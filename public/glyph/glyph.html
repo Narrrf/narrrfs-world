@@ -20,8 +20,24 @@
         <div class="panel__header">
           <h1 class="title">Glyph Memory</h1>
           <p class="subtitle">Match the hidden glyph pairs.</p>
-          <div id="userDisplay" class="user-display">
-            <span id="userName">Guest</span>
+          <div id="userDisplay" class="user-display" style="display: none;">
+            <div class="user-display__avatar-container">
+              <img id="userAvatar" src="" alt="User Avatar" class="user-display__avatar" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
+            </div>
+            <div class="user-display__info">
+              <div class="user-display__name" id="userName">Guest</div>
+              <div class="user-display__balance">
+                <span id="userBalance" class="user-display__balance-value">DSPOINC: 0</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Login Message (shown when not logged in) -->
+          <div id="loginMessage" class="login-message" style="display: none;">
+            <a href="../profile.html" class="login-message__link">
+              <span class="login-message__icon">🔐</span>
+              <span class="login-message__text">Login with Discord to play</span>
+            </a>
           </div>
           
           <!-- Navigation Buttons -->

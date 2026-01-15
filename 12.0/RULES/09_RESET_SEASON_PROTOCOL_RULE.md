@@ -207,7 +207,15 @@ These fixes ensure the frontend shows Season 5 data correctly:
 - Remove fallback logic for Tetris that shows all-time data when season has 0 scores
 - Remove season filtering from Cheese Hunt and Discord Race (they show all-time data)
 
-**File 6: `public/admin-interface.html`**
+**File 6: `api/dev/get-leaderboard.php`** ⚠️ **CRITICAL - DSPOINC EARNINGS LEADERBOARD (NEW - January 14, 2026)**
+- **Status:** ✅ Already uses dynamic season detection - No hardcoded fallbacks needed
+- **DSPOINC Earnings Leaderboard:** Queries `tbl_score_adjustments` with season timestamp filtering
+- **Verification Required:** Ensure DSPOINC earnings leaderboard shows correct season data after reset
+- **Why Critical:** Leaderboard page displays top 10 DSPOINC earners for the season - must show current season data
+- **Automatic:** Season dates are fetched from `tbl_seasons` table, so it updates automatically
+- **Verification:** Check that `leaderboard.html` shows correct season in DSPOINC earnings leaderboard title
+
+**File 7: `public/admin-interface.html`**
 - Add "Season 5" option to all 3 season dropdowns:
   - `seasonSelector` (line ~3006)
   - `seasonSwitchSelector` (line ~3857)
@@ -219,11 +227,21 @@ These fixes ensure the frontend shows Season 5 data correctly:
   - `updateSeasonDisplay()` fallback: "Season 4" → "Season 5" (line ~25289)
   - `overviewSeasonTimeLeft`: "Season 4 Active" → "Season 5 Active" (line ~25307)
 
+**File 8: `public/leaderboard.html`** ⚠️ **CRITICAL - LEADERBOARD PAGE (NEW - January 14, 2026)**
+- **Status:** ✅ Already uses dynamic season detection from API - No hardcoded season names
+- **DSPOINC Earnings Leaderboard:** Displays top 10 DSPOINC earners for the season at the top
+- **Season Title:** Dynamically updates from API response (no hardcoded values)
+- **Verification Required:** Ensure DSPOINC earnings leaderboard section shows correct season title after reset
+- **Why Critical:** Leaderboard page is the main display for season rankings - must show current season correctly
+- **Automatic:** Season title updates from `data.display_season` in API response, so it updates automatically
+- **Verification:** Check that "Season X Leaderboard" title in DSPOINC earnings section matches current season
+
 **Why This Is Critical:**
 - Without these fixes, the profile page shows "Not Played" (red X) for all 3 games
 - Mission status API filters only Season 4 data, ignoring Season 5 scores
 - Admin interface shows old season data
 - Players can't see their Season 5 progress
+- Leaderboard page shows incorrect season in DSPOINC earnings leaderboard title
 
 **🚨 CRITICAL: BROWSER CACHE WORKAROUND (DISCOVERED NOV 3, 2025)**
 
@@ -262,6 +280,8 @@ Keep DevTools open while testing
 - ✅ All 3 games show 0 scores (fresh season)
 - ✅ Twitter, Bug Report, Missions work correctly
 - ✅ Profile page mission status loads
+- ✅ Leaderboard page shows correct season title in DSPOINC earnings section
+- ✅ DSPOINC earnings leaderboard displays current season data (or empty if fresh season)
 
 **Test After Fixes:**
 ```bash
@@ -277,7 +297,13 @@ Keep DevTools open while testing
 # 4. Test admin interface data display
 # Verify: 3 main games show 0 scores initially, then new Season 5 scores appear
 
-# 5. Verify no corruption
+# 5. Test leaderboard page (NEW - January 14, 2026)
+# File: public/leaderboard.html
+# Verify: DSPOINC earnings leaderboard shows correct season title (e.g., "Season 7 Leaderboard")
+# Verify: All game leaderboards load correctly with new season data
+# Verify: Season status banner shows correct season
+
+# 6. Verify no corruption
 # Ensure: Twitter, Bug Report, Missions all functional
 ```
 
@@ -328,6 +354,10 @@ echo "Code deployed to production: $(date)" >> /data/season_reset_log.txt
 
 ### **⚠️ SPECIAL CASES:**
 - **`tbl_season_leaderboards`** - No `game` column, regenerates automatically
+- **`tbl_score_adjustments`** - DSPOINC earnings tracked per season (timestamp-based filtering in leaderboard queries)
+  - **DSPOINC Earnings Leaderboard:** Shows top 10 earners for current season only (filtered by timestamp)
+  - **Season-Based:** Each season has separate DSPOINC earnings leaderboard
+  - **No Reset Required:** Data is preserved across seasons, leaderboard filters by season timestamps automatically
 - **User Profiles** - Never reset user account data
 - **Store Items** - Never reset store inventory or purchases
 - **Wallet Data** - Never reset NFT ownership or wallet balances
@@ -470,6 +500,13 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
   - **Space Invaders Fixes:** Boss explosion cleanup, falling blocks cleanup, shot messages frequency
   - **Season 6 Theming:** All "Starting Soon" → "Season 6 Running" messages updated
   - **Status:** ✅ Season 6 is LIVE and fully operational
+- **Version 5.1** - DSPOINC Earnings Leaderboard Added (January 14, 2026)
+  - **New Feature:** DSPOINC earnings leaderboard added to leaderboard page (top 10 earners per season)
+  - **Leaderboard API:** Added `getDspoincEarningsLeaderboard()` function to `api/dev/get-leaderboard.php`
+  - **Frontend:** Added DSPOINC earnings section to `public/leaderboard.html` (at top, prominent styling)
+  - **Dynamic Season:** Leaderboard already uses dynamic season detection - no hardcoded values
+  - **Reset Protocol:** Added leaderboard page to season reset verification checklist
+  - **Status:** ✅ DSPOINC earnings leaderboard is LIVE and dynamically updates with seasons
 - **Future Updates** - Rule will be updated based on new learnings and requirements
 - **Version Control** - All updates must be documented with rationale
 
@@ -508,7 +545,7 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
 ---
 
 **RULE CREATED:** October 6, 2025  
-**LAST UPDATED:** December 1, 2025 (v5.0 - Season 6 Live Launch)  
+**LAST UPDATED:** January 14, 2026 (v5.1 - DSPOINC Earnings Leaderboard Added)  
 **STATUS:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**  
 **PURPOSE:** Professional Season Reset Operations with Historical Data Preservation  
 **SCOPE:** All future season resets, all team members, all environments  
@@ -535,17 +572,19 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
 ### **🔧 API & MESSAGING FIXES REQUIRED (LEARNED FROM SEASON 5):**
 After every season reset, MUST update 8 files to prevent errors and ensure proper launch messaging:
 
-**API Files (6 files):**
+**API Files (7 files):**
 1. `api/user/user-game-missions.php` - Dynamic season detection (6 queries)
 2. `api/dev/save-score.php` - Update fallback season
 3. `api/admin/get-season-stats.php` - Update fallback + mapping
 4. `api/admin/get-current-season-settings.php` - Update fallback (causes admin interface to show wrong season!)
 5. `api/admin/get-all-games-stats.php` - Update fallback + remove incorrect filters (causes admin interface to swap to old season!)
-6. `public/admin-interface.html` - Add new season to dropdowns + displays
+6. `api/dev/get-leaderboard.php` - ✅ Already dynamic (uses season dates from tbl_seasons) - Verify DSPOINC earnings leaderboard shows correct season
+7. `public/admin-interface.html` - Add new season to dropdowns + displays
 
-**Frontend Messaging (2 files):**
-7. `public/index.html` - Update all "Coming Soon" → "NOW LIVE" (8 locations)
-8. `public/profile.html` - Update all "Config Mode" → "NOW LIVE" (12 locations)
+**Frontend Messaging (3 files):**
+8. `public/index.html` - Update all "Coming Soon" → "NOW LIVE" (8 locations)
+9. `public/profile.html` - Update all "Config Mode" → "NOW LIVE" (12 locations)
+10. `public/leaderboard.html` - ✅ Already dynamic (season title from API) - Verify DSPOINC earnings leaderboard displays correctly
 
 **Additional Steps:**
 - Clear browser cache after updates (CTRL+SHIFT+R)

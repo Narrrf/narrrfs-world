@@ -158,11 +158,17 @@ try {
     $insertId = $pdo->lastInsertId();
     error_log("Cheese click inserted successfully with ID: $insertId");
 
+    // Get total cheese hunt clicks (all time, not just quest)
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total_clicks FROM tbl_cheese_clicks WHERE user_wallet = ?");
+    $stmt->execute([$userWallet]);
+    $totalClicks = $stmt->fetch(PDO::FETCH_ASSOC)['total_clicks'];
+
     $response = [
         'success' => true,
         'message' => "🧀 Cheese click logged: $eggId by $userWallet",
         'timestamp' => $timestamp,
-        'insert_id' => $insertId
+        'insert_id' => $insertId,
+        'total_clicks' => (int)$totalClicks
     ];
 
     // If this is a quest completion, handle additional logic
@@ -219,11 +225,13 @@ try {
                     $response['quest_reward'] = $quest['reward'];
                     $response['winner_message'] = $cheese_config['winner_message'] ?? "🎯 Congratulations! You found all $required_eggs cheese eggs!";
                     $response['progress'] = "$required_eggs/$required_eggs eggs found!";
+                    $response['required_eggs'] = (int)$required_eggs; // Include required eggs count in response
                 } else {
                     // Still need more cheese eggs
                     $response['quest_completed'] = false;
                     $response['progress'] = "$egg_count/$required_eggs eggs found";
                     $response['message'] = "Great! You found $egg_count of $required_eggs cheese eggs. Keep hunting!";
+                    $response['required_eggs'] = (int)$required_eggs; // Include required eggs count in response
                 }
             }
         }

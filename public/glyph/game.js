@@ -23,6 +23,21 @@ Glyph Memory — Phase 1 JS
     ...Array.from({ length: 10 }, (_, i) => `assets/glyphs/${i}.png`),
     ...Array.from({ length: 26 }, (_, i) => `assets/glyphs/${String.fromCharCode(65 + i)}.png`),
   ];
+  
+  // CRITICAL: Verify GLYPH_FILES array is valid and has no duplicates
+  (function validateGlyphFiles() {
+    const unique = [...new Set(GLYPH_FILES)];
+    if (unique.length !== GLYPH_FILES.length) {
+      console.error(`❌ [GLYPH] GLYPH_FILES array contains duplicates! Total: ${GLYPH_FILES.length}, Unique: ${unique.length}`);
+      console.error(`   This is a code bug - each glyph should appear exactly once in GLYPH_FILES`);
+    }
+    if (GLYPH_FILES.length < 12) {
+      console.error(`❌ [GLYPH] Not enough glyph files! Need at least 12 for hard difficulty, have: ${GLYPH_FILES.length}`);
+    }
+    if (GLYPH_FILES.length === 36) {
+      console.log(`✅ [GLYPH] Glyph files initialized: ${GLYPH_FILES.length} total (expected 36: 0-9 + A-Z)`);
+    }
+  })();
 
   // Backgrounds per difficulty (menu uses easy by default)
   const BACKGROUNDS = {
@@ -32,10 +47,11 @@ Glyph Memory — Phase 1 JS
     hard: 'assets/backgrounds/bg_hard.jpg',
   };
 
-  // Two sounds only (match + mismatch)
+  // Three sounds: match, mismatch, and card flip
   const SOUNDS = {
     match: 'assets/audio/match.mp3',
     fail:  'assets/audio/mismatch.mp3',
+    flip:  'assets/audio/flip.mp3', // Sound when card is flipped up
   };
 
   // ------- DOM -------
@@ -59,6 +75,9 @@ Glyph Memory — Phase 1 JS
   // User display elements
   const userDisplayEl = document.getElementById('userDisplay');
   const userNameEl = document.getElementById('userName');
+  const userAvatarEl = document.getElementById('userAvatar');
+  const userBalanceEl = document.getElementById('userBalance');
+  const loginMessageEl = document.getElementById('loginMessage');
 
   const winOverlay = document.getElementById('winOverlay');
   const finalTimeEl = document.getElementById('finalTime');
@@ -118,6 +137,7 @@ Glyph Memory — Phase 1 JS
   const audio = {
     match: SOUNDS.match ? new Audio(SOUNDS.match) : null,
     fail:  SOUNDS.fail ? new Audio(SOUNDS.fail) : null,
+    flip:  SOUNDS.flip ? new Audio(SOUNDS.flip) : null,
   };
 
   function playSound(key) {
@@ -242,10 +262,46 @@ Glyph Memory — Phase 1 JS
   }
 
   function pickRandomGlyphs(count) {
-    if (GLYPH_FILES.length < count) {
-      console.warn(`Not enough glyphs: need ${count}, have ${GLYPH_FILES.length}`);
+    // CRITICAL: Verify GLYPH_FILES has no duplicates
+    const uniqueGlyphFiles = [...new Set(GLYPH_FILES)];
+    if (uniqueGlyphFiles.length !== GLYPH_FILES.length) {
+      console.warn(`⚠️ [GLYPH] GLYPH_FILES array contains duplicates! Total: ${GLYPH_FILES.length}, Unique: ${uniqueGlyphFiles.length}`);
+      // Use unique glyphs only
+      GLYPH_FILES.splice(0, GLYPH_FILES.length, ...uniqueGlyphFiles);
     }
-    return shuffle(GLYPH_FILES).slice(0, count);
+    
+    if (GLYPH_FILES.length < count) {
+      console.error(`❌ [GLYPH] Not enough glyphs: need ${count}, have ${GLYPH_FILES.length}`);
+      // Fallback: return what we have and pad with repeats if necessary (shouldn't happen with 36 glyphs)
+      const result = [...GLYPH_FILES];
+      while (result.length < count) {
+        result.push(GLYPH_FILES[Math.floor(Math.random() * GLYPH_FILES.length)]);
+      }
+      return result.slice(0, count);
+    }
+    
+    // CRITICAL: Shuffle entire array first, then take first N to ensure uniqueness
+    const shuffled = shuffle([...GLYPH_FILES]);
+    const selected = shuffled.slice(0, count);
+    
+    // CRITICAL: Verify selected glyphs are all unique
+    const selectedSet = new Set(selected);
+    if (selectedSet.size !== selected.length) {
+      console.error(`❌ [GLYPH] Duplicate glyphs selected! Requested: ${count}, Unique: ${selectedSet.size}`);
+      // Fix: Remove duplicates and add more unique glyphs
+      const fixed = Array.from(selectedSet);
+      const available = shuffled.slice(count);
+      while (fixed.length < count && available.length > 0) {
+        const next = available.shift();
+        if (!fixed.includes(next)) {
+          fixed.push(next);
+        }
+      }
+      console.warn(`🔧 [GLYPH] Fixed duplicate selection - using ${fixed.length} unique glyphs`);
+      return fixed;
+    }
+    
+    return selected;
   }
 
   function formatTime(ms) {
@@ -314,12 +370,82 @@ Glyph Memory — Phase 1 JS
     const cfg = DIFFICULTIES[difficultyKey];
     const glyphs = pickRandomGlyphs(cfg.pairs);
 
-    const cards = glyphs.flatMap((src, idx) => ([
-      { id: `${idx}-a`, glyphSrc: src, matched: false },
-      { id: `${idx}-b`, glyphSrc: src, matched: false },
-    ]));
+    // CRITICAL: Ensure we have exactly the right number of unique glyphs
+    if (glyphs.length !== cfg.pairs) {
+      console.error(`❌ [GLYPH] Incorrect glyph count: expected ${cfg.pairs}, got ${glyphs.length}`);
+    }
 
-    return shuffle(cards);
+    // CRITICAL: Verify all glyphs are unique (no duplicates)
+    const uniqueGlyphs = [...new Set(glyphs)];
+    if (uniqueGlyphs.length !== glyphs.length) {
+      console.error(`❌ [GLYPH] Duplicate glyphs detected! Expected ${glyphs.length} unique, got ${uniqueGlyphs.length}`);
+      // Fix: Use only unique glyphs and pad if needed
+      const fixedGlyphs = uniqueGlyphs.slice(0, cfg.pairs);
+      while (fixedGlyphs.length < cfg.pairs) {
+        // Add random glyphs that aren't already selected
+        const available = GLYPH_FILES.filter(g => !fixedGlyphs.includes(g));
+        if (available.length > 0) {
+          fixedGlyphs.push(available[Math.floor(Math.random() * available.length)]);
+        } else {
+          // Fallback: duplicate a glyph if we run out (shouldn't happen)
+          fixedGlyphs.push(GLYPH_FILES[Math.floor(Math.random() * GLYPH_FILES.length)]);
+        }
+      }
+      console.warn(`🔧 [GLYPH] Fixed duplicate glyphs - using ${fixedGlyphs.length} unique glyphs`);
+      glyphs.splice(0, glyphs.length, ...fixedGlyphs);
+    }
+
+    // Create exactly 2 cards per glyph (pair matching)
+    const cards = glyphs.flatMap((src, idx) => {
+      // CRITICAL: Both cards MUST have the exact same glyphSrc for matching to work
+      const cardA = { id: `${idx}-a`, glyphSrc: src, matched: false };
+      const cardB = { id: `${idx}-b`, glyphSrc: src, matched: false }; // Same src as cardA!
+      
+      // Validation: Verify both cards have identical glyphSrc
+      if (cardA.glyphSrc !== cardB.glyphSrc) {
+        console.error(`❌ [GLYPH] Pair mismatch detected! Card A: ${cardA.glyphSrc}, Card B: ${cardB.glyphSrc}`);
+      }
+      
+      return [cardA, cardB];
+    });
+
+    // CRITICAL: Verify deck integrity before shuffling
+    // Each glyph should appear exactly twice
+    const glyphCounts = {};
+    cards.forEach(card => {
+      glyphCounts[card.glyphSrc] = (glyphCounts[card.glyphSrc] || 0) + 1;
+    });
+    
+    // Validate: All glyphs should appear exactly 2 times
+    const invalidGlyphs = Object.entries(glyphCounts).filter(([src, count]) => count !== 2);
+    if (invalidGlyphs.length > 0) {
+      console.error(`❌ [GLYPH] Deck validation failed! Glyphs with incorrect counts:`, invalidGlyphs);
+      invalidGlyphs.forEach(([src, count]) => {
+        console.error(`  - ${src}: appears ${count} times (should be 2)`);
+      });
+    } else {
+      console.log(`✅ [GLYPH] Deck validated: ${Object.keys(glyphCounts).length} unique glyphs, each appearing exactly 2 times`);
+    }
+
+    // Verify total card count matches expected
+    const expectedCards = cfg.pairs * 2;
+    if (cards.length !== expectedCards) {
+      console.error(`❌ [GLYPH] Incorrect card count: expected ${expectedCards}, got ${cards.length}`);
+    }
+
+    const shuffled = shuffle(cards);
+    
+    // Final validation after shuffle
+    const shuffledGlyphCounts = {};
+    shuffled.forEach(card => {
+      shuffledGlyphCounts[card.glyphSrc] = (shuffledGlyphCounts[card.glyphSrc] || 0) + 1;
+    });
+    const invalidAfterShuffle = Object.entries(shuffledGlyphCounts).filter(([src, count]) => count !== 2);
+    if (invalidAfterShuffle.length > 0) {
+      console.error(`❌ [GLYPH] Deck corrupted after shuffle!`, invalidAfterShuffle);
+    }
+    
+    return shuffled;
   }
 
   function setBoardGrid(difficultyKey) {
@@ -390,6 +516,21 @@ Glyph Memory — Phase 1 JS
     boardEl.appendChild(frag);
   }
 
+  // ------- DECK VERIFICATION -------
+  function verifyDeckIntegrity() {
+    const glyphCounts = {};
+    deck.forEach(card => {
+      glyphCounts[card.glyphSrc] = (glyphCounts[card.glyphSrc] || 0) + 1;
+    });
+    
+    const invalid = Object.entries(glyphCounts).filter(([src, count]) => count !== 2);
+    if (invalid.length > 0) {
+      console.error(`❌ [GLYPH] Deck integrity check FAILED:`, invalid);
+      return false;
+    }
+    return true;
+  }
+
   // ------- GAMEPLAY -------
   function onCardClick(e) {
     if (lockBoard) return;
@@ -397,6 +538,11 @@ Glyph Memory — Phase 1 JS
     const cardBtn = e.currentTarget;
     const index = Number(cardBtn.dataset.index);
     const card = deck[index];
+
+    if (!card) {
+      console.error(`❌ [GLYPH] Card at index ${index} not found in deck!`);
+      return;
+    }
 
     if (card.matched) return;
     if (cardBtn.classList.contains('is-flipped')) return;
@@ -415,9 +561,49 @@ Glyph Memory — Phase 1 JS
     const firstCard = deck[firstPick.index];
     const secondCard = deck[secondPick.index];
 
+    // CRITICAL: Verify both cards exist
+    if (!firstCard || !secondCard) {
+      console.error(`❌ [GLYPH] Card mismatch - firstCard:`, firstCard, `secondCard:`, secondCard);
+      resetTurnPicks();
+      return;
+    }
+
     lockBoard = true;
 
-    if (firstCard.glyphSrc === secondCard.glyphSrc) {
+    // CRITICAL: Use strict comparison and verify glyphSrc values
+    const firstSrc = String(firstCard.glyphSrc || '').trim();
+    const secondSrc = String(secondCard.glyphSrc || '').trim();
+    
+    if (!firstSrc || !secondSrc) {
+      console.error(`❌ [GLYPH] Empty glyphSrc detected! First: "${firstSrc}", Second: "${secondSrc}"`);
+      playSound('fail');
+      window.setTimeout(() => {
+        flipCardDown(firstPick.el);
+        flipCardDown(secondPick.el);
+        resetTurnPicks();
+      }, 900);
+      return;
+    }
+
+    const isMatch = firstSrc === secondSrc;
+    
+    // Diagnostic logging for mismatches (especially near the end)
+    if (!isMatch) {
+      const remainingUnmatched = deck.filter(c => !c.matched);
+      if (remainingUnmatched.length <= 4) {
+        console.warn(`⚠️ [GLYPH] Mismatch detected with ${remainingUnmatched.length} cards remaining:`, {
+          first: firstSrc,
+          second: secondSrc,
+          remaining: remainingUnmatched.map(c => c.glyphSrc)
+        });
+        // Verify deck integrity when near the end
+        if (!verifyDeckIntegrity()) {
+          console.error(`❌ [GLYPH] Deck corruption detected during gameplay!`);
+        }
+      }
+    }
+
+    if (isMatch) {
       firstCard.matched = true;
       secondCard.matched = true;
 
@@ -448,6 +634,8 @@ Glyph Memory — Phase 1 JS
   function flipCardUp(el) {
     el.classList.add('is-flipped');
     el.setAttribute('aria-label', 'Revealed card');
+    // Play flip sound when card is revealed
+    playSound('flip');
   }
 
   function flipCardDown(el) {
@@ -457,7 +645,40 @@ Glyph Memory — Phase 1 JS
 
   function checkWin() {
     const totalPairs = DIFFICULTIES[activeDifficulty].pairs;
+    
+    // CRITICAL: Diagnostic check before win - verify all pairs are matched correctly
+    const unmatchedCards = deck.filter(card => !card.matched);
+    if (unmatchedCards.length > 0) {
+      console.warn(`⚠️ [GLYPH] Win check: ${unmatchedCards.length} unmatched card(s) remaining:`, unmatchedCards.map(c => c.glyphSrc));
+      
+      // CRITICAL: Check if remaining unmatched cards can form pairs
+      const remainingGlyphCounts = {};
+      unmatchedCards.forEach(card => {
+        remainingGlyphCounts[card.glyphSrc] = (remainingGlyphCounts[card.glyphSrc] || 0) + 1;
+      });
+      
+      const unmatchedPairs = Object.entries(remainingGlyphCounts).filter(([src, count]) => count !== 2);
+      if (unmatchedPairs.length > 0) {
+        console.error(`❌ [GLYPH] CRITICAL BUG: Unmatched cards cannot form pairs!`, unmatchedPairs);
+        unmatchedPairs.forEach(([src, count]) => {
+          console.error(`  - Glyph "${src}": appears ${count} time(s) (should be 2 for matching)`);
+        });
+        
+        // Prevent win if deck is corrupted
+        console.error(`❌ [GLYPH] Blocking win - deck corruption detected!`);
+        return; // Don't allow win with corrupted deck
+      }
+    }
+    
     if (matchedPairs >= totalPairs) {
+      // CRITICAL: Final validation - verify all cards are actually matched
+      const stillUnmatched = deck.filter(card => !card.matched);
+      if (stillUnmatched.length > 0) {
+        console.error(`❌ [GLYPH] Win condition met but ${stillUnmatched.length} card(s) still unmatched!`, stillUnmatched);
+        // Don't show win screen if there are still unmatched cards
+        return;
+      }
+      
       stopTimer();
 
       const elapsed = Date.now() - timerStart;
@@ -474,6 +695,7 @@ Glyph Memory — Phase 1 JS
 
       if (newBestBadgeEl) newBestBadgeEl.hidden = !isNewBest;
 
+      console.log(`✅ [GLYPH] Game won! Time: ${formatTime(elapsed)}, Pairs matched: ${matchedPairs}/${totalPairs}`);
       winOverlay.hidden = false;
     }
   }
@@ -527,6 +749,36 @@ Glyph Memory — Phase 1 JS
     resetTurnPicks();
 
     deck = buildDeck(activeDifficulty);
+    
+    // CRITICAL: Verify deck integrity before starting game
+    if (!verifyDeckIntegrity()) {
+      console.error(`❌ [GLYPH] Cannot start game - deck is corrupted!`);
+      alert('⚠️ Error: Game deck is invalid. Please try restarting the game.');
+      return; // Don't start with corrupted deck
+    }
+    
+    // CRITICAL: Verify deck has correct number of cards
+    const expectedCards = DIFFICULTIES[activeDifficulty].pairs * 2;
+    if (deck.length !== expectedCards) {
+      console.error(`❌ [GLYPH] Deck has wrong number of cards: expected ${expectedCards}, got ${deck.length}`);
+      alert('⚠️ Error: Game deck has incorrect number of cards. Please try restarting the game.');
+      return;
+    }
+    
+    // CRITICAL: Verify all glyphs appear exactly twice
+    const glyphCounts = {};
+    deck.forEach(card => {
+      glyphCounts[card.glyphSrc] = (glyphCounts[card.glyphSrc] || 0) + 1;
+    });
+    const invalidPairs = Object.entries(glyphCounts).filter(([src, count]) => count !== 2);
+    if (invalidPairs.length > 0) {
+      console.error(`❌ [GLYPH] Deck validation failed - glyphs with incorrect counts:`, invalidPairs);
+      alert('⚠️ Error: Game deck validation failed. Please try restarting the game.');
+      return;
+    }
+    
+    console.log(`✅ [GLYPH] Deck validated successfully: ${deck.length} cards, ${Object.keys(glyphCounts).length} unique glyphs, all appear exactly 2 times`);
+    
     setBoardGrid(activeDifficulty);
     renderBoard();
 
@@ -542,6 +794,23 @@ Glyph Memory — Phase 1 JS
     resetTurnPicks();
 
     deck = buildDeck(activeDifficulty);
+    
+    // CRITICAL: Verify deck integrity before restarting game
+    if (!verifyDeckIntegrity()) {
+      console.error(`❌ [GLYPH] Cannot restart game - deck is corrupted!`);
+      alert('⚠️ Error: Game deck is invalid. Please try restarting the game.');
+      goToMenu(); // Return to menu if deck is corrupted
+      return;
+    }
+    
+    // CRITICAL: Verify deck has correct number of cards
+    const expectedCards = DIFFICULTIES[activeDifficulty].pairs * 2;
+    if (deck.length !== expectedCards) {
+      console.error(`❌ [GLYPH] Deck has wrong number of cards: expected ${expectedCards}, got ${deck.length}`);
+      goToMenu();
+      return;
+    }
+    
     setBoardGrid(activeDifficulty);
     renderBoard();
 
@@ -585,34 +854,102 @@ Glyph Memory — Phase 1 JS
   });
 
   // ------- USER DISPLAY -------
-  function updateUserDisplay() {
+  // Environment detection for API calls
+  const isProduction = window.location.hostname === 'narrrfs.world' || window.location.hostname === 'narrrfs-world.onrender.com';
+  const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
+  
+  async function updateUserDisplay() {
     try {
       const discordId = localStorage.getItem('discord_id');
       const discordName = localStorage.getItem('discord_name');
       
-      if (userDisplayEl && userNameEl) {
-        if (discordId && discordName) {
-          // User is logged in with Discord
-          userNameEl.textContent = `👤 ${discordName}`;
-          userDisplayEl.style.display = 'block';
-        } else {
-          // Check for local bypass user (for local development)
-          const isLocal = window.location.hostname === 'localhost' || 
-                        window.location.hostname === '127.0.0.1' || 
-                        window.location.hostname === '';
+      if (!userDisplayEl || !userNameEl) return;
+      
+      // Check for local bypass user (for local development)
+      const isLocal = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' || 
+                    window.location.hostname === '';
+      
+      if (discordId && discordName) {
+        // User is logged in with Discord - fetch full user details
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/user/details.php?user_id=${encodeURIComponent(discordId)}`, {
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' }
+          });
           
-          if (isLocal) {
-            // Show local bypass user for local testing
-            userNameEl.textContent = '👤 Local Bypass User';
-            userDisplayEl.style.display = 'block';
-          } else {
-            // Not logged in - hide user display
-            userDisplayEl.style.display = 'none';
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user) {
+              // Update username
+              if (userNameEl) {
+                userNameEl.textContent = data.user.username || discordName;
+              }
+              
+              // Update avatar (with fallback)
+              if (userAvatarEl) {
+                if (data.user.avatar_url) {
+                  userAvatarEl.src = data.user.avatar_url;
+                } else {
+                  // Fallback to Discord default avatar based on user ID
+                  const avatarIndex = parseInt(discordId) % 5;
+                  userAvatarEl.src = `https://cdn.discordapp.com/embed/avatars/${avatarIndex}.png`;
+                }
+              }
+              
+              // Update DSPOINC balance (formatted with commas, like 3D riddle game)
+              if (userBalanceEl) {
+                const balance = data.user.balance || 0;
+                userBalanceEl.textContent = `DSPOINC: ${typeof balance === 'number' && Number.isFinite(balance) ? balance.toLocaleString() : '0'}`;
+              }
+              
+              // Show user display, hide login message
+              userDisplayEl.style.display = 'flex';
+              if (loginMessageEl) loginMessageEl.style.display = 'none';
+              
+              return;
+            }
           }
+        } catch (apiError) {
+          console.warn('Failed to fetch user details from API, using localStorage data:', apiError);
         }
+        
+        // Fallback: Use localStorage data if API fails
+        userNameEl.textContent = discordName;
+        if (userAvatarEl) {
+          const avatarIndex = parseInt(discordId) % 5;
+          userAvatarEl.src = `https://cdn.discordapp.com/embed/avatars/${avatarIndex}.png`;
+        }
+        if (userBalanceEl) {
+          userBalanceEl.textContent = '0';
+        }
+        userDisplayEl.style.display = 'flex';
+        if (loginMessageEl) loginMessageEl.style.display = 'none';
+        
+      } else if (isLocal) {
+        // Local development - show local bypass user
+        if (userNameEl) {
+          userNameEl.textContent = 'Local Bypass User';
+        }
+        if (userAvatarEl) {
+          userAvatarEl.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+        }
+        if (userBalanceEl) {
+          userBalanceEl.textContent = 'DSPOINC: 0';
+        }
+        userDisplayEl.style.display = 'flex';
+        if (loginMessageEl) loginMessageEl.style.display = 'none';
+        
+      } else {
+        // Not logged in - show login message, hide user display
+        userDisplayEl.style.display = 'none';
+        if (loginMessageEl) loginMessageEl.style.display = 'block';
       }
     } catch (error) {
       console.error('Error updating user display:', error);
+      // On error, hide user display and show login message
+      if (userDisplayEl) userDisplayEl.style.display = 'none';
+      if (loginMessageEl) loginMessageEl.style.display = 'block';
     }
   }
 

@@ -1378,10 +1378,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     <!-- 🎯 Game Stats Grid -->
       <div>
-        <h3 class="text-md font-semibold mb-3 text-blue-300 flex items-center gap-2">
-          <span>🎯</span>
-          <span>Current Season Statistics</span>
-        </h3>
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-md font-semibold text-blue-300 flex items-center gap-2">
+            <span>🎯</span>
+            <span>Current Season Statistics</span>
+          </h3>
+          <a href="leaderboard.html" 
+             class="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-gray-900 font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400 hover:border-yellow-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
+            <span>🏆</span>
+            <span>View Full Leaderboard</span>
+          </a>
+        </div>
         <div id="missionsResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <!-- Game stats will be populated by JavaScript -->
         </div>

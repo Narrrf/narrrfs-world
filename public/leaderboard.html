@@ -81,12 +81,30 @@
 
     <!-- Leaderboard Content -->
     <div id="leaderboard-content" class="hidden">
+      <!-- DSPOINC Earnings Leaderboard (Season Top Earners) -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6 border-4 border-yellow-400 shadow-2xl">
+        <h2 class="text-3xl font-bold text-yellow-300 mb-2 flex items-center gap-2">
+          <span>💰</span>
+          <span id="season-leaderboard-title">Season 7 Leaderboard</span>
+        </h2>
+        <p class="text-sm text-yellow-200 mb-4 opacity-80">Top 10 DSPOINC Earners - All Games & Platform Actions</p>
+        <div id="dspoinc-earnings-leaderboard" class="space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
       <!-- Tetris Leaderboard -->
       <div class="leaderboard-card rounded-xl p-6 mb-6">
-        <h2 class="text-2xl font-bold text-purple-300 mb-4 flex items-center gap-2">
-          <span>🧩</span>
-          <span>Tetris Leaderboard</span>
-        </h2>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold text-purple-300 flex items-center gap-2">
+            <span>🧩</span>
+            <span>Cheese Tetris Leaderboard</span>
+          </h2>
+          <a href="tetris.html" 
+             class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-purple-400 hover:border-purple-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
+            🎮 Play Tetris
+          </a>
+        </div>
         <div id="tetris-leaderboard" class="space-y-2">
           <!-- Populated by JavaScript -->
         </div>
@@ -94,10 +112,16 @@
 
       <!-- Snake Leaderboard -->
       <div class="leaderboard-card rounded-xl p-6 mb-6">
-        <h2 class="text-2xl font-bold text-green-300 mb-4 flex items-center gap-2">
-          <span>🐍</span>
-          <span>Snake Leaderboard</span>
-        </h2>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold text-green-300 flex items-center gap-2">
+            <span>🐍</span>
+            <span>Cheese Snake Leaderboard</span>
+          </h2>
+          <a href="snake.html" 
+             class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-green-400 hover:border-green-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
+            🎮 Play Snake
+          </a>
+        </div>
         <div id="snake-leaderboard" class="space-y-2">
           <!-- Populated by JavaScript -->
         </div>
@@ -105,11 +129,50 @@
 
       <!-- Space Invaders Leaderboard -->
       <div class="leaderboard-card rounded-xl p-6 mb-6">
-        <h2 class="text-2xl font-bold text-pink-300 mb-4 flex items-center gap-2">
-          <span>👾</span>
-          <span>Space Invaders Leaderboard</span>
-        </h2>
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 class="text-2xl font-bold text-pink-300 flex items-center gap-2">
+            <span>👾</span>
+            <span>Cheese Space Invaders Leaderboard</span>
+          </h2>
+          <a href="space-cheese-invaders.html" 
+             class="bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-pink-400 hover:border-pink-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
+            🎮 Play Space Invaders
+          </a>
+        </div>
         <div id="space-invaders-leaderboard" class="space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Cheese Hunt Leaderboard -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6">
+        <h2 class="text-2xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
+          <span>🧀</span>
+          <span>Cheese Hunt Leaderboard</span>
+        </h2>
+        <div id="cheese-hunt-leaderboard" class="space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Discord Cheese Race Leaderboard -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6">
+        <h2 class="text-2xl font-bold text-blue-300 mb-4 flex items-center gap-2">
+          <span>🏁</span>
+          <span>Discord Cheese Race Leaderboard</span>
+        </h2>
+        <div id="discord-race-leaderboard" class="space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Cheese Rumble Leaderboard -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6">
+        <h2 class="text-2xl font-bold text-red-300 mb-4 flex items-center gap-2">
+            <span>💥</span>
+            <span>Discord Cheese Rumbles Leaderboard</span>
+        </h2>
+        <div id="cheese-rumble-leaderboard" class="space-y-2">
           <!-- Populated by JavaScript -->
         </div>
       </div>
@@ -174,7 +237,9 @@
         const seasonTitle = document.getElementById('season-title');
         const seasonSubtitle = document.getElementById('season-subtitle');
         const seasonStatus = document.getElementById('season-status');
+        const seasonLeaderboardTitle = document.getElementById('season-leaderboard-title');
 
+        // Update main season title
         if (data.is_frozen) {
           seasonTitle.textContent = `⏸️ ${data.display_season} Leaderboard (Frozen)`;
           seasonSubtitle.textContent = `🎮 ${data.current_season} is active! Play now to appear on the leaderboard.`;
@@ -185,19 +250,34 @@
           seasonStatus.textContent = `🎮 ${data.display_season} Active`;
         }
 
-        // Display leaderboards (use correct game keys from API response)
+        // Update DSPOINC earnings leaderboard season title
+        if (seasonLeaderboardTitle) {
+          seasonLeaderboardTitle.textContent = `${data.display_season} Leaderboard`;
+        }
+
+        // Display DSPOINC earnings leaderboard (season top earners - at top)
+        displayLeaderboard('dspoinc-earnings', data.dspoinc_earnings || [], data.is_frozen);
+
+        // Display leaderboards (all 6 games)
         displayLeaderboard('tetris', data.tetris || [], data.is_frozen);
         displayLeaderboard('snake', data.snake || [], data.is_frozen);
         displayLeaderboard('space-invaders', data.space_invaders || [], data.is_frozen);
+        displayLeaderboard('cheese-hunt', data.cheese_hunt || [], data.is_frozen);
+        displayLeaderboard('discord-race', data.discord_race || [], data.is_frozen);
+        displayLeaderboard('cheese-rumble', data.cheese_rumble || [], data.is_frozen);
         
         // 🔧 CRITICAL FIX: Log API response for debugging
         console.log('🏆 Leaderboard data loaded:', {
           current_season: data.current_season,
           display_season: data.display_season,
           is_frozen: data.is_frozen,
+          dspoinc_earnings_count: (data.dspoinc_earnings || []).length,
           tetris_count: (data.tetris || []).length,
           snake_count: (data.snake || []).length,
-          space_invaders_count: (data.space_invaders || []).length
+          space_invaders_count: (data.space_invaders || []).length,
+          cheese_hunt_count: (data.cheese_hunt || []).length,
+          discord_race_count: (data.discord_race || []).length,
+          cheese_rumble_count: (data.cheese_rumble || []).length
         });
 
       } catch (error) {
@@ -208,8 +288,103 @@
       }
     }
 
+    // Helper function to get role color class
+    function getRoleColorClass(role) {
+      if (!role) return 'text-gray-400';
+      const roleLower = role.toLowerCase();
+      // Monthly Legend roles (special champions - highest priority)
+      if (roleLower.includes('monthly tetris legend')) return 'text-yellow-400';
+      if (roleLower.includes('monthly snake legend')) return 'text-pink-400';
+      if (roleLower.includes('monthly cheese invaders legend')) return 'text-blue-400';
+      // Standard roles
+      if (roleLower.includes('vip')) return 'text-yellow-400';
+      if (roleLower.includes('holder')) return 'text-gray-300';
+      if (roleLower.includes('champion')) return 'text-red-400';
+      if (roleLower.includes('season tester') || roleLower.includes('wl')) return 'text-green-400';
+      if (roleLower.includes('early bird')) return 'text-blue-400';
+      if (roleLower.includes('cheese hunter')) return 'text-yellow-500';
+      return 'text-gray-400';
+    }
+    
+    // Helper function to check if player has Monthly Legend role for a specific game
+    // 
+    // CRITICAL: This function handles players with MULTIPLE Monthly Champion roles correctly.
+    // For example, if a player has both "Monthly Tetris Legend" and "Monthly Snake Legend":
+    // - On the Tetris leaderboard: Will detect and return "Monthly Tetris Legend"
+    // - On the Snake leaderboard: Will detect and return "Monthly Snake Legend"  
+    // - On the Space Invaders leaderboard: Will return null (no matching role)
+    // 
+    // This ensures each leaderboard shows the correct champion badge for its specific game.
+    function getMonthlyLegendRole(roles, game) {
+      if (!roles || !Array.isArray(roles) || roles.length === 0) return null;
+      
+      // Normalize roles to lowercase for comparison (but preserve original for return)
+      const normalizedRoles = roles.map(r => (r || '').toString().trim().toLowerCase());
+      
+      // Check for game-specific Monthly Legend role
+      // This ensures players with multiple champion roles show the correct badge on each leaderboard
+      if (game === 'tetris') {
+        // Check for Monthly Tetris Legend role
+        const tetrisIndex = normalizedRoles.findIndex(r => r.includes('monthly') && r.includes('tetris') && r.includes('legend'));
+        if (tetrisIndex !== -1) {
+          return roles[tetrisIndex]; // Return original role with proper casing
+        }
+      } else if (game === 'snake') {
+        // Check for Monthly Snake Legend role
+        const snakeIndex = normalizedRoles.findIndex(r => r.includes('monthly') && r.includes('snake') && r.includes('legend'));
+        if (snakeIndex !== -1) {
+          return roles[snakeIndex]; // Return original role with proper casing
+        }
+      } else if (game === 'space-invaders') {
+        // Check for Monthly Cheese Invaders Legend role (can be "cheese invaders" or "space invaders")
+        const invadersIndex = normalizedRoles.findIndex(r => 
+          r.includes('monthly') && 
+          (r.includes('cheese invaders') || r.includes('space invaders')) && 
+          r.includes('legend')
+        );
+        if (invadersIndex !== -1) {
+          return roles[invadersIndex]; // Return original role with proper casing
+        }
+      }
+      
+      return null;
+    }
+    
+    // Helper function to get Monthly Legend badge HTML
+    function getMonthlyLegendBadge(legendRole, game) {
+      if (!legendRole) return '';
+      
+      const roleLower = legendRole.toLowerCase();
+      let badgeClass = '';
+      let shieldEmoji = '🛡️';
+      let badgeText = '';
+      
+      if (roleLower.includes('tetris')) {
+        badgeClass = 'bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-900';
+        shieldEmoji = '🛡️';
+        badgeText = '🏆 Tetris Champion';
+      } else if (roleLower.includes('snake')) {
+        badgeClass = 'bg-gradient-to-r from-pink-400 to-rose-500 text-pink-900';
+        shieldEmoji = '🛡️';
+        badgeText = '🏆 Snake Champion';
+      } else if (roleLower.includes('cheese invaders')) {
+        badgeClass = 'bg-gradient-to-r from-blue-400 to-indigo-500 text-blue-900';
+        shieldEmoji = '🛡️';
+        badgeText = '🏆 Space Invaders Champion';
+      }
+      
+      if (!badgeClass) return '';
+      
+      return `
+        <div class="${badgeClass} px-3 py-1.5 rounded-full text-xs font-bold shadow-xl border-2 border-white/70 flex items-center gap-1.5 animate-pulse whitespace-nowrap inline-flex">
+          <span class="text-sm">${shieldEmoji}</span>
+          <span>${badgeText}</span>
+        </div>
+      `;
+    }
+
     // Display leaderboard for a game
-    function displayLeaderboard(game, leaderboard, isFrozen) {
+    function displayLeaderboard(game, leaderboard, isFrozen, customLabel = null) {
       const containerId = `${game}-leaderboard`;
       const container = document.getElementById(containerId);
       
@@ -227,6 +402,16 @@
         return;
       }
 
+      // Determine score label based on game (or use custom label)
+      let scoreLabel = customLabel || 'score';
+      if (!customLabel) {
+        if (game === 'dspoinc-earnings') scoreLabel = 'DSPOINC';
+        else if (game === 'cheese-hunt') scoreLabel = 'clicks';
+        else if (game === 'discord-race') scoreLabel = 'races';
+        else if (game === 'cheese-rumble') scoreLabel = 'rumbles';
+        else if (game === 'space-invaders') scoreLabel = 'kills';
+      }
+
       container.innerHTML = leaderboard.map((entry, index) => {
         const rank = index + 1;
         const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
@@ -235,18 +420,58 @@
         // Format score with commas
         const formattedScore = entry.score ? Number(entry.score).toLocaleString() : '0';
         
+        // Get avatar URL (with fallback to default Discord avatar)
+        const avatarUrl = entry.avatar_url || `https://cdn.discordapp.com/embed/avatars/${parseInt(entry.discord_id) % 5}.png`;
+        
+        // Get highest role (with fallback to 'Member')
+        const highestRole = entry.highest_role || 'Member';
+        const roleColorClass = getRoleColorClass(highestRole);
+        
+        // Check if player has Monthly Legend role for this specific game
+        // NOTE: If player has multiple Monthly Champion roles (e.g., Tetris + Snake),
+        // this will only return the role matching the current game's leaderboard
+        const monthlyLegendRole = getMonthlyLegendRole(entry.roles || [], game);
+        const monthlyLegendBadge = monthlyLegendRole ? getMonthlyLegendBadge(monthlyLegendRole, game) : '';
+        
+        // Add special styling for Monthly Legend champions
+        let specialBorderClass = 'border-gray-600';
+        let specialGlowClass = '';
+        let avatarBorderClass = 'border-gray-500';
+        if (monthlyLegendRole) {
+          if (game === 'tetris') {
+            specialBorderClass = 'border-yellow-400 border-2';
+            specialGlowClass = 'shadow-lg shadow-yellow-500/50 ring-2 ring-yellow-400/30';
+            avatarBorderClass = 'border-yellow-400 border-2';
+          } else if (game === 'snake') {
+            specialBorderClass = 'border-pink-400 border-2';
+            specialGlowClass = 'shadow-lg shadow-pink-500/50 ring-2 ring-pink-400/30';
+            avatarBorderClass = 'border-pink-400 border-2';
+          } else if (game === 'space-invaders') {
+            specialBorderClass = 'border-blue-400 border-2';
+            specialGlowClass = 'shadow-lg shadow-blue-500/50 ring-2 ring-blue-400/30';
+            avatarBorderClass = 'border-blue-400 border-2';
+          }
+        }
+        
         return `
-          <div class="flex items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-gray-600 hover:border-yellow-400 transition-all">
-            <div class="flex items-center gap-4">
-              <div class="text-2xl font-bold w-12 text-center">${medal}</div>
-              <div>
-                <div class="font-semibold text-lg">${entry.discord_name || entry.discord_id || 'Unknown'}</div>
-                <div class="text-xs text-gray-400">${entry.discord_id || ''}</div>
+          <div class="flex items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border ${specialBorderClass} hover:border-yellow-400 transition-all ${specialGlowClass} relative overflow-visible">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+              <div class="text-2xl font-bold w-12 text-center flex-shrink-0">${medal}</div>
+              <img src="${avatarUrl}" alt="${entry.discord_name || 'Unknown'}" class="w-12 h-12 rounded-full border-2 ${avatarBorderClass} hover:border-yellow-400 transition-colors flex-shrink-0" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-lg flex items-center gap-2 flex-wrap">
+                  <span class="truncate">${entry.discord_name || entry.discord_id || 'Unknown'}</span>
+                  ${monthlyLegendRole ? '<span class="text-lg animate-pulse flex-shrink-0">👑</span>' : ''}
+                </div>
+                <div class="text-xs font-bold ${roleColorClass} flex items-center gap-2 flex-wrap mt-1">
+                  <span>${highestRole}</span>
+                </div>
+                ${monthlyLegendBadge ? `<div class="mt-2">${monthlyLegendBadge}</div>` : ''}
               </div>
             </div>
-            <div class="text-right">
+            <div class="text-right ml-4 flex-shrink-0">
               <div class="text-xl font-bold text-yellow-300">${formattedScore}</div>
-              <div class="text-xs text-gray-400">${game === 'space-invaders' ? 'kills' : 'score'}</div>
+              <div class="text-xs text-gray-400">${scoreLabel}</div>
             </div>
           </div>
         `;

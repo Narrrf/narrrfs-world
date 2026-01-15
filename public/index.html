@@ -585,6 +585,9 @@ require_once 'discord-invite.php';
       existingNotification.remove();
     }
 
+    // Get cheese count from quest config (fetch actual count from quest configuration)
+    const requiredEggs = quest.cheese_config?.cheese_count || 3; // Default to 3 if not specified
+
     // Create notification
     const notification = document.createElement('div');
     notification.id = 'cheese-hunt-notification';
@@ -597,12 +600,21 @@ require_once 'discord-invite.php';
       padding: 12px 16px;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 10000;
+      z-index: 10001;
       max-width: 300px;
       font-size: 14px;
       line-height: 1.4;
       border: 2px solid #fbbf24;
     `;
+    
+    // Mobile-friendly adjustments
+    if (window.innerWidth < 768) {
+      notification.style.top = '20px';
+      notification.style.right = '10px';
+      notification.style.maxWidth = '260px';
+      notification.style.fontSize = '12px';
+      notification.style.padding = '10px 12px';
+    }
     
     notification.innerHTML = `
       <div style="display: flex; align-items: center; margin-bottom: 8px;">
@@ -611,6 +623,7 @@ require_once 'discord-invite.php';
       </div>
       <div style="font-size: 12px; opacity: 0.9;">
         ${quest.description}<br>
+        <strong>Find:</strong> ${requiredEggs} cheese eggs<br>
         <strong>Reward:</strong> ${quest.reward} $DSPOINC
       </div>
       <button onclick="this.parentElement.remove()" style="
@@ -642,14 +655,14 @@ require_once 'discord-invite.php';
     const progressNotification = document.createElement('div');
     progressNotification.style.cssText = `
       position: fixed;
-      top: 100px;
+      top: 140px;
       right: 20px;
       background: linear-gradient(135deg, #10b981, #059669);
       color: white;
       padding: 12px 16px;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 10001;
+      z-index: 10002;
       max-width: 300px;
       font-size: 14px;
       line-height: 1.4;
@@ -657,6 +670,15 @@ require_once 'discord-invite.php';
       transform: translateX(100%);
       transition: transform 0.3s ease-in-out;
     `;
+    
+    // Mobile-friendly adjustments
+    if (window.innerWidth < 768) {
+      progressNotification.style.top = '140px';
+      progressNotification.style.right = '10px';
+      progressNotification.style.maxWidth = '260px';
+      progressNotification.style.fontSize = '12px';
+      progressNotification.style.padding = '10px 12px';
+    }
     
     if (result.quest_completed) {
       progressNotification.innerHTML = `
@@ -697,6 +719,260 @@ require_once 'discord-invite.php';
         }
       }, 300);
     }, 5000);
+  }
+
+  // 🧀 PERSISTENT CHEESE HUNT DISPLAY (always visible, updates with each click)
+  function createCheeseHuntPersistentDisplay() {
+    // Remove existing display if it exists
+    const existingDisplay = document.getElementById('cheese-hunt-persistent-display');
+    if (existingDisplay) {
+      existingDisplay.remove();
+    }
+
+    // Create persistent display element
+    const display = document.createElement('div');
+    display.id = 'cheese-hunt-persistent-display';
+    display.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 9999;
+      max-width: 280px;
+      font-size: 14px;
+      line-height: 1.4;
+      border: 2px solid #34d399;
+    `;
+    
+    // Mobile-friendly adjustments
+    if (window.innerWidth < 768) {
+      display.style.top = '80px';
+      display.style.right = '10px';
+      display.style.maxWidth = '240px';
+      display.style.fontSize = '12px';
+      display.style.padding = '10px 12px';
+    }
+    
+    display.innerHTML = `
+      <button onclick="document.getElementById('cheese-hunt-persistent-display')?.remove()" style="
+        position: absolute;
+        top: 4px;
+        right: 8px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        opacity: 0.8;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        transition: opacity 0.2s;
+      " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Close">×</button>
+      <div style="display: flex; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 18px; margin-right: 8px;">🧀</span>
+        <strong>Cheese Hunt</strong>
+      </div>
+      <div id="cheese-hunt-mission-progress" style="font-size: 12px; opacity: 0.9;">
+        Mission: No active quest
+      </div>
+      <div id="cheese-hunt-total-clicks" style="font-size: 12px; opacity: 0.9; margin-top: 4px;">
+        Total Clicks: 0
+      </div>
+    `;
+    
+    document.body.appendChild(display);
+    console.log('✅ Cheese Hunt persistent display created');
+  }
+
+  // Update persistent display with new data
+  function updateCheeseHuntPersistentDisplay(result) {
+    const display = document.getElementById('cheese-hunt-persistent-display');
+    const missionProgress = document.getElementById('cheese-hunt-mission-progress');
+    const totalClicks = document.getElementById('cheese-hunt-total-clicks');
+    
+    if (!display || !missionProgress || !totalClicks) {
+      // Create display if it doesn't exist
+      createCheeseHuntPersistentDisplay();
+      // Re-fetch elements after creation
+      const newDisplay = document.getElementById('cheese-hunt-persistent-display');
+      const newMissionProgress = document.getElementById('cheese-hunt-mission-progress');
+      const newTotalClicks = document.getElementById('cheese-hunt-total-clicks');
+      
+      if (!newDisplay || !newMissionProgress || !newTotalClicks) {
+        console.warn('⚠️ Failed to create persistent display');
+        return;
+      }
+      
+      // Use new elements
+      updateDisplayContent(newMissionProgress, newTotalClicks, result);
+      return;
+    }
+    
+    updateDisplayContent(missionProgress, totalClicks, result);
+  }
+
+  // Helper function to update display content
+  function updateDisplayContent(missionProgressEl, totalClicksEl, result) {
+    const display = document.getElementById('cheese-hunt-persistent-display');
+    
+    // CRITICAL: Always use actual quest config (cheese_count) instead of parsing from progress string
+    // This ensures we show the correct required eggs even if quest was completed with different count
+    const requiredEggs = result.required_eggs || activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
+    
+    // Update mission progress
+    if (activeCheeseHuntQuest && result.progress) {
+      // Parse progress (e.g., "2/3 eggs found" or "2/3") for current count only
+      const progressMatch = result.progress.match(/(\d+)\/(\d+)/);
+      if (progressMatch) {
+        const current = parseInt(progressMatch[1]);
+        // Don't use required from progress string - use actual quest config instead!
+        // const required = parseInt(progressMatch[2]); // ❌ WRONG - might be old value
+        
+        if (result.quest_completed) {
+          // Use actual quest config value (not parsed from progress string)
+          missionProgressEl.textContent = `Mission: ✅ Complete! (${requiredEggs}/${requiredEggs})`;
+          // Change background to gold/yellow for completed quest
+          if (display) {
+            display.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            display.style.borderColor = '#fbbf24';
+          }
+        } else {
+          // Use actual quest config value for display
+          missionProgressEl.textContent = `Mission: ${current}/${requiredEggs} eggs`;
+          // Reset to green background for active quest
+          if (display) {
+            display.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            display.style.borderColor = '#34d399';
+          }
+        }
+      } else {
+        // Fallback: use required_eggs from result or quest config
+        if (result.quest_completed) {
+          missionProgressEl.textContent = `Mission: ✅ Complete! (${requiredEggs}/${requiredEggs})`;
+          if (display) {
+            display.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            display.style.borderColor = '#fbbf24';
+          }
+        } else {
+          const current = result.progress.match(/\d+/)?.[0] || 0;
+          missionProgressEl.textContent = `Mission: ${current}/${requiredEggs} eggs`;
+          if (display) {
+            display.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            display.style.borderColor = '#34d399';
+          }
+        }
+      }
+    } else if (activeCheeseHuntQuest) {
+      // Quest active but no progress yet - show required count from quest config (fetch actual count!)
+      missionProgressEl.textContent = `Mission: 0/${requiredEggs} eggs`;
+      // Reset to green background for active quest
+      if (display) {
+        display.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        display.style.borderColor = '#34d399';
+      }
+    } else {
+      missionProgressEl.textContent = 'Mission: No active quest';
+      // Change background to gray for no quest
+      if (display) {
+        display.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
+        display.style.borderColor = '#9ca3af';
+      }
+    }
+    
+    // Update total clicks
+    const total = result.total_clicks || 0;
+    totalClicksEl.textContent = `Total Clicks: ${total.toLocaleString()}`;
+    
+    console.log('✅ Cheese Hunt persistent display updated:', {
+      mission: missionProgressEl.textContent,
+      total: totalClicksEl.textContent,
+      requiredEggs: requiredEggs,
+      questConfigCheeseCount: activeCheeseHuntQuest?.cheese_config?.cheese_count,
+      resultRequiredEggs: result.required_eggs
+    });
+  }
+
+  // Initialize persistent display on page load
+  async function initializeCheeseHuntPersistentDisplay() {
+    // Create display element
+    createCheeseHuntPersistentDisplay();
+    
+    // Get user Discord ID
+    const discordId = localStorage.getItem('discord_id');
+    if (!discordId || discordId === 'null' || discordId === 'undefined' || discordId.trim() === '') {
+      // User not logged in - hide display
+      const display = document.getElementById('cheese-hunt-persistent-display');
+      if (display) {
+        display.style.display = 'none';
+      }
+      return;
+    }
+    
+    // Show display for logged-in users
+    const display = document.getElementById('cheese-hunt-persistent-display');
+    if (display) {
+      display.style.display = 'block';
+    }
+    
+    // Fetch initial stats
+    try {
+      // Get total clicks and quest progress from API
+      const response = await fetch(`/api/user/get-cheese-hunt-stats.php?user_id=${discordId}`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Update display with initial stats
+          updateCheeseHuntPersistentDisplay({
+            progress: activeCheeseHuntQuest && data.quest_clicks !== undefined ? `${data.quest_clicks}/${data.required_eggs}` : null,
+            total_clicks: data.total_clicks || 0,
+            quest_completed: data.quest_completed || false,
+            required_eggs: data.required_eggs || (activeCheeseHuntQuest?.cheese_config?.cheese_count || 3)
+          });
+          console.log('✅ Cheese Hunt stats loaded:', data);
+        } else {
+          // API returned error - use default values
+          const requiredEggs = activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
+          updateCheeseHuntPersistentDisplay({
+            progress: activeCheeseHuntQuest ? `0/${requiredEggs}` : null,
+            total_clicks: 0,
+            quest_completed: false,
+            required_eggs: requiredEggs
+          });
+        }
+      } else {
+        // API not available - use default values
+        const requiredEggs = activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
+        updateCheeseHuntPersistentDisplay({
+          progress: activeCheeseHuntQuest ? `0/${requiredEggs}` : null,
+          total_clicks: 0,
+          quest_completed: false,
+          required_eggs: requiredEggs
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching cheese hunt stats:', error);
+      // Use default values on error
+      const requiredEggs = activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
+      updateCheeseHuntPersistentDisplay({
+        progress: activeCheeseHuntQuest ? `0/${requiredEggs}` : null,
+        total_clicks: 0,
+        quest_completed: false,
+        required_eggs: requiredEggs
+      });
+    }
   }
 
   // Show warning when user is not logged in
@@ -865,6 +1141,9 @@ require_once 'discord-invite.php';
         if (result.success) {
           console.log('✅ Server confirmed tracking success');
           
+          // Update persistent display with new data
+          updateCheeseHuntPersistentDisplay(result);
+          
           // Show quest progress if this was part of a cheese hunt
           if (activeCheeseHuntQuest && (result.progress || result.quest_completed !== undefined)) {
             console.log('🎯 Quest progress update available:', result);
@@ -925,15 +1204,23 @@ require_once 'discord-invite.php';
       if (data.success && data.quest) {
         activeCheeseHuntQuest = data.quest;
         console.log('🧀 Active cheese hunt quest loaded:', activeCheeseHuntQuest);
+        console.log('🧀 Quest cheese count:', activeCheeseHuntQuest.cheese_config?.cheese_count || 3);
         
         // Show cheese hunt notification
         showCheeseHuntNotification(activeCheeseHuntQuest);
+        
+        // Initialize persistent display after quest is loaded
+        initializeCheeseHuntPersistentDisplay();
       } else {
         console.log('🧀 No active cheese hunt quest found');
+        // Initialize display even without quest (shows "No active quest")
+        initializeCheeseHuntPersistentDisplay();
       }
     } catch (error) {
       console.error('Error loading active cheese hunt quest:', error);
       console.log('🧀 Continuing without cheese hunt quest...');
+      // Initialize display even on error
+      initializeCheeseHuntPersistentDisplay();
     }
     
     // 🧹 Clean up any existing status bar on page load
@@ -1203,10 +1490,35 @@ require_once 'discord-invite.php';
 </div>
 
 <!-- 🎴 Floating NFT Verification Notification -->
-<div id="nft-verification-notification" class="fixed top-20 right-2 md:right-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 md:p-4 rounded-xl shadow-2xl z-50 max-w-[280px] md:max-w-sm transform translate-x-full transition-all duration-500 ease-out border border-purple-400/30">
+<div id="nft-verification-notification" class="fixed top-140 right-2 md:right-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 md:p-4 rounded-xl shadow-2xl z-50 max-w-[280px] md:max-w-sm transform translate-x-full transition-all duration-500 ease-out border border-purple-400/30" style="top: 180px;">
+  <button onclick="dismissNFTNotification()" 
+          style="
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0.8;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: opacity 0.2s;
+            z-index: 51;
+          " 
+          onmouseover="this.style.opacity='1'" 
+          onmouseout="this.style.opacity='0.8'" 
+          title="Close">×</button>
   <div class="flex items-start gap-2 md:gap-3">
     <div class="text-xl md:text-2xl animate-bounce">🎴</div>
-    <div class="flex-1 min-w-0">
+    <div class="flex-1 min-w-0 pr-6">
       <h4 class="font-bold text-sm mb-1">NFT Holder?</h4>
       <p class="text-xs text-purple-100 mb-3 leading-relaxed">Verify your NFTs to unlock exclusive Discord roles and features!</p>
       <div class="flex gap-2">
@@ -1214,11 +1526,8 @@ require_once 'discord-invite.php';
            class="bg-white text-purple-600 hover:bg-purple-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
           🔍 Verify Now
         </a>
-        <button onclick="dismissNFTNotification()" 
-                class="text-purple-200 hover:text-white text-xs px-2 py-1.5 rounded transition-colors hover:bg-white/10">
-          ✕
-        </button>
       </div>
+      <p class="text-xs text-purple-200/80 mt-2 italic">Powered by Helius APIs</p>
     </div>
   </div>
 </div>
@@ -1404,6 +1713,99 @@ require_once 'discord-invite.php';
     <a href="partners.html" class="inline-block mt-3 bg-white/90 hover:bg-white text-gray-900 font-bold px-6 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 border-2 border-cyan-300">
       🔍 Explore Network →
     </a>
+  </div>
+  
+  <!-- 📅 2026 WEEKLY EVENTS CALENDAR - SORTED BY WEEKDAY & VIBRANT THEME -->
+  <div class="bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-pink-500/20 p-8 rounded-2xl mb-4 shadow-2xl border-4 border-yellow-400/60 max-w-4xl mx-auto backdrop-blur-sm relative overflow-hidden">
+    <!-- Animated background elements -->
+    <div class="absolute inset-0 bg-gradient-to-r from-yellow-400/10 via-orange-400/10 to-pink-400/10 animate-pulse pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-300/20 rounded-full blur-3xl animate-bounce-slow pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-40 h-40 bg-orange-300/20 rounded-full blur-3xl animate-bounce-slow pointer-events-none" style="animation-delay: 1s;"></div>
+    
+    <div class="relative z-10">
+      <h2 class="text-2xl md:text-3xl font-extrabold text-yellow-300 mb-2 text-center drop-shadow-lg flex items-center justify-center gap-3">
+        <span class="text-3xl animate-pulse">📅</span>
+        <span>2026 Weekly Events Calendar</span>
+        <span class="text-3xl animate-pulse">📅</span>
+      </h2>
+      <p class="text-sm md:text-base text-yellow-100 mb-6 italic text-center font-semibold">🧀 5 fixed weekly events - Join us for epic community fun!</p>
+      
+      <div class="space-y-4">
+        <!-- Tuesday - Gensuki Spaces -->
+        <div class="bg-gradient-to-r from-purple-600/80 via-pink-600/80 to-purple-600/80 p-4 rounded-xl border-2 border-purple-400/60 shadow-lg hover:shadow-purple-500/50 transition-all duration-300 hover:scale-[1.02] hover:border-purple-300">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">🌮</span>
+            <div class="font-bold text-white text-lg">Gensuki Spaces - Every Tuesday @ 3pm EST</div>
+          </div>
+          <ul class="list-disc list-inside text-sm text-purple-100 ml-8 space-y-1">
+            <li>Twitter/X Spaces hosted by Gensuki</li>
+            <li>Partner updates, community Q&A, exclusive insights</li>
+            <li>Weekly engagement and DSPOINC rewards</li>
+          </ul>
+        </div>
+        
+        <!-- Thursday - Golden Baboons Bingo Night -->
+        <div class="bg-gradient-to-r from-orange-600/80 via-amber-600/80 to-yellow-600/80 p-4 rounded-xl border-2 border-orange-400/60 shadow-lg hover:shadow-orange-500/50 transition-all duration-300 hover:scale-[1.02] hover:border-orange-300">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">🎲</span>
+            <div class="font-bold text-white text-lg">Golden Baboons Bingo Night - Every Thursday @ 8pm EST</div>
+          </div>
+          <ul class="list-disc list-inside text-sm text-orange-100 ml-8 space-y-1">
+            <li>Bingo games hosted by Golden Baboons</li>
+            <li>Community bingo night with prizes and rewards</li>
+            <li>Weekly Thursday evening fun</li>
+          </ul>
+        </div>
+        
+        <!-- Friday - Weekly Friday Community Events (Highlight) -->
+        <div class="bg-gradient-to-r from-green-600/90 via-emerald-600/90 to-teal-600/90 p-5 rounded-xl border-4 border-green-400/80 shadow-2xl hover:shadow-green-500/60 transition-all duration-300 hover:scale-[1.03] hover:border-green-300 relative overflow-hidden">
+          <!-- Highlight badge -->
+          <div class="absolute top-2 right-2 bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center gap-1">
+            <span>⭐</span>
+            <span>HIGHLIGHT</span>
+          </div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">🎉</span>
+            <div class="font-bold text-white text-lg">Weekly Friday Community Events - Every Friday</div>
+          </div>
+          <ul class="list-disc list-inside text-sm text-green-100 ml-8 space-y-1">
+            <li>💥 <strong>Cheese Rumble Launch!</strong> – Epic text-based battle royale every Friday!</li>
+            <li>🎮 Special community activities and games</li>
+            <li>🧀 Hosted by Narrrf's Lab team</li>
+            <li>💰 Exclusive rewards and community fun</li>
+            <li>⚔️ Join the epic text-based battle royale chaos!</li>
+            <li>🌟 <strong>Our Highlight Event Each Week!</strong></li>
+          </ul>
+        </div>
+        
+        <!-- Saturday - Boundless NFT Spaces -->
+        <div class="bg-gradient-to-r from-blue-600/80 via-cyan-600/80 to-blue-600/80 p-4 rounded-xl border-2 border-blue-400/60 shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-[1.02] hover:border-blue-300">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">🌊</span>
+            <div class="font-bold text-white text-lg">Boundless NFT Spaces - Every Saturday</div>
+          </div>
+          <ul class="list-disc list-inside text-sm text-blue-100 ml-8 space-y-1">
+            <li>Twitter/X Spaces hosted by Boundless NFT</li>
+            <li>Web3 discussions, market insights, community vibes</li>
+            <li>Weekly Saturday connection</li>
+          </ul>
+        </div>
+        
+        <!-- Saturday - Bear or Bulls Poker & VC Rumble -->
+        <div class="bg-gradient-to-r from-cyan-600/80 via-teal-600/80 to-cyan-600/80 p-4 rounded-xl border-2 border-cyan-400/60 shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-[1.02] hover:border-cyan-300">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-2xl">🎴</span>
+            <div class="font-bold text-white text-lg">Bear or Bulls Poker & VC Rumble - Every Saturday</div>
+          </div>
+          <ul class="list-disc list-inside text-sm text-cyan-100 ml-8 space-y-1">
+            <li>Poker games and voice chat battles</li>
+            <li>Community poker nights and VC rumbles</li>
+            <li>Weekly Saturday excitement</li>
+          </ul>
+        </div>
+        
+      </div>
+    </div>
   </div>
   
   <p class="text-base md:text-lg text-gray-800">
@@ -2795,33 +3197,6 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
       </p>
     </div>
 
-    <!-- 📅 NOVEMBER/DECEMBER 2025 EVENTS CALENDAR -->
-    <div class="bg-white border-l-4 border-yellow-500 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold text-yellow-600">📅 November/December 2025 Events Calendar</h2>
-      <p class="text-sm text-gray-700 mb-4 italic">🧀 Last 2 months of the cheesy year - packed with events!</p>
-      
-      <div class="space-y-3">
-        <!-- Weekly Gensuki Spaces -->
-        <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
-          <div class="font-bold text-purple-700 mb-1">🌮 Gensuki Spaces - Every Tuesday @ 3pm EST</div>
-          <p class="text-xs text-gray-600">Twitter/X Spaces • Hosted by Gensuki • Partner updates & community Q&A</p>
-        </div>
-        
-        <!-- Weekly Boundless Spaces -->
-        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
-          <div class="font-bold text-blue-700 mb-1">🌊 Boundless NFT Spaces - Every Friday @ 9:15-10:15am EST</div>
-          <p class="text-xs text-gray-600">Twitter/X Spaces • Hosted by Boundless NFT • Web3 discussions & insights</p>
-        </div>
-        
-        <!-- Weekly Friday Events -->
-        <div class="bg-green-50 p-3 rounded-lg border border-green-200">
-          <div class="font-bold text-green-700 mb-1">🎉 Weekly Friday Community Events - Every Friday</div>
-          <p class="text-xs text-gray-600">Hosted by Narrrf's Lab • Community games & exclusive rewards</p>
-        </div>
-        
-      </div>
-    </div>
-    
     <div class="bg-white border-l-4 border-cyan-500 p-6 rounded-xl shadow mb-8">
       <h2 class="text-xl font-semibold text-cyan-600">🤝 Partner Network Expansion - NEW!</h2>
       <ul class="list-disc list-inside mt-2 text-sm">
