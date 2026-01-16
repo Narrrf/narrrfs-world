@@ -19745,8 +19745,9 @@ function createLevel4CheeseBosses(origin) {
       name: "Cheese Destroyer",
       x: origin.x + cornerOffset,
       z: origin.z + cornerOffset,
-      // file verified on Render: /data/public/three.js/public/textures/3d models/Cheese Destroyer/cheese destroyer blanc.glb
-      relativePath: "textures/3d models/Cheese Destroyer/cheese destroyer blanc.glb",
+      // file target (persistent on Render):
+      // /data/public/three.js/public/textures/3d models/Cheese Destroyer/cheese destroyer.glb
+      relativePath: "textures/3d models/Cheese Destroyer/cheese destroyer.glb",
     },
     {
       bossKey: "boss2",

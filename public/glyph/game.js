@@ -18,6 +18,42 @@ Glyph Memory — Phase 1 JS
     hard:   { pairs: 12, cols: 6 }, // 6x4
   };
 
+  // Mobile device detection (January 15, 2026)
+  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.innerWidth <= 768 && window.matchMedia('(max-width: 768px)').matches);
+  
+  // Log mobile detection status
+  if (isMobileDevice) {
+    console.log(`📱 [GLYPH] Mobile device detected - using optimized image paths for faster loading`);
+  } else {
+    console.log(`🖥️ [GLYPH] Desktop device - using original image sizes`);
+  }
+  
+  // CRITICAL (January 15, 2026): Mobile image optimization
+  // Compressed/resized images for mobile devices to reduce loading time
+  // Format: w=300,h=300,c=fill,q=75 (similar to Cloudinary compression: w_500,h_500,c_fill)
+  // NOTE: Query parameters are added but ignored if no PHP endpoint exists
+  // TODO: Create PHP endpoint at /api/glyph/compress-image.php to handle on-the-fly compression
+  // The endpoint should: resize to 300x300, apply quality=75, use fill crop mode
+  function getOptimizedGlyphPath(originalPath) {
+    if (!isMobileDevice) {
+      return originalPath; // Desktop: use original images (no compression needed)
+    }
+    
+    // Mobile: request compressed version
+    // Format: assets/glyphs/0.png?w=300&h=300&c=fill&q=75&m=1
+    // Parameters:
+    //   w=300: width (pixels)
+    //   h=300: height (pixels)
+    //   c=fill: crop mode (fill container)
+    //   q=75: quality (0-100, 75 is good balance)
+    //   m=1: mobile flag (identifies mobile requests)
+    // If PHP endpoint exists, it will compress/resize on-the-fly
+    // If not, query params are ignored and original image loads (works but no optimization)
+    const separator = originalPath.includes('?') ? '&' : '?';
+    return `${originalPath}${separator}w=300&h=300&c=fill&q=75&m=1`;
+  }
+
   // Your glyph filenames:
   const GLYPH_FILES = [
     ...Array.from({ length: 10 }, (_, i) => `assets/glyphs/${i}.png`),
@@ -500,7 +536,8 @@ Glyph Memory — Phase 1 JS
       // Use eager loading so glyphs are visible immediately on flip
       img.loading = 'eager';
       img.decoding = 'async';
-      img.src = card.glyphSrc;
+      // CRITICAL (January 15, 2026): Use optimized paths on mobile for faster loading
+      img.src = getOptimizedGlyphPath(card.glyphSrc);
       // If a glyph file is missing or fails to load, show a clear fallback + log it
       img.addEventListener('error', () => {
         console.warn('Missing glyph file:', card.glyphSrc);
@@ -511,7 +548,9 @@ Glyph Memory — Phase 1 JS
       // Optional: Auto-center glyph pixels so they look consistent at all card sizes.
       // Disabled by default because it uses data: URLs which may be blocked by CSP.
       if (ENABLE_GLYPH_NORMALIZATION) {
-        normalizeGlyphImage(card.glyphSrc).then((dataUrl) => {
+        // Use optimized path for normalization on mobile
+        const optimizedSrc = getOptimizedGlyphPath(card.glyphSrc);
+        normalizeGlyphImage(optimizedSrc).then((dataUrl) => {
           if (!front.classList.contains('missing')) img.src = dataUrl;
         });
       }

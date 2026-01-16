@@ -486,7 +486,8 @@ html, body {
 .boardWrap {
   display: grid;
   place-items: center;
-  padding-bottom: 18px;
+  /* CRITICAL (January 15, 2026): Increased bottom padding to prevent cards from being cut off */
+  padding-bottom: 40px;
 }
 
 .board {
@@ -495,22 +496,32 @@ html, body {
   display: grid;
   gap: 22px;
   margin: 0 auto;
+  /* CRITICAL (January 15, 2026): Ensure bottom padding prevents cutting - cards fit grid field */
   padding: 24px;
+  padding-bottom: 40px;
   grid-auto-rows: clamp(140px, 18vh, 200px);
   justify-content: center;
+  /* Ensure board doesn't clip content */
+  overflow: visible;
 }
 
 /* Cards */
 .card {
   position: relative;
   height: 100%;
+  width: 100%;
 border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(0,0,0,0.35);
+  /* CRITICAL (January 15, 2026): Contain content within grid cell - no overlap with adjacent cards */
+  /* overflow: hidden keeps white frame glow contained within card boundaries */
   overflow: hidden;
   cursor: pointer;
   user-select: none;
   transform: translateZ(0);
+  /* No external padding - cards fit exactly within grid cells */
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .card[aria-disabled="true"] {
@@ -520,6 +531,8 @@ border-radius: 16px;
 
 .cardInner {
   position: absolute;
+  /* CRITICAL (January 15, 2026): No inset - fill entire card for maximum glyph space */
+  /* inset: 0 matches card padding: 0 - content fills entire card area */
   inset: 0;
   display: grid;
   place-items: center;
@@ -527,21 +540,32 @@ border-radius: 16px;
 
 /* Simple flip states (Phase 1) */
 .cardFront {
-  place-items: center; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
   position: relative;
   /* Ensure glyph face is above the card back */
   z-index: 2;
-  /* STRONG background to help glyphs stand out against dark stone backgrounds */
+  /* White shimmer background for visibility - no thick inner frame border */
   background: 
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.25) 40%, rgba(255, 255, 255, 0.1) 70%, transparent 100%),
-    radial-gradient(circle at center, rgba(255, 215, 0, 0.15) 0%, transparent 60%);
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.15) 40%, rgba(255, 255, 255, 0.05) 70%, transparent 100%);
   border-radius: 12px;
-  /* Stronger border for extra definition */
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  /* CRITICAL (January 15, 2026): No inner frame border - white shimmer only for visibility */
+  /* No border - clean look, glyph fits grid field perfectly */
+  border: none;
+  /* White shimmer glow effect - subtle but visible */
   box-shadow: 
     inset 0 0 20px rgba(255, 255, 255, 0.2),
+    inset 0 0 40px rgba(255, 255, 255, 0.1),
     0 0 15px rgba(255, 255, 255, 0.15);
+  /* Contain content within card boundaries */
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  /* Minimal padding - just enough for glyph to fit within grid field */
+  padding: 4px;
+  box-sizing: border-box;
 }
 
 .cardBack{
@@ -551,85 +575,48 @@ border-radius: 16px;
 
 .card.is-flipped .cardFront { 
   opacity: 1;
-  /* Add visible glow when card is flipped/uncovered */
+  /* White shimmer glow when card is flipped - visible but no thick inner frame borders */
   box-shadow: 
-    inset 0 0 20px rgba(255, 255, 255, 0.2),
-    0 0 15px rgba(255, 255, 255, 0.15),
-    0 0 25px rgba(255, 255, 255, 0.4),
-    0 0 40px rgba(255, 255, 255, 0.3),
-    0 0 60px rgba(255, 255, 255, 0.2);
+    inset 0 0 25px rgba(255, 255, 255, 0.3),
+    inset 0 0 50px rgba(255, 255, 255, 0.15),
+    0 0 20px rgba(255, 255, 255, 0.2),
+    0 0 35px rgba(255, 255, 255, 0.1);
 }
 .card.is-flipped .cardBack { opacity: 0; }
 
-/* Add a STRONG glow ring behind glyph for maximum visibility */
-.cardFront::before {
-  content: "";
-  position: absolute;
-  inset: 8%;
-  border-radius: 50%;
-  background: 
-    radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.5) 25%, rgba(255, 255, 255, 0.3) 45%, rgba(255, 255, 255, 0.15) 65%, transparent 85%);
-  pointer-events: none;
-  z-index: 0;
-  /* Strong visible glow that extends beyond the card */
-  box-shadow: 
-    0 0 30px rgba(255, 255, 255, 0.8),
-    0 0 50px rgba(255, 255, 255, 0.6),
-    0 0 80px rgba(255, 255, 255, 0.4),
-    0 0 120px rgba(255, 255, 255, 0.2),
-    inset 0 0 20px rgba(255, 255, 255, 0.3);
-  /* Ensure it's visible when card is flipped */
-  opacity: 1;
-}
-
-/* Add an additional bright circle layer for even more visibility */
-.cardFront::after {
-  content: "";
-  position: absolute;
-  inset: 20%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 50%, transparent 80%);
-  pointer-events: none;
-  z-index: 0;
-  /* Visible glow for the inner circle */
-  box-shadow: 
-    0 0 20px rgba(255, 255, 255, 0.6),
-    0 0 40px rgba(255, 255, 255, 0.4),
-    0 0 60px rgba(255, 255, 255, 0.2);
-  opacity: 1;
-}
+/* CRITICAL (January 15, 2026): Removed ::before and ::after glow rings - no inner frame border per user request */
+/* Glyphs now display cleanly centered without thick white frame borders */
 
 .cardFront img {
   display: block;
-  width: 85%;
-  height: 85%;
+  width: auto;
+  height: auto;
+  /* CRITICAL (January 15, 2026): Glyphs fit grid field perfectly - centered with minimal padding */
+  /* max-width/height 90% ensures glyph fits within grid field without cutting */
+  max-width: 90%;
+  max-height: 90%;
   object-fit: contain;
   object-position: center;
-  justify-self: center;
-  align-self: center;
+  /* Perfect centering via parent flex container */
+  margin: 0 auto;
   position: relative;
   z-index: 1;
-  /* MAXIMUM visibility: strong brightness/contrast boost + multiple shadows for depth + outline effect */
-  /* Very strong white glow for outline + dark shadow for depth */
+  /* White shimmer effect for visibility - especially important on mobile */
+  /* Brightness and contrast boost + white glow drop-shadows for shimmer effect */
   filter: 
     brightness(1.3)
-    contrast(1.4)
-    drop-shadow(0 0 4px rgba(255, 255, 255, 1.0))
-    drop-shadow(0 0 8px rgba(255, 255, 255, 0.9))
-    drop-shadow(0 0 12px rgba(255, 255, 255, 0.8))
-    drop-shadow(0 0 16px rgba(255, 255, 255, 0.6))
-    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95))
-    drop-shadow(0 4px 12px rgba(0, 0, 0, 0.9))
-    drop-shadow(0 8px 24px rgba(0, 0, 0, 0.8))
-    drop-shadow(0 12px 36px rgba(0, 0, 0, 0.7));
-  /* Ensure image is always visible */
+    contrast(1.3)
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.8))
+    drop-shadow(0 0 8px rgba(255, 255, 255, 0.6))
+    drop-shadow(0 0 12px rgba(255, 255, 255, 0.4))
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8))
+    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
   mix-blend-mode: normal;
   opacity: 1;
-  /* Add a strong outline effect via box-shadow */
+  /* White shimmer glow - subtle white box-shadow for visibility (not a frame border) */
   box-shadow: 
-    0 0 0 2px rgba(255, 255, 255, 0.8),
-    0 0 0 4px rgba(255, 255, 255, 0.4),
-    0 0 20px rgba(255, 255, 255, 0.3);
+    0 0 10px rgba(255, 255, 255, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.2);
 }
 
 /* Duplicate removed - see above for cardFront styles */
@@ -662,6 +649,21 @@ border-radius: 16px;
 
 /* Small screens */
 @media (max-width: 520px) {
+  /* CRITICAL (January 15, 2026): Mobile board - ensure cards fit grid field without cutting */
+  .board {
+    grid-auto-rows: clamp(160px, 22vh, 240px);
+    gap: 16px;
+    padding: 16px;
+    /* Increased bottom padding to prevent cards from being cut off on mobile */
+    padding-bottom: 40px;
+    overflow: visible;
+  }
+  
+  .boardWrap {
+    /* Ensure mobile board has enough bottom padding */
+    padding-bottom: 40px;
+  }
+  
   .controls--row {
     grid-auto-flow: row;
   }
@@ -676,51 +678,56 @@ border-radius: 16px;
     width: 100%;
   }
   
-  /* MAXIMUM glyph visibility on mobile */
+  /* CRITICAL (January 15, 2026): Mobile styles - white shimmer for visibility, no inner frame border */
   .cardFront {
-    /* Very strong background on mobile for maximum contrast */
+    /* White shimmer background on mobile - important for visibility on small screens */
+    padding: 4px;
     background: 
-      radial-gradient(circle at center, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 40%, rgba(255, 255, 255, 0.2) 70%, rgba(255, 255, 255, 0.1) 100%),
-      radial-gradient(circle at center, rgba(255, 215, 0, 0.25) 0%, transparent 60%);
-    border: 3px solid rgba(255, 255, 255, 0.5);
+      radial-gradient(circle at center, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.2) 40%, rgba(255, 255, 255, 0.08) 70%, transparent 100%);
+    /* No border - removed inner frame border per user request */
+    border: none;
+    /* White shimmer glow effect on mobile - more prominent for visibility */
     box-shadow: 
-      inset 0 0 30px rgba(255, 255, 255, 0.3),
-      0 0 20px rgba(255, 255, 255, 0.25);
+      inset 0 0 25px rgba(255, 255, 255, 0.25),
+      inset 0 0 50px rgba(255, 255, 255, 0.12),
+      0 0 18px rgba(255, 255, 255, 0.18),
+      0 0 30px rgba(255, 255, 255, 0.1);
   }
   
-  .cardFront::before {
-    /* Maximum glow on mobile */
-    background: 
-      radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 25%, rgba(255, 255, 255, 0.5) 45%, rgba(255, 255, 255, 0.25) 65%, transparent 85%);
+  .card.is-flipped .cardFront {
+    /* Enhanced white shimmer when flipped on mobile */
     box-shadow: 
-      0 0 50px rgba(255, 255, 255, 0.7),
-      0 0 80px rgba(255, 255, 255, 0.5),
-      inset 0 0 30px rgba(255, 255, 255, 0.3);
+      inset 0 0 30px rgba(255, 255, 255, 0.35),
+      inset 0 0 60px rgba(255, 255, 255, 0.18),
+      0 0 25px rgba(255, 255, 255, 0.25),
+      0 0 45px rgba(255, 255, 255, 0.12);
   }
   
-  .cardFront::after {
-    /* Additional bright layer on mobile */
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 50%, transparent 80%);
-    box-shadow: 0 0 35px rgba(255, 255, 255, 0.6);
-  }
+  /* CRITICAL (January 15, 2026): No frame borders - white shimmer only for visibility */
   
   .cardFront img {
-    /* Maximum visibility on mobile - very strong effects */
+    /* CRITICAL (January 15, 2026): Mobile glyphs centered and fit grid field - white shimmer for visibility */
+    /* Glyphs fit perfectly within grid field without cutting */
+    max-width: 90%;
+    max-height: 90%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    margin: 0 auto;
+    /* White shimmer effect on mobile - more prominent for better visibility on small screens */
     filter: 
-      brightness(1.5)
-      contrast(1.6)
-      drop-shadow(0 0 5px rgba(255, 255, 255, 1.0))
-      drop-shadow(0 0 10px rgba(255, 255, 255, 1.0))
-      drop-shadow(0 0 15px rgba(255, 255, 255, 0.9))
-      drop-shadow(0 0 20px rgba(255, 255, 255, 0.7))
-      drop-shadow(0 3px 6px rgba(0, 0, 0, 0.95))
-      drop-shadow(0 6px 16px rgba(0, 0, 0, 0.9))
-      drop-shadow(0 10px 30px rgba(0, 0, 0, 0.85))
-      drop-shadow(0 15px 40px rgba(0, 0, 0, 0.75));
+      brightness(1.4)
+      contrast(1.4)
+      drop-shadow(0 0 5px rgba(255, 255, 255, 0.9))
+      drop-shadow(0 0 10px rgba(255, 255, 255, 0.7))
+      drop-shadow(0 0 15px rgba(255, 255, 255, 0.5))
+      drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8))
+      drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+    /* White shimmer glow - subtle but visible (not a frame border) */
     box-shadow: 
-      0 0 0 3px rgba(255, 255, 255, 1.0),
-      0 0 0 6px rgba(255, 255, 255, 0.6),
-      0 0 30px rgba(255, 255, 255, 0.5);
+      0 0 12px rgba(255, 255, 255, 0.5),
+      0 0 24px rgba(255, 255, 255, 0.3);
   }
   
   /* User display mobile adjustments */

@@ -646,9 +646,9 @@ function stopTimer() {
 
 ### **File Sizes:**
 - **HTML:** ~3.1 KB (90 lines)
-- **JavaScript:** ~16 KB (547 lines)
-- **CSS:** ~9.3 KB (466 lines)
-- **Total Code:** ~28.4 KB
+- **JavaScript:** ~16 KB (1,156 lines) - Includes mobile image optimization
+- **CSS:** ~19.5 KB (993 lines) - Includes styling fixes and white shimmer effects
+- **Total Code:** ~38.6 KB
 - **Assets:** Variable (depends on image/audio file sizes)
 
 ### **Performance:**
@@ -688,6 +688,138 @@ function stopTimer() {
    - Add `/glyph-memory` command
    - Display leaderboards
    - Share best times
+
+---
+
+## 🎨 **STYLING & VISIBILITY FIXES (January 16, 2026)**
+
+### **Critical Fixes Applied:**
+
+#### **1. Glyph Centering & Grid Field Fit (January 16, 2026)**
+**Problem:** Glyphs were cut off at bottom, white frame borders were too thick, cards overlapped adjacent grid cells.
+
+**Solution:**
+- Changed `.cardFront` to `display: flex` with `align-items: center` and `justify-content: center` for perfect centering
+- Set `.cardFront img` to `max-width: 90%` and `max-height: 90%` to ensure glyphs fit within grid field
+- Removed thick inner frame borders (`border: none` on `.cardFront`)
+- Set `.card` to `overflow: hidden` to contain content within grid cell boundaries
+- Added bottom padding to `.board` and `.boardWrap` (40px) to prevent cutting at bottom
+
+**Files Modified:**
+- `public/glyph/styles.css` - Lines 542-613 (desktop), Lines 681-713 (mobile)
+
+#### **2. White Shimmer Effect for Visibility (January 16, 2026)**
+**Problem:** User requested white shimmer effect for better visibility (especially on mobile) but without frame borders.
+
+**Solution:**
+- Added white radial gradient background to `.cardFront` for subtle shimmer
+- Applied white box-shadow glow effects (inset + external) for shimmer effect
+- Added white drop-shadow filters to glyph images for visibility
+- Enhanced shimmer on mobile (stronger effects) for better visibility on small screens
+- Removed all frame borders while maintaining white shimmer for visibility
+
+**Desktop Shimmer:**
+- Background: `radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, ...)`
+- Box-shadow: `inset 0 0 20px rgba(255, 255, 255, 0.2), 0 0 15px rgba(255, 255, 255, 0.15)`
+- Image filter: White drop-shadows (4px, 8px, 12px)
+- Image box-shadow: White glow (10px, 20px)
+
+**Mobile Shimmer (Enhanced):**
+- Background: Stronger white radial gradient (0.35 max opacity)
+- Box-shadow: Stronger white shimmer (25px, 50px inset, 18px, 30px external)
+- Image filter: More prominent white drop-shadows (5px, 10px, 15px)
+- Image box-shadow: Stronger white glow (12px, 24px)
+- Brightness: 1.4 (vs 1.3 on desktop) for better visibility
+
+**Files Modified:**
+- `public/glyph/styles.css` - Lines 542-613 (desktop), Lines 681-713 (mobile)
+
+#### **3. Mobile Image Optimization (January 15, 2026)**
+**Problem:** Glyph images were too large on mobile devices, causing slow loading times.
+
+**Solution:**
+- Added mobile device detection in `game.js` using `navigator.userAgent` and `window.innerWidth`
+- Created `getOptimizedGlyphPath()` function that appends compression query parameters for mobile
+- Mobile image URLs: `?w=300&h=300&c=fill&q=75&m=1` (Cloudinary-style parameters)
+- Desktop uses original image sizes (no compression needed)
+
+**Implementation:**
+```javascript
+// game.js
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+  (window.innerWidth <= 768 && window.matchMedia('(max-width: 768px)').matches);
+
+function getOptimizedGlyphPath(originalPath) {
+  if (!isMobileDevice) {
+    return originalPath; // Desktop: use original images
+  }
+  const separator = originalPath.includes('?') ? '&' : '?';
+  return `${originalPath}${separator}w=300&h=300&c=fill&q=75&m=1`;
+}
+```
+
+**TODO:** Create PHP endpoint `/api/glyph/compress-image.php` to handle on-the-fly image compression based on query parameters.
+
+**Files Modified:**
+- `public/glyph/game.js` - Lines 25-50 (mobile detection, optimized path function)
+
+#### **4. Card Responsive Sizing (January 15, 2026)**
+**Problem:** Glyphs were too small on mobile devices, symbols hard to see on handhelds.
+
+**Solution:**
+- Increased mobile card sizes: `grid-auto-rows: clamp(160px, 22vh, 240px)` (from `clamp(140px, 18vh, 200px)`)
+- Reduced mobile padding: `.cardFront` padding reduced to `4px` (from `8px`)
+- Increased mobile image size: `max-width: 95%` and `max-height: 95%` (from `90%`)
+- Adjusted mobile gap and padding: `gap: 16px; padding: 16px` (from `22px; 24px`)
+
+**Files Modified:**
+- `public/glyph/styles.css` - Lines 641-713 (mobile responsive styles)
+
+### **Current Styling Configuration:**
+
+**Desktop:**
+- Card padding: `4px` (minimal inside frame)
+- Card border: `none` (no frame borders)
+- Image size: `max-width: 90%; max-height: 90%`
+- White shimmer: Subtle radial gradient + box-shadow glow
+- Bottom padding: `40px` (prevents cutting)
+
+**Mobile:**
+- Card padding: `4px` (minimal inside frame)
+- Card border: `none` (no frame borders)
+- Image size: `max-width: 90%; max-height: 90%`
+- White shimmer: Enhanced radial gradient + stronger box-shadow glow
+- Bottom padding: `40px` (prevents cutting)
+- Grid rows: `clamp(160px, 22vh, 240px)` (larger cards)
+
+### **Key CSS Classes:**
+
+**`.card`:**
+- `overflow: hidden` - Contains content within grid cell
+- `padding: 0` - No external padding (maximizes grid space)
+- `height: 100%; width: 100%` - Fills grid cell completely
+
+**`.cardFront`:**
+- `display: flex; align-items: center; justify-content: center` - Perfect centering
+- `overflow: hidden` - Contains shimmer effects
+- `padding: 4px` - Minimal inside padding
+- `border: none` - No frame borders
+- `background: radial-gradient(...)` - White shimmer background
+- `box-shadow: inset + external` - White shimmer glow
+
+**`.cardFront img`:**
+- `max-width: 90%; max-height: 90%` - Fits within grid field
+- `object-fit: contain` - Preserves aspect ratio
+- `margin: 0 auto` - Perfect centering
+- `filter: brightness + contrast + white drop-shadows` - Visibility enhancement
+- `box-shadow: white glow` - Shimmer effect (not a border)
+
+### **Testing Status:**
+- ✅ **Desktop:** Glyphs centered, fit grid field, no cutting, white shimmer visible
+- ✅ **Mobile:** Glyphs centered, fit grid field, no cutting, enhanced white shimmer visible
+- ✅ **Bottom Row:** All cards fully visible (no cutting with 40px bottom padding)
+- ✅ **No Frame Borders:** Clean appearance without thick white borders
+- ✅ **Visibility:** White shimmer improves visibility especially on mobile
 
 ---
 
@@ -766,7 +898,7 @@ function stopTimer() {
 
 ---
 
-**Last Updated:** January 4, 2026  
-**Version:** 1.0.0  
-**Status:** ✅ **PRODUCTION READY - PHASE 1 COMPLETE**
+**Last Updated:** January 16, 2026  
+**Version:** 1.1.0 - Styling & Visibility Fixes  
+**Status:** ✅ **PRODUCTION READY - PHASE 1 COMPLETE - STYLING PERFECTED**
 

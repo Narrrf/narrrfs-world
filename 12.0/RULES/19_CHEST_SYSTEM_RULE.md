@@ -654,3 +654,30 @@ When creating hundreds of chests:
 ### **Files**
 - `public/three.js/main.js` (`loadModel()` caching + clone strategy)
 
+---
+
+## ✅ **LEVEL 4 BOSS MODEL SWAPS (Render /data) (January 15, 2026) - VERIFIED PATTERN**
+
+### **Goal**
+- Replace a Level 4 corner boss GLB with a newly uploaded GLB while keeping:
+  - environment-aware path resolution (`resolveAssetPath`)
+  - safe URL encoding for spaces
+  - Render persistence (`/data/...`)
+
+### **Where the boss path lives**
+- `public/three.js/main.js` → `createLevel4CheeseBosses()` → `cornerPositions[].relativePath`
+
+### **Render persistent upload location**
+- Upload boss GLBs into:
+  - `/data/public/three.js/public/textures/3d models/<Boss Folder>/`
+
+### **Web-accessible URL path (what the game loads)**
+- `textures/3d models/<Boss Folder>/<file>.glb`
+
+### **Example: Cheese Destroyer swap**
+- Upload file to:
+  - `/data/public/three.js/public/textures/3d models/Cheese Destroyer/cheese destroyer.glb`
+- Set config to:
+  - `relativePath: "textures/3d models/Cheese Destroyer/cheese destroyer.glb"`
+
+

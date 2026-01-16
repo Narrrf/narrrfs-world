@@ -1,13 +1,44 @@
 # 🧀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** January 15, 2026  
-**Status:** ✅ **ACTIVE DEVELOPMENT - MULTIPLE BUGS FIXED + UI IMPROVEMENTS TODAY**  
-**Version:** 2026-01-15-BUG-FIXES-UI-SESSION  
-**Milestone:** 🐛 **MAJOR BUG FIX SESSION - 5 CRITICAL BUGS RESOLVED + 1 UI IMPROVEMENT**  
+**Last Updated:** January 16, 2026  
+**Status:** ✅ **ACTIVE DEVELOPMENT - GLYPH STYLING + PORTAL MODEL IMPORT**  
+**Version:** 2026-01-16-GLYPH-PORTAL-SESSION  
+**Milestone:** 🎨 **GLYPH STYLING PERFECTED + 🌀 PORTAL MODEL IMPORTED**  
 
 ---
 
-## 🎯 **JANUARY 15, 2026 - TODAY'S WORK (COMPLETE):**
+## 🎯 **JANUARY 16, 2026 - TODAY'S WORK (COMPLETE):**
+
+### **🌀 Level 1 Portal GLB Model Import (NEW - January 16, 2026):**
+- ✅ **Portal Model Imported:** Cheese Portal GLB model at coordinates (26, 3, 21)
+- ✅ **Model Path:** `textures/3d models/cheese portal/cheese-portal.glb` (relative path, symlink support)
+- ✅ **Pattern Followed:** Exact same pattern as Level 4 Cheese Bosses (persistent asset)
+- ✅ **Path Resolution:** Uses `resolveAssetPath()` + `encodeURI()` for symlink support and space handling
+- ✅ **Block Replacement:** Blocks at (x: 26, z: 21, y: 3) filtered out BEFORE InstancedMesh creation
+- ✅ **Collision Detection:** Portal collision integrated in `checkLevel1TreeCollision()` (sphere-to-sphere)
+- ✅ **Cleanup:** Portal cleanup added to `cleanupAllLevels()` (proper disposal on level change)
+- ✅ **Function Created:** `createLevel1Portal(spawnData, blockSize)` - Lines 37527-37688
+- ✅ **Function Called:** Portal creation called in `buildLevel()` after chest creation (line 16877)
+- ✅ **Files Modified:** `public/three.js/main.js` (portal function, block filter, collision, cleanup, state)
+- ⏳ **Testing Pending:** Needs local testing to verify portal loads and blocks are replaced correctly
+- 📝 **Reference:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-16/DAILY_NOTES_2026-01-16.md`
+- 📋 **Plan:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-16/LEVEL1_CENTER_TOWER_TO_PORTAL_REPLACEMENT_PLAN.md`
+- 🔧 **Technical:** Follows Cheese Boss pattern: `relativePath` → `resolveAssetPath()` → `encodeURI()` → `loadModel()`
+
+### **🎨 Glyph Memory Game Styling Fixes (COMPLETE):**
+- ✅ **Glyph Centering:** Fixed using flexbox (perfect centering within grid cells)
+- ✅ **Grid Field Fit:** Set max-width/height to 90% (prevents cutting)
+- ✅ **White Shimmer Effect:** Added radial gradient + box-shadow + drop-shadow filters
+- ✅ **No Frame Borders:** Removed thick inner frame borders (clean appearance)
+- ✅ **Bottom Padding:** Added 40px padding (prevents bottom row cutting)
+- ✅ **Mobile Optimization:** Enhanced shimmer effects for better mobile visibility
+- ✅ **Files Modified:** `public/glyph/styles.css`, technical documentation
+- ✅ **Status:** ✅ **COMPLETE - ALL FIXES APPLIED AND TESTED**
+- 📝 **Reference:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-16/GLYPH_GAME_STYLING_FIXES_2026-01-16.md`
+
+---
+
+## 🎯 **JANUARY 15, 2026 - PREVIOUS WORK (COMPLETE):**
 
 ### **✅ 2026 Events Calendar Update (COMPLETE):**
 - ✅ **Updated Events Calendar:** Changed from "November/December 2025" to "2026 Weekly Events Calendar"
