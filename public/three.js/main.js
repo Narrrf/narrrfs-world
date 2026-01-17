@@ -1083,7 +1083,11 @@ const level1State = {
   butterflyMixer: null, // Animation mixer for butterfly
   butterflyPatrolTimer: 0, // Timer for patrol movement pattern
   plant: null, // Phormium plant model 1 (decorative element at 40, 1, 100, scale 0.015)
-  plant2: null // Phormium plant model 2 (decorative element at 71, 1, 91, scale 0.0075)
+  plant2: null, // Phormium plant model 2 (decorative element at 71, 1, 91, scale 0.0075)
+  portal: null, // Cheese Portal GLB model (replaces blocks at x: 26, z: 21, y: 3) - coordinates (26, 3, 21)
+  portalPosition: null, // Portal position for collision detection
+              blueCheese: null, // Blue Cheese GLB model (decorative element at world coordinates 100, 5.5, 18 with blue glow)
+              blueCheesePosition: null // Blue Cheese position for collision detection
 };
 
 // Background Music Paths are imported from config-system.js (already defined there with relative paths)
@@ -16466,6 +16470,18 @@ function buildLevel(mapData) {
   let totalBlocks = 0;
   if (Array.isArray(mapData.blocks)) {
     for (const block of mapData.blocks) {
+      // 🌀 Filter out portal location blocks (x: 26, z: 21, y: 3) - portal GLB model will replace them
+      // Block coordinates (26, 3, 21) - portal will be at world position (26.5, 3.5, 21.5)
+      const isPortalLocation = (block.x === 26 && block.z === 21 && block.y === 3);
+      if (isPortalLocation) {
+        console.log("🌀 [LEVEL 1] Skipping portal location block - will replace with portal GLB model:", {
+          x: block.x,
+          y: block.y,
+          z: block.z
+        });
+        continue; // Skip this block - portal GLB model will replace it
+      }
+      
       if (!groupedBlocks.has(block.id)) groupedBlocks.set(block.id, []);
       groupedBlocks.get(block.id).push(block);
       totalBlocks += 1;
@@ -16496,6 +16512,12 @@ function buildLevel(mapData) {
     const matrix = new THREE.Matrix4();
 
     list.forEach((block, index) => {
+      // 🌀 Filter out portal location blocks from collision mesh too (x: 26, z: 21, y: 3)
+      const isPortalLocation = (block.x === 26 && block.z === 21 && block.y === 3);
+      if (isPortalLocation) {
+        return; // Skip collision generation for portal location blocks
+      }
+      
       matrix.setPosition(
         block.x * blockSize + blockSize / 2,
         block.y * blockSize + blockSize / 2,
@@ -16888,6 +16910,16 @@ function buildLevel(mapData) {
   if (mapData.spawn && !window.npcMonster) {
     createNPCMonster(mapData.spawn, blockSize);
     console.log("🐉 [NPC] Monster NPC created and added to level");
+  }
+  
+  // 🌀 Create Cheese Portal GLB model in Level 1 (replaces blocks at x: 26, z: 21, y: 3)
+  if (mapData.spawn && !level1State.portal) {
+    createLevel1Portal(mapData.spawn, blockSize);
+  }
+  
+  // 🧀 Create Blue Cheese GLB model in Level 1 (decorative element at world coordinates 100, 2.5, 18)
+  if (!level1State.blueCheese) {
+    createLevel1BlueCheese();
   }
 
   baseCollisionGeometry.dispose();
@@ -25396,6 +25428,48 @@ function cleanupAllLevels() {
     level1State.plantPosition = null;
     level1State.plant2 = null;
     level1State.plant2Position = null;
+    
+    // Remove and dispose of portal (Cheese Portal GLB model)
+    if (level1State.portal && level1State.portal.parent) {
+      scene.remove(level1State.portal);
+      level1State.portal.traverse((child) => {
+        if (child.isMesh) {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(mat => mat.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        }
+      });
+    }
+    
+    // Reset portal state
+    level1State.portal = null;
+    level1State.portalPosition = null;
+    
+    // Remove and dispose of blue cheese (Blue Cheese GLB model)
+    if (level1State.blueCheese && level1State.blueCheese.parent) {
+      scene.remove(level1State.blueCheese);
+      level1State.blueCheese.traverse((child) => {
+        if (child.isMesh) {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(mat => mat.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        }
+      });
+    }
+    
+    // Reset blue cheese state
+    level1State.blueCheese = null;
+    level1State.blueCheesePosition = null;
   }
   
   // 3. Cleanup Chest System (clear all chests for all levels)
@@ -33848,6 +33922,7 @@ function createTriggerBlock(mapData, blockSize) {
 }
 
 // Create the unlockable block - HIDDEN LOCATION (not in the middle, hidden somewhere else)
+// January 16, 2026: Replaced BoxGeometry with Tetris o-block.glb GLB model (data persistence pattern)
 function createUnlockableBlock(spawnData, blockSize) {
   // Position: HIDDEN LOCATION - far from spawn and center, players must explore to find it
   // Place it at x: 100, z: 100 (far from spawn, different from trigger block at 110, 110)
@@ -33857,59 +33932,192 @@ function createUnlockableBlock(spawnData, blockSize) {
   const blockZ = 100 * blockSize + blockSize / 2; // Far from spawn = 100.5
   
   // Debug: Log spawn and calculated positions
-  console.log("🧩 [RIDDLE] Creating unlockable block:", {
+  console.log("🧩 [RIDDLE #2] Creating unlockable block (O-Block GLB):", {
     spawnData: { x: spawnData.x, y: spawnData.y, z: spawnData.z },
     calculatedPosition: { x: blockX, y: blockY, z: blockZ },
     blockSize: blockSize
   });
   
-  const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  const blockTexture = loadTexture("textures/blocks/cheese-stone.png");
-  const blockMaterial = new THREE.MeshLambertMaterial({ 
-    map: blockTexture,
-    // FIX: Remove emissive to show texture correctly (no yellow overlay)
-    emissive: new THREE.Color(0x000000), // Black (no glow)
-    emissiveIntensity: 0.0, // No emissive glow - show texture as-is
-    transparent: false // Ensure block is fully opaque
-  });
+  // O-Block GLB model path (relative path, no leading slash - same as Portal/Blue Cheese)
+  const relativePath = "textures/3d models/tetris/o-block.glb";
   
-  const block = new THREE.Mesh(blockGeometry, blockMaterial);
-  block.position.set(blockX, blockY, blockZ);
-  // CRITICAL FIX: Unlockable block should be visible at Level 1 start
-  // It becomes available after the player finds the trigger block (Step 0) and aims at it (Step 1)
-  // But at game start, it should be visible so players can find it
-  block.visible = true; // Visible at Level 1 start - players need to find it
-  block.castShadow = false;
-  block.receiveShadow = false;
+  // Use resolveAssetPath() + encodeURI() pattern (same as Level 1 Portal and Blue Cheese)
+  const resolved = resolveAssetPath(relativePath);
+  const urlForLoader = encodeURI(resolved); // Handle spaces in "3d models" folder name
+  console.log("🧩 [RIDDLE #2] Loading O-Block from:", urlForLoader);
   
-  // Add userData for raycast detection
-  block.userData.isRiddleBlock = true;
-  block.userData.isUnlockableBlock = true;
-  block.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_01';
-  block.userData.triggerStep = 2;
-  
-  // Ensure block matrix is updated for proper raycasting
-  block.matrixAutoUpdate = true;
-  block.updateMatrix();
-  block.updateMatrixWorld(true); // Force world matrix update
-  
-  scene.add(block);
-  riddleState.unlockableBlock = block;
-  
-  // Store original position for Riddle #2 (movable block)
-  riddleState.riddle2.unlockableBlockOriginalPosition = new THREE.Vector3(blockX, blockY, blockZ);
-  
-  // Mark block as movable for Riddle #2
-  block.userData.isMovable = true;
-  block.userData.isRiddle2Movable = true;
-  
-  console.log("🧩 [RIDDLE] Unlockable block created and added to scene:", {
-    position: { x: blockX.toFixed(2), y: blockY.toFixed(2), z: blockZ.toFixed(2) },
-    spawnY: spawnData.y,
-    calculatedY: spawnData.y + 1,
-    inScene: scene.children.includes(block),
-    visible: block.visible
-  });
+  // Load model using loadModel() with GLTFLoader fallback (same pattern as Portal/Blue Cheese)
+  if (typeof loadModel === "function") {
+    loadModel(urlForLoader)
+      .then((result) => {
+        const loadedScene = result.scene || result;
+        const block = loadedScene; // Use directly (no clone needed for single instance)
+        
+        // Calculate bounding box to understand model size and scale appropriately
+        const box = new THREE.Box3().setFromObject(block);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        
+        console.log("🧩 [RIDDLE #2] O-Block model loaded:", {
+          size: size,
+          center: center,
+          children: block.children.length
+        });
+        
+        // Scale to match blockSize (1.0 unit) for easy movement and collision
+        // Calculate scale factor based on largest dimension
+        const targetSize = blockSize; // 1.0 unit (same as original BoxGeometry)
+        const maxDimension = Math.max(size.x, size.y, size.z);
+        const scaleFactor = maxDimension > 0 ? targetSize / maxDimension : 1.0;
+        block.scale.setScalar(scaleFactor);
+        
+        // Position block at exact same coordinates as before
+        block.position.set(blockX, blockY, blockZ);
+        
+        // Adjust Y position if model center is not at base (use bounding box center)
+        if (size.y > 0) {
+          // Adjust Y to account for model center offset
+          const yOffset = center.y - (size.y / 2); // Offset from model center to bottom
+          block.position.y = blockY - (yOffset * scaleFactor); // Adjust for scaled model
+        }
+        
+        // Process materials to ensure proper rendering (same as Portal/Blue Cheese)
+        block.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = false; // Match original block settings
+            child.receiveShadow = false;
+            if (child.material) {
+              // Process material similar to other models
+              if (Array.isArray(child.material)) {
+                child.material = child.material.map(mat => processWeaponMaterial(mat));
+              } else {
+                child.material = processWeaponMaterial(child.material);
+              }
+            }
+          }
+        });
+        
+        // Visibility and settings (PRESERVE ORIGINAL BEHAVIOR)
+        block.visible = true; // Visible at Level 1 start - players need to find it
+        block.frustumCulled = false; // Ensure it's always rendered
+        block.matrixAutoUpdate = true; // Important for movement system
+        block.updateMatrix();
+        block.updateMatrixWorld(true);
+        
+        // Add userData (PRESERVE ALL PROPERTIES FOR MOVEMENT SYSTEM)
+        block.userData.isRiddleBlock = true;
+        block.userData.isUnlockableBlock = true;
+        block.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_01';
+        block.userData.triggerStep = 2;
+        block.userData.isMovable = true; // CRITICAL: Enables movement system
+        block.userData.isRiddle2Movable = true; // CRITICAL: Enables Riddle #2 movement
+        
+        // Store original position for Riddle #2 (movable block) - CRITICAL FOR RESET
+        riddleState.riddle2.unlockableBlockOriginalPosition = new THREE.Vector3(blockX, blockY, blockZ);
+        
+        // Initialize velocity to zero (important for physics/movement system)
+        riddleState.riddle2.unlockableBlockVelocity.set(0, 0, 0);
+        
+        // Add to scene
+        scene.add(block);
+        riddleState.unlockableBlock = block;
+        
+        console.log("✅ [RIDDLE #2] O-Block GLB model created and added to scene:", {
+          position: { x: block.position.x.toFixed(2), y: block.position.y.toFixed(2), z: block.position.z.toFixed(2) },
+          scale: { x: block.scale.x.toFixed(3), y: block.scale.y.toFixed(3), z: block.scale.z.toFixed(3) },
+          scaleFactor: scaleFactor.toFixed(3),
+          boundingBox: { size: size, center: center },
+          inScene: scene.children.includes(block),
+          visible: block.visible,
+          userData: block.userData
+        });
+        
+        // Double-check visibility after a short delay
+        setTimeout(() => {
+          if (riddleState.unlockableBlock) {
+            riddleState.unlockableBlock.visible = true;
+            riddleState.unlockableBlock.updateMatrixWorld(true);
+            console.log("🧩 [RIDDLE #2] O-Block visibility verified:", {
+              visible: riddleState.unlockableBlock.visible,
+              inScene: scene.children.includes(riddleState.unlockableBlock),
+              position: riddleState.unlockableBlock.position
+            });
+          }
+        }, 100);
+      })
+      .catch((error) => {
+        console.error("❌ [RIDDLE #2] Failed to load o-block.glb:", error);
+        console.error("❌ [RIDDLE #2] O-Block path attempted:", urlForLoader);
+        console.error("❌ [RIDDLE #2] Full error:", error.message, error.stack);
+        
+        // Fallback: Try direct GLTFLoader (same as Portal/Blue Cheese)
+        console.log("🧩 [RIDDLE #2] Attempting GLTFLoader fallback...");
+        const loader = new GLTFLoader();
+        loader.load(
+          urlForLoader,
+          (gltf) => {
+            const block = gltf.scene;
+            
+            // Calculate bounding box and scale
+            const box = new THREE.Box3().setFromObject(block);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const targetSize = blockSize;
+            const maxDimension = Math.max(size.x, size.y, size.z);
+            const scaleFactor = maxDimension > 0 ? targetSize / maxDimension : 1.0;
+            block.scale.setScalar(scaleFactor);
+            
+            block.position.set(blockX, blockY, blockZ);
+            if (size.y > 0) {
+              const yOffset = center.y - (size.y / 2);
+              block.position.y = blockY - (yOffset * scaleFactor);
+            }
+            
+            // Process materials
+            block.traverse((child) => {
+              if (child.isMesh) {
+                child.castShadow = false;
+                child.receiveShadow = false;
+                if (child.material) {
+                  if (Array.isArray(child.material)) {
+                    child.material = child.material.map(mat => processWeaponMaterial(mat));
+                  } else {
+                    child.material = processWeaponMaterial(child.material);
+                  }
+                }
+              }
+            });
+            
+            block.visible = true;
+            block.frustumCulled = false;
+            block.matrixAutoUpdate = true;
+            block.updateMatrix();
+            block.updateMatrixWorld(true);
+            
+            // Add userData (PRESERVE ALL PROPERTIES)
+            block.userData.isRiddleBlock = true;
+            block.userData.isUnlockableBlock = true;
+            block.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_01';
+            block.userData.triggerStep = 2;
+            block.userData.isMovable = true;
+            block.userData.isRiddle2Movable = true;
+            
+            // Store original position and initialize velocity
+            riddleState.riddle2.unlockableBlockOriginalPosition = new THREE.Vector3(blockX, blockY, blockZ);
+            riddleState.riddle2.unlockableBlockVelocity.set(0, 0, 0);
+            
+            scene.add(block);
+            riddleState.unlockableBlock = block;
+            
+            console.log("✅ [RIDDLE #2] O-Block spawned (GLTFLoader fallback)");
+          },
+          undefined,
+          (err) => console.error("❌ [RIDDLE #2] GLTFLoader failed for o-block:", err)
+        );
+      });
+  } else {
+    console.error("❌ [RIDDLE #2] loadModel function not available!");
+  }
 }
 
 // Create blinking oak stone for Riddle #2
@@ -34104,6 +34312,7 @@ function createRiddle4Lever(x, y, z, blockSize, leverNumber) {
 }
 
 // Create movable block for Riddle #3
+// January 16, 2026: Replaced BoxGeometry with Tetris o-block.glb GLB model (data persistence pattern)
 function createRiddle3MovableBlock(spawnData, blockSize) {
   // Position: Near spawn, offset from unlockable block (so it doesn't overlap)
   // Place it at spawn position but offset by 5 blocks in X direction
@@ -34111,58 +34320,194 @@ function createRiddle3MovableBlock(spawnData, blockSize) {
   const blockY = 1 * blockSize + blockSize / 2; // Ground level (y: 1.5)
   const blockZ = spawnData.z * blockSize + blockSize / 2; // Same Z as spawn
   
-  console.log("🧩 [RIDDLE #3] Creating movable block:", {
+  console.log("🧩 [RIDDLE #3] Creating movable block (O-Block GLB):", {
     spawnData: { x: spawnData.x, y: spawnData.y, z: spawnData.z },
     calculatedPosition: { x: blockX, y: blockY, z: blockZ },
     blockSize: blockSize
   });
   
-  // Reuse cheese stone texture or use different texture
-  const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  const blockTexture = loadTexture("textures/blocks/cheese-stone.png");
-  const blockMaterial = new THREE.MeshLambertMaterial({ 
-    map: blockTexture,
-    // FIX: Remove emissive to show texture correctly (no yellow overlay)
-    emissive: new THREE.Color(0x000000), // Black (no glow)
-    emissiveIntensity: 0.0, // No emissive glow - show texture as-is
-    transparent: false
-  });
+  // O-Block GLB model path (relative path, no leading slash - same as Portal/Blue Cheese)
+  const relativePath = "textures/3d models/tetris/o-block.glb";
   
-  const block = new THREE.Mesh(blockGeometry, blockMaterial);
-  block.position.set(blockX, blockY, blockZ);
-  block.visible = false; // Hidden until lever is pressed (Step 1 complete)
-  block.castShadow = false;
-  block.receiveShadow = false;
+  // Use resolveAssetPath() + encodeURI() pattern (same as Level 1 Portal and Blue Cheese)
+  const resolved = resolveAssetPath(relativePath);
+  const urlForLoader = encodeURI(resolved); // Handle spaces in "3d models" folder name
+  console.log("🧩 [RIDDLE #3] Loading O-Block from:", urlForLoader);
   
-  // Add userData for Riddle #3
-  block.userData.isRiddleBlock = true;
-  block.userData.isRiddle3MovableBlock = true;
-  block.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_03';
-  block.userData.isMovable = true;
-  block.userData.isRiddle3Movable = true;
-  
-  // Store original position
-  riddleState.riddle3.movableBlockOriginalPosition = new THREE.Vector3(blockX, blockY, blockZ);
-  
-  // Initialize velocity to zero (important for physics)
-  riddleState.riddle3.movableBlockVelocity.set(0, 0, 0);
-  
-  // Ensure matrix is updated
-  block.matrixAutoUpdate = true;
-  block.updateMatrix();
-  block.updateMatrixWorld(true);
-  
-  scene.add(block);
-  riddleState.riddle3.movableBlock = block;
-  
-  console.log("🧩 [RIDDLE #3] Movable block created and added to scene:", {
-    position: { x: blockX.toFixed(2), y: blockY.toFixed(2), z: blockZ.toFixed(2) },
-    inScene: scene.children.includes(block),
-    visible: block.visible,
-    velocity: { x: riddleState.riddle3.movableBlockVelocity.x.toFixed(3), y: riddleState.riddle3.movableBlockVelocity.y.toFixed(3), z: riddleState.riddle3.movableBlockVelocity.z.toFixed(3) },
-    step1Complete: riddleState.riddle3.step1Complete,
-    step2Complete: riddleState.riddle3.step2Complete
-  });
+  // Load model using loadModel() with GLTFLoader fallback (same pattern as Portal/Blue Cheese)
+  if (typeof loadModel === "function") {
+    loadModel(urlForLoader)
+      .then((result) => {
+        const loadedScene = result.scene || result;
+        const block = loadedScene; // Use directly (no clone needed for single instance)
+        
+        // Calculate bounding box to understand model size and scale appropriately
+        const box = new THREE.Box3().setFromObject(block);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        
+        console.log("🧩 [RIDDLE #3] O-Block model loaded:", {
+          size: size,
+          center: center,
+          children: block.children.length
+        });
+        
+        // Scale to match blockSize (1.0 unit) for easy movement and collision
+        // Calculate scale factor based on largest dimension
+        const targetSize = blockSize; // 1.0 unit (same as original BoxGeometry)
+        const maxDimension = Math.max(size.x, size.y, size.z);
+        const scaleFactor = maxDimension > 0 ? targetSize / maxDimension : 1.0;
+        block.scale.setScalar(scaleFactor);
+        
+        // Position block at exact same coordinates as before
+        block.position.set(blockX, blockY, blockZ);
+        
+        // Adjust Y position if model center is not at base (use bounding box center)
+        if (size.y > 0) {
+          // Adjust Y to account for model center offset
+          const yOffset = center.y - (size.y / 2); // Offset from model center to bottom
+          block.position.y = blockY - (yOffset * scaleFactor); // Adjust for scaled model
+        }
+        
+        // Process materials to ensure proper rendering (same as Portal/Blue Cheese)
+        block.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = false; // Match original block settings
+            child.receiveShadow = false;
+            if (child.material) {
+              // Process material similar to other models
+              if (Array.isArray(child.material)) {
+                child.material = child.material.map(mat => processWeaponMaterial(mat));
+              } else {
+                child.material = processWeaponMaterial(child.material);
+              }
+            }
+          }
+        });
+        
+        // Visibility and settings (PRESERVE ORIGINAL BEHAVIOR)
+        block.visible = false; // Hidden until lever is pressed (Step 1 complete)
+        block.frustumCulled = false; // Ensure it's always rendered
+        block.matrixAutoUpdate = true; // Important for movement system
+        block.updateMatrix();
+        block.updateMatrixWorld(true);
+        
+        // Add userData (PRESERVE ALL PROPERTIES FOR MOVEMENT SYSTEM)
+        block.userData.isRiddleBlock = true;
+        block.userData.isRiddle3MovableBlock = true;
+        block.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_03';
+        block.userData.isMovable = true; // CRITICAL: Enables movement system
+        block.userData.isRiddle3Movable = true; // CRITICAL: Enables Riddle #3 movement
+        
+        // Store original position - CRITICAL FOR RESET
+        riddleState.riddle3.movableBlockOriginalPosition = new THREE.Vector3(blockX, blockY, blockZ);
+        
+        // Initialize velocity to zero (important for physics/movement system)
+        riddleState.riddle3.movableBlockVelocity.set(0, 0, 0);
+        
+        // Add to scene
+        scene.add(block);
+        riddleState.riddle3.movableBlock = block;
+        
+        console.log("✅ [RIDDLE #3] O-Block GLB model created and added to scene:", {
+          position: { x: block.position.x.toFixed(2), y: block.position.y.toFixed(2), z: block.position.z.toFixed(2) },
+          scale: { x: block.scale.x.toFixed(3), y: block.scale.y.toFixed(3), z: block.scale.z.toFixed(3) },
+          scaleFactor: scaleFactor.toFixed(3),
+          boundingBox: { size: size, center: center },
+          inScene: scene.children.includes(block),
+          visible: block.visible,
+          velocity: { x: riddleState.riddle3.movableBlockVelocity.x.toFixed(3), y: riddleState.riddle3.movableBlockVelocity.y.toFixed(3), z: riddleState.riddle3.movableBlockVelocity.z.toFixed(3) },
+          step1Complete: riddleState.riddle3.step1Complete,
+          step2Complete: riddleState.riddle3.step2Complete,
+          userData: block.userData
+        });
+        
+        // Double-check visibility after a short delay
+        setTimeout(() => {
+          if (riddleState.riddle3.movableBlock) {
+            // Visibility controlled by lever state (Step 1 complete)
+            riddleState.riddle3.movableBlock.updateMatrixWorld(true);
+            console.log("🧩 [RIDDLE #3] O-Block visibility verified:", {
+              visible: riddleState.riddle3.movableBlock.visible,
+              inScene: scene.children.includes(riddleState.riddle3.movableBlock),
+              position: riddleState.riddle3.movableBlock.position,
+              step1Complete: riddleState.riddle3.step1Complete
+            });
+          }
+        }, 100);
+      })
+      .catch((error) => {
+        console.error("❌ [RIDDLE #3] Failed to load o-block.glb:", error);
+        console.error("❌ [RIDDLE #3] O-Block path attempted:", urlForLoader);
+        console.error("❌ [RIDDLE #3] Full error:", error.message, error.stack);
+        
+        // Fallback: Try direct GLTFLoader (same as Portal/Blue Cheese)
+        console.log("🧩 [RIDDLE #3] Attempting GLTFLoader fallback...");
+        const loader = new GLTFLoader();
+        loader.load(
+          urlForLoader,
+          (gltf) => {
+            const block = gltf.scene;
+            
+            // Calculate bounding box and scale
+            const box = new THREE.Box3().setFromObject(block);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const targetSize = blockSize;
+            const maxDimension = Math.max(size.x, size.y, size.z);
+            const scaleFactor = maxDimension > 0 ? targetSize / maxDimension : 1.0;
+            block.scale.setScalar(scaleFactor);
+            
+            block.position.set(blockX, blockY, blockZ);
+            if (size.y > 0) {
+              const yOffset = center.y - (size.y / 2);
+              block.position.y = blockY - (yOffset * scaleFactor);
+            }
+            
+            // Process materials
+            block.traverse((child) => {
+              if (child.isMesh) {
+                child.castShadow = false;
+                child.receiveShadow = false;
+                if (child.material) {
+                  if (Array.isArray(child.material)) {
+                    child.material = child.material.map(mat => processWeaponMaterial(mat));
+                  } else {
+                    child.material = processWeaponMaterial(child.material);
+                  }
+                }
+              }
+            });
+            
+            block.visible = false; // Hidden until lever pressed
+            block.frustumCulled = false;
+            block.matrixAutoUpdate = true;
+            block.updateMatrix();
+            block.updateMatrixWorld(true);
+            
+            // Add userData (PRESERVE ALL PROPERTIES)
+            block.userData.isRiddleBlock = true;
+            block.userData.isRiddle3MovableBlock = true;
+            block.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_03';
+            block.userData.isMovable = true;
+            block.userData.isRiddle3Movable = true;
+            
+            // Store original position and initialize velocity
+            riddleState.riddle3.movableBlockOriginalPosition = new THREE.Vector3(blockX, blockY, blockZ);
+            riddleState.riddle3.movableBlockVelocity.set(0, 0, 0);
+            
+            scene.add(block);
+            riddleState.riddle3.movableBlock = block;
+            
+            console.log("✅ [RIDDLE #3] O-Block spawned (GLTFLoader fallback)");
+          },
+          undefined,
+          (err) => console.error("❌ [RIDDLE #3] GLTFLoader failed for o-block:", err)
+        );
+      });
+  } else {
+    console.error("❌ [RIDDLE #3] loadModel function not available!");
+  }
 }
 
 // Create oak block for Riddle #3
@@ -37177,6 +37522,41 @@ function checkChestCollision() {
   }
 }
 
+// Update pulsing glow effect for blue cheese (called every frame)
+function updateBlueCheeseGlow() {
+  if (currentLevel !== LEVEL_IDS.LEVEL1 || !level1State.blueCheese) {
+    return;
+  }
+  
+  // Use time-based sine wave for smooth pulsing (0 to 1 range)
+  const time = Date.now() * 0.001; // Convert to seconds, slow down with 0.001 multiplier
+  const pulse = (Math.sin(time * 2) + 1) / 2; // 0 to 1 range (sine wave)
+  
+  // Pulse emissive intensity between 0.0 and 0.6
+  const minIntensity = 0.0;
+  const maxIntensity = 0.6;
+  const emissiveIntensity = minIntensity + (maxIntensity - minIntensity) * pulse;
+  
+  // Update all materials on blue cheese
+  level1State.blueCheese.traverse((child) => {
+    if (child.isMesh && child.material) {
+      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      
+      materials.forEach((mat) => {
+        if (mat && mat.isMaterial && mat.userData && mat.userData.pulsingGlow) {
+          // Interpolate between original color and glow color based on pulse value
+          const originalColor = mat.userData.originalColor || mat.color;
+          const glowColor = mat.userData.glowColor || new THREE.Color(0x4488ff);
+          
+          // Blend emissive color between original and glow
+          mat.emissive.lerpColors(originalColor, glowColor, pulse);
+          mat.emissiveIntensity = emissiveIntensity;
+        }
+      });
+    }
+  });
+}
+
 // Check collision with trees in Level 1 (prevents player from walking through trees)
 // STANDARD PATTERN: Can be copied to other levels for tree collision
 // 🚧 Check collision with Level 1 trees and plants
@@ -37237,18 +37617,23 @@ function checkLevel1TreeCollision() {
     return;
   }
   
+  // Update pulsing glow for blue cheese (every frame)
+  updateBlueCheeseGlow();
+  
   // Get player position (center of capsule)
   const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
   const playerRadius = PLAYER_RADIUS;
   
-  // Check collision with all trees and plants (both act as obstacles)
+  // Check collision with all trees, plants, and portal (all act as obstacles)
   const obstacles = [
     { tree: level1State.tree, position: level1State.treePosition, name: "Tree 1", type: "tree" },
     { tree: level1State.tree2, position: level1State.tree2Position, name: "Tree 2", type: "tree" },
     { tree: level1State.tree3, position: level1State.tree3Position, name: "Tree 3", type: "tree" },
     { tree: level1State.tree4, position: level1State.tree4Position, name: "Tree 4", type: "tree" },
     { tree: level1State.plant, position: level1State.plantPosition, name: "Plant 1", type: "plant" },
-    { tree: level1State.plant2, position: level1State.plant2Position, name: "Plant 2", type: "plant" }
+    { tree: level1State.plant2, position: level1State.plant2Position, name: "Plant 2", type: "plant" },
+    { tree: level1State.portal, position: level1State.portalPosition, name: "Portal", type: "portal" },
+    { tree: level1State.blueCheese, position: level1State.blueCheesePosition, name: "Blue Cheese", type: "decorative" }
   ];
   
   obstacles.forEach(({ tree, position, name, type }) => {
@@ -38219,6 +38604,425 @@ function createLevel1Plant2(spawnData, blockSize) {
       console.error("❌ [LEVEL 1] Failed to load plant 2 model:", error);
       console.error("❌ [LEVEL 1] Plant 2 path attempted:", plantPath);
     });
+}
+
+// 🌀 Create Cheese Portal GLB model in Level 1 (replaces blocks at x: 26, z: 21, y: 3)
+// Position: Block coordinates (26, 3, 21) = World coordinates (26.5, 4.5, 21.5) after Y adjustment (+1 for 3x scale)
+// Pattern: Follows exact same pattern as Level 4 Cheese Bosses (resolveAssetPath + encodeURI + loadModel)
+// ✅ WORKING PATTERN - DO NOT CHANGE WITHOUT TESTING
+// 📝 See documentation: 12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-16/LEVEL1_PORTAL_3D_MODEL_IMPLEMENTATION.md
+function createLevel1Portal(spawnData, blockSize) {
+  // Portal position: Block coordinates (26, 3, 21) converted to world coordinates
+  const portalX = 26 * blockSize + blockSize / 2; // 26.5
+  const portalY = 3 * blockSize + blockSize / 2; // 3.5 (before Y adjustment)
+  const portalZ = 21 * blockSize + blockSize / 2; // 21.5
+  
+  // Store position with Y adjustment (portalY + 1) for collision detection (3x scale prevents underground)
+  level1State.portalPosition = new THREE.Vector3(portalX, portalY + 1, portalZ);
+  
+  console.log("🌀 [LEVEL 1] Creating Cheese Portal at:", level1State.portalPosition);
+  
+  // Portal model path (relative path, no leading slash - same as Level 4 Cheese Bosses)
+  const relativePath = "textures/3d models/cheese portal/cheese-portal.glb";
+  
+  // Use resolveAssetPath() + encodeURI() pattern (same as Level 4 Cheese Bosses)
+  const resolved = resolveAssetPath(relativePath);
+  const urlForLoader = encodeURI(resolved); // Handle spaces in "cheese portal" folder name
+  console.log("🌀 [LEVEL 1] Loading portal from:", urlForLoader);
+  
+  // Use loadModel() with GLTFLoader fallback (same pattern as Level 4 Cheese Bosses)
+  if (typeof loadModel === "function") {
+    loadModel(urlForLoader)
+      .then((result) => {
+        const loadedScene = result.scene || result;
+        const portal = loadedScene; // Use directly (no clone needed for single instance)
+        
+        // Calculate bounding box to understand model size
+        const box = new THREE.Box3().setFromObject(portal);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        
+        console.log("🌀 [LEVEL 1] Portal model loaded:", {
+          size: size,
+          center: center,
+          children: portal.children.length
+        });
+        
+        // Position portal at specified coordinates
+        // Y position adjusted by +1 to prevent going underground (model is 3x larger now)
+        // Final Y position: 3.5 + 1 = 4.5 (sits correctly above ground with 3x scale)
+        portal.position.set(portalX, portalY + 1, portalZ);
+        
+        // Adjust Y position if model center is not at base
+        if (size.y > 0) {
+          // Model is 3x larger, so adjust Y up by 1 unit to prevent going underground
+          portal.position.y = portalY + 1; // Final Y: 4.5
+        }
+        
+        // Scale portal 3x larger (was 1.0, now 3.0 for better visibility and interaction)
+        portal.scale.setScalar(3.0);
+        
+        // Rotation (optional - adjust based on model orientation)
+        portal.rotation.y = 0;
+        
+        // Process materials to ensure proper rendering (same as trees and plants)
+        portal.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (child.material) {
+              // Process material similar to other models
+              if (Array.isArray(child.material)) {
+                child.material = child.material.map(mat => processWeaponMaterial(mat));
+              } else {
+                child.material = processWeaponMaterial(child.material);
+              }
+            }
+          }
+        });
+        
+        // Ensure portal is visible
+        portal.visible = true;
+        portal.frustumCulled = false; // Ensure it's always rendered
+        portal.updateMatrixWorld(true);
+        
+        // Add to scene
+        scene.add(portal);
+        level1State.portal = portal;
+        
+        // Store collision data for portal (for collision detection if needed)
+        portal.userData.collisionRadius = Math.max(size.x, size.z) * 0.5; // Half of larger dimension
+        portal.userData.collisionPosition = level1State.portalPosition;
+        
+        // Log success
+        console.log("✅ [LEVEL 1] Portal created successfully:", {
+          position: { x: portal.position.x, y: portal.position.y, z: portal.position.z },
+          scale: { x: portal.scale.x, y: portal.scale.y, z: portal.scale.z },
+          visible: portal.visible,
+          inScene: scene.children.includes(portal),
+          boundingBox: { size: size, center: center },
+          collisionRadius: portal.userData.collisionRadius,
+          children: portal.children.length
+        });
+        
+        // Double-check visibility after a short delay
+        setTimeout(() => {
+          if (level1State.portal) {
+            level1State.portal.visible = true;
+            level1State.portal.updateMatrixWorld(true);
+            console.log("🌀 [LEVEL 1] Portal visibility verified:", {
+              visible: level1State.portal.visible,
+              inScene: scene.children.includes(level1State.portal),
+              position: { 
+                x: level1State.portal.position.x, 
+                y: level1State.portal.position.y, 
+                z: level1State.portal.position.z 
+              }
+            });
+          }
+        }, 100);
+      })
+      .catch((error) => {
+        console.error("❌ [LEVEL 1] Failed to load portal model:", error);
+        console.error("❌ [LEVEL 1] Portal path attempted:", urlForLoader);
+        console.error("❌ [LEVEL 1] Full error:", error.message, error.stack);
+        
+        // Fallback: Try direct GLTFLoader (same as Level 4 Cheese Bosses)
+        console.log("🌀 [LEVEL 1] Attempting GLTFLoader fallback...");
+        const loader = new GLTFLoader();
+        loader.load(
+          urlForLoader,
+          (gltf) => {
+            const portal = gltf.scene;
+            portal.visible = true;
+            portal.frustumCulled = false;
+            portal.position.set(portalX, portalY + 1, portalZ); // Y adjusted by +1 to prevent going underground (3x scale)
+            portal.scale.setScalar(3.0); // Scale 3x larger for better visibility
+            
+            // Process materials
+            portal.traverse((child) => {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                if (child.material) {
+                  if (Array.isArray(child.material)) {
+                    child.material = child.material.map(mat => processWeaponMaterial(mat));
+                  } else {
+                    child.material = processWeaponMaterial(child.material);
+                  }
+                }
+              }
+            });
+            
+            portal.updateMatrixWorld(true);
+            scene.add(portal);
+            level1State.portal = portal;
+            // Store position with Y adjustment (portalY + 1) for collision detection (3x scale)
+            level1State.portalPosition = new THREE.Vector3(portalX, portalY + 1, portalZ);
+            
+            // Store collision data
+            const box = new THREE.Box3().setFromObject(portal);
+            const size = box.getSize(new THREE.Vector3());
+            portal.userData.collisionRadius = Math.max(size.x, size.z) * 0.5;
+            portal.userData.collisionPosition = level1State.portalPosition;
+            
+            console.log("✅ [LEVEL 1] Portal loaded via GLTFLoader fallback");
+          },
+          undefined,
+          (err) => console.error("❌ [LEVEL 1] GLTFLoader fallback also failed:", err)
+        );
+      });
+  } else {
+    console.error("❌ [LEVEL 1] loadModel function not available!");
+  }
+}
+
+// Pattern: Follows exact same pattern as Level 1 Portal and Level 4 Cheese Bosses (resolveAssetPath + encodeURI + loadModel)
+// ✅ WORKING PATTERN - DO NOT CHANGE WITHOUT TESTING
+// 📝 See documentation: 12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-16/LEVEL1_PORTAL_3D_MODEL_IMPLEMENTATION.md
+function createLevel1BlueCheese() {
+  // Blue cheese position: World coordinates (100, 5.5, 18) - Y adjusted by +3 units for correct placement
+  const blueCheeseX = 100;
+  const blueCheeseY = 2.5; // Base Y coordinate (before adjustment)
+  const blueCheeseZ = 18;
+  
+  // Y position adjusted by +3 to place model correctly (was 2.5, now 5.5)
+  const finalY = blueCheeseY + 3; // Final Y: 5.5
+  
+  // Store position with Y adjustment for collision detection
+  level1State.blueCheesePosition = new THREE.Vector3(blueCheeseX, finalY, blueCheeseZ);
+  
+  console.log("🧀 [LEVEL 1] Creating Blue Cheese at:", level1State.blueCheesePosition);
+  
+  // Blue cheese model path (relative path, no leading slash - same as Level 4 Cheese Bosses)
+  // File is located at: textures/3d models/cheese blue/cheese-blue.glb
+  const relativePath = "textures/3d models/cheese blue/cheese-blue.glb";
+  
+  // Use resolveAssetPath() + encodeURI() pattern (same as Level 4 Cheese Bosses)
+  const resolved = resolveAssetPath(relativePath);
+  const urlForLoader = encodeURI(resolved); // Handle spaces in "cheese blue" folder name
+  console.log("🧀 [LEVEL 1] Loading blue cheese from:", urlForLoader);
+  
+  // Use loadModel() with GLTFLoader fallback (same pattern as Level 4 Cheese Bosses)
+  if (typeof loadModel === "function") {
+    loadModel(urlForLoader)
+      .then((result) => {
+        const loadedScene = result.scene || result;
+        const blueCheese = loadedScene; // Use directly (no clone needed for single instance)
+        
+        // Calculate bounding box to understand model size
+        const box = new THREE.Box3().setFromObject(blueCheese);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        
+        console.log("🧀 [LEVEL 1] Blue cheese model loaded:", {
+          size: size,
+          center: center,
+          children: blueCheese.children.length
+        });
+        
+        // Position blue cheese at specified world coordinates
+        // Y position adjusted by +3 to place model correctly (was 2.5, now 5.5)
+        blueCheese.position.set(blueCheeseX, finalY, blueCheeseZ);
+        
+        // Adjust Y position if model center is not at base
+        if (size.y > 0) {
+          // Y position adjusted by +3 for correct placement
+          blueCheese.position.y = finalY; // Final Y: 5.5
+        }
+        
+        // Scale blue cheese to huge size (10.0x for "huge" as requested)
+        blueCheese.scale.setScalar(10.0);
+        
+        // Rotation (optional - adjust based on model orientation)
+        blueCheese.rotation.y = 0;
+        
+        // Process materials to ensure proper rendering and add blue glow effect
+        blueCheese.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (child.material) {
+              // Process material first (converts to MeshStandardMaterial)
+              let processedMaterials;
+              if (Array.isArray(child.material)) {
+                processedMaterials = child.material.map(mat => processWeaponMaterial(mat));
+              } else {
+                processedMaterials = [processWeaponMaterial(child.material)];
+              }
+              
+              // Add pulsing blue glow effect to all materials (AFTER processing)
+              processedMaterials.forEach((mat) => {
+                if (mat && mat.isMaterial) {
+                  // Ensure material is MeshStandardMaterial for emissive support
+                  if (!mat.isMeshStandardMaterial) {
+                    const oldMat = mat;
+                    mat = new THREE.MeshStandardMaterial({
+                      color: oldMat.color || 0x888888,
+                      map: oldMat.map || null,
+                      normalMap: oldMat.normalMap || null,
+                      metalness: 0.35,
+                      roughness: 0.45,
+                      side: THREE.DoubleSide
+                    });
+                  }
+                  
+                  // Store original color and glow color for pulsing animation
+                  mat.userData.originalColor = mat.color.clone();
+                  mat.userData.glowColor = new THREE.Color(0x4488ff); // Light blue/purple glow color
+                  mat.userData.pulsingGlow = true; // Enable pulsing glow animation
+                  
+                  // Initialize emissive (will be animated in update loop)
+                  if (!mat.emissive) {
+                    mat.emissive = new THREE.Color(0x000000); // Start with no emissive
+                  }
+                  mat.emissiveIntensity = 0.0; // Start at 0, will pulse up to 0.6
+                  mat.needsUpdate = true;
+                }
+              });
+              
+              // Set processed materials back with glow
+              if (Array.isArray(child.material)) {
+                child.material = processedMaterials;
+              } else {
+                child.material = processedMaterials[0];
+              }
+            }
+          }
+        });
+        
+        // Ensure blue cheese is visible
+        blueCheese.visible = true;
+        blueCheese.frustumCulled = false; // Ensure it's always rendered
+        blueCheese.updateMatrixWorld(true);
+        
+        // Add to scene
+        scene.add(blueCheese);
+        level1State.blueCheese = blueCheese;
+        
+        // Store collision data for blue cheese (for collision detection)
+        blueCheese.userData.collisionRadius = Math.max(size.x, size.z) * 0.5; // Half of larger dimension
+        blueCheese.userData.collisionPosition = level1State.blueCheesePosition;
+        
+        // Log success
+        console.log("✅ [LEVEL 1] Blue cheese created successfully:", {
+          position: { x: blueCheese.position.x, y: blueCheese.position.y, z: blueCheese.position.z },
+          scale: { x: blueCheese.scale.x, y: blueCheese.scale.y, z: blueCheese.scale.z },
+          visible: blueCheese.visible,
+          inScene: scene.children.includes(blueCheese),
+          boundingBox: { size: size, center: center },
+          collisionRadius: blueCheese.userData.collisionRadius,
+          children: blueCheese.children.length
+        });
+        
+        // Double-check visibility after a short delay
+        setTimeout(() => {
+          if (level1State.blueCheese) {
+            level1State.blueCheese.visible = true;
+            level1State.blueCheese.updateMatrixWorld(true);
+            console.log("🧀 [LEVEL 1] Blue cheese visibility verified:", {
+              visible: level1State.blueCheese.visible,
+              inScene: scene.children.includes(level1State.blueCheese),
+              position: { 
+                x: level1State.blueCheese.position.x, 
+                y: level1State.blueCheese.position.y, 
+                z: level1State.blueCheese.position.z 
+              }
+            });
+          }
+        }, 100);
+      })
+      .catch((error) => {
+        console.error("❌ [LEVEL 1] Failed to load blue cheese model:", error);
+        console.error("❌ [LEVEL 1] Blue cheese path attempted:", urlForLoader);
+        console.error("❌ [LEVEL 1] Full error:", error.message, error.stack);
+        
+        // Fallback: Try direct GLTFLoader (same as Level 4 Cheese Bosses)
+        console.log("🧀 [LEVEL 1] Attempting GLTFLoader fallback...");
+        const loader = new GLTFLoader();
+        loader.load(
+          urlForLoader,
+          (gltf) => {
+            const blueCheese = gltf.scene;
+            blueCheese.visible = true;
+            blueCheese.frustumCulled = false;
+            blueCheese.position.set(blueCheeseX, finalY, blueCheeseZ); // Y adjusted by +3 for correct placement
+            blueCheese.scale.setScalar(10.0); // Scale 10x for huge size
+            
+            // Process materials and add blue glow effect
+            blueCheese.traverse((child) => {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                if (child.material) {
+                  // Process material first (converts to MeshStandardMaterial)
+                  let processedMaterials;
+                  if (Array.isArray(child.material)) {
+                    processedMaterials = child.material.map(mat => processWeaponMaterial(mat));
+                  } else {
+                    processedMaterials = [processWeaponMaterial(child.material)];
+                  }
+                  
+                  // Add pulsing blue glow effect to all materials (AFTER processing)
+                  processedMaterials.forEach((mat) => {
+                    if (mat && mat.isMaterial) {
+                      // Ensure material is MeshStandardMaterial for emissive support
+                      if (!mat.isMeshStandardMaterial) {
+                        const oldMat = mat;
+                        mat = new THREE.MeshStandardMaterial({
+                          color: oldMat.color || 0x888888,
+                          map: oldMat.map || null,
+                          normalMap: oldMat.normalMap || null,
+                          metalness: 0.35,
+                          roughness: 0.45,
+                          side: THREE.DoubleSide
+                        });
+                      }
+                      
+                      // Store original color and glow color for pulsing animation
+                      mat.userData.originalColor = mat.color.clone();
+                      mat.userData.glowColor = new THREE.Color(0x4488ff); // Light blue/purple glow color
+                      mat.userData.pulsingGlow = true; // Enable pulsing glow animation
+                      
+                      // Initialize emissive (will be animated in update loop)
+                      if (!mat.emissive) {
+                        mat.emissive = new THREE.Color(0x000000); // Start with no emissive
+                      }
+                      mat.emissiveIntensity = 0.0; // Start at 0, will pulse up to 0.6
+                      mat.needsUpdate = true;
+                    }
+                  });
+                  
+                  // Set processed materials back with glow
+                  if (Array.isArray(child.material)) {
+                    child.material = processedMaterials;
+                  } else {
+                    child.material = processedMaterials[0];
+                  }
+                }
+              }
+            });
+            
+            blueCheese.updateMatrixWorld(true);
+            scene.add(blueCheese);
+            level1State.blueCheese = blueCheese;
+            level1State.blueCheesePosition = new THREE.Vector3(blueCheeseX, finalY, blueCheeseZ); // Y adjusted by +3
+            
+            // Store collision data
+            const box = new THREE.Box3().setFromObject(blueCheese);
+            const size = box.getSize(new THREE.Vector3());
+            blueCheese.userData.collisionRadius = Math.max(size.x, size.z) * 0.5;
+            blueCheese.userData.collisionPosition = level1State.blueCheesePosition;
+            
+            console.log("✅ [LEVEL 1] Blue cheese loaded via GLTFLoader fallback");
+          },
+          undefined,
+          (err) => console.error("❌ [LEVEL 1] GLTFLoader fallback also failed:", err)
+        );
+      });
+  } else {
+    console.error("❌ [LEVEL 1] loadModel function not available!");
+  }
 }
 
 // Trigger death sequence for bear trap (uses Level 3 game over screen but with Level 1 context)

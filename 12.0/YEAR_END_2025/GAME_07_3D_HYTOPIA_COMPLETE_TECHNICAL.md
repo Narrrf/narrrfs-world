@@ -206,6 +206,91 @@ Professional two-level asset caching system for optimal performance on both mobi
 - **Texture Loading:** `loadTexture()` function uses cache automatically
 - **Model Loading:** `loadModel()` function uses cache automatically
 
+## 🗄️ **DATA PERSISTENCE FILE SYSTEM PATTERN (January 16, 2026)**
+
+### **✅ VERIFIED WORKING METHOD FOR RENDER DEPLOYMENT**
+
+This is the **STANDARD METHOD** for implementing GLB models from the data persistence file system (`/data/public/three.js/public/textures/`). Use this pattern for ALL future GLB model integrations that need to work with the Render deployment symlink system.
+
+### **File System Structure:**
+
+**Render Deployment:**
+- **Data Persistence Directory:** `/data/public/three.js/public/textures/3d models/` (persists across deployments)
+- **Symlink:** `/data/public/three.js/public/textures/` → `/var/www/html/public/three.js/public/textures/`
+- **Actual Path:** `/var/www/html/public/three.js/public/textures/3d models/[model-folder]/[model-file].glb`
+- **Relative Path:** `textures/3d models/[model-folder]/[model-file].glb` (no leading slash)
+
+### **MANDATORY IMPLEMENTATION PATTERN:**
+
+```javascript
+// Relative path (no leading slash) - same as Level 4 Cheese Bosses
+const relativePath = "textures/3d models/cheese portal/cheese-portal.glb";
+
+// Use resolveAssetPath() + encodeURI() for symlink support and space handling
+const resolved = resolveAssetPath(relativePath);
+const urlForLoader = encodeURI(resolved); // Handles spaces in "cheese portal" folder name
+
+// Load model using loadModel() with GLTFLoader fallback
+if (typeof loadModel === "function") {
+  loadModel(urlForLoader)
+    .then((result) => {
+      const loadedScene = result.scene || result;
+      const model = loadedScene; // Use directly (no clone needed for single instance)
+      
+      // Position, scale, material processing, etc.
+      // ... rest of implementation
+    })
+    .catch((error) => {
+      // GLTFLoader fallback here
+      const loader = new GLTFLoader();
+      loader.load(urlForLoader, (gltf) => {
+        // ... fallback loading logic
+      });
+    });
+}
+```
+
+### **Why This Pattern Works:**
+
+- ✅ **Data Persistence File System:** Works with `/data/public/three.js/public/textures/` symlink on Render
+- ✅ **Symlink Support:** `resolveAssetPath()` resolves relative paths through `/data/` symlink to `/var/www/html/public/three.js/public/`
+- ✅ **Space Handling:** `encodeURI()` handles spaces in folder names (e.g., "cheese portal") for proper URL encoding
+- ✅ **Cross-Environment:** Works on both local development and production Render environments
+- ✅ **Verified Pattern:** Level 1 Portal (January 16, 2026) + Level 4 Cheese Bosses both use this pattern successfully
+
+### **When to Use This Pattern:**
+
+- ✅ **GLB Models from Data Persistence:** All GLB models stored in `/data/public/three.js/public/textures/`
+- ✅ **Render Deployment:** Models that need to persist across deployments via `/data/` symlink
+- ✅ **Symlink Support Required:** Models that must work with Render's `/data/` persistence symlink
+- ✅ **Space Handling Needed:** Folder names with spaces (e.g., "cheese portal", "3d models")
+
+### **Working Examples:**
+
+- ✅ **Level 1 Portal:** `textures/3d models/cheese portal/cheese-portal.glb` (January 16, 2026 - Verified)
+- ✅ **Level 4 Cheese Bosses:** Original working implementation using this pattern
+
+### **Implementation Reference:**
+
+- **Portal Implementation:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-16/LEVEL1_PORTAL_3D_MODEL_IMPLEMENTATION.md`
+- **3D Model Rendering Rule:** `12.0/RULES/18_3D_MODEL_RENDERING_RULE.md` - Updated with this working pattern
+- **Daily Notes:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-16/DAILY_NOTES_2026-01-16.md`
+
+### **Key Points:**
+
+1. **Use Relative Paths:** Start with relative path (no leading slash): `"textures/3d models/..."`
+2. **Resolve Path:** Use `resolveAssetPath(relativePath)` to resolve through symlink
+3. **Encode URI:** Use `encodeURI(resolved)` to handle spaces in folder names
+4. **Load Model:** Use `loadModel(urlForLoader)` with GLTFLoader fallback
+5. **Single Instance:** Use `loadedScene` directly (no clone needed for single instance)
+
+### **Status:**
+
+✅ **VERIFIED WORKING - STANDARD METHOD FOR DATA PERSISTENCE FILE SYSTEM** (January 16, 2026)  
+**Use This Pattern:** For ALL GLB models loaded from `/data/public/three.js/public/textures/` via Render symlink
+
+---
+
 ### **Future Enhancements:**
 - [ ] **Cache Size Limits:** Automatic cleanup of least-used assets
 - [ ] **Cache Persistence:** Store cache in IndexedDB for cross-session persistence
@@ -478,6 +563,14 @@ These functions are called from the main animate loop when the respective level 
 - **Total Riddles:** 4 (3 main + 1 secret)
 - **Status:** ✅ **PRODUCTION VERIFIED**
 - **Documentation:** `12.0/TECHNICAL_DOCUMENTATION/3d_riddles/RIDDLE_01_CHEESE_TEMPLE_LEVEL_1.md`
+- **Decorative Models (NEW - January 16, 2026):**
+  - ✅ **Portal Model:** Cheese Portal GLB at (26, 3, 21) - Block replacement system
+  - ✅ **Blue Cheese Model:** Blue Cheese GLB at (100, 5.5, 18) with **pulsing blue glow effect**
+    - **Glow Effect:** Smooth pulsing animation (sine wave) transitions between original GLB color and blue/purple glow (`0x4488ff`)
+    - **Animation:** `updateBlueCheeseGlow()` - Intensity pulses 0.0 to 0.6 with color interpolation using `lerpColors()`
+    - **Scale:** 10.0x (huge size for visibility)
+    - **Pattern:** Uses data persistence file system (`resolveAssetPath()` + `encodeURI()` + `loadModel()`)
+    - **Status:** ✅ **VERIFIED WORKING** - Pulsing glow effect working perfectly
 
 #### **Level 2: The Spawn (Matrix Construct)**
 - **Type:** Inspection-based riddle with gallery exploration

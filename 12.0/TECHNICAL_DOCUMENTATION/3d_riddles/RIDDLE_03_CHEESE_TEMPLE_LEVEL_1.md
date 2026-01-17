@@ -148,13 +148,17 @@ const RIDDLE3_PORTAL_SUCTION_STRENGTH = 18.0; // Force multiplier applied each f
 - **Initial State:** Hidden until Riddle #2 is complete, starts in off state (`slever1.png`)
 - **Interaction:** Player can click/press the lever when within 2.0 units
 
-#### **2. `createRiddle3MovableBlock(spawnData, blockSize)`**
-- **Purpose:** Creates the movable block for Step 2.
-- **Texture:** *[To be determined - can reuse cheese stone or use different texture]*
-- **Position:** *[To be determined based on map layout]*
-- **Visual:** Movable block similar to Riddle #2's cheese stone
-- **Initial State:** Hidden or locked until lever is pressed (Step 1 complete)
-- **Physics:** Can be pushed by player movement (similar to Riddle #2)
+#### **2. `createRiddle3MovableBlock(spawnData, blockSize)` (Updated January 16, 2026)**
+- **Purpose:** Creates the movable O-Block GLB model for Step 2.
+- **Model:** Tetris O-Block GLB (`/textures/3d models/tetris/o-block.glb`)
+- **Type:** GLB 3D model (replaced BoxGeometry on January 16, 2026)
+- **Position:** (spawnX + 5, 1.5, spawnZ) - 5 blocks right of spawn (preserved from original)
+- **Scale:** Auto-calculated to match blockSize (1.0 unit) for easy movement
+- **Material Processing:** Uses `processWeaponMaterial()` for visibility
+- **Data Persistence:** Uses `resolveAssetPath()` + `encodeURI()` + `loadModel()` pattern
+- **Movement System:** All userData properties preserved (`isMovable`, `isRiddle3Movable`, etc.)
+- **Initial State:** Hidden until lever is pressed (Step 1 complete)
+- **Physics:** Can be pushed by player movement (same as Riddle #2 - position-based detection works with GLB)
 
 #### **3. `createRiddle3OakBlock(spawnData, blockSize)`**
 - **Purpose:** Creates the oak block target for Step 2.
@@ -506,13 +510,18 @@ CREATE TABLE tbl_user_traits (
 - **Size:** Standard block size (1×1×1 units) or custom size
 - **Interaction:** Rotates or changes texture when clicked (off to on)
 
-### **Movable Block:**
-- **Texture:** *[To be determined - can reuse cheese stone or use different texture]*
-- **Material:** `MeshLambertMaterial` with emissive glow (optional)
-- **Visual:** Movable block similar to Riddle #2's cheese stone
-- **Position:** *[To be determined based on map layout]*
-- **Size:** Standard block size (1×1×1 units)
-- **Physics:** Can be pushed by player movement
+### **Movable Block (O-Block GLB Model):**
+- **Model:** Tetris O-Block GLB (`/textures/3d models/tetris/o-block.glb`)
+- **Type:** GLB 3D model (replaced BoxGeometry on January 16, 2026)
+- **Material:** Processed with `processWeaponMaterial()` for visibility
+- **Visual:** 3D Tetris O-Block shape (same as Riddle #2's movable block)
+- **Scale:** Auto-calculated to match blockSize (1.0 unit) for easy movement
+- **Position:** (spawnX + 5, 1.5, spawnZ) - 5 blocks right of spawn
+- **Size:** Scaled to match standard block size (1×1×1 units)
+- **Physics:** Can be pushed by player movement (same as Riddle #2)
+- **Data Persistence:** Uses `resolveAssetPath()` + `encodeURI()` + `loadModel()` pattern (same as Portal/Blue Cheese)
+- **Visibility:** Hidden until lever pressed (Step 1 complete)
+- **Movement System:** Fully compatible - uses position-based detection (works with GLB models)
 
 ### **Oak Block:**
 - **Texture:** Oak planks (`/textures/blocks/oak-planks.png`)
@@ -617,14 +626,15 @@ CREATE TABLE tbl_user_traits (
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** November 15, 2025  
+**Document Version:** 2.1  
+**Last Updated:** January 16, 2026  
 **Maintained By:** Narrrf's Lab Tech Council  
 **Status:** ✅ **LIVE IMPLEMENTATION**
 
 **Riddle Notes:**  
 - **Nov 13, 2025:** Mechanics specced (lever → block → portal).  
 - **Nov 15, 2025:** Portal suction + jump-in requirement shipped. See `12.0/LAB_NOTES/2025/11_NOVEMBER/DAILY_NOTES/2025-11-15/RIDDLE_PORTAL_SUCTION_NOTE.md` for granular QA details.
+- **Jan 16, 2026:** Movable block replaced with Tetris O-Block GLB model (`o-block.glb`). Block now uses data persistence file system pattern (`resolveAssetPath()` + `encodeURI()` + `loadModel()`), auto-scaled to match blockSize (1.0 unit), materials processed with `processWeaponMaterial()`, and all movement system properties preserved. Movement system fully compatible - uses position-based detection that works with GLB models.
 
 ---
 

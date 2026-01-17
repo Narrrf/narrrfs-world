@@ -1,6 +1,6 @@
-﻿# HYTOPIA THREE TECH DOCUMENTATION
+# HYTOPIA THREE TECH DOCUMENTATION
 
-Date: 2025-11-13 (Last Updated: December 8, 2025 - Phoenix Boss 2.0 Success! + God Mode Menu Optimized - Sticky save buttons, larger fonts, better scrolling)
+Date: 2025-11-13 (Last Updated: January 16, 2026 - O-Block GLB Models for Movable Blocks + Portal & Blue Cheese Integration)
 Maintainer: Narrrf's Lab Tech Council
 Scope: Migration roadmap from Hytopia SDK (Bun/Node) integration to the new Vite-powered three.js prototype located at C:\xampp-server\htdocs\narrrfs-world\three.js.
 

@@ -105,15 +105,26 @@ const RIDDLE2_PROXIMITY_THRESHOLD = 1.5; // Distance threshold for cheese stone 
 - **Visual:** Oak planks texture (`/textures/blocks/oak-planks.png`) with emissive glow that blinks.
 - **Initial State:** Hidden until Riddle #1 is complete (`riddleState.step2Complete === true`).
 
-#### **2. `updateRiddle2(delta, aimingAtCheese)`**
+#### **2. `createUnlockableBlock(spawnData, blockSize)` (Updated January 16, 2026)**
+- **Purpose:** Creates the movable O-Block GLB model for Riddle #2 Step 1.
+- **Model:** Tetris O-Block GLB (`/textures/3d models/tetris/o-block.glb`)
+- **Type:** GLB 3D model (replaced BoxGeometry on January 16, 2026)
+- **Position:** (100, 2.5, 100) - Far corner, hidden location (preserved from original)
+- **Scale:** Auto-calculated to match blockSize (1.0 unit) for easy movement
+- **Material Processing:** Uses `processWeaponMaterial()` for visibility
+- **Data Persistence:** Uses `resolveAssetPath()` + `encodeURI()` + `loadModel()` pattern
+- **Movement System:** All userData properties preserved (`isMovable`, `isRiddle2Movable`, etc.)
+- **Visibility:** Visible at Level 1 start (players need to find it)
+
+#### **3. `updateRiddle2(delta, aimingAtCheese)`**
 - **Purpose:** Manages Riddle #2 logic, including oak stone blinking, movable block physics, and proximity detection.
 - **Oak Stone Blinking:** Controls `emissiveIntensity` of `riddle2.oakStone` to create a blinking effect every `RIDDLE2_OAK_STONE_BLINK_INTERVAL` seconds for `RIDDLE2_OAK_STONE_BLINK_DURATION` seconds.
-- **Movable Block Physics:** Applies player-induced push force, friction, and clamps Y position for `riddleState.unlockableBlock`.
-- **Proximity Detection:** Checks if `riddleState.unlockableBlock` is within `RIDDLE2_PROXIMITY_THRESHOLD` of `riddle2.oakStone`.
+- **Movable Block Physics:** Applies player-induced push force, friction, and clamps Y position for `riddleState.unlockableBlock` (works with GLB models - uses position-based detection).
+- **Proximity Detection:** Checks if `riddleState.unlockableBlock` is within `RIDDLE2_PROXIMITY_THRESHOLD` of `riddle2.oakStone` (uses position, not geometry - compatible with GLB).
 - **Step 1 Completion:** If block is on oak stone, `riddle2.step1Complete` is set to `true`, block is locked in place, and oak stone glows permanently.
 - **Step 2 Logic:** If `riddle2.step1Complete` is true, it checks `aimingAtCheese` to increment `riddle2.cheeseAimTimer`.
 
-#### **3. `completeRiddle2()`**
+#### **4. `completeRiddle2()`**
 - **Purpose:** Handles Riddle #2 completion, trait unlocking, and DSPOINC reward.
 - **Actions:**
   - Shows completion message: "🧩 RIDDLE #2 SOLVED! 🧀"
@@ -124,7 +135,7 @@ const RIDDLE2_PROXIMITY_THRESHOLD = 1.5; // Distance threshold for cheese stone 
 #### **4. `showRiddle2CompletionMessage()`**
 - **Purpose:** Displays a specific completion message for Riddle #2.
 
-#### **5. `skipRiddle1ForTesting()` (Debug Function)**
+#### **6. `skipRiddle1ForTesting()` (Debug Function)**
 - **Purpose:** Skips Riddle #1 for testing Riddle #2 directly.
 - **Trigger:** Press **Shift+K** or **Ctrl+K**.
 - **Actions:**
@@ -412,12 +423,16 @@ CREATE TABLE tbl_user_traits (
 - **Position:** Middle platform, offset by 3 blocks in X direction from spawn
 - **Size:** Standard block size (1×1×1 units)
 
-### **Movable Cheese Stone:**
-- **Texture:** Cheese stone (`/textures/blocks/cheese-stone.png`)
-- **Material:** `MeshLambertMaterial` with emissive glow (from Riddle #1)
-- **Visual:** Retains its glow and appearance from Riddle #1
-- **Physics:** Can be pushed by player movement
-- **Position:** Original position from Riddle #1 (unlocks after Riddle #1 Step 1)
+### **Movable Cheese Stone (O-Block GLB Model):**
+- **Model:** Tetris O-Block GLB (`/textures/3d models/tetris/o-block.glb`)
+- **Type:** GLB 3D model (replaced BoxGeometry on January 16, 2026)
+- **Material:** Processed with `processWeaponMaterial()` for visibility
+- **Visual:** 3D Tetris O-Block shape (more interesting than simple box)
+- **Scale:** Auto-calculated to match blockSize (1.0 unit) for easy movement
+- **Physics:** Can be pushed by player movement (same as before)
+- **Position:** Original position from Riddle #1 (100, 2.5, 100) - preserved
+- **Data Persistence:** Uses `resolveAssetPath()` + `encodeURI()` + `loadModel()` pattern (same as Portal/Blue Cheese)
+- **Movement System:** Fully compatible - uses position-based detection (works with GLB models)
 
 ### **Progress UI:**
 - **Step 1:** Shows "Step 1: Move Cheese Stone to Oak Stone" with distance and blinking status
@@ -504,12 +519,14 @@ CREATE TABLE tbl_user_traits (
 
 ---
 
-**Document Version:** 2.1  
-**Last Updated:** November 13, 2025  
+**Document Version:** 2.2  
+**Last Updated:** January 16, 2026  
 **Maintained By:** Narrrf's Lab Tech Council  
 **Status:** ✅ **SUCCESSFULLY IMPLEMENTED AND TESTED**
 
 **Riddle Note:** November 13, 2025 - Riddle #2 successfully implemented and tested! Block movement physics, oak stone blinking, proximity detection, and API integration all working correctly. Database verification confirms trait unlock (`CHEESE_TEMPLE_RIDDLE_02_SOLVED`) and DSPOINC reward (500 DSPOINC) recorded successfully. Completion recorded at 2025-11-13 06:53:39. Ready for production testing with real Discord users.
+
+**Update (January 16, 2026):** Movable block replaced with Tetris O-Block GLB model (`o-block.glb`). Block now uses data persistence file system pattern (`resolveAssetPath()` + `encodeURI()` + `loadModel()`), auto-scaled to match blockSize (1.0 unit), materials processed with `processWeaponMaterial()`, and all movement system properties preserved. Movement system fully compatible - uses position-based detection that works with GLB models.
 
 ---
 

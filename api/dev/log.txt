@@ -2862,3 +2862,40 @@
     "pairs_matched": 6,
     "wallet": ""
 }
+{
+    "game": "glyph_memory",
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "difficulty": "easy",
+    "time_ms": 25486,
+    "pairs_matched": 6,
+    "wallet": ""
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 556,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 7540,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 260,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "snake"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 42,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "tetris"
+}

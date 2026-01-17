@@ -54,6 +54,75 @@ The `normalizeAssetPath()` function in `main.js` automatically converts relative
 
 ---
 
+## 🗄️ **CRITICAL: DATA PERSISTENCE FILE SYSTEM PATTERN (January 16, 2026)**
+
+### **✅ VERIFIED WORKING METHOD FOR RENDER DEPLOYMENT**
+
+**This is the STANDARD METHOD for loading GLB models from the data persistence file system (`/data/public/three.js/public/textures/`).**
+
+### **MANDATORY PATTERN FOR DATA PERSISTENCE FILE SYSTEM:**
+
+**✅ CORRECT - Data Persistence Pattern (resolveAssetPath + encodeURI):**
+```javascript
+// Relative path (no leading slash) - same as Level 4 Cheese Bosses
+const relativePath = "textures/3d models/cheese portal/cheese-portal.glb";
+
+// Use resolveAssetPath() + encodeURI() for symlink support and space handling
+const resolved = resolveAssetPath(relativePath);
+const urlForLoader = encodeURI(resolved); // Handles spaces in folder names
+
+// Load model using loadModel() with GLTFLoader fallback
+if (typeof loadModel === "function") {
+  loadModel(urlForLoader)
+    .then((result) => {
+      const loadedScene = result.scene || result;
+      const model = loadedScene; // Use directly (no clone needed for single instance)
+      // ... rest of processing
+    })
+    .catch((error) => {
+      // GLTFLoader fallback here
+    });
+}
+```
+
+### **Why This Pattern Works:**
+
+- ✅ **Data Persistence File System:** Works with `/data/public/three.js/public/textures/` symlink on Render
+- ✅ **Symlink Support:** `resolveAssetPath()` resolves relative paths through `/data/` symlink to `/var/www/html/public/three.js/public/`
+- ✅ **Space Handling:** `encodeURI()` handles spaces in folder names (e.g., "cheese portal") for proper URL encoding
+- ✅ **Cross-Environment:** Works on both local development and production Render environments
+- ✅ **Verified Pattern:** Level 1 Portal + Level 4 Cheese Bosses both use this pattern successfully
+
+### **File System Structure:**
+
+**Render Deployment:**
+- **Symlink:** `/data/public/three.js/public/textures/` → `/var/www/html/public/three.js/public/textures/`
+- **Actual Path:** `/var/www/html/public/three.js/public/textures/3d models/cheese portal/cheese-portal.glb`
+- **Relative Path:** `textures/3d models/cheese portal/cheese-portal.glb` (no leading slash)
+
+### **When to Use This Pattern:**
+
+- ✅ **GLB Models from Data Persistence:** All GLB models stored in `/data/public/three.js/public/textures/`
+- ✅ **Render Deployment:** Models that need to persist across deployments via `/data/` symlink
+- ✅ **Symlink Support Required:** Models that must work with Render's `/data/` persistence symlink
+- ✅ **Space Handling Needed:** Folder names with spaces (e.g., "cheese portal", "3d models")
+
+### **Working Examples:**
+
+- ✅ **Level 1 Portal:** `textures/3d models/cheese portal/cheese-portal.glb` (January 16, 2026 - Verified)
+- ✅ **Level 4 Cheese Bosses:** Original working implementation using this pattern
+
+### **Implementation Reference:**
+
+- **Portal Implementation:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-16/LEVEL1_PORTAL_3D_MODEL_IMPLEMENTATION.md`
+- **Technical Documentation:** `12.0/YEAR_END_2025/GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md`
+- **Master Index:** `12.0/YEAR_END_2025/TECHNICAL_COMPLETE_2025_MASTER_INDEX.md`
+
+**Status:** ✅ **VERIFIED WORKING - STANDARD METHOD FOR DATA PERSISTENCE FILE SYSTEM** (January 16, 2026)  
+**Use This Pattern:** For ALL GLB models loaded from `/data/public/three.js/public/textures/` via Render symlink
+
+---
+
 ---
 
 ## 📋 **MANDATORY IMPLEMENTATION PATTERN**
