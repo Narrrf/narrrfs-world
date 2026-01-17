@@ -1,13 +1,34 @@
 # 🧀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** January 16, 2026  
-**Status:** ✅ **COMPLETE - GLYPH STYLING + PORTAL + BLUE CHEESE MODEL IMPORTS WITH PULSING GLOW**  
-**Version:** 2026-01-16-GLYPH-PORTAL-BLUECHEESE-SESSION  
-**Milestone:** 🎨 **GLYPH STYLING PERFECTED + 🌀 PORTAL MODEL IMPORTED + 🧀 BLUE CHEESE WITH PULSING GLOW**  
+**Last Updated:** January 17, 2026  
+**Status:** ✅ **COMPLETE - LEVEL 1 STEP 2 FPS FIX - STABLE VERSION**  
+**Version:** 2026-01-17-LEVEL1-FPS-STABLE  
+**Milestone:** 🚨 **LEVEL 1 FPS PERFECTED - ALL RIDDLE STEPS STABLE 60 FPS**  
 
 ---
 
-## 🎯 **JANUARY 16, 2026 - TODAY'S WORK (COMPLETE):**
+## 🎯 **JANUARY 17, 2026 - TODAY'S WORK (COMPLETE):**
+
+### **🚨 Level 1 Step 2 FPS Fix - Proxy Mesh Solution (NEW - January 17, 2026):**
+- ✅ **Problem:** FPS dropped to 0-3 FPS when aiming at unlockable block during Step 2
+- ✅ **Root Cause:** GLB models are very expensive to raycast - complex meshes, materials, transforms
+- ✅ **Solution:** Simple BoxGeometry proxy mesh for raycasting (same pattern as cheese entity)
+- ✅ **Implementation:**
+  - Created simple BoxGeometry proxy mesh (invisible, same size as GLB block)
+  - Attached proxy as child of block Group (automatically follows position/rotation/scale)
+  - Use proxy mesh for raycasting instead of GLB model
+  - GLB model remains visible for rendering (players see actual block)
+- ✅ **Performance:** ✅ **STABLE 60 FPS - Same as Step 1 (cheese entity aiming)**
+- ✅ **Result:** Level 1 is now perfectly running with full frames on all riddle steps - stable version!
+- ✅ **Files Modified:** `public/three.js/main.js` (proxy creation, raycasting update, block movement skip)
+- ✅ **Code Comments:** Massive notes added at proxy creation and raycasting locations
+- ✅ **All Level 1 Riddle Steps:** ✅ **Perfect performance (60 FPS on all steps)**
+- 📝 **Reference:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-17/LEVEL1_STEP2_FPS_PROXY_SOLUTION_2026-01-17.md`
+- 🔧 **Technical:** Proxy mesh pattern - simple BoxGeometry for collision detection, GLB model for rendering
+
+---
+
+## 🎯 **JANUARY 16, 2026 - PREVIOUS WORK (COMPLETE):**
 
 ### **🌀 Level 1 Portal GLB Model Import (NEW - January 16, 2026):**
 - ✅ **Portal Model Imported:** Cheese Portal GLB model at coordinates (26, 3, 21)
