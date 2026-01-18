@@ -2818,7 +2818,17 @@ const level4State = {
   tripleShotBulletsRemaining: 0, // Bullets remaining in current burst
   tripleShotNextBulletTime: 0, // Time for next bullet in burst
   // Monster Projectiles (Final Wave)
-  monsterProjectiles: [] // NEW: Array of active monster projectiles
+  monsterProjectiles: [], // NEW: Array of active monster projectiles
+  // 📖 Portal Waypoint Register System (January 18, 2026 - Phase 2)
+  portalRegister: {
+    isOpen: false, // Is register UI currently open?
+    playerInProximity: false, // Is player near portal?
+    proximityDistance: 8.0, // Distance threshold to show prompt
+    ui: null, // Portal register UI element
+    messages: [], // Cached messages from API
+    lastFetchTime: 0, // Last time messages were fetched
+    fetchCooldown: 5000 // Minimum time between API fetches (5 seconds)
+  }
 };
 scene.add(level4State.group);
 level4State.group.visible = false;
@@ -8708,7 +8718,11 @@ function startGame(startLevelId = null) {
   // Initialize debug helpers menu (January 4, 2026)
   if (!debugHelpersMenu) {
     createDebugHelpersMenu();
-    console.log("✅ [DEBUG] Debug helpers menu initialized");
+    // Set initial visibility based on saved preference
+    if (debugHelpersMenu) {
+      debugHelpersMenu.style.display = debugHelpersMenuVisible ? "flex" : "none";
+      console.log(`✅ [DEBUG] Debug helpers menu initialized (visibility: ${debugHelpersMenuVisible ? "visible" : "hidden"})`);
+    }
   }
   
   console.log("✅ [GAME START] HUD elements shown (FPS counter, cheese HUD, debug overlay)");
@@ -11531,6 +11545,85 @@ function getOptionsMenu() {
     godModeToggle.appendChild(godModeOnBtn);
     godModeSection.appendChild(godModeToggle);
     generalTabContent.appendChild(godModeSection);
+
+    // 🔧 DEBUG HELPERS MENU TOGGLE (Visibility control)
+    const debugHelpersSection = document.createElement("div");
+    Object.assign(debugHelpersSection.style, {
+      width: "100%",
+      marginBottom: "20px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+      alignItems: "center"
+    });
+
+    const debugHelpersLabel = document.createElement("div");
+    debugHelpersLabel.textContent = "🔧 Debug Helpers Menu";
+    Object.assign(debugHelpersLabel.style, {
+      fontSize: "22px",
+      color: "#cbd5f5",
+      fontWeight: "700",
+      marginBottom: "12px"
+    });
+    debugHelpersSection.appendChild(debugHelpersLabel);
+
+    const debugHelpersToggle = document.createElement("div");
+    Object.assign(debugHelpersToggle.style, {
+      display: "flex",
+      gap: "12px",
+      alignItems: "center",
+      background: "rgba(15, 23, 42, 0.6)",
+      padding: "6px",
+      borderRadius: "8px",
+      border: "1px solid rgba(255, 224, 102, 0.2)"
+    });
+
+    const debugHelpersOffBtn = document.createElement("button");
+    debugHelpersOffBtn.textContent = "Off";
+    Object.assign(debugHelpersOffBtn.style, {
+      padding: "12px 24px",
+      borderRadius: "8px",
+      border: "none",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "all 0.2s",
+      background: !isDebugHelpersMenuVisible() ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 255, 255, 0.1)",
+      color: !isDebugHelpersMenuVisible() ? "#ffe066" : "#cbd5f5"
+    });
+    debugHelpersOffBtn.addEventListener("click", () => {
+      setDebugHelpersMenuVisible(false);
+      updateDebugHelpersButtons();
+    });
+
+    const debugHelpersOnBtn = document.createElement("button");
+    debugHelpersOnBtn.textContent = "On";
+    Object.assign(debugHelpersOnBtn.style, {
+      padding: "12px 24px",
+      borderRadius: "8px",
+      border: "none",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "all 0.2s",
+      background: isDebugHelpersMenuVisible() ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 255, 255, 0.1)",
+      color: isDebugHelpersMenuVisible() ? "#ffe066" : "#cbd5f5"
+    });
+    debugHelpersOnBtn.addEventListener("click", () => {
+      setDebugHelpersMenuVisible(true);
+      updateDebugHelpersButtons();
+    });
+
+    debugHelpersToggle.appendChild(debugHelpersOffBtn);
+    debugHelpersToggle.appendChild(debugHelpersOnBtn);
+    debugHelpersSection.appendChild(debugHelpersToggle);
+    generalTabContent.appendChild(debugHelpersSection);
+
+    console.log("✅ [OPTIONS] Debug Helpers Menu toggle section added to General tab");
+
+    // Store references for updateDebugHelpersButtons
+    optionsMenu._debugHelpersOffBtn = debugHelpersOffBtn;
+    optionsMenu._debugHelpersOnBtn = debugHelpersOnBtn;
 
     // 🌌 SKY SYSTEM CONFIGURATION (God Mode Only) - COLLAPSIBLE
     // Capture variables in outer scope to ensure they're accessible in callback
@@ -15666,6 +15759,40 @@ function updateGodModeButtons() {
   updateAlienSpiderBossControlsForLevel();
 }
 
+// 🔧 DEBUG HELPERS MENU VISIBILITY FUNCTIONS
+function isDebugHelpersMenuVisible() {
+  return debugHelpersMenuVisible;
+}
+
+function setDebugHelpersMenuVisible(visible) {
+  debugHelpersMenuVisible = visible;
+  try {
+    localStorage.setItem("cheese_temple_debug_helpers_visible", visible.toString());
+    
+    // Actually show/hide the debug helpers menu element
+    if (debugHelpersMenu) {
+      debugHelpersMenu.style.display = visible ? "flex" : "none";
+      console.log(`✅ [DEBUG HELPERS] Menu element display updated to: ${visible ? "visible" : "hidden"}`);
+    } else {
+      console.warn("⚠️ [DEBUG HELPERS] debugHelpersMenu element not found - menu may not be initialized yet");
+    }
+  } catch (e) {
+    console.warn("⚠️ [DEBUG HELPERS] Failed to save debug helpers menu visibility setting:", e);
+  }
+}
+
+function updateDebugHelpersButtons() {
+  if (!optionsMenu) return;
+  const debugHelpersOffBtn = optionsMenu._debugHelpersOffBtn;
+  const debugHelpersOnBtn = optionsMenu._debugHelpersOnBtn;
+  if (debugHelpersOffBtn && debugHelpersOnBtn) {
+    debugHelpersOffBtn.style.background = !debugHelpersMenuVisible ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 255, 255, 0.1)";
+    debugHelpersOffBtn.style.color = !debugHelpersMenuVisible ? "#ffe066" : "#cbd5f5";
+    debugHelpersOnBtn.style.background = debugHelpersMenuVisible ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 255, 255, 0.1)";
+    debugHelpersOnBtn.style.color = debugHelpersMenuVisible ? "#ffe066" : "#cbd5f5";
+  }
+}
+
 // 🕷️ ALIEN SPIDER BOSS CONTROLS UPDATE FUNCTION
 function updateAlienSpiderBossControlsForLevel() {
   if (!currentLevel) return;
@@ -15958,6 +16085,7 @@ function showOptionsMenu() {
     updateLandscapeButtons();
   }
   updateGodModeButtons();
+  updateDebugHelpersButtons(); // Update debug helpers buttons state
   updateSoundFxButtons();
   updateBackgroundMusicButtons();
   updateBackgroundMusicVolumeSlider();
@@ -16343,6 +16471,15 @@ function hidePauseMenu() {
 }
 
 function togglePause(forceState) {
+  // 📖 PORTAL REGISTER CHECK (January 18, 2026 - Phase 2)
+  // If portal register is open or opening, don't do anything with pause menu
+  if (level4State.portalRegister && level4State.portalRegister.isOpen) {
+    console.log("⚠️ [PORTAL REGISTER] togglePause called but register is open, ignoring...");
+    // Only close register if ESC key was explicitly pressed (forceState === true means "force pause")
+    // Don't close on pointer lock changes or other automatic pause triggers
+    return;
+  }
+  
   // CRITICAL FIX: Prevent circular calls - if called from GUI System, don't call it back
   // Check if we're in a GUI System callback context (avoid infinite loop)
   if (window._togglePauseFromGUI) {
@@ -16963,6 +17100,17 @@ try {
   }
 } catch (e) {
   console.warn("Failed to load GOD mode setting:", e);
+}
+
+// 🔧 DEBUG HELPERS MENU VISIBILITY STATE
+let debugHelpersMenuVisible = false;
+try {
+  const savedDebugHelpersMenuVisible = localStorage.getItem("cheese_temple_debug_helpers_visible");
+  if (savedDebugHelpersMenuVisible !== null) {
+    debugHelpersMenuVisible = savedDebugHelpersMenuVisible === "true";
+  }
+} catch (e) {
+  console.warn("Failed to load debug helpers menu visibility setting:", e);
 }
 
 function getForwardVector() {
@@ -19742,6 +19890,16 @@ function buildLevel4FirstShotArena() {
     console.error("❌ [LEVEL 4] Failed to create Cheese Bosses:", e);
   }
 
+  // 🌀 Create Cheese Portal in center of arena (January 18, 2026)
+  // Same portal as Level 1, with collision and 3x scale
+  console.log("📖 [PORTAL REGISTER] About to call createLevel4CenterPortal with origin:", origin);
+  try {
+    createLevel4CenterPortal(origin);
+  } catch (e) {
+    console.error("❌ [LEVEL 4] Failed to create center portal:", e);
+    console.error("❌ [PORTAL REGISTER] Exception details:", e.message, e.stack);
+  }
+
   level4State.built = true;
   
   // Create Level 4 chests (after built flag set, ensure chestSystem is initialized)
@@ -19892,6 +20050,811 @@ function updateLevel4CheeseBossBounce(delta) {
     level4State.cheeseBossBounceTimers[bossKey] = t;
 
     boss.position.x = base.x + Math.sin(t) * bounceAmount;
+  }
+}
+
+// 🌀 Create Cheese Portal GLB model in Level 4 center (January 18, 2026)
+// Position: Center of 160x160 arena at origin (0, 0, 1000)
+// Pattern: Follows exact same pattern as Level 1 portal (resolveAssetPath + encodeURI + loadModel)
+// ✅ WORKING PATTERN - DO NOT CHANGE WITHOUT TESTING
+function createLevel4CenterPortal(origin) {
+  console.log("📖 [PORTAL REGISTER] createLevel4CenterPortal() called with origin:", origin);
+  
+  // Portal position: Center of Level 4 arena
+  const portalX = origin.x; // 0 (center of arena)
+  const portalY = origin.y; // 0 (ground level)
+  const portalZ = origin.z; // 1000 (center of arena)
+  
+  // Store position with Y adjustment (portalY + 3) for collision detection (3x scale + 2 units higher to prevent underground)
+  level4State.centerPortalPosition = new THREE.Vector3(portalX, portalY + 3, portalZ);
+  
+  console.log("🌀 [LEVEL 4] Creating Cheese Portal at center:", level4State.centerPortalPosition);
+  console.log("📖 [PORTAL REGISTER] centerPortalPosition stored:", level4State.centerPortalPosition);
+  
+  // Portal model path (relative path, no leading slash - same as Level 1 portal)
+  const relativePath = "textures/3d models/cheese portal/cheese-portal.glb";
+  
+  // Use resolveAssetPath() + encodeURI() pattern (same as Level 1 portal)
+  const resolved = resolveAssetPath(relativePath);
+  const urlForLoader = encodeURI(resolved); // Handle spaces in "cheese portal" folder name
+  console.log("🌀 [LEVEL 4] Loading portal from:", urlForLoader);
+  
+  // Use loadModel() with GLTFLoader fallback (same pattern as Level 1 portal)
+  if (typeof loadModel === "function") {
+    loadModel(urlForLoader)
+      .then((result) => {
+        const loadedScene = result.scene || result;
+        const portal = loadedScene; // Use directly (no clone needed for single instance)
+        
+        // Calculate bounding box to understand model size
+        const box = new THREE.Box3().setFromObject(portal);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        
+        console.log("🌀 [LEVEL 4] Portal model loaded:", {
+          size: size,
+          center: center,
+          children: portal.children.length
+        });
+        
+        // Position portal at arena center
+        // Y position adjusted by +3 to prevent going underground (model is 3x larger + 2 units higher)
+        // Final Y position: 0 + 3 = 3 (sits correctly above ground with 3x scale)
+        portal.position.set(portalX, portalY + 3, portalZ);
+        
+        // Adjust Y position if model center is not at base
+        if (size.y > 0) {
+          // Model is 3x larger, so adjust Y up by 3 units to prevent going underground
+          portal.position.y = portalY + 3; // Final Y: 3
+        }
+        
+        // Scale portal 3x larger (same as Level 1 for consistency)
+        portal.scale.setScalar(3.0);
+        
+        // Rotation (optional - adjust based on model orientation)
+        portal.rotation.y = 0;
+        
+        // Process materials to ensure proper rendering (same as Level 1 portal)
+        portal.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (child.material) {
+              // Process material similar to other models
+              if (Array.isArray(child.material)) {
+                child.material = child.material.map(mat => processWeaponMaterial(mat));
+              } else {
+                child.material = processWeaponMaterial(child.material);
+              }
+            }
+          }
+        });
+        
+        // Ensure portal is visible
+        portal.visible = true;
+        portal.frustumCulled = false; // Ensure it's always rendered
+        portal.updateMatrixWorld(true);
+        
+        // Add to Level 4 group
+        level4State.group.add(portal);
+        level4State.centerPortal = portal;
+        
+        // Store collision data for portal (for collision detection)
+        portal.userData.collisionRadius = Math.max(size.x, size.z) * 1.5; // 1.5x half of larger dimension for reliable collision
+        portal.userData.collisionPosition = level4State.centerPortalPosition;
+        
+        // Log success
+        console.log("✅ [LEVEL 4] Center Portal created successfully:", {
+          position: { x: portal.position.x, y: portal.position.y, z: portal.position.z },
+          scale: { x: portal.scale.x, y: portal.scale.y, z: portal.scale.z },
+          visible: portal.visible,
+          inGroup: level4State.group.children.includes(portal),
+          boundingBox: { size: size, center: center },
+          collisionRadius: portal.userData.collisionRadius,
+          children: portal.children.length
+        });
+        
+        // 📖 PORTAL REGISTER: Verify state is ready (January 18, 2026)
+        console.log("📖 [PORTAL REGISTER] Portal state verified after load:", {
+          centerPortalStored: !!level4State.centerPortal,
+          centerPortalPositionStored: !!level4State.centerPortalPosition,
+          portalRegisterConfigured: !!level4State.portalRegister,
+          ready: !!(level4State.centerPortal && level4State.centerPortalPosition && level4State.portalRegister),
+          centerPortalObject: level4State.centerPortal
+        });
+        
+        // DEBUG: Force log to confirm portal is accessible
+        if (level4State.centerPortal) {
+          console.log("✅ [PORTAL REGISTER] centerPortal is NOW accessible in level4State!");
+        } else {
+          console.error("❌ [PORTAL REGISTER] centerPortal is NULL even after assignment!");
+        }
+        
+        // Double-check visibility after a short delay
+        setTimeout(() => {
+          if (level4State.centerPortal) {
+            level4State.centerPortal.visible = true;
+            level4State.centerPortal.updateMatrixWorld(true);
+            console.log("🌀 [LEVEL 4] Center Portal visibility verified:", {
+              visible: level4State.centerPortal.visible,
+              inGroup: level4State.group.children.includes(level4State.centerPortal),
+              position: { 
+                x: level4State.centerPortal.position.x, 
+                y: level4State.centerPortal.position.y, 
+                z: level4State.centerPortal.position.z 
+              }
+            });
+          }
+        }, 100);
+      })
+      .catch((error) => {
+        console.error("❌ [LEVEL 4] Failed to load center portal model:", error);
+        console.error("❌ [LEVEL 4] Portal path attempted:", urlForLoader);
+        console.error("❌ [LEVEL 4] Full error:", error.message, error.stack);
+        
+        // Fallback: Try direct GLTFLoader (same as Level 1 portal)
+        console.log("🌀 [LEVEL 4] Attempting GLTFLoader fallback...");
+        const loader = new GLTFLoader();
+        loader.load(
+          urlForLoader,
+          (gltf) => {
+            const portal = gltf.scene;
+            portal.visible = true;
+            portal.frustumCulled = false;
+            portal.position.set(portalX, portalY + 3, portalZ); // Y adjusted by +3 to prevent going underground (3x scale + 2 units higher)
+            portal.scale.setScalar(3.0); // Scale 3x larger for consistency with Level 1
+            
+            // Process materials
+            portal.traverse((child) => {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                if (child.material) {
+                  if (Array.isArray(child.material)) {
+                    child.material = child.material.map(mat => processWeaponMaterial(mat));
+                  } else {
+                    child.material = processWeaponMaterial(child.material);
+                  }
+                }
+              }
+            });
+            
+            portal.updateMatrixWorld(true);
+            level4State.group.add(portal);
+            level4State.centerPortal = portal;
+            
+            // Store collision data
+            const box = new THREE.Box3().setFromObject(portal);
+            const size = box.getSize(new THREE.Vector3());
+            portal.userData.collisionRadius = Math.max(size.x, size.z) * 1.5;
+            portal.userData.collisionPosition = level4State.centerPortalPosition;
+            
+            console.log("✅ [LEVEL 4] Center Portal created successfully (GLTFLoader fallback):", {
+              position: { x: portal.position.x, y: portal.position.y, z: portal.position.z },
+              scale: { x: portal.scale.x, y: portal.scale.y, z: portal.scale.z },
+              visible: portal.visible,
+              inGroup: level4State.group.children.includes(portal),
+              collisionRadius: portal.userData.collisionRadius
+            });
+          },
+          undefined,
+          (err) => {
+            console.error("❌ [LEVEL 4] GLTFLoader fallback failed:", err);
+          }
+        );
+      });
+  } else {
+    // Direct GLTFLoader (if loadModel function not available)
+    console.warn("⚠️ [LEVEL 4] loadModel function not available, using direct GLTFLoader");
+    const loader = new GLTFLoader();
+    loader.load(
+      urlForLoader,
+      (gltf) => {
+        const portal = gltf.scene;
+        portal.visible = true;
+        portal.frustumCulled = false;
+        portal.position.set(portalX, portalY + 3, portalZ);
+        portal.scale.setScalar(3.0);
+        
+        portal.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (child.material) {
+              if (Array.isArray(child.material)) {
+                child.material = child.material.map(mat => processWeaponMaterial(mat));
+              } else {
+                child.material = processWeaponMaterial(child.material);
+              }
+            }
+          }
+        });
+        
+        portal.updateMatrixWorld(true);
+        level4State.group.add(portal);
+        level4State.centerPortal = portal;
+        
+        const box = new THREE.Box3().setFromObject(portal);
+        const size = box.getSize(new THREE.Vector3());
+        portal.userData.collisionRadius = Math.max(size.x, size.z) * 1.5;
+        portal.userData.collisionPosition = level4State.centerPortalPosition;
+        
+        console.log("✅ [LEVEL 4] Center Portal created (direct GLTFLoader)");
+      },
+      undefined,
+      (err) => console.error("❌ [LEVEL 4] Direct GLTFLoader failed:", err)
+    );
+  }
+}
+
+// ==================== PORTAL WAYPOINT REGISTER SYSTEM ====================
+// 📖 Portal Register UI System (January 18, 2026 - Phase 2)
+// Allows players to leave messages in the Level 4 center portal for other players to discover
+
+// API Configuration
+// Portal waypoint API endpoint - follows same pattern as other API calls (details.php, unlock-trait.php)
+// Local: http://localhost/api/user/portal-waypoint.php (file is in htdocs/api/user/)
+// Production: https://narrrfs.world/api/user/portal-waypoint.php
+const PORTAL_WAYPOINT_API_URL = `${API_BASE_URL}/api/user/portal-waypoint.php`;
+
+const PORTAL_ID = 'LEVEL4_CENTER_PORTAL';
+
+// Open the Portal Register UI
+async function openPortalRegister() {
+  console.log("📖 [PORTAL REGISTER] Opening Portal Register...");
+  
+  level4State.portalRegister.isOpen = true;
+  
+  // Exit pointer lock to show mouse cursor
+  try {
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+      console.log("📖 [PORTAL REGISTER] Exited pointer lock");
+    }
+  } catch (e) {
+    console.warn("⚠️ [PORTAL REGISTER] Failed to exit pointer lock:", e);
+  }
+  
+  // Hide interaction prompt
+  if (guiSystem) {
+    guiSystem.hideInteractionPrompt();
+  }
+  
+  // Create UI if it doesn't exist
+  if (!level4State.portalRegister.ui) {
+    createPortalRegisterUI();
+  }
+  
+  // Show UI
+  level4State.portalRegister.ui.style.display = 'flex';
+  
+  // Disable player controls while register is open
+  if (playerControls) {
+    playerControls.enabled = false;
+    console.log("📖 [PORTAL REGISTER] Player controls disabled");
+  }
+  
+  // Focus the input field after a short delay (after UI renders)
+  setTimeout(() => {
+    const inputField = document.getElementById('portalRegisterInput');
+    if (inputField) {
+      inputField.focus();
+      console.log("📖 [PORTAL REGISTER] Input field focused");
+    }
+  }, 100);
+  
+  // Fetch messages from API
+  await fetchPortalMessages();
+}
+
+// Close the Portal Register UI
+function closePortalRegister() {
+  console.log("📖 [PORTAL REGISTER] Closing Portal Register...");
+  
+  level4State.portalRegister.isOpen = false;
+  
+  // Hide UI
+  if (level4State.portalRegister.ui) {
+    level4State.portalRegister.ui.style.display = 'none';
+  }
+  
+  // Re-enable player controls
+  if (playerControls) {
+    playerControls.enabled = true;
+    console.log("📖 [PORTAL REGISTER] Player controls re-enabled");
+  }
+  
+  // Restore pointer lock if player is still in Level 4
+  if (currentLevel === LEVEL_IDS.LEVEL4) {
+    setTimeout(() => {
+      try {
+        if (!document.pointerLockElement) {
+          document.body.requestPointerLock();
+          console.log("📖 [PORTAL REGISTER] Restored pointer lock");
+        }
+      } catch (e) {
+        console.warn("⚠️ [PORTAL REGISTER] Failed to restore pointer lock:", e);
+      }
+    }, 100);
+  }
+}
+
+// Create the Portal Register UI
+function createPortalRegisterUI() {
+  console.log("📖 [PORTAL REGISTER] Creating Portal Register UI...");
+  
+  // Main container
+  const ui = document.createElement("div");
+  ui.id = "portalRegisterUI";
+  Object.assign(ui.style, {
+    display: "none",
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    zIndex: "10000",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "'Press Start 2P', 'Courier New', monospace",
+    color: "#ffe066",
+    padding: "20px",
+    boxSizing: "border-box"
+  });
+  
+  // Book container
+  const bookContainer = document.createElement("div");
+  Object.assign(bookContainer.style, {
+    width: "90%",
+    maxWidth: "800px",
+    height: "85%",
+    maxHeight: "700px",
+    background: "linear-gradient(135deg, #1a1410 0%, #2d2416 100%)",
+    border: "6px solid #8B4513",
+    borderRadius: "12px",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6), inset 0 2px 8px rgba(255, 224, 102, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+    position: "relative"
+  });
+  
+  // Header
+  const header = document.createElement("div");
+  Object.assign(header.style, {
+    padding: "24px",
+    borderBottom: "3px solid #8B4513",
+    textAlign: "center",
+    background: "linear-gradient(180deg, rgba(255, 224, 102, 0.15) 0%, transparent 100%)"
+  });
+  
+  const title = document.createElement("div");
+  title.textContent = "📖 PORTAL REGISTER";
+  Object.assign(title.style, {
+    fontSize: "28px",
+    marginBottom: "8px",
+    textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
+    color: "#ffe066"
+  });
+  
+  const subtitle = document.createElement("div");
+  subtitle.textContent = "Visitor's Log - Level 4 Portal";
+  Object.assign(subtitle.style, {
+    fontSize: "14px",
+    color: "#cbd5f5",
+    opacity: "0.9"
+  });
+  
+  header.appendChild(title);
+  header.appendChild(subtitle);
+  
+  // Messages area (scrollable)
+  const messagesArea = document.createElement("div");
+  messagesArea.id = "portalRegisterMessages";
+  Object.assign(messagesArea.style, {
+    flex: "1",
+    overflowY: "auto",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px"
+  });
+  
+  // Input area
+  const inputArea = document.createElement("div");
+  Object.assign(inputArea.style, {
+    padding: "20px",
+    borderTop: "3px solid #8B4513",
+    background: "rgba(0, 0, 0, 0.3)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px"
+  });
+  
+  const inputLabel = document.createElement("div");
+  inputLabel.textContent = "Leave your mark:";
+  Object.assign(inputLabel.style, {
+    fontSize: "14px",
+    color: "#ffe066"
+  });
+  
+  const inputRow = document.createElement("div");
+  Object.assign(inputRow.style, {
+    display: "flex",
+    gap: "12px",
+    alignItems: "stretch"
+  });
+  
+  const messageInput = document.createElement("textarea");
+  messageInput.id = "portalRegisterInput";
+  messageInput.placeholder = "Your message here... (max 200 characters)";
+  messageInput.maxLength = 200;
+  Object.assign(messageInput.style, {
+    flex: "1",
+    padding: "12px",
+    fontSize: "14px",
+    fontFamily: "'Press Start 2P', 'Courier New', monospace",
+    background: "rgba(15, 23, 42, 0.8)",
+    border: "2px solid #8B4513",
+    borderRadius: "6px",
+    color: "#ffe066",
+    resize: "vertical",
+    minHeight: "80px",
+    maxHeight: "120px"
+  });
+  
+  // Prevent keyboard events from propagating to game controls
+  messageInput.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+  });
+  messageInput.addEventListener('keyup', (e) => {
+    e.stopPropagation();
+  });
+  messageInput.addEventListener('keypress', (e) => {
+    e.stopPropagation();
+  });
+  
+  const submitButton = document.createElement("button");
+  submitButton.textContent = "Submit";
+  Object.assign(submitButton.style, {
+    padding: "12px 24px",
+    fontSize: "14px",
+    fontFamily: "'Press Start 2P', 'Courier New', monospace",
+    background: "rgba(255, 224, 102, 0.2)",
+    border: "2px solid #ffe066",
+    borderRadius: "6px",
+    color: "#ffe066",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    fontWeight: "600",
+    whiteSpace: "nowrap"
+  });
+  
+  submitButton.addEventListener("mouseenter", () => {
+    submitButton.style.background = "rgba(255, 224, 102, 0.4)";
+    submitButton.style.transform = "scale(1.05)";
+  });
+  
+  submitButton.addEventListener("mouseleave", () => {
+    submitButton.style.background = "rgba(255, 224, 102, 0.2)";
+    submitButton.style.transform = "scale(1)";
+  });
+  
+  submitButton.addEventListener("click", async () => {
+    await submitPortalMessage(messageInput.value);
+  });
+  
+  inputRow.appendChild(messageInput);
+  inputRow.appendChild(submitButton);
+  inputArea.appendChild(inputLabel);
+  inputArea.appendChild(inputRow);
+  
+  // Close button
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "✕ Close";
+  Object.assign(closeButton.style, {
+    position: "absolute",
+    top: "16px",
+    right: "16px",
+    padding: "8px 16px",
+    fontSize: "14px",
+    fontFamily: "'Press Start 2P', 'Courier New', monospace",
+    background: "rgba(220, 38, 38, 0.3)",
+    border: "2px solid #ef4444",
+    borderRadius: "6px",
+    color: "#ef4444",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    zIndex: "10001"
+  });
+  
+  closeButton.addEventListener("mouseenter", () => {
+    closeButton.style.background = "rgba(220, 38, 38, 0.5)";
+  });
+  
+  closeButton.addEventListener("mouseleave", () => {
+    closeButton.style.background = "rgba(220, 38, 38, 0.3)";
+  });
+  
+  closeButton.addEventListener("click", () => {
+    closePortalRegister();
+  });
+  
+  // Assemble UI
+  bookContainer.appendChild(header);
+  bookContainer.appendChild(messagesArea);
+  bookContainer.appendChild(inputArea);
+  bookContainer.appendChild(closeButton);
+  ui.appendChild(bookContainer);
+  
+  // Add to DOM
+  document.body.appendChild(ui);
+  level4State.portalRegister.ui = ui;
+  
+  console.log("✅ [PORTAL REGISTER] UI created successfully");
+}
+
+// Fetch messages from API
+async function fetchPortalMessages() {
+  console.log("📖 [PORTAL REGISTER] Fetching messages from API...");
+  
+  try {
+    const response = await fetch(`${PORTAL_WAYPOINT_API_URL}?portal_id=${PORTAL_ID}&limit=50`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      level4State.portalRegister.messages = data.messages || [];
+      level4State.portalRegister.lastFetchTime = Date.now();
+      renderPortalMessages();
+      console.log(`✅ [PORTAL REGISTER] Fetched ${data.messages.length} messages`);
+    } else {
+      console.error("❌ [PORTAL REGISTER] API returned error:", data.error);
+      showPortalError("Failed to load messages");
+    }
+  } catch (error) {
+    console.error("❌ [PORTAL REGISTER] Failed to fetch messages:", error);
+    showPortalError("Network error - could not load messages");
+  }
+}
+
+// Render messages in UI
+function renderPortalMessages() {
+  const messagesArea = document.getElementById("portalRegisterMessages");
+  if (!messagesArea) return;
+  
+  // Clear existing messages
+  messagesArea.innerHTML = "";
+  
+  const messages = level4State.portalRegister.messages;
+  
+  if (messages.length === 0) {
+    const emptyMessage = document.createElement("div");
+    emptyMessage.textContent = "No messages yet. Be the first to leave your mark!";
+    Object.assign(emptyMessage.style, {
+      textAlign: "center",
+      fontSize: "14px",
+      color: "#cbd5f5",
+      opacity: "0.7",
+      padding: "40px 20px"
+    });
+    messagesArea.appendChild(emptyMessage);
+    return;
+  }
+  
+  // Render each message
+  messages.forEach((msg, index) => {
+    const messageCard = document.createElement("div");
+    Object.assign(messageCard.style, {
+      padding: "16px",
+      background: "rgba(15, 23, 42, 0.6)",
+      border: "2px solid rgba(139, 69, 19, 0.5)",
+      borderRadius: "8px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+      transition: "all 0.2s"
+    });
+    
+    messageCard.addEventListener("mouseenter", () => {
+      messageCard.style.background = "rgba(15, 23, 42, 0.8)";
+      messageCard.style.borderColor = "rgba(139, 69, 19, 0.8)";
+    });
+    
+    messageCard.addEventListener("mouseleave", () => {
+      messageCard.style.background = "rgba(15, 23, 42, 0.6)";
+      messageCard.style.borderColor = "rgba(139, 69, 19, 0.5)";
+    });
+    
+    // Header row (username + date)
+    const headerRow = document.createElement("div");
+    Object.assign(headerRow.style, {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "8px"
+    });
+    
+    const username = document.createElement("div");
+    username.textContent = `👤 ${msg.username}`;
+    Object.assign(username.style, {
+      fontSize: "14px",
+      color: "#ffe066",
+      fontWeight: "600"
+    });
+    
+    const date = document.createElement("div");
+    const messageDate = new Date(msg.created_at);
+    date.textContent = messageDate.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    Object.assign(date.style, {
+      fontSize: "11px",
+      color: "#cbd5f5",
+      opacity: "0.8"
+    });
+    
+    headerRow.appendChild(username);
+    headerRow.appendChild(date);
+    
+    // Message text
+    const messageText = document.createElement("div");
+    messageText.textContent = msg.message;
+    Object.assign(messageText.style, {
+      fontSize: "13px",
+      color: "#cbd5f5",
+      lineHeight: "1.6",
+      wordBreak: "break-word"
+    });
+    
+    messageCard.appendChild(headerRow);
+    messageCard.appendChild(messageText);
+    messagesArea.appendChild(messageCard);
+  });
+  
+  // Scroll to top
+  messagesArea.scrollTop = 0;
+}
+
+// Submit a new message
+async function submitPortalMessage(messageText) {
+  if (!messageText || messageText.trim().length === 0) {
+    showPortalError("Please enter a message");
+    return;
+  }
+  
+  if (messageText.length > 200) {
+    showPortalError("Message too long (max 200 characters)");
+    return;
+  }
+  
+  // Get user info from localStorage
+  const userInfo = getUserInfo();
+  if (!userInfo || !userInfo.discordId) {
+    showPortalError("You must be logged in to leave a message");
+    return;
+  }
+  
+  console.log("📖 [PORTAL REGISTER] Submitting message...");
+  
+  try {
+    const response = await fetch(PORTAL_WAYPOINT_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        portal_id: PORTAL_ID,
+        discord_id: userInfo.discordId,
+        username: userInfo.username || 'Anonymous',
+        message: messageText.trim()
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      console.log("✅ [PORTAL REGISTER] Message submitted successfully");
+      
+      // Clear input
+      const input = document.getElementById("portalRegisterInput");
+      if (input) input.value = "";
+      
+      // Refresh messages
+      await fetchPortalMessages();
+      
+      // Show success toast
+      if (guiSystem && typeof guiSystem.showRiddleToast === 'function') {
+        guiSystem.showRiddleToast("✅ Message added to register!", { duration: 3000 });
+      }
+    } else {
+      console.error("❌ [PORTAL REGISTER] API returned error:", data.error);
+      showPortalError(data.error || "Failed to submit message");
+    }
+  } catch (error) {
+    console.error("❌ [PORTAL REGISTER] Failed to submit message:", error);
+    showPortalError("Network error - could not submit message");
+  }
+}
+
+// Show error message in UI
+function showPortalError(message) {
+  console.error("❌ [PORTAL REGISTER]", message);
+  
+  if (guiSystem && typeof guiSystem.showRiddleToast === 'function') {
+    guiSystem.showRiddleToast(`❌ ${message}`, { duration: 4000, backgroundColor: 'rgba(220, 38, 38, 0.9)' });
+  } else {
+    alert(message);
+  }
+}
+
+// Helper function to get user info from localStorage
+function getUserInfo() {
+  try {
+    // Method 1: Try to get user data as JSON object
+    let userDataStr = localStorage.getItem('cheese_temple_user_data');
+    let storageKey = 'cheese_temple_user_data';
+    
+    if (!userDataStr) {
+      // Try alternate key
+      userDataStr = localStorage.getItem('user_data');
+      storageKey = 'user_data';
+    }
+    
+    if (userDataStr) {
+      // User data stored as JSON object
+      const userData = JSON.parse(userDataStr);
+      console.log("📖 [PORTAL REGISTER] User data loaded from", storageKey, ":", userData);
+      
+      const userInfo = {
+        discordId: userData.discord_id || userData.discordId || userData.id,
+        username: userData.username || userData.global_name || userData.name || 'Anonymous'
+      };
+      
+      console.log("✅ [PORTAL REGISTER] Extracted user info:", userInfo);
+      return userInfo;
+    }
+    
+    // Method 2: Try to get user data as individual localStorage keys (your game's format)
+    const discordId = localStorage.getItem('discord_id');
+    const discordName = localStorage.getItem('discord_name');
+    
+    if (discordId) {
+      const userInfo = {
+        discordId: discordId,
+        username: discordName || 'Anonymous'
+      };
+      console.log("✅ [PORTAL REGISTER] User data loaded from individual localStorage keys:", userInfo);
+      return userInfo;
+    }
+    
+    // No user data found
+    console.warn("⚠️ [PORTAL REGISTER] No user data found in localStorage");
+    console.log("📖 [PORTAL REGISTER] Available localStorage keys:", Object.keys(localStorage));
+    return null;
+    
+  } catch (e) {
+    console.error("❌ [PORTAL REGISTER] Failed to get user data:", e);
+    return null;
   }
 }
 
@@ -23132,6 +24095,21 @@ function updateLevel4TriggerBlockVisual(delta) {
 
 function updateLevel4(delta) {
   if (!level4State.built || currentLevel !== LEVEL_IDS.LEVEL4) return;
+  
+  // 📖 DEBUG: Check portal register system status (logs once when portal is ready)
+  if (!level4State._portalRegisterDiagnosticLogged && level4State.centerPortal) {
+    console.log("✅ [PORTAL REGISTER] Portal Register System READY:", {
+      centerPortalExists: !!level4State.centerPortal,
+      centerPortalPositionExists: !!level4State.centerPortalPosition,
+      portalRegisterStateExists: !!level4State.portalRegister,
+      proximityDistance: level4State.portalRegister?.proximityDistance,
+      centerPortalPosition: level4State.centerPortalPosition,
+      updateLevel4Running: true,
+      message: "Proximity detection is now active!"
+    });
+    level4State._portalRegisterDiagnosticLogged = true;
+  }
+  
   // Decorative corner bosses (visual only)
   updateLevel4CheeseBossBounce(delta);
   checkLevel4CheeseBossCollision();
@@ -23306,6 +24284,96 @@ function updateLevel4(delta) {
     // Update monster projectiles (final wave only)
     updateMonsterProjectiles(delta);
   }
+  
+  // 🌀 Check center portal collision (January 18, 2026)
+  // Center portal is always visible and has collision to prevent player from walking through it
+  if (level4State.centerPortal && level4State.centerPortalPosition) {
+    const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+    const portalPos = level4State.centerPortalPosition;
+    
+    // Calculate distance to portal
+    const horizontalDistance = Math.sqrt(
+      Math.pow(playerPosition.x - portalPos.x, 2) + 
+      Math.pow(playerPosition.z - portalPos.z, 2)
+    );
+    
+    const verticalDistance = Math.abs(playerPosition.y - portalPos.y);
+    
+    // Get collision radius from portal userData (default to 4.5 if not set)
+    const collisionRadius = level4State.centerPortal.userData.collisionRadius || 4.5;
+    
+    // Check if player is too close to portal (collision)
+    if (horizontalDistance < collisionRadius && verticalDistance < 5.0) {
+      // Push player away from portal center
+      const pushDirection = new THREE.Vector3(
+        playerPosition.x - portalPos.x,
+        0, // Don't push vertically
+        playerPosition.z - portalPos.z
+      );
+      
+      // Normalize and scale push force
+      if (pushDirection.lengthSq() > 0.0001) {
+        pushDirection.normalize();
+        const pushStrength = (collisionRadius - horizontalDistance) * 20.0; // Stronger push when closer
+        const pushOffset = pushDirection.multiplyScalar(delta * pushStrength);
+        
+        // Apply push to player collider
+        playerCollider.start.add(pushOffset);
+        playerCollider.end.add(pushOffset);
+        
+        // Also add to velocity for smoother movement
+        if (playerVelocity) {
+          playerVelocity.addScaledVector(pushDirection, pushStrength * delta * 2);
+        }
+      }
+    }
+    
+    // 📖 Check proximity for Portal Register interaction (January 18, 2026 - Phase 2)
+    // Show "Press [E] to Open Portal Register" prompt when player is near portal but not colliding
+    const proximityDistance = level4State.portalRegister.proximityDistance;
+    const wasInProximity = level4State.portalRegister.playerInProximity;
+    const isInProximity = horizontalDistance < proximityDistance && verticalDistance < 8.0;
+    
+    level4State.portalRegister.playerInProximity = isInProximity;
+    
+    // DEBUG: Log proximity status (only when it changes)
+    if (isInProximity !== wasInProximity) {
+      console.log("📖 [PORTAL REGISTER] Proximity changed:", {
+        isInProximity,
+        horizontalDistance: horizontalDistance.toFixed(2),
+        verticalDistance: verticalDistance.toFixed(2),
+        proximityThreshold: proximityDistance
+      });
+    }
+    
+    // Show/hide interaction prompt based on proximity and register state
+    if (guiSystem) {
+      if (isInProximity && !level4State.portalRegister.isOpen) {
+        // Player is close enough and register is not already open - show prompt
+        console.log("📖 [PORTAL REGISTER] Calling guiSystem.showInteractionPrompt()");
+        guiSystem.showInteractionPrompt("Press [E] to Open Portal Register");
+        console.log("📖 [PORTAL REGISTER] showInteractionPrompt() called, checking if prompt element exists:", !!guiSystem.interactionPrompt);
+        if (guiSystem.interactionPrompt) {
+          console.log("📖 [PORTAL REGISTER] Prompt element details:", {
+            display: guiSystem.interactionPrompt.style.display,
+            opacity: guiSystem.interactionPrompt.style.opacity,
+            text: guiSystem.interactionPrompt.innerText,
+            zIndex: guiSystem.interactionPrompt.style.zIndex
+          });
+        }
+      } else if (wasInProximity && !isInProximity) {
+        // Player moved away - hide prompt
+        console.log("📖 [PORTAL REGISTER] Hiding prompt (player moved away)");
+        guiSystem.hideInteractionPrompt();
+      } else if (level4State.portalRegister.isOpen) {
+        // Register is open - hide prompt
+        guiSystem.hideInteractionPrompt();
+      }
+    } else {
+      console.warn("⚠️ [PORTAL REGISTER] guiSystem is not available!");
+    }
+  }
+  // Note: Portal may still be loading asynchronously, so we skip proximity checks until ready
   
   // Handle portal proximity if portal is active
   if (level4State.portalActive && level4State.portal) {
@@ -31562,6 +32630,24 @@ function hideLevelSelector() {
 }
 
 document.addEventListener("keydown", (event) => {
+  // 📖 PORTAL REGISTER: ESC key closes register (highest priority, January 18, 2026)
+  if (event.key === 'Escape') {
+    if (level4State.portalRegister && level4State.portalRegister.isOpen) {
+      console.log("📖 [PORTAL REGISTER] ESC pressed, closing register");
+      closePortalRegister();
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+  }
+  
+  // 📖 PORTAL REGISTER: Block all other keys when register is open (January 18, 2026)
+  if (level4State.portalRegister && level4State.portalRegister.isOpen) {
+    // Allow only ESC (handled above) and typing in input field
+    // All other game keys should be blocked
+    return;
+  }
+  
   // 🧪 DEBUG: GOD mode riddle cycle (press G to jump 1→2→3→1…)
   if (event.key === 'g' || event.key === 'G') {
     if (godMode) {
@@ -31748,7 +32834,27 @@ document.addEventListener("keydown", (event) => {
       }
       break;
     case "KeyE":
+      console.log("🔑 [DEBUG] E KEY PRESSED! event.repeat:", event.repeat);
       if (!event.repeat) {
+        console.log("🔑 [DEBUG] E key not repeated, checking conditions...");
+        console.log("🔑 [DEBUG] currentLevel:", currentLevel, "LEVEL_IDS.LEVEL4:", LEVEL_IDS.LEVEL4);
+        console.log("🔑 [DEBUG] level4State:", level4State);
+        console.log("🔑 [DEBUG] level4State.portalRegister:", level4State.portalRegister);
+        console.log("🔑 [DEBUG] level4State.portalRegister.playerInProximity:", level4State.portalRegister?.playerInProximity);
+        
+        // 📖 Level 4 Portal Register interaction (January 18, 2026 - Phase 2)
+        if (currentLevel === LEVEL_IDS.LEVEL4 && level4State.portalRegister.playerInProximity) {
+          console.log("✅ [PORTAL REGISTER] CONDITIONS MET! Opening portal register...");
+          if (!level4State.portalRegister.isOpen) {
+            openPortalRegister();
+            break; // Prevent other E key actions when opening register
+          } else {
+            console.log("⚠️ [PORTAL REGISTER] Register already open");
+          }
+        } else {
+          console.log("❌ [PORTAL REGISTER] Conditions NOT met for opening register");
+        }
+        
         if (currentLevel === LEVEL_IDS.LEVEL2 && handleLevel2LeverClick()) {
           break;
         }
@@ -41505,6 +42611,13 @@ function createRiddleProgressUI() {
 function updateRiddleProgressUI() {
   if (!riddleProgressUI) {
     createRiddleProgressUI();
+  }
+  
+  // 🔧 UX FIX (January 18, 2026): Hide riddle UI while loading screen is visible
+  // Prevents riddle notification from showing during game initialization
+  if (guiSystem && guiSystem.loadingScreen && guiSystem.loadingScreen.style.display === 'flex') {
+    riddleProgressUI.style.display = "none";
+    return;
   }
   
   const step1Div = document.getElementById("riddleStep1");

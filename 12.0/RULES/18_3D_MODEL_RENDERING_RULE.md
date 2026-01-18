@@ -1278,23 +1278,92 @@ function buildLevel(mapData) {
 
 ## 🚧 **COLLISION DETECTION FOR 3D MODELS**
 
-### **STANDARD PATTERN: Tree Collision System**
+### **🌀 CRITICAL: ALWAYS ADD COLLISION TO GLB MODELS (January 18, 2026)**
 
-**Status:** ✅ **PRODUCTION READY - WORKING PERFECTLY**  
-**Purpose:** Prevent players from walking through 3D models (trees, decorative objects, etc.)
+**Status:** ✅ **MANDATORY FOR ALL GLB MODELS**  
+**Purpose:** Prevent players from walking through 3D models (trees, decorative objects, portals, etc.)  
+**Updated:** January 18, 2026 (Level 4 Center Portal Implementation)
+
+### **🚨 MANDATORY RULE:**
+**EVERY GLB MODEL ADDED TO THE GAME MUST INCLUDE COLLISION DETECTION**
+
+When creating any GLB model (decorative or interactive), you **MUST** implement collision detection using the standard pattern below. This is not optional.
 
 ### **Implementation Pattern:**
 
-#### **1. Store Collision Data in Model:**
+#### **1. Store Collision Data in Model (MANDATORY):**
 ```javascript
 // After loading model, calculate and store collision radius
-const box = new THREE.Box3().setFromObject(tree);
+const box = new THREE.Box3().setFromObject(model);
 const size = box.getSize(new THREE.Vector3());
-tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5; // Half of larger dimension
-tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
+
+// Store collision data in userData for later use
+model.userData.collisionRadius = Math.max(size.x, size.z) * 1.5; // 1.5x for reliable collision
+model.userData.collisionPosition = new THREE.Vector3(modelX, modelY, modelZ);
+
+console.log("✅ Model collision data stored:", {
+  collisionRadius: model.userData.collisionRadius,
+  collisionPosition: model.userData.collisionPosition
+});
 ```
 
-#### **2. Create Collision Check Function:**
+**Why 1.5x multiplier?**
+- Ensures reliable collision detection
+- Accounts for model scaling and irregular shapes
+- Prevents players from clipping through edges
+- Used successfully in Level 1 Portal, Level 4 Center Portal
+
+#### **2. Implement Collision Detection in Level Update Function (MANDATORY):**
+
+**For Single Static Model (Portal/Statue Pattern - January 18, 2026):**
+```javascript
+// Example: Level 4 Center Portal Collision (in updateLevel4 function)
+// 🌀 Check center portal collision (January 18, 2026)
+// Center portal is always visible and has collision to prevent player from walking through it
+if (level4State.centerPortal && level4State.centerPortalPosition) {
+  const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+  const portalPos = level4State.centerPortalPosition;
+  
+  // Calculate distance to portal
+  const horizontalDistance = Math.sqrt(
+    Math.pow(playerPosition.x - portalPos.x, 2) + 
+    Math.pow(playerPosition.z - portalPos.z, 2)
+  );
+  
+  const verticalDistance = Math.abs(playerPosition.y - portalPos.y);
+  
+  // Get collision radius from portal userData (default to 4.5 if not set)
+  const collisionRadius = level4State.centerPortal.userData.collisionRadius || 4.5;
+  
+  // Check if player is too close to portal (collision)
+  if (horizontalDistance < collisionRadius && verticalDistance < 5.0) {
+    // Push player away from portal center
+    const pushDirection = new THREE.Vector3(
+      playerPosition.x - portalPos.x,
+      0, // Don't push vertically
+      playerPosition.z - portalPos.z
+    );
+    
+    // Normalize and scale push force
+    if (pushDirection.lengthSq() > 0.0001) {
+      pushDirection.normalize();
+      const pushStrength = (collisionRadius - horizontalDistance) * 20.0; // Stronger push when closer
+      const pushOffset = pushDirection.multiplyScalar(delta * pushStrength);
+      
+      // Apply push to player collider
+      playerCollider.start.add(pushOffset);
+      playerCollider.end.add(pushOffset);
+      
+      // Also add to velocity for smoother movement
+      if (playerVelocity) {
+        playerVelocity.addScaledVector(pushDirection, pushStrength * delta * 2);
+      }
+    }
+  }
+}
+```
+
+**For Multiple Models (Trees/Decorative Pattern):**
 ```javascript
 // Check collision with trees in Level 1 (prevents player from walking through trees)
 // STANDARD PATTERN: Can be copied to other levels for tree collision
@@ -1375,16 +1444,41 @@ function animate() {
 
 ### **Key Features:**
 - ✅ **Automatic Radius Calculation** - Uses bounding box to determine collision size
-- ✅ **Smooth Push-Away** - Pushes player away from tree when colliding
-- ✅ **Velocity Cancellation** - Prevents sliding through trees
-- ✅ **Performance Optimized** - Only checks visible trees
+- ✅ **Smooth Push-Away** - Pushes player away from model when colliding
+- ✅ **Velocity Cancellation** - Prevents sliding through models
+- ✅ **Performance Optimized** - Only checks visible models
 - ✅ **Reusable Pattern** - Can be copied to other levels
+- ✅ **Dynamic Push Strength** - Stronger push when player is closer to center
+
+### **🚨 MANDATORY FOR ALL NEW GLB MODELS:**
+
+When adding **ANY** GLB model to the game, you **MUST**:
+
+1. **Store Collision Data** in `model.userData`:
+   - `collisionRadius` (calculated from bounding box)
+   - `collisionPosition` (model's world position)
+
+2. **Implement Collision Check** in level's update function:
+   - Calculate distance from player to model
+   - Check if within collision radius
+   - Push player away with dynamic force
+   - Update both collider and velocity
+
+3. **Choose Appropriate Pattern:**
+   - **Single Model:** Use portal/statue pattern (inline collision check)
+   - **Multiple Models:** Use trees pattern (separate collision function)
 
 ### **For Other Levels:**
-1. Copy `checkLevel1TreeCollision()` function
-2. Rename to `checkLevel[Number]TreeCollision()`
-3. Update tree references to match level state
-4. Add call in animate loop for that level
+1. Copy appropriate collision pattern (portal or trees)
+2. Rename to match level (e.g., `checkLevel2ModelCollision()`)
+3. Update model references to match level state
+4. Add call in level's update function or animate loop
+
+### **Working Examples:**
+- ✅ **Level 1 Portal:** Portal collision with suction and enter mechanics
+- ✅ **Level 4 Center Portal:** Portal collision with push-away mechanics (January 18, 2026)
+- ✅ **Level 1 Trees:** Multiple tree collision with push-away system
+- ✅ **Level 4 Cheese Bosses:** Decorative model collision (corner statues)
 
 ---
 
