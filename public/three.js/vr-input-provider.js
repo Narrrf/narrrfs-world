@@ -3,9 +3,9 @@
  * VR INPUT PROVIDER - VR Controller Input Handling
  * ============================================================================
  * 
- * ✅ STATUS: STABLE - PRODUCTION READY
+ * ✅ STATUS: UPDATED FOR META QUEST 3 - JANUARY 18, 2026
  * 📅 CREATED: December 6, 2025
- * 📅 LAST UPDATED: December 20, 2025
+ * 📅 LAST UPDATED: January 18, 2026 (Quest 3 Controller Fixes)
  * 
  * ============================================================================
  * 🎯 PURPOSE
@@ -13,27 +13,27 @@
  * 
  * Handles VR controller input using WebXR API:
  * - VR controller input (thumbsticks, buttons, triggers)
- * - Movement from VR controllers
+ * - Movement from VR controllers (left thumbstick)
+ * - Rotation from VR controllers (right thumbstick)
  * - Button state management
  * - Extends InputProvider base class for plugin-based architecture
  * 
  * Supported VR devices:
- * - Oculus Quest / Quest 2 / Quest 3
- * - Meta Quest
+ * - Meta Quest 3 (Primary target - 2026)
+ * - Meta Quest 2
+ * - Oculus Quest
  * - Other WebXR-compatible VR headsets
  * 
  * ============================================================================
- * ✅ STABLE VERSION STATUS
+ * ✅ PHASE 1 FIXES (January 18, 2026)
  * ============================================================================
  * 
- * ✅ **STABLE VERSION - PRODUCTION READY**
- * 
- * This system has reached a stable, production-ready state with:
- * - ✅ VR support working
- * - ✅ Controller input functional
- * - ✅ Movement from controllers working
- * - ✅ Button states tracked correctly
- * - ✅ Plugin architecture ready for expansion
+ * ✅ **QUEST 3 CONTROLLER FIXES:**
+ * - ✅ Fixed Y-axis inversion (forward = negative Y)
+ * - ✅ Increased deadzone (0.1 → 0.15)
+ * - ✅ Added rotation input (right thumbstick)
+ * - ✅ Added sprint (left thumbstick click)
+ * - ✅ Added jump (X/A buttons)
  * 
  * ============================================================================
  * 📦 WHAT THIS MODULE LOADS
@@ -61,7 +61,12 @@
  *      vrInputProvider.enable();
  *    }
  * 
- * 3. PlayerControls automatically uses VR input if available
+ * 3. In animate loop:
+ *    renderer.setAnimationLoop((timestamp, xrFrame) => {
+ *      if (vrInputProvider && isVRSessionActive()) {
+ *        vrInputProvider.update(delta);
+ *      }
+ *    });
  * 
  * ============================================================================
  * 🎮 KEY FUNCTIONS
@@ -69,8 +74,9 @@
  * 
  * - enable() - Enable VR input provider
  * - disable() - Disable VR input provider
- * - update(delta) - Update controller state
- * - getMovementState() - Get movement from controllers
+ * - update(delta) - Update controller state (MUST be called every frame!)
+ * - getMovementState() - Get movement from left thumbstick
+ * - getRotationInput() - Get rotation from right thumbstick (NEW!)
  * - isAvailable() - Check if VR is available (static)
  * 
  * ============================================================================
@@ -274,22 +280,77 @@ export class VRInputProvider extends InputProvider {
   /**
    * Get movement state from VR controllers
    * Left controller thumbstick = movement
+   * 
+   * ✅ FIXED FOR QUEST 3 (January 18, 2026):
+   * - Corrected Y-axis direction (negative = forward)
+   * - Increased deadzone to 0.15
+   * - Added sprint (thumbstick click)
+   * - Added jump (X/A buttons)
    */
   getMovementState() {
     if (!this.enabled) return null;
     
     const leftStick = this.thumbstickState.left || { x: 0, y: 0 };
     
-    // Convert thumbstick input to movement
-    // y-axis: forward/backward, x-axis: left/right
+    // ✅ Meta Quest 3 Controller Mapping (2026):
+    // Left Thumbstick:
+    //   Y: -1.0 (forward/push up) to +1.0 (backward/pull down)
+    //   X: -1.0 (left) to +1.0 (right)
+    
+    const deadzone = 0.15; // ✅ Increased deadzone for Quest 3 (was 0.1)
+    
+    // Apply deadzone
+    const x = Math.abs(leftStick.x) > deadzone ? leftStick.x : 0;
+    const y = Math.abs(leftStick.y) > deadzone ? leftStick.y : 0;
+    
+    // ✅ Log thumbstick values occasionally for debugging
+    if (Math.abs(x) > deadzone || Math.abs(y) > deadzone) {
+      if (!window.vrThumbstickLogCounter) window.vrThumbstickLogCounter = 0;
+      window.vrThumbstickLogCounter++;
+      if (window.vrThumbstickLogCounter % 60 === 0) { // Every 60 frames
+        console.log(`🕹️ [VR INPUT] Left stick: x=${x.toFixed(2)}, y=${y.toFixed(2)}`);
+      }
+    }
+    
     return {
-      forward: leftStick.y > 0.1 ? leftStick.y : 0,
-      backward: leftStick.y < -0.1 ? -leftStick.y : 0,
-      left: leftStick.x < -0.1 ? -leftStick.x : 0,
-      right: leftStick.x > 0.1 ? leftStick.x : 0,
-      sprint: false, // Can be mapped to a button press
-      jump: false    // Will be handled via getButtonState
+      forward: y < -deadzone ? Math.abs(y) : 0,  // ✅ Negative Y = forward (push up)
+      backward: y > deadzone ? y : 0,            // ✅ Positive Y = backward (pull down)
+      left: x < -deadzone ? Math.abs(x) : 0,     // ✅ Negative X = left
+      right: x > deadzone ? x : 0,               // ✅ Positive X = right
+      sprint: this.getButtonState('thumbstick', 'left'), // ✅ Click left stick to sprint
+      jump: this.getButtonState('x', 'left') || this.getButtonState('a', 'right'), // ✅ X or A button to jump
+      flyUp: false,   // VR uses jump instead of fly
+      flyDown: false  // VR uses jump instead of fly
     };
+  }
+  
+  /**
+   * Get rotation input from right thumbstick
+   * Used for snap-turn or smooth-turn in VR
+   * 
+   * ✅ NEW METHOD (January 18, 2026)
+   * 
+   * @returns {Object} Rotation input { x: horizontal, y: vertical }
+   */
+  getRotationInput() {
+    if (!this.enabled) return { x: 0, y: 0 };
+    
+    const rightStick = this.thumbstickState.right || { x: 0, y: 0 };
+    const deadzone = 0.3; // ✅ Higher deadzone for rotation (prevents accidental turns)
+    
+    const x = Math.abs(rightStick.x) > deadzone ? rightStick.x : 0;
+    const y = Math.abs(rightStick.y) > deadzone ? rightStick.y : 0;
+    
+    // ✅ Log rotation input occasionally for debugging
+    if (Math.abs(x) > deadzone || Math.abs(y) > deadzone) {
+      if (!window.vrRotationLogCounter) window.vrRotationLogCounter = 0;
+      window.vrRotationLogCounter++;
+      if (window.vrRotationLogCounter % 60 === 0) { // Every 60 frames
+        console.log(`🔄 [VR INPUT] Right stick: x=${x.toFixed(2)}, y=${y.toFixed(2)}`);
+      }
+    }
+    
+    return { x, y };
   }
   
   /**

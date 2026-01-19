@@ -341,8 +341,16 @@ function checkLevel2TriggerBlockStanding() {
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
+// 📱 MOBILE DETECTION (January 18, 2026 - Phase 1 Mobile Optimization)
+// Detect if device is mobile (phones, tablets)
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-const isMobileLandscape = isMobile && window.innerWidth > window.innerHeight;
+
+// 🔧 FIX: Make isMobileLandscape a dynamic function instead of static constant
+// This ensures it updates when device orientation changes (portrait ↔ landscape)
+// OLD: const isMobileLandscape = isMobile && window.innerWidth > window.innerHeight;
+function isMobileLandscape() {
+  return isMobile && window.innerWidth > window.innerHeight;
+}
 
 // Mobile joystick controls
 let mobileJoystick = null;
@@ -1980,8 +1988,199 @@ checkVRSupport();
 let vrInputProvider = null;
 let currentVRSession = null;
 
+// ============================================================================
+// VR OPTIMIZATION FUNCTIONS (PHASE 2 - January 18, 2026)
+// ============================================================================
+
 /**
- * Start VR Session
+ * Check if texture is VR-optimized for Meta Quest 3
+ * Quest 3 has limited memory - textures should be compressed and reasonably sized
+ * 
+ * ✅ PHASE 2 IMPLEMENTATION
+ */
+function isTextureVROptimized(texture) {
+  if (!texture || !texture.image) return true; // No texture = no problem
+  
+  const width = texture.image.width || 0;
+  const height = texture.image.height || 0;
+  
+  // Quest 3 recommendations:
+  // - Max 2048x2048 (prefer 1024x1024 for most textures)
+  // - ASTC compression (not directly available in Three.js, but check size)
+  const maxSize = 2048;
+  const recommendedSize = 1024;
+  
+  if (width > maxSize || height > maxSize) {
+    console.warn(`⚠️ [VR TEXTURE] Texture too large for VR: ${width}x${height} (max: ${maxSize}x${maxSize})`);
+    return false;
+  }
+  
+  if (width > recommendedSize || height > recommendedSize) {
+    console.log(`📊 [VR TEXTURE] Texture larger than recommended: ${width}x${height} (recommended: ${recommendedSize}x${recommendedSize})`);
+  }
+  
+  return true;
+}
+
+/**
+ * Optimize scene for VR mode
+ * Reduces memory usage for Meta Quest 3's limited RAM
+ * 
+ * ✅ PHASE 2 IMPLEMENTATION
+ */
+function optimizeForVR() {
+  console.log('🥽 [VR OPTIMIZE] Starting VR optimization...');
+  
+  const optimizations = {
+    texturesOptimized: 0,
+    anisotropyReduced: 0,
+    shadowMapsReduced: 0,
+    lightsOptimized: 0
+  };
+  
+  // 1. Reduce texture anisotropy (improves performance)
+  scene.traverse((object) => {
+    if (object.isMesh && object.material) {
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      
+      materials.forEach((material) => {
+        if (material.map) {
+          // Reduce anisotropy from 16 to 4 (4x less filtering, 4x faster)
+          if (material.map.anisotropy > 4) {
+            material.map.anisotropy = 4;
+            optimizations.anisotropyReduced++;
+          }
+          
+          // Check if texture is VR-optimized
+          if (!isTextureVROptimized(material.map)) {
+            optimizations.texturesOptimized++;
+          }
+        }
+        
+        if (material.normalMap) {
+          material.normalMap.anisotropy = 2; // Even lower for normal maps
+        }
+        
+        if (material.roughnessMap) {
+          material.roughnessMap.anisotropy = 2;
+        }
+      });
+    }
+  });
+  
+  // 2. Reduce shadow map sizes (improves memory and performance)
+  const lights = scene.children.filter(child => child.isLight && child.shadow);
+  lights.forEach(light => {
+    if (light.shadow && light.shadow.mapSize) {
+      const currentSize = light.shadow.mapSize.width;
+      
+      if (currentSize > 1024) {
+        light.shadow.mapSize.width = 1024; // Reduce from 2048
+        light.shadow.mapSize.height = 1024;
+        light.shadow.map = null; // Force regeneration
+        optimizations.shadowMapsReduced++;
+      }
+    }
+  });
+  
+  // 3. Optimize lights (reduce radius/distance)
+  scene.traverse((object) => {
+    if (object.isLight) {
+      if (object.isPointLight || object.isSpotLight) {
+        // Reduce light distance for better performance
+        if (object.distance > 50) {
+          object.distance = Math.min(object.distance, 50);
+          optimizations.lightsOptimized++;
+        }
+      }
+    }
+  });
+  
+  console.log('✅ [VR OPTIMIZE] VR optimization complete:', optimizations);
+  
+  return optimizations;
+}
+
+/**
+ * Show VR loading indicator in 3D space
+ * Displays a rotating cheese while assets load
+ * 
+ * ✅ PHASE 2 IMPLEMENTATION
+ */
+function showVRLoadingIndicator() {
+  // Remove existing indicator if present
+  const existing = scene.getObjectByName('vrLoadingIndicator');
+  if (existing) return; // Already showing
+  
+  console.log('🥽 [VR LOADING] Creating VR loading indicator...');
+  
+  // Create glowing cheese sphere
+  const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0xffe066, // Cheese yellow
+    wireframe: true,
+    transparent: true,
+    opacity: 0.8
+  });
+  const loader = new THREE.Mesh(geometry, material);
+  
+  // Position in front of player at eye level
+  loader.position.set(0, 1.6, -2);
+  loader.name = 'vrLoadingIndicator';
+  scene.add(loader);
+  
+  // Add inner solid sphere
+  const innerGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+  const innerMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffeb3b, // Brighter yellow
+    transparent: true,
+    opacity: 0.6
+  });
+  const innerSphere = new THREE.Mesh(innerGeometry, innerMaterial);
+  loader.add(innerSphere);
+  
+  // Animate rotation
+  const animateLoader = () => {
+    const loaderObj = scene.getObjectByName('vrLoadingIndicator');
+    if (loaderObj) {
+      loaderObj.rotation.y += 0.02;
+      loaderObj.rotation.x += 0.01;
+      requestAnimationFrame(animateLoader);
+    }
+  };
+  animateLoader();
+  
+  console.log('✅ [VR LOADING] VR loading indicator created');
+}
+
+/**
+ * Hide VR loading indicator
+ * 
+ * ✅ PHASE 2 IMPLEMENTATION
+ */
+function hideVRLoadingIndicator() {
+  const loader = scene.getObjectByName('vrLoadingIndicator');
+  if (loader) {
+    scene.remove(loader);
+    
+    // Dispose geometry and materials
+    if (loader.geometry) loader.geometry.dispose();
+    if (loader.material) loader.material.dispose();
+    
+    // Dispose children
+    loader.children.forEach(child => {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) child.material.dispose();
+    });
+    
+    console.log('✅ [VR LOADING] VR loading indicator removed');
+  }
+}
+
+/**
+ * Start VR Session with Phase 2 optimizations
+ * 
+ * ✅ UPDATED FOR PHASE 2 (January 18, 2026)
  */
 async function startVRSession() {
   if (!navigator.xr) {
@@ -1995,10 +2194,34 @@ async function startVRSession() {
   }
   
   try {
+    console.log('🥽 [VR] Starting VR session with Phase 2 optimizations...');
+    
+    // ✅ PHASE 2: Show loading indicator
+    showVRLoadingIndicator();
+    
+    // ✅ PHASE 2: Preload critical assets if not already done
+    if (!window.vrAssetsPreloaded) {
+      console.log('🥽 [VR] Preloading critical assets for VR...');
+      
+      try {
+        await preloadCriticalAssets();
+        window.vrAssetsPreloaded = true;
+        console.log('✅ [VR] Assets preloaded successfully');
+      } catch (error) {
+        console.warn('⚠️ [VR] Asset preload failed, continuing anyway:', error);
+      }
+    } else {
+      console.log('✅ [VR] Assets already preloaded');
+    }
+    
+    // ✅ PHASE 2: Optimize scene for VR
+    const optimizations = optimizeForVR();
+    console.log('✅ [VR] Scene optimized for VR mode');
+    
     // Request immersive VR session
     const session = await navigator.xr.requestSession('immersive-vr', {
       requiredFeatures: ['local-floor'], // Floor-level tracking
-      optionalFeatures: ['hand-tracking'] // Optional hand tracking
+      optionalFeatures: ['hand-tracking', 'bounded-floor'] // Optional features
     });
     
     currentVRSession = session;
@@ -2022,10 +2245,16 @@ async function startVRSession() {
       endVRSession();
     });
     
-    console.log('🥽 [VR] VR session started successfully');
+    // ✅ PHASE 2: Hide loading indicator after session starts
+    setTimeout(() => {
+      hideVRLoadingIndicator();
+    }, 1000); // Wait 1 second for assets to settle
+    
+    console.log('🥽 [VR] VR session started successfully with Phase 2 optimizations');
     return true;
   } catch (err) {
     console.error('❌ [VR] Failed to start VR session:', err);
+    hideVRLoadingIndicator(); // Clean up if failed
     return false;
   }
 }
@@ -4154,7 +4383,7 @@ function initializePlayerControls() {
 
       // Mobile detection
       isMobile: isMobile,
-      isMobileLandscape: isMobileLandscape,
+      isMobileLandscape: isMobileLandscape(), // Call function to get current state
 
       // Third-person camera config
       thirdPersonCameraDistanceMin: thirdPersonCameraDistanceMin,
@@ -8727,6 +8956,24 @@ function startGame(startLevelId = null) {
   
   console.log("✅ [GAME START] HUD elements shown (FPS counter, cheese HUD, debug overlay)");
   
+  // 📱 Show mobile pause button (January 18, 2026 - Phase 1 Mobile Optimization)
+  if (isMobile) {
+    updateMobilePauseButton();
+    console.log("📱 [GAME START] Mobile pause button updated");
+    
+    // Update weapon selector (will show if in weapon level)
+    updateMobileWeaponSelector();
+    console.log("📱 [GAME START] Mobile weapon selector updated");
+    
+    // Update shoot button (will show if in weapon level)
+    updateMobileShootButton();
+    console.log("📱 [GAME START] Mobile shoot button updated");
+    
+    // Check landscape mode and show prompt if needed
+    setTimeout(checkLandscapeMode, 200);
+    console.log("📱 [GAME START] Landscape mode check scheduled");
+  }
+  
   // Ensure character selection menu is hidden before starting game
   hideCharacterSelectionMenu();
   
@@ -11197,26 +11444,30 @@ function getOptionsMenu() {
     viewModeSection.appendChild(viewModeToggle);
     generalTabContent.appendChild(viewModeSection);
 
-    // Mobile Joystick Toggle (for desktop testing)
-    const joystickSection = document.createElement("div");
-    Object.assign(joystickSection.style, {
-      width: "100%",
-      marginBottom: "20px",
-      display: "flex",
-      flexDirection: "column",
-      gap: "8px",
-      alignItems: "center"
-    });
+    // 📱 Mobile Joystick Toggle (January 18, 2026 - Mobile Controls)
+    // IMPORTANT: Only show for desktop users to test mobile controls
+    // Mobile users ALWAYS have their controls - they can't disable them!
+    if (!isMobile) {
+      const joystickSection = document.createElement("div");
+      Object.assign(joystickSection.style, {
+        width: "100%",
+        marginBottom: "20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        alignItems: "center"
+      });
 
-    const joystickLabel = document.createElement("div");
-    joystickLabel.textContent = "Mobile Controls (Desktop Test)";
-    Object.assign(joystickLabel.style, {
-      fontSize: "18px", // Increased from 14px
-      color: "#cbd5f5",
-      fontWeight: "600", // Make labels bolder
-      marginBottom: "8px"
-    });
-    joystickSection.appendChild(joystickLabel);
+      const joystickLabel = document.createElement("div");
+      joystickLabel.textContent = "🎮 Desktop Joysticks (Testing)";
+      joystickLabel.title = "Enable mobile joysticks for testing on desktop";
+      Object.assign(joystickLabel.style, {
+        fontSize: "18px", // Increased from 14px
+        color: "#cbd5f5",
+        fontWeight: "600", // Make labels bolder
+        marginBottom: "8px"
+      });
+      joystickSection.appendChild(joystickLabel);
 
     const joystickToggle = document.createElement("div");
     Object.assign(joystickToggle.style, {
@@ -11272,10 +11523,15 @@ function getOptionsMenu() {
       updateViewModeButtons();
     });
 
-    joystickToggle.appendChild(joystickOffBtn);
-    joystickToggle.appendChild(joystickOnBtn);
-    joystickSection.appendChild(joystickToggle);
-    generalTabContent.appendChild(joystickSection);
+      joystickToggle.appendChild(joystickOffBtn);
+      joystickToggle.appendChild(joystickOnBtn);
+      joystickSection.appendChild(joystickToggle);
+      generalTabContent.appendChild(joystickSection);
+
+      // Store buttons for later updates
+      optionsMenu._joystickOffBtn = joystickOffBtn;
+      optionsMenu._joystickOnBtn = joystickOnBtn;
+    } // End of desktop-only joystick toggle
 
     // 📱 MOBILE LANDSCAPE MODE (Only visible on mobile devices)
     if (isMobile) {
@@ -15487,7 +15743,7 @@ function setCameraMode(mode) {
       mobileCameraJoystick.style.display = "none";
     }
     // Hide movement joystick in first-person (unless mobile landscape)
-    if (mobileJoystick && !isMobileLandscape) {
+    if (mobileJoystick && !isMobileLandscape()) {
       mobileJoystick.style.display = "none";
     }
     // Reset cursor style
@@ -15614,7 +15870,7 @@ function setCameraMode(mode) {
     }
     // Show camera joystick in third-person on mobile/desktop test
     if (mobileCameraJoystick) {
-      if ((isMobileLandscape || window.enableDesktopJoysticks) && !isGamePaused) {
+      if ((isMobileLandscape() || window.enableDesktopJoysticks) && !isGamePaused) {
         mobileCameraJoystick.style.display = "flex";
       } else {
         mobileCameraJoystick.style.display = "none";
@@ -15622,7 +15878,7 @@ function setCameraMode(mode) {
     }
     // Show movement joystick if enabled
     if (mobileJoystick) {
-      if ((isMobileLandscape || window.enableDesktopJoysticks) && !isGamePaused) {
+      if ((isMobileLandscape() || window.enableDesktopJoysticks) && !isGamePaused) {
         mobileJoystick.style.display = "flex";
       } else {
         mobileJoystick.style.display = "none";
@@ -16494,12 +16750,24 @@ function togglePause(forceState) {
     } else {
       resumeBackgroundMusic();
     }
+    
+    // 📱 Update mobile pause button (January 18, 2026 - Phase 1 Mobile Optimization)
+    if (isMobile) {
+      updateMobilePauseButton();
+    }
+    
     return;
   }
   
   // Use GUI System if available (normal call path)
   if (guiSystem && typeof guiSystem.togglePause === 'function') {
     guiSystem.togglePause(forceState);
+    
+    // 📱 Update mobile pause button (January 18, 2026 - Phase 1 Mobile Optimization)
+    if (isMobile) {
+      updateMobilePauseButton();
+    }
+    
     return;
   }
   
@@ -17580,7 +17848,7 @@ function updateCameraPosition(delta) {
       
       // Reset deltas after use
       playerControls.resetMouseDelta();
-    } else if ((isMobileLandscape || window.enableDesktopJoysticks || isJoystickView()) && cameraJoystickActive) {
+    } else if ((isMobileLandscape() || window.enableDesktopJoysticks || isJoystickView()) && cameraJoystickActive) {
       // Mobile/desktop camera control via joystick (works in third-person and joystick view)
       const joystickSensitivity = 0.05;
       // Horizontal rotation
@@ -33066,9 +33334,9 @@ window.addEventListener("resize", () => {
 // Declare crosshairElement early to avoid TDZ errors (initialized later after createCrosshair is defined)
 let crosshairElement = null;
 
-function animate() {
-  requestAnimationFrame(animate);
-
+// ✅ VR-COMPATIBLE ANIMATION LOOP (January 18, 2026 - Phase 1)
+// Uses setAnimationLoop instead of requestAnimationFrame for proper VR rendering
+function animate(timestamp, xrFrame) {
   if (stats) stats.begin();
 
   const delta = Math.min(clock.getDelta(), 0.1);
@@ -33087,14 +33355,79 @@ function animate() {
     console.log("✅ [ANIMATE] Animate loop is running", {
       isGamePaused: isGamePaused,
       controlsLocked: playerControls ? playerControls.getPointerLockControls().isLocked : false,
-      isFirstPerson: isFirstPerson()
+      isFirstPerson: isFirstPerson(),
+      vrActive: isVRSessionActive()
     });
     window.animateLoopConfirmed = true;
   }
   */
 
-  // 🎮 UPDATE PLAYER CONTROLS MODULE
-  if (playerControls) {
+  // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
+  // ✅ CRITICAL FIX: VRInputProvider MUST be updated every frame!
+  if (vrInputProvider && isVRSessionActive()) {
+    vrInputProvider.update(delta);
+    
+    // ✅ Update camera from VR headset pose
+    if (xrFrame) {
+      try {
+        const referenceSpace = renderer.xr.getReferenceSpace();
+        if (referenceSpace) {
+          const pose = xrFrame.getViewerPose(referenceSpace);
+          
+          if (pose) {
+            // Get headset position and rotation
+            const transform = pose.transform;
+            const position = transform.position;
+            const orientation = transform.orientation;
+            
+            // Update camera position (offset by player position)
+            camera.position.set(
+              playerPosition.x + position.x,
+              playerPosition.y + position.y,
+              playerPosition.z + position.z
+            );
+            
+            // Update camera rotation from headset
+            camera.quaternion.set(
+              orientation.x,
+              orientation.y,
+              orientation.z,
+              orientation.w
+            );
+            
+            // ✅ Log VR pose occasionally for debugging
+            if (!window.vrPoseLogCounter) window.vrPoseLogCounter = 0;
+            window.vrPoseLogCounter++;
+            if (window.vrPoseLogCounter % 300 === 0) { // Every 300 frames (5 seconds at 60fps)
+              console.log(`🥽 [VR POSE] Head: pos(${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)})`);
+            }
+          }
+        }
+      } catch (error) {
+        // Silently fail if pose not available yet
+        if (!window.vrPoseErrorLogged) {
+          console.warn('⚠️ [VR POSE] Error getting headset pose:', error);
+          window.vrPoseErrorLogged = true;
+        }
+      }
+    }
+    
+    // ✅ Handle rotation from right thumbstick
+    const rotationInput = vrInputProvider.getRotationInput();
+    if (Math.abs(rotationInput.x) > 0) {
+      // Smooth turn (can be changed to snap-turn later)
+      const turnSpeed = 2.0; // Radians per second
+      thirdPersonCameraAngle.horizontal += rotationInput.x * turnSpeed * delta;
+      
+      // Also rotate player body for consistency
+      if (playerCharacterModel) {
+        playerCharacterModel.rotation.y = thirdPersonCameraAngle.horizontal;
+      }
+    }
+  }
+  
+  // 🎮 UPDATE DESKTOP PLAYER CONTROLS MODULE (only if not in VR)
+  if (playerControls && !isVRSessionActive()) {
     playerControls.update(delta);
   }
   
@@ -33363,7 +33696,7 @@ function animate() {
       // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
       const currentMovement = playerControls ? playerControls.getMovementState() : movement;
       // Use joystick input on mobile or desktop test mode, keyboard otherwise
-      const useJoystick = (isMobileLandscape || window.enableDesktopJoysticks) && joystickActive;
+      const useJoystick = (isMobileLandscape() || window.enableDesktopJoysticks) && joystickActive;
       if (useJoystick) {
         playerDirection.x = joystickDirection.x;
         playerDirection.z = -joystickDirection.y; // Invert Y for forward/back
@@ -34098,6 +34431,11 @@ function animate() {
     if (guiSystem) {
       guiSystem.hideInteractionPrompt();
     }
+    
+    // 📱 Hide mobile interact button (January 18, 2026)
+    if (isMobile) {
+      updateMobileInteractButton(false);
+    }
   }
   
   // CRITICAL: Wrap render in try-catch to prevent skeleton errors from crashing the game
@@ -34189,7 +34527,11 @@ function animate() {
   if (stats) stats.end();
 }
 
-animate();
+// ✅ START ANIMATION LOOP (VR-compatible - January 18, 2026)
+// Use setAnimationLoop instead of calling animate() directly
+// This ensures proper VR rendering and frame timing
+renderer.setAnimationLoop(animate);
+console.log('✅ [ANIMATE] Animation loop started with setAnimationLoop (VR-compatible)');
 
 const createCrosshair = () => {
   let crosshair = document.getElementById('crosshair');
@@ -34231,10 +34573,815 @@ const createCrosshair = () => {
 // Initialize crosshair element (declared early to avoid TDZ, initialized here after function is defined)
 crosshairElement = createCrosshair();
 
+// 📱 MOBILE PAUSE BUTTON (January 18, 2026 - Phase 1 Mobile Optimization)
+// Floating pause button for mobile players in top-right corner
+let mobilePauseButton = null;
+
+function createMobilePauseButton() {
+  if (!isMobile) {
+    console.log("💡 [MOBILE PAUSE] Not on mobile - skipping pause button creation");
+    return null;
+  }
+  
+  if (mobilePauseButton) {
+    console.log("✅ [MOBILE PAUSE] Button already exists");
+    return mobilePauseButton;
+  }
+  
+  console.log("📱 [MOBILE PAUSE] Creating mobile pause button...");
+  
+  const pauseBtn = document.createElement("button");
+  pauseBtn.id = "mobilePauseButton";
+  pauseBtn.innerHTML = "⏸️"; // Pause icon
+  pauseBtn.setAttribute("aria-label", "Pause Game");
+  
+  Object.assign(pauseBtn.style, {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    width: "60px",
+    height: "60px",
+    borderRadius: "50%",
+    background: "rgba(0, 0, 0, 0.7)",
+    border: "2px solid rgba(255, 224, 102, 0.8)",
+    color: "#ffe066",
+    fontSize: "24px",
+    cursor: "pointer",
+    zIndex: "9999",
+    display: "none", // Hidden initially until game starts
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+    transition: "all 0.2s",
+    touchAction: "manipulation", // Prevent double-tap zoom
+    userSelect: "none",
+    WebkitTapHighlightColor: "transparent", // Remove tap highlight on iOS
+    fontFamily: "'Press Start 2P', monospace"
+  });
+  
+  // Click handler
+  pauseBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("📱 [MOBILE PAUSE] Pause button clicked");
+    togglePause();
+  });
+  
+  // Prevent touch events from interfering with game
+  pauseBtn.addEventListener("touchstart", (e) => {
+    e.stopPropagation();
+  }, { passive: true });
+  
+  pauseBtn.addEventListener("touchend", (e) => {
+    e.stopPropagation();
+  }, { passive: true });
+  
+  document.body.appendChild(pauseBtn);
+  mobilePauseButton = pauseBtn;
+  
+  console.log("✅ [MOBILE PAUSE] Mobile pause button created successfully");
+  return pauseBtn;
+}
+
+function updateMobilePauseButton() {
+  if (!isMobile || !mobilePauseButton) return;
+  
+  const shouldShow = !isGamePaused && gameStarted;
+  mobilePauseButton.style.display = shouldShow ? "flex" : "none";
+  
+  // Update icon based on pause state
+  mobilePauseButton.innerHTML = isGamePaused ? "▶️" : "⏸️";
+}
+
+// Create mobile pause button on load
+if (isMobile) {
+  createMobilePauseButton();
+}
+
+// 🎮 MOBILE JOYSTICKS (January 18, 2026 - MOVEMENT & CAMERA CONTROL)
+// Two joysticks for mobile: left for movement, right for camera
+// Note: mobileCameraJoystick is already declared at line 357 (reusing existing variable)
+let mobileMovementJoystick = null;
+let joystickMovement = { x: 0, y: 0 };
+let joystickRotation = { x: 0, y: 0 };
+
+function createMobileJoysticks() {
+  if (!isMobile) {
+    console.log("💡 [MOBILE JOYSTICKS] Not on mobile - skipping joystick creation");
+    return;
+  }
+  
+  // Check if nipplejs is loaded
+  if (typeof nipplejs === 'undefined') {
+    console.error("❌ [MOBILE JOYSTICKS] nipplejs library not loaded!");
+    return;
+  }
+  
+  console.log("🎮 [MOBILE JOYSTICKS] Creating movement and camera joysticks...");
+  
+  // Left Joystick - Movement Control
+  const movementZone = document.createElement("div");
+  movementZone.id = "joystick-movement-zone";
+  Object.assign(movementZone.style, {
+    position: "fixed",
+    bottom: "20px",
+    left: "20px",
+    width: "150px",
+    height: "150px",
+    zIndex: "999",
+    display: "none" // Hidden by default, shown in landscape
+  });
+  document.body.appendChild(movementZone);
+  
+  mobileMovementJoystick = nipplejs.create({
+    zone: movementZone,
+    mode: "static",
+    position: { left: "50%", top: "50%"},
+    color: "rgba(255, 224, 102, 0.6)", // Cheese yellow
+    size: 120,
+    threshold: 0.1
+  });
+  
+  // Movement joystick event handlers
+  mobileMovementJoystick.on("move", (evt, data) => {
+    if (data.vector) {
+      joystickMovement.x = data.vector.x;
+      joystickMovement.y = -data.vector.y; // Invert Y for forward/backward
+      
+      // Update PlayerControls if it exists
+      if (playerControls) {
+        playerControls.joystickActive = true;
+        playerControls.joystickDirection = { ...joystickMovement };
+        playerControls.refreshJoystickMovementFlags();
+      }
+    }
+  });
+  
+  mobileMovementJoystick.on("end", () => {
+    joystickMovement = { x: 0, y: 0 };
+    
+    // Update PlayerControls if it exists
+    if (playerControls) {
+      playerControls.joystickActive = false;
+      playerControls.joystickDirection = { x: 0, y: 0 };
+      playerControls.refreshJoystickMovementFlags();
+    }
+  });
+  
+  // Right Joystick - Camera Control
+  const cameraZone = document.createElement("div");
+  cameraZone.id = "joystick-camera-zone";
+  Object.assign(cameraZone.style, {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    width: "150px",
+    height: "150px",
+    zIndex: "999",
+    display: "none" // Hidden by default, shown in landscape
+  });
+  document.body.appendChild(cameraZone);
+  
+  mobileCameraJoystick = nipplejs.create({
+    zone: cameraZone,
+    mode: "static",
+    position: { left: "50%", top: "50%"},
+    color: "rgba(203, 213, 245, 0.6)", // Blue-ish
+    size: 120,
+    threshold: 0.1
+  });
+  
+  // Camera joystick event handlers
+  mobileCameraJoystick.on("move", (evt, data) => {
+    if (data.vector) {
+      joystickRotation.x = data.vector.x;
+      joystickRotation.y = -data.vector.y;
+      
+      // Update PlayerControls if it exists
+      if (playerControls) {
+        playerControls.cameraJoystickActive = true;
+        playerControls.cameraJoystickDirection = { ...joystickRotation };
+      }
+    }
+  });
+  
+  mobileCameraJoystick.on("end", () => {
+    joystickRotation = { x: 0, y: 0 };
+    
+    // Update PlayerControls if it exists
+    if (playerControls) {
+      playerControls.cameraJoystickActive = false;
+      playerControls.cameraJoystickDirection = { x: 0, y: 0 };
+    }
+  });
+  
+  console.log("✅ [MOBILE JOYSTICKS] Movement and camera joysticks created successfully");
+}
+
+function updateMobileJoysticks() {
+  if (!isMobile) return;
+  
+  const movementZone = document.getElementById("joystick-movement-zone");
+  const cameraZone = document.getElementById("joystick-camera-zone");
+  
+  if (!movementZone || !cameraZone) return;
+  
+  const shouldShow = !isGamePaused && gameStarted && isMobileLandscape();
+  movementZone.style.display = shouldShow ? "block" : "none";
+  cameraZone.style.display = shouldShow ? "block" : "none";
+  
+  console.log(`🎮 [MOBILE JOYSTICKS] Joystick visibility updated to: ${shouldShow ? "visible" : "hidden"}`);
+}
+
+// Create mobile joysticks on load
+if (isMobile) {
+  // Wait for nipplejs to load
+  if (typeof nipplejs !== 'undefined') {
+    createMobileJoysticks();
+  } else {
+    console.log("⏳ [MOBILE JOYSTICKS] Waiting for nipplejs to load...");
+    window.addEventListener('load', () => {
+      setTimeout(createMobileJoysticks, 500); // Give nipplejs time to load
+    });
+  }
+}
+
+// Note: checkAndCreateJoystick() function is defined later (line ~35789)
+// with comprehensive error handling, retry logic, and mobile support
+
+// 📱 MOBILE INTERACT (E KEY) BUTTON (January 18, 2026 - Phase 1 Mobile Optimization)
+// Button for opening chests and interacting with objects
+let mobileInteractButton = null;
+
+function createMobileInteractButton() {
+  if (!isMobile) {
+    console.log("💡 [MOBILE INTERACT] Not on mobile - skipping interact button creation");
+    return null;
+  }
+  
+  if (mobileInteractButton) {
+    console.log("✅ [MOBILE INTERACT] Button already exists");
+    return mobileInteractButton;
+  }
+  
+  console.log("📱 [MOBILE INTERACT] Creating mobile interact button...");
+  
+  const interactBtn = document.createElement("button");
+  interactBtn.id = "mobileInteractButton";
+  interactBtn.innerHTML = "E"; // E key icon
+  interactBtn.setAttribute("aria-label", "Interact");
+  
+  Object.assign(interactBtn.style, {
+    position: "fixed",
+    bottom: "140px", // Above joystick area
+    right: "20px",
+    width: "70px",
+    height: "70px",
+    borderRadius: "50%",
+    background: "rgba(255, 224, 102, 0.9)", // Golden/yellow
+    border: "3px solid rgba(255, 255, 255, 0.8)",
+    color: "#000",
+    fontSize: "32px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    zIndex: "9998",
+    display: "none", // Hidden until near interactable object
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.4)",
+    transition: "all 0.2s",
+    touchAction: "manipulation",
+    userSelect: "none",
+    WebkitTapHighlightColor: "transparent",
+    fontFamily: "'Press Start 2P', monospace"
+  });
+  
+  // Click handler - trigger E key interaction
+  interactBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("📱 [MOBILE INTERACT] Interact button clicked");
+    
+    // Trigger the onInteract callback from playerControls
+    if (playerControls && playerControls.config && typeof playerControls.config.onInteract === 'function') {
+      playerControls.config.onInteract(e);
+    }
+  });
+  
+  // Prevent touch events from interfering with game
+  interactBtn.addEventListener("touchstart", (e) => {
+    e.stopPropagation();
+  }, { passive: true });
+  
+  interactBtn.addEventListener("touchend", (e) => {
+    e.stopPropagation();
+  }, { passive: true });
+  
+  document.body.appendChild(interactBtn);
+  mobileInteractButton = interactBtn;
+  
+  console.log("✅ [MOBILE INTERACT] Mobile interact button created successfully");
+  return interactBtn;
+}
+
+function updateMobileInteractButton(nearInteractable = false) {
+  if (!isMobile || !mobileInteractButton) return;
+  
+  // Only show when near an interactable object and game is not paused
+  const shouldShow = nearInteractable && !isGamePaused && gameStarted && isMobileLandscape();
+  mobileInteractButton.style.display = shouldShow ? "flex" : "none";
+  
+  // Add pulse animation when visible
+  if (shouldShow) {
+    mobileInteractButton.style.animation = "pulse 1s infinite";
+  } else {
+    mobileInteractButton.style.animation = "none";
+  }
+}
+
+// Create mobile interact button on load
+if (isMobile) {
+  createMobileInteractButton();
+  
+  // Add pulse animation CSS
+  const pulseStyle = document.createElement('style');
+  pulseStyle.textContent = `
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+  `;
+  document.head.appendChild(pulseStyle);
+}
+
+// 📱 MOBILE WEAPON SELECTOR (January 18, 2026 - Phase 1 Mobile Optimization)
+// Horizontal weapon slot selector for levels 4, 5, 6
+let mobileWeaponSelector = null;
+
+function createMobileWeaponSelector() {
+  if (!isMobile) {
+    console.log("💡 [MOBILE WEAPON] Not on mobile - skipping weapon selector creation");
+    return null;
+  }
+  
+  if (mobileWeaponSelector) {
+    console.log("✅ [MOBILE WEAPON] Selector already exists");
+    return mobileWeaponSelector;
+  }
+  
+  console.log("📱 [MOBILE WEAPON] Creating mobile weapon selector...");
+  
+  const weaponContainer = document.createElement("div");
+  weaponContainer.id = "mobileWeaponSelector";
+  
+  Object.assign(weaponContainer.style, {
+    position: "fixed",
+    bottom: "20px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    display: "none", // Hidden until in weapon-enabled level
+    flexDirection: "row",
+    gap: "8px",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "10px",
+    background: "rgba(0, 0, 0, 0.7)",
+    border: "2px solid rgba(255, 224, 102, 0.6)",
+    borderRadius: "15px",
+    zIndex: "9997",
+    touchAction: "manipulation",
+    userSelect: "none"
+  });
+  
+  // Create 9 weapon slot buttons (1-9)
+  for (let i = 1; i <= 9; i++) {
+    const slotBtn = document.createElement("button");
+    slotBtn.id = `mobileWeaponSlot${i}`;
+    slotBtn.textContent = i.toString();
+    slotBtn.setAttribute("aria-label", `Weapon Slot ${i}`);
+    slotBtn.dataset.slot = i;
+    
+    Object.assign(slotBtn.style, {
+      width: "45px",
+      height: "45px",
+      borderRadius: "8px",
+      background: "rgba(255, 255, 255, 0.1)",
+      border: "2px solid rgba(255, 255, 255, 0.3)",
+      color: "#cbd5f5",
+      fontSize: "18px",
+      fontWeight: "bold",
+      cursor: "pointer",
+      transition: "all 0.2s",
+      touchAction: "manipulation",
+      userSelect: "none",
+      WebkitTapHighlightColor: "transparent",
+      fontFamily: "'Press Start 2P', monospace"
+    });
+    
+    // Click handler - switch weapon
+    slotBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const slot = parseInt(e.target.dataset.slot);
+      console.log(`📱 [MOBILE WEAPON] Weapon slot ${slot} clicked`);
+      
+      // Switch weapon using weapon system
+      if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
+        weaponSystem.switchWeapon(slot).then(() => {
+          if (currentLevel === LEVEL_IDS.LEVEL4 && typeof updateLevel4ProgressHUD === 'function') {
+            updateLevel4ProgressHUD();
+          }
+        });
+      }
+      
+      // Update active state
+      updateMobileWeaponSelector(slot);
+    });
+    
+    // Prevent touch events from interfering
+    slotBtn.addEventListener("touchstart", (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+    
+    slotBtn.addEventListener("touchend", (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+    
+    weaponContainer.appendChild(slotBtn);
+  }
+  
+  document.body.appendChild(weaponContainer);
+  mobileWeaponSelector = weaponContainer;
+  
+  console.log("✅ [MOBILE WEAPON] Mobile weapon selector created successfully");
+  return weaponContainer;
+}
+
+function updateMobileWeaponSelector(activeSlot = null) {
+  if (!isMobile || !mobileWeaponSelector) return;
+  
+  // Only show in weapon-enabled levels (4, 5, 6)
+  const weaponLevels = [LEVEL_IDS.LEVEL4, LEVEL_IDS.LEVEL5, LEVEL_IDS.LEVEL6];
+  const shouldShow = weaponLevels.includes(currentLevel) && !isGamePaused && gameStarted && isMobileLandscape();
+  
+  mobileWeaponSelector.style.display = shouldShow ? "flex" : "none";
+  
+  // Update active slot styling
+  if (activeSlot && shouldShow) {
+    const buttons = mobileWeaponSelector.querySelectorAll('button');
+    buttons.forEach((btn) => {
+      const slot = parseInt(btn.dataset.slot);
+      if (slot === activeSlot) {
+        // Active slot
+        btn.style.background = "rgba(255, 224, 102, 0.9)";
+        btn.style.border = "2px solid rgba(255, 255, 255, 0.9)";
+        btn.style.color = "#000";
+        btn.style.transform = "scale(1.1)";
+      } else {
+        // Inactive slot
+        btn.style.background = "rgba(255, 255, 255, 0.1)";
+        btn.style.border = "2px solid rgba(255, 255, 255, 0.3)";
+        btn.style.color = "#cbd5f5";
+        btn.style.transform = "scale(1)";
+      }
+    });
+  }
+}
+
+// Create mobile weapon selector on load
+if (isMobile) {
+  createMobileWeaponSelector();
+}
+
+// 📱 MOBILE SHOOT BUTTON (January 18, 2026 - Mobile Controls Complete)
+// Large shoot button for firing weapons in levels 4, 5, 6
+let mobileShootButton = null;
+let mobileShootInterval = null;
+
+function createMobileShootButton() {
+  if (!isMobile) {
+    console.log("💡 [MOBILE SHOOT] Not on mobile - skipping shoot button creation");
+    return null;
+  }
+  
+  if (mobileShootButton) {
+    console.log("✅ [MOBILE SHOOT] Button already exists");
+    return mobileShootButton;
+  }
+  
+  console.log("📱 [MOBILE SHOOT] Creating mobile shoot button...");
+  
+  const shootBtn = document.createElement("button");
+  shootBtn.id = "mobileShootButton";
+  shootBtn.innerHTML = "🔫"; // Gun icon
+  shootBtn.setAttribute("aria-label", "Shoot");
+  
+  Object.assign(shootBtn.style, {
+    position: "fixed",
+    bottom: "230px", // Above interact button
+    right: "20px",
+    width: "80px",
+    height: "80px",
+    borderRadius: "50%",
+    background: "rgba(255, 69, 58, 0.9)", // Red
+    border: "3px solid rgba(255, 255, 255, 0.9)",
+    color: "#fff",
+    fontSize: "36px",
+    cursor: "pointer",
+    zIndex: "9998",
+    display: "none", // Hidden until in weapon level
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.5)",
+    transition: "all 0.1s",
+    touchAction: "manipulation",
+    userSelect: "none",
+    WebkitTapHighlightColor: "transparent",
+    fontFamily: "'Press Start 2P', monospace"
+  });
+  
+  // Shoot on touch start (continuous fire while held)
+  shootBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log("📱 [MOBILE SHOOT] Shoot button pressed - starting continuous fire");
+    
+    // Immediate first shot
+    fireWeapon();
+    
+    // Visual feedback - scale down slightly
+    shootBtn.style.transform = "scale(0.95)";
+    shootBtn.style.background = "rgba(255, 0, 0, 1)"; // Brighter red
+    
+    // Continuous fire while held (100ms interval = ~10 shots/second)
+    mobileShootInterval = setInterval(() => {
+      fireWeapon();
+    }, 100);
+  }, { passive: false });
+  
+  // Stop shooting on touch end
+  shootBtn.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log("📱 [MOBILE SHOOT] Shoot button released - stopping fire");
+    
+    // Stop continuous fire
+    if (mobileShootInterval) {
+      clearInterval(mobileShootInterval);
+      mobileShootInterval = null;
+    }
+    
+    // Reset visual feedback
+    shootBtn.style.transform = "scale(1)";
+    shootBtn.style.background = "rgba(255, 69, 58, 0.9)";
+  }, { passive: false });
+  
+  // Also stop on touch cancel (e.g., finger slides off button)
+  shootBtn.addEventListener("touchcancel", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (mobileShootInterval) {
+      clearInterval(mobileShootInterval);
+      mobileShootInterval = null;
+    }
+    
+    shootBtn.style.transform = "scale(1)";
+    shootBtn.style.background = "rgba(255, 69, 58, 0.9)";
+  }, { passive: false });
+  
+  document.body.appendChild(shootBtn);
+  mobileShootButton = shootBtn;
+  
+  console.log("✅ [MOBILE SHOOT] Mobile shoot button created successfully");
+  return shootBtn;
+}
+
+// Helper function to fire weapon (same logic as mousedown handler)
+function fireWeapon() {
+  // Check if in weapon level
+  const weaponLevels = [LEVEL_IDS.LEVEL4, LEVEL_IDS.LEVEL5, LEVEL_IDS.LEVEL6];
+  if (!weaponLevels.includes(currentLevel)) {
+    console.warn("⚠️ [MOBILE SHOOT] Not in weapon level");
+    return;
+  }
+  
+  // Don't shoot if paused
+  if (isGamePaused) {
+    console.warn("⚠️ [MOBILE SHOOT] Game is paused");
+    return;
+  }
+  
+  // Use Weapon System
+  if (weaponSystem && typeof weaponSystem.fire === 'function') {
+    // Check if weapon is loaded
+    if (!weaponSystem.weaponViewmodel || !weaponSystem.camera.children.includes(weaponSystem.weaponViewmodel)) {
+      console.warn("⚠️ [MOBILE SHOOT] Weapon not loaded, attempting to load...");
+      const currentSlot = weaponSystem.getCurrentSlot() || 1;
+      weaponSystem.loadWeapon(currentSlot).then(() => {
+        weaponSystem.fire();
+      }).catch(err => {
+        console.error("❌ [MOBILE SHOOT] Failed to load weapon for shooting:", err);
+      });
+    } else {
+      weaponSystem.fire();
+    }
+  } else {
+    console.warn("⚠️ [MOBILE SHOOT] Weapon system not available");
+  }
+}
+
+function updateMobileShootButton() {
+  if (!isMobile || !mobileShootButton) return;
+  
+  // Only show in weapon-enabled levels (4, 5, 6)
+  const weaponLevels = [LEVEL_IDS.LEVEL4, LEVEL_IDS.LEVEL5, LEVEL_IDS.LEVEL6];
+  const shouldShow = weaponLevels.includes(currentLevel) && !isGamePaused && gameStarted && isMobileLandscape();
+  
+  mobileShootButton.style.display = shouldShow ? "flex" : "none";
+  
+  // Clean up interval if hidden
+  if (!shouldShow && mobileShootInterval) {
+    clearInterval(mobileShootInterval);
+    mobileShootInterval = null;
+  }
+}
+
+// Create mobile shoot button on load
+if (isMobile) {
+  createMobileShootButton();
+}
+
+// 📱 LANDSCAPE ORIENTATION PROMPT (January 18, 2026 - Phase 1 Mobile Optimization)
+// Full-screen overlay prompting users to rotate device to landscape
+let landscapePromptOverlay = null;
+
+function createLandscapePrompt() {
+  if (!isMobile) {
+    console.log("💡 [LANDSCAPE PROMPT] Not on mobile - skipping prompt creation");
+    return null;
+  }
+  
+  if (landscapePromptOverlay) {
+    console.log("✅ [LANDSCAPE PROMPT] Prompt already exists");
+    return landscapePromptOverlay;
+  }
+  
+  console.log("📱 [LANDSCAPE PROMPT] Creating landscape orientation prompt...");
+  
+  const promptOverlay = document.createElement("div");
+  promptOverlay.id = "landscapePrompt";
+  
+  Object.assign(promptOverlay.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    background: "rgba(0, 0, 0, 0.95)",
+    zIndex: "999999",
+    display: "none",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#ffe066",
+    fontFamily: "'Press Start 2P', monospace",
+    textAlign: "center",
+    padding: "20px",
+    boxSizing: "border-box"
+  });
+  
+  promptOverlay.innerHTML = `
+    <div style="font-size: 18px; margin-bottom: 30px; line-height: 1.6;">
+      🔄 Please Rotate Your Device
+    </div>
+    <div style="font-size: 48px; margin-bottom: 30px; animation: rotateDevice 2s infinite;">
+      📱 ➡️ 📱
+    </div>
+    <div style="font-size: 14px; color: #cbd5f5; max-width: 400px; line-height: 1.8;">
+      This game requires landscape mode<br>for the best experience.
+      <br><br>
+      Please rotate your device to<br>landscape orientation.
+    </div>
+  `;
+  
+  // Add CSS animation for rotate icon
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes rotateDevice {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-10deg); }
+      75% { transform: rotate(10deg); }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  document.body.appendChild(promptOverlay);
+  landscapePromptOverlay = promptOverlay;
+  
+  console.log("✅ [LANDSCAPE PROMPT] Landscape prompt created successfully");
+  return promptOverlay;
+}
+
+// 📱 CONTINUOUS LANDSCAPE MODE CHECKING (January 18, 2026 - Phase 1 Mobile Optimization)
+// Continuously check orientation and show/hide prompt + controls accordingly
+function checkLandscapeMode() {
+  if (!isMobile) return;
+  
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const promptOverlay = landscapePromptOverlay || createLandscapePrompt();
+  
+  if (!isLandscape && gameStarted) {
+    // Portrait mode detected - show prompt and hide controls
+    console.log("📱 [LANDSCAPE CHECK] Portrait detected - showing prompt");
+    
+    if (promptOverlay) {
+      promptOverlay.style.display = "flex";
+    }
+    
+    // Hide joysticks
+    if (mobileJoystick) mobileJoystick.style.display = "none";
+    if (mobileCameraJoystick) mobileCameraJoystick.style.display = "none";
+    
+    // Hide pause button
+    if (mobilePauseButton) mobilePauseButton.style.display = "none";
+    
+    // Hide interact button
+    if (mobileInteractButton) mobileInteractButton.style.display = "none";
+    
+    // Hide weapon selector
+    if (mobileWeaponSelector) mobileWeaponSelector.style.display = "none";
+    
+    // Hide shoot button
+    if (mobileShootButton) mobileShootButton.style.display = "none";
+    
+    // Hide crosshair
+    if (crosshairElement) crosshairElement.style.display = "none";
+  } else if (isLandscape || !gameStarted) {
+    // Landscape mode detected or game not started - hide prompt and show controls
+    if (isLandscape && gameStarted) {
+      console.log("📱 [LANDSCAPE CHECK] Landscape detected - hiding prompt, showing controls");
+    }
+    
+    if (promptOverlay) {
+      promptOverlay.style.display = "none";
+    }
+    
+    // Re-create/show joysticks
+    if (gameStarted) {
+      checkAndCreateJoystick();
+      
+      // Show pause button
+      updateMobilePauseButton();
+      
+      // Update interact button (will show if near interactable)
+      updateMobileInteractButton(!!nearestInteractableChest);
+      
+      // Update weapon selector (will show if in weapon level)
+      updateMobileWeaponSelector();
+      
+      // Update shoot button (will show if in weapon level)
+      updateMobileShootButton();
+      
+      // Show crosshair
+      if (crosshairElement) crosshairElement.style.display = "flex";
+    }
+  }
+}
+
+// Create landscape prompt on load
+if (isMobile) {
+  createLandscapePrompt();
+}
+
+// Check orientation on orientation change
+window.addEventListener('orientationchange', () => {
+  console.log("📱 [ORIENTATION] Orientation changed");
+  setTimeout(checkLandscapeMode, 200); // Delay to let orientation settle
+});
+
+// Check orientation on resize
+window.addEventListener('resize', () => {
+  if (isMobile) {
+    checkLandscapeMode();
+  }
+});
+
+// Check orientation periodically (fallback for devices that don't fire events reliably)
+if (isMobile) {
+  setInterval(() => {
+    if (gameStarted) {
+      checkLandscapeMode();
+    }
+  }, 1000); // Check every second
+}
+
 // Mobile Joystick (for landscape mode or desktop testing)
 function createMobileJoystick() {
   // FIX: Always create on mobile, or if desktop testing enabled
-  const shouldShow = isMobile || (isMobileLandscape || window.enableDesktopJoysticks) && !mobileJoystick;
+  const shouldShow = isMobile || (isMobileLandscape() || window.enableDesktopJoysticks) && !mobileJoystick;
   if (!shouldShow && mobileJoystick) return; // Don't recreate if exists
   if (mobileJoystick) return; // Already exists
   
@@ -34421,7 +35568,7 @@ function createMobileJoystick() {
 // Mobile Camera Control Joystick (right side, for third-person camera rotation only)
 function createMobileCameraJoystick() {
   // FIX: Always create on mobile, or if desktop testing enabled
-  const shouldShow = isMobile || (isMobileLandscape || window.enableDesktopJoysticks) && !mobileCameraJoystick;
+  const shouldShow = isMobile || (isMobileLandscape() || window.enableDesktopJoysticks) && !mobileCameraJoystick;
   if (!shouldShow && mobileCameraJoystick) return; // Don't recreate if exists
   if (mobileCameraJoystick) return; // Already exists
   
@@ -34607,56 +35754,85 @@ function createMobileCameraJoystick() {
   return joystickContainer;
 }
 
+// 📱 MOBILE JOYSTICK INITIALIZATION (January 18, 2026 - Phase 1 Mobile Optimization)
 // Initialize mobile joysticks if in landscape mode or desktop testing enabled
+// 🔧 ENHANCED with error handling, retry logic, and comprehensive logging
+let joystickCreationAttempts = 0;
+const MAX_JOYSTICK_ATTEMPTS = 3;
+
 function checkAndCreateJoystick() {
-  const newIsLandscape = isMobile && window.innerWidth > window.innerHeight;
-  // FIX: Force landscape mode for mobile - always enable joysticks on mobile
-  const forceLandscape = isMobile ? true : (window.forceLandscapeMode || false);
-  const desktopTestEnabled = window.enableDesktopJoysticks || false;
-  const joystickViewMode = isJoystickView();
-  // FIX: Always show joysticks on mobile (they're essential for mobile play)
-  const shouldShow = isMobile || newIsLandscape || forceLandscape || desktopTestEnabled || joystickViewMode;
-  
-  if (shouldShow) {
-    // Create movement joystick if needed (always create on mobile)
-    if (!mobileJoystick) {
-      createMobileJoystick();
-    }
-    // Create camera joystick if needed (only in third-person or joystick view)
-    // FIX: Also create on mobile even if first-person (some mobile players prefer it)
-    if (!mobileCameraJoystick && (!isFirstPerson() || isMobile)) {
-      createMobileCameraJoystick();
-    }
-    // Update visibility based on camera mode and pause state
-    // FIX: On mobile, always show movement joystick when not paused
-    if (mobileJoystick) {
-      mobileJoystick.style.display = (isGamePaused) ? "none" : "flex";
-    }
-    // FIX: On mobile, show camera joystick in third-person/joystick view, or always if mobile prefers it
-    if (mobileCameraJoystick) {
-      if (isMobile) {
-        // Mobile: Show in third-person/joystick view, hide in first-person (unless forced)
-        mobileCameraJoystick.style.display = (isFirstPerson() && !window.forceLandscapeMode) || isGamePaused ? "none" : "flex";
+  try {
+    const newIsLandscape = isMobile && window.innerWidth > window.innerHeight;
+    const forceLandscape = isMobile ? true : (window.forceLandscapeMode || false);
+    const desktopTestEnabled = window.enableDesktopJoysticks || false;
+    const joystickViewMode = isJoystickView();
+    
+    // 📊 Diagnostic logging
+    console.log("📱 [JOYSTICK CHECK] Conditions:", {
+      isMobile: isMobile,
+      isLandscape: newIsLandscape,
+      windowSize: `${window.innerWidth}x${window.innerHeight}`,
+      forceLandscape: forceLandscape,
+      desktopTest: desktopTestEnabled,
+      joystickView: joystickViewMode,
+      isGamePaused: isGamePaused,
+      movementJoystickExists: !!mobileMovementJoystick,
+      cameraJoystickExists: !!mobileCameraJoystick
+    });
+    
+    // FIX: Always show joysticks on mobile (they're essential for mobile play)
+    const shouldShow = isMobile || newIsLandscape || forceLandscape || desktopTestEnabled || joystickViewMode;
+    
+    if (shouldShow && !isGamePaused) {
+      console.log("✅ [JOYSTICK] Should show joysticks - checking creation...");
+      
+      // ✅ USE NEW NIPPLEJS SYSTEM - Create BOTH joysticks with one function
+      if (!mobileMovementJoystick || !mobileCameraJoystick) {
+        console.log("📱 [JOYSTICK] Creating nipplejs joysticks...");
+        try {
+          // Check if nipplejs is loaded
+          if (typeof nipplejs === 'undefined') {
+            console.warn("⚠️ [JOYSTICK] nipplejs not loaded yet - retrying in 500ms...");
+            joystickCreationAttempts++;
+            if (joystickCreationAttempts < MAX_JOYSTICK_ATTEMPTS) {
+              setTimeout(checkAndCreateJoystick, 500);
+            }
+            return;
+          }
+          
+          createMobileJoysticks(); // Creates BOTH joysticks
+          
+          if (mobileMovementJoystick && mobileCameraJoystick) {
+            console.log("✅ [JOYSTICK] Nipplejs joysticks created successfully");
+            joystickCreationAttempts = 0; // Reset attempt counter
+          } else {
+            throw new Error("Nipplejs joystick creation returned null");
+          }
+        } catch (error) {
+          console.error("❌ [JOYSTICK] Failed to create nipplejs joysticks:", error);
+          joystickCreationAttempts++;
+          if (joystickCreationAttempts < MAX_JOYSTICK_ATTEMPTS) {
+            console.log(`🔄 [JOYSTICK] Retrying in 500ms (attempt ${joystickCreationAttempts}/${MAX_JOYSTICK_ATTEMPTS})...`);
+            setTimeout(checkAndCreateJoystick, 500);
+            return;
+          } else {
+            console.error("💔 [JOYSTICK] Max retry attempts reached - joystick creation failed");
+          }
+        }
       } else {
-        // Desktop: Original logic
-        mobileCameraJoystick.style.display = (isFirstPerson() || isGamePaused) ? "none" : "flex";
+        console.log("✅ [JOYSTICK] Nipplejs joysticks already exist");
+        
+        // Update visibility via updateMobileJoysticks()
+        updateMobileJoysticks();
       }
+    } else {
+      console.log("⏸️ [JOYSTICK] Should not show joysticks (not in landscape or game paused)");
+      
+      // Update visibility via updateMobileJoysticks()
+      updateMobileJoysticks();
     }
-  } else {
-    // Only remove if not in joystick view mode (which always needs joysticks)
-    // FIX: Never remove joysticks on mobile
-    if (!joystickViewMode && !isMobile) {
-      if (mobileJoystick) {
-        mobileJoystick.remove();
-        mobileJoystick = null;
-        joystickActive = false;
-      }
-      if (mobileCameraJoystick) {
-        mobileCameraJoystick.remove();
-        mobileCameraJoystick = null;
-        cameraJoystickActive = false;
-      }
-    }
+  } catch (error) {
+    console.error("💥 [JOYSTICK] Critical error in checkAndCreateJoystick:", error);
   }
 }
 
