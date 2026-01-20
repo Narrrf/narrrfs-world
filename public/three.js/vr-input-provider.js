@@ -368,6 +368,23 @@ export class VRInputProvider extends InputProvider {
   }
   
   /**
+   * Get shoot state from VR controller trigger
+   * Used for weapon shooting in VR mode (Levels 4-6)
+   * ✅ NEW METHOD (January 20, 2026)
+   * 
+   * @returns {boolean} True if trigger is pressed on either controller
+   */
+  getShootState() {
+    if (!this.enabled) return false;
+    
+    // Check trigger on both controllers (either can shoot)
+    const leftTrigger = this.getButtonState('trigger', 'left');
+    const rightTrigger = this.getButtonState('trigger', 'right');
+    
+    return leftTrigger || rightTrigger;
+  }
+  
+  /**
    * Get button state for VR controller
    * @param {string} buttonId - Button identifier (e.g., 'trigger', 'grip', 'thumbstick')
    * @param {string} handedness - 'left' or 'right'
@@ -384,10 +401,18 @@ export class VRInputProvider extends InputProvider {
       'thumbstick': 2,   // Thumbstick press
       'x': 3,            // X button (left) / A button (right)
       'y': 4,            // Y button (left) / B button (right)
+      'a': 3,            // A button (right controller) - same as X
+      'b': 4,            // B button (right controller) - same as Y
     };
     
     const index = buttonMap[buttonId];
     if (index !== undefined && buttonStates[index] !== undefined) {
+      // ✅ Log button presses for debugging (January 20, 2026)
+      if (buttonStates[index] && (!window.lastButtonLog || window.lastButtonLog !== `${buttonId}_${handedness}`)) {
+        console.log(`🎮 [VR INPUT] Button pressed: ${buttonId} (${handedness}) - Index: ${index}`);
+        window.lastButtonLog = `${buttonId}_${handedness}`;
+        setTimeout(() => { window.lastButtonLog = null; }, 500); // Reset after 500ms
+      }
       return buttonStates[index];
     }
     

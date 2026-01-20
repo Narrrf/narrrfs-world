@@ -2269,10 +2269,10 @@ async function startVRSession() {
     }
     
     // ✅ Create and initialize VR UI raycaster for menu interaction (January 20, 2026)
-    vrUIRaycaster = new VRUIRaycaster(scene, camera, renderer);
-    if (vrUIRaycaster.initialize(session)) {
-      console.log('✅ [VR UI] VR UI raycaster initialized for menu interaction');
-    }
+    // FIXED: Use correct constructor parameters (renderer, camera, session, vrInputProvider)
+    vrUIRaycaster = new VRUIRaycaster(renderer, camera, session, vrInputProvider);
+    vrUIRaycaster.enable();
+    console.log('✅ [VR UI] VR UI raycaster enabled for menu interaction');
     
     // Handle session end
     session.addEventListener('end', () => {
@@ -10442,7 +10442,29 @@ function initializeGUISystem() {
       // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
       onStartVRSession: async () => {
         console.log('🥽 [VR] Starting VR session from main menu callback...');
-        return await startVRSession();
+        const vrStarted = await startVRSession();
+        if (vrStarted) {
+          console.log('✅ [VR] VR session started successfully!');
+          console.log('🎮 [VR] Starting game in VR mode...');
+          
+          // CRITICAL FIX: Start the game after VR session starts!
+          // This loads the level and enables player controls
+          setTimeout(() => {
+            console.log('🎮 [VR] Calling startGame() to load level...');
+            startGame(LEVEL_IDS.LEVEL1); // Start with Level 1 in VR mode
+            
+            // CRITICAL: Re-enable VR input after game starts (in case it got disabled)
+            setTimeout(() => {
+              if (vrInputProvider && playerControls && isVRSessionActive()) {
+                console.log('🥽 [VR] Re-enabling VR input provider after game start...');
+                vrInputProvider.enable();
+                playerControls.enableVR(currentVRSession);
+                console.log('✅ [VR] VR input re-enabled for gameplay');
+              }
+            }, 1000); // Wait for level to fully load
+          }, 500); // Small delay to let VR session fully initialize
+        }
+        return vrStarted;
       },
       onTogglePause: (paused) => {
         // CRITICAL FIX: Set flag to prevent circular call
