@@ -2269,10 +2269,20 @@ async function startVRSession() {
     }
     
     // ✅ Create and initialize VR UI raycaster for menu interaction (January 20, 2026)
-    // FIXED: Use correct constructor parameters (renderer, camera, session, vrInputProvider)
-    vrUIRaycaster = new VRUIRaycaster(renderer, camera, session, vrInputProvider);
-    vrUIRaycaster.enable();
-    console.log('✅ [VR UI] VR UI raycaster enabled for menu interaction');
+    // CRITICAL FIX: Use correct constructor parameters and initialize separately
+    try {
+      // Constructor: (scene, camera, renderer) - NOT (renderer, camera, session, vrInputProvider)!
+      vrUIRaycaster = new VRUIRaycaster(scene, camera, renderer);
+      // Initialize with XR session (separate step)
+      if (vrUIRaycaster.initialize(session)) {
+        console.log('✅ [VR UI] VR UI raycaster initialized successfully');
+      }
+    } catch (raycasterErr) {
+      console.warn('⚠️ [VR UI] Failed to initialize VR UI raycaster (non-critical):', raycasterErr);
+      console.error('⚠️ [VR UI] Raycaster error details:', raycasterErr.message, raycasterErr.stack);
+      vrUIRaycaster = null;
+      // VR session continues without menu raycaster - keyboard (SHIFT+V) still works!
+    }
     
     // Handle session end
     session.addEventListener('end', () => {
@@ -2288,7 +2298,11 @@ async function startVRSession() {
     return true;
   } catch (err) {
     console.error('❌ [VR] Failed to start VR session:', err);
+    console.error('❌ [VR] Error details:', err.message, err.stack);
     hideVRLoadingIndicator(); // Clean up if failed
+    
+    // Show user-friendly error
+    alert(`VR Session Failed: ${err.message}\n\nTry refreshing the page or using SHIFT+V keyboard shortcut.`);
     return false;
   }
 }
@@ -10442,29 +10456,47 @@ function initializeGUISystem() {
       // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
       onStartVRSession: async () => {
         console.log('🥽 [VR] Starting VR session from main menu callback...');
-        const vrStarted = await startVRSession();
-        if (vrStarted) {
-          console.log('✅ [VR] VR session started successfully!');
-          console.log('🎮 [VR] Starting game in VR mode...');
-          
-          // CRITICAL FIX: Start the game after VR session starts!
-          // This loads the level and enables player controls
-          setTimeout(() => {
-            console.log('🎮 [VR] Calling startGame() to load level...');
-            startGame(LEVEL_IDS.LEVEL1); // Start with Level 1 in VR mode
+        
+        try {
+          const vrStarted = await startVRSession();
+          if (vrStarted) {
+            console.log('✅ [VR] VR session started successfully!');
+            console.log('🎮 [VR] Starting game in VR mode...');
             
-            // CRITICAL: Re-enable VR input after game starts (in case it got disabled)
+            // CRITICAL FIX: Start the game after VR session starts!
+            // This loads the level and enables player controls
             setTimeout(() => {
-              if (vrInputProvider && playerControls && isVRSessionActive()) {
-                console.log('🥽 [VR] Re-enabling VR input provider after game start...');
-                vrInputProvider.enable();
-                playerControls.enableVR(currentVRSession);
-                console.log('✅ [VR] VR input re-enabled for gameplay');
+              try {
+                console.log('🎮 [VR] Calling startGame() to load level...');
+                startGame(LEVEL_IDS.LEVEL1); // Start with Level 1 in VR mode
+                
+                // CRITICAL: Re-enable VR input after game starts (in case it got disabled)
+                setTimeout(() => {
+                  if (vrInputProvider && playerControls && isVRSessionActive()) {
+                    console.log('🥽 [VR] Re-enabling VR input provider after game start...');
+                    try {
+                      vrInputProvider.enable();
+                      playerControls.enableVR(currentVRSession).catch(err => {
+                        console.warn('⚠️ [VR] PlayerControls.enableVR failed:', err);
+                      });
+                      console.log('✅ [VR] VR input re-enabled for gameplay');
+                    } catch (enableErr) {
+                      console.error('❌ [VR] Failed to re-enable VR input:', enableErr);
+                    }
+                  }
+                }, 2000); // Wait 2 seconds for level to fully load (increased from 1s)
+              } catch (gameErr) {
+                console.error('❌ [VR] Failed to start game in VR mode:', gameErr);
               }
-            }, 1000); // Wait for level to fully load
-          }, 500); // Small delay to let VR session fully initialize
+            }, 1000); // Increased delay to let VR session fully settle
+          } else {
+            console.error('❌ [VR] VR session failed to start');
+          }
+          return vrStarted;
+        } catch (err) {
+          console.error('❌ [VR] Error in VR MODE callback:', err);
+          return false;
         }
-        return vrStarted;
       },
       onTogglePause: (paused) => {
         // CRITICAL FIX: Set flag to prevent circular call
