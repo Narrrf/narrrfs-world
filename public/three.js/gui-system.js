@@ -2767,12 +2767,67 @@ export class GUISystem {
     });
     buttonsContainer.appendChild(glyphMemoryBtn);
     
+    // 🥽 VR MODE button (January 20, 2026) - URGENT FIX FOR META QUEST 3
+    const vrModeBtn = this._createCompletionButton("🥽 VR MODE", async () => {
+      console.log('🥽 [VR] VR MODE button clicked from main menu');
+      // Check if VR is supported
+      if (navigator.xr) {
+        try {
+          const vrSupported = await navigator.xr.isSessionSupported('immersive-vr');
+          if (vrSupported) {
+            // Hide main menu
+            this.hideMainMenu();
+            // Start VR session via callback
+            if (this.config.onStartVRSession) {
+              const success = await this.config.onStartVRSession();
+              if (success) {
+                console.log('✅ [VR] VR session started from main menu');
+              } else {
+                console.error('❌ [VR] Failed to start VR session');
+                // Show main menu again if VR failed
+                this.showMainMenu();
+                alert('Failed to start VR session. Please try again.');
+              }
+            } else {
+              console.error('❌ [VR] onStartVRSession callback not available');
+              this.showMainMenu();
+              alert('VR session handler not available. Please refresh the page.');
+            }
+          } else {
+            alert('VR is not supported on this device.');
+          }
+        } catch (error) {
+          console.error('❌ [VR] Error checking VR support:', error);
+          alert('Error checking VR support. Please try again.');
+        }
+      } else {
+        alert('WebXR is not available in this browser.');
+      }
+    }, true); // Primary button (yellow)
+    Object.assign(vrModeBtn.style, {
+      width: "100%", 
+      padding: "20px 32px", // Bigger for VR mode
+      fontSize: "clamp(18px, 3.5vw, 24px)", // Bigger font
+      fontWeight: "700", // Bolder
+      pointerEvents: "auto", 
+      cursor: "pointer", 
+      zIndex: "1005",
+      position: "relative",
+      // Extra visibility for VR controllers
+      boxShadow: "0 0 20px rgba(139, 92, 246, 0.6)",
+      border: "2px solid rgba(139, 92, 246, 0.8)"
+    });
+    buttonsContainer.appendChild(vrModeBtn);
+    
     // Options button
     const optionsBtn = this._createCompletionButton("Options", () => {
+      console.log('⚙️ [OPTIONS] Options button clicked from main menu');
       // Hide main menu when opening options (options menu will overlay)
       // User can close options to return to main menu
       if (this.config.onShowOptions) {
         this.config.onShowOptions();
+      } else {
+        console.error('❌ [OPTIONS] onShowOptions callback not available');
       }
     }, false);
     Object.assign(optionsBtn.style, {

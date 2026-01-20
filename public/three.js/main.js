@@ -10439,6 +10439,11 @@ function initializeGUISystem() {
       onHideOptionsMenu: () => {
         hideOptionsMenu();
       },
+      // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
+      onStartVRSession: async () => {
+        console.log('🥽 [VR] Starting VR session from main menu callback...');
+        return await startVRSession();
+      },
       onTogglePause: (paused) => {
         // CRITICAL FIX: Set flag to prevent circular call
         window._togglePauseFromGUI = true;
