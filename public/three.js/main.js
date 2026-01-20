@@ -282,6 +282,7 @@ import { SkySystem } from "./sky-system.js";
 import { GrassSystem } from "./grass-system.js";
 import { PlayerControls } from "./player-controls.js";
 import { VRInputProvider } from "./vr-input-provider.js";
+import { VRUIRaycaster } from "./vr-ui-raycaster.js"; // ✅ VR UI interaction system (January 20, 2026)
 import { PlayerModel } from "./player-model.js";
 import { GUISystem } from "./gui-system.js";
 import { WeaponSystem } from "./weapon-system.js";
@@ -290,6 +291,8 @@ import { AlienSpiderBoss } from "./alien-spider.js"; // Alien Spider boss
 // Cache-bust chest system to avoid stale module during rapid iteration.
 import { ChestSystem } from "./chest-system.js?v=2026-01-15-chest3-dual-model";
 import { AudioSystem } from "./audio-system.js";
+// 📱 Mobile Optimization System (January 19, 2026 - RAM Crash Fix)
+import { MobileOptimizer } from "./mobile-optimizer.js";
 import {
   CHARACTER_FOOTSTEP_AUDIO,
   CHARACTER_JUMP_AUDIO,
@@ -1959,6 +1962,22 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 console.log(`🖥️ [RENDERER] Pixel ratio set to: ${pixelRatio} (devicePixelRatio: ${window.devicePixelRatio || 1}, screen: ${window.innerWidth}x${window.innerHeight})`);
 renderer.shadowMap.enabled = true;
 
+// 📱 MOBILE OPTIMIZATION SYSTEM (January 19, 2026 - RAM Crash Fix)
+// Apply aggressive optimizations for mobile devices to prevent crashes
+let mobileOptimizer = null;
+if (isMobile) {
+  console.log('📱 [MOBILE OPTIMIZER] Creating mobile optimizer...');
+  mobileOptimizer = new MobileOptimizer({
+    renderer: renderer,
+    scene: scene,
+    isMobile: isMobile
+  });
+  mobileOptimizer.optimize();
+  mobileOptimizer.logMemoryUsage();
+} else {
+  console.log('💻 [DESKTOP MODE] No mobile optimization needed');
+}
+
 // 🥽 VR/WebXR Support - Enable VR rendering
 renderer.xr.enabled = true;
 renderer.xr.setReferenceSpaceType('local-floor'); // Floor-level tracking for better VR experience
@@ -1986,6 +2005,7 @@ checkVRSupport();
 
 // VR Session Management
 let vrInputProvider = null;
+let vrUIRaycaster = null; // ✅ VR UI raycaster for menu interaction (January 20, 2026)
 let currentVRSession = null;
 
 // ============================================================================
@@ -2181,6 +2201,7 @@ function hideVRLoadingIndicator() {
  * Start VR Session with Phase 2 optimizations
  * 
  * ✅ UPDATED FOR PHASE 2 (January 18, 2026)
+ * ✅ UPDATED FOR AUTO-START (January 20, 2026) - Support keyboard trigger
  */
 async function startVRSession() {
   if (!navigator.xr) {
@@ -2218,6 +2239,13 @@ async function startVRSession() {
     const optimizations = optimizeForVR();
     console.log('✅ [VR] Scene optimized for VR mode');
     
+    // ✅ CRITICAL: Close options menu before starting VR (January 20, 2026)
+    if (optionsMenu && optionsMenu.style.display === 'flex') {
+      optionsMenu.style.display = 'none';
+      window.optionsMenuOpen = false;
+      console.log('🥽 [VR] Options menu closed before starting VR');
+    }
+    
     // Request immersive VR session
     const session = await navigator.xr.requestSession('immersive-vr', {
       requiredFeatures: ['local-floor'], // Floor-level tracking
@@ -2238,6 +2266,12 @@ async function startVRSession() {
         await playerControls.enableVR(session);
         console.log('✅ [VR] VR session started and registered with PlayerControls');
       }
+    }
+    
+    // ✅ Create and initialize VR UI raycaster for menu interaction (January 20, 2026)
+    vrUIRaycaster = new VRUIRaycaster(scene, camera, renderer);
+    if (vrUIRaycaster.initialize(session)) {
+      console.log('✅ [VR UI] VR UI raycaster initialized for menu interaction');
     }
     
     // Handle session end
@@ -2273,6 +2307,12 @@ function endVRSession() {
       playerControls.disableVR();
     }
     vrInputProvider = null;
+  }
+  
+  // ✅ Dispose VR UI raycaster (January 20, 2026)
+  if (vrUIRaycaster) {
+    vrUIRaycaster.dispose();
+    vrUIRaycaster = null;
   }
   
   currentVRSession = null;
@@ -5594,6 +5634,17 @@ document.addEventListener("mousedown", (event) => {
         weaponLoaded: weaponSystem ? (weaponSystem.weaponViewmodel !== null) : false
       });
     }
+  }
+});
+
+// ⏸️ ESCAPE KEY TO TOGGLE PAUSE MENU (January 19, 2026)
+document.addEventListener("keydown", (event) => {
+  // Escape key toggles pause menu (only when game is started)
+  if (event.key === 'Escape' && gameStarted && !window.optionsMenuOpen) {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log("⏸️ [PAUSE] Escape key pressed - toggling pause");
+    togglePause();
   }
 });
 
@@ -8956,8 +9007,25 @@ function startGame(startLevelId = null) {
   
   console.log("✅ [GAME START] HUD elements shown (FPS counter, cheese HUD, debug overlay)");
   
-  // 📱 Show mobile pause button (January 18, 2026 - Phase 1 Mobile Optimization)
+  // 📱 Show mobile controls (January 19, 2026 - CRITICAL FIX)
   if (isMobile) {
+    console.log("📱 [GAME START] Initializing mobile controls...");
+    
+    // Ensure joysticks are created
+    if (!mobileMovementJoystick || !mobileCameraJoystick) {
+      console.log("📱 [GAME START] Creating mobile joysticks...");
+      if (typeof nipplejs !== 'undefined') {
+        createMobileJoysticks();
+      } else {
+        console.error("❌ [GAME START] nipplejs not loaded!");
+      }
+    }
+    
+    // Update joystick visibility
+    updateMobileJoysticks();
+    console.log("📱 [GAME START] Mobile joysticks updated");
+    
+    // Show mobile pause button
     updateMobilePauseButton();
     console.log("📱 [GAME START] Mobile pause button updated");
     
@@ -8970,7 +9038,10 @@ function startGame(startLevelId = null) {
     console.log("📱 [GAME START] Mobile shoot button updated");
     
     // Check landscape mode and show prompt if needed
-    setTimeout(checkLandscapeMode, 200);
+    setTimeout(() => {
+      console.log("📱 [GAME START] Running landscape check...");
+      checkLandscapeMode();
+    }, 200);
     console.log("📱 [GAME START] Landscape mode check scheduled");
   }
   
@@ -11880,6 +11951,118 @@ function getOptionsMenu() {
     // Store references for updateDebugHelpersButtons
     optionsMenu._debugHelpersOffBtn = debugHelpersOffBtn;
     optionsMenu._debugHelpersOnBtn = debugHelpersOnBtn;
+
+    // 🎨 GRAPHICS QUALITY TOGGLE (January 19, 2026)
+    const graphicsQualitySection = document.createElement("div");
+    Object.assign(graphicsQualitySection.style, {
+      width: "100%",
+      marginBottom: "20px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+      alignItems: "center"
+    });
+
+    const graphicsQualityLabel = document.createElement("div");
+    graphicsQualityLabel.textContent = "🎨 Graphics Quality";
+    Object.assign(graphicsQualityLabel.style, {
+      fontSize: "22px",
+      color: "#cbd5f5",
+      fontWeight: "700",
+      marginBottom: "12px"
+    });
+    graphicsQualitySection.appendChild(graphicsQualityLabel);
+
+    const graphicsQualityToggle = document.createElement("div");
+    Object.assign(graphicsQualityToggle.style, {
+      display: "flex",
+      gap: "12px",
+      alignItems: "center",
+      background: "rgba(15, 23, 42, 0.6)",
+      padding: "6px",
+      borderRadius: "8px",
+      border: "1px solid rgba(255, 224, 102, 0.2)",
+      flexWrap: "wrap",
+      justifyContent: "center"
+    });
+
+    const qualityOptions = ['low', 'medium', 'high', 'auto'];
+    const qualityButtons = {};
+    
+    qualityOptions.forEach(quality => {
+      const btn = document.createElement("button");
+      btn.textContent = graphicsQualitySettings[quality].label;
+      btn.className = `graphics-quality-btn-${quality}`;
+      Object.assign(btn.style, {
+        padding: "12px 24px",
+        borderRadius: "8px",
+        border: "none",
+        fontSize: "16px",
+        fontWeight: "600",
+        cursor: "pointer",
+        transition: "all 0.2s",
+        background: graphicsQuality === quality ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 255, 255, 0.1)",
+        color: graphicsQuality === quality ? "#ffe066" : "#cbd5f5"
+      });
+      
+      btn.addEventListener("click", () => {
+        applyGraphicsQuality(quality);
+        updateGraphicsQualityButtons();
+        console.log(`🎨 [OPTIONS] Graphics quality changed to: ${quality}`);
+      });
+      
+      btn.addEventListener("mouseenter", () => {
+        if (graphicsQuality !== quality) {
+          btn.style.background = "rgba(255, 224, 102, 0.2)";
+        }
+      });
+      
+      btn.addEventListener("mouseleave", () => {
+        if (graphicsQuality !== quality) {
+          btn.style.background = "rgba(255, 255, 255, 0.1)";
+        }
+      });
+      
+      graphicsQualityToggle.appendChild(btn);
+      qualityButtons[quality] = btn;
+    });
+    
+    graphicsQualitySection.appendChild(graphicsQualityToggle);
+    
+    // Current quality display
+    const currentQualityDisplay = document.createElement("div");
+    currentQualityDisplay.className = 'current-quality-display';
+    currentQualityDisplay.textContent = `Current: ${getGraphicsQualityLabel()}`;
+    Object.assign(currentQualityDisplay.style, {
+      fontSize: "14px",
+      color: "#cbd5f5",
+      fontStyle: "italic",
+      marginTop: "8px"
+    });
+    graphicsQualitySection.appendChild(currentQualityDisplay);
+    
+    // Add device info for mobile
+    if (isMobile && mobileOptimizer) {
+      const deviceInfoDisplay = document.createElement("div");
+      const tier = mobileOptimizer.getDeviceTier();
+      const tierNames = { 'low-end': 'Low-End', 'mid-tier': 'Mid-Tier', 'high-end': 'High-End' };
+      deviceInfoDisplay.textContent = `Device: ${tierNames[tier] || 'Unknown'} | RAM: ${mobileOptimizer.deviceInfo.memory}GB`;
+      Object.assign(deviceInfoDisplay.style, {
+        fontSize: "13px",
+        color: "#9ca3af",
+        fontStyle: "italic",
+        marginTop: "4px"
+      });
+      graphicsQualitySection.appendChild(deviceInfoDisplay);
+    }
+    
+    generalTabContent.appendChild(graphicsQualitySection);
+    
+    console.log("✅ [OPTIONS] Graphics Quality toggle section added to General tab");
+    
+    // Store references for updateGraphicsQualityButtons
+    optionsMenu._graphicsQualityButtons = qualityButtons;
+    optionsMenu._currentQualityDisplay = currentQualityDisplay;
 
     // 🌌 SKY SYSTEM CONFIGURATION (God Mode Only) - COLLAPSIBLE
     // Capture variables in outer scope to ensure they're accessible in callback
@@ -15517,19 +15700,10 @@ function getOptionsMenu() {
     optionsMenu._firstPersonBtn = firstPersonBtn;
     optionsMenu._thirdPersonBtn = thirdPersonBtn;
     optionsMenu._joystickViewBtn = joystickViewBtn;
-    optionsMenu._joystickOffBtn = joystickOffBtn;
-    optionsMenu._joystickOnBtn = joystickOnBtn;
-    optionsMenu._godModeOffBtn = godModeOffBtn;
-    optionsMenu._godModeOnBtn = godModeOnBtn;
-    optionsMenu._soundFxOffBtn = soundFxOffBtn;
-    optionsMenu._soundFxOnBtn = soundFxOnBtn;
-    optionsMenu._backgroundMusicOffBtn = backgroundMusicOffBtn;
-    optionsMenu._backgroundMusicOnBtn = backgroundMusicOnBtn;
-    optionsMenu._backgroundMusicVolumeSlider = volumeSlider;
-    optionsMenu._backgroundMusicVolumeValue = volumeValue;
-    updateSoundFxButtons();
-    updateBackgroundMusicButtons();
-    updateBackgroundMusicVolumeSlider();
+    // Note: joystickOffBtn and joystickOnBtn are already stored inside the if (!isMobile) block (line 11581-11582)
+    // Note: godModeOffBtn, soundFxOffBtn, backgroundMusicOffBtn, etc. are created elsewhere in the options menu
+    // They should be stored where they are created, not here
+    // Removed invalid references to prevent "not defined" errors (January 19, 2026)
 
     // 🥽 VR MODE (Only visible when VR is supported)
     if (vrSupported) {
@@ -15572,6 +15746,9 @@ function getOptionsMenu() {
       const vrButton = document.createElement("button");
       const isVRActive = isVRSessionActive();
       vrButton.textContent = isVRActive ? "Exit VR" : "Enter VR";
+      vrButton.tabIndex = 0; // ✅ Make button keyboard accessible (January 20, 2026)
+      vrButton.setAttribute('role', 'button'); // ✅ ARIA role for accessibility
+      vrButton.id = 'vr-toggle-button'; // ✅ ID for easy reference
       Object.assign(vrButton.style, {
         padding: "10px 20px",
         borderRadius: "8px",
@@ -15584,6 +15761,16 @@ function getOptionsMenu() {
         color: isVRActive ? "#ef4444" : "#cbd5f5",
         border: `1px solid ${isVRActive ? "rgba(239, 68, 68, 0.5)" : "rgba(139, 92, 246, 0.5)"}`
       });
+      
+      // ✅ Keyboard support for VR button (January 20, 2026)
+      // Allow Enter or Space key to activate button (standard keyboard navigation)
+      vrButton.addEventListener("keydown", async (event) => {
+        if (event.key === 'Enter' || event.key === ' ' || event.code === 'Space') {
+          event.preventDefault();
+          vrButton.click(); // Trigger the click handler
+        }
+      });
+      
       vrButton.addEventListener("click", async (event) => {
         event.preventDefault();
         if (isVRSessionActive()) {
@@ -15604,6 +15791,16 @@ function getOptionsMenu() {
         }
         updateVRButton();
       });
+      
+      // ✅ Add focus outline for keyboard navigation (January 20, 2026)
+      vrButton.addEventListener("focus", () => {
+        vrButton.style.outline = "3px solid rgba(255, 224, 102, 0.8)";
+        vrButton.style.outlineOffset = "2px";
+      });
+      vrButton.addEventListener("blur", () => {
+        vrButton.style.outline = "none";
+      });
+      
       vrSection.appendChild(vrButton);
       generalTabContent.appendChild(vrSection);
       
@@ -16308,10 +16505,20 @@ function updateGroundControlsWithSavedSettings() {
 }
 
 function showOptionsMenu() {
+  // 🎨 ORIGINAL OPTIONS MENU with Graphics Toggle Added (January 19, 2026)
   const menu = getOptionsMenu();
   
+  // CRITICAL: Hide main menu if it's open (January 19, 2026 - FIX)
+  if (guiSystem && guiSystem.mainMenu && guiSystem.mainMenu.style.display !== "none") {
+    guiSystem.mainMenu.style.display = "none";
+    window.wasMainMenuOpen = true;
+    console.log("🎮 [OPTIONS] Main menu hidden - was open before options");
+  } else {
+    window.wasMainMenuOpen = false;
+  }
+  
   // CRITICAL: Hide pause menu if it's open (so options menu appears on top)
-  const pauseMenuElement = getPauseMenu();
+  const pauseMenuElement = pauseMenu;
   if (pauseMenuElement && pauseMenuElement.style.display === "flex") {
     pauseMenuElement.style.display = "none";
     // Store that we were paused so we can restore it later
@@ -16331,23 +16538,29 @@ function showOptionsMenu() {
   // Add a flag to prevent auto-locking
   window.optionsMenuOpen = true;
   
-  // CRITICAL: Set options menu z-index higher than pause menu
-  menu.style.zIndex = "100000"; // Even higher than pause menu (99999)
+  // CRITICAL: Set options menu z-index higher than pause menu AND main menu
+  menu.style.zIndex = "100000"; // Even higher than pause menu (99999) and main menu (1002)
   menu.style.display = "flex";
   
-  updateViewModeButtons();
-  updateJoystickButtons();
-  if (isMobile) {
+  // 🎨 Update graphics quality buttons (NEW - January 19, 2026)
+  if (typeof updateGraphicsQualityButtons === 'function') {
+    updateGraphicsQualityButtons();
+  }
+  
+  // Update all existing button states
+  if (typeof updateViewModeButtons === 'function') updateViewModeButtons();
+  if (typeof updateJoystickButtons === 'function') updateJoystickButtons();
+  if (isMobile && typeof updateLandscapeButtons === 'function') {
     updateLandscapeButtons();
   }
-  updateGodModeButtons();
-  updateDebugHelpersButtons(); // Update debug helpers buttons state
-  updateSoundFxButtons();
-  updateBackgroundMusicButtons();
-  updateBackgroundMusicVolumeSlider();
-  updateVRButton();
-  updateSkyControlsWithSavedSettings(); // Load saved sky settings into UI controls
-  updateGroundControlsWithSavedSettings(); // Load saved ground settings into UI controls
+  if (typeof updateGodModeButtons === 'function') updateGodModeButtons();
+  if (typeof updateDebugHelpersButtons === 'function') updateDebugHelpersButtons();
+  if (typeof updateSoundFxButtons === 'function') updateSoundFxButtons();
+  if (typeof updateBackgroundMusicButtons === 'function') updateBackgroundMusicButtons();
+  if (typeof updateBackgroundMusicVolumeSlider === 'function') updateBackgroundMusicVolumeSlider();
+  if (typeof updateVRButton === 'function') updateVRButton();
+  if (typeof updateSkyControlsWithSavedSettings === 'function') updateSkyControlsWithSavedSettings();
+  if (typeof updateGroundControlsWithSavedSettings === 'function') updateGroundControlsWithSavedSettings();
   
   // Force cursor to stay visible (prevent any other code from hiding it)
   setTimeout(() => {
@@ -16356,6 +16569,8 @@ function showOptionsMenu() {
       playerControls.getPointerLockControls().unlock();
     }
   }, 50);
+  
+  console.log("⚙️ [OPTIONS] Options menu opened");
 }
 
 function hideOptionsMenu() {
@@ -16364,6 +16579,13 @@ function hideOptionsMenu() {
   
   // Clear the flag to allow pointer lock again
   window.optionsMenuOpen = false;
+  
+  // CRITICAL: Restore main menu if it was open before options (January 19, 2026 - FIX)
+  if (window.wasMainMenuOpen && guiSystem && guiSystem.mainMenu) {
+    guiSystem.mainMenu.style.display = "flex";
+    console.log("🎮 [OPTIONS] Main menu restored after closing options");
+    window.wasMainMenuOpen = false;
+  }
   
   // CRITICAL: Restore pause menu if we were paused before opening options
   if (window.wasPausedBeforeOptions) {
@@ -16601,15 +16823,9 @@ async function fetchPlayerDetails() {
 }
 
 async function showPauseMenu() {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.showPauseMenu === 'function') {
-    guiSystem.showPauseMenu();
-    return;
-  }
-  
-  // Legacy fallback
+  // 🎨 NEW PAUSE MENU (January 19, 2026) - Use createPauseMenu() with modern UI
   console.log("⏸️ [DEBUG] showPauseMenu called");
-  const menu = getPauseMenu();
+  const menu = createPauseMenu();
   pointerWasLockedBeforePause = playerControls ? playerControls.getPointerLockControls().isLocked : false;
   if (playerControls) {
     playerControls.getPointerLockControls().unlock();
@@ -16618,10 +16834,15 @@ async function showPauseMenu() {
   isGamePaused = true;
   
   // Hide mobile joysticks when paused
-  if (mobileJoystick) {
+  if (typeof updateMobileJoysticks === 'function') {
+    updateMobileJoysticks();
+  }
+  
+  // Legacy mobile joystick hiding (keep for safety)
+  if (typeof mobileJoystick !== 'undefined' && mobileJoystick) {
     mobileJoystick.style.display = "none";
   }
-  if (mobileCameraJoystick) {
+  if (typeof mobileCameraJoystick !== 'undefined' && mobileCameraJoystick) {
     mobileCameraJoystick.style.display = "none";
   }
   
@@ -16632,13 +16853,7 @@ async function showPauseMenu() {
 }
 
 function hidePauseMenu() {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.hidePauseMenu === 'function') {
-    guiSystem.hidePauseMenu();
-    return;
-  }
-  
-  // Legacy fallback
+  // 🎨 NEW PAUSE MENU (January 19, 2026) - Direct control
   if (!pauseMenu) return;
   pauseMenu.style.display = "none";
   isGamePaused = false;
@@ -16759,33 +16974,49 @@ function togglePause(forceState) {
     return;
   }
   
-  // Use GUI System if available (normal call path)
-  if (guiSystem && typeof guiSystem.togglePause === 'function') {
-    guiSystem.togglePause(forceState);
-    
-    // 📱 Update mobile pause button (January 18, 2026 - Phase 1 Mobile Optimization)
-    if (isMobile) {
-      updateMobilePauseButton();
-    }
-    
-    return;
-  }
-  
-  // Legacy fallback
+  // 📱 NEW PAUSE MENU SYSTEM (January 19, 2026)
+  // Determine pause state
   const shouldPause = typeof forceState === "boolean" ? forceState : !isGamePaused;
+  const wasPaused = isGamePaused;
   isGamePaused = shouldPause;
+  
   // Keep global window flag in sync (warp/loading code relies on window.isGamePaused)
   window.isGamePaused = isGamePaused;
-  if (shouldPause) {
-    if (!isGamePaused) {
-      pauseBackgroundMusic();
-      showPauseMenu();
+  
+  console.log(`⏸️ [PAUSE] Toggle pause - was: ${wasPaused}, now: ${isGamePaused}`);
+  
+  if (isGamePaused && !wasPaused) {
+    // Pause game
+    showPauseMenu();
+    pauseBackgroundMusic();
+    
+    // Release pointer lock
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
     }
-  } else {
-    if (isGamePaused) {
-      hidePauseMenu();
-      resumeBackgroundMusic();
+    
+    // Hide joysticks
+    if (typeof updateMobileJoysticks === 'function') {
+      updateMobileJoysticks();
     }
+    
+    console.log('⏸️ [PAUSE] Game paused');
+  } else if (!isGamePaused && wasPaused) {
+    // Resume game
+    hidePauseMenu();
+    resumeBackgroundMusic();
+    
+    // Show joysticks
+    if (typeof updateMobileJoysticks === 'function') {
+      updateMobileJoysticks();
+    }
+    
+    console.log('▶️ [PAUSE] Game resumed');
+  }
+  
+  // 📱 Update mobile pause button (January 18, 2026 - Phase 1 Mobile Optimization)
+  if (isMobile && typeof updateMobilePauseButton === 'function') {
+    updateMobilePauseButton();
   }
 }
 
@@ -33367,6 +33598,11 @@ function animate(timestamp, xrFrame) {
   if (vrInputProvider && isVRSessionActive()) {
     vrInputProvider.update(delta);
     
+    // ✅ UPDATE VR UI RAYCASTER for menu interaction (January 20, 2026)
+    if (vrUIRaycaster && xrFrame) {
+      vrUIRaycaster.update(xrFrame);
+    }
+    
     // ✅ Update camera from VR headset pose
     if (xrFrame) {
       try {
@@ -34658,6 +34894,346 @@ if (isMobile) {
   createMobilePauseButton();
 }
 
+// ============================================================================
+// ⏸️ PAUSE SYSTEM INTEGRATION (January 19, 2026)
+// Note: togglePause() function already exists at line 16778
+// This section only adds helper functions
+// ============================================================================
+// 🎨 GRAPHICS QUALITY SYSTEM (January 19, 2026)
+// ============================================================================
+
+// Graphics quality setting
+let graphicsQuality = 'auto'; // 'low', 'medium', 'high', 'auto'
+
+const graphicsQualitySettings = {
+  low: {
+    maxTextureSize: 512,
+    shadowMapSize: 0, // Disabled
+    grassDensity: 0.1, // 90% reduction
+    lodDistance: 0.5,
+    pixelRatio: 1,
+    anisotropy: 1,
+    label: 'Low'
+  },
+  medium: {
+    maxTextureSize: 1024,
+    shadowMapSize: 512,
+    grassDensity: 0.25, // 75% reduction
+    lodDistance: 0.7,
+    pixelRatio: 1.5,
+    anisotropy: 2,
+    label: 'Medium'
+  },
+  high: {
+    maxTextureSize: 2048,
+    shadowMapSize: 1024,
+    grassDensity: 0.5, // 50% reduction
+    lodDistance: 0.85,
+    pixelRatio: 2,
+    anisotropy: 4,
+    label: 'High'
+  },
+  auto: {
+    label: 'Auto'
+    // Determined by MobileOptimizer device tier detection
+  }
+};
+
+/**
+ * Apply graphics quality settings
+ * @param {string} quality - 'low', 'medium', 'high', 'auto'
+ */
+function applyGraphicsQuality(quality) {
+  graphicsQuality = quality;
+  let actualQuality = quality;
+  
+  console.log(`🎨 [GRAPHICS] Applying graphics quality: ${quality}`);
+  
+  if (quality === 'auto' && mobileOptimizer) {
+    // Use MobileOptimizer's device tier detection
+    const tier = mobileOptimizer.getDeviceTier();
+    const tierMap = { 'low-end': 'low', 'mid-tier': 'medium', 'high-end': 'high' };
+    actualQuality = tierMap[tier] || 'medium';
+    console.log(`🎨 [GRAPHICS] Auto mode - Device tier: ${tier}, Using: ${actualQuality}`);
+  } else if (quality === 'auto') {
+    // Fallback if no mobileOptimizer (desktop)
+    actualQuality = 'high';
+    console.log(`🎨 [GRAPHICS] Auto mode - Desktop, Using: high`);
+  }
+  
+  const settings = graphicsQualitySettings[actualQuality];
+  
+  if (!settings) {
+    console.error(`❌ [GRAPHICS] Invalid quality setting: ${actualQuality}`);
+    return;
+  }
+  
+  // Apply settings to MobileOptimizer (works on both mobile and desktop)
+  if (mobileOptimizer) {
+    mobileOptimizer.config.maxTextureSize = settings.maxTextureSize;
+    mobileOptimizer.config.shadowMapSize = settings.shadowMapSize;
+    mobileOptimizer.config.grassDensityMultiplier = settings.grassDensity;
+    mobileOptimizer.config.lodDistanceMultiplier = settings.lodDistance;
+    mobileOptimizer.applyOptimizations(scene, renderer, grassSystem);
+    console.log(`✅ [GRAPHICS] MobileOptimizer settings updated`);
+  } else {
+    // Manual application for desktop if no optimizer
+    if (renderer) {
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, settings.pixelRatio));
+      if (renderer.shadowMap && settings.shadowMapSize > 0) {
+        renderer.shadowMap.enabled = true;
+        // Note: Shadow map size set per light, not globally
+      } else if (renderer.shadowMap) {
+        renderer.shadowMap.enabled = false;
+      }
+    }
+  }
+  
+  // Update pixel ratio
+  if (renderer) {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, settings.pixelRatio));
+  }
+  
+  // Regenerate grass with new density
+  if (grassSystem && currentLevel) {
+    console.log(`🌱 [GRAPHICS] Regenerating grass with density: ${settings.grassDensity}`);
+    // Note: Grass regeneration happens automatically on next level load
+    // For immediate effect, would need to call grassSystem.regenerateGrass()
+  }
+  
+  console.log(`🎨 [GRAPHICS] Quality applied: ${quality} (${actualQuality})`, settings);
+}
+
+/**
+ * Get current graphics quality label for display
+ */
+function getGraphicsQualityLabel() {
+  if (graphicsQuality === 'auto' && mobileOptimizer) {
+    const tier = mobileOptimizer.getDeviceTier();
+    const tierMap = { 'low-end': 'Low', 'mid-tier': 'Medium', 'high-end': 'High' };
+    return `Auto (${tierMap[tier] || 'Medium'})`;
+  }
+  return graphicsQualitySettings[graphicsQuality]?.label || 'Auto';
+}
+
+// ============================================================================
+// ⚙️ GRAPHICS QUALITY BUTTON UPDATE (January 19, 2026)
+// ============================================================================
+
+/**
+ * Update graphics quality buttons in options menu
+ */
+function updateGraphicsQualityButtons() {
+  if (!optionsMenu || !optionsMenu._graphicsQualityButtons) return;
+  
+  const buttons = optionsMenu._graphicsQualityButtons;
+  const qualityOptions = ['low', 'medium', 'high', 'auto'];
+  
+  qualityOptions.forEach(quality => {
+    const btn = buttons[quality];
+    if (btn) {
+      const isActive = graphicsQuality === quality;
+      btn.style.background = isActive ? 'rgba(255, 224, 102, 0.3)' : 'rgba(255, 255, 255, 0.1)';
+      btn.style.color = isActive ? '#ffe066' : '#cbd5f5';
+    }
+  });
+  
+  // Update current quality display
+  if (optionsMenu._currentQualityDisplay) {
+    optionsMenu._currentQualityDisplay.textContent = `Current: ${getGraphicsQualityLabel()}`;
+  }
+  
+  console.log(`🎨 [OPTIONS] Graphics quality buttons updated to: ${graphicsQuality}`);
+}
+
+// Note: showOptionsMenu() and hideOptionsMenu() already exist at lines 16359 and 16410
+// They use the existing getOptionsMenu() which now includes graphics quality toggle
+
+// ============================================================================
+// ⏸️ PAUSE MENU (January 19, 2026)
+// ============================================================================
+
+// Note: pauseMenu variable already declared at line 10260
+// Note: showPauseMenu() and hidePauseMenu() already exist at lines 16661 and 16692
+// createPauseMenu() is new and creates the modern pause menu with Resume/Options/Exit buttons
+
+/**
+ * Create pause menu (NEW - January 19, 2026)
+ */
+function createPauseMenu() {
+  if (pauseMenu) return pauseMenu;
+  
+  console.log("⏸️ [PAUSE] Creating pause menu...");
+  
+  const menu = document.createElement('div');
+  menu.className = 'pause-menu';
+  menu.id = 'pauseMenu';
+  
+  Object.assign(menu.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    display: 'none',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backdropFilter: 'blur(8px)',
+    zIndex: '99999',
+    color: '#fef3c7',
+    fontFamily: 'Montserrat, Arial, sans-serif',
+    padding: '20px',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    WebkitOverflowScrolling: 'touch',
+    touchAction: 'pan-y',
+    pointerEvents: 'auto', // CRITICAL: Enable click events (January 19, 2026)
+    cursor: 'default' // Show cursor
+  });
+  
+  // Title
+  const title = document.createElement('h2');
+  title.textContent = '⏸️ PAUSED';
+  Object.assign(title.style, {
+    fontSize: '42px',
+    marginBottom: '40px',
+    color: '#ffe066',
+    textShadow: '3px 3px 6px rgba(0, 0, 0, 0.8)',
+    pointerEvents: 'none' // Don't block button clicks
+  });
+  menu.appendChild(title);
+  
+  // Buttons container
+  const buttonsContainer = document.createElement('div');
+  Object.assign(buttonsContainer.style, {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '15px',
+    minWidth: '250px',
+    pointerEvents: 'auto', // CRITICAL: Enable click events (January 19, 2026)
+    zIndex: '100000' // Above everything
+  });
+  
+  // Resume button
+  const resumeBtn = document.createElement('button');
+  resumeBtn.textContent = '▶️ RESUME';
+  Object.assign(resumeBtn.style, {
+    padding: '15px 40px',
+    fontSize: '20px',
+    border: '2px solid rgba(255, 224, 102, 0.8)',
+    borderRadius: '8px',
+    background: 'rgba(255, 224, 102, 0.2)',
+    color: '#ffe066',
+    cursor: 'pointer',
+    fontFamily: 'Montserrat, Arial, sans-serif',
+    fontWeight: 'bold',
+    transition: 'all 0.2s',
+    pointerEvents: 'auto' // CRITICAL: Enable click events
+  });
+  
+  resumeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("⏸️ [PAUSE MENU] Resume button clicked!");
+    togglePause(false);
+  });
+  
+  resumeBtn.addEventListener('mouseenter', () => {
+    resumeBtn.style.background = 'rgba(255, 224, 102, 0.3)';
+    resumeBtn.style.transform = 'scale(1.05)';
+  });
+  
+  resumeBtn.addEventListener('mouseleave', () => {
+    resumeBtn.style.background = 'rgba(255, 224, 102, 0.2)';
+    resumeBtn.style.transform = 'scale(1)';
+  });
+  
+  buttonsContainer.appendChild(resumeBtn);
+  
+  // Options button
+  const optionsBtn = document.createElement('button');
+  optionsBtn.textContent = '⚙️ OPTIONS';
+  Object.assign(optionsBtn.style, {
+    padding: '15px 40px',
+    fontSize: '20px',
+    border: '2px solid rgba(255, 224, 102, 0.8)',
+    borderRadius: '8px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    color: '#cbd5f5',
+    cursor: 'pointer',
+    fontFamily: 'Montserrat, Arial, sans-serif',
+    fontWeight: 'bold',
+    transition: 'all 0.2s',
+    pointerEvents: 'auto' // CRITICAL: Enable click events
+  });
+  
+  optionsBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("⚙️ [PAUSE MENU] Options button clicked!");
+    showOptionsMenu();
+  });
+  
+  optionsBtn.addEventListener('mouseenter', () => {
+    optionsBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+    optionsBtn.style.transform = 'scale(1.05)';
+  });
+  
+  optionsBtn.addEventListener('mouseleave', () => {
+    optionsBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+    optionsBtn.style.transform = 'scale(1)';
+  });
+  
+  buttonsContainer.appendChild(optionsBtn);
+  
+  // Exit to main menu button (God Mode only)
+  if (godMode) {
+    const exitBtn = document.createElement('button');
+    exitBtn.textContent = '🚪 EXIT TO MENU';
+    Object.assign(exitBtn.style, {
+      padding: '15px 40px',
+      fontSize: '20px',
+      border: '2px solid rgba(255, 102, 102, 0.8)',
+      borderRadius: '8px',
+      background: 'rgba(255, 102, 102, 0.1)',
+      color: '#ff6666',
+      cursor: 'pointer',
+      fontFamily: 'Montserrat, Arial, sans-serif',
+      fontWeight: 'bold',
+      transition: 'all 0.2s',
+      pointerEvents: 'auto' // CRITICAL: Enable click events
+    });
+    
+    exitBtn.addEventListener('click', () => {
+      // Reload page to return to main menu
+      location.reload();
+    });
+    
+    exitBtn.addEventListener('mouseenter', () => {
+      exitBtn.style.background = 'rgba(255, 102, 102, 0.2)';
+      exitBtn.style.transform = 'scale(1.05)';
+    });
+    
+    exitBtn.addEventListener('mouseleave', () => {
+      exitBtn.style.background = 'rgba(255, 102, 102, 0.1)';
+      exitBtn.style.transform = 'scale(1)';
+    });
+    
+    buttonsContainer.appendChild(exitBtn);
+  }
+  
+  menu.appendChild(buttonsContainer);
+  document.body.appendChild(menu);
+  pauseMenu = menu;
+  
+  console.log("✅ [PAUSE] Pause menu created successfully");
+  return menu;
+}
+
+// ============================================================================
+
 // 🎮 MOBILE JOYSTICKS (January 18, 2026 - MOVEMENT & CAMERA CONTROL)
 // Two joysticks for mobile: left for movement, right for camera
 // Note: mobileCameraJoystick is already declared at line 357 (reusing existing variable)
@@ -34775,7 +35351,9 @@ function createMobileJoysticks() {
     }
   });
   
-  console.log("✅ [MOBILE JOYSTICKS] Movement and camera joysticks created successfully");
+  console.log("✅ [MOBILE JOYSTICKS] nipplejs joysticks created successfully!");
+  console.log(`✅ [MOBILE JOYSTICKS] Movement zone: ${movementZone.id}, Camera zone: ${cameraZone.id}`);
+  console.log(`✅ [MOBILE JOYSTICKS] Movement manager: ${!!mobileMovementJoystick}, Camera manager: ${!!mobileCameraJoystick}`);
 }
 
 function updateMobileJoysticks() {
@@ -34784,13 +35362,18 @@ function updateMobileJoysticks() {
   const movementZone = document.getElementById("joystick-movement-zone");
   const cameraZone = document.getElementById("joystick-camera-zone");
   
-  if (!movementZone || !cameraZone) return;
+  console.log(`🎮 [UPDATE JOYSTICKS] Zones found - movement: ${!!movementZone}, camera: ${!!cameraZone}`);
+  
+  if (!movementZone || !cameraZone) {
+    console.warn("⚠️ [UPDATE JOYSTICKS] Joystick zones not found in DOM!");
+    return;
+  }
   
   const shouldShow = !isGamePaused && gameStarted && isMobileLandscape();
   movementZone.style.display = shouldShow ? "block" : "none";
   cameraZone.style.display = shouldShow ? "block" : "none";
   
-  console.log(`🎮 [MOBILE JOYSTICKS] Joystick visibility updated to: ${shouldShow ? "visible" : "hidden"}`);
+  console.log(`🎮 [UPDATE JOYSTICKS] Visibility: ${shouldShow ? "VISIBLE" : "HIDDEN"} (paused: ${isGamePaused}, started: ${gameStarted}, landscape: ${isMobileLandscape()})`);
 }
 
 // Create mobile joysticks on load
@@ -35293,6 +35876,8 @@ function checkLandscapeMode() {
   const isLandscape = window.innerWidth > window.innerHeight;
   const promptOverlay = landscapePromptOverlay || createLandscapePrompt();
   
+  console.log(`📱 [LANDSCAPE CHECK] isLandscape: ${isLandscape}, gameStarted: ${gameStarted}`);
+  
   if (!isLandscape && gameStarted) {
     // Portrait mode detected - show prompt and hide controls
     console.log("📱 [LANDSCAPE CHECK] Portrait detected - showing prompt");
@@ -35301,9 +35886,17 @@ function checkLandscapeMode() {
       promptOverlay.style.display = "flex";
     }
     
-    // Hide joysticks
-    if (mobileJoystick) mobileJoystick.style.display = "none";
-    if (mobileCameraJoystick) mobileCameraJoystick.style.display = "none";
+    // ✅ Hide nipplejs joystick ZONES (by ID)
+    const movementZone = document.getElementById("joystick-movement-zone");
+    const cameraZone = document.getElementById("joystick-camera-zone");
+    if (movementZone) {
+      movementZone.style.display = "none";
+      console.log("📱 [LANDSCAPE CHECK] Hiding movement joystick zone");
+    }
+    if (cameraZone) {
+      cameraZone.style.display = "none";
+      console.log("📱 [LANDSCAPE CHECK] Hiding camera joystick zone");
+    }
     
     // Hide pause button
     if (mobilePauseButton) mobilePauseButton.style.display = "none";
@@ -35330,19 +35923,35 @@ function checkLandscapeMode() {
     }
     
     // Re-create/show joysticks
-    if (gameStarted) {
+    if (gameStarted && isLandscape) {
+      console.log("📱 [LANDSCAPE CHECK] Calling checkAndCreateJoystick...");
       checkAndCreateJoystick();
       
+      // ✅ Show nipplejs joystick ZONES immediately
+      const movementZone = document.getElementById("joystick-movement-zone");
+      const cameraZone = document.getElementById("joystick-camera-zone");
+      if (movementZone) {
+        movementZone.style.display = "block";
+        console.log("📱 [LANDSCAPE CHECK] Showing movement joystick zone");
+      }
+      if (cameraZone) {
+        cameraZone.style.display = "block";
+        console.log("📱 [LANDSCAPE CHECK] Showing camera joystick zone");
+      }
+      
       // Show pause button
+      console.log("📱 [LANDSCAPE CHECK] Updating mobile pause button...");
       updateMobilePauseButton();
       
       // Update interact button (will show if near interactable)
       updateMobileInteractButton(!!nearestInteractableChest);
       
       // Update weapon selector (will show if in weapon level)
+      console.log("📱 [LANDSCAPE CHECK] Updating weapon selector...");
       updateMobileWeaponSelector();
       
       // Update shoot button (will show if in weapon level)
+      console.log("📱 [LANDSCAPE CHECK] Updating shoot button...");
       updateMobileShootButton();
       
       // Show crosshair
@@ -44675,6 +45284,161 @@ if (typeof window !== "undefined") {
     if (!window._preloadStarted) {
       window._preloadStarted = true;
       initializePreloadSystem();
+    }
+  });
+  
+  // ✅ VR MODE KEYBOARD SHORTCUT (January 20, 2026)
+  // Add global keyboard listener for VR mode toggle
+  // This allows VR headset users to start VR mode without clicking
+  document.addEventListener('keydown', (event) => {
+    // SHIFT + V = Toggle VR Mode (Shift + V because V alone is used for camera toggle)
+    if (event.shiftKey && (event.key === 'V' || event.key === 'v' || event.code === 'KeyV')) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      console.log('🥽 [VR] VR toggle keyboard shortcut pressed (SHIFT+V)');
+      
+      // Toggle VR mode
+      if (isVRSessionActive()) {
+        console.log('🥽 [VR] Ending VR session via keyboard shortcut...');
+        endVRSession();
+      } else if (vrSupported) {
+        console.log('🥽 [VR] Starting VR session via keyboard shortcut...');
+        startVRSession().then((success) => {
+          if (success) {
+            console.log('✅ [VR] VR session started successfully via keyboard');
+          } else {
+            console.error('❌ [VR] VR session failed to start via keyboard');
+          }
+        });
+      } else {
+        console.warn('⚠️ [VR] VR not supported on this device');
+      }
+    }
+  }, { capture: true }); // Capture phase to ensure it fires first
+  
+  // ✅ AUTO-DETECT VR HEADSET ON PAGE LOAD (January 20, 2026)
+  // Automatically prompt to enter VR mode when VR headset is detected
+  window.addEventListener('load', async () => {
+    // Wait for VR support check to complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Check if VR is supported and available
+    if (vrSupported && navigator.xr) {
+      try {
+        const isVRHeadsetConnected = await navigator.xr.isSessionSupported('immersive-vr');
+        
+        if (isVRHeadsetConnected && !isVRSessionActive()) {
+          console.log('🥽 [VR] VR headset detected! Auto-prompting for VR mode...');
+          
+          // Create auto-prompt overlay
+          const autoPrompt = document.createElement('div');
+          Object.assign(autoPrompt.style, {
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '32px 48px',
+            background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))',
+            border: '2px solid rgba(255, 224, 102, 0.5)',
+            borderRadius: '16px',
+            color: '#ffe066',
+            fontFamily: 'Montserrat, Arial, sans-serif',
+            fontSize: '18px',
+            fontWeight: '600',
+            textAlign: 'center',
+            zIndex: '200000', // Above everything
+            boxShadow: '0 0 40px rgba(255, 224, 102, 0.6)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+            minWidth: '300px'
+          });
+          
+          const promptText = document.createElement('div');
+          promptText.textContent = '🥽 VR Headset Detected!';
+          Object.assign(promptText.style, {
+            fontSize: '24px',
+            marginBottom: '10px',
+            textShadow: '0 0 16px rgba(255, 224, 102, 0.8)'
+          });
+          autoPrompt.appendChild(promptText);
+          
+          const instructionText = document.createElement('div');
+          instructionText.innerHTML = 'Press <strong>SHIFT + V</strong> to enter VR mode<br>or wait 10 seconds to continue in browser mode';
+          Object.assign(instructionText.style, {
+            fontSize: '14px',
+            color: '#cbd5f5',
+            lineHeight: '1.6'
+          });
+          autoPrompt.appendChild(instructionText);
+          
+          const buttonsContainer = document.createElement('div');
+          Object.assign(buttonsContainer.style, {
+            display: 'flex',
+            gap: '12px',
+            justifyContent: 'center',
+            marginTop: '10px'
+          });
+          
+          const enterVRBtn = document.createElement('button');
+          enterVRBtn.textContent = '🥽 Enter VR';
+          Object.assign(enterVRBtn.style, {
+            padding: '12px 24px',
+            border: '2px solid rgba(139, 92, 246, 0.5)',
+            borderRadius: '8px',
+            background: 'rgba(139, 92, 246, 0.3)',
+            color: '#cbd5f5',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          });
+          
+          enterVRBtn.addEventListener('click', async () => {
+            document.body.removeChild(autoPrompt);
+            const success = await startVRSession();
+            if (!success) {
+              alert('Failed to start VR session. Please try again or use SHIFT+V keyboard shortcut.');
+            }
+          });
+          
+          const dismissBtn = document.createElement('button');
+          dismissBtn.textContent = 'Continue in Browser';
+          Object.assign(dismissBtn.style, {
+            padding: '12px 24px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '8px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            color: '#cbd5f5',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          });
+          
+          dismissBtn.addEventListener('click', () => {
+            document.body.removeChild(autoPrompt);
+            console.log('🖥️ [VR] User chose to continue in browser mode');
+          });
+          
+          buttonsContainer.appendChild(enterVRBtn);
+          buttonsContainer.appendChild(dismissBtn);
+          autoPrompt.appendChild(buttonsContainer);
+          
+          document.body.appendChild(autoPrompt);
+          
+          // Auto-dismiss after 10 seconds
+          setTimeout(() => {
+            if (document.body.contains(autoPrompt)) {
+              document.body.removeChild(autoPrompt);
+              console.log('🖥️ [VR] Auto-prompt dismissed after 10 seconds');
+            }
+          }, 10000);
+        }
+      } catch (error) {
+        console.warn('⚠️ [VR] Could not check VR headset connection:', error);
+      }
     }
   });
 }}

@@ -2052,6 +2052,11 @@ export class GUISystem {
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
+      // 📱 MOBILE FIX (January 19, 2026): Enable touch scrolling
+      overflowY: "auto",
+      overflowX: "hidden",
+      WebkitOverflowScrolling: "touch",
+      touchAction: "pan-y",
       backgroundColor: "rgba(5, 7, 16, 0.85)",
       backdropFilter: "blur(8px)", zIndex: "1003",
       color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto", cursor: "default"
@@ -2671,7 +2676,12 @@ export class GUISystem {
       backgroundRepeat: "no-repeat",
       backgroundColor: "rgba(5, 7, 16, 0.85)",
       backdropFilter: "blur(6px)", zIndex: "1002",
-      color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto", cursor: "default"
+      color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto", cursor: "default",
+      // 📱 MOBILE FIX (January 19, 2026): Enable touch scrolling
+      overflowY: "auto", // Allow vertical scrolling
+      overflowX: "hidden", // Prevent horizontal scrolling
+      WebkitOverflowScrolling: "touch", // Smooth scrolling on iOS
+      touchAction: "pan-y" // Allow vertical pan/scroll gestures
     });
     
     const panel = document.createElement("div");
@@ -3076,6 +3086,11 @@ export class GUISystem {
       backgroundImage: `url('${controlsMenuBgPath}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
+      // 📱 MOBILE FIX (January 19, 2026): Enable touch scrolling
+      overflowY: "auto",
+      overflowX: "hidden",
+      WebkitOverflowScrolling: "touch",
+      touchAction: "pan-y",
       backgroundRepeat: "no-repeat",
       backgroundColor: "rgba(5, 7, 16, 0.92)", backdropFilter: "blur(8px)", zIndex: "1004",
       color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto",
@@ -3265,6 +3280,11 @@ export class GUISystem {
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
+      // 📱 MOBILE FIX (January 19, 2026): Enable touch scrolling
+      overflowY: "auto",
+      overflowX: "hidden",
+      WebkitOverflowScrolling: "touch",
+      touchAction: "pan-y",
       backgroundColor: "rgba(5, 7, 16, 0.85)",
       backdropFilter: "blur(6px)", zIndex: "1003",
       color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto", cursor: "default"
