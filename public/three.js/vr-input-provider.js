@@ -255,19 +255,29 @@ if (newSources.length !== this.controllerInputSources.length) {
         this.buttonStates[handedness] = {};
       }
       
-// Get thumbstick input (Quest: primary stick is usually axes 0 and 1)
-if (gamepad.axes && gamepad.axes.length >= 2) {
-  let x = gamepad.axes[0] || 0;
-  let y = gamepad.axes[1] || 0;
+      // Get thumbstick input (Quest / WebXR: axes[0]=X, axes[1]=Y)
+      if (gamepad.axes && gamepad.axes.length >= 2) {
+        let x = gamepad.axes[0] || 0;
+        let y = gamepad.axes[1] || 0;
 
-  // Fallback: if 0/1 are basically 0 but we have 4 axes, try 2/3
-  if (Math.abs(x) < 0.01 && Math.abs(y) < 0.01 && gamepad.axes.length >= 4) {
-    x = gamepad.axes[2] || 0;
-    y = gamepad.axes[3] || 0;
-  }
+        // Optional fallback: if 0/1 are basically 0 but there are 4 axes, try 2/3
+        if (Math.abs(x) < 0.01 && Math.abs(y) < 0.01 && gamepad.axes.length >= 4) {
+          x = gamepad.axes[2] || 0;
+          y = gamepad.axes[3] || 0;
+        }
 
-  this.thumbstickState[handedness] = { x, y };
-}
+        this.thumbstickState[handedness] = { x, y };
+
+        // Debug log (only occasionally) to confirm sticks are working
+        if (Math.abs(x) > 0.15 || Math.abs(y) > 0.15) {
+          if (!window.vrThumbstickLogCounter) window.vrThumbstickLogCounter = 0;
+          window.vrThumbstickLogCounter++;
+          if (window.vrThumbstickLogCounter % 60 === 0) {
+            console.log(`🕹️ [VR INPUT] ${handedness} stick: x=${x.toFixed(2)}, y=${y.toFixed(2)}`);
+          }
+        }
+      }
+
 
 
       
@@ -316,6 +326,8 @@ if (gamepad.axes && gamepad.axes.length >= 2) {
     //   Y: -1.0 (forward/push up) to +1.0 (backward/pull down)
     //   X: -1.0 (left) to +1.0 (right)
     
+	
+	
     const deadzone = 0.15; // ✅ Increased deadzone for Quest 3 (was 0.1)
     
     // Apply deadzone
