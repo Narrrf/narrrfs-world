@@ -255,13 +255,21 @@ if (newSources.length !== this.controllerInputSources.length) {
         this.buttonStates[handedness] = {};
       }
       
-      // Get thumbstick input (usually axes 2 and 3)
-      if (gamepad.axes && gamepad.axes.length >= 4) {
-        this.thumbstickState[handedness] = {
-          x: gamepad.axes[2] || 0,
-          y: gamepad.axes[3] || 0
-        };
-      }
+// Get thumbstick input (Quest: primary stick is usually axes 0 and 1)
+if (gamepad.axes && gamepad.axes.length >= 2) {
+  let x = gamepad.axes[0] || 0;
+  let y = gamepad.axes[1] || 0;
+
+  // Fallback: if 0/1 are basically 0 but we have 4 axes, try 2/3
+  if (Math.abs(x) < 0.01 && Math.abs(y) < 0.01 && gamepad.axes.length >= 4) {
+    x = gamepad.axes[2] || 0;
+    y = gamepad.axes[3] || 0;
+  }
+
+  this.thumbstickState[handedness] = { x, y };
+}
+
+
       
       // Get button states
       if (gamepad.buttons) {

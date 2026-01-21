@@ -34069,7 +34069,7 @@ if (xrFrame) {
     }
     
     // CRITICAL FIX: Use playerControls.getMovementState() (same as animation system) instead of global movement
-    const movementForClimb = playerControls ? playerControls.getMovementState() : movement;
+    const movementForClimb = getCurrentMovementState();
     const hasMovementInput = (movementForClimb.forward || movementForClimb.backward || movementForClimb.left || movementForClimb.right);
     
     // 🚨 CRITICAL: Only check for climbing if player has movement input
@@ -34407,7 +34407,7 @@ if (xrFrame) {
     }
     
     // CRITICAL: Use currentMovement (from playerControls) instead of global movement variable
-    const movementForCollision = playerControls ? playerControls.getMovementState() : movement;
+    const movementForCollision = getCurrentMovementState();
     const hasMovementInputForClimb = (movementForCollision.forward || movementForCollision.backward || movementForCollision.left || movementForCollision.right);
     
     // CRITICAL: Always check collisions (remove !isClimbing condition) so wall detection works for climbing
