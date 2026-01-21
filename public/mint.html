@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <?php
@@ -151,6 +150,76 @@ require_once 'discord-invite.php';
       backdrop-filter: blur(20px);
       border: 2px solid rgba(251, 191, 36, 0.3);
     }
+  
+
+    /* ============================= */
+    /* 🎨 Trait Showcase (Mint Page)  */
+    /* ============================= */
+    .trait-tab { opacity: 0.7; border: 2px solid transparent; }
+    .trait-tab.active {
+      opacity: 1;
+      border-color: rgba(251, 191, 36, 0.5);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    }
+
+    .trait-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(15,23,42,0.90));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.20);
+      transition: all 0.3s ease;
+    }
+
+    .trait-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(251, 191, 36, 0.50);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.30);
+    }
+
+    .rarity-bar {
+      height: 8px;
+      background: rgba(15, 23, 42, 0.90);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .rarity-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #fbbf24, #f97316);
+      transition: width 0.4s ease;
+    }
+
+    .rarity-legendary {
+      background: linear-gradient(135deg, #facc15, #eab308);
+      color: #fef9c3;
+      box-shadow: 0 0 20px rgba(250,204,21,0.60);
+      animation: rarityPulse 2s ease-in-out infinite;
+    }
+
+    .rarity-ultra-rare {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: #ede9fe;
+    }
+
+    .rarity-rare {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      color: #e0f2fe;
+    }
+
+    .rarity-uncommon {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #dcfce7;
+    }
+
+    .rarity-common {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+      color: #e5e7eb;
+    }
+
+    @keyframes rarityPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
   </style>
 
   <!-- 📜 DEV NOTES -->
@@ -266,88 +335,62 @@ require_once 'discord-invite.php';
   </section>
 
 
-  <!-- 🎨 Trait Showcase Section -->
-  <section id="traits" class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-indigo-900/40 to-purple-900/40">
+
+  <!-- 🎨 TRAIT SHOWCASE SECTION -->
+  <section id="traits" class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-indigo-900/30 to-purple-900/30">
     <div class="max-w-7xl mx-auto">
-      <!-- Header -->
+
+      <!-- Section Header -->
       <div class="text-center mb-12">
-        <h2 class="text-4xl md:text-5xl font-extrabold mb-4">
-          <span class="bg-gradient-to-r from-yellow-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
-            266 Unique Traits Across 7 Categories
+        <h2 class="text-5xl md:text-6xl font-bold mb-4">
+          <span class="bg-gradient-to-r from-yellow-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            🎨 266 Unique Traits
           </span>
         </h2>
-        <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
-          Every trait is a key in the 3D Riddle Game and DSPOINC ecosystem. Random minting means every mouse is a new roll of the dice.
+        <p class="text-xl text-gray-300 max-w-4xl mx-auto mb-6">
+          Every trait is a key to the 3D Riddle Game ecosystem. Random minting means endless possibilities.
         </p>
-      </div>
-
-      <!-- Rarity Legend -->
-      <div class="flex flex-wrap justify-center gap-3 mb-10 text-xs md:text-sm">
-        <span class="px-4 py-2 rounded-full rarity-legendary bg-opacity-20 border border-yellow-400/60">
-          🌟 Legendary · 1–10 items
-        </span>
-        <span class="px-4 py-2 rounded-full rarity-ultra-rare bg-opacity-20 border border-purple-400/60">
-          💎 Ultra Rare · 11–50 items
-        </span>
-        <span class="px-4 py-2 rounded-full rarity-rare bg-opacity-20 border border-blue-400/60">
-          🔮 Rare · 51–100 items
-        </span>
-        <span class="px-4 py-2 rounded-full rarity-uncommon bg-opacity-20 border border-green-400/60">
-          ⚡ Uncommon · 101–300 items
-        </span>
-        <span class="px-4 py-2 rounded-full rarity-common bg-opacity-20 border border-gray-400/60">
-          🎯 Common · 301+ items
-        </span>
+        <div class="flex flex-wrap justify-center gap-4 text-sm">
+          <span class="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full border border-yellow-500/50">🌟 Legendary: 1-10</span>
+          <span class="bg-purple-500/20 text-purple-400 px-4 py-2 rounded-full border border-purple-500/50">💎 Ultra Rare: 11-50</span>
+          <span class="bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full border border-blue-500/50">🔮 Rare: 51-100</span>
+          <span class="bg-green-500/20 text-green-400 px-4 py-2 rounded-full border border-green-500/50">⚡ Uncommon: 101-300</span>
+          <span class="bg-gray-500/20 text-gray-400 px-4 py-2 rounded-full border border-gray-500/50">🎯 Common: 301+</span>
+        </div>
       </div>
 
       <!-- Tabs -->
       <div class="mb-8">
-        <div class="flex flex-wrap justify-center gap-2 mb-6">
-          <button onclick="showTraitCategory('theme', this)" class="trait-tab active bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold text-xs md:text-sm">
-            🎭 Theme
-          </button>
-          <button onclick="showTraitCategory('subTrait', this)" class="trait-tab bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold text-xs md:text-sm">
-            🐭 Sub-Trait
-          </button>
-          <button onclick="showTraitCategory('outfit', this)" class="trait-tab bg-gradient-to-r from-pink-600 to-rose-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold text-xs md:text-sm">
-            👔 Outfit
-          </button>
-          <button onclick="showTraitCategory('accessories', this)" class="trait-tab bg-gradient-to-r from-yellow-600 to-amber-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold text-xs md:text-sm">
-            🎯 Accessories
-          </button>
-          <button onclick="showTraitCategory('expression', this)" class="trait-tab bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold text-xs md:text-sm">
-            😊 Expression
-          </button>
-          <button onclick="showTraitCategory('background', this)" class="trait-tab bg-gradient-to-r from-orange-600 to-red-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold text-xs md:text-sm">
-            🌆 Background
-          </button>
-          <button onclick="showTraitCategory('special', this)" class="trait-tab bg-gradient-to-r from-yellow-400 to-pink-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold text-xs md:text-sm">
-            🌟 Special (Rarest)
-          </button>
+        <div class="flex flex-wrap justify-center gap-2 mb-8">
+          <button type="button" onclick="showTraitCategory('theme', this)" class="trait-tab active bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">🎭 Theme (12)</button>
+          <button type="button" onclick="showTraitCategory('subTrait', this)" class="trait-tab bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">🐭 Sub-Trait (97)</button>
+          <button type="button" onclick="showTraitCategory('outfit', this)" class="trait-tab bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">👔 Outfit (46)</button>
+          <button type="button" onclick="showTraitCategory('accessories', this)" class="trait-tab bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">🎯 Accessories (45)</button>
+          <button type="button" onclick="showTraitCategory('expression', this)" class="trait-tab bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">😊 Expression (9)</button>
+          <button type="button" onclick="showTraitCategory('background', this)" class="trait-tab bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">🌆 Background (47)</button>
+          <button type="button" onclick="showTraitCategory('special', this)" class="trait-tab bg-gradient-to-r from-yellow-400 to-pink-500 hover:from-yellow-500 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-pulse">🌟 Special (10)</button>
         </div>
 
         <!-- Search -->
         <div class="max-w-md mx-auto mb-8">
-          <input id="trait-search" type="text" placeholder="🔍 Search traits..." class="w-full bg-slate-900/70 border border-slate-600 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400" />
+          <input type="text" id="trait-search" placeholder="🔍 Search traits..." class="w-full bg-gray-800/50 border border-gray-600 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400 transition-colors" />
         </div>
       </div>
 
-      <!-- Dynamic Traits Grid -->
-      <div id="trait-content" class="min-h-[260px]"></div>
+      <!-- Trait content -->
+      <div id="trait-content" class="min-h-[400px]"></div>
 
-      <!-- Random Trait Generator -->
-      <div class="mt-12 max-w-3xl mx-auto">
-        <div class="mint-card rounded-3xl p-8 border-2 border-yellow-500/60 text-center">
-          <h3 class="text-2xl md:text-3xl font-bold text-yellow-300 mb-3">🎲 Preview a Random Mouse</h3>
-          <p class="text-gray-200 mb-6 text-sm md:text-base">
-            Generate a random combination of traits to see the kind of mice waiting in the Genesis collection.
-          </p>
-          <button onclick="generateRandomTraits()" class="bg-gradient-to-r from-yellow-500 to-pink-500 hover:from-yellow-600 hover:to-pink-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold shadow-lg text-sm md:text-base">
-            🎲 Generate Random Combination
-          </button>
-          <div id="random-traits-display" class="hidden mt-6 text-left bg-black/40 rounded-2xl p-5 border border-yellow-500/40"></div>
+      <!-- Random Generator -->
+      <div class="mt-12 max-w-4xl mx-auto">
+        <div class="mint-card rounded-3xl p-8 text-center border-2 border-yellow-500/50">
+          <h3 class="text-3xl font-bold text-yellow-400 mb-4">🎲 Preview Your Possible Mouse</h3>
+          <p class="text-gray-300 mb-6">See what kind of unique combination you might get when you mint.</p>
+          <button type="button" onclick="generateRandomTraits()" class="bg-gradient-to-r from-yellow-500 to-pink-500 hover:from-yellow-600 hover:to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg transition-all duration-300 transform hover:scale-105 mb-6">🎲 Generate Random Mouse</button>
+          <div id="random-traits-display" class="hidden bg-black/30 rounded-2xl p-6 border border-yellow-500/30"></div>
+          <p class="text-xs text-gray-400 mt-4">TODO: Full 266-trait dataset can be pasted into TRAITS_DATABASE for complete accuracy.</p>
         </div>
       </div>
+
     </div>
   </section>
 
@@ -549,100 +592,335 @@ require_once 'discord-invite.php';
   </footer>
 
   <!-- Remove old wallet script and add new one -->
-  <script src="js/wallet.js"></script>
 
 
-  <!-- Trait showcase logic -->
   <script>
-    // Minimal trait database (TODO: extend with full 266 traits)
-    const TRAITS_DATABASE = {
-      theme: {
-        name: 'Theme',
-        icon: '🎭',
-        total: 3333,
-        traits: {
-          'Sci-Fi and Futuristic': 755,
-          'Crime and Thriller': 481,
-          'Fantasy and Mythology': 372,
-          'Historical and War-Themed': 130,
-          'Slice of Life': 410
-        }
-      },
-      subTrait: {
-        name: 'Sub-Trait',
-        icon: '🐭',
-        total: 3333,
-        traits: {
-          'Yellow Submarine Mouse': 86,
-          'Dark Cheese Wizard Mouse': 80,
-          'Lebowski Mouse': 7,
-          'Equilibrium Mouse': 3,
-          'Rick and Morty Mouse': 42
-        }
-      },
-      outfit: {
-        name: 'Outfit',
-        icon: '👔',
-        total: 3333,
-        traits: {
-          'Futuristic Armor': 343,
-          'Retro Streetwear': 314,
-          'Bathrobe': 3,
-          'Green Mile Suit': 6,
-          'Explorer Gear': 210
-        }
-      },
-      accessories: {
-        name: 'Accessories',
-        icon: '🎯',
-        total: 3333,
-        traits: {
-          'Scroll of Spells': 644,
-          'Orb Magic': 322,
-          'Baseball Bat': 3,
-          'Golf Magic': 4,
-          'Portal Device': 120
-        }
-      },
-      expression: {
-        name: 'Expression',
-        icon: '😊',
-        total: 3333,
-        traits: {
-          'Happy': 1653,
-          'Poker Face': 589,
-          'Grumpy': 32,
-          'Sad': 34,
-          'Suspicious': 210
-        }
-      },
-      background: {
-        name: 'Background',
-        icon: '🌆',
-        total: 3333,
-        traits: {
-          'Futuristic City': 382,
-          'Dark City': 354,
-          'Poker Lounge': 5,
-          'Ancient Greece': 12,
-          'Neon Lab': 260
-        }
-      },
-      special: {
-        name: 'Special',
-        icon: '🌟',
-        total: 550,
-        traits: {
-          'Bootie Heart': 10,
-          'Scroll Keeper': 15,
-          'Portal Seeker': 121,
-          'Fibonacci Order': 97,
-          'Cheese Prophet': 25
-        }
-      }
-    };
+    // =============================================
+    // 🎨 Mint Page Trait Showcase (Client-side UI)
+    // =============================================
 
-    function rarityFromCount(count) {
+    // TODO: Replace sample data with the full verified dataset (all 266 traits across 7 categories).
+    const TRAITS_DATABASE = {
+  theme: {
+    name: "Theme",
+    icon: "🎭",
+    total: 3333,
+    traits: {
+      "Action and Adventure": 186,
+      "Animation and Classic Cartoons": 217,
+      "Classic Cinema and TV": 236,
+      "Comedy and Satire": 222,
+      "Crime and Thriller": 481,
+      "Dystopian and Noir": 363,
+      "Fantasy and Mythology": 372,
+      "Historical and War-Themed": 130,
+      "Horror and Gothic": 88,
+      "Musical and Psychedelic": 215,
+      "Sci-Fi and Futuristic": 755,
+      "Sports and Competition": 68
+    }
+  },
+  subTrait: {
+    name: "Sub-Trait",
+    icon: "🐭",
+    total: 3333,
+    traits: {
+      "Alien Predator Mouse": 54,
+      "Apocalypto Mouse": 13,
+      "Back to the Future Mouse": 64,
+      "Barbapapa Mouse": 32,
+      "Basketball Mouse": 24,
+      "Bear or Bull Mouse": 50,
+      "Bloodsport Mouse": 14,
+      "Blow Money Mouse": 14,
+      "Boardwalk Empire Mouse": 5,
+      "Bootie Mouse": 10,
+      "Borderland Mouse": 37,
+      "Boys in the Hood Mouse": 38,
+      "Braveheart Mouse": 19,
+      "Cartoon Factory Mouse": 55,
+      "Cat from Hell Mouse": 60,
+      "Clockwork Orange Mouse": 36,
+      "Cowboy Alien Invasion Mouse": 62,
+      "CryptoCorn Popcorn Mouse": 50,
+      "Cyber Street Mouse": 18,
+      "Cyberpunk Mouse": 37,
+      "Dark Cheese Wizard Mouse": 80,
+      "Doctor Who Mouse": 31,
+      "Elf Warrior Mouse": 39,
+      "Equilibrium Mouse": 3,
+      "Fear and Loathing Las Vegas Mouse": 67,
+      "Fibonacci Mouse": 18,
+      "Flintstones Prehistoric Mouse": 61,
+      "Formula 1 Racing Mouse": 14,
+      "Friday Mouse": 17,
+      "Futurama Mouse": 12,
+      "Gangster Club Mouse": 69,
+      "Gladiator Future Mouse": 48,
+      "Golden Baboons Rascal Club Mouse": 59,
+      "Golden Bingo Champion Mouse": 19,
+      "Good Morning Vietnam Mouse": 29,
+      "Green Mile Mouse": 67,
+      "Gulag Prisoner Mouse": 16,
+      "Halloween Mouse": 19,
+      "Happy Gilmore Golf Champion Mouse": 30,
+      "Harold and Kumar Mouse": 12,
+      "Hulk Mouse": 10,
+      "Inception Mouse": 66,
+      "Independence Day Mouse": 11,
+      "Jamaica Rum Mouse": 34,
+      "Joker Mouse": 15,
+      "Kill Bill Shogun Mouse": 71,
+      "Lab Coat Mouse": 21,
+      "Lab Mouse": 22,
+      "Lebowski Mouse": 7,
+      "Legionnaire Mouse": 18,
+      "Mad Max Mouse": 4,
+      "Marvel Gang Mouse": 8,
+      "Masters of the Universe Mouse": 43,
+      "Matrix Mouse": 57,
+      "Medieval Bow Fighter Mouse": 37,
+      "Men in Black Mouse": 12,
+      "Mythology Python Greece Mouse": 48,
+      "Noir Detective Mouse": 37,
+      "Nosferatu Vampire Mouse": 32,
+      "Orb Weaver Sorcerer Mouse": 27,
+      "Orc Warlord Mouse": 56,
+      "Pirates of the Caribbean Mouse": 18,
+      "Platoon Mouse": 17,
+      "Psychedelic Rockstar Mouse": 21,
+      "Psychedelic Vibe Mouse": 53,
+      "Pulp Fiction Alien Dance Mouse": 23,
+      "Raging Bull Fighter Mouse": 24,
+      "Rambo Mouse": 8,
+      "Reservoir Dogs Heist Mouse": 65,
+      "Rick and Morty Mouse": 76,
+      "Robocop Mouse": 27,
+      "Robotic Rabbit Syndicate Mouse": 50,
+      "RocknRolla Street Boss Mouse": 18,
+      "Rocky Horro Picture Mouse": 23,
+      "Rocky Horror Picture Mouse": 32,
+      "Rocky Mouse": 16,
+      "Sailor Mouse": 7,
+      "Scarface Crime Lord Mouse": 38,
+      "Seven Mouse": 48,
+      "Shawshank Redemption Mouse": 76,
+      "Shining Mouse": 19,
+      "Shogun Last Samurai Mouse": 17,
+      "Snatch Underground Fighter Mouse": 13,
+      "Speedy Gonzales Brain Morph Mouse": 5,
+      "Star Wars Ewok Mouse": 34,
+      "Terminator Mouse": 51,
+      "The Hunt for Red October Mouse": 14,
+      "The Jetsons Futuristic Mouse": 4,
+      "The Mask Mouse": 10,
+      "The Waterboy Underdog Mouse": 12,
+      "Top Gun Mouse": 17,
+      "Transformers Mouse": 22,
+      "Transporter Mouse": 29,
+      "Tron Mouse": 11,
+      "True Romance Mouse": 14,
+      "True Romance Street Mouse": 9,
+      "Vendetta Mouse": 29,
+      "Venom Mouse": 12,
+      "Viking Valhalla Mouse": 44,
+      "Waterworld Mouse": 61,
+      "We are the Millers Roadtrip Mouse": 24,
+      "Weedery WDYR Mouse": 50,
+      "Western Outlaw Battle Goose Mouse": 50,
+      "Yellow Submarine Mouse": 86,
+      "Zombieland Mouse": 18
+    }
+  },
+  outfit: {
+    name: "Outfit",
+    icon: "👔",
+    total: 3333,
+    traits: {
+      "Alien Armor": 97,
+      "Apocalyptic Wasteland Gear": 99,
+      "Bathrobe": 3,
+      "Black Suit": 141,
+      "Bull Suit": 39,
+      "Cartoon Costume": 216,
+      "Champion Belt": 26,
+      "Cowboy Outlaw Dress": 49,
+      "Crazy Alex Costume": 35,
+      "Crazy Suit": 137,
+      "Dragon Combat Gi": 14,
+      "Futuristic Armor": 343,
+      "Gold Suit": 25,
+      "Gothic Cabaret Show Costume": 33,
+      "Greek Robe": 16,
+      "Green Mile Suit": 6,
+      "Kill Bill Martial Kimono": 57,
+      "Lab Coat": 80,
+      "Mafia Boss Tuxedo": 104,
+      "Magical Psychedelic Rocker Cloak": 51,
+      "Medieval Armor": 144,
+      "Military Uniform": 23,
+      "Modern Streetware": 271,
+      "Modern Streetwear": 22,
+      "Mythical Cloak": 172,
+      "Ninja Outfit": 24,
+      "Noir Detective Trench Coat": 26,
+      "Police Costume": 31,
+      "Prison Uniform": 145,
+      "Punk Outfit": 23,
+      "Retro Streetware": 22,
+      "Retro Streetwear": 314,
+      "Robe": 65,
+      "Samurai Armor": 8,
+      "Seven Trench Coat": 20,
+      "Sleek Suit": 142,
+      "Sport Dress": 43,
+      "Trench Coat Noir": 10,
+      "Tribal Gear": 48,
+      "Uniform": 121,
+      "Waterworld Survival Armor": 42,
+      "Weedery Dispensary Fit": 17,
+      "Wild West Styler": 29
+    }
+  },
+  accessories: {
+    name: "Accessories",
+    icon: "🎯",
+    total: 3333,
+    traits: {
+      "Angel Wings": 19,
+      "Axe": 35,
+      "Baseball Bat": 3,
+      "Basketball": 26,
+      "Bingo Balls": 14,
+      "Cheese": 182,
+      "Cheese Scepter": 51,
+      "Cheese-Spiked Secret": 296,
+      "Crown": 28,
+      "Daimond item": 18,
+      "Diamond item": 60,
+      "F1 Car": 13,
+      "Flux Capacitor": 39,
+      "Gold": 74,
+      "Gold Chain": 26,
+      "Golden Gun": 8,
+      "Golf Magic": 4,
+      "Golf Set": 8,
+      "Guitar": 28,
+      "Gun Future": 58,
+      "Gun Special": 7,
+      "Gun Standard": 121,
+      "Hearts": 7,
+      "Katana": 49,
+      "Knife": 42,
+      "Knock Out Gloves": 18,
+      "Machine Gun": 11,
+      "Magic Staff": 121,
+      "Mushroom Magic": 11,
+      "Mushroom Spell": 222,
+      "Neon Utility": 63,
+      "Orb Magic": 322,
+      "Poker Cards": 85,
+      "Portal": 124,
+      "Prehistoric Weapon": 38,
+      "Recurve Bow": 32,
+      "Rocky Power": 16,
+      "Scroll of Spells": 644,
+      "Shield": 10,
+      "Smoking Magic": 197,
+      "Sword": 121,
+      "Sword Special": 77
+    }
+  },
+  expression: {
+    name: "Expression",
+    icon: "😊",
+    total: 3333,
+    traits: {
+      "Angry": 375,
+      "Funny": 97,
+      "Grumpy": 32,
+      "Happy": 1653,
+      "Insane Mad": 169,
+      "Poker Face": 589,
+      "Psychedelic Shock": 250,
+      "Sad": 34,
+      "Stoned": 134
+    }
+  },
+  background: {
+    name: "Background",
+    icon: "🌆",
+    total: 3333,
+    traits: {
+      "Alien Planet": 62,
+      "Ancient City": 28,
+      "Ancient Greece": 12,
+      "Backroom Mafia Casino": 89,
+      "Battle of the High Seas": 97,
+      "Battlefield": 35,
+      "Beach": 37,
+      "Boxing Ring": 22,
+      "Burning Warcamp": 41,
+      "Cannabis Lab": 50,
+      "Cheese Cartoon": 58,
+      "City of Hearts": 11,
+      "Club": 27,
+      "Comic-style Cheese Lab": 53,
+      "Dark City": 354,
+      "Dark Forest": 22,
+      "Dark Mansion": 45,
+      "Desert": 267,
+      "Desert Battlefield": 26,
+      "Digital Grid (Tron Style)": 73,
+      "Easter Island": 16,
+      "Execution Chamber": 35,
+      "Futuristic City": 382,
+      "Golden River Casino": 110,
+      "Golf Course": 30,
+      "Haunted Castle": 145,
+      "Jungle": 52,
+      "Lab": 60,
+      "Medieval Warfield": 37,
+      "Mushroom Magic": 95,
+      "Music Lab": 47,
+      "Mystical Forest": 73,
+      "Narrrfs World Portal Cheese Gate": 113,
+      "Philadelphia Skyline": 16,
+      "Poker Lounge": 5,
+      "Post-Apocalyptic": 114,
+      "Prison Cell": 91,
+      "Psychodelic Mushrooms": 134,
+      "Racetrack": 12,
+      "Retro Miami Backyard": 57,
+      "Samurai District": 116,
+      "Sky Battle": 13,
+      "Snowy Gulag Camp": 16,
+      "Stadium": 12,
+      "Time-Travel Tunnel": 41,
+      "Underground Club": 76,
+      "Viking Ragnarok": 26
+    }
+  },
+  special: {
+    name: "Special",
+    icon: "🌟",
+    total: 550,
+    traits: {
+      "Bear or Bull": 50,
+      "Bootie Heart": 10,
+      "CryptoCorn": 50,
+      "Fibonacci Order": 97,
+      "Golden Baboons Rascal Club": 50,
+      "Golden Cheese Hunter": 57,
+      "Portal Seeker": 121,
+      "Robotic Rabbit Syndicate": 50,
+      "Scroll Keeper": 15,
+      "Weedery WDYR": 50
+    }
+  },
+};
+
+function rarityFromCount(count) {
       if (count <= 10) return 'LEGENDARY';
       if (count <= 50) return 'ULTRA RARE';
       if (count <= 100) return 'RARE';
@@ -660,42 +938,41 @@ require_once 'discord-invite.php';
       }
     }
 
-    function showTraitCategory(key, el) {
-      const data = TRAITS_DATABASE[key];
-      if (!data) return;
+    function showTraitCategory(categoryKey, buttonEl) {
+      const categoryData = TRAITS_DATABASE[categoryKey];
+      const contentArea = document.getElementById('trait-content');
+      if (!categoryData || !contentArea) return;
 
-      // tabs
+      // Update active tab (do not rely on window.event)
       document.querySelectorAll('.trait-tab').forEach(btn => btn.classList.remove('active'));
-      if (el) el.classList.add('active');
+      if (buttonEl) buttonEl.classList.add('active');
 
-      const entries = Object.entries(data.traits).sort((a, b) => a[1] - b[1]);
-      const total = data.total;
-      const container = document.getElementById('trait-content');
+      const sortedTraits = Object.entries(categoryData.traits)
+        .sort((a, b) => a[1] - b[1]);
 
-      let html = '<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">';
-      for (const [name, count] of entries) {
+      let html = '<div class="grid md:grid-cols-3 lg:grid-cols-4 gap-4">';
+
+      sortedTraits.forEach(([traitName, count]) => {
         const rarity = rarityFromCount(count);
-        const percent = ((count / total) * 100).toFixed(2);
+        const badgeClass = rarityClass(rarity);
+        const percentage = ((count / categoryData.total) * 100);
+
         html += `
-          <div class="trait-card rounded-2xl p-4 text-sm">
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <span class="text-xl">${data.icon}</span>
-                <span class="font-semibold text-white">${name}</span>
-              </div>
-              <span class="px-3 py-1 rounded-full text-xs font-bold ${rarityClass(rarity)}">${rarity}</span>
-            </div>
-            <div class="flex items-center justify-between text-xs text-gray-300 mb-1">
-              <span>${count} / ${total}</span>
-              <span>${percent}% of collection</span>
-            </div>
+          <div class="trait-card rounded-xl p-4 text-center">
+            <div class="text-2xl mb-2">${categoryData.icon}</div>
+            <h4 class="font-semibold text-white mb-2 text-sm">${traitName}</h4>
+            <div class="text-xs ${badgeClass} px-2 py-1 rounded-full inline-block mb-2">${rarity}</div>
+            <div class="text-gray-300 text-xs mb-2">${count} / ${categoryData.total}</div>
             <div class="rarity-bar">
-              <div class="rarity-fill" style="width:${percent}%;"></div>
+              <div class="rarity-fill" style="width: ${Math.min(percentage, 100).toFixed(2)}%"></div>
             </div>
-          </div>`;
-      }
+            <div class="text-xs text-gray-400 mt-1">${percentage.toFixed(2)}%</div>
+          </div>
+        `;
+      });
+
       html += '</div>';
-      container.innerHTML = html;
+      contentArea.innerHTML = html;
     }
 
     function generateRandomTraits() {
@@ -703,61 +980,86 @@ require_once 'discord-invite.php';
       if (!display) return;
       display.classList.remove('hidden');
 
-      const rarityScore = { LEGENDARY: 100, 'ULTRA RARE': 80, RARE: 60, UNCOMMON: 40, COMMON: 20 };
-      let totalScore = 0;
-      let rows = '';
+      const rarityScores = {
+        'LEGENDARY': 100,
+        'ULTRA RARE': 80,
+        'RARE': 60,
+        'UNCOMMON': 40,
+        'COMMON': 20,
+      };
 
-      for (const [key, data] of Object.entries(TRAITS_DATABASE)) {
-        const traitNames = Object.keys(data.traits);
-        const name = traitNames[Math.floor(Math.random() * traitNames.length)];
-        const count = data.traits[name];
+      const picked = {};
+      const categories = Object.keys(TRAITS_DATABASE);
+
+      categories.forEach((key) => {
+        const category = TRAITS_DATABASE[key];
+        const traitNames = Object.keys(category.traits);
+        const chosenName = traitNames[Math.floor(Math.random() * traitNames.length)];
+        const count = category.traits[chosenName];
         const rarity = rarityFromCount(count);
-        totalScore += rarityScore[rarity] || 0;
-        rows += `
-          <div class="flex items-center justify-between bg-slate-900/70 rounded-xl px-4 py-3 mb-2">
+        picked[key] = { chosenName, count, rarity };
+      });
+
+      const avgScore = categories.reduce((sum, key) => sum + rarityScores[picked[key].rarity], 0) / categories.length;
+      const multiplier = (1 + (avgScore / 200)).toFixed(2);
+
+      let html = '<div class="space-y-3 text-left">';
+
+      categories.forEach((key) => {
+        const category = TRAITS_DATABASE[key];
+        const trait = picked[key];
+        const badgeClass = rarityClass(trait.rarity);
+
+        html += `
+          <div class="flex items-center justify-between bg-gray-800/50 rounded-lg p-3">
             <div class="flex items-center gap-3">
-              <span class="text-xl">${data.icon}</span>
+              <span class="text-2xl">${category.icon}</span>
               <div>
-                <div class="text-xs text-gray-400">${data.name}</div>
-                <div class="text-sm font-semibold text-white">${name}</div>
+                <div class="text-sm text-gray-400">${category.name}</div>
+                <div class="font-semibold text-white">${trait.chosenName}</div>
               </div>
             </div>
-            <span class="px-3 py-1 rounded-full text-xs font-bold ${rarityClass(rarity)}">${rarity}</span>
-          </div>`;
-      }
+            <div class="text-xs ${badgeClass} px-3 py-1 rounded-full">${trait.rarity}</div>
+          </div>
+        `;
+      });
 
-      const avg = Math.round(totalScore / Object.keys(TRAITS_DATABASE).length);
-      const multiplier = (1 + avg / 200).toFixed(2);
+      html += `
+        </div>
+        <div class="mt-6 pt-6 border-t border-gray-700">
+          <div class="text-center mb-4">
+            <div class="text-2xl font-bold text-yellow-400 mb-2">Rarity Score: ${Math.round(avgScore)}/100</div>
+            <div class="text-sm text-gray-300">Estimated DSPOINC Multiplier: ${multiplier}x</div>
+          </div>
+          <div class="text-center text-xs text-gray-400">Mint to discover your real on-chain combination.</div>
+        </div>
+      `;
 
-      display.innerHTML = `
-        ${rows}
-        <div class="mt-4 pt-4 border-t border-slate-700 text-center">
-          <div class="text-xl font-bold text-yellow-300 mb-1">Rarity Score: ${avg}/100</div>
-          <div class="text-sm text-gray-300 mb-3">Estimated DSPOINC multiplier: ${multiplier}x</div>
-          <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" class="inline-block mt-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold">
-            🚀 Mint to Get Your Mouse
-          </a>
-        </div>`;
+      display.innerHTML = html;
     }
 
+    // Init
     document.addEventListener('DOMContentLoaded', () => {
+      // Default tab
       const firstTab = document.querySelector('.trait-tab');
       if (firstTab) showTraitCategory('theme', firstTab);
 
-      const search = document.getElementById('trait-search');
-      if (search) {
-        search.addEventListener('input', e => {
-          const term = e.target.value.toLowerCase();
-          document.querySelectorAll('#trait-content .trait-card').forEach(card => {
-            const name = card.querySelector('span.font-semibold')?.textContent.toLowerCase() || '';
-            card.style.display = name.includes(term) ? '' : 'none';
-          });
+      // Search filtering
+      const searchEl = document.getElementById('trait-search');
+      if (!searchEl) return;
+
+      searchEl.addEventListener('input', (e) => {
+        const term = (e.target.value || '').toLowerCase();
+        document.querySelectorAll('#trait-content .trait-card').forEach((card) => {
+          const nameEl = card.querySelector('h4');
+          const name = (nameEl?.textContent || '').toLowerCase();
+          card.style.display = name.includes(term) ? '' : 'none';
         });
-      }
+      });
     });
   </script>
 
-
+  <script src="js/wallet.js"></script>
 
   <!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
   <!-- 🔐 Do not remove unless instructed by the Over Brain. -->

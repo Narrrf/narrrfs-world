@@ -766,56 +766,66 @@ const API_BASE_URL = isProduction ? "https://narrrfs.world" : "http://localhost"
  */
 // 🚨 PATH RESOLUTION FUNCTION - VERSION 2026-01-04-FIXED
 // This function resolves asset paths for both local and production environments
+// 🚨 PATH RESOLUTION FUNCTION - VR/FILE-SAFE VERSION
+
 function resolveAssetPath(path) {
-  // FORCE DEBUG: Always log to verify function is being called
   console.log(`🔍 [PATH RESOLVE] Called with: "${path}"`);
-  
+
   if (!path) {
     console.warn("⚠️ [PATH] resolveAssetPath called with empty/null path");
     return path;
   }
-  
-  // If path already starts with http://, https://, or already correct absolute path, return as-is
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    console.log(`🔍 [PATH RESOLVE] Already full URL, returning as-is: "${path}"`);
+
+  // Already full URL
+  if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
-  
-  // If path already starts with /three.js/public/ or /public/three.js/public/, return as-is
-  if (path.startsWith('/three.js/public/') || path.startsWith('/public/three.js/public/')) {
-    console.log(`🔍 [PATH RESOLVE] Already resolved, returning as-is: "${path}"`);
+
+  // Already resolved to our asset root
+  if (path.startsWith("/three.js/public/") || path.startsWith("/public/three.js/public/")) {
     return path;
   }
-  
-  // 🔧 FIX: If path starts with /public/glyph/, return as-is (glyph3d files are absolute paths from web root)
-  // These files are stored at /public/glyph/glyph3d/ and don't need three.js path resolution (January 11, 2026)
-  if (path.startsWith('/public/glyph/')) {
-    console.log(`🔍 [PATH RESOLVE] Glyph path (absolute from web root), returning as-is: "${path}"`);
+
+  // Glyph special-case
+  if (path.startsWith("/public/glyph/")) {
     return path;
   }
-  
-  // Remove leading ./ if present
-  let cleanPath = path.startsWith('./') ? path.slice(2) : path;
-  
-  // Remove leading / if present (for consistency)
-  cleanPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
-  
-  // Remove "public/" prefix if present (prevents double public/)
-  cleanPath = cleanPath.startsWith('public/') ? cleanPath.slice(7) : cleanPath;
-  
-  // Environment-aware path resolution
-  // NOTE: According to rules (11_THREE_JS_RULE.md §13), Render uses symlinks:
-  // - Assets stored in: /data/public/three.js/public/ (persistent storage)
-  // - Symlinks created: /var/www/html/public/three.js/public/ → /data/public/three.js/public/
-  // - Web-accessible URL: /public/three.js/public/... (same for both local and production)
-  // Therefore, BOTH environments use the same URL path structure!
-  let resolvedPath = `/public/three.js/public/${cleanPath}`;
-  
-  // ALWAYS log resolution for debugging
-  console.log(`🔍 [PATH RESOLVE] "${path}" → "${resolvedPath}" (isProduction: ${isProduction}, hostname: ${window.location.hostname})`);
-  
+
+  // Normalize
+  let cleanPath = path.startsWith("./") ? path.slice(2) : path;
+  cleanPath = cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath;
+  cleanPath = cleanPath.startsWith("public/") ? cleanPath.slice(7) : cleanPath;
+
+  const href = window.location.href;
+  const isFile = href.startsWith("file:");
+
+  let resolvedPath;
+
+  if (isFile) {
+    // 🥽 FILE:// MODE (e.g. sideloaded on Quest)
+    // Assume assets live in "public/three.js/public" next to the HTML file.
+    // e.g. file:///.../3d-riddle-game.html → file:///.../public/three.js/public/...
+    const lastSlash = href.lastIndexOf("/");
+    const baseDir = href.slice(0, lastSlash); // no trailing slash
+    resolvedPath = `${baseDir}/public/three.js/public/${cleanPath}`;
+  } else if (href.includes("/public/three.js/")) {
+    // Standard layout: .../public/three.js/3d-riddle-game.html
+    resolvedPath = `/public/three.js/public/${cleanPath}`;
+  } else if (href.includes("/three.js/")) {
+    // Fallback layout: .../three.js/3d-riddle-game.html
+    resolvedPath = `/three.js/public/${cleanPath}`;
+  } else {
+    // Last-resort: keep your old default
+    resolvedPath = `/public/three.js/public/${cleanPath}`;
+  }
+
+  console.log(
+    `🔍 [PATH RESOLVE] "${path}" → "${resolvedPath}" (origin: ${window.location.origin}, href: ${href})`
+  );
+
   return resolvedPath;
 }
+
 const PROFILE_URL = isProduction
   ? "https://narrrfs.world/profile.html"
   : "http://localhost/public/profile.html";
@@ -11931,6 +11941,10 @@ function getOptionsMenu() {
     godModeToggle.appendChild(godModeOnBtn);
     godModeSection.appendChild(godModeToggle);
     generalTabContent.appendChild(godModeSection);
+	
+	// ✅ FIX: Store button references so updateGodModeButtons() can style them
+    optionsMenu._godModeOffBtn = godModeOffBtn;
+    optionsMenu._godModeOnBtn  = godModeOnBtn;
 
     // 🔧 DEBUG HELPERS MENU TOGGLE (Visibility control)
     const debugHelpersSection = document.createElement("div");
