@@ -382,8 +382,7 @@ const joystickMovementFlags = {
   right: false
 };
 
-// Aggregated movement used by legacy systems (GOD mode, climbing, etc.)
-// PlayerControls.getMovementState() is still the main source where available
+// Aggregated movement used by legacy systems (GOD mode, climbing, animation fallback)
 const movement = {
   forward: false,
   backward: false,
@@ -7649,7 +7648,8 @@ function updatePlayerCharacter(delta) {
         // CRITICAL: Properly handle animation transitions based on ACTUAL movement
         // Check both key states AND velocity to prevent rapid switching
         // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-        const currentMovement = playerControls ? playerControls.getMovementState() : movement;
+        const currentMovement = getCurrentMovementState();
+
         const hasMovementInput = currentMovement.forward || currentMovement.backward || currentMovement.left || currentMovement.right;
         
         // DEBUG: Animation debug logging disabled for performance
@@ -17727,6 +17727,20 @@ function updateAggregatedMovement() {
   }
 }
 
+// 🎮 Helper: unified movement state for physics/animation
+function getCurrentMovementState() {
+  try {
+    // In VR, always use aggregated movement (keyboard + joystick + VR)
+    if (typeof isVRSessionActive === 'function' && isVRSessionActive()) {
+      return movement;
+    }
+  } catch (e) {
+    // Ignore any weird errors and fall back to normal behavior
+  }
+
+  // Desktop / Mobile: use PlayerControls when available
+  return playerControls ? playerControls.getMovementState() : movement;
+}
 
 updateAggregatedMovement();
 
@@ -33774,40 +33788,39 @@ if (vrInputProvider && isVRSessionActive()) {
   }
     
  // 4) ✅ Update camera from VR headset pose
-  if (xrFrame) {
-    try {
-      const referenceSpace = renderer.xr.getReferenceSpace();
-      if (referenceSpace) {
-        const pose = xrFrame.getViewerPose(referenceSpace);
-        if (pose) {
-          const transform   = pose.transform;
-          const position    = transform.position;
-          const orientation = transform.orientation;
+if (xrFrame) {
+  try {
+    const referenceSpace = renderer.xr.getReferenceSpace();
+    if (referenceSpace) {
+      const pose = xrFrame.getViewerPose(referenceSpace);
+      if (pose) {
+        const transform   = pose.transform;
+        const orientation = transform.orientation;
 
-          // playerPosition is computed just above this block
-          camera.position.set(
-            playerPosition.x + position.x,
-            playerPosition.y + position.y,
-            playerPosition.z + position.z
-          );
+        // ✅ Position: keep the camera exactly at the player collider center
+        camera.position.set(
+          playerPosition.x,
+          playerPosition.y,
+          playerPosition.z
+        );
 
-          camera.quaternion.set(
-            orientation.x,
-            orientation.y,
-            orientation.z,
-            orientation.w
-          );
-
-          // (debug logging kept as you had it)
-        }
-      }
-    } catch (error) {
-      if (!window.vrPoseErrorLogged) {
-        console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
-        window.vrPoseErrorLogged = true;
+        // ✅ Rotation: use the headset orientation
+        camera.quaternion.set(
+          orientation.x,
+          orientation.y,
+          orientation.z,
+          orientation.w
+        );
       }
     }
+  } catch (error) {
+    if (!window.vrPoseErrorLogged) {
+      console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
+      window.vrPoseErrorLogged = true;
+    }
   }
+}
+
     
   // 5) ✅ Handle rotation from right thumbstick
   const rotationInput = vrInputProvider.getRotationInput();
@@ -33983,7 +33996,8 @@ if (vrInputProvider && isVRSessionActive()) {
     } else {
       // GOD MODE: Fly up/down controls
       // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-      const currentMovement = playerControls ? playerControls.getMovementState() : movement;
+      const currentMovement = getCurrentMovementState();
+
       const flySpeed = 20; // Fly speed
       if (currentMovement.flyUp) {
         const previousY = playerVelocity.y;
@@ -34013,7 +34027,8 @@ if (vrInputProvider && isVRSessionActive()) {
     // Apply damping to horizontal movement (X and Z only)
     // In God Mode, don't damp Y velocity when actively flying
     // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-    const currentMovement = playerControls ? playerControls.getMovementState() : movement;
+    const currentMovement = getCurrentMovementState();
+
     const damping = Math.exp(-4 * delta) - 1;
     if (godMode && (currentMovement.flyUp || currentMovement.flyDown)) {
       // God Mode + Flying: Only damp horizontal velocity (X, Z), preserve Y velocity
@@ -34209,7 +34224,8 @@ if (vrInputProvider && isVRSessionActive()) {
       // Don't process input - player is stuck in trap
     } else {
       // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-      const currentMovement = playerControls ? playerControls.getMovementState() : movement;
+      const currentMovement = getCurrentMovementState();
+
       // Use joystick input on mobile or desktop test mode, keyboard otherwise
       const useJoystick = (isMobileLandscape() || window.enableDesktopJoysticks) && joystickActive;
       if (useJoystick) {
@@ -34251,7 +34267,8 @@ if (vrInputProvider && isVRSessionActive()) {
       const forward = playerControls ? playerControls.getForwardVector() : getForwardVector();
       const side = playerControls ? playerControls.getSideVector() : getSideVector();
       // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-      const currentMovement = playerControls ? playerControls.getMovementState() : movement;
+      const currentMovement = getCurrentMovementState();
+
       
       // 🧗 CLIMBING MODE: Handle vertical climbing movement
       if (isClimbing && climbSurfaceNormal) {
