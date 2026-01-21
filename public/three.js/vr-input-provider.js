@@ -166,9 +166,12 @@ export class VRInputProvider extends InputProvider {
       this.handleInputSourcesChange(event);
     });
     
-    // Initialize existing input sources
-    this.controllerInputSources = this.xrSession.inputSources || [];
-    this.updateControllers();
+// Initialize existing input sources
+const initialSources = this.xrSession.inputSources || [];
+// ✅ Convert XRInputSourceArray → real Array
+this.controllerInputSources = Array.from(initialSources);
+this.updateControllers();
+
   }
   
   /**
@@ -222,12 +225,20 @@ export class VRInputProvider extends InputProvider {
   update(delta) {
     if (!this.enabled || !this.xrSession) return;
     
-    // Update controller input sources from current session
-    const inputSources = this.xrSession.inputSources || [];
-    if (inputSources.length !== this.controllerInputSources.length) {
-      this.controllerInputSources = inputSources;
-      this.updateControllers();
-    }
+// Update controller input sources from current session
+const inputSources = this.xrSession.inputSources || [];
+
+// ✅ Always keep our own array instance and copy values
+const newSources = Array.from(inputSources);
+
+if (newSources.length !== this.controllerInputSources.length) {
+  this.controllerInputSources = newSources;
+  this.updateControllers();
+} else {
+  // Optional: if you want to be super-safe, you could also compare contents here.
+  this.controllerInputSources = newSources;
+}
+
     
     // Update controller button and thumbstick states
     this.controllerInputSources.forEach(inputSource => {
@@ -407,7 +418,7 @@ export class VRInputProvider extends InputProvider {
     
     const index = buttonMap[buttonId];
     if (index !== undefined && buttonStates[index] !== undefined) {
-      // ✅ Log button presses for debugging (January 20, 2026)
+      // ✅ Log buttons presses for debugging (January 20, 2026)
       if (buttonStates[index] && (!window.lastButtonLog || window.lastButtonLog !== `${buttonId}_${handedness}`)) {
         console.log(`🎮 [VR INPUT] Button pressed: ${buttonId} (${handedness}) - Index: ${index}`);
         window.lastButtonLog = `${buttonId}_${handedness}`;
@@ -423,20 +434,19 @@ export class VRInputProvider extends InputProvider {
    * Get controller position and rotation
    * @param {string} handedness - 'left' or 'right'
    */
-  getControllerPose(frame, handedness) {
-    if (!frame || !handedness) return null;
-    
-    const controller = handedness === 'left' ? this.leftController : this.rightController;
-    if (!controller) return null;
-    
-    const inputPose = frame.getPose(controller.targetRaySpace, frame.session.requestAnimationFrame);
-    if (!inputPose) return null;
-    
-    return {
-      position: inputPose.transform.position,
-      rotation: inputPose.transform.orientation,
-      matrix: inputPose.transform.matrix
-    };
-  }
+getControllerPose(frame, referenceSpace, handedness) {
+  if (!frame || !referenceSpace || !handedness) return null;
+
+  const controller = handedness === 'left' ? this.leftController : this.rightController;
+  if (!controller) return null;
+
+  const inputPose = frame.getPose(controller.targetRaySpace, referenceSpace);
+  if (!inputPose) return null;
+
+  return {
+    position: inputPose.transform.position,
+    rotation: inputPose.transform.orientation
+  };
+}
 }
 

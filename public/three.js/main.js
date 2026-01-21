@@ -2017,6 +2017,7 @@ checkVRSupport();
 let vrInputProvider = null;
 let vrUIRaycaster = null; // ✅ VR UI raycaster for menu interaction (January 20, 2026)
 let currentVRSession = null;
+let vrSessionStarting = false; // ✅ guard against double start
 
 // ============================================================================
 // VR OPTIMIZATION FUNCTIONS (PHASE 2 - January 18, 2026)
@@ -2224,6 +2225,15 @@ async function startVRSession() {
     return false;
   }
   
+  
+  // ✅ NEW: prevent starting twice (or while already active)
+  if (vrSessionStarting || isVRSessionActive()) {
+    console.warn('⚠️ [VR] startVRSession called while session is already active or starting.');
+    return false;
+  }
+
+  vrSessionStarting = true;
+  
   try {
     console.log('🥽 [VR] Starting VR session with Phase 2 optimizations...');
     
@@ -2300,11 +2310,12 @@ async function startVRSession() {
     });
     
     // ✅ PHASE 2: Hide loading indicator after session starts
-    setTimeout(() => {
+     setTimeout(() => {
       hideVRLoadingIndicator();
     }, 1000); // Wait 1 second for assets to settle
     
     console.log('🥽 [VR] VR session started successfully with Phase 2 optimizations');
+    vrSessionStarting = false;   // ✅ reset guard flag on success
     return true;
   } catch (err) {
     console.error('❌ [VR] Failed to start VR session:', err);
@@ -2313,16 +2324,23 @@ async function startVRSession() {
     
     // Show user-friendly error
     alert(`VR Session Failed: ${err.message}\n\nTry refreshing the page or using SHIFT+V keyboard shortcut.`);
+    vrSessionStarting = false;   // ✅ reset guard flag on failure
     return false;
   }
 }
+
 
 /**
  * End VR Session
  */
 function endVRSession() {
-  if (currentVRSession) {
-    currentVRSession.end();
+  // Only call .end() if session is still active/presenting
+  if (currentVRSession && renderer.xr.isPresenting) {
+    try {
+      currentVRSession.end();
+    } catch (e) {
+      console.warn('⚠️ [VR] Error while ending XR session (probably already ended):', e);
+    }
   }
   
   if (vrInputProvider) {
@@ -2340,6 +2358,7 @@ function endVRSession() {
   }
   
   currentVRSession = null;
+  vrSessionStarting = false; // ✅ extra safety net so we can start VR again
   console.log('🖥️ [VR] VR session ended, returned to desktop mode');
 }
 
