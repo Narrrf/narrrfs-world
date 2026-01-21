@@ -361,6 +361,40 @@ let mobileCameraJoystick = null;
 let joystickActive = false;
 let cameraJoystickActive = false;
 
+// 🎮 CENTRAL MOVEMENT STATE (keyboard + joystick + VR)
+
+// Raw keyboard movement before aggregation
+const keyboardMovement = {
+  forward: false,
+  backward: false,
+  left: false,
+  right: false,
+  sprint: false,
+  flyUp: false,
+  flyDown: false
+};
+
+// Mobile/desktop joystick movement flags
+const joystickMovementFlags = {
+  forward: false,
+  backward: false,
+  left: false,
+  right: false
+};
+
+// Aggregated movement used by legacy systems (GOD mode, climbing, etc.)
+// PlayerControls.getMovementState() is still the main source where available
+const movement = {
+  forward: false,
+  backward: false,
+  left: false,
+  right: false,
+  sprint: false,
+  flyUp: false,
+  flyDown: false
+};
+
+
 // 🧗 CLIMBING SYSTEM - December 16, 2025
 // ✅ STABLE VERSION - December 16, 2025
 // All inner towers (5 blocks) climbable, borders properly blocked
@@ -2019,6 +2053,12 @@ let vrUIRaycaster = null; // ✅ VR UI raycaster for menu interaction (January 2
 let currentVRSession = null;
 let vrSessionStarting = false; // ✅ guard against double start
 
+// 🥽 VR action state (for edge detection: "just pressed")
+let _lastVRJumpPressed = false;
+let _lastVRInteractPressed = false;
+let _lastVRShootPressed = false;
+
+
 // ============================================================================
 // VR OPTIMIZATION FUNCTIONS (PHASE 2 - January 18, 2026)
 // ============================================================================
@@ -2265,6 +2305,15 @@ async function startVRSession() {
       window.optionsMenuOpen = false;
       console.log('🥽 [VR] Options menu closed before starting VR');
     }
+	
+	    // 🥽 Always use first-person camera in VR
+    if (typeof isFirstPerson === 'function' && typeof setCameraMode === 'function') {
+      if (!isFirstPerson()) {
+        setCameraMode(0);
+        console.log('🥽 [VR] Camera mode forced to first-person for VR session');
+      }
+    }
+
     
     // Request immersive VR session
     const session = await navigator.xr.requestSession('immersive-vr', {
@@ -4267,7 +4316,65 @@ function ensureBackgroundMusicForCurrentLevel(force = false) {
 // Initialize Player Controls Module with all necessary callbacks
 let playerControls = null;
 
-// Helper function to initialize Player Controls (called after scene/camera/renderer are ready)
+// 🔧 Shared jump handler – used by keyboard + VR
+function handlePlayerJumpFromAnyInput(isVR = false) {
+  // 🧗 CLIMBING: Exit climb mode when jump is pressed
+  if (isClimbing) {
+    isClimbing = false;
+    climbSurfaceNormal = null;
+  }
+
+  const isLevel5 = currentLevel === LEVEL_IDS.LEVEL5;
+
+  if (onGround) {
+    const jumpHeight = isLevel5 ? 75 : 15;
+    playerVelocity.y = jumpHeight;
+    hasDoubleJumped = false;
+    playJumpSound();
+
+    if (playerModelModule && playerModelModule.isLoaded() && playerModelModule.isMouseCharacter()) {
+      console.log(isVR ? "🦘 [JUMP][VR] Normal jump" : "🦘 [JUMP] Normal jump");
+    }
+    if (isLevel5) {
+      console.log(isVR ? "🚀 [LEVEL 5][VR] Super jump" : "🚀 [LEVEL 5] Super jump");
+    }
+  } else if (!hasDoubleJumped) {
+    const doubleJumpHeight = isLevel5 ? 50 : 12;
+    playerVelocity.y = doubleJumpHeight;
+    hasDoubleJumped = true;
+    playJumpSound();
+
+    console.log(
+      isVR
+        ? `🤸 [DOUBLE JUMP][VR] Double jump! vY=${playerVelocity.y.toFixed(2)}`
+        : `🤸 [DOUBLE JUMP] Double jump! vY=${playerVelocity.y.toFixed(2)}`
+    );
+
+    if (playerModelModule && playerModelModule.isLoaded() && playerModelModule.isMouseCharacter()) {
+      playerModelModule.triggerAnimation("somersoult", true);
+    } else if (playerCharacterAnimations["somersoult"]) {
+      const somersaultAction = playerCharacterAnimations["somersoult"];
+      Object.keys(playerCharacterAnimations).forEach((animName) => {
+        if (animName !== "somersoult") {
+          const action = playerCharacterAnimations[animName];
+          if (action && action.enabled) {
+            action.fadeOut(0.1);
+          }
+        }
+      });
+      somersaultAction.reset();
+      somersaultAction.setLoop(THREE.LoopOnce, 1);
+      somersaultAction.setEffectiveWeight(1.0);
+      somersaultAction.play();
+    }
+
+    if (isLevel5) {
+      console.log(isVR ? "🚀 [LEVEL 5][VR] Super double jump" : "🚀 [LEVEL 5] Super double jump");
+    }
+  }
+}
+
+// Helper function to innitialize Player Controls (called after scene/camera/renderer are ready)
 function initializePlayerControls() {
   if (playerControls) {
     console.warn("⚠️ [PLAYER CONTROLS] Already initialized, skipping...");
@@ -4285,80 +4392,15 @@ function initializePlayerControls() {
       isThirdPerson: () => isThirdPerson(),
       isJoystickView: () => isJoystickView(),
 
-      // Callbacks for actions (these will be called from controls)
-      onJump: (event) => {
-        // 🧗 CLIMBING: Exit climb mode when jump is pressed
-        if (isClimbing) {
-          isClimbing = false;
-          climbSurfaceNormal = null;
-        }
-        // Jump logic: Space key pressed in normal mode
-        // Supports: Normal jump (on ground) and Double jump (in air, somersault animation)
+       onJump: (event) => {
+        // Space key jump in desktop mode
         if (!event || !event.repeat) {
           if (!godMode) {
-            // Level 5 has super jump mode (5x higher than normal)
-            const isLevel5 = currentLevel === LEVEL_IDS.LEVEL5;
-            
-            if (onGround) {
-              // Normal jump: On ground, first jump
-              const jumpHeight = isLevel5 ? 75 : 15; // Super jump in Level 5 (5x = 75), normal jump elsewhere (15)
-              playerVelocity.y = jumpHeight;
-              hasDoubleJumped = false; // Reset double jump flag when on ground
-              playJumpSound();
-              
-              // Trigger normal jump animation (already handled by animation state machine)
-              if (playerModelModule && playerModelModule.isLoaded() && playerModelModule.isMouseCharacter()) {
-                // Jump animation will be triggered automatically by animation state machine
-                // But we can ensure it's playing
-                console.log("🦘 [JUMP] Normal jump - jump animation should play");
-              }
-              
-              if (isLevel5) {
-                console.log("🚀 [LEVEL 5] Super jump activated!");
-              }
-            } else if (!hasDoubleJumped) {
-              // Double jump: In air, not yet double jumped
-              // Use somersault animation for double jump
-              // 🎮 Allow double jump even when falling (removed velocity check for better feel)
-              const doubleJumpHeight = isLevel5 ? 50 : 12; // Slightly less than first jump
-              playerVelocity.y = doubleJumpHeight;
-              hasDoubleJumped = true; // Mark double jump as used
-              playJumpSound();
-              
-              console.log("🤸 [DOUBLE JUMP] Double jump activated! Velocity.y:", playerVelocity.y.toFixed(2));
-              
-              // Trigger somersault animation for double jump
-              if (playerModelModule && playerModelModule.isLoaded() && playerModelModule.isMouseCharacter()) {
-                playerModelModule.triggerAnimation('somersoult', true); // Immediate, interrupts other animations
-                console.log("🤸 [DOUBLE JUMP] Somersault animation triggered!");
-              } else if (playerCharacterAnimations['somersoult']) {
-                // Fallback to legacy system if PlayerModel module not available
-                const somersaultAction = playerCharacterAnimations['somersoult'];
-                if (somersaultAction) {
-                  // Stop other animations and play somersault
-                  Object.keys(playerCharacterAnimations).forEach(animName => {
-                    if (animName !== 'somersoult') {
-                      const action = playerCharacterAnimations[animName];
-                      if (action && action.enabled) {
-                        action.fadeOut(0.1);
-                      }
-                    }
-                  });
-                  somersaultAction.reset();
-                  somersaultAction.setLoop(THREE.LoopOnce, 1);
-                  somersaultAction.setEffectiveWeight(1.0);
-                  somersaultAction.play();
-                  console.log("🤸 [DOUBLE JUMP] Somersault animation triggered (legacy system)!");
-                }
-              }
-              
-              if (isLevel5) {
-                console.log("🚀 [LEVEL 5] Super double jump activated!");
-              }
-            }
+            handlePlayerJumpFromAnyInput(false); // false = desktop/keyboard
           }
         }
       },
+
       onInteract: () => {
         // E key interaction - open nearest chest if available
         if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
@@ -17654,19 +17696,37 @@ function buildLevel(mapData) {
   renderGeometry.dispose();
 }
 
-const movement = { forward: false, backward: false, left: false, right: false, sprint: false, flyUp: false, flyDown: false };
-const keyboardMovement = { forward: false, backward: false, left: false, right: false, sprint: false, flyUp: false, flyDown: false };
-const joystickMovementFlags = { forward: false, backward: false, left: false, right: false };
-
 function updateAggregatedMovement() {
-  movement.forward = keyboardMovement.forward || joystickMovementFlags.forward;
+  // 1) Base: keyboard + joystick
+  movement.forward  = keyboardMovement.forward  || joystickMovementFlags.forward;
   movement.backward = keyboardMovement.backward || joystickMovementFlags.backward;
-  movement.left = keyboardMovement.left || joystickMovementFlags.left;
-  movement.right = keyboardMovement.right || joystickMovementFlags.right;
-  movement.sprint = keyboardMovement.sprint;
-  movement.flyUp = keyboardMovement.flyUp;
-  movement.flyDown = keyboardMovement.flyDown;
+  movement.left     = keyboardMovement.left     || joystickMovementFlags.left;
+  movement.right    = keyboardMovement.right    || joystickMovementFlags.right;
+  movement.sprint   = keyboardMovement.sprint;
+  movement.flyUp    = keyboardMovement.flyUp;
+  movement.flyDown  = keyboardMovement.flyDown;
+
+  // 2) 🥽 VR integration: add left-stick movement + sprint from VRInputProvider
+  try {
+    if (vrInputProvider && typeof isVRSessionActive === "function" && isVRSessionActive()) {
+      const vrMovement = vrInputProvider.getMovementState && vrInputProvider.getMovementState();
+      if (vrMovement) {
+        movement.forward  = movement.forward  || !!vrMovement.forward;
+        movement.backward = movement.backward || !!vrMovement.backward;
+        movement.left     = movement.left     || !!vrMovement.left;
+        movement.right    = movement.right    || !!vrMovement.right;
+        movement.sprint   = movement.sprint   || !!vrMovement.sprint;
+        // flyUp / flyDown stay as-is (GOD mode only)
+      }
+    }
+  } catch (vrMoveErr) {
+    if (!window.vrMovementErrorLogged) {
+      console.warn("⚠️ [VR MOVE] Failed to read VR movement state:", vrMoveErr);
+      window.vrMovementErrorLogged = true;
+    }
+  }
 }
+
 
 updateAggregatedMovement();
 
@@ -33684,75 +33744,202 @@ function animate(timestamp, xrFrame) {
     window.animateLoopConfirmed = true;
   }
   */
+  
+    // 🎮 Compute current player position for this frame (center of the collision capsule)
+  // Used by: VR camera update and various systems
+  let playerPosition = new THREE.Vector3(0, 1, 0); // Safe default
+
+  if (playerCollider && playerCollider.start && playerCollider.end) {
+    // Lerp between capsule start (feet) and end (head) to get player center
+    playerPosition = new THREE.Vector3().lerpVectors(
+      playerCollider.start,
+      playerCollider.end,
+      0.5
+    );
+  }
 
   // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
   // ✅ CRITICAL FIX: VRInputProvider MUST be updated every frame!
-  if (vrInputProvider && isVRSessionActive()) {
-    vrInputProvider.update(delta);
+
+if (vrInputProvider && isVRSessionActive()) {
+  // 1) Update raw controller state
+  vrInputProvider.update(delta);
+
+  // 2) Update aggregated movement to include VR left stick
+  updateAggregatedMovement();
+
+  // 3) ✅ UPDATE VR UI RAYCASTER for menu interaction (January 20, 2026)
+  if (vrUIRaycaster && xrFrame) {
+    vrUIRaycaster.update(xrFrame);
+  }
     
-    // ✅ UPDATE VR UI RAYCASTER for menu interaction (January 20, 2026)
-    if (vrUIRaycaster && xrFrame) {
-      vrUIRaycaster.update(xrFrame);
-    }
-    
-    // ✅ Update camera from VR headset pose
-    if (xrFrame) {
-      try {
-        const referenceSpace = renderer.xr.getReferenceSpace();
-        if (referenceSpace) {
-          const pose = xrFrame.getViewerPose(referenceSpace);
-          
-          if (pose) {
-            // Get headset position and rotation
-            const transform = pose.transform;
-            const position = transform.position;
-            const orientation = transform.orientation;
-            
-            // Update camera position (offset by player position)
-            camera.position.set(
-              playerPosition.x + position.x,
-              playerPosition.y + position.y,
-              playerPosition.z + position.z
-            );
-            
-            // Update camera rotation from headset
-            camera.quaternion.set(
-              orientation.x,
-              orientation.y,
-              orientation.z,
-              orientation.w
-            );
-            
-            // ✅ Log VR pose occasionally for debugging
-            if (!window.vrPoseLogCounter) window.vrPoseLogCounter = 0;
-            window.vrPoseLogCounter++;
-            if (window.vrPoseLogCounter % 300 === 0) { // Every 300 frames (5 seconds at 60fps)
-              console.log(`🥽 [VR POSE] Head: pos(${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)})`);
-            }
-          }
-        }
-      } catch (error) {
-        // Silently fail if pose not available yet
-        if (!window.vrPoseErrorLogged) {
-          console.warn('⚠️ [VR POSE] Error getting headset pose:', error);
-          window.vrPoseErrorLogged = true;
+ // 4) ✅ Update camera from VR headset pose
+  if (xrFrame) {
+    try {
+      const referenceSpace = renderer.xr.getReferenceSpace();
+      if (referenceSpace) {
+        const pose = xrFrame.getViewerPose(referenceSpace);
+        if (pose) {
+          const transform   = pose.transform;
+          const position    = transform.position;
+          const orientation = transform.orientation;
+
+          // playerPosition is computed just above this block
+          camera.position.set(
+            playerPosition.x + position.x,
+            playerPosition.y + position.y,
+            playerPosition.z + position.z
+          );
+
+          camera.quaternion.set(
+            orientation.x,
+            orientation.y,
+            orientation.z,
+            orientation.w
+          );
+
+          // (debug logging kept as you had it)
         }
       }
-    }
-    
-    // ✅ Handle rotation from right thumbstick
-    const rotationInput = vrInputProvider.getRotationInput();
-    if (Math.abs(rotationInput.x) > 0) {
-      // Smooth turn (can be changed to snap-turn later)
-      const turnSpeed = 2.0; // Radians per second
-      thirdPersonCameraAngle.horizontal += rotationInput.x * turnSpeed * delta;
-      
-      // Also rotate player body for consistency
-      if (playerCharacterModel) {
-        playerCharacterModel.rotation.y = thirdPersonCameraAngle.horizontal;
+    } catch (error) {
+      if (!window.vrPoseErrorLogged) {
+        console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
+        window.vrPoseErrorLogged = true;
       }
     }
   }
+    
+  // 5) ✅ Handle rotation from right thumbstick
+  const rotationInput = vrInputProvider.getRotationInput();
+  if (Math.abs(rotationInput.x) > 0) {
+    const turnSpeed = 2.0; // Radians per second
+    thirdPersonCameraAngle.horizontal += rotationInput.x * turnSpeed * delta;
+
+    if (playerCharacterModel) {
+      playerCharacterModel.rotation.y = thirdPersonCameraAngle.horizontal;
+    }
+  }
+// 6) 🥽 VR JUMP: map X/A → jump (edge-triggered)
+  const vrMovement = vrInputProvider.getMovementState && vrInputProvider.getMovementState();
+  const vrJumpPressedNow = !!(vrMovement && vrMovement.jump);
+
+  if (vrJumpPressedNow && !_lastVRJumpPressed) {
+    // first frame of press
+    if (!godMode) {
+      handlePlayerJumpFromAnyInput(true); // true = VR
+    }
+  }
+  _lastVRJumpPressed = vrJumpPressedNow;
+
+ // 7) 🥽 VR INTERACT: use Grip as "E" (open chest)
+  let vrInteractPressedNow = false;
+  try {
+    if (vrInputProvider.getButtonState) {
+      vrInteractPressedNow =
+        vrInputProvider.getButtonState("grip", "right") ||
+        vrInputProvider.getButtonState("grip", "left");
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  if (vrInteractPressedNow && !_lastVRInteractPressed) {
+    // mimic the onInteract callback used by PlayerControls (open nearest chest)
+    if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
+      // reuse exactly the same logic as in onInteract: nearestInteractableChest.open(awardRewardCallback)
+      // easier + safer: call the same code path by triggering keyboard-like interaction:
+      try {
+        // NOTE: PlayerControls calls our onInteract callback when E is pressed.
+        // We simulate that by directly invoking the body inline here,
+        // or, better, by calling a helper if you refactor onInteract into a named function.
+        nearestInteractableChest.open(async (chest) => {
+          // this is the same awardRewardCallback body you already have in onInteract
+          if (!resolvedDiscordId) {
+            console.warn(`🎁 [CHEST][VR] Skipping DSPOINC reward for ${chest.id} — no Discord ID.`);
+            return;
+          }
+          try {
+            const payload = {
+              discord_id: resolvedDiscordId,
+              discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
+              riddle_id: `CHEST_${chest.id}`,
+              level_id: chest.levelId,
+              base_reward: chest.dspoincAmount,
+              session_id: cheeseSessionId
+            };
+
+            const response = await fetch(RIDDLE_REWARD_ENDPOINT, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify(payload)
+            });
+
+            const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
+
+            if (response.ok && result.success) {
+              const dsPoincAwarded = result.data?.ds_poinc_awarded || 0;
+              const totalDspoinc  = result.data?.total_ds_poinc;
+
+              if (typeof totalDspoinc === "number") {
+                currentTotalDspoinc = totalDspoinc;
+                window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
+                if (isGamePaused) updatePausePlayerInfo();
+              }
+
+              showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
+
+              if (chestSystem) {
+                chestSystem.incrementChestsOpenedCount();
+                chestSystem.markChestAsOpened(chest.id);
+              }
+            } else if (response.status === 409) {
+              console.warn(`🎁 [CHEST][VR] Reward already claimed for ${chest.id}`);
+              if (chestSystem) chestSystem.markChestAsOpened(chest.id);
+              if (chest && typeof chest.restoreOpenedState === "function") {
+                chest.restoreOpenedState();
+              }
+              showRiddleRewardNotification(0, 1.0, true);
+            } else {
+              console.warn(`🎁 [CHEST][VR] DSPOINC reward failed for ${chest.id}:`, result.error);
+              showRiddleRewardNotification(0, 1.0, true);
+            }
+          } catch (error) {
+            console.error(`❌ [CHEST][VR] Failed to award DSPOINC for ${chest.id}:`, error);
+          }
+        });
+
+        if (guiSystem) {
+          guiSystem.hideInteractionPrompt();
+        }
+        nearestInteractableChest = null;
+      } catch (err) {
+        console.error("❌ [VR INTERACT] Failed to open chest from VR:", err);
+      }
+    }
+  }
+  _lastVRInteractPressed = vrInteractPressedNow;
+
+ // 8) 🥽 VR SHOOT: primary trigger → fireWeapon() in weapon levels
+  let vrShootPressedNow = false;
+  try {
+    if (vrInputProvider.getShootState) {
+      vrShootPressedNow = vrInputProvider.getShootState();
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // fire once per press (rising edge)
+  if (vrShootPressedNow && !_lastVRShootPressed) {
+    if (typeof fireWeapon === "function") {
+      fireWeapon();
+    } else if (weaponSystem && typeof weaponSystem.fire === "function") {
+      weaponSystem.fire();
+    }
+  }
+  _lastVRShootPressed = vrShootPressedNow;
+}
   
   // 🎮 UPDATE DESKTOP PLAYER CONTROLS MODULE (only if not in VR)
   if (playerControls && !isVRSessionActive()) {
