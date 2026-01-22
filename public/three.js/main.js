@@ -902,12 +902,15 @@ function resolveAssetPath(path) {
     return path;
   }
 
-  // Glyph special-case
+  // Glyph special-case (already has correct base)
   if (path.startsWith("/public/glyph/")) {
     return path;
   }
 
-  // Normalize
+  // Normalize path:
+  // - remove leading "./"
+  // - remove leading "/"
+  // - strip leading "public/" if present
   let cleanPath = path.startsWith("./") ? path.slice(2) : path;
   cleanPath = cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath;
   cleanPath = cleanPath.startsWith("public/") ? cleanPath.slice(7) : cleanPath;
@@ -928,10 +931,11 @@ function resolveAssetPath(path) {
     // Standard layout: .../public/three.js/3d-riddle-game.html
     resolvedPath = `/public/three.js/public/${cleanPath}`;
   } else if (href.includes("/three.js/")) {
-    // Fallback layout: .../three.js/3d-riddle-game.html
-    resolvedPath = `/three.js/public/${cleanPath}`;
+    // ✅ FIXED: HTML is under /three.js/, but assets still live under /public/three.js/public
+    // This matches the Render symlink: /data/public/three.js/public/...
+    resolvedPath = `/public/three.js/public/${cleanPath}`;
   } else {
-    // Last-resort: keep your old default
+    // Last-resort: keep your old default (still the /public/three.js/public root)
     resolvedPath = `/public/three.js/public/${cleanPath}`;
   }
 
@@ -941,6 +945,7 @@ function resolveAssetPath(path) {
 
   return resolvedPath;
 }
+
 
 const PROFILE_URL = isProduction
   ? "https://narrrfs.world/profile.html"
