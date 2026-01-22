@@ -463,5 +463,4 @@ export class VRInputProvider extends InputProvider {
   }
 }
 
-}
 

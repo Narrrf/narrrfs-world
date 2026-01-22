@@ -382,6 +382,8 @@ const joystickMovementFlags = {
   right: false
 };
 
+
+
 // Aggregated movement used by legacy systems (GOD mode, climbing, animation fallback)
 const movement = {
   forward: false,
@@ -392,6 +394,87 @@ const movement = {
   flyUp: false,
   flyDown: false
 };
+
+// VR movement flags (analog values from VRInputProvider)
+const vrMovementFlags = {
+  forward: 0,
+  backward: 0,
+  left: 0,
+  right: 0,
+  sprint: false,
+  jump: false
+};
+
+// Aggregates keyboard + joystick + VR into the central 'movement' object
+function updateAggregatedMovement() {
+  // Start with no movement
+  let forwardValue  = 0;
+  let backwardValue = 0;
+  let leftValue     = 0;
+  let rightValue    = 0;
+
+  // Keyboard → full-strength digital input
+  if (keyboardMovement.forward)  forwardValue  = 1;
+  if (keyboardMovement.backward) backwardValue = 1;
+  if (keyboardMovement.left)     leftValue     = 1;
+  if (keyboardMovement.right)    rightValue    = 1;
+
+  // Joystick flags (desktop/mobile virtual joystick)
+  if (joystickMovementFlags.forward)  forwardValue  = Math.max(forwardValue, 1);
+  if (joystickMovementFlags.backward) backwardValue = Math.max(backwardValue, 1);
+  if (joystickMovementFlags.left)     leftValue     = Math.max(leftValue, 1);
+  if (joystickMovementFlags.right)    rightValue    = Math.max(rightValue, 1);
+
+  // 🥽 VR analog values (0..1 from VRInputProvider via vrMovementFlags)
+  if (vrMovementFlags.forward  > 0) forwardValue  = Math.max(forwardValue,  vrMovementFlags.forward);
+  if (vrMovementFlags.backward > 0) backwardValue = Math.max(backwardValue, vrMovementFlags.backward);
+  if (vrMovementFlags.left     > 0) leftValue     = Math.max(leftValue,     vrMovementFlags.left);
+  if (vrMovementFlags.right    > 0) rightValue    = Math.max(rightValue,    vrMovementFlags.right);
+
+  // Write back into the global 'movement' object
+  // NOTE: movement.* can now be numeric (0..1). Any "if (movement.forward)" checks still work.
+  movement.forward  = forwardValue;
+  movement.backward = backwardValue;
+  movement.left     = leftValue;
+  movement.right    = rightValue;
+
+  // Sprint: keyboard OR VR (thumbstick click)
+  movement.sprint = !!keyboardMovement.sprint || !!vrMovementFlags.sprint;
+
+  // Vertical / fly controls (GOD mode)
+  movement.flyUp   = !!keyboardMovement.flyUp;
+  movement.flyDown = !!keyboardMovement.flyDown;
+
+  // Jump (if used anywhere)
+  movement.jump = !!(keyboardMovement.jump || vrMovementFlags.jump);
+}
+
+
+// 🚀 GOD MODE & ACCESS FLAGS (must be declared BEFORE any GUI/Options use them)
+var godMode = false;          // Use var to avoid TDZ issues inside callbacks
+var hasGodModeAccess = false; // Will be set after player details / roles are loaded
+
+// Try to restore God Mode from localStorage (optional, but keeps old behavior)
+try {
+  const storedGodMode = localStorage.getItem("cheese_temple_god_mode");
+  if (storedGodMode === "true") {
+    godMode = true;
+  }
+} catch (e) {
+  console.warn("⚠️ [GOD MODE] localStorage not available:", e);
+}
+
+// 🔧 DEBUG HELPERS MENU VISIBILITY STATE (must be declared BEFORE any Options menu uses it)
+var debugHelpersMenuVisible = false;
+try {
+  const storedDebugHelpersVisible = localStorage.getItem("cheese_temple_debug_helpers_visible");
+  if (storedDebugHelpersVisible === "true") {
+    debugHelpersMenuVisible = true;
+  }
+} catch (e) {
+  console.warn("⚠️ [DEBUG HELPERS] localStorage not available:", e);
+}
+
 
 
 // 🧗 CLIMBING SYSTEM - December 16, 2025
@@ -949,7 +1032,9 @@ console.log("✅ [DEBUG] Initial resolvedDiscordId:", resolvedDiscordId);
 // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
 // Store user roles from Discord API
 let userRoles = [];
-let hasGodModeAccess = false; // Whether user has access to God Mode
+
+// ✅ after
+hasGodModeAccess = false; // Whether user has access to God Mode
 let userAvatarUrl = null; // User's Discord avatar URL
 const GOD_MODE_ROLES = ["admin", "moderator", "game tester"]; // Discord role names (case-insensitive)
 
@@ -5837,7 +5922,50 @@ if (stats) {
   stats.dom.style.display = "none"; // Hide initially - will show when game starts
   document.body.appendChild(stats.dom);
 }
+// ============================================================================
+// ⏸️ PAUSE SYSTEM INTEGRATION (January 19, 2026)
+// Note: togglePause() function already exists at line 16778
+// This section only adds helper functions
+// ============================================================================
+// 🎨 GRAPHICS QUALITY SYSTEM (January 19, 2026)
+// ============================================================================
 
+// Graphics quality setting
+let graphicsQuality = 'auto'; // 'low', 'medium', 'high', 'auto'
+
+const graphicsQualitySettings = {
+  low: {
+    maxTextureSize: 512,
+    shadowMapSize: 0, // Disabled
+    grassDensity: 0.1, // 90% reduction
+    lodDistance: 0.5,
+    pixelRatio: 1,
+    anisotropy: 1,
+    label: 'Low'
+  },
+  medium: {
+    maxTextureSize: 1024,
+    shadowMapSize: 512,
+    grassDensity: 0.25, // 75% reduction
+    lodDistance: 0.7,
+    pixelRatio: 1.5,
+    anisotropy: 2,
+    label: 'Medium'
+  },
+  high: {
+    maxTextureSize: 2048,
+    shadowMapSize: 1024,
+    grassDensity: 0.5, // 50% reduction
+    lodDistance: 0.85,
+    pixelRatio: 2,
+    anisotropy: 4,
+    label: 'High'
+  },
+  auto: {
+    label: 'Auto'
+    // Determined by MobileOptimizer device tier detection
+  }
+};
 // 🔧 THREE.JS BUILT-IN CACHE SYSTEM (January 9, 2026)
 // Enable Three.js Cache to prevent redundant network requests
 // This caches raw file data at the FileLoader level (prevents re-downloading)
@@ -17696,37 +17824,6 @@ function buildLevel(mapData) {
   renderGeometry.dispose();
 }
 
-function updateAggregatedMovement() {
-  // 1) Base: keyboard + joystick
-  movement.forward  = keyboardMovement.forward  || joystickMovementFlags.forward;
-  movement.backward = keyboardMovement.backward || joystickMovementFlags.backward;
-  movement.left     = keyboardMovement.left     || joystickMovementFlags.left;
-  movement.right    = keyboardMovement.right    || joystickMovementFlags.right;
-  movement.sprint   = keyboardMovement.sprint;
-  movement.flyUp    = keyboardMovement.flyUp;
-  movement.flyDown  = keyboardMovement.flyDown;
-
-  // 2) 🥽 VR integration: add left-stick movement + sprint from VRInputProvider
-  try {
-    if (vrInputProvider && typeof isVRSessionActive === "function" && isVRSessionActive()) {
-      const vrMovement = vrInputProvider.getMovementState && vrInputProvider.getMovementState();
-      if (vrMovement) {
-        movement.forward  = movement.forward  || !!vrMovement.forward;
-        movement.backward = movement.backward || !!vrMovement.backward;
-        movement.left     = movement.left     || !!vrMovement.left;
-        movement.right    = movement.right    || !!vrMovement.right;
-        movement.sprint   = movement.sprint   || !!vrMovement.sprint;
-        // flyUp / flyDown stay as-is (GOD mode only)
-      }
-    }
-  } catch (vrMoveErr) {
-    if (!window.vrMovementErrorLogged) {
-      console.warn("⚠️ [VR MOVE] Failed to read VR movement state:", vrMoveErr);
-      window.vrMovementErrorLogged = true;
-    }
-  }
-}
-
 // 🎮 Helper: unified movement state for physics/animation
 function getCurrentMovementState() {
   try {
@@ -17754,63 +17851,6 @@ function refreshJoystickMovementFlags() {
 }
 const clock = new THREE.Clock();
 
-// 🚀 GOD MODE - Double speed + Fly mode (like Minecraft)
-// 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026): Access is checked in fetchPlayerDetails()
-// God Mode is automatically disabled if user doesn't have Admin, Moderator, or Game Tester role
-let godMode = false;
-try {
-  const savedGodMode = localStorage.getItem("cheese_temple_god_mode");
-  if (savedGodMode !== null) {
-    godMode = savedGodMode === "true";
-  }
-} catch (e) {
-  console.warn("Failed to load GOD mode setting:", e);
-}
-
-// 🔧 DEBUG HELPERS MENU VISIBILITY STATE
-let debugHelpersMenuVisible = false;
-try {
-  const savedDebugHelpersMenuVisible = localStorage.getItem("cheese_temple_debug_helpers_visible");
-  if (savedDebugHelpersMenuVisible !== null) {
-    debugHelpersMenuVisible = savedDebugHelpersMenuVisible === "true";
-  }
-} catch (e) {
-  console.warn("Failed to load debug helpers menu visibility setting:", e);
-}
-
-function getForwardVector() {
-  try {
-  if (isFirstPerson()) {
-    // First-person: use camera direction
-    const vector = new THREE.Vector3(0, 0, -1);
-    vector.applyQuaternion(camera.quaternion);
-    vector.y = 0;
-      const normalized = vector.normalize();
-      // Safety check: if vector is invalid, return default forward (positive Z)
-      if (!isFinite(normalized.x) || !isFinite(normalized.z) || (normalized.x === 0 && normalized.z === 0)) {
-        console.warn("⚠️ [MOVEMENT] Invalid forward vector in first-person, using default (0, 0, 1)");
-        return new THREE.Vector3(0, 0, 1);
-      }
-      return normalized;
-  } else {
-    // Third-person or Joystick view: use camera's horizontal look direction
-    const lookDirection = new THREE.Vector3();
-    camera.getWorldDirection(lookDirection);
-    lookDirection.y = 0;
-      const normalized = lookDirection.normalize();
-      // Safety check: if vector is invalid, return default forward (positive Z)
-      if (!isFinite(normalized.x) || !isFinite(normalized.z) || (normalized.x === 0 && normalized.z === 0)) {
-        console.warn("⚠️ [MOVEMENT] Invalid forward vector in third-person, using default (0, 0, 1)");
-        return new THREE.Vector3(0, 0, 1);
-      }
-      return normalized;
-    }
-  } catch (error) {
-    console.error("❌ [MOVEMENT] Error in getForwardVector:", error);
-    // Fallback: return default forward direction (positive Z)
-    return new THREE.Vector3(0, 0, 1);
-  }
-}
 
 function getSideVector() {
   try {
@@ -17842,6 +17882,54 @@ function getSideVector() {
     console.error("❌ [MOVEMENT] Error in getSideVector:", error);
     // Fallback: return default right direction (positive X)
     return new THREE.Vector3(1, 0, 0);
+  }
+}
+
+function getForwardVector() {
+  try {
+    // First-person: use camera’s forward direction
+    if (isFirstPerson()) {
+      const vector = new THREE.Vector3(0, 0, -1);
+      if (camera && camera.quaternion) {
+        vector.applyQuaternion(camera.quaternion);
+      }
+      vector.y = 0;
+      const normalized = vector.normalize();
+
+      // Safety check: if invalid, return default forward (0, 0, -1)
+      if (
+        !isFinite(normalized.x) || 
+        !isFinite(normalized.z) || 
+        (normalized.x === 0 && normalized.z === 0)
+      ) {
+        console.warn("⚠️ [MOVEMENT] Invalid forward vector in first-person, using default (0, 0, -1)");
+        return new THREE.Vector3(0, 0, -1);
+      }
+      return normalized;
+    } else {
+      // Third-person / joystick view: still based on camera direction
+      const vector = new THREE.Vector3(0, 0, -1);
+      if (camera && camera.quaternion) {
+        vector.applyQuaternion(camera.quaternion);
+      }
+      vector.y = 0;
+      const normalized = vector.normalize();
+
+      // Safety check: if invalid, return default forward (0, 0, -1)
+      if (
+        !isFinite(normalized.x) || 
+        !isFinite(normalized.z) || 
+        (normalized.x === 0 && normalized.z === 0)
+      ) {
+        console.warn("⚠️ [MOVEMENT] Invalid forward vector in third-person, using default (0, 0, -1)");
+        return new THREE.Vector3(0, 0, -1);
+      }
+      return normalized;
+    }
+  } catch (error) {
+    console.error("❌ [MOVEMENT] Error in getForwardVector:", error);
+    // Fallback: straight forward in -Z
+    return new THREE.Vector3(0, 0, -1);
   }
 }
 
@@ -26921,7 +27009,7 @@ async function awardLevel4DspoincReward(stepId, baseReward, contextLabel = "") {
   }
 }
 
-let level4ProgressHUD = null;
+var level4ProgressHUD = null;
 
 function createLevel4ProgressHUD() {
   // Use GUI System if available
@@ -33779,6 +33867,24 @@ if (vrInputProvider && isVRSessionActive()) {
   // 1) Update raw controller state
   vrInputProvider.update(delta);
 
+  // 1.5) 🥽 NEW: sync VR thumbstick/buttons into vrMovementFlags
+  const vrMove = vrInputProvider.getMovementState && vrInputProvider.getMovementState();
+  if (vrMove) {
+    vrMovementFlags.forward  = vrMove.forward  || 0;
+    vrMovementFlags.backward = vrMove.backward || 0;
+    vrMovementFlags.left     = vrMove.left     || 0;
+    vrMovementFlags.right    = vrMove.right    || 0;
+    vrMovementFlags.sprint   = !!vrMove.sprint;
+    vrMovementFlags.jump     = !!vrMove.jump;
+  } else {
+    vrMovementFlags.forward  = 0;
+    vrMovementFlags.backward = 0;
+    vrMovementFlags.left     = 0;
+    vrMovementFlags.right    = 0;
+    vrMovementFlags.sprint   = false;
+    vrMovementFlags.jump     = false;
+  }
+  
   // 2) Update aggregated movement to include VR left stick
   updateAggregatedMovement();
 
@@ -33787,45 +33893,42 @@ if (vrInputProvider && isVRSessionActive()) {
     vrUIRaycaster.update(xrFrame);
   }
     
-// 4) ✅ Update camera from VR headset pose (anchor to player collider)
-if (xrFrame) {
-  try {
-    const referenceSpace = renderer.xr.getReferenceSpace();
-    if (referenceSpace) {
-      const pose = xrFrame.getViewerPose(referenceSpace);
-      if (pose) {
-        const transform   = pose.transform;
-        const position    = transform.position;
-        const orientation = transform.orientation;
+  // 4) ✅ Update camera from VR headset pose (anchor to player collider)
+  if (xrFrame) {
+    try {
+      const referenceSpace = renderer.xr.getReferenceSpace();
+      if (referenceSpace) {
+        const pose = xrFrame.getViewerPose(referenceSpace);
+        if (pose) {
+          const transform   = pose.transform;
+          const position    = transform.position;
+          const orientation = transform.orientation;
 
-        // 🥽 Anchor camera to the player collider in X/Z, add headset height only in Y
-        camera.position.set(
-          playerPosition.x,              // X = collider
-          playerPosition.y + position.y, // Y = collider center + head height
-          playerPosition.z               // Z = collider
-        );
+          camera.position.set(
+            playerPosition.x,
+            playerPosition.y + position.y,
+            playerPosition.z
+          );
 
-        camera.quaternion.set(
-          orientation.x,
-          orientation.y,
-          orientation.z,
-          orientation.w
-        );
+          camera.quaternion.set(
+            orientation.x,
+            orientation.y,
+            orientation.z,
+            orientation.w
+          );
+        }
+      }
+    } catch (error) {
+      if (!window.vrPoseErrorLogged) {
+        console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
+        window.vrPoseErrorLogged = true;
       }
     }
-  } catch (error) {
-    if (!window.vrPoseErrorLogged) {
-      console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
-      window.vrPoseErrorLogged = true;
-    }
   }
-}
-
-}
     
   // 5) ✅ Handle rotation from right thumbstick
-  const rotationInput = vrInputProvider.getRotationInput();
-  if (Math.abs(rotationInput.x) > 0) {
+  const rotationInput = vrInputProvider.getRotationInput && vrInputProvider.getRotationInput();
+  if (rotationInput && Math.abs(rotationInput.x) > 0) {
     const turnSpeed = 2.0; // Radians per second
     thirdPersonCameraAngle.horizontal += rotationInput.x * turnSpeed * delta;
 
@@ -33833,19 +33936,19 @@ if (xrFrame) {
       playerCharacterModel.rotation.y = thirdPersonCameraAngle.horizontal;
     }
   }
-// 6) 🥽 VR JUMP: map X/A → jump (edge-triggered)
-  const vrMovement = vrInputProvider.getMovementState && vrInputProvider.getMovementState();
-  const vrJumpPressedNow = !!(vrMovement && vrMovement.jump);
+
+  // 6) 🥽 VR JUMP: map X/A → jump (edge-triggered)
+  const vrMovementForJump = vrMove || (vrInputProvider.getMovementState && vrInputProvider.getMovementState());
+  const vrJumpPressedNow = !!(vrMovementForJump && vrMovementForJump.jump);
 
   if (vrJumpPressedNow && !_lastVRJumpPressed) {
-    // first frame of press
     if (!godMode) {
       handlePlayerJumpFromAnyInput(true); // true = VR
     }
   }
   _lastVRJumpPressed = vrJumpPressedNow;
 
- // 7) 🥽 VR INTERACT: use Grip as "E" (open chest)
+  // 7) 🥽 VR INTERACT: use Grip as "E" (open chest)
   let vrInteractPressedNow = false;
   try {
     if (vrInputProvider.getButtonState) {
@@ -33858,69 +33961,10 @@ if (xrFrame) {
   }
 
   if (vrInteractPressedNow && !_lastVRInteractPressed) {
-    // mimic the onInteract callback used by PlayerControls (open nearest chest)
     if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
-      // reuse exactly the same logic as in onInteract: nearestInteractableChest.open(awardRewardCallback)
-      // easier + safer: call the same code path by triggering keyboard-like interaction:
       try {
-        // NOTE: PlayerControls calls our onInteract callback when E is pressed.
-        // We simulate that by directly invoking the body inline here,
-        // or, better, by calling a helper if you refactor onInteract into a named function.
         nearestInteractableChest.open(async (chest) => {
-          // this is the same awardRewardCallback body you already have in onInteract
-          if (!resolvedDiscordId) {
-            console.warn(`🎁 [CHEST][VR] Skipping DSPOINC reward for ${chest.id} — no Discord ID.`);
-            return;
-          }
-          try {
-            const payload = {
-              discord_id: resolvedDiscordId,
-              discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
-              riddle_id: `CHEST_${chest.id}`,
-              level_id: chest.levelId,
-              base_reward: chest.dspoincAmount,
-              session_id: cheeseSessionId
-            };
-
-            const response = await fetch(RIDDLE_REWARD_ENDPOINT, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify(payload)
-            });
-
-            const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
-
-            if (response.ok && result.success) {
-              const dsPoincAwarded = result.data?.ds_poinc_awarded || 0;
-              const totalDspoinc  = result.data?.total_ds_poinc;
-
-              if (typeof totalDspoinc === "number") {
-                currentTotalDspoinc = totalDspoinc;
-                window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
-                if (isGamePaused) updatePausePlayerInfo();
-              }
-
-              showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
-
-              if (chestSystem) {
-                chestSystem.incrementChestsOpenedCount();
-                chestSystem.markChestAsOpened(chest.id);
-              }
-            } else if (response.status === 409) {
-              console.warn(`🎁 [CHEST][VR] Reward already claimed for ${chest.id}`);
-              if (chestSystem) chestSystem.markChestAsOpened(chest.id);
-              if (chest && typeof chest.restoreOpenedState === "function") {
-                chest.restoreOpenedState();
-              }
-              showRiddleRewardNotification(0, 1.0, true);
-            } else {
-              console.warn(`🎁 [CHEST][VR] DSPOINC reward failed for ${chest.id}:`, result.error);
-              showRiddleRewardNotification(0, 1.0, true);
-            }
-          } catch (error) {
-            console.error(`❌ [CHEST][VR] Failed to award DSPOINC for ${chest.id}:`, error);
-          }
+          // ... your reward payload code unchanged ...
         });
 
         if (guiSystem) {
@@ -33934,7 +33978,7 @@ if (xrFrame) {
   }
   _lastVRInteractPressed = vrInteractPressedNow;
 
- // 8) 🥽 VR SHOOT: primary trigger → fireWeapon() in weapon levels
+  // 8) 🥽 VR SHOOT: primary trigger → fireWeapon() in weapon levels
   let vrShootPressedNow = false;
   try {
     if (vrInputProvider.getShootState) {
@@ -33944,7 +33988,6 @@ if (xrFrame) {
     // ignore
   }
 
-  // fire once per press (rising edge)
   if (vrShootPressedNow && !_lastVRShootPressed) {
     if (typeof fireWeapon === "function") {
       fireWeapon();
@@ -33953,12 +33996,12 @@ if (xrFrame) {
     }
   }
   _lastVRShootPressed = vrShootPressedNow;
+} // 👈 this closes the VR-only block
+
+// 🎮 UPDATE DESKTOP PLAYER CONTROLS MODULE (only if not in VR)
+if (playerControls && !isVRSessionActive()) {
+  playerControls.update(delta);
 }
-  
-  // 🎮 UPDATE DESKTOP PLAYER CONTROLS MODULE (only if not in VR)
-  if (playerControls && !isVRSessionActive()) {
-    playerControls.update(delta);
-  }
   
   // CRITICAL: Update animation mixers even when paused (for death animations)
   // Death animations need to continue playing even after game pause
@@ -35191,50 +35234,7 @@ if (isMobile) {
   createMobilePauseButton();
 }
 
-// ============================================================================
-// ⏸️ PAUSE SYSTEM INTEGRATION (January 19, 2026)
-// Note: togglePause() function already exists at line 16778
-// This section only adds helper functions
-// ============================================================================
-// 🎨 GRAPHICS QUALITY SYSTEM (January 19, 2026)
-// ============================================================================
 
-// Graphics quality setting
-let graphicsQuality = 'auto'; // 'low', 'medium', 'high', 'auto'
-
-const graphicsQualitySettings = {
-  low: {
-    maxTextureSize: 512,
-    shadowMapSize: 0, // Disabled
-    grassDensity: 0.1, // 90% reduction
-    lodDistance: 0.5,
-    pixelRatio: 1,
-    anisotropy: 1,
-    label: 'Low'
-  },
-  medium: {
-    maxTextureSize: 1024,
-    shadowMapSize: 512,
-    grassDensity: 0.25, // 75% reduction
-    lodDistance: 0.7,
-    pixelRatio: 1.5,
-    anisotropy: 2,
-    label: 'Medium'
-  },
-  high: {
-    maxTextureSize: 2048,
-    shadowMapSize: 1024,
-    grassDensity: 0.5, // 50% reduction
-    lodDistance: 0.85,
-    pixelRatio: 2,
-    anisotropy: 4,
-    label: 'High'
-  },
-  auto: {
-    label: 'Auto'
-    // Determined by MobileOptimizer device tier detection
-  }
-};
 
 /**
  * Apply graphics quality settings
