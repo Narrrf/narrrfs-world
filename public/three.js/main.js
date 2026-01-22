@@ -33898,42 +33898,36 @@ if (vrInputProvider) {
     vrUIRaycaster.update(xrFrame);
   }
     
-  // 4) ✅ Update camera from VR headset pose (anchor to player collider)
+   // 4) ✅ Update camera for VR:
+  //    - POSITION from game logic (player collider → head)
+  //    - ROTATION from headset pose
   if (xrFrame) {
     try {
       const referenceSpace = renderer.xr.getReferenceSpace();
       if (referenceSpace) {
         const pose = xrFrame.getViewerPose(referenceSpace);
         if (pose) {
-          const transform   = pose.transform;
-          const position    = transform.position;
-          const orientation = transform.orientation;
+          const orientation = pose.transform.orientation;
 
-          // 🔧 Robust player position for VR:
-          // 1) Use playerCollider if ready
-          // 2) Fallback to level1SpawnPosition when on LEVEL1
-          // 3) Fallback to current camera position as last resort
-          let basePos;
+          // 🎯 Compute head position from player collider (same idea as desktop first-person)
+          const headPos = new THREE.Vector3();
 
           if (playerCollider && playerCollider.start && playerCollider.end) {
-            basePos = new THREE.Vector3().lerpVectors(
-              playerCollider.start,
-              playerCollider.end,
-              0.5
-            );
-          } else if (currentLevel === LEVEL_IDS.LEVEL1 && typeof level1SpawnPosition !== "undefined") {
-            basePos = level1SpawnPosition.clone();
+            // Use the capsule’s top as “head”
+            headPos.copy(playerCollider.end);
+          } else if (playerCharacterModel) {
+            // Fallback: character model position + eye height
+            headPos.copy(playerCharacterModel.position);
+            headPos.y += 1.6; // approximate eye height
           } else {
-            // don’t snap to (0,1,0) – keep whatever camera already has
-            basePos = camera.position.clone();
+            // Last resort: keep current camera position
+            headPos.copy(camera.position);
           }
 
-          camera.position.set(
-            basePos.x,
-            basePos.y + position.y,
-            basePos.z
-          );
+          // 📌 Lock camera to the player’s head in game space
+          camera.position.copy(headPos);
 
+          // 🧠 Use headset rotation so the player can look around naturally
           camera.quaternion.set(
             orientation.x,
             orientation.y,
