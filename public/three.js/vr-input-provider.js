@@ -87,6 +87,8 @@ import { InputProvider } from './player-controls.js';
 /**
  * VR Input Provider Class
  * Handles VR controller input and movement
+ *
+ * Designed for WebXR (Meta Quest 2/3).
  */
 export class VRInputProvider extends InputProvider {
   constructor(xrSession) {
@@ -95,23 +97,23 @@ export class VRInputProvider extends InputProvider {
     this.xrSession = xrSession;
     this.enabled = false;
 
-    // VR controller state
+    // VR controller references from inputSources
     this.leftController = null;
     this.rightController = null;
     this.controllerInputSources = [];
 
-    // Movement state from VR controllers
+    // Thumbstick state per hand
     this.thumbstickState = {
-      left: { x: 0, y: 0 },
+      left:  { x: 0, y: 0 },
       right: { x: 0, y: 0 },
       unknown: { x: 0, y: 0 }
     };
 
-    // Button states
+    // Raw button state per hand (indexed by button index)
     this.buttonStates = {
-      left: {},
-      right: {},
-      unknown: {}
+      left:   {},
+      right:  {},
+      unknown:{}
     };
 
     console.log('🥽 [VR INPUT] VRInputProvider created');
@@ -125,6 +127,7 @@ export class VRInputProvider extends InputProvider {
       try {
         return await navigator.xr.isSessionSupported('immersive-vr');
       } catch (err) {
+        console.warn('⚠️ [VR INPUT] XR isAvailable() failed:', err);
         return false;
       }
     }
@@ -228,12 +231,8 @@ export class VRInputProvider extends InputProvider {
     const newSources = Array.from(inputSources);
 
     // Keep internal list in sync
-    if (newSources.length !== this.controllerInputSources.length) {
-      this.controllerInputSources = newSources;
-      this.updateControllers();
-    } else {
-      this.controllerInputSources = newSources;
-    }
+    this.controllerInputSources = newSources;
+    this.updateControllers();
 
     // Update controller button and thumbstick states
     this.controllerInputSources.forEach((inputSource) => {
@@ -251,19 +250,19 @@ export class VRInputProvider extends InputProvider {
       }
 
       // 🔄 Read thumbstick axes (Quest-safe mapping)
-      // Default: axes[0], axes[1]
+      // Default: axes[0], axes[1], with fallback to axes[2], axes[3]
       let x = 0;
       let y = 0;
 
-      if (gamepad.axes && gamepad.axes.length >= 2) {
-        x = gamepad.axes[0] || 0;
-        y = gamepad.axes[1] || 0;
+      const axes = gamepad.axes || [];
+      if (axes.length >= 2) {
+        x = axes[0] || 0;
+        y = axes[1] || 0;
 
-        // Some runtimes (and older stacks) report stick on axes 2/3.
-        // If 0/1 are basically zero but we have 4 axes, try 2/3 as fallback.
-        if (Math.abs(x) < 0.01 && Math.abs(y) < 0.01 && gamepad.axes.length >= 4) {
-          const altX = gamepad.axes[2] || 0;
-          const altY = gamepad.axes[3] || 0;
+        // Fallback for runtimes that put stick on axes 2/3
+        if (Math.abs(x) < 0.01 && Math.abs(y) < 0.01 && axes.length >= 4) {
+          const altX = axes[2] || 0;
+          const altY = axes[3] || 0;
           if (Math.abs(altX) > 0.01 || Math.abs(altY) > 0.01) {
             x = altX;
             y = altY;
@@ -273,10 +272,10 @@ export class VRInputProvider extends InputProvider {
 
       this.thumbstickState[handedness] = { x, y };
 
-      // Get button states
+      // Get button states (store per index)
       if (gamepad.buttons) {
         gamepad.buttons.forEach((button, index) => {
-          this.buttonStates[handedness][index] = button.pressed;
+          this.buttonStates[handedness][index] = !!button.pressed;
         });
       }
     });
@@ -313,7 +312,7 @@ export class VRInputProvider extends InputProvider {
 
     const leftStick = this.thumbstickState.left || { x: 0, y: 0 };
 
-    // ✅ Meta Quest 3 Controller Mapping (2026):
+    // ✅ Meta Quest Controller Mapping:
     // Left Thumbstick:
     //   Y: -1.0 (forward/push up) to +1.0 (backward/pull down)
     //   X: -1.0 (left) to +1.0 (right)
@@ -334,15 +333,15 @@ export class VRInputProvider extends InputProvider {
     }
 
     return {
-      forward: y < -deadzone ? Math.abs(y) : 0, // Negative Y = forward
-      backward: y > deadzone ? y : 0,           // Positive Y = backward
-      left: x < -deadzone ? Math.abs(x) : 0,    // Negative X = left
-      right: x > deadzone ? x : 0,              // Positive X = right
-      sprint: this.getButtonState('thumbstick', 'left'), // Left stick click = sprint
+      forward:  y < -deadzone ? Math.abs(y) : 0, // Negative Y = forward
+      backward: y >  deadzone ? y : 0,           // Positive Y = backward
+      left:     x < -deadzone ? Math.abs(x) : 0, // Negative X = left
+      right:    x >  deadzone ? x : 0,           // Positive X = right
+      sprint:   this.getButtonState('thumbstick', 'left'), // Left stick click = sprint
       jump:
         this.getButtonState('x', 'left') ||
         this.getButtonState('a', 'right'), // X or A button to jump
-      flyUp: false,
+      flyUp:   false,
       flyDown: false
     };
   }
@@ -375,15 +374,9 @@ export class VRInputProvider extends InputProvider {
   }
 
   /**
-   * Get rotation from VR headset (for camera)
-   * Returns head pose rotation
+   * Headset rotation is handled externally (in main camera update)
    */
   getRotation() {
-    if (!this.enabled || !this.xrSession) {
-      return { x: 0, y: 0, z: 0 };
-    }
-
-    // Headset rotation is handled separately in the main camera update
     return { x: 0, y: 0, z: 0 };
   }
 
@@ -395,15 +388,27 @@ export class VRInputProvider extends InputProvider {
     if (!this.enabled) return false;
 
     // Check trigger on both controllers (either can shoot)
-    const leftTrigger = this.getButtonState('trigger', 'left');
+    const leftTrigger  = this.getButtonState('trigger', 'left');
     const rightTrigger = this.getButtonState('trigger', 'right');
 
     return leftTrigger || rightTrigger;
   }
 
   /**
+   * OPTIONAL helper: get menu state (B/Y)
+   * Returns true if the "menu" button is pressed on either controller.
+   */
+  getMenuState() {
+    if (!this.enabled) return false;
+    return (
+      this.getButtonState('menu', 'left') ||
+      this.getButtonState('menu', 'right')
+    );
+  }
+
+  /**
    * Get button state for VR controller
-   * @param {string} buttonId - Button identifier (e.g., 'trigger', 'grip', 'thumbstick')
+   * @param {string} buttonId - Button identifier (e.g., 'trigger', 'grip', 'thumbstick', 'menu')
    * @param {string} handedness - 'left' or 'right'
    */
   getButtonState(buttonId, handedness = 'right') {
@@ -411,15 +416,25 @@ export class VRInputProvider extends InputProvider {
 
     const buttonStates = this.buttonStates[handedness] || {};
 
-    // Map button names to indices (standard WebXR gamepad mapping)
+    // Map button names to indices (standard-ish WebXR gamepad mapping)
+    //
+    // Typical Quest mapping:
+    //  0: trigger
+    //  1: grip (squeeze)
+    //  2: thumbstick click
+    //  3: primary (A on right, X on left)
+    //  4: secondary (B on right, Y on left)
+    //
+    // We map "menu" → secondary (B/Y) so we can use it as a pause/menu button.
     const buttonMap = {
-      trigger: 0,     // Trigger button
-      grip: 1,        // Grip button
-      thumbstick: 2,  // Thumbstick press
-      x: 3,           // X button (left) / A button (right)
-      y: 4,           // Y button (left) / B button (right)
-      a: 3,           // A button (right controller) - same as X
-      b: 4            // B button (right controller) - same as Y
+      trigger:    0,     // Trigger button
+      grip:       1,     // Grip button
+      thumbstick: 2,     // Thumbstick press
+      x:          3,     // X button (left) / A button (right)
+      y:          4,     // Y button (left) / B button (right)
+      a:          3,     // A button (right controller) - same index as X
+      b:          4,     // B button (right controller) - same index as Y
+      menu:       4      // 🆕 Use secondary (B/Y) as "menu" button
     };
 
     const index = buttonMap[buttonId];
@@ -444,6 +459,8 @@ export class VRInputProvider extends InputProvider {
 
   /**
    * Get controller position and rotation
+   * @param {XRFrame} frame
+   * @param {XRReferenceSpace} referenceSpace
    * @param {string} handedness - 'left' or 'right'
    */
   getControllerPose(frame, referenceSpace, handedness) {
@@ -462,5 +479,6 @@ export class VRInputProvider extends InputProvider {
     };
   }
 }
+
 
 

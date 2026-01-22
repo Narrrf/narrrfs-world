@@ -2146,7 +2146,7 @@ let vrSessionStarting = false; // ✅ guard against double start
 let _lastVRJumpPressed = false;
 let _lastVRInteractPressed = false;
 let _lastVRShootPressed = false;
-
+let _lastVRMenuPressed = false;   // 🆕 VR menu/pause button
 
 // ============================================================================
 // VR OPTIMIZATION FUNCTIONS (PHASE 2 - January 18, 2026)
@@ -33868,8 +33868,8 @@ function animate(timestamp, xrFrame) {
   // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
   // ✅ CRITICAL FIX: VRInputProvider MUST be updated every frame!
 
-if (vrInputProvider && isVRSessionActive()) {
-  // 1) Update raw controller state
+if (vrInputProvider) {
+  // 1) Update raw controller state (update() checks session internally)
   vrInputProvider.update(delta);
 
   // 1.5) 🥽 NEW: sync VR thumbstick/buttons into vrMovementFlags
@@ -33909,10 +33909,29 @@ if (vrInputProvider && isVRSessionActive()) {
           const position    = transform.position;
           const orientation = transform.orientation;
 
+          // 🔧 Robust player position for VR:
+          // 1) Use playerCollider if ready
+          // 2) Fallback to level1SpawnPosition when on LEVEL1
+          // 3) Fallback to current camera position as last resort
+          let basePos;
+
+          if (playerCollider && playerCollider.start && playerCollider.end) {
+            basePos = new THREE.Vector3().lerpVectors(
+              playerCollider.start,
+              playerCollider.end,
+              0.5
+            );
+          } else if (currentLevel === LEVEL_IDS.LEVEL1 && typeof level1SpawnPosition !== "undefined") {
+            basePos = level1SpawnPosition.clone();
+          } else {
+            // don’t snap to (0,1,0) – keep whatever camera already has
+            basePos = camera.position.clone();
+          }
+
           camera.position.set(
-            playerPosition.x,
-            playerPosition.y + position.y,
-            playerPosition.z
+            basePos.x,
+            basePos.y + position.y,
+            basePos.z
           );
 
           camera.quaternion.set(
@@ -33930,7 +33949,7 @@ if (vrInputProvider && isVRSessionActive()) {
       }
     }
   }
-    
+ 
   // 5) ✅ Handle rotation from right thumbstick
   const rotationInput = vrInputProvider.getRotationInput && vrInputProvider.getRotationInput();
   if (rotationInput && Math.abs(rotationInput.x) > 0) {
@@ -34001,7 +34020,42 @@ if (vrInputProvider && isVRSessionActive()) {
     }
   }
   _lastVRShootPressed = vrShootPressedNow;
+
+  // 9) 🥽 VR MENU: Y button (left or right) toggles options menu
+  let vrMenuPressedNow = false;
+  try {
+    if (vrInputProvider.getButtonState) {
+      // Y/B is index 4 in our VRInputProvider mapping
+      vrMenuPressedNow =
+        vrInputProvider.getButtonState('y', 'left') ||
+        vrInputProvider.getButtonState('y', 'right');
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  if (vrMenuPressedNow && !_lastVRMenuPressed) {
+    console.log('🥽 [VR MENU] Y button pressed - toggling options menu');
+
+    // Use the same options menu system as desktop
+    if (typeof showOptionsMenu === 'function' && typeof hideOptionsMenu === 'function') {
+      const isOpen = !!(optionsMenu && optionsMenu.style.display === 'flex');
+
+      if (!isOpen) {
+        showOptionsMenu();
+        window.optionsMenuOpen = true;
+        console.log('🥽 [VR MENU] Options menu opened from VR');
+      } else {
+        hideOptionsMenu();
+        window.optionsMenuOpen = false;
+        console.log('🥽 [VR MENU] Options menu closed from VR');
+      }
+    }
+  }
+  _lastVRMenuPressed = vrMenuPressedNow;
 } // 👈 this closes the VR-only block
+
+
 
 // 🎮 UPDATE DESKTOP PLAYER CONTROLS MODULE (only if not in VR)
 if (playerControls && !isVRSessionActive()) {
