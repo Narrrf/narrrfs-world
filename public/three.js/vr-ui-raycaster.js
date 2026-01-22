@@ -120,51 +120,58 @@ export class VRUIRaycaster {
   /**
    * Update VR UI raycaster (call every frame)
    */
-  update(xrFrame) {
-    if (!this.enabled || !xrFrame || !this.xrSession) return;
-    
-    // Get input sources (controllers)
-    const inputSources = this.xrSession.inputSources || [];
-    
-    // Process each controller
-    inputSources.forEach((inputSource, index) => {
-      const controller = index === 0 ? this.controller1 : this.controller2;
-      const rayLine = index === 0 ? this.rayLine1 : this.rayLine2;
-      
-      if (!controller || !inputSource.gamepad) return;
-      
-      // Get trigger button state
-      const triggerButton = inputSource.gamepad.buttons[0]; // Trigger is button 0
-      const triggerPressed = triggerButton && triggerButton.pressed;
-      
-      // Store previous state for click detection
-      const wasTriggerPressed = index === 0 ? this.controller1TriggerPressed : this.controller2TriggerPressed;
-      if (index === 0) {
-        this.controller1TriggerPressed = triggerPressed;
+update(xrFrame) {
+  if (!this.enabled || !xrFrame || !this.xrSession) return;
+
+  const controllers = [this.controller1, this.controller2];
+
+  controllers.forEach((controller, idx) => {
+    if (!controller) return;
+
+    const handedness = controller.userData.handedness || 'unknown';
+    const gamepad    = controller.gamepad || (controller.userData && controller.userData.gamepad);
+
+    if (!gamepad) return;
+
+    let rayLine, triggerStateProp;
+
+    if (handedness === 'left') {
+      rayLine          = this.rayLine1;
+      triggerStateProp = 'controller1TriggerPressed';
+    } else if (handedness === 'right') {
+      rayLine          = this.rayLine2;
+      triggerStateProp = 'controller2TriggerPressed';
+    } else {
+      return; // ignore unknown/gaze
+    }
+
+    // Trigger = button 0 on Quest
+    const triggerButton  = gamepad.buttons[0];
+    const triggerPressed = !!(triggerButton && triggerButton.pressed);
+
+    const wasTriggerPressed = this[triggerStateProp] || false;
+    this[triggerStateProp]  = triggerPressed;
+
+    const shouldShowRay = this.isPointingAtUI();
+
+    if (rayLine) {
+      rayLine.visible = shouldShowRay;
+
+      if (triggerPressed) {
+        rayLine.material.color.setHex(0xff00ff);
+        rayLine.material.opacity = 1.0;
       } else {
-        this.controller2TriggerPressed = triggerPressed;
+        rayLine.material.color.setHex(0x00ffff);
+        rayLine.material.opacity = 0.8;
       }
-      
-      // Show ray when pointing at UI or when trigger is pressed
-      const shouldShowRay = this.isPointingAtUI() || triggerPressed;
-      if (rayLine) {
-        rayLine.visible = shouldShowRay;
-        
-        // Change color when trigger is pressed
-        if (triggerPressed) {
-          rayLine.material.color.setHex(0xff00ff); // Magenta when clicking
-          rayLine.material.opacity = 1.0;
-        } else {
-          rayLine.material.color.setHex(0x00ffff); // Cyan when hovering
-          rayLine.material.opacity = 0.8;
-        }
-      }
-      
-      // Perform UI raycasting
-      this.raycastUI(controller, triggerPressed, wasTriggerPressed);
-    });
-  }
-  
+    }
+
+    // UI hit-test using this controller
+    this.raycastUI(controller, triggerPressed, wasTriggerPressed);
+  });
+}
+
+
   /**
    * Check if controller is pointing at UI elements
    */

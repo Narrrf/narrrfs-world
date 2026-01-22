@@ -94,27 +94,29 @@ export class VRInputProvider extends InputProvider {
     this.type = 'vr';
     this.xrSession = xrSession;
     this.enabled = false;
-    
+
     // VR controller state
     this.leftController = null;
     this.rightController = null;
     this.controllerInputSources = [];
-    
+
     // Movement state from VR controllers
     this.thumbstickState = {
       left: { x: 0, y: 0 },
-      right: { x: 0, y: 0 }
+      right: { x: 0, y: 0 },
+      unknown: { x: 0, y: 0 }
     };
-    
+
     // Button states
     this.buttonStates = {
       left: {},
-      right: {}
+      right: {},
+      unknown: {}
     };
-    
+
     console.log('🥽 [VR INPUT] VRInputProvider created');
   }
-  
+
   /**
    * Check if VR is available
    */
@@ -128,7 +130,7 @@ export class VRInputProvider extends InputProvider {
     }
     return false;
   }
-  
+
   /**
    * Enable VR input provider
    */
@@ -137,13 +139,13 @@ export class VRInputProvider extends InputProvider {
       console.error('❌ [VR INPUT] Cannot enable: No XR session');
       return false;
     }
-    
+
     this.enabled = true;
     this.setupControllerHandlers();
     console.log('✅ [VR INPUT] VR input provider enabled');
     return true;
   }
-  
+
   /**
    * Disable VR input provider
    */
@@ -154,62 +156,58 @@ export class VRInputProvider extends InputProvider {
     this.controllerInputSources = [];
     console.log('🖥️ [VR INPUT] VR input provider disabled');
   }
-  
+
   /**
    * Setup VR controller handlers
    */
   setupControllerHandlers() {
     if (!this.xrSession) return;
-    
-    // Get input sources (controllers)
+
+    // Listen for controller add/remove
     this.xrSession.addEventListener('inputsourceschange', (event) => {
       this.handleInputSourcesChange(event);
     });
-    
-// Initialize existing input sources
-const initialSources = this.xrSession.inputSources || [];
-// ✅ Convert XRInputSourceArray → real Array
-this.controllerInputSources = Array.from(initialSources);
-this.updateControllers();
 
+    // Initialize existing input sources
+    const initialSources = this.xrSession.inputSources || [];
+    this.controllerInputSources = Array.from(initialSources);
+    this.updateControllers();
   }
-  
+
   /**
    * Handle input sources change (controllers connected/disconnected)
    */
   handleInputSourcesChange(event) {
     // Add new controllers
-    event.added.forEach(inputSource => {
+    event.added.forEach((inputSource) => {
       if (inputSource.targetRayMode === 'tracked-pointer') {
         this.controllerInputSources.push(inputSource);
         console.log('🥽 [VR INPUT] Controller connected:', inputSource.handedness);
       }
     });
-    
+
     // Remove disconnected controllers
-    event.removed.forEach(inputSource => {
+    event.removed.forEach((inputSource) => {
       const index = this.controllerInputSources.indexOf(inputSource);
       if (index > -1) {
         this.controllerInputSources.splice(index, 1);
         console.log('🥽 [VR INPUT] Controller disconnected:', inputSource.handedness);
       }
     });
-    
+
     this.updateControllers();
   }
-  
+
   /**
-   * Update controller references
+   * Update controller references (left/right)
    */
   updateControllers() {
-    this.leftController = this.controllerInputSources.find(
-      source => source.handedness === 'left'
-    ) || null;
-    
-    this.rightController = this.controllerInputSources.find(
-      source => source.handedness === 'right'
-    ) || null;
-    
+    this.leftController =
+      this.controllerInputSources.find((source) => source.handedness === 'left') || null;
+
+    this.rightController =
+      this.controllerInputSources.find((source) => source.handedness === 'right') || null;
+
     if (this.leftController) {
       console.log('🥽 [VR INPUT] Left controller active');
     }
@@ -217,70 +215,64 @@ this.updateControllers();
       console.log('🥽 [VR INPUT] Right controller active');
     }
   }
-  
+
   /**
    * Update VR input state (called each frame)
    * @param {number} delta - Time delta (required by InputProvider interface)
    */
   update(delta) {
     if (!this.enabled || !this.xrSession) return;
-    
-// Update controller input sources from current session
-const inputSources = this.xrSession.inputSources || [];
 
-// ✅ Always keep our own array instance and copy values
-const newSources = Array.from(inputSources);
+    // Refresh input sources from current session
+    const inputSources = this.xrSession.inputSources || [];
+    const newSources = Array.from(inputSources);
 
-if (newSources.length !== this.controllerInputSources.length) {
-  this.controllerInputSources = newSources;
-  this.updateControllers();
-} else {
-  // Optional: if you want to be super-safe, you could also compare contents here.
-  this.controllerInputSources = newSources;
-}
+    // Keep internal list in sync
+    if (newSources.length !== this.controllerInputSources.length) {
+      this.controllerInputSources = newSources;
+      this.updateControllers();
+    } else {
+      this.controllerInputSources = newSources;
+    }
 
-    
     // Update controller button and thumbstick states
-    this.controllerInputSources.forEach(inputSource => {
+    this.controllerInputSources.forEach((inputSource) => {
       const gamepad = inputSource.gamepad;
       if (!gamepad) return;
-      
+
       const handedness = inputSource.handedness || 'unknown';
-      
-      // Initialize state objects if needed
+
+      // Ensure state containers exist
       if (!this.thumbstickState[handedness]) {
         this.thumbstickState[handedness] = { x: 0, y: 0 };
       }
       if (!this.buttonStates[handedness]) {
         this.buttonStates[handedness] = {};
       }
-      
-      // Get thumbstick input (Quest / WebXR: axes[0]=X, axes[1]=Y)
+
+      // 🔄 Read thumbstick axes (Quest-safe mapping)
+      // Default: axes[0], axes[1]
+      let x = 0;
+      let y = 0;
+
       if (gamepad.axes && gamepad.axes.length >= 2) {
-        let x = gamepad.axes[0] || 0;
-        let y = gamepad.axes[1] || 0;
+        x = gamepad.axes[0] || 0;
+        y = gamepad.axes[1] || 0;
 
-        // Optional fallback: if 0/1 are basically 0 but there are 4 axes, try 2/3
+        // Some runtimes (and older stacks) report stick on axes 2/3.
+        // If 0/1 are basically zero but we have 4 axes, try 2/3 as fallback.
         if (Math.abs(x) < 0.01 && Math.abs(y) < 0.01 && gamepad.axes.length >= 4) {
-          x = gamepad.axes[2] || 0;
-          y = gamepad.axes[3] || 0;
-        }
-
-        this.thumbstickState[handedness] = { x, y };
-
-        // Debug log (only occasionally) to confirm sticks are working
-        if (Math.abs(x) > 0.15 || Math.abs(y) > 0.15) {
-          if (!window.vrThumbstickLogCounter) window.vrThumbstickLogCounter = 0;
-          window.vrThumbstickLogCounter++;
-          if (window.vrThumbstickLogCounter % 60 === 0) {
-            console.log(`🕹️ [VR INPUT] ${handedness} stick: x=${x.toFixed(2)}, y=${y.toFixed(2)}`);
+          const altX = gamepad.axes[2] || 0;
+          const altY = gamepad.axes[3] || 0;
+          if (Math.abs(altX) > 0.01 || Math.abs(altY) > 0.01) {
+            x = altX;
+            y = altY;
           }
         }
       }
 
+      this.thumbstickState[handedness] = { x, y };
 
-
-      
       // Get button states
       if (gamepad.buttons) {
         gamepad.buttons.forEach((button, index) => {
@@ -289,7 +281,7 @@ if (newSources.length !== this.controllerInputSources.length) {
       }
     });
   }
-  
+
   /**
    * Initialize VR input provider (required by InputProvider interface)
    */
@@ -297,7 +289,7 @@ if (newSources.length !== this.controllerInputSources.length) {
     this.setupControllerHandlers();
     console.log('✅ [VR INPUT] VR input provider initialized');
   }
-  
+
   /**
    * Dispose VR input provider (required by InputProvider interface)
    */
@@ -305,11 +297,11 @@ if (newSources.length !== this.controllerInputSources.length) {
     this.disable();
     console.log('🗑️ [VR INPUT] VR input provider disposed');
   }
-  
+
   /**
    * Get movement state from VR controllers
    * Left controller thumbstick = movement
-   * 
+   *
    * ✅ FIXED FOR QUEST 3 (January 18, 2026):
    * - Corrected Y-axis direction (negative = forward)
    * - Increased deadzone to 0.15
@@ -318,72 +310,70 @@ if (newSources.length !== this.controllerInputSources.length) {
    */
   getMovementState() {
     if (!this.enabled) return null;
-    
+
     const leftStick = this.thumbstickState.left || { x: 0, y: 0 };
-    
+
     // ✅ Meta Quest 3 Controller Mapping (2026):
     // Left Thumbstick:
     //   Y: -1.0 (forward/push up) to +1.0 (backward/pull down)
     //   X: -1.0 (left) to +1.0 (right)
-    
-	
-	
+
     const deadzone = 0.15; // ✅ Increased deadzone for Quest 3 (was 0.1)
-    
+
     // Apply deadzone
     const x = Math.abs(leftStick.x) > deadzone ? leftStick.x : 0;
     const y = Math.abs(leftStick.y) > deadzone ? leftStick.y : 0;
-    
+
     // ✅ Log thumbstick values occasionally for debugging
     if (Math.abs(x) > deadzone || Math.abs(y) > deadzone) {
       if (!window.vrThumbstickLogCounter) window.vrThumbstickLogCounter = 0;
       window.vrThumbstickLogCounter++;
-      if (window.vrThumbstickLogCounter % 60 === 0) { // Every 60 frames
+      if (window.vrThumbstickLogCounter % 60 === 0) {
         console.log(`🕹️ [VR INPUT] Left stick: x=${x.toFixed(2)}, y=${y.toFixed(2)}`);
       }
     }
-    
+
     return {
-      forward: y < -deadzone ? Math.abs(y) : 0,  // ✅ Negative Y = forward (push up)
-      backward: y > deadzone ? y : 0,            // ✅ Positive Y = backward (pull down)
-      left: x < -deadzone ? Math.abs(x) : 0,     // ✅ Negative X = left
-      right: x > deadzone ? x : 0,               // ✅ Positive X = right
-      sprint: this.getButtonState('thumbstick', 'left'), // ✅ Click left stick to sprint
-      jump: this.getButtonState('x', 'left') || this.getButtonState('a', 'right'), // ✅ X or A button to jump
-      flyUp: false,   // VR uses jump instead of fly
-      flyDown: false  // VR uses jump instead of fly
+      forward: y < -deadzone ? Math.abs(y) : 0, // Negative Y = forward
+      backward: y > deadzone ? y : 0,           // Positive Y = backward
+      left: x < -deadzone ? Math.abs(x) : 0,    // Negative X = left
+      right: x > deadzone ? x : 0,              // Positive X = right
+      sprint: this.getButtonState('thumbstick', 'left'), // Left stick click = sprint
+      jump:
+        this.getButtonState('x', 'left') ||
+        this.getButtonState('a', 'right'), // X or A button to jump
+      flyUp: false,
+      flyDown: false
     };
   }
-  
+
   /**
    * Get rotation input from right thumbstick
    * Used for snap-turn or smooth-turn in VR
-   * 
-   * ✅ NEW METHOD (January 18, 2026)
-   * 
+   *
    * @returns {Object} Rotation input { x: horizontal, y: vertical }
    */
   getRotationInput() {
     if (!this.enabled) return { x: 0, y: 0 };
-    
+
     const rightStick = this.thumbstickState.right || { x: 0, y: 0 };
-    const deadzone = 0.3; // ✅ Higher deadzone for rotation (prevents accidental turns)
-    
+    const deadzone = 0.3; // Higher deadzone for rotation (prevents accidental turns)
+
     const x = Math.abs(rightStick.x) > deadzone ? rightStick.x : 0;
     const y = Math.abs(rightStick.y) > deadzone ? rightStick.y : 0;
-    
+
     // ✅ Log rotation input occasionally for debugging
     if (Math.abs(x) > deadzone || Math.abs(y) > deadzone) {
       if (!window.vrRotationLogCounter) window.vrRotationLogCounter = 0;
       window.vrRotationLogCounter++;
-      if (window.vrRotationLogCounter % 60 === 0) { // Every 60 frames
+      if (window.vrRotationLogCounter % 60 === 0) {
         console.log(`🔄 [VR INPUT] Right stick: x=${x.toFixed(2)}, y=${y.toFixed(2)}`);
       }
     }
-    
+
     return { x, y };
   }
-  
+
   /**
    * Get rotation from VR headset (for camera)
    * Returns head pose rotation
@@ -392,29 +382,25 @@ if (newSources.length !== this.controllerInputSources.length) {
     if (!this.enabled || !this.xrSession) {
       return { x: 0, y: 0, z: 0 };
     }
-    
-    // Rotation comes from headset pose, not controllers
-    // This is handled separately in the camera update
+
+    // Headset rotation is handled separately in the main camera update
     return { x: 0, y: 0, z: 0 };
   }
-  
+
   /**
    * Get shoot state from VR controller trigger
    * Used for weapon shooting in VR mode (Levels 4-6)
-   * ✅ NEW METHOD (January 20, 2026)
-   * 
-   * @returns {boolean} True if trigger is pressed on either controller
    */
   getShootState() {
     if (!this.enabled) return false;
-    
+
     // Check trigger on both controllers (either can shoot)
     const leftTrigger = this.getButtonState('trigger', 'left');
     const rightTrigger = this.getButtonState('trigger', 'right');
-    
+
     return leftTrigger || rightTrigger;
   }
-  
+
   /**
    * Get button state for VR controller
    * @param {string} buttonId - Button identifier (e.g., 'trigger', 'grip', 'thumbstick')
@@ -422,51 +408,60 @@ if (newSources.length !== this.controllerInputSources.length) {
    */
   getButtonState(buttonId, handedness = 'right') {
     if (!this.enabled) return false;
-    
+
     const buttonStates = this.buttonStates[handedness] || {};
-    
+
     // Map button names to indices (standard WebXR gamepad mapping)
     const buttonMap = {
-      'trigger': 0,      // Trigger button
-      'grip': 1,         // Grip button
-      'thumbstick': 2,   // Thumbstick press
-      'x': 3,            // X button (left) / A button (right)
-      'y': 4,            // Y button (left) / B button (right)
-      'a': 3,            // A button (right controller) - same as X
-      'b': 4,            // B button (right controller) - same as Y
+      trigger: 0,     // Trigger button
+      grip: 1,        // Grip button
+      thumbstick: 2,  // Thumbstick press
+      x: 3,           // X button (left) / A button (right)
+      y: 4,           // Y button (left) / B button (right)
+      a: 3,           // A button (right controller) - same as X
+      b: 4            // B button (right controller) - same as Y
     };
-    
+
     const index = buttonMap[buttonId];
     if (index !== undefined && buttonStates[index] !== undefined) {
-      // ✅ Log buttons presses for debugging (January 20, 2026)
-      if (buttonStates[index] && (!window.lastButtonLog || window.lastButtonLog !== `${buttonId}_${handedness}`)) {
-        console.log(`🎮 [VR INPUT] Button pressed: ${buttonId} (${handedness}) - Index: ${index}`);
+      if (
+        buttonStates[index] &&
+        (!window.lastButtonLog || window.lastButtonLog !== `${buttonId}_${handedness}`)
+      ) {
+        console.log(
+          `🎮 [VR INPUT] Button pressed: ${buttonId} (${handedness}) - Index: ${index}`
+        );
         window.lastButtonLog = `${buttonId}_${handedness}`;
-        setTimeout(() => { window.lastButtonLog = null; }, 500); // Reset after 500ms
+        setTimeout(() => {
+          window.lastButtonLog = null;
+        }, 500);
       }
       return buttonStates[index];
     }
-    
+
     return false;
   }
-  
+
   /**
    * Get controller position and rotation
    * @param {string} handedness - 'left' or 'right'
    */
-getControllerPose(frame, referenceSpace, handedness) {
-  if (!frame || !referenceSpace || !handedness) return null;
+  getControllerPose(frame, referenceSpace, handedness) {
+    if (!frame || !referenceSpace || !handedness) return null;
 
-  const controller = handedness === 'left' ? this.leftController : this.rightController;
-  if (!controller) return null;
+    const controller =
+      handedness === 'left' ? this.leftController : this.rightController;
+    if (!controller || !controller.targetRaySpace) return null;
 
-  const inputPose = frame.getPose(controller.targetRaySpace, referenceSpace);
-  if (!inputPose) return null;
+    const inputPose = frame.getPose(controller.targetRaySpace, referenceSpace);
+    if (!inputPose) return null;
 
-  return {
-    position: inputPose.transform.position,
-    rotation: inputPose.transform.orientation
-  };
+    return {
+      position: inputPose.transform.position,
+      rotation: inputPose.transform.orientation
+    };
+  }
 }
+
 }
 

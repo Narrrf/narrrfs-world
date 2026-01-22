@@ -33787,7 +33787,7 @@ if (vrInputProvider && isVRSessionActive()) {
     vrUIRaycaster.update(xrFrame);
   }
     
-// 4) ✅ Update camera from VR headset pose (safer offset)
+// 4) ✅ Update camera from VR headset pose (anchor to player collider)
 if (xrFrame) {
   try {
     const referenceSpace = renderer.xr.getReferenceSpace();
@@ -33798,11 +33798,11 @@ if (xrFrame) {
         const position    = transform.position;
         const orientation = transform.orientation;
 
-        // 🥽 VR: keep camera at player collider X/Z, use headset Y as height
+        // 🥽 Anchor camera to the player collider in X/Z, add headset height only in Y
         camera.position.set(
-          playerPosition.x,
-          playerPosition.y + position.y, // add head height only
-          playerPosition.z
+          playerPosition.x,              // X = collider
+          playerPosition.y + position.y, // Y = collider center + head height
+          playerPosition.z               // Z = collider
         );
 
         camera.quaternion.set(
@@ -33811,7 +33811,6 @@ if (xrFrame) {
           orientation.z,
           orientation.w
         );
-
       }
     }
   } catch (error) {
@@ -33820,6 +33819,8 @@ if (xrFrame) {
       window.vrPoseErrorLogged = true;
     }
   }
+}
+
 }
     
   // 5) ✅ Handle rotation from right thumbstick
