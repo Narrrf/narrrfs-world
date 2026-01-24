@@ -4606,6 +4606,26 @@ function initializePlayerControls() {
       thirdPersonCameraHeight: thirdPersonCameraHeight
     });
 
+    // 🥽 If VR session already active, hook VR input provider into PlayerControls
+    if (vrInputProvider && typeof playerControls.registerInputProvider === 'function') {
+      try {
+        playerControls.registerInputProvider(vrInputProvider);
+        console.log("🥽 [PLAYER CONTROLS] VR input provider registered on init");
+      } catch (err) {
+        console.warn("⚠️ [PLAYER CONTROLS] Failed to register VR input provider on init:", err);
+      }
+    }
+
+    // If there is an active XR session, enable VR in PlayerControls
+    if (currentVRSession && typeof playerControls.enableVR === 'function') {
+      playerControls.enableVR(currentVRSession).then(() => {
+        console.log("🥽 [PLAYER CONTROLS] VR mode enabled in PlayerControls on init");
+      }).catch(err => {
+        console.warn("⚠️ [PLAYER CONTROLS] Failed to enable VR mode on init:", err);
+      });
+    }
+
+
     console.log("✅ [PLAYER CONTROLS] Module initialized successfully");
   } catch (error) {
     console.error("❌ [PLAYER CONTROLS] Failed to initialize:", error);
@@ -10658,27 +10678,28 @@ function initializeGUISystem() {
       onHideOptionsMenu: () => {
         hideOptionsMenu();
       },
-      // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
-      // ❗ UPDATED: Do NOT auto-start Level 1. Stay in main menu so player
-      // can pick character + level (works in VR as well).
-      onStartVRSession: async () => {
-        console.log('🥽 [VR] Starting VR session from main menu callback...');
-        
-        try {
-          const vrStarted = await startVRSession();
-          if (vrStarted) {
-            console.log('✅ [VR] VR session started successfully (no auto-start).');
-            console.log('🎮 [VR] Player can now select character and level in VR.');
-            // DO NOT call startGame() here – player will use the existing GUI.
-          } else {
-            console.error('❌ [VR] VR session failed to start');
-          }
-          return vrStarted;
-        } catch (err) {
-          console.error('❌ [VR] Error in VR MODE callback:', err);
-          return false;
-        }
-      },
+// ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
+// ❗ IMPORTANT: Do NOT auto-start Level 1 here. Player should still
+// use the normal GUI (character selector + level selector), just in VR.
+onStartVRSession: async () => {
+  console.log('🥽 [VR] Starting VR session from main menu callback...');
+  
+  try {
+    const vrStarted = await startVRSession();
+    if (vrStarted) {
+      console.log('✅ [VR] VR session started successfully (no auto-start).');
+      console.log('🎮 [VR] Player can now use the normal GUI in VR (character + level selector).');
+      // DO NOT call startGame() here – the existing GUI buttons handle it.
+    } else {
+      console.error('❌ [VR] VR session failed to start');
+    }
+    return vrStarted;
+  } catch (err) {
+    console.error('❌ [VR] Error in VR MODE callback:', err);
+    return false;
+  }
+},
+
 
       onTogglePause: (paused) => {
         // CRITICAL FIX: Set flag to prevent circular call
@@ -33981,36 +34002,39 @@ if (vrInputProvider) {
   }
   _lastVRShootPressed = vrShootPressedNow;
 
-  // 9) 🥽 VR MENU: Y/B button opens Level Selector (for ALL players, even without God Mode)
-  let vrMenuPressedNow = false;
-  try {
-    if (vrInputProvider.getButtonState) {
-      // Y/B is index 4 in our VRInputProvider mapping
-      vrMenuPressedNow =
-        vrInputProvider.getButtonState('y', 'left') ||
-        vrInputProvider.getButtonState('y', 'right');
-    }
-  } catch (e) {
-    // ignore
-  }
-
-  if (vrMenuPressedNow && !_lastVRMenuPressed) {
-    console.log('🥽 [VR MENU] Y/B button pressed - opening Level Selector');
-
-    if (typeof showLevelSelector === 'function') {
-      try {
-        showLevelSelector();   // ✅ opens the same selector you use on desktop
-        console.log('🥽 [VR MENU] Level Selector opened from VR');
-      } catch (err) {
-        console.error('❌ [VR MENU] Failed to open Level Selector from VR:', err);
+    // 9) 🥽 VR MENU: Y/B button toggles the options menu
+    let vrMenuPressedNow = false;
+    try {
+      if (vrInputProvider.getButtonState) {
+        // Map both "y" and "b" on both controllers to menu
+        vrMenuPressedNow =
+          vrInputProvider.getButtonState('y', 'left')  ||
+          vrInputProvider.getButtonState('y', 'right') ||
+          vrInputProvider.getButtonState('b', 'left')  ||
+          vrInputProvider.getButtonState('b', 'right');
       }
-    } else if (typeof showOptionsMenu === 'function') {
-      // Fallback: open options if selector not available
-      showOptionsMenu();
-      console.log('🥽 [VR MENU] Level Selector not available, opened Options instead');
+    } catch (e) {
+      // ignore
     }
-  }
-  _lastVRMenuPressed = vrMenuPressedNow;
+
+    if (vrMenuPressedNow && !_lastVRMenuPressed) {
+      console.log('🥽 [VR MENU] Y/B button pressed - toggling options menu');
+
+      if (typeof showOptionsMenu === 'function' && typeof hideOptionsMenu === 'function') {
+        const isOpen = !!(optionsMenu && optionsMenu.style.display === 'flex');
+
+        if (!isOpen) {
+          showOptionsMenu();
+          window.optionsMenuOpen = true;
+          console.log('🥽 [VR MENU] Options menu opened from VR');
+        } else {
+          hideOptionsMenu();
+          window.optionsMenuOpen = false;
+          console.log('🥽 [VR MENU] Options menu closed from VR');
+        }
+      }
+    }
+    _lastVRMenuPressed = vrMenuPressedNow;
 } // 👈 this closes the VR-only block
 
 
