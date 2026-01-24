@@ -10658,33 +10658,28 @@ function initializeGUISystem() {
       onHideOptionsMenu: () => {
         hideOptionsMenu();
       },
-// ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
-onStartVRSession: async () => {
-  console.log('🥽 [VR] Starting VR session from main menu callback...');
-  
-  try {
-    const vrStarted = await startVRSession();
-    if (vrStarted) {
-      console.log('✅ [VR] VR session started successfully (staying in main menu)');
-      
-      // Make sure the GUI main menu is still visible in VR
-      if (guiSystem && typeof guiSystem.showMainMenu === 'function') {
-        guiSystem.showMainMenu();
-      }
-      
-      // From here on, the flow is exactly like desktop:
-      //  - select character
-      //  - if GOD MODE → level selector
-      //  - press "Start Game" → startGame(...)
-    } else {
-      console.error('❌ [VR] VR session failed to start');
-    }
-    return vrStarted;
-  } catch (err) {
-    console.error('❌ [VR] Error in VR MODE callback:', err);
-    return false;
-  }
-},
+      // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
+      // ❗ UPDATED: Do NOT auto-start Level 1. Stay in main menu so player
+      // can pick character + level (works in VR as well).
+      onStartVRSession: async () => {
+        console.log('🥽 [VR] Starting VR session from main menu callback...');
+        
+        try {
+          const vrStarted = await startVRSession();
+          if (vrStarted) {
+            console.log('✅ [VR] VR session started successfully (no auto-start).');
+            console.log('🎮 [VR] Player can now select character and level in VR.');
+            // DO NOT call startGame() here – player will use the existing GUI.
+          } else {
+            console.error('❌ [VR] VR session failed to start');
+          }
+          return vrStarted;
+        } catch (err) {
+          console.error('❌ [VR] Error in VR MODE callback:', err);
+          return false;
+        }
+      },
+
       onTogglePause: (paused) => {
         // CRITICAL FIX: Set flag to prevent circular call
         window._togglePauseFromGUI = true;
@@ -33880,7 +33875,40 @@ if (vrInputProvider) {
   if (vrUIRaycaster && xrFrame) {
     vrUIRaycaster.update(xrFrame);
   }
-    
+   
+  // 4) ✅ Update camera orientation from VR headset, position from playerPosition
+  if (xrFrame) {
+    try {
+      const referenceSpace = renderer.xr.getReferenceSpace();
+      if (referenceSpace) {
+        const pose = xrFrame.getViewerPose(referenceSpace);
+        if (pose) {
+          const orientation = pose.transform.orientation;
+
+          // Position: follow your game player (like desktop)
+          const eyeHeight = 1.7; // ~average human eye height
+          camera.position.set(
+            playerPosition.x,
+            playerPosition.y + eyeHeight,
+            playerPosition.z
+          );
+
+          // Rotation: use the headset orientation
+          camera.quaternion.set(
+            orientation.x,
+            orientation.y,
+            orientation.z,
+            orientation.w
+          );
+        }
+      }
+    } catch (error) {
+      if (!window.vrPoseErrorLogged) {
+        console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
+        window.vrPoseErrorLogged = true;
+      }
+    }
+  }
  
   // 5) ✅ Handle rotation from right thumbstick
   const rotationInput = vrInputProvider.getRotationInput && vrInputProvider.getRotationInput();
@@ -33953,11 +33981,11 @@ if (vrInputProvider) {
   }
   _lastVRShootPressed = vrShootPressedNow;
 
-  // 9) 🥽 VR MENU: Y/B button toggles options menu
+  // 9) 🥽 VR MENU: Y/B button opens Level Selector (for ALL players, even without God Mode)
   let vrMenuPressedNow = false;
   try {
     if (vrInputProvider.getButtonState) {
-      // Y on left, B on right (index 4 in our mapping)
+      // Y/B is index 4 in our VRInputProvider mapping
       vrMenuPressedNow =
         vrInputProvider.getButtonState('y', 'left') ||
         vrInputProvider.getButtonState('y', 'right');
@@ -33967,20 +33995,19 @@ if (vrInputProvider) {
   }
 
   if (vrMenuPressedNow && !_lastVRMenuPressed) {
-    console.log('🥽 [VR MENU] Y/B button pressed - toggling options menu');
+    console.log('🥽 [VR MENU] Y/B button pressed - opening Level Selector');
 
-    if (typeof showOptionsMenu === 'function' && typeof hideOptionsMenu === 'function') {
-      const isOpen = !!(optionsMenu && optionsMenu.style.display === 'flex');
-
-      if (!isOpen) {
-        showOptionsMenu();
-        window.optionsMenuOpen = true;
-        console.log('🥽 [VR MENU] Options menu opened from VR');
-      } else {
-        hideOptionsMenu();
-        window.optionsMenuOpen = false;
-        console.log('🥽 [VR MENU] Options menu closed from VR');
+    if (typeof showLevelSelector === 'function') {
+      try {
+        showLevelSelector();   // ✅ opens the same selector you use on desktop
+        console.log('🥽 [VR MENU] Level Selector opened from VR');
+      } catch (err) {
+        console.error('❌ [VR MENU] Failed to open Level Selector from VR:', err);
       }
+    } else if (typeof showOptionsMenu === 'function') {
+      // Fallback: open options if selector not available
+      showOptionsMenu();
+      console.log('🥽 [VR MENU] Level Selector not available, opened Options instead');
     }
   }
   _lastVRMenuPressed = vrMenuPressedNow;
