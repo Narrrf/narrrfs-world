@@ -2146,7 +2146,8 @@ let vrSessionStarting = false; // ✅ guard against double start
 let _lastVRJumpPressed = false;
 let _lastVRInteractPressed = false;
 let _lastVRShootPressed = false;
-let _lastVRMenuPressed = false;   // 🆕 VR menu/pause button
+let _lastVRMenuPressed = false;   // 🆕 needed for VR options-menu toggle
+
 
 // ============================================================================
 // VR OPTIMIZATION FUNCTIONS (PHASE 2 - January 18, 2026)
@@ -10657,51 +10658,33 @@ function initializeGUISystem() {
       onHideOptionsMenu: () => {
         hideOptionsMenu();
       },
-      // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
-      onStartVRSession: async () => {
-        console.log('🥽 [VR] Starting VR session from main menu callback...');
-        
-        try {
-          const vrStarted = await startVRSession();
-          if (vrStarted) {
-            console.log('✅ [VR] VR session started successfully!');
-            console.log('🎮 [VR] Starting game in VR mode...');
-            
-            // CRITICAL FIX: Start the game after VR session starts!
-            // This loads the level and enables player controls
-            setTimeout(() => {
-              try {
-                console.log('🎮 [VR] Calling startGame() to load level...');
-                startGame(LEVEL_IDS.LEVEL1); // Start with Level 1 in VR mode
-                
-                // CRITICAL: Re-enable VR input after game starts (in case it got disabled)
-                setTimeout(() => {
-                  if (vrInputProvider && playerControls && isVRSessionActive()) {
-                    console.log('🥽 [VR] Re-enabling VR input provider after game start...');
-                    try {
-                      vrInputProvider.enable();
-                      playerControls.enableVR(currentVRSession).catch(err => {
-                        console.warn('⚠️ [VR] PlayerControls.enableVR failed:', err);
-                      });
-                      console.log('✅ [VR] VR input re-enabled for gameplay');
-                    } catch (enableErr) {
-                      console.error('❌ [VR] Failed to re-enable VR input:', enableErr);
-                    }
-                  }
-                }, 2000); // Wait 2 seconds for level to fully load (increased from 1s)
-              } catch (gameErr) {
-                console.error('❌ [VR] Failed to start game in VR mode:', gameErr);
-              }
-            }, 1000); // Increased delay to let VR session fully settle
-          } else {
-            console.error('❌ [VR] VR session failed to start');
-          }
-          return vrStarted;
-        } catch (err) {
-          console.error('❌ [VR] Error in VR MODE callback:', err);
-          return false;
-        }
-      },
+// ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
+onStartVRSession: async () => {
+  console.log('🥽 [VR] Starting VR session from main menu callback...');
+  
+  try {
+    const vrStarted = await startVRSession();
+    if (vrStarted) {
+      console.log('✅ [VR] VR session started successfully (staying in main menu)');
+      
+      // Make sure the GUI main menu is still visible in VR
+      if (guiSystem && typeof guiSystem.showMainMenu === 'function') {
+        guiSystem.showMainMenu();
+      }
+      
+      // From here on, the flow is exactly like desktop:
+      //  - select character
+      //  - if GOD MODE → level selector
+      //  - press "Start Game" → startGame(...)
+    } else {
+      console.error('❌ [VR] VR session failed to start');
+    }
+    return vrStarted;
+  } catch (err) {
+    console.error('❌ [VR] Error in VR MODE callback:', err);
+    return false;
+  }
+},
       onTogglePause: (paused) => {
         // CRITICAL FIX: Set flag to prevent circular call
         window._togglePauseFromGUI = true;
@@ -33898,51 +33881,6 @@ if (vrInputProvider) {
     vrUIRaycaster.update(xrFrame);
   }
     
-   // 4) ✅ Update camera for VR:
-  //    - POSITION from game logic (player collider → head)
-  //    - ROTATION from headset pose
-  if (xrFrame) {
-    try {
-      const referenceSpace = renderer.xr.getReferenceSpace();
-      if (referenceSpace) {
-        const pose = xrFrame.getViewerPose(referenceSpace);
-        if (pose) {
-          const orientation = pose.transform.orientation;
-
-          // 🎯 Compute head position from player collider (same idea as desktop first-person)
-          const headPos = new THREE.Vector3();
-
-          if (playerCollider && playerCollider.start && playerCollider.end) {
-            // Use the capsule’s top as “head”
-            headPos.copy(playerCollider.end);
-          } else if (playerCharacterModel) {
-            // Fallback: character model position + eye height
-            headPos.copy(playerCharacterModel.position);
-            headPos.y += 1.6; // approximate eye height
-          } else {
-            // Last resort: keep current camera position
-            headPos.copy(camera.position);
-          }
-
-          // 📌 Lock camera to the player’s head in game space
-          camera.position.copy(headPos);
-
-          // 🧠 Use headset rotation so the player can look around naturally
-          camera.quaternion.set(
-            orientation.x,
-            orientation.y,
-            orientation.z,
-            orientation.w
-          );
-        }
-      }
-    } catch (error) {
-      if (!window.vrPoseErrorLogged) {
-        console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
-        window.vrPoseErrorLogged = true;
-      }
-    }
-  }
  
   // 5) ✅ Handle rotation from right thumbstick
   const rotationInput = vrInputProvider.getRotationInput && vrInputProvider.getRotationInput();
@@ -34015,11 +33953,11 @@ if (vrInputProvider) {
   }
   _lastVRShootPressed = vrShootPressedNow;
 
-  // 9) 🥽 VR MENU: Y button (left or right) toggles options menu
+  // 9) 🥽 VR MENU: Y/B button toggles options menu
   let vrMenuPressedNow = false;
   try {
     if (vrInputProvider.getButtonState) {
-      // Y/B is index 4 in our VRInputProvider mapping
+      // Y on left, B on right (index 4 in our mapping)
       vrMenuPressedNow =
         vrInputProvider.getButtonState('y', 'left') ||
         vrInputProvider.getButtonState('y', 'right');
@@ -34029,9 +33967,8 @@ if (vrInputProvider) {
   }
 
   if (vrMenuPressedNow && !_lastVRMenuPressed) {
-    console.log('🥽 [VR MENU] Y button pressed - toggling options menu');
+    console.log('🥽 [VR MENU] Y/B button pressed - toggling options menu');
 
-    // Use the same options menu system as desktop
     if (typeof showOptionsMenu === 'function' && typeof hideOptionsMenu === 'function') {
       const isOpen = !!(optionsMenu && optionsMenu.style.display === 'flex');
 
@@ -34048,7 +33985,6 @@ if (vrInputProvider) {
   }
   _lastVRMenuPressed = vrMenuPressedNow;
 } // 👈 this closes the VR-only block
-
 
 
 // 🎮 UPDATE DESKTOP PLAYER CONTROLS MODULE (only if not in VR)
