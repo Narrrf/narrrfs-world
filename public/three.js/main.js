@@ -2288,7 +2288,10 @@ function installVRCameraAnchor() {
 
       // 2️⃣ Override POSITION only (keep XR rotation!)
       try {
-        if (playerCollider && playerCollider.start && playerCollider.end) {
+        if (playerCollider &&
+            playerCollider.start &&
+            playerCollider.end) {
+
           const center = new THREE.Vector3().lerpVectors(
             playerCollider.start,
             playerCollider.end,
@@ -2302,6 +2305,9 @@ function installVRCameraAnchor() {
             center.y + eyeHeight,
             center.z
           );
+
+          // ✅ Ensure the new position is actually used for rendering
+          camera.updateMatrixWorld(true);
         }
       } catch (e) {
         // Never crash XR loop
@@ -2314,6 +2320,7 @@ function installVRCameraAnchor() {
     console.warn("⚠️ [VR CAMERA] Failed to install anchor:", e);
   }
 }
+
 
 function uninstallVRCameraAnchor() {
   try {
@@ -2481,9 +2488,62 @@ async function startVRSession() {
 	
     // Enable VR in renderer
     await renderer.xr.setSession(session);
-	
+
+// 🥽 VR SPAWN SYNC – make sure player capsule is at the real level spawn
+function syncVRSpawnToPlayerCollider() {
+  try {
+    // We need at least a collider
+    if (!playerCollider || !playerCollider.start || !playerCollider.end) {
+      console.warn("⚠️ [VR SPAWN] No playerCollider available to sync");
+      return;
+    }
+
+    // Prefer the recorded initial spawn position from level loading
+    let target = null;
+
+    if (initialSpawnPosition) {
+      target = initialSpawnPosition.clone();
+    } else {
+      // Fallback: use current capsule center if spawn not known yet
+      const center = new THREE.Vector3().lerpVectors(
+        playerCollider.start,
+        playerCollider.end,
+        0.5
+      );
+      target = center;
+    }
+
+    // Extra safety: ignore obviously bogus positions
+    if (!isFinite(target.x) || !isFinite(target.y) || !isFinite(target.z)) {
+      console.warn("⚠️ [VR SPAWN] Spawn target is invalid:", target);
+      return;
+    }
+
+    // Use the existing helper if present
+    if (typeof setPlayerFeetPosition === "function") {
+      setPlayerFeetPosition(target);
+    } else {
+      // Direct capsule fallback
+      const feetY = target.y;
+      playerCollider.start.set(target.x, feetY, target.z);
+      playerCollider.end.set(target.x, feetY + 1.4, target.z);
+      if (playerVelocity) {
+        playerVelocity.set(0, 0, 0);
+      }
+    }
+
+    console.log("🥽 [VR SPAWN] Synced player collider to", target);
+  } catch (e) {
+    console.warn("⚠️ [VR SPAWN] Failed to sync player collider:", e);
+  }
+}
+
+    // ✅ Before anchoring the camera, force the player capsule to the level spawn
+    syncVRSpawnToPlayerCollider();
+
 	// 🥽 Install VR camera anchor so XR camera follows player collider
 installVRCameraAnchor();
+
     
     // Create and register VR input provider
     vrInputProvider = new VRInputProvider(session);
@@ -2536,7 +2596,6 @@ installVRCameraAnchor();
     return false;
   }
 }
-
 
 /**
  * End VR Session
@@ -34019,13 +34078,18 @@ function animate(timestamp, xrFrame) {
     );
   }
 
-// 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
+
 // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
 // This must live INSIDE your animate() function, after player physics but before rendering
 // 🥽 VR: controller + camera bridge (called every frame while XR is active)
 if (vrInputProvider &&
     typeof isVRSessionActive === "function" &&
     isVRSessionActive()) {
+		
+		if (!window.vrBlockLogOnce) {
+  console.log("🥽 [VR] VR movement + actions block ACTIVE");
+  window.vrBlockLogOnce = true;
+}
 
   // 1) Update raw controller state
   vrInputProvider.update(delta);
