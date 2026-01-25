@@ -2144,6 +2144,13 @@ let currentVRSession = null;
 let vrSessionStarting = false; // ✅ guard against double start
 // 🥽 XR camera hook - keeps track of original Three.js updateCamera
 let originalXRUpdateCamera = null;
+let playerColliderDebugMarker = null;
+
+// Desktop FPS limiter (keep VR running at native refresh)
+const TARGET_DESKTOP_FPS = 60;
+const DESKTOP_FRAME_DURATION = 1000 / TARGET_DESKTOP_FPS; // ~16.67ms
+let lastDesktopFrameTime = 0;
+
 
 // 🥽 VR action state (for edge detection: "just pressed")
 let _lastVRJumpPressed = false;
@@ -2538,8 +2545,8 @@ function syncVRSpawnToPlayerCollider() {
   }
 }
 
-    // ✅ Before anchoring the camera, force the player capsule to the level spawn
-    syncVRSpawnToPlayerCollider();
+// 🧪 TEMP: Disable auto VR spawn sync while we debug collider position
+// syncVRSpawnToPlayerCollider();
 
 	// 🥽 Install VR camera anchor so XR camera follows player collider
 installVRCameraAnchor();
@@ -34233,12 +34240,67 @@ window.addEventListener("resize", () => {
 // Declare crosshairElement early to avoid TDZ errors (initialized later after createCrosshair is defined)
 let crosshairElement = null;
 
+// ============================================================================
+// 🧭 DEBUG: 3D marker to visualize player collider position (works in VR)
+// ============================================================================
+function ensurePlayerColliderDebugMarker() {
+  if (playerColliderDebugMarker && scene.children.includes(playerColliderDebugMarker)) {
+    return playerColliderDebugMarker;
+  }
+
+  const geometry = new THREE.SphereGeometry(0.3, 12, 12);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0xff00ff,
+    wireframe: true
+  });
+
+  const marker = new THREE.Mesh(geometry, material);
+  marker.name = "playerColliderDebugMarker";
+  marker.visible = true;
+
+  scene.add(marker);
+  playerColliderDebugMarker = marker;
+
+  console.log("🧭 [DEBUG] Player collider marker created");
+  return marker;
+}
+
+
+// Main render loop  
+
 // ✅ VR-COMPATIBLE ANIMATION LOOP (January 18, 2026 - Phase 1)
 // Uses setAnimationLoop instead of requestAnimationFrame for proper VR rendering
 function animate(timestamp, xrFrame) {
   if (stats) stats.begin();
-
+  // Base delta from clock
   const delta = Math.min(clock.getDelta(), 0.1);
+  
+  
+  
+  
+  // 🧵 DESKTOP FPS LIMITER: run at ~60 FPS when NOT in VR
+  const vrActive =
+    (typeof isVRSessionActive === "function" && isVRSessionActive()) ||
+    (renderer && renderer.xr && renderer.xr.isPresenting);
+
+  if (!vrActive) {
+    if (!lastDesktopFrameTime) {
+      lastDesktopFrameTime = timestamp;
+    }
+
+    const deltaMs = timestamp - lastDesktopFrameTime;
+
+    if (deltaMs < DESKTOP_FRAME_DURATION) {
+      // Too soon for next desktop frame → skip update & render
+      if (stats) stats.end();
+      return;
+    }
+
+    // Enough time has passed → accept this frame as the next 60Hz tick
+    lastDesktopFrameTime = timestamp;
+  }
+
+  
   
   // CRITICAL: Skip frame if delta is too large (prevents huge jumps during frame drops)
   // This prevents performance issues when FPS drops below 10
@@ -34273,7 +34335,6 @@ function animate(timestamp, xrFrame) {
       0.5
     );
   }
-
 
 // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
 // This must live INSIDE your animate() function, after player physics but before rendering
@@ -35458,9 +35519,21 @@ if (playerControls && !isVRSessionActive()) {
     }
   }
   
+    // 🔎 DEBUG: Show where the player collider actually is (VR + desktop)
+  if (playerCollider && playerCollider.start && playerCollider.end) {
+    const marker = ensurePlayerColliderDebugMarker();
+    const center = new THREE.Vector3().lerpVectors(
+      playerCollider.start,
+      playerCollider.end,
+      0.5
+    );
+    marker.position.copy(center);
+  }
+  
   // CRITICAL: Wrap render in try-catch to prevent skeleton errors from crashing the game
   try {
     renderer.render(scene, camera);
+	requestAnimationFrame(animate);
   } catch (renderError) {
     // If render error is related to skeleton, try to fix it
     const renderMsg = String(renderError?.message || "");
