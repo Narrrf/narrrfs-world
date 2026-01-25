@@ -2627,6 +2627,18 @@ function syncVRSpawnToPlayerCollider() {
 	// 🥽 Install VR camera anchor so XR camera follows player collider
 installVRCameraAnchor();
 
+// 🥽 VR-ONLY: If we're already in a level when VR starts, apply its VR spawn (fallback to Level 1)
+try {
+  if (typeof applyVRSpawnForLevel === "function") {
+    const activeLevelId = currentLevel || LEVEL_IDS.LEVEL1;
+    console.log("🥽 [VR] Applying initial VR spawn for level:", activeLevelId);
+    applyVRSpawnForLevel(activeLevelId);
+  }
+} catch (e) {
+  console.warn("⚠️ [VR] Failed to apply initial VR spawn on session start:", e);
+}
+
+
         // 🥽 VR-SPAWN OVERRIDE ON SESSION START
     // When entering VR after a level is already loaded (common on Quest),
     // snap the player capsule to the VR-safe spawn for the current level.
@@ -44463,6 +44475,20 @@ function warpToLevel1() {
                       playerColliderEnd: playerCollider.end,
                       cameraPosition: camera ? camera.position : null
                     });
+					// 🥽 VR-ONLY: After desktop spawn is applied, override with safe VR spawn for Level 1
+try {
+  const vrActive =
+    (renderer && renderer.xr && renderer.xr.isPresenting) ||
+    (typeof isVRSessionActive === "function" && isVRSessionActive());
+
+  if (vrActive && typeof applyVRSpawnForLevel === "function") {
+    console.log("🥽 [LEVEL 1] Applying VR spawn override after warp...");
+    applyVRSpawnForLevel(LEVEL_IDS.LEVEL1);
+  }
+} catch (e) {
+  console.warn("⚠️ [LEVEL 1][VR SPAWN] Failed to apply VR spawn override:", e);
+}
+
                   } else {
                     console.warn("⚠️ [LEVEL 1] No spawn data found in mapData, using default position");
                     // Fallback: Use default spawn position (60, 0.5, 15)
