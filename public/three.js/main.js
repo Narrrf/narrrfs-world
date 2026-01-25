@@ -10682,33 +10682,32 @@ function initializeGUISystem() {
 
 // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
 // ✅ IMPORTANT: Do NOT auto-start Level 1. Player uses the existing GUI
-//    (character select + level selector) the same way as on desktop.
 onStartVRSession: async () => {
   console.log('🥽 [VR] Starting VR session from main menu callback...');
-
+        
   try {
     const vrStarted = await startVRSession();
     if (vrStarted) {
-      console.log('✅ [VR] VR session started successfully (no auto-start).');
-      console.log('🎮 [VR] Player can now select character and level in VR.');
-
-      // Make sure the main menu is visible and pointer-lock is NOT active
-      if (guiSystem && typeof guiSystem.showMainMenu === 'function') {
-        guiSystem.showMainMenu();
-      }
-
-      // OPTIONAL TEST: show character selector right away in VR
-      // (This assumes GUI System exposes these methods)
-      if (guiSystem && typeof guiSystem.showCharacterSelectionMenu === 'function') {
-        guiSystem.showCharacterSelectionMenu();
-      }
-
-      // OPTIONAL TEST: expose level selector to *everyone* for VR debugging
-      if (guiSystem && typeof guiSystem.showLevelSelector === 'function') {
-        guiSystem.showLevelSelector();
-      }
+      console.log('✅ [VR] VR session started successfully from main menu, auto-starting Level 1 in VR after 1s');
+              
+      setTimeout(async () => {
+        try {
+          if (typeof startGame === 'function') {
+            await startGame(LEVEL_IDS.LEVEL1);
+          }
+          if (vrInputProvider && playerControls && typeof playerControls.registerInputProvider === 'function') {
+            playerControls.registerInputProvider(vrInputProvider);
+          }
+          if (currentVRSession && playerControls && typeof playerControls.enableVR === 'function') {
+            await playerControls.enableVR(currentVRSession);
+          }
+          console.log('✅ [VR] PlayerControls VR mode enabled after auto-start');
+        } catch (err) {
+          console.error('❌ [VR] Error auto-starting Level 1 in VR after main menu:', err);
+        }
+      }, 1000);
     } else {
-      console.error('❌ [VR] VR session failed to start');
+      console.error('❌ [VR] VR session failed to start from main menu');
     }
     return vrStarted;
   } catch (err) {
@@ -10716,6 +10715,7 @@ onStartVRSession: async () => {
     return false;
   }
 },
+
 
 
       onTogglePause: (paused) => {
@@ -33882,12 +33882,14 @@ function animate(timestamp, xrFrame) {
   }
 
 // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
+// 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
 // This must live INSIDE your animate() function, after playerPhysics but before rendering
-if (vrInputProvider && isVRSessionActive()) {
-  // 1) Update raw controller state from WebXR
+// 🥽 VR: controller + camera bridge (called every frame while XR is active)
+if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
+  // 1) Update raw controller state
   vrInputProvider.update(delta);
 
-  // 2) Sync VR movement into vrMovementFlags
+  // 2) Read movement from left stick → vrMovementFlags
   const vrMove = vrInputProvider.getMovementState && vrInputProvider.getMovementState();
   if (vrMove) {
     vrMovementFlags.forward  = vrMove.forward  || 0;
@@ -33905,35 +33907,36 @@ if (vrInputProvider && isVRSessionActive()) {
     vrMovementFlags.jump     = false;
   }
 
-  // 3) Rebuild aggregated movement (keyboard + joystick + VR)
+  // 3) Merge keyboard + joystick + VR → movement
   updateAggregatedMovement();
 
-  // 4) VR UI raycaster (for pointing at menu buttons in VR)
+  // 4) VR UI raycaster for menu interaction
   if (vrUIRaycaster && xrFrame) {
     vrUIRaycaster.update(xrFrame);
   }
 
-  // 5) Anchor camera to player position + headset pose
-  if (xrFrame && renderer && renderer.xr) {
+  // 5) Anchor camera to player capsule, use only headset rotation
+  if (xrFrame && renderer && renderer.xr && playerCollider && playerCollider.start && playerCollider.end) {
     try {
       const referenceSpace = renderer.xr.getReferenceSpace();
       if (referenceSpace) {
         const pose = xrFrame.getViewerPose(referenceSpace);
         if (pose) {
-          const transform   = pose.transform;
-          const position    = transform.position;
-          const orientation = transform.orientation;
+          const { orientation } = pose.transform;
 
-          // Base position = player world position (same as desktop)
-          const playerPos = getPlayerWorldPosition
-            ? getPlayerWorldPosition()
-            : (camera ? camera.position.clone() : new THREE.Vector3(0, 1.6, 0));
+          // center of capsule
+          const center = new THREE.Vector3().lerpVectors(
+            playerCollider.start,
+            playerCollider.end,
+            0.5
+          );
 
-          // Y offset: add headset height on top of player
+          const eyeHeight = 1.6; // standing mouse height in meters
+
           camera.position.set(
-            playerPos.x,
-            playerPos.y + position.y,
-            playerPos.z
+            center.x,
+            center.y + eyeHeight,
+            center.z
           );
 
           camera.quaternion.set(
@@ -33952,11 +33955,12 @@ if (vrInputProvider && isVRSessionActive()) {
     }
   }
 
-  // 6) Right thumbstick = smooth horizontal turn (for third-person mode)
+  // 6) Right stick → smooth turn
   const rotationInput = vrInputProvider.getRotationInput && vrInputProvider.getRotationInput();
   if (rotationInput && Math.abs(rotationInput.x) > 0) {
-    const turnSpeed = 2.0; // radians/sec
+    const turnSpeed = 2.0;
     thirdPersonCameraAngle.horizontal += rotationInput.x * turnSpeed * delta;
+
     if (playerCharacterModel) {
       playerCharacterModel.rotation.y = thirdPersonCameraAngle.horizontal;
     }
@@ -34047,9 +34051,7 @@ if (vrInputProvider && isVRSessionActive()) {
     }
   }
   _lastVRMenuPressed = vrMenuPressedNow;
-}  // end VR block
-
-
+} // end VR block
 
 // 🎮 UPDATE DESKTOP PLAYER CONTROLS MODULE (only if not in VR)
 if (playerControls && !isVRSessionActive()) {
