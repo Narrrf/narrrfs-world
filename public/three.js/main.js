@@ -406,6 +406,7 @@ const vrMovementFlags = {
 };
 
 // Aggregates keyboard + joystick + VR into the central 'movement' object
+// Aggregates keyboard + joystick + VR into the central 'movement' object
 function updateAggregatedMovement() {
   // Start with no movement
   let forwardValue  = 0;
@@ -413,25 +414,25 @@ function updateAggregatedMovement() {
   let leftValue     = 0;
   let rightValue    = 0;
 
-  // Keyboard → digital
+  // Keyboard (digital)
   if (keyboardMovement.forward)  forwardValue  = 1;
   if (keyboardMovement.backward) backwardValue = 1;
   if (keyboardMovement.left)     leftValue     = 1;
   if (keyboardMovement.right)    rightValue    = 1;
 
-  // Joystick flags (desktop/mobile virtual joystick)
+  // Joystick flags
   if (joystickMovementFlags.forward)  forwardValue  = Math.max(forwardValue, 1);
   if (joystickMovementFlags.backward) backwardValue = Math.max(backwardValue, 1);
   if (joystickMovementFlags.left)     leftValue     = Math.max(leftValue, 1);
   if (joystickMovementFlags.right)    rightValue    = Math.max(rightValue, 1);
 
-  // 🥽 VR analog values (0..1 from VRInputProvider via vrMovementFlags)
+  // 🥽 VR analog values (0..1)
   if (vrMovementFlags.forward  > 0) forwardValue  = Math.max(forwardValue,  vrMovementFlags.forward);
   if (vrMovementFlags.backward > 0) backwardValue = Math.max(backwardValue, vrMovementFlags.backward);
   if (vrMovementFlags.left     > 0) leftValue     = Math.max(leftValue,     vrMovementFlags.left);
   if (vrMovementFlags.right    > 0) rightValue    = Math.max(rightValue,    vrMovementFlags.right);
 
-  // Write back into the global 'movement' object
+  // Write into central movement object
   movement.forward  = forwardValue;
   movement.backward = backwardValue;
   movement.left     = leftValue;
@@ -440,19 +441,18 @@ function updateAggregatedMovement() {
   // Sprint: keyboard OR VR thumbstick click
   movement.sprint = !!keyboardMovement.sprint || !!vrMovementFlags.sprint;
 
-  // Vertical / fly controls (GOD mode)
+  // Fly / jump (GOD + normal)
   movement.flyUp   = !!keyboardMovement.flyUp;
   movement.flyDown = !!keyboardMovement.flyDown;
-
-  // Jump (if used anywhere)
-  movement.jump = !!(keyboardMovement.jump || vrMovementFlags.jump);
+  movement.jump    = !!(keyboardMovement.jump || vrMovementFlags.jump);
 }
-
 
 
 // 🚀 GOD MODE & ACCESS FLAGS (must be declared BEFORE any GUI/Options use them)
 var godMode = false;          // Use var to avoid TDZ issues inside callbacks
-var hasGodModeAccess = false; // Will be set after player details / roles are loaded
+// 🚨 TEST ONLY: force God Mode access so level selector + panels are visible
+// Remember to remove this before going live
+var hasGodModeAccess = true;
 
 // Try to restore God Mode from localStorage (optional, but keeps old behavior)
 try {
@@ -10679,17 +10679,34 @@ function initializeGUISystem() {
       onHideOptionsMenu: () => {
         hideOptionsMenu();
       },
+
 // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
-// ❗ IMPORTANT: Do NOT auto-start Level 1 here. Player should still
-// use the normal GUI (character selector + level selector), just in VR.
+// ✅ IMPORTANT: Do NOT auto-start Level 1. Player uses the existing GUI
+//    (character select + level selector) the same way as on desktop.
 onStartVRSession: async () => {
   console.log('🥽 [VR] Starting VR session from main menu callback...');
+
   try {
     const vrStarted = await startVRSession();
     if (vrStarted) {
       console.log('✅ [VR] VR session started successfully (no auto-start).');
       console.log('🎮 [VR] Player can now select character and level in VR.');
-      // DO NOT call startGame() here – player uses existing GUI
+
+      // Make sure the main menu is visible and pointer-lock is NOT active
+      if (guiSystem && typeof guiSystem.showMainMenu === 'function') {
+        guiSystem.showMainMenu();
+      }
+
+      // OPTIONAL TEST: show character selector right away in VR
+      // (This assumes GUI System exposes these methods)
+      if (guiSystem && typeof guiSystem.showCharacterSelectionMenu === 'function') {
+        guiSystem.showCharacterSelectionMenu();
+      }
+
+      // OPTIONAL TEST: expose level selector to *everyone* for VR debugging
+      if (guiSystem && typeof guiSystem.showLevelSelector === 'function') {
+        guiSystem.showLevelSelector();
+      }
     } else {
       console.error('❌ [VR] VR session failed to start');
     }
@@ -10699,6 +10716,7 @@ onStartVRSession: async () => {
     return false;
   }
 },
+
 
       onTogglePause: (paused) => {
         // CRITICAL FIX: Set flag to prevent circular call
@@ -33865,15 +33883,12 @@ function animate(timestamp, xrFrame) {
 
 // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
 // This must live INSIDE your animate() function, after playerPhysics but before rendering
-if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
-  // 1) Update raw controller state (sticks + buttons)
+if (vrInputProvider && isVRSessionActive()) {
+  // 1) Update raw controller state from WebXR
   vrInputProvider.update(delta);
 
-  // 1.5) Sync VR thumbstick/buttons into vrMovementFlags
-  const vrMove = vrInputProvider.getMovementState
-    ? vrInputProvider.getMovementState()
-    : null;
-
+  // 2) Sync VR movement into vrMovementFlags
+  const vrMove = vrInputProvider.getMovementState && vrInputProvider.getMovementState();
   if (vrMove) {
     vrMovementFlags.forward  = vrMove.forward  || 0;
     vrMovementFlags.backward = vrMove.backward || 0;
@@ -33890,36 +33905,35 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
     vrMovementFlags.jump     = false;
   }
 
-  // 2) Aggregate keyboard + joystick + VR into central `movement`
+  // 3) Rebuild aggregated movement (keyboard + joystick + VR)
   updateAggregatedMovement();
 
-  // 3) VR UI raycaster (for menu / buttons in VR, if enabled)
+  // 4) VR UI raycaster (for pointing at menu buttons in VR)
   if (vrUIRaycaster && xrFrame) {
     vrUIRaycaster.update(xrFrame);
   }
 
-  // 4) ✅ Camera anchored to playerCollider (ignore VR world translation)
+  // 5) Anchor camera to player position + headset pose
   if (xrFrame && renderer && renderer.xr) {
     try {
       const referenceSpace = renderer.xr.getReferenceSpace();
-      if (referenceSpace && playerCollider && playerCollider.start && playerCollider.end) {
+      if (referenceSpace) {
         const pose = xrFrame.getViewerPose(referenceSpace);
         if (pose) {
-          const orientation = pose.transform.orientation;
+          const transform   = pose.transform;
+          const position    = transform.position;
+          const orientation = transform.orientation;
 
-          // Center of the capsule
-          const center = new THREE.Vector3().lerpVectors(
-            playerCollider.start,
-            playerCollider.end,
-            0.5
-          );
+          // Base position = player world position (same as desktop)
+          const playerPos = getPlayerWorldPosition
+            ? getPlayerWorldPosition()
+            : (camera ? camera.position.clone() : new THREE.Vector3(0, 1.6, 0));
 
-          const eyeHeight = 1.6; // Meta Quest average eye height
-
+          // Y offset: add headset height on top of player
           camera.position.set(
-            center.x,
-            center.y + eyeHeight,
-            center.z
+            playerPos.x,
+            playerPos.y + position.y,
+            playerPos.z
           );
 
           camera.quaternion.set(
@@ -33930,41 +33944,35 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
           );
         }
       }
-    } catch (err) {
+    } catch (error) {
       if (!window.vrPoseErrorLogged) {
-        console.warn("⚠️ [VR POSE] Error updating camera from VR pose:", err);
+        console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
         window.vrPoseErrorLogged = true;
       }
     }
   }
 
-  // 5) Right-stick rotation (turning the player / camera)
-  const rotationInput = vrInputProvider.getRotationInput
-    ? vrInputProvider.getRotationInput()
-    : { x: 0, y: 0 };
-
-  if (Math.abs(rotationInput.x) > 0) {
+  // 6) Right thumbstick = smooth horizontal turn (for third-person mode)
+  const rotationInput = vrInputProvider.getRotationInput && vrInputProvider.getRotationInput();
+  if (rotationInput && Math.abs(rotationInput.x) > 0) {
     const turnSpeed = 2.0; // radians/sec
     thirdPersonCameraAngle.horizontal += rotationInput.x * turnSpeed * delta;
-
     if (playerCharacterModel) {
       playerCharacterModel.rotation.y = thirdPersonCameraAngle.horizontal;
     }
   }
 
-  // 6) VR JUMP (X / A)
-  const vrMovementForJump = vrMove ||
-    (vrInputProvider.getMovementState && vrInputProvider.getMovementState());
-  const vrJumpPressedNow = !!(vrMovementForJump && vrMovementForJump.jump);
-
+  // 7) VR JUMP: X/A → jump (edge-triggered)
+  const vrMovementForJump = vrMove || (vrInputProvider.getMovementState && vrInputProvider.getMovementState());
+  const vrJumpPressedNow  = !!(vrMovementForJump && vrMovementForJump.jump);
   if (vrJumpPressedNow && !_lastVRJumpPressed) {
     if (!godMode) {
-      handlePlayerJumpFromAnyInput(true); // true = VR jump
+      handlePlayerJumpFromAnyInput(true); // true = VR
     }
   }
   _lastVRJumpPressed = vrJumpPressedNow;
 
-  // 7) VR INTERACT (Grip = open chest)
+  // 8) VR INTERACT: Grip → open chest
   let vrInteractPressedNow = false;
   try {
     if (vrInputProvider.getButtonState) {
@@ -33973,16 +33981,15 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
         vrInputProvider.getButtonState("grip", "left");
     }
   } catch (e) {
-    // Ignore
+    // ignore
   }
 
   if (vrInteractPressedNow && !_lastVRInteractPressed) {
     if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
       try {
         nearestInteractableChest.open(async (chest) => {
-          // reward callback stays the same as desktop "E" key path
+          // existing reward logic stays as-is (see desktop onInteract)
         });
-
         if (guiSystem) {
           guiSystem.hideInteractionPrompt();
         }
@@ -33994,7 +34001,7 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
   }
   _lastVRInteractPressed = vrInteractPressedNow;
 
-  // 8) VR SHOOT (trigger)
+  // 9) VR SHOOT: trigger → fireWeapon
   let vrShootPressedNow = false;
   try {
     if (vrInputProvider.getShootState) {
@@ -34003,7 +34010,6 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
   } catch (e) {
     // ignore
   }
-
   if (vrShootPressedNow && !_lastVRShootPressed) {
     if (typeof fireWeapon === "function") {
       fireWeapon();
@@ -34013,31 +34019,35 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
   }
   _lastVRShootPressed = vrShootPressedNow;
 
-  // 9) VR MENU/Pause (Y/B)
+  // 10) VR MENU: Y/B toggles options (works in VR & desktop)
   let vrMenuPressedNow = false;
   try {
     if (vrInputProvider.getButtonState) {
       vrMenuPressedNow =
-        vrInputProvider.getButtonState("y", "left") ||
-        vrInputProvider.getButtonState("y", "right");
+        vrInputProvider.getButtonState('y', 'left') ||
+        vrInputProvider.getButtonState('y', 'right');
     }
   } catch (e) {
     // ignore
   }
 
   if (vrMenuPressedNow && !_lastVRMenuPressed) {
-    console.log("🥽 [VR MENU] Y button pressed - toggling pause/options menu");
-
-    // You can either toggle pause or open Options directly:
-    if (typeof togglePause === "function") {
-      togglePause(!isGamePaused);
-    } else if (typeof showOptionsMenu === "function") {
-      const isOpen = !!(optionsMenu && optionsMenu.style.display === "flex");
-      isOpen ? hideOptionsMenu() : showOptionsMenu();
+    console.log('🥽 [VR MENU] Y button pressed - toggling options menu');
+    if (typeof showOptionsMenu === 'function' && typeof hideOptionsMenu === 'function') {
+      const isOpen = !!(optionsMenu && optionsMenu.style.display === 'flex');
+      if (!isOpen) {
+        showOptionsMenu();
+        window.optionsMenuOpen = true;
+        console.log('🥽 [VR MENU] Options menu opened from VR');
+      } else {
+        hideOptionsMenu();
+        window.optionsMenuOpen = false;
+        console.log('🥽 [VR MENU] Options menu closed from VR');
+      }
     }
   }
   _lastVRMenuPressed = vrMenuPressedNow;
-} // end VR block
+}  // end VR block
 
 
 
