@@ -2627,7 +2627,15 @@ function syncVRSpawnToPlayerCollider() {
 	// 🥽 Install VR camera anchor so XR camera follows player collider
 installVRCameraAnchor();
 
-    
+        // 🥽 VR-SPAWN OVERRIDE ON SESSION START
+    // When entering VR after a level is already loaded (common on Quest),
+    // snap the player capsule to the VR-safe spawn for the current level.
+    if (typeof applyVRSpawnForLevel === "function") {
+      const levelId = currentLevel || LEVEL_IDS.LEVEL1;
+      console.log("🥽 [VR SPAWN] Applying VR spawn override on VR session start for level:", levelId);
+      applyVRSpawnForLevel(levelId);
+    }
+
     // Create and register VR input provider
     vrInputProvider = new VRInputProvider(session);
     if (vrInputProvider.enable()) {
@@ -35626,7 +35634,6 @@ if (playerControls && !isVRSessionActive()) {
   // CRITICAL: Wrap render in try-catch to prevent skeleton errors from crashing the game
   try {
     renderer.render(scene, camera);
-	requestAnimationFrame(animate);
   } catch (renderError) {
     // If render error is related to skeleton, try to fix it
     const renderMsg = String(renderError?.message || "");
