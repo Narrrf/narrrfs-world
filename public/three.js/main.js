@@ -2142,6 +2142,8 @@ let vrInputProvider = null;
 let vrUIRaycaster = null; // ✅ VR UI raycaster for menu interaction (January 20, 2026)
 let currentVRSession = null;
 let vrSessionStarting = false; // ✅ guard against double start
+// 🥽 XR camera hook - keeps track of original Three.js updateCamera
+let originalXRUpdateCamera = null;
 
 // 🥽 VR action state (for edge detection: "just pressed")
 let _lastVRJumpPressed = false;
@@ -2262,6 +2264,69 @@ function optimizeForVR() {
   
   return optimizations;
 }
+
+// 🥽 VR CAMERA FIX — anchor XR camera to player collider (position only)
+function installVRCameraAnchor() {
+  try {
+    if (!renderer || !renderer.xr || !renderer.xr.updateCamera) {
+      console.warn("⚠️ [VR CAMERA] Cannot install anchor: renderer.xr.updateCamera missing");
+      return;
+    }
+
+    // Already installed?
+    if (originalXRUpdateCamera) {
+      return;
+    }
+
+    // Keep original implementation
+    originalXRUpdateCamera = renderer.xr.updateCamera.bind(renderer.xr);
+
+    // Monkey-patch updateCamera
+    renderer.xr.updateCamera = function (camera, ...args) {
+      // 1️⃣ Let Three.js apply headset pose (orientation, XR internals)
+      originalXRUpdateCamera(camera, ...args);
+
+      // 2️⃣ Override POSITION only (keep XR rotation!)
+      try {
+        if (playerCollider && playerCollider.start && playerCollider.end) {
+          const center = new THREE.Vector3().lerpVectors(
+            playerCollider.start,
+            playerCollider.end,
+            0.5
+          );
+
+          const eyeHeight = 1.6;
+
+          camera.position.set(
+            center.x,
+            center.y + eyeHeight,
+            center.z
+          );
+        }
+      } catch (e) {
+        // Never crash XR loop
+        // console.warn("⚠️ [VR CAMERA] Anchor update failed:", e);
+      }
+    };
+
+    console.log("✅ [VR CAMERA] XR camera anchored to player collider");
+  } catch (e) {
+    console.warn("⚠️ [VR CAMERA] Failed to install anchor:", e);
+  }
+}
+
+function uninstallVRCameraAnchor() {
+  try {
+    if (originalXRUpdateCamera && renderer && renderer.xr) {
+      renderer.xr.updateCamera = originalXRUpdateCamera;
+      originalXRUpdateCamera = null;
+      console.log("🧹 [VR CAMERA] XR camera anchor removed");
+    }
+  } catch (e) {
+    console.warn("⚠️ [VR CAMERA] Failed to remove anchor:", e);
+  }
+}
+
 
 /**
  * Show VR loading indicator in 3D space
@@ -2405,7 +2470,7 @@ async function startVRSession() {
       }
     }
 
-    
+  
     // Request immersive VR session
     const session = await navigator.xr.requestSession('immersive-vr', {
       requiredFeatures: ['local-floor'], // Floor-level tracking
@@ -2413,9 +2478,12 @@ async function startVRSession() {
     });
     
     currentVRSession = session;
-    
+	
     // Enable VR in renderer
     await renderer.xr.setSession(session);
+	
+	// 🥽 Install VR camera anchor so XR camera follows player collider
+installVRCameraAnchor();
     
     // Create and register VR input provider
     vrInputProvider = new VRInputProvider(session);
@@ -2474,6 +2542,10 @@ async function startVRSession() {
  * End VR Session
  */
 function endVRSession() {
+	  console.log('🛑 [VR] VR session ended');
+  // 🧹 Remove camera anchor so desktop camera works normally again
+  uninstallVRCameraAnchor()
+  
   // Only call .end() if session is still active/presenting
   if (currentVRSession && renderer.xr.isPresenting) {
     try {
@@ -34007,18 +34079,7 @@ if (
 
         const eyeHeight = 1.6;
 
-        camera.position.set(
-          center.x,
-          center.y + eyeHeight,
-          center.z
-        );
-
-        camera.quaternion.set(
-          orientation.x,
-          orientation.y,
-          orientation.z,
-          orientation.w
-        );
+        // camera.position.set gone
       }
     }
   } catch (error) {
