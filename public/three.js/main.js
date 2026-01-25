@@ -10681,40 +10681,44 @@ function initializeGUISystem() {
       },
 
 // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
-// ✅ IMPORTANT: Do NOT auto-start Level 1. Player uses the existing GUI
+// ✅ VR MODE callback (main menu + in-game options use the same logic)
+// ❗ DO NOT auto-start any level here. Just start the XR session.
 onStartVRSession: async () => {
-  console.log('🥽 [VR] Starting VR session from main menu callback...');
-        
+  console.log('🥽 [VR] Starting VR session from GUI (unified callback)...');
+
   try {
     const vrStarted = await startVRSession();
+
     if (vrStarted) {
-      console.log('✅ [VR] VR session started successfully from main menu, auto-starting Level 1 in VR after 1s');
-              
-      setTimeout(async () => {
-        try {
-          if (typeof startGame === 'function') {
-            await startGame(LEVEL_IDS.LEVEL1);
+      console.log('✅ [VR] VR session started successfully; staying in menus for character + level selection');
+
+      // Optional: make sure GUI is visible in VR so you can pick character + level
+      try {
+        if (guiSystem) {
+          if (typeof guiSystem.showMainMenu === 'function') {
+            guiSystem.showMainMenu();
           }
-          if (vrInputProvider && playerControls && typeof playerControls.registerInputProvider === 'function') {
-            playerControls.registerInputProvider(vrInputProvider);
+          if (typeof guiSystem.showCharacterSelectionMenu === 'function') {
+            guiSystem.showCharacterSelectionMenu();
           }
-          if (currentVRSession && playerControls && typeof playerControls.enableVR === 'function') {
-            await playerControls.enableVR(currentVRSession);
+          if (typeof guiSystem.showLevelSelector === 'function') {
+            guiSystem.showLevelSelector();
           }
-          console.log('✅ [VR] PlayerControls VR mode enabled after auto-start');
-        } catch (err) {
-          console.error('❌ [VR] Error auto-starting Level 1 in VR after main menu:', err);
         }
-      }, 1000);
+      } catch (guiErr) {
+        console.warn('⚠️ [VR] Failed to reopen menus after VR start:', guiErr);
+      }
     } else {
-      console.error('❌ [VR] VR session failed to start from main menu');
+      console.error('❌ [VR] VR session failed to start from GUI');
     }
+
     return vrStarted;
   } catch (err) {
     console.error('❌ [VR] Error in VR MODE callback:', err);
     return false;
   }
 },
+
 
 
 
@@ -16047,33 +16051,55 @@ function getOptionsMenu() {
       
       // ✅ Keyboard support for VR button (January 20, 2026)
       // Allow Enter or Space key to activate button (standard keyboard navigation)
-      vrButton.addEventListener("keydown", async (event) => {
-        if (event.key === 'Enter' || event.key === ' ' || event.code === 'Space') {
-          event.preventDefault();
-          vrButton.click(); // Trigger the click handler
-        }
-      });
-      
-      vrButton.addEventListener("click", async (event) => {
-        event.preventDefault();
-        if (isVRSessionActive()) {
-          endVRSession();
-          vrButton.textContent = "Enter VR";
-          vrButton.style.background = "rgba(139, 92, 246, 0.3)";
-          vrButton.style.color = "#cbd5f5";
-          vrButton.style.border = "1px solid rgba(139, 92, 246, 0.5)";
-        } else {
-          const success = await startVRSession();
-          if (success) {
-            vrButton.textContent = "Exit VR";
-            vrButton.style.background = "rgba(239, 68, 68, 0.3)";
-            vrButton.style.color = "#ef4444";
-            vrButton.style.border = "1px solid rgba(239, 68, 68, 0.5)";
-            hideOptionsMenu(); // Close options menu when entering VR
-          }
-        }
-        updateVRButton();
-      });
+vrButton.addEventListener("click", async (event) => {
+  event.preventDefault();
+
+  // If VR is already running → exit
+  if (typeof isVRSessionActive === 'function' && isVRSessionActive()) {
+    endVRSession();
+
+    vrButton.textContent = "Enter VR";
+    vrButton.style.background = "rgba(139, 92, 246, 0.3)";
+    vrButton.style.color = "#cbd5f5";
+    vrButton.style.border = "1px solid rgba(139, 92, 246, 0.5)";
+
+    updateVRButton();
+    return;
+  }
+
+  // Otherwise: start VR via the SAME callback used by the main menu
+  let success = false;
+
+  try {
+    if (guiSystem &&
+        guiSystem.config &&
+        typeof guiSystem.config.onStartVRSession === 'function') {
+      success = await guiSystem.config.onStartVRSession();
+    } else if (typeof startVRSession === 'function') {
+      // Fallback: call startVRSession directly if config missing
+      console.warn('⚠️ [VR] guiSystem.config.onStartVRSession not found, using startVRSession() fallback');
+      success = await startVRSession();
+    } else {
+      console.error('❌ [VR] No VR start function available');
+      success = false;
+    }
+  } catch (err) {
+    console.error('❌ [VR] Error starting VR from options menu:', err);
+    success = false;
+  }
+
+  if (success) {
+    vrButton.textContent = "Exit VR";
+    vrButton.style.background = "rgba(239, 68, 68, 0.3)";
+    vrButton.style.color = "#ef4444";
+    vrButton.style.border = "1px solid rgba(239, 68, 68, 0.5)";
+
+    // Close options menu when entering VR (same UX as before)
+    hideOptionsMenu();
+  }
+
+  updateVRButton();
+});
       
       // ✅ Add focus outline for keyboard navigation (January 20, 2026)
       vrButton.addEventListener("focus", () => {
@@ -33883,9 +33909,12 @@ function animate(timestamp, xrFrame) {
 
 // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
 // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
-// This must live INSIDE your animate() function, after playerPhysics but before rendering
+// This must live INSIDE your animate() function, after player physics but before rendering
 // 🥽 VR: controller + camera bridge (called every frame while XR is active)
-if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
+if (vrInputProvider &&
+    typeof isVRSessionActive === "function" &&
+    isVRSessionActive()) {
+
   // 1) Update raw controller state
   vrInputProvider.update(delta);
 
@@ -33916,7 +33945,8 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
   }
 
   // 5) Anchor camera to player capsule, use only headset rotation
-  if (xrFrame && renderer && renderer.xr && playerCollider && playerCollider.start && playerCollider.end) {
+  //    NOTE: playerPosition is already computed earlier in animate()
+  if (xrFrame && renderer && renderer.xr && playerPosition) {
     try {
       const referenceSpace = renderer.xr.getReferenceSpace();
       if (referenceSpace) {
@@ -33924,19 +33954,13 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
         if (pose) {
           const { orientation } = pose.transform;
 
-          // center of capsule
-          const center = new THREE.Vector3().lerpVectors(
-            playerCollider.start,
-            playerCollider.end,
-            0.5
-          );
-
+          // Use playerPosition (center of collider) + fixed eye height
           const eyeHeight = 1.6; // standing mouse height in meters
 
           camera.position.set(
-            center.x,
-            center.y + eyeHeight,
-            center.z
+            playerPosition.x,
+            playerPosition.y + eyeHeight,
+            playerPosition.z
           );
 
           camera.quaternion.set(
@@ -33955,7 +33979,7 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
     }
   }
 
-  // 6) Right stick → smooth turn
+  // 6) Right stick → smooth turn (rotates character, not camera)
   const rotationInput = vrInputProvider.getRotationInput && vrInputProvider.getRotationInput();
   if (rotationInput && Math.abs(rotationInput.x) > 0) {
     const turnSpeed = 2.0;
@@ -33966,7 +33990,7 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
     }
   }
 
-  // 7) VR JUMP: X/A → jump (edge-triggered)
+  // 7) VR JUMP: X / A (edge-triggered)
   const vrMovementForJump = vrMove || (vrInputProvider.getMovementState && vrInputProvider.getMovementState());
   const vrJumpPressedNow  = !!(vrMovementForJump && vrMovementForJump.jump);
   if (vrJumpPressedNow && !_lastVRJumpPressed) {
@@ -33992,8 +34016,10 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
     if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
       try {
         nearestInteractableChest.open(async (chest) => {
-          // existing reward logic stays as-is (see desktop onInteract)
+          // use the same reward callback logic as desktop onInteract
+          // (your existing code stays the same)
         });
+
         if (guiSystem) {
           guiSystem.hideInteractionPrompt();
         }
@@ -34023,35 +34049,36 @@ if (vrInputProvider && isVRSessionActive && isVRSessionActive()) {
   }
   _lastVRShootPressed = vrShootPressedNow;
 
-  // 10) VR MENU: Y/B toggles options (works in VR & desktop)
+  // 10) VR MENU: Y/B toggles options (works in VR)
   let vrMenuPressedNow = false;
   try {
     if (vrInputProvider.getButtonState) {
       vrMenuPressedNow =
-        vrInputProvider.getButtonState('y', 'left') ||
-        vrInputProvider.getButtonState('y', 'right');
+        vrInputProvider.getButtonState("y", "left") ||
+        vrInputProvider.getButtonState("y", "right");
     }
   } catch (e) {
     // ignore
   }
 
   if (vrMenuPressedNow && !_lastVRMenuPressed) {
-    console.log('🥽 [VR MENU] Y button pressed - toggling options menu');
-    if (typeof showOptionsMenu === 'function' && typeof hideOptionsMenu === 'function') {
-      const isOpen = !!(optionsMenu && optionsMenu.style.display === 'flex');
+    console.log("🥽 [VR MENU] Y button pressed - toggling options menu");
+    if (typeof showOptionsMenu === "function" && typeof hideOptionsMenu === "function") {
+      const isOpen = !!(optionsMenu && optionsMenu.style.display === "flex");
       if (!isOpen) {
         showOptionsMenu();
         window.optionsMenuOpen = true;
-        console.log('🥽 [VR MENU] Options menu opened from VR');
+        console.log("🥽 [VR MENU] Options menu opened from VR");
       } else {
         hideOptionsMenu();
         window.optionsMenuOpen = false;
-        console.log('🥽 [VR MENU] Options menu closed from VR');
+        console.log("🥽 [VR MENU] Options menu closed from VR");
       }
     }
   }
   _lastVRMenuPressed = vrMenuPressedNow;
-} // end VR block
+} // 🔚 end VR block
+
 
 // 🎮 UPDATE DESKTOP PLAYER CONTROLS MODULE (only if not in VR)
 if (playerControls && !isVRSessionActive()) {
