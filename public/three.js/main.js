@@ -308,6 +308,83 @@ import {
   LEVEL_MAP_CONFIG
 } from "./config-system.js";
 
+// 🥽 VR-only spawn points per level (capsule center, not feet)
+const VR_SPAWN_POINTS = {
+  // Level 1: X 60, Z 15, Y 2.5 (ground + 1m approx)
+  [LEVEL_IDS.LEVEL1]: new THREE.Vector3(60, 2.5, 15),
+
+  // You can fill these later once Level 1 is confirmed:
+  // [LEVEL_IDS.LEVEL2]: new THREE.Vector3(...),
+  // [LEVEL_IDS.LEVEL3]: new THREE.Vector3(...),
+  // [LEVEL_IDS.LEVEL4]: new THREE.Vector3(...),
+  // [LEVEL_IDS.LEVEL5]: new THREE.Vector3(...),
+  // [LEVEL_IDS.LEVEL6]: new THREE.Vector3(...),
+};
+
+/**
+ * 🥽 Apply VR-only spawn for a given level.
+ *
+ * - Only runs when VR is actually active
+ * - Does NOT affect desktop spawn logic
+ * - Uses VR_SPAWN_POINTS[levelId] if present
+ */
+function applyVRSpawnForLevel(levelId) {
+  try {
+    // Only touch anything when in VR
+    const vrActive =
+      (renderer && renderer.xr && renderer.xr.isPresenting) ||
+      !!currentVRSession;
+
+    if (!vrActive) return;
+
+    const spawn = VR_SPAWN_POINTS[levelId];
+    if (!spawn) {
+      // No VR override for this level → do nothing
+      return;
+    }
+
+    if (!playerCollider || !playerCollider.start || !playerCollider.end) {
+      console.warn("🥽 [VR SPAWN] Player collider not ready, cannot apply VR spawn.");
+      return;
+    }
+
+    // Use current capsule height if available, fallback to 1.4
+    const start = playerCollider.start;
+    const end   = playerCollider.end;
+
+    let halfHeight = (end.y - start.y) * 0.5;
+    if (!isFinite(halfHeight) || halfHeight <= 0) {
+      halfHeight = 0.7; // default (capsule height ≈ 1.4)
+    }
+
+    // 'spawn.y' is treated as the capsule CENTER
+    const centerY = spawn.y;
+
+    // Position the capsule so that its center is at spawn.y
+    start.set(spawn.x, centerY - halfHeight, spawn.z);
+    end.set(spawn.x, centerY + halfHeight, spawn.z);
+
+    // If you have a separate visual player object, move it too
+    if (typeof playerObject !== "undefined" && playerObject) {
+      playerObject.position.set(spawn.x, centerY, spawn.z);
+    }
+
+    // Update the magenta debug sphere (collider center)
+    if (typeof playerColliderDebugMesh !== "undefined" && playerColliderDebugMesh) {
+      playerColliderDebugMesh.position.set(spawn.x, centerY, spawn.z);
+    }
+
+    console.log(`🥽 [VR SPAWN] Applied VR spawn for level ${levelId}:`, {
+      x: spawn.x,
+      y: centerY,
+      z: spawn.z
+    });
+  } catch (e) {
+    console.error("❌ [VR SPAWN] Failed to apply VR spawn:", e);
+  }
+}
+
+
 function isPlayerStandingOnBlock(block) {
   if (!block || !block.geometry || !block.geometry.parameters) return false;
   const { width = 1, height = 1, depth = 1 } = block.geometry.parameters;
@@ -2137,7 +2214,7 @@ async function checkVRSupport() {
 // Check VR support on initialization
 checkVRSupport();
 
-// VR Session Management
+// VR Session Management add updates functions add const add  etc 
 let vrInputProvider = null;
 let vrUIRaycaster = null; // ✅ VR UI raycaster for menu interaction (January 20, 2026)
 let currentVRSession = null;
@@ -2150,7 +2227,6 @@ let playerColliderDebugMarker = null;
 const TARGET_DESKTOP_FPS = 60;
 const DESKTOP_FRAME_DURATION = 1000 / TARGET_DESKTOP_FPS; // ~16.67ms
 let lastDesktopFrameTime = 0;
-
 
 // 🥽 VR action state (for edge detection: "just pressed")
 let _lastVRJumpPressed = false;
@@ -2644,8 +2720,19 @@ function endVRSession() {
  * Check if VR session is active
  */
 function isVRSessionActive() {
-  return currentVRSession !== null && renderer.xr.isPresenting;
+  try {
+    // Treat VR as active if the renderer is presenting OR we still have a valid XR session
+    if (renderer && renderer.xr && renderer.xr.isPresenting) {
+      return true;
+    }
+
+    // Fallback: if we still have a session handle, assume VR is active
+    return !!currentVRSession;
+  } catch (e) {
+    return false;
+  }
 }
+
 
 // CRITICAL: Use PCF shadows (faster than PCFSoft) for better performance
 // PCFSoft looks better but is slower - PCF is acceptable quality with better FPS
@@ -17909,6 +17996,10 @@ function buildLevel(mapData) {
     
     updateCameraPosition(0);
   }
+  
+    // 🥽 VR: if we're in VR, override spawn point with a safe VR point for this level
+  applyVRSpawnForLevel(currentLevel);
+
 
   // CRITICAL FIX: Always recreate cheese entity for Level 1 (cheese hunting)
   // Check if we're building Level 1 and need the cheese entity
@@ -34339,14 +34430,16 @@ function animate(timestamp, xrFrame) {
 // 🥽 UPDATE VR INPUT PROVIDER (if VR session active)
 // This must live INSIDE your animate() function, after player physics but before rendering
 // 🥽 VR: controller + camera bridge (called every frame while XR is active)
-if (vrInputProvider &&
-    typeof isVRSessionActive === "function" &&
-    isVRSessionActive()) {
-		
-		if (!window.vrBlockLogOnce) {
-  console.log("🥽 [VR] VR movement + actions block ACTIVE");
-  window.vrBlockLogOnce = true;
-}
+const xrFrameActive =
+  !!xrFrame &&          // WebXR is actually giving us a frame
+  renderer && renderer.xr;
+
+if (vrInputProvider && (xrFrameActive || (typeof isVRSessionActive === "function" && isVRSessionActive()))) {
+
+  if (!window.vrBlockLogOnce) {
+    console.log("🥽 [VR] VR movement + actions block ACTIVE (xrFrameActive:", xrFrameActive, ")");
+    window.vrBlockLogOnce = true;
+  }
 
   // 1) Update raw controller state
   vrInputProvider.update(delta);
@@ -45193,7 +45286,7 @@ function createRiddleProgressUI() {
 Object.assign(riddleProgressUI.style, {
   position: "fixed",
   bottom: "45%",                    // ⬆ move toward middle
-  left: "50%",
+  left: "15%",
   transform: "translate(-50%, 50%)",
   width: "260px",
   padding: "10px 12px",
@@ -45209,7 +45302,6 @@ Object.assign(riddleProgressUI.style, {
   gap: "8px"
 });
 
-  
   const title = document.createElement("div");
   title.textContent = "🧩 Cheese Temple Riddle";
   title.style.fontWeight = "700";
