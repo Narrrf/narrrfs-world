@@ -10959,14 +10959,26 @@ function initializeWeaponSystem() {
       isFirstPerson: () => isFirstPerson(),
       isGamePaused: () => isGamePaused || false,
       isPointerLocked: () => {
-        // Check pointer lock state via PlayerControls if available
+        // 🥽 In VR we don't use pointer lock, but we still want to allow shooting.
+        // Treat an active VR session as "locked" so WeaponSystem._canShoot() passes.
+        try {
+          if (typeof isVRSessionActive === 'function' && isVRSessionActive()) {
+            return true;
+          }
+        } catch (e) {
+          // If isVRSessionActive fails for some reason, fall through to desktop logic.
+        }
+
+        // 🖥️ Desktop / non-VR: require real pointer lock as before
         if (playerControls && typeof playerControls.getPointerLockControls === 'function') {
           const controls = playerControls.getPointerLockControls();
           return controls ? controls.isLocked : false;
         }
-        // Fallback to direct check
+
+        // Fallback to direct document-level check
         return document.pointerLockElement === renderer.domElement;
       },
+
       getPhoenixBoss: () => {
         // CRITICAL: Return phoenixBoss if it exists, otherwise null
         // This prevents errors when phoenixBoss hasn't been initialized yet
@@ -12317,16 +12329,16 @@ function getOptionsMenu() {
     graphicsQualitySection.appendChild(graphicsQualityToggle);
     
     // Current quality display
-    const currentQualityDisplay = document.createElement("div");
-    currentQualityDisplay.className = 'current-quality-display';
-    currentQualityDisplay.textContent = `Current: ${getGraphicsQualityLabel()}`;
-    Object.assign(currentQualityDisplay.style, {
-      fontSize: "14px",
-      color: "#cbd5f5",
-      fontStyle: "italic",
-      marginTop: "8px"
-    });
-    graphicsQualitySection.appendChild(currentQualityDisplay);
+const currentQualityDisplay = document.createElement("div");
+currentQualityDisplay.className = 'current-quality-display';
+
+// Use a safe fallback if getGraphicsQualityLabel is not defined
+const qualityLabelFn =
+  (typeof getGraphicsQualityLabel === 'function')
+    ? getGraphicsQualityLabel
+    : () => 'Auto';
+
+currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
     
     // Add device info for mobile
     if (isMobile && mobileOptimizer) {
@@ -16895,7 +16907,29 @@ function hideOptionsMenu() {
     console.log("🎮 [OPTIONS] Main menu restored after closing options");
     window.wasMainMenuOpen = false;
   }
-  
+
+function toggleOptionsMenu(forceState) {
+  // Ensure the options menu DOM exists
+  const menu = getOptionsMenu();
+  if (!menu) {
+    console.warn("⚙️ [OPTIONS] toggleOptionsMenu called but options menu could not be created.");
+    return;
+  }
+
+  const isVisible = menu.style.display === "flex";
+
+  // If a specific state is passed, force it; otherwise just toggle
+  const shouldShow = (typeof forceState === "boolean")
+    ? forceState
+    : !isVisible;
+
+  if (shouldShow) {
+    showOptionsMenu();
+  } else {
+    hideOptionsMenu();
+  }
+}
+ 
   // CRITICAL: Restore pause menu if we were paused before opening options
   if (window.wasPausedBeforeOptions) {
     const pauseMenuElement = getPauseMenu();
@@ -18288,156 +18322,162 @@ function playerCollisions() {
 }
 
 function updateCameraPosition(delta) {
-  // If options menu is open, ensure cursor stays visible
-  const optionsMenuOpen = window.optionsMenuOpen && optionsMenu && optionsMenu.style.display === "flex";
+  // 🥽 VR: camera is fully controlled by the WebXR block in animate()
+  // If we touch the camera here while a VR session is active, we'll fight
+  // with the XR pose and get jitter / desync.
+  try {
+    if (typeof isVRSessionActive === "function" && isVRSessionActive()) {
+      return;
+    }
+  } catch (e) {
+    // If anything goes weird, just fall back to normal behaviour
+  }
+
+  // If options menu is open, ensure cursor stays visible and pointer lock is released
+  const optionsMenuOpen =
+    window.optionsMenuOpen &&
+    optionsMenu &&
+    optionsMenu.style.display === "flex";
+
   if (optionsMenuOpen) {
     document.body.style.cursor = "default";
-    if (playerControls) {
-      playerControls.getPointerLockControls().unlock();
-    }
-  }
-  
-  if (isFirstPerson()) {
-    // First-person: camera at player head position
-    camera.position.copy(playerCollider.end);
-    
-    // CRITICAL: PointerLockControls automatically handles camera rotation via mousemove events
-    // The camera rotation is applied directly by PointerLockControls when pointer is locked
-    // PointerLockControls listens to mousemove events and modifies camera.rotation automatically
-    // 
-    // DO NOT modify camera.rotation or call camera.lookAt() in first-person mode
-    // Let PointerLockControls handle all rotation - it works automatically when pointer is locked
-    
-    // DEBUG: First-person mode logging disabled for performance
-    // Enable only when specifically debugging camera issues by uncommenting below
-    // WARNING: Enabling this will spam console and reduce FPS
-    /*
-    if (DEBUG_CAMERA && playerControls) {
+    if (playerControls && typeof playerControls.getPointerLockControls === "function") {
       const controls = playerControls.getPointerLockControls();
-      if (controls.isLocked && Math.random() < 0.01) { // 1% chance when enabled
-        console.log("🎮 [DEBUG] First-person mode:", {
-          pointerLocked: controls.isLocked,
-          cameraRotation: {
-            x: camera.rotation.x.toFixed(3),
-            y: camera.rotation.y.toFixed(3),
-            z: camera.rotation.z.toFixed(3)
-          }
-        });
+      if (controls && controls.unlock) {
+        controls.unlock();
       }
     }
-    */
-    
-    // Hide player model in first-person
+  }
+
+  if (isFirstPerson()) {
+    // First-person: camera at player head position
+    if (playerCollider && playerCollider.end) {
+      camera.position.copy(playerCollider.end);
+    }
+
+    // PointerLockControls handles rotation – DO NOT modify camera.rotation here.
+    // Just hide the third-person player model in first-person.
     if (playerModel) {
       playerModel.visible = false;
     }
-  } else {
-    // Third-person or Joystick view: disable PointerLockControls rotation, use our custom system
-    // The controls object still exists but we override camera position/rotation
-    // Show player model in third-person and joystick view
-    // Note: Visibility is managed by setCameraMode, but we ensure it's visible here as a safety check
-    // FIX: Only show simple playerModel if GLTF character is not active
-    if (!useGLTFCharacter) {
+
+    return;
+  }
+
+  // ─────────────────────────────────────────────
+  // Third-person / joystick view
+  // ─────────────────────────────────────────────
+
+  // Show the correct character model (simple capsule or GLTF character)
+  if (!useGLTFCharacter) {
     if (!playerModel) {
       createPlayerModel();
     }
     if (playerModel && !playerModel.visible) {
-      // Only set visible if it's not already visible (avoid unnecessary updates)
       playerModel.visible = true;
+    }
+  } else {
+    if (playerCharacterModel) {
+      if (!playerCharacterModel.visible) {
+        console.log("🎭 [CHARACTER] Forcing character visibility in 3rd person view");
+        playerCharacterModel.visible = true;
       }
-    } else {
-      // GLTF character is active - ensure it's visible in 3rd person
-      if (playerCharacterModel) {
-        if (!playerCharacterModel.visible) {
-          console.log("🎭 [CHARACTER] Forcing character visibility in 3rd person view");
-          playerCharacterModel.visible = true;
-        }
-        // Ensure character is in scene
-        if (!scene.children.includes(playerCharacterModel)) {
-          console.warn("⚠️ [CHARACTER] Character not in scene in 3rd person view! Adding it now...");
-          scene.add(playerCharacterModel);
-        }
+      if (!scene.children.includes(playerCharacterModel)) {
+        console.warn("⚠️ [CHARACTER] Character not in scene in 3rd person view! Adding it now...");
+        scene.add(playerCharacterModel);
       }
     }
-    
-    // Update camera angles from mouse movement or mobile joystick
-    // Use same sensitivity as first-person controls for consistency
-    const mouseSensitivity = 0.002; // Match PointerLockControls sensitivity
-    
-    if (document.pointerLockElement === renderer.domElement && !isJoystickView() && playerControls) {
-      // Third-person mode: use mouse for camera control
-      // Get mouse deltas from PlayerControls module
-      const mouseDelta = playerControls.getMouseDelta();
-      
-      // Horizontal rotation (yaw): rotate around player
-      thirdPersonCameraAngle.horizontal -= mouseDelta.x * mouseSensitivity;
-      
-      // Vertical rotation (pitch): look up/down
-      // Match first-person: mouse up = look up (decrease vertical angle in spherical coords)
-      // In spherical coordinates: negative vertical = look up, positive = look down
-      // Clamp to reasonable range: -85° to +85° (prevent gimbal lock)
-      thirdPersonCameraAngle.vertical = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, thirdPersonCameraAngle.vertical + mouseDelta.y * mouseSensitivity));
-      
-      // Reset deltas after use
-      playerControls.resetMouseDelta();
-    } else if ((isMobileLandscape() || window.enableDesktopJoysticks || isJoystickView()) && cameraJoystickActive) {
-      // Mobile/desktop camera control via joystick (works in third-person and joystick view)
-      const joystickSensitivity = 0.05;
-      // Horizontal rotation
-      thirdPersonCameraAngle.horizontal -= cameraJoystickDirection.x * joystickSensitivity;
-      // Vertical rotation: push up = look up (invert Y)
-      thirdPersonCameraAngle.vertical = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, thirdPersonCameraAngle.vertical - cameraJoystickDirection.y * joystickSensitivity));
-    }
-    
-    // Third-person or Joystick view: camera follows behind player using spherical coordinates
-    const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-    playerPos.y += 0.5; // Center of player body (eye level)
-    
-    // Use spherical coordinates for smooth camera movement
-    const horizontalAngle = thirdPersonCameraAngle.horizontal;
-    const verticalAngle = thirdPersonCameraAngle.vertical;
-    
-    // Calculate camera position using spherical coordinates
-    // horizontalAngle: rotation around Y axis (yaw)
-    // verticalAngle: pitch (up/down)
-    // thirdPersonCameraDistance: radius (distance from player)
-    const cameraOffsetX = Math.sin(horizontalAngle) * Math.cos(verticalAngle) * thirdPersonCameraDistance;
-    const cameraOffsetY = Math.sin(verticalAngle) * thirdPersonCameraDistance + thirdPersonCameraHeight;
-    const cameraOffsetZ = Math.cos(horizontalAngle) * Math.cos(verticalAngle) * thirdPersonCameraDistance;
-    
-    camera.position.set(
-      playerPos.x + cameraOffsetX,
-      playerPos.y + cameraOffsetY,
-      playerPos.z + cameraOffsetZ
-    );
-    
-    // Look at player position (camera always focuses on player center)
-    // This creates a smooth third-person follow camera
-    camera.lookAt(playerPos);
-    
-    // Update player model rotation to face movement direction (or camera direction if not moving)
-    // Only update simple playerModel if GLTF character is not active
-    // GLTF character rotation is handled in updatePlayerCharacter function
-    if (playerModel && !useGLTFCharacter) {
-      if (playerVelocity.lengthSq() > 0.01) {
-        const moveDir = new THREE.Vector3(playerVelocity.x, 0, playerVelocity.z).normalize();
-        const angle = Math.atan2(moveDir.x, moveDir.z);
-        playerModel.rotation.y = angle;
-      } else {
-        // Face camera direction when not moving
-        const cameraDir = new THREE.Vector3();
-        camera.getWorldDirection(cameraDir);
-        cameraDir.y = 0;
-        cameraDir.normalize();
-        if (cameraDir.lengthSq() > 0.1) {
-          const angle = Math.atan2(cameraDir.x, cameraDir.z);
-          playerModel.rotation.y = angle;
-        }
-      }
-    }
-    // GLTF character position and rotation are handled in updatePlayerCharacter function
   }
+
+  // Mouse / joystick orbit camera
+  const mouseSensitivity = 0.002; // Match PointerLockControls sensitivity
+
+  if (
+    document.pointerLockElement === renderer.domElement &&
+    !isJoystickView() &&
+    playerControls
+  ) {
+    // Third-person mode: use mouse for camera control
+    const mouseDelta = playerControls.getMouseDelta();
+
+    // Horizontal rotation (yaw): rotate around player
+    thirdPersonCameraAngle.horizontal -= mouseDelta.x * mouseSensitivity;
+
+    // Vertical rotation (pitch): look up/down, clamped
+    thirdPersonCameraAngle.vertical = Math.max(
+      -Math.PI / 2 + 0.1,
+      Math.min(
+        Math.PI / 2 - 0.1,
+        thirdPersonCameraAngle.vertical + mouseDelta.y * mouseSensitivity
+      )
+    );
+
+    playerControls.resetMouseDelta();
+  } else if (
+    (isMobileLandscape() || window.enableDesktopJoysticks || isJoystickView()) &&
+    cameraJoystickActive
+  ) {
+    // Mobile/desktop camera control via joystick
+    const joystickSensitivity = 0.05;
+    thirdPersonCameraAngle.horizontal -= cameraJoystickDirection.x * joystickSensitivity;
+    thirdPersonCameraAngle.vertical = Math.max(
+      -Math.PI / 2 + 0.1,
+      Math.min(
+        Math.PI / 2 - 0.1,
+        thirdPersonCameraAngle.vertical - cameraJoystickDirection.y * joystickSensitivity
+      )
+    );
+  }
+
+  // Third-person: camera follows behind player using spherical coordinates
+  if (!playerCollider || !playerCollider.start || !playerCollider.end) return;
+
+  const playerPos = new THREE.Vector3().lerpVectors(
+    playerCollider.start,
+    playerCollider.end,
+    0.5
+  );
+  playerPos.y += 0.5; // Center of player body (eye level)
+
+  const horizontalAngle = thirdPersonCameraAngle.horizontal;
+  const verticalAngle = thirdPersonCameraAngle.vertical;
+
+  const cameraOffsetX =
+    Math.sin(horizontalAngle) * Math.cos(verticalAngle) * thirdPersonCameraDistance;
+  const cameraOffsetY =
+    Math.sin(verticalAngle) * thirdPersonCameraDistance + thirdPersonCameraHeight;
+  const cameraOffsetZ =
+    Math.cos(horizontalAngle) * Math.cos(verticalAngle) * thirdPersonCameraDistance;
+
+  camera.position.set(
+    playerPos.x + cameraOffsetX,
+    playerPos.y + cameraOffsetY,
+    playerPos.z + cameraOffsetZ
+  );
+
+  // Look at player position
+  camera.lookAt(playerPos);
+
+  // Rotate simple player model to face movement or camera direction
+  if (playerModel && !useGLTFCharacter) {
+    if (playerVelocity.lengthSq() > 0.01) {
+      const moveDir = new THREE.Vector3(playerVelocity.x, 0, playerVelocity.z).normalize();
+      const angle = Math.atan2(moveDir.x, moveDir.z);
+      playerModel.rotation.y = angle;
+    } else {
+      const cameraDir = new THREE.Vector3();
+      camera.getWorldDirection(cameraDir);
+      cameraDir.y = 0;
+      cameraDir.normalize();
+      if (cameraDir.lengthSq() > 0.1) {
+        const angle = Math.atan2(cameraDir.x, cameraDir.z);
+        playerModel.rotation.y = angle;
+      }
+    }
+  }
+  // GLTF character rotation is handled elsewhere (updatePlayerCharacter)
 }
+
 
 function createPlayerModel() {
   if (playerModel) {
@@ -33946,32 +33986,42 @@ if (vrInputProvider &&
 
   // 5) Anchor camera to player capsule, use only headset rotation
   //    NOTE: playerPosition is already computed earlier in animate()
-  if (xrFrame && renderer && renderer.xr && playerPosition) {
-    try {
-      const referenceSpace = renderer.xr.getReferenceSpace();
-      if (referenceSpace) {
-        const pose = xrFrame.getViewerPose(referenceSpace);
-        if (pose) {
-          const { orientation } = pose.transform;
+if (
+  xrFrame &&
+  renderer && renderer.xr &&
+  playerCollider && playerCollider.start && playerCollider.end
+) {
+  try {
+    const referenceSpace = renderer.xr.getReferenceSpace();
+    if (referenceSpace) {
+      const pose = xrFrame.getViewerPose(referenceSpace);
+      if (pose) {
+        const { orientation } = pose.transform;
 
-          // Use playerPosition (center of collider) + fixed eye height
-          const eyeHeight = 1.6; // standing mouse height in meters
+        // Recompute center directly from collider every frame
+        const center = new THREE.Vector3().lerpVectors(
+          playerCollider.start,
+          playerCollider.end,
+          0.5
+        );
 
-          camera.position.set(
-            playerPosition.x,
-            playerPosition.y + eyeHeight,
-            playerPosition.z
-          );
+        const eyeHeight = 1.6;
 
-          camera.quaternion.set(
-            orientation.x,
-            orientation.y,
-            orientation.z,
-            orientation.w
-          );
-        }
+        camera.position.set(
+          center.x,
+          center.y + eyeHeight,
+          center.z
+        );
+
+        camera.quaternion.set(
+          orientation.x,
+          orientation.y,
+          orientation.z,
+          orientation.w
+        );
       }
-    } catch (error) {
+    }
+  } catch (error) {
       if (!window.vrPoseErrorLogged) {
         console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
         window.vrPoseErrorLogged = true;
@@ -34000,59 +34050,59 @@ if (vrInputProvider &&
   }
   _lastVRJumpPressed = vrJumpPressedNow;
 
-  // 8) VR INTERACT: Grip → open chest
-  let vrInteractPressedNow = false;
-  try {
-    if (vrInputProvider.getButtonState) {
-      vrInteractPressedNow =
-        vrInputProvider.getButtonState("grip", "right") ||
-        vrInputProvider.getButtonState("grip", "left");
-    }
-  } catch (e) {
-    // ignore
+// 8) VR INTERACT: Grip → open chest
+let vrInteractPressedNow = false;
+try {
+  if (vrInputProvider && vrInputProvider.getButtonState) {
+    vrInteractPressedNow =
+      vrInputProvider.getButtonState("grip", "right") ||
+      vrInputProvider.getButtonState("grip", "left");
   }
+} catch (e) {
+  // ignore
+}
 
-  if (vrInteractPressedNow && !_lastVRInteractPressed) {
-    if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
-      try {
-        nearestInteractableChest.open(async (chest) => {
-          // use the same reward callback logic as desktop onInteract
-          // (your existing code stays the same)
-        });
+if (vrInteractPressedNow && !_lastVRInteractPressed) {
+  if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
+    try {
+      nearestInteractableChest.open(async (chest) => {
+        // same reward callback as desktop onInteract
+      });
 
-        if (guiSystem) {
-          guiSystem.hideInteractionPrompt();
-        }
-        nearestInteractableChest = null;
-      } catch (err) {
-        console.error("❌ [VR INTERACT] Failed to open chest from VR:", err);
+      if (guiSystem) {
+        guiSystem.hideInteractionPrompt();
       }
+      nearestInteractableChest = null;
+    } catch (err) {
+      console.error("❌ [VR INTERACT] Failed to open chest from VR:", err);
     }
   }
-  _lastVRInteractPressed = vrInteractPressedNow;
+}
+_lastVRInteractPressed = vrInteractPressedNow;
 
-  // 9) VR SHOOT: trigger → fireWeapon
-  let vrShootPressedNow = false;
-  try {
-    if (vrInputProvider.getShootState) {
-      vrShootPressedNow = vrInputProvider.getShootState();
-    }
-  } catch (e) {
-    // ignore
-  }
-  if (vrShootPressedNow && !_lastVRShootPressed) {
-    if (typeof fireWeapon === "function") {
-      fireWeapon();
-    } else if (weaponSystem && typeof weaponSystem.fire === "function") {
-      weaponSystem.fire();
-    }
-  }
-  _lastVRShootPressed = vrShootPressedNow;
 
-  // 10) VR MENU: Y/B toggles options (works in VR)
+// 9) VR SHOOT: trigger → fireWeapon
+let vrShootPressedNow = false;
+try {
+  if (vrInputProvider && vrInputProvider.getShootState) {
+    vrShootPressedNow = vrInputProvider.getShootState();
+  }
+} catch (e) {
+  // ignore
+}
+
+if (vrShootPressedNow && !_lastVRShootPressed) {
+  if (typeof fireWeapon === "function") {
+    fireWeapon();
+  } else if (weaponSystem && typeof weaponSystem.fire === "function") {
+    weaponSystem.fire();
+  }
+}
+_lastVRShootPressed = vrShootPressedNow;
+ // 10) VR MENU: Y/B toggles options (works in VR)
   let vrMenuPressedNow = false;
   try {
-    if (vrInputProvider.getButtonState) {
+    if (vrInputProvider && vrInputProvider.getButtonState) {
       vrMenuPressedNow =
         vrInputProvider.getButtonState("y", "left") ||
         vrInputProvider.getButtonState("y", "right");
@@ -34063,17 +34113,8 @@ if (vrInputProvider &&
 
   if (vrMenuPressedNow && !_lastVRMenuPressed) {
     console.log("🥽 [VR MENU] Y button pressed - toggling options menu");
-    if (typeof showOptionsMenu === "function" && typeof hideOptionsMenu === "function") {
-      const isOpen = !!(optionsMenu && optionsMenu.style.display === "flex");
-      if (!isOpen) {
-        showOptionsMenu();
-        window.optionsMenuOpen = true;
-        console.log("🥽 [VR MENU] Options menu opened from VR");
-      } else {
-        hideOptionsMenu();
-        window.optionsMenuOpen = false;
-        console.log("🥽 [VR MENU] Options menu closed from VR");
-      }
+    if (typeof toggleOptionsMenu === "function") {
+      toggleOptionsMenu();
     }
   }
   _lastVRMenuPressed = vrMenuPressedNow;
@@ -35386,14 +35427,32 @@ function applyGraphicsQuality(quality) {
 /**
  * Get current graphics quality label for display
  */
+/**
+ * Get current graphics quality label for display
+ */
 function getGraphicsQualityLabel() {
-  if (graphicsQuality === 'auto' && mobileOptimizer) {
-    const tier = mobileOptimizer.getDeviceTier();
-    const tierMap = { 'low-end': 'Low', 'mid-tier': 'Medium', 'high-end': 'High' };
-    return `Auto (${tierMap[tier] || 'Medium'})`;
+  try {
+    if (graphicsQuality === 'auto' && typeof mobileOptimizer !== 'undefined' && mobileOptimizer) {
+      const tier = mobileOptimizer.getDeviceTier();
+      const tierMap = {
+        'low-end':  'Low',
+        'mid-tier': 'Medium',
+        'high-end': 'High'
+      };
+      return `Auto (${tierMap[tier] || 'Medium'})`;
+    }
+
+    if (typeof graphicsQualitySettings !== 'undefined' && graphicsQualitySettings) {
+      return graphicsQualitySettings[graphicsQuality]?.label || 'Auto';
+    }
+  } catch (e) {
+    console.warn('⚠️ [GRAPHICS] Failed to compute graphics quality label:', e);
   }
-  return graphicsQualitySettings[graphicsQuality]?.label || 'Auto';
+
+  // Fallback
+  return 'Auto';
 }
+
 
 // ============================================================================
 // ⚙️ GRAPHICS QUALITY BUTTON UPDATE (January 19, 2026)
@@ -35408,22 +35467,31 @@ function updateGraphicsQualityButtons() {
   const buttons = optionsMenu._graphicsQualityButtons;
   const qualityOptions = ['low', 'medium', 'high', 'auto'];
   
-  qualityOptions.forEach(quality => {
+  // Highlight the active quality button
+  qualityOptions.forEach((quality) => {
     const btn = buttons[quality];
     if (btn) {
       const isActive = graphicsQuality === quality;
-      btn.style.background = isActive ? 'rgba(255, 224, 102, 0.3)' : 'rgba(255, 255, 255, 0.1)';
+      btn.style.background = isActive
+        ? 'rgba(255, 224, 102, 0.3)'
+        : 'rgba(255, 255, 255, 0.1)';
       btn.style.color = isActive ? '#ffe066' : '#cbd5f5';
     }
   });
   
-  // Update current quality display
+  // Update current quality display (label text)
   if (optionsMenu._currentQualityDisplay) {
-    optionsMenu._currentQualityDisplay.textContent = `Current: ${getGraphicsQualityLabel()}`;
+    const qualityLabelFn =
+      (typeof getGraphicsQualityLabel === 'function')
+        ? getGraphicsQualityLabel
+        : () => 'Auto';
+    
+    optionsMenu._currentQualityDisplay.textContent =
+      `Current: ${qualityLabelFn()}`;
   }
-  
-  console.log(`🎨 [OPTIONS] Graphics quality buttons updated to: ${graphicsQuality}`);
 }
+
+
 
 // Note: showOptionsMenu() and hideOptionsMenu() already exist at lines 16359 and 16410
 // They use the existing getOptionsMenu() which now includes graphics quality toggle
@@ -45523,99 +45591,6 @@ function updateRiddleProgressUI() {
 }
 
 if (typeof window !== "undefined") {
-  window.updateRiddleProgressUI = updateRiddleProgressUI;
-}
-
-// Show riddle completion message
-function showRiddleCompletionMessage() {
-  const message = document.createElement("div");
-  Object.assign(message.style, {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    padding: "24px 32px",
-    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
-    border: "3px solid #ffe066",
-    borderRadius: "15px",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "20px",
-    fontWeight: "700",
-    textAlign: "center",
-    zIndex: "10000",
-    boxShadow: "0 0 30px rgba(255, 224, 102, 0.5)"
-  });
-  message.textContent = "🧩 RIDDLE SOLVED! 🧀";
-  
-  document.body.appendChild(message);
-  
-  setTimeout(() => {
-    message.style.opacity = "0";
-    message.style.transition = "opacity 0.5s";
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 500);
-  }, 3000);
-}
-
-function queueCheeseCapture(payload) {
-  cheeseCaptureQueue.push(payload);
-  debugState.pending = cheeseCaptureQueue.length + (cheeseCaptureInFlight ? 1 : 0);
-  refreshDebugOverlay();
-  console.debug("🧀 Queue capture", { pending: cheeseCaptureQueue.length, payload });
-  processCheeseCaptureQueue();
-}
-
-async function processCheeseCaptureQueue() {
-  if (cheeseCaptureInFlight || cheeseCaptureQueue.length === 0) return;
-
-  cheeseCaptureInFlight = true;
-  const payload = cheeseCaptureQueue.shift();
-  debugState.pending = cheeseCaptureQueue.length + 1;
-  refreshDebugOverlay();
-
-  try {
-    const response = await fetch(CHEESE_CAPTURE_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
-
-    if (!response.ok || !result.success) {
-      console.warn("Cheese Hunt capture rejected", result);
-      debugState.lastResponse = { success: false, details: result };
-    } else if (result.data && typeof result.data.total_captures === "number") {
-      playerScore = result.data.total_captures;
-      updateCheeseHud(playerScore);
-      debugState.lastResponse = { success: true, total: playerScore };
-      if (typeof result.data.total_ds_poinc === "number") {
-        currentTotalDspoinc = result.data.total_ds_poinc;
-        window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
-        if (isGamePaused) updatePausePlayerInfo();
-      }
-    }
-  } catch (error) {
-    console.error("Cheese Hunt capture failed", error);
-    debugState.lastResponse = { success: false, error: error?.message || error };
-  } finally {
-    cheeseCaptureInFlight = false;
-    debugState.pending = cheeseCaptureQueue.length;
-    refreshDebugOverlay();
-    if (cheeseCaptureQueue.length > 0) {
-      setTimeout(processCheeseCaptureQueue, 200);
-    }
-  }
-}
-
-// 🚀 AUTOMATIC ASSET PRELOADING ON PAGE LOAD (January 9, 2026)
-// Professional mobile & desktop optimized preload system with perfect resilience
-// Runs automatically when page loads to improve initial load times and reduce stutter
-
-if (typeof window !== "undefined") {
   // Wait for DOM and all dependencies to be ready
   const initializePreloadSystem = async () => {
     // Wait for THREE.js and all loaders to be available
@@ -45630,7 +45605,7 @@ if (typeof window !== "undefined") {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     try {
-      console.log("🚀 [PRELOAD] Initializing automatic asset preload system...");
+      console.log("🚀 [PRELOAD] Initializing automatic asset preload system.");
       const preloadResult = await preloadCriticalAssets();
       
       if (preloadResult && preloadResult.success) {
@@ -45679,10 +45654,10 @@ if (typeof window !== "undefined") {
       
       // Toggle VR mode
       if (isVRSessionActive()) {
-        console.log('🥽 [VR] Ending VR session via keyboard shortcut...');
+        console.log('🥽 [VR] Ending VR session via keyboard shortcut.');
         endVRSession();
       } else if (vrSupported) {
-        console.log('🥽 [VR] Starting VR session via keyboard shortcut...');
+        console.log('🥽 [VR] Starting VR session via keyboard shortcut.');
         startVRSession().then((success) => {
           if (success) {
             console.log('✅ [VR] VR session started successfully via keyboard');
@@ -45708,7 +45683,7 @@ if (typeof window !== "undefined") {
         const isVRHeadsetConnected = await navigator.xr.isSessionSupported('immersive-vr');
         
         if (isVRHeadsetConnected && !isVRSessionActive()) {
-          console.log('🥽 [VR] VR headset detected! Auto-prompting for VR mode...');
+          console.log('🥽 [VR] VR headset detected! Auto-prompting for VR mode.');
           
           // Create auto-prompt overlay
           const autoPrompt = document.createElement('div');
@@ -45820,4 +45795,7 @@ if (typeof window !== "undefined") {
       }
     }
   });
-}}
+ }
+}
+ 
+ // ⬅️ FINAL closing brace
