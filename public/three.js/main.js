@@ -10284,6 +10284,158 @@ let worldAxesHelper = null;
 let playerAxesHelper = null;
 let debugHelpersMenu = null;
 
+// ============================================================================
+// 🔎 IN-GAME DEBUG CONSOLE OVERLAY (VR-FRIENDLY)
+// ============================================================================
+
+let debugConsoleOverlay = null;
+let debugConsoleMessages = [];
+let debugConsolePatched = false;
+
+const MAX_DEBUG_CONSOLE_MESSAGES = 200;
+
+/**
+ * Create the floating debug console overlay DOM element.
+ * Works in desktop + VR (because it's just plain DOM).
+ */
+function createDebugConsoleOverlay() {
+  if (debugConsoleOverlay && document.body.contains(debugConsoleOverlay)) {
+    return debugConsoleOverlay;
+  }
+
+  const container = document.createElement("div");
+  container.id = "debugConsoleOverlay";
+  Object.assign(container.style, {
+    position: "fixed",
+    bottom: "80px",          // slightly above Debug Helpers menu
+    right: "10px",
+    width: "420px",
+    maxHeight: "45vh",
+    overflowY: "auto",
+    padding: "8px 10px",
+    background: "rgba(0, 0, 0, 0.8)",
+    color: "#00ff99",
+    fontFamily: "monospace",
+    fontSize: "11px",
+    lineHeight: "1.3",
+    borderRadius: "6px",
+    zIndex: "10002",         // above joysticks + menus
+    pointerEvents: "auto"
+  });
+
+  const title = document.createElement("div");
+  title.textContent = "Debug Console (last messages)";
+  Object.assign(title.style, {
+    fontWeight: "bold",
+    marginBottom: "4px",
+    color: "#ffffff"
+  });
+
+  const content = document.createElement("pre");
+  content.id = "debugConsoleContent";
+  Object.assign(content.style, {
+    margin: "0",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word"
+  });
+
+  container.appendChild(title);
+  container.appendChild(content);
+
+  container.style.display = "none"; // hidden by default
+
+  document.body.appendChild(container);
+  debugConsoleOverlay = container;
+
+  return container;
+}
+
+/**
+ * Append a message to the overlay.
+ */
+function appendToDebugConsole(message, type = "log") {
+  if (!debugConsoleOverlay) {
+    createDebugConsoleOverlay();
+  }
+
+  const timestamp = new Date().toISOString().split("T")[1].split(".")[0]; // HH:MM:SS
+  const prefix =
+    type === "error" ? "❌" :
+    type === "warn"  ? "⚠️" :
+    type === "info"  ? "ℹ️" :
+                       "🔍";
+
+  const line = `[${timestamp}] ${prefix} ${message}`;
+  debugConsoleMessages.push(line);
+
+  // Trim buffer
+  if (debugConsoleMessages.length > MAX_DEBUG_CONSOLE_MESSAGES) {
+    debugConsoleMessages.splice(
+      0,
+      debugConsoleMessages.length - MAX_DEBUG_CONSOLE_MESSAGES
+    );
+  }
+
+  const content = document.getElementById("debugConsoleContent");
+  if (content) {
+    content.textContent = debugConsoleMessages.join("\n");
+    content.scrollTop = content.scrollHeight; // auto-scroll to bottom
+  }
+}
+
+/**
+ * Patch console.log / warn / error / info to also mirror into overlay.
+ */
+function installConsoleMirror() {
+  if (debugConsolePatched) return;
+  debugConsolePatched = true;
+
+  const originalLog   = console.log;
+  const originalWarn  = console.warn;
+  const originalError = console.error;
+  const originalInfo  = console.info || console.log;
+
+  console.log = function (...args) {
+    try {
+      appendToDebugConsole(args.map(String).join(" "), "log");
+    } catch (e) {}
+    originalLog.apply(console, args);
+  };
+
+  console.warn = function (...args) {
+    try {
+      appendToDebugConsole(args.map(String).join(" "), "warn");
+    } catch (e) {}
+    originalWarn.apply(console, args);
+  };
+
+  console.error = function (...args) {
+    try {
+      appendToDebugConsole(args.map(String).join(" "), "error");
+    } catch (e) {}
+    originalError.apply(console, args);
+  };
+
+  console.info = function (...args) {
+    try {
+      appendToDebugConsole(args.map(String).join(" "), "info");
+    } catch (e) {}
+    originalInfo.apply(console, args);
+  };
+
+  console.log("✅ [DEBUG CONSOLE] Console mirror installed (log/warn/error/info)");
+}
+
+/**
+ * Show / hide overlay from UI (Debug Helper checkbox).
+ */
+function toggleDebugConsoleOverlay(show) {
+  createDebugConsoleOverlay();
+  installConsoleMirror();
+
+  debugConsoleOverlay.style.display = show ? "block" : "none";
+}
+
 function createDebugHelpersMenu() {
   if (debugHelpersMenu) return debugHelpersMenu;
   
@@ -10357,17 +10509,17 @@ function createDebugHelpersMenu() {
   });
   
   shadowCameraCheckbox.addEventListener("change", (e) => {
-    e.stopPropagation(); // Prevent event from bubbling
+    e.stopPropagation();
     toggleShadowCameraHelper(e.target.checked);
   });
   
   shadowCameraCheckbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent click from triggering game actions
+    e.stopPropagation();
   });
   
   shadowCameraLabel.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent click from triggering game actions
-    shadowCameraCheckbox.click(); // Trigger checkbox click
+    e.stopPropagation();
+    shadowCameraCheckbox.click();
   });
   
   shadowCameraRow.appendChild(shadowCameraCheckbox);
@@ -10399,17 +10551,17 @@ function createDebugHelpersMenu() {
   });
   
   worldAxesCheckbox.addEventListener("change", (e) => {
-    e.stopPropagation(); // Prevent event from bubbling
+    e.stopPropagation();
     toggleWorldAxesHelper(e.target.checked);
   });
   
   worldAxesCheckbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent click from triggering game actions
+    e.stopPropagation();
   });
   
   worldAxesLabel.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent click from triggering game actions
-    worldAxesCheckbox.click(); // Trigger checkbox click
+    e.stopPropagation();
+    worldAxesCheckbox.click();
   });
   
   worldAxesRow.appendChild(worldAxesCheckbox);
@@ -10441,31 +10593,75 @@ function createDebugHelpersMenu() {
   });
   
   playerAxesCheckbox.addEventListener("change", (e) => {
-    e.stopPropagation(); // Prevent event from bubbling
+    e.stopPropagation();
     togglePlayerAxesHelper(e.target.checked);
   });
   
   playerAxesCheckbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent click from triggering game actions
+    e.stopPropagation();
   });
   
   playerAxesLabel.addEventListener("click", (e) => {
-    e.stopPropagation(); // Prevent click from triggering game actions
-    playerAxesCheckbox.click(); // Trigger checkbox click
+    e.stopPropagation();
+    playerAxesCheckbox.click();
   });
   
   playerAxesRow.appendChild(playerAxesCheckbox);
   playerAxesRow.appendChild(playerAxesLabel);
+
+  // 🔹 Debug Console checkbox (4th button)
+  const debugConsoleRow = document.createElement("div");
+  Object.assign(debugConsoleRow.style, {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px"
+  });
+
+  const debugConsoleCheckbox = document.createElement("input");
+  debugConsoleCheckbox.type = "checkbox";
+  debugConsoleCheckbox.id = "debugConsoleToggle";
+  Object.assign(debugConsoleCheckbox.style, {
+    width: "16px",
+    height: "16px",
+    cursor: "pointer"
+  });
+
+  const debugConsoleLabel = document.createElement("label");
+  debugConsoleLabel.htmlFor = "debugConsoleToggle";
+  debugConsoleLabel.textContent = "Debug Console (console.log)";
+  Object.assign(debugConsoleLabel.style, {
+    cursor: "pointer",
+    userSelect: "none"
+  });
+
+  debugConsoleCheckbox.addEventListener("change", (e) => {
+    e.stopPropagation();
+    toggleDebugConsoleOverlay(e.target.checked);
+  });
+
+  debugConsoleCheckbox.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  debugConsoleLabel.addEventListener("click", (e) => {
+    e.stopPropagation();
+    debugConsoleCheckbox.click();
+  });
+
+  debugConsoleRow.appendChild(debugConsoleCheckbox);
+  debugConsoleRow.appendChild(debugConsoleLabel);
   
   menu.appendChild(header);
   menu.appendChild(shadowCameraRow);
   menu.appendChild(worldAxesRow);
   menu.appendChild(playerAxesRow);
+  menu.appendChild(debugConsoleRow); // 🆕 4th row
   
   document.body.appendChild(menu);
   debugHelpersMenu = menu;
   return menu;
 }
+
 
 function toggleShadowCameraHelper(show) {
   if (!skySystem || !skySystem.skybox || !skySystem.skybox.sun) {
@@ -44913,7 +45109,7 @@ async function completeRiddle() {
   }
 }
 
-// Show riddle reward notification
+// Show riddle note reward notification
 
 // Create progress UI for riddle
 function createRiddleProgressUI() {
@@ -44921,24 +45117,25 @@ function createRiddleProgressUI() {
   
   riddleProgressUI = document.createElement("div");
   riddleProgressUI.id = "riddleProgress";
-  Object.assign(riddleProgressUI.style, {
-    position: "fixed",
-    bottom: "100px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "300px",
-    padding: "12px 16px",
-    background: "rgba(14, 12, 20, 0.9)",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    borderRadius: "10px",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "14px",
-    zIndex: "1001",
-    display: "none",
-    flexDirection: "column",
-    gap: "8px"
-  });
+Object.assign(riddleProgressUI.style, {
+  position: "fixed",
+  bottom: "45%",                    // ⬆ move toward middle
+  left: "50%",
+  transform: "translate(-50%, 50%)",
+  width: "260px",
+  padding: "10px 12px",
+  background: "rgba(14, 12, 20, 0.9)",
+  border: "2px solid rgba(255, 224, 102, 0.5)",
+  borderRadius: "10px",
+  color: "#ffe066",
+  fontFamily: "Montserrat, Arial, sans-serif",
+  fontSize: "13px",
+  zIndex: "1001",
+  display: "none",
+  flexDirection: "column",
+  gap: "8px"
+});
+
   
   const title = document.createElement("div");
   title.textContent = "🧩 Cheese Temple Riddle";
