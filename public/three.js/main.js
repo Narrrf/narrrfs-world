@@ -310,15 +310,12 @@ import {
 
 // 🥽 VR-only spawn points per level (capsule center, not feet)
 const VR_SPAWN_POINTS = {
-  // Level 1: X 60, Z 15, Y 2.5 (ground + 1m approx)
   [LEVEL_IDS.LEVEL1]: new THREE.Vector3(60, 2.5, 15),
-
-  // You can fill these later once Level 1 is confirmed:
-  // [LEVEL_IDS.LEVEL2]: new THREE.Vector3(...),
-  // [LEVEL_IDS.LEVEL3]: new THREE.Vector3(...),
-  // [LEVEL_IDS.LEVEL4]: new THREE.Vector3(...),
-  // [LEVEL_IDS.LEVEL5]: new THREE.Vector3(...),
-  // [LEVEL_IDS.LEVEL6]: new THREE.Vector3(...),
+  [LEVEL_IDS.LEVEL2]: new THREE.Vector3(0, 1.75, 575),
+  [LEVEL_IDS.LEVEL3]: new THREE.Vector3(0, 1.75, 750),
+  [LEVEL_IDS.LEVEL4]: new THREE.Vector3(0, 1.75, 950),
+  [LEVEL_IDS.LEVEL5]: new THREE.Vector3(0, 9.76, 0),
+  [LEVEL_IDS.LEVEL6]: new THREE.Vector3(0, 1.75, 0),
 };
 
 /**
@@ -330,7 +327,6 @@ const VR_SPAWN_POINTS = {
  */
 function applyVRSpawnForLevel(levelId) {
   try {
-    // Only touch anything when in VR
     const vrActive =
       (renderer && renderer.xr && renderer.xr.isPresenting) ||
       !!currentVRSession;
@@ -338,38 +334,36 @@ function applyVRSpawnForLevel(levelId) {
     if (!vrActive) return;
 
     const spawn = VR_SPAWN_POINTS[levelId];
-    if (!spawn) {
-      // No VR override for this level → do nothing
-      return;
-    }
+    if (!spawn) return;
 
     if (!playerCollider || !playerCollider.start || !playerCollider.end) {
       console.warn("🥽 [VR SPAWN] Player collider not ready, cannot apply VR spawn.");
       return;
     }
 
-    // Use current capsule height if available, fallback to 1.4
     const start = playerCollider.start;
     const end   = playerCollider.end;
 
     let halfHeight = (end.y - start.y) * 0.5;
     if (!isFinite(halfHeight) || halfHeight <= 0) {
-      halfHeight = 0.7; // default (capsule height ≈ 1.4)
+      halfHeight = 0.7;
     }
 
-    // 'spawn.y' is treated as the capsule CENTER
     const centerY = spawn.y;
 
-    // Position the capsule so that its center is at spawn.y
+    // Debug: before move
+    console.log("🥽 [VR SPAWN] Before apply:", {
+      levelId,
+      start: start.clone(),
+      end: end.clone()
+    });
+
     start.set(spawn.x, centerY - halfHeight, spawn.z);
     end.set(spawn.x, centerY + halfHeight, spawn.z);
 
-    // If you have a separate visual player object, move it too
     if (typeof playerObject !== "undefined" && playerObject) {
       playerObject.position.set(spawn.x, centerY, spawn.z);
     }
-
-    // Update the magenta debug sphere (collider center)
     if (typeof playerColliderDebugMesh !== "undefined" && playerColliderDebugMesh) {
       playerColliderDebugMesh.position.set(spawn.x, centerY, spawn.z);
     }
@@ -377,13 +371,14 @@ function applyVRSpawnForLevel(levelId) {
     console.log(`🥽 [VR SPAWN] Applied VR spawn for level ${levelId}:`, {
       x: spawn.x,
       y: centerY,
-      z: spawn.z
+      z: spawn.z,
+      newStart: start.clone(),
+      newEnd: end.clone()
     });
   } catch (e) {
     console.error("❌ [VR SPAWN] Failed to apply VR spawn:", e);
   }
 }
-
 
 function isPlayerStandingOnBlock(block) {
   if (!block || !block.geometry || !block.geometry.parameters) return false;
@@ -2572,92 +2567,87 @@ async function startVRSession() {
     // Enable VR in renderer
     await renderer.xr.setSession(session);
 
-// 🥽 VR SPAWN SYNC – make sure player capsule is at the real level spawn
-function syncVRSpawnToPlayerCollider() {
-  try {
-    // We need at least a collider
-    if (!playerCollider || !playerCollider.start || !playerCollider.end) {
-      console.warn("⚠️ [VR SPAWN] No playerCollider available to sync");
-      return;
-    }
+    // 🥽 VR SPAWN SYNC – make sure player capsule is at the real level spawn
+    function syncVRSpawnToPlayerCollider() {
+      try {
+        if (!playerCollider || !playerCollider.start || !playerCollider.end) {
+          console.warn("⚠️ [VR SPAWN] No playerCollider available to sync");
+          return;
+        }
 
-    // Prefer the recorded initial spawn position from level loading
-    let target = null;
+        let target = null;
 
-    if (initialSpawnPosition) {
-      target = initialSpawnPosition.clone();
-    } else {
-      // Fallback: use current capsule center if spawn not known yet
-      const center = new THREE.Vector3().lerpVectors(
-        playerCollider.start,
-        playerCollider.end,
-        0.5
-      );
-      target = center;
-    }
+        if (initialSpawnPosition) {
+          target = initialSpawnPosition.clone();
+        } else {
+          const center = new THREE.Vector3().lerpVectors(
+            playerCollider.start,
+            playerCollider.end,
+            0.5
+          );
+          target = center;
+        }
 
-    // Extra safety: ignore obviously bogus positions
-    if (!isFinite(target.x) || !isFinite(target.y) || !isFinite(target.z)) {
-      console.warn("⚠️ [VR SPAWN] Spawn target is invalid:", target);
-      return;
-    }
+        if (!isFinite(target.x) || !isFinite(target.y) || !isFinite(target.z)) {
+          console.warn("⚠️ [VR SPAWN] Spawn target is invalid:", target);
+          return;
+        }
 
-    // Use the existing helper if present
-    if (typeof setPlayerFeetPosition === "function") {
-      setPlayerFeetPosition(target);
-    } else {
-      // Direct capsule fallback
-      const feetY = target.y;
-      playerCollider.start.set(target.x, feetY, target.z);
-      playerCollider.end.set(target.x, feetY + 1.4, target.z);
-      if (playerVelocity) {
-        playerVelocity.set(0, 0, 0);
+        if (typeof setPlayerFeetPosition === "function") {
+          setPlayerFeetPosition(target);
+        } else {
+          const feetY = target.y;
+          playerCollider.start.set(target.x, feetY, target.z);
+          playerCollider.end.set(target.x, feetY + 1.4, target.z);
+          if (playerVelocity) {
+            playerVelocity.set(0, 0, 0);
+          }
+        }
+
+        console.log("🥽 [VR SPAWN] Synced player collider to", target);
+      } catch (e) {
+        console.warn("⚠️ [VR SPAWN] Failed to sync player collider:", e);
       }
     }
 
-    console.log("🥽 [VR SPAWN] Synced player collider to", target);
-  } catch (e) {
-    console.warn("⚠️ [VR SPAWN] Failed to sync player collider:", e);
-  }
-}
+    // 🧪 TEMP: Keep this OFF so it doesn't fight our VR spawn table
+    // syncVRSpawnToPlayerCollider();
 
-// 🧪 TEMP: Disable auto VR spawn sync while we debug collider position
-// syncVRSpawnToPlayerCollider();
-
-	// 🥽 Install VR camera anchor so XR camera follows player collider
-installVRCameraAnchor();
-
-// 🥽 VR-ONLY: If we're already in a level when VR starts, apply its VR spawn (fallback to Level 1)
-try {
-  if (typeof applyVRSpawnForLevel === "function") {
-    const activeLevelId = currentLevel || LEVEL_IDS.LEVEL1;
-    console.log("🥽 [VR] Applying initial VR spawn for level:", activeLevelId);
-    applyVRSpawnForLevel(activeLevelId);
-  }
-} catch (e) {
-  console.warn("⚠️ [VR] Failed to apply initial VR spawn on session start:", e);
-}
-
-
-        // 🥽 VR-SPAWN OVERRIDE ON SESSION START
-    // When entering VR after a level is already loaded (common on Quest),
-    // snap the player capsule to the VR-safe spawn for the current level.
-    if (typeof applyVRSpawnForLevel === "function") {
-      const levelId = currentLevel || LEVEL_IDS.LEVEL1;
-      console.log("🥽 [VR SPAWN] Applying VR spawn override on VR session start for level:", levelId);
-      applyVRSpawnForLevel(levelId);
+    // 🧭 Ensure debug marker exists BEFORE we move anything
+    try {
+      if (typeof ensurePlayerColliderDebugMarker === "function") {
+        ensurePlayerColliderDebugMarker();
+      }
+    } catch (e) {
+      console.warn("⚠️ [VR DEBUG] Failed to ensure player collider marker:", e);
     }
+
+    // 🥽 VR-ONLY: If we're already in a level when VR starts, apply its VR spawn (fallback to Level 1)
+    try {
+      if (typeof applyVRSpawnForLevel === "function") {
+        const activeLevelId = currentLevel || LEVEL_IDS.LEVEL1;
+        console.log("🥽 [VR SPAWN] Applying VR spawn on session start for level:", activeLevelId);
+        applyVRSpawnForLevel(activeLevelId);
+      } else {
+        console.log("ℹ️ [VR SPAWN] applyVRSpawnForLevel not defined (skipping)");
+      }
+    } catch (e) {
+      console.warn("⚠️ [VR SPAWN] Failed to apply VR spawn on session start:", e);
+    }
+
+    // 🥽 Install VR camera anchor so XR camera follows player collider (AFTER spawn)
+    installVRCameraAnchor();
 
     // Create and register VR input provider
     vrInputProvider = new VRInputProvider(session);
     if (vrInputProvider.enable()) {
-      // Register with PlayerControls
       if (playerControls) {
         playerControls.registerInputProvider(vrInputProvider);
         await playerControls.enableVR(session);
-        console.log('✅ [VR] VR session started and registered with PlayerControls');
+        console.log("✅ [VR] VR session started and registered with PlayerControls");
       }
     }
+
     
     // ✅ Create and initialize VR UI raycaster for menu interaction (January 20, 2026)
     // CRITICAL FIX: Use correct constructor parameters and initialize separately
@@ -18330,11 +18320,13 @@ function buildLevel(mapData) {
     }
   }
   
-  // 🐉 Create NPC/Monster that runs around the level
-  if (mapData.spawn && !window.npcMonster) {
-    createNPCMonster(mapData.spawn, blockSize);
-    console.log("🐉 [NPC] Monster NPC created and added to level");
-  }
+// 🐉 Create NPC/Monster that runs around the level
+// DISABLED: Level 1 Monster should not have a monster NPC
+// if (mapData.spawn && !window.npcMonster) {
+//   createNPCMonster(mapData.spawn, blockSize);
+//   console.log("🐉 [NPC] Monster NPC created and added to level");
+// }
+
   
   // 🌀 Create Cheese Portal GLB model in Level 1 (replaces blocks at x: 26, z: 21, y: 3)
   if (mapData.spawn && !level1State.portal) {
@@ -32451,9 +32443,23 @@ async function warpToLevel2() {
     setPlayerFeetPosition(level2Config.spawnPosition.clone());
     showLevel2IntroToast();
     console.log("🚀 [LEVEL 2] Entered THE SPAWN. Inspect all rows to unlock the next portal.");
+
+    // 🥽 VR-ONLY: After desktop spawn, override with safe VR spawn for Level 2
+    try {
+      const vrActive =
+        (renderer && renderer.xr && renderer.xr.isPresenting) ||
+        (typeof isVRSessionActive === "function" && isVRSessionActive());
+
+      if (vrActive && typeof applyVRSpawnForLevel === "function") {
+        console.log("🥽 [LEVEL 2] Applying VR spawn override after warp...");
+        applyVRSpawnForLevel(LEVEL_IDS.LEVEL2);
+      }
+    } catch (e) {
+      console.warn("⚠️ [LEVEL 2][VR SPAWN] Failed to apply VR spawn override:", e);
+    }
   }
   ensureBackgroundMusicForCurrentLevel(true);
-  });
+});
 }
 
 let currentRiddleTarget = 1;
@@ -44443,93 +44449,95 @@ function warpToLevel1() {
                     console.error("❌ [LEVEL 1] Error restoring game state:", error);
                   }
                   
-                  // CRITICAL: Reset player position to spawn point (prevents player being in sky)
-                  // Get spawn position from mapData (used in buildLevel)
-                  if (mapData && mapData.spawn) {
-                    const spawnX = mapData.spawn.x * blockSize + blockSize / 2;
-                    const spawnY = mapData.spawn.y * blockSize + blockSize / 2;
-                    const spawnZ = mapData.spawn.z * blockSize + blockSize / 2;
-                    
-                    // Reset player collider to spawn position
-                    // playerCollider is a Capsule with .start (bottom) and .end (top) Vector3 properties
-                    // Capsule height is 1.4 (from 0.3 to 1.7), so we place bottom at spawnY + 0.3
-                    playerCollider.start.set(spawnX, spawnY + 0.3, spawnZ);
-                    playerCollider.end.set(spawnX, spawnY + 1.7, spawnZ);
-                    
-                    // Reset player velocity to zero (prevents falling/gliding)
-                    playerVelocity.set(0, 0, 0);
-                    playerDirection.set(0, 0, 0);
-                    onGround = false; // Will be recalculated in next frame
-                    
-                    // Reset camera position to spawn
-                    if (camera) {
-                      camera.position.set(spawnX, spawnY + 1.6, spawnZ);
-                      camera.rotation.set(0, 0, 0);
-                    }
-                    
-                    console.log("✅ [LEVEL 1] Player position reset to spawn:", {
-                      spawnX: spawnX,
-                      spawnY: spawnY,
-                      spawnZ: spawnZ,
-                      playerColliderStart: playerCollider.start,
-                      playerColliderEnd: playerCollider.end,
-                      cameraPosition: camera ? camera.position : null
-                    });
-					// 🥽 VR-ONLY: After desktop spawn is applied, override with safe VR spawn for Level 1
-try {
-  const vrActive =
-    (renderer && renderer.xr && renderer.xr.isPresenting) ||
-    (typeof isVRSessionActive === "function" && isVRSessionActive());
-
-  if (vrActive && typeof applyVRSpawnForLevel === "function") {
-    console.log("🥽 [LEVEL 1] Applying VR spawn override after warp...");
-    applyVRSpawnForLevel(LEVEL_IDS.LEVEL1);
+// CRITICAL: Reset player position to spawn point (prevents player being in sky)
+// Get spawn position from mapData (used in buildLevel)
+if (mapData && mapData.spawn) {
+  const spawnX = mapData.spawn.x * blockSize + blockSize / 2;
+  const spawnY = mapData.spawn.y * blockSize + blockSize / 2;
+  const spawnZ = mapData.spawn.z * blockSize + blockSize / 2;
+  
+  // Reset player collider to spawn position
+  // playerCollider is a Capsule with .start (bottom) and .end (top) Vector3 properties
+  // Capsule height is 1.4 (from 0.3 to 1.7), so we place bottom at spawnY + 0.3
+  playerCollider.start.set(spawnX, spawnY + 0.3, spawnZ);
+  playerCollider.end.set(spawnX, spawnY + 1.7, spawnZ);
+  
+  // Reset player velocity to zero (prevents falling/gliding)
+  playerVelocity.set(0, 0, 0);
+  playerDirection.set(0, 0, 0);
+  onGround = false; // Will be recalculated in next frame
+  
+  // Reset camera position to spawn (DESKTOP ONLY - XR camera uses anchor in VR)
+  if (camera) {
+    camera.position.set(spawnX, spawnY + 1.6, spawnZ);
+    camera.rotation.set(0, 0, 0);
   }
-} catch (e) {
-  console.warn("⚠️ [LEVEL 1][VR SPAWN] Failed to apply VR spawn override:", e);
+  
+  console.log("✅ [LEVEL 1] Player position reset to spawn:", {
+    spawnX,
+    spawnY,
+    spawnZ,
+    playerColliderStart: playerCollider.start,
+    playerColliderEnd: playerCollider.end,
+    cameraPosition: camera ? camera.position : null
+  });
+
+  // 🥽 VR-ONLY: After desktop spawn, override with safe VR spawn for Level 1
+  try {
+    const vrActive =
+      (renderer && renderer.xr && renderer.xr.isPresenting) ||
+      (typeof isVRSessionActive === "function" && isVRSessionActive());
+
+    if (vrActive && typeof applyVRSpawnForLevel === "function") {
+      console.log("🥽 [LEVEL 1] Applying VR spawn override after warp...");
+      applyVRSpawnForLevel(LEVEL_IDS.LEVEL1);
+    }
+  } catch (e) {
+    console.warn("⚠️ [LEVEL 1][VR SPAWN] Failed to apply VR spawn override:", e);
+  }
+
+} else {
+  console.warn("⚠️ [LEVEL 1] No spawn data found in mapData, using default position");
+  // Fallback: Use default spawn position (60, 0.5, 15)
+  playerCollider.start.set(60, 0.8, 15);
+  playerCollider.end.set(60, 2.2, 15);
+  playerVelocity.set(0, 0, 0);
+  if (camera) {
+    camera.position.set(60, 1.6, 15);
+    camera.rotation.set(0, 0, 0);
+  }
 }
 
-                  } else {
-                    console.warn("⚠️ [LEVEL 1] No spawn data found in mapData, using default position");
-                    // Fallback: Use default spawn position (60, 0.5, 15)
-                    playerCollider.start.set(60, 0.8, 15);
-                    playerCollider.end.set(60, 2.2, 15);
-                    playerVelocity.set(0, 0, 0);
-                    if (camera) {
-                      camera.position.set(60, 1.6, 15);
-                      camera.rotation.set(0, 0, 0);
-                    }
-                  }
-                  
-                  // CRITICAL: Clean up weapon system from Level 4 (Level 1 has no weapons)
-                  if (typeof weaponSystem !== 'undefined' && weaponSystem) {
-                    try {
-                      // Hide weapon viewmodel if it exists
-                      if (weaponSystem.weaponViewmodel) {
-                        weaponSystem.weaponViewmodel.visible = false;
-                        // Remove from camera if attached
-                        if (camera && camera.children.includes(weaponSystem.weaponViewmodel)) {
-                          camera.remove(weaponSystem.weaponViewmodel);
-                        }
-                        // Remove from scene if attached
-                        if (scene && scene.children.includes(weaponSystem.weaponViewmodel)) {
-                          scene.remove(weaponSystem.weaponViewmodel);
-                        }
-                        console.log("✅ [LEVEL 1] Weapon viewmodel hidden and removed from camera/scene");
-                      }
-                      // Clear current weapon slot
-                      if (typeof weaponSystem.clearCurrentWeapon === 'function') {
-                        weaponSystem.clearCurrentWeapon();
-                      }
-                      // Reset weapon system state
-                      if (weaponSystem.currentSlot !== undefined) {
-                        weaponSystem.currentSlot = null;
-                      }
-                      console.log("✅ [LEVEL 1] Weapon system cleaned up (Level 1 has no weapons)");
-                    } catch (error) {
-                      console.error("❌ [LEVEL 1] Error cleaning up weapon system:", error);
-                    }
-                  }
+// CRITICAL: Clean up weapon system from Level 4 (Level 1 has no weapons)
+if (typeof weaponSystem !== 'undefined' && weaponSystem) {
+  try {
+    // Hide weapon viewmodel if it exists
+    if (weaponSystem.weaponViewmodel) {
+      weaponSystem.weaponViewmodel.visible = false;
+      // Remove from camera if attached
+      if (camera && camera.children.includes(weaponSystem.weaponViewmodel)) {
+        camera.remove(weaponSystem.weaponViewmodel);
+      }
+      // Remove from scene if attached
+      if (scene && scene.children.includes(weaponSystem.weaponViewmodel)) {
+        scene.remove(weaponSystem.weaponViewmodel);
+      }
+      console.log("✅ [LEVEL 1] Weapon viewmodel hidden and removed from camera/scene");
+    }
+    // Clear current weapon slot
+    if (typeof weaponSystem.clearCurrentWeapon === 'function') {
+      weaponSystem.clearCurrentWeapon();
+    }
+    // Reset weapon system state
+    if (weaponSystem.currentSlot !== undefined) {
+      weaponSystem.currentSlot = null;
+    }
+    console.log("✅ [LEVEL 1] Weapon system cleaned up (Level 1 has no weapons)");
+  } catch (error) {
+    console.error("❌ [LEVEL 1] Error cleaning up weapon system:", error);
+  }
+}
+
                   
                                   // ========================================================================
                                   // CRITICAL: Apply Level 1 environment (background color and fog)
