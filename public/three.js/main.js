@@ -380,6 +380,37 @@ function applyVRSpawnForLevel(levelId) {
   }
 }
 
+/**
+ * 🥽 VR RESCUE: Manually respawn player to the safe VR spawn for the current level.
+ *
+ * - Only works when VR is active
+ * - Uses VR_SPAWN_POINTS via applyVRSpawnForLevel(levelId)
+ * - Does NOT affect desktop spawn logic
+ */
+function respawnPlayerToCurrentLevelVRSpawn() {
+  try {
+    const activeLevelId = currentLevel || LEVEL_IDS.LEVEL1;
+
+    const vrActive =
+      (renderer && renderer.xr && renderer.xr.isPresenting) ||
+      (typeof isVRSessionActive === "function" && isVRSessionActive());
+
+    if (!vrActive) {
+      console.log("ℹ️ [VR RESCUE] Not in VR, respawn button does nothing.");
+      return;
+    }
+
+    if (typeof applyVRSpawnForLevel === "function") {
+      console.log("🥽 [VR RESCUE] Respawning player to VR spawn for level:", activeLevelId);
+      applyVRSpawnForLevel(activeLevelId);
+    } else {
+      console.warn("⚠️ [VR RESCUE] applyVRSpawnForLevel not available.");
+    }
+  } catch (e) {
+    console.error("❌ [VR RESCUE] Failed to respawn player:", e);
+  }
+}
+
 function isPlayerStandingOnBlock(block) {
   if (!block || !block.geometry || !block.geometry.parameters) return false;
   const { width = 1, height = 1, depth = 1 } = block.geometry.parameters;
@@ -12463,6 +12494,84 @@ function getOptionsMenu() {
       optionsMenu._landscapeOffBtn = landscapeOffBtn;
       optionsMenu._landscapeOnBtn = landscapeOnBtn;
     }
+
+// 🥽 VR RESCUE SECTION (inside getOptionsMenu, after other general controls)
+const vrRescueContainer = document.createElement("div");
+Object.assign(vrRescueContainer.style, {
+  marginTop: "12px",
+  padding: "12px",
+  borderRadius: "10px",
+  backgroundColor: "rgba(15, 23, 42, 0.7)",
+  border: "1px solid rgba(248, 250, 252, 0.25)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px"
+});
+
+const vrRescueTitle = document.createElement("div");
+vrRescueTitle.textContent = "VR Rescue / Respawn";
+Object.assign(vrRescueTitle.style, {
+  fontSize: "16px",
+  fontWeight: "600",
+  letterSpacing: "0.03em",
+  textTransform: "uppercase",
+  color: "#e5e7eb"
+});
+
+const vrRescueDesc = document.createElement("div");
+vrRescueDesc.textContent =
+  "If you spawned outside the level or under the map in VR, use this to snap back to the level’s entry point.";
+Object.assign(vrRescueDesc.style, {
+  fontSize: "13px",
+  lineHeight: "1.4",
+  color: "#cbd5f5"
+});
+
+const vrRescueBtn = document.createElement("button");
+vrRescueBtn.textContent = "🥽 Respawn to Level Entry (VR)";
+Object.assign(vrRescueBtn.style, {
+  marginTop: "4px",
+  padding: "10px 16px",
+  fontSize: "14px",
+  fontWeight: "600",
+  borderRadius: "8px",
+  border: "1px solid rgba(248, 250, 252, 0.7)",
+  background: "rgba(15, 23, 42, 0.9)",
+  color: "#fefce8",
+  cursor: "pointer",
+  alignSelf: "flex-start",
+  pointerEvents: "auto"
+});
+
+vrRescueBtn.addEventListener("mouseenter", () => {
+  vrRescueBtn.style.background = "rgba(248, 250, 252, 0.1)";
+  vrRescueBtn.style.transform = "scale(1.02)";
+});
+
+vrRescueBtn.addEventListener("mouseleave", () => {
+  vrRescueBtn.style.background = "rgba(15, 23, 42, 0.9)";
+  vrRescueBtn.style.transform = "scale(1)";
+});
+
+vrRescueBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  console.log("🥽 [VR RESCUE] Button clicked");
+  if (typeof respawnPlayerToCurrentLevelVRSpawn === "function") {
+    respawnPlayerToCurrentLevelVRSpawn();
+  } else {
+    console.warn("⚠️ [VR RESCUE] respawnPlayerToCurrentLevelVRSpawn not defined.");
+  }
+});
+
+// Assemble VR rescue block
+vrRescueContainer.appendChild(vrRescueTitle);
+vrRescueContainer.appendChild(vrRescueDesc);
+vrRescueContainer.appendChild(vrRescueBtn);
+
+// Attach to the general tab content
+generalTabContent.appendChild(vrRescueContainer);
+
 
     // 🚀 GOD MODE Toggle (Double Speed + Fly Mode)
     // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
