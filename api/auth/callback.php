@@ -4,10 +4,15 @@ ini_set('session.gc_maxlifetime', 86400); // 24 hours
 ini_set('session.cookie_lifetime', 86400); // 24 hours
 session_start();
 
-// ✅ Load from Render environment with exact values from working OAuth URL
 $clientId = '1357927342265204858'; // Use exact client ID from working URL
 $clientSecret = getenv('DISCORD_SECRET');
-$redirectUri = 'https://narrrfs.world/api/auth/callback.php'; // Exact redirect URI from working URL
+$redirectUri = 'https://narrrfs.world/api/auth/callback.php';
+
+// DEBUG: ensure secret is actually loaded
+if (!$clientSecret) {
+    error_log('❌ DISCORD_SECRET is empty or not set in environment.');
+    die('❌ Discord-Konfiguration fehlt. Bitte informiere den Admin.');
+}
 
 // ✅ Step 1: Get code
 if (!isset($_GET['code'])) {
@@ -27,15 +32,26 @@ curl_setopt_array($tokenRequest, [
         'client_secret' => $clientSecret,
         'grant_type' => 'authorization_code',
         'code' => $code,
-        'redirect_uri' => $redirectUri, // Use exact redirect URI without parameters
-        'scope' => 'guilds+identify+guilds.members.read' // Exact scope order from working URL
+        'redirect_uri' => $redirectUri
+        // IMPORTANT: no "scope" here – Discord infers it from the code
     ]),
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded']
 ]);
 
 $response = curl_exec($tokenRequest);
+$httpCode = curl_getinfo($tokenRequest, CURLINFO_HTTP_CODE);
+$curlError = curl_error($tokenRequest);
 curl_close($tokenRequest);
+
+if ($curlError) {
+    error_log('❌ cURL error during token request: ' . $curlError);
+}
+
+error_log('🔎 Discord token HTTP status: ' . $httpCode);
+error_log('🔎 Discord token raw response: ' . $response);
+
 $token = json_decode($response, true);
+
 
 if (!isset($token['access_token'])) {
     error_log('❌ Failed to get access token: ' . $response);
