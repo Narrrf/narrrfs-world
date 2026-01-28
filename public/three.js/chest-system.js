@@ -2851,32 +2851,34 @@ class Chest {
  * Performance: O(1) lookup, no degradation
  */
 export class ChestSystem {
-  constructor(scene, loadModel, processWeaponMaterial, grassSystem = null, resolveAssetPath = null, chestModelConfig = null) {
+  constructor(
+    scene,
+    loadModel,
+    processWeaponMaterial,
+    grassSystem = null,
+    resolveAssetPath = null,
+    chestModelConfig = null
+  ) {
     this.scene = scene;
     this.loadModel = loadModel;
     this.processWeaponMaterial = processWeaponMaterial;
-    this.grassSystem = grassSystem; // Reference to grass system for exclusion zones
-    this.resolveAssetPath = resolveAssetPath || ((path) => path); // Path resolver function
-    // Optional: global chest model override (e.g., dual-model closed/opened GLBs).
-    // This lets us switch ALL chests to new models without rewriting every createLevelXChests() callsite.
+    this.grassSystem = grassSystem;
+    this.resolveAssetPath = resolveAssetPath || ((path) => path);
+
+    // Global chest model config (dual-model etc.)
     this.chestModelConfig = chestModelConfig;
-    
-    // CRITICAL: Multi-level chest organization
-    // Map<levelId, Map<chestId, Chest>>
-    // - Outer Map: Level isolation (Level 1, Level 2, Level 3, ...)
-    // - Inner Map: Chest organization within each level
-    // - Scales to unlimited levels without performance degradation
+
+    // 🔁 HARD RESET callback (FIXED)
+    this.onRecreateLevelChests = chestModelConfig?.onRecreateLevelChests || null;
+
+    // Chest storage
     this.chests = new Map();
-    
     this.activeLevel = null;
-    
-    // Chest counter system - tracks how many chests player has opened
+
+    // Persistence
     this.chestsOpenedCount = this.loadChestsOpenedCount();
-    
-    // Opened chests cache - stores which chests player has already opened
-    this.openedChestsCache = new Set(); // Set of chest IDs (e.g., 'chest_001', 'chest_002')
-    this.openedChestsLoaded = false; // Flag to track if opened chests have been loaded
-    // Track which user this cache belongs to (prevents cross-user leakage on the same browser).
+    this.openedChestsCache = new Set();
+    this.openedChestsLoaded = false;
     this.openedChestsLoadedForDiscordId = null;
   }
   
@@ -2931,11 +2933,24 @@ export class ChestSystem {
    * @param {string} apiBaseUrl - API base URL (for environment detection)
    * @returns {Promise<Set<string>>} - Set of opened chest IDs
    */
-  async loadOpenedChests(discordId, apiBaseUrl = '') {
-    if (!discordId || discordId === '') {
-      console.warn('⚠️ [CHEST SYSTEM] Cannot load opened chests - no Discord ID');
+  async loadOpenedChests(discordId) {
+    if (!discordId) {
+      console.warn("⚠️ [CHEST SYSTEM] Cannot load opened chests without Discord ID");
       return new Set();
     }
+
+    // 🧪 DEV OVERRIDE LOCAL CHEST: on localhost we don't restore opened chests
+    // This makes all chests start CLOSED every refresh, which is perfect for testing.
+    if (window.location.hostname === "localhost") {
+      console.log("🧪 [CHEST SYSTEM] Localhost detected – skipping opened-chest persistence. All chests start CLOSED.");
+      this.openedChestsCache = new Set();
+      this.openedChestsLoaded = true;
+      this.openedChestsLoadedForDiscordId = null;
+      return this.openedChestsCache;
+    }
+
+    // ... existing production logic continues here ...
+
     
     // If we already loaded for a DIFFERENT user, reset and reload.
     if (this.openedChestsLoaded && this.openedChestsLoadedForDiscordId && this.openedChestsLoadedForDiscordId !== discordId) {
@@ -3507,13 +3522,14 @@ export class ChestSystem {
   
 /**
  * Reset opened chests for a specific level (admin/god mode only)
+ * - HARD RESET: clear level chests and recreate them in closed state
  * - Does NOT touch other levels
- * - Keeps other level progress intact
- * - Intended for local/dev testing
+ * - Intended for local/dev testing & god mode
  */
 resetOpenedChestsForLevel(levelId) {
   if (!levelId) {
     console.warn("⚠️ [CHEST SYSTEM] resetOpenedChestsForLevel called without levelId");
+    return 0;
   }
 
   const levelKey = String(levelId);
@@ -3524,56 +3540,84 @@ resetOpenedChestsForLevel(levelId) {
     return 0;
   }
 
-  let resetCount = 0;
+  console.log(`🔄 [CHEST SYSTEM] HARD reset for level ${levelKey}`);
 
-  levelChests.forEach((chest, chestId) => {
-    if (!chest) return;
+  // 1) Clear persistence / cache entries for this level's chests
+  if (this.openedChestsCache) {
+    levelChests.forEach((_, chestId) => {
+      if (this.openedChestsCache.has(chestId)) {
+        this.openedChestsCache.delete(chestId);
+      }
+    });
+  }
 
-    // Remove this chest from the opened cache (if present)
-    if (this.openedChestsCache && this.openedChestsCache.has(chestId)) {
-      this.openedChestsCache.delete(chestId);
+  // Reset global flags so we don't re-apply opened state
+  this.openedChestsLoaded = false;
+  this.openedChestsLoadedForDiscordId = null;
+
+  // 2) FULL NUKE: remove all chest meshes & objects for this level
+  this.clearLevel(levelKey);
+
+  // 3) Recreate chests for this level in CLOSED state via callback
+  if (typeof this.onRecreateLevelChests === "function") {
+    try {
+      this.onRecreateLevelChests(levelKey);
+      console.log(`✅ [CHEST SYSTEM] Level ${levelKey} chests fully rebuilt (hard reset)`);
+      return 1;
+    } catch (err) {
+      console.error(`❌ [CHEST SYSTEM] Error recreating chests for level ${levelKey}:`, err);
+      return 0;
     }
+  } else {
+    console.warn(
+      "⚠️ [CHEST SYSTEM] onRecreateLevelChests callback not set – level chests were cleared but not recreated"
+    );
+    return 0;
+  }
+}
 
-    // Already closed & interactable? skip.
-    if (!chest.opened && chest.canInteract !== false) {
-      return;
+
+// ─────────────────────────────────────────────
+// 1) Dual-model chests (new mouse chest)
+// ─────────────────────────────────────────────
+if (chest.closedModelPath && chest.openedModelPath) {
+  console.log("🔧 [CHEST SYSTEM] Dual-model reset – before:", {
+    id: chestId,
+    hasClosedMesh: !!chest.closedMesh,
+    hasOpenedMesh: !!chest.openedMesh,
+    currentMeshIsClosed: chest.mesh === chest.closedMesh,
+    openedParent: chest.openedMesh?.parent?.name || chest.openedMesh?.parent?.type
+  });
+
+  // 🔥 HARD REMOVE opened mesh from scene graph
+  if (chest.openedMesh && chest.openedMesh.parent) {
+    chest.openedMesh.parent.remove(chest.openedMesh);
+  }
+
+  // Also handle alternate property name
+  if (chest.openMesh && chest.openMesh.parent) {
+    chest.openMesh.parent.remove(chest.openMesh);
+  }
+
+  // Ensure closed mesh is attached to scene
+  if (chest.closedMesh) {
+    if (!chest.closedMesh.parent) {
+      this.scene.add(chest.closedMesh);
     }
+    chest.closedMesh.visible = true;
+    chest.closedMesh.updateMatrixWorld(true);
+    chest.mesh = chest.closedMesh;
+  }
 
-    console.log(`🔄 [CHEST SYSTEM] Resetting chest ${chestId} in level ${levelKey} to closed state`);
+  // Safety: ensure NO opened visuals remain
+  if (chest.openedMesh) chest.openedMesh.visible = false;
+  if (chest.openMesh) chest.openMesh.visible = false;
 
-    // Basic state flags
-    chest.opened = false;
-    chest.canInteract = true;
+  console.log(`✅ [CHEST SYSTEM] Dual-model chest ${chestId} FORCE reset to CLOSED mesh`);
+  resetCount++;
+  return;
+}
 
-    // ─────────────────────────────────────────────
-    // 1) Dual-model chests (new mouse chest)
-    // ─────────────────────────────────────────────
-    if (chest.closedModelPath && chest.openedModelPath) {
-      // Show CLOSED mesh again
-      if (chest.closedMesh) {
-        chest.closedMesh.visible = true;
-        chest.closedMesh.updateMatrixWorld(true);
-        chest.mesh = chest.closedMesh;
-      }
-
-      // Hide OPENED mesh
-      if (chest.openedMesh) {
-        chest.openedMesh.visible = false;
-      }
-
-      // Reset any lid / duplicate arrays just in case
-      if (chest.duplicateLidMeshes && chest.duplicateLidMeshes.length > 0) {
-        chest.duplicateLidMeshes.forEach(m => (m.visible = true));
-      }
-      if (chest.lidMesh) {
-        chest.lidMesh.rotation.x = 0;
-        chest.lidMesh.visible = true;
-      }
-
-      resetCount++;
-      console.log(`✅ [CHEST SYSTEM] Dual-model chest ${chestId} reset to CLOSED mesh`);
-      return; // don’t run legacy logic below
-    }
 
     // ─────────────────────────────────────────────
     // 2) Legacy single-model chest2 logic

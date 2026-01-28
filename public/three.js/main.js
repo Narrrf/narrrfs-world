@@ -1233,7 +1233,7 @@ let playerDisplayName =
 console.log("✅ [DEBUG] Initial playerDisplayName:", playerDisplayName);
 
 // 🧪 LOCAL TEST USER: Narrrf's account for local testing
-const LOCAL_TEST_DISCORD_ID = "328601656659017732"; // Narrrf's Discord ID
+const LOCAL_TEST_DISCORD_ID = "328601656659017732"; // Narrrf's Discord ID 328601656659017732
 const LOCAL_TEST_DISPLAY_NAME = "Narrrf";
 const OLD_LOCAL_TEST_DISCORD_STRING = "LOCAL_TEST_DISCORD"; // Legacy test user string
 let autoSeededLocalIdentity = false;
@@ -11634,16 +11634,41 @@ function initializeWeaponSystem() {
     // Initialize Chest System
     // Dual-model chest system (Jan 2026): new GLBs with no embedded animation.
     // Stored under `three.js/public/textures/3d models/chest3/` (symlinked from /data on Render).
-    chestSystem = new ChestSystem(scene, loadModel, processWeaponMaterial, grassSystem, resolveAssetPath, {
-      closedModelPath: "/textures/3d models/chest3/chest-closed.glb",
-      openedModelPath: "/textures/3d models/chest3/chest-opened.glb",
-    });
-    console.log("✅ [CHEST SYSTEM] Initialized successfully");
+chestSystem = new ChestSystem(
+  scene,
+  loadModel,
+  processWeaponMaterial,
+  grassSystem,
+  resolveAssetPath,
+  {
+    closedModelPath: "/textures/3d models/chest3/chest-closed.glb",
+    openedModelPath: "/textures/3d models/chest3/chest-opened.glb",
 
-  } catch (error) {
-    console.error("❌ [WEAPON SYSTEM] Failed to create instance:", error);
+    // 🔁 HARD RESET SUPPORT: recreate chests per level
+    onRecreateLevelChests: (levelId) => {
+      console.log("🔁 [CHEST SYSTEM] Recreating chests for level:", levelId);
+
+      if (levelId === LEVEL_IDS.LEVEL1) {
+        createLevel1Chests();
+      } else if (levelId === LEVEL_IDS.LEVEL2) {
+        createLevel2Chests();
+      } else if (levelId === LEVEL_IDS.LEVEL3) {
+        createLevel3Chests();
+      } else if (levelId === LEVEL_IDS.LEVEL4) {
+        createLevel4Chests();
+      } else if (levelId === LEVEL_IDS.LEVEL5) {
+        createLevel5Chests();
+      } else if (levelId === LEVEL_IDS.LEVEL6) {
+        createLevel6Chests();
+      } else {
+        console.warn("⚠️ [CHEST SYSTEM] No chest recreation handler for level:", levelId);
+      }
+    }
   }
-}
+);
+
+console.log("✅ [CHEST SYSTEM] Initialized successfully");
+
 
 // Initialize Weapon System after all dependencies are ready
 if (!weaponSystem && typeof initializeWeaponSystem === 'function') {
