@@ -62,7 +62,7 @@ if (!isset($token['access_token'])) {
     error_log('❌ Failed to get access token: ' . $response);
 
     if (isset($token['error'])) {
-        switch ($token['error'])) {
+        switch ($token['error']) {
             case 'invalid_grant':
                 die("❌ OAuth-Fehler: Der Autorisierungscode ist abgelaufen oder wurde bereits verwendet. Bitte versuche es erneut.");
             case 'redirect_uri_mismatch':
@@ -79,7 +79,7 @@ if (!isset($token['access_token'])) {
 
 $accessToken = $token['access_token'];
 
-
+// ✅ Step 3: Fetch user info
 $userRequest = curl_init();
 curl_setopt_array($userRequest, [
     CURLOPT_URL => 'https://discord.com/api/v10/users/@me',
@@ -94,34 +94,38 @@ $user = json_decode($userResponse, true);
 
 if (!isset($user['id'])) {
     error_log('❌ Failed to get user info: ' . $userResponse);
-    
+
     if (isset($user['error'])) {
         die("❌ Discord-Fehler: " . ($user['error_description'] ?? $user['error']) . ". Bitte versuchen Sie es erneut.");
     }
-    
+
     die("❌ Fehler beim Abrufen der Benutzerinformationen. Bitte versuchen Sie es erneut.");
 }
 
 // 🧀 Save key user fields to session with extended lifetime
 $_SESSION['user'] = [
-    'username' => $user['username'],
+    'username'      => $user['username'],
     'discriminator' => $user['discriminator'] ?? '0000',
-    'avatar' => $user['avatar'],
-    'email' => $user['email'] ?? null,
+    'avatar'        => $user['avatar'],
+    'email'         => $user['email'] ?? null,
 ];
-$_SESSION['discord_id'] = $user['id'];
-$_SESSION['access_token'] = $accessToken;
-$_SESSION['token_expires_at'] = time() + 3600; // Discord tokens expire in 1 hour
-$_SESSION['refresh_token'] = $token['refresh_token'] ?? null; // Store refresh token if available
+$_SESSION['discord_id']        = $user['id'];
+$_SESSION['access_token']      = $accessToken;
+$_SESSION['token_expires_at']  = time() + 3600; // Discord tokens expire in 1 hour
+$_SESSION['refresh_token']     = $token['refresh_token'] ?? null; // Store refresh token if available
 
 error_log('Discord ID Fetched: ' . $_SESSION['discord_id']);
 
 // Optional: Store guilds if scope includes `guilds`
-$guildsResponse = file_get_contents('https://discord.com/api/users/@me/guilds', false, stream_context_create([
-    'http' => [
-        'header' => "Authorization: Bearer $accessToken"
-    ]
-]));
+$guildsResponse = file_get_contents(
+    'https://discord.com/api/users/@me/guilds',
+    false,
+    stream_context_create([
+        'http' => [
+            'header' => "Authorization: Bearer $accessToken"
+        ]
+    ])
+);
 $_SESSION['guilds'] = json_decode($guildsResponse, true) ?? [];
 
 // ✅ Save user to DB
@@ -179,9 +183,12 @@ if (isset($_SESSION['oauth_final_redirect'])) {
 }
 
 // ✅ Inject localStorage and redirect with admin redirect check
+$discordIdSafe   = htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8');
+$discordNameSafe = htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8');
+
 echo "<script>
-  localStorage.setItem('discord_id', '{$user['id']}');
-  localStorage.setItem('discord_name', '{$user['username']}');
+  localStorage.setItem('discord_id', '$discordIdSafe');
+  localStorage.setItem('discord_name', '$discordNameSafe');
   
   // Check if user was redirected from admin interface
   const adminRedirect = localStorage.getItem('adminRedirect');
@@ -200,4 +207,5 @@ echo "<script>
     window.location.href = '$target';
   }
 </script>";
+
 exit;
