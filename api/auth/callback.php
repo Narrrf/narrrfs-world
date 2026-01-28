@@ -52,18 +52,33 @@ error_log('🔎 Discord token raw response: ' . $response);
 
 $token = json_decode($response, true);
 
-// 🔍 TEMP DEBUG BLOCK – SHOW EXACT DISCORD RESPONSE IF NO ACCESS TOKEN
+// Handle rate limiting from Discord / Cloudflare
+if ($httpCode === 429) {
+    error_log('❌ Discord OAuth rate limited (HTTP 429, Cloudflare 1015). Response: ' . $response);
+    die('❌ Discord ist aktuell ausgelastet oder begrenzt unsere Anfragen (Rate Limit). Bitte versuche es in Kürze erneut. Wenn das Problem länger anhält, melde dich bitte bei Narrrf im Discord.');
+}
+
 if (!isset($token['access_token'])) {
-    header('Content-Type: text/plain; charset=utf-8');
-    echo "DEBUG: Failed to get access token\n";
-    echo "HTTP status: " . $httpCode . "\n";
-    echo "cURL error: " . ($curlError ?: 'none') . "\n\n";
-    echo "Raw response from Discord:\n";
-    echo $response . "\n";
-    exit;
+    error_log('❌ Failed to get access token: ' . $response);
+
+    if (isset($token['error'])) {
+        switch ($token['error'])) {
+            case 'invalid_grant':
+                die("❌ OAuth-Fehler: Der Autorisierungscode ist abgelaufen oder wurde bereits verwendet. Bitte versuche es erneut.");
+            case 'redirect_uri_mismatch':
+                die("❌ OAuth-Fehler: Die Weiterleitungs-URL stimmt nicht überein. Bitte kontaktiere den Admin.");
+            case 'invalid_client':
+                die("❌ OAuth-Fehler: Ungültige Client-Konfiguration. Bitte kontaktiere den Admin.");
+            default:
+                die("❌ OAuth-Fehler: " . ($token['error_description'] ?? $token['error']) . ". Bitte versuche es erneut.");
+        }
+    }
+
+    die("❌ Fehler beim Abrufen des Zugriffstokens. Bitte versuche es erneut.");
 }
 
 $accessToken = $token['access_token'];
+
 
 $userRequest = curl_init();
 curl_setopt_array($userRequest, [
