@@ -3478,108 +3478,170 @@ export class ChestSystem {
   
   /**
    * Reset all opened chests (admin/god mode only)
-   * Clears opened chests cache and resets all chest states to closed
-   * This allows testing chests multiple times in local development
+   * Uses the per-level reset so dual-model + legacy chests are handled correctly.
    */
   resetOpenedChests() {
-    console.log(`🔄 [CHEST SYSTEM] Resetting all opened chests...`);
-    
-    // Clear opened chests cache
-    this.openedChestsCache.clear();
+    console.log(`🔄 [CHEST SYSTEM] Global chest reset starting...`);
+
+    // Clear global cache flags
+    if (this.openedChestsCache) {
+      this.openedChestsCache.clear();
+    }
     this.openedChestsLoaded = false;
-    
-    let resetCount = 0;
-    
-    // Reset all chest states to closed
-    this.chests.forEach((levelChests, levelId) => {
-      levelChests.forEach((chest, chestId) => {
-        if (chest && chest.opened) {
-          console.log(`🔄 [CHEST SYSTEM] Resetting chest ${chestId} to closed state`);
-          
-          // Reset chest state flags
-          chest.opened = false;
-          chest.canInteract = true;
-          
-          // Reset visual state (reverse switchToOpenedState)
-          if (chest.mesh && chest.isLoaded) {
-            // Show closed meshes (reverse: show what was hidden)
-            if (chest.closedMeshes && chest.closedMeshes.length > 0) {
-              chest.closedMeshes.forEach(mesh => {
-                if (mesh) {
-                  mesh.visible = true;
-                  console.log(`🔄 [CHEST SYSTEM] Showing closed mesh: "${mesh.name}"`);
-                }
-              });
-            }
-            
-            // Hide opened meshes (reverse: hide what was shown)
-            if (chest.openedMeshes && chest.openedMeshes.length > 0) {
-              chest.openedMeshes.forEach(mesh => {
-                if (mesh) {
-                  mesh.visible = false;
-                  console.log(`🔄 [CHEST SYSTEM] Hiding opened mesh: "${mesh.name}"`);
-                }
-              });
-            }
-            
-            // Show duplicate lid meshes (reverse: show what was hidden)
-            if (chest.duplicateLidMeshes && chest.duplicateLidMeshes.length > 0) {
-              chest.duplicateLidMeshes.forEach(mesh => {
-                if (mesh) {
-                  mesh.visible = true;
-                  console.log(`🔄 [CHEST SYSTEM] Showing duplicate lid mesh: "${mesh.name}"`);
-                }
-              });
-            }
-            
-            // Reset lid rotation to closed position (0 degrees)
-            if (chest.lidMesh) {
-              chest.lidMesh.rotation.x = 0; // Reset to closed position
-              chest.lidMesh.visible = true; // Ensure lid is visible
-              console.log(`🔄 [CHEST SYSTEM] Reset lid rotation to 0 (closed position)`);
-            }
-            
-            // Reset animation mixer if it exists
-            if (chest.openingAnimation) {
-              chest.openingAnimation.stopAllAction();
-              console.log(`🔄 [CHEST SYSTEM] Stopped all animations`);
-            }
-            
-            // Ensure body and handles are visible
-            if (chest.chestBodyMesh) {
-              chest.chestBodyMesh.visible = true;
-            }
-            
-            // Ensure all essential parts are visible
-            if (chest.mesh) {
-              chest.mesh.traverse((node) => {
-                if (node.isMesh) {
-                  const nameLower = (node.name || '').toLowerCase();
-                  const isBody = nameLower.includes('body') && !nameLower.includes('lid');
-                  const isHandle = nameLower.includes('handle');
-                  
-                  if (isBody || isHandle) {
-                    node.visible = true;
-                  }
-                }
-              });
-            }
-            
-            resetCount++;
-            console.log(`✅ [CHEST SYSTEM] Chest ${chestId} reset to closed state`);
-          } else {
-            // Chest not loaded yet, just reset flags
-            resetCount++;
-            console.log(`✅ [CHEST SYSTEM] Chest ${chestId} state flags reset (mesh not loaded yet)`);
-          }
-        }
-      });
+    this.openedChestsLoadedForDiscordId = null;
+
+    let totalReset = 0;
+
+    // Call the per-level reset for every level we know about
+    this.chests.forEach((_, levelId) => {
+      if (typeof this.resetOpenedChestsForLevel === "function") {
+        const count = this.resetOpenedChestsForLevel(levelId);
+        totalReset += count;
+      }
     });
-    
-    console.log(`✅ [CHEST SYSTEM] Reset ${resetCount} opened chest(s) - ready for testing`);
-    return resetCount;
+
+    console.log(`✅ [CHEST SYSTEM] Global reset completed – ${totalReset} chest(s) reset across all levels`);
+    return totalReset;
   }
+
   
+/**
+ * Reset opened chests for a specific level (admin/god mode only)
+ * - Does NOT touch other levels
+ * - Keeps other level progress intact
+ * - Intended for local/dev testing
+ */
+resetOpenedChestsForLevel(levelId) {
+  if (!levelId) {
+    console.warn("⚠️ [CHEST SYSTEM] resetOpenedChestsForLevel called without levelId");
+  }
+
+  const levelKey = String(levelId);
+  const levelChests = this.chests.get(levelKey);
+
+  if (!levelChests) {
+    console.warn(`⚠️ [CHEST SYSTEM] No chests found for level ${levelKey} – nothing to reset`);
+    return 0;
+  }
+
+  let resetCount = 0;
+
+  levelChests.forEach((chest, chestId) => {
+    if (!chest) return;
+
+    // Remove this chest from the opened cache (if present)
+    if (this.openedChestsCache && this.openedChestsCache.has(chestId)) {
+      this.openedChestsCache.delete(chestId);
+    }
+
+    // Already closed & interactable? skip.
+    if (!chest.opened && chest.canInteract !== false) {
+      return;
+    }
+
+    console.log(`🔄 [CHEST SYSTEM] Resetting chest ${chestId} in level ${levelKey} to closed state`);
+
+    // Basic state flags
+    chest.opened = false;
+    chest.canInteract = true;
+
+    // ─────────────────────────────────────────────
+    // 1) Dual-model chests (new mouse chest)
+    // ─────────────────────────────────────────────
+    if (chest.closedModelPath && chest.openedModelPath) {
+      // Show CLOSED mesh again
+      if (chest.closedMesh) {
+        chest.closedMesh.visible = true;
+        chest.closedMesh.updateMatrixWorld(true);
+        chest.mesh = chest.closedMesh;
+      }
+
+      // Hide OPENED mesh
+      if (chest.openedMesh) {
+        chest.openedMesh.visible = false;
+      }
+
+      // Reset any lid / duplicate arrays just in case
+      if (chest.duplicateLidMeshes && chest.duplicateLidMeshes.length > 0) {
+        chest.duplicateLidMeshes.forEach(m => (m.visible = true));
+      }
+      if (chest.lidMesh) {
+        chest.lidMesh.rotation.x = 0;
+        chest.lidMesh.visible = true;
+      }
+
+      resetCount++;
+      console.log(`✅ [CHEST SYSTEM] Dual-model chest ${chestId} reset to CLOSED mesh`);
+      return; // don’t run legacy logic below
+    }
+
+    // ─────────────────────────────────────────────
+    // 2) Legacy single-model chest2 logic
+    // ─────────────────────────────────────────────
+    if (chest.mesh && chest.isLoaded) {
+      // Show closed meshes
+      if (chest.closedMeshes && chest.closedMeshes.length > 0) {
+        chest.closedMeshes.forEach((mesh) => {
+          if (mesh) mesh.visible = true;
+        });
+      }
+
+      // Hide opened meshes
+      if (chest.openedMeshes && chest.openedMeshes.length > 0) {
+        chest.openedMeshes.forEach((mesh) => {
+          if (mesh) mesh.visible = false;
+        });
+      }
+
+      // Show duplicate lids again
+      if (chest.duplicateLidMeshes && chest.duplicateLidMeshes.length > 0) {
+        chest.duplicateLidMeshes.forEach((mesh) => {
+          if (mesh) mesh.visible = true;
+        });
+      }
+
+      // Reset lid rotation to closed
+      if (chest.lidMesh) {
+        chest.lidMesh.rotation.x = 0;
+        chest.lidMesh.visible = true;
+      }
+
+      // Stop opening animation if present
+      if (chest.openingAnimation) {
+        chest.openingAnimation.stopAllAction();
+      }
+
+      // Make sure body/handles are visible
+      if (chest.chestBodyMesh) {
+        chest.chestBodyMesh.visible = true;
+      }
+
+      if (chest.mesh) {
+        chest.mesh.traverse((node) => {
+          if (node.isMesh) {
+            const nameLower = (node.name || "").toLowerCase();
+            const isBody = nameLower.includes("body") && !nameLower.includes("lid");
+            const isHandle = nameLower.includes("handle");
+            if (isBody || isHandle) {
+              node.visible = true;
+            }
+          }
+        });
+      }
+
+      resetCount++;
+      console.log(`✅ [CHEST SYSTEM] Chest ${chestId} in level ${levelKey} reset to closed state`);
+    } else {
+      // Mesh not yet loaded – just reset flags, visuals will spawn closed
+      resetCount++;
+      console.log(`✅ [CHEST SYSTEM] Chest ${chestId} (level ${levelKey}) flags reset (mesh not loaded yet)`);
+    }
+  });
+
+  console.log(`✅ [CHEST SYSTEM] Reset ${resetCount} chest(s) in level ${levelKey} – ready for testing`);
+  return resetCount;
+}
+
   /**
    * Get chest by ID
    * @param {string} levelId - Level identifier

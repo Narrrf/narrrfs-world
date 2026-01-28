@@ -2554,32 +2554,62 @@ export class GUISystem {
       buttonContainer.appendChild(btn);
     }
     
-    // Reset Chests button (admin/god mode only - for local testing)
+    // Reset Chests buttons (admin/god mode only - for local testing)
     const isLocal = !this.config.getIsProduction || !this.config.getIsProduction();
-    if (isLocal) {
-      const resetChestsBtn = this._createCompletionButton("🔄 Reset All Chests", () => {
-        // Confirm action
-        if (confirm("Are you sure you want to reset all opened chests? This will allow you to open them again for testing.")) {
-          // Get chest system from config or global
-          const chestSystem = this.config.getChestSystem ? this.config.getChestSystem() : (window.chestSystem || null);
-          
-          if (chestSystem && typeof chestSystem.resetOpenedChests === 'function') {
-            chestSystem.resetOpenedChests();
-            console.log("✅ [GOD MODE] All chests reset - ready for testing");
-            
-            // Show confirmation message
-            alert("✅ All chests have been reset! You can now open them again.");
-          } else {
-            console.error("❌ [GOD MODE] Chest system not available or reset method not found");
-            alert("❌ Error: Could not reset chests. Chest system not available.");
+    const godModeOn = this.config.getGodMode ? this.config.getGodMode() : false;
+
+    if (isLocal && godModeOn) {
+      // 🔄 Reset chests only in the CURRENT level
+      const resetCurrentLevelBtn = this._createCompletionButton(
+        "🔄 Reset Chests in CURRENT Level",
+        () => {
+          if (!confirm("Reset all opened chests in the CURRENT level only?")) {
+            return;
           }
+
+          if (this.config.onResetCurrentLevelChests) {
+            this.config.onResetCurrentLevelChests();
+            console.log("✅ [GOD MODE] Current level chests reset - ready for testing");
+            alert("✅ All chests in the current level have been reset! You can open them again.");
+          } else {
+            console.error("❌ [GOD MODE] onResetCurrentLevelChests callback not found");
+            alert("❌ Error: Could not reset current level chests. Callback not available.");
+          }
+        },
+        false,
+        {
+          bgColor: "rgba(255, 224, 102, 0.2)",
+          hoverBgColor: "rgba(255, 224, 102, 0.3)"
         }
-      }, false, {
-        bgColor: "rgba(255, 100, 100, 0.2)",
-        hoverBgColor: "rgba(255, 100, 100, 0.3)"
-      });
+      );
+      buttonContainer.appendChild(resetCurrentLevelBtn);
+
+      // 🔁 Reset chests in ALL levels (runtime only)
+      const resetChestsBtn = this._createCompletionButton(
+        "🔁 Reset ALL Chests (ALL Levels)",
+        () => {
+          if (!confirm("Reset ALL opened chests in ALL levels for this session?")) {
+            return;
+          }
+
+          if (this.config.onResetAllChests) {
+            this.config.onResetAllChests();
+            console.log("✅ [GOD MODE] All chests reset - ready for testing");
+            alert("✅ All chests in ALL levels have been reset! You can open them again.");
+          } else {
+            console.error("❌ [GOD MODE] onResetAllChests callback not found");
+            alert("❌ Error: Could not reset all chests. Callback not available.");
+          }
+        },
+        false,
+        {
+          bgColor: "rgba(255, 100, 100, 0.2)",
+          hoverBgColor: "rgba(255, 100, 100, 0.3)"
+        }
+      );
       buttonContainer.appendChild(resetChestsBtn);
     }
+
     
     // Close button
     const closeBtn = this._createCompletionButton("❌ Close", () => {

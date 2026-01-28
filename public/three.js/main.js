@@ -2374,11 +2374,29 @@ function optimizeForVR() {
   return optimizations;
 }
 
+// 🥽 VR functions - Small helper: show debug/hint messages in-game (works in VR & desktop)
+function showVRDebugMessage(message, id = "vr_debug", duration = 4000) {
+  if (window.showRiddleToast) {
+    window.showRiddleToast(message, {
+      id,
+      duration
+    });
+  } else {
+    console.log("🧩 [VR DEBUG]", message);
+  }
+}
+
+
 // 🥽 VR CAMERA FIX — anchor XR camera to player collider (position only)
 function installVRCameraAnchor() {
   try {
     if (!renderer || !renderer.xr || !renderer.xr.updateCamera) {
       console.warn("⚠️ [VR CAMERA] Cannot install anchor: renderer.xr.updateCamera missing");
+      showVRDebugMessage(
+        "⚠️ VR camera anchor could not be installed (renderer not ready).",
+        "vr_anchor_missing",
+        5000
+      );
       return;
     }
 
@@ -2425,11 +2443,20 @@ function installVRCameraAnchor() {
     };
 
     console.log("✅ [VR CAMERA] XR camera anchored to player collider");
+    showVRDebugMessage(
+      "🥽 VR camera anchor installed – your view should follow the magenta sphere.",
+      "vr_anchor_installed",
+      5000
+    );
   } catch (e) {
     console.warn("⚠️ [VR CAMERA] Failed to install anchor:", e);
+    showVRDebugMessage(
+      "⚠️ VR camera anchor failed to install.",
+      "vr_anchor_failed",
+      5000
+    );
   }
 }
-
 
 function uninstallVRCameraAnchor() {
   try {
@@ -2442,6 +2469,7 @@ function uninstallVRCameraAnchor() {
     console.warn("⚠️ [VR CAMERA] Failed to remove anchor:", e);
   }
 }
+
 
 
 /**
@@ -2676,6 +2704,8 @@ async function startVRSession() {
         playerControls.registerInputProvider(vrInputProvider);
         await playerControls.enableVR(session);
         console.log("✅ [VR] VR session started and registered with PlayerControls");
+		console.log("✅ [VR CAMERA] XR camera anchored to player collider");
+        showVRDebugMessage("🥽 VR camera anchor active – your view should follow the magenta sphere.", "vr_anchor_ok", 5000);
       }
     }
 
@@ -11129,7 +11159,7 @@ function initializeGUISystem() {
           restartLevel5();
         }
       },
-      onBackToPortal: () => {
+            onBackToPortal: () => {
         window.location.href = PROFILE_URL;
       },
       onShowOptions: () => {
@@ -11141,6 +11171,86 @@ function initializeGUISystem() {
       onHideOptionsMenu: () => {
         hideOptionsMenu();
       },
+
+      // 🧪 GOD MODE / DEV TOOLS – Chest reset callbacks
+      onResetCurrentLevelChests: () => {
+        // Only allow in God Mode and non-production (safety)
+        if (!godMode) {
+          console.warn("⚠️ [GOD MODE] Chest reset ignored – godMode is OFF");
+          return;
+        }
+        if (isProduction) {
+          console.warn("🚫 [GOD MODE] Chest reset disabled in production");
+          return;
+        }
+
+        if (!chestSystem) {
+          console.warn("⚠️ [GOD MODE] No chestSystem instance available – cannot reset chests");
+          return;
+        }
+
+        const levelId = currentLevel || LEVEL_IDS.LEVEL1;
+
+        try {
+          let resetCount = 0;
+
+          if (typeof chestSystem.resetOpenedChestsForLevel === "function") {
+            resetCount = chestSystem.resetOpenedChestsForLevel(levelId);
+          } else if (typeof chestSystem.resetOpenedChests === "function") {
+            // Fallback: reset all levels if per-level method not present
+            resetCount = chestSystem.resetOpenedChests();
+          }
+
+          console.log(`🧪 [GOD MODE] Reset ${resetCount} chest(s) for level ${levelId}`);
+
+          if (guiSystem && typeof guiSystem.showToast === "function") {
+            guiSystem.showToast(
+              `Reset ${resetCount} chest(s) in this level (God Mode)`,
+              "info"
+            );
+          }
+        } catch (err) {
+          console.error("❌ [GOD MODE] Error resetting chests:", err);
+          if (guiSystem && typeof guiSystem.showToast === "function") {
+            guiSystem.showToast("Chest reset failed – check console.", "error");
+          }
+        }
+      },
+
+      // (optional) global reset – ALL levels
+      onResetAllChests: () => {
+        if (!godMode) {
+          console.warn("⚠️ [GOD MODE] Global chest reset ignored – godMode is OFF");
+          return;
+        }
+        if (isProduction) {
+          console.warn("🚫 [GOD MODE] Global chest reset disabled in production");
+          return;
+        }
+
+        if (!chestSystem || typeof chestSystem.resetOpenedChests !== "function") {
+          console.warn("⚠️ [GOD MODE] chestSystem.resetOpenedChests() not available");
+          return;
+        }
+
+        try {
+          const resetCount = chestSystem.resetOpenedChests();
+          console.log(`🧪 [GOD MODE] Global chest reset – ${resetCount} chest(s) reset`);
+
+          if (guiSystem && typeof guiSystem.showToast === "function") {
+            guiSystem.showToast(
+              `Global chest reset: ${resetCount} chest(s) reset`,
+              "info"
+            );
+          }
+        } catch (err) {
+          console.error("❌ [GOD MODE] Error performing global chest reset:", err);
+          if (guiSystem && typeof guiSystem.showToast === "function") {
+            guiSystem.showToast("Global chest reset failed – see console.", "error");
+          }
+        }
+      },
+
 
 // ✅ VR MODE callback (January 20, 2026) - Start VR session from main menu
 // ✅ VR MODE callback (main menu + in-game options use the same logic)
