@@ -38,8 +38,8 @@ curl_setopt_array($tokenRequest, [
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded']
 ]);
 
-$response = curl_exec($tokenRequest);
-$httpCode = curl_getinfo($tokenRequest, CURLINFO_HTTP_CODE);
+$response  = curl_exec($tokenRequest);
+$httpCode  = curl_getinfo($tokenRequest, CURLINFO_HTTP_CODE);
 $curlError = curl_error($tokenRequest);
 curl_close($tokenRequest);
 
@@ -52,29 +52,19 @@ error_log('🔎 Discord token raw response: ' . $response);
 
 $token = json_decode($response, true);
 
-
+// 🔍 TEMP DEBUG BLOCK – SHOW EXACT DISCORD RESPONSE IF NO ACCESS TOKEN
 if (!isset($token['access_token'])) {
-    error_log('❌ Failed to get access token: ' . $response);
-    
-    // Check for specific Discord OAuth errors
-    if (isset($token['error'])) {
-        switch ($token['error']) {
-            case 'invalid_grant':
-                die("❌ OAuth-Fehler: Der Autorisierungscode ist abgelaufen oder wurde bereits verwendet. Bitte versuchen Sie sich erneut anzumelden.");
-            case 'redirect_uri_mismatch':
-                die("❌ OAuth-Fehler: Die Weiterleitungs-URL stimmt nicht überein. Bitte kontaktieren Sie den Administrator.");
-            case 'invalid_client':
-                die("❌ OAuth-Fehler: Ungültige Client-Konfiguration. Bitte kontaktieren Sie den Administrator.");
-            default:
-                die("❌ OAuth-Fehler: " . ($token['error_description'] ?? $token['error']) . ". Bitte versuchen Sie es erneut.");
-        }
-    }
-    
-    die("❌ Fehler beim Abrufen des Zugriffstokens. Bitte versuchen Sie sich erneut anzumelden.");
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "DEBUG: Failed to get access token\n";
+    echo "HTTP status: " . $httpCode . "\n";
+    echo "cURL error: " . ($curlError ?: 'none') . "\n\n";
+    echo "Raw response from Discord:\n";
+    echo $response . "\n";
+    exit;
 }
+
 $accessToken = $token['access_token'];
 
-// ✅ Step 3: Fetch user info
 $userRequest = curl_init();
 curl_setopt_array($userRequest, [
     CURLOPT_URL => 'https://discord.com/api/v10/users/@me',
