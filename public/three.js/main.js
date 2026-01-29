@@ -11711,16 +11711,21 @@ if (chestSystem && typeof chestSystem.tryInteract !== "function") {
       );
 
       // DEV NOTE: on localhost, ignore opened/locked flags so we can always test interaction
-      const isLocalhost = window.location.hostname === "localhost";
+// DEV NOTE: on localhost, ignore opened/locked flags so we can always test interaction
+const isLocalhost = window.location.hostname === "localhost";
 
-      if (!isLocalhost && (chest.opened || chest.canInteract === false || chest.interactionLocked)) {
-        console.log("🎁 [CHEST] → rejected due to state flags", chestId, flags);
-        return;
-      }
+// In production: only reject if chest is actually opened or explicitly locked.
+// We IGNORE canInteract here, because it's defaulting to false on fresh chests.
+if (!isLocalhost && (chest.opened || chest.interactionLocked)) {
+  console.log("🎁 [CHEST] → rejected due to state flags (prod)", chestId, flags);
+  return;
+}
 
-      if (isLocalhost && (chest.opened || chest.interactionLocked)) {
-        console.log("🧪 [CHEST DEV] Ignoring opened/locked flags on localhost for", chestId, flags);
-      }
+// In localhost dev: be extra forgiving so we can always re-test chests.
+if (isLocalhost && (chest.opened || chest.interactionLocked)) {
+  console.log("🧪 [CHEST DEV] Ignoring opened/locked flags on localhost for", chestId, flags);
+}
+
 
       candidateCount++;
 
