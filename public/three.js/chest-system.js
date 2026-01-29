@@ -3491,6 +3491,9 @@ export class ChestSystem {
     console.log(`✅ [CHEST SYSTEM] Cleared all chests for level ${levelId} (${disposedCount}/${chestCount} disposed)`);
   }
   
+  
+
+  
   /**
    * Reset all opened chests (admin/god mode only)
    * Uses the per-level reset so dual-model + legacy chests are handled correctly.
@@ -3498,7 +3501,6 @@ export class ChestSystem {
   resetOpenedChests() {
     console.log(`🔄 [CHEST SYSTEM] Global chest reset starting...`);
 
-    // Clear global cache flags
     if (this.openedChestsCache) {
       this.openedChestsCache.clear();
     }
@@ -3507,7 +3509,6 @@ export class ChestSystem {
 
     let totalReset = 0;
 
-    // Call the per-level reset for every level we know about
     this.chests.forEach((_, levelId) => {
       if (typeof this.resetOpenedChestsForLevel === "function") {
         const count = this.resetOpenedChestsForLevel(levelId);
@@ -3519,186 +3520,68 @@ export class ChestSystem {
     return totalReset;
   }
 
-  
-/**
- * Reset opened chests for a specific level (admin/god mode only)
- * - HARD RESET: clear level chests and recreate them in closed state
- * - Does NOT touch other levels
- * - Intended for local/dev testing & god mode
- */
-resetOpenedChestsForLevel(levelId) {
-  if (!levelId) {
-    console.warn("⚠️ [CHEST SYSTEM] resetOpenedChestsForLevel called without levelId");
-    return 0;
-  }
-
-  const levelKey = String(levelId);
-  const levelChests = this.chests.get(levelKey);
-
-  if (!levelChests) {
-    console.warn(`⚠️ [CHEST SYSTEM] No chests found for level ${levelKey} – nothing to reset`);
-    return 0;
-  }
-
-  console.log(`🔄 [CHEST SYSTEM] HARD reset for level ${levelKey}`);
-
-  // 1) Clear persistence / cache entries for this level's chests
-  if (this.openedChestsCache) {
-    levelChests.forEach((_, chestId) => {
-      if (this.openedChestsCache.has(chestId)) {
-        this.openedChestsCache.delete(chestId);
-      }
-    });
-  }
-
-  // Reset global flags so we don't re-apply opened state
-  this.openedChestsLoaded = false;
-  this.openedChestsLoadedForDiscordId = null;
-
-  // 2) FULL NUKE: remove all chest meshes & objects for this level
-  this.clearLevel(levelKey);
-
-  // 3) Recreate chests for this level in CLOSED state via callback
-  if (typeof this.onRecreateLevelChests === "function") {
-    try {
-      this.onRecreateLevelChests(levelKey);
-      console.log(`✅ [CHEST SYSTEM] Level ${levelKey} chests fully rebuilt (hard reset)`);
-      return 1;
-    } catch (err) {
-      console.error(`❌ [CHEST SYSTEM] Error recreating chests for level ${levelKey}:`, err);
+  /**
+   * Reset opened chests for a specific level (admin/god mode only)
+   * - HARD RESET: clear level chests and recreate them in closed state
+   * - Does NOT touch other levels
+   * - Intended for local/dev testing & god mode
+   */
+  resetOpenedChestsForLevel(levelId) {
+    if (!levelId) {
+      console.warn("⚠️ [CHEST SYSTEM] resetOpenedChestsForLevel called without levelId");
       return 0;
     }
-  } else {
-    console.warn(
-      "⚠️ [CHEST SYSTEM] onRecreateLevelChests callback not set – level chests were cleared but not recreated"
-    );
-    return 0;
-  }
-}
 
+    const levelKey = String(levelId);
+    const levelChests = this.chests.get(levelKey);
 
-// ─────────────────────────────────────────────
-// 1) Dual-model chests (new mouse chest)
-// ─────────────────────────────────────────────
-if (chest.closedModelPath && chest.openedModelPath) {
-  console.log("🔧 [CHEST SYSTEM] Dual-model reset – before:", {
-    id: chestId,
-    hasClosedMesh: !!chest.closedMesh,
-    hasOpenedMesh: !!chest.openedMesh,
-    currentMeshIsClosed: chest.mesh === chest.closedMesh,
-    openedParent: chest.openedMesh?.parent?.name || chest.openedMesh?.parent?.type
-  });
-
-  // 🔥 HARD REMOVE opened mesh from scene graph
-  if (chest.openedMesh && chest.openedMesh.parent) {
-    chest.openedMesh.parent.remove(chest.openedMesh);
-  }
-
-  // Also handle alternate property name
-  if (chest.openMesh && chest.openMesh.parent) {
-    chest.openMesh.parent.remove(chest.openMesh);
-  }
-
-  // Ensure closed mesh is attached to scene
-  if (chest.closedMesh) {
-    if (!chest.closedMesh.parent) {
-      this.scene.add(chest.closedMesh);
+    if (!levelChests) {
+      console.warn(`⚠️ [CHEST SYSTEM] No chests found for level ${levelKey} – nothing to reset`);
+      return 0;
     }
-    chest.closedMesh.visible = true;
-    chest.closedMesh.updateMatrixWorld(true);
-    chest.mesh = chest.closedMesh;
-  }
 
-  // Safety: ensure NO opened visuals remain
-  if (chest.openedMesh) chest.openedMesh.visible = false;
-  if (chest.openMesh) chest.openMesh.visible = false;
+    console.log(`🔄 [CHEST SYSTEM] HARD reset for level ${levelKey}`);
 
-  console.log(`✅ [CHEST SYSTEM] Dual-model chest ${chestId} FORCE reset to CLOSED mesh`);
-  resetCount++;
-  return;
-}
+    // 1) Clear persistence / cache entries for this level's chests
+    if (this.openedChestsCache) {
+      levelChests.forEach((_, chestId) => {
+        if (this.openedChestsCache.has(chestId)) {
+          this.openedChestsCache.delete(chestId);
+        }
+      });
+    }
 
+    // Reset global flags so we don't re-apply opened state
+    this.openedChestsLoaded = false;
+    this.openedChestsLoadedForDiscordId = null;
 
-    // ─────────────────────────────────────────────
-    // 2) Legacy single-model chest2 logic
-    // ─────────────────────────────────────────────
-    if (chest.mesh && chest.isLoaded) {
-      // Show closed meshes
-      if (chest.closedMeshes && chest.closedMeshes.length > 0) {
-        chest.closedMeshes.forEach((mesh) => {
-          if (mesh) mesh.visible = true;
-        });
+    // 2) FULL NUKE: remove all chest meshes & objects for this level
+    this.clearLevel(levelKey);
+
+    // 3) Recreate chests for this level in CLOSED state via callback
+    if (typeof this.onRecreateLevelChests === "function") {
+      try {
+        this.onRecreateLevelChests(levelKey);
+        console.log(`✅ [CHEST SYSTEM] Level ${levelKey} chests fully rebuilt (hard reset)`);
+        return 1;
+      } catch (err) {
+        console.error(`❌ [CHEST SYSTEM] Error recreating chests for level ${levelKey}:`, err);
+        return 0;
       }
-
-      // Hide opened meshes
-      if (chest.openedMeshes && chest.openedMeshes.length > 0) {
-        chest.openedMeshes.forEach((mesh) => {
-          if (mesh) mesh.visible = false;
-        });
-      }
-
-      // Show duplicate lids again
-      if (chest.duplicateLidMeshes && chest.duplicateLidMeshes.length > 0) {
-        chest.duplicateLidMeshes.forEach((mesh) => {
-          if (mesh) mesh.visible = true;
-        });
-      }
-
-      // Reset lid rotation to closed
-      if (chest.lidMesh) {
-        chest.lidMesh.rotation.x = 0;
-        chest.lidMesh.visible = true;
-      }
-
-      // Stop opening animation if present
-      if (chest.openingAnimation) {
-        chest.openingAnimation.stopAllAction();
-      }
-
-      // Make sure body/handles are visible
-      if (chest.chestBodyMesh) {
-        chest.chestBodyMesh.visible = true;
-      }
-
-      if (chest.mesh) {
-        chest.mesh.traverse((node) => {
-          if (node.isMesh) {
-            const nameLower = (node.name || "").toLowerCase();
-            const isBody = nameLower.includes("body") && !nameLower.includes("lid");
-            const isHandle = nameLower.includes("handle");
-            if (isBody || isHandle) {
-              node.visible = true;
-            }
-          }
-        });
-      }
-
-      resetCount++;
-      console.log(`✅ [CHEST SYSTEM] Chest ${chestId} in level ${levelKey} reset to closed state`);
     } else {
-      // Mesh not yet loaded – just reset flags, visuals will spawn closed
-      resetCount++;
-      console.log(`✅ [CHEST SYSTEM] Chest ${chestId} (level ${levelKey}) flags reset (mesh not loaded yet)`);
+      console.warn(
+        "⚠️ [CHEST SYSTEM] onRecreateLevelChests callback not set – level chests were cleared but not recreated"
+      );
+      return 0;
     }
-  });
-
-  console.log(`✅ [CHEST SYSTEM] Reset ${resetCount} chest(s) in level ${levelKey} – ready for testing`);
-  return resetCount;
-}
+  }
 
   /**
    * Get chest by ID
-   * @param {string} levelId - Level identifier
-   * @param {string} chestId - Chest ID
-   * @returns {Chest|null} - Chest object or null
    */
   getChest(levelId, chestId) {
     const levelChests = this.chests.get(levelId);
-    if (!levelChests) {
-      return null;
-    }
-    
+    if (!levelChests) return null;
     return levelChests.get(chestId) || null;
   }
 }
-

@@ -11492,7 +11492,7 @@ if (!guiSystem && typeof initializeGUISystem === 'function') {
   }
 }
 
-// Helper function to initialize Weapon System (called after all dependencies are ready)
+/// Helper function to initialize Weapon System (called after all dependencies are ready)
 function initializeWeaponSystem() {
   if (weaponSystem) {
     console.warn("⚠️ [WEAPON SYSTEM] Already initialized, skipping...");
@@ -11517,8 +11517,8 @@ function initializeWeaponSystem() {
       shootRange: LEVEL4_SHOOT_RANGE || 200,
       shootAudioPath: resolveAssetPath(LEVEL4_SHOOT_AUDIO || ""),
       tripleShotAudioPath: resolveAssetPath(LEVEL4_SF13_SHOOT_AUDIO || ""),
-      resolveAssetPath: resolveAssetPath, // Pass function for any other paths
-      bulletSize: LEVEL4_BULLET_SIZE || 0.15, // Use 0.15 (visible size) instead of 0.05
+      resolveAssetPath: resolveAssetPath,
+      bulletSize: LEVEL4_BULLET_SIZE || 0.15,
       bulletSpeed: LEVEL4_BULLET_SPEED || 100,
       bulletLifetime: LEVEL4_BULLET_LIFETIME || 2.0,
 
@@ -11526,96 +11526,75 @@ function initializeWeaponSystem() {
       getCurrentLevel: () => currentLevel || LEVEL_IDS.LEVEL1,
       getLevel4State: () => level4State || {},
       getLevel4RiddleState: () => level4RiddleState || {},
-      getLevel5State: () => level5State || {}, // Level 5 state getter (January 11, 2026)
-      getLevel5RiddleState: () => level5RiddleState || {}, // Level 5 riddle state getter (January 11, 2026)
+      getLevel5State: () => level5State || {},
+      getLevel5RiddleState: () => level5RiddleState || {},
       isFirstPerson: () => isFirstPerson(),
       isGamePaused: () => isGamePaused || false,
       isPointerLocked: () => {
-        // 🥽 In VR we don't use pointer lock, but we still want to allow shooting.
-        // Treat an active VR session as "locked" so WeaponSystem._canShoot() passes.
         try {
-          if (typeof isVRSessionActive === 'function' && isVRSessionActive()) {
+          if (typeof isVRSessionActive === "function" && isVRSessionActive()) {
             return true;
           }
-        } catch (e) {
-          // If isVRSessionActive fails for some reason, fall through to desktop logic.
-        }
-
-        // 🖥️ Desktop / non-VR: require real pointer lock as before
-        if (playerControls && typeof playerControls.getPointerLockControls === 'function') {
+        } catch (e) {}
+        if (playerControls && typeof playerControls.getPointerLockControls === "function") {
           const controls = playerControls.getPointerLockControls();
           return controls ? controls.isLocked : false;
         }
-
-        // Fallback to direct document-level check
         return document.pointerLockElement === renderer.domElement;
       },
 
       getPhoenixBoss: () => {
-        // CRITICAL: Return phoenixBoss if it exists, otherwise null
-        // This prevents errors when phoenixBoss hasn't been initialized yet
         try {
-          return typeof phoenixBoss !== 'undefined' && phoenixBoss ? phoenixBoss : null;
+          return typeof phoenixBoss !== "undefined" && phoenixBoss ? phoenixBoss : null;
         } catch (error) {
           return null;
         }
-      }, // Phoenix boss getter (used in Level 6, returns null if not initialized)
+      },
 
       // Callbacks
       onWeaponSwitched: (slot, weapon) => {
-        // CRITICAL: Sync legacy state with weapon system state
         if (level4State) {
           level4State.currentWeaponSlot = slot;
         }
-        // Update HUD if GUI system is available
-        if (guiSystem && typeof guiSystem.updateLevel4ProgressHUD === 'function') {
+        if (guiSystem && typeof guiSystem.updateLevel4ProgressHUD === "function") {
           guiSystem.updateLevel4ProgressHUD();
         }
-        // Legacy fallback
-        if (typeof updateLevel4WeaponHUD === 'function') {
+        if (typeof updateLevel4WeaponHUD === "function") {
           updateLevel4WeaponHUD();
         }
         console.log("✅ [WEAPON] HUD updated after weapon switch to slot", slot);
       },
       onWeaponFired: (slot, weapon) => {
-        // Weapon fired callback - can be used for additional effects
-        console.log(`🔫 [WEAPON] Fired: ${weapon?.name || 'Unknown'} (Slot ${slot})`);
+        console.log(`🔫 [WEAPON] Fired: ${weapon?.name || "Unknown"} (Slot ${slot})`);
       },
       onOverheated: () => {
-        // Weapon overheated - can show notification
-        console.log('🔥 [WEAPON] Weapon overheated!');
+        console.log("🔥 [WEAPON] Weapon overheated!");
       },
       onHeatChanged: (heat, maxHeat) => {
-        // Heat changed - update HUD
-        if (guiSystem && typeof guiSystem.updateLevel4ProgressHUD === 'function') {
+        if (guiSystem && typeof guiSystem.updateLevel4ProgressHUD === "function") {
           guiSystem.updateLevel4ProgressHUD();
         }
       },
       onMonsterHit: (index) => {
-        // Level 4 Monster hit - call existing function
-        if (typeof defeatLevel4Monster === 'function') {
+        if (typeof defeatLevel4Monster === "function") {
           defeatLevel4Monster(index);
         }
       },
       onLevel5MonsterHit: (index) => {
-        // Level 5 Monster hit - call Level 5 defeat function (January 11, 2026)
-        if (typeof defeatLevel5Monster === 'function') {
+        if (typeof defeatLevel5Monster === "function") {
           defeatLevel5Monster(index);
         }
       },
       onCheeseHit: (index) => {
-        // Cheese hit - call existing function
-        if (typeof captureLevel4Cheese === 'function') {
+        if (typeof captureLevel4Cheese === "function") {
           captureLevel4Cheese(index);
         }
       },
       onHitIndicator: () => {
-        // Show hit indicator
-        if (guiSystem && typeof guiSystem.showLevel4HitIndicator === 'function') {
+        if (guiSystem && typeof guiSystem.showLevel4HitIndicator === "function") {
           guiSystem.showLevel4HitIndicator();
         }
-        // Legacy fallback
-        if (typeof showLevel4HitIndicator === 'function') {
+        if (typeof showLevel4HitIndicator === "function") {
           showLevel4HitIndicator();
         }
       }
@@ -11625,15 +11604,23 @@ function initializeWeaponSystem() {
     weaponSystem = new WeaponSystem(scene, camera, weaponConfig);
 
     // Initialize Weapon System (loads audio)
-    weaponSystem.initialize().then(() => {
-      console.log("✅ [WEAPON SYSTEM] Initialized successfully");
-    }).catch((error) => {
-      console.error("❌ [WEAPON SYSTEM] Failed to initialize:", error);
-    });
-    
-    // Initialize Chest System
-    // Dual-model chest system (Jan 2026): new GLBs with no embedded animation.
-    // Stored under `three.js/public/textures/3d models/chest3/` (symlinked from /data on Render).
+    weaponSystem
+      .initialize()
+      .then(() => {
+        console.log("✅ [WEAPON SYSTEM] Initialized successfully");
+      })
+      .catch((error) => {
+        console.error("❌ [WEAPON SYSTEM] Failed to initialize:", error);
+      });
+  } catch (error) {
+    console.error("❌ [WEAPON SYSTEM] Failed to create instance:", error);
+  }
+} // ← CLOSES function initializeWeaponSystem ✅
+
+
+// Initialize Chest System
+// Dual-model chest system (Jan 2026): new GLBs with no embedded animation.
+// Stored under `three.js/public/textures/3d models/chest3/` (symlinked from /data on Render).
 chestSystem = new ChestSystem(
   scene,
   loadModel,
@@ -11669,9 +11656,117 @@ chestSystem = new ChestSystem(
 
 console.log("✅ [CHEST SYSTEM] Initialized successfully");
 
+// 🛡️ SAFETY PATCH: ensure chestSystem.tryInteract exists for E-key interaction
+if (chestSystem && typeof chestSystem.tryInteract !== "function") {
+  console.warn("🛠️ [CHEST SYSTEM] tryInteract not found on instance – attaching runtime helper");
+  
+  chestSystem.tryInteract = function (playerPosition, levelId) {
+    if (!playerPosition) {
+      console.warn("⚠️ [CHEST SYSTEM] tryInteract called without playerPosition");
+      return false;
+    }
+
+    const levelKey = String(levelId || this.activeLevel || "");
+    const levelChests = this.chests && this.chests.get ? this.chests.get(levelKey) : null;
+
+    if (!levelChests || levelChests.size === 0) {
+      console.log(`🎁 [CHEST] No chests found for level ${levelKey} in tryInteract (runtime helper)`);
+      return false;
+    }
+
+    const MAX_INTERACT_DISTANCE = 8.0; // more forgiving
+    let closestChest = null;
+    let closestDist = Infinity;
+    let candidateCount = 0;
+
+    levelChests.forEach((chest, chestId) => {
+      if (!chest) return;
+
+      const mesh = chest.mesh || chest.closedMesh || chest.openedMesh;
+      const flags = {
+        opened: !!chest.opened,
+        canInteract: chest.canInteract !== false,
+        interactionLocked: !!chest.interactionLocked,
+        hasMesh: !!mesh,
+      };
+
+      if (!mesh || !mesh.position) {
+        console.log("🎁 [CHEST] Skipping chest", chestId, "- no valid mesh/position", flags);
+        return;
+      }
+
+      // Horizontal distance only (XZ) so Y height doesn’t kill interaction
+      const dx = mesh.position.x - playerPosition.x;
+      const dz = mesh.position.z - playerPosition.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+
+      console.log(
+        "🎁 [CHEST] Candidate",
+        chestId,
+        "distXZ:",
+        dist.toFixed(2),
+        flags,
+        "meshPos:",
+        mesh.position
+      );
+
+      // DEV NOTE: on localhost, ignore opened/locked flags so we can always test interaction
+      const isLocalhost = window.location.hostname === "localhost";
+
+      if (!isLocalhost && (chest.opened || chest.canInteract === false || chest.interactionLocked)) {
+        console.log("🎁 [CHEST] → rejected due to state flags", chestId, flags);
+        return;
+      }
+
+      if (isLocalhost && (chest.opened || chest.interactionLocked)) {
+        console.log("🧪 [CHEST DEV] Ignoring opened/locked flags on localhost for", chestId, flags);
+      }
+
+      candidateCount++;
+
+      if (dist < MAX_INTERACT_DISTANCE && dist < closestDist) {
+        closestDist = dist;
+        closestChest = { chest, chestId };
+      }
+    });
+
+    console.log("🎁 [CHEST] tryInteract candidates found:", candidateCount);
+
+
+    if (!closestChest) {
+      console.log("🎁 [CHEST] No chest in interaction range for E key (runtime helper)");
+      return false;
+    }
+
+    const { chest, chestId } = closestChest;
+    console.log("🎁 [CHEST] Interacting with chest via E key (runtime helper):", chestId, {
+      levelKey,
+      distance: closestDist
+    });
+
+    try {
+      if (typeof chest.interact === "function") {
+        chest.interact();
+      } else if (typeof chest.open === "function") {
+        chest.open();
+      } else if (typeof this.openChest === "function") {
+        this.openChest(levelKey, chestId);
+      } else {
+        console.warn("⚠️ [CHEST] Chest has no interact/open method – cannot handle E key (runtime helper)");
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error("❌ [CHEST] Error during chest interaction (runtime helper):", err);
+      return false;
+    }
+  };
+}
+
 
 // Initialize Weapon System after all dependencies are ready
-if (!weaponSystem && typeof initializeWeaponSystem === 'function') {
+if (!weaponSystem && typeof initializeWeaponSystem === "function") {
   try {
     initializeWeaponSystem();
     console.log("✅ [WEAPON SYSTEM] Initialization started");
@@ -11679,6 +11774,7 @@ if (!weaponSystem && typeof initializeWeaponSystem === 'function') {
     console.error("❌ [WEAPON SYSTEM] Failed to start initialization:", error);
   }
 }
+
 
 if (autoSeededLocalIdentity) {
   const storedBalanceRaw = window.localStorage.getItem("narrrfs_last_ds_balance");
@@ -34336,7 +34432,6 @@ document.addEventListener("keydown", (event) => {
     case "Space":
       if (godMode) {
         // 🚀 GOD MODE: Space = Fly up (hold to fly continuously)
-        // Allow setting flyUp even on repeat events so holding Space works properly
         keyboardMovement.flyUp = true;
         updateAggregatedMovement();
         console.log("🚀 [GOD MODE] Space pressed - flyUp set to true", {
@@ -34348,35 +34443,74 @@ document.addEventListener("keydown", (event) => {
       } else {
         // Normal mode: Space = Jump (only when on ground, no repeat)
         if (!event.repeat && onGround) {
-          // Level 5 has super jump mode (5x higher than normal)
           const isLevel5 = currentLevel === LEVEL_IDS.LEVEL5;
+
           // 🧗 CLIMBING: Exit climb mode when jump is pressed
           if (isClimbing) {
             isClimbing = false;
             climbSurfaceNormal = null;
           }
-          
-          const jumpHeight = isLevel5 ? 75 : 15; // Super jump in Level 5 (5x = 75), normal jump elsewhere (15)
+
+          const jumpHeight = isLevel5 ? 75 : 15;
           playerVelocity.y = jumpHeight;
           playJumpSound();
-          
+
           if (isLevel5) {
             console.log("🚀 [LEVEL 5] Super jump activated!");
           }
         }
-        keyboardMovement.flyUp = false; // Ensure fly up is off in normal mode
+        keyboardMovement.flyUp = false;
         updateAggregatedMovement();
       }
       break;
+
     case "KeyE":
       console.log("🔑 [DEBUG] E KEY PRESSED! event.repeat:", event.repeat);
       if (!event.repeat) {
         console.log("🔑 [DEBUG] E key not repeated, checking conditions...");
+
+        // 1️⃣ CHEST INTERACTION (ALL LEVELS)
+        try {
+          if (chestSystem && typeof chestSystem.tryInteract === "function") {
+            let playerPos = null;
+
+            // Prefer camera position
+            if (camera && camera.position) {
+              playerPos = camera.position;
+            } else if (playerCollider && playerCollider.start && playerCollider.end) {
+              playerPos = new THREE.Vector3().lerpVectors(
+                playerCollider.start,
+                playerCollider.end,
+                0.5
+              );
+            }
+
+            console.log("🎁 [CHEST] E key – playerPos:", playerPos);
+
+            if (playerPos) {
+              const didChestInteract = chestSystem.tryInteract(playerPos, currentLevel);
+              console.log("🎁 [CHEST] tryInteract result:", didChestInteract);
+              if (didChestInteract) {
+                console.log("🎁 [CHEST] E key handled by chest system");
+                break; // ✅ don't fall through if chest handled interaction
+              }
+            }
+          } else {
+            console.log("⚠️ [CHEST] chestSystem or tryInteract not available on E key");
+          }
+        } catch (err) {
+          console.error("❌ [CHEST] Error in E-key chest interaction block:", err);
+        }
+
+        // 2️⃣ PORTAL REGISTER DEBUG LOGS (LEVEL 4)
         console.log("🔑 [DEBUG] currentLevel:", currentLevel, "LEVEL_IDS.LEVEL4:", LEVEL_IDS.LEVEL4);
         console.log("🔑 [DEBUG] level4State:", level4State);
         console.log("🔑 [DEBUG] level4State.portalRegister:", level4State.portalRegister);
-        console.log("🔑 [DEBUG] level4State.portalRegister.playerInProximity:", level4State.portalRegister?.playerInProximity);
-        
+        console.log(
+          "🔑 [DEBUG] level4State.portalRegister.playerInProximity:",
+          level4State.portalRegister?.playerInProximity
+        );
+
         // 📖 Level 4 Portal Register interaction (January 18, 2026 - Phase 2)
         if (currentLevel === LEVEL_IDS.LEVEL4 && level4State.portalRegister.playerInProximity) {
           console.log("✅ [PORTAL REGISTER] CONDITIONS MET! Opening portal register...");
@@ -34389,20 +34523,24 @@ document.addEventListener("keydown", (event) => {
         } else {
           console.log("❌ [PORTAL REGISTER] Conditions NOT met for opening register");
         }
-        
+
+        // 3️⃣ LEVEL 2 LEVER
         if (currentLevel === LEVEL_IDS.LEVEL2 && handleLevel2LeverClick()) {
           break;
         }
+
+        // 4️⃣ RIDDLE #3 LEVER
         if (riddleState.riddle2.step2Complete && !riddleState.riddle3.step1Complete) {
-        handleRiddle3LeverClick();
+          handleRiddle3LeverClick();
         }
-        // Handle Riddle #4 (Hidden Secret) lever clicks - always available
+
+        // 5️⃣ RIDDLE #4 LEVER (LEVEL 1)
         if (currentLevel === LEVEL_IDS.LEVEL1) {
           handleRiddle4LeverClick();
         }
       }
       break;
-    // Level 4, Level 5 & Level 6 Weapon Switching (Keys 1-9)
+
     case "Digit1":
     case "Numpad1":
       if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
