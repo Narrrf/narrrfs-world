@@ -10,7 +10,7 @@ require_once 'discord-invite.php';
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🧀 Your Narrrf Profile - Season 7 RUNNING 🎮</title>
+  <title>🧀 Your Narrrf Profile - Season 8 STARTED 🎮</title>
   <script>
     window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
     document.addEventListener("DOMContentLoaded", async () => {
@@ -525,10 +525,10 @@ require_once 'discord-invite.php';
 <header class="mobile-header bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <div>
-      <h1 class="text-xl font-bold tracking-wide text-green-400">🚀 Narrrf's World – 🎮 Season 7 RUNNING 🎮</h1>
+      <h1 class="text-xl font-bold tracking-wide text-green-400">🚀 Narrrf's World – 🎮 Season 8 STARTED 🎮</h1>
       <!-- 🚀 SEASON STATUS MESSAGE -->
       <div class="season-info text-xs text-blue-300 animate-pulse mt-1">
-        🎮 Season 7 RUNNING 🎮 • Play now and compete! • 🐛 Bug Tracker Ready!
+        ⏸️ Season 8 STARTED - Frozen • Play to unlock leaderboard! • 🐛 Bug Tracker Ready!
       </div>
     </div>
     <nav class="mobile-hide-nav space-x-4 text-sm md:text-base flex items-center">
@@ -617,19 +617,19 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
-<!-- 🚀 SEASON STATUS BANNER - Dynamic Based on Leaderboard Status -->
+<!-- 🚀 SEASON STATUS BANNER - FROZEN THEME (blue) for Season 8 -->
 <div id="season-status-banner" class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 z-30 relative animate-pulse mb-6">
   <div class="mb-2">
-    <span id="season-status-main" class="text-green-300 text-lg font-bold animate-pulse">🎮 SEASON 7 RUNNING 🎮</span>
+    <span id="season-status-main" class="text-blue-200 text-lg font-bold animate-pulse">⏸️ SEASON 8 STARTED - FROZEN ⏸️</span>
   </div>
   <div class="text-center">
-    <span id="season6-coming-status" class="text-green-300 text-2xl font-bold animate-bounce">🎮 SEASON 7 ACTIVE 🎮</span>
+    <span id="season6-coming-status" class="text-blue-200 text-2xl font-bold animate-pulse">⏸️ Showing Season 7 until 3+ scores</span>
   </div>
   <div class="mt-2">
-    <span id="season-status-subtitle" class="text-blue-200 text-sm">⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon!</span>
+    <span id="season-status-subtitle" class="text-blue-200 text-sm">🎮 Season 8 STARTED • Leaderboard frozen • Play to unlock!</span>
   </div>
   <div class="mt-1">
-    <span id="season-status-details" class="text-white text-xs">🎮 Season 7 RUNNING 🎮 • Play now and compete for the top spots!</span>
+    <span id="season-status-details" class="text-white text-xs">⏸️ Season 8 STARTED • Play now to be first on the leaderboard!</span>
   </div>
 </div>
 
@@ -850,7 +850,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         🎯 Mint Now 🔥
       </a>
       <div class="mt-2 text-green-400 font-semibold">🔥 Mint is LIVE! Get your Narrrf's Genesis NFT!</div>
-      <div id="mint-season-status" class="text-gray-400 text-sm">🎮 Season 7 RUNNING 🎮</div>
+      <div id="mint-season-status" class="text-gray-400 text-sm">🎮 Season 8 STARTED 🎮</div>
     </div>
 
     <!-- 🧀 Nerd Lab Button (for authorized users) -->
@@ -868,18 +868,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner border-2 border-orange-300">
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
       
-      <!-- 🚀 Season Status Banner (Dynamic) -->
-      <div id="wallet-season-banner" class="mb-3 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center">
-        <span class="text-green-800 font-semibold text-sm">🎮 Season 7 RUNNING 🎮</span>
+      <!-- 🚀 Season Status Banner - FROZEN THEME (blue) for Season 8 -->
+      <div id="wallet-season-banner" class="mb-3 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center">
+        <span class="text-blue-800 font-semibold text-sm">⏸️ Season 8 STARTED - Frozen ⏸️</span>
       </div>
       
       <p id="wallet-address">🔗 Linked wallet: <em class="text-sm text-green-600">TestWallet123456789XYZ</em></p>
       <p>🧬 Traits: <span id="traits" class="text-green-600">Season Tester • Cheese Master • Game Champion</span></p>
       
-      <!-- 🚀 Season Status Features -->
-      <div class="mt-3 text-xs text-gray-600 bg-green-50 rounded p-2 border border-green-200">
-        <strong>🎮 Season 7 RUNNING 🎮</strong><br>
-        • 🎮 Season 7 is LIVE! • Play now and compete for the top spots!<br>
+      <!-- 🚀 Season Status Features - FROZEN THEME -->
+      <div class="mt-3 text-xs text-gray-600 bg-blue-50 rounded p-2 border border-blue-200">
+        <strong>⏸️ Season 8 STARTED - Frozen ⏸️</strong><br>
+        • 🎮 Season 8 STARTED! • Leaderboard shows Season 7 until 3+ scores • Play to unlock!<br>
         • Fresh leaderboards active! • Compete now and earn DSPOINC!<br>
         • Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>
         • Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>
@@ -887,16 +887,16 @@ document.addEventListener('DOMContentLoaded', async function() {
       </div>
     </div>
 
-    <!-- 🚀 SEASON STATUS BANNER (Dynamic) -->
-    <div id="main-season-banner" class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white p-4 rounded-xl shadow-lg border-4 border-green-300 mb-6 text-center animate-pulse">
-      <div id="main-season-title" class="text-lg font-bold mb-2">🎮 SEASON 7 RUNNING 🎮</div>
-      <div id="main-season-subtitle" class="text-sm mb-2 font-semibold">🎮 Season 7 is LIVE! • Play now and compete! • Leaderboards active!</div>
-      <div id="main-season-details" class="text-xs mb-2 text-green-100 italic font-bold">🎮 Season 7 RUNNING 🎮 • Fresh competition is here! • Compete now! 🎯</div>
-      <div id="main-season-cta" class="text-2xl font-bold text-yellow-300 mb-2 border-2 border-yellow-300 inline-block px-4 py-1 rounded-full">
-        🎮 SEASON 7 RUNNING! 🎮
+    <!-- 🚀 SEASON STATUS BANNER - FROZEN THEME (blue) for Season 8 -->
+    <div id="main-season-banner" class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white p-4 rounded-xl shadow-lg border-4 border-blue-300 mb-6 text-center animate-pulse">
+      <div id="main-season-title" class="text-lg font-bold mb-2">⏸️ SEASON 8 STARTED - FROZEN ⏸️</div>
+      <div id="main-season-subtitle" class="text-sm mb-2 font-semibold">🎮 Season 8 STARTED! • Leaderboard shows Season 7 until 3+ scores • Play to unlock!</div>
+      <div id="main-season-details" class="text-xs mb-2 text-blue-100 italic font-bold">⏸️ Season 8 FROZEN • Play now to be first on the leaderboard! 🎯</div>
+      <div id="main-season-cta" class="text-2xl font-bold text-blue-200 mb-2 border-2 border-blue-300 inline-block px-4 py-1 rounded-full">
+        ⏸️ SEASON 8 FROZEN 🎮
       </div>
       <div id="main-season-features" class="text-xs mt-2 text-white">
-        🎮 Season 7 RUNNING 🎮 • 6 Games Available • Boss Battles • Active Leaderboards • Achievements System • Bug Tracker Ready!
+        🎮 Season 8 STARTED 🎮 • 6 Games Available • Boss Battles • Frozen Leaderboard • Play to unlock! • Bug Tracker Ready!
       </div>
     </div>
 
@@ -906,7 +906,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       
       <!-- 🚀 Season Store Banner -->
       <div class="mb-4 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center">
-        <span class="text-green-800 font-semibold text-sm">🎮 Season 7 RUNNING 🎮 - Play now and compete!</span>
+        <span class="text-green-800 font-semibold text-sm">🎮 Season 8 STARTED 🎮 - Play now and compete!</span>
       </div>
       
       <!-- 📦 Inventory Summary -->
@@ -1456,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 </section>
 
 <!-- 🎴 Web3 Wallet Verification Section -->
-<section class="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl p-6 shadow-2xl my-20 relative z-10 border border-purple-500/30">
+<section id="holder-verification" class="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl p-6 shadow-2xl my-20 relative z-10 border border-purple-500/30">
   <div class="text-center">
     <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2 animate-neon-glow">
       🎴 NFT Holder Verification
@@ -1718,7 +1718,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 <section class="max-w-6xl w-full mx-auto px-4 mt-12 relative z-10">
   <div class="text-center mb-8">
     <h2 class="text-3xl font-bold text-yellow-300 mb-2">🎮 Play Your Games</h2>
-    <p class="text-gray-400">Click any game to start playing • 🎮 Season 7 RUNNING 🎮</p>
+    <p class="text-gray-400">Click any game to start playing • 🎮 Season 8 STARTED 🎮</p>
   </div>
   
   <div class="flex flex-col gap-4">
@@ -1753,7 +1753,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-yellow-400/20 border border-yellow-400/50 rounded-full text-xs text-yellow-300 font-semibold">
-            🎮 Season 7 RUNNING 🎮 • Total Rewards: 3,550 DSPOINC
+            🎮 Season 8 STARTED 🎮 • Total Rewards: 3,550 DSPOINC
           </span>
         </div>
       </div>
@@ -1790,7 +1790,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-green-400/20 border border-green-400/50 rounded-full text-xs text-green-300 font-semibold">
-            🎮 Season 7 RUNNING 🎮 • Total Rewards: 1,930 DSPOINC
+            🎮 Season 8 STARTED 🎮 • Total Rewards: 1,930 DSPOINC
           </span>
         </div>
       </div>
@@ -1827,7 +1827,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-green-400/20 border border-green-400/50 rounded-full text-xs text-green-300 font-semibold">
-            🎮 Season 7 RUNNING 🎮 • Progressive Boss Rewards
+            🎮 Season 8 STARTED 🎮 • Progressive Boss Rewards
           </span>
         </div>
       </div>
@@ -1844,41 +1844,41 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 <!-- 🧀 Discord Login Button - MOVED TO TOP NAVIGATION AREA -->
 
-<!-- 🎮 Season Status Notification -->
-<div id="season6Active" class="max-w-6xl mx-auto bg-gradient-to-r from-green-500/30 via-emerald-500/30 to-teal-500/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-green-400/50 mt-6 relative z-10 border-2 border-green-400/40">
+<!-- 🎮 Season Status Notification - FROZEN THEME (blue) for Season 8 transition -->
+<div id="season6Active" class="max-w-6xl mx-auto bg-gradient-to-r from-blue-600/30 via-indigo-500/30 to-purple-600/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-blue-400/50 mt-6 relative z-10 border-2 border-blue-400/40">
   <div class="flex items-center justify-center gap-3 mb-2">
-    <span class="text-2xl">🎮</span>
-    <h3 class="text-lg font-bold text-green-200">Season 7 is RUNNING!</h3>
-    <span class="text-2xl">🎮</span>
+    <span class="text-2xl">⏸️</span>
+    <h3 class="text-lg font-bold text-blue-200">Season 8 STARTED • Leaderboard Frozen</h3>
+    <span class="text-2xl">⏸️</span>
   </div>
   <div class="text-center">
-    <p class="text-sm text-green-200 mb-2 font-semibold">🎮 Season 7 RUNNING • Leaderboards active! • Play now and compete!</p>
-    <p class="text-xs text-yellow-200 mb-2 italic">🎮 Season 7 is LIVE! • Fresh leaderboards active! • Compete for top spots! 🎯</p>
-    <div class="text-lg font-mono font-bold text-green-300 mb-2 border-2 border-green-300 inline-block px-4 py-1 rounded-full">
-      🎮 SEASON 7 RUNNING! 🎮
+    <p class="text-sm text-blue-200 mb-2 font-semibold">⏸️ Season 8 STARTED • Showing Season 7 leaderboard until 3+ scores!</p>
+    <p class="text-xs text-blue-100 mb-2 italic">🎮 Play now to be first! • First 3 scores unlock live Season 8 leaderboard!</p>
+    <div class="text-lg font-mono font-bold text-blue-300 mb-2 border-2 border-blue-300 inline-block px-4 py-1 rounded-full">
+      ⏸️ SEASON 8 FROZEN 🎮
     </div>
-    <p class="text-xs text-white mt-2 italic">🎮 Season 7: RUNNING 🎮 • Play now and compete for the top spots! 🏆</p>
+    <p class="text-xs text-white mt-2 italic">🎮 Season 8: STARTED • Leaderboard shows Season 7 until 3+ scores! 🏆</p>
   </div>
 </div>
 
-<!-- 🎮 Season Status Banner -->
+<!-- 🎮 Season Status Banner - FROZEN THEME (blue) for Season 8 -->
 <div class="max-w-6xl mx-auto mt-10 mb-4">
-  <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white rounded-2xl p-6 shadow-2xl border-4 border-green-400 animate-pulse">
+  <div class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white rounded-2xl p-6 shadow-2xl border-4 border-blue-400 animate-pulse">
     <div class="text-center">
-      <div class="text-2xl font-extrabold mb-2">🎮 SEASON 7 RUNNING 🎮</div>
-      <div class="text-sm font-semibold mb-3">🎮 Season 7 is LIVE! • Play now and compete! • Leaderboards active!</div>
-      <div class="bg-gray-900 text-green-300 inline-block px-4 py-2 rounded-full text-xs font-bold border-2 border-green-300">
-        🏆 SEASON 7 LEADERBOARDS - ACTIVE 🎮 • PLAY NOW 🎮 🏆
+      <div class="text-2xl font-extrabold mb-2">⏸️ SEASON 8 STARTED - FROZEN ⏸️</div>
+      <div class="text-sm font-semibold mb-3">🎮 Season 8 STARTED! • Leaderboard shows Season 7 until 3+ scores • Play to unlock!</div>
+      <div class="bg-gray-900 text-blue-300 inline-block px-4 py-2 rounded-full text-xs font-bold border-2 border-blue-300">
+        ⏸️ SEASON 8 FROZEN • Showing Season 7 🎮 • PLAY TO UNLOCK! 🏆
       </div>
-      <div class="text-xs mt-3 font-bold text-yellow-100">🎮 Season 7 RUNNING 🎮 • Fresh competition is here! • Compete now! 🎯</div>
+      <div class="text-xs mt-3 font-bold text-blue-100">🎮 Season 8 STARTED 🎮 • Play now to be first on the leaderboard! 🎯</div>
     </div>
   </div>
 </div>
 
-<!-- 🏆 Leaderboard Section - Dynamic Season Status -->
-<section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-green-400/50 mt-2 relative z-10 border-2 border-green-400/50">
-  <h3 id="leaderboard-title" class="text-center text-xl font-bold">🎮 Season 7 Leaderboard - ACTIVE 🎮</h3>
-  <div id="leaderboard-subtitle" class="text-center text-xs text-blue-300 mb-4 font-semibold">⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon! • Get ready for fresh competition!</div>
+<!-- 🏆 Leaderboard Section - FROZEN THEME (blue) for Season 8 -->
+<section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-blue-400/50 mt-2 relative z-10 border-2 border-blue-400/50">
+  <h3 id="leaderboard-title" class="text-center text-xl font-bold">⏸️ Season 8 Leaderboard - FROZEN ⏸️</h3>
+  <div id="leaderboard-subtitle" class="text-center text-xs text-blue-300 mb-4 font-semibold">⏸️ Season 7 leaderboard shown • 🎮 Season 8 STARTED! • Play to unlock live leaderboard (3+ scores)!</div>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
     <div>
       <h4 class="text-center text-md font-semibold">🧀 Tetris Top Scores</h4>
@@ -2772,7 +2772,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           leaderboardHeader.innerHTML = `⏸️ ${result.display_season} Leaderboard - FREEZED (Final Rankings)`;
         }
         if (leaderboardSubtitle) {
-          const nextSeason = result.current_season || 'Season 7';
+          const nextSeason = result.current_season || 'Season 8';
           leaderboardSubtitle.innerHTML = `🚀 ${nextSeason} Starting Soon • ${result.display_season} Final Rankings • Check Your Position!`;
         }
       } else if (result.display_season) {
@@ -3618,10 +3618,10 @@ window.claimQuest = async function(questId, btn) {
   }
 };
 
-// 🎮 SEASON STATUS - Season 7 RUNNING
+// 🎮 SEASON STATUS - Season 8 STARTED
 function showSeason6Active() {
-  // Season 7 is running/active
-  console.log('🎮 Season 7 RUNNING 🎮 - Play now and compete!');
+  // Season 8 is running/active
+  console.log('🎮 Season 8 STARTED 🎮 - Play now and compete!');
 }
 
 // 🏆 Load Leaderboard and Update Season Status Dynamically
@@ -3690,16 +3690,16 @@ async function loadLeaderboard() {
         seasonBanner.className = 'bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 z-30 relative animate-pulse mb-6';
       }
       if (seasonStatusMain) {
-        seasonStatusMain.textContent = '⏸️ SEASON 6 FROZEN ⏸️';
+        seasonStatusMain.textContent = '⏸️ SEASON 7 FROZEN ⏸️';
       }
       if (season6ComingStatus) {
-        season6ComingStatus.textContent = '🎮 SEASON 7 LOADING 🎮';
+        season6ComingStatus.textContent = '🎮 SEASON 8 LOADING 🎮';
       }
       if (seasonStatusSubtitle) {
-        seasonStatusSubtitle.textContent = '⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon!';
+        seasonStatusSubtitle.textContent = '⏸️ Season 7 leaderboards frozen • 🎮 Season 8 starting soon!';
       }
       if (seasonStatusDetails) {
-        seasonStatusDetails.textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Get ready for fresh competition!';
+        seasonStatusDetails.textContent = '⏸️ Season 7 FROZEN ⏸️ • 🎮 Season 8 LOADING 🎮 • Get ready for fresh competition!';
       }
       
       // Update main season banner (frozen)
@@ -3707,29 +3707,29 @@ async function loadLeaderboard() {
         mainSeasonBanner.className = 'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white p-4 rounded-xl shadow-lg border-4 border-blue-300 mb-6 text-center animate-pulse';
       }
       if (mainSeasonTitle) {
-        mainSeasonTitle.textContent = '⏸️ SEASON 6 FROZEN ⏸️ • 🎮 SEASON 7 LOADING 🎮';
+        mainSeasonTitle.textContent = '⏸️ SEASON 7 FROZEN ⏸️ • 🎮 SEASON 8 LOADING 🎮';
       }
       if (mainSeasonSubtitle) {
         mainSeasonSubtitle.textContent = '⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon! • Get ready!';
       }
       if (mainSeasonDetails) {
-        mainSeasonDetails.textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Fresh competition coming! 🎯';
+        mainSeasonDetails.textContent = '⏸️ Season 7 FROZEN ⏸️ • 🎮 Season 8 LOADING 🎮 • Fresh competition coming! 🎯';
       }
       if (mainSeasonCta) {
-        mainSeasonCta.textContent = '🎮 SEASON 7 LOADING! 🎮';
+        mainSeasonCta.textContent = '🎮 SEASON 8 LOADING! 🎮';
       }
       if (mainSeasonFeatures) {
-        mainSeasonFeatures.textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • 6 Games Available • Boss Battles • Fresh Leaderboards Coming • Achievements System • Bug Tracker Ready!';
+        mainSeasonFeatures.textContent = '⏸️ Season 7 FROZEN ⏸️ • 🎮 Season 8 LOADING 🎮 • 6 Games Available • Boss Battles • Fresh Leaderboards Coming • Achievements System • Bug Tracker Ready!';
       }
       
       // Update wallet/mint banners (frozen)
       if (walletSeasonBanner) {
         walletSeasonBanner.className = 'mb-3 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center';
-        walletSeasonBanner.querySelector('span').textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮';
+        walletSeasonBanner.querySelector('span').textContent = '⏸️ Season 7 FROZEN ⏸️ • 🎮 Season 8 LOADING 🎮';
         walletSeasonBanner.querySelector('span').className = 'text-blue-800 font-semibold text-sm';
       }
       if (mintSeasonStatus) {
-        mintSeasonStatus.textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮';
+        mintSeasonStatus.textContent = '⏸️ Season 7 FROZEN ⏸️ • 🎮 Season 8 LOADING 🎮';
       }
     } else {
       // Show active current season leaderboard (Season 7 when not frozen)
@@ -3745,51 +3745,51 @@ async function loadLeaderboard() {
         leaderboardSection.className = 'max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-green-400/50 mt-2 relative z-10 border-2 border-green-400/50';
       }
       
-      // Update season status banner (active - Season 7 RUNNING)
+      // Update season status banner (active - Season 8 STARTED)
       if (seasonBanner) {
         seasonBanner.className = 'bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 text-white text-center py-4 z-30 relative animate-pulse mb-6';
       }
       if (seasonStatusMain) {
-        seasonStatusMain.textContent = '🎮 SEASON 7 RUNNING 🎮';
+        seasonStatusMain.textContent = '🎮 SEASON 8 STARTED 🎮';
       }
       if (season6ComingStatus) {
-        season6ComingStatus.textContent = '🎮 SEASON 7 ACTIVE 🎮';
+        season6ComingStatus.textContent = '🎮 SEASON 8 ACTIVE 🎮';
       }
       if (seasonStatusSubtitle) {
-        seasonStatusSubtitle.textContent = '🎮 Season 7 is LIVE! • Play now and compete for the top spots!';
+        seasonStatusSubtitle.textContent = '🎮 Season 8 is LIVE! • Play now and compete for the top spots!';
       }
       if (seasonStatusDetails) {
-        seasonStatusDetails.textContent = '🎮 Season 7 RUNNING 🎮 • Fresh leaderboards active! • Compete now! 🏆';
+        seasonStatusDetails.textContent = '🎮 Season 8 STARTED 🎮 • Fresh leaderboards active! • Compete now! 🏆';
       }
       
-      // Update main season banner (active - Season 7 RUNNING)
+      // Update main season banner (active - Season 8 STARTED)
       if (mainSeasonBanner) {
         mainSeasonBanner.className = 'bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white p-4 rounded-xl shadow-lg border-4 border-green-300 mb-6 text-center animate-pulse';
       }
       if (mainSeasonTitle) {
-        mainSeasonTitle.textContent = '🎮 SEASON 7 RUNNING 🎮';
+        mainSeasonTitle.textContent = '🎮 SEASON 8 STARTED 🎮';
       }
       if (mainSeasonSubtitle) {
-        mainSeasonSubtitle.textContent = '🎮 Season 7 is LIVE! • Play now and compete! • Leaderboards active!';
+        mainSeasonSubtitle.textContent = '🎮 Season 8 is LIVE! • Play now and compete! • Leaderboards active!';
       }
       if (mainSeasonDetails) {
-        mainSeasonDetails.textContent = '🎮 Season 7 RUNNING 🎮 • Fresh competition is here! • Compete now! 🎯';
+        mainSeasonDetails.textContent = '🎮 Season 8 STARTED 🎮 • Fresh competition is here! • Compete now! 🎯';
       }
       if (mainSeasonCta) {
-        mainSeasonCta.textContent = '🎮 SEASON 7 RUNNING! 🎮';
+        mainSeasonCta.textContent = '🎮 SEASON 8 STARTED! 🎮';
       }
       if (mainSeasonFeatures) {
-        mainSeasonFeatures.textContent = '🎮 Season 7 RUNNING 🎮 • 6 Games Available • Boss Battles • Active Leaderboards • Achievements System • Bug Tracker Ready!';
+        mainSeasonFeatures.textContent = '🎮 Season 8 STARTED 🎮 • 6 Games Available • Boss Battles • Active Leaderboards • Achievements System • Bug Tracker Ready!';
       }
       
       // Update wallet/mint banners (active - Season 7 RUNNING)
       if (walletSeasonBanner) {
         walletSeasonBanner.className = 'mb-3 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center';
-        walletSeasonBanner.querySelector('span').textContent = '🎮 Season 7 RUNNING 🎮';
+        walletSeasonBanner.querySelector('span').textContent = '🎮 Season 8 STARTED 🎮';
         walletSeasonBanner.querySelector('span').className = 'text-green-800 font-semibold text-sm';
       }
       if (mintSeasonStatus) {
-        mintSeasonStatus.textContent = '🎮 Season 7 RUNNING 🎮';
+        mintSeasonStatus.textContent = '🎮 Season 8 STARTED 🎮';
       }
     }
     

@@ -1,9 +1,58 @@
 # 🧀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** January 20, 2026, 1:55 PM 🥽 **META QUEST 3 VR LIVE TEST**  
-**Status:** ✅ **READY FOR VR TESTING - PRODUCTION ENVIRONMENT VERIFIED**  
-**Version:** 2026-01-20-VR-TEST-READY  
-**Milestone:** 🎯 **META QUEST 3 LIVE VR TEST IN PROGRESS**
+**Last Updated:** January 31, 2026 🎯 **END-OF-MONTH + SEASON 8 RESET PREP**  
+**Status:** ⏱️ **~1h 30 min until snapshot – RESET PREP IN PROGRESS**  
+**Version:** 2026-01-31-END-OF-MONTH  
+**Milestone:** 🎯 **JANUARY 2026 MONTHLY SYNC + SEASON 7 → 8 RESET**
+
+---
+
+## ⏱️ **SEASON 8 RESET – 1h 30 MIN WINDOW (January 31, 2026):**
+
+**DONE:**
+- ✅ `index.html` – Season 8 STARTED + mint prices
+- ✅ `mint.html` – Season 8, mint prices, Quick Play, Holder Verify, theming
+- ✅ `profile.html` – Holder Verification anchor for deep link
+
+**REMAINING (see reset plan):**
+- [x] `profile.html` – Season 7 → Season 8 ✅ Done
+- [x] `project-updates.html`, `admin-interface.html`, `leaderboard.html` ✅ Done
+- [ ] 4 API fallbacks (get-current-season-settings, save-score, get-all-games-stats, get-season-stats)
+- [ ] Local smoke test
+- [ ] Git push to `render-deploy`
+- [ ] After snapshot: Archive + DB reset on Render
+
+**Plan:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-31/SEASON_7_TO_8_RESET_PLAN_2026-01-31.md`
+
+---
+
+## 🎯 **END-OF-MONTH JANUARY 2026 SYNC (January 31, 2026):**
+
+**✅ FILES & FOLDERS CREATED:**
+- ✅ **Daily folders:** 2026-01-21 through 2026-01-31 in `LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/`
+- ✅ **Handover inbox:** `HANDOVER_NOTES/LLM_HANDOVER_INBOX_2026-01-31.md` - Central receipt for all LLM handovers
+- ✅ **Cursor overhead:** `ONBOARDING_HANDOVERS/CURSOR_LLM_OVERHEAD_2026-01.md` - Cursor LLM as orchestrator
+- ✅ **Daily status:** `ACTIVE_STATUS/DAILY_STATUS_2026-01-31.md`
+
+**🤖 LLM HANDOVER STATUS:**
+- ✅ **HANDOVER #1:** VR / Meta Quest (`VR_HANDOVER_META_QUEST_2026-01-31.md`)
+  - Desktop stable, VR near-final. Render loop fixed, camera finalized, VR spawn in place.
+  - **Priority:** Verify Level 1 VR spawn + magenta collider moves with left thumbstick
+  - **Files:** `main.js`, `gui-system.js`, `vr-input-provider.js`
+- ✅ **HANDOVER #2:** Chest System (`CHEST_SYSTEM_HANDOVER_2026-01-31.md`)
+  - New chest3 GLBs (closed/opened) running. Dual-model, E-key priority, reset API, God Mode buttons.
+  - **Next:** VR controller → chest interaction (map button to `tryInteract`)
+  - **Files:** `main.js`, `chest-system.js`, `gui-system.js`
+- ✅ **2/2 handovers received** – January 2026 sync complete
+
+**📁 COMMON FILES REFERENCE:**
+| File | Location |
+|------|----------|
+| QUICK_STATUS | `12.0/ACTIVE_STATUS/QUICK_STATUS.md` |
+| DAILY_STATUS | `12.0/ACTIVE_STATUS/DAILY_STATUS_YYYY-MM-DD.md` |
+| Handover Inbox | `12.0/HANDOVER_NOTES/LLM_HANDOVER_INBOX_2026-01-31.md` |
+| Cursor Overhead | `12.0/ONBOARDING_HANDOVERS/CURSOR_LLM_OVERHEAD_2026-01.md` |
+| Daily Notes | `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/YYYY-MM-DD/` |
 
 ---
 
