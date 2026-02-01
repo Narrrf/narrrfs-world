@@ -526,8 +526,8 @@ require_once 'discord-invite.php';
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <div>
       <h1 class="text-xl font-bold tracking-wide text-green-400">🚀 Narrrf's World – 🎮 Season 8 STARTED 🎮</h1>
-      <!-- 🚀 SEASON STATUS MESSAGE -->
-      <div class="season-info text-xs text-blue-300 animate-pulse mt-1">
+      <!-- 🚀 SEASON STATUS MESSAGE (updated by loadLeaderboardAndUpdateBanners) -->
+      <div id="season-info" class="season-info text-xs text-blue-300 animate-pulse mt-1">
         ⏸️ Season 8 STARTED - Frozen • Play to unlock leaderboard! • 🐛 Bug Tracker Ready!
       </div>
     </div>
@@ -876,8 +876,8 @@ document.addEventListener('DOMContentLoaded', async function() {
       <p id="wallet-address">🔗 Linked wallet: <em class="text-sm text-green-600">TestWallet123456789XYZ</em></p>
       <p>🧬 Traits: <span id="traits" class="text-green-600">Season Tester • Cheese Master • Game Champion</span></p>
       
-      <!-- 🚀 Season Status Features - FROZEN THEME -->
-      <div class="mt-3 text-xs text-gray-600 bg-blue-50 rounded p-2 border border-blue-200">
+      <!-- 🚀 Season Status Features - FROZEN/ACTIVE THEME (updated by loadLeaderboardAndUpdateBanners) -->
+      <div id="wallet-season-features" class="mt-3 text-xs text-gray-600 bg-blue-50 rounded p-2 border border-blue-200">
         <strong>⏸️ Season 8 STARTED - Frozen ⏸️</strong><br>
         • 🎮 Season 8 STARTED! • Leaderboard shows Season 7 until 3+ scores • Play to unlock!<br>
         • Fresh leaderboards active! • Compete now and earn DSPOINC!<br>
@@ -2138,9 +2138,168 @@ function goToAdminInterface() {
   window.location.href = '/admin-interface.html';
 }
 
+// 🏆 Load leaderboard and update ALL season banners (frozen vs active)
+async function loadLeaderboardAndUpdateBanners() {
+  try {
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+    const response = await fetch(`${apiBaseUrl}/api/dev/get-leaderboard.php`, {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Failed to load leaderboard');
+
+    const isFrozen = data.is_frozen === true;
+    const currentSeason = data.current_season || 'Season 8';
+    const displaySeason = data.display_season || currentSeason;
+
+    // ACTIVE theme (green) when not frozen; FROZEN theme (blue) when frozen
+    if (isFrozen) {
+      // FROZEN - blue theme, show "Season 7 until 3+ scores"
+      const frozenMain = '⏸️ SEASON 8 STARTED - FROZEN ⏸️';
+      const frozenSub = '🎮 Season 8 STARTED! • Leaderboard shows Season 7 until 3+ scores • Play to unlock!';
+      const frozenDetails = '⏸️ Season 8 FROZEN • Play now to be first on the leaderboard! 🎯';
+      setTextIf('season-status-main', frozenMain);
+      setTextIf('season6-coming-status', '⏸️ Showing Season 7 until 3+ scores');
+      setTextIf('season-status-subtitle', frozenSub);
+      setTextIf('season-status-details', frozenDetails);
+      setTextIf('main-season-title', frozenMain);
+      setTextIf('main-season-subtitle', frozenSub);
+      setTextIf('main-season-details', frozenDetails);
+      setTextIf('main-season-cta', '⏸️ SEASON 8 FROZEN 🎮');
+      setTextIf('main-season-features', '🎮 Season 8 STARTED 🎮 • 6 Games Available • Boss Battles • Frozen Leaderboard • Play to unlock! • Bug Tracker Ready!');
+      setHtmlIf('wallet-season-banner', '<span class="text-blue-800 font-semibold text-sm">⏸️ Season 8 STARTED - Frozen ⏸️</span>');
+      setHtmlIf('wallet-season-features', '<strong>⏸️ Season 8 STARTED - Frozen ⏸️</strong><br>• 🎮 Season 8 STARTED! • Leaderboard shows Season 7 until 3+ scores • Play to unlock!<br>• Fresh leaderboards active! • Compete now and earn DSPOINC!<br>• Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>• Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>• Active Leaderboards: Compete for top spots and earn DSPOINC!');
+      setTextIf('leaderboard-title', '⏸️ Season 8 Leaderboard - FROZEN ⏸️');
+      setTextIf('leaderboard-subtitle', '⏸️ Season 7 leaderboard shown • 🎮 Season 8 STARTED! • Play to unlock live leaderboard (3+ scores)!');
+      setTextIf('season-info', '⏸️ Season 8 STARTED - Frozen • Play to unlock leaderboard! • 🐛 Bug Tracker Ready!');
+      setLeaderboardBannerClasses(false); // blue theme for main-season-details, main-season-cta
+      updateBannerTheme('frozen');
+    } else {
+      // ACTIVE - green theme, live Season 8 leaderboard
+      const activeMain = '🎮 SEASON 8 ACTIVE 🎮';
+      const activeSub = 'Season 8 Running • Play now and compete! • Check Your Position!';
+      const activeDetails = '🎮 Season 8 Live • Compete for top spots!';
+      setTextIf('season-status-main', activeMain);
+      setTextIf('season6-coming-status', '🎮 Season 8 Running');
+      setTextIf('season-status-subtitle', activeSub);
+      setTextIf('season-status-details', activeDetails);
+      setTextIf('main-season-title', activeMain);
+      setTextIf('main-season-subtitle', activeSub);
+      setTextIf('main-season-details', activeDetails);
+      setTextIf('main-season-cta', '🎮 SEASON 8 ACTIVE 🎮');
+      setTextIf('main-season-features', '🎮 Season 8 RUNNING 🎮 • 6 Games Available • Boss Battles • Live Leaderboard! • Bug Tracker Ready!');
+      setHtmlIf('wallet-season-banner', '<span class="text-green-800 font-semibold text-sm">🎮 Season 8 ACTIVE 🎮</span>');
+      setHtmlIf('wallet-season-features', '<strong>🎮 Season 8 ACTIVE 🎮</strong><br>• 🎮 Season 8 Running! • Live leaderboard! Compete now!<br>• Fresh leaderboards active! • Compete now and earn DSPOINC!<br>• Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>• Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>• Active Leaderboards: Compete for top spots and earn DSPOINC!');
+      setTextIf('leaderboard-title', '🎮 Season 8 Leaderboard - ACTIVE 🎮');
+      setTextIf('leaderboard-subtitle', 'Season 8 Running • Play now and compete! • Check Your Position!');
+      setTextIf('season-info', '🎮 Season 8 ACTIVE • Live leaderboard! • 🐛 Bug Tracker Ready!');
+      setLeaderboardBannerClasses(true); // green theme for main-season-details, main-season-cta
+      updateBannerTheme('active');
+    }
+
+    // Populate leaderboard lists
+    const tetrisList = document.getElementById('leaderboard-tetris-list');
+    const snakeList = document.getElementById('leaderboard-snake-list');
+    const spaceList = document.getElementById('leaderboard-space-invaders-list');
+    const renderEntry = (entry, i) => `<li class="text-sm py-1">${i + 1}. ${(entry.discord_name || entry.discord_id || 'Unknown')} - ${Math.round(entry.score || 0).toLocaleString()}</li>`;
+    if (tetrisList) tetrisList.innerHTML = (data.tetris || []).length ? (data.tetris || []).map(renderEntry).join('') : '<li class="text-gray-400 text-sm">No scores yet</li>';
+    if (snakeList) snakeList.innerHTML = (data.snake || []).length ? (data.snake || []).map(renderEntry).join('') : '<li class="text-gray-400 text-sm">No scores yet</li>';
+    if (spaceList) spaceList.innerHTML = (data.space_invaders || []).length ? (data.space_invaders || []).map(renderEntry).join('') : '<li class="text-gray-400 text-sm">No scores yet</li>';
+
+    // Update season6Active div content and theme
+    const season6El = document.getElementById('season6Active');
+    if (season6El) {
+      const inner = season6El.querySelector('.flex.items-center');
+      const center = season6El.querySelector('.text-center');
+      if (inner) inner.innerHTML = isFrozen
+        ? '<span class="text-2xl">⏸️</span><h3 class="text-lg font-bold text-blue-200">Season 8 STARTED • Leaderboard Frozen</h3><span class="text-2xl">⏸️</span>'
+        : '<span class="text-2xl">🎮</span><h3 class="text-lg font-bold text-green-200">Season 8 ACTIVE</h3><span class="text-2xl">🎮</span>';
+      if (center) center.innerHTML = isFrozen
+        ? '<p class="text-sm text-blue-200 mb-2 font-semibold">⏸️ Season 8 STARTED • Showing Season 7 leaderboard until 3+ scores!</p><p class="text-xs text-blue-100 mb-2 italic">🎮 Play now to be first! • First 3 scores unlock live Season 8 leaderboard!</p><div class="text-lg font-mono font-bold text-blue-300 mb-2 border-2 border-blue-300 inline-block px-4 py-1 rounded-full">⏸️ SEASON 8 FROZEN 🎮</div><p class="text-xs text-white mt-2 italic">🎮 Season 8: STARTED • Leaderboard shows Season 7 until 3+ scores! 🏆</p>'
+        : '<p class="text-sm text-green-200 mb-2 font-semibold">🎮 Season 8 ACTIVE • Live leaderboard!</p><p class="text-xs text-green-100 mb-2 italic">Compete now and earn DSPOINC!</p><div class="text-lg font-mono font-bold text-green-300 mb-2 border-2 border-green-300 inline-block px-4 py-1 rounded-full">🎮 SEASON 8 ACTIVE 🎮</div><p class="text-xs text-white mt-2 italic">Check your position on the leaderboard! 🏆</p>';
+      season6El.className = isFrozen
+        ? 'max-w-6xl mx-auto bg-gradient-to-r from-blue-600/30 via-indigo-500/30 to-purple-600/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-blue-400/50 mt-6 relative z-10 border-2 border-blue-400/40'
+        : 'max-w-6xl mx-auto bg-gradient-to-r from-green-600/30 via-emerald-500/30 to-teal-600/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-green-400/50 mt-6 relative z-10 border-2 border-green-400/40';
+    }
+
+    // Update second blue banner (max-w-6xl mt-10)
+    const secondBanner = document.querySelector('.max-w-6xl.mt-10.mb-4 > div');
+    if (secondBanner) {
+      const titleEl = secondBanner.querySelector('.text-2xl');
+      const subEl = secondBanner.querySelector('.text-sm.font-semibold');
+      const badgeEl = secondBanner.querySelector('.bg-gray-900');
+      const detailsEl = secondBanner.querySelector('.text-xs.mt-3');
+      if (isFrozen) {
+        if (titleEl) titleEl.textContent = '⏸️ SEASON 8 STARTED - FROZEN ⏸️';
+        if (subEl) subEl.textContent = '🎮 Season 8 STARTED! • Leaderboard shows Season 7 until 3+ scores • Play to unlock!';
+        if (badgeEl) badgeEl.textContent = '⏸️ SEASON 8 FROZEN • Showing Season 7 🎮 • PLAY TO UNLOCK! 🏆';
+        if (detailsEl) detailsEl.textContent = '🎮 Season 8 STARTED 🎮 • Play now to be first on the leaderboard! 🎯';
+        secondBanner.className = 'bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white rounded-2xl p-6 shadow-2xl border-4 border-blue-400 animate-pulse';
+      } else {
+        if (titleEl) titleEl.textContent = '🎮 SEASON 8 ACTIVE 🎮';
+        if (subEl) subEl.textContent = 'Season 8 Running • Live leaderboard! Compete now!';
+        if (badgeEl) badgeEl.textContent = '🎮 SEASON 8 ACTIVE • Compete for top spots! 🏆';
+        if (detailsEl) detailsEl.textContent = '🎮 Season 8 Running 🎮 • Check your position on the leaderboard! 🎯';
+        secondBanner.className = 'bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 text-white rounded-2xl p-6 shadow-2xl border-4 border-green-400 animate-pulse';
+      }
+    }
+
+    const leaderboardSection = document.getElementById('leaderboard');
+    if (leaderboardSection) {
+      if (isFrozen) {
+        leaderboardSection.className = 'max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-blue-400/50 mt-2 relative z-10 border-2 border-blue-400/50';
+      } else {
+        leaderboardSection.className = 'max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-green-400/50 mt-2 relative z-10 border-2 border-green-400/50';
+      }
+    }
+
+    console.log('🏆 Leaderboard and banners updated:', { isFrozen, currentSeason, displaySeason });
+  } catch (err) {
+    console.warn('⚠️ loadLeaderboardAndUpdateBanners failed:', err);
+  }
+}
+
+function setTextIf(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+function setHtmlIf(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+function setLeaderboardBannerClasses(isActive) {
+  const details = document.getElementById('main-season-details');
+  const cta = document.getElementById('main-season-cta');
+  if (details) details.className = isActive ? 'text-xs mb-2 text-green-100 italic font-bold' : 'text-xs mb-2 text-blue-100 italic font-bold';
+  if (cta) cta.className = isActive ? 'text-2xl font-bold text-green-200 mb-2 border-2 border-green-300 inline-block px-4 py-1 rounded-full' : 'text-2xl font-bold text-blue-200 mb-2 border-2 border-blue-300 inline-block px-4 py-1 rounded-full';
+}
+function updateBannerTheme(theme) {
+  const banner = document.getElementById('season-status-banner');
+  const mainBanner = document.getElementById('main-season-banner');
+  const walletBanner = document.getElementById('wallet-season-banner');
+  const walletFeatures = document.getElementById('wallet-season-features');
+  if (theme === 'active') {
+    if (banner) banner.className = 'bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 text-white text-center py-4 z-30 relative animate-pulse mb-6';
+    if (mainBanner) mainBanner.className = 'bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 text-white p-4 rounded-xl shadow-lg border-4 border-green-300 mb-6 text-center animate-pulse';
+    if (walletBanner) walletBanner.className = 'mb-3 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center';
+    if (walletFeatures) walletFeatures.className = 'mt-3 text-xs text-gray-700 bg-green-50 rounded p-2 border border-green-200';
+  } else {
+    if (banner) banner.className = 'bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 z-30 relative animate-pulse mb-6';
+    if (mainBanner) mainBanner.className = 'bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white p-4 rounded-xl shadow-lg border-4 border-blue-300 mb-6 text-center animate-pulse';
+    if (walletBanner) walletBanner.className = 'mb-3 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center';
+    if (walletFeatures) walletFeatures.className = 'mt-3 text-xs text-gray-600 bg-blue-50 rounded p-2 border border-blue-200';
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
   const avatar = document.getElementById('avatar');
   const loginLink = document.getElementById('login-link');
+
+  // 🏆 Load leaderboard and update season banners (frozen vs active) - runs for everyone
+  loadLeaderboardAndUpdateBanners();
 
   // Check if user was redirected from admin interface
   const adminRedirect = localStorage.getItem('adminRedirect');
