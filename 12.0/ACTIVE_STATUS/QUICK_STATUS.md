@@ -1,9 +1,9 @@
 # 🧀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** February 1, 2026 🎯 **NEW DAY – FEBRUARY 2026**  
-**Status:** ✅ **Season 8 LIVE – Continue development**  
-**Version:** 2026-02-01  
-**Milestone:** 🎯 **Season 8 deployed – Fresh month**
+**Last Updated:** February 2, 2026 🎯 **NEW DAY – FEBRUARY 2**  
+**Status:** ✅ **Season 8 LIVE – On Chain Bridges integration discussion**  
+**Version:** 2026-02-02  
+**Milestone:** 🎯 **On Chain Bridges → 3D riddle game**
 
 ---
 
@@ -20,7 +20,26 @@
 
 ---
 
-## 📋 **TODAY – FEBRUARY 1, 2026:**
+## 📋 **TODAY – FEBRUARY 2, 2026:**
+
+**On Chain Bridges Integration:**
+- ✅ **NFT Bridges team:** Testnet + iframe code confirmed incoming
+- ✅ **WalletConnect** – Easy integration path
+- 📋 **To-do worklist:** `12.0/TECHNICAL_DOCUMENTATION/On Chain Bridges/NFT_BRIDGES_3D_GAME_INTEGRATION_TODO.md`
+- 📋 **Technical spec:** `12.0/TECHNICAL_DOCUMENTATION/On Chain Bridges/NFT_BRIDGES_3D_GAME_INTEGRATION_TECHNICAL.md`
+- ⏳ **Awaiting:** Testnet credentials + iframe embed code from NFT Bridges
+
+**Daily Paths:**
+- `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/`
+- `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-02.md`
+
+**Level 5 Collision Handover (Feb 2):**
+- 🔧 Fix applied but collision still not working
+- 📋 Handover: `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/LEVEL_5_COLLISION_HANDOVER_2026-02-02.md`
+
+---
+
+## 📋 **YESTERDAY – FEBRUARY 1, 2026:**
 
 **Season 8 Polish (Complete – Ready to Push):**
 - ✅ Profile: Dynamic frozen/active banners via `loadLeaderboardAndUpdateBanners()`
@@ -28,12 +47,13 @@
 - ✅ Admin Game tab: Verified – uses dynamic season from DB (Season 8)
 - ✅ Twitter Spaces pitch helper created (~7 min)
 
-**Daily Paths:**
-- `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-01/`
-- `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-01.md`
+**3D Game (Feb 1, 2026):**
+- ✅ Level 1 blue cheese: Proximity + E key → "You need a Cheese Scepter to start the riddle"
+- ✅ VR fixes: Per-frame camera sync, magenta sphere, both grips = VR Rescue respawn
+- ⏳ VR: Pending Meta Quest hardware to verify fixes
 
 **Handover Priorities (from Jan 31):**
-- VR: Verify Level 1 VR spawn + magenta collider
+- VR: Verify Level 1 VR spawn + magenta collider (when Quest ready)
 - Chest: VR controller → chest interaction (`tryInteract`)
 
 ---
@@ -61,9 +81,9 @@
 | File | Location |
 |------|----------|
 | QUICK_STATUS | `12.0/ACTIVE_STATUS/QUICK_STATUS.md` |
-| DAILY_STATUS | `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-01.md` |
+| DAILY_STATUS | `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-02.md` |
 | COMMON REFERENCE | `12.0/ACTIVE_STATUS/COMMON_FILES_REFERENCE_2026-02.md` |
-| Daily Notes | `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-01/` |
+| Daily Notes | `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/` |
 
 ---
 

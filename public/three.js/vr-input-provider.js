@@ -2,11 +2,19 @@
  * ============================================================================
  * VR INPUT PROVIDER - VR Controller Input Handling
  * ============================================================================
- * 
- * ✅ STATUS: UPDATED FOR META QUEST 3 - JANUARY 18, 2026
- * 📅 CREATED: December 6, 2025
- * 📅 LAST UPDATED: January 18, 2026 (Quest 3 Controller Fixes)
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~420
+ * Used by: main.js (vrInputProvider) – Meta Quest 2/3
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   update(delta)            ~100  Per-frame controller state
+ *   getMovementState()      ~150  Left stick → forward, left, sprint, jump
+ *   getButtonState(name,h)  ~200  Grip, trigger for interact/shoot
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================

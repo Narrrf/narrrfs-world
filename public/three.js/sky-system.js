@@ -2,14 +2,19 @@
  * ============================================================================
  * SKY SYSTEM - Sky and Environment Management
  * ============================================================================
- * 
- * ✅ STATUS: STABLE - PRODUCTION READY
- * 📅 CREATED: December 2025
- * 📅 LAST UPDATED: December 20, 2025
- * 
- * Based on CodePen: https://codepen.io/the-red-reddington/pen/MYKRZNN
- * Original Author: red-reddington
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~1,230
+ * Used by: main.js (skySystem)
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   applyLevelEnvironment   ~150  Per-level sky config
+ *   update(delta)            ~200  Day/night, clouds
+ *   setTime, setCloudDensity ~250
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================

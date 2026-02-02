@@ -1,15 +1,15 @@
 # 🎁 Hytopia Chest System Implementation Rules
 
-**Last Updated:** December 30, 2025  
-**Status:** ✅ **PRODUCTION READY - STANDARDIZED - COLLISION & PERSISTENCE WORKING - MULTI-LEVEL SUPPORT**
+**Last Updated:** February 1, 2026  
+**Status:** ✅ **PRODUCTION READY - STANDARDIZED - DUAL-MODEL PRIMARY - COLLISION & PERSISTENCE WORKING - MULTI-LEVEL SUPPORT**
 
 ---
 
-## ✅ **FINAL STATUS (December 15, 2025)**
+## ✅ **FINAL STATUS (February 2026)**
 
-- ✅ **All chests standardized to chest2** (has animation support)
-- ✅ **Animation system working** (lid rotation, particles, sound, glow)
-- ✅ **Duplicate lid detection working** (3-pass system ensures closed lid is hidden)
+- ✅ **Primary method: Dual-model** (closed GLB + opened GLB, swap on open – simpler, no lid detection)
+- ✅ **Fallback: Legacy chest2** (single GLB with lid rotation, 3-pass duplicate lid detection)
+- ✅ **All chests standardized to chest2** (type: 'chest2' – dual-model paths come from chestModelConfig)
 - ✅ **Chest counter system implemented** (tracks opened chests in localStorage)
 - ✅ **Collision detection implemented** (players cannot walk through chests)
 - ✅ **Persistence system implemented** (opened chests saved to database, restored on load)
@@ -21,18 +21,24 @@
 
 ## 📖 **OVERVIEW**
 
-Complete guide for implementing treasure chests in the game. All chests use the standardized chest2 model with opening animation. This rule ensures all chests work consistently across all levels.
+Complete guide for implementing treasure chests in the game.
+
+**Primary method (simpler):** Dual-model – two separate GLB files (closed + opened). On open: pop/pulse on closed mesh, then swap visibility to opened mesh. No lid rotation, no duplicate detection.
+
+**Fallback:** Legacy chest2 single GLB with lid rotation and 3-pass duplicate lid detection.
+
+This rule ensures all chests work consistently across all levels.
 
 ---
 
 ## ✅ **STANDARDIZATION**
 
-- **Chest Type:** ALL chests use `type: 'chest2'` (has animation support)
+- **Chest Type:** ALL chests use `type: 'chest2'` (standardized)
 - **Chest1 Deprecated:** `chest1` type automatically converts to `chest2`
-- **Model:** All chests use `/textures/3d models/chest2/Chest2.glb`
+- **Primary – Dual-model:** When `chestModelConfig.closedModelPath` + `openedModelPath` provided: load closed GLB first, preload opened GLB, swap visibility on open
+- **Fallback – Legacy chest2:** Single GLB `/textures/3d models/chest2/Chest2.glb` with lid rotation
 - **Scale:** All chests use **2.0x scale** (standardized size for visibility and interaction)
-- **Animation:** All chests have opening animation (lid rotation)
-- **State Management:** All chests hide closed state and show opened state
+- **State Management:** Dual-model = swap meshes; Legacy = hide closed lid, show opened lid
 
 ---
 
@@ -104,7 +110,23 @@ chestSystem.addChest(LEVEL_IDS.LEVEL1, {
 
 **Note:** Rewards are multiplied by player's role multiplier (e.g., VIP = 2.0x)
 
-### **Step 5: Level ID Format**
+### **Step 5: Dual-Model Configuration (Optional – Primary Method)**
+
+To use the simpler dual-model method, pass `closedModelPath` and `openedModelPath` when initializing ChestSystem in main.js:
+
+```javascript
+// chestModelConfig passed to ChestSystem constructor
+chestModelConfig: {
+  closedModelPath: '/path/to/chest-closed.glb',
+  openedModelPath: '/path/to/chest-opened.glb'
+}
+```
+
+Or per chest: `addChest(levelId, { ...config, closedModelPath, openedModelPath })`.
+
+When both are provided: load closed first, preload opened, swap on open – no lid rotation or duplicate detection.
+
+### **Step 6: Level ID Format**
 
 **Format:** `'CHEESE_TEMPLE_LEVELX'` where X is level number
 
@@ -113,7 +135,7 @@ chestSystem.addChest(LEVEL_IDS.LEVEL1, {
 - `'CHEESE_TEMPLE_LEVEL2'`
 - `'CHEESE_TEMPLE_LEVEL3'`
 
-### **Step 6: Current Chest Inventory (December 30, 2025)**
+### **Step 7: Current Chest Inventory (December 30, 2025)**
 
 **Level 1 Chests:**
 - chest_001: X: 10, Y: 1, Z: 10 - 100 DSPOINC
@@ -132,8 +154,12 @@ chestSystem.addChest(LEVEL_IDS.LEVEL1, {
 - chest_008: X: 75, Y: 0, Z: 923 - 220 DSPOINC (Note: Level 4 uses Y: 0.0, not Y: 1.0)
 - chest_009: X: 54, Y: 0, Z: 1050 - 250 DSPOINC (Note: Level 4 uses Y: 0.0, not Y: 1.0)
 
-**Level 5 Chests:**
-- chest_010: X: 33, Y: 1, Z: -41 - 280 DSPOINC (Note: Level 5 uses dynamic ground detection via raycast, chest Y uses spawn position Y)
+**Level 5 Chests:** (Feb 2026 - 40 chests treasure hunt)
+- chest_012 through chest_051: 40 chests spread across huge Level 5 area
+- Each: 100 DSPOINC (role multiplier applied)
+- Y: raycastLevel5GroundYAt(x, z, spawnY) - ground raycast for uneven terrain
+- Level ID: CHEESE_TEMPLE_LEVEL5
+- Placement: Grid + random offset across map bounds (~±550 X/Z)
 
 **Level 6 Chests:**
 - chest_011: X: 79, Y: 0, Z: -98 - 300 DSPOINC (Note: Level 6 uses Y: 0.0, same as Level 3/4)
@@ -193,16 +219,13 @@ function createLevel1Chests(spawnData, blockSize) {
 - UI shows "Press [E] to Open" prompt (large, visible)
 
 ### **2. Opening Animation**
-- Player presses E key
-- Lid rotates -90 degrees (smooth 1-second animation)
-- Sparkling particles appear (50 golden particles)
-- Chest glows (emissive effect, fades after 1s)
-- Sound plays (`/sounds/SFX/chest.mp3`)
+- **Dual-model (primary):** Pop/pulse on closed mesh (~650ms), then swap visibility to opened mesh
+- **Legacy chest2:** Lid rotates -90 degrees (smooth 1-second animation)
+- Both: Sparkling particles (50 golden particles), emissive glow, sound (`/sounds/SFX/chest.mp3`)
 
 ### **3. State Switching**
-- Closed chest top is hidden
-- Opened chest is shown (with body and handles)
-- Only opened state remains visible
+- **Dual-model:** Closed mesh hidden, opened mesh shown (two separate GLBs)
+- **Legacy chest2:** Closed chest top hidden, opened chest shown (with body and handles)
 
 ### **4. Reward System**
 - API call to `/api/dev/riddle-reward.php`
@@ -355,7 +378,7 @@ Players cannot walk through chests - collision detection prevents it:
 ## ⚠️ **IMPORTANT RULES**
 
 ### **✅ DO:**
-- ✅ Always use `type: 'chest2'` (standardized, has animation)
+- ✅ Always use `type: 'chest2'` (standardized)
 - ✅ Always use correct Y position for level:
   - Level 1, 2: `Y position: 1.0` (standard ground level)
   - Level 3: `Y position: spawnY` (use level3Config.spawnPosition.y - same approach as Level 5)
@@ -364,8 +387,8 @@ Players cannot walk through chests - collision detection prevents it:
 - ✅ Always use unique chest IDs (chest_001, chest_002, etc.)
 - ✅ Always use correct levelId format (CHEESE_TEMPLE_LEVELX)
 - ✅ Use sequential numbering for chest IDs
-- ✅ Test chest opening animation works
-- ✅ Verify closed state is hidden after opening
+- ✅ Test chest opening (dual-model swap or lid animation)
+- ✅ Verify closed state is hidden after opening (dual-model = swap; legacy = lid hide)
 - ✅ Check level's ground height before positioning chests
 
 ### **❌ DON'T:**
@@ -381,8 +404,8 @@ Players cannot walk through chests - collision detection prevents it:
 ## 🔧 **TECHNICAL DETAILS**
 
 ### **Model Path**
-- Standard: `/textures/3d models/chest2/Chest2.glb`
-- Fallback: `/textures/3d models/chest2/chest2.glb` (lowercase)
+- **Dual-model (primary):** `closedModelPath` + `openedModelPath` (two separate GLB files) – pass via `chestModelConfig` when initializing ChestSystem
+- **Legacy chest2:** `/textures/3d models/chest2/Chest2.glb` or `chest2.glb` (lowercase fallback)
 
 ### **Scale**
 - **Standardized:** All chests use **2.0x scale** (applied automatically)
@@ -390,14 +413,22 @@ Players cannot walk through chests - collision detection prevents it:
 - **Applied:** Automatically when chest model loads
 - **Note:** Scale is uniform (2.0x on all axes) for consistent appearance
 
-### **Animation System**
+### **Dual-Model System (Primary – Simpler)**
+When `closedModelPath` and `openedModelPath` are provided:
+- Load closed GLB first; preload opened GLB in background
+- On open: pop/pulse on closed mesh (~650ms), then swap visibility to opened mesh
+- No lid rotation, no duplicate detection – just swap two GLBs
+- `_playDualModelSwapAnimation()` – `chest-system.js` ~line 1982
+- `_ensureOpenedMeshLoaded()` – `chest-system.js` ~line 1915
+
+### **Legacy Animation System (Fallback – chest2 Single GLB)**
 - Manual lid rotation: -90 degrees around X-axis
 - Duration: 1000ms (1 second)
 - Easing: Cubic ease-out
-- State switching: Hides closed, shows opened
+- State switching: Hides closed lid, shows opened lid
 
-### **Duplicate Lid Detection (CRITICAL)**
-The chest2 model contains both closed and opened lid meshes. After opening, the closed lid must be hidden.
+### **Legacy Duplicate Lid Detection (Fallback – chest2 Only)**
+The legacy chest2 single-GLB model contains both closed and opened lid meshes. After opening, the closed lid must be hidden.
 
 **3-Pass Detection System:**
 1. **First Pass:** Hide duplicate lids found during load (stored in `this.duplicateLidMeshes`)
@@ -405,18 +436,9 @@ The chest2 model contains both closed and opened lid meshes. After opening, the 
 3. **Final Pass:** Count ALL meshes in model, if > 4 visible, find and hide duplicate lids
 
 **Expected Visible Meshes After Opening: 4 total**
-- Chest_Body (1)
-- Chest_Handle_01 (1)
-- Chest_Handle_02 (1)
-- Chest_Lid (1) - the rotated/opened lid
+- Chest_Body (1), Chest_Handle_01 (1), Chest_Handle_02 (1), Chest_Lid (1) – the rotated/opened lid
 
-**If more than 4 meshes are visible, duplicate lids are present and must be hidden.**
-
-**Implementation:**
-- The `switchToOpenedState()` function uses a 3-pass system to ensure all duplicate lids are hidden
-- Final pass traverses entire chest model and counts all meshes
-- All lids except the main rotated lid are hidden
-- Body and handles are always kept visible
+**Note:** Dual-model chests skip this entirely – they use two separate GLBs.
 
 ### **Interaction Radius**
 - Default: 2.0 units
@@ -532,9 +554,10 @@ When creating hundreds of chests:
 ## 🎯 **SYSTEM FEATURES SUMMARY**
 
 ### **Core Features:**
-- ✅ **Standardized chest2 model** (all chests use same model)
-- ✅ **Opening animation** (lid rotation, particles, sound, glow)
-- ✅ **State management** (closed → opened visual transition)
+- ✅ **Primary: Dual-model** (closed + opened GLB, swap on open – simpler)
+- ✅ **Fallback: Legacy chest2** (single GLB with lid rotation)
+- ✅ **Opening effects** (particles, sound, glow – both methods)
+- ✅ **State management** (dual-model = mesh swap; legacy = lid hide/show)
 - ✅ **Reward system** (DSPOINC with role multipliers)
 - ✅ **Counter system** (tracks opened chests)
 - ✅ **Collision detection** (players cannot walk through chests)
@@ -542,7 +565,8 @@ When creating hundreds of chests:
 - ✅ **Duplicate prevention** (409 Conflict handling)
 
 ### **Technical Features:**
-- ✅ **3-pass duplicate detection** (ensures closed lid is hidden)
+- ✅ **Dual-model swap** (primary – no lid detection needed)
+- ✅ **Legacy 3-pass duplicate detection** (fallback chest2 only)
 - ✅ **Bounding box positioning** (accurate Y positioning)
 - ✅ **Automatic state restoration** (opened chests appear opened on load)
 - ✅ **Database persistence** (survives game restarts)
@@ -550,7 +574,7 @@ When creating hundreds of chests:
 
 ---
 
-**STATUS:** ✅ **PRODUCTION READY - ALL CHESTS USE CHEST2 - ANIMATION, COLLISION & PERSISTENCE WORKING PERFECTLY**
+**STATUS:** ✅ **PRODUCTION READY - DUAL-MODEL PRIMARY - LEGACY CHEST2 FALLBACK - COLLISION & PERSISTENCE WORKING PERFECTLY**
 
 ---
 

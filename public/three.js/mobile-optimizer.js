@@ -1,10 +1,18 @@
 /**
  * ============================================================================
- * MOBILE OPTIMIZER - Performance & Memory Optimization for Mobile Devices
+ * MOBILE OPTIMIZER - Performance & Memory for Mobile
  * ============================================================================
- * 
- * 📅 CREATED: January 19, 2026
- * 🎯 PURPOSE: Prevent RAM crashes on mobile devices by aggressive optimization
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~310
+ * Used by: main.js (MobileOptimizer) – RAM crash fix, landscape
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   detectPerformanceTier    ~60   high / medium / low
+ *   applyOptimizations      ~100  Textures, shadows, grass
  * 
  * ============================================================================
  * 🎯 OPTIMIZATION TARGETS

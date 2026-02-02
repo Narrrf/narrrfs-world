@@ -1,13 +1,22 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════════
- * 🕷️ ALIEN SPIDER BOSS SYSTEM - BEHAVIOR PATTERN ARCHITECTURE
- * ═══════════════════════════════════════════════════════════════════════════
- * 
- * 📅 CREATED: December 20, 2025
- * ✅ STATUS: STABLE - PRODUCTION READY
- * ═══════════════════════════════════════════════════════════════════════════
- * 
- * 🎯 ARCHITECTURE: Similar to Phoenix Boss 2.0, but ground-based
+ * ============================================================================
+ * ALIEN SPIDER BOSS - Level 6 Ground Boss
+ * ============================================================================
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~1,090
+ * Used by: main.js (alienSpiderBoss) – Level 6 only
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   loadModel(path)          ~100  Load AFC_03.fbx (TGA textures)
+ *   update(delta)           ~180  7 behavior patterns
+ *   setBehaviorMode         ~220  idle_1, walk_patrol, attack_1, etc.
+ *
+ * ============================================================================
+ * 🎯 PURPOSE – Similar to Phoenix 2.0, but ground-based
  * 
  * This module implements the Alien Spider boss for Level 6, featuring:
  * - 7 behavior patterns with separate animations

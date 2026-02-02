@@ -2,54 +2,60 @@
  * ============================================================================
  * CHEST SYSTEM - Treasure Chest Management
  * ============================================================================
- * 
- * ✅ STATUS: STABLE - PRODUCTION READY - ALL LEVELS COMPLETE
- * 📅 CREATED: December 2025
- * 📅 LAST UPDATED: January 9, 2026
- * 🎯 MILESTONE: Stable Production Version - Level 1 verified working
- * ✅ Version: 2026-01-09-STABLE-PRODUCTION
- * Previous: January 4, 2026 - Enhanced chest clearing system with level isolation guarantee
- * 
- * ✅ ALL LEVELS HAVE WORKING CHESTS (December 30, 2025):
- * ======================================================
- * - Level 1: ✅ 3 chests (chest_001, chest_002, chest_003)
- * - Level 2: ✅ 2 chests (chest_004, chest_005)
- * - Level 3: ✅ 2 chests (chest_006, chest_007) - Fixed: Uses spawn position Y (same approach as Level 5)
- * - Level 4: ✅ 2 chests (chest_008, chest_009)
- * - Level 5: ✅ 1 chest (chest_010) - Uses dynamic ground detection via raycast
- * - Level 6: ✅ 1 chest (chest_011)
- * Total: 11 chests across all 6 levels, all working correctly with proper ground positioning
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~3,550
+ * Used by: main.js (chestSystem)
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   addChest              ~920   Add chest to level (main entry from main.js)
+ *   ChestSystem class     ~1050  Main system class
+ *   update                ~1200  Per-frame interaction check
+ *   _playDualModelSwapAnimation ~1982  Dual-model: swap closed→opened GLB
+ *   loadOpenedChests      ~800   Load opened state from database
+ *   checkChestCollision   ~600   Player collision with closed chests
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================
- * 
- * Game-wide treasure chest system for easy integration across all levels:
- * - Chest spawning and management
- * - Player interaction (E key)
- * - Animation system (lid opening)
- * - Reward system (DSPOINC via API)
- * - Visual effects (particles, glow)
- * - Sound effects
- * - Collision detection
- * - Persistence (database)
- * - Grass exclusion zones (automatic registration)
- * 
+ *
+ * Game-wide treasure chest system: spawning, E-key interaction, DSPOINC rewards
+ * via API, grass exclusion, collision, persistence (database).
+ *
+ * PRIMARY METHOD (simpler): Dual-model – closed GLB + opened GLB, instant swap.
+ * FALLBACK: Legacy chest2 single-GLB with lid rotation.
+ *
  * ============================================================================
- * ✅ STABLE VERSION STATUS
+ * 🎮 KEY FUNCTIONS
  * ============================================================================
- * 
- * ✅ **STABLE VERSION - PRODUCTION READY - CHEST DUPLICATE DETECTION WORKING**
- * 
- * 🚨 CRITICAL: This is the WORKING version with functional duplicate lid detection!
- * - Restored from working backup on December 19, 2025
- * - DO NOT modify duplicate detection logic without reading full documentation below
- * - The rotation-based check (lines ~1842-1900) is THE KEY WORKING MECHANISM
- * 
- * This system has reached a stable, production-ready state with:
- * - ✅ Chest2 animation system working perfectly (lid rotation, duplicate detection)
- * - ✅ Duplicate lid detection working (6-pass system with rotation-based check)
- * - ✅ Grass exclusion zone system working (no grass under chests)
+ *
+ *   addChest(levelId, config)  Create chest – id, type:'chest2', position, dspoincAmount, levelId
+ *   update(delta)              Per-frame – proximity, tryInteract, collision
+ *   loadOpenedChests(id, url)  Load opened state from DB before creating chests
+ *   getChestsOpenedCount()     LocalStorage counter
+ *
+ * ============================================================================
+ * 📦 MAIN.JS USAGE
+ * ============================================================================
+ *
+ *   chestSystem.addChest(LEVEL_IDS.LEVEL1, { id:'chest_001', type:'chest2', ... });
+ *   chestSystem.update(delta);  // in animate loop
+ *   chestSystem.checkChestCollision(...);  // in player movement
+ *
+ * Full guide: 12.0/RULES/19_CHEST_SYSTEM_RULE.md
+ *
+ * ============================================================================
+ * DUAL-MODEL METHOD (primary – simpler)
+ * ============================================================================
+ * When chestModelConfig.closedModelPath + openedModelPath provided:
+ * - Load closed GLB first; preload opened GLB in background
+ * - On open: pop/pulse on closed mesh, then swap visibility to opened mesh
+ * - No lid rotation, no duplicate detection – just swap two GLBs
+ *
+ * LEGACY chest2 (fallback): Single GLB with lid rotation + duplicate lid detection.
  * - ✅ Reward system integrated with API (DSPOINC rewards)
  * - ✅ Visual effects (sparkling particles, emissive glow)
  * - ✅ Sound effects (opening sound with fallback)
@@ -81,7 +87,7 @@
  * 
  * This ensures:
  * - ✅ Chests load correctly when warping to any level
- * - ✅ Chests that were opened display as opened (lid rotated)
+ * - ✅ Chests that were opened display as opened (dual-model swap or lid rotated)
  * - ✅ Chests that were not opened display as closed and ready to open
  * - ✅ Each chest's opened state is tracked on the player's profile
  * - ✅ Works correctly when warping between levels multiple times
@@ -2785,7 +2791,7 @@ class Chest {
  * Features:
  * - Chest loading and positioning
  * - Interaction detection (distance-based)
- * - Opening animation (lid rotation)
+ * - Opening: dual-model swap (closed GLB → opened GLB) or legacy lid animation
  * - State management (closed/opened)
  * - Reward system (DSPOINC via API)
  * - Chest counter (tracks opened chests)

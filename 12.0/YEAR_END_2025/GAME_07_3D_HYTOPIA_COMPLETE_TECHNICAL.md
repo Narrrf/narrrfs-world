@@ -1,9 +1,9 @@
 # 🎮 GAME 7: 3D HYTOPIA GAME - COMPLETE TECHNICAL DOCUMENTATION 2025
 
 **Created:** December 20, 2025  
-**Last Updated:** January 18, 2026 (Mobile Controls + VR Optimization Complete)  
+**Last Updated:** January 31, 2026 (Level 5: 40 chests treasure hunt with ground raycast)  
 **Status:** ✅ **STABLE PRODUCTION VERSION - MOBILE & VR OPTIMIZED**  
-**Version:** 2026-01-18-MOBILE-VR-COMPLETE  
+**Version:** 2026-02-01-PORTAL-REGISTER-UPDATES  
 **Purpose:** Complete technical reference for 3D Riddle Game integration in Narrrfs World
 
 ---
@@ -764,13 +764,15 @@ function togglePause(forceState) {
 #### **ChestSystem (`chest-system.js`)**
 - **Purpose:** Treasure chest system
 - **Active Levels:** All levels (1-6+)
-- **Features:** Animation, rewards (DSPOINC), persistence, grass exclusion
+- **Primary method:** Dual-model – closed GLB + opened GLB, swap on open (simpler)
+- **Fallback:** Legacy chest2 single-GLB with lid rotation
+- **Features:** Rewards (DSPOINC), persistence, grass exclusion, collision
 - **Initialization:** Once at game start (usually in weapon system init)
 - **Update:** Event-driven (checks interactions in `update()`)
 - **Key Functions:**
-  - `createChestsForLevel(levelId, chests)` - Create chests for level
+  - `addChest(levelId, config)` - Add chest (id, type, position, dspoincAmount, levelId; optional closedModelPath/openedModelPath for dual-model)
   - `update(delta)` - Check interactions
-  - `registerExclusionZones()` - Prevent grass under chests
+  - `loadOpenedChests(discordId)` - Load opened state from DB before creating chests
 
 ### **3. Boss Systems (Level 6)**
 
@@ -854,6 +856,7 @@ function togglePause(forceState) {
 - **Type:** Shooting challenge (50 cheeses + 30 monsters in waves)
 - **Total Steps:** 4 (Step 0, Step 1, Step 2, Step 3)
 - **Status:** ✅ **PRODUCTION VERIFIED**
+- **Center Portal Register:** Visitor's Log message system at arena center (E key when near) – see [Level 4 Portal Register](#-level-4-portal-register-visitors-log--february-2026) in Changelog
 - **Documentation:** `12.0/TECHNICAL_DOCUMENTATION/3d_riddles/RIDDLE_01_THE_FIRST_SHOT_LEVEL_4.md`
 
 #### **Level 5: The Walk**
@@ -3249,6 +3252,140 @@ async function startVRSession() {
 - [ ] Polish & final optimizations
 
 **Estimated Time:** 8 hours
+
+---
+
+## 📋 **CHANGELOG – FEBRUARY 2026**
+
+### ✅ Level 1 Blue Cheese Interaction (February 1, 2026)
+
+**Feature:** Proximity-based interaction with the large blue cheese GLB model in Level 1.
+
+**Implementation:**
+- **Proximity radius:** 12 units (blue cheese at world coords 100, 5.5, 18)
+- **Prompt:** When player is within 12 units and no chest is nearer, shows "Press [E] to interact"
+- **E key / VR grip:** Shows toast: **"You need a Cheese Scepter to start the riddle"** (4s duration)
+- **Priority:** Chest interaction takes precedence when both are in range
+
+**Code locations:**
+- Animate loop: `main.js` ~36037–36050 (chest system update block)
+- E key handler: `main.js` ~34487–34508 (KeyE case, before chest block)
+- VR grip handler: `main.js` ~34988–35025 (VR INTERACT block)
+
+**Status:** ✅ **Implemented – Ready for testing**
+
+---
+
+### ✅ VR Mode Fixes (February 2026 – Pending Meta Quest Verification)
+
+**Issues addressed:**
+- VR camera not spawning at player position
+- Player "out of play scenes" in VR
+- Magenta sphere (collider debug) sometimes visible but camera not following
+- VR Rescue button (Options menu) not working in VR
+- Controller movement affecting collider but not camera view
+
+**Fixes implemented:**
+1. **Per-frame camera sync:** Camera position forced to `playerCollider` center + 1.6m eye height every frame in VR
+2. **`applyVRSpawnForLevel`:** Now updates `playerColliderDebugMarker` (magenta sphere) in addition to collider
+3. **`updateCameraPosition(0)`** called after VR spawn to sync camera immediately
+4. **VR Rescue shortcut:** Both grip buttons (L+R) trigger respawn to level spawn – no menu needed
+5. **VR Rescue controller shortcut:** Edge-triggered (prevents continuous respawn)
+
+**Code locations:**
+- `applyVRSpawnForLevel` ~line 367
+- Animate loop VR block ~lines 34903–34932
+- VR Rescue shortcut ~line 35021
+- `_lastVRRescueGrips` ~line 2263
+
+**VR spawn coordinates (VR_SPAWN_POINTS):**
+- Level 1: (60, 2.5, 15)
+- Level 2–6: Per-level spawn positions
+
+**Status:** ⏳ **Implemented – Awaiting Meta Quest hardware verification**
+
+---
+
+### ✅ Level 4 Portal Register (Visitor's Log) – February 2026
+
+**Feature:** Message/guestbook system at the Level 4 center Cheese Portal. Players can leave messages for others to discover.
+
+**Implementation:**
+- **Location:** Center of Level 4 arena (origin)
+- **Model:** `textures/3d models/cheese portal/cheese-portal.glb`
+- **Scale:** 6× (doubled Feb 2026 – was 3×)
+- **Y position:** `origin.y + 6` – raised to prevent model going into ground when scaled 6×
+- **Proximity:** 8 units horizontal, 8 units vertical → shows "Press [E] to Open Portal Register"
+- **E key:** Opens full-screen Register UI when in proximity
+
+**Portal Register UI:**
+- Header: "📖 PORTAL REGISTER" + "Visitor's Log – Level 4 Portal"
+- Messages area: Scrollable list from API (max 50 messages)
+- Input: Textarea (max 200 chars), Submit button
+- Close: ✕ Close button
+- Style: Press Start 2P, warm/cheese theme (#ffe066, brown borders)
+
+**API:**
+- **Fetch:** `GET /api/user/portal-waypoint.php?portal_id=LEVEL4_CENTER_PORTAL&limit=50`
+- **Submit:** `POST /api/user/portal-waypoint.php` (portal_id, discord_id, username, message)
+- **Table:** `portal_waypoint_messages`
+- **Rate limit:** 1 message per minute per user
+
+**Code locations:**
+- `createLevel4CenterPortal()` ~line 21700
+- `createPortalRegisterUI()` ~line 22022
+- `openPortalRegister()` / `closePortalRegister()` ~lines 21943–22019
+- `fetchPortalMessages()` / `renderPortalMessages()` / `submitPortalMessage()` ~lines 22239–22448
+- Proximity check: Level 4 update loop ~lines 25928–26014
+- E key handler: ~lines 34550–34560
+
+**Status:** ✅ **Implemented – Production ready**
+
+---
+
+### ✅ Chest System – Dual-Model Method (Primary – Simpler) – February 2026
+
+**Documentation update:** Chest system now uses **dual-model method** as primary (simpler).
+
+**Primary method – Dual-model:**
+- **closedModelPath** + **openedModelPath** (two separate GLB files)
+- Load closed GLB first; preload opened GLB in background
+- On open: pop/pulse on closed mesh, then swap visibility to opened mesh
+- No lid rotation, no duplicate detection – just swap two GLBs
+
+**Fallback – Legacy chest2:**
+- Single GLB with embedded lid meshes
+- Manual lid rotation animation + duplicate lid detection (6-pass system)
+
+**Configuration:** Pass `closedModelPath` and `openedModelPath` via `chestModelConfig` when initializing ChestSystem in main.js.
+
+**Code locations:**
+- `_playDualModelSwapAnimation()` – `chest-system.js` ~line 1982
+- `_ensureOpenedMeshLoaded()` – `chest-system.js` ~line 1915
+- Chest constructor – `chest-system.js` ~line 838 (closedModelPath, openedModelPath)
+- addChest() – `chest-system.js` ~line 3140 (applies chestModelConfig)
+
+**Status:** ✅ **Documentation updated – Dual-model is primary method**
+
+---
+
+### ✅ Level 5 Chest Treasure Hunt (40 Chests) – February 2026
+
+**Feature:** 40 treasure chests spread across the huge Level 5 (Klagenfurt map) area. Each chest: 100 DSPOINC (role multiplier applied).
+
+**Implementation:**
+- **Chest IDs:** chest_012 through chest_051
+- **Level ID:** CHEESE_TEMPLE_LEVEL5
+- **Y position:** `raycastLevel5GroundYAt(x, z, spawnY)` – ground raycast for uneven city terrain
+- **Placement:** Grid pattern (8×5) with random offset across map bounds (~±550 X/Z)
+- **Spacing:** ~75 units between grid points
+- **Total:** 4,000 base DSPOINC (40 × 100) before role multipliers
+
+**Code locations:**
+- `createLevel5Chests()` ~line 23245 (after createLevel5Glyphs)
+- Called from buildLevel5TheWalk (setTimeout 100ms) and warpToLevel5 (setTimeout 200ms)
+
+**Status:** ✅ **Implemented – Production ready**
 
 ---
 

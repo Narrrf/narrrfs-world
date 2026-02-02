@@ -2,11 +2,19 @@
  * ============================================================================
  * PLAYER CONTROLS SYSTEM - Input Handling and Movement
  * ============================================================================
- * 
- * ✅ STATUS: STABLE - PRODUCTION READY
- * 📅 CREATED: December 2025
- * 📅 LAST UPDATED: December 20, 2025
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~790
+ * Used by: main.js (playerControls)
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   update(delta)            ~80   Per-frame input
+ *   getMovementState()       ~100  Forward, left, sprint, jump
+ *   getPointerLockControls() ~120  Pointer lock
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================

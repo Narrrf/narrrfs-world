@@ -2,11 +2,19 @@
  * ============================================================================
  * PLAYER MODEL SYSTEM - Character Model and Animation
  * ============================================================================
- * 
- * ✅ STATUS: STABLE - PRODUCTION READY
- * 📅 CREATED: December 2025
- * 📅 LAST UPDATED: December 20, 2025
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~1,250
+ * Used by: main.js (playerModel / playerCharacterModel)
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   load(modelPath)          ~80   Load GLTF character
+ *   update(delta)            ~150  Animate, position
+ *   setVisible, playAnimation ~200
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================

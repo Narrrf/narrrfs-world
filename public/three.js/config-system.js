@@ -2,11 +2,19 @@
  * ============================================================================
  * CONFIGURATION SYSTEM - Game Configuration Constants
  * ============================================================================
- * 
- * ✅ STATUS: STABLE - PRODUCTION READY
- * 📅 CREATED: December 18, 2025
- * 📅 LAST UPDATED: December 20, 2025
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~220
+ * Used by: main.js, audio-system, all modules (import only, no init)
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   LEVEL_IDS               ~118  Level identifiers
+ *   API_BASE_URL            ~106  narrrfs.world / localhost
+ *   RIDDLE_REWARD_ENDPOINT  ~114  /api/dev/riddle-reward.php
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================

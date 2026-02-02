@@ -1,278 +1,92 @@
 /**
- * 🚨 VERSION MARKER - STABLE PRODUCTION VERSION
- * Date: January 9, 2026
- * Version: 2026-01-09-STABLE-PRODUCTION
+ * ============================================================================
+ * 3D RIDDLE GAME - MAIN GAME LOOP (main.js)
+ * ============================================================================
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Date: February 2026
  * Status: ✅ STABLE - PRODUCTION READY
- * 
- * This is the STABLE PRODUCTION VERSION with:
- * - ✅ All path resolution fixes (unified for local and production)
- * - ✅ All critical assets uploaded and verified (123 files)
- * - ✅ Level 1 loading correctly in production
- * - ✅ Asset management system working (API upload, persistent storage, symlinks)
- * - ✅ All modules verified and working
- * - ✅ Production tested and confirmed stable
- * 
- * If you don't see this message in console, you're using cached code!
- */
-console.log("✅ [STABLE VERSION] main.js v2026-01-09-STABLE-PRODUCTION loaded - Production verified stable!");
-/**
+ * Lines: ~46,900
+ *
  * ============================================================================
- * 3D RIDDLE GAME - MAIN GAME LOOP
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND (Search for these anchors)
  * ============================================================================
- * 
- * 🎯 STABLE VERSION STATUS - January 9, 2026
+ *
+ * Use "Go to Line" or search for these strings to jump to sections:
+ *
+ *   VR_SPAWN_POINTS           ~272   Imports & VR spawn
+ *   function resolveAssetPath ~990   Path resolution (local + production)
+ *   SOUND_FX_STORAGE_KEY      ~1060  Storage keys, debug flags
+ *   loadLevel4WeaponViewmodel ~5030  Level 4 weapon/viewmodel
+ *   Level 4 cheese entity     ~9900  Level 4 cheese AI
+ *   handleLevel3CrushCheck    ~19980 Level 3 moving walls
+ *   createLevel4CenterPortal  ~21700 Level 4 center portal (6× scale)
+ *   createPortalRegisterUI    ~22020 Portal Register visitor's log
+ *   case "KeyE":              ~34350 Key handlers (E, Space…)
+ *   function animate(timestamp ~34850 MAIN GAME LOOP
+ *   vrInteractPressedNow      ~35020 VR interact (grip→chest/boss)
+ *   skySystem.update          ~36000 Sky/shadow update
+ *   checkRiddle4Combination   ~40025 Riddle #4 lever combination
+ *   function updateRiddleProgressUI ~38590 Riddle HUD
+ *   createMobileJoystick      ~37510 Mobile joystick
+ *   guiSystem.hideLoadingScreen ~9300 Game start / init flow
+ *
  * ============================================================================
- * 
- * ✅ **STABLE PRODUCTION VERSION - VERIFIED WORKING**
- * 
- * **MILESTONE:** First stable production version confirmed working!
- * **Date:** January 9, 2026
- * **Production URL:** https://narrrfs.world/public/three.js/3d-riddle-game.html
- * **Level 1:** ✅ VERIFIED WORKING - Loads correctly without errors
- * 
- * This game has reached a stable, production-ready state with:
- * - ✅ All 6 levels working correctly (Level 1-6)
- * - ✅ Dual player model support (Mouse & Animation Library)
- * - ✅ Complete animation system (idle, walk, run, jump, special moves)
- * - ✅ Chest system with grass exclusion zones (no grass under chests)
- * - ✅ Weapon system for Levels 4-6
- * - ✅ Boss fights (Phoenix Dragon & Alien Spider) working correctly
- * - ✅ Grass system with exclusion zones
- * - ✅ Audio system modularized (excluded from main.js, centralized in audio-system.js)
- * - ✅ TGA texture loading support (Alien Spider)
- * - ✅ Season management system
- * - ✅ Quest and achievement systems
- * - ✅ Collision detection and player movement
- * - ✅ First-person and third-person camera modes
- * 
- * **STABLE SYSTEMS:**
- * - ✅ Player Model System: Both Mouse and Animation Library working
- * - ✅ Animation System: All animations loading and playing correctly
- * - ✅ Chest System: Animation and grass exclusion working perfectly
- * - ✅ Grass System: Exclusion zones preventing grass under objects
- * - ✅ Weapon System: Working in Levels 4-6
- * - ✅ Audio System: Modularized and excluded from main.js (~200+ lines removed)
- * - ✅ Level System: All 6 levels load and function correctly
- * - ✅ Boss Systems: Phoenix (15 patterns) and Alien Spider (7 patterns) working
- * - ✅ TGA Texture Support: Fully implemented and working
- * 
- * **AUDIO SYSTEM ARCHITECTURE:**
- * - ✅ All audio logic centralized in audio-system.js module
- * - ✅ Wrapper functions maintain backward compatibility
- * - ✅ Audio buttons properly enabled in GUI
- * - ✅ Legacy variables synced after initialization
- * - ✅ No audio code in main.js (clean separation of concerns)
- * 
+ * 📦 MODULE OVERVIEW – ALL MODULES USED BY MAIN.JS
  * ============================================================================
- * 📦 MODULE INTEGRATION GUIDE - COMPLETE OVERVIEW
+ *
+ * CORE (all levels):
+ *   sky-system.js        Sky, clouds, day/night – applyLevelEnvironment(), update()
+ *   grass-system.js      Procedural grass, exclusion zones – applyLevelEnvironment(), registerExclusionZone()
+ *   player-controls.js   WASD, pointer lock, mobile – update(), getMovementState(), getPointerLockControls()
+ *   player-model.js      Character model, animations – load(), update(), setVisible(), playAnimation()
+ *   gui-system.js        HUD, menus, toasts, pause, level selector – initialize(), update(), showToast()
+ *   audio-system.js      Music, SFX – loadBackgroundMusic(), playJumpSound(), playFootstepSound()
+ *
+ * LEVEL-SPECIFIC:
+ *   weapon-system.js     Levels 4–6 – loadWeapon(), switchWeapon(), fire(), update()
+ *   chest-system.js      All levels – addChest(), update(), tryInteract(), loadOpenedChests()
+ *
+ * BOSS (Level 6):
+ *   phoenix2.js          Phoenix Dragon, 15 patterns – loadModel(), update(), setBehaviorMode()
+ *   alien-spider.js      Alien Spider, 7 patterns – loadModel(), update(), setBehaviorMode()
+ *
+ * OPTIONAL:
+ *   vr-input-provider.js WebXR controllers – enable(), update(), getMovementState(), getButtonState()
+ *   vr-ui-raycaster.js   VR menu interaction – initialize(), update() (raycast to DOM)
+ *   mobile-optimizer.js  RAM crash fix, landscape – detectPerformanceTier(), applyOptimizations()
+ *
+ * CONFIG (no init):
+ *   config-system.js     LEVEL_IDS, API_BASE_URL, audio paths – import only
+ *
  * ============================================================================
- * 
- * This file integrates all game modules. See MODULE_INTEGRATION_GUIDE.md for details.
- * 
- * **ALL MODULES - STATUS & OVERVIEW:**
- * 
- * ┌─────────────────────────────────────────────────────────────────────────┐
- * │ CORE SYSTEMS (Initialized once, work for all levels)                    │
- * └─────────────────────────────────────────────────────────────────────────┘
- * 
- * 1. SkySystem (sky-system.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: Sky and environment management (day/night cycle, clouds, stars)
- *    Loads: Procedural generation (no external files)
- *    Initialized: Once at game start
- *    Updated: Per-level via applyLevelEnvironment(levelId)
- *    Key Functions: applyLevelEnvironment(), setTime(), setCloudDensity()
- * 
- * 2. GrassSystem (grass-system.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: Procedural grass generation with wind animation
- *    Loads: GLTF maps (optional), custom shaders (embedded)
- *    Initialized: Once at game start
- *    Updated: Per-level via applyLevelEnvironment(levelId)
- *    Features: Exclusion zones, chunked meshes, wind system, per-level config
- *    Key Functions: applyLevelEnvironment(), registerExclusionZone(), regenerateGrass()
- * 
- * 3. PlayerControls (player-controls.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: Player input handling (keyboard, mouse, mobile joystick)
- *    Loads: No external files (uses THREE.js PointerLockControls)
- *    Initialized: Once after scene/camera/renderer ready
- *    Updated: Every frame via update(delta)
- *    Key Functions: enable(), disable(), update(), getMovementState()
- * 
- * 4. PlayerModel (player-model.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: Player character model and animation
- *    Loads: GLTF/GLB character models
- *    Initialized: Once at game start
- *    Updated: Every frame via update(delta)
- *    Key Functions: load(), update(), setVisible(), playAnimation()
- * 
- * 5. GUISystem (gui-system.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: User interface management (HUD, menus, notifications, boss health)
- *    Loads: No external files (pure DOM manipulation)
- *    Initialized: Once at game start via initialize()
- *    Updated: Event-driven (no update loop needed)
- *    Key Functions: initialize(), showToast(), showBossHealthBar(), updateHUD()
- * 
- * 6. AudioSystem (audio-system.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: Complete audio management (background music, sound effects)
- *    Loads: MP3/OGG/WAV audio files from /sounds/ and /audio/ directories
- *    Initialized: Once at game start via initialize()
- *    Updated: Event-driven (plays sounds on demand)
- *    Key Functions: loadBackgroundMusic(), playJumpSound(), setBackgroundMusicEnabled()
- *    Note: All audio logic modularized - main.js has wrapper functions only
- * 
- * ┌─────────────────────────────────────────────────────────────────────────┐
- * │ LEVEL-SPECIFIC SYSTEMS                                                  │
- * └─────────────────────────────────────────────────────────────────────────┘
- * 
- * 7. WeaponSystem (weapon-system.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: Weapon loading, shooting, inventory management
- *    Loads: FBX weapon models from /textures/3d models/Fire Weapons 1/FBX/
- *    Active: Levels 4, 5, 6
- *    Initialized: Once at game start
- *    Updated: Every frame via update(delta)
- *    Key Functions: loadWeapon(), switchWeapon(), fire(), update()
- * 
- * 8. ChestSystem (chest-system.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: Treasure chest system (spawning, interaction, rewards, persistence)
- *    Loads: GLTF chest models (chest2.gltf), audio files
- *    Active: All levels (1-6+)
- *    Initialized: Once at game start (usually in weapon system init)
- *    Updated: Event-driven (checks interactions in update())
- *    Key Functions: createChestsForLevel(), update(), registerExclusionZones()
- *    Features: Animation, rewards (DSPOINC), persistence, grass exclusion zones
- * 
- * ┌─────────────────────────────────────────────────────────────────────────┐
- * │ BOSS SYSTEMS (Level 6)                                                  │
- * └─────────────────────────────────────────────────────────────────────────┘
- * 
- * 9. PhoenixBoss2 (phoenix2.js) - ✅ STABLE - PRODUCTION READY
- *    Purpose: Phoenix Dragon boss with 15 behavior patterns
- *    Loads: GLB model (Dragons1.glb), PNG textures (7 color variations)
- *    Location: Level 6, spawn position (20, 10, 0)
- *    Initialized: In buildLevel6PhoenixArena()
- *    Updated: Every frame via update(delta) in updateLevel6()
- *    Key Functions: loadModel(), update(), setBehaviorMode(), applyColorVariation()
- *    Features: 7 color variations, 3 eye colors, emissive glow, 15 patterns
- * 
- * 10. AlienSpiderBoss (alien-spider.js) - ✅ STABLE - PRODUCTION READY
- *     Purpose: Alien Spider boss with 7 behavior patterns
- *     Loads: FBX model (AFC_03.fbx), TGA textures (via TGALoader)
- *     Location: Level 6, spawn position (-20, 1, 0) - opposite side from Phoenix
- *     Initialized: In buildLevel6PhoenixArena()
- *     Updated: Every frame via update(delta) in updateLevel6()
- *     Key Functions: loadModel(), update(), setBehaviorMode(), applyTextureVariation()
- *     Features: 3 texture variations, TGA texture support, brightness control, 7 patterns
- *     TGA Support: TGALoader + LoadingManager configured for automatic TGA loading
- * 
- * ┌─────────────────────────────────────────────────────────────────────────┐
- * │ OPTIONAL SYSTEMS                                                        │
- * └─────────────────────────────────────────────────────────────────────────┘
- * 
- * 11. VRInputProvider (vr-input-provider.js) - ✅ STABLE - PRODUCTION READY
- *     Purpose: VR controller input handling (WebXR API)
- *     Loads: No external files (uses browser WebXR API)
- *     Initialized: If VR detected and available
- *     Updated: Every frame via update(delta)
- *     Key Functions: enable(), disable(), update(), isAvailable() (static)
- *     Supported: Oculus Quest, Meta Quest, WebXR-compatible headsets
- * 
- * ┌─────────────────────────────────────────────────────────────────────────┐
- * │ CONFIGURATION                                                           │
- * └─────────────────────────────────────────────────────────────────────────┘
- * 
- * 12. config-system.js - ✅ STABLE - PRODUCTION READY
- *     Purpose: Centralized configuration constants
- *     Loads: Nothing (pure constants module)
- *     Exports: LEVEL_IDS, API_BASE_URL, audio paths, storage keys, game constants
- *     Used by: All modules (imported as needed)
- * 
- * **MODULE INITIALIZATION ORDER:**
- * 1. Core THREE.js setup (Scene, Camera, Renderer, AudioListener, AudioLoader)
- * 2. ConfigSystem (import constants - no initialization needed)
- * 3. Core Systems: SkySystem → GrassSystem → PlayerControls → PlayerModel → GUISystem
- * 4. Level-Specific: WeaponSystem → ChestSystem → AudioSystem
- * 5. Boss systems (Level 6): PhoenixBoss2 → AlienSpiderBoss
- * 6. VR (optional): VRInputProvider (if VR available)
- * 
- * **MODULE UPDATE ORDER (in game loop - animate function):**
- * - PlayerControls.update(delta) - Input handling
- * - PlayerModel.update(delta) - Character animation
- * - WeaponSystem.update(delta) - Weapon animation, heat, shooting
- * - Boss systems (Level 6): PhoenixBoss2.update(delta), AlienSpiderBoss.update(delta)
- * - Other systems updated as needed (event-driven or per-frame)
- * 
- * **MODULE SETTINGS PERSISTENCE:**
- * - SkySystem: loadSkySettingsForLevel(), saveSkySettingsForLevel()
- * - GrassSystem: loadGroundSettingsForLevel(), saveGroundSettingsForLevel()
- * - PhoenixBoss2: loadPhoenixBossSettingsForLevel(), savePhoenixBossSettingsForLevel()
- * - AlienSpiderBoss: loadAlienSpiderBossSettingsForLevel(), saveAlienSpiderBossSettingsForLevel()
- * - All settings stored in localStorage with level-specific keys
- * 
+ * 🧀 CODE ADVICE – DECADES OF GAMING
  * ============================================================================
- * 🕷️ ALIEN SPIDER BOSS INTEGRATION
+ *
+ * 1. NEVER delete working code – only add or fix. See 08_CRITICAL_CODE_PRESERVATION_RULE.
+ * 2. ALWAYS use resolveAssetPath() for textures/models – local + production paths differ.
+ * 3. GLTF with animations: use SkeletonUtils.clone(), not .clone(). See rule 14.
+ * 4. FBX models: clone + processWeaponMaterial() for visibility. See rule 18.
+ * 5. Chests: type 'chest2', Y=1.0, levelId CHEESE_TEMPLE_LEVELX. See rule 19.
+ * 6. Riddle rewards: /api/dev/riddle-reward.php, trait before DSPOINC. See rule 13.
+ * 7. E key priority: Chests > Portal Register > Level 4 bosses > Level 5 glyphs > Level 1 blue cheese.
+ * 8. VR: camera sync to playerCollider every frame; VR Rescue = both grip buttons.
+ *
  * ============================================================================
- * 
- * **Location:** Level 6 (buildLevel6PhoenixArena function)
- * **Spawn Position:** (-20, 1, 0) - opposite side from Phoenix
- * 
- * **Features:**
- * - 7 behavior patterns (idle_1, idle_2, walk_patrol, run_patrol, attack_1, attack_2, damage_reaction)
- * - 3 texture variations (Default, Fur_1, Fur_2)
- * - TGA texture loading support (TGALoader)
- * - Brightness control (0.5-3.0)
- * - GUI integration in God Mode
- * - Settings persistence per level
- * 
- * **TGA Texture Support:**
- * - TGALoader imported and configured
- * - LoadingManager with TGA handler set up
- * - FBXLoader uses LoadingManager for automatic TGA loading
- * - Resource path set for texture discovery
- * - All textures loading successfully
- * 
- * **See:** alien-spider.js for implementation details
- * 
- * ============================================================================
- * 🔥 PHOENIX BOSS INTEGRATION
- * ============================================================================
- * 
- * **Location:** Level 6 (buildLevel6PhoenixArena function)
- * **Spawn Position:** (20, 10, 0)
- * 
- * **Features:**
- * - 15 behavior patterns
- * - 7 color variations (Black, Blue, Brown, Gold, Green, Red, White)
- * - 3 eye colors (Blue, Red, Yellow)
- * - Emissive glow system
- * - GUI integration in God Mode
- * - Settings persistence per level
- * 
- * **See:** phoenix2.js for implementation details
- * 
- * ============================================================================
- * 📚 DOCUMENTATION REFERENCES
- * ============================================================================
- * 
- * Module Integration:
- * - MODULE_INTEGRATION_GUIDE.md - Complete integration guide
- * - JS_MODULES_STATUS.md - Module status documentation
- * 
- * TGA Texture Support:
- * - TGA_TEXTURE_SUCCESS.md - TGA implementation details
- * 
- * Alien Spider:
- * - ALIEN_SPIDER_INTEGRATION_COMPLETE.md - Integration documentation
- * 
- * FBX to GLTF Conversion:
- * - Tool: three.js/tools/fbx2gltf/convert-fbx-to-gltf.js
- * - Documentation: 12.0/LAB_NOTES/2025/12_DECEMBER/DAILY_NOTES/2025-12-08/
- * 
+ * 📚 DOCUMENTATION: 12.0/YEAR_END_2025/GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md
  * ============================================================================
  */
+console.log("✅ [3D RIDDLE GAME] main.js v2026-02-01 loaded – 6 levels, VR, Portal Register");
 
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
+
+// CRITICAL: Enable BVH-accelerated raycasting for collision meshes (Level 5, procedural blocks)
+// Without this, raycaster.intersectObject() uses default raycast which does NOT use boundsTree
+// and wall/ground collision fails (player walks through walls)
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
 import { Capsule } from "three/examples/jsm/math/Capsule.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
@@ -361,11 +175,20 @@ function applyVRSpawnForLevel(levelId) {
     start.set(spawn.x, centerY - halfHeight, spawn.z);
     end.set(spawn.x, centerY + halfHeight, spawn.z);
 
+    // CRITICAL: Sync camera to new collider position (desktop + VR)
+    if (typeof updateCameraPosition === "function") {
+      updateCameraPosition(0);
+    }
+
     if (typeof playerObject !== "undefined" && playerObject) {
       playerObject.position.set(spawn.x, centerY, spawn.z);
     }
     if (typeof playerColliderDebugMesh !== "undefined" && playerColliderDebugMesh) {
       playerColliderDebugMesh.position.set(spawn.x, centerY, spawn.z);
+    }
+    // CRITICAL: Also update playerColliderDebugMarker (magenta sphere) - different variable!
+    if (typeof playerColliderDebugMarker !== "undefined" && playerColliderDebugMarker) {
+      playerColliderDebugMarker.position.set(spawn.x, centerY, spawn.z);
     }
 
     console.log(`🥽 [VR SPAWN] Applied VR spawn for level ${levelId}:`, {
@@ -1017,6 +840,14 @@ function resolveAssetPath(path) {
   let cleanPath = path.startsWith("./") ? path.slice(2) : path;
   cleanPath = cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath;
   cleanPath = cleanPath.startsWith("public/") ? cleanPath.slice(7) : cleanPath;
+
+  // Level 5 / Maps: textures/3d models/Maps/ lives in public/textures/, NOT public/three.js/public/textures/
+  // (public/three.js/public/textures/ has no 3d models folder - Maps are at project root public/textures/)
+  if (cleanPath.includes("textures/3d models/") || cleanPath.includes("3d models/Maps/") || cleanPath.startsWith("textures/3d models/")) {
+    const mapsPath = `/public/${cleanPath}`;
+    console.log(`🔍 [PATH RESOLVE] Level 5 / Maps path → "${mapsPath}" (using /public/ root for 3d models)`);
+    return mapsPath;
+  }
 
   const href = window.location.href;
   const isFile = href.startsWith("file:");
@@ -2259,6 +2090,7 @@ let _lastVRJumpPressed = false;
 let _lastVRInteractPressed = false;
 let _lastVRShootPressed = false;
 let _lastVRMenuPressed = false;   // 🆕 needed for VR options-menu toggle
+let _lastVRRescueGrips = false;   // Both grips = VR Rescue respawn (edge-triggered)
 
 
 // ============================================================================
@@ -3677,6 +3509,25 @@ const LEVEL4_FINAL_MONSTER_WAVE_HEALTH = 2; // Final wave: 2 hits per monster
 const LEVEL4_MONSTER_PROJECTILE_SPEED = 12; // Projectile speed for final wave
 const LEVEL4_MONSTER_PROJECTILE_COOLDOWN = 3000; // 3 seconds between shots per monster
 const LEVEL4_WEAPON_PATH = "/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx";
+// Level 4 corner bosses - funny toast messages when player tries to interact (Feb 2026)
+const LEVEL4_CHEESE_BOSS_MESSAGES = {
+  boss1: "You must grow to fight with me! Come back when you've opened a few more chests, rookie.",
+  boss2: "The Emperor demands tribute. Bring more items from the shop—then we'll talk.",
+  boss3: "Your inventory amuses me, mortal. Go earn some DSPOINC from the other games. Then maybe.",
+  boss4: "A king fights kings. Play Tetris. Get gud. Then come back."
+};
+const LEVEL4_CHEESE_BOSS_PROXIMITY = 18; // units - bosses are 8x scale in corners
+
+// Level 5 ABD glyph stones - mysterious toast messages when player presses E (Feb 2026)
+// Hint: glyphs are our "hidden speak" - first time player sees ancient language stones
+const LEVEL5_GLYPH_MESSAGES = [
+  "A language older than cheese. Older than time. What does it say?",
+  "These stones remember. They remember when the Temple was young.",
+  "Some say the glyphs speak only to those who listen. Are you listening?",
+  "The marks repeat—a pattern, a key. Or a warning.",
+  "You have found the first words of the hidden speak. There are many more."
+];
+const LEVEL5_GLYPH_PROXIMITY = 28; // units - glyphs are 15x scale in circle (45 radius)
 
 // ==================== LEVEL 5: MONSTER HUD + VISIBILITY SAFETY (Jan 12, 2026) ====================
 
@@ -18410,42 +18261,61 @@ function buildLevel(mapData) {
         scene.add(collisionMesh);
       }
     } else {
-      // Don't remove Level 5 collision mesh if we're in Level 5
-      if (collisionMesh && currentLevel !== LEVEL_IDS.LEVEL5) {
-        scene.remove(collisionMesh);
-        if (collisionMesh.geometry) {
-          // Dispose boundsTree if it exists
-          if (collisionMesh.geometry.boundsTree && typeof collisionMesh.geometry.boundsTree.dispose === 'function') {
-            collisionMesh.geometry.boundsTree.dispose();
-          }
-          collisionMesh.geometry.dispose();
-        }
-      } else if (collisionMesh && currentLevel === LEVEL_IDS.LEVEL5) {
-        console.log("🔒 [LEVEL 5] Preserving Level 5 collision mesh (not removing)");
-      }
+      // CRITICAL FIX (Jan 31, 2026): Also preserve Level 5 collision mesh (includes green walls)
+      // Level 5's collision mesh is created in buildLevel5TheWalk() with all GLTF meshes
+      const shouldPreserveLevel5Mesh = currentLevel === LEVEL_IDS.LEVEL5 && collisionMesh && 
+        collisionMesh.name === 'Level5_CollisionMesh' && 
+        collisionMesh.geometry && collisionMesh.geometry.boundsTree;
       
-      // Create new collision mesh
-      const collisionGeometry = new THREE.BufferGeometry();
-      collisionGeometry.setAttribute("position", new THREE.BufferAttribute(collisionPositions, 3));
-      if (collisionNormals) {
-        collisionGeometry.setAttribute("normal", new THREE.BufferAttribute(collisionNormals, 3));
+      if (shouldPreserveLevel5Mesh) {
+        console.log("🔒 [LEVEL 5] Preserving Level 5 collision mesh (includes green walls from klagenfurt.gltf)");
+        // Ensure it's in the scene
+        if (!scene.children.includes(collisionMesh)) {
+          console.log("🔧 [LEVEL 5] Re-adding Level 5 collision mesh to scene");
+          scene.add(collisionMesh);
+        }
+      } else {
+        // Don't remove Level 5 collision mesh if we're in Level 5
+        if (collisionMesh && currentLevel !== LEVEL_IDS.LEVEL5) {
+          scene.remove(collisionMesh);
+          if (collisionMesh.geometry) {
+            // Dispose boundsTree if it exists
+            if (collisionMesh.geometry.boundsTree && typeof collisionMesh.geometry.boundsTree.dispose === 'function') {
+              collisionMesh.geometry.boundsTree.dispose();
+            }
+            collisionMesh.geometry.dispose();
+          }
+        } else if (collisionMesh && currentLevel === LEVEL_IDS.LEVEL5) {
+          console.log("🔒 [LEVEL 5] Preserving Level 5 collision mesh (not removing)");
+        }
+        
+        // Create new collision mesh ONLY if not Level 5 (Level 5 uses GLTF collision from buildLevel5TheWalk)
+        if (currentLevel !== LEVEL_IDS.LEVEL5) {
+          const collisionGeometry = new THREE.BufferGeometry();
+          collisionGeometry.setAttribute("position", new THREE.BufferAttribute(collisionPositions, 3));
+          if (collisionNormals) {
+            collisionGeometry.setAttribute("normal", new THREE.BufferAttribute(collisionNormals, 3));
+          }
+          collisionGeometry.computeBoundingBox();
+          collisionGeometry.boundsTree = new MeshBVH(collisionGeometry);
+          collisionMesh = new THREE.Mesh(collisionGeometry, new THREE.MeshBasicMaterial({ visible: false }));
+          collisionMesh.visible = false;
+          // Mark Level 1 collision mesh for easy identification
+          if (isLevel1) {
+            collisionMesh.name = 'level1_collision_mesh';
+            console.log("✅ [LEVEL 1] Collision mesh created:", {
+              hasGeometry: !!collisionMesh.geometry,
+              hasBoundsTree: !!collisionMesh.geometry?.boundsTree,
+              geometryVertices: collisionMesh.geometry?.attributes?.position?.count || 0,
+              inScene: scene.children.includes(collisionMesh),
+              meshName: collisionMesh.name
+            });
+          }
+          scene.add(collisionMesh);
+        } else {
+          console.log("⏭️ [LEVEL 5] Skipping new collision mesh creation (using GLTF-based collision from buildLevel5TheWalk)");
+        }
       }
-      collisionGeometry.computeBoundingBox();
-      collisionGeometry.boundsTree = new MeshBVH(collisionGeometry);
-      collisionMesh = new THREE.Mesh(collisionGeometry, new THREE.MeshBasicMaterial({ visible: false }));
-      collisionMesh.visible = false;
-      // Mark Level 1 collision mesh for easy identification
-      if (isLevel1) {
-        collisionMesh.name = 'level1_collision_mesh';
-        console.log("✅ [LEVEL 1] Collision mesh created:", {
-          hasGeometry: !!collisionMesh.geometry,
-          hasBoundsTree: !!collisionMesh.geometry?.boundsTree,
-          geometryVertices: collisionMesh.geometry?.attributes?.position?.count || 0,
-          inScene: scene.children.includes(collisionMesh),
-          meshName: collisionMesh.name
-        });
-      }
-      scene.add(collisionMesh);
     }
   } else {
     console.warn("⚠️ [BUILD LEVEL] No collision positions found - collision mesh will not be created!");
@@ -21687,8 +21557,8 @@ function createLevel4CenterPortal(origin) {
   const portalY = origin.y; // 0 (ground level)
   const portalZ = origin.z; // 1000 (center of arena)
   
-  // Store position with Y adjustment (portalY + 3) for collision detection (3x scale + 2 units higher to prevent underground)
-  level4State.centerPortalPosition = new THREE.Vector3(portalX, portalY + 3, portalZ);
+  // Store position with Y adjustment (portalY + 6) for collision detection (6x scale – doubled Feb 2026, raised to prevent underground)
+  level4State.centerPortalPosition = new THREE.Vector3(portalX, portalY + 6, portalZ);
   
   console.log("🌀 [LEVEL 4] Creating Cheese Portal at center:", level4State.centerPortalPosition);
   console.log("📖 [PORTAL REGISTER] centerPortalPosition stored:", level4State.centerPortalPosition);
@@ -21720,18 +21590,18 @@ function createLevel4CenterPortal(origin) {
         });
         
         // Position portal at arena center
-        // Y position adjusted by +3 to prevent going underground (model is 3x larger + 2 units higher)
-        // Final Y position: 0 + 3 = 3 (sits correctly above ground with 3x scale)
-        portal.position.set(portalX, portalY + 3, portalZ);
+        // Y position adjusted by +6 to prevent going underground (model is 6x scale – doubled Feb 2026)
+        // When scaling 2x (3→6), raise Y proportionally so base stays at ground level
+        portal.position.set(portalX, portalY + 6, portalZ);
         
         // Adjust Y position if model center is not at base
         if (size.y > 0) {
-          // Model is 3x larger, so adjust Y up by 3 units to prevent going underground
-          portal.position.y = portalY + 3; // Final Y: 3
+          // Model is 6x larger, so adjust Y up by 6 units to prevent going underground
+          portal.position.y = portalY + 6;
         }
         
-        // Scale portal 3x larger (same as Level 1 for consistency)
-        portal.scale.setScalar(3.0);
+        // Scale portal 6x (doubled Feb 2026 – was 3x for consistency with Level 1)
+        portal.scale.setScalar(6.0);
         
         // Rotation (optional - adjust based on model orientation)
         portal.rotation.y = 0;
@@ -21823,8 +21693,8 @@ function createLevel4CenterPortal(origin) {
             const portal = gltf.scene;
             portal.visible = true;
             portal.frustumCulled = false;
-            portal.position.set(portalX, portalY + 3, portalZ); // Y adjusted by +3 to prevent going underground (3x scale + 2 units higher)
-            portal.scale.setScalar(3.0); // Scale 3x larger for consistency with Level 1
+            portal.position.set(portalX, portalY + 6, portalZ); // Y + 6 for 6x scale – prevents going underground (Feb 2026)
+            portal.scale.setScalar(6.0); // Scale 6x (doubled Feb 2026)
             
             // Process materials
             portal.traverse((child) => {
@@ -21875,8 +21745,8 @@ function createLevel4CenterPortal(origin) {
         const portal = gltf.scene;
         portal.visible = true;
         portal.frustumCulled = false;
-        portal.position.set(portalX, portalY + 3, portalZ);
-        portal.scale.setScalar(3.0);
+        portal.position.set(portalX, portalY + 6, portalZ); // Y + 6 for 6x scale – prevents underground (Feb 2026)
+        portal.scale.setScalar(6.0); // Doubled Feb 2026
         
         portal.traverse((child) => {
           if (child.isMesh) {
@@ -22796,448 +22666,137 @@ async function buildLevel5TheWalk() {
     console.log("🎨 [LEVEL 5] Creating glyph stone monuments...");
     await createLevel5Glyphs();
     
-    // Create collision mesh from Level 5 GLTF map geometry
-    // This is essential for ground detection and wall collision
+    // LEVEL 5 COLLISION: Merge MAP + BORDER WALLS only. EXCLUDE GLYPHS to fix FPS drops.
+    // Glyphs are 15–37MB each; including them in BVH causes massive frame drops when nearby.
+    // Map (klagenfurt) has labyrinth walls/buildings; border walls are cheese boundaries.
+    // CRITICAL: material.side = THREE.DoubleSide so raycast hits BOTH sides of walls.
     try {
-      console.log("🔧 [LEVEL 5] Creating collision mesh from map geometry...");
+      console.log("🔧 [LEVEL 5] Creating collision from map + border walls (glyphs excluded for performance)...");
       
-      // Remove old collision mesh if it exists (from other levels)
-      // Wrap in try-catch to prevent cleanup errors from blocking collision mesh creation
-      if (collisionMesh) {
-        // Only reuse if it's Level 5's collision mesh AND it is verified to include Level 5 colliders.
-        // Why: If we reuse an older Level 5 BVH that was built without the border walls (or without glyph colliders),
-        // the player will be able to walk through those objects even though they visually exist.
-        if (collisionMesh.name === "Level5_CollisionMesh" && collisionMesh.geometry && collisionMesh.geometry.boundsTree) {
-          const includesBorderWalls = collisionMesh.userData && collisionMesh.userData.includesBorderWalls === true;
-          const includesGlyphProxies = collisionMesh.userData && collisionMesh.userData.includesGlyphProxies === true;
-          const glyphsExist = Array.isArray(level5State.glyphs) && level5State.glyphs.length > 0;
-          
-          if (includesBorderWalls && (!glyphsExist || includesGlyphProxies)) {
-            console.log("✅ [LEVEL 5] Level 5 collision mesh already exists and is verified, reusing it", {
-              includesBorderWalls,
-              includesGlyphProxies,
-              glyphsExist
-            });
-            // Don't recreate - collision mesh is already set up correctly
-            return; // Exit early - collision mesh already exists and includes required colliders
-          }
-          
-          console.warn("⚠️ [LEVEL 5] Existing Level 5 collision mesh missing required colliders; rebuilding it now...", {
-            includesBorderWalls,
-            includesGlyphProxies,
-            glyphsExist
-          });
-        }
-        
+      // Remove old Level 5 collision mesh if it exists
+      if (collisionMesh && (collisionMesh.name === "Level5_CollisionMesh" || collisionMesh.name === "Level5_FallbackGroundCollisionMesh")) {
         try {
           scene.remove(collisionMesh);
           if (collisionMesh.geometry) {
-            // Dispose boundsTree if it exists and has dispose method
-            try {
-              if (collisionMesh.geometry.boundsTree && typeof collisionMesh.geometry.boundsTree.dispose === 'function') {
-                collisionMesh.geometry.boundsTree.dispose();
-              }
-            } catch (boundsTreeError) {
-              // Ignore boundsTree disposal errors - not critical
-              console.warn("⚠️ [LEVEL 5] Could not dispose boundsTree (non-critical):", boundsTreeError.message);
+            if (collisionMesh.geometry.boundsTree && typeof collisionMesh.geometry.boundsTree.dispose === 'function') {
+              collisionMesh.geometry.boundsTree.dispose();
             }
             collisionMesh.geometry.dispose();
           }
           console.log("🗑️ [LEVEL 5] Old collision mesh removed");
         } catch (cleanupError) {
-          console.warn("⚠️ [LEVEL 5] Error removing old collision mesh (continuing anyway):", cleanupError.message);
-        } finally {
-          collisionMesh = null;
+          console.warn("⚠️ [LEVEL 5] Error removing old collision mesh:", cleanupError.message);
         }
+        collisionMesh = null;
       }
+      level5State.collisionMapModel = null; // Level 5 uses collisionMesh (single merged mesh)
       
-      // For Level 5, we'll use the GLTF scene directly as collision source
-      // Extract ALL mesh geometries (including all 8 patterns the user mentioned)
-      const meshes = [];
-      const meshNames = [];
-      const meshDetails = [];
-      
-      console.log(`🔍 [LEVEL 5] Scanning GLTF scene for meshes (recursive traversal)...`);
-      console.log(`   GLTF scene has ${gltf.scene.children.length} direct children`);
-      
-      // Count total objects in scene for debugging
-      let totalObjects = 0;
-      gltf.scene.traverse(() => { totalObjects++; });
-      console.log(`   Total objects in scene (including nested): ${totalObjects}`);
-      
-      // Recursively traverse the entire scene to find ALL meshes (including nested ones)
-      gltf.scene.traverse((child) => {
-        // Find ALL meshes - check that geometry has position attribute (valid mesh)
-        if (child.isMesh && child.geometry && child.geometry.attributes && child.geometry.attributes.position) {
-          const meshName = child.name || `unnamed_mesh_${meshes.length + 1}`;
-          const vertexCount = child.geometry.attributes.position.count;
-          const indexCount = child.geometry.index ? child.geometry.index.count : 0;
-          const isSkinned = child.isSkinnedMesh;
-          const parentName = child.parent ? (child.parent.name || child.parent.type || 'unnamed_parent') : 'root';
-          
-          // Include ALL meshes for collision (regular, skinned, etc.)
-          meshes.push(child);
-          meshNames.push(meshName);
-          meshDetails.push({
-            name: meshName,
-            parent: parentName,
-            vertices: vertexCount,
-            indices: indexCount,
-            isSkinned: isSkinned,
-            type: child.type,
-            visible: child.visible
-          });
-          
-          console.log(`📦 [LEVEL 5] Found mesh ${meshes.length}: "${meshName}" (parent: "${parentName}", ${vertexCount} vertices, ${indexCount} indices, ${isSkinned ? 'skinned' : 'regular'})`);
+      const geoms = [];
+      const normAttr = (g) => {
+        if (!g.index || g.index.count === 0) {
+          const vc = g.attributes.position.count;
+          const idx = new Uint32Array(Math.floor(vc / 3) * 3);
+          for (let i = 0; i < idx.length; i++) idx[i] = i;
+          g.setIndex(new THREE.BufferAttribute(idx, 1));
         }
-      });
-      
-      console.log(`📊 [LEVEL 5] Scene traversal complete: ${meshes.length} meshes found`);
-      
-      if (meshes.length > 0) {
-        console.log(`📦 [LEVEL 5] Found ${meshes.length} meshes for collision:`, meshNames);
-        console.log(`📋 [LEVEL 5] Mesh details:`, meshDetails);
-        
-        // Verify we found meshes (optimized map uses 5 meshes)
-        if (meshes.length === 0) {
-          console.error(`❌ [LEVEL 5] No meshes found! Collision detection will not work.`);
-        } else if (meshes.length >= 3) {
-          console.log(`✅ [LEVEL 5] Found ${meshes.length} meshes - collision detection ready!`);
-        } else {
-          console.warn(`⚠️ [LEVEL 5] Only ${meshes.length} meshes found - collision may be incomplete`);
+        if (!g.attributes.normal) g.computeVertexNormals();
+        if (!g.attributes.uv) {
+          const vc = g.attributes.position.count;
+          const uvs = new Float32Array(vc * 2);
+          g.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
         }
-        
-        // Create a combined geometry from all meshes using BufferGeometryUtils
-        // This properly merges geometries with indices (faces) for collision detection
-        const geometriesToMerge = [];
-        
-        // Helper function to normalize geometry attributes for mergeGeometries compatibility
-        // mergeGeometries requires ALL geometries to have the SAME attributes (position, normal, uv, etc.)
-        const normalizeGeometryAttributes = (geometry) => {
-          const vertexCount = geometry.attributes.position.count;
-          
-          // Ensure geometry has indices
-          if (!geometry.index || geometry.index.count === 0) {
-            // Non-indexed geometry - create index buffer
-            const triangleCount = Math.floor(vertexCount / 3);
-            const indexCount = triangleCount * 3;
-            
-            // Create sequential indices assuming triangles (0,1,2, 3,4,5, 6,7,8, ...)
-            const indices = new Uint32Array(indexCount);
-            for (let i = 0; i < indexCount; i++) {
-              indices[i] = i;
-            }
-            geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+        return g;
+      };
+      // Build Set of glyph objects (and their descendants) to EXCLUDE from collision
+      const glyphSet = new Set();
+      if (Array.isArray(level5State.glyphs)) {
+        level5State.glyphs.forEach((glyph) => {
+          if (glyph) {
+            glyphSet.add(glyph);
+            glyph.traverse((child) => glyphSet.add(child));
           }
-          
-          // Ensure geometry has normals
-          if (!geometry.attributes.normal) {
-            geometry.computeVertexNormals();
-          }
-          
-          // Ensure geometry has UV coordinates (required for merge compatibility)
-          // If missing, add dummy UVs (0,0) - we don't need UVs for collision detection
-          if (!geometry.attributes.uv) {
-            const uvs = new Float32Array(vertexCount * 2);
-            for (let i = 0; i < vertexCount; i++) {
-              uvs[i * 2] = 0;
-              uvs[i * 2 + 1] = 0;
-            }
-            geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-          }
-          
-          return geometry;
-        };
-        
-        meshes.forEach((mesh) => {
-          mesh.updateMatrixWorld(true);
-          
-          // Clone geometry to avoid modifying original
-          const geometry = mesh.geometry.clone();
-          
-          // Apply world matrix to geometry vertices
-          geometry.applyMatrix4(mesh.matrixWorld);
-          
-          // Normalize attributes (indices, normals, UVs) for mergeGeometries compatibility
-          normalizeGeometryAttributes(geometry);
-          
-          geometriesToMerge.push(geometry);
         });
-        
-        // Track Level 5 extra collider counts for verification/reuse logic
-        let glyphProxiesAdded = 0;
-        
-        // Add border walls to collision mesh
-        if (level5State.borderWalls) {
-          console.log("🧀 [LEVEL 5] Adding border walls to collision mesh...");
-          console.log("🧀 [LEVEL 5] Border walls object:", level5State.borderWalls);
-          const walls = [
-            level5State.borderWalls.north,
-            level5State.borderWalls.south,
-            level5State.borderWalls.east,
-            level5State.borderWalls.west
-          ];
-          
-          let wallsAdded = 0;
-          walls.forEach((wall, index) => {
-            if (wall && wall.geometry) {
-              wall.updateMatrixWorld(true);
-              
-              // Clone geometry to avoid modifying original
-              const wallGeometry = wall.geometry.clone();
-              
-              // Apply world matrix to geometry vertices
-              wallGeometry.applyMatrix4(wall.matrixWorld);
-              
-              // Normalize attributes (indices, normals, UVs) for mergeGeometries compatibility
-              normalizeGeometryAttributes(wallGeometry);
-              
-              geometriesToMerge.push(wallGeometry);
-              wallsAdded++;
-              console.log(`🧀 [LEVEL 5] Added ${['North', 'South', 'East', 'West'][index]} wall to collision mesh`, {
-                position: wall.position,
-                geometry: { 
-                  vertices: wallGeometry.attributes.position.count,
-                  indices: wallGeometry.index ? wallGeometry.index.count : 0
-                }
-              });
-            } else {
-              console.warn(`⚠️ [LEVEL 5] Wall ${['North', 'South', 'East', 'West'][index]} is missing or has no geometry:`, wall);
+      }
+      // Traverse MAP only (klagenfurt) + add border walls. Do NOT include glyphs.
+      // CRITICAL: Handle InstancedMesh - GLTF maps often use instancing for walls/buildings.
+      // Each instance has its own transform in instanceMatrix; we must bake all instances.
+      const instanceMatrix = new THREE.Matrix4();
+      if (level5State.mapMesh) {
+        level5State.mapMesh.updateMatrixWorld(true);
+        level5State.mapMesh.traverse((c) => {
+          if (glyphSet.has(c)) return; // Skip glyph meshes
+          if (c.isSkinnedMesh) return;
+          if (!c.isMesh || !c.geometry || !c.geometry.attributes || !c.geometry.attributes.position) return;
+          c.updateMatrixWorld(true);
+          if (c.isInstancedMesh && c.count > 0) {
+            // Bake each instance with its per-instance transform
+            for (let i = 0; i < c.count; i++) {
+              c.getMatrixAt(i, instanceMatrix);
+              const worldMatrix = c.matrixWorld.clone().multiply(instanceMatrix);
+              const g = c.geometry.clone();
+              g.applyMatrix4(worldMatrix);
+              normAttr(g);
+              geoms.push(g);
             }
-          });
-          console.log(`✅ [LEVEL 5] Total walls added to collision mesh: ${wallsAdded}/4`);
-        } else {
-          console.error("❌ [LEVEL 5] CRITICAL: level5State.borderWalls is null/undefined - walls not added to collision mesh!");
-        }
-
-        // Add glyph collision to Level 5 (cheap collision proxies, NOT full glyph geometry)
-        // Goal: prevent walking through the huge glyph stone monuments without building an enormous BVH.
-        // Implementation: build an axis-aligned BoxGeometry collider per glyph based on its world-space bounding box.
-        if (Array.isArray(level5State.glyphs) && level5State.glyphs.length > 0) {
-          console.log(`🗿 [LEVEL 5] Adding glyph collision proxies to collision mesh... (glyphs=${level5State.glyphs.length})`);
-          level5State.glyphs.forEach((glyphModel, index) => {
-            try {
-              if (!glyphModel) return;
-              
-              // Ensure world matrices are correct (glyphs use matrixAutoUpdate = false)
-              glyphModel.updateMatrixWorld(true);
-              
-              const box = new THREE.Box3().setFromObject(glyphModel);
-              const size = box.getSize(new THREE.Vector3());
-              const center = box.getCenter(new THREE.Vector3());
-              
-              // Guard: skip invalid boxes
-              if (!Number.isFinite(size.x) || !Number.isFinite(size.y) || !Number.isFinite(size.z)) return;
-              if (size.x <= 0.001 || size.y <= 0.001 || size.z <= 0.001) return;
-              
-              // Slightly expand the collider so we don't clip through due to capsule radius / ray offsets
-              const expand = 0.75;
-              const sx = Math.max(1.0, size.x + expand);
-              const sy = Math.max(2.0, size.y + expand);
-              const sz = Math.max(1.0, size.z + expand);
-              
-              const proxy = new THREE.BoxGeometry(sx, sy, sz);
-              proxy.translate(center.x, center.y, center.z);
-              normalizeGeometryAttributes(proxy);
-              
-              geometriesToMerge.push(proxy);
-              glyphProxiesAdded++;
-              
-              // Optional debug logging (disabled by default)
-              if (DEBUG_SETTINGS && DEBUG_SETTINGS.logCollisionChecks && Math.random() < 0.1) {
-                console.log(`🗿 [LEVEL 5] Added glyph collision proxy #${index + 1}`, {
-                  size: { x: sx.toFixed(2), y: sy.toFixed(2), z: sz.toFixed(2) },
-                  center: { x: center.x.toFixed(2), y: center.y.toFixed(2), z: center.z.toFixed(2) }
-                });
-              }
-            } catch (glyphColliderError) {
-              console.warn(`⚠️ [LEVEL 5] Failed to add glyph collision proxy #${index + 1}:`, glyphColliderError.message);
-            }
-          });
-          console.log(`✅ [LEVEL 5] Glyph collision proxies added: ${glyphProxiesAdded}/${level5State.glyphs.length}`);
-        } else {
-          console.log("🗿 [LEVEL 5] No glyphs found for collision proxies (skipping)");
-        }
-        
-        // Merge all geometries into one using BufferGeometryUtils
-        // All geometries now have indices for compatibility
-        if (geometriesToMerge.length > 0) {
-          console.log(`📦 [LEVEL 5] Merging ${geometriesToMerge.length} geometries for collision mesh...`);
-          
-          // Verify all geometries have compatible attributes before merging
-          console.log(`🔍 [LEVEL 5] Verifying geometry attribute compatibility...`);
-          geometriesToMerge.forEach((geom, idx) => {
-            // Normalize attributes to ensure compatibility
-            normalizeGeometryAttributes(geom);
-            
-            const hasPosition = !!geom.attributes.position;
-            const hasNormal = !!geom.attributes.normal;
-            const hasUV = !!geom.attributes.uv;
-            const hasIndex = !!geom.index;
-            
-            console.log(`   Geometry ${idx}: position=${hasPosition}, normal=${hasNormal}, uv=${hasUV}, index=${hasIndex}`);
-          });
-          
-          let mergedGeometry;
-          try {
-            // Use BufferGeometryUtils to merge geometries (all now have compatible indices)
-            console.log(`🔄 [LEVEL 5] Attempting to merge ${geometriesToMerge.length} geometries...`);
-            mergedGeometry = mergeGeometries(geometriesToMerge);
-            console.log(`✅ [LEVEL 5] Geometry merge successful`);
-          } catch (mergeError) {
-            console.error("❌ [LEVEL 5] Failed to merge geometries:", mergeError);
-            console.error("   Error details:", mergeError.message);
-            
-            // Enhanced fallback: try to merge in groups
-            console.error("   Trying grouped merge fallback...");
-            try {
-              // Ensure all geometries have normalized attributes
-              console.log(`   Normalizing all geometry attributes for compatibility...`);
-              geometriesToMerge.forEach((geom, idx) => {
-                normalizeGeometryAttributes(geom);
-              });
-              
-              // Try merge again after normalization
-              mergedGeometry = mergeGeometries(geometriesToMerge);
-              console.log(`✅ [LEVEL 5] Merge successful after attribute normalization`);
-            } catch (fallbackError) {
-              console.error("❌ [LEVEL 5] Fallback merge also failed:", fallbackError);
-              // Last resort: use first geometry only
-              mergedGeometry = geometriesToMerge[0];
-              if (geometriesToMerge.length > 1) {
-                console.warn(`⚠️ [LEVEL 5] Using only first geometry (${geometriesToMerge.length - 1} meshes skipped)`);
-              }
-            }
-          }
-          
-          // Verify mergedGeometry was created successfully
-          if (!mergedGeometry) {
-            console.error("❌ [LEVEL 5] CRITICAL: mergedGeometry is null/undefined after merge attempts!");
-            throw new Error("Failed to create merged geometry for collision mesh");
-          }
-          
-          // Dispose geometries we merged (except the merged one)
-          geometriesToMerge.forEach((geom) => {
-            if (geom !== mergedGeometry) {
-              geom.dispose();
-            }
-          });
-          
-          // Ensure geometry has normals for proper collision
-          if (!mergedGeometry.attributes || !mergedGeometry.attributes.normal) {
-            console.log("🔧 [LEVEL 5] Computing vertex normals...");
-            mergedGeometry.computeVertexNormals();
-          }
-          
-          // Compute bounding box
-          mergedGeometry.computeBoundingBox();
-          const bbox = mergedGeometry.boundingBox;
-          console.log(`📦 [LEVEL 5] Merged geometry bounding box:`, {
-            min: `${bbox.min.x.toFixed(2)}, ${bbox.min.y.toFixed(2)}, ${bbox.min.z.toFixed(2)}`,
-            max: `${bbox.max.x.toFixed(2)}, ${bbox.max.y.toFixed(2)}, ${bbox.max.z.toFixed(2)}`,
-            size: `${(bbox.max.x - bbox.min.x).toFixed(2)}, ${(bbox.max.y - bbox.min.y).toFixed(2)}, ${(bbox.max.z - bbox.min.z).toFixed(2)}`
-          });
-          
-          // Create BVH tree for efficient collision detection
-          console.log("🌳 [LEVEL 5] Creating BVH tree for collision detection...");
-          try {
-            mergedGeometry.boundsTree = new MeshBVH(mergedGeometry);
-            console.log("✅ [LEVEL 5] BVH tree created successfully");
-          } catch (bvhError) {
-            console.error("❌ [LEVEL 5] Failed to create BVH tree:", bvhError);
-            throw bvhError; // Re-throw to trigger outer catch
-          }
-          
-          // Create invisible collision mesh
-          collisionMesh = new THREE.Mesh(mergedGeometry, new THREE.MeshBasicMaterial({ visible: false }));
-          collisionMesh.visible = false;
-          collisionMesh.name = "Level5_CollisionMesh";
-          
-          // Mark what this Level 5 BVH contains (used to avoid reusing an incomplete cached BVH later)
-          collisionMesh.userData = collisionMesh.userData || {};
-          collisionMesh.userData.levelId = LEVEL_IDS.LEVEL5;
-          collisionMesh.userData.includesBorderWalls = !!level5State.borderWalls;
-          collisionMesh.userData.includesGlyphProxies = glyphProxiesAdded > 0;
-          collisionMesh.userData.createdAt = Date.now();
-          
-          scene.add(collisionMesh);
-          
-          const vertexCount = mergedGeometry.attributes.position.count;
-          const indexCount = mergedGeometry.index ? mergedGeometry.index.count : 0;
-          const hasBoundsTree = !!mergedGeometry.boundsTree;
-          
-          const wallsCount = level5State.borderWalls ? 
-            Object.values(level5State.borderWalls).filter(w => w && w.geometry).length : 0;
-          
-          console.log(`✅ [LEVEL 5] Collision mesh created successfully!`, {
-            vertices: vertexCount,
-            indices: indexCount,
-            faces: indexCount > 0 ? indexCount / 3 : 'unknown',
-            mapMeshes: meshes.length,
-            wallsIncluded: wallsCount,
-            glyphProxiesIncluded: glyphProxiesAdded,
-            totalGeometries: geometriesToMerge.length,
-            hasBoundsTree: hasBoundsTree,
-            collisionMeshInScene: scene.children.includes(collisionMesh),
-            collisionMeshName: collisionMesh.name
-          });
-          
-          // Verify collision mesh is ready
-          if (!hasBoundsTree) {
-            console.error("❌ [LEVEL 5] CRITICAL: Collision mesh created but BVH tree is missing!");
           } else {
-            console.log("✅ [LEVEL 5] Collision mesh is ready for ground/wall detection");
-            console.log("✅ [LEVEL 5] Collision mesh bounds:", {
-              min: `${bbox.min.x.toFixed(2)}, ${bbox.min.y.toFixed(2)}, ${bbox.min.z.toFixed(2)}`,
-              max: `${bbox.max.x.toFixed(2)}, ${bbox.max.y.toFixed(2)}, ${bbox.max.z.toFixed(2)}`
-            });
+            const g = c.geometry.clone();
+            g.applyMatrix4(c.matrixWorld);
+            normAttr(g);
+            geoms.push(g);
           }
-        } else {
-          console.warn("⚠️ [LEVEL 5] No geometries to merge for collision");
-        }
-      } else {
-        console.warn("⚠️ [LEVEL 5] No meshes found in GLTF for collision mesh - ground/wall collision disabled");
+        });
       }
+      if (level5State.borderWalls) {
+        [level5State.borderWalls.north, level5State.borderWalls.south, level5State.borderWalls.east, level5State.borderWalls.west].forEach((w) => {
+          if (w && w.geometry) {
+            w.updateMatrixWorld(true);
+            const g = w.geometry.clone();
+            g.applyMatrix4(w.matrixWorld);
+            normAttr(g);
+            geoms.push(g);
+          }
+        });
+      }
+      if (geoms.length === 0) {
+        throw new Error("No meshes found in Level 5 for collision");
+      }
+      const mergedGeometry = mergeGeometries(geoms);
+      geoms.forEach((g) => { if (g !== mergedGeometry) g.dispose(); });
       
-      // Final verification: Check if collision mesh is ready
-      if (collisionMesh && collisionMesh.geometry && collisionMesh.geometry.boundsTree) {
-        console.log("✅ [LEVEL 5] Collision mesh final verification:", {
-          name: collisionMesh.name,
-          vertices: collisionMesh.geometry.attributes.position.count,
-          indices: collisionMesh.geometry.index ? collisionMesh.geometry.index.count : 0,
-          inScene: scene.children.includes(collisionMesh),
-          visible: collisionMesh.visible
-        });
-      } else {
-        console.error("❌ [LEVEL 5] CRITICAL: Collision mesh verification failed!", {
-          collisionMesh: !!collisionMesh,
-          hasGeometry: !!collisionMesh?.geometry,
-          hasBoundsTree: !!collisionMesh?.geometry?.boundsTree
-        });
-        
-        // Ground safety net: if BVH creation failed for any reason, at least provide a flat collision plane
-        // so the player won't randomly fall forever when not in GOD mode.
-        try {
-          const groundY = (level5State && level5State.spawnPosition) ? level5State.spawnPosition.y : 0;
-          const fallbackSize = 5000;
-          const collisionGeometry = new THREE.BoxGeometry(fallbackSize, 2, fallbackSize);
-          collisionGeometry.translate(0, groundY - 1, 0);
-          collisionGeometry.boundsTree = new MeshBVH(collisionGeometry);
-          
-          collisionMesh = new THREE.Mesh(collisionGeometry, new THREE.MeshBasicMaterial({ visible: false }));
-          collisionMesh.visible = false;
-          collisionMesh.name = "Level5_FallbackGroundCollisionMesh";
-          scene.add(collisionMesh);
-          
-          console.log("✅ [LEVEL 5] Fallback ground collision plane created", { groundY, fallbackSize });
-        } catch (fallbackCollisionError) {
-          console.error("❌ [LEVEL 5] Failed to create fallback ground collision plane:", fallbackCollisionError);
-        }
-      }
+      const vertexCount = mergedGeometry.attributes.position.count;
+      console.log(`📦 [LEVEL 5] Baked collision geometry: ${vertexCount} vertices (map + border walls, glyphs excluded)`);
+      
+      // Build BVH on merged geometry
+      mergedGeometry.boundsTree = new MeshBVH(mergedGeometry);
+      
+      // CRITICAL: side: THREE.DoubleSide so raycast hits BOTH sides of walls
+      // (FrontSide-only would miss rays from "inside" or at grazing angles - player walks through)
+      const collisionMaterial = new THREE.MeshBasicMaterial({
+        visible: false,
+        side: THREE.DoubleSide
+      });
+      collisionMesh = new THREE.Mesh(mergedGeometry, collisionMaterial);
+      collisionMesh.visible = false;
+      collisionMesh.name = "Level5_CollisionMesh";
+      scene.add(collisionMesh);
+      
+      console.log("✅ [LEVEL 5] Collision ready (map + walls, no glyphs, DoubleSide, InstancedMesh supported)");
     } catch (collisionError) {
-      console.error("❌ [LEVEL 5] Failed to create collision mesh:", collisionError);
-      console.error("   Error details:", collisionError.stack);
-      // Continue without collision mesh (player can fly through, but no ground detection)
+      console.error("❌ [LEVEL 5] Failed to create collision:", collisionError);
+      // Fallback: flat ground plane
+      try {
+        const groundY = level5State.spawnPosition ? level5State.spawnPosition.y : 0;
+        const collisionGeometry = new THREE.BoxGeometry(5000, 2, 5000);
+        collisionGeometry.translate(0, groundY - 1, 0);
+        collisionGeometry.boundsTree = new MeshBVH(collisionGeometry);
+        collisionMesh = new THREE.Mesh(collisionGeometry, new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
+        collisionMesh.visible = false;
+        collisionMesh.name = "Level5_FallbackGroundCollisionMesh";
+        scene.add(collisionMesh);
+        console.log("✅ [LEVEL 5] Fallback ground collision created");
+      } catch (e) {
+        console.error("❌ [LEVEL 5] Fallback collision failed:", e);
+      }
     }
     
     // Create Level 5 chests (with small delay to ensure level is fully initialized)
@@ -23400,6 +22959,81 @@ async function createLevel5Glyphs() {
   }
   
   console.log(`✅ [LEVEL 5] Created ${level5State.glyphs.length} glyph stone monuments`);
+}
+
+// ==================== LEVEL 5: CHEST TREASURE HUNT (Feb 2026) ====================
+// 40 chests across the huge Level 5 area, 100 DSPOINC each, ground raycast for Y
+// Level 5 map ~1500 units, spawn at origin; chests spread in grid + offset pattern
+const LEVEL5_CHEST_COUNT = 40;
+const LEVEL5_CHEST_DSPOINC = 100;
+const LEVEL5_CHEST_SPACING = 75; // Units between chest grid points
+
+function createLevel5Chests() {
+  if (!chestSystem) {
+    console.warn("⚠️ [LEVEL 5] Chest system not initialized");
+    return;
+  }
+  if (!level5State || !level5State.mapMesh) {
+    console.warn("⚠️ [LEVEL 5] Map not ready for chest creation");
+    return;
+  }
+
+  // CRITICAL: Clear existing Level 5 chests first to ensure clean state (prevents duplicates after warp/respawn)
+  console.log("🎁 [LEVEL 5] Clearing existing chests before recreation (40-chest treasure hunt)...");
+  chestSystem.clearLevel(LEVEL_IDS.LEVEL5);
+
+  const spawnY = level5State.spawnPosition.y ?? 0;
+
+  // Get map bounds for placement (map centered at origin)
+  const box = new THREE.Box3().setFromObject(level5State.mapMesh);
+  const minX = Math.max(box.min.x, -550);
+  const maxX = Math.min(box.max.x, 550);
+  const minZ = Math.max(box.min.z, -550);
+  const maxZ = Math.min(box.max.z, 550);
+  const spanX = maxX - minX;
+  const spanZ = maxZ - minZ;
+
+  const positions = [];
+  const used = new Set();
+  const gridStep = LEVEL5_CHEST_SPACING;
+  const offsetRange = gridStep * 0.4;
+
+  // Generate 40 positions: grid pattern with small random offset for organic feel
+  for (let i = 0; i < LEVEL5_CHEST_COUNT; i++) {
+    let x, z, key;
+    let attempts = 0;
+    do {
+      const col = Math.floor((i % 8) - 4) * 2;
+      const row = Math.floor(i / 8) - 2;
+      const baseX = col * gridStep + (Math.random() - 0.5) * offsetRange * 2;
+      const baseZ = row * gridStep + (Math.random() - 0.5) * offsetRange * 2;
+      x = Math.max(minX + 30, Math.min(maxX - 30, baseX));
+      z = Math.max(minZ + 30, Math.min(maxZ - 30, baseZ));
+      key = `${Math.round(x)}_${Math.round(z)}`;
+      attempts++;
+    } while (used.has(key) && attempts < 20);
+    used.add(key);
+    positions.push({ x, z });
+  }
+
+  let added = 0;
+  for (let i = 0; i < positions.length; i++) {
+    const { x, z } = positions[i];
+    const chestId = `chest_${String(12 + i).padStart(3, "0")}`;
+    const groundY = raycastLevel5GroundYAt(x, z, spawnY);
+    const y = groundY !== null ? groundY : spawnY;
+
+    chestSystem.addChest(LEVEL_IDS.LEVEL5, {
+      id: chestId,
+      type: "chest2",
+      position: new THREE.Vector3(x, y, z),
+      dspoincAmount: LEVEL5_CHEST_DSPOINC,
+      levelId: "CHEESE_TEMPLE_LEVEL5"
+    });
+    added++;
+  }
+
+  console.log(`🎁 [LEVEL 5] Created ${added} treasure chests (${LEVEL5_CHEST_DSPOINC} DSPOINC each, ground raycast Y)`);
 }
 
 // ==================== LEVEL 5: RIDDLE SYSTEM ====================
@@ -34474,6 +34108,97 @@ document.addEventListener("keydown", (event) => {
       if (!event.repeat) {
         console.log("🔑 [DEBUG] E key not repeated, checking conditions...");
 
+        // 0️⃣ LEVEL 1 BLUE CHEESE - "You need a Cheese Scepter to start the riddle"
+        if (
+          currentLevel === LEVEL_IDS.LEVEL1 &&
+          level1State.blueCheesePosition &&
+          playerCollider
+        ) {
+          const playerPos = new THREE.Vector3().lerpVectors(
+            playerCollider.start,
+            playerCollider.end,
+            0.5
+          );
+          const distToBlueCheese = playerPos.distanceTo(level1State.blueCheesePosition);
+          if (distToBlueCheese < 12) {
+            showRiddleToast("You need a Cheese Scepter to start the riddle", {
+              id: "level1_blue_cheese_scepter",
+              duration: 4000
+            });
+            break; // Handled - don't fall through
+          }
+        }
+
+        // 0b️⃣ LEVEL 4 CORNER BOSSES - Funny messages (Feb 2026)
+        if (
+          currentLevel === LEVEL_IDS.LEVEL4 &&
+          level4State.cheeseBossBasePositions &&
+          !nearestInteractableChest &&
+          !(level4State.portalRegister && level4State.portalRegister.playerInProximity) &&
+          playerCollider
+        ) {
+          const playerPos = new THREE.Vector3().lerpVectors(
+            playerCollider.start,
+            playerCollider.end,
+            0.5
+          );
+          let nearestBossKey = null;
+          let nearestDist = LEVEL4_CHEESE_BOSS_PROXIMITY;
+          for (const key of Object.keys(level4State.cheeseBossBasePositions)) {
+            const pos = level4State.cheeseBossBasePositions[key];
+            if (pos) {
+              const d = playerPos.distanceTo(pos);
+              if (d < nearestDist) {
+                nearestDist = d;
+                nearestBossKey = key;
+              }
+            }
+          }
+          if (nearestBossKey && LEVEL4_CHEESE_BOSS_MESSAGES[nearestBossKey]) {
+            showRiddleToast(LEVEL4_CHEESE_BOSS_MESSAGES[nearestBossKey], {
+              id: "level4_boss_" + nearestBossKey,
+              duration: 4000
+            });
+            break; // Handled - don't fall through
+          }
+        }
+
+        // 0c️⃣ LEVEL 5 GLYPH STONES - Mysterious ABD messages (Feb 2026)
+        if (
+          currentLevel === LEVEL_IDS.LEVEL5 &&
+          Array.isArray(level5State.glyphPositions) &&
+          level5State.glyphPositions.length > 0 &&
+          !nearestInteractableChest &&
+          playerCollider
+        ) {
+          const playerPos = new THREE.Vector3().lerpVectors(
+            playerCollider.start,
+            playerCollider.end,
+            0.5
+          );
+          let nearestGlyphIndex = -1;
+          let nearestDist = LEVEL5_GLYPH_PROXIMITY;
+          for (let i = 0; i < level5State.glyphPositions.length; i++) {
+            const pos = level5State.glyphPositions[i];
+            if (pos) {
+              const dx = playerPos.x - pos.x;
+              const dz = playerPos.z - pos.z;
+              const d = Math.sqrt(dx * dx + dz * dz);
+              if (d < nearestDist) {
+                nearestDist = d;
+                nearestGlyphIndex = i;
+              }
+            }
+          }
+          if (nearestGlyphIndex >= 0 && LEVEL5_GLYPH_MESSAGES[nearestGlyphIndex]) {
+            showRiddleToast(LEVEL5_GLYPH_MESSAGES[nearestGlyphIndex], {
+              id: "level5_glyph_" + nearestGlyphIndex,
+              duration: 4500
+            });
+            break; // Handled - don't fall through
+          }
+        }
+
         // 1️⃣ CHEST INTERACTION (ALL LEVELS)
         try {
           if (chestSystem && typeof chestSystem.tryInteract === "function") {
@@ -34891,31 +34616,36 @@ if (
   playerCollider && playerCollider.start && playerCollider.end
 ) {
   try {
+    // CRITICAL FIX (Feb 2026): Force camera position to player collider every frame in VR
+    // The installVRCameraAnchor monkey-patch may not run for all XR views or may be overridden.
+    // This ensures the VR camera ALWAYS follows the player collider (magenta sphere).
+    const center = new THREE.Vector3().lerpVectors(
+      playerCollider.start,
+      playerCollider.end,
+      0.5
+    );
+    const eyeHeight = 1.6;
+    camera.position.set(center.x, center.y + eyeHeight, center.z);
+    camera.updateMatrixWorld(true);
+
     const referenceSpace = renderer.xr.getReferenceSpace();
     if (referenceSpace) {
       const pose = xrFrame.getViewerPose(referenceSpace);
       if (pose) {
+        // Use XR pose ORIENTATION only (head look direction) - position comes from player collider above
         const { orientation } = pose.transform;
-
-        // Recompute center directly from collider every frame
-        const center = new THREE.Vector3().lerpVectors(
-          playerCollider.start,
-          playerCollider.end,
-          0.5
-        );
-
-        const eyeHeight = 1.6;
-
-        // camera.position.set gone
+        const quat = new THREE.Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+        camera.quaternion.copy(quat);
+        camera.updateMatrixWorld(true);
       }
     }
   } catch (error) {
-      if (!window.vrPoseErrorLogged) {
-        console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
-        window.vrPoseErrorLogged = true;
-      }
+    if (!window.vrPoseErrorLogged) {
+      console.warn("⚠️ [VR POSE] Error getting headset pose:", error);
+      window.vrPoseErrorLogged = true;
     }
   }
+}
 
   // 6) Right stick → smooth turn (rotates character, not camera)
   const rotationInput = vrInputProvider.getRotationInput && vrInputProvider.getRotationInput();
@@ -34951,7 +34681,56 @@ try {
 }
 
 if (vrInteractPressedNow && !_lastVRInteractPressed) {
-  if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
+  // Level 1 blue cheese: grip near cheese shows scepter message
+  if (
+    currentLevel === LEVEL_IDS.LEVEL1 &&
+    level1State.blueCheesePosition &&
+    !nearestInteractableChest &&
+    playerCollider
+  ) {
+    const center = new THREE.Vector3().lerpVectors(
+      playerCollider.start,
+      playerCollider.end,
+      0.5
+    );
+    if (center.distanceTo(level1State.blueCheesePosition) < 12) {
+      showRiddleToast("You need a Cheese Scepter to start the riddle", {
+        id: "level1_blue_cheese_scepter_vr",
+        duration: 4000
+      });
+    }
+  } else if (
+    currentLevel === LEVEL_IDS.LEVEL4 &&
+    level4State.cheeseBossBasePositions &&
+    !nearestInteractableChest &&
+    !(level4State.portalRegister && level4State.portalRegister.playerInProximity) &&
+    playerCollider
+  ) {
+    // Level 4 corner bosses: grip near boss shows funny message (Feb 2026)
+    const center = new THREE.Vector3().lerpVectors(
+      playerCollider.start,
+      playerCollider.end,
+      0.5
+    );
+    let nearestBossKey = null;
+    let nearestDist = LEVEL4_CHEESE_BOSS_PROXIMITY;
+    for (const key of Object.keys(level4State.cheeseBossBasePositions)) {
+      const pos = level4State.cheeseBossBasePositions[key];
+      if (pos) {
+        const d = center.distanceTo(pos);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearestBossKey = key;
+        }
+      }
+    }
+    if (nearestBossKey && LEVEL4_CHEESE_BOSS_MESSAGES[nearestBossKey]) {
+      showRiddleToast(LEVEL4_CHEESE_BOSS_MESSAGES[nearestBossKey], {
+        id: "level4_boss_vr_" + nearestBossKey,
+        duration: 4000
+      });
+    }
+  } else if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
     try {
       nearestInteractableChest.open(async (chest) => {
         // same reward callback as desktop onInteract
@@ -35006,6 +34785,20 @@ _lastVRShootPressed = vrShootPressedNow;
     }
   }
   _lastVRMenuPressed = vrMenuPressedNow;
+
+  // 11) VR RESCUE: Both grip buttons = instant respawn to level spawn (no menu needed)
+  const leftGrip = vrInputProvider.getButtonState("grip", "left");
+  const rightGrip = vrInputProvider.getButtonState("grip", "right");
+  const bothGripsNow = leftGrip && rightGrip;
+  if (bothGripsNow && !_lastVRRescueGrips) {
+    if (typeof respawnPlayerToCurrentLevelVRSpawn === "function") {
+      respawnPlayerToCurrentLevelVRSpawn();
+      if (window.showRiddleToast) {
+        window.showRiddleToast("🥽 VR Rescue: Respawned to level entry.", { id: "vr_rescue_shortcut", duration: 2000 });
+      }
+    }
+  }
+  _lastVRRescueGrips = bothGripsNow;
 } // 🔚 end VR block
 
 
@@ -36004,10 +35797,74 @@ if (playerControls && !isVRSessionActive()) {
     // Update chest system and get nearest interactable chest
     nearestInteractableChest = chestSystem.update(currentLevel, playerPos, delta);
     
-    // Show/hide interaction prompt based on nearest chest
+    // Show/hide interaction prompt - ALL LEVELS (chests, Level 1 blue cheese, Level 4 bosses/portal, Level 5 glyphs)
+    // Optimizations in gui-system showInteractionPrompt/hideInteractionPrompt prevent frame drops
     if (guiSystem) {
       if (nearestInteractableChest && !nearestInteractableChest.opened) {
         guiSystem.showInteractionPrompt("Press [E] to Open");
+      } else if (
+        currentLevel === LEVEL_IDS.LEVEL4 &&
+        level4State.portalRegister &&
+        level4State.portalRegister.playerInProximity &&
+        !nearestInteractableChest
+      ) {
+        guiSystem.showInteractionPrompt("Press [E] to sign");
+      } else if (
+        currentLevel === LEVEL_IDS.LEVEL4 &&
+        level4State.cheeseBossBasePositions &&
+        !nearestInteractableChest &&
+        !(level4State.portalRegister && level4State.portalRegister.playerInProximity)
+      ) {
+        // Level 4: Check proximity to corner cheese bosses (Feb 2026)
+        let nearBoss = false;
+        for (const key of Object.keys(level4State.cheeseBossBasePositions)) {
+          const pos = level4State.cheeseBossBasePositions[key];
+          if (pos && playerPos.distanceTo(pos) < LEVEL4_CHEESE_BOSS_PROXIMITY) {
+            nearBoss = true;
+            break;
+          }
+        }
+        if (nearBoss) {
+          guiSystem.showInteractionPrompt("Press [E] to interact");
+        } else {
+          guiSystem.hideInteractionPrompt();
+        }
+      } else if (
+        currentLevel === LEVEL_IDS.LEVEL1 &&
+        level1State.blueCheesePosition &&
+        !nearestInteractableChest
+      ) {
+        // Level 1: Check proximity to blue cheese (big model, use 12 units)
+        const distToBlueCheese = playerPos.distanceTo(level1State.blueCheesePosition);
+        if (distToBlueCheese < 12) {
+          guiSystem.showInteractionPrompt("Press [E] to interact");
+        } else {
+          guiSystem.hideInteractionPrompt();
+        }
+      } else if (
+        currentLevel === LEVEL_IDS.LEVEL5 &&
+        Array.isArray(level5State.glyphPositions) &&
+        level5State.glyphPositions.length > 0 &&
+        !nearestInteractableChest
+      ) {
+        // Level 5: Check proximity to glyph stones (Feb 2026)
+        let nearGlyph = false;
+        for (let i = 0; i < level5State.glyphPositions.length; i++) {
+          const pos = level5State.glyphPositions[i];
+          if (pos) {
+            const dx = playerPos.x - pos.x;
+            const dz = playerPos.z - pos.z;
+            if (Math.sqrt(dx * dx + dz * dz) < LEVEL5_GLYPH_PROXIMITY) {
+              nearGlyph = true;
+              break;
+            }
+          }
+        }
+        if (nearGlyph) {
+          guiSystem.showInteractionPrompt("Press [E] to examine");
+        } else {
+          guiSystem.hideInteractionPrompt();
+        }
       } else {
         guiSystem.hideInteractionPrompt();
       }
@@ -41528,110 +41385,7 @@ function createLevel4Chests() {
   }, 50); // Small delay to ensure chest 8 is processed first
 }
 
-function createLevel5Chests() {
-  if (!chestSystem) {
-    console.warn("⚠️ [LEVEL 5] Chest system not initialized");
-    return;
-  }
-  
-  // CRITICAL: Clear existing Level 5 chests first to ensure clean state (prevents duplicates after warp/respawn)
-  console.log("🎁 [LEVEL 5] Clearing existing chests before recreation (ensuring clean state)...");
-  chestSystem.clearLevel(LEVEL_IDS.LEVEL5);
-  
-  // Level 5 chest Y position - CRITICAL: Use raycast at chest position, not spawn position (January 4, 2026)
-  // Level 5 uses dynamic ground detection via raycast, but ground level may vary at different X/Z positions
-  // The chest is at (33, -41), so we need to detect ground level at that specific position, not spawn (0, 0)
-  const spawnY = (level5State && level5State.spawnPosition) ? level5State.spawnPosition.y : 0;
-  
-  // Chest 10: First chest in Level 5 (chest_010 in the whole system)
-  // Position: X: 33, Y: detected ground level at chest position, Z: -41
-  const chest10X = 33;
-  const chest10Z = -41;
-  
-  // CRITICAL: Raycast at chest position to find ground level at (33, -41) (January 4, 2026)
-  // Since Level 5 is a city map with uneven terrain, ground level may differ from spawn position
-  let chest10Y = spawnY; // Fallback to spawn Y if raycast fails
-  if (level5State && level5State.mapMesh && scene) {
-    try {
-      const raycaster = new THREE.Raycaster();
-      // Start raycast well above the map (use spawn Y + 50 as estimate for max height)
-      const rayStartY = Math.max(spawnY + 50, 100); // At least 50 units above spawn, or 100 minimum
-      const rayStart = new THREE.Vector3(chest10X, rayStartY, chest10Z);
-      const rayDirection = new THREE.Vector3(0, -1, 0); // Cast downward
-      
-      raycaster.set(rayStart, rayDirection);
-      raycaster.far = 200; // Cast through enough distance to hit ground
-      
-      // Raycast against the Level 5 map mesh
-      const intersects = raycaster.intersectObject(level5State.mapMesh, true); // Recursive
-      
-      if (intersects.length > 0) {
-        // Find intersections near chest position (within 1 unit)
-        const chestRadius = 1.0;
-        const nearbyIntersects = intersects.filter(intersect => {
-          const dx = intersect.point.x - chest10X;
-          const dz = intersect.point.z - chest10Z;
-          const distance = Math.sqrt(dx * dx + dz * dz);
-          return distance <= chestRadius;
-        });
-        
-        if (nearbyIntersects.length > 0) {
-          // Use the highest (top) intersection near chest position - this is the walkable surface
-          nearbyIntersects.sort((a, b) => b.point.y - a.point.y);
-          chest10Y = nearbyIntersects[0].point.y;
-          console.log(`✅ [LEVEL 5 CHEST] Found ground surface at chest position (${chest10X}, ${chest10Z}): Y=${chest10Y.toFixed(2)} (from ${nearbyIntersects.length} nearby intersections)`);
-        } else {
-          // Fallback: use the highest intersection overall
-          const sortedIntersects = [...intersects].sort((a, b) => b.point.y - a.point.y);
-          chest10Y = sortedIntersects[0].point.y;
-          console.warn(`⚠️ [LEVEL 5 CHEST] No intersections near chest position, using highest intersection: Y=${chest10Y.toFixed(2)}`);
-        }
-      } else {
-        // Fallback to spawn Y if no intersections found
-        console.warn(`⚠️ [LEVEL 5 CHEST] Raycast found no intersections at chest position (${chest10X}, ${chest10Z}), using spawn Y: ${spawnY.toFixed(2)}`);
-      }
-    } catch (raycastError) {
-      // Fallback to spawn Y if raycast fails
-      console.error(`❌ [LEVEL 5 CHEST] Raycast error at chest position:`, raycastError);
-      console.warn(`   Using fallback chest Y: ${spawnY.toFixed(2)} (spawn position Y)`);
-    }
-  } else {
-    console.warn(`⚠️ [LEVEL 5 CHEST] Level 5 map mesh not available, using spawn Y: ${spawnY.toFixed(2)}`);
-  }
-  
-  console.log("🎁 [LEVEL 5] Creating chests...", {
-    spawnY: spawnY,
-    chest10Y: chest10Y,
-    chest10X: chest10X,
-    chest10Z: chest10Z,
-    hasMapMesh: !!(level5State && level5State.mapMesh),
-    note: "Chest Y detected via raycast at chest position (Level 5 uses dynamic ground detection per position)"
-  });
-  
-  const chest10Position = new THREE.Vector3(chest10X, chest10Y, chest10Z);
-  
-  console.log("🎁 [LEVEL 5] Adding chest 10 (first chest in Level 5):", {
-    id: 'chest_010',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest10Position,
-    x: chest10X,
-    y: chest10Y,
-    z: chest10Z,
-    spawnY: spawnY,
-    detectedChestY: chest10Y,
-    note: "Chest Y detected via raycast at chest position (Level 5 uses dynamic ground detection per position)"
-  });
-  
-  chestSystem.addChest(LEVEL_IDS.LEVEL5, {
-    id: 'chest_010',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest10Position,
-    dspoincAmount: 280, // Level 5 chest reward (scaled up from Level 4)
-    levelId: 'CHEESE_TEMPLE_LEVEL5'
-  });
-  
-  console.log("✅ [LEVEL 5] Chest 10 (chest_010) creation initiated");
-}
+// NOTE: createLevel5Chests() is now defined earlier (~line 23245) with 40 chests treasure hunt (Feb 2026)
 
 function createLevel6Chests() {
   if (!chestSystem) {

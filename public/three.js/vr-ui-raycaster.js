@@ -1,11 +1,19 @@
 /**
  * ============================================================================
- * VR UI RAYCASTER - VR Controller UI Interaction System
+ * VR UI RAYCASTER - VR Controller UI Interaction
  * ============================================================================
- * 
- * ✅ STATUS: NEW - JANUARY 20, 2026
- * 📅 CREATED: January 20, 2026
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~315
+ * Used by: main.js (VRUIRaycaster) – Menu interaction in VR
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   initialize(xrSession)    ~70   Setup controller rays
+ *   update()                 ~120  Raycast to DOM, click/hover
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================

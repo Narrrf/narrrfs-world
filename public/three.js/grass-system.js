@@ -1,33 +1,20 @@
 /**
- * ✅ VERSION MARKER - STABLE PRODUCTION VERSION
- * Date: January 9, 2026
- * Version: 2026-01-09-STABLE-PRODUCTION
- * Status: ✅ STABLE - PRODUCTION READY
- * 
- * This is the STABLE PRODUCTION VERSION with:
- * - ✅ Path resolution fixes (unified for local and production)
- * - ✅ All textures loaded and verified (grass.jpg, cloud.jpg)
- * - ✅ Assets uploaded to /data/ and accessible via symlinks
- * - ✅ Production tested and confirmed stable
- * 
- * If you don't see this message in console, you're using cached code!
- */
-console.log("✅ [STABLE VERSION] grass-system.js v2026-01-09-STABLE-PRODUCTION loaded - Production verified stable!");
-/**
  * ============================================================================
  * GRASS SYSTEM - Procedural Grass Generation with Wind Animation
  * ============================================================================
- * 
- * ✅ STATUS: STABLE - PRODUCTION READY
- * 📅 CREATED: December 2025
- * 📅 LAST UPDATED: January 9, 2026
- * 🎯 MILESTONE: Stable Production Version - Level 1 verified working
- * 
- * Based on: https://github.com/James-Smyth/three-grass-demo
- * Original Author: James Smyth
- * Enhanced by Narrrfs World Team (December 2025)
- * Reference Article: https://medium.com/antaeus-ar/making-grass-with-triangles-in-glsl-using-three-js-e106771a71ff
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~2,950
+ * Used by: main.js (grassSystem)
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   applyLevelEnvironment   ~150  Per-level grass config
+ *   registerExclusionZone   ~200  No grass under chests/objects
+ *   regenerateGrass         ~250  Rebuild with exclusions
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================

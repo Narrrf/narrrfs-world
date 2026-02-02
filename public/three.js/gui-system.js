@@ -2,13 +2,22 @@
  * ============================================================================
  * GUI SYSTEM - User Interface Management
  * ============================================================================
- * 
- * ✅ STATUS: STABLE - PRODUCTION READY
- * 📅 CREATED: December 2025
- * 📅 LAST UPDATED: January 9, 2026
- * 🎯 MILESTONE: Stable Production Version - Level 1 verified working
- * ✅ Version: 2026-01-09-STABLE-PRODUCTION
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~4,180
+ * Used by: main.js (guiSystem)
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   initialize              ~80   Setup all UI (menus, HUD, toasts)
+ *   update(delta)           ~200  Per-frame (boss health, hit indicator)
+ *   showToast               ~350  Toast notifications
+ *   showInteractionPrompt   ~400  "Press [E] to Open"
+ *   updateRiddleProgressUI  ~450  Riddle HUD (Level 1–4)
+ *   showBossHealthBar       ~500  Phoenix/Alien Spider health
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================
@@ -973,10 +982,15 @@ export class GUISystem {
   /**
    * Show interaction prompt with custom message
    * @param {string} message - Message to display (default: "Press [E] to Open")
+   * PERFORMANCE: Only updates DOM when message or visibility changed - prevents frame drops when near chests/glyphs
    */
   showInteractionPrompt(message = "Press [E] to Open") {
     if (!this.interactionPrompt) this.createInteractionPrompt();
     if (this.interactionPrompt) {
+      // Skip DOM update if already showing the same message (prevents frame drops from per-frame calls)
+      if (this.interactionPrompt.innerText === message && this.interactionPrompt.style.display === 'block') {
+        return;
+      }
       this.interactionPrompt.innerText = message;
       this.interactionPrompt.style.display = 'block';
       this.interactionPrompt.style.opacity = '0';
@@ -991,9 +1005,12 @@ export class GUISystem {
   
   /**
    * Hide interaction prompt
+   * PERFORMANCE: Skips when already hidden - prevents per-frame DOM updates and timeout spam
    */
   hideInteractionPrompt() {
     if (!this.interactionPrompt) return;
+    // Skip if already hidden (prevents frame drops from per-frame hide calls)
+    if (this.interactionPrompt.style.display === 'none') return;
     // Fade out animation
     if (this.interactionPrompt.style.opacity !== '0') {
       this.interactionPrompt.style.opacity = '0';
@@ -1018,13 +1035,18 @@ export class GUISystem {
    * @param {string|null} options.id - Unique ID for the toast (prevents duplicates)
    * @param {number} options.duration - Duration in milliseconds (default: 5500)
    * @returns {HTMLElement} The created toast element
+   * PERFORMANCE: Skips recreate when same id + message already showing (prevents frame drops across all levels)
    */
   showRiddleToast(message, options = {}) {
     const { id = null, duration = 5500 } = options;
     
-    // Remove existing toast with same ID if present
+    // Skip if same toast already showing (prevents DOM churn when called per-frame or rapidly)
     if (id && this.activeRiddleToasts.has(id)) {
       const existing = this.activeRiddleToasts.get(id);
+      if (existing && document.body.contains(existing) && existing.textContent === message) {
+        return existing; // Already showing same message - no DOM update
+      }
+      // Different message - remove existing before creating new
       if (existing && document.body.contains(existing)) {
         document.body.removeChild(existing);
       }

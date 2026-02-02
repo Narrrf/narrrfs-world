@@ -51,10 +51,25 @@
 
 ---
 
+## ✅ **3D RIDDLE GAME (FEB 1, 2026)**
+
+**Level 1 Blue Cheese Interaction:**
+- Proximity (12 units) → "Press [E] to interact"
+- E key / VR grip → Toast: "You need a Cheese Scepter to start the riddle"
+
+**VR Fixes (Pending Quest Test):**
+- Per-frame camera sync to player collider
+- VR Rescue: Both grips = respawn to level spawn
+- Magenta sphere + spawn sync fixes
+
+**Technical Doc:** `GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md` – Changelog Feb 2026 added
+
+---
+
 ## 🚀 **NEXT STEPS**
 
-- Push Season 8 polish to production
-- VR: Verify Level 1 VR spawn + magenta collider
+- Push Season 8 polish + 3D game changes to production
+- VR: Verify Level 1 VR spawn + magenta collider (when Meta Quest ready)
 - Chest VR: Map controller to `tryInteract`
 
 ---

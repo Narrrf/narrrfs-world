@@ -2,13 +2,21 @@
  * ============================================================================
  * WEAPON SYSTEM - Weapon Loading, Shooting, and Inventory
  * ============================================================================
- * 
- * ✅ STATUS: STABLE - PRODUCTION READY
- * 📅 CREATED: December 2025
- * 📅 LAST UPDATED: January 9, 2026
- * 🎯 MILESTONE: Stable Production Version - Level 1 verified working
- * ✅ Version: 2026-01-09-STABLE-PRODUCTION
- * 
+ *
+ * Version: 2026-02-01-HEADER-REFRESH
+ * Lines: ~1,960
+ * Used by: main.js (weaponSystem) – Levels 4, 5, 6
+ *
+ * ============================================================================
+ * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
+ * ============================================================================
+ *
+ *   loadWeapon(path, slot)  ~100  Load FBX weapon into slot
+ *   switchWeapon(slot)      ~200  Switch active weapon
+ *   fire()                  ~300  Raycast shoot
+ *   update(delta)           ~400  Animation, heat, bobbing
+ *   processWeaponMaterial   ~500  Dark material brightening (main.js)
+ *
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================
