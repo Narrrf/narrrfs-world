@@ -43,8 +43,26 @@
 
 ---
 
+## ✅ **LEVEL 5 COLLISION – RESOLVED (FEB 2, 2026)**
+
+**Status:** ✅ **WORKING** – Walls block player; not perfect, fine-tuning possible later.
+
+**Fixes applied:**
+- In-place wall collision mesh (map + border walls, DoubleSide, BVH)
+- InstancedMesh support – all instances collected with correct world transforms
+- Index creation fix: `vc` instead of `Math.floor(vc/3)*3`
+- `updateMatrixWorld(true)` when using `level5State.group` as raycast fallback
+- 7 rays for Level 5 labyrinth (5 vertical + 2 lateral)
+- Diagnostic logging for collision target and geometry collection
+
+**Files:** `public/three.js/main.js` (~22805–22875, ~35355–35470)
+
+---
+
 ## 📋 **TODAY'S PRIORITIES**
 
+- [x] Level 5 collision – ✅ **WORKING**
+- [ ] Level 6 bug – next (user to describe)
 - [ ] On Chain Bridges integration discussion
 - [ ] Map litepaper concepts → 3D riddle game features
 - [ ] Document integration plan

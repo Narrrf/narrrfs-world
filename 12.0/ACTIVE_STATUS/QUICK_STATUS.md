@@ -33,9 +33,10 @@
 - `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/`
 - `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-02.md`
 
-**Level 5 Collision Handover (Feb 2):**
-- 🔧 Fix applied but collision still not working
-- 📋 Handover: `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/LEVEL_5_COLLISION_HANDOVER_2026-02-02.md`
+**Level 5 Collision (Feb 2):**
+- ✅ **WORKING** – In-place wall collision mesh (InstancedMesh support, DoubleSide, BVH)
+- 📋 **Fine-tuning:** Not perfect but functional; can refine later
+- 📋 Handover + resolution: `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/LEVEL_5_COLLISION_HANDOVER_2026-02-02.md`
 
 ---
 

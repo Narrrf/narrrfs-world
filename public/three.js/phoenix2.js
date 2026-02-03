@@ -624,9 +624,67 @@ export class PhoenixBoss2 {
   }
   
   /**
-   * Load the GLB model
+   * Internal: Setup model from loaded GLTF (used by loadModel and when receiving pre-loaded from main.js).
+   * Accepts { scene, animations } from central loadModel or raw gltf from GLTFLoader.
    */
-  async loadModel(modelPath) {
+  _setupModelFromLoaded(gltf) {
+    const scene = gltf.scene;
+    const animations = gltf.animations || [];
+    if (!scene) {
+      console.error("❌ [PHOENIX2] No scene in loaded gltf:", gltf);
+      return null;
+    }
+    this.model = scene;
+    const box = new THREE.Box3().setFromObject(this.model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    this._originalModelSize = maxDim;
+    const scale = this.targetSize / this._originalModelSize;
+    this.model.scale.set(scale, scale, scale);
+    this.applyColorVariation(this.colorVariation, this.eyeColor, this.emissiveGlow);
+    this.model.traverse((child) => {
+      if (child.isMesh) child.frustumCulled = false;
+    });
+    this.model.position.copy(this.spawnPosition);
+    this.model.visible = true;
+    if (this.levelGroup) {
+      this.levelGroup.add(this.model);
+      console.log("✅ [PHOENIX2] Model added to level group");
+    } else {
+      this.scene.add(this.model);
+      console.log("✅ [PHOENIX2] Model added to scene");
+    }
+    if (animations.length > 0) {
+      this.mixer = new THREE.AnimationMixer(this.model);
+      animations.forEach((clip) => {
+        this.animationActions[clip.name] = this.mixer.clipAction(clip);
+      });
+      console.log(`✅ [PHOENIX2] ${animations.length} animations loaded`);
+      this.setBehaviorMode(this.behaviorMode);
+      if (this.isFlying) {
+        if (this.animationActions['FlyIdle1']) this.playAnimation('FlyIdle1', true);
+        else if (this.animationActions['FlyIdle2']) this.playAnimation('FlyIdle2', true);
+        else if (this.animationActions['FlyForward1']) this.playAnimation('FlyForward1', true);
+      } else {
+        if (this.animationActions['GroundIdle1']) this.playAnimation('GroundIdle1', true);
+      }
+    }
+    return this.model;
+  }
+  
+  /**
+   * Load the GLB model.
+   * Accepts either a path string (uses internal loader) or a pre-loaded result from main.js loadModel.
+   * CRITICAL: Use pre-loaded when available - central loadModel has proper path encoding and caching.
+   */
+  async loadModel(modelPathOrLoaded) {
+    if (modelPathOrLoaded && typeof modelPathOrLoaded === 'object' && modelPathOrLoaded.scene) {
+      return this._setupModelFromLoaded(modelPathOrLoaded);
+    }
+    const modelPath = typeof modelPathOrLoaded === 'string' ? modelPathOrLoaded : null;
+    if (!modelPath) {
+      return Promise.reject(new Error('loadModel requires a path string or pre-loaded {scene, animations}'));
+    }
     return new Promise((resolve, reject) => {
       const loader = new GLTFLoader();
       
@@ -634,85 +692,7 @@ export class PhoenixBoss2 {
         modelPath,
         (gltf) => {
           console.log("✅ [PHOENIX2] Model loaded:", modelPath);
-          
-          // Get the scene (model root)
-          this.model = gltf.scene;
-          
-          // Calculate original model size (before scaling)
-          const box = new THREE.Box3().setFromObject(this.model);
-          const size = box.getSize(new THREE.Vector3());
-          const maxDim = Math.max(size.x, size.y, size.z);
-          this._originalModelSize = maxDim; // Store original size for future scaling
-          
-          // Scale model to target size (from config)
-          const scale = this.targetSize / this._originalModelSize;
-          this.model.scale.set(scale, scale, scale);
-          console.log(`✅ [PHOENIX2] Model scaled: ${scale.toFixed(4)}x (target: ${this.targetSize} units, original: ${this._originalModelSize.toFixed(2)} units)`);
-          
-          // Apply color variation textures with eye color and glow
-          this.applyColorVariation(this.colorVariation, this.eyeColor, this.emissiveGlow);
-          
-          // Disable frustum culling
-          this.model.traverse((child) => {
-            if (child.isMesh) {
-              child.frustumCulled = false;
-            }
-          });
-          
-          // Set initial position
-          this.model.position.copy(this.spawnPosition);
-          this.model.visible = true;
-          
-          // Add to level group
-          if (this.levelGroup) {
-            this.levelGroup.add(this.model);
-            console.log("✅ [PHOENIX2] Model added to level group");
-          } else {
-            this.scene.add(this.model);
-            console.log("✅ [PHOENIX2] Model added to scene");
-          }
-          
-          // Setup animations
-          if (gltf.animations && gltf.animations.length > 0) {
-            this.mixer = new THREE.AnimationMixer(this.model);
-            
-            // Create actions for all animations
-            gltf.animations.forEach((clip) => {
-              const action = this.mixer.clipAction(clip);
-              this.animationActions[clip.name] = action;
-            });
-            
-            console.log(`✅ [PHOENIX2] ${gltf.animations.length} animations loaded`);
-            
-            // Log all animation names for debugging (helps identify death animations)
-            console.log(`📋 [PHOENIX2] Available animations:`, Object.keys(this.animationActions).sort());
-            
-            // Apply initial behavior mode and start animation immediately
-            this.setBehaviorMode(this.behaviorMode);
-            
-            // CRITICAL: Force initial animation to start immediately
-            if (this.isFlying) {
-              // Try flying animations in order of preference
-              if (this.animationActions['FlyIdle1']) {
-                this.playAnimation('FlyIdle1', true);
-                console.log("✅ [PHOENIX2] Started FlyIdle1 animation on load");
-              } else if (this.animationActions['FlyIdle2']) {
-                this.playAnimation('FlyIdle2', true);
-                console.log("✅ [PHOENIX2] Started FlyIdle2 animation on load");
-              } else if (this.animationActions['FlyForward1']) {
-                this.playAnimation('FlyForward1', true);
-                console.log("✅ [PHOENIX2] Started FlyForward1 animation on load");
-              }
-            } else {
-              // Ground animations
-              if (this.animationActions['GroundIdle1']) {
-                this.playAnimation('GroundIdle1', true);
-                console.log("✅ [PHOENIX2] Started GroundIdle1 animation on load");
-              }
-            }
-          }
-          
-          resolve(this.model);
+          resolve(this._setupModelFromLoaded(gltf));
         },
         (progress) => {
           // Progress callback

@@ -65,16 +65,21 @@
 
 ---
 
-## 🔧 **LEVEL 5 COLLISION HANDOVER (FEB 2, 2026)**
+## 🔧 **LEVEL 5 COLLISION (FEB 2, 2026)**
 
-**Status:** ⏳ **Investigation needed – collision fix applied but walls still passable**
+**Status:** ✅ **WORKING** – Walls now block player (not perfect, fine-tuning possible later)
 
-- **Fix applied:** `buildLevel()` preserves Level 5 collision mesh (lines 18251–18305)
-- **Issue:** Collision still not working; possible causes:
-  - `buildLevel()` may not run for Level 5 (Level 5 uses GLTF, not procedural blocks)
-  - Another code path may overwrite `collisionMesh`
-- **Handover doc:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/LEVEL_5_COLLISION_HANDOVER_2026-02-02.md`
-- **Next:** Trace `buildLevel` vs `buildLevel5TheWalk` call order; search all `collisionMesh =` assignments
+**Fixes applied (this session):**
+- In-place wall collision mesh from map + border walls (DoubleSide, BVH)
+- InstancedMesh support – iterate all instances with `getMatrixAt` + `premultiply(matrixWorld)`
+- Index creation fix: `vc` instead of `Math.floor(vc/3)*3` for correct vertex count
+- `updateMatrixWorld(true)` when using `level5State.group` as raycast fallback
+- Diagnostic logging: collision target, geometry collection failure
+- 7 rays for Level 5 (5 vertical + 2 lateral) for labyrinth walls
+
+**Files:** `public/three.js/main.js` (~22805–22875, ~35355–35470)
+
+**Next:** Level 6 bug (user to describe)
 
 ---
 
@@ -84,7 +89,7 @@
 - Implement Phase 1: WalletConnect + Bridge tab in pause menu
 - VR: Verify Level 1 spawn (when Quest ready)
 - Chest VR: Map controller to `tryInteract`
-- **Level 5 collision:** Continue investigation per handover doc
+- **Level 5 collision:** ✅ Working – optional fine-tuning later
 
 ---
 

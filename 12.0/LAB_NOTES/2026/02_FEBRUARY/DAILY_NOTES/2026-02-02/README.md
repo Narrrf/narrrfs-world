@@ -32,6 +32,18 @@ This folder receives daily notes and development work for February 2, 2026.
 
 ---
 
+---
+
+## 📄 Notes in This Folder
+
+| Note | Description |
+|------|-------------|
+| `LOCAL_LEVELS_TEST_AND_MOBILE_BLOCKER_2026-02-02.md` | Local levels pass + **Mobile UX BLOCKER** before push |
+| `LEVEL_5_COLLISION_HANDOVER_2026-02-02.md` | Level 5 collision fix handover |
+| `ON_CHAIN_BRIDGES_INTEGRATION_DISCUSSION_2026-02-02.md` | On Chain Bridges integration discussion |
+
+---
+
 ## 🤖 LLM Handover Context
 
 *Reference handovers from January 31:*

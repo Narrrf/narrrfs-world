@@ -558,14 +558,92 @@ export class AlienSpiderBoss {
   }
   
   /**
-   * Load the FBX model
+   * Sync setup of model from FBX (shared by load callback and _setupModelFromLoaded).
    */
-  async loadModel(modelPath) {
+  _setupModelFromFbx(fbx) {
+    this.model = fbx;
+    const box = new THREE.Box3().setFromObject(this.model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    this._originalModelSize = maxDim;
+    const scale = this.targetSize / this._originalModelSize;
+    this.model.scale.set(scale, scale, scale);
+    let meshCount = 0;
+    this.model.traverse((child) => {
+      if (child.isMesh) {
+        meshCount++;
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.visible = true;
+        child.frustumCulled = false;
+        if (!child.material) {
+          child.material = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.35, roughness: 0.45, side: THREE.DoubleSide });
+        } else {
+          const originalMat = child.material;
+          const isArray = Array.isArray(originalMat);
+          const materials = isArray ? originalMat : [originalMat];
+          const processedMaterials = materials.map((mat) => {
+            let originalColor = mat.color && mat.color.isColor ? mat.color.clone() : (mat.color ? new THREE.Color(mat.color) : new THREE.Color(0x888888));
+            const brightness = originalColor.r + originalColor.g + originalColor.b;
+            let finalColor = originalColor.clone();
+            if (brightness < 0.3) { finalColor.r = Math.min(1, originalColor.r * 3); finalColor.g = Math.min(1, originalColor.g * 3); finalColor.b = Math.min(1, originalColor.b * 3); }
+            else if (brightness < 0.6) { finalColor.r = Math.min(1, originalColor.r * 2); finalColor.g = Math.min(1, originalColor.g * 2); finalColor.b = Math.min(1, originalColor.b * 2); }
+            finalColor.r = Math.min(1, finalColor.r * this.brightness); finalColor.g = Math.min(1, finalColor.g * this.brightness); finalColor.b = Math.min(1, finalColor.b * this.brightness);
+            const newMat = new THREE.MeshStandardMaterial({
+              color: finalColor, map: mat.map || null, normalMap: mat.normalMap || null,
+              emissive: brightness < 0.3 ? finalColor.clone().multiplyScalar(0.1) : new THREE.Color(0x000000),
+              emissiveIntensity: brightness < 0.3 ? 0.2 : 0,
+              metalness: 0.35, roughness: 0.45, side: THREE.DoubleSide,
+              opacity: mat.opacity !== undefined && mat.opacity > 0.1 ? mat.opacity : 1.0,
+              transparent: mat.transparent !== undefined ? mat.transparent : false
+            });
+            newMat._originalColor = originalColor.clone();
+            return newMat;
+          });
+          child.material = isArray ? processedMaterials : processedMaterials[0];
+        }
+      }
+    });
+    this.applyTextures();
+    this.model.position.copy(this.spawnPosition);
+    const box2 = new THREE.Box3().setFromObject(this.model);
+    this.model.position.y += this.groundY - box2.min.y;
+    this.model.visible = true;
+    if (this.levelGroup) this.levelGroup.add(this.model); else this.scene.add(this.model);
+    this.mixer = new THREE.AnimationMixer(this.model);
+  }
+  
+  /**
+   * Setup model from pre-loaded result (used when main.js loadModel provides the model).
+   */
+  async _setupModelFromLoaded(loaded) {
+    const fbx = loaded.scene;
+    if (!fbx) {
+      console.error("❌ [ALIEN_SPIDER] No scene in loaded:", loaded);
+      return null;
+    }
+    this._setupModelFromFbx(fbx);
+    await this.loadAllAnimations();
+    this.applyTextureVariation(this.textureVariation);
+    this.setBehaviorMode(this.behaviorMode);
+    if (this.animationActions['Idle_1']) this.playAnimation('Idle_1', true);
+    return this.model;
+  }
+  
+  /**
+   * Load the FBX model.
+   * Accepts either a path string (uses internal loader) or pre-loaded { scene, animations } from main.js loadModel.
+   */
+  async loadModel(modelPathOrLoaded) {
+    if (modelPathOrLoaded && typeof modelPathOrLoaded === 'object' && modelPathOrLoaded.scene) {
+      return this._setupModelFromLoaded(modelPathOrLoaded);
+    }
+    const modelPath = typeof modelPathOrLoaded === 'string' ? modelPathOrLoaded : null;
+    if (!modelPath) {
+      return Promise.reject(new Error('loadModel requires a path string or pre-loaded {scene, animations}'));
+    }
     return new Promise((resolve, reject) => {
-      // Use LoadingManager with TGA handler so FBXLoader can load TGA textures
       const loader = new FBXLoader(this.loadingManager);
-      
-      // Set resource path so FBXLoader knows where to find textures
       const basePath = this.resolveAssetPath("textures/3d models/Alien Spider 1/AFC_03/");
       loader.setResourcePath(basePath);
       
@@ -573,151 +651,7 @@ export class AlienSpiderBoss {
         modelPath,
         (fbx) => {
           console.log("✅ [ALIEN_SPIDER] Model loaded:", modelPath);
-          
-          // Get the scene (model root)
-          this.model = fbx;
-          
-          // Calculate original model size (before scaling)
-          const box = new THREE.Box3().setFromObject(this.model);
-          const size = box.getSize(new THREE.Vector3());
-          const maxDim = Math.max(size.x, size.y, size.z);
-          this._originalModelSize = maxDim; // Store original size
-          
-          // Scale model to target size
-          const scale = this.targetSize / this._originalModelSize;
-          this.model.scale.set(scale, scale, scale);
-          console.log(`✅ [ALIEN_SPIDER] Model scaled: ${scale.toFixed(4)}x (target: ${this.targetSize} units, original: ${this._originalModelSize.toFixed(2)} units)`);
-          
-          // CRITICAL: Process materials for FBX models (often have dark/invisible materials)
-          // NOTE: TGA textures are now supported via TGALoader and LoadingManager
-          let meshCount = 0;
-          let materialCount = 0;
-          this.model.traverse((child) => {
-            if (child.isMesh) {
-              meshCount++;
-              child.castShadow = true;
-              child.receiveShadow = true;
-              child.visible = true;
-              child.frustumCulled = false;
-              
-              // CRITICAL: Process materials - FBX models often have very dark or missing materials
-              if (!child.material) {
-                // No material - create a visible default material
-                child.material = new THREE.MeshStandardMaterial({
-                  color: 0x888888, // Medium gray for visibility
-                  metalness: 0.35,
-                  roughness: 0.45,
-                  side: THREE.DoubleSide
-                });
-                child.material.needsUpdate = true;
-                materialCount++;
-                console.log(`🕷️ [ALIEN_SPIDER] Created default material for mesh: ${child.name}`);
-              } else {
-                // Process existing materials - brighten dark colors
-                const originalMat = child.material;
-                const isArray = Array.isArray(originalMat);
-                const materials = isArray ? originalMat : [originalMat];
-                
-                const processedMaterials = materials.map((mat) => {
-                  // Extract color safely
-                  let originalColor = null;
-                  if (mat.color && mat.color.isColor) {
-                    originalColor = mat.color.clone();
-                  } else if (mat.color) {
-                    originalColor = new THREE.Color(mat.color);
-                  } else {
-                    originalColor = new THREE.Color(0x888888); // Default visible gray
-                  }
-                  
-                  // Store original color for brightness slider
-                  const storedOriginalColor = originalColor.clone();
-                  
-                  // Brighten dark colors (CRITICAL for FBX)
-                  const brightness = originalColor.r + originalColor.g + originalColor.b;
-                  let finalColor = originalColor.clone();
-                  if (brightness < 0.3) {
-                    // Very dark - brighten significantly (3x)
-                    finalColor.r = Math.min(1.0, originalColor.r * 3.0);
-                    finalColor.g = Math.min(1.0, originalColor.g * 3.0);
-                    finalColor.b = Math.min(1.0, originalColor.b * 3.0);
-                  } else if (brightness < 0.6) {
-                    // Medium dark - brighten moderately (2x)
-                    finalColor.r = Math.min(1.0, originalColor.r * 2.0);
-                    finalColor.g = Math.min(1.0, originalColor.g * 2.0);
-                    finalColor.b = Math.min(1.0, originalColor.b * 2.0);
-                  }
-                  
-                  // Apply initial brightness multiplier
-                  finalColor.r = Math.min(1.0, finalColor.r * this.brightness);
-                  finalColor.g = Math.min(1.0, finalColor.g * this.brightness);
-                  finalColor.b = Math.min(1.0, finalColor.b * this.brightness);
-                  
-                  // Create new MeshStandardMaterial (always use standard for consistency)
-                  const newMaterial = new THREE.MeshStandardMaterial({
-                    color: finalColor,
-                    map: mat.map || null,
-                    normalMap: mat.normalMap || null,
-                    emissive: brightness < 0.3 ? finalColor.clone().multiplyScalar(0.1) : new THREE.Color(0x000000),
-                    emissiveIntensity: brightness < 0.3 ? 0.2 : 0,
-                    metalness: 0.35,
-                    roughness: 0.45,
-                    side: THREE.DoubleSide, // CRITICAL: Double-sided for visibility
-                    opacity: mat.opacity !== undefined && mat.opacity > 0.1 ? mat.opacity : 1.0,
-                    transparent: mat.transparent !== undefined ? mat.transparent : false
-                  });
-                  
-                  // Store original color for brightness slider
-                  newMaterial._originalColor = storedOriginalColor;
-                  
-                  newMaterial.needsUpdate = true;
-                  
-                  // Ensure material is visible
-                  if (newMaterial.opacity < 0.1) {
-                    newMaterial.opacity = 1.0;
-                    newMaterial.transparent = false;
-                  }
-                  
-                  return newMaterial;
-                });
-                
-                child.material = isArray ? processedMaterials : processedMaterials[0];
-                materialCount++;
-                // Log material processing (brightness is applied in the material processing above)
-                console.log(`🕷️ [ALIEN_SPIDER] Processed material for mesh: ${child.name}`);
-              }
-            }
-          });
-          
-          console.log(`✅ [ALIEN_SPIDER] Processed ${meshCount} meshes with ${materialCount} materials`);
-          
-          // Apply textures after material processing
-          this.applyTextures();
-          
-          // Set initial position
-          this.model.position.copy(this.spawnPosition);
-          
-          // Align to ground level
-          const boxAfterScale = new THREE.Box3().setFromObject(this.model);
-          const minY = boxAfterScale.min.y;
-          const yOffset = this.groundY - minY;
-          this.model.position.y += yOffset;
-          
-          this.model.visible = true;
-          
-          // Add to level group
-          if (this.levelGroup) {
-            this.levelGroup.add(this.model);
-            console.log("✅ [ALIEN_SPIDER] Model added to level group");
-          } else {
-            this.scene.add(this.model);
-            console.log("✅ [ALIEN_SPIDER] Model added to scene");
-          }
-          
-          // Setup animation mixer (will load animations separately)
-          this.mixer = new THREE.AnimationMixer(this.model);
-          console.log("✅ [ALIEN_SPIDER] Animation mixer created");
-          
-          // Load all animations
+          this._setupModelFromFbx(fbx);
           this.loadAllAnimations().then(() => {
             // Apply initial texture variation
             this.applyTextureVariation(this.textureVariation);

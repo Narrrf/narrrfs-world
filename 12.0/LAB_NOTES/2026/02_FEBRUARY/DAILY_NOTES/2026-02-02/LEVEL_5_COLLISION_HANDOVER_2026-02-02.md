@@ -129,5 +129,21 @@ Find where Level 5 warp/load triggers:
 
 ---
 
+---
+
+## ✅ **ADDENDUM – RESOLVED (FEB 2, 2026)**
+
+**Status:** ✅ **COLLISION NOW WORKING** – Player is blocked by walls in Level 5 (GOD mode OFF).
+
+**Root cause:** In-place wall collision mesh was not including all geometry. Key fixes:
+1. **InstancedMesh:** Iterate each instance with `getMatrixAt(i)` + `premultiply(matrixWorld)` and clone geometry per instance
+2. **Index creation:** Use `vc` (vertex count) instead of `Math.floor(vc/3)*3`
+3. **Matrix update:** Call `raycastTarget.updateMatrixWorld(true)` when using `level5State.group`
+4. **Ray count:** 7 rays for Level 5 (5 vertical + 2 lateral) for labyrinth walls
+
+**Result:** Walls block movement; behavior is not perfect but functional. Fine-tuning possible later.
+
+---
+
 **Last Updated:** February 2, 2026  
 **File:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/LEVEL_5_COLLISION_HANDOVER_2026-02-02.md`
