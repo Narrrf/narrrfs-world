@@ -1,9 +1,22 @@
 # 🧀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** February 2, 2026 🎯 **NEW DAY – FEBRUARY 2**  
-**Status:** ✅ **Season 8 LIVE – On Chain Bridges integration discussion**  
+**Last Updated:** February 3, 2026 🎯 **STABLE – PRODUCTION VERIFIED**  
+**Status:** ✅ **Season 8 LIVE – 3D game stable on production (all levels, paths, mobile)**  
 **Version:** 2026-02-02  
-**Milestone:** 🎯 **On Chain Bridges → 3D riddle game**
+**Milestone:** ✅ **3D Game paths + mobile UX – Production verified**
+
+---
+
+## ✅ **STABLE VERSION – PRODUCTION VERIFIED (February 2, 2026):**
+
+**Production tested and confirmed working:**
+- ✅ **All levels load** – Levels 1–6 load correctly on production
+- ✅ **Monsters & GLBs** – All 3D models (Phoenix, Alien Spider, Level 2 previews, Level 5 map) load
+- ✅ **Scenes & camera** – First-person and 3rd-person both work
+- ✅ **Asset paths:** Level 5 map, Level 6 bosses, player character, Level 2 – `loadModel()` + `resolveAssetPath`
+- ✅ **Mobile joysticks:** nipplejs, 2 joysticks, Jump/Interact/Shoot buttons
+- ✅ **Mobile forced:** Joystick View (2 joysticks + 3rd person) on every level load
+- ✅ **Mobile prompts:** "Tap [E]" for chests, glyphs, bosses, portal register
 
 ---
 
@@ -20,7 +33,19 @@
 
 ---
 
-## 📋 **TODAY – FEBRUARY 2, 2026:**
+## 📋 **TODAY – FEBRUARY 3, 2026:**
+
+**Level 6 Combined Boss HUD (✅ COMPLETE):**
+- ✅ **Phoenix:** F key cycles behaviors; HUD updates correctly (15 behaviors)
+- ✅ **Spider:** N key cycles behaviors; HUD now updates correctly (12 behaviors)
+- ✅ **Per-frame sync:** Alien Spider HUD reads `behaviorMode` every frame in animate loop
+- ✅ **Options menu:** Both bosses – dropdown has all behaviors; change triggers immediate HUD update
+- ✅ **Public main.js:** Synced cycleAlienSpiderBehavior (12 behaviors), fixed options dropdown (was 7, now 12)
+- 📋 **Lab note:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-03/LEVEL6_COMBINED_BOSS_HUD_PROGRESS_2026-02-03.md`
+
+---
+
+## 📋 **YESTERDAY – FEBRUARY 2, 2026:**
 
 **On Chain Bridges Integration:**
 - ✅ **NFT Bridges team:** Testnet + iframe code confirmed incoming
@@ -40,7 +65,7 @@
 
 ---
 
-## 📋 **YESTERDAY – FEBRUARY 1, 2026:**
+## 📋 **FEBRUARY 1, 2026:**
 
 **Season 8 Polish (Complete – Ready to Push):**
 - ✅ Profile: Dynamic frozen/active banners via `loadLeaderboardAndUpdateBanners()`

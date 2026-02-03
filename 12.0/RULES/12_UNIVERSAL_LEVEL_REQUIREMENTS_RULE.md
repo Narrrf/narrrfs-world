@@ -45,6 +45,14 @@
 - **Implementation:** Global event handler (document level)
 - **Status:** ✅ Works in ALL levels
 
+### **3b. Level 6 Boss Cycling (F Key, N Key) – February 3, 2026**
+- **F Key:** Cycles Phoenix Dragon behavior (15 patterns)
+- **N Key:** Cycles Alien Spider behavior (12 patterns)
+- **HUD:** Combined boss HUD shows current behavior; per-frame sync in animate loop
+- **Options Menu:** Pause → Options → Boss tab – behavior dropdowns for both bosses
+- **Status:** ✅ Works in Level 6 (God Mode)
+- **Technical Doc:** `12.0/YEAR_END_2025/GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md` (Level 6 Boss HUD section)
+
 ### **4. Sound System**
 - **Footstep Sounds:** Play when moving on ground (horizontal speed > 0.5)
 - **Jump Sound:** Plays on Space key (when on ground)
@@ -223,6 +231,8 @@ If a feature works in one level but not another:
 - **Level 2:** ✅ All features working
 - **Level 3:** ✅ All features working
 - **Level 4:** ✅ All features working
+- **Level 5:** ✅ All features working
+- **Level 6:** ✅ All features working (incl. F/N boss cycling, combined boss HUD)
 - **Future Levels:** ✅ Will automatically inherit all features
 
 ---
@@ -231,6 +241,6 @@ If a feature works in one level but not another:
 
 This rule is **MANDATORY** for all levels. Any level that does not comply with these requirements must be fixed before deployment.
 
-**Last Updated:** November 18, 2025  
+**Last Updated:** February 3, 2026 (Level 6 boss cycling F/N keys, combined HUD)  
 **Maintained By:** Narrrf's Lab Tech Council
 

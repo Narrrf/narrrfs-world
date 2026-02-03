@@ -137,7 +137,7 @@ Integrate NFT Bridges (nftbridges.xyz) into the 3D riddle game to enable:
 
 - **A:** NFT Bridges API (if provided)
 - **B:** Direct chain RPC (e.g. `balanceOf` on ERC-721 contract)
-- **C:** Backend proxy – our API calls RPC, returns ownership to game
+- **C:** Backend proxy – our API calls on helius RPC, returns ownership to game
 
 ---
 

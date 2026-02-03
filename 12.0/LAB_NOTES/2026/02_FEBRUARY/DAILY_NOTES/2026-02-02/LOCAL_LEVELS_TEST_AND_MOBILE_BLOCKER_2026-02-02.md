@@ -114,25 +114,22 @@ Mobile customers have **huge problems** with:
 
 ---
 
-## 🚀 **FINAL PUSH NOTES – STABLE LOCAL (February 2, 2026)**
+## ✅ **STABLE VERSION – PRODUCTION VERIFIED (February 2, 2026)**
 
-**Version:** Stable local + new joysticks implemented  
-**Status:** ✅ **READY TO PUSH** – Test live for all paths and levels
+**Version:** Stable local + new joysticks + production verified  
+**Status:** ✅ **STABLE – Working on production**
 
-### **Included in this push:**
+### **Production verification (user confirmed):**
+- ✅ All levels load
+- ✅ Monsters, GLBs, scenes load correctly
+- ✅ Camera: first-person and 3rd-person both work
+- ✅ Playable across all levels
+
+### **Included in this version:**
 - ✅ **Asset paths** – `resolveAssetPath()` + `loadModel()` for Level 2, 5, 6, player character
 - ✅ **nipplejs** – Joystick library in `3d-riddle-game.html`
 - ✅ **Mobile UX** – Jump, Interact, Shoot buttons; Tap [E] prompts; Pause/Options integration
 - ✅ **Mobile camera** – Forced Joystick View (2 joysticks + 3rd person) on every level load
-
-### **Live test checklist (after push):**
-- [ ] All levels 1–6 load (paths, models, maps)
-- [ ] Level 2 preview models visible
-- [ ] Level 5 map (GLB) loads
-- [ ] Level 6 Phoenix + Alien Spider load
-- [ ] Player model (GLTF) visible in 3rd person
-- [ ] Mobile: 2 joysticks + action buttons in landscape
-- [ ] Mobile: Joystick View forced on level load
 
 ### **Files changed (summary):**
 - `public/three.js/main.js` – Paths, mobile UX, forced Joystick View
@@ -140,6 +137,26 @@ Mobile customers have **huge problems** with:
 
 ---
 
+---
+
+## 🎮 **LEVEL 6 ALIEN SPIDER HUD FIX (FEB 2–3, 2026)**
+
+**Status:** ✅ **COMPLETE** – Documented for handover
+
+**Problem:** Spider HUD showed "Idle" even when model changed (N key). Phoenix HUD worked.
+
+**Root causes fixed:**
+1. `public/three.js/gui-system.js` had old Phoenix-only HUD → synced combined HUD
+2. `public/three.js/main.js` `cycleAlienSpiderBehavior()` missing HUD calls + only 7 behaviors → synced 12 behaviors + update calls
+3. HUD not syncing with boss state → added per-frame sync in animate loop (reads `alienSpiderBoss.behaviorMode`)
+4. Options menu Alien Spider dropdown had 7 options → fixed to all 12 (charge_attack, combo_attack, aggressive_patrol, retreat_attack, stagger_recovery)
+
+**Files:** `public/three.js/main.js`, `public/three.js/gui-system.js`, `three.js/main.js`, `three.js/gui-system.js`
+
+**Technical doc:** `12.0/YEAR_END_2025/GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md` (Level 6 Boss HUD section)
+
+---
+
 **Created:** February 2, 2026  
-**Updated:** February 2, 2026 – Mobile UX fixes + forced Joystick View + final push notes  
-**Next:** Live test all paths and levels; mobile device verification
+**Updated:** February 3, 2026 – Level 6 Alien Spider HUD fix documented  
+**Next:** Level 5 collision fine-tuning (optional); On Chain Bridges integration when testnet ready

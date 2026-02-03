@@ -98,7 +98,8 @@ import { PlayerControls } from "./player-controls.js";
 import { VRInputProvider } from "./vr-input-provider.js";
 import { VRUIRaycaster } from "./vr-ui-raycaster.js"; // ✅ VR UI interaction system (January 20, 2026)
 import { PlayerModel } from "./player-model.js";
-import { GUISystem } from "./gui-system.js";
+// Cache-bust for combined boss HUD (Phoenix + Spider) - Feb 3, 2026
+import { GUISystem } from "./gui-system.js?v=2026-02-03-combined-boss-hud";
 import { WeaponSystem } from "./weapon-system.js";
 import { PhoenixBoss2 } from "./phoenix2.js"; // New clean implementation
 import { AlienSpiderBoss } from "./alien-spider.js"; // Alien Spider boss
@@ -16048,6 +16049,11 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
           <option value="attack_1">⚔️ Attack 1</option>
           <option value="attack_2">🎯 Attack 2</option>
           <option value="damage_reaction">💥 Damage Reaction</option>
+          <option value="charge_attack">⚡ Charge Attack</option>
+          <option value="combo_attack">🔄 Combo Attack</option>
+          <option value="aggressive_patrol">🔥 Aggressive Patrol</option>
+          <option value="retreat_attack">↩️ Retreat Attack</option>
+          <option value="stagger_recovery">🩹 Stagger Recovery</option>
         `;
         behaviorSelect.value = alienSpiderBoss ? alienSpiderBoss.behaviorMode || currentSpiderSettings.behaviorMode : currentSpiderSettings.behaviorMode;
         Object.assign(behaviorSelect.style, {
@@ -16065,6 +16071,16 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
           if (alienSpiderBoss && typeof alienSpiderBoss.setBehaviorMode === 'function') {
             alienSpiderBoss.setBehaviorMode(behavior);
             console.log("🕷️ [ALIEN SPIDER BOSS] Behavior set to:", behavior);
+            // Update HUD immediately (sync with options menu - Feb 3, 2026)
+            if (guiSystem && typeof guiSystem.updateAlienSpiderBehaviorDisplay === 'function') {
+              const spiderBehaviors = ['idle_1', 'idle_2', 'walk_patrol', 'run_patrol', 'attack_1', 'attack_2',
+                                       'damage_reaction', 'charge_attack', 'combo_attack', 'aggressive_patrol', 'retreat_attack', 'stagger_recovery'];
+              const spiderBehaviorNames = ['🕷️ Idle 1', '🕷️ Idle 2', '🚶 Walk Patrol', '🏃 Run Patrol', '⚔️ Attack 1', '🎯 Attack 2',
+                                           '💥 Damage Reaction', '⚡ Charge Attack', '🔄 Combo Attack', '🔥 Aggressive Patrol', '↩️ Retreat Attack', '🩹 Stagger Recovery'];
+              const idx = spiderBehaviors.indexOf(behavior);
+              const name = idx >= 0 ? spiderBehaviorNames[idx] : '🕷️ Idle 1';
+              guiSystem.updateAlienSpiderBehaviorDisplay(name, idx >= 0 ? idx + 1 : 1);
+            }
           }
         });
         
@@ -26070,6 +26086,19 @@ function updateLevel6(delta) {
     });
   }
   
+  // CRITICAL: Per-frame sync of Spider behavior HUD when in Level 6 with God Mode (Feb 3, 2026)
+  // Ensures HUD always reflects actual boss behavior - fixes HUD stuck on "Idle" when N key cycles
+  if (currentLevel === LEVEL_IDS.LEVEL6 && godMode && alienSpiderBoss && guiSystem && typeof guiSystem.updateAlienSpiderBehaviorDisplay === 'function') {
+    const spiderBehaviors = ['idle_1', 'idle_2', 'walk_patrol', 'run_patrol', 'attack_1', 'attack_2',
+                             'damage_reaction', 'charge_attack', 'combo_attack', 'aggressive_patrol', 'retreat_attack', 'stagger_recovery'];
+    const spiderBehaviorNames = ['🕷️ Idle 1', '🕷️ Idle 2', '🚶 Walk Patrol', '🏃 Run Patrol', '⚔️ Attack 1', '🎯 Attack 2',
+                                 '💥 Damage Reaction', '⚡ Charge Attack', '🔄 Combo Attack', '🔥 Aggressive Patrol', '↩️ Retreat Attack', '🩹 Stagger Recovery'];
+    const currentSpiderBehavior = alienSpiderBoss.behaviorMode || 'idle_1';
+    const spiderBehaviorIndex = spiderBehaviors.indexOf(currentSpiderBehavior);
+    const spiderBehaviorName = spiderBehaviorIndex >= 0 ? spiderBehaviorNames[spiderBehaviorIndex] : '🕷️ Idle 1';
+    guiSystem.updateAlienSpiderBehaviorDisplay(spiderBehaviorName, spiderBehaviorIndex >= 0 ? spiderBehaviorIndex + 1 : 1);
+  }
+  
   // CRITICAL: Ensure boss health bar is only visible in Level 6 (January 4, 2026)
   // Hide it if we're not in Level 6 (safety check)
   if (currentLevel !== LEVEL_IDS.LEVEL6) {
@@ -32958,6 +32987,11 @@ function cyclePhoenixBehavior() {
  * 5. ⚔️ Attack 1 (Melee attack)
  * 6. 🎯 Attack 2 (Jump attack)
  * 7. 💥 Damage Reaction (Hit reaction)
+ * 8. ⚡ Charge Attack (Run → Attack composite)
+ * 9. 🔄 Combo Attack (Attack_1 → Attack_2 composite)
+ * 10. 🔥 Aggressive Patrol (Walk → Attack alternating)
+ * 11. ↩️ Retreat Attack (Attack → Walk backward)
+ * 12. 🩹 Stagger Recovery (Damage → Idle composite)
  * 
  * Usage: Press N key in Level 6 (God Mode must be enabled)
  */
@@ -32967,7 +33001,7 @@ function cycleAlienSpiderBehavior() {
     return;
   }
 
-  // Define all 7 behaviors in order
+  // Define all 12 behaviors in order
   const behaviors = [
     'idle_1',           // 0: 🕷️ Idle 1
     'idle_2',           // 1: 🕷️ Idle 2
@@ -32975,7 +33009,12 @@ function cycleAlienSpiderBehavior() {
     'run_patrol',       // 3: 🏃 Run Patrol
     'attack_1',         // 4: ⚔️ Attack 1
     'attack_2',         // 5: 🎯 Attack 2
-    'damage_reaction'   // 6: 💥 Damage Reaction
+    'damage_reaction',  // 6: 💥 Damage Reaction
+    'charge_attack',    // 7: ⚡ Charge Attack
+    'combo_attack',     // 8: 🔄 Combo Attack
+    'aggressive_patrol',// 9: 🔥 Aggressive Patrol
+    'retreat_attack',   // 10: ↩️ Retreat Attack
+    'stagger_recovery'  // 11: 🩹 Stagger Recovery
   ];
 
   // Behavior display names for console logging
@@ -32986,7 +33025,12 @@ function cycleAlienSpiderBehavior() {
     '🏃 Run Patrol',
     '⚔️ Attack 1',
     '🎯 Attack 2',
-    '💥 Damage Reaction'
+    '💥 Damage Reaction',
+    '⚡ Charge Attack',
+    '🔄 Combo Attack',
+    '🔥 Aggressive Patrol',
+    '↩️ Retreat Attack',
+    '🩹 Stagger Recovery'
   ];
 
   // Get current behavior from alienSpiderBoss
@@ -33006,7 +33050,18 @@ function cycleAlienSpiderBehavior() {
   // Set new behavior
   alienSpiderBoss.setBehaviorMode(nextBehavior);
   
-  console.log(`🕷️ [DEBUG] GOD Mode Alien Spider Behavior Cycle: ${behaviorNames[startIndex]} → ${nextBehaviorName} (${nextIndex + 1}/7)`);
+  // CRITICAL: Urgently show HUD when N key cycles - listener-style immediate display
+  // Ensures HUD is visible even if per-frame update missed it (e.g. timing, z-index)
+  if (guiSystem) {
+    if (typeof guiSystem.showAlienSpiderBehaviorDisplay === 'function') {
+      guiSystem.showAlienSpiderBehaviorDisplay();
+    }
+    if (typeof guiSystem.updateAlienSpiderBehaviorDisplay === 'function') {
+      guiSystem.updateAlienSpiderBehaviorDisplay(nextBehaviorName, nextIndex + 1);
+    }
+  }
+  
+  console.log(`🕷️ [DEBUG] GOD Mode Alien Spider Behavior Cycle: ${behaviorNames[startIndex]} → ${nextBehaviorName} (${nextIndex + 1}/12)`);
   
   // Show notification to user
   if (guiSystem && typeof guiSystem.showNotification === 'function') {

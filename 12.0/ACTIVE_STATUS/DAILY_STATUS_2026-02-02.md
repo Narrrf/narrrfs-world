@@ -65,6 +65,24 @@
 
 ---
 
+## 🎮 **LEVEL 6 ALIEN SPIDER HUD FIX (FEB 2–3, 2026)**
+
+**Status:** ✅ **COMPLETE** – Alien Spider behavior HUD now updates correctly with model
+
+**Fixes applied:**
+- **Combined HUD sync:** `public/three.js/gui-system.js` updated with Phoenix + Alien Spider rows
+- **Cache-busting:** Added `?v=2026-02-03-combined-boss-hud` to gui-system import
+- **cycleAlienSpiderBehavior():** Synced from dev to public – added HUD update calls, full 12 behaviors
+- **Per-frame sync:** Alien Spider HUD reads `alienSpiderBoss.behaviorMode` every frame in animate loop (God Mode, Level 6)
+- **Options menu:** Public main.js Alien Spider dropdown fixed – was 7 options, now all 12 (charge_attack, combo_attack, aggressive_patrol, retreat_attack, stagger_recovery)
+- **Immediate HUD update:** Options menu behavior change now calls `updateAlienSpiderBehaviorDisplay()` for both bosses
+
+**Files:** `public/three.js/main.js`, `public/three.js/gui-system.js`, `three.js/main.js`, `three.js/gui-system.js`
+
+**Reference:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-03/LEVEL6_COMBINED_BOSS_HUD_PROGRESS_2026-02-03.md`
+
+---
+
 ## 🔧 **LEVEL 5 COLLISION (FEB 2, 2026)**
 
 **Status:** ✅ **WORKING** – Walls now block player (not perfect, fine-tuning possible later)
@@ -83,10 +101,31 @@
 
 ---
 
+## ✅ **STABLE VERSION – PRODUCTION VERIFIED (February 2, 2026)**
+
+**Status:** ✅ **STABLE – Working on production (user verified)**
+
+### **Production verification**
+- ✅ All 6 levels load on production
+- ✅ Monsters, GLBs, scenes load correctly
+- ✅ Camera: first-person and 3rd-person both work
+- ✅ Playable across all levels
+
+### **What’s in this version**
+- **Asset paths:** Level 5 map, Level 6 bosses (Phoenix/Alien Spider), player character, Level 2 – `loadModel()` + `resolveAssetPath`
+- **Mobile UX:** nipplejs joysticks, Jump/Interact/Shoot buttons, "Tap [E]" prompts, forced Joystick View on every level load
+- **Level 5 collision:** Wall collision working (in-place mesh, BVH, InstancedMesh)
+
+### **Files touched**
+- `public/three.js/main.js` – paths, mobile logic, camera mode
+- `public/three.js/3d-riddle-game.html` – nipplejs script
+
+---
+
 ## 🚀 **NEXT STEPS**
 
+- **Push to production** → test live (paths + levels + mobile)
 - ⏳ Receive testnet credentials + iframe embed code from NFT Bridges
-- Implement Phase 1: WalletConnect + Bridge tab in pause menu
 - VR: Verify Level 1 spawn (when Quest ready)
 - Chest VR: Map controller to `tryInteract`
 - **Level 5 collision:** ✅ Working – optional fine-tuning later

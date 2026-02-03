@@ -1,9 +1,9 @@
 # 🎮 GAME 7: 3D HYTOPIA GAME - COMPLETE TECHNICAL DOCUMENTATION 2025
 
 **Created:** December 20, 2025  
-**Last Updated:** January 31, 2026 (Level 5: 40 chests treasure hunt with ground raycast)  
+**Last Updated:** February 3, 2026 (Level 6 Boss HUD – Alien Spider + Phoenix sync)  
 **Status:** ✅ **STABLE PRODUCTION VERSION - MOBILE & VR OPTIMIZED**  
-**Version:** 2026-02-01-PORTAL-REGISTER-UPDATES  
+**Version:** 2026-02-03-LEVEL6-BOSS-HUD  
 **Purpose:** Complete technical reference for 3D Riddle Game integration in Narrrfs World
 
 ---
@@ -27,8 +27,9 @@
 13. [Mobile Controls System](#mobile-controls-system---complete---january-18-2026)
 14. [VR Support System (Meta Quest 3)](#vr-support-system-meta-quest-3---optimized---january-18-2026)
 15. [God Mode Settings Persistence System](#god-mode-settings-persistence-system-january-9-2026----production-ready)
-16. [Code Examples](#code-examples)
-17. [Future Implementation Plans](#future-implementation-plans)
+16. [Level 6 Boss HUD System](#level-6-boss-hud-system-february-3-2026----complete)
+17. [Code Examples](#code-examples)
+18. [Future Implementation Plans](#future-implementation-plans)
 
 ---
 
@@ -94,7 +95,7 @@ three.js/
 │
 ├── Boss Systems (Level 6):
 │   ├── phoenix2.js               # Phoenix Dragon boss (15 patterns)
-│   └── alien-spider.js           # Alien Spider boss (7 patterns)
+│   └── alien-spider.js           # Alien Spider boss (12 patterns)
 │
 ├── Optional Systems:
 │   └── vr-input-provider.js      # VR controller input (WebXR)
@@ -2496,6 +2497,44 @@ All save/load operations log to console with:
 - `public/three.js/sky-system.js` - Sky system (settings applied here)
 - `public/three.js/phoenix2.js` - Phoenix boss (settings applied here)
 - `public/three.js/alien-spider.js` - Alien Spider boss (settings applied here)
+
+---
+
+## 🎮 **LEVEL 6 BOSS HUD SYSTEM (February 3, 2026) - ✅ COMPLETE**
+
+**Status:** ✅ **WORKING PERFECTLY** – Both Phoenix and Alien Spider behavior HUDs update correctly  
+**Purpose:** Combined HUD displaying current boss behavior for Level 6 dual-boss arena (God Mode)
+
+### **Overview:**
+Level 6 features two bosses (Phoenix Dragon + Alien Spider). A combined HUD shows each boss's current behavior. Phoenix has 15 patterns; Alien Spider has 12 patterns. Both HUDs sync with model state via keyboard (F/N keys) and Options menu.
+
+### **Key Features:**
+- ✅ **Combined HUD:** Single container with Phoenix row + Alien Spider row
+- ✅ **Phoenix:** F key cycles 15 behaviors; HUD updates correctly
+- ✅ **Alien Spider:** N key cycles 12 behaviors; HUD updates correctly
+- ✅ **Per-frame sync:** Alien Spider HUD reads `alienSpiderBoss.behaviorMode` every frame in animate loop (Level 6 + God Mode)
+- ✅ **Options menu:** Both bosses – dropdown lists all behaviors; change triggers immediate HUD update
+- ✅ **Cache-busting:** gui-system.js import uses `?v=2026-02-03-combined-boss-hud` to avoid stale cache
+
+### **Alien Spider 12 Behaviors (Full List):**
+`idle_1`, `idle_2`, `patrol`, `charge_attack`, `combo_attack`, `aggressive_patrol`, `retreat_attack`, `stagger_recovery`, `death`, `spawn`, `hit`, `attack`
+
+**Note:** `public/three.js/main.js` previously had only 7 behaviors in options dropdown; fixed to all 12 (Feb 3, 2026).
+
+### **Implementation:**
+- **GUI:** `createLevel6BossBehaviorHud()` in gui-system.js – creates combined HUD
+- **Updates:** `updatePhoenixBehaviorDisplay()`, `updateAlienSpiderBehaviorDisplay()` – both use `document.getElementById()` for direct DOM access
+- **Per-frame sync:** In `animate()` loop, when `currentLevel === LEVEL_IDS.LEVEL6 && godMode`, call `guiSystem.updateAlienSpiderBehaviorDisplay()` with `alienSpiderBoss.behaviorMode`
+- **Key handlers:** F = Phoenix cycle, N = Spider cycle (in main.js `cycleAlienSpiderBehavior()`)
+- **Options menu:** Pause → Options → Boss tab – behavior dropdowns for both bosses; change handler calls `updateAlienSpiderBehaviorDisplay()` / `updatePhoenixBehaviorDisplay()`
+
+### **Files:**
+- `public/three.js/gui-system.js` – Combined HUD creation
+- `public/three.js/main.js` – cycleAlienSpiderBehavior (12 behaviors), options dropdown, per-frame sync, cache-busting
+- `three.js/gui-system.js`, `three.js/main.js` – Dev versions (source of truth)
+
+### **Reference:**
+- `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-03/LEVEL6_COMBINED_BOSS_HUD_PROGRESS_2026-02-03.md`
 
 ---
 

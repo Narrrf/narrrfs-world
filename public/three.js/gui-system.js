@@ -676,103 +676,173 @@ export class GUISystem {
   }
   
   // ========================================
-  // PHOENIX BOSS BEHAVIOR DISPLAY (DEV TESTING)
+  // LEVEL 6 BOSS BEHAVIOR HUD (COMBINED - Phoenix + Spider)
+  // Single container with both boss displays - guarantees both always visible
+  // February 3, 2026 - CRITICAL: Combined layout fixes Spider HUD never appearing
   // ========================================
   
   /**
-   * Create Phoenix behavior display element (for dev testing)
+   * Create combined Level 6 boss behavior display (Phoenix + Spider in one box)
    */
-  createPhoenixBehaviorDisplay() {
-    if (this.phoenixBehaviorDisplay) return this.phoenixBehaviorDisplay;
+  createLevel6BossBehaviorHud() {
+    if (this.level6BossBehaviorHud) return this.level6BossBehaviorHud;
     
-    const container = document.createElement("div");
-    container.id = "phoenixBehaviorDisplay";
-    Object.assign(container.style, {
+    const wrapper = document.createElement("div");
+    wrapper.id = "level6BossBehaviorHud";
+    Object.assign(wrapper.style, {
       position: "fixed",
-      top: "20px", // Top of screen
-      left: "20px", // Top-left corner (away from cheese collected HUD on right)
+      top: "20px",
+      left: "20px",
       padding: "12px 20px",
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      paddingBottom: "16px", // Extra space so Spider row is never clipped (Feb 3, 2026)
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
       border: "2px solid #ffaa44",
       borderRadius: "8px",
-      display: "none", // Hidden by default
-      zIndex: "51", // Just above boss health bar (50)
-      pointerEvents: "none", // Never block mouse clicks
+      display: "none",
+      flexDirection: "column", // Flexbox ensures both rows visible (Feb 3, 2026) - use "flex" when showing
+      zIndex: "1001",
+      pointerEvents: "none",
       userSelect: "none",
       fontFamily: "Montserrat, Arial, sans-serif",
-      fontSize: "16px",
+      fontSize: "14px",
       fontWeight: "700",
-      color: "#ffaa44",
-      textShadow: "0 0 5px rgba(255, 170, 68, 0.8), 1px 1px 2px rgba(0, 0, 0, 0.8)",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 170, 68, 0.2)"
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.6)",
+      overflow: "visible" // CRITICAL: Prevent Spider row from being clipped (Feb 3, 2026)
     });
     
-    // Label
-    const label = document.createElement("div");
-    label.id = "phoenixBehaviorLabel";
-    Object.assign(label.style, {
-      fontSize: "12px",
-      color: "#ffaa44",
-      opacity: "0.8",
-      marginBottom: "4px",
-      pointerEvents: "none",
-      userSelect: "none"
+    // Phoenix row
+    const phoenixRow = document.createElement("div");
+    Object.assign(phoenixRow.style, { marginBottom: "8px", flexShrink: "0", display: "flex", alignItems: "center" });
+    const phoenixLabel = document.createElement("span");
+    phoenixLabel.style.cssText = "color: #ffaa44; font-size: 12px; opacity: 0.9;";
+    phoenixLabel.innerText = "🐉 Phoenix: ";
+    const phoenixName = document.createElement("span");
+    phoenixName.id = "phoenixBehaviorName";
+    phoenixName.style.cssText = "color: #ffaa44; font-size: 16px;";
+    phoenixName.innerText = "Flying Circle (1/15)";
+    phoenixRow.appendChild(phoenixLabel);
+    phoenixRow.appendChild(phoenixName);
+    
+    // Spider row (separator + Spider)
+    // CRITICAL: flexShrink: 0 prevents row from collapsing; explicit visibility (Feb 3, 2026)
+    const spiderRow = document.createElement("div");
+    spiderRow.id = "level6SpiderRow";
+    spiderRow.setAttribute("data-boss", "alien-spider");
+    Object.assign(spiderRow.style, {
+      borderTop: "1px solid rgba(94, 234, 212, 0.4)",
+      paddingTop: "8px",
+      display: "flex",
+      alignItems: "center",
+      flexShrink: "0",
+      minHeight: "24px",
+      visibility: "visible",
+      opacity: "1"
     });
-    label.innerText = "🐉 Behavior:";
+    const spiderLabel = document.createElement("span");
+    spiderLabel.style.cssText = "color: #5eead4; font-size: 12px; opacity: 0.9;";
+    spiderLabel.innerText = "🕷️ Spider: ";
+    const spiderName = document.createElement("span");
+    spiderName.id = "alienSpiderBehaviorName";
+    spiderName.style.cssText = "color: #5eead4; font-size: 16px; visibility: visible;";
+    spiderName.innerText = "Idle 1 (1/12)";
+    spiderRow.appendChild(spiderLabel);
+    spiderRow.appendChild(spiderName);
     
-    // Behavior name
-    const behaviorName = document.createElement("div");
-    behaviorName.id = "phoenixBehaviorName";
-    Object.assign(behaviorName.style, {
-      fontSize: "18px",
-      color: "#ffaa44",
-      fontWeight: "700",
-      pointerEvents: "none",
-      userSelect: "none"
-    });
-    behaviorName.innerText = "Flying Circle";
+    wrapper.appendChild(phoenixRow);
+    wrapper.appendChild(spiderRow);
+    this.container.appendChild(wrapper);
     
-    container.appendChild(label);
-    container.appendChild(behaviorName);
-    this.container.appendChild(container);
+    console.log("🎨 [GUI] Level 6 combined boss HUD created (Phoenix + Spider rows)");
+    this.level6BossBehaviorHud = wrapper;
+    this.phoenixBehaviorDisplay = wrapper; // For hide/show compatibility
+    this.phoenixBehaviorName = phoenixName;
+    this.alienSpiderBehaviorDisplay = wrapper; // Same container
+    this.alienSpiderBehaviorName = spiderName;
     
-    this.phoenixBehaviorDisplay = container;
-    this.phoenixBehaviorName = behaviorName;
-    
-    return container;
+    return wrapper;
   }
   
   /**
-   * Show Phoenix behavior display
+   * Create Phoenix behavior display (delegates to combined HUD)
+   */
+  createPhoenixBehaviorDisplay() {
+    return this.createLevel6BossBehaviorHud();
+  }
+  
+  /**
+   * Create Alien Spider behavior display (delegates to combined HUD)
+   */
+  createAlienSpiderBehaviorDisplay() {
+    return this.createLevel6BossBehaviorHud();
+  }
+  
+  /**
+   * Show Phoenix behavior display (shows combined HUD)
+   * CRITICAL: Use "flex" so both Phoenix + Spider rows display (Feb 3, 2026)
    */
   showPhoenixBehaviorDisplay() {
-    if (!this.phoenixBehaviorDisplay) this.createPhoenixBehaviorDisplay();
-    this.phoenixBehaviorDisplay.style.display = "block";
-  }
-  
-  /**
-   * Hide Phoenix behavior display
-   */
-  hidePhoenixBehaviorDisplay() {
-    if (this.phoenixBehaviorDisplay) {
-      this.phoenixBehaviorDisplay.style.display = "none";
+    if (!this.level6BossBehaviorHud) this.createLevel6BossBehaviorHud();
+    if (this.level6BossBehaviorHud) {
+      this.level6BossBehaviorHud.style.display = "flex";
+      this.level6BossBehaviorHud.style.flexDirection = "column";
     }
   }
   
   /**
+   * Show Alien Spider behavior display (shows combined HUD)
+   * CRITICAL: Use "flex" so both Phoenix + Spider rows display (Feb 3, 2026)
+   */
+  showAlienSpiderBehaviorDisplay() {
+    if (!this.level6BossBehaviorHud) this.createLevel6BossBehaviorHud();
+    if (this.level6BossBehaviorHud) {
+      this.level6BossBehaviorHud.style.display = "flex";
+      this.level6BossBehaviorHud.style.flexDirection = "column";
+    }
+  }
+  
+  /**
+   * Hide Phoenix behavior display (hides combined HUD)
+   */
+  hidePhoenixBehaviorDisplay() {
+    if (this.level6BossBehaviorHud) this.level6BossBehaviorHud.style.display = "none";
+  }
+  
+  /**
+   * Hide Alien Spider behavior display (hides combined HUD)
+   */
+  hideAlienSpiderBehaviorDisplay() {
+    if (this.level6BossBehaviorHud) this.level6BossBehaviorHud.style.display = "none";
+  }
+  
+  /**
    * Update Phoenix behavior display
-   * @param {string} behaviorName - Current behavior name (e.g., "🔄 Flying Circle")
-   * @param {number} behaviorIndex - Current behavior index (1-15)
-   * 📝 UPDATED: December 18, 2025 - Changed from 9 to 15 total patterns
    */
   updatePhoenixBehaviorDisplay(behaviorName, behaviorIndex = null) {
-    if (!this.phoenixBehaviorDisplay) this.createPhoenixBehaviorDisplay();
-    
+    if (!this.phoenixBehaviorName) this.createLevel6BossBehaviorHud();
     if (this.phoenixBehaviorName) {
-      const displayText = behaviorIndex !== null 
-        ? `${behaviorName} (${behaviorIndex}/15)` // Updated from /14 to /15
-        : behaviorName;
-      this.phoenixBehaviorName.innerText = displayText;
+      this.phoenixBehaviorName.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/15)` : behaviorName;
+    }
+  }
+  
+  /**
+   * Update Alien Spider behavior display
+   * CRITICAL: Use getElementById for robustness - ensures we find the element even if
+   * reference was lost (e.g. instance mismatch, HUD created before Spider init)
+   */
+  updateAlienSpiderBehaviorDisplay(behaviorName, behaviorIndex = null) {
+    if (!this.level6BossBehaviorHud) this.createLevel6BossBehaviorHud();
+    const el = document.getElementById("alienSpiderBehaviorName");
+    if (el) {
+      el.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/12)` : behaviorName;
+      this.alienSpiderBehaviorName = el; // Keep reference in sync
+      const spiderRow = document.getElementById("level6SpiderRow");
+      if (spiderRow) {
+        spiderRow.style.display = "flex";
+        spiderRow.style.visibility = "visible";
+        spiderRow.style.opacity = "1";
+      }
+    } else if (this.alienSpiderBehaviorName) {
+      this.alienSpiderBehaviorName.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/12)` : behaviorName;
     }
   }
   
