@@ -1,22 +1,13 @@
 /**
- * ============================================================================
- * ALIEN SPIDER BOSS - Level 6 Ground Boss
- * ============================================================================
- *
- * Version: 2026-02-01-HEADER-REFRESH
- * Lines: ~1,090
- * Used by: main.js (alienSpiderBoss) – Level 6 only
- *
- * ============================================================================
- * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
- * ============================================================================
- *
- *   loadModel(path)          ~100  Load AFC_03.fbx (TGA textures)
- *   update(delta)           ~180  7 behavior patterns
- *   setBehaviorMode         ~220  idle_1, walk_patrol, attack_1, etc.
- *
- * ============================================================================
- * 🎯 PURPOSE – Similar to Phoenix 2.0, but ground-based
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 🕷️ ALIEN SPIDER BOSS SYSTEM - BEHAVIOR PATTERN ARCHITECTURE
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * 📅 CREATED: December 20, 2025
+ * ✅ STATUS: STABLE - PRODUCTION READY
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * 🎯 ARCHITECTURE: Similar to Phoenix Boss 2.0, but ground-based
  * 
  * This module implements the Alien Spider boss for Level 6, featuring:
  * - 7 behavior patterns with separate animations
@@ -25,14 +16,16 @@
  * - Brightness control for material visibility
  * - Full GUI integration with settings persistence
  * 
- * ✅ BEHAVIOR PATTERNS (7 patterns):
- * - idle_1: Idle animation 1
- * - idle_2: Idle animation 2
- * - walk_patrol: Walking patrol in circle
- * - run_patrol: Running patrol (faster)
- * - attack_1: Attack pattern 1 (melee)
- * - attack_2: Attack pattern 2 (jump attack)
+ * ✅ BEHAVIOR PATTERNS (12 patterns):
+ * - idle_1, idle_2: Idle animations
+ * - walk_patrol, run_patrol: Patrol patterns
+ * - attack_1, attack_2: Single attack patterns
  * - damage_reaction: Damage taken reaction
+ * - charge_attack: Run toward center → Attack_1 (composite)
+ * - combo_attack: Attack_1 → Attack_2 sequence (composite)
+ * - aggressive_patrol: Walk patrol → Attack_1 alternating (composite)
+ * - retreat_attack: Attack_1 → Walk backward (composite)
+ * - stagger_recovery: Damage_taken → Idle_2 → idle (composite)
  * 
  * 🎮 MODEL INFO
  * ═══════════════════════════════════════════════════════════════════════════
@@ -135,13 +128,14 @@ export class AlienSpiderBoss {
     this.camera = config.camera;
     this.levelGroup = config.levelGroup || null;
     this.player = config.player || null; // Player object for tracking
-    this.resolveAssetPath = config.resolveAssetPath || ((path) => path); // Path resolver function
+    this.getPlayerPosition = config.getPlayerPosition || null; // Callback: () => Vector3 for player tracking (follow_attack pattern)
     
     // Model
     this.model = null;
     this.mixer = null;
     this.animationActions = {};
     this.currentAction = null;
+    this.assetBasePath = null; // Set from model path in loadModel() - used for textures & animations
     
     // State
     this.isAlive = true;
@@ -197,6 +191,37 @@ export class AlienSpiderBoss {
       },
       damage_reaction: {
         duration: 1.5
+      },
+      // Composite patterns (reuse existing animations)
+      charge_attack: {
+        runPhaseDuration: 2.0,
+        attackPhaseDuration: 2.0,
+        movementSpeed: 5.0
+      },
+      combo_attack: {
+        attack1Duration: 2.0,
+        attack2Duration: 2.5
+      },
+      aggressive_patrol: {
+        walkPhaseDuration: 3.0,
+        attackPhaseDuration: 2.0,
+        movementSpeed: 2.0
+      },
+      retreat_attack: {
+        attackPhaseDuration: 2.0,
+        retreatPhaseDuration: 2.5,
+        movementSpeed: 1.5
+      },
+      stagger_recovery: {
+        damagePhaseDuration: 1.5,
+        idlePhaseDuration: 2.0
+      },
+      follow_attack: {
+        followSpeed: 3.0,
+        attackRange: 4.0,
+        attackDuration: 2.5,
+        idleAfterAttack: 3.0,
+        reFollowAfterIdle: true
       }
     };
     
@@ -209,16 +234,15 @@ export class AlienSpiderBoss {
       damage: ['Damage_taken']
     };
     
-    // Animation file paths (FBX files) - will be resolved when needed
-    // Store relative paths, resolve when loading
-    this.animationPathsRelative = {
-      idle_1: "textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_1.fbx",
-      idle_2: "textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_2.fbx",
-      walk: "textures/3d models/Alien Spider 1/AFC_03/AFC_03@Walk.fbx",
-      run: "textures/3d models/Alien Spider 1/AFC_03/AFC_03@Run.fbx",
-      attack_1: "textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_1.fbx",
-      attack_2: "textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_2.fbx",
-      damage: "textures/3d models/Alien Spider 1/AFC_03/AFC_03@Damage_taken.fbx"
+    // Animation file names (paths built from assetBasePath at load time)
+    this.animationFileNames = {
+      idle_1: "AFC_03@Idle_1.fbx",
+      idle_2: "AFC_03@Idle_2.fbx",
+      walk: "AFC_03@Walk.fbx",
+      run: "AFC_03@Run.fbx",
+      attack_1: "AFC_03@Attack_1.fbx",
+      attack_2: "AFC_03@Attack_2.fbx",
+      damage: "AFC_03@Damage_taken.fbx"
     };
     
     // Texture loaders - TGALoader for TGA files, TextureLoader for other formats
@@ -249,7 +273,7 @@ export class AlienSpiderBoss {
     this.textureVariation = variationName;
     console.log(`🕷️ [ALIEN_SPIDER] Applying texture variation: ${variationName}`);
     
-    const basePath = this.resolveAssetPath("textures/3d models/Alien Spider 1/AFC_03/");
+    const basePath = this.assetBasePath || "/textures/3d models/Alien Spider 1/AFC_03/";
     
     // Determine which color texture to use based on variation
     let colorTextureFile = 'AFC_03_color.tga'; // Default
@@ -349,7 +373,7 @@ export class AlienSpiderBoss {
     
     console.log(`🕷️ [ALIEN_SPIDER] Applying textures (brightness: ${this.brightness}x, variation: ${this.textureVariation})`);
     
-    const basePath = this.resolveAssetPath("textures/3d models/Alien Spider 1/AFC_03/");
+    const basePath = this.assetBasePath || "/textures/3d models/Alien Spider 1/AFC_03/";
     
     // Load and apply textures to all meshes
     this.model.traverse((child) => {
@@ -558,100 +582,171 @@ export class AlienSpiderBoss {
   }
   
   /**
-   * Sync setup of model from FBX (shared by load callback and _setupModelFromLoaded).
+   * Load the FBX model
    */
-  _setupModelFromFbx(fbx) {
-    this.model = fbx;
-    const box = new THREE.Box3().setFromObject(this.model);
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    this._originalModelSize = maxDim;
-    const scale = this.targetSize / this._originalModelSize;
-    this.model.scale.set(scale, scale, scale);
-    let meshCount = 0;
-    this.model.traverse((child) => {
-      if (child.isMesh) {
-        meshCount++;
-        child.castShadow = true;
-        child.receiveShadow = true;
-        child.visible = true;
-        child.frustumCulled = false;
-        if (!child.material) {
-          child.material = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.35, roughness: 0.45, side: THREE.DoubleSide });
-        } else {
-          const originalMat = child.material;
-          const isArray = Array.isArray(originalMat);
-          const materials = isArray ? originalMat : [originalMat];
-          const processedMaterials = materials.map((mat) => {
-            let originalColor = mat.color && mat.color.isColor ? mat.color.clone() : (mat.color ? new THREE.Color(mat.color) : new THREE.Color(0x888888));
-            const brightness = originalColor.r + originalColor.g + originalColor.b;
-            let finalColor = originalColor.clone();
-            if (brightness < 0.3) { finalColor.r = Math.min(1, originalColor.r * 3); finalColor.g = Math.min(1, originalColor.g * 3); finalColor.b = Math.min(1, originalColor.b * 3); }
-            else if (brightness < 0.6) { finalColor.r = Math.min(1, originalColor.r * 2); finalColor.g = Math.min(1, originalColor.g * 2); finalColor.b = Math.min(1, originalColor.b * 2); }
-            finalColor.r = Math.min(1, finalColor.r * this.brightness); finalColor.g = Math.min(1, finalColor.g * this.brightness); finalColor.b = Math.min(1, finalColor.b * this.brightness);
-            const newMat = new THREE.MeshStandardMaterial({
-              color: finalColor, map: mat.map || null, normalMap: mat.normalMap || null,
-              emissive: brightness < 0.3 ? finalColor.clone().multiplyScalar(0.1) : new THREE.Color(0x000000),
-              emissiveIntensity: brightness < 0.3 ? 0.2 : 0,
-              metalness: 0.35, roughness: 0.45, side: THREE.DoubleSide,
-              opacity: mat.opacity !== undefined && mat.opacity > 0.1 ? mat.opacity : 1.0,
-              transparent: mat.transparent !== undefined ? mat.transparent : false
-            });
-            newMat._originalColor = originalColor.clone();
-            return newMat;
-          });
-          child.material = isArray ? processedMaterials : processedMaterials[0];
-        }
-      }
-    });
-    this.applyTextures();
-    this.model.position.copy(this.spawnPosition);
-    const box2 = new THREE.Box3().setFromObject(this.model);
-    this.model.position.y += this.groundY - box2.min.y;
-    this.model.visible = true;
-    if (this.levelGroup) this.levelGroup.add(this.model); else this.scene.add(this.model);
-    this.mixer = new THREE.AnimationMixer(this.model);
-  }
-  
-  /**
-   * Setup model from pre-loaded result (used when main.js loadModel provides the model).
-   */
-  async _setupModelFromLoaded(loaded) {
-    const fbx = loaded.scene;
-    if (!fbx) {
-      console.error("❌ [ALIEN_SPIDER] No scene in loaded:", loaded);
-      return null;
-    }
-    this._setupModelFromFbx(fbx);
-    await this.loadAllAnimations();
-    this.applyTextureVariation(this.textureVariation);
-    this.setBehaviorMode(this.behaviorMode);
-    if (this.animationActions['Idle_1']) this.playAnimation('Idle_1', true);
-    return this.model;
-  }
-  
-  /**
-   * Load the FBX model.
-   * Accepts either a path string (uses internal loader) or pre-loaded { scene, animations } from main.js loadModel.
-   */
-  async loadModel(modelPathOrLoaded) {
-    if (modelPathOrLoaded && typeof modelPathOrLoaded === 'object' && modelPathOrLoaded.scene) {
-      return this._setupModelFromLoaded(modelPathOrLoaded);
-    }
-    const modelPath = typeof modelPathOrLoaded === 'string' ? modelPathOrLoaded : null;
-    if (!modelPath) {
-      return Promise.reject(new Error('loadModel requires a path string or pre-loaded {scene, animations}'));
-    }
+  async loadModel(modelPath) {
+    console.log("🕷️🕷️🕷️ [ALIEN_SPIDER] loadModel() CALLED with path:", modelPath);
     return new Promise((resolve, reject) => {
+      // CRITICAL: Derive base path from model path (main.js passes resolveAssetPath result)
+      // e.g. /public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx -> .../AFC_03/
+      this.assetBasePath = modelPath.replace(/\/[^/]+$/, '/');
+      console.log("🕷️ [ALIEN_SPIDER] Asset base path:", this.assetBasePath);
+      
+      // Use LoadingManager with TGA handler so FBXLoader can load TGA textures
       const loader = new FBXLoader(this.loadingManager);
-      const basePath = this.resolveAssetPath("textures/3d models/Alien Spider 1/AFC_03/");
-      loader.setResourcePath(basePath);
+      
+      // Set resource path so FBXLoader knows where to find textures
+      loader.setResourcePath(this.assetBasePath);
       
       loader.load(
         modelPath,
         (fbx) => {
           console.log("✅ [ALIEN_SPIDER] Model loaded:", modelPath);
-          this._setupModelFromFbx(fbx);
+          
+          // Get the scene (model root)
+          this.model = fbx;
+          
+          // Calculate original model size (before scaling)
+          const box = new THREE.Box3().setFromObject(this.model);
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+          this._originalModelSize = maxDim; // Store original size
+          
+          // Scale model to target size
+          const scale = this.targetSize / this._originalModelSize;
+          this.model.scale.set(scale, scale, scale);
+          console.log(`✅ [ALIEN_SPIDER] Model scaled: ${scale.toFixed(4)}x (target: ${this.targetSize} units, original: ${this._originalModelSize.toFixed(2)} units)`);
+          
+          // CRITICAL: Process materials for FBX models (often have dark/invisible materials)
+          // NOTE: TGA textures are now supported via TGALoader and LoadingManager
+          let meshCount = 0;
+          let materialCount = 0;
+          this.model.traverse((child) => {
+            if (child.isMesh) {
+              meshCount++;
+              child.castShadow = true;
+              child.receiveShadow = true;
+              child.visible = true;
+              child.frustumCulled = false;
+              
+              // CRITICAL: Process materials - FBX models often have very dark or missing materials
+              if (!child.material) {
+                // No material - create a visible default material
+                child.material = new THREE.MeshStandardMaterial({
+                  color: 0x888888, // Medium gray for visibility
+                  metalness: 0.35,
+                  roughness: 0.45,
+                  side: THREE.DoubleSide
+                });
+                child.material.needsUpdate = true;
+                materialCount++;
+                console.log(`🕷️ [ALIEN_SPIDER] Created default material for mesh: ${child.name}`);
+              } else {
+                // Process existing materials - brighten dark colors
+                const originalMat = child.material;
+                const isArray = Array.isArray(originalMat);
+                const materials = isArray ? originalMat : [originalMat];
+                
+                const processedMaterials = materials.map((mat) => {
+                  // Extract color safely
+                  let originalColor = null;
+                  if (mat.color && mat.color.isColor) {
+                    originalColor = mat.color.clone();
+                  } else if (mat.color) {
+                    originalColor = new THREE.Color(mat.color);
+                  } else {
+                    originalColor = new THREE.Color(0x888888); // Default visible gray
+                  }
+                  
+                  // Store original color for brightness slider
+                  const storedOriginalColor = originalColor.clone();
+                  
+                  // Brighten dark colors (CRITICAL for FBX)
+                  const brightness = originalColor.r + originalColor.g + originalColor.b;
+                  let finalColor = originalColor.clone();
+                  if (brightness < 0.3) {
+                    // Very dark - brighten significantly (3x)
+                    finalColor.r = Math.min(1.0, originalColor.r * 3.0);
+                    finalColor.g = Math.min(1.0, originalColor.g * 3.0);
+                    finalColor.b = Math.min(1.0, originalColor.b * 3.0);
+                  } else if (brightness < 0.6) {
+                    // Medium dark - brighten moderately (2x)
+                    finalColor.r = Math.min(1.0, originalColor.r * 2.0);
+                    finalColor.g = Math.min(1.0, originalColor.g * 2.0);
+                    finalColor.b = Math.min(1.0, originalColor.b * 2.0);
+                  }
+                  
+                  // Apply initial brightness multiplier
+                  finalColor.r = Math.min(1.0, finalColor.r * this.brightness);
+                  finalColor.g = Math.min(1.0, finalColor.g * this.brightness);
+                  finalColor.b = Math.min(1.0, finalColor.b * this.brightness);
+                  
+                  // Create new MeshStandardMaterial (always use standard for consistency)
+                  const newMaterial = new THREE.MeshStandardMaterial({
+                    color: finalColor,
+                    map: mat.map || null,
+                    normalMap: mat.normalMap || null,
+                    emissive: brightness < 0.3 ? finalColor.clone().multiplyScalar(0.1) : new THREE.Color(0x000000),
+                    emissiveIntensity: brightness < 0.3 ? 0.2 : 0,
+                    metalness: 0.35,
+                    roughness: 0.45,
+                    side: THREE.DoubleSide, // CRITICAL: Double-sided for visibility
+                    opacity: mat.opacity !== undefined && mat.opacity > 0.1 ? mat.opacity : 1.0,
+                    transparent: mat.transparent !== undefined ? mat.transparent : false
+                  });
+                  
+                  // Store original color for brightness slider
+                  newMaterial._originalColor = storedOriginalColor;
+                  
+                  newMaterial.needsUpdate = true;
+                  
+                  // Ensure material is visible
+                  if (newMaterial.opacity < 0.1) {
+                    newMaterial.opacity = 1.0;
+                    newMaterial.transparent = false;
+                  }
+                  
+                  return newMaterial;
+                });
+                
+                child.material = isArray ? processedMaterials : processedMaterials[0];
+                materialCount++;
+                // Log material processing (brightness is applied in the material processing above)
+                console.log(`🕷️ [ALIEN_SPIDER] Processed material for mesh: ${child.name}`);
+              }
+            }
+          });
+          
+          console.log(`✅ [ALIEN_SPIDER] Processed ${meshCount} meshes with ${materialCount} materials`);
+          
+          // Apply textures after material processing
+          this.applyTextures();
+          
+          // Set initial position
+          this.model.position.copy(this.spawnPosition);
+          
+          // Align to ground level
+          const boxAfterScale = new THREE.Box3().setFromObject(this.model);
+          const minY = boxAfterScale.min.y;
+          const yOffset = this.groundY - minY;
+          this.model.position.y += yOffset;
+          
+          this.model.visible = true;
+          
+          // Add to level group
+          if (this.levelGroup) {
+            this.levelGroup.add(this.model);
+            console.log("✅ [ALIEN_SPIDER] Model added to level group");
+          } else {
+            this.scene.add(this.model);
+            console.log("✅ [ALIEN_SPIDER] Model added to scene");
+          }
+          
+          // Setup animation mixer (will load animations separately)
+          this.mixer = new THREE.AnimationMixer(this.model);
+          console.log("✅ [ALIEN_SPIDER] Animation mixer created");
+          
+          // Load all animations
           this.loadAllAnimations().then(() => {
             // Apply initial texture variation
             this.applyTextureVariation(this.textureVariation);
@@ -686,20 +781,49 @@ export class AlienSpiderBoss {
    * Load all animation files (FBX format - separate files)
    */
   async loadAllAnimations() {
+    // CRITICAL: Build animation paths from assetBasePath + animationFileNames
+    // (animationPaths was never defined - was causing undefined iteration)
+    const basePath = this.assetBasePath || "/textures/3d models/Alien Spider 1/AFC_03/";
+    const animationPaths = {};
+    for (const [key, filename] of Object.entries(this.animationFileNames)) {
+      animationPaths[key] = basePath + filename;
+    }
+    
     // Use LoadingManager with TGA handler for animation files too (in case they have textures)
     const loader = new FBXLoader(this.loadingManager);
-    const basePath = this.resolveAssetPath("textures/3d models/Alien Spider 1/AFC_03/");
     loader.setResourcePath(basePath);
+    
+    // DEBUG: Log base model hierarchy (bones/objects) for animation binding diagnosis
+    if (this.model) {
+      const baseNames = [];
+      const baseBones = [];
+      this.model.traverse((child) => {
+        baseNames.push(child.name || '(unnamed)');
+        if (child.type === 'Bone' || child.isBone) {
+          baseBones.push(child.name || '(unnamed)');
+        }
+      });
+      console.log("🕷️ [ALIEN_SPIDER] Base model object names (first 30):", baseNames.slice(0, 30));
+      if (baseBones.length > 0) {
+        console.log("🕷️ [ALIEN_SPIDER] Base model bones:", baseBones);
+      } else {
+        console.log("🕷️ [ALIEN_SPIDER] Base model has no Bone objects - check for SkinnedMesh/skeleton");
+      }
+    }
     
     const animationPromises = [];
     
-    // Resolve animation paths using resolveAssetPath
-    for (const [key, relativePath] of Object.entries(this.animationPathsRelative)) {
-      const path = this.resolveAssetPath(relativePath);
+    for (const [key, path] of Object.entries(animationPaths)) {
       const promise = loader.loadAsync(path).then((fbx) => {
         if (fbx.animations && fbx.animations.length > 0) {
           // Extract animation clip
           const animation = fbx.animations[0];
+          
+          // DEBUG: Log animation track targets (which objects the animation references)
+          if (animation.tracks && animation.tracks.length > 0 && key === 'idle_1') {
+            const trackTargets = animation.tracks.map((t) => t.name).slice(0, 10);
+            console.log(`🕷️ [ALIEN_SPIDER] Animation ${key} track targets (first 10):`, trackTargets);
+          }
           
           // Map animation name to our key
           const actionName = this.getAnimationNameFromKey(key);
@@ -789,28 +913,9 @@ export class AlienSpiderBoss {
     // Only skip if model doesn't exist
     if (!this.model) return;
     
-    // CRITICAL FIX (January 6, 2026): Debug mixer update to verify animations are running
-    if (!this.mixer) {
-      console.warn("⚠️ [ALIEN_SPIDER] update() called but mixer not initialized yet");
-      return; // Can't update animations without mixer
-    }
-    
-    // Update animation mixer (CRITICAL: This makes animations play!)
-    this.mixer.update(delta);
-    
-    // Debug: Log mixer update every 60 frames (~1 second) when animations not playing
-    if (!window.spiderMixerDebugShown) {
-      const currentActionRunning = this.currentAction && this.currentAction.isRunning();
-      if (!currentActionRunning && this.currentAction) {
-        console.warn("⚠️ [ALIEN_SPIDER] Mixer updating but current action not running:", {
-          actionName: this.currentAction.getClip().name,
-          isRunning: currentActionRunning,
-          delta: delta.toFixed(4),
-          behaviorMode: this.behaviorMode
-        });
-        window.spiderMixerDebugShown = true;
-        setTimeout(() => { window.spiderMixerDebugShown = false; }, 2000);
-      }
+    // Update animation mixer
+    if (this.mixer) {
+      this.mixer.update(delta);
     }
     
     // Update behavior based on current mode
@@ -847,6 +952,24 @@ export class AlienSpiderBoss {
         break;
       case 'damage_reaction':
         this.updateDamageReaction(delta);
+        break;
+      case 'charge_attack':
+        this.updateChargeAttack(delta);
+        break;
+      case 'combo_attack':
+        this.updateComboAttack(delta);
+        break;
+      case 'aggressive_patrol':
+        this.updateAggressivePatrol(delta);
+        break;
+      case 'retreat_attack':
+        this.updateRetreatAttack(delta);
+        break;
+      case 'stagger_recovery':
+        this.updateStaggerRecovery(delta);
+        break;
+      case 'follow_attack':
+        this.updateFollowAttack(delta);
         break;
       default:
         console.warn(`⚠️ [ALIEN_SPIDER] Unknown behavior mode: ${this.behaviorMode}`);
@@ -902,6 +1025,35 @@ export class AlienSpiderBoss {
       case 'damage_reaction':
         this.playAnimation('Damage_taken', false);
         console.log("🕷️ [ALIEN_SPIDER] Started damage_reaction pattern");
+        break;
+      case 'charge_attack':
+        this.playAnimation('Run', true);
+        this.chargeAttackStartPos = this.model ? this.model.position.clone() : this.spawnPosition.clone();
+        console.log("🕷️ [ALIEN_SPIDER] Started charge_attack pattern");
+        break;
+      case 'combo_attack':
+        this.playAnimation('Attack_1', false);
+        console.log("🕷️ [ALIEN_SPIDER] Started combo_attack pattern");
+        break;
+      case 'aggressive_patrol':
+        this.playAnimation('Walk', true);
+        this.patrolAngle = 0;
+        console.log("🕷️ [ALIEN_SPIDER] Started aggressive_patrol pattern");
+        break;
+      case 'retreat_attack':
+        this.playAnimation('Attack_1', false);
+        this.retreatAttackStartPos = this.model ? this.model.position.clone() : this.spawnPosition.clone();
+        console.log("🕷️ [ALIEN_SPIDER] Started retreat_attack pattern");
+        break;
+      case 'stagger_recovery':
+        this.playAnimation('Damage_taken', false);
+        console.log("🕷️ [ALIEN_SPIDER] Started stagger_recovery pattern");
+        break;
+      case 'follow_attack':
+        this.playAnimation('Walk', true);
+        this.followAttackState = 'following';
+        this.followAttackTimer = 0;
+        console.log("🕷️ [ALIEN_SPIDER] Started follow_attack pattern");
         break;
     }
   }
@@ -1015,6 +1167,223 @@ export class AlienSpiderBoss {
   }
   
   /**
+   * Charge attack - Run toward spawn center, then Attack_1
+   * Phase 1: Run toward center (2s)
+   * Phase 2: Attack_1 (2s)
+   */
+  updateChargeAttack(delta) {
+    const durations = this.behaviorDurations.charge_attack || {};
+    const runPhaseDuration = durations.runPhaseDuration || 2.0;
+    const attackPhaseDuration = durations.attackPhaseDuration || 2.0;
+    const speed = durations.movementSpeed || 5.0;
+    
+    if (this.behaviorTimer < runPhaseDuration) {
+      // Phase 1: Run toward spawn center
+      if (!this.animationActions['Run'] || this.currentAction !== this.animationActions['Run']) {
+        this.playAnimation('Run', true);
+      }
+      const progress = this.behaviorTimer / runPhaseDuration;
+      const startX = this.chargeAttackStartPos ? this.chargeAttackStartPos.x : this.spawnPosition.x;
+      const startZ = this.chargeAttackStartPos ? this.chargeAttackStartPos.z : this.spawnPosition.z;
+      const x = startX + (this.spawnPosition.x - startX) * progress;
+      const z = startZ + (this.spawnPosition.z - startZ) * progress;
+      this.model.position.set(x, this.groundY, z);
+      const angle = Math.atan2(this.spawnPosition.z - startZ, this.spawnPosition.x - startX);
+      this.model.rotation.y = angle - Math.PI / 2;
+    } else if (this.behaviorTimer < runPhaseDuration + attackPhaseDuration) {
+      // Phase 2: Attack
+      if (!this.animationActions['Attack_1'] || this.currentAction !== this.animationActions['Attack_1']) {
+        this.playAnimation('Attack_1', false);
+      }
+    } else {
+      this.setBehaviorMode('idle_1');
+    }
+  }
+  
+  /**
+   * Combo attack - Attack_1 then Attack_2
+   */
+  updateComboAttack(delta) {
+    const durations = this.behaviorDurations.combo_attack || {};
+    const attack1Duration = durations.attack1Duration || 2.0;
+    const attack2Duration = durations.attack2Duration || 2.5;
+    
+    if (this.behaviorTimer < attack1Duration) {
+      if (!this.animationActions['Attack_1'] || this.currentAction !== this.animationActions['Attack_1']) {
+        this.playAnimation('Attack_1', false);
+      }
+    } else if (this.behaviorTimer < attack1Duration + attack2Duration) {
+      if (!this.animationActions['Attack_2'] || this.currentAction !== this.animationActions['Attack_2']) {
+        this.playAnimation('Attack_2', false);
+      }
+    } else {
+      this.setBehaviorMode('idle_1');
+    }
+  }
+  
+  /**
+   * Aggressive patrol - Walk in circle, then Attack_1, repeat
+   */
+  updateAggressivePatrol(delta) {
+    const durations = this.behaviorDurations.aggressive_patrol || {};
+    const walkPhaseDuration = durations.walkPhaseDuration || 3.0;
+    const attackPhaseDuration = durations.attackPhaseDuration || 2.0;
+    const speed = durations.movementSpeed || 2.0;
+    const cycleDuration = walkPhaseDuration + attackPhaseDuration;
+    const cycleTime = this.behaviorTimer % cycleDuration;
+    
+    if (cycleTime < walkPhaseDuration) {
+      if (!this.animationActions['Walk'] || this.currentAction !== this.animationActions['Walk']) {
+        this.playAnimation('Walk', true);
+      }
+      this.patrolAngle += (speed / this.patrolRadius) * delta;
+      const x = this.spawnPosition.x + Math.cos(this.patrolAngle) * this.patrolRadius;
+      const z = this.spawnPosition.z + Math.sin(this.patrolAngle) * this.patrolRadius;
+      this.model.position.set(x, this.groundY, z);
+      const angle = Math.atan2(Math.sin(this.patrolAngle), Math.cos(this.patrolAngle));
+      this.model.rotation.y = angle + Math.PI / 2;
+    } else {
+      if (!this.animationActions['Attack_1'] || this.currentAction !== this.animationActions['Attack_1']) {
+        this.playAnimation('Attack_1', false);
+      }
+    }
+  }
+  
+  /**
+   * Retreat attack - Attack_1 then walk backward away from spawn
+   */
+  updateRetreatAttack(delta) {
+    const durations = this.behaviorDurations.retreat_attack || {};
+    const attackPhaseDuration = durations.attackPhaseDuration || 2.0;
+    const retreatPhaseDuration = durations.retreatPhaseDuration || 2.5;
+    const retreatDistance = 8.0;
+    
+    if (this.behaviorTimer < attackPhaseDuration) {
+      if (!this.animationActions['Attack_1'] || this.currentAction !== this.animationActions['Attack_1']) {
+        this.playAnimation('Attack_1', false);
+      }
+    } else if (this.behaviorTimer < attackPhaseDuration + retreatPhaseDuration) {
+      if (!this.animationActions['Walk'] || this.currentAction !== this.animationActions['Walk']) {
+        this.playAnimation('Walk', true);
+      }
+      const retreatProgress = (this.behaviorTimer - attackPhaseDuration) / retreatPhaseDuration;
+      const startPos = this.retreatAttackStartPos || this.spawnPosition.clone();
+      const dir = new THREE.Vector3(startPos.x - this.spawnPosition.x, 0, startPos.z - this.spawnPosition.z);
+      if (dir.lengthSq() < 0.01) {
+        dir.set(1, 0, 0);
+      }
+      dir.normalize();
+      const x = startPos.x + dir.x * retreatDistance * retreatProgress;
+      const z = startPos.z + dir.z * retreatDistance * retreatProgress;
+      this.model.position.set(x, this.groundY, z);
+      this.model.rotation.y = Math.atan2(-dir.x, -dir.z) + Math.PI / 2;
+    } else {
+      this.setBehaviorMode('idle_1');
+    }
+  }
+  
+  /**
+   * Stagger recovery - Damage_taken then Idle_2
+   */
+  updateStaggerRecovery(delta) {
+    const durations = this.behaviorDurations.stagger_recovery || {};
+    const damagePhaseDuration = durations.damagePhaseDuration || 1.5;
+    const idlePhaseDuration = durations.idlePhaseDuration || 2.0;
+    
+    if (this.behaviorTimer < damagePhaseDuration) {
+      if (!this.animationActions['Damage_taken'] || this.currentAction !== this.animationActions['Damage_taken']) {
+        this.playAnimation('Damage_taken', false);
+      }
+    } else if (this.behaviorTimer < damagePhaseDuration + idlePhaseDuration) {
+      if (!this.animationActions['Idle_2'] || this.currentAction !== this.animationActions['Idle_2']) {
+        this.playAnimation('Idle_2', true);
+      }
+    } else {
+      this.setBehaviorMode('idle_1');
+    }
+  }
+  
+  /**
+   * Follow & jump attack - Track player, jump attack when in range, idle recovery
+   * Uses getPlayerPosition callback for player tracking.
+   */
+  updateFollowAttack(delta) {
+    if (!this.getPlayerPosition) {
+      if (!this.animationActions['Idle_1'] || this.currentAction !== this.animationActions['Idle_1']) {
+        this.playAnimation('Idle_1', true);
+      }
+      return;
+    }
+    
+    const durations = this.behaviorDurations.follow_attack || {};
+    const followSpeed = durations.followSpeed || 3.0;
+    const attackRange = durations.attackRange || 4.0;
+    const attackDuration = durations.attackDuration || 2.5;
+    const idleAfterAttack = durations.idleAfterAttack || 3.0;
+    const reFollowAfterIdle = durations.reFollowAfterIdle !== false;
+    
+    const playerPos = this.getPlayerPosition();
+    const dx = playerPos.x - this.model.position.x;
+    const dz = playerPos.z - this.model.position.z;
+    const distToPlayer = Math.sqrt(dx * dx + dz * dz);
+    
+    this.followAttackState = this.followAttackState || 'following';
+    this.followAttackTimer = (this.followAttackTimer || 0) + delta;
+    
+    switch (this.followAttackState) {
+      case 'following':
+        if (distToPlayer <= attackRange) {
+          this.followAttackState = 'attacking';
+          this.lastPlayerPos = playerPos.clone();
+          this.attackStartPos = this.model.position.clone();
+          this.playAnimation('Attack_2', false);
+          this.followAttackTimer = 0;
+        } else {
+          this.moveToward(playerPos, followSpeed, delta);
+        }
+        break;
+        
+      case 'attacking':
+        if (this.followAttackTimer >= attackDuration) {
+          this.followAttackState = 'idle_recovery';
+          this.playAnimation('Idle_1', true);
+          this.followAttackTimer = 0;
+        }
+        break;
+        
+      case 'idle_recovery':
+        if (reFollowAfterIdle && this.followAttackTimer >= idleAfterAttack) {
+          this.followAttackState = 'following';
+          this.playAnimation('Walk', true);
+          this.followAttackTimer = 0;
+        }
+        break;
+        
+      default:
+        this.followAttackState = 'following';
+        this.playAnimation('Walk', true);
+        this.followAttackTimer = 0;
+    }
+  }
+  
+  /**
+   * Move spider toward target position (horizontal only, keeps ground Y)
+   */
+  moveToward(targetPos, speed, delta) {
+    if (!this.model) return;
+    const dx = targetPos.x - this.model.position.x;
+    const dz = targetPos.z - this.model.position.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist < 0.01) return;
+    const nx = dx / dist;
+    const nz = dz / dist;
+    this.model.position.x += nx * speed * delta;
+    this.model.position.z += nz * speed * delta;
+    this.model.position.y = this.groundY;
+    this.model.rotation.y = Math.atan2(-nx, nz) + Math.PI / 2;
+  }
+  
+  /**
    * Set health
    */
   setHealth(health) {
@@ -1036,4 +1405,3 @@ export class AlienSpiderBoss {
     this.model.scale.set(scale, scale, scale);
   }
 }
-

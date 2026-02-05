@@ -116,6 +116,11 @@ public/three.js/public/textures/3d models/
 public/three.js/public/sounds/
 public/three.js/public/audio/
 
+# 🎨 Public Textures - Persistent Storage (DO NOT COMMIT)
+# 3D models and backgrounds are stored in /data/ on Render with symlinks
+public/textures/3d models/
+public/textures/backgrounds/
+
 # 📋 Rules - Local Development Only (DO NOT COMMIT TO PRODUCTION)
 12.0/RULES/
 

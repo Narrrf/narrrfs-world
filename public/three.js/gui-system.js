@@ -2,22 +2,13 @@
  * ============================================================================
  * GUI SYSTEM - User Interface Management
  * ============================================================================
- *
- * Version: 2026-02-01-HEADER-REFRESH
- * Lines: ~4,180
- * Used by: main.js (guiSystem)
- *
- * ============================================================================
- * 🤖 AI & HUMAN NAVIGATION – QUICK FIND
- * ============================================================================
- *
- *   initialize              ~80   Setup all UI (menus, HUD, toasts)
- *   update(delta)           ~200  Per-frame (boss health, hit indicator)
- *   showToast               ~350  Toast notifications
- *   showInteractionPrompt   ~400  "Press [E] to Open"
- *   updateRiddleProgressUI  ~450  Riddle HUD (Level 1–4)
- *   showBossHealthBar       ~500  Phoenix/Alien Spider health
- *
+ * 
+ * ✅ STATUS: STABLE - PRODUCTION READY
+ * 📅 CREATED: December 2025
+ * 📅 LAST UPDATED: January 9, 2026
+ * 🎯 MILESTONE: Stable Production Version - Level 1 verified working
+ * ✅ Version: 2026-01-09-STABLE-PRODUCTION
+ * 
  * ============================================================================
  * 🎯 PURPOSE
  * ============================================================================
@@ -285,6 +276,10 @@ export class GUISystem {
     // Phoenix Boss behavior display (dev testing)
     this.phoenixBehaviorDisplay = null;
     
+    // Alien Spider Boss behavior display (dev testing) - February 3, 2026 combined HUD
+    this.alienSpiderBehaviorDisplay = null;
+    this.level6BossBehaviorHud = null;
+    
     // Toast system
     this.activeRiddleToasts = new Map();
     
@@ -365,6 +360,18 @@ export class GUISystem {
     } else {
       // Hide Level 2 HUD when not in Level 2
       this.hideLevel2InspectionHud();
+    }
+    
+    // Level 6 Boss Behavior HUDs: Show Phoenix + Alien Spider when in Level 6 (February 3, 2026)
+    // CRITICAL: Show whenever in Level 6 - no God Mode gate (HUD displays current boss state for all players)
+    // Boss keys (B, N) still require God Mode for cycling behaviors
+    const isLevel6 = currentLevel === (LEVEL_IDS?.LEVEL6 ?? 6);
+    if (isLevel6) {
+      if (this.showPhoenixBehaviorDisplay) this.showPhoenixBehaviorDisplay();
+      if (this.showAlienSpiderBehaviorDisplay) this.showAlienSpiderBehaviorDisplay();
+    } else {
+      if (this.hidePhoenixBehaviorDisplay) this.hidePhoenixBehaviorDisplay();
+      if (this.hideAlienSpiderBehaviorDisplay) this.hideAlienSpiderBehaviorDisplay();
     }
   }
   
@@ -744,7 +751,7 @@ export class GUISystem {
     const spiderName = document.createElement("span");
     spiderName.id = "alienSpiderBehaviorName";
     spiderName.style.cssText = "color: #5eead4; font-size: 16px; visibility: visible;";
-    spiderName.innerText = "Idle 1 (1/12)";
+    spiderName.innerText = "Idle 1 (1/13)";
     spiderRow.appendChild(spiderLabel);
     spiderRow.appendChild(spiderName);
     
@@ -833,7 +840,7 @@ export class GUISystem {
     if (!this.level6BossBehaviorHud) this.createLevel6BossBehaviorHud();
     const el = document.getElementById("alienSpiderBehaviorName");
     if (el) {
-      el.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/12)` : behaviorName;
+      el.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/13)` : behaviorName;
       this.alienSpiderBehaviorName = el; // Keep reference in sync
       const spiderRow = document.getElementById("level6SpiderRow");
       if (spiderRow) {
@@ -842,7 +849,7 @@ export class GUISystem {
         spiderRow.style.opacity = "1";
       }
     } else if (this.alienSpiderBehaviorName) {
-      this.alienSpiderBehaviorName.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/12)` : behaviorName;
+      this.alienSpiderBehaviorName.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/13)` : behaviorName;
     }
   }
   
@@ -1052,15 +1059,10 @@ export class GUISystem {
   /**
    * Show interaction prompt with custom message
    * @param {string} message - Message to display (default: "Press [E] to Open")
-   * PERFORMANCE: Only updates DOM when message or visibility changed - prevents frame drops when near chests/glyphs
    */
   showInteractionPrompt(message = "Press [E] to Open") {
     if (!this.interactionPrompt) this.createInteractionPrompt();
     if (this.interactionPrompt) {
-      // Skip DOM update if already showing the same message (prevents frame drops from per-frame calls)
-      if (this.interactionPrompt.innerText === message && this.interactionPrompt.style.display === 'block') {
-        return;
-      }
       this.interactionPrompt.innerText = message;
       this.interactionPrompt.style.display = 'block';
       this.interactionPrompt.style.opacity = '0';
@@ -1075,12 +1077,9 @@ export class GUISystem {
   
   /**
    * Hide interaction prompt
-   * PERFORMANCE: Skips when already hidden - prevents per-frame DOM updates and timeout spam
    */
   hideInteractionPrompt() {
     if (!this.interactionPrompt) return;
-    // Skip if already hidden (prevents frame drops from per-frame hide calls)
-    if (this.interactionPrompt.style.display === 'none') return;
     // Fade out animation
     if (this.interactionPrompt.style.opacity !== '0') {
       this.interactionPrompt.style.opacity = '0';
@@ -1105,18 +1104,13 @@ export class GUISystem {
    * @param {string|null} options.id - Unique ID for the toast (prevents duplicates)
    * @param {number} options.duration - Duration in milliseconds (default: 5500)
    * @returns {HTMLElement} The created toast element
-   * PERFORMANCE: Skips recreate when same id + message already showing (prevents frame drops across all levels)
    */
   showRiddleToast(message, options = {}) {
     const { id = null, duration = 5500 } = options;
     
-    // Skip if same toast already showing (prevents DOM churn when called per-frame or rapidly)
+    // Remove existing toast with same ID if present
     if (id && this.activeRiddleToasts.has(id)) {
       const existing = this.activeRiddleToasts.get(id);
-      if (existing && document.body.contains(existing) && existing.textContent === message) {
-        return existing; // Already showing same message - no DOM update
-      }
-      // Different message - remove existing before creating new
       if (existing && document.body.contains(existing)) {
         document.body.removeChild(existing);
       }

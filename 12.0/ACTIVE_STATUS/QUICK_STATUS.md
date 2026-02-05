@@ -1,9 +1,24 @@
 # 🧀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** February 3, 2026 🎯 **STABLE – PRODUCTION VERIFIED**  
+**Last Updated:** February 5, 2026 🎯 **STABLE – PRODUCTION VERIFIED**  
 **Status:** ✅ **Season 8 LIVE – 3D game stable on production (all levels, paths, mobile)**  
-**Version:** 2026-02-02  
-**Milestone:** ✅ **3D Game paths + mobile UX – Production verified**
+**Version:** 2026-02-05  
+**Milestone:** 🎯 **Level 3 wall collision + all 4 corner bosses auto-toaster – COMPLETE**
+
+---
+
+## 📋 **TODAY – FEBRUARY 5, 2026:**
+
+**Level 3 Wall Collision (✅ USER CONFIRMED):**
+- ✅ **User feedback:** "Super exactly now what we wanted from the collision of the walls"
+- ✅ Collision feels right; reduced padding (2 units) lets player get appropriately close
+- ✅ No walking through walls; solid blocking on all sides
+- 📋 **Lab note:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-05/LEVEL_3_WALL_COLLISION_COMPLETE_2026-02-05.md`
+
+**Level 3 Corner Boss Toaster (✅ ALL 4 AUTO):**
+- ✅ **Fix:** Iterate over `cheeseBossBasePositions` (sync) not `cheeseBosses` (async)
+- ✅ **Result:** All 4 corner bosses now auto-show mythical speaks toaster when player nears (25 units)
+- 📋 **Lab note:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-05/LEVEL_3_CORNER_BOSSES_2026-02-05.md`
 
 ---
 
@@ -33,7 +48,24 @@
 
 ---
 
-## 📋 **TODAY – FEBRUARY 3, 2026:**
+## 📋 **TODAY – FEBRUARY 4, 2026:**
+
+**Level 6 New Steps + Phoenix HUD (📋 IN PROGRESS):**
+- 🎯 **Focus:** Level 6 new riddle steps (plan created), boss HUD polish, behavior patterns
+- 📋 **Level 6 new steps plan:** `LEVEL_6_NEW_STEPS_PLAN_2026-02-04.md` – Options A/B/C (recommend Option B: Step 0 platform + Step 1 chest)
+- 📋 **Alien Spider follow-attack pattern:** Plan created – `ALIEN_SPIDER_FOLLOW_ATTACK_PATTERN_PLAN_2026-02-04.md` (follow player → jump attack when near → idle/sleep)
+- ✅ **Handover:** Level 6 Combined Boss HUD complete (Feb 3) – Phoenix + Spider both update
+- 📋 **Daily folder:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-04/`
+- 📋 **Daily status:** `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-04.md`
+
+---
+
+## 📋 **YESTERDAY – FEBRUARY 3, 2026:**
+
+**Alien Spider Material + Rig (✅ COMPLETE):**
+- ✅ **Material fixed** – Dynamic `assetBasePath`; textures load; spider no longer black
+- ✅ **Rig fixed** – Use `AFC_03@Idle_1.fbx` as base model (rig-compatible); all 7 animations play; legs/body animate
+- 📋 **Lab note:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-03/ALIEN_SPIDER_RIG_ANIMATION_STATUS_2026-02-03.md`
 
 **Level 6 Combined Boss HUD (✅ COMPLETE):**
 - ✅ **Phoenix:** F key cycles behaviors; HUD updates correctly (15 behaviors)
@@ -45,7 +77,7 @@
 
 ---
 
-## 📋 **YESTERDAY – FEBRUARY 2, 2026:**
+## 📋 **FEBRUARY 2, 2026:**
 
 **On Chain Bridges Integration:**
 - ✅ **NFT Bridges team:** Testnet + iframe code confirmed incoming
@@ -107,9 +139,9 @@
 | File | Location |
 |------|----------|
 | QUICK_STATUS | `12.0/ACTIVE_STATUS/QUICK_STATUS.md` |
-| DAILY_STATUS | `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-02.md` |
+| DAILY_STATUS | `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-05.md` |
 | COMMON REFERENCE | `12.0/ACTIVE_STATUS/COMMON_FILES_REFERENCE_2026-02.md` |
-| Daily Notes | `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-02/` |
+| Daily Notes | `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-05/` |
 
 ---
 
