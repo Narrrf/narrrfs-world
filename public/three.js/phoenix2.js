@@ -435,6 +435,7 @@ export class PhoenixBoss2 {
     this.camera = config.camera;
     this.levelGroup = config.levelGroup || null;
     this.player = config.player || null; // Player object for tracking (Pattern 15)
+    this.getPlayerPosition = config.getPlayerPosition || null; // Callback for player capsule center (Pattern 15, 16)
     this.resolveAssetPath = config.resolveAssetPath || ((path) => path); // Path resolver function
     
     // Model
@@ -530,6 +531,45 @@ export class PhoenixBoss2 {
         returnDuration: 3.0,         // Phase 7: Return to sky
         patrolDuration: 5.0,         // Phase 8: Patrol at double height
         observeDuration: 3.0         // Phase 9: Observe player before loop
+      },
+      fire_sphere_hunt: {
+        sleepDuration: 2.0,
+        wakeupDuration: 2.0,
+        takeoffDuration: 3.0,
+        aimDuration: 2.0,
+        cooldownAfterFirst: 1.5,
+        landingDuration: 3.0
+      },
+      fire_sphere_hunt_extended: {
+        // Cycle 1 - FAST (first double sequence sped up)
+        cycle1SleepDuration: 1.5,
+        cycle1WakeupDuration: 1.5,
+        cycle1TakeoffDuration: 2.5,
+        cycle1AimDuration: 1.0,
+        cycle1CooldownAfterFirst: 0.7,
+        cycle1LandingDuration: 2.5,
+        // Cycle 2 - base durations (NO SLEEP - aggressive fire bursts between cycles)
+        cycle2BreakDuration: 1.5,   // Phase 9: Ground fire burst (replaces sleep)
+        cycle2Break2Duration: 1.5,  // Phase 10: Ground fire burst (replaces wake)
+        takeoffDuration: 3.0,
+        landingDuration: 3.0,
+        // Cycle 2 - MORE AGGRESSIVE (shorter aim, shorter cooldown, fires 2 on first shot)
+        aimDurationCycle2: 1.0,
+        cooldownAfterFirstCycle2: 0.6,
+        // Post-cycle 2 break (phases 17-18) - NO SLEEP, aggressive fire bursts
+        postCycle2BreakDuration: 1.5,   // Phase 17: Ground fire burst
+        postCycle2Break2Duration: 1.5,  // Phase 18: Ground fire burst
+        // Extended phases (after 2 fire sphere cycles)
+        groundWakeDuration: 2.0,
+        groundAttackDuration: 3.0,
+        patrolTakeoffDuration: 3.0,
+        patrolCircleDuration: 4.5,
+        patrolCircleRadius: 18,
+        patrolTransitionDuration: 1.5,  // Smooth blend from takeoff end (center) to circle - prevents "beam" teleport
+        patrolAttackDuration: 2.0,
+        postDiveFireDuration: 1.5,      // Phase 24: Ground fire burst (replaces sleep)
+        finalGroundAttackDuration: 3.0,
+        finalFireBurstDuration: 2.0     // Phase 26: Final aggressive fire burst (replaces sleep before loop)
       }
     };
     
@@ -553,6 +593,7 @@ export class PhoenixBoss2 {
     this.lastAttackTime = 0;
     this.attackCooldown = 3.0; // Seconds between attacks
     this.fireBreathProjectiles = []; // Active fire breath projectiles
+    this.pendingFireRequest = null; // Pattern 16: request fire from main.js (exact F-key code path)
     this.isDiving = false; // Track if performing dive attack
     this.diveTarget = null; // Target position for dive attack
     
@@ -916,6 +957,12 @@ export class PhoenixBoss2 {
         break;
       case 'player_hunt_combo':
         this.updatePlayerHuntCombo(delta);
+        break;
+      case 'fire_sphere_hunt':
+        this.updateFireSphereHunt(delta);
+        break;
+      case 'fire_sphere_hunt_extended':
+        this.updateFireSphereHuntExtended(delta);
         break;
       default:
         this.updateFlyingCircle(delta); // Default to flying circle
@@ -1452,7 +1499,7 @@ export class PhoenixBoss2 {
       this.isFlying = true;
       // Smoothly rise from ground to flight height
       const timeInTakeoff = cycleTime - phase2End;
-      const takeoffProgress = Math.min(1.0, timeInTakeoff / takeoffDuration);
+      const takeoffProgress = Math.min(1.0, timeInTakeoff / takeoffDururation);
       this.model.position.y = this.groundY + (this.spawnPosition.y - this.groundY) * takeoffProgress;
       this.model.position.x = this.spawnPosition.x;
       this.model.position.z = this.spawnPosition.z;
@@ -1987,7 +2034,7 @@ export class PhoenixBoss2 {
     // Phase 3: Take off
     else if (currentTime < phase3End) {
       this.isFlying = true;
-      const takeoffProgress = (currentTime - phase2End) / takeoffDuration;
+      const takeoffProgress = (currentTime - phase2End) / takeoffDururation;
       
       // Move from ground back to spawn height
       const startY = this.groundY;
@@ -2274,7 +2321,7 @@ export class PhoenixBoss2 {
     // Phase 3: Swing up to patrol mode
     else if (currentTime < phase3End) {
       this.isFlying = true;
-      const takeoffProgress = (currentTime - phase2End) / takeoffDuration;
+      const takeoffProgress = (currentTime - phase2End) / takeoffDururation;
       
       // Rise from ground to normal patrol height
       const startY = this.groundY;
@@ -2453,6 +2500,367 @@ export class PhoenixBoss2 {
     }
   }
   
+  /**
+   * Fire Sphere Hunt (Pattern 16) - Sleep→Wake→Takeoff→(1 sphere→2 spheres)→Land→Sleep→Wake→Takeoff→(1→2 spheres)→Land→Sleep→Wake→loop
+   */
+  updateFireSphereHunt(delta) {
+    const d = this.behaviorDurations.fire_sphere_hunt || {};
+    const sleepD = d.sleepDuration ?? 2.0, wakeD = d.wakeupDuration ?? 2.0, takeoffD = d.takeoffDuration ?? 3.0;
+    const aimD = d.aimDuration ?? 2.0, cooldownD = d.cooldownAfterFirst ?? 1.5, landD = d.landingDuration ?? 3.0;
+    const t = this.behaviorTimer;
+    const p1 = sleepD, p2 = p1 + wakeD, p3 = p2 + takeoffD, p4 = p3 + aimD;
+    // Fire phases 0.05s (was 0.001) - ensures we hit them at 60fps; first/last shot were missing
+    const p5 = p4 + 0.05, p6 = p5 + cooldownD, p7 = p6 + 0.05, p8 = p7 + landD;
+    const p9 = p8 + sleepD, p10 = p9 + wakeD, p11 = p10 + takeoffD, p12 = p11 + aimD;
+    const p13 = p12 + 0.05, p14 = p13 + cooldownD, p15 = p14 + 0.05, p16 = p15 + landD;
+    const p17 = p16 + sleepD, p18 = p17 + wakeD, total = p18;
+    const prevT = t - delta;
+    const phase = (t) => t < p1 ? 1 : t < p2 ? 2 : t < p3 ? 3 : t < p4 ? 4 : t < p5 ? 5 : t < p6 ? 6 : t < p7 ? 7 : t < p8 ? 8 : t < p9 ? 9 : t < p10 ? 10 : t < p11 ? 11 : t < p12 ? 12 : t < p13 ? 13 : t < p14 ? 14 : t < p15 ? 15 : t < p16 ? 16 : t < p17 ? 17 : t < p18 ? 18 : 0;
+    const cur = phase(t), prev = phase(prevT);
+    const entering = cur !== prev;
+    // CRITICAL: Phases 5, 7, 13, 15 are only 0.001s - at 60fps (delta ~0.0167) we can SKIP over them.
+    // Fire when we CROSS the boundary (prev < N && cur >= N), not just when entering (cur === N).
+    const crossedInto5 = prev < 5 && cur >= 5;
+    const crossedInto7 = prev < 7 && cur >= 7;
+    const crossedInto13 = prev < 13 && cur >= 13;
+    const crossedInto15 = prev < 15 && cur >= 15;
+    const playerPos = this.getPlayerPosition ? this.getPlayerPosition() : (this.player?.position?.clone() || this.camera?.position?.clone() || this.spawnPosition.clone());
+    if (!playerPos) return;
+    if (cur === 1) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('GroundSleep', true);
+    } else if (cur === 2) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundWakeUp'] ? 'GroundWakeUp' : 'GroundAwake', false);
+    } else if (cur === 3) {
+      this.isFlying = true;
+      const prog = (t - p2) / takeoffDur;
+      const y = this.groundY + (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyForward2'] ? 'FlyForward2' : (this.animationActions['FlyForward1'] ? 'FlyForward1' : 'StartFly'), false);
+    } else if (cur === 4) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('FlyIdle1', true);
+    } else if (cur === 5) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (crossedInto5) this.pendingFireRequest = { count: 1 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForwardFireAttack1'] ? 'FlyForwardFireAttack1' : 'GroundFireballAttack'), false);
+    } else if (cur === 6) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      if (crossedInto5) this.pendingFireRequest = { count: 1 }; // Fired when we skipped phase 5
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('FlyIdle1', true);
+    } else if (cur === 7) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (crossedInto7) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForwardFireAttack1'] ? 'FlyForwardFireAttack1' : 'GroundFireballAttack'), false);
+    } else if (cur === 8) {
+      this.isFlying = true;
+      const prog = (t - p7) / landDur;
+      const y = this.spawnPosition.y - (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (crossedInto7) this.pendingFireRequest = { count: 2 }; // Fired when we skipped phase 7
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['EndFly'] ? 'EndFly' : 'FlyIdle1', false);
+    } else if (cur === 9) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('GroundSleep', true);
+    } else if (cur === 10) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundWakeUp'] ? 'GroundWakeUp' : 'GroundAwake', false);
+    } else if (cur === 11) {
+      this.isFlying = true;
+      const prog = (t - p10) / takeoffDur;
+      const y = this.groundY + (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyForward2'] ? 'FlyForward2' : (this.animationActions['FlyForward1'] ? 'FlyForward1' : 'StartFly'), false);
+    } else if (cur === 12) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('FlyIdle1', true);
+    } else if (cur === 13) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (crossedInto13) this.pendingFireRequest = { count: 1 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForwardFireAttack1'] ? 'FlyForwardFireAttack1' : 'GroundFireballAttack'), false);
+    } else if (cur === 14) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      if (crossedInto13) this.pendingFireRequest = { count: 1 }; // Fired when we skipped phase 13
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('FlyIdle1', true);
+    } else if (cur === 15) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (crossedInto15) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForwardFireAttack1'] ? 'FlyForwardFireAttack1' : 'GroundFireballAttack'), false);
+    } else if (cur === 16) {
+      this.isFlying = true;
+      const prog = (t - p15) / landDur;
+      const y = this.spawnPosition.y - (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (crossedInto15) this.pendingFireRequest = { count: 2 }; // Fired when we skipped phase 15
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['EndFly'] ? 'EndFly' : 'FlyIdle1', false);
+    } else if (cur === 17) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('GroundSleep', true);
+    } else if (cur === 18) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundWakeUp'] ? 'GroundWakeUp' : 'GroundAwake', false);
+    } else {
+      this.behaviorTimer = 0;
+      console.log(`🔄 [PHOENIX2] Fire sphere hunt cycle complete - restarting`);
+    }
+    // Note: behaviorTimer is incremented in update() - do NOT add delta here
+  }
+  
+  /**
+   * Fire Sphere Hunt Extended (Pattern 17) - Pattern 16 + ground fight + huge patrol + dive attack + ground attack + sleep
+   * Flow: (1) Sleep ONLY → (2-8) Cycle 1 → (9-10) Ground fire burst → (11-16) Cycle 2 → (17-18) Ground fire burst → (19-20) Ground wake+attack → (21-23) Patrol+dive → (24) Ground fire burst → (25) Ground attack → (26) Final fire burst (3) → loop
+   */
+  updateFireSphereHuntExtended(delta) {
+    const d = this.behaviorDurations.fire_sphere_hunt_extended || this.behaviorDurations.fire_sphere_hunt || {};
+    const s1 = d.cycle1SleepDuration ?? 1.5, w1 = d.cycle1WakeupDuration ?? 1.5, t1 = d.cycle1TakeoffDuration ?? 2.5;
+    const a1 = d.cycle1AimDuration ?? 1.0, c1 = d.cycle1CooldownAfterFirst ?? 0.7, l1 = d.cycle1LandingDuration ?? 2.5;
+    const break9D = d.cycle2BreakDuration ?? 1.5, break10D = d.cycle2Break2Duration ?? 1.5;
+    const takeoffD = d.takeoffDuration ?? 3.0, landD = d.landingDuration ?? 3.0;
+    const aim2D = d.aimDurationCycle2 ?? 1.0;
+    const cooldown2D = d.cooldownAfterFirstCycle2 ?? 0.6;
+    const break17D = d.postCycle2BreakDuration ?? 1.5, break18D = d.postCycle2Break2Duration ?? 1.5;
+    const groundWakeD = d.groundWakeDuration ?? 2.0, groundAttackD = d.groundAttackDuration ?? 3.0;
+    const patrolTakeoffD = d.patrolTakeoffDuration ?? 3.0, patrolCircleD = d.patrolCircleDuration ?? 6.0;
+    const patrolRadius = d.patrolCircleRadius ?? 25, patrolTransitionD = d.patrolTransitionDuration ?? 1.5;
+    const patrolAttackD = d.patrolAttackDuration ?? 2.0;
+    const postDiveFireD = d.postDiveFireDuration ?? 1.5, finalGroundAttackD = d.finalGroundAttackDuration ?? 3.0;
+    const finalFireBurstD = d.finalFireBurstDuration ?? 2.0;
+    
+    const t = this.behaviorTimer;
+    const p1 = s1, p2 = p1 + w1, p3 = p2 + t1, p4 = p3 + a1;
+    const p5 = p4 + 0.05, p6 = p5 + c1, p7 = p6 + 0.05, p8 = p7 + l1;
+    const p9 = p8 + break9D, p10 = p9 + break10D, p11 = p10 + takeoffD, p12 = p11 + aim2D;
+    const p13 = p12 + 0.05, p14 = p13 + cooldown2D, p15 = p14 + 0.05, p16 = p15 + landD;
+    const p17 = p16 + break17D, p18 = p17 + break18D;
+    const p19 = p18 + groundWakeD, p20 = p19 + groundAttackD, p21 = p20 + patrolTakeoffD;
+    const p22 = p21 + patrolCircleD, p23 = p22 + patrolAttackD, p24 = p23 + postDiveFireD;
+    const p25 = p24 + finalGroundAttackD, p26 = p25 + finalFireBurstD, total = p26;
+    
+    const prevT = t - delta;
+    const phase = (x) => x < p1 ? 1 : x < p2 ? 2 : x < p3 ? 3 : x < p4 ? 4 : x < p5 ? 5 : x < p6 ? 6 : x < p7 ? 7 : x < p8 ? 8 : x < p9 ? 9 : x < p10 ? 10 : x < p11 ? 11 : x < p12 ? 12 : x < p13 ? 13 : x < p14 ? 14 : x < p15 ? 15 : x < p16 ? 16 : x < p17 ? 17 : x < p18 ? 18 : x < p19 ? 19 : x < p20 ? 20 : x < p21 ? 21 : x < p22 ? 22 : x < p23 ? 23 : x < p24 ? 24 : x < p25 ? 25 : x < p26 ? 26 : 0;
+    const cur = phase(t), prev = phase(prevT);
+    const entering = cur !== prev;
+    const crossedInto5 = prev < 5 && cur >= 5, crossedInto7 = prev < 7 && cur >= 7;
+    const crossedInto13 = prev < 13 && cur >= 13, crossedInto15 = prev < 15 && cur >= 15;
+    
+    const playerPos = this.getPlayerPosition ? this.getPlayerPosition() : (this.player?.position?.clone() || this.camera?.position?.clone() || this.spawnPosition.clone());
+    if (!playerPos) return;
+    
+    if (cur >= 1 && cur <= 18) {
+      const isCycle2Aggressive = cur >= 9;
+      this._runPattern16Phases(t, prevT, cur, prev, entering, crossedInto5, crossedInto7, crossedInto13, crossedInto15, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, s1, w1, t1, a1, c1, l1, takeoffD, aim2D, cooldown2D, landD, playerPos, isCycle2Aggressive);
+    } else if (cur === 19) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering) this.pendingFireRequest = { count: 1 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundWakeUp'] ? 'GroundWakeUp' : 'GroundAwake', false);
+    } else if (cur === 20) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundFireAttack1'] ? 'GroundFireAttack1' : (this.animationActions['GroundMeleeAttack1'] ? 'GroundMeleeAttack1' : 'GroundIdle1'), false);
+    } else if (cur === 21) {
+      this.isFlying = true;
+      const prog = (t - p20) / patrolTakeoffD;
+      const y = this.groundY + (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyForward2'] ? 'FlyForward2' : (this.animationActions['FlyForward1'] ? 'FlyForward1' : 'StartFly'), false);
+    } else if (cur === 22) {
+      this.isFlying = true;
+      const patrolTime = t - p21;
+      const angle = patrolTime * 0.6;
+      const circleX = this.spawnPosition.x + Math.cos(angle) * patrolRadius;
+      const circleZ = this.spawnPosition.z + Math.sin(angle) * patrolRadius;
+      const circleY = this.spawnPosition.y + Math.sin(patrolTime * 2) * 2;
+      const startX = this.spawnPosition.x, startZ = this.spawnPosition.z, startY = this.spawnPosition.y;
+      const rawBlend = Math.min(1, patrolTime / patrolTransitionD);
+      const blend = rawBlend * rawBlend * (3 - 2 * rawBlend);
+      const x = startX + (circleX - startX) * blend;
+      const z = startZ + (circleZ - startZ) * blend;
+      const y = startY + (circleY - startY) * blend;
+      this.model.position.set(x, y, z);
+      this.model.rotation.y = angle + Math.PI / 2;
+      if (entering) this._patrolFireFired = false;
+      if (!this._patrolFireFired && patrolTime >= 1.5) {
+        this.pendingFireRequest = { count: 1 };
+        this._patrolFireFired = true;
+      }
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForward1'] ? 'FlyForward1' : 'FlyIdle1'), true);
+    } else if (cur === 23) {
+      this.isFlying = true;
+      const diveProg = (t - p22) / patrolAttackD;
+      if (entering) {
+        this._extendedDiveTarget = playerPos.clone();
+        this._extendedDiveTarget.y = this.groundY;
+        this._extendedDiveStart = this.model.position.clone();
+      }
+      const start = this._extendedDiveStart || this.model.position.clone();
+      const end = this._extendedDiveTarget || playerPos.clone();
+      end.y = this.groundY + 1;
+      const y = start.y - (start.y - end.y) * diveProg;
+      const x = start.x + (end.x - start.x) * diveProg;
+      const z = start.z + (end.z - start.z) * diveProg;
+      this.model.position.set(x, y, z);
+      this.model.rotation.y = Math.atan2(end.x - x, end.z - z);
+      if (entering) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyForward2Down'] ? 'FlyForward2Down' : 'FlyForward1', true);
+    } else if (cur === 24) {
+      this.isFlying = false;
+      this._extendedDiveTarget = null;
+      this._extendedDiveStart = null;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('GroundSleep', true);
+    } else if (cur === 25) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundFireAttack1'] ? 'GroundFireAttack1' : (this.animationActions['GroundMeleeAttack1'] ? 'GroundMeleeAttack1' : 'GroundIdle1'), false);
+    } else if (cur === 26) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering) this.pendingFireRequest = { count: 3 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundFireAttack1'] ? 'GroundFireAttack1' : (this.animationActions['GroundMeleeAttack1'] ? 'GroundMeleeAttack1' : 'GroundIdle1'), false);
+    } else {
+      this.behaviorTimer = 0;
+      this._extendedDiveTarget = null;
+      this._extendedDiveStart = null;
+      console.log(`🔄 [PHOENIX2] Pattern 17 (fire_sphere_hunt_extended) complete - restarting`);
+    }
+  }
+  
+  _runPattern16Phases(t, prevT, cur, prev, entering, crossedInto5, crossedInto7, crossedInto13, crossedInto15, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, s1, w1, t1, a1, c1, l1, takeoffD, aim2D, cooldown2D, landD, playerPos, isCycle2Aggressive = false) {
+    const useCycle1 = cur <= 8;
+    const takeoffDur = useCycle1 ? t1 : takeoffD;
+    const landDur = useCycle1 ? l1 : landD;
+    if (cur === 1) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('GroundSleep', true);
+    } else if (cur === 2) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundWakeUp'] ? 'GroundWakeUp' : 'GroundAwake', false);
+    } else if (cur === 3) {
+      this.isFlying = true;
+      const prog = (t - p2) / takeoffDur;
+      const y = this.groundY + (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyForward2'] ? 'FlyForward2' : (this.animationActions['FlyForward1'] ? 'FlyForward1' : 'StartFly'), false);
+    } else if (cur === 4) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('FlyIdle1', true);
+    } else if (cur === 5) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (crossedInto5) this.pendingFireRequest = { count: 1 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForwardFireAttack1'] ? 'FlyForwardFireAttack1' : 'GroundFireballAttack'), false);
+    } else if (cur === 6) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      if (crossedInto5) this.pendingFireRequest = { count: 1 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('FlyIdle1', true);
+    } else if (cur === 7) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (crossedInto7) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForwardFireAttack1'] ? 'FlyForwardFireAttack1' : 'GroundFireballAttack'), false);
+    } else if (cur === 8) {
+      this.isFlying = true;
+      const prog = (t - p7) / landDur;
+      const y = this.spawnPosition.y - (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (crossedInto7) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['EndFly'] ? 'EndFly' : 'FlyIdle1', false);
+    } else if (cur === 9) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundFireAttack1'] ? 'GroundFireAttack1' : (this.animationActions['GroundMeleeAttack1'] ? 'GroundMeleeAttack1' : 'GroundIdle1'), false);
+    } else if (cur === 10) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundFireAttack1'] ? 'GroundFireAttack1' : (this.animationActions['GroundMeleeAttack1'] ? 'GroundMeleeAttack1' : 'GroundIdle1'), false);
+    } else if (cur === 11) {
+      this.isFlying = true;
+      const prog = (t - p10) / takeoffDur;
+      const y = this.groundY + (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyForward2'] ? 'FlyForward2' : (this.animationActions['FlyForward1'] ? 'FlyForward1' : 'StartFly'), false);
+    } else if (cur === 12) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('FlyIdle1', true);
+    } else if (cur === 13) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (crossedInto13) this.pendingFireRequest = { count: isCycle2Aggressive ? 2 : 1 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForwardFireAttack1'] ? 'FlyForwardFireAttack1' : 'GroundFireballAttack'), false);
+    } else if (cur === 14) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      if (crossedInto13) this.pendingFireRequest = { count: isCycle2Aggressive ? 2 : 1 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation('FlyIdle1', true);
+    } else if (cur === 15) {
+      this.isFlying = true;
+      this.model.position.set(this.spawnPosition.x, this.spawnPosition.y, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (crossedInto15) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['FlyIdleFireAttack1'] ? 'FlyIdleFireAttack1' : (this.animationActions['FlyForwardFireAttack1'] ? 'FlyForwardFireAttack1' : 'GroundFireballAttack'), false);
+    } else if (cur === 16) {
+      this.isFlying = true;
+      const prog = (t - p15) / landDur;
+      const y = this.spawnPosition.y - (this.spawnPosition.y - this.groundY) * prog;
+      this.model.position.set(this.spawnPosition.x, y, this.spawnPosition.z);
+      if (crossedInto15) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['EndFly'] ? 'EndFly' : 'FlyIdle1', false);
+    } else if (cur === 17) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundFireAttack1'] ? 'GroundFireAttack1' : (this.animationActions['GroundMeleeAttack1'] ? 'GroundMeleeAttack1' : 'GroundIdle1'), false);
+    } else if (cur === 18) {
+      this.isFlying = false;
+      this.model.position.set(this.spawnPosition.x, this.groundY, this.spawnPosition.z);
+      this.model.rotation.y = Math.atan2(playerPos.x - this.model.position.x, playerPos.z - this.model.position.z);
+      if (entering) this.pendingFireRequest = { count: 2 };
+      if (entering || !this.currentAction?.isRunning()) this.playAnimation(this.animationActions['GroundFireAttack1'] ? 'GroundFireAttack1' : (this.animationActions['GroundMeleeAttack1'] ? 'GroundMeleeAttack1' : 'GroundIdle1'), false);
+    }
+  }
+  
   // ═══════════════════════════════════════════════════════════════════════════
   // 🎯 STEP 5: SET BEHAVIOR MODE - Add initialization for your pattern here
   // ═══════════════════════════════════════════════════════════════════════════
@@ -2572,6 +2980,21 @@ export class PhoenixBoss2 {
         this.playAnimation('GroundSleep', true);
         console.log(`🎯 [PHOENIX2] Started player hunt combo mode: ${mode}`);
         break;
+      case 'fire_sphere_hunt':
+        this.isFlying = false;
+        this.isAlive = true; // 🔥 CRITICAL: Reset alive status
+        this.playAnimation('GroundSleep', true);
+        console.log(`🔥 [PHOENIX2] Started fire sphere hunt mode: ${mode}`);
+        break;
+      case 'fire_sphere_hunt_extended':
+        this.isFlying = false;
+        this.isAlive = true; // 🔥 CRITICAL: Reset alive status
+        this._extendedPhase = 0; // 0 = Pattern 16 phases, 1+ = extended phases
+        this._extendedSubPhase = 0;
+        this._patrolFireFired = false; // One-shot flag for patrol phase fire (prevents frame-drop spam)
+        this.playAnimation('GroundSleep', true);
+        console.log(`🔥 [PHOENIX2] Started fire sphere hunt extended (Pattern 17): ${mode}`);
+        break;
     }
   }
   
@@ -2680,11 +3103,12 @@ export class PhoenixBoss2 {
     for (let i = this.fireBreathProjectiles.length - 1; i >= 0; i--) {
       const projectile = this.fireBreathProjectiles[i];
       
-      // Move projectile forward
+      // Move projectile forward (position and velocity are in world space)
       projectile.position.add(projectile.velocity.clone().multiplyScalar(delta));
       
-      // Remove if too far away
-      const distance = projectile.position.distanceTo(this.spawnPosition);
+      // Remove if too far from spawn point (use stored spawn or dragon spawn)
+      const spawnPos = projectile.userData?.spawnPosition || this.spawnPosition;
+      const distance = projectile.position.distanceTo(spawnPos);
       if (distance > 50) {
         if (projectile.parent) {
           projectile.parent.remove(projectile);
@@ -2697,28 +3121,57 @@ export class PhoenixBoss2 {
   /**
    * Shoot fire breath at target position
    */
-  shootFireBreath(targetPosition) {
-    if (!this.model || !this.scene) return;
+  shootFireBreath(targetPosition, fireballCount = null) {
+    if (!this.model) return;
     
-    const fireballCount = this.currentPhase >= 3 ? 3 : 1; // Shoot 3 fireballs in phase 3+
+    // CRITICAL FIX (Feb 6, 2026): Always add fireballs to SCENE in world space.
+    // Using levelGroup caused coordinate-space mismatch: position was converted to local via worldToLocal,
+    // but velocity is world-space. updateFireBreathProjectiles adds world velocity to position - only
+    // correct when BOTH are world space. Pattern 16 fired animation but no visible projectiles; F key
+    // worked when Phoenix was in different state. Scene ensures consistent world-space behavior.
+    const parent = this.scene;
+    if (!parent) {
+      console.warn("⚠️ [PHOENIX2] shootFireBreath: No scene - cannot add fireballs");
+      return;
+    }
+    
+    if (fireballCount == null) {
+      fireballCount = this.currentPhase >= 3 ? 3 : 1; // Legacy: phase-based count
+    }
     
     for (let i = 0; i < fireballCount; i++) {
-      // Create fireball
-      const geometry = new THREE.SphereGeometry(0.3, 16, 16);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xff4400,
+      // Create fireball - 1.0 radius for strong visibility
+      const geometry = new THREE.SphereGeometry(1.0, 16, 16);
+      // Use MeshStandardMaterial with emissive for glowing fire effect - ensures visibility in all lighting
+      const material = new THREE.MeshStandardMaterial({
+        color: 0xff6600,
         emissive: 0xff4400,
-        emissiveIntensity: 1.0
+        emissiveIntensity: 1.0,
+        depthTest: true,
+        depthWrite: true
       });
       const fireball = new THREE.Mesh(geometry, material);
       
-      // Position at dragon's mouth
-      const mouthOffset = new THREE.Vector3(0, 0, 2); // Adjust based on model
-      fireball.position.copy(this.model.position).add(mouthOffset);
+      // World position at dragon mouth
+      const worldPos = new THREE.Vector3();
+      this.model.getWorldPosition(worldPos);
+      const mouthOffset = new THREE.Vector3(0, 0, 2);
+      mouthOffset.applyQuaternion(this.model.quaternion);
+      worldPos.add(mouthOffset);
       
-      // Calculate direction with spread for multiple fireballs
+      // Keep in world space (scene is root - no conversion needed)
+      fireball.position.copy(worldPos);
+      
+      // Calculate direction with spread for multiple fireballs (ensure targetPosition has x,y,z)
+      const target = targetPosition && typeof targetPosition.x === 'number'
+        ? targetPosition
+        : new THREE.Vector3(
+            targetPosition?.x ?? 0,
+            targetPosition?.y ?? 0,
+            targetPosition?.z ?? 0
+          );
       const direction = new THREE.Vector3()
-        .subVectors(targetPosition, fireball.position)
+        .subVectors(target, worldPos)
         .normalize();
       
       // Add spread for multiple fireballs
@@ -2728,27 +3181,38 @@ export class PhoenixBoss2 {
       }
       
       const speed = 20; // Units per second
-      fireball.velocity = direction.multiplyScalar(speed);
+      fireball.velocity = direction.clone().multiplyScalar(speed);
       
-      // Add to scene
-      if (this.levelGroup) {
-        this.levelGroup.add(fireball);
-      } else {
-        this.scene.add(fireball);
-      }
+      // Store spawn position for distance-based cleanup (world space)
+      fireball.userData = fireball.userData || {};
+      fireball.userData.spawnPosition = fireball.position.clone();
+      
+      // Visibility enforcement (per 17_WEAPON_RENDERING_RULE / 18_3D_MODEL_RENDERING_RULE)
+      fireball.frustumCulled = false;
+      fireball.visible = true;
+      fireball.renderOrder = 999;
+      fireball.layers.set(0); // Default layer - ensure camera sees it
+      fireball.material.depthTest = true;
+      fireball.material.depthWrite = true;
+      parent.add(fireball);
       
       this.fireBreathProjectiles.push(fireball);
     }
     
-    // Play fire attack animation
-    const fireAnims = [
-      'GroundFireAttack1', 'GroundFireAttack2', 'GroundFireballAttack',
-      'FlyIdleFireAttack1', 'FlyIdleFireAttack2', 'FlyForwardFireAttack1'
-    ];
-    const randomAnim = fireAnims[Math.floor(Math.random() * fireAnims.length)];
-    this.playAnimation(randomAnim, false);
+    // Play fire attack animation (prefer flying animations when airborne - caller may override)
+    const fireAnims = this.isFlying
+      ? ['FlyIdleFireAttack1', 'FlyIdleFireAttack2', 'FlyForwardFireAttack1', 'FlyForwardFireAttack2']
+      : ['GroundFireAttack1', 'GroundFireAttack2', 'GroundFireballAttack'];
+    const available = fireAnims.filter((n) => this.animationActions[n]);
+    const anim = available.length ? available[Math.floor(Math.random() * available.length)] : fireAnims[0];
+    if (anim && this.animationActions[anim]) this.playAnimation(anim, false);
     
-    console.log(`🔥 [PHOENIX2] Shot ${fireballCount} fire breath projectile(s)!`);
+    const firstProj = this.fireBreathProjectiles[this.fireBreathProjectiles.length - fireballCount];
+    console.log(`🔥 [PHOENIX2] Shot ${fireballCount} fire breath projectile(s)!`, {
+      parent: 'scene',
+      spawnPos: firstProj ? firstProj.position.toArray() : null,
+      totalProjectiles: this.fireBreathProjectiles.length
+    });
   }
   
   /**
@@ -2757,7 +3221,17 @@ export class PhoenixBoss2 {
   getFireBreathProjectiles() {
     return this.fireBreathProjectiles;
   }
-  
+
+  /**
+   * Clear all fire breath projectiles (e.g. on Level 6 restart)
+   */
+  clearFireBreathProjectiles() {
+    this.fireBreathProjectiles.forEach((projectile) => {
+      if (projectile.parent) projectile.parent.remove(projectile);
+    });
+    this.fireBreathProjectiles = [];
+  }
+
   /**
    * Defeat the boss
    */

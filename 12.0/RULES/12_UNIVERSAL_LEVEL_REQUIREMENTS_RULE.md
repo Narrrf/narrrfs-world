@@ -45,9 +45,10 @@
 - **Implementation:** Global event handler (document level)
 - **Status:** ✅ Works in ALL levels
 
-### **3b. Level 6 Boss Cycling (F Key, N Key) – February 3, 2026**
-- **F Key:** Cycles Phoenix Dragon behavior (15 patterns)
+### **3b. Level 6 Boss Cycling (B Key, N Key, F Key) – February 6, 2026**
+- **B Key:** Cycles Phoenix Dragon behavior (16 patterns)
 - **N Key:** Cycles Alien Spider behavior (12 patterns)
+- **F Key:** Phoenix fire sphere test – fires 2 spheres at player instantly (for debugging visibility)
 - **HUD:** Combined boss HUD shows current behavior; per-frame sync in animate loop
 - **Options Menu:** Pause → Options → Boss tab – behavior dropdowns for both bosses
 - **Status:** ✅ Works in Level 6 (God Mode)

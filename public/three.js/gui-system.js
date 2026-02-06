@@ -726,7 +726,7 @@ export class GUISystem {
     const phoenixName = document.createElement("span");
     phoenixName.id = "phoenixBehaviorName";
     phoenixName.style.cssText = "color: #ffaa44; font-size: 16px;";
-    phoenixName.innerText = "Flying Circle (1/15)";
+    phoenixName.innerText = "Flying Circle (1/17)";
     phoenixRow.appendChild(phoenixLabel);
     phoenixRow.appendChild(phoenixName);
     
@@ -755,8 +755,32 @@ export class GUISystem {
     spiderRow.appendChild(spiderLabel);
     spiderRow.appendChild(spiderName);
     
+    // Spider Minions row (hunt mode - Feb 6, 2026)
+    const minionRow = document.createElement("div");
+    minionRow.id = "level6SpiderMinionRow";
+    minionRow.setAttribute("data-hud", "spider-minions");
+    Object.assign(minionRow.style, {
+      borderTop: "1px solid rgba(251, 191, 36, 0.4)",
+      paddingTop: "8px",
+      marginTop: "4px",
+      display: "none", // Shown only when step1Active
+      alignItems: "center",
+      flexShrink: "0",
+      minHeight: "24px"
+    });
+    const minionLabel = document.createElement("span");
+    minionLabel.style.cssText = "color: #fbbf24; font-size: 12px; opacity: 0.9;";
+    minionLabel.innerText = "🎯 Minions: ";
+    const minionCount = document.createElement("span");
+    minionCount.id = "level6SpiderMinionCount";
+    minionCount.style.cssText = "color: #fbbf24; font-size: 16px; font-weight: bold;";
+    minionCount.innerText = "0 alive";
+    minionRow.appendChild(minionLabel);
+    minionRow.appendChild(minionCount);
+    
     wrapper.appendChild(phoenixRow);
     wrapper.appendChild(spiderRow);
+    wrapper.appendChild(minionRow);
     this.container.appendChild(wrapper);
     
     console.log("🎨 [GUI] Level 6 combined boss HUD created (Phoenix + Spider rows)");
@@ -827,7 +851,20 @@ export class GUISystem {
   updatePhoenixBehaviorDisplay(behaviorName, behaviorIndex = null) {
     if (!this.phoenixBehaviorName) this.createLevel6BossBehaviorHud();
     if (this.phoenixBehaviorName) {
-      this.phoenixBehaviorName.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/15)` : behaviorName;
+      this.phoenixBehaviorName.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/17)` : behaviorName;
+    }
+  }
+  
+  /**
+   * Update Level 6 spider minion HUD (hunt mode - Feb 6, 2026)
+   * Shows "Minions: X alive" when step1Active
+   */
+  updateLevel6SpiderMinionHud(aliveCount, show = true) {
+    const row = document.getElementById("level6SpiderMinionRow");
+    const countEl = document.getElementById("level6SpiderMinionCount");
+    if (row && countEl) {
+      countEl.innerText = `${aliveCount} alive`;
+      row.style.display = show ? "flex" : "none";
     }
   }
   
@@ -1912,6 +1949,8 @@ export class GUISystem {
       deathMessage = "The bear trap caught you! Level 2 proved too dangerous this time.";
     } else if (deathType === 'monsterLevel4') {
       deathMessage = "You were hit by a monster projectile! The hunt ended in defeat.";
+    } else if (deathType === 'phoenixFireLevel6') {
+      deathMessage = "The Phoenix dragon's fire sphere crushed you! The arena proved too dangerous this time.";
     }
     
     message.textContent = deathMessage;
@@ -1967,10 +2006,41 @@ export class GUISystem {
     };
     
     // Determine buttons based on death type
-    const level1State = this.config.getLevel1State();
-    const level2State = this.config.getLevel2State();
+    const level1State = this.config.getLevel1State?.() || {};
+    const level2State = this.config.getLevel2State?.() || {};
+    const level6State = this.config.getLevel6State?.() || {};
     
-    if (level1State?.bearTrapDeathActive) {
+    if (level6State?.playerDead || deathType === 'phoenixFireLevel6') {
+      // Level 6 Phoenix fire: Show "Restart Level 6", "Level Select" (God Mode), "Return to Level 1"
+      buttonContainer.appendChild(
+        createButton("🔄 Restart Level 6", () => {
+          this.hideGameOverScreen();
+          if (this.config.onTogglePause) this.config.onTogglePause(false);
+          setTimeout(() => {
+            if (this.config.onRequestPointerLockRestore) this.config.onRequestPointerLockRestore();
+          }, 500);
+          if (this.config.onRestartLevel6) this.config.onRestartLevel6();
+        }, true)
+      );
+      if (this.config.getGodMode?.()) {
+        buttonContainer.appendChild(
+          createButton("🎮 Level Select", () => {
+            this.hideGameOverScreen();
+            if (this.config.onShowLevelSelector) this.config.onShowLevelSelector();
+          })
+        );
+      }
+      buttonContainer.appendChild(
+        createButton("🏠 Return to Level 1", () => {
+          this.hideGameOverScreen();
+          if (this.config.onTogglePause) this.config.onTogglePause(false);
+          setTimeout(() => {
+            if (this.config.onRequestPointerLockRestore) this.config.onRequestPointerLockRestore();
+          }, 500);
+          if (this.config.onWarpToLevel1) this.config.onWarpToLevel1();
+        })
+      );
+    } else if (level1State?.bearTrapDeathActive) {
       // Level 1 bear trap: Show "Restart Level 1" button
       buttonContainer.appendChild(
         createButton("🔄 Restart Level 1", () => {

@@ -287,7 +287,7 @@ import { PlayerModel } from "./player-model.js";
 import { GUISystem } from "./gui-system.js?v=2026-02-03-combined-boss-hud";
 import { WeaponSystem } from "./weapon-system.js";
 import { PhoenixBoss2 } from "./phoenix2.js"; // New clean implementation
-import { AlienSpiderBoss } from "./alien-spider.js"; // Alien Spider boss
+import { AlienSpiderBoss, AlienSpiderMinion } from "./alien-spider.js"; // Alien Spider boss + minions
 // Cache-bust chest system to avoid stale module during rapid iteration.
 import { ChestSystem } from "./chest-system.js?v=2026-01-15-chest3-dual-model";
 import { AudioSystem } from "./audio-system.js";
@@ -1411,6 +1411,8 @@ const levelGroundConfigs = {
     windStrength: 0.3,              // Wind movement strength
     grassColor: 0x4a7c59,           // Base grass color
     groundColor: 0xaaaaaa,          // For 'color' mode
+    useGroundTexture: true,         // Use grass texture for underground (same as Level 3)
+    groundTexturePath: 'textures/grass/grass.jpg',
     // FIX: Grass was positioned too low. Level 1 uses blocks, and player spawns at block center level.
     // Block center is at: block.y * blockSize + blockSize / 2
     // For spawn block at y=0: block center = 0.5, block top = 1.0
@@ -1441,6 +1443,8 @@ const levelGroundConfigs = {
     windStrength: 0.3,
     grassColor: 0x4a7c59,
     groundColor: 0xaaaaaa,
+    useGroundTexture: true, // Use grass texture instead of grey solid color (test)
+    groundTexturePath: 'textures/grass/grass.jpg',
     position: new THREE.Vector3(0, 0, 800)
   },
   [LEVEL_IDS.LEVEL4]: {
@@ -1888,10 +1892,28 @@ function getGroundConfigForLevel(levelId) {
       ...(savedSettings.groundColor !== undefined && { groundColor: savedSettings.groundColor }),
       ...(savedSettings.undergroundType !== undefined && { undergroundType: savedSettings.undergroundType }),
       ...(savedSettings.undergroundColor !== undefined && { undergroundColor: savedSettings.undergroundColor }),
-      ...(savedSettings.undergroundTexturePath !== undefined && { undergroundTexturePath: savedSettings.undergroundTexturePath })
+      ...(savedSettings.undergroundTexturePath !== undefined && { undergroundTexturePath: savedSettings.undergroundTexturePath }),
+      ...(savedSettings.useGroundTexture !== undefined && { useGroundTexture: savedSettings.useGroundTexture }),
+      ...(savedSettings.groundTexturePath !== undefined && { groundTexturePath: savedSettings.groundTexturePath })
     };
     
     console.log(`🌱 [GROUND] Using merged config for ${levelId} (saved settings + defaults):`, mergedConfig);
+  }
+  
+  // FIX: Level 1 blank ground showing lava instead of grass like Level 3
+  // Saved settings can overwrite with lava from previous sessions (e.g. Underground Texture Path).
+  // For Level 1/3 with grass or blank mode, always use grass texture for underground.
+  const wantGrassGround = (mergedConfig.groundType === 'grass' || mergedConfig.groundType === 'blank');
+  if ((normalizedLevelId === 'LEVEL1' || normalizedLevelId === 'LEVEL3') && wantGrassGround) {
+    const grassPath = 'textures/grass/grass.jpg';
+    const hadLava = (mergedConfig.groundTexturePath && String(mergedConfig.groundTexturePath).toLowerCase().includes('lava')) ||
+                    (mergedConfig.undergroundTexturePath && String(mergedConfig.undergroundTexturePath).toLowerCase().includes('lava'));
+    if (hadLava) {
+      mergedConfig.groundTexturePath = grassPath;
+      mergedConfig.undergroundTexturePath = grassPath;
+      mergedConfig.useGroundTexture = true;
+      console.log(`🌱 [GROUND] Overrode lava→grass for ${levelId} (Level 1/3 standard texture)`);
+    }
   }
   
   // CRITICAL: Set gltfMapPath from LEVEL_MAP_CONFIG if available (resolved for production)
@@ -1945,6 +1967,8 @@ function saveGroundSettingsForLevel(levelId) {
     undergroundType: currentOptions.undergroundType,
     undergroundColor: currentOptions.undergroundColor,
     undergroundTexturePath: currentOptions.undergroundTexturePath,
+    useGroundTexture: currentOptions.useGroundTexture === true,
+    groundTexturePath: currentOptions.groundTexturePath || null,
     savedAt: new Date().toISOString(), // Add timestamp for debugging
     savedFrom: window.location.hostname // Add hostname to verify domain
   };
@@ -3532,8 +3556,297 @@ const level6State = {
   groundPlane: null, // Simple flat ground plane (fallback if GLTF map not loaded)
   mapModel: null, // GLTF map model (thefield.gltf)
   collisionMapModel: null, // Map model used for collision detection (with BVH trees)
-  spawnPosition: new THREE.Vector3(0, 0, 0) // Player spawn position (feet at ground level y=0)
+  spawnPosition: new THREE.Vector3(0, 0, 0), // Player spawn position (feet at ground level y=0)
+  // Spider wave minions (Feb 6, 2026)
+  spiderMinions: [],
+  spiderWaveTimer: 0,
+  spiderWaveCacheLoaded: false,
+  playerDead: false, // Set true when spider minion melee hits player (Phase 3)
+  explosionParticles: [] // Colored cube explosion when minions die (like Level 5 - Feb 6, 2026)
 };
+
+const LEVEL6_SPIDER_WAVE_CONFIG = {
+  enabled: true,
+  spidersPerWave: 3,
+  waveIntervalSeconds: 15, // Shorter interval for more action (was 25)
+  maxSpidersAlive: 8,
+  spawnRadius: 25,
+  groundY: 1.0,
+  minionHealth: 30,
+  targetSize: 1.0, // Dog-sized minions (was 1.5 - too huge, Feb 6 2026)
+  followSpeed: 3.0,
+  attackRange: 2.5
+};
+
+// Level 6 Riddle Step 0 (plate) - Feb 6, 2026: Stand on plate 5 seconds to activate spider minion fight
+const LEVEL6_STEP0_TRIGGER_TIME = 5;
+const LEVEL6_STEP0_TRAIT = "CHEESE_TEMPLE_LEVEL6_STEP0";
+const level6RiddleState = {
+  step0Complete: false,
+  step0StandingSoundPlayed: false,
+  triggerBlockTimer: 0,
+  triggerBlock: null,
+  triggerBlockVisual: null,
+  triggerBlockTargetY: 0,
+  step0TraitUnlocked: false,
+  step1Active: false // Spider minion fight only starts after Step 0 complete
+};
+
+function getPlayerPositionForSpider() {
+  if (playerCollider) {
+    return new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+  }
+  return camera ? camera.position.clone() : new THREE.Vector3(0, 1, 0);
+}
+
+async function spawnLevel6SpiderWave() {
+  if (!level6State.built || currentLevel !== LEVEL_IDS.LEVEL6) return;
+  // Only spawn when Step 1 (hunt mode) is active - plate must be triggered first
+  if (!level6RiddleState.step1Active) return;
+  const alive = level6State.spiderMinions.filter((m) => m.isAlive);
+  if (alive.length >= LEVEL6_SPIDER_WAVE_CONFIG.maxSpidersAlive) return;
+
+  const cfg = LEVEL6_SPIDER_WAVE_CONFIG;
+  const modelPath = resolveAssetPath("textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx");
+
+  // Use boss's size as reference - minions = 1/4 of boss (matches GUI Main Boss Menu, Feb 6, 2026)
+  // CRITICAL: When boss has loaded model, use its actual scale - bypasses bbox calculation issues
+  const bossSize = alienSpiderBoss?.targetSize ?? 4.0;
+  const bossOriginalSize = alienSpiderBoss?._originalModelSize;
+  const bossScale = alienSpiderBoss?.model?.scale?.x; // Uniform scale on boss model
+  const minionTargetSize = bossSize * 0.25; // Dog-sized: 1 unit when boss is 4
+  if (godMode) {
+    console.log(`🕷️ [LEVEL 6] Minion size config: bossSize=${bossSize}, bossOriginalSize=${bossOriginalSize?.toFixed(2) ?? 'n/a'}, bossScale=${bossScale?.toFixed(4) ?? 'n/a'}, minionTargetSize=${minionTargetSize}, bossScale/4=${bossScale != null ? (bossScale / 4).toFixed(4) : 'n/a'}`);
+  }
+
+  if (!level6State.spiderWaveCacheLoaded) {
+    try {
+      await AlienSpiderMinion.loadMinionCache(modelPath);
+      level6State.spiderWaveCacheLoaded = true;
+    } catch (e) {
+      console.warn("⚠️ [LEVEL 6] Spider minion cache load failed:", e);
+      return;
+    }
+  }
+
+  // Spawn minions AROUND the player (hunt mode) - player can be anywhere on Level 6 map
+  const playerPos = getPlayerPositionForSpider();
+  const spawnRadius = 15; // 15-22 units from player - safe distance, prevents instant death (Feb 6, 2026)
+  const toSpawn = Math.min(cfg.spidersPerWave, cfg.maxSpidersAlive - alive.length);
+  // Use actual Level 6 ground Y (spawn feet level) - GLTF map may have different ground
+  const groundY = Math.max(0, (level6State.spawnPosition?.y ?? 2) - 1.5);
+
+  const MIN_SPAWN_DIST = 12; // Never spawn closer than 12 units - prevents instant death (Feb 6, 2026)
+  for (let i = 0; i < toSpawn; i++) {
+    const angle = (Math.PI * 2 * i) / toSpawn + Math.random() * 0.5;
+    let r = spawnRadius + Math.random() * 7; // 15-22 units from player - safe spawn distance
+    if (r < MIN_SPAWN_DIST) r = MIN_SPAWN_DIST; // Enforce minimum distance
+    const pos = new THREE.Vector3(
+      playerPos.x + Math.cos(angle) * r,
+      groundY,
+      playerPos.z + Math.sin(angle) * r
+    );
+    const minion = AlienSpiderMinion.createFromCache({
+      levelGroup: level6State.group,
+      getPlayerPosition: getPlayerPositionForSpider,
+      spawnPosition: pos,
+      health: cfg.minionHealth,
+      maxHealth: cfg.minionHealth,
+      groundY: groundY,
+      targetSize: minionTargetSize,
+      bossOriginalModelSize: bossOriginalSize,
+      bossScale: bossScale != null ? bossScale / 4 : undefined, // Minion = 1/4 boss when boss loaded (Feb 6, 2026)
+      followSpeed: cfg.followSpeed,
+      attackRange: cfg.attackRange,
+      onMinionDied: (m) => {
+        // Explosion effect (colored cubes like Level 5 - Feb 6, 2026)
+        if (m.model && typeof createMonsterExplosionEffect === 'function') {
+          const pos = m.model.position.clone();
+          createMonsterExplosionEffect(pos, 0.8); // sizeMultiplier for minion
+        }
+        m.dispose();
+        level6State.spiderMinions = level6State.spiderMinions.filter((x) => x !== m);
+      }
+    });
+
+    if (minion) {
+      level6State.spiderMinions.push(minion);
+    }
+  }
+  console.log(`🕷️ [LEVEL 6] Spider minion wave spawned: ${toSpawn} minions near player (${playerPos.x.toFixed(1)}, ${playerPos.z.toFixed(1)}), total alive: ${level6State.spiderMinions.filter((m) => m.isAlive).length}`);
+}
+
+// onPlayerHitBySpiderMinion defined later (near triggerLevel6GameOver) - uses same flow as Phoenix fire death
+
+const LEVEL6_MINION_SPAWN_GRACE_MS = 2500; // No damage for 2.5s after spawn - gives player time to react (Feb 6, 2026)
+
+function checkSpiderMinionPlayerCollision() {
+  if (level6State.playerDead || !playerCollider) return;
+  const playerCenter = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+  const hitRadius = LEVEL6_SPIDER_WAVE_CONFIG.attackRange || 2.5;
+  const cooldownMs = 1500;
+  const now = performance.now();
+
+  for (const m of level6State.spiderMinions) {
+    if (!m.isAlive || !m.model) continue;
+    // Grace period: no damage for 2.5s after spawn - prevents instant death from spawn-on-player (Feb 6, 2026)
+    if (m.spawnTime && now - m.spawnTime < LEVEL6_MINION_SPAWN_GRACE_MS) continue;
+    const minionWorldPos = new THREE.Vector3();
+    m.model.getWorldPosition(minionWorldPos);
+    const dist = playerCenter.distanceTo(minionWorldPos);
+    if (dist >= hitRadius) continue;
+    if (m.lastHitTime && now - m.lastHitTime < cooldownMs) continue;
+    m.lastHitTime = now;
+    onPlayerHitBySpiderMinion();
+    return; // One hit per check
+  }
+}
+
+// Level 6 Step 0: Cheese stone plate - stand 5 seconds to activate spider minion fight (Feb 6, 2026)
+function createLevel6TriggerBlock() {
+  const blockSize = 1;
+  const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+  const texture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
+  const material = new THREE.MeshLambertMaterial({
+    map: texture,
+    emissive: new THREE.Color(0x000000),
+    emissiveIntensity: 0.0
+  });
+  const triggerBlock = new THREE.Mesh(geometry, material);
+  triggerBlock.scale.set(1.4, 0.35, 1.4);
+
+  const blockHeight = blockSize * 0.35;
+  // CRITICAL: Use actual Level 6 ground - spawn is 2 units above ground when map loaded (thefield.gltf)
+  // Plate at y=0 was underground when map ground was higher - player never stood on it (Feb 6, 2026)
+  const groundY = level6State.spawnPosition
+    ? Math.max(0, level6State.spawnPosition.y - 2)
+    : 0;
+  const blockCenterY = groundY + (blockHeight / 2) + 0.05;
+
+  const spawnX = level6State.spawnPosition ? level6State.spawnPosition.x : 0;
+  const spawnZ = level6State.spawnPosition ? level6State.spawnPosition.z : 0;
+  triggerBlock.position.set(spawnX, blockCenterY, spawnZ + 2);
+
+  triggerBlock.visible = true;
+  triggerBlock.userData.isTrigger = true;
+  level6State.group.add(triggerBlock);
+  level6RiddleState.triggerBlock = triggerBlock;
+
+  const visualMaterial = material.clone();
+  const visualBlock = new THREE.Mesh(geometry.clone(), visualMaterial);
+  visualBlock.scale.copy(triggerBlock.scale);
+  visualBlock.position.copy(triggerBlock.position);
+  visualBlock.userData.restY = visualBlock.position.y;
+  visualBlock.userData.pressedY = visualBlock.position.y - 0.2;
+  visualBlock.userData.lerpSpeed = 6;
+  level6State.group.add(visualBlock);
+  level6RiddleState.triggerBlockVisual = visualBlock;
+  level6RiddleState.triggerBlockTargetY = visualBlock.userData.restY;
+
+  triggerBlock.visible = false;
+  console.log("🧩 [LEVEL 6] Cheese stone trigger block created at:", {
+    x: triggerBlock.position.x.toFixed(2),
+    y: triggerBlock.position.y.toFixed(2),
+    z: triggerBlock.position.z.toFixed(2)
+  });
+}
+
+function checkLevel6TriggerBlockStanding() {
+  if (!level6RiddleState.triggerBlock) return false;
+  const block = level6RiddleState.triggerBlock;
+  const blockTopY = block.position.y + (block.scale.y * 0.5);
+  const playerFeet = playerCollider.start;
+  const horizontalDistance = Math.sqrt(
+    Math.pow(playerFeet.x - block.position.x, 2) + Math.pow(playerFeet.z - block.position.z, 2)
+  );
+  const verticalDistance = Math.abs(playerFeet.y - blockTopY);
+  return horizontalDistance < 1.2 && verticalDistance < 0.8;
+}
+
+function updateLevel6TriggerBlockVisual(delta) {
+  if (!level6RiddleState.triggerBlockVisual) return;
+  const targetY = level6RiddleState.triggerBlockTargetY ?? level6RiddleState.triggerBlockVisual.position.y;
+  const currentY = level6RiddleState.triggerBlockVisual.position.y;
+  const lerpSpeed = level6RiddleState.triggerBlockVisual.userData?.lerpSpeed ?? 6;
+  const newY = currentY + (targetY - currentY) * Math.min(1, delta * lerpSpeed);
+  level6RiddleState.triggerBlockVisual.position.y = newY;
+}
+
+function updateLevel6Step0(delta) {
+  const isStandingOnTrigger = checkLevel6TriggerBlockStanding();
+
+  if (isStandingOnTrigger) {
+    if (!level6RiddleState.step0StandingSoundPlayed) {
+      playCheesePlatformSound();
+      level6RiddleState.step0StandingSoundPlayed = true;
+    }
+    level6RiddleState.triggerBlockTimer += delta;
+    if (level6RiddleState.triggerBlockTimer >= LEVEL6_STEP0_TRIGGER_TIME && !level6RiddleState.step0Complete) {
+      level6RiddleState.step0Complete = true;
+      level6RiddleState.step1Active = true;
+      if (level6RiddleState.triggerBlock) level6RiddleState.triggerBlock.visible = false;
+      if (level6RiddleState.triggerBlockVisual) level6RiddleState.triggerBlockVisual.visible = false;
+      showRiddleToast("Spider minions incoming! Fight!", { id: "level6_step1_start", duration: 5000 });
+      if (!level6RiddleState.step0TraitUnlocked) {
+        unlockLevel6Trait(LEVEL6_STEP0_TRAIT, "Level 6 Step 0");
+      }
+      awardLevel6DspoincReward("CHEESE_TEMPLE_LEVEL6_STEP0", 100, "Level 6 Step 0");
+      spawnLevel6SpiderWave();
+    }
+  } else {
+    level6RiddleState.triggerBlockTimer = Math.max(0, level6RiddleState.triggerBlockTimer - delta * 0.5);
+    level6RiddleState.step0StandingSoundPlayed = false;
+  }
+
+  const targetY = isStandingOnTrigger && level6RiddleState.triggerBlockVisual
+    ? level6RiddleState.triggerBlockVisual.userData?.pressedY ?? level6RiddleState.triggerBlockVisual.position.y
+    : level6RiddleState.triggerBlockVisual?.userData?.restY ?? level6RiddleState.triggerBlockVisual?.position.y;
+  level6RiddleState.triggerBlockTargetY = targetY;
+  updateLevel6TriggerBlockVisual(delta);
+}
+
+function resetLevel6Progress() {
+  level6RiddleState.step0Complete = false;
+  level6RiddleState.step0StandingSoundPlayed = false;
+  level6RiddleState.triggerBlockTimer = 0;
+  level6RiddleState.step0TraitUnlocked = false;
+  level6RiddleState.step1Active = false;
+  if (level6RiddleState.triggerBlock) level6RiddleState.triggerBlock.visible = false;
+  if (level6RiddleState.triggerBlockVisual) {
+    level6RiddleState.triggerBlockVisual.visible = true;
+    const restY = level6RiddleState.triggerBlockVisual.userData?.restY ?? level6RiddleState.triggerBlockVisual.position.y;
+    level6RiddleState.triggerBlockVisual.position.y = restY;
+    level6RiddleState.triggerBlockTargetY = restY;
+  }
+  level6State.spiderMinions.forEach((m) => {
+    if (m.dispose) m.dispose();
+  });
+  level6State.spiderMinions = [];
+  level6State.spiderWaveTimer = 0;
+}
+
+function updateLevel6SpiderWaves(delta) {
+  if (!level6State.built || currentLevel !== LEVEL_IDS.LEVEL6) return;
+
+  level6State.spiderWaveTimer += delta;
+  if (level6State.spiderWaveTimer >= LEVEL6_SPIDER_WAVE_CONFIG.waveIntervalSeconds) {
+    level6State.spiderWaveTimer = 0;
+    spawnLevel6SpiderWave();
+  }
+
+  level6State.spiderMinions.forEach((m) => {
+    if (m.isAlive && typeof m.update === "function") m.update(delta);
+  });
+
+  if (!level6State.playerDead) checkSpiderMinionPlayerCollision();
+
+  // Update spider minion HUD (Feb 6, 2026)
+  const aliveCount = level6State.spiderMinions.filter((m) => m.isAlive).length;
+  if (guiSystem && typeof guiSystem.updateLevel6SpiderMinionHud === "function") {
+    guiSystem.updateLevel6SpiderMinionHud(aliveCount, true);
+  }
+}
+
 scene.add(level6State.group);
 level6State.group.visible = false;
 
@@ -11182,6 +11495,8 @@ function initializeGUISystem() {
           restartLevel4();
         } else if (currentLevel === LEVEL_IDS.LEVEL5) {
           restartLevel5();
+        } else if (currentLevel === LEVEL_IDS.LEVEL6) {
+          restartLevel6();
         }
       },
             onBackToPortal: () => {
@@ -11347,6 +11662,9 @@ onStartVRSession: async () => {
       },
       onRestartLevel5: () => {
         restartLevel5();
+      },
+      onRestartLevel6: () => {
+        restartLevel6();
       },
       onWarpToLevel1: () => {
         warpToLevel1();
@@ -11553,6 +11871,7 @@ function initializeWeaponSystem() {
       getLevel4RiddleState: () => level4RiddleState || {},
       getLevel5State: () => level5State || {},
       getLevel5RiddleState: () => level5RiddleState || {},
+      getLevel6State: () => level6State || null,
       isFirstPerson: () => isFirstPerson(),
       isGamePaused: () => isGamePaused || false,
       isPointerLocked: () => {
@@ -11609,6 +11928,9 @@ function initializeWeaponSystem() {
         if (typeof defeatLevel5Monster === "function") {
           defeatLevel5Monster(index);
         }
+      },
+      onSpiderMinionHit: (minion) => {
+        // Minion damage handled in weapon-system; callback for extra effects if needed
       },
       onCheeseHit: (index) => {
         if (typeof captureLevel4Cheese === "function") {
@@ -14904,6 +15226,91 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
     groundColorContainer.appendChild(groundColorInput);
     groundSystemContent.appendChild(groundColorContainer);
 
+    // Use Ground Texture Toggle (for blank/color modes)
+    const useGroundTextureContainer = document.createElement("div");
+    Object.assign(useGroundTextureContainer.style, {
+      width: "100%",
+      marginBottom: "12px",
+      display: "none", // Shown for blank/color modes
+      flexDirection: "column",
+      gap: "6px",
+      alignItems: "center"
+    });
+    useGroundTextureContainer.id = "useGroundTextureContainer";
+
+    const useGroundTextureLabel = document.createElement("div");
+    useGroundTextureLabel.textContent = "Use Ground Texture";
+    Object.assign(useGroundTextureLabel.style, {
+      fontSize: "16px",
+      color: "#cbd5f5",
+      fontWeight: "600",
+      marginBottom: "4px"
+    });
+    useGroundTextureContainer.appendChild(useGroundTextureLabel);
+
+    const useGroundTextureToggle = document.createElement("input");
+    useGroundTextureToggle.type = "checkbox";
+    useGroundTextureToggle.id = "groundUseGroundTextureToggle";
+    useGroundTextureToggle.checked = false;
+    Object.assign(useGroundTextureToggle.style, {
+      width: "24px",
+      height: "24px",
+      cursor: "pointer",
+      accentColor: "#ffe066"
+    });
+    useGroundTextureToggle.addEventListener("change", (e) => {
+      const useTexture = e.target.checked;
+      if (grassSystem) {
+        grassSystem.setOptions({ useGroundTexture: useTexture });
+        groundTexturePathContainer.style.display = useTexture ? "block" : "none";
+        console.log("🌱 [GROUND] Use ground texture:", useTexture);
+      }
+    });
+    useGroundTextureContainer.appendChild(useGroundTextureToggle);
+    groundSystemContent.appendChild(useGroundTextureContainer);
+
+    // Ground Texture Path Input (visible when useGroundTexture is checked)
+    const groundTexturePathContainer = document.createElement("div");
+    Object.assign(groundTexturePathContainer.style, {
+      width: "100%",
+      marginBottom: "12px",
+      display: "none",
+      flexDirection: "column",
+      gap: "6px",
+      alignItems: "center"
+    });
+    groundTexturePathContainer.id = "groundTexturePathContainer";
+
+    const groundTexturePathLabel = document.createElement("div");
+    groundTexturePathLabel.textContent = "Ground Texture Path";
+    Object.assign(groundTexturePathLabel.style, {
+      fontSize: "14px",
+      color: "#cbd5f5",
+      marginBottom: "4px"
+    });
+    groundTexturePathContainer.appendChild(groundTexturePathLabel);
+
+    const groundTexturePathInput = document.createElement("input");
+    groundTexturePathInput.type = "text";
+    groundTexturePathInput.id = "groundTexturePathInput";
+    groundTexturePathInput.placeholder = "textures/grass/grass.jpg";
+    Object.assign(groundTexturePathInput.style, {
+      width: "100%",
+      padding: "6px",
+      border: "1px solid #444",
+      borderRadius: "4px",
+      background: "#111",
+      color: "#fff"
+    });
+    groundTexturePathInput.addEventListener("change", () => {
+      if (grassSystem) {
+        grassSystem.setOptions({ groundTexturePath: groundTexturePathInput.value || null });
+        console.log("🌱 [GROUND] Ground texture path:", groundTexturePathInput.value);
+      }
+    });
+    groundTexturePathContainer.appendChild(groundTexturePathInput);
+    groundSystemContent.appendChild(groundTexturePathContainer);
+
     // 💾 SAVE GROUND SETTINGS FOR LEVEL Button
     const saveGroundContainer = document.createElement("div");
     Object.assign(saveGroundContainer.style, {
@@ -15442,6 +15849,8 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
           <option value="flying_dive_attack" ${currentSettings.behaviorMode === 'flying_dive_attack' ? 'selected' : ''}>🎯 Flying Dive Attack (Dive Bomb)</option>
           <option value="ground_ultimate_combo" ${currentSettings.behaviorMode === 'ground_ultimate_combo' ? 'selected' : ''}>💥 Ground Ultimate Combo (5-Hit Combo)</option>
           <option value="player_hunt_combo" ${currentSettings.behaviorMode === 'player_hunt_combo' ? 'selected' : ''}>🎯 Player Hunt Combo (AI Player-Tracking Attack)</option>
+          <option value="fire_sphere_hunt" ${currentSettings.behaviorMode === 'fire_sphere_hunt' ? 'selected' : ''}>🔥 Pattern 16 Fire Sphere Hunt</option>
+          <option value="fire_sphere_hunt_extended" ${currentSettings.behaviorMode === 'fire_sphere_hunt_extended' ? 'selected' : ''}>🔥 Pattern 17 Extended</option>
         `;
         Object.assign(behaviorSelect.style, {
           width: "100%",
@@ -15463,13 +15872,13 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
             if (guiSystem && typeof guiSystem.updatePhoenixBehaviorDisplay === 'function') {
               const behaviors = ['flying_circle', 'flying_hover', 'flying_patrol', 'ground_sleeping', 
                                 'ground_idle', 'ground_walking', 'ground_attacking', 'ground_rage', 'combat_preparation',
-                                'ground_death', 'ground_running', 'ground_awakening', 'flying_dive_attack', 'ground_ultimate_combo', 'player_hunt_combo'];
+                                'ground_death', 'ground_running', 'ground_awakening', 'flying_dive_attack', 'ground_ultimate_combo', 'player_hunt_combo', 'fire_sphere_hunt', 'fire_sphere_hunt_extended'];
               const behaviorNames = ['🔄 Flying Circle', '✈️ Flying Hover', '🛸 Flying Patrol', '😴 Ground Sleeping',
                                     '🧍 Ground Idle', '🚶 Ground Walking', '⚔️ Ground Attacking', '😡 Ground Rage', '🎯 Combat Preparation',
-                                    '💀 Ground Death', '🏃 Ground Running', '🌅 Ground Awakening', '🎯 Flying Dive Attack', '💥 Ground Ultimate Combo', '🎯 Player Hunt Combo'];
+                                    '💀 Ground Death', '🏃 Ground Running', '🌅 Ground Awakening', '🎯 Flying Dive Attack', '💥 Ground Ultimate Combo', '🎯 Player Hunt Combo', '🔥 Pattern 16 Fire Sphere Hunt', '🔥 Pattern 17 Extended'];
               const behaviorIndex = behaviors.indexOf(mode);
               const behaviorName = behaviorIndex >= 0 ? behaviorNames[behaviorIndex] : '🔄 Flying Circle';
-              // Updated to X/15 format (was 14, now 15 - December 18, 2025)
+              // Updated to X/17 format (February 5, 2026 - Pattern 16 Fire Sphere Hunt + Pattern 17 Extended)
               guiSystem.updatePhoenixBehaviorDisplay(behaviorName, behaviorIndex >= 0 ? behaviorIndex + 1 : 1);
             }
           }
@@ -16447,6 +16856,9 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
       const undergroundTypeContainer = document.getElementById("undergroundTypeContainer");
       const undergroundColorContainer = document.getElementById("undergroundColorContainer");
       const undergroundTextureContainer = document.getElementById("undergroundTextureContainer");
+      const useGroundTextureContainer = document.getElementById("useGroundTextureContainer");
+      const groundTexturePathContainer = document.getElementById("groundTexturePathContainer");
+      const useGroundTextureToggle = document.getElementById("groundUseGroundTextureToggle");
       
       if (groundType === "grass") {
         if (bladeCountContainer) bladeCountContainer.style.display = "flex";
@@ -16457,6 +16869,8 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
         const windDirectionContainer = document.getElementById("windDirectionContainer");
         if (windDirectionContainer) windDirectionContainer.style.display = "flex";
         if (groundColorContainer) groundColorContainer.style.display = "none";
+        if (useGroundTextureContainer) useGroundTextureContainer.style.display = "none";
+        if (groundTexturePathContainer) groundTexturePathContainer.style.display = "none";
         if (undergroundTypeContainer) undergroundTypeContainer.style.display = "block";
         // Underground type controls are shown; visibility of color/texture depends on selection
         if (undergroundTypeContainer) {
@@ -16480,6 +16894,10 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
         const windGustIntensityContainer = document.getElementById("windGustIntensityContainer");
         if (windGustIntensityContainer) windGustIntensityContainer.style.display = "none";
         if (groundColorContainer) groundColorContainer.style.display = "flex";
+        if (useGroundTextureContainer) useGroundTextureContainer.style.display = "flex";
+        if (groundTexturePathContainer) {
+          groundTexturePathContainer.style.display = (useGroundTextureToggle && useGroundTextureToggle.checked) ? "block" : "none";
+        }
         if (undergroundTypeContainer) undergroundTypeContainer.style.display = "none";
         if (undergroundColorContainer) undergroundColorContainer.style.display = "none";
         if (undergroundTextureContainer) undergroundTextureContainer.style.display = "none";
@@ -16492,6 +16910,10 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
         const windDirectionContainer = document.getElementById("windDirectionContainer"); // NEW: Get wind direction container
         if (windDirectionContainer) windDirectionContainer.style.display = "none"; // NEW: Hide wind direction for blank
         if (groundColorContainer) groundColorContainer.style.display = "none";
+        if (useGroundTextureContainer) useGroundTextureContainer.style.display = "flex";
+        if (groundTexturePathContainer) {
+          groundTexturePathContainer.style.display = (useGroundTextureToggle && useGroundTextureToggle.checked) ? "block" : "none";
+        }
         if (undergroundTypeContainer) undergroundTypeContainer.style.display = "none";
         if (undergroundColorContainer) undergroundColorContainer.style.display = "none";
         if (undergroundTextureContainer) undergroundTextureContainer.style.display = "none";
@@ -16522,6 +16944,8 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
     const undergroundTypeSelectEl = document.getElementById("groundUndergroundType");
     const undergroundColorInputEl = document.getElementById("groundUndergroundColor");
     const undergroundTextureInputEl = document.getElementById("groundUndergroundTexturePath");
+    const useGroundTextureToggleEl = document.getElementById("groundUseGroundTextureToggle");
+    const groundTexturePathInputEl = document.getElementById("groundTexturePathInput");
 
     const currentGroundSettings = getGroundConfigForLevel(currentLevel || LEVEL_IDS.LEVEL1);
     if (currentGroundSettings) {
@@ -16592,6 +17016,12 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
       }
       if (undergroundTextureInputEl && currentGroundSettings.undergroundTexturePath) {
         undergroundTextureInputEl.value = currentGroundSettings.undergroundTexturePath;
+      }
+      if (useGroundTextureToggleEl) {
+        useGroundTextureToggleEl.checked = currentGroundSettings.useGroundTexture === true;
+      }
+      if (groundTexturePathInputEl) {
+        groundTexturePathInputEl.value = currentGroundSettings.groundTexturePath || "";
       }
       updateGroundControlsVisibility(currentGroundSettings.groundType || "grass");
     }
@@ -19655,50 +20085,83 @@ function buildLevel3HuntArena() {
   const size = level3Config.size;
 
   // Solid static floor (160x160) - No flickering, solid ground for development
-  // CRITICAL: Use SOLID COLOR material (no texture) to ensure 100% static floor with zero flickering
-  // This completely eliminates any possibility of texture animation or shared texture issues
+  // 🟢 FIX (2026-02-05): Apply grass texture when useGroundTexture is enabled in level config
+  // This makes the central arena floor match the outer ground (green grass texture)
+  // Falls back to solid grey when texture is disabled
   try {
     const floorGeometry = new THREE.PlaneGeometry(size, size);
-    
-    // Create a completely static solid color material - NO TEXTURE to prevent any flickering
-    // Using a light gray stone color that matches the cheese-stone texture appearance
-    // 🚨 CRITICAL FIX (December 30, 2025): Use MeshBasicMaterial for completely unlit ground (zero flickering)
-    // MeshBasicMaterial is completely unaffected by lighting, preventing any color fluctuation
-    // This matches the fix applied to Level 5 & 6 underground flickering (grass-system.js createUndergroundMesh)
-    // Polygon offset prevents z-fighting with grass system's ground mesh (groundType: 'color')
-    const floorMaterial = new THREE.MeshBasicMaterial({
-      color: 0xaaaaaa, // Light gray stone color (solid, no texture)
-      side: THREE.DoubleSide,
-      polygonOffset: true,
-      polygonOffsetFactor: -2,
-      polygonOffsetUnits: -2
-    });
-    
-    // CRITICAL: Mark material as completely static - no texture, no animation possible
-    floorMaterial.userData = {
-      isStatic: true,
-      isFloorMaterial: true,
-      noAnimation: true,
-      noTexture: true,
-      isSolidColor: true
-    };
+    const groundConfig = getGroundConfigForLevel(LEVEL_IDS.LEVEL3);
+    const useTexture = groundConfig && groundConfig.useGroundTexture === true && groundConfig.groundTexturePath;
+    let floorMaterial;
+
+    if (useTexture) {
+      const loader = new THREE.TextureLoader();
+      const resolvedPath = resolveAssetPath(groundConfig.groundTexturePath);
+      const texture = loader.load(
+        resolvedPath,
+        (tex) => {
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(size / 10, size / 10);
+          tex.needsUpdate = true;
+        },
+        undefined,
+        (err) => console.error("❌ [LEVEL 3] Failed to load floor texture:", resolvedPath, err)
+      );
+      const groundColor = (groundConfig && groundConfig.groundColor) || 0x888888;
+      floorMaterial = new THREE.MeshStandardMaterial({
+        map: texture,
+        color: groundColor,
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2,
+        roughness: 0.8,
+        metalness: 0.1
+      });
+      floorMaterial.userData = {
+        isStatic: true,
+        isFloorMaterial: true,
+        noAnimation: true,
+        hasTexture: true,
+        isSolidColor: false
+      };
+    } else {
+      // Create a completely static solid color material - NO TEXTURE to prevent any flickering
+      // Using a light gray stone color that matches the cheese-stone texture appearance
+      // 🚨 CRITICAL FIX (December 30, 2025): Use MeshBasicMaterial for completely unlit ground (zero flickering)
+      floorMaterial = new THREE.MeshBasicMaterial({
+        color: 0xaaaaaa, // Light gray stone color (solid, no texture)
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2
+      });
+      floorMaterial.userData = {
+        isStatic: true,
+        isFloorMaterial: true,
+        noAnimation: true,
+        noTexture: true,
+        isSolidColor: true
+      };
+    }
     Object.freeze(floorMaterial.userData);
     
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     floor.position.set(origin.x, origin.y, origin.z); // No elevation offset - solid ground
-    // 🚨 CRITICAL FIX (December 30, 2025): MeshBasicMaterial doesn't support shadows
-    floor.receiveShadow = false; // MeshBasicMaterial doesn't support shadows
+    // MeshStandardMaterial supports shadows; MeshBasicMaterial doesn't
+    floor.receiveShadow = useTexture;
     floor.castShadow = false; // Floor doesn't cast shadows
     
-    // CRITICAL: Mark floor as completely static - no texture, no animation, no updates
+    // CRITICAL: Mark floor as completely static - no animation, no updates
     floor.userData = {
       isStaticFloor: true,
       noTextureAnimation: true,
       isLevel3Floor: true,
       materialStatic: true,
-      isSolidColor: true,
-      noTexture: true
+      isSolidColor: !useTexture,
+      hasTexture: useTexture
     };
     Object.freeze(floor.userData);
     
@@ -19706,18 +20169,13 @@ function buildLevel3HuntArena() {
     level3State.floor = floor;
     level3State.group.add(floor);
     
-    console.log("✅ [LEVEL 3] Solid static floor created (MeshBasicMaterial - zero flickering):", {
+    console.log("✅ [LEVEL 3] Static floor created:", {
       size: size,
       position: { x: origin.x, y: origin.y, z: origin.z },
-      materialType: 'MeshBasicMaterial (completely unlit)',
-      color: '0xaaaaaa (light gray stone)',
-      isStatic: true,
-      hasTexture: false,
-      isSolidColor: true,
-      materialFrozen: true,
-      zeroFlickering: true,
-      polygonOffset: true,
-      fixApplied: 'December 30, 2025 - Matches Level 5 & 6 underground flickering fix'
+      materialType: useTexture ? 'MeshStandardMaterial (textured)' : 'MeshBasicMaterial (solid)',
+      hasTexture: useTexture,
+      texturePath: useTexture ? groundConfig.groundTexturePath : null,
+      fixApplied: '2026-02-05 - Grass texture on central arena when useGroundTexture enabled'
     });
   } catch (floorError) {
     console.error("❌ [LEVEL 3] CRITICAL ERROR creating floor:", floorError);
@@ -25225,6 +25683,9 @@ async function buildLevel6PhoenixArena() {
   
   level6State.built = true;
   console.log("🔥 [LEVEL 6] Phoenix Boss Arena built successfully. Spawn position:", level6State.spawnPosition);
+
+  // 🧩 LEVEL 6 STEP 0: Create cheese stone plate - stand 5 seconds to activate spider minion fight (Feb 6, 2026)
+  createLevel6TriggerBlock();
 }
 
 // Calculate wave-based difficulty (returns difficulty object)
@@ -26541,6 +27002,61 @@ function checkLevel4CheeseBossCollision() {
   }
 }
 
+// Collision for Phoenix fire spheres (Level 6) - fire sphere hits player = instant game over (crushed)
+function checkPhoenixFireSpherePlayerCollision() {
+  if (currentLevel !== LEVEL_IDS.LEVEL6 || !phoenixBoss) return;
+  if (level6State.playerDead) return; // Already game over
+
+  const projectiles = phoenixBoss.getFireBreathProjectiles();
+  if (!projectiles || projectiles.length === 0) return;
+  if (!playerCollider || !playerCollider.start || !playerCollider.end) return;
+
+  const playerCenter = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+  const playerRadius = (typeof PLAYER_RADIUS !== 'undefined' ? PLAYER_RADIUS : 0.5);
+  const sphereRadius = 1.0; // Match phoenix2.js SphereGeometry(1.0)
+
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const proj = projectiles[i];
+    const projWorldPos = proj.getWorldPosition ? proj.getWorldPosition(new THREE.Vector3()) : proj.position.clone();
+    const dist = projWorldPos.distanceTo(playerCenter);
+
+    if (dist < playerRadius + sphereRadius) {
+      if (proj.parent) proj.parent.remove(proj);
+      projectiles.splice(i, 1);
+      onPlayerHitByPhoenixFire();
+    }
+  }
+}
+
+// Game over when player is hit by Phoenix fire sphere (crushed - instant death)
+function onPlayerHitByPhoenixFire() {
+  if (level6State.playerDead) return;
+  level6State.playerDead = true;
+
+  console.log("🔥 [LEVEL 6] Player crushed by Phoenix fire sphere - Game Over!");
+  triggerLevel6GameOver('phoenixFireLevel6');
+}
+
+// Game over when player is hit by spider minion melee (instant death)
+function onPlayerHitBySpiderMinion() {
+  if (level6State.playerDead) return;
+  level6State.playerDead = true;
+  console.log("🕷️ [LEVEL 6] Player hit by spider minion - Game Over!");
+  triggerLevel6GameOver('spiderMinionLevel6');
+}
+
+function triggerLevel6GameOver(deathType) {
+  if (!level6State.playerDead) return; // Not yet marked dead
+  // Use crushed-style game over screen (same as Level 3 crush)
+  if (guiSystem && typeof guiSystem.showGameOverScreen === 'function') {
+    guiSystem.showGameOverScreen({ deathType: deathType || 'phoenixFireLevel6' });
+  } else {
+    isGamePaused = true;
+    if (typeof showPauseMenu === 'function') showPauseMenu();
+    else if (guiSystem && typeof guiSystem.showPauseMenu === 'function') guiSystem.showPauseMenu();
+  }
+}
+
 // Level 5 "The Walk" - Update function
 function updateLevel5(delta) {
   if (!level5State.built || currentLevel !== LEVEL_IDS.LEVEL5) return;
@@ -26677,13 +27193,36 @@ function updateLevel5(delta) {
 
 function updateLevel6(delta) {
   if (!level6State.built || currentLevel !== LEVEL_IDS.LEVEL6) return;
+
+  if (level6State.playerDead === undefined) level6State.playerDead = false;
+
+  // Update explosion particles (colored cubes when minions die - Feb 6, 2026)
+  if (level6State.explosionParticles && level6State.explosionParticles.length > 0) {
+    level6State.explosionParticles = level6State.explosionParticles.filter((particle) => {
+      if (!particle.parent) return false;
+      particle.userData.age += delta;
+      if (particle.userData.age >= particle.userData.lifetime) {
+        level6State.group.remove(particle);
+        return false;
+      }
+      particle.position.addScaledVector(particle.userData.velocity, delta);
+      particle.userData.velocity.y += particle.userData.gravity * delta;
+      const opacity = 1 - (particle.userData.age / particle.userData.lifetime);
+      if (particle.material) particle.material.opacity = opacity;
+      particle.rotation.x += delta * 5;
+      particle.rotation.y += delta * 5;
+      return true;
+    });
+  }
   
-  // CRITICAL: Update weapon system (bullets, triple-shot, heat) if weapons are loaded
-  if (isFirstPerson() && weaponSystem && typeof weaponSystem.update === 'function') {
+  // CRITICAL: Update weapon system - ALLOW SHOOTING IN ALL CAMERA MODES (Feb 6, 2026)
+  // Previously: Only first-person could shoot - players in Joystick/3rd-person saw no minions to shoot
+  // Fix: Level 6 spider minion hunt requires shooting - allow weapon update in all views
+  if (weaponSystem && typeof weaponSystem.update === 'function') {
     weaponSystem.update(delta);
   }
   
-  // Update weapon animation (only in first-person view)
+  // Update weapon animation (only in first-person view - bobbing/recoil)
   if (isFirstPerson() && weaponSystem && weaponSystem.weaponViewmodel) {
     const velocityMagnitude = Math.sqrt(
       (playerVelocity?.x || 0) * (playerVelocity?.x || 0) +
@@ -26696,6 +27235,24 @@ function updateLevel6(delta) {
     }
   }
   
+  // 🧩 LEVEL 6 STEP 0: Plate - stand 5 seconds to activate spider fight (Feb 6, 2026)
+  if (!level6RiddleState.step0Complete) {
+    updateLevel6Step0(delta);
+    // Hide minion HUD when hunt mode not active
+    if (guiSystem && typeof guiSystem.updateLevel6SpiderMinionHud === "function") {
+      guiSystem.updateLevel6SpiderMinionHud(0, false);
+    }
+  } else if (level6RiddleState.step1Active) {
+    // 🕷️ SPIDER WAVE MINIONS: Only update when Step 0 complete (plate activated)
+    if (LEVEL6_SPIDER_WAVE_CONFIG.enabled && typeof updateLevel6SpiderWaves === 'function') {
+      updateLevel6SpiderWaves(delta);
+    }
+  } else {
+    if (guiSystem && typeof guiSystem.updateLevel6SpiderMinionHud === "function") {
+      guiSystem.updateLevel6SpiderMinionHud(0, false);
+    }
+  }
+
   // 🔥 PHOENIX BOSS: Update Phoenix boss (AI, animations, movement, attacks)
   // CRITICAL FIX (January 6, 2026): Remove isAlive check - update() needs to run for animations even when dead
   // The update() method handles death animations internally, so we must call it regardless of isAlive state
@@ -26718,6 +27275,19 @@ function updateLevel6(delta) {
     }
     
     phoenixBoss.update(delta);
+
+    // CRITICAL (Feb 6, 2026): Pattern 16 fire - use EXACT same code path as F key
+    // Phoenix sets pendingFireRequest; main.js executes identical F-key handler here
+    if (phoenixBoss.pendingFireRequest) {
+      const playerPos = phoenixBoss.getPlayerPosition ? phoenixBoss.getPlayerPosition() : (playerCollider ? new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5) : camera.position.clone());
+      phoenixBoss.shootFireBreath(playerPos, phoenixBoss.pendingFireRequest.count);
+      phoenixBoss.pendingFireRequest = null;
+    }
+
+    // Fire sphere vs player collision - instant game over if hit (Feb 5, 2026)
+    if (!level6State.playerDead) {
+      checkPhoenixFireSpherePlayerCollision();
+    }
     
     // CRITICAL: Hide boss health bar when Phoenix HP reaches 0 (January 4, 2026)
     // This ensures the HUD disappears even if onBossDefeated callback isn't triggered
@@ -26743,6 +27313,8 @@ function updateLevel6(delta) {
     });
   }
   
+  // Spider waves already updated above when step1Active
+
   // 🕷️ ALIEN SPIDER BOSS: Update Alien Spider boss (AI, animations, movement, attacks)
   // CRITICAL FIX (January 6, 2026): Remove isAlive check - update() needs to run for animations even when dead
   // The update() method handles death animations internally, so we must call it regardless of isAlive state
@@ -27180,9 +27752,10 @@ function defeatLevel4Monster(monsterIndex) {
 // - Creates 15 colorful particles that explode outward, fade out, and rotate
 // - Particles are updated in updateLevel4() and updateLevel5() functions
 function createMonsterExplosionEffect(position, sizeMultiplier) {
-  // Detect which level we're in and use the appropriate state (Level 4 or Level 5)
+  // Detect which level we're in and use the appropriate state (Level 4, 5, or 6 - Feb 6, 2026)
   const isLevel5 = currentLevel === LEVEL_IDS.LEVEL5;
-  const targetState = isLevel5 ? level5State : level4State;
+  const isLevel6 = currentLevel === LEVEL_IDS.LEVEL6;
+  const targetState = isLevel6 ? level6State : (isLevel5 ? level5State : level4State);
   
   const particleCount = 15;
   const particleSize = 0.4 * sizeMultiplier;
@@ -28403,6 +28976,26 @@ function cleanupAllLevels() {
     level6State.group.visible = false;
   }
   
+  // 1b. Level 6 spider minion cleanup + riddle state reset - Feb 6, 2026
+  if (level6State && level6State.spiderMinions && level6State.spiderMinions.length > 0) {
+    level6State.spiderMinions.forEach((m) => {
+      if (m && typeof m.dispose === 'function') m.dispose();
+    });
+    level6State.spiderMinions = [];
+    level6State.spiderWaveTimer = 0;
+    level6State.spiderWaveCacheLoaded = false;
+    level6State.playerDead = false;
+    console.log("🕷️ [CLEANUP] Level 6 spider minions disposed");
+  }
+  if (typeof resetLevel6Progress === 'function') {
+    resetLevel6Progress();
+    console.log("🧩 [CLEANUP] Level 6 riddle progress reset");
+  }
+  // Hide spider minion HUD when leaving Level 6 (Feb 6, 2026)
+  if (guiSystem && typeof guiSystem.updateLevel6SpiderMinionHud === "function") {
+    guiSystem.updateLevel6SpiderMinionHud(0, false);
+  }
+  
   // 2. Cleanup Level 1 trees (remove from scene and reset state)
   if (level1State) {
     // Remove trees from scene
@@ -29524,6 +30117,7 @@ async function warpToLevel6() {
   
   // Set current level BEFORE applying environment
   currentLevel = LEVEL_IDS.LEVEL6;
+  level6State.playerDead = false; // Reset death state when entering Level 6
   console.log("🔍 [LEVEL 6] Step 3: Current level set to:", currentLevel);
   
   // CRITICAL: Verify weapon system can see the current level
@@ -29567,6 +30161,7 @@ async function warpToLevel6() {
     // Do NOT run an additional setTimeout that clears + recreates chests.
     // That path was disposing chest_011 after it successfully loaded, causing “missing chest”.
     ensureLevel6ChestsLoaded("warpToLevel6:already-built");
+    // Spider waves only spawn after Step 0 (plate) complete - no spawn on warp
   }
   
   // CRITICAL: Ensure group is in scene before making it visible
@@ -29846,6 +30441,15 @@ async function warpToLevel6() {
         scene: scene,
         camera: camera,
         levelGroup: level6State.group, // Pass level6State.group for proper scene hierarchy
+        getPlayerPosition: () => {
+          if (playerCollider && playerCollider.start && playerCollider.end) {
+            return new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+          }
+          if (camera && camera.position) {
+            return camera.position.clone();
+          }
+          return spawnPos ? spawnPos.clone() : new THREE.Vector3(0, 1, 0);
+        },
         size: bossConfig.size,          // Use saved size
         color: bossConfig.color,        // Use saved color
         eyeColor: bossConfig.eyeColor || 'Red', // Use saved eye color
@@ -29969,13 +30573,13 @@ async function warpToLevel6() {
       const currentBehavior = phoenixBoss.behaviorMode || 'flying_circle';
       const behaviors = ['flying_circle', 'flying_hover', 'flying_patrol', 'ground_sleeping', 
                         'ground_idle', 'ground_walking', 'ground_attacking', 'ground_rage', 'combat_preparation',
-                        'ground_death', 'ground_running', 'ground_awakening', 'flying_dive_attack', 'ground_ultimate_combo', 'player_hunt_combo'];
+                        'ground_death', 'ground_running', 'ground_awakening', 'flying_dive_attack', 'ground_ultimate_combo', 'player_hunt_combo', 'fire_sphere_hunt', 'fire_sphere_hunt_extended'];
       const behaviorNames = ['🔄 Flying Circle', '✈️ Flying Hover', '🛸 Flying Patrol', '😴 Ground Sleeping',
                             '🧍 Ground Idle', '🚶 Ground Walking', '⚔️ Ground Attacking', '😡 Ground Rage', '🎯 Combat Preparation',
-                            '💀 Ground Death', '🏃 Ground Running', '🌅 Ground Awakening', '🎯 Flying Dive Attack', '💥 Ground Ultimate Combo', '🎯 Player Hunt Combo'];
+                            '💀 Ground Death', '🏃 Ground Running', '🌅 Ground Awakening', '🎯 Flying Dive Attack', '💥 Ground Ultimate Combo', '🎯 Player Hunt Combo', '🔥 Pattern 16 Fire Sphere Hunt', '🔥 Pattern 17 Extended'];
       const behaviorIndex = behaviors.indexOf(currentBehavior);
       const behaviorName = behaviorIndex >= 0 ? behaviorNames[behaviorIndex] : '🔄 Flying Circle';
-      // Updated to X/15 format (was 14, now 15 - December 18, 2025)
+      // Updated to X/17 format (February 6, 2026 - Pattern 17 Fire Sphere Hunt Extended)
       guiSystem.updatePhoenixBehaviorDisplay(behaviorName, behaviorIndex >= 0 ? behaviorIndex + 1 : 1);
     }
     
@@ -30580,6 +31184,39 @@ function restartLevel3() {
   console.log("🔄 [LEVEL 3] Restarted The Hunt from the beginning.");
 }
 
+function restartLevel6() {
+  if (!level6State || !level6State.built) return;
+
+  // Clear any remaining fire projectiles
+  if (phoenixBoss && typeof phoenixBoss.clearFireBreathProjectiles === 'function') {
+    phoenixBoss.clearFireBreathProjectiles();
+  }
+
+  level6State.playerDead = false;
+
+  if (guiSystem && typeof guiSystem.hideGameOverScreen === 'function') {
+    guiSystem.hideGameOverScreen();
+  }
+
+  if (typeof togglePause === 'function') {
+    togglePause(false);
+  }
+
+  // Reposition player at spawn
+  if (level6State.spawnPosition) {
+    setPlayerFeetPosition(level6State.spawnPosition.clone());
+  }
+
+  setTimeout(() => {
+    window.needsPointerLockAfterPause = true;
+    if (guiSystem && guiSystem.config && guiSystem.config.onRequestPointerLockRestore) {
+      guiSystem.config.onRequestPointerLockRestore();
+    }
+  }, 500);
+
+  console.log("🔄 [LEVEL 6] Restarted Phoenix Boss Arena - Try Again!");
+}
+
 function hideLevel3CompletionScreen(clearFlag = true) {
   if (level3CompletionScreen && document.body.contains(level3CompletionScreen)) {
     document.body.removeChild(level3CompletionScreen);
@@ -30765,6 +31402,81 @@ async function awardLevel3DspoincReward(stepId, baseReward, contextLabel = "") {
     }
   } catch (error) {
     console.error(`🧀 [LEVEL 3] Error awarding DSPOINC reward (${stepId}):`, error);
+  }
+}
+
+async function unlockLevel6Trait(traitName, contextLabel = "") {
+  if (!traitName) return;
+  if (!resolvedDiscordId) {
+    console.warn(`🧩 [LEVEL 6] Trait ${traitName} skipped (no Discord ID)`);
+    return;
+  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/unlock-trait.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: resolvedDiscordId,
+        trait_name: traitName,
+        trait_value: "true"
+      })
+    });
+    const result = await response.json();
+    if (result.success) {
+      console.log(`🧩 [LEVEL 6] Trait unlocked (${traitName})`, contextLabel);
+      if (traitName === LEVEL6_STEP0_TRAIT) level6RiddleState.step0TraitUnlocked = true;
+    } else {
+      console.warn(`🧩 [LEVEL 6] Trait unlock failed (${traitName}):`, result.error);
+    }
+  } catch (error) {
+    console.error(`🧩 [LEVEL 6] Error unlocking trait (${traitName}):`, error);
+  }
+}
+
+async function awardLevel6DspoincReward(stepId, baseReward, contextLabel = "") {
+  if (!resolvedDiscordId) {
+    console.warn(`🧀 [LEVEL 6] Skipping DSPOINC reward (${stepId}) — no Discord ID.`);
+    return;
+  }
+  try {
+    const payload = {
+      discord_id: resolvedDiscordId,
+      discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
+      riddle_id: stepId,
+      level_id: "CHEESE_TEMPLE_LEVEL6",
+      base_reward: baseReward,
+      session_id: cheeseSessionId
+    };
+    const response = await fetch(RIDDLE_REWARD_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
+    if (response.ok && result.success) {
+      const dsPoincAwarded = result.data?.ds_poinc_awarded || 0;
+      const totalDspoinc = result.data?.total_ds_poinc;
+      if (typeof totalDspoinc === "number") {
+        currentTotalDspoinc = totalDspoinc;
+        window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
+        if (isGamePaused) updatePausePlayerInfo();
+      }
+      showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
+      console.log(`🧀 [LEVEL 6] DSPOINC reward granted (${stepId})`, {
+        baseReward,
+        dsPoincAwarded,
+        totalDspoinc,
+        contextLabel
+      });
+    } else if (response.status === 409) {
+      console.warn(`🧀 [LEVEL 6] Reward already claimed for ${stepId}`);
+      showRiddleRewardNotification(0, 1.0, true);
+    } else {
+      console.warn(`🧀 [LEVEL 6] DSPOINC reward failed (${stepId}):`, result.error);
+    }
+  } catch (error) {
+    console.error(`🧀 [LEVEL 6] Error awarding DSPOINC reward (${stepId}):`, error);
   }
 }
 
@@ -33479,9 +34191,9 @@ function cycleLevel5Step() {
 /**
  * 🐉 Cycle through Phoenix boss behaviors (GOD Mode - B key)
  * 
- * 📝 UPDATED: December 18, 2025 - Now includes 14 patterns (was 9)
+ * 📝 UPDATED: February 6, 2026 - Now includes 17 patterns (Pattern 16 + 17 added)
  * 
- * Cycles through all 14 behaviors in order:
+ * Cycles through all 17 behaviors in order:
  * 
  * ORIGINAL PATTERNS (1-9):
  * 1. 🔄 Flying Circle (Standard circular flight)
@@ -33494,12 +34206,15 @@ function cycleLevel5Step() {
  * 8. 😡 Ground Rage (Rage cycles)
  * 9. 🎯 Combat Preparation (Land/Takeoff cycle)
  * 
- * NEW PATTERNS (10-14):
+ * NEW PATTERNS (10-17):
  * 10. 💀 Ground Death (Death sequence)
  * 11. 🏃 Ground Running (Fast running movement)
  * 12. 🌅 Ground Awakening (Dramatic wake up sequence)
  * 13. 🎯 Flying Dive Attack (Dive bomb from sky)
  * 14. 💥 Ground Ultimate Combo (Epic 5-hit combo)
+ * 15. 🎯 Player Hunt Combo (AI attack)
+ * 16. 🔥 Fire Sphere Hunt (Fire spheres toward player)
+ * 17. 🔥 Pattern 17 Extended (Extended fire sphere hunt)
  * 
  * Usage: Press B key in Level 6 (God Mode must be enabled)
  */
@@ -33509,8 +34224,8 @@ function cyclePhoenixBehavior() {
     return;
   }
 
-  // Define all 15 behaviors in order (9 original + 6 new)
-  // 📝 UPDATED: December 18, 2025 - Added 6 new behavior patterns
+  // Define all 17 behaviors in order (9 original + 7 new + Pattern 16 + Pattern 17)
+  // 📝 UPDATED: February 6, 2026 - Added fire_sphere_hunt_extended (Pattern 17)
   const behaviors = [
     'flying_circle',        // 0: 🔄 Flying Circle (Standard)
     'flying_hover',         // 1: ✈️ Flying Hover (In Place)
@@ -33527,7 +34242,9 @@ function cyclePhoenixBehavior() {
     'ground_awakening',     // 11: 🌅 Ground Awakening (Wake up sequence)
     'flying_dive_attack',   // 12: 🎯 Flying Dive Attack (Dive bomb)
     'ground_ultimate_combo',// 13: 💥 Ground Ultimate Combo (5-hit combo)
-    'player_hunt_combo'     // 14: 🎯 Player Hunt Combo (AI attack) ⭐ NEW!
+    'player_hunt_combo',    // 14: 🎯 Player Hunt Combo (AI attack)
+    'fire_sphere_hunt',     // 15: 🔥 Pattern 16 Fire Sphere Hunt
+    'fire_sphere_hunt_extended' // 16: 🔥 Pattern 17 Extended ⭐ NEW!
   ];
 
   // Behavior display names for console logging
@@ -33547,7 +34264,9 @@ function cyclePhoenixBehavior() {
     '🌅 Ground Awakening',
     '🎯 Flying Dive Attack',
     '💥 Ground Ultimate Combo',
-    '🎯 Player Hunt Combo' // ⭐ NEW!
+    '🎯 Player Hunt Combo',
+    '🔥 Pattern 16 Fire Sphere Hunt',
+    '🔥 Pattern 17 Extended' // ⭐ NEW!
   ];
 
   // Get current behavior from phoenixBoss
@@ -33567,7 +34286,7 @@ function cyclePhoenixBehavior() {
   // Set new behavior
   phoenixBoss.setBehaviorMode(nextBehavior);
   
-  console.log(`🐉 [DEBUG] GOD Mode Phoenix Behavior Cycle: ${behaviorNames[startIndex]} → ${nextBehaviorName} (${nextIndex + 1}/15)`);
+  console.log(`🐉 [DEBUG] GOD Mode Phoenix Behavior Cycle: ${behaviorNames[startIndex]} → ${nextBehaviorName} (${nextIndex + 1}/17)`);
   
   // Update on-screen behavior display (dev testing)
   if (guiSystem && typeof guiSystem.updatePhoenixBehaviorDisplay === 'function') {
@@ -34797,6 +35516,25 @@ document.addEventListener("keydown", (event) => {
     }
       event.preventDefault();
       return;
+  }
+  // 🔥 GOD mode Phoenix fire sphere test (press F to fire at player) - LEVEL 6 ONLY
+  if (event.key === 'f' || event.key === 'F') {
+    if (godMode) {
+      if (currentLevel === LEVEL_IDS.LEVEL6 && phoenixBoss) {
+        const playerPos = phoenixBoss.getPlayerPosition ? phoenixBoss.getPlayerPosition() : (playerCollider ? new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5) : camera.position.clone());
+        phoenixBoss.shootFireBreath(playerPos, 2);
+        console.log("🔥 [GOD MODE] F key: Phoenix fired 2 fire spheres at player (test)");
+        if (guiSystem && typeof guiSystem.showToast === 'function') {
+          guiSystem.showToast("🔥 Fire spheres test fired! (F key)", 2000);
+        }
+      } else {
+        console.warn("🔥 [DEBUG] Phoenix fire test ignored - must be in Level 6 with Phoenix loaded to use the F shortcut.");
+      }
+    } else {
+      console.warn("🔥 [DEBUG] Phoenix fire test ignored - enable GOD Mode to use the F shortcut.");
+    }
+    event.preventDefault();
+    return;
   }
   // 🎮 GOD mode level selector (press L to open level menu) - WORKS IN ALL LEVELS
   if (event.key === 'l' || event.key === 'L') {
@@ -42022,109 +42760,125 @@ function createLevel4Chests() {
   }, 50); // Small delay to ensure chest 8 is processed first
 }
 
+// Level 5: 50 chests spread randomly across Klagenfurt map
+// Bounds computed from map mesh; random scatter with min spacing (February 5, 2026)
+const LEVEL5_CHEST_COUNT = 50;
+const LEVEL5_CHEST_DSPOINC = 50;
+const LEVEL5_CHEST_MIN_SPACING = 6; // Minimum distance between chests
+const LEVEL5_CHEST_EDGE_INSET = 8; // Inset from map bounds to avoid edges
+
+// Seeded random for reproducible random scatter (same positions every session)
+function createSeededRandom(seed) {
+  return function() {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
+
 function createLevel5Chests() {
   if (!chestSystem) {
     console.warn("⚠️ [LEVEL 5] Chest system not initialized");
     return;
   }
-  
-  // CRITICAL: Clear existing Level 5 chests first to ensure clean state (prevents duplicates after warp/respawn)
-  console.log("🎁 [LEVEL 5] Clearing existing chests before recreation (ensuring clean state)...");
+
+  console.log("🎁 [LEVEL 5] Clearing existing chests before recreation...");
   chestSystem.clearLevel(LEVEL_IDS.LEVEL5);
-  
-  // Level 5 chest Y position - CRITICAL: Use raycast at chest position, not spawn position (January 4, 2026)
-  // Level 5 uses dynamic ground detection via raycast, but ground level may vary at different X/Z positions
-  // The chest is at (33, -41), so we need to detect ground level at that specific position, not spawn (0, 0)
+
   const spawnY = (level5State && level5State.spawnPosition) ? level5State.spawnPosition.y : 0;
-  
-  // Chest 10: First chest in Level 5 (chest_010 in the whole system)
-  // Position: X: 33, Y: detected ground level at chest position, Z: -41
-  const chest10X = 33;
-  const chest10Z = -41;
-  
-  // CRITICAL: Raycast at chest position to find ground level at (33, -41) (January 4, 2026)
-  // Since Level 5 is a city map with uneven terrain, ground level may differ from spawn position
-  let chest10Y = spawnY; // Fallback to spawn Y if raycast fails
-  if (level5State && level5State.mapMesh && scene) {
+
+  // Compute map bounds from Level 5 geometry (mapMesh or group)
+  let minX = -50, maxX = 50, minZ = -50, maxZ = 50;
+  const boundsSource = (level5State && (level5State.group || level5State.mapMesh)) || null;
+  if (boundsSource) {
+    try {
+      boundsSource.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(boundsSource);
+      const size = box.getSize(new THREE.Vector3());
+      minX = box.min.x + LEVEL5_CHEST_EDGE_INSET;
+      maxX = box.max.x - LEVEL5_CHEST_EDGE_INSET;
+      minZ = box.min.z + LEVEL5_CHEST_EDGE_INSET;
+      maxZ = box.max.z - LEVEL5_CHEST_EDGE_INSET;
+      if (minX >= maxX) { minX = box.min.x; maxX = box.max.x; }
+      if (minZ >= maxZ) { minZ = box.min.z; maxZ = box.max.z; }
+      console.log("🎁 [LEVEL 5] Map bounds from geometry:", { minX: minX.toFixed(0), maxX: maxX.toFixed(0), minZ: minZ.toFixed(0), maxZ: maxZ.toFixed(0) });
+    } catch (e) {
+      console.warn("⚠️ [LEVEL 5] Could not compute map bounds, using default:", e);
+    }
+  }
+
+  // Raycast helper: detect ground Y at (x, z) on Level 5 map mesh
+  function raycastLevel5GroundYAt(x, z, fallbackY) {
+    if (!level5State || !level5State.mapMesh || !scene) return fallbackY;
     try {
       const raycaster = new THREE.Raycaster();
-      // Start raycast well above the map (use spawn Y + 50 as estimate for max height)
-      const rayStartY = Math.max(spawnY + 50, 100); // At least 50 units above spawn, or 100 minimum
-      const rayStart = new THREE.Vector3(chest10X, rayStartY, chest10Z);
-      const rayDirection = new THREE.Vector3(0, -1, 0); // Cast downward
-      
-      raycaster.set(rayStart, rayDirection);
-      raycaster.far = 200; // Cast through enough distance to hit ground
-      
-      // Raycast against the Level 5 map mesh
-      const intersects = raycaster.intersectObject(level5State.mapMesh, true); // Recursive
-      
+      const rayStartY = Math.max(spawnY + 50, 100);
+      raycaster.set(new THREE.Vector3(x, rayStartY, z), new THREE.Vector3(0, -1, 0));
+      raycaster.far = 200;
+      const intersects = raycaster.intersectObject(level5State.mapMesh, true);
       if (intersects.length > 0) {
-        // Find intersections near chest position (within 1 unit)
         const chestRadius = 1.0;
         const nearbyIntersects = intersects.filter(intersect => {
-          const dx = intersect.point.x - chest10X;
-          const dz = intersect.point.z - chest10Z;
-          const distance = Math.sqrt(dx * dx + dz * dz);
-          return distance <= chestRadius;
+          const dx = intersect.point.x - x;
+          const dz = intersect.point.z - z;
+          return Math.sqrt(dx * dx + dz * dz) <= chestRadius;
         });
-        
         if (nearbyIntersects.length > 0) {
-          // Use the highest (top) intersection near chest position - this is the walkable surface
           nearbyIntersects.sort((a, b) => b.point.y - a.point.y);
-          chest10Y = nearbyIntersects[0].point.y;
-          console.log(`✅ [LEVEL 5 CHEST] Found ground surface at chest position (${chest10X}, ${chest10Z}): Y=${chest10Y.toFixed(2)} (from ${nearbyIntersects.length} nearby intersections)`);
-        } else {
-          // Fallback: use the highest intersection overall
-          const sortedIntersects = [...intersects].sort((a, b) => b.point.y - a.point.y);
-          chest10Y = sortedIntersects[0].point.y;
-          console.warn(`⚠️ [LEVEL 5 CHEST] No intersections near chest position, using highest intersection: Y=${chest10Y.toFixed(2)}`);
+          return nearbyIntersects[0].point.y;
         }
-      } else {
-        // Fallback to spawn Y if no intersections found
-        console.warn(`⚠️ [LEVEL 5 CHEST] Raycast found no intersections at chest position (${chest10X}, ${chest10Z}), using spawn Y: ${spawnY.toFixed(2)}`);
+        const sorted = [...intersects].sort((a, b) => b.point.y - a.point.y);
+        return sorted[0].point.y;
       }
-    } catch (raycastError) {
-      // Fallback to spawn Y if raycast fails
-      console.error(`❌ [LEVEL 5 CHEST] Raycast error at chest position:`, raycastError);
-      console.warn(`   Using fallback chest Y: ${spawnY.toFixed(2)} (spawn position Y)`);
+      return fallbackY;
+    } catch (e) {
+      return fallbackY;
     }
-  } else {
-    console.warn(`⚠️ [LEVEL 5 CHEST] Level 5 map mesh not available, using spawn Y: ${spawnY.toFixed(2)}`);
   }
-  
-  console.log("🎁 [LEVEL 5] Creating chests...", {
-    spawnY: spawnY,
-    chest10Y: chest10Y,
-    chest10X: chest10X,
-    chest10Z: chest10Z,
-    hasMapMesh: !!(level5State && level5State.mapMesh),
-    note: "Chest Y detected via raycast at chest position (Level 5 uses dynamic ground detection per position)"
+
+  // Generate 50 random positions with minimum spacing (rejection sampling)
+  const rand = createSeededRandom(12345);
+  const positions = [];
+  let attempts = 0;
+  const maxAttempts = 500;
+  while (positions.length < LEVEL5_CHEST_COUNT && attempts < maxAttempts) {
+    attempts++;
+    const x = minX + rand() * (maxX - minX);
+    const z = minZ + rand() * (maxZ - minZ);
+    const tooClose = positions.some(p => {
+      const dx = p.x - x;
+      const dz = p.z - z;
+      return Math.sqrt(dx * dx + dz * dz) < LEVEL5_CHEST_MIN_SPACING;
+    });
+    if (!tooClose) positions.push({ x, z });
+  }
+
+  if (positions.length < LEVEL5_CHEST_COUNT) {
+    console.warn(`⚠️ [LEVEL 5] Only placed ${positions.length} chests (spacing constraint)`);
+  }
+
+  console.log("🎁 [LEVEL 5] Creating 50 chests (50 DSPOINC each, random spread)...", {
+    spawnY,
+    bounds: { minX, maxX, minZ, maxZ },
+    positionCount: positions.length,
+    hasMapMesh: !!(level5State && level5State.mapMesh)
   });
-  
-  const chest10Position = new THREE.Vector3(chest10X, chest10Y, chest10Z);
-  
-  console.log("🎁 [LEVEL 5] Adding chest 10 (first chest in Level 5):", {
-    id: 'chest_010',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest10Position,
-    x: chest10X,
-    y: chest10Y,
-    z: chest10Z,
-    spawnY: spawnY,
-    detectedChestY: chest10Y,
-    note: "Chest Y detected via raycast at chest position (Level 5 uses dynamic ground detection per position)"
-  });
-  
-  chestSystem.addChest(LEVEL_IDS.LEVEL5, {
-    id: 'chest_010',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest10Position,
-    dspoincAmount: 280, // Level 5 chest reward (scaled up from Level 4)
-    levelId: 'CHEESE_TEMPLE_LEVEL5'
-  });
-  
-  console.log("✅ [LEVEL 5] Chest 10 (chest_010) creation initiated");
+
+  for (let i = 0; i < positions.length; i++) {
+    const pos = positions[i];
+    const chestY = raycastLevel5GroundYAt(pos.x, pos.z, spawnY);
+    const chestId = `chest_${String(10 + i).padStart(3, "0")}`;
+    const chestPosition = new THREE.Vector3(pos.x, chestY, pos.z);
+
+    chestSystem.addChest(LEVEL_IDS.LEVEL5, {
+      id: chestId,
+      type: "chest2",
+      position: chestPosition,
+      dspoincAmount: LEVEL5_CHEST_DSPOINC,
+      levelId: "CHEESE_TEMPLE_LEVEL5"
+    });
+  }
+
+  console.log(`✅ [LEVEL 5] ${positions.length} chests (chest_010–chest_059) creation initiated`);
 }
 
 function createLevel6Chests() {

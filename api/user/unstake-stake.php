@@ -176,20 +176,25 @@ try {
         $stake_id
     ]);
 
-    // Add returned amount to tbl_user_scores (unfreeze return)
+    // CRITICAL: Add -penalty_amount to tbl_user_scores (NOT +returned_amount)
+    // When staking, create-stake does NOT deduct from tbl_user_scores - the freeze is tracked
+    // in tbl_dspoinc_stakes only. So the user's total_balance already includes the 1M.
+    // When early unfreezing, we must apply the PENALTY (-150K) not add the return (+850K).
+    // Adding +850K would double-credit: user would get 850K + the 1M they never lost = 1.85M.
+    // Correct: add -penalty_amount so balance decreases by 150K (they lose the penalty).
     $scoreStmt = $pdo->prepare("
         INSERT INTO tbl_user_scores (user_id, score, game, source, season)
         VALUES (:user_id, :score, :game, :source, :season)
     ");
     $scoreStmt->execute([
         ':user_id' => $user_id,
-        ':score' => $returned_amount, // 85% returned
+        ':score' => -$penalty_amount, // Apply penalty (balance decreases by 150K)
         ':game' => 'staking',
-        ':source' => 'unstake_return',
+        ':source' => 'unstake_penalty',
         ':season' => $currentSeason
     ]);
 
-    // Create audit trail entry
+    // Create audit trail entry (amount = penalty for display consistency with balance change)
     $reason = sprintf(
         'Early unstake (15%% penalty): %d DSPOINC - %d penalty = %d returned (stake_id: %d)',
         $original_amount,
@@ -205,8 +210,8 @@ try {
     $adjustStmt->execute([
         ':user_id' => $user_id,
         ':admin_id' => 'system-staking',
-        ':amount' => $returned_amount, // Positive amount (returned to user)
-        ':action' => 'add',
+        ':amount' => -$penalty_amount, // Negative = penalty (matches actual balance change)
+        ':action' => 'remove',
         ':reason' => $reason,
         ':timestamp' => $now
     ]);

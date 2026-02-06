@@ -1,13 +1,34 @@
 # 🧀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** February 5, 2026 🎯 **STABLE – PRODUCTION VERIFIED**  
+**Last Updated:** February 6, 2026 🎯 **STABLE – PRODUCTION VERIFIED**  
 **Status:** ✅ **Season 8 LIVE – 3D game stable on production (all levels, paths, mobile)**  
-**Version:** 2026-02-05  
-**Milestone:** 🎯 **Level 3 wall collision + all 4 corner bosses auto-toaster – COMPLETE**
+**Version:** 2026-02-06  
+**Milestone:** 🎯 **Level 6 Phoenix Pattern 17 – Full overhaul (dangerous, no sleeps, smooth transitions)**
 
 ---
 
-## 📋 **TODAY – FEBRUARY 5, 2026:**
+## 📋 **TODAY – FEBRUARY 6, 2026:**
+
+**Level 6 Phoenix Pattern 17 – Full Overhaul (✅ COMPLETE):**
+- ✅ **Only one sleep** – Phase 1 at start; all other sleeps replaced with ground fire bursts
+- ✅ **Ground fire bursts** – Phases 9, 10, 17, 18, 24, 26 now fire 2–3 fireballs each (no sleep)
+- ✅ **Faster first sequence** – Cycle 1 sped up (~9.8s vs ~13.6s)
+- ✅ **Ground fireballs** – Phases 19, 20, 25 fire when dragon is on ground
+- ✅ **Smooth takeoff-to-circle** – 1.5s blend prevents "beam" teleport when entering patrol
+- 📋 **Lab note:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-06/PHOENIX_PATTERN_17_FINAL_SESSION_2026-02-06.md`
+
+**Files Modified:**
+- `public/three.js/phoenix2.js` – Config, phase logic, transition blend
+
+**Alien Spider Wave Minions – Implementation (✅ COMPLETE – Feb 6, 2026):**
+- ✅ **Implemented:** Spiders spawn in waves (3 per wave, every 25s, max 8 alive)
+- ✅ **Behavior:** Chase player, melee = instant death, player shoots to kill
+- ✅ **Wiring:** Weapon raycast, update loop, spawn on build + return-to-Level-6
+- **Lab note:** `ALIEN_SPIDER_WAVE_MINIONS_IMPLEMENTATION_PLAN_2026-02-06.md`
+
+---
+
+## 📋 **YESTERDAY – FEBRUARY 5, 2026:**
 
 **Level 3 Wall Collision (✅ USER CONFIRMED):**
 - ✅ **User feedback:** "Super exactly now what we wanted from the collision of the walls"
@@ -19,6 +40,17 @@
 - ✅ **Fix:** Iterate over `cheeseBossBasePositions` (sync) not `cheeseBosses` (async)
 - ✅ **Result:** All 4 corner bosses now auto-show mythical speaks toaster when player nears (25 units)
 - 📋 **Lab note:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-05/LEVEL_3_CORNER_BOSSES_2026-02-05.md`
+
+**Level 6 Phoenix Pattern 16 – Fire Sphere Hunt (🔄 PARTIAL):**
+- ✅ **Takeoff + animations:** Sleep → Wake → Takeoff → Fire phases all working
+- ✅ **Game over flow:** Crushed-style screen, Restart Level 6, Level Select, Return to Level 1
+- ⚠️ **Fireball visibility:** 4 shot phases (5, 7, 13, 15) do not show spheres at player – still to solve
+- 📋 **Lab note:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-05/PHOENIX_FIRE_SPHERE_ATTACK_PLAN_2026-02-05.md`
+
+**Deployment (✅ PUSHED Feb 5 EOD):**
+- ✅ **Commit:** 84400e7 – "Alien Spider + Level 3 fixes" → `render-deploy`
+- ✅ **Alien Spider assets:** Verified on Render /data/ – 63 files present
+- 📋 **EOD note:** `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-05/END_OF_DAY_DEPLOYMENT_2026-02-05.md`
 
 ---
 
@@ -139,9 +171,9 @@
 | File | Location |
 |------|----------|
 | QUICK_STATUS | `12.0/ACTIVE_STATUS/QUICK_STATUS.md` |
-| DAILY_STATUS | `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-05.md` |
+| DAILY_STATUS | `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-02-06.md` |
 | COMMON REFERENCE | `12.0/ACTIVE_STATUS/COMMON_FILES_REFERENCE_2026-02.md` |
-| Daily Notes | `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-05/` |
+| Daily Notes | `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-06/` |
 
 ---
 

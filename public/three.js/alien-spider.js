@@ -119,6 +119,7 @@
 import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { TGALoader } from "three/examples/jsm/loaders/TGALoader.js";
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 
 console.log("🕷️🕷️🕷️ [ALIEN_SPIDER.JS] FILE LOADED - December 20, 2025 VERSION 🕷️🕷️🕷️");
 
@@ -1403,5 +1404,289 @@ export class AlienSpiderBoss {
     this.targetSize = size;
     const scale = this.targetSize / this._originalModelSize;
     this.model.scale.set(scale, scale, scale);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🕷️ ALIEN SPIDER MINION - Wave spawn minions for Level 6
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 1: Basic class with follow_attack, takeDamage, die
+// Created: February 6, 2026
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** @type {{ model: THREE.Object3D, clips: Record<string, THREE.AnimationClip>, basePath: string, originalSize: number } | null} */
+let _minionCache = null;
+
+export class AlienSpiderMinion {
+  constructor(config = {}) {
+    this.model = config.model || null;
+    this.hitbox = config.hitbox || null; // For weapon raycast (avoids SkinnedMesh crash - Feb 6, 2026)
+    this.mixer = config.mixer || null;
+    this.animationActions = config.animationActions || {};
+    this.currentAction = null;
+    
+    this.levelGroup = config.levelGroup || null;
+    this.getPlayerPosition = config.getPlayerPosition || null;
+    
+    this.health = config.health ?? 30;
+    this.maxHealth = config.maxHealth ?? 30;
+    this.isAlive = true;
+    this.groundY = config.groundY ?? 1.0;
+    
+    this.followSpeed = config.followSpeed ?? 3.0;
+    this.attackRange = config.attackRange ?? 2.5;
+    this.attackCooldown = 0;
+    
+    this.onMinionDied = config.onMinionDied || (() => {});
+  }
+  
+  /**
+   * Load the minion cache (model + animation clips). Call once before spawning.
+   * @param {string} modelPath - Path to AFC_03.fbx
+   * @returns {Promise<{ model: THREE.Object3D, clips: Record<string, THREE.AnimationClip>, basePath: string, originalSize: number }>}
+   */
+  static async loadMinionCache(modelPath) {
+    if (_minionCache) return _minionCache;
+    
+    const basePath = modelPath.replace(/\/[^/]+$/, '/');
+    // CRITICAL: Use LoadingManager with TGALoader - same as boss (Feb 6, 2026)
+    // Without this, FBX TGA textures fail to load and minions appear black
+    const tgaLoader = new TGALoader();
+    const loadingManager = new THREE.LoadingManager();
+    loadingManager.addHandler(/\.tga$/i, tgaLoader);
+    const loader = new FBXLoader(loadingManager);
+    loader.setResourcePath(basePath);
+    
+    const fbx = await new Promise((resolve, reject) => {
+      loader.load(modelPath, resolve, undefined, reject);
+    });
+    fbx.updateMatrixWorld(true); // Ensure transforms applied before bbox (Feb 6, 2026)
+    const box = new THREE.Box3().setFromObject(fbx);
+    const size = box.getSize(new THREE.Vector3());
+    let originalSize = Math.max(size.x, size.y, size.z);
+    if (originalSize < 0.1 || originalSize > 100) {
+      originalSize = 2.0; // Fallback: AFC_03 boss is ~4 units, minion base ~2 (Feb 6, 2026)
+      console.warn(`⚠️ [SPIDER] Suspicious bbox (${size.x.toFixed(2)}×${size.y.toFixed(2)}×${size.z.toFixed(2)}), using originalSize=${originalSize}`);
+    }
+    
+    const clips = {};
+    const animFiles = {
+      idle_1: "AFC_03@Idle_1.fbx", walk: "AFC_03@Walk.fbx", run: "AFC_03@Run.fbx",
+      attack_1: "AFC_03@Attack_1.fbx", attack_2: "AFC_03@Attack_2.fbx"
+    };
+    
+    for (const [key, file] of Object.entries(animFiles)) {
+      try {
+        const animFbx = await loader.loadAsync(basePath + file);
+        if (animFbx.animations?.[0]) clips[key] = animFbx.animations[0];
+      } catch (_) {}
+    }
+    
+    _minionCache = { model: fbx, clips, basePath, originalSize, tgaLoader };
+    console.log(`🕷️ [SPIDER] Minion cache loaded: originalSize=${originalSize.toFixed(4)}, targetScale for 1.5 units = ${(1.5 / originalSize).toFixed(1)}x`);
+    return _minionCache;
+  }
+  
+  
+  /**
+   * Create a minion from cache. Call loadMinionCache first.
+   * @param {object} config - levelGroup, getPlayerPosition, spawnPosition, health, targetSize, etc.
+   * @returns {AlienSpiderMinion|null}
+   */
+  static createFromCache(config) {
+    if (!_minionCache) return null;
+    
+    const { model, clips, originalSize, basePath, tgaLoader } = _minionCache;
+    
+    // FBX cloning: Try standard clone for AFC_03 - SkeletonUtils may only clone feet for FBX (Rule 14 is GLTF; Rule 18 says FBX can use clone)
+    // If only feet visible with SkeletonUtils, standard clone may render full body (Feb 6, 2026)
+    const clone = model.clone(true);
+    
+    const targetSize = config.targetSize ?? 1.0;
+    let scale;
+    // PREFERRED: When boss has loaded model, use bossScale/4 directly - guarantees minion = 1/4 boss (Feb 6, 2026)
+    if (config.bossScale != null && config.bossScale > 0) {
+      scale = config.bossScale;
+      clone.scale.set(scale, scale, scale);
+      clone.updateMatrixWorld(true);
+    } else {
+      // Fallback: compute from targetSize and originalSize (when boss not loaded yet)
+      const effectiveOriginalSize = config.bossOriginalModelSize ?? originalSize;
+      const rawScale = targetSize / effectiveOriginalSize;
+      scale = Math.min(rawScale, 2); // Stricter: max 2x upscale (was 3x - minions were still huge)
+      clone.scale.set(scale, scale, scale);
+      clone.updateMatrixWorld(true);
+    }
+    
+    // CRITICAL: Hard cap scale - AFC_03 is ~100+ units; scale > 0.05 would make minion huge (Feb 6, 2026)
+    const ABSOLUTE_MAX_SCALE = 0.05;
+    if (scale > ABSOLUTE_MAX_SCALE) {
+      scale = ABSOLUTE_MAX_SCALE;
+      clone.scale.set(scale, scale, scale);
+      console.warn(`⚠️ [SPIDER] Minion scale capped to ${ABSOLUTE_MAX_SCALE} (was too large)`);
+    }
+    
+    // Ensure skeleton is posed before bbox (SkinnedMesh bbox can be wrong otherwise)
+    clone.traverse((child) => {
+      if (child.isSkinnedMesh && child.skeleton) child.skeleton.pose();
+    });
+    clone.updateMatrixWorld(true);
+    
+    // Final safeguard: ALWAYS cap world size to 1.0 units - dog-sized, 1/4 of 4-unit boss (Feb 6, 2026)
+    const worldBox = new THREE.Box3().setFromObject(clone);
+    const worldSize = worldBox.getSize(new THREE.Vector3());
+    const maxDim = Math.max(worldSize.x, worldSize.y, worldSize.z);
+    const maxMinionSize = 1.0; // Dog-sized: 1/4 of 4-unit boss
+    if (maxDim > maxMinionSize) {
+      const fixScale = maxMinionSize / maxDim;
+      scale *= fixScale;
+      clone.scale.set(scale, scale, scale);
+      clone.updateMatrixWorld(true);
+      console.warn(`⚠️ [SPIDER] Minion too large (${maxDim.toFixed(1)} units), scaled down to ${maxMinionSize}`);
+    }
+    
+    clone.position.copy(config.spawnPosition || new THREE.Vector3(0, 1, 0));
+    clone.position.y = config.groundY ?? 1.0;
+    
+    // Apply textures and brighten materials so minion matches alien spider boss (Feb 6, 2026)
+    if (tgaLoader && basePath) AlienSpiderMinion._applyMinionMaterials(clone, basePath, tgaLoader);
+    
+    const mixer = new THREE.AnimationMixer(clone);
+    const animationActions = {};
+    for (const [key, clip] of Object.entries(clips)) {
+      animationActions[key] = mixer.clipAction(clip);
+    }
+    
+    // Hitbox for raycast stability - MUST be world-size ~1.0 unit (hitbox is child of clone, inherits scale)
+    // With scale ~0.05, hitboxRadius 0.8 → world size 0.04 (too small to hit). Use 1/scale for ~1.0 world size (Feb 6, 2026)
+    const finalScale = clone.scale.x;
+    const hitboxRadius = 1.0 / Math.max(0.01, finalScale);
+    const hitbox = new THREE.Mesh(
+      new THREE.SphereGeometry(hitboxRadius, 8, 8),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 }) // Invisible but raycastable (visible:false skips raycast)
+    );
+    hitbox.position.set(0, hitboxRadius * 0.5, 0); // Center at body height
+    hitbox.name = "spider_minion_hitbox";
+    hitbox.userData.isSpiderMinionHitbox = true;
+    clone.add(hitbox);
+
+    const minion = new AlienSpiderMinion({
+      ...config,
+      model: clone,
+      mixer,
+      animationActions,
+      hitbox,
+      levelGroup: config.levelGroup,
+      getPlayerPosition: config.getPlayerPosition,
+      health: config.health ?? 30,
+      maxHealth: config.maxHealth ?? 30,
+      groundY: config.groundY ?? 1.0,
+      followSpeed: config.followSpeed ?? 3.0,
+      attackRange: config.attackRange ?? 2.5,
+      onMinionDied: config.onMinionDied
+    });
+    
+    if (config.levelGroup) config.levelGroup.add(clone);
+    minion.spawnTime = performance.now(); // Grace period - no collision for 2s after spawn (Feb 6, 2026)
+    minion.playAnimation('walk', true);
+    return minion;
+  }
+  
+  /** Apply textures and brighten materials so minions match alien spider boss (Feb 6, 2026) */
+  static _applyMinionMaterials(model, basePath, tgaLoader) {
+    const brightness = 1.5;
+    model.traverse((child) => {
+      if (child.isMesh && child.material) {
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((mat) => {
+          if (!mat || !mat.isMeshStandardMaterial) return;
+          const isEye = (child.name || '').toLowerCase().includes('eye') || (mat.name || '').toLowerCase().includes('eye');
+          const colorFile = isEye ? 'Eye_color.tga' : 'AFC_03_color.tga';
+          if (mat.color) {
+            const orig = mat.color.clone();
+            const b = orig.r + orig.g + orig.b;
+            if (b < 0.3) {
+              mat.color.setRGB(Math.min(1, orig.r * 3), Math.min(1, orig.g * 3), Math.min(1, orig.b * 3));
+            } else if (b < 0.6) {
+              mat.color.setRGB(Math.min(1, orig.r * 2), Math.min(1, orig.g * 2), Math.min(1, orig.b * 2));
+            }
+            mat.color.multiplyScalar(brightness);
+          }
+          tgaLoader.load(basePath + colorFile, (tex) => {
+            tex.flipY = false;
+            mat.map = tex;
+            mat.needsUpdate = true;
+          }, undefined, () => {
+            if (mat.color) mat.color.setHex(0x888888);
+            mat.needsUpdate = true;
+          });
+        });
+      }
+    });
+  }
+  
+  playAnimation(name, loop = true) {
+    const action = this.animationActions[name] || this.animationActions.walk;
+    if (!action) return;
+    if (this.currentAction) this.currentAction.fadeOut(0.15);
+    this.currentAction = action;
+    this.currentAction.reset();
+    this.currentAction.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce);
+    this.currentAction.fadeIn(0.15);
+    this.currentAction.play();
+  }
+  
+  update(delta) {
+    if (!this.model || !this.isAlive) return;
+    
+    if (this.mixer) this.mixer.update(delta);
+    if (this.attackCooldown > 0) this.attackCooldown -= delta;
+    
+    const pos = this.getPlayerPosition?.();
+    if (!pos) return;
+    
+    const dx = pos.x - this.model.position.x;
+    const dz = pos.z - this.model.position.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    
+    if (dist < this.attackRange) {
+      this.playAnimation(Math.random() < 0.5 ? 'attack_1' : 'attack_2', false);
+      return;
+    }
+    
+    if (dist > 0.1) {
+      const nx = dx / dist;
+      const nz = dz / dist;
+      const speed = this.followSpeed * delta;
+      this.model.position.x += nx * speed;
+      this.model.position.z += nz * speed;
+      this.model.position.y = this.groundY;
+      this.model.rotation.y = Math.atan2(-nx, nz) + Math.PI / 2;
+      if (!this.currentAction || this.currentAction?.getClip()?.name?.includes('Attack')) {
+        this.playAnimation('run', true);
+      }
+    }
+  }
+  
+  takeDamage(amount) {
+    if (!this.isAlive) return;
+    this.health = Math.max(0, this.health - amount);
+    if (this.health <= 0) this.die();
+  }
+  
+  die() {
+    if (!this.isAlive) return;
+    this.isAlive = false;
+    this.onMinionDied(this);
+  }
+  
+  /** Remove from scene and dispose. Call after die(). */
+  dispose() {
+    if (this.mixer) this.mixer.stopAllAction();
+    if (this.levelGroup && this.model) this.levelGroup.remove(this.model);
+    this.model = null;
+    this.mixer = null;
+    this.hitbox = null;
+    this.animationActions = {};
   }
 }

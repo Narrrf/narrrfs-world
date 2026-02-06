@@ -723,6 +723,8 @@ export class GrassSystem {
       undergroundType: options.undergroundType || 'color', // 'color' | 'texture'
       undergroundColor: options.undergroundColor !== undefined ? options.undergroundColor : 0x777777,
       undergroundTexturePath: options.undergroundTexturePath || null,
+      useGroundTexture: options.useGroundTexture === true, // For blank/color: use texture instead of solid color
+      groundTexturePath: options.groundTexturePath || null, // Path to ground texture (e.g. textures/grass/grass.jpg)
       ...options
     };
     
@@ -1279,7 +1281,7 @@ export class GrassSystem {
   }
   
   /**
-   * Create a blank (solid color) ground mesh
+   * Create a blank (solid color or textured) ground mesh
    * Used for levels with no grass (e.g., Level 6)
    * 
    * FIXED (December 16, 2025): Underground flickering/z-fighting issue resolved
@@ -1287,28 +1289,55 @@ export class GrassSystem {
    * - Polygon offset prevents z-fighting with other meshes
    * - Ground color respects saved settings from options.groundColor
    * 
-   * @returns {THREE.Mesh} Ground mesh with solid color material
+   * NEW (2026-02-05): useGroundTexture + groundTexturePath - textured ground for blank/color modes
+   * 
+   * @returns {THREE.Mesh} Ground mesh with solid color or textured material
    */
   createBlankGround() {
     const PLANE_SIZE = this.options.planeSize;
     const geometry = new THREE.PlaneGeometry(PLANE_SIZE * 2, PLANE_SIZE * 2);
-    // 🚨 CRITICAL FIX: Use MeshBasicMaterial for completely unlit ground (zero flickering)
-    // MeshBasicMaterial is completely unaffected by lighting, preventing any color fluctuation
-    // Use groundColor from options (e.g., Level 6 uses 0x333333) instead of hardcoded value
-    // Add polygonOffset to prevent z-fighting with other meshes at same position
-    // FIXED (Dec 16, 2025): Underground flickering issue - all levels now match saved settings perfectly
-    const groundColor = this.options.groundColor || 0x888888;
-    const material = new THREE.MeshBasicMaterial({
-      color: groundColor,
-      side: THREE.DoubleSide,
-      polygonOffset: true,
-      polygonOffsetFactor: -1,
-      polygonOffsetUnits: -1
-    });
+    let material;
+    if (this.options.useGroundTexture && this.options.groundTexturePath) {
+      const loader = new THREE.TextureLoader();
+      const resolvedPath = this.resolveAssetPath(this.options.groundTexturePath);
+      const texture = loader.load(
+        resolvedPath,
+        (tex) => {
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(PLANE_SIZE / 10, PLANE_SIZE / 10);
+          tex.needsUpdate = true;
+        },
+        undefined,
+        (err) => console.error("❌ [GRASS] Failed to load underground ground texture:", resolvedPath, err)
+      );
+      // Use white (0xffffff) when textured - groundColor tints the texture and caused yellow/gray underground.
+      // White ensures the texture displays its true colors (e.g. green grass) without tinting.
+      const matColor = 0xffffff;
+      material = new THREE.MeshStandardMaterial({
+        map: texture,
+        color: matColor,
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
+        roughness: 0.8,
+        metalness: 0.1
+      });
+    } else {
+      const groundColor = this.options.groundColor || 0x888888;
+      material = new THREE.MeshBasicMaterial({
+        color: groundColor,
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1
+      });
+    }
     const mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.copy(this.options.position);
-    mesh.receiveShadow = false; // MeshBasicMaterial doesn't support shadows
+    mesh.receiveShadow = !!(material instanceof THREE.MeshStandardMaterial);
     mesh.userData.isGroundMesh = true;
     return mesh;
   }
@@ -1324,6 +1353,9 @@ export class GrassSystem {
    * - MeshStandardMaterial with high emissive for textures (reduces lighting influence)
    * - Ground color respects saved settings and properly falls back to options.groundColor
    * 
+   * NEW (2026-02-05): useGroundTexture + groundTexturePath - grass texture for underground
+   * Same as Level 3 - makes underground match the grass texture (green) when enabled.
+   * 
    * @returns {THREE.Mesh} Underground mesh positioned slightly below ground level
    */
   createUndergroundMesh() {
@@ -1331,21 +1363,60 @@ export class GrassSystem {
     const geometry = new THREE.PlaneGeometry(PLANE_SIZE * 2, PLANE_SIZE * 2);
     let material;
     
-    if (this.options.undergroundType === 'texture' && this.options.undergroundTexturePath) {
+    // NEW (2026-02-05): useGroundTexture + groundTexturePath - same as Level 3 underground
+    if (this.options.useGroundTexture && this.options.groundTexturePath) {
       const loader = new THREE.TextureLoader();
+      const resolvedPath = this.resolveAssetPath(this.options.groundTexturePath);
       const texture = loader.load(
-        this.options.undergroundTexturePath,
-        () => {
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          texture.repeat.set(PLANE_SIZE / 10, PLANE_SIZE / 10);
-          texture.needsUpdate = true;
+        resolvedPath,
+        (tex) => {
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(PLANE_SIZE / 10, PLANE_SIZE / 10);
+          tex.needsUpdate = true;
         },
         undefined,
-        (error) => {
-          console.error(`❌ [GRASS] Failed to load underground texture: ${this.options.undergroundTexturePath}`, error);
-        }
+        (err) => console.error("❌ [GRASS] Failed to load underground ground texture:", resolvedPath, err)
       );
+      // Use white (0xffffff) when textured - groundColor tints the texture and caused yellow/gray underground.
+      const matColor = 0xffffff;
+      material = new THREE.MeshStandardMaterial({
+        map: texture,
+        color: matColor,
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2,
+        roughness: 0.8,
+        metalness: 0.1
+      });
+    } else if (this.options.undergroundType === 'texture' && this.options.undergroundTexturePath) {
+      // FIX (2026-02-05): Level 1 lava override - when ground is grass or blank, always use grass underground (like Level 3).
+      // Saved config may have undergroundTexturePath: lava.png from previous sessions.
+      let undergroundPath = this.options.undergroundTexturePath;
+      const groundType = String(this.options.groundType || '').toLowerCase();
+      const isLava = undergroundPath && String(undergroundPath).toLowerCase().includes('lava');
+      const wantGrassUnderground = groundType === 'grass' || groundType === 'blank';
+      if (isLava && wantGrassUnderground) {
+        // Both grass and blank modes: use grass texture for underground (like Level 3)
+        undergroundPath = this.options.groundTexturePath || '/textures/grass/grass.jpg';
+      }
+      if (undergroundPath) {
+        const loader = new THREE.TextureLoader();
+        const resolvedUndergroundPath = this.resolveAssetPath(undergroundPath);
+        const texture = loader.load(
+          resolvedUndergroundPath,
+          () => {
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(PLANE_SIZE / 10, PLANE_SIZE / 10);
+            texture.needsUpdate = true;
+          },
+          undefined,
+          (error) => {
+            console.error(`❌ [GRASS] Failed to load underground texture: ${resolvedUndergroundPath}`, error);
+          }
+        );
       
       // 🚨 CRITICAL FIX: Make material unlit to prevent color fluctuation from lighting changes
       // Set neutral emissive and high emissiveIntensity so texture doesn't fluctuate with lighting
@@ -1358,6 +1429,7 @@ export class GrassSystem {
         roughness: 0.8,
         metalness: 0.1
       });
+      }
     } else {
       // 🚨 CRITICAL FIX: Use MeshBasicMaterial for completely unlit underground (zero flickering)
       // MeshBasicMaterial is completely unaffected by lighting, preventing any color fluctuation
@@ -1404,27 +1476,54 @@ export class GrassSystem {
    * - Polygon offset prevents z-fighting with other meshes
    * - Ground color respects saved settings from options.groundColor
    * 
-   * @returns {THREE.Mesh} Ground mesh with solid color material
+   * NEW (2026-02-05): useGroundTexture + groundTexturePath - textured ground for blank/color modes
+   * 
+   * @returns {THREE.Mesh} Ground mesh with solid color or textured material
    */
   createColorGround() {
     const PLANE_SIZE = this.options.planeSize;
     const geometry = new THREE.PlaneGeometry(PLANE_SIZE * 2, PLANE_SIZE * 2);
-    // 🚨 CRITICAL FIX: Use MeshBasicMaterial for completely unlit ground (zero flickering)
-    // MeshBasicMaterial is completely unaffected by lighting, preventing any color fluctuation
-    // Add polygonOffset to prevent z-fighting with other meshes at same position
-    // FIXED (Dec 16, 2025): Underground flickering issue - all levels now match saved settings perfectly
-    const groundColor = this.options.groundColor || 0xaaaaaa;
-    const material = new THREE.MeshBasicMaterial({
-      color: groundColor,
-      side: THREE.DoubleSide,
-      polygonOffset: true,
-      polygonOffsetFactor: -1,
-      polygonOffsetUnits: -1
-    });
+    let material;
+    if (this.options.useGroundTexture && this.options.groundTexturePath) {
+      const loader = new THREE.TextureLoader();
+      const resolvedPath = this.resolveAssetPath(this.options.groundTexturePath);
+      const texture = loader.load(
+        resolvedPath,
+        (tex) => {
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(PLANE_SIZE / 10, PLANE_SIZE / 10);
+          tex.needsUpdate = true;
+        },
+        undefined,
+        (err) => console.error("❌ [GRASS] Failed to load ground texture:", resolvedPath, err)
+      );
+      // Use white (0xffffff) when textured - groundColor tints the texture and caused yellow/gray underground.
+      const matColor = 0xffffff;
+      material = new THREE.MeshStandardMaterial({
+        map: texture,
+        color: matColor,
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
+        roughness: 0.8,
+        metalness: 0.1
+      });
+    } else {
+      const groundColor = this.options.groundColor || 0xaaaaaa;
+      material = new THREE.MeshBasicMaterial({
+        color: groundColor,
+        side: THREE.DoubleSide,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1
+      });
+    }
     const mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.copy(this.options.position);
-    mesh.receiveShadow = false; // MeshBasicMaterial doesn't support shadows
+    mesh.receiveShadow = !!(material instanceof THREE.MeshStandardMaterial);
     mesh.userData.isGroundMesh = true;
     return mesh;
   }
@@ -2945,14 +3044,20 @@ export class GrassSystem {
       // Underground changes for grass: recreate underground mesh
       if (newOptions.undergroundType !== undefined ||
           newOptions.undergroundColor !== undefined ||
-          newOptions.undergroundTexturePath !== undefined) {
-        // Recreate ground to apply underground changes
+          newOptions.undergroundTexturePath !== undefined ||
+          newOptions.useGroundTexture !== undefined ||
+          newOptions.groundTexturePath !== undefined) {
+        // Recreate ground to apply underground changes (incl. grass texture for Level 1)
         this.setGroundType('grass');
       }
     } else if (this.groundMesh && (this.options.groundType === 'blank' || this.options.groundType === 'color')) {
-      // If it's a blank/color mesh and color changed, update material
-      if (newOptions.groundColor !== undefined && this.groundMesh.material.color) {
+      // If it's a blank/color mesh and color changed, update material (only if not textured)
+      if (newOptions.groundColor !== undefined && this.groundMesh.material.color && !this.options.useGroundTexture) {
         this.groundMesh.material.color.setHex(newOptions.groundColor);
+      }
+      // Recreate ground if useGroundTexture or groundTexturePath changed (need new mesh with texture)
+      if (newOptions.useGroundTexture !== undefined || newOptions.groundTexturePath !== undefined) {
+        this.setGroundType(this.options.groundType);
       }
     }
   }

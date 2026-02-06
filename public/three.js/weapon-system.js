@@ -500,6 +500,7 @@ export class WeaponSystem {
     this.getLevel4RiddleState = config.getLevel4RiddleState || (() => ({}));
     this.getLevel5State = config.getLevel5State || (() => ({})); // Level 5 state getter (January 11, 2026)
     this.getLevel5RiddleState = config.getLevel5RiddleState || (() => ({})); // Level 5 riddle state getter (January 11, 2026)
+    this.getLevel6State = config.getLevel6State || (() => null); // Level 6 state getter (February 6, 2026 - spider minions)
     this.isFirstPerson = config.isFirstPerson || (() => false);
     this.isGamePaused = config.isGamePaused || (() => false);
     this.isPointerLocked = config.isPointerLocked || (() => false);
@@ -1313,6 +1314,7 @@ export class WeaponSystem {
 
     // 🔥 PHOENIX BOSS: Check for Phoenix hit (Level 5 or Level 6) - takes highest priority
     let hitPhoenix = false;
+    let hitSpiderMinion = null;
     const currentLevel = this.getCurrentLevel();
     const phoenixBossInstance = this.getPhoenixBoss ? this.getPhoenixBoss() : null;
     if ((currentLevel === "LEVEL5" || currentLevel === "LEVEL6") && phoenixBossInstance && phoenixBossInstance.isAlive) {
@@ -1334,6 +1336,36 @@ export class WeaponSystem {
           }
         }
       }
+    }
+
+    // 🕷️ LEVEL 6 SPIDER MINIONS: Check for spider minion hits (February 6, 2026)
+    const level6State = this.getLevel6State ? this.getLevel6State() : null;
+    if (currentLevel === "LEVEL6" && level6State?.spiderMinions && !hitPhoenix) {
+      level6State.spiderMinions.forEach((minion) => {
+        if (!minion || !minion.isAlive) return;
+        const raycastTarget = minion.hitbox || minion.model;
+        if (!raycastTarget) return;
+        try {
+          const intersects = raycaster.intersectObject(raycastTarget, true);
+          if (intersects.length > 0) {
+            const distance = intersects[0].distance;
+            if (distance < hitDistance) {
+              hitDistance = distance;
+              hitSpiderMinion = minion;
+              hitMonster = null;
+              hitCheese = null;
+              hitPhoenix = false;
+              hitIndex = -1;
+              monsterHitIndex = -1;
+              level5MonsterHitIndex = -1;
+              targetPos.copy(intersects[0].point);
+              console.log(`🕷️ [WEAPON] Level 6 Spider Minion HIT! Distance: ${distance.toFixed(2)}`);
+            }
+          }
+        } catch (e) {
+          console.warn("⚠️ [WEAPON] Spider minion raycast error:", e);
+        }
+      });
     }
     
     // 🎯 LEVEL 5 MONSTERS: Check for Level 5 monster hits (takes priority over Level 4 monsters) - January 11, 2026
@@ -1513,6 +1545,12 @@ export class WeaponSystem {
       this.onHitIndicator();
       const health = phoenixBossInstance.getHealth();
       console.log(`🔥 [WEAPON] Phoenix hit! Damage: ${damage}, Health: ${health.current}/${health.max}`);
+    } else if (hitSpiderMinion) {
+      const damage = isPurple ? 75 : 50;
+      hitSpiderMinion.takeDamage(damage);
+      if (typeof this.onSpiderMinionHit === "function") this.onSpiderMinionHit(hitSpiderMinion);
+      this.onHitIndicator();
+      console.log(`🕷️ [WEAPON] Spider minion hit! Damage: ${damage}, Health: ${hitSpiderMinion.health}/${hitSpiderMinion.maxHealth}`);
     } else if (hitMonster && level5MonsterHitIndex >= 0 && (currentLevel === "LEVEL5" || currentLevel === LEVEL_IDS?.LEVEL5)) {
       // Level 5 Monster hit processing (January 11, 2026)
       // Called after raycast detects a hit on a Level 5 monster
