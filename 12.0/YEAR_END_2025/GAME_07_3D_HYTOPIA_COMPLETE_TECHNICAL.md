@@ -1,9 +1,9 @@
 # 🎮 GAME 7: 3D HYTOPIA GAME - COMPLETE TECHNICAL DOCUMENTATION 2025
 
 **Created:** December 20, 2025  
-**Last Updated:** February 3, 2026 (Level 6 Boss HUD – Alien Spider + Phoenix sync)  
+**Last Updated:** February 6, 2026 (Alien Spider Wave Minions – Level 6 hunt mode)  
 **Status:** ✅ **STABLE PRODUCTION VERSION - MOBILE & VR OPTIMIZED**  
-**Version:** 2026-02-03-LEVEL6-BOSS-HUD  
+**Version:** 2026-02-06-LEVEL6-MINION-WAVE  
 **Purpose:** Complete technical reference for 3D Riddle Game integration in Narrrfs World
 
 ---
@@ -3423,6 +3423,33 @@ async function startVRSession() {
 **Code locations:**
 - `createLevel5Chests()` ~line 23245 (after createLevel5Glyphs)
 - Called from buildLevel5TheWalk (setTimeout 100ms) and warpToLevel5 (setTimeout 200ms)
+
+**Status:** ✅ **Implemented – Production ready**
+
+---
+
+### ✅ Alien Spider Wave Minions – Level 6 Hunt Mode (February 6, 2026)
+
+**Feature:** Alien spider minions spawn in waves during Level 6 Step 1 (hunt mode). Chase player, melee = instant death, player shoots to kill. Colored cube explosion on death (like Level 5).
+
+**Implementation:**
+- **Module:** `alien-spider.js` – AlienSpiderMinion class, createFromCache(), loadMinionCache()
+- **Spawn:** 3 per wave, max 8 alive, waveInterval 15s, spawn 15–22 units from player
+- **Model:** AFC_03.fbx via SkeletonUtils.clone (FBX skinned mesh – Rule 14)
+- **Materials:** _applyMinionMaterials() – color, normal, ao; white body → brown (0x664422) when b>0.9
+- **Visibility:** _forceMinionVisible() – EXCLUDES hitbox (spider_minion_hitbox) – hitbox must stay invisible or it renders as white sphere
+- **Hitbox:** SphereGeometry, MeshBasicMaterial({ transparent:true, opacity:0, colorWrite:false }) – raycastable, invisible
+- **Hitbox size:** hitboxRadius = 1.0 / scale – world-size ~1 unit (shootable)
+- **Size:** maxMinionSize 1.3, targetSize 1.2, followSpeed 2.0 (slower, bigger)
+- **Explosion:** createMonsterExplosionEffect(pos, 0.8) in onMinionDied
+- **Weapon:** weapon-system.js Level 6 config includes spider minion hitbox for raycast
+
+**Config (main.js LEVEL6_SPIDER_WAVE_CONFIG):**
+- targetSize: 1.2, followSpeed: 2.0, spidersPerWave: 3, maxSpidersAlive: 8
+
+**Lab notes:**
+- `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-06/ALIEN_SPIDER_MINION_RENDERING_AND_SHOOTING_ISSUES_2026-02-06.md`
+- `12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-06/ALIEN_SPIDER_WAVE_MINIONS_IMPLEMENTATION_PLAN_2026-02-06.md`
 
 **Status:** ✅ **Implemented – Production ready**
 

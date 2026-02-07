@@ -726,7 +726,7 @@ export class GUISystem {
     const phoenixName = document.createElement("span");
     phoenixName.id = "phoenixBehaviorName";
     phoenixName.style.cssText = "color: #ffaa44; font-size: 16px;";
-    phoenixName.innerText = "Flying Circle (1/17)";
+    phoenixName.innerText = "Flying Circle (1/18)";
     phoenixRow.appendChild(phoenixLabel);
     phoenixRow.appendChild(phoenixName);
     
@@ -851,7 +851,7 @@ export class GUISystem {
   updatePhoenixBehaviorDisplay(behaviorName, behaviorIndex = null) {
     if (!this.phoenixBehaviorName) this.createLevel6BossBehaviorHud();
     if (this.phoenixBehaviorName) {
-      this.phoenixBehaviorName.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/17)` : behaviorName;
+      this.phoenixBehaviorName.innerText = behaviorIndex !== null ? `${behaviorName} (${behaviorIndex}/18)` : behaviorName;
     }
   }
   

@@ -19,12 +19,21 @@
 
 **Files Modified:**
 - `public/three.js/phoenix2.js` – Config, phase logic, transition blend
+- `public/three.js/alien-spider.js` – Minion materials (white→brown), size, speed
+- `public/three.js/main.js` – LEVEL6_SPIDER_WAVE_CONFIG, bossScale for minions
 
 **Alien Spider Wave Minions – Implementation (✅ COMPLETE – Feb 6, 2026):**
 - ✅ **Implemented:** Spiders spawn in waves (3 per wave, every 25s, max 8 alive)
 - ✅ **Behavior:** Chase player, melee = instant death, player shoots to kill
 - ✅ **Wiring:** Weapon raycast, update loop, spawn on build + return-to-Level-6
-- **Lab note:** `ALIEN_SPIDER_WAVE_MINIONS_IMPLEMENTATION_PLAN_2026-02-06.md`
+- ✅ **Minion Polish (Feb 6):** White→brown materials (no white placeholders), bigger (targetSize 1.2, max 1.3), slower (followSpeed 2.0)
+- **Lab note:** `ALIEN_SPIDER_WAVE_MINIONS_IMPLEMENTATION_PLAN_2026-02-06.md`, `ALIEN_SPIDER_MINION_RENDERING_AND_SHOOTING_ISSUES_2026-02-06.md`
+
+**Phoenix Egg Drop – Pattern 18 Plan (📋 PLANNED – Feb 6, 2026):**
+- 📋 **Pattern 18** = Ultra-extended Pattern 17 + egg laying when Phoenix is in air (circle/patrol mode)
+- 📋 **Loop:** Phoenix drops Volcanic Egg while flying → egg falls with gravity → spiders spawn on landing → repeat until Phoenix + spiders defeated
+- 📋 **Circle mode phases (21–23):** Egg drop triggers during patrol/circle flight
+- 📋 **Lab note:** `PHOENIX_EGG_DROP_PATTERN_18_PLAN_2026-02-06.md`
 
 ---
 

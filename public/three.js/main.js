@@ -3557,6 +3557,7 @@ const level6State = {
   mapModel: null, // GLTF map model (thefield.gltf)
   collisionMapModel: null, // Map model used for collision detection (with BVH trees)
   spawnPosition: new THREE.Vector3(0, 0, 0), // Player spawn position (feet at ground level y=0)
+  volcanicEgg: null, // Volcanic Egg decorative model (Feb 6, 2026 - Egg Volcanic Core)
   // Spider wave minions (Feb 6, 2026)
   spiderMinions: [],
   spiderWaveTimer: 0,
@@ -3573,8 +3574,8 @@ const LEVEL6_SPIDER_WAVE_CONFIG = {
   spawnRadius: 25,
   groundY: 1.0,
   minionHealth: 30,
-  targetSize: 1.0, // Dog-sized minions (was 1.5 - too huge, Feb 6 2026)
-  followSpeed: 3.0,
+  targetSize: 1.2, // Slightly bigger for visibility (was 1.0 - Feb 6, 2026)
+  followSpeed: 2.0, // Slower for better gameplay (was 3.0 - Feb 6, 2026)
   attackRange: 2.5
 };
 
@@ -3614,7 +3615,7 @@ async function spawnLevel6SpiderWave() {
   const bossSize = alienSpiderBoss?.targetSize ?? 4.0;
   const bossOriginalSize = alienSpiderBoss?._originalModelSize;
   const bossScale = alienSpiderBoss?.model?.scale?.x; // Uniform scale on boss model
-  const minionTargetSize = bossSize * 0.25; // Dog-sized: 1 unit when boss is 4
+  const minionTargetSize = bossSize * 0.3; // Slightly bigger: ~1.2 units when boss is 4 (was 0.25 - Feb 6, 2026)
   if (godMode) {
     console.log(`🕷️ [LEVEL 6] Minion size config: bossSize=${bossSize}, bossOriginalSize=${bossOriginalSize?.toFixed(2) ?? 'n/a'}, bossScale=${bossScale?.toFixed(4) ?? 'n/a'}, minionTargetSize=${minionTargetSize}, bossScale/4=${bossScale != null ? (bossScale / 4).toFixed(4) : 'n/a'}`);
   }
@@ -3655,7 +3656,7 @@ async function spawnLevel6SpiderWave() {
       groundY: groundY,
       targetSize: minionTargetSize,
       bossOriginalModelSize: bossOriginalSize,
-      bossScale: bossScale != null ? bossScale / 4 : undefined, // Minion = 1/4 boss when boss loaded (Feb 6, 2026)
+      bossScale: bossScale != null ? bossScale * (minionTargetSize / bossSize) : undefined, // Minion size proportional to boss (Feb 6, 2026)
       followSpeed: cfg.followSpeed,
       attackRange: cfg.attackRange,
       onMinionDied: (m) => {
@@ -3679,6 +3680,89 @@ async function spawnLevel6SpiderWave() {
 // onPlayerHitBySpiderMinion defined later (near triggerLevel6GameOver) - uses same flow as Phoenix fire death
 
 const LEVEL6_MINION_SPAWN_GRACE_MS = 2500; // No damage for 2.5s after spawn - gives player time to react (Feb 6, 2026)
+
+/**
+ * Spawn spider minions at a fixed position (Pattern 18 egg drop - Feb 6, 2026)
+ * Called when Phoenix egg lands during fire_sphere_hunt_egg_drop pattern.
+ * @param {THREE.Vector3} landPos - Position where egg landed (spawn spiders here)
+ * @param {number} count - Number of spiders to spawn (from egg config, default 2)
+ */
+async function spawnLevel6SpiderMinionsAtPosition(landPos, count = 2) {
+  if (!level6State.built || currentLevel !== LEVEL_IDS.LEVEL6) return;
+  // Pattern 18: Egg drops spawn minions even before Step 0 - no step1Active check
+  const alive = level6State.spiderMinions.filter((m) => m.isAlive);
+  if (alive.length >= LEVEL6_SPIDER_WAVE_CONFIG.maxSpidersAlive) return;
+
+  const cfg = LEVEL6_SPIDER_WAVE_CONFIG;
+  const modelPath = resolveAssetPath("textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx");
+
+  const bossSize = alienSpiderBoss?.targetSize ?? 4.0;
+  const bossOriginalSize = alienSpiderBoss?._originalModelSize;
+  const bossScale = alienSpiderBoss?.model?.scale?.x;
+  const minionTargetSize = bossSize * 0.3;
+
+  if (!level6State.spiderWaveCacheLoaded) {
+    try {
+      await AlienSpiderMinion.loadMinionCache(modelPath);
+      level6State.spiderWaveCacheLoaded = true;
+    } catch (e) {
+      console.warn("⚠️ [LEVEL 6] Spider minion cache load failed (egg drop):", e);
+      return;
+    }
+  }
+
+  const toSpawn = Math.min(count, cfg.maxSpidersAlive - alive.length);
+  const groundY = Math.max(0, (level6State.spawnPosition?.y ?? 2) - 1.5);
+
+  // If egg landed very close to player, offset spawn center away to prevent instant crush (Feb 6, 2026)
+  let spawnCenter = landPos.clone();
+  if (playerCollider) {
+    const playerCenter = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+    const dx = landPos.x - playerCenter.x;
+    const dz = landPos.z - playerCenter.z;
+    const distToPlayer = Math.sqrt(dx * dx + dz * dz);
+    const minSafeDist = 5.0; // Spawn at least 5 units from player
+    if (distToPlayer < minSafeDist && distToPlayer > 0.01) {
+      const dir = new THREE.Vector3(dx, 0, dz).normalize();
+      spawnCenter.x = playerCenter.x + dir.x * minSafeDist;
+      spawnCenter.z = playerCenter.z + dir.z * minSafeDist;
+    }
+  }
+
+  // Spawn in a small circle around spawnCenter (radius ~2 units to avoid stacking)
+  const spawnRadius = 2.0;
+  for (let i = 0; i < toSpawn; i++) {
+    const angle = (Math.PI * 2 * i) / toSpawn + Math.random() * 0.3;
+    const r = spawnRadius * (0.8 + Math.random() * 0.4);
+    const pos = new THREE.Vector3(
+      spawnCenter.x + Math.cos(angle) * r,
+      groundY,
+      spawnCenter.z + Math.sin(angle) * r
+    );
+    const minion = AlienSpiderMinion.createFromCache({
+      levelGroup: level6State.group,
+      getPlayerPosition: getPlayerPositionForSpider,
+      spawnPosition: pos,
+      health: cfg.minionHealth,
+      maxHealth: cfg.minionHealth,
+      groundY: groundY,
+      targetSize: minionTargetSize,
+      bossOriginalModelSize: bossOriginalSize,
+      bossScale: bossScale != null ? bossScale * (minionTargetSize / bossSize) : undefined,
+      followSpeed: cfg.followSpeed,
+      attackRange: cfg.attackRange,
+      onMinionDied: (m) => {
+        if (m.model && typeof createMonsterExplosionEffect === 'function') {
+          createMonsterExplosionEffect(m.model.position.clone(), 0.8);
+        }
+        m.dispose();
+        level6State.spiderMinions = level6State.spiderMinions.filter((x) => x !== m);
+      }
+    });
+    if (minion) level6State.spiderMinions.push(minion);
+  }
+  console.log(`🕷️ [LEVEL 6] Egg drop: spawned ${toSpawn} spider minions at (${landPos.x.toFixed(1)}, ${landPos.z.toFixed(1)}), total alive: ${level6State.spiderMinions.filter((m) => m.isAlive).length}`);
+}
 
 function checkSpiderMinionPlayerCollision() {
   if (level6State.playerDead || !playerCollider) return;
@@ -15851,6 +15935,7 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
           <option value="player_hunt_combo" ${currentSettings.behaviorMode === 'player_hunt_combo' ? 'selected' : ''}>🎯 Player Hunt Combo (AI Player-Tracking Attack)</option>
           <option value="fire_sphere_hunt" ${currentSettings.behaviorMode === 'fire_sphere_hunt' ? 'selected' : ''}>🔥 Pattern 16 Fire Sphere Hunt</option>
           <option value="fire_sphere_hunt_extended" ${currentSettings.behaviorMode === 'fire_sphere_hunt_extended' ? 'selected' : ''}>🔥 Pattern 17 Extended</option>
+          <option value="fire_sphere_hunt_egg_drop" ${currentSettings.behaviorMode === 'fire_sphere_hunt_egg_drop' ? 'selected' : ''}>🥚 Pattern 18 Egg Drop</option>
         `;
         Object.assign(behaviorSelect.style, {
           width: "100%",
@@ -15872,13 +15957,13 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
             if (guiSystem && typeof guiSystem.updatePhoenixBehaviorDisplay === 'function') {
               const behaviors = ['flying_circle', 'flying_hover', 'flying_patrol', 'ground_sleeping', 
                                 'ground_idle', 'ground_walking', 'ground_attacking', 'ground_rage', 'combat_preparation',
-                                'ground_death', 'ground_running', 'ground_awakening', 'flying_dive_attack', 'ground_ultimate_combo', 'player_hunt_combo', 'fire_sphere_hunt', 'fire_sphere_hunt_extended'];
+                                'ground_death', 'ground_running', 'ground_awakening', 'flying_dive_attack', 'ground_ultimate_combo', 'player_hunt_combo', 'fire_sphere_hunt', 'fire_sphere_hunt_extended', 'fire_sphere_hunt_egg_drop'];
               const behaviorNames = ['🔄 Flying Circle', '✈️ Flying Hover', '🛸 Flying Patrol', '😴 Ground Sleeping',
                                     '🧍 Ground Idle', '🚶 Ground Walking', '⚔️ Ground Attacking', '😡 Ground Rage', '🎯 Combat Preparation',
-                                    '💀 Ground Death', '🏃 Ground Running', '🌅 Ground Awakening', '🎯 Flying Dive Attack', '💥 Ground Ultimate Combo', '🎯 Player Hunt Combo', '🔥 Pattern 16 Fire Sphere Hunt', '🔥 Pattern 17 Extended'];
+                                    '💀 Ground Death', '🏃 Ground Running', '🌅 Ground Awakening', '🎯 Flying Dive Attack', '💥 Ground Ultimate Combo', '🎯 Player Hunt Combo', '🔥 Pattern 16 Fire Sphere Hunt', '🔥 Pattern 17 Extended', '🥚 Pattern 18 Egg Drop'];
               const behaviorIndex = behaviors.indexOf(mode);
               const behaviorName = behaviorIndex >= 0 ? behaviorNames[behaviorIndex] : '🔄 Flying Circle';
-              // Updated to X/17 format (February 5, 2026 - Pattern 16 Fire Sphere Hunt + Pattern 17 Extended)
+              // Updated to X/18 format (February 6, 2026 - Pattern 18 Egg Drop)
               guiSystem.updatePhoenixBehaviorDisplay(behaviorName, behaviorIndex >= 0 ? behaviorIndex + 1 : 1);
             }
           }
@@ -25679,6 +25764,7 @@ async function buildLevel6PhoenixArena() {
     // which caused chest_011 to be created, then disposed, then recreated (often off-camera),
     // leading to “no chest spawns” reports even though logs show it loaded.
     ensureLevel6ChestsLoaded("buildLevel6PhoenixArena:post-build");
+    createLevel6VolcanicEgg();
   }, 150);
   
   level6State.built = true;
@@ -25686,6 +25772,60 @@ async function buildLevel6PhoenixArena() {
 
   // 🧩 LEVEL 6 STEP 0: Create cheese stone plate - stand 5 seconds to activate spider minion fight (Feb 6, 2026)
   createLevel6TriggerBlock();
+}
+
+// Create Volcanic Egg decorative model in Level 6 (Feb 6, 2026)
+// Pattern: Rule 18 - resolveAssetPath + encodeURI for data persistence / Render symlink
+// Model: Egg Volcanic Core / EggVolcanic.glb (like corner bosses in Level 3/4 or glyphs in Level 5)
+function createLevel6VolcanicEgg() {
+  if (!level6State.group || level6State.volcanicEgg) return;
+
+  const relativePath = "textures/3d models/Egg Volcanic Core/EggVolcanic.glb";
+  const resolved = resolveAssetPath(relativePath);
+  const urlForLoader = encodeURI(resolved);
+
+  if (typeof loadModel !== "function") {
+    console.warn("⚠️ [LEVEL 6] loadModel not available for Volcanic Egg");
+    return;
+  }
+
+  loadModel(urlForLoader)
+    .then((result) => {
+      const loadedScene = result.scene || result;
+      const model = loadedScene;
+
+      const spawn = level6State.spawnPosition || new THREE.Vector3(0, 2, 0);
+      const groundY = Math.max(0.5, (spawn.y || 2) - 1.5);
+      const eggX = (spawn.x || 0) + 8;
+      const eggZ = (spawn.z || 0) + 5;
+
+      model.position.set(eggX, groundY, eggZ);
+      model.scale.setScalar(2.5);
+      model.rotation.y = Math.PI * 0.25;
+      model.visible = true;
+      model.name = "Level6_VolcanicEgg";
+
+      if (typeof processWeaponMaterial === "function") {
+        model.traverse((child) => {
+          if (child.isMesh && child.material) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => processWeaponMaterial(mat));
+            } else {
+              child.material = processWeaponMaterial(child.material);
+            }
+          }
+        });
+      }
+
+      level6State.group.add(model);
+      level6State.volcanicEgg = model;
+      console.log("🥚 [LEVEL 6] Volcanic Egg created at:", { x: eggX, y: groundY, z: eggZ });
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 6] Failed to load Volcanic Egg model:", error);
+    });
 }
 
 // Calculate wave-based difficulty (returns difficulty object)
@@ -30493,6 +30633,11 @@ async function warpToLevel6() {
             const phase = phoenixBoss.getCurrentPhase ? phoenixBoss.getCurrentPhase() : 1;
             guiSystem.updateBossHealthBar(health, maxHealth, phase);
           }
+        },
+        onEggLanded: (landPos, spidersPerEgg) => {
+          if (typeof spawnLevel6SpiderMinionsAtPosition === 'function') {
+            spawnLevel6SpiderMinionsAtPosition(landPos, spidersPerEgg ?? 2);
+          }
         }
       };
       
@@ -34215,6 +34360,7 @@ function cycleLevel5Step() {
  * 15. 🎯 Player Hunt Combo (AI attack)
  * 16. 🔥 Fire Sphere Hunt (Fire spheres toward player)
  * 17. 🔥 Pattern 17 Extended (Extended fire sphere hunt)
+ * 18. 🥚 Pattern 18 Egg Drop (Pattern 17 + egg drops during circle mode - Feb 6, 2026)
  * 
  * Usage: Press B key in Level 6 (God Mode must be enabled)
  */
@@ -34224,8 +34370,8 @@ function cyclePhoenixBehavior() {
     return;
   }
 
-  // Define all 17 behaviors in order (9 original + 7 new + Pattern 16 + Pattern 17)
-  // 📝 UPDATED: February 6, 2026 - Added fire_sphere_hunt_extended (Pattern 17)
+  // Define all 18 behaviors in order (9 original + 7 new + Pattern 16 + Pattern 17 + Pattern 18)
+  // 📝 UPDATED: February 6, 2026 - Added fire_sphere_hunt_egg_drop (Pattern 18)
   const behaviors = [
     'flying_circle',        // 0: 🔄 Flying Circle (Standard)
     'flying_hover',         // 1: ✈️ Flying Hover (In Place)
@@ -34244,7 +34390,8 @@ function cyclePhoenixBehavior() {
     'ground_ultimate_combo',// 13: 💥 Ground Ultimate Combo (5-hit combo)
     'player_hunt_combo',    // 14: 🎯 Player Hunt Combo (AI attack)
     'fire_sphere_hunt',     // 15: 🔥 Pattern 16 Fire Sphere Hunt
-    'fire_sphere_hunt_extended' // 16: 🔥 Pattern 17 Extended ⭐ NEW!
+    'fire_sphere_hunt_extended', // 16: 🔥 Pattern 17 Extended
+    'fire_sphere_hunt_egg_drop'  // 17: 🥚 Pattern 18 Egg Drop (Feb 6, 2026)
   ];
 
   // Behavior display names for console logging
@@ -34266,7 +34413,8 @@ function cyclePhoenixBehavior() {
     '💥 Ground Ultimate Combo',
     '🎯 Player Hunt Combo',
     '🔥 Pattern 16 Fire Sphere Hunt',
-    '🔥 Pattern 17 Extended' // ⭐ NEW!
+    '🔥 Pattern 17 Extended',
+    '🥚 Pattern 18 Egg Drop' // Feb 6, 2026
   ];
 
   // Get current behavior from phoenixBoss
@@ -34286,7 +34434,7 @@ function cyclePhoenixBehavior() {
   // Set new behavior
   phoenixBoss.setBehaviorMode(nextBehavior);
   
-  console.log(`🐉 [DEBUG] GOD Mode Phoenix Behavior Cycle: ${behaviorNames[startIndex]} → ${nextBehaviorName} (${nextIndex + 1}/17)`);
+  console.log(`🐉 [DEBUG] GOD Mode Phoenix Behavior Cycle: ${behaviorNames[startIndex]} → ${nextBehaviorName} (${nextIndex + 1}/18)`);
   
   // Update on-screen behavior display (dev testing)
   if (guiSystem && typeof guiSystem.updatePhoenixBehaviorDisplay === 'function') {

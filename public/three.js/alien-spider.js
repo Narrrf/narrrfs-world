@@ -112,8 +112,19 @@
  * - TGA_TEXTURE_SUCCESS.md - TGA texture implementation
  * - ALIEN_SPIDER_INTEGRATION_COMPLETE.md - Complete integration docs
  * 
+ * 🕷️ ALIEN SPIDER MINION WAVE SYSTEM (February 6, 2026)
+ * ═══════════════════════════════════════════════════════════════════════════
+ * AlienSpiderMinion class – spawns in waves during Level 6 Step 1 (hunt mode).
+ * - SkeletonUtils.clone(model) – FBX skinned mesh (Rule 14)
+ * - _applyMinionMaterials() – color, normal, ao; white→brown for body (b>0.9)
+ * - _forceMinionVisible() – EXCLUDES hitbox (spider_minion_hitbox) – hitbox must stay invisible
+ * - Hitbox: SphereGeometry, colorWrite:false, opacity:0 – raycastable, no white sphere
+ * - Size: maxMinionSize 1.3, targetSize 1.2, followSpeed 2.0 (slower, bigger)
+ * - Explosion: createMonsterExplosionEffect() on death (Level 6 supported)
+ * - Lab note: 12.0/LAB_NOTES/2026/02_FEBRUARY/DAILY_NOTES/2026-02-06/ALIEN_SPIDER_MINION_RENDERING_AND_SHOOTING_ISSUES_2026-02-06.md
+ * 
  * Created: December 20, 2025
- * Last Updated: December 20, 2025
+ * Last Updated: February 6, 2026 (Minion wave – materials, hitbox, size, speed)
  */
 
 import * as THREE from "three";
@@ -1498,9 +1509,9 @@ export class AlienSpiderMinion {
     
     const { model, clips, originalSize, basePath, tgaLoader } = _minionCache;
     
-    // FBX cloning: Try standard clone for AFC_03 - SkeletonUtils may only clone feet for FBX (Rule 14 is GLTF; Rule 18 says FBX can use clone)
-    // If only feet visible with SkeletonUtils, standard clone may render full body (Feb 6, 2026)
-    const clone = model.clone(true);
+    // CRITICAL: Use SkeletonUtils.clone for skinned FBX - standard clone() breaks rig/animations (Rule 14; Feb 6, 2026)
+    // Standard clone gave one giant non-moving model; SkeletonUtils preserves rig for chase/attack
+    const clone = SkeletonUtils.clone(model);
     
     const targetSize = config.targetSize ?? 1.0;
     let scale;
@@ -1532,11 +1543,11 @@ export class AlienSpiderMinion {
     });
     clone.updateMatrixWorld(true);
     
-    // Final safeguard: ALWAYS cap world size to 1.0 units - dog-sized, 1/4 of 4-unit boss (Feb 6, 2026)
+    // Final safeguard: Cap world size - slightly bigger for visibility (1.3 units, Feb 6, 2026)
     const worldBox = new THREE.Box3().setFromObject(clone);
     const worldSize = worldBox.getSize(new THREE.Vector3());
     const maxDim = Math.max(worldSize.x, worldSize.y, worldSize.z);
-    const maxMinionSize = 1.0; // Dog-sized: 1/4 of 4-unit boss
+    const maxMinionSize = 1.3; // Slightly bigger than dog-sized for visibility (was 1.0)
     if (maxDim > maxMinionSize) {
       const fixScale = maxMinionSize / maxDim;
       scale *= fixScale;
@@ -1550,6 +1561,8 @@ export class AlienSpiderMinion {
     
     // Apply textures and brighten materials so minion matches alien spider boss (Feb 6, 2026)
     if (tgaLoader && basePath) AlienSpiderMinion._applyMinionMaterials(clone, basePath, tgaLoader);
+    // CRITICAL: Force ALL meshes visible - fixes "only feet visible" with SkeletonUtils + FBX (like Level 5 monsters, Feb 6, 2026)
+    AlienSpiderMinion._forceMinionVisible(clone);
     
     const mixer = new THREE.AnimationMixer(clone);
     const animationActions = {};
@@ -1563,7 +1576,11 @@ export class AlienSpiderMinion {
     const hitboxRadius = 1.0 / Math.max(0.01, finalScale);
     const hitbox = new THREE.Mesh(
       new THREE.SphereGeometry(hitboxRadius, 8, 8),
-      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 }) // Invisible but raycastable (visible:false skips raycast)
+      new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0,
+        colorWrite: false // CRITICAL: Don't render - prevents white sphere artifact; mesh still raycastable (Feb 6, 2026)
+      })
     );
     hitbox.position.set(0, hitboxRadius * 0.5, 0); // Center at body height
     hitbox.name = "spider_minion_hitbox";
@@ -1581,7 +1598,7 @@ export class AlienSpiderMinion {
       health: config.health ?? 30,
       maxHealth: config.maxHealth ?? 30,
       groundY: config.groundY ?? 1.0,
-      followSpeed: config.followSpeed ?? 3.0,
+      followSpeed: config.followSpeed ?? 2.0, // Slower for better gameplay (was 3.0 - Feb 6, 2026)
       attackRange: config.attackRange ?? 2.5,
       onMinionDied: config.onMinionDied
     });
@@ -1592,34 +1609,108 @@ export class AlienSpiderMinion {
     return minion;
   }
   
-  /** Apply textures and brighten materials so minions match alien spider boss (Feb 6, 2026) */
+  /** Force ALL meshes visible - fixes "only feet visible" with SkeletonUtils + FBX (Feb 6, 2026)
+   * Mirrors forceLevel5MonsterVisible from main.js - skinned meshes need skinning=true, frustumCulled=false */
+  static _forceMinionVisible(model) {
+    if (!model) return;
+    model.visible = true;
+    model.frustumCulled = false;
+    model.traverse((child) => {
+      if (!child || !child.isMesh) return;
+      // CRITICAL: Skip hitbox - must stay invisible (colorWrite:false, opacity:0); _forceMinionVisible would make it white (Feb 6, 2026)
+      if (child.name === 'spider_minion_hitbox' || child.userData?.isSpiderMinionHitbox) return;
+      child.visible = true;
+      child.frustumCulled = false;
+      child.renderOrder = 10;
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
+      mats.forEach((mat) => {
+        if (!mat) return;
+        if (mat.visible === false) mat.visible = true;
+        if (mat.colorWrite === false) mat.colorWrite = true;
+        if (mat.depthTest === false) mat.depthTest = true;
+        if (mat.depthWrite === false) mat.depthWrite = true;
+        if (mat.side !== THREE.DoubleSide) mat.side = THREE.DoubleSide;
+        if (child.isSkinnedMesh && mat.skinning !== true) mat.skinning = true;
+        if (mat.color && mat.color.isColor) {
+          const b = (mat.color.r + mat.color.g + mat.color.b) / 3;
+          if (b < 0.18) mat.color.setRGB(Math.min(1, mat.color.r * 3), Math.min(1, mat.color.g * 3), Math.min(1, mat.color.b * 3));
+          else if (b < 0.35) mat.color.setRGB(Math.min(1, mat.color.r * 2), Math.min(1, mat.color.g * 2), Math.min(1, mat.color.b * 2));
+        }
+        if (mat.opacity !== undefined && mat.opacity < 0.15) { mat.opacity = 1.0; mat.transparent = false; }
+        mat.needsUpdate = true;
+      });
+    });
+  }
+
+  /** Apply textures and brighten materials so minions match alien spider boss (Feb 6, 2026)
+   * CRITICAL: Process ALL material types (Lambert, Phong, Standard) - FBX can use any.
+   * Uses full texture set (color, normal, ao) like boss applyTextures(). */
   static _applyMinionMaterials(model, basePath, tgaLoader) {
     const brightness = 1.5;
+    const pathBase = (basePath && basePath.endsWith('/')) ? basePath : (basePath || '') + '/';
+    
     model.traverse((child) => {
       if (child.isMesh && child.material) {
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         materials.forEach((mat) => {
-          if (!mat || !mat.isMeshStandardMaterial) return;
+          if (!mat) return;
+          // Process ALL material types - FBX can use Lambert, Phong, Standard (Rule 18 - Feb 6, 2026)
+          
           const isEye = (child.name || '').toLowerCase().includes('eye') || (mat.name || '').toLowerCase().includes('eye');
           const colorFile = isEye ? 'Eye_color.tga' : 'AFC_03_color.tga';
-          if (mat.color) {
+          const normalFile = isEye ? 'Eye_normal.tga' : 'AFC_03_normal.tga';
+          const aoFile = 'AFC_03_ao.tga';
+          
+          // SYNCHRONOUS: Set visible color - CRITICAL: white materials stay white; force brown tint for body until texture loads (Feb 6, 2026)
+          const bodyBrown = 0x664422; // Fur-like brown - ensures minions never appear as white placeholders
+          if (mat.color && mat.color.isColor) {
             const orig = mat.color.clone();
-            const b = orig.r + orig.g + orig.b;
+            const b = (orig.r + orig.g + orig.b) / 3;
             if (b < 0.3) {
               mat.color.setRGB(Math.min(1, orig.r * 3), Math.min(1, orig.g * 3), Math.min(1, orig.b * 3));
             } else if (b < 0.6) {
               mat.color.setRGB(Math.min(1, orig.r * 2), Math.min(1, orig.g * 2), Math.min(1, orig.b * 2));
+            } else if (b > 0.9 && !isEye) {
+              // White/untextured body → force brown tint so minions never look like white placeholders
+              mat.color.setHex(bodyBrown);
             }
             mat.color.multiplyScalar(brightness);
+          } else {
+            mat.color = mat.color || new THREE.Color(bodyBrown);
+            mat.color.setHex(bodyBrown);
+            mat.color.multiplyScalar(brightness);
           }
-          tgaLoader.load(basePath + colorFile, (tex) => {
+          mat.needsUpdate = true;
+          
+          // Load color texture (body or eye) - same pattern as boss applyTextures()
+          tgaLoader.load(pathBase + colorFile, (tex) => {
             tex.flipY = false;
             mat.map = tex;
             mat.needsUpdate = true;
           }, undefined, () => {
-            if (mat.color) mat.color.setHex(0x888888);
+            if (mat.color) mat.color.setHex(0x664422);
             mat.needsUpdate = true;
           });
+          
+          // Load normal map for depth/mesh appearance (like boss - Feb 6, 2026)
+          if (mat.isMeshStandardMaterial || mat.isMeshPhongMaterial || (typeof mat.normalMap !== 'undefined')) {
+            tgaLoader.load(pathBase + normalFile, (tex) => {
+              tex.flipY = false;
+              if (typeof mat.normalMap !== 'undefined' || mat.isMeshStandardMaterial || mat.isMeshPhongMaterial) {
+                mat.normalMap = tex;
+                mat.needsUpdate = true;
+              }
+            }, undefined, () => {});
+          }
+          
+          // Load AO for body meshes (like boss - MeshStandardMaterial supports aoMap)
+          if (!isEye && (mat.isMeshStandardMaterial || (typeof mat.aoMap !== 'undefined'))) {
+            tgaLoader.load(pathBase + aoFile, (tex) => {
+              tex.flipY = false;
+              mat.aoMap = tex;
+              mat.needsUpdate = true;
+            }, undefined, () => {});
+          }
         });
       }
     });
@@ -1639,6 +1730,9 @@ export class AlienSpiderMinion {
   update(delta) {
     if (!this.model || !this.isAlive) return;
     
+    // PERF: _forceMinionVisible only at spawn (createFromCache). Periodic re-apply was causing FPS drops when
+    // many minions near player - full traverse + mat.needsUpdate on every mesh is expensive (Feb 6, 2026)
+    
     if (this.mixer) this.mixer.update(delta);
     if (this.attackCooldown > 0) this.attackCooldown -= delta;
     
@@ -1650,7 +1744,11 @@ export class AlienSpiderMinion {
     const dist = Math.sqrt(dx * dx + dz * dz);
     
     if (dist < this.attackRange) {
-      this.playAnimation(Math.random() < 0.5 ? 'attack_1' : 'attack_2', false);
+      // PERF: Only start attack animation if not already playing one - avoid playAnimation every frame (Feb 6, 2026)
+      const clipName = this.currentAction?.getClip()?.name || '';
+      if (!clipName.includes('Attack')) {
+        this.playAnimation(Math.random() < 0.5 ? 'attack_1' : 'attack_2', false);
+      }
       return;
     }
     

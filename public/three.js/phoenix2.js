@@ -436,6 +436,7 @@ export class PhoenixBoss2 {
     this.levelGroup = config.levelGroup || null;
     this.player = config.player || null; // Player object for tracking (Pattern 15)
     this.getPlayerPosition = config.getPlayerPosition || null; // Callback for player capsule center (Pattern 15, 16)
+    this.onEggLanded = config.onEggLanded || null; // Callback for Pattern 18: (landPos, spidersPerEgg) when egg hits ground
     this.resolveAssetPath = config.resolveAssetPath || ((path) => path); // Path resolver function
     
     // Model
@@ -570,6 +571,16 @@ export class PhoenixBoss2 {
         postDiveFireDuration: 1.5,      // Phase 24: Ground fire burst (replaces sleep)
         finalGroundAttackDuration: 3.0,
         finalFireBurstDuration: 2.0     // Phase 26: Final aggressive fire burst (replaces sleep before loop)
+      },
+      // Pattern 18: Ultra-extended Pattern 17 + egg drop during circle/patrol mode (Feb 6, 2026)
+      fire_sphere_hunt_egg_drop: {
+        // Inherits all fire_sphere_hunt_extended durations (used by updateFireSphereHuntExtended)
+        // Egg drop settings (used during circle phases 21-23)
+        eggDropIntervalSeconds: 3.0,    // Drop egg every N seconds while in circle mode
+        eggDropMinIntervalSeconds: 2.0, // Min interval between drops (for randomness)
+        spidersPerEgg: 2,               // Spiders spawned when egg lands
+        eggFallSpeed: 12.0,             // Units per second (gravity-like fall)
+        eggHatchDelaySeconds: 1.5       // Egg stays on ground this long before spiders hatch (prevents instant crush)
       }
     };
     
@@ -963,6 +974,10 @@ export class PhoenixBoss2 {
         break;
       case 'fire_sphere_hunt_extended':
         this.updateFireSphereHuntExtended(delta);
+        break;
+      case 'fire_sphere_hunt_egg_drop':
+        // Pattern 18: Same as 17 + egg drop during circle mode
+        this.updateFireSphereHuntEggDrop(delta);
         break;
       default:
         this.updateFlyingCircle(delta); // Default to flying circle
@@ -2752,6 +2767,109 @@ export class PhoenixBoss2 {
     }
   }
   
+  /**
+   * Pattern 18: Fire Sphere Hunt Egg Drop - Same as Pattern 17 + egg drops during circle/patrol mode (phases 21-23)
+   * Phase 2: Spawns eggs at Phoenix position during phases 21-23 (no fall/landing yet).
+   */
+  updateFireSphereHuntEggDrop(delta) {
+    this.updateFireSphereHuntExtended(delta);
+    // Phase 2: Egg drop spawn during circle mode (phases 21-23)
+    const d = this.behaviorDurations.fire_sphere_hunt_extended || this.behaviorDurations.fire_sphere_hunt || {};
+    const eggCfg = this.behaviorDurations.fire_sphere_hunt_egg_drop || {};
+    const s1 = d.cycle1SleepDuration ?? 1.5, w1 = d.cycle1WakeupDuration ?? 1.5, t1 = d.cycle1TakeoffDuration ?? 2.5;
+    const a1 = d.cycle1AimDuration ?? 1.0, c1 = d.cycle1CooldownAfterFirst ?? 0.7, l1 = d.cycle1LandingDuration ?? 2.5;
+    const break9D = d.cycle2BreakDuration ?? 1.5, break10D = d.cycle2Break2Duration ?? 1.5;
+    const takeoffD = d.takeoffDuration ?? 3.0, landD = d.landingDuration ?? 3.0;
+    const aim2D = d.aimDurationCycle2 ?? 1.0, cooldown2D = d.cooldownAfterFirstCycle2 ?? 0.6;
+    const break17D = d.postCycle2BreakDuration ?? 1.5, break18D = d.postCycle2Break2Duration ?? 1.5;
+    const groundWakeD = d.groundWakeDuration ?? 2.0, groundAttackD = d.groundAttackDuration ?? 3.0;
+    const patrolTakeoffD = d.patrolTakeoffDuration ?? 3.0, patrolCircleD = d.patrolCircleDuration ?? 4.5;
+    const patrolAttackD = d.patrolAttackDuration ?? 2.0;
+    const p1 = s1, p2 = p1 + w1, p3 = p2 + t1, p4 = p3 + a1, p5 = p4 + 0.05, p6 = p5 + c1, p7 = p6 + 0.05, p8 = p7 + l1;
+    const p9 = p8 + break9D, p10 = p9 + break10D, p11 = p10 + takeoffD, p12 = p11 + aim2D, p13 = p12 + 0.05, p14 = p13 + cooldown2D, p15 = p14 + 0.05, p16 = p15 + landD;
+    const p17 = p16 + break17D, p18 = p17 + break18D, p19 = p18 + groundWakeD, p20 = p19 + groundAttackD;
+    const p21 = p20 + patrolTakeoffD, p22 = p21 + patrolCircleD, p23 = p22 + patrolAttackD;
+    const t = this.behaviorTimer;
+    const isEggDropPhase = t >= p20 && t < p23; // phases 21, 22, 23
+    if (!isEggDropPhase) {
+      this._eggDropTimer = 0; // Reset when not in circle mode
+    } else if (this.model) {
+      this._eggDropTimer = (this._eggDropTimer ?? 0) + delta;
+      const interval = eggCfg.eggDropIntervalSeconds ?? 3.0;
+      if (this._eggDropTimer >= interval) {
+        this._eggDropTimer = 0;
+        this._spawnEggAtPhoenixPosition();
+      }
+    }
+    // Phase 3: Update falling eggs (gravity + landing)
+    this._updateFallingEggs(delta);
+  }
+
+  /**
+   * Phase 3: Apply gravity to eggs, detect landing, then hatching. Egg stays on ground for hatchDelay
+   * before spiders spawn (prevents instant crush, gives player time to react).
+   */
+  _updateFallingEggs(delta) {
+    if (!this._activeEggs || this._activeEggs.length === 0) return;
+    const groundY = this.groundY ?? 0;
+    const landThreshold = 1.2; // Egg "lands" when Y <= ground + threshold
+    const eggCfg = this.behaviorDurations.fire_sphere_hunt_egg_drop || {};
+    const hatchDelay = eggCfg.eggHatchDelaySeconds ?? 1.5;
+    const toRemove = [];
+    const worldPos = new THREE.Vector3();
+    for (let i = 0; i < this._activeEggs.length; i++) {
+      const egg = this._activeEggs[i];
+      if (!egg.parent) { toRemove.push(i); continue; }
+      const ud = egg.userData || {};
+      if (ud.landed) {
+        // Egg has landed - wait for hatch delay, then spawn spiders and remove
+        const elapsed = (performance.now() - ud.landTime) / 1000;
+        if (elapsed >= hatchDelay) {
+          egg.getWorldPosition(worldPos);
+          const landPos = worldPos.clone();
+          const spidersPerEgg = ud.spidersPerEgg ?? 2;
+          if (typeof this.onEggLanded === 'function') this.onEggLanded(landPos, spidersPerEgg);
+          if (egg.parent) egg.parent.remove(egg);
+          if (egg.geometry) egg.geometry.dispose();
+          if (egg.material) { if (Array.isArray(egg.material)) egg.material.forEach(m => m.dispose()); else egg.material.dispose(); }
+          toRemove.push(i);
+        }
+        continue;
+      }
+      const fallSpeed = ud.fallSpeed ?? 12.0;
+      egg.position.y -= fallSpeed * delta;
+      if (egg.position.y <= groundY + landThreshold) {
+        // Land egg - snap to ground, mark as landed, start hatch timer
+        egg.position.y = groundY + landThreshold * 0.5;
+        ud.landed = true;
+        ud.landTime = performance.now();
+      }
+    }
+    for (let j = toRemove.length - 1; j >= 0; j--) this._activeEggs.splice(toRemove[j], 1);
+  }
+
+  /**
+   * Phase 2: Spawn placeholder egg at Phoenix world position (no fall/landing yet).
+   * Egg is a simple sphere mesh for now; Phase 3 will add fall animation.
+   */
+  _spawnEggAtPhoenixPosition() {
+    if (!this.model || (!this.levelGroup && !this.scene)) return;
+    const worldPos = new THREE.Vector3();
+    this.model.getWorldPosition(worldPos);
+    const geo = new THREE.SphereGeometry(0.5, 16, 12);
+    const mat = new THREE.MeshStandardMaterial({ color: 0xcc4400, metalness: 0.2, roughness: 0.6 });
+    const egg = new THREE.Mesh(geo, mat);
+    egg.position.copy(worldPos);
+    const eggCfg = this.behaviorDurations.fire_sphere_hunt_egg_drop || {};
+    const fallSpeed = eggCfg.eggFallSpeed ?? 12.0;
+    const spidersPerEgg = eggCfg.spidersPerEgg ?? 2;
+    egg.userData = { type: 'phoenix_egg', spawnTime: performance.now(), fallSpeed, spidersPerEgg };
+    const parent = this.levelGroup || this.scene;
+    if (parent) parent.add(egg);
+    if (!this._activeEggs) this._activeEggs = [];
+    this._activeEggs.push(egg);
+  }
+  
   _runPattern16Phases(t, prevT, cur, prev, entering, crossedInto5, crossedInto7, crossedInto13, crossedInto15, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, s1, w1, t1, a1, c1, l1, takeoffD, aim2D, cooldown2D, landD, playerPos, isCycle2Aggressive = false) {
     const useCycle1 = cur <= 8;
     const takeoffDur = useCycle1 ? t1 : takeoffD;
@@ -2994,6 +3112,17 @@ export class PhoenixBoss2 {
         this._patrolFireFired = false; // One-shot flag for patrol phase fire (prevents frame-drop spam)
         this.playAnimation('GroundSleep', true);
         console.log(`🔥 [PHOENIX2] Started fire sphere hunt extended (Pattern 17): ${mode}`);
+        break;
+      case 'fire_sphere_hunt_egg_drop':
+        this.isFlying = false;
+        this.isAlive = true; // 🔥 CRITICAL: Reset alive status
+        this._extendedPhase = 0;
+        this._extendedSubPhase = 0;
+        this._patrolFireFired = false;
+        this._eggDropTimer = 0; // For egg drop interval (Phase 2+)
+        this._activeEggs = []; // Eggs spawned during circle mode (Phase 2+)
+        this.playAnimation('GroundSleep', true);
+        console.log(`🥚 [PHOENIX2] Started fire sphere hunt egg drop (Pattern 18): ${mode}`);
         break;
     }
   }
