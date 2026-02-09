@@ -1,9 +1,38 @@
 # 🧀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** February 6, 2026 🎯 **STABLE – PRODUCTION VERIFIED**  
+**Last Updated:** February 9, 2026 🎯 **STABLE – PRODUCTION VERIFIED**  
 **Status:** ✅ **Season 8 LIVE – 3D game stable on production (all levels, paths, mobile)**  
-**Version:** 2026-02-06  
-**Milestone:** 🎯 **Level 6 Phoenix Pattern 17 – Full overhaul (dangerous, no sleeps, smooth transitions)**
+**Version:** 2026-02-09  
+**Milestone:** 🎯 **Production support update – Twitter link reset flow verified on Render SQLite**
+
+---
+
+## 📋 **TODAY – FEBRUARY 9, 2026:**
+
+**Twitter Link Reset Support (✅ COMPLETE):**
+- ✅ **Render shell troubleshooting:** Confirmed prompt/path confusion (`/var/www/html#` is shell prompt, not file path)
+- ✅ **Database identified:** SQLite at `/var/www/html/db/narrrf_world.sqlite`
+- ✅ **Schema verified:** `tbl_users` with columns `twitter_username`, `twitter_linked_at`, `twitter_verification_status`
+- ✅ **Target user reset executed:** Discord ID `521376255711510548`
+- ✅ **Reset values applied:** `twitter_username = NULL`, `twitter_linked_at = NULL`, `twitter_verification_status = 'unverified'`
+- ✅ **Verification query passed:** User row confirmed reset and ready to relink Twitter
+
+**Impact:**
+- ✅ User can now set/link Twitter again through normal flow
+- ✅ Manual recovery procedure validated for future support cases
+
+**Level 5 Monster Roster Expansion (✅ COMPLETE):**
+- ✅ Added expanded `monsterPaths` set for Level 5 using **Level 4 proven model sources**
+- ✅ Integrated 16 monster GLTF paths from `Monster 1/Big/glTF` pack:
+  - `Alien.gltf`, `Birb.gltf`, `BlueDemon.gltf`, `Bunny.gltf`
+  - `Cactoro.gltf`, `Demon.gltf`, `Dino.gltf`, `Fish.gltf`
+  - `Frog.gltf`, `Monkroose.gltf`, `MushroomKing.gltf`, `Ninja.gltf`
+  - `Orc.gltf`, `Orc_Skull.gltf`, `Tribal.gltf`, `Yeti.gltf`
+- ✅ Path base used: `/textures/3d models/Monster 1/Big/glTF/`
+
+**Impact:**
+- ✅ Level 5 now has wider monster variety while staying on stable/known-good assets
+- ✅ Reuse strategy reduces integration risk and keeps rendering behavior consistent
 
 ---
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <?php
 // Include Discord invite configuration
@@ -13,996 +13,1444 @@ require_once 'discord-invite.php';
   <meta name="robots" content="index, follow" />
   <title>Mint Your Narrrf's World GEN1 NFT</title>
 
-  <!-- 🧀 Favicon & App Icons -->
-  <!-- Primary Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-phantom.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-phantom.png" />
-  
-  <!-- Apple Touch Icon -->
-  <link rel="apple-touch-icon" sizes="180x180" href="favicon-phantom.png" />
-  
-  <!-- Shortcut Icon -->
-  <link rel="shortcut icon" href="favicon-phantom.png" type="image/png" />
-  
-  <!-- Standard favicon.ico fallback -->
-  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-  
-  <!-- Windows Tile -->
-  <meta name="msapplication-TileImage" content="favicon-phantom.png" />
-  
-  <!-- Microsoft tile -->
-  <meta name="theme-color" content="#facc15" />
-  <meta name="msapplication-TileColor" content="#facc15" />
-  
-  <!-- Additional meta tags for wallet connections -->
-  <meta name="application-name" content="Narrrf's World" />
-  <meta name="apple-mobile-web-app-title" content="Narrrf's World" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- 🧀 Favicon & App Icons -->
+    <!-- Primary Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="favicon-phantom.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="favicon-phantom.png"
+    />
 
-  
-  <!-- Open Graph and Twitter images -->
-  <meta property="og:image" content="https://narrrfs.world/img/narrrf-logo-professional.png" />
-  <meta name="twitter:image" content="https://narrrfs.world/img/narrrf-logo-professional.png" />
-  
-  <!-- Additional wallet-specific meta tags -->
-  <meta name="msapplication-config" content="none" />
-  <meta name="format-detection" content="telephone=no" />
-  <meta name="mobile-web-app-capable" content="yes" />
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon-phantom.png" />
 
-  <!-- 🧀 FAVICON PRELOAD -->
-  <link rel="preload" as="image" href="favicon-phantom.png" />
+    <!-- Shortcut Icon -->
+    <link rel="shortcut icon" href="favicon-phantom.png" type="image/png" />
 
-  <!-- 🔍 SEO & SOCIAL SHARING -->
-  <meta name="title" content="Narrrf's World" />
-  <meta name="description" content="Mint your GEN1 Narrrf NFT and enter the chaos lab." />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Narrrf's World GEN1 Mint" />
-  <meta property="og:description" content="Professional NFT minting platform for Narrrf's World Genesis Collection. Season 8 STARTED, 3D Riddle Game alpha testing January 2026, role-based multipliers active!" />
-  <meta property="og:image" content="https://narrrfs.world/img/narrrf-logo-professional.png" />
-  <meta property="og:url" content="https://narrrfs.world/mint.html" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Narrrf's World GEN1 Mint" />
-  <meta name="twitter:description" content="Professional NFT minting platform for Narrrf's World Genesis Collection. Secure blockchain integration with Phantom wallet support." />
-  <meta name="twitter:image" content="https://narrrfs.world/img/narrrf-logo-professional.png" />
+    <!-- Standard favicon.ico fallback -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
-  <!-- 🔐 PROJECT METADATA (FOR DEV TOOLS / SYSTEMS) -->
-  <meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4" />
-  <meta name="egg-count" content="3" />
-  <meta name="egg-tracking" content="enabled" />
-  <meta name="mint-eligibility-source" content="Sheety API v2" />
-  <meta name="wallet-auth-system" content="PhantomConnect" />
-  <meta name="mint-tier-model" content="5-tier access" />
-  <meta name="dsponic-conversion-rate" content="10000:1" />
-  <meta name="gen" content="1" />
-  <meta name="realms" content="3D Riddle Game (The Cheese Temple), The Pink Pool, Brain Vats" />
+    <!-- Windows Tile -->
+    <meta name="msapplication-TileImage" content="favicon-phantom.png" />
 
-  <!-- 🎨 TAILWIND CSS DEV (CDN for staging only) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Microsoft tile -->
+    <meta name="theme-color" content="#facc15" />
+    <meta name="msapplication-TileColor" content="#facc15" />
 
-  <!-- 🔗 Discord Token of Render System -->
-  <script src="discord-config.js"></script>
+    <!-- Additional meta tags for wallet connections -->
+    <meta name="application-name" content="Narrrf's World" />
+    <meta name="apple-mobile-web-app-title" content="Narrrf's World" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
-  <!-- 💫 Enhanced Mint Portal Styles -->
-  <style>
-    @keyframes trophyGlow {
-      0%, 100% { 
-        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
-        transform: scale(1);
+    <!-- Open Graph and Twitter images -->
+    <meta
+      property="og:image"
+      content="https://narrrfs.world/img/narrrf-logo-professional.png"
+    />
+    <meta
+      name="twitter:image"
+      content="https://narrrfs.world/img/narrrf-logo-professional.png"
+    />
+
+    <!-- Additional wallet-specific meta tags -->
+    <meta name="msapplication-config" content="none" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- 🧀 FAVICON PRELOAD -->
+    <link rel="preload" as="image" href="favicon-phantom.png" />
+
+    <!-- 🔍 SEO & SOCIAL SHARING -->
+    <meta name="title" content="Narrrf's World" />
+    <meta
+      name="description"
+      content="Mint your GEN1 Narrrf NFT and enter the chaos lab."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Narrrf's World GEN1 Mint" />
+    <meta
+      property="og:description"
+      content="Professional NFT minting platform for Narrrf's World Genesis Collection. Season 8 STARTED, 3D Riddle Game alpha testing January 2026, role-based multipliers active!"
+    />
+    <meta
+      property="og:image"
+      content="https://narrrfs.world/img/narrrf-logo-professional.png"
+    />
+    <meta property="og:url" content="https://narrrfs.world/mint.html" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Narrrf's World GEN1 Mint" />
+    <meta
+      name="twitter:description"
+      content="Professional NFT minting platform for Narrrf's World Genesis Collection. Secure blockchain integration with Phantom wallet support."
+    />
+    <meta
+      name="twitter:image"
+      content="https://narrrfs.world/img/narrrf-logo-professional.png"
+    />
+
+    <!-- 🔐 PROJECT METADATA (FOR DEV TOOLS / SYSTEMS) -->
+    <meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4" />
+    <meta name="egg-count" content="3" />
+    <meta name="egg-tracking" content="enabled" />
+    <meta name="mint-eligibility-source" content="Sheety API v2" />
+    <meta name="wallet-auth-system" content="PhantomConnect" />
+    <meta name="mint-tier-model" content="5-tier access" />
+    <meta name="dsponic-conversion-rate" content="10000:1" />
+    <meta name="gen" content="1" />
+    <meta
+      name="realms"
+      content="3D Riddle Game (The Cheese Temple), The Pink Pool, Brain Vats"
+    />
+
+    <!-- 🎨 TAILWIND CSS DEV (CDN for staging only) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 🔗 Discord Token of Render System -->
+    <script src="discord-config.js"></script>
+
+    <!-- 💫 Enhanced Mint Portal Styles -->
+    <style>
+      @keyframes trophyGlow {
+        0%,
+        100% {
+          box-shadow:
+            0 0 20px rgba(251, 191, 36, 0.3),
+            0 0 40px rgba(251, 191, 36, 0.2);
+          transform: scale(1);
+        }
+        50% {
+          box-shadow:
+            0 0 30px rgba(251, 191, 36, 0.5),
+            0 0 60px rgba(251, 191, 36, 0.3);
+          transform: scale(1.05);
+        }
       }
-      50% { 
-        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
-        transform: scale(1.05);
+
+      @keyframes rolePulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: scale(1.02);
+        }
       }
-    }
-    
-    @keyframes rolePulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.02); }
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-    }
-    
-    @keyframes bubble-burst {
-      0% { transform: translateY(0) scale(1); opacity: 0.7; }
-      50% { transform: translateY(-20px) scale(1.3); opacity: 1; }
-      100% { transform: translateY(-40px) scale(1); opacity: 0; }
-    }
-    
-    .trophy-glow {
-      animation: trophyGlow 3s ease-in-out infinite;
-    }
-    
-    .role-pulse {
-      animation: rolePulse 4s ease-in-out infinite;
-    }
-    
-    .float-animation {
-      animation: float 6s ease-in-out infinite;
-    }
-    
-    .animate-bubble-burst {
-      animation: bubble-burst 4s ease-in-out infinite;
-    }
-    
-    .delay-1000 { animation-delay: 1s; }
-    .delay-2000 { animation-delay: 2s; }
-    .delay-300 { animation-delay: 0.3s; }
-    
-    .mint-card {
-      transition: all 0.3s ease;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    
-    .mint-card:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      border-color: rgba(251, 191, 36, 0.5);
-    }
-    
-    .mint-shelf {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
-      backdrop-filter: blur(20px);
-      border: 2px solid rgba(251, 191, 36, 0.3);
-    }
-  
 
-    /* ============================= */
-    /* 🎨 Trait Showcase (Mint Page)  */
-    /* ============================= */
-    .trait-tab { opacity: 0.7; border: 2px solid transparent; }
-    .trait-tab.active {
-      opacity: 1;
-      border-color: rgba(251, 191, 36, 0.5);
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
-    }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
 
-    .trait-card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(15,23,42,0.90));
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.20);
-      transition: all 0.3s ease;
-    }
+      @keyframes bubble-burst {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 0.7;
+        }
+        50% {
+          transform: translateY(-20px) scale(1.3);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-40px) scale(1);
+          opacity: 0;
+        }
+      }
 
-    .trait-card:hover {
-      transform: translateY(-5px);
-      border-color: rgba(251, 191, 36, 0.50);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.30);
-    }
+      .trophy-glow {
+        animation: trophyGlow 3s ease-in-out infinite;
+      }
 
-    .rarity-bar {
-      height: 8px;
-      background: rgba(15, 23, 42, 0.90);
-      border-radius: 999px;
-      overflow: hidden;
-    }
+      .role-pulse {
+        animation: rolePulse 4s ease-in-out infinite;
+      }
 
-    .rarity-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #fbbf24, #f97316);
-      transition: width 0.4s ease;
-    }
+      .float-animation {
+        animation: float 6s ease-in-out infinite;
+      }
 
-    .rarity-legendary {
-      background: linear-gradient(135deg, #facc15, #eab308);
-      color: #fef9c3;
-      box-shadow: 0 0 20px rgba(250,204,21,0.60);
-      animation: rarityPulse 2s ease-in-out infinite;
-    }
+      .animate-bubble-burst {
+        animation: bubble-burst 4s ease-in-out infinite;
+      }
 
-    .rarity-ultra-rare {
-      background: linear-gradient(135deg, #a855f7, #7c3aed);
-      color: #ede9fe;
-    }
+      .delay-1000 {
+        animation-delay: 1s;
+      }
+      .delay-2000 {
+        animation-delay: 2s;
+      }
+      .delay-300 {
+        animation-delay: 0.3s;
+      }
 
-    .rarity-rare {
-      background: linear-gradient(135deg, #3b82f6, #06b6d4);
-      color: #e0f2fe;
-    }
+      .mint-card {
+        transition: all 0.3s ease;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.1),
+          rgba(255, 255, 255, 0.05)
+        );
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
 
-    .rarity-uncommon {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #dcfce7;
-    }
+      .mint-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-color: rgba(251, 191, 36, 0.5);
+      }
 
-    .rarity-common {
-      background: linear-gradient(135deg, #6b7280, #4b5563);
-      color: #e5e7eb;
-    }
+      .mint-shelf {
+        background: linear-gradient(
+          135deg,
+          rgba(30, 41, 59, 0.9),
+          rgba(15, 23, 42, 0.9)
+        );
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(251, 191, 36, 0.3);
+      }
 
-    @keyframes rarityPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
+      /* ============================= */
+      /* 🎨 Trait Showcase (Mint Page)  */
+      /* ============================= */
+      .trait-tab {
+        opacity: 0.7;
+        border: 2px solid transparent;
+      }
+      .trait-tab.active {
+        opacity: 1;
+        border-color: rgba(251, 191, 36, 0.5);
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+      }
 
-  </style>
+      .trait-card {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.1),
+          rgba(15, 23, 42, 0.9)
+        );
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+      }
 
-  <!-- 📜 DEV NOTES -->
-  <!-- This file is 100-year ready. Designed for clarity, scale, and Masterchief SQL integration. -->
-  <!-- If you're a new dev joining Narrrf's World, please see README.md and lore-portal.html -->
-</head>
+      .trait-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(251, 191, 36, 0.5);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
 
-<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+      .rarity-bar {
+        height: 8px;
+        background: rgba(15, 23, 42, 0.9);
+        border-radius: 999px;
+        overflow: hidden;
+      }
 
-  <!-- 🌟 Floating Background Elements -->
-  <div class="fixed inset-0 pointer-events-none z-0">
-    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
-    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
-    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
-    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
-  </div>
+      .rarity-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #fbbf24, #f97316);
+        transition: width 0.4s ease;
+      }
 
-  <!-- 🧬 Lab Status Badge -->
-  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
-    🎮 Season 8 STARTED • Alpha Testing Jan 2026
-  </div>
+      .rarity-legendary {
+        background: linear-gradient(135deg, #facc15, #eab308);
+        color: #fef9c3;
+        box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+        animation: rarityPulse 2s ease-in-out infinite;
+      }
 
-  <!-- 🧭 Navigation Bar (Sticky Top) -->
-  <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
-      <nav class="space-x-4 text-sm md:text-base flex items-center">
-        <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
-        <a href="mint.html" class="text-yellow-400 font-semibold border-b-2 border-yellow-400">Mint</a>
-        <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
-        <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
-        <a href="partners.html" class="hover:text-yellow-400 transition-colors">Partners</a>
-        <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
-        <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
-        
-        <!-- 🧠 Wallet Connect Button -->
-        <button id="connect-wallet-btn"
+      .rarity-ultra-rare {
+        background: linear-gradient(135deg, #a855f7, #7c3aed);
+        color: #ede9fe;
+      }
+
+      .rarity-rare {
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        color: #e0f2fe;
+      }
+
+      .rarity-uncommon {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #dcfce7;
+      }
+
+      .rarity-common {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: #e5e7eb;
+      }
+
+      @keyframes rarityPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+    </style>
+
+    <!-- 📜 DEV NOTES -->
+    <!-- This file is 100-year ready. Designed for clarity, scale, and Masterchief SQL integration. -->
+    <!-- If you're a new dev joining Narrrf's World, please see README.md and lore-portal.html -->
+  </head>
+
+  <body
+    class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden"
+  >
+    <!-- 🌟 Floating Background Elements -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+      <div
+        class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation"
+        style="top: 20%; left: 15%; animation-delay: 0s"
+      ></div>
+      <div
+        class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation"
+        style="top: 60%; left: 80%; animation-delay: 2s"
+      ></div>
+      <div
+        class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation"
+        style="top: 40%; left: 50%; animation-delay: 4s"
+      ></div>
+      <div
+        class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation"
+        style="top: 70%; left: 25%; animation-delay: 1s"
+      ></div>
+    </div>
+
+    <!-- 🧬 Lab Status Badge -->
+    <div
+      class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400"
+    >
+      🎮 Season 8 STARTED • Alpha Testing Jan 2026
+    </div>
+
+    <!-- 🧭 Navigation Bar (Sticky Top) -->
+    <header
+      class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30"
+    >
+      <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <a
+          href="index.html"
+          class="text-xl font-bold tracking-tight text-yellow-400"
+          >🧠 Narrrf's World</a
+        >
+        <nav class="space-x-4 text-sm md:text-base flex items-center">
+          <a href="index.html" class="hover:text-yellow-400 transition-colors"
+            >Home</a
+          >
+          <a
+            href="mint.html"
+            class="text-yellow-400 font-semibold border-b-2 border-yellow-400"
+            >Mint</a
+          >
+          <a
+            href="whitepaper.html"
+            class="hover:text-yellow-400 transition-colors"
+            >Whitepaper</a
+          >
+          <a
+            href="get-roles.html"
+            class="hover:text-yellow-400 transition-colors"
+            >Get Roles</a
+          >
+          <a
+            href="partners.html"
+            class="hover:text-yellow-400 transition-colors"
+            >Partners</a
+          >
+          <a
+            href="project-updates.html"
+            class="hover:text-yellow-400 transition-colors"
+            >Updates</a
+          >
+          <a href="faq.html" class="hover:text-yellow-400 transition-colors"
+            >FAQ</a
+          >
+
+          <!-- 🧠 Wallet Connect Button -->
+          <button
+            id="connect-wallet-btn"
+            onclick="connectWallet()"
+            class="ml-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
+            🔌 Connect Wallet
+          </button>
+
+          <!-- 🧀 Avatar Placeholder -->
+          <img
+            id="user-avatar"
+            src="https://narrrfs.world/img/cheese.png"
+            alt="PFP"
+            class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-4 shadow-lg"
+          />
+
+          <!-- 🧀 Wallet Disconnect Button -->
+          <button
+            id="wallet-disconnect"
+            onclick="disconnectWallet()"
+            class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow transition-colors"
+          >
+            ❌
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 🧪 Mint Hero -->
+    <section
+      class="relative z-10 bg-gradient-to-r from-pink-900/50 to-purple-900/50 text-white text-center py-20 px-6 border border-pink-500/30"
+    >
+      <h1
+        class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-yellow-400 bg-clip-text text-transparent"
+      >
+        🧪 Mint Your GEN1 NFT
+      </h1>
+      <!-- 🎮 Season 8 & Alpha Testing Badge -->
+      <div class="flex flex-wrap justify-center gap-4 mb-6">
+        <div
+          class="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-2 border-green-400/50 rounded-xl px-6 py-3"
+        >
+          <div class="text-sm text-green-300 mb-1">🎮 Current Status</div>
+          <div class="text-lg font-bold text-green-400">Season 8 STARTED</div>
+          <div class="text-xs text-green-200">Play games & earn DSPOINC</div>
+        </div>
+        <div
+          class="bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-2 border-purple-400/50 rounded-xl px-6 py-3"
+        >
+          <div class="text-sm text-purple-300 mb-1">🚀 Coming Soon</div>
+          <div class="text-lg font-bold text-purple-400">
+            Alpha Testing Jan 2026
+          </div>
+          <div class="text-xs text-purple-200">@holders & @vip only</div>
+        </div>
+      </div>
+      <p
+        class="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed"
+      >
+        Each NFT is a cartoon mutant of chaos — packed with utility, staking
+        (coming 2026), and plots in the 3D Riddle Game (The Cheese Temple).
+        Supply: 3,333 only.
+      </p>
+    </section>
+
+    <!-- 📦 Mint Details -->
+    <section class="relative z-10 py-16 px-4 md:px-6">
+      <div class="max-w-6xl mx-auto text-center">
+        <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-12">
+          📦 Mint Details
+        </h2>
+        <div class="grid md:grid-cols-2 gap-8 text-left">
+          <div
+            class="mint-card rounded-2xl shadow-lg p-8 border-l-4 border-yellow-500 flex flex-col bg-gradient-to-br from-yellow-900/20 via-purple-900/20 to-slate-900/30"
+          >
+            <h3 class="text-2xl font-bold mb-6 text-yellow-400">
+              🧬 Mint Tiers & Benefits
+            </h3>
+            <ul class="space-y-3 text-lg text-gray-300 flex-1">
+              <li>🎯 1–4 NFTs = Entry Access</li>
+              <li>🏠 5–10 NFTs = Small Plot in 3D Riddle Game</li>
+              <li>🏘️ 11–25 NFTs = Medium Plot in 3D Riddle Game</li>
+              <li>🏙️ 26–50 NFTs = Large Plot in 3D Riddle Game</li>
+              <li>🏗️ 50+ NFTs = Custom Shop + API Access</li>
+              <li>
+                🎮 All NFTs = Role multipliers (1.1x - 2.0x) across all games
+              </li>
+              <li>
+                🧀 All NFTs = Alpha testing access (Jan 2026) for @holders &
+                @vip
+              </li>
+            </ul>
+            <!-- 🎮 Quick Play – Compact game links (relative paths for local + production) -->
+            <div
+              class="mt-6 p-4 bg-gradient-to-r from-emerald-900/40 to-teal-900/40 rounded-xl border border-emerald-500/40 shadow-lg"
+            >
+              <p
+                class="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-2"
+              >
+                ⚡ Quick Play • Season 8
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <a
+                  href="tetris.html"
+                  class="inline-flex items-center gap-1 bg-purple-600/90 hover:bg-purple-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
+                  title="Tetris"
+                  >🧩 Tetris</a
+                >
+                <a
+                  href="snake.html"
+                  class="inline-flex items-center gap-1 bg-green-600/90 hover:bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
+                  title="Snake"
+                  >🐍 Snake</a
+                >
+                <a
+                  href="space-cheese-invaders.html"
+                  class="inline-flex items-center gap-1 bg-pink-600/90 hover:bg-pink-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
+                  title="Space Invaders"
+                  >👾 Invaders</a
+                >
+                <a
+                  href="profile.html#cheese-hunt"
+                  class="inline-flex items-center gap-1 bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
+                  title="Cheese Hunt"
+                  >🧀 Hunt</a
+                >
+                <a
+                  href="3d-riddle.html"
+                  class="inline-flex items-center gap-1 bg-indigo-600/90 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 border border-indigo-400/50 shadow"
+                  title="3D Riddle Game"
+                  >🏛️ 3D Riddle</a
+                >
+                <a
+                  href="stake-lab.html"
+                  class="inline-flex items-center gap-1 bg-cyan-600/90 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
+                  title="Stake DSPOINC"
+                  >🧊 Stake</a
+                >
+              </div>
+            </div>
+            <!-- 🎮 Interactive CTA – Play games & earn DSPOINC -->
+            <div class="mt-8 pt-6 border-t border-yellow-500/40">
+              <p class="text-sm text-yellow-200/90 mb-3 font-semibold">
+                Use your NFTs! Play to earn $DSPOINC now.
+              </p>
+              <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
+                <a
+                  href="profile.html"
+                  class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-500 hover:via-emerald-500 hover:to-teal-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-emerald-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-emerald-400/50"
+                >
+                  🎮 Enter Game Zone
+                </a>
+                <a
+                  href="profile.html#holder-verification"
+                  class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-500 hover:via-violet-500 hover:to-indigo-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-purple-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-purple-400/50"
+                >
+                  🎴 Holder Verify
+                </a>
+                <a
+                  href="leaderboard.html"
+                  class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-400 hover:via-yellow-400 hover:to-orange-400 text-gray-900 font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-yellow-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400/70"
+                >
+                  🏆 View Leaderboard
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="mint-card rounded-2xl shadow-lg p-8 border-l-4 border-purple-500"
+          >
+            <h3 class="text-2xl font-bold mb-6 text-purple-400">
+              💰 Pricing & Supply
+            </h3>
+            <div class="space-y-3 text-lg text-gray-300 mb-4">
+              <div
+                class="bg-purple-800/40 rounded-xl p-3 border border-purple-500/50"
+              >
+                <div class="font-bold text-purple-200 mb-1">🏆 Holders</div>
+                <div class="text-xl text-yellow-400 font-bold">0.15 SOL</div>
+                <div class="text-xs text-purple-300">Follows per Sheet</div>
+              </div>
+              <div
+                class="bg-purple-800/40 rounded-xl p-3 border border-purple-500/50"
+              >
+                <div class="font-bold text-purple-200 mb-1">🐦 Early Bird</div>
+                <div class="text-xl text-yellow-400 font-bold">0.175 SOL</div>
+                <div class="text-xs text-purple-300">Follows per Sheet</div>
+              </div>
+              <div
+                class="bg-purple-800/40 rounded-xl p-3 border border-purple-500/50"
+              >
+                <div class="font-bold text-purple-200 mb-1">🤝 Partners</div>
+                <div class="text-xl text-yellow-400 font-bold">0.20 SOL</div>
+              </div>
+              <div
+                class="bg-yellow-900/40 rounded-xl p-3 border-2 border-yellow-500/70"
+              >
+                <div class="font-bold text-yellow-200 mb-1">
+                  🎁 Redemption Mint
+                </div>
+                <div class="text-xl text-yellow-300 font-bold">0.3999 SOL</div>
+                <div class="text-xs text-yellow-200/90">
+                  Endless running • Always available
+                </div>
+              </div>
+            </div>
+            <ul class="space-y-3 text-lg text-gray-300">
+              <li>🧠 Supply: 3,333 NFTs total</li>
+              <li>🪙 1 $SPOINC daily per NFT (staking coming 2026)</li>
+              <li>💥 10,000 $DSPOINC = 1 $SPOINC</li>
+              <li>
+                🎮 <strong>Season 8 STARTED</strong> - Play games to earn
+                $DSPOINC now!
+              </li>
+              <li>
+                🧀 <strong>3D Riddle Game</strong> alpha testing January 2026
+              </li>
+              <li>
+                ⚡ <strong>Role Multipliers</strong> active across all games
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🎨 TRAIT SHOWCASE SECTION -->
+    <section
+      id="traits"
+      class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-indigo-900/30 to-purple-900/30"
+    >
+      <div class="max-w-7xl mx-auto">
+        <!-- Section Header -->
+        <div class="text-center mb-12">
+          <h2 class="text-5xl md:text-6xl font-bold mb-4">
+            <span
+              class="bg-gradient-to-r from-yellow-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+            >
+              🎨 266 Unique Traits
+            </span>
+          </h2>
+          <p class="text-xl text-gray-300 max-w-4xl mx-auto mb-6">
+            Every trait is a key to the 3D Riddle Game ecosystem. Random minting
+            means endless possibilities.
+          </p>
+          <div class="flex flex-wrap justify-center gap-4 text-sm">
+            <span
+              class="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full border border-yellow-500/50"
+              >🌟 Legendary: 1-10</span
+            >
+            <span
+              class="bg-purple-500/20 text-purple-400 px-4 py-2 rounded-full border border-purple-500/50"
+              >💎 Ultra Rare: 11-50</span
+            >
+            <span
+              class="bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full border border-blue-500/50"
+              >🔮 Rare: 51-100</span
+            >
+            <span
+              class="bg-green-500/20 text-green-400 px-4 py-2 rounded-full border border-green-500/50"
+              >⚡ Uncommon: 101-300</span
+            >
+            <span
+              class="bg-gray-500/20 text-gray-400 px-4 py-2 rounded-full border border-gray-500/50"
+              >🎯 Common: 301+</span
+            >
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-8">
+          <div class="flex flex-wrap justify-center gap-2 mb-8">
+            <button
+              type="button"
+              onclick="showTraitCategory('theme', this)"
+              class="trait-tab active bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+            >
+              🎭 Theme (12)
+            </button>
+            <button
+              type="button"
+              onclick="showTraitCategory('subTrait', this)"
+              class="trait-tab bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+            >
+              🐭 Sub-Trait (97)
+            </button>
+            <button
+              type="button"
+              onclick="showTraitCategory('outfit', this)"
+              class="trait-tab bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+            >
+              👔 Outfit (46)
+            </button>
+            <button
+              type="button"
+              onclick="showTraitCategory('accessories', this)"
+              class="trait-tab bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+            >
+              🎯 Accessories (45)
+            </button>
+            <button
+              type="button"
+              onclick="showTraitCategory('expression', this)"
+              class="trait-tab bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+            >
+              😊 Expression (9)
+            </button>
+            <button
+              type="button"
+              onclick="showTraitCategory('background', this)"
+              class="trait-tab bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+            >
+              🌆 Background (47)
+            </button>
+            <button
+              type="button"
+              onclick="showTraitCategory('special', this)"
+              class="trait-tab bg-gradient-to-r from-yellow-400 to-pink-500 hover:from-yellow-500 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-pulse"
+            >
+              🌟 Special (10)
+            </button>
+          </div>
+
+          <!-- Search -->
+          <div class="max-w-md mx-auto mb-8">
+            <input
+              type="text"
+              id="trait-search"
+              placeholder="🔍 Search traits..."
+              class="w-full bg-gray-800/50 border border-gray-600 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400 transition-colors"
+            />
+          </div>
+        </div>
+
+        <!-- Trait content -->
+        <div id="trait-content" class="min-h-[400px]"></div>
+
+        <!-- Random Generator -->
+        <div class="mt-12 max-w-4xl mx-auto">
+          <div
+            class="mint-card rounded-3xl p-8 text-center border-2 border-yellow-500/50"
+          >
+            <h3 class="text-3xl font-bold text-yellow-400 mb-4">
+              🎲 Preview Your Possible Mouse
+            </h3>
+            <p class="text-gray-300 mb-6">
+              See what kind of unique combination you might get when you mint.
+            </p>
+            <button
+              type="button"
+              onclick="generateRandomTraits()"
+              class="bg-gradient-to-r from-yellow-500 to-pink-500 hover:from-yellow-600 hover:to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg transition-all duration-300 transform hover:scale-105 mb-6"
+            >
+              🎲 Generate Random Mouse
+            </button>
+            <div
+              id="random-traits-display"
+              class="hidden bg-black/30 rounded-2xl p-6 border border-yellow-500/30"
+            ></div>
+            <p class="text-xs text-gray-400 mt-4">
+              TODO: Full 266-trait dataset can be pasted into TRAITS_DATABASE
+              for complete accuracy.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🔐 Mint Access Section with Neon Bubble Background -->
+    <section class="relative z-10 text-center py-16 px-4 md:px-6">
+      <div
+        class="mint-shelf rounded-3xl p-8 max-w-4xl mx-auto relative overflow-hidden"
+      >
+        <div class="absolute inset-0 pointer-events-none z-0">
+          <div
+            class="absolute w-4 h-4 bg-pink-400 blur-md rounded-full animate-bubble-burst"
+            style="top: 20%; left: 15%"
+          ></div>
+          <div
+            class="absolute w-6 h-6 bg-purple-400 blur-lg rounded-full animate-bubble-burst delay-1000"
+            style="top: 60%; left: 80%"
+          ></div>
+          <div
+            class="absolute w-5 h-5 bg-lime-300 blur-sm rounded-full animate-bubble-burst delay-2000"
+            style="top: 35%; left: 50%"
+          ></div>
+          <div
+            class="absolute w-3 h-3 bg-fuchsia-300 blur-md rounded-full animate-bubble-burst delay-300"
+            style="top: 70%; left: 25%"
+          ></div>
+        </div>
+
+        <!-- Mint Content -->
+        <h2
+          class="text-3xl md:text-4xl font-bold mb-6 text-yellow-400 z-10 relative"
+        >
+          🔐 VIP Mint Access
+        </h2>
+        <p class="mb-8 max-w-2xl mx-auto text-lg text-gray-300 z-10 relative">
+          Verify with Phantom Wallet or Discord role for VIP access, or go
+          directly to Gensuki to mint. All users will be redirected to our
+          official launchpad partner Gensuki.
+        </p>
+
+        <button
+          id="mint-connect-wallet-btn"
           onclick="connectWallet()"
-          class="ml-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-          🔌 Connect Wallet
+          class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative"
+        >
+          🔍 Verify Wallet & Discord Access
         </button>
 
-        <!-- 🧀 Avatar Placeholder -->
-        <img id="user-avatar" src="https://narrrfs.world/img/cheese.png" alt="PFP" 
-          class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-4 shadow-lg" />
-        
-        <!-- 🧀 Wallet Disconnect Button -->
-        <button id="wallet-disconnect" onclick="disconnectWallet()" 
-          class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow transition-colors">
-          ❌
+        <button
+          id="check-discord-role-btn"
+          onclick="checkDiscordRoleAccess()"
+          class="mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative"
+        >
+          🎯 Check Discord Role Access
         </button>
-      </nav>
-    </div>
-  </header>
 
-  <!-- 🧪 Mint Hero -->
-  <section class="relative z-10 bg-gradient-to-r from-pink-900/50 to-purple-900/50 text-white text-center py-20 px-6 border border-pink-500/30">
-    <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-yellow-400 bg-clip-text text-transparent">
-      🧪 Mint Your GEN1 NFT
-    </h1>
-    <!-- 🎮 Season 8 & Alpha Testing Badge -->
-    <div class="flex flex-wrap justify-center gap-4 mb-6">
-      <div class="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-2 border-green-400/50 rounded-xl px-6 py-3">
-        <div class="text-sm text-green-300 mb-1">🎮 Current Status</div>
-        <div class="text-lg font-bold text-green-400">Season 8 STARTED</div>
-        <div class="text-xs text-green-200">Play games & earn DSPOINC</div>
-      </div>
-      <div class="bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-2 border-purple-400/50 rounded-xl px-6 py-3">
-        <div class="text-sm text-purple-300 mb-1">🚀 Coming Soon</div>
-        <div class="text-lg font-bold text-purple-400">Alpha Testing Jan 2026</div>
-        <div class="text-xs text-purple-200">@holders & @vip only</div>
-      </div>
-    </div>
-    <p class="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-      Each NFT is a cartoon mutant of chaos — packed with utility, staking (coming 2026), and plots in the 3D Riddle Game (The Cheese Temple). Supply: 3,333 only.
-    </p>
-  </section>
+        <button
+          onclick="clearCacheAndReload()"
+          class="mt-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 z-10 relative text-sm"
+        >
+          🔄 Clear Cache & Reload (for favicon)
+        </button>
 
-  <!-- 📦 Mint Details -->
-  <section class="relative z-10 py-16 px-4 md:px-6">
-    <div class="max-w-6xl mx-auto text-center">
-      <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-12">📦 Mint Details</h2>
-      <div class="grid md:grid-cols-2 gap-8 text-left">
-        <div class="mint-card rounded-2xl shadow-lg p-8 border-l-4 border-yellow-500 flex flex-col bg-gradient-to-br from-yellow-900/20 via-purple-900/20 to-slate-900/30">
-          <h3 class="text-2xl font-bold mb-6 text-yellow-400">🧬 Mint Tiers & Benefits</h3>
-          <ul class="space-y-3 text-lg text-gray-300 flex-1">
-            <li>🎯 1–4 NFTs = Entry Access</li>
-            <li>🏠 5–10 NFTs = Small Plot in 3D Riddle Game</li>
-            <li>🏘️ 11–25 NFTs = Medium Plot in 3D Riddle Game</li>
-            <li>🏙️ 26–50 NFTs = Large Plot in 3D Riddle Game</li>
-            <li>🏗️ 50+ NFTs = Custom Shop + API Access</li>
-            <li>🎮 All NFTs = Role multipliers (1.1x - 2.0x) across all games</li>
-            <li>🧀 All NFTs = Alpha testing access (Jan 2026) for @holders & @vip</li>
-          </ul>
-          <!-- 🎮 Quick Play – Compact game links (relative paths for local + production) -->
-          <div class="mt-6 p-4 bg-gradient-to-r from-emerald-900/40 to-teal-900/40 rounded-xl border border-emerald-500/40 shadow-lg">
-            <p class="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-2">⚡ Quick Play • Season 8</p>
-            <div class="flex flex-wrap gap-2">
-              <a href="tetris.html" class="inline-flex items-center gap-1 bg-purple-600/90 hover:bg-purple-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow" title="Tetris">🧩 Tetris</a>
-              <a href="snake.html" class="inline-flex items-center gap-1 bg-green-600/90 hover:bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow" title="Snake">🐍 Snake</a>
-              <a href="space-cheese-invaders.html" class="inline-flex items-center gap-1 bg-pink-600/90 hover:bg-pink-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow" title="Space Invaders">👾 Invaders</a>
-              <a href="profile.html#cheese-hunt" class="inline-flex items-center gap-1 bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow" title="Cheese Hunt">🧀 Hunt</a>
-              <a href="3d-riddle.html" class="inline-flex items-center gap-1 bg-indigo-600/90 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 border border-indigo-400/50 shadow" title="3D Riddle Game">🏛️ 3D Riddle</a>
-              <a href="stake-lab.html" class="inline-flex items-center gap-1 bg-cyan-600/90 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow" title="Stake DSPOINC">🧊 Stake</a>
-            </div>
-          </div>
-          <!-- 🎮 Interactive CTA – Play games & earn DSPOINC -->
-          <div class="mt-8 pt-6 border-t border-yellow-500/40">
-            <p class="text-sm text-yellow-200/90 mb-3 font-semibold">Use your NFTs! Play to earn $DSPOINC now.</p>
-            <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
-              <a href="profile.html" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-500 hover:via-emerald-500 hover:to-teal-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-emerald-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-emerald-400/50">
-                🎮 Enter Game Zone
-              </a>
-              <a href="profile.html#holder-verification" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-500 hover:via-violet-500 hover:to-indigo-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-purple-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-purple-400/50">
-                🎴 Holder Verify
-              </a>
-              <a href="leaderboard.html" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-400 hover:via-yellow-400 hover:to-orange-400 text-gray-900 font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-yellow-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400/70">
-                🏆 View Leaderboard
-              </a>
-            </div>
+        <p
+          id="vip-message"
+          class="mt-8 text-xl font-semibold z-10 relative"
+        ></p>
+
+        <div class="mt-8 z-10 relative">
+          <p class="text-lg text-gray-400 mb-4">
+            Or login with Discord to verify:
+          </p>
+          <a
+            href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
+            class="inline-flex items-center bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
+            <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"
+              />
+            </svg>
+            Login with Discord, come back to verify
+          </a>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-gray-600/30 z-10 relative">
+          <p class="text-lg text-gray-400 mb-4">Or go directly to mint:</p>
+          <a
+            href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
+            target="_blank"
+            class="inline-block bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-8 py-4 rounded-xl text-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
+            🚀 Go to Gensuki
+          </a>
+        </div>
+
+        <div
+          id="mint-info"
+          class="hidden mt-8 p-6 bg-blue-900/30 border border-blue-500/30 rounded-xl z-10 relative"
+        >
+          <h3 class="text-xl font-bold text-blue-400 mb-3">
+            🎯 Mint Access Verified!
+          </h3>
+          <p class="text-blue-300 mb-4">
+            You have been verified for minting access. You will be redirected to
+            our official launchpad partner Gensuki to complete your mint.
+          </p>
+          <div
+            class="flex items-center justify-center space-x-2 text-lg text-blue-400"
+          >
+            <span>🔗</span>
+            <span>Gensuki Launchpad</span>
+            <span>→</span>
           </div>
         </div>
 
-        <div class="mint-card rounded-2xl shadow-lg p-8 border-l-4 border-purple-500">
-          <h3 class="text-2xl font-bold mb-6 text-purple-400">💰 Pricing & Supply</h3>
-          <div class="space-y-3 text-lg text-gray-300 mb-4">
-            <div class="bg-purple-800/40 rounded-xl p-3 border border-purple-500/50">
-              <div class="font-bold text-purple-200 mb-1">🏆 Holders</div>
-              <div class="text-xl text-yellow-400 font-bold">0.15 SOL</div>
-              <div class="text-xs text-purple-300">Follows per Sheet</div>
-            </div>
-            <div class="bg-purple-800/40 rounded-xl p-3 border border-purple-500/50">
-              <div class="font-bold text-purple-200 mb-1">🐦 Early Bird</div>
-              <div class="text-xl text-yellow-400 font-bold">0.175 SOL</div>
-              <div class="text-xs text-purple-300">Follows per Sheet</div>
-            </div>
-            <div class="bg-purple-800/40 rounded-xl p-3 border border-purple-500/50">
-              <div class="font-bold text-purple-200 mb-1">🤝 Partners</div>
-              <div class="text-xl text-yellow-400 font-bold">0.20 SOL</div>
-            </div>
-            <div class="bg-yellow-900/40 rounded-xl p-3 border-2 border-yellow-500/70">
-              <div class="font-bold text-yellow-200 mb-1">🎁 Redemption Mint</div>
-              <div class="text-xl text-yellow-300 font-bold">0.3999 SOL</div>
-              <div class="text-xs text-yellow-200/90">Endless running • Always available</div>
-            </div>
+        <a
+          href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
+          target="_blank"
+          id="mint-now-btn"
+          class="hidden mt-8 inline-block bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative"
+        >
+          🧠 Mint on Gensuki Launchpad
+        </a>
+      </div>
+    </section>
+
+    <!-- 🎮 Current Benefits & Features -->
+    <section
+      class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-emerald-900/30 to-teal-900/30"
+    >
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-12">
+          <h2 class="text-4xl md:text-5xl font-bold text-emerald-400 mb-4">
+            🎮 Current Benefits & Features
+          </h2>
+          <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+            What you get right now when you mint a GEN1 NFT
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Season 8 Gaming -->
+          <div class="mint-card rounded-2xl p-6 border-2 border-green-500/50">
+            <div class="text-4xl mb-4 text-center">🎮</div>
+            <h3 class="text-xl font-bold text-green-400 mb-3 text-center">
+              Season 8 Gaming
+            </h3>
+            <ul class="text-gray-300 space-y-2 text-sm">
+              <li>
+                • <strong>5 Active Games:</strong> Tetris, Snake, Space
+                Invaders, Cheese Hunt, Discord Race
+              </li>
+              <li>
+                • <strong>Role Multipliers:</strong> Earn up to 2.0x DSPOINC
+                (VIP Holder)
+              </li>
+              <li>
+                • <strong>73+ Achievements:</strong> Unlock across 3 games
+              </li>
+              <li>• <strong>Leaderboards:</strong> Compete for top spots</li>
+              <li>
+                • <strong>Profile Tracking:</strong> Complete gaming history
+              </li>
+            </ul>
           </div>
-          <ul class="space-y-3 text-lg text-gray-300">
-            <li>🧠 Supply: 3,333 NFTs total</li>
-            <li>🪙 1 $SPOINC daily per NFT (staking coming 2026)</li>
-            <li>💥 10,000 $DSPOINC = 1 $SPOINC</li>
-            <li>🎮 <strong>Season 8 STARTED</strong> - Play games to earn $DSPOINC now!</li>
-            <li>🧀 <strong>3D Riddle Game</strong> alpha testing January 2026</li>
-            <li>⚡ <strong>Role Multipliers</strong> active across all games</li>
-          </ul>
+
+          <!-- 3D Riddle Game Access -->
+          <div class="mint-card rounded-2xl p-6 border-2 border-purple-500/50">
+            <div class="text-4xl mb-4 text-center">🧀</div>
+            <h3 class="text-xl font-bold text-purple-400 mb-3 text-center">
+              3D Riddle Game
+            </h3>
+            <ul class="text-gray-300 space-y-2 text-sm">
+              <li>
+                • <strong>Alpha Testing:</strong> January 2026 (@holders & @vip)
+              </li>
+              <li>
+                • <strong>6 Complete Levels:</strong> Level 1: The Cheese Temple
+              </li>
+              <li>• <strong>Phoenix Boss:</strong> 15 behavior patterns</li>
+              <li>
+                • <strong>Riddles & Rewards:</strong> DSPOINC rewards with
+                multipliers
+              </li>
+              <li>
+                • <strong>Plot Ownership:</strong> Based on NFT tier (coming
+                2026)
+              </li>
+            </ul>
+          </div>
+
+          <!-- Community Access -->
+          <div class="mint-card rounded-2xl p-6 border-2 border-yellow-500/50">
+            <div class="text-4xl mb-4 text-center">🤝</div>
+            <h3 class="text-xl font-bold text-yellow-400 mb-3 text-center">
+              Community Access
+            </h3>
+            <ul class="text-gray-300 space-y-2 text-sm">
+              <li>
+                • <strong>Discord Roles:</strong> Automatic role assignment
+              </li>
+              <li>
+                • <strong>Giveaways:</strong> Epic cheese giveaways & raffles
+              </li>
+              <li>
+                • <strong>Events:</strong> Friday games, poker tournaments
+              </li>
+              <li>
+                • <strong>Partner Access:</strong> Exclusive partner channels
+              </li>
+              <li>
+                • <strong>Alpha Labs:</strong> Early access to new features
+              </li>
+            </ul>
+          </div>
+
+          <!-- Future Benefits -->
+          <div class="mint-card rounded-2xl p-6 border-2 border-blue-500/50">
+            <div class="text-4xl mb-4 text-center">🚀</div>
+            <h3 class="text-xl font-bold text-blue-400 mb-3 text-center">
+              Coming 2026
+            </h3>
+            <ul class="text-gray-300 space-y-2 text-sm">
+              <li>• <strong>Staking:</strong> Earn 1 $SPOINC daily per NFT</li>
+              <li>• <strong>3D Game Plots:</strong> Land ownership system</li>
+              <li>
+                • <strong>Utility Expansion:</strong> More games & features
+              </li>
+              <li>• <strong>DAO Integration:</strong> Community governance</li>
+              <li>
+                • <strong>Real-World Utility:</strong> Partner integrations
+              </li>
+            </ul>
+          </div>
+
+          <!-- Role Benefits -->
+          <div class="mint-card rounded-2xl p-6 border-2 border-pink-500/50">
+            <div class="text-4xl mb-4 text-center">⚡</div>
+            <h3 class="text-xl font-bold text-pink-400 mb-3 text-center">
+              Role Multipliers
+            </h3>
+            <ul class="text-gray-300 space-y-2 text-sm">
+              <li>• <strong>VIP Holder:</strong> 2.0x multiplier</li>
+              <li>• <strong>Holder:</strong> 1.5x multiplier</li>
+              <li>• <strong>Champion:</strong> 1.4x multiplier</li>
+              <li>• <strong>Season Tester:</strong> 1.3x multiplier</li>
+              <li>• <strong>Early Bird:</strong> 1.2x multiplier</li>
+              <li>• <strong>Cheese Hunter:</strong> 1.1x multiplier</li>
+            </ul>
+          </div>
+
+          <!-- Store & Rewards -->
+          <div class="mint-card rounded-2xl p-6 border-2 border-orange-500/50">
+            <div class="text-4xl mb-4 text-center">💰</div>
+            <h3 class="text-xl font-bold text-orange-400 mb-3 text-center">
+              Store & Rewards
+            </h3>
+            <ul class="text-gray-300 space-y-2 text-sm">
+              <li>
+                • <strong>Narrrf Shop:</strong> Redeem DSPOINC for rewards
+              </li>
+              <li>
+                • <strong>NFT Purchases:</strong> Buy items with earned currency
+              </li>
+              <li>
+                • <strong>Raffle Entries:</strong> Use DSPOINC for giveaways
+              </li>
+              <li>• <strong>VIP Upgrades:</strong> Unlock premium features</li>
+              <li>• <strong>Conversion:</strong> 10,000 DSPOINC = 1 SPOINC</li>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
+    <!-- 🧪 Quote from the Lab -->
+    <section class="relative z-10 py-16 px-4 md:px-6">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="mint-card rounded-2xl p-8 border-l-4 border-pink-500">
+          <h2 class="text-3xl md:text-4xl font-bold mb-6 text-pink-400">
+            🧪 Quote from the Lab
+          </h2>
+          <p class="italic text-xl text-purple-300 font-semibold mb-2">
+            "You don't mint a masterpiece — you mutate one."
+          </p>
+          <span class="text-lg text-gray-400 font-normal"
+            >– Narrrf's Lab Philosophy, Vol. 1</span
+          >
+        </div>
+      </div>
+    </section>
 
-
-  <!-- 🎨 TRAIT SHOWCASE SECTION -->
-  <section id="traits" class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-indigo-900/30 to-purple-900/30">
-    <div class="max-w-7xl mx-auto">
-
-      <!-- Section Header -->
-      <div class="text-center mb-12">
-        <h2 class="text-5xl md:text-6xl font-bold mb-4">
-          <span class="bg-gradient-to-r from-yellow-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            🎨 266 Unique Traits
-          </span>
-        </h2>
-        <p class="text-xl text-gray-300 max-w-4xl mx-auto mb-6">
-          Every trait is a key to the 3D Riddle Game ecosystem. Random minting means endless possibilities.
+    <!-- Footer -->
+    <footer
+      class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20"
+    >
+      <div class="max-w-4xl mx-auto px-6">
+        <p class="mb-4">
+          Made with 🧪 & strategy in Narrrf's Lab |
+          <a
+            href="https://discord.gg/zgjAwzuDqV"
+            class="text-yellow-400 hover:text-yellow-300 underline transition-colors"
+          >
+            Join us on Discord
+          </a>
         </p>
-        <div class="flex flex-wrap justify-center gap-4 text-sm">
-          <span class="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full border border-yellow-500/50">🌟 Legendary: 1-10</span>
-          <span class="bg-purple-500/20 text-purple-400 px-4 py-2 rounded-full border border-purple-500/50">💎 Ultra Rare: 11-50</span>
-          <span class="bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full border border-blue-500/50">🔮 Rare: 51-100</span>
-          <span class="bg-green-500/20 text-green-400 px-4 py-2 rounded-full border border-green-500/50">⚡ Uncommon: 101-300</span>
-          <span class="bg-gray-500/20 text-gray-400 px-4 py-2 rounded-full border border-gray-500/50">🎯 Common: 301+</span>
-        </div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="mb-8">
-        <div class="flex flex-wrap justify-center gap-2 mb-8">
-          <button type="button" onclick="showTraitCategory('theme', this)" class="trait-tab active bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">🎭 Theme (12)</button>
-          <button type="button" onclick="showTraitCategory('subTrait', this)" class="trait-tab bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">🐭 Sub-Trait (97)</button>
-          <button type="button" onclick="showTraitCategory('outfit', this)" class="trait-tab bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">👔 Outfit (46)</button>
-          <button type="button" onclick="showTraitCategory('accessories', this)" class="trait-tab bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">🎯 Accessories (45)</button>
-          <button type="button" onclick="showTraitCategory('expression', this)" class="trait-tab bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">😊 Expression (9)</button>
-          <button type="button" onclick="showTraitCategory('background', this)" class="trait-tab bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">🌆 Background (47)</button>
-          <button type="button" onclick="showTraitCategory('special', this)" class="trait-tab bg-gradient-to-r from-yellow-400 to-pink-500 hover:from-yellow-500 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 animate-pulse">🌟 Special (10)</button>
-        </div>
-
-        <!-- Search -->
-        <div class="max-w-md mx-auto mb-8">
-          <input type="text" id="trait-search" placeholder="🔍 Search traits..." class="w-full bg-gray-800/50 border border-gray-600 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400 transition-colors" />
-        </div>
-      </div>
-
-      <!-- Trait content -->
-      <div id="trait-content" class="min-h-[400px]"></div>
-
-      <!-- Random Generator -->
-      <div class="mt-12 max-w-4xl mx-auto">
-        <div class="mint-card rounded-3xl p-8 text-center border-2 border-yellow-500/50">
-          <h3 class="text-3xl font-bold text-yellow-400 mb-4">🎲 Preview Your Possible Mouse</h3>
-          <p class="text-gray-300 mb-6">See what kind of unique combination you might get when you mint.</p>
-          <button type="button" onclick="generateRandomTraits()" class="bg-gradient-to-r from-yellow-500 to-pink-500 hover:from-yellow-600 hover:to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-bold shadow-lg transition-all duration-300 transform hover:scale-105 mb-6">🎲 Generate Random Mouse</button>
-          <div id="random-traits-display" class="hidden bg-black/30 rounded-2xl p-6 border border-yellow-500/30"></div>
-          <p class="text-xs text-gray-400 mt-4">TODO: Full 266-trait dataset can be pasted into TRAITS_DATABASE for complete accuracy.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 🔐 Mint Access Section with Neon Bubble Background -->
-  <section class="relative z-10 text-center py-16 px-4 md:px-6">
-    <div class="mint-shelf rounded-3xl p-8 max-w-4xl mx-auto relative overflow-hidden">
-      <div class="absolute inset-0 pointer-events-none z-0">
-        <div class="absolute w-4 h-4 bg-pink-400 blur-md rounded-full animate-bubble-burst" style="top: 20%; left: 15%;"></div>
-        <div class="absolute w-6 h-6 bg-purple-400 blur-lg rounded-full animate-bubble-burst delay-1000" style="top: 60%; left: 80%;"></div>
-        <div class="absolute w-5 h-5 bg-lime-300 blur-sm rounded-full animate-bubble-burst delay-2000" style="top: 35%; left: 50%;"></div>
-        <div class="absolute w-3 h-3 bg-fuchsia-300 blur-md rounded-full animate-bubble-burst delay-300" style="top: 70%; left: 25%;"></div>
-      </div>
-
-      <!-- Mint Content -->
-      <h2 class="text-3xl md:text-4xl font-bold mb-6 text-yellow-400 z-10 relative">🔐 VIP Mint Access</h2>
-      <p class="mb-8 max-w-2xl mx-auto text-lg text-gray-300 z-10 relative">
-        Verify with Phantom Wallet or Discord role for VIP access, or go directly to Gensuki to mint. All users will be redirected to our official launchpad partner Gensuki.
-      </p>
-
-      <button id="mint-connect-wallet-btn" onclick="connectWallet()"
-        class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative">
-        🔍 Verify Wallet & Discord Access
-      </button>
-
-      <button id="check-discord-role-btn" onclick="checkDiscordRoleAccess()"
-        class="mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative">
-        🎯 Check Discord Role Access
-      </button>
-
-      <button onclick="clearCacheAndReload()"
-        class="mt-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 z-10 relative text-sm">
-        🔄 Clear Cache & Reload (for favicon)
-      </button>
-
-      <p id="vip-message" class="mt-8 text-xl font-semibold z-10 relative"></p>
-
-      <div class="mt-8 z-10 relative">
-        <p class="text-lg text-gray-400 mb-4">Or login with Discord to verify:</p>
-        <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read" 
-           class="inline-flex items-center bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-          <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-          </svg>
-          Login with Discord, come back to verify
-        </a>
-      </div>
-
-      <div class="mt-8 pt-8 border-t border-gray-600/30 z-10 relative">
-        <p class="text-lg text-gray-400 mb-4">Or go directly to mint:</p>
-        <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" 
-           class="inline-block bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-8 py-4 rounded-xl text-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-          🚀 Go to Gensuki
-        </a>
-      </div>
-
-      <div id="mint-info" class="hidden mt-8 p-6 bg-blue-900/30 border border-blue-500/30 rounded-xl z-10 relative">
-        <h3 class="text-xl font-bold text-blue-400 mb-3">🎯 Mint Access Verified!</h3>
-        <p class="text-blue-300 mb-4">You have been verified for minting access. You will be redirected to our official launchpad partner Gensuki to complete your mint.</p>
-        <div class="flex items-center justify-center space-x-2 text-lg text-blue-400">
-          <span>🔗</span>
-          <span>Gensuki Launchpad</span>
-          <span>→</span>
-        </div>
-      </div>
-
-      <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" id="mint-now-btn"
-         class="hidden mt-8 inline-block bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative">
-        🧠 Mint on Gensuki Launchpad
-      </a>
-    </div>
-  </section>
-
-  <!-- 🎮 Current Benefits & Features -->
-  <section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-emerald-900/30 to-teal-900/30">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl md:text-5xl font-bold text-emerald-400 mb-4">
-          🎮 Current Benefits & Features
-        </h2>
-        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-          What you get right now when you mint a GEN1 NFT
+        <p class="text-sm">
+          © 2025 Narrrf's World. Built with brain & cheese 🧠🧀 |
+          <a
+            href="privacy-policy.html"
+            class="text-gray-500 hover:text-gray-300 underline"
+            >Privacy Policy</a
+          >
+          |
+          <a href="faq.html" class="text-gray-500 hover:text-gray-300 underline"
+            >FAQ</a
+          >
+          |
+          <a
+            href="3d-riddle.html"
+            class="text-gray-500 hover:text-gray-300 underline"
+            >3D Riddle Game</a
+          >
         </p>
       </div>
+    </footer>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        
-        <!-- Season 8 Gaming -->
-        <div class="mint-card rounded-2xl p-6 border-2 border-green-500/50">
-          <div class="text-4xl mb-4 text-center">🎮</div>
-          <h3 class="text-xl font-bold text-green-400 mb-3 text-center">Season 8 Gaming</h3>
-          <ul class="text-gray-300 space-y-2 text-sm">
-            <li>• <strong>5 Active Games:</strong> Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race</li>
-            <li>• <strong>Role Multipliers:</strong> Earn up to 2.0x DSPOINC (VIP Holder)</li>
-            <li>• <strong>73+ Achievements:</strong> Unlock across 3 games</li>
-            <li>• <strong>Leaderboards:</strong> Compete for top spots</li>
-            <li>• <strong>Profile Tracking:</strong> Complete gaming history</li>
-          </ul>
-        </div>
+    <!-- Remove old wallet script and add new one -->
 
-        <!-- 3D Riddle Game Access -->
-        <div class="mint-card rounded-2xl p-6 border-2 border-purple-500/50">
-          <div class="text-4xl mb-4 text-center">🧀</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-3 text-center">3D Riddle Game</h3>
-          <ul class="text-gray-300 space-y-2 text-sm">
-            <li>• <strong>Alpha Testing:</strong> January 2026 (@holders & @vip)</li>
-            <li>• <strong>6 Complete Levels:</strong> Level 1: The Cheese Temple</li>
-            <li>• <strong>Phoenix Boss:</strong> 15 behavior patterns</li>
-            <li>• <strong>Riddles & Rewards:</strong> DSPOINC rewards with multipliers</li>
-            <li>• <strong>Plot Ownership:</strong> Based on NFT tier (coming 2026)</li>
-          </ul>
-        </div>
+    <script>
+      // =============================================
+      // 🎨 Mint Page Trait Showcase (Client-side UI)
+      // =============================================
 
-        <!-- Community Access -->
-        <div class="mint-card rounded-2xl p-6 border-2 border-yellow-500/50">
-          <div class="text-4xl mb-4 text-center">🤝</div>
-          <h3 class="text-xl font-bold text-yellow-400 mb-3 text-center">Community Access</h3>
-          <ul class="text-gray-300 space-y-2 text-sm">
-            <li>• <strong>Discord Roles:</strong> Automatic role assignment</li>
-            <li>• <strong>Giveaways:</strong> Epic cheese giveaways & raffles</li>
-            <li>• <strong>Events:</strong> Friday games, poker tournaments</li>
-            <li>• <strong>Partner Access:</strong> Exclusive partner channels</li>
-            <li>• <strong>Alpha Labs:</strong> Early access to new features</li>
-          </ul>
-        </div>
+      // TODO: Replace sample data with the full verified dataset (all 266 traits across 7 categories).
+      const TRAITS_DATABASE = {
+        theme: {
+          name: 'Theme',
+          icon: '🎭',
+          total: 3333,
+          traits: {
+            'Action and Adventure': 186,
+            'Animation and Classic Cartoons': 217,
+            'Classic Cinema and TV': 236,
+            'Comedy and Satire': 222,
+            'Crime and Thriller': 481,
+            'Dystopian and Noir': 363,
+            'Fantasy and Mythology': 372,
+            'Historical and War-Themed': 130,
+            'Horror and Gothic': 88,
+            'Musical and Psychedelic': 215,
+            'Sci-Fi and Futuristic': 755,
+            'Sports and Competition': 68,
+          },
+        },
+        subTrait: {
+          name: 'Sub-Trait',
+          icon: '🐭',
+          total: 3333,
+          traits: {
+            'Alien Predator Mouse': 54,
+            'Apocalypto Mouse': 13,
+            'Back to the Future Mouse': 64,
+            'Barbapapa Mouse': 32,
+            'Basketball Mouse': 24,
+            'Bear or Bull Mouse': 50,
+            'Bloodsport Mouse': 14,
+            'Blow Money Mouse': 14,
+            'Boardwalk Empire Mouse': 5,
+            'Bootie Mouse': 10,
+            'Borderland Mouse': 37,
+            'Boys in the Hood Mouse': 38,
+            'Braveheart Mouse': 19,
+            'Cartoon Factory Mouse': 55,
+            'Cat from Hell Mouse': 60,
+            'Clockwork Orange Mouse': 36,
+            'Cowboy Alien Invasion Mouse': 62,
+            'CryptoCorn Popcorn Mouse': 50,
+            'Cyber Street Mouse': 18,
+            'Cyberpunk Mouse': 37,
+            'Dark Cheese Wizard Mouse': 80,
+            'Doctor Who Mouse': 31,
+            'Elf Warrior Mouse': 39,
+            'Equilibrium Mouse': 3,
+            'Fear and Loathing Las Vegas Mouse': 67,
+            'Fibonacci Mouse': 18,
+            'Flintstones Prehistoric Mouse': 61,
+            'Formula 1 Racing Mouse': 14,
+            'Friday Mouse': 17,
+            'Futurama Mouse': 12,
+            'Gangster Club Mouse': 69,
+            'Gladiator Future Mouse': 48,
+            'Golden Baboons Rascal Club Mouse': 59,
+            'Golden Bingo Champion Mouse': 19,
+            'Good Morning Vietnam Mouse': 29,
+            'Green Mile Mouse': 67,
+            'Gulag Prisoner Mouse': 16,
+            'Halloween Mouse': 19,
+            'Happy Gilmore Golf Champion Mouse': 30,
+            'Harold and Kumar Mouse': 12,
+            'Hulk Mouse': 10,
+            'Inception Mouse': 66,
+            'Independence Day Mouse': 11,
+            'Jamaica Rum Mouse': 34,
+            'Joker Mouse': 15,
+            'Kill Bill Shogun Mouse': 71,
+            'Lab Coat Mouse': 21,
+            'Lab Mouse': 22,
+            'Lebowski Mouse': 7,
+            'Legionnaire Mouse': 18,
+            'Mad Max Mouse': 4,
+            'Marvel Gang Mouse': 8,
+            'Masters of the Universe Mouse': 43,
+            'Matrix Mouse': 57,
+            'Medieval Bow Fighter Mouse': 37,
+            'Men in Black Mouse': 12,
+            'Mythology Python Greece Mouse': 48,
+            'Noir Detective Mouse': 37,
+            'Nosferatu Vampire Mouse': 32,
+            'Orb Weaver Sorcerer Mouse': 27,
+            'Orc Warlord Mouse': 56,
+            'Pirates of the Caribbean Mouse': 18,
+            'Platoon Mouse': 17,
+            'Psychedelic Rockstar Mouse': 21,
+            'Psychedelic Vibe Mouse': 53,
+            'Pulp Fiction Alien Dance Mouse': 23,
+            'Raging Bull Fighter Mouse': 24,
+            'Rambo Mouse': 8,
+            'Reservoir Dogs Heist Mouse': 65,
+            'Rick and Morty Mouse': 76,
+            'Robocop Mouse': 27,
+            'Robotic Rabbit Syndicate Mouse': 50,
+            'RocknRolla Street Boss Mouse': 18,
+            'Rocky Horro Picture Mouse': 23,
+            'Rocky Horror Picture Mouse': 32,
+            'Rocky Mouse': 16,
+            'Sailor Mouse': 7,
+            'Scarface Crime Lord Mouse': 38,
+            'Seven Mouse': 48,
+            'Shawshank Redemption Mouse': 76,
+            'Shining Mouse': 19,
+            'Shogun Last Samurai Mouse': 17,
+            'Snatch Underground Fighter Mouse': 13,
+            'Speedy Gonzales Brain Morph Mouse': 5,
+            'Star Wars Ewok Mouse': 34,
+            'Terminator Mouse': 51,
+            'The Hunt for Red October Mouse': 14,
+            'The Jetsons Futuristic Mouse': 4,
+            'The Mask Mouse': 10,
+            'The Waterboy Underdog Mouse': 12,
+            'Top Gun Mouse': 17,
+            'Transformers Mouse': 22,
+            'Transporter Mouse': 29,
+            'Tron Mouse': 11,
+            'True Romance Mouse': 14,
+            'True Romance Street Mouse': 9,
+            'Vendetta Mouse': 29,
+            'Venom Mouse': 12,
+            'Viking Valhalla Mouse': 44,
+            'Waterworld Mouse': 61,
+            'We are the Millers Roadtrip Mouse': 24,
+            'Weedery WDYR Mouse': 50,
+            'Western Outlaw Battle Goose Mouse': 50,
+            'Yellow Submarine Mouse': 86,
+            'Zombieland Mouse': 18,
+          },
+        },
+        outfit: {
+          name: 'Outfit',
+          icon: '👔',
+          total: 3333,
+          traits: {
+            'Alien Armor': 97,
+            'Apocalyptic Wasteland Gear': 99,
+            Bathrobe: 3,
+            'Black Suit': 141,
+            'Bull Suit': 39,
+            'Cartoon Costume': 216,
+            'Champion Belt': 26,
+            'Cowboy Outlaw Dress': 49,
+            'Crazy Alex Costume': 35,
+            'Crazy Suit': 137,
+            'Dragon Combat Gi': 14,
+            'Futuristic Armor': 343,
+            'Gold Suit': 25,
+            'Gothic Cabaret Show Costume': 33,
+            'Greek Robe': 16,
+            'Green Mile Suit': 6,
+            'Kill Bill Martial Kimono': 57,
+            'Lab Coat': 80,
+            'Mafia Boss Tuxedo': 104,
+            'Magical Psychedelic Rocker Cloak': 51,
+            'Medieval Armor': 144,
+            'Military Uniform': 23,
+            'Modern Streetware': 271,
+            'Modern Streetwear': 22,
+            'Mythical Cloak': 172,
+            'Ninja Outfit': 24,
+            'Noir Detective Trench Coat': 26,
+            'Police Costume': 31,
+            'Prison Uniform': 145,
+            'Punk Outfit': 23,
+            'Retro Streetware': 22,
+            'Retro Streetwear': 314,
+            Robe: 65,
+            'Samurai Armor': 8,
+            'Seven Trench Coat': 20,
+            'Sleek Suit': 142,
+            'Sport Dress': 43,
+            'Trench Coat Noir': 10,
+            'Tribal Gear': 48,
+            Uniform: 121,
+            'Waterworld Survival Armor': 42,
+            'Weedery Dispensary Fit': 17,
+            'Wild West Styler': 29,
+          },
+        },
+        accessories: {
+          name: 'Accessories',
+          icon: '🎯',
+          total: 3333,
+          traits: {
+            'Angel Wings': 19,
+            Axe: 35,
+            'Baseball Bat': 3,
+            Basketball: 26,
+            'Bingo Balls': 14,
+            Cheese: 182,
+            'Cheese Scepter': 51,
+            'Cheese-Spiked Secret': 296,
+            Crown: 28,
+            'Daimond item': 18,
+            'Diamond item': 60,
+            'F1 Car': 13,
+            'Flux Capacitor': 39,
+            Gold: 74,
+            'Gold Chain': 26,
+            'Golden Gun': 8,
+            'Golf Magic': 4,
+            'Golf Set': 8,
+            Guitar: 28,
+            'Gun Future': 58,
+            'Gun Special': 7,
+            'Gun Standard': 121,
+            Hearts: 7,
+            Katana: 49,
+            Knife: 42,
+            'Knock Out Gloves': 18,
+            'Machine Gun': 11,
+            'Magic Staff': 121,
+            'Mushroom Magic': 11,
+            'Mushroom Spell': 222,
+            'Neon Utility': 63,
+            'Orb Magic': 322,
+            'Poker Cards': 85,
+            Portal: 124,
+            'Prehistoric Weapon': 38,
+            'Recurve Bow': 32,
+            'Rocky Power': 16,
+            'Scroll of Spells': 644,
+            Shield: 10,
+            'Smoking Magic': 197,
+            Sword: 121,
+            'Sword Special': 77,
+          },
+        },
+        expression: {
+          name: 'Expression',
+          icon: '😊',
+          total: 3333,
+          traits: {
+            Angry: 375,
+            Funny: 97,
+            Grumpy: 32,
+            Happy: 1653,
+            'Insane Mad': 169,
+            'Poker Face': 589,
+            'Psychedelic Shock': 250,
+            Sad: 34,
+            Stoned: 134,
+          },
+        },
+        background: {
+          name: 'Background',
+          icon: '🌆',
+          total: 3333,
+          traits: {
+            'Alien Planet': 62,
+            'Ancient City': 28,
+            'Ancient Greece': 12,
+            'Backroom Mafia Casino': 89,
+            'Battle of the High Seas': 97,
+            Battlefield: 35,
+            Beach: 37,
+            'Boxing Ring': 22,
+            'Burning Warcamp': 41,
+            'Cannabis Lab': 50,
+            'Cheese Cartoon': 58,
+            'City of Hearts': 11,
+            Club: 27,
+            'Comic-style Cheese Lab': 53,
+            'Dark City': 354,
+            'Dark Forest': 22,
+            'Dark Mansion': 45,
+            Desert: 267,
+            'Desert Battlefield': 26,
+            'Digital Grid (Tron Style)': 73,
+            'Easter Island': 16,
+            'Execution Chamber': 35,
+            'Futuristic City': 382,
+            'Golden River Casino': 110,
+            'Golf Course': 30,
+            'Haunted Castle': 145,
+            Jungle: 52,
+            Lab: 60,
+            'Medieval Warfield': 37,
+            'Mushroom Magic': 95,
+            'Music Lab': 47,
+            'Mystical Forest': 73,
+            'Narrrfs World Portal Cheese Gate': 113,
+            'Philadelphia Skyline': 16,
+            'Poker Lounge': 5,
+            'Post-Apocalyptic': 114,
+            'Prison Cell': 91,
+            'Psychodelic Mushrooms': 134,
+            Racetrack: 12,
+            'Retro Miami Backyard': 57,
+            'Samurai District': 116,
+            'Sky Battle': 13,
+            'Snowy Gulag Camp': 16,
+            Stadium: 12,
+            'Time-Travel Tunnel': 41,
+            'Underground Club': 76,
+            'Viking Ragnarok': 26,
+          },
+        },
+        special: {
+          name: 'Special',
+          icon: '🌟',
+          total: 550,
+          traits: {
+            'Bear or Bull': 50,
+            'Bootie Heart': 10,
+            CryptoCorn: 50,
+            'Fibonacci Order': 97,
+            'Golden Baboons Rascal Club': 50,
+            'Golden Cheese Hunter': 57,
+            'Portal Seeker': 121,
+            'Robotic Rabbit Syndicate': 50,
+            'Scroll Keeper': 15,
+            'Weedery WDYR': 50,
+          },
+        },
+      };
 
-        <!-- Future Benefits -->
-        <div class="mint-card rounded-2xl p-6 border-2 border-blue-500/50">
-          <div class="text-4xl mb-4 text-center">🚀</div>
-          <h3 class="text-xl font-bold text-blue-400 mb-3 text-center">Coming 2026</h3>
-          <ul class="text-gray-300 space-y-2 text-sm">
-            <li>• <strong>Staking:</strong> Earn 1 $SPOINC daily per NFT</li>
-            <li>• <strong>3D Game Plots:</strong> Land ownership system</li>
-            <li>• <strong>Utility Expansion:</strong> More games & features</li>
-            <li>• <strong>DAO Integration:</strong> Community governance</li>
-            <li>• <strong>Real-World Utility:</strong> Partner integrations</li>
-          </ul>
-        </div>
-
-        <!-- Role Benefits -->
-        <div class="mint-card rounded-2xl p-6 border-2 border-pink-500/50">
-          <div class="text-4xl mb-4 text-center">⚡</div>
-          <h3 class="text-xl font-bold text-pink-400 mb-3 text-center">Role Multipliers</h3>
-          <ul class="text-gray-300 space-y-2 text-sm">
-            <li>• <strong>VIP Holder:</strong> 2.0x multiplier</li>
-            <li>• <strong>Holder:</strong> 1.5x multiplier</li>
-            <li>• <strong>Champion:</strong> 1.4x multiplier</li>
-            <li>• <strong>Season Tester:</strong> 1.3x multiplier</li>
-            <li>• <strong>Early Bird:</strong> 1.2x multiplier</li>
-            <li>• <strong>Cheese Hunter:</strong> 1.1x multiplier</li>
-          </ul>
-        </div>
-
-        <!-- Store & Rewards -->
-        <div class="mint-card rounded-2xl p-6 border-2 border-orange-500/50">
-          <div class="text-4xl mb-4 text-center">💰</div>
-          <h3 class="text-xl font-bold text-orange-400 mb-3 text-center">Store & Rewards</h3>
-          <ul class="text-gray-300 space-y-2 text-sm">
-            <li>• <strong>Narrrf Shop:</strong> Redeem DSPOINC for rewards</li>
-            <li>• <strong>NFT Purchases:</strong> Buy items with earned currency</li>
-            <li>• <strong>Raffle Entries:</strong> Use DSPOINC for giveaways</li>
-            <li>• <strong>VIP Upgrades:</strong> Unlock premium features</li>
-            <li>• <strong>Conversion:</strong> 10,000 DSPOINC = 1 SPOINC</li>
-          </ul>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- 🧪 Quote from the Lab -->
-  <section class="relative z-10 py-16 px-4 md:px-6">
-    <div class="max-w-4xl mx-auto text-center">
-      <div class="mint-card rounded-2xl p-8 border-l-4 border-pink-500">
-        <h2 class="text-3xl md:text-4xl font-bold mb-6 text-pink-400">🧪 Quote from the Lab</h2>
-        <p class="italic text-xl text-purple-300 font-semibold mb-2">
-          "You don't mint a masterpiece — you mutate one."
-        </p>
-        <span class="text-lg text-gray-400 font-normal">– Narrrf's Lab Philosophy, Vol. 1</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20">
-    <div class="max-w-4xl mx-auto px-6">
-      <p class="mb-4">
-        Made with 🧪 & strategy in Narrrf's Lab | 
-                        <a href="https://discord.gg/zgjAwzuDqV" class="text-yellow-400 hover:text-yellow-300 underline transition-colors">
-          Join us on Discord
-        </a>
-      </p>
-      <p class="text-sm">
-        © 2025 Narrrf's World. Built with brain & cheese 🧠🧀 | 
-        <a href="privacy-policy.html" class="text-gray-500 hover:text-gray-300 underline">Privacy Policy</a> | 
-        <a href="faq.html" class="text-gray-500 hover:text-gray-300 underline">FAQ</a> | 
-        <a href="3d-riddle.html" class="text-gray-500 hover:text-gray-300 underline">3D Riddle Game</a>
-      </p>
-    </div>
-  </footer>
-
-  <!-- Remove old wallet script and add new one -->
-
-
-  <script>
-    // =============================================
-    // 🎨 Mint Page Trait Showcase (Client-side UI)
-    // =============================================
-
-    // TODO: Replace sample data with the full verified dataset (all 266 traits across 7 categories).
-    const TRAITS_DATABASE = {
-  theme: {
-    name: "Theme",
-    icon: "🎭",
-    total: 3333,
-    traits: {
-      "Action and Adventure": 186,
-      "Animation and Classic Cartoons": 217,
-      "Classic Cinema and TV": 236,
-      "Comedy and Satire": 222,
-      "Crime and Thriller": 481,
-      "Dystopian and Noir": 363,
-      "Fantasy and Mythology": 372,
-      "Historical and War-Themed": 130,
-      "Horror and Gothic": 88,
-      "Musical and Psychedelic": 215,
-      "Sci-Fi and Futuristic": 755,
-      "Sports and Competition": 68
-    }
-  },
-  subTrait: {
-    name: "Sub-Trait",
-    icon: "🐭",
-    total: 3333,
-    traits: {
-      "Alien Predator Mouse": 54,
-      "Apocalypto Mouse": 13,
-      "Back to the Future Mouse": 64,
-      "Barbapapa Mouse": 32,
-      "Basketball Mouse": 24,
-      "Bear or Bull Mouse": 50,
-      "Bloodsport Mouse": 14,
-      "Blow Money Mouse": 14,
-      "Boardwalk Empire Mouse": 5,
-      "Bootie Mouse": 10,
-      "Borderland Mouse": 37,
-      "Boys in the Hood Mouse": 38,
-      "Braveheart Mouse": 19,
-      "Cartoon Factory Mouse": 55,
-      "Cat from Hell Mouse": 60,
-      "Clockwork Orange Mouse": 36,
-      "Cowboy Alien Invasion Mouse": 62,
-      "CryptoCorn Popcorn Mouse": 50,
-      "Cyber Street Mouse": 18,
-      "Cyberpunk Mouse": 37,
-      "Dark Cheese Wizard Mouse": 80,
-      "Doctor Who Mouse": 31,
-      "Elf Warrior Mouse": 39,
-      "Equilibrium Mouse": 3,
-      "Fear and Loathing Las Vegas Mouse": 67,
-      "Fibonacci Mouse": 18,
-      "Flintstones Prehistoric Mouse": 61,
-      "Formula 1 Racing Mouse": 14,
-      "Friday Mouse": 17,
-      "Futurama Mouse": 12,
-      "Gangster Club Mouse": 69,
-      "Gladiator Future Mouse": 48,
-      "Golden Baboons Rascal Club Mouse": 59,
-      "Golden Bingo Champion Mouse": 19,
-      "Good Morning Vietnam Mouse": 29,
-      "Green Mile Mouse": 67,
-      "Gulag Prisoner Mouse": 16,
-      "Halloween Mouse": 19,
-      "Happy Gilmore Golf Champion Mouse": 30,
-      "Harold and Kumar Mouse": 12,
-      "Hulk Mouse": 10,
-      "Inception Mouse": 66,
-      "Independence Day Mouse": 11,
-      "Jamaica Rum Mouse": 34,
-      "Joker Mouse": 15,
-      "Kill Bill Shogun Mouse": 71,
-      "Lab Coat Mouse": 21,
-      "Lab Mouse": 22,
-      "Lebowski Mouse": 7,
-      "Legionnaire Mouse": 18,
-      "Mad Max Mouse": 4,
-      "Marvel Gang Mouse": 8,
-      "Masters of the Universe Mouse": 43,
-      "Matrix Mouse": 57,
-      "Medieval Bow Fighter Mouse": 37,
-      "Men in Black Mouse": 12,
-      "Mythology Python Greece Mouse": 48,
-      "Noir Detective Mouse": 37,
-      "Nosferatu Vampire Mouse": 32,
-      "Orb Weaver Sorcerer Mouse": 27,
-      "Orc Warlord Mouse": 56,
-      "Pirates of the Caribbean Mouse": 18,
-      "Platoon Mouse": 17,
-      "Psychedelic Rockstar Mouse": 21,
-      "Psychedelic Vibe Mouse": 53,
-      "Pulp Fiction Alien Dance Mouse": 23,
-      "Raging Bull Fighter Mouse": 24,
-      "Rambo Mouse": 8,
-      "Reservoir Dogs Heist Mouse": 65,
-      "Rick and Morty Mouse": 76,
-      "Robocop Mouse": 27,
-      "Robotic Rabbit Syndicate Mouse": 50,
-      "RocknRolla Street Boss Mouse": 18,
-      "Rocky Horro Picture Mouse": 23,
-      "Rocky Horror Picture Mouse": 32,
-      "Rocky Mouse": 16,
-      "Sailor Mouse": 7,
-      "Scarface Crime Lord Mouse": 38,
-      "Seven Mouse": 48,
-      "Shawshank Redemption Mouse": 76,
-      "Shining Mouse": 19,
-      "Shogun Last Samurai Mouse": 17,
-      "Snatch Underground Fighter Mouse": 13,
-      "Speedy Gonzales Brain Morph Mouse": 5,
-      "Star Wars Ewok Mouse": 34,
-      "Terminator Mouse": 51,
-      "The Hunt for Red October Mouse": 14,
-      "The Jetsons Futuristic Mouse": 4,
-      "The Mask Mouse": 10,
-      "The Waterboy Underdog Mouse": 12,
-      "Top Gun Mouse": 17,
-      "Transformers Mouse": 22,
-      "Transporter Mouse": 29,
-      "Tron Mouse": 11,
-      "True Romance Mouse": 14,
-      "True Romance Street Mouse": 9,
-      "Vendetta Mouse": 29,
-      "Venom Mouse": 12,
-      "Viking Valhalla Mouse": 44,
-      "Waterworld Mouse": 61,
-      "We are the Millers Roadtrip Mouse": 24,
-      "Weedery WDYR Mouse": 50,
-      "Western Outlaw Battle Goose Mouse": 50,
-      "Yellow Submarine Mouse": 86,
-      "Zombieland Mouse": 18
-    }
-  },
-  outfit: {
-    name: "Outfit",
-    icon: "👔",
-    total: 3333,
-    traits: {
-      "Alien Armor": 97,
-      "Apocalyptic Wasteland Gear": 99,
-      "Bathrobe": 3,
-      "Black Suit": 141,
-      "Bull Suit": 39,
-      "Cartoon Costume": 216,
-      "Champion Belt": 26,
-      "Cowboy Outlaw Dress": 49,
-      "Crazy Alex Costume": 35,
-      "Crazy Suit": 137,
-      "Dragon Combat Gi": 14,
-      "Futuristic Armor": 343,
-      "Gold Suit": 25,
-      "Gothic Cabaret Show Costume": 33,
-      "Greek Robe": 16,
-      "Green Mile Suit": 6,
-      "Kill Bill Martial Kimono": 57,
-      "Lab Coat": 80,
-      "Mafia Boss Tuxedo": 104,
-      "Magical Psychedelic Rocker Cloak": 51,
-      "Medieval Armor": 144,
-      "Military Uniform": 23,
-      "Modern Streetware": 271,
-      "Modern Streetwear": 22,
-      "Mythical Cloak": 172,
-      "Ninja Outfit": 24,
-      "Noir Detective Trench Coat": 26,
-      "Police Costume": 31,
-      "Prison Uniform": 145,
-      "Punk Outfit": 23,
-      "Retro Streetware": 22,
-      "Retro Streetwear": 314,
-      "Robe": 65,
-      "Samurai Armor": 8,
-      "Seven Trench Coat": 20,
-      "Sleek Suit": 142,
-      "Sport Dress": 43,
-      "Trench Coat Noir": 10,
-      "Tribal Gear": 48,
-      "Uniform": 121,
-      "Waterworld Survival Armor": 42,
-      "Weedery Dispensary Fit": 17,
-      "Wild West Styler": 29
-    }
-  },
-  accessories: {
-    name: "Accessories",
-    icon: "🎯",
-    total: 3333,
-    traits: {
-      "Angel Wings": 19,
-      "Axe": 35,
-      "Baseball Bat": 3,
-      "Basketball": 26,
-      "Bingo Balls": 14,
-      "Cheese": 182,
-      "Cheese Scepter": 51,
-      "Cheese-Spiked Secret": 296,
-      "Crown": 28,
-      "Daimond item": 18,
-      "Diamond item": 60,
-      "F1 Car": 13,
-      "Flux Capacitor": 39,
-      "Gold": 74,
-      "Gold Chain": 26,
-      "Golden Gun": 8,
-      "Golf Magic": 4,
-      "Golf Set": 8,
-      "Guitar": 28,
-      "Gun Future": 58,
-      "Gun Special": 7,
-      "Gun Standard": 121,
-      "Hearts": 7,
-      "Katana": 49,
-      "Knife": 42,
-      "Knock Out Gloves": 18,
-      "Machine Gun": 11,
-      "Magic Staff": 121,
-      "Mushroom Magic": 11,
-      "Mushroom Spell": 222,
-      "Neon Utility": 63,
-      "Orb Magic": 322,
-      "Poker Cards": 85,
-      "Portal": 124,
-      "Prehistoric Weapon": 38,
-      "Recurve Bow": 32,
-      "Rocky Power": 16,
-      "Scroll of Spells": 644,
-      "Shield": 10,
-      "Smoking Magic": 197,
-      "Sword": 121,
-      "Sword Special": 77
-    }
-  },
-  expression: {
-    name: "Expression",
-    icon: "😊",
-    total: 3333,
-    traits: {
-      "Angry": 375,
-      "Funny": 97,
-      "Grumpy": 32,
-      "Happy": 1653,
-      "Insane Mad": 169,
-      "Poker Face": 589,
-      "Psychedelic Shock": 250,
-      "Sad": 34,
-      "Stoned": 134
-    }
-  },
-  background: {
-    name: "Background",
-    icon: "🌆",
-    total: 3333,
-    traits: {
-      "Alien Planet": 62,
-      "Ancient City": 28,
-      "Ancient Greece": 12,
-      "Backroom Mafia Casino": 89,
-      "Battle of the High Seas": 97,
-      "Battlefield": 35,
-      "Beach": 37,
-      "Boxing Ring": 22,
-      "Burning Warcamp": 41,
-      "Cannabis Lab": 50,
-      "Cheese Cartoon": 58,
-      "City of Hearts": 11,
-      "Club": 27,
-      "Comic-style Cheese Lab": 53,
-      "Dark City": 354,
-      "Dark Forest": 22,
-      "Dark Mansion": 45,
-      "Desert": 267,
-      "Desert Battlefield": 26,
-      "Digital Grid (Tron Style)": 73,
-      "Easter Island": 16,
-      "Execution Chamber": 35,
-      "Futuristic City": 382,
-      "Golden River Casino": 110,
-      "Golf Course": 30,
-      "Haunted Castle": 145,
-      "Jungle": 52,
-      "Lab": 60,
-      "Medieval Warfield": 37,
-      "Mushroom Magic": 95,
-      "Music Lab": 47,
-      "Mystical Forest": 73,
-      "Narrrfs World Portal Cheese Gate": 113,
-      "Philadelphia Skyline": 16,
-      "Poker Lounge": 5,
-      "Post-Apocalyptic": 114,
-      "Prison Cell": 91,
-      "Psychodelic Mushrooms": 134,
-      "Racetrack": 12,
-      "Retro Miami Backyard": 57,
-      "Samurai District": 116,
-      "Sky Battle": 13,
-      "Snowy Gulag Camp": 16,
-      "Stadium": 12,
-      "Time-Travel Tunnel": 41,
-      "Underground Club": 76,
-      "Viking Ragnarok": 26
-    }
-  },
-  special: {
-    name: "Special",
-    icon: "🌟",
-    total: 550,
-    traits: {
-      "Bear or Bull": 50,
-      "Bootie Heart": 10,
-      "CryptoCorn": 50,
-      "Fibonacci Order": 97,
-      "Golden Baboons Rascal Club": 50,
-      "Golden Cheese Hunter": 57,
-      "Portal Seeker": 121,
-      "Robotic Rabbit Syndicate": 50,
-      "Scroll Keeper": 15,
-      "Weedery WDYR": 50
-    }
-  },
-};
-
-function rarityFromCount(count) {
-      if (count <= 10) return 'LEGENDARY';
-      if (count <= 50) return 'ULTRA RARE';
-      if (count <= 100) return 'RARE';
-      if (count <= 300) return 'UNCOMMON';
-      return 'COMMON';
-    }
-
-    function rarityClass(rarity) {
-      switch (rarity) {
-        case 'LEGENDARY': return 'rarity-legendary';
-        case 'ULTRA RARE': return 'rarity-ultra-rare';
-        case 'RARE': return 'rarity-rare';
-        case 'UNCOMMON': return 'rarity-uncommon';
-        default: return 'rarity-common';
+      function rarityFromCount(count) {
+        if (count <= 10) return 'LEGENDARY';
+        if (count <= 50) return 'ULTRA RARE';
+        if (count <= 100) return 'RARE';
+        if (count <= 300) return 'UNCOMMON';
+        return 'COMMON';
       }
-    }
 
-    function showTraitCategory(categoryKey, buttonEl) {
-      const categoryData = TRAITS_DATABASE[categoryKey];
-      const contentArea = document.getElementById('trait-content');
-      if (!categoryData || !contentArea) return;
+      function rarityClass(rarity) {
+        switch (rarity) {
+          case 'LEGENDARY':
+            return 'rarity-legendary';
+          case 'ULTRA RARE':
+            return 'rarity-ultra-rare';
+          case 'RARE':
+            return 'rarity-rare';
+          case 'UNCOMMON':
+            return 'rarity-uncommon';
+          default:
+            return 'rarity-common';
+        }
+      }
 
-      // Update active tab (do not rely on window.event)
-      document.querySelectorAll('.trait-tab').forEach(btn => btn.classList.remove('active'));
-      if (buttonEl) buttonEl.classList.add('active');
+      function showTraitCategory(categoryKey, buttonEl) {
+        const categoryData = TRAITS_DATABASE[categoryKey];
+        const contentArea = document.getElementById('trait-content');
+        if (!categoryData || !contentArea) return;
 
-      const sortedTraits = Object.entries(categoryData.traits)
-        .sort((a, b) => a[1] - b[1]);
+        // Update active tab (do not rely on window.event)
+        document
+          .querySelectorAll('.trait-tab')
+          .forEach((btn) => btn.classList.remove('active'));
+        if (buttonEl) buttonEl.classList.add('active');
 
-      let html = '<div class="grid md:grid-cols-3 lg:grid-cols-4 gap-4">';
+        const sortedTraits = Object.entries(categoryData.traits).sort(
+          (a, b) => a[1] - b[1]
+        );
 
-      sortedTraits.forEach(([traitName, count]) => {
-        const rarity = rarityFromCount(count);
-        const badgeClass = rarityClass(rarity);
-        const percentage = ((count / categoryData.total) * 100);
+        let html = '<div class="grid md:grid-cols-3 lg:grid-cols-4 gap-4">';
 
-        html += `
+        sortedTraits.forEach(([traitName, count]) => {
+          const rarity = rarityFromCount(count);
+          const badgeClass = rarityClass(rarity);
+          const percentage = (count / categoryData.total) * 100;
+
+          html += `
           <div class="trait-card rounded-xl p-4 text-center">
             <div class="text-2xl mb-2">${categoryData.icon}</div>
             <h4 class="font-semibold text-white mb-2 text-sm">${traitName}</h4>
@@ -1014,48 +1462,53 @@ function rarityFromCount(count) {
             <div class="text-xs text-gray-400 mt-1">${percentage.toFixed(2)}%</div>
           </div>
         `;
-      });
+        });
 
-      html += '</div>';
-      contentArea.innerHTML = html;
-    }
+        html += '</div>';
+        contentArea.innerHTML = html;
+      }
 
-    function generateRandomTraits() {
-      const display = document.getElementById('random-traits-display');
-      if (!display) return;
-      display.classList.remove('hidden');
+      function generateRandomTraits() {
+        const display = document.getElementById('random-traits-display');
+        if (!display) return;
+        display.classList.remove('hidden');
 
-      const rarityScores = {
-        'LEGENDARY': 100,
-        'ULTRA RARE': 80,
-        'RARE': 60,
-        'UNCOMMON': 40,
-        'COMMON': 20,
-      };
+        const rarityScores = {
+          LEGENDARY: 100,
+          'ULTRA RARE': 80,
+          RARE: 60,
+          UNCOMMON: 40,
+          COMMON: 20,
+        };
 
-      const picked = {};
-      const categories = Object.keys(TRAITS_DATABASE);
+        const picked = {};
+        const categories = Object.keys(TRAITS_DATABASE);
 
-      categories.forEach((key) => {
-        const category = TRAITS_DATABASE[key];
-        const traitNames = Object.keys(category.traits);
-        const chosenName = traitNames[Math.floor(Math.random() * traitNames.length)];
-        const count = category.traits[chosenName];
-        const rarity = rarityFromCount(count);
-        picked[key] = { chosenName, count, rarity };
-      });
+        categories.forEach((key) => {
+          const category = TRAITS_DATABASE[key];
+          const traitNames = Object.keys(category.traits);
+          const chosenName =
+            traitNames[Math.floor(Math.random() * traitNames.length)];
+          const count = category.traits[chosenName];
+          const rarity = rarityFromCount(count);
+          picked[key] = { chosenName, count, rarity };
+        });
 
-      const avgScore = categories.reduce((sum, key) => sum + rarityScores[picked[key].rarity], 0) / categories.length;
-      const multiplier = (1 + (avgScore / 200)).toFixed(2);
+        const avgScore =
+          categories.reduce(
+            (sum, key) => sum + rarityScores[picked[key].rarity],
+            0
+          ) / categories.length;
+        const multiplier = (1 + avgScore / 200).toFixed(2);
 
-      let html = '<div class="space-y-3 text-left">';
+        let html = '<div class="space-y-3 text-left">';
 
-      categories.forEach((key) => {
-        const category = TRAITS_DATABASE[key];
-        const trait = picked[key];
-        const badgeClass = rarityClass(trait.rarity);
+        categories.forEach((key) => {
+          const category = TRAITS_DATABASE[key];
+          const trait = picked[key];
+          const badgeClass = rarityClass(trait.rarity);
 
-        html += `
+          html += `
           <div class="flex items-center justify-between bg-gray-800/50 rounded-lg p-3">
             <div class="flex items-center gap-3">
               <span class="text-2xl">${category.icon}</span>
@@ -1067,9 +1520,9 @@ function rarityFromCount(count) {
             <div class="text-xs ${badgeClass} px-3 py-1 rounded-full">${trait.rarity}</div>
           </div>
         `;
-      });
+        });
 
-      html += `
+        html += `
         </div>
         <div class="mt-6 pt-6 border-t border-gray-700">
           <div class="text-center mb-4">
@@ -1080,37 +1533,35 @@ function rarityFromCount(count) {
         </div>
       `;
 
-      display.innerHTML = html;
-    }
+        display.innerHTML = html;
+      }
 
-    // Init
-    document.addEventListener('DOMContentLoaded', () => {
-      // Default tab
-      const firstTab = document.querySelector('.trait-tab');
-      if (firstTab) showTraitCategory('theme', firstTab);
+      // Init
+      document.addEventListener('DOMContentLoaded', () => {
+        // Default tab
+        const firstTab = document.querySelector('.trait-tab');
+        if (firstTab) showTraitCategory('theme', firstTab);
 
-      // Search filtering
-      const searchEl = document.getElementById('trait-search');
-      if (!searchEl) return;
+        // Search filtering
+        const searchEl = document.getElementById('trait-search');
+        if (!searchEl) return;
 
-      searchEl.addEventListener('input', (e) => {
-        const term = (e.target.value || '').toLowerCase();
-        document.querySelectorAll('#trait-content .trait-card').forEach((card) => {
-          const nameEl = card.querySelector('h4');
-          const name = (nameEl?.textContent || '').toLowerCase();
-          card.style.display = name.includes(term) ? '' : 'none';
+        searchEl.addEventListener('input', (e) => {
+          const term = (e.target.value || '').toLowerCase();
+          document
+            .querySelectorAll('#trait-content .trait-card')
+            .forEach((card) => {
+              const nameEl = card.querySelector('h4');
+              const name = (nameEl?.textContent || '').toLowerCase();
+              card.style.display = name.includes(term) ? '' : 'none';
+            });
         });
       });
-    });
-  </script>
+    </script>
 
-  <script src="js/wallet.js"></script>
+    <script src="js/wallet.js"></script>
 
-  <!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
-  <!-- 🔐 Do not remove unless instructed by the Over Brain. -->
-</body>
+    <!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
+    <!-- 🔐 Do not remove unless instructed by the Over Brain. -->
+  </body>
 </html>
-
-
-
-

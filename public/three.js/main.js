@@ -4063,6 +4063,8 @@ const LEVEL5_MONSTERS_PER_WAVE = 10; // 10 monsters per wave
 const LEVEL5_TOTAL_MONSTERS = 100; // 100 monsters total (10 × 10)
 const LEVEL5_WAVE_COUNTDOWN_TIME = 3; // 3 second countdown between waves
 const LEVEL5_DSPOINC_PER_MONSTER = 50; // 50 DSPOINC per monster (5,000 total)
+const LEVEL5_MONSTER_ATTACK_RANGE = 2.4; // Melee range around player
+const LEVEL5_MONSTER_ATTACK_COOLDOWN_MS = 1200; // Per-monster attack interval
 
 // 🚨 LEVEL 5 QUICK MODE (Jan 12, 2026)
 // User-requested urgent fallback: run ONLY ONE wave of 5 monsters, then complete Step 1 and spawn portal.
@@ -24698,11 +24700,22 @@ async function spawnLevel5MonsterWave(waveNumber) {
   
   // Monster paths (reuse Level 4 proven models)
   const monsterPaths = [
-    "/textures/3d models/Monster 1/Big/glTF/Demon.gltf",
-    "/textures/3d models/Monster 1/Big/glTF/Frog.gltf",
-    "/textures/3d models/Monster 1/Big/glTF/Orc.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Alien.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Birb.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf",
     "/textures/3d models/Monster 1/Big/glTF/Bunny.gltf",
-    "/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf"
+    "/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Demon.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Dino.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Fish.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Frog.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Monkroose.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Ninja.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Orc.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Orc_Skull.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Tribal.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Yeti.gltf"
   ];
   
   console.log(`🐉 [LEVEL 5] Monster paths for wave ${waveNumber}:`, {
@@ -25110,6 +25123,30 @@ function defeatLevel5Monster(monsterIndex) {
   }
 }
 
+// Level 5 melee damage handler (monster reaches player)
+function onPlayerHitByLevel5Monster(monster, monsterIndex) {
+  if (!level5RiddleState.step1Active) return;
+
+  // Stop Level 5 active combat state immediately to prevent repeated hits in same frame.
+  level5RiddleState.step1Active = false;
+  level5RiddleState.step1TimerActive = false;
+  level5RiddleState.waveCountdownActive = false;
+
+  console.error("💥 [LEVEL 5] Player hit by monster melee attack! Game over!", {
+    monsterIndex,
+    path: monster?.path,
+    pos: monster?.mesh?.position
+  });
+
+  showRiddleToast("💥 A monster hit you!", {
+    id: "level5_player_hit",
+    duration: 2500
+  });
+
+  // Reuse the existing game-over flow/UI.
+  showLevel3GameOverScreen();
+}
+
 // Update Level 5 Monsters Movement (reuses Level 4 pattern)
 function updateLevel5Monsters(delta) {
   if (!level5RiddleState.step1Active || !level5State.monsters) return;
@@ -25198,6 +25235,24 @@ function updateLevel5Monsters(delta) {
       monster.hitbox.position.z = monster.mesh.position.z;
       monster.hitbox.position.y = monster.mesh.position.y + (monster.hitboxYOffset ?? 1.6);
       monster.hitbox.updateMatrixWorld(true);
+    }
+
+    // Level 5 melee attack: when monster reaches player, trigger game over.
+    try {
+      const attackRange = monster.attackRange || LEVEL5_MONSTER_ATTACK_RANGE;
+      const playerDist = new THREE.Vector2(monster.mesh.position.x, monster.mesh.position.z)
+        .distanceTo(new THREE.Vector2(playerPosition.x, playerPosition.z));
+      if (playerDist <= attackRange) {
+        const now = performance.now();
+        const lastAttack = monster.lastAttackTime || 0;
+        if (now - lastAttack >= LEVEL5_MONSTER_ATTACK_COOLDOWN_MS) {
+          monster.lastAttackTime = now;
+          onPlayerHitByLevel5Monster(monster, index);
+          return;
+        }
+      }
+    } catch (attackError) {
+      // Non-critical safety guard.
     }
 
     // 🧯 LEVEL 5 WAVE RESCUE (Jan 12, 2026)
