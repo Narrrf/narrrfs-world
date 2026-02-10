@@ -448,8 +448,11 @@ function checkLevel2TriggerBlockStanding() {
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 // 📱 MOBILE DETECTION (January 18, 2026 - Phase 1 Mobile Optimization)
-// Detect if device is mobile (phones, tablets)
-const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+// Detect if device is mobile/tablet (including iPadOS desktop-style user agents)
+const mobileUserAgentRegex = /Mobi|Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Windows Phone/i;
+const hasTouchSupport = ("ontouchstart" in window) || (navigator.maxTouchPoints > 0);
+const hasCoarsePointer = typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
+const isMobile = mobileUserAgentRegex.test(navigator.userAgent) || (hasTouchSupport && hasCoarsePointer);
 
 // 🔧 FIX: Make isMobileLandscape a dynamic function instead of static constant
 // This ensures it updates when device orientation changes (portrait ↔ landscape)
@@ -501,6 +504,11 @@ const movement = {
 // Current nearest interactable object (chest or boss)
 let nearestInteractableChest = null; // Existing variable
 let nearestInteractableBoss = null; // NEW: For Level 3 corner bosses
+
+// Chest fix 
+let lastInteractionPromptVisible = false;
+let lastInteractionPromptMessage = null;
+
 
 
 // VR movement flags (analog values from VRInputProvider)
@@ -6637,6 +6645,7 @@ scene.add(sun);
 
 scene.add(new THREE.HemisphereLight(0xffe8a3, 0x1a1a2e, 0.4));
 
+// CRITICAL: Disable any debug setting disable
 const DEBUG_SETTINGS = {
   enableStatsOverlay: !isMobile,
   logMovementState: false,
@@ -6652,7 +6661,10 @@ const DEBUG_SETTINGS = {
   logLevel2Weapons: false, // CRITICAL: Disable Level 2 weapon loading logs for performance (was causing FPS drops)
   logLevel2Zones: false, // CRITICAL: Disable Level 2 zone inspection logs for performance
   logLevel3Monsters: false, // CRITICAL: Disable Level 3 monster spawn logs for performance (was causing continuous loading)
-  logModelCacheStats: false // Phase 1 (Jan 10, 2026): Model cache hit/miss + clone/load timing logs
+  logModelCacheStats: false, // Phase 1 (Jan 10, 2026): Model cache hit/miss + clone/load timing logs
+  logLevel3Walls: false,
+  logLevel3Crush: false,
+  logLevel5Glyphs: false,
 };
 
 const stats = DEBUG_SETTINGS.enableStatsOverlay ? new Stats() : null;
@@ -20722,36 +20734,43 @@ function checkLevel3CornerBossCollision() {
 
 function updateLevel3MovingWalls(delta) {
   if (!level3State.movingWalls || level3State.movingWalls.length === 0) {
-    // 🔍 DEBUG: Log if walls don't exist
-    if (!level3State.lastWallDebugLog || Date.now() - level3State.lastWallDebugLog > 5000) {
-      console.log("🔍 [LEVEL 3 WALLS DEBUG] No moving walls found:", {
-        wallsArray: level3State.movingWalls,
-        wallsLength: level3State.movingWalls ? level3State.movingWalls.length : 0
-      });
-      level3State.lastWallDebugLog = Date.now();
-    }
-    return;
-  }
-
-  // 🔍 DEBUG: Log wall movement every 5 seconds
-  if (!level3State.lastWallDebugLog || Date.now() - level3State.lastWallDebugLog > 5000) {
-    console.log("🔍 [LEVEL 3 WALLS DEBUG]", {
-      wallCount: level3State.movingWalls.length,
-      walls: level3State.movingWalls.map((wall, i) => ({
-        index: i,
-        position: { x: wall.position.x.toFixed(2), z: wall.position.z.toFixed(2) },
-        movement: wall.userData?.movement ? {
-          axis: wall.userData.movement.axis,
-          direction: wall.userData.movement.direction,
-          currentPos: wall.userData.movement.position?.toFixed(2),
-          min: wall.userData.movement.min?.toFixed(2),
-          max: wall.userData.movement.max?.toFixed(2),
-          speed: wall.userData.movement.speed
-        } : "NO MOVEMENT DATA"
-      }))
+  if (
+    DEBUG_SETTINGS.logLevel3Walls &&
+    (!level3State.lastWallDebugLog || Date.now() - level3State.lastWallDebugLog > 5000)
+  ) {
+    console.log("🔍 [LEVEL 3 WALLS DEBUG] No moving walls found:", {
+      wallsArray: level3State.movingWalls,
+      wallsLength: level3State.movingWalls ? level3State.movingWalls.length : 0
     });
     level3State.lastWallDebugLog = Date.now();
   }
+  return;
+}
+
+
+// 🔍 DEBUG: Log wall movement every 5 seconds (only when enabled)
+if (
+  DEBUG_SETTINGS.logLevel3Walls &&
+  (!level3State.lastWallDebugLog || Date.now() - level3State.lastWallDebugLog > 5000)
+) {
+  console.log("🔍 [LEVEL 3 WALLS DEBUG]", {
+    wallCount: level3State.movingWalls.length,
+    walls: level3State.movingWalls.map((wall, i) => ({
+      index: i,
+      position: { x: wall.position.x.toFixed(2), z: wall.position.z.toFixed(2) },
+      movement: wall.userData?.movement ? {
+        axis: wall.userData.movement.axis,
+        direction: wall.userData.movement.direction,
+        currentPos: wall.userData.movement.position?.toFixed(2),
+        min: wall.userData.movement.min?.toFixed(2),
+        max: wall.userData.movement.max?.toFixed(2),
+        speed: wall.userData.movement.speed
+      } : "NO MOVEMENT DATA"
+    }))
+  });
+  level3State.lastWallDebugLog = Date.now();
+}
+
 
   level3State.movingWalls.forEach((wall) => {
     const movement = wall.userData?.movement;
@@ -20861,27 +20880,21 @@ function configureLevel3WallMovement(wall, spec) {
  * Adds LEVEL3_WALL_EXTENT_PADDING (5 units) to each side to cover Tetris block_I model extent mismatch.
  */
 function getLevel3WallWorldBounds(wall) {
-  if (!wall || !wall.parent) {
-    const hw = wall?.userData?.halfWidth ?? 0;
-    const hd = wall?.userData?.halfDepth ?? 0;
-    const px = wall?.position?.x ?? 0;
-    const pz = wall?.position?.z ?? 0;
-    const pad = LEVEL3_WALL_EXTENT_PADDING;
-    return {
-      xMin: px - hw - pad,
-      xMax: px + hw + pad,
-      zMin: pz - hd - pad,
-      zMax: pz + hd + pad
-    };
+  if (!wall) {
+    return { xMin: 0, xMax: 0, zMin: 0, zMax: 0 };
   }
-  wall.updateMatrixWorld(true);
-  const box = new THREE.Box3().setFromObject(wall);
+
+  const hw = wall.userData?.halfWidth ?? 0;
+  const hd = wall.userData?.halfDepth ?? 0;
+  const px = wall.position.x;
+  const pz = wall.position.z;
   const pad = LEVEL3_WALL_EXTENT_PADDING;
+
   return {
-    xMin: box.min.x - pad,
-    xMax: box.max.x + pad,
-    zMin: box.min.z - pad,
-    zMax: box.max.z + pad
+    xMin: px - hw - pad,
+    xMax: px + hw + pad,
+    zMin: pz - hd - pad,
+    zMax: pz + hd + pad
   };
 }
 
@@ -21582,91 +21595,99 @@ function evaluateLevel3CornerCrush(crushX, crushZ, playerBounds) {
  * Called every frame when in Level 3 - runs BEFORE crush detection.
  * Uses reduced padding (3 units less than crush detection) so player can get closer to walls.
  */
-const LEVEL3_WALL_COLLISION_PADDING = LEVEL3_WALL_EXTENT_PADDING - 3; // 2 units - allows player 3 units closer than crush bounds
+const LEVEL3_WALL_COLLISION_PADDING = LEVEL3_WALL_EXTENT_PADDING - 3;
 
 function checkLevel3WallCollision() {
   if (currentLevel !== LEVEL_IDS.LEVEL3) return;
   if (!level3State.movingWalls || level3State.movingWalls.length === 0) return;
 
-  const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+  // 🔁 Consider reusing a temp vector here if you like,
+  // but this is okay for now.
+  const playerPos = new THREE.Vector3().lerpVectors(
+    playerCollider.start,
+    playerCollider.end,
+    0.5
+  );
+
   const playerMinY = Math.min(playerCollider.start.y, playerCollider.end.y);
   const playerMaxY = Math.max(playerCollider.start.y, playerCollider.end.y);
   const radius = PLAYER_RADIUS;
   const PUSH_BUFFER = 0.05;
 
+  // Approximate vertical range based on level config instead of Box3
+  const originY = level3Config.origin.y;
+  const wallHeight = level3Config.wallHeight || 40;
+  const yMinGlobal = originY - LEVEL3_WALL_COLLISION_PADDING;
+  const yMaxGlobal = originY + wallHeight + LEVEL3_WALL_COLLISION_PADDING;
+
+  // If capsule is completely outside vertical wall range → no collision
+  if (playerMaxY < yMinGlobal || playerMinY > yMaxGlobal) return;
+
   level3State.movingWalls.forEach((wall) => {
     if (!wall || !wall.parent) return;
 
-    wall.updateMatrixWorld(true);
-    const box = new THREE.Box3().setFromObject(wall);
-    const pad = LEVEL3_WALL_COLLISION_PADDING;
-    const xMin = box.min.x - pad;
-    const xMax = box.max.x + pad;
-    const zMin = box.min.z - pad;
-    const zMax = box.max.z + pad;
-    const yMin = box.min.y - pad;
-    const yMax = box.max.y + pad;
+    const b = getLevel3WallWorldBounds(wall);
 
-    // Quick reject: no Y overlap
-    if (playerMaxY < yMin || playerMinY > yMax) return;
+    // shrink a bit so the "crush zone" can be slightly wider than
+    // the simple collision push zone
+    const xMin = b.xMin + LEVEL3_WALL_COLLISION_PADDING;
+    const xMax = b.xMax - LEVEL3_WALL_COLLISION_PADDING;
+    const zMin = b.zMin + LEVEL3_WALL_COLLISION_PADDING;
+    const zMax = b.zMax - LEVEL3_WALL_COLLISION_PADDING;
 
-    // Closest point on wall's XZ rectangle to player center
+    // Closest point on AABB to the player center
     const closestX = Math.max(xMin, Math.min(xMax, playerPos.x));
     const closestZ = Math.max(zMin, Math.min(zMax, playerPos.z));
+
     const dx = playerPos.x - closestX;
     const dz = playerPos.z - closestZ;
     const distSq = dx * dx + dz * dz;
+
+    // No overlap: circle center is far enough from box
+    if (distSq >= radius * radius) return;
+
     const dist = Math.sqrt(distSq);
-
-    if (dist >= radius) return;
-
-    // Player overlaps wall - push out
     let pushX = 0;
     let pushZ = 0;
 
     if (dist < 0.0001) {
-      // Player center inside wall - push along axis of least penetration
-      const needPushLeft = (playerPos.x - radius) >= xMin ? (playerPos.x - radius) - xMin : Infinity;
-      const needPushRight = (playerPos.x + radius) <= xMax ? xMax - (playerPos.x + radius) : Infinity;
-      const needPushBack = (playerPos.z - radius) >= zMin ? (playerPos.z - radius) - zMin : Infinity;
-      const needPushFront = (playerPos.z + radius) <= zMax ? zMax - (playerPos.z + radius) : Infinity;
+      // Rare edge case: player center is *inside* the wall bounds.
 
-      const minPushX = Math.min(needPushLeft, needPushRight);
-      const minPushZ = Math.min(needPushBack, needPushFront);
+      // Use center of the wall AABB to decide major push axis
+      const wallCenterX = (xMin + xMax) * 0.5;
+      const wallCenterZ = (zMin + zMax) * 0.5;
+      const dx2 = playerPos.x - wallCenterX;
+      const dz2 = playerPos.z - wallCenterZ;
 
-      if (minPushX < Infinity || minPushZ < Infinity) {
-        if (minPushX <= minPushZ) {
-          pushX = needPushLeft <= needPushRight ? -needPushLeft : needPushRight;
-        } else {
-          pushZ = needPushBack <= needPushFront ? -needPushBack : needPushFront;
-        }
+      if (Math.abs(dx2) > Math.abs(dz2)) {
+        // Push along X
+        const sign = dx2 >= 0 ? 1 : -1;
+        const halfWidth = (xMax - xMin) * 0.5;
+        const currentOffset = Math.abs(dx2);
+        const overlap = radius + halfWidth - currentOffset + PUSH_BUFFER;
+        pushX = sign * overlap;
+      } else {
+        // Push along Z
+        const sign = dz2 >= 0 ? 1 : -1;
+        const halfDepth = (zMax - zMin) * 0.5;
+        const currentOffset = Math.abs(dz2);
+        const overlap = radius + halfDepth - currentOffset + PUSH_BUFFER;
+        pushZ = sign * overlap;
       }
     } else {
-      // Normal case: push away from closest point on wall surface
-      const pushAmount = radius - dist + PUSH_BUFFER;
+      // Normal case: use circle's normal away from wall
+      const overlap = radius - dist + PUSH_BUFFER;
       const nx = dx / dist;
       const nz = dz / dist;
-      pushX = nx * pushAmount;
-      pushZ = nz * pushAmount;
+      pushX = nx * overlap;
+      pushZ = nz * overlap;
     }
 
     if (pushX !== 0 || pushZ !== 0) {
       playerCollider.start.x += pushX;
-      playerCollider.start.z += pushZ;
       playerCollider.end.x += pushX;
+      playerCollider.start.z += pushZ;
       playerCollider.end.z += pushZ;
-
-      // Cancel velocity toward wall
-      const len = Math.sqrt(pushX * pushX + pushZ * pushZ);
-      if (len > 0.0001) {
-        const nx = pushX / len;
-        const nz = pushZ / len;
-        const velDot = playerVelocity.x * nx + playerVelocity.z * nz;
-        if (velDot < 0) {
-          playerVelocity.x += nx * (-velDot * 0.5);
-          playerVelocity.z += nz * (-velDot * 0.5);
-        }
-      }
     }
   });
 }
@@ -24256,12 +24277,14 @@ async function createLevel5Glyphs() {
     console.warn("⚠️ [LEVEL 5] Cannot create glyphs - map not loaded yet");
     return;
   }
-  
-  console.log("🎨 [LEVEL 5] Creating glyph stone monuments...");
-  
+
+  if (DEBUG_SETTINGS.logLevel5Glyphs) {
+    console.log("🎨 [LEVEL 5] Creating glyph stone monuments...");
+  }
+
   // Get map ground level (from level5State.spawnPosition.y)
   const groundY = level5State.spawnPosition.y || 0;
-  
+
   // Glyph selection: First 5 glyphs "LEVEL" (L, E, V, E, L) - placed near spawn for inspection
   // Positioned in a circle pattern surrounding spawn point (January 11, 2026)
   // Distance from spawn: 25 units (within 20-45 unit range)
@@ -24269,114 +24292,138 @@ async function createLevel5Glyphs() {
   // Y position: ✅ CORRECT (15.0 elevation offset above ground)
   const spawnDistance = 45.0; // Distance from spawn (20-45 units range)
   const angleStep = (Math.PI * 2) / 5; // Divide circle into 5 segments (72 degrees each)
-  
+
   const glyphConfigs = [
-    // Position glyphs in a circle around spawn (0, groundY, 0)
-    // Each glyph is 25 units from spawn, spaced 72 degrees apart
-    // Distance between adjacent glyphs: 2 × 25 × sin(36°) ≈ 29.4 units (close to 30 units minimum)
     { file: "L 3d.glb", position: new THREE.Vector3(Math.cos(0 * angleStep) * spawnDistance, groundY, Math.sin(0 * angleStep) * spawnDistance), rotationY: 0 },
     { file: "E 3d.glb", position: new THREE.Vector3(Math.cos(1 * angleStep) * spawnDistance, groundY, Math.sin(1 * angleStep) * spawnDistance), rotationY: 0 },
     { file: "V 3d.glb", position: new THREE.Vector3(Math.cos(2 * angleStep) * spawnDistance, groundY, Math.sin(2 * angleStep) * spawnDistance), rotationY: 0 },
     { file: "E 3d.glb", position: new THREE.Vector3(Math.cos(3 * angleStep) * spawnDistance, groundY, Math.sin(3 * angleStep) * spawnDistance), rotationY: 0 },
     { file: "L 3d.glb", position: new THREE.Vector3(Math.cos(4 * angleStep) * spawnDistance, groundY, Math.sin(4 * angleStep) * spawnDistance), rotationY: 0 }
   ];
-  
+
   // Scale for huge stone monuments (15 units tall)
   const glyphScale = 15.0;
-  
+
   // Load and create each glyph
   for (const config of glyphConfigs) {
     try {
       // CRITICAL: Use absolute path from web root (see 18_3D_MODEL_RENDERING_RULE.md)
       const modelPath = `/public/glyph/glyph3d/${config.file}`;
-      console.log(`🎨 [LEVEL 5] Loading glyph: ${config.file} from ${modelPath}`);
-      
+
+      if (DEBUG_SETTINGS.logLevel5Glyphs) {
+        console.log(`🎨 [LEVEL 5] Loading glyph: ${config.file} from ${modelPath}`);
+      }
+
       const result = await loadModel(modelPath);
       const glyphModel = result.scene.clone(true); // Clone for multiple instances (L and E reused)
-      
+
       // Calculate bounding box for positioning
       const box = new THREE.Box3().setFromObject(glyphModel);
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
-      
-      console.log(`🎨 [LEVEL 5] Glyph "${config.file}" loaded:`, {
-        size: size,
-        center: center,
-        children: glyphModel.children.length
-      });
-      
+
+      if (DEBUG_SETTINGS.logLevel5Glyphs) {
+        console.log(`🎨 [LEVEL 5] Glyph "${config.file}" loaded:`, {
+          size: size,
+          center: center,
+          children: glyphModel.children.length
+        });
+      }
+
       // Position glyph (adjust Y so base is elevated above ground)
       glyphModel.position.copy(config.position);
-      
+
       // Elevate glyphs significantly above ground (user request - January 11, 2026)
-      // Increased to 15 units to prevent glyphs from being partially in the ground
-      const elevationOffset = 15.0; // Increased from 10.0 to 15.0 for better visibility above ground
-      
+      const elevationOffset = 15.0;
+
       // If model center is not at base, adjust Y position
-      // For models with center at middle, move down by the distance from center to base
-      // Then add elevation offset to raise them above ground
       if (size.y > 0) {
         glyphModel.position.y = config.position.y - (center.y - box.min.y) + elevationOffset;
       } else {
         glyphModel.position.y = config.position.y + elevationOffset;
       }
-      
-      // Scale to huge stone size (20 units tall)
+
+      // Scale to huge stone size
       glyphModel.scale.setScalar(glyphScale);
-      
+
       // Rotation
       glyphModel.rotation.y = config.rotationY || 0;
-      
+
+      // Root: static + culled
+      glyphModel.matrixAutoUpdate = false;
+      glyphModel.frustumCulled = true;
+
       // Process materials (GLB models - recommended material processing)
-      // 🔧 PERFORMANCE: Disable shadows for large glyph models to reduce lag
-      // Large models (15-37MB each) with shadows cause significant frame drops
+      // 🔧 PERFORMANCE: Disable shadows & simplify materials for large glyph models
       glyphModel.traverse((child) => {
-        if (child.isMesh) {
-          // Disable shadows for performance (large models cause lag with shadows enabled)
-          child.castShadow = false; // Performance optimization (January 11, 2026)
-          child.receiveShadow = false; // Performance optimization (January 11, 2026)
-          if (child.material) {
-            // Process material (handles dark materials, converts to MeshStandardMaterial)
-            if (Array.isArray(child.material)) {
-              child.material = child.material.map(mat => processWeaponMaterial(mat));
-            } else {
-              child.material = processWeaponMaterial(child.material);
-            }
-          }
+        if (!child.isMesh) return;
+
+        // Disable shadows – these big models are too expensive with shadows
+        child.castShadow = false;
+        child.receiveShadow = false;
+
+        // Make glyph meshes fully static and culled where possible
+        child.matrixAutoUpdate = false;
+        child.frustumCulled = true;
+
+        if (child.material) {
+          const materials = Array.isArray(child.material)
+            ? child.material
+            : [child.material];
+
+          const processedMaterials = materials.map((mat) => {
+            if (!mat) return mat;
+
+            // Keep your existing material pipeline
+            let finalMat = processWeaponMaterial(mat);
+
+            // 🔧 GLYPH-SPECIFIC PERFORMANCE TWEAK:
+            // Cheap stone: no env/normal/emissive, rough + non-metal
+            if ("metalness" in finalMat) finalMat.metalness = 0.0;
+            if ("roughness" in finalMat) finalMat.roughness = 1.0;
+
+            if ("envMap" in finalMat) finalMat.envMap = null;
+            if ("normalMap" in finalMat) finalMat.normalMap = null;
+            if ("emissiveMap" in finalMat) finalMat.emissiveMap = null;
+
+            finalMat.needsUpdate = true;
+            return finalMat;
+          });
+
+          child.material = Array.isArray(child.material)
+            ? processedMaterials
+            : processedMaterials[0];
         }
       });
-      
+
       // Ensure visibility
       glyphModel.visible = true;
-      // 🔧 PERFORMANCE: Enable frustum culling for large glyph models (reduces lag when approaching)
-      // Large models (15-37MB each) cause frame drops when always rendered - culling improves performance
-      glyphModel.frustumCulled = true; // Enable culling to improve performance (January 11, 2026)
-      
-      // 🔧 PERFORMANCE: Disable matrix auto-update for static glyph models (reduces frame drops when approaching)
-      // Static monuments don't need matrix updates every frame - only update once after positioning
-      // IMPORTANT: Set matrixAutoUpdate = false BEFORE calling updateMatrixWorld() to ensure matrix is calculated correctly
-      glyphModel.matrixAutoUpdate = false; // Static objects - no per-frame matrix updates (January 11, 2026)
-      
-      // Add to Level 5 group (not scene directly) BEFORE updating matrix
+
+      // Add to Level 5 group BEFORE updating matrix
       level5State.group.add(glyphModel);
-      
-      // Update matrix AFTER adding to scene/group (ensures parent transforms are applied correctly)
-      glyphModel.updateMatrix(); // Update local matrix
-      glyphModel.updateMatrixWorld(true); // Update world matrix (recursive update of children)
-      
+
+      // Update matrices once (static object)
+      glyphModel.updateMatrix();
+      glyphModel.updateMatrixWorld(true);
+
       // Store reference
       level5State.glyphs.push(glyphModel);
       level5State.glyphPositions.push(config.position);
-      
-      console.log(`✅ [LEVEL 5] Glyph "${config.file}" created at:`, glyphModel.position);
+
+      if (DEBUG_SETTINGS.logLevel5Glyphs) {
+        console.log(`✅ [LEVEL 5] Glyph "${config.file}" created at:`, glyphModel.position);
+      }
     } catch (error) {
       console.error(`❌ [LEVEL 5] Failed to load glyph ${config.file}:`, error);
       console.error(`❌ [LEVEL 5] Error details:`, error.message, error.stack);
     }
   }
-  
-  console.log(`✅ [LEVEL 5] Created ${level5State.glyphs.length} glyph stone monuments`);
+
+  if (DEBUG_SETTINGS.logLevel5Glyphs) {
+    console.log(`✅ [LEVEL 5] Created ${level5State.glyphs.length} glyph stone monuments`);
+  }
 }
+
 
 // ==================== LEVEL 5: RIDDLE SYSTEM ====================
 
@@ -37418,47 +37465,86 @@ if (playerControls && !isVRSessionActive()) {
     }
   }
   
-  // 🎁 CHEST SYSTEM UPDATE - Update chest system if active level has chests
-  if (chestSystem && currentLevel && !isGamePaused) {
-    const playerPos = new THREE.Vector3().lerpVectors(
-      playerCollider.start,
-      playerCollider.end,
-      0.5
-    );
-    // Update chest system and get nearest interactable chest
-    nearestInteractableChest = chestSystem.update(currentLevel, playerPos, delta);
-    
-    // Show/hide interaction prompt based on nearest chest or Level 3 corner boss
-    if (guiSystem) {
-      if (nearestInteractableChest && !nearestInteractableChest.opened) {
-        guiSystem.showInteractionPrompt("Press [E] to Open");
-        nearestInteractableBoss = null; // Chest takes priority
-      } else if (currentLevel === LEVEL_IDS.LEVEL3 && typeof updateLevel3InteractableBoss === "function") {
-        // Level 3 corner bosses: E-key toaster (same as Level 1 blue cheese, Level 4/5 glyphs)
-        nearestInteractableBoss = updateLevel3InteractableBoss();
-        if (nearestInteractableBoss) {
-          guiSystem.showInteractionPrompt("Press [E] to Interact");
-        } else {
-          guiSystem.hideInteractionPrompt();
-        }
+// 🎁 CHEST SYSTEM UPDATE - Update chest system if active level has chests
+if (chestSystem && currentLevel && !isGamePaused) {
+  const playerPos = new THREE.Vector3().lerpVectors(
+    playerCollider.start,
+    playerCollider.end,
+    0.5
+  );
+
+  // Update chest system and get nearest interactable chest
+  nearestInteractableChest = chestSystem.update(currentLevel, playerPos, delta);
+
+  // Show/hide interaction prompt based on nearest chest or Level 3 corner boss
+  if (guiSystem) {
+    let desiredVisible = false;
+    let desiredMessage = null;
+
+    if (nearestInteractableChest && !nearestInteractableChest.opened) {
+      // Chest in range → takes priority
+      desiredVisible = true;
+      desiredMessage = "Press [E] to Open";
+      nearestInteractableBoss = null;
+    } else if (
+      currentLevel === LEVEL_IDS.LEVEL3 &&
+      typeof updateLevel3InteractableBoss === "function"
+    ) {
+      // Level 3 corner bosses: E-key toaster (same as Level 1 blue cheese, Level 4/5 glyphs)
+      nearestInteractableBoss = updateLevel3InteractableBoss();
+      if (nearestInteractableBoss) {
+        desiredVisible = true;
+        desiredMessage = "Press [E] to Interact";
       } else {
-        nearestInteractableBoss = null;
+        desiredVisible = false;
+      }
+    } else {
+      nearestInteractableBoss = null;
+      desiredVisible = false;
+    }
+
+    // 🔑 Only call GUI methods when something actually changed
+    if (desiredVisible) {
+      if (
+        !lastInteractionPromptVisible ||
+        lastInteractionPromptMessage !== desiredMessage
+      ) {
+        guiSystem.showInteractionPrompt(desiredMessage);
+        lastInteractionPromptVisible = true;
+        lastInteractionPromptMessage = desiredMessage;
+      }
+    } else {
+      if (lastInteractionPromptVisible) {
         guiSystem.hideInteractionPrompt();
+        lastInteractionPromptVisible = false;
+        lastInteractionPromptMessage = null;
       }
     }
-  } else {
-    // No chest system or game paused - hide prompt
-    nearestInteractableChest = null;
-    nearestInteractableBoss = null;
-    if (guiSystem) {
-      guiSystem.hideInteractionPrompt();
-    }
-    
-    // 📱 Hide mobile interact button (January 18, 2026)
-    if (isMobile) {
-      updateMobileInteractButton(false);
+
+    // 📱 Mobile interact button toggling (optional, but keeps behavior consistent)
+    if (isMobile && typeof updateMobileInteractButton === "function") {
+      const hasInteractable = !!nearestInteractableChest || !!nearestInteractableBoss;
+      updateMobileInteractButton(hasInteractable);
     }
   }
+} else {
+  // No chest system or game paused - hide prompt
+  nearestInteractableChest = null;
+  nearestInteractableBoss = null;
+
+  if (guiSystem) {
+    if (lastInteractionPromptVisible) {
+      guiSystem.hideInteractionPrompt();
+      lastInteractionPromptVisible = false;
+      lastInteractionPromptMessage = null;
+    }
+  }
+
+  // 📱 Hide mobile interact button (January 18, 2026)
+  if (isMobile && typeof updateMobileInteractButton === "function") {
+    updateMobileInteractButton(false);
+  }
+}
   
     // 🔎 DEBUG: Show where the player collider actually is (VR + desktop)
   if (playerCollider && playerCollider.start && playerCollider.end) {
@@ -37677,7 +37763,14 @@ function createMobilePauseButton() {
 }
 
 function updateMobilePauseButton() {
-  if (!isMobile || !mobilePauseButton) return;
+  if (!isMobile) return;
+
+  // Self-heal: recreate if button was removed/replaced by other UI flows
+  if (!mobilePauseButton || !document.body.contains(mobilePauseButton)) {
+    createMobilePauseButton();
+  }
+
+  if (!mobilePauseButton) return;
   
   const shouldShow = !isGamePaused && gameStarted;
   mobilePauseButton.style.display = shouldShow ? "flex" : "none";

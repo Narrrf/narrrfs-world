@@ -3345,63 +3345,72 @@ export class ChestSystem {
     if (chests.size === 0) {
       return null;
     }
-    
-    // Get player center position (middle of capsule)
-    const playerPos = new THREE.Vector3().lerpVectors(playerStart, playerEnd, 0.5);
-    
+
+    // Reuse a temp vector to avoid per-frame allocations
+    if (!this._tmpPlayerPos) {
+      this._tmpPlayerPos = new THREE.Vector3();
+    }
+    const playerPos = this._tmpPlayerPos;
+    playerPos.lerpVectors(playerStart, playerEnd, 0.5);
+
     let nearestCollision = null;
     let nearestOverlap = 0;
-    
-    // Check collision with all chests
+
     chests.forEach((chest, chestId) => {
       // Skip if chest doesn't exist or isn't loaded
-      // NOTE (Jan 12, 2026): We keep chest collision enabled even if the chest is already opened,
-      // so players can't walk through chest meshes in Level 6 (and future levels).
       if (!chest || !chest.mesh || !chest.isLoaded) {
         return;
       }
-      
-      // Get chest position (from mesh world position)
-      const chestPos = new THREE.Vector3();
-      chest.mesh.getWorldPosition(chestPos);
-      
-      // Calculate chest collision radius based on bounding box
-      const box = new THREE.Box3().setFromObject(chest.mesh);
-      const size = box.getSize(new THREE.Vector3());
-      // Use the larger of X or Z dimension as collision radius (chests are roughly rectangular)
-      const chestRadius = Math.max(size.x, size.z) * 0.5; // Half of the larger dimension
-      
-      // Calculate horizontal distance from player to chest center
+
+      const ud = chest.mesh.userData || {};
+
+      // Use precomputed collision radius + position from load()
+      const chestRadius =
+        typeof ud.collisionRadius === "number"
+          ? ud.collisionRadius
+          : playerRadius; // tiny fallback if something was missing
+
+      const chestPos = ud.collisionPosition || chest.mesh.position;
+
+      // Horizontal distance
       const dx = playerPos.x - chestPos.x;
       const dz = playerPos.z - chestPos.z;
-      const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-      
-      // Collision occurs when player is within chest radius + player radius
+      const horizontalDistanceSq = dx * dx + dz * dz;
+
       const collisionDistance = chestRadius + playerRadius;
-      
-      if (horizontalDistance < collisionDistance) {
-        // Player is colliding with chest
-        const overlap = collisionDistance - horizontalDistance;
-        
-        // Track nearest collision (largest overlap)
-        if (overlap > nearestOverlap) {
-          nearestCollision = {
-            chest: chest,
-            chestId: chestId,
-            chestPos: chestPos.clone(),
-            chestRadius: chestRadius,
-            playerPos: playerPos.clone(),
-            horizontalDistance: horizontalDistance,
-            overlap: overlap,
-            pushDirection: new THREE.Vector3(dx, 0, dz).normalize()
-          };
-          nearestOverlap = overlap;
+      const collisionDistanceSq = collisionDistance * collisionDistance;
+
+      if (horizontalDistanceSq >= collisionDistanceSq) {
+        return; // no collision
+      }
+
+      const horizontalDistance = Math.sqrt(horizontalDistanceSq);
+      const overlap = collisionDistance - horizontalDistance;
+
+      if (overlap > nearestOverlap) {
+        // Reuse a temp push vector (no allocations)
+        if (!this._tmpPushDir) {
+          this._tmpPushDir = new THREE.Vector3();
         }
+        const pushDirection = this._tmpPushDir.set(dx, 0, dz).normalize();
+
+        nearestCollision = {
+          chest,
+          chestId,
+          chestPos: chestPos.clone(),        // safe clone
+          chestRadius,
+          playerPos: playerPos.clone(),      // safe clone
+          horizontalDistance,
+          overlap,
+          pushDirection: pushDirection.clone(), // store a clone so caller can keep it
+        };
+        nearestOverlap = overlap;
       }
     });
-    
+
     return nearestCollision;
   }
+
   
   /**
    * Update all chests for a level (called every frame)

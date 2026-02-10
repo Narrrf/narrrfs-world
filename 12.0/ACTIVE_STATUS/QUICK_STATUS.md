@@ -34,6 +34,14 @@
 - ✅ Level 5 now has wider monster variety while staying on stable/known-good assets
 - ✅ Reuse strategy reduces integration risk and keeps rendering behavior consistent
 
+**Level 5 Monster Wave Hit Brush Integration (✅ COMPLETE):**
+- ✅ Integrated monster "brush/hit" behavior for Level 5 wave encounters when monsters contact the player
+- ✅ Confirmed hit interaction triggers correctly during active wave combat flow
+
+**Impact:**
+- ✅ Level 5 wave combat now includes confirmed monster-to-player contact pressure
+- ✅ Improves combat feel and makes wave survival interactions more readable
+
 ---
 
 ## 📋 **TODAY – FEBRUARY 6, 2026:**
