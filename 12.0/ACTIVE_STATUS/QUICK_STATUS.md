@@ -5,6 +5,239 @@
 **Version:** 2026-02-09  
 **Milestone:** 🎯 **Production support update – Twitter link reset flow verified on Render SQLite**
 
+
+📋 TODAY – FEBRUARY 10, 2026:
+Level 4 Cheese Hunt – Wave FPS Optimization (✅ COMPLETE)
+
+Problem:
+
+Spraying the cheese entities during Level 4 Step 1 waves caused visible FPS drops, especially during rapid fire + multiple cheese hits.
+
+Root causes inside captureLevel4Cheese() / createCheeseExplosionEffect():
+
+Per-hit geometry + material allocations
+
+12-particle explosions per cheese
+
+Un-gated debug logs on every cheese hit
+
+Changes:
+
+✅ Explosion effect pooling:
+
+Added shared geometry: LEVEL4_CHEESE_EXPLOSION_GEOMETRY = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+
+Added shared base material:
+LEVEL4_CHEESE_EXPLOSION_MATERIAL = new THREE.MeshLambertMaterial({ map: cheeseTexture, transparent: true });
+
+Both are created lazily once on first explosion instead of per shot.
+
+✅ Lighter but still juicy explosions:
+
+Reduced particleCount from 12 → 8 per cheese hit.
+
+Particles still fly in a ring with upward velocity (same arcade feel, less CPU/GC).
+
+✅ Cheese wave logging gated behind debug flag:
+
+New debug flag: DEBUG_SETTINGS.logLevel4CheeseWaves
+
+All spammy logs wrapped with:
+
+if (typeof DEBUG_SETTINGS !== "undefined" && DEBUG_SETTINGS.logLevel4CheeseWaves) { ... }
+
+Occasional “no-hit” diagnostics use Math.random() sampling to avoid log storms.
+
+✅ Game logic preserved:
+
+captureLevel4Cheese() still:
+
+Removes the mesh
+
+Updates cheesesCaught, difficultyLevel, and cheesesInCurrentWave
+
+Handles wave progression + final Step 1 completion
+
+Awards DSPOINC per cheese
+
+Updates HUD + riddle toast as before
+
+Impact:
+
+✅ Level 4 cheese waves stay high FPS even when spam-firing at multiple cheeses.
+
+✅ No change to riddle progression, DSPOINC rewards, or HUD behavior.
+
+✅ Cheese explosions feel the same, but are much cheaper to run.
+
+Weapon System – Shooting, Heat & Boss Targeting Hardening (✅ COMPLETE)
+
+Scope: weapon-system.js (fire loop, raycast, bullets, heat)
+
+Goals:
+
+Stabilize shooting logic across Levels 4–6.
+
+Reduce console spam during waves and boss fights.
+
+Keep all existing gameplay (cheese hunt, monsters, Phoenix, spider minions) intact.
+
+Changes:
+
+✅ Fire pipeline cleaned and guarded (fire()):
+
+New early guard: this._canShoot()
+
+Blocks fire when:
+
+Game is paused
+
+Pointer lock is not active
+
+Not in LEVEL4, LEVEL5, or LEVEL6
+
+Not in first-person view
+
+Extra debug context when shooting is blocked (only if DEBUG_SETTINGS.logWeaponFire is enabled).
+
+✅ Overheat + weapon load safety:
+
+If this.isOverheated → fire returns early with optional debug log.
+
+Safety check:
+
+If weaponViewmodel missing or not attached to camera:
+
+Logs a warning
+
+Attempts loadWeapon(this.currentSlot) in LEVEL4/5/6
+
+Returns without firing if loading fails.
+
+✅ SF13 triple shot (Slot 2) – stable burst logic:
+
+When currentSlot === 2:
+
+Starts burst only if !this.tripleShotActive
+
+Sets:
+
+tripleShotActive = true
+
+tripleShotBulletsRemaining = 3
+
+tripleShotNextBulletTime = now
+
+Adds heat via this.generateHeat(this.heatPerTripleShot)
+
+Fires first purple bullet immediately via this._fireSingleShot(true)
+
+Plays SF13 sound via playTripleShotSound()
+
+Sets burst cooldown: shootCooldown = 0.4
+
+Follow-up bullets handled in _updateTripleShot(delta) with burstDelay = 0.11s.
+
+✅ Normal cheese gun (Slot 1) – clean single-shot path:
+
+Uses shootCooldown = 0.2 between shots.
+
+Calls _fireSingleShot(false) (yellow cheese bullet).
+
+Adds heat via generateHeat(this.heatPerShot).
+
+Plays shoot SFX with playShootSound().
+
+Success logs gated behind DEBUG_SETTINGS.logWeaponFire.
+
+✅ Unified hit detection in _fireSingleShot(isPurple) (no logic loss):
+
+Full-raycast pipeline preserved, but logs are now heavily gated:
+
+🔥 Phoenix boss (Level 5 & 6):
+
+Priority target; uses getPhoenixBoss() → getModel() and raycast.
+
+Hit logs only when DEBUG_SETTINGS.logWeaponBossHits is true.
+
+🕷️ Level 6 spider minions:
+
+Uses level6State.spiderMinions with hitbox || model.
+
+Hit logs only when DEBUG_SETTINGS.logLevel6SpiderHits is true.
+
+👾 Level 5 monsters:
+
+Uses getLevel5State() + getLevel5RiddleState().
+
+Raycasts against monster.hitbox || monster.mesh with try/catch to avoid SkinnedMesh crashes.
+
+Hit logs only when DEBUG_SETTINGS.logWeaponBossHits is true.
+
+👹 Level 4 monsters (Step 2):
+
+Same raycast logic as before, but hit logs gated behind DEBUG_SETTINGS.logWeaponFire.
+
+🧀 Level 4 cheeses (Step 1):
+
+Raycast against cheese meshes; logs + diagnostics gated behind DEBUG_SETTINGS.logLevel4CheeseWaves.
+
+✅ Visible bullets intact, with extra safety:
+
+_createSF13Bullet() and _createCheeseBullet():
+
+Verify this.scene exists before adding meshes.
+
+Ensure bullets are visible, cast shadows, and are added to the scene.
+
+Log creation only under debug (or remain minimal).
+
+Update loop (_updateBullets(delta)):
+
+Keeps existing:
+
+Lifetime and travel distance
+
+Visual spin animation
+
+Cleanup + geometry/material disposal
+
+Level 4 monster proximity hit
+
+Level 6 Phoenix window.phoenixBoss.checkHit() path
+
+✅ Heat system unchanged but better surfaced:
+
+updateHeat(delta) continues to:
+
+Decay heat while not shooting
+
+Cooldown after overheat (overheatCooldown)
+
+Helper methods still available:
+
+getHeat(), getMaxHeat(), isWeaponOverheated(), canFire().
+
+New / important debug flags:
+
+DEBUG_SETTINGS.logWeaponFire – Generic fire + raycast debug.
+
+DEBUG_SETTINGS.logLevel4CheeseWaves – Level 4 cheese wave debug (hits, no-hit diagnostics).
+
+DEBUG_SETTINGS.logWeaponBossHits – Phoenix + Level 5 boss monster hit logging.
+
+DEBUG_SETTINGS.logLevel6SpiderHits – Level 6 spider minion hit logging.
+
+Impact:
+
+✅ Shooting is stable and predictable across Levels 4–6 (no firing in wrong states/levels).
+
+✅ SF13 triple shot feels the same, but internals are safer and easier to debug.
+
+✅ Boss and wave fights no longer spam the console by default.
+
+✅ Bullet creation, raycasts, and hit callbacks keep all previous functionality.
+
 ---
 
 ## 📋 **TODAY – FEBRUARY 9, 2026:**

@@ -1158,59 +1158,92 @@ export class WeaponSystem {
    * Fire weapon (shooting mechanics)
    */
   fire() {
-    // CRITICAL: Always log fire() calls for debugging
     const currentLevel = this.getCurrentLevel();
-    console.log("🔫 [WEAPON] fire() called", {
-      currentLevel: currentLevel,
-      currentSlot: this.currentSlot,
-      hasWeapon: !!this.weaponViewmodel,
-      weaponAttached: this.weaponViewmodel ? this.camera.children.includes(this.weaponViewmodel) : false
-    });
-    
+
+    // 🔫 Only log when weapon fire debug is enabled
+    if (
+      typeof DEBUG_SETTINGS !== "undefined" &&
+      DEBUG_SETTINGS.logWeaponFire
+    ) {
+      console.log("🔫 [WEAPON] fire() called", {
+        currentLevel,
+        currentSlot: this.currentSlot,
+        hasWeapon: !!this.weaponViewmodel,
+        weaponAttached: this.weaponViewmodel
+          ? this.camera.children.includes(this.weaponViewmodel)
+          : false,
+      });
+    }
+
     // CRITICAL: Validate shooting conditions first
     if (!this._canShoot()) {
-      // Debug: Log why shooting is blocked (ALWAYS log for Level 5 debugging)
-      const level4RiddleState = this.getLevel4RiddleState();
-      const isFirstPerson = this.isFirstPerson();
-      const isPaused = this.isGamePaused();
-      const isLocked = this.isPointerLocked();
-      const currentLevel = this.getCurrentLevel();
-      console.log("🔫 [WEAPON] Shooting blocked:", {
-        level: currentLevel,
-        paused: isPaused,
-        pointerLocked: isLocked,
-        firstPerson: isFirstPerson,
-        step1Active: level4RiddleState?.step1Active,
-        step2Active: level4RiddleState?.step2Active,
-        weaponLoaded: this.weaponViewmodel !== null,
-        weaponAttached: this.weaponViewmodel ? this.camera.children.includes(this.weaponViewmodel) : false,
-        currentSlot: this.currentSlot,
-        weaponViewmodelExists: !!this.weaponViewmodel
-      });
+      // Optional: detailed "blocked" debug, only when weapon fire debug is on
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire
+      ) {
+        const level4RiddleState = this.getLevel4RiddleState();
+        const isFirstPerson = this.isFirstPerson();
+        const isPaused = this.isGamePaused();
+        const isLocked = this.isPointerLocked();
+        const level = this.getCurrentLevel();
+        console.log("🔫 [WEAPON] Shooting blocked:", {
+          level,
+          paused: isPaused,
+          pointerLocked: isLocked,
+          firstPerson: isFirstPerson,
+          step1Active: level4RiddleState?.step1Active,
+          step2Active: level4RiddleState?.step2Active,
+          weaponLoaded: this.weaponViewmodel !== null,
+          weaponAttached: this.weaponViewmodel
+            ? this.camera.children.includes(this.weaponViewmodel)
+            : false,
+          currentSlot: this.currentSlot,
+          weaponViewmodelExists: !!this.weaponViewmodel,
+        });
+      }
       return;
     }
 
     // Check for overheating
     if (this.isOverheated) {
-      console.log('🚫 [WEAPON] Cannot shoot - weapon is overheated!');
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire
+      ) {
+        console.log("🚫 [WEAPON] Cannot shoot - weapon is overheated!");
+      }
       return;
     }
 
     // CRITICAL: Ensure weapon is loaded before firing
-    if (!this.weaponViewmodel || !this.camera.children.includes(this.weaponViewmodel)) {
-      console.warn("⚠️ [WEAPON] Cannot shoot - weapon not loaded. Attempting to load...");
+    if (
+      !this.weaponViewmodel ||
+      !this.camera.children.includes(this.weaponViewmodel)
+    ) {
+      console.warn(
+        "⚠️ [WEAPON] Cannot shoot - weapon not loaded. Attempting to load..."
+      );
+
       // Try to load weapon if in Level 4, Level 5, or Level 6
-      const currentLevel = this.getCurrentLevel();
-      if (currentLevel === "LEVEL4" || currentLevel === "LEVEL5" || currentLevel === "LEVEL6") {
-        this.loadWeapon(this.currentSlot).catch(err => {
+      const lvl = this.getCurrentLevel();
+      if (lvl === "LEVEL4" || lvl === "LEVEL5" || lvl === "LEVEL6") {
+        this.loadWeapon(this.currentSlot).catch((err) => {
           console.error("❌ [WEAPON] Failed to load weapon:", err);
         });
       }
       return;
     }
-    
-    // Debug: Log successful fire attempt
-    console.log("🔫 [WEAPON] Fire() called - conditions met, proceeding to fire...");
+
+    // Debug: Log successful fire attempt (gated)
+    if (
+      typeof DEBUG_SETTINGS !== "undefined" &&
+      DEBUG_SETTINGS.logWeaponFire
+    ) {
+      console.log(
+        "🔫 [WEAPON] Fire() called - conditions met, proceeding to fire..."
+      );
+    }
 
     // Check if SF13 (slot 2) - triple shot mode
     const isSF13 = this.currentSlot === 2;
@@ -1226,18 +1259,35 @@ export class WeaponSystem {
         this.generateHeat(this.heatPerTripleShot);
 
         // Fire first bullet immediately (purple bullet for SF13)
-        console.log("🔫 [WEAPON] Starting triple shot burst (purple bullets) from slot 2");
+        if (
+          typeof DEBUG_SETTINGS !== "undefined" &&
+          DEBUG_SETTINGS.logWeaponFire
+        ) {
+          console.log(
+            "🔫 [WEAPON] Starting triple shot burst (purple bullets) from slot 2"
+          );
+        }
+
         this._fireSingleShot(true); // true = purple bullet
 
         // Play SF13 sound
         this.playTripleShotSound();
-        console.log("✅ [WEAPON] Triple shot burst started, first bullet fired, sound played");
 
-        // Update cooldown
+        if (
+          typeof DEBUG_SETTINGS !== "undefined" &&
+          DEBUG_SETTINGS.logWeaponFire
+        ) {
+          console.log(
+            "✅ [WEAPON] Triple shot burst started, first bullet fired, sound played"
+          );
+        }
+
+        // Update cooldown for burst
         this.lastShotTime = performance.now() / 1000;
         this.shootCooldown = 0.4; // 400ms cooldown between bursts
       }
-      return; // Triple shot system will handle the rest in update()
+      // Triple shot system will handle the rest in update()
+      return;
     } else {
       // Normal weapon (slot 1): Single shot
       const currentTime = performance.now() / 1000;
@@ -1246,7 +1296,15 @@ export class WeaponSystem {
       }
 
       // Fire single shot (yellow bullet for cheese)
-      console.log("🔫 [WEAPON] Firing single shot (yellow bullet) from slot 1");
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire
+      ) {
+        console.log(
+          "🔫 [WEAPON] Firing single shot (yellow bullet) from slot 1"
+        );
+      }
+
       this._fireSingleShot(false); // false = yellow bullet
 
       // Add heat for single shot
@@ -1254,7 +1312,14 @@ export class WeaponSystem {
 
       // Play shooting sound
       this.playShootSound();
-      console.log("✅ [WEAPON] Single shot fired, sound played, heat added");
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire
+      ) {
+        console.log(
+          "✅ [WEAPON] Single shot fired, sound played, heat added"
+        );
+      }
 
       // Update cooldown
       this.lastShotTime = currentTime;
@@ -1291,9 +1356,15 @@ export class WeaponSystem {
     this.camera.getWorldPosition(bulletStartPos);
 
     // Apply camera rotation to offset
-    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
-    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
+    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(
+      this.camera.quaternion
+    );
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(
+      this.camera.quaternion
+    );
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(
+      this.camera.quaternion
+    );
 
     bulletStartPos.addScaledVector(right, gunOffset.x);
     bulletStartPos.addScaledVector(up, gunOffset.y);
@@ -1302,7 +1373,10 @@ export class WeaponSystem {
     // Calculate target position
     let targetPos = new THREE.Vector3();
     const rayDirection = raycaster.ray.direction.clone();
-    targetPos.copy(bulletStartPos).addScaledVector(rayDirection, this.shootRange);
+    targetPos.copy(bulletStartPos).addScaledVector(
+      rayDirection,
+      this.shootRange
+    );
 
     // Check for hits
     let hitCheese = null;
@@ -1316,8 +1390,15 @@ export class WeaponSystem {
     let hitPhoenix = false;
     let hitSpiderMinion = null;
     const currentLevel = this.getCurrentLevel();
-    const phoenixBossInstance = this.getPhoenixBoss ? this.getPhoenixBoss() : null;
-    if ((currentLevel === "LEVEL5" || currentLevel === "LEVEL6") && phoenixBossInstance && phoenixBossInstance.isAlive) {
+    const phoenixBossInstance = this.getPhoenixBoss
+      ? this.getPhoenixBoss()
+      : null;
+
+    if (
+      (currentLevel === "LEVEL5" || currentLevel === "LEVEL6") &&
+      phoenixBossInstance &&
+      phoenixBossInstance.isAlive
+    ) {
       const phoenixModel = phoenixBossInstance.getModel();
       if (phoenixModel) {
         const intersects = raycaster.intersectObject(phoenixModel, true);
@@ -1332,7 +1413,16 @@ export class WeaponSystem {
             monsterHitIndex = -1;
             level5MonsterHitIndex = -1;
             targetPos.copy(intersects[0].point);
-            console.log(`🔥 [WEAPON] Phoenix HIT! Distance: ${distance.toFixed(2)}`);
+
+            // Distance log for Phoenix hit – boss debug only
+            if (
+              typeof DEBUG_SETTINGS !== "undefined" &&
+              DEBUG_SETTINGS.logWeaponBossHits
+            ) {
+              console.log(
+                `🔥 [WEAPON] Phoenix HIT! Distance: ${distance.toFixed(2)}`
+              );
+            }
           }
         }
       }
@@ -1340,7 +1430,11 @@ export class WeaponSystem {
 
     // 🕷️ LEVEL 6 SPIDER MINIONS: Check for spider minion hits (February 6, 2026)
     const level6State = this.getLevel6State ? this.getLevel6State() : null;
-    if (currentLevel === "LEVEL6" && level6State?.spiderMinions && !hitPhoenix) {
+    if (
+      currentLevel === "LEVEL6" &&
+      level6State?.spiderMinions &&
+      !hitPhoenix
+    ) {
       level6State.spiderMinions.forEach((minion) => {
         if (!minion || !minion.isAlive) return;
         const raycastTarget = minion.hitbox || minion.model;
@@ -1359,7 +1453,17 @@ export class WeaponSystem {
               monsterHitIndex = -1;
               level5MonsterHitIndex = -1;
               targetPos.copy(intersects[0].point);
-              console.log(`🕷️ [WEAPON] Level 6 Spider Minion HIT! Distance: ${distance.toFixed(2)}`);
+
+              if (
+                typeof DEBUG_SETTINGS !== "undefined" &&
+                DEBUG_SETTINGS.logLevel6SpiderHits
+              ) {
+                console.log(
+                  `🕷️ [WEAPON] Level 6 Spider Minion HIT! Distance: ${distance.toFixed(
+                    2
+                  )}`
+                );
+              }
             }
           }
         } catch (e) {
@@ -1367,74 +1471,83 @@ export class WeaponSystem {
         }
       });
     }
-    
-    // 🎯 LEVEL 5 MONSTERS: Check for Level 5 monster hits (takes priority over Level 4 monsters) - January 11, 2026
-    // ISSUE FIXED: Bullet detection wasn't working for Level 5 monsters
-    // SOLUTION: Added Level 5 monster raycasting loop with state getters and callback system
-    // - State getters: getLevel5State() and getLevel5RiddleState() provide access to Level 5 state
-    // - Raycasting: Uses raycaster.intersectObject(monster.mesh, true) with recursive=true for GLTF models
-    // - Callback: onLevel5MonsterHit() callback triggers defeatLevel5Monster() function in main.js
-    // - Priority: Level 5 detection happens BEFORE Level 4 (priority order in hit processing)
-    // - Validation: Checks step1Active, monster visibility, and defeated status
-    // STATUS: ✅ WORKING - Monsters can now be shot and defeated with proper hit detection
+
+    // 🎯 LEVEL 5 MONSTERS: Check for Level 5 monster hits (takes priority over Level 4 monsters)
     const level5RiddleState = this.getLevel5RiddleState();
     const level5State = this.getLevel5State();
-    
-    // Debug: ALWAYS log Level 5 detection check (to diagnose why detection isn't working)
-    if (currentLevel === "LEVEL5") {
-      console.log("🔍 [WEAPON] Level 5 detection check (ALWAYS LOG):", {
+
+    // Level 5 detection debug – only when enabled
+    if (
+      currentLevel === "LEVEL5" &&
+      typeof DEBUG_SETTINGS !== "undefined" &&
+      DEBUG_SETTINGS.logLevel5MonsterDetection
+    ) {
+      console.log("🔍 [WEAPON] Level 5 detection check:", {
         currentLevel,
         currentLevelType: typeof currentLevel,
         step1Active: level5RiddleState?.step1Active,
         hasMonsters: !!level5State?.monsters,
         monstersCount: level5State?.monsters?.length || 0,
         hitPhoenix,
-        conditionMet: !!(currentLevel === "LEVEL5" && level5RiddleState?.step1Active && level5State?.monsters && !hitPhoenix),
+        conditionMet:
+          currentLevel === "LEVEL5" &&
+          level5RiddleState?.step1Active &&
+          level5State?.monsters &&
+          !hitPhoenix,
         level5RiddleStateType: typeof level5RiddleState,
         level5StateType: typeof level5State,
-        level5RiddleStateKeys: level5RiddleState ? Object.keys(level5RiddleState) : [],
-        level5StateKeys: level5State ? Object.keys(level5State) : []
+        level5RiddleStateKeys: level5RiddleState
+          ? Object.keys(level5RiddleState)
+          : [],
+        level5StateKeys: level5State ? Object.keys(level5State) : [],
       });
     }
-    
+
     // Level 5 Monster Detection (January 11, 2026)
-    // ISSUE FIXED: Bullet detection wasn't working for Level 5 monsters
-    // SOLUTION: Added Level 5 monster raycasting logic similar to Level 4
-    // - Checks if currentLevel === "LEVEL5" and step1Active
-    // - Iterates through level5State.monsters array
-    // - Uses raycast.intersectObject(monster.mesh, true) for hit detection
-    // - Stores hit in level5MonsterHitIndex and calls onLevel5MonsterHit callback
-    // NOTE: Level 5 detection happens BEFORE Level 4 detection (priority order)
-    if (currentLevel === "LEVEL5" && level5RiddleState?.step1Active && level5State?.monsters && !hitPhoenix) {
+    if (
+      currentLevel === "LEVEL5" &&
+      level5RiddleState?.step1Active &&
+      level5State?.monsters &&
+      !hitPhoenix
+    ) {
       const cameraPos = this.camera.position.clone();
-      
-      if (Math.random() < 0.05) {
-        console.log("🔍 [WEAPON] Checking Level 5 monsters, count:", level5State.monsters.length);
+
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logLevel5MonsterDetection &&
+        Math.random() < 0.05
+      ) {
+        console.log(
+          "🔍 [WEAPON] Checking Level 5 monsters, count:",
+          level5State.monsters.length
+        );
       }
-      
+
       level5State.monsters.forEach((monster, index) => {
         if (!monster || monster.defeated) return;
         if (!monster.mesh || !monster.mesh.visible) return;
-        
+
         // Get monster world position
         const monsterWorldPos = new THREE.Vector3();
         monster.mesh.getWorldPosition(monsterWorldPos);
-        
-        // CRITICAL STABILITY FIX (Jan 12, 2026):
-        // Do NOT raycast bullets directly against SkinnedMesh geometry (can crash in applyBoneTransform).
-        // Level 5 monsters now provide an invisible sphere hitbox in main.js (monster.hitbox).
+
+        // CRITICAL STABILITY FIX:
         const raycastTarget = monster.hitbox || monster.mesh;
         let intersects = [];
         try {
-          // Use recursive=false for hitboxes (faster), true only as fallback for legacy meshes.
+          // Use recursive=false for hitboxes (faster), true only as fallback
           const recursive = !monster.hitbox;
           intersects = raycaster.intersectObject(raycastTarget, recursive);
         } catch (raycastError) {
-          // Never allow an uncaught raycast crash to kill shooting/bullets.
-          console.warn(`⚠️ [WEAPON] Level 5 raycast error on monster ${index} (${monster.path?.split('/').pop() || 'Unknown'}):`, raycastError);
+          console.warn(
+            `⚠️ [WEAPON] Level 5 raycast error on monster ${index} (${
+              monster.path?.split("/").pop() || "Unknown"
+            }):`,
+            raycastError
+          );
           intersects = [];
         }
-        
+
         if (intersects.length > 0) {
           const distance = intersects[0].distance;
           if (distance < hitDistance) {
@@ -1445,36 +1558,60 @@ export class WeaponSystem {
             monsterHitIndex = -1; // Clear Level 4 monster hit
             level5MonsterHitIndex = index; // Store Level 5 monster index
             targetPos.copy(intersects[0].point);
-            console.log(`🎯 [WEAPON] Level 5 Monster ${index} HIT! Distance: ${distance.toFixed(2)}`);
+
+            if (
+              typeof DEBUG_SETTINGS !== "undefined" &&
+              DEBUG_SETTINGS.logWeaponBossHits
+            ) {
+              console.log(
+                `🎯 [WEAPON] Level 5 Monster ${index} HIT! Distance: ${distance.toFixed(
+                  2
+                )}`
+              );
+            }
           }
-        } else {
-          // Debug: Log raycast misses occasionally (like Level 4)
-          if (Math.random() < 0.05) {
-            const distToMonster = cameraPos.distanceTo(monsterWorldPos);
-            console.log(`🔍 [WEAPON] Level 5 Raycast missed monster ${index}:`, {
+        } else if (
+          typeof DEBUG_SETTINGS !== "undefined" &&
+          DEBUG_SETTINGS.logLevel5MonsterDetection &&
+          Math.random() < 0.05
+        ) {
+          // Debug: occasional raycast miss log
+          const distToMonster = cameraPos.distanceTo(monsterWorldPos);
+          console.log(
+            `🔍 [WEAPON] Level 5 Raycast missed monster ${index}:`,
+            {
               distance: distToMonster.toFixed(2),
               visible: monster.mesh.visible,
               defeated: monster.defeated,
               meshInScene: level5State.group?.children.includes(monster.mesh),
-              groupVisible: level5State.group?.visible
-            });
-          }
+              groupVisible: level5State.group?.visible,
+            }
+          );
         }
       });
     }
-    
+
     // Step 2 (monsters) takes priority over Step 1 (cheese)
-    if (level4RiddleState?.step2Active && level4State?.monsters && !hitPhoenix) {
+    if (
+      level4RiddleState?.step2Active &&
+      level4State?.monsters &&
+      !hitPhoenix
+    ) {
       const cameraPos = this.camera.position.clone();
 
       level4State.monsters.forEach((monster, index) => {
-        if (!monster || !monster.mesh || !monster.mesh.visible || monster.defeated) return;
+        if (
+          !monster ||
+          !monster.mesh ||
+          !monster.mesh.visible ||
+          monster.defeated
+        )
+          return;
 
         const monsterWorldPos = new THREE.Vector3();
         monster.mesh.getWorldPosition(monsterWorldPos);
 
-        // CRITICAL: Raycast against monster mesh with recursive check (true = check all children)
-        // This is important for GLTF models with skeletons and multiple meshes
+        // Raycast against monster mesh with recursive check
         const intersects = raycaster.intersectObject(monster.mesh, true);
 
         if (intersects.length > 0) {
@@ -1486,30 +1623,53 @@ export class WeaponSystem {
             hitIndex = -1;
             monsterHitIndex = index; // Store the index from the loop
             targetPos.copy(intersects[0].point);
-            console.log(`🎯 [WEAPON] Monster ${index} HIT! Distance: ${distance.toFixed(2)}, Name: ${monster.path?.split('/').pop() || 'Unknown'}`);
+
+            if (
+              typeof DEBUG_SETTINGS !== "undefined" &&
+              DEBUG_SETTINGS.logWeaponFire
+            ) {
+              console.log(
+                `🎯 [WEAPON] Monster ${index} HIT! Distance: ${distance.toFixed(
+                  2
+                )}, Name: ${
+                  monster.path?.split("/").pop() || "Unknown"
+                }`
+              );
+            }
           }
-        } else {
-          // Debug: Log if raycast misses (only occasionally to avoid spam)
-          if (Math.random() < 0.01) {
-            const distanceToMonster = cameraPos.distanceTo(monsterWorldPos);
-            console.log(`🔍 [WEAPON] Raycast missed monster ${index} (distance: ${distanceToMonster.toFixed(2)}, visible: ${monster.mesh.visible}, defeated: ${monster.defeated})`);
-          }
+        } else if (
+          typeof DEBUG_SETTINGS !== "undefined" &&
+          DEBUG_SETTINGS.logWeaponFire &&
+          Math.random() < 0.01
+        ) {
+          const distanceToMonster = cameraPos.distanceTo(monsterWorldPos);
+          console.log(
+            `🔍 [WEAPON] Raycast missed monster ${index} (distance: ${distanceToMonster.toFixed(
+              2
+            )}, visible: ${monster.mesh.visible}, defeated: ${
+              monster.defeated
+            })`
+          );
         }
       });
     }
 
     // Check for cheese hits (Step 1) only if no monster or Phoenix hit found
-    if (level4RiddleState?.step1Active && !hitMonster && !hitPhoenix && level4State?.cheeses) {
+    if (
+      level4RiddleState?.step1Active &&
+      !hitMonster &&
+      !hitPhoenix &&
+      level4State?.cheeses
+    ) {
       const cheeseCount = level4State.cheeses.length;
       let checkedCheeses = 0;
-      
+
       level4State.cheeses.forEach((cheese, index) => {
         if (!cheese || !cheese.mesh || !cheese.mesh.visible) {
           checkedCheeses++;
           return;
         }
 
-        // CRITICAL: Use recursive check for cheese (some cheese models might have children)
         const intersects = raycaster.intersectObject(cheese.mesh, true);
         if (intersects.length > 0) {
           const distance = intersects[0].distance;
@@ -1518,15 +1678,32 @@ export class WeaponSystem {
             hitCheese = cheese;
             hitIndex = index;
             targetPos.copy(intersects[0].point);
-            console.log(`🎯 [WEAPON] Cheese ${index} HIT! Distance: ${distance.toFixed(2)}`);
+
+            if (
+              typeof DEBUG_SETTINGS !== "undefined" &&
+              DEBUG_SETTINGS.logLevel4CheeseWaves
+            ) {
+              console.log(
+                `🎯 [WEAPON] Cheese ${index} HIT! Distance: ${distance.toFixed(
+                  2
+                )}`
+              );
+            }
           }
         }
         checkedCheeses++;
       });
-      
-      // Debug: Log if no cheese hit found (only occasionally to avoid spam)
-      if (!hitCheese && Math.random() < 0.1) {
-        console.log(`🔍 [WEAPON] Shot fired but no cheese hit. Active cheeses: ${cheeseCount}, checked: ${checkedCheeses}, Step1Active: ${level4RiddleState.step1Active}`);
+
+      // Only log in special cheese-wave debug mode
+      if (
+        !hitCheese &&
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logLevel4CheeseWaves &&
+        Math.random() < 0.1
+      ) {
+        console.log(
+          `🔍 [WEAPON] Shot fired but no cheese hit. Active cheeses: ${cheeseCount}, checked: ${checkedCheeses}, Step1Active: ${level4RiddleState.step1Active}`
+        );
       }
     }
 
@@ -1537,78 +1714,181 @@ export class WeaponSystem {
       this._createCheeseBullet(bulletStartPos, rayDirection, targetPos);
     }
 
-    // Instant hit detection
+    // Instant hit detection & outcome handling
     if (hitPhoenix && phoenixBossInstance) {
       // Phoenix boss hit - deal damage
       const damage = isPurple ? 75 : 50; // Purple bullets do more damage
       phoenixBossInstance.takeDamage(damage);
       this.onHitIndicator();
       const health = phoenixBossInstance.getHealth();
-      console.log(`🔥 [WEAPON] Phoenix hit! Damage: ${damage}, Health: ${health.current}/${health.max}`);
+
+      // 🔥 Phoenix hit logs – only in boss debug mode
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponBossHits
+      ) {
+        console.log(
+          `🔥 [WEAPON] Phoenix hit! Damage: ${damage}, Health: ${health.current}/${health.max}`
+        );
+      }
     } else if (hitSpiderMinion) {
       const damage = isPurple ? 75 : 50;
       hitSpiderMinion.takeDamage(damage);
-      if (typeof this.onSpiderMinionHit === "function") this.onSpiderMinionHit(hitSpiderMinion);
+      if (typeof this.onSpiderMinionHit === "function") {
+        this.onSpiderMinionHit(hitSpiderMinion);
+      }
       this.onHitIndicator();
-      console.log(`🕷️ [WEAPON] Spider minion hit! Damage: ${damage}, Health: ${hitSpiderMinion.health}/${hitSpiderMinion.maxHealth}`);
-    } else if (hitMonster && level5MonsterHitIndex >= 0 && (currentLevel === "LEVEL5" || currentLevel === LEVEL_IDS?.LEVEL5)) {
+
+      // 🕷️ Spider hit logs – only in spider debug mode
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logLevel6SpiderHits
+      ) {
+        console.log(
+          `🕷️ [WEAPON] Spider minion hit! Damage: ${damage}, Health: ${hitSpiderMinion.health}/${hitSpiderMinion.maxHealth}`
+        );
+      }
+    } else if (
+      hitMonster &&
+      level5MonsterHitIndex >= 0 &&
+      (currentLevel === "LEVEL5" || currentLevel === LEVEL_IDS?.LEVEL5)
+    ) {
       // Level 5 Monster hit processing (January 11, 2026)
-      // Called after raycast detects a hit on a Level 5 monster
-      // Finds current index in monsters array (may have shifted) and calls defeatLevel5Monster
-      const level5State = this.getLevel5State();
-      const currentIndex = level5State.monsters.indexOf(hitMonster);
-      if (currentIndex >= 0 && currentIndex < level5State.monsters.length) {
-        const targetMonster = level5State.monsters[currentIndex];
+      const level5StateNow = this.getLevel5State();
+      const currentIndex = level5StateNow.monsters.indexOf(hitMonster);
+
+      if (
+        currentIndex >= 0 &&
+        currentIndex < level5StateNow.monsters.length
+      ) {
+        const targetMonster = level5StateNow.monsters[currentIndex];
         if (targetMonster && !targetMonster.defeated) {
-          console.log("🎯 [WEAPON] Level 5 Monster hit! Index:", currentIndex, "Monster:", hitMonster.path?.split('/').pop() || 'Unknown');
+          // 🧪 Only log Level 5 monster hits in boss debug mode
+          if (
+            typeof DEBUG_SETTINGS !== "undefined" &&
+            DEBUG_SETTINGS.logWeaponBossHits
+          ) {
+            console.log(
+              "🎯 [WEAPON] Level 5 Monster hit! Index:",
+              currentIndex,
+              "Monster:",
+              hitMonster.path?.split("/").pop() || "Unknown"
+            );
+          }
+
           this.onLevel5MonsterHit(currentIndex);
           this.onHitIndicator();
         } else {
-          console.warn(`⚠️ [WEAPON] Level 5 Monster at index ${currentIndex} already defeated or doesn't exist`);
+          console.warn(
+            `⚠️ [WEAPON] Level 5 Monster at index ${currentIndex} already defeated or doesn't exist`
+          );
         }
       } else {
-        console.warn(`⚠️ [WEAPON] Invalid Level 5 monster index ${currentIndex}, array length: ${level5State.monsters.length}`);
+        console.warn(
+          `⚠️ [WEAPON] Invalid Level 5 monster index ${currentIndex}, array length: ${level5StateNow.monsters.length}`
+        );
       }
     } else if (hitMonster && monsterHitIndex >= 0) {
-      // CRITICAL: Use the index from the loop (monsterHitIndex) as primary, 
-      // but verify the monster still exists in the array
+      // CRITICAL: Validate monster index for Level 4 monsters
       const currentIndex = level4State.monsters.indexOf(hitMonster);
-      
-      // Use currentIndex if found, otherwise fall back to monsterHitIndex
-      // (monsterHitIndex might be stale if array shifted, but currentIndex is accurate)
       const finalIndex = currentIndex >= 0 ? currentIndex : monsterHitIndex;
-      
+
       if (finalIndex >= 0 && finalIndex < level4State.monsters.length) {
         const targetMonster = level4State.monsters[finalIndex];
         if (targetMonster && !targetMonster.defeated) {
-          console.log("🎯 [WEAPON] Monster hit! Index:", finalIndex, "Monster:", hitMonster.path?.split('/').pop() || 'Unknown');
+          // 🧪 Generic Level 4 monster hit logs – use weapon fire debug
+          if (
+            typeof DEBUG_SETTINGS !== "undefined" &&
+            DEBUG_SETTINGS.logWeaponFire
+          ) {
+            console.log(
+              "🎯 [WEAPON] Monster hit! Index:",
+              finalIndex,
+              "Monster:",
+              hitMonster.path?.split("/").pop() || "Unknown"
+            );
+          }
+
           this.onMonsterHit(finalIndex);
           this.onHitIndicator();
         } else {
-          console.warn(`⚠️ [WEAPON] Monster at index ${finalIndex} already defeated or doesn't exist`);
+          console.warn(
+            `⚠️ [WEAPON] Monster at index ${finalIndex} already defeated or doesn't exist`
+          );
         }
       } else {
-        console.warn(`⚠️ [WEAPON] Invalid monster index ${finalIndex}, array length: ${level4State.monsters.length}`);
+        console.warn(
+          `⚠️ [WEAPON] Invalid monster index ${finalIndex}, array length: ${level4State.monsters.length}`
+        );
       }
     } else if (hitCheese && hitIndex >= 0) {
-      console.log("🎯 [WEAPON] Cheese hit! Index:", hitIndex, "Calling onCheeseHit callback...");
+      // 🎯 Cheese hit logs – only in cheese-wave debug mode
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logLevel4CheeseWaves
+      ) {
+        console.log(
+          "🎯 [WEAPON] Cheese hit! Index:",
+          hitIndex,
+          "Calling onCheeseHit callback..."
+        );
+      }
+
       // CRITICAL: Call cheese hit callback
-      if (typeof this.onCheeseHit === 'function') {
+      if (typeof this.onCheeseHit === "function") {
         this.onCheeseHit(hitIndex);
-        console.log("✅ [WEAPON] onCheeseHit callback executed for index:", hitIndex);
+
+        if (
+          typeof DEBUG_SETTINGS !== "undefined" &&
+          DEBUG_SETTINGS.logLevel4CheeseWaves
+        ) {
+          console.log(
+            "✅ [WEAPON] onCheeseHit callback executed for index:",
+            hitIndex
+          );
+        }
       } else {
-        console.warn("⚠️ [WEAPON] onCheeseHit callback is not a function!");
+        console.warn(
+          "⚠️ [WEAPON] onCheeseHit callback is not a function!"
+        );
       }
       this.onHitIndicator();
-    } else if (level4RiddleState?.step1Active && !hitCheese && level4State?.cheeses && level4State.cheeses.length > 0) {
-      // Debug: Log if we shot but didn't hit any cheese in Step 1 (only occasionally to avoid spam)
-      if (Math.random() < 0.1) {
-        console.log("🔫 [WEAPON] Shot fired in Step 1 but no cheese hit. Active cheeses:", level4State.cheeses.length, "Step1Active:", level4RiddleState.step1Active);
+    } else if (
+      level4RiddleState?.step1Active &&
+      !hitCheese &&
+      level4State?.cheeses &&
+      level4State.cheeses.length > 0
+    ) {
+      // Debug: only occasionally log no-cheese shots in Step 1
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logLevel4CheeseWaves &&
+        Math.random() < 0.1
+      ) {
+        console.log(
+          "🔫 [WEAPON] Shot fired in Step 1 but no cheese hit. Active cheeses:",
+          level4State.cheeses.length,
+          "Step1Active:",
+          level4RiddleState.step1Active
+        );
       }
-    } else if (level4RiddleState?.step2Active && level4State?.monsters && level4State.monsters.length > 0) {
-      // Debug: Log if we shot but didn't hit anything in monster waves (only occasionally to avoid spam)
-      if (Math.random() < 0.05) {
-        console.log("🔫 [WEAPON] Shot fired but no monster hit. Active monsters:", level4State.monsters.length, "Step2Active:", level4RiddleState.step2Active);
+    } else if (
+      level4RiddleState?.step2Active &&
+      level4State?.monsters &&
+      level4State.monsters.length > 0
+    ) {
+      // Debug: only occasionally log no-monster shots in Step 2
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire &&
+        Math.random() < 0.05
+      ) {
+        console.log(
+          "🔫 [WEAPON] Shot fired but no monster hit. Active monsters:",
+          level4State.monsters.length,
+          "Step2Active:",
+          level4RiddleState.step2Active
+        );
       }
     }
 
@@ -1626,10 +1906,14 @@ export class WeaponSystem {
   _canShoot() {
     const currentLevel = this.getCurrentLevel();
     const isLevel6 = currentLevel === "LEVEL6";
-    
+
     // CRITICAL: Check if game is paused first
     if (this.isGamePaused()) {
-      if (isLevel6 || Math.random() < 0.2) {
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire &&
+        (isLevel6 || Math.random() < 0.2)
+      ) {
         console.log("🔫 [WEAPON] Shooting blocked: game is paused");
       }
       return false;
@@ -1637,7 +1921,11 @@ export class WeaponSystem {
 
     // CRITICAL: Check pointer lock state (required for shooting)
     if (!this.isPointerLocked()) {
-      if (isLevel6 || Math.random() < 0.2) {
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire &&
+        (isLevel6 || Math.random() < 0.2)
+      ) {
         console.log("🔫 [WEAPON] Shooting blocked: pointer not locked");
       }
       return false;
@@ -1646,23 +1934,45 @@ export class WeaponSystem {
     const isFirstPerson = this.isFirstPerson();
 
     // Only allow shooting in Level 4, Level 5, or Level 6, and first-person view
-    // NOTE: Weapons are available from Level 4 start, no step requirement
-    // NOTE: currentLevel is a string "LEVEL4", "LEVEL5", or "LEVEL6", not a number
-    if (currentLevel !== "LEVEL4" && currentLevel !== "LEVEL5" && currentLevel !== "LEVEL6") {
-      if (isLevel6 || Math.random() < 0.2) {
-        console.log("🔫 [WEAPON] Shooting blocked: wrong level", currentLevel, "(expected: 'LEVEL4', 'LEVEL5', or 'LEVEL6')");
+    if (
+      currentLevel !== "LEVEL4" &&
+      currentLevel !== "LEVEL5" &&
+      currentLevel !== "LEVEL6"
+    ) {
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire &&
+        (isLevel6 || Math.random() < 0.2)
+      ) {
+        console.log(
+          "🔫 [WEAPON] Shooting blocked: wrong level",
+          currentLevel,
+          "(expected: 'LEVEL4', 'LEVEL5', or 'LEVEL6')"
+        );
       }
       return false;
     }
-    
+
     if (!isFirstPerson) {
-      if (isLevel6 || Math.random() < 0.2) {
-        console.log("🔫 [WEAPON] Shooting blocked: not first-person (isFirstPerson:", isFirstPerson, ")");
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire &&
+        (isLevel6 || Math.random() < 0.2)
+      ) {
+        console.log(
+          "🔫 [WEAPON] Shooting blocked: not first-person (isFirstPerson:",
+          isFirstPerson,
+          ")"
+        );
       }
       return false;
     }
-    
-    if (isLevel6) {
+
+    if (
+      isLevel6 &&
+      typeof DEBUG_SETTINGS !== "undefined" &&
+      DEBUG_SETTINGS.logWeaponFire
+    ) {
       console.log("✅ [WEAPON] _canShoot() returns TRUE for Level 6");
     }
     return true;
@@ -1691,7 +2001,16 @@ export class WeaponSystem {
       if (Date.now() - this.lastOverheatTime >= this.overheatCooldown) {
         this.isOverheated = false;
         this.weaponHeat = 0;
-        console.log('❄️ [WEAPON] Weapon cooled down! Ready to fire again!');
+
+        if (
+          typeof DEBUG_SETTINGS !== "undefined" &&
+          DEBUG_SETTINGS.logWeaponFire
+        ) {
+          console.log(
+            "❄️ [WEAPON] Weapon cooled down! Ready to fire again!"
+          );
+        }
+
         this.onHeatChanged(this.weaponHeat, this.maxHeat);
       }
       return;
@@ -1720,12 +2039,25 @@ export class WeaponSystem {
       this.isOverheated = true;
       this.lastOverheatTime = Date.now();
       this.onOverheated();
-      console.log("🔥 [WEAPON] Weapon overheated!");
+
+      if (
+        typeof DEBUG_SETTINGS !== "undefined" &&
+        DEBUG_SETTINGS.logWeaponFire
+      ) {
+        console.log("🔥 [WEAPON] Weapon overheated!");
+      }
     }
 
     // Critical heat warning (at 80% heat)
-    if (this.weaponHeat >= 120 && this.weaponHeat < this.maxHeat) {
-      console.log('⚠️ [WEAPON] WARNING: Weapon heat critical! Consider cooling down...');
+    if (
+      this.weaponHeat >= 120 &&
+      this.weaponHeat < this.maxHeat &&
+      typeof DEBUG_SETTINGS !== "undefined" &&
+      DEBUG_SETTINGS.logWeaponFire
+    ) {
+      console.log(
+        "⚠️ [WEAPON] WARNING: Weapon heat critical! Consider cooling down..."
+      );
     }
 
     this.onHeatChanged(this.weaponHeat, this.maxHeat);
@@ -1776,7 +2108,10 @@ export class WeaponSystem {
 
     // Update recoil
     if (this.weaponRecoilOffset > 0) {
-      this.weaponRecoilOffset = Math.max(0, this.weaponRecoilOffset - delta * 5);
+      this.weaponRecoilOffset = Math.max(
+        0,
+        this.weaponRecoilOffset - delta * 5
+      );
     }
   }
 
@@ -1793,7 +2128,10 @@ export class WeaponSystem {
     const currentTime = performance.now() / 1000;
     const burstDelay = 0.11; // 110ms between shots
 
-    if (currentTime >= this.tripleShotNextBulletTime && this.tripleShotBulletsRemaining > 0) {
+    if (
+      currentTime >= this.tripleShotNextBulletTime &&
+      this.tripleShotBulletsRemaining > 0
+    ) {
       this.tripleShotBulletsRemaining--;
       this.tripleShotNextBulletTime = currentTime + burstDelay;
 
@@ -1819,11 +2157,6 @@ export class WeaponSystem {
     const level4RiddleState = this.getLevel4RiddleState();
     const level4State = this.getLevel4State();
 
-    // Clean up bullets if not in Level 4
-    // (This should be handled by checking if we're still in Level 4)
-    // For now, we'll let bullets continue updating
-
-    // Update each bullet
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       const bullet = this.bullets[i];
 
@@ -1833,18 +2166,15 @@ export class WeaponSystem {
       // Check if bullet should be removed
       if (bullet.lifetime >= bullet.maxLifetime || bullet.hit) {
         if (bullet.mesh) {
-          // Remove from scene if it has a parent
           if (bullet.mesh.parent) {
             bullet.mesh.parent.remove(bullet.mesh);
           } else if (this.scene.children.includes(bullet.mesh)) {
-            // Fallback: remove directly from scene if parent check fails
             this.scene.remove(bullet.mesh);
           }
-          // Dispose geometry and material
           if (bullet.mesh.geometry) bullet.mesh.geometry.dispose();
           if (bullet.mesh.material) {
             if (Array.isArray(bullet.mesh.material)) {
-              bullet.mesh.material.forEach(mat => mat.dispose());
+              bullet.mesh.material.forEach((mat) => mat.dispose());
             } else {
               bullet.mesh.material.dispose();
             }
@@ -1871,25 +2201,51 @@ export class WeaponSystem {
       }
 
       // Visual collision check with monsters (Step 2)
-      if (level4RiddleState?.step2Active && !bullet.hit && level4State?.monsters) {
+      if (
+        level4RiddleState?.step2Active &&
+        !bullet.hit &&
+        level4State?.monsters
+      ) {
         level4State.monsters.forEach((monster) => {
-          if (!monster || !monster.mesh || !monster.mesh.visible || monster.defeated) return;
+          if (
+            !monster ||
+            !monster.mesh ||
+            !monster.mesh.visible ||
+            monster.defeated
+          )
+            return;
 
-          const distanceToMonster = bullet.mesh.position.distanceTo(monster.mesh.position);
+          const distanceToMonster = bullet.mesh.position.distanceTo(
+            monster.mesh.position
+          );
           if (distanceToMonster < 2.0) {
             bullet.hit = true;
           }
         });
       }
-      
+
       // Phoenix Boss hit detection (Level 6)
-      if (currentLevel === this.LEVEL_IDS?.LEVEL6 && !bullet.hit && window.phoenixBoss) {
-        if (window.phoenixBoss.checkHit && window.phoenixBoss.checkHit(bullet.mesh.position)) {
+      if (
+        currentLevel === this.LEVEL_IDS?.LEVEL6 &&
+        !bullet.hit &&
+        window.phoenixBoss
+      ) {
+        if (
+          window.phoenixBoss.checkHit &&
+          window.phoenixBoss.checkHit(bullet.mesh.position)
+        ) {
           bullet.hit = true;
-          // Deal damage based on weapon type
           const damage = bullet.isPurple ? 15 : 10; // SF13 does more damage
           window.phoenixBoss.takeDamage(damage);
-          console.log(`💥 [WEAPON] Bullet hit Phoenix Boss! Damage: ${damage}`);
+
+          if (
+            typeof DEBUG_SETTINGS !== "undefined" &&
+            DEBUG_SETTINGS.logWeaponBossHits
+          ) {
+            console.log(
+              `💥 [WEAPON] Bullet hit Phoenix Boss! Damage: ${damage}`
+            );
+          }
         }
       }
     }
@@ -1900,7 +2256,11 @@ export class WeaponSystem {
    * @private
    */
   _createSF13Bullet(startPos, direction, targetPos) {
-    const bulletGeometry = new THREE.SphereGeometry(this.bulletSize, 8, 8);
+    const bulletGeometry = new THREE.SphereGeometry(
+      this.bulletSize,
+      8,
+      8
+    );
     const purpleColor = new THREE.Color(0x7c3aed);
 
     const bulletMaterial = new THREE.MeshStandardMaterial({
@@ -1908,35 +2268,46 @@ export class WeaponSystem {
       emissive: purpleColor,
       emissiveIntensity: 1.2,
       metalness: 0.5,
-      roughness: 0.3
+      roughness: 0.3,
     });
 
     const bulletMesh = new THREE.Mesh(bulletGeometry, bulletMaterial);
     bulletMesh.position.copy(startPos);
-    
-    // CRITICAL: Ensure bullet is visible and properly sized
+
     bulletMesh.visible = true;
-    bulletMesh.renderOrder = 1000; // Render on top
-    bulletMesh.castShadow = true; // Enable shadows for visibility
+    bulletMesh.renderOrder = 1000;
+    bulletMesh.castShadow = true;
     bulletMesh.receiveShadow = false;
-    
-    // CRITICAL: Verify scene exists before adding
+
     if (!this.scene) {
       console.error("❌ [WEAPON] Scene is null! Cannot add bullet.");
       return null;
     }
-    
-    // Add to scene
+
     this.scene.add(bulletMesh);
-    
-    // Verify bullet was added
-    if (!this.scene.children.includes(bulletMesh)) {
-      console.error("❌ [WEAPON] Failed to add SF13 bullet to scene!");
-    } else {
-      console.log("💥 [WEAPON] SF13 bullet created and added to scene at:", startPos.toArray().map(n => n.toFixed(2)), "Scene children:", this.scene.children.length);
+
+    if (
+      typeof DEBUG_SETTINGS !== "undefined" &&
+      DEBUG_SETTINGS.logWeaponFire
+    ) {
+      if (!this.scene.children.includes(bulletMesh)) {
+        console.error(
+          "❌ [WEAPON] Failed to add SF13 bullet to scene!"
+        );
+      } else {
+        console.log(
+          "💥 [WEAPON] SF13 bullet created at:",
+          startPos.toArray().map((n) => n.toFixed(2)),
+          "Scene children:",
+          this.scene.children.length
+        );
+      }
     }
 
-    const directionVec = new THREE.Vector3().subVectors(targetPos, startPos);
+    const directionVec = new THREE.Vector3().subVectors(
+      targetPos,
+      startPos
+    );
     const distance = directionVec.length();
     directionVec.normalize();
 
@@ -1951,7 +2322,7 @@ export class WeaponSystem {
       maxLifetime: this.bulletLifetime,
       targetPos: targetPos.clone(),
       hit: false,
-      isPurple: true
+      isPurple: true,
     };
 
     this.bullets.push(bullet);
@@ -1963,28 +2334,42 @@ export class WeaponSystem {
    * @private
    */
   _createCheeseBullet(startPos, direction, targetPos) {
-    const bulletGeometry = new THREE.SphereGeometry(this.bulletSize, 8, 8);
+    const bulletGeometry = new THREE.SphereGeometry(
+      this.bulletSize,
+      8,
+      8
+    );
 
-    // Load cheese bullet texture - use resolveAssetPath if available
-    const primaryTexturePath = this.resolveAssetPath("textures/blocks/cheese-bullet-small.png");
-    const fallbackTexturePath = this.resolveAssetPath("textures/blocks/yellow-cheese.png");
+    const primaryTexturePath = this.resolveAssetPath(
+      "textures/blocks/cheese-bullet-small.png"
+    );
+    const fallbackTexturePath = this.resolveAssetPath(
+      "textures/blocks/yellow-cheese.png"
+    );
 
     let cheeseTexture = null;
     if (this.textureCache && this.textureCache.has(primaryTexturePath)) {
       const cached = this.textureCache.get(primaryTexturePath);
-      if (cached && cached.image && cached.image.complete && cached.image.width > 0) {
+      if (
+        cached &&
+        cached.image &&
+        cached.image.complete &&
+        cached.image.width > 0
+      ) {
         cheeseTexture = cached;
       }
     }
 
-    const fallbackTexture = this.loadTexture ? this.loadTexture(fallbackTexturePath) : null;
+    const fallbackTexture = this.loadTexture
+      ? this.loadTexture(fallbackTexturePath)
+      : null;
 
     const bulletMaterial = new THREE.MeshStandardMaterial({
       map: cheeseTexture || fallbackTexture,
       emissive: new THREE.Color(0xffe066),
       emissiveIntensity: 0.8,
       metalness: 0.3,
-      roughness: 0.7
+      roughness: 0.7,
     });
 
     // Load primary texture asynchronously if not cached
@@ -1998,8 +2383,10 @@ export class WeaponSystem {
             texture.flipY = false;
             bulletMaterial.map = texture;
             bulletMaterial.needsUpdate = true;
-            
-            const bullet = this.bullets.find(b => b.material === bulletMaterial);
+
+            const bullet = this.bullets.find(
+              (b) => b.material === bulletMaterial
+            );
             if (bullet && bullet.mesh) {
               bullet.mesh.material = bulletMaterial;
               bullet.mesh.material.needsUpdate = true;
@@ -2010,37 +2397,51 @@ export class WeaponSystem {
         },
         undefined,
         (error) => {
-          console.warn("⚠️ [WEAPON] Cheese bullet texture not found, using fallback:", error);
+          console.warn(
+            "⚠️ [WEAPON] Cheese bullet texture not found, using fallback:",
+            error
+          );
         }
       );
     }
 
     const bulletMesh = new THREE.Mesh(bulletGeometry, bulletMaterial);
     bulletMesh.position.copy(startPos);
-    
-    // CRITICAL: Ensure bullet is visible and properly sized
+
     bulletMesh.visible = true;
-    bulletMesh.renderOrder = 1000; // Render on top
-    bulletMesh.castShadow = true; // Enable shadows for visibility
+    bulletMesh.renderOrder = 1000;
+    bulletMesh.castShadow = true;
     bulletMesh.receiveShadow = false;
-    
-    // CRITICAL: Verify scene exists before adding
+
     if (!this.scene) {
       console.error("❌ [WEAPON] Scene is null! Cannot add bullet.");
       return null;
     }
-    
-    // Add to scene
+
     this.scene.add(bulletMesh);
-    
-    // Verify bullet was added
-    if (!this.scene.children.includes(bulletMesh)) {
-      console.error("❌ [WEAPON] Failed to add Cheese bullet to scene!");
-    } else {
-      console.log("💥 [WEAPON] Cheese bullet created and added to scene at:", startPos.toArray().map(n => n.toFixed(2)), "Scene children:", this.scene.children.length);
+
+    if (
+      typeof DEBUG_SETTINGS !== "undefined" &&
+      DEBUG_SETTINGS.logWeaponFire
+    ) {
+      if (!this.scene.children.includes(bulletMesh)) {
+        console.error(
+          "❌ [WEAPON] Failed to add Cheese bullet to scene!"
+        );
+      } else {
+        console.log(
+          "💥 [WEAPON] Cheese bullet created at:",
+          startPos.toArray().map((n) => n.toFixed(2)),
+          "Scene children:",
+          this.scene.children.length
+        );
+      }
     }
 
-    const directionVec = new THREE.Vector3().subVectors(targetPos, startPos);
+    const directionVec = new THREE.Vector3().subVectors(
+      targetPos,
+      startPos
+    );
     const distance = directionVec.length();
     directionVec.normalize();
 
@@ -2055,7 +2456,7 @@ export class WeaponSystem {
       maxLifetime: this.bulletLifetime,
       targetPos: targetPos.clone(),
       hit: false,
-      isPurple: false
+      isPurple: false,
     };
 
     this.bullets.push(bullet);
@@ -2113,7 +2514,7 @@ export class WeaponSystem {
    * Clean up all bullets
    */
   cleanupBullets() {
-    this.bullets.forEach(bullet => {
+    this.bullets.forEach((bullet) => {
       if (bullet.mesh && bullet.mesh.parent) {
         this.scene.remove(bullet.mesh);
         bullet.mesh.geometry.dispose();

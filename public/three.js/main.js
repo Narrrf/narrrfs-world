@@ -6651,21 +6651,29 @@ const DEBUG_SETTINGS = {
   logMovementState: false,
   logVisibilityUpdates: false,
   logNpcWaypoints: false,
-  logClimbDebug: false, // CRITICAL: Disable climb debug logging for performance (was causing FPS drops)
-  logAnimationDebug: false, // CRITICAL: Disable animation debug logging for performance
-  logClimbChecks: false, // CRITICAL: Disable climb check logging for performance
-  logCollisionChecks: false, // CRITICAL: Disable collision check logging for performance
-  logWeaponMaterials: false, // CRITICAL: Disable weapon material processing logs for performance (was causing FPS drops in Level 2)
-  logCharacterAnimations: false, // CRITICAL: Disable character animation switching logs for performance
-  logLevel2Previews: false, // CRITICAL: Disable Level 2 monster preview spawn logs for performance
-  logLevel2Weapons: false, // CRITICAL: Disable Level 2 weapon loading logs for performance (was causing FPS drops)
-  logLevel2Zones: false, // CRITICAL: Disable Level 2 zone inspection logs for performance
-  logLevel3Monsters: false, // CRITICAL: Disable Level 3 monster spawn logs for performance (was causing continuous loading)
-  logModelCacheStats: false, // Phase 1 (Jan 10, 2026): Model cache hit/miss + clone/load timing logs
+  logClimbDebug: false,
+  logAnimationDebug: false,
+  logClimbChecks: false,
+  logCollisionChecks: false,
+  logWeaponMaterials: false,
+  logCharacterAnimations: false,
+  logLevel2Previews: false,
+  logLevel2Weapons: false,
+  logLevel2Zones: false,
+  logLevel3Monsters: false,
+  logModelCacheStats: false,
   logLevel3Walls: false,
   logLevel3Crush: false,
   logLevel5Glyphs: false,
+  logLevel4CheeseWaves: false,
+
+  // 🔫 New weapon-related flags
+  logWeaponFire: false,              // Generic weapon fire / cooldown / blocked logs
+  logLevel5MonsterDetection: false,  // Heavy Level 5 detection debug
+  logLevel6SpiderHits: false,        // Spider minion hit spam
+  logWeaponBossHits: false,          // Phoenix + Spider hit logs
 };
+
 
 const stats = DEBUG_SETTINGS.enableStatsOverlay ? new Stats() : null;
 if (stats) {
@@ -27620,14 +27628,14 @@ function updateLevel6(delta) {
 
 function captureLevel4Cheese(cheeseIndex) {
   if (!level4RiddleState.step1Active) return;
-  
+
   const cheese = level4State.cheeses[cheeseIndex];
   if (!cheese || !cheese.mesh || !cheese.mesh.visible) return;
-  
+
   // Create explosion effect (cheese particles)
   const cheesePos = cheese.mesh.position.clone();
   createCheeseExplosionEffect(cheesePos);
-  
+
   // Remove the caught cheese
   if (cheese.mesh.parent) {
     cheese.mesh.parent.remove(cheese.mesh);
@@ -27635,53 +27643,71 @@ function captureLevel4Cheese(cheeseIndex) {
   level4State.cheeses.splice(cheeseIndex, 1);
   level4RiddleState.cheesesCaught++;
   level4RiddleState.difficultyLevel = level4RiddleState.cheesesCaught;
-  
+
   // Award DSPOINC
   awardLevel4DspoincReward(
     `CHEESE_TEMPLE_LEVEL4_CHEESE_${level4RiddleState.cheesesCaught}`,
     LEVEL4_DSPOINC_PER_CHEESE,
     `Level 4 Cheese ${level4RiddleState.cheesesCaught}`
   );
-  
+
   // Update HUD (will be created if needed)
-  if (typeof updateLevel4ProgressHUD === 'function') {
+  if (typeof updateLevel4ProgressHUD === "function") {
     updateLevel4ProgressHUD();
   }
-  
-  showRiddleToast(`🧀 Cheese ${level4RiddleState.cheesesCaught}/${LEVEL4_CHEESES_TO_CATCH} caught!`, {
-    id: `level4_cheese_${level4RiddleState.cheesesCaught}`,
-    duration: 2000
-  });
-  
-  console.log(`🎯 [LEVEL 4] Cheese ${level4RiddleState.cheesesCaught}/${LEVEL4_CHEESES_TO_CATCH} caught!`);
-  
+
+  // Toast: keep this, but it might be many in a row when spraying
+  showRiddleToast(
+    `🧀 Cheese ${level4RiddleState.cheesesCaught}/${LEVEL4_CHEESES_TO_CATCH} caught!`,
+    {
+      id: `level4_cheese_${level4RiddleState.cheesesCaught}`,
+      duration: 2000
+    }
+  );
+
+  // 🧪 Only log in debug mode to avoid spam in normal play
+  if (typeof DEBUG_SETTINGS !== "undefined" && DEBUG_SETTINGS.logLevel4CheeseWaves) {
+  console.log(
+    `🎯 [LEVEL 4] Cheese ${level4RiddleState.cheesesCaught}/${LEVEL4_CHEESES_TO_CATCH} caught!`
+  );
+}
+
+
   // CRITICAL: Check if all cheeses are caught BEFORE wave logic
   // This ensures Step 1 completes immediately when the 50th cheese is caught
   if (level4RiddleState.cheesesCaught >= LEVEL4_CHEESES_TO_CATCH) {
-    console.log("🎯 [LEVEL 4] All 50 cheeses caught! Completing Step 1 immediately...", {
-      cheesesCaught: level4RiddleState.cheesesCaught,
-      LEVEL4_CHEESES_TO_CATCH: LEVEL4_CHEESES_TO_CATCH,
-      step1TraitUnlocked: level4RiddleState.step1TraitUnlocked
-    });
+    if (DEBUG_SETTINGS && DEBUG_SETTINGS.logLevel4CheeseWaves) {
+      console.log(
+        "🎯 [LEVEL 4] All 50 cheeses caught! Completing Step 1 immediately...",
+        {
+          cheesesCaught: level4RiddleState.cheesesCaught,
+          LEVEL4_CHEESES_TO_CATCH: LEVEL4_CHEESES_TO_CATCH,
+          step1TraitUnlocked: level4RiddleState.step1TraitUnlocked
+        }
+      );
+    }
     completeLevel4Step1();
     return; // Exit early - don't process wave logic
   }
-  
+
   // Update wave progress
   level4RiddleState.cheesesInCurrentWave++;
-  
+
   // Check if current wave is complete
   const isFinalWave = level4RiddleState.currentWave > LEVEL4_WAVES_COUNT;
-  const cheesesNeededForWave = isFinalWave ? LEVEL4_FINAL_WAVE_CHEESES : LEVEL4_CHEESES_PER_WAVE;
-  const waveComplete = level4RiddleState.cheesesInCurrentWave >= cheesesNeededForWave;
-  
+  const cheesesNeededForWave = isFinalWave
+    ? LEVEL4_FINAL_WAVE_CHEESES
+    : LEVEL4_CHEESES_PER_WAVE;
+  const waveComplete =
+    level4RiddleState.cheesesInCurrentWave >= cheesesNeededForWave;
+
   // Spawn new wave if not all 50 caught
   if (level4RiddleState.cheesesCaught < LEVEL4_CHEESES_TO_CATCH) {
     if (waveComplete) {
       // Wave complete - show countdown and spawn next wave
       level4RiddleState.currentWave++;
       level4RiddleState.cheesesInCurrentWave = 0;
-      
+
       // Show countdown popup (3 seconds)
       showLevel4WaveCountdown(level4RiddleState.currentWave, () => {
         // Spawn next wave after countdown
@@ -27691,27 +27717,53 @@ function captureLevel4Cheese(cheeseIndex) {
     // If wave not complete, next cheese will spawn automatically when caught
   } else {
     // All 50 cheeses caught - complete Step 1
-    console.log("🎯 [LEVEL 4] All 50 cheeses caught! Calling completeLevel4Step1()...", {
-      cheesesCaught: level4RiddleState.cheesesCaught,
-      LEVEL4_CHEESES_TO_CATCH: LEVEL4_CHEESES_TO_CATCH,
-      step1TraitUnlocked: level4RiddleState.step1TraitUnlocked
-    });
+    if (DEBUG_SETTINGS && DEBUG_SETTINGS.logLevel4CheeseWaves) {
+      console.log(
+        "🎯 [LEVEL 4] All 50 cheeses caught! Calling completeLevel4Step1()...",
+        {
+          cheesesCaught: level4RiddleState.cheesesCaught,
+          LEVEL4_CHEESES_TO_CATCH: LEVEL4_CHEESES_TO_CATCH,
+          step1TraitUnlocked: level4RiddleState.step1TraitUnlocked
+        }
+      );
+    }
     completeLevel4Step1();
   }
 }
 
+// Shared resources for level 4 cheese explosions to avoid per-hit allocations
+let LEVEL4_CHEESE_EXPLOSION_GEOMETRY = null;
+let LEVEL4_CHEESE_EXPLOSION_MATERIAL = null;
+
+
 // Cheese explosion effect (cartoon/arcade style)
 function createCheeseExplosionEffect(position) {
-  const particleCount = 12;
-  const cheeseTexture = loadTexture("textures/blocks/cheese-stone.png");
-  
+  // Slightly reduced count = lighter but still juicy
+  const particleCount = 8;
+
+  // Lazily create shared geometry once
+  if (!LEVEL4_CHEESE_EXPLOSION_GEOMETRY) {
+    LEVEL4_CHEESE_EXPLOSION_GEOMETRY = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+  }
+
+  // Lazily create base material once (texture load only once)
+  if (!LEVEL4_CHEESE_EXPLOSION_MATERIAL) {
+    const cheeseTexture = loadTexture("textures/blocks/cheese-stone.png");
+    LEVEL4_CHEESE_EXPLOSION_MATERIAL = new THREE.MeshLambertMaterial({
+      map: cheeseTexture,
+      transparent: true
+    });
+  }
+
   for (let i = 0; i < particleCount; i++) {
+    // Clone material so each particle can have its own opacity/lifetime if needed
     const particle = new THREE.Mesh(
-      new THREE.BoxGeometry(0.3, 0.3, 0.3),
-      new THREE.MeshLambertMaterial({ map: cheeseTexture, transparent: true })
+      LEVEL4_CHEESE_EXPLOSION_GEOMETRY,
+      LEVEL4_CHEESE_EXPLOSION_MATERIAL.clone()
     );
+
     particle.position.copy(position);
-    
+
     // Random velocity direction
     const angle = (Math.PI * 2 * i) / particleCount;
     const speed = 2 + Math.random() * 3;
@@ -27722,12 +27774,13 @@ function createCheeseExplosionEffect(position) {
     );
     particle.userData.gravity = -9.8;
     particle.userData.lifetime = 1.0; // 1 second lifetime
-    particle.userData.age = 0; // Current age
-    
+    particle.userData.age = 0;        // Current age
+
     level4State.group.add(particle);
     level4State.explosionParticles.push(particle);
   }
 }
+
 
 function completeLevel4Step1() {
   if (level4RiddleState.step1TraitUnlocked) return;
