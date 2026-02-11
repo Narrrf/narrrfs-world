@@ -18429,14 +18429,24 @@ async function fetchPlayerDetails() {
       // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
       // Store user roles from API response
       if (Array.isArray(data.user.roles)) {
-        userRoles = data.user.roles;
-        console.log("🔐 [ROLES] User roles loaded:", userRoles);
-        const roleMultiplier = getHighestRoleMultiplier();
-        console.log("🔐 [ROLES] Highest role multiplier:", roleMultiplier);
-      } else {
-        userRoles = [];
-        console.log("🔐 [ROLES] No roles found in API response");
-      }
+  userRoles = data.user.roles;
+} else if (Array.isArray(data.user.discord_roles)) {
+  userRoles = data.user.discord_roles;
+}
+
+// 🧀 Expose user roles globally for GUI, trophies & other systems
+try {
+  window.cheeseTempleUserRoles = Array.isArray(userRoles) ? userRoles : [];
+  window.CHEESE_TEMPLE_USER = window.CHEESE_TEMPLE_USER || {};
+  window.CHEESE_TEMPLE_USER.roles = window.cheeseTempleUserRoles;
+
+  if (typeof window.renderTrophyShelf === "function") {
+    window.renderTrophyShelf(window.cheeseTempleUserRoles);
+  }
+} catch (err) {
+  console.warn("⚠️ [MAIN] Failed to expose user roles globally:", err);
+}
+	  
       
       // Check if user has God Mode access
       const previousGodModeAccess = hasGodModeAccess;

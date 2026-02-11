@@ -3057,9 +3057,56 @@ export class GUISystem {
     buttonsContainer.appendChild(exitBtn);
     
     panel.appendChild(buttonsContainer);
+	
+	// 🏆 MAIN MENU TROPHY SHELF (shared design with profile.html)
+    const trophySection = document.createElement("section");
+    trophySection.id = "mainMenuTrophySection";
+    trophySection.className = "mt-6 w-full";
+
+    // This inner HTML mirrors the layout from profile.html, but sized for the menu panel
+    trophySection.innerHTML = `
+      <h2 class="mb-2 text-[11px] sm:text-xs tracking-[0.28em] uppercase text-slate-200/90 text-center">
+        🏆 Trophy Shelf
+      </h2>
+
+      <p class="text-[11px] sm:text-xs text-slate-300/85 text-center mb-3">
+        Your unlocked trophies from roles, hunts & events
+      </p>
+
+      <div
+        id="cheeseShelf"
+        class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-[10px] sm:text-xs text-slate-100/90"
+      ></div>
+    `;
+
+    panel.appendChild(trophySection);
+	
     this.mainMenu.appendChild(panel);
     this.container.appendChild(this.mainMenu);
-  }
+
+    // 🏆 After mounting, render the trophies if the helper exists
+    try {
+      const renderFn = window.renderTrophyShelf;
+      if (typeof renderFn === "function") {
+        // Prefer the roles from the 3D game bootstrap, fall back to global user object if present
+        const roles =
+          Array.isArray(window.cheeseTempleUserRoles) && window.cheeseTempleUserRoles.length
+            ? window.cheeseTempleUserRoles
+            : (Array.isArray(window.CHEESE_TEMPLE_USER?.roles)
+                ? window.CHEESE_TEMPLE_USER.roles
+                : []);
+
+        renderFn(roles || []);
+      } else {
+        console.debug(
+          "ℹ️ [GUI] renderTrophyShelf() not found – trophy shelf will stay empty until the helper is loaded."
+        );
+      }
+    } catch (err) {
+      console.warn("⚠️ [GUI] Error while rendering trophy shelf in main menu:", err);
+    }
+  } // <-- closes showMainMenu, only this one
+
   
   /**
    * Create user info panel (PFP, DSPOINC, Role/Multiplier) - Phase 2 (January 9, 2026)
