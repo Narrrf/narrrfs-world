@@ -10691,20 +10691,35 @@ let riddleState = {
     movableBlockVelocity: new THREE.Vector3(0, 0, 0), // Velocity for movable block
     movableBlockOriginalPosition: null // Original position of movable block
   },
-  // Riddle #4 state (Hidden Secret Riddle - 3 Levers)
-  riddle4: {
-    complete: false,       // Riddle complete flag
-    lever1: null,          // First lever
-    lever2: null,          // Second lever
-    lever3: null,          // Third lever
-    lever1State: false,    // Lever 1 state (off/on)
-    lever2State: false,    // Lever 2 state (off/on)
-    lever3State: false,    // Lever 3 state (off/on)
-    attemptCount: 0,       // Track attempts for hint messages
-    lastAttemptTime: 0,    // Track time between attempts
-    sequenceStep: 0        // Track sequence step: 0 = initial, 1 = all ON, 2 = all OFF, 3 = middle ON (solved)
-  }
-};
+// Riddle #4 state
+riddle4: {
+  complete: false,
+  lever1: null,
+  lever2: null,
+  lever3: null,
+  lever1State: false,
+  lever2State: false,
+  lever3State: false,
+  attemptCount: 0,
+  lastAttemptTime: 0,
+  sequenceStep: 0
+},
+
+// Riddle #5 state (Hidden Secret Riddle 2 - 3 Levers)
+riddle5: {
+  complete: false,
+  lever1: null,
+  lever2: null,
+  lever3: null,
+  lever1State: false,
+  lever2State: false,
+  lever3State: false,
+  attemptCount: 0,
+  lastAttemptTime: 0,
+  sequenceStep: 0
+}
+}; // ← THIS closes riddleState
+
 const RIDDLE_AIM_TIME = 10; // 10 seconds required for each step (Level 2)
 const LEVEL3_STEP0_TRIGGER_TIME = 5; // 5 seconds required for Level 3 Step 0 (monster activation)
 const RIDDLE2_OAK_STONE_BLINK_INTERVAL = 15; // Oak stone blinks every 15 seconds
@@ -10715,6 +10730,9 @@ const RIDDLE3_LEVER_CLICK_DISTANCE = 2.0; // Distance threshold for clicking lev
 const RIDDLE4_LEVER_CLICK_DISTANCE = 2.0; // Distance threshold for clicking hidden riddle levers (2.0 units)
 const RIDDLE4_HINT_COOLDOWN = 10000; // 10 seconds between hint messages (in milliseconds)
 const RIDDLE4_HINT_ATTEMPT_THRESHOLD = 5; // Show hint after 5 failed attempts
+const RIDDLE5_LEVER_CLICK_DISTANCE = 2.0;
+const RIDDLE5_HINT_COOLDOWN = 10000;
+const RIDDLE5_HINT_ATTEMPT_THRESHOLD = 5;
 const RIDDLE3_PORTAL_SCALE = 5.0; // Portal scale multiplier (very huge)
 const RIDDLE3_PORTAL_BRIGHTNESS = 2.0; // Portal brightness multiplier (very bright)
 const RIDDLE3_PORTAL_ENTER_DISTANCE = 2.5; // Player must be almost touching the portal
@@ -19217,6 +19235,12 @@ function buildLevel(mapData) {
     createRiddle4Levers(mapData.spawn, blockSize);
   }
   
+    // Create 3 levers for Riddle #5 (Hidden slever Secret level 1 Riddle 2)
+if (mapData.spawn && riddleState.riddle5 && !riddleState.riddle5.lever1) {
+  createRiddle5Levers(mapData.spawn, blockSize);
+}
+
+  
   // Create movable block for Riddle #3 (only if lever is pressed)
   if (mapData.spawn && !riddleState.riddle3.movableBlock && riddleState.riddle3.step1Complete) {
     createRiddle3MovableBlock(mapData.spawn, blockSize);
@@ -19258,6 +19282,45 @@ function buildLevel(mapData) {
   baseCollisionGeometry.dispose();
   renderGeometry.dispose();
 }
+
+// Create 3 levers for Riddle #5 (Hidden Secret Riddle 2)
+// IMPORTANT: same wall X + same height as Riddle #4, only Z is different.
+function createRiddle5Levers(spawnData, blockSize) {
+  // Safety check
+  if (!riddleState || !riddleState.riddle5) {
+    console.warn("⚠️ [RIDDLE #5] Cannot create levers - riddle5 state not initialized");
+    return;
+  }
+
+  const r5 = riddleState.riddle5;
+
+  // ✅ HARD COORDS (as requested)
+  // Lever 1: X=10, Y=2.75, Z=70
+  // Lever 2: X=10, Y=2.75, Z=75
+  // Lever 3: X=10, Y=2.75, Z=80
+  //
+  // NOTE: These are WORLD units (not multiplied by blockSize),
+  // because you provided exact coordinates you tested.
+
+  const x = 10.50;
+  const y = 2.50;
+
+  const z1 = 70;
+  const z2 = 75;
+  const z3 = 80;
+
+  // Create levers (Z changes, X/Y fixed)
+  r5.lever1 = createRiddle5Lever(x, y, z1, blockSize, 1);
+  r5.lever2 = createRiddle5Lever(x, y, z2, blockSize, 2);
+  r5.lever3 = createRiddle5Lever(x, y, z3, blockSize, 3);
+
+  console.log("🧩 [RIDDLE #5] Levers created at fixed X/Y with stepped Z:", {
+    lever1: r5.lever1?.position,
+    lever2: r5.lever2?.position,
+    lever3: r5.lever3?.position
+  });
+}
+
 
 // 🎮 Helper: unified movement state for physics/animation
 function getCurrentMovementState() {
@@ -36066,9 +36129,10 @@ document.addEventListener("keydown", (event) => {
           handleRiddle3LeverClick();
         }
 
-        // 5️⃣ RIDDLE #4 LEVER (LEVEL 1)
+        // 5️⃣ RIDDLE #4+5 LEVER (LEVEL 1)
         if (currentLevel === LEVEL_IDS.LEVEL1) {
           handleRiddle4LeverClick();
+		  handleRiddle5LeverClick();
         }
       }
       break;
@@ -40204,6 +40268,47 @@ function createRiddle4Lever(x, y, z, blockSize, leverNumber) {
   return lever;
 }
 
+// Helper function to create a single Riddle #5 lever (Hidden Secret Riddle 2)
+function createRiddle5Lever(x, y, z, blockSize, leverNumber) {
+  const leverGeometry = new THREE.BoxGeometry(blockSize * 0.8, blockSize * 0.6, blockSize * 0.3);
+  const leverTextureOff = loadTexture("textures/blocks/slever1.png");
+  const leverMaterial = new THREE.MeshLambertMaterial({
+    map: leverTextureOff,
+    emissive: new THREE.Color(0x000000),
+    emissiveIntensity: 0.0,
+    transparent: false
+  });
+
+  const lever = new THREE.Mesh(leverGeometry, leverMaterial);
+  lever.position.set(x, y, z);
+  lever.visible = true;
+  lever.castShadow = false;
+  lever.receiveShadow = false;
+
+  lever.userData.isRiddleBlock = true;
+  lever.userData.isRiddle5Lever = true;
+  lever.userData.riddleId = "CHEESE_TEMPLE_RIDDLE_05";
+  lever.userData.leverNumber = leverNumber;
+  lever.userData.leverState = "off";
+
+  lever.userData.textureOff = leverTextureOff;
+  lever.userData.textureOn = loadTexture("textures/blocks/slever2.png");
+
+  lever.matrixAutoUpdate = true;
+  lever.updateMatrix();
+  lever.updateMatrixWorld(true);
+
+  scene.add(lever);
+
+  console.log(`🧩 [RIDDLE #5] Lever ${leverNumber} created:`, {
+    position: { x: x.toFixed(2), y: y.toFixed(2), z: z.toFixed(2) },
+    visible: lever.visible
+  });
+
+  return lever;
+}
+
+
 // Create movable block for Riddle #3
 // January 16, 2026: Replaced BoxGeometry with Tetris o-block.glb GLB model (data persistence pattern)
 function createRiddle3MovableBlock(spawnData, blockSize) {
@@ -41634,6 +41739,231 @@ function showRiddle4HintMessage() {
     fontWeight: "600"
   });
 }
+
+// Handle Riddle #5 (Hidden Secret Riddle 2) lever clicks
+function handleRiddle5LeverClick() {
+  // Safety check: ensure riddle5 state exists
+  if (!riddleState || !riddleState.riddle5) {
+    return;
+  }
+
+  const r5 = riddleState.riddle5;
+
+  // Check if riddle is already complete
+  if (r5.complete) {
+    return;
+  }
+
+  // Check each lever
+  const levers = [
+    { lever: r5.lever1, state: "lever1State", number: 1 },
+    { lever: r5.lever2, state: "lever2State", number: 2 },
+    { lever: r5.lever3, state: "lever3State", number: 3 },
+  ];
+
+  for (const leverData of levers) {
+    const lever = leverData.lever;
+    if (!lever || !lever.visible) continue;
+
+    // Check if player is within click distance
+    const leverPos = lever.position;
+    const playerPos = new THREE.Vector3().lerpVectors(
+      playerCollider.start,
+      playerCollider.end,
+      0.5
+    );
+    const distanceToLever = playerPos.distanceTo(leverPos);
+
+    if (distanceToLever <= RIDDLE4_LEVER_CLICK_DISTANCE) {
+      // Toggle lever state
+      const currentState = r5[leverData.state];
+      r5[leverData.state] = !currentState;
+      lever.userData.leverState = r5[leverData.state] ? "on" : "off";
+
+      // Play lever sound
+      playLeverSound();
+
+      // Update lever texture
+      const texture = r5[leverData.state]
+        ? lever.userData.textureOn
+        : lever.userData.textureOff;
+
+      if (texture) {
+        lever.material.map = texture;
+        lever.material.emissive = new THREE.Color(
+          r5[leverData.state] ? 0x00ff00 : 0x000000
+        );
+        lever.material.emissiveIntensity = r5[leverData.state] ? 0.3 : 0.0;
+        lever.material.needsUpdate = true;
+      }
+
+      console.log(
+        `🧩 [RIDDLE #5] Lever ${leverData.number} toggled to:`,
+        r5[leverData.state] ? "ON" : "OFF"
+      );
+
+      // Check combination after toggle
+      checkRiddle5Combination();
+
+      return; // Only handle one lever per click
+    }
+  }
+}
+
+// Check if Riddle #5 combination is correct
+function checkRiddle5Combination() {
+  if (!riddleState?.riddle5) return;
+  const r5 = riddleState.riddle5;
+  if (r5.complete) return;
+
+  r5.attemptCount++;
+  const currentTime = Date.now();
+  let sequenceMatched = false;
+
+  // Step 1: only middle ON
+  if (r5.sequenceStep === 0) {
+    if (!r5.lever1State && r5.lever2State && !r5.lever3State) {
+      r5.sequenceStep = 1;
+      console.log("🧩 [RIDDLE #5] ✅ Step 1 complete: Only middle lever ON");
+      sequenceMatched = true;
+    }
+  }
+  // Step 2: all ON
+  else if (r5.sequenceStep === 1) {
+    if (r5.lever1State && r5.lever2State && r5.lever3State) {
+      r5.sequenceStep = 2;
+      console.log("🧩 [RIDDLE #5] ✅ Step 2 complete: All levers ON");
+      sequenceMatched = true;
+    }
+  }
+  // Step 3: only left ON (solve)
+  else if (r5.sequenceStep === 2) {
+    if (r5.lever1State && !r5.lever2State && !r5.lever3State) {
+      r5.sequenceStep = 3;
+      r5.complete = true;
+      console.log("🧩 [RIDDLE #5] ✅ SECRET RIDDLE SOLVED! Sequence complete!");
+
+      try {
+        unlockRiddle5Reward();
+        showRiddle5SuccessMessage();
+      } catch (error) {
+        console.error("❌ [RIDDLE #5] Error showing success/reward:", error);
+      }
+
+      sequenceMatched = true;
+    }
+  }
+
+  // Hint logic (copy your riddle4 style)
+  if (!sequenceMatched && !r5.complete) {
+    const timeSinceLastAttempt = currentTime - r5.lastAttemptTime;
+    if (r5.attemptCount >= RIDDLE4_HINT_ATTEMPT_THRESHOLD && timeSinceLastAttempt >= RIDDLE4_HINT_COOLDOWN) {
+      showRiddle5HintMessage();
+      r5.lastAttemptTime = currentTime;
+    }
+    console.log(`🧩 [RIDDLE #5] ❌ Wrong sequence step. Current step: ${r5.sequenceStep}, Attempts: ${r5.attemptCount}`);
+  }
+}
+
+
+// Unlock Riddle #5 reward
+async function unlockRiddle5Reward() {
+  const rewardAmount = 1500;
+  const rewardId = "CHEESE_TEMPLE_RIDDLE_05_SECRET";
+  const rewardDescription = "Secret Riddle #5 - Hidden Lever Combination 2";
+
+  const discordId = resolvedDiscordId;
+  if (!discordId) {
+    console.warn(`🧩 [RIDDLE #5] Skipping DSPOINC reward — no Discord ID.`);
+    return;
+  }
+
+  try {
+    const rewardPayload = {
+      discord_id: discordId,
+      discord_name:
+        playerDisplayName && playerDisplayName !== "Guest"
+          ? playerDisplayName
+          : null,
+      riddle_id: rewardId,
+      level_id: "CHEESE_TEMPLE_LVL1",
+      base_reward: rewardAmount, // fixed reward
+      session_id: cheeseSessionId,
+    };
+
+    const rewardResponse = await fetch(RIDDLE_REWARD_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(rewardPayload),
+    });
+
+    const rewardResult = await rewardResponse.json();
+
+    if (rewardResponse.ok && rewardResult.success) {
+      const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
+      const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
+
+      if (typeof totalDspoinc === "number") {
+        currentTotalDspoinc = totalDspoinc;
+        window.localStorage.setItem(
+          "narrrfs_last_ds_balance",
+          String(currentTotalDspoinc)
+        );
+        if (isGamePaused) updatePausePlayerInfo();
+      }
+
+      showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
+
+      console.log(`🧩 [RIDDLE #5] 🎁 DSPOINC reward awarded successfully!`, {
+        dsPoincAwarded,
+        totalDspoinc,
+        multiplier: rewardResult.data?.multiplier,
+      });
+    } else {
+      if (rewardResponse.status === 409) {
+        console.warn(`🧩 [RIDDLE #5] Riddle already completed - no reward awarded`);
+        showRiddleRewardNotification(0, 1.0, true);
+      } else {
+        console.warn(`🧩 [RIDDLE #5] DSPOINC reward failed:`, rewardResult.error);
+      }
+    }
+  } catch (error) {
+    console.error(`🧩 [RIDDLE #5] Error awarding DSPOINC reward:`, error);
+  }
+}
+
+// Show success message when riddle is solved
+function showRiddle5SuccessMessage() {
+  showRiddleToast("🎉 Secret Wall Riddle solved! 🎉\n\n+1,000 DSPOINC", {
+    duration: 5000,
+    backgroundColor: "rgba(0, 255, 200, 0.9)",
+    color: "#000",
+    fontSize: "18px",
+    fontWeight: "bold",
+  });
+}
+
+// Show hint message when player tries too often
+function showRiddle5HintMessage() {
+  const messages = [
+    "🔍 Something about this wall feels different...",
+    "🧠 Maybe the order matters...",
+    "💡 Try a different lever rhythm...",
+    "🔎 The temple hides more than one secret...",
+  ];
+
+  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
+  showRiddleToast(randomMessage, {
+    duration: 4000,
+    backgroundColor: "rgba(255, 200, 0, 0.9)",
+    color: "#000",
+    fontSize: "16px",
+    fontWeight: "600",
+  });
+}
+
 
 function setLevel2LeverState(isOn) {
   const lever = level2RiddleState.lever;
