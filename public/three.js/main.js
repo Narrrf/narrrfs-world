@@ -461,9 +461,12 @@ function isMobileLandscape() {
   return isMobile && window.innerWidth > window.innerHeight;
 }
 
-// Mobile joystick controls
-let mobileJoystick = null;
-let mobileCameraJoystick = null;
+// Joystick controls
+let mobileJoystick = null;          // legacy DOM left joystick container
+let legacyCameraJoystick = null;    // legacy DOM right joystick container (renamed)
+let mobileMovementJoystick = null;  // nipplejs manager (left stick)
+let mobileCameraJoystick = null;    // nipplejs manager (right stick)
+
 let joystickActive = false;
 let cameraJoystickActive = false;
 
@@ -8426,105 +8429,139 @@ function updatePlayerCharacter(delta) {
     const lerpFactor = Math.min(1.0, clampedDelta * baseLerpSpeed); // Smooth interpolation based on delta
     playerCharacterModel.position.lerp(targetPos, lerpFactor);
     
-    // 🧗 CLIMBING MODE: Special rotation handling - face the wall
-    // ✅ STABLE VERSION - December 16, 2025: Character rotation working correctly - faces wall during climbing
-    if (isClimbing && climbSurfaceNormal && useGLTFCharacter && playerCharacterModel) {
-      // Face the wall (opposite to wall normal) during climbing
-      const wallFacingDirection = climbSurfaceNormal.clone().negate(); // Point toward wall
-      wallFacingDirection.y = 0; // Keep horizontal
-      wallFacingDirection.normalize();
-      
-      if (wallFacingDirection.lengthSq() > 0.01) {
-        let targetRotation = Math.atan2(wallFacingDirection.x, wallFacingDirection.z);
-        
-        // CRITICAL: Mouse character has different default orientation
-        const isMouseCharacterModel = playerCharacterModel.userData && playerCharacterModel.userData.isMouseCharacter;
-        if (isMouseCharacterModel) {
-          // Subtract 90 degrees to compensate for Mouse character's default orientation
-          targetRotation -= Math.PI / 2;
-        }
-        
-        const currentRotation = playerCharacterModel.rotation.y;
-        let rotationDelta = targetRotation - currentRotation;
-        
-        // Normalize rotation delta to [-PI, PI]
-        while (rotationDelta > Math.PI) rotationDelta -= 2 * Math.PI;
-        while (rotationDelta < -Math.PI) rotationDelta += 2 * Math.PI;
-        
-        // Smooth rotation interpolation
-        const baseRotationSpeed = playerModelModule ? playerModelModule.getRotationSpeed(godMode) : 0.3;
-        const rotationSpeed = Math.min(0.5, Math.abs(rotationDelta) * baseRotationSpeed);
-        playerCharacterModel.rotation.y += rotationDelta * rotationSpeed;
-      }
-    } else if (!isFirstPerson() && playerControls && playerControls.getPointerLockControls().isLocked && useGLTFCharacter && playerCharacterModel) {
-      // Normal movement rotation (only in third-person, not climbing)
-      const hasMovementInput = movement.forward || movement.backward || movement.left || movement.right;
-      // Use velocity magnitude for rotation (same as animation system)
-      const velocityMagnitude = Math.sqrt(playerVelocity.x * playerVelocity.x + playerVelocity.z * playerVelocity.z);
-      const hasActualVelocity = velocityMagnitude > 0.15;
-      
-      // Only rotate if there's actual movement (input OR velocity)
-      if (hasMovementInput || hasActualVelocity) {
-        let targetDirection = new THREE.Vector3();
-        
-        // Prefer velocity direction (actual movement) over input direction
-        if (hasActualVelocity) {
-          targetDirection.set(playerVelocity.x, 0, playerVelocity.z);
+// 🧗 CLIMBING MODE: Special rotation handling - face the wall
+if (isClimbing && climbSurfaceNormal && useGLTFCharacter && playerCharacterModel) {
+
+  const wallFacingDirection = climbSurfaceNormal.clone().negate();
+  wallFacingDirection.y = 0;
+  wallFacingDirection.normalize();
+
+  if (wallFacingDirection.lengthSq() > 0.01) {
+
+    let targetRotation = Math.atan2(wallFacingDirection.x, wallFacingDirection.z);
+
+    const isMouseCharacterModel =
+      playerCharacterModel.userData &&
+      playerCharacterModel.userData.isMouseCharacter;
+
+    if (isMouseCharacterModel) {
+      targetRotation -= Math.PI / 2;
+    }
+
+    const currentRotation = playerCharacterModel.rotation.y;
+    let rotationDelta = targetRotation - currentRotation;
+
+    while (rotationDelta > Math.PI) rotationDelta -= 2 * Math.PI;
+    while (rotationDelta < -Math.PI) rotationDelta += 2 * Math.PI;
+
+    const baseRotationSpeed =
+      playerModelModule ? playerModelModule.getRotationSpeed(godMode) : 0.3;
+
+    const rotationSpeed =
+      Math.min(0.5, Math.abs(rotationDelta) * baseRotationSpeed);
+
+    playerCharacterModel.rotation.y += rotationDelta * rotationSpeed;
+  }
+
+} else if (
+  !isFirstPerson() &&
+  useGLTFCharacter &&
+  playerCharacterModel &&
+  (
+    (playerControls && playerControls.getPointerLockControls().isLocked) ||
+    (window.enableDesktopJoysticks && joystickActive)
+  )
+) {
+
+  // Normal movement rotation (only in third-person, not climbing)
+
+  const hasMovementInput =
+    movement.forward || movement.backward || movement.left || movement.right;
+
+  const velocityMagnitude = Math.sqrt(
+    playerVelocity.x * playerVelocity.x +
+    playerVelocity.z * playerVelocity.z
+  );
+
+  const hasActualVelocity = velocityMagnitude > 0.15;
+
+  const useJoystickRotation =
+    window.enableDesktopJoysticks && joystickActive;
+
+  if (hasMovementInput || hasActualVelocity) {
+
+    let targetDirection = new THREE.Vector3();
+
+    if (hasActualVelocity) {
+
+      targetDirection.set(playerVelocity.x, 0, playerVelocity.z);
+      targetDirection.normalize();
+
+    } else {
+
+      const forward = getForwardVector();
+      const side = getSideVector();
+
+      if (useJoystickRotation) {
+
+        const joyZ = -joystickDirection.y;
+        const joyX = joystickDirection.x;
+
+        targetDirection.addScaledVector(forward, joyZ);
+        targetDirection.addScaledVector(side, joyX);
+        targetDirection.y = 0;
+        targetDirection.normalize();
+
+      } else {
+
+        const playerMovement = new THREE.Vector3();
+        if (movement.forward) playerMovement.z += 1;
+        if (movement.backward) playerMovement.z -= 1;
+        if (movement.left) playerMovement.x -= 1;
+        if (movement.right) playerMovement.x += 1;
+
+        if (playerMovement.lengthSq() > 0.01) {
+          playerMovement.normalize();
+          targetDirection.addScaledVector(forward, playerMovement.z);
+          targetDirection.addScaledVector(side, playerMovement.x);
+          targetDirection.y = 0;
           targetDirection.normalize();
-        } else {
-          // Use input direction if no velocity yet (for immediate rotation response)
-          const playerMovement = new THREE.Vector3();
-          if (movement.forward) playerMovement.z += 1;
-          if (movement.backward) playerMovement.z -= 1;
-          if (movement.left) playerMovement.x -= 1;
-          if (movement.right) playerMovement.x += 1;
-          
-          if (playerMovement.lengthSq() > 0.01) {
-            playerMovement.normalize();
-            const forward = getForwardVector();
-            const side = getSideVector();
-            targetDirection.addScaledVector(forward, playerMovement.z);
-            targetDirection.addScaledVector(side, playerMovement.x);
-            targetDirection.y = 0;
-            targetDirection.normalize();
-          }
-        }
-        
-        // Calculate and apply rotation if direction is valid
-        if (targetDirection.lengthSq() > 0.01) {
-          // CRITICAL: Mouse character has different default orientation
-          // Mouse character's visual forward direction needs correction for rotation
-          const isMouseCharacterModel = playerCharacterModel.userData && playerCharacterModel.userData.isMouseCharacter;
-          
-          let targetRotation = Math.atan2(targetDirection.x, targetDirection.z);
-          
-          // CRITICAL FIX: Mouse character visual rotation offset
-          // User feedback: W makes character turn LEFT but move STRAIGHT (forward)
-          // This means character's forward is 90 degrees off from movement direction
-          // Subtract 90 degrees so character faces the correct direction when moving
-          if (isMouseCharacterModel) {
-            // Subtract 90 degrees to compensate for Mouse character's default orientation
-            // This makes character face forward when moving forward (W key)
-            targetRotation -= Math.PI / 2;
-          }
-          
-          const currentRotation = playerCharacterModel.rotation.y;
-          let rotationDelta = targetRotation - currentRotation;
-          
-          // Normalize rotation delta to [-PI, PI]
-          while (rotationDelta > Math.PI) rotationDelta -= 2 * Math.PI;
-          while (rotationDelta < -Math.PI) rotationDelta += 2 * Math.PI;
-          
-          // Smooth rotation interpolation (faster when rotating larger angles)
-          // STANDARDIZED: Use centralized settings from PlayerModel module
-          // Same rotation speed for ALL levels (consistent feel) - no level-specific overrides
-          // CRITICAL: Settings are now in player-model.js - consistent across ALL levels and BOTH character types
-          const baseRotationSpeed = playerModelModule ? playerModelModule.getRotationSpeed(godMode) : 0.3;
-          const rotationSpeed = Math.min(0.5, Math.abs(rotationDelta) * baseRotationSpeed);
-          playerCharacterModel.rotation.y += rotationDelta * rotationSpeed;
         }
       }
     }
+
+    if (targetDirection.lengthSq() > 0.01) {
+
+      const isMouseCharacterModel =
+        playerCharacterModel.userData &&
+        playerCharacterModel.userData.isMouseCharacter;
+
+      let targetRotation =
+        Math.atan2(targetDirection.x, targetDirection.z);
+
+      if (isMouseCharacterModel) {
+        targetRotation -= Math.PI / 2;
+      }
+
+      const currentRotation = playerCharacterModel.rotation.y;
+      let rotationDelta = targetRotation - currentRotation;
+
+      while (rotationDelta > Math.PI) rotationDelta -= 2 * Math.PI;
+      while (rotationDelta < -Math.PI) rotationDelta += 2 * Math.PI;
+
+      const baseRotationSpeed =
+        playerModelModule ? playerModelModule.getRotationSpeed(godMode) : 0.3;
+
+      const rotationSpeed =
+        Math.min(0.5, Math.abs(rotationDelta) * baseRotationSpeed);
+
+      playerCharacterModel.rotation.y += rotationDelta * rotationSpeed;
+    }
+
+  } // closes: if (hasMovementInput || hasActualVelocity)
+
+} // closes: else if ( !isFirstPerson() ... )
+
     
     // Update animations if mixer exists
     if (playerCharacterMixer) {
@@ -17613,9 +17650,9 @@ function setCameraMode(mode) {
       playerControls.getPointerLockControls().lock();
     }
     // Hide camera joystick in first-person
-    if (mobileCameraJoystick) {
-      mobileCameraJoystick.style.display = "none";
-    }
+    if (legacyCameraJoystick) {
+  legacyCameraJoystick.style.display = "none";
+}
     // Hide movement joystick in first-person (unless mobile landscape)
     if (mobileJoystick && !isMobileLandscape()) {
       mobileJoystick.style.display = "none";
@@ -17742,22 +17779,24 @@ function setCameraMode(mode) {
     if (document.pointerLockElement !== renderer.domElement && !isGamePaused && !optionsMenuOpen && playerControls) {
       playerControls.getPointerLockControls().lock();
     }
-    // Show camera joystick in third-person on mobile/desktop test
-    if (mobileCameraJoystick) {
-      if ((isMobileLandscape() || window.enableDesktopJoysticks) && !isGamePaused) {
-        mobileCameraJoystick.style.display = "flex";
-      } else {
-        mobileCameraJoystick.style.display = "none";
-      }
-    }
-    // Show movement joystick if enabled
-    if (mobileJoystick) {
-      if ((isMobileLandscape() || window.enableDesktopJoysticks) && !isGamePaused) {
-        mobileJoystick.style.display = "flex";
-      } else {
-        mobileJoystick.style.display = "none";
-      }
-    }
+// Show camera joystick in third-person (DESKTOP TEST ONLY – legacy system)
+if (legacyCameraJoystick) {
+  if (!isMobile && window.enableDesktopJoysticks && !isGamePaused) {
+    legacyCameraJoystick.style.display = "flex";
+  } else {
+    legacyCameraJoystick.style.display = "none";
+  }
+}
+
+// Show movement joystick (DESKTOP TEST ONLY – legacy system)
+if (mobileJoystick) {
+  if (!isMobile && window.enableDesktopJoysticks && !isGamePaused) {
+    mobileJoystick.style.display = "flex";
+  } else {
+    mobileJoystick.style.display = "none";
+  }
+}
+
     // Reset cursor style
     document.body.style.cursor = "";
   } else if (isJoystickView()) {
@@ -17785,9 +17824,9 @@ function setCameraMode(mode) {
     if (mobileJoystick && !isGamePaused) {
       mobileJoystick.style.display = "flex";
     }
-    if (mobileCameraJoystick && !isGamePaused) {
-      mobileCameraJoystick.style.display = "flex";
-    }
+    if (legacyCameraJoystick && !isGamePaused) {
+  legacyCameraJoystick.style.display = "flex";
+}
   }
   
   // Update UI buttons
@@ -18595,24 +18634,18 @@ function hidePauseMenu() {
   
   // Show mobile joysticks when unpaused (if in landscape or desktop test enabled)
   // CRITICAL: Only show joysticks if NOT in first-person mode
-  const shouldShowJoysticks = (isMobile && window.innerWidth > window.innerHeight) || window.enableDesktopJoysticks || isJoystickView();
-  if (shouldShowJoysticks && !isFirstPerson()) {
-    // Only show joysticks in third-person or joystick view
-    if (mobileJoystick) {
-      mobileJoystick.style.display = "flex";
-    }
-    if (mobileCameraJoystick) {
-      mobileCameraJoystick.style.display = "flex";
-    }
-  } else {
-    // Hide joysticks in first-person mode
-    if (mobileJoystick) {
-      mobileJoystick.style.display = "none";
-    }
-    if (mobileCameraJoystick) {
-      mobileCameraJoystick.style.display = "none";
-    }
-  }
+  const shouldShowJoysticks =
+  (isMobile && window.innerWidth > window.innerHeight) ||
+  window.enableDesktopJoysticks ||
+  isJoystickView();
+
+if (shouldShowJoysticks && !isFirstPerson()) {
+  if (mobileJoystick) mobileJoystick.style.display = "flex";
+  if (legacyCameraJoystick) legacyCameraJoystick.style.display = "flex";
+} else {
+  if (mobileJoystick) mobileJoystick.style.display = "none";
+  if (legacyCameraJoystick) legacyCameraJoystick.style.display = "none";
+}
   
   refreshDebugOverlay();
 
@@ -19341,12 +19374,29 @@ updateAggregatedMovement();
 
 function refreshJoystickMovementFlags() {
   const threshold = 0.2;
+
   joystickMovementFlags.forward = joystickActive && joystickDirection.y < -threshold;
   joystickMovementFlags.backward = joystickActive && joystickDirection.y > threshold;
   joystickMovementFlags.left = joystickActive && joystickDirection.x < -threshold;
   joystickMovementFlags.right = joystickActive && joystickDirection.x > threshold;
+
+  // ✅ BRIDGE legacy joystick state into PlayerControls
+  if (playerControls) {
+    playerControls.joystickActive = joystickActive;
+    playerControls.joystickDirection = { ...joystickDirection };
+
+    // If your PlayerControls class has this method (it does), call it:
+    if (typeof playerControls.refreshJoystickMovementFlags === "function") {
+      playerControls.refreshJoystickMovementFlags();
+    } else if (typeof playerControls.updateAggregatedMovement === "function") {
+      playerControls.updateAggregatedMovement();
+    }
+  }
+
+  // Keep legacy aggregated movement alive too (VR/other legacy systems)
   updateAggregatedMovement();
 }
+
 const clock = new THREE.Clock();
 
 
@@ -38238,11 +38288,12 @@ function createPauseMenu() {
 // 🎮 MOBILE JOYSTICKS (January 18, 2026 - MOVEMENT & CAMERA CONTROL)
 // Two joysticks for mobile: left for movement, right for camera
 // Note: mobileCameraJoystick is already declared at line 357 (reusing existing variable)
-let mobileMovementJoystick = null;
 let joystickMovement = { x: 0, y: 0 };
 let joystickRotation = { x: 0, y: 0 };
 
 function createMobileJoysticks() {
+	const desktopTestEnabled = !!window.enableDesktopJoysticks;
+	
   if (!isMobile) {
     console.log("💡 [MOBILE JOYSTICKS] Not on mobile - skipping joystick creation");
     return;
@@ -38253,6 +38304,13 @@ function createMobileJoysticks() {
     console.error("❌ [MOBILE JOYSTICKS] nipplejs library not loaded!");
     return;
   }
+  
+    // Prevent duplicates
+  if (document.getElementById("joystick-movement-zone") || document.getElementById("joystick-camera-zone")) {
+    console.log("💡 [MOBILE JOYSTICKS] Zones already exist - skipping re-create");
+    return;
+  }
+
   
   console.log("🎮 [MOBILE JOYSTICKS] Creating movement and camera joysticks...");
   
@@ -38287,10 +38345,10 @@ function createMobileJoysticks() {
       
       // Update PlayerControls if it exists
       if (playerControls) {
-        playerControls.joystickActive = true;
-        playerControls.joystickDirection = { ...joystickMovement };
-        playerControls.refreshJoystickMovementFlags();
-      }
+  playerControls.joystickActive = true;
+  playerControls.joystickDirection = { ...joystickMovement };
+  playerControls.refreshJoystickMovementFlags();
+}
     }
   });
   
@@ -38336,9 +38394,9 @@ function createMobileJoysticks() {
       
       // Update PlayerControls if it exists
       if (playerControls) {
-        playerControls.cameraJoystickActive = true;
-        playerControls.cameraJoystickDirection = { ...joystickRotation };
-      }
+  playerControls.cameraJoystickActive = true;
+  playerControls.cameraJoystickDirection = { ...joystickRotation };
+}
     }
   });
   
@@ -38357,38 +38415,47 @@ function createMobileJoysticks() {
   console.log(`✅ [MOBILE JOYSTICKS] Movement manager: ${!!mobileMovementJoystick}, Camera manager: ${!!mobileCameraJoystick}`);
 }
 
+let lastJoyVisible = null;
 function updateMobileJoysticks() {
   if (!isMobile) return;
-  
   const movementZone = document.getElementById("joystick-movement-zone");
   const cameraZone = document.getElementById("joystick-camera-zone");
-  
-  console.log(`🎮 [UPDATE JOYSTICKS] Zones found - movement: ${!!movementZone}, camera: ${!!cameraZone}`);
-  
-  if (!movementZone || !cameraZone) {
-    console.warn("⚠️ [UPDATE JOYSTICKS] Joystick zones not found in DOM!");
-    return;
-  }
-  
+  if (!movementZone || !cameraZone) return;
+
   const shouldShow = !isGamePaused && gameStarted && isMobileLandscape();
   movementZone.style.display = shouldShow ? "block" : "none";
   cameraZone.style.display = shouldShow ? "block" : "none";
-  
-  console.log(`🎮 [UPDATE JOYSTICKS] Visibility: ${shouldShow ? "VISIBLE" : "HIDDEN"} (paused: ${isGamePaused}, started: ${gameStarted}, landscape: ${isMobileLandscape()})`);
+
+  if (lastJoyVisible !== shouldShow) {
+    lastJoyVisible = shouldShow;
+    console.log(`🎮 [UPDATE JOYSTICKS] ${shouldShow ? "VISIBLE" : "HIDDEN"}`);
+  }
 }
+
 
 // Create mobile joysticks on load
 if (isMobile) {
-  // Wait for nipplejs to load
-  if (typeof nipplejs !== 'undefined') {
+  // Always register these (regardless of nipplejs timing)
+  window.addEventListener("resize", updateMobileJoysticks);
+  window.addEventListener("orientationchange", () => setTimeout(updateMobileJoysticks, 150));
+
+  const createAndRefresh = () => {
     createMobileJoysticks();
+    // After creation, immediately apply visibility rules
+    updateMobileJoysticks();
+  };
+
+  // Wait for nipplejs to load
+  if (typeof nipplejs !== "undefined") {
+    createAndRefresh();
   } else {
     console.log("⏳ [MOBILE JOYSTICKS] Waiting for nipplejs to load...");
-    window.addEventListener('load', () => {
-      setTimeout(createMobileJoysticks, 500); // Give nipplejs time to load
+    window.addEventListener("load", () => {
+      setTimeout(createAndRefresh, 500);
     });
   }
 }
+
 
 // Note: checkAndCreateJoystick() function is defined later (line ~35789)
 // with comprehensive error handling, retry logic, and mobile support
@@ -38887,18 +38954,8 @@ function checkLandscapeMode() {
       promptOverlay.style.display = "flex";
     }
     
-    // ✅ Hide nipplejs joystick ZONES (by ID)
-    const movementZone = document.getElementById("joystick-movement-zone");
-    const cameraZone = document.getElementById("joystick-camera-zone");
-    if (movementZone) {
-      movementZone.style.display = "none";
-      console.log("📱 [LANDSCAPE CHECK] Hiding movement joystick zone");
-    }
-    if (cameraZone) {
-      cameraZone.style.display = "none";
-      console.log("📱 [LANDSCAPE CHECK] Hiding camera joystick zone");
-    }
-    
+    updateMobileJoysticks(); // Will hide because isMobileLandscape() is false
+
     // Hide pause button
     if (mobilePauseButton) mobilePauseButton.style.display = "none";
     
@@ -38923,43 +38980,48 @@ function checkLandscapeMode() {
       promptOverlay.style.display = "none";
     }
     
-    // Re-create/show joysticks
-    if (gameStarted && isLandscape) {
-      console.log("📱 [LANDSCAPE CHECK] Calling checkAndCreateJoystick...");
-      checkAndCreateJoystick();
-      
-      // ✅ Show nipplejs joystick ZONES immediately
-      const movementZone = document.getElementById("joystick-movement-zone");
-      const cameraZone = document.getElementById("joystick-camera-zone");
-      if (movementZone) {
-        movementZone.style.display = "block";
-        console.log("📱 [LANDSCAPE CHECK] Showing movement joystick zone");
-      }
-      if (cameraZone) {
-        cameraZone.style.display = "block";
-        console.log("📱 [LANDSCAPE CHECK] Showing camera joystick zone");
-      }
-      
-      // Show pause button
-      console.log("📱 [LANDSCAPE CHECK] Updating mobile pause button...");
-      updateMobilePauseButton();
-      
-      // Update interact button (will show if near interactable)
-      updateMobileInteractButton(!!nearestInteractableChest);
-      
-      // Update weapon selector (will show if in weapon level)
-      console.log("📱 [LANDSCAPE CHECK] Updating weapon selector...");
-      updateMobileWeaponSelector();
-      
-      // Update shoot button (will show if in weapon level)
-      console.log("📱 [LANDSCAPE CHECK] Updating shoot button...");
-      updateMobileShootButton();
-      
-      // Show crosshair
-      if (crosshairElement) crosshairElement.style.display = "flex";
-    }
+// Re-create/show joysticks
+if (gameStarted && isLandscape) {
+  console.log("📱 [LANDSCAPE CHECK] Landscape active - ensuring controls exist");
+
+  // Ensure joystick systems exist, then apply visibility rules
+  checkAndCreateJoystick();
+  updateMobileJoysticks();
+
+  // Show/update the rest of the mobile UI
+  updateMobilePauseButton();
+  updateMobileInteractButton(!!nearestInteractableChest);
+  updateMobileWeaponSelector();
+  updateMobileShootButton();
+
+  // Show crosshair
+  if (crosshairElement) crosshairElement.style.display = "flex";
+}
+
   }
 }
+
+// Mobile UI kick: when the player first interacts, re-evaluate landscape + joysticks
+if (isMobile) {
+  const oneTimeMobileKick = () => {
+    try {
+      checkLandscapeMode();
+      checkAndCreateJoystick();
+      updateMobileJoysticks();
+      updateMobilePauseButton?.();
+      updateMobileInteractButton?.(!!nearestInteractableChest);
+      updateMobileWeaponSelector?.();
+      updateMobileShootButton?.();
+    } catch (e) {
+      console.warn("⚠️ [MOBILE KICK] Failed:", e);
+    }
+    window.removeEventListener("touchstart", oneTimeMobileKick, true);
+    window.removeEventListener("pointerdown", oneTimeMobileKick, true);
+  };
+  window.addEventListener("touchstart", oneTimeMobileKick, true);
+  window.addEventListener("pointerdown", oneTimeMobileKick, true);
+}
+
 
 // Create landscape prompt on load
 if (isMobile) {
@@ -39177,16 +39239,20 @@ function createMobileJoystick() {
 
 // Mobile Camera Control Joystick (right side, for third-person camera rotation only)
 function createMobileCameraJoystick() {
-  // FIX: Always create on mobile, or if desktop testing enabled
-  const shouldShow = isMobile || (isMobileLandscape() || window.enableDesktopJoysticks) && !mobileCameraJoystick;
-  if (!shouldShow && mobileCameraJoystick) return; // Don't recreate if exists
-  if (mobileCameraJoystick) return; // Already exists
-  
-  // FIX: On mobile, show camera joystick even in first-person (some players prefer it)
-  // Only skip on desktop if first-person
-  if (!isMobile && isFirstPerson()) return;
-  
+  // Legacy DOM camera joystick is ONLY for desktop testing (NOT mobile, NOT nipplejs)
+  const desktopTestEnabled = !!window.enableDesktopJoysticks;
+
+  // Only create in desktop test mode
+  if (isMobile || !desktopTestEnabled) return;
+
+  // Only in third-person (your requirement)
+  if (isFirstPerson()) return;
+
+  // Don't recreate if exists
+  if (legacyCameraJoystick) return;
+
   const joystickContainer = document.createElement("div");
+
   Object.assign(joystickContainer.style, {
     position: "fixed",
     bottom: "30px",
@@ -39360,11 +39426,11 @@ function createMobileCameraJoystick() {
     }
   });
 
-  mobileCameraJoystick = joystickContainer;
+  legacyCameraJoystick = joystickContainer;
   return joystickContainer;
 }
 
-// 📱 MOBILE JOYSTICK INITIALIZATION (January 18, 2026 - Phase 1 Mobile Optimization)
+// 📱 MOBILE JOYSTICK INITIALIZATION (17 Februar, 2026 - Phase 1 Mobile Optimization)
 // Initialize mobile joysticks if in landscape mode or desktop testing enabled
 // 🔧 ENHANCED with error handling, retry logic, and comprehensive logging
 let joystickCreationAttempts = 0;
@@ -39372,75 +39438,97 @@ const MAX_JOYSTICK_ATTEMPTS = 3;
 
 function checkAndCreateJoystick() {
   try {
-    const newIsLandscape = isMobile && window.innerWidth > window.innerHeight;
-    const forceLandscape = isMobile ? true : (window.forceLandscapeMode || false);
-    const desktopTestEnabled = window.enableDesktopJoysticks || false;
+    const desktopTestEnabled = !!window.enableDesktopJoysticks;
     const joystickViewMode = isJoystickView();
-    
-    // 📊 Diagnostic logging
+    const isLandscapeNow = window.innerWidth > window.innerHeight;
+
+    // Mobile "landscape" concept: only applies to mobile.
+    const mobileLandscape = isMobile && isLandscapeNow;
+
     console.log("📱 [JOYSTICK CHECK] Conditions:", {
-      isMobile: isMobile,
-      isLandscape: newIsLandscape,
+      isMobile,
+      mobileLandscape,
       windowSize: `${window.innerWidth}x${window.innerHeight}`,
-      forceLandscape: forceLandscape,
       desktopTest: desktopTestEnabled,
       joystickView: joystickViewMode,
-      isGamePaused: isGamePaused,
-      movementJoystickExists: !!mobileMovementJoystick,
-      cameraJoystickExists: !!mobileCameraJoystick
+      isGamePaused,
+      // Nipplejs managers:
+      nippleMoveExists: !!mobileMovementJoystick,
+      nippleCamExists: !!mobileCameraJoystick,
+      // Legacy DOM containers:
+      legacyMoveExists: !!mobileJoystick,
+      legacyCamExists: !!legacyCameraJoystick
     });
-    
-    // FIX: Always show joysticks on mobile (they're essential for mobile play)
-    const shouldShow = isMobile || newIsLandscape || forceLandscape || desktopTestEnabled || joystickViewMode;
-    
-    if (shouldShow && !isGamePaused) {
-      console.log("✅ [JOYSTICK] Should show joysticks - checking creation...");
-      
-      // ✅ USE NEW NIPPLEJS SYSTEM - Create BOTH joysticks with one function
+
+// ---- 1) DESKTOP TEST MODE (legacy DOM only) ----
+if (!isMobile && (desktopTestEnabled || joystickViewMode)) {
+
+  // Only in 3rd person
+  if (isFirstPerson()) {
+    if (mobileJoystick) mobileJoystick.style.display = "none";
+    if (legacyCameraJoystick) legacyCameraJoystick.style.display = "none";
+    console.log("🖥️ [JOYSTICK] Desktop test enabled but first-person → hide legacy joysticks");
+    return;
+  }
+
+  // ✅ CREATE EVEN IF PAUSED (so menu toggle works), but keep hidden while paused
+  if (!mobileJoystick) createMobileJoystick();
+  if (!legacyCameraJoystick) createMobileCameraJoystick();
+
+  if (isGamePaused) {
+    if (mobileJoystick) mobileJoystick.style.display = "none";
+    if (legacyCameraJoystick) legacyCameraJoystick.style.display = "none";
+    console.log("🖥️ [JOYSTICK] Desktop test enabled but paused → created (if needed) + hidden");
+    return;
+  }
+
+  // Ensure visible (only when not paused)
+  if (mobileJoystick) mobileJoystick.style.display = "flex";
+  if (legacyCameraJoystick) legacyCameraJoystick.style.display = "flex";
+
+  console.log("🖥️✅ [JOYSTICK] Desktop legacy joysticks active");
+  return;
+}
+
+
+    // ---- 2) MOBILE MODE (nipplejs only) ----
+    if (isMobile) {
+      // If paused or not started or not landscape, let updateMobileJoysticks hide them
+      if (isGamePaused) {
+        updateMobileJoysticks();
+        return;
+      }
+
+      // Ensure nipplejs exists before trying to create
+      if (typeof nipplejs === "undefined") {
+        console.warn("⚠️ [JOYSTICK] nipplejs not loaded yet - retrying in 500ms...");
+        joystickCreationAttempts++;
+        if (joystickCreationAttempts < MAX_JOYSTICK_ATTEMPTS) {
+          setTimeout(checkAndCreateJoystick, 500);
+        }
+        return;
+      }
+
+      // Create if needed
       if (!mobileMovementJoystick || !mobileCameraJoystick) {
         console.log("📱 [JOYSTICK] Creating nipplejs joysticks...");
-        try {
-          // Check if nipplejs is loaded
-          if (typeof nipplejs === 'undefined') {
-            console.warn("⚠️ [JOYSTICK] nipplejs not loaded yet - retrying in 500ms...");
-            joystickCreationAttempts++;
-            if (joystickCreationAttempts < MAX_JOYSTICK_ATTEMPTS) {
-              setTimeout(checkAndCreateJoystick, 500);
-            }
-            return;
-          }
-          
-          createMobileJoysticks(); // Creates BOTH joysticks
-          
-          if (mobileMovementJoystick && mobileCameraJoystick) {
-            console.log("✅ [JOYSTICK] Nipplejs joysticks created successfully");
-            joystickCreationAttempts = 0; // Reset attempt counter
-          } else {
-            throw new Error("Nipplejs joystick creation returned null");
-          }
-        } catch (error) {
-          console.error("❌ [JOYSTICK] Failed to create nipplejs joysticks:", error);
-          joystickCreationAttempts++;
-          if (joystickCreationAttempts < MAX_JOYSTICK_ATTEMPTS) {
-            console.log(`🔄 [JOYSTICK] Retrying in 500ms (attempt ${joystickCreationAttempts}/${MAX_JOYSTICK_ATTEMPTS})...`);
-            setTimeout(checkAndCreateJoystick, 500);
-            return;
-          } else {
-            console.error("💔 [JOYSTICK] Max retry attempts reached - joystick creation failed");
-          }
+        createMobileJoysticks();
+        if (mobileMovementJoystick && mobileCameraJoystick) {
+          console.log("✅ [JOYSTICK] Nipplejs joysticks created successfully");
+          joystickCreationAttempts = 0;
         }
-      } else {
-        console.log("✅ [JOYSTICK] Nipplejs joysticks already exist");
-        
-        // Update visibility via updateMobileJoysticks()
-        updateMobileJoysticks();
       }
-    } else {
-      console.log("⏸️ [JOYSTICK] Should not show joysticks (not in landscape or game paused)");
-      
-      // Update visibility via updateMobileJoysticks()
+
+      // Apply visibility rules (started + landscape + not paused)
       updateMobileJoysticks();
+      return;
     }
+
+    // ---- 3) DEFAULT DESKTOP (no joysticks) ----
+    // If desktop test is off, hide legacy if they exist
+    if (mobileJoystick) mobileJoystick.style.display = "none";
+    if (legacyCameraJoystick) legacyCameraJoystick.style.display = "none";
+
   } catch (error) {
     console.error("💥 [JOYSTICK] Critical error in checkAndCreateJoystick:", error);
   }
@@ -39474,10 +39562,11 @@ if (screen.orientation && screen.orientation.addEventListener) {
 }
 
 window.addEventListener("resize", () => {
-  if (isMobile) {
+  if (isMobile || window.enableDesktopJoysticks || isJoystickView()) {
     checkAndCreateJoystick();
   }
 });
+
 
 // PERFORMANCE OPTIMIZATION: Reuse raycaster to avoid creating new object every frame
 let crosshairRaycaster = null;
