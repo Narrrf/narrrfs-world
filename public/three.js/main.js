@@ -1269,7 +1269,18 @@ let backgroundMusicEnabled = true;
 let backgroundMusicVolume = 0.5; // Default 50% volume
 let currentBackgroundMusic = null;
 let backgroundMusicObjects = {}; // Store music objects for each level
-let isGamePaused = false; // Game pause state (moved earlier for playBackgroundMusic access - January 4, 2026)
+
+// ✅ Pause state (used by GUI + pause menu + mobile overlays)
+let isGamePaused = false;
+
+// ✅ [MOBILE HARDEN] Add globals Mobile here: Game start flag (used by mobile overlays)
+let gameStarted = false;
+
+// ✅ [MOBILE HARDEN] Hoist mobile overlay vars to avoid TDZ crashes
+// Use var so early calls can't crash before initialization.
+var mobileInteractButton = null;
+var mobileShootButton = null;
+var mobileShootInterval = null;
 
 // AudioSystem instance (initialized later)
 let audioSystem = null;
@@ -10139,6 +10150,8 @@ async function warpToLevelWithLoading(levelId, levelName, warpFunction) {
 let gameStartPendingLevel = null; // null = not pending, level ID = pending with specific level
 
 function startGame(startLevelId = null) {
+    // ✅ Mark game as started (mobile overlays rely on this)
+  gameStarted = true;
   // Use provided level ID or default to Level 1
   const targetLevelId = startLevelId || LEVEL_IDS.LEVEL1;
   const targetLevelName = startLevelId 
@@ -11734,14 +11747,14 @@ function initializeGUISystem() {
   }
 
   try {
-    // Create comprehensive config object with all necessary callbacks
+    // Create comprehensive guiconfig object with all necessary callbacks
     const guiConfig = {
       // Game state callbacks
       getPlayerName: () => playerDisplayName || "Gifted Hunter",
       getDSPOINC: () => currentTotalDspoinc || 0,
       getCameraMode: () => cameraMode || 0,
       getDebugState: () => debugState || { pending: 0, lastResponse: null },
-      getIsGamePaused: () => isGamePaused || false,
+      getIsGamePaused: () => (typeof isGamePaused !== "undefined" ? !!isGamePaused : false),
       getCurrentLevel: () => currentLevel || LEVEL_IDS.LEVEL1,
       getGodMode: () => godMode || false,
       getSoundFxEnabled: () => soundFxEnabled !== false,
@@ -13811,7 +13824,14 @@ currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
       const deviceInfoDisplay = document.createElement("div");
       const tier = mobileOptimizer.getDeviceTier();
       const tierNames = { 'low-end': 'Low-End', 'mid-tier': 'Mid-Tier', 'high-end': 'High-End' };
-      deviceInfoDisplay.textContent = `Device: ${tierNames[tier] || 'Unknown'} | RAM: ${mobileOptimizer.deviceInfo.memory}GB`;
+      const ramGB =
+  (mobileOptimizer && mobileOptimizer.deviceInfo && mobileOptimizer.deviceInfo.memory != null)
+    ? mobileOptimizer.deviceInfo.memory
+    : (navigator.deviceMemory != null ? navigator.deviceMemory : "?");
+
+deviceInfoDisplay.textContent =
+  `Device: ${tierNames[tier] || 'Unknown'} | RAM: ${ramGB}GB`;
+
       Object.assign(deviceInfoDisplay.style, {
         fontSize: "13px",
         color: "#9ca3af",
@@ -18779,125 +18799,134 @@ try {
 }
 
 async function showPauseMenu() {
-  // 🎨 NEW PAUSE MENU (January 19, 2026) - Use createPauseMenu() with modern UI
   console.log("⏸️ [DEBUG] showPauseMenu called");
-  const menu = createPauseMenu();
-  pointerWasLockedBeforePause = playerControls ? playerControls.getPointerLockControls().isLocked : false;
-  if (playerControls) {
-    playerControls.getPointerLockControls().unlock();
+
+  let menu = null;
+  try {
+    menu = createPauseMenu();
+  } catch (e) {
+    console.error("❌ [PAUSE] createPauseMenu crashed:", e);
+    if (window.__showMobileErrorHUD) window.__showMobileErrorHUD("PAUSE MENU BUILD ERROR: " + (e?.message || e));
+    return;
   }
+
+  if (!menu || !menu.style) {
+    console.warn("⚠️ [PAUSE] createPauseMenu returned invalid menu:", menu);
+    if (window.__showMobileErrorHUD) window.__showMobileErrorHUD("PAUSE MENU INVALID: menu is null/undefined");
+    return;
+  }
+
+  pointerWasLockedBeforePause = playerControls ? playerControls.getPointerLockControls().isLocked : false;
+  if (playerControls) playerControls.getPointerLockControls().unlock();
+
   isGamePaused = true;
   menu.style.display = "flex";
 
-   // 🛑 Mobile safety: stop any hold-to-fire immediately when pausing
-  if (isMobile && typeof stopMobileShooting === "function") {
-    stopMobileShooting("pause");
-  }
-   // Hide mobile joysticks when paused
-   if (typeof updateMobileJoysticks === 'function') {
-     updateMobileJoysticks();
-  }
-  
-  // Legacy mobile joystick hiding (keep for safety)
-  if (typeof mobileJoystick !== 'undefined' && mobileJoystick) {
+  // 🛑 Mobile safety: stop any hold-to-fire immediately when pausing
+  if (isMobile && typeof stopMobileShooting === "function") stopMobileShooting("pause");
+
+  // Hide mobile joysticks when paused
+  if (typeof updateMobileJoysticks === "function") updateMobileJoysticks();
+
+  // ✅ HARD GUARDS: only touch .style if it's a real element
+  if (typeof mobileJoystick !== "undefined" && mobileJoystick && mobileJoystick.style) {
     mobileJoystick.style.display = "none";
   }
-  if (typeof mobileCameraJoystick !== 'undefined' && mobileCameraJoystick) {
+  if (typeof mobileCameraJoystick !== "undefined" && mobileCameraJoystick && mobileCameraJoystick.style) {
     mobileCameraJoystick.style.display = "none";
   }
+  if (typeof legacyCameraJoystick !== "undefined" && legacyCameraJoystick && legacyCameraJoystick.style) {
+    legacyCameraJoystick.style.display = "none";
+  }
+
   if (typeof updateMobileShootButton === "function") updateMobileShootButton();
   if (typeof updateMobileInteractButton === "function") updateMobileInteractButton(false);
   if (typeof updateMobileWeaponSelector === "function") updateMobileWeaponSelector(weaponSystem?.getCurrentSlot?.());
 
-  
-  // Fetch player details before updating the menu
   await fetchPlayerDetails();
-  
   refreshDebugOverlay();
 }
 
+
+
 function hidePauseMenu() {
   // 🎨 NEW PAUSE MENU (January 19, 2026) - Direct control
-  if (!pauseMenu) return;
+  if (!pauseMenu || !pauseMenu.style) return;
+
   pauseMenu.style.display = "none";
   isGamePaused = false;
 
   // CRITICAL: Re-apply the currently selected camera mode so HUD, joysticks, player model, and pointer-lock state
   // always match the player's last choice after resuming.
   setCameraMode(cameraMode);
-  
+
   // CRITICAL: Ensure player model is hidden in first-person after resume
   if (isFirstPerson() && playerCharacterModel) {
     playerCharacterModel.visible = false;
     playerCharacterModel.traverse((child) => {
-      if (child.isMesh) {
-        child.visible = false;
-      }
+      if (child.isMesh) child.visible = false;
     });
   }
-  
+
   // CRITICAL: Ensure weapon is visible in first-person after resume (if in Level 4)
   if (isFirstPerson() && currentLevel === LEVEL_IDS.LEVEL4 && (level4RiddleState.step1Active || level4RiddleState.step2Active)) {
     if (weaponSystem && weaponSystem.weaponViewmodel) {
       weaponSystem.weaponViewmodel.visible = true;
       weaponSystem.weaponViewmodel.traverse((child) => {
-        if (child.isMesh) {
-          child.visible = true;
-        }
+        if (child.isMesh) child.visible = true;
       });
     }
   }
-  
+
   // Show mobile joysticks when unpaused (if in landscape or desktop test enabled)
   // CRITICAL: Only show joysticks if NOT in first-person mode
   const shouldShowJoysticks =
-  (isMobile && window.innerWidth > window.innerHeight) ||
-  window.enableDesktopJoysticks ||
-  isJoystickView();
+    (isMobile && window.innerWidth > window.innerHeight) ||
+    window.enableDesktopJoysticks ||
+    isJoystickView();
 
-if (shouldShowJoysticks && !isFirstPerson()) {
-  if (mobileJoystick) mobileJoystick.style.display = "flex";
-  if (legacyCameraJoystick) legacyCameraJoystick.style.display = "flex";
-} else {
-  if (mobileJoystick) mobileJoystick.style.display = "none";
-  if (legacyCameraJoystick) legacyCameraJoystick.style.display = "none";
-}
-  
+  // ✅ HARD GUARDS for joystick elements
+  const hasMobileJoy = (typeof mobileJoystick !== "undefined" && mobileJoystick && mobileJoystick.style);
+  const hasLegacyCamJoy = (typeof legacyCameraJoystick !== "undefined" && legacyCameraJoystick && legacyCameraJoystick.style);
+  const hasMobileCamJoy = (typeof mobileCameraJoystick !== "undefined" && mobileCameraJoystick && mobileCameraJoystick.style);
+
+  if (shouldShowJoysticks && !isFirstPerson()) {
+    if (hasMobileJoy) mobileJoystick.style.display = "flex";
+    if (hasLegacyCamJoy) legacyCameraJoystick.style.display = "flex";
+    if (hasMobileCamJoy) mobileCameraJoystick.style.display = "flex";
+  } else {
+    if (hasMobileJoy) mobileJoystick.style.display = "none";
+    if (hasLegacyCamJoy) legacyCameraJoystick.style.display = "none";
+    if (hasMobileCamJoy) mobileCameraJoystick.style.display = "none";
+  }
+
   refreshDebugOverlay();
 
   const expectsPointerLock = !isMobile && !isJoystickView();
-  
-  // FIX: Re-request pointer lock after resume (requires user gesture)
-  // Pointer lock API requires explicit user interaction, so we need to request it
-  // after the user clicks or interacts with the canvas
+
   if (pointerWasLockedBeforePause && expectsPointerLock) {
-    // Set flag to request pointer lock on next click
     window.needsPointerLockAfterPause = true;
-    
+
     console.log("🎮 [PAUSE] Game resumed - pointer lock will be re-enabled on next click");
-    
-    // Try to lock immediately if user just clicked (e.g., clicked resume button)
-    // This might work in some cases, but the click handler will handle it if it fails
+
     setTimeout(() => {
       if (window.needsPointerLockAfterPause && !isGamePaused && playerControls && !playerControls.getPointerLockControls().isLocked) {
         try {
-          // Request pointer lock (might work if triggered by user interaction)
           renderer.domElement.requestPointerLock();
         } catch (e) {
-          // Lock failed - will be re-requested on next click
           console.log("🎮 [PAUSE] Pointer lock requires user gesture - will lock on next click");
         }
       }
-    }, 100); // Small delay to ensure pause menu is closed
+    }, 100);
   } else if (expectsPointerLock && playerControls && !playerControls.getPointerLockControls().isLocked) {
-    // Even if the pointer wasn't locked before pausing, ensure we try to lock again
-    // so first-person / third-person mouse look is consistent after resuming.
     window.needsPointerLockAfterPause = true;
   } else {
     window.needsPointerLockAfterPause = false;
   }
+
   pointerWasLockedBeforePause = false;
 }
+
 
 function togglePause(forceState) {
   // 📖 PORTAL REGISTER CHECK (January 18, 2026 - Phase 2)
@@ -18945,7 +18974,19 @@ function togglePause(forceState) {
   
   if (isGamePaused && !wasPaused) {
     // Pause game
-    showPauseMenu();
+    try {
+  const p = showPauseMenu();
+  if (p && typeof p.catch === "function") {
+    p.catch((e) => {
+      console.error("❌ [PAUSE] showPauseMenu rejected:", e);
+      if (window.__showMobileErrorHUD) window.__showMobileErrorHUD("PAUSE PROMISE REJECT: " + (e?.message || e));
+    });
+  }
+} catch (e) {
+  console.error("❌ [PAUSE] showPauseMenu threw:", e);
+  if (window.__showMobileErrorHUD) window.__showMobileErrorHUD("PAUSE THROW: " + (e?.message || e));
+}
+
     pauseBackgroundMusic();
     
     // Release pointer lock
@@ -18961,7 +19002,19 @@ function togglePause(forceState) {
     console.log('⏸️ [PAUSE] Game paused');
   } else if (!isGamePaused && wasPaused) {
     // Resume game
-    hidePauseMenu();
+    try {
+  const p = hidePauseMenu();
+  if (p && typeof p.catch === "function") {
+    p.catch((e) => {
+      console.error("❌ [PAUSE] hidePauseMenu rejected:", e);
+      if (window.__showMobileErrorHUD) window.__showMobileErrorHUD("HIDE PAUSE REJECT: " + (e?.message || e));
+    });
+  }
+} catch (e) {
+  console.error("❌ [PAUSE] hidePauseMenu threw:", e);
+  if (window.__showMobileErrorHUD) window.__showMobileErrorHUD("HIDE PAUSE THROW: " + (e?.message || e));
+}
+
     resumeBackgroundMusic();
     
     // Show joysticks
@@ -38678,7 +38731,7 @@ if (isMobile) {
 
 // 📱 MOBILE INTERACT (E KEY) BUTTON (January 18, 2026 - Phase 1 Mobile Optimization)
 // Button for opening chests and interacting with objects
-let mobileInteractButton = null;
+// mobileInteractButton declared near top (TDZ hardening)
 
 function createMobileInteractButton() {
   if (!isMobile) {
@@ -38900,8 +38953,8 @@ if (isMobile) {
 
 // 📱 MOBILE SHOOT BUTTON (January 18, 2026 - Mobile Controls Complete)
 // Large shoot button for firing weapons in levels 4, 5, 6
-let mobileShootButton = null;
-let mobileShootInterval = null;
+// mobileShootButton / mobileShootInterval declared near top (TDZ hardening)
+
 
 function stopMobileShooting(reason = "") {
   if (mobileShootInterval) {

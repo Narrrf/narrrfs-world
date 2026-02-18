@@ -162,7 +162,7 @@ import * as THREE from "three";
  */
 export class GUISystem {
   constructor(config = {}) {
-    // Configuration with dependency injection callbacks
+    // Configuration with dependency injection callbacks nice
     this.config = {
       // Game state callbacks
       getPlayerName: config.getPlayerName || (() => 'Player'),

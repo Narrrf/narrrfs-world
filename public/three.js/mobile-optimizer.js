@@ -395,6 +395,36 @@ export class MobileOptimizer {
   // ---------------------------------------------------------------------------
   // Helpers used by the rest of the game
   // ---------------------------------------------------------------------------
+  
+    // ---------------------------------------------------------------------------
+  // Compatibility helpers (used by main.js UI)
+  // ---------------------------------------------------------------------------
+
+  getDeviceTier() {
+    // Map internal tier to labels used by main.js
+    const tier = this.performanceTier || this.detectPerformanceTier();
+    if (tier === "low") return "low-end";
+    if (tier === "medium") return "mid-tier";
+    return "high-end";
+  }
+
+  // main.js sometimes calls this older-style entry point.
+  // Keep as a safe alias so Options/Graphics can't crash.
+  applyOptimizations(scene, renderer /*, grassSystem */) {
+    try {
+      if (scene) this.config.scene = scene;
+      if (renderer) this.config.renderer = renderer;
+
+      // Allow re-apply when graphics settings change
+      if (this._applied) {
+        try { this.restore(); } catch (_) {}
+      }
+      this.optimize();
+    } catch (e) {
+      console.warn("⚠️ [MOBILE OPTIMIZER] applyOptimizations failed:", e);
+    }
+  }
+
 
   getGrassDensityMultiplier() {
     if (!this.config.isMobile) return 1.0;
