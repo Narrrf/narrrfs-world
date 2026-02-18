@@ -189,11 +189,11 @@ export class GUISystem {
       getLevel4RiddleState: config.getLevel4RiddleState || (() => ({})),
       getLevel5State: config.getLevel5State || (() => ({})),
       
-      // Action callbacks
+      // Add Action callbacks
       onResume: config.onResume || (() => {}),
       onRestart: config.onRestart || (() => {}),
       onBackToPortal: config.onBackToPortal || (() => {}),
-      onShowOptions: config.onShowOptions || (() => {}),
+      onShowOptions: typeof config.onShowOptions === "function" ? config.onShowOptions : null,
       onTogglePause: config.onTogglePause || ((paused) => {}),
       onToggleSoundFx: config.onToggleSoundFx || ((enabled) => {}),
       onToggleMusic: config.onToggleMusic || ((enabled) => {}),
@@ -211,6 +211,10 @@ export class GUISystem {
       onSelectCharacter: config.onSelectCharacter || ((path) => {}),
       onStartGame: config.onStartGame || (() => {}),
       onPlayLevelUpSound: config.onPlayLevelUpSound || (() => {}),
+      isGameStartPending: typeof config.isGameStartPending === "function" ? config.isGameStartPending : (() => false),
+      setGameStartPending: typeof config.setGameStartPending === "function" ? config.setGameStartPending : (() => {}),
+      onStartGameWithLevel: typeof config.onStartGameWithLevel === "function" ? config.onStartGameWithLevel : null,
+
       
       // Level IDs constants (passed from main.js)
       LEVEL_IDS: config.LEVEL_IDS || { LEVEL1: 1, LEVEL2: 2, LEVEL3: 3, LEVEL4: 4, LEVEL5: 5 },
@@ -2695,10 +2699,12 @@ export class GUISystem {
           if (this.config.onStartGameWithLevel && typeof this.config.onStartGameWithLevel === 'function') {
             this.config.onStartGameWithLevel(levelId);
           } else {
+            alert("onStartGameWithLevel missing - game cannot start from level selector");
             console.error("❌ [LEVEL SELECTOR] onStartGameWithLevel callback not found");
-            // Fallback: start game normally (will load Level 1)
-            if (this.config.onStartGame) {
-              this.config.onStartGame();
+            if (this.config.onStartGame && typeof this.config.onStartGame === "function") {
+             this.config.onStartGame();
+            } else {
+              alert("onStartGame missing too - wiring problem in main.js");
             }
           }
         } else {
@@ -2879,21 +2885,25 @@ export class GUISystem {
     this.mainMenu = document.createElement("div");
     this.mainMenu.className = "main-menu"; // Add class for click handler detection (January 11, 2026)
     Object.assign(this.mainMenu.style, {
-      position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
-      display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "24px",
-      backgroundImage: `url('${mainMenuBgPath}')`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-      backgroundColor: "rgba(5, 7, 16, 0.85)",
-      backdropFilter: "blur(6px)", zIndex: "1002",
-      color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto", cursor: "default",
-      // 📱 MOBILE FIX (January 19, 2026): Enable touch scrolling
-      overflowY: "auto", // Allow vertical scrolling
-      overflowX: "hidden", // Prevent horizontal scrolling
-      WebkitOverflowScrolling: "touch", // Smooth scrolling on iOS
-      touchAction: "pan-y" // Allow vertical pan/scroll gestures
-    });
+  position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
+  display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "24px",
+  backgroundImage: `url('${mainMenuBgPath}')`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  backgroundColor: "rgba(5, 7, 16, 0.85)",
+  backdropFilter: "blur(6px)",
+  zIndex: "20000", // raise above everything
+  color: "#fef3c7",
+  fontFamily: "Montserrat, Arial, sans-serif",
+  pointerEvents: "auto",
+  cursor: "default",
+
+  // 🔧 IMPORTANT FIX
+  overflowY: "hidden",
+  overflowX: "hidden",
+  touchAction: "none"
+});
     
     const panel = document.createElement("div");
 Object.assign(panel.style, {
@@ -2921,6 +2931,11 @@ Object.assign(panel.style, {
   touchAction: "pan-y",
 });
 
+  // ✅ STEP 2: apply AFTER styling, not inside Object.assign
+  this.mainMenu.style.pointerEvents = "auto";
+  this.mainMenu.style.zIndex = "20000";
+  panel.style.pointerEvents = "auto";
+  panel.style.touchAction = "pan-y";
     
     // Title
     const title = document.createElement("div");
@@ -3048,14 +3063,16 @@ Object.assign(panel.style, {
     
     // Options button
     const optionsBtn = this._createCompletionButton("Options", () => {
+      alert("OPTIONS BUTTON HIT"); // <- add this first line
       console.log('⚙️ [OPTIONS] Options button clicked from main menu');
       // Hide main menu when opening options (options menu will overlay)
       // User can close options to return to main menu
       if (this.config.onShowOptions) {
-        this.config.onShowOptions();
-      } else {
-        console.error('❌ [OPTIONS] onShowOptions callback not available');
-      }
+      this.config.onShowOptions();
+    } else {
+      alert("Options callback missing (onShowOptions not wired in main.js)");
+      console.error('❌ [OPTIONS] onShowOptions callback not available');
+    }
     }, false);
     Object.assign(optionsBtn.style, {
       width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
@@ -3148,7 +3165,6 @@ Object.assign(panel.style, {
     }
   } // <-- closes showMainMenu, only this one
 
-  
   /**
    * Create user info panel (PFP, DSPOINC, Role/Multiplier) - Phase 2 (January 9, 2026)
    * @returns {HTMLElement} User info panel element
