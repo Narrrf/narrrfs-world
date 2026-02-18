@@ -308,6 +308,9 @@ import {
   LEVEL_MAP_CONFIG
 } from "./config-system.js";
 
+// Optional safety: expose THREE globally for legacy modules
+globalThis.THREE = THREE;
+
 // 🥽 VR-only spawn points per level (capsule center, not feet)
 const VR_SPAWN_POINTS = {
   [LEVEL_IDS.LEVEL1]: new THREE.Vector3(60, 2.5, 15),
@@ -2243,17 +2246,21 @@ renderer.shadowMap.enabled = true;
 // Apply aggressive optimizations for mobile devices to prevent crashes
 let mobileOptimizer = null;
 if (isMobile) {
-  console.log('📱 [MOBILE OPTIMIZER] Creating mobile optimizer...');
+  console.log("📱 [MOBILE OPTIMIZER] Creating mobile optimizer...");
+
   mobileOptimizer = new MobileOptimizer({
     renderer: renderer,
     scene: scene,
-    isMobile: isMobile
+    isMobile: isMobile,
+    THREE: THREE, // ✅ explicit key:value avoids syntax ambiguity
   });
+
   mobileOptimizer.optimize();
   mobileOptimizer.logMemoryUsage();
 } else {
-  console.log('💻 [DESKTOP MODE] No mobile optimization needed');
+  console.log("💻 [DESKTOP MODE] No mobile optimization needed");
 }
+
 
 // 🥽 VR/WebXR Support - Enable VR rendering
 renderer.xr.enabled = true;
@@ -18578,12 +18585,16 @@ async function showPauseMenu() {
   if (playerControls) {
     playerControls.getPointerLockControls().unlock();
   }
-  menu.style.display = "flex";
   isGamePaused = true;
-  
-  // Hide mobile joysticks when paused
-  if (typeof updateMobileJoysticks === 'function') {
-    updateMobileJoysticks();
+  menu.style.display = "flex";
+
+   // 🛑 Mobile safety: stop any hold-to-fire immediately when pausing
+  if (isMobile && typeof stopMobileShooting === "function") {
+    stopMobileShooting("pause");
+  }
+   // Hide mobile joysticks when paused
+   if (typeof updateMobileJoysticks === 'function') {
+     updateMobileJoysticks();
   }
   
   // Legacy mobile joystick hiding (keep for safety)
@@ -18593,6 +18604,10 @@ async function showPauseMenu() {
   if (typeof mobileCameraJoystick !== 'undefined' && mobileCameraJoystick) {
     mobileCameraJoystick.style.display = "none";
   }
+  if (typeof updateMobileShootButton === "function") updateMobileShootButton();
+  if (typeof updateMobileInteractButton === "function") updateMobileInteractButton(false);
+  if (typeof updateMobileWeaponSelector === "function") updateMobileWeaponSelector(weaponSystem?.getCurrentSlot?.());
+
   
   // Fetch player details before updating the menu
   await fetchPlayerDetails();
@@ -38507,26 +38522,25 @@ function createMobileInteractButton() {
     fontFamily: "'Press Start 2P', monospace"
   });
   
-  // Click handler - trigger E key interaction
-  interactBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("📱 [MOBILE INTERACT] Interact button clicked");
-    
-    // Trigger the onInteract callback from playerControls
-    if (playerControls && playerControls.config && typeof playerControls.config.onInteract === 'function') {
+bindMobileActionButton(interactBtn, {
+  onDown: () => {
+    // optional press feedback
+    interactBtn.style.transform = "scale(0.95)";
+  },
+  onUp: (e) => {
+    interactBtn.style.transform = "scale(1)";
+
+    // Guard: don't interact if hidden or paused
+    if (interactBtn.style.display === "none") return;
+    if (isGamePaused) return;
+
+    console.log("📱 [MOBILE INTERACT] Interact pressed");
+
+    if (playerControls?.config && typeof playerControls.config.onInteract === "function") {
       playerControls.config.onInteract(e);
     }
-  });
-  
-  // Prevent touch events from interfering with game
-  interactBtn.addEventListener("touchstart", (e) => {
-    e.stopPropagation();
-  }, { passive: true });
-  
-  interactBtn.addEventListener("touchend", (e) => {
-    e.stopPropagation();
-  }, { passive: true });
+  }
+});
   
   document.body.appendChild(interactBtn);
   mobileInteractButton = interactBtn;
@@ -38570,27 +38584,18 @@ if (isMobile) {
 let mobileWeaponSelector = null;
 
 function createMobileWeaponSelector() {
-  if (!isMobile) {
-    console.log("💡 [MOBILE WEAPON] Not on mobile - skipping weapon selector creation");
-    return null;
-  }
-  
-  if (mobileWeaponSelector) {
-    console.log("✅ [MOBILE WEAPON] Selector already exists");
-    return mobileWeaponSelector;
-  }
-  
-  console.log("📱 [MOBILE WEAPON] Creating mobile weapon selector...");
-  
+  if (!isMobile) return null;
+  if (mobileWeaponSelector) return mobileWeaponSelector;
+
   const weaponContainer = document.createElement("div");
   weaponContainer.id = "mobileWeaponSelector";
-  
+
   Object.assign(weaponContainer.style, {
     position: "fixed",
     bottom: "20px",
     left: "50%",
     transform: "translateX(-50%)",
-    display: "none", // Hidden until in weapon-enabled level
+    display: "none",
     flexDirection: "row",
     gap: "8px",
     alignItems: "center",
@@ -38603,15 +38608,14 @@ function createMobileWeaponSelector() {
     touchAction: "manipulation",
     userSelect: "none"
   });
-  
-  // Create 9 weapon slot buttons (1-9)
+
   for (let i = 1; i <= 9; i++) {
     const slotBtn = document.createElement("button");
     slotBtn.id = `mobileWeaponSlot${i}`;
-    slotBtn.textContent = i.toString();
+    slotBtn.textContent = String(i);
     slotBtn.setAttribute("aria-label", `Weapon Slot ${i}`);
-    slotBtn.dataset.slot = i;
-    
+    slotBtn.dataset.slot = String(i);
+
     Object.assign(slotBtn.style, {
       width: "45px",
       height: "45px",
@@ -38628,43 +38632,32 @@ function createMobileWeaponSelector() {
       WebkitTapHighlightColor: "transparent",
       fontFamily: "'Press Start 2P', monospace"
     });
-    
-    // Click handler - switch weapon
-    slotBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const slot = parseInt(e.target.dataset.slot);
-      console.log(`📱 [MOBILE WEAPON] Weapon slot ${slot} clicked`);
-      
-      // Switch weapon using weapon system
-      if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-        weaponSystem.switchWeapon(slot).then(() => {
-          if (currentLevel === LEVEL_IDS.LEVEL4 && typeof updateLevel4ProgressHUD === 'function') {
-            updateLevel4ProgressHUD();
-          }
-        });
+
+    bindMobileActionButton(slotBtn, {
+      onDown: () => { slotBtn.style.transform = "scale(0.95)"; },
+      onUp: () => {
+        slotBtn.style.transform = "scale(1)";
+
+        const slot = parseInt(slotBtn.dataset.slot, 10);
+
+        if (weaponSystem && typeof weaponSystem.switchWeapon === "function") {
+          weaponSystem.switchWeapon(slot).then(() => {
+            if (currentLevel === LEVEL_IDS.LEVEL4 && typeof updateLevel4ProgressHUD === "function") {
+              updateLevel4ProgressHUD();
+            }
+          });
+        }
+
+        updateMobileWeaponSelector(slot);
       }
-      
-      // Update active state
-      updateMobileWeaponSelector(slot);
     });
-    
-    // Prevent touch events from interfering
-    slotBtn.addEventListener("touchstart", (e) => {
-      e.stopPropagation();
-    }, { passive: true });
-    
-    slotBtn.addEventListener("touchend", (e) => {
-      e.stopPropagation();
-    }, { passive: true });
-    
+
+    // ✅ IMPORTANT: you must append each slot button
     weaponContainer.appendChild(slotBtn);
   }
-  
+
   document.body.appendChild(weaponContainer);
   mobileWeaponSelector = weaponContainer;
-  
-  console.log("✅ [MOBILE WEAPON] Mobile weapon selector created successfully");
   return weaponContainer;
 }
 
@@ -38709,38 +38702,52 @@ if (isMobile) {
 let mobileShootButton = null;
 let mobileShootInterval = null;
 
+function stopMobileShooting(reason = "") {
+  if (mobileShootInterval) {
+    clearInterval(mobileShootInterval);
+    mobileShootInterval = null;
+  }
+
+  if (mobileShootButton) {
+    mobileShootButton.style.transform = "scale(1)";
+    mobileShootButton.style.background = "rgba(255, 69, 58, 0.9)";
+  }
+
+  if (reason) console.log("🛑 [MOBILE SHOOT] stop:", reason);
+}
+
 function createMobileShootButton() {
   if (!isMobile) {
     console.log("💡 [MOBILE SHOOT] Not on mobile - skipping shoot button creation");
     return null;
   }
-  
+
   if (mobileShootButton) {
     console.log("✅ [MOBILE SHOOT] Button already exists");
     return mobileShootButton;
   }
-  
+
   console.log("📱 [MOBILE SHOOT] Creating mobile shoot button...");
-  
+
   const shootBtn = document.createElement("button");
   shootBtn.id = "mobileShootButton";
-  shootBtn.innerHTML = "🔫"; // Gun icon
+  shootBtn.innerHTML = "🔫";
   shootBtn.setAttribute("aria-label", "Shoot");
-  
+
   Object.assign(shootBtn.style, {
     position: "fixed",
-    bottom: "230px", // Above interact button
+    bottom: "230px",
     right: "20px",
     width: "80px",
     height: "80px",
     borderRadius: "50%",
-    background: "rgba(255, 69, 58, 0.9)", // Red
+    background: "rgba(255, 69, 58, 0.9)",
     border: "3px solid rgba(255, 255, 255, 0.9)",
     color: "#fff",
     fontSize: "36px",
     cursor: "pointer",
     zIndex: "9998",
-    display: "none", // Hidden until in weapon level
+    display: "none",
     alignItems: "center",
     justifyContent: "center",
     boxShadow: "0 6px 12px rgba(0, 0, 0, 0.5)",
@@ -38750,62 +38757,38 @@ function createMobileShootButton() {
     WebkitTapHighlightColor: "transparent",
     fontFamily: "'Press Start 2P', monospace"
   });
-  
-  // Shoot on touch start (continuous fire while held)
-  shootBtn.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log("📱 [MOBILE SHOOT] Shoot button pressed - starting continuous fire");
-    
-    // Immediate first shot
-    fireWeapon();
-    
-    // Visual feedback - scale down slightly
-    shootBtn.style.transform = "scale(0.95)";
-    shootBtn.style.background = "rgba(255, 0, 0, 1)"; // Brighter red
-    
-    // Continuous fire while held (100ms interval = ~10 shots/second)
-    mobileShootInterval = setInterval(() => {
+
+  // ✅ Replace touchstart/touchend/touchcancel with pointer-safe bind
+  bindMobileActionButton(shootBtn, {
+    onDown: () => {
+      if (isGamePaused) return;
+
+      console.log("📱 [MOBILE SHOOT] Start hold fire");
+
+      // First shot immediately
       fireWeapon();
-    }, 100);
-  }, { passive: false });
-  
-  // Stop shooting on touch end
-  shootBtn.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log("📱 [MOBILE SHOOT] Shoot button released - stopping fire");
-    
-    // Stop continuous fire
-    if (mobileShootInterval) {
-      clearInterval(mobileShootInterval);
-      mobileShootInterval = null;
+
+      // Press feedback
+      shootBtn.style.transform = "scale(0.95)";
+      shootBtn.style.background = "rgba(255, 0, 0, 1)";
+
+      // Safety: clear any previous interval
+      stopMobileShooting();
+
+      // Hold-to-fire
+      mobileShootInterval = setInterval(() => {
+        fireWeapon();
+      }, 100);
+    },
+    onUp: () => {
+      console.log("📱 [MOBILE SHOOT] End hold fire");
+      stopMobileShooting("pointer up/cancel");
     }
-    
-    // Reset visual feedback
-    shootBtn.style.transform = "scale(1)";
-    shootBtn.style.background = "rgba(255, 69, 58, 0.9)";
-  }, { passive: false });
-  
-  // Also stop on touch cancel (e.g., finger slides off button)
-  shootBtn.addEventListener("touchcancel", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (mobileShootInterval) {
-      clearInterval(mobileShootInterval);
-      mobileShootInterval = null;
-    }
-    
-    shootBtn.style.transform = "scale(1)";
-    shootBtn.style.background = "rgba(255, 69, 58, 0.9)";
-  }, { passive: false });
-  
+  });
+
   document.body.appendChild(shootBtn);
   mobileShootButton = shootBtn;
-  
+
   console.log("✅ [MOBILE SHOOT] Mobile shoot button created successfully");
   return shootBtn;
 }
@@ -38846,24 +38829,20 @@ function fireWeapon() {
 
 function updateMobileShootButton() {
   if (!isMobile || !mobileShootButton) return;
-  
+
   // Only show in weapon-enabled levels (4, 5, 6)
   const weaponLevels = [LEVEL_IDS.LEVEL4, LEVEL_IDS.LEVEL5, LEVEL_IDS.LEVEL6];
-  const shouldShow = weaponLevels.includes(currentLevel) && !isGamePaused && gameStarted && isMobileLandscape();
-  
+  const shouldShow =
+    weaponLevels.includes(currentLevel) && !isGamePaused && gameStarted && isMobileLandscape();
+
   mobileShootButton.style.display = shouldShow ? "flex" : "none";
-  
-  // Clean up interval if hidden
-  if (!shouldShow && mobileShootInterval) {
-    clearInterval(mobileShootInterval);
-    mobileShootInterval = null;
+
+  // ✅ Always stop firing if the button is not supposed to be visible
+  if (!shouldShow) {
+    stopMobileShooting("hidden");
   }
 }
 
-// Create mobile shoot button on load
-if (isMobile) {
-  createMobileShootButton();
-}
 
 // 📱 LANDSCAPE ORIENTATION PROMPT (January 18, 2026 - Phase 1 Mobile Optimization)
 // Full-screen overlay prompting users to rotate device to landscape
@@ -38935,6 +38914,43 @@ function createLandscapePrompt() {
   console.log("✅ [LANDSCAPE PROMPT] Landscape prompt created successfully");
   return promptOverlay;
 }
+
+function bindMobileActionButton(el, { onDown, onUp } = {}) {
+  if (!el) return;
+
+  // Prevent iOS/Android click synthesis + gesture defaults
+  el.style.touchAction = "none";
+
+  el.addEventListener("pointerdown", (e) => {
+    // Only primary finger/touch
+    if (e.pointerType === "mouse") return; // keep desktop safe
+    e.preventDefault();
+    e.stopPropagation();
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    onDown && onDown(e);
+  }, { passive: false });
+
+  el.addEventListener("pointerup", (e) => {
+    if (e.pointerType === "mouse") return;
+    e.preventDefault();
+    e.stopPropagation();
+    onUp && onUp(e);
+  }, { passive: false });
+
+  el.addEventListener("pointercancel", (e) => {
+    if (e.pointerType === "mouse") return;
+    e.preventDefault();
+    e.stopPropagation();
+    onUp && onUp(e);
+  }, { passive: false });
+
+  // IMPORTANT: kill synthetic clicks entirely (prevents double-fire)
+  el.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, { passive: false });
+}
+
 
 // 📱 CONTINUOUS LANDSCAPE MODE CHECKING (January 18, 2026 - Phase 1 Mobile Optimization)
 // Continuously check orientation and show/hide prompt + controls accordingly
@@ -47353,6 +47369,10 @@ function restoreGameStateAfterWarp() {
   // Unpause game if paused
   if (isGamePaused) {
     isGamePaused = false;
+    if (isMobile && typeof stopMobileShooting === "function") {
+  stopMobileShooting("resume");
+}
+
     console.log("🎮 [RESTORE] Game unpaused");
   }
   

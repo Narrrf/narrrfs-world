@@ -2825,7 +2825,11 @@ export class GUISystem {
       this.config.onUnlockControls();
     }
     document.body.style.cursor = "default";
-    
+
+    // 📱 MOBILE SCROLL FIX: allow vertical scrolling ONLY while main menu is open
+    document.body.dataset.prevTouchAction = document.body.style.touchAction || "";
+    document.body.style.touchAction = "pan-y";
+
     // If menu already exists and is in DOM, just show it (but refresh user info)
     if (this.mainMenu && this.container && this.container.contains(this.mainMenu)) {
       this.mainMenu.style.display = "flex";
@@ -2871,15 +2875,31 @@ export class GUISystem {
     });
     
     const panel = document.createElement("div");
-    Object.assign(panel.style, {
-      background: "linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(17, 24, 39, 0.95))",
-      border: "1px solid rgba(255, 224, 102, 0.35)", borderRadius: "14px", padding: "48px 56px",
-      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.45)", display: "flex", flexDirection: "column",
-      alignItems: "center", minWidth: "400px", maxWidth: "90vw", textAlign: "center",
-      pointerEvents: "auto", // 🔧 FIX: Ensure panel can receive clicks
-      position: "relative", // 🔧 FIX: Ensure panel is positioned correctly
-      zIndex: "1003" // 🔧 FIX: Ensure panel is above menu background
-    });
+Object.assign(panel.style, {
+  background: "linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(17, 24, 39, 0.95))",
+  border: "1px solid rgba(255, 224, 102, 0.35)",
+  borderRadius: "14px",
+  padding: "48px 56px",
+  boxShadow: "0 20px 60px rgba(0, 0, 0, 0.45)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  minWidth: "400px",
+  maxWidth: "90vw",
+  textAlign: "center",
+  pointerEvents: "auto", // 🔧 FIX: Ensure panel can receive clicks
+  position: "relative", // 🔧 FIX: Ensure panel is positioned correctly
+  zIndex: "1003",       // 🔧 FIX: Ensure panel is above menu background
+
+  // 📱 MOBILE SCROLL FIX: panel must scroll (trophies extend beyond viewport)
+  maxHeight: "calc(100vh - 40px)",
+  overflowY: "auto",
+  overflowX: "hidden",
+  WebkitOverflowScrolling: "touch",
+  overscrollBehavior: "contain",
+  touchAction: "pan-y",
+});
+
     
     // Title
     const title = document.createElement("div");
