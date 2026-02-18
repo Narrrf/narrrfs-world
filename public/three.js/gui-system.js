@@ -3062,18 +3062,34 @@ Object.assign(panel.style, {
     buttonsContainer.appendChild(vrModeBtn);
     
     // Options button
-    const optionsBtn = this._createCompletionButton("Options", () => {
-      alert("OPTIONS BUTTON HIT"); // <- add this first line
-      console.log('⚙️ [OPTIONS] Options button clicked from main menu');
-      // Hide main menu when opening options (options menu will overlay)
-      // User can close options to return to main menu
-      if (this.config.onShowOptions) {
+const optionsBtn = this._createCompletionButton("Options", () => {
+  alert("OPTIONS BUTTON HIT"); // keep for 1 phone test
+  console.log("⚙️ [OPTIONS] Options tapped");
+
+  this._optionsOpenedFromMainMenu = true;
+
+  // IMPORTANT: hide main menu first (zIndex 20000)
+  try { this.hideMainMenu(); } catch (e) {}
+
+  window.__optionsReturnToMainMenu = true;
+
+  try {
+    if (this.config.onShowOptions) {
       this.config.onShowOptions();
+    } else if (this.config.onShowOptionsMenu) {
+      this.config.onShowOptionsMenu();
     } else {
-      alert("Options callback missing (onShowOptions not wired in main.js)");
-      console.error('❌ [OPTIONS] onShowOptions callback not available');
+      alert("Options callback missing (onShowOptions / onShowOptionsMenu not wired)");
+      console.error("❌ [OPTIONS] No options callback wired");
     }
-    }, false);
+  } catch (err) {
+    console.error("❌ [OPTIONS] Exception:", err);
+    if (window.__showMobileErrorHUD) window.__showMobileErrorHUD("OPTIONS ERROR: " + (err?.message || err));
+    alert("Options failed. Check Error HUD.");
+  }
+}, false);
+
+
     Object.assign(optionsBtn.style, {
       width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
       pointerEvents: "auto", // 🔧 FIX: Ensure button can receive clicks
@@ -3083,10 +3099,22 @@ Object.assign(panel.style, {
     });
     buttonsContainer.appendChild(optionsBtn);
     
-    // Controls button
-    const controlsBtn = this._createCompletionButton("Controls", () => {
-      this.showControlsMenu();
-    }, false);
+// Controls button
+const controlsBtn = this._createCompletionButton("Controls", () => {
+  console.log("🎮 [CONTROLS] Controls tapped");
+
+  // IMPORTANT: main menu is zIndex 20000 -> hide it BEFORE opening submenu
+  try { this.hideMainMenu(); } catch (e) {}
+
+  try {
+    this.showControlsMenu();
+  } catch (err) {
+    console.error("❌ [CONTROLS] Exception:", err);
+    if (window.__showMobileErrorHUD) window.__showMobileErrorHUD("CONTROLS ERROR: " + (err?.message || err));
+    alert("Controls failed. Check Error HUD.");
+  }
+}, false);
+
     Object.assign(controlsBtn.style, {
       width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
       pointerEvents: "auto", // 🔧 FIX: Ensure button can receive clicks

@@ -321,6 +321,179 @@ const VR_SPAWN_POINTS = {
   [LEVEL_IDS.LEVEL6]: new THREE.Vector3(0, 1.75, 0),
 };
 
+// ============================================================================
+// 📱 MOBILE ERROR HUD (Feb 2026) — phone-visible crash capture
+// Captures: window.onerror + unhandledrejection
+// Shows a tiny top overlay ONLY when an error occurs.
+// ============================================================================
+
+function installMobileErrorHUD() {
+  try {
+    // Avoid double-install
+    if (window.__mobileErrorHUDInstalled) return;
+    window.__mobileErrorHUDInstalled = true;
+
+    const MAX_LINES = 8;
+    const id = "mobile-error-hud";
+
+    function ensureHud() {
+      let hud = document.getElementById(id);
+      if (hud) return hud;
+
+      hud = document.createElement("div");
+      hud.id = id;
+
+      // Collapsed by default; expands when errors arrive
+      hud.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 2147483647;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        line-height: 1.25;
+        color: #fff;
+        background: rgba(120, 0, 0, 0.92);
+        border-bottom: 1px solid rgba(255,255,255,0.18);
+        padding: 8px 10px;
+        display: none;
+        pointer-events: auto;
+        -webkit-user-select: text;
+        user-select: text;
+        max-height: 45vh;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      `;
+
+      // Header row with buttons
+      const header = document.createElement("div");
+      header.style.cssText = `
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-weight: 700;
+      `;
+
+      const title = document.createElement("div");
+      title.textContent = "⚠️ Error (tap text to select/copy)";
+
+      const btnRow = document.createElement("div");
+      btnRow.style.cssText = `display:flex; gap:8px;`;
+
+      const clearBtn = document.createElement("button");
+      clearBtn.textContent = "Clear";
+      clearBtn.style.cssText = `
+        font: inherit;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.25);
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+      `;
+      clearBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const body = hud.querySelector(".hud-body");
+        if (body) body.textContent = "";
+        hud.style.display = "none";
+        window.__mobileErrorHUDLines = [];
+      });
+
+      const hideBtn = document.createElement("button");
+      hideBtn.textContent = "Hide";
+      hideBtn.style.cssText = clearBtn.style.cssText;
+      hideBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        hud.style.display = "none";
+      });
+
+      btnRow.appendChild(clearBtn);
+      btnRow.appendChild(hideBtn);
+
+      header.appendChild(title);
+      header.appendChild(btnRow);
+
+      const body = document.createElement("div");
+      body.className = "hud-body";
+      body.textContent = "";
+      body.style.cssText = `font-weight: 500;`;
+
+      hud.appendChild(header);
+      hud.appendChild(body);
+
+      document.body.appendChild(hud);
+      return hud;
+    }
+
+    function pushLine(line) {
+      const hud = ensureHud();
+      const body = hud.querySelector(".hud-body");
+      if (!body) return;
+
+      const lines = (window.__mobileErrorHUDLines ||= []);
+      lines.push(line);
+
+      // Keep last N lines
+      while (lines.length > MAX_LINES) lines.shift();
+
+      body.textContent = lines.join("\n\n");
+      hud.style.display = "block";
+    }
+
+    function fmtError(prefix, msg, src, line, col, err) {
+      const stack = err && err.stack ? String(err.stack) : "";
+      const loc =
+        src ? `${src}${line != null ? `:${line}` : ""}${col != null ? `:${col}` : ""}` : "";
+      const header = `${prefix}: ${msg || "(no message)"}`;
+      const parts = [header];
+      if (loc) parts.push(`at ${loc}`);
+      if (stack) parts.push(stack);
+      return parts.join("\n");
+    }
+
+    window.addEventListener(
+      "error",
+      (event) => {
+        try {
+          const msg = event?.message || "Script error";
+          const src = event?.filename || "";
+          const line = event?.lineno;
+          const col = event?.colno;
+          const err = event?.error;
+          pushLine(fmtError("window.onerror", msg, src, line, col, err));
+        } catch (_) {}
+      },
+      true
+    );
+
+    window.addEventListener("unhandledrejection", (event) => {
+      try {
+        const reason = event?.reason;
+        const msg =
+          (reason && (reason.message || reason.toString?.())) ||
+          "Unhandled promise rejection";
+        const stack = reason && reason.stack ? String(reason.stack) : "";
+        pushLine(`unhandledrejection: ${msg}${stack ? `\n${stack}` : ""}`);
+      } catch (_) {}
+    });
+
+    // Optional: expose helper so testers can force-show it
+    window.__showMobileErrorHUD = (text) => pushLine(String(text || "test"));
+  } catch (e) {
+    // Last-resort: don't let HUD break the game
+    console.warn("⚠️ [MobileErrorHUD] install failed:", e);
+  }
+}
+
+// Call immediately (safe even on desktop; it stays hidden unless errors occur)
+installMobileErrorHUD();
+
+
+
 /**
  * 🥽 Apply VR-only spawn for a given level.
  *
@@ -11960,6 +12133,8 @@ onStartVRSession: async () => {
     
     // Create GUI System instance
     guiSystem = new GUISystem(guiConfig);
+
+    window.guiSystem = guiSystem; // ✅ ADD THIS (so Options Back can restore menu)
     
     // Initialize GUI System
     guiSystem.initialize();
@@ -17529,17 +17704,43 @@ vrButton.addEventListener("click", async (event) => {
       optionsMenu._vrButton = vrButton;
     }
 
-    // Back button
-    const backBtn = document.createElement("button");
-    backBtn.textContent = "Back";
-    stylePauseButton(backBtn, true);
-    backBtn.addEventListener("click", (event) => {
-      event.preventDefault();
-      hideOptionsMenu();
-    });
-    panel.appendChild(backBtn);
+// Back button
+const backBtn = document.createElement("button");
+backBtn.textContent = "Back";
+stylePauseButton(backBtn, true);
 
-    // Initialize GOD Mode tab visibility
+backBtn.addEventListener("click", (event) => {
+  event.preventDefault();
+
+  // Always close options first
+  hideOptionsMenu();
+
+  // ✅ If options was opened from main menu, restore it
+  if (window.__optionsReturnToMainMenu) {
+    window.__optionsReturnToMainMenu = false;
+
+    try {
+      // Prefer in-scope guiSystem if available, otherwise use global
+      const gs =
+        (typeof guiSystem !== "undefined" && guiSystem) ||
+        window.guiSystem;
+
+      if (gs && typeof gs.showMainMenu === "function") {
+        gs.showMainMenu();
+      } else {
+        console.warn("⚠️ guiSystem not available to restore main menu");
+        alert("guiSystem missing: cannot restore main menu");
+      }
+    } catch (e) {
+      console.warn("⚠️ Failed to restore main menu after options:", e);
+    }
+  }
+}); // ✅ IMPORTANT: close addEventListener properly
+
+panel.appendChild(backBtn);
+
+// Initialize GOD Mode tab visibility...
+
     updateGodModeTabsVisibility();
 
     optionsMenu.appendChild(panel);
