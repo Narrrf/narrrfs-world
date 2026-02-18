@@ -2607,7 +2607,13 @@ export class GUISystem {
       backgroundRepeat: "no-repeat",
       backgroundColor: "rgba(5, 7, 16, 0.85)",
       backdropFilter: "blur(8px)", zIndex: "10005",
-      color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto", cursor: "default"
+      color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto", cursor: "default",
+
+      // 📱 MOBILE: Allow scrolling if content exceeds viewport
+      overflowY: "auto",
+      overflowX: "hidden",
+      WebkitOverflowScrolling: "touch",
+      touchAction: "pan-y"
     });
     
     const panel = document.createElement("div");
@@ -2615,7 +2621,15 @@ export class GUISystem {
       background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
       border: "2px solid rgba(255, 224, 102, 0.5)", borderRadius: "16px", padding: "40px 48px",
       boxShadow: "0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 224, 102, 0.3)",
-      display: "flex", flexDirection: "column", alignItems: "center", minWidth: "400px", maxWidth: "90vw", textAlign: "center"
+      display: "flex", flexDirection: "column", alignItems: "center", minWidth: "400px", maxWidth: "90vw", textAlign: "center",
+
+      // 📱 MOBILE: Panel itself should scroll if needed
+      maxHeight: "calc(100vh - 40px)",
+      overflowY: "auto",
+      overflowX: "hidden",
+      WebkitOverflowScrolling: "touch",
+      overscrollBehavior: "contain",
+      touchAction: "pan-y"
     });
     
     const title = document.createElement("div");
@@ -2639,7 +2653,10 @@ export class GUISystem {
     
     const buttonContainer = document.createElement("div");
     Object.assign(buttonContainer.style, {
-      display: "flex", flexDirection: "column", gap: "14px", width: "100%"
+      display: "flex", flexDirection: "column", gap: "14px", width: "100%",
+
+      // 📱 MOBILE: ensure container can be scrolled with finger gestures
+      touchAction: "pan-y"
     });
     
     const currentLevel = this.config.getCurrentLevel ? this.config.getCurrentLevel() : null;
@@ -2782,8 +2799,12 @@ export class GUISystem {
    * Hide level selector screen
    */
   hideLevelSelector() {
-    if (this.levelSelectorScreen && document.body.contains(this.levelSelectorScreen)) {
-      document.body.removeChild(this.levelSelectorScreen);
+    if (this.levelSelectorScreen) {
+      // Remove from whatever parent it was appended to (container is not guaranteed to be document.body)
+      const parent = this.levelSelectorScreen.parentNode;
+      if (parent) {
+        parent.removeChild(this.levelSelectorScreen);
+      }
       this.levelSelectorScreen = null;
     }
     
@@ -3346,6 +3367,17 @@ Object.assign(panel.style, {
    */
   hideMainMenu() {
     if (this.mainMenu) {
+      // 📱 Restore body's previous touchAction (main menu temporarily enables pan-y)
+      try {
+        const prev = document.body?.dataset?.prevTouchAction;
+        if (typeof prev === "string") {
+          document.body.style.touchAction = prev;
+        }
+        if (document.body?.dataset) {
+          delete document.body.dataset.prevTouchAction;
+        }
+      } catch (_) {}
+
       // Hide via display first (immediate visual removal)
       this.mainMenu.style.display = "none";
       this.mainMenu.style.pointerEvents = "none";
@@ -3833,7 +3865,46 @@ Object.assign(panel.style, {
       btn.style.transform = "scale(1)";
     });
     
+    // ✅ Desktop: normal click
     btn.addEventListener("click", onClick);
+
+    // 📱 Mobile safety (scroll-friendly):
+    // Some browsers can drop/suppress "click" inside scroll containers.
+    // Add a pointer-based fallback, but ONLY treat it as a tap if the finger
+    // didn't move much (otherwise we break scrolling).
+    let pointerDownId = null;
+    let downX = 0, downY = 0;
+    let moved = false;
+    const TAP_SLOP_PX = 10;
+
+    btn.addEventListener("pointerdown", (e) => {
+      if (!e || !e.isPrimary) return;
+      pointerDownId = e.pointerId;
+      downX = e.clientX || 0;
+      downY = e.clientY || 0;
+      moved = false;
+    });
+
+    btn.addEventListener("pointermove", (e) => {
+      if (pointerDownId === null || !e || e.pointerId !== pointerDownId) return;
+      const dx = Math.abs((e.clientX || 0) - downX);
+      const dy = Math.abs((e.clientY || 0) - downY);
+      if (dx > TAP_SLOP_PX || dy > TAP_SLOP_PX) moved = true;
+    });
+
+    btn.addEventListener("pointerup", (e) => {
+      if (pointerDownId === null || !e || e.pointerId !== pointerDownId) return;
+      pointerDownId = null;
+
+      // If user dragged (scroll), don't treat as a tap.
+      if (moved) return;
+
+      if (e.pointerType === "touch" || e.pointerType === "pen") {
+        e.preventDefault();
+        e.stopPropagation();
+        try { onClick(e); } catch (err) { console.error("❌ [GUI] Button pointerup handler error:", err); }
+      }
+    }, { passive: false });
     
     return btn;
   }
@@ -4395,7 +4466,7 @@ Object.assign(panel.style, {
       document.body.removeChild(this.loadingScreen);
     }
     
-    // Clear toast map
+    // Clear toast map 2 
     this.activeRiddleToasts.clear();
     
     // Reset state
