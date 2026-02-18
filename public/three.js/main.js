@@ -322,6 +322,159 @@ const VR_SPAWN_POINTS = {
 };
 
 // ============================================================================
+// 🥽 VR ERROR HUD (Feb 2026) — shows error text INSIDE WebXR
+// Additive-only: does not modify VR controls, only renders a text panel.
+// Depends on THREE, renderer, camera, and scene being available.
+// ============================================================================
+
+function installVRErrorHUD() {
+  try {
+    if (window.__vrErrorHUDInstalled) return;
+    window.__vrErrorHUDInstalled = true;
+
+    // Keep last lines
+    const MAX_LINES = 10;
+    const lines = [];
+
+    // --- Build a canvas texture for text ---
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+
+    function draw(text) {
+      // Background
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(120,0,0,0.85)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Header
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.font = "bold 36px sans-serif";
+      ctx.fillText("⚠ ERROR", 30, 55);
+
+      // Body
+      ctx.font = "28px monospace";
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+
+      const wrapped = wrapText(ctx, text, 30, 110, canvas.width - 60, 34);
+      // (wrapText draws lines)
+    }
+
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+      const words = String(text || "").split(" ");
+      let line = "";
+      let yy = y;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = context.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          context.fillText(line, x, yy);
+          line = words[n] + " ";
+          yy += lineHeight;
+          if (yy > canvas.height - 20) break;
+        } else {
+          line = testLine;
+        }
+      }
+      if (yy <= canvas.height - 20) {
+        context.fillText(line, x, yy);
+      }
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+    });
+
+    const geometry = new THREE.PlaneGeometry(1.4, 0.7); // meters in VR
+    const panel = new THREE.Mesh(geometry, material);
+    panel.renderOrder = 9999;
+    panel.visible = false;
+
+    // Attach to camera so it stays in view in VR
+    // Put slightly in front and down
+    panel.position.set(0, -0.15, -1.2);
+
+    // If camera is replaced in XR, we reattach in animate()
+    let attached = false;
+
+    function ensureAttached() {
+      if (!window.renderer || !window.renderer.xr) return;
+      if (!window.camera) return;
+      if (attached && panel.parent === window.camera) return;
+
+      try {
+        // Remove from old parent
+        if (panel.parent) panel.parent.remove(panel);
+        window.camera.add(panel);
+        attached = true;
+      } catch (e) {}
+    }
+
+    // Main entry point: push an error line and show panel in XR
+    function pushErrorLine(line) {
+      lines.push(String(line));
+      while (lines.length > MAX_LINES) lines.shift();
+      const text = lines.join("\n\n");
+
+      draw(text);
+      texture.needsUpdate = true;
+
+      // Show only when in XR session
+      const inXR = !!(window.renderer && window.renderer.xr && window.renderer.xr.isPresenting);
+      panel.visible = inXR;
+
+      // Auto-hide after 12s (still keeps log)
+      if (panel.visible) {
+        clearTimeout(window.__vrErrorHudHideTimer);
+        window.__vrErrorHudHideTimer = setTimeout(() => {
+          panel.visible = false;
+        }, 12000);
+      }
+    }
+
+    // Hook into your existing mobile HUD helper if present
+    const prev = window.__showMobileErrorHUD;
+    window.__showMobileErrorHUD = (text) => {
+      try { if (typeof prev === "function") prev(text); } catch (_) {}
+      try { pushErrorLine(text); } catch (_) {}
+    };
+
+    // Also capture global errors (VR sometimes bypasses overlay clicks)
+    window.addEventListener("error", (event) => {
+      const msg = event?.message || "Script error";
+      pushErrorLine("window.onerror: " + msg);
+    }, true);
+
+    window.addEventListener("unhandledrejection", (event) => {
+      const reason = event?.reason;
+      const msg = (reason && (reason.message || reason.toString?.())) || "Unhandled promise rejection";
+      pushErrorLine("unhandledrejection: " + msg);
+    });
+
+    // Expose helper
+    window.__showVRErrorHUD = pushErrorLine;
+
+    // You must add to scene at least once so it can render (camera child works too)
+    // We'll ensure attachment every frame in animate by calling ensureAttached()
+    window.__ensureVRErrorHudAttached = ensureAttached;
+
+    console.log("✅ [VR ERROR HUD] Installed");
+  } catch (e) {
+    console.warn("⚠️ [VR ERROR HUD] Install failed:", e);
+  }
+}
+
+
+// ============================================================================
 // 📱 MOBILE ERROR HUD (Feb 2026) — phone-visible crash capture
 // Captures: window.onerror + unhandledrejection
 // Shows a tiny top overlay ONLY when an error occurs.
@@ -2414,17 +2567,49 @@ async function applyLevelEnvironment(levelId) {
 
 applyLevelEnvironment(LEVEL_IDS.LEVEL1);
 
+// ✅ Ensure scene + camera exist before renderer wiring
+// (If your file already defines scene/camera above, this just uses them.)
+try {
+  if (typeof scene === "undefined" || !scene) {
+    console.error("❌ [BOOT] scene is not defined before renderer init");
+  }
+  if (typeof camera === "undefined" || !camera) {
+    console.error("❌ [BOOT] camera is not defined before renderer init");
+  }
+} catch (e) {
+  console.error("❌ [BOOT] scene/camera TDZ error before renderer init:", e);
+}
+
 const renderer = new THREE.WebGLRenderer({
   antialias: !isMobile,
   powerPreference: "high-performance"
 });
+
 // CRITICAL: Set pixel ratio for optimal quality on full HD screens (January 4, 2026)
 // Use devicePixelRatio for sharp visuals, but cap at 2.0 for performance
 const pixelRatio = isMobile ? 1 : Math.min(2.0, window.devicePixelRatio || 1);
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-console.log(`🖥️ [RENDERER] Pixel ratio set to: ${pixelRatio} (devicePixelRatio: ${window.devicePixelRatio || 1}, screen: ${window.innerWidth}x${window.innerHeight})`);
+console.log(
+  `🖥️ [RENDERER] Pixel ratio set to: ${pixelRatio} (devicePixelRatio: ${window.devicePixelRatio || 1}, screen: ${window.innerWidth}x${window.innerHeight})`
+);
+
 renderer.shadowMap.enabled = true;
+
+// 🥽 VR Error HUD — safe install (camera may not exist yet here)
+window.renderer = renderer;
+
+// Do NOT reference `camera`/`scene` directly here (TDZ risk).
+// We attach lazily later (after camera is initialized).
+setTimeout(() => {
+  try {
+    if (typeof scene !== "undefined") window.scene = scene;
+    if (typeof camera !== "undefined") window.camera = camera;
+    installVRErrorHUD();
+  } catch (e) {
+    console.warn("⚠️ [VR ERROR HUD] Delayed install failed:", e);
+  }
+}, 0);
 
 // 📱 MOBILE OPTIMIZATION SYSTEM (January 19, 2026 - RAM Crash Fix)
 // Apply aggressive optimizations for mobile devices to prevent crashes
@@ -2436,7 +2621,7 @@ if (isMobile) {
     renderer: renderer,
     scene: scene,
     isMobile: isMobile,
-    THREE: THREE, // ✅ explicit key:value avoids syntax ambiguity
+    THREE: THREE
   });
 
   mobileOptimizer.optimize();
@@ -2444,7 +2629,6 @@ if (isMobile) {
 } else {
   console.log("💻 [DESKTOP MODE] No mobile optimization needed");
 }
-
 
 // 🥽 VR/WebXR Support - Enable VR rendering
 renderer.xr.enabled = true;
@@ -36690,12 +36874,16 @@ function animate(timestamp, xrFrame) {
   const delta = Math.min(clock.getDelta(), 0.1);
   
   
-  
-  
   // 🧵 DESKTOP FPS LIMITER: run at ~60 FPS when NOT in VR
-  const vrActive =
+    const vrActive =
     (typeof isVRSessionActive === "function" && isVRSessionActive()) ||
     (renderer && renderer.xr && renderer.xr.isPresenting);
+
+  // 🥽 VR Error HUD: keep panel attached to the active XR camera
+  if (window.__ensureVRErrorHudAttached) {
+    try { window.__ensureVRErrorHudAttached(); } catch (e) {}
+  }
+
 
   if (!vrActive) {
     if (!lastDesktopFrameTime) {
