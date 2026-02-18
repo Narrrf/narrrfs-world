@@ -14003,31 +14003,42 @@ const qualityLabelFn =
 
 currentQualityDisplay.textContent = `Current: ${qualityLabelFn()}`;
     
-    // Add device info for mobile
-    if (isMobile && mobileOptimizer) {
-      const deviceInfoDisplay = document.createElement("div");
-      const tier = mobileOptimizer.getDeviceTier();
-      const tierNames = { 'low-end': 'Low-End', 'mid-tier': 'Mid-Tier', 'high-end': 'High-End' };
-      const ramGB =
-  (mobileOptimizer && mobileOptimizer.deviceInfo && mobileOptimizer.deviceInfo.memory != null)
-    ? mobileOptimizer.deviceInfo.memory
-    : (navigator.deviceMemory != null ? navigator.deviceMemory : "?");
+// Add device info (safe for both mobile and desktop)
+{
+  const deviceInfoDisplay = document.createElement("div");
 
-deviceInfoDisplay.textContent =
-  `Device: ${tierNames[tier] || 'Unknown'} | RAM: ${ramGB}GB`;
+  const tier =
+    (typeof mobileOptimizer !== "undefined" &&
+      mobileOptimizer &&
+      typeof mobileOptimizer.getDeviceTier === "function")
+      ? mobileOptimizer.getDeviceTier()
+      : (isMobile ? "unknown" : "desktop");
 
-      Object.assign(deviceInfoDisplay.style, {
-        fontSize: "13px",
-        color: "#9ca3af",
-        fontStyle: "italic",
-        marginTop: "4px"
-      });
-      graphicsQualitySection.appendChild(deviceInfoDisplay);
-    }
-    
-    generalTabContent.appendChild(graphicsQualitySection);
-    
-    console.log("✅ [OPTIONS] Graphics Quality toggle section added to General tab");
+  const tierNames = {
+    "low-end": "Low-End",
+    "mid-tier": "Mid-Tier",
+    "high-end": "High-End",
+    "unknown": "Unknown",
+    "desktop": "Desktop"
+  };
+
+  const ramGB =
+    (mobileOptimizer &&
+      mobileOptimizer.deviceInfo &&
+      mobileOptimizer.deviceInfo.memory != null)
+      ? mobileOptimizer.deviceInfo.memory
+      : (navigator.deviceMemory != null ? navigator.deviceMemory : "?");
+
+  deviceInfoDisplay.textContent =
+    `Device: ${tierNames[tier] || "Unknown"} | RAM: ${ramGB}GB`;
+
+  deviceInfoDisplay.style.fontSize = "12px";
+  deviceInfoDisplay.style.opacity = "0.7";
+  deviceInfoDisplay.style.marginTop = "12px";
+
+  // ✅ Put it in the current tab
+  generalTabContent.appendChild(deviceInfoDisplay);
+}
     
     // Store references for updateGraphicsQualityButtons
     optionsMenu._graphicsQualityButtons = qualityButtons;
@@ -18703,20 +18714,34 @@ function showOptionsMenu() {
 
 function hideOptionsMenu() {
   if (!optionsMenu) return;
+
   optionsMenu.style.display = "none";
-  
+
   // Clear the flag to allow pointer lock again
   window.optionsMenuOpen = false;
-  
-  // CRITICAL: Restore main menu if it was open before options (January 19, 2026 - FIX)
-  if (window.wasMainMenuOpen && guiSystem && guiSystem.mainMenu) {
-    guiSystem.mainMenu.style.display = "flex";
+
+  // Restore main menu if it was open before options
+  if (window.wasMainMenuOpen && window.guiSystem && window.guiSystem.mainMenu) {
+    window.guiSystem.mainMenu.style.display = "flex";
     console.log("🎮 [OPTIONS] Main menu restored after closing options");
     window.wasMainMenuOpen = false;
   }
 
+  // Restore pause menu if we were paused before opening options
+  if (window.wasPausedBeforeOptions) {
+    const pauseMenuElement = (typeof getPauseMenu === "function") ? getPauseMenu() : pauseMenu;
+    if (pauseMenuElement && pauseMenuElement.style) {
+      pauseMenuElement.style.display = "flex";
+      pauseMenuElement.style.zIndex = "99999";
+      console.log("🎮 [OPTIONS] Pause menu restored after closing options");
+    }
+    window.wasPausedBeforeOptions = false;
+  }
+
+  // NOTE: Do not force pointer lock here. Let the normal “next click” handler restore it.
+}
+
 function toggleOptionsMenu(forceState) {
-  // Ensure the options menu DOM exists
   const menu = getOptionsMenu();
   if (!menu) {
     console.warn("⚙️ [OPTIONS] toggleOptionsMenu called but options menu could not be created.");
@@ -18724,32 +18749,10 @@ function toggleOptionsMenu(forceState) {
   }
 
   const isVisible = menu.style.display === "flex";
+  const shouldShow = (typeof forceState === "boolean") ? forceState : !isVisible;
 
-  // If a specific state is passed, force it; otherwise just toggle
-  const shouldShow = (typeof forceState === "boolean")
-    ? forceState
-    : !isVisible;
-
-  if (shouldShow) {
-    showOptionsMenu();
-  } else {
-    hideOptionsMenu();
-  }
-}
- 
-  // CRITICAL: Restore pause menu if we were paused before opening options
-  if (window.wasPausedBeforeOptions) {
-    const pauseMenuElement = getPauseMenu();
-    if (pauseMenuElement) {
-      pauseMenuElement.style.display = "flex";
-      pauseMenuElement.style.zIndex = "99999"; // Ensure it's on top
-      console.log("🎮 [OPTIONS] Pause menu restored after closing options");
-    }
-    window.wasPausedBeforeOptions = false;
-  }
-  
-  // Note: Don't re-lock pointer here - let the pause menu or camera mode handle it
-  // The pause menu's hidePauseMenu will handle re-locking if needed
+  if (shouldShow) showOptionsMenu();
+  else hideOptionsMenu();
 }
 
 function stylePauseButton(button, primary) {
@@ -38432,7 +38435,11 @@ function applyGraphicsQuality(quality) {
   
   if (quality === 'auto' && mobileOptimizer) {
     // Use MobileOptimizer's device tier detection
-    const tier = mobileOptimizer.getDeviceTier();
+    const tier =
+  (typeof mobileOptimizer !== "undefined" && mobileOptimizer && typeof mobileOptimizer.getDeviceTier === "function")
+    ? mobileOptimizer.getDeviceTier()
+    : (isMobile ? "unknown" : "desktop");
+
     const tierMap = { 'low-end': 'low', 'mid-tier': 'medium', 'high-end': 'high' };
     actualQuality = tierMap[tier] || 'medium';
     console.log(`🎨 [GRAPHICS] Auto mode - Device tier: ${tier}, Using: ${actualQuality}`);
@@ -38494,7 +38501,11 @@ function applyGraphicsQuality(quality) {
 function getGraphicsQualityLabel() {
   try {
     if (graphicsQuality === 'auto' && typeof mobileOptimizer !== 'undefined' && mobileOptimizer) {
-      const tier = mobileOptimizer.getDeviceTier();
+      const tier =
+  (typeof mobileOptimizer !== "undefined" && mobileOptimizer && typeof mobileOptimizer.getDeviceTier === "function")
+    ? mobileOptimizer.getDeviceTier()
+    : (isMobile ? "unknown" : "desktop");
+
       const tierMap = {
         'low-end':  'Low',
         'mid-tier': 'Medium',
