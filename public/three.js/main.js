@@ -38760,29 +38760,34 @@ let joystickMovement = { x: 0, y: 0 };
 let joystickRotation = { x: 0, y: 0 };
 
 function createMobileJoysticks() {
-	const desktopTestEnabled = !!window.enableDesktopJoysticks;
-	
-  if (!isMobile) {
-    console.log("💡 [MOBILE JOYSTICKS] Not on mobile - skipping joystick creation");
+  const desktopTestEnabled = !!window.enableDesktopJoysticks;
+
+  // Allow joysticks on real phones, and on desktop when test flag is enabled
+  if (!isMobile && !desktopTestEnabled) {
+    console.log("💡 [MOBILE JOYSTICKS] Not mobile and desktop test off - skipping joystick creation");
     return;
   }
-  
+
   // Check if nipplejs is loaded
-  if (typeof nipplejs === 'undefined') {
+  if (typeof nipplejs === "undefined") {
     console.error("❌ [MOBILE JOYSTICKS] nipplejs library not loaded!");
     return;
   }
-  
-    // Prevent duplicates
-  if (document.getElementById("joystick-movement-zone") || document.getElementById("joystick-camera-zone")) {
+
+  // Prevent duplicates
+  if (
+    document.getElementById("joystick-movement-zone") ||
+    document.getElementById("joystick-camera-zone")
+  ) {
     console.log("💡 [MOBILE JOYSTICKS] Zones already exist - skipping re-create");
     return;
   }
 
-  
   console.log("🎮 [MOBILE JOYSTICKS] Creating movement and camera joysticks...");
-  
-  // Left Joystick - Movement Control
+
+  // ------------------------------------------------
+  // LEFT STICK (MOVEMENT)
+  // ------------------------------------------------
   const movementZone = document.createElement("div");
   movementZone.id = "joystick-movement-zone";
   Object.assign(movementZone.style, {
@@ -38795,43 +38800,60 @@ function createMobileJoysticks() {
     display: "none" // Hidden by default, shown in landscape
   });
   document.body.appendChild(movementZone);
-  
+
   mobileMovementJoystick = nipplejs.create({
     zone: movementZone,
     mode: "static",
-    position: { left: "50%", top: "50%"},
+    position: { left: "50%", top: "50%" },
     color: "rgba(255, 224, 102, 0.6)", // Cheese yellow
     size: 120,
     threshold: 0.1
   });
-  
+
   // Movement joystick event handlers
   mobileMovementJoystick.on("move", (evt, data) => {
-    if (data.vector) {
-      joystickMovement.x = data.vector.x;
-      joystickMovement.y = -data.vector.y; // Invert Y for forward/backward
-      
-      // Update PlayerControls if it exists
-      if (playerControls) {
-  playerControls.joystickActive = true;
-  playerControls.joystickDirection = { ...joystickMovement };
-  playerControls.refreshJoystickMovementFlags();
-}
+    if (!data || !data.vector) return;
+
+    // Raw nipple vector (-1..1)
+    joystickMovement.x = data.vector.x;
+    joystickMovement.y = -data.vector.y; // Invert Y for forward/backward
+
+    // 🔗 Feed central joystick direction used by movement code in main.js
+    joystickDirection.x = joystickMovement.x;
+    joystickDirection.y = joystickMovement.y;
+    joystickActive = true;
+
+    // Update PlayerControls + legacy flags
+    if (typeof refreshJoystickMovementFlags === "function") {
+      // Global helper in main.js – also updates PlayerControls
+      refreshJoystickMovementFlags();
+    } else if (playerControls && typeof playerControls.refreshJoystickMovementFlags === "function") {
+      // Fallback: talk directly to PlayerControls
+      playerControls.joystickActive = true;
+      playerControls.joystickDirection = { ...joystickMovement };
+      playerControls.refreshJoystickMovementFlags();
     }
   });
-  
+
   mobileMovementJoystick.on("end", () => {
     joystickMovement = { x: 0, y: 0 };
-    
-    // Update PlayerControls if it exists
-    if (playerControls) {
+
+    joystickDirection.x = 0;
+    joystickDirection.y = 0;
+    joystickActive = false;
+
+    if (typeof refreshJoystickMovementFlags === "function") {
+      refreshJoystickMovementFlags();
+    } else if (playerControls && typeof playerControls.refreshJoystickMovementFlags === "function") {
       playerControls.joystickActive = false;
       playerControls.joystickDirection = { x: 0, y: 0 };
       playerControls.refreshJoystickMovementFlags();
     }
   });
-  
-  // Right Joystick - Camera Control
+
+  // ------------------------------------------------
+  // RIGHT STICK (CAMERA)
+  // ------------------------------------------------
   const cameraZone = document.createElement("div");
   cameraZone.id = "joystick-camera-zone";
   Object.assign(cameraZone.style, {
@@ -38844,44 +38866,58 @@ function createMobileJoysticks() {
     display: "none" // Hidden by default, shown in landscape
   });
   document.body.appendChild(cameraZone);
-  
+
   mobileCameraJoystick = nipplejs.create({
     zone: cameraZone,
     mode: "static",
-    position: { left: "50%", top: "50%"},
+    position: { left: "50%", top: "50%" },
     color: "rgba(203, 213, 245, 0.6)", // Blue-ish
     size: 120,
     threshold: 0.1
   });
-  
+
   // Camera joystick event handlers
   mobileCameraJoystick.on("move", (evt, data) => {
-    if (data.vector) {
-      joystickRotation.x = data.vector.x;
-      joystickRotation.y = -data.vector.y;
-      
-      // Update PlayerControls if it exists
-      if (playerControls) {
-  playerControls.cameraJoystickActive = true;
-  playerControls.cameraJoystickDirection = { ...joystickRotation };
-}
+    if (!data || !data.vector) return;
+
+    // Raw nipple vector (-1..1)
+    joystickRotation.x = data.vector.x;
+    joystickRotation.y = -data.vector.y;
+
+    // 🔗 Feed central camera joystick state used by third-person camera in main.js
+    cameraJoystickDirection.x = joystickRotation.x;
+    cameraJoystickDirection.y = joystickRotation.y;
+    cameraJoystickActive = true;
+
+    // Optional: also mirror into PlayerControls fields (future-proof)
+    if (playerControls) {
+      playerControls.cameraJoystickActive = true;
+      playerControls.cameraJoystickDirection = { ...joystickRotation };
     }
   });
-  
+
   mobileCameraJoystick.on("end", () => {
     joystickRotation = { x: 0, y: 0 };
-    
-    // Update PlayerControls if it exists
+
+    cameraJoystickDirection.x = 0;
+    cameraJoystickDirection.y = 0;
+    cameraJoystickActive = false;
+
     if (playerControls) {
       playerControls.cameraJoystickActive = false;
       playerControls.cameraJoystickDirection = { x: 0, y: 0 };
     }
   });
-  
+
   console.log("✅ [MOBILE JOYSTICKS] nipplejs joysticks created successfully!");
-  console.log(`✅ [MOBILE JOYSTICKS] Movement zone: ${movementZone.id}, Camera zone: ${cameraZone.id}`);
-  console.log(`✅ [MOBILE JOYSTICKS] Movement manager: ${!!mobileMovementJoystick}, Camera manager: ${!!mobileCameraJoystick}`);
+  console.log(
+    `✅ [MOBILE JOYSTICKS] Movement zone: ${movementZone.id}, Camera zone: ${cameraZone.id}`
+  );
+  console.log(
+    `✅ [MOBILE JOYSTICKS] Movement manager: ${!!mobileMovementJoystick}, Camera manager: ${!!mobileCameraJoystick}`
+  );
 }
+
 
 let lastJoyVisible = null;
 function updateMobileJoysticks() {
