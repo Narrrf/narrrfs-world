@@ -10334,8 +10334,6 @@ async function warpToLevelWithLoading(levelId, levelName, warpFunction) {
 let gameStartPendingLevel = null; // null = not pending, level ID = pending with specific level
 
 function startGame(startLevelId = null) {
-    // ✅ Mark game as started (mobile overlays rely on this)
-  gameStarted = true;
   // Use provided level ID or default to Level 1
   const targetLevelId = startLevelId || LEVEL_IDS.LEVEL1;
   const targetLevelName = startLevelId 
@@ -10591,12 +10589,24 @@ function startGame(startLevelId = null) {
         
         // CRITICAL: Only resolve after everything is loaded (grass, sky, level built, items rendered, character loaded)
         console.log("✅ [LEVEL 1] ALL STEPS COMPLETE: Level 1 fully loaded!");
-        resolve();
-      } catch (error) {
-        console.error("❌ [GAME START] Error during level loading:", error);
-        // Still resolve to prevent hanging, but log the error
-        resolve();
-      }
+
+       // 📱 NOW the game is truly ready REAL START GAME
+       gameStarted = true;
+       console.log("📱 [MOBILE] gameStarted = true (after full level load)");
+
+       // 📱 Ensure mobile 3rd-person + joysticks are fully synced
+       if (isMobile) {
+         ensureMobileThirdPersonControlsReady("level1-load-complete");
+       }
+
+       resolve();
+
+       } catch (error) {
+         console.error("❌ [GAME START] Error during level loading:", error);
+         resolve(); // prevent hanging
+       }
+
+      
       
       // CRITICAL: Character loading moved to Phase 6 in warp function above
       // This legacy code is now obsolete - character loads before promise resolves
@@ -12413,18 +12423,46 @@ function initializeWeaponSystem() {
       getLevel5RiddleState: () => level5RiddleState || {},
       getLevel6State: () => level6State || null,
       isFirstPerson: () => isFirstPerson(),
+
       isGamePaused: () => isGamePaused || false,
+
+      // 🔑 IMPORTANT: Pointer lock logic adjusted for mobile + VR
       isPointerLocked: () => {
+        // 📱 MOBILE + VR OVERRIDE:
+        // On mobile we do not use pointer lock at all; blocking on "no pointer lock"
+        // would permanently disable mobile shooting. For VR we also bypass pointer lock.
         try {
+          // Mobile: always treat as "pointer locked" so WeaponSystem can shoot
+          if (typeof isMobile !== "undefined" && isMobile) {
+            return true;
+          }
+
+          // VR: WebXR controllers, not pointer lock
           if (typeof isVRSessionActive === "function" && isVRSessionActive()) {
             return true;
           }
-        } catch (e) {}
-        if (playerControls && typeof playerControls.getPointerLockControls === "function") {
-          const controls = playerControls.getPointerLockControls();
-          return controls ? controls.isLocked : false;
+        } catch (e) {
+          // If anything goes wrong, gracefully fall back to desktop logic below
         }
-        return document.pointerLockElement === renderer.domElement;
+
+        // 🖥️ Desktop: real pointer lock checks
+        if (
+          typeof playerControls !== "undefined" &&
+          playerControls &&
+          typeof playerControls.getPointerLockControls === "function"
+        ) {
+          const controls = playerControls.getPointerLockControls();
+          if (controls && typeof controls.isLocked === "boolean") {
+            return controls.isLocked;
+          }
+        }
+
+        // Fallback to DOM pointer lock
+        return (
+          typeof document !== "undefined" &&
+          typeof renderer !== "undefined" &&
+          document.pointerLockElement === renderer.domElement
+        );
       },
 
       getPhoenixBoss: () => {
@@ -12505,7 +12543,6 @@ function initializeWeaponSystem() {
 } // ← CLOSES function initializeWeaponSystem ✅
 
 
-// Initialize Chest System
 // Dual-model chest system (Jan 2026): new GLBs with no embedded animation.
 // Stored under `three.js/public/textures/3d models/chest3/` (symlinked from /data on Render).
 chestSystem = new ChestSystem(
@@ -39936,6 +39973,48 @@ function createMobileCameraJoystick() {
 }
 
 // 📱 MOBILE JOYSTICK INITIALIZATION (17 Februar, 2026 - Phase 1 Mobile Optimization)
+
+// 📱 Ensure mobile 3rd-person + joysticks are fully synced after level start
+function ensureMobileThirdPersonControlsReady(sourceTag = "unknown") {
+  if (!isMobile) return;
+
+  try {
+    console.log(`📱 [MOBILE] ensureMobileThirdPersonControlsReady from: ${sourceTag}`);
+
+    // 1) Force 3rd-person camera mode on mobile
+    if (typeof setCameraMode === "function") {
+      // 1 = third-person in your setup
+      cameraMode = 1;
+      setCameraMode(cameraMode);
+      console.log("📱 [MOBILE] Camera mode forced to 3rd-person for mobile");
+    } else {
+      console.warn("⚠️ [MOBILE] setCameraMode not available in ensureMobileThirdPersonControlsReady");
+    }
+
+    // 2) Make sure joysticks exist & are visible when they should
+    if (typeof checkAndCreateJoystick === "function") {
+      checkAndCreateJoystick();
+    }
+
+    // 3) Refresh joystick movement flags → PlayerControls
+    if (typeof refreshJoystickMovementFlags === "function") {
+      refreshJoystickMovementFlags();
+    } else if (playerControls && typeof playerControls.refreshJoystickMovementFlags === "function") {
+      playerControls.refreshJoystickMovementFlags();
+    }
+
+    console.log("✅ [MOBILE] Third-person controls + joysticks synced");
+
+  } catch (e) {
+    console.error("❌ [MOBILE] ensureMobileThirdPersonControlsReady failed:", e);
+    if (window.__showMobileErrorHUD) {
+      window.__showMobileErrorHUD(
+        "MOBILE THIRD PERSON SYNC ERROR: " + (e?.message || e)
+      );
+    }
+  }
+}
+
 // Initialize mobile joysticks if in landscape mode or desktop testing enabled
 // 🔧 ENHANCED with error handling, retry logic, and comprehensive logging
 let joystickCreationAttempts = 0;
