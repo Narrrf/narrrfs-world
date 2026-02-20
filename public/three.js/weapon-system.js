@@ -1953,20 +1953,48 @@ export class WeaponSystem {
       return false;
     }
 
-    if (!isFirstPerson) {
-      if (
-        typeof DEBUG_SETTINGS !== "undefined" &&
-        DEBUG_SETTINGS.logWeaponFire &&
-        (isLevel6 || Math.random() < 0.2)
-      ) {
-        console.log(
-          "🔫 [WEAPON] Shooting blocked: not first-person (isFirstPerson:",
-          isFirstPerson,
-          ")"
-        );
-      }
-      return false;
+// CRITICAL: First-person requirement
+// Desktop: must be first-person
+// Mobile: allow 3rd-person aiming/shooting (touch controls)
+if (!isFirstPerson) {
+  // Detect mobile from global flag defined in main.js
+  const mobileAllowed =
+    typeof isMobile !== "undefined" &&
+    isMobile === true;
+
+  if (!mobileAllowed) {
+    if (
+      typeof DEBUG_SETTINGS !== "undefined" &&
+      DEBUG_SETTINGS.logWeaponFire &&
+      (isLevel6 || Math.random() < 0.2)
+    ) {
+      console.log(
+        "🔫 [WEAPON] Shooting blocked: not first-person (isFirstPerson:",
+        isFirstPerson,
+        ", isMobile:",
+        typeof isMobile !== "undefined" ? isMobile : "unknown",
+        ")"
+      );
     }
+    return false;
+  }
+
+  // On mobile we *allow* shooting in 3rd-person.
+  if (
+    typeof DEBUG_SETTINGS !== "undefined" &&
+    DEBUG_SETTINGS.logWeaponFire &&
+    (isLevel6 || Math.random() < 0.2)
+  ) {
+    console.log(
+      "📱🔫 [WEAPON] Allowing 3rd-person shooting on mobile (isFirstPerson:",
+      isFirstPerson,
+      ", isMobile:",
+      typeof isMobile !== "undefined" ? isMobile : "unknown",
+      ")"
+    );
+  }
+}
+
 
     if (
       isLevel6 &&

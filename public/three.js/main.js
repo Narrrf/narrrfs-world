@@ -10258,46 +10258,53 @@ async function warpToLevelWithLoading(levelId, levelName, warpFunction) {
     // Request pointer lock for first-person controls
     // CRITICAL: Set flag to request pointer lock on next user interaction (browser security requires user gesture)
     // Browser blocks pointer lock requests after async delays, so we request it on next click/mousedown
-    const currentCameraMode = typeof getCameraMode === 'function' ? getCameraMode() : (typeof cameraMode !== 'undefined' ? cameraMode : 0);
-    if (currentCameraMode === 0 && playerControls && playerControls.getPointerLockControls) {
-      const pointerLockControls = playerControls.getPointerLockControls();
-      if (pointerLockControls && !pointerLockControls.isLocked) {
-        // Set flag to request pointer lock on next user interaction (click/mousedown)
-        window.needsPointerLockAfterLoad = true;
-        console.log("✅ [GAME START] Pointer lock flag set - will request on next user interaction");
-        
-        // Also try to request immediately (might work if triggered from user gesture)
-        setTimeout(() => {
-          try {
-            pointerLockControls.lock();
-            console.log("✅ [GAME START] Pointer lock requested immediately");
-          } catch (err) {
-            // Expected to fail - browser requires user gesture, so we use the flag instead
-            console.log("ℹ️ [GAME START] Pointer lock will be requested on next click (browser security requirement)");
-          }
-        }, 200);
-      } else {
-        console.log("✅ [GAME START] Pointer lock already active");
-        window.needsPointerLockAfterLoad = false; // Clear flag if already locked
+const currentCameraMode = typeof getCameraMode === 'function'
+  ? getCameraMode()
+  : (typeof cameraMode !== 'undefined' ? cameraMode : 0);
+
+// 🖥️ Only desktop should request pointer lock here
+if (!isMobile && currentCameraMode === 0 && playerControls && playerControls.getPointerLockControls) {
+  const pointerLockControls = playerControls.getPointerLockControls();
+  if (pointerLockControls && !pointerLockControls.isLocked) {
+    // Set flag to request pointer lock on next user interaction (click/mousedown)
+    window.needsPointerLockAfterLoad = true;
+    console.log("✅ [GAME START] Pointer lock flag set - will request on next user interaction");
+    
+    // Also try to request immediately (might work if triggered from user gesture)
+    setTimeout(() => {
+      try {
+        pointerLockControls.lock();
+        console.log("✅ [GAME START] Pointer lock requested immediately");
+      } catch (err) {
+        // Expected to fail - browser requires user gesture, so we use the flag instead
+        console.log("ℹ️ [GAME START] Pointer lock will be requested on next click (browser security requirement)");
       }
-    } else {
-      console.warn("⚠️ [GAME START] Cannot request pointer lock:", {
-        currentCameraMode: currentCameraMode,
-        hasPlayerControls: !!playerControls,
-        hasGetPointerLockControls: playerControls && typeof playerControls.getPointerLockControls === 'function'
-      });
-      window.needsPointerLockAfterLoad = false; // Clear flag if conditions not met
-    }
+    }, 200);
+  } else {
+    console.log("✅ [GAME START] Pointer lock already active");
+    window.needsPointerLockAfterLoad = false; // Clear flag if already locked
+  }
+} else {
+  console.warn("⚠️ [GAME START] Cannot request pointer lock:", {
+    currentCameraMode: currentCameraMode,
+    hasPlayerControls: !!playerControls,
+    hasGetPointerLockControls: playerControls && typeof playerControls.getPointerLockControls === 'function'
+  });
+  window.needsPointerLockAfterLoad = false; // Clear flag if conditions not met
+}
     
     // Ensure camera is visible and scene is rendered
     if (camera) {
       camera.visible = true;
     }
-    if (renderer && scene) {
-      renderer.render(scene, camera);
-    }
-    
-    console.log("✅ [GAME START] Game is now playable - all modules loaded");
+if (renderer && scene) {
+  renderer.render(scene, camera);
+}
+
+console.log("✅ [GAME START] Game is now playable - all modules loaded");
+
+// 📱 Ensure gameStarted + mobile controls for ALL levels
+markGameStartedAndSyncMobileControls(`warpToLevelWithLoading(${levelName})`);
 
     // 🎁 LEVEL 6 CHEST SAFETY (Jan 12, 2026)
     // If a warp hits the safety timeout (60s), Level 6 can become playable before build/late init finishes.
@@ -10588,18 +10595,12 @@ function startGame(startLevelId = null) {
         }
         
         // CRITICAL: Only resolve after everything is loaded (grass, sky, level built, items rendered, character loaded)
-        console.log("✅ [LEVEL 1] ALL STEPS COMPLETE: Level 1 fully loaded!");
+console.log("✅ [LEVEL 1] ALL STEPS COMPLETE: Level 1 fully loaded!");
 
-       // 📱 NOW the game is truly ready REAL START GAME
-       gameStarted = true;
-       console.log("📱 [MOBILE] gameStarted = true (after full level load)");
+// 📱 Mark game started + sync all mobile controls (Level 1)
+markGameStartedAndSyncMobileControls("level1-load-complete");
 
-       // 📱 Ensure mobile 3rd-person + joysticks are fully synced
-       if (isMobile) {
-         ensureMobileThirdPersonControlsReady("level1-load-complete");
-       }
-
-       resolve();
+resolve();
 
        } catch (error) {
          console.error("❌ [GAME START] Error during level loading:", error);
@@ -39972,7 +39973,49 @@ function createMobileCameraJoystick() {
   return joystickContainer;
 }
 
-// 📱 MOBILE JOYSTICK INITIALIZATION (17 Februar, 2026 - Phase 1 Mobile Optimization)
+// 📱 MOBILE JOYSTICK INITIALIZATION  helpers etc (17 Februar, 2026 - Phase 1 Mobile Optimization)
+
+// 📱 Helper: Mark game as fully started and sync mobile controls
+function markGameStartedAndSyncMobileControls(sourceTag = "unknown") {
+  if (!gameStarted) {
+    gameStarted = true;
+    console.log(`📱 [MOBILE] gameStarted = true (${sourceTag})`);
+  }
+
+  if (!isMobile) return;
+
+  try {
+    // Ensure camera mode + joysticks are in a sane state
+    if (typeof ensureMobileThirdPersonControlsReady === "function") {
+      ensureMobileThirdPersonControlsReady(`markGameStarted:${sourceTag}`);
+    }
+
+    // Refresh all mobile overlays
+    if (typeof checkAndCreateJoystick === "function") {
+      checkAndCreateJoystick();
+    }
+    if (typeof updateMobileJoysticks === "function") {
+      updateMobileJoysticks();
+    }
+    if (typeof updateMobilePauseButton === "function") {
+      updateMobilePauseButton();
+    }
+    if (typeof updateMobileInteractButton === "function") {
+      updateMobileInteractButton(!!nearestInteractableChest);
+    }
+    if (typeof updateMobileWeaponSelector === "function") {
+      updateMobileWeaponSelector();
+    }
+    if (typeof updateMobileShootButton === "function") {
+      updateMobileShootButton();
+    }
+
+    console.log("✅ [MOBILE] Controls + overlays synced after game start");
+
+  } catch (err) {
+    console.error("❌ [MOBILE] Failed to sync mobile controls:", err);
+  }
+}
 
 // 📱 Ensure mobile 3rd-person + joysticks are fully synced after level start
 function ensureMobileThirdPersonControlsReady(sourceTag = "unknown") {
@@ -40171,29 +40214,65 @@ function updateCrosshairAim(cheese) {
   let cheeseIntersects = [];
   let aimingAtCheese = false;
   
-  // Riddle #1 Step 1: Aim at cheese (only if Step 0 is complete and Step 1 is not complete)
   if (cheese && cheese.mesh && riddleState.step0Complete && !riddleState.step1Complete) {
-    // STRICT: Direct raycast intersection ONLY - must hit the actual cheese mesh pixels
-    // No fallback tolerance - crosshair must be directly on the moving cheese entity
-    // PERFORMANCE: Use false instead of true - cheese.mesh is a single mesh, no need for recursive check
+    // STRICT raycast first (desktop-quality)
     cheeseIntersects = crosshairRaycaster.intersectObject(cheese.mesh, false);
-    
-    // NO FALLBACK: Removed distance/angle fallback check
-    // Step 1 now requires EXACT raycast hit on the cheese mesh - same strictness as Step 2
-    // If crosshair moves even 1 pixel off the moving cheese entity, aimingAtCheese becomes false immediately
     aimingAtCheese = cheeseIntersects.length > 0 && cheeseIntersects[0].distance < 50;
-  }
-  
-  // Riddle #2 Step 2: Aim at cheese (only if Riddle #1 is complete and Riddle #2 Step 1 is complete)
-  // Check separately - don't interfere with Riddle #1 detection
-  if (cheese && cheese.mesh && riddleState.step2Complete && riddleState.riddle2.step1Complete && !riddleState.riddle2.step2Complete) {
-    // Check if aiming at cheese for Riddle #2 (same strict detection as Riddle #1)
-    // PERFORMANCE: Use false instead of true - cheese.mesh is a single mesh, no need for recursive check
-    const riddle2CheeseIntersects = crosshairRaycaster.intersectObject(cheese.mesh, false);
-    if (riddle2CheeseIntersects.length > 0 && riddle2CheeseIntersects[0].distance < 50) {
-        aimingAtCheese = true;
+
+    // 📱 MOBILE AIM ASSIST: allow a small angular cone around the cheese
+    // This makes it possible to aim with 3rd-person camera + thumbstick.
+    if (!aimingAtCheese && typeof isMobile !== "undefined" && isMobile) {
+      try {
+        const cameraForward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        const toCheese = new THREE.Vector3()
+          .subVectors(cheese.mesh.position, camera.position)
+          .normalize();
+
+        // Clamp dot to avoid NaN
+        let dot = cameraForward.dot(toCheese);
+        if (dot > 1) dot = 1;
+        if (dot < -1) dot = -1;
+
+        const angle = Math.acos(dot); // radians
+        const maxAngle = THREE.MathUtils.degToRad(6); // ~6° cone for mobile assist
+
+        if (angle < maxAngle) {
+          aimingAtCheese = true;
+
+          if (
+            typeof DEBUG_SETTINGS !== "undefined" &&
+            DEBUG_SETTINGS.logRiddleAimAssist
+          ) {
+            console.log("📱🧀 [AIM ASSIST] Mobile cheese aim accepted by angle:", {
+              angleDegrees: (angle * 180 / Math.PI).toFixed(2),
+              maxAngleDegrees: (maxAngle * 180 / Math.PI).toFixed(2)
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("⚠️ [AIM ASSIST] Mobile aim assist failed:", e);
+      }
     }
   }
+
+  
+// Riddle #2 Step 2: Aim at cheese (only if Riddle #1 is complete and Riddle #2 Step 1 is complete)
+// Reuse existing aimingAtCheese state (includes mobile aim assist)
+if (
+  cheese && cheese.mesh &&
+  riddleState.step2Complete &&
+  riddleState.riddle2.step1Complete &&
+  !riddleState.riddle2.step2Complete
+) {
+  // If strict + (optional mobile) assist from above says we're aiming at cheese,
+  // keep aimingAtCheese = true; otherwise force false for this stage.
+  // This keeps behavior consistent between riddle steps.
+  if (!aimingAtCheese) {
+    // You can optionally run a strict-only check here if you want
+    // a slightly harder requirement for riddle2, but it's not necessary.
+  }
+}
+
   
   // STEP 2: Check if aiming at unlockable block (ULTRA-STRICT - like Step 1 cheese detection)
   let blockIntersects = [];
