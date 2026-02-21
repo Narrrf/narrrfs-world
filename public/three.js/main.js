@@ -449,10 +449,23 @@ function installVRErrorHUD() {
     };
 
     // Also capture global errors (VR sometimes bypasses overlay clicks)
-    window.addEventListener("error", (event) => {
-      const msg = event?.message || "Script error";
-      pushErrorLine("window.onerror: " + msg);
-    }, true);
+window.addEventListener("error", (event) => {
+  const baseMsg = event?.message || "Script error";
+  let extra = "";
+
+  if (event) {
+    if (event.filename) extra += ` @ ${event.filename}`;
+    if (typeof event.lineno === "number") {
+      extra += `:${event.lineno}`;
+      if (typeof event.colno === "number") {
+        extra += `:${event.colno}`;
+      }
+    }
+  }
+
+  const msg = baseMsg + (extra ? ` ${extra}` : "");
+  pushErrorLine("window.onerror: " + msg);
+}, true);
 
     window.addEventListener("unhandledrejection", (event) => {
       const reason = event?.reason;
@@ -2675,6 +2688,62 @@ let _lastVRInteractPressed = false;
 let _lastVRShootPressed = false;
 let _lastVRMenuPressed = false;   // 🆕 needed for VR options-menu toggle
 
+// 📌 GLOBAL POINTER LOCK SAFETY WRAPPER (Desktop only; NO pointer lock on mobile)
+(function setupSafePointerLock() {
+  try {
+    // Wrap renderer.domElement.requestPointerLock
+    if (renderer && renderer.domElement && renderer.domElement.requestPointerLock) {
+      const originalRequestPointerLock = renderer.domElement.requestPointerLock.bind(renderer.domElement);
+      renderer.domElement.requestPointerLock = function safeRequestPointerLock() {
+        // Never request pointer lock on mobile
+        if (typeof isMobile !== "undefined" && isMobile) {
+          console.log("📱 [POINTER LOCK] Skipping renderer.requestPointerLock on mobile");
+          return;
+        }
+        try {
+          const result = originalRequestPointerLock();
+          // Some browsers might return a Promise – catch it so we don't get unhandledrejection
+          if (result && typeof result.catch === "function") {
+            result.catch((err) => {
+              console.log("⚠️ [POINTER LOCK] Request rejected (renderer):", err && err.message);
+            });
+          }
+          return result;
+        } catch (e) {
+          console.log("⚠️ [POINTER LOCK] Exception during renderer.requestPointerLock:", e && e.message);
+        }
+      };
+      console.log("✅ [POINTER LOCK] Wrapped renderer.domElement.requestPointerLock");
+    }
+
+    // Wrap document.body.requestPointerLock as well (used in some restore helpers)
+    if (typeof document !== "undefined" &&
+        document.body &&
+        document.body.requestPointerLock) {
+      const originalBodyRequest = document.body.requestPointerLock.bind(document.body);
+      document.body.requestPointerLock = function safeBodyRequestPointerLock() {
+        if (typeof isMobile !== "undefined" && isMobile) {
+          console.log("📱 [POINTER LOCK] Skipping body.requestPointerLock on mobile");
+          return;
+        }
+        try {
+          const result = originalBodyRequest();
+          if (result && typeof result.catch === "function") {
+            result.catch((err) => {
+              console.log("⚠️ [POINTER LOCK] Request rejected (body):", err && err.message);
+            });
+          }
+          return result;
+        } catch (e) {
+          console.log("⚠️ [POINTER LOCK] Exception during body.requestPointerLock:", e && e.message);
+        }
+      };
+      console.log("✅ [POINTER LOCK] Wrapped document.body.requestPointerLock");
+    }
+  } catch (e) {
+    console.warn("⚠️ [POINTER LOCK] Failed to set up safe wrappers:", e);
+  }
+})();
 
 // ============================================================================
 // VR OPTIMIZATION FUNCTIONS (PHASE 2 - January 18, 2026)

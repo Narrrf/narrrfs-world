@@ -697,12 +697,35 @@ class GrassChunk {
 export class GrassSystem {
   constructor(scene, options = {}) {
     this.scene = scene;
+
+    // -----------------------------------------------------------
+    // 📱 MOBILE OPTIMIZER CHECK (Disable grass on low-end devices)
+    // -----------------------------------------------------------
+    try {
+      if (
+        typeof mobileOptimizer !== "undefined" &&
+        mobileOptimizer &&
+        typeof mobileOptimizer.shouldEnableGrass === "function"
+      ) {
+        const enableGrass = mobileOptimizer.shouldEnableGrass();
+
+        if (!enableGrass) {
+          console.log("🌱 [GRASS] Disabled by MobileOptimizer (low-end device)");
+          this.disabled = true;
+          return; // 🔥 STOP constructor — do NOT create grass
+        }
+      }
+    } catch (err) {
+      console.warn("⚠️ [GRASS] MobileOptimizer check failed:", err);
+    }
+
     // FIX: Store resolveAssetPath function if provided in options
     this.resolveAssetPath = options.resolveAssetPath || ((path) => path);
+
     this.options = {
-      groundType: options.groundType || 'grass',  // 'grass', 'blank', 'color', 'gltf'
-      planeSize: options.planeSize || 60,          // Field size
-      bladeCount: options.bladeCount || 10000,     // Number of grass blades (performance)
+      groundType: options.groundType || 'grass',
+      planeSize: options.planeSize || 60,
+      bladeCount: options.bladeCount || 10000,
       bladeWidth: options.bladeWidth || 0.1,       // Blade width
       bladeHeight: options.bladeHeight || 0.8,     // Blade height
       bladeHeightVariation: options.bladeHeightVariation || 0.6, // Height randomness
@@ -1967,126 +1990,151 @@ export class GrassSystem {
     }
   }
   
-  /**
-   * Get GLTF map model (for collision system)
-   */
-  getGLTFMapModel() {
-    return this.gltfMapModel;
+/**
+ * Get GLTF map model (for collision system)
+ */
+getGLTFMapModel() {
+  return this.gltfMapModel;
+}
+
+update(delta, camera = null) {
+
+  // 🌱 Skip update completely if grass was disabled by MobileOptimizer
+  if (this.disabled) return;
+
+  this.elapsedTime += delta * 1000; // Convert to milliseconds
+    
+  // Update grass wind animation
+  if (
+    this.groundMesh &&
+    this.groundMesh.userData.isGrassMesh &&
+    this.groundMesh.userData.grassUniforms
+  ) {
+    const elapsedTime = Date.now() - this.startTime;
+    this.groundMesh.userData.grassUniforms.iTime.value = elapsedTime;
+    this.groundMesh.userData.grassUniforms.windSpeed.value = this.options.windSpeed;
+    this.groundMesh.userData.grassUniforms.windStrength.value = this.options.windStrength;
+    
+    // NEW: Update blade length multiplier
+    if (this.groundMesh.userData.grassUniforms.bladeLengthMultiplier) {
+      this.groundMesh.userData.grassUniforms.bladeLengthMultiplier.value =
+        this.options.bladeLengthMultiplier || 1.0;
+    }
+    
+    // NEW: Update wind direction
+    if (this.groundMesh.userData.grassUniforms.windDirection) {
+      this.groundMesh.userData.grassUniforms.windDirection.value = this.windDirection;
+    }
+    
+    // Update wind noise texture if it exists
+    if (this.groundMesh.userData.grassUniforms.windNoiseTexture && this.windNoiseTexture) {
+      this.groundMesh.userData.grassUniforms.windNoiseTexture.value = this.windNoiseTexture;
+    }
+    
+    // NEW: Update wind turbulence
+    if (this.groundMesh.userData.grassUniforms.windTurbulence) {
+      this.groundMesh.userData.grassUniforms.windTurbulence.value =
+        this.options.windTurbulence || 0.2;
+    }
+    
+    // NEW: Calculate and update wind gust
+    if (
+      this.groundMesh.userData.grassUniforms.windGust &&
+      this.options.windGustFrequency > 0
+    ) {
+      const gustTime = elapsedTime / 1000; // Time in seconds
+      const gustCycle = gustTime * this.options.windGustFrequency; // Total cycles
+      const gustPhase = gustCycle % 1.0; // Phase within current cycle (0-1)
+      
+      let gustMultiplier = 1.0;
+      const gustDuration = this.options.windGustDuration || 0.5;
+      
+      if (gustPhase < gustDuration) {
+        // Gust is active
+        const gustProgress = gustPhase / gustDuration;
+        // Smooth gust curve (ease in/out using sine)
+        const gustCurve = Math.sin(gustProgress * Math.PI);
+        gustMultiplier =
+          1.0 + (gustCurve * (this.options.windGustIntensity - 1.0));
+      }
+      
+      this.groundMesh.userData.grassUniforms.windGust.value = gustMultiplier;
+    } else if (this.groundMesh.userData.grassUniforms.windGust) {
+      // No gusts (frequency = 0)
+      this.groundMesh.userData.grassUniforms.windGust.value = 1.0;
+    }
+    
+    // CRITICAL: Update textures if they've loaded (in case they loaded after mesh creation)
+    if (this.grassTexture && this.cloudTexture) {
+      const uniforms = this.groundMesh.userData.grassUniforms;
+      if (
+        uniforms.grassTexture.value !== this.grassTexture ||
+        uniforms.cloudTexture.value !== this.cloudTexture
+      ) {
+        uniforms.grassTexture.value = this.grassTexture;
+        uniforms.cloudTexture.value = this.cloudTexture;
+        this.groundMesh.material.needsUpdate = true;
+        console.log("🌱 [GRASS] Textures updated in uniforms");
+      }
+    }
   }
   
-  update(delta, camera = null) {
-    this.elapsedTime += delta * 1000; // Convert to milliseconds
+  // PHASE 2: Update chunks if chunked mode is enabled
+  if (this.useChunkedGrass && camera) {
+    this.updateChunks(camera.position);
     
-    // Update grass wind animation
-    if (this.groundMesh && this.groundMesh.userData.isGrassMesh && this.groundMesh.userData.grassUniforms) {
-      const elapsedTime = Date.now() - this.startTime;
-      this.groundMesh.userData.grassUniforms.iTime.value = elapsedTime;
-      this.groundMesh.userData.grassUniforms.windSpeed.value = this.options.windSpeed;
-      this.groundMesh.userData.grassUniforms.windStrength.value = this.options.windStrength;
-      
-      // NEW: Update blade length multiplier
-      if (this.groundMesh.userData.grassUniforms.bladeLengthMultiplier) {
-        this.groundMesh.userData.grassUniforms.bladeLengthMultiplier.value = this.options.bladeLengthMultiplier || 1.0;
-      }
-      
-      // NEW: Update wind direction
-      if (this.groundMesh.userData.grassUniforms.windDirection) {
-        this.groundMesh.userData.grassUniforms.windDirection.value = this.windDirection;
-      }
-      
-      // Update wind noise texture if it exists
-      if (this.groundMesh.userData.grassUniforms.windNoiseTexture && this.windNoiseTexture) {
-        this.groundMesh.userData.grassUniforms.windNoiseTexture.value = this.windNoiseTexture;
-      }
-      
-      // NEW: Update wind turbulence
-      if (this.groundMesh.userData.grassUniforms.windTurbulence) {
-        this.groundMesh.userData.grassUniforms.windTurbulence.value = this.options.windTurbulence || 0.2;
-      }
-      
-      // NEW: Calculate and update wind gust
-      if (this.groundMesh.userData.grassUniforms.windGust && this.options.windGustFrequency > 0) {
-        const gustTime = elapsedTime / 1000; // Time in seconds
-        const gustCycle = gustTime * this.options.windGustFrequency; // Total cycles
-        const gustPhase = gustCycle % 1.0; // Phase within current cycle (0-1)
+    // Update all chunk uniforms
+    const elapsedTime = Date.now() - this.startTime;
+    for (const [key, chunk] of this.chunks) {
+      if (chunk.mesh && chunk.mesh.userData.grassUniforms) {
+        const uniforms = chunk.mesh.userData.grassUniforms;
+        uniforms.iTime.value = elapsedTime;
+        uniforms.windSpeed.value = this.options.windSpeed;
+        uniforms.windStrength.value = this.options.windStrength;
+        uniforms.bladeLengthMultiplier.value =
+          this.options.bladeLengthMultiplier || 1.0;
+        uniforms.windDirection.value = this.windDirection;
+
+        if (uniforms.windNoiseTexture && this.windNoiseTexture) {
+          uniforms.windNoiseTexture.value = this.windNoiseTexture;
+        }
+
+        uniforms.windTurbulence.value = this.options.windTurbulence || 0.2;
         
-        let gustMultiplier = 1.0;
-        const gustDuration = this.options.windGustDuration || 0.5;
-        
-        if (gustPhase < gustDuration) {
-          // Gust is active
-          const gustProgress = gustPhase / gustDuration;
-          // Smooth gust curve (ease in/out using sine)
-          const gustCurve = Math.sin(gustProgress * Math.PI);
-          gustMultiplier = 1.0 + (gustCurve * (this.options.windGustIntensity - 1.0));
+        // Update wind gust for chunk
+        if (uniforms.windGust && this.options.windGustFrequency > 0) {
+          const gustTime = elapsedTime / 1000;
+          const gustCycle = gustTime * this.options.windGustFrequency;
+          const gustPhase = gustCycle % 1.0;
+          let gustMultiplier = 1.0;
+          const gustDuration = this.options.windGustDuration || 0.5;
+
+          if (gustPhase < gustDuration) {
+            const gustProgress = gustPhase / gustDuration;
+            const gustCurve = Math.sin(gustProgress * Math.PI);
+            gustMultiplier =
+              1.0 + (gustCurve * (this.options.windGustIntensity - 1.0));
+          }
+          uniforms.windGust.value = gustMultiplier;
+        } else if (uniforms.windGust) {
+          uniforms.windGust.value = 1.0;
         }
         
-        this.groundMesh.userData.grassUniforms.windGust.value = gustMultiplier;
-      } else if (this.groundMesh.userData.grassUniforms.windGust) {
-        // No gusts (frequency = 0)
-        this.groundMesh.userData.grassUniforms.windGust.value = 1.0;
-      }
-      
-      // CRITICAL: Update textures if they've loaded (in case they loaded after mesh creation)
-      if (this.grassTexture && this.cloudTexture) {
-        const uniforms = this.groundMesh.userData.grassUniforms;
-        if (uniforms.grassTexture.value !== this.grassTexture || uniforms.cloudTexture.value !== this.cloudTexture) {
-          uniforms.grassTexture.value = this.grassTexture;
-          uniforms.cloudTexture.value = this.cloudTexture;
-          this.groundMesh.material.needsUpdate = true;
-          console.log("🌱 [GRASS] Textures updated in uniforms");
-        }
-      }
-    }
-    
-    // PHASE 2: Update chunks if chunked mode is enabled
-    if (this.useChunkedGrass && camera) {
-      this.updateChunks(camera.position);
-      
-      // Update all chunk uniforms
-      const elapsedTime = Date.now() - this.startTime;
-      for (const [key, chunk] of this.chunks) {
-        if (chunk.mesh && chunk.mesh.userData.grassUniforms) {
-          const uniforms = chunk.mesh.userData.grassUniforms;
-          uniforms.iTime.value = elapsedTime;
-          uniforms.windSpeed.value = this.options.windSpeed;
-          uniforms.windStrength.value = this.options.windStrength;
-          uniforms.bladeLengthMultiplier.value = this.options.bladeLengthMultiplier || 1.0;
-          uniforms.windDirection.value = this.windDirection;
-          if (uniforms.windNoiseTexture && this.windNoiseTexture) {
-            uniforms.windNoiseTexture.value = this.windNoiseTexture;
-          }
-          uniforms.windTurbulence.value = this.options.windTurbulence || 0.2;
-          
-          // Update wind gust for chunk
-          if (uniforms.windGust && this.options.windGustFrequency > 0) {
-            const gustTime = elapsedTime / 1000;
-            const gustCycle = gustTime * this.options.windGustFrequency;
-            const gustPhase = gustCycle % 1.0;
-            let gustMultiplier = 1.0;
-            const gustDuration = this.options.windGustDuration || 0.5;
-            if (gustPhase < gustDuration) {
-              const gustProgress = gustPhase / gustDuration;
-              const gustCurve = Math.sin(gustProgress * Math.PI);
-              gustMultiplier = 1.0 + (gustCurve * (this.options.windGustIntensity - 1.0));
-            }
-            uniforms.windGust.value = gustMultiplier;
-          } else if (uniforms.windGust) {
-            uniforms.windGust.value = 1.0;
-          }
-          
-          // Update textures
-          if (this.grassTexture && this.cloudTexture) {
-            if (uniforms.grassTexture.value !== this.grassTexture || uniforms.cloudTexture.value !== this.cloudTexture) {
-              uniforms.grassTexture.value = this.grassTexture;
-              uniforms.cloudTexture.value = this.cloudTexture;
-              chunk.mesh.material.needsUpdate = true;
-            }
+        // Update textures
+        if (this.grassTexture && this.cloudTexture) {
+          if (
+            uniforms.grassTexture.value !== this.grassTexture ||
+            uniforms.cloudTexture.value !== this.cloudTexture
+          ) {
+            uniforms.grassTexture.value = this.grassTexture;
+            uniforms.cloudTexture.value = this.cloudTexture;
+            chunk.mesh.material.needsUpdate = true;
           }
         }
       }
     }
   }
+}
   
   /**
    * PHASE 2: Generate initial chunks around origin

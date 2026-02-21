@@ -336,61 +336,116 @@ export class MobileOptimizer {
     console.log(`✅ [MOBILE OPTIMIZER] Materials optimized: ${count}`);
   }
 
-  optimizeTextures() {
-    const scene = this.config.scene;
-    if (!scene) return;
+optimizeTextures() {
+  const scene = this.config.scene;
+  if (!scene) return;
 
-    const THREE = this.config.THREE;
-    const useMipmaps = this.optimizationLevel !== "aggressive";
-    let texturesOptimized = 0;
+  const THREE = this.config.THREE;
+  const useMipmaps = this.optimizationLevel !== "aggressive";
+  let texturesOptimized = 0;
 
-    scene.traverse((obj) => {
-      if (!obj || !obj.isMesh) return;
+  scene.traverse((obj) => {
+    if (!obj || !obj.isMesh) return;
 
-      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-      for (const mat of mats) {
-        if (!mat) continue;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
 
-        for (const tex of this._getMaterialTextures(mat)) {
-          if (!tex || !tex.isTexture || !tex.uuid) continue;
+    for (const mat of mats) {
+      if (!mat) continue;
 
-          // Save once
-          if (!this.original.textures.has(tex.uuid)) {
-            this.original.textures.set(tex.uuid, {
-              anisotropy: tex.anisotropy,
-              generateMipmaps: tex.generateMipmaps,
-              minFilter: tex.minFilter,
-              magFilter: tex.magFilter,
-            });
-          }
+      for (const tex of this._getMaterialTextures(mat)) {
+        if (!tex || !tex.isTexture || !tex.uuid) continue;
 
-          // Lower anisotropy
-          tex.anisotropy = 1;
-
-          // Mipmaps: off in aggressive
-          tex.generateMipmaps = useMipmaps;
-
-          // Filters: use fastest safe defaults if THREE is available
-          if (THREE) {
-            // Aggressive: no mipmaps + linear
-            if (!useMipmaps && THREE.LinearFilter) {
-              tex.minFilter = THREE.LinearFilter;
-              tex.magFilter = THREE.LinearFilter;
-            } else {
-              // Normal: keep decent look, still fast
-              if (THREE.LinearMipmapLinearFilter) tex.minFilter = THREE.LinearMipmapLinearFilter;
-              if (THREE.LinearFilter) tex.magFilter = THREE.LinearFilter;
-            }
-          }
-
-          tex.needsUpdate = true;
-          texturesOptimized++;
+        // Save original settings once (needed for restore())
+        if (!this.original.textures.has(tex.uuid)) {
+          this.original.textures.set(tex.uuid, {
+            anisotropy: tex.anisotropy,
+            generateMipmaps: tex.generateMipmaps,
+            minFilter: tex.minFilter,
+            magFilter: tex.magFilter,
+          });
         }
-      }
-    });
 
-    console.log(`✅ [MOBILE OPTIMIZER] Textures optimized: ${texturesOptimized}`);
-  }
+        // -----------------------------------------------------------
+        // 💾 AGGRESSIVE MOBILE RAM SAVER (Downscale Large Textures)
+        // -----------------------------------------------------------
+        if (
+          this.config.isMobile &&
+          this.optimizationLevel === "aggressive" &&
+          typeof document !== "undefined" &&
+          tex.image
+        ) {
+          try {
+            const img = tex.image;
+
+            const width =
+              img.naturalWidth ||
+              img.videoWidth ||
+              img.width ||
+              0;
+
+            const height =
+              img.naturalHeight ||
+              img.videoHeight ||
+              img.height ||
+              0;
+
+            const maxSize = this.getMaxTextureSize(); // 512 on aggressive
+            const largest = Math.max(width, height);
+
+            if (largest > maxSize && width > 0 && height > 0) {
+              const scale = maxSize / largest;
+              const newW = Math.max(1, Math.round(width * scale));
+              const newH = Math.max(1, Math.round(height * scale));
+
+              const canvas = document.createElement("canvas");
+              canvas.width = newW;
+              canvas.height = newH;
+
+              const ctx = canvas.getContext("2d");
+              if (ctx) {
+                ctx.drawImage(img, 0, 0, newW, newH);
+
+                tex.image = canvas;
+                tex.needsUpdate = true;
+
+                console.log(
+                  `📉 [MOBILE OPTIMIZER] Downscaled texture: ` +
+                  `${width}x${height} → ${newW}x${newH}`
+                );
+              }
+            }
+          } catch (err) {
+            console.warn("⚠️ [MOBILE OPTIMIZER] Texture downscale failed:", err);
+          }
+        }
+
+        // -----------------------------------------------------------
+        // Standard texture optimizations
+        // -----------------------------------------------------------
+
+        tex.anisotropy = 1;
+        tex.generateMipmaps = useMipmaps;
+
+        if (THREE) {
+          if (!useMipmaps && THREE.LinearFilter) {
+            tex.minFilter = THREE.LinearFilter;
+            tex.magFilter = THREE.LinearFilter;
+          } else {
+            if (THREE.LinearMipmapLinearFilter)
+              tex.minFilter = THREE.LinearMipmapLinearFilter;
+            if (THREE.LinearFilter)
+              tex.magFilter = THREE.LinearFilter;
+          }
+        }
+
+        tex.needsUpdate = true;
+        texturesOptimized++;
+      }
+    }
+  });
+
+  console.log(`✅ [MOBILE OPTIMIZER] Textures optimized: ${texturesOptimized}`);
+}
 
   // ---------------------------------------------------------------------------
   // Helpers used by the rest of the game
