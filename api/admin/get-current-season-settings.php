@@ -16,8 +16,8 @@ try {
     $activeSeason = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$activeSeason) {
-        // Fallback to Season 8 if no active season found
-        $currentSeason = 'Season 8';
+        // Fallback to Season 9 if no active season found
+        $currentSeason = 'Season 9';
     } else {
         $currentSeason = $activeSeason['season_name'];
     }
