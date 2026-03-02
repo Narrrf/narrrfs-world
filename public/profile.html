@@ -2179,7 +2179,7 @@ async function loadLeaderboardAndUpdateBanners() {
       updateBannerTheme('frozen');
     } else {
       // ACTIVE - green theme, live Season 9 leaderboard
-      const activeMain = '🎮 SEASON 8 ACTIVE 🎮';
+      const activeMain = '🎮 SEASON 9 ACTIVE 🎮';
       const activeSub = 'Season 9 Running • Play now and compete! • Check Your Position!';
       const activeDetails = '🎮 Season 9 Live • Compete for top spots!';
       setTextIf('season-status-main', activeMain);
@@ -2189,7 +2189,7 @@ async function loadLeaderboardAndUpdateBanners() {
       setTextIf('main-season-title', activeMain);
       setTextIf('main-season-subtitle', activeSub);
       setTextIf('main-season-details', activeDetails);
-      setTextIf('main-season-cta', '🎮 SEASON 8 ACTIVE 🎮');
+      setTextIf('main-season-cta', '🎮 SEASON 9 ACTIVE 🎮');
       setTextIf('main-season-features', '🎮 Season 9 RUNNING 🎮 • 6 Games Available • Boss Battles • Live Leaderboard! • Bug Tracker Ready!');
       setHtmlIf('wallet-season-banner', '<span class="text-green-800 font-semibold text-sm">🎮 Season 9 ACTIVE 🎮</span>');
       setHtmlIf('wallet-season-features', '<strong>🎮 Season 9 ACTIVE 🎮</strong><br>• 🎮 Season 9 Running! • Live leaderboard! Compete now!<br>• Fresh leaderboards active! • Compete now and earn DSPOINC!<br>• Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>• Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>• Active Leaderboards: Compete for top spots and earn DSPOINC!');
@@ -3935,7 +3935,7 @@ async function loadLeaderboard() {
         mainSeasonDetails.textContent = '🎮 Season 9 STARTED 🎮 • Fresh competition is here! • Compete now! 🎯';
       }
       if (mainSeasonCta) {
-        mainSeasonCta.textContent = '🎮 SEASON 8 STARTED! 🎮';
+        mainSeasonCta.textContent = '🎮 SEASON 9 STARTED! 🎮';
       }
       if (mainSeasonFeatures) {
         mainSeasonFeatures.textContent = '🎮 Season 9 STARTED 🎮 • 6 Games Available • Boss Battles • Active Leaderboards • Achievements System • Bug Tracker Ready!';
