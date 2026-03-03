@@ -39312,18 +39312,40 @@ function stopMobileShooting(reason = "") {
   if (reason) console.log("🛑 [MOBILE SHOOT] stop:", reason);
 }
 
+
+// Safe logging helper to avoid crashing on undefined console in weird environments
+function logMobileShootDebug(step, extra = {}) {
+  try {
+    console.log(`📱🔫 [MOBILE SHOOT] ${step}`, {
+      level: currentLevel,
+      gameStarted,
+      isGamePaused,
+      isMobile,
+      isMobileLandscape: typeof isMobileLandscape === "function" ? isMobileLandscape() : null,
+      hasWeaponSystem: !!weaponSystem,
+      currentWeaponSlot: weaponSystem && typeof weaponSystem.getCurrentSlot === "function"
+        ? weaponSystem.getCurrentSlot()
+        : null,
+      ...extra
+    });
+  } catch (e) {}
+}
+
+
+
+
 function createMobileShootButton() {
   if (!isMobile) {
-    console.log("💡 [MOBILE SHOOT] Not on mobile - skipping shoot button creation");
+    logMobileShootDebug("Not on mobile - skipping shoot button creation");
     return null;
   }
 
   if (mobileShootButton) {
-    console.log("✅ [MOBILE SHOOT] Button already exists");
+    logMobileShootDebug("Button already exists");
     return mobileShootButton;
   }
 
-  console.log("📱 [MOBILE SHOOT] Creating mobile shoot button...");
+  logMobileShootDebug("Creating mobile shoot button...");
 
   const shootBtn = document.createElement("button");
   shootBtn.id = "mobileShootButton";
@@ -39354,12 +39376,15 @@ function createMobileShootButton() {
     fontFamily: "'Press Start 2P', monospace"
   });
 
-  // ✅ Replace touchstart/touchend/touchcancel with pointer-safe bind
+  // ✅ Use your generic mobile action binder
   bindMobileActionButton(shootBtn, {
     onDown: () => {
-      if (isGamePaused) return;
+      if (isGamePaused) {
+        logMobileShootDebug("Blocked: game paused");
+        return;
+      }
 
-      console.log("📱 [MOBILE SHOOT] Start hold fire");
+      logMobileShootDebug("Start hold fire");
 
       // First shot immediately
       fireWeapon();
@@ -39377,7 +39402,7 @@ function createMobileShootButton() {
       }, 100);
     },
     onUp: () => {
-      console.log("📱 [MOBILE SHOOT] End hold fire");
+      logMobileShootDebug("End hold fire");
       stopMobileShooting("pointer up/cancel");
     }
   });
@@ -39385,53 +39410,90 @@ function createMobileShootButton() {
   document.body.appendChild(shootBtn);
   mobileShootButton = shootBtn;
 
-  console.log("✅ [MOBILE SHOOT] Mobile shoot button created successfully");
+  logMobileShootDebug("Mobile shoot button created successfully");
   return shootBtn;
 }
 
 // Helper function to fire weapon (same logic as mousedown handler)
 function fireWeapon() {
-  // Check if in weapon level
   const weaponLevels = [LEVEL_IDS.LEVEL4, LEVEL_IDS.LEVEL5, LEVEL_IDS.LEVEL6];
+
+  logMobileShootDebug("fireWeapon() called", {
+    inWeaponLevel: weaponLevels.includes(currentLevel)
+  });
+
+  // Check if in weapon level
   if (!weaponLevels.includes(currentLevel)) {
+    logMobileShootDebug("Blocked: not in weapon level");
     console.warn("⚠️ [MOBILE SHOOT] Not in weapon level");
     return;
   }
   
   // Don't shoot if paused
   if (isGamePaused) {
+    logMobileShootDebug("Blocked: game is paused");
     console.warn("⚠️ [MOBILE SHOOT] Game is paused");
     return;
   }
   
   // Use Weapon System
-  if (weaponSystem && typeof weaponSystem.fire === 'function') {
+  if (weaponSystem && typeof weaponSystem.fire === "function") {
     // Check if weapon is loaded
-    if (!weaponSystem.weaponViewmodel || !weaponSystem.camera.children.includes(weaponSystem.weaponViewmodel)) {
+    const weaponLoaded =
+      weaponSystem.weaponViewmodel &&
+      weaponSystem.camera &&
+      weaponSystem.camera.children.includes(weaponSystem.weaponViewmodel);
+
+    if (!weaponLoaded) {
+      logMobileShootDebug("Weapon not loaded - attempting load");
       console.warn("⚠️ [MOBILE SHOOT] Weapon not loaded, attempting to load...");
-      const currentSlot = weaponSystem.getCurrentSlot() || 1;
+
+      const currentSlot = (weaponSystem.getCurrentSlot && weaponSystem.getCurrentSlot()) || 1;
       weaponSystem.loadWeapon(currentSlot).then(() => {
+        logMobileShootDebug("Weapon loaded, calling weaponSystem.fire()");
         weaponSystem.fire();
       }).catch(err => {
+        logMobileShootDebug("Failed to load weapon", { error: String(err) });
         console.error("❌ [MOBILE SHOOT] Failed to load weapon for shooting:", err);
       });
     } else {
+      logMobileShootDebug("Direct fire: weaponSystem.fire()");
       weaponSystem.fire();
     }
   } else {
+    logMobileShootDebug("Blocked: weapon system not available");
     console.warn("⚠️ [MOBILE SHOOT] Weapon system not available");
   }
 }
 
 function updateMobileShootButton() {
-  if (!isMobile || !mobileShootButton) return;
+  if (!isMobile) {
+    return;
+  }
+
+  if (!mobileShootButton) {
+    // Try to create it on demand
+    createMobileShootButton();
+    if (!mobileShootButton) {
+      logMobileShootDebug("updateMobileShootButton() - no button available");
+      return;
+    }
+  }
 
   // Only show in weapon-enabled levels (4, 5, 6)
   const weaponLevels = [LEVEL_IDS.LEVEL4, LEVEL_IDS.LEVEL5, LEVEL_IDS.LEVEL6];
   const shouldShow =
-    weaponLevels.includes(currentLevel) && !isGamePaused && gameStarted && isMobileLandscape();
+    weaponLevels.includes(currentLevel) &&
+    !isGamePaused &&
+    gameStarted &&
+    isMobileLandscape();
 
+  const oldDisplay = mobileShootButton.style.display;
   mobileShootButton.style.display = shouldShow ? "flex" : "none";
+
+  if (oldDisplay !== mobileShootButton.style.display) {
+    logMobileShootDebug("visibility changed", { shouldShow });
+  }
 
   // ✅ Always stop firing if the button is not supposed to be visible
   if (!shouldShow) {
@@ -40095,7 +40157,6 @@ function ensureMobileThirdPersonControlsReady(sourceTag = "unknown") {
 
     // 1) Force 3rd-person camera mode on mobile
     if (typeof setCameraMode === "function") {
-      // 1 = third-person in your setup
       cameraMode = 1;
       setCameraMode(cameraMode);
       console.log("📱 [MOBILE] Camera mode forced to 3rd-person for mobile");
@@ -40115,7 +40176,26 @@ function ensureMobileThirdPersonControlsReady(sourceTag = "unknown") {
       playerControls.refreshJoystickMovementFlags();
     }
 
-    console.log("✅ [MOBILE] Third-person controls + joysticks synced");
+    // 🆕 4) Ensure mobile shoot button is created & synced
+    if (typeof createMobileShootButton === "function") {
+      createMobileShootButton();
+    }
+
+    if (typeof updateMobileShootButton === "function") {
+      updateMobileShootButton();
+    }
+
+    // 🆕 5) Ensure weapon selector synced (if exists)
+    if (typeof updateMobileWeaponSelector === "function") {
+      updateMobileWeaponSelector();
+    }
+
+    // 🆕 6) Ensure interact button synced (cross-level consistency)
+    if (typeof updateMobileInteractButton === "function") {
+      updateMobileInteractButton();
+    }
+
+    console.log("✅ [MOBILE] Third-person controls + joysticks + HUD synced");
 
   } catch (e) {
     console.error("❌ [MOBILE] ensureMobileThirdPersonControlsReady failed:", e);

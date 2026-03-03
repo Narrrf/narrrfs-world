@@ -525,13 +525,27 @@ export class PlayerControls {
    * Refresh joystick movement flags from joystick input
    */
   refreshJoystickMovementFlags() {
-    const threshold = 0.2;
-    this.joystickMovementFlags.forward = this.joystickActive && this.joystickDirection.y < -threshold;
-    this.joystickMovementFlags.backward = this.joystickActive && this.joystickDirection.y > threshold;
-    this.joystickMovementFlags.left = this.joystickActive && this.joystickDirection.x < -threshold;
-    this.joystickMovementFlags.right = this.joystickActive && this.joystickDirection.x > threshold;
+    const threshold = 0.12;
+
+    const len = Math.hypot(this.joystickDirection.x, this.joystickDirection.y);
+
+    if (!this.joystickActive || len < threshold) {
+      this.joystickMovementFlags.forward  = false;
+      this.joystickMovementFlags.backward = false;
+      this.joystickMovementFlags.left     = false;
+      this.joystickMovementFlags.right    = false;
+    } else {
+      const nx = this.joystickDirection.x / len;
+      const ny = this.joystickDirection.y / len;
+
+      this.joystickMovementFlags.forward  = ny < -threshold;
+      this.joystickMovementFlags.backward = ny >  threshold;
+      this.joystickMovementFlags.left     = nx < -threshold;
+      this.joystickMovementFlags.right    = nx >  threshold;
+    }
+
     this.updateAggregatedMovement();
-  }
+}
   
   /**
    * Get forward direction vector based on camera mode

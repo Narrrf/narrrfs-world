@@ -17,41 +17,73 @@ Glyph Memory — Phase 1 JS
     medium: { pairs: 8,  cols: 4 }, // 4x4
     hard:   { pairs: 12, cols: 6 }, // 6x4
   };
-
-  // Mobile device detection (January 15, 2026)
-  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-    (window.innerWidth <= 768 && window.matchMedia('(max-width: 768px)').matches);
   
+  // Mobile device detection (January 15, 2026)
+  const isMobileDevice =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.innerWidth <= 768 && window.matchMedia('(max-width: 768px)').matches);
+
+  // Extra: classify very weak devices as "low-end mobile"
+  // Uses deviceMemory / cores / small screen as hints
+  const isLowEndMobile = (() => {
+    if (!isMobileDevice) return false;
+
+    let mem = 0;
+    try {
+      if (typeof navigator !== "undefined" && "deviceMemory" in navigator) {
+        mem = navigator.deviceMemory || 0;
+      }
+    } catch (_) {}
+
+    let cores = 0;
+    try {
+      if (typeof navigator !== "undefined" && navigator.hardwareConcurrency) {
+        cores = navigator.hardwareConcurrency;
+      }
+    } catch (_) {}
+
+    const minSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
+
+    const lowMem = mem && mem <= 3;       // <= 3 GB
+    const lowCores = cores && cores <= 4; // <= 4 cores
+    const tinyScreen = minSide > 0 && minSide <= 720; // smaller phones
+
+    return lowMem || (lowCores && tinyScreen) || (tinyScreen && !mem);
+  })();
+
   // Log mobile detection status
   if (isMobileDevice) {
-    console.log(`📱 [GLYPH] Mobile device detected - using optimized image paths for faster loading`);
+    console.log(
+      `📱 [GLYPH] Mobile device detected - using optimized image paths (lowEnd=${isLowEndMobile})`
+    );
   } else {
     console.log(`🖥️ [GLYPH] Desktop device - using original image sizes`);
   }
   
-  // CRITICAL (January 15, 2026): Mobile image optimization
+    // CRITICAL (January 15, 2026): Mobile image optimization
   // Compressed/resized images for mobile devices to reduce loading time
-  // Format: w=300,h=300,c=fill,q=75 (similar to Cloudinary compression: w_500,h_500,c_fill)
   // NOTE: Query parameters are added but ignored if no PHP endpoint exists
-  // TODO: Create PHP endpoint at /api/glyph/compress-image.php to handle on-the-fly compression
-  // The endpoint should: resize to 300x300, apply quality=75, use fill crop mode
+  // If /api/glyph/compress-image.php exists, it can use these params to resize/encode.
   function getOptimizedGlyphPath(originalPath) {
     if (!isMobileDevice) {
-      return originalPath; // Desktop: use original images (no compression needed)
+      // Desktop: use original images (no compression needed)
+      return originalPath;
     }
-    
-    // Mobile: request compressed version
-    // Format: assets/glyphs/0.png?w=300&h=300&c=fill&q=75&m=1
+
+    // Mobile: be more aggressive on low-end devices
+    // Low-end: smaller + slightly lower quality
+    const baseSize = isLowEndMobile ? 200 : 300;
+    const quality  = isLowEndMobile ? 70  : 75;
+
+    // Example:
+    //   assets/glyphs/0.png?w=200&h=200&c=fill&q=70&m=1
     // Parameters:
-    //   w=300: width (pixels)
-    //   h=300: height (pixels)
+    //   w / h: target size
     //   c=fill: crop mode (fill container)
-    //   q=75: quality (0-100, 75 is good balance)
-    //   m=1: mobile flag (identifies mobile requests)
-    // If PHP endpoint exists, it will compress/resize on-the-fly
-    // If not, query params are ignored and original image loads (works but no optimization)
-    const separator = originalPath.includes('?') ? '&' : '?';
-    return `${originalPath}${separator}w=300&h=300&c=fill&q=75&m=1`;
+    //   q: JPEG/PNG compression quality (0–100)
+    //   m=1: mobile flag (optional hint for backend)
+    const separator = originalPath.includes("?") ? "&" : "?";
+    return `${originalPath}${separator}w=${baseSize}&h=${baseSize}&c=fill&q=${quality}&m=1`;
   }
 
   // Your glyph filenames:
@@ -64,30 +96,49 @@ Glyph Memory — Phase 1 JS
   (function validateGlyphFiles() {
     const unique = [...new Set(GLYPH_FILES)];
     if (unique.length !== GLYPH_FILES.length) {
-      console.error(`❌ [GLYPH] GLYPH_FILES array contains duplicates! Total: ${GLYPH_FILES.length}, Unique: ${unique.length}`);
+      console.error(
+        `❌ [GLYPH] GLYPH_FILES array contains duplicates! Total: ${GLYPH_FILES.length}, Unique: ${unique.length}`
+      );
       console.error(`   This is a code bug - each glyph should appear exactly once in GLYPH_FILES`);
     }
     if (GLYPH_FILES.length < 12) {
-      console.error(`❌ [GLYPH] Not enough glyph files! Need at least 12 for hard difficulty, have: ${GLYPH_FILES.length}`);
+      console.error(
+        `❌ [GLYPH] Not enough glyph files! Need at least 12 for hard difficulty, have: ${GLYPH_FILES.length}`
+      );
     }
     if (GLYPH_FILES.length === 36) {
-      console.log(`✅ [GLYPH] Glyph files initialized: ${GLYPH_FILES.length} total (expected 36: 0-9 + A-Z)`);
+      console.log(
+        `✅ [GLYPH] Glyph files initialized: ${GLYPH_FILES.length} total (expected 36: 0-9 + A-Z)`
+      );
     }
   })();
 
   // Backgrounds per difficulty (menu uses easy by default)
   const BACKGROUNDS = {
-    menu: 'assets/backgrounds/bg_easy.jpg',
-    easy: 'assets/backgrounds/bg_easy.jpg',
-    medium: 'assets/backgrounds/bg_medium.jpg',
-    hard: 'assets/backgrounds/bg_hard.jpg',
+    menu: "assets/backgrounds/bg_easy.jpg",
+    easy: "assets/backgrounds/bg_easy.jpg",
+    medium: "assets/backgrounds/bg_medium.jpg",
+    hard: "assets/backgrounds/bg_hard.jpg",
   };
+
+  // Mobile background optimization (smaller JPEGs on phones)
+  function getOptimizedBackgroundPath(originalPath) {
+    if (!isMobileDevice) return originalPath;
+
+    // Low-end: ~1280 wide, others ~1920
+    const maxWidth  = isLowEndMobile ? 1280 : 1920;
+    const maxHeight = Math.round(maxWidth * 9 / 16); // ~16:9
+    const quality   = isLowEndMobile ? 70 : 80;
+
+    const separator = originalPath.includes("?") ? "&" : "?";
+    return `${originalPath}${separator}w=${maxWidth}&h=${maxHeight}&c=cover&q=${quality}&m=1`;
+  }
 
   // Three sounds: match, mismatch, and card flip
   const SOUNDS = {
-    match: 'assets/audio/match.mp3',
-    fail:  'assets/audio/mismatch.mp3',
-    flip:  'assets/audio/flip.mp3', // Sound when card is flipped up
+    match: "assets/audio/match.mp3",
+    fail:  "assets/audio/mismatch.mp3",
+    flip:  "assets/audio/flip.mp3", // Sound when card is flipped up
   };
 
   // ------- DOM -------
@@ -272,11 +323,15 @@ Glyph Memory — Phase 1 JS
 // ------- HELPERS -------
   function setBackground(kind) {
     // kind: 'menu' | 'easy' | 'medium' | 'hard'
-    const url = BACKGROUNDS[kind] || '';
-    if (!url) {
+    const baseUrl = BACKGROUNDS[kind] || '';
+    if (!baseUrl) {
       bg.style.backgroundImage = '';
       return;
     }
+
+    // ✅ Use mobile-optimized background URL on phones
+    const url = getOptimizedBackgroundPath(baseUrl);
+
     bg.style.backgroundImage = `url('${url}')`;
     bg.style.backgroundSize = 'cover';
     bg.style.backgroundPosition = 'center';

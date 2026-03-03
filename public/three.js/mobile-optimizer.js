@@ -45,8 +45,8 @@ export class MobileOptimizer {
     };
 
     // Tier & state
-    this.performanceTier = "high"; // high | medium | low
-    this.optimizationLevel = "none"; // none | normal | aggressive
+    this.performanceTier = "high";     // high | medium | low
+    this.optimizationLevel = "none";   // none | normal | aggressive
     this._applied = false;
 
     // Cache originals for restore()
@@ -113,9 +113,15 @@ export class MobileOptimizer {
     console.log("📱 [MOBILE OPTIMIZER] Restoring original settings...");
 
     // Renderer
-    if (this.original.renderer.pixelRatio != null) renderer.setPixelRatio(this.original.renderer.pixelRatio);
-    if (this.original.renderer.shadowEnabled != null) renderer.shadowMap.enabled = this.original.renderer.shadowEnabled;
-    if (this.original.renderer.shadowType != null) renderer.shadowMap.type = this.original.renderer.shadowType;
+    if (this.original.renderer.pixelRatio != null) {
+      renderer.setPixelRatio(this.original.renderer.pixelRatio);
+    }
+    if (this.original.renderer.shadowEnabled != null) {
+      renderer.shadowMap.enabled = this.original.renderer.shadowEnabled;
+    }
+    if (this.original.renderer.shadowType != null) {
+      renderer.shadowMap.type = this.original.renderer.shadowType;
+    }
 
     // Lights
     if (scene) {
@@ -135,13 +141,16 @@ export class MobileOptimizer {
       });
     }
 
-    // Textures
+    // Textures + materials
     if (scene) {
       scene.traverse((obj) => {
         if (!obj || !obj.isMesh) return;
         const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+
         for (const mat of mats) {
           if (!mat) continue;
+
+          // Textures
           for (const tex of this._getMaterialTextures(mat)) {
             const saved = tex && tex.uuid ? this.original.textures.get(tex.uuid) : null;
             if (!saved) continue;
@@ -156,9 +165,15 @@ export class MobileOptimizer {
           // Materials
           const mSaved = mat.uuid ? this.original.materials.get(mat.uuid) : null;
           if (mSaved) {
-            if (mSaved.envMapIntensity != null && "envMapIntensity" in mat) mat.envMapIntensity = mSaved.envMapIntensity;
-            if (mSaved.flatShading != null && "flatShading" in mat) mat.flatShading = mSaved.flatShading;
-            if (mSaved.dithering != null && "dithering" in mat) mat.dithering = mSaved.dithering;
+            if (mSaved.envMapIntensity != null && "envMapIntensity" in mat) {
+              mat.envMapIntensity = mSaved.envMapIntensity;
+            }
+            if (mSaved.flatShading != null && "flatShading" in mat) {
+              mat.flatShading = mSaved.flatShading;
+            }
+            if (mSaved.dithering != null && "dithering" in mat) {
+              mat.dithering = mSaved.dithering;
+            }
             mat.needsUpdate = true;
           }
         }
@@ -177,24 +192,45 @@ export class MobileOptimizer {
     // If not mobile, treat as high
     if (!this.config.isMobile) return "high";
 
-    const deviceMemory = navigator.deviceMemory || 4; // GB
-    const cores = navigator.hardwareConcurrency || 4;
-    const pixels = (window.screen?.width || 0) * (window.screen?.height || 0);
+    // Some browsers don't expose deviceMemory at all → treat as 2 GB
+    const hasNavigator = typeof navigator !== "undefined";
+    const rawMem = hasNavigator && "deviceMemory" in navigator
+      ? navigator.deviceMemory
+      : undefined;
+    const deviceMemory = rawMem || 2; // GB
+
+    const cores =
+      hasNavigator && navigator.hardwareConcurrency
+        ? navigator.hardwareConcurrency
+        : 4;
+
+    const hasWindow = typeof window !== "undefined";
+    const screenWidth = hasWindow && window.screen ? window.screen.width : 0;
+    const screenHeight = hasWindow && window.screen ? window.screen.height : 0;
+
+    const pixels = screenWidth * screenHeight;
 
     console.log("📱 [MOBILE OPTIMIZER] Device specs", {
       deviceMemory,
       cores,
-      screen: `${window.screen?.width}x${window.screen?.height}`,
+      screen: `${screenWidth}x${screenHeight}`,
       pixels,
     });
 
-    // conservative: many phones lie about power
-    const lowMem = deviceMemory <= 2;
+    // 🔽 treat more small / weak devices as "low"
+    const lowMem = deviceMemory <= 3;              // 3 GB or less → always low
+    const midMem = deviceMemory <= 4;              // 4 GB → likely low on heavy scenes
     const lowCPU = cores <= 4;
-    const smallScreen = pixels > 0 && pixels < 1920 * 1080;
+    const smallScreen = pixels > 0 && pixels <= 1280 * 720;      // really small phone displays
+    const normalScreen = pixels > 0 && pixels <= 1920 * 1080;    // 1080p
 
-    if (lowMem || (lowCPU && smallScreen)) return "low";
-    if (deviceMemory <= 4 || cores <= 8) return "medium";
+    // Ultra-conservative for low-end phones
+    if (lowMem) return "low";
+    if ((midMem && normalScreen) || (lowCPU && normalScreen) || smallScreen) return "low";
+
+    // Mid-tier: 4–5 GB or 6 cores and maybe bigger screen
+    if (deviceMemory <= 5 || cores <= 6) return "medium";
+
     return "high";
   }
 
@@ -211,12 +247,42 @@ export class MobileOptimizer {
       this.original.renderer.pixelRatio = renderer.getPixelRatio();
     }
 
-    // Cap DPR on mobile
-    const cap = this.optimizationLevel === "aggressive" ? 1 : this.config.maxDPR;
-    const dpr = Math.min(window.devicePixelRatio || 1, cap);
+    const hasWindow = typeof window !== "undefined";
+    const w = hasWindow
+      ? ((window.screen && window.screen.width) || window.innerWidth || 0)
+      : 0;
+    const h = hasWindow
+      ? ((window.screen && window.screen.height) || window.innerHeight || 0)
+      : 0;
+    const pixels = w * h;
+
+    let cap;
+
+    if (this.optimizationLevel === "aggressive") {
+      // Ultra-low mode: really cut resolution
+      cap = 0.5; // big win for fill-rate on weak GPUs
+    } else {
+      // Normal tier – still conservative on mobile
+      const defaultMax = typeof this.config.maxDPR === "number" ? this.config.maxDPR : 1;
+
+      if (pixels >= 1920 * 1080) {
+        // Full-HD or bigger: keep it under 0.85
+        cap = Math.min(defaultMax, 0.85);
+      } else if (pixels > 0 && pixels <= 1280 * 720) {
+        // Small phones: can afford a tiny bit more, but never >1
+        cap = Math.min(defaultMax, 1.0);
+      } else {
+        // In-between resolutions
+        cap = Math.min(defaultMax, 0.9);
+      }
+    }
+
+    const dpr = Math.min(hasWindow ? (window.devicePixelRatio || 1) : 1, cap);
     renderer.setPixelRatio(dpr);
 
-    console.log(`✅ [MOBILE OPTIMIZER] DPR ${this.original.renderer.pixelRatio} → ${dpr}`);
+    console.log(
+      `✅ [MOBILE OPTIMIZER] DPR ${this.original.renderer.pixelRatio} → ${dpr} (pixels=${w}x${h})`
+    );
   }
 
   optimizeShadows() {
@@ -229,24 +295,13 @@ export class MobileOptimizer {
       this.original.renderer.shadowType = renderer.shadowMap.type;
     }
 
-    // Aggressive: disable shadows entirely
-    if (this.optimizationLevel === "aggressive") {
-      renderer.shadowMap.enabled = false;
-      console.log("✅ [MOBILE OPTIMIZER] Shadows disabled (aggressive)");
-      return;
-    }
+    // 🔥 SIMPLE MODE: turn off shadows on *all* mobile devices.
+    // This is a massive perf & memory win for older phones.
+    renderer.shadowMap.enabled = false;
+    console.log("✅ [MOBILE OPTIMIZER] Shadows disabled on mobile (global)");
 
-    // Normal: keep shadows but reduce quality safely
-    renderer.shadowMap.enabled = true;
-
-    const THREE = this.config.THREE;
-    if (THREE && THREE.BasicShadowMap) {
-      renderer.shadowMap.type = THREE.BasicShadowMap;
-      console.log("✅ [MOBILE OPTIMIZER] ShadowMap type set to BasicShadowMap");
-    } else {
-      // Never crash if THREE missing
-      console.warn("⚠️ [MOBILE OPTIMIZER] THREE not provided; leaving shadowMap.type unchanged");
-    }
+    // If you want to keep the old “normal vs aggressive” behavior,
+    // you could branch on this.optimizationLevel here instead.
   }
 
   optimizeLights() {
@@ -271,7 +326,7 @@ export class MobileOptimizer {
         this.original.lights.set(obj.uuid, saved);
       }
 
-      // If shadows disabled, ensure lights don't cast
+      // If shadows disabled aggressively, ensure lights don't cast
       if (this.optimizationLevel === "aggressive") {
         obj.castShadow = false;
         return;
@@ -318,13 +373,17 @@ export class MobileOptimizer {
 
         // Aggressive: cheaper shading
         if (this.optimizationLevel === "aggressive") {
-          if ("envMapIntensity" in mat) mat.envMapIntensity = Math.min(mat.envMapIntensity || 0, 0.5);
+          if ("envMapIntensity" in mat) {
+            mat.envMapIntensity = Math.min(mat.envMapIntensity || 0, 0.5);
+          }
           if ("dithering" in mat) mat.dithering = false;
           // flatShading changes look; only do in aggressive
           if ("flatShading" in mat) mat.flatShading = true;
         } else {
           // Normal: keep look, just reduce a bit
-          if ("envMapIntensity" in mat) mat.envMapIntensity = Math.min(mat.envMapIntensity || 0, 1.0);
+          if ("envMapIntensity" in mat) {
+            mat.envMapIntensity = Math.min(mat.envMapIntensity || 0, 1.0);
+          }
           if ("dithering" in mat) mat.dithering = false;
         }
 
@@ -336,125 +395,124 @@ export class MobileOptimizer {
     console.log(`✅ [MOBILE OPTIMIZER] Materials optimized: ${count}`);
   }
 
-optimizeTextures() {
-  const scene = this.config.scene;
-  if (!scene) return;
+  optimizeTextures() {
+    const scene = this.config.scene;
+    if (!scene) return;
 
-  const THREE = this.config.THREE;
-  const useMipmaps = this.optimizationLevel !== "aggressive";
-  let texturesOptimized = 0;
+    const THREE = this.config.THREE;
+    const useMipmaps = this.optimizationLevel !== "aggressive";
+    let texturesOptimized = 0;
 
-  scene.traverse((obj) => {
-    if (!obj || !obj.isMesh) return;
+    scene.traverse((obj) => {
+      if (!obj || !obj.isMesh) return;
 
-    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
 
-    for (const mat of mats) {
-      if (!mat) continue;
+      for (const mat of mats) {
+        if (!mat) continue;
 
-      for (const tex of this._getMaterialTextures(mat)) {
-        if (!tex || !tex.isTexture || !tex.uuid) continue;
+        for (const tex of this._getMaterialTextures(mat)) {
+          if (!tex || !tex.isTexture || !tex.uuid) continue;
 
-        // Save original settings once (needed for restore())
-        if (!this.original.textures.has(tex.uuid)) {
-          this.original.textures.set(tex.uuid, {
-            anisotropy: tex.anisotropy,
-            generateMipmaps: tex.generateMipmaps,
-            minFilter: tex.minFilter,
-            magFilter: tex.magFilter,
-          });
-        }
+          // Save original settings once (needed for restore())
+          if (!this.original.textures.has(tex.uuid)) {
+            this.original.textures.set(tex.uuid, {
+              anisotropy: tex.anisotropy,
+              generateMipmaps: tex.generateMipmaps,
+              minFilter: tex.minFilter,
+              magFilter: tex.magFilter,
+            });
+          }
 
-        // -----------------------------------------------------------
-        // 💾 AGGRESSIVE MOBILE RAM SAVER (Downscale Large Textures)
-        // -----------------------------------------------------------
-        if (
-          this.config.isMobile &&
-          this.optimizationLevel === "aggressive" &&
-          typeof document !== "undefined" &&
-          tex.image
-        ) {
-          try {
-            const img = tex.image;
+          // -----------------------------------------------------------
+          // 💾 AGGRESSIVE MOBILE RAM SAVER (Downscale Large Textures)
+          // -----------------------------------------------------------
+          if (
+            this.config.isMobile &&
+            this.optimizationLevel === "aggressive" &&
+            typeof document !== "undefined" &&
+            tex.image
+          ) {
+            try {
+              const img = tex.image;
 
-            const width =
-              img.naturalWidth ||
-              img.videoWidth ||
-              img.width ||
-              0;
+              const width =
+                img.naturalWidth ||
+                img.videoWidth ||
+                img.width ||
+                0;
 
-            const height =
-              img.naturalHeight ||
-              img.videoHeight ||
-              img.height ||
-              0;
+              const height =
+                img.naturalHeight ||
+                img.videoHeight ||
+                img.height ||
+                0;
 
-            const maxSize = this.getMaxTextureSize(); // 512 on aggressive
-            const largest = Math.max(width, height);
+              const maxSize = this.getMaxTextureSize(); // 256 on aggressive
+              const largest = Math.max(width, height);
 
-            if (largest > maxSize && width > 0 && height > 0) {
-              const scale = maxSize / largest;
-              const newW = Math.max(1, Math.round(width * scale));
-              const newH = Math.max(1, Math.round(height * scale));
+              if (largest > maxSize && width > 0 && height > 0) {
+                const scale = maxSize / largest;
+                const newW = Math.max(1, Math.round(width * scale));
+                const newH = Math.max(1, Math.round(height * scale));
 
-              const canvas = document.createElement("canvas");
-              canvas.width = newW;
-              canvas.height = newH;
+                const canvas = document.createElement("canvas");
+                canvas.width = newW;
+                canvas.height = newH;
 
-              const ctx = canvas.getContext("2d");
-              if (ctx) {
-                ctx.drawImage(img, 0, 0, newW, newH);
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                  ctx.drawImage(img, 0, 0, newW, newH);
 
-                tex.image = canvas;
-                tex.needsUpdate = true;
+                  tex.image = canvas;
+                  tex.needsUpdate = true;
 
-                console.log(
-                  `📉 [MOBILE OPTIMIZER] Downscaled texture: ` +
-                  `${width}x${height} → ${newW}x${newH}`
-                );
+                  console.log(
+                    `📉 [MOBILE OPTIMIZER] Downscaled texture: ` +
+                    `${width}x${height} → ${newW}x${newH}`
+                  );
+                }
+              }
+            } catch (err) {
+              console.warn("⚠️ [MOBILE OPTIMIZER] Texture downscale failed:", err);
+            }
+          }
+
+          // -----------------------------------------------------------
+          // Standard texture optimizations
+          // -----------------------------------------------------------
+
+          tex.anisotropy = 1;
+          tex.generateMipmaps = useMipmaps;
+
+          if (THREE) {
+            if (!useMipmaps && THREE.LinearFilter) {
+              tex.minFilter = THREE.LinearFilter;
+              tex.magFilter = THREE.LinearFilter;
+            } else {
+              if (THREE.LinearMipmapLinearFilter) {
+                tex.minFilter = THREE.LinearMipmapLinearFilter;
+              }
+              if (THREE.LinearFilter) {
+                tex.magFilter = THREE.LinearFilter;
               }
             }
-          } catch (err) {
-            console.warn("⚠️ [MOBILE OPTIMIZER] Texture downscale failed:", err);
           }
+
+          tex.needsUpdate = true;
+          texturesOptimized++;
         }
-
-        // -----------------------------------------------------------
-        // Standard texture optimizations
-        // -----------------------------------------------------------
-
-        tex.anisotropy = 1;
-        tex.generateMipmaps = useMipmaps;
-
-        if (THREE) {
-          if (!useMipmaps && THREE.LinearFilter) {
-            tex.minFilter = THREE.LinearFilter;
-            tex.magFilter = THREE.LinearFilter;
-          } else {
-            if (THREE.LinearMipmapLinearFilter)
-              tex.minFilter = THREE.LinearMipmapLinearFilter;
-            if (THREE.LinearFilter)
-              tex.magFilter = THREE.LinearFilter;
-          }
-        }
-
-        tex.needsUpdate = true;
-        texturesOptimized++;
       }
-    }
-  });
+    });
 
-  console.log(`✅ [MOBILE OPTIMIZER] Textures optimized: ${texturesOptimized}`);
-}
+    console.log(`✅ [MOBILE OPTIMIZER] Textures optimized: ${texturesOptimized}`);
+  }
 
   // ---------------------------------------------------------------------------
   // Helpers used by the rest of the game
   // ---------------------------------------------------------------------------
-  
-    // ---------------------------------------------------------------------------
-  // Compatibility helpers (used by main.js UI)
-  // ---------------------------------------------------------------------------
 
+  // Compatibility helpers (used by main.js UI)
   getDeviceTier() {
     // Map internal tier to labels used by main.js
     const tier = this.performanceTier || this.detectPerformanceTier();
@@ -472,7 +530,9 @@ optimizeTextures() {
 
       // Allow re-apply when graphics settings change
       if (this._applied) {
-        try { this.restore(); } catch (_) {}
+        try {
+          this.restore();
+        } catch (_) {}
       }
       this.optimize();
     } catch (e) {
@@ -480,30 +540,43 @@ optimizeTextures() {
     }
   }
 
-
   getGrassDensityMultiplier() {
     if (!this.config.isMobile) return 1.0;
-    return this.optimizationLevel === "aggressive" ? 0.0 : 0.25;
+
+    // On mobile:
+    // - aggressive: no grass
+    // - normal: very low grass density
+    if (this.optimizationLevel === "aggressive") return 0.0;
+    return 0.1; // very sparse, big perf win
   }
 
   shouldEnableGrass() {
     if (!this.config.isMobile) return true;
+
+    // On low-end (aggressive) devices, disable grass completely.
+    // On normal mobile, keep grass on but very sparse using multiplier above.
     return this.optimizationLevel !== "aggressive";
   }
 
   getShadowMapSize() {
     if (!this.config.isMobile) return 2048;
-    return this.optimizationLevel === "aggressive" ? 0 : 512;
+    // mobile:
+    // - aggressive: no shadows (0)
+    // - normal: 256 shadow map (was 512)
+    return this.optimizationLevel === "aggressive" ? 0 : 256;
   }
 
   getMaxTextureSize() {
     if (!this.config.isMobile) return 2048;
-    return this.optimizationLevel === "aggressive" ? 512 : 1024;
+    // mobile:
+    // - aggressive: 256 max texture
+    // - normal: 512 max texture (was 1024)
+    return this.optimizationLevel === "aggressive" ? 256 : 512;
   }
 
   logMemoryUsage() {
-    // Only Chrome exposes performance.memory (and not always)
-    const mem = performance && performance.memory ? performance.memory : null;
+    const hasPerformance = typeof performance !== "undefined";
+    const mem = hasPerformance && performance.memory ? performance.memory : null;
     if (!mem) return;
 
     const used = (mem.usedJSHeapSize / 1024 / 1024).toFixed(1);
