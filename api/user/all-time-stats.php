@@ -260,7 +260,7 @@ try {
         'total_races' => (int)($race['total_races'] ?? 0),
         'total_wins' => (int)($race['total_wins'] ?? 0),
         'podium_finishes' => (int)($race['podium_finishes'] ?? 0),
-        'best_position' => (int)($race['best_position'] ?? 0)
+        'best_position' => $race['best_position'] !== null ? (int)$race['best_position'] : null
     ];
     
     // 6. CHEESE RUMBLE - All-time stats
@@ -282,17 +282,40 @@ try {
         'total_rumbles' => (int)($rumble['total_rumbles'] ?? 0),
         'total_wins' => (int)($rumble['total_wins'] ?? 0),
         'podium_finishes' => (int)($rumble['podium_finishes'] ?? 0),
-        'best_position' => (int)($rumble['best_position'] ?? 0)
+        'best_position' => $rumble['best_position'] !== null ? (int)$rumble['best_position'] : null
     ];
+	
+	// 7. GLYPH MEMORY - All-time stats
+$glyphStmt = $db->prepare("
+    SELECT 
+        COUNT(*) as total_runs,
+        MIN(time_ms) as best_time_ms,
+        AVG(time_ms) as avg_time_ms,
+        MAX(timestamp) as last_played
+    FROM tbl_glyph_memory_scores
+    WHERE discord_id = :user_id
+");
+$glyphStmt->execute([':user_id' => $user_id]);
+$glyph = $glyphStmt->fetch(PDO::FETCH_ASSOC);
+
+$response['all_time_stats']['games']['glyph_memory'] = [
+    'name' => 'Glyph Memory',
+    'icon' => '🔮',
+    'total_runs' => (int)($glyph['total_runs'] ?? 0),
+    'best_time_ms' => isset($glyph['best_time_ms']) ? (int)$glyph['best_time_ms'] : null,
+    'avg_time_ms' => isset($glyph['avg_time_ms']) ? (int)round($glyph['avg_time_ms']) : null,
+    'last_played' => $glyph['last_played'] ?? null
+];
     
     // Calculate total games played across all games (including Cheese Rumble - 6th game)
-    $response['all_time_stats']['total_games_played'] = 
-        $response['all_time_stats']['games']['tetris']['total_games'] +
-        $response['all_time_stats']['games']['snake']['total_games'] +
-        $response['all_time_stats']['games']['space_invaders']['total_games'] +
-        $response['all_time_stats']['games']['cheese_hunt']['total_clicks'] +
-        $response['all_time_stats']['games']['discord_race']['total_races'] +
-        $response['all_time_stats']['games']['cheese_rumble']['total_rumbles'];
+$response['all_time_stats']['total_games_played'] = 
+    $response['all_time_stats']['games']['tetris']['total_games'] +
+    $response['all_time_stats']['games']['snake']['total_games'] +
+    $response['all_time_stats']['games']['space_invaders']['total_games'] +
+    $response['all_time_stats']['games']['cheese_hunt']['total_clicks'] +
+    $response['all_time_stats']['games']['discord_race']['total_races'] +
+    $response['all_time_stats']['games']['cheese_rumble']['total_rumbles'] +
+    $response['all_time_stats']['games']['glyph_memory']['total_runs'];
     
     // Calculate total DSPOINC earned (from tbl_tetris_scores only)
     $response['all_time_stats']['total_dspoinc_earned'] = 

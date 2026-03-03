@@ -220,6 +220,14 @@ try {
             'dspoinc_earned' => 0,
             'last_played' => null
         ],
+		// 🔮 Glyph Memory - time-trial stats (all-time for now)
+        'glyph_memory' => [
+            'total_runs' => 0,
+            'best_time_ms' => null,
+            'avg_time_ms' => null,
+            'last_played' => null,
+            'dspoinc_earned' => 0
+        ],
         'overall' => [
             'total_dspoinc' => 0,
             'games_played' => 0,
@@ -620,6 +628,44 @@ try {
         error_log("Cheese Rumble query error: " . $e->getMessage());
     }
 
+    // 7. GLYPH MEMORY STATS (using discord_id from tbl_glyph_memory_scores)
+    try {
+        error_log("🔍 GLYPH MEMORY DEBUG: Querying for user $discordId");
+
+        // NOTE: Glyph scores currently do not have a season column,
+        // so this is all-time stats for the user.
+        $glyphStmt = $db->prepare("
+            SELECT 
+                COUNT(*) AS total_runs,
+                MIN(time_ms) AS best_time_ms,
+                AVG(time_ms) AS avg_time_ms,
+                MAX(timestamp) AS last_played
+            FROM tbl_glyph_memory_scores
+            WHERE discord_id = ?
+        ");
+        $glyphStmt->execute([$discordId]);
+        $glyphData = $glyphStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($glyphData && (int)$glyphData['total_runs'] > 0) {
+            $response['glyph_memory']['total_runs'] = (int)$glyphData['total_runs'];
+            $response['glyph_memory']['best_time_ms'] =
+                $glyphData['best_time_ms'] !== null ? (int)$glyphData['best_time_ms'] : null;
+            $response['glyph_memory']['avg_time_ms'] =
+                $glyphData['avg_time_ms'] !== null ? (int)round($glyphData['avg_time_ms']) : null;
+            $response['glyph_memory']['last_played'] = $glyphData['last_played'];
+
+            // TODO: Decide DSPOINC reward model for Glyph Memory runs.
+            // For now we keep it at 0 so we don't impact the economy unexpectedly.
+            $response['glyph_memory']['dspoinc_earned'] = 0;
+
+            error_log("✅ GLYPH MEMORY stats found for user $discordId: " . $glyphData['total_runs'] . " runs");
+        } else {
+            error_log("ℹ️ GLYPH MEMORY: No runs found for user $discordId");
+        }
+    } catch (Exception $e) {
+        error_log("Glyph Memory query error: " . $e->getMessage());
+    }
+
     // Calculate total DSPOINC from all games (including Cheese Rumble)
     $response['overall']['total_dspoinc'] = 
         $response['tetris']['dspoinc_earned'] + 
@@ -627,7 +673,8 @@ try {
         $response['space_invaders']['dspoinc_earned'] + 
         $response['cheese_hunt']['dspoinc_earned'] + 
         $response['discord_race']['dspoinc_earned'] +
-        $response['cheese_rumble']['dspoinc_earned'];
+        $response['cheese_rumble']['dspoinc_earned'] +
+        $response['glyph_memory']['dspoinc_earned'];
 
     // Count how many games the user has played (including Cheese Rumble - 6th game)
     $gamesPlayed = 0;
@@ -637,6 +684,7 @@ try {
     if ($response['cheese_hunt']['total_clicks'] > 0) $gamesPlayed++;
     if ($response['discord_race']['total_races'] > 0) $gamesPlayed++;
     if ($response['cheese_rumble']['total_rumbles'] > 0) $gamesPlayed++; // 6th game
+    if ($response['glyph_memory']['total_runs'] > 0) $gamesPlayed++;     // 7th game
     
     $response['overall']['games_played'] = $gamesPlayed;
 
@@ -661,7 +709,7 @@ try {
     error_log("  Space Invaders: " . $response['space_invaders']['total_games'] . " games, " . $response['space_invaders']['dspoinc_earned'] . " DSPOINC");
     error_log("  Cheese Hunt: " . $response['cheese_hunt']['total_clicks'] . " clicks, " . $response['cheese_hunt']['dspoinc_earned'] . " DSPOINC");
     error_log("  Discord Race: " . $response['discord_race']['total_races'] . " races, " . $response['discord_race']['dspoinc_earned'] . " DSPOINC");
-    error_log("  Total Games Played: " . $response['overall']['games_played'] . "/5");
+    error_log("  Total Games Played: " . $response['overall']['games_played'] . "/7");
     error_log("  Total DSPOINC: " . $response['overall']['total_dspoinc']);
     
     // Additional debugging for Cheese Hunt
@@ -820,10 +868,15 @@ try {
     }
 
     // Return the response in the format expected by the frontend
-    echo json_encode([
-        'success' => true,
-        'total_dspoinc' => $response['overall']['total_dspoinc'],
-        'achievements' => [
+echo json_encode([
+    'success' => true,
+    // 👇 NEW: expose season info to the frontend
+    'current_season' => $currentSeason,
+    'season_start'   => $currentSeasonStart,
+    'season_end'     => $currentSeasonEnd,
+
+    'total_dspoinc' => $response['overall']['total_dspoinc'],
+    'achievements' => [
             'games_played' => $response['overall']['games_played'],
             'cheese_hunter_level' => $response['overall']['level']
         ],
@@ -925,6 +978,20 @@ try {
                     'best_position' => $response['cheese_rumble']['best_position'] !== null ? $response['cheese_rumble']['best_position'] : 'N/A',
                     'dspoinc_earned' => $response['cheese_rumble']['dspoinc_earned'],
                     'last_played' => $response['cheese_rumble']['last_played']
+                ]
+            ],
+			// 🔮 Glyph Memory game descriptor for profile Current Season grid
+            'glyph_memory' => [
+                'name' => 'Glyph Memory',
+                'icon' => '🔮',
+                'url' => '/glyph/glyph.html',
+                'status' => $response['glyph_memory']['total_runs'] > 0 ? 'active' : 'not_played',
+                'stats' => [
+                    'total_runs' => $response['glyph_memory']['total_runs'],
+                    'best_time_ms' => $response['glyph_memory']['best_time_ms'],
+                    'avg_time_ms' => $response['glyph_memory']['avg_time_ms'],
+                    'dspoinc_earned' => $response['glyph_memory']['dspoinc_earned'],
+                    'last_played' => $response['glyph_memory']['last_played']
                 ]
             ]
         ]
