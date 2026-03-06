@@ -2624,9 +2624,11 @@ setTimeout(() => {
   }
 }, 0);
 
-// 📱 MOBILE OPTIMIZATION SYSTEM (January 19, 2026 - RAM Crash Fix)
+// 📱 MOBILE OPTIMIZATION SYSTEM start game on mobile get functions from mobile-optimzer.js  (January 19, 2026 - RAM Crash Fix)
 // Apply aggressive optimizations for mobile devices to prevent crashes
+// 📱 MOBILE OPTIMIZATION SYSTEM (January 19, 2026 - RAM Crash Fix)
 let mobileOptimizer = null;
+
 if (isMobile) {
   console.log("📱 [MOBILE OPTIMIZER] Creating mobile optimizer...");
 
@@ -2637,8 +2639,35 @@ if (isMobile) {
     THREE: THREE
   });
 
+  // 🔍 Check if device is strong enough to run the game
+  if (typeof mobileOptimizer.getSupportDecision === "function") {
+    const support = mobileOptimizer.getSupportDecision();
+    console.log("📱 [DEVICE CHECK]", support);
+
+    if (!support.allowed) {
+      console.error("❌ [DEVICE BLOCKED] Device below minimum requirements");
+
+      alert(
+        "Your device is below the minimum requirements for Narrrfs World 3D mode.\n\n" +
+        "Recommended: 4 GB RAM and 6 CPU cores.\n" +
+        "Minimum to try low mode: 3 GB RAM and 4 CPU cores."
+      );
+
+      // Stop game initialization early
+      throw new Error("Device below minimum spec");
+    }
+
+    // Force aggressive mode for weaker phones
+    if (support.mode === "aggressive") {
+      console.warn("📱 [LOW-END DEVICE] Forcing aggressive mobile optimization mode");
+      mobileOptimizer.config.aggressiveMode = true;
+    }
+  }
+
+  // Apply optimizations after decision
   mobileOptimizer.optimize();
   mobileOptimizer.logMemoryUsage();
+
 } else {
   console.log("💻 [DESKTOP MODE] No mobile optimization needed");
 }
@@ -19938,17 +19967,18 @@ updateAggregatedMovement();
 function refreshJoystickMovementFlags() {
   const threshold = 0.2;
 
-  joystickMovementFlags.forward = joystickActive && joystickDirection.y < -threshold;
-  joystickMovementFlags.backward = joystickActive && joystickDirection.y > threshold;
+  // Because joystickDirection.y is already inverted in the move handler:
+  // up on stick => positive y => forward
+  // down on stick => negative y => backward
+  joystickMovementFlags.forward = joystickActive && joystickDirection.y > threshold;
+  joystickMovementFlags.backward = joystickActive && joystickDirection.y < -threshold;
   joystickMovementFlags.left = joystickActive && joystickDirection.x < -threshold;
   joystickMovementFlags.right = joystickActive && joystickDirection.x > threshold;
 
-  // ✅ BRIDGE legacy joystick state into PlayerControls
   if (playerControls) {
     playerControls.joystickActive = joystickActive;
     playerControls.joystickDirection = { ...joystickDirection };
 
-    // If your PlayerControls class has this method (it does), call it:
     if (typeof playerControls.refreshJoystickMovementFlags === "function") {
       playerControls.refreshJoystickMovementFlags();
     } else if (typeof playerControls.updateAggregatedMovement === "function") {
@@ -19956,7 +19986,6 @@ function refreshJoystickMovementFlags() {
     }
   }
 
-  // Keep legacy aggregated movement alive too (VR/other legacy systems)
   updateAggregatedMovement();
 }
 

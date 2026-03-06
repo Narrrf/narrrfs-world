@@ -540,6 +540,50 @@ export class MobileOptimizer {
     }
   }
 
+  getSupportDecision() {
+  if (!this.config.isMobile) {
+    return {
+      allowed: true,
+      mode: "desktop",
+      reason: "not-mobile"
+    };
+  }
+
+  const hasNavigator = typeof navigator !== "undefined";
+  const mem = hasNavigator && "deviceMemory" in navigator ? (navigator.deviceMemory || 0) : 0;
+  const cores = hasNavigator ? (navigator.hardwareConcurrency || 0) : 0;
+
+  const hasWindow = typeof window !== "undefined";
+  const width = hasWindow && window.screen ? window.screen.width : 0;
+  const height = hasWindow && window.screen ? window.screen.height : 0;
+  const pixels = width * height;
+
+  // Hard fail: extremely weak / old devices
+  if ((mem > 0 && mem < 3) || (cores > 0 && cores <= 2)) {
+    return {
+      allowed: false,
+      mode: "blocked",
+      reason: "below-minimum-spec"
+    };
+  }
+
+  // Low mode only
+  if ((mem > 0 && mem <= 3) || (cores > 0 && cores <= 4) || (pixels > 0 && pixels <= 1280 * 720)) {
+    return {
+      allowed: true,
+      mode: "aggressive",
+      reason: "low-end-device"
+    };
+  }
+
+  // Mid / high devices
+  return {
+    allowed: true,
+    mode: "normal",
+    reason: "supported"
+  };
+}
+
   getGrassDensityMultiplier() {
     if (!this.config.isMobile) return 1.0;
 
