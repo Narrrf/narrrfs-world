@@ -176,6 +176,41 @@
           <!-- Populated by JavaScript -->
         </div>
       </div>
+
+            <!-- Glyph Memory Leaderboard -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 class="text-2xl font-bold text-fuchsia-300 flex items-center gap-2">
+            <span>🔮</span>
+            <span>Glyph Memory Leaderboard</span>
+          </h2>
+          <a href="/glyph/glyph.html" 
+             class="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-fuchsia-400 hover:border-fuchsia-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
+            🎮 Play Glyph
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <h3 class="text-lg font-bold text-purple-200 mb-3 text-center">Easy</h3>
+            <div id="glyph-easy-leaderboard" class="space-y-2">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-purple-200 mb-3 text-center">Medium</h3>
+            <div id="glyph-medium-leaderboard" class="space-y-2">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-purple-200 mb-3 text-center">Hard</h3>
+            <div id="glyph-hard-leaderboard" class="space-y-2">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -265,6 +300,11 @@
         displayLeaderboard('cheese-hunt', data.cheese_hunt || [], data.is_frozen);
         displayLeaderboard('discord-race', data.discord_race || [], data.is_frozen);
         displayLeaderboard('cheese-rumble', data.cheese_rumble || [], data.is_frozen);
+                // Glyph Memory leaderboards (3 difficulty modes)
+        const glyphMemory = data.glyph_memory || {};
+        displayGlyphLeaderboard('easy', glyphMemory.easy || []);
+        displayGlyphLeaderboard('medium', glyphMemory.medium || []);
+        displayGlyphLeaderboard('hard', glyphMemory.hard || []);
         
         // 🔧 CRITICAL FIX: Log API response for debugging
         console.log('🏆 Leaderboard data loaded:', {
@@ -277,7 +317,10 @@
           space_invaders_count: (data.space_invaders || []).length,
           cheese_hunt_count: (data.cheese_hunt || []).length,
           discord_race_count: (data.discord_race || []).length,
-          cheese_rumble_count: (data.cheese_rumble || []).length
+          cheese_rumble_count: (data.cheese_rumble || []).length,
+          glyph_easy_count: ((data.glyph_memory || {}).easy || []).length,
+          glyph_medium_count: ((data.glyph_memory || {}).medium || []).length,
+          glyph_hard_count: ((data.glyph_memory || {}).hard || []).length
         });
 
       } catch (error) {
@@ -381,6 +424,93 @@
           <span>${badgeText}</span>
         </div>
       `;
+    }
+    function formatGlyphTime(ms) {
+      if (ms == null || isNaN(ms)) return '--:--';
+      const totalSec = Math.floor(ms / 1000);
+      const min = Math.floor(totalSec / 60);
+      const sec = totalSec % 60;
+      return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
+
+    function displayGlyphLeaderboard(difficulty, leaderboard) {
+      const containerId = `glyph-${difficulty}-leaderboard`;
+      const container = document.getElementById(containerId);
+
+      if (!container) {
+        console.error(`Glyph container not found: ${containerId}`);
+        return;
+      }
+
+      if (!leaderboard || leaderboard.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-6 text-gray-400 text-sm">
+            No ${difficulty} scores yet
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = leaderboard.map((entry, index) => {
+        const rank = index + 1;
+        const rankClass =
+          rank === 1 ? 'rank-1' :
+          rank === 2 ? 'rank-2' :
+          rank === 3 ? 'rank-3' : '';
+
+        const medal =
+          rank === 1 ? '🥇' :
+          rank === 2 ? '🥈' :
+          rank === 3 ? '🥉' :
+          `${rank}.`;
+
+        const avatarUrl = entry.avatar_url ||
+          `https://cdn.discordapp.com/embed/avatars/${parseInt(entry.discord_id || 0, 10) % 5}.png`;
+
+        const highestRole = entry.highest_role || 'Member';
+        const roleColorClass = getRoleColorClass(highestRole);
+
+        const formattedTime =
+          entry.best_time_formatted ||
+          formatGlyphTime(entry.best_time_ms);
+
+        return `
+          <div class="flex items-center justify-between p-3 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-purple-500/30 hover:border-purple-400 transition-all">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="text-lg font-bold w-10 text-center flex-shrink-0">
+                ${medal}
+              </div>
+
+              <img
+                src="${avatarUrl}"
+                alt="${entry.discord_name || 'Unknown'}"
+                class="w-10 h-10 rounded-full border-2 border-purple-500 hover:border-yellow-400 transition-colors flex-shrink-0"
+                onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"
+              />
+
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-sm truncate">
+                  ${entry.discord_name || entry.discord_id || 'Unknown'}
+                </div>
+
+                <div class="text-xs ${roleColorClass} truncate">
+                  ${highestRole}
+                </div>
+              </div>
+            </div>
+
+            <div class="text-right ml-3 flex-shrink-0">
+              <div class="text-sm font-bold text-yellow-300 flex items-center justify-end gap-1">
+                <span>🔮</span>
+                <span>${formattedTime}</span>
+              </div>
+              <div class="text-xs text-gray-400">
+                best time
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     // Display leaderboard for a game

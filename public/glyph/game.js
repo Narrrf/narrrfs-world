@@ -64,27 +64,12 @@ Glyph Memory — Phase 1 JS
   // Compressed/resized images for mobile devices to reduce loading time
   // NOTE: Query parameters are added but ignored if no PHP endpoint exists
   // If /api/glyph/compress-image.php exists, it can use these params to resize/encode.
-  function getOptimizedGlyphPath(originalPath) {
-    if (!isMobileDevice) {
-      // Desktop: use original images (no compression needed)
-      return originalPath;
-    }
-
-    // Mobile: be more aggressive on low-end devices
-    // Low-end: smaller + slightly lower quality
-    const baseSize = isLowEndMobile ? 200 : 300;
-    const quality  = isLowEndMobile ? 70  : 75;
-
-    // Example:
-    //   assets/glyphs/0.png?w=200&h=200&c=fill&q=70&m=1
-    // Parameters:
-    //   w / h: target size
-    //   c=fill: crop mode (fill container)
-    //   q: JPEG/PNG compression quality (0–100)
-    //   m=1: mobile flag (optional hint for backend)
-    const separator = originalPath.includes("?") ? "&" : "?";
-    return `${originalPath}${separator}w=${baseSize}&h=${baseSize}&c=fill&q=${quality}&m=1`;
-  }
+function getOptimizedGlyphPath(originalPath) {
+  // TEMP FIX: use original asset path on all devices
+  // Query-string based mobile rewriting can cause slow/blank glyph loading
+  // on some mobile browsers / cache layers when no image-processing backend exists.
+  return originalPath;
+}
 
   // Your glyph filenames:
   const GLYPH_FILES = [
@@ -319,6 +304,27 @@ Glyph Memory — Phase 1 JS
     glyphNormalizeCache.set(src, p);
     return p;
   }
+
+function preloadGlyphImages(sources) {
+  if (!Array.isArray(sources) || sources.length === 0) return Promise.resolve();
+
+  const uniqueSources = [...new Set(sources)];
+
+  return Promise.all(
+    uniqueSources.map((src) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = () => resolve(src);
+        img.onerror = () => {
+          console.warn('⚠️ [GLYPH] Preload failed:', src);
+          resolve(src);
+        };
+        img.src = getOptimizedGlyphPath(src);
+      });
+    })
+  );
+}
 
 // ------- HELPERS -------
   function setBackground(kind) {
@@ -589,10 +595,10 @@ Glyph Memory — Phase 1 JS
       const img = document.createElement('img');
       img.alt = 'Glyph';
       // Use eager loading so glyphs are visible immediately on flip
-      img.loading = 'eager';
+      img.loading = 'auto';
       img.decoding = 'async';
-      // CRITICAL (January 15, 2026): Use optimized paths on mobile for faster loading
-      img.src = getOptimizedGlyphPath(card.glyphSrc);
+      // CRITICAL (March, 7th , 2026): optimzed mobil glyph  loading 
+      img.src = card.glyphSrc;
       // If a glyph file is missing or fails to load, show a clear fallback + log it
       img.addEventListener('error', () => {
         console.warn('Missing glyph file:', card.glyphSrc);
@@ -874,13 +880,18 @@ Glyph Memory — Phase 1 JS
   }
 
   // ------- FLOW CONTROLS -------
-  function startGame() {
+  // ------- FLOW CONTROLS -------
+  async function startGame() {
     activeDifficulty = difficultySelect.value;
 
     winOverlay.hidden = true;
     resetTurnPicks();
 
     deck = buildDeck(activeDifficulty);
+
+    // Preload only the glyphs used in this round before rendering the board
+    const deckSources = deck.map(card => card.glyphSrc);
+    await preloadGlyphImages(deckSources);
     
     // CRITICAL: Verify deck integrity before starting game
     if (!verifyDeckIntegrity()) {
