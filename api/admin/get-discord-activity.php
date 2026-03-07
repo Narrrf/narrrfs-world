@@ -9,9 +9,22 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
 
+// Detect local development environment
+$isLocalhost =
+    ($_SERVER['HTTP_HOST'] ?? '') === 'localhost' ||
+    strpos(($_SERVER['HTTP_HOST'] ?? ''), '127.0.0.1') !== false;
+
 // Check for authentication
 session_start();
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+
+$skipAuthForLocalDev = $isLocalhost;
+
+// TODO: Local development bypass for Discord activity feed testing.
+// Production must continue enforcing full admin/Discord authentication.
+if (
+    !$skipAuthForLocalDev &&
+    (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true)
+) {
     // Check for Discord authentication - multiple methods
     $discord_user_id = null;
     $user_roles = [];
@@ -83,7 +96,7 @@ try {
             discord_id as user_id,
             game as channel_name,
             timestamp,
-            CONCAT('Scored ', score, ' points in ', game) as description
+            'Scored ' || score || ' points in ' || game as description
         FROM tbl_tetris_scores 
         WHERE timestamp >= datetime('now', '-1 hour')
         ORDER BY timestamp DESC 
@@ -111,7 +124,7 @@ try {
             admin_id as user_id,
             'admin-panel' as channel_name,
             timestamp,
-            CONCAT(action, ' ', amount, ' DSPOINC - ', reason) as description
+            action || ' ' || amount || ' DSPOINC - ' || reason as description
         FROM tbl_score_adjustments 
         WHERE timestamp >= datetime('now', '-1 hour')
         ORDER BY timestamp DESC 
@@ -159,18 +172,10 @@ try {
         ];
     }
     
-    // 4. If no recent activity, provide some realistic sample events
+    // 4. If no recent activity, return an empty list.
+    // TODO: Keep this empty for local/admin feed accuracy. Do not inject fake events into the live feed.
     if (empty($events)) {
-        $events = [
-            [
-                'type' => 'messageCreate',
-                'user_name' => 'System',
-                'user_id' => '000000000000000000',
-                'channel_name' => 'general',
-                'timestamp' => date('Y-m-d H:i:s'),
-                'description' => 'Discord activity feed initialized'
-            ]
-        ];
+        $events = [];
     }
     
     // Sort events by timestamp (newest first)

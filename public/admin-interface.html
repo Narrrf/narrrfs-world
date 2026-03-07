@@ -2984,6 +2984,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="forceLoadTabOnClick('cheese-hunt')">🧀 Cheese Hunt</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="forceLoadTabOnClick('discord-race')">🏁 Discord Race</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-rumble" onclick="forceLoadTabOnClick('cheese-rumble')">💥 Cheese Rumble</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="glyph-memory" onclick="forceLoadTabOnClick('glyph-memory')">🔮 Glyph</button>
       </div>
       
       <!-- 🚀 ENHANCED: Action Buttons -->
@@ -3284,7 +3285,54 @@
         </div>
       </div>
 
+<div id="glyphMemoryTab" class="game-tab-content hidden" style="display: none;">
+  <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+    <h3 class="text-lg font-semibold mb-3 text-fuchsia-300">🔮 Glyph Memory Management</h3>
 
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>🎮</span><span>Total Runs</span></div>
+        <div class="game-stat-value" id="glyphTotalRuns">-</div>
+        <div class="game-stat-label">All-time runs</div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>👥</span><span>Unique Players</span></div>
+        <div class="game-stat-value" id="glyphUniquePlayers">-</div>
+        <div class="game-stat-label">Memory mice</div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>🏆</span><span>Best Time</span></div>
+        <div class="game-stat-value" id="glyphBestTime">--:--</div>
+        <div class="game-stat-label">Fastest clear</div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>📈</span><span>Average Time</span></div>
+        <div class="game-stat-value" id="glyphAvgTime">--:--</div>
+        <div class="game-stat-label">Average clear</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-gray-700/40 p-4 rounded-lg border border-fuchsia-500/30">
+        <h4 class="font-semibold text-green-300 mb-2">Easy</h4>
+        <div id="glyphEasyStats">Loading...</div>
+      </div>
+
+      <div class="bg-gray-700/40 p-4 rounded-lg border border-fuchsia-500/30">
+        <h4 class="font-semibold text-yellow-300 mb-2">Medium</h4>
+        <div id="glyphMediumStats">Loading...</div>
+      </div>
+
+      <div class="bg-gray-700/40 p-4 rounded-lg border border-fuchsia-500/30">
+        <h4 class="font-semibold text-red-300 mb-2">Hard</h4>
+        <div id="glyphHardStats">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
 
       <!-- Cheese Hunt Tab -->
       <div id="cheeseHuntTab" class="game-tab-content" style="display: none;">
@@ -3990,7 +4038,8 @@
         </div>
       </div>
       
-      <!-- Additional Game Statistics -->
+      <!-- Ovview panels ew panel erAdmin Game Management -->
+      <!-- Additional Game Statistics Cards for Admin Game Management -->
       <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Cheese Hunt Statistics -->
         <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
@@ -4013,6 +4062,14 @@
           <h4 class="font-semibold text-orange-400 mb-3">💥 Cheese Rumble Statistics</h4>
           <div id="cheeseRumbleStats" class="space-y-2">
             <div class="text-gray-300">Loading cheese rumble stats...</div>
+          </div>
+        </div>
+
+        <!-- Glyph Memory Statistics -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-cyan-400 mb-3">🔮 Glyph Memory Statistics</h4>
+          <div id="glyphOverviewStats" class="space-y-2">
+            <div class="text-gray-300">Loading glyph memory stats...</div>
           </div>
         </div>
       </div>
@@ -6227,7 +6284,7 @@
           } else if (tabName === 'games') {
             // Game Management - Load all data after tab animation completes
             console.log('🎮 Loading Game Management data...');
-            
+
             // Fix white space issue - scroll to top of tab content
             setTimeout(() => {
               const gamesTab = document.getElementById('gamesTab');
@@ -6235,68 +6292,39 @@
                 gamesTab.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
             }, 100);
-            
+
             // Wait for tab animation to complete before loading data
-            setTimeout(() => {
-            loadGameOverview();
-            loadSeasonStats();
-            loadGameSettings();
-            loadCurrentSeasonSettings();
-            
-            // Load all game data with auto-refresh
-            loadTetrisData();
-            loadSnakeData();
-            loadSpaceInvadersData();
-            loadCheeseHuntData();
-            loadDiscordRaceData();
-            
-            // Switch to overview tab by default
-            setTimeout(() => {
-          console.log('🔄 Switching to overview tab by default...');
-              switchGameTab('overview');
-          
-          // Force show the overview tab
-          setTimeout(() => {
-            const overviewTab = document.getElementById('overviewTab');
-            if (overviewTab) {
-              overviewTab.style.display = 'block';
-              overviewTab.style.visibility = 'visible';
-              overviewTab.style.opacity = '1';
-              overviewTab.classList.add('show-tab');
-              console.log('✅ Overview tab forced visible after switch');
-            }
-          }, 200);
-            }, 100);
-              
+            setTimeout(async () => {
+              await loadGameOverview();
+              loadSeasonStats();
+              loadGameSettings();
+              loadCurrentSeasonSettings();
+
+              // NEW: load all 7 games through the canonical registry
+              await refreshAllGameData();
+
+              // Switch to overview tab by default
+              setTimeout(() => {
+                console.log('🔄 Switching to overview tab by default...');
+                switchGameTab('overview');
+
+                // Force show the overview tab
+                setTimeout(() => {
+                  const overviewTab = document.getElementById('overviewTab');
+                  if (overviewTab) {
+                    overviewTab.style.display = 'block';
+                    overviewTab.style.visibility = 'visible';
+                    overviewTab.style.opacity = '1';
+                    overviewTab.classList.add('show-tab');
+                    console.log('✅ Overview tab forced visible after switch');
+                  }
+                }, 200);
+              }, 100);
+
               // Display any pending data that was loaded while tab was hidden
               displayPendingGameData();
-              
-              // 🔧 CRITICAL FIX: Force display of loaded data after tab switch
-              setTimeout(() => {
-                console.log('🔄 Force displaying loaded game data after tab switch...');
-                if (window.pendingTetrisData) {
-                  console.log('📊 Force displaying pending Tetris data...');
-                  displayTetrisData(window.pendingTetrisData);
-                  delete window.pendingTetrisData;
-                }
-                if (window.pendingSnakeData) {
-                  console.log('🐍 Force displaying pending Snake data...');
-                  displaySnakeData(window.pendingSnakeData);
-                  delete window.pendingSnakeData;
-                }
-                if (window.pendingSpaceInvadersData) {
-                  console.log('👾 Force displaying pending Space Invaders data...');
-                  displaySpaceInvadersData(window.pendingSpaceInvadersData);
-                  delete window.pendingSpaceInvadersData;
-                }
-                if (window.pendingDiscordRaceData) {
-                  console.log('🏁 Force displaying pending Discord Race data...');
-                  displayDiscordRaceData(window.pendingDiscordRaceData);
-                  delete window.pendingDiscordRaceData;
-                }
-              }, 300); // Wait for tab switch animation to complete
-              
-            addLog('🎮 Game management tab auto-loaded with all game data');
+
+              addLog('🎮 Game management tab auto-loaded with canonical 7-game refresh');
             }, 250); // Wait for tab animation to complete
             
           } else if (tabName === 'games2') {
@@ -6405,15 +6433,21 @@
           displayDiscordRaceData(window.pendingDiscordRaceData);
           delete window.pendingDiscordRaceData;
         }
+
+        if (window.pendingGlyphMemoryData) {
+          console.log('🔮 Displaying pending Glyph Memory data...');
+          displayGlyphMemoryData(window.pendingGlyphMemoryData);
+          delete window.pendingGlyphMemoryData;
+        }
         
         console.log('✅ Pending game data display completed');
-      }, 100); // Small delay to ensure DOM is ready
+      }, 100);
     }
 
-    // Load overview game statistics for all 5 games in Overview Dashboard
+    // Acive renderr  functions in Load overview game statistics for all 7 games in Overview Dashboard
     async function loadOverviewGameStats() {
-      console.log('🔄 Loading overview game statistics for all 5 games...');
-      addLog('🔄 Loading overview game statistics for all 5 games...');
+      console.log('🔄 Loading overview game statistics for all overview panels...');
+addLog('🔄 Loading overview game statistics for all overview panels...');
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
@@ -6483,25 +6517,46 @@
             console.log('⚠️ No Discord Race data found');
             displayOverviewDiscordRaceStats({});
           }
+          // Load Glyph Memory statistics
+if (games.glyph_memory) {
+  console.log('🔮 Glyph Memory data found:', games.glyph_memory);
+  displayOverviewGlyphStats(games.glyph_memory);
+} else {
+  console.log('⚠️ No Glyph Memory data found');
+  displayOverviewGlyphStats({});
+}
+// Load Cheese Rumble statistics
+if (games.cheese_rumble) {
+  console.log('💥 Cheese Rumble data found:', games.cheese_rumble);
+  displayOverviewCheeseRumbleStats(games.cheese_rumble);
+
+  // Load Cheese Rumble top players
+  // TODO: Keep both access paths temporarily for rollback safety until the API shape is fully normalized.
+  const rumbleTopPlayers =
+    games.cheese_rumble.top_players ||
+    games.cheese_rumble.season_data?.top_players ||
+    [];
+
+  console.log('💥 Cheese Rumble top players resolved:', rumbleTopPlayers);
+  displayOverviewRumbleTopPlayers(rumbleTopPlayers);
+} else {
+  console.log('⚠️ No Cheese Rumble data found');
+  displayOverviewCheeseRumbleStats({});
+  displayOverviewRumbleTopPlayers([]);
+}
+
+          // Load Recent Activity
+          // TODO: Keep multiple lookup paths temporarily until the consolidated API activity field is fully verified.
+          const recentActivity =
+            data.data.recent_activity ||
+            data.data.overview?.recent_activity ||
+            [];
+
+          console.log('📊 Recent activity resolved:', recentActivity);
+          displayRecentActivity(Array.isArray(recentActivity) ? recentActivity : []);
           
-          // Load Cheese Rumble statistics
-          if (games.cheese_rumble) {
-            console.log('💥 Cheese Rumble data found:', games.cheese_rumble);
-            displayOverviewCheeseRumbleStats(games.cheese_rumble);
-            // Load Cheese Rumble top players
-            if (games.cheese_rumble.season_data && games.cheese_rumble.season_data.top_players) {
-              displayOverviewRumbleTopPlayers(games.cheese_rumble.season_data.top_players);
-            } else {
-              displayOverviewRumbleTopPlayers([]);
-            }
-          } else {
-            console.log('⚠️ No Cheese Rumble data found');
-            displayOverviewCheeseRumbleStats({});
-            displayOverviewRumbleTopPlayers([]);
-          }
-          
-          console.log('✅ Overview game statistics loaded successfully for all 6 games');
-          addLog('✅ Overview game statistics loaded successfully for all 6 games');
+          console.log('✅ Overview game statistics loaded successfully for all overview panels');
+addLog('✅ Overview game statistics loaded successfully for all overview panels');
           
           // Update dashboard status
           updateDashboardStatus('Games data loaded');
@@ -6519,6 +6574,8 @@
           displayOverviewDiscordRaceStats({});
           displayOverviewCheeseRumbleStats({});
           displayOverviewRumbleTopPlayers([]);
+          displayOverviewGlyphStats({});
+          displayRecentActivity([]);
         }
       } catch (error) {
         console.error(`❌ Overview game statistics loading error: ${error.message}`);
@@ -6531,6 +6588,10 @@
         displayOverviewSpaceInvadersTopPlayers({});
         displayOverviewCheeseHuntStats({});
         displayOverviewDiscordRaceStats({});
+        displayOverviewCheeseRumbleStats({});
+        displayOverviewRumbleTopPlayers([]);
+        displayOverviewGlyphStats({});
+        displayRecentActivity([]);
       }
     }
 
@@ -6603,7 +6664,7 @@
       });
     }
 
-    // Display Tetris top players in Overview Dashboard
+    // Here are all Displays in game manage em- Display Tetris top players in Overview Dashboard
     function displayOverviewTetrisTopPlayers(players) {
       const container = document.getElementById('tetrisTopPlayers');
       if (!container) {
@@ -6764,7 +6825,7 @@
                 <span class="text-sm font-semibold text-gray-300">#${index + 1}</span>
                 <div>
                   <div class="text-sm font-semibold text-white">${player.username || 'Unknown'}</div>
-                  <div class="text-xs text-gray-400">${player.user_id || 'N/A'}</div>
+                  <div class="text-xs text-gray-400">${player.discord_id || player.user_id || 'N/A'}</div>
                 </div>
               </div>
               <div class="text-right">
@@ -6793,7 +6854,6 @@
 
       try {
         const currentData = cheeseData.season_data || {};
-        const allTimeData = cheeseData.all_time || {};
         
         statsElement.innerHTML = `
           <div class="grid grid-cols-2 gap-4">
@@ -6825,44 +6885,45 @@
     }
 
     // Display Discord Race statistics in Overview Dashboard
-    function displayOverviewDiscordRaceStats(raceData) {
-      const statsElement = document.getElementById('discordRaceStats');
-      if (!statsElement) {
-        console.error('Discord Race stats element not found');
-        return;
-      }
+function displayOverviewDiscordRaceStats(raceData) {
+  const statsElement = document.getElementById('discordRaceStats');
+  if (!statsElement) {
+    console.error('Discord Race stats element not found');
+    return;
+  }
 
-      try {
-        const raceStats = raceData.race_data || {};
-        
-        statsElement.innerHTML = `
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-gray-700 p-3 rounded-lg">
-              <div class="text-sm text-gray-400">Total Races</div>
-              <div class="text-xl font-bold text-purple-400">${raceStats.total_races || 0}</div>
-            </div>
-            <div class="bg-gray-700 p-3 rounded-lg">
-              <div class="text-sm text-gray-400">Total Participants</div>
-              <div class="text-xl font-bold text-blue-400">${raceStats.total_participants || 0}</div>
-            </div>
-            <div class="bg-gray-700 p-3 rounded-lg">
-              <div class="text-sm text-gray-400">Prizes Awarded</div>
-              <div class="text-xl font-bold text-yellow-400">${raceStats.total_prizes_awarded || 0}</div>
-            </div>
-            <div class="bg-gray-700 p-3 rounded-lg">
-              <div class="text-sm text-gray-400">Recent 24h</div>
-              <div class="text-xl font-bold text-green-400">${raceStats.recent_24h || 0}</div>
-            </div>
-          </div>
-          <div class="mt-3 text-xs text-gray-400">
-            Recent 7d: ${raceStats.recent_7d || 0} | Current Race: ${raceStats.current_race ? 'Active' : 'None'}
-          </div>
-        `;
-      } catch (error) {
-        console.error('Error displaying overview Discord Race stats:', error);
-        statsElement.innerHTML = '<div class="text-red-400">Error loading Discord Race statistics</div>';
-      }
-    }
+  try {
+        // TODO: Deprecated legacy overview fallback kept temporarily for rollback safety.
+    const raceStats = raceData.season_data || raceData.race_data || {};
+
+    statsElement.innerHTML = `
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-gray-700 p-3 rounded-lg">
+          <div class="text-sm text-gray-400">Total Races</div>
+          <div class="text-xl font-bold text-purple-400">${raceStats.total_races || raceStats.total_entries || 0}</div>
+        </div>
+        <div class="bg-gray-700 p-3 rounded-lg">
+          <div class="text-sm text-gray-400">Total Participants</div>
+          <div class="text-xl font-bold text-blue-400">${raceStats.unique_players || raceStats.total_participants || 0}</div>
+        </div>
+        <div class="bg-gray-700 p-3 rounded-lg">
+          <div class="text-sm text-gray-400">Wins</div>
+          <div class="text-xl font-bold text-yellow-400">${raceStats.wins || 0}</div>
+        </div>
+        <div class="bg-gray-700 p-3 rounded-lg">
+          <div class="text-sm text-gray-400">Recent 24h</div>
+          <div class="text-xl font-bold text-green-400">${raceStats.recent_24h || 0}</div>
+        </div>
+      </div>
+      <div class="mt-3 text-xs text-gray-400">
+        Recent 7d: ${raceStats.recent_7d || 0}
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error displaying overview Discord Race stats:', error);
+    statsElement.innerHTML = '<div class="text-red-400">Error loading Discord Race statistics</div>';
+  }
+}
 
     function displayOverviewCheeseRumbleStats(rumbleData) {
       const statsElement = document.getElementById('cheeseRumbleStats');
@@ -6900,6 +6961,46 @@
       } catch (error) {
         console.error('Error displaying overview Cheese Rumble stats:', error);
         statsElement.innerHTML = '<div class="text-red-400">Error loading Cheese Rumble statistics</div>';
+      }
+    }
+
+        // Display Glyph Memory statistics in Overview Dashboard
+    function displayOverviewGlyphStats(glyphData) {
+      const statsElement = document.getElementById('glyphOverviewStats');
+      if (!statsElement) {
+        console.error('Glyph Memory overview stats element not found');
+        return;
+      }
+
+      try {
+        const glyphStats = glyphData.season_data || {};
+
+        statsElement.innerHTML = `
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Total Runs</div>
+              <div class="text-xl font-bold text-cyan-400">${glyphStats.total_runs || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Unique Players</div>
+              <div class="text-xl font-bold text-blue-400">${glyphStats.unique_players || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Best Time</div>
+              <div class="text-xl font-bold text-green-400">${glyphStats.best_time_formatted || '--:--'}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Avg Time</div>
+              <div class="text-xl font-bold text-purple-400">${glyphStats.avg_time_formatted || '--:--'}</div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-gray-400">
+            Recent 24h: ${glyphStats.recent_24h || 0} | Recent 7d: ${glyphStats.recent_7d || 0}
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error displaying overview Glyph Memory stats:', error);
+        statsElement.innerHTML = '<div class="text-red-400">Error loading Glyph Memory statistics</div>';
       }
     }
 
@@ -13880,8 +13981,160 @@ function updateGameTabContent(gameType, gameData) {
       
       addLog('✅ Game management data loaded successfully');
     }
+
+        // ===== CANONICAL 7-GAME REGISTRY =====
+    // This is the single source of truth for Game Management.
+    // All game tabs, labels, tab ids, and loaders should read from here.
+    const GAME_MANAGEMENT_REGISTRY = {
+      overview: {
+        key: 'overview',
+        label: '📊 Overview Dashboard',
+        buttonLabel: '📊 Overview Dashboard',
+        tabId: 'overviewTab',
+        tabButtonSelector: '[data-game-tab="overview"]',
+        load: async () => {
+          await forceLoadOverviewData();
+        },
+        refresh: async () => {
+          await forceRefreshTabDisplay('overview');
+        }
+      },
+      tetris: {
+        key: 'tetris',
+        label: '🧩 Tetris',
+        buttonLabel: '🧩 Tetris',
+        tabId: 'tetrisTab',
+        tabButtonSelector: '[data-game-tab="tetris"]',
+        load: async () => {
+          await forceLoadTetrisData();
+        },
+        refresh: async () => {
+          await forceRefreshTabDisplay('tetris');
+        }
+      },
+      snake: {
+        key: 'snake',
+        label: '🐍 Snake',
+        buttonLabel: '🐍 Snake',
+        tabId: 'snakeTab',
+        tabButtonSelector: '[data-game-tab="snake"]',
+        load: async () => {
+          await forceLoadSnakeData();
+        },
+        refresh: async () => {
+          await forceRefreshTabDisplay('snake');
+        }
+      },
+      'space-invaders': {
+        key: 'space-invaders',
+        label: '👾 Space Invaders',
+        buttonLabel: '👾 Space Invaders',
+        tabId: 'spaceInvadersTab',
+        tabButtonSelector: '[data-game-tab="space-invaders"]',
+        load: async () => {
+          await forceLoadSpaceInvadersData();
+        },
+        refresh: async () => {
+          await forceRefreshTabDisplay('space-invaders');
+        }
+      },
+      'cheese-hunt': {
+        key: 'cheese-hunt',
+        label: '🧀 Cheese Hunt',
+        buttonLabel: '🧀 Cheese Hunt',
+        tabId: 'cheeseHuntTab',
+        tabButtonSelector: '[data-game-tab="cheese-hunt"]',
+        load: async () => {
+          await forceLoadCheeseHuntData();
+        },
+        refresh: async () => {
+          await forceRefreshTabDisplay('cheese-hunt');
+        }
+      },
+      'discord-race': {
+        key: 'discord-race',
+        label: '🏁 Discord Race',
+        buttonLabel: '🏁 Discord Race',
+        tabId: 'discordRaceTab',
+        tabButtonSelector: '[data-game-tab="discord-race"]',
+        load: async () => {
+          await forceLoadDiscordRaceData();
+        },
+        refresh: async () => {
+          await forceRefreshTabDisplay('discord-race');
+        }
+      },
+      'cheese-rumble': {
+        key: 'cheese-rumble',
+        label: '💥 Cheese Rumble',
+        buttonLabel: '💥 Cheese Rumble',
+        tabId: 'cheeseRumbleTab',
+        tabButtonSelector: '[data-game-tab="cheese-rumble"]',
+        load: async () => {
+          if (typeof forceLoadCheeseRumbleData === 'function') {
+            await forceLoadCheeseRumbleData();
+          } else if (typeof loadCheeseRumbleData === 'function') {
+            await loadCheeseRumbleData();
+          } else {
+            addLog('⚠️ Cheese Rumble loader not found');
+          }
+        },
+        refresh: async () => {
+          await forceRefreshTabDisplay('cheese-rumble');
+        }
+      },
+      'glyph-memory': {
+        key: 'glyph-memory',
+        label: '🔮 Glyph Memory',
+        buttonLabel: '🔮 Glyph',
+        tabId: 'glyphMemoryTab',
+        tabButtonSelector: '[data-game-tab="glyph-memory"]',
+          load: async () => {
+    await loadGlyphMemoryData();
+  },
+        refresh: async () => {
+          await forceRefreshTabDisplay('glyph-memory');
+        }
+      }
+    };
+
+    function getGameManagementConfig(tabName) {
+      return GAME_MANAGEMENT_REGISTRY[tabName] || null;
+    }
+
+    function getAllGameManagementTabKeys() {
+      return Object.keys(GAME_MANAGEMENT_REGISTRY);
+    }
+
+        async function refreshAllGameData() {
+      addLog('🔄 Refreshing all Game Management tabs from canonical registry.');
+
+      const tabKeys = getAllGameManagementTabKeys().filter(key => key !== 'overview' && key !== 'system');
+
+      for (const tabKey of tabKeys) {
+        const gameConfig = getGameManagementConfig(tabKey);
+
+        try {
+          if (gameConfig && typeof gameConfig.load === 'function') {
+            await gameConfig.load();
+          }
+
+          if (gameConfig && typeof gameConfig.refresh === 'function') {
+            await gameConfig.refresh();
+          }
+
+          addLog(`✅ Refreshed ${tabKey}`);
+        } catch (error) {
+          addLog(`❌ Failed to refresh ${tabKey}: ${error.message}`);
+        }
+      }
+
+      await loadGameOverview();
+      addLog('✅ All game tabs refreshed from canonical registry');
+    }
+
     
-    // Tab switching functionality
+    // Helper above this here - Tab switching functionality
     function switchGameTab(tabName) {
       console.log('🔄 switchGameTab called with:', tabName);
       
@@ -13911,21 +14164,17 @@ function updateGameTabContent(gameType, gameData) {
       allButtons.forEach(btn => btn.classList.remove('active'));
       
       // Map button names to actual tab IDs
-      const tabMapping = {
-        'overview': 'overviewTab',
-        'tetris': 'tetrisTab',
-        'snake': 'snakeTab',
-        'space-invaders': 'spaceInvadersTab',
-        'cheese-invaders': 'cheeseInvadersTab',
-        'cheese-hunt': 'cheeseHuntTab',
-        'discord-race': 'discordRaceTab',
-        'cheese-rumble': 'cheeseRumbleTab'
-      };
-      
-      // Show selected tab and activate button
-      const selectedTabId = tabMapping[tabName];
+      const gameConfig = getGameManagementConfig(tabName);
+
+      if (!gameConfig) {
+        console.error('❌ Unknown Game Management tab:', tabName);
+        addLog(`❌ Unknown Game Management tab: ${tabName}`);
+        return;
+      }
+
+      const selectedTabId = gameConfig.tabId;
       const selectedTab = document.getElementById(selectedTabId);
-      const selectedButton = document.querySelector(`[data-game-tab="${tabName}"]`);
+      const selectedButton = document.querySelector(gameConfig.tabButtonSelector);
       
       console.log('Selected tab ID:', selectedTabId);
       console.log('Selected tab element:', selectedTab);
@@ -14027,6 +14276,9 @@ function updateGameTabContent(gameType, gameData) {
         
         if (data.success) {
           displayGameOverview(data);
+          if (data.data && data.data.games && data.data.games.glyph_memory) {
+          displayGlyphMemoryData(data.data.games.glyph_memory);
+          }
           
           // 🚀 NEW: Also load season overview
           await loadSeasonOverview();
@@ -14044,120 +14296,274 @@ function updateGameTabContent(gameType, gameData) {
       try {
         console.log('📊 Dashboard data received:', data);
         console.log('📊 Dashboard data structure:', JSON.stringify(data, null, 2));
-        
-        // Update system overview cards - Fix data path to use data.data.overview
-        if (data.data && data.data.overview) {
-          const overview = data.data.overview;
-          console.log('📊 Overview data:', overview);
-          
-          if (document.getElementById('totalActivePlayers')) {
-            document.getElementById('totalActivePlayers').textContent = overview.total_active_players || '-';
-            console.log('📊 Updated totalActivePlayers:', overview.total_active_players || '-');
-          }
-          if (document.getElementById('totalWeeklyPlayers')) {
-            document.getElementById('totalWeeklyPlayers').textContent = overview.total_weekly_players || '-';
-            console.log('📊 Updated totalWeeklyPlayers:', overview.total_weekly_players || '-');
-          }
-          if (document.getElementById('totalGamesPlayed')) {
-            document.getElementById('totalGamesPlayed').textContent = overview.total_games_played || '-';
-            console.log('📊 Updated totalGamesPlayed:', overview.total_games_played || '-');
-          }
-          if (document.getElementById('totalGamesToday')) {
-            document.getElementById('totalGamesToday').textContent = overview.total_games_today || '-';
-            console.log('📊 Updated totalGamesToday:', overview.total_games_today || '-');
-          }
-          if (document.getElementById('topPerformersWeek')) {
-            document.getElementById('topPerformersWeek').textContent = overview.top_performers_week || '-';
-            console.log('📊 Updated topPerformersWeek:', overview.top_performers_week || '-');
-          }
-          if (document.getElementById('topPerformersAllTime')) {
-            document.getElementById('topPerformersAllTime').textContent = overview.top_performers_all_time || '-';
-            console.log('📊 Updated topPerformersAllTime:', overview.top_performers_all_time || '-');
-          }
-        } else {
-          console.log('❌ No overview data found in response - checking data.data.overview');
-          // Try alternative data structure
-          if (data.data && data.data.games) {
-            console.log('📊 Found games data, updating overview with game summaries');
-            updateOverviewWithGameSummaries(data.data.games);
-          }
+
+        if (!data || !data.data || !data.data.overview) {
+          console.warn('❌ No overview data found in response');
+          addLog('❌ No overview data found in game stats response');
+          return;
         }
 
-        // Update daily activity chart (placeholder for now)
+        const overview = data.data.overview;
+        const games = data.data.games || {};
+
+        console.log('📊 Normalized overview data:', overview);
+
+        // Core overview cards
+        const totalActivePlayersEl = document.getElementById('totalActivePlayers');
+        if (totalActivePlayersEl) {
+          totalActivePlayersEl.textContent = overview.true_unique_players ?? '-';
+        }
+
+        const totalWeeklyPlayersEl = document.getElementById('totalWeeklyPlayers');
+        if (totalWeeklyPlayersEl) {
+          totalWeeklyPlayersEl.textContent = overview.summed_unique_player_entries ?? '-';
+        }
+
+        const totalGamesPlayedEl = document.getElementById('totalGamesPlayed');
+        if (totalGamesPlayedEl) {
+          totalGamesPlayedEl.textContent = overview.total_entries ?? '-';
+        }
+
+        const totalGamesTodayEl = document.getElementById('totalGamesToday');
+        if (totalGamesTodayEl) {
+          totalGamesTodayEl.textContent = overview.games_with_activity ?? '-';
+        }
+
+        // Compute top performer labels from available game data
+        let topPerformerWeek = '-';
+        let topPerformerAllTime = '-';
+
+        // Prefer glyph easy #1 for all-time if it exists, otherwise fall back to Tetris
+        if (
+          games.glyph_memory &&
+          games.glyph_memory.top_players &&
+          games.glyph_memory.top_players.easy &&
+          games.glyph_memory.top_players.easy.length > 0
+        ) {
+          topPerformerAllTime = games.glyph_memory.top_players.easy[0].username || 'Unknown';
+        } else if (
+          games.tetris &&
+          games.tetris.top_players &&
+          games.tetris.top_players.length > 0
+        ) {
+          topPerformerAllTime = games.tetris.top_players[0].username || 'Unknown';
+        }
+
+        // Weekly performer fallback based on recent activity preference
+        if (
+          games.tetris &&
+          games.tetris.top_players &&
+          games.tetris.top_players.length > 0
+        ) {
+          topPerformerWeek = games.tetris.top_players[0].username || 'Unknown';
+        }
+
+        const topPerformersWeekEl = document.getElementById('topPerformersWeek');
+        if (topPerformersWeekEl) {
+          topPerformersWeekEl.textContent = topPerformerWeek;
+        }
+
+        const topPerformersAllTimeEl = document.getElementById('topPerformersAllTime');
+        if (topPerformersAllTimeEl) {
+          topPerformersAllTimeEl.textContent = topPerformerAllTime;
+        }
+
+        // Current season status strip
+        const overviewSeasonNameEl = document.getElementById('overviewSeasonName');
+        if (overviewSeasonNameEl) {
+          overviewSeasonNameEl.textContent = overview.current_season || 'Unknown Season';
+        }
+
+        const overviewSeasonGamesEl = document.getElementById('overviewSeasonGames');
+        if (overviewSeasonGamesEl) {
+          overviewSeasonGamesEl.textContent = overview.total_entries ?? 0;
+        }
+
+        const overviewSeasonPlayersEl = document.getElementById('overviewSeasonPlayers');
+        if (overviewSeasonPlayersEl) {
+          overviewSeasonPlayersEl.textContent = `${overview.true_unique_players ?? 0} Players`;
+        }
+
+        // Season progress is not provided by the normalized API yet
+        const overviewSeasonProgressEl = document.getElementById('overviewSeasonProgress');
+        if (overviewSeasonProgressEl) {
+          overviewSeasonProgressEl.textContent = `${overview.games_with_activity ?? 0}/${overview.games_configured ?? 7}`;
+        }
+
+        const overviewSeasonTimeLeftEl = document.getElementById('overviewSeasonTimeLeft');
+        if (overviewSeasonTimeLeftEl) {
+          overviewSeasonTimeLeftEl.textContent = `${overview.games_configured ?? 7} configured`;
+        }
+
+        const overviewSeasonDatesEl = document.getElementById('overviewSeasonDates');
+        if (overviewSeasonDatesEl) {
+          overviewSeasonDatesEl.textContent = overview.last_updated || '-';
+        }
+
+        // System status
+        const dataLoadStatusEl = document.getElementById('dataLoadStatus');
+        if (dataLoadStatusEl) {
+          dataLoadStatusEl.textContent = '✅ All Data Ready';
+        }
+
+        // Placeholder areas
         const dailyChart = document.getElementById('dailyActivityChart');
         if (dailyChart) {
-          dailyChart.innerHTML = '<div class="text-green-400 text-center">📊 Daily activity data loaded</div>';
+          dailyChart.innerHTML = `
+            <div class="text-green-400 text-center">
+              📊 Daily activity data loaded
+            </div>
+          `;
         }
 
-        // Update weekly performance
         const weeklyPerf = document.getElementById('weeklyPerformance');
-        if (weeklyPerf && data.data && data.data.overview) {
-          const overview = data.data.overview;
+        if (weeklyPerf) {
           weeklyPerf.innerHTML = `
-            <div class="bg-gray-600 p-2 rounded mb-2">
-              <div class="flex justify-between text-sm">
-                <span>🎮 Total Games This Week</span>
-                <span class="font-semibold">${overview.total_games_week || 0}</span>
+            <div class="space-y-2">
+              <div class="flex justify-between bg-gray-600/50 px-3 py-1 rounded">
+                <span>🎮 Games With Activity</span>
+                <span>${overview.games_with_activity ?? 0}</span>
               </div>
-            </div>
-            <div class="bg-gray-600 p-2 rounded mb-2">
-              <div class="flex justify-between text-sm">
-                <span>👥 New Players This Week</span>
-                <span class="font-semibold">${overview.new_players_week || 0}</span>
+              <div class="flex justify-between bg-gray-600/50 px-3 py-1 rounded">
+                <span>👥 True Unique Players</span>
+                <span>${overview.true_unique_players ?? 0}</span>
               </div>
-            </div>
-            <div class="bg-gray-600 p-2 rounded mb-2">
-              <span>📈 Growth Rate</span>
-              <span class="font-semibold text-green-400">+${overview.growth_rate || 0}%</span>
-            </div>
-          `;
-        } else if (weeklyPerf && data.data && data.data.games) {
-          // Fallback to game summaries if no overview data
-          const games = data.data.games;
-          const totalGames = Object.values(games).reduce((sum, game) => {
-            if (game.season_data && game.season_data.total_scores) {
-              return sum + game.season_data.total_scores;
-            }
-            if (game.current_data && game.current_data.total_clicks) {
-              return sum + game.current_data.total_clicks;
-            }
-            if (game.season_data && game.season_data.total_rumbles) {
-              // Cheese Rumble uses total_rumbles
-              return sum + game.season_data.total_rumbles;
-            }
-            if (game.season_data && game.season_data.total_races) {
-              // Discord Race uses total_races
-              return sum + game.season_data.total_races;
-            }
-            return sum;
-          }, 0);
-          
-          weeklyPerf.innerHTML = `
-            <div class="bg-gray-600 p-2 rounded mb-2">
-              <div class="flex justify-between text-sm">
-                <span>🎮 Total Games This Week</span>
-                <span class="font-semibold">${totalGames}</span>
-              </div>
-            </div>
-            <div class="bg-gray-600 p-2 rounded mb-2">
-              <div class="flex justify-between text-sm">
-                <span>👥 Active Games</span>
-                <span class="font-semibold">${Object.keys(games).length}</span>
-              </div>
-            </div>
-            <div class="bg-gray-600 p-2 rounded mb-2">
-              <div class="flex justify-between text-sm">
-                <span>📊 Data Source</span>
-                <span class="font-semibold text-blue-400">Game Stats</span>
+              <div class="flex justify-between bg-gray-600/50 px-3 py-1 rounded">
+                <span>🧮 Total Entries</span>
+                <span>${overview.total_entries ?? 0}</span>
               </div>
             </div>
           `;
         }
-              } catch (error) {
-          console.error('Error displaying game overview:', error);
-          addLog(`❌ Error displaying game overview: ${error.message}`);
+
+        addLog('✅ Game overview rendered with normalized API fields');
+      } catch (error) {
+        console.error('❌ Error displaying game overview:', error);
+        addLog(`❌ Error displaying game overview: ${error.message}`);
+      }
+    }
+
+        async function loadGlyphMemoryData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔮 Loading Glyph Memory data...');
+
+      const glyphTab = document.getElementById('glyphMemoryTab');
+      if (glyphTab) {
+        glyphTab.classList.add('loading');
+      }
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.games && data.data.games.glyph_memory) {
+          displayGlyphMemoryData(data.data.games.glyph_memory);
+          addLog('✅ Glyph Memory data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Glyph Memory data: ${data.error || 'No Glyph data available'}`);
+          displayGlyphMemoryData(null);
+        }
+      } catch (error) {
+        addLog(`❌ Glyph Memory data loading error: ${error.message}`);
+        displayGlyphMemoryData(null);
+      } finally {
+        if (glyphTab) {
+          glyphTab.classList.remove('loading');
         }
       }
+    }
+
+    function displayGlyphMemoryData(glyphData) {
+      try {
+        const gamesTab = document.getElementById('gamesTab');
+        if (!gamesTab || gamesTab.style.display === 'none') {
+          console.log('⚠️ Games tab not visible, deferring Glyph Memory data display');
+          window.pendingGlyphMemoryData = glyphData;
+          return;
+        }
+
+        if (!glyphData || !glyphData.season_data) {
+          if (document.getElementById('glyphTotalRuns')) {
+            document.getElementById('glyphTotalRuns').textContent = '0';
+          }
+          if (document.getElementById('glyphUniquePlayers')) {
+            document.getElementById('glyphUniquePlayers').textContent = '0';
+          }
+          if (document.getElementById('glyphBestTime')) {
+            document.getElementById('glyphBestTime').textContent = '--:--';
+          }
+          if (document.getElementById('glyphAvgTime')) {
+            document.getElementById('glyphAvgTime').textContent = '--:--';
+          }
+          if (document.getElementById('glyphEasyStats')) {
+            document.getElementById('glyphEasyStats').innerHTML = '<div class="text-gray-400">No Easy data yet</div>';
+          }
+          if (document.getElementById('glyphMediumStats')) {
+            document.getElementById('glyphMediumStats').innerHTML = '<div class="text-gray-400">No Medium data yet</div>';
+          }
+          if (document.getElementById('glyphHardStats')) {
+            document.getElementById('glyphHardStats').innerHTML = '<div class="text-gray-400">No Hard data yet</div>';
+          }
+          return;
+        }
+
+        const seasonData = glyphData.season_data;
+        const breakdown = seasonData.difficulty_breakdown || {};
+
+        if (document.getElementById('glyphTotalRuns')) {
+          document.getElementById('glyphTotalRuns').textContent = (seasonData.total_runs || 0).toLocaleString();
+        }
+        if (document.getElementById('glyphUniquePlayers')) {
+          document.getElementById('glyphUniquePlayers').textContent = (seasonData.unique_players || 0).toLocaleString();
+        }
+        if (document.getElementById('glyphBestTime')) {
+          document.getElementById('glyphBestTime').textContent = seasonData.best_time_formatted || '--:--';
+        }
+        if (document.getElementById('glyphAvgTime')) {
+          document.getElementById('glyphAvgTime').textContent = seasonData.avg_time_formatted || '--:--';
+        }
+
+        const easy = breakdown.easy || {};
+        const medium = breakdown.medium || {};
+        const hard = breakdown.hard || {};
+
+        if (document.getElementById('glyphEasyStats')) {
+          document.getElementById('glyphEasyStats').innerHTML = `
+            <div>Total Runs: ${(easy.total_runs || 0).toLocaleString()}</div>
+            <div>Players: ${(easy.unique_players || 0).toLocaleString()}</div>
+            <div>Best: ${easy.best_time_formatted || '--:--'}</div>
+            <div>Avg: ${easy.avg_time_formatted || '--:--'}</div>
+          `;
+        }
+
+        if (document.getElementById('glyphMediumStats')) {
+          document.getElementById('glyphMediumStats').innerHTML = `
+            <div>Total Runs: ${(medium.total_runs || 0).toLocaleString()}</div>
+            <div>Players: ${(medium.unique_players || 0).toLocaleString()}</div>
+            <div>Best: ${medium.best_time_formatted || '--:--'}</div>
+            <div>Avg: ${medium.avg_time_formatted || '--:--'}</div>
+          `;
+        }
+
+        if (document.getElementById('glyphHardStats')) {
+          document.getElementById('glyphHardStats').innerHTML = `
+            <div>Total Runs: ${(hard.total_runs || 0).toLocaleString()}</div>
+            <div>Players: ${(hard.unique_players || 0).toLocaleString()}</div>
+            <div>Best: ${hard.best_time_formatted || '--:--'}</div>
+            <div>Avg: ${hard.avg_time_formatted || '--:--'}</div>
+          `;
+        }
+
+        addLog('✅ Glyph Memory tab display refreshed');
+      } catch (error) {
+        console.error('❌ Error displaying Glyph Memory data:', error);
+        addLog(`❌ Error displaying Glyph Memory data: ${error.message}`);
+      }
+    }
 
       // Function to update overview with game summaries when overview data is not available
       function updateOverviewWithGameSummaries(games) {
@@ -18626,6 +19032,7 @@ function updateGameTabContent(gameType, gameData) {
     let discordFeedInterval = null;
     let discordFeedActive = false;
     let discordEventCount = 0;
+    let discordSeenEvents = new Set();
 
     function toggleDiscordFeed() {
       const button = document.getElementById('toggleDiscordFeed');
@@ -18654,33 +19061,78 @@ function updateGameTabContent(gameType, gameData) {
     function startDiscordFeed() {
       // Clear existing feed
       clearDiscordFeed();
-      
-      // Start polling for Discord events
-      discordFeedInterval = setInterval(async () => {
+
+      /**
+       * Load Discord activity from the preferred real-time endpoint first,
+       * then safely fall back to the historical activity endpoint.
+       */
+      async function pollDiscordFeed() {
         try {
-          // First try to get real-time Discord events
-          const response = await fetch(API_BASE_URL + '/api/admin/discord-events.php');
-          const data = await response.json();
-          
-          if (data.success && data.events && data.events.length > 0) {
-            data.events.forEach(event => {
-              addDiscordEvent(event);
-            });
-          } else {
-            // Fallback to the old activity endpoint
-            const fallbackResponse = await fetch(API_BASE_URL + '/api/admin/get-discord-activity.php');
-            const fallbackData = await fallbackResponse.json();
-            
-            if (fallbackData.success && fallbackData.events && fallbackData.events.length > 0) {
-              fallbackData.events.forEach(event => {
-                addDiscordEvent(event);
-              });
+          let events = [];
+
+          // Try real-time endpoint first
+          try {
+            const response = await fetch(API_BASE_URL + '/api/admin/discord-events.php');
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && Array.isArray(data.events)) {
+                events = data.events;
+              }
+            } else {
+              console.warn('Discord real-time endpoint returned:', response.status);
+            }
+          } catch (primaryError) {
+            console.warn('Discord real-time endpoint failed:', primaryError);
+          }
+
+          // Fallback to activity endpoint if primary returned no usable events
+          if (!events.length) {
+            try {
+              const fallbackResponse = await fetch(API_BASE_URL + '/api/admin/get-discord-activity.php');
+
+              if (fallbackResponse.ok) {
+                const fallbackData = await fallbackResponse.json();
+                if (fallbackData.success && Array.isArray(fallbackData.events)) {
+                  events = fallbackData.events;
+                }
+              } else {
+                console.warn('Discord fallback endpoint returned:', fallbackResponse.status);
+              }
+            } catch (fallbackError) {
+              console.warn('Discord fallback endpoint failed:', fallbackError);
             }
           }
-      } catch (error) {
+
+          // Render only new events
+          if (events.length) {
+            events.forEach(event => {
+              const eventKey = [
+                event.type || '',
+                event.user_id || '',
+                event.channel_name || '',
+                event.timestamp || '',
+                event.description || ''
+              ].join('|');
+
+              if (discordSeenEvents.has(eventKey)) {
+                return;
+              }
+
+              discordSeenEvents.add(eventKey);
+              addDiscordEvent(event);
+            });
+          }
+        } catch (error) {
           console.error('Error fetching Discord activity:', error);
         }
-      }, 2000); // Poll every 2 seconds
+      }
+
+      // Load immediately once so the user sees activity right away
+      pollDiscordFeed();
+
+      // Continue polling every 2 seconds
+      discordFeedInterval = setInterval(pollDiscordFeed, 2000);
     }
 
     function addDiscordEvent(event) {
@@ -18764,20 +19216,23 @@ function updateGameTabContent(gameType, gameData) {
       }
     }
 
-    function clearDiscordFeed() {
-      const feed = document.getElementById('discordActivityFeed');
-      const stats = document.getElementById('feedStats');
-      
-      feed.innerHTML = `
-        <div class="text-gray-400 text-center py-4">
-          <div class="text-lg mb-2">🤖 Discord Bot Activity</div>
-          <div class="text-sm">Click "Start" to begin monitoring Discord events</div>
-        </div>
-      `;
-      
-      discordEventCount = 0;
-      stats.textContent = 'Events: 0 | Last update: Never';
-    }
+function clearDiscordFeed() {
+  const feed = document.getElementById('discordActivityFeed');
+  const stats = document.getElementById('feedStats');
+  
+  feed.innerHTML = `
+    <div class="text-gray-400 text-center py-4">
+      <div class="text-lg mb-2">🤖 Discord Bot Activity</div>
+      <div class="text-sm">Click "Start" to begin monitoring Discord events</div>
+    </div>
+  `;
+
+  // Reset feed state
+  discordSeenEvents.clear();   // Prevent duplicate event filtering from persisting
+  discordEventCount = 0;
+
+  stats.textContent = 'Events: 0 | Last update: Never';
+}
 
     // 🔧 REMOVED: Duplicate loadCommunityFundsData function (conflicting with main implementation)
     
@@ -26864,38 +27319,28 @@ Continue with Season 3 Reset?`)) {
     
     // 🚀 NEW: Enhanced tab click handler that forces data loading
     function forceLoadTabOnClick(tabName) {
-      addLog(`🚀 FORCE LOADING ${tabName} tab on click...`);
-      
+      addLog(`🚀 FORCE LOADING ${tabName} tab on click.`);
+
+      const gameConfig = getGameManagementConfig(tabName);
+      if (!gameConfig) {
+        addLog(`❌ Unknown tab requested: ${tabName}`);
+        return;
+      }
+
       // First switch to the tab
       switchGameTab(tabName);
-      
+
       // Then force load data after a short delay
       setTimeout(async () => {
         try {
-          switch(tabName) {
-            case 'overview':
-              await forceLoadOverviewData();
-              break;
-            case 'tetris':
-              await forceLoadTetrisData();
-              break;
-            case 'snake':
-              await forceLoadSnakeData();
-              break;
-            case 'space-invaders':
-              await forceLoadSpaceInvadersData();
-              break;
-            case 'cheese-hunt':
-              await forceLoadCheeseHuntData();
-              break;
-            case 'discord-race':
-              await forceLoadDiscordRaceData();
-              break;
+          if (typeof gameConfig.load === 'function') {
+            await gameConfig.load();
           }
-          
-          // Force refresh the display
-          await forceRefreshTabDisplay(tabName);
-          
+
+          if (typeof gameConfig.refresh === 'function') {
+            await gameConfig.refresh();
+          }
+
           addLog(`✅ ${tabName} tab FORCE LOADED successfully on click!`);
         } catch (error) {
           addLog(`❌ Error force loading ${tabName} tab on click: ${error.message}`);

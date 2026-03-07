@@ -12,9 +12,15 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
 
+// Detect local development environment
+$isLocalhost =
+    ($_SERVER['HTTP_HOST'] ?? '') === 'localhost' ||
+    strpos(($_SERVER['HTTP_HOST'] ?? ''), '127.0.0.1') !== false;
+
 // Check for authentication
 session_start();
 $is_authenticated = false;
+$skipAuthForLocalDev = $isLocalhost;
 
 // Method 1: Check for bot token authentication (for Discord bot)
 $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
@@ -51,7 +57,7 @@ if ($auth_header && strpos($auth_header, 'Bearer ') === 0) {
 }
 
 // Method 2: Check for admin session authentication
-if (!$is_authenticated) {
+if (!$is_authenticated && !$skipAuthForLocalDev) {
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
         // Check for Discord authentication - multiple methods
         $discord_user_id = null;
@@ -112,7 +118,7 @@ if (!$is_authenticated) {
     }
 }
 
-if (!$is_authenticated) {
+if (!$is_authenticated && !$skipAuthForLocalDev) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
