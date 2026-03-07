@@ -22,8 +22,32 @@ session_start();
 $is_authenticated = false;
 $skipAuthForLocalDev = $isLocalhost;
 
+function getAuthorizationHeader() {
+    if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+        return $_SERVER['HTTP_AUTHORIZATION'];
+    }
+
+    if (!empty($_SERVER['Authorization'])) {
+        return $_SERVER['Authorization'];
+    }
+
+    if (function_exists('getallheaders')) {
+        $headers = getallheaders();
+
+        if (isset($headers['Authorization'])) {
+            return $headers['Authorization'];
+        }
+
+        if (isset($headers['authorization'])) {
+            return $headers['authorization'];
+        }
+    }
+
+    return '';
+}
+
 // Method 1: Check for bot token authentication (for Discord bot)
-$auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+$auth_header = getAuthorizationHeader();
 if ($auth_header && strpos($auth_header, 'Bearer ') === 0) {
     $bot_token = substr($auth_header, 7);
     
