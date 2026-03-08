@@ -1,701 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Narrrf's World Admin Interface</title>
-  
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <!-- 🔗 Discord Token of Render System -->
   <script src="discord-config.js"></script>
-  
+
   <!-- 🌍 Environment Detection -->
   <script>
     // Detect environment and set API base URL
     const isProduction = window.location.hostname === 'narrrfs.world';
     const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
-    
+
     console.log('🌍 Environment detected:', isProduction ? 'Production' : 'Local');
     console.log('🔗 API Base URL:', API_BASE_URL);
   </script>
-  
-  <style>
-    .admin-card {
-      background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
-      border-radius: 15px;
-      padding: 20px;
-      margin: 10px;
-      color: white;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-    .stats-card {
-      background: linear-gradient(135deg, #059669 0%, #047857 100%);
-      border-radius: 12px;
-      padding: 15px;
-      margin: 8px;
-      color: white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    .user-card {
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 15px;
-      margin: 8px;
-      border-left: 4px solid #f0c92c;
-      transition: all 0.3s ease;
-    }
-    .user-card:hover {
-      background: rgba(255,255,255,0.2);
-      transform: translateY(-2px);
-    }
-    .tab-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      transition: all 0.3s ease;
-    }
-    .tab-btn.active {
-      background: rgba(255,255,255,0.3);
-      border-color: rgba(255,255,255,0.5);
-    }
-    .game-tab-content {
-      display: none;
-    }
-    .game-tab-content:first-child {
-      display: block;
-    }
-    .history-item {
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 10px;
-      margin: 5px 0;
-      border-left: 4px solid #f0c92c;
-    }
-    .positive { border-left-color: #10b981; }
-    .negative { border-left-color: #ef4444; }
-    .loading {
-      opacity: 0.6;
-      pointer-events: none;
-    }
-    
-    /* Boss notification animations */
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    .animate-pulse {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    
-    .notification-toast {
-      z-index: 9999;
-    }
-    
-    /* 12.0 Management Tab Styles */
-    .folder-tab-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      transition: all 0.3s ease;
-    }
-    .folder-tab-btn.active {
-      background: rgba(255,255,255,0.3);
-      border-color: rgba(255,255,255,0.5);
-    }
-    .folder-tab-content {
-      display: none;
-    }
-    .folder-tab-content:first-child {
-      display: block;
-    }
-    
-    /* Force activeStatusTab to be visible */
-    #activeStatusTab {
-      display: block !important;
-    }
-    
-    /* Force stats-card content to be visible */
-    #activeStatusTab .stats-card {
-      display: block !important;
-      min-height: 200px !important;
-      visibility: visible !important;
-    }
-    
-    /* Force content elements to be visible */
-    #quickStatusContent, #dailyStatusContent {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-    
-    /* Enhanced data display styles */
-    .data-summary {
-      border-left: 4px solid;
-      animation: fadeIn 0.5s ease-in;
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      border-radius: 0.5rem;
-    }
-    
-    /* Enhanced leaderboard styles */
-    .leaderboard-container {
-      max-height: 400px;
-      overflow-y: auto;
-      border-radius: 0.5rem;
-      background: rgba(31, 41, 55, 0.5);
-    }
-    
-    .leaderboard-item {
-      display: flex;
-      align-items: center;
-      padding: 1rem 1.25rem;
-      margin-bottom: 0.75rem;
-      border-radius: 0.75rem;
-      background: rgba(31, 41, 55, 0.6);
-      border: 1px solid rgba(75, 85, 99, 0.2);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      animation: slideIn 0.4s ease-out;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .leaderboard-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      transform: scaleY(0);
-      transition: transform 0.3s ease;
-    }
-    
-    .leaderboard-item:hover {
-      background: rgba(59, 130, 246, 0.15);
-      transform: translateX(6px) translateY(-2px);
-      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
-      border-color: rgba(59, 130, 246, 0.4);
-    }
-    
-    .leaderboard-item:hover::before {
-      transform: scaleY(1);
-    }
-    
-    .leaderboard-item:last-child {
-      margin-bottom: 0;
-    }
-    
-    .leaderboard-rank {
-      font-weight: bold;
-      font-size: 1.25rem;
-      min-width: 3rem;
-      text-align: center;
-      padding: 0.5rem;
-      border-radius: 0.5rem;
-      background: rgba(255, 255, 255, 0.1);
-      margin-right: 1rem;
-      transition: all 0.3s ease;
-    }
-    
-    .leaderboard-rank.gold { 
-      color: #fbbf24; 
-      background: rgba(251, 191, 36, 0.15);
-      text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-    }
-    .leaderboard-rank.silver { 
-      color: #9ca3af; 
-      background: rgba(156, 163, 175, 0.15);
-      text-shadow: 0 0 10px rgba(156, 163, 175, 0.5);
-    }
-    .leaderboard-rank.bronze { 
-      color: #d97706; 
-      background: rgba(217, 119, 6, 0.15);
-      text-shadow: 0 0 10px rgba(217, 119, 6, 0.5);
-    }
-    
-    .leaderboard-info {
-      flex: 1;
-      margin-left: 0.5rem;
-    }
-    
-    .leaderboard-name {
-      font-weight: 700;
-      color: #f9fafb;
-      margin-bottom: 0.375rem;
-      font-size: 1.1rem;
-      letter-spacing: 0.025em;
-    }
-    
-    .leaderboard-score {
-      font-size: 0.9rem;
-      color: #d1d5db;
-      font-weight: 500;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.375rem;
-      display: inline-block;
-    }
-    
-    .leaderboard-date {
-      font-size: 0.8rem;
-      color: #9ca3af;
-      margin-left: auto;
-      padding: 0.5rem 0.75rem;
-      background: rgba(75, 85, 99, 0.2);
-      border-radius: 0.5rem;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-    
-    .leaderboard-item:hover .leaderboard-date {
-      background: rgba(75, 85, 99, 0.4);
-      color: #d1d5db;
-    }
-    
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(-30px) scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-      }
-    }
-    
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.7;
-      }
-    }
-    
-    .data-summary[class*="bg-blue"] {
-      border-left-color: #3b82f6;
-    }
-    
-    .data-summary[class*="bg-green"] {
-      border-left-color: #10b981;
-    }
-    
-    .data-summary[class*="bg-purple"] {
-      border-left-color: #8b5cf6;
-    }
-    
-    .stats-value {
-      transition: all 0.3s ease;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      background: rgba(255, 255, 255, 0.1);
-      display: inline-block;
-      margin: 0.25rem 0;
-    }
-    
-    .stats-value:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: scale(1.02);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Enhanced Game Stat Cards */
-    .game-stat-card {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .game-stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(90deg, #3b82f6, #1d4ed8, #3b82f6);
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
-    
-    .game-stat-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-    }
-    
-    .game-stat-card:hover::before {
-      transform: scaleX(1);
-    }
-    
-    .game-stat-header {
-      transition: all 0.3s ease;
-    }
-    
-    .game-stat-card:hover .game-stat-header {
-      transform: scale(1.05);
-    }
-    
-    .game-stat-value {
-      transition: all 0.3s ease;
-    }
-    
-    .game-stat-card:hover .game-stat-value {
-      transform: scale(1.1);
-      text-shadow: 0 0 20px currentColor;
-    }
-    
-    /* Enhanced Button Styles */
-    .admin-button {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .admin-button::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transition: width 0.6s ease, height 0.6s ease;
-    }
-    
-    .admin-button:hover::before {
-      width: 300px;
-      height: 300px;
-    }
-    
-    .admin-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    }
-    
-    /* Loading States */
-    .loading-skeleton {
-      background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-    }
-    
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    /* Enhanced Empty States */
-    .empty-state {
-      animation: fadeInUp 0.6s ease-out;
-      background: linear-gradient(135deg, rgba(31, 41, 55, 0.8), rgba(55, 65, 81, 0.8));
-      border: 1px solid rgba(75, 85, 99, 0.3);
-      backdrop-filter: blur(10px);
-    }
-    
-    /* Responsive Enhancements */
-    @media (max-width: 768px) {
-      .game-stats-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      
-      .leaderboard-item {
-        flex-direction: column;
-        text-align: center;
-        padding: 1.5rem 1rem;
-      }
-      
-      .leaderboard-rank {
-        margin-bottom: 0.75rem;
-        margin-right: 0;
-      }
-      
-      .leaderboard-date {
-        margin-top: 0.75rem;
-        margin-left: 0;
-      }
-    }
-    
-    .leaderboard-item {
-      transition: all 0.3s ease;
-      border-left: 3px solid transparent;
-      margin-bottom: 0.5rem;
-      border-radius: 0.5rem;
-      overflow: hidden;
-    }
-    
-    .leaderboard-item:hover {
-      border-left-color: #f59e0b;
-      transform: translateX(5px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-    
-    /* Enhanced game management styles */
-    .game-tab-content {
-      display: none;
-      animation: slideIn 0.4s ease-out;
-    }
-    
-    .game-tab-content:first-child {
-      display: block;
-    }
-    
-    .game-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    
-    .game-stat-card {
-      background: rgba(55, 65, 81, 0.8);
-      border-radius: 0.75rem;
-      padding: 1.5rem;
-      border: 1px solid rgba(75, 85, 99, 0.3);
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .game-stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-      border-color: rgba(75, 85, 99, 0.5);
-    }
-    
-    .game-stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    
-    .game-stat-card:hover::before {
-      opacity: 1;
-    }
-    
-    .game-stat-header {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .game-stat-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      transition: color 0.3s ease;
-    }
-    
-    .game-stat-label {
-      font-size: 0.875rem;
-      color: #9ca3af;
-      margin-bottom: 0.25rem;
-    }
-    
-    .game-stat-subvalue {
-      font-size: 0.75rem;
-      color: #6b7280;
-    }
-    
-    /* Enhanced leaderboard styles */
-    .leaderboard-container {
-      background: rgba(55, 65, 81, 0.8);
-      border-radius: 0.75rem;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      border: 1px solid rgba(75, 85, 99, 0.3);
-    }
-    
-    .leaderboard-header {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: #f59e0b;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .leaderboard-item {
-      background: rgba(75, 85, 99, 0.6);
-      border-radius: 0.5rem;
-      padding: 1rem;
-      margin-bottom: 0.5rem;
-      border-left: 3px solid transparent;
-      transition: all 0.3s ease;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .leaderboard-item:hover {
-      background: rgba(75, 85, 99, 0.8);
-      border-left-color: #f59e0b;
-      transform: translateX(5px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-    
-    .leaderboard-rank {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #f59e0b;
-      min-width: 3rem;
-    }
-    
-    .leaderboard-player {
-      flex: 1;
-      margin-left: 1rem;
-    }
-    
-    .leaderboard-score {
-      text-align: right;
-      margin-left: 1rem;
-    }
-    
-    .leaderboard-score-main {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #10b981;
-    }
-    
-    .leaderboard-score-sub {
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-top: 0.25rem;
-    }
-    
-    /* Enhanced button styles */
-    .game-action-btn {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .game-action-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-      background: linear-gradient(135deg, #2563eb, #1e40af);
-    }
-    
-    .game-action-btn:active {
-      transform: translateY(0);
-    }
-    
-    .game-action-btn.danger {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-    }
-    
-    .game-action-btn.danger:hover {
-      background: linear-gradient(135deg, #dc2626, #b91c1c);
-      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-    }
-    
-    .game-action-btn.success {
-      background: linear-gradient(135deg, #10b981, #059669);
-    }
-    
-    .game-action-btn.success:hover {
-      background: linear-gradient(135deg, #059669, #047857);
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-    }
-    
-    /* Enhanced loading states */
-    .loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0.75rem;
-      z-index: 10;
-    }
-    
-    .loading-spinner {
-      width: 3rem;
-      height: 3rem;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top: 3px solid #3b82f6;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    @keyframes slideIn {
-      from { 
-        opacity: 0; 
-        transform: translateY(20px); 
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0); 
-      }
-    }
-    
-    /* Responsive improvements */
-    @media (max-width: 768px) {
-      .game-stats-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      
-      .game-stat-card {
-        padding: 1rem;
-      }
-      
-      .leaderboard-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-      
-      .leaderboard-score {
-        text-align: left;
-        margin-left: 0;
-        width: 100%;
-      }
-    }
-  </style>
-</head>
-  
+
   <style>
     .admin-card {
       background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
@@ -1693,67 +1018,104 @@
           </div>
         </div>
 
-        <!-- Enhanced Statistics -->
-        <div class="mt-6 pt-6 border-t border-gray-600">
-          <h4 class="text-md font-semibold mb-3 text-cyan-400">🚀 Enhanced Statistics</h4>
-          
-          <!-- Immediate Stats -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div class="text-center">
-              <div class="text-xl font-bold text-cyan-400" id="avgClicksPerUser">-</div>
-              <div class="text-sm text-gray-300">Avg Clicks/User</div>
-            </div>
-            <div class="text-center">
-              <div class="text-xl font-bold text-emerald-400" id="totalDSPOINC">-</div>
-              <div class="text-sm text-gray-300">Total $DSPOINC</div>
-            </div>
-            <div class="text-center">
-              <div class="text-xl font-bold text-pink-400" id="questCompletionRate">-</div>
-              <div class="text-sm text-gray-300">Quest Success %</div>
-            </div>
-            <div class="text-center">
-              <div class="text-xl font-bold text-indigo-400" id="avgQuestReward">-</div>
-              <div class="text-sm text-gray-300">Avg Quest Reward</div>
-            </div>
-          </div>
+<!-- 💰 DSPOINC Economy Overview -->
+<div class="mt-6 pt-6 border-t border-gray-600">
+  <h4 class="text-md font-semibold mb-3 text-cyan-400">💰 DSPOINC Economy Overview</h4>
 
-          <!-- Daily Activity Stats -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div class="text-center">
-              <div class="text-lg font-bold text-yellow-400" id="clicksLast24h">-</div>
-              <div class="text-sm text-gray-300">Clicks (24h)</div>
-            </div>
-            <div class="text-center">
-              <div class="text-lg font-bold text-green-400" id="newUsersToday">-</div>
-              <div class="text-sm text-gray-300">New Users (24h)</div>
-            </div>
-            <div class="text-center">
-              <div class="text-lg font-bold text-blue-400" id="questsClaimedToday">-</div>
-              <div class="text-sm text-gray-300">Quests (24h)</div>
-            </div>
-            <div class="text-center">
-              <div class="text-lg font-bold text-purple-400" id="rolesGrantedToday">-</div>
-              <div class="text-sm text-gray-300">Roles (24h)</div>
-            </div>
-          </div>
+  <!-- Core Supply Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+    <div class="text-center">
+      <div class="text-xl font-bold text-emerald-400" id="economyTotalSupply">-</div>
+      <div class="text-sm text-gray-300">Total Supply</div>
+    </div>
+    <div class="text-center">
+      <div class="text-xl font-bold text-blue-400" id="economyAvailableSupply">-</div>
+      <div class="text-sm text-gray-300">Available Supply</div>
+    </div>
+    <div class="text-center">
+      <div class="text-xl font-bold text-indigo-400" id="economyFrozenSupply">-</div>
+      <div class="text-sm text-gray-300">Frozen in Stakes</div>
+    </div>
+    <div class="text-center">
+      <div class="text-xl font-bold text-purple-400" id="economyActiveStakes">-</div>
+      <div class="text-sm text-gray-300">Active Stakes</div>
+    </div>
+  </div>
 
-          <!-- Engagement Stats -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h5 class="text-sm font-semibold mb-2 text-cyan-300">User Engagement:</h5>
-              <div id="engagementStats" class="text-sm text-gray-300">
-                Loading engagement data...
-              </div>
-            </div>
-            <div>
-              <h5 class="text-sm font-semibold mb-2 text-emerald-300">Wealth Distribution:</h5>
-              <div id="wealthStats" class="text-sm text-gray-300">
-                Loading wealth data...
-              </div>
-            </div>
-          </div>
+  <!-- Secondary Economy Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+    <div class="text-center">
+      <div class="text-lg font-bold text-yellow-400" id="economyPendingRewards">-</div>
+      <div class="text-sm text-gray-300">Pending Rewards</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg font-bold text-green-400" id="economyAverageBalance">-</div>
+      <div class="text-sm text-gray-300">Avg Holder Balance</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg font-bold text-pink-400" id="economyFundedUsers">-</div>
+      <div class="text-sm text-gray-300">Funded Users</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg font-bold text-cyan-400" id="economyTopHolderBalance">-</div>
+      <div class="text-sm text-gray-300">Top Holder Balance</div>
+    </div>
+  </div>
+
+  <!-- Ledger Activity Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+    <div class="text-center">
+      <div class="text-lg font-bold text-orange-400" id="economyEntries24h">-</div>
+      <div class="text-sm text-gray-300">Ledger Entries (24h)</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg font-bold text-orange-300" id="economyEntries7d">-</div>
+      <div class="text-sm text-gray-300">Ledger Entries (7d)</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg font-bold text-lime-400" id="economyPositiveFlow24h">-</div>
+      <div class="text-sm text-gray-300">Positive Flow (24h)</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg font-bold text-red-400" id="economyNegativeFlow24h">-</div>
+      <div class="text-sm text-gray-300">Spend / Burn (24h)</div>
+    </div>
+  </div>
+
+  <!-- Long-Term Overview -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>
+      <h5 class="text-sm font-semibold mb-2 text-cyan-300">Supply Health:</h5>
+      <div id="economySupplyHealth" class="text-sm text-gray-300 space-y-1">
+        <div class="flex justify-between">
+          <span>Staked Ratio:</span>
+          <span id="economyStakedRatio">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Current Season:</span>
+          <span id="economyCurrentSeason">-</span>
         </div>
       </div>
+    </div>
+
+    <div>
+      <h5 class="text-sm font-semibold mb-2 text-emerald-300">Top Holders Snapshot:</h5>
+      <div id="economyTopHolders" class="text-sm text-gray-300">
+        Loading holder data...
+      </div>
+    </div>
+
+    <div>
+      <h5 class="text-sm font-semibold mb-2 text-yellow-300">Long-Term Monitoring:</h5>
+      <div id="economyMonitoringNotes" class="text-sm text-gray-300">
+        <div>• Monitor staking ratio over time</div>
+        <div>• Compare positive flow vs spend/burn</div>
+        <div>• Watch holder concentration</div>
+        <div>• Watch ledger activity trends</div>
+      </div>
+    </div>
+  </div>
+</div>
 
       <!-- Quick Actions -->
       <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
@@ -1868,8 +1230,8 @@
       </div>
     </div>
 
-    <!-- Missions Status Tab -->
-    <div class="admin-card mb-6" id="missionsStatusTab" style="display: none;">
+        <!-- Missions Status Tab -->
+      <div class="admin-card mb-6" id="missionsStatusTab" style="display: none;">
       <h2 class="text-xl font-semibold mb-4">🎯 Missions Status Overview</h2>
       
       <!-- User Search for Missions Status -->
@@ -2750,14 +2112,15 @@
       </div>
     </div>
 
-    <!-- Admin Activity Log -->
-    <div class="admin-card mb-6">
-      <h2 class="text-xl font-semibold mb-4">📊 Admin Activity Log</h2>
-      <div id="statusLog" class="bg-gray-800 p-4 rounded text-sm font-mono h-40 overflow-y-auto border border-gray-600">
-        <div class="text-green-400">🔄 Admin interface initializing...</div>
-      </div>
-      <div class="text-xs text-gray-400 mt-2 text-center">💡 Activity log moved to top for better visibility - no more scrolling needed!</div>
-    <!-- </div> -->
+    
+<!-- Admin Activity Log -->
+<div class="admin-card mb-6">
+  <h2 class="text-xl font-semibold mb-4">📊 Admin Activity Log</h2>
+  <div id="statusLog" class="bg-gray-800 p-4 rounded text-sm font-mono h-40 overflow-y-auto border border-gray-600">
+    <div class="text-green-400">🔄 Admin interface initializing...</div>
+  </div>
+  <div class="text-xs text-gray-400 mt-2 text-center">💡 Activity log moved to top for better visibility - no more scrolling needed!</div>
+</div>
     <!-- END OF GAME MANAGEMENT 2.0 TAB - DISABLED -->
 
     <!-- Boss Management Tab -->
@@ -5609,6 +4972,38 @@
       });
     }
 
+    function forceRevealAncestorChain(element) {
+      let current = element;
+
+      while (current) {
+        if (current.style) {
+          current.style.display = 'block';
+          current.style.visibility = 'visible';
+          current.style.opacity = '1';
+          current.classList.remove('hidden');
+        }
+
+        current = current.parentElement;
+      }
+    }
+
+    function debugTabParentChain(tabId) {
+  let node = document.getElementById(tabId);
+
+  while (node) {
+    const computed = window.getComputedStyle(node);
+    console.log(
+      'NODE:',
+      node.id || node.tagName,
+      '| display =', computed.display,
+      '| visibility =', computed.visibility,
+      '| opacity =', computed.opacity,
+      '| class =', node.className
+    );
+    node = node.parentElement;
+  }
+}
+
     // Show admin content after authentication
     function showAdminContent() {
       console.log('🔓 showAdminContent() called - showing admin interface');
@@ -6146,263 +5541,196 @@
       addLog('✅ All tab content cleared');
     }
 
-    // SUPER WORKING TAB SYSTEM - Clean and reliable
-    function showTab(tabName) {
-      console.log(`🚀 SUPER TAB SYSTEM: Switching to ${tabName}`);
-      
-      // STEP 1: Update active tab button state
-      document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.opacity = '0.7';
-      });
-      
-      const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
-      if (activeBtn) {
-        activeBtn.classList.add('active');
-        activeBtn.style.opacity = '1';
-        console.log(`✅ Active tab button updated: ${tabName}`);
-      } else {
-        console.error(`❌ Tab button not found for: ${tabName}`);
-        return; // Exit if tab button not found
-      }
-      
-      // STEP 2: Hide ALL tabs with smooth transition
-      const allTabs = document.querySelectorAll('[id$="Tab"]');
-      console.log(`🔄 Hiding ${allTabs.length} tabs`);
-      
-      allTabs.forEach(tab => {
-        if (tab) {
-          tab.style.opacity = '0';
-          tab.style.transform = 'translateY(10px)';
-          tab.style.transition = 'all 0.3s ease';
-          
-          setTimeout(() => {
-            tab.style.display = 'none';
-          }, 150);
-        }
-      });
-      
-      // STEP 2.5: Explicitly hide Quest Claims Management section when switching away from quests tab
-      if (tabName !== 'quests') {
-        const questClaimsSection = document.getElementById('questClaimsManagementSection');
-        if (questClaimsSection) {
-          questClaimsSection.style.display = 'none';
-          console.log('🔒 Quest Claims Management section explicitly hidden');
-        }
-      }
-      
-      // STEP 3: Show selected tab with smooth animation
-      setTimeout(() => {
-      const selectedTab = document.getElementById(tabName + 'Tab');
-      console.log(`🔍 Looking for tab: ${tabName}Tab`);
-      console.log(`🔍 Found element:`, selectedTab);
-      
-      if (selectedTab) {
-        console.log(`✅ Tab found: ${tabName}Tab, showing...`);
-        selectedTab.style.display = 'block';
-          selectedTab.style.opacity = '0';
-          selectedTab.style.transform = 'translateY(10px)';
-          
-          // STEP 3.5: Explicitly show Quest Claims Management section when switching TO quests tab
-          if (tabName === 'quests') {
-            const questClaimsSection = document.getElementById('questClaimsManagementSection');
-            if (questClaimsSection) {
-              questClaimsSection.style.display = 'block';
-              console.log('🔓 Quest Claims Management section explicitly shown');
-            }
-          }
-          
-          // Trigger animation
-          setTimeout(() => {
-            selectedTab.style.opacity = '1';
-            selectedTab.style.transform = 'translateY(0)';
-            console.log(`✅ Tab displayed with animation: ${tabName}Tab`);
-          }, 50);
-      } else {
-        console.error(`❌ Tab not found: ${tabName}Tab`);
-        console.error(`❌ Available tabs:`, document.querySelectorAll('[id$="Tab"]'));
-          return;
-      }
-      
-        // STEP 4: Update current tab and log
-      currentTab = tabName;
-        addLog(`📋 Successfully switched to ${tabName} tab`);
-      
-        // STEP 5: Load tab-specific data with error handling and auto-refresh
-        try {
-          console.log(`🔄 Auto-loading data for tab: ${tabName}`);
-          
-          if (tabName === 'dashboard') {
-            // Dashboard - Always refresh with latest data
-            loadDashboardData();
-            loadOverviewGameStats();
-            addLog('📊 Dashboard data auto-loaded');
-            
-          } else if (tabName === 'users') {
-            // User management - Auto-load recent user activity
-            loadRecentUserActivity();
-            addLog('👥 User management tab auto-loaded');
-            
-          } else if (tabName === 'missionsStatus') {
-            // Missions status - Auto-load overview data
-            loadMissionsStatusOverview();
-            addLog('🎯 Missions status tab auto-loaded');
-            
-          } else if (tabName === 'points') {
-            // Point management - Auto-load point statistics
-            loadPointStatistics();
-            addLog('💰 Point management tab auto-loaded');
-            
-          } else if (tabName === 'store') {
-            // Store - Always refresh store items
-            loadStoreItems();
-            addLog('🏪 Store tab auto-loaded');
-            
-          } else if (tabName === 'profileChest') {
-            // Profile Chest Config - Load configuration
-            loadProfileChestConfig();
-            addLog('🎁 Profile chest config tab loaded');
-            
-          } else if (tabName === 'quests') {
-            // Quests - Always refresh quest data and claims
-            loadQuests();
-            loadEnhancedQuestClaims();
-            addLog('🏆 Quest system tab auto-loaded');
-            
-          } else if (tabName === 'bosses') {
-            // Boss management - Auto-load all boss configurations
-            loadAllBossConfigurations();
-            // 🔥 NEW: Auto-load Phoenix configuration
-            loadPhoenixConfiguration();
-            addLog('👑 Boss management tab auto-loaded with Phoenix swarm controls');
-            
-          } else if (tabName === 'bossNotifications') {
-            // Boss notifications - Always refresh
-            loadBossNotifications();
-            addLog('🔔 Boss notifications tab auto-loaded');
-            
-          } else if (tabName === 'games') {
-            // Game Management - Load all data after tab animation completes
-            console.log('🎮 Loading Game Management data...');
+function forceRevealAncestorChain(element) {
+  let current = element;
 
-            // Fix white space issue - scroll to top of tab content
-            setTimeout(() => {
-              const gamesTab = document.getElementById('gamesTab');
-              if (gamesTab) {
-                gamesTab.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }, 100);
-
-            // Wait for tab animation to complete before loading data
-            setTimeout(async () => {
-              await loadGameOverview();
-              loadSeasonStats();
-              loadGameSettings();
-              loadCurrentSeasonSettings();
-
-              // NEW: load all 7 games through the canonical registry
-              await refreshAllGameData();
-
-              // Switch to overview tab by default
-              setTimeout(() => {
-                console.log('🔄 Switching to overview tab by default...');
-                switchGameTab('overview');
-
-                // Force show the overview tab
-                setTimeout(() => {
-                  const overviewTab = document.getElementById('overviewTab');
-                  if (overviewTab) {
-                    overviewTab.style.display = 'block';
-                    overviewTab.style.visibility = 'visible';
-                    overviewTab.style.opacity = '1';
-                    overviewTab.classList.add('show-tab');
-                    console.log('✅ Overview tab forced visible after switch');
-                  }
-                }, 200);
-              }, 100);
-
-              // Display any pending data that was loaded while tab was hidden
-              displayPendingGameData();
-
-              addLog('🎮 Game management tab auto-loaded with canonical 7-game refresh');
-            }, 250); // Wait for tab animation to complete
-            
-          } else if (tabName === 'games2') {
-            // Game Management 2.0 - Comprehensive auto-load
-            console.log('🚀 Loading Game Management 2.0 data...');
-            loadGameManagement2Data();
-            loadSeasonOverview2();
-            loadGameStatsBySeason2();
-            loadTopPerformers2();
-            loadSeasonComparison2();
-            startLiveActivityFeed2();
-            addLog('🚀 Game management 2.0 tab auto-loaded');
-            
-          } else if (tabName === 'discord') {
-            // Discord config - Auto-load with refresh
-            loadDiscordConfigData();
-            addLog('📱 Discord config tab auto-loaded');
-            
-          } else if (tabName === 'cheeseGuide') {
-            // Cheese guide - Auto-load content
-            loadCheeseGuideData();
-            addLog('🧀 Cheese guide tab auto-loaded');
-            
-          } else if (tabName === 'holderVerification') {
-            // Holder verification - Auto-load verification data
-            loadHolderVerificationData();
-            addLog('✅ Holder verification tab auto-loaded');
-            
-          } else if (tabName === 'communityFunds') {
-            // Community funds - Auto-load wallet and funds data with delay to ensure DOM is ready
-            setTimeout(() => {
-              loadCommunityFundsData();
-            }, 100);
-            addLog('💰 Community funds tab auto-loaded');
-            
-          } else if (tabName === 'bugTracker') {
-            // Bug tracker - Auto-load bug data and initialize tracker
-            setTimeout(() => {
-              initBugTracker();
-            }, 100);
-            addLog('🐛 Bug tracker tab auto-loaded');
-            
-          } else if (tabName === 'databaseOverview') {
-            // Database overview - Auto-load database status and sync information
-            setTimeout(() => {
-              loadDatabaseOverview();
-            }, 100);
-            addLog('🗄️ Database overview tab auto-loaded');
-          } else if (tabName === 'securityCrawler') {
-            // Security crawler - Auto-load security data
-            setTimeout(() => {
-              loadSecurityCrawlerData();
-            }, 100);
-            addLog('🔒 Security crawler tab auto-loaded');
-          } else if (tabName === 'twitterMissions') {
-            // Twitter Missions - Auto-load Twitter mission data
-            setTimeout(() => {
-              loadTwitterMissionsData();
-            }, 100);
-            addLog('🐦 Twitter Missions tab auto-loaded');
-          } else if (tabName === 'twelveZeroManagement') {
-            // 12.0 Management - Auto-load 12.0 folder data
-            setTimeout(() => {
-              loadTwelveZeroData();
-            }, 100);
-            addLog('📁 12.0 Management tab auto-loaded');
-          }
-          
-          // Mark tab as recently loaded
-          markTabAsLoaded(tabName);
-          console.log(`✅ Tab ${tabName} data auto-loaded successfully`);
-          
-        } catch (error) {
-          console.error(`❌ Error auto-loading tab ${tabName} data:`, error);
-          addLog(`❌ Error auto-loading ${tabName} tab data: ${error.message}`);
-        }
-      }, 200);
+  while (current) {
+    if (current.style) {
+      current.style.display = 'block';
+      current.style.visibility = 'visible';
+      current.style.opacity = '1';
+      current.classList.remove('hidden');
     }
+
+    current = current.parentElement;
+  }
+}
+
+function showTab(tabName) {
+  console.log(`🚀 SUPER TAB SYSTEM: Switching to ${tabName}`);
+  addLog(`📋 Switching to ${tabName} tab...`);
+
+  // STEP 1: Update active tab button state
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.opacity = '0.7';
+  });
+
+  const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+  if (!activeBtn) {
+    console.error(`❌ Tab button not found for: ${tabName}`);
+    addLog(`❌ Tab button not found for: ${tabName}`);
+    return;
+  }
+
+  activeBtn.classList.add('active');
+  activeBtn.style.opacity = '1';
+
+  // STEP 2: Hide only the real main admin tabs immediately
+  const mainTabIds = [
+    'dashboardTab',
+    'usersTab',
+    'missionsStatusTab',
+    'pointsTab',
+    'storeTab',
+    'questsTab',
+    'gamesTab',
+    'bossesTab',
+    'bossNotificationsTab',
+    'discordTab',
+    'holderVerificationTab',
+    'cheeseGuideTab',
+    'communityFundsTab',
+    'bugTrackerTab',
+    'twitterMissionsTab',
+    'databaseOverviewTab',
+    'securityCrawlerTab',
+    'twelveZeroManagementTab',
+    'partnersTab',
+    'profileChestTab'
+  ];
+
+  mainTabIds.forEach(tabId => {
+    const tab = document.getElementById(tabId);
+    if (!tab) return;
+
+    tab.style.display = 'none';
+    tab.style.opacity = '0';
+    tab.style.transform = 'translateY(10px)';
+    tab.style.visibility = 'hidden';
+  });
+
+  // STEP 2.5: Special handling for quest claims section
+  const questClaimsSection = document.getElementById('questClaimsManagementSection');
+  if (questClaimsSection) {
+    questClaimsSection.style.display = (tabName === 'quests') ? 'block' : 'none';
+  }
+
+  // STEP 3: Show selected tab immediately
+  const selectedTab = document.getElementById(tabName + 'Tab');
+  console.log(`🔍 Looking for tab: ${tabName}Tab`);
+  console.log(`🔍 Found element:`, selectedTab);
+
+  if (!selectedTab) {
+    console.error(`❌ Tab not found: ${tabName}Tab`);
+    addLog(`❌ Tab not found: ${tabName}Tab`);
+    return;
+  }
+
+  selectedTab.style.display = 'block';
+  selectedTab.style.visibility = 'visible';
+  selectedTab.style.opacity = '1';
+  selectedTab.style.transform = 'translateY(0)';
+  selectedTab.style.transition = 'all 0.3s ease';
+
+  forceRevealAncestorChain(selectedTab);
+
+  // Temporary visual debug
+  selectedTab.style.border = '3px solid red';
+  selectedTab.scrollIntoView({ behavior: 'auto', block: 'start' });
+
+  // Temporary debug logs
+  console.log('✅ selectedTab inline display:', selectedTab.style.display);
+  console.log('✅ selectedTab computed display:', window.getComputedStyle(selectedTab).display);
+  console.log('✅ selectedTab computed visibility:', window.getComputedStyle(selectedTab).visibility);
+  console.log('✅ selectedTab offsetHeight:', selectedTab.offsetHeight);
+  console.log('✅ selectedTab offsetParent:', selectedTab.offsetParent);
+
+  window.currentTab = tabName;
+  addLog(`✅ Successfully switched to ${tabName} tab`);
+
+
+  // STEP 4: Load tab-specific data
+  try {
+    if (tabName === 'dashboard') {
+      loadDashboardData();
+      loadOverviewGameStats();
+      addLog('📊 Dashboard data auto-loaded');
+
+    } else if (tabName === 'users') {
+      loadRecentUserActivity();
+      addLog('👥 User management tab auto-loaded');
+
+    } else if (tabName === 'missionsStatus') {
+      loadMissionsStatusOverview();
+      addLog('🎯 Missions status tab auto-loaded');
+
+    } else if (tabName === 'points') {
+      loadPointStatistics();
+      addLog('💰 Point management tab auto-loaded');
+
+    } else if (tabName === 'store') {
+      loadStoreItems();
+      addLog('🏪 Store tab auto-loaded');
+
+    } else if (tabName === 'profileChest') {
+      loadProfileChestConfig();
+      addLog('🎁 Profile chest config tab loaded');
+
+    } else if (tabName === 'quests') {
+      loadQuests();
+      loadEnhancedQuestClaims();
+      addLog('🏆 Quest system tab auto-loaded');
+
+    } else if (tabName === 'bosses') {
+      loadAllBossConfigurations();
+      loadPhoenixConfiguration();
+      addLog('👑 Boss management tab auto-loaded');
+
+    } else if (tabName === 'bossNotifications') {
+      loadBossNotifications();
+      addLog('🔔 Boss notifications tab auto-loaded');
+
+    } else if (tabName === 'securityCrawler') {
+      loadSecurityCrawlerData();
+      addLog('🔒 Security Crawler tab auto-loaded');
+
+    } else if (tabName === 'twelveZeroManagement') {
+      loadTwelveZeroData();
+      addLog('📁 12.0 Management tab auto-loaded');
+
+    } else if (tabName === 'games') {
+      setTimeout(async () => {
+        await loadGameOverview();
+        loadSeasonStats();
+        loadGameSettings();
+        loadCurrentSeasonSettings();
+        await refreshAllGameData();
+
+        setTimeout(() => {
+          switchGameTab('overview');
+          const overviewTab = document.getElementById('overviewTab');
+          if (overviewTab) {
+            overviewTab.style.display = 'block';
+            overviewTab.style.visibility = 'visible';
+            overviewTab.style.opacity = '1';
+            overviewTab.classList.add('show-tab');
+          }
+        }, 100);
+
+        displayPendingGameData();
+        addLog('🎮 Game management tab auto-loaded');
+      }, 100);
+
+    } else if (tabName === 'partners') {
+      loadPartnersData?.();
+      addLog('🤝 Partners tab auto-loaded');
+    }
+  } catch (error) {
+    console.error(`❌ Error auto-loading ${tabName} tab:`, error);
+    addLog(`❌ Error auto-loading ${tabName} tab: ${error.message}`);
+  }
+}
 
     // Display any pending game data that was loaded while tab was hidden
     function displayPendingGameData() {
@@ -6447,7 +5775,7 @@
     // Acive renderr  functions in Load overview game statistics for all 7 games in Overview Dashboard
     async function loadOverviewGameStats() {
       console.log('🔄 Loading overview game statistics for all overview panels...');
-addLog('🔄 Loading overview game statistics for all overview panels...');
+      addLog('🔄 Loading overview game statistics for all overview panels...');
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
@@ -7004,7 +6332,120 @@ function displayOverviewDiscordRaceStats(raceData) {
       }
     }
 
-    // Load dashboard data
+    function formatAdminNumber(value) {
+  const num = Number(value || 0);
+  return num.toLocaleString();
+}
+
+/**
+ * Updates a dashboard economy element safely.
+ */
+function updateEconomyElement(id, value, suffix = '') {
+  const element = document.getElementById(id);
+  if (!element) {
+    console.warn(`⚠️ Economy element not found: ${id}`);
+    return;
+  }
+
+  element.textContent = `${value}${suffix}`;
+}
+
+/**
+ * Renders top holder list for the DSPOINC overview.
+ */
+function renderEconomyTopHolders(holders) {
+  const container = document.getElementById('economyTopHolders');
+  if (!container) return;
+
+  if (!holders || holders.length === 0) {
+    container.innerHTML = '<div class="text-gray-400">No funded users found</div>';
+    return;
+  }
+
+  container.innerHTML = holders.slice(0, 5).map((holder, index) => {
+    const rawName = String(holder.username || 'Unknown User');
+    const shortName = rawName.length > 18
+      ? rawName.substring(0, 18) + '...'
+      : rawName;
+
+    return `
+      <div class="flex justify-between items-center py-1">
+        <span class="text-cyan-200">#${index + 1} ${shortName}</span>
+        <span class="text-white font-semibold">${formatAdminNumber(holder.balance)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * Loads canonical DSPOINC economy overview for the main dashboard.
+ * This must stay aligned with the same accounting model used by staking stats.
+ */
+async function loadDspoincOverview() {
+  try {
+    console.log('💰 Loading DSPOINC economy overview...');
+    addLog('💰 Loading DSPOINC economy overview...');
+
+    const response = await fetch(API_BASE_URL + '/api/admin/get-dspoinc-overview.php');
+    const result = await response.json();
+
+    if (!result.success || !result.data) {
+      throw new Error(result.error || 'Failed to load DSPOINC overview');
+    }
+
+    const data = result.data;
+
+    updateEconomyElement('economyTotalSupply', formatAdminNumber(data.total_supply));
+    updateEconomyElement('economyAvailableSupply', formatAdminNumber(data.available_balance));
+    updateEconomyElement('economyFrozenSupply', formatAdminNumber(data.frozen_balance));
+    updateEconomyElement('economyActiveStakes', formatAdminNumber(data.active_stakes));
+
+    updateEconomyElement('economyPendingRewards', formatAdminNumber(data.pending_rewards));
+    updateEconomyElement('economyAverageBalance', formatAdminNumber(data.average_balance));
+    updateEconomyElement('economyFundedUsers', formatAdminNumber(data.funded_users));
+    updateEconomyElement('economyTopHolderBalance', formatAdminNumber(data.top_holder_balance));
+
+    updateEconomyElement('economyEntries24h', formatAdminNumber(data.entries_24h));
+    updateEconomyElement('economyEntries7d', formatAdminNumber(data.entries_7d));
+    updateEconomyElement('economyPositiveFlow24h', formatAdminNumber(data.positive_flow_24h));
+    updateEconomyElement('economyNegativeFlow24h', formatAdminNumber(data.negative_flow_24h));
+
+    updateEconomyElement('economyStakedRatio', data.staked_ratio, '%');
+    updateEconomyElement('economyCurrentSeason', data.current_season || 'unknown');
+
+    renderEconomyTopHolders(data.top_holders || []);
+
+    addLog('✅ DSPOINC economy overview loaded successfully');
+    console.log('✅ DSPOINC overview loaded:', data);
+  } catch (error) {
+    console.error('❌ Error loading DSPOINC overview:', error);
+    addLog(`❌ Error loading DSPOINC overview: ${error.message}`);
+
+    [
+      'economyTotalSupply',
+      'economyAvailableSupply',
+      'economyFrozenSupply',
+      'economyActiveStakes',
+      'economyPendingRewards',
+      'economyAverageBalance',
+      'economyFundedUsers',
+      'economyTopHolderBalance',
+      'economyEntries24h',
+      'economyEntries7d',
+      'economyPositiveFlow24h',
+      'economyNegativeFlow24h',
+      'economyStakedRatio',
+      'economyCurrentSeason'
+    ].forEach(id => updateEconomyElement(id, 'Error'));
+
+    const container = document.getElementById('economyTopHolders');
+    if (container) {
+      container.innerHTML = '<div class="text-red-400">Error loading holder data</div>';
+    }
+  }
+}
+
+    // Load dashboard data fron admin interface page 
     async function loadDashboardData() {
       try {
         // Load basic stats (always visible)
@@ -7049,6 +6490,8 @@ function displayOverviewDiscordRaceStats(raceData) {
             loadTwitterClaimNotificationCount();
           }, 500);
         }
+
+
 
         // Load cheese click statistics (only for authenticated users)
         if (currentAdmin) {
@@ -7219,12 +6662,12 @@ function displayOverviewDiscordRaceStats(raceData) {
           document.getElementById('topUsers').innerHTML = '<div class="text-gray-400">🔒 Authentication required</div>';
         }
 
-        // Load enhanced statistics and engagement data
+        // Load canonical DSPOINC economy overview
         try {
-          await loadEnhancedDashboardStats();
+          await loadDspoincOverview();
         } catch (error) {
-          console.error('❌ Error loading enhanced dashboard stats:', error);
-          addLog(`❌ Error loading enhanced dashboard stats: ${error.message}`);
+          console.error('❌ Error loading DSPOINC overview:', error);
+          addLog(`❌ Error loading DSPOINC overview: ${error.message}`);
         }
       } catch (error) {
         addLog(`❌ Error loading dashboard data: ${error.message}`);
@@ -7797,6 +7240,14 @@ function displayOverviewDiscordRaceStats(raceData) {
           await loadOverviewGameStats();
         }
         
+        // Load canonical DSPOINC economy overview
+        try {
+          await loadDspoincOverview();
+        } catch (error) {
+          console.error('❌ Error loading DSPOINC overview in dashboard:', error);
+         addLog(`❌ Error loading DSPOINC overview in dashboard: ${error.message}`);
+        }
+
         // Load enhanced dashboard statistics
         try {
           await loadEnhancedDashboardStats();
@@ -8195,31 +7646,40 @@ function displayOverviewDiscordRaceStats(raceData) {
     }
     
     // Update cheese click statistics
-    function updateCheeseClickStats(data) {
-      console.log('🧀 Updating cheese click stats:', data);
-      
-      const elements = {
-        'totalCheeseClicks': data.total_clicks || '0',
-        'last24hClicks': data.recent_24h || '0',
-        'topClicker': data.top_clicker || 'None',
-        'mostClicked': data.most_clicked || 'None'
-      };
-      
-      Object.entries(elements).forEach(([elementId, value]) => {
-        const element = document.getElementById(elementId);
-        if (element) {
-          element.textContent = value;
-        }
-      });
-      
-      // Display detailed cheese stats if available
-      if (data.clicks_by_egg) {
-        displayCheeseClicksByType(data.clicks_by_egg);
-      }
-      if (data.top_users) {
-        displayTopCheeseClickers(data.top_users);
-      }
-    }
+function updateCheeseClickStats(data) {
+  console.log('🧀 Updating cheese click stats:', data);
+
+  let topCheeseUserText = 'None';
+  if (data.top_users && Array.isArray(data.top_users) && data.top_users.length > 0) {
+    const topUser = data.top_users[0];
+    const username = topUser.username || topUser.user_id || 'Unknown';
+    const clicks = topUser.click_count || topUser.total_clicks || 0;
+    topCheeseUserText = `${username} (${Number(clicks).toLocaleString()})`;
+  } else if (data.top_clicker) {
+    topCheeseUserText = data.top_clicker;
+  }
+
+  const elements = {
+    totalCheeseClicks: Number(data.total_clicks || 0).toLocaleString(),
+    recentCheeseClicks: Number(data.recent_24h || data.recent_clicks_24h || 0).toLocaleString(),
+    topCheeseUser: topCheeseUserText,
+    mostClickedCheese: data.most_clicked || 'None'
+  };
+
+  Object.entries(elements).forEach(([elementId, value]) => {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    element.textContent = value;
+  });
+
+  if (data.clicks_by_egg) {
+    displayCheeseClicksByType(data.clicks_by_egg);
+  }
+
+  if (data.top_users) {
+    displayTopCheeseClickers(data.top_users);
+  }
+}
     
     // Display cheese clicks by type
     function displayCheeseClicksByType(clicksByEgg) {
@@ -9382,41 +8842,6 @@ function displayOverviewDiscordRaceStats(raceData) {
       }
     }
 
-    function loadStoreItems() {
-      console.log('🏪 Loading store items...');
-      addLog('🏪 Loading store items...');
-      
-      // Load store items from API
-      fetch(API_BASE_URL + '/api/admin/store-admin.php')
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            updateStoreItems(data.items);
-          }
-        })
-        .catch(error => {
-          console.error('Error loading store items:', error);
-          addLog('❌ Error loading store items');
-        });
-    }
-
-    function updateStoreItems(items) {
-      const tableBody = document.getElementById('storeTableBody');
-      if (tableBody && items) {
-        tableBody.innerHTML = items.map(item => `
-          <tr>
-            <td>${item.item_name}</td>
-            <td>${item.description || 'No description'}</td>
-            <td>${item.price} DSPOINC</td>
-            <td>${item.is_active ? 'Active' : 'Inactive'}</td>
-            <td>
-              <button onclick="editStoreItem(${item.item_id})" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm">Edit</button>
-            </td>
-          </tr>
-        `).join('');
-      }
-    }
-
     // REMOVED DUPLICATE loadQuests() function - using the enhanced version below
 
     function loadBossNotifications() {
@@ -10158,25 +9583,25 @@ function displayOverviewDiscordRaceStats(raceData) {
 
     // Load store items
     async function loadStoreItems() {
-      try {
-        const response = await fetch(API_BASE_URL + '/api/admin/store-management.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_items' })
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-          displayStoreItems(data.items);
-          populateGiveItemDropdown(data.items); // NEW: Also populate give item dropdown
-          addLog(`🏪 Loaded ${data.items.length} store items`);
-        } else {
-          addLog(`❌ Failed to load store items: ${data.error}`);
-        }
-      } catch (error) {
-        addLog(`❌ Store items error: ${error.message}`);
-      }
+  try {
+    const response = await fetch(API_BASE_URL + '/api/admin/store-management.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_items' })
+    });
+    const data = await response.json();
+    
+    if (data.success) {
+      displayStoreItems(data.items);
+      populateGiveItemDropdown(data.items);
+      addLog(`🏪 Loaded ${data.items.length} store items`);
+    } else {
+      addLog(`❌ Failed to load store items: ${data.error}`);
     }
+  } catch (error) {
+    addLog(`❌ Store items error: ${error.message}`);
+  }
+}
     
     // NEW: Populate give item dropdown with available items
     function populateGiveItemDropdown(items) {
@@ -10201,54 +9626,58 @@ function displayOverviewDiscordRaceStats(raceData) {
     }
 
     // Display store items
-    function displayStoreItems(items) {
-      const container = document.getElementById('storeItems');
-      
-      if (items.length === 0) {
-        container.innerHTML = '<div class="text-gray-300">No store items found</div>';
-        return;
-      }
+function displayStoreItems(items) {
+  const container = document.getElementById('storeItems');
+  if (!container) {
+    addLog('❌ Store items container not found');
+    return;
+  }
 
-      container.innerHTML = items.map(item => {
-        const statusClass = item.is_active == 1 ? 'bg-green-600' : 'bg-red-600';
-        const statusText = item.is_active == 1 ? '🟢 Active' : '🔴 Inactive';
-        const statusBorder = item.is_active == 1 ? 'border-green-500' : 'border-red-500';
-        
-        return `
-          <div class="user-card ${statusBorder}">
-            <div class="flex justify-between items-start mb-2">
-              <h4 class="font-semibold">${item.item_name}</h4>
-              <span class="px-2 py-1 rounded text-xs text-white ${statusClass}">${statusText}</span>
-            </div>
-            <p class="text-sm text-gray-300 mb-2">${item.description || 'No description'}</p>
-            <div class="grid grid-cols-2 gap-2 mb-3">
-              <div class="text-center">
-                <div class="text-lg font-bold text-yellow-400">${item.price?.toLocaleString() || 0}</div>
-                <div class="text-xs text-gray-400">Price ($DSPOINC)</div>
-              </div>
-              <div class="text-center">
-                <div class="text-lg font-bold text-blue-400">${item.quantity || '∞'}</div>
-                <div class="text-xs text-gray-400">Available</div>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <button onclick="editStoreItem(${item.item_id})" 
-                      class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex-1">
-                Edit
-              </button>
-              <button onclick="toggleItemStatus(${item.item_id}, ${item.is_active})" 
-                      class="${item.is_active == 1 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white px-3 py-1 rounded text-sm flex-1">
-                ${item.is_active == 1 ? 'Deactivate' : 'Activate'}
-              </button>
-              <button onclick="deleteStoreItem(${item.item_id})" 
-                      class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex-1">
-                Delete
-              </button>
-              </div>
-            </div>
-        `;
-      }).join('');
-    }
+  if (!Array.isArray(items) || items.length === 0) {
+    container.innerHTML = '<div class="text-gray-300">No store items found</div>';
+    return;
+  }
+
+  container.innerHTML = items.map(item => {
+    const statusClass = item.is_active == 1 ? 'bg-green-600' : 'bg-red-600';
+    const statusText = item.is_active == 1 ? '🟢 Active' : '🔴 Inactive';
+    const statusBorder = item.is_active == 1 ? 'border-green-500' : 'border-red-500';
+
+    return `
+      <div class="user-card ${statusBorder}">
+        <div class="flex justify-between items-start mb-2">
+          <h4 class="font-semibold">${item.item_name}</h4>
+          <span class="px-2 py-1 rounded text-xs text-white ${statusClass}">${statusText}</span>
+        </div>
+        <p class="text-sm text-gray-300 mb-2">${item.description || 'No description'}</p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div class="text-center">
+            <div class="text-lg font-bold text-yellow-400">${Number(item.price || 0).toLocaleString()}</div>
+            <div class="text-xs text-gray-400">Price ($DSPOINC)</div>
+          </div>
+          <div class="text-center">
+            <div class="text-lg font-bold text-blue-400">${item.quantity || '∞'}</div>
+            <div class="text-xs text-gray-400">Available</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="editStoreItem(${item.item_id})"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex-1">
+            Edit
+          </button>
+          <button onclick="toggleItemStatus(${item.item_id}, ${item.is_active})"
+                  class="${item.is_active == 1 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white px-3 py-1 rounded text-sm flex-1">
+            ${item.is_active == 1 ? 'Deactivate' : 'Activate'}
+          </button>
+          <button onclick="deleteStoreItem(${item.item_id})"
+                  class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex-1">
+            Delete
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
     // Edit store item functionality
     async function editStoreItem(itemId) {
