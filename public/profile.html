@@ -1619,7 +1619,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 </section>
 
 
-
 <!-- 🧀 Official Cheese Stamp -->
 <div class="mt-6 flex justify-center">
   <div class="bg-yellow-400 text-white px-4 py-2 rounded-full border-4 border-white shadow-md">
@@ -4906,58 +4905,76 @@ collectionMatches.forEach(collectionInfo => {
         // Save the full verified NFT scan for admin overview and trait search.
     if (allGrantedRoles.length > 0 && Array.isArray(scannedNfts) && scannedNfts.length > 0) {
       try {
-        const normalizedNfts = scannedNfts
-          .map(nft => {
-            const collectionName = String(
-              nft.collectionRole ||
-              nft.collectionType ||
-              nft.collectionName ||
-              nft.collection ||
-              ''
-            ).toLowerCase();
+const normalizedNfts = (Array.isArray(scannedNfts) ? scannedNfts : [])
+  .map(nft => {
+    const rawCollectionAddress = String(nft.collectionAddress || nft.collection || '').trim();
+    const rawCollectionName = String(
+      nft.collectionName ||
+      nft.collectionType ||
+      nft.collection ||
+      ''
+    ).trim();
+    const rawCollectionRole = String(nft.collectionRole || '').trim();
 
-            const normalizedCollection = collectionName.includes('vip')
-              ? 'vip'
-              : (collectionName.includes('genesis') ? 'genesis' : '');
+    let normalizedCollection = '';
 
-            if (!normalizedCollection) {
-              return null;
-            }
+    if (rawCollectionAddress === 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML') {
+      normalizedCollection = 'genesis';
+    } else if (rawCollectionAddress === 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg') {
+      normalizedCollection = 'vip';
+    } else if (rawCollectionName.toLowerCase().includes('genesis genetic')) {
+      normalizedCollection = 'genesis';
+    } else if (rawCollectionName.toLowerCase().includes('vip')) {
+      normalizedCollection = 'vip';
+    } else if (rawCollectionRole.toLowerCase().includes('holder')) {
+      normalizedCollection = 'genesis';
+    } else if (rawCollectionRole.toLowerCase().includes('vip')) {
+      normalizedCollection = 'vip';
+    }
 
-            const tokenId =
-              nft.token_id ||
-              nft.tokenId ||
-              nft.mint ||
-              nft.mintAddress ||
-              nft.address ||
-              '';
+    const tokenId =
+      nft.token_id ||
+      nft.tokenId ||
+      nft.mint ||
+      nft.mintAddress ||
+      nft.address ||
+      '';
 
-            if (!tokenId) {
-              return null;
-            }
+    if (!normalizedCollection || !tokenId) {
+      console.warn('⚠️ [NFT SCAN SAVE] Skipping NFT during normalization:', {
+        name: nft.name,
+        tokenId,
+        rawCollectionAddress,
+        rawCollectionName,
+        rawCollectionRole
+      });
+      return null;
+    }
 
-            const traits = Array.isArray(nft.traits)
-              ? nft.traits
-              : (Array.isArray(nft.attributes) ? nft.attributes : []);
+    const rawTraits = Array.isArray(nft.traits)
+      ? nft.traits
+      : (Array.isArray(nft.attributes) ? nft.attributes : []);
 
-            return {
-              token_id: tokenId,
-              collection: normalizedCollection,
-              nft_name: nft.name || nft.nft_name || 'Unnamed NFT',
-              image_url: nft.image || nft.image_url || '',
-              metadata_json: nft.metadata || nft.metadata_json || null,
-              traits: traits.map(trait => ({
-                trait_type: trait.trait_type || trait.type || '',
-                value: trait.value ?? ''
-              })).filter(trait => trait.trait_type && String(trait.value) !== '')
-            };
-          })
-          .filter(Boolean);
+    return {
+      token_id: tokenId,
+      collection: normalizedCollection,
+      nft_name: nft.nft_name || nft.name || 'Unnamed NFT',
+      image_url: nft.image_url || nft.image || '',
+      metadata_json: nft,
+      traits: rawTraits.map(trait => ({
+        trait_type: trait.trait_type || trait.type || '',
+        value: trait.value ?? ''
+      })).filter(trait => trait.trait_type && String(trait.value) !== '')
+    };
+  })
+  .filter(Boolean);
+
+console.log('💾 [NFT SCAN SAVE] Normalized NFTs for SQL save:', normalizedNfts);
 
         if (normalizedNfts.length > 0) {
           const savePayload = {
             user_id: userId,
-            username: window.sessionDiscordUsername || localStorage.getItem('discord_username') || 'Unknown User',
+            username: window.sessionDiscordUsername || localStorage.getItem('discord_username') || localStorage.getItem('username') || 'Unknown User',
             wallet: walletAddress,
             signature: signature,
             message: message,

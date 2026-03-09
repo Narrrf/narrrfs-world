@@ -1659,7 +1659,11 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
   try {
 
     const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-    const username = window.sessionDiscordUsername || localStorage.getItem("discord_username") || "Unknown";
+    const username =
+  window.sessionDiscordUsername ||
+  localStorage.getItem("discord_username") ||
+  localStorage.getItem("username") ||
+  "Unknown";
 
     if (!userId) {
       alert("Please login with Discord first.");
@@ -1741,42 +1745,103 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
     console.log("📦 Verified collections:", verifiedCollections);
 
     // Persist the full NFT scan to SQL
-    const saveResponse = await fetch("/api/user/save-verified-nft-scan.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        username: username,
-        wallet: walletAddress,
-        signature: signature,
-        message: message,
-        nfts: scannedNfts
-      })
-    });
+const normalizedNfts = (Array.isArray(scannedNfts) ? scannedNfts : [])
+  .map(nft => {
+    const rawCollectionAddress = String(nft.collectionAddress || nft.collection || '').trim();
+    const rawCollectionName = String(nft.collectionName || nft.collection || '').trim();
+    const rawCollectionRole = String(nft.collectionRole || '').trim();
 
-    const saveData = await saveResponse.json();
+    let normalizedCollection = '';
 
-    if (!saveData.success) {
-
-      console.error("❌ Failed saving NFT scan:", saveData.error);
-
-    } else {
-
-      console.log("💾 NFT scan saved:", saveData);
-
+    if (rawCollectionAddress === 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML') {
+      normalizedCollection = 'genesis';
+    } else if (rawCollectionAddress === 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg') {
+      normalizedCollection = 'vip';
+    } else if (rawCollectionName.toLowerCase().includes('genesis genetic')) {
+      normalizedCollection = 'genesis';
+    } else if (rawCollectionName.toLowerCase().includes('vip')) {
+      normalizedCollection = 'vip';
+    } else if (rawCollectionRole.toLowerCase().includes('holder')) {
+      normalizedCollection = 'genesis';
+    } else if (rawCollectionRole.toLowerCase().includes('vip')) {
+      normalizedCollection = 'vip';
     }
 
-    let successMessage = "✅ NFT Verification Successful!\n\nRoles granted:\n";
+    const tokenId =
+      nft.token_id ||
+      nft.tokenId ||
+      nft.mint ||
+      nft.mintAddress ||
+      nft.address ||
+      '';
 
-    verifiedCollections.forEach((col, i) => {
+    if (!normalizedCollection || !tokenId) {
+      console.warn('⚠️ Skipping NFT during normalization:', {
+        name: nft.name,
+        tokenId,
+        rawCollectionAddress,
+        rawCollectionName,
+        rawCollectionRole
+      });
+      return null;
+    }
 
-      successMessage += `${i + 1}. ${col.role} (${col.count} NFTs)\n`;
+    const rawTraits = Array.isArray(nft.traits)
+      ? nft.traits
+      : (Array.isArray(nft.attributes) ? nft.attributes : []);
 
-    });
+    return {
+      token_id: tokenId,
+      collection: normalizedCollection,
+      nft_name: nft.nft_name || nft.name || 'Unnamed NFT',
+      image_url: nft.image_url || nft.image || '',
+      metadata_json: nft,
+      traits: rawTraits.map(trait => ({
+        trait_type: trait.trait_type || trait.type || '',
+        value: trait.value ?? ''
+      })).filter(trait => trait.trait_type && String(trait.value) !== '')
+    };
+  })
+  .filter(Boolean);
 
-    alert(successMessage);
+console.log('💾 Normalized NFTs for SQL save:', normalizedNfts);
+
+const saveResponse = await fetch("/api/user/save-verified-nft-scan.php", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    user_id: userId,
+    username: username,
+    wallet: walletAddress,
+    signature: signature,
+    message: message,
+    nfts: normalizedNfts
+  })
+});
+
+const saveContentType = saveResponse.headers.get('content-type') || '';
+if (!saveContentType.includes('application/json')) {
+  const saveText = await saveResponse.text();
+  throw new Error(`NFT scan save returned non-JSON response: ${saveText.substring(0, 300)}`);
+}
+
+const saveResult = await saveResponse.json();
+
+if (!saveResult.success) {
+  throw new Error(saveResult.error || 'Unknown NFT scan save error');
+}
+
+console.log('✅ [NFT SCAN SAVE] Verified NFT scan saved successfully:', saveResult);
+
+let successMessage = "✅ NFT Verification Successful!\n\nRoles granted:\n";
+
+verifiedCollections.forEach((col, i) => {
+  successMessage += `${i + 1}. ${col.role} (${col.count} NFTs)\n`;
+});
+
+alert(successMessage);
 
   } catch (error) {
 

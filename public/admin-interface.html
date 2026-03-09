@@ -21543,6 +21543,59 @@ function clearDiscordFeed() {
         </div>
       </div>
 
+            <!-- Live Database Summary -->
+      <div class="stats-card mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-yellow-400">📈 Live Database Summary</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <div id="databaseTotalRecords" class="text-2xl font-bold text-cyan-300">0</div>
+            <div class="text-sm text-gray-300">Total Records</div>
+          </div>
+          <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <div id="databaseTablesWithRows" class="text-2xl font-bold text-green-300">0</div>
+            <div class="text-sm text-gray-300">Tables With Rows</div>
+          </div>
+          <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <div id="databaseEmptyTables" class="text-2xl font-bold text-yellow-300">0</div>
+            <div class="text-sm text-gray-300">Empty Tables</div>
+          </div>
+          <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <div id="databaseFileSize" class="text-2xl font-bold text-purple-300">0 MB</div>
+            <div class="text-sm text-gray-300">DB File Size</div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <h4 class="text-md font-semibold text-blue-300 mb-2">📂 Category Summary</h4>
+          <div id="databaseCategorySummary" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <!-- NFT System Health -->
+      <div class="stats-card mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-yellow-400">🎴 NFT System Health</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <div id="databaseNftHolderRows" class="text-2xl font-bold text-green-300">0</div>
+            <div class="text-sm text-gray-300">Holder Verifications</div>
+          </div>
+          <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <div id="databaseNftOwnershipRows" class="text-2xl font-bold text-blue-300">0</div>
+            <div class="text-sm text-gray-300">NFT Ownership Rows</div>
+          </div>
+          <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <div id="databaseNftTraitRows" class="text-2xl font-bold text-purple-300">0</div>
+            <div class="text-sm text-gray-300">NFT Trait Rows</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Database Tables List -->
+      <div class="stats-card mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-yellow-400">🗂️ Live Database Tables</h3>
+        <div id="databaseTablesList" class="space-y-2"></div>
+      </div>
+
       <!-- API Endpoints Status -->
       <div class="stats-card mb-6">
         <h3 class="text-lg font-semibold mb-4 text-yellow-400">🔌 API Endpoints Status</h3>
@@ -22257,116 +22310,138 @@ function clearDiscordFeed() {
       return div.innerHTML;
     }
 
-    // 🗄️ Database Overview Functions
-    async function loadDatabaseOverview() {
-      console.log('🗄️ loadDatabaseOverview function called');
-      
-      if (!currentAdmin) {
-        addLog('❌ Please authenticate first');
-        return;
-      }
 
-      addLog('🗄️ Loading database overview...');
+    
+// 🗄️ Database Overview Functions
+async function loadDatabaseOverview() {
+  console.log('🗄️ loadDatabaseOverview function called');
 
-      try {
-        // Check if the tab element exists
-        const tabElement = document.getElementById('databaseOverviewTab');
-        if (!tabElement) {
-          console.error('❌ databaseOverviewTab element not found in DOM');
-          addLog('❌ Database overview tab element not found');
-          return;
-        }
-        console.log('✅ databaseOverviewTab element found');
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-        const response = await fetch(API_BASE_URL + '/api/discord/comprehensive-database-overview.php');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const htmlContent = await response.text();
-        console.log('✅ Database overview API response received');
-        
-        // Extract data from the HTML response using regex patterns
-        const totalTablesMatch = htmlContent.match(/Total Tables.*?(\d+)/);
-        const environmentMatch = htmlContent.match(/Environment.*?>(Local|Remote)</);
-        const sqliteMatch = htmlContent.match(/SQLite3 Extension.*?>(Enabled|Disabled)</);
-        const permissionsMatch = htmlContent.match(/Permissions.*?>(Writable|Read-only)</);
-        
-        // Update the database overview section
-        if (totalTablesMatch) {
-          const totalTablesElement = document.getElementById('totalTables');
-          if (totalTablesElement) {
-            totalTablesElement.textContent = totalTablesMatch[1];
-            console.log('✅ Total tables updated:', totalTablesMatch[1]);
-          }
-        }
-        if (environmentMatch) {
-          const environmentElement = document.getElementById('environment');
-          if (environmentElement) {
-            environmentElement.textContent = environmentMatch[1];
-            console.log('✅ Environment updated:', environmentMatch[1]);
-          }
-        }
-        if (sqliteMatch) {
-          const sqliteElement = document.getElementById('sqliteStatus');
-          if (sqliteElement) {
-            sqliteElement.textContent = sqliteMatch[1];
-            console.log('✅ SQLite status updated:', sqliteMatch[1]);
-          }
-        }
-        if (permissionsMatch) {
-          const permissionsElement = document.getElementById('permissions');
-          if (permissionsElement) {
-            permissionsElement.textContent = permissionsMatch[1];
-            console.log('✅ Permissions updated:', permissionsMatch[1]);
-          }
-        }
+if (!isLocal && !currentAdmin) {
+  addLog('❌ Please authenticate first');
+  return;
+}
 
-        // Update timestamp
-        const timestampElement = document.getElementById('databaseOverviewTimestamp');
-        if (timestampElement) {
-          timestampElement.textContent = new Date().toLocaleString();
-          console.log('✅ Timestamp updated');
-        }
+  addLog('🗄️ Loading database overview...');
 
-        addLog('✅ Database overview loaded successfully');
-      } catch (error) {
-        addLog(`❌ Database overview loading error: ${error.message}`);
-        console.error('Database overview loading error:', error);
-      }
+  try {
+    const tabElement = document.getElementById('databaseOverviewTab');
+    if (!tabElement) {
+      console.error('❌ databaseOverviewTab element not found in DOM');
+      addLog('❌ Database overview tab element not found');
+      return;
     }
 
-    // 🔒 Security Crawler Functions
-    async function loadSecurityCrawlerData() {
-      console.log('🔒 loadSecurityCrawlerData function called');
-      
-      // For local development, skip authentication check
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      
-      if (!isLocal && !currentAdmin) {
-        addLog('❌ Please authenticate first');
-        return;
-      }
+    const response = await fetch(API_BASE_URL + '/api/admin/get-database-overview.php', {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
 
-      addLog('🔒 Loading Security Crawler data...');
-
-      try {
-        // Load security crawler status
-        await loadSecurityCrawlerStatus();
-        
-        // Load recent crawls
-        await loadRecentCrawls();
-        
-        // Load security findings
-        await loadSecurityFindings();
-        
-        addLog('✅ Security Crawler data loaded successfully');
-      } catch (error) {
-        addLog(`❌ Security Crawler loading error: ${error.message}`);
-        console.error('Security Crawler loading error:', error);
-      }
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Unknown database overview error');
+    }
+
+    console.log('✅ Database overview JSON response received:', data);
+
+    updateDatabaseOverviewSummary(data.summary, data.nft_health, data.categories);
+    renderDatabaseTablesOverview(data.tables || []);
+    updateDatabaseOverviewTimestamp();
+
+    addLog(`✅ Database overview loaded successfully (${data.summary?.total_tables || 0} tables)`);
+  } catch (error) {
+    addLog(`❌ Database overview loading error: ${error.message}`);
+    console.error('Database overview loading error:', error);
+  }
+}
+function updateDatabaseOverviewSummary(summary = {}, nftHealth = {}, categories = {}) {
+  const totalTablesElement = document.getElementById('totalTables');
+  if (totalTablesElement) totalTablesElement.textContent = summary.total_tables ?? '0';
+
+  const environmentElement = document.getElementById('environment');
+  if (environmentElement) environmentElement.textContent = summary.environment ?? 'Unknown';
+
+  const sqliteElement = document.getElementById('sqliteStatus');
+  if (sqliteElement) sqliteElement.textContent = summary.sqlite_enabled ? 'Enabled' : 'Disabled';
+
+  const permissionsElement = document.getElementById('permissions');
+  if (permissionsElement) permissionsElement.textContent = summary.db_writable ? 'Writable' : 'Read-only';
+
+  const totalRecordsElement = document.getElementById('databaseTotalRecords');
+  if (totalRecordsElement) totalRecordsElement.textContent = Number(summary.total_records || 0).toLocaleString();
+
+  const tablesWithRowsElement = document.getElementById('databaseTablesWithRows');
+  if (tablesWithRowsElement) tablesWithRowsElement.textContent = Number(summary.tables_with_rows || 0).toLocaleString();
+
+  const emptyTablesElement = document.getElementById('databaseEmptyTables');
+  if (emptyTablesElement) emptyTablesElement.textContent = Number(summary.empty_tables || 0).toLocaleString();
+
+  const dbFileSizeElement = document.getElementById('databaseFileSize');
+  if (dbFileSizeElement) dbFileSizeElement.textContent = `${summary.db_file_size_mb || 0} MB`;
+
+  const nftHolderRowsElement = document.getElementById('databaseNftHolderRows');
+  if (nftHolderRowsElement) nftHolderRowsElement.textContent = Number(nftHealth.holder_verifications || 0).toLocaleString();
+
+  const nftOwnershipRowsElement = document.getElementById('databaseNftOwnershipRows');
+  if (nftOwnershipRowsElement) nftOwnershipRowsElement.textContent = Number(nftHealth.nft_ownership || 0).toLocaleString();
+
+  const nftTraitRowsElement = document.getElementById('databaseNftTraitRows');
+  if (nftTraitRowsElement) nftTraitRowsElement.textContent = Number(nftHealth.nft_traits || 0).toLocaleString();
+
+  const databaseCategorySummary = document.getElementById('databaseCategorySummary');
+  if (databaseCategorySummary) {
+    databaseCategorySummary.innerHTML = Object.entries(categories).map(([name, count]) => `
+      <span class="px-2 py-1 bg-gray-700 rounded text-xs text-gray-200">
+        ${escapeHtml(name)}: ${Number(count || 0).toLocaleString()}
+      </span>
+    `).join(' ');
+  }
+}
+
+function renderDatabaseTablesOverview(tables = []) {
+  const container = document.getElementById('databaseTablesList');
+  if (!container) return;
+
+  if (!Array.isArray(tables) || tables.length === 0) {
+    container.innerHTML = '<div class="text-gray-400">No database tables found</div>';
+    return;
+  }
+
+  container.innerHTML = tables.map(table => {
+    const badge = table.has_rows
+      ? '<span class="px-2 py-1 bg-green-600 text-white text-xs rounded">Has Rows</span>'
+      : '<span class="px-2 py-1 bg-gray-600 text-white text-xs rounded">Empty</span>';
+
+    return `
+      <div class="flex items-center justify-between p-3 bg-gray-800 bg-opacity-60 rounded border border-gray-700">
+        <div>
+          <div class="font-semibold text-white">${escapeHtml(table.name)}</div>
+          <div class="text-xs text-gray-400">Category: ${escapeHtml(table.category)}</div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <div class="text-cyan-300 font-bold">${Number(table.row_count || 0).toLocaleString()}</div>
+            <div class="text-xs text-gray-500">Rows</div>
+          </div>
+          ${badge}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateDatabaseOverviewTimestamp() {
+  const timestampElement = document.getElementById('databaseOverviewTimestamp');
+  if (timestampElement) {
+    timestampElement.textContent = new Date().toLocaleString();
+  }
+}
 
     async function loadSecurityCrawlerStatus() {
       try {
