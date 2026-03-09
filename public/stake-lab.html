@@ -439,35 +439,44 @@ require_once 'discord-invite.php';
             <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl p-6 border border-purple-400/30">
               <h3 class="text-xl font-bold text-purple-300 mb-4">Connect Your Phantom Wallet</h3>
               <p class="text-gray-300 mb-4">
-                Connect your wallet to view your Narrrfs World NFTs from our two collections: Genesis Genetic and VIP Drop.
-              </p>
+  Connect your wallet to view and verify your Narrrfs World NFTs from our two collections: Genesis Genetic and VIP Drop.
+</p>
               
-              <!-- 🔍 How NFT Display Works Section -->
-              <div class="bg-gradient-to-br from-gray-800 via-purple-800/20 to-gray-700 rounded-xl p-6 mb-6 border border-purple-400/30">
-                <h4 class="text-lg font-semibold text-purple-300 mb-4 flex items-center gap-2">
-                  🔍 How NFT Display Works
-                </h4>
-                <div class="space-y-3 text-left">
-                  <div class="flex items-start gap-3">
-                    <span class="text-purple-400 font-bold text-lg">1.</span>
-                    <div>
-                      <strong class="text-purple-100">Wallet Connection:</strong> Connect your Phantom wallet securely to view your NFT collection
-                    </div>
-                  </div>
-                  <div class="flex items-start gap-3">
-                    <span class="text-purple-400 font-bold text-lg">2.</span>
-                    <div>
-                      <strong class="text-purple-100">Helius API Check:</strong> We use <a href="https://helius.xyz/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Helius APIs</a> to efficiently search your wallet for our specific NFT collections (Genesis Genetic & VIP Drop)
-                    </div>
-                  </div>
-                  <div class="flex items-start gap-3">
-                    <span class="text-purple-400 font-bold text-lg">3.</span>
-                    <div>
-                      <strong class="text-purple-100">NFT Display:</strong> View all your NFTs with images, names, and traits in a beautiful gallery format
-                    </div>
-                  </div>
-                </div>
-              </div>
+<!-- 🔍 How NFT Display & Verification Works Section -->
+<div class="bg-gradient-to-br from-gray-800 via-purple-800/20 to-gray-700 rounded-xl p-6 mb-6 border border-purple-400/30">
+  <h4 class="text-lg font-semibold text-purple-300 mb-4 flex items-center gap-2">
+    🔍 How NFT Display & Verification Works
+  </h4>
+  <div class="space-y-3 text-left">
+    <div class="flex items-start gap-3">
+      <span class="text-purple-400 font-bold text-lg">1.</span>
+      <div>
+        <strong class="text-purple-100">Wallet Connection:</strong> Connect your Phantom wallet securely to access your NFT collection.
+      </div>
+    </div>
+
+    <div class="flex items-start gap-3">
+      <span class="text-purple-400 font-bold text-lg">2.</span>
+      <div>
+        <strong class="text-purple-100">NFT Collection Scan:</strong> We use <a href="https://helius.xyz/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Helius APIs</a> to search your wallet for Narrrfs World: Genesis Genetic and Narrrf Genesis VIP Drop NFTs.
+      </div>
+    </div>
+
+    <div class="flex items-start gap-3">
+      <span class="text-purple-400 font-bold text-lg">3.</span>
+      <div>
+        <strong class="text-purple-100">NFT Gallery Display:</strong> Use <span class="text-blue-300 font-semibold">Load My NFTs</span> to view your matching NFTs with images, names, and available traits.
+      </div>
+    </div>
+
+    <div class="flex items-start gap-3">
+      <span class="text-purple-400 font-bold text-lg">4.</span>
+      <div>
+        <strong class="text-purple-100">Verification & Secure Save:</strong> Use <span class="text-green-300 font-semibold">Verify &amp; Save My NFTs</span> to sign a wallet message, verify your holdership, update your Discord role eligibility, and securely save your verified NFT and Genesis trait data in the Narrrf’s World SQL database for admin review and future ecosystem features.
+      </div>
+    </div>
+  </div>
+</div>
               
               <!-- 🔗 Powered by Helius Section -->
               <div class="bg-gradient-to-br from-blue-900/30 via-blue-800/20 to-blue-900/30 rounded-xl p-4 mb-6 border border-blue-400/30">
@@ -491,27 +500,33 @@ require_once 'discord-invite.php';
                   Make sure you have <a href="https://phantom.app/" target="_blank" class="text-blue-400 underline">Phantom wallet</a> installed
                 </p>
               </div>
-              
-              <!-- Connected Wallet Display -->
-              <div id="wallet-connected" class="hidden">
-                <div class="flex items-center justify-between mb-4">
-                  <div>
-                    <p class="text-green-300 font-semibold">✅ Wallet Connected</p>
-                    <p id="wallet-address-display" class="text-gray-400 text-sm font-mono mt-1"></p>
-                  </div>
-                  <button id="disconnect-wallet-btn" 
-                          class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm">
-                    Disconnect
-                  </button>
-                </div>
-                <button id="fetch-nfts-btn" 
-                        class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                  🔍 Load My NFTs
-                </button>
-              </div>
-            </div>
-          </div>
-          
+<!-- Connected Wallet Display -->
+<div id="wallet-connected" class="hidden">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <p class="text-green-300 font-semibold">✅ Wallet Connected</p>
+      <p id="wallet-address-display" class="text-gray-400 text-sm font-mono mt-1"></p>
+    </div>
+    <button id="disconnect-wallet-btn" 
+            class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm">
+      Disconnect
+    </button>
+  </div>
+
+  <button id="fetch-nfts-btn" 
+          class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+    🔍 Load My NFTs
+  </button>
+
+  <button id="verify-stake-nfts-btn"
+          class="w-full mt-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+    ✅ Verify & Save My NFTs
+  </button>
+
+  <p class="text-xs text-gray-400 mt-3">
+    Verification requires a Phantom signature and an active Discord login. Verified Genesis NFT traits are securely saved for holder verification, admin review, and future Narrrf’s World ecosystem features.
+  </p>
+</div>
           <!-- NFT Gallery -->
           <div id="nft-gallery-section" class="hidden">
             <div id="nft-loading" class="text-center py-8 text-gray-400">
@@ -1637,6 +1652,248 @@ require_once 'discord-invite.php';
       
       galleryDiv.innerHTML = nftCards.join('');
     }
+
+// Verify collections with backend and persist the full verified NFT scan for admin trait audit.
+async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts = []) {
+
+  try {
+
+    const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+    const username = window.sessionDiscordUsername || localStorage.getItem("discord_username") || "Unknown";
+
+    if (!userId) {
+      alert("Please login with Discord first.");
+      return;
+    }
+
+    const message = `Verify NFT ownership for Narrrfs World - ${new Date().toISOString()}`;
+
+    let signature = null;
+
+    // Request Phantom signature
+    if (window.solana && window.solana.isPhantom) {
+
+      const encodedMessage = new TextEncoder().encode(message);
+      const signedMessage = await window.solana.signMessage(encodedMessage, "utf8");
+
+      signature = Array.from(signedMessage.signature)
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+
+      console.log("🔐 Signature obtained:", signature);
+
+    } else {
+
+      throw new Error("Phantom wallet not available");
+
+    }
+
+    const verifiedCollections = [];
+
+    // Verify each collection with backend role verification API
+    for (const collection of collectionMatches) {
+
+      const payload = {
+        user_id: userId,
+        wallet_address: walletAddress,
+        collection: collection.collectionAddress,
+        nfts: [],
+        signature: signature,
+        message: message
+      };
+
+      const response = await fetch("/api/user/verify-nft-holder.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+
+        console.log("✅ Collection verified:", collection.collection);
+
+        verifiedCollections.push({
+          collection: collection.collection,
+          role: collection.role,
+          roleId: collection.roleId,
+          count: collection.count
+        });
+
+      } else {
+
+        console.warn("⚠️ Verification failed:", data.error);
+
+      }
+
+    }
+
+    if (verifiedCollections.length === 0) {
+
+      alert("No roles were granted. Verification failed.");
+      return;
+
+    }
+
+    console.log("📦 Verified collections:", verifiedCollections);
+
+    // Persist the full NFT scan to SQL
+    const saveResponse = await fetch("/api/user/save-verified-nft-scan.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        username: username,
+        wallet: walletAddress,
+        signature: signature,
+        message: message,
+        nfts: scannedNfts
+      })
+    });
+
+    const saveData = await saveResponse.json();
+
+    if (!saveData.success) {
+
+      console.error("❌ Failed saving NFT scan:", saveData.error);
+
+    } else {
+
+      console.log("💾 NFT scan saved:", saveData);
+
+    }
+
+    let successMessage = "✅ NFT Verification Successful!\n\nRoles granted:\n";
+
+    verifiedCollections.forEach((col, i) => {
+
+      successMessage += `${i + 1}. ${col.role} (${col.count} NFTs)\n`;
+
+    });
+
+    alert(successMessage);
+
+  } catch (error) {
+
+    console.error("Verification error:", error);
+    alert("Verification failed: " + error.message);
+
+  }
+
+}
+
+    // Verify NFTs from stake-lab page and persist scan to SQL
+async function verifyStakeLabNFTs() {
+
+  if (!connectedWalletAddress) {
+    alert("Please connect your wallet first.");
+    return;
+  }
+
+  if (!loadedNFTs || loadedNFTs.length === 0) {
+    alert("Please load your NFTs first.");
+    return;
+  }
+
+  try {
+
+    const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+
+    if (!userId) {
+      alert("Please login with Discord first.");
+      return;
+    }
+
+    const message = `Verify NFT ownership for Narrrfs World - ${new Date().toISOString()}`;
+
+    let signature;
+
+    if (window.solana && window.solana.isPhantom) {
+
+      const encodedMessage = new TextEncoder().encode(message);
+      const signedMessage = await window.solana.signMessage(encodedMessage, "utf8");
+
+      signature = Array.from(signedMessage.signature)
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+
+    } else {
+
+      throw new Error("Phantom wallet not available");
+
+    }
+
+    console.log("🔐 Signature obtained:", signature);
+
+    const collections = {
+
+      "AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML": {
+        name: "Narrrfs World: Genesis Genetic",
+        role: "🏆 Holder",
+        roleId: "1402668301414563971"
+      },
+
+      "CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg": {
+        name: "Narrrf Genesis VIP Drop",
+        role: "🎴 VIP Holder",
+        roleId: "1332016526848692345"
+      }
+
+    };
+
+    const foundNFTs = [];
+
+    for (const [collectionAddress, info] of Object.entries(collections)) {
+
+      const matches = loadedNFTs.filter(nft => {
+
+        const nftCollection = nft.collection || nft.collectionAddress || "";
+        return nftCollection === collectionAddress;
+
+      });
+
+      if (matches.length > 0) {
+
+        foundNFTs.push({
+          collection: info.name,
+          role: info.role,
+          roleId: info.roleId,
+          count: matches.length,
+          collectionAddress: collectionAddress
+        });
+
+      }
+
+    }
+
+    if (foundNFTs.length === 0) {
+
+      alert("No Narrrfs World NFTs found in your wallet.");
+      return;
+
+    }
+
+    console.log("📦 Collections detected:", foundNFTs);
+
+    await verifyWithBackend(
+      connectedWalletAddress,
+      foundNFTs,
+      loadedNFTs
+    );
+
+  } catch (error) {
+
+    console.error("Stake verification error:", error);
+    alert("Verification failed: " + error.message);
+
+  }
+
+}
     
     // Initialize wallet connection on page load
     function initWalletConnection() {
@@ -1664,6 +1921,7 @@ require_once 'discord-invite.php';
       document.getElementById('connect-phantom-btn').addEventListener('click', connectPhantomWallet);
       document.getElementById('disconnect-wallet-btn').addEventListener('click', disconnectWallet);
       document.getElementById('fetch-nfts-btn').addEventListener('click', fetchNFTs);
+      document.getElementById('verify-stake-nfts-btn').addEventListener('click', verifyStakeLabNFTs);
     }
 
     // Run on page load

@@ -4561,7 +4561,7 @@ async function verifyNFTs() {
     
     // If NFTs found, verify with our backend
     if (foundNFTs.length > 0) {
-      await verifyWithBackend(connectedWalletAddress, foundNFTs);
+      await verifyWithBackend(connectedWalletAddress, foundNFTs, allNFTsWithTraits);
     } else {
       showError('No NFTs from our collections found in your wallet. Make sure you own Narrrfs World: Genesis Genetic or Narrrf Genesis VIP Drop NFTs. If you believe this is an error, please contact support.');
     }
@@ -4651,8 +4651,8 @@ function displayVerificationResults(foundNFTs) {
   resultsDiv.classList.remove('hidden');
 }
 
-// Verify with our backend - now requires cryptographic signature
-async function verifyWithBackend(walletAddress, nfts) {
+// Verify with backend and persist the full verified NFT scan for admin trait audit.
+async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts = []) {
   try {
     const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
     
@@ -4682,11 +4682,11 @@ async function verifyWithBackend(walletAddress, nfts) {
       return;
     }
     
-    // Group collections by collection address (API expects collection address, not role name)
-    // NOTE: 'nfts' parameter is actually the foundNFTs array from verifyNFTs(), which contains collection info objects
-    // Each object has: { collection, role, roleId, count, collectionAddress }
-    const nftsByCollection = {};
-    nfts.forEach(collectionInfo => {
+// Group matched collections by collection address for backend role verification.
+// collectionMatches contains summary matches like:
+// { collection, role, roleId, count, collectionAddress }
+const nftsByCollection = {};
+collectionMatches.forEach(collectionInfo => {
       // Use collectionAddress as the key (this is what the API expects)
       const collectionAddress = collectionInfo.collectionAddress;
       
@@ -4901,6 +4901,99 @@ async function verifyWithBackend(walletAddress, nfts) {
       allFailedCollections.forEach((failed, index) => {
         console.log(`   ${index + 1}. ❌ ${failed.collection}: ${failed.error}`);
       });
+    }
+
+        // Save the full verified NFT scan for admin overview and trait search.
+    if (allGrantedRoles.length > 0 && Array.isArray(scannedNfts) && scannedNfts.length > 0) {
+      try {
+        const normalizedNfts = scannedNfts
+          .map(nft => {
+            const collectionName = String(
+              nft.collectionRole ||
+              nft.collectionType ||
+              nft.collectionName ||
+              nft.collection ||
+              ''
+            ).toLowerCase();
+
+            const normalizedCollection = collectionName.includes('vip')
+              ? 'vip'
+              : (collectionName.includes('genesis') ? 'genesis' : '');
+
+            if (!normalizedCollection) {
+              return null;
+            }
+
+            const tokenId =
+              nft.token_id ||
+              nft.tokenId ||
+              nft.mint ||
+              nft.mintAddress ||
+              nft.address ||
+              '';
+
+            if (!tokenId) {
+              return null;
+            }
+
+            const traits = Array.isArray(nft.traits)
+              ? nft.traits
+              : (Array.isArray(nft.attributes) ? nft.attributes : []);
+
+            return {
+              token_id: tokenId,
+              collection: normalizedCollection,
+              nft_name: nft.name || nft.nft_name || 'Unnamed NFT',
+              image_url: nft.image || nft.image_url || '',
+              metadata_json: nft.metadata || nft.metadata_json || null,
+              traits: traits.map(trait => ({
+                trait_type: trait.trait_type || trait.type || '',
+                value: trait.value ?? ''
+              })).filter(trait => trait.trait_type && String(trait.value) !== '')
+            };
+          })
+          .filter(Boolean);
+
+        if (normalizedNfts.length > 0) {
+          const savePayload = {
+            user_id: userId,
+            username: window.sessionDiscordUsername || localStorage.getItem('discord_username') || 'Unknown User',
+            wallet: walletAddress,
+            signature: signature,
+            message: message,
+            nfts: normalizedNfts
+          };
+
+          console.log('💾 [NFT SCAN SAVE] Saving verified NFT scan:', {
+            user_id: savePayload.user_id,
+            username: savePayload.username,
+            wallet: `${walletAddress.substring(0, 8)}...`,
+            nft_count: normalizedNfts.length
+          });
+
+          const saveResponse = await fetch('/api/user/save-verified-nft-scan.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(savePayload)
+          });
+
+          const saveContentType = saveResponse.headers.get('content-type') || '';
+          if (!saveContentType.includes('application/json')) {
+            const saveText = await saveResponse.text();
+            throw new Error(`NFT scan save returned non-JSON response: ${saveText.substring(0, 300)}`);
+          }
+
+          const saveData = await saveResponse.json();
+
+          if (!saveData.success) {
+            throw new Error(saveData.error || 'Unknown NFT scan save error');
+          }
+
+          console.log('✅ [NFT SCAN SAVE] Verified NFT scan saved successfully:', saveData);
+        }
+      } catch (saveError) {
+        console.error('❌ [NFT SCAN SAVE] Failed to save verified NFT scan:', saveError);
+      }
     }
     
     // Display comprehensive success/error message

@@ -4256,19 +4256,22 @@
       </div>
 
       <!-- Role Management Tabs -->
-      <div class="mb-6">
-        <div class="flex space-x-1 bg-gray-800 p-1 rounded-lg">
-          <button onclick="switchRoleTab('vip')" id="vipRoleTab" class="flex-1 px-4 py-2 rounded text-sm font-medium bg-purple-600 text-white">
-            👑 VIP Holders (<span id="vipTabCount">-</span>)
-          </button>
-          <button onclick="switchRoleTab('genesis')" id="genesisRoleTab" class="flex-1 px-4 py-2 rounded text-sm font-medium text-gray-300 hover:text-white">
-            🧬 Genesis Genetic (<span id="genesisTabCount">-</span>)
-          </button>
-          <button onclick="switchRoleTab('all')" id="allRoleTab" class="flex-1 px-4 py-2 rounded text-sm font-medium text-gray-300 hover:text-white">
-            📋 All Verifications
-          </button>
-        </div>
-      </div>
+<div class="mb-6">
+  <div class="flex space-x-1 bg-gray-800 p-1 rounded-lg">
+    <button onclick="switchRoleTab('vip')" id="vipRoleTab" class="flex-1 px-4 py-2 rounded text-sm font-medium bg-purple-600 text-white">
+      👑 VIP Holders (<span id="vipTabCount">671</span>)
+    </button>
+    <button onclick="switchRoleTab('genesis')" id="genesisRoleTab" class="flex-1 px-4 py-2 rounded text-sm font-medium text-gray-300 hover:text-white">
+      🧬 Genesis Genetic (<span id="genesisTabCount">714</span>)
+    </button>
+    <button onclick="switchRoleTab('all')" id="allRoleTab" class="flex-1 px-4 py-2 rounded text-sm font-medium text-gray-300 hover:text-white">
+      📋 All Verifications (<span id="allRoleTabCount">-</span>)
+    </button>
+    <button onclick="switchRoleTab('traits')" id="traitsRoleTab" class="flex-1 px-4 py-2 rounded text-sm font-medium text-gray-300 hover:text-white">
+      🧬 Traits Verified (<span id="traitsRoleTabCount">-</span>)
+    </button>
+  </div>
+</div>
 
       <!-- VIP Holders Tab -->
       <div id="vipRoleContent" class="role-tab-content">
@@ -4308,6 +4311,73 @@
           </div>
         </div>
       </div>
+
+      <!-- Traits Verified Tab -->
+<div id="traitsRoleContent" class="role-tab-content" style="display: none;">
+  <div class="mb-4 p-4 bg-cyan-900 bg-opacity-20 rounded-lg border border-cyan-600">
+    <h3 class="text-lg font-semibold mb-3 text-cyan-300">🧬 Verified Genesis Traits</h3>
+    <div class="text-sm text-gray-400 mb-4">
+      Search and audit all verified Genesis holders, their Genesis NFT traits, and whether they also hold VIP.
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mb-4">
+      <input
+        type="text"
+        id="traitsSearchInput"
+        placeholder="Search username / Discord ID / wallet / NFT name"
+        class="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"
+        oninput="applyTraitsVerifiedFilters()"
+      >
+
+      <input
+        type="text"
+        id="traitsTraitSearchInput"
+        placeholder="Search trait text"
+        class="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"
+        oninput="applyTraitsVerifiedFilters()"
+      >
+
+      <select
+        id="traitsTraitTypeFilter"
+        class="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"
+        onchange="applyTraitsVerifiedFilters()"
+      >
+        <option value="">All Trait Types</option>
+      </select>
+
+      <label class="flex items-center px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white">
+        <input type="checkbox" id="traitsVipOnlyFilter" class="mr-2" onchange="applyTraitsVerifiedFilters()">
+        VIP only
+      </label>
+
+      <button onclick="loadTraitsVerified()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded">
+        🔄 Refresh Traits
+      </button>
+    </div>
+
+    <!-- Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+      <div class="bg-gray-800 bg-opacity-60 rounded p-3 border border-cyan-700">
+        <div class="text-xs text-gray-400">Verified Users</div>
+        <div id="traitsSummaryUsers" class="text-2xl font-bold text-cyan-300">0</div>
+      </div>
+      <div class="bg-gray-800 bg-opacity-60 rounded p-3 border border-cyan-700">
+        <div class="text-xs text-gray-400">Genesis NFTs</div>
+        <div id="traitsSummaryNfts" class="text-2xl font-bold text-cyan-300">0</div>
+      </div>
+      <div class="bg-gray-800 bg-opacity-60 rounded p-3 border border-cyan-700">
+        <div class="text-xs text-gray-400">Visible Trait Rows</div>
+        <div id="traitsSummaryTraits" class="text-2xl font-bold text-cyan-300">0</div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="traitsVerifiedList" class="space-y-4">
+      <div class="text-gray-400">Loading verified traits...</div>
+    </div>
+  </div>
+</div>
 
       <!-- Verification Actions -->
       <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
@@ -4972,20 +5042,22 @@
       });
     }
 
-    function forceRevealAncestorChain(element) {
-      let current = element;
+function forceRevealAncestorChain(element) {
+  let current = element.parentElement;
 
-      while (current) {
-        if (current.style) {
-          current.style.display = 'block';
-          current.style.visibility = 'visible';
-          current.style.opacity = '1';
-          current.classList.remove('hidden');
-        }
-
-        current = current.parentElement;
+  while (current) {
+    if (current.style) {
+      if (window.getComputedStyle(current).display === 'none') {
+        current.style.display = 'block';
       }
+      current.style.visibility = 'visible';
+      current.style.opacity = '1';
+      current.classList.remove('hidden');
     }
+
+    current = current.parentElement;
+  }
+}
 
     function debugTabParentChain(tabId) {
   let node = document.getElementById(tabId);
@@ -5627,27 +5699,27 @@ function showTab(tabName) {
     return;
   }
 
-  selectedTab.style.display = 'block';
-  selectedTab.style.visibility = 'visible';
-  selectedTab.style.opacity = '1';
-  selectedTab.style.transform = 'translateY(0)';
-  selectedTab.style.transition = 'all 0.3s ease';
+selectedTab.style.display = 'block';
+selectedTab.style.visibility = 'visible';
+selectedTab.style.opacity = '1';
+selectedTab.style.transform = 'translateY(0)';
+selectedTab.style.transition = 'all 0.3s ease';
 
-  forceRevealAncestorChain(selectedTab);
+forceRevealAncestorChain(selectedTab);
 
-  // Temporary visual debug
-  selectedTab.style.border = '3px solid red';
-  selectedTab.scrollIntoView({ behavior: 'auto', block: 'start' });
+// Temporary visual debug
+selectedTab.style.border = '3px solid red';
+selectedTab.scrollIntoView({ behavior: 'auto', block: 'start' });
 
-  // Temporary debug logs
-  console.log('✅ selectedTab inline display:', selectedTab.style.display);
-  console.log('✅ selectedTab computed display:', window.getComputedStyle(selectedTab).display);
-  console.log('✅ selectedTab computed visibility:', window.getComputedStyle(selectedTab).visibility);
-  console.log('✅ selectedTab offsetHeight:', selectedTab.offsetHeight);
-  console.log('✅ selectedTab offsetParent:', selectedTab.offsetParent);
+// Temporary debug logs
+console.log('✅ selectedTab inline display:', selectedTab.style.display);
+console.log('✅ selectedTab computed display:', window.getComputedStyle(selectedTab).display);
+console.log('✅ selectedTab computed visibility:', window.getComputedStyle(selectedTab).visibility);
+console.log('✅ selectedTab offsetHeight:', selectedTab.offsetHeight);
+console.log('✅ selectedTab offsetParent:', selectedTab.offsetParent);
 
-  window.currentTab = tabName;
-  addLog(`✅ Successfully switched to ${tabName} tab`);
+window.currentTab = tabName;
+addLog(`✅ Successfully switched to ${tabName} tab`);
 
 
   // STEP 4: Load tab-specific data
@@ -7954,35 +8026,194 @@ function updateCheeseClickStats(data) {
     }
     
     // Update holder verification display
-    function updateHolderVerificationDisplay(verifications) {
-      const container = document.getElementById('holderVerificationContainer');
-      if (!container) return;
-      
-      if (verifications.length === 0) {
-        container.innerHTML = '<div class="text-gray-400">No holder verifications found</div>';
-        return;
+// Update holder verification display
+function updateHolderVerificationDisplay(verifications) {
+  const legacyContainer = document.getElementById('holderVerificationContainer');
+  const allVerificationsContainer = document.getElementById('allVerificationsList');
+  const targetContainer = allVerificationsContainer || legacyContainer;
+  if (!targetContainer) return;
+
+  renderAllVerificationOverview(verifications, window.discordRoleData, targetContainer);
+  addLog(`✅ Loaded ${Array.isArray(verifications) ? verifications.length : 0} holder verifications`);
+}
+
+// Build a single all-verifications overview from verification records and Discord role members.
+function buildAllVerificationOverview(verifications, discordRoleData) {
+  const verificationList = Array.isArray(verifications) ? verifications : [];
+  const roleData = discordRoleData || {};
+  const vipMembers = Array.isArray(roleData?.roles?.vip?.members) ? roleData.roles.vip.members : [];
+  const genesisMembers = Array.isArray(roleData?.roles?.genesis?.members) ? roleData.roles.genesis.members : [];
+  const memberMap = new Map();
+
+  vipMembers.forEach(member => {
+    const memberKey = member.user_id || member.wallet || `vip-${member.username || Math.random()}`;
+    if (!memberMap.has(memberKey)) {
+      memberMap.set(memberKey, {
+        member,
+        hasVipRole: true,
+        hasGenesisRole: false
+      });
+      return;
+    }
+
+    memberMap.get(memberKey).hasVipRole = true;
+  });
+
+  genesisMembers.forEach(member => {
+    const memberKey = member.user_id || member.wallet || `genesis-${member.username || Math.random()}`;
+    if (!memberMap.has(memberKey)) {
+      memberMap.set(memberKey, {
+        member,
+        hasVipRole: false,
+        hasGenesisRole: true
+      });
+      return;
+    }
+
+    memberMap.get(memberKey).hasGenesisRole = true;
+  });
+
+  const combinedMap = new Map();
+
+  verificationList.forEach(verification => {
+    const verificationUserId = verification.discord_id || verification.user_id || '';
+    const verificationWallet = verification.wallet || '';
+    const verificationUsername = verification.username || verification.discord_username || '';
+    const mapKey = verificationUserId || verificationWallet || `verification-${verificationUsername}-${verification.collection || 'unknown'}`;
+    const matchedMember = memberMap.get(mapKey);
+    const matchedMemberData = matchedMember?.member || null;
+
+    combinedMap.set(mapKey, {
+      key: mapKey,
+      username: verificationUsername || matchedMemberData?.username || 'Unknown user',
+      userId: verificationUserId || matchedMemberData?.user_id || '',
+      wallet: verificationWallet || matchedMemberData?.wallet || '',
+      avatarUrl: matchedMemberData?.avatar_url || '/img/default-avatar.png',
+      nftCount: Number(verification.nft_count || matchedMemberData?.nft_count || 0),
+      collection: verification.collection || '',
+      verifiedAt: verification.verified_at || verification.created_at || '',
+      hasVerification: true,
+      roleGranted: Boolean(verification.role_granted),
+      hasVipRole: Boolean(matchedMember?.hasVipRole || verification.collection === 'vip'),
+      hasGenesisRole: Boolean(matchedMember?.hasGenesisRole || verification.collection === 'genesis'),
+      statusLabel: verification.role_granted ? 'Verified + Role' : 'Verified Only'
+    });
+  });
+
+  memberMap.forEach((memberEntry, memberKey) => {
+    if (combinedMap.has(memberKey)) {
+      const existingEntry = combinedMap.get(memberKey);
+      existingEntry.hasVipRole = Boolean(existingEntry.hasVipRole || memberEntry.hasVipRole);
+      existingEntry.hasGenesisRole = Boolean(existingEntry.hasGenesisRole || memberEntry.hasGenesisRole);
+
+      if (!existingEntry.wallet && memberEntry.member?.wallet) {
+        existingEntry.wallet = memberEntry.member.wallet;
       }
-      
-      container.innerHTML = verifications.map(verification => `
-        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-600 mb-4">
-          <div class="flex justify-between items-start">
+
+      if (!existingEntry.nftCount && memberEntry.member?.nft_count) {
+        existingEntry.nftCount = Number(memberEntry.member.nft_count || 0);
+      }
+
+      return;
+    }
+
+    combinedMap.set(memberKey, {
+      key: memberKey,
+      username: memberEntry.member?.username || 'Unknown member',
+      userId: memberEntry.member?.user_id || '',
+      wallet: memberEntry.member?.wallet || '',
+      avatarUrl: memberEntry.member?.avatar_url || '/img/default-avatar.png',
+      nftCount: Number(memberEntry.member?.nft_count || 0),
+      collection: memberEntry.hasVipRole && memberEntry.hasGenesisRole ? 'vip + genesis' : (memberEntry.hasVipRole ? 'vip' : 'genesis'),
+      verifiedAt: '',
+      hasVerification: Boolean(memberEntry.member?.wallet),
+      roleGranted: true,
+      hasVipRole: Boolean(memberEntry.hasVipRole),
+      hasGenesisRole: Boolean(memberEntry.hasGenesisRole),
+      statusLabel: memberEntry.member?.wallet ? 'Discord Role + Wallet' : 'Discord Role Only'
+    });
+  });
+
+  return Array.from(combinedMap.values()).sort((leftEntry, rightEntry) => {
+    const leftScore = (leftEntry.hasVerification ? 4 : 0) + (leftEntry.hasVipRole ? 2 : 0) + (leftEntry.hasGenesisRole ? 1 : 0);
+    const rightScore = (rightEntry.hasVerification ? 4 : 0) + (rightEntry.hasVipRole ? 2 : 0) + (rightEntry.hasGenesisRole ? 1 : 0);
+
+    if (rightScore !== leftScore) {
+      return rightScore - leftScore;
+    }
+
+    return (leftEntry.username || '').localeCompare(rightEntry.username || '');
+  });
+}
+
+// Render the combined all-verifications overview.
+function renderAllVerificationOverview(verifications, discordRoleData, container) {
+  if (!container) return;
+
+  const overviewEntries = buildAllVerificationOverview(verifications, discordRoleData);
+
+  const allRoleTabCountElement = document.getElementById('allRoleTabCount');
+  if (allRoleTabCountElement) {
+    allRoleTabCountElement.textContent = overviewEntries.length;
+  }
+
+  if (overviewEntries.length === 0) {
+    container.innerHTML = '<div class="text-gray-400">No holder verifications or Discord role members found</div>';
+    return;
+  }
+
+  container.innerHTML = overviewEntries.map(entry => {
+    const walletDisplay = entry.wallet
+      ? `${entry.wallet.substring(0, 8)}...${entry.wallet.substring(entry.wallet.length - 8)}`
+      : 'No wallet linked';
+
+    const verifiedBadge = entry.hasVerification
+      ? '<span class="px-2 py-1 bg-green-600 text-white text-xs rounded">✅ Wallet Verified</span>'
+      : '<span class="px-2 py-1 bg-yellow-600 text-white text-xs rounded">⚠️ No Wallet Verification</span>';
+
+    const vipBadge = entry.hasVipRole
+      ? '<span class="px-2 py-1 bg-purple-600 text-white text-xs rounded">👑 VIP</span>'
+      : '';
+
+    const genesisBadge = entry.hasGenesisRole
+      ? '<span class="px-2 py-1 bg-green-600 text-white text-xs rounded">🧬 Genesis</span>'
+      : '';
+
+    const verifiedDate = entry.verifiedAt
+      ? new Date(entry.verifiedAt).toLocaleString()
+      : 'No verification timestamp';
+
+    return `
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-600">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <img src="${entry.avatarUrl}" alt="${entry.username}" class="w-10 h-10 rounded-full">
             <div>
-              <h4 class="font-semibold text-white">${verification.username}</h4>
-              <p class="text-gray-300 text-sm">Wallet: ${verification.wallet}</p>
-              <p class="text-gray-300 text-sm">Collection: ${verification.collection}</p>
-              <p class="text-gray-300 text-sm">NFT Count: ${verification.nft_count}</p>
-            </div>
-            <div class="text-right">
-              <span class="px-2 py-1 rounded text-xs ${verification.role_granted ? 'bg-green-600' : 'bg-yellow-600'}">
-                ${verification.role_granted ? 'Role Granted' : 'Pending'}
-              </span>
+              <div class="font-semibold text-white">${entry.username}</div>
+              <div class="text-sm text-gray-400">ID: ${entry.userId || 'Unknown'}</div>
+              <div class="text-xs text-blue-400 font-mono">${walletDisplay}</div>
+              <div class="text-xs text-gray-400">
+                Collection: ${entry.collection || 'unknown'} • NFTs: ${entry.nftCount || 0}
+              </div>
+              <div class="text-xs text-gray-500">${verifiedDate}</div>
             </div>
           </div>
+
+          <div class="flex items-center space-x-2">
+            ${verifiedBadge}
+            ${vipBadge}
+            ${genesisBadge}
+            <span class="px-2 py-1 bg-blue-700 text-white text-xs rounded">${entry.statusLabel}</span>
+            <button onclick="manageUserVerification('${entry.userId}', '${entry.collection || 'all'}')"
+                    class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">
+              Manage
+            </button>
+          </div>
         </div>
-      `).join('');
-      
-      addLog(`✅ Loaded ${verifications.length} holder verifications`);
-    }
+      </div>
+    `;
+  }).join('');
+}
 
     // ========================================
     // ENHANCED HOLDER VERIFICATION FUNCTIONS
@@ -8104,43 +8335,329 @@ function updateCheeseClickStats(data) {
     }
 
     // Switch between role tabs
-    function switchRoleTab(tabName) {
-      // Hide all role tab contents
-      document.querySelectorAll('.role-tab-content').forEach(tab => {
-        tab.style.display = 'none';
-      });
-      
-      // Remove active class from all tab buttons
-      document.querySelectorAll('[id$="RoleTab"]').forEach(btn => {
-        btn.className = btn.className.replace('bg-purple-600 text-white', 'text-gray-300 hover:text-white');
-        btn.className = btn.className.replace('bg-green-600 text-white', 'text-gray-300 hover:text-white');
-        btn.className = btn.className.replace('bg-blue-600 text-white', 'text-gray-300 hover:text-white');
-      });
-      
-      // Show selected tab and update button
-      if (tabName === 'vip') {
-        document.getElementById('vipRoleContent').style.display = 'block';
-        document.getElementById('vipRoleTab').className = 'flex-1 px-4 py-2 rounded text-sm font-medium bg-purple-600 text-white';
-      } else if (tabName === 'genesis') {
-        document.getElementById('genesisRoleContent').style.display = 'block';
-        document.getElementById('genesisRoleTab').className = 'flex-1 px-4 py-2 rounded text-sm font-medium bg-green-600 text-white';
-      } else if (tabName === 'all') {
-        document.getElementById('allRoleContent').style.display = 'block';
-        document.getElementById('allRoleTab').className = 'flex-1 px-4 py-2 rounded text-sm font-medium bg-blue-600 text-white';
-        loadAllVerifications();
-      }
+// Switch between role tabs
+function switchRoleTab(tabName) {
+  document.querySelectorAll('.role-tab-content').forEach(tab => {
+    tab.style.display = 'none';
+  });
+
+  document.querySelectorAll('[id$="RoleTab"]').forEach(btn => {
+    btn.className = btn.className.replace('bg-purple-600 text-white', 'text-gray-300 hover:text-white');
+    btn.className = btn.className.replace('bg-green-600 text-white', 'text-gray-300 hover:text-white');
+    btn.className = btn.className.replace('bg-blue-600 text-white', 'text-gray-300 hover:text-white');
+    btn.className = btn.className.replace('bg-cyan-600 text-white', 'text-gray-300 hover:text-white');
+  });
+
+  if (tabName === 'vip') {
+    document.getElementById('vipRoleContent').style.display = 'block';
+    document.getElementById('vipRoleTab').className = 'flex-1 px-4 py-2 rounded text-sm font-medium bg-purple-600 text-white';
+  } else if (tabName === 'genesis') {
+    document.getElementById('genesisRoleContent').style.display = 'block';
+    document.getElementById('genesisRoleTab').className = 'flex-1 px-4 py-2 rounded text-sm font-medium bg-green-600 text-white';
+  } else if (tabName === 'all') {
+    document.getElementById('allRoleContent').style.display = 'block';
+    document.getElementById('allRoleTab').className = 'flex-1 px-4 py-2 rounded text-sm font-medium bg-blue-600 text-white';
+    loadAllVerifications();
+  } else if (tabName === 'traits') {
+    document.getElementById('traitsRoleContent').style.display = 'block';
+    document.getElementById('traitsRoleTab').className = 'flex-1 px-4 py-2 rounded text-sm font-medium bg-cyan-600 text-white';
+    loadTraitsVerified();
+  }
+}
+
+
+// Load all verifications for the audit overview tab. March 2026
+
+async function loadAllVerifications() {
+  const container = document.getElementById('allVerificationsList');
+  if (!container) return;
+
+  container.innerHTML = '<div class="text-gray-400">Loading all verifications...</div>';
+
+  try {
+    const response = await fetch(API_BASE_URL + '/api/admin/get-holder-verifications.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        collection: 'all',
+        status: 'all'
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      container.innerHTML = `<div class="text-red-400">Failed to load verifications: ${escapeHtml(data.error || 'Unknown error')}</div>`;
+      addLog(`❌ Failed to load all verifications: ${data.error || 'Unknown error'}`);
+      return;
     }
 
-    // Load all verifications
-    function loadAllVerifications() {
-      const container = document.getElementById('allVerificationsList');
-      if (!container) return;
-      
-      container.innerHTML = '<div class="text-gray-400">Loading all verifications...</div>';
-      
-      // Use existing function to load verifications
-      loadHolderVerificationData();
+    renderAllVerificationOverview(data.verifications || [], window.discordRoleData, container);
+    addLog(`✅ Loaded all-verifications overview with ${(data.verifications || []).length} verification records`);
+  } catch (error) {
+    container.innerHTML = `<div class="text-red-400">Error loading all verifications: ${escapeHtml(error.message)}</div>`;
+    addLog(`❌ Error loading all verifications: ${error.message}`);
+  }
+}
+
+window.traitsVerifiedRawData = [];
+window.traitsVerifiedFilteredData = [];
+
+// Load verified Genesis traits from admin API
+async function loadTraitsVerified() {
+  const container = document.getElementById('traitsVerifiedList');
+  if (!container) return;
+
+  container.innerHTML = '<div class="text-gray-400">Loading verified traits...</div>';
+
+  try {
+    const response = await fetch(API_BASE_URL + '/api/admin/get-holder-verification-traits.php', {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      container.innerHTML = `<div class="text-red-400">Failed to load traits: ${escapeHtml(data.error || 'Unknown error')}</div>`;
+      addLog(`❌ Failed to load verified traits: ${data.error || 'Unknown error'}`);
+      return;
     }
+
+    const records = Array.isArray(data.records)
+      ? data.records
+      : (Array.isArray(data.users) ? data.users : []);
+
+    window.traitsVerifiedRawData = normalizeTraitsVerifiedRecords(records);
+    applyTraitsVerifiedFilters();
+    addLog(`✅ Loaded traits-verified overview with ${window.traitsVerifiedRawData.length} user records`);
+  } catch (error) {
+    container.innerHTML = `<div class="text-red-400">Error loading traits: ${escapeHtml(error.message)}</div>`;
+    addLog(`❌ Error loading verified traits: ${error.message}`);
+  }
+}
+
+// Normalize different backend payload shapes into one admin-friendly structure
+function normalizeTraitsVerifiedRecords(records) {
+  return (Array.isArray(records) ? records : []).map(record => {
+    const genesisNfts = Array.isArray(record.genesis_nfts)
+      ? record.genesis_nfts
+      : (Array.isArray(record.nfts) ? record.nfts.filter(nft => {
+          const collection = String(nft.collection || '').toLowerCase();
+          return collection === 'genesis';
+        }) : []);
+
+    const normalizedNfts = genesisNfts.map(nft => {
+      const rawTraits = Array.isArray(nft.traits)
+        ? nft.traits
+        : (Array.isArray(nft.attributes) ? nft.attributes : []);
+
+      return {
+        token_id: nft.token_id || nft.tokenId || nft.mint || nft.address || '',
+        nft_name: nft.nft_name || nft.name || 'Unnamed NFT',
+        image_url: nft.image_url || nft.image || '/img/nft-placeholder.png',
+        traits: rawTraits.map(trait => ({
+          trait_type: trait.trait_type || trait.type || '',
+          trait_value: trait.trait_value || trait.value || ''
+        })).filter(trait => trait.trait_type && String(trait.trait_value) !== '')
+      };
+    });
+
+    return {
+      user_id: record.user_id || record.discord_id || '',
+      username: record.username || record.discord_username || 'Unknown user',
+      wallet: record.wallet || '',
+      verified_at: record.verified_at || record.created_at || '',
+      has_vip: Boolean(record.has_vip || record.vip || record.hasVipRole),
+      has_genesis: normalizedNfts.length > 0 || Boolean(record.has_genesis || record.genesis),
+      genesis_nfts: normalizedNfts
+    };
+  });
+}
+
+// Apply search and filters
+function applyTraitsVerifiedFilters() {
+  const searchValue = (document.getElementById('traitsSearchInput')?.value || '').trim().toLowerCase();
+  const traitSearchValue = (document.getElementById('traitsTraitSearchInput')?.value || '').trim().toLowerCase();
+  const traitTypeValue = (document.getElementById('traitsTraitTypeFilter')?.value || '').trim().toLowerCase();
+  const vipOnly = Boolean(document.getElementById('traitsVipOnlyFilter')?.checked);
+
+  const filtered = window.traitsVerifiedRawData.filter(user => {
+    if (vipOnly && !user.has_vip) {
+      return false;
+    }
+
+    const userHaystack = [
+      user.username,
+      user.user_id,
+      user.wallet,
+      ...user.genesis_nfts.map(nft => nft.nft_name)
+    ].join(' ').toLowerCase();
+
+    if (searchValue && !userHaystack.includes(searchValue)) {
+      return false;
+    }
+
+    const matchingNfts = user.genesis_nfts.filter(nft => {
+      const traitRows = nft.traits || [];
+
+      const matchesTraitText = !traitSearchValue || traitRows.some(trait => {
+        return `${trait.trait_type} ${trait.trait_value}`.toLowerCase().includes(traitSearchValue);
+      });
+
+      const matchesTraitType = !traitTypeValue || traitRows.some(trait => {
+        return String(trait.trait_type || '').toLowerCase() === traitTypeValue;
+      });
+
+      return matchesTraitText && matchesTraitType;
+    });
+
+    return matchingNfts.length > 0;
+  }).map(user => {
+    const traitSearchValueLocal = traitSearchValue;
+    const traitTypeValueLocal = traitTypeValue;
+
+    const visibleGenesisNfts = user.genesis_nfts.map(nft => {
+      const visibleTraits = (nft.traits || []).filter(trait => {
+        const matchesTraitText = !traitSearchValueLocal || `${trait.trait_type} ${trait.trait_value}`.toLowerCase().includes(traitSearchValueLocal);
+        const matchesTraitType = !traitTypeValueLocal || String(trait.trait_type || '').toLowerCase() === traitTypeValueLocal;
+        return matchesTraitText && matchesTraitType;
+      });
+
+      return {
+        ...nft,
+        visible_traits: visibleTraits
+      };
+    }).filter(nft => nft.visible_traits.length > 0);
+
+    return {
+      ...user,
+      visible_genesis_nfts: visibleGenesisNfts
+    };
+  }).filter(user => user.visible_genesis_nfts.length > 0);
+
+  window.traitsVerifiedFilteredData = filtered;
+  populateTraitsTypeFilter(window.traitsVerifiedRawData);
+  renderTraitsVerifiedOverview(filtered);
+}
+
+// Build trait type dropdown options
+function populateTraitsTypeFilter(records) {
+  const select = document.getElementById('traitsTraitTypeFilter');
+  if (!select) return;
+
+  const currentValue = select.value || '';
+  const traitTypes = new Set();
+
+  (Array.isArray(records) ? records : []).forEach(user => {
+    (user.genesis_nfts || []).forEach(nft => {
+      (nft.traits || []).forEach(trait => {
+        if (trait.trait_type) {
+          traitTypes.add(trait.trait_type);
+        }
+      });
+    });
+  });
+
+  const sortedTypes = Array.from(traitTypes).sort((a, b) => a.localeCompare(b));
+
+  select.innerHTML = '<option value="">All Trait Types</option>' +
+    sortedTypes.map(type => `<option value="${escapeHtml(String(type).toLowerCase())}">${escapeHtml(type)}</option>`).join('');
+
+  if (currentValue) {
+    select.value = currentValue;
+  }
+}
+
+// Render the traits verified overview
+function renderTraitsVerifiedOverview(records) {
+  const container = document.getElementById('traitsVerifiedList');
+  if (!container) return;
+
+  const usersCount = records.length;
+  const nftCount = records.reduce((sum, user) => sum + user.visible_genesis_nfts.length, 0);
+  const traitCount = records.reduce((sum, user) => {
+    return sum + user.visible_genesis_nfts.reduce((nftSum, nft) => nftSum + (nft.visible_traits || []).length, 0);
+  }, 0);
+
+  const traitsRoleTabCount = document.getElementById('traitsRoleTabCount');
+  if (traitsRoleTabCount) traitsRoleTabCount.textContent = usersCount;
+
+  const usersSummary = document.getElementById('traitsSummaryUsers');
+  const nftsSummary = document.getElementById('traitsSummaryNfts');
+  const traitsSummary = document.getElementById('traitsSummaryTraits');
+
+  if (usersSummary) usersSummary.textContent = usersCount;
+  if (nftsSummary) nftsSummary.textContent = nftCount;
+  if (traitsSummary) traitsSummary.textContent = traitCount;
+
+  if (!records.length) {
+    container.innerHTML = '<div class="text-gray-400">No verified Genesis trait records matched your filters</div>';
+    return;
+  }
+
+  container.innerHTML = records.map(user => {
+    const walletDisplay = user.wallet
+      ? `${user.wallet.substring(0, 8)}...${user.wallet.substring(user.wallet.length - 8)}`
+      : 'No wallet linked';
+
+    const verifiedDate = user.verified_at
+      ? new Date(user.verified_at).toLocaleString()
+      : 'No verification timestamp';
+
+    const vipBadge = user.has_vip
+      ? '<span class="px-2 py-1 bg-purple-600 text-white text-xs rounded">👑 VIP</span>'
+      : '';
+
+    return `
+      <div class="bg-gray-800 bg-opacity-60 rounded-lg border border-cyan-700 p-4">
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <div class="text-lg font-semibold text-white">${escapeHtml(user.username)}</div>
+            <div class="text-sm text-gray-400">ID: ${escapeHtml(user.user_id || 'Unknown')}</div>
+            <div class="text-xs text-cyan-300 font-mono">${escapeHtml(walletDisplay)}</div>
+            <div class="text-xs text-gray-500 mt-1">${escapeHtml(verifiedDate)}</div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-2 py-1 bg-green-600 text-white text-xs rounded">✅ Genesis Verified</span>
+            ${vipBadge}
+            <span class="px-2 py-1 bg-cyan-700 text-white text-xs rounded">${user.visible_genesis_nfts.length} NFT${user.visible_genesis_nfts.length !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          ${user.visible_genesis_nfts.map(nft => `
+            <div class="bg-gray-900 bg-opacity-60 rounded-lg border border-gray-700 p-4">
+              <div class="flex items-start gap-4">
+                <img
+                  src="${escapeHtml(nft.image_url || '/img/nft-placeholder.png')}"
+                  alt="${escapeHtml(nft.nft_name)}"
+                  class="w-20 h-20 rounded-lg object-cover border border-cyan-700"
+                  onerror="this.src='/img/nft-placeholder.png'"
+                >
+                <div class="flex-1">
+                  <div class="text-white font-semibold">${escapeHtml(nft.nft_name)}</div>
+                  <div class="text-xs text-gray-500 font-mono mb-2">
+                    ${escapeHtml(nft.token_id ? `${nft.token_id.substring(0, 8)}...${nft.token_id.substring(nft.token_id.length - 8)}` : 'Unknown token')}
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                    ${nft.visible_traits.map(trait => `
+                      <div class="bg-gray-700 bg-opacity-60 rounded px-3 py-2 text-xs">
+                        <span class="text-gray-300">${escapeHtml(trait.trait_type)}:</span>
+                        <span class="text-cyan-300 font-semibold ml-1">${escapeHtml(String(trait.trait_value))}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
     // Manage user verification
     function manageUserVerification(userId, roleType) {
@@ -25746,6 +26263,12 @@ function testDatabaseConnection() {
       }
     }
 
+    // Safe fallback logger in case addLog() is not defined yet
+if (typeof addLog !== 'function') {
+  function addLog(message) {
+    console.log('[ADMIN LOG]', message);
+  }
+}
     // Auto-refresh all tabs periodically (every 10 minutes)
     function startAutoRefreshSystem() {
       console.log('🔄 Starting auto-refresh system...');
