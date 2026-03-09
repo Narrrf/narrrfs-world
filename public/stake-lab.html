@@ -1659,11 +1659,12 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
   try {
 
     const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-    const username =
+const username =
   window.sessionDiscordUsername ||
-  localStorage.getItem("discord_username") ||
-  localStorage.getItem("username") ||
-  "Unknown";
+  localStorage.getItem('discord_username') ||
+  localStorage.getItem('discord_name') ||
+  localStorage.getItem('username') ||
+  'Unknown';
 
     if (!userId) {
       alert("Please login with Discord first.");

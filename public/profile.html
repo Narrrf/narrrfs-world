@@ -4972,14 +4972,19 @@ const normalizedNfts = (Array.isArray(scannedNfts) ? scannedNfts : [])
 console.log('💾 [NFT SCAN SAVE] Normalized NFTs for SQL save:', normalizedNfts);
 
         if (normalizedNfts.length > 0) {
-          const savePayload = {
-            user_id: userId,
-            username: window.sessionDiscordUsername || localStorage.getItem('discord_username') || localStorage.getItem('username') || 'Unknown User',
-            wallet: walletAddress,
-            signature: signature,
-            message: message,
-            nfts: normalizedNfts
-          };
+const savePayload = {
+  user_id: userId,
+  username:
+    window.sessionDiscordUsername ||
+    localStorage.getItem('discord_username') ||
+    localStorage.getItem('discord_name') ||
+    localStorage.getItem('username') ||
+    'Unknown User',
+  wallet: walletAddress,
+  signature: signature,
+  message: message,
+  nfts: normalizedNfts
+};
 
           console.log('💾 [NFT SCAN SAVE] Saving verified NFT scan:', {
             user_id: savePayload.user_id,
