@@ -801,6 +801,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="bossNotifications">🏆 Boss Notifications</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="holderVerification">🎴 Holder Verification</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="playerProfiles">🧠 Player Profiles</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="cheeseGuide">🧀 Cheese Guide</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="communityFunds">💰 Community Funds</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bugTracker">🐛 Bug Tracker</button>
@@ -4312,6 +4313,8 @@
         </div>
       </div>
 
+
+
       <!-- Traits Verified Tab -->
 <div id="traitsRoleContent" class="role-tab-content" style="display: none;">
   <div class="mb-4 p-4 bg-cyan-900 bg-opacity-20 rounded-lg border border-cyan-600">
@@ -5628,6 +5631,38 @@ function forceRevealAncestorChain(element) {
   }
 }
 
+async function loadSecurityCrawlerData() {
+  console.log('🔒 loadSecurityCrawlerData function called');
+
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+  if (!isLocal && !currentAdmin) {
+    addLog('❌ Please authenticate first');
+    return;
+  }
+
+  addLog('🔒 Loading Security Crawler data...');
+
+  try {
+    if (typeof loadSecurityCrawlerStatus === 'function') {
+      await loadSecurityCrawlerStatus();
+    }
+
+    if (typeof loadRecentCrawls === 'function') {
+      await loadRecentCrawls();
+    }
+
+    if (typeof loadSecurityFindings === 'function') {
+      await loadSecurityFindings();
+    }
+
+    addLog('✅ Security Crawler data loaded successfully');
+  } catch (error) {
+    addLog(`❌ Security Crawler loading error: ${error.message}`);
+    console.error('Security Crawler loading error:', error);
+  }
+}
+
 function showTab(tabName) {
   console.log(`🚀 SUPER TAB SYSTEM: Switching to ${tabName}`);
   addLog(`📋 Switching to ${tabName} tab...`);
@@ -5661,6 +5696,7 @@ function showTab(tabName) {
     'bossNotificationsTab',
     'discordTab',
     'holderVerificationTab',
+    'playerProfilesTab',
     'cheeseGuideTab',
     'communityFundsTab',
     'bugTrackerTab',
@@ -8569,6 +8605,38 @@ function populateTraitsTypeFilter(records) {
   }
 }
 
+function renderAdminPlayerProfile(profile) {
+  const container = document.getElementById('adminPlayerProfileResult');
+
+  const roles = Array.isArray(profile.roles) ? profile.roles : [];
+  const traits = Array.isArray(profile.traits) ? profile.traits : [];
+
+  container.innerHTML = `
+    <div class="stats-card">
+      <h3 class="text-lg font-semibold mb-4">${escapeHtml(profile.username || 'Unknown User')}</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>💰 Balance: <b>${Number(profile.balance || 0).toLocaleString()}</b></div>
+        <div>👛 Wallet: ${profile.wallet ? `<span class="font-mono">${escapeHtml(profile.wallet)}</span>` : 'Not verified'}</div>
+        <div>🎴 Genesis NFTs: ${Number(profile.genesis_count || 0)}</div>
+        <div>🏆 VIP NFTs: ${Number(profile.vip_count || 0)}</div>
+      </div>
+
+      <div class="mt-4">
+        <b>Roles</b><br>
+        ${roles.length ? roles.map(role => escapeHtml(role)).join(', ') : 'No roles'}
+      </div>
+
+      <div class="mt-4">
+        <b>Traits</b><br>
+        ${traits.length
+          ? traits.map(trait => `${escapeHtml(trait.trait_type)}: ${escapeHtml(trait.trait_value)}`).join('<br>')
+          : 'No verified Genesis traits'}
+      </div>
+    </div>
+  `;
+}
+
 // Render the traits verified overview
 function renderTraitsVerifiedOverview(records) {
   const container = document.getElementById('traitsVerifiedList');
@@ -9439,6 +9507,96 @@ function renderTraitsVerifiedOverview(records) {
       }, 300);
     }
 
+function searchPlayerProfilesInstant(searchTerm) {
+
+  if (searchTimeout) clearTimeout(searchTimeout);
+
+  const container = document.getElementById('adminPlayerAutocomplete');
+  if (!container) return;
+
+  if (!searchTerm || searchTerm.trim().length < 2) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  searchTimeout = setTimeout(async () => {
+
+    try {
+
+      const response = await fetch('/api/admin/point-management.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'searchuser',
+          search: searchTerm.trim()
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success || !Array.isArray(data.users) || data.users.length === 0) {
+
+        container.innerHTML = `
+          <div class="p-3 text-gray-400">
+            No matching users found
+          </div>
+        `;
+        container.classList.remove('hidden');
+        return;
+
+      }
+
+      container.innerHTML = data.users.slice(0,8).map(user => `
+        <button
+          type="button"
+          onclick="selectPlayerProfileSuggestion('${user.user_id}','${user.username || 'Unknown'}')"
+          class="w-full text-left px-4 py-3 hover:bg-gray-700 border-b border-gray-700 last:border-b-0"
+        >
+          <div class="font-semibold text-white">${user.username || 'Unknown User'}</div>
+          <div class="text-xs text-gray-400">ID: ${user.user_id}</div>
+          <div class="text-xs text-yellow-400">Balance: ${(user.score || 0).toLocaleString()} DSPOINC</div>
+        </button>
+      `).join('');
+
+      container.classList.remove('hidden');
+
+    } catch (error) {
+
+      console.error('Autocomplete error:', error);
+
+      container.innerHTML = `
+        <div class="p-3 text-red-400">
+          Autocomplete failed
+        </div>
+      `;
+      container.classList.remove('hidden');
+
+    }
+
+  }, 250);
+
+}
+
+function selectPlayerProfileSuggestion(userId, username) {
+
+  const input = document.getElementById('adminPlayerSearch');
+  const container = document.getElementById('adminPlayerAutocomplete');
+
+  if (input) {
+    input.value = username || userId;
+  }
+
+  if (container) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+  }
+
+  searchPlayerProfile();
+}
+
     // Quick instant user search for point management
     function quickSearchUsersInstant(searchTerm) {
       if (searchTimeout) clearTimeout(searchTimeout);
@@ -9537,6 +9695,62 @@ function renderTraitsVerifiedOverview(records) {
         addLog(`❌ Missions status search error: ${error.message}`);
       }
     }
+
+async function searchPlayerProfile() {
+  const query = document.getElementById('adminPlayerSearch').value.trim();
+  const resultContainer = document.getElementById('adminPlayerProfileResult');
+
+  if (!query) {
+    addLog('❌ Enter a Discord ID, username, or wallet');
+    if (resultContainer) {
+      resultContainer.innerHTML = '<div class="text-red-300">Please enter a Discord ID, username, or wallet.</div>';
+    }
+    return;
+  }
+
+  try {
+    addLog(`🧠 Searching player profile for "${query}"...`);
+
+    const response = await fetch(
+      API_BASE_URL + '/api/admin/get-player-profile.php?q=' + encodeURIComponent(query),
+      {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      }
+    );
+
+    const contentType = response.headers.get('content-type') || '';
+
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Non-JSON response: ${text.substring(0, 200)}`);
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || 'Player profile search failed');
+    }
+
+    renderAdminPlayerProfile(data.profile);
+    addLog(`✅ Loaded player profile for ${data.profile?.username || query}`);
+  } catch (err) {
+    console.error('Player profile search error:', err);
+    addLog(`❌ Player profile search failed: ${err.message}`);
+
+    if (resultContainer) {
+      resultContainer.innerHTML = `
+        <div class="bg-red-900 bg-opacity-30 border border-red-500 rounded-lg p-4 text-red-200">
+          Failed to load player profile: ${escapeHtml(err.message)}
+        </div>
+      `;
+    }
+  }
+}
 
     // User search
     async function searchUsers() {
@@ -21187,6 +21401,38 @@ function clearDiscordFeed() {
         </div>
       </div>
     </div>
+
+<div id="playerProfilesTab" class="admin-card mb-6" style="display: none;">
+  <h2 class="text-xl font-semibold mb-4">🧠 Player Profiles</h2>
+  <p class="text-gray-300 mb-6">
+    Search and inspect any Narrrf's World player profile.
+  </p>
+
+  <div class="mb-6 relative">
+    <div class="flex gap-4">
+      <input
+        id="adminPlayerSearch"
+        type="text"
+        placeholder="Search by Discord ID, username, or wallet..."
+        class="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
+        oninput="searchPlayerProfilesInstant(this.value)"
+        onkeydown="if (event.key === 'Enter') searchPlayerProfile()"
+        autocomplete="off"
+      />
+
+      <button
+        onclick="searchPlayerProfile()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg"
+      >
+        Search
+      </button>
+    </div>
+
+    <div id="adminPlayerAutocomplete" class="mt-2 bg-gray-800 border border-gray-600 rounded-lg hidden"></div>
+  </div>
+
+  <div id="adminPlayerProfileResult"></div>
+</div>
 
     <!-- Database Overview Tab -->
     <div class="admin-card mb-6" id="databaseOverviewTab" style="display: none; opacity: 1; transform: translateY(0);">
