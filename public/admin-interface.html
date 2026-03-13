@@ -8605,33 +8605,82 @@ function populateTraitsTypeFilter(records) {
   }
 }
 
-function renderAdminPlayerProfile(profile) {
-  const container = document.getElementById('adminPlayerProfileResult');
+/**
+ * Render the complete game cards from the same missions API structure
+ * already used on the profile page and missions status tab.
+ */
+function renderAdminPlayerGames(profile) {
+  const missionsProfile = profile.missions_profile || {};
+  const games = missionsProfile.games || {};
 
-  const roles = Array.isArray(profile.roles) ? profile.roles : [];
-  const traits = Array.isArray(profile.traits) ? profile.traits : [];
+  const formatNumber = value => Number(value || 0).toLocaleString();
+  const showValue = value => value ? escapeHtml(String(value)) : '—';
 
-  container.innerHTML = `
+  const cards = [
+    {
+      title: '🧀 Cheese Hunt',
+      stats: [
+        ['Total Clicks', formatNumber(games.cheese_hunt?.stats?.total_clicks)],
+        ['Quest Clicks', formatNumber(games.cheese_hunt?.stats?.quest_clicks)],
+        ['Unique Eggs', formatNumber(games.cheese_hunt?.stats?.unique_eggs)],
+        ['DSPOINC Earned', formatNumber(games.cheese_hunt?.stats?.dspoinc_earned)]
+      ]
+    },
+    {
+      title: '🎮 Tetris',
+      stats: [
+        ['Games Played', formatNumber(games.tetris?.stats?.total_games)],
+        ['Best Score', formatNumber(games.tetris?.stats?.best_score)],
+        ['DSPOINC Earned', formatNumber(games.tetris?.stats?.dspoinc_earned)],
+        ['Last Played', showValue(games.tetris?.stats?.last_played)]
+      ]
+    },
+    {
+      title: '🐍 Snake',
+      stats: [
+        ['Games Played', formatNumber(games.snake?.stats?.total_games)],
+        ['Best Score', formatNumber(games.snake?.stats?.best_score)],
+        ['DSPOINC Earned', formatNumber(games.snake?.stats?.dspoinc_earned)],
+        ['Last Played', showValue(games.snake?.stats?.last_played)]
+      ]
+    },
+    {
+      title: '👾 Space Invaders',
+      stats: [
+        ['Games Played', formatNumber(games.space_invaders?.stats?.total_games)],
+        ['Best Score', formatNumber(games.space_invaders?.stats?.best_score)],
+        ['DSPOINC Earned', formatNumber(games.space_invaders?.stats?.dspoinc_earned)],
+        ['Last Played', showValue(games.space_invaders?.stats?.last_played)]
+      ]
+    },
+    {
+      title: '🏁 Discord Race',
+      stats: [
+        ['Total Races', formatNumber(games.discord_race?.stats?.total_races)],
+        ['Wins', formatNumber(games.discord_race?.stats?.wins)],
+        ['Podiums', formatNumber(games.discord_race?.stats?.podium_finishes)],
+        ['DSPOINC Earned', formatNumber(games.discord_race?.stats?.dspoinc_earned)]
+      ]
+    }
+  ];
+
+  return `
     <div class="stats-card">
-      <h3 class="text-lg font-semibold mb-4">${escapeHtml(profile.username || 'Unknown User')}</h3>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>💰 Balance: <b>${Number(profile.balance || 0).toLocaleString()}</b></div>
-        <div>👛 Wallet: ${profile.wallet ? `<span class="font-mono">${escapeHtml(profile.wallet)}</span>` : 'Not verified'}</div>
-        <div>🎴 Genesis NFTs: ${Number(profile.genesis_count || 0)}</div>
-        <div>🏆 VIP NFTs: ${Number(profile.vip_count || 0)}</div>
-      </div>
-
-      <div class="mt-4">
-        <b>Roles</b><br>
-        ${roles.length ? roles.map(role => escapeHtml(role)).join(', ') : 'No roles'}
-      </div>
-
-      <div class="mt-4">
-        <b>Traits</b><br>
-        ${traits.length
-          ? traits.map(trait => `${escapeHtml(trait.trait_type)}: ${escapeHtml(trait.trait_value)}`).join('<br>')
-          : 'No verified Genesis traits'}
+      <h4 class="text-lg font-semibold mb-4">🎮 Complete Game Profile</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        ${cards.map(card => `
+          <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg p-4">
+            <div class="text-lg font-semibold text-white mb-3">${card.title}</div>
+            <div class="space-y-1 text-sm text-gray-200">
+              ${card.stats.map(([label, value]) => `
+                <div class="flex justify-between gap-3">
+                  <span class="text-gray-400">${label}:</span>
+                  <span class="text-white text-right">${value}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
       </div>
     </div>
   `;
@@ -9507,7 +9556,15 @@ function renderTraitsVerifiedOverview(records) {
       }, 300);
     }
 
+/**
+ * Clear the exact selected player when the input text changes manually.
+ */
 function searchPlayerProfilesInstant(searchTerm) {
+  const input = document.getElementById('adminPlayerSearch');
+  if (input) {
+    input.dataset.selectedUserId = '';
+  }
+  selectedAdminPlayerProfileUserId = null;
 
   if (searchTimeout) clearTimeout(searchTimeout);
 
@@ -9521,14 +9578,10 @@ function searchPlayerProfilesInstant(searchTerm) {
   }
 
   searchTimeout = setTimeout(async () => {
-
     try {
-
-      const response = await fetch('/api/admin/point-management.php', {
+      const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'searchuser',
           search: searchTerm.trim()
@@ -9538,7 +9591,6 @@ function searchPlayerProfilesInstant(searchTerm) {
       const data = await response.json();
 
       if (!data.success || !Array.isArray(data.users) || data.users.length === 0) {
-
         container.innerHTML = `
           <div class="p-3 text-gray-400">
             No matching users found
@@ -9546,25 +9598,22 @@ function searchPlayerProfilesInstant(searchTerm) {
         `;
         container.classList.remove('hidden');
         return;
-
       }
 
-      container.innerHTML = data.users.slice(0,8).map(user => `
+      container.innerHTML = data.users.slice(0, 8).map(user => `
         <button
           type="button"
-          onclick="selectPlayerProfileSuggestion('${user.user_id}','${user.username || 'Unknown'}')"
+          onclick="selectPlayerProfileSuggestion('${user.user_id}', '${escapeHtml(user.username || 'Unknown').replace(/'/g, "\\'")}')"
           class="w-full text-left px-4 py-3 hover:bg-gray-700 border-b border-gray-700 last:border-b-0"
         >
-          <div class="font-semibold text-white">${user.username || 'Unknown User'}</div>
-          <div class="text-xs text-gray-400">ID: ${user.user_id}</div>
-          <div class="text-xs text-yellow-400">Balance: ${(user.score || 0).toLocaleString()} DSPOINC</div>
+          <div class="font-semibold text-white">${escapeHtml(user.username || 'Unknown User')}</div>
+          <div class="text-xs text-gray-400">ID: ${escapeHtml(user.user_id || '')}</div>
+          <div class="text-xs text-yellow-400">Balance: ${Number(user.score || 0).toLocaleString()} DSPOINC</div>
         </button>
       `).join('');
 
       container.classList.remove('hidden');
-
     } catch (error) {
-
       console.error('Autocomplete error:', error);
 
       container.innerHTML = `
@@ -9573,63 +9622,11 @@ function searchPlayerProfilesInstant(searchTerm) {
         </div>
       `;
       container.classList.remove('hidden');
-
     }
-
   }, 250);
-
 }
 
-function selectPlayerProfileSuggestion(userId, username) {
 
-  const input = document.getElementById('adminPlayerSearch');
-  const container = document.getElementById('adminPlayerAutocomplete');
-
-  if (input) {
-    input.value = username || userId;
-  }
-
-  if (container) {
-    container.classList.add('hidden');
-    container.innerHTML = '';
-  }
-
-  searchPlayerProfile();
-}
-
-    // Quick instant user search for point management
-    function quickSearchUsersInstant(searchTerm) {
-      if (searchTimeout) clearTimeout(searchTimeout);
-      
-      if (searchTerm.length < 2) {
-        document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
-        return;
-      }
-
-      searchTimeout = setTimeout(async () => {
-        try {
-          const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'searchuser',
-              search: searchTerm
-            })
-          });
-
-          const data = await response.json();
-          
-          if (data.success) {
-            displayQuickUserResults(data.users);
-            addLog(`🔍 Found ${data.users.length} users matching "${searchTerm}"`);
-          } else {
-            addLog(`❌ Search failed: ${data.error}`);
-          }
-        } catch (error) {
-          addLog(`❌ Search error: ${error.message}`);
-        }
-      }, 300);
-    }
 
     // 🎯 NEW: Instant missions status search
     function searchMissionsStatusInstant(searchTerm) {
@@ -9696,48 +9693,286 @@ function selectPlayerProfileSuggestion(userId, username) {
       }
     }
 
+
+
+/**
+ * Load the exact selected player profile when possible.
+ * Falls back to manual text search only when no exact selection exists.
+ */
+let selectedAdminPlayerProfileUserId = null;
+
+/**
+ * Read a fetch response safely as JSON.
+ * This protects the admin interface from PHP warnings that return HTML instead of JSON.
+ */
+async function readJsonResponse(response, label) {
+  const rawText = await response.text();
+  const contentType = response.headers.get('content-type') || '';
+
+  if (!rawText.trim()) {
+    throw new Error(`${label} returned an empty response`);
+  }
+
+  if (!contentType.includes('application/json')) {
+    throw new Error(`${label} returned non-JSON: ${rawText.substring(0, 300)}`);
+  }
+
+  try {
+    return JSON.parse(rawText);
+  } catch (error) {
+    throw new Error(`${label} returned invalid JSON: ${rawText.substring(0, 300)}`);
+  }
+}
+
+/**
+ * Store the exact selected player from autocomplete.
+ * This prevents fuzzy username re-matching to the wrong player.
+ */
+function selectPlayerProfileSuggestion(userId, username) {
+  const input = document.getElementById('adminPlayerSearch');
+  const container = document.getElementById('adminPlayerAutocomplete');
+
+  selectedAdminPlayerProfileUserId = String(userId || '').trim();
+
+  if (input) {
+    input.value = username || userId || '';
+    input.dataset.selectedUserId = selectedAdminPlayerProfileUserId;
+  }
+
+  if (container) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+  }
+
+  searchPlayerProfile();
+}
+
+/**
+ * Clear exact player selection when the admin types manually again.
+ */
+function searchPlayerProfilesInstant(searchTerm) {
+  const input = document.getElementById('adminPlayerSearch');
+  const container = document.getElementById('adminPlayerAutocomplete');
+
+  if (input) {
+    input.dataset.selectedUserId = '';
+  }
+
+  selectedAdminPlayerProfileUserId = null;
+
+  if (searchTimeout) clearTimeout(searchTimeout);
+  if (!container) return;
+
+  if (!searchTerm || searchTerm.trim().length < 2) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  searchTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'searchuser',
+          search: searchTerm.trim()
+        })
+      });
+
+      const data = await readJsonResponse(response, 'Player autocomplete');
+
+      if (!data.success || !Array.isArray(data.users) || data.users.length === 0) {
+        container.innerHTML = `
+          <div class="p-3 text-gray-400">
+            No matching users found
+          </div>
+        `;
+        container.classList.remove('hidden');
+        return;
+      }
+
+      container.innerHTML = data.users.slice(0, 8).map(user => `
+        <button
+          type="button"
+          onclick="selectPlayerProfileSuggestion('${String(user.user_id || '').replace(/'/g, "\\'")}', '${String(user.username || 'Unknown').replace(/'/g, "\\'")}')"
+          class="w-full text-left px-4 py-3 hover:bg-gray-700 border-b border-gray-700 last:border-b-0"
+        >
+          <div class="font-semibold text-white">${escapeHtml(user.username || 'Unknown User')}</div>
+          <div class="text-xs text-gray-400">ID: ${escapeHtml(user.user_id || '')}</div>
+          <div class="text-xs text-yellow-400">Balance: ${Number(user.score || 0).toLocaleString()} DSPOINC</div>
+        </button>
+      `).join('');
+
+      container.classList.remove('hidden');
+    } catch (error) {
+      console.error('Autocomplete error:', error);
+
+      container.innerHTML = `
+        <div class="p-3 text-red-400">
+          Autocomplete failed: ${escapeHtml(error.message)}
+        </div>
+      `;
+      container.classList.remove('hidden');
+    }
+  }, 250);
+}
+
+
+/**
+ * Load the exact selected player profile when possible.
+ * Falls back to manual text search only when no exact selection exists.
+ */
+/**
+ * Load the exact selected player profile when possible.
+ * Falls back to manual text search only when no exact selection exists.
+ */
 async function searchPlayerProfile() {
-  const query = document.getElementById('adminPlayerSearch').value.trim();
+  const input = document.getElementById('adminPlayerSearch');
   const resultContainer = document.getElementById('adminPlayerProfileResult');
 
-  if (!query) {
+  const typedQuery = input?.value?.trim() || '';
+  const selectedUserId = input?.dataset?.selectedUserId?.trim() || selectedAdminPlayerProfileUserId || '';
+  const effectiveQuery = selectedUserId || typedQuery;
+
+  if (!effectiveQuery) {
     addLog('❌ Enter a Discord ID, username, or wallet');
+
     if (resultContainer) {
-      resultContainer.innerHTML = '<div class="text-red-300">Please enter a Discord ID, username, or wallet.</div>';
+      resultContainer.innerHTML = `
+        <div class="text-red-300">
+          Please enter a Discord ID, username, or wallet.
+        </div>
+      `;
     }
     return;
   }
 
-  try {
-    addLog(`🧠 Searching player profile for "${query}"...`);
+  if (resultContainer) {
+    resultContainer.innerHTML = `
+      <div class="stats-card">
+        <div class="text-gray-200">Loading player profile...</div>
+      </div>
+    `;
+  }
 
-    const response = await fetch(
-      API_BASE_URL + '/api/admin/get-player-profile.php?q=' + encodeURIComponent(query),
+  try {
+    addLog(`🧠 Searching player profile for "${effectiveQuery}"...`);
+
+    const profileResponse = await fetch(
+      API_BASE_URL + '/api/admin/get-player-profile.php?q=' + encodeURIComponent(effectiveQuery),
       {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       }
     );
 
-    const contentType = response.headers.get('content-type') || '';
+    const profileData = await readJsonResponse(profileResponse, 'Admin player profile');
 
-    if (!contentType.includes('application/json')) {
-      const text = await response.text();
-      throw new Error(`Non-JSON response: ${text.substring(0, 200)}`);
+    if (!profileResponse.ok || !profileData.success) {
+      throw new Error(profileData.error || `HTTP ${profileResponse.status}`);
     }
 
-    const data = await response.json();
+    const profile = profileData.profile || {};
+    const userId = profile.user_id;
 
-    if (!response.ok) {
-      throw new Error(data.error || `HTTP ${response.status}`);
+    let missionsProfile = null;
+    let allTimeStats = null;
+    let puzzles3DAchievements = null;
+
+    if (userId) {
+      /**
+       * Load missions/game profile data.
+       * This covers the per-game stats currently used by the admin player profile.
+       */
+      try {
+        const missionsResponse = await fetch(
+          API_BASE_URL + '/api/user/user-game-missions.php?discord_id=' + encodeURIComponent(userId),
+          {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          }
+        );
+
+        const missionsData = await readJsonResponse(missionsResponse, 'Player missions profile');
+
+        if (missionsResponse.ok && missionsData.success) {
+          missionsProfile = missionsData;
+        } else {
+          console.warn('Player missions API returned unsuccessful payload:', missionsData);
+        }
+      } catch (missionsError) {
+        console.error('Player missions load failed:', missionsError);
+        addLog(`⚠️ Missions profile load failed: ${missionsError.message}`);
+      }
+
+      /**
+       * Load all-time stats.
+       * This provides Cheese Rumble, Glyph, and overall achievements totals.
+       */
+      try {
+        const allTimeResponse = await fetch(
+          API_BASE_URL + '/api/user/all-time-stats.php',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+          }
+        );
+
+        const allTimeData = await readJsonResponse(allTimeResponse, 'Player all-time stats');
+
+        if (allTimeResponse.ok && allTimeData.success && allTimeData.all_time_stats) {
+          allTimeStats = allTimeData.all_time_stats;
+        } else {
+          console.warn('Player all-time stats API returned unsuccessful payload:', allTimeData);
+        }
+      } catch (allTimeError) {
+        console.error('Player all-time stats load failed:', allTimeError);
+        addLog(`⚠️ All-time stats load failed: ${allTimeError.message}`);
+      }
+
+      /**
+       * Load 3D Riddle / 3D Puzzles achievements.
+       * This is separate from the missions and all-time stats payloads.
+       */
+      try {
+        const puzzlesResponse = await fetch(
+          API_BASE_URL + '/api/user/get-3d-puzzles-achievements.php',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+          }
+        );
+
+        const puzzlesData = await readJsonResponse(puzzlesResponse, 'Player 3D puzzles achievements');
+
+        if (puzzlesResponse.ok && puzzlesData.success && puzzlesData.data) {
+          puzzles3DAchievements = puzzlesData.data;
+        } else {
+          console.warn('Player 3D puzzles achievements API returned unsuccessful payload:', puzzlesData);
+        }
+      } catch (puzzlesError) {
+        console.error('Player 3D puzzles achievements load failed:', puzzlesError);
+        addLog(`⚠️ 3D puzzles achievements load failed: ${puzzlesError.message}`);
+      }
     }
 
-    if (!data.success) {
-      throw new Error(data.error || 'Player profile search failed');
-    }
+    renderAdminPlayerProfile({
+      ...profile,
+      missions_profile: missionsProfile,
+      all_time_stats: allTimeStats,
+      puzzles_3d_achievements: puzzles3DAchievements
+    });
 
-    renderAdminPlayerProfile(data.profile);
-    addLog(`✅ Loaded player profile for ${data.profile?.username || query}`);
+    addLog(`✅ Loaded player profile for ${profile?.username || effectiveQuery}`);
   } catch (err) {
     console.error('Player profile search error:', err);
     addLog(`❌ Player profile search failed: ${err.message}`);
@@ -9750,6 +9985,310 @@ async function searchPlayerProfile() {
       `;
     }
   }
+}
+
+/**
+ * Render the selected admin player profile.
+ * This shows the core identity, wallet, role, trait, and game summary blocks.
+ */
+/**
+ * Render the selected admin player profile.
+ * This shows identity, wallet, roles, grouped NFT traits, and game summary blocks.
+ */
+function renderAdminPlayerProfile(profile) {
+  const container = document.getElementById('adminPlayerProfileResult');
+  if (!container) return;
+
+  const roles = Array.isArray(profile.roles) ? profile.roles : [];
+  const traits = Array.isArray(profile.traits) ? profile.traits : [];
+  const traitSummary = Array.isArray(profile.trait_summary) ? profile.trait_summary : [];
+  const missionsProfile = profile.missions_profile || {};
+  const games = missionsProfile.games || {};
+  const allTimeStats = profile.all_time_stats || {};
+  const allTimeGames = allTimeStats.games || {};
+  const puzzles3DAchievements = profile.puzzles_3d_achievements || {};
+  const puzzles3DStats = puzzles3DAchievements.statistics || {};
+
+  /**
+   * Prefer all-time game stats when available.
+   * Fall back to missions/current-season stats only when needed.
+   */
+  const cheeseHuntStats = allTimeGames.cheese_hunt || games.cheese_hunt?.stats || {};
+  const tetrisStats = allTimeGames.tetris || games.tetris?.stats || {};
+  const snakeStats = allTimeGames.snake || games.snake?.stats || {};
+  const spaceInvadersStats = allTimeGames.space_invaders || games.space_invaders?.stats || {};
+  const discordRaceStats = allTimeGames.discord_race || games.discord_race?.stats || {};
+  const cheeseRumbleStats = allTimeGames.cheese_rumble || {};
+  const glyphStats = allTimeGames.glyph_memory || allTimeGames.glyph || {};
+
+  const totalAchievements = Number(allTimeStats.total_achievements || 0);
+
+  const formatNumber = (value) => Number(value || 0).toLocaleString();
+  const safeText = (value) => escapeHtml(String(value || ''));
+  const showValue = (value) => value ? safeText(value) : '—';
+
+  /**
+   * Render score or activity values safely.
+   */
+  const showNumericOrDash = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return '—';
+    }
+
+    return formatNumber(value);
+  };
+
+  /**
+   * Format milliseconds into a readable time string if no formatted value exists.
+   */
+  const formatTimeValue = (formattedValue, msValue) => {
+    if (formattedValue) {
+      return safeText(formattedValue);
+    }
+
+    const ms = Number(msValue || 0);
+    if (!ms) {
+      return '—';
+    }
+
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const remainingMs = ms % 1000;
+
+    return `${minutes}:${String(seconds).padStart(2, '0')}.${String(remainingMs).padStart(3, '0')}`;
+  };
+
+  /**
+   * Calculate a safe win rate string.
+   */
+  const calculateWinRate = (wins, total) => {
+    const safeWins = Number(wins || 0);
+    const safeTotal = Number(total || 0);
+
+    if (!safeTotal) {
+      return '0%';
+    }
+
+    return `${((safeWins / safeTotal) * 100).toFixed(1)}%`;
+  };
+
+  /**
+   * Render role badges for the player.
+   */
+  const renderRoleBadges = () => {
+    if (!roles.length) {
+      return '<div class="text-gray-400">No roles found</div>';
+    }
+
+    return `
+      <div class="flex flex-wrap gap-2">
+        ${roles.map(role => `
+          <span class="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">
+            ${safeText(role)}
+          </span>
+        `).join('')}
+      </div>
+    `;
+  };
+
+  /**
+   * Render grouped NFT traits.
+   * Prefers backend-provided trait_summary so duplicates appear as x2/x3/x4.
+   * Falls back to raw traits if the API has not been upgraded yet.
+   */
+  const renderTraits = () => {
+    const traitsToRender = traitSummary.length
+      ? traitSummary
+      : traits.map(trait => ({
+          trait_type: trait.trait_type,
+          trait_value: trait.trait_value,
+          count: 1
+        }));
+
+    if (!traitsToRender.length) {
+      return '<div class="text-gray-400">No verified Genesis traits</div>';
+    }
+
+    return `
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+        ${traitsToRender.map(trait => `
+          <div class="bg-gray-800/70 rounded-lg p-3 border border-yellow-500/20">
+            <div class="text-xs text-yellow-300 uppercase">${safeText(trait.trait_type)}</div>
+            <div class="flex items-center justify-between gap-3">
+              <div class="text-sm text-white font-medium">${safeText(trait.trait_value)}</div>
+              ${Number(trait.count || 1) > 1 ? `
+                <span class="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full">
+                  x${Number(trait.count)}
+                </span>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  };
+
+  /**
+   * Build the all-time 7-game profile cards.
+   * Falls back to seasonal missions stats only if all-time values are absent.
+   */
+  const gameCards = [
+    {
+      title: '🧀 Cheese Hunt',
+      rows: [
+        ['Total Clicks', showNumericOrDash(cheeseHuntStats.total_clicks)],
+        ['Quest Clicks', showNumericOrDash(cheeseHuntStats.quest_clicks)],
+        ['Unique Eggs', showNumericOrDash(cheeseHuntStats.unique_eggs)],
+        ['DSPOINC Earned', showNumericOrDash(cheeseHuntStats.dspoinc_earned)]
+      ]
+    },
+    {
+      title: '🎮 Tetris',
+      rows: [
+        ['Games Played', showNumericOrDash(tetrisStats.total_games || tetrisStats.games_played)],
+        ['Best Score', showNumericOrDash(tetrisStats.best_score)],
+        ['DSPOINC Earned', showNumericOrDash(tetrisStats.dspoinc_earned)],
+        ['Last Played', showValue(tetrisStats.last_played)]
+      ]
+    },
+    {
+      title: '🐍 Snake',
+      rows: [
+        ['Games Played', showNumericOrDash(snakeStats.total_games || snakeStats.games_played)],
+        ['Best Score', showNumericOrDash(snakeStats.best_score)],
+        ['DSPOINC Earned', showNumericOrDash(snakeStats.dspoinc_earned)],
+        ['Last Played', showValue(snakeStats.last_played)]
+      ]
+    },
+    {
+      title: '👾 Space Invaders',
+      rows: [
+        ['Games Played', showNumericOrDash(spaceInvadersStats.total_games || spaceInvadersStats.games_played)],
+        ['Best Score', showNumericOrDash(spaceInvadersStats.best_score)],
+        ['DSPOINC Earned', showNumericOrDash(spaceInvadersStats.dspoinc_earned)],
+        ['Last Played', showValue(spaceInvadersStats.last_played)]
+      ]
+    },
+    {
+      title: '🏁 Discord Race',
+      rows: [
+        ['Total Races', showNumericOrDash(discordRaceStats.total_races)],
+        ['Wins', showNumericOrDash(discordRaceStats.total_wins || discordRaceStats.wins)],
+        ['Podiums', showNumericOrDash(discordRaceStats.podium_finishes)],
+        ['DSPOINC Earned', showNumericOrDash(discordRaceStats.dspoinc_earned || discordRaceStats.total_dspoinc)]
+      ]
+    },
+    {
+      title: '💥 Cheese Rumble',
+      rows: [
+        ['Total Rumbles', showNumericOrDash(cheeseRumbleStats.total_rumbles)],
+        ['Wins', showNumericOrDash(cheeseRumbleStats.total_wins)],
+        ['Win Rate', calculateWinRate(cheeseRumbleStats.total_wins, cheeseRumbleStats.total_rumbles)],
+        ['Best Position', showValue(cheeseRumbleStats.best_position)]
+      ]
+    },
+    {
+      title: '🔮 Glyph Memory',
+      rows: [
+        ['Total Runs', showNumericOrDash(glyphStats.total_runs)],
+        ['Best Time', formatTimeValue(glyphStats.best_time_formatted, glyphStats.best_time_ms)],
+        ['Average Time', formatTimeValue(glyphStats.avg_time_formatted, glyphStats.avg_time_ms)],
+        ['Rank', showValue(glyphStats.rank)]
+      ]
+    }
+  ];
+
+  /**
+   * Achievements use mixed sources:
+   * - total from all-time stats
+   * - classic game unlocked/total from missions payload
+   * - 3D Riddle Game from dedicated puzzles achievements API
+   */
+  const achievementRows = [
+    ['Unlocked Total', formatNumber(totalAchievements)],
+    ['Tetris', `${formatNumber(games.tetris?.achievements?.unlocked)}/${formatNumber(games.tetris?.achievements?.total)}`],
+    ['Snake', `${formatNumber(games.snake?.achievements?.unlocked)}/${formatNumber(games.snake?.achievements?.total)}`],
+    ['Space Invaders', `${formatNumber(games.space_invaders?.achievements?.unlocked)}/${formatNumber(games.space_invaders?.achievements?.total)}`],
+    ['Cheese Hunt', showValue(games.cheese_hunt?.achievements?.unlocked)],
+    ['Glyph', showValue(glyphStats.achievements_unlocked)],
+    ['Cheese Rumble', showValue(cheeseRumbleStats.achievements_unlocked)],
+    ['3D Riddle Game', `${formatNumber(puzzles3DStats.unlocked)}/${formatNumber(puzzles3DStats.total)}`]
+  ];
+
+  container.innerHTML = `
+    <div class="space-y-6">
+      <div class="stats-card">
+        <h3 class="text-2xl font-bold mb-4">${safeText(profile.username || 'Unknown User')}</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div class="bg-gray-800/70 rounded-lg p-4">
+            <div class="text-xs text-gray-400 uppercase">Discord ID</div>
+            <div class="text-sm text-white break-all">${safeText(profile.user_id)}</div>
+          </div>
+
+          <div class="bg-gray-800/70 rounded-lg p-4">
+            <div class="text-xs text-gray-400 uppercase">Balance</div>
+            <div class="text-lg font-bold text-yellow-300">${formatNumber(profile.balance)} DSPOINC</div>
+          </div>
+
+          <div class="bg-gray-800/70 rounded-lg p-4">
+            <div class="text-xs text-gray-400 uppercase">Wallet</div>
+            <div class="text-sm text-white break-all">${showValue(profile.wallet)}</div>
+          </div>
+
+          <div class="bg-gray-800/70 rounded-lg p-4">
+            <div class="text-xs text-gray-400 uppercase">NFT Counts</div>
+            <div class="text-sm text-white">Genesis: ${formatNumber(profile.genesis_count)}</div>
+            <div class="text-sm text-white">VIP: ${formatNumber(profile.vip_count)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🎭 Roles</h4>
+        ${renderRoleBadges()}
+      </div>
+
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🧬 NFT Traits</h4>
+        ${renderTraits()}
+      </div>
+
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🎮 Complete Game Profile</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          ${gameCards.map(card => `
+            <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg p-4">
+              <div class="text-lg font-semibold text-white mb-3">${card.title}</div>
+              <div class="space-y-1 text-sm text-gray-200">
+                ${card.rows.map(([label, value]) => `
+                  <div class="flex justify-between gap-3">
+                    <span class="text-gray-400">${label}:</span>
+                    <span class="text-white text-right">${value}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🏆 Achievements</h4>
+        <div class="bg-gray-800/70 border border-amber-500/20 rounded-lg p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            ${achievementRows.map(([label, value]) => `
+              <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                <div class="text-xs text-amber-300 uppercase">${label}</div>
+                <div class="text-lg font-semibold text-white mt-1">${value}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
     // User search

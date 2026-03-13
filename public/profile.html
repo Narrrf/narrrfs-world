@@ -1473,38 +1473,53 @@ document.addEventListener('DOMContentLoaded', async function() {
       <br><span class="text-yellow-400 text-sm">🔐 Secure: Requires cryptographic signature to prove wallet ownership</span>
     </p>
     
-    <!-- 🆘 ENHANCED: How NFT Verification Works Section -->
-    <div class="bg-gradient-to-br from-gray-800 via-purple-800/20 to-gray-700 rounded-xl p-6 mb-6 border border-purple-400/30">
-      <h3 class="text-lg font-semibold text-purple-300 mb-4 flex items-center gap-2">
-         🔍 How NFT Verification Works
-       </h3>
-      <div class="space-y-3 text-left">
-         <div class="flex items-start gap-3">
-          <span class="text-purple-400 font-bold text-lg">1.</span>
-           <div>
-            <strong class="text-purple-100">Wallet Connection:</strong> Connect your Phantom wallet securely
-           </div>
-         </div>
-         <div class="flex items-start gap-3">
-          <span class="text-purple-400 font-bold text-lg">2.</span>
-           <div>
-            <strong class="text-purple-100">Helius API Check:</strong> We use <a href="https://helius.xyz/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Helius APIs</a> to efficiently search your wallet for our specific NFT collections
-           </div>
-         </div>
-         <div class="flex items-start gap-3">
-          <span class="text-purple-400 font-bold text-lg">3.</span>
-           <div>
-            <strong class="text-purple-100">Cryptographic Proof:</strong> Sign a message with your wallet to prove ownership
-           </div>
-         </div>
-         <div class="flex items-start gap-3">
-          <span class="text-purple-400 font-bold text-lg">4.</span>
-           <div>
-            <strong class="text-purple-100">Automatic Role Grant:</strong> Get Discord roles instantly based on your NFT holdings
-          </div>
-           </div>
-         </div>
-       </div>
+<!-- 🆘 ENHANCED: How NFT Verification Works Section -->
+<div class="bg-gradient-to-br from-gray-800 via-purple-800/20 to-gray-700 rounded-xl p-6 mb-6 border border-purple-400/30">
+  <h3 class="text-lg font-semibold text-purple-300 mb-4 flex items-center gap-2">
+    🔍 How NFT Verification Works
+  </h3>
+
+  <div class="space-y-3 text-left">
+    <div class="flex items-start gap-3">
+      <span class="text-purple-400 font-bold text-lg">1.</span>
+      <div>
+        <strong class="text-purple-100">Wallet Connection:</strong>
+        Connect your Phantom wallet securely
+      </div>
+    </div>
+
+    <div class="flex items-start gap-3">
+      <span class="text-purple-400 font-bold text-lg">2.</span>
+      <div>
+        <strong class="text-purple-100">Helius API Check:</strong>
+        We use
+        <a href="https://helius.xyz/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Helius APIs</a>
+        to efficiently search your wallet for our specific NFT collections
+      </div>
+    </div>
+
+    <div class="flex items-start gap-3">
+      <span class="text-purple-400 font-bold text-lg">3.</span>
+      <div>
+        <strong class="text-purple-100">Cryptographic Proof:</strong>
+        Sign a message with your wallet to prove ownership
+      </div>
+    </div>
+
+    <div class="flex items-start gap-3">
+      <span class="text-purple-400 font-bold text-lg">4.</span>
+      <div>
+        <strong class="text-purple-100">Automatic Role Grant:</strong>
+        Get Discord roles instantly based on your NFT holdings
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 rounded-lg border border-yellow-400/30 bg-yellow-500/10 p-3 text-xs text-yellow-200">
+    <strong class="text-yellow-100">Ledger users:</strong>
+    Open the Solana app on your Ledger, enable Blind Signing, and close Ledger Wallet / Ledger Live before signing.
+  </div>
+</div>
        
     <!-- 🆘 ENHANCED: Powered by Helius Section -->
     <div class="bg-gradient-to-br from-blue-900/30 via-blue-800/20 to-blue-900/30 rounded-xl p-4 mb-6 border border-blue-400/30">
@@ -4370,6 +4385,126 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(checkWLRoleAndShowButton, 1000);
 });
 
+/**
+ * Return the best available Solana provider.
+ * Prefer Phantom when present, but do not hard-require isPhantom.
+ * This is safer for Ledger-backed Solana accounts and future wallet support.
+ */
+function getSolanaProvider() {
+  if (window.phantom?.solana?.isPhantom) {
+    return window.phantom.solana;
+  }
+
+  if (window.solana?.isPhantom) {
+    return window.solana;
+  }
+
+  /**
+   * Wallet Standard style fallback.
+   * Some wallets expose providers differently than legacy Phantom injection.
+   */
+  if (window.solana && typeof window.solana.connect === 'function') {
+    return window.solana;
+  }
+
+  return null;
+}
+
+/**
+ * Return a user-facing wallet label.
+ */
+function getWalletProviderLabel(provider) {
+  if (!provider) return 'wallet';
+
+  if (provider.isPhantom) return 'Phantom';
+  if (provider.isSolflare) return 'Solflare';
+  if (provider.isBackpack) return 'Backpack';
+
+  return 'Solana wallet';
+}
+
+/**
+ * Detect whether the provider can sign messages.
+ */
+function supportsSignMessage(provider) {
+  return !!provider && typeof provider.signMessage === 'function';
+}
+
+/**
+ * Build a better Ledger-focused help message.
+ */
+function getLedgerHelpMessage() {
+  return [
+    'Ledger signing help:',
+    '• Unlock your Ledger',
+    '• Open the Solana app on the Ledger',
+    '• Enable Blind Signing in the Solana app',
+    '• Close Ledger Wallet / Ledger Live if it is open',
+    '• Reconnect the wallet and try again'
+  ].join('\n');
+}
+
+/**
+ * Connect to the current Solana wallet provider.
+ */
+async function connectSolanaWallet() {
+  const provider = getSolanaProvider();
+
+  if (!provider) {
+    throw new Error('No supported Solana wallet found. Please install Phantom or another Solana wallet.');
+  }
+
+  const response = await provider.connect();
+  const publicKey = response?.publicKey?.toString?.();
+
+  if (!publicKey) {
+    throw new Error('Wallet connected but no public key was returned.');
+  }
+
+  return {
+    provider,
+    publicKey
+  };
+}
+
+/**
+ * Sign a verification message.
+ * This remains an off-chain signature flow, but now gives a clearer Ledger error path.
+ */
+async function signVerificationMessage(message) {
+  const provider = getSolanaProvider();
+
+  if (!provider) {
+    throw new Error('No supported Solana wallet found for signing.');
+  }
+
+  if (!supportsSignMessage(provider)) {
+    throw new Error(
+      `${getWalletProviderLabel(provider)} does not support message signing in this browser flow.\n\n${getLedgerHelpMessage()}`
+    );
+  }
+
+  const encodedMessage = new TextEncoder().encode(message);
+
+  try {
+    const signedMessage = await provider.signMessage(encodedMessage, 'utf8');
+    const signatureHex = Array.from(signedMessage.signature)
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('');
+
+    return {
+      provider,
+      signature: signatureHex
+    };
+  } catch (error) {
+    const walletName = getWalletProviderLabel(provider);
+
+    throw new Error(
+      `Failed to sign with ${walletName}. ${error?.message || 'Unknown signing error'}\n\n${getLedgerHelpMessage()}`
+    );
+  }
+}
+
 // 🎴 Web3 Wallet Verification Functions
 let connectedWallet = null;
 let connectedWalletAddress = null;
@@ -4377,37 +4512,37 @@ let connectedWalletAddress = null;
 // Connect to Phantom wallet
 async function connectWallet() {
   try {
-    // Check if Phantom is installed
-    if (!window.solana || !window.solana.isPhantom) {
-      showError('Phantom wallet is not installed. Please install it from <a href="https://phantom.app/" target="_blank" class="text-blue-400 underline">phantom.app</a>');
+    const { provider, publicKey } = await connectSolanaWallet();
+
+    const verification = verifySolanaKeypair(publicKey);
+    if (!verification.valid) {
+      showError('Invalid wallet keypair: ' + verification.error);
       return;
     }
 
-    // Connect to wallet
-    const response = await window.solana.connect();
-    connectedWallet = window.solana;
-    connectedWalletAddress = response.publicKey.toString();
-    
-    // Store wallet address in localStorage
+    connectedWallet = provider;
+    connectedWalletAddress = publicKey;
+
     localStorage.setItem('walletAddress', connectedWalletAddress);
-    
-    // Update Wallet & Traits section
+
     updateWalletDisplay(connectedWalletAddress);
-    
-    // Update UI
+
     document.getElementById('wallet-status').classList.remove('hidden');
+
     const verificationWalletEl = document.getElementById('verification-wallet-address');
     if (verificationWalletEl) {
-      verificationWalletEl.textContent = `Address: ${connectedWalletAddress.substring(0, 4)}...${connectedWalletAddress.substring(connectedWalletAddress.length - 4)}`;
+      verificationWalletEl.textContent =
+        `Address: ${publicKey.substring(0, 8)}...${publicKey.substring(publicKey.length - 8)}`;
     }
+
     document.getElementById('connect-wallet-btn').classList.add('hidden');
     document.getElementById('verify-nfts-btn').classList.remove('hidden');
-    
-    showSuccess('Wallet connected successfully!');
-    
+
+    console.log('🔐 Solana wallet connected:', publicKey, getWalletProviderLabel(provider));
+    showSuccess(`Wallet connected successfully via ${getWalletProviderLabel(provider)}!`);
   } catch (error) {
     console.error('Wallet connection error:', error);
-    showError('Failed to connect wallet: ' + error.message);
+    showError('Failed to connect wallet: ' + error.message.replace(/\n/g, '<br>'));
   }
 }
 
@@ -4665,16 +4800,11 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
     let signature = null;
     
     try {
-      // Request signature from Phantom wallet
-      if (window.solana && window.solana.isPhantom) {
-        const encodedMessage = new TextEncoder().encode(message);
-        const signedMessage = await window.solana.signMessage(encodedMessage, 'utf8');
-        signature = Array.from(signedMessage.signature).map(byte => byte.toString(16).padStart(2, '0')).join('');
-        
-        console.log('🔐 Signature obtained:', signature);
-      } else {
-        throw new Error('Phantom wallet not available for signing');
-      }
+      const signed = await signVerificationMessage(message);
+      signature = signed.signature;
+
+      console.log('🔐 Signature obtained:', signature);
+      console.log('🔐 Signed with provider:', getWalletProviderLabel(signed.provider));
     } catch (signError) {
       console.error('Signature error:', signError);
       showError('Failed to get signature. Please approve the signature request in your wallet.');
