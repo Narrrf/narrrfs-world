@@ -149,7 +149,6 @@ switch ($action) {
         $quantity = intval($input['quantity'] ?? 1);
         $given_by = $input['given_by'] ?? '';
         
-        // Validation
         if (empty($user_id) || empty($item_name) || $quantity <= 0) {
             echo json_encode([
                 'success' => false,
@@ -159,56 +158,77 @@ switch ($action) {
         }
         
         try {
-            // First, find the item
-            $stmt = $db->prepare('SELECT * FROM tbl_store_items WHERE item_name = ? AND is_active = 1');
+            /**
+             * Resolve the catalog item first.
+             * Store item metadata lives in tbl_store_items.
+             */
+            $stmt = $db->prepare('
+                SELECT item_id, item_name, description, price
+                FROM tbl_store_items
+                WHERE item_name = ? AND is_active = 1
+                LIMIT 1
+            ');
             $stmt->bindValue(1, $item_name, SQLITE3_TEXT);
             $result = $stmt->execute();
-            $item = $result->fetchArray(SQLITE3_ASSOC);
+            $item = $result ? $result->fetchArray(SQLITE3_ASSOC) : false;
             
-            if (!$item) {
+            if (!$item || empty($item['item_id'])) {
                 echo json_encode([
                     'success' => false,
                     'error' => 'Item not found'
                 ]);
                 break;
             }
-            
-            // Check if user already has this item
-            $stmt = $db->prepare('SELECT * FROM tbl_user_inventory WHERE user_id = ? AND item_name = ?');
+
+            $item_id = intval($item['item_id']);
+
+            /**
+             * New schema path:
+             * tbl_user_inventory stores item_id, not item_name.
+             */
+            $stmt = $db->prepare('
+                SELECT *
+                FROM tbl_user_inventory
+                WHERE user_id = ? AND item_id = ?
+                LIMIT 1
+            ');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
-            $stmt->bindValue(2, $item_name, SQLITE3_TEXT);
+            $stmt->bindValue(2, $item_id, SQLITE3_INTEGER);
             $result = $stmt->execute();
-            $existing = $result->fetchArray(SQLITE3_ASSOC);
+            $existing = $result ? $result->fetchArray(SQLITE3_ASSOC) : false;
             
             if ($existing) {
-                // Update quantity
-                $new_quantity = $existing['quantity'] + $quantity;
-                $stmt = $db->prepare('UPDATE tbl_user_inventory SET quantity = ? WHERE user_id = ? AND item_name = ?');
+                $new_quantity = intval($existing['quantity'] ?? 0) + $quantity;
+
+                $stmt = $db->prepare('
+                    UPDATE tbl_user_inventory
+                    SET quantity = ?
+                    WHERE user_id = ? AND item_id = ?
+                ');
                 $stmt->bindValue(1, $new_quantity, SQLITE3_INTEGER);
                 $stmt->bindValue(2, $user_id, SQLITE3_TEXT);
-                $stmt->bindValue(3, $item_name, SQLITE3_TEXT);
+                $stmt->bindValue(3, $item_id, SQLITE3_INTEGER);
                 $stmt->execute();
             } else {
-                // Insert new inventory entry
                 $stmt = $db->prepare('
-                    INSERT INTO tbl_user_inventory (user_id, item_name, quantity, acquired_at) 
+                    INSERT INTO tbl_user_inventory (user_id, item_id, quantity, acquired_at)
                     VALUES (?, ?, ?, datetime("now"))
                 ');
                 $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
-                $stmt->bindValue(2, $item_name, SQLITE3_TEXT);
+                $stmt->bindValue(2, $item_id, SQLITE3_INTEGER);
                 $stmt->bindValue(3, $quantity, SQLITE3_INTEGER);
                 $stmt->execute();
             }
-            
-            // Trigger database backup after successful item assignment
+
             triggerDatabaseBackup();
             
             echo json_encode([
                 'success' => true,
-                'message' => "Item '{$item_name}' given to user successfully",
+                'message' => "Item '{$item['item_name']}' given to user successfully",
+                'item_id' => $item_id,
+                'item_name' => $item['item_name'],
                 'quantity' => $quantity
             ]);
-            
         } catch (Exception $e) {
             echo json_encode([
                 'success' => false,
@@ -267,10 +287,21 @@ switch ($action) {
         }
         
         try {
+            /**
+             * Load a user's inventory by joining inventory rows to the store item catalog.
+             * Inventory tables usually store item_id + quantity, while the readable metadata
+             * like item_name, description, and price live in tbl_store_items.
+             */
             $stmt = $db->prepare('
-                SELECT ui.*, si.item_name, si.description, si.image_url as category 
-                FROM tbl_user_inventory ui 
-                JOIN tbl_store_items si ON ui.item_name = si.item_name 
+                SELECT
+                    ui.*,
+                    si.item_name,
+                    si.description,
+                    si.image_url AS category,
+                    si.price,
+                    (COALESCE(si.price, 0) * COALESCE(ui.quantity, 0)) AS total_value
+                FROM tbl_user_inventory ui
+                JOIN tbl_store_items si ON ui.item_id = si.item_id
                 WHERE ui.user_id = ? AND si.is_active = 1
                 ORDER BY si.item_name
             ');
@@ -293,7 +324,6 @@ switch ($action) {
             ]);
         }
         break;
-        
     case 'get_user_store_activity':
         $user_id = $input['user_id'] ?? $_GET['user_id'] ?? '';
         

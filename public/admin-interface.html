@@ -5667,7 +5667,7 @@ function showTab(tabName) {
   console.log(`🚀 SUPER TAB SYSTEM: Switching to ${tabName}`);
   addLog(`📋 Switching to ${tabName} tab...`);
 
-  // STEP 1: Update active tab button state
+  // Update active tab button state
   document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
     btn.classList.remove('active');
     btn.style.opacity = '0.7';
@@ -5683,7 +5683,7 @@ function showTab(tabName) {
   activeBtn.classList.add('active');
   activeBtn.style.opacity = '1';
 
-  // STEP 2: Hide only the real main admin tabs immediately
+  // Hide only the real main admin tabs
   const mainTabIds = [
     'dashboardTab',
     'usersTab',
@@ -5710,24 +5710,26 @@ function showTab(tabName) {
 
   mainTabIds.forEach(tabId => {
     const tab = document.getElementById(tabId);
-    if (!tab) return;
+    if (!tab) {
+      return;
+    }
 
     tab.style.display = 'none';
+    tab.style.visibility = 'hidden';
     tab.style.opacity = '0';
     tab.style.transform = 'translateY(10px)';
-    tab.style.visibility = 'hidden';
   });
 
-  // STEP 2.5: Special handling for quest claims section
+  // Special handling for quest claims section
   const questClaimsSection = document.getElementById('questClaimsManagementSection');
   if (questClaimsSection) {
-    questClaimsSection.style.display = (tabName === 'quests') ? 'block' : 'none';
+    questClaimsSection.style.display = tabName === 'quests' ? 'block' : 'none';
   }
 
-  // STEP 3: Show selected tab immediately
+  // Show selected tab
   const selectedTab = document.getElementById(tabName + 'Tab');
   console.log(`🔍 Looking for tab: ${tabName}Tab`);
-  console.log(`🔍 Found element:`, selectedTab);
+  console.log('🔍 Found element:', selectedTab);
 
   if (!selectedTab) {
     console.error(`❌ Tab not found: ${tabName}Tab`);
@@ -5735,79 +5737,100 @@ function showTab(tabName) {
     return;
   }
 
-selectedTab.style.display = 'block';
-selectedTab.style.visibility = 'visible';
-selectedTab.style.opacity = '1';
-selectedTab.style.transform = 'translateY(0)';
-selectedTab.style.transition = 'all 0.3s ease';
+  selectedTab.style.display = 'block';
+  selectedTab.style.visibility = 'visible';
+  selectedTab.style.opacity = '1';
+  selectedTab.style.transform = 'translateY(0)';
+  selectedTab.style.transition = 'all 0.3s ease';
+  selectedTab.classList.remove('hidden');
 
-forceRevealAncestorChain(selectedTab);
+  if (typeof forceRevealAncestorChain === 'function') {
+    forceRevealAncestorChain(selectedTab);
+  }
 
-// Temporary visual debug
-selectedTab.style.border = '3px solid red';
-selectedTab.scrollIntoView({ behavior: 'auto', block: 'start' });
+  selectedTab.scrollIntoView({ behavior: 'auto', block: 'start' });
 
-// Temporary debug logs
-console.log('✅ selectedTab inline display:', selectedTab.style.display);
-console.log('✅ selectedTab computed display:', window.getComputedStyle(selectedTab).display);
-console.log('✅ selectedTab computed visibility:', window.getComputedStyle(selectedTab).visibility);
-console.log('✅ selectedTab offsetHeight:', selectedTab.offsetHeight);
-console.log('✅ selectedTab offsetParent:', selectedTab.offsetParent);
+  console.log('✅ selectedTab inline display:', selectedTab.style.display);
+  console.log('✅ selectedTab computed display:', window.getComputedStyle(selectedTab).display);
+  console.log('✅ selectedTab computed visibility:', window.getComputedStyle(selectedTab).visibility);
+  console.log('✅ selectedTab offsetHeight:', selectedTab.offsetHeight);
+  console.log('✅ selectedTab offsetParent:', selectedTab.offsetParent);
 
-window.currentTab = tabName;
-addLog(`✅ Successfully switched to ${tabName} tab`);
+  window.currentTab = tabName;
+  addLog(`✅ Successfully switched to ${tabName} tab`);
 
-
-  // STEP 4: Load tab-specific data
+  // Load tab-specific data
   try {
     if (tabName === 'dashboard') {
       loadDashboardData();
       loadOverviewGameStats();
       addLog('📊 Dashboard data auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'users') {
+    if (tabName === 'users') {
       loadRecentUserActivity();
       addLog('👥 User management tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'missionsStatus') {
+    if (tabName === 'missionsStatus') {
       loadMissionsStatusOverview();
       addLog('🎯 Missions status tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'points') {
+    if (tabName === 'points') {
       loadPointStatistics();
       addLog('💰 Point management tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'store') {
+    if (tabName === 'store') {
       loadStoreItems();
       addLog('🏪 Store tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'profileChest') {
+    if (tabName === 'profileChest') {
       loadProfileChestConfig();
       addLog('🎁 Profile chest config tab loaded');
+      return;
+    }
 
-    } else if (tabName === 'quests') {
+    if (tabName === 'quests') {
       loadQuests();
       loadEnhancedQuestClaims();
       addLog('🏆 Quest system tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'bosses') {
+    if (tabName === 'bosses') {
       loadAllBossConfigurations();
       loadPhoenixConfiguration();
       addLog('👑 Boss management tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'bossNotifications') {
+    if (tabName === 'bossNotifications') {
       loadBossNotifications();
       addLog('🔔 Boss notifications tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'securityCrawler') {
+    if (tabName === 'securityCrawler') {
       loadSecurityCrawlerData();
       addLog('🔒 Security Crawler tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'twelveZeroManagement') {
+    if (tabName === 'twelveZeroManagement') {
       loadTwelveZeroData();
       addLog('📁 12.0 Management tab auto-loaded');
+      return;
+    }
 
-    } else if (tabName === 'games') {
+    if (tabName === 'games') {
       setTimeout(async () => {
         await loadGameOverview();
         loadSeasonStats();
@@ -5817,6 +5840,7 @@ addLog(`✅ Successfully switched to ${tabName} tab`);
 
         setTimeout(() => {
           switchGameTab('overview');
+
           const overviewTab = document.getElementById('overviewTab');
           if (overviewTab) {
             overviewTab.style.display = 'block';
@@ -5829,10 +5853,22 @@ addLog(`✅ Successfully switched to ${tabName} tab`);
         displayPendingGameData();
         addLog('🎮 Game management tab auto-loaded');
       }, 100);
+      return;
+    }
 
-    } else if (tabName === 'partners') {
+    if (tabName === 'partners') {
       loadPartnersData?.();
       addLog('🤝 Partners tab auto-loaded');
+      return;
+    }
+
+    if (tabName === 'bugTracker') {
+      console.log('🐛 showTab detected bugTracker tab - starting initBugTracker()');
+      addLog('🐛 Loading Bug Tracker data...');
+      setTimeout(() => {
+        initBugTracker();
+      }, 50);
+      return;
     }
   } catch (error) {
     console.error(`❌ Error auto-loading ${tabName} tab:`, error);
@@ -9879,6 +9915,9 @@ async function searchPlayerProfile() {
     let missionsProfile = null;
     let allTimeStats = null;
     let puzzles3DAchievements = null;
+    let adminStoreActivity = null;
+    let adminInventory = null;
+    let storeCatalog = [];
 
     if (userId) {
       /**
@@ -9963,13 +10002,90 @@ async function searchPlayerProfile() {
         console.error('Player 3D puzzles achievements load failed:', puzzlesError);
         addLog(`⚠️ 3D puzzles achievements load failed: ${puzzlesError.message}`);
       }
+
+      /**
+       * Load admin store activity.
+       * This is the main source for inventory, purchase history, usage history, and financial item data.
+       */
+      try {
+        const storeActivityResponse = await fetch(
+          `${API_BASE_URL}/api/admin/store-management.php?action=get_user_store_activity&user_id=${encodeURIComponent(userId)}`,
+          {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          }
+        );
+
+        const storeActivityData = await readJsonResponse(storeActivityResponse, 'Admin player store activity');
+
+        if (storeActivityResponse.ok && storeActivityData.success && storeActivityData.data) {
+          adminStoreActivity = storeActivityData.data;
+        } else {
+          console.warn('Admin store activity API returned unsuccessful payload:', storeActivityData);
+        }
+      } catch (storeActivityError) {
+        console.error('Admin store activity load failed:', storeActivityError);
+        addLog(`⚠️ Store activity load failed: ${storeActivityError.message}`);
+      }
+
+      /**
+       * Load direct inventory as a fallback.
+       * This helps if the richer admin store activity payload is incomplete.
+       */
+      try {
+        const inventoryResponse = await fetch(
+          `${API_BASE_URL}/api/admin/store-management.php?action=get_user_inventory&user_id=${encodeURIComponent(userId)}`,
+          {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          }
+        );
+
+        const inventoryData = await readJsonResponse(inventoryResponse, 'Admin player inventory');
+
+        if (inventoryResponse.ok && inventoryData.success && Array.isArray(inventoryData.items)) {
+          adminInventory = inventoryData.items;
+        } else {
+          console.warn('Admin inventory API returned unsuccessful payload:', inventoryData);
+        }
+      } catch (inventoryError) {
+        console.error('Admin inventory load failed:', inventoryError);
+        addLog(`⚠️ Inventory load failed: ${inventoryError.message}`);
+      }
+
+      /**
+       * Load active store items for the inline give-item control inside the player profile.
+       */
+      try {
+        const catalogResponse = await fetch(
+          `${API_BASE_URL}/api/store/items.php`,
+          {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          }
+        );
+
+        const catalogData = await readJsonResponse(catalogResponse, 'Store catalog');
+
+        if (catalogResponse.ok && catalogData.success && Array.isArray(catalogData.items)) {
+          storeCatalog = catalogData.items.filter(item => item && Number(item.is_active || 1) === 1);
+        } else if (catalogResponse.ok && Array.isArray(catalogData.items)) {
+          storeCatalog = catalogData.items;
+        }
+      } catch (catalogError) {
+        console.error('Store catalog load failed:', catalogError);
+        addLog(`⚠️ Store catalog load failed: ${catalogError.message}`);
+      }
     }
 
     renderAdminPlayerProfile({
       ...profile,
       missions_profile: missionsProfile,
       all_time_stats: allTimeStats,
-      puzzles_3d_achievements: puzzles3DAchievements
+      puzzles_3d_achievements: puzzles3DAchievements,
+      admin_store_activity: adminStoreActivity,
+      admin_inventory: adminInventory,
+      store_catalog: storeCatalog
     });
 
     addLog(`✅ Loaded player profile for ${profile?.username || effectiveQuery}`);
@@ -9986,7 +10102,6 @@ async function searchPlayerProfile() {
     }
   }
 }
-
 /**
  * Render the selected admin player profile.
  * This shows the core identity, wallet, role, trait, and game summary blocks.
@@ -10008,6 +10123,8 @@ function renderAdminPlayerProfile(profile) {
   const allTimeGames = allTimeStats.games || {};
   const puzzles3DAchievements = profile.puzzles_3d_achievements || {};
   const puzzles3DStats = puzzles3DAchievements.statistics || {};
+  const adminStoreActivity = profile.admin_store_activity || {};
+  const storeCatalog = Array.isArray(profile.store_catalog) ? profile.store_catalog : [];
 
   /**
    * Prefer all-time game stats when available.
@@ -10023,7 +10140,7 @@ function renderAdminPlayerProfile(profile) {
 
   const totalAchievements = Number(allTimeStats.total_achievements || 0);
 
-  const formatNumber = (value) => Number(value || 0).toLocaleString();
+  const formatNumberSafe = (value) => Number(value || 0).toLocaleString();
   const safeText = (value) => escapeHtml(String(value || ''));
   const showValue = (value) => value ? safeText(value) : '—';
 
@@ -10035,7 +10152,7 @@ function renderAdminPlayerProfile(profile) {
       return '—';
     }
 
-    return formatNumber(value);
+    return formatNumberSafe(value);
   };
 
   /**
@@ -10206,14 +10323,14 @@ function renderAdminPlayerProfile(profile) {
    * - 3D Riddle Game from dedicated puzzles achievements API
    */
   const achievementRows = [
-    ['Unlocked Total', formatNumber(totalAchievements)],
-    ['Tetris', `${formatNumber(games.tetris?.achievements?.unlocked)}/${formatNumber(games.tetris?.achievements?.total)}`],
-    ['Snake', `${formatNumber(games.snake?.achievements?.unlocked)}/${formatNumber(games.snake?.achievements?.total)}`],
-    ['Space Invaders', `${formatNumber(games.space_invaders?.achievements?.unlocked)}/${formatNumber(games.space_invaders?.achievements?.total)}`],
+    ['Unlocked Total', formatNumberSafe(totalAchievements)],
+    ['Tetris', `${formatNumberSafe(games.tetris?.achievements?.unlocked)}/${formatNumberSafe(games.tetris?.achievements?.total)}`],
+    ['Snake', `${formatNumberSafe(games.snake?.achievements?.unlocked)}/${formatNumberSafe(games.snake?.achievements?.total)}`],
+    ['Space Invaders', `${formatNumberSafe(games.space_invaders?.achievements?.unlocked)}/${formatNumberSafe(games.space_invaders?.achievements?.total)}`],
     ['Cheese Hunt', showValue(games.cheese_hunt?.achievements?.unlocked)],
     ['Glyph', showValue(glyphStats.achievements_unlocked)],
     ['Cheese Rumble', showValue(cheeseRumbleStats.achievements_unlocked)],
-    ['3D Riddle Game', `${formatNumber(puzzles3DStats.unlocked)}/${formatNumber(puzzles3DStats.total)}`]
+    ['3D Riddle Game', `${formatNumberSafe(puzzles3DStats.unlocked)}/${formatNumberSafe(puzzles3DStats.total)}`]
   ];
 
   container.innerHTML = `
@@ -10229,7 +10346,7 @@ function renderAdminPlayerProfile(profile) {
 
           <div class="bg-gray-800/70 rounded-lg p-4">
             <div class="text-xs text-gray-400 uppercase">Balance</div>
-            <div class="text-lg font-bold text-yellow-300">${formatNumber(profile.balance)} DSPOINC</div>
+            <div class="text-lg font-bold text-yellow-300">${formatNumberSafe(profile.balance)} DSPOINC</div>
           </div>
 
           <div class="bg-gray-800/70 rounded-lg p-4">
@@ -10239,8 +10356,8 @@ function renderAdminPlayerProfile(profile) {
 
           <div class="bg-gray-800/70 rounded-lg p-4">
             <div class="text-xs text-gray-400 uppercase">NFT Counts</div>
-            <div class="text-sm text-white">Genesis: ${formatNumber(profile.genesis_count)}</div>
-            <div class="text-sm text-white">VIP: ${formatNumber(profile.vip_count)}</div>
+            <div class="text-sm text-white">Genesis: ${formatNumberSafe(profile.genesis_count)}</div>
+            <div class="text-sm text-white">VIP: ${formatNumberSafe(profile.vip_count)}</div>
           </div>
         </div>
       </div>
@@ -10253,6 +10370,11 @@ function renderAdminPlayerProfile(profile) {
       <div class="stats-card">
         <h4 class="text-lg font-semibold mb-4">🧬 NFT Traits</h4>
         ${renderTraits()}
+      </div>
+
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🎒 Inventory & Store Activity</h4>
+        ${renderAdminPlayerInventorySection(profile, adminStoreActivity, storeCatalog)}
       </div>
 
       <div class="stats-card">
@@ -10289,6 +10411,450 @@ function renderAdminPlayerProfile(profile) {
       </div>
     </div>
   `;
+
+  /**
+   * Store the current user for inventory actions that rely on global state.
+   */
+  window.currentInventoryUserId = profile.user_id;
+
+  /**
+   * Hydrate the give-item select after the HTML exists.
+   */
+  hydrateAdminPlayerProfileItemSelect(profile.user_id, storeCatalog);
+}
+
+/**
+ * Escape text safely for inline HTML.
+ */
+function escapeAdminProfileHtml(value) {
+  return escapeHtml(String(value || ''));
+}
+
+/**
+ * Escape text safely for inline onclick string arguments.
+ */
+function escapeAdminProfileJsString(value) {
+  return String(value || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, ' ')
+    .replace(/\n/g, ' ');
+}
+
+/**
+ * Format date values for admin profile inventory and history blocks.
+ */
+function formatAdminProfileDate(value) {
+  if (!value) {
+    return '—';
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return escapeAdminProfileHtml(value);
+  }
+
+  return parsed.toLocaleString();
+}
+
+/**
+ * Pick the richest inventory array available without breaking existing player profile logic.
+ */
+function getAdminPlayerInventoryItems(profile, storeActivity) {
+  if (storeActivity && Array.isArray(storeActivity.inventory) && storeActivity.inventory.length) {
+    return storeActivity.inventory;
+  }
+
+  if (Array.isArray(profile.admin_inventory) && profile.admin_inventory.length) {
+    return profile.admin_inventory;
+  }
+
+  return [];
+}
+
+/**
+ * Build the admin player inventory section.
+ * This keeps inventory viewing, purchase history, and inline inventory actions together in one place.
+ */
+function renderAdminPlayerInventorySection(profile, storeActivity, storeCatalog) {
+  const financial = storeActivity?.financial || {};
+  const stats = storeActivity?.stats || {};
+  const inventoryStats = stats.inventory || {};
+  const purchaseStats = stats.purchases || {};
+  const inventoryItems = getAdminPlayerInventoryItems(profile, storeActivity);
+  const purchaseHistory = Array.isArray(storeActivity?.purchase_history) ? storeActivity.purchase_history : [];
+  const usageHistory = Array.isArray(storeActivity?.usage_history) ? storeActivity.usage_history : [];
+  const removalHistory = Array.isArray(storeActivity?.removal_history) ? storeActivity.removal_history : [];
+
+  const numberValue = (value) => Number(value || 0).toLocaleString();
+
+  const summaryCards = [
+    ['Balance', `${numberValue(financial.balance || profile.balance)} DSPOINC`],
+    ['Total Spent', `${numberValue(financial.total_spent)} DSPOINC`],
+    ['Net Worth', `${numberValue(financial.net_worth)} DSPOINC`],
+    ['Total Items', numberValue(inventoryStats.total_items || inventoryItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0))],
+    ['Unique Items', numberValue(inventoryStats.unique_items || inventoryItems.length)],
+    ['Inventory Value', `${numberValue(inventoryStats.total_value)} DSPOINC`],
+    ['Recent Purchases', numberValue(inventoryStats.recent_purchases)],
+    ['Total Purchases', numberValue(purchaseStats.total_purchases)],
+    ['Average Purchase', `${numberValue(purchaseStats.average_purchase)} DSPOINC`],
+    ['Largest Purchase', `${numberValue(purchaseStats.largest_purchase)} DSPOINC`]
+  ];
+
+  return `
+    <div class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
+        ${summaryCards.map(([label, value]) => `
+          <div class="bg-gray-800/70 border border-purple-500/20 rounded-lg px-4 py-3">
+            <div class="text-xs text-purple-300 uppercase">${escapeAdminProfileHtml(label)}</div>
+            <div class="text-lg font-semibold text-white mt-1">${escapeAdminProfileHtml(value)}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="bg-gray-800/70 border border-blue-500/20 rounded-lg p-4">
+        <div class="flex flex-col xl:flex-row xl:items-end gap-3">
+          <div class="flex-1">
+            <div class="text-sm text-blue-300 font-semibold mb-2">Give Item To This Player</div>
+            <select id="adminProfileGiveItemSelect"
+                    class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white">
+              <option value="">Loading store items...</option>
+            </select>
+          </div>
+
+          <div class="w-full xl:w-40">
+            <div class="text-sm text-blue-300 font-semibold mb-2">Quantity</div>
+            <input id="adminProfileGiveItemQuantity"
+                   type="number"
+                   min="1"
+                   value="1"
+                   class="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white">
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button onclick="giveAdminProfileItemToUser('${escapeAdminProfileJsString(profile.user_id)}')"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold">
+              ➕ Give Item
+            </button>
+
+            <button onclick="refreshAdminPlayerProfileInventory()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">
+              🔄 Refresh Inventory
+            </button>
+
+            <button onclick="clearUserInventory()"
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold">
+              🧹 Clear Inventory
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-gray-800/70 border border-green-500/20 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h5 class="text-lg font-semibold text-white">🎒 Owned Inventory</h5>
+            <span class="text-sm text-gray-400">${numberValue(inventoryItems.length)} item rows</span>
+          </div>
+
+          <div class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            ${inventoryItems.length ? inventoryItems.map(item => {
+              const itemId = Number(item.item_id || item.id || 0);
+              const itemName = escapeAdminProfileHtml(item.item_name || item.name || 'Unknown Item');
+              const itemNameJs = escapeAdminProfileJsString(item.item_name || item.name || 'Unknown Item');
+              const quantity = Number(item.quantity || 0);
+              const itemPrice = Number(item.price || item.price_paid || 0);
+              const itemValue = Number(item.item_value || item.total_value || (itemPrice * quantity) || 0);
+              const itemDescription = escapeAdminProfileHtml(item.description || 'No description');
+              const acquiredAt = formatAdminProfileDate(item.acquisition_date || item.acquired_at || item.created_at);
+
+              return `
+                <div class="bg-gray-900/60 border border-green-500/20 rounded-lg p-3">
+                  <div class="flex justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="text-white font-semibold break-words">${itemName}</div>
+                      <div class="text-sm text-gray-300 mt-1">${itemDescription}</div>
+                      <div class="text-xs text-gray-400 mt-2">
+                        ID: ${itemId || '—'} • Added: ${escapeAdminProfileHtml(acquiredAt)}
+                      </div>
+                    </div>
+
+                    <div class="text-right shrink-0">
+                      <div class="text-white font-semibold">x${numberValue(quantity)}</div>
+                      <div class="text-sm text-gray-300">${numberValue(itemPrice)} DSPOINC each</div>
+                      <div class="text-sm text-green-400">Total: ${numberValue(itemValue)} DSPOINC</div>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    <button onclick="removeUserItem('${escapeAdminProfileJsString(profile.user_id)}', ${itemId}, '${itemNameJs}', ${quantity}, 1)"
+                            class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm font-semibold">
+                      🗑️ Remove 1
+                    </button>
+
+                    <button onclick="removeUserItem('${escapeAdminProfileJsString(profile.user_id)}', ${itemId}, '${itemNameJs}', ${quantity}, ${quantity})"
+                            class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-semibold">
+                      ❌ Remove All
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('') : `
+              <div class="text-center text-gray-400 py-8">
+                <div class="text-lg mb-2">📦 No items found</div>
+                <div class="text-sm">This player currently has no inventory rows.</div>
+              </div>
+            `}
+          </div>
+        </div>
+
+        <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h5 class="text-lg font-semibold text-white">🧾 Purchase History</h5>
+            <span class="text-sm text-gray-400">${numberValue(purchaseHistory.length)} entries</span>
+          </div>
+
+          <div class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            ${purchaseHistory.length ? purchaseHistory.map(entry => {
+              const itemName = escapeAdminProfileHtml(entry.item_name || 'Unknown Item');
+              const description = escapeAdminProfileHtml(entry.description || 'No description');
+              const quantity = Number(entry.quantity || 0);
+              const pricePaid = Number(entry.price_paid || 0);
+              const totalPaid = pricePaid * quantity;
+              const purchasedAt = formatAdminProfileDate(entry.purchase_date || entry.purchased_at || entry.created_at);
+
+              return `
+                <div class="bg-gray-900/60 border-l-4 border-cyan-500 rounded-lg p-3">
+                  <div class="flex justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="text-white font-semibold break-words">${itemName}</div>
+                      <div class="text-sm text-gray-300 mt-1">${description}</div>
+                      <div class="text-xs text-gray-400 mt-2">${escapeAdminProfileHtml(purchasedAt)}</div>
+                    </div>
+
+                    <div class="text-right shrink-0">
+                      <div class="text-white font-semibold">x${numberValue(quantity)}</div>
+                      <div class="text-sm text-gray-300">${numberValue(pricePaid)} DSPOINC each</div>
+                      <div class="text-sm text-cyan-400">Total: ${numberValue(totalPaid)} DSPOINC</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('') : `
+              <div class="text-center text-gray-400 py-8">
+                <div class="text-lg mb-2">🛒 No purchases found</div>
+                <div class="text-sm">This player currently has no recorded purchase history.</div>
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-gray-800/70 border border-yellow-500/20 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h5 class="text-lg font-semibold text-white">⏳ Usage History</h5>
+            <span class="text-sm text-gray-400">${numberValue(usageHistory.length)} entries</span>
+          </div>
+
+          <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            ${usageHistory.length ? usageHistory.map(entry => {
+              const status = String(entry.status || 'pending').toLowerCase();
+              const statusClass =
+                status === 'approved' ? 'border-green-500 text-green-400' :
+                status === 'denied' ? 'border-red-500 text-red-400' :
+                'border-yellow-500 text-yellow-400';
+
+              const itemName = escapeAdminProfileHtml(entry.item_name || 'Unknown Item');
+              const description = escapeAdminProfileHtml(entry.description || 'No description');
+              const reason = escapeAdminProfileHtml(entry.reason || 'No reason provided');
+              const quantity = Number(entry.quantity || 0);
+              const usedAt = formatAdminProfileDate(entry.used_at || entry.created_at);
+
+              return `
+                <div class="bg-gray-900/60 border-l-4 ${statusClass.split(' ')[0]} rounded-lg p-3">
+                  <div class="flex justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <span class="${statusClass.split(' ')[1]} uppercase text-xs font-bold">${escapeAdminProfileHtml(status)}</span>
+                        <span class="text-white font-semibold break-words">${itemName}</span>
+                      </div>
+                      <div class="text-sm text-gray-300 mt-1">${description}</div>
+                      <div class="text-sm text-yellow-300 mt-1">Reason: ${reason}</div>
+                      <div class="text-xs text-gray-400 mt-2">${escapeAdminProfileHtml(usedAt)}</div>
+                    </div>
+
+                    <div class="text-right shrink-0">
+                      <div class="text-white font-semibold">x${numberValue(quantity)}</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('') : `
+              <div class="text-center text-gray-400 py-8">
+                <div class="text-lg mb-2">🧪 No usage records</div>
+                <div class="text-sm">This player currently has no recorded item usage history.</div>
+              </div>
+            `}
+          </div>
+        </div>
+
+        <div class="bg-gray-800/70 border border-orange-500/20 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h5 class="text-lg font-semibold text-white">🗑️ Admin Removal History</h5>
+            <span class="text-sm text-gray-400">${numberValue(removalHistory.length)} entries</span>
+          </div>
+
+          <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            ${removalHistory.length ? removalHistory.map(entry => {
+              const itemName = escapeAdminProfileHtml(entry.item_name || 'Unknown Item');
+              const description = escapeAdminProfileHtml(entry.description || 'No description');
+              const quantity = Number(entry.quantity || 0);
+              const itemValue = Number(entry.item_value || 0);
+              const adminUsername = escapeAdminProfileHtml(entry.admin_username || 'Unknown Admin');
+              const actionAt = formatAdminProfileDate(entry.action_timestamp || entry.created_at);
+
+              return `
+                <div class="bg-gray-900/60 border-l-4 border-orange-500 rounded-lg p-3">
+                  <div class="flex justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div class="text-white font-semibold break-words">${itemName}</div>
+                      <div class="text-sm text-gray-300 mt-1">${description}</div>
+                      <div class="text-sm text-orange-300 mt-1">By: ${adminUsername}</div>
+                      <div class="text-xs text-gray-400 mt-2">${escapeAdminProfileHtml(actionAt)}</div>
+                    </div>
+
+                    <div class="text-right shrink-0">
+                      <div class="text-white font-semibold">-${numberValue(quantity)}</div>
+                      <div class="text-sm text-red-400">Value: ${numberValue(itemValue)} DSPOINC</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('') : `
+              <div class="text-center text-gray-400 py-8">
+                <div class="text-lg mb-2">📜 No removals found</div>
+                <div class="text-sm">This player currently has no admin removal history.</div>
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Populate the inline give-item select in the admin player profile.
+ */
+function hydrateAdminPlayerProfileItemSelect(userId, storeCatalog) {
+  const select = document.getElementById('adminProfileGiveItemSelect');
+  if (!select) {
+    return;
+  }
+
+  const items = Array.isArray(storeCatalog) ? storeCatalog : [];
+  const sortedItems = [...items].sort((a, b) => {
+    const aName = String(a.item_name || '').toLowerCase();
+    const bName = String(b.item_name || '').toLowerCase();
+    return aName.localeCompare(bName);
+  });
+
+  if (!sortedItems.length) {
+    select.innerHTML = '<option value="">No active store items found</option>';
+    return;
+  }
+
+  select.innerHTML = `
+    <option value="">Select an item...</option>
+    ${sortedItems.map(item => `
+      <option value="${escapeAdminProfileHtml(item.item_name)}">
+        ${escapeAdminProfileHtml(item.item_name)}${item.price ? ` — ${Number(item.price).toLocaleString()} DSPOINC` : ''}
+      </option>
+    `).join('')}
+  `;
+}
+
+/**
+ * Give an item directly from the admin player profile.
+ * This avoids relying on the separate Give Item tab fields.
+ */
+async function giveAdminProfileItemToUser(userId) {
+  if (!currentAdmin) {
+    addLog('❌ Please authenticate first');
+    return;
+  }
+
+  const itemSelect = document.getElementById('adminProfileGiveItemSelect');
+  const quantityInput = document.getElementById('adminProfileGiveItemQuantity');
+
+  const itemName = itemSelect?.value?.trim() || '';
+  const quantity = parseInt(quantityInput?.value || '0', 10);
+
+  if (!userId || !itemName || !quantity || quantity <= 0) {
+    addLog('❌ Please select an item and enter a valid quantity');
+    showNotification('❌ Select an item and valid quantity', 'error');
+    return;
+  }
+
+  const confirmed = confirm(`Give ${quantity}x "${itemName}" to user ${userId}?`);
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    addLog(`🎁 Giving ${quantity}x "${itemName}" to user ${userId}...`);
+
+    const response = await fetch(API_BASE_URL + '/api/admin/store-management.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'give_item',
+        user_id: userId,
+        item_name: itemName,
+        quantity: quantity,
+        given_by: currentAdmin.discord_id
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      addLog(`✅ Successfully gave ${quantity}x "${itemName}" to user ${userId}`);
+      showNotification(`✅ Gave ${quantity}x "${itemName}"`, 'success');
+
+      if (quantityInput) {
+        quantityInput.value = '1';
+      }
+
+      await refreshAdminPlayerProfileInventory();
+      return;
+    }
+
+    addLog(`❌ Failed to give item: ${data.error}`);
+    showNotification(`❌ Failed: ${data.error}`, 'error');
+  } catch (error) {
+    addLog(`❌ Give item error: ${error.message}`);
+    showNotification(`❌ Error: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * Refresh only the currently selected player profile.
+ * This keeps the admin on the same player after give/remove/clear actions.
+ */
+async function refreshAdminPlayerProfileInventory() {
+  const input = document.getElementById('adminPlayerSearch');
+  if (!input) {
+    return;
+  }
+
+  if (window.currentInventoryUserId) {
+    input.dataset.selectedUserId = window.currentInventoryUserId;
+    selectedAdminPlayerProfileUserId = window.currentInventoryUserId;
+  }
+
+  await searchPlayerProfile();
 }
 
     // User search
@@ -11964,7 +12530,11 @@ function displayStoreItems(items) {
           showNotification(`✅ Removed ${quantityToRemove}x "${itemName}"`, 'success');
           
           // Refresh inventory display
-          await viewUserStoreActivity();
+if (window.currentInventoryUserId) {
+  await refreshAdminPlayerProfileInventory();
+} else {
+  await viewUserStoreActivity();
+}
         } else {
           addLog(`❌ Failed to remove item: ${data.error}`);
           showNotification(`❌ Failed: ${data.error}`, 'error');
@@ -12029,7 +12599,11 @@ Type "CLEAR ALL" to confirm:`;
           showNotification(`✅ Cleared ${data.items_removed} items (${formatNumber(data.total_value)} $DSPOINC)`, 'success');
           
           // Refresh inventory display
-          await viewUserStoreActivity();
+if (window.currentInventoryUserId) {
+  await refreshAdminPlayerProfileInventory();
+} else {
+  await viewUserStoreActivity();
+}
         } else {
           addLog(`❌ Failed to clear inventory: ${data.error}`);
           showNotification(`❌ Failed: ${data.error}`, 'error');
@@ -28365,69 +28939,164 @@ Continue with Season 3 Reset?`)) {
     // 🐛 BUG TRACKER SYSTEM - 1K+ Games Feedback Management
     let bugTracker = null;
 
-    // Initialize Bug Tracker
-    function initBugTracker() {
-      console.log('🐛 Initializing Bug Tracker...');
-      
-      if (!bugTracker) {
-        bugTracker = new BugTracker();
-      }
-      
-      // Load bug data
-      bugTracker.loadData();
-      
-      addLog('🐛 Bug Tracker initialized successfully');
+// Initialize Bug Tracker
+async function initBugTracker() {
+  console.log('🐛 Initializing Bug Tracker...');
+
+  try {
+    if (!bugTracker) {
+      bugTracker = new BugTracker();
+      await bugTracker.init();
+    } else {
+      await bugTracker.loadData();
     }
 
+    addLog('🐛 Bug Tracker initialized successfully');
+  } catch (error) {
+    console.error('❌ Bug Tracker init failed:', error);
+    addLog(`❌ Bug Tracker init failed: ${error.message}`);
+  }
+}
+
     // Bug Tracker Class
-    class BugTracker {
-      constructor() {
-        this.bugs = [];
-        this.categories = [];
-        this.priorities = [];
-        this.statuses = [];
-        this.teamMembers = [];
-        this.currentFilter = {};
-        this.init();
-      }
+class BugTracker {
+  constructor() {
+    this.bugs = [];
+    this.categories = [];
+    this.priorities = [];
+    this.statuses = [];
+    this.teamMembers = [];
+    this.currentFilter = {};
+    this.initialized = false;
+  }
 
-      async init() {
-        await this.loadData();
-        this.setupEventListeners();
-        this.renderDashboard();
-        this.renderBugList();
-      }
+  async init() {
+    await this.loadData();
 
-      async loadData() {
-        try {
-          console.log('🔄 Loading bug data...');
-          // 🔄 CRITICAL FIX: Add cache-busting to prevent stale data
-          const response = await fetch(`${API_BASE_URL}/api/admin/get-bug-data.php?t=${Date.now()}`, {
-            cache: 'no-cache',
-            headers: {
-              'Cache-Control': 'no-cache'
-            }
-          });
-          const data = await response.json();
-          
-          if (data.success) {
-            this.bugs = data.bugs || [];
-            this.categories = data.categories || [];
-            this.priorities = data.priorities || [];
-            this.statuses = data.statuses || [];
-            this.teamMembers = data.teamMembers || [];
-            
-            console.log(`✅ Loaded ${this.bugs.length} bugs, ${this.categories.length} categories`);
-            this.populateFilters();
-          } else {
-            console.error('❌ Error loading bug data:', data.error);
-            addLog(`❌ Error loading bug data: ${data.error}`);
-          }
-        } catch (error) {
-          console.error('❌ Error loading bug data:', error);
-          addLog(`❌ Error loading bug data: ${error.message}`);
-        }
+    if (!this.initialized) {
+      this.setupEventListeners();
+      this.initialized = true;
+    }
+
+    this.renderDashboard();
+    this.renderBugList();
+  }
+
+async loadData() {
+  try {
+    console.log('🔄 Loading bug data...');
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/get-bug-data.php?t=${Date.now()}`, {
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Accept': 'application/json'
       }
+    });
+
+    const rawText = await response.text();
+    console.log('🐛 Raw bug API response:', rawText.substring(0, 500));
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      throw new Error(`Invalid JSON from get-bug-data.php: ${rawText.substring(0, 200)}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${data?.error || rawText.substring(0, 200)}`);
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || 'Bug API returned success=false');
+    }
+
+    const payload = data.data || data;
+
+    const parseMaybeJsonArray = (value, fallback = []) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (error) {
+      console.warn('⚠️ Failed to parse JSON array field:', value.substring(0, 120));
+      return fallback;
+    }
+  }
+
+  return fallback;
+};
+
+const parseMaybeJsonObject = (value, fallback = {}) => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : fallback;
+    } catch (error) {
+      console.warn('⚠️ Failed to parse JSON object field:', value.substring(0, 120));
+      return fallback;
+    }
+  }
+
+  return fallback;
+};
+
+this.bugs = parseMaybeJsonArray(payload.bugs);
+this.categories = parseMaybeJsonArray(payload.categories);
+this.priorities = parseMaybeJsonArray(payload.priorities);
+this.statuses = parseMaybeJsonArray(payload.statuses);
+this.teamMembers = parseMaybeJsonArray(payload.teamMembers);
+
+console.log('🐛 Parsed bug payload:', {
+  bugs: this.bugs.length,
+  categories: this.categories.length,
+  priorities: this.priorities.length,
+  statuses: this.statuses.length,
+  teamMembers: this.teamMembers.length
+});
+
+    console.log(`✅ Loaded ${this.bugs.length} bugs, ${this.categories.length} categories, ${this.statuses.length} statuses`);
+
+    this.populateFilters();
+    this.renderDashboard();
+    this.renderBugList();
+
+  } catch (error) {
+    console.error('❌ Error loading bug data:', error);
+    addLog(`❌ Error loading bug data: ${error.message}`);
+
+    const recentActivity = document.getElementById('recentBugActivity');
+    const teamPerformance = document.getElementById('teamPerformance');
+    const tableBody = document.getElementById('bugTableBody');
+
+    if (recentActivity) {
+      recentActivity.innerHTML = `<div class="text-red-400">Failed to load recent activity: ${error.message}</div>`;
+    }
+
+    if (teamPerformance) {
+      teamPerformance.innerHTML = `<div class="text-red-400">Failed to load team performance: ${error.message}</div>`;
+    }
+
+    if (tableBody) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="9" class="px-4 py-8 text-center text-red-400">
+            Failed to load bug tracker data: ${error.message}
+          </td>
+        </tr>
+      `;
+    }
+  }
+}
 
       populateFilters() {
         // Populate status filter
