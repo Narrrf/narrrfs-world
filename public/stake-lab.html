@@ -57,6 +57,20 @@ require_once 'discord-invite.php';
         transform: scale(1);
       }
     }
+    @keyframes liveRewardPulse {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 0 rgba(34, 211, 238, 0);
+  }
+  50% {
+    transform: scale(1.06);
+    text-shadow: 0 0 12px rgba(34, 211, 238, 0.45);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 0 rgba(34, 211, 238, 0);
+  }
+}
     
     .float-animation {
       animation: float 6s ease-in-out infinite;
@@ -68,6 +82,13 @@ require_once 'discord-invite.php';
     
     .animate-fade-in {
       animation: fade-in 0.3s ease-out;
+    }
+    .live-stake-reward {
+      transition: all 0.3s ease;
+    }
+    .live-stake-reward-pulse {
+     display: inline-block;
+     animation: liveRewardPulse 0.45s ease;
     }
     
     .stake-card {
@@ -614,6 +635,7 @@ require_once 'discord-invite.php';
     let claimableRewards = [];
     let currentTab = 'active';
     let unstakeStakeId = null;
+    let activeStakeRewardInterval = null;
 
     // Access Control - Check for logged in user
     async function checkAccess() {
@@ -775,14 +797,89 @@ require_once 'discord-invite.php';
       document.getElementById('total-return').textContent = `${totalReturn.toLocaleString()} DSPOINC`;
     }
 
+    /**
+ * Calculate the visually earned reward so far for an active stake.
+ * This is a frontend display value only and does not replace backend reward logic.
+ */
+function calculateLiveStakeReward(stake) {
+  const frozenTime = new Date(stake.frozen_at).getTime();
+  const unfreezeTime = new Date(stake.unfreeze_at).getTime();
+  const nowTime = Date.now();
+  const expectedReward = Number(stake.expected_reward || 0);
+
+  if (!Number.isFinite(frozenTime) || !Number.isFinite(unfreezeTime) || expectedReward <= 0) {
+    return 0;
+  }
+
+  if (nowTime <= frozenTime) {
+    return 0;
+  }
+
+  if (nowTime >= unfreezeTime) {
+    return expectedReward;
+  }
+
+  const totalDuration = unfreezeTime - frozenTime;
+  const elapsedDuration = nowTime - frozenTime;
+
+  if (totalDuration <= 0) {
+    return expectedReward;
+  }
+
+  return Math.min(
+  expectedReward,
+  (elapsedDuration / totalDuration) * expectedReward
+);
+}
+
+/**
+ * Format the live reward counter for display.
+ */
+function formatLiveRewardAmount(value) {
+  return Number(value || 0).toLocaleString(undefined, {
+    minimumFractionDigits: 5,
+    maximumFractionDigits: 5
+  });
+}
+/**
+ * Refresh all live reward counters in the Active Stakes tab.
+ */
+function updateLiveStakeRewardCounters() {
+  activeStakes.forEach(stake => {
+    const stakeId = stake.stake_id || stake.id || 'N/A';
+    const rewardElement = document.querySelector(`.live-stake-reward[data-stake-id="${stakeId}"]`);
+
+    if (!rewardElement) {
+      return;
+    }
+
+    const liveReward = calculateLiveStakeReward(stake);
+
+    if (liveReward >= stake.expected_reward) {
+      rewardElement.textContent = formatLiveRewardAmount(stake.expected_reward);
+      return;
+    }
+
+    rewardElement.textContent = formatLiveRewardAmount(liveReward);
+    rewardElement.classList.remove('live-stake-reward-pulse');
+    void rewardElement.offsetWidth;
+    rewardElement.classList.add('live-stake-reward-pulse');
+  });
+}
+
     // Display active stakes
     function displayActiveStakes() {
       const container = document.getElementById('active-stakes-list');
       
-      if (activeStakes.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 text-center py-8">No active stakes. Create your first stake above!</p>';
-        return;
-      }
+if (activeStakes.length === 0) {
+  if (activeStakeRewardInterval) {
+    clearInterval(activeStakeRewardInterval);
+    activeStakeRewardInterval = null;
+  }
+
+  container.innerHTML = '<p class="text-gray-400 text-center py-8">No active stakes. Create your first stake above!</p>';
+  return;
+}
 
       container.innerHTML = activeStakes.map(stake => {
         const stakeId = stake.stake_id || stake.id || 'N/A';
@@ -808,18 +905,25 @@ require_once 'discord-invite.php';
               </div>
             </div>
             <div class="mb-3">
-              <div class="flex justify-between text-sm mb-1">
-                <span class="text-blue-300">Duration: ${stake.freeze_duration_months} months</span>
-                <span class="text-blue-300">Reward: ${stake.expected_reward.toLocaleString()} DSPOINC</span>
-              </div>
-              <div class="w-full bg-gray-700 rounded-full h-2">
-                <div class="progress-bar bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: ${progress}%"></div>
-              </div>
-              <div class="flex justify-between text-xs text-gray-400 mt-1">
-                <span>Unfreeze: ${unfreezeDate.toLocaleDateString()}</span>
-                <span>${daysRemaining} days remaining</span>
-              </div>
-            </div>
+  <div class="flex justify-between text-sm mb-1">
+    <span class="text-blue-300">Duration: ${stake.freeze_duration_months} months</span>
+    <span class="text-blue-300">Reward: ${Number(stake.expected_reward || 0).toLocaleString()} DSPOINC</span>
+  </div>
+  <div class="w-full bg-gray-700 rounded-full h-2">
+    <div class="progress-bar bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: ${progress}%"></div>
+  </div>
+  <div class="flex justify-between text-xs text-gray-400 mt-1">
+    <span>Unfreeze: ${unfreezeDate.toLocaleDateString()}</span>
+    <span>${daysRemaining} days remaining</span>
+  </div>
+  <div class="mt-3 rounded-lg bg-cyan-500/10 border border-cyan-400/20 px-3 py-2">
+    <div class="text-xs text-cyan-300">Live earned so far</div>
+    <div class="text-lg font-bold text-cyan-100">
+      <span class="live-stake-reward" data-stake-id="${stakeId}">${formatLiveRewardAmount(calculateLiveStakeReward(stake))}</span>
+      <span class="text-xs text-cyan-400">DSPOINC</span>
+    </div>
+  </div>
+</div>
             <div class="mt-4 pt-4 border-t border-blue-400/20">
               <button onclick="showUnstakeModal(${stakeId}, ${stake.amount}, ${penaltyAmount}, ${returnedAmount}, ${stake.expected_reward})" 
                       class="w-full bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-300 px-4 py-2 rounded-lg transition-all font-semibold text-sm">
@@ -829,6 +933,13 @@ require_once 'discord-invite.php';
           </div>
         `;
       }).join('');
+
+      if (activeStakeRewardInterval) {
+        clearInterval(activeStakeRewardInterval);
+      }
+
+      updateLiveStakeRewardCounters();
+      activeStakeRewardInterval = setInterval(updateLiveStakeRewardCounters, 1000);
     }
 
     // Display completed stakes
@@ -1365,6 +1476,22 @@ function getLedgerHelpMessage() {
     '• Reconnect the wallet and try again'
   ].join('\n');
 }
+/**
+ * Detect whether a signing error is likely related to Ledger.
+ */
+function isLikelyLedgerSignError(error) {
+  const message = String(error?.message || '').toLowerCase();
+
+  return (
+    message.includes('ledger') ||
+    message.includes('0x6a81') ||
+    message.includes('unknown_error') ||
+    message.includes('blind signing') ||
+    message.includes('transport') ||
+    message.includes('device') ||
+    message.includes('failed to sign with ledger')
+  );
+}
 
 /**
  * Connect to the current Solana wallet provider.
@@ -1394,7 +1521,7 @@ async function connectSolanaWallet() {
  * This remains an off-chain signature flow, but now gives a clearer Ledger error path.
  */
 async function signVerificationMessage(message) {
-  const provider = getSolanaProvider();
+  const provider = connectedWallet || getSolanaProvider();
 
   if (!provider) {
     throw new Error('No supported Solana wallet found for signing.');
@@ -1420,10 +1547,13 @@ async function signVerificationMessage(message) {
     };
   } catch (error) {
     const walletName = getWalletProviderLabel(provider);
+    const baseMessage = `Failed to sign with ${walletName}. ${error?.message || 'Unknown signing error'}`;
 
-    throw new Error(
-      `Failed to sign with ${walletName}. ${error?.message || 'Unknown signing error'}\n\n${getLedgerHelpMessage()}`
-    );
+    if (isLikelyLedgerSignError(error)) {
+      throw new Error(`${baseMessage}\n\n${getLedgerHelpMessage()}`);
+    }
+
+    throw new Error(baseMessage);
   }
 }
     
@@ -1441,17 +1571,19 @@ async function signVerificationMessage(message) {
       }
     };
     
-    let connectedWalletAddress = null;
-    let loadedNFTs = [];
-    let isFetchingNFTs = false; // Prevent multiple simultaneous fetches
+let connectedWallet = null;
+let connectedWalletAddress = null;
+let loadedNFTs = [];
+let isFetchingNFTs = false;
     
     // Connect Phantom wallet
 // Connect Solana wallet (keeps old function name so existing button wiring still works)
 async function connectPhantomWallet() {
   try {
-    const { provider, publicKey } = await connectSolanaWallet();
+const { provider, publicKey } = await connectSolanaWallet();
 
-    connectedWalletAddress = publicKey;
+connectedWallet = provider;
+connectedWalletAddress = publicKey;
 
     document.getElementById('wallet-not-connected').classList.add('hidden');
     document.getElementById('wallet-connected').classList.remove('hidden');
@@ -1476,7 +1608,7 @@ function disconnectWallet() {
   if (provider && typeof provider.disconnect === 'function') {
     provider.disconnect();
   }
-
+  connectedWallet = null;
   connectedWalletAddress = null;
   loadedNFTs = [];
   localStorage.removeItem('phantom_wallet_address');
@@ -2053,9 +2185,10 @@ function initWalletConnection() {
   const provider = getSolanaProvider();
 
   if (savedAddress && provider) {
-    provider.connect()
-      .then(response => {
-        connectedWalletAddress = response.publicKey.toString();
+  provider.connect()
+    .then(response => {
+      connectedWallet = provider;
+      connectedWalletAddress = response.publicKey.toString();
 
         if (connectedWalletAddress === savedAddress) {
           document.getElementById('wallet-not-connected').classList.add('hidden');

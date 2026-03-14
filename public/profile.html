@@ -4445,6 +4445,23 @@ function getLedgerHelpMessage() {
 }
 
 /**
+ * Detect whether a signing error is likely related to Ledger.
+ */
+function isLikelyLedgerSignError(error) {
+  const message = String(error?.message || '').toLowerCase();
+
+  return (
+    message.includes('ledger') ||
+    message.includes('0x6a81') ||
+    message.includes('unknown_error') ||
+    message.includes('blind signing') ||
+    message.includes('transport') ||
+    message.includes('device') ||
+    message.includes('failed to sign with ledger')
+  );
+}
+
+/**
  * Connect to the current Solana wallet provider.
  */
 async function connectSolanaWallet() {
@@ -4472,7 +4489,7 @@ async function connectSolanaWallet() {
  * This remains an off-chain signature flow, but now gives a clearer Ledger error path.
  */
 async function signVerificationMessage(message) {
-  const provider = getSolanaProvider();
+  const provider = connectedWallet || getSolanaProvider();
 
   if (!provider) {
     throw new Error('No supported Solana wallet found for signing.');
@@ -4498,10 +4515,13 @@ async function signVerificationMessage(message) {
     };
   } catch (error) {
     const walletName = getWalletProviderLabel(provider);
+    const baseMessage = `Failed to sign with ${walletName}. ${error?.message || 'Unknown signing error'}`;
 
-    throw new Error(
-      `Failed to sign with ${walletName}. ${error?.message || 'Unknown signing error'}\n\n${getLedgerHelpMessage()}`
-    );
+    if (isLikelyLedgerSignError(error)) {
+      throw new Error(`${baseMessage}\n\n${getLedgerHelpMessage()}`);
+    }
+
+    throw new Error(baseMessage);
   }
 }
 
@@ -4509,7 +4529,7 @@ async function signVerificationMessage(message) {
 let connectedWallet = null;
 let connectedWalletAddress = null;
 
-// Connect to Phantom wallet
+// // Connect to Solana wallet (Phantom / Solflare / Backpack / Ledger-supported)
 async function connectWallet() {
   try {
     const { provider, publicKey } = await connectSolanaWallet();
@@ -4524,6 +4544,7 @@ async function connectWallet() {
     connectedWalletAddress = publicKey;
 
     localStorage.setItem('walletAddress', connectedWalletAddress);
+    localStorage.setItem('phantom_wallet_address', connectedWalletAddress);
 
     updateWalletDisplay(connectedWalletAddress);
 
@@ -5247,58 +5268,8 @@ function verifySolanaKeypair(publicKey) {
   }
 }
 
-// Connect to Phantom wallet with enhanced keypair verification
-async function connectWallet() {
-  try {
-    // Check if Phantom is installed
-    if (!window.solana || !window.solana.isPhantom) {
-      showError('Phantom wallet is not installed. Please install it from <a href="https://phantom.app/" target="_blank" class="text-blue-400 underline">phantom.app</a>');
-      return;
-    }
 
-    // Connect to wallet
-    const response = await window.solana.connect();
-    const publicKey = response.publicKey.toString();
-    
-    // Verify the keypair using Solana standards
-    const verification = verifySolanaKeypair(publicKey);
-    if (!verification.valid) {
-      showError('Invalid wallet keypair: ' + verification.error);
-      return;
-    }
-    
-    connectedWallet = window.solana;
-    connectedWalletAddress = publicKey;
-    
-    // Store wallet address in localStorage
-    localStorage.setItem('walletAddress', connectedWalletAddress);
-    
-    // Update Wallet & Traits section
-    updateWalletDisplay(connectedWalletAddress);
-    
-    // Update UI
-    document.getElementById('wallet-status').classList.remove('hidden');
-    const verificationWalletEl = document.getElementById('verification-wallet-address');
-    if (verificationWalletEl) {
-      verificationWalletEl.textContent = `Address: ${publicKey.substring(0, 8)}...${publicKey.substring(publicKey.length - 8)}`;
-    }
-    document.getElementById('connect-wallet-btn').classList.add('hidden');
-    document.getElementById('verify-nfts-btn').classList.remove('hidden');
-    
-    console.log('🔐 Solana wallet connected and verified:', publicKey);
-    showSuccess('Wallet connected successfully!');
-    
-  } catch (error) {
-    console.error('Wallet connection error:', error);
-    showError('Failed to connect wallet: ' + error.message);
-  }
-}
 </script>
-
-
-
-
-
 <script>
 function navigateToGame(url) {
   if (!url) {
