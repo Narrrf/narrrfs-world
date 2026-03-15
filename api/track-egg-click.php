@@ -264,19 +264,26 @@ function createDiscordTicket($userWallet, $quest, $eggProgressLabel, $claim_id) 
             'created_at' => date('Y-m-d H:i:s')
         ];
 
-        $tickets_dir = __DIR__ . '/../discord/tickets/';
+        $tickets_dir = '/data/discord/tickets/';
         if (!is_dir($tickets_dir)) {
             mkdir($tickets_dir, 0755, true);
         }
 
         $ticket_file = $tickets_dir . "cheese_hunt_ticket_{$quest['quest_id']}_{$userWallet}_{$claim_id}.json";
-        file_put_contents($ticket_file, json_encode($ticket_data, JSON_PRETTY_PRINT));
+        $write_result = file_put_contents($ticket_file, json_encode($ticket_data, JSON_PRETTY_PRINT));
+
+        if ($write_result === false) {
+            throw new Exception("Failed to write ticket file: {$ticket_file}");
+        }
+
+        error_log("Cheese Hunt ticket file created successfully: " . $ticket_file);
 
         return [
             'success' => true,
             'ticket_id' => "cheese_hunt_{$quest['quest_id']}_{$userWallet}_{$claim_id}",
             'claim_id' => (int)$claim_id,
-            'message' => 'Discord ticket created successfully'
+            'message' => 'Discord ticket created successfully',
+            'ticket_file' => $ticket_file
         ];
     } catch (Exception $e) {
         error_log("Discord ticket creation failed: " . $e->getMessage());

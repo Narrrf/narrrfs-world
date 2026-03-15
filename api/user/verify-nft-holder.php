@@ -65,12 +65,13 @@ try {
         throw new Exception('Invalid JSON input');
     }
     
-    $userId = isset($input['user_id']) ? $input['user_id'] : '';
-    $walletAddress = isset($input['wallet_address']) ? $input['wallet_address'] : '';
-    $collection = isset($input['collection']) ? $input['collection'] : '';
-    $signature = isset($input['signature']) ? $input['signature'] : '';
-    $message = isset($input['message']) ? $input['message'] : '';
-    $botToken = isset($input['bot_token']) ? $input['bot_token'] : '';
+$userId = isset($input['user_id']) ? $input['user_id'] : '';
+$walletAddress = isset($input['wallet_address']) ? $input['wallet_address'] : '';
+$collection = isset($input['collection']) ? $input['collection'] : '';
+$signature = isset($input['signature']) ? $input['signature'] : '';
+$message = isset($input['message']) ? $input['message'] : '';
+$verificationMode = isset($input['verification_mode']) ? $input['verification_mode'] : 'message';
+$botToken = isset($input['bot_token']) ? $input['bot_token'] : '';
     
     // Check if this is a Discord bot request (bypasses signature verification)
     $isBotRequest = !empty($botToken);
@@ -88,27 +89,41 @@ try {
     if (empty($walletAddress)) {
         throw new Exception('Wallet address is required');
     }
+
+    if (!in_array($verificationMode, ['message', 'memo_transaction'], true)) {
+    throw new Exception('Invalid verification mode');
+    }
     
     // Validate wallet address format
     if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $walletAddress)) {
         throw new Exception('Invalid Solana wallet address format');
     }
     
-    // For non-bot requests, require signature verification
-    if (!$isBotRequest) {
-        if (empty($signature)) {
-            throw new Exception('Cryptographic signature is required for security');
+// For non-bot requests, require verification proof
+if (!$isBotRequest) {
+    if (empty($signature)) {
+        throw new Exception('Cryptographic signature is required for security');
+    }
+
+    if (empty($message)) {
+        throw new Exception('Signed message is required');
+    }
+
+    error_log("🔐 [VERIFY-NFT-HOLDER] Verification mode: {$verificationMode}");
+    error_log("🔐 [VERIFY-NFT-HOLDER] Wallet: {$walletAddress}");
+    error_log("🔐 [VERIFY-NFT-HOLDER] Proof: {$signature}");
+    error_log("🔐 [VERIFY-NFT-HOLDER] Message: {$message}");
+
+    if ($verificationMode === 'memo_transaction') {
+        if (!verifySolanaMemoTransaction($walletAddress, $message, $signature)) {
+            throw new Exception('Invalid Ledger verification transaction.');
         }
-        
-        if (empty($message)) {
-            throw new Exception('Signed message is required');
-        }
-        
-        // Verify the signature on the server side
+    } else {
         if (!verifySolanaSignature($walletAddress, $message, $signature)) {
             throw new Exception('Invalid signature. Please sign the verification message with your wallet.');
         }
     }
+}
     
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -475,6 +490,8 @@ function logRoleGrant(PDO $db, string $userId, string $username, string $roleId,
  * Verify Solana signature on the server side
  * This function validates that the signature was created by the claimed public key
  */
+// TODO: Replace placeholder Solana message verification with real Ed25519 verification.
+// Current implementation only validates signature shape and is not cryptographically secure.
 function verifySolanaSignature($publicKey, $message, $signature) {
     try {
         // Basic format validation
@@ -525,6 +542,156 @@ function verifySolanaSignature($publicKey, $message, $signature) {
         
     } catch (Exception $e) {
         error_log("Signature verification error: " . $e->getMessage());
+        return false;
+    }
+}
+/**
+ * Verify a Solana memo transaction for Ledger fallback verification.
+ * This checks that:
+ * 1. the transaction exists on mainnet
+ * 2. the claimed wallet signed it
+ * 3. the transaction contains the Memo program
+ * 4. the memo text exactly matches the expected verification message
+ */
+function verifySolanaMemoTransaction($walletAddress, $message, $txSignature) {
+    try {
+        if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $walletAddress)) {
+            error_log("Invalid wallet address format for memo verification: $walletAddress");
+            return false;
+        }
+
+        if (empty($message) || empty($txSignature)) {
+            error_log("Missing message or transaction signature for memo verification");
+            return false;
+        }
+
+        if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]+$/', $txSignature)) {
+            error_log("Invalid Solana transaction signature format: $txSignature");
+            return false;
+        }
+
+        $rpcUrl = 'https://api.mainnet-beta.solana.com';
+
+        $payload = [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'getTransaction',
+            'params' => [
+                $txSignature,
+                [
+                    'encoding' => 'jsonParsed',
+                    'maxSupportedTransactionVersion' => 0
+                ]
+            ]
+        ];
+
+        $ch = curl_init($rpcUrl);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlError) {
+            error_log("Memo verification RPC CURL error: $curlError");
+            return false;
+        }
+
+        if ($httpCode !== 200) {
+            error_log("Memo verification RPC HTTP error: $httpCode");
+            return false;
+        }
+
+        $data = json_decode($response, true);
+
+        if (!isset($data['result']) || !$data['result']) {
+            error_log("Memo verification RPC returned no transaction result");
+            return false;
+        }
+
+        $result = $data['result'];
+
+        if (isset($result['meta']['err']) && $result['meta']['err'] !== null) {
+    error_log("Memo verification transaction failed on-chain");
+    return false;
+}
+
+        if (
+            !isset($result['transaction']['message']['accountKeys']) ||
+            !is_array($result['transaction']['message']['accountKeys'])
+        ) {
+            error_log("Memo verification missing account keys");
+            return false;
+        }
+
+        $accountKeys = $result['transaction']['message']['accountKeys'];
+        $walletMatched = false;
+
+foreach ($accountKeys as $keyInfo) {
+    if (is_array($keyInfo)) {
+        $pubkey = isset($keyInfo['pubkey']) ? $keyInfo['pubkey'] : null;
+        $signer = !empty($keyInfo['signer']);
+
+        if ($pubkey === $walletAddress && $signer) {
+            $walletMatched = true;
+            break;
+        }
+    } elseif (is_string($keyInfo) && $keyInfo === $walletAddress) {
+        // Fallback for non-parsed account key shape
+        $walletMatched = true;
+        break;
+    }
+}
+
+        if (!$walletMatched) {
+            error_log("Memo verification wallet signer mismatch for $walletAddress");
+            return false;
+        }
+
+        $instructions = isset($result['transaction']['message']['instructions']) && is_array($result['transaction']['message']['instructions'])
+            ? $result['transaction']['message']['instructions']
+            : [];
+
+        $memoFound = false;
+        $memoProgramId = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+
+        foreach ($instructions as $instruction) {
+            if (!is_array($instruction)) {
+                continue;
+            }
+
+            $programId = isset($instruction['programId']) ? $instruction['programId'] : '';
+            $parsed = isset($instruction['parsed']) ? $instruction['parsed'] : null;
+
+            if ($programId !== $memoProgramId) {
+                continue;
+            }
+
+            if (is_string($parsed) && $parsed === $message) {
+                $memoFound = true;
+                break;
+            }
+
+            if (is_array($parsed) && isset($parsed['memo']) && $parsed['memo'] === $message) {
+                $memoFound = true;
+                break;
+            }
+        }
+
+        if (!$memoFound) {
+            error_log("Memo verification message mismatch");
+            return false;
+        }
+
+        error_log("Memo verification succeeded for wallet: $walletAddress");
+        return true;
+    } catch (Exception $e) {
+        error_log("Memo verification error: " . $e->getMessage());
         return false;
     }
 }
