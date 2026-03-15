@@ -3974,51 +3974,67 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
       }
 
-      questList.innerHTML = data.quests.map(q => `
-        <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
-          <div class="flex-1 min-w-0">
-            <div class="font-bold text-lg text-yellow-200 mb-1">
-              ${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}
-            </div>
-            <div class="mb-1 break-words">${q.description}</div>
-            ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
-            <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
-          </div>
-          <div class="flex flex-col items-end gap-2 min-w-[140px]">
-            <span class="px-3 py-1 rounded-full text-xs font-semibold 
-              ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
-              ${q.is_active ? 'Active' : 'Closed'}
-            </span>
-            <span class="px-3 py-1 rounded-full text-xs font-semibold 
-              ${
-                q.claim_status === "approved" ? 'bg-green-500'
-                : q.claim_status === "rejected" ? 'bg-red-500'
-                : q.claim_status === "pending" ? 'bg-yellow-400 text-gray-900'
-                : 'bg-gray-700'
-              }">
-              ${
-                q.claim_status === "approved" ? 'Claimed & Rewarded'
-                : q.claim_status === "rejected" ? 'Rejected'
-                : q.claim_status === "pending" ? 'Pending Review'
-                : 'Not Claimed'
-              }
-            </span>
-            ${q.claim_status === "rejected" && q.rejection_reason ? 
-              `<div class="mt-1 text-xs text-red-300 bg-red-900/30 px-2 py-1 rounded">
-                <strong>Reason:</strong> ${q.rejection_reason}
-              </div>` : ''
-            }
-            ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
-            ${
-              q.is_active && !q.claim_status
-                ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition whitespace-nowrap">
-                    Claim Quest
-                  </button>`
-                : ''
-            }
-          </div>
+questList.innerHTML = data.quests.map(q => {
+  // Resolve quest type label safely for current and legacy quest values
+  const normalizedType = String(q.type || '').toLowerCase().trim();
+
+  let questTypeLabel = '🎯 Quest';
+  if (normalizedType === 'cheese_hunt' || normalizedType === 'cheese hunt') {
+    questTypeLabel = '🧀 Cheese Hunt';
+  } else if (normalizedType === 'twitter' || normalizedType === 'twitter_quest' || normalizedType === 'twitter quest') {
+    questTypeLabel = '🐦 Twitter Quest';
+  } else if (normalizedType === 'custom') {
+    questTypeLabel = '📝 Custom Quest';
+  } else if (q.type) {
+    questTypeLabel = `🎯 ${q.type}`;
+  }
+
+  // Cheese Hunt claims are created automatically by the backend on completion.
+  // Keep manual claim button for other quest types only.
+  const showManualClaimButton = q.is_active && !q.claim_status && normalizedType !== 'cheese_hunt' && normalizedType !== 'cheese hunt';
+
+  return `
+    <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
+      <div class="flex-1 min-w-0">
+        <div class="font-bold text-lg text-yellow-200 mb-1">
+          ${questTypeLabel}
         </div>
-      `).join('');
+        <div class="mb-1 break-words">${q.description}</div>
+        ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank" rel="noopener noreferrer">Open Link</a>` : ''}
+        <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
+      </div>
+      <div class="flex flex-col items-end gap-2 min-w-[140px]">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
+          ${q.is_active ? 'Active' : 'Closed'}
+        </span>
+        <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+          q.claim_status === "approved" ? 'bg-green-500'
+          : q.claim_status === "rejected" ? 'bg-red-500'
+          : q.claim_status === "pending" ? 'bg-yellow-400 text-gray-900'
+          : 'bg-gray-700'
+        }">
+          ${
+            q.claim_status === "approved" ? 'Claimed & Rewarded'
+            : q.claim_status === "rejected" ? 'Rejected'
+            : q.claim_status === "pending" ? 'Pending Review'
+            : 'Not Claimed'
+          }
+        </span>
+        ${q.claim_status === "rejected" && q.rejection_reason ? `
+          <div class="mt-1 text-xs text-red-300 bg-red-900/30 px-2 py-1 rounded">
+            <strong>Reason:</strong> ${q.rejection_reason}
+          </div>
+        ` : ''}
+        ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
+        ${showManualClaimButton ? `
+          <button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition whitespace-nowrap">
+            Claim Quest
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}).join('');
     } catch (e) {
       const questList = document.getElementById('user-quests-list');
       if (questList) questList.innerHTML = '<div class="text-red-400">Failed to load quests.</div>';

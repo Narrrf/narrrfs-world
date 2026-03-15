@@ -15,10 +15,17 @@ try {
     $pdo = getDatabaseConnection();
 
     // Get active cheese hunt quest
+    // Expired quests are ignored unless expires_at is empty or null.
     $stmt = $pdo->prepare("
         SELECT quest_id, description, reward, expires_at, cheese_config 
         FROM tbl_quests 
-        WHERE type = 'cheese_hunt' AND is_active = 1 
+        WHERE type = 'cheese_hunt'
+          AND is_active = 1
+          AND (
+              expires_at IS NULL
+              OR expires_at = ''
+              OR datetime(expires_at) > datetime('now')
+          )
         ORDER BY created_at DESC 
         LIMIT 1
     ");

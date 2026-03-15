@@ -5,7 +5,61 @@ header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
 // Database connection
-$db_path = '/var/www/html/db/narrrf_world.sqlite';
+// IMPORTANT:
+// Prefer the known local Windows DB first during XAMPP development,
+// then fall back to Render/Linux and relative project paths.
+$db_candidates = [
+    'C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite',
+    'C:\\xampp-server\\htdocs\\narrrfs-world\\db\\narrrf_world.sqlite',
+    '/var/www/html/db/narrrf_world.sqlite',
+    __DIR__ . '/../../db/narrrf_world.sqlite',
+    __DIR__ . '/../db/narrrf_world.sqlite'
+];
+
+$db_path = null;
+foreach ($db_candidates as $candidate) {
+    if (file_exists($candidate)) {
+        $db_path = $candidate;
+        break;
+    }
+}
+
+if ($db_path === null) {
+    echo json_encode([
+        'success' => false,
+        'error' => 'Database file not found in known locations'
+    ]);
+    exit;
+}
+
+/**
+ * Convert mixed request values into a real boolean.
+ * This keeps Cheese Hunt config stable even when values arrive as strings like
+ * "true", "false", "1", or "0".
+ */
+function normalizeBoolean($value, bool $default = false): bool {
+    if (is_bool($value)) {
+        return $value;
+    }
+
+    if (is_int($value)) {
+        return $value === 1;
+    }
+
+    if (is_string($value)) {
+        $normalized = strtolower(trim($value));
+
+        if (in_array($normalized, ['true', '1', 'yes', 'on'], true)) {
+            return true;
+        }
+
+        if (in_array($normalized, ['false', '0', 'no', 'off', ''], true)) {
+            return false;
+        }
+    }
+
+    return $default;
+}
 
 try {
     $db = new SQLite3($db_path);
@@ -33,46 +87,98 @@ $action = $input['action'] ?? $_GET['action'] ?? '';
 
 switch ($action) {
     case 'create':
-        $type = $input['type'] ?? '';
-        $description = $input['description'] ?? '';
-        $link = $input['link'] ?? '';
+        $type = trim((string)($input['type'] ?? ''));
+        $description = trim((string)($input['description'] ?? ''));
+        $link = trim((string)($input['link'] ?? ''));
         $reward = intval($input['reward'] ?? 0);
-        $created_by = $input['created_by'] ?? '';
-        
+        $created_by = trim((string)($input['created_by'] ?? ''));
+
         // Role granting options
-        $grant_role = $input['grant_role'] ?? false;
-        $role_id = $input['role_id'] ?? null;
-        
+        $grant_role = normalizeBoolean($input['grant_role'] ?? false, false);
+        $role_id = trim((string)($input['role_id'] ?? ''));
+        if ($role_id === '') {
+            $role_id = null;
+        }
+
         // Cheese quest specific fields
         $cheese_config = null;
+
         if ($type === 'cheese_hunt') {
+            $movement_pattern = trim((string)($input['movement_pattern'] ?? 'random'));
+            $movement_speed = trim((string)($input['movement_speed'] ?? 'normal'));
+            $hidden_areas = normalizeBoolean($input['hidden_areas'] ?? true, true);
+            $cheese_count = intval($input['cheese_count'] ?? 3);
+            $discord_ticket = normalizeBoolean($input['discord_ticket'] ?? true, true);
+            $winner_message = trim((string)($input['winner_message'] ?? '🎯 Congratulations! You found the cheese!'));
+
+            $allowed_patterns = ['random', 'edge_hunter', 'sneaky', 'corner_lurker'];
+            $allowed_speeds = ['slow', 'normal', 'fast'];
+
+            if (!in_array($movement_pattern, $allowed_patterns, true)) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Invalid cheese movement pattern'
+                ]);
+                break;
+            }
+
+            if (!in_array($movement_speed, $allowed_speeds, true)) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Invalid cheese movement speed'
+                ]);
+                break;
+            }
+
+            // IMPORTANT:
+            // The current frontend runtime supports only 3 real cheese eggs.
+            // Keep this capped to 1-3 until dynamic egg generation is implemented.
+            if ($cheese_count < 1 || $cheese_count > 3) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Cheese Hunt currently supports 1 to 3 cheeses only'
+                ]);
+                break;
+            }
+
+            if ($winner_message === '') {
+                $winner_message = '🎯 Congratulations! You found the cheese!';
+            }
+
             $cheese_config = [
-                'movement_pattern' => $input['movement_pattern'] ?? 'random',
-                'movement_speed' => $input['movement_speed'] ?? 'normal',
-                'hidden_areas' => $input['hidden_areas'] ?? true,
-                'cheese_count' => $input['cheese_count'] ?? 3,
-                'discord_ticket' => $input['discord_ticket'] ?? true,
-                'winner_message' => $input['winner_message'] ?? '🎯 Congratulations! You found the cheese!',
-                'screenshot_required' => $input['screenshot_required'] ?? true
+                'movement_pattern' => $movement_pattern,
+                'movement_speed' => $movement_speed,
+                'hidden_areas' => $hidden_areas,
+                'cheese_count' => $cheese_count,
+                'discord_ticket' => $discord_ticket,
+                'winner_message' => $winner_message
             ];
         }
-        
+
         // Validation
-        if (empty($type) || empty($description) || $reward <= 0) {
+        if ($type === '' || $description === '' || $reward <= 0) {
             echo json_encode([
                 'success' => false,
                 'error' => 'Type, description, and reward are required. Reward must be positive.'
             ]);
             break;
         }
-        
+
+        if ($grant_role && empty($role_id)) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Role ID is required when grant_role is enabled'
+            ]);
+            break;
+        }
+
         try {
             // Insert new quest with cheese configuration and role_id
             $stmt = $db->prepare('
                 INSERT INTO tbl_quests (type, description, link, reward, created_by, is_active, created_at, cheese_config, role_id) 
                 VALUES (?, ?, ?, ?, ?, 1, datetime("now"), ?, ?)
             ');
-            
+
             $stmt->bindValue(1, $type, SQLITE3_TEXT);
             $stmt->bindValue(2, $description, SQLITE3_TEXT);
             $stmt->bindValue(3, $link, SQLITE3_TEXT);
@@ -80,9 +186,9 @@ switch ($action) {
             $stmt->bindValue(5, $created_by, SQLITE3_TEXT);
             $stmt->bindValue(6, $cheese_config ? json_encode($cheese_config) : null, SQLITE3_TEXT);
             $stmt->bindValue(7, $grant_role ? $role_id : null, SQLITE3_TEXT);
-            
+
             $result = $stmt->execute();
-            
+
             if ($result) {
                 $quest_id = $db->lastInsertRowID();
                 echo json_encode([
@@ -114,10 +220,10 @@ switch ($action) {
             ]);
         }
         break;
-        
+
     case 'delete':
         $quest_id = intval($input['quest_id'] ?? 0);
-        
+
         if ($quest_id <= 0) {
             echo json_encode([
                 'success' => false,
@@ -125,12 +231,12 @@ switch ($action) {
             ]);
             break;
         }
-        
+
         try {
             $stmt = $db->prepare('UPDATE tbl_quests SET is_active = 0 WHERE quest_id = ?');
             $stmt->bindValue(1, $quest_id, SQLITE3_INTEGER);
             $result = $stmt->execute();
-            
+
             if ($result && $db->changes() > 0) {
                 echo json_encode([
                     'success' => true,
@@ -149,7 +255,7 @@ switch ($action) {
             ]);
         }
         break;
-        
+
     default:
         echo json_encode([
             'success' => false,
@@ -159,4 +265,4 @@ switch ($action) {
 }
 
 $db->close();
-?> 
+?>

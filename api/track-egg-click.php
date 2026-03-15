@@ -81,7 +81,6 @@ $userWallet = trim($input['user_wallet']);
 $eggId = trim($input['egg_id']);
 $timestamp = isset($input['timestamp']) ? ($input['timestamp'] / 1000) : time(); // Convert JS milliseconds to seconds
 $quest_id = isset($input['quest_id']) ? intval($input['quest_id']) : null;
-$screenshot_data = isset($input['screenshot']) ? $input['screenshot'] : null;
 
 // Enhanced logging for debugging
 error_log("Processing click - User: $userWallet, Egg: $eggId, Quest: " . ($quest_id ?: 'none'));
@@ -205,19 +204,17 @@ try {
                     $stmt = $pdo->prepare("INSERT INTO tbl_quest_claims (quest_id, user_id, proof, claimed_at, status)
                                            VALUES (?, ?, ?, datetime('now'), 'pending')");
                     $stmt->execute([$quest_id, $userWallet, "Cheese hunt completed: All $required_eggs eggs found"]);
+                    $claim_id = (int)$pdo->lastInsertId();
 
-                    // Save screenshot if provided
-                    if ($screenshot_data && $cheese_config['screenshot_required']) {
-                        $screenshot_path = saveScreenshot($screenshot_data, $userWallet, $quest_id);
-                        if ($screenshot_path) {
-                            $stmt = $pdo->prepare("UPDATE tbl_quest_claims SET proof = ? WHERE quest_id = ? AND user_id = ?");
-                            $stmt->execute([$screenshot_path, $quest_id, $userWallet]);
-                        }
-                    }
 
                     // Create Discord ticket if enabled
-                    if ($cheese_config['discord_ticket']) {
-                        $ticket_created = createDiscordTicket($userWallet, $quest, "All $required_eggs eggs", $screenshot_path ?? null);
+                    if (!empty($cheese_config['discord_ticket'])) {
+                        $ticket_created = createDiscordTicket(
+                            $userWallet,
+                            $quest,
+                            "All $required_eggs eggs",
+                            $claim_id
+                        );
                         $response['discord_ticket'] = $ticket_created;
                     }
 
@@ -251,65 +248,34 @@ try {
     ]);
 }
 
-// Function to save screenshot
-function saveScreenshot($screenshot_data, $userWallet, $quest_id) {
-    try {
-        // Remove data URL prefix
-        $screenshot_data = str_replace('data:image/png;base64,', '', $screenshot_data);
-        $screenshot_data = str_replace('data:image/jpeg;base64,', '', $screenshot_data);
-        
-        // Decode base64
-        $image_data = base64_decode($screenshot_data);
-        
-        // Create screenshots directory if it doesn't exist
-        $screenshots_dir = __DIR__ . '/../screenshots/';
-        if (!is_dir($screenshots_dir)) {
-            mkdir($screenshots_dir, 0755, true);
-        }
-        
-        // Generate filename
-        $filename = "cheese_hunt_{$quest_id}_{$userWallet}_" . time() . ".png";
-        $filepath = $screenshots_dir . $filename;
-        
-        // Save file
-        if (file_put_contents($filepath, $image_data)) {
-            return "screenshots/$filename";
-        }
-        
-        return null;
-    } catch (Exception $e) {
-        error_log("Screenshot save failed: " . $e->getMessage());
-        return null;
-    }
-}
+
 
 // Function to create Discord ticket
-function createDiscordTicket($userWallet, $quest, $eggId, $screenshot_path) {
+function createDiscordTicket($userWallet, $quest, $eggProgressLabel, $claim_id) {
     try {
-        // This would integrate with your Discord bot
-        // For now, we'll log the ticket creation
         $ticket_data = [
+            'ticket_type' => 'cheese_hunt_claim',
+            'claim_id' => (int)$claim_id,
             'user_wallet' => $userWallet,
-            'quest_id' => $quest['quest_id'],
+            'quest_id' => (int)$quest['quest_id'],
             'quest_description' => $quest['description'],
-            'egg_id' => $eggId,
-            'reward' => $quest['reward'],
-            'screenshot' => $screenshot_path,
-            'timestamp' => date('Y-m-d H:i:s')
+            'egg_progress' => $eggProgressLabel,
+            'reward' => (int)$quest['reward'],
+            'created_at' => date('Y-m-d H:i:s')
         ];
-        
-        // Log ticket creation
+
         $tickets_dir = __DIR__ . '/../discord/tickets/';
         if (!is_dir($tickets_dir)) {
             mkdir($tickets_dir, 0755, true);
         }
-        
-        $ticket_file = $tickets_dir . "cheese_hunt_ticket_{$quest['quest_id']}_{$userWallet}.json";
+
+        $ticket_file = $tickets_dir . "cheese_hunt_ticket_{$quest['quest_id']}_{$userWallet}_{$claim_id}.json";
         file_put_contents($ticket_file, json_encode($ticket_data, JSON_PRETTY_PRINT));
-        
+
         return [
             'success' => true,
-            'ticket_id' => "cheese_hunt_{$quest['quest_id']}_{$userWallet}",
+            'ticket_id' => "cheese_hunt_{$quest['quest_id']}_{$userWallet}_{$claim_id}",
+            'claim_id' => (int)$claim_id,
             'message' => 'Discord ticket created successfully'
         ];
     } catch (Exception $e) {

@@ -503,58 +503,18 @@ require_once 'discord-invite.php';
     const currentLeft = parseInt(egg.style.left) || 200;
     const currentTop = parseInt(egg.style.top) || 150;
     
-    // 🧠 SMART MOVEMENT TYPES - Each cheese has aggressive personality
-    const eggId = id;
-    let movementType = 0; // Default
-    if (eggId.includes('finance')) movementType = 1; // Finance - teleporter
-    else if (eggId.includes('blue')) movementType = 2; // Blue - page jumper
-    else movementType = 0; // Normal - wild jumper
-    
-    let left, top;
-    
-    switch (movementType) {
-      case 0: // Normal - WILD JUMPS in current viewport area
-        left = Math.random() * (viewportWidth - CHEESE_SIZE);
-        top = currentScroll + Math.random() * (viewportHeight - CHEESE_SIZE);
-        break;
-        
-      case 1: // Finance - TELEPORTER (can jump ANYWHERE on page)
-        if (Math.random() > 0.4) {
-          // 60% anywhere on entire page (hard to predict!)
-          left = Math.random() * (viewportWidth - CHEESE_SIZE);
-          top = Math.random() * (documentHeight - CHEESE_SIZE);
-        } else {
-          // 40% in current viewport
-          left = Math.random() * (viewportWidth - CHEESE_SIZE);
-          top = currentScroll + Math.random() * (viewportHeight - CHEESE_SIZE);
-        }
-        break;
-        
-      case 2: // Blue - PAGE JUMPER (different scroll positions)
-        if (Math.random() > 0.5) {
-          // 50% jump to different scroll section
-          const sections = [
-            0, // Top of page
-            documentHeight * 0.25, // Quarter down
-            documentHeight * 0.5, // Middle
-            documentHeight * 0.75, // Three quarters
-            documentHeight - viewportHeight // Bottom
-          ];
-          const targetSection = sections[Math.floor(Math.random() * sections.length)];
-          left = Math.random() * (viewportWidth - CHEESE_SIZE);
-          top = targetSection + Math.random() * (viewportHeight - CHEESE_SIZE);
-        } else {
-          // 50% stay in current viewport
-          left = Math.random() * (viewportWidth - CHEESE_SIZE);
-          top = currentScroll + Math.random() * (viewportHeight - CHEESE_SIZE);
-        }
-        break;
-    }
-    
-    // 🎯 KEEP WITHIN PAGE BOUNDS
-    const padding = 50;
-    left = Math.max(padding, Math.min(viewportWidth - CHEESE_SIZE - padding, left));
-    top = Math.max(padding, Math.min(documentHeight - CHEESE_SIZE - padding, top));
+    const nextPosition = getCheesePositionByPattern({
+      eggId: id,
+      viewportWidth,
+      viewportHeight,
+      documentHeight,
+      currentScroll
+    });
+
+    let left = nextPosition.left;
+    let top = nextPosition.top;
+
+    console.log(`🧀 moveEgg pattern=${nextPosition.pattern} egg=${id} left=${left} top=${top}`);
 
     egg.style.position = 'fixed'; // Fixed positioning for whole page coverage
     egg.style.left = `${left}px`;
@@ -647,6 +607,407 @@ require_once 'discord-invite.php';
         notification.remove();
       }
     }, 10000);
+  }
+
+    /**
+   * Return the active cheese egg IDs for the current Cheese Hunt quest.
+   * This keeps the runtime aligned with the configured cheese_count
+   * while preserving the current 3 synced egg instances.
+   */
+  function getActiveCheeseEggIds() {
+    const allEggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+
+    const configuredCount = parseInt(activeCheeseHuntQuest?.cheese_config?.cheese_count, 10);
+    const safeCount = Number.isInteger(configuredCount)
+      ? Math.max(1, Math.min(3, configuredCount))
+      : 3;
+
+    return allEggIds.slice(0, safeCount);
+  }
+
+    /**
+   * Read the configured Cheese Hunt movement speed and return a safe value.
+   */
+  function getCheeseMovementSpeed() {
+    const configuredSpeed = String(activeCheeseHuntQuest?.cheese_config?.movement_speed || 'normal')
+      .toLowerCase()
+      .trim();
+
+    const allowedSpeeds = ['slow', 'normal', 'fast'];
+    return allowedSpeeds.includes(configuredSpeed) ? configuredSpeed : 'normal';
+  }
+
+  /**
+   * Return movement timing values for the active Cheese Hunt speed.
+   * These ranges preserve the current feel while making speed config real.
+   */
+  function getCheeseMovementTiming(index) {
+    const speed = getCheeseMovementSpeed();
+
+    const speedPresets = {
+      slow: {
+        initialDelayMin: 1800,
+        initialDelayMax: 3600,
+        intervalMin: 4500,
+        intervalMax: 9000
+      },
+      normal: {
+        initialDelayMin: 1000,
+        initialDelayMax: 3000,
+        intervalMin: 1000,
+        intervalMax: 7500
+      },
+      fast: {
+        initialDelayMin: 500,
+        initialDelayMax: 1800,
+        intervalMin: 700,
+        intervalMax: 3500
+      }
+    };
+
+    const preset = speedPresets[speed] || speedPresets.normal;
+
+    const baseDelay = preset.initialDelayMin + Math.random() * (preset.initialDelayMax - preset.initialDelayMin);
+    const baseInterval = preset.intervalMin + Math.random() * (preset.intervalMax - preset.intervalMin);
+
+    // Keep slight personality variance so the eggs still feel alive,
+    // but anchor the overall difficulty to the quest speed config.
+    const personality = index % 3;
+
+    let delayMultiplier = 1;
+    let intervalMultiplier = 1;
+
+    switch (personality) {
+      case 0:
+        delayMultiplier = 0.85;
+        intervalMultiplier = 0.85;
+        break;
+      case 1:
+        delayMultiplier = 1;
+        intervalMultiplier = 1;
+        break;
+      case 2:
+        delayMultiplier = 1.15;
+        intervalMultiplier = 1.15;
+        break;
+    }
+
+    return {
+      speed,
+      delay: Math.round(baseDelay * delayMultiplier),
+      interval: Math.round(baseInterval * intervalMultiplier)
+    };
+  }
+
+    /**
+   * Read the configured Cheese Hunt movement pattern and return a safe value.
+   */
+  function getCheeseMovementPattern() {
+    const configuredPattern = String(activeCheeseHuntQuest?.cheese_config?.movement_pattern || 'random')
+      .toLowerCase()
+      .trim();
+
+    const allowedPatterns = ['random', 'edge_hunter', 'sneaky', 'corner_lurker'];
+    return allowedPatterns.includes(configuredPattern) ? configuredPattern : 'random';
+  }
+
+    /**
+   * Read the configured hidden_areas flag and return a safe boolean.
+   * Default stays true so the classic site behavior is preserved when no quest is active.
+   */
+  function getCheeseHiddenAreasEnabled() {
+    const rawValue = activeCheeseHuntQuest?.cheese_config?.hidden_areas;
+
+    if (typeof rawValue === 'boolean') {
+      return rawValue;
+    }
+
+    if (typeof rawValue === 'string') {
+      const normalized = rawValue.toLowerCase().trim();
+      if (normalized === 'true') return true;
+      if (normalized === 'false') return false;
+    }
+
+    if (typeof rawValue === 'number') {
+      return rawValue === 1;
+    }
+
+    return true;
+  }
+
+  /**
+   * Return a random number between min and max.
+   */
+  function getRandomInRange(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  /**
+   * Pick one item from an array.
+   */
+  function pickRandomItem(items) {
+    return items[Math.floor(Math.random() * items.length)];
+  }
+
+  /**
+   * Choose the next cheese position based on the active Cheese Hunt movement pattern.
+   * This keeps the old whole-page feel but makes pattern config a real control.
+   */
+  function getCheesePositionByPattern({
+    eggId,
+    viewportWidth,
+    viewportHeight,
+    documentHeight,
+    currentScroll
+  }) {
+    const pattern = getCheeseMovementPattern();
+    const hiddenAreasEnabled = getCheeseHiddenAreasEnabled();
+    const padding = hiddenAreasEnabled ? 50 : 90;
+
+    const safeLeftMin = padding;
+    const safeLeftMax = Math.max(padding, viewportWidth - CHEESE_SIZE - padding);
+
+    const safeTopViewportMin = currentScroll + padding;
+    const safeTopViewportMax = Math.max(
+      currentScroll + padding,
+      currentScroll + viewportHeight - CHEESE_SIZE - padding
+    );
+
+    const safeTopPageMin = padding;
+    const safeTopPageMax = Math.max(padding, documentHeight - CHEESE_SIZE - padding);
+
+    // Fair-mode ranges when hidden areas are disabled:
+    // keep eggs mainly in the visible viewport and away from extreme edges/corners.
+    const fairLeftMin = Math.max(safeLeftMin, viewportWidth * 0.15);
+    const fairLeftMax = Math.min(safeLeftMax, viewportWidth - CHEESE_SIZE - viewportWidth * 0.15);
+
+    const fairTopMin = Math.max(safeTopViewportMin, currentScroll + viewportHeight * 0.18);
+    const fairTopMax = Math.min(
+      safeTopViewportMax,
+      currentScroll + viewportHeight - CHEESE_SIZE - viewportHeight * 0.18
+    );
+
+    let left = safeLeftMin;
+    let top = safeTopViewportMin;
+
+    switch (pattern) {
+      case 'edge_hunter': {
+        if (!hiddenAreasEnabled) {
+          // Fair-mode fallback: still edge-biased, but not glued to extreme borders.
+          const sideBandWidth = Math.max(70, viewportWidth * 0.14);
+          const sideBandHeight = Math.max(70, viewportHeight * 0.14);
+
+          const edgeType = pickRandomItem(['left', 'right', 'top', 'bottom']);
+
+          if (edgeType === 'left') {
+            left = getRandomInRange(fairLeftMin, Math.min(fairLeftMin + sideBandWidth, fairLeftMax));
+            top = getRandomInRange(fairTopMin, fairTopMax);
+          } else if (edgeType === 'right') {
+            left = getRandomInRange(Math.max(fairLeftMin, fairLeftMax - sideBandWidth), fairLeftMax);
+            top = getRandomInRange(fairTopMin, fairTopMax);
+          } else if (edgeType === 'top') {
+            left = getRandomInRange(fairLeftMin, fairLeftMax);
+            top = getRandomInRange(fairTopMin, Math.min(fairTopMin + sideBandHeight, fairTopMax));
+          } else {
+            left = getRandomInRange(fairLeftMin, fairLeftMax);
+            top = getRandomInRange(Math.max(fairTopMin, fairTopMax - sideBandHeight), fairTopMax);
+          }
+        } else {
+          const edgeZoneWidth = Math.max(80, viewportWidth * 0.12);
+          const edgeZoneHeight = Math.max(80, viewportHeight * 0.12);
+
+          const edgeType = pickRandomItem(['left', 'right', 'top', 'bottom']);
+
+          if (edgeType === 'left') {
+            left = getRandomInRange(safeLeftMin, Math.min(safeLeftMin + edgeZoneWidth, safeLeftMax));
+            top = getRandomInRange(safeTopViewportMin, safeTopViewportMax);
+          } else if (edgeType === 'right') {
+            left = getRandomInRange(Math.max(safeLeftMin, safeLeftMax - edgeZoneWidth), safeLeftMax);
+            top = getRandomInRange(safeTopViewportMin, safeTopViewportMax);
+          } else if (edgeType === 'top') {
+            left = getRandomInRange(safeLeftMin, safeLeftMax);
+            top = getRandomInRange(safeTopViewportMin, Math.min(safeTopViewportMin + edgeZoneHeight, safeTopViewportMax));
+          } else {
+            left = getRandomInRange(safeLeftMin, safeLeftMax);
+            top = getRandomInRange(Math.max(safeTopViewportMin, safeTopViewportMax - edgeZoneHeight), safeTopViewportMax);
+          }
+        }
+        break;
+      }
+
+      case 'sneaky': {
+        if (!hiddenAreasEnabled) {
+          // Fair-mode fallback: keep sneaky less predictable, but still inside the current viewport.
+          const viewportZones = [
+            {
+              leftMin: fairLeftMin,
+              leftMax: fairLeftMax,
+              topMin: fairTopMin,
+              topMax: Math.max(fairTopMin, fairTopMin + (fairTopMax - fairTopMin) * 0.35)
+            },
+            {
+              leftMin: fairLeftMin,
+              leftMax: fairLeftMax,
+              topMin: Math.max(fairTopMin, fairTopMax - (fairTopMax - fairTopMin) * 0.35),
+              topMax: fairTopMax
+            },
+            {
+              leftMin: fairLeftMin,
+              leftMax: Math.max(fairLeftMin, fairLeftMin + (fairLeftMax - fairLeftMin) * 0.35),
+              topMin: fairTopMin,
+              topMax: fairTopMax
+            },
+            {
+              leftMin: Math.max(fairLeftMin, fairLeftMax - (fairLeftMax - fairLeftMin) * 0.35),
+              leftMax: fairLeftMax,
+              topMin: fairTopMin,
+              topMax: fairTopMax
+            }
+          ];
+
+          const chosenZone = pickRandomItem(viewportZones);
+          left = getRandomInRange(chosenZone.leftMin, Math.max(chosenZone.leftMin, chosenZone.leftMax));
+          top = getRandomInRange(chosenZone.topMin, Math.max(chosenZone.topMin, chosenZone.topMax));
+        } else {
+          const pageSections = [
+            safeTopPageMin,
+            Math.max(safeTopPageMin, documentHeight * 0.2),
+            Math.max(safeTopPageMin, documentHeight * 0.45),
+            Math.max(safeTopPageMin, documentHeight * 0.7),
+            Math.max(safeTopPageMin, documentHeight - viewportHeight - padding)
+          ];
+
+          const sectionTop = pickRandomItem(pageSections);
+          const useViewport = Math.random() < 0.25;
+
+          left = getRandomInRange(safeLeftMin, safeLeftMax);
+
+          if (useViewport) {
+            top = getRandomInRange(safeTopViewportMin, safeTopViewportMax);
+          } else {
+            const sneakyTopMin = Math.max(safeTopPageMin, sectionTop + padding);
+            const sneakyTopMax = Math.min(safeTopPageMax, sectionTop + viewportHeight - CHEESE_SIZE - padding);
+            top = getRandomInRange(sneakyTopMin, Math.max(sneakyTopMin, sneakyTopMax));
+          }
+        }
+        break;
+      }
+
+      case 'corner_lurker': {
+        const leftMinBase = hiddenAreasEnabled ? safeLeftMin : fairLeftMin;
+        const leftMaxBase = hiddenAreasEnabled ? safeLeftMax : fairLeftMax;
+        const topMinBase = hiddenAreasEnabled ? safeTopViewportMin : fairTopMin;
+        const topMaxBase = hiddenAreasEnabled ? safeTopViewportMax : fairTopMax;
+
+        const cornerOffsetX = Math.max(hiddenAreasEnabled ? 90 : 70, viewportWidth * (hiddenAreasEnabled ? 0.15 : 0.12));
+        const cornerOffsetY = Math.max(hiddenAreasEnabled ? 90 : 70, viewportHeight * (hiddenAreasEnabled ? 0.15 : 0.12));
+
+        const corners = [
+          {
+            leftMin: leftMinBase,
+            leftMax: Math.min(leftMaxBase, leftMinBase + cornerOffsetX),
+            topMin: topMinBase,
+            topMax: Math.min(topMaxBase, topMinBase + cornerOffsetY)
+          },
+          {
+            leftMin: Math.max(leftMinBase, leftMaxBase - cornerOffsetX),
+            leftMax: leftMaxBase,
+            topMin: topMinBase,
+            topMax: Math.min(topMaxBase, topMinBase + cornerOffsetY)
+          },
+          {
+            leftMin: leftMinBase,
+            leftMax: Math.min(leftMaxBase, leftMinBase + cornerOffsetX),
+            topMin: Math.max(topMinBase, topMaxBase - cornerOffsetY),
+            topMax: topMaxBase
+          },
+          {
+            leftMin: Math.max(leftMinBase, leftMaxBase - cornerOffsetX),
+            leftMax: leftMaxBase,
+            topMin: Math.max(topMinBase, topMaxBase - cornerOffsetY),
+            topMax: topMaxBase
+          }
+        ];
+
+        const chosenCorner = pickRandomItem(corners);
+        left = getRandomInRange(chosenCorner.leftMin, Math.max(chosenCorner.leftMin, chosenCorner.leftMax));
+        top = getRandomInRange(chosenCorner.topMin, Math.max(chosenCorner.topMin, chosenCorner.topMax));
+        break;
+      }
+
+      case 'random':
+      default: {
+        const eggType = eggId.includes('finance') ? 'finance' : eggId.includes('blue') ? 'blue' : 'normal';
+
+        if (!hiddenAreasEnabled) {
+          // Fair-mode random: keep eggs inside the visible play area.
+          left = getRandomInRange(fairLeftMin, Math.max(fairLeftMin, fairLeftMax));
+          top = getRandomInRange(fairTopMin, Math.max(fairTopMin, fairTopMax));
+        } else if (eggType === 'finance') {
+          if (Math.random() > 0.4) {
+            left = getRandomInRange(safeLeftMin, safeLeftMax);
+            top = getRandomInRange(safeTopPageMin, safeTopPageMax);
+          } else {
+            left = getRandomInRange(safeLeftMin, safeLeftMax);
+            top = getRandomInRange(safeTopViewportMin, safeTopViewportMax);
+          }
+        } else if (eggType === 'blue') {
+          if (Math.random() > 0.5) {
+            const sections = [
+              safeTopPageMin,
+              Math.max(safeTopPageMin, documentHeight * 0.25),
+              Math.max(safeTopPageMin, documentHeight * 0.5),
+              Math.max(safeTopPageMin, documentHeight * 0.75),
+              Math.max(safeTopPageMin, documentHeight - viewportHeight - padding)
+            ];
+            const targetSection = pickRandomItem(sections);
+            const sectionTopMin = Math.max(safeTopPageMin, targetSection + padding);
+            const sectionTopMax = Math.min(safeTopPageMax, targetSection + viewportHeight - CHEESE_SIZE - padding);
+
+            left = getRandomInRange(safeLeftMin, safeLeftMax);
+            top = getRandomInRange(sectionTopMin, Math.max(sectionTopMin, sectionTopMax));
+          } else {
+            left = getRandomInRange(safeLeftMin, safeLeftMax);
+            top = getRandomInRange(safeTopViewportMin, safeTopViewportMax);
+          }
+        } else {
+          left = getRandomInRange(safeLeftMin, safeLeftMax);
+          top = getRandomInRange(safeTopViewportMin, safeTopViewportMax);
+        }
+        break;
+      }
+    }
+
+    left = Math.max(safeLeftMin, Math.min(safeLeftMax, left));
+    top = Math.max(safeTopPageMin, Math.min(safeTopPageMax, top));
+
+    return { left, top, pattern };
+  }
+
+  /**
+   * Hide any inactive cheese eggs so the page only shows the configured
+   * number of eggs for the current Cheese Hunt quest.
+   */
+  function syncCheeseEggVisibility() {
+    const allEggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+    const activeEggIds = getActiveCheeseEggIds();
+
+    allEggIds.forEach((id) => {
+      const egg = document.getElementById(id);
+      if (!egg) {
+        return;
+      }
+
+      if (activeEggIds.includes(id)) {
+        egg.style.display = '';
+        egg.setAttribute('data-cheese-active', 'true');
+      } else {
+        egg.style.display = 'none';
+        egg.setAttribute('data-cheese-active', 'false');
+      }
+    });
+
+    console.log('🧀 Active cheese eggs synced:', activeEggIds);
   }
 
   // Show cheese hunt progress feedback
@@ -1113,14 +1474,13 @@ require_once 'discord-invite.php';
       console.log('🚀 Sending API request to /api/track-egg-click.php...');
       
       const currentTimestamp = Date.now();
-      const requestData = {
-        user_wallet: currentUserWallet,
-        egg_id: eggId,
-        timestamp: currentTimestamp,
-        quest_id: activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : null,
-        screenshot: null,
-        hunt_context: 'enhanced_tracking_v2'
-      };
+const requestData = {
+  user_wallet: currentUserWallet,
+  egg_id: eggId,
+  timestamp: currentTimestamp,
+  quest_id: activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : null,
+  hunt_context: 'enhanced_tracking_v2'
+};
       
       console.log('📤 Request data:', requestData);
       console.log('🕒 Timestamp debug - JS timestamp:', currentTimestamp, 'Date:', new Date(currentTimestamp).toISOString());
@@ -1205,14 +1565,22 @@ require_once 'discord-invite.php';
         activeCheeseHuntQuest = data.quest;
         console.log('🧀 Active cheese hunt quest loaded:', activeCheeseHuntQuest);
         console.log('🧀 Quest cheese count:', activeCheeseHuntQuest.cheese_config?.cheese_count || 3);
-        
+
+        // Sync live egg visibility to the configured cheese_count
+        syncCheeseEggVisibility();
+
         // Show cheese hunt notification
         showCheeseHuntNotification(activeCheeseHuntQuest);
-        
+
         // Initialize persistent display after quest is loaded
         initializeCheeseHuntPersistentDisplay();
       } else {
         console.log('🧀 No active cheese hunt quest found');
+
+        // No active quest: keep the classic 3-egg site behavior visible
+        activeCheeseHuntQuest = null;
+        syncCheeseEggVisibility();
+
         // Initialize display even without quest (shows "No active quest")
         initializeCheeseHuntPersistentDisplay();
       }
@@ -1233,36 +1601,22 @@ require_once 'discord-invite.php';
     const existingStatusBars = document.querySelectorAll('#hdr-status-bar');
     existingStatusBars.forEach(bar => bar.remove());
     
-    const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+    const eggIds = getActiveCheeseEggIds();
     console.log('🧀 Initializing cheese eggs:', eggIds);
 
     eggIds.forEach((id, index) => {
       console.log(`🧀 Setting up cheese egg ${id} (index: ${index})`);
       
-      // 🎯 BALANCED MODE - Variable stand time (1-7.5 seconds)
-      const baseDelay = 1000 + Math.random() * 2000; // 1-3 seconds initial delay
-      const baseInterval = 1000 + Math.random() * 6500; // 1-7.5 seconds between moves
-      
-      // Each cheese egg has different personality
-      const personality = index % 3; // 3 different personalities
-      let delay, interval;
-      
-      switch (personality) {
-        case 0: // Fast cheese
-          delay = baseDelay * 0.7;
-          interval = baseInterval * 0.6; // ~0.6-4.5 seconds (faster)
-          break;
-        case 1: // Medium cheese
-          delay = baseDelay;
-          interval = baseInterval; // ~1-7.5 seconds (balanced)
-          break;
-        case 2: // Slower cheese
-          delay = baseDelay * 1.2;
-          interval = baseInterval * 1.2; // ~1.2-9 seconds (slower, easier)
-          break;
+            const activeEggIds = getActiveCheeseEggIds();
+      if (!activeEggIds.includes(id)) {
+        console.log(`🧀 Skipping inactive cheese egg ${id}`);
+        return;
       }
-      
-      console.log(`🧀 Cheese egg ${id}: delay=${delay}ms, interval=${interval}ms`);
+      const movementTiming = getCheeseMovementTiming(index);
+      const delay = movementTiming.delay;
+      const interval = movementTiming.interval;
+
+      console.log(`🧀 Cheese egg ${id}: speed=${movementTiming.speed}, delay=${delay}ms, interval=${interval}ms`);
 
       // Initial positioning - start immediately
       setTimeout(() => {
@@ -1323,17 +1677,19 @@ require_once 'discord-invite.php';
 
   // Handle window resize to keep cheese in bounds
   window.addEventListener('resize', () => {
-    const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+    const eggIds = getActiveCheeseEggIds();
     eggIds.forEach(id => {
       const egg = document.getElementById(id);
-      if (egg) {
-        const rect = egg.getBoundingClientRect();
-        const maxLeft = window.innerWidth - CHEESE_SIZE;
-        const maxTop = window.innerHeight - CHEESE_SIZE;
-        
-        if (rect.left > maxLeft) egg.style.left = `${maxLeft}px`;
-        if (rect.top > maxTop) egg.style.top = `${maxTop}px`;
+      if (!egg || egg.getAttribute('data-cheese-active') !== 'true') {
+        return;
       }
+
+      const rect = egg.getBoundingClientRect();
+      const maxLeft = window.innerWidth - CHEESE_SIZE;
+      const maxTop = window.innerHeight - CHEESE_SIZE;
+
+      if (rect.left > maxLeft) egg.style.left = `${maxLeft}px`;
+      if (rect.top > maxTop) egg.style.top = `${maxTop}px`;
     });
   });
 
