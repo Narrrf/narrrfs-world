@@ -1482,8 +1482,32 @@ function getLedgerHelpMessage() {
 /**
  * Detect whether a signing error is likely related to Ledger.
  */
+/**
+ * Detect whether a signing error is likely related to Ledger.
+ */
 function isLikelyLedgerSignError(error) {
-  const message = String(error?.message || '').toLowerCase();
+  if (!error) {
+    return false;
+  }
+
+  const originalError = error.originalError || {};
+
+  const message = [
+    error.message,
+    typeof error.toString === 'function' ? error.toString() : '',
+    error.name,
+    error.code,
+    error?.data?.message,
+    error?.error?.message,
+    originalError.message,
+    originalError.name,
+    originalError.code,
+    originalError?.data?.message,
+    originalError?.error?.message
+  ]
+    .filter(Boolean)
+    .join(' | ')
+    .toLowerCase();
 
   return (
     message.includes('ledger') ||
@@ -1492,7 +1516,11 @@ function isLikelyLedgerSignError(error) {
     message.includes('blind signing') ||
     message.includes('transport') ||
     message.includes('device') ||
-    message.includes('failed to sign with ledger')
+    message.includes('sign error') ||
+    message.includes('ledgersignerror') ||
+    message.includes('ledgerunknownsignerror') ||
+    message.includes('failed to sign with ledger') ||
+    message.includes('failed to sign with phantom')
   );
 }
 
@@ -1649,7 +1677,13 @@ async function requestVerificationProof() {
   const offChainMessage = `Verify NFT ownership for Narrrfs World - ${new Date().toISOString()}`;
 
   try {
+    console.log('🔐 Trying off-chain message signing first...');
     const signed = await signVerificationMessage(offChainMessage);
+
+    console.log('✅ Off-chain signing succeeded:', {
+      provider: getWalletProviderLabel(signed.provider),
+      wallet: connectedWalletAddress
+    });
 
     return {
       provider: signed.provider,
@@ -1658,12 +1692,20 @@ async function requestVerificationProof() {
       message: offChainMessage
     };
   } catch (error) {
-    if (!isLikelyLedgerSignError(error)) {
+    console.error('❌ Off-chain signing failed:', error);
+
+    const shouldFallbackToMemo = isLikelyLedgerSignError(error);
+
+    console.log('🔍 Ledger fallback check:', {
+      shouldFallbackToMemo,
+      message: error?.message || String(error)
+    });
+
+    if (!shouldFallbackToMemo) {
       throw error;
     }
 
-    console.warn('🔐 Ledger off-chain signing failed, trying memo transaction fallback...', error);
-
+    console.warn('🔐 Ledger-like signing error detected, trying memo transaction fallback...');
     return await signVerificationMemoTransaction();
   }
 }
@@ -1693,7 +1735,8 @@ async function connectSolanaWallet() {
 
 /**
  * Sign a verification message.
- * This remains an off-chain signature flow, but now gives a clearer Ledger error path.
+ * This keeps the existing off-chain signature flow, but preserves the
+ * original wallet error details so Ledger fallback detection can still work.
  */
 async function signVerificationMessage(message) {
   const provider = connectedWallet || getSolanaProvider();
@@ -1712,7 +1755,14 @@ async function signVerificationMessage(message) {
 
   try {
     const signedMessage = await provider.signMessage(encodedMessage, 'utf8');
-    const signatureHex = Array.from(signedMessage.signature)
+    const signatureBytes =
+      signedMessage && signedMessage.signature ? signedMessage.signature : signedMessage;
+
+    if (!signatureBytes) {
+      throw new Error('Wallet returned no signature bytes.');
+    }
+
+    const signatureHex = Array.from(signatureBytes)
       .map(byte => byte.toString(16).padStart(2, '0'))
       .join('');
 
@@ -1724,11 +1774,17 @@ async function signVerificationMessage(message) {
     const walletName = getWalletProviderLabel(provider);
     const baseMessage = `Failed to sign with ${walletName}. ${error?.message || 'Unknown signing error'}`;
 
-    if (isLikelyLedgerSignError(error)) {
-      throw new Error(`${baseMessage}\n\n${getLedgerHelpMessage()}`);
-    }
+    const wrappedError = new Error(
+      isLikelyLedgerSignError(error)
+        ? `${baseMessage}\n\n${getLedgerHelpMessage()}`
+        : baseMessage
+    );
 
-    throw new Error(baseMessage);
+    wrappedError.originalError = error;
+    wrappedError.code = error?.code;
+    wrappedError.name = error?.name || wrappedError.name;
+
+    throw wrappedError;
   }
 }
     
@@ -2300,13 +2356,15 @@ async function verifyStakeLabNFTs() {
       return;
     }
 
-    const message = `Verify NFT ownership for Narrrfs World - ${new Date().toISOString()}`;
+const verificationProof = await requestVerificationProof();
+const signature = verificationProof.signature;
+const message = verificationProof.message;
 
-    const signed = await signVerificationMessage(message);
-    const signature = signed.signature;
-
-    console.log("🔐 Signature obtained:", signature);
-    console.log("🔐 Signed with provider:", getWalletProviderLabel(signed.provider));
+console.log("🔐 Verification proof obtained:", {
+  mode: verificationProof.mode,
+  signature,
+  provider: getWalletProviderLabel(verificationProof.provider)
+});
 
     const collections = {
       "AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML": {
