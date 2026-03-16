@@ -9,10 +9,10 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
 
-  <script>
-    window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
-    window.sessionDiscordUsername = "<?= htmlspecialchars($discordUsername) ?>";
-  </script>
+<script>
+  window.sessionDiscordId = '';
+  window.sessionDiscordUsername = '';
+</script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="discord-config.js"></script>
@@ -528,31 +528,32 @@
       return `${LAB_CONFIG.apiBaseUrl}${path}`;
     }
 
-    function getStoredUserId() {
-      const candidates = [
-        window.sessionDiscordId,
-        localStorage.getItem('discord_id'),
-        localStorage.getItem('narrrfs_last_discord_id')
-      ];
+function getStoredUserId() {
+  const candidates = [
+    localStorage.getItem('discord_id'),
+    localStorage.getItem('narrrfs_last_discord_id'),
+    window.sessionDiscordId
+  ];
 
-      const found = candidates.find(v => v && String(v).trim());
-      if (found) return found;
+  const found = candidates.find(v => v && String(v).trim());
+  if (found) return String(found).trim();
 
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      return isLocal ? LAB_CONFIG.localTestUserId : '';
-    }
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  return isLocal ? LAB_CONFIG.localTestUserId : '';
+}
 
-    function getStoredUsername() {
-      const candidates = [
-        window.sessionDiscordUsername,
-        localStorage.getItem('discord_username'),
-        localStorage.getItem('discord_name'),
-        localStorage.getItem('narrrfs_last_discord_name'),
-        localStorage.getItem('username')
-      ];
-      return candidates.find(v => v && String(v).trim()) || 'Unknown User';
-    }
+function getStoredUsername() {
+  const candidates = [
+    localStorage.getItem('discord_username'),
+    localStorage.getItem('discord_name'),
+    localStorage.getItem('narrrfs_last_discord_name'),
+    localStorage.getItem('username'),
+    window.sessionDiscordUsername
+  ];
 
+  const found = candidates.find(v => v && String(v).trim());
+  return found ? String(found).trim() : 'Unknown User';
+}
     async function fetchJson(url, options = {}, allowFailure = false) {
       const response = await fetch(url, options);
       const contentType = response.headers.get('content-type') || '';
@@ -806,46 +807,98 @@
       logLab(`Selected Genesis specimen ${nft.nft_name || nft.token_id}.`, 'info');
     }
 
-    function renderNftGrid() {
-      const verified = getVerifiedGenesisNfts();
-      el.nftCountBadge.textContent = `${verified.length} Genesis specimen${verified.length === 1 ? '' : 's'} loaded`;
+function renderNftGrid() {
+  const verified = getVerifiedGenesisNfts();
+  el.nftCountBadge.textContent = `${verified.length} Genesis specimen${verified.length === 1 ? '' : 's'} loaded`;
 
-      if (!verified.length) {
-        renderVerificationWarning(`<div class="space-y-2"><div class="font-semibold text-amber-200">Genesis verification is required for trait upgrading.</div><div class="text-amber-100">No verified Genesis NFT was found in the saved SQL scan for this player. The page still shows player identity and stats, but the upgrade chamber stays locked.</div><div class="text-amber-100">Please verify a Genesis NFT through <strong>stake-lab.html</strong> or <strong>profile.html</strong> to unlock the lab.</div></div>`, true);
-        el.nftGrid.innerHTML = `<div class="card p-5 sm:col-span-2 2xl:col-span-3"><div class="empty-art">🧬</div><div class="mt-4 text-xl font-bold">No verified Genesis specimen found</div><div class="mt-2 text-sm text-slate-300">This player can still view their economy, missions, and profile identity here. Genesis upgrade functionality becomes available after a saved verification scan exists.</div><div class="mt-4 flex flex-wrap gap-3"><a class="btn primary inline-flex items-center justify-center" href="stake-lab.html">Go to Stake Lab</a><a class="btn inline-flex items-center justify-center" href="profile.html">Open Profile</a></div></div>`;
-        return;
-      }
+  if (!verified.length) {
+    renderVerificationWarning(
+      `<div class="space-y-2">
+        <div class="font-semibold text-amber-200">Genesis verification is required for trait upgrading.</div>
+        <div class="text-amber-100">No verified Genesis NFT was found in the saved SQL scan for this player. The page still shows player identity and stats, but the upgrade chamber stays locked.</div>
+        <div class="text-amber-100">Please verify a Genesis NFT through <strong>stake-lab.html</strong> or <strong>profile.html</strong> to unlock the lab.</div>
+      </div>`,
+      true
+    );
 
-      renderVerificationWarning('', false);
+    el.nftGrid.innerHTML = `
+      <div class="card p-5 sm:col-span-2 2xl:col-span-3">
+        <div class="empty-art">🧬</div>
+        <div class="mt-4 text-xl font-bold">No verified Genesis specimen found</div>
+        <div class="mt-2 text-sm text-slate-300">This player can still view their economy, missions, and profile identity here. Genesis upgrade functionality becomes available after a saved verification scan exists.</div>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a class="btn primary inline-flex items-center justify-center" href="stake-lab.html">Go to Stake Lab</a>
+          <a class="btn inline-flex items-center justify-center" href="profile.html">Open Profile</a>
+        </div>
+      </div>
+    `;
+    return;
+  }
 
-      el.nftGrid.innerHTML = verified.map(nft => {
-        const summary = getNftUpgradeSummary(nft);
-        const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
-        const traits = normalizeNftTraits(nft);
-        return `
-          <button class="card ${selected ? 'selected' : ''} text-left p-4" data-select-nft="${escapeHtml(nft.token_id)}">
-            ${nft.image_url ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>` : `<div class="empty-art">🐭</div>`}
-            <div class="mt-4 flex items-start justify-between gap-3">
-              <div>
-                <div class="text-lg font-bold leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
-                <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token')}</div>
-              </div>
-              <span class="pill ${selected ? 'upgrading' : 'idle'}">${selected ? 'Selected' : 'Available'}</span>
-            </div>
-            <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
-              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Traits</div><div class="mt-1 text-lg font-bold">${formatNumber(traits.length)}</div></div>
-              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div><div class="mt-1 text-lg font-bold">${formatNumber(summary.totalLevels)}</div></div>
-              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active</div><div class="mt-1 text-lg font-bold">${formatNumber(summary.activeCount)}</div></div>
-              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready</div><div class="mt-1 text-lg font-bold">${formatNumber(summary.readyCount)}</div></div>
-            </div>
-          </button>
-        `;
-      }).join('');
+  renderVerificationWarning('', false);
 
-      document.querySelectorAll('[data-select-nft]').forEach(button => {
-        button.addEventListener('click', () => selectNftByTokenId(button.getAttribute('data-select-nft') || ''));
-      });
-    }
+  el.nftGrid.innerHTML = verified.map(nft => {
+    const summary = getNftUpgradeSummary(nft);
+    const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
+    const traits = normalizeNftTraits(nft);
+
+    const visibleTraitPreview = traits.slice(0, 4).map(trait => `
+      <span class="pill idle" style="font-size:0.65rem;">
+        ${escapeHtml(trait.trait_type)}: ${escapeHtml(trait.value)}
+      </span>
+    `).join('');
+
+    const remainingTraitCount = traits.length > 4
+      ? `<span class="pill idle" style="font-size:0.65rem;">+${formatNumber(traits.length - 4)} more</span>`
+      : '';
+
+    return `
+      <button class="card ${selected ? 'selected' : ''} text-left p-4" data-select-nft="${escapeHtml(nft.token_id)}">
+        ${nft.image_url
+          ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+          : `<div class="empty-art">🐭</div>`}
+
+        <div class="mt-4 flex items-start justify-between gap-3">
+          <div>
+            <div class="text-lg font-bold leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
+            <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token')}</div>
+          </div>
+          <span class="pill ${selected ? 'upgrading' : 'idle'}">${selected ? 'Selected' : 'Available'}</span>
+        </div>
+
+        <div class="mt-3 flex flex-wrap gap-2">
+          ${visibleTraitPreview}
+          ${remainingTraitCount}
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+          <div class="kv">
+            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Traits</div>
+            <div class="mt-1 text-lg font-bold">${formatNumber(traits.length)}</div>
+          </div>
+          <div class="kv">
+            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div>
+            <div class="mt-1 text-lg font-bold">${formatNumber(summary.totalLevels)}</div>
+          </div>
+          <div class="kv">
+            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active</div>
+            <div class="mt-1 text-lg font-bold">${formatNumber(summary.activeCount)}</div>
+          </div>
+          <div class="kv">
+            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready</div>
+            <div class="mt-1 text-lg font-bold">${formatNumber(summary.readyCount)}</div>
+          </div>
+        </div>
+      </button>
+    `;
+  }).join('');
+
+  document.querySelectorAll('[data-select-nft]').forEach(button => {
+    button.addEventListener('click', () => {
+      selectNftByTokenId(button.getAttribute('data-select-nft') || '');
+    });
+  });
+}
 
     function renderSelectedNftPanel() {
       const nft = state.selectedNft;
@@ -1163,13 +1216,17 @@
           return;
         }
 
-        logLab('Verified NFT scan endpoint not available yet. Waiting for upgrade endpoint fallback.', 'warn');
+        if (Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
+  logLab('Verified NFT scan endpoint unavailable, but Genesis data is already loaded from upgrade endpoint fallback.', 'info');
+} else {
+  logLab('Verified NFT scan endpoint not available yet. Waiting for upgrade endpoint fallback.', 'warn');
+}
       } catch (error) {
         logLab(`Verified NFT scan load failed: ${error.message}`, 'warn');
       }
     }
 
-    async function loadTraitUpgrades() {
+async function loadTraitUpgrades() {
   if (!state.userId) return;
 
   try {
@@ -1183,24 +1240,24 @@
       true
     );
 
-if (res.ok && res.payload?.success) {
-  const data = res.payload.data || {};
+    if (res.ok && res.payload?.success) {
+      const data = res.payload.data || {};
 
-  state.upgradeRows = Array.isArray(data.upgrades)
-    ? data.upgrades
-    : Array.isArray(res.payload.upgrades)
-      ? res.payload.upgrades
-      : [];
+      state.upgradeRows = Array.isArray(data.upgrades)
+        ? data.upgrades
+        : Array.isArray(res.payload.upgrades)
+          ? res.payload.upgrades
+          : [];
 
-  if (Array.isArray(data.verified_genesis_nfts)) {
-    state.verifiedNfts = data.verified_genesis_nfts;
-    logLab(`Loaded ${state.verifiedNfts.length} verified Genesis NFT(s) from upgrade endpoint.`, 'success');
-  }
+      if (Array.isArray(data.verified_genesis_nfts)) {
+        state.verifiedNfts = data.verified_genesis_nfts;
+        logLab(`Loaded ${state.verifiedNfts.length} verified Genesis NFT(s) from upgrade endpoint.`, 'success');
+      }
 
-  state.upgradeEndpointAvailable = true;
-  logLab(`Loaded ${state.upgradeRows.length} trait upgrade rows.`, 'success');
-  return;
-}
+      state.upgradeEndpointAvailable = true;
+      logLab(`Loaded ${state.upgradeRows.length} trait upgrade rows.`, 'success');
+      return;
+    }
 
     state.upgradeEndpointAvailable = false;
     state.upgradeRows = [];
@@ -1356,232 +1413,98 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
   }
 }
 
-    async function loadTraitUpgrades(){
-  if(!state.userId) return;
+async function loadStableApis() {
+  await Promise.allSettled([
+    loadProfileData(),
+    loadDetailsData(),
+    loadEnhancedProfile(),
+    loadMissions(),
+    loadAllTimeStats(),
+    loadPuzzles(),
+    loadStakingStats(),
+    loadStakingActivity(),
+    loadVerifiedNftScan(),
+    loadTraitUpgrades()
+  ]);
+}
 
-  try{
-    const res = await fetchJson(
-      `${getApiUrl(LAB_CONFIG.upgradesEndpoint)}?user_id=${encodeURIComponent(state.userId)}`,
-      {
-        method:'GET',
-        credentials:'include',
-        headers:{'Accept':'application/json'}
-      },
-      true
-    );
+function renderAll() {
+  renderSessionNotice();
+  ensureSelectedNft();
+  renderOverviewCards();
+  renderIdentitySummary();
+  renderEconomySummary();
+  renderGameSummary();
+  renderQueueSummary();
+  renderNftGrid();
+  renderSelectedNftPanel();
+  renderTraitGrid();
+}
 
-    if(res.ok && res.payload?.success){
-      state.upgradeRows = res.payload.data || [];
-      state.upgradeEndpointAvailable = true;
-      logLab(`Loaded ${state.upgradeRows.length} trait upgrade rows.`,'success');
+function liveRefreshRender() {
+  if (!state.selectedNft) return;
+  renderOverviewCards();
+  renderQueueSummary();
+  renderNftGrid();
+  renderSelectedNftPanel();
+  renderTraitGrid();
+}
+
+async function loadLab() {
+  if (state.loading) return;
+  state.loading = true;
+  try {
+    logLab('Booting lab runtime…', 'info');
+    state.userId = getStoredUserId();
+    state.username = getStoredUsername();
+    renderSessionNotice();
+
+    if (!state.userId) {
+      renderAll();
+      logLab('No Discord session detected. Rendered shell in safe mode.', 'warn');
       return;
     }
 
-    logLab('Upgrade endpoint reachable but returned no rows.','warn');
+    localStorage.setItem('discord_id', state.userId);
+    if (state.username) {
+      localStorage.setItem('discord_name', state.username);
+      localStorage.setItem('narrrfs_last_discord_name', state.username);
+    }
 
-  }catch(error){
-    logLab(`Upgrade endpoint not available yet: ${error.message}`,'warn');
+    const aggregateLoaded = await tryAggregateLab();
+    if (!aggregateLoaded) {
+      await loadStableApis();
+    }
+
+    await loadTraitUpgrades();
+    renderAll();
+    logLab('Lab runtime ready.', 'success');
+  } catch (error) {
+    logLab(`Lab boot failed: ${error.message}`, 'error');
+    alert(`Lab failed to load: ${error.message}`);
+  } finally {
+    state.loading = false;
   }
 }
 
-    async function loadUpgradeRows() {
-      if (!state.userId) return;
-      try {
-        const res = await fetchJson(getApiUrl(LAB_CONFIG.upgradesEndpoint), {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ user_id: state.userId, token_id: state.selectedNftTokenId || undefined })
-        }, true);
+el.refreshLabButton.addEventListener('click', async () => {
+  logLab('Manual full lab refresh triggered.', 'info');
+  await loadLab();
+});
 
-        if (res.ok && res.payload?.success) {
-          state.upgradeRows = Array.isArray(res.payload?.data?.upgrades) ? res.payload.data.upgrades : Array.isArray(res.payload?.data) ? res.payload.data : Array.isArray(res.payload?.upgrades) ? res.payload.upgrades : [];
-          state.upgradeEndpointAvailable = true;
-          logLab(`Loaded ${state.upgradeRows.length} upgrade row(s).`, 'success');
-          return;
-        }
+el.refreshUpgradeButton.addEventListener('click', async () => {
+  logLab('Manual upgrade refresh triggered.', 'info');
+  await loadTraitUpgrades();
+  renderAll();
+});
 
-        state.upgradeEndpointAvailable = false;
-        state.upgradeRows = [];
-        logLab('Upgrade endpoint not available. Using frontend fallback rows for visual rendering.', 'warn');
-      } catch (error) {
-        state.upgradeEndpointAvailable = false;
-        state.upgradeRows = [];
-        logLab(`Upgrade state load failed: ${error.message}`, 'warn');
-      }
-    }
-
-    async function handleStartUpgrade(tokenId, traitType, traitValue) {
-      if (!state.upgradeEndpointAvailable) {
-        logLab(`Start upgrade blocked in frontend-only mode for ${traitType}: ${traitValue}.`, 'warn');
-        alert('The start-upgrade endpoint is not deployed yet. This page is ready for the flow, but backend persistence still needs to be connected.');
-        return;
-      }
-      try {
-        const res = await fetchJson(getApiUrl(LAB_CONFIG.startUpgradeEndpoint), {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ user_id: state.userId, token_id: tokenId, collection: LAB_CONFIG.genesisCollection, trait_type: traitType, trait_value: traitValue })
-        });
-        if (!res.ok || !res.payload?.success) throw new Error(res.payload?.error || `HTTP ${res.status}`);
-        logLab(`Started upgrade for ${traitType}: ${traitValue}.`, 'success');
-        await loadUpgradeRows();
-        renderAll();
-      } catch (error) {
-        logLab(`Failed to start upgrade for ${traitType}: ${traitValue} — ${error.message}`, 'error');
-        alert(`Failed to start upgrade: ${error.message}`);
-      }
-    }
-
-    async function handleClaimUpgrade(tokenId, traitType, traitValue) {
-      if (!state.upgradeEndpointAvailable) {
-        logLab(`Claim blocked in frontend-only mode for ${traitType}: ${traitValue}.`, 'warn');
-        alert('The claim-upgrade endpoint is not deployed yet. Manual claim behavior is prepared in the UI and awaits backend activation.');
-        return;
-      }
-      try {
-        const res = await fetchJson(getApiUrl(LAB_CONFIG.claimUpgradeEndpoint), {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ user_id: state.userId, token_id: tokenId, collection: LAB_CONFIG.genesisCollection, trait_type: traitType, trait_value: traitValue })
-        });
-        if (!res.ok || !res.payload?.success) throw new Error(res.payload?.error || `HTTP ${res.status}`);
-        logLab(`Claimed upgrade for ${traitType}: ${traitValue}.`, 'success');
-        await loadUpgradeRows();
-        renderAll();
-      } catch (error) {
-        logLab(`Failed to claim upgrade for ${traitType}: ${traitValue} — ${error.message}`, 'error');
-        alert(`Failed to claim upgrade: ${error.message}`);
-      }
-    }
-
-    async function handleInstantFinish(tokenId, traitType, traitValue) {
-      const nft = state.selectedNft;
-      const row = nft ? getTraitUpgradeDisplayRow(nft, { trait_type: traitType, value: traitValue }) : null;
-      const currentLevel = safeNumber(row?.current_level, 1);
-      const remainingMs = row?.upgrade_ends_at ? Math.max(0, new Date(row.upgrade_ends_at).getTime() - Date.now()) : 0;
-      const preview = calculateInstantFinishCost(currentLevel, remainingMs);
-
-      if (!state.upgradeEndpointAvailable) {
-        logLab(`Instant finish blocked in frontend-only mode for ${traitType}: ${traitValue}.`, 'warn');
-        alert(`Instant finish backend is not deployed yet. Preview cost for this action is ${formatNumber(preview)} DSPOINC.`);
-        return;
-      }
-
-      if (!confirm(`Instantly finish ${traitType}: ${traitValue} for approximately ${formatNumber(preview)} DSPOINC?\n\nThe backend remains source of truth for the final cost and balance check.`)) {
-        return;
-      }
-
-      try {
-        const res = await fetchJson(getApiUrl(LAB_CONFIG.instantFinishEndpoint), {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ user_id: state.userId, token_id: tokenId, collection: LAB_CONFIG.genesisCollection, trait_type: traitType, trait_value: traitValue })
-        });
-        if (!res.ok || !res.payload?.success) throw new Error(res.payload?.error || `HTTP ${res.status}`);
-        logLab(`Instant finish completed for ${traitType}: ${traitValue}.`, 'success');
-        await Promise.all([loadUpgradeRows(), loadStakingStats()]);
-        renderAll();
-      } catch (error) {
-        logLab(`Instant finish failed for ${traitType}: ${traitValue} — ${error.message}`, 'error');
-        alert(`Instant finish failed: ${error.message}`);
-      }
-    }
-
-    async function loadStableApis() {
-await Promise.allSettled([
-  loadProfileData(),
-  loadDetailsData(),
-  loadEnhancedProfile(),
-  loadMissions(),
-  loadAllTimeStats(),
-  loadPuzzles(),
-  loadStakingStats(),
-  loadStakingActivity(),
-  loadVerifiedNftScan(),
-  loadTraitUpgrades()
-]);
-    }
-
-    function renderAll() {
-      renderSessionNotice();
-      ensureSelectedNft();
-      renderOverviewCards();
-      renderIdentitySummary();
-      renderEconomySummary();
-      renderGameSummary();
-      renderQueueSummary();
-      renderNftGrid();
-      renderSelectedNftPanel();
-      renderTraitGrid();
-    }
-
-    function liveRefreshRender() {
-      if (!state.selectedNft) return;
-      renderOverviewCards();
-      renderQueueSummary();
-      renderNftGrid();
-      renderSelectedNftPanel();
-      renderTraitGrid();
-    }
-
-    async function loadLab() {
-      if (state.loading) return;
-      state.loading = true;
-      try {
-        logLab('Booting lab runtime…', 'info');
-        state.userId = getStoredUserId();
-        state.username = getStoredUsername();
-        renderSessionNotice();
-
-        if (!state.userId) {
-          renderAll();
-          logLab('No Discord session detected. Rendered shell in safe mode.', 'warn');
-          return;
-        }
-
-        localStorage.setItem('discord_id', state.userId);
-        if (state.username) {
-          localStorage.setItem('discord_name', state.username);
-          localStorage.setItem('narrrfs_last_discord_name', state.username);
-        }
-
-        const aggregateLoaded = await tryAggregateLab();
-        if (!aggregateLoaded) {
-          await loadStableApis();
-        }
-        await loadUpgradeRows();
-        renderAll();
-        logLab('Lab runtime ready.', 'success');
-      } catch (error) {
-        logLab(`Lab boot failed: ${error.message}`, 'error');
-        alert(`Lab failed to load: ${error.message}`);
-      } finally {
-        state.loading = false;
-      }
-    }
-
-    el.refreshLabButton.addEventListener('click', async () => {
-      logLab('Manual full lab refresh triggered.', 'info');
-      await loadLab();
-    });
-
-    el.refreshUpgradeButton.addEventListener('click', async () => {
-      logLab('Manual upgrade refresh triggered.', 'info');
-      await loadUpgradeRows();
-      renderAll();
-    });
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      logLab('Narrrf’s Lab frontend artifact mounted.', 'success');
-      logLab('This page prefers stable read APIs and only activates live upgrade actions when dedicated endpoints are detected.', 'info');
-      await loadLab();
-      if (state.refreshTimer) clearInterval(state.refreshTimer);
-      state.refreshTimer = setInterval(liveRefreshRender, LAB_CONFIG.tickMs);
-    });
+document.addEventListener('DOMContentLoaded', async () => {
+  logLab('Narrrf’s Lab frontend artifact mounted.', 'success');
+  logLab('This page prefers stable read APIs and only activates live upgrade actions when dedicated endpoints are detected.', 'info');
+  await loadLab();
+  if (state.refreshTimer) clearInterval(state.refreshTimer);
+  state.refreshTimer = setInterval(liveRefreshRender, LAB_CONFIG.tickMs);
+});
   </script>
 </body>
 </html>
