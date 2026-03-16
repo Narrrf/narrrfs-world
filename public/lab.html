@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🧬 Narrrf's Lab | Genesis Trait Upgrade Chamber</title>
+  <meta name="theme-color" content="#06b6d4" />
+  <meta name="description" content="Narrrf's Lab - player identity, verified Genesis NFT management, and trait upgrade research." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon-phantom.png" type="image/png" />
+
+  <script>
+    window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
+    window.sessionDiscordUsername = "<?= htmlspecialchars($discordUsername) ?>";
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="discord-config.js"></script>
+
+  <style>
+    :root {
+      --bg-1: #020617;
+      --bg-2: #0f172a;
+      --bg-3: #111827;
+      --cyan: #22d3ee;
+      --blue: #3b82f6;
+      --violet: #8b5cf6;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --border: rgba(148,163,184,0.18);
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: white;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(59, 130, 246, 0.10), transparent 32%),
+        radial-gradient(circle at 50% 100%, rgba(139, 92, 246, 0.12), transparent 30%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2) 45%, #172554 100%);
+      overflow-x: hidden;
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.25;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(circle at center, black 40%, transparent 95%);
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(48px);
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+      animation: floatOrb 12s ease-in-out infinite;
+    }
+    .orb.one { width: 15rem; height: 15rem; background: rgba(34,211,238,.45); top: 8%; left: -4rem; }
+    .orb.two { width: 19rem; height: 19rem; background: rgba(59,130,246,.35); top: 48%; right: -5rem; animation-delay: -3s; }
+    .orb.three { width: 17rem; height: 17rem; background: rgba(139,92,246,.28); bottom: -2rem; left: 32%; animation-delay: -6s; }
+
+    @keyframes floatOrb {
+      0%,100% { transform: translateY(0) translateX(0) scale(1); }
+      50% { transform: translateY(-22px) translateX(8px) scale(1.04); }
+    }
+
+    @keyframes glowPulse {
+      0%,100% { box-shadow: 0 0 0 rgba(34,211,238,0), 0 0 0 rgba(59,130,246,0); }
+      50% { box-shadow: 0 0 22px rgba(34,211,238,0.14), 0 0 48px rgba(59,130,246,0.12); }
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1560px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 16px 0 64px;
+    }
+
+    .glass {
+      background: linear-gradient(180deg, rgba(15,23,42,0.88), rgba(15,23,42,0.72));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 28%);
+    }
+
+    .card {
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.035));
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34,211,238,0.35);
+      box-shadow: 0 12px 30px rgba(2,132,199,0.12);
+    }
+
+    .card.selected {
+      border-color: rgba(34,211,238,0.55);
+      box-shadow: 0 0 0 1px rgba(34,211,238,0.15), 0 18px 40px rgba(2,132,199,0.18);
+      animation: glowPulse 3s ease-in-out infinite;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #e2e8f0;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+    .pill.idle { background: rgba(148,163,184,.12); color: #cbd5e1; border-color: rgba(148,163,184,.25); }
+    .pill.upgrading { background: rgba(34,211,238,.12); color: #67e8f9; border-color: rgba(34,211,238,.24); }
+    .pill.ready { background: rgba(16,185,129,.12); color: #6ee7b7; border-color: rgba(16,185,129,.24); }
+    .pill.blocked { background: rgba(239,68,68,.12); color: #fca5a5; border-color: rgba(239,68,68,.24); }
+
+    .btn {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-weight: 700;
+      font-size: .92rem;
+      transition: all .22s ease;
+      cursor: pointer;
+      color: white;
+      background: rgba(255,255,255,0.06);
+      text-decoration: none;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(34,211,238,0.35); }
+    .btn:disabled { opacity: .42; cursor: not-allowed; }
+    .btn.primary { background: linear-gradient(135deg, rgba(14,165,233,0.86), rgba(37,99,235,0.86)); }
+    .btn.success { background: linear-gradient(135deg, rgba(16,185,129,0.82), rgba(5,150,105,0.82)); }
+    .btn.warn { background: linear-gradient(135deg, rgba(245,158,11,0.82), rgba(217,119,6,0.82)); }
+
+    .kv {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      padding: 14px;
+    }
+
+    .console {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: .83rem;
+      line-height: 1.5;
+      color: #dbeafe;
+      background: rgba(2,6,23,0.72);
+      border: 1px solid rgba(34,211,238,0.12);
+      border-radius: 18px;
+      padding: 16px;
+      min-height: 180px;
+      max-height: 320px;
+      overflow: auto;
+    }
+
+    .info, .warnbox, .okbox {
+      border-radius: 18px;
+      padding: 16px 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .info { background: rgba(59,130,246,0.10); border-color: rgba(59,130,246,0.18); }
+    .warnbox { background: rgba(245,158,11,0.10); border-color: rgba(245,158,11,0.18); }
+    .okbox { background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.18); }
+
+    .nft-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(15,23,42,.9), rgba(30,41,59,.8));
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .empty-art {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.14);
+      background: linear-gradient(135deg, rgba(15,23,42,.88), rgba(30,41,59,.72));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: rgba(255,255,255,0.26);
+    }
+
+    .progress-shell {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.8);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(34,211,238,0.95), rgba(59,130,246,0.95), rgba(139,92,246,0.95));
+      transition: width .4s ease;
+    }
+    .progress-bar.ready {
+      background: linear-gradient(90deg, rgba(16,185,129,0.95), rgba(34,197,94,0.95));
+    }
+
+    .sticky-panel { position: sticky; top: 16px; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+
+    .nav-link { color: #cbd5e1; text-decoration: none; font-weight: 600; }
+    .nav-link:hover { color: white; }
+
+    @media (max-width: 1180px) {
+      .sticky-panel { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+  <div class="orb three"></div>
+
+  <div class="shell">
+    <header class="glass px-5 py-4 md:px-7 md:py-5 mb-5">
+      <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="chip">🧬 Genesis Trait Research</span>
+            <span class="chip">🧊 Identity + Progression</span>
+            <span class="chip">⚙️ Season 9 Lab Page</span>
+          </div>
+          <div>
+            <h1 class="text-3xl md:text-5xl font-black tracking-tight">Narrrf’s Lab</h1>
+            <p class="mt-2 max-w-4xl text-sm md:text-base text-slate-300">A player-facing laboratory built for verified Genesis NFT identity, trait progression, and future game power systems. This version is intentionally stable first: it works as a full profile lab now and degrades safely until the dedicated upgrade APIs are deployed.</p>
+          </div>
+        </div>
+        <nav class="flex flex-wrap items-center gap-4 text-sm">
+          <a class="nav-link" href="index.html">Home</a>
+          <a class="nav-link" href="profile.html">Profile</a>
+          <a class="nav-link" href="stake-lab.html">Stake Lab</a>
+          <a class="nav-link" href="admin-interface.html">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-5">
+      <section class="flex flex-col gap-5">
+        <div class="glass p-5 md:p-6">
+          <div class="flex flex-col gap-6">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+              <div>
+                <div class="section-title text-xl md:text-2xl"><span>🧠</span><span>Player Command Console</span></div>
+                <p class="mt-2 text-sm md:text-base text-slate-300 max-w-3xl">Identity, DSPOINC, staking, missions, all-time stats, verified Genesis access, and lab-power overview. The page remains useful even when the player owns no verified Genesis NFT.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button id="refreshLabButton" class="btn primary">🔄 Refresh Lab Data</button>
+                <button id="refreshUpgradeButton" class="btn">🧪 Refresh Upgrade State</button>
+              </div>
+            </div>
+
+            <div id="sessionNotice" class="info text-sm">Resolving player session...</div>
+            <div id="overviewStatsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-cyan-300 font-bold">Player Identity</div><div id="identitySummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
+              <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-emerald-300 font-bold">Economy Snapshot</div><div id="economySummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
+              <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-violet-300 font-bold">Game Identity</div><div id="gameSummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="card p-4"><div class="section-title text-lg"><span>📚</span><span>Lab Queue Overview</span></div><div id="queueSummary" class="mt-4 text-sm text-slate-200 space-y-3"></div></div>
+              <div class="card p-4"><div class="section-title text-lg"><span>📈</span><span>Long-Term Integration Notes</span></div><div class="mt-4 text-sm text-slate-300 space-y-3"><p>• Upgrade ownership is designed to follow the verified Genesis NFT token, not only the current player.</p><p>• Future games can read stored trait levels per token and derive multipliers, weapon tiers, or gameplay bonuses from that fixed NFT progression.</p><p>• Verified scan data should stay immutable. Upgrades belong in a dedicated progression table.</p></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div class="section-title text-xl md:text-2xl"><span>🧬</span><span>Verified Genesis Specimen Grid</span></div>
+              <p class="mt-2 text-sm md:text-base text-slate-300">Genesis NFTs are loaded from the saved verified SQL scan. Players without a verified Genesis NFT still keep full profile access, but trait upgrading remains locked until verification.</p>
+            </div>
+            <div class="text-sm text-slate-300"><span id="nftCountBadge" class="chip">Loading specimens…</span></div>
+          </div>
+          <div id="verificationWarning" class="warnbox text-sm mt-4 hidden"></div>
+          <div id="nftGrid" class="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 mt-5"></div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div class="section-title text-xl md:text-2xl"><span>⚙️</span><span>Trait Research Chamber</span></div>
+              <p class="mt-2 text-sm md:text-base text-slate-300">Upgrade the exact scanned trait values on the selected Genesis NFT. This UI already enforces the design rules visually: Genesis only, one active upgrade per NFT, manual claim after timer finish, and DSPOINC instant-finish pricing preview.</p>
+            </div>
+            <div class="text-sm text-slate-300"><span id="upgradeModeBadge" class="chip">Upgrade system warming up…</span></div>
+          </div>
+          <div id="traitUpgradeInfo" class="info text-sm mt-4"></div>
+          <div id="traitGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-5"></div>
+        </div>
+      </section>
+
+      <aside class="flex flex-col gap-5 sticky-panel">
+        <div class="glass p-5 md:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="section-title text-xl md:text-2xl"><span>🧪</span><span>Selected Specimen Chamber</span></div>
+              <p class="mt-2 text-sm text-slate-300">The highlighted NFT acts as the current lab focus. Visual switching is local-only for now and can later be promoted into a global gameplay preference once the ecosystem is ready.</p>
+            </div>
+            <span id="selectedNftStatus" class="pill idle">No specimen selected</span>
+          </div>
+          <div id="selectedNftPanel" class="mt-5"></div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl"><span>🛰️</span><span>Lab Runtime Log</span></div>
+          <div id="labConsole" class="console mt-4"></div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl"><span>📜</span><span>Backend Contract Notes</span></div>
+          <div class="mt-4 text-sm text-slate-300 space-y-3">
+            <p><strong class="text-cyan-300">Recommended endpoints:</strong> <code>/api/user/get-player-lab.php</code>, <code>/api/user/get-verified-nft-scan.php</code>, <code>/api/user/get-nft-trait-upgrades.php</code>, <code>/api/user/start-nft-trait-upgrade.php</code>, <code>/api/user/complete-nft-trait-upgrade.php</code>, <code>/api/user/instant-finish-nft-trait-upgrade.php</code>.</p>
+            <p><strong class="text-cyan-300">Recommended key:</strong> <code>token_id + collection + trait_type + trait_value</code>.</p>
+            <p><strong class="text-cyan-300">Audit principle:</strong> verified NFT scans remain immutable identity records; upgrade state lives in a dedicated progression table for ownership-transfer safety.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const LAB_CONFIG = {
+      apiBaseUrl: (window.location.hostname === 'narrrfs.world' || window.location.hostname === 'narrrfs-world.onrender.com') ? 'https://narrrfs.world' : '',
+      playerProfileEndpoint: '/api/user/profile.php',
+      detailsEndpoint: '/api/user/details.php',
+      enhancedProfileEndpoint: '/api/user/enhanced-profile.php',
+      missionsEndpoint: '/api/user/user-game-missions.php',
+      allTimeStatsEndpoint: '/api/user/all-time-stats.php',
+      puzzlesEndpoint: '/api/user/get-3d-puzzles-achievements.php',
+      stakingStatsEndpoint: '/api/user/get-staking-stats.php',
+      stakesEndpoint: '/api/user/get-stakes.php',
+      verifiedNftEndpoint: '/api/user/get-verified-nft-scan.php',
+      aggregateLabEndpoint: '/api/user/get-player-lab.php',
+      upgradesEndpoint: '/api/user/get-nft-trait-upgrades.php',
+      startUpgradeEndpoint: '/api/user/start-nft-trait-upgrade.php',
+      claimUpgradeEndpoint: '/api/user/complete-nft-trait-upgrade.php',
+      instantFinishEndpoint: '/api/user/instant-finish-nft-trait-upgrade.php',
+      genesisCollection: 'genesis',
+      upgradeableTraitOrder: ['Theme', 'Sub-Trait', 'Outfit', 'Accessories', 'Expression', 'Background', 'Special'],
+      levelOneDurationHours: 24,
+      instantFinishBaseCost: 10000,
+      selectedTokenStorageKey: 'narrrfs_lab_selected_nft_token_id',
+      tickMs: 1000,
+      localTestUserId: '328601656659017732'
+    };
+
+    const state = {
+      userId: '',
+      username: '',
+      profile: null,
+      enhancedProfile: null,
+      missions: null,
+      allTimeStats: null,
+      puzzleAchievements: null,
+      stakingStats: null,
+      stakingActivity: null,
+      verifiedNfts: [],
+      selectedNft: null,
+      selectedNftTokenId: '',
+      upgradeRows: [],
+      upgradeEndpointAvailable: false,
+      aggregateLabEndpointAvailable: false,
+      refreshTimer: null,
+      loading: false
+    };
+
+    const el = {
+      sessionNotice: document.getElementById('sessionNotice'),
+      overviewStatsGrid: document.getElementById('overviewStatsGrid'),
+      identitySummary: document.getElementById('identitySummary'),
+      economySummary: document.getElementById('economySummary'),
+      gameSummary: document.getElementById('gameSummary'),
+      queueSummary: document.getElementById('queueSummary'),
+      nftGrid: document.getElementById('nftGrid'),
+      nftCountBadge: document.getElementById('nftCountBadge'),
+      verificationWarning: document.getElementById('verificationWarning'),
+      selectedNftPanel: document.getElementById('selectedNftPanel'),
+      selectedNftStatus: document.getElementById('selectedNftStatus'),
+      traitGrid: document.getElementById('traitGrid'),
+      traitUpgradeInfo: document.getElementById('traitUpgradeInfo'),
+      upgradeModeBadge: document.getElementById('upgradeModeBadge'),
+      labConsole: document.getElementById('labConsole'),
+      refreshLabButton: document.getElementById('refreshLabButton'),
+      refreshUpgradeButton: document.getElementById('refreshUpgradeButton')
+    };
+
+    function logLab(message, level = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const colors = {
+        info: 'text-slate-200',
+        success: 'text-emerald-300',
+        warn: 'text-amber-300',
+        error: 'text-red-300'
+      };
+      const line = document.createElement('div');
+      line.className = colors[level] || colors.info;
+      line.textContent = `[${timestamp}] ${message}`;
+      el.labConsole.prepend(line);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function safeNumber(value, fallback = 0) {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : fallback;
+    }
+
+    function formatNumber(value) {
+      return safeNumber(value).toLocaleString();
+    }
+
+    function formatCompactNumber(value) {
+      return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(safeNumber(value));
+    }
+
+    function formatDateTime(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? escapeHtml(value) : date.toLocaleString();
+    }
+
+    function formatDurationFromHours(hours) {
+      const h = Math.max(0, safeNumber(hours));
+      if (h < 24) return `${formatNumber(h)}h`;
+      const d = h / 24;
+      if (d < 7) return `${Number.isInteger(d) ? formatNumber(d) : d.toFixed(1)}d`;
+      const w = d / 7;
+      if (w < 52) return `${Number.isInteger(w) ? formatNumber(w) : w.toFixed(1)}w`;
+      const y = d / 365;
+      return `${y.toFixed(1)}y`;
+    }
+
+    function formatRemainingMs(ms) {
+      const s = Math.floor(Math.max(0, safeNumber(ms)) / 1000);
+      const d = Math.floor(s / 86400);
+      const h = Math.floor((s % 86400) / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (d > 0) return `${d}d ${h}h ${m}m`;
+      if (h > 0) return `${h}h ${m}m ${sec}s`;
+      if (m > 0) return `${m}m ${sec}s`;
+      return `${sec}s`;
+    }
+
+    function normalizeTraitType(raw) {
+      const t = String(raw || '').trim();
+      if (!t) return '';
+      const lower = t.toLowerCase();
+      if (['sub trait', 'sub-trait', 'subtrait'].includes(lower)) return 'Sub-Trait';
+      if (['special trait', 'special'].includes(lower)) return 'Special';
+      return t
+        .split(' ')
+        .map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : part)
+        .join(' ')
+        .replace('Sub-trait', 'Sub-Trait');
+    }
+
+    function getApiUrl(path) {
+      return `${LAB_CONFIG.apiBaseUrl}${path}`;
+    }
+
+    function getStoredUserId() {
+      const candidates = [
+        window.sessionDiscordId,
+        localStorage.getItem('discord_id'),
+        localStorage.getItem('narrrfs_last_discord_id')
+      ];
+
+      const found = candidates.find(v => v && String(v).trim());
+      if (found) return found;
+
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      return isLocal ? LAB_CONFIG.localTestUserId : '';
+    }
+
+    function getStoredUsername() {
+      const candidates = [
+        window.sessionDiscordUsername,
+        localStorage.getItem('discord_username'),
+        localStorage.getItem('discord_name'),
+        localStorage.getItem('narrrfs_last_discord_name'),
+        localStorage.getItem('username')
+      ];
+      return candidates.find(v => v && String(v).trim()) || 'Unknown User';
+    }
+
+    async function fetchJson(url, options = {}, allowFailure = false) {
+      const response = await fetch(url, options);
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const rawText = await response.text();
+        if (allowFailure) {
+          return { ok: false, status: response.status, payload: null, rawText };
+        }
+        throw new Error(`Endpoint returned non-JSON (${response.status})`);
+      }
+      return { ok: response.ok, status: response.status, payload: await response.json() };
+    }
+
+    function saveSelectedTokenId(tokenId) {
+      if (!tokenId) {
+        localStorage.removeItem(LAB_CONFIG.selectedTokenStorageKey);
+        return;
+      }
+      localStorage.setItem(LAB_CONFIG.selectedTokenStorageKey, tokenId);
+    }
+
+    function getSavedSelectedTokenId() {
+      return localStorage.getItem(LAB_CONFIG.selectedTokenStorageKey) || '';
+    }
+
+    function normalizeNftTraits(nft) {
+      const rawTraits = Array.isArray(nft?.traits) ? nft.traits : (Array.isArray(nft?.attributes) ? nft.attributes : []);
+      const map = new Map();
+      rawTraits.forEach(trait => {
+        const traitType = normalizeTraitType(trait?.trait_type || trait?.type || trait?.trait || '');
+        const value = String(trait?.value ?? trait?.trait_value ?? '').trim();
+        if (!traitType || !value) return;
+        const key = `${traitType}::${value}`;
+        if (!map.has(key)) {
+          map.set(key, { trait_type: traitType, value });
+        }
+      });
+
+      return Array.from(map.values()).sort((a, b) => {
+        const ia = LAB_CONFIG.upgradeableTraitOrder.indexOf(a.trait_type);
+        const ib = LAB_CONFIG.upgradeableTraitOrder.indexOf(b.trait_type);
+        const pa = ia === -1 ? 999 : ia;
+        const pb = ib === -1 ? 999 : ib;
+        return pa !== pb ? pa - pb : (a.trait_type.localeCompare(b.trait_type) || a.value.localeCompare(b.value));
+      });
+    }
+
+    function getVerifiedGenesisNfts() {
+      return (Array.isArray(state.verifiedNfts) ? state.verifiedNfts : []).filter(nft => String(nft.collection || '').toLowerCase() === LAB_CONFIG.genesisCollection);
+    }
+
+    function findUpgradeRow(tokenId, traitType, traitValue, upgradeRows = state.upgradeRows) {
+      return (Array.isArray(upgradeRows) ? upgradeRows : []).find(row =>
+        String(row?.token_id || '') === String(tokenId || '') &&
+        normalizeTraitType(row?.trait_type || '') === normalizeTraitType(traitType || '') &&
+        String(row?.trait_value || row?.value || '') === String(traitValue || '')
+      ) || null;
+    }
+
+    function buildFallbackUpgradeRow(nft, trait) {
+      return {
+        token_id: nft.token_id,
+        collection: nft.collection,
+        trait_type: trait.trait_type,
+        trait_value: trait.value,
+        current_level: 1,
+        upgrade_status: 'idle',
+        upgrade_started_at: null,
+        upgrade_ends_at: null,
+        last_completed_at: null,
+        source: 'frontend-fallback'
+      };
+    }
+
+    function getTraitUpgradeDisplayRow(nft, trait) {
+      return findUpgradeRow(nft.token_id, trait.trait_type, trait.value) || buildFallbackUpgradeRow(nft, trait);
+    }
+
+    function calculateUpgradeDurationHours(currentLevel) {
+      return LAB_CONFIG.levelOneDurationHours * Math.pow(2, Math.max(1, safeNumber(currentLevel, 1)) - 1);
+    }
+
+    function calculateInstantFinishCost(currentLevel, remainingMs) {
+      const level = Math.max(1, safeNumber(currentLevel, 1));
+      const remainingHours = Math.max(0, safeNumber(remainingMs) / 3600000);
+      const levelMultiplier = Math.pow(2.35, Math.max(0, level - 1));
+      const timeMultiplier = Math.max(1, remainingHours / 24);
+      return Math.ceil(LAB_CONFIG.instantFinishBaseCost * levelMultiplier * timeMultiplier);
+    }
+
+    function mapUpgradeStatus(status, endsAt) {
+      const normalized = String(status || '').trim().toLowerCase();
+      const endTime = endsAt ? new Date(endsAt).getTime() : 0;
+      const now = Date.now();
+      if (normalized === 'ready_to_claim' || normalized === 'ready') return 'ready';
+      if (normalized === 'upgrading' && endTime && endTime <= now) return 'ready';
+      if (normalized === 'upgrading') return 'upgrading';
+      if (normalized === 'blocked') return 'blocked';
+      return 'idle';
+    }
+
+    function getNftUpgradeSummary(nft) {
+      const traits = normalizeNftTraits(nft);
+      const rows = traits.map(trait => findUpgradeRow(nft.token_id, trait.trait_type, trait.value)).filter(Boolean);
+      return {
+        activeCount: rows.filter(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading').length,
+        readyCount: rows.filter(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'ready').length,
+        totalLevels: traits.reduce((sum, trait) => sum + safeNumber(findUpgradeRow(nft.token_id, trait.trait_type, trait.value)?.current_level, 1), 0),
+        traitCount: traits.length
+      };
+    }
+
+    function getNftActiveUpgradeRow(nft) {
+      return normalizeNftTraits(nft)
+        .map(trait => getTraitUpgradeDisplayRow(nft, trait))
+        .find(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading') || null;
+    }
+
+    function renderSessionNotice() {
+      if (state.userId) {
+        el.sessionNotice.className = 'okbox text-sm';
+        el.sessionNotice.innerHTML = `Logged in as <strong>${escapeHtml(state.username)}</strong> · Discord ID <strong>${escapeHtml(state.userId)}</strong>. Stable read APIs are used first, and live upgrade actions activate only when dedicated upgrade endpoints are detected.`;
+      } else {
+        el.sessionNotice.className = 'warnbox text-sm';
+        el.sessionNotice.innerHTML = 'No Discord session or synced local Discord ID was detected. The lab shell can still render, but live profile identity, verified NFT data, and upgrade management require a logged-in player.';
+      }
+    }
+
+    function createStatCard(label, value, hint, accentClass) {
+      return `<div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] ${accentClass} font-bold">${escapeHtml(label)}</div><div class="mt-3 text-3xl font-black tracking-tight">${escapeHtml(value)}</div><div class="mt-2 text-sm text-slate-400">${escapeHtml(hint)}</div></div>`;
+    }
+
+    function getAggregateTraitLevels(nfts) {
+      return (Array.isArray(nfts) ? nfts : []).reduce((total, nft) => total + normalizeNftTraits(nft).reduce((sum, trait) => sum + safeNumber(findUpgradeRow(nft.token_id, trait.trait_type, trait.value)?.current_level, 1), 0), 0);
+    }
+
+    function getAllActiveUpgradeCount() {
+      return (state.upgradeRows || []).filter(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading').length;
+    }
+
+    function getAllReadyUpgradeCount() {
+      return (state.upgradeRows || []).filter(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'ready').length;
+    }
+
+    function renderOverviewCards() {
+      const verified = getVerifiedGenesisNfts();
+      const staking = state.stakingStats || {};
+      el.overviewStatsGrid.innerHTML = [
+        createStatCard('DSPOINC Total', formatCompactNumber(staking.total_balance || staking.total_available || state.profile?.dspoinc || 0), 'All known score balance tied to the current player.', 'text-cyan-300'),
+        createStatCard('Genesis NFTs', formatNumber(verified.length), 'Verified saved Genesis specimens available in the lab.', 'text-violet-300'),
+        createStatCard('Lab Power', formatNumber(getAggregateTraitLevels(verified)), 'Total trait levels across verified Genesis NFTs.', 'text-emerald-300'),
+        createStatCard('Upgrade Queue', `${formatNumber(getAllActiveUpgradeCount())} / ${formatNumber(getAllReadyUpgradeCount())}`, 'Active upgrades versus ready-to-claim completions.', 'text-amber-300')
+      ].join('');
+    }
+
+    function renderIdentitySummary() {
+      const p = state.profile || {};
+      const rows = [
+        ['User', state.username || p.username || 'Unknown User'],
+        ['Discord ID', state.userId || p.discord_id || p.user_id || 'Unavailable'],
+        ['Wallet', p.wallet_address || p.wallet || state.enhancedProfile?.wallet_address || 'No wallet linked'],
+        ['Genesis Holder Count', formatNumber(getVerifiedGenesisNfts().length)],
+        ['VIP Holder Count', formatNumber(p.vip_count || 0)]
+      ];
+      el.identitySummary.innerHTML = rows.map(([k,v]) => `<div class="flex justify-between gap-3"><span class="text-slate-400">${escapeHtml(k)}</span><span class="text-right text-white">${escapeHtml(v)}</span></div>`).join('');
+    }
+
+    function renderEconomySummary() {
+      const s = state.stakingStats || {};
+      const rows = [
+        ['Total Balance', formatNumber(s.total_balance || 0)],
+        ['Available', formatNumber(s.available_balance || s.total_available || 0)],
+        ['Frozen', formatNumber(s.frozen_balance || s.total_staked || 0)],
+        ['Active Stakes', formatNumber(s.active_stakes_count || s.active_stakes || 0)],
+        ['Ready To Claim', formatNumber(s.ready_to_claim || 0)]
+      ];
+      el.economySummary.innerHTML = rows.map(([k,v]) => `<div class="flex justify-between gap-3"><span class="text-slate-400">${escapeHtml(k)}</span><span class="text-right text-white">${escapeHtml(v)}</span></div>`).join('');
+    }
+
+    function renderGameSummary() {
+      const m = state.missions || {};
+      const a = state.allTimeStats || {};
+      const p = state.puzzleAchievements || {};
+      const rows = [
+        ['Mission Runs', formatNumber(m.total_missions || m.completed_missions || 0)],
+        ['All-Time Wins', formatNumber(a.total_wins || 0)],
+        ['Total Game Runs', formatNumber(a.total_runs || 0)],
+        ['3D Puzzle Clears', formatNumber(p.total_completed || p.completed_puzzles || 0)],
+        ['Achievements', formatNumber(p.total_achievements || a.total_achievements || 0)]
+      ];
+      el.gameSummary.innerHTML = rows.map(([k,v]) => `<div class="flex justify-between gap-3"><span class="text-slate-400">${escapeHtml(k)}</span><span class="text-right text-white">${escapeHtml(v)}</span></div>`).join('');
+    }
+
+    function getStakeCollections() {
+      const activity = state.stakingActivity || {};
+      return {
+        active: Array.isArray(activity.active_stakes) ? activity.active_stakes : [],
+        completed: Array.isArray(activity.completed_stakes) ? activity.completed_stakes : [],
+        cancelled: Array.isArray(activity.cancelled_stakes) ? activity.cancelled_stakes : [],
+        claimable: Array.isArray(activity.claimable_rewards) ? activity.claimable_rewards : []
+      };
+    }
+
+    function renderQueueSummary() {
+      const verified = getVerifiedGenesisNfts();
+      const stakeCollections = getStakeCollections();
+      const totalCompletedRewards = stakeCollections.completed.reduce((sum, stake) => sum + safeNumber(stake.reward_paid), 0);
+      const blocks = [
+        ['Verified Genesis Specimens', formatNumber(verified.length), 'Genesis NFTs loaded from saved verification data.'],
+        ['Active Trait Upgrades', formatNumber(getAllActiveUpgradeCount()), 'One active upgrade per NFT by design.'],
+        ['Ready To Claim', formatNumber(getAllReadyUpgradeCount()), 'Finished upgrades waiting for manual claim.'],
+        ['Completed Stake Rewards', formatNumber(totalCompletedRewards), 'Read-only staking income context for identity.'],
+        ['Loaded Upgrade Rows', formatNumber((state.upgradeRows || []).length), 'Rows returned from upgrade endpoint or local fallback layer.']
+      ];
+      el.queueSummary.innerHTML = blocks.map(([l,v,h]) => `<div class="kv"><div class="flex items-baseline justify-between gap-3"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">${escapeHtml(l)}</div><div class="text-xl font-black">${escapeHtml(v)}</div></div><div class="mt-2 text-sm text-slate-300">${escapeHtml(h)}</div></div>`).join('');
+    }
+
+    function renderVerificationWarning(html, visible) {
+      el.verificationWarning.classList.toggle('hidden', !visible);
+      el.verificationWarning.innerHTML = html || '';
+    }
+
+    function ensureSelectedNft() {
+      const verified = getVerifiedGenesisNfts();
+      if (!verified.length) {
+        state.selectedNft = null;
+        state.selectedNftTokenId = '';
+        saveSelectedTokenId('');
+        return;
+      }
+
+      const saved = state.selectedNftTokenId || getSavedSelectedTokenId();
+      const selected = verified.find(nft => String(nft.token_id) === String(saved)) || verified[0];
+      state.selectedNft = selected;
+      state.selectedNftTokenId = String(selected.token_id);
+      saveSelectedTokenId(state.selectedNftTokenId);
+    }
+
+    function selectNftByTokenId(tokenId) {
+      const nft = getVerifiedGenesisNfts().find(item => String(item.token_id) === String(tokenId));
+      if (!nft) {
+        logLab(`Could not select specimen ${tokenId}; it is not present in the verified Genesis set.`, 'warn');
+        return;
+      }
+      state.selectedNft = nft;
+      state.selectedNftTokenId = String(tokenId);
+      saveSelectedTokenId(state.selectedNftTokenId);
+      renderNftGrid();
+      renderSelectedNftPanel();
+      renderTraitGrid();
+      logLab(`Selected Genesis specimen ${nft.nft_name || nft.token_id}.`, 'info');
+    }
+
+    function renderNftGrid() {
+      const verified = getVerifiedGenesisNfts();
+      el.nftCountBadge.textContent = `${verified.length} Genesis specimen${verified.length === 1 ? '' : 's'} loaded`;
+
+      if (!verified.length) {
+        renderVerificationWarning(`<div class="space-y-2"><div class="font-semibold text-amber-200">Genesis verification is required for trait upgrading.</div><div class="text-amber-100">No verified Genesis NFT was found in the saved SQL scan for this player. The page still shows player identity and stats, but the upgrade chamber stays locked.</div><div class="text-amber-100">Please verify a Genesis NFT through <strong>stake-lab.html</strong> or <strong>profile.html</strong> to unlock the lab.</div></div>`, true);
+        el.nftGrid.innerHTML = `<div class="card p-5 sm:col-span-2 2xl:col-span-3"><div class="empty-art">🧬</div><div class="mt-4 text-xl font-bold">No verified Genesis specimen found</div><div class="mt-2 text-sm text-slate-300">This player can still view their economy, missions, and profile identity here. Genesis upgrade functionality becomes available after a saved verification scan exists.</div><div class="mt-4 flex flex-wrap gap-3"><a class="btn primary inline-flex items-center justify-center" href="stake-lab.html">Go to Stake Lab</a><a class="btn inline-flex items-center justify-center" href="profile.html">Open Profile</a></div></div>`;
+        return;
+      }
+
+      renderVerificationWarning('', false);
+
+      el.nftGrid.innerHTML = verified.map(nft => {
+        const summary = getNftUpgradeSummary(nft);
+        const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
+        const traits = normalizeNftTraits(nft);
+        return `
+          <button class="card ${selected ? 'selected' : ''} text-left p-4" data-select-nft="${escapeHtml(nft.token_id)}">
+            ${nft.image_url ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>` : `<div class="empty-art">🐭</div>`}
+            <div class="mt-4 flex items-start justify-between gap-3">
+              <div>
+                <div class="text-lg font-bold leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
+                <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token')}</div>
+              </div>
+              <span class="pill ${selected ? 'upgrading' : 'idle'}">${selected ? 'Selected' : 'Available'}</span>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Traits</div><div class="mt-1 text-lg font-bold">${formatNumber(traits.length)}</div></div>
+              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div><div class="mt-1 text-lg font-bold">${formatNumber(summary.totalLevels)}</div></div>
+              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active</div><div class="mt-1 text-lg font-bold">${formatNumber(summary.activeCount)}</div></div>
+              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready</div><div class="mt-1 text-lg font-bold">${formatNumber(summary.readyCount)}</div></div>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      document.querySelectorAll('[data-select-nft]').forEach(button => {
+        button.addEventListener('click', () => selectNftByTokenId(button.getAttribute('data-select-nft') || ''));
+      });
+    }
+
+    function renderSelectedNftPanel() {
+      const nft = state.selectedNft;
+      if (!nft) {
+        el.selectedNftStatus.className = 'pill blocked';
+        el.selectedNftStatus.textContent = 'No Genesis specimen loaded';
+        el.selectedNftPanel.innerHTML = `<div class="warnbox"><div class="font-semibold text-amber-200">Genesis upgrade chamber is locked</div><div class="mt-2 text-sm text-amber-100">A verified Genesis NFT must exist in the saved SQL scan before trait upgrades can be rendered or managed on this page.</div></div>`;
+        return;
+      }
+
+      const traits = normalizeNftTraits(nft);
+      const summary = getNftUpgradeSummary(nft);
+      const active = summary.activeCount > 0;
+      const ready = summary.readyCount > 0;
+      el.selectedNftStatus.className = `pill ${ready ? 'ready' : active ? 'upgrading' : 'idle'}`;
+      el.selectedNftStatus.textContent = ready ? 'Claim available' : active ? 'Research active' : 'Ready for upgrade';
+
+      el.selectedNftPanel.innerHTML = `
+        <div class="space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-[0.95fr_1.05fr] gap-5">
+            <div>
+              ${nft.image_url ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>` : `<div class="empty-art">🐭</div>`}
+            </div>
+            <div class="space-y-4">
+              <div>
+                <div class="text-xs uppercase tracking-[0.2em] text-cyan-300 font-bold">Genesis Specimen</div>
+                <div class="mt-2 text-3xl font-black leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
+                <div class="mt-2 text-sm text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token id')}</div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Trait Slots</div><div class="mt-1 text-2xl font-black">${formatNumber(traits.length)}</div></div>
+                <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.totalLevels)}</div></div>
+                <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active Upgrades</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.activeCount)}</div></div>
+                <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready To Claim</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.readyCount)}</div></div>
+              </div>
+              <div class="info text-sm">Upgrade ownership is intended to follow this NFT token. If the NFT changes owner and the new player verifies it later, the stored upgrade state should be recoverable through the upgrade table keyed to this token and its exact trait values.</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-title text-lg"><span>🧾</span><span>Trait Snapshot</span></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+              ${traits.map(trait => `<div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">${escapeHtml(trait.trait_type)}</div><div class="mt-1 text-sm text-white">${escapeHtml(trait.value)}</div></div>`).join('') || `<div class="warnbox text-sm sm:col-span-2">No trait data was found on this verified NFT snapshot.</div>`}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTraitGrid() {
+      const nft = state.selectedNft;
+      if (!nft) {
+        el.traitUpgradeInfo.innerHTML = 'Upgrade UI stays visible only after a verified Genesis specimen has been selected.';
+        el.traitGrid.innerHTML = '';
+        el.upgradeModeBadge.textContent = 'Waiting for verified Genesis specimen';
+        return;
+      }
+
+      const traits = normalizeNftTraits(nft);
+      const activeUpgradeRow = getNftActiveUpgradeRow(nft);
+      const modeText = state.upgradeEndpointAvailable ? 'Live upgrade endpoint detected' : 'Read-safe mode: upgrade endpoints not yet confirmed';
+      el.upgradeModeBadge.textContent = modeText;
+      el.traitUpgradeInfo.innerHTML = `<div class="space-y-2"><div><strong class="text-cyan-300">Upgrade rules locked:</strong> exact trait value upgrades, Genesis only, one active upgrade per NFT, manual claim on finish, infinite levels with doubling duration.</div><div><strong class="text-cyan-300">Instant finish model:</strong> DSPOINC-based and intentionally more expensive than simple time scaling. This UI calculates a preview cost, but the backend remains source of truth.</div><div><strong class="text-cyan-300">Current page mode:</strong> ${escapeHtml(modeText)}.</div></div>`;
+
+      el.traitGrid.innerHTML = traits.map(trait => {
+        const row = getTraitUpgradeDisplayRow(nft, trait);
+        const currentLevel = Math.max(1, safeNumber(row.current_level, 1));
+        const nextLevel = currentLevel + 1;
+        const status = mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at);
+        const durationHours = calculateUpgradeDurationHours(currentLevel);
+        const endTime = row.upgrade_ends_at ? new Date(row.upgrade_ends_at).getTime() : 0;
+        const remainingMs = status === 'upgrading' ? Math.max(0, endTime - Date.now()) : 0;
+        const totalMs = durationHours * 3600000;
+        const elapsedMs = status === 'upgrading' ? Math.max(0, totalMs - remainingMs) : status === 'ready' ? totalMs : 0;
+        const progressPercent = totalMs > 0 ? Math.min(100, Math.round((elapsedMs / totalMs) * 100)) : 0;
+        const instantCost = status === 'upgrading' ? calculateInstantFinishCost(currentLevel, remainingMs) : 0;
+        const blocked = Boolean(activeUpgradeRow && !(String(activeUpgradeRow.trait_type) === String(row.trait_type) && String(activeUpgradeRow.trait_value) === String(row.trait_value)));
+        const canStart = !blocked && status === 'idle';
+        const canClaim = status === 'ready';
+        const canFinish = status === 'upgrading';
+        const statusClass = status === 'ready' ? 'ready' : status === 'upgrading' ? 'upgrading' : blocked ? 'blocked' : 'idle';
+        const statusText = status === 'ready' ? 'Ready to claim' : status === 'upgrading' ? 'Research active' : blocked ? 'Another trait is upgrading' : 'Idle';
+
+        return `
+          <div class="card p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xs uppercase tracking-[0.18em] text-slate-400">${escapeHtml(trait.trait_type)}</div>
+                <div class="mt-1 text-xl font-bold leading-tight">${escapeHtml(trait.value)}</div>
+              </div>
+              <span class="pill ${statusClass}">${escapeHtml(statusText)}</span>
+            </div>
+
+            <div class="mt-4 grid grid-cols-3 gap-3">
+              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Current</div><div class="mt-1 text-3xl font-black">${formatNumber(currentLevel)}</div></div>
+              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Next</div><div class="mt-1 text-3xl font-black">${formatNumber(nextLevel)}</div></div>
+              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Duration</div><div class="mt-2 text-2xl font-black">${escapeHtml(formatDurationFromHours(durationHours))}</div></div>
+            </div>
+
+            <div class="mt-4">
+              <div class="flex items-center justify-between gap-3 text-sm"><span class="text-slate-400">Progress</span><span class="text-slate-200">${status === 'upgrading' ? escapeHtml(formatRemainingMs(remainingMs)) : status === 'ready' ? 'Completed' : 'Not started'}</span></div>
+              <div class="progress-shell mt-2"><div class="progress-bar ${status === 'ready' ? 'ready' : ''}" style="width:${progressPercent}%"></div></div>
+              <div class="mt-2 text-xs text-slate-400">${status === 'upgrading' ? `Finishes ${escapeHtml(formatDateTime(row.upgrade_ends_at))}` : status === 'ready' ? `Finished ${escapeHtml(formatDateTime(row.upgrade_ends_at || row.last_completed_at))}` : `Next upgrade will end ${escapeHtml(formatDurationFromHours(durationHours))} after start.`}</div>
+            </div>
+
+            <div class="mt-4 space-y-3">
+              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Gameplay Outlook</div><div class="mt-2 text-sm text-slate-300">Designed for future multipliers, weapon tiers, and trait-driven gameplay bonuses read by games, admin tools, and Discord commands.</div></div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button class="btn primary" ${canStart ? '' : 'disabled'} data-start-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}">🚀 Start Upgrade</button>
+                <button class="btn success" ${canClaim ? '' : 'disabled'} data-claim-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}">✅ Claim Upgrade</button>
+                <button class="btn warn sm:col-span-2" ${canFinish ? '' : 'disabled'} data-finish-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}">⚡ Instant Finish · ${formatNumber(instantCost)} DSPOINC</button>
+              </div>
+              <div class="text-xs text-slate-400">${blocked ? 'Another trait on this NFT is already upgrading. One active upgrade per NFT is enforced by design.' : 'This trait is eligible for upgrade when backend validation confirms the NFT is still verified to the current player.'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      attachTraitActionListeners();
+    }
+
+    function attachTraitActionListeners() {
+      document.querySelectorAll('[data-start-upgrade]').forEach(btn => btn.addEventListener('click', async () => {
+        const [tokenId, traitType, traitValue] = (btn.getAttribute('data-start-upgrade') || '').split('|');
+        await handleStartUpgrade(tokenId, traitType, traitValue);
+      }));
+
+      document.querySelectorAll('[data-claim-upgrade]').forEach(btn => btn.addEventListener('click', async () => {
+        const [tokenId, traitType, traitValue] = (btn.getAttribute('data-claim-upgrade') || '').split('|');
+        await handleClaimUpgrade(tokenId, traitType, traitValue);
+      }));
+
+      document.querySelectorAll('[data-finish-upgrade]').forEach(btn => btn.addEventListener('click', async () => {
+        const [tokenId, traitType, traitValue] = (btn.getAttribute('data-finish-upgrade') || '').split('|');
+        await handleInstantFinish(tokenId, traitType, traitValue);
+      }));
+    }
+
+    async function tryAggregateLab() {
+      if (!state.userId) return false;
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.aggregateLabEndpoint), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: state.userId })
+        }, true);
+
+        if (!res.ok || !res.payload?.success || !res.payload?.data) {
+          logLab('Aggregate lab endpoint not available yet. Falling back to stable existing APIs.', 'warn');
+          state.aggregateLabEndpointAvailable = false;
+          return false;
+        }
+
+        const data = res.payload.data;
+        state.profile = data.profile || state.profile;
+        state.missions = data.missions_profile || data.missions || state.missions;
+        state.allTimeStats = data.all_time_stats || state.allTimeStats;
+        state.puzzleAchievements = data.puzzles_3d_achievements || state.puzzleAchievements;
+        state.stakingStats = data.staking_stats || state.stakingStats;
+        state.stakingActivity = data.staking_activity || state.stakingActivity;
+        state.verifiedNfts = Array.isArray(data.verified_nfts) ? data.verified_nfts : state.verifiedNfts;
+        state.upgradeRows = Array.isArray(data.trait_upgrades) ? data.trait_upgrades : state.upgradeRows;
+        state.aggregateLabEndpointAvailable = true;
+        logLab('Loaded aggregate lab payload from dedicated endpoint.', 'success');
+        return true;
+      } catch (error) {
+        state.aggregateLabEndpointAvailable = false;
+        logLab(`Aggregate lab endpoint failed: ${error.message}`, 'warn');
+        return false;
+      }
+    }
+
+    async function loadProfileData() {
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.playerProfileEndpoint), { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } }, true);
+        if (res.ok && res.payload) {
+          state.profile = res.payload.profile || res.payload.user || res.payload.data || res.payload;
+          if (state.profile?.discord_id && !state.userId) state.userId = state.profile.discord_id;
+          if (state.profile?.username && (!state.username || state.username === 'Unknown User')) state.username = state.profile.username;
+          logLab('Loaded profile identity data.', 'success');
+        } else {
+          logLab('Profile endpoint returned no usable payload.', 'warn');
+        }
+      } catch (error) {
+        logLab(`Profile load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadDetailsData() {
+      if (!state.userId) return;
+      try {
+        const res = await fetchJson(`${getApiUrl(LAB_CONFIG.detailsEndpoint)}?user_id=${encodeURIComponent(state.userId)}`, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } }, true);
+        if (res.ok && res.payload?.success && res.payload.user) {
+          state.profile = { ...(state.profile || {}), ...res.payload.user };
+          if (res.payload.user.username) {
+            state.username = res.payload.user.username;
+            localStorage.setItem('narrrfs_last_discord_name', res.payload.user.username);
+            localStorage.setItem('discord_name', res.payload.user.username);
+          }
+          logLab('Loaded player details data.', 'success');
+        }
+      } catch (error) {
+        logLab(`Details load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadEnhancedProfile() {
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.enhancedProfileEndpoint), { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } }, true);
+        if (res.ok && res.payload) {
+          state.enhancedProfile = res.payload.profile || res.payload.data || res.payload;
+          logLab('Loaded enhanced profile data.', 'success');
+        }
+      } catch (error) {
+        logLab(`Enhanced profile load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadMissions() {
+      if (!state.userId) return;
+      try {
+        const res = await fetchJson(`${getApiUrl(LAB_CONFIG.missionsEndpoint)}?user_id=${encodeURIComponent(state.userId)}`, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } }, true);
+        if (res.ok && res.payload) {
+          state.missions = res.payload.data || res.payload.profile || res.payload;
+          logLab('Loaded mission profile data.', 'success');
+        }
+      } catch (error) {
+        logLab(`Mission profile load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadAllTimeStats() {
+      if (!state.userId) return;
+      try {
+        const res = await fetchJson(`${getApiUrl(LAB_CONFIG.allTimeStatsEndpoint)}?user_id=${encodeURIComponent(state.userId)}`, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } }, true);
+        if (res.ok && res.payload) {
+          state.allTimeStats = res.payload.all_time_stats || res.payload.data || res.payload.stats || res.payload;
+          logLab('Loaded all-time stats.', 'success');
+        }
+      } catch (error) {
+        logLab(`All-time stats load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadPuzzles() {
+      if (!state.userId) return;
+      try {
+        const res = await fetchJson(`${getApiUrl(LAB_CONFIG.puzzlesEndpoint)}?user_id=${encodeURIComponent(state.userId)}`, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } }, true);
+        if (res.ok && res.payload) {
+          state.puzzleAchievements = res.payload.data || res.payload.achievements || res.payload;
+          logLab('Loaded 3D puzzle achievements.', 'success');
+        }
+      } catch (error) {
+        logLab(`3D puzzle achievement load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadStakingStats() {
+      if (!state.userId) return;
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.stakingStatsEndpoint), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: state.userId })
+        }, true);
+
+        if (res.ok && res.payload?.success) {
+          state.stakingStats = res.payload.data || res.payload.staking_stats || null;
+          logLab('Loaded staking summary.', 'success');
+        } else {
+          logLab('Staking stats endpoint returned no usable payload.', 'warn');
+        }
+      } catch (error) {
+        logLab(`Staking summary load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadStakingActivity() {
+      if (!state.userId) return;
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.stakesEndpoint), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: state.userId, status: 'all' })
+        }, true);
+
+        if (res.ok && res.payload?.success && res.payload?.data) {
+          state.stakingActivity = res.payload.data;
+          logLab('Loaded staking activity collections.', 'success');
+        } else {
+          logLab('Stake activity endpoint returned no usable payload.', 'warn');
+        }
+      } catch (error) {
+        logLab(`Stake activity load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadVerifiedNftScan() {
+      if (!state.userId) return;
+      try {
+        const res = await fetchJson(`${getApiUrl(LAB_CONFIG.verifiedNftEndpoint)}?user_id=${encodeURIComponent(state.userId)}`, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } }, true);
+
+        if (res.ok && res.payload?.success && Array.isArray(res.payload?.data?.nfts)) {
+          state.verifiedNfts = res.payload.data.nfts;
+          logLab('Loaded verified NFT scan data from dedicated endpoint.', 'success');
+          return;
+        }
+
+        if (res.ok && Array.isArray(res.payload?.nfts)) {
+          state.verifiedNfts = res.payload.nfts;
+          logLab('Loaded verified NFT scan data from compatibility payload.', 'success');
+          return;
+        }
+
+        logLab('Verified NFT scan endpoint not available yet. Waiting for upgrade endpoint fallback.', 'warn');
+      } catch (error) {
+        logLab(`Verified NFT scan load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function loadTraitUpgrades() {
+  if (!state.userId) return;
+
+  try {
+    const res = await fetchJson(
+      `${getApiUrl(LAB_CONFIG.upgradesEndpoint)}?user_id=${encodeURIComponent(state.userId)}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      },
+      true
+    );
+
+if (res.ok && res.payload?.success) {
+  const data = res.payload.data || {};
+
+  state.upgradeRows = Array.isArray(data.upgrades)
+    ? data.upgrades
+    : Array.isArray(res.payload.upgrades)
+      ? res.payload.upgrades
+      : [];
+
+  if (Array.isArray(data.verified_genesis_nfts)) {
+    state.verifiedNfts = data.verified_genesis_nfts;
+    logLab(`Loaded ${state.verifiedNfts.length} verified Genesis NFT(s) from upgrade endpoint.`, 'success');
+  }
+
+  state.upgradeEndpointAvailable = true;
+  logLab(`Loaded ${state.upgradeRows.length} trait upgrade rows.`, 'success');
+  return;
+}
+
+    state.upgradeEndpointAvailable = false;
+    state.upgradeRows = [];
+    logLab('Upgrade endpoint returned no usable rows.', 'warn');
+  } catch (error) {
+    state.upgradeEndpointAvailable = false;
+    state.upgradeRows = [];
+    logLab(`Upgrade endpoint not available yet: ${error.message}`, 'warn');
+  }
+}
+
+async function handleStartUpgrade(tokenId, traitType, traitValue) {
+  if (!state.userId) {
+    alert('No player session found.');
+    return;
+  }
+
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.startUpgradeEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: state.userId,
+          token_id: tokenId,
+          collection: 'genesis',
+          trait_type: traitType,
+          trait_value: traitValue
+        })
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      const message = res.payload?.error || `Start upgrade failed (${res.status})`;
+      logLab(`Start upgrade failed: ${message}`, 'error');
+      alert(message);
+      return;
+    }
+
+    logLab(`Started upgrade for ${traitType}: ${traitValue}`, 'success');
+    await loadTraitUpgrades();
+    renderAll();
+  } catch (error) {
+    logLab(`Start upgrade request failed: ${error.message}`, 'error');
+    alert(`Start upgrade failed: ${error.message}`);
+  }
+}
+
+async function handleClaimUpgrade(tokenId, traitType, traitValue) {
+  if (!state.userId) {
+    alert('No player session found.');
+    return;
+  }
+
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.claimUpgradeEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: state.userId,
+          token_id: tokenId,
+          collection: 'genesis',
+          trait_type: traitType,
+          trait_value: traitValue
+        })
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      const message = res.payload?.error || `Claim upgrade failed (${res.status})`;
+      logLab(`Claim upgrade failed: ${message}`, 'error');
+      alert(message);
+      return;
+    }
+
+    logLab(`Claimed upgrade for ${traitType}: ${traitValue}`, 'success');
+    await loadTraitUpgrades();
+    renderAll();
+  } catch (error) {
+    logLab(`Claim upgrade request failed: ${error.message}`, 'error');
+    alert(`Claim upgrade failed: ${error.message}`);
+  }
+}
+
+async function handleInstantFinish(tokenId, traitType, traitValue) {
+  if (!state.userId) {
+    alert('No player session found.');
+    return;
+  }
+
+  const nft = state.selectedNft;
+  const row = nft ? getTraitUpgradeDisplayRow(nft, { trait_type: traitType, value: traitValue }) : null;
+  const currentLevel = Math.max(1, safeNumber(row?.current_level, 1));
+  const remainingMs = row?.upgrade_ends_at ? Math.max(0, new Date(row.upgrade_ends_at).getTime() - Date.now()) : 0;
+  const previewCost = calculateInstantFinishCost(currentLevel, remainingMs);
+
+  const confirmed = confirm(
+    `Instantly finish ${traitType}: ${traitValue} for about ${formatNumber(previewCost)} DSPOINC?\n\nThe backend remains source of truth for the final cost.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.instantFinishEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: state.userId,
+          token_id: tokenId,
+          collection: 'genesis',
+          trait_type: traitType,
+          trait_value: traitValue
+        })
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      const message = res.payload?.error || `Instant finish failed (${res.status})`;
+      logLab(`Instant finish failed: ${message}`, 'error');
+      alert(message);
+      return;
+    }
+
+    logLab(`Instant finish completed for ${traitType}: ${traitValue}`, 'success');
+    await Promise.all([
+      loadTraitUpgrades(),
+      loadStakingStats()
+    ]);
+    renderAll();
+  } catch (error) {
+    logLab(`Instant finish request failed: ${error.message}`, 'error');
+    alert(`Instant finish failed: ${error.message}`);
+  }
+}
+
+    async function loadTraitUpgrades(){
+  if(!state.userId) return;
+
+  try{
+    const res = await fetchJson(
+      `${getApiUrl(LAB_CONFIG.upgradesEndpoint)}?user_id=${encodeURIComponent(state.userId)}`,
+      {
+        method:'GET',
+        credentials:'include',
+        headers:{'Accept':'application/json'}
+      },
+      true
+    );
+
+    if(res.ok && res.payload?.success){
+      state.upgradeRows = res.payload.data || [];
+      state.upgradeEndpointAvailable = true;
+      logLab(`Loaded ${state.upgradeRows.length} trait upgrade rows.`,'success');
+      return;
+    }
+
+    logLab('Upgrade endpoint reachable but returned no rows.','warn');
+
+  }catch(error){
+    logLab(`Upgrade endpoint not available yet: ${error.message}`,'warn');
+  }
+}
+
+    async function loadUpgradeRows() {
+      if (!state.userId) return;
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.upgradesEndpoint), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: state.userId, token_id: state.selectedNftTokenId || undefined })
+        }, true);
+
+        if (res.ok && res.payload?.success) {
+          state.upgradeRows = Array.isArray(res.payload?.data?.upgrades) ? res.payload.data.upgrades : Array.isArray(res.payload?.data) ? res.payload.data : Array.isArray(res.payload?.upgrades) ? res.payload.upgrades : [];
+          state.upgradeEndpointAvailable = true;
+          logLab(`Loaded ${state.upgradeRows.length} upgrade row(s).`, 'success');
+          return;
+        }
+
+        state.upgradeEndpointAvailable = false;
+        state.upgradeRows = [];
+        logLab('Upgrade endpoint not available. Using frontend fallback rows for visual rendering.', 'warn');
+      } catch (error) {
+        state.upgradeEndpointAvailable = false;
+        state.upgradeRows = [];
+        logLab(`Upgrade state load failed: ${error.message}`, 'warn');
+      }
+    }
+
+    async function handleStartUpgrade(tokenId, traitType, traitValue) {
+      if (!state.upgradeEndpointAvailable) {
+        logLab(`Start upgrade blocked in frontend-only mode for ${traitType}: ${traitValue}.`, 'warn');
+        alert('The start-upgrade endpoint is not deployed yet. This page is ready for the flow, but backend persistence still needs to be connected.');
+        return;
+      }
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.startUpgradeEndpoint), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: state.userId, token_id: tokenId, collection: LAB_CONFIG.genesisCollection, trait_type: traitType, trait_value: traitValue })
+        });
+        if (!res.ok || !res.payload?.success) throw new Error(res.payload?.error || `HTTP ${res.status}`);
+        logLab(`Started upgrade for ${traitType}: ${traitValue}.`, 'success');
+        await loadUpgradeRows();
+        renderAll();
+      } catch (error) {
+        logLab(`Failed to start upgrade for ${traitType}: ${traitValue} — ${error.message}`, 'error');
+        alert(`Failed to start upgrade: ${error.message}`);
+      }
+    }
+
+    async function handleClaimUpgrade(tokenId, traitType, traitValue) {
+      if (!state.upgradeEndpointAvailable) {
+        logLab(`Claim blocked in frontend-only mode for ${traitType}: ${traitValue}.`, 'warn');
+        alert('The claim-upgrade endpoint is not deployed yet. Manual claim behavior is prepared in the UI and awaits backend activation.');
+        return;
+      }
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.claimUpgradeEndpoint), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: state.userId, token_id: tokenId, collection: LAB_CONFIG.genesisCollection, trait_type: traitType, trait_value: traitValue })
+        });
+        if (!res.ok || !res.payload?.success) throw new Error(res.payload?.error || `HTTP ${res.status}`);
+        logLab(`Claimed upgrade for ${traitType}: ${traitValue}.`, 'success');
+        await loadUpgradeRows();
+        renderAll();
+      } catch (error) {
+        logLab(`Failed to claim upgrade for ${traitType}: ${traitValue} — ${error.message}`, 'error');
+        alert(`Failed to claim upgrade: ${error.message}`);
+      }
+    }
+
+    async function handleInstantFinish(tokenId, traitType, traitValue) {
+      const nft = state.selectedNft;
+      const row = nft ? getTraitUpgradeDisplayRow(nft, { trait_type: traitType, value: traitValue }) : null;
+      const currentLevel = safeNumber(row?.current_level, 1);
+      const remainingMs = row?.upgrade_ends_at ? Math.max(0, new Date(row.upgrade_ends_at).getTime() - Date.now()) : 0;
+      const preview = calculateInstantFinishCost(currentLevel, remainingMs);
+
+      if (!state.upgradeEndpointAvailable) {
+        logLab(`Instant finish blocked in frontend-only mode for ${traitType}: ${traitValue}.`, 'warn');
+        alert(`Instant finish backend is not deployed yet. Preview cost for this action is ${formatNumber(preview)} DSPOINC.`);
+        return;
+      }
+
+      if (!confirm(`Instantly finish ${traitType}: ${traitValue} for approximately ${formatNumber(preview)} DSPOINC?\n\nThe backend remains source of truth for the final cost and balance check.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetchJson(getApiUrl(LAB_CONFIG.instantFinishEndpoint), {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: state.userId, token_id: tokenId, collection: LAB_CONFIG.genesisCollection, trait_type: traitType, trait_value: traitValue })
+        });
+        if (!res.ok || !res.payload?.success) throw new Error(res.payload?.error || `HTTP ${res.status}`);
+        logLab(`Instant finish completed for ${traitType}: ${traitValue}.`, 'success');
+        await Promise.all([loadUpgradeRows(), loadStakingStats()]);
+        renderAll();
+      } catch (error) {
+        logLab(`Instant finish failed for ${traitType}: ${traitValue} — ${error.message}`, 'error');
+        alert(`Instant finish failed: ${error.message}`);
+      }
+    }
+
+    async function loadStableApis() {
+await Promise.allSettled([
+  loadProfileData(),
+  loadDetailsData(),
+  loadEnhancedProfile(),
+  loadMissions(),
+  loadAllTimeStats(),
+  loadPuzzles(),
+  loadStakingStats(),
+  loadStakingActivity(),
+  loadVerifiedNftScan(),
+  loadTraitUpgrades()
+]);
+    }
+
+    function renderAll() {
+      renderSessionNotice();
+      ensureSelectedNft();
+      renderOverviewCards();
+      renderIdentitySummary();
+      renderEconomySummary();
+      renderGameSummary();
+      renderQueueSummary();
+      renderNftGrid();
+      renderSelectedNftPanel();
+      renderTraitGrid();
+    }
+
+    function liveRefreshRender() {
+      if (!state.selectedNft) return;
+      renderOverviewCards();
+      renderQueueSummary();
+      renderNftGrid();
+      renderSelectedNftPanel();
+      renderTraitGrid();
+    }
+
+    async function loadLab() {
+      if (state.loading) return;
+      state.loading = true;
+      try {
+        logLab('Booting lab runtime…', 'info');
+        state.userId = getStoredUserId();
+        state.username = getStoredUsername();
+        renderSessionNotice();
+
+        if (!state.userId) {
+          renderAll();
+          logLab('No Discord session detected. Rendered shell in safe mode.', 'warn');
+          return;
+        }
+
+        localStorage.setItem('discord_id', state.userId);
+        if (state.username) {
+          localStorage.setItem('discord_name', state.username);
+          localStorage.setItem('narrrfs_last_discord_name', state.username);
+        }
+
+        const aggregateLoaded = await tryAggregateLab();
+        if (!aggregateLoaded) {
+          await loadStableApis();
+        }
+        await loadUpgradeRows();
+        renderAll();
+        logLab('Lab runtime ready.', 'success');
+      } catch (error) {
+        logLab(`Lab boot failed: ${error.message}`, 'error');
+        alert(`Lab failed to load: ${error.message}`);
+      } finally {
+        state.loading = false;
+      }
+    }
+
+    el.refreshLabButton.addEventListener('click', async () => {
+      logLab('Manual full lab refresh triggered.', 'info');
+      await loadLab();
+    });
+
+    el.refreshUpgradeButton.addEventListener('click', async () => {
+      logLab('Manual upgrade refresh triggered.', 'info');
+      await loadUpgradeRows();
+      renderAll();
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      logLab('Narrrf’s Lab frontend artifact mounted.', 'success');
+      logLab('This page prefers stable read APIs and only activates live upgrade actions when dedicated endpoints are detected.', 'info');
+      await loadLab();
+      if (state.refreshTimer) clearInterval(state.refreshTimer);
+      state.refreshTimer = setInterval(liveRefreshRender, LAB_CONFIG.tickMs);
+    });
+  </script>
+</body>
+</html>
