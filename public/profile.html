@@ -5073,144 +5073,142 @@ function displayVerificationResults(foundNFTs) {
 }
 
 // Verify with backend and persist the full verified NFT scan for admin trait audit.
+// IMPORTANT:
+// - SQL verified profile creation must happen when NFT ownership is verified.
+// - Discord role grant is a secondary outcome and must not block SQL save.
 async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts = []) {
   try {
     const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-    
+
     if (!userId) {
       showError('Please login with Discord first to verify NFTs');
       return;
     }
-    
-    // Request signature from user to prove wallet ownership
-let verificationProof = null;
 
-try {
-  verificationProof = await requestVerificationProof();
+    let verificationProof = null;
 
-  console.log('🔐 Verification proof obtained:', {
-    mode: verificationProof.mode,
-    signature: verificationProof.signature,
-    wallet: connectedWalletAddress,
-    provider: getWalletProviderLabel(verificationProof.provider)
-  });
-} catch (signError) {
-  console.error('Signature error:', signError);
-  showError('Failed to get verification approval. Please approve the request in your wallet.');
-  return;
-}
+    try {
+      verificationProof = await requestVerificationProof();
 
-const signature = verificationProof.signature;
-const message = verificationProof.message;
-    
-// Group matched collections by collection address for backend role verification.
-// collectionMatches contains summary matches like:
-// { collection, role, roleId, count, collectionAddress }
-const nftsByCollection = {};
-collectionMatches.forEach(collectionInfo => {
-      // Use collectionAddress as the key (this is what the API expects)
+      console.log('🔐 Verification proof obtained:', {
+        mode: verificationProof.mode,
+        signature: verificationProof.signature,
+        wallet: connectedWalletAddress,
+        provider: getWalletProviderLabel(verificationProof.provider)
+      });
+    } catch (signError) {
+      console.error('Signature error:', signError);
+      showError('Failed to get verification approval. Please approve the request in your wallet.');
+      return;
+    }
+
+    const signature = verificationProof.signature;
+    const message = verificationProof.message;
+
+    // Group matched collections by collection address for backend role verification.
+    // collectionMatches contains summary matches like:
+    // { collection, role, roleId, count, collectionAddress }
+    const nftsByCollection = {};
+    collectionMatches.forEach(collectionInfo => {
       const collectionAddress = collectionInfo.collectionAddress;
-      
+
       if (!collectionAddress) {
         console.error('❌ Missing collectionAddress in collection info:', collectionInfo);
-        return; // Skip if no collection address
+        return;
       }
-      
+
       if (!nftsByCollection[collectionAddress]) {
         nftsByCollection[collectionAddress] = {
-          nfts: [], // API will fetch NFTs itself using collection address
+          nfts: [],
           role: collectionInfo.role,
           roleId: collectionInfo.roleId,
           collectionName: collectionInfo.collection,
           collectionAddress: collectionAddress
         };
       }
-      // Note: We don't push individual NFTs here because the API will fetch them itself
-      // The API uses the collection address to verify ownership via get-nfts.php
     });
-    
+
     console.log('🔍 Grouped collections for verification:', Object.keys(nftsByCollection).map(addr => ({
       address: addr,
       role: nftsByCollection[addr].role,
       roleId: nftsByCollection[addr].roleId,
       collectionName: nftsByCollection[addr].collectionName
     })));
-    
-    // Verify each collection and collect all granted roles
+
     console.log(`\n🔐 [BACKEND VERIFICATION] Starting backend verification for ${Object.keys(nftsByCollection).length} collection(s)`);
     console.log(`   User ID: ${userId}`);
     console.log(`   Wallet Address: ${walletAddress}`);
-    
-    // Track all granted roles across all collections
+
+    // Split outcomes clearly:
+    // - verified ownership
+    // - granted Discord roles
+    // - failures / warnings
+    const allVerifiedCollections = [];
     const allGrantedRoles = [];
     const allFailedCollections = [];
     let hasErrors = false;
-    
+
     for (const [collectionAddress, collectionData] of Object.entries(nftsByCollection)) {
       console.log(`\n🔐 [BACKEND VERIFICATION] Verifying collection: ${collectionData.collectionName}`);
       console.log(`   Collection Address: ${collectionAddress}`);
       console.log(`   Expected Role: ${collectionData.role} (ID: ${collectionData.roleId})`);
       console.log(`   NFTs found (frontend): ${collectionData.nfts.length}`);
-      
-const requestPayload = {
-  user_id: userId,
-  wallet_address: walletAddress,
-  nfts: collectionData.nfts,
-  collection: collectionAddress,
-  signature: signature,
-  message: message,
-  verification_mode: verificationProof.mode
-};
-      
+
+      const requestPayload = {
+        user_id: userId,
+        wallet_address: walletAddress,
+        nfts: collectionData.nfts,
+        collection: collectionAddress,
+        signature: signature,
+        message: message,
+        verification_mode: verificationProof.mode
+      };
+
       console.log(`📤 [BACKEND VERIFICATION] Sending request to /api/user/verify-nft-holder.php:`, {
         user_id: userId,
         wallet_address: walletAddress.substring(0, 8) + '...',
         collection: collectionAddress,
         signature_length: signature ? signature.length : 0,
-        message: message
+        message: message,
+        verification_mode: verificationProof.mode
       });
-      
+
       const response = await fetch('/api/user/verify-nft-holder.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestPayload)
       });
-      
+
       console.log(`📥 [BACKEND VERIFICATION] Response status: ${response.status} ${response.statusText}`);
-      
-      // Check if response is actually JSON before parsing
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
         const text = await response.text();
         console.error(`❌ [BACKEND VERIFICATION] Non-JSON response received`);
         console.error(`   Content-Type: ${contentType}`);
         console.error(`   Response Status: ${response.status} ${response.statusText}`);
         console.error(`   Response Text (first 1000 chars):`, text.substring(0, 1000));
-        
-        // Try to extract error message from HTML if it's a PHP error
-        const errorMatch = text.match(/<b>.*?error.*?<\/b>.*?<br.*?>(.*?)(?:<br|$)/i) || 
-                          text.match(/Fatal error:.*?in.*?on line.*?(\d+)/i) ||
-                          text.match(/Parse error:.*?in.*?on line.*?(\d+)/i);
-        
-        if (errorMatch) {
-          console.error(`   Extracted Error:`, errorMatch[0]);
-        }
-        
+
         hasErrors = true;
         allFailedCollections.push({
           collection: collectionData.collectionName,
           error: `Server returned non-JSON response (${contentType})`
         });
-        continue; // Skip this collection and continue with others
+        continue;
       }
-      
+
       const data = await response.json();
-      
+
       console.log(`📥 [BACKEND VERIFICATION] Full response for ${collectionData.collectionName}:`, data);
-      
-      if (data.verified_collections && Array.isArray(data.verified_collections)) {
-        console.log(`\n📋 [BACKEND VERIFICATION] Verified Collections Array (${data.verified_collections.length} item(s)):`);
-        data.verified_collections.forEach((vc, index) => {
+
+      const backendCollections = Array.isArray(data.verified_collections)
+        ? data.verified_collections
+        : [];
+
+      if (backendCollections.length > 0) {
+        console.log(`\n📋 [BACKEND VERIFICATION] Verified Collections Array (${backendCollections.length} item(s)):`);
+
+        backendCollections.forEach((vc, index) => {
           console.log(`   📦 Collection ${index + 1}:`, {
             collection: vc.collection,
             collection_address: vc.collection_address,
@@ -5219,94 +5217,104 @@ const requestPayload = {
             count: vc.count,
             granted: vc.granted ? '✅ YES - ROLE GRANTED' : '❌ NO - ROLE NOT GRANTED'
           });
-          
-          if (vc.granted) {
-            console.log(`   ✅ SUCCESS: Role "${vc.role}" (ID: ${vc.role_id}) was GRANTED for ${vc.count} NFT(s) from ${vc.collection}`);
-          } else {
-            console.log(`   ⚠️ WARNING: Role "${vc.role}" (ID: ${vc.role_id}) was NOT GRANTED for ${vc.count} NFT(s) from ${vc.collection}`);
-          }
         });
       } else {
         console.warn(`⚠️ [BACKEND VERIFICATION] No verified_collections array in response for ${collectionData.collectionName}`);
       }
-      
-      if (data.success) {
-        console.log(`\n🔍 [BACKEND VERIFICATION] Processing successful response for ${collectionData.collectionName}`);
-        console.log(`   verified_collections array length: ${data.verified_collections?.length || 0}`);
-        console.log(`   Looking for collection with granted=true...`);
-        
-        // Check which role was actually granted
-        const grantedCollection = data.verified_collections?.find(c => c.granted);
-        
-        if (grantedCollection) {
-          console.log(`   ✅ Found granted collection:`, {
-            collection: grantedCollection.collection,
-            role: grantedCollection.role,
-            role_id: grantedCollection.role_id,
-            count: grantedCollection.count,
-            granted: grantedCollection.granted
-          });
-        } else {
-          console.warn(`   ⚠️ No collection with granted=true found in response`);
-          console.warn(`   Available collections:`, data.verified_collections?.map(c => ({
-            collection: c.collection,
-            role: c.role,
-            granted: c.granted
-          })));
-        }
-        
-        if (grantedCollection) {
-          const expectedRole = collectionData.role;
-          const actualRole = grantedCollection.role;
-          const expectedRoleId = collectionData.roleId;
-          const actualRoleId = grantedCollection.role_id;
-          
-          console.log(`\n🎯 [BACKEND VERIFICATION] Role Grant Check:`);
-          console.log(`   Expected: ${expectedRole} (${expectedRoleId})`);
-          console.log(`   Actual: ${actualRole} (${actualRoleId})`);
-          console.log(`   NFTs Found: ${grantedCollection.count}`);
-          
-          // Verify the role matches what we expect
-          if (actualRole === expectedRole && actualRoleId === expectedRoleId) {
-            // Add to granted roles list
-            allGrantedRoles.push({
-              role: actualRole,
-              roleId: actualRoleId,
-              collection: collectionData.collectionName,
-              count: grantedCollection.count
-            });
-            console.log(`✅ [BACKEND VERIFICATION] Role verification CORRECT: Expected ${expectedRole}, Got ${actualRole}`);
-          } else {
-            hasErrors = true;
-            allFailedCollections.push({
-              collection: collectionData.collectionName,
-              error: `Role mismatch! Expected ${expectedRole}, but got ${actualRole}`
-            });
-            console.error(`❌ [BACKEND VERIFICATION] Role mismatch! Expected ${expectedRole} (${expectedRoleId}), but got ${actualRole} (${actualRoleId})`);
-          }
-        } else {
-          hasErrors = true;
-          allFailedCollections.push({
-            collection: collectionData.collectionName,
-            error: 'No role was granted'
-          });
-          console.warn(`⚠️ [BACKEND VERIFICATION] No role granted for ${collectionData.collectionName}`);
-          console.warn(`   Verified collections:`, data.verified_collections);
-        }
-      } else {
+
+      if (!data.success) {
         hasErrors = true;
         allFailedCollections.push({
           collection: collectionData.collectionName,
           error: data.error || 'Verification failed'
         });
         console.error(`❌ [BACKEND VERIFICATION] Verification failed: ${data.error}`);
+        continue;
+      }
+
+      const matchingBackendCollection = backendCollections.find(c => {
+        const backendAddress = String(c.collection_address || '').trim().toLowerCase();
+        const expectedAddress = String(collectionAddress).trim().toLowerCase();
+        return backendAddress === expectedAddress;
+      });
+
+      if (!matchingBackendCollection) {
+        hasErrors = true;
+        allFailedCollections.push({
+          collection: collectionData.collectionName,
+          error: 'Backend returned no matching verified collection'
+        });
+        console.warn(`⚠️ [BACKEND VERIFICATION] No matching backend collection found for ${collectionData.collectionName}`);
+        continue;
+      }
+
+      const verifiedCount = Number(matchingBackendCollection.count || 0);
+      const roleGranted = matchingBackendCollection.granted === true;
+
+      // VERIFIED OWNERSHIP RESULT
+      if (verifiedCount > 0) {
+        const verifiedEntry = {
+          collection: matchingBackendCollection.collection || collectionData.collectionName,
+          collectionAddress: matchingBackendCollection.collection_address || collectionAddress,
+          role: matchingBackendCollection.role || collectionData.role,
+          roleId: matchingBackendCollection.role_id || collectionData.roleId,
+          count: verifiedCount,
+          granted: roleGranted
+        };
+
+        allVerifiedCollections.push(verifiedEntry);
+
+        console.log(`✅ [BACKEND VERIFICATION] Verified ownership confirmed:`, verifiedEntry);
+
+        // ROLE GRANT RESULT
+        if (roleGranted) {
+          const expectedRole = collectionData.role;
+          const actualRole = verifiedEntry.role;
+          const expectedRoleId = collectionData.roleId;
+          const actualRoleId = verifiedEntry.roleId;
+
+          console.log(`\n🎯 [BACKEND VERIFICATION] Role Grant Check:`);
+          console.log(`   Expected: ${expectedRole} (${expectedRoleId})`);
+          console.log(`   Actual: ${actualRole} (${actualRoleId})`);
+          console.log(`   NFTs Found: ${verifiedEntry.count}`);
+
+          if (actualRole === expectedRole && actualRoleId === expectedRoleId) {
+            allGrantedRoles.push({
+              role: actualRole,
+              roleId: actualRoleId,
+              collection: verifiedEntry.collection,
+              count: verifiedEntry.count
+            });
+
+            console.log(`✅ [BACKEND VERIFICATION] Role verification CORRECT: Expected ${expectedRole}, Got ${actualRole}`);
+          } else {
+            hasErrors = true;
+            allFailedCollections.push({
+              collection: verifiedEntry.collection,
+              error: `Role mismatch! Expected ${expectedRole}, but got ${actualRole}`
+            });
+            console.error(`❌ [BACKEND VERIFICATION] Role mismatch! Expected ${expectedRole} (${expectedRoleId}), but got ${actualRole} (${actualRoleId})`);
+          }
+        } else {
+          allFailedCollections.push({
+            collection: verifiedEntry.collection,
+            error: 'NFT ownership verified, but no Discord role was granted'
+          });
+          console.warn(`⚠️ [BACKEND VERIFICATION] Ownership verified but no role granted for ${verifiedEntry.collection}`);
+        }
+      } else {
+        hasErrors = true;
+        allFailedCollections.push({
+          collection: collectionData.collectionName,
+          error: 'No verified NFTs found for this collection'
+        });
+        console.warn(`⚠️ [BACKEND VERIFICATION] No verified NFTs found for ${collectionData.collectionName}`);
       }
     }
-    
+
     console.log(`\n✅ [BACKEND VERIFICATION] Verification process complete`);
-    console.log(`📊 Summary: ${allGrantedRoles.length} role(s) granted, ${allFailedCollections.length} collection(s) failed`);
-    
-    // Log detailed summary of all granted roles
+    console.log(`📊 Summary: ${allVerifiedCollections.length} verified collection(s), ${allGrantedRoles.length} role(s) granted, ${allFailedCollections.length} collection issue(s)`);
+
     if (allGrantedRoles.length > 0) {
       console.log(`\n🎯 [FINAL SUMMARY] Roles Granted:`);
       allGrantedRoles.forEach((granted, index) => {
@@ -5317,97 +5325,100 @@ const requestPayload = {
     } else {
       console.warn(`\n⚠️ [FINAL SUMMARY] No roles were granted`);
     }
-    
+
     if (allFailedCollections.length > 0) {
-      console.log(`\n❌ [FINAL SUMMARY] Failed Collections:`);
+      console.log(`\n❌ [FINAL SUMMARY] Failed / Warning Collections:`);
       allFailedCollections.forEach((failed, index) => {
         console.log(`   ${index + 1}. ❌ ${failed.collection}: ${failed.error}`);
       });
     }
 
-        // Save the full verified NFT scan for admin overview and trait search.
-    if (allGrantedRoles.length > 0 && Array.isArray(scannedNfts) && scannedNfts.length > 0) {
+    // Save the full verified NFT scan for admin overview and trait search.
+    // IMPORTANT:
+    // Save must happen when verified ownership exists, even if Discord role grant failed.
+    if (allVerifiedCollections.length > 0 && Array.isArray(scannedNfts) && scannedNfts.length > 0) {
       try {
-const normalizedNfts = (Array.isArray(scannedNfts) ? scannedNfts : [])
-  .map(nft => {
-    const rawCollectionAddress = String(nft.collectionAddress || nft.collection || '').trim();
-    const rawCollectionName = String(
-      nft.collectionName ||
-      nft.collectionType ||
-      nft.collection ||
-      ''
-    ).trim();
-    const rawCollectionRole = String(nft.collectionRole || '').trim();
+        const normalizedNfts = (Array.isArray(scannedNfts) ? scannedNfts : [])
+          .map(nft => {
+            const rawCollectionAddress = String(nft.collectionAddress || nft.collection || '').trim();
+            const rawCollectionName = String(
+              nft.collectionName ||
+              nft.collectionType ||
+              nft.collection ||
+              ''
+            ).trim();
+            const rawCollectionRole = String(nft.collectionRole || '').trim();
 
-    let normalizedCollection = '';
+            let normalizedCollection = '';
 
-    if (rawCollectionAddress === 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML') {
-      normalizedCollection = 'genesis';
-    } else if (rawCollectionAddress === 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg') {
-      normalizedCollection = 'vip';
-    } else if (rawCollectionName.toLowerCase().includes('genesis genetic')) {
-      normalizedCollection = 'genesis';
-    } else if (rawCollectionName.toLowerCase().includes('vip')) {
-      normalizedCollection = 'vip';
-    } else if (rawCollectionRole.toLowerCase().includes('holder')) {
-      normalizedCollection = 'genesis';
-    } else if (rawCollectionRole.toLowerCase().includes('vip')) {
-      normalizedCollection = 'vip';
-    }
+            if (rawCollectionAddress === 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML') {
+              normalizedCollection = 'genesis';
+            } else if (rawCollectionAddress === 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg') {
+              normalizedCollection = 'vip';
+            } else if (rawCollectionName.toLowerCase().includes('genesis genetic')) {
+              normalizedCollection = 'genesis';
+            } else if (rawCollectionName.toLowerCase().includes('vip')) {
+              normalizedCollection = 'vip';
+            } else if (rawCollectionRole.toLowerCase().includes('holder')) {
+              normalizedCollection = 'genesis';
+            } else if (rawCollectionRole.toLowerCase().includes('vip')) {
+              normalizedCollection = 'vip';
+            }
 
-    const tokenId =
-      nft.token_id ||
-      nft.tokenId ||
-      nft.mint ||
-      nft.mintAddress ||
-      nft.address ||
-      '';
+            const tokenId =
+              nft.token_id ||
+              nft.tokenId ||
+              nft.mint ||
+              nft.mintAddress ||
+              nft.address ||
+              '';
 
-    if (!normalizedCollection || !tokenId) {
-      console.warn('⚠️ [NFT SCAN SAVE] Skipping NFT during normalization:', {
-        name: nft.name,
-        tokenId,
-        rawCollectionAddress,
-        rawCollectionName,
-        rawCollectionRole
-      });
-      return null;
-    }
+            if (!normalizedCollection || !tokenId) {
+              console.warn('⚠️ [NFT SCAN SAVE] Skipping NFT during normalization:', {
+                name: nft.name,
+                tokenId,
+                rawCollectionAddress,
+                rawCollectionName,
+                rawCollectionRole
+              });
+              return null;
+            }
 
-    const rawTraits = Array.isArray(nft.traits)
-      ? nft.traits
-      : (Array.isArray(nft.attributes) ? nft.attributes : []);
+            const rawTraits = Array.isArray(nft.traits)
+              ? nft.traits
+              : (Array.isArray(nft.attributes) ? nft.attributes : []);
 
-    return {
-      token_id: tokenId,
-      collection: normalizedCollection,
-      nft_name: nft.nft_name || nft.name || 'Unnamed NFT',
-      image_url: nft.image_url || nft.image || '',
-      metadata_json: nft,
-      traits: rawTraits.map(trait => ({
-        trait_type: trait.trait_type || trait.type || '',
-        value: trait.value ?? ''
-      })).filter(trait => trait.trait_type && String(trait.value) !== '')
-    };
-  })
-  .filter(Boolean);
+            return {
+              token_id: tokenId,
+              collection: normalizedCollection,
+              nft_name: nft.nft_name || nft.name || 'Unnamed NFT',
+              image_url: nft.image_url || nft.image || '',
+              metadata_json: nft,
+              traits: rawTraits.map(trait => ({
+                trait_type: trait.trait_type || trait.type || '',
+                value: trait.value ?? ''
+              })).filter(trait => trait.trait_type && String(trait.value) !== '')
+            };
+          })
+          .filter(Boolean);
 
-console.log('💾 [NFT SCAN SAVE] Normalized NFTs for SQL save:', normalizedNfts);
+        console.log('💾 [NFT SCAN SAVE] Normalized NFTs for SQL save:', normalizedNfts);
 
         if (normalizedNfts.length > 0) {
-const savePayload = {
-  user_id: userId,
-  username:
-    window.sessionDiscordUsername ||
-    localStorage.getItem('discord_username') ||
-    localStorage.getItem('discord_name') ||
-    localStorage.getItem('username') ||
-    'Unknown User',
-  wallet: walletAddress,
-  signature: signature,
-  message: message,
-  nfts: normalizedNfts
-};
+          const savePayload = {
+            user_id: userId,
+            username:
+              window.sessionDiscordUsername ||
+              localStorage.getItem('discord_username') ||
+              localStorage.getItem('discord_name') ||
+              localStorage.getItem('username') ||
+              'Unknown User',
+            wallet: walletAddress,
+            signature: signature,
+            message: message,
+            verification_mode: verificationProof.mode,
+            nfts: normalizedNfts
+          };
 
           console.log('💾 [NFT SCAN SAVE] Saving verified NFT scan:', {
             user_id: savePayload.user_id,
@@ -5440,26 +5451,37 @@ const savePayload = {
         console.error('❌ [NFT SCAN SAVE] Failed to save verified NFT scan:', saveError);
       }
     }
-    
+
     // Display comprehensive success/error message
-    if (allGrantedRoles.length > 0) {
-      // Build success message showing all granted roles
+    if (allVerifiedCollections.length > 0) {
       let successMessage = `✅ NFT Verification Successful!\n\n`;
-      successMessage += `🎯 Discord Roles Granted:\n`;
-      
-      allGrantedRoles.forEach((granted, index) => {
-        successMessage += `   ${index + 1}. ${granted.role} (${granted.count} NFT${granted.count !== 1 ? 's' : ''} from ${granted.collection})\n`;
+      successMessage += `📦 Verified Collections:\n`;
+
+      allVerifiedCollections.forEach((verified, index) => {
+        successMessage += `   ${index + 1}. ${verified.collection} (${verified.count} NFT${verified.count !== 1 ? 's' : ''})\n`;
       });
-      
-      successMessage += `\n✨ Your Discord roles have been updated! Check your Discord server to see your new roles.`;
-      
-      if (allFailedCollections.length > 0) {
-        successMessage += `\n\n⚠️ Note: ${allFailedCollections.length} collection(s) could not be verified.`;
+
+      if (allGrantedRoles.length > 0) {
+        successMessage += `\n🎯 Discord Roles Granted:\n`;
+
+        allGrantedRoles.forEach((granted, index) => {
+          successMessage += `   ${index + 1}. ${granted.role} (${granted.count} NFT${granted.count !== 1 ? 's' : ''} from ${granted.collection})\n`;
+        });
+
+        successMessage += `\n✨ Your Discord roles have been updated! Check your Discord server to see your new roles.`;
+      } else {
+        successMessage += `\n⚠️ Your NFT ownership was verified and saved to your player profile, but no Discord role was granted yet.`;
       }
-      
+
+      if (allFailedCollections.length > 0) {
+        successMessage += `\n\n⚠️ Notes:\n`;
+        allFailedCollections.forEach((failed, index) => {
+          successMessage += `   ${index + 1}. ${failed.collection}: ${failed.error}\n`;
+        });
+      }
+
       showSuccess(successMessage);
     } else if (hasErrors) {
-      // Show error message if no roles were granted
       let errorMessage = `❌ NFT Verification Failed\n\n`;
       errorMessage += `The following collections could not be verified:\n`;
       allFailedCollections.forEach((failed, index) => {
@@ -5467,14 +5489,14 @@ const savePayload = {
       });
       showError(errorMessage);
     } else {
-      showError('No roles were granted. Please ensure you own NFTs from the supported collections.');
+      showError('No verified NFTs were found. Please ensure you own NFTs from the supported collections.');
     }
-    
-    // Refresh the page to show new roles (only if roles were granted)
+
+    // Refresh the page only if roles were granted.
     if (allGrantedRoles.length > 0) {
       setTimeout(() => location.reload(), 3000);
     }
-    
+
   } catch (error) {
     console.error('Backend verification error:', error);
     showError('Failed to verify with backend: ' + error.message);
