@@ -1,45 +1,57 @@
 <?php
 /**
  * NFT Holder Verification API
- * 
+ *
  * VERIFICATION FLOW:
  * 1. Frontend calls this API with wallet address and collection address
  * 2. API uses get-nfts.php to verify NFT ownership (same logic as frontend display)
  * 3. If NFTs found, grants Discord role based on collection address mapping:
  *    - 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML' → '🏆 Holder' (role_id: 1402668301414563971)
  *    - 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg' → '🎴 VIP Holder' (role_id: 1332016526848692345)
- * 
+ *
  * CRITICAL: Collection address is used to determine which role to grant
  * - VIP NFTs (CUJH8MV...) → VIP Holder role ONLY
  * - Genesis NFTs (AtJCkW4...) → Holder role ONLY
  * - No cross-granting: VIP collection grants VIP role, Genesis collection grants Holder role
  */
 
-// Start output buffering to prevent any accidental HTML output
 ob_start();
 
-// Suppress warnings/notices from being displayed (they'll still be logged)
-// Only fatal errors will stop execution
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
 
-// Register shutdown function to catch fatal errors and ensure JSON response
-register_shutdown_function(function() {
+register_shutdown_function(function () {
     $error = error_get_last();
-    if ($error !== NULL && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-        ob_clean();
-        header('Content-Type: application/json');
-        http_response_code(500);
-        echo json_encode([
-            'success' => false,
-            'error' => 'Fatal error: ' . $error['message'],
-            'file' => basename($error['file']),
-            'line' => $error['line']
-        ]);
-        ob_end_flush();
-        exit;
+
+    if ($error === null) {
+        return;
     }
+
+    $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
+    if (!in_array($error['type'], $fatalTypes, true)) {
+        return;
+    }
+
+    if (ob_get_length()) {
+        ob_clean();
+    }
+
+    header('Content-Type: application/json');
+    http_response_code(500);
+
+    echo json_encode([
+        'success' => false,
+        'error' => 'Fatal error: ' . $error['message'],
+        'file' => basename($error['file']),
+        'line' => $error['line']
+    ]);
+
+    if (ob_get_length() !== false) {
+        ob_end_flush();
+    }
+
+    exit;
 });
 
 header('Content-Type: application/json');
@@ -48,174 +60,96 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    ob_end_clean();
+    if (ob_get_length()) {
+        ob_end_clean();
+    }
     exit(0);
 }
 
-// Database path detection (local vs production)
-$isProduction = strpos(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '', 'narrrfs.world') !== false;
-$dbPath = $isProduction 
-    ? '/var/www/html/db/narrrf_world.sqlite' 
-    : __DIR__ . '/../../db/narrrf_world.sqlite';
+const VERIFICATION_MODE_MESSAGE = 'message';
+const VERIFICATION_MODE_MEMO = 'memo_transaction';
+
+const GENESIS_COLLECTION_ADDRESS = 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML';
+const VIP_COLLECTION_ADDRESS = 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg';
+
+const GENESIS_ROLE_ID = '1402668301414563971';
+const VIP_ROLE_ID = '1332016526848692345';
+
+const MEMO_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);
-    
-    if (!$input) {
+
+    if (!is_array($input)) {
         throw new Exception('Invalid JSON input');
     }
-    
-$userId = isset($input['user_id']) ? $input['user_id'] : '';
-$walletAddress = isset($input['wallet_address']) ? $input['wallet_address'] : '';
-$collection = isset($input['collection']) ? $input['collection'] : '';
-$signature = isset($input['signature']) ? $input['signature'] : '';
-$message = isset($input['message']) ? $input['message'] : '';
-$verificationMode = isset($input['verification_mode']) ? $input['verification_mode'] : 'message';
-$botToken = isset($input['bot_token']) ? $input['bot_token'] : '';
-    
-    // Check if this is a Discord bot request (bypasses signature verification)
-    $isBotRequest = !empty($botToken);
-    $validBotToken = getenv('DISCORD_SECRET') ?: 'admin_quest_system'; // Use same token as grant-role.php
-    
+
+    $userId = trim((string)($input['user_id'] ?? ''));
+    $walletAddress = trim((string)($input['wallet_address'] ?? ''));
+    $collection = trim((string)($input['collection'] ?? ''));
+    $signature = trim((string)($input['signature'] ?? ''));
+    $message = trim((string)($input['message'] ?? ''));
+    $verificationMode = trim((string)($input['verification_mode'] ?? VERIFICATION_MODE_MESSAGE));
+    $botToken = trim((string)($input['bot_token'] ?? ''));
+
+    $isBotRequest = $botToken !== '';
+    $validBotToken = getenv('DISCORD_SECRET') ?: 'admin_quest_system';
+
     if ($isBotRequest && $botToken !== $validBotToken) {
         throw new Exception('Invalid bot token for Discord bot verification');
     }
-    
-    // Validate required fields
-    if (empty($userId)) {
+
+    if ($userId === '') {
         throw new Exception('User ID is required');
     }
-    
-    if (empty($walletAddress)) {
+
+    if ($walletAddress === '') {
         throw new Exception('Wallet address is required');
     }
 
-    if (!in_array($verificationMode, ['message', 'memo_transaction'], true)) {
-    throw new Exception('Invalid verification mode');
-    }
-    
-    // Validate wallet address format
-    if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $walletAddress)) {
+    if (!isValidSolanaAddress($walletAddress)) {
         throw new Exception('Invalid Solana wallet address format');
     }
-    
-// For non-bot requests, require verification proof
-if (!$isBotRequest) {
-    if (empty($signature)) {
-        throw new Exception('Cryptographic signature is required for security');
+
+    if (!in_array($verificationMode, [VERIFICATION_MODE_MESSAGE, VERIFICATION_MODE_MEMO], true)) {
+        throw new Exception('Invalid verification mode');
     }
 
-    if (empty($message)) {
-        throw new Exception('Signed message is required');
+    if (!$isBotRequest) {
+        validateVerificationProof($walletAddress, $message, $signature, $verificationMode);
     }
 
-    error_log("🔐 [VERIFY-NFT-HOLDER] Verification mode: {$verificationMode}");
-    error_log("🔐 [VERIFY-NFT-HOLDER] Wallet: {$walletAddress}");
-    error_log("🔐 [VERIFY-NFT-HOLDER] Proof: {$signature}");
-    error_log("🔐 [VERIFY-NFT-HOLDER] Message: {$message}");
+    $db = createDatabaseConnection();
+    $user = findUserForVerification($db, $userId);
 
-    if ($verificationMode === 'memo_transaction') {
-        if (!verifySolanaMemoTransaction($walletAddress, $message, $signature)) {
-            throw new Exception('Invalid Ledger verification transaction.');
-        }
-    } else {
-        if (!verifySolanaSignature($walletAddress, $message, $signature)) {
-            throw new Exception('Invalid signature. Please sign the verification message with your wallet.');
-        }
-    }
-}
-    
-    $db = new PDO("sqlite:$dbPath");
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Get user info - use same logic as existing user search system
-    $userStmt = $db->prepare("
-        SELECT us.user_id, SUM(us.score) as total_score, u.username, u.discord_id
-        FROM tbl_user_scores us
-        LEFT JOIN tbl_users u ON us.user_id = u.discord_id
-        WHERE us.user_id = ?
-        GROUP BY us.user_id
-    ");
-    $userStmt->execute([$userId]);
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-    
-    // If user not found in scores, check if they exist in users table
-    if (!$user) {
-        $userCheckStmt = $db->prepare("SELECT discord_id, username FROM tbl_users WHERE discord_id = ?");
-        $userCheckStmt->execute([$userId]);
-        $userExists = $userCheckStmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($userExists) {
-            // User exists but hasn't played games yet - create a basic entry
-            $user = [
-                'user_id' => $userId,
-                'total_score' => 0,
-                'username' => $userExists['username'],
-                'discord_id' => $userId
-            ];
-            error_log("User $userId exists but hasn't played games yet - allowing verification");
-        } else {
-            throw new Exception('User not found in database. User must be registered in the system.');
-        }
-    }
-    
-    // Known collections mapped to their Discord roles
-    $collectionsConfig = [
-        'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML' => [
-            'name' => 'Narrrfs World: Genesis Genetic',
-            'role_name' => '🏆 Holder',
-            'role_id' => '1402668301414563971'
-        ],
-        'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg' => [
-            'name' => 'Narrrf Genesis VIP Drop',
-            'role_name' => '🎴 VIP Holder',
-            'role_id' => '1332016526848692345'
-        ]
-    ];
-
-    // Helper maps for role name / collection name lookup
-    $collectionsByRole = [];
-    $collectionsByName = [];
-    foreach ($collectionsConfig as $address => $info) {
-        $collectionsByRole[$info['role_name']] = $address;
-        $collectionsByName[strtolower($info['name'])] = $address;
-    }
-
-    // Determine which collections to verify (default: all)
-    $collectionsToVerify = $collectionsConfig;
-    if (!empty($collection)) {
-        if (isset($collectionsConfig[$collection])) {
-            $collectionsToVerify = [$collection => $collectionsConfig[$collection]];
-        } elseif (isset($collectionsByRole[$collection])) {
-            $addr = $collectionsByRole[$collection];
-            $collectionsToVerify = [$addr => $collectionsConfig[$addr]];
-        } elseif (isset($collectionsByName[strtolower($collection)])) {
-            $addr = $collectionsByName[strtolower($collection)];
-            $collectionsToVerify = [$addr => $collectionsConfig[$addr]];
-        }
-    }
-
+    $collectionsConfig = getCollectionsConfig();
+    $collectionsToVerify = resolveCollectionsToVerify($collectionsConfig, $collection);
     $verifiedCollections = [];
 
-    error_log("🔍 [VERIFY-NFT-HOLDER] Starting verification for user: {$userId} (" . (isset($user['username']) ? $user['username'] : 'N/A') . ")");
+    error_log("🔍 [VERIFY-NFT-HOLDER] Starting verification for user: {$userId} (" . ($user['username'] ?? 'N/A') . ")");
     error_log("🔍 [VERIFY-NFT-HOLDER] Wallet: {$walletAddress}");
+    error_log("🔍 [VERIFY-NFT-HOLDER] Verification mode: {$verificationMode}");
     error_log("🔍 [VERIFY-NFT-HOLDER] Collections to verify: " . count($collectionsToVerify));
 
     foreach ($collectionsToVerify as $collectionAddress => $info) {
         error_log("\n🔍 [VERIFY-NFT-HOLDER] Processing collection: {$info['name']}");
         error_log("   Collection Address: {$collectionAddress}");
         error_log("   Expected Role: {$info['role_name']} (ID: {$info['role_id']})");
-        
-        // Use the same get-nfts.php API that we fixed for proper collection matching
-        // This ensures we use the same logic that works correctly on the frontend
-        error_log("   Calling fetchCollectionNFTCountViaAPI...");
+
         $collectionCount = fetchCollectionNFTCountViaAPI($walletAddress, $collectionAddress);
         error_log("   ✅ NFT Count Result: {$collectionCount} NFT(s) found");
 
         $roleGranted = false;
+
         if ($collectionCount > 0) {
             error_log("   🎯 NFTs found! Attempting to grant role: {$info['role_name']} (ID: {$info['role_id']})");
-            $roleGranted = grantDiscordRole($userId, isset($user['username']) ? $user['username'] : '', $info['role_id'], $info['role_name']);
+
+            $roleGranted = grantDiscordRole(
+                $userId,
+                (string)($user['username'] ?? ''),
+                $info['role_id'],
+                $info['role_name']
+            );
 
             if ($roleGranted) {
                 error_log("   ✅ Role granted successfully: {$info['role_name']}");
@@ -223,15 +157,37 @@ if (!$isBotRequest) {
                 error_log("   ❌ Role grant failed: {$info['role_name']}");
             }
 
-            logHolderVerification($db, $userId, isset($user['username']) ? $user['username'] : '', $walletAddress, $info['name'], $collectionCount, $roleGranted);
+            logHolderVerification(
+                $db,
+                $userId,
+                (string)($user['username'] ?? ''),
+                $walletAddress,
+                $info['name'],
+                $collectionCount,
+                $roleGranted
+            );
 
             if ($roleGranted) {
-                logRoleGrant($db, $userId, isset($user['username']) ? $user['username'] : '', $info['role_id'], $info['role_name']);
+                logRoleGrant(
+                    $db,
+                    $userId,
+                    (string)($user['username'] ?? ''),
+                    $info['role_id'],
+                    $info['role_name']
+                );
             }
         } else {
             error_log("   ❌ No NFTs found for collection: {$info['name']}");
-            // Always log verification attempts even when no NFTs were found
-            logHolderVerification($db, $userId, isset($user['username']) ? $user['username'] : '', $walletAddress, $info['name'], 0, false);
+
+            logHolderVerification(
+                $db,
+                $userId,
+                (string)($user['username'] ?? ''),
+                $walletAddress,
+                $info['name'],
+                0,
+                false
+            );
         }
 
         $verifiedCollections[] = [
@@ -242,121 +198,268 @@ if (!$isBotRequest) {
             'count' => $collectionCount,
             'granted' => $roleGranted
         ];
-        
-        error_log("   📊 Collection verification result: " . json_encode([
+
+        error_log('   📊 Collection verification result: ' . json_encode([
             'collection' => $info['name'],
             'count' => $collectionCount,
             'granted' => $roleGranted ? 'YES' : 'NO'
         ]));
     }
-    
+
     error_log("\n✅ [VERIFY-NFT-HOLDER] Verification complete. Total collections verified: " . count($verifiedCollections));
 
-    ob_clean(); // Clear any output before sending JSON
-    echo json_encode([
+    respondJson([
         'success' => true,
         'wallet' => $walletAddress,
         'verified_collections' => $verifiedCollections,
         'message' => 'NFT verification completed.'
     ]);
-    ob_end_flush();
-    exit;
-
 } catch (Exception $e) {
-    error_log("NFT Holder Verification Error: " . $e->getMessage());
-    ob_clean(); // Clear any output before sending JSON
-    http_response_code(400);
-    echo json_encode([
+    error_log('NFT Holder Verification Error: ' . $e->getMessage());
+
+    respondJson([
         'success' => false,
         'error' => $e->getMessage()
-    ]);
-    ob_end_flush();
-    exit;
+    ], 400);
 } catch (Error $e) {
-    // Catch fatal errors (PHP 7+)
-    error_log("NFT Holder Verification Fatal Error: " . $e->getMessage());
-    ob_clean(); // Clear any output before sending JSON
-    http_response_code(500);
-    echo json_encode([
+    error_log('NFT Holder Verification Fatal Error: ' . $e->getMessage());
+
+    respondJson([
         'success' => false,
         'error' => 'Fatal error: ' . $e->getMessage(),
         'file' => basename($e->getFile()),
         'line' => $e->getLine()
-    ]);
-    ob_end_flush();
+    ], 500);
+}
+
+/**
+ * Send a JSON response and stop execution.
+ */
+function respondJson(array $payload, int $statusCode = 200): void
+{
+    if (ob_get_length()) {
+        ob_clean();
+    }
+
+    http_response_code($statusCode);
+    echo json_encode($payload);
+
+    if (ob_get_length() !== false) {
+        ob_end_flush();
+    }
+
     exit;
 }
 
 /**
- * Fetch the number of NFTs a wallet holds for a specific collection using our fixed get-nfts.php API.
- * This ensures we use the same collection matching logic that works correctly on the frontend.
+ * Return the SQLite path for local or production environments.
+ */
+function getDatabasePath(): string
+{
+    $host = isset($_SERVER['HTTP_HOST']) ? (string)$_SERVER['HTTP_HOST'] : '';
+    $isProduction = strpos($host, 'narrrfs.world') !== false;
+
+    return $isProduction
+        ? '/var/www/html/db/narrrf_world.sqlite'
+        : __DIR__ . '/../../db/narrrf_world.sqlite';
+}
+
+/**
+ * Create the PDO connection used by the verification flow.
+ */
+function createDatabaseConnection(): PDO
+{
+    $db = new PDO('sqlite:' . getDatabasePath());
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    return $db;
+}
+
+/**
+ * Return the supported NFT collection and Discord role mapping.
+ */
+function getCollectionsConfig(): array
+{
+    return [
+        GENESIS_COLLECTION_ADDRESS => [
+            'name' => 'Narrrfs World: Genesis Genetic',
+            'role_name' => '🏆 Holder',
+            'role_id' => GENESIS_ROLE_ID
+        ],
+        VIP_COLLECTION_ADDRESS => [
+            'name' => 'Narrrf Genesis VIP Drop',
+            'role_name' => '🎴 VIP Holder',
+            'role_id' => VIP_ROLE_ID
+        ]
+    ];
+}
+
+/**
+ * Validate a Solana wallet address shape.
+ */
+function isValidSolanaAddress(string $value): bool
+{
+    return (bool)preg_match('/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $value);
+}
+
+/**
+ * Validate the supplied verification proof before any role or NFT logic runs.
+ */
+function validateVerificationProof(
+    string $walletAddress,
+    string $message,
+    string $signature,
+    string $verificationMode
+): void {
+    if ($signature === '') {
+        throw new Exception('Cryptographic signature is required for security');
+    }
+
+    if ($message === '') {
+        throw new Exception('Signed message is required');
+    }
+
+    error_log("🔐 [VERIFY-NFT-HOLDER] Verification mode: {$verificationMode}");
+    error_log("🔐 [VERIFY-NFT-HOLDER] Wallet: {$walletAddress}");
+    error_log("🔐 [VERIFY-NFT-HOLDER] Proof: {$signature}");
+    error_log("🔐 [VERIFY-NFT-HOLDER] Message: {$message}");
+
+    if ($verificationMode === VERIFICATION_MODE_MEMO) {
+        if (!verifySolanaMemoTransaction($walletAddress, $message, $signature)) {
+            throw new Exception('Invalid Ledger verification transaction.');
+        }
+
+        return;
+    }
+
+    if (!verifySolanaSignature($walletAddress, $message, $signature)) {
+        throw new Exception('Invalid signature. Please sign the verification message with your wallet.');
+    }
+}
+
+/**
+ * Find the user in the same Season 9-compatible way the existing system expects.
+ */
+function findUserForVerification(PDO $db, string $userId): array
+{
+    $userStmt = $db->prepare("
+        SELECT us.user_id, SUM(us.score) as total_score, u.username, u.discord_id
+        FROM tbl_user_scores us
+        LEFT JOIN tbl_users u ON us.user_id = u.discord_id
+        WHERE us.user_id = ?
+        GROUP BY us.user_id
+    ");
+    $userStmt->execute([$userId]);
+
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user) {
+        return $user;
+    }
+
+    $userCheckStmt = $db->prepare("
+        SELECT discord_id, username
+        FROM tbl_users
+        WHERE discord_id = ?
+    ");
+    $userCheckStmt->execute([$userId]);
+
+    $userExists = $userCheckStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$userExists) {
+        throw new Exception('User not found in database. User must be registered in the system.');
+    }
+
+    error_log("User {$userId} exists but hasn't played games yet - allowing verification");
+
+    return [
+        'user_id' => $userId,
+        'total_score' => 0,
+        'username' => $userExists['username'],
+        'discord_id' => $userId
+    ];
+}
+
+/**
+ * Resolve which collections should be verified for this request.
+ */
+function resolveCollectionsToVerify(array $collectionsConfig, string $requestedCollection): array
+{
+    if ($requestedCollection === '') {
+        return $collectionsConfig;
+    }
+
+    if (isset($collectionsConfig[$requestedCollection])) {
+        return [$requestedCollection => $collectionsConfig[$requestedCollection]];
+    }
+
+    $collectionsByRole = [];
+    $collectionsByName = [];
+
+    foreach ($collectionsConfig as $address => $info) {
+        $collectionsByRole[$info['role_name']] = $address;
+        $collectionsByName[strtolower($info['name'])] = $address;
+    }
+
+    if (isset($collectionsByRole[$requestedCollection])) {
+        $address = $collectionsByRole[$requestedCollection];
+        return [$address => $collectionsConfig[$address]];
+    }
+
+    $lowerRequestedCollection = strtolower($requestedCollection);
+    if (isset($collectionsByName[$lowerRequestedCollection])) {
+        $address = $collectionsByName[$lowerRequestedCollection];
+        return [$address => $collectionsConfig[$address]];
+    }
+
+    return $collectionsConfig;
+}
+
+/**
+ * Fetch the number of NFTs a wallet holds for a specific collection using get-nfts.php.
+ * This keeps frontend display logic and backend role logic aligned.
  */
 function fetchCollectionNFTCountViaAPI(string $walletAddress, string $collectionAddress): int
 {
     try {
-        error_log("   🔍 [FETCH-NFT-COUNT] Calling get-nfts.php API");
+        error_log('   🔍 [FETCH-NFT-COUNT] Calling get-nfts.php API');
         error_log("      Wallet: {$walletAddress}");
         error_log("      Collection: {$collectionAddress}");
-        
-        // Use the same get-nfts.php API that we fixed for proper collection matching
-        // This ensures consistent behavior between frontend display and role granting
-        $isProduction = strpos(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '', 'narrrfs.world') !== false;
+
+        $host = isset($_SERVER['HTTP_HOST']) ? (string)$_SERVER['HTTP_HOST'] : '';
+        $isProduction = strpos($host, 'narrrfs.world') !== false;
         $apiBaseUrl = $isProduction ? 'https://narrrfs.world' : 'http://localhost';
-        $apiUrl = "{$apiBaseUrl}/api/wallet/get-nfts.php?wallet=" . urlencode($walletAddress) . "&collection=" . urlencode($collectionAddress);
-        
+
+        $apiUrl = $apiBaseUrl
+            . '/api/wallet/get-nfts.php?wallet=' . urlencode($walletAddress)
+            . '&collection=' . urlencode($collectionAddress);
+
         error_log("      API URL: {$apiUrl}");
-        
-        $ch = curl_init($apiUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+
+        $response = performJsonHttpRequest($apiUrl, null, [
             'User-Agent: Narrrfs-World-NFT-Verification/1.0'
-        ]);
+        ], 30);
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
+        $data = $response['json'];
 
-        error_log("      HTTP Code: {$httpCode}");
-
-        if ($curlError) {
-            error_log("      ❌ CURL Error: {$curlError}");
-            throw new Exception('API request error: ' . $curlError);
-        }
-
-        if ($httpCode !== 200) {
-            error_log("      ❌ HTTP Error: {$httpCode}");
-            error_log("      Response: " . substr($response, 0, 500));
-            throw new Exception("API request failed with HTTP code {$httpCode}");
-        }
-
-        $data = json_decode($response, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            error_log("      ❌ JSON Parse Error: " . json_last_error_msg());
-            throw new Exception('Invalid JSON response from API: ' . json_last_error_msg());
-        }
-
-        error_log("      ✅ API Response: " . json_encode([
-            'success' => isset($data['success']) ? $data['success'] : false,
-            'count' => isset($data['count']) ? $data['count'] : 0,
-            'has_assets' => isset($data['has_assets']) ? $data['has_assets'] : false,
-            'method' => isset($data['method']) ? $data['method'] : 'unknown',
+        error_log('      ✅ API Response: ' . json_encode([
+            'success' => $data['success'] ?? false,
+            'count' => $data['count'] ?? 0,
+            'has_assets' => $data['has_assets'] ?? false,
+            'method' => $data['method'] ?? 'unknown',
             'nfts_length' => isset($data['nfts']) && is_array($data['nfts']) ? count($data['nfts']) : 0
         ]));
 
-        // Use the count from the API response (already filtered by collection)
-        if (isset($data['success']) && $data['success'] && isset($data['count'])) {
+        if (($data['success'] ?? false) && isset($data['count'])) {
             $count = (int)$data['count'];
             error_log("      ✅ Collection NFT count via API ({$collectionAddress}): {$count} NFTs found");
             return $count;
-        } else {
-            // Fallback: count NFTs array if count field is missing
-            if (isset($data['nfts']) && is_array($data['nfts'])) {
-                $count = count($data['nfts']);
-                error_log("      ✅ Collection NFT count via API (fallback, {$collectionAddress}): {$count} NFTs found");
-                return $count;
-            }
+        }
+
+        if (isset($data['nfts']) && is_array($data['nfts'])) {
+            $count = count($data['nfts']);
+            error_log("      ✅ Collection NFT count via API (fallback, {$collectionAddress}): {$count} NFTs found");
+            return $count;
         }
 
         error_log("      ⚠️ Collection NFT count via API ({$collectionAddress}): No NFTs found or API error");
@@ -368,75 +471,56 @@ function fetchCollectionNFTCountViaAPI(string $walletAddress, string $collection
 }
 
 /**
- * Legacy function - kept for backward compatibility but not used anymore.
- * @deprecated Use fetchCollectionNFTCountViaAPI instead
+ * Legacy compatibility wrapper.
  */
 function fetchCollectionNFTCount(string $walletAddress, string $collectionAddress): int
 {
-    // Redirect to the new API-based function
     return fetchCollectionNFTCountViaAPI($walletAddress, $collectionAddress);
 }
 
 /**
- * Grant a Discord role via internal API.
+ * Grant a Discord role through the internal API.
  */
 function grantDiscordRole(string $userId, string $username, string $roleId, string $roleName): bool
 {
     try {
-        error_log("   🎯 [GRANT-ROLE] Attempting to grant Discord role");
+        error_log('   🎯 [GRANT-ROLE] Attempting to grant Discord role');
         error_log("      User ID: {$userId}");
         error_log("      Username: {$username}");
         error_log("      Role: {$roleName} (ID: {$roleId})");
-        
+
         $discordApiUrl = 'https://narrrfs.world/api/discord/grant-role.php';
         $payload = [
             'action' => 'add_role',
             'user_id' => $userId,
             'role_id' => $roleId
         ];
-        
+
         error_log("      API URL: {$discordApiUrl}");
-        error_log("      Payload: " . json_encode($payload));
+        error_log('      Payload: ' . json_encode($payload));
 
-        $ch = curl_init($discordApiUrl);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Authorization: Bearer admin_quest_system'
-        ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        $response = performJsonHttpRequest(
+            $discordApiUrl,
+            $payload,
+            [
+                'Content-Type: application/json',
+                'Authorization: Bearer admin_quest_system'
+            ],
+            10
+        );
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
+        $result = $response['json'];
+        $success = (bool)($result['success'] ?? false);
 
-        error_log("      HTTP Code: {$httpCode}");
-
-        if ($curlError) {
-            error_log("      ❌ CURL Error: {$curlError}");
-            throw new Exception('Discord role grant CURL error: ' . $curlError);
-        }
-
-        if ($httpCode !== 200) {
-            error_log("      ❌ HTTP Error: {$httpCode}");
-            error_log("      Response: " . substr($response, 0, 500));
-            throw new Exception("Discord role grant failed with HTTP code {$httpCode}: {$response}");
-        }
-
-        $result = json_decode($response, true);
-        $success = isset($result['success']) && $result['success'];
-
-        error_log("      API Response: " . json_encode($result));
+        error_log('      API Response: ' . json_encode($result));
 
         if (!$success) {
-            error_log("      ❌ Role grant failed: " . (isset($result['error']) ? $result['error'] : 'Unknown error'));
-            throw new Exception('Discord role grant failed: ' . (isset($result['error']) ? $result['error'] : $response));
+            $error = $result['error'] ?? 'Unknown error';
+            error_log("      ❌ Role grant failed: {$error}");
+            throw new Exception('Discord role grant failed: ' . $error);
         }
 
-        error_log("      ✅ Role granted successfully!");
+        error_log('      ✅ Role granted successfully!');
         return true;
     } catch (Exception $e) {
         error_log("      ❌ Failed to grant Discord role {$roleName} ({$roleId}) to {$userId} ({$username}): " . $e->getMessage());
@@ -445,10 +529,17 @@ function grantDiscordRole(string $userId, string $username, string $roleId, stri
 }
 
 /**
- * Log holder verification attempts/successes.
+ * Log holder verification attempts and outcomes.
  */
-function logHolderVerification(PDO $db, string $userId, string $username, string $wallet, string $collectionName, int $count, bool $granted): void
-{
+function logHolderVerification(
+    PDO $db,
+    string $userId,
+    string $username,
+    string $wallet,
+    string $collectionName,
+    int $count,
+    bool $granted
+): void {
     $stmt = $db->prepare("
         INSERT OR REPLACE INTO tbl_holder_verifications
         (user_id, username, wallet, collection, nft_count, role_granted, verified_at)
@@ -466,12 +557,12 @@ function logHolderVerification(PDO $db, string $userId, string $username, string
 }
 
 /**
- * Log role grants for auditing.
+ * Log successful role grants for auditing.
  */
 function logRoleGrant(PDO $db, string $userId, string $username, string $roleId, string $roleName): void
 {
     $stmt = $db->prepare("
-        INSERT INTO tbl_role_grants 
+        INSERT INTO tbl_role_grants
         (user_id, username, role_id, role_name, granted_at, reason, granted_by)
         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
     ");
@@ -487,64 +578,158 @@ function logRoleGrant(PDO $db, string $userId, string $username, string $roleId,
 }
 
 /**
- * Verify Solana signature on the server side
- * This function validates that the signature was created by the claimed public key
+ * Perform an HTTP request and return both raw response and decoded JSON.
  */
-// TODO: Replace placeholder Solana message verification with real Ed25519 verification.
-// Current implementation only validates signature shape and is not cryptographically secure.
-function verifySolanaSignature($publicKey, $message, $signature) {
+function performJsonHttpRequest(
+    string $url,
+    ?array $payload = null,
+    array $headers = [],
+    int $timeoutSeconds = 20
+): array {
+    $ch = curl_init($url);
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutSeconds);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+    if ($payload !== null) {
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    }
+
+    $responseBody = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+
+    curl_close($ch);
+
+    if ($curlError) {
+        throw new Exception('CURL error: ' . $curlError);
+    }
+
+    if ($httpCode !== 200) {
+        throw new Exception("HTTP {$httpCode}: " . substr((string)$responseBody, 0, 500));
+    }
+
+    $decoded = json_decode((string)$responseBody, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid JSON response: ' . json_last_error_msg());
+    }
+
+    return [
+        'status' => $httpCode,
+        'body' => $responseBody,
+        'json' => $decoded
+    ];
+}
+
+/**
+ * Return the RPC URLs used for server-side Solana verification calls.
+ */
+function getSolanaRpcUrls(): array
+{
+    return [
+        'https://rpc.ankr.com/solana',
+        'https://api.mainnet-beta.solana.com'
+    ];
+}
+
+/**
+ * Fetch a Solana transaction from RPC with fallback across multiple endpoints.
+ */
+function fetchSolanaTransaction(string $txSignature): ?array
+{
+    $payload = [
+        'jsonrpc' => '2.0',
+        'id' => 1,
+        'method' => 'getTransaction',
+        'params' => [
+            $txSignature,
+            [
+                'encoding' => 'jsonParsed',
+                'maxSupportedTransactionVersion' => 0
+            ]
+        ]
+    ];
+
+    $lastError = null;
+
+    foreach (getSolanaRpcUrls() as $rpcUrl) {
+        try {
+            error_log("🔗 [SOLANA RPC] Trying getTransaction via {$rpcUrl}");
+
+            $response = performJsonHttpRequest(
+                $rpcUrl,
+                $payload,
+                ['Content-Type: application/json'],
+                20
+            );
+
+            if (!isset($response['json']['result'])) {
+                error_log("⚠️ [SOLANA RPC] No result field from {$rpcUrl}");
+                continue;
+            }
+
+            if (!$response['json']['result']) {
+                error_log("⚠️ [SOLANA RPC] Empty transaction result from {$rpcUrl}");
+                continue;
+            }
+
+            error_log("✅ [SOLANA RPC] Transaction fetched successfully from {$rpcUrl}");
+            return $response['json']['result'];
+        } catch (Exception $e) {
+            $lastError = $e;
+            error_log("❌ [SOLANA RPC] getTransaction failed via {$rpcUrl}: " . $e->getMessage());
+        }
+    }
+
+    if ($lastError) {
+        error_log('❌ [SOLANA RPC] All getTransaction RPC endpoints failed: ' . $lastError->getMessage());
+    }
+
+    return null;
+}
+
+/**
+ * Verify Solana signature on the server side.
+ *
+ * TODO: Replace placeholder Solana message verification with real Ed25519 verification.
+ * Current implementation only validates signature shape and is not cryptographically secure.
+ */
+function verifySolanaSignature(string $publicKey, string $message, string $signature): bool
+{
     try {
-        // Basic format validation
-        if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $publicKey)) {
-            error_log("Invalid public key format: $publicKey");
+        if (!isValidSolanaAddress($publicKey)) {
+            error_log("Invalid public key format: {$publicKey}");
             return false;
         }
-        
-        if (empty($signature) || empty($message)) {
-            error_log("Missing signature or message");
+
+        if ($signature === '' || $message === '') {
+            error_log('Missing signature or message');
             return false;
         }
-        
-        // Validate signature format (should be hex string)
+
         if (!preg_match('/^[0-9a-fA-F]+$/', $signature)) {
-            error_log("Invalid signature format: $signature");
+            error_log("Invalid signature format: {$signature}");
             return false;
         }
-        
-        // For production, you should implement proper Ed25519 signature verification
-        // Here's a placeholder implementation that you should replace with proper verification
-        
-        // TODO: Implement proper Ed25519 signature verification using a library like:
-        // - sodium_compat (PHP)
-        // - Or use a Solana RPC call to verify the signature
-        
-        // For now, we'll do basic validation and log for debugging
+
         $signatureLength = strlen($signature);
-        if ($signatureLength !== 128) { // Ed25519 signatures are 64 bytes = 128 hex chars
-            error_log("Invalid signature length: $signatureLength (expected 128)");
+        if ($signatureLength !== 128) {
+            error_log("Invalid signature length: {$signatureLength} (expected 128)");
             return false;
         }
-        
-        // Log the verification attempt for debugging
-        error_log("Signature verification attempt - PublicKey: $publicKey, Message: $message, Signature: $signature");
-        
-        // TODO: Replace this with proper Ed25519 verification
-        // For now, we'll accept the signature if it passes basic validation
-        // This is a security placeholder - implement proper verification before production
-        
-        // In production, you should:
-        // 1. Use a proper Ed25519 library
-        // 2. Verify the signature against the public key and message
-        // 3. Ensure the message hasn't been tampered with
-        // 4. Add rate limiting to prevent abuse
-        
+
+        error_log("Signature verification attempt - PublicKey: {$publicKey}, Message: {$message}, Signature: {$signature}");
+
+        // TODO: Implement proper Ed25519 verification using a proven library.
         return true;
-        
     } catch (Exception $e) {
-        error_log("Signature verification error: " . $e->getMessage());
+        error_log('Signature verification error: ' . $e->getMessage());
         return false;
     }
 }
+
 /**
  * Verify a Solana memo transaction for Ledger fallback verification.
  * This checks that:
@@ -553,122 +738,83 @@ function verifySolanaSignature($publicKey, $message, $signature) {
  * 3. the transaction contains the Memo program
  * 4. the memo text exactly matches the expected verification message
  */
-function verifySolanaMemoTransaction($walletAddress, $message, $txSignature) {
+function verifySolanaMemoTransaction(string $walletAddress, string $message, string $txSignature): bool
+{
     try {
-        if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $walletAddress)) {
-            error_log("Invalid wallet address format for memo verification: $walletAddress");
+        if (!isValidSolanaAddress($walletAddress)) {
+            error_log("Invalid wallet address format for memo verification: {$walletAddress}");
             return false;
         }
 
-        if (empty($message) || empty($txSignature)) {
-            error_log("Missing message or transaction signature for memo verification");
+        if ($message === '' || $txSignature === '') {
+            error_log('Missing message or transaction signature for memo verification');
             return false;
         }
 
         if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]+$/', $txSignature)) {
-            error_log("Invalid Solana transaction signature format: $txSignature");
+            error_log("Invalid Solana transaction signature format: {$txSignature}");
             return false;
         }
 
-        $rpcUrl = 'https://api.mainnet-beta.solana.com';
-
-        $payload = [
-            'jsonrpc' => '2.0',
-            'id' => 1,
-            'method' => 'getTransaction',
-            'params' => [
-                $txSignature,
-                [
-                    'encoding' => 'jsonParsed',
-                    'maxSupportedTransactionVersion' => 0
-                ]
-            ]
-        ];
-
-        $ch = curl_init($rpcUrl);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-
-        if ($curlError) {
-            error_log("Memo verification RPC CURL error: $curlError");
+        $result = fetchSolanaTransaction($txSignature);
+        if (!$result) {
+            error_log('Memo verification RPC returned no transaction result');
             return false;
         }
 
-        if ($httpCode !== 200) {
-            error_log("Memo verification RPC HTTP error: $httpCode");
+        if (($result['meta']['err'] ?? null) !== null) {
+            error_log('Memo verification transaction failed on-chain');
             return false;
         }
 
-        $data = json_decode($response, true);
-
-        if (!isset($data['result']) || !$data['result']) {
-            error_log("Memo verification RPC returned no transaction result");
+        $accountKeys = $result['transaction']['message']['accountKeys'] ?? null;
+        if (!is_array($accountKeys)) {
+            error_log('Memo verification missing account keys');
             return false;
         }
 
-        $result = $data['result'];
-
-        if (isset($result['meta']['err']) && $result['meta']['err'] !== null) {
-    error_log("Memo verification transaction failed on-chain");
-    return false;
-}
-
-        if (
-            !isset($result['transaction']['message']['accountKeys']) ||
-            !is_array($result['transaction']['message']['accountKeys'])
-        ) {
-            error_log("Memo verification missing account keys");
-            return false;
-        }
-
-        $accountKeys = $result['transaction']['message']['accountKeys'];
         $walletMatched = false;
 
-foreach ($accountKeys as $keyInfo) {
-    if (is_array($keyInfo)) {
-        $pubkey = isset($keyInfo['pubkey']) ? $keyInfo['pubkey'] : null;
-        $signer = !empty($keyInfo['signer']);
+        foreach ($accountKeys as $keyInfo) {
+            if (is_array($keyInfo)) {
+                $pubkey = (string)($keyInfo['pubkey'] ?? '');
+                $signer = !empty($keyInfo['signer']);
 
-        if ($pubkey === $walletAddress && $signer) {
-            $walletMatched = true;
-            break;
+                if ($pubkey === $walletAddress && $signer) {
+                    $walletMatched = true;
+                    break;
+                }
+
+                continue;
+            }
+
+            if (is_string($keyInfo) && $keyInfo === $walletAddress) {
+                $walletMatched = true;
+                break;
+            }
         }
-    } elseif (is_string($keyInfo) && $keyInfo === $walletAddress) {
-        // Fallback for non-parsed account key shape
-        $walletMatched = true;
-        break;
-    }
-}
 
         if (!$walletMatched) {
-            error_log("Memo verification wallet signer mismatch for $walletAddress");
+            error_log("Memo verification wallet signer mismatch for {$walletAddress}");
             return false;
         }
 
-        $instructions = isset($result['transaction']['message']['instructions']) && is_array($result['transaction']['message']['instructions'])
-            ? $result['transaction']['message']['instructions']
-            : [];
+        $instructions = $result['transaction']['message']['instructions'] ?? [];
+        if (!is_array($instructions)) {
+            $instructions = [];
+        }
 
         $memoFound = false;
-        $memoProgramId = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 
         foreach ($instructions as $instruction) {
             if (!is_array($instruction)) {
                 continue;
             }
 
-            $programId = isset($instruction['programId']) ? $instruction['programId'] : '';
-            $parsed = isset($instruction['parsed']) ? $instruction['parsed'] : null;
+            $programId = (string)($instruction['programId'] ?? '');
+            $parsed = $instruction['parsed'] ?? null;
 
-            if ($programId !== $memoProgramId) {
+            if ($programId !== MEMO_PROGRAM_ID) {
                 continue;
             }
 
@@ -677,22 +823,22 @@ foreach ($accountKeys as $keyInfo) {
                 break;
             }
 
-            if (is_array($parsed) && isset($parsed['memo']) && $parsed['memo'] === $message) {
+            if (is_array($parsed) && (string)($parsed['memo'] ?? '') === $message) {
                 $memoFound = true;
                 break;
             }
         }
 
         if (!$memoFound) {
-            error_log("Memo verification message mismatch");
+            error_log('Memo verification message mismatch');
             return false;
         }
 
-        error_log("Memo verification succeeded for wallet: $walletAddress");
+        error_log("Memo verification succeeded for wallet: {$walletAddress}");
         return true;
     } catch (Exception $e) {
-        error_log("Memo verification error: " . $e->getMessage());
+        error_log('Memo verification error: ' . $e->getMessage());
         return false;
     }
 }
-?> 
+?>

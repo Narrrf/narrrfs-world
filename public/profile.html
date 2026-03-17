@@ -4549,23 +4549,45 @@ function buildVerificationMemoMessage() {
 
 /**
  * Create a memo-only verification transaction.
- * This is a real on-chain transaction, so Ledger devices can show a prompt
- * even when off-chain signMessage flows fail.
+ * Uses backend blockhash fetch so browser RPC restrictions do not block Ledger verification.
  */
 async function createVerificationMemoTransaction(walletAddress, memoText) {
   const solanaWeb3 = ensureSolanaWeb3Available();
-  const connection = new solanaWeb3.Connection(getVerificationRpcUrl(), 'confirmed');
+
+  if (!walletAddress) {
+    throw new Error('Missing wallet address for Ledger verification transaction.');
+  }
+
+  if (!memoText) {
+    throw new Error('Missing memo text for Ledger verification transaction.');
+  }
+
   const publicKey = new solanaWeb3.PublicKey(walletAddress);
 
   const memoProgramId = new solanaWeb3.PublicKey(
     'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
   );
 
-  const { blockhash } = await connection.getLatestBlockhash('confirmed');
+  const response = await fetch('/api/wallet/get-ledger-blockhash.php', {
+    method: 'GET',
+    credentials: 'include'
+  });
+
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await response.text();
+    throw new Error(`Blockhash API returned non-JSON response: ${text.substring(0, 300)}`);
+  }
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success || !result.blockhash) {
+    throw new Error(result.error || 'Failed to fetch recent blockhash from backend.');
+  }
 
   const transaction = new solanaWeb3.Transaction({
     feePayer: publicKey,
-    recentBlockhash: blockhash
+    recentBlockhash: result.blockhash
   });
 
   transaction.add(
@@ -4578,20 +4600,22 @@ async function createVerificationMemoTransaction(walletAddress, memoText) {
         }
       ],
       programId: memoProgramId,
-      data: new TextEncoder().encode(memoText)
+      data: new TextEncoder().encode(String(memoText))
     })
   );
 
   return {
-    connection,
     transaction,
-    memoText
+    memoText,
+    blockhash: result.blockhash,
+    lastValidBlockHeight: result.lastValidBlockHeight || null,
+    rpc: result.rpc || null
   };
 }
 
 /**
  * Ask the wallet to sign/send a memo verification transaction.
- * This is intended as a Ledger fallback and test path.
+ * This is intended as a Ledger fallback path.
  */
 async function signVerificationMemoTransaction() {
   const provider = connectedWallet || getSolanaProvider();
@@ -4610,8 +4634,15 @@ async function signVerificationMemoTransaction() {
     );
   }
 
-  const { connection, transaction, memoText } =
+  const { transaction, memoText, blockhash, lastValidBlockHeight, rpc } =
     await createVerificationMemoTransaction(connectedWalletAddress, buildVerificationMemoMessage());
+
+  console.log('🧾 Ledger memo transaction prepared:', {
+    wallet: connectedWalletAddress,
+    blockhash,
+    lastValidBlockHeight,
+    rpc
+  });
 
   try {
     if (typeof provider.signAndSendTransaction === 'function') {
@@ -4625,27 +4656,13 @@ async function signVerificationMemoTransaction() {
         provider,
         mode: 'memo_transaction',
         signature: result.signature,
-        message: memoText,
-        connection
+        message: memoText
       };
     }
 
-    if (typeof provider.signTransaction === 'function') {
-      const signedTransaction = await provider.signTransaction(transaction);
-      const raw = signedTransaction.serialize();
-      const txSignature = await connection.sendRawTransaction(raw);
-      await connection.confirmTransaction(txSignature, 'confirmed');
-
-      return {
-        provider,
-        mode: 'memo_transaction',
-        signature: txSignature,
-        message: memoText,
-        connection
-      };
-    }
-
-    throw new Error('No supported transaction signing method found on provider.');
+    throw new Error(
+      `${getWalletProviderLabel(provider)} requires signAndSendTransaction for Ledger verification in this browser flow.`
+    );
   } catch (error) {
     const walletName = getWalletProviderLabel(provider);
     throw new Error(
