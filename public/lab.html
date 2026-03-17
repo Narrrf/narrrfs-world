@@ -97,6 +97,88 @@
       animation-delay: -6s;
     }
 
+    .queue-card {
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  padding: 16px;
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+
+.queue-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34,211,238,0.35);
+  box-shadow: 0 12px 30px rgba(2,132,199,0.12);
+}
+
+.queue-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.queue-mini-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #e2e8f0;
+}
+
+.queue-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.queue-empty {
+  border-radius: 18px;
+  border: 1px dashed rgba(255,255,255,0.14);
+  padding: 18px;
+  color: #cbd5e1;
+  background: rgba(255,255,255,0.03);
+}
+
+.nft-card-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.btn.compact {
+  padding: 9px 12px;
+  font-size: 0.82rem;
+}
+
+.chamber-pulse {
+  animation: chamberPulseHighlight 1.2s ease-out;
+}
+
+@keyframes chamberPulseHighlight {
+  0% {
+    box-shadow: 0 0 0 rgba(34,211,238,0);
+    transform: translateY(0);
+  }
+  30% {
+    box-shadow: 0 0 0 2px rgba(34,211,238,0.18), 0 0 28px rgba(34,211,238,0.18);
+    transform: translateY(-2px);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(34,211,238,0);
+    transform: translateY(0);
+  }
+}
+
     @keyframes floatOrb {
       0%,100% { transform: translateY(0) translateX(0) scale(1); }
       50% { transform: translateY(-22px) translateX(8px) scale(1.04); }
@@ -464,6 +546,53 @@
       box-shadow: 0 10px 24px rgba(239, 68, 68, 0.24);
     }
 
+    .trait-snapshot-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.trait-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff7d6;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.92));
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.22);
+}
+
+.trait-level-badge::before {
+  content: "🧀";
+  font-size: 0.78rem;
+}
+
+.trait-level-badge.level-high {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.96), rgba(245, 158, 11, 0.94));
+  color: #1f2937;
+}
+
+.trait-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.trait-value-text {
+  font-size: 0.95rem;
+  color: white;
+  min-width: 0;
+  word-break: break-word;
+}
+
     @keyframes labModalFadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -505,10 +634,11 @@
           <a class="nav-link" href="index.html">Home</a>
           <a class="nav-link" href="profile.html">Profile</a>
           <a class="nav-link" href="stake-lab.html">Stake Lab</a>
-          <a class="nav-link" href="admin-interface.html">Admin</a>
         </nav>
       </div>
     </header>
+
+    <div id="labEntryActions" class="mt-5"></div>
 
     <div class="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-5">
       <section class="flex flex-col gap-5">
@@ -540,6 +670,21 @@
             </div>
           </div>
         </div>
+
+        <div class="glass p-5 md:p-6">
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <div class="section-title text-xl md:text-2xl"><span>🧪</span><span>Active Research Queue</span></div>
+      <p class="mt-2 text-sm md:text-base text-slate-300">
+        Quick access to NFTs with active upgrades or ready-to-claim trait research.
+      </p>
+    </div>
+    <div class="text-sm text-slate-300">
+      <span id="activeQueueBadge" class="chip">Queue warming up…</span>
+    </div>
+  </div>
+  <div id="activeResearchQueue" class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-5"></div>
+</div>
 
         <div class="glass p-5 md:p-6">
           <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -669,25 +814,28 @@
       loading: false
     };
 
-    const el = {
-      sessionNotice: document.getElementById('sessionNotice'),
-      overviewStatsGrid: document.getElementById('overviewStatsGrid'),
-      identitySummary: document.getElementById('identitySummary'),
-      economySummary: document.getElementById('economySummary'),
-      gameSummary: document.getElementById('gameSummary'),
-      queueSummary: document.getElementById('queueSummary'),
-      nftGrid: document.getElementById('nftGrid'),
-      nftCountBadge: document.getElementById('nftCountBadge'),
-      verificationWarning: document.getElementById('verificationWarning'),
-      selectedNftPanel: document.getElementById('selectedNftPanel'),
-      selectedNftStatus: document.getElementById('selectedNftStatus'),
-      traitGrid: document.getElementById('traitGrid'),
-      traitUpgradeInfo: document.getElementById('traitUpgradeInfo'),
-      upgradeModeBadge: document.getElementById('upgradeModeBadge'),
-      labConsole: document.getElementById('labConsole'),
-      refreshLabButton: document.getElementById('refreshLabButton'),
-      refreshUpgradeButton: document.getElementById('refreshUpgradeButton')
-    };
+const el = {
+  sessionNotice: document.getElementById('sessionNotice'),
+  overviewStatsGrid: document.getElementById('overviewStatsGrid'),
+  identitySummary: document.getElementById('identitySummary'),
+  economySummary: document.getElementById('economySummary'),
+  gameSummary: document.getElementById('gameSummary'),
+  queueSummary: document.getElementById('queueSummary'),
+  nftGrid: document.getElementById('nftGrid'),
+  nftCountBadge: document.getElementById('nftCountBadge'),
+  verificationWarning: document.getElementById('verificationWarning'),
+  selectedNftPanel: document.getElementById('selectedNftPanel'),
+  selectedNftStatus: document.getElementById('selectedNftStatus'),
+  traitGrid: document.getElementById('traitGrid'),
+  traitUpgradeInfo: document.getElementById('traitUpgradeInfo'),
+  upgradeModeBadge: document.getElementById('upgradeModeBadge'),
+  labConsole: document.getElementById('labConsole'),
+  refreshLabButton: document.getElementById('refreshLabButton'),
+  refreshUpgradeButton: document.getElementById('refreshUpgradeButton'),
+  activeResearchQueue: document.getElementById('activeResearchQueue'),
+  activeQueueBadge: document.getElementById('activeQueueBadge'),
+  labEntryActions: document.getElementById('labEntryActions')
+};
 
     function logLab(message, level = 'info') {
       const timestamp = new Date().toLocaleTimeString();
@@ -812,6 +960,97 @@ function getLabModalElements() {
     cancel: document.getElementById('lab-modal-cancel'),
     confirm: document.getElementById('lab-modal-confirm')
   };
+}
+
+function getDiscordLoginUrl() {
+  const profileStyleOauthUrl = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read';
+
+  if (window.location.hostname === 'narrrfs.world') {
+    return profileStyleOauthUrl;
+  }
+
+  if (typeof window.DISCORD_AUTH_URL === 'string' && window.DISCORD_AUTH_URL.trim()) {
+    return window.DISCORD_AUTH_URL.trim();
+  }
+
+  if (typeof DISCORD_AUTH_URL === 'string' && DISCORD_AUTH_URL.trim()) {
+    return DISCORD_AUTH_URL.trim();
+  }
+
+  return profileStyleOauthUrl;
+}
+
+/**
+ * Build the top lab entry actions for login / verification guidance.
+ */
+function getLabEntryActionsMarkup() {
+  const isLoggedIn = !!state.userId;
+
+  if (!isLoggedIn) {
+    return `
+      <div class="glass p-5 md:p-6">
+        <div class="section-title text-xl md:text-2xl">
+          <span>🧀</span>
+          <span>Access Narrrf’s Lab</span>
+        </div>
+
+        <div class="mt-4 okbox">
+          <div class="text-lg font-bold text-white">Discord login is required before the lab can load your player state.</div>
+          <div class="mt-2 text-sm text-slate-200">
+            Log in with Discord first, then verify your Genesis NFT collection through the Stake Lab to unlock full trait research.
+          </div>
+        </div>
+
+        <div class="mt-5 flex flex-wrap gap-3">
+          <a
+            class="btn primary inline-flex items-center justify-center"
+            href="${escapeHtml(getDiscordLoginUrl())}">
+            🔐 Login with Discord
+          </a>
+
+          <a
+            class="btn success inline-flex items-center justify-center"
+            href="stake-lab.html">
+            ✅ Verify My NFT Collection
+          </a>
+        </div>
+
+        <div class="mt-4 text-xs text-slate-400">
+          Verification uses the Stake Lab flow, which already handles wallet connection, NFT loading, wallet signature, and SQL-backed verification save.
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="glass p-5 md:p-6">
+      <div class="section-title text-xl md:text-2xl">
+        <span>🧬</span>
+        <span>Genesis Verification Access</span>
+      </div>
+
+      <div class="mt-4 info">
+        <div class="text-lg font-bold text-white">Need to verify or refresh your Genesis NFT collection?</div>
+        <div class="mt-2 text-sm text-slate-200">
+          Open Stake Lab to connect your wallet, load your NFTs, and save your verified Genesis collection for lab progression.
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a
+          class="btn success inline-flex items-center justify-center"
+          href="stake-lab.html">
+          ✅ Verify My NFT Collection
+        </a>
+
+        <a
+          class="btn inline-flex items-center justify-center"
+          href="profile.html">
+          👤 Open Profile
+        </a>
+      </div>
+    </div>
+  `;
 }
 
 /**
@@ -1076,6 +1315,11 @@ function showLabMessageModal({
         .find(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading') || null;
     }
 
+    function renderLabEntryActions() {
+  if (!el.labEntryActions) return;
+  el.labEntryActions.innerHTML = getLabEntryActionsMarkup();
+}
+
     function renderSessionNotice() {
       if (state.userId) {
         el.sessionNotice.className = 'okbox text-sm';
@@ -1196,112 +1440,251 @@ function showLabMessageModal({
       saveSelectedTokenId(state.selectedNftTokenId);
     }
 
-    function selectNftByTokenId(tokenId) {
-      const nft = getVerifiedGenesisNfts().find(item => String(item.token_id) === String(tokenId));
-      if (!nft) {
-        logLab(`Could not select specimen ${tokenId}; it is not present in the verified Genesis set.`, 'warn');
-        return;
+function selectNftByTokenId(tokenId, options = {}) {
+  const { scrollToResearch = false } = options;
+
+  const nft = getVerifiedGenesisNfts().find(item => String(item.token_id) === String(tokenId));
+  if (!nft) {
+    logLab(`Could not select specimen ${tokenId}; it is not present in the verified Genesis set.`, 'warn');
+    return;
+  }
+
+  state.selectedNft = nft;
+  state.selectedNftTokenId = String(tokenId);
+  saveSelectedTokenId(state.selectedNftTokenId);
+
+  renderNftGrid();
+  renderSelectedNftPanel();
+  renderTraitGrid();
+  renderActiveResearchQueue();
+
+  if (scrollToResearch) {
+    requestAnimationFrame(() => {
+      scrollToTraitResearchChamber();
+    });
+  }
+
+  logLab(`Selected Genesis specimen ${nft.nft_name || nft.token_id}.`, 'info');
+}
+
+function getNftsWithActionableQueueState() {
+  return getVerifiedGenesisNfts()
+    .map(nft => ({
+      nft,
+      summary: getNftUpgradeSummary(nft),
+      traits: normalizeNftTraits(nft)
+    }))
+    .filter(item => item.summary.activeCount > 0 || item.summary.readyCount > 0)
+    .sort((a, b) => {
+      if (b.summary.readyCount !== a.summary.readyCount) {
+        return b.summary.readyCount - a.summary.readyCount;
       }
-      state.selectedNft = nft;
-      state.selectedNftTokenId = String(tokenId);
-      saveSelectedTokenId(state.selectedNftTokenId);
-      renderNftGrid();
-      renderSelectedNftPanel();
-      renderTraitGrid();
-      logLab(`Selected Genesis specimen ${nft.nft_name || nft.token_id}.`, 'info');
-    }
+      if (b.summary.activeCount !== a.summary.activeCount) {
+        return b.summary.activeCount - a.summary.activeCount;
+      }
+      return String(a.nft.nft_name || '').localeCompare(String(b.nft.nft_name || ''));
+    });
+}
 
-function renderNftGrid() {
-  const verified = getVerifiedGenesisNfts();
-  el.nftCountBadge.textContent = `${verified.length} Genesis specimen${verified.length === 1 ? '' : 's'} loaded`;
+function getPrimaryNftAction(summary) {
+  if (summary.readyCount > 0) {
+    return { label: 'Claim Ready', className: 'success' };
+  }
+  if (summary.activeCount > 0) {
+    return { label: 'View Research', className: 'warn' };
+  }
+  return { label: 'Open Lab', className: 'primary' };
+}
 
-  if (!verified.length) {
-    renderVerificationWarning(
-      `<div class="space-y-2">
-        <div class="font-semibold text-amber-200">Genesis verification is required for trait upgrading.</div>
-        <div class="text-amber-100">No verified Genesis NFT was found in the saved SQL scan for this player. The page still shows player identity and stats, but the upgrade chamber stays locked.</div>
-        <div class="text-amber-100">Please verify a Genesis NFT through <strong>stake-lab.html</strong> or <strong>profile.html</strong> to unlock the lab.</div>
-      </div>`,
-      true
-    );
+function scrollToTraitResearchChamber() {
+  const traitGrid = document.getElementById('traitGrid');
+  if (!traitGrid) return;
 
-    el.nftGrid.innerHTML = `
-      <div class="card p-5 sm:col-span-2 2xl:col-span-3">
-        <div class="empty-art">🧬</div>
-        <div class="mt-4 text-xl font-bold">No verified Genesis specimen found</div>
-        <div class="mt-2 text-sm text-slate-300">This player can still view their economy, missions, and profile identity here. Genesis upgrade functionality becomes available after a saved verification scan exists.</div>
-        <div class="mt-4 flex flex-wrap gap-3">
-          <a class="btn primary inline-flex items-center justify-center" href="stake-lab.html">Go to Stake Lab</a>
-          <a class="btn inline-flex items-center justify-center" href="profile.html">Open Profile</a>
-        </div>
+  const chamberSection = traitGrid.closest('.glass');
+  if (!chamberSection) return;
+
+  chamberSection.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+
+  chamberSection.classList.remove('chamber-pulse');
+  void chamberSection.offsetWidth;
+  chamberSection.classList.add('chamber-pulse');
+}
+
+function renderActiveResearchQueue() {
+  const items = getNftsWithActionableQueueState();
+
+  if (!el.activeQueueBadge || !el.activeResearchQueue) {
+    return;
+  }
+
+  el.activeQueueBadge.textContent = `${items.length} actionable specimen${items.length === 1 ? '' : 's'}`;
+
+  if (!items.length) {
+    el.activeResearchQueue.innerHTML = `
+      <div class="queue-empty xl:col-span-2">
+        No active or ready-to-claim Genesis research is running right now. Select any verified specimen below to open the lab chamber.
       </div>
     `;
     return;
   }
 
-  renderVerificationWarning('', false);
-
-  el.nftGrid.innerHTML = verified.map(nft => {
-    const summary = getNftUpgradeSummary(nft);
+  el.activeResearchQueue.innerHTML = items.map(({ nft, summary }) => {
     const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
-    const traits = normalizeNftTraits(nft);
-
-    const visibleTraitPreview = traits.slice(0, 4).map(trait => `
-      <span class="pill idle" style="font-size:0.65rem;">
-        ${escapeHtml(trait.trait_type)}: ${escapeHtml(trait.value)}
-      </span>
-    `).join('');
-
-    const remainingTraitCount = traits.length > 4
-      ? `<span class="pill idle" style="font-size:0.65rem;">+${formatNumber(traits.length - 4)} more</span>`
-      : '';
+    const action = getPrimaryNftAction(summary);
 
     return `
-      <button class="card ${selected ? 'selected' : ''} text-left p-4" data-select-nft="${escapeHtml(nft.token_id)}">
-        ${nft.image_url
-          ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
-          : `<div class="empty-art">🐭</div>`}
-
-        <div class="mt-4 flex items-start justify-between gap-3">
+      <div class="queue-card ${selected ? 'selected' : ''}">
+        <div class="flex items-start justify-between gap-3">
           <div>
-            <div class="text-lg font-bold leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
-            <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token')}</div>
+            <div class="text-xs uppercase tracking-[0.18em] text-cyan-300 font-bold">Genesis Specimen</div>
+            <div class="mt-2 text-lg font-black leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
+            <div class="mt-2 text-xs text-slate-400 break-all">${escapeHtml(nft.token_id || '')}</div>
           </div>
-          <span class="pill ${selected ? 'upgrading' : 'idle'}">${selected ? 'Selected' : 'Available'}</span>
+          <span class="pill ${summary.readyCount > 0 ? 'ready' : summary.activeCount > 0 ? 'upgrading' : 'idle'}">
+            ${summary.readyCount > 0 ? 'Ready' : 'Active'}
+          </span>
         </div>
 
-        <div class="mt-3 flex flex-wrap gap-2">
-          ${visibleTraitPreview}
-          ${remainingTraitCount}
+        <div class="queue-meta-row">
+          <span class="queue-mini-pill">🧬 Traits ${formatNumber(normalizeNftTraits(nft).length)}</span>
+          <span class="queue-mini-pill">⚡ Power ${formatNumber(summary.totalLevels)}</span>
+          <span class="queue-mini-pill">🔬 Active ${formatNumber(summary.activeCount)}</span>
+          <span class="queue-mini-pill">✅ Ready ${formatNumber(summary.readyCount)}</span>
         </div>
 
-        <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
-          <div class="kv">
-            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Traits</div>
-            <div class="mt-1 text-lg font-bold">${formatNumber(traits.length)}</div>
-          </div>
-          <div class="kv">
-            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div>
-            <div class="mt-1 text-lg font-bold">${formatNumber(summary.totalLevels)}</div>
-          </div>
-          <div class="kv">
-            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active</div>
-            <div class="mt-1 text-lg font-bold">${formatNumber(summary.activeCount)}</div>
-          </div>
-          <div class="kv">
-            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready</div>
-            <div class="mt-1 text-lg font-bold">${formatNumber(summary.readyCount)}</div>
-          </div>
+        <div class="queue-action-row">
+          <button
+            type="button"
+            class="btn compact ${action.className}"
+            data-queue-open="${escapeHtml(String(nft.token_id || ''))}">
+            ${escapeHtml(action.label)}
+          </button>
         </div>
-      </button>
+      </div>
     `;
   }).join('');
 
-  document.querySelectorAll('[data-select-nft]').forEach(button => {
+  document.querySelectorAll('[data-queue-open]').forEach(button => {
     button.addEventListener('click', () => {
-      selectNftByTokenId(button.getAttribute('data-select-nft') || '');
+      const tokenId = button.getAttribute('data-queue-open') || '';
+      selectNftByTokenId(tokenId, { scrollToResearch: true });
     });
   });
+}
+
+function renderNftGrid() {
+  const verified = getVerifiedGenesisNfts();
+  el.nftCountBadge.textContent = `${verified.length} Genesis specimen${verified.length === 1 ? '' : 's'} loaded`;
+
+if (!verified.length) {
+  renderVerificationWarning(
+    `<div class="space-y-2">
+      <div class="font-semibold text-amber-200">Genesis verification is required for trait upgrading.</div>
+      <div class="text-amber-100">No verified Genesis NFT was found in the saved SQL scan for this player. The page still shows player identity and stats, but the upgrade chamber stays locked.</div>
+      <div class="text-amber-100">Please verify a Genesis NFT through <strong>stake-lab.html</strong> or <strong>profile.html</strong> to unlock the lab.</div>
+    </div>`,
+    true
+  );
+
+  el.nftGrid.innerHTML = `
+    <div class="card p-5 sm:col-span-2 2xl:col-span-3">
+      <div class="empty-art">🧬</div>
+      <div class="mt-4 text-xl font-bold">No verified Genesis specimen found</div>
+      <div class="mt-2 text-sm text-slate-300">This player can still view their economy, missions, and profile identity here. Genesis upgrade functionality becomes available after a saved verification scan exists.</div>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a class="btn success inline-flex items-center justify-center" href="stake-lab.html">✅ Verify My NFT Collection</a>
+        <a class="btn inline-flex items-center justify-center" href="profile.html">👤 Open Profile</a>
+      </div>
+    </div>
+  `;
+  return;
+}
+
+  renderVerificationWarning('', false);
+
+el.nftGrid.innerHTML = verified.map(nft => {
+  const summary = getNftUpgradeSummary(nft);
+  const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
+  const traits = normalizeNftTraits(nft);
+  const primaryAction = getPrimaryNftAction(summary);
+
+  const visibleTraitPreview = traits.slice(0, 4).map(trait => `
+    <span class="pill idle" style="font-size:0.65rem;">
+      ${escapeHtml(trait.trait_type)}: ${escapeHtml(trait.value)}
+    </span>
+  `).join('');
+
+  const remainingTraitCount = traits.length > 4
+    ? `<span class="pill idle" style="font-size:0.65rem;">+${formatNumber(traits.length - 4)} more</span>`
+    : '';
+
+  return `
+    <button class="card ${selected ? 'selected' : ''} text-left p-4" data-select-nft="${escapeHtml(nft.token_id)}">
+      ${nft.image_url
+        ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+        : `<div class="empty-art">🐭</div>`}
+
+      <div class="mt-4 flex items-start justify-between gap-3">
+        <div>
+          <div class="text-lg font-bold leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
+          <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token')}</div>
+        </div>
+        <span class="pill ${selected ? 'upgrading' : 'idle'}">${selected ? 'Selected' : 'Available'}</span>
+      </div>
+
+      <div class="mt-3 flex flex-wrap gap-2">
+        ${visibleTraitPreview}
+        ${remainingTraitCount}
+      </div>
+
+      <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+        <div class="kv">
+          <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Traits</div>
+          <div class="mt-1 text-lg font-bold">${formatNumber(traits.length)}</div>
+        </div>
+        <div class="kv">
+          <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div>
+          <div class="mt-1 text-lg font-bold">${formatNumber(summary.totalLevels)}</div>
+        </div>
+        <div class="kv">
+          <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active</div>
+          <div class="mt-1 text-lg font-bold">${formatNumber(summary.activeCount)}</div>
+        </div>
+        <div class="kv">
+          <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready</div>
+          <div class="mt-1 text-lg font-bold">${formatNumber(summary.readyCount)}</div>
+        </div>
+      </div>
+
+      <div class="nft-card-action-row">
+        <span class="btn compact ${primaryAction.className}">
+          ${escapeHtml(primaryAction.label)}
+        </span>
+      </div>
+    </button>
+  `;
+}).join('');
+
+  document.querySelectorAll('[data-select-nft]').forEach(button => {
+    button.addEventListener('click', () => {
+      selectNftByTokenId(button.getAttribute('data-select-nft') || '', { scrollToResearch: true });
+    });
+  });
+}
+
+function getTraitSnapshotLevelBadge(nft, trait) {
+  const row = getTraitUpgradeDisplayRow(nft, trait);
+  const currentLevel = Math.max(1, safeNumber(row?.current_level, 1));
+
+  if (currentLevel <= 1) {
+    return '';
+  }
+
+  const highLevelClass = currentLevel >= 5 ? ' level-high' : '';
+  return `<span class="trait-level-badge${highLevelClass}">LVL ${formatNumber(currentLevel)}</span>`;
 }
 
     function renderSelectedNftPanel() {
@@ -1345,7 +1728,21 @@ function renderNftGrid() {
           <div>
             <div class="section-title text-lg"><span>🧾</span><span>Trait Snapshot</span></div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-              ${traits.map(trait => `<div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">${escapeHtml(trait.trait_type)}</div><div class="mt-1 text-sm text-white">${escapeHtml(trait.value)}</div></div>`).join('') || `<div class="warnbox text-sm sm:col-span-2">No trait data was found on this verified NFT snapshot.</div>`}
+              ${traits.map(trait => {
+  const levelBadge = getTraitSnapshotLevelBadge(nft, trait);
+
+  return `
+    <div class="kv trait-snapshot-card">
+      <div class="text-xs uppercase tracking-[0.18em] text-slate-400">
+        ${escapeHtml(trait.trait_type)}
+      </div>
+      <div class="trait-value-row">
+        <div class="trait-value-text">${escapeHtml(trait.value)}</div>
+        ${levelBadge}
+      </div>
+    </div>
+  `;
+}).join('') || `<div class="warnbox text-sm sm:col-span-2">No trait data was found on this verified NFT snapshot.</div>`}
             </div>
           </div>
         </div>
@@ -1886,12 +2283,14 @@ async function loadStableApis() {
 
 function renderAll() {
   renderSessionNotice();
+  renderLabEntryActions();
   ensureSelectedNft();
   renderOverviewCards();
   renderIdentitySummary();
   renderEconomySummary();
   renderGameSummary();
   renderQueueSummary();
+  renderActiveResearchQueue();
   renderNftGrid();
   renderSelectedNftPanel();
   renderTraitGrid();
@@ -1901,6 +2300,7 @@ function liveRefreshRender() {
   if (!state.selectedNft) return;
   renderOverviewCards();
   renderQueueSummary();
+  renderActiveResearchQueue();
   renderNftGrid();
   renderSelectedNftPanel();
   renderTraitGrid();

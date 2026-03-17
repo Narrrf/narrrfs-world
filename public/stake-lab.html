@@ -2402,22 +2402,27 @@ console.log("🔐 Verification proof obtained:", {
 
     const foundNFTs = [];
 
-    for (const [collectionAddress, info] of Object.entries(collections)) {
-      const matches = loadedNFTs.filter(nft => {
-        const nftCollection = nft.collection || nft.collectionAddress || "";
-        return nftCollection === collectionAddress;
-      });
+for (const [collectionAddress, info] of Object.entries(collections)) {
+  const matches = loadedNFTs.filter(nft => {
+    const nftCollectionAddress = String(
+      nft.collectionAddress || nft.collection || ''
+    ).trim();
 
-      if (matches.length > 0) {
-        foundNFTs.push({
-          collection: info.name,
-          role: info.role,
-          roleId: info.roleId,
-          count: matches.length,
-          collectionAddress: collectionAddress
-        });
-      }
-    }
+    const targetCollectionAddress = String(collectionAddress).trim();
+
+    return nftCollectionAddress.toLowerCase() === targetCollectionAddress.toLowerCase();
+  });
+
+  if (matches.length > 0) {
+    foundNFTs.push({
+      collection: info.name,
+      role: info.role,
+      roleId: info.roleId,
+      count: matches.length,
+      collectionAddress: collectionAddress
+    });
+  }
+}
 
     if (foundNFTs.length === 0) {
       alert("No Narrrfs World NFTs found in your wallet.");
