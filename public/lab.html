@@ -9,10 +9,10 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
 
-<script>
-  window.sessionDiscordId = '';
-  window.sessionDiscordUsername = '';
-</script>
+  <script>
+    window.sessionDiscordId = '';
+    window.sessionDiscordUsername = '';
+  </script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="discord-config.js"></script>
@@ -34,6 +34,7 @@
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -69,9 +70,32 @@
       z-index: 0;
       animation: floatOrb 12s ease-in-out infinite;
     }
-    .orb.one { width: 15rem; height: 15rem; background: rgba(34,211,238,.45); top: 8%; left: -4rem; }
-    .orb.two { width: 19rem; height: 19rem; background: rgba(59,130,246,.35); top: 48%; right: -5rem; animation-delay: -3s; }
-    .orb.three { width: 17rem; height: 17rem; background: rgba(139,92,246,.28); bottom: -2rem; left: 32%; animation-delay: -6s; }
+
+    .orb.one {
+      width: 15rem;
+      height: 15rem;
+      background: rgba(34,211,238,.45);
+      top: 8%;
+      left: -4rem;
+    }
+
+    .orb.two {
+      width: 19rem;
+      height: 19rem;
+      background: rgba(59,130,246,.35);
+      top: 48%;
+      right: -5rem;
+      animation-delay: -3s;
+    }
+
+    .orb.three {
+      width: 17rem;
+      height: 17rem;
+      background: rgba(139,92,246,.28);
+      bottom: -2rem;
+      left: 32%;
+      animation-delay: -6s;
+    }
 
     @keyframes floatOrb {
       0%,100% { transform: translateY(0) translateX(0) scale(1); }
@@ -155,6 +179,7 @@
       text-transform: uppercase;
       border: 1px solid transparent;
     }
+
     .pill.idle { background: rgba(148,163,184,.12); color: #cbd5e1; border-color: rgba(148,163,184,.25); }
     .pill.upgrading { background: rgba(34,211,238,.12); color: #67e8f9; border-color: rgba(34,211,238,.24); }
     .pill.ready { background: rgba(16,185,129,.12); color: #6ee7b7; border-color: rgba(16,185,129,.24); }
@@ -172,8 +197,17 @@
       background: rgba(255,255,255,0.06);
       text-decoration: none;
     }
-    .btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(34,211,238,0.35); }
-    .btn:disabled { opacity: .42; cursor: not-allowed; }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(34,211,238,0.35);
+    }
+
+    .btn:disabled {
+      opacity: .42;
+      cursor: not-allowed;
+    }
+
     .btn.primary { background: linear-gradient(135deg, rgba(14,165,233,0.86), rgba(37,99,235,0.86)); }
     .btn.success { background: linear-gradient(135deg, rgba(16,185,129,0.82), rgba(5,150,105,0.82)); }
     .btn.warn { background: linear-gradient(135deg, rgba(245,158,11,0.82), rgba(217,119,6,0.82)); }
@@ -199,11 +233,14 @@
       overflow: auto;
     }
 
-    .info, .warnbox, .okbox {
+    .info,
+    .warnbox,
+    .okbox {
       border-radius: 18px;
       padding: 16px 18px;
       border: 1px solid rgba(255,255,255,0.08);
     }
+
     .info { background: rgba(59,130,246,0.10); border-color: rgba(59,130,246,0.18); }
     .warnbox { background: rgba(245,158,11,0.10); border-color: rgba(245,158,11,0.18); }
     .okbox { background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.18); }
@@ -238,12 +275,14 @@
       overflow: hidden;
       border: 1px solid rgba(255,255,255,0.06);
     }
+
     .progress-bar {
       height: 100%;
       border-radius: inherit;
       background: linear-gradient(90deg, rgba(34,211,238,0.95), rgba(59,130,246,0.95), rgba(139,92,246,0.95));
       transition: width .4s ease;
     }
+
     .progress-bar.ready {
       background: linear-gradient(90deg, rgba(16,185,129,0.95), rgba(34,197,94,0.95));
     }
@@ -258,11 +297,187 @@
       letter-spacing: .01em;
     }
 
-    .nav-link { color: #cbd5e1; text-decoration: none; font-weight: 600; }
+    .nav-link {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
     .nav-link:hover { color: white; }
 
     @media (max-width: 1180px) {
       .sticky-panel { position: static; }
+    }
+
+    .lab-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at top, rgba(251, 191, 36, 0.14), transparent 35%),
+        rgba(2, 6, 23, 0.82);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 99999;
+      animation: labModalFadeIn 0.18s ease-out;
+    }
+
+    .lab-modal-overlay.hidden {
+      display: none;
+    }
+
+    .lab-modal-card {
+      width: min(100%, 520px);
+      border-radius: 24px;
+      border: 1px solid rgba(250, 204, 21, 0.28);
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(34, 211, 238, 0.08) inset,
+        0 0 30px rgba(250, 204, 21, 0.12);
+      overflow: hidden;
+      animation: labModalScaleIn 0.2s ease-out;
+    }
+
+    .lab-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      background: linear-gradient(90deg, rgba(251, 191, 36, 0.08), rgba(34, 211, 238, 0.06));
+    }
+
+    .lab-modal-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      background: linear-gradient(135deg, rgba(250, 204, 21, 0.22), rgba(251, 146, 60, 0.2));
+      border: 1px solid rgba(250, 204, 21, 0.22);
+      box-shadow: 0 8px 24px rgba(250, 204, 21, 0.12);
+    }
+
+    .lab-modal-title-wrap {
+      min-width: 0;
+    }
+
+    .lab-modal-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #67e8f9;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .lab-modal-title {
+      margin: 0;
+      color: #f8fafc;
+      font-size: 24px;
+      line-height: 1.1;
+      font-weight: 900;
+    }
+
+    .lab-modal-body {
+      padding: 20px 22px 12px;
+    }
+
+    .lab-modal-message {
+      margin: 0 0 16px 0;
+      color: #e2e8f0;
+      font-size: 15px;
+      line-height: 1.65;
+      white-space: pre-line;
+    }
+
+    .lab-modal-highlight {
+      border: 1px solid rgba(250, 204, 21, 0.2);
+      background: linear-gradient(180deg, rgba(251, 191, 36, 0.1), rgba(15, 23, 42, 0.15));
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .lab-modal-highlight-label {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #facc15;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .lab-modal-highlight-value {
+      color: #f8fafc;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .lab-modal-note {
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .lab-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 22px 22px;
+    }
+
+    .lab-modal-btn {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    .lab-modal-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .lab-modal-btn-secondary {
+      color: #e2e8f0;
+      background: linear-gradient(180deg, rgba(51, 65, 85, 0.95), rgba(30, 41, 59, 0.95));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .lab-modal-btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, #f59e0b, #f97316);
+      box-shadow: 0 10px 24px rgba(245, 158, 11, 0.26);
+    }
+
+    .lab-modal-btn-danger {
+      color: #fff;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 10px 24px rgba(239, 68, 68, 0.24);
+    }
+
+    @keyframes labModalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes labModalScaleIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
   </style>
 </head>
@@ -379,6 +594,34 @@
       </aside>
     </div>
   </div>
+
+  <div id="lab-modal" class="lab-modal-overlay hidden" aria-hidden="true">
+  <div class="lab-modal-card" role="dialog" aria-modal="true" aria-labelledby="lab-modal-title">
+    <div class="lab-modal-header">
+      <div id="lab-modal-icon" class="lab-modal-icon">🧀</div>
+      <div class="lab-modal-title-wrap">
+        <div id="lab-modal-eyebrow" class="lab-modal-eyebrow">Lab Confirmation</div>
+        <h3 id="lab-modal-title" class="lab-modal-title">Confirm Action</h3>
+      </div>
+    </div>
+
+    <div class="lab-modal-body">
+      <p id="lab-modal-message" class="lab-modal-message"></p>
+
+      <div id="lab-modal-highlight" class="lab-modal-highlight hidden">
+        <div id="lab-modal-highlight-label" class="lab-modal-highlight-label">Cost</div>
+        <div id="lab-modal-highlight-value" class="lab-modal-highlight-value"></div>
+      </div>
+
+      <p id="lab-modal-note" class="lab-modal-note"></p>
+    </div>
+
+    <div class="lab-modal-footer">
+      <button id="lab-modal-cancel" type="button" class="lab-modal-btn lab-modal-btn-secondary">Cancel</button>
+      <button id="lab-modal-confirm" type="button" class="lab-modal-btn lab-modal-btn-primary">Confirm</button>
+    </div>
+  </div>
+</div>
 
   <script>
     const LAB_CONFIG = {
@@ -554,6 +797,167 @@ function getStoredUsername() {
   const found = candidates.find(v => v && String(v).trim());
   return found ? String(found).trim() : 'Unknown User';
 }
+
+function getLabModalElements() {
+  return {
+    overlay: document.getElementById('lab-modal'),
+    icon: document.getElementById('lab-modal-icon'),
+    eyebrow: document.getElementById('lab-modal-eyebrow'),
+    title: document.getElementById('lab-modal-title'),
+    message: document.getElementById('lab-modal-message'),
+    note: document.getElementById('lab-modal-note'),
+    highlight: document.getElementById('lab-modal-highlight'),
+    highlightLabel: document.getElementById('lab-modal-highlight-label'),
+    highlightValue: document.getElementById('lab-modal-highlight-value'),
+    cancel: document.getElementById('lab-modal-cancel'),
+    confirm: document.getElementById('lab-modal-confirm')
+  };
+}
+
+/**
+ * Show a styled lab confirmation modal and resolve true/false.
+ */
+function showLabConfirmModal({
+  eyebrow = 'Lab Confirmation',
+  title = 'Confirm Action',
+  message = '',
+  note = '',
+  icon = '🧀',
+  highlightLabel = '',
+  highlightValue = '',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  confirmVariant = 'primary'
+} = {}) {
+  return new Promise((resolve) => {
+    const modal = getLabModalElements();
+    if (!modal.overlay) {
+      resolve(window.confirm(message || title));
+      return;
+    }
+
+    modal.icon.textContent = icon;
+    modal.eyebrow.textContent = eyebrow;
+    modal.title.textContent = title;
+    modal.message.textContent = message || '';
+    modal.note.textContent = note || '';
+
+    if (highlightValue) {
+      modal.highlight.classList.remove('hidden');
+      modal.highlightLabel.textContent = highlightLabel || 'Details';
+      modal.highlightValue.textContent = highlightValue;
+    } else {
+      modal.highlight.classList.add('hidden');
+      modal.highlightLabel.textContent = '';
+      modal.highlightValue.textContent = '';
+    }
+
+    modal.cancel.textContent = cancelText;
+    modal.confirm.textContent = confirmText;
+    modal.confirm.className = `lab-modal-btn ${confirmVariant === 'danger' ? 'lab-modal-btn-danger' : 'lab-modal-btn-primary'}`;
+
+    modal.overlay.classList.remove('hidden');
+    modal.overlay.setAttribute('aria-hidden', 'false');
+
+    let settled = false;
+
+    const cleanup = () => {
+      modal.overlay.classList.add('hidden');
+      modal.overlay.setAttribute('aria-hidden', 'true');
+      modal.cancel.onclick = null;
+      modal.confirm.onclick = null;
+      modal.overlay.onclick = null;
+      document.removeEventListener('keydown', handleKeydown);
+    };
+
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(result);
+    };
+
+    const handleKeydown = (event) => {
+      if (event.key === 'Escape') finish(false);
+      if (event.key === 'Enter') finish(true);
+    };
+
+    modal.cancel.onclick = () => finish(false);
+    modal.confirm.onclick = () => finish(true);
+    modal.overlay.onclick = (event) => {
+      if (event.target === modal.overlay) finish(false);
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+  });
+}
+
+/**
+ * Show a styled one-button lab message modal.
+ */
+function showLabMessageModal({
+  eyebrow = 'Lab Notice',
+  title = 'Message',
+  message = '',
+  note = '',
+  icon = '🧀',
+  confirmText = 'Got it',
+  confirmVariant = 'primary'
+} = {}) {
+  return new Promise((resolve) => {
+    const modal = getLabModalElements();
+    if (!modal.overlay) {
+      window.alert(message || title);
+      resolve(true);
+      return;
+    }
+
+    modal.icon.textContent = icon;
+    modal.eyebrow.textContent = eyebrow;
+    modal.title.textContent = title;
+    modal.message.textContent = message || '';
+    modal.note.textContent = note || '';
+    modal.highlight.classList.add('hidden');
+
+    modal.cancel.style.display = 'none';
+    modal.confirm.textContent = confirmText;
+    modal.confirm.className = `lab-modal-btn ${confirmVariant === 'danger' ? 'lab-modal-btn-danger' : 'lab-modal-btn-primary'}`;
+
+    modal.overlay.classList.remove('hidden');
+    modal.overlay.setAttribute('aria-hidden', 'false');
+
+    let settled = false;
+
+    const cleanup = () => {
+      modal.overlay.classList.add('hidden');
+      modal.overlay.setAttribute('aria-hidden', 'true');
+      modal.cancel.style.display = '';
+      modal.cancel.onclick = null;
+      modal.confirm.onclick = null;
+      modal.overlay.onclick = null;
+      document.removeEventListener('keydown', handleKeydown);
+    };
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(true);
+    };
+
+    const handleKeydown = (event) => {
+      if (event.key === 'Escape' || event.key === 'Enter') finish();
+    };
+
+    modal.confirm.onclick = finish;
+    modal.overlay.onclick = (event) => {
+      if (event.target === modal.overlay) finish();
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+  });
+}
+
     async function fetchJson(url, options = {}, allowFailure = false) {
       const response = await fetch(url, options);
       const contentType = response.headers.get('content-type') || '';
@@ -1037,40 +1441,48 @@ function renderNftGrid() {
       }));
     }
 
-    async function tryAggregateLab() {
-      if (!state.userId) return false;
-      try {
-        const res = await fetchJson(getApiUrl(LAB_CONFIG.aggregateLabEndpoint), {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ user_id: state.userId })
-        }, true);
+async function tryAggregateLab() {
+  if (!state.userId) return false;
 
-        if (!res.ok || !res.payload?.success || !res.payload?.data) {
-          logLab('Aggregate lab endpoint not available yet. Falling back to stable existing APIs.', 'warn');
-          state.aggregateLabEndpointAvailable = false;
-          return false;
-        }
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.aggregateLabEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ user_id: state.userId })
+      },
+      true
+    );
 
-        const data = res.payload.data;
-        state.profile = data.profile || state.profile;
-        state.missions = data.missions_profile || data.missions || state.missions;
-        state.allTimeStats = data.all_time_stats || state.allTimeStats;
-        state.puzzleAchievements = data.puzzles_3d_achievements || state.puzzleAchievements;
-        state.stakingStats = data.staking_stats || state.stakingStats;
-        state.stakingActivity = data.staking_activity || state.stakingActivity;
-        state.verifiedNfts = Array.isArray(data.verified_nfts) ? data.verified_nfts : state.verifiedNfts;
-        state.upgradeRows = Array.isArray(data.trait_upgrades) ? data.trait_upgrades : state.upgradeRows;
-        state.aggregateLabEndpointAvailable = true;
-        logLab('Loaded aggregate lab payload from dedicated endpoint.', 'success');
-        return true;
-      } catch (error) {
-        state.aggregateLabEndpointAvailable = false;
-        logLab(`Aggregate lab endpoint failed: ${error.message}`, 'warn');
-        return false;
-      }
+    if (!res.ok || !res.payload?.success || !res.payload?.data) {
+      state.aggregateLabEndpointAvailable = false;
+      return false;
     }
+
+    const data = res.payload.data;
+
+    state.profile = data.profile || state.profile;
+    state.missions = data.missions_profile || data.missions || state.missions;
+    state.allTimeStats = data.all_time_stats || state.allTimeStats;
+    state.puzzleAchievements = data.puzzles_3d_achievements || state.puzzleAchievements;
+    state.stakingStats = data.staking_stats || state.stakingStats;
+    state.stakingActivity = data.staking_activity || state.stakingActivity;
+    state.verifiedNfts = Array.isArray(data.verified_nfts) ? data.verified_nfts : state.verifiedNfts;
+    state.upgradeRows = Array.isArray(data.trait_upgrades) ? data.trait_upgrades : state.upgradeRows;
+
+    state.aggregateLabEndpointAvailable = true;
+    logLab('Loaded aggregate lab payload from dedicated endpoint.', 'success');
+    return true;
+  } catch (error) {
+    state.aggregateLabEndpointAvailable = false;
+    return false;
+  }
+}
 
     async function loadProfileData() {
       try {
@@ -1216,10 +1628,8 @@ function renderNftGrid() {
           return;
         }
 
-        if (Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
-  logLab('Verified NFT scan endpoint unavailable, but Genesis data is already loaded from upgrade endpoint fallback.', 'info');
-} else {
-  logLab('Verified NFT scan endpoint not available yet. Waiting for upgrade endpoint fallback.', 'warn');
+if (Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
+  logLab('Genesis data confirmed through stable upgrade endpoint fallback.', 'info');
 }
       } catch (error) {
         logLab(`Verified NFT scan load failed: ${error.message}`, 'warn');
@@ -1357,7 +1767,15 @@ async function handleClaimUpgrade(tokenId, traitType, traitValue) {
 
 async function handleInstantFinish(tokenId, traitType, traitValue) {
   if (!state.userId) {
-    alert('No player session found.');
+    await showLabMessageModal({
+      eyebrow: 'Session Required',
+      title: 'No Player Session Found',
+      icon: '🧬',
+      message: 'No player session was found for this lab action.',
+      note: 'Please log in with Discord before using instant finish.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
     return;
   }
 
@@ -1367,9 +1785,18 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
   const remainingMs = row?.upgrade_ends_at ? Math.max(0, new Date(row.upgrade_ends_at).getTime() - Date.now()) : 0;
   const previewCost = calculateInstantFinishCost(currentLevel, remainingMs);
 
-  const confirmed = confirm(
-    `Instantly finish ${traitType}: ${traitValue} for about ${formatNumber(previewCost)} DSPOINC?\n\nThe backend remains source of truth for the final cost.`
-  );
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Instant Finish',
+    title: `Finish ${traitType} Research?`,
+    icon: '⚡',
+    message: `Instantly finish ${traitType}: ${traitValue}.`,
+    highlightLabel: 'Estimated DSPOINC Cost',
+    highlightValue: `${formatNumber(previewCost)} DSPOINC`,
+    note: 'Backend validation remains the source of truth for the final price, ownership check, and finish state.',
+    confirmText: 'Spend DSPOINC',
+    cancelText: 'Keep Running',
+    confirmVariant: 'primary'
+  });
 
   if (!confirmed) return;
 
@@ -1397,11 +1824,31 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
     if (!res.ok || !res.payload?.success) {
       const message = res.payload?.error || `Instant finish failed (${res.status})`;
       logLab(`Instant finish failed: ${message}`, 'error');
-      alert(message);
+
+      await showLabMessageModal({
+        eyebrow: 'Instant Finish',
+        title: 'Instant Finish Failed',
+        icon: '⚠️',
+        message,
+        note: 'The lab state was not changed. Review the message and try again.',
+        confirmText: 'Close',
+        confirmVariant: 'danger'
+      });
       return;
     }
 
-    logLab(`Instant finish completed for ${traitType}: ${traitValue}`, 'success');
+    const finishData = res.payload?.data || {};
+    const finalCost = Number(finishData.instant_finish_cost || 0);
+
+    if (finalCost > 0) {
+      logLab(
+        `Instant finish completed for ${traitType}: ${traitValue} (-${formatNumber(finalCost)} DSPOINC)`,
+        'success'
+      );
+    } else {
+      logLab(`Instant finish completed for ${traitType}: ${traitValue}`, 'success');
+    }
+
     await Promise.all([
       loadTraitUpgrades(),
       loadStakingStats()
@@ -1409,7 +1856,16 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
     renderAll();
   } catch (error) {
     logLab(`Instant finish request failed: ${error.message}`, 'error');
-    alert(`Instant finish failed: ${error.message}`);
+
+    await showLabMessageModal({
+      eyebrow: 'Instant Finish',
+      title: 'Request Failed',
+      icon: '⚠️',
+      message: `Instant finish failed: ${error.message}`,
+      note: 'This usually means the request did not complete cleanly.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
   }
 }
 
@@ -1471,14 +1927,16 @@ async function loadLab() {
       localStorage.setItem('narrrfs_last_discord_name', state.username);
     }
 
-    const aggregateLoaded = await tryAggregateLab();
-    if (!aggregateLoaded) {
-      await loadStableApis();
-    }
+const aggregateLoaded = await tryAggregateLab();
 
-    await loadTraitUpgrades();
-    renderAll();
-    logLab('Lab runtime ready.', 'success');
+if (!aggregateLoaded) {
+  await loadStableApis();
+} else if (!Array.isArray(state.upgradeRows) || state.upgradeRows.length === 0) {
+  await loadTraitUpgrades();
+}
+
+renderAll();
+logLab('Lab runtime ready.', 'success');
   } catch (error) {
     logLab(`Lab boot failed: ${error.message}`, 'error');
     alert(`Lab failed to load: ${error.message}`);
