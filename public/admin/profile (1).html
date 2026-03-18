@@ -4883,6 +4883,11 @@ function loadProfileSavedNfts() {
     });
   });
 
+  if (snapshot.walletAddress) {
+    connectedWalletAddress = snapshot.walletAddress;
+    updateWalletDisplay(snapshot.walletAddress);
+  }
+
   if (traitLabels.length > 0) {
     updateTraitsDisplay(Array.from(new Set(traitLabels)));
   }
@@ -4908,6 +4913,9 @@ async function connectWallet() {
 
     connectedWallet = provider;
     connectedWalletAddress = publicKey;
+
+    localStorage.setItem('walletAddress', connectedWalletAddress);
+    localStorage.setItem('phantom_wallet_address', connectedWalletAddress);
 
     updateWalletDisplay(connectedWalletAddress);
 
@@ -5182,68 +5190,17 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
       return;
     }
 
-    // ✅ FIX: DEFINE ONCE, GLOBAL TO THIS FUNCTION
-    const normalizedNfts = (Array.isArray(scannedNfts) ? scannedNfts : [])
-      .map(nft => {
-        const rawCollectionAddress = String(nft.collectionAddress || nft.collection || '').trim();
-        const rawCollectionName = String(
-          nft.collectionName ||
-          nft.collectionType ||
-          nft.collection ||
-          ''
-        ).trim();
-        const rawCollectionRole = String(nft.collectionRole || '').trim();
-
-        let normalizedCollection = '';
-
-        if (rawCollectionAddress === 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML') {
-          normalizedCollection = 'genesis';
-        } else if (rawCollectionAddress === 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg') {
-          normalizedCollection = 'vip';
-        } else if (rawCollectionName.toLowerCase().includes('genesis genetic')) {
-          normalizedCollection = 'genesis';
-        } else if (rawCollectionName.toLowerCase().includes('vip')) {
-          normalizedCollection = 'vip';
-        } else if (rawCollectionRole.toLowerCase().includes('holder')) {
-          normalizedCollection = 'genesis';
-        } else if (rawCollectionRole.toLowerCase().includes('vip')) {
-          normalizedCollection = 'vip';
-        }
-
-        const tokenId =
-          nft.token_id ||
-          nft.tokenId ||
-          nft.mint ||
-          nft.mintAddress ||
-          nft.address ||
-          '';
-
-        if (!normalizedCollection || !tokenId) return null;
-
-        const rawTraits = Array.isArray(nft.traits)
-          ? nft.traits
-          : (Array.isArray(nft.attributes) ? nft.attributes : []);
-
-        return {
-          token_id: tokenId,
-          collection: normalizedCollection,
-          nft_name: nft.nft_name || nft.name || 'Unnamed NFT',
-          image_url: nft.image_url || nft.image || '',
-          metadata_json: nft,
-          traits: rawTraits.map(trait => ({
-            trait_type: trait.trait_type || trait.type || '',
-            value: trait.value ?? ''
-          })).filter(trait => trait.trait_type && String(trait.value) !== '')
-        };
-      })
-      .filter(Boolean);
-
-    console.log('💾 [GLOBAL NORMALIZED NFTS]:', normalizedNfts);
-
     let verificationProof = null;
 
     try {
       verificationProof = await requestVerificationProof();
+
+      console.log('🔐 Verification proof obtained:', {
+        mode: verificationProof.mode,
+        signature: verificationProof.signature,
+        wallet: connectedWalletAddress,
+        provider: getWalletProviderLabel(verificationProof.provider)
+      });
     } catch (signError) {
       console.error('Signature error:', signError);
       showError('Failed to get verification approval. Please approve the request in your wallet.');
@@ -5253,11 +5210,17 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
     const signature = verificationProof.signature;
     const message = verificationProof.message;
 
+    // Group matched collections by collection address for backend role verification.
+    // collectionMatches contains summary matches like:
+    // { collection, role, roleId, count, collectionAddress }
     const nftsByCollection = {};
-
     collectionMatches.forEach(collectionInfo => {
       const collectionAddress = collectionInfo.collectionAddress;
-      if (!collectionAddress) return;
+
+      if (!collectionAddress) {
+        console.error('❌ Missing collectionAddress in collection info:', collectionInfo);
+        return;
+      }
 
       if (!nftsByCollection[collectionAddress]) {
         nftsByCollection[collectionAddress] = {
@@ -5270,28 +5233,99 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
       }
     });
 
+    console.log('🔍 Grouped collections for verification:', Object.keys(nftsByCollection).map(addr => ({
+      address: addr,
+      role: nftsByCollection[addr].role,
+      roleId: nftsByCollection[addr].roleId,
+      collectionName: nftsByCollection[addr].collectionName
+    })));
+
+    console.log(`\n🔐 [BACKEND VERIFICATION] Starting backend verification for ${Object.keys(nftsByCollection).length} collection(s)`);
+    console.log(`   User ID: ${userId}`);
+    console.log(`   Wallet Address: ${walletAddress}`);
+
+    // Split outcomes clearly:
+    // - verified ownership
+    // - granted Discord roles
+    // - failures / warnings
     const allVerifiedCollections = [];
     const allGrantedRoles = [];
     const allFailedCollections = [];
     let hasErrors = false;
 
     for (const [collectionAddress, collectionData] of Object.entries(nftsByCollection)) {
+      console.log(`\n🔐 [BACKEND VERIFICATION] Verifying collection: ${collectionData.collectionName}`);
+      console.log(`   Collection Address: ${collectionAddress}`);
+      console.log(`   Expected Role: ${collectionData.role} (ID: ${collectionData.roleId})`);
+      console.log(`   NFTs found (frontend): ${collectionData.nfts.length}`);
+
+      const requestPayload = {
+        user_id: userId,
+        wallet_address: walletAddress,
+        nfts: collectionData.nfts,
+        collection: collectionAddress,
+        signature: signature,
+        message: message,
+        verification_mode: verificationProof.mode
+      };
+
+      console.log(`📤 [BACKEND VERIFICATION] Sending request to /api/user/verify-nft-holder.php:`, {
+        user_id: userId,
+        wallet_address: walletAddress.substring(0, 8) + '...',
+        collection: collectionAddress,
+        signature_length: signature ? signature.length : 0,
+        message: message,
+        verification_mode: verificationProof.mode
+      });
 
       const response = await fetch('/api/user/verify-nft-holder.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          wallet_address: walletAddress,
-          nfts: collectionData.nfts,
-          collection: collectionAddress,
-          signature: signature,
-          message: message,
-          verification_mode: verificationProof.mode
-        })
+        body: JSON.stringify(requestPayload)
       });
 
+      console.log(`📥 [BACKEND VERIFICATION] Response status: ${response.status} ${response.statusText}`);
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error(`❌ [BACKEND VERIFICATION] Non-JSON response received`);
+        console.error(`   Content-Type: ${contentType}`);
+        console.error(`   Response Status: ${response.status} ${response.statusText}`);
+        console.error(`   Response Text (first 1000 chars):`, text.substring(0, 1000));
+
+        hasErrors = true;
+        allFailedCollections.push({
+          collection: collectionData.collectionName,
+          error: `Server returned non-JSON response (${contentType})`
+        });
+        continue;
+      }
+
       const data = await response.json();
+
+      console.log(`📥 [BACKEND VERIFICATION] Full response for ${collectionData.collectionName}:`, data);
+
+      const backendCollections = Array.isArray(data.verified_collections)
+        ? data.verified_collections
+        : [];
+
+      if (backendCollections.length > 0) {
+        console.log(`\n📋 [BACKEND VERIFICATION] Verified Collections Array (${backendCollections.length} item(s)):`);
+
+        backendCollections.forEach((vc, index) => {
+          console.log(`   📦 Collection ${index + 1}:`, {
+            collection: vc.collection,
+            collection_address: vc.collection_address,
+            role: vc.role,
+            role_id: vc.role_id,
+            count: vc.count,
+            granted: vc.granted ? '✅ YES - ROLE GRANTED' : '❌ NO - ROLE NOT GRANTED'
+          });
+        });
+      } else {
+        console.warn(`⚠️ [BACKEND VERIFICATION] No verified_collections array in response for ${collectionData.collectionName}`);
+      }
 
       if (!data.success) {
         hasErrors = true;
@@ -5299,78 +5333,279 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
           collection: collectionData.collectionName,
           error: data.error || 'Verification failed'
         });
+        console.error(`❌ [BACKEND VERIFICATION] Verification failed: ${data.error}`);
         continue;
       }
 
-      const backendCollections = Array.isArray(data.verified_collections)
-        ? data.verified_collections
-        : [];
+      const matchingBackendCollection = backendCollections.find(c => {
+        const backendAddress = String(c.collection_address || '').trim().toLowerCase();
+        const expectedAddress = String(collectionAddress).trim().toLowerCase();
+        return backendAddress === expectedAddress;
+      });
 
-      const match = backendCollections.find(c =>
-        String(c.collection_address).toLowerCase() === collectionAddress.toLowerCase()
-      );
-
-      if (!match) {
+      if (!matchingBackendCollection) {
         hasErrors = true;
         allFailedCollections.push({
           collection: collectionData.collectionName,
-          error: 'No matching backend collection'
+          error: 'Backend returned no matching verified collection'
         });
+        console.warn(`⚠️ [BACKEND VERIFICATION] No matching backend collection found for ${collectionData.collectionName}`);
         continue;
       }
 
-      if (match.count > 0) {
-        allVerifiedCollections.push(match);
+      const verifiedCount = Number(matchingBackendCollection.count || 0);
+      const roleGranted = matchingBackendCollection.granted === true;
 
-        if (match.granted) {
-          allGrantedRoles.push({
-            role: match.role,
-            roleId: match.role_id,
-            collection: match.collection,
-            count: match.count
+      // VERIFIED OWNERSHIP RESULT
+      if (verifiedCount > 0) {
+        const verifiedEntry = {
+          collection: matchingBackendCollection.collection || collectionData.collectionName,
+          collectionAddress: matchingBackendCollection.collection_address || collectionAddress,
+          role: matchingBackendCollection.role || collectionData.role,
+          roleId: matchingBackendCollection.role_id || collectionData.roleId,
+          count: verifiedCount,
+          granted: roleGranted
+        };
+
+        allVerifiedCollections.push(verifiedEntry);
+
+        console.log(`✅ [BACKEND VERIFICATION] Verified ownership confirmed:`, verifiedEntry);
+
+        // ROLE GRANT RESULT
+        if (roleGranted) {
+          const expectedRole = collectionData.role;
+          const actualRole = verifiedEntry.role;
+          const expectedRoleId = collectionData.roleId;
+          const actualRoleId = verifiedEntry.roleId;
+
+          console.log(`\n🎯 [BACKEND VERIFICATION] Role Grant Check:`);
+          console.log(`   Expected: ${expectedRole} (${expectedRoleId})`);
+          console.log(`   Actual: ${actualRole} (${actualRoleId})`);
+          console.log(`   NFTs Found: ${verifiedEntry.count}`);
+
+          if (actualRole === expectedRole && actualRoleId === expectedRoleId) {
+            allGrantedRoles.push({
+              role: actualRole,
+              roleId: actualRoleId,
+              collection: verifiedEntry.collection,
+              count: verifiedEntry.count
+            });
+
+            console.log(`✅ [BACKEND VERIFICATION] Role verification CORRECT: Expected ${expectedRole}, Got ${actualRole}`);
+          } else {
+            hasErrors = true;
+            allFailedCollections.push({
+              collection: verifiedEntry.collection,
+              error: `Role mismatch! Expected ${expectedRole}, but got ${actualRole}`
+            });
+            console.error(`❌ [BACKEND VERIFICATION] Role mismatch! Expected ${expectedRole} (${expectedRoleId}), but got ${actualRole} (${actualRoleId})`);
+          }
+        } else {
+          allFailedCollections.push({
+            collection: verifiedEntry.collection,
+            error: 'NFT ownership verified, but no Discord role was granted'
           });
+          console.warn(`⚠️ [BACKEND VERIFICATION] Ownership verified but no role granted for ${verifiedEntry.collection}`);
         }
+      } else {
+        hasErrors = true;
+        allFailedCollections.push({
+          collection: collectionData.collectionName,
+          error: 'No verified NFTs found for this collection'
+        });
+        console.warn(`⚠️ [BACKEND VERIFICATION] No verified NFTs found for ${collectionData.collectionName}`);
       }
     }
 
-    // ✅ SAVE SNAPSHOT (NOW ALWAYS SAFE)
-    if (normalizedNfts.length > 0) {
+    console.log(`\n✅ [BACKEND VERIFICATION] Verification process complete`);
+    console.log(`📊 Summary: ${allVerifiedCollections.length} verified collection(s), ${allGrantedRoles.length} role(s) granted, ${allFailedCollections.length} collection issue(s)`);
+
+    if (allGrantedRoles.length > 0) {
+      console.log(`\n🎯 [FINAL SUMMARY] Roles Granted:`);
+      allGrantedRoles.forEach((granted, index) => {
+        console.log(`   ${index + 1}. ✅ ${granted.role} (ID: ${granted.roleId})`);
+        console.log(`      Collection: ${granted.collection}`);
+        console.log(`      NFTs: ${granted.count}`);
+      });
+    } else {
+      console.warn(`\n⚠️ [FINAL SUMMARY] No roles were granted`);
+    }
+
+    if (allFailedCollections.length > 0) {
+      console.log(`\n❌ [FINAL SUMMARY] Failed / Warning Collections:`);
+      allFailedCollections.forEach((failed, index) => {
+        console.log(`   ${index + 1}. ❌ ${failed.collection}: ${failed.error}`);
+      });
+    }
+
+    // Save the full verified NFT scan for admin overview and trait search.
+    // IMPORTANT:
+    // Save must happen when verified ownership exists, even if Discord role grant failed.
+    if (allVerifiedCollections.length > 0 && Array.isArray(scannedNfts) && scannedNfts.length > 0) {
       try {
-        await fetch('/api/user/save-verified-nft-scan.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const normalizedNfts = (Array.isArray(scannedNfts) ? scannedNfts : [])
+          .map(nft => {
+            const rawCollectionAddress = String(nft.collectionAddress || nft.collection || '').trim();
+            const rawCollectionName = String(
+              nft.collectionName ||
+              nft.collectionType ||
+              nft.collection ||
+              ''
+            ).trim();
+            const rawCollectionRole = String(nft.collectionRole || '').trim();
+
+            let normalizedCollection = '';
+
+            if (rawCollectionAddress === 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML') {
+              normalizedCollection = 'genesis';
+            } else if (rawCollectionAddress === 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg') {
+              normalizedCollection = 'vip';
+            } else if (rawCollectionName.toLowerCase().includes('genesis genetic')) {
+              normalizedCollection = 'genesis';
+            } else if (rawCollectionName.toLowerCase().includes('vip')) {
+              normalizedCollection = 'vip';
+            } else if (rawCollectionRole.toLowerCase().includes('holder')) {
+              normalizedCollection = 'genesis';
+            } else if (rawCollectionRole.toLowerCase().includes('vip')) {
+              normalizedCollection = 'vip';
+            }
+
+            const tokenId =
+              nft.token_id ||
+              nft.tokenId ||
+              nft.mint ||
+              nft.mintAddress ||
+              nft.address ||
+              '';
+
+            if (!normalizedCollection || !tokenId) {
+              console.warn('⚠️ [NFT SCAN SAVE] Skipping NFT during normalization:', {
+                name: nft.name,
+                tokenId,
+                rawCollectionAddress,
+                rawCollectionName,
+                rawCollectionRole
+              });
+              return null;
+            }
+
+            const rawTraits = Array.isArray(nft.traits)
+              ? nft.traits
+              : (Array.isArray(nft.attributes) ? nft.attributes : []);
+
+            return {
+              token_id: tokenId,
+              collection: normalizedCollection,
+              nft_name: nft.nft_name || nft.name || 'Unnamed NFT',
+              image_url: nft.image_url || nft.image || '',
+              metadata_json: nft,
+              traits: rawTraits.map(trait => ({
+                trait_type: trait.trait_type || trait.type || '',
+                value: trait.value ?? ''
+              })).filter(trait => trait.trait_type && String(trait.value) !== '')
+            };
+          })
+          .filter(Boolean);
+
+        console.log('💾 [NFT SCAN SAVE] Normalized NFTs for SQL save:', normalizedNfts);
+
+        if (normalizedNfts.length > 0) {
+          const savePayload = {
             user_id: userId,
+            username:
+              window.sessionDiscordUsername ||
+              localStorage.getItem('discord_username') ||
+              localStorage.getItem('discord_name') ||
+              localStorage.getItem('username') ||
+              'Unknown User',
             wallet: walletAddress,
-            signature,
-            message,
+            signature: signature,
+            message: message,
             verification_mode: verificationProof.mode,
             nfts: normalizedNfts
-          })
-        });
-      } catch (e) {
-        console.warn('Snapshot save failed:', e);
+          };
+
+          console.log('💾 [NFT SCAN SAVE] Saving verified NFT scan:', {
+            user_id: savePayload.user_id,
+            username: savePayload.username,
+            wallet: `${walletAddress.substring(0, 8)}...`,
+            nft_count: normalizedNfts.length
+          });
+
+          const saveResponse = await fetch('/api/user/save-verified-nft-scan.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(savePayload)
+          });
+
+          const saveContentType = saveResponse.headers.get('content-type') || '';
+          if (!saveContentType.includes('application/json')) {
+            const saveText = await saveResponse.text();
+            throw new Error(`NFT scan save returned non-JSON response: ${saveText.substring(0, 300)}`);
+          }
+
+          const saveData = await saveResponse.json();
+
+          if (!saveData.success) {
+            throw new Error(saveData.error || 'Unknown NFT scan save error');
+          }
+
+          console.log('✅ [NFT SCAN SAVE] Verified NFT scan saved successfully:', saveData);
+        }
+      } catch (saveError) {
+        console.error('❌ [NFT SCAN SAVE] Failed to save verified NFT scan:', saveError);
       }
     }
 
-    // ✅ LOCAL SNAPSHOT (FIXED)
-    saveProfileVerifiedSnapshot({
-      walletAddress,
+    // Display comprehensive success/error message
+    if (allVerifiedCollections.length > 0) {
+      let successMessage = `✅ NFT Verification Successful!\n\n`;
+      successMessage += `📦 Verified Collections:\n`;
+
+      allVerifiedCollections.forEach((verified, index) => {
+        successMessage += `   ${index + 1}. ${verified.collection} (${verified.count} NFT${verified.count !== 1 ? 's' : ''})\n`;
+      });
+
+      if (allGrantedRoles.length > 0) {
+        successMessage += `\n🎯 Discord Roles Granted:\n`;
+
+        allGrantedRoles.forEach((granted, index) => {
+          successMessage += `   ${index + 1}. ${granted.role} (${granted.count} NFT${granted.count !== 1 ? 's' : ''} from ${granted.collection})\n`;
+        });
+
+        successMessage += `\n✨ Your Discord roles have been updated! Check your Discord server to see your new roles.`;
+      } else {
+        successMessage += `\n⚠️ Your NFT ownership was verified and saved to your player profile, but no Discord role was granted yet.`;
+      }
+
+      if (allFailedCollections.length > 0) {
+        successMessage += `\n\n⚠️ Notes:\n`;
+        allFailedCollections.forEach((failed, index) => {
+          successMessage += `   ${index + 1}. ${failed.collection}: ${failed.error}\n`;
+        });
+      }
+
+      saveProfileVerifiedSnapshot({
+      walletAddress: walletAddress,
       collections: allVerifiedCollections,
       nfts: normalizedNfts,
       savedAt: new Date().toISOString(),
-      userId
+      userId: userId
     });
-
     renderProfileSavedNftPanel();
-
-    // ✅ UI RESULT
-    if (allVerifiedCollections.length > 0) {
-      showSuccess('✅ NFT Verification successful!');
+    showSuccess(successMessage);
+    } else if (hasErrors) {
+      let errorMessage = `❌ NFT Verification Failed\n\n`;
+      errorMessage += `The following collections could not be verified:\n`;
+      allFailedCollections.forEach((failed, index) => {
+        errorMessage += `   ${index + 1}. ${failed.collection}: ${failed.error}\n`;
+      });
+      showError(errorMessage);
     } else {
-      showError('No verified NFTs found.');
+      showError('No verified NFTs were found. Please ensure you own NFTs from the supported collections.');
     }
 
+    // Refresh the page only if roles were granted.
     if (allGrantedRoles.length > 0) {
       setTimeout(() => location.reload(), 3000);
     }
@@ -8176,33 +8411,7 @@ function closeSeasonTesterPopup() {
 }
 
 // Call the function when profile page loads
-// Call the function when profile page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // 🧹 Force clean wallet state on every profile page load
-    try {
-        const provider = getSolanaProvider();
-        if (provider && typeof provider.disconnect === 'function') {
-            provider.disconnect();
-            console.log('🧹 Profile page forced wallet disconnect on load');
-        }
-    } catch (e) {
-        console.log('No wallet session to clear on profile load');
-    }
-
-    // Clear remembered wallet state so user must click Connect manually
-    localStorage.removeItem('walletAddress');
-    localStorage.removeItem('phantom_wallet_address');
-
-    // Reset runtime wallet state
-    connectedWallet = null;
-    connectedWalletAddress = null;
-
-    // Hide disconnect button until a fresh manual connect happens
-    const disconnectBtn = document.getElementById('wallet-disconnect');
-    if (disconnectBtn) {
-        disconnectBtn.classList.add('hidden');
-    }
-
     // Wait a bit for the page to fully load
     setTimeout(checkSeasonTesterRole, 2000);
     

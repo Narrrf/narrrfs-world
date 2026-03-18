@@ -559,9 +559,31 @@ require_once 'discord-invite.php';
     ✅ Verify & Save My NFTs
   </button>
 
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+    <button id="load-saved-nfts-btn"
+            class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg">
+      💾 Load Saved NFT Snapshot
+    </button>
+    <button id="clear-saved-nfts-btn"
+            class="w-full bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-700 hover:to-slate-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg">
+      🧹 Clear Saved Snapshot
+    </button>
+  </div>
+
   <p class="text-xs text-gray-400 mt-3">
     Verification requires a wallet signature and an active Discord login. Verified Genesis NFT traits are securely saved for holder verification, admin review, and future Narrrf’s World ecosystem features.
   </p>
+</div>
+
+<div id="saved-nft-snapshot-panel" class="hidden mt-4 rounded-xl border border-cyan-400/30 bg-cyan-900/20 p-4">
+  <div class="flex items-center justify-between gap-3 flex-wrap">
+    <div>
+      <h4 class="text-cyan-200 font-semibold">💾 Saved Verification Snapshot</h4>
+      <p id="saved-nft-snapshot-meta" class="text-cyan-100/80 text-sm mt-1"></p>
+    </div>
+    <div class="text-xs text-cyan-100/70 uppercase tracking-[0.24em]">Local Restore</div>
+  </div>
+  <div id="saved-nft-snapshot-summary" class="text-sm text-cyan-50 mt-3"></div>
 </div>
           <!-- NFT Gallery -->
           <div id="nft-gallery-section" class="hidden">
@@ -1827,6 +1849,101 @@ let connectedWallet = null;
 let connectedWalletAddress = null;
 let loadedNFTs = [];
 let isFetchingNFTs = false;
+const STAKE_LAB_LOADED_NFTS_KEY = 'narrrfs_stake_lab_loaded_nfts_v1';
+const STAKE_LAB_VERIFIED_NFTS_KEY = 'narrrfs_stake_lab_verified_nfts_v1';
+
+function isMobileWalletBrowser() {
+  const ua = navigator.userAgent || '';
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+  const isPhantom = /Phantom/i.test(ua) || !!window.phantom?.solana?.isPhantom;
+  return isMobile && isPhantom;
+}
+
+function formatSnapshotTime(timestamp) {
+  if (!timestamp) return 'Unknown time';
+  const date = new Date(timestamp);
+  return Number.isNaN(date.getTime()) ? 'Unknown time' : date.toLocaleString();
+}
+
+function saveStakeLabSnapshot(storageKey, payload) {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('Stake Lab snapshot save failed:', error);
+  }
+}
+
+function loadStakeLabSnapshot(storageKey) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch (error) {
+    console.warn('Stake Lab snapshot load failed:', error);
+    return null;
+  }
+}
+
+function clearStakeLabSnapshots() {
+  localStorage.removeItem(STAKE_LAB_LOADED_NFTS_KEY);
+  localStorage.removeItem(STAKE_LAB_VERIFIED_NFTS_KEY);
+  renderStakeLabSavedSnapshot();
+}
+
+function renderStakeLabSavedSnapshot() {
+  const panel = document.getElementById('saved-nft-snapshot-panel');
+  const meta = document.getElementById('saved-nft-snapshot-meta');
+  const summary = document.getElementById('saved-nft-snapshot-summary');
+  if (!panel || !meta || !summary) return;
+
+  const verified = loadStakeLabSnapshot(STAKE_LAB_VERIFIED_NFTS_KEY);
+  const loaded = loadStakeLabSnapshot(STAKE_LAB_LOADED_NFTS_KEY);
+  const active = verified || loaded;
+
+  if (!active) {
+    panel.classList.add('hidden');
+    return;
+  }
+
+  panel.classList.remove('hidden');
+  const wallet = active.walletAddress || 'Unknown wallet';
+  const nftCount = Array.isArray(active.nfts) ? active.nfts.length : 0;
+  const collectionCount = Array.isArray(active.collections) ? active.collections.length : 0;
+  meta.textContent = `Wallet ${wallet.slice(0, 6)}...${wallet.slice(-4)} • ${formatSnapshotTime(active.savedAt)}`;
+  summary.innerHTML = `
+    <div class="space-y-1">
+      <div>Saved NFTs: <strong>${nftCount}</strong></div>
+      <div>Collections matched: <strong>${collectionCount}</strong></div>
+      <div>Mode: <strong>${verified ? 'Verified & saved to backend' : 'Loaded locally only'}</strong></div>
+    </div>
+  `;
+}
+
+function restoreSavedStakeLabNfts() {
+  const snapshot = loadStakeLabSnapshot(STAKE_LAB_VERIFIED_NFTS_KEY) || loadStakeLabSnapshot(STAKE_LAB_LOADED_NFTS_KEY);
+  if (!snapshot || !Array.isArray(snapshot.nfts) || snapshot.nfts.length === 0) {
+    alert('No saved NFT snapshot found yet.');
+    return;
+  }
+
+  if (connectedWalletAddress && snapshot.walletAddress && snapshot.walletAddress !== connectedWalletAddress) {
+    alert('Saved NFT snapshot belongs to a different wallet. Connect the same wallet first.');
+    return;
+  }
+
+  loadedNFTs = snapshot.nfts;
+  const gallerySection = document.getElementById('nft-gallery-section');
+  const loadingDiv = document.getElementById('nft-loading');
+  const galleryDiv = document.getElementById('nft-gallery');
+  const noNFTsDiv = document.getElementById('no-nfts-message');
+  gallerySection.classList.remove('hidden');
+  loadingDiv.classList.add('hidden');
+  noNFTsDiv.classList.add('hidden');
+  galleryDiv.classList.remove('hidden');
+  displayNFTs(loadedNFTs);
+  renderStakeLabSavedSnapshot();
+}
     
     // Connect Phantom wallet
 // Connect Solana wallet (keeps old function name so existing button wiring still works)
@@ -2010,6 +2127,13 @@ function disconnectWallet() {
           noNFTsDiv.classList.remove('hidden');
         } else {
           galleryDiv.classList.remove('hidden');
+          saveStakeLabSnapshot(STAKE_LAB_LOADED_NFTS_KEY, {
+            walletAddress: connectedWalletAddress,
+            nfts: loadedNFTs,
+            collections: Array.from(new Set(loadedNFTs.map(nft => nft.collectionAddress || nft.collection || ''))),
+            savedAt: new Date().toISOString()
+          });
+          renderStakeLabSavedSnapshot();
           displayNFTs(loadedNFTs);
         }
         
@@ -2550,6 +2674,17 @@ function initWalletConnection() {
 document.addEventListener('DOMContentLoaded', () => {
   initPage();
   initWalletConnection();
+  const loadSavedBtn = document.getElementById('load-saved-nfts-btn');
+if (loadSavedBtn) {
+  loadSavedBtn.addEventListener('click', restoreSavedStakeLabNfts);
+}
+
+const clearSavedBtn = document.getElementById('clear-saved-nfts-btn');
+if (clearSavedBtn) {
+  clearSavedBtn.addEventListener('click', clearStakeLabSnapshots);
+}
+
+renderStakeLabSavedSnapshot();
 });
   </script>
 
