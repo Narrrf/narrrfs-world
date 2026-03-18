@@ -778,7 +778,7 @@ function verifySolanaMemoTransaction(string $walletAddress, string $message, str
         foreach ($accountKeys as $keyInfo) {
             if (is_array($keyInfo)) {
                 $pubkey = (string)($keyInfo['pubkey'] ?? '');
-                $signer = !empty($keyInfo['signer']);
+                $signer = array_key_exists('signer', $keyInfo) ? !empty($keyInfo['signer']) : true;
 
                 if ($pubkey === $walletAddress && $signer) {
                     $walletMatched = true;
@@ -812,25 +812,45 @@ function verifySolanaMemoTransaction(string $walletAddress, string $message, str
             }
 
             $programId = (string)($instruction['programId'] ?? '');
+            $program = strtolower((string)($instruction['program'] ?? ''));
             $parsed = $instruction['parsed'] ?? null;
+            $rawData = $instruction['data'] ?? null;
 
-            if ($programId !== MEMO_PROGRAM_ID) {
+            $isMemoInstruction =
+                $programId === MEMO_PROGRAM_ID ||
+                $program === 'spl-memo';
+
+            if (!$isMemoInstruction) {
                 continue;
             }
 
-            if (is_string($parsed) && $parsed === $message) {
+            if (is_string($parsed) && trim($parsed) === $message) {
                 $memoFound = true;
                 break;
             }
 
-            if (is_array($parsed) && (string)($parsed['memo'] ?? '') === $message) {
+            if (is_array($parsed) && trim((string)($parsed['memo'] ?? '')) === $message) {
                 $memoFound = true;
                 break;
+            }
+
+            if (is_string($rawData)) {
+                $decoded = base64_decode($rawData, true);
+                if ($decoded !== false && trim($decoded) === $message) {
+                    $memoFound = true;
+                    break;
+                }
+
+                if (trim($rawData) === $message) {
+                    $memoFound = true;
+                    break;
+                }
             }
         }
 
         if (!$memoFound) {
-            error_log('Memo verification message mismatch');
+            error_log("Memo verification message mismatch. Expected: {$message}");
+            error_log('Memo verification raw transaction: ' . json_encode($result));
             return false;
         }
 

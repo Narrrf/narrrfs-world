@@ -4638,12 +4638,49 @@ async function createVerificationMemoTransaction(walletAddress, memoText) {
   };
 }
 
+async function waitForLedgerVerificationTransaction(signature, rpcUrl = null) {
+  const solanaWeb3 = ensureSolanaWeb3Available();
+
+  if (!signature) {
+    throw new Error('Missing transaction signature while waiting for Ledger verification.');
+  }
+
+  const connection = new solanaWeb3.Connection(
+    rpcUrl || 'https://api.mainnet-beta.solana.com',
+    'confirmed'
+  );
+
+  const maxAttempts = 12;
+  const delayMs = 1500;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const tx = await connection.getTransaction(signature, {
+        commitment: 'confirmed',
+        maxSupportedTransactionVersion: 0
+      });
+
+      if (tx && !tx.meta?.err) {
+        console.log(`✅ Ledger verification tx visible on-chain after attempt ${attempt}`);
+        return true;
+      }
+    } catch (error) {
+      console.warn(`⏳ Waiting for Ledger verification tx attempt ${attempt}:`, error?.message || error);
+    }
+
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+  }
+
+  throw new Error('Ledger verification transaction was signed but not yet visible on-chain. Please try again in a few seconds.');
+}
+
 /**
  * Ask the wallet to sign/send a memo verification transaction.
  * This is intended as a Ledger fallback path.
  */
 async function signVerificationMemoTransaction() {
   const provider = connectedWallet || getSolanaProvider();
+  const solanaWeb3 = ensureSolanaWeb3Available();
 
   if (!provider) {
     throw new Error('No supported Solana wallet found for transaction signing.');
@@ -4670,24 +4707,42 @@ async function signVerificationMemoTransaction() {
   });
 
   try {
+    let signature = null;
+
     if (typeof provider.signAndSendTransaction === 'function') {
       const result = await provider.signAndSendTransaction(transaction);
+      signature = result?.signature || null;
+    } else if (typeof provider.signTransaction === 'function') {
+      const signedTx = await provider.signTransaction(transaction);
 
-      if (!result?.signature) {
-        throw new Error('Wallet returned no transaction signature.');
+      if (!signedTx) {
+        throw new Error('Wallet returned no signed transaction.');
       }
 
-      return {
-        provider,
-        mode: 'memo_transaction',
-        signature: result.signature,
-        message: memoText
-      };
+      const connection = new solanaWeb3.Connection(
+        rpc || 'https://api.mainnet-beta.solana.com',
+        'confirmed'
+      );
+
+      signature = await connection.sendRawTransaction(signedTx.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed'
+      });
     }
 
-    throw new Error(
-      `${getWalletProviderLabel(provider)} requires signAndSendTransaction for Ledger verification in this browser flow.`
-    );
+    if (!signature) {
+      throw new Error('Wallet returned no transaction signature.');
+    }
+
+    // Critical: wait until transaction is visible on-chain before backend verification
+    await waitForLedgerVerificationTransaction(signature, rpc);
+
+    return {
+      provider,
+      mode: 'memo_transaction',
+      signature,
+      message: memoText
+    };
   } catch (error) {
     const walletName = getWalletProviderLabel(provider);
     throw new Error(
@@ -4702,16 +4757,27 @@ async function signVerificationMemoTransaction() {
  * If that fails with a likely Ledger signing issue, fall back to a memo transaction.
  */
 async function requestVerificationProof() {
+  const provider = connectedWallet || getSolanaProvider();
+
+  if (!provider) {
+    throw new Error('No supported Solana wallet found for verification.');
+  }
+
+  const walletLabel = getWalletProviderLabel(provider);
+  const forceLedgerMemo =
+    /ledger/i.test(walletLabel) ||
+    !supportsSignMessage(provider);
+
+  if (forceLedgerMemo) {
+    console.warn('🔐 Ledger-style wallet detected, using memo transaction verification directly...');
+    return await signVerificationMemoTransaction();
+  }
+
   const offChainMessage = `Verify NFT ownership for Narrrfs World - ${new Date().toISOString()}`;
 
   try {
-    console.log('🔐 Trying off-chain message signing first...');
+    console.log('🔐 Trying off-chain message signing...');
     const signed = await signVerificationMessage(offChainMessage);
-
-    console.log('✅ Off-chain signing succeeded:', {
-      provider: getWalletProviderLabel(signed.provider),
-      wallet: connectedWalletAddress
-    });
 
     return {
       provider: signed.provider,
@@ -4724,16 +4790,11 @@ async function requestVerificationProof() {
 
     const shouldFallbackToMemo = isLikelyLedgerSignError(error);
 
-    console.log('🔍 Ledger fallback check:', {
-      shouldFallbackToMemo,
-      message: error?.message || String(error)
-    });
-
     if (!shouldFallbackToMemo) {
       throw error;
     }
 
-    console.warn('🔐 Ledger-like signing error detected, trying memo transaction fallback...');
+    console.warn('🔐 Ledger-like signing error detected, using memo transaction fallback...');
     return await signVerificationMemoTransaction();
   }
 }
