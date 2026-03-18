@@ -9912,6 +9912,7 @@ async function searchPlayerProfile() {
     let adminInventory = null;
     let stakingStats = null;
     let stakingActivity = null;
+    let adminLabProfile = null;
     let storeCatalog = [];
 
     if (userId) {
@@ -10107,6 +10108,35 @@ async function searchPlayerProfile() {
       }
 
       /**
+       * Load admin lab progression for the selected player.
+       * This uses a dedicated admin read endpoint because the player-facing lab endpoint is session-bound.
+       */
+      try {
+        const adminLabResponse = await fetch(
+          `${API_BASE_URL}/api/admin/get-player-lab.php`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+          }
+        );
+
+        const adminLabData = await readJsonResponse(adminLabResponse, 'Admin player lab profile');
+
+        if (adminLabResponse.ok && adminLabData.success && adminLabData.data) {
+          adminLabProfile = adminLabData.data;
+        } else {
+          console.warn('Admin player lab API returned unsuccessful payload:', adminLabData);
+        }
+      } catch (adminLabError) {
+        console.error('Admin player lab load failed:', adminLabError);
+        addLog(`⚠️ Player lab load failed: ${adminLabError.message}`);
+      }
+
+      /**
        * Load active store items for the inline give-item control inside the player profile.
        */
       try {
@@ -10140,6 +10170,7 @@ async function searchPlayerProfile() {
       admin_inventory: adminInventory,
       staking_stats: stakingStats,
       staking_activity: stakingActivity,
+      admin_lab_profile: adminLabProfile,
       store_catalog: storeCatalog
     });
 
@@ -10349,6 +10380,7 @@ function renderAdminPlayerProfile(profile) {
   const adminStoreActivity = profile.admin_store_activity || {};
   const stakingStats = profile.staking_stats || {};
   const stakingActivity = profile.staking_activity || {};
+  const adminLabProfile = profile.admin_lab_profile || {};
   const storeCatalog = Array.isArray(profile.store_catalog) ? profile.store_catalog : [];
 
   /**
@@ -10593,6 +10625,11 @@ function renderAdminPlayerProfile(profile) {
       </div>
 
       <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🧬 Lab Progression</h4>
+        ${renderAdminPlayerLabSection(adminLabProfile)}
+      </div>
+
+      <div class="stats-card">
         <h4 class="text-lg font-semibold mb-4">🎭 Roles</h4>
         ${renderRoleBadges()}
       </div>
@@ -10651,6 +10688,186 @@ function renderAdminPlayerProfile(profile) {
    * Hydrate the give-item select after the HTML exists.
    */
   hydrateAdminPlayerProfileItemSelect(profile.user_id, storeCatalog);
+}
+
+
+/**
+ * Group lab upgrades by NFT token for the admin player profile.
+ * This keeps the player profile readable while still exposing exact trait rows.
+ */
+function groupAdminLabUpgradesByToken(labProfile) {
+  const nfts = Array.isArray(labProfile?.verified_genesis_nfts) ? labProfile.verified_genesis_nfts : [];
+  const upgrades = Array.isArray(labProfile?.upgrades) ? labProfile.upgrades : [];
+  const nftMap = new Map();
+
+  nfts.forEach(nft => {
+    const tokenId = String(nft?.token_id || '').trim();
+    if (!tokenId) {
+      return;
+    }
+
+    nftMap.set(tokenId, {
+      token_id: tokenId,
+      nft_name: nft?.nft_name || 'Unnamed NFT',
+      collection: nft?.collection || 'genesis',
+      image_url: nft?.image_url || '',
+      upgrades: []
+    });
+  });
+
+  upgrades.forEach(row => {
+    const tokenId = String(row?.token_id || '').trim();
+    if (!tokenId) {
+      return;
+    }
+
+    if (!nftMap.has(tokenId)) {
+      nftMap.set(tokenId, {
+        token_id: tokenId,
+        nft_name: row?.nft_name || 'Unnamed NFT',
+        collection: row?.collection || 'genesis',
+        image_url: '',
+        upgrades: []
+      });
+    }
+
+    nftMap.get(tokenId).upgrades.push(row);
+  });
+
+  return Array.from(nftMap.values()).map(nft => {
+    const upgradesForNft = Array.isArray(nft.upgrades) ? nft.upgrades : [];
+    const nftLevel = upgradesForNft.reduce((sum, row) => sum + Number(row?.current_level || 1), 0);
+    const highestLevel = upgradesForNft.reduce((max, row) => Math.max(max, Number(row?.current_level || 1)), 1);
+    const activeCount = upgradesForNft.filter(row => String(row?.upgrade_status || '').toLowerCase() === 'upgrading').length;
+    const readyCount = upgradesForNft.filter(row => ['ready', 'ready_to_claim'].includes(String(row?.upgrade_status || '').toLowerCase())).length;
+
+    return {
+      ...nft,
+      nft_level: nftLevel,
+      highest_level: highestLevel,
+      active_count: activeCount,
+      ready_count: readyCount,
+      upgrades: upgradesForNft.sort((a, b) => {
+        const typeCompare = String(a?.trait_type || '').localeCompare(String(b?.trait_type || ''));
+        if (typeCompare !== 0) {
+          return typeCompare;
+        }
+        return String(a?.trait_value || '').localeCompare(String(b?.trait_value || ''));
+      })
+    };
+  }).sort((a, b) => b.nft_level - a.nft_level || String(a.token_id).localeCompare(String(b.token_id)));
+}
+
+/**
+ * Render the admin lab progression block inside the player profile.
+ * This is read-only and surfaces NFT ownership-linked lab progression for support and balancing.
+ */
+function renderAdminPlayerLabSection(labProfile) {
+  const profile = labProfile || {};
+  const summary = profile.summary || {};
+  const groupedNfts = groupAdminLabUpgradesByToken(profile);
+  const summaryCards = [
+    ['Verified NFTs', Number(summary.verified_nft_count || 0).toLocaleString()],
+    ['Trait Rows', Number(summary.upgrade_row_count || 0).toLocaleString()],
+    ['Lab Power', Number(summary.total_lab_power || 0).toLocaleString()],
+    ['Active Upgrades', Number(summary.active_count || 0).toLocaleString()],
+    ['Ready To Claim', Number(summary.ready_count || 0).toLocaleString()],
+    ['Highest Trait', summary.highest_level_trait
+      ? `${escapeAdminProfileHtml(summary.highest_level_trait)} • Lv ${Number(summary.highest_level || 1).toLocaleString()}`
+      : '—']
+  ];
+
+  if (!groupedNfts.length) {
+    return `
+      <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3 mb-4">
+          ${summaryCards.map(([label, value]) => `
+            <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+              <div class="text-xs text-cyan-300 uppercase">${escapeAdminProfileHtml(label)}</div>
+              <div class="text-lg font-semibold text-white mt-1">${value}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="text-center text-gray-400 py-8">
+          <div class="text-lg mb-2">🧪 No verified Genesis lab data</div>
+          <div class="text-sm">This player currently has no verified Genesis NFTs linked to lab progression.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3">
+        ${summaryCards.map(([label, value]) => `
+          <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg px-4 py-3">
+            <div class="text-xs text-cyan-300 uppercase">${escapeAdminProfileHtml(label)}</div>
+            <div class="text-lg font-semibold text-white mt-1">${value}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="space-y-4">
+        ${groupedNfts.map(nft => `
+          <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg p-4">
+            <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-4">
+              <div>
+                <div class="text-lg font-semibold text-white">${escapeAdminProfileHtml(nft.nft_name || 'Unnamed NFT')}</div>
+                <div class="text-sm text-gray-300 mt-1">Token: <span class="text-cyan-300 break-all">${escapeAdminProfileHtml(nft.token_id)}</span></div>
+                <div class="text-sm text-gray-300">Collection: <span class="text-white">${escapeAdminProfileHtml(String(nft.collection || 'genesis').toUpperCase())}</span></div>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 xl:min-w-[420px]">
+                <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                  <div class="text-xs text-cyan-300 uppercase">NFT Level</div>
+                  <div class="text-lg font-semibold text-white mt-1">${Number(nft.nft_level || 0).toLocaleString()}</div>
+                </div>
+                <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                  <div class="text-xs text-cyan-300 uppercase">Highest Trait</div>
+                  <div class="text-lg font-semibold text-white mt-1">Lv ${Number(nft.highest_level || 1).toLocaleString()}</div>
+                </div>
+                <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                  <div class="text-xs text-cyan-300 uppercase">Active</div>
+                  <div class="text-lg font-semibold text-white mt-1">${Number(nft.active_count || 0).toLocaleString()}</div>
+                </div>
+                <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                  <div class="text-xs text-cyan-300 uppercase">Ready</div>
+                  <div class="text-lg font-semibold text-white mt-1">${Number(nft.ready_count || 0).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm">
+                <thead>
+                  <tr class="text-left text-cyan-300 border-b border-cyan-500/20">
+                    <th class="py-2 pr-4">Trait Type</th>
+                    <th class="py-2 pr-4">Trait Value</th>
+                    <th class="py-2 pr-4">Current Level</th>
+                    <th class="py-2 pr-4">Status</th>
+                    <th class="py-2 pr-4">Ends</th>
+                    <th class="py-2 pr-4">Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${nft.upgrades.map(row => `
+                    <tr class="border-b border-gray-700/40 align-top">
+                      <td class="py-2 pr-4 text-white">${escapeAdminProfileHtml(row.trait_type || '—')}</td>
+                      <td class="py-2 pr-4 text-gray-200">${escapeAdminProfileHtml(row.trait_value || '—')}</td>
+                      <td class="py-2 pr-4 text-yellow-300 font-semibold">Lv ${Number(row.current_level || 1).toLocaleString()}</td>
+                      <td class="py-2 pr-4 text-white">${escapeAdminProfileHtml(row.upgrade_status || 'idle')}</td>
+                      <td class="py-2 pr-4 text-gray-300">${formatAdminProfileDate(row.upgrade_ends_at)}</td>
+                      <td class="py-2 pr-4 text-gray-300">${formatAdminProfileDate(row.updated_at || row.last_completed_at || row.created_at)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 /**

@@ -369,8 +369,19 @@ function load_verified_genesis_from_db(PDO $pdo, $user_id) {
                 $selectFields .= ", {$traitColumn} AS raw_traits";
             }
 
-            $stmt = $pdo->prepare("SELECT {$selectFields} FROM {$table} WHERE {$userColumn} = ? AND LOWER(collection) = 'genesis'");
-            $stmt->execute([$user_id]);
+            $whereParts = [
+                "{$userColumn} = ?",
+                "LOWER(collection) = 'genesis'"
+            ];
+            $params = [$user_id];
+
+            if (in_array('is_verified', $columns, true)) {
+                $whereParts[] = 'is_verified = 1';
+            }
+
+            $whereSql = implode(' AND ', $whereParts);
+            $stmt = $pdo->prepare("SELECT {$selectFields} FROM {$table} WHERE {$whereSql}");
+            $stmt->execute($params);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($rows as $row) {

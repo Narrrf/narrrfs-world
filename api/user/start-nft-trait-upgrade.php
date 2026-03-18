@@ -336,8 +336,19 @@ function load_verified_genesis_from_db(PDO $pdo, $user_id) {
                 $selectFields .= ", {$traitColumn} AS raw_traits";
             }
 
-            $stmt = $pdo->prepare("SELECT {$selectFields} FROM {$table} WHERE {$userColumn} = ? AND LOWER(collection) = 'genesis'");
-            $stmt->execute([$user_id]);
+            $whereParts = [
+                "{$userColumn} = ?",
+                "LOWER(collection) = 'genesis'"
+            ];
+            $params = [$user_id];
+
+            if (in_array('is_verified', $columns, true)) {
+                $whereParts[] = 'is_verified = 1';
+            }
+
+            $whereSql = implode(' AND ', $whereParts);
+            $stmt = $pdo->prepare("SELECT {$selectFields} FROM {$table} WHERE {$whereSql}");
+            $stmt->execute($params);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($rows as $row) {
@@ -437,7 +448,21 @@ function nft_has_active_upgrade(PDO $pdo, $token_id, $collection) {
 
 function calculate_upgrade_duration_hours($current_level) {
     $level = max(1, (int)$current_level);
-    return 24 * pow(2, $level - 1);
+
+    // Early game stays exactly the same: 1, 2, 4, 8, 16 days.
+    if ($level <= 5) {
+        return (int)(24 * pow(2, $level - 1));
+    }
+
+    // Mid/late game grows gently instead of doubling forever.
+    // Level 6 starts at 16 days, then each level adds 1.5 hours.
+    $baseDaysAfterEarlyGame = 16;
+    $extraHoursPerLevel = 1.5;
+    $levelsAfterEarlyGame = $level - 6;
+
+    $durationDays = $baseDaysAfterEarlyGame + (($levelsAfterEarlyGame * $extraHoursPerLevel) / 24);
+
+    return (int)round($durationDays * 24);
 }
 
 try {

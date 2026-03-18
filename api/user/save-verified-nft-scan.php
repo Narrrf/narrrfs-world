@@ -100,6 +100,32 @@ try {
         LIMIT 1
     ");
 
+    /**
+     * Reset verified ownership for the same NFT token before assigning the
+     * current verified owner. This is the critical ownership-transfer guard:
+     * upgrades belong to the NFT, but only the current verified holder may
+     * access them through the read/action layer.
+     */
+    $resetPreviousTokenOwnership = $db->prepare("
+        UPDATE tbl_nft_ownership
+        SET is_verified = 0
+        WHERE token_id = :token_id
+          AND collection = :collection
+          AND wallet != :wallet
+    ");
+
+    /**
+     * Remove trait rows that still point at an older ownership record for the
+     * same NFT token. Fresh trait rows for the current verified holder will be
+     * inserted again below.
+     */
+    $deletePreviousTokenTraits = $db->prepare("
+        DELETE FROM tbl_nft_traits
+        WHERE token_id = :token_id
+          AND collection = :collection
+          AND wallet != :wallet
+    ");
+
     $insertOwnership = $db->prepare("
         INSERT INTO tbl_nft_ownership (
             wallet,
@@ -253,7 +279,24 @@ try {
 
         /**
          * Upsert NFT ownership row.
+         *
+         * IMPORTANT: token-level ownership must be normalized before the upsert
+         * so a previous verified holder instantly loses access after transfer.
          */
+        $resetPreviousTokenOwnership->reset();
+        $resetPreviousTokenOwnership->clear();
+        $resetPreviousTokenOwnership->bindValue(':token_id', $tokenId, SQLITE3_TEXT);
+        $resetPreviousTokenOwnership->bindValue(':collection', $collection, SQLITE3_TEXT);
+        $resetPreviousTokenOwnership->bindValue(':wallet', $wallet, SQLITE3_TEXT);
+        $resetPreviousTokenOwnership->execute();
+
+        $deletePreviousTokenTraits->reset();
+        $deletePreviousTokenTraits->clear();
+        $deletePreviousTokenTraits->bindValue(':token_id', $tokenId, SQLITE3_TEXT);
+        $deletePreviousTokenTraits->bindValue(':collection', $collection, SQLITE3_TEXT);
+        $deletePreviousTokenTraits->bindValue(':wallet', $wallet, SQLITE3_TEXT);
+        $deletePreviousTokenTraits->execute();
+
         $selectOwnership->reset();
         $selectOwnership->clear();
         $selectOwnership->bindValue(':wallet', $wallet, SQLITE3_TEXT);
