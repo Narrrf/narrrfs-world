@@ -2640,54 +2640,78 @@ for (const [collectionAddress, info] of Object.entries(collections)) {
     alert("Verification failed: " + error.message);
   }
 }
-    
-    // Initialize wallet connection on page load
-// Initialize wallet connection on page load
 function initWalletConnection() {
-  const savedAddress = localStorage.getItem('phantom_wallet_address');
-  const provider = getSolanaProvider();
+  // Never auto-connect on page load.
+  // This avoids stale Phantom sessions, especially on mobile in-app browser.
+  localStorage.removeItem('phantom_wallet_address');
+  connectedWallet = null;
+  connectedWalletAddress = null;
 
-  if (savedAddress && provider) {
-  provider.connect()
-    .then(response => {
-      connectedWallet = provider;
-      connectedWalletAddress = response.publicKey.toString();
+  const notConnected = document.getElementById('wallet-not-connected');
+  const connected = document.getElementById('wallet-connected');
+  const addressDisplay = document.getElementById('wallet-address-display');
 
-        if (connectedWalletAddress === savedAddress) {
-          document.getElementById('wallet-not-connected').classList.add('hidden');
-          document.getElementById('wallet-connected').classList.remove('hidden');
-          document.getElementById('wallet-address-display').textContent =
-            `${connectedWalletAddress.substring(0, 6)}...${connectedWalletAddress.substring(connectedWalletAddress.length - 4)}`;
-        }
-      })
-      .catch(() => {
-        localStorage.removeItem('phantom_wallet_address');
-      });
+  if (notConnected) notConnected.classList.remove('hidden');
+  if (connected) connected.classList.add('hidden');
+  if (addressDisplay) addressDisplay.textContent = '';
+
+  const connectBtn = document.getElementById('connect-phantom-btn');
+  const disconnectBtn = document.getElementById('disconnect-wallet-btn');
+  const fetchBtn = document.getElementById('fetch-nfts-btn');
+  const verifyBtn = document.getElementById('verify-stake-nfts-btn');
+  const loadSavedBtn = document.getElementById('load-saved-nfts-btn');
+  const clearSavedBtn = document.getElementById('clear-saved-nfts-btn');
+
+  if (connectBtn) {
+    connectBtn.addEventListener('click', connectPhantomWallet);
   }
 
-  document.getElementById('connect-phantom-btn').addEventListener('click', connectPhantomWallet);
-  document.getElementById('disconnect-wallet-btn').addEventListener('click', disconnectWallet);
-  document.getElementById('fetch-nfts-btn').addEventListener('click', fetchNFTs);
-  document.getElementById('verify-stake-nfts-btn').addEventListener('click', verifyStakeLabNFTs);
-}
-// Run on page load
-document.addEventListener('DOMContentLoaded', () => {
-  initPage();
-  initWalletConnection();
-  const loadSavedBtn = document.getElementById('load-saved-nfts-btn');
-if (loadSavedBtn) {
-  loadSavedBtn.addEventListener('click', restoreSavedStakeLabNfts);
+  if (disconnectBtn) {
+    disconnectBtn.addEventListener('click', disconnectWallet);
+  }
+
+  if (loadSavedBtn) {
+    loadSavedBtn.addEventListener('click', restoreSavedStakeLabNfts);
+  }
+
+  if (clearSavedBtn) {
+    clearSavedBtn.addEventListener('click', clearStakeLabSnapshots);
+  }
+
+  // 📱 Mobile Phantom: do NOT push users into heavy stake-lab fetch/verify flow.
+  if (isMobileWalletBrowser()) {
+    if (fetchBtn) {
+      fetchBtn.textContent = '📱 Verify on Profile First';
+      fetchBtn.onclick = function () {
+        window.location.href = 'profile.html';
+      };
+    }
+
+    if (verifyBtn) {
+      verifyBtn.textContent = '💾 Load Saved NFT Snapshot';
+      verifyBtn.onclick = function () {
+        restoreSavedStakeLabNfts();
+      };
+    }
+  } else {
+    if (fetchBtn) {
+      fetchBtn.addEventListener('click', fetchNFTs);
+    }
+
+    if (verifyBtn) {
+      verifyBtn.addEventListener('click', verifyStakeLabNFTs);
+    }
+  }
+
+  renderStakeLabSavedSnapshot();
 }
 
-const clearSavedBtn = document.getElementById('clear-saved-nfts-btn');
-if (clearSavedBtn) {
-  clearSavedBtn.addEventListener('click', clearStakeLabSnapshots);
-}
-
-renderStakeLabSavedSnapshot();
-});
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage();
+      initWalletConnection();
+    });
   </script>
 
 </body>
 </html>
-
