@@ -2647,13 +2647,11 @@ function initWalletConnection() {
   connectedWallet = null;
   connectedWalletAddress = null;
 
+  const isMobilePhantom = isMobileWalletBrowser();
+
   const notConnected = document.getElementById('wallet-not-connected');
   const connected = document.getElementById('wallet-connected');
   const addressDisplay = document.getElementById('wallet-address-display');
-
-  if (notConnected) notConnected.classList.remove('hidden');
-  if (connected) connected.classList.add('hidden');
-  if (addressDisplay) addressDisplay.textContent = '';
 
   const connectBtn = document.getElementById('connect-phantom-btn');
   const disconnectBtn = document.getElementById('disconnect-wallet-btn');
@@ -2662,44 +2660,77 @@ function initWalletConnection() {
   const loadSavedBtn = document.getElementById('load-saved-nfts-btn');
   const clearSavedBtn = document.getElementById('clear-saved-nfts-btn');
 
-  if (connectBtn) {
-    connectBtn.addEventListener('click', connectPhantomWallet);
+  if (notConnected) notConnected.classList.remove('hidden');
+  if (connected) connected.classList.add('hidden');
+  if (addressDisplay) addressDisplay.textContent = '';
+
+  // Remove old listeners by replacing nodes.
+  function resetButton(buttonId) {
+    const oldBtn = document.getElementById(buttonId);
+    if (!oldBtn || !oldBtn.parentNode) return null;
+    const newBtn = oldBtn.cloneNode(true);
+    oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+    return newBtn;
   }
 
-  if (disconnectBtn) {
-    disconnectBtn.addEventListener('click', disconnectWallet);
+  const safeConnectBtn = resetButton('connect-phantom-btn');
+  const safeDisconnectBtn = resetButton('disconnect-wallet-btn');
+  const safeFetchBtn = resetButton('fetch-nfts-btn');
+  const safeVerifyBtn = resetButton('verify-stake-nfts-btn');
+  const safeLoadSavedBtn = resetButton('load-saved-nfts-btn');
+  const safeClearSavedBtn = resetButton('clear-saved-nfts-btn');
+
+  if (safeLoadSavedBtn) {
+    safeLoadSavedBtn.addEventListener('click', restoreSavedStakeLabNfts);
   }
 
-  if (loadSavedBtn) {
-    loadSavedBtn.addEventListener('click', restoreSavedStakeLabNfts);
+  if (safeClearSavedBtn) {
+    safeClearSavedBtn.addEventListener('click', clearStakeLabSnapshots);
   }
 
-  if (clearSavedBtn) {
-    clearSavedBtn.addEventListener('click', clearStakeLabSnapshots);
-  }
-
-  // 📱 Mobile Phantom: do NOT push users into heavy stake-lab fetch/verify flow.
-  if (isMobileWalletBrowser()) {
-    if (fetchBtn) {
-      fetchBtn.textContent = '📱 Verify on Profile First';
-      fetchBtn.onclick = function () {
+  if (isMobilePhantom) {
+    // Mobile Phantom should not use heavy stake-lab connect/fetch/verify flow.
+    if (safeConnectBtn) {
+      safeConnectBtn.textContent = '📱 Use Profile Verification';
+      safeConnectBtn.addEventListener('click', function () {
         window.location.href = 'profile.html';
-      };
+      });
     }
 
-    if (verifyBtn) {
-      verifyBtn.textContent = '💾 Load Saved NFT Snapshot';
-      verifyBtn.onclick = function () {
+    if (safeDisconnectBtn) {
+      safeDisconnectBtn.classList.add('hidden');
+    }
+
+    if (safeFetchBtn) {
+      safeFetchBtn.textContent = '📱 Verify on Profile First';
+      safeFetchBtn.addEventListener('click', function () {
+        window.location.href = 'profile.html';
+      });
+    }
+
+    if (safeVerifyBtn) {
+      safeVerifyBtn.textContent = '💾 Load Saved NFT Snapshot';
+      safeVerifyBtn.addEventListener('click', function () {
         restoreSavedStakeLabNfts();
-      };
+      });
     }
   } else {
-    if (fetchBtn) {
-      fetchBtn.addEventListener('click', fetchNFTs);
+    if (safeConnectBtn) {
+      safeConnectBtn.textContent = '🔌 Connect Phantom';
+      safeConnectBtn.addEventListener('click', connectPhantomWallet);
     }
 
-    if (verifyBtn) {
-      verifyBtn.addEventListener('click', verifyStakeLabNFTs);
+    if (safeDisconnectBtn) {
+      safeDisconnectBtn.classList.remove('hidden');
+      safeDisconnectBtn.addEventListener('click', disconnectWallet);
+    }
+
+    if (safeFetchBtn) {
+      safeFetchBtn.addEventListener('click', fetchNFTs);
+    }
+
+    if (safeVerifyBtn) {
+      safeVerifyBtn.addEventListener('click', verifyStakeLabNFTs);
     }
   }
 
