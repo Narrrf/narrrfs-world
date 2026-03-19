@@ -2097,6 +2097,21 @@ const el = {
         .replace(/'/g, '&#39;');
     }
 
+    function parseLabUtcDate(value) {
+  if (!value) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  // Backend writes gmdate('Y-m-d H:i:s') without timezone.
+  // Force UTC interpretation so frontend matches PHP claim logic.
+  const normalized = raw.includes('T')
+    ? raw
+    : raw.replace(' ', 'T') + 'Z';
+
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
     function safeNumber(value, fallback = 0) {
       const num = Number(value);
       return Number.isFinite(num) ? num : fallback;
@@ -2110,11 +2125,10 @@ const el = {
       return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(safeNumber(value));
     }
 
-    function formatDateTime(value) {
-      if (!value) return '—';
-      const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? escapeHtml(value) : date.toLocaleString();
-    }
+function formatDateTime(value) {
+  const date = parseLabUtcDate(value);
+  return date ? date.toLocaleString() : '—';
+}
 
     function formatDurationFromHours(hours) {
       const h = Math.max(0, safeNumber(hours));
@@ -2524,16 +2538,18 @@ function showLabMessageModal({
       return Math.ceil(LAB_CONFIG.instantFinishBaseCost * levelMultiplier * timeMultiplier);
     }
 
-    function mapUpgradeStatus(status, endsAt) {
-      const normalized = String(status || '').trim().toLowerCase();
-      const endTime = endsAt ? new Date(endsAt).getTime() : 0;
-      const now = Date.now();
-      if (normalized === 'ready_to_claim' || normalized === 'ready') return 'ready';
-      if (normalized === 'upgrading' && endTime && endTime <= now) return 'ready';
-      if (normalized === 'upgrading') return 'upgrading';
-      if (normalized === 'blocked') return 'blocked';
-      return 'idle';
-    }
+function mapUpgradeStatus(status, endsAt) {
+  const normalized = String(status || '').trim().toLowerCase();
+  const endDate = parseLabUtcDate(endsAt);
+  const endTime = endDate ? endDate.getTime() : 0;
+  const now = Date.now();
+
+  if (normalized === 'ready_to_claim' || normalized === 'ready') return 'ready';
+  if (normalized === 'upgrading' && endTime && endTime <= now) return 'ready';
+  if (normalized === 'upgrading') return 'upgrading';
+  if (normalized === 'blocked') return 'blocked';
+  return 'idle';
+}
 
     function getNftUpgradeSummary(nft) {
       const traits = normalizeNftTraits(nft);
@@ -2894,14 +2910,25 @@ function scrollToTraitResearchChamber() {
   const chamberSection = traitGrid.closest('.glass');
   if (!chamberSection) return;
 
-  chamberSection.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
+  window.scrollTo({
+    top: Math.max(0, chamberSection.getBoundingClientRect().top + window.scrollY - 16),
+    behavior: 'smooth'
   });
 
   chamberSection.classList.remove('chamber-pulse');
   void chamberSection.offsetWidth;
   chamberSection.classList.add('chamber-pulse');
+}
+
+function openGenesisLabFromQueue(tokenId) {
+  const targetTabButton = document.querySelector('.lab-tab-button[data-lab-tab="my-genesis"]');
+  if (targetTabButton) {
+    targetTabButton.click();
+  }
+
+  requestAnimationFrame(() => {
+    selectNftByTokenId(String(tokenId || ''), { scrollToResearch: true });
+  });
 }
 
 function renderActiveResearchQueue() {
@@ -2911,47 +2938,64 @@ function renderActiveResearchQueue() {
     return;
   }
 
-  el.activeQueueBadge.textContent = `${items.length} actionable mouse${items.length === 1 ? '' : 's'}`;
+  el.activeQueueBadge.textContent = `${items.length} actionable mice`;
 
   if (!items.length) {
     el.activeResearchQueue.innerHTML = `
-      <div class="queue-empty xl:col-span-2">
-        No active or ready-to-claim Genesis research is running right now. Select any verified mouse below to open the lab chamber.
+      <div class="queue-empty">
+        <div class="text-lg font-bold text-white">No active research queue yet</div>
+        <div class="mt-2 text-sm text-slate-300">
+          Start a trait upgrade in <strong>My Genesis Lab</strong> and your actionable mice will appear here.
+        </div>
       </div>
     `;
     return;
   }
 
-  el.activeResearchQueue.innerHTML = items.map(({ nft, summary }) => {
-    const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
-    const action = getPrimaryNftAction(summary);
+  el.activeResearchQueue.innerHTML = items.map(({ nft, summary, traits }) => {
+    const tokenId = String(nft.token_id || '');
+    const nftName = nft.nft_name || 'Genesis Mouse';
+    const shortToken = tokenId ? escapeHtml(tokenId) : '—';
+
+    const hasReady = safeNumber(summary.readyCount) > 0;
+    const hasActive = safeNumber(summary.activeCount) > 0;
+
+    const statusPill = hasReady
+      ? '<span class="pill ready">Ready to claim</span>'
+      : hasActive
+        ? '<span class="pill upgrading">Active</span>'
+        : '<span class="pill idle">Idle</span>';
+
+    const actionLabel = hasReady
+  ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
+  : '🧪 View Research';
+    const actionClass = hasReady ? 'success' : 'warn';
 
     return `
-      <div class="queue-card ${selected ? 'selected' : ''}">
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <div class="text-xs uppercase tracking-[0.18em] text-cyan-300 font-bold">Genesis Specimen</div>
-            <div class="mt-2 text-lg font-black leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
-            <div class="mt-2 text-xs text-slate-400 break-all">${escapeHtml(nft.token_id || '')}</div>
-          </div>
-          <span class="pill ${summary.readyCount > 0 ? 'ready' : summary.activeCount > 0 ? 'upgrading' : 'idle'}">
-            ${summary.readyCount > 0 ? 'Ready' : 'Active'}
-          </span>
-        </div>
+      <div class="queue-card">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="text-xs uppercase tracking-[0.18em] text-cyan-300 font-bold">Genesis Mouse</div>
+            <div class="mt-2 text-2xl font-black text-white break-words">${escapeHtml(nftName)}</div>
+            <div class="mt-2 text-sm text-slate-400 break-all">${shortToken}</div>
 
-        <div class="queue-meta-row">
-          <span class="queue-mini-pill">🧬 Traits ${formatNumber(normalizeNftTraits(nft).length)}</span>
-          <span class="queue-mini-pill">⚡ Power ${formatNumber(summary.totalLevels)}</span>
-          <span class="queue-mini-pill">🔬 Active ${formatNumber(summary.activeCount)}</span>
-          <span class="queue-mini-pill">✅ Ready ${formatNumber(summary.readyCount)}</span>
+            <div class="queue-meta-row">
+              <span class="queue-mini-pill">🧬 Traits ${formatNumber(traits.length)}</span>
+              <span class="queue-mini-pill">⚡ Power ${formatNumber(summary.totalLevels || 0)}</span>
+              <span class="queue-mini-pill">🕰 Active ${formatNumber(summary.activeCount || 0)}</span>
+              <span class="queue-mini-pill">✅ Ready ${formatNumber(summary.readyCount || 0)}</span>
+            </div>
+          </div>
+
+          ${statusPill}
         </div>
 
         <div class="queue-action-row">
           <button
             type="button"
-            class="btn compact ${action.className}"
-            data-queue-open="${escapeHtml(String(nft.token_id || ''))}">
-            ${escapeHtml(action.label)}
+            class="btn ${actionClass}"
+            onclick="openGenesisLabFromQueue('${escapeHtml(tokenId)}')">
+            ${actionLabel}
           </button>
         </div>
       </div>
@@ -2966,9 +3010,35 @@ function renderActiveResearchQueue() {
   });
 }
 
+function syncSliderRailToSelectedCard() {
+  if (!el.nftGrid || !state.selectedNft) return;
+
+  const selectedTokenId = String(state.selectedNft.token_id || '');
+  if (!selectedTokenId) return;
+
+  const selectedCard = el.nftGrid.querySelector(
+    `[data-nft-token-id="${CSS.escape(selectedTokenId)}"]`
+  );
+  if (!selectedCard) return;
+
+  const rail = el.nftGrid;
+  const cardLeft = selectedCard.offsetLeft;
+  const cardWidth = selectedCard.offsetWidth;
+  const railWidth = rail.clientWidth;
+
+  const targetScrollLeft = Math.max(0, cardLeft - ((railWidth - cardWidth) / 2));
+
+  rail.scrollTo({
+    left: targetScrollLeft,
+    behavior: 'smooth'
+  });
+}
+
 function renderNftGrid() {
   const verified = getVerifiedGenesisNfts();
-  const currentIndex = verified.findIndex(nft => state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id));
+  const currentIndex = verified.findIndex(
+    nft => state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id)
+  );
   const total = verified.length;
 
   if (el.nftCountBadge) {
@@ -3048,9 +3118,17 @@ function renderNftGrid() {
     const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
     const traits = normalizeNftTraits(nft);
     const primaryAction = getPrimaryNftAction(summary);
+    const tokenId = String(nft.token_id || '');
 
     return `
-      <button class="card viewer-card ${selected ? 'selected' : ''} text-left p-4" data-select-nft="${escapeHtml(nft.token_id)}">
+      <div
+        class="card viewer-card ${selected ? 'selected' : ''} text-left p-4"
+        data-select-nft="${escapeHtml(tokenId)}"
+        data-nft-token-id="${escapeHtml(tokenId)}"
+        role="button"
+        tabindex="0"
+        aria-label="Select ${escapeHtml(nft.nft_name || 'Genesis Mouse')}">
+
         ${nft.image_url
           ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
           : `<div class="empty-art">🐭</div>`}
@@ -3059,9 +3137,11 @@ function renderNftGrid() {
           <div>
             <div class="text-sm uppercase tracking-[0.18em] text-cyan-300 font-bold">Genesis Mouse ${formatNumber(index + 1)}</div>
             <div class="mt-2 text-lg font-bold leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
-            <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token')}</div>
+            <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(tokenId || 'Unknown token')}</div>
           </div>
-          <span class="pill ${summary.readyCount > 0 ? 'ready' : summary.activeCount > 0 ? 'upgrading' : selected ? 'upgrading' : 'idle'}">${summary.readyCount > 0 ? 'Ready' : summary.activeCount > 0 ? 'Active' : selected ? 'Selected' : 'Idle'}</span>
+          <span class="pill ${summary.readyCount > 0 ? 'ready' : summary.activeCount > 0 ? 'upgrading' : selected ? 'upgrading' : 'idle'}">
+            ${summary.readyCount > 0 ? 'Ready' : summary.activeCount > 0 ? 'Active' : selected ? 'Selected' : 'Idle'}
+          </span>
         </div>
 
         <div class="viewer-meta-strip mt-4">
@@ -3071,16 +3151,51 @@ function renderNftGrid() {
         </div>
 
         <div class="nft-card-action-row">
-          <span class="btn compact ${primaryAction.className}">${escapeHtml(primaryAction.label)}</span>
+          <button
+            type="button"
+            class="btn compact ${primaryAction.className}"
+            data-open-research="${escapeHtml(tokenId)}">
+            ${escapeHtml(primaryAction.label)}
+          </button>
         </div>
-      </button>
+      </div>
     `;
   }).join('');
 
-  document.querySelectorAll('[data-select-nft]').forEach(button => {
-    button.addEventListener('click', () => {
-      selectNftByTokenId(button.getAttribute('data-select-nft') || '', { scrollToResearch: false });
+  el.nftGrid.querySelectorAll('[data-select-nft]').forEach(card => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('[data-open-research]')) return;
+
+      const tokenId = card.getAttribute('data-select-nft') || '';
+      if (!tokenId) return;
+      selectNftByTokenId(tokenId, { scrollToResearch: false });
     });
+
+    card.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (event.target.closest('[data-open-research]')) return;
+
+      event.preventDefault();
+      const tokenId = card.getAttribute('data-select-nft') || '';
+      if (!tokenId) return;
+      selectNftByTokenId(tokenId, { scrollToResearch: false });
+    });
+  });
+
+  el.nftGrid.querySelectorAll('[data-open-research]').forEach(button => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const tokenId = button.getAttribute('data-open-research') || '';
+      if (!tokenId) return;
+
+      selectNftByTokenId(tokenId, { scrollToResearch: true });
+    });
+  });
+
+  requestAnimationFrame(() => {
+    syncSliderRailToSelectedCard();
   });
 }
 

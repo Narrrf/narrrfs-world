@@ -1,12 +1,12 @@
 🧀 NARRRFS WORLD 13.0 - QUICK STATUS
 
-Last Updated: March 17, 2026 🎯 STABLE – LIVE ECOSYSTEM + LAB SYSTEM EXPANSION ACTIVE
-Status: ✅ Season 9 LIVE – core website, admin, staking, verification, and Discord runtime stable
-Version: 2026-03-17
-Milestone: 🎯 Genesis Lab / NFT Trait Progression system connected locally and admin/player identity expansion progressing
+Last Updated: March 19, 2026 🎯 STABLE – LIVE ECOSYSTEM + LAB SYSTEM EXPANSION ACTIVE
+Status: ✅ Season 9 LIVE – core website, admin, staking, verification, Discord runtime, and Genesis Lab progression flow stable-first and actively expanding
+Version: 2026-03-19
+Milestone: 🎯 Genesis Lab / NFT Trait Progression system now functionally alive with live player UX expansion, Discord DM ready-claim notifications, and ongoing production hardening
 
-📋 TODAY – MARCH 17, 2026:
-🧬 Genesis Lab / NFT Trait Progression System (✅ MAJOR BREAKTHROUGH):
+📋 TODAY – MARCH 19, 2026:
+🧬 Genesis Lab / NFT Trait Progression System (✅ MAJOR BREAKTHROUGH EXPANDED):
 
 ✅ New player-facing lab.html established as the Genesis NFT Research / Upgrade Lab
 
@@ -20,13 +20,17 @@ staking summary
 
 mission / all-time / puzzle profile data
 
-verified Genesis NFT grid
+verified Genesis NFT collection
 
 selected NFT detail state
 
 trait research chamber
 
-✅ Core long-term architecture locked and implemented in first working form:
+research queue
+
+knowledge / explainer layer
+
+✅ Core long-term architecture locked and implemented in working form:
 
 verified NFT scan = immutable identity layer
 
@@ -46,9 +50,37 @@ verified scan data itself is never corrupted by progression logic
 
 ✅ Verified Genesis NFTs now render in lab
 
-✅ Local lab page now successfully loads verified Genesis NFTs into the specimen grid
+✅ Lab UX direction significantly advanced beyond the old dev-style version
 
-✅ NFT cards now show:
+✅ Genesis Lab now behaves more like a real gameplay hub and less like a raw developer overview
+
+✅ Product direction now clearly locked as:
+
+identity hub
+
+NFT gallery / featured viewer
+
+progression screen
+
+trait upgrade chamber
+
+future gameplay integration point
+
+✅ Verified Genesis display direction changed from grid-first to featured viewer + slider pattern
+
+✅ New structure now supports:
+
+large selected Genesis mouse panel
+
+verified collection slider
+
+selected mouse snapshot
+
+trait chamber below
+
+cleaner holder-friendly navigation
+
+✅ Selected Genesis viewer now shows:
 
 image
 
@@ -56,23 +88,37 @@ NFT name
 
 token id
 
-selected/available state
-
-trait count
+trait slots
 
 lab power
 
-active count
+active research count
 
 ready-to-claim count
 
-✅ Trait preview pills added to grid cards for immediate visual NFT identity
+selected mouse trait snapshot
 
-✅ Compact grid preview now shows trait type + value and +X more
+✅ Verified Collection Slider now supports:
+
+prev / next browsing
+
+dropdown quick select
+
+selected card centering in slider rail
+
+view research action
+
+✅ Slider sync logic stabilized
+
+✅ Selection changes now update the left featured mouse correctly
+
+✅ Verified collection rail now scrolls horizontally to the selected NFT instead of using unsafe generic page scroll behavior
+
+✅ Trait preview / visual identity layer improved
 
 ✅ Trait data pipeline aligned
 
-✅ Traits now normalized consistently across verification / storage / frontend:
+✅ Traits now normalize consistently across verification / storage / frontend:
 
 Theme
 
@@ -100,17 +146,45 @@ trait_value
 
 ✅ Upgrade system applies to exact trait value on exact NFT
 
-✅ Upgrade backend first wave connected
+✅ Locked progression rules preserved:
 
-✅ api/user/get-nft-trait-upgrades.php working locally
+Genesis only
 
-✅ api/user/start-nft-trait-upgrade.php created and integrated into flow
+verified saved NFTs only
 
-✅ Future upgrade APIs defined and wired in lab structure:
+upgrades bound to exact NFT trait values
 
-complete-nft-trait-upgrade.php
+immutable verified NFT scan
 
-instant-finish-nft-trait-upgrade.php
+separate progression table
+
+1 active upgrade per NFT
+
+infinite progression
+
+exponential timing:
+
+1→2 = 24h
+
+2→3 = 48h
+
+3→4 = 96h
+
+doubles forward
+
+explicit manual claim after finish
+
+DSPOINC instant finish supported as progression path
+
+✅ Upgrade backend first wave connected and working locally:
+
+api/user/get-nft-trait-upgrades.php
+
+api/user/start-nft-trait-upgrade.php
+
+api/user/complete-nft-trait-upgrade.php
+
+api/user/instant-finish-nft-trait-upgrade.php
 
 ✅ Local endpoint now returns:
 
@@ -122,7 +196,7 @@ upgrades
 
 ✅ Upgrade table schema fixed locally
 
-✅ Critical local SQL issue resolved:
+✅ Critical local SQL issue previously resolved:
 
 old table lacked upgrade_id
 
@@ -156,51 +230,149 @@ timestamps
 
 ✅ This unblocked lab progression loading
 
-✅ Locked progression rules
+✅ Full player upgrade loop now tested deeper than before:
 
-✅ Genesis only
+start upgrade works
 
-✅ verified saved NFTs only
+timers update
 
-✅ upgrades bound to exact NFT trait values
+ready state displays
 
-✅ immutable verified NFT scan
+claim flow tested
 
-✅ separate progression table
+instant finish path working
 
-✅ 1 active upgrade per NFT
+Discord notification integration working
 
-✅ infinite progression
+✅ Important claim-state bug investigated and narrowed to frontend/server time interpretation mismatch risk
 
-✅ exponential timing:
+✅ Frontend time / readiness handling now recognized as a stability-sensitive area
 
-1→2 = 24h
+✅ Discord DM Ready-to-Claim Notification System (NEW / WORKING):
 
-2→3 = 48h
+✅ Discord bot now monitors ready-to-claim trait upgrades
 
-3→4 = 96h
+✅ When a trait upgrade becomes ready, the bot DMs the matching Discord user
 
-doubles forward
+✅ DM includes:
 
-✅ explicit manual claim after finish
+NFT token / Genesis identifier
 
-✅ DSPOINC instant finish planned and scaffolded
+trait
 
-✅ player-side only for now
+level info
 
-✅ later readable by admin interface / Discord bot / games
+claim context
+
+direct lab link
+
+✅ Notification architecture added safely through bot-side polling against live DB
+
+✅ No lab frontend notification hack used
+
+✅ Stable bot-side design chosen intentionally
+
+✅ New DB fields added to tbl_nft_trait_upgrades:
+
+ready_claim_notified_at
+
+ready_claim_notification_count
+
+✅ Notification state reset / lifecycle integrated into upgrade flow
+
+✅ Bot monitor now respects “send once per cycle” logic
+
+✅ This created the first live player-return loop for Lab progression
+
+✅ Lab UX / Theme Expansion (NEW PROGRESS):
+
+✅ lab.html moved further away from dev-facing terminology
+
+✅ Cleaner player-facing structure introduced
+
+✅ Top area now explains the Lab as a real holder progression feature
+
+✅ Quick-access and holder guidance blocks expanded
+
+✅ CSS-only lab atmosphere work progressed:
+
+enhanced dark chamber style
+
+cheese-gold glow accents
+
+mint-green / cyan lab accents
+
+subtle lab pulse / glow improvements
+
+active tab emphasis
+
+active trait card visual emphasis
+
+✅ Active trait card now visually stands out more when research is running
+
+✅ “My Genesis Lab” tab visually highlighted as the main gameplay entry point
+
+✅ Mint / Chamber Expansion CTA added to Lab
+
+✅ Mint link integrated:
+
+https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis
+
+✅ Lab now supports a mint-growth promotional layer:
+
+stronger empty-state / no-Genesis attraction
+
+holder-side “expand your chamber” messaging
+
+cheese-gold attention styling
+
+mint-green / cyan accent styling
+
+animated pulse border direction
+
+✅ Wording refined away from “specimen” and toward:
+
+mouse
+
+Genesis mouse
+
+chamber
+
+chamber slot
+
+Genesis needed / chamber expansion direction
+
+✅ Research Queue UX improved
+
+✅ Queue now better supports actionable mouse navigation
+
+✅ Direct flow added from queue / slider toward the actual research chamber
+
+✅ Current slider/research navigation remains in active hardening because page-scroll behavior must stay stable on all screens
 
 ⚠️ Known remaining lab issues
 
-⚠️ Runtime log still shows misleading verified scan fallback warning even when upgrade-endpoint fallback succeeds
+⚠️ Slider / chamber jump behavior was improved but still remains a sensitive UX area when combining:
 
-⚠️ Grid shows trait preview, not all traits at once
+selection rerender
+
+horizontal slider sync
+
+scroll-to-research behavior
+
+⚠️ Some recent “View Research” / chamber jump interactions caused page scroll bounce and need final stability-safe refinement
+
+⚠️ Research Queue quick actions still need final polish so they always land cleanly in the actual chamber without scroll conflicts
+
+⚠️ Runtime log / developer-facing log output still exists in the page and should be reduced or hidden for final player-facing polish
+
+⚠️ Timezone / frontend readiness display remains a known sensitive area for claim-state truth if timestamps are interpreted differently in browser vs backend
 
 ⚠️ Selected NFT / trait chamber still needs final UX polish
 
-⚠️ Full end-to-end start → ready_to_claim → claim → instant-finish flow still requires complete runtime verification
-
 ⚠️ Economy-safe DSPOINC instant-finish audit still pending
+
+⚠️ Final mobile-first polish still needed for some viewer / slider / chamber interactions
 
 📋 LAST 10 DAYS – MARCH 2026 MAIN UPDATE STREAM:
 ✅ Admin Player Profile Expansion (COMPLETE / STABLE):
@@ -332,6 +504,37 @@ trait upgrade management
 future gameplay integration point
 
 ✅ This is now the official progression page for Genesis NFT holders
+
+📋 MARCH 18–19, 2026:
+✅ Lab UX / Runtime Expansion (COMPLETE PARTIAL / ACTIVE):
+
+✅ Current Lab top section, viewer area, slider area, queue, mint CTA, and trait chamber all received active iteration
+
+✅ Structure moved toward a game-style user-facing interface
+
+✅ Verified Collection Slider controls moved into the slider card where they belong logically
+
+✅ Selected Genesis panel and slider relationship improved
+
+✅ Mint CTA and holder chamber-expansion messaging integrated
+
+✅ Active trait highlight and tab emphasis improved
+
+✅ Slider now visually follows selection
+
+✅ Discord bot DM loop now confirms when upgrades are ready to claim
+
+✅ This created a stronger return-to-lab behavior for players
+
+✅ Current remaining work is primarily:
+
+final scroll / jump stability
+
+final mobile polish
+
+final copy cleanup
+
+final player-facing polish
 
 📋 MARCH 15, 2026:
 ✅ Quest Claim / Admin / Bot Runtime Stability (COMPLETE):
@@ -478,30 +681,38 @@ Discord Runtime
 
 ✅ Cheese Rumble persistence preserved
 
+✅ Lab ready-claim DM notification system working
+
 Lab / Progression
 
-✅ local Genesis Lab system now functionally alive
+✅ Genesis Lab system functionally alive locally
 
-✅ NFT grid + trait preview working
+✅ verified Genesis viewer + slider working
+
+✅ selected NFT chamber working
+
+✅ trait preview / trait chamber working
 
 ✅ backend progression rows working locally
 
-🔄 final end-to-end production hardening still ongoing
+✅ claim + instant finish + DM loop substantially advanced
+
+🔄 final production hardening and scroll/UX stabilization still ongoing
 
 🎯 CURRENT PRIORITIES
-Priority 1 — Finish Lab Progression Flow
+Priority 1 — Finish Lab Production Hardening
 
-finalize selected NFT chamber
+finalize slider / chamber scroll behavior
 
-finalize full trait research chamber
+finalize research queue jump flow
 
-verify start upgrade
+finalize selected NFT chamber UX
 
-verify claim upgrade
+finalize trait research chamber UX polish
 
-verify instant finish
+verify claim-state truth under all time conditions
 
-remove misleading warnings
+remove misleading warnings / dev-facing leftovers
 
 harden race-condition protection
 
@@ -553,32 +764,36 @@ DSPOINC instant-finish audit safety
 
 infinite progression duration scaling at very high levels
 
+frontend/backend time interpretation mismatch for ready/claim state
+
+scroll bounce / UI race conditions in slider → chamber navigation
+
 admin restoration regressions if done too broadly
 
 All known. All should remain on incremental, stability-first handling.
 
 📝 TIMELINE SYNC NOTE
 
-This quick status has now been updated beyond the old February baseline and synced with the major March work stream, especially:
+This quick status has now been updated beyond the March 17 baseline and synced with the major March 18–19 work stream, especially:
 
-admin player profile expansion
+lab UX restructuring
 
-staking profile integration
+selected Genesis viewer + slider direction
 
-stake-lab real-time reward counters
+mint CTA / chamber expansion messaging
 
-wallet verification unification
+Discord DM ready-to-claim notifications
 
-verified NFT trait display improvements
+active trait visual highlight work
 
-Genesis Lab product direction
+tab emphasis / game-style lab theming
 
-local NFT trait progression implementation
+research queue and slider action improvements
 
-new API and DB progression layer
+scroll/jump hardening work
 
-This closes the biggest missing timeline gap between the older quick status and the current lab/progression/admin work.
+This closes the newest timeline gap between the earlier local lab baseline and the current player-facing Lab expansion work.
 
-Status: ✅ SEASON 9 LIVE + GENESIS LAB PROGRESSION SYSTEM ACTIVE LOCALLY
-Version: 2026-03-17
-Milestone: 🏆 NFT IDENTITY + PROGRESSION MERGE WORKING — NEXT STEP IS FULL FLOW HARDENING
+Status: ✅ SEASON 9 LIVE + GENESIS LAB PROGRESSION SYSTEM ACTIVE + PLAYER UX EXPANSION ACTIVE
+Version: 2026-03-19
+Milestone: 🏆 NFT IDENTITY + PROGRESSION MERGE WORKING — NEXT STEP IS FINAL LAB UX HARDENING + PRODUCTION POLISH
