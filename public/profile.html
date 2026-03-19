@@ -4676,7 +4676,13 @@ async function waitForLedgerVerificationTransaction(signature, rpcUrl = null) {
 
 /**
  * Ask the wallet to sign/send a memo verification transaction.
- * This is intended as a Ledger fallback path.
+ * This is the Ledger fallback path.
+ *
+ * IMPORTANT:
+ * - Do NOT wait for transaction visibility in the browser.
+ * - Browser-side RPC checks are the current weak point for Ledger users.
+ * - Return the tx signature immediately and let the backend verifier
+ *   handle propagation delays and RPC fallback.
  */
 async function signVerificationMemoTransaction() {
   const provider = connectedWallet || getSolanaProvider();
@@ -4696,8 +4702,16 @@ async function signVerificationMemoTransaction() {
     );
   }
 
-  const { transaction, memoText, blockhash, lastValidBlockHeight, rpc } =
-    await createVerificationMemoTransaction(connectedWalletAddress, buildVerificationMemoMessage());
+  const {
+    transaction,
+    memoText,
+    blockhash,
+    lastValidBlockHeight,
+    rpc
+  } = await createVerificationMemoTransaction(
+    connectedWalletAddress,
+    buildVerificationMemoMessage()
+  );
 
   console.log('🧾 Ledger memo transaction prepared:', {
     wallet: connectedWalletAddress,
@@ -4728,15 +4742,23 @@ async function signVerificationMemoTransaction() {
         skipPreflight: false,
         preflightCommitment: 'confirmed'
       });
+    } else {
+      throw new Error('Wallet does not support transaction signing methods.');
     }
 
     if (!signature) {
       throw new Error('Wallet returned no transaction signature.');
     }
 
-    // Critical: wait until transaction is visible on-chain before backend verification
-    await waitForLedgerVerificationTransaction(signature, rpc);
+    console.log('✅ Ledger memo transaction signed/sent:', {
+      wallet: connectedWalletAddress,
+      signature,
+      mode: 'memo_transaction'
+    });
 
+    // IMPORTANT:
+    // Return immediately.
+    // Backend verify-nft-holder.php already has the better retry + multi-RPC logic.
     return {
       provider,
       mode: 'memo_transaction',
