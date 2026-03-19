@@ -588,9 +588,12 @@ function performJsonHttpRequest(
 ): array {
     $ch = curl_init($url);
 
+    $finalHeaders = $headers;
+    $finalHeaders[] = 'User-Agent: Narrrfs-World-Verification/1.0';
+
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutSeconds);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $finalHeaders);
 
     if ($payload !== null) {
         curl_setopt($ch, CURLOPT_POST, true);
@@ -624,18 +627,9 @@ function performJsonHttpRequest(
 }
 
 /**
- * Return the RPC URLs used for server-side Solana verification calls.
- */
-function getSolanaRpcUrls(): array
-{
-    return [
-        'https://rpc.ankr.com/solana',
-        'https://api.mainnet-beta.solana.com'
-    ];
-}
-
-/**
  * Fetch a Solana transaction from RPC with fallback across multiple endpoints.
+ * Ledger memo transactions may take a few seconds to become visible on-chain,
+ * so we retry across multiple rounds before giving up.
  */
 function fetchSolanaTransaction(string $txSignature): ?array
 {
@@ -652,42 +646,77 @@ function fetchSolanaTransaction(string $txSignature): ?array
         ]
     ];
 
+    $rpcUrls = getSolanaRpcUrls();
+    $maxAttempts = 12;
+    $sleepMicroseconds = 1500000; // 1.5 seconds
     $lastError = null;
 
-    foreach (getSolanaRpcUrls() as $rpcUrl) {
-        try {
-            error_log("🔗 [SOLANA RPC] Trying getTransaction via {$rpcUrl}");
+    for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+        foreach ($rpcUrls as $rpcUrl) {
+            try {
+                error_log("🔗 [SOLANA RPC] Attempt {$attempt}/{$maxAttempts}: getTransaction via {$rpcUrl}");
 
-            $response = performJsonHttpRequest(
-                $rpcUrl,
-                $payload,
-                ['Content-Type: application/json'],
-                20
-            );
+                $response = performJsonHttpRequest(
+                    $rpcUrl,
+                    $payload,
+                    ['Content-Type: application/json'],
+                    20
+                );
 
-            if (!isset($response['json']['result'])) {
-                error_log("⚠️ [SOLANA RPC] No result field from {$rpcUrl}");
-                continue;
+                if (!array_key_exists('result', $response['json'])) {
+                    error_log("⚠️ [SOLANA RPC] No result field from {$rpcUrl} on attempt {$attempt}");
+                    continue;
+                }
+
+                if (!$response['json']['result']) {
+                    error_log("⚠️ [SOLANA RPC] Empty transaction result from {$rpcUrl} on attempt {$attempt}");
+                    continue;
+                }
+
+                error_log("✅ [SOLANA RPC] Transaction fetched successfully from {$rpcUrl} on attempt {$attempt}");
+                return $response['json']['result'];
+            } catch (Exception $e) {
+                $lastError = $e;
+                error_log("❌ [SOLANA RPC] getTransaction failed via {$rpcUrl} on attempt {$attempt}: " . $e->getMessage());
             }
+        }
 
-            if (!$response['json']['result']) {
-                error_log("⚠️ [SOLANA RPC] Empty transaction result from {$rpcUrl}");
-                continue;
-            }
-
-            error_log("✅ [SOLANA RPC] Transaction fetched successfully from {$rpcUrl}");
-            return $response['json']['result'];
-        } catch (Exception $e) {
-            $lastError = $e;
-            error_log("❌ [SOLANA RPC] getTransaction failed via {$rpcUrl}: " . $e->getMessage());
+        if ($attempt < $maxAttempts) {
+            error_log("⏳ [SOLANA RPC] Transaction not visible yet for {$txSignature}. Waiting before retry attempt " . ($attempt + 1));
+            usleep($sleepMicroseconds);
         }
     }
 
     if ($lastError) {
-        error_log('❌ [SOLANA RPC] All getTransaction RPC endpoints failed: ' . $lastError->getMessage());
+        error_log('❌ [SOLANA RPC] All getTransaction RPC endpoints failed after retries: ' . $lastError->getMessage());
+    } else {
+        error_log("❌ [SOLANA RPC] Transaction {$txSignature} was not visible after {$maxAttempts} attempts");
     }
 
     return null;
+}
+
+/**
+ * Return the RPC URLs used for server-side Solana verification calls.
+ */
+function getSolanaRpcUrls(): array
+{
+    $rpcUrls = [];
+
+    $heliusApiKey = getenv('HELIUS_API_KEY');
+    if ($heliusApiKey) {
+        $rpcUrls[] = 'https://mainnet.helius-rpc.com/?api-key=' . $heliusApiKey;
+    }
+
+    $alchemyApiKey = getenv('ALCHEMY_API_KEY');
+    if ($alchemyApiKey) {
+        $rpcUrls[] = 'https://solana-mainnet.g.alchemy.com/v2/' . $alchemyApiKey;
+    }
+
+    $rpcUrls[] = 'https://rpc.ankr.com/solana';
+    $rpcUrls[] = 'https://api.mainnet-beta.solana.com';
+
+    return array_values(array_unique(array_filter($rpcUrls)));
 }
 
 /**
