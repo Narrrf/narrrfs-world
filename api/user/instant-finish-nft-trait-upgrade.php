@@ -742,19 +742,20 @@ try {
     deduct_user_dspoinc($pdo, $user_id, $finalCost);
     insert_optional_score_adjustment_audit($pdo, $user_id, $finalCost, $auditReason);
 
-    $finishStmt = $pdo->prepare("
-        UPDATE tbl_nft_trait_upgrades
-        SET upgrade_status = 'ready_to_claim',
-            upgrade_ends_at = ?,
-            last_owner_user_id = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE upgrade_id = ?
-    ");
-    $finishStmt->execute([
-        $finishedAt,
-        $user_id,
-        $existingRow['upgrade_id']
-    ]);
+$finishStmt = $pdo->prepare("
+    UPDATE tbl_nft_trait_upgrades
+    SET upgrade_status = 'ready_to_claim',
+        upgrade_ends_at = ?,
+        last_owner_user_id = ?,
+        ready_claim_notified_at = NULL,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE upgrade_id = ?
+");
+$finishStmt->execute([
+    $finishedAt,
+    $user_id,
+    $existingRow['upgrade_id']
+]);
 
     $updatedBalance = get_user_balance_snapshot($pdo, $user_id);
 

@@ -293,6 +293,71 @@
     .btn.primary { background: linear-gradient(135deg, rgba(14,165,233,0.86), rgba(37,99,235,0.86)); }
     .btn.success { background: linear-gradient(135deg, rgba(16,185,129,0.82), rgba(5,150,105,0.82)); }
     .btn.warn { background: linear-gradient(135deg, rgba(245,158,11,0.82), rgba(217,119,6,0.82)); }
+    .btn.ghost { background: rgba(15,23,42,0.68); }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-tile {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      padding: 14px;
+    }
+
+    .metric-label {
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    .metric-value {
+      margin-top: 8px;
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .metric-hint {
+      margin-top: 6px;
+      font-size: .82rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .trait-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .trait-summary-card {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      padding: 14px;
+    }
+
+    .trait-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .trait-mini-kv {
+      border-radius: 14px;
+      background: rgba(2,6,23,0.28);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 12px;
+    }
 
     .kv {
       border-radius: 18px;
@@ -656,6 +721,7 @@
             </div>
 
             <div id="sessionNotice" class="info text-sm">Resolving player session...</div>
+            <div id="labHealthStrip" class="metric-strip"></div>
             <div id="overviewStatsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -707,6 +773,7 @@
             <div class="text-sm text-slate-300"><span id="upgradeModeBadge" class="chip">Upgrade system warming up…</span></div>
           </div>
           <div id="traitUpgradeInfo" class="info text-sm mt-4"></div>
+          <div id="selectedTraitSummary" class="trait-summary-grid"></div>
           <div id="traitGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-5"></div>
         </div>
       </section>
@@ -811,7 +878,10 @@
       upgradeEndpointAvailable: false,
       aggregateLabEndpointAvailable: false,
       refreshTimer: null,
-      loading: false
+      loading: false,
+      actionInFlight: false,
+      lastUpgradeSummary: null,
+      lastSuccessfulLoadAt: null
     };
 
 const el = {
@@ -1346,6 +1416,57 @@ function showLabMessageModal({
       return (state.upgradeRows || []).filter(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'ready').length;
     }
 
+    function getEndpointModeLabel() {
+      if (state.aggregateLabEndpointAvailable && state.upgradeEndpointAvailable) return 'Aggregate + live upgrade endpoints';
+      if (state.aggregateLabEndpointAvailable) return 'Aggregate player lab endpoint';
+      if (state.upgradeEndpointAvailable) return 'Dedicated upgrade endpoint';
+      return 'Read-safe compatibility mode';
+    }
+
+    function getHighestLevelTraitAcrossVerifiedNfts() {
+      const verified = getVerifiedGenesisNfts();
+      let best = null;
+
+      verified.forEach(nft => {
+        normalizeNftTraits(nft).forEach(trait => {
+          const row = getTraitUpgradeDisplayRow(nft, trait);
+          const level = Math.max(1, safeNumber(row.current_level, 1));
+          if (!best || level > best.level) {
+            best = {
+              nftName: nft.nft_name || nft.token_id || 'Genesis NFT',
+              traitType: trait.trait_type,
+              traitValue: trait.value,
+              level
+            };
+          }
+        });
+      });
+
+      return best;
+    }
+
+    function renderLabHealthStrip() {
+      if (!el.labHealthStrip) return;
+
+      const verified = getVerifiedGenesisNfts();
+      const highestTrait = getHighestLevelTraitAcrossVerifiedNfts();
+      const healthCards = [
+        ['Session', state.userId ? 'Linked' : 'Guest', state.userId ? 'Discord identity is available for player-bound reads.' : 'Log in with Discord to load player-bound data.'],
+        ['API Mode', getEndpointModeLabel(), 'Frontend renders safely even when some lab APIs are unavailable.'],
+        ['Verified Source', verified.length ? `${formatNumber(verified.length)} Genesis NFT${verified.length === 1 ? '' : 's'}` : 'No Genesis scan', verified.length ? 'Trait progression is being resolved from saved SQL-backed verification data.' : 'Upgrade rendering stays locked until a saved Genesis verification exists.'],
+        ['Highest Trait', highestTrait ? `Lv ${formatNumber(highestTrait.level)}` : 'Lv 0', highestTrait ? `${highestTrait.traitType}: ${highestTrait.traitValue}` : 'No upgraded Genesis traits detected yet.'],
+        ['Last Sync', state.lastSuccessfulLoadAt ? new Date(state.lastSuccessfulLoadAt).toLocaleTimeString() : 'Waiting', state.lastSuccessfulLoadAt ? 'Most recent successful lab hydration.' : 'No successful lab hydration recorded yet.']
+      ];
+
+      el.labHealthStrip.innerHTML = healthCards.map(([label, value, hint]) => `
+        <div class="metric-tile">
+          <div class="metric-label">${escapeHtml(label)}</div>
+          <div class="metric-value">${escapeHtml(value)}</div>
+          <div class="metric-hint">${escapeHtml(hint)}</div>
+        </div>
+      `).join('');
+    }
+
     function renderOverviewCards() {
       const verified = getVerifiedGenesisNfts();
       const staking = state.stakingStats || {};
@@ -1419,6 +1540,42 @@ function showLabMessageModal({
       el.queueSummary.innerHTML = blocks.map(([l,v,h]) => `<div class="kv"><div class="flex items-baseline justify-between gap-3"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">${escapeHtml(l)}</div><div class="text-xl font-black">${escapeHtml(v)}</div></div><div class="mt-2 text-sm text-slate-300">${escapeHtml(h)}</div></div>`).join('');
     }
 
+    function renderSelectedTraitSummary() {
+      if (!el.selectedTraitSummary) return;
+
+      const nft = state.selectedNft;
+      if (!nft) {
+        el.selectedTraitSummary.innerHTML = '';
+        return;
+      }
+
+      const summary = getNftUpgradeSummary(nft);
+      const activeRow = getNftActiveUpgradeRow(nft);
+      const highest = normalizeNftTraits(nft).reduce((best, trait) => {
+        const row = getTraitUpgradeDisplayRow(nft, trait);
+        const level = Math.max(1, safeNumber(row.current_level, 1));
+        if (!best || level > best.level) {
+          return { level, label: `${trait.trait_type}: ${trait.value}` };
+        }
+        return best;
+      }, null);
+
+      const cards = [
+        ['NFT Lab Power', formatNumber(summary.totalLevels), 'Sum of all current trait levels on the selected Genesis NFT.'],
+        ['Trait Slots', formatNumber(summary.traitCount), 'Exact immutable scanned traits available for progression.'],
+        ['Highest Trait', highest ? `Lv ${formatNumber(highest.level)}` : 'Lv 0', highest ? highest.label : 'No trait data loaded yet.'],
+        ['Chamber State', summary.readyCount > 0 ? 'Claim Ready' : summary.activeCount > 0 ? 'Research Active' : 'Idle', activeRow ? `${activeRow.trait_type}: ${activeRow.trait_value}` : 'No active research is running on this NFT.']
+      ];
+
+      el.selectedTraitSummary.innerHTML = cards.map(([label, value, hint]) => `
+        <div class="trait-summary-card">
+          <div class="metric-label">${escapeHtml(label)}</div>
+          <div class="metric-value">${escapeHtml(value)}</div>
+          <div class="metric-hint">${escapeHtml(hint)}</div>
+        </div>
+      `).join('');
+    }
+
     function renderVerificationWarning(html, visible) {
       el.verificationWarning.classList.toggle('hidden', !visible);
       el.verificationWarning.innerHTML = html || '';
@@ -1455,6 +1612,7 @@ function selectNftByTokenId(tokenId, options = {}) {
 
   renderNftGrid();
   renderSelectedNftPanel();
+  renderSelectedTraitSummary();
   renderTraitGrid();
   renderActiveResearchQueue();
 
@@ -1806,6 +1964,11 @@ function getTraitSnapshotLevelBadge(nft, trait) {
             </div>
 
             <div class="mt-4 space-y-3">
+              <div class="trait-mini-grid">
+                <div class="trait-mini-kv"><div class="metric-label">Status</div><div class="mt-2 text-lg font-black">${escapeHtml(statusText)}</div></div>
+                <div class="trait-mini-kv"><div class="metric-label">Next Level</div><div class="mt-2 text-lg font-black">Lv ${formatNumber(nextLevel)}</div></div>
+                <div class="trait-mini-kv"><div class="metric-label">Instant Finish</div><div class="mt-2 text-lg font-black">${status === 'upgrading' ? `${formatNumber(instantCost)} DSPOINC` : '—'}</div></div>
+              </div>
               <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Gameplay Outlook</div><div class="mt-2 text-sm text-slate-300">Designed for future multipliers, weapon tiers, and trait-driven gameplay bonuses read by games, admin tools, and Discord commands.</div></div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button class="btn primary" ${canStart ? '' : 'disabled'} data-start-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}">🚀 Start Upgrade</button>
@@ -1822,6 +1985,10 @@ function getTraitSnapshotLevelBadge(nft, trait) {
     }
 
     function attachTraitActionListeners() {
+      document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade]').forEach(btn => {
+        btn.dataset.wasDisabled = btn.hasAttribute('disabled') ? 'true' : 'false';
+      });
+
       document.querySelectorAll('[data-start-upgrade]').forEach(btn => btn.addEventListener('click', async () => {
         const [tokenId, traitType, traitValue] = (btn.getAttribute('data-start-upgrade') || '').split('|');
         await handleStartUpgrade(tokenId, traitType, traitValue);
@@ -1905,6 +2072,7 @@ async function tryAggregateLab() {
           state.profile = { ...(state.profile || {}), ...res.payload.user };
           if (res.payload.user.username) {
             state.username = res.payload.user.username;
+          state.lastSuccessfulLoadAt = Date.now();
             localStorage.setItem('narrrfs_last_discord_name', res.payload.user.username);
             localStorage.setItem('discord_name', res.payload.user.username);
           }
@@ -2062,6 +2230,8 @@ async function loadTraitUpgrades() {
       }
 
       state.upgradeEndpointAvailable = true;
+      state.lastUpgradeSummary = data.summary || null;
+      state.lastSuccessfulLoadAt = Date.now();
       logLab(`Loaded ${state.upgradeRows.length} trait upgrade rows.`, 'success');
       return;
     }
@@ -2076,11 +2246,51 @@ async function loadTraitUpgrades() {
   }
 }
 
+
+function setActionInFlight(isBusy) {
+  state.actionInFlight = !!isBusy;
+  document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade]').forEach(button => {
+    if (state.actionInFlight) {
+      button.setAttribute('disabled', 'disabled');
+    } else if (button.dataset.wasDisabled !== 'true') {
+      button.removeAttribute('disabled');
+    }
+  });
+}
+
 async function handleStartUpgrade(tokenId, traitType, traitValue) {
   if (!state.userId) {
-    alert('No player session found.');
+    await showLabMessageModal({
+      eyebrow: 'Session Required',
+      title: 'No Player Session Found',
+      icon: '🧬',
+      message: 'No player session was found for this lab action.',
+      note: 'Please log in with Discord before starting research.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
     return;
   }
+
+  if (state.actionInFlight) {
+    logLab('A lab action is already running. Please wait for the current request to finish.', 'warn');
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Start Research',
+    title: `Start ${traitType} Upgrade?`,
+    icon: '🚀',
+    message: `Begin timed research for ${traitType}: ${traitValue}.`,
+    note: 'The backend remains authoritative and will still verify ownership, NFT trait match, and one-active-upgrade-per-NFT rules.',
+    confirmText: 'Start Upgrade',
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) return;
+
+  setActionInFlight(true);
 
   try {
     const res = await fetchJson(
@@ -2106,7 +2316,15 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
     if (!res.ok || !res.payload?.success) {
       const message = res.payload?.error || `Start upgrade failed (${res.status})`;
       logLab(`Start upgrade failed: ${message}`, 'error');
-      alert(message);
+      await showLabMessageModal({
+        eyebrow: 'Start Research',
+        title: 'Upgrade Start Failed',
+        icon: '⚠️',
+        message,
+        note: 'No progression changes were applied.',
+        confirmText: 'Close',
+        confirmVariant: 'danger'
+      });
       return;
     }
 
@@ -2115,15 +2333,53 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
     renderAll();
   } catch (error) {
     logLab(`Start upgrade request failed: ${error.message}`, 'error');
-    alert(`Start upgrade failed: ${error.message}`);
+    await showLabMessageModal({
+      eyebrow: 'Start Research',
+      title: 'Request Failed',
+      icon: '⚠️',
+      message: `Start upgrade failed: ${error.message}`,
+      note: 'The research chamber did not change state.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    setActionInFlight(false);
   }
 }
 
 async function handleClaimUpgrade(tokenId, traitType, traitValue) {
   if (!state.userId) {
-    alert('No player session found.');
+    await showLabMessageModal({
+      eyebrow: 'Session Required',
+      title: 'No Player Session Found',
+      icon: '🧬',
+      message: 'No player session was found for this claim action.',
+      note: 'Please log in with Discord before claiming research.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
     return;
   }
+
+  if (state.actionInFlight) {
+    logLab('A lab action is already running. Please wait for the current request to finish.', 'warn');
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Claim Upgrade',
+    title: `Claim ${traitType} Upgrade?`,
+    icon: '✅',
+    message: `Claim the completed research for ${traitType}: ${traitValue}.`,
+    note: 'Claiming increments the stored trait level and returns the row to idle for the next cycle.',
+    confirmText: 'Claim Upgrade',
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) return;
+
+  setActionInFlight(true);
 
   try {
     const res = await fetchJson(
@@ -2149,7 +2405,15 @@ async function handleClaimUpgrade(tokenId, traitType, traitValue) {
     if (!res.ok || !res.payload?.success) {
       const message = res.payload?.error || `Claim upgrade failed (${res.status})`;
       logLab(`Claim upgrade failed: ${message}`, 'error');
-      alert(message);
+      await showLabMessageModal({
+        eyebrow: 'Claim Upgrade',
+        title: 'Claim Failed',
+        icon: '⚠️',
+        message,
+        note: 'No level increase was applied.',
+        confirmText: 'Close',
+        confirmVariant: 'danger'
+      });
       return;
     }
 
@@ -2158,7 +2422,17 @@ async function handleClaimUpgrade(tokenId, traitType, traitValue) {
     renderAll();
   } catch (error) {
     logLab(`Claim upgrade request failed: ${error.message}`, 'error');
-    alert(`Claim upgrade failed: ${error.message}`);
+    await showLabMessageModal({
+      eyebrow: 'Claim Upgrade',
+      title: 'Request Failed',
+      icon: '⚠️',
+      message: `Claim upgrade failed: ${error.message}`,
+      note: 'The claim did not complete cleanly.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    setActionInFlight(false);
   }
 }
 
@@ -2196,6 +2470,13 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
   });
 
   if (!confirmed) return;
+
+  if (state.actionInFlight) {
+    logLab('A lab action is already running. Please wait for the current request to finish.', 'warn');
+    return;
+  }
+
+  setActionInFlight(true);
 
   try {
     const res = await fetchJson(
@@ -2263,6 +2544,8 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
       confirmText: 'Close',
       confirmVariant: 'danger'
     });
+  } finally {
+    setActionInFlight(false);
   }
 }
 
@@ -2285,6 +2568,7 @@ function renderAll() {
   renderSessionNotice();
   renderLabEntryActions();
   ensureSelectedNft();
+  renderLabHealthStrip();
   renderOverviewCards();
   renderIdentitySummary();
   renderEconomySummary();
@@ -2293,16 +2577,19 @@ function renderAll() {
   renderActiveResearchQueue();
   renderNftGrid();
   renderSelectedNftPanel();
+  renderSelectedTraitSummary();
   renderTraitGrid();
 }
 
 function liveRefreshRender() {
   if (!state.selectedNft) return;
+  renderLabHealthStrip();
   renderOverviewCards();
   renderQueueSummary();
   renderActiveResearchQueue();
   renderNftGrid();
   renderSelectedNftPanel();
+  renderSelectedTraitSummary();
   renderTraitGrid();
 }
 

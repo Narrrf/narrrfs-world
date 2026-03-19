@@ -802,6 +802,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="holderVerification">🎴 Holder Verification</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="playerProfiles">🧠 Player Profiles</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="labTraitSystem">🧬 Lab / Trait System</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="cheeseGuide">🧀 Cheese Guide</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="communityFunds">💰 Community Funds</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bugTracker">🐛 Bug Tracker</button>
@@ -5690,6 +5691,7 @@ function showTab(tabName) {
     'discordTab',
     'holderVerificationTab',
     'playerProfilesTab',
+    'labTraitSystemTab',
     'cheeseGuideTab',
     'communityFundsTab',
     'bugTrackerTab',
@@ -5852,6 +5854,12 @@ function showTab(tabName) {
     if (tabName === 'partners') {
       loadPartnersData?.();
       addLog('🤝 Partners tab auto-loaded');
+      return;
+    }
+
+    if (tabName === 'labTraitSystem') {
+      loadLabTraitSystemAdmin();
+      addLog('🧬 Lab / Trait System tab auto-loaded');
       return;
     }
 
@@ -10868,6 +10876,195 @@ function renderAdminPlayerLabSection(labProfile) {
       </div>
     </div>
   `;
+}
+
+function resolveAdminLabUserId() {
+  const candidates = [
+    localStorage.getItem('discord_id'),
+    localStorage.getItem('narrrfs_last_discord_id'),
+    window.sessionDiscordId,
+    currentAdmin?.discord_id,
+    currentAdmin?.discordId
+  ];
+
+  const found = candidates.find(value => value && String(value).trim());
+  return found ? String(found).trim() : '';
+}
+
+function normalizeAdminLabStatus(status, endsAt) {
+  const normalized = String(status || 'idle').toLowerCase();
+  const endTime = endsAt ? new Date(endsAt).getTime() : 0;
+
+  if ((normalized === 'upgrading') && endTime && endTime <= Date.now()) return 'ready_to_claim';
+  if (normalized === 'ready') return 'ready_to_claim';
+  return normalized || 'idle';
+}
+
+function renderLabTraitSystemAdmin(profile) {
+  const notice = document.getElementById('labTraitSystemNotice');
+  const stats = document.getElementById('labTraitSystemStats');
+  const highlights = document.getElementById('labTraitHighlights');
+  const observability = document.getElementById('labTraitSystemObservability');
+  const nftContainer = document.getElementById('labTraitSystemNfts');
+
+  if (!notice || !stats || !highlights || !observability || !nftContainer) return;
+
+  const data = profile || {};
+  const summary = data.summary || {};
+  const verifiedNfts = Array.isArray(data.verified_nfts) ? data.verified_nfts : [];
+  const groupedNfts = groupAdminLabUpgradesByToken(data);
+  const upgrades = groupedNfts.flatMap(item => Array.isArray(item.upgrades) ? item.upgrades : []);
+
+  const traitTypeMap = new Map();
+  upgrades.forEach(row => {
+    const key = row.trait_type || 'Unknown';
+    const current = traitTypeMap.get(key) || { traitType: key, totalLevel: 0, count: 0, highestLevel: 0 };
+    const level = Number(row.current_level || 1);
+    current.totalLevel += level;
+    current.count += 1;
+    current.highestLevel = Math.max(current.highestLevel, level);
+    traitTypeMap.set(key, current);
+  });
+
+  const topTraitTypes = Array.from(traitTypeMap.values())
+    .sort((a, b) => (b.totalLevel - a.totalLevel) || (b.highestLevel - a.highestLevel) || String(a.traitType).localeCompare(String(b.traitType)))
+    .slice(0, 5);
+
+  const highestNft = groupedNfts
+    .slice()
+    .sort((a, b) => Number(b.nft_level || 0) - Number(a.nft_level || 0))[0];
+
+  notice.innerHTML = `
+    <div class="font-semibold text-lg mb-1">Production-safe admin visibility is active</div>
+    <div class="text-sm text-blue-100">This tab reads existing lab progression data without mutation. Use Player Profiles for deep per-player support via the dedicated admin player-lab endpoint.</div>
+  `;
+
+  const statCards = [
+    ['Verified NFTs', Number(summary.verified_nft_count || verifiedNfts.length || 0).toLocaleString(), 'Genesis NFTs currently visible to this operator context.'],
+    ['Trait Rows', Number(summary.upgrade_row_count || upgrades.length || 0).toLocaleString(), 'Resolved upgrade rows including idle fallback rows from the stable backend.'],
+    ['Active Upgrades', Number(summary.active_count || 0).toLocaleString(), 'Rows currently running on a timer.'],
+    ['Ready To Claim', Number(summary.ready_count || 0).toLocaleString(), 'Completed rows awaiting a manual claim.'],
+    ['Lab Power', Number(summary.total_lab_power || groupedNfts.reduce((sum, nft) => sum + Number(nft.nft_level || 0), 0) || 0).toLocaleString(), 'Total NFT-bound progression currently visible.'],
+    ['Highest NFT', highestNft ? `${escapeAdminProfileHtml(highestNft.nft_name || 'Genesis NFT')} • Lv ${Number(highestNft.nft_level || 0).toLocaleString()}` : '—', 'The strongest NFT progression row currently visible in this panel.']
+  ];
+
+  stats.innerHTML = statCards.map(([label, value, hint]) => `
+    <div class="game-stat-card">
+      <div class="game-stat-header text-cyan-300">${escapeAdminProfileHtml(label)}</div>
+      <div class="game-stat-value text-white">${value}</div>
+      <div class="game-stat-subvalue">${escapeAdminProfileHtml(hint)}</div>
+    </div>
+  `).join('');
+
+  if (!topTraitTypes.length) {
+    highlights.innerHTML = '<div class="empty-state p-4 text-center">No trait progression rows are visible yet.</div>';
+  } else {
+    highlights.innerHTML = topTraitTypes.map((item, index) => `
+      <div class="leaderboard-item">
+        <div class="leaderboard-rank ${index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : ''}">#${index + 1}</div>
+        <div class="leaderboard-info">
+          <div class="leaderboard-name">${escapeAdminProfileHtml(item.traitType)}</div>
+          <div class="leaderboard-score">Total Level ${Number(item.totalLevel || 0).toLocaleString()} · Highest Lv ${Number(item.highestLevel || 0).toLocaleString()} · ${Number(item.count || 0).toLocaleString()} row(s)</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  observability.innerHTML = [
+    'Current panel is read-only and uses existing stable APIs only.',
+    'Per-player deep inspection is already available through Player Profiles and the admin player-lab endpoint.',
+    'Global economy and balancing views should move to a dedicated admin trait aggregation endpoint when backend scope is approved.',
+    'Upgrade ownership remains NFT-bound; verified scan rows stay immutable identity records.'
+  ].map(item => `<div class="history-item">${escapeAdminProfileHtml(item)}</div>`).join('');
+
+  if (!groupedNfts.length) {
+    nftContainer.innerHTML = '<div class="empty-state p-6 text-center">No verified Genesis lab progression is currently visible for this operator context.</div>';
+    return;
+  }
+
+  nftContainer.innerHTML = groupedNfts.map(nft => `
+    <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg p-4">
+      <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-4">
+        <div>
+          <div class="text-lg font-semibold text-white">${escapeAdminProfileHtml(nft.nft_name || 'Unnamed NFT')}</div>
+          <div class="text-sm text-gray-300 mt-1 break-all">Token: <span class="text-cyan-300">${escapeAdminProfileHtml(nft.token_id || '—')}</span></div>
+          <div class="text-sm text-gray-300">Traits: <span class="text-white">${Number(nft.trait_count || 0).toLocaleString()}</span></div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 xl:min-w-[420px]">
+          <div class="bg-gray-900/50 rounded-lg px-4 py-3"><div class="text-xs text-cyan-300 uppercase">NFT Level</div><div class="text-lg font-semibold text-white mt-1">${Number(nft.nft_level || 0).toLocaleString()}</div></div>
+          <div class="bg-gray-900/50 rounded-lg px-4 py-3"><div class="text-xs text-cyan-300 uppercase">Highest Trait</div><div class="text-lg font-semibold text-white mt-1">Lv ${Number(nft.highest_level || 1).toLocaleString()}</div></div>
+          <div class="bg-gray-900/50 rounded-lg px-4 py-3"><div class="text-xs text-cyan-300 uppercase">Active</div><div class="text-lg font-semibold text-white mt-1">${Number(nft.active_count || 0).toLocaleString()}</div></div>
+          <div class="bg-gray-900/50 rounded-lg px-4 py-3"><div class="text-xs text-cyan-300 uppercase">Ready</div><div class="text-lg font-semibold text-white mt-1">${Number(nft.ready_count || 0).toLocaleString()}</div></div>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="text-left text-cyan-300 border-b border-cyan-500/20">
+              <th class="py-2 pr-4">Trait Type</th>
+              <th class="py-2 pr-4">Trait Value</th>
+              <th class="py-2 pr-4">Current Level</th>
+              <th class="py-2 pr-4">Status</th>
+              <th class="py-2 pr-4">Ends</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(Array.isArray(nft.upgrades) ? nft.upgrades : []).map(row => `
+              <tr class="border-b border-gray-700/40 align-top">
+                <td class="py-2 pr-4 text-white">${escapeAdminProfileHtml(row.trait_type || '—')}</td>
+                <td class="py-2 pr-4 text-gray-200">${escapeAdminProfileHtml(row.trait_value || '—')}</td>
+                <td class="py-2 pr-4 text-yellow-300 font-semibold">Lv ${Number(row.current_level || 1).toLocaleString()}</td>
+                <td class="py-2 pr-4 text-white">${escapeAdminProfileHtml(normalizeAdminLabStatus(row.upgrade_status, row.upgrade_ends_at))}</td>
+                <td class="py-2 pr-4 text-gray-300">${formatAdminProfileDate(row.upgrade_ends_at)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadLabTraitSystemAdmin() {
+  const notice = document.getElementById('labTraitSystemNotice');
+  const userId = resolveAdminLabUserId();
+
+  if (!userId) {
+    if (notice) {
+      notice.innerHTML = '<div class="font-semibold text-lg mb-1">No admin Discord context found</div><div class="text-sm text-blue-100">Open the public lab or log in through the profile flow first so the current Discord ID is available for read-only observability.</div>';
+    }
+    return;
+  }
+
+  try {
+    if (notice) {
+      notice.innerHTML = '<div class="font-semibold text-lg mb-1">Loading lab observability...</div><div class="text-sm text-blue-100">Reading stable progression endpoints for the current operator context.</div>';
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/get-player-lab.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ user_id: userId })
+    });
+
+    const data = await readJsonResponse(response, 'Lab trait system observability');
+
+    if (!response.ok || !data.success || !data.data) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+
+    renderLabTraitSystemAdmin(data.data);
+    addLog('🧬 Lab / Trait System observability loaded successfully');
+  } catch (error) {
+    console.error('❌ Lab / Trait System load failed:', error);
+    addLog(`❌ Lab / Trait System load failed: ${error.message}`);
+    if (notice) {
+      notice.innerHTML = `<div class="font-semibold text-lg mb-1">Lab observability failed to load</div><div class="text-sm text-blue-100">${escapeAdminProfileHtml(error.message)}</div>`;
+    }
+  }
 }
 
 /**
@@ -23019,7 +23216,44 @@ function clearDiscordFeed() {
 </div>
 
     <!-- Database Overview Tab -->
-    <div class="admin-card mb-6" id="databaseOverviewTab" style="display: none; opacity: 1; transform: translateY(0);">
+    
+<div id="labTraitSystemTab" class="admin-card mb-6" style="display: none;">
+  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-2xl font-semibold mb-2">🧬 Lab / Trait System</h2>
+      <p class="text-gray-300 max-w-4xl">Read-only observability for the Genesis lab progression system. This tab keeps production safe by using existing read endpoints only. Global balancing and per-player deep inspection remain available through Player Profiles, while this panel shows current runtime health and the authenticated admin's current lab state.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button onclick="loadLabTraitSystemAdmin()" class="game-action-btn success">🔄 Refresh Lab Observability</button>
+      <button onclick="showTab('playerProfiles')" class="game-action-btn">🧠 Open Player Profiles</button>
+    </div>
+  </div>
+
+  <div id="labTraitSystemNotice" class="data-summary bg-blue-900/30 text-blue-100 border border-blue-500/30">
+    Loading lab observability...
+  </div>
+
+  <div id="labTraitSystemStats" class="game-stats-grid mb-6"></div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div class="leaderboard-container p-6">
+      <div class="leaderboard-header">📈 Trait Progression Highlights</div>
+      <div id="labTraitHighlights" class="space-y-3 text-gray-300">Loading progression highlights...</div>
+    </div>
+
+    <div class="leaderboard-container p-6">
+      <div class="leaderboard-header">🧭 Admin Visibility Notes</div>
+      <div id="labTraitSystemObservability" class="space-y-3 text-gray-300"></div>
+    </div>
+  </div>
+
+  <div class="leaderboard-container p-6 mt-6">
+    <div class="leaderboard-header">🧪 Current Operator Per-NFT Progression</div>
+    <div id="labTraitSystemNfts" class="space-y-4 text-gray-300">Loading NFT progression...</div>
+  </div>
+</div>
+
+<div class="admin-card mb-6" id="databaseOverviewTab" style="display: none; opacity: 1; transform: translateY(0);">
       <h2 class="text-xl font-semibold mb-4">🗄️ Database Overview & Sync Status</h2>
       <p class="text-gray-300 mb-6">Complete system health check for Narrrf's World - Check before pushing to production</p>
       

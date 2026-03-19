@@ -592,23 +592,24 @@ try {
 
     $pdo->beginTransaction();
 
-    $claimStmt = $pdo->prepare("
-        UPDATE tbl_nft_trait_upgrades
-        SET current_level = ?,
-            upgrade_status = 'idle',
-            upgrade_started_at = NULL,
-            upgrade_ends_at = NULL,
-            last_completed_at = ?,
-            last_owner_user_id = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE upgrade_id = ?
-    ");
-    $claimStmt->execute([
-        $newLevel,
-        $claimedAt,
-        $user_id,
-        $existingRow['upgrade_id']
-    ]);
+$claimStmt = $pdo->prepare("
+    UPDATE tbl_nft_trait_upgrades
+    SET current_level = ?,
+        upgrade_status = 'idle',
+        upgrade_started_at = NULL,
+        upgrade_ends_at = NULL,
+        last_completed_at = ?,
+        last_owner_user_id = ?,
+        ready_claim_notified_at = NULL,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE upgrade_id = ?
+");
+$claimStmt->execute([
+    $newLevel,
+    $claimedAt,
+    $user_id,
+    $existingRow['upgrade_id']
+]);
 
     $pdo->commit();
 

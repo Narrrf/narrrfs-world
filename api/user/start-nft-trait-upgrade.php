@@ -586,16 +586,18 @@ try {
         $startedAt = gmdate('Y-m-d H:i:s');
         $endsAt = gmdate('Y-m-d H:i:s', time() + ($durationHours * 3600));
 
-        $updateStmt = $pdo->prepare("
-            UPDATE tbl_nft_trait_upgrades
-            SET upgrade_status = 'upgrading',
-                upgrade_started_at = ?,
-                upgrade_ends_at = ?,
-                last_owner_user_id = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE upgrade_id = ?
-        ");
-        $updateStmt->execute([$startedAt, $endsAt, $user_id, $existingRow['upgrade_id']]);
+$updateStmt = $pdo->prepare("
+    UPDATE tbl_nft_trait_upgrades
+    SET upgrade_status = 'upgrading',
+        upgrade_started_at = ?,
+        upgrade_ends_at = ?,
+        last_owner_user_id = ?,
+        ready_claim_notified_at = NULL,
+        ready_claim_notification_count = 0,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE upgrade_id = ?
+");
+$updateStmt->execute([$startedAt, $endsAt, $user_id, $existingRow['upgrade_id']]);
 
         json_response([
             'success' => true,
@@ -622,22 +624,24 @@ try {
     $startedAt = gmdate('Y-m-d H:i:s');
     $endsAt = gmdate('Y-m-d H:i:s', time() + ($durationHours * 3600));
 
-    $insertStmt = $pdo->prepare("
-        INSERT INTO tbl_nft_trait_upgrades (
-            token_id,
-            collection,
-            trait_type,
-            trait_value,
-            current_level,
-            upgrade_status,
-            upgrade_started_at,
-            upgrade_ends_at,
-            last_completed_at,
-            last_owner_user_id,
-            created_at,
-            updated_at
-        ) VALUES (?, ?, ?, ?, ?, 'upgrading', ?, ?, NULL, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    ");
+$insertStmt = $pdo->prepare("
+    INSERT INTO tbl_nft_trait_upgrades (
+        token_id,
+        collection,
+        trait_type,
+        trait_value,
+        current_level,
+        upgrade_status,
+        upgrade_started_at,
+        upgrade_ends_at,
+        last_completed_at,
+        last_owner_user_id,
+        ready_claim_notified_at,
+        ready_claim_notification_count,
+        created_at,
+        updated_at
+    ) VALUES (?, ?, ?, ?, ?, 'upgrading', ?, ?, NULL, ?, NULL, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+");
     $insertStmt->execute([
         $token_id,
         'genesis',
