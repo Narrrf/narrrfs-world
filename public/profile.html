@@ -981,7 +981,338 @@ require_once 'discord-invite.php';
   }
 }
 
-  </style>
+  
+/* 🧭 PROFILE 2.0 TAB WORKSPACE */
+.profile-v2-shell {
+  position: relative;
+  z-index: 20;
+  width: min(1280px, calc(100% - 24px));
+  margin: 0 auto 1.5rem;
+}
+
+.profile-v2-shell.hidden {
+  display: none;
+}
+
+.profile-v2-frame {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(30, 27, 75, 0.86));
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+}
+
+.profile-v2-topbar {
+  position: sticky;
+  top: 68px;
+  z-index: 35;
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(17, 24, 39, 0.88));
+  border-bottom: 1px solid rgba(250, 204, 21, 0.16);
+  padding: 0.85rem 1rem 0.9rem;
+}
+
+.profile-v2-kicker {
+  display: block;
+  text-align: center;
+  color: #fde68a;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+}
+
+.profile-v2-tablist {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.profile-v2-tab {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  border-radius: 999px;
+  padding: 0.62rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: all 0.22s ease;
+}
+
+.profile-v2-tab:hover {
+  transform: translateY(-1px);
+  border-color: rgba(250, 204, 21, 0.35);
+  color: #ffffff;
+}
+
+.profile-v2-tab.active {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.94), rgba(245, 158, 11, 0.92));
+  color: #111827;
+  border-color: rgba(250, 204, 21, 0.9);
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.22);
+}
+
+/* ✅ PANELS */
+.profile-v2-panels {
+  padding: 0;
+  background: linear-gradient(180deg, rgba(8, 15, 37, 0.4), rgba(8, 15, 37, 0.18));
+}
+
+.profile-v2-panel {
+  display: none;
+  animation: profileV2Fade 0.24s ease;
+}
+
+.profile-v2-panel.active {
+  display: block;
+}
+
+.profile-v2-panel-inner {
+  display: grid;
+  gap: 1.5rem;
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 0 0 2.75rem;
+  align-content: start;
+}
+
+/* ✅ hard top spacer for every tab (MAIN FIX) */
+.profile-v2-panel-inner::before {
+  content: "";
+  display: block;
+  height: 3.2rem; /* 🔥 increased from 2.9 → stronger push down */
+}
+
+/* ✅ migrated legacy wrapper */
+.profile-v2-preserve {
+  padding-top: 0.25rem; /* small extra breathing room */
+}
+
+/* ✅ remove weird inherited first-child top collisions */
+.profile-v2-panel-inner > *:first-child,
+.profile-v2-preserve > *:first-child {
+  margin-top: 0 !important;
+}
+
+.profile-v2-preserve > * {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.profile-v2-preserve > .mt-2:first-child,
+.profile-v2-preserve > .mt-3:first-child,
+.profile-v2-preserve > .mt-4:first-child,
+.profile-v2-preserve > .mt-5:first-child,
+.profile-v2-preserve > .mt-6:first-child,
+.profile-v2-preserve > .mt-8:first-child,
+.profile-v2-preserve > .mt-10:first-child,
+.profile-v2-preserve > .mt-12:first-child,
+.profile-v2-preserve > .mb-8:first-child {
+  margin-top: 0 !important;
+}
+
+.profile-v2-preserve h1:first-child,
+.profile-v2-preserve h2:first-child,
+.profile-v2-preserve h3:first-child,
+.profile-v2-preserve h4:first-child,
+.profile-v2-preserve section:first-child,
+.profile-v2-preserve div:first-child,
+.profile-v2-preserve .finance-card:first-child,
+.profile-v2-preserve .stats-card:first-child,
+.profile-v2-preserve .admin-card:first-child,
+.profile-v2-preserve .game-stat-card:first-child,
+.profile-v2-preserve .leaderboard-container:first-child {
+  margin-top: 0 !important;
+}
+
+.profile-v2-preserve main,
+.profile-v2-preserve section,
+.profile-v2-preserve div[id] {
+  max-width: 100%;
+}
+
+@keyframes profileV2Fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🧰 PROFILE 2.0 UTILITY STRIP */
+.profile-v2-utility-strip {
+  max-width: 1150px;
+  margin: 0 auto 1.5rem;
+  padding: 0 1rem;
+}
+
+.profile-v2-utility-grid {
+  display: grid;
+  grid-template-columns: minmax(340px, 1.1fr) minmax(260px, 0.9fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.profile-v2-utility-card,
+.profile-v2-docs-card {
+  border-radius: 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+}
+
+.profile-v2-docs-card {
+  display: block;
+  text-decoration: none;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(6, 95, 70, 0.95), rgba(16, 185, 129, 0.88));
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.profile-v2-docs-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.28);
+  border-color: rgba(167, 243, 208, 0.4);
+}
+
+.profile-v2-docs-card-inner {
+  position: relative;
+  min-height: 100%;
+  padding: 1.15rem 1.2rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.profile-v2-docs-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: max-content;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ecfdf5;
+}
+
+.profile-v2-docs-title {
+  font-size: 1.5rem;
+  line-height: 1.05;
+  font-weight: 900;
+  margin: 0;
+}
+
+.profile-v2-docs-copy {
+  margin: 0;
+  color: rgba(236, 253, 245, 0.9);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.profile-v2-docs-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  gap: 0.45rem;
+  padding: 0.72rem 1rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+/* 🎁 chest utility transplant */
+#profile-v2-utility-target {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.92), rgba(30, 41, 59, 0.92));
+}
+
+#profile-v2-utility-target #profile-chest-section {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#profile-v2-utility-target #profile-chest-section > div {
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+#profile-v2-utility-target #profile-chest-section .bg-gradient-to-br {
+  border-radius: 1.4rem !important;
+  padding: 1.15rem 1.2rem !important;
+  min-height: 100%;
+}
+
+#profile-v2-utility-target #profile-chest-image {
+  width: 132px !important;
+}
+
+#profile-v2-utility-target #profile-chest-section .text-3xl {
+  font-size: 1.55rem !important;
+}
+
+#profile-v2-utility-target #profile-chest-section .text-sm {
+  font-size: 0.82rem !important;
+}
+
+/* 📱 responsive */
+@media (max-width: 900px) {
+  .profile-v2-utility-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-v2-shell {
+    width: calc(100% - 16px);
+  }
+
+  .profile-v2-topbar {
+    top: 0;
+    padding: 0.8rem 0.75rem 0.9rem;
+  }
+
+  .profile-v2-tablist {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.2rem;
+  }
+
+  .profile-v2-tab {
+    flex: 0 0 auto;
+  }
+
+  .profile-v2-panels {
+    padding: 0;
+  }
+
+  .profile-v2-panel-inner {
+    width: calc(100% - 22px);
+    padding: 0 0 2rem;
+    gap: 1rem;
+  }
+
+.profile-v2-panel-inner::before {
+  height: 2.9rem;
+}
+
+  .profile-v2-preserve {
+    padding-top: 0.1rem;
+  }
+}
+</style>
 </head>
 
 
@@ -1214,54 +1545,6 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
-<!-- 🧠 NERD LAB ENTRY - Green Themed (Holder & VIP Holder Only) -->
-<div id="nerd-lab-entry" class="hidden mb-6 mt-4">
-  <div class="max-w-4xl mx-auto px-4">
-    <a href="nerd-lab.html" 
-       class="block group relative overflow-hidden rounded-2xl shadow-2xl transform transition-all duration-300 hover:scale-105">
-      <!-- Green Gradient Background -->
-      <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 p-8 border-4 border-green-300 shadow-lg">
-        <!-- Animated Background Pattern -->
-        <div class="absolute inset-0 opacity-20">
-          <div class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')]"></div>
-        </div>
-        
-        <!-- Content -->
-        <div class="relative z-10 text-center">
-          <!-- Icon and Title -->
-          <div class="flex items-center justify-center mb-4">
-            <span class="text-6xl mr-4 group-hover:animate-spin transition-transform duration-300">🧠</span>
-            <h2 class="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
-              NERD LAB
-            </h2>
-            <span class="text-6xl ml-4 group-hover:animate-pulse transition-opacity duration-300">🔬</span>
-          </div>
-          
-          <!-- Subtitle -->
-          <p class="text-xl md:text-2xl text-green-100 font-semibold mb-4 drop-shadow-md">
-            Complete Technical Documentation Hub
-          </p>
-          
-          <!-- Description -->
-          <p class="text-base md:text-lg text-green-50 mb-6 max-w-2xl mx-auto">
-            Exclusive access to the Narrrf's World Cheese Engine system • All 7 games • Admin Interface • Discord Bot • Database • Frontend • Agent System
-          </p>
-          
-          <!-- CTA Button -->
-          <div class="inline-block bg-white/20 backdrop-blur-sm border-3 border-white/50 rounded-xl px-8 py-4 group-hover:bg-white/30 transition-all duration-300">
-            <span class="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">
-              🚀 ENTER LAB →
-            </span>
-          </div>
-          
-          <!-- Glow Effect on Hover -->
-          <div class="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/20 to-green-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-        </div>
-      </div>
-    </a>
-  </div>
-</div>
-
 <script>
 // Role-gate: show tester collab button when user has allowed roles
 // Load stored wallet and traits on page load
@@ -1307,18 +1590,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       const el = document.getElementById('bug-collab-wrapper');
       if (el) el.style.display = '';
     }
-    
-    // Check for Holder and VIP Holder roles (Nerd Lab access) - name-based only (Phase 2 security)
-    const isHolderByName = roles.some(r => r.includes('holder') && !r.includes('vip'));
-    const isVIPHolderByName = roles.some(r => r.includes('vip') && r.includes('holder'));
-    
-    if (isHolderByName || isVIPHolderByName) {
-      const nerdLabEl = document.getElementById('nerd-lab-entry');
-      if (nerdLabEl) {
-        nerdLabEl.classList.remove('hidden');
-        console.log('🧠 Nerd Lab access granted for Holder/VIP Holder');
-      }
-    }
+
   } catch (e) { 
     console.error('Error checking roles:', e);
   }
@@ -1338,18 +1610,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 </div>
 
 <!-- Quick Action Buttons - Improved Styling -->
-<div id="quickActions" class="flex flex-col sm:flex-row gap-4 mb-8 mt-8 px-4">
-  <!-- Bingo Vault Button - Beautiful Banner Style -->
-  <div class="flex-1">
-    <div class="bg-gradient-to-r from-purple-400/90 via-purple-300 to-purple-400/90 border-2 border-purple-500 px-6 py-3 rounded-xl font-bold text-purple-900 shadow-lg mb-2 text-center">
-      🎲 Bingo Vault Access
-    </div>
-    <a href="Bingo.html"
-       class="block bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-purple-500 transition-all duration-300 transform hover:scale-105 text-center">
-      🎯 Enter Bingo Vault
-    </a>
-  </div>
-  
+<div id="quickActions" class="flex flex-col sm:flex-row gap-4 mb-8 mt-8 px-4 max-w-5xl mx-auto">
   <!-- Bug Report Button - Beautiful Banner Style -->
   <div class="flex-1">
     <div class="bg-gradient-to-r from-red-400/90 via-red-300 to-red-400/90 border-2 border-red-500 px-6 py-3 rounded-xl font-bold text-red-900 shadow-lg mb-2 text-center">
@@ -1394,6 +1655,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 
 
+<!-- 🧭 PROFILE 2.0 WORKSPACE ANCHOR -->
+<div id="profile-v2-anchor" class="relative z-20"></div>
 
 <!-- 👤 User Profile Card -->
 <main class="mobile-game-container container mx-auto px-4 py-8 max-w-6xl relative z-10">
@@ -1445,43 +1708,34 @@ document.addEventListener('DOMContentLoaded', async function() {
       <div class="text-gray-400 text-sm">Access development documentation and technical insights</div>
     </div>
 
-    <!-- 🧪 Traits + Wallet View -->
-    <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner border-2 border-orange-300">
-      <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
-      
-      <!-- 🚀 Season Status Banner - FROZEN THEME (blue) for Season 9 -->
-      <div id="wallet-season-banner" class="mb-3 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center">
-        <span class="text-blue-800 font-semibold text-sm">⏸️ Season 9 STARTED - Frozen ⏸️</span>
-      </div>
-      
-      <p id="wallet-address">🔗 Linked wallet: <em class="text-sm text-green-600">TestWallet123456789XYZ</em></p>
-      <p>🧬 Traits: <span id="traits" class="text-green-600">Season Tester • Cheese Master • Game Champion</span></p>
-      
-      <!-- 🚀 Season Status Features - FROZEN/ACTIVE THEME (updated by loadLeaderboardAndUpdateBanners) -->
-      <div id="wallet-season-features" class="mt-3 text-xs text-gray-600 bg-blue-50 rounded p-2 border border-blue-200">
-        <strong>⏸️ Season 9 STARTED - Frozen ⏸️</strong><br>
-        • 🎮 Season 9 STARTED! • Leaderboard shows Season 8 until 3+ scores • Play to unlock!<br>
-        • Fresh leaderboards active! • Compete now and earn DSPOINC!<br>
-        • Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>
-        • Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>
-        • Active Leaderboards: Compete for top spots and earn DSPOINC!
-      </div>
-    </div>
+<!-- 🧪 Traits + Wallet View -->
+<div id="wallet-traits-panel" class="mt-6 bg-gradient-to-br from-slate-800/90 to-purple-900/70 text-white rounded-2xl p-5 shadow-2xl border border-purple-400/30">
 
-    <!-- 🚀 SEASON STATUS BANNER - FROZEN THEME (blue) for Season 9 -->
-    <div id="main-season-banner" class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white p-4 rounded-xl shadow-lg border-4 border-blue-300 mb-6 text-center animate-pulse">
-      <div id="main-season-title" class="text-lg font-bold mb-2">⏸️ SEASON 9 STARTED - FROZEN ⏸️</div>
-      <div id="main-season-subtitle" class="text-sm mb-2 font-semibold">🎮 Season 9 STARTED! • Leaderboard shows Season 7 until 3+ scores • Play to unlock!</div>
-      <div id="main-season-details" class="text-xs mb-2 text-blue-100 italic font-bold">⏸️ Season 9 FROZEN • Play now to be first on the leaderboard! 🎯</div>
-      <div id="main-season-cta" class="text-2xl font-bold text-blue-200 mb-2 border-2 border-blue-300 inline-block px-4 py-1 rounded-full">
-        ⏸️ SEASON 8 FROZEN 🎮
-      </div>
-      <div id="main-season-features" class="text-xs mt-2 text-white">
-        🎮 Season 9 STARTED 🎮 • 7 Games Available • Boss Battles • Frozen Leaderboard • Play to unlock! • Bug Tracker Ready!
-      </div>
-    </div>
+  <!-- 🚀 Compact wallet season banner -->
+  <div id="wallet-season-banner" class="mb-3 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/40 rounded-lg p-2 text-center">
+    <span class="text-blue-200 font-semibold text-sm">⏸️ Season 9 STARTED - Frozen ⏸️</span>
+  </div>
 
-    <!-- 🛍️ Inventory & Purchase History Section -->
+  <p id="wallet-address" class="text-slate-100">
+    🔗 Linked wallet: <em class="text-sm text-emerald-300">TestWallet123456789XYZ</em>
+  </p>
+
+  <p class="text-slate-100">
+    🧬 Traits: <span id="traits" class="text-emerald-300">Season Tester • Cheese Master • Game Champion</span>
+  </p>
+
+  <!-- 🚀 Wallet season features -->
+  <div id="wallet-season-features" class="mt-3 text-xs text-slate-200 bg-slate-900/40 rounded p-3 border border-slate-500/30">
+    <strong>⏸️ Season 9 STARTED - Frozen ⏸️</strong><br>
+    • 🎮 Season 9 STARTED! • Leaderboard shows Season 8 until 3+ scores • Play to unlock!<br>
+    • Fresh leaderboards active! • Compete now and earn DSPOINC!<br>
+    • Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>
+    • Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>
+    • Active Leaderboards: Compete for top spots and earn DSPOINC!
+  </div>
+</div>
+
+<!-- 🛍️ Inventory & Purchase History Section -->
     <div id="inventory-history-section" class="mt-6 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-lg p-4 shadow-inner border border-purple-500/30">
       <h2 class="font-semibold text-lg mb-4 text-purple-300">🛍️ Store Activity</h2>
       
@@ -9624,6 +9878,206 @@ function updateBingoCard() {
 updateBingoCard();
 setInterval(updateBingoCard, 60000);
 </script>
+
+<script>
+(function() {
+  const PROFILE_V2_TABS = [
+    { key: 'overview', label: 'Overview', emoji: '🧭' },
+    { key: 'economy', label: 'Economy', emoji: '🛍️' },
+    { key: 'achievements', label: 'Achievements', emoji: '🏆' },
+    { key: 'stats', label: 'Statistics', emoji: '📊' },
+    { key: 'staking', label: 'Staking', emoji: '🧊' },
+    { key: 'dspoinc', label: 'DSPOINC', emoji: '🧀' },
+    { key: 'access', label: 'Access', emoji: '🚪' },
+    { key: 'collectibles', label: 'Trophies', emoji: '🏅' },
+    { key: 'nfts', label: 'Holder Verify', emoji: '🎴' },
+    { key: 'leaderboards', label: 'Leaderboards', emoji: '🥇' }
+  ];
+
+  function moveNode(node, target) {
+    if (!node || !target || !node.parentNode) return;
+    target.appendChild(node);
+  }
+
+  function findHeading(root, text) {
+    if (!root) return null;
+    return Array.from(root.querySelectorAll('h2,h3')).find((el) => (el.textContent || '').includes(text)) || null;
+  }
+
+  function activateTab(key) {
+    document.querySelectorAll('.profile-v2-tab').forEach((button) => {
+      button.classList.toggle('active', button.dataset.tab === key);
+    });
+    document.querySelectorAll('.profile-v2-panel').forEach((panel) => {
+      panel.classList.toggle('active', panel.dataset.panel === key);
+    });
+    localStorage.setItem('narrrfs_profile_v2_tab', key);
+  }
+
+  function ensurePanelNote(panel) {
+    if (!panel) return;
+    const hasMeaningfulChild = Array.from(panel.children).some((child) => {
+      if (!(child instanceof HTMLElement)) return false;
+      return child.textContent.trim() !== '' || child.querySelector('*');
+    });
+    if (!hasMeaningfulChild) {
+      const note = document.createElement('div');
+      note.className = 'profile-v2-panel-note';
+      note.textContent = 'This section is ready for the next migration pass.';
+      panel.appendChild(note);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const anchor = document.getElementById('profile-v2-anchor');
+    const main = document.querySelector('main.mobile-game-container');
+    const card = main ? main.querySelector('.finance-card') : null;
+    if (!anchor || !main || !card) return;
+
+    const shell = document.createElement('section');
+    shell.id = 'profile-v2-shell';
+    shell.className = 'profile-v2-shell';
+
+    const frame = document.createElement('div');
+    frame.className = 'profile-v2-frame';
+
+    const topbar = document.createElement('div');
+    topbar.className = 'profile-v2-topbar';
+
+    const kicker = document.createElement('span');
+    kicker.className = 'profile-v2-kicker';
+    kicker.textContent = 'Profile 2.0 Workspace · first safe migration pass';
+    topbar.appendChild(kicker);
+
+    const tablist = document.createElement('div');
+    tablist.className = 'profile-v2-tablist';
+    tablist.setAttribute('role', 'tablist');
+
+    const panelsWrap = document.createElement('div');
+    panelsWrap.className = 'profile-v2-panels';
+
+    const panelMap = {};
+
+    PROFILE_V2_TABS.forEach((tab, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'profile-v2-tab';
+      button.dataset.tab = tab.key;
+      button.setAttribute('role', 'tab');
+      button.innerHTML = `<span>${tab.emoji}</span> <span>${tab.label}</span>`;
+      button.addEventListener('click', () => activateTab(tab.key));
+      tablist.appendChild(button);
+
+      const panel = document.createElement('section');
+      panel.className = 'profile-v2-panel';
+      panel.dataset.panel = tab.key;
+
+      const panelInner = document.createElement('div');
+      panelInner.className = 'profile-v2-panel-inner';
+
+      const preserve = document.createElement('div');
+      preserve.className = 'profile-v2-preserve';
+
+      panelInner.appendChild(preserve);
+      panel.appendChild(panelInner);
+      panelsWrap.appendChild(panel);
+
+      panelMap[tab.key] = preserve;
+
+      if (index === 0) {
+        button.classList.add('active');
+        panel.classList.add('active');
+      }
+    });
+
+    topbar.appendChild(tablist);
+    frame.appendChild(topbar);
+    frame.appendChild(panelsWrap);
+    shell.appendChild(frame);
+    anchor.appendChild(shell);
+
+    const utilityTarget = document.getElementById('profile-v2-utility-target');
+
+    const inventory = document.getElementById('inventory-history-section');
+    const storeCatalog = document.getElementById('profile-store-catalog');
+    const missions = document.getElementById('missions-section');
+    const tetrisAchievements = document.getElementById('tetrisAchievements');
+    const snakeAchievements = document.getElementById('snakeAchievements');
+    const spaceAchievements = document.getElementById('spaceInvadersAchievements');
+    const puzzlesAchievements = document.getElementById('puzzles3DAchievements');
+    const allTimeBlock = document.getElementById('allTimeOverview') ? document.getElementById('allTimeOverview').closest('.mb-8') : null;
+    const stakingAnchor = document.getElementById('staking');
+    const stakingBlock = document.getElementById('stakingOverview') ? document.getElementById('stakingOverview').closest('.mb-8') : null;
+    const gameStatsBlock = document.getElementById('missionsResults') ? document.getElementById('missionsResults').parentElement : null;
+    const accessBlock = document.querySelector('.access-levels-list')
+      ? document.querySelector('.access-levels-list').closest('.mb-8')
+      : null;
+    const sessionNote = accessBlock ? accessBlock.nextElementSibling : null;
+    const adminAccessButton = document.getElementById('adminAccessBtn') ? document.getElementById('adminAccessBtn').parentElement : null;
+    const wlMintButton = document.getElementById('wlMintAccessBtn') ? document.getElementById('wlMintAccessBtn').parentElement : null;
+    const goldenCheeseGate = document.getElementById('golden-cheese-gate');
+    const footerNote = goldenCheeseGate ? goldenCheeseGate.nextElementSibling : null;
+    const trophyShelf = document.getElementById('trophy-shelf');
+    const holderVerification = document.getElementById('holder-verification');
+    const dspoincSection = document.getElementById('dspoincSection');
+    const profileChestSection = document.getElementById('profile-chest-section');
+    const leaderboardAuth = document.getElementById('tetris-auth');
+    const seasonActive = document.getElementById('season6Active');
+    const leaderboard = document.getElementById('leaderboard');
+
+    const skillsHeading = findHeading(card, 'Skills & Roles');
+    const skillsList = card.querySelector('.skills-list');
+    let skillsBlock = null;
+    if (skillsHeading && skillsList) {
+      skillsBlock = document.createElement('div');
+      skillsBlock.className = 'profile-v2-generated-card';
+      skillsHeading.parentNode.insertBefore(skillsBlock, skillsHeading);
+      skillsBlock.appendChild(skillsHeading);
+      skillsBlock.appendChild(skillsList);
+    }
+
+    /* ✅ Move Wallet & Traits into Access tab */
+    const walletTraitsPanel = document.getElementById('wallet-traits-panel');
+    if (walletTraitsPanel && panelMap.access) {
+      moveNode(walletTraitsPanel, panelMap.access);
+    }
+
+    [inventory, storeCatalog].forEach((node) => moveNode(node, panelMap.economy));
+    if (profileChestSection && utilityTarget) moveNode(profileChestSection, utilityTarget);
+
+    [missions, tetrisAchievements, snakeAchievements, spaceAchievements, puzzlesAchievements].forEach((node) => moveNode(node, panelMap.achievements));
+
+    if (allTimeBlock) moveNode(allTimeBlock, panelMap.stats);
+    if (gameStatsBlock) moveNode(gameStatsBlock, panelMap.stats);
+
+    if (stakingAnchor) moveNode(stakingAnchor, panelMap.staking);
+    if (stakingBlock) moveNode(stakingBlock, panelMap.staking);
+
+    if (skillsBlock) moveNode(skillsBlock, panelMap.access);
+    if (accessBlock) moveNode(accessBlock, panelMap.access);
+    if (sessionNote && sessionNote.textContent.includes('OAuth session live')) moveNode(sessionNote, panelMap.access);
+    [adminAccessButton, wlMintButton, goldenCheeseGate].forEach((node) => moveNode(node, panelMap.access));
+    if (footerNote && footerNote.textContent.includes('Profile powered')) moveNode(footerNote, panelMap.access);
+
+    if (trophyShelf) moveNode(trophyShelf, panelMap.collectibles);
+    if (holderVerification) moveNode(holderVerification, panelMap.nfts);
+    if (dspoincSection) moveNode(dspoincSection, panelMap.dspoinc);
+    [leaderboardAuth, seasonActive, leaderboard].forEach((node) => moveNode(node, panelMap.leaderboards));
+
+    moveNode(main, panelMap.overview);
+
+    Object.values(panelMap).forEach(ensurePanelNote);
+
+    const savedTab = localStorage.getItem('narrrfs_profile_v2_tab');
+    if (savedTab && panelMap[savedTab]) {
+      activateTab(savedTab);
+    } else {
+      activateTab('overview');
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
 
