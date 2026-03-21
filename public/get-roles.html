@@ -181,768 +181,625 @@ require_once 'discord-invite.php';
     </div>
   </header>
 
-  <!-- 🏆 Hero Section -->
-  <section class="relative z-10 py-20 px-4 md:px-6 text-center">
-    <div class="max-w-6xl mx-auto">
-      <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">
-        🏆 Role System
-      </h1>
-      <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-        Discover your destiny in Narrrf's World. Every role is a trophy, every achievement a step toward greatness.
+ <!-- 🏆 Hero Section -->
+<section class="relative z-10 py-20 px-4 md:px-6 text-center">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">
+      🏆 Role System
+    </h1>
+
+    <p class="text-xl md:text-2xl text-gray-300 mb-6 max-w-3xl mx-auto leading-relaxed">
+      Roles are no longer just titles — they are active multipliers, access layers, and identity signals across Narrrf’s World.
+    </p>
+
+    <p class="text-md text-gray-400 max-w-2xl mx-auto mb-8">
+      Your role connects your Discord identity, NFT ownership, gameplay rewards, and progression systems like the Genesis Lab.
+    </p>
+
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="#trophy-shelf" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+        🏆 View Roles
+      </a>
+      <a href="profile.html" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+        👤 Open Profile
+      </a>
+      <a href="lab.html" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+        🧬 Genesis Lab
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 🏆 Trophy Shelf Section -->
+<section id="trophy-shelf" class="relative z-10 py-16 px-4 md:px-6">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
+        🏆 Active Role System
+      </h2>
+      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+        Roles define your power inside the ecosystem — affecting gameplay, rewards, access, and progression.
       </p>
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="#trophy-shelf" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-          🏆 View Trophies
-        </a>
-        <a href="#roadmap" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-          🗺️ Project Roadmap
-        </a>
+    </div>
+
+    <!-- ✅ LIVE SYSTEM -->
+    <div class="bg-green-900/30 border border-green-500/50 rounded-xl p-5 mb-10 text-center">
+      <h3 class="text-lg font-bold text-green-300 mb-2">✅ Season 9 Role System — LIVE</h3>
+      <p class="text-green-100 text-sm mb-4">
+        Role bonuses are now fully active across all games, profile tracking, and reward systems.
+      </p>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-green-200">
+        <div>🎴 VIP Holder: <strong>2.0x</strong></div>
+        <div>🏆 Holder: <strong>1.5x</strong></div>
+        <div>🥇 Champion: <strong>1.4x</strong></div>
+        <div>🎮 Season Tester: <strong>1.3x</strong></div>
+        <div>🐦 Early Bird: <strong>1.2x</strong></div>
+        <div>🧀 Cheese Hunter: <strong>1.1x</strong></div>
       </div>
     </div>
-  </section>
 
-  <!-- 🏆 Trophy Shelf Section -->
-  <section id="trophy-shelf" class="relative z-10 py-16 px-4 md:px-6">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
-          🏆 Trophy Collection
-        </h2>
-        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-          Each role represents a unique achievement and unlocks special privileges in Narrrf's World
-        </p>
+    <!-- Trophy Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+      <!-- VIP Holder -->
+      <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+        <img src="img/trophy_VIP.png" class="w-20 h-20 mx-auto mb-4" />
+        <h3 class="text-lg font-bold text-yellow-400 mb-2">🎴 VIP Holder</h3>
+        <p class="text-sm text-gray-300 mb-3">Top-tier ecosystem role</p>
+        <div class="text-xs text-yellow-300 font-mono">
+          ✅ 2.0x Game Rewards<br>
+          🟡 Premium Access<br>
+          🎁 Top Raffles + Events
+        </div>
       </div>
 
-      <!-- Trophy Grid -->
-      <div class="trophy-shelf rounded-3xl p-8 mb-12">
-        <!-- ✅ Role Bonus System LIVE -->
-        <div class="bg-green-900/30 border border-green-500/50 rounded-xl p-4 mb-8 text-center">
-          <h3 class="text-lg font-bold text-green-300 mb-2">✅ Role Bonus System - LIVE & ACTIVE</h3>
-          <p class="text-green-100 text-sm mb-3">
-            All gaming roles now have active multiplier bonuses across Tetris, Snake, and Space Invaders!
-          </p>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-green-200">
-            <div>🎴 VIP Holder: <strong>2.0x</strong></div>
-            <div>🏆 Holder: <strong>1.5x</strong></div>
-            <div>🥇 Champion: <strong>1.4x</strong></div>
-            <div>🎮 Season Tester: <strong>1.3x</strong></div>
-            <div>🐦 Early Bird: <strong>1.2x</strong></div>
-            <div>🧀 Cheese Hunter: <strong>1.1x</strong></div>
-          </div>
+      <!-- Holder -->
+      <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+        <img src="img/trophy_holder.png" class="w-20 h-20 mx-auto mb-4" />
+        <h3 class="text-lg font-bold text-yellow-400 mb-2">🏆 Holder</h3>
+        <p class="text-sm text-gray-300 mb-3">Verified Genesis NFT holder</p>
+        <div class="text-xs text-yellow-300 font-mono">
+          ✅ 1.5x Game Rewards<br>
+          🧬 Lab Access<br>
+          🎮 Full Gameplay Unlock
         </div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          
-          <!-- Alpha Caller Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_alphacaller.png" alt="Alpha Caller" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Alpha Caller</h3>
-            <p class="text-sm text-gray-300 mb-3">Exclusive alpha access</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              #alpha-lab Access<br>
-              Signal Posts
-            </div>
-          </div>
+      </div>
 
-          <!-- Champion Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_champion.png" alt="Champion" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">🥇 Champion</h3>
-            <p class="text-sm text-gray-300 mb-3">Tournament winner</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              ✅ <strong>1.4x Gaming Bonus</strong><br>
-              🔴 Red Theme<br>
-              Elite Raffles
-            </div>
-          </div>
+      <!-- Champion -->
+      <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+        <img src="img/trophy_champion.png" class="w-20 h-20 mx-auto mb-4" />
+        <h3 class="text-lg font-bold text-yellow-400 mb-2">🥇 Champion</h3>
+        <p class="text-sm text-gray-300 mb-3">Tournament winner</p>
+        <div class="text-xs text-yellow-300 font-mono">
+          ✅ 1.4x Bonus<br>
+          🏆 Elite Status<br>
+          🎯 Competitive Rewards
+        </div>
+      </div>
 
-          <!-- Community Member Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_community.png" alt="Community Member" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Community Member</h3>
-            <p class="text-sm text-gray-300 mb-3">Active community participant</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Basic Access<br>
-              Community Events
-            </div>
-          </div>
+      <!-- Season Tester -->
+      <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+        <img src="img/trophy_season_tester.png" class="w-20 h-20 mx-auto mb-4" />
+        <h3 class="text-lg font-bold text-yellow-400 mb-2">🎮 Season Tester</h3>
+        <p class="text-sm text-gray-300 mb-3">Active seasonal player</p>
+        <div class="text-xs text-yellow-300 font-mono">
+          ✅ 1.3x Bonus<br>
+          🧪 Early Features<br>
+          🎮 Gameplay Access
+        </div>
+      </div>
 
-          <!-- Corny Companion Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_cryptocornfriends.png" alt="Corny Companion" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Corny Companion</h3>
-            <p class="text-sm text-gray-300 mb-3">Crypto Corn supporter</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Special Events<br>
-              Corn Rewards
-            </div>
-          </div>
+      <!-- Early Bird -->
+      <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+        <img src="img/trophy_earlybird.png" class="w-20 h-20 mx-auto mb-4" />
+        <h3 class="text-lg font-bold text-yellow-400 mb-2">🐦 Early Bird</h3>
+        <p class="text-sm text-gray-300 mb-3">Early ecosystem supporter</p>
+        <div class="text-xs text-yellow-300 font-mono">
+          ✅ 1.2x Bonus<br>
+          🚀 Early Access<br>
+          🎁 Special Drops
+        </div>
+      </div>
 
-          <!-- Engager Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_engage.png" alt="Engager" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Engager</h3>
-            <p class="text-sm text-gray-300 mb-3">Active community member</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Activity Rewards<br>
-              Community Perks
-            </div>
-          </div>
+      <!-- Cheese Hunter -->
+      <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+        <img src="img/trophy_cheese_hunter.png" class="w-20 h-20 mx-auto mb-4" />
+        <h3 class="text-lg font-bold text-yellow-400 mb-2">🧀 Cheese Hunter</h3>
+        <p class="text-sm text-gray-300 mb-3">Game achievement role</p>
+        <div class="text-xs text-yellow-300 font-mono">
+          ✅ 1.1x Bonus<br>
+          🎯 Mission Rewards<br>
+          🧀 Activity Unlocks
+        </div>
+      </div>
 
-          <!-- Kaleido Supporter Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_kaleidofriends.png" alt="Kaleido Supporter" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Kaleido Supporter</h3>
-            <p class="text-sm text-gray-300 mb-3">Kaleido project supporter</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Kaleido Events<br>
-              Special Access
-            </div>
-          </div>
+      <!-- Verified -->
+      <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+        <img src="img/trophy_verified.png" class="w-20 h-20 mx-auto mb-4" />
+        <h3 class="text-lg font-bold text-yellow-400 mb-2">🔐 Verified</h3>
+        <p class="text-sm text-gray-300 mb-3">Human verified user</p>
+        <div class="text-xs text-yellow-300 font-mono">
+          🔗 Real person behind<br>
+          🧬 Active Community Engage<br>
+          🎮 System Access
+        </div>
+      </div>
 
-          <!-- PokerOG Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_PokerOG.png" alt="Poker OG" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Poker OG</h3>
-            <p class="text-sm text-gray-300 mb-3">VIP poker access</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              VIP Tournaments<br>
-              Exclusive Tables
-            </div>
-          </div>
+      <!-- Gaming Zone -->
+      <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-violet-900/50 to-purple-900/50 border-2 border-violet-500/50 hover:scale-105 transition-all">
+        <div class="text-6xl mb-4">🎮</div>
+        <h3 class="text-lg font-bold text-violet-400 mb-2">Game Zone</h3>
+        <p class="text-sm text-gray-300 mb-3">Play, earn, progress</p>
+        <a href="profile.html"
+           class="inline-block bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold py-2 px-4 rounded-lg">
+          🚀 Enter
+        </a>
+      </div>
 
-          <!-- Bunny Buddy Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_rabbitfriends.png" alt="Bunny Buddy" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Bunny Buddy</h3>
-            <p class="text-sm text-gray-300 mb-3">Rabbit project supporter</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Rabbit Events<br>
-              Special Rewards
-            </div>
-          </div>
+    </div>
 
-          <!-- Rumble Champ Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_rumble.png" alt="Rumble Champ" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Rumble Champ</h3>
-            <p class="text-sm text-gray-300 mb-3">Rumble tournament winner</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Rumble Access<br>
-              Champion Status
-            </div>
-          </div>
+    <!-- 🧬 SYSTEM EXPLANATION -->
+    <div class="mt-12 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-2xl p-8 border border-cyan-500/30">
+      <h3 class="text-2xl font-bold text-cyan-300 mb-6 text-center">
+        🧬 How Roles Fit Into the Ecosystem
+      </h3>
 
-          <!-- Server Booster Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_serverbooster.png" alt="Server Booster" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Server Booster</h3>
-            <p class="text-sm text-gray-300 mb-3">Discord server booster</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Booster Perks<br>
-              VIP Channels
-            </div>
-          </div>
+      <div class="grid md:grid-cols-2 gap-8 text-gray-300">
 
-          <!-- Verified Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_verified.png" alt="Verified" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Verified</h3>
-            <p class="text-sm text-gray-300 mb-3">Verified community member</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Trust Status<br>
-              Special Access
-            </div>
-          </div>
+        <div>
+          <h4 class="text-lg font-semibold text-cyan-200 mb-3">🎮 Gameplay Layer</h4>
+          <ul class="space-y-2 text-sm">
+            <li>• Score multipliers across all games</li>
+            <li>• DSPOINC earning boost</li>
+            <li>• Competitive leaderboard advantage</li>
+            <li>• Seasonal progression tracking</li>
+          </ul>
+        </div>
 
-          <!-- Weedery Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_weederyfriends.png" alt="Weedery" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Weedery</h3>
-            <p class="text-sm text-gray-300 mb-3">Weedery project supporter</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Weedery Events<br>
-              Special Rewards
-            </div>
-          </div>
+        <div>
+          <h4 class="text-lg font-semibold text-cyan-200 mb-3">🧬 Identity Layer</h4>
+          <ul class="space-y-2 text-sm">
+            <li>• Linked to NFT ownership</li>
+            <li>• Visible on profile system</li>
+            <li>• Used in Genesis Lab progression</li>
+            <li>• Determines access & permissions</li>
+          </ul>
+        </div>
 
-          <!-- VIP Holder Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_VIP.png" alt="VIP Holder" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">🎴 VIP Holder</h3>
-            <p class="text-sm text-gray-300 mb-3">Elite status with exclusive access</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              ✅ <strong>2.0x Gaming Bonus</strong><br>
-              🟡 Golden Theme<br>
-              VIP Raffles & Events
-            </div>
-          </div>
+      </div>
+    </div>
 
-          <!-- Holder Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_holder.png" alt="Holder" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">🏆 Holder</h3>
-            <p class="text-sm text-gray-300 mb-3">Core community member</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              ✅ <strong>1.5x Gaming Bonus</strong><br>
-              ⚪ Silver Theme<br>
-              Community Access
-            </div>
-          </div>
+  </div>
+</section>
 
-          <!-- Cheese Hunter Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_cheese_hunter.png" alt="Cheese Hunter" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">🧀 Cheese Hunter</h3>
-            <p class="text-sm text-gray-300 mb-3">Game achievement unlocked</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              ✅ <strong>1.1x Gaming Bonus</strong><br>
-              🟠 Orange Theme<br>
-              Game Rewards
-            </div>
-          </div>
+<!-- 🏆 Achievement Missions Section -->
+<section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-emerald-900/30 to-teal-900/30">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-bold text-emerald-400 mb-4">
+        🏆 Achievement Missions
+      </h2>
+      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+        Complete missions, set high scores, and grow your identity across the live Season 9 ecosystem.
+      </p>
+    </div>
 
-          <!-- Season Tester Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_season_tester.png" alt="Season Tester" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">🎮 Season Tester</h3>
-            <p class="text-sm text-gray-300 mb-3">Active season contributor</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              ✅ <strong>1.3x Gaming Bonus</strong><br>
-              🟢 Green Theme<br>
-              Testing Access
-            </div>
+    <!-- Achievement Grid -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+      
+      <!-- Tetris Achievements -->
+      <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-blue-900/50 to-indigo-900/50 border-2 border-blue-500/50">
+        <div class="text-5xl mb-4">🧩</div>
+        <h3 class="text-xl font-bold text-blue-400 mb-4">Tetris DSPOINC</h3>
+        <div class="space-y-3 text-sm">
+          <div class="bg-blue-900/30 rounded-lg p-3">
+            <h4 class="font-semibold text-blue-300 mb-2">✅ Live Features</h4>
+            <ul class="text-gray-300 space-y-1 text-xs">
+              <li>• <strong>2 DSPOINC per line</strong> cleared (base rate)</li>
+              <li>• <strong>10 DSPOINC bonus</strong> for bomb defusal</li>
+              <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x</li>
+              <li>• <strong>25 achievements</strong> to unlock</li>
+              <li>• <strong>Role-based themes</strong> and visual identity</li>
+            </ul>
           </div>
-
-          <!-- Early Bird Trophy -->
-          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
-            <img src="img/trophy_earlybird.png" alt="Early Bird" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">🐦 Early Bird</h3>
-            <p class="text-sm text-gray-300 mb-3">Early supporter</p>
-            <div class="text-xs text-yellow-300 font-mono">
-              ✅ <strong>1.2x Gaming Bonus</strong><br>
-              🔵 Blue Theme<br>
-              Early Access
-            </div>
+          <div class="bg-blue-900/30 rounded-lg p-3">
+            <h4 class="font-semibold text-blue-300 mb-2">🏆 Progression Value</h4>
+            <ul class="text-gray-300 space-y-1 text-xs">
+              <li>• ✅ Earn live DSPOINC rewards</li>
+              <li>• ✅ Track achievements in profile</li>
+              <li>• ✅ All-time stats across seasons</li>
+              <li>• ✅ Competitive leaderboard value</li>
+            </ul>
           </div>
-
-          <!-- Gaming Zone - Link to Profile -->
-          <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-violet-900/50 to-purple-900/50 border-2 border-violet-500/50 hover:border-violet-400/70 transition-all duration-300 transform hover:scale-105">
-            <div class="text-6xl mb-4">🎮</div>
-            <h3 class="text-lg font-bold text-violet-400 mb-2">Gaming Zone</h3>
-            <p class="text-sm text-gray-300 mb-3">Verify roles & play games</p>
-            <div class="text-xs text-violet-300 font-mono mb-4">
-              Role Verification<br>
-              Game Access<br>
-              Trophy Collection
-            </div>
-            <a href="profile.html" class="inline-block bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
-              🚀 Enter Zone
+          <div class="mt-4">
+            <a href="profile.html" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+              🎮 Play Tetris Now
             </a>
           </div>
-
-  </div>
+        </div>
       </div>
 
-      <!-- 🔐 Hidden Moderator Section (Only visible to moderators) -->
-      <div id="moderator-section" class="hidden bg-gradient-to-r from-red-900/30 to-purple-900/30 rounded-2xl p-6 border border-red-500/30 mb-8">
-        <div class="text-center">
-          <h3 class="text-2xl font-bold text-red-400 mb-4">🛡️ Moderator Access</h3>
-          <p class="text-gray-300 mb-4">Welcome, Moderator. You have access to administrative functions.</p>
-          
-          <!-- Moderator Trophy Display -->
-          <div class="flex justify-center mb-4">
-            <div class="role-card rounded-2xl p-6 text-center trophy-glow border-2 border-red-500/50">
-              <img src="img/trophy_moderator.png" alt="Moderator" class="w-24 h-24 mx-auto mb-4 drop-shadow-2xl" />
-              <h4 class="text-lg font-bold text-red-400 mb-2">Moderator</h4>
-              <p class="text-sm text-gray-300 mb-3">Community moderator</p>
-              <div class="text-xs text-red-300 font-mono">
-                +2 Wheel Bonus<br>
-                Mod Powers<br>
-                VIP Access
-              </div>
-            </div>
-          </div>
-          
-          <div class="text-sm text-red-300">
-            <p>🔒 This section is only visible to users with moderator privileges</p>
-          </div>
-  </div>
-  </div>
-
-      <!-- Role Benefits Summary -->
-      <div class="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 rounded-2xl p-8 border border-yellow-500/30">
-        <h3 class="text-2xl font-bold text-yellow-400 mb-6 text-center">🎯 Role Benefits Overview</h3>
-        <div class="grid md:grid-cols-2 gap-8">
-          <div>
-            <h4 class="text-lg font-semibold text-yellow-300 mb-4">🎮 Gaming Advantages (LIVE NOW!)</h4>
-            <ul class="space-y-2 text-gray-300">
-              <li>• <strong>Score Multipliers:</strong> Up to 2.0x bonus on all games (VIP Holder)</li>
-              <li>• <strong>Themed Frames:</strong> Unique visual themes (Gold, Silver, Red, etc.)</li>
-              <li>• <strong>3 Games Active:</strong> Tetris, Snake, Space Invaders</li>
-              <li>• <strong>Achievement System:</strong> Track progress across all games</li>
-              <li>• <strong>Discord Races:</strong> DSPOINC rewards for race winners</li>
-              <li>• <strong>Cheese Hunt:</strong> Click-based missions with rewards</li>
-            </ul>
-  </div>
-          <div>
-            <h4 class="text-lg font-semibold text-yellow-300 mb-4">🌟 Community Perks</h4>
-            <ul class="space-y-2 text-gray-300">
-              <li>• <strong>Discord Roles:</strong> Real Discord permissions and access</li>
-              <li>• <strong>NFT Verification:</strong> Automatic role grant for holders</li>
-              <li>• <strong>Giveaway System:</strong> Participate in epic cheese giveaways</li>
-              <li>• <strong>Season System:</strong> Historical stats preservation</li>
-              <li>• <strong>Profile Page:</strong> Complete gaming history tracking</li>
-              <li>• <strong>All-Time Stats:</strong> View total progress across all seasons</li>
-            </ul>
-  </div>
-  </div>
-  </div>
-  </div>
-</section>
-
-  <!-- 🏆 Achievement Missions Section -->
-  <section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-emerald-900/30 to-teal-900/30">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl md:text-5xl font-bold text-emerald-400 mb-4">
-          🏆 Achievement Missions
-        </h2>
-        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-          Complete epic missions across Tetris, Snake, and Space Invaders to unlock exclusive roles and rewards! 🎮 Season 7 RUNNING 🎮
-        </p>
-      </div>
-
-      <!-- Achievement Grid -->
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-        
-        <!-- Tetris Achievements -->
-        <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-blue-900/50 to-indigo-900/50 border-2 border-blue-500/50">
-          <div class="text-5xl mb-4">🧩</div>
-          <h3 class="text-xl font-bold text-blue-400 mb-4">Tetris DSPOINC</h3>
-          <div class="space-y-3 text-sm">
-            <div class="bg-blue-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-blue-300 mb-2">✅ Active Features</h4>
-              <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• <strong>2 DSPOINC per line</strong> cleared (base rate)</li>
-                <li>• <strong>10 DSPOINC bonus</strong> for bomb defusal</li>
-                <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x bonus</li>
-                <li>• <strong>25 Achievements</strong> to unlock</li>
-                <li>• <strong>Themed frames:</strong> Gold, Silver, Red, Green, Blue, Orange</li>
-              </ul>
-            </div>
-            <div class="bg-blue-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-blue-300 mb-2">🏆 Real Benefits</h4>
-              <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• ✅ Earn real $DSPOINC points</li>
-                <li>• ✅ Track 25 achievements in profile</li>
-                <li>• ✅ All-time stats across seasons</li>
-                <li>• ✅ Role-based visual themes</li>
-              </ul>
-            </div>
-            <div class="mt-4">
-              <a href="profile.html" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                🎮 Play Tetris Now
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Snake Achievements -->
-        <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-green-900/50 to-emerald-900/50 border-2 border-green-500/50">
-          <div class="text-5xl mb-4">🐍</div>
-          <h3 class="text-xl font-bold text-green-400 mb-4">Snake DSPOINC</h3>
-          <div class="space-y-3 text-sm">
-            <div class="bg-green-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-green-300 mb-2">✅ Active Features</h4>
-              <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• <strong>10 DSPOINC per cheese</strong> (base rate)</li>
-                <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x bonus</li>
-                <li>• <strong>20 Achievements</strong> to unlock</li>
-                <li>• <strong>Themed snakes:</strong> Gold, Silver, Red, Green, Blue, Orange</li>
-                <li>• <strong>Cheese teleportation</strong> mechanic active</li>
-              </ul>
-            </div>
-            <div class="bg-green-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-green-300 mb-2">🏆 Real Benefits</h4>
-              <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• ✅ Earn real $DSPOINC points</li>
-                <li>• ✅ Track 20 achievements in profile</li>
-                <li>• ✅ All-time stats across seasons</li>
-                <li>• ✅ Role-based visual themes</li>
-                <li>• 🎮 Season 7 leaderboards active</li>
-              </ul>
-            </div>
-            <div class="mt-4">
-              <a href="profile.html" class="inline-block bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                🎮 Play Snake Now
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Space Invaders Achievements -->
-        <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500/50">
-          <div class="text-5xl mb-4">👾</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-4">Space Cheese Invaders</h3>
-          <div class="space-y-3 text-sm">
-            <div class="bg-purple-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-purple-300 mb-2">✅ Active Features</h4>
-              <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• <strong>1 DSPOINC per invader</strong> (base rate)</li>
-                <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x bonus</li>
-                <li>• <strong>28 Achievements</strong> to unlock</li>
-                <li>• <strong>Boss battles</strong> with power-ups</li>
-                <li>• <strong>Themed frames:</strong> Gold, Silver, Red, Green, Blue, Orange</li>
-              </ul>
-            </div>
-            <div class="bg-purple-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-purple-300 mb-2">🏆 Real Benefits</h4>
-              <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• ✅ Earn real $DSPOINC points</li>
-                <li>• ✅ Track 28 achievements in profile</li>
-                <li>• ✅ All-time stats across seasons</li>
-                <li>• ✅ Role-based visual themes</li>
-                <li>• 🎮 Season 7 leaderboards active</li>
-              </ul>
-            </div>
-            <div class="mt-4">
-              <a href="space-cheese-invaders.html" class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                🎮 Play Space Invaders Now
-              </a>
-            </div>
-          </div>
-        </div>
-
-
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 🎮 How to Earn Roles -->
-  <section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl md:text-5xl font-bold text-purple-400 mb-4">
-          🎮 How to Earn Roles
-        </h2>
-        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-          Multiple paths to unlock your potential in Narrrf's World
-        </p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        
-        <!-- Gaming Path -->
-        <div class="role-card rounded-2xl p-6 text-center">
-          <div class="text-4xl mb-4">🎮</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-4">Gaming Excellence</h3>
-          <ul class="text-left text-gray-300 space-y-2">
-            <li>• Win Tetris tournaments</li>
-            <li>• Master Snake challenges</li>
-            <li>• Complete Cheese Hunt missions</li>
-            <li>• Dominate Discord races</li>
-            <li>• Achieve high scores</li>
-          </ul>
-        </div>
-
-        <!-- Community Path -->
-        <div class="role-card rounded-2xl p-6 text-center">
-          <div class="text-4xl mb-4">🤝</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-4">Community Engagement</h3>
-          <ul class="text-left text-gray-300 space-y-2">
-            <li>• Active Discord participation</li>
-            <li>• Help new community members</li>
-            <li>• Contribute to discussions</li>
-            <li>• Attend community events</li>
-            <li>• Share valuable insights</li>
-          </ul>
-        </div>
-
-        <!-- NFT Path -->
-        <div class="role-card rounded-2xl p-6 text-center">
-          <div class="text-4xl mb-4">🎨</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-4">NFT Ownership</h3>
-          <ul class="text-left text-gray-300 space-y-2">
-            <li>• Hold Genesis NFTs</li>
-            <li>• Collect rare traits</li>
-            <li>• Participate in mints</li>
-            <li>• Support community projects</li>
-            <li>• Long-term holding</li>
-          </ul>
-        </div>
-
-        <!-- Poker Path -->
-        <div class="role-card rounded-2xl p-6 text-center">
-          <div class="text-4xl mb-4">🃏</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-4">Poker Excellence</h3>
-          <ul class="text-left text-gray-300 space-y-2">
-            <li>• Join ClubGG (ID: 821719)</li>
-            <li>• Win poker tournaments</li>
-            <li>• Build reputation</li>
-            <li>• Mentor new players</li>
-            <li>• Consistent performance</li>
-          </ul>
-        </div>
-
-        <!-- Alpha Path -->
-        <div class="role-card rounded-2xl p-6 text-center">
-          <div class="text-4xl mb-4">🔐</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-4">Alpha Contribution</h3>
-          <ul class="text-left text-gray-300 space-y-2">
-            <li>• Share valuable insights</li>
-            <li>• Post in #alpha-lab</li>
-            <li>• Contribute signals</li>
-            <li>• Help community research</li>
-            <li>• Build knowledge base</li>
-          </ul>
-        </div>
-
-        <!-- Special Events -->
-        <div class="role-card rounded-2xl p-6 text-center">
-          <div class="text-4xl mb-4">🎉</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-4">Special Events</h3>
-          <ul class="text-left text-gray-300 space-y-2">
-            <li>• Friday community games</li>
-            <li>• Seasonal tournaments</li>
-            <li>• Community challenges</li>
-            <li>• Milestone celebrations</li>
-            <li>• Exclusive raffles</li>
-    </ul>
-        </div>
-
-      </div>
-  </div>
-</section>
-
-  <!-- 🗺️ Project Roadmap -->
-  <section id="roadmap" class="relative z-10 py-16 px-4 md:px-6">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
-          🗺️ Project Roadmap
-        </h2>
-        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-          The future of Narrrf's World - where we're going and what's coming next
-    </p>
-  </div>
-
-      <div class="space-y-8">
-        
-        <!-- Phase 1: Foundation (Completed) -->
-        <div class="bg-gray-800/90 rounded-xl p-6 shadow border-l-4 border-green-500">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-2xl font-bold text-green-400">Phase 1: Foundation</h3>
-            <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">✅ COMPLETED</span>
-          </div>
-          <p class="text-gray-200 mb-4">Core infrastructure and basic role system established</p>
-          <ul class="text-gray-300 space-y-2">
-            <li>• Discord bot integration with role management</li>
-            <li>• Basic trophy system and role visualization</li>
-            <li>• Community foundation and initial user base</li>
-            <li>• Basic gaming infrastructure (Tetris, Snake, Cheese Hunt)</li>
-            <li>• NFT collection launch and minting system</li>
-          </ul>
-        </div>
-
-        <!-- Phase 2: Expansion (In Progress) -->
-        <div class="bg-gray-800/90 rounded-xl p-6 shadow border-l-4 border-yellow-500">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-2xl font-bold text-yellow-400">Phase 2: Expansion</h3>
-            <span class="bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-bold">🔄 IN PROGRESS</span>
-          </div>
-          <p class="text-gray-200 mb-4">Enhanced gaming experience and advanced role system</p>
-          <ul class="text-gray-300 space-y-2">
-            <li>• ✅ Advanced trophy system with dynamic rewards (LIVE)</li>
-            <li>• ✅ Enhanced Discord race system and leaderboards (LIVE)</li>
-            <li>• ✅ Role-based multipliers (1.1x - 2.0x) across all games (LIVE)</li>
-            <li>• ✅ 73+ achievements system (Tetris 25, Snake 20, Space Invaders 28) (LIVE)</li>
-            <li>• 🚀 3D Riddle Game alpha testing (January 2026 - @holders & @vip)</li>
-            <li>• 🎮 Season 7 leaderboards active</li>
-          </ul>
-        </div>
-
-        <!-- Phase 3: Innovation (Future) -->
-        <div class="bg-gray-800/90 rounded-xl p-6 shadow border-l-4 border-blue-500">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-2xl font-bold text-blue-400">Phase 3: Innovation</h3>
-            <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold">🔮 FUTURE</span>
-          </div>
-          <p class="text-gray-200 mb-4">Cutting-edge features and ecosystem expansion</p>
-          <ul class="text-gray-300 space-y-2">
-            <li>• AI-powered role recommendations and matching</li>
-            <li>• Advanced staking and DeFi integration</li>
-            <li>• Cross-chain NFT bridges and interoperability</li>
-            <li>• Virtual reality gaming experiences</li>
-            <li>• Global tournament series and championships</li>
-          </ul>
-        </div>
-
-        <!-- Phase 4: Metaverse (Future) with Investor Mouse -->
-        <div class="bg-gray-800/90 rounded-xl p-6 shadow border-l-4 border-purple-500 flex flex-col md:flex-row items-center gap-6">
-          
-          <!-- Text Content -->
-          <div class="flex-1">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-2xl font-bold text-purple-400">Phase 4: Metaverse</h3>
-              <span class="bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-bold">🚀 FUTURE</span>
-            </div>
-            <p class="text-gray-200 mb-4">Full metaverse integration and global dominance</p>
-            <ul class="text-gray-300 space-y-2">
-              <li>• Full 3D metaverse with virtual real estate</li>
-              <li>• Advanced AI NPCs and dynamic storytelling</li>
-              <li>• Global partnerships and brand integrations</li>
-              <li>• Advanced governance and DAO structures</li>
-              <li>• Cross-platform gaming and social experiences</li>
+      <!-- Snake Achievements -->
+      <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-green-900/50 to-emerald-900/50 border-2 border-green-500/50">
+        <div class="text-5xl mb-4">🐍</div>
+        <h3 class="text-xl font-bold text-green-400 mb-4">Snake DSPOINC</h3>
+        <div class="space-y-3 text-sm">
+          <div class="bg-green-900/30 rounded-lg p-3">
+            <h4 class="font-semibold text-green-300 mb-2">✅ Live Features</h4>
+            <ul class="text-gray-300 space-y-1 text-xs">
+              <li>• <strong>10 DSPOINC per cheese</strong> (base rate)</li>
+              <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x</li>
+              <li>• <strong>20 achievements</strong> to unlock</li>
+              <li>• <strong>Themed snakes</strong> by role and status</li>
+              <li>• <strong>Cheese teleportation</strong> mechanic active</li>
             </ul>
           </div>
-
-          <!-- 🐭 Investor Mouse -->
-          <div class="relative z-10">
-            <div class="absolute inset-0 w-full h-full blur-xl opacity-20 rounded-full bg-yellow-200 -z-10"></div>
-            <img src="img/investor-mouse1.png" alt="Investor Mouse"
-                 class="w-32 md:w-40 hover:scale-105 transition-transform duration-300 drop-shadow-xl investor-glow"
-                 title="The future is made of cheese & business." />
+          <div class="bg-green-900/30 rounded-lg p-3">
+            <h4 class="font-semibold text-green-300 mb-2">🏆 Progression Value</h4>
+            <ul class="text-gray-300 space-y-1 text-xs">
+              <li>• ✅ Earn live DSPOINC rewards</li>
+              <li>• ✅ Track achievements in profile</li>
+              <li>• ✅ All-time stats across seasons</li>
+              <li>• ✅ Active Season 9 leaderboards</li>
+            </ul>
           </div>
-
-        </div>
-
-        <!-- Link to Detailed Whitepaper -->
-        <div class="bg-gradient-to-r from-yellow-900/50 to-orange-900/50 rounded-xl border border-yellow-500/30 p-6 text-center">
-          <h3 class="text-xl font-bold text-yellow-200 mb-2">📜 Want More Details?</h3>
-          <p class="text-yellow-100 mb-4">Explore our comprehensive roadmap to 2030 and beyond</p>
-          <a href="whitepaper-pro.html" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-            🚀 Read Full Whitepaper
-          </a>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- 🔥 Lab Flask + Bubbles (Bottom Right Corner) -->
-    <div class="absolute bottom-0 right-4 z-[1] pointer-events-none">
-      <div class="w-40 h-40 bg-pink-300 opacity-20 rounded-full blur-2xl absolute bottom-0 right-0"></div>
-      <div class="relative bottom-2">
-        <svg width="80" height="120" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z"
-                fill="#f472b6" stroke="#000" stroke-width="2" />
-        </svg>
-        <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div class="w-3 h-3 bg-pink-400 rounded-full blur-sm animate-lab-bubble absolute" style="left:-10px"></div>
-          <div class="w-4 h-4 bg-purple-400 rounded-full blur-md animate-lab-bubble absolute delay-1000" style="left:10px"></div>
-          <div class="w-2.5 h-2.5 bg-lime-300 rounded-full blur-sm animate-lab-bubble absolute delay-2000" style="left:0px"></div>
+          <div class="mt-4">
+            <a href="profile.html" class="inline-block bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+              🎮 Play Snake Now
+            </a>
+          </div>
         </div>
       </div>
-    </div>
 
+      <!-- Space Invaders Achievements -->
+      <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500/50">
+        <div class="text-5xl mb-4">👾</div>
+        <h3 class="text-xl font-bold text-purple-400 mb-4">Space Cheese Invaders</h3>
+        <div class="space-y-3 text-sm">
+          <div class="bg-purple-900/30 rounded-lg p-3">
+            <h4 class="font-semibold text-purple-300 mb-2">✅ Live Features</h4>
+            <ul class="text-gray-300 space-y-1 text-xs">
+              <li>• <strong>1 DSPOINC per invader</strong> (base rate)</li>
+              <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x</li>
+              <li>• <strong>28 achievements</strong> to unlock</li>
+              <li>• <strong>Boss battles</strong> and power-ups</li>
+              <li>• <strong>Role-based themes</strong> and frames</li>
+            </ul>
+          </div>
+          <div class="bg-purple-900/30 rounded-lg p-3">
+            <h4 class="font-semibold text-purple-300 mb-2">🏆 Progression Value</h4>
+            <ul class="text-gray-300 space-y-1 text-xs">
+              <li>• ✅ Earn live DSPOINC rewards</li>
+              <li>• ✅ Track achievements in profile</li>
+              <li>• ✅ All-time stats across seasons</li>
+              <li>• ✅ Active Season 9 competition layer</li>
+            </ul>
+          </div>
+          <div class="mt-4">
+            <a href="space-cheese-invaders.html" class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+              🎮 Play Space Invaders Now
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </section>
 
-  <!-- 🎯 Current Season & Events -->
-  <section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-pink-900/30 to-red-900/30">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl md:text-5xl font-bold text-pink-400 mb-4">
-          🎯 Current Season & Events
-        </h2>
-        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-          What's happening right now in Narrrf's World
-        </p>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-8">
-        
-        <!-- Current Season -->
-        <div class="role-card rounded-2xl p-6">
-          <h3 class="text-2xl font-bold text-green-400 mb-4">🎮 Season 7 RUNNING 🎮</h3>
-          <div class="space-y-4">
-            <div class="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
-              <h4 class="font-semibold text-green-300 mb-2">🎮 Season Status</h4>
-              <ul class="text-gray-300 text-sm space-y-1">
-                <li>• 🎮 Season 7 RUNNING - Play now and compete for the top spots!</li>
-                <li>• 🏆 Active Leaderboards - Fresh leaderboards active across all games!</li>
-                <li>• ✅ All 6 games integrated (including Cheese Rumble)</li>
-                <li>• ✅ Role multipliers active (1.1x - 2.0x)</li>
-                <li>• ✅ Achievement system fully operational</li>
-              </ul>
-            </div>
-            <div class="bg-green-900/30 rounded-lg p-4">
-              <h4 class="font-semibold text-green-300 mb-2">🎮 Coming Soon</h4>
-              <ul class="text-gray-300 text-sm space-y-1">
-                <li>• 6 Games: Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble</li>
-                <li>• Role-based multipliers across all games</li>
-                <li>• 73+ achievements to unlock (25 Tetris, 20 Snake, 28 Space Invaders)</li>
-                <li>• 🎮 Season 7 leaderboards starting soon</li>
-                <li>• Profile pages with complete stats</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- Upcoming Events -->
-        <div class="role-card rounded-2xl p-6">
-          <h3 class="text-2xl font-bold text-pink-400 mb-4">📅 Current Events & Plans</h3>
-          <div class="space-y-4">
-            <div class="bg-pink-900/30 rounded-lg p-4 border border-pink-500/30">
-              <h4 class="font-semibold text-pink-300 mb-2">🎄 December 2025 - Christmas Events</h4>
-              <ul class="text-gray-300 text-sm space-y-1">
-                <li>• ✅ <strong>2 Active Giveaways:</strong> Holders Vault + Public Giveaway</li>
-                <li>• ✅ <strong>Christmas Theme:</strong> Bingo.html festive mode active</li>
-                <li>• ✅ <strong>Golden Baboons Bingo:</strong> Thursday events</li>
-                <li>• ✅ <strong>Cheese Rumble:</strong> Poker Friday + Cheese Games</li>
-                <li>• 📅 <strong>Last Bingo Event:</strong> December 18th</li>
-              </ul>
-            </div>
-            <div class="bg-purple-900/30 rounded-lg p-4">
-              <h4 class="font-semibold text-purple-300 mb-2">🚀 Q1 2026 - Alpha Testing Coming!</h4>
-              <ul class="text-gray-300 text-sm space-y-1">
-                <li>• 🎮 <strong>3D Riddle Game:</strong> Level 1 - The Cheese Temple (6 levels)</li>
-                <li>• 🔐 <strong>Alpha Access:</strong> @holders & @vip only (January 2026)</li>
-                <li>• ✅ <strong>Systems Ready:</strong> Phoenix Boss, Chest System, Mouse Climbing</li>
-                <li>• ✅ <strong>Infrastructure:</strong> Production-ready, optimized, tested</li>
-                <li>• 📝 <strong>Focus:</strong> Gameplay testing, bug fixes, community feedback</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-</section>
-
-  <!-- 🔗 Call to Action -->
-  <section class="relative z-10 py-16 px-4 md:px-6 text-center">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-6">
-        🚀 Ready to Start Your Journey?
+<!-- 🎮 How to Earn Roles -->
+<section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-bold text-purple-400 mb-4">
+        🎮 How to Earn Roles
       </h2>
-      <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-        Join Narrrf's World today and begin collecting your trophies. Every role is a step toward greatness.
+      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+        There are multiple real paths to role progression in Narrrf’s World — through gameplay, ownership, contribution, and community value.
       </p>
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="mint.html" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-          🎨 Mint Your NFT
-        </a>
-        <a href="<?php echo $discord_url; ?>" target="_blank" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-          🎮 Join Discord
-        </a>
-        <a href="profile.html" class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-          👤 View Profile
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      
+      <!-- Gaming Path -->
+      <div class="role-card rounded-2xl p-6 text-center">
+        <div class="text-4xl mb-4">🎮</div>
+        <h3 class="text-xl font-bold text-purple-400 mb-4">Gaming Excellence</h3>
+        <ul class="text-left text-gray-300 space-y-2">
+          <li>• Compete in live games and leaderboards</li>
+          <li>• Unlock achievements and score milestones</li>
+          <li>• Win tournaments and seasonal challenges</li>
+          <li>• Build a stronger all-time profile record</li>
+          <li>• Earn status through consistent performance</li>
+        </ul>
+      </div>
+
+      <!-- Community Path -->
+      <div class="role-card rounded-2xl p-6 text-center">
+        <div class="text-4xl mb-4">🤝</div>
+        <h3 class="text-xl font-bold text-purple-400 mb-4">Community Engagement</h3>
+        <ul class="text-left text-gray-300 space-y-2">
+          <li>• Be active and helpful in Discord</li>
+          <li>• Support new community members</li>
+          <li>• Participate in discussions and events</li>
+          <li>• Contribute useful ideas and feedback</li>
+          <li>• Strengthen the ecosystem socially</li>
+        </ul>
+      </div>
+
+      <!-- NFT Path -->
+      <div class="role-card rounded-2xl p-6 text-center">
+        <div class="text-4xl mb-4">🎨</div>
+        <h3 class="text-xl font-bold text-purple-400 mb-4">NFT Ownership</h3>
+        <ul class="text-left text-gray-300 space-y-2">
+          <li>• Hold Genesis NFTs</li>
+          <li>• Verify wallet ownership</li>
+          <li>• Unlock Holder or VIP Holder roles</li>
+          <li>• Gain access to the Genesis Lab</li>
+          <li>• Build long-term progression power</li>
+        </ul>
+      </div>
+
+      <!-- Poker Path -->
+      <div class="role-card rounded-2xl p-6 text-center">
+        <div class="text-4xl mb-4">🃏</div>
+        <h3 class="text-xl font-bold text-purple-400 mb-4">Poker Excellence</h3>
+        <ul class="text-left text-gray-300 space-y-2">
+          <li>• Join ClubGG events and tables</li>
+          <li>• Build a winning reputation</li>
+          <li>• Participate in poker-focused community nights</li>
+          <li>• Earn recognition through consistency</li>
+          <li>• Strengthen your status in the ecosystem</li>
+        </ul>
+      </div>
+
+      <!-- Alpha Path -->
+      <div class="role-card rounded-2xl p-6 text-center">
+        <div class="text-4xl mb-4">🔐</div>
+        <h3 class="text-xl font-bold text-purple-400 mb-4">Testing & Contribution</h3>
+        <ul class="text-left text-gray-300 space-y-2">
+          <li>• Participate in live feature testing</li>
+          <li>• Give high-quality bug feedback</li>
+          <li>• Help refine new systems like Lab and profile tools</li>
+          <li>• Contribute insight during rollout phases</li>
+          <li>• Support ecosystem hardening</li>
+        </ul>
+      </div>
+
+      <!-- Events -->
+      <div class="role-card rounded-2xl p-6 text-center">
+        <div class="text-4xl mb-4">🎉</div>
+        <h3 class="text-xl font-bold text-purple-400 mb-4">Events & Participation</h3>
+        <ul class="text-left text-gray-300 space-y-2">
+          <li>• Join Friday community events</li>
+          <li>• Play in seasonal competitions</li>
+          <li>• Participate in raffles and milestone events</li>
+          <li>• Be present during ecosystem launches</li>
+          <li>• Grow your visibility in the community</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- 🗺️ Project Roadmap -->
+<section id="roadmap" class="relative z-10 py-16 px-4 md:px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
+        🗺️ Role System Roadmap
+      </h2>
+      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+        The role system is evolving from Discord status into a full identity, progression, and utility layer.
+      </p>
+    </div>
+
+    <div class="space-y-8">
+      
+      <!-- Phase 1 -->
+      <div class="bg-gray-800/90 rounded-xl p-6 shadow border-l-4 border-green-500">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-2xl font-bold text-green-400">Phase 1: Foundation</h3>
+          <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">✅ COMPLETED</span>
+        </div>
+        <p class="text-gray-200 mb-4">The base role structure and trophy identity layer were established.</p>
+        <ul class="text-gray-300 space-y-2">
+          <li>• Discord role system introduced</li>
+          <li>• Trophy visuals and role presentation created</li>
+          <li>• Early gaming infrastructure launched</li>
+          <li>• Basic NFT-linked role direction established</li>
+          <li>• Community and reward logic began forming</li>
+        </ul>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="bg-gray-800/90 rounded-xl p-6 shadow border-l-4 border-yellow-500">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-2xl font-bold text-yellow-400">Phase 2: Live Utility</h3>
+          <span class="bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-bold">✅ LIVE</span>
+        </div>
+        <p class="text-gray-200 mb-4">Roles now have real utility in the live Season 9 ecosystem.</p>
+        <ul class="text-gray-300 space-y-2">
+          <li>• ✅ Role-based multipliers (1.1x - 2.0x) active across games</li>
+          <li>• ✅ Achievement systems active and tracked in profile</li>
+          <li>• ✅ Verified holder roles linked to NFT ownership</li>
+          <li>• ✅ Profile system reflects identity and progression state</li>
+          <li>• ✅ Role value now visible in live gameplay and reward loops</li>
+        </ul>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="bg-gray-800/90 rounded-xl p-6 shadow border-l-4 border-blue-500">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-2xl font-bold text-blue-400">Phase 3: Deeper Integration</h3>
+          <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold">🔄 EXPANDING</span>
+        </div>
+        <p class="text-gray-200 mb-4">Roles are moving toward deeper gameplay, profile, and progression integration.</p>
+        <ul class="text-gray-300 space-y-2">
+          <li>• More role-based gameplay identity across systems</li>
+          <li>• More role use inside profile and progression views</li>
+          <li>• Connection to Lab, missions, and future unlock systems</li>
+          <li>• Better visibility of role value across the ecosystem</li>
+          <li>• More advanced status / access layers over time</li>
+        </ul>
+      </div>
+
+      <!-- Phase 4 -->
+      <div class="bg-gray-800/90 rounded-xl p-6 shadow border-l-4 border-purple-500 flex flex-col md:flex-row items-center gap-6">
+        
+        <div class="flex-1">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-2xl font-bold text-purple-400">Phase 4: Full Identity Layer</h3>
+            <span class="bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-bold">🚀 FUTURE</span>
+          </div>
+          <p class="text-gray-200 mb-4">Long-term, roles become part of a broader persistent identity and progression system.</p>
+          <ul class="text-gray-300 space-y-2">
+            <li>• Role influence on future world systems</li>
+            <li>• More exclusive access layers and ecosystem logic</li>
+            <li>• More advanced event / quest / progression tie-ins</li>
+            <li>• Stronger player recognition across all systems</li>
+            <li>• Full role identity as part of the live Web3 gaming engine</li>
+          </ul>
+        </div>
+
+        <div class="relative z-10">
+          <div class="absolute inset-0 w-full h-full blur-xl opacity-20 rounded-full bg-yellow-200 -z-10"></div>
+          <img src="img/investor-mouse1.png" alt="Investor Mouse"
+               class="w-32 md:w-40 hover:scale-105 transition-transform duration-300 drop-shadow-xl investor-glow"
+               title="Identity, roles, and progression grow together." />
+        </div>
+
+      </div>
+
+      <!-- Link to Whitepaper -->
+      <div class="bg-gradient-to-r from-yellow-900/50 to-orange-900/50 rounded-xl border border-yellow-500/30 p-6 text-center">
+        <h3 class="text-xl font-bold text-yellow-200 mb-2">📜 Want More Details?</h3>
+        <p class="text-yellow-100 mb-4">Explore the broader ecosystem roadmap, progression systems, and long-term vision.</p>
+        <a href="whitepaper-pro.html" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+          🚀 Read Full Whitepaper
         </a>
       </div>
+
     </div>
-  </section>
+  </div>
+
+  <!-- 🔥 Lab Flask + Bubbles (Bottom Right Corner) -->
+  <div class="absolute bottom-0 right-4 z-[1] pointer-events-none">
+    <div class="w-40 h-40 bg-pink-300 opacity-20 rounded-full blur-2xl absolute bottom-0 right-0"></div>
+    <div class="relative bottom-2">
+      <svg width="80" height="120" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z"
+              fill="#f472b6" stroke="#000" stroke-width="2" />
+      </svg>
+      <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <div class="w-3 h-3 bg-pink-400 rounded-full blur-sm animate-lab-bubble absolute" style="left:-10px"></div>
+        <div class="w-4 h-4 bg-purple-400 rounded-full blur-md animate-lab-bubble absolute delay-1000" style="left:10px"></div>
+        <div class="w-2.5 h-2.5 bg-lime-300 rounded-full blur-sm animate-lab-bubble absolute delay-2000" style="left:0px"></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- 🎯 Current Season & Events -->
+<section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-pink-900/30 to-red-900/30">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-bold text-pink-400 mb-4">
+        🎯 Current Season & Live Status
+      </h2>
+      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+        What roles now mean inside the live Season 9 ecosystem.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      
+      <!-- Current Season -->
+      <div class="role-card rounded-2xl p-6">
+        <h3 class="text-2xl font-bold text-green-400 mb-4">🎮 Season 9 LIVE 🎮</h3>
+        <div class="space-y-4">
+          <div class="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
+            <h4 class="font-semibold text-green-300 mb-2">🎮 Current Role Utility</h4>
+            <ul class="text-gray-300 text-sm space-y-1">
+              <li>• ✅ Season 9 is live and active</li>
+              <li>• ✅ Role multipliers affect game rewards now</li>
+              <li>• ✅ Holder identity connects to verification and profile</li>
+              <li>• ✅ Role value is reflected across live ecosystem pages</li>
+              <li>• ✅ Leaderboards and profiles support long-term recognition</li>
+            </ul>
+          </div>
+          <div class="bg-green-900/30 rounded-lg p-4">
+            <h4 class="font-semibold text-green-300 mb-2">🧬 Role Direction</h4>
+            <ul class="text-gray-300 text-sm space-y-1">
+              <li>• Roles now reinforce identity, not just access</li>
+              <li>• Roles matter across games, staking, and profile views</li>
+              <li>• Holder roles support Genesis Lab access</li>
+              <li>• Future systems will deepen role-based recognition</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Events -->
+      <div class="role-card rounded-2xl p-6">
+        <h3 class="text-2xl font-bold text-pink-400 mb-4">📅 Current Ecosystem Momentum</h3>
+        <div class="space-y-4">
+          <div class="bg-pink-900/30 rounded-lg p-4 border border-pink-500/30">
+            <h4 class="font-semibold text-pink-300 mb-2">🧬 Active Growth Areas</h4>
+            <ul class="text-gray-300 text-sm space-y-1">
+              <li>• Genesis Lab progression expansion</li>
+              <li>• Profile and identity layer growth</li>
+              <li>• Ongoing admin restoration and observability</li>
+              <li>• Continued community events and reward loops</li>
+              <li>• More gameplay depth across the ecosystem</li>
+            </ul>
+          </div>
+          <div class="bg-purple-900/30 rounded-lg p-4">
+            <h4 class="font-semibold text-purple-300 mb-2">🚀 Forward Direction</h4>
+            <ul class="text-gray-300 text-sm space-y-1">
+              <li>• Roles becoming more valuable through system integration</li>
+              <li>• More progression-linked holder benefits over time</li>
+              <li>• 3D world and future feature alignment ahead</li>
+              <li>• Stronger identity + access + reward logic</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- 🔗 Call to Action -->
+<section class="relative z-10 py-16 px-4 md:px-6 text-center">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-6">
+      🚀 Ready to Grow Your Role?
+    </h2>
+    <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+      Roles in Narrrf’s World are now tied to real gameplay, real ownership, and real progression. Step into the ecosystem and build your status.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="mint.html" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+        🎨 Mint Genesis NFT
+      </a>
+      <a href="<?php echo $discord_url; ?>" target="_blank" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+        🎮 Join Discord
+      </a>
+      <a href="profile.html" class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+        👤 Open Profile
+      </a>
+      <a href="lab.html" class="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+        🧬 Enter Lab
+      </a>
+    </div>
+  </div>
+</section>
 
 <!-- Footer -->
   <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20">

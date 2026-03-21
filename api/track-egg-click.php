@@ -249,7 +249,6 @@ try {
 }
 
 
-
 // Function to create Discord ticket
 function createDiscordTicket($userWallet, $quest, $eggProgressLabel, $claim_id) {
     try {

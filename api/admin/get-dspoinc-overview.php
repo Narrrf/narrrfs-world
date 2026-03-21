@@ -114,7 +114,7 @@ function fetchAllRows(PDO $pdo, string $sql, array $params = []): array {
     );
 
     // 5) Holder balances
-    $holderRows = fetchAllRows(
+$holderRows = fetchAllRows(
     $pdo,
     "SELECT
         s.user_id,
@@ -127,21 +127,21 @@ function fetchAllRows(PDO $pdo, string $sql, array $params = []): array {
      GROUP BY s.user_id, u.discord_id, u.username
      HAVING balance > 0
      ORDER BY balance DESC"
-    );
+);
 
-    $fundedUsers = count($holderRows);
+$fundedUsers = count($holderRows);
 
-    $averageBalance = 0;
-    if ($fundedUsers > 0) {
-        $sumBalances = 0;
-        foreach ($holderRows as $row) {
-            $sumBalances += (int) $row['balance'];
-        }
-        $averageBalance = (int) round($sumBalances / $fundedUsers);
+$averageBalance = 0;
+if ($fundedUsers > 0) {
+    $sumBalances = 0;
+    foreach ($holderRows as $row) {
+        $sumBalances += (int) $row['balance'];
     }
+    $averageBalance = (int) round($sumBalances / $fundedUsers);
+}
 
-    $topHolders = [];
-    foreach (array_slice($holderRows, 0, 10) as $row) {
+$topHolders = [];
+foreach (array_slice($holderRows, 0, 10) as $row) {
     $resolvedUsername = $row['matched_username'];
 
     if ($resolvedUsername === null || trim($resolvedUsername) === '') {
@@ -154,7 +154,7 @@ function fetchAllRows(PDO $pdo, string $sql, array $params = []): array {
         'username' => $resolvedUsername,
         'balance' => (int) $row['balance']
     ];
-    }
+}
 
     $topHolderBalance = $topHolders[0]['balance'] ?? 0;
 
