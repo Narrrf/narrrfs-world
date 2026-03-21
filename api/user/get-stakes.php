@@ -221,14 +221,16 @@ foreach ($all_stakes as $stake) {
         error_log("ℹ️ Score adjustment entry already exists for stake #{$stake['id']}");
     }
 }
-
 // Process stakes and calculate days remaining
 $active_stakes = [];
 $completed_stakes = [];
 $cancelled_stakes = [];
 $claimable_rewards = [];
 
-foreach ($all_stakes as $stake) {
+$now_timestamp = time();
+$completedStatusUpdated = false;
+
+foreach ($all_stakes as &$stake) {
     $stake_data = [
         'stake_id' => (int)$stake['id'],
         'amount' => (int)$stake['amount'],
@@ -240,34 +242,58 @@ foreach ($all_stakes as $stake) {
         'status' => $stake['status'],
         'reward_paid' => (int)($stake['reward_paid'] ?? 0),
         'completed_at' => $stake['completed_at'] ?? null,
-        // Include unstake fields if they exist
         'cancelled_at' => $stake['cancelled_at'] ?? null,
         'penalty_amount' => isset($stake['penalty_amount']) ? (int)$stake['penalty_amount'] : null,
         'returned_amount' => isset($stake['returned_amount']) ? (int)$stake['returned_amount'] : null,
         'unstake_reason' => $stake['unstake_reason'] ?? null
     ];
 
+    $unfreeze_timestamp = strtotime($stake['unfreeze_at']);
+    $frozen_timestamp = strtotime($stake['frozen_at']);
+
+    // ✅ AUTO-TRANSITION: mature active stakes become completed
+    if ($stake['status'] === 'active' && $unfreeze_timestamp <= $now_timestamp) {
+        $completed_at = $stake['completed_at'] ?: date('Y-m-d H:i:s', $unfreeze_timestamp);
+
+        try {
+            $updateStmt = $pdo->prepare("
+                UPDATE tbl_dspoinc_stakes
+                SET status = 'completed',
+                    completed_at = COALESCE(completed_at, ?)
+                WHERE id = ? AND status = 'active'
+            ");
+            $updateStmt->execute([$completed_at, $stake['id']]);
+
+            $stake['status'] = 'completed';
+            $stake['completed_at'] = $completed_at;
+            $stake_data['status'] = 'completed';
+            $stake_data['completed_at'] = $completed_at;
+
+            $completedStatusUpdated = true;
+
+            error_log("✅ Auto-completed matured stake #{$stake['id']} for user {$user_id}");
+        } catch (Exception $e) {
+            error_log("❌ Failed to auto-complete matured stake #{$stake['id']}: " . $e->getMessage());
+        }
+    }
+
     if ($stake['status'] === 'active') {
-        // Calculate days remaining
-        $unfreeze_timestamp = strtotime($stake['unfreeze_at']);
-        $now_timestamp = time();
         $seconds_remaining = max(0, $unfreeze_timestamp - $now_timestamp);
         $days_remaining = (int)ceil($seconds_remaining / 86400);
-        
-        // Calculate progress percentage
-        $frozen_timestamp = strtotime($stake['frozen_at']);
-        $total_seconds = $unfreeze_timestamp - $frozen_timestamp;
-        $elapsed_seconds = $now_timestamp - $frozen_timestamp;
+
+        $total_seconds = max(1, $unfreeze_timestamp - $frozen_timestamp);
+        $elapsed_seconds = max(0, $now_timestamp - $frozen_timestamp);
         $progress_percentage = min(100, max(0, ($elapsed_seconds / $total_seconds) * 100));
 
         $stake_data['days_remaining'] = $days_remaining;
         $stake_data['progress_percentage'] = round($progress_percentage, 2);
+
         $active_stakes[] = $stake_data;
     } elseif ($stake['status'] === 'completed') {
-        $stake_data['total_received'] = (int)$stake['amount'] + (int)($stake['reward_paid'] ?? 0);
+        $stake_data['total_received'] = (int)$stake['amount'] + (int)$stake['expected_reward'];
         $completed_stakes[] = $stake_data;
-        
-        // Add to claimable rewards if reward hasn't been paid
+
+        // ✅ Claimable if completed and reward not paid yet
         if ((int)($stake['reward_paid'] ?? 0) === 0) {
             $claimable_rewards[] = $stake_data;
         }
@@ -275,6 +301,7 @@ foreach ($all_stakes as $stake) {
         $cancelled_stakes[] = $stake_data;
     }
 }
+unset($stake);
 
 json_response([
     'success' => true,
