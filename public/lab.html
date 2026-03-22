@@ -1193,6 +1193,219 @@ body::after {
     opacity: 0.18 !important;
   }
 }
+
+.trait-card-accordion {
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(10, 15, 30, 0.96));
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(2, 8, 23, 0.28);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.trait-card-accordion.expanded {
+  border-color: rgba(45, 212, 191, 0.42);
+  box-shadow: 0 16px 36px rgba(2, 8, 23, 0.38), 0 0 0 1px rgba(45, 212, 191, 0.12);
+}
+
+.trait-card-accordion.ready {
+  border-color: rgba(250, 204, 21, 0.35);
+}
+
+.trait-card-accordion.upgrading {
+  border-color: rgba(45, 212, 191, 0.35);
+}
+
+.trait-card-accordion.blocked {
+  border-color: rgba(248, 113, 113, 0.28);
+}
+
+.trait-card-toggle {
+  width: 100%;
+  display: block;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.trait-card-toggle-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 18px;
+}
+
+.trait-card-toggle-copy {
+  min-width: 0;
+}
+
+.trait-card-kicker {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.trait-card-title {
+  margin-top: 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.trait-card-toggle-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.trait-toggle-stat {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.65);
+  padding: 10px 12px;
+}
+
+.trait-toggle-stat-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.88);
+}
+
+.trait-toggle-stat-value {
+  display: block;
+  margin-top: 6px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.trait-card-toggle-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trait-toggle-chevron {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #e2e8f0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-pill.idle {
+  background: rgba(37, 99, 235, 0.16);
+  color: #bfdbfe;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+}
+
+.status-pill.upgrading {
+  background: rgba(16, 185, 129, 0.14);
+  color: #a7f3d0;
+  border: 1px solid rgba(45, 212, 191, 0.24);
+}
+
+.status-pill.ready {
+  background: rgba(250, 204, 21, 0.16);
+  color: #fde68a;
+  border: 1px solid rgba(250, 204, 21, 0.28);
+}
+
+.status-pill.blocked {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
+  border: 1px solid rgba(248, 113, 113, 0.24);
+}
+
+.trait-card-body {
+  padding: 0 18px 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.mini-progress-label {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.mini-progress-track {
+  margin-top: 8px;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  overflow: hidden;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.mini-progress-fill.idle {
+  background: rgba(96, 165, 250, 0.45);
+}
+
+.mini-progress-fill.upgrading {
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.92), rgba(59, 130, 246, 0.92));
+}
+
+.mini-progress-fill.ready {
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.95), rgba(16, 185, 129, 0.9));
+}
+
+.mini-progress-fill.blocked {
+  background: rgba(248, 113, 113, 0.5);
+}
+
+@media (max-width: 1024px) {
+  .trait-card-toggle-main {
+    grid-template-columns: 1fr;
+  }
+
+  .trait-card-toggle-side {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 640px) {
+  .trait-card-toggle-stats {
+    grid-template-columns: 1fr;
+  }
+}
 /* =========================================================
    ACTIVE TRAIT CHAMBER HIGHLIGHT
    Golden pulse for the currently running research card
@@ -1843,7 +2056,7 @@ body::after {
 
     <div class="viewer-grid mt-5">
       <div class="viewer-stage">
-        <div class="glass p-5 md:p-6 selected-stage-card">
+        <div id="selectedGenesisMouseCard" class="glass p-5 md:p-6 selected-stage-card">
           <div class="flex items-start justify-between gap-4">
             <div>
               <div class="section-title text-xl md:text-2xl"><span>🧪</span><span>Selected Genesis Mouse</span></div>
@@ -2040,7 +2253,8 @@ body::after {
       loading: false,
       actionInFlight: false,
       lastUpgradeSummary: null,
-      lastSuccessfulLoadAt: null
+      lastSuccessfulLoadAt: null,
+      expandedTraitKey: null
     };
 
 const el = {
@@ -2128,6 +2342,43 @@ const el = {
 function formatDateTime(value) {
   const date = parseLabUtcDate(value);
   return date ? date.toLocaleString() : '—';
+}
+
+/**
+ * Convert duration in hours into human readable words.
+ * Example: 24 → "24 hours", 48 → "2 days"
+ */
+function formatDurationWords(hours) {
+  const safeHours = Number(hours || 0);
+
+  if (!safeHours) return '0 hours';
+
+  if (safeHours < 24) {
+    return `${safeHours} hour${safeHours === 1 ? '' : 's'}`;
+  }
+
+  const days = safeHours / 24;
+
+  if (Number.isInteger(days)) {
+    return `${days} day${days === 1 ? '' : 's'}`;
+  }
+
+  return `${safeHours} hours`;
+}
+/**
+ * Convert milliseconds to readable remaining time.
+ */
+function formatRemainingLong(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m remaining`;
+  }
+
+  return `${minutes}m remaining`;
 }
 
     function formatDurationFromHours(hours) {
@@ -2723,6 +2974,30 @@ function mapUpgradeStatus(status, endsAt) {
       el.queueSummary.innerHTML = blocks.map(([l,v,h]) => `<div class="kv"><div class="flex items-baseline justify-between gap-3"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">${escapeHtml(l)}</div><div class="text-xl font-black">${escapeHtml(v)}</div></div><div class="mt-2 text-sm text-slate-300">${escapeHtml(h)}</div></div>`).join('');
     }
 
+    function getTraitAccordionKey(nft, trait) {
+  const tokenId = String(nft?.token_id || '').trim();
+  const traitType = String(trait?.trait_type || '').trim();
+  const traitValue = String(trait?.value || trait?.trait_value || '').trim();
+  return `${tokenId}__${traitType}__${traitValue}`;
+}
+
+function getExpandedTraitKey() {
+  return state.expandedTraitKey || null;
+}
+
+function setExpandedTraitKey(key) {
+  state.expandedTraitKey = key || null;
+}
+
+function toggleExpandedTraitKey(key) {
+  if (!key) {
+    state.expandedTraitKey = null;
+    return;
+  }
+
+  state.expandedTraitKey = state.expandedTraitKey === key ? null : key;
+}
+
     function renderSelectedTraitSummary() {
       if (!el.selectedTraitSummary) return;
 
@@ -2901,6 +3176,20 @@ function getPrimaryNftAction(summary) {
     return { label: 'View Research', className: 'warn' };
   }
   return { label: 'Open Lab', className: 'primary' };
+}
+
+function scrollToSelectedGenesisMouse() {
+  const selectedCard = document.getElementById('selectedGenesisMouseCard');
+  if (!selectedCard) return;
+
+  window.scrollTo({
+    top: Math.max(0, selectedCard.getBoundingClientRect().top + window.scrollY - 16),
+    behavior: 'smooth'
+  });
+
+  selectedCard.classList.remove('chamber-pulse');
+  void selectedCard.offsetWidth;
+  selectedCard.classList.add('chamber-pulse');
 }
 
 function scrollToTraitResearchChamber() {
@@ -3273,82 +3562,199 @@ function getTraitSnapshotLevelBadge(nft, trait) {
       `;
     }
 
-    function renderTraitGrid() {
-      const nft = state.selectedNft;
-      if (!nft) {
-        el.traitUpgradeInfo.innerHTML = 'Upgrade UI stays visible only after a verified Genesis mouse has been selected.';
-        el.traitGrid.innerHTML = '';
-        el.upgradeModeBadge.textContent = 'Waiting for verified Genesis mouse';
-        return;
-      }
+function renderTraitGrid() {
+  const nft = state.selectedNft;
+  if (!nft) {
+    el.traitUpgradeInfo.innerHTML = 'Upgrade UI stays visible only after a verified Genesis mouse has been selected.';
+    el.traitGrid.innerHTML = '';
+    el.upgradeModeBadge.textContent = 'Waiting for verified Genesis mouse';
+    setExpandedTraitKey(null);
+    return;
+  }
 
-      const traits = normalizeNftTraits(nft);
-      const activeUpgradeRow = getNftActiveUpgradeRow(nft);
-      const modeText = state.upgradeEndpointAvailable ? 'Live upgrade endpoint detected' : 'Read-safe mode: upgrade endpoints not yet confirmed';
-      el.upgradeModeBadge.textContent = modeText;
-      el.traitUpgradeInfo.innerHTML = `<div class="space-y-2"><div><strong class="text-cyan-300">Upgrade rules locked:</strong> exact trait value upgrades, Genesis only, one active upgrade per NFT, manual claim on finish, infinite levels with doubling duration.</div><div><strong class="text-cyan-300">Instant finish model:</strong> DSPOINC-based and intentionally more expensive than simple time scaling. This UI calculates a preview cost, but the backend remains source of truth.</div><div><strong class="text-cyan-300">Current page mode:</strong> ${escapeHtml(modeText)}.</div></div>`;
+  const traits = normalizeNftTraits(nft);
+  const activeUpgradeRow = getNftActiveUpgradeRow(nft);
+  const modeText = state.upgradeEndpointAvailable ? 'Live upgrade endpoint detected' : 'Read-safe mode: upgrade endpoints not yet confirmed';
+  el.upgradeModeBadge.textContent = modeText;
+  el.traitUpgradeInfo.innerHTML = `<div class="space-y-2"><div><strong class="text-cyan-300">Upgrade rules locked:</strong> exact trait value upgrades, Genesis only, one active upgrade per NFT, manual claim on finish, infinite levels with doubling duration.</div><div><strong class="text-cyan-300">Instant finish model:</strong> DSPOINC-based and intentionally more expensive than simple time scaling. This UI calculates a preview cost, but the backend remains source of truth.</div><div><strong class="text-cyan-300">Current page mode:</strong> ${escapeHtml(modeText)}.</div></div>`;
 
-      el.traitGrid.innerHTML = traits.map(trait => {
-        const row = getTraitUpgradeDisplayRow(nft, trait);
-        const currentLevel = Math.max(1, safeNumber(row.current_level, 1));
-        const nextLevel = currentLevel + 1;
-        const status = mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at);
-        const durationHours = calculateUpgradeDurationHours(currentLevel);
-        const endTime = row.upgrade_ends_at ? new Date(row.upgrade_ends_at).getTime() : 0;
-        const remainingMs = status === 'upgrading' ? Math.max(0, endTime - Date.now()) : 0;
-        const totalMs = durationHours * 3600000;
-        const elapsedMs = status === 'upgrading' ? Math.max(0, totalMs - remainingMs) : status === 'ready' ? totalMs : 0;
-        const progressPercent = totalMs > 0 ? Math.min(100, Math.round((elapsedMs / totalMs) * 100)) : 0;
-        const instantCost = status === 'upgrading' ? calculateInstantFinishCost(currentLevel, remainingMs) : 0;
-        const blocked = Boolean(activeUpgradeRow && !(String(activeUpgradeRow.trait_type) === String(row.trait_type) && String(activeUpgradeRow.trait_value) === String(row.trait_value)));
-        const canStart = !blocked && status === 'idle';
-        const canClaim = status === 'ready';
-        const canFinish = status === 'upgrading';
-        const statusClass = status === 'ready' ? 'ready' : status === 'upgrading' ? 'upgrading' : blocked ? 'blocked' : 'idle';
-        const statusText = status === 'ready' ? 'Ready to claim' : status === 'upgrading' ? 'Research active' : blocked ? 'Another trait is upgrading' : 'Idle';
+  if (!Array.isArray(traits) || !traits.length) {
+    el.traitGrid.innerHTML = `<div class="warnbox text-sm">No trait data was found for this selected Genesis mouse.</div>`;
+    setExpandedTraitKey(null);
+    return;
+  }
 
-        return `
-          <div class="card p-4">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-xs uppercase tracking-[0.18em] text-slate-400">${escapeHtml(trait.trait_type)}</div>
-                <div class="mt-1 text-xl font-bold leading-tight">${escapeHtml(trait.value)}</div>
-              </div>
-              <span class="pill ${statusClass}">${escapeHtml(statusText)}</span>
+  const validTraitKeys = new Set(traits.map(trait => getTraitAccordionKey(nft, trait)));
+  if (getExpandedTraitKey() && !validTraitKeys.has(getExpandedTraitKey())) {
+    setExpandedTraitKey(null);
+  }
+
+  el.traitGrid.innerHTML = traits.map(trait => {
+    const row = getTraitUpgradeDisplayRow(nft, trait);
+    const currentLevel = Math.max(1, safeNumber(row.current_level, 1));
+    const nextLevel = currentLevel + 1;
+    const status = mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at);
+    const durationHours = calculateUpgradeDurationHours(currentLevel);
+    const endTime = row.upgrade_ends_at ? new Date(row.upgrade_ends_at).getTime() : 0;
+    const remainingMs = status === 'upgrading' ? Math.max(0, endTime - Date.now()) : 0;
+    const totalMs = durationHours * 3600000;
+    const elapsedMs = status === 'upgrading'
+      ? Math.max(0, totalMs - remainingMs)
+      : status === 'ready'
+        ? totalMs
+        : 0;
+    const progressPercent = totalMs > 0 ? Math.min(100, Math.round((elapsedMs / totalMs) * 100)) : 0;
+    const instantCost = status === 'upgrading' ? calculateInstantFinishCost(currentLevel, remainingMs) : 0;
+
+    const blocked = Boolean(
+      activeUpgradeRow &&
+      !(
+        String(activeUpgradeRow.trait_type) === String(row.trait_type) &&
+        String(activeUpgradeRow.trait_value) === String(row.trait_value)
+      )
+    );
+
+    const canStart = !blocked && status === 'idle';
+    const canClaim = status === 'ready';
+    const canFinish = status === 'upgrading';
+
+    const statusClass = status === 'ready'
+      ? 'ready'
+      : status === 'upgrading'
+        ? 'upgrading'
+        : blocked
+          ? 'blocked'
+          : 'idle';
+
+    const statusText = blocked
+      ? 'Another trait is upgrading'
+      : status === 'ready'
+        ? 'Research complete'
+        : status === 'upgrading'
+          ? 'Research active'
+          : 'Ready to start';
+
+    const chamberNote = blocked
+      ? 'Another trait on this NFT is already upgrading. One active upgrade per NFT is enforced by design.'
+      : status === 'ready'
+        ? 'This trait is ready to claim. Claiming finalizes the new level for the current player.'
+        : status === 'upgrading'
+          ? `Finishes ${formatRemainingLong(remainingMs)}`
+          : `Next upgrade will end ${formatDurationWords(durationHours)} after start.`;
+
+    const progressLabel = status === 'upgrading'
+      ? `${progressPercent}%`
+      : status === 'ready'
+        ? 'Complete'
+        : 'Not started';
+
+    const traitKey = getTraitAccordionKey(nft, trait);
+    const isExpanded = getExpandedTraitKey() === traitKey;
+
+    return `
+      <div class="trait-card trait-card-accordion ${statusClass} ${isExpanded ? 'expanded' : 'collapsed'}">
+        <button
+          type="button"
+          class="trait-card-toggle"
+          data-trait-toggle="true"
+          data-trait-key="${escapeHtml(traitKey)}"
+          aria-expanded="${isExpanded ? 'true' : 'false'}"
+        >
+          <div class="trait-card-toggle-main">
+            <div class="trait-card-toggle-copy">
+              <div class="trait-card-kicker">${escapeHtml(row.trait_type || trait.trait_type || 'Trait')}</div>
+              <div class="trait-card-title">${escapeHtml(row.trait_value || trait.value || 'Unknown trait')}</div>
             </div>
 
-            <div class="mt-4 grid grid-cols-3 gap-3">
-              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Current</div><div class="mt-1 text-3xl font-black">${formatNumber(currentLevel)}</div></div>
-              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Next</div><div class="mt-1 text-3xl font-black">${formatNumber(nextLevel)}</div></div>
-              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Duration</div><div class="mt-2 text-2xl font-black">${escapeHtml(formatDurationFromHours(durationHours))}</div></div>
+            <div class="trait-card-toggle-stats">
+              <div class="trait-toggle-stat">
+                <span class="trait-toggle-stat-label">Current</span>
+                <span class="trait-toggle-stat-value">${formatNumber(currentLevel)}</span>
+              </div>
+              <div class="trait-toggle-stat">
+                <span class="trait-toggle-stat-label">Next</span>
+                <span class="trait-toggle-stat-value">${formatNumber(nextLevel)}</span>
+              </div>
+              <div class="trait-toggle-stat">
+                <span class="trait-toggle-stat-label">Duration</span>
+                <span class="trait-toggle-stat-value">${escapeHtml(formatDurationWords(durationHours))}</span>
+              </div>
             </div>
 
-            <div class="mt-4">
-              <div class="flex items-center justify-between gap-3 text-sm"><span class="text-slate-400">Progress</span><span class="text-slate-200">${status === 'upgrading' ? escapeHtml(formatRemainingMs(remainingMs)) : status === 'ready' ? 'Completed' : 'Not started'}</span></div>
-              <div class="progress-shell mt-2"><div class="progress-bar ${status === 'ready' ? 'ready' : ''}" style="width:${progressPercent}%"></div></div>
-              <div class="mt-2 text-xs text-slate-400">${status === 'upgrading' ? `Finishes ${escapeHtml(formatDateTime(row.upgrade_ends_at))}` : status === 'ready' ? `Finished ${escapeHtml(formatDateTime(row.upgrade_ends_at || row.last_completed_at))}` : `Next upgrade will end ${escapeHtml(formatDurationFromHours(durationHours))} after start.`}</div>
-            </div>
-
-            <div class="mt-4 space-y-3">
-              <div class="trait-mini-grid">
-                <div class="trait-mini-kv"><div class="metric-label">Status</div><div class="mt-2 text-lg font-black">${escapeHtml(statusText)}</div></div>
-                <div class="trait-mini-kv"><div class="metric-label">Next Level</div><div class="mt-2 text-lg font-black">Lv ${formatNumber(nextLevel)}</div></div>
-                <div class="trait-mini-kv"><div class="metric-label">Instant Finish</div><div class="mt-2 text-lg font-black">${status === 'upgrading' ? `${formatNumber(instantCost)} DSPOINC` : '—'}</div></div>
-              </div>
-              <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Gameplay Outlook</div><div class="mt-2 text-sm text-slate-300">Designed for future multipliers, weapon tiers, and trait-driven gameplay bonuses read by games, admin tools, and Discord commands.</div></div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button class="btn primary" ${canStart ? '' : 'disabled'} data-start-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}">🚀 Start Upgrade</button>
-                <button class="btn success" ${canClaim ? '' : 'disabled'} data-claim-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}">✅ Claim Upgrade</button>
-                <button class="btn warn sm:col-span-2" ${canFinish ? '' : 'disabled'} data-finish-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}">⚡ Instant Finish · ${formatNumber(instantCost)} DSPOINC</button>
-              </div>
-              <div class="text-xs text-slate-400">${blocked ? 'Another trait on this NFT is already upgrading. One active upgrade per NFT is enforced by design.' : 'This trait is eligible for upgrade when backend validation confirms the NFT is still verified to the current player.'}</div>
+            <div class="trait-card-toggle-side">
+              <span class="status-pill ${statusClass}">${escapeHtml(statusText)}</span>
+              <span class="trait-toggle-chevron" aria-hidden="true">${isExpanded ? '−' : '+'}</span>
             </div>
           </div>
-        `;
-      }).join('');
+        </button>
 
-      attachTraitActionListeners();
-    }
+        <div class="trait-card-body" ${isExpanded ? '' : 'hidden'}>
+          <div class="mini-progress-label">
+            <span>Progress</span>
+            <span>${escapeHtml(progressLabel)}</span>
+          </div>
+          <div class="mini-progress-track">
+            <div class="mini-progress-fill ${statusClass}" style="width:${progressPercent}%"></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Status</div>
+              <div class="mt-2 text-lg font-black">${escapeHtml(statusText)}</div>
+            </div>
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Next Level</div>
+              <div class="mt-2 text-lg font-black">Lv ${formatNumber(nextLevel)}</div>
+            </div>
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Instant Finish</div>
+              <div class="mt-2 text-lg font-black">${canFinish ? `${formatNumber(instantCost)} DSPOINC` : '—'}</div>
+            </div>
+          </div>
+
+          <div class="info text-sm mt-4">
+            Designed for future multipliers, weapon tiers, and trait-driven gameplay bonuses read by games, admin tools, and Discord commands.
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+            <button
+              type="button"
+              class="btn primary"
+              ${canStart ? '' : 'disabled'}
+              data-start-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}"
+            >
+              🚀 Start Upgrade
+            </button>
+
+            <button
+              type="button"
+              class="btn success"
+              ${canClaim ? '' : 'disabled'}
+              data-claim-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}"
+            >
+              ✅ Claim Upgrade
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="btn warn mt-3 w-full"
+            ${canFinish ? '' : 'disabled'}
+            data-finish-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}"
+          >
+            ⚡ Instant Finish • ${canFinish ? `${formatNumber(instantCost)} DSPOINC` : '0 DSPOINC'}
+          </button>
+
+          <div class="mt-3 text-xs text-slate-400">
+            ${escapeHtml(chamberNote)}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  attachTraitActionListeners();
+}
 
     function attachTraitActionListeners() {
       document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade]').forEach(btn => {
@@ -3982,6 +4388,20 @@ function bindLabTabs() {
     });
   });
 }
+function autoOpenMyGenesisLabOnLogin() {
+  const hasSession = !!state.userId;
+  const verifiedGenesis = getVerifiedGenesisNfts();
+
+  if (!hasSession || !Array.isArray(verifiedGenesis) || !verifiedGenesis.length) {
+    return;
+  }
+
+  switchLabTab('my-genesis');
+
+  requestAnimationFrame(() => {
+    scrollToSelectedGenesisMouse();
+  });
+}
 
 async function loadLab() {
   if (state.loading) return;
@@ -4033,17 +4453,46 @@ el.refreshUpgradeButton.addEventListener('click', async () => {
   renderAll();
 });
 
+el.traitGrid?.addEventListener('click', event => {
+  const toggleButton = event.target.closest('[data-trait-toggle="true"]');
+  if (!toggleButton) {
+    return;
+  }
+
+  const traitKey = toggleButton.getAttribute('data-trait-key') || '';
+  toggleExpandedTraitKey(traitKey);
+  renderTraitGrid();
+});
+
+el.traitGrid?.addEventListener('keydown', event => {
+  const toggleButton = event.target.closest('[data-trait-toggle="true"]');
+  if (!toggleButton) {
+    return;
+  }
+
+  if (event.key !== 'Enter' && event.key !== ' ') {
+    return;
+  }
+
+  event.preventDefault();
+  const traitKey = toggleButton.getAttribute('data-trait-key') || '';
+  toggleExpandedTraitKey(traitKey);
+  renderTraitGrid();
+});
+
 function setupQuickAccessLinks() {
   document.querySelectorAll('[href="#lab-tab-my-genesis"], [href="#lab-panel-research-queue"]').forEach(link => {
     link.addEventListener('click', event => {
       const href = link.getAttribute('href') || '';
 
-      if (href === '#lab-tab-my-genesis') {
-        event.preventDefault();
-        switchLabTab('my-genesis');
-        document.getElementById('lab-panel-my-genesis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
+if (href === '#lab-tab-my-genesis') {
+  event.preventDefault();
+  switchLabTab('my-genesis');
+  requestAnimationFrame(() => {
+    scrollToSelectedGenesisMouse();
+  });
+  return;
+}
 
       if (href === '#lab-panel-research-queue') {
         event.preventDefault();
@@ -4060,7 +4509,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   switchLabTab('overview');
   logLab('Narrrf’s Lab frontend artifact mounted.', 'success');
   logLab('This page prefers stable read APIs and only activates live upgrade actions when dedicated endpoints are detected.', 'info');
+
   await loadLab();
+  autoOpenMyGenesisLabOnLogin();
+
   if (state.refreshTimer) clearInterval(state.refreshTimer);
   state.refreshTimer = setInterval(liveRefreshRender, LAB_CONFIG.tickMs);
 });
