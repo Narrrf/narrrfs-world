@@ -600,7 +600,6 @@ $claimStmt = $pdo->prepare("
         upgrade_ends_at = NULL,
         last_completed_at = ?,
         last_owner_user_id = ?,
-        ready_claim_notified_at = NULL,
         updated_at = CURRENT_TIMESTAMP
     WHERE upgrade_id = ?
 ");
@@ -610,6 +609,10 @@ $claimStmt->execute([
     $user_id,
     $existingRow['upgrade_id']
 ]);
+
+if ($claimStmt->rowCount() < 1) {
+    throw new Exception('Claim update did not modify any upgrade row.');
+}
 
     $pdo->commit();
 
@@ -637,6 +640,8 @@ $claimStmt->execute([
     if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
+
+    error_log('🧬 Complete Trait Upgrade ERROR: ' . $e->getMessage());
 
     json_response([
         'success' => false,
