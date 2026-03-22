@@ -558,6 +558,21 @@ try {
 
     $tableCreated = ensure_upgrade_table($pdo);
 
+    /**
+     * Auto-flip overdue upgrades into claimable state.
+     * This keeps Lab state correct even if a background monitor
+     * or notification worker missed the status transition.
+     */
+    $normalizeStmt = $pdo->prepare("
+        UPDATE tbl_nft_trait_upgrades
+        SET upgrade_status = 'ready_to_claim',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE upgrade_status = 'upgrading'
+          AND upgrade_ends_at IS NOT NULL
+          AND upgrade_ends_at <= CURRENT_TIMESTAMP
+    ");
+    $normalizeStmt->execute();
+
     $verifiedResult = load_current_verified_genesis_nfts($pdo, $user_id);
     $verifiedGenesisNfts = $verifiedResult['nfts'];
     $verifiedSource = $verifiedResult['source'];
