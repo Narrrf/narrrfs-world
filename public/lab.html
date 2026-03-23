@@ -16,6 +16,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="discord-config.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 
   <style>
     :root {
@@ -148,6 +149,38 @@
   background: rgba(255,255,255,0.03);
 }
 
+.queue-progress-wrap {
+  margin-top: 12px;
+}
+
+.queue-progress-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.queue-progress-subtext {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.queue-progress-bar {
+  margin-top: 8px;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.queue-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(34,211,238,0.9), rgba(59,130,246,0.9));
+  transition: width 0.35s ease;
+}
+
 .nft-card-action-row {
   display: flex;
   gap: 10px;
@@ -179,7 +212,142 @@
   }
 }
 
-    @keyframes floatOrb {
+    
+    .booster-panel {
+      border-radius: 20px;
+      border: 1px solid rgba(34,211,238,0.18);
+      background: linear-gradient(180deg, rgba(8,47,73,0.45), rgba(15,23,42,0.7));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      padding: 18px;
+    }
+
+    .booster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .booster-card {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      padding: 16px;
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+
+    .booster-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34,211,238,0.28);
+      box-shadow: 0 12px 30px rgba(2,132,199,0.10);
+    }
+
+    .booster-card.green { border-color: rgba(16,185,129,0.28); }
+    .booster-card.blue { border-color: rgba(59,130,246,0.28); }
+    .booster-card.red { border-color: rgba(239,68,68,0.28); }
+
+    .booster-icon {
+      font-size: 1.65rem;
+      line-height: 1;
+    }
+
+    .booster-owned {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+
+    .booster-viewer-shell {
+      position: relative;
+      margin-top: 14px;
+      min-height: 190px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        radial-gradient(circle at 50% 35%, rgba(255,255,255,0.12), transparent 42%),
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(2,6,23,0.18));
+    }
+
+    .booster-viewer-shell::after {
+      content: '';
+      position: absolute;
+      inset: auto 14px 10px 14px;
+      height: 18px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(15,23,42,0.55), rgba(15,23,42,0));
+      filter: blur(8px);
+      pointer-events: none;
+    }
+
+    .booster-viewer-shell.green {
+      box-shadow: inset 0 0 50px rgba(16,185,129,0.10), 0 0 28px rgba(16,185,129,0.10);
+    }
+
+    .booster-viewer-shell.blue {
+      box-shadow: inset 0 0 50px rgba(59,130,246,0.12), 0 0 28px rgba(59,130,246,0.10);
+    }
+
+    .booster-viewer-shell.red {
+      box-shadow: inset 0 0 50px rgba(239,68,68,0.12), 0 0 28px rgba(239,68,68,0.10);
+    }
+
+.booster-model-viewer {
+  display: block;
+  width: 100%;
+  height: 190px;
+}
+
+.booster-model-viewer {
+  position: relative;
+  z-index: 2;
+  --poster-color: transparent;
+  background: transparent;
+}
+
+.booster-glow-pill {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(2,6,23,0.50);
+  backdrop-filter: blur(10px);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e2e8f0;
+  pointer-events: none;
+}
+
+.booster-card.green .booster-glow-pill { color: #86efac; }
+.booster-card.blue .booster-glow-pill { color: #93c5fd; }
+.booster-card.red .booster-glow-pill { color: #fca5a5; }
+
+@media (max-width: 640px) {
+  .booster-viewer-shell,
+  .booster-model-viewer {
+    height: 170px;
+  }
+}
+
+@keyframes floatOrb {
       0%,100% { transform: translateY(0) translateX(0) scale(1); }
       50% { transform: translateY(-22px) translateX(8px) scale(1.04); }
     }
@@ -2106,6 +2274,7 @@ body::after {
         </div>
         <div id="traitUpgradeInfo" class="info text-sm mt-4"></div>
         <div id="traitGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-5"></div>
+        <div id="labBoosterPanel" class="mt-5"></div>
       </div>
     </div>
   </div>
@@ -2224,6 +2393,8 @@ body::after {
       startUpgradeEndpoint: '/api/user/start-nft-trait-upgrade.php',
       claimUpgradeEndpoint: '/api/user/complete-nft-trait-upgrade.php',
       instantFinishEndpoint: '/api/user/instant-finish-nft-trait-upgrade.php',
+      boosterInventoryEndpoint: '/api/user/get-lab-booster-inventory.php',
+      useBoosterEndpoint: '/api/user/use-lab-booster.php',
       genesisCollection: 'genesis',
       upgradeableTraitOrder: ['Theme', 'Sub-Trait', 'Outfit', 'Accessories', 'Expression', 'Background', 'Special'],
       levelOneDurationHours: 24,
@@ -2247,6 +2418,7 @@ body::after {
       selectedNft: null,
       selectedNftTokenId: '',
       upgradeRows: [],
+      boosterInventory: [],
       upgradeEndpointAvailable: false,
       aggregateLabEndpointAvailable: false,
       refreshTimer: null,
@@ -2271,6 +2443,7 @@ const el = {
   selectedNftPanel: document.getElementById('selectedNftPanel'),
   selectedNftStatus: document.getElementById('selectedNftStatus'),
   traitGrid: document.getElementById('traitGrid'),
+  labBoosterPanel: document.getElementById('labBoosterPanel'),
   traitUpgradeInfo: document.getElementById('traitUpgradeInfo'),
   upgradeModeBadge: document.getElementById('upgradeModeBadge'),
   labConsole: document.getElementById('labConsole'),
@@ -3138,6 +3311,7 @@ function selectNftByTokenId(tokenId, options = {}) {
   renderSelectedNftPanel();
   renderSelectedTraitSummary();
   renderTraitGrid();
+  renderLabBoosterPanel();
   renderActiveResearchQueue();
 
   if (scrollToResearch) {
@@ -3256,9 +3430,43 @@ function renderActiveResearchQueue() {
         : '<span class="pill idle">Idle</span>';
 
     const actionLabel = hasReady
-  ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
-  : '🧪 View Research';
+      ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
+      : '🧪 View Research';
+
     const actionClass = hasReady ? 'success' : 'warn';
+
+    const activeRow = getNftActiveUpgradeRow(nft);
+    let progressBlock = '';
+
+    if (activeRow && activeRow.upgrade_status === 'upgrading') {
+      const currentLevel = Math.max(1, safeNumber(activeRow.current_level, 1));
+      const durationHours = calculateUpgradeDurationHours(currentLevel);
+      const totalMs = durationHours * 60 * 60 * 1000;
+
+      const endTime = parseLabUtcDate(activeRow.upgrade_ends_at)?.getTime() || 0;
+      const remainingMs = Math.max(0, endTime - Date.now());
+      const elapsedMs = Math.max(0, totalMs - remainingMs);
+
+      const progressPercent = totalMs > 0
+        ? Math.min(100, Math.round((elapsedMs / totalMs) * 100))
+        : 0;
+
+progressBlock = `
+  <div class="queue-progress-wrap">
+    <div class="queue-progress-label">
+      Active Upgrade: ${escapeHtml(activeRow.trait_type)} • ${escapeHtml(activeRow.trait_value)} • ${progressPercent}%
+    </div>
+
+    <div class="queue-progress-bar">
+      <div class="queue-progress-fill" style="width:${progressPercent}%"></div>
+    </div>
+
+    <div class="queue-progress-subtext">
+      ${formatRemainingMs(remainingMs)} remaining
+    </div>
+  </div>
+`;
+    }
 
     return `
       <div class="queue-card">
@@ -3274,6 +3482,8 @@ function renderActiveResearchQueue() {
               <span class="queue-mini-pill">🕰 Active ${formatNumber(summary.activeCount || 0)}</span>
               <span class="queue-mini-pill">✅ Ready ${formatNumber(summary.readyCount || 0)}</span>
             </div>
+
+            ${progressBlock}
           </div>
 
           ${statusPill}
@@ -3562,6 +3772,167 @@ function getTraitSnapshotLevelBadge(nft, trait) {
       `;
     }
 
+function getLabBoosterCatalog() {
+  return [
+    {
+      itemId: 33,
+      name: 'Green Elixir',
+      effect: '-25% remaining time',
+      reductionPercent: 25,
+      icon: '🟢',
+      tone: 'green',
+      glbPath: 'img/lab/green_elixir.glb',
+      posterPath: 'img/lab/green_elixir.png',
+      viewerLabel: 'Emerald Lab Boost'
+    },
+    {
+      itemId: 34,
+      name: 'Blue Elixir',
+      effect: '-50% remaining time',
+      reductionPercent: 50,
+      icon: '🔵',
+      tone: 'blue',
+      glbPath: 'img/lab/blue_elixir.glb',
+      posterPath: 'img/lab/blue_elixir.png',
+      viewerLabel: 'Azure Time Collapse'
+    },
+    {
+      itemId: 35,
+      name: 'Red Elixir',
+      effect: '-75% remaining time',
+      reductionPercent: 75,
+      icon: '🔴',
+      tone: 'red',
+      glbPath: 'img/lab/red_elixir.glb',
+      posterPath: 'img/lab/red_elixir.png',
+      viewerLabel: 'Crimson Rush Core'
+    }
+  ];
+}
+
+function getBoosterInventoryQuantity(itemId) {
+  const row = (Array.isArray(state.boosterInventory) ? state.boosterInventory : []).find(item => Number(item?.item_id || 0) === Number(itemId || 0));
+  return Math.max(0, safeNumber(row?.quantity, 0));
+}
+
+function getActiveUpgradeableTraitRow(nft = state.selectedNft) {
+  if (!nft) return null;
+  const activeRow = getNftActiveUpgradeRow(nft);
+  if (!activeRow) return null;
+
+  const activeEndDate = parseLabUtcDate(activeRow.upgrade_ends_at);
+  if (!activeEndDate || activeEndDate.getTime() <= Date.now()) {
+    return null;
+  }
+
+  return activeRow;
+}
+
+function renderLabBoosterViewer(booster) {
+  const glbPath = escapeHtml(booster.glbPath || '');
+  const posterPath = escapeHtml(booster.posterPath || '');
+  const ariaLabel = escapeHtml(`${booster.name} 3D viewer`);
+  const glowLabel = escapeHtml(booster.viewerLabel || booster.name);
+
+  return `
+    <div class="booster-viewer-shell ${escapeHtml(booster.tone)}">
+      <div class="booster-glow-pill">${glowLabel}</div>
+      <model-viewer
+        class="booster-model-viewer"
+        src="${glbPath}"
+        poster="${posterPath}"
+        alt="${ariaLabel}"
+        camera-controls
+        auto-rotate
+        rotation-per-second="24deg"
+        shadow-intensity="1"
+        exposure="1.1"
+        interaction-prompt="none"
+        loading="eager"
+        reveal="auto"
+        disable-pan
+        touch-action="pan-y"
+      ></model-viewer>
+    </div>
+  `;
+}
+
+function renderLabBoosterPanel() {
+  if (!el.labBoosterPanel) {
+    return;
+  }
+
+  const nft = state.selectedNft;
+  const activeRow = getActiveUpgradeableTraitRow(nft);
+
+  if (!nft || !activeRow) {
+    el.labBoosterPanel.innerHTML = '';
+    return;
+  }
+
+  const activeEndDate = parseLabUtcDate(activeRow.upgrade_ends_at);
+  const finishesAtLabel = activeEndDate ? activeEndDate.toLocaleString() : '—';
+
+  el.labBoosterPanel.innerHTML = `
+    <div class="booster-panel">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div class="section-title text-lg md:text-xl"><span>🧪</span><span>Lab Boosters</span></div>
+          <p class="mt-2 text-sm text-slate-300">Boosters only work while one trait is actively upgrading on the selected Genesis mouse.</p>
+        </div>
+        <div class="text-sm text-slate-300">
+          <span class="chip">Active Trait: ${escapeHtml(activeRow.trait_type)} • ${escapeHtml(activeRow.trait_value)}</span>
+        </div>
+      </div>
+
+      <div class="info text-sm mt-4">
+        The backend remains authoritative. Each elixir reduces the <strong>remaining time</strong> for the active upgrade and consumes <strong>1 inventory item</strong>.
+        Current finish target: <strong>${escapeHtml(finishesAtLabel)}</strong>.
+      </div>
+
+      <div class="booster-grid">
+        ${getLabBoosterCatalog().map(booster => {
+          const ownedQuantity = getBoosterInventoryQuantity(booster.itemId);
+          const disabledReason = state.actionInFlight
+            ? 'Another lab action is running'
+            : ownedQuantity < 1
+              ? 'No boosters owned'
+              : '';
+
+          return `
+            <div class="booster-card ${escapeHtml(booster.tone)}">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="booster-icon" aria-hidden="true">${booster.icon}</span>
+                    <div class="text-lg font-black text-white">${escapeHtml(booster.name)}</div>
+                  </div>
+                  <div class="mt-2 text-sm text-slate-300">${escapeHtml(booster.effect)}</div>
+                </div>
+                <span class="booster-owned">Owned: ${formatNumber(ownedQuantity)}</span>
+              </div>
+
+              ${renderLabBoosterViewer(booster)}
+
+              <button
+                type="button"
+                class="btn primary mt-4 w-full"
+                data-use-booster="${escapeHtml(String(booster.itemId))}"
+                ${ownedQuantity > 0 && !state.actionInFlight ? '' : 'disabled'}
+                title="${escapeHtml(disabledReason)}"
+              >
+                🧪 Use Booster
+              </button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  attachLabBoosterListeners();
+}
+
 function renderTraitGrid() {
   const nft = state.selectedNft;
   if (!nft) {
@@ -3595,7 +3966,7 @@ function renderTraitGrid() {
     const nextLevel = currentLevel + 1;
     const status = mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at);
     const durationHours = calculateUpgradeDurationHours(currentLevel);
-    const endTime = row.upgrade_ends_at ? new Date(row.upgrade_ends_at).getTime() : 0;
+    const endTime = row.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.getTime() || 0) : 0;
     const remainingMs = status === 'upgrading' ? Math.max(0, endTime - Date.now()) : 0;
     const totalMs = durationHours * 3600000;
     const elapsedMs = status === 'upgrading'
@@ -3776,6 +4147,168 @@ function renderTraitGrid() {
         await handleInstantFinish(tokenId, traitType, traitValue);
       }));
     }
+
+    function attachLabBoosterListeners() {
+      document.querySelectorAll('[data-use-booster]').forEach(btn => {
+        btn.dataset.wasDisabled = btn.hasAttribute('disabled') ? 'true' : 'false';
+        btn.addEventListener('click', async () => {
+          const itemId = safeNumber(btn.getAttribute('data-use-booster'), 0);
+          await handleUseBooster(itemId);
+        });
+      });
+    }
+
+async function handleUseBooster(itemId) {
+  if (!state.userId) {
+    await showLabMessageModal({
+      eyebrow: 'Session Required',
+      title: 'No Player Session Found',
+      icon: '🧪',
+      message: 'No player session was found for this booster action.',
+      note: 'Please log in with Discord before using Lab boosters.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  if (state.actionInFlight) {
+    logLab('A lab action is already running. Please wait for the current request to finish.', 'warn');
+    return;
+  }
+
+  const nft = state.selectedNft;
+  if (!nft) {
+    await showLabMessageModal({
+      eyebrow: 'Genesis Required',
+      title: 'No Genesis Mouse Selected',
+      icon: '🧬',
+      message: 'Select a verified Genesis mouse before using a Lab booster.',
+      note: 'Boosters can only target the active upgrade on the currently selected NFT.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  const activeRow = getActiveUpgradeableTraitRow(nft);
+  if (!activeRow) {
+    await showLabMessageModal({
+      eyebrow: 'Active Upgrade Required',
+      title: 'No Active Upgrade Found',
+      icon: '⏳',
+      message: 'Boosters can only be used while a selected trait is actively upgrading.',
+      note: 'Finished upgrades must be claimed instead of boosted.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  const booster = getLabBoosterCatalog().find(item => item.itemId === Number(itemId || 0));
+  if (!booster) {
+    logLab(`Unknown Lab booster requested: ${itemId}`, 'error');
+    return;
+  }
+
+  const ownedQuantity = getBoosterInventoryQuantity(booster.itemId);
+  if (ownedQuantity < 1) {
+    await showLabMessageModal({
+      eyebrow: 'Inventory Required',
+      title: 'Booster Not Owned',
+      icon: '🎒',
+      message: `You do not currently own any ${booster.name}.`,
+      note: 'Acquire more boosters before trying again.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Use Lab Booster',
+    title: `Use ${booster.name}?`,
+    icon: '🧪',
+    message: `${booster.effect} will be applied to ${activeRow.trait_type}: ${activeRow.trait_value}.`,
+    note: 'The backend remains authoritative and will still verify inventory, NFT ownership, exact trait match, and active timer state.',
+    confirmText: 'Use Booster',
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) return;
+
+  setActionInFlight(true);
+
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.useBoosterEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: state.userId,
+          token_id: nft.token_id,
+          trait_type: activeRow.trait_type,
+          trait_value: activeRow.trait_value,
+          item_id: booster.itemId
+        })
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      const message = res.payload?.details || res.payload?.error || `Use booster failed (${res.status})`;
+      logLab(`Use booster failed: ${message}`, 'error');
+      await showLabMessageModal({
+        eyebrow: 'Use Lab Booster',
+        title: 'Booster Use Failed',
+        icon: '⚠️',
+        message,
+        note: 'No Lab booster changes were applied.',
+        confirmText: 'Close',
+        confirmVariant: 'danger'
+      });
+      return;
+    }
+
+    const payload = res.payload?.data || {};
+    logLab(`${booster.name} applied to ${activeRow.trait_type}: ${activeRow.trait_value}.`, 'success');
+
+    await Promise.all([
+      loadTraitUpgrades(),
+      loadLabBoosterInventory()
+    ]);
+    renderAll();
+
+    await showLabMessageModal({
+      eyebrow: 'Booster Applied',
+      title: `${booster.name} Activated`,
+      icon: '✨',
+      message: `${booster.effect} applied successfully to ${activeRow.trait_type}: ${activeRow.trait_value}.`,
+      note: `Inventory remaining: ${formatNumber(payload.remaining_inventory_quantity || 0)} • New finish target: ${formatDateTime(payload.new_ends_at)}`,
+      confirmText: 'Close',
+      confirmVariant: 'primary'
+    });
+  } catch (error) {
+    logLab(`Use booster request failed: ${error.message}`, 'error');
+    await showLabMessageModal({
+      eyebrow: 'Request Failed',
+      title: 'Booster Request Failed',
+      icon: '⚠️',
+      message: `Use booster failed: ${error.message}`,
+      note: 'The selected Lab booster was not consumed by the frontend request.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    setActionInFlight(false);
+  }
+}
 
 async function tryAggregateLab() {
   if (!state.userId) return false;
@@ -3973,6 +4506,42 @@ if (Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
       }
     }
 
+async function loadLabBoosterInventory() {
+  if (!state.userId) {
+    state.boosterInventory = [];
+    return;
+  }
+
+  try {
+    const res = await fetchJson(
+      `${getApiUrl(LAB_CONFIG.boosterInventoryEndpoint)}?user_id=${encodeURIComponent(state.userId)}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      },
+      true
+    );
+
+    if (res.ok && res.payload?.success) {
+      const data = res.payload?.data || {};
+      state.boosterInventory = Array.isArray(data.items)
+        ? data.items
+        : Array.isArray(res.payload.items)
+          ? res.payload.items
+          : [];
+      logLab(`Loaded ${state.boosterInventory.length} Lab booster inventory row(s).`, 'success');
+      return;
+    }
+
+    state.boosterInventory = [];
+    logLab('Lab booster inventory endpoint returned no usable rows.', 'warn');
+  } catch (error) {
+    state.boosterInventory = [];
+    logLab(`Lab booster inventory endpoint not available yet: ${error.message}`, 'warn');
+  }
+}
+
 async function loadTraitUpgrades() {
   if (!state.userId) return;
 
@@ -4021,7 +4590,7 @@ async function loadTraitUpgrades() {
 
 function setActionInFlight(isBusy) {
   state.actionInFlight = !!isBusy;
-  document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade]').forEach(button => {
+  document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade], [data-use-booster]').forEach(button => {
     if (state.actionInFlight) {
       button.setAttribute('disabled', 'disabled');
     } else if (button.dataset.wasDisabled !== 'true') {
@@ -4351,6 +4920,7 @@ function renderAll() {
   renderSelectedNftPanel();
   renderSelectedTraitSummary();
   renderTraitGrid();
+  renderLabBoosterPanel();
 }
 
 function liveRefreshRender() {
@@ -4432,6 +5002,8 @@ if (!aggregateLoaded) {
   await loadTraitUpgrades();
 }
 
+await loadLabBoosterInventory();
+
 renderAll();
 logLab('Lab runtime ready.', 'success');
   } catch (error) {
@@ -4449,7 +5021,10 @@ el.refreshLabButton.addEventListener('click', async () => {
 
 el.refreshUpgradeButton.addEventListener('click', async () => {
   logLab('Manual upgrade refresh triggered.', 'info');
-  await loadTraitUpgrades();
+  await Promise.all([
+    loadTraitUpgrades(),
+    loadLabBoosterInventory()
+  ]);
   renderAll();
 });
 
