@@ -16,7 +16,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="discord-config.js"></script>
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
     :root {
@@ -149,38 +149,6 @@
   background: rgba(255,255,255,0.03);
 }
 
-.queue-progress-wrap {
-  margin-top: 12px;
-}
-
-.queue-progress-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #e2e8f0;
-}
-
-.queue-progress-subtext {
-  margin-top: 6px;
-  font-size: 0.75rem;
-  color: #94a3b8;
-}
-
-.queue-progress-bar {
-  margin-top: 8px;
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.queue-progress-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(34,211,238,0.9), rgba(59,130,246,0.9));
-  transition: width 0.35s ease;
-}
-
 .nft-card-action-row {
   display: flex;
   gap: 10px;
@@ -265,87 +233,6 @@
       letter-spacing: .04em;
       text-transform: uppercase;
     }
-
-
-    .booster-viewer-shell {
-      position: relative;
-      margin-top: 14px;
-      min-height: 190px;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.08);
-      background:
-        radial-gradient(circle at 50% 35%, rgba(255,255,255,0.12), transparent 42%),
-        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(2,6,23,0.18));
-    }
-
-    .booster-viewer-shell::after {
-      content: '';
-      position: absolute;
-      inset: auto 14px 10px 14px;
-      height: 18px;
-      border-radius: 999px;
-      background: radial-gradient(circle, rgba(15,23,42,0.55), rgba(15,23,42,0));
-      filter: blur(8px);
-      pointer-events: none;
-    }
-
-    .booster-viewer-shell.green {
-      box-shadow: inset 0 0 50px rgba(16,185,129,0.10), 0 0 28px rgba(16,185,129,0.10);
-    }
-
-    .booster-viewer-shell.blue {
-      box-shadow: inset 0 0 50px rgba(59,130,246,0.12), 0 0 28px rgba(59,130,246,0.10);
-    }
-
-    .booster-viewer-shell.red {
-      box-shadow: inset 0 0 50px rgba(239,68,68,0.12), 0 0 28px rgba(239,68,68,0.10);
-    }
-
-.booster-model-viewer {
-  display: block;
-  width: 100%;
-  height: 190px;
-}
-
-.booster-model-viewer {
-  position: relative;
-  z-index: 2;
-  --poster-color: transparent;
-  background: transparent;
-}
-
-.booster-glow-pill {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 3;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(2,6,23,0.50);
-  backdrop-filter: blur(10px);
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #e2e8f0;
-  pointer-events: none;
-}
-
-.booster-card.green .booster-glow-pill { color: #86efac; }
-.booster-card.blue .booster-glow-pill { color: #93c5fd; }
-.booster-card.red .booster-glow-pill { color: #fca5a5; }
-
-@media (max-width: 640px) {
-  .booster-viewer-shell,
-  .booster-model-viewer {
-    height: 170px;
-  }
-}
 
 @keyframes floatOrb {
       0%,100% { transform: translateY(0) translateX(0) scale(1); }
@@ -2394,6 +2281,9 @@ body::after {
       claimUpgradeEndpoint: '/api/user/complete-nft-trait-upgrade.php',
       instantFinishEndpoint: '/api/user/instant-finish-nft-trait-upgrade.php',
       boosterInventoryEndpoint: '/api/user/get-lab-booster-inventory.php',
+      storeItemsEndpoint: '/api/store/items.php',
+      storePurchaseEndpoint: '/api/store/purchase.php',
+      scoreTotalEndpoint: '/api/user/score-total.php',
       useBoosterEndpoint: '/api/user/use-lab-booster.php',
       genesisCollection: 'genesis',
       upgradeableTraitOrder: ['Theme', 'Sub-Trait', 'Outfit', 'Accessories', 'Expression', 'Background', 'Special'],
@@ -2419,6 +2309,8 @@ body::after {
       selectedNftTokenId: '',
       upgradeRows: [],
       boosterInventory: [],
+      boosterStoreItems: {},
+      boosterStoreBalance: null,
       upgradeEndpointAvailable: false,
       aggregateLabEndpointAvailable: false,
       refreshTimer: null,
@@ -3430,43 +3322,9 @@ function renderActiveResearchQueue() {
         : '<span class="pill idle">Idle</span>';
 
     const actionLabel = hasReady
-      ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
-      : '🧪 View Research';
-
+  ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
+  : '🧪 View Research';
     const actionClass = hasReady ? 'success' : 'warn';
-
-    const activeRow = getNftActiveUpgradeRow(nft);
-    let progressBlock = '';
-
-    if (activeRow && activeRow.upgrade_status === 'upgrading') {
-      const currentLevel = Math.max(1, safeNumber(activeRow.current_level, 1));
-      const durationHours = calculateUpgradeDurationHours(currentLevel);
-      const totalMs = durationHours * 60 * 60 * 1000;
-
-      const endTime = parseLabUtcDate(activeRow.upgrade_ends_at)?.getTime() || 0;
-      const remainingMs = Math.max(0, endTime - Date.now());
-      const elapsedMs = Math.max(0, totalMs - remainingMs);
-
-      const progressPercent = totalMs > 0
-        ? Math.min(100, Math.round((elapsedMs / totalMs) * 100))
-        : 0;
-
-progressBlock = `
-  <div class="queue-progress-wrap">
-    <div class="queue-progress-label">
-      Active Upgrade: ${escapeHtml(activeRow.trait_type)} • ${escapeHtml(activeRow.trait_value)} • ${progressPercent}%
-    </div>
-
-    <div class="queue-progress-bar">
-      <div class="queue-progress-fill" style="width:${progressPercent}%"></div>
-    </div>
-
-    <div class="queue-progress-subtext">
-      ${formatRemainingMs(remainingMs)} remaining
-    </div>
-  </div>
-`;
-    }
 
     return `
       <div class="queue-card">
@@ -3482,8 +3340,6 @@ progressBlock = `
               <span class="queue-mini-pill">🕰 Active ${formatNumber(summary.activeCount || 0)}</span>
               <span class="queue-mini-pill">✅ Ready ${formatNumber(summary.readyCount || 0)}</span>
             </div>
-
-            ${progressBlock}
           </div>
 
           ${statusPill}
@@ -3783,7 +3639,7 @@ function getLabBoosterCatalog() {
       tone: 'green',
       glbPath: 'img/lab/green_elixir.glb',
       posterPath: 'img/lab/green_elixir.png',
-      viewerLabel: 'Emerald Lab Boost'
+      viewerLabel: 'Green Elixir'
     },
     {
       itemId: 34,
@@ -3794,7 +3650,7 @@ function getLabBoosterCatalog() {
       tone: 'blue',
       glbPath: 'img/lab/blue_elixir.glb',
       posterPath: 'img/lab/blue_elixir.png',
-      viewerLabel: 'Azure Time Collapse'
+      viewerLabel: 'Blue Elixir'
     },
     {
       itemId: 35,
@@ -3805,7 +3661,7 @@ function getLabBoosterCatalog() {
       tone: 'red',
       glbPath: 'img/lab/red_elixir.glb',
       posterPath: 'img/lab/red_elixir.png',
-      viewerLabel: 'Crimson Rush Core'
+      viewerLabel: 'Red Elixir'
     }
   ];
 }
@@ -3813,6 +3669,20 @@ function getLabBoosterCatalog() {
 function getBoosterInventoryQuantity(itemId) {
   const row = (Array.isArray(state.boosterInventory) ? state.boosterInventory : []).find(item => Number(item?.item_id || 0) === Number(itemId || 0));
   return Math.max(0, safeNumber(row?.quantity, 0));
+}
+
+function getLabBoosterStoreItem(itemId) {
+  return state.boosterStoreItems?.[String(itemId || '')] || null;
+}
+
+function getLabBoosterPriceLabel(itemId) {
+  const storeItem = getLabBoosterStoreItem(itemId);
+  const price = safeNumber(storeItem?.price, null);
+  if (price === null || Number.isNaN(price)) {
+    return 'Store price unavailable';
+  }
+
+  return `${formatNumber(price)} DSPOINC`;
 }
 
 function getActiveUpgradeableTraitRow(nft = state.selectedNft) {
@@ -3908,21 +3778,34 @@ function renderLabBoosterPanel() {
                     <div class="text-lg font-black text-white">${escapeHtml(booster.name)}</div>
                   </div>
                   <div class="mt-2 text-sm text-slate-300">${escapeHtml(booster.effect)}</div>
+                  <div class="mt-2 text-xs text-slate-400">Store: ${escapeHtml(getLabBoosterPriceLabel(booster.itemId))}</div>
                 </div>
                 <span class="booster-owned">Owned: ${formatNumber(ownedQuantity)}</span>
               </div>
 
               ${renderLabBoosterViewer(booster)}
 
-              <button
-                type="button"
-                class="btn primary mt-4 w-full"
-                data-use-booster="${escapeHtml(String(booster.itemId))}"
-                ${ownedQuantity > 0 && !state.actionInFlight ? '' : 'disabled'}
-                title="${escapeHtml(disabledReason)}"
-              >
-                🧪 Use Booster
-              </button>
+              <div class="nft-card-action-row">
+                <button
+                  type="button"
+                  class="btn primary flex-1"
+                  data-use-booster="${escapeHtml(String(booster.itemId))}"
+                  ${ownedQuantity > 0 && !state.actionInFlight ? '' : 'disabled'}
+                  title="${escapeHtml(disabledReason)}"
+                >
+                  🧪 Use Booster
+                </button>
+
+                <button
+                  type="button"
+                  class="btn ghost flex-1"
+                  data-buy-booster="${escapeHtml(String(booster.itemId))}"
+                  ${state.actionInFlight ? 'disabled' : ''}
+                  title="${escapeHtml(state.actionInFlight ? 'Another lab action is running' : 'Buy 1 booster from the Narrrf store')}"
+                >
+                  🛒 Buy 1
+                </button>
+              </div>
             </div>
           `;
         }).join('')}
@@ -4156,7 +4039,136 @@ function renderTraitGrid() {
           await handleUseBooster(itemId);
         });
       });
+
+      document.querySelectorAll('[data-buy-booster]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const itemId = safeNumber(btn.getAttribute('data-buy-booster'), 0);
+          await handleBuyBooster(itemId);
+        });
+      });
     }
+
+async function handleBuyBooster(itemId) {
+  if (!state.userId) {
+    await showLabMessageModal({
+      eyebrow: 'Session Required',
+      title: 'No Player Session Found',
+      icon: '🛒',
+      message: 'No player session was found for this store purchase.',
+      note: 'Please log in with Discord before buying Lab boosters.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  if (state.actionInFlight) {
+    logLab('A lab action is already running. Please wait for the current request to finish.', 'warn');
+    return;
+  }
+
+  const booster = getLabBoosterCatalog().find(item => item.itemId === Number(itemId || 0));
+  if (!booster) {
+    logLab(`Unknown Lab booster purchase requested: ${itemId}`, 'error');
+    return;
+  }
+
+  const storeItem = getLabBoosterStoreItem(booster.itemId);
+  const priceLabel = getLabBoosterPriceLabel(booster.itemId);
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Lab Store Purchase',
+    title: `Buy ${booster.name}?`,
+    icon: '🛒',
+    message: `${booster.effect} will be added to your inventory as a store purchase.`,
+    highlightLabel: 'Store Price',
+    highlightValue: priceLabel,
+    note: storeItem
+      ? 'The existing store purchase flow remains authoritative for price, balance checks, purchase history, and inventory updates.'
+      : 'Store catalog data is not loaded yet. The existing purchase endpoint remains authoritative and will confirm availability and price server-side.',
+    confirmText: 'Buy Booster',
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  setActionInFlight(true);
+
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.storePurchaseEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: state.userId,
+          item_id: booster.itemId,
+          quantity: 1
+        })
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      const message = res.payload?.details || res.payload?.error || `Booster purchase failed (${res.status})`;
+      logLab(`Booster purchase failed: ${message}`, 'error');
+      await showLabMessageModal({
+        eyebrow: 'Lab Store Purchase',
+        title: 'Purchase Failed',
+        icon: '⚠️',
+        message,
+        note: 'No Lab booster inventory changes were applied.',
+        confirmText: 'Close',
+        confirmVariant: 'danger'
+      });
+      return;
+    }
+
+    logLab(`${booster.name} purchased successfully.`, 'success');
+
+await Promise.all([
+  loadLabBoosterInventory(),
+  loadLabBoosterStoreCatalog(),
+  loadStakingStats()
+]);
+
+setActionInFlight(false);
+renderAll();
+
+    await showLabMessageModal({
+      eyebrow: 'Lab Store Purchase',
+      title: `${booster.name} Added`,
+      icon: '🎉',
+      message: `${booster.name} was purchased and added to your Lab inventory.`,
+      note: 'You can now use it immediately on the active upgrade shown above.',
+      confirmText: 'Nice',
+      confirmVariant: 'primary'
+    });
+  } catch (error) {
+    logLab(`Booster purchase request failed: ${error.message}`, 'error');
+    await showLabMessageModal({
+      eyebrow: 'Lab Store Purchase',
+      title: 'Request Failed',
+      icon: '⚠️',
+      message: `Booster purchase failed: ${error.message}`,
+      note: 'The purchase did not complete cleanly.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+} finally {
+  if (state.actionInFlight) {
+    setActionInFlight(false);
+    renderAll();
+  }
+}
+}
 
 async function handleUseBooster(itemId) {
   if (!state.userId) {
@@ -4506,6 +4518,61 @@ if (Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
       }
     }
 
+async function loadLabBoosterStoreCatalog() {
+  state.boosterStoreItems = {};
+  state.boosterStoreBalance = null;
+
+  if (!state.userId) {
+    return;
+  }
+
+  try {
+    const [itemsRes, balanceRes] = await Promise.allSettled([
+      fetchJson(
+        getApiUrl(LAB_CONFIG.storeItemsEndpoint),
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        },
+        true
+      ),
+      fetchJson(
+        `${getApiUrl(LAB_CONFIG.scoreTotalEndpoint)}?user_id=${encodeURIComponent(state.userId)}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        },
+        true
+      )
+    ]);
+
+    if (itemsRes.status === 'fulfilled' && itemsRes.value.ok) {
+      const itemsPayload = itemsRes.value.payload || {};
+      const items = Array.isArray(itemsPayload.items) ? itemsPayload.items : [];
+      state.boosterStoreItems = items.reduce((acc, item) => {
+        const itemId = Number(item?.item_id || 0);
+        if ([33, 34, 35].includes(itemId)) {
+          acc[String(itemId)] = item;
+        }
+        return acc;
+      }, {});
+    }
+
+    if (balanceRes.status === 'fulfilled' && balanceRes.value.ok) {
+      const balancePayload = balanceRes.value.payload || {};
+      state.boosterStoreBalance = safeNumber(balancePayload.total_dspoinc, null);
+    }
+
+    logLab(`Loaded ${Object.keys(state.boosterStoreItems).length} Lab booster store item(s).`, 'info');
+  } catch (error) {
+    state.boosterStoreItems = {};
+    state.boosterStoreBalance = null;
+    logLab(`Lab booster store catalog not available yet: ${error.message}`, 'warn');
+  }
+}
+
 async function loadLabBoosterInventory() {
   if (!state.userId) {
     state.boosterInventory = [];
@@ -4590,7 +4657,7 @@ async function loadTraitUpgrades() {
 
 function setActionInFlight(isBusy) {
   state.actionInFlight = !!isBusy;
-  document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade], [data-use-booster]').forEach(button => {
+  document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade], [data-use-booster], [data-buy-booster]').forEach(button => {
     if (state.actionInFlight) {
       button.setAttribute('disabled', 'disabled');
     } else if (button.dataset.wasDisabled !== 'true') {
@@ -5002,7 +5069,10 @@ if (!aggregateLoaded) {
   await loadTraitUpgrades();
 }
 
-await loadLabBoosterInventory();
+await Promise.all([
+  loadLabBoosterStoreCatalog(),
+  loadLabBoosterInventory()
+]);
 
 renderAll();
 logLab('Lab runtime ready.', 'success');
@@ -5023,6 +5093,7 @@ el.refreshUpgradeButton.addEventListener('click', async () => {
   logLab('Manual upgrade refresh triggered.', 'info');
   await Promise.all([
     loadTraitUpgrades(),
+    loadLabBoosterStoreCatalog(),
     loadLabBoosterInventory()
   ]);
   renderAll();

@@ -1,0 +1,16 @@
+[24-Mar-2026 00:37:29 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 00:37:29 Europe/Berlin] File exists: YES
+[24-Mar-2026 00:37:29 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 00:37:29 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 00:47:57 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 00:47:57 Europe/Berlin] File exists: YES
+[24-Mar-2026 00:47:57 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 00:47:57 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 00:48:53 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 00:48:53 Europe/Berlin] File exists: YES
+[24-Mar-2026 00:48:53 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 00:48:53 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 00:53:04 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 00:53:04 Europe/Berlin] File exists: YES
+[24-Mar-2026 00:53:04 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 00:53:04 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
