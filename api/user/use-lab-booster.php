@@ -552,16 +552,19 @@ try {
 
     $pdo->beginTransaction();
 
-    $updateUpgradeStmt = $pdo->prepare("
-        UPDATE tbl_nft_trait_upgrades
-        SET upgrade_ends_at = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE upgrade_id = ?
-    ");
-    $updateUpgradeStmt->execute([
-        $newEndsAt,
-        $upgradeRow['upgrade_id']
-    ]);
+$updateUpgradeStmt = $pdo->prepare("
+    UPDATE tbl_nft_trait_upgrades
+    SET upgrade_ends_at = ?,
+        active_booster_item_id = ?,
+        active_booster_used_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE upgrade_id = ?
+");
+$updateUpgradeStmt->execute([
+    $newEndsAt,
+    $item_id,
+    $upgradeRow['upgrade_id']
+]);
 
     if ($updateUpgradeStmt->rowCount() < 1) {
         throw new Exception('Booster update did not modify the upgrade row.');

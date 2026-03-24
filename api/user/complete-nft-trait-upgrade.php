@@ -598,6 +598,8 @@ $claimStmt = $pdo->prepare("
         upgrade_status = 'idle',
         upgrade_started_at = NULL,
         upgrade_ends_at = NULL,
+        active_booster_item_id = NULL,
+        active_booster_used_at = NULL,
         last_completed_at = ?,
         last_owner_user_id = ?,
         updated_at = CURRENT_TIMESTAMP
@@ -619,22 +621,24 @@ if ($claimStmt->rowCount() < 1) {
     json_response([
         'success' => true,
         'message' => 'Trait upgrade claimed successfully',
-        'data' => [
-            'upgrade_id' => $existingRow['upgrade_id'],
-            'token_id' => $token_id,
-            'collection' => 'genesis',
-            'trait_type' => $trait_type,
-            'trait_value' => $trait_value,
-            'previous_level' => $currentLevel,
-            'current_level' => $newLevel,
-            'next_level' => $newLevel + 1,
-            'upgrade_status' => 'idle',
-            'upgrade_started_at' => null,
-            'upgrade_ends_at' => null,
-            'last_completed_at' => $claimedAt,
-            'last_owner_user_id' => $user_id,
-            'source' => 'claimed_existing_row'
-        ]
+'data' => [
+    'upgrade_id' => $existingRow['upgrade_id'],
+    'token_id' => $token_id,
+    'collection' => 'genesis',
+    'trait_type' => $trait_type,
+    'trait_value' => $trait_value,
+    'previous_level' => $currentLevel,
+    'current_level' => $newLevel,
+    'next_level' => $newLevel + 1,
+    'upgrade_status' => 'idle',
+    'upgrade_started_at' => null,
+    'upgrade_ends_at' => null,
+    'active_booster_item_id' => null,
+    'active_booster_used_at' => null,
+    'last_completed_at' => $claimedAt,
+    'last_owner_user_id' => $user_id,
+    'source' => 'claimed_existing_row'
+]
     ]);
 } catch (Exception $e) {
     if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {

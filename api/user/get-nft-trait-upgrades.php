@@ -228,6 +228,21 @@ function dedupe_nfts_by_token($nfts) {
  * Create the upgrade table if it does not exist yet.
  * This keeps the read endpoint stable even before write endpoints are added.
  */
+
+function ensure_column_exists(PDO $pdo, string $tableName, string $columnName, string $columnDefinition): void {
+    $stmt = $pdo->query("PRAGMA table_info($tableName)");
+    $columns = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+    foreach ($columns as $column) {
+        if (($column['name'] ?? '') === $columnName) {
+            return;
+        }
+    }
+
+    $pdo->exec("ALTER TABLE $tableName ADD COLUMN $columnName $columnDefinition");
+    error_log("🧬 Trait Upgrades: Added missing column {$columnName} to {$tableName}");
+}
+
 function ensure_upgrade_table(PDO $pdo) {
     $tableCreated = false;
 
@@ -250,6 +265,8 @@ function ensure_upgrade_table(PDO $pdo) {
                 last_owner_user_id TEXT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                active_booster_item_id INTEGER NULL,
+                active_booster_used_at DATETIME NULL,
                 UNIQUE(token_id, collection, trait_type, trait_value)
             )
         ");
@@ -261,6 +278,9 @@ function ensure_upgrade_table(PDO $pdo) {
         $tableCreated = true;
         error_log("🧬 Trait Upgrades: Created tbl_nft_trait_upgrades");
     }
+
+    ensure_column_exists($pdo, 'tbl_nft_trait_upgrades', 'active_booster_item_id', 'INTEGER NULL');
+    ensure_column_exists($pdo, 'tbl_nft_trait_upgrades', 'active_booster_used_at', 'DATETIME NULL');
 
     return $tableCreated;
 }
@@ -518,20 +538,22 @@ function load_upgrade_rows(PDO $pdo, $tokenIds) {
 
     $placeholders = implode(',', array_fill(0, count($tokenIds), '?'));
     $sql = "
-        SELECT
-            upgrade_id,
-            token_id,
-            collection,
-            trait_type,
-            trait_value,
-            current_level,
-            upgrade_status,
-            upgrade_started_at,
-            upgrade_ends_at,
-            last_completed_at,
-            last_owner_user_id,
-            created_at,
-            updated_at
+SELECT
+    upgrade_id,
+    token_id,
+    collection,
+    trait_type,
+    trait_value,
+    current_level,
+    upgrade_status,
+    upgrade_started_at,
+    upgrade_ends_at,
+    last_completed_at,
+    last_owner_user_id,
+    created_at,
+    updated_at,
+    active_booster_item_id,
+    active_booster_used_at
         FROM tbl_nft_trait_upgrades
         WHERE collection = 'genesis'
           AND token_id IN ({$placeholders})
@@ -614,39 +636,43 @@ try {
 
             if (isset($storedMap[$key])) {
                 $row = $storedMap[$key];
-                $resolvedRows[] = [
-                    'upgrade_id' => $row['upgrade_id'] ?? null,
-                    'token_id' => $row['token_id'],
-                    'collection' => 'genesis',
-                    'trait_type' => normalize_trait_type($row['trait_type'] ?? ''),
-                    'trait_value' => (string)($row['trait_value'] ?? ''),
-                    'current_level' => max(1, (int)($row['current_level'] ?? 1)),
-                    'upgrade_status' => $row['upgrade_status'] ?? 'idle',
-                    'upgrade_started_at' => $row['upgrade_started_at'] ?? null,
-                    'upgrade_ends_at' => $row['upgrade_ends_at'] ?? null,
-                    'last_completed_at' => $row['last_completed_at'] ?? null,
-                    'last_owner_user_id' => $row['last_owner_user_id'] ?? null,
-                    'created_at' => $row['created_at'] ?? null,
-                    'updated_at' => $row['updated_at'] ?? null,
-                    'source' => 'stored'
-                ];
+$resolvedRows[] = [
+    'upgrade_id' => $row['upgrade_id'] ?? null,
+    'token_id' => $row['token_id'],
+    'collection' => 'genesis',
+    'trait_type' => normalize_trait_type($row['trait_type'] ?? ''),
+    'trait_value' => (string)($row['trait_value'] ?? ''),
+    'current_level' => max(1, (int)($row['current_level'] ?? 1)),
+    'upgrade_status' => $row['upgrade_status'] ?? 'idle',
+    'upgrade_started_at' => $row['upgrade_started_at'] ?? null,
+    'upgrade_ends_at' => $row['upgrade_ends_at'] ?? null,
+    'last_completed_at' => $row['last_completed_at'] ?? null,
+    'last_owner_user_id' => $row['last_owner_user_id'] ?? null,
+    'created_at' => $row['created_at'] ?? null,
+    'updated_at' => $row['updated_at'] ?? null,
+    'active_booster_item_id' => $row['active_booster_item_id'] ?? null,
+    'active_booster_used_at' => $row['active_booster_used_at'] ?? null,
+    'source' => 'stored'
+];
             } else {
-                $resolvedRows[] = [
-                    'upgrade_id' => null,
-                    'token_id' => $nft['token_id'],
-                    'collection' => 'genesis',
-                    'trait_type' => normalize_trait_type($trait['trait_type'] ?? ''),
-                    'trait_value' => (string)($trait['trait_value'] ?? ''),
-                    'current_level' => 1,
-                    'upgrade_status' => 'idle',
-                    'upgrade_started_at' => null,
-                    'upgrade_ends_at' => null,
-                    'last_completed_at' => null,
-                    'last_owner_user_id' => null,
-                    'created_at' => null,
-                    'updated_at' => null,
-                    'source' => 'fallback'
-                ];
+$resolvedRows[] = [
+    'upgrade_id' => null,
+    'token_id' => $nft['token_id'],
+    'collection' => 'genesis',
+    'trait_type' => normalize_trait_type($trait['trait_type'] ?? ''),
+    'trait_value' => (string)($trait['trait_value'] ?? ''),
+    'current_level' => 1,
+    'upgrade_status' => 'idle',
+    'upgrade_started_at' => null,
+    'upgrade_ends_at' => null,
+    'last_completed_at' => null,
+    'last_owner_user_id' => null,
+    'created_at' => null,
+    'updated_at' => null,
+    'active_booster_item_id' => null,
+    'active_booster_used_at' => null,
+    'source' => 'fallback'
+];
             }
         }
     }
