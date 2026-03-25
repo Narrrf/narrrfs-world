@@ -533,13 +533,20 @@ try {
         ], 409);
     }
 
-    $remainingSeconds = max(1, $endTs - $nowTs);
-    $reductionPercent = (int)$boosterConfig['reduction_percent'];
-    $newRemainingSeconds = (int)floor($remainingSeconds * ((100 - $reductionPercent) / 100));
+$remainingSeconds = max(1, $endTs - $nowTs);
 
-    if ($newRemainingSeconds < 1) {
-        $newRemainingSeconds = 1;
-    }
+/**
+ * Fixed time reduction per booster
+ * This replaces percentage-based reduction
+ */
+$reductionSeconds = match ($item_id) {
+    33 => 6 * 3600,   // 🟢 Green → -6h
+    34 => 18 * 3600,  // 🔵 Blue → -18h
+    35 => 48 * 3600,  // 🔴 Red → -48h
+    default => 0
+};
+
+$newRemainingSeconds = max(1, $remainingSeconds - $reductionSeconds);
 
     $newEndsAt = gmdate('Y-m-d H:i:s', $nowTs + $newRemainingSeconds);
     $newQuantity = max(0, (int)$inventoryRow['quantity'] - 1);

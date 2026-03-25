@@ -446,23 +446,21 @@ function nft_has_active_upgrade(PDO $pdo, $token_id, $collection) {
     return $row;
 }
 
-function calculate_upgrade_duration_hours($current_level) {
-    $level = max(1, (int)$current_level);
+function calculate_upgrade_duration_hours($currentLevel) {
+    $level = max(1, (int)$currentLevel);
 
-    // Early game stays exactly the same: 1, 2, 4, 8, 16 days.
-    if ($level <= 5) {
-        return (int)(24 * pow(2, $level - 1));
+    // 1→2 = 24h, 2→3 = 48h, 3→4 = 96h, 4→5 = 192h
+    if ($level <= 4) {
+        return 24 * pow(2, $level - 1);
     }
 
-    // Mid/late game grows gently instead of doubling forever.
-    // Level 6 starts at 16 days, then each level adds 1.5 hours.
-    $baseDaysAfterEarlyGame = 16;
-    $extraHoursPerLevel = 1.5;
-    $levelsAfterEarlyGame = $level - 6;
+    // 5→6 bis 15→16: +24h pro Stufe
+    if ($level <= 15) {
+        return 192 + (($level - 4) * 24);
+    }
 
-    $durationDays = $baseDaysAfterEarlyGame + (($levelsAfterEarlyGame * $extraHoursPerLevel) / 24);
-
-    return (int)round($durationDays * 24);
+    // ab 16→17: +1h pro Stufe
+    return 456 + ($level - 15);
 }
 
 try {

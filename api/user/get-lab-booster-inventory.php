@@ -116,18 +116,18 @@ function get_lab_booster_configs() {
     return [
         LAB_GREEN_ELIXIR_ITEM_ID => [
             'item_name' => 'Green Elixir',
-            'effect' => '-25% remaining time',
-            'reduction_percent' => 25
+            'effect' => '-6 hours remaining time',
+            'reduction_hours' => 6
         ],
         LAB_BLUE_ELIXIR_ITEM_ID => [
             'item_name' => 'Blue Elixir',
-            'effect' => '-50% remaining time',
-            'reduction_percent' => 50
+            'effect' => '-18 hours remaining time',
+            'reduction_hours' => 18
         ],
         LAB_RED_ELIXIR_ITEM_ID => [
             'item_name' => 'Red Elixir',
-            'effect' => '-75% remaining time',
-            'reduction_percent' => 75
+            'effect' => '-48 hours remaining time',
+            'reduction_hours' => 48
         ]
     ];
 }

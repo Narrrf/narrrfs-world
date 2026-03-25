@@ -6300,8 +6300,7 @@ function getLabBoosterCatalog() {
     {
       itemId: 33,
       name: 'Green Elixir',
-      effect: '-25% remaining time',
-      reductionPercent: 25,
+      effect: '-6 hours remaining time',
       icon: '🟢',
       tone: 'green',
       glbPath: 'img/lab/green_elixir.glb',
@@ -6311,8 +6310,7 @@ function getLabBoosterCatalog() {
     {
       itemId: 34,
       name: 'Blue Elixir',
-      effect: '-50% remaining time',
-      reductionPercent: 50,
+      effect: '-18 hours remaining time',
       icon: '🔵',
       tone: 'blue',
       glbPath: 'img/lab/blue_elixir.glb',
@@ -6322,8 +6320,7 @@ function getLabBoosterCatalog() {
     {
       itemId: 35,
       name: 'Red Elixir',
-      effect: '-75% remaining time',
-      reductionPercent: 75,
+      effect: '-48 hours remaining time',
       icon: '🔴',
       tone: 'red',
       glbPath: 'img/lab/red_elixir.glb',
@@ -6353,18 +6350,28 @@ function getLabBoosterPriceLabel(itemId) {
 }
 
 function renderLabBoosterViewer(booster) {
+  const glowLabel = booster.viewerLabel || booster.name || 'Lab Booster';
+  const glbPath = booster.glbPath || '';
+  const posterPath = booster.posterPath || '';
+
   return `
-    <div class="booster-viewer-shell ${booster.tone}">
-      <div class="booster-glow-pill">${booster.viewerLabel}</div>
+    <div class="booster-viewer-shell ${booster.tone || ''}">
+      <div class="booster-glow-pill">${glowLabel}</div>
       <model-viewer
         class="booster-model-viewer"
-        src="${booster.glbPath}"
-        poster="${booster.posterPath}"
+        src="${glbPath}"
+        poster="${posterPath}"
+        alt="${booster.name || 'Lab Booster'} 3D viewer"
         camera-controls
         auto-rotate
+        rotation-per-second="24deg"
         shadow-intensity="1"
         exposure="1.1"
+        interaction-prompt="none"
         loading="eager"
+        reveal="auto"
+        disable-pan
+        touch-action="pan-y"
       ></model-viewer>
     </div>
   `;
@@ -7404,31 +7411,23 @@ function renderBoosterStoreSection() {
         ${getLabBoosterCatalog().map(booster => {
           return `
             <div class="lab-booster-card ${booster.tone}">
+              <div class="lab-booster-title">${booster.name}</div>
 
-              <div class="lab-booster-title">
-                ${booster.name}
-              </div>
-
-              <div class="lab-booster-effect">
-                ${booster.effect}
-              </div>
+              <div class="lab-booster-effect">${booster.effect}</div>
 
               <div class="lab-booster-sub">
                 ${getLabBoosterPriceLabel(booster.itemId)}
               </div>
 
-              <div class="booster-viewer-shell">
-                ${renderLabBoosterViewer(booster)}
-              </div>
+              ${renderLabBoosterViewer(booster)}
 
-<button
-  type="button"
-  class="lab-booster-buy btn-like-lab ${booster.tone}"
-  data-buy-booster="${booster.itemId}"
->
-  🛒 Buy 1
-</button>
-
+              <button
+                type="button"
+                class="lab-booster-buy btn-like-lab ${booster.tone}"
+                data-buy-booster="${booster.itemId}"
+              >
+                🛒 Buy 1
+              </button>
             </div>
           `;
         }).join('')}

@@ -350,6 +350,23 @@
       transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
     }
 
+    .booster-viewer-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 140px;
+  position: relative;
+  overflow: visible;
+}
+
+.booster-model-viewer,
+.booster-viewer-shell img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  transform: translate(10px, -12px);
+}
+
     .booster-card:hover {
       transform: translateY(-2px);
       border-color: rgba(34,211,238,0.28);
@@ -2462,6 +2479,20 @@ body::after {
         </div>
 
         <div class="glass p-5 md:p-6">
+  <div class="section-title text-xl md:text-2xl"><span>📈</span><span>Level Timing Guide</span></div>
+  <div class="feature-list">
+    <div class="feature-item"><strong>Level 1 → 2:</strong> 24 hours</div>
+    <div class="feature-item"><strong>Level 2 → 3:</strong> 48 hours</div>
+    <div class="feature-item"><strong>Level 3 → 4:</strong> 96 hours</div>
+    <div class="feature-item"><strong>Level 4 → 5:</strong> 192 hours (8 days)</div>
+    <div class="feature-item"><strong>Level 5 → 16:</strong> after 8 days, each next level adds 24 more hours</div>
+    <div class="feature-item"><strong>Level 16+:</strong> each next level adds only 1 more hour</div>
+    <div class="feature-item"><strong>Claim rule:</strong> finished research must always be claimed manually before the next cycle can begin</div>
+    <div class="feature-item"><strong>Booster rule:</strong> Green, Blue, and Red Elixirs reduce active research time by fixed hours</div>
+  </div>
+</div>
+
+        <div class="glass p-5 md:p-6">
           <div class="section-title text-xl md:text-2xl"><span>🧀</span><span>Holder benefits and future hints</span></div>
           <div class="feature-list">
             <div class="feature-item">Verified Genesis holdership opens the door to exclusive lab systems and future holder-first releases.</div>
@@ -3085,9 +3116,22 @@ function showLabMessageModal({
       return findUpgradeRow(nft.token_id, trait.trait_type, trait.value) || buildFallbackUpgradeRow(nft, trait);
     }
 
-    function calculateUpgradeDurationHours(currentLevel) {
-      return LAB_CONFIG.levelOneDurationHours * Math.pow(2, Math.max(1, safeNumber(currentLevel, 1)) - 1);
-    }
+function calculateUpgradeDurationHours(currentLevel) {
+  const level = Math.max(1, safeNumber(currentLevel, 1));
+
+  // 1→2 = 24h, 2→3 = 48h, 3→4 = 96h, 4→5 = 192h
+  if (level <= 4) {
+    return LAB_CONFIG.levelOneDurationHours * Math.pow(2, level - 1);
+  }
+
+  // 5→6 bis 15→16: +24h pro Stufe
+  if (level <= 15) {
+    return 192 + ((level - 4) * 24);
+  }
+
+  // ab 16→17: nur noch +1h pro Stufe
+  return 456 + (level - 15);
+}
 
     function calculateInstantFinishCost(currentLevel, remainingMs) {
       const level = Math.max(1, safeNumber(currentLevel, 1));
@@ -4020,35 +4064,32 @@ function getLabBoosterCatalog() {
     {
       itemId: 33,
       name: 'Green Elixir',
-      effect: '-25% remaining time',
-      reductionPercent: 25,
+      effect: '-6 hours remaining time',
       icon: '🟢',
       tone: 'green',
       glbPath: 'img/lab/green_elixir.glb',
       posterPath: 'img/lab/green_elixir.png',
-      viewerLabel: 'Green Elixir'
+      viewerLabel: 'Emerald Lab Boost'
     },
     {
       itemId: 34,
       name: 'Blue Elixir',
-      effect: '-50% remaining time',
-      reductionPercent: 50,
+      effect: '-18 hours remaining time',
       icon: '🔵',
       tone: 'blue',
       glbPath: 'img/lab/blue_elixir.glb',
       posterPath: 'img/lab/blue_elixir.png',
-      viewerLabel: 'Blue Elixir'
+      viewerLabel: 'Azure Time Collapse'
     },
     {
       itemId: 35,
       name: 'Red Elixir',
-      effect: '-75% remaining time',
-      reductionPercent: 75,
+      effect: '-48 hours remaining time',
       icon: '🔴',
       tone: 'red',
       glbPath: 'img/lab/red_elixir.glb',
       posterPath: 'img/lab/red_elixir.png',
-      viewerLabel: 'Red Elixir'
+      viewerLabel: 'Crimson Rush Core'
     }
   ];
 }
@@ -4239,8 +4280,22 @@ function renderTraitGrid() {
   const activeUpgradeRow = getNftActiveUpgradeRow(nft);
   const modeText = state.upgradeEndpointAvailable ? 'Live upgrade endpoint detected' : 'Read-safe mode: upgrade endpoints not yet confirmed';
   el.upgradeModeBadge.textContent = modeText;
-  el.traitUpgradeInfo.innerHTML = `<div class="space-y-2"><div><strong class="text-cyan-300">Upgrade rules locked:</strong> exact trait value upgrades, Genesis only, one active upgrade per NFT, manual claim on finish, infinite levels with doubling duration.</div><div><strong class="text-cyan-300">Instant finish model:</strong> DSPOINC-based and intentionally more expensive than simple time scaling. This UI calculates a preview cost, but the backend remains source of truth.</div><div><strong class="text-cyan-300">Current page mode:</strong> ${escapeHtml(modeText)}.</div></div>`;
-
+el.traitUpgradeInfo.innerHTML = `
+  <div class="space-y-2">
+    <div>
+      <strong class="text-cyan-300">Upgrade rules locked:</strong>
+      exact trait value upgrades, Genesis only, one active upgrade per NFT, manual claim on finish, and long-term level scaling with an early exponential phase that softens into slower growth at higher levels.
+    </div>
+    <div>
+      <strong class="text-cyan-300">Instant finish model:</strong>
+      DSPOINC-based and intentionally more expensive than simple time scaling. This UI calculates a preview cost, but the backend remains source of truth.
+    </div>
+    <div>
+      <strong class="text-cyan-300">Current page mode:</strong>
+      ${escapeHtml(modeText)}.
+    </div>
+  </div>
+`;
   if (!Array.isArray(traits) || !traits.length) {
     el.traitGrid.innerHTML = `<div class="warnbox text-sm">No trait data was found for this selected Genesis mouse.</div>`;
     setExpandedTraitKey(null);
