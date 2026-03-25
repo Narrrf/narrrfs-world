@@ -3460,20 +3460,60 @@ function selectNftByTokenId(tokenId, options = {}) {
 
 function getNftsWithActionableQueueState() {
   return getVerifiedGenesisNfts()
-    .map(nft => ({
-      nft,
-      summary: getNftUpgradeSummary(nft),
-      traits: normalizeNftTraits(nft)
-    }))
+    .map(nft => {
+      const summary = getNftUpgradeSummary(nft);
+      const traits = normalizeNftTraits(nft);
+      const activeRow = getNftActiveUpgradeRow(nft);
+
+      const activeEndTime = activeRow?.upgrade_ends_at
+        ? (parseLabUtcDate(activeRow.upgrade_ends_at)?.getTime() || Number.MAX_SAFE_INTEGER)
+        : Number.MAX_SAFE_INTEGER;
+
+      return {
+        nft,
+        summary,
+        traits,
+        activeRow,
+        queueSort: {
+          hasReady: safeNumber(summary.readyCount || 0) > 0 ? 1 : 0,
+          hasActive: safeNumber(summary.activeCount || 0) > 0 ? 1 : 0,
+          readyCount: safeNumber(summary.readyCount || 0),
+          activeCount: safeNumber(summary.activeCount || 0),
+          nextActionAt: activeEndTime
+        }
+      };
+    })
     .filter(item => item.summary.activeCount > 0 || item.summary.readyCount > 0)
     .sort((a, b) => {
-      if (b.summary.readyCount !== a.summary.readyCount) {
-        return b.summary.readyCount - a.summary.readyCount;
+      /* 1) claimable first */
+      if (b.queueSort.hasReady !== a.queueSort.hasReady) {
+        return b.queueSort.hasReady - a.queueSort.hasReady;
       }
-      if (b.summary.activeCount !== a.summary.activeCount) {
-        return b.summary.activeCount - a.summary.activeCount;
+
+      /* 2) among ready ones, more ready claims first */
+      if (b.queueSort.readyCount !== a.queueSort.readyCount) {
+        return b.queueSort.readyCount - a.queueSort.readyCount;
       }
-      return String(a.nft.nft_name || '').localeCompare(String(b.nft.nft_name || ''));
+
+      /* 3) then active upgrades */
+      if (b.queueSort.hasActive !== a.queueSort.hasActive) {
+        return b.queueSort.hasActive - a.queueSort.hasActive;
+      }
+
+      /* 4) among active ones, earliest finish first */
+      if (a.queueSort.nextActionAt !== b.queueSort.nextActionAt) {
+        return a.queueSort.nextActionAt - b.queueSort.nextActionAt;
+      }
+
+      /* 5) then more active count */
+      if (b.queueSort.activeCount !== a.queueSort.activeCount) {
+        return b.queueSort.activeCount - a.queueSort.activeCount;
+      }
+
+      /* 6) stable fallback */
+      return String(a.nft.nft_name || a.nft.token_id || '').localeCompare(
+        String(b.nft.nft_name || b.nft.token_id || '')
+      );
     });
 }
 

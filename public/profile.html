@@ -48,6 +48,8 @@ require_once 'discord-invite.php';
     });
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   
   <!-- 🔗 Discord Token of Render System -->
   <script src="discord-config.js"></script>
@@ -1054,6 +1056,139 @@ require_once 'discord-invite.php';
   box-shadow: 0 10px 24px rgba(245, 158, 11, 0.22);
 }
 
+/* 🧪 LAB BOOSTER STORE STYLING */
+
+.lab-boosters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-top: 20px;
+}
+
+/* Booster Card */
+.lab-booster-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+/* Hover effect */
+.lab-booster-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+}
+
+/* Color themes */
+.lab-booster-card.green {
+  border-color: rgba(16,185,129,0.3);
+  box-shadow: 0 0 25px rgba(16,185,129,0.08);
+}
+
+.lab-booster-card.blue {
+  border-color: rgba(59,130,246,0.3);
+  box-shadow: 0 0 25px rgba(59,130,246,0.08);
+}
+
+.lab-booster-card.red {
+  border-color: rgba(239,68,68,0.3);
+  box-shadow: 0 0 25px rgba(239,68,68,0.08);
+}
+
+/* Title */
+.lab-booster-title {
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+/* Effect text */
+.lab-booster-effect {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
+/* Model viewer wrapper */
+.booster-viewer-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 140px;
+  position: relative;
+  overflow: visible;
+}
+
+/* 🎯 TARGET: GLB + IMG inside viewer */
+.booster-viewer-shell model-viewer,
+.booster-viewer-shell img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+
+  /* 🔥 FIX POSITION */
+  transform: translate(8px, -12px);
+}
+
+.booster-model-viewer {
+  width: 100%;
+  height: 100%;
+}
+
+/* Price */
+.lab-booster-price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #facc15;
+}
+
+/* Buy button */
+.lab-booster-buy {
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 10px;
+  padding: 8px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+/* Button themes */
+.lab-booster-card.green .lab-booster-buy {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.lab-booster-card.blue .lab-booster-buy {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.lab-booster-card.red .lab-booster-buy {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
+.lab-booster-buy:hover {
+  transform: scale(1.05);
+  filter: brightness(1.15);
+}
+
+/* Sub name */
+.lab-booster-sub {
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .lab-boosters-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ✅ PANELS */
 .profile-v2-panels {
   padding: 0;
@@ -1144,6 +1279,129 @@ require_once 'discord-invite.php';
   }
 }
 
+.profile-store-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.profile-store-modal-card {
+  width: min(100%, 460px);
+  border-radius: 22px;
+  padding: 22px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(34,211,238,0.10), transparent 30%),
+    linear-gradient(180deg, rgba(15,23,42,0.96), rgba(30,27,75,0.96));
+  border: 1px solid rgba(148,163,184,0.18);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+}
+
+.profile-store-modal-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #67e8f9;
+}
+
+.profile-store-modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.profile-store-modal-icon {
+  font-size: 1.5rem;
+}
+
+.profile-store-modal-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.profile-store-modal-message {
+  margin-top: 14px;
+  color: #e2e8f0;
+  line-height: 1.55;
+}
+
+.profile-store-modal-highlight {
+  margin-top: 16px;
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(59,130,246,0.24);
+  background: rgba(30,41,59,0.72);
+}
+
+.profile-store-modal-highlight-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #93c5fd;
+}
+
+.profile-store-modal-highlight-value {
+  margin-top: 6px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.profile-store-modal-note {
+  margin-top: 14px;
+  font-size: 0.86rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.profile-store-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.profile-store-modal-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.profile-store-modal-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.profile-store-modal-btn.primary {
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.profile-store-modal-btn.danger {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.profile-store-modal-btn.ghost {
+  color: #e2e8f0;
+  border: 1px solid rgba(148,163,184,0.18);
+  background: rgba(15,23,42,0.65);
+}
+
 /* 🧰 PROFILE 2.0 UTILITY STRIP */
 .profile-v2-utility-strip {
   max-width: 1150px;
@@ -1228,6 +1486,43 @@ require_once 'discord-invite.php';
   background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
   font-weight: 800;
+}
+
+.lab-booster-buy.btn-like-lab {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.lab-booster-buy.btn-like-lab.green {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.lab-booster-buy.btn-like-lab.blue {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.lab-booster-buy.btn-like-lab.red {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.lab-booster-buy.btn-like-lab:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.22);
+}
+
+.lab-booster-buy.btn-like-lab:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* 🎁 chest utility transplant */
@@ -6000,6 +6295,81 @@ async function verifyNFTs() {
   }
 }
 
+function getLabBoosterCatalog() {
+  return [
+    {
+      itemId: 33,
+      name: 'Green Elixir',
+      effect: '-25% remaining time',
+      reductionPercent: 25,
+      icon: '🟢',
+      tone: 'green',
+      glbPath: 'img/lab/green_elixir.glb',
+      posterPath: 'img/lab/green_elixir.png',
+      viewerLabel: 'Emerald Lab Boost'
+    },
+    {
+      itemId: 34,
+      name: 'Blue Elixir',
+      effect: '-50% remaining time',
+      reductionPercent: 50,
+      icon: '🔵',
+      tone: 'blue',
+      glbPath: 'img/lab/blue_elixir.glb',
+      posterPath: 'img/lab/blue_elixir.png',
+      viewerLabel: 'Azure Time Collapse'
+    },
+    {
+      itemId: 35,
+      name: 'Red Elixir',
+      effect: '-75% remaining time',
+      reductionPercent: 75,
+      icon: '🔴',
+      tone: 'red',
+      glbPath: 'img/lab/red_elixir.glb',
+      posterPath: 'img/lab/red_elixir.png',
+      viewerLabel: 'Crimson Rush Core'
+    }
+  ];
+}
+
+/**
+ * Returns formatted price label for lab booster items
+ */
+function getLabBoosterPriceLabel(itemId) {
+  const priceMap = {
+    33: 100000,
+    34: 250000,
+    35: 500000
+  };
+
+  const price = priceMap[itemId];
+
+  if (!price) {
+    return 'Price unavailable';
+  }
+
+  return `${formatProfileStoreNumber(price)} DSPOINC`;
+}
+
+function renderLabBoosterViewer(booster) {
+  return `
+    <div class="booster-viewer-shell ${booster.tone}">
+      <div class="booster-glow-pill">${booster.viewerLabel}</div>
+      <model-viewer
+        class="booster-model-viewer"
+        src="${booster.glbPath}"
+        poster="${booster.posterPath}"
+        camera-controls
+        auto-rotate
+        shadow-intensity="1"
+        exposure="1.1"
+        loading="eager"
+      ></model-viewer>
+    </div>
+  `;
+}
+
 // Extract traits from NFT data and store them
 function extractAndStoreTraits(nfts) {
   const allTraits = new Set();
@@ -6777,6 +7147,207 @@ async function loadProfileStore(discordId, baseUrlOverride) {
   }
 }
 
+function getProfileStoreModalRoot() {
+  let modalRoot = document.getElementById('profile-store-modal-root');
+  if (!modalRoot) {
+    modalRoot = document.createElement('div');
+    modalRoot.id = 'profile-store-modal-root';
+    document.body.appendChild(modalRoot);
+  }
+  return modalRoot;
+}
+
+function renderProfileStoreModal({
+  eyebrow = '',
+  title = '',
+  icon = '🧀',
+  message = '',
+  note = '',
+  highlightLabel = '',
+  highlightValue = '',
+  confirmText = 'OK',
+  cancelText = '',
+  confirmVariant = 'primary'
+} = {}) {
+  const variantClass =
+    confirmVariant === 'danger'
+      ? 'profile-store-modal-btn danger'
+      : 'profile-store-modal-btn primary';
+
+  return `
+    <div class="profile-store-modal-backdrop">
+      <div class="profile-store-modal-card animate-fade-in">
+        <div class="profile-store-modal-eyebrow">${eyebrow}</div>
+        <div class="profile-store-modal-title-row">
+          <span class="profile-store-modal-icon">${icon}</span>
+          <h3 class="profile-store-modal-title">${title}</h3>
+        </div>
+
+        <div class="profile-store-modal-message">${message}</div>
+
+        ${highlightLabel && highlightValue ? `
+          <div class="profile-store-modal-highlight">
+            <div class="profile-store-modal-highlight-label">${highlightLabel}</div>
+            <div class="profile-store-modal-highlight-value">${highlightValue}</div>
+          </div>
+        ` : ''}
+
+        ${note ? `<div class="profile-store-modal-note">${note}</div>` : ''}
+
+        <div class="profile-store-modal-actions">
+          ${cancelText ? `<button type="button" class="profile-store-modal-btn ghost" data-profile-store-cancel>${cancelText}</button>` : ''}
+          <button type="button" class="${variantClass}" data-profile-store-confirm>${confirmText}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showProfileStoreConfirmModal(options = {}) {
+  return new Promise((resolve) => {
+    const root = getProfileStoreModalRoot();
+    root.innerHTML = renderProfileStoreModal(options);
+
+    const close = (result) => {
+      root.innerHTML = '';
+      resolve(result);
+    };
+
+    root.querySelector('[data-profile-store-confirm]')?.addEventListener('click', () => close(true));
+    root.querySelector('[data-profile-store-cancel]')?.addEventListener('click', () => close(false));
+    root.querySelector('.profile-store-modal-backdrop')?.addEventListener('click', (event) => {
+      if (event.target.classList.contains('profile-store-modal-backdrop')) {
+        close(false);
+      }
+    });
+  });
+}
+
+function showProfileStoreMessageModal(options = {}) {
+  return new Promise((resolve) => {
+    const root = getProfileStoreModalRoot();
+    root.innerHTML = renderProfileStoreModal(options);
+
+    const close = () => {
+      root.innerHTML = '';
+      resolve(true);
+    };
+
+    root.querySelector('[data-profile-store-confirm]')?.addEventListener('click', close);
+    root.querySelector('.profile-store-modal-backdrop')?.addEventListener('click', (event) => {
+      if (event.target.classList.contains('profile-store-modal-backdrop')) {
+        close();
+      }
+    });
+  });
+}
+
+/**
+ * Attach click listeners for booster buy buttons in profile store
+ */
+function attachBoosterBuyListeners() {
+  document.querySelectorAll('[data-buy-booster]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const itemId = Number(button.getAttribute('data-buy-booster') || 0);
+      const userId =
+        profileStoreState.userId ||
+        window.sessionDiscordId ||
+        localStorage.getItem('narrrfs_last_discord_id') ||
+        localStorage.getItem('discord_id') ||
+        '';
+
+      const apiBase =
+        profileStoreState.apiBaseUrl ||
+        getApiBaseUrl();
+
+      if (!itemId || !userId) {
+        await showProfileStoreMessageModal({
+          eyebrow: 'Profile Store',
+          title: 'No Player Session Found',
+          icon: '⚠️',
+          message: 'No player session was found for this purchase.',
+          note: 'Please log in with Discord before buying Lab boosters.',
+          confirmText: 'Close',
+          confirmVariant: 'danger'
+        });
+        return;
+      }
+
+      const booster = getLabBoosterCatalog().find(item => item.itemId === itemId);
+      if (!booster) {
+        return;
+      }
+
+      const confirmed = await showProfileStoreConfirmModal({
+        eyebrow: 'Lab Store Purchase',
+        title: `Buy ${booster.name}?`,
+        icon: '🛒',
+        message: `${booster.effect} will be added to your inventory as a store purchase.`,
+        highlightLabel: 'Store Price',
+        highlightValue: getLabBoosterPriceLabel(booster.itemId),
+        note: 'The existing store purchase flow remains authoritative for price, balance checks, purchase history, and inventory updates.',
+        confirmText: 'Buy Booster',
+        cancelText: 'Cancel',
+        confirmVariant: 'primary'
+      });
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        button.disabled = true;
+
+        const response = await fetch(`${apiBase}/api/store/purchase.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            user_id: String(userId),
+            item_id: itemId,
+            quantity: 1
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || `Purchase failed (${response.status})`);
+        }
+
+        await loadProfileStore(userId, apiBase);
+
+        await showProfileStoreMessageModal({
+          eyebrow: 'Lab Store Purchase',
+          title: `${booster.name} Added`,
+          icon: '🎉',
+          message: `${booster.name} was purchased and added to your Lab inventory.`,
+          note: 'You can now use it immediately in the Genesis Lab.',
+          confirmText: 'Nice',
+          confirmVariant: 'primary'
+        });
+      } catch (err) {
+        console.error('Booster purchase failed:', err);
+
+        await showProfileStoreMessageModal({
+          eyebrow: 'Lab Store Purchase',
+          title: 'Purchase Failed',
+          icon: '⚠️',
+          message: err.message || 'Purchase failed',
+          note: 'No booster inventory changes were applied.',
+          confirmText: 'Close',
+          confirmVariant: 'danger'
+        });
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+}
+
 function renderProfileStore() {
   const itemsContainer = document.getElementById('profile-store-items');
   const balanceEl = document.getElementById('profile-store-balance');
@@ -6812,9 +7383,58 @@ function renderProfileStore() {
     itemsRendered += 1;
   });
 
+  if (itemsRendered > 0) {
+    const boosterWrapper = document.createElement('div');
+    boosterWrapper.innerHTML = renderBoosterStoreSection();
+    itemsContainer.appendChild(boosterWrapper);
+    attachBoosterBuyListeners();
+  }
+
   if (itemsRendered === 0) {
     itemsContainer.innerHTML = '<div class="text-center text-gray-400 py-3">Store catalog is being prepared. Check back soon!</div>';
   }
+}
+
+function renderBoosterStoreSection() {
+  return `
+    <div class="mt-6">
+      <div class="text-lg font-bold text-cyan-300 mb-3">🧪 Lab Boosters</div>
+
+      <div class="lab-boosters-grid">
+        ${getLabBoosterCatalog().map(booster => {
+          return `
+            <div class="lab-booster-card ${booster.tone}">
+
+              <div class="lab-booster-title">
+                ${booster.name}
+              </div>
+
+              <div class="lab-booster-effect">
+                ${booster.effect}
+              </div>
+
+              <div class="lab-booster-sub">
+                ${getLabBoosterPriceLabel(booster.itemId)}
+              </div>
+
+              <div class="booster-viewer-shell">
+                ${renderLabBoosterViewer(booster)}
+              </div>
+
+<button
+  type="button"
+  class="lab-booster-buy btn-like-lab ${booster.tone}"
+  data-buy-booster="${booster.itemId}"
+>
+  🛒 Buy 1
+</button>
+
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function buildProfileStoreCard(defKey, def, item, owned) {

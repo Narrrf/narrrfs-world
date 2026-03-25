@@ -18,3 +18,27 @@
 [24-Mar-2026 15:52:16 Europe/Berlin] File exists: YES
 [24-Mar-2026 15:52:16 Europe/Berlin] PHP OS: Windows
 [24-Mar-2026 15:52:16 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 19:36:27 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 19:36:27 Europe/Berlin] File exists: YES
+[24-Mar-2026 19:36:27 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 19:36:27 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 19:36:36 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 19:36:36 Europe/Berlin] File exists: YES
+[24-Mar-2026 19:36:36 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 19:36:36 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 19:41:43 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 19:41:43 Europe/Berlin] File exists: YES
+[24-Mar-2026 19:41:43 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 19:41:43 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 19:42:09 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 19:42:09 Europe/Berlin] File exists: YES
+[24-Mar-2026 19:42:09 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 19:42:09 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 19:44:40 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 19:44:40 Europe/Berlin] File exists: YES
+[24-Mar-2026 19:44:40 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 19:44:40 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[24-Mar-2026 20:02:45 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[24-Mar-2026 20:02:45 Europe/Berlin] File exists: YES
+[24-Mar-2026 20:02:45 Europe/Berlin] PHP OS: Windows
+[24-Mar-2026 20:02:45 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
