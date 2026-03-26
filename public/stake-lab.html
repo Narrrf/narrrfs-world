@@ -137,6 +137,16 @@ require_once 'discord-invite.php';
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
       border-color: rgba(147, 51, 234, 0.5);
     }
+
+
+    .quick-jump-fab {
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
   </style>
 </head>
 
@@ -195,6 +205,10 @@ require_once 'discord-invite.php';
     </div>
   </div>
 
+  <button type="button" onclick="scrollToSection('stake-lab-verify-section')" class="quick-jump-fab fixed bottom-5 right-5 z-40 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-3 px-5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg border border-emerald-300/30">
+    ✅ Verify NFTs Here
+  </button>
+
   <!-- 🧊 Main Content (Hidden until access verified) -->
   <div id="main-content" style="display: none;">
 
@@ -205,12 +219,31 @@ require_once 'discord-invite.php';
           🧊 DSPOINC Staking Lab
         </h1>
         <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-          Freeze your DSPOINC for selected durations and earn rewards. The longer you stake, the higher your reward!
+          Freeze your DSPOINC for selected durations and earn rewards. You can also verify and save your Narrrfs World NFTs directly on this page.
         </p>
-        <div class="bg-blue-900/30 border border-blue-500/50 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
+        <div class="bg-blue-900/30 border border-blue-500/50 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
           <p class="text-blue-100 text-sm">
             <strong>How It Works:</strong> Freeze your DSPOINC for 1, 3, 6, 12, 24, or 36 months. After the freeze period, receive your original DSPOINC plus a reward bonus. All transactions are tracked in your DSPOINC Journey.
           </p>
+        </div>
+        <div class="bg-gradient-to-r from-emerald-900/40 via-cyan-900/40 to-blue-900/40 border border-emerald-400/40 rounded-2xl p-5 mb-8 max-w-4xl mx-auto shadow-lg">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-left">
+            <div>
+              <div class="text-xs uppercase tracking-[0.28em] text-emerald-300/80 mb-2">Dual purpose page</div>
+              <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">✅ NFT verification happens here too</h2>
+              <p class="text-sm md:text-base text-cyan-100/90 max-w-2xl">
+                This page is not only for staking. You can jump straight to the verification area below to connect your wallet, load your Narrrfs NFTs, and verify &amp; save them here.
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 lg:justify-end">
+              <button type="button" onclick="scrollToSection('stake-lab-verify-section')" class="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                ✅ Jump to NFT Verification
+              </button>
+              <button type="button" onclick="scrollToSection('staking-controls-section')" class="bg-white/10 hover:bg-white/20 border border-cyan-300/30 text-cyan-100 font-semibold py-3 px-6 rounded-xl transition-all duration-300">
+                ❄️ Jump to Staking
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -232,7 +265,7 @@ require_once 'discord-invite.php';
                   <strong class="text-cyan-200">✅ No Wallet Connection Required for Staking:</strong> DSPOINC staking works directly with your Discord account. Simply log in with Discord to start staking your DSPOINC - no Solana wallet connection needed!
                 </p>
                 <p>
-                  <strong class="text-cyan-200">🎴 NFT Collection Feature:</strong> The "Your NFT Collection" section below is a <strong>separate feature</strong> that displays your Narrrf's World NFTs. This feature does <strong>not affect staking</strong> and is optional. Wallet connection is only needed if you want to view your NFT collection.
+                  <strong class="text-cyan-200">🎴 NFT Verification Feature:</strong> The section below is an optional verification area where holders can connect a wallet, load Narrrfs World NFTs, and use <strong>Verify &amp; Save My NFTs</strong> directly on this page. This feature does <strong>not affect staking</strong> and exists to make holder verification easier.
                 </p>
                 <p class="text-cyan-200/80 italic">
                   💡 <strong>Future Development:</strong> NFT-based staking features are planned for future updates. For now, DSPOINC staking is independent of NFT ownership.
@@ -245,7 +278,7 @@ require_once 'discord-invite.php';
     </section>
 
     <!-- 📊 Balance Dashboard -->
-    <section class="relative z-10 px-4 md:px-6 pb-8">
+    <section id="staking-controls-section" class="relative z-10 px-4 md:px-6 pb-8">
       <div class="max-w-7xl mx-auto">
         <div class="bg-black/50 backdrop-blur-md rounded-xl p-6 border border-blue-400/30 mb-8">
           <h2 class="text-2xl font-bold text-blue-400 mb-6">💰 Your DSPOINC Balance</h2>
@@ -453,66 +486,107 @@ require_once 'discord-invite.php';
     </div>
 
     <!-- 🎴 NFT Collection Display Section -->
-    <section class="relative z-10 px-4 md:px-6 pb-8">
+    <section id="stake-lab-verify-section" class="relative z-10 px-4 md:px-6 pb-8">
       <div class="max-w-7xl mx-auto">
         <div class="bg-black/50 backdrop-blur-md rounded-xl p-6 border border-blue-400/30">
-          <h2 class="text-2xl font-bold text-blue-400 mb-6">🎴 Your NFT Collection</h2>
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <div>
+              <div class="text-xs uppercase tracking-[0.28em] text-cyan-300/80 mb-2">Optional holder tool</div>
+              <h2 class="text-2xl md:text-3xl font-bold text-blue-300">✅ Verify &amp; Load Your NFTs Here</h2>
+              <p class="text-gray-300 mt-2 max-w-3xl">
+                This is the verification area for Narrrfs World holders inside the Stake Lab. Connect your wallet, load your NFTs, and verify &amp; save them here without leaving this page.
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 lg:justify-end">
+              <button type="button" onclick="scrollToSection('wallet-connection-section')" class="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-3 px-5 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                🔐 Start Verification Here
+              </button>
+              <button type="button" onclick="scrollToSection('staking-controls-section')" class="bg-white/10 hover:bg-white/20 border border-blue-300/30 text-blue-100 font-semibold py-3 px-5 rounded-xl transition-all duration-300">
+                ❄️ Back to Staking
+              </button>
+            </div>
+          </div>
           
           <!-- Wallet Connection Section -->
-          <div id="wallet-connection-section" class="mb-6">
+          <div id="wallet-connection-section" class="mb-6 scroll-mt-28">
             <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl p-6 border border-purple-400/30">
-              <h3 class="text-xl font-bold text-purple-300 mb-4">Connect Your Solana Wallet</h3>
-              <p class="text-gray-300 mb-4">
-  Connect your wallet to view and verify your Narrrfs World NFTs from our two collections: Genesis Genetic and VIP Drop.
-</p>
-              
-<!-- 🔍 How NFT Display & Verification Works Section -->
-<div class="bg-gradient-to-br from-gray-800 via-purple-800/20 to-gray-700 rounded-xl p-6 mb-6 border border-purple-400/30">
-  <h4 class="text-lg font-semibold text-purple-300 mb-4 flex items-center gap-2">
-    🔍 How NFT Display & Verification Works
-  </h4>
+              <div class="bg-gradient-to-r from-emerald-900/40 via-cyan-900/30 to-blue-900/40 rounded-xl border border-emerald-400/30 p-4 mb-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div>
+                    <h3 class="text-xl font-bold text-emerald-300 mb-2">🔐 Verify your NFTs directly on this page</h3>
+                    <p class="text-sm md:text-base text-cyan-100/90">
+                      Follow this flow: <strong>Connect Wallet</strong> → <strong>Load My NFTs</strong> → <strong>Verify &amp; Save My NFTs</strong>. Staking stays separate, but holder verification can be completed right here.
+                    </p>
+                  </div>
+                  <button type="button" onclick="scrollToSection('wallet-connected')" class="bg-white/10 hover:bg-white/20 border border-emerald-300/30 text-emerald-100 font-semibold py-3 px-5 rounded-xl transition-all duration-300">
+                    ⬇️ Follow the verification steps
+                  </button>
+                </div>
+              </div>
 
-  <div class="space-y-3 text-left">
-    <div class="flex items-start gap-3">
-      <span class="text-purple-400 font-bold text-lg">1.</span>
-      <div>
-        <strong class="text-purple-100">Wallet Connection:</strong>
-        Connect your Solana wallet securely to access your NFT collection.
-      </div>
-    </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                <div class="rounded-xl border border-purple-400/30 bg-black/20 p-4">
+                  <div class="text-xs uppercase tracking-[0.22em] text-purple-300/70 mb-2">Step 1</div>
+                  <div class="text-lg font-bold text-white mb-1">Connect Wallet</div>
+                  <p class="text-sm text-gray-300">Connect your Solana wallet to access your Narrrfs World NFTs.</p>
+                </div>
+                <div class="rounded-xl border border-blue-400/30 bg-black/20 p-4">
+                  <div class="text-xs uppercase tracking-[0.22em] text-blue-300/70 mb-2">Step 2</div>
+                  <div class="text-lg font-bold text-white mb-1">Load My NFTs</div>
+                  <p class="text-sm text-gray-300">Scan the Genesis and VIP collections and display the matching NFTs here.</p>
+                </div>
+                <div class="rounded-xl border border-emerald-400/30 bg-black/20 p-4">
+                  <div class="text-xs uppercase tracking-[0.22em] text-emerald-300/70 mb-2">Step 3</div>
+                  <div class="text-lg font-bold text-white mb-1">Verify &amp; Save</div>
+                  <p class="text-sm text-gray-300">Sign once to verify holdership and save the verified snapshot for backend use.</p>
+                </div>
+              </div>
 
-    <div class="flex items-start gap-3">
-      <span class="text-purple-400 font-bold text-lg">2.</span>
-      <div>
-        <strong class="text-purple-100">NFT Collection Scan:</strong>
-        We use
-        <a href="https://helius.xyz/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Helius APIs</a>
-        to search your wallet for Narrrfs World: Genesis Genetic and Narrrf Genesis VIP Drop NFTs.
-      </div>
-    </div>
+              <details class="bg-gradient-to-br from-gray-800 via-purple-800/20 to-gray-700 rounded-xl p-6 mb-6 border border-purple-400/30">
+                <summary class="text-lg font-semibold text-purple-300 cursor-pointer select-none flex items-center gap-2">
+                  🔍 How NFT display &amp; verification works
+                </summary>
+                <div class="space-y-3 text-left mt-4">
+                  <div class="flex items-start gap-3">
+                    <span class="text-purple-400 font-bold text-lg">1.</span>
+                    <div>
+                      <strong class="text-purple-100">Wallet Connection:</strong>
+                      Connect your Solana wallet securely to access your NFT collection.
+                    </div>
+                  </div>
 
-    <div class="flex items-start gap-3">
-      <span class="text-purple-400 font-bold text-lg">3.</span>
-      <div>
-        <strong class="text-purple-100">NFT Gallery Display:</strong>
-        Use <span class="text-blue-300 font-semibold">Load My NFTs</span> to view your matching NFTs with images, names, and available traits.
-      </div>
-    </div>
+                  <div class="flex items-start gap-3">
+                    <span class="text-purple-400 font-bold text-lg">2.</span>
+                    <div>
+                      <strong class="text-purple-100">NFT Collection Scan:</strong>
+                      We use
+                      <a href="https://helius.xyz/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Helius APIs</a>
+                      to search your wallet for Narrrfs World: Genesis Genetic and Narrrf Genesis VIP Drop NFTs.
+                    </div>
+                  </div>
 
-    <div class="flex items-start gap-3">
-      <span class="text-purple-400 font-bold text-lg">4.</span>
-      <div>
-        <strong class="text-purple-100">Verification &amp; Secure Save:</strong>
-        Use <span class="text-green-300 font-semibold">Verify &amp; Save My NFTs</span> to sign a message with your connected Solana wallet, verify your holdership, update your Discord role eligibility, and securely save your verified NFT and Genesis trait data in the Narrrf’s World SQL database for admin review and future ecosystem features.
-      </div>
-    </div>
-  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="text-purple-400 font-bold text-lg">3.</span>
+                    <div>
+                      <strong class="text-purple-100">NFT Gallery Display:</strong>
+                      Use <span class="text-blue-300 font-semibold">Load My NFTs</span> to view your matching NFTs with images, names, and available traits.
+                    </div>
+                  </div>
 
-  <div class="mt-4 rounded-lg border border-yellow-400/30 bg-yellow-500/10 p-3 text-xs text-yellow-200">
-    <strong class="text-yellow-100">Ledger users:</strong>
-    Open the Solana app on your Ledger, enable Blind Signing, and close Ledger Wallet / Ledger Live before signing.
-  </div>
-</div>
+                  <div class="flex items-start gap-3">
+                    <span class="text-purple-400 font-bold text-lg">4.</span>
+                    <div>
+                      <strong class="text-purple-100">Verification &amp; Secure Save:</strong>
+                      Use <span class="text-green-300 font-semibold">Verify &amp; Save My NFTs</span> to sign a message with your connected Solana wallet, verify your holdership, update your Discord role eligibility, and securely save your verified NFT and Genesis trait data in the Narrrf’s World SQL database for admin review and future ecosystem features.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4 rounded-lg border border-yellow-400/30 bg-yellow-500/10 p-3 text-xs text-yellow-200">
+                  <strong class="text-yellow-100">Ledger users:</strong>
+                  Open the Solana app on your Ledger, enable Blind Signing, and close Ledger Wallet / Ledger Live before signing.
+                </div>
+              </details>
               
               <!-- 🔗 Powered by Helius Section -->
               <div class="bg-gradient-to-br from-blue-900/30 via-blue-800/20 to-blue-900/30 rounded-xl p-4 mb-6 border border-blue-400/30">
@@ -551,12 +625,12 @@ require_once 'discord-invite.php';
 
   <button id="fetch-nfts-btn" 
           class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-    🔍 Load My NFTs
+    🔍 Step 2: Load My NFTs
   </button>
 
   <button id="verify-stake-nfts-btn"
           class="w-full mt-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-    ✅ Verify & Save My NFTs
+    ✅ Step 3: Verify &amp; Save My NFTs
   </button>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
@@ -608,7 +682,7 @@ require_once 'discord-invite.php';
               <div class="text-3xl mb-3">🧀</div>
               <h3 class="text-xl font-bold text-yellow-300 mb-2">🚧 Under Cheese-struction</h3>
               <p class="text-yellow-200 text-sm">
-                The NFT Collection display feature is currently being tested and improved. 
+                The verification and NFT display flow is currently being tested and improved.
                 If you experience any issues, please report them in our Discord server.
               </p>
             </div>
@@ -2003,6 +2077,13 @@ function renderStakeLabSavedSnapshot() {
   `;
 }
 
+function scrollToSection(sectionId) {
+  const target = document.getElementById(sectionId);
+  if (!target) return;
+
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function restoreSavedStakeLabNfts() {
   const snapshot = loadStakeLabSnapshot(STAKE_LAB_VERIFIED_NFTS_KEY) || loadStakeLabSnapshot(STAKE_LAB_LOADED_NFTS_KEY);
   if (!snapshot || !Array.isArray(snapshot.nfts) || snapshot.nfts.length === 0) {
@@ -2026,6 +2107,9 @@ function restoreSavedStakeLabNfts() {
   galleryDiv.classList.remove('hidden');
   displayNFTs(loadedNFTs);
   renderStakeLabSavedSnapshot();
+  setTimeout(() => {
+    scrollToSection('nft-gallery-section');
+  }, 150);
 }
     
     // Connect Phantom wallet
@@ -2047,6 +2131,9 @@ connectedWalletAddress = publicKey;
     localStorage.setItem('walletAddress', connectedWalletAddress);
 
     console.log('🔐 Stake Lab wallet connected:', connectedWalletAddress, getWalletProviderLabel(provider));
+    setTimeout(() => {
+      scrollToSection('wallet-connected');
+    }, 150);
   } catch (error) {
     console.error('Wallet connection error:', error);
     alert('Failed to connect wallet: ' + error.message);
@@ -2718,6 +2805,10 @@ for (const [collectionAddress, info] of Object.entries(collections)) {
       foundNFTs,
       loadedNFTs
     );
+
+    setTimeout(() => {
+      scrollToSection('saved-nft-snapshot-panel');
+    }, 150);
   } catch (error) {
     console.error("Stake verification error:", error);
     alert("Verification failed: " + error.message);
@@ -2777,7 +2868,7 @@ function initWalletConnection() {
     }
 
     if (safeFetchBtn) {
-      safeFetchBtn.textContent = '📱 Verify on Profile';
+      safeFetchBtn.textContent = '📱 Mobile Verification Help';
       safeFetchBtn.addEventListener('click', function () {
         window.location.href = 'profile.html';
       });
