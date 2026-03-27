@@ -1,92 +1,210 @@
 <?php
 session_start();
-header('Access-Control-Allow-Origin: https://narrrfs.world');
-header('Access-Control-Allow-Credentials: true');
+header('Content-Type: application/json');
 
-// Use a safe relative path so it works both locally and on Render!
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
-$db = new PDO('sqlite:' . $dbPath);
-
-// Local development fallback
-$isLocalDevelopment = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
-                      strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
-$LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
-
-// First try to get user from session
-$user_id = $_SESSION['discord_id'] ?? '';
-
-// If not in session, try GET param as fallback
-if (!$user_id) {
-    $user_id = $_GET['user_id'] ?? '';
-}
-
-// For local development, use Narrrf's account if no user_id provided
-if (!$user_id && $isLocalDevelopment) {
-    $user_id = $LOCAL_TEST_DISCORD_ID;
-}
-
-// If still no user_id, return error
-if (!$user_id) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Not authenticated']);
+/**
+ * Return a JSON response and stop execution.
+ */
+function json_response(array $payload, int $statusCode = 200): void {
+    http_response_code($statusCode);
+    echo json_encode($payload);
     exit;
 }
 
-// Get user info
-$stmt = $db->prepare("SELECT username, avatar_url FROM tbl_users WHERE discord_id = ?");
-$stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// If avatar_url is just a hash, convert it to full URL
-if ($user && $user['avatar_url'] && !str_starts_with($user['avatar_url'], 'http')) {
-    $user['avatar_url'] = "https://cdn.discordapp.com/avatars/{$user_id}/{$user['avatar_url']}.png";
+/**
+ * Return true when running in localhost-style development.
+ */
+function is_local_development(): bool {
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    return strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false;
 }
 
-// Get total DSPOINC for this user
-$stmt = $db->prepare("SELECT SUM(score) AS total_dspoinc FROM tbl_user_scores WHERE user_id = ?");
-$stmt->execute([$user_id]);
-$row = $stmt->fetch();
+/**
+ * Resolve the active user with session-first auth in production.
+ */
+function resolve_user_id(): string {
+    $LOCAL_TEST_DISCORD_ID = '328601656659017732';
 
-// Default to 0 if not found
-$total_dspoinc = (int)($row['total_dspoinc'] ?? 0);
+    $isLocalDevelopment = is_local_development();
+    $sessionUserId = $_SESSION['discord_id'] ?? '';
+    $requestUserId = trim((string)($_GET['user_id'] ?? ''));
 
-// Get guilds from session
-$guilds = $_SESSION['guilds'] ?? [];
+    if ($isLocalDevelopment && $requestUserId !== '') {
+        return $requestUserId;
+    }
 
-// Get additional stats
-// 1. Total adjustments count
-$stmt = $db->prepare("SELECT COUNT(*) as adj_count FROM tbl_score_adjustments WHERE user_id = ?");
-$stmt->execute([$user_id]);
-$adjustments = $stmt->fetch();
+    $userId = $sessionUserId;
 
-// 2. Unique score sources
-$stmt = $db->prepare("SELECT COUNT(DISTINCT source) as source_count FROM tbl_user_scores WHERE user_id = ?");
-$stmt->execute([$user_id]);
-$sources = $stmt->fetch();
+    if ($requestUserId !== '' && $sessionUserId !== '' && $requestUserId !== $sessionUserId) {
+        json_response([
+            'success' => false,
+            'error' => 'Unauthorized: user_id mismatch'
+        ], 403);
+    }
 
-// 3. First score date
-$stmt = $db->prepare("SELECT MIN(timestamp) as first_score FROM tbl_score_adjustments WHERE user_id = ?");
-$stmt->execute([$user_id]);
-$firstScore = $stmt->fetch();
+    if ($userId === '' && $isLocalDevelopment) {
+        return $LOCAL_TEST_DISCORD_ID;
+    }
 
-// 4. Role count
-$stmt = $db->prepare("SELECT COUNT(*) as role_count FROM tbl_user_roles WHERE user_id = ?");
-$stmt->execute([$user_id]);
-$roles = $stmt->fetch();
+    return $userId;
+}
 
-// Respond with user info and scores
-echo json_encode([
-    'discord_id' => $user_id,
-    'discord_name' => $user['username'] ?? 'Guest',
-    'avatar_url' => $user['avatar_url'] ?? 'https://cdn.discordapp.com/embed/avatars/0.png',
-    'guilds' => $guilds,
-    'total_dspoinc' => $total_dspoinc,
-    'total_spoinc' => floor($total_dspoinc / 10000),
-    'stats' => [
-        'adjustments_count' => (int)($adjustments['adj_count'] ?? 0),
-        'source_count' => (int)($sources['source_count'] ?? 0),
-        'first_score_date' => $firstScore['first_score'] ?? null,
-        'role_count' => (int)($roles['role_count'] ?? 0)
-    ]
-]);
+/**
+ * Build the database path for local or production environments.
+ */
+function get_database_path(): string {
+    if (is_local_development()) {
+        return __DIR__ . '/../../db/narrrf_world.sqlite';
+    }
+
+    return '/var/www/html/db/narrrf_world.sqlite';
+}
+
+/**
+ * Convert a Discord avatar hash into a full CDN URL when needed.
+ */
+function normalize_avatar_url(string $userId, ?string $avatarUrl): string {
+    $avatarUrl = trim((string)$avatarUrl);
+
+    if ($avatarUrl === '') {
+        return 'https://cdn.discordapp.com/embed/avatars/0.png';
+    }
+
+    if (strpos($avatarUrl, 'http') === 0) {
+        return $avatarUrl;
+    }
+
+    return "https://cdn.discordapp.com/avatars/{$userId}/{$avatarUrl}.png";
+}
+
+try {
+    $userId = resolve_user_id();
+
+    if ($userId === '') {
+        json_response([
+            'success' => false,
+            'error' => 'Not authenticated'
+        ], 401);
+    }
+
+    $dbPath = get_database_path();
+    $db = new PDO('sqlite:' . $dbPath);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    /**
+     * Get basic user identity data.
+     */
+    $stmt = $db->prepare("
+        SELECT username, avatar_url
+        FROM tbl_users
+        WHERE discord_id = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    /**
+     * Get canonical total DSPOINC from the score ledger.
+     */
+    $stmt = $db->prepare("
+        SELECT COALESCE(SUM(score), 0) AS total_dspoinc
+        FROM tbl_user_scores
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $totalRow = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    $totalDspoinc = (int)($totalRow['total_dspoinc'] ?? 0);
+
+    /**
+     * Get frozen DSPOINC from active stakes.
+     */
+    $stmt = $db->prepare("
+        SELECT COALESCE(SUM(amount), 0) AS frozen_dspoinc
+        FROM tbl_dspoinc_stakes
+        WHERE user_id = ?
+          AND status = 'active'
+    ");
+    $stmt->execute([$userId]);
+    $frozenRow = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    $frozenDspoinc = (int)($frozenRow['frozen_dspoinc'] ?? 0);
+
+    /**
+     * Canonical available DSPOINC.
+     */
+    $availableDspoinc = max(0, $totalDspoinc - $frozenDspoinc);
+
+    /**
+     * Get guilds from session.
+     */
+    $guilds = $_SESSION['guilds'] ?? [];
+
+    /**
+     * Get total adjustment count.
+     */
+    $stmt = $db->prepare("
+        SELECT COUNT(*) AS adj_count
+        FROM tbl_score_adjustments
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $adjustments = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    /**
+     * Get unique score source count.
+     */
+    $stmt = $db->prepare("
+        SELECT COUNT(DISTINCT source) AS source_count
+        FROM tbl_user_scores
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $sources = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    /**
+     * Get the first score adjustment date.
+     */
+    $stmt = $db->prepare("
+        SELECT MIN(timestamp) AS first_score
+        FROM tbl_score_adjustments
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $firstScore = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    /**
+     * Get the user's role count.
+     */
+    $stmt = $db->prepare("
+        SELECT COUNT(*) AS role_count
+        FROM tbl_user_roles
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $roles = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    json_response([
+        'success' => true,
+        'discord_id' => $userId,
+        'discord_name' => (string)($user['username'] ?? 'Guest'),
+        'avatar_url' => normalize_avatar_url($userId, $user['avatar_url'] ?? ''),
+        'guilds' => is_array($guilds) ? $guilds : [],
+        'total_dspoinc' => $totalDspoinc,
+        'frozen_dspoinc' => $frozenDspoinc,
+        'available_dspoinc' => $availableDspoinc,
+        'total_spoinc' => (int)floor($totalDspoinc / 10000),
+        'available_spoinc' => (int)floor($availableDspoinc / 10000),
+        'stats' => [
+            'adjustments_count' => (int)($adjustments['adj_count'] ?? 0),
+            'source_count' => (int)($sources['source_count'] ?? 0),
+            'first_score_date' => $firstScore['first_score'] ?? null,
+            'role_count' => (int)($roles['role_count'] ?? 0)
+        ]
+    ]);
+} catch (Exception $e) {
+    json_response([
+        'success' => false,
+        'error' => 'Failed to load score total',
+        'details' => $e->getMessage()
+    ], 500);
+}
 ?>

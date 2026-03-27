@@ -25,12 +25,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $request_user_id = $_GET['user_id'] ?? '';
 }
 
-// Use request user_id if provided (takes priority over session)
-if ($request_user_id) {
+// SECURITY: Only allow request user_id override on localhost
+if ($isLocalDevelopment && $request_user_id) {
     $user_id = $request_user_id;
+} else {
+    $user_id = $_SESSION['discord_id'] ?? '';
+
+    if ($request_user_id && $user_id && $request_user_id !== $user_id) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Unauthorized: user_id mismatch'
+        ]);
+        exit;
+    }
 }
 
-// For local development, use Narrrf's account if no session exists
+// Local development fallback
 if (!$user_id && $isLocalDevelopment) {
     $user_id = $LOCAL_TEST_DISCORD_ID;
 }
@@ -98,7 +108,7 @@ if ($tableCheck) {
     $frozen_balance = 0;
     $active_stakes_count = 0;
 }
-$available_balance = $total_dspoinc - $frozen_balance;
+$available_balance = max(0, (int)$total_dspoinc - (int)$frozen_balance);
 
 // NOW close the DB!
 $db->close();

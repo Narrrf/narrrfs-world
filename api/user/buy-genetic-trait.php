@@ -218,18 +218,6 @@ function user_owns_genetic_trait(PDO $pdo, string $userId, string $traitType, st
     return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function get_user_total_dspoinc(PDO $pdo, string $userId): int {
-    $stmt = $pdo->prepare("
-        SELECT COALESCE(SUM(score), 0) AS total_balance
-        FROM tbl_user_scores
-        WHERE user_id = ?
-    ");
-    $stmt->execute([$userId]);
-
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    return (int)($row['total_balance'] ?? 0);
-}
-
 function insert_dspoinc_spend(PDO $pdo, string $userId, int $amount, string $reason, string $reference): void {
     $negativeAmount = -abs($amount);
 

@@ -158,23 +158,34 @@ try {
     $now = date('Y-m-d H:i:s');
 
     // Update stake status to cancelled
-    $updateStmt = $pdo->prepare("
-        UPDATE tbl_dspoinc_stakes 
-        SET status = 'cancelled',
-            cancelled_at = ?,
-            penalty_amount = ?,
-            returned_amount = ?,
-            unstake_reason = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-    ");
-    $updateStmt->execute([
-        $now,
-        $penalty_amount,
-        $returned_amount,
-        $unstake_reason,
-        $stake_id
-    ]);
+$updateStmt = $pdo->prepare("
+    UPDATE tbl_dspoinc_stakes 
+    SET status = 'cancelled',
+        cancelled_at = ?,
+        penalty_amount = ?,
+        returned_amount = ?,
+        unstake_reason = ?,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+      AND user_id = ?
+      AND status = 'active'
+");
+$updateStmt->execute([
+    $now,
+    $penalty_amount,
+    $returned_amount,
+    $unstake_reason,
+    $stake_id,
+    $user_id
+]);
+
+if ($updateStmt->rowCount() !== 1) {
+    $pdo->rollBack();
+    json_response([
+        'success' => false,
+        'error' => 'Stake is no longer active or was already unstaked'
+    ], 409);
+}
 
     // CRITICAL: Add -penalty_amount to tbl_user_scores (NOT +returned_amount)
     // When staking, create-stake does NOT deduct from tbl_user_scores - the freeze is tracked
@@ -233,7 +244,7 @@ try {
             'returned_amount' => $returned_amount,
             'status' => 'cancelled',
             'cancelled_at' => $now,
-            'new_balance' => $new_balance
+            'new_total_balance' => $new_balance
         ]
     ]);
 

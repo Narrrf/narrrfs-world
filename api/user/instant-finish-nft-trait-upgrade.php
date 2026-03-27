@@ -536,7 +536,7 @@ function get_user_balance_snapshot(PDO $pdo, $user_id) {
     return [
         'total_balance' => $totalBalance,
         'frozen_balance' => $frozenBalance,
-        'available_balance' => $totalBalance - $frozenBalance
+        'available_balance' => max(0, $totalBalance - $frozenBalance)
     ];
 }
 
@@ -737,10 +737,50 @@ try {
         $currentLevel
     );
 
-    $pdo->beginTransaction();
+$pdo->beginTransaction();
 
-    deduct_user_dspoinc($pdo, $user_id, $finalCost);
-    insert_optional_score_adjustment_audit($pdo, $user_id, $finalCost, $auditReason);
+// Re-check current upgrade row inside transaction to reduce double-finish risk.
+$lockedRow = get_existing_upgrade_row($pdo, $token_id, 'genesis', $trait_type, $trait_value);
+if (!$lockedRow) {
+    $pdo->rollBack();
+    json_response([
+        'success' => false,
+        'error' => 'Upgrade row no longer exists'
+    ], 404);
+}
+
+$lockedStatus = resolve_runtime_status(
+    $lockedRow['upgrade_status'] ?? 'idle',
+    $lockedRow['upgrade_ends_at'] ?? null
+);
+
+if ($lockedStatus !== 'upgrading') {
+    $pdo->rollBack();
+    json_response([
+        'success' => false,
+        'error' => 'This trait is no longer actively upgrading'
+    ], 409);
+}
+
+// Re-check available balance inside transaction to reduce double-spend risk.
+$lockedBalance = get_user_balance_snapshot($pdo, $user_id);
+
+if ((int)$lockedBalance['available_balance'] < $finalCost) {
+    $pdo->rollBack();
+    json_response([
+        'success' => false,
+        'error' => 'Not enough available DSPOINC for instant finish',
+        'data' => [
+            'required_cost' => $finalCost,
+            'available_balance' => (int)$lockedBalance['available_balance'],
+            'total_balance' => (int)$lockedBalance['total_balance'],
+            'frozen_balance' => (int)$lockedBalance['frozen_balance']
+        ]
+    ], 409);
+}
+
+deduct_user_dspoinc($pdo, $user_id, $finalCost);
+insert_optional_score_adjustment_audit($pdo, $user_id, $finalCost, $auditReason);
 
 $finishStmt = $pdo->prepare("
     UPDATE tbl_nft_trait_upgrades

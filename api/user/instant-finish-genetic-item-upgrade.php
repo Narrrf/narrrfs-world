@@ -260,6 +260,30 @@ function insert_dspoinc_spend(PDO $pdo, string $userId, int $amount, string $rea
 }
 
 /**
+ * Returns available DSPOINC = total - frozen (active stakes)
+ */
+function get_user_available_dspoinc(PDO $pdo, string $userId): int {
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(score), 0)
+        FROM tbl_user_scores
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $total = (int)$stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(amount), 0)
+        FROM tbl_dspoinc_stakes
+        WHERE user_id = ?
+        AND status = 'active'
+    ");
+    $stmt->execute([$userId]);
+    $frozen = (int)$stmt->fetchColumn();
+
+    return max(0, $total - $frozen);
+}
+
+/**
  * Insert an audit/history row for genetic items.
  */
 function insert_genetic_item_history(
@@ -417,7 +441,7 @@ try {
     }
 
     $instantFinishCost = calculate_genetic_instant_finish_cost($currentLevel, $remainingSeconds);
-    $currentBalance = get_user_total_dspoinc($pdo, $userId);
+    $currentBalance = get_user_available_dspoinc($pdo, $userId);
 
     if ($currentBalance < $instantFinishCost) {
         json_response([
@@ -504,7 +528,7 @@ try {
     }
 
     $instantFinishCost = calculate_genetic_instant_finish_cost($currentLevel, $remainingSeconds);
-    $currentBalance = get_user_total_dspoinc($pdo, $userId);
+    $currentBalance = get_user_available_dspoinc($pdo, $userId);
 
     if ($currentBalance < $instantFinishCost) {
         $pdo->rollBack();
@@ -553,7 +577,7 @@ try {
         ], 500);
     }
 
-    $remainingBalance = get_user_total_dspoinc($pdo, $userId);
+    $remainingBalance = get_user_available_dspoinc($pdo, $userId);
 
     insert_genetic_item_history(
         $pdo,

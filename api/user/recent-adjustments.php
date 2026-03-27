@@ -66,12 +66,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $request_user_id = $_GET['user_id'] ?? '';
 }
 
-// Use request user_id if provided (takes priority over session)
-if ($request_user_id) {
+// SECURITY: Only allow request user_id override on localhost
+if ($isLocalDevelopment && $request_user_id) {
     $user_id = $request_user_id;
-    error_log("📊 Recent adjustments: Using user_id from request: " . substr($user_id, 0, 10) . "...");
-} else if ($user_id) {
-    error_log("📊 Recent adjustments: Using user_id from session: " . substr($user_id, 0, 10) . "...");
+    error_log("📊 Recent adjustments: Using user_id from localhost request: " . substr($user_id, 0, 10) . "...");
+} else {
+    $user_id = $_SESSION['discord_id'] ?? '';
+
+    if ($request_user_id && $user_id && $request_user_id !== $user_id) {
+        error_log("🚨 SECURITY: Recent adjustments - user_id mismatch. Session: {$user_id}, Request: {$request_user_id}");
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Unauthorized: user_id mismatch'
+        ]);
+        exit;
+    }
+
+    if ($user_id) {
+        error_log("📊 Recent adjustments: Using user_id from session: " . substr($user_id, 0, 10) . "...");
+    }
 }
 
 // For local development, use Narrrf's account if no session exists
