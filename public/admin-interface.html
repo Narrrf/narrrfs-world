@@ -1378,6 +1378,60 @@
         </div>
       </div>
 
+
+      <!-- Genetic Trait Catalog (Integrated into Store Management) -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6 border border-cyan-500/30">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-lg font-semibold mb-2 text-cyan-300">🧬 Genetic Trait Catalog</h3>
+            <p class="text-sm text-gray-300">Read-only integration of the live Genetic Shop catalog into Store Management. This keeps the admin workflow close to the existing store system while dedicated genetic edit APIs are still pending.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="loadGeneticCatalogAdminStore()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded">Refresh Genetic Catalog</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+          <div class="bg-gray-900 bg-opacity-50 rounded-lg p-3">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">Visible Traits</div>
+            <div id="geneticStoreSummaryVisible" class="text-xl font-bold text-cyan-300">-</div>
+          </div>
+          <div class="bg-gray-900 bg-opacity-50 rounded-lg p-3">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">Outfits</div>
+            <div id="geneticStoreSummaryOutfits" class="text-xl font-bold text-purple-300">-</div>
+          </div>
+          <div class="bg-gray-900 bg-opacity-50 rounded-lg p-3">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">Accessories</div>
+            <div id="geneticStoreSummaryAccessories" class="text-xl font-bold text-blue-300">-</div>
+          </div>
+          <div class="bg-gray-900 bg-opacity-50 rounded-lg p-3">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">Range</div>
+            <div id="geneticStoreSummaryRange" class="text-xl font-bold text-yellow-300">-</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <select id="geneticAdminTypeFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyGeneticAdminStoreFilters()">
+            <option value="">All Types</option>
+            <option value="Outfit">Outfit</option>
+            <option value="Accessories">Accessories</option>
+          </select>
+          <select id="geneticAdminRarityFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyGeneticAdminStoreFilters()">
+            <option value="">All Rarities</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="legendary">Legendary</option>
+          </select>
+          <input type="text" id="geneticAdminSearchInput" placeholder="Search trait title or name..." class="px-3 py-2 rounded text-gray-800" oninput="applyGeneticAdminStoreFilters()">
+        </div>
+
+        <div id="geneticStoreAdminNotice" class="text-sm text-cyan-100 bg-cyan-900 bg-opacity-30 border border-cyan-500/20 rounded-lg p-3 mb-4">Genetic catalog has not been loaded yet.</div>
+        <div id="geneticStoreAdminGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div class="text-gray-300">Click "Refresh Genetic Catalog" to load the live genetic trait catalog.</div>
+        </div>
+      </div>
+
       <!-- Add New Item -->
       <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
         <h3 class="text-lg font-semibold mb-3">➕ Add New Store Item</h3>
@@ -4840,6 +4894,9 @@
     let currentAdmin = null;
     let currentTab = 'dashboard';
     let searchTimeout = null;
+    let geneticAdminCatalogRaw = [];
+    let geneticAdminCatalogFiltered = [];
+    let geneticAdminInventorySnapshot = [];
 
     // Initialize the interface
     document.addEventListener('DOMContentLoaded', async function() {
@@ -5783,6 +5840,7 @@ function showTab(tabName) {
 
     if (tabName === 'store') {
       loadStoreItems();
+      loadGeneticCatalogAdminStore();
       addLog('🏪 Store tab auto-loaded');
       return;
     }
@@ -5859,6 +5917,7 @@ function showTab(tabName) {
 
     if (tabName === 'labTraitSystem') {
       loadLabTraitSystemAdmin();
+      loadGeneticRuntimeAdminSnapshot();
       addLog('🧬 Lab / Trait System tab auto-loaded');
       return;
     }
@@ -12189,6 +12248,7 @@ function displayStoreItems(items) {
     // Show edit store item modal
     function showEditStoreItemModal(item) {
       const modal = document.createElement('div');
+      modal.id = 'editStoreItemModal';
       modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
       modal.innerHTML = `
         <div class="bg-gray-800 p-6 rounded-lg w-96 max-w-full mx-4">
@@ -12258,12 +12318,12 @@ function displayStoreItems(items) {
     }
 
     // Close edit store item modal
-    function closeEditStoreItemModal() {
-      const modal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50');
-      if (modal) {
-        modal.remove();
-      }
-    }
+function closeEditStoreItemModal() {
+  const modal = document.getElementById('editStoreItemModal');
+  if (modal) {
+    modal.remove();
+  }
+}
 
     // Update store item
     async function updateStoreItem(itemId) {
@@ -23251,7 +23311,31 @@ function clearDiscordFeed() {
     <div class="leaderboard-header">🧪 Current Operator Per-NFT Progression</div>
     <div id="labTraitSystemNfts" class="space-y-4 text-gray-300">Loading NFT progression...</div>
   </div>
-</div>
+
+  <div class="leaderboard-container p-6 mt-6 border border-cyan-500/20">
+    <div class="leaderboard-header">🧬 Genetic Runtime Snapshot</div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-3">
+        <div class="text-xs text-gray-400 uppercase tracking-wide">Visible Catalog</div>
+        <div id="labGeneticStatCatalog" class="text-xl font-bold text-cyan-300">-</div>
+      </div>
+      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-3">
+        <div class="text-xs text-gray-400 uppercase tracking-wide">Owned Items</div>
+        <div id="labGeneticStatOwned" class="text-xl font-bold text-purple-300">-</div>
+      </div>
+      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-3">
+        <div class="text-xs text-gray-400 uppercase tracking-wide">Upgrading</div>
+        <div id="labGeneticStatUpgrading" class="text-xl font-bold text-yellow-300">-</div>
+      </div>
+      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-3">
+        <div class="text-xs text-gray-400 uppercase tracking-wide">Ready To Claim</div>
+        <div id="labGeneticStatReady" class="text-xl font-bold text-green-300">-</div>
+      </div>
+    </div>
+    <div id="labGeneticSnapshotNotice" class="text-sm text-cyan-100 bg-cyan-900 bg-opacity-30 border border-cyan-500/20 rounded-lg p-3 mb-4">Loading genetic runtime snapshot...</div>
+    <div id="labGeneticSnapshotList" class="space-y-3 text-gray-300">Loading genetic inventory snapshot...</div>
+  </div>
+
 
 <div class="admin-card mb-6" id="databaseOverviewTab" style="display: none; opacity: 1; transform: translateY(0);">
       <h2 class="text-xl font-semibold mb-4">🗄️ Database Overview & Sync Status</h2>
@@ -31733,6 +31817,417 @@ console.log('🐛 Parsed bug payload:', {
       }
     });
 
+
+    /* =========================================================
+   🧬 GENETIC STORE ADMIN — STAGE 1 (READ ONLY)
+   SAFE ADDITIVE BLOCK — MATCHED TO CURRENT admin-interface.html
+========================================================= */
+
+let geneticAdminCatalog = [];
+let geneticAdminFiltered = [];
+
+/**
+ * Safe helper: set text content when element exists.
+ */
+function setGeneticAdminText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+/**
+ * Load the live Genetic Shop catalog into Store Management.
+ * Uses the existing public-preview endpoint.
+ */
+async function loadGeneticCatalogAdminStore() {
+  try {
+    addLog?.('🧬 Loading Genetic Store catalog...');
+    setGeneticAdminText('geneticStoreAdminNotice', 'Loading live genetic trait catalog...');
+
+    const response = await fetch(`${API_BASE_URL}/api/user/get-genetic-trait-catalog.php`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include'
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || `HTTP ${response.status}`);
+    }
+
+    const catalog = data?.data?.catalog || {};
+    geneticAdminCatalog = [
+      ...(Array.isArray(catalog.Outfit) ? catalog.Outfit : []),
+      ...(Array.isArray(catalog.Accessories) ? catalog.Accessories : [])
+    ];
+
+    geneticAdminFiltered = [...geneticAdminCatalog];
+
+    updateGeneticAdminStoreSummary();
+    renderGeneticAdminStoreGrid();
+
+    setGeneticAdminText(
+      'geneticStoreAdminNotice',
+      `Loaded ${geneticAdminCatalog.length} visible genetic traits from the live catalog.`
+    );
+
+    addLog?.(`🧬 Loaded ${geneticAdminCatalog.length} genetic store traits`);
+  } catch (error) {
+    console.error('❌ loadGeneticCatalogAdminStore failed:', error);
+
+    const notice = document.getElementById('geneticStoreAdminNotice');
+    if (notice) {
+      notice.textContent = `Failed to load genetic catalog: ${error.message}`;
+    }
+
+    const grid = document.getElementById('geneticStoreAdminGrid');
+    if (grid) {
+      grid.innerHTML = `<div class="text-red-300">Failed to load genetic catalog. ${error.message}</div>`;
+    }
+
+    addLog?.(`❌ Genetic catalog load failed: ${error.message}`);
+  }
+}
+
+/**
+ * Apply store filters using the real current admin element IDs.
+ */
+function applyGeneticAdminStoreFilters() {
+  const typeValue = (document.getElementById('geneticAdminTypeFilter')?.value || '').trim();
+  const rarityValue = (document.getElementById('geneticAdminRarityFilter')?.value || '').trim().toLowerCase();
+  const searchValue = (document.getElementById('geneticAdminSearchInput')?.value || '').trim().toLowerCase();
+
+  geneticAdminFiltered = geneticAdminCatalog.filter(item => {
+    if (typeValue && String(item.trait_type || '') !== typeValue) return false;
+    if (rarityValue && String(item.rarity_tier || '').toLowerCase() !== rarityValue) return false;
+
+    if (searchValue) {
+      const haystack = [
+        item.display_title,
+        item.trait_value,
+        item.description,
+        item.trait_type
+      ].join(' ').toLowerCase();
+
+      if (!haystack.includes(searchValue)) return false;
+    }
+
+    return true;
+  });
+
+  renderGeneticAdminStoreGrid();
+}
+
+/**
+ * Update the 4 summary cards in the Genetic Trait Catalog block.
+ */
+function updateGeneticAdminStoreSummary() {
+  const visibleCount = geneticAdminCatalog.length;
+  const outfitCount = geneticAdminCatalog.filter(item => item.trait_type === 'Outfit').length;
+  const accessoriesCount = geneticAdminCatalog.filter(item => item.trait_type === 'Accessories').length;
+
+  const prices = geneticAdminCatalog
+    .map(item => Number(item.base_price_dspoinc || 0))
+    .filter(price => Number.isFinite(price) && price >= 0);
+
+  const rangeText = prices.length
+    ? `${Math.min(...prices).toLocaleString()} - ${Math.max(...prices).toLocaleString()}`
+    : '-';
+
+  setGeneticAdminText('geneticStoreSummaryVisible', visibleCount.toLocaleString());
+  setGeneticAdminText('geneticStoreSummaryOutfits', outfitCount.toLocaleString());
+  setGeneticAdminText('geneticStoreSummaryAccessories', accessoriesCount.toLocaleString());
+  setGeneticAdminText('geneticStoreSummaryRange', rangeText);
+}
+
+/**
+ * Render the filtered read-only catalog cards into the real grid.
+ */
+function renderGeneticAdminStoreGrid() {
+  const grid = document.getElementById('geneticStoreAdminGrid');
+  if (!grid) return;
+
+  if (!geneticAdminFiltered.length) {
+    grid.innerHTML = `<div class="text-gray-300">No genetic traits match your current filters.</div>`;
+    return;
+  }
+
+  grid.innerHTML = geneticAdminFiltered.map(item => {
+    const rarity = String(item.rarity_tier || 'common').toLowerCase();
+    const price = Number(item.base_price_dspoinc || 0).toLocaleString();
+    const count = Number(item.rarity_count || 0).toLocaleString();
+    const isActive = Number(item.is_active ?? 1) === 1;
+    const isVisible = Number(item.is_visible ?? 1) === 1;
+
+    return `
+      <div class="user-card border-cyan-400">
+        <div class="flex justify-between items-start mb-2 gap-2">
+          <h4 class="font-semibold text-cyan-200">${escapeHtml(item.display_title || item.trait_value || 'Unknown Trait')}</h4>
+          <div class="flex gap-2 flex-wrap justify-end">
+            <span class="px-2 py-1 rounded text-xs bg-cyan-700 text-white">${escapeHtml(item.trait_type || 'Unknown')}</span>
+            <span class="px-2 py-1 rounded text-xs ${isActive && isVisible ? 'bg-green-700 text-white' : 'bg-red-700 text-white'}">
+              ${isActive && isVisible ? 'Active' : 'Hidden'}
+            </span>
+          </div>
+        </div>
+
+        <p class="text-sm text-gray-300 mb-3">
+          ${item.description ? escapeHtml(item.description) : 'Mint-seeded genetic catalog trait.'}
+        </p>
+
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div class="text-center">
+            <div class="text-lg font-bold text-yellow-400">${price}</div>
+            <div class="text-xs text-gray-400">Price (DSPOINC)</div>
+          </div>
+          <div class="text-center">
+            <div class="text-lg font-bold text-blue-300">${count}</div>
+            <div class="text-xs text-gray-400">Rarity Count</div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center text-xs text-gray-400 mb-3">
+          <span>Rarity: ${escapeHtml(rarity)}</span>
+          <span>ID: ${Number(item.catalog_id || 0)}</span>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="openEditGeneticCatalogModal(${Number(item.catalog_id)})"
+                  class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+            Edit
+          </button>
+          <button onclick="toggleGeneticCatalogStatus(${Number(item.catalog_id)}, ${isActive ? 1 : 0}, ${isVisible ? 1 : 0})"
+                  class="flex-1 ${isActive && isVisible ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white px-3 py-2 rounded text-sm">
+            ${isActive && isVisible ? 'Deactivate' : 'Activate'}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getGeneticCatalogItemById(catalogId) {
+  return geneticAdminCatalog.find(item => Number(item.catalog_id) === Number(catalogId)) || null;
+}
+
+function openEditGeneticCatalogModal(catalogId) {
+  const item = getGeneticCatalogItemById(catalogId);
+
+  if (!item) {
+    addLog?.(`❌ Genetic catalog item not found: ${catalogId}`);
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'editGeneticCatalogModal';
+modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  modal.innerHTML = `
+    <div class="bg-gray-900 border border-cyan-500 rounded-xl p-6 w-full max-w-2xl mx-4">
+      <h3 class="text-xl font-bold text-cyan-300 mb-4">🧬 Edit Genetic Catalog Item</h3>
+
+      <form id="editGeneticCatalogForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Trait Identity</label>
+          <div class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-gray-300">
+            ${escapeHtml(item.trait_type)} • ${escapeHtml(item.trait_value)}
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Trait identity stays locked. Edit display title for storefront wording.</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Display Title</label>
+          <input type="text" id="editGeneticDisplayTitle"
+                 value="${escapeHtml(item.display_title || item.trait_value || '')}"
+                 class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Price (DSPOINC)</label>
+          <input type="number" id="editGeneticPrice"
+                 value="${Number(item.base_price_dspoinc || 0)}"
+                 min="0"
+                 class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+                  <div class="border border-cyan-800/60 rounded-lg p-4 bg-gray-800/40">
+          <div class="text-sm font-semibold text-cyan-300 mb-3">Media Configuration</div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Media Type</label>
+              <select id="editGeneticImageType" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
+                <option value="png" ${String(item.image_type || 'png').toLowerCase() === 'png' ? 'selected' : ''}>PNG</option>
+                <option value="glb" ${String(item.image_type || '').toLowerCase() === 'glb' ? 'selected' : ''}>GLB</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Preview Path</label>
+              <input
+                type="text"
+                id="editGeneticPreviewPath"
+                value="${escapeHtml(item.preview_path || '')}"
+                placeholder="img/genetics/item-preview.png"
+                class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+              >
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Image / Model Path</label>
+            <input
+              type="text"
+              id="editGeneticImagePath"
+              value="${escapeHtml(item.image_path || '')}"
+              placeholder="img/genetics/item.png or models/genetics/item.glb"
+              class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+            >
+          </div>
+
+          <div class="mt-4 text-xs text-gray-500">
+            PNG → use image_path only<br>
+            GLB → use image_path (model) + preview_path (poster)
+          </div>
+        </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Active</label>
+            <select id="editGeneticIsActive" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
+              <option value="1" ${(Number(item.is_active ?? 1) === 1) ? 'selected' : ''}>Active</option>
+              <option value="0" ${(Number(item.is_active ?? 1) === 0) ? 'selected' : ''}>Inactive</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Visible</label>
+            <select id="editGeneticIsVisible" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
+              <option value="1" ${(Number(item.is_visible ?? 1) === 1) ? 'selected' : ''}>Visible</option>
+              <option value="0" ${(Number(item.is_visible ?? 1) === 0) ? 'selected' : ''}>Hidden</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            Update Genetic Item
+          </button>
+          <button type="button" onclick="closeEditGeneticCatalogModal()"
+                  class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById('editGeneticCatalogForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await updateGeneticCatalogItem(catalogId);
+  });
+}
+
+function closeEditGeneticCatalogModal() {
+  const modal = document.getElementById('editGeneticCatalogModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+async function updateGeneticCatalogItem(catalogId) {
+  try {
+    const displayTitle = document.getElementById('editGeneticDisplayTitle').value.trim();
+    const price = parseInt(document.getElementById('editGeneticPrice').value, 10);
+    const isActive = parseInt(document.getElementById('editGeneticIsActive').value, 10);
+    const isVisible = parseInt(document.getElementById('editGeneticIsVisible').value, 10);
+
+    const imageType = (document.getElementById('editGeneticImageType')?.value || 'png').trim().toLowerCase();
+    const imagePath = document.getElementById('editGeneticImagePath')?.value.trim() || '';
+    const previewPath = document.getElementById('editGeneticPreviewPath')?.value.trim() || '';
+
+    if (!displayTitle || Number.isNaN(price) || price < 0) {
+      addLog?.('❌ Please enter a valid title and price');
+      return;
+    }
+
+    if (imageType !== 'png' && imageType !== 'glb') {
+      addLog?.('❌ Media type must be png or glb');
+      return;
+    }
+
+    const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-item.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        catalog_id: catalogId,
+        display_title: displayTitle,
+        base_price_dspoinc: price,
+        image_type: imageType,
+        image_path: imagePath,
+        preview_path: previewPath,
+        is_active: isActive,
+        is_visible: isVisible
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      addLog?.(`❌ Failed to update genetic catalog item: ${data.error}`);
+      return;
+    }
+
+    addLog?.(`✅ Genetic catalog item updated: ${displayTitle} (#${catalogId})`);
+    closeEditGeneticCatalogModal();
+    await loadGeneticCatalogAdminStore();
+  } catch (error) {
+    console.error('❌ updateGeneticCatalogItem failed:', error);
+    addLog?.(`❌ Genetic catalog update error: ${error.message}`);
+  }
+}
+
+async function toggleGeneticCatalogStatus(catalogId, currentActive, currentVisible) {
+  try {
+    const nextState = (Number(currentActive) === 1 && Number(currentVisible) === 1) ? 0 : 1;
+    const actionText = nextState === 1 ? 'activated' : 'deactivated';
+
+    const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-item.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        catalog_id: catalogId,
+        is_active: nextState,
+        is_visible: nextState
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      addLog?.(`❌ Failed to ${actionText} genetic catalog item: ${data.error}`);
+      return;
+    }
+
+    addLog?.(`✅ Genetic catalog item ${actionText}: #${catalogId}`);
+    await loadGeneticCatalogAdminStore();
+  } catch (error) {
+    console.error('❌ toggleGeneticCatalogStatus failed:', error);
+    addLog?.(`❌ Genetic catalog toggle error: ${error.message}`);
+  }
+}
+
+/**
+ * Minimal safe escaping for rendered strings.
+ */
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+    
   </script>
 
 </body>

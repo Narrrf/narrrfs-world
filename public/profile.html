@@ -1561,6 +1561,309 @@ require_once 'discord-invite.php';
   font-size: 0.82rem !important;
 }
 
+
+/* 🧬 genetic profile integration */
+.profile-genetics-shell {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.profile-genetics-hero,
+.profile-genetics-card,
+.profile-genetics-activity-card,
+.profile-genetics-upgrade-card,
+.profile-genetics-knowledge-card {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(30, 27, 75, 0.74));
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+}
+
+.profile-genetics-hero {
+  padding: 1.2rem 1.25rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.profile-genetics-hero-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.profile-genetics-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.12);
+  color: #a5f3fc;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.profile-genetics-hero-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.profile-genetics-hero-copy {
+  color: #cbd5e1;
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
+.profile-genetics-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.profile-genetics-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #e5e7eb;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.profile-genetics-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.profile-genetics-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.9rem;
+  padding: 0.8rem 1rem;
+  font-weight: 800;
+  font-size: 0.88rem;
+  transition: all 0.22s ease;
+  text-decoration: none;
+}
+
+.profile-genetics-btn.primary {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.94), rgba(5, 150, 105, 0.92));
+  color: white;
+}
+
+.profile-genetics-btn.secondary {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #f8fafc;
+}
+
+.profile-genetics-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.profile-genetics-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.profile-genetics-card {
+  padding: 1rem;
+}
+
+.profile-genetics-card-value {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #f8fafc;
+  line-height: 1.1;
+}
+
+.profile-genetics-card-label {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #94a3b8;
+}
+
+.profile-genetics-card-copy {
+  margin-top: 0.5rem;
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+.profile-genetics-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1rem;
+}
+
+.profile-genetics-upgrade-card,
+.profile-genetics-activity-card,
+.profile-genetics-knowledge-card {
+  padding: 1rem 1.05rem;
+}
+
+.profile-genetics-section-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.profile-genetics-upgrade-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+}
+
+.profile-genetics-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.36rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profile-genetics-pill.idle { background: rgba(148,163,184,0.14); color: #e2e8f0; }
+.profile-genetics-pill.upgrading { background: rgba(34,211,238,0.14); color: #a5f3fc; }
+.profile-genetics-pill.ready { background: rgba(16,185,129,0.16); color: #bbf7d0; }
+.profile-genetics-pill.boosted { background: rgba(245,158,11,0.15); color: #fde68a; }
+
+.profile-genetics-progress {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  margin-top: 0.9rem;
+}
+
+.profile-genetics-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(34,211,238,0.96), rgba(59,130,246,0.92));
+  box-shadow: 0 0 12px rgba(34,211,238,0.25);
+}
+
+.profile-genetics-progress-fill.ready {
+  background: linear-gradient(90deg, rgba(16,185,129,0.96), rgba(5,150,105,0.92));
+  box-shadow: 0 0 12px rgba(16,185,129,0.25);
+}
+
+.profile-genetics-progress-fill.idle {
+  background: linear-gradient(90deg, rgba(148,163,184,0.35), rgba(148,163,184,0.18));
+  box-shadow: none;
+}
+
+.profile-genetics-meta-list,
+.profile-genetics-activity-list,
+.profile-genetics-knowledge-list {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.9rem;
+}
+
+.profile-genetics-meta-item,
+.profile-genetics-activity-item,
+.profile-genetics-knowledge-item {
+  border-radius: 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  padding: 0.8rem 0.85rem;
+}
+
+.profile-genetics-meta-label {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.profile-genetics-meta-value {
+  margin-top: 0.3rem;
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.profile-genetics-activity-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.profile-genetics-activity-title {
+  color: #f8fafc;
+  font-weight: 800;
+}
+
+.profile-genetics-activity-time {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.profile-genetics-activity-copy,
+.profile-genetics-knowledge-item {
+  color: #cbd5e1;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.profile-genetics-empty {
+  border-radius: 1rem;
+  border: 1px dashed rgba(148,163,184,0.24);
+  padding: 1rem;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.5);
+  margin-top: 0.9rem;
+}
+
+@media (max-width: 1100px) {
+  .profile-genetics-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .profile-genetics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-genetics-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-genetics-hero {
+    padding: 1rem;
+  }
+  .profile-genetics-card,
+  .profile-genetics-upgrade-card,
+  .profile-genetics-activity-card,
+  .profile-genetics-knowledge-card {
+    padding: 0.9rem;
+  }
+}
+
 /* 📱 responsive */
 @media (max-width: 900px) {
   .profile-v2-utility-grid {
@@ -10503,6 +10806,7 @@ setInterval(updateBingoCard, 60000);
   const PROFILE_V2_TABS = [
     { key: 'overview', label: 'Overview', emoji: '🧭' },
     { key: 'economy', label: 'Economy', emoji: '🛍️' },
+    { key: 'genetics', label: 'Genetics', emoji: '🧬' },
     { key: 'achievements', label: 'Achievements', emoji: '🏆' },
     { key: 'stats', label: 'Statistics', emoji: '📊' },
     { key: 'staking', label: 'Staking', emoji: '🧊' },
@@ -10544,6 +10848,267 @@ setInterval(updateBingoCard, 60000);
       note.className = 'profile-v2-panel-note';
       note.textContent = 'This section is ready for the next migration pass.';
       panel.appendChild(note);
+    }
+  }
+
+
+  const PROFILE_GENETIC_CONFIG = {
+    apiBaseUrl: (window.location.hostname === 'narrrfs.world' || window.location.hostname === 'narrrfs-world.onrender.com') ? 'https://narrrfs.world' : '',
+    userGeneticItemsEndpoint: '/api/user/get-user-genetic-items.php',
+    labPageUrl: 'lab.html'
+  };
+
+  function getProfileApiUrl(path) {
+    return `${PROFILE_GENETIC_CONFIG.apiBaseUrl}${path}`;
+  }
+
+  function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value == null ? '' : String(value);
+    return div.innerHTML;
+  }
+
+  function formatNumber(value) {
+    const num = Number(value || 0);
+    if (!Number.isFinite(num)) return '0';
+    return num.toLocaleString('en-US');
+  }
+
+  function formatDateTime(value) {
+    if (!value) return '—';
+    const date = new Date(String(value).replace(' ', 'T') + 'Z');
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleString();
+  }
+
+  function formatRelativeTime(value) {
+    if (!value) return 'No timestamp';
+    const date = new Date(String(value).replace(' ', 'T') + 'Z');
+    if (Number.isNaN(date.getTime())) return String(value);
+    const diff = date.getTime() - Date.now();
+    const abs = Math.abs(diff);
+    const minutes = Math.round(abs / 60000);
+    if (minutes < 1) return diff <= 0 ? 'just now' : 'in a moment';
+    if (minutes < 60) return diff <= 0 ? `${minutes}m ago` : `in ${minutes}m`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 48) return diff <= 0 ? `${hours}h ago` : `in ${hours}h`;
+    const days = Math.round(hours / 24);
+    return diff <= 0 ? `${days}d ago` : `in ${days}d`;
+  }
+
+  function getGeneticRuntimeState(item) {
+    const status = String(item?.upgrade_status || 'idle').toLowerCase();
+    const endsAt = item?.upgrade_ends_at ? new Date(String(item.upgrade_ends_at).replace(' ', 'T') + 'Z') : null;
+    if (status === 'upgrading' && endsAt && !Number.isNaN(endsAt.getTime()) && endsAt.getTime() <= Date.now()) {
+      return 'ready';
+    }
+    if (status === 'ready_to_claim') return 'ready';
+    if (status === 'upgrading') return 'upgrading';
+    return 'idle';
+  }
+
+  function getGeneticProgressPercent(item) {
+    const runtime = getGeneticRuntimeState(item);
+    if (runtime === 'ready') return 100;
+    if (runtime === 'idle') return 0;
+    const start = item?.upgrade_started_at ? new Date(String(item.upgrade_started_at).replace(' ', 'T') + 'Z') : null;
+    const end = item?.upgrade_ends_at ? new Date(String(item.upgrade_ends_at).replace(' ', 'T') + 'Z') : null;
+    if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 8;
+    const total = Math.max(1, end.getTime() - start.getTime());
+    const elapsed = Math.max(0, Math.min(total, Date.now() - start.getTime()));
+    return Math.max(4, Math.min(100, Math.round((elapsed / total) * 100)));
+  }
+
+  async function fetchProfileJson(url) {
+    const res = await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } });
+    const payload = await res.json().catch(() => ({}));
+    return { ok: res.ok, payload };
+  }
+
+  async function loadProfileGeneticState() {
+    const currentUserId = window.sessionDiscordId || localStorage.getItem('discord_id') || '';
+    const query = currentUserId ? `?user_id=${encodeURIComponent(currentUserId)}` : '';
+    const result = await fetchProfileJson(getProfileApiUrl(PROFILE_GENETIC_CONFIG.userGeneticItemsEndpoint) + query);
+    if (!result.ok || !result.payload?.success) {
+      throw new Error(result.payload?.error || 'Failed to load Genetic Profile data');
+    }
+    return result.payload.data || { summary: {}, items: [], holder_access: {} };
+  }
+
+  function buildProfileGeneticActivity(items) {
+    const events = [];
+    (Array.isArray(items) ? items : []).forEach((item) => {
+      const title = item.display_title || item.trait_value || 'Unknown Trait';
+      if (item.created_at) {
+        events.push({
+          type: 'Acquired',
+          title,
+          copy: `${title} entered the player-bound Genetic Inventory as a ${item.trait_type || 'Genetic'} item.`,
+          at: item.created_at
+        });
+      }
+      if (item.last_completed_at) {
+        events.push({
+          type: 'Upgrade Claimed',
+          title,
+          copy: `${title} reached Lv ${formatNumber(item.current_level || 1)} and returned to idle after a successful genetic claim.`,
+          at: item.last_completed_at
+        });
+      }
+      if (item.active_booster_used_at) {
+        events.push({
+          type: 'Booster Used',
+          title,
+          copy: `${title} received a shared Lab booster during active research.`,
+          at: item.active_booster_used_at
+        });
+      }
+      if (String(item.upgrade_status || '').toLowerCase() === 'upgrading' && item.upgrade_started_at) {
+        events.push({
+          type: 'Upgrade Started',
+          title,
+          copy: `${title} is currently pushing toward Lv ${formatNumber((item.current_level || 1) + 1)} on the faster user-bound curve.`,
+          at: item.upgrade_started_at
+        });
+      }
+    });
+    return events.sort((a, b) => new Date(String(b.at).replace(' ', 'T') + 'Z') - new Date(String(a.at).replace(' ', 'T') + 'Z')).slice(0, 6);
+  }
+
+  function renderProfileGeneticsPanel(data) {
+    const items = Array.isArray(data?.items) ? data.items : [];
+    const summary = data?.summary || {};
+    const holder = data?.holder_access || {};
+    const active = items.find((item) => getGeneticRuntimeState(item) === 'upgrading')
+      || items.find((item) => getGeneticRuntimeState(item) === 'ready')
+      || null;
+    const highest = items.slice().sort((a, b) => (Number(b.current_level || 0) - Number(a.current_level || 0)))[0] || null;
+    const activity = buildProfileGeneticActivity(items);
+    const activeRuntime = active ? getGeneticRuntimeState(active) : 'idle';
+    const activeProgress = active ? getGeneticProgressPercent(active) : 0;
+    const accessCopy = holder.can_buy
+      ? (holder.has_genesis && holder.has_vip ? 'Genesis + VIP verified' : holder.has_genesis ? 'Genesis verified' : 'VIP verified')
+      : 'Preview-only until Genesis or VIP verification is active';
+
+    return `
+      <div class="profile-genetics-shell">
+        <section class="profile-genetics-hero">
+          <div class="profile-genetics-hero-top">
+            <span class="profile-genetics-kicker">🧬 Genetic Profile Bridge</span>
+            <div class="profile-genetics-chip-row">
+              <span class="profile-genetics-chip">${holder.can_buy ? '✅ Genetic access active' : '🔒 Preview only'}</span>
+              <span class="profile-genetics-chip">🎒 ${formatNumber(summary.total_items || 0)} owned</span>
+              <span class="profile-genetics-chip">⚗️ ${formatNumber(summary.upgrading_items || 0)} upgrading</span>
+            </div>
+          </div>
+          <div class="profile-genetics-hero-title">Genetic progression now lives beside your main profile.</div>
+          <div class="profile-genetics-hero-copy">This profile bridge surfaces the user-bound Genetic System that now runs in parallel to Genesis Lab. Outfit and Accessories traits bought through Genetic Shop remain Discord-owned items, follow the faster upgrade curve, and can later feed marketplace, admin, and Discord-bot visibility.</div>
+          <div class="profile-genetics-actions">
+            <a class="profile-genetics-btn primary" href="${PROFILE_GENETIC_CONFIG.labPageUrl}">🧪 Open Lab Runtime</a>
+            <a class="profile-genetics-btn secondary" href="stake-lab.html">🎴 Refresh Holder Access</a>
+          </div>
+        </section>
+
+        <section class="profile-genetics-summary-grid">
+          <article class="profile-genetics-card">
+            <div class="profile-genetics-card-value">${formatNumber(summary.total_items || 0)}</div>
+            <div class="profile-genetics-card-label">Owned Genetic Items</div>
+            <div class="profile-genetics-card-copy">Discord-bound Outfit and Accessories traits held by this player profile.</div>
+          </article>
+          <article class="profile-genetics-card">
+            <div class="profile-genetics-card-value">${formatNumber(summary.max_level || 0)}</div>
+            <div class="profile-genetics-card-label">Highest Genetic Level</div>
+            <div class="profile-genetics-card-copy">Current peak among all owned Genetic Items on the faster user-bound curve.</div>
+          </article>
+          <article class="profile-genetics-card">
+            <div class="profile-genetics-card-value">${formatNumber(summary.upgrading_items || 0)}</div>
+            <div class="profile-genetics-card-label">Active Genetic Research</div>
+            <div class="profile-genetics-card-copy">Only one active genetic upgrade may run per user, enforced by backend authority.</div>
+          </article>
+          <article class="profile-genetics-card">
+            <div class="profile-genetics-card-value">${escapeHtml(accessCopy)}</div>
+            <div class="profile-genetics-card-label">Holder Access</div>
+            <div class="profile-genetics-card-copy">Buying and upgrading stay gated by verified Genesis or VIP access.</div>
+          </article>
+        </section>
+
+        <section class="profile-genetics-grid">
+          <article class="profile-genetics-upgrade-card">
+            <div class="profile-genetics-section-title">⚗️ Active Genetic Upgrade</div>
+            ${active ? `
+              <div class="profile-genetics-upgrade-row">
+                <div>
+                  <div class="profile-genetics-card-value">${escapeHtml(active.display_title || active.trait_value || 'Unknown Trait')}</div>
+                  <div class="profile-genetics-card-copy">${escapeHtml(active.trait_type || 'Genetic')} · Lv ${formatNumber(active.current_level || 1)} → Lv ${formatNumber((active.current_level || 1) + 1)}</div>
+                </div>
+                <span class="profile-genetics-pill ${activeRuntime === 'ready' ? 'ready' : 'upgrading'}">${activeRuntime === 'ready' ? 'Ready To Claim' : 'Upgrading'}</span>
+              </div>
+              <div class="profile-genetics-progress"><div class="profile-genetics-progress-fill ${activeRuntime === 'ready' ? 'ready' : ''}" style="width:${activeProgress}%"></div></div>
+              <div class="profile-genetics-meta-list">
+                <div class="profile-genetics-meta-item">
+                  <div class="profile-genetics-meta-label">Backend finish target</div>
+                  <div class="profile-genetics-meta-value">${formatDateTime(active.upgrade_ends_at)}</div>
+                </div>
+                <div class="profile-genetics-meta-item">
+                  <div class="profile-genetics-meta-label">Runtime state</div>
+                  <div class="profile-genetics-meta-value">${activeRuntime === 'ready' ? 'Ready to claim in Lab now' : formatRelativeTime(active.upgrade_ends_at)}</div>
+                </div>
+                <div class="profile-genetics-meta-item">
+                  <div class="profile-genetics-meta-label">Booster state</div>
+                  <div class="profile-genetics-meta-value">${active.active_booster_item_id ? `Shared Lab booster active · item ${formatNumber(active.active_booster_item_id)}` : 'No booster used on this run yet'}</div>
+                </div>
+              </div>
+            ` : highest ? `
+              <div class="profile-genetics-empty">
+                No genetic item is upgrading right now. Your strongest owned item is <strong>${escapeHtml(highest.display_title || highest.trait_value || 'Unknown Trait')}</strong> at Lv ${formatNumber(highest.current_level || 1)}. Use Lab to start the next user-bound research cycle.
+              </div>
+            ` : `
+              <div class="profile-genetics-empty">
+                No Genetic Items are owned yet on this profile. Buy one in Genetic Shop to begin the second progression lane beside Genesis Lab.
+              </div>
+            `}
+          </article>
+
+          <div class="profile-genetics-shell">
+            <article class="profile-genetics-activity-card">
+              <div class="profile-genetics-section-title">🧠 Recent Genetic Activity</div>
+              ${activity.length ? `
+                <div class="profile-genetics-activity-list">
+                  ${activity.map(entry => `
+                    <div class="profile-genetics-activity-item">
+                      <div class="profile-genetics-activity-top">
+                        <div class="profile-genetics-activity-title">${escapeHtml(entry.type)} · ${escapeHtml(entry.title)}</div>
+                        <div class="profile-genetics-activity-time">${escapeHtml(formatRelativeTime(entry.at))}</div>
+                      </div>
+                      <div class="profile-genetics-activity-copy">${escapeHtml(entry.copy)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `<div class="profile-genetics-empty">No genetic activity has been logged on this profile yet.</div>`}
+            </article>
+
+            <article class="profile-genetics-knowledge-card">
+              <div class="profile-genetics-section-title">📘 Genetic Profile Notes</div>
+              <div class="profile-genetics-knowledge-list">
+                <div class="profile-genetics-knowledge-item">Genesis Lab remains NFT-bound, while Genetic Items stay Discord-user-bound. This profile view surfaces both lanes without merging their progression keys.</div>
+                <div class="profile-genetics-knowledge-item">Genetic upgrades run on the same general timing philosophy as Genesis traits, but at the faster user-bound speed you locked during this build phase.</div>
+                <div class="profile-genetics-knowledge-item">Marketplace transfer, admin tooling, and Discord bot visibility are the next ecosystem layers planned after this profile integration pass.</div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  async function mountProfileGenetics(panel) {
+    if (!panel) return;
+    panel.innerHTML = '<div class="profile-genetics-empty">Loading Genetic profile bridge…</div>';
+    try {
+      const data = await loadProfileGeneticState();
+      panel.innerHTML = renderProfileGeneticsPanel(data);
+    } catch (error) {
+      panel.innerHTML = `<div class="profile-genetics-empty">Could not load Genetic profile data yet. ${escapeHtml(error.message || 'Try refreshing the profile once the API is reachable.')}</div>`;
     }
   }
 
@@ -10684,6 +11249,10 @@ setInterval(updateBingoCard, 60000);
     [leaderboardAuth, seasonActive, leaderboard].forEach((node) => moveNode(node, panelMap.leaderboards));
 
     moveNode(main, panelMap.overview);
+
+    if (panelMap.genetics) {
+      mountProfileGenetics(panelMap.genetics);
+    }
 
     Object.values(panelMap).forEach(ensurePanelNote);
 

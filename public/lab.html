@@ -327,186 +327,58 @@
 }
 
     
-/* 🧪 LAB BOOSTER PANEL — aligned to profile.html look */
-.booster-panel {
-  border-radius: 20px;
-  border: 1px solid rgba(34, 211, 238, 0.18);
-  background: linear-gradient(180deg, rgba(8, 47, 73, 0.45), rgba(15, 23, 42, 0.7));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  padding: 18px;
-}
+    .booster-panel {
+      border-radius: 20px;
+      border: 1px solid rgba(34,211,238,0.18);
+      background: linear-gradient(180deg, rgba(8,47,73,0.45), rgba(15,23,42,0.7));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      padding: 18px;
+    }
 
-.booster-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-  margin-top: 16px;
-}
+    .booster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
 
-.booster-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-  backdrop-filter: blur(10px);
-  transition: all 0.25s ease;
-}
+    .booster-card {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      padding: 16px;
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
 
-.booster-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-}
+    .booster-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34,211,238,0.28);
+      box-shadow: 0 12px 30px rgba(2,132,199,0.10);
+    }
 
-/* tone borders */
-.booster-card.green {
-  border-color: rgba(16, 185, 129, 0.3);
-  box-shadow: 0 0 25px rgba(16, 185, 129, 0.08);
-}
+    .booster-card.green { border-color: rgba(16,185,129,0.28); }
+    .booster-card.blue { border-color: rgba(59,130,246,0.28); }
+    .booster-card.red { border-color: rgba(239,68,68,0.28); }
 
-.booster-card.blue {
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow: 0 0 25px rgba(59, 130, 246, 0.08);
-}
+    .booster-icon {
+      font-size: 1.65rem;
+      line-height: 1;
+    }
 
-.booster-card.red {
-  border-color: rgba(239, 68, 68, 0.3);
-  box-shadow: 0 0 25px rgba(239, 68, 68, 0.08);
-}
-
-/* top info row */
-.booster-owned {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: #e2e8f0;
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* IMPORTANT:
-   keep the booster flavor name visible as normal text above the model,
-   like profile.html, instead of floating over the model */
-.booster-glow-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: auto;
-  max-width: 100%;
-  margin: 4px auto 10px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-  position: static;
-  transform: none;
-  left: auto;
-  top: auto;
-  z-index: auto;
-  pointer-events: none;
-}
-
-.booster-card.green .booster-glow-pill {
-  color: #d1fae5;
-  border: 1px solid rgba(16, 185, 129, 0.28);
-  background: rgba(16, 185, 129, 0.12);
-}
-
-.booster-card.blue .booster-glow-pill {
-  color: #dbeafe;
-  border: 1px solid rgba(59, 130, 246, 0.28);
-  background: rgba(59, 130, 246, 0.12);
-}
-
-.booster-card.red .booster-glow-pill {
-  color: #fee2e2;
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  background: rgba(239, 68, 68, 0.12);
-}
-
-/* viewer area — match profile feel more closely */
-.booster-viewer-shell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  height: 150px;
-  position: relative;
-  overflow: visible;
-  margin: 6px 0 12px;
-  padding-top: 0;
-}
-
-/* model placement — slightly more right like profile */
-.booster-viewer-shell model-viewer,
-.booster-viewer-shell img {
-  width: 110px;
-  height: 110px;
-  object-fit: contain;
-  display: block;
-  transform: translate(14px, 2px);
-}
-
-.booster-model-viewer {
-  width: 110px;
-  height: 110px;
-  --poster-color: transparent;
-  background: transparent;
-}
-
-/* optional fallback text class if used in your markup */
-.booster-card p.booster-flavor-text,
-.booster-card .booster-flavor-text,
-.booster-card .booster-viewer-label,
-.booster-card .booster-model-label {
-  display: block;
-  text-align: center;
-  font-size: 0.98rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.92);
-  margin: 4px 0 10px;
-  line-height: 1.2;
-}
-
-/* mobile */
-@media (max-width: 768px) {
-  .booster-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .booster-viewer-shell {
-    height: 142px;
-    margin: 8px 0 12px;
-  }
-
-  .booster-viewer-shell model-viewer,
-  .booster-viewer-shell img {
-    width: 104px;
-    height: 104px;
-    transform: translate(12px, 2px);
-  }
-
-  .booster-model-viewer {
-    width: 104px;
-    height: 104px;
-  }
-
-  .booster-glow-pill {
-    font-size: 0.64rem;
-    margin: 2px auto 8px;
-  }
-}
+    .booster-owned {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
 
 @keyframes floatOrb {
       0%,100% { transform: translateY(0) translateX(0) scale(1); }
@@ -2397,6 +2269,358 @@ body::after {
   }
 }
 
+
+/* 🧬 Genetic media shell reuses booster viewer language */
+.genetic-media-shell {
+  min-height: 140px;
+}
+
+.genetic-media-image,
+.genetic-placeholder-core {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  transform: translate(8px, -12px);
+}
+
+.genetic-placeholder-core {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  background: radial-gradient(circle, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
+  backdrop-filter: blur(8px);
+}
+
+.genetic-placeholder-icon {
+  font-size: 2rem;
+  opacity: 0.9;
+}
+
+.genetic-media-shell.violet .genetic-placeholder-core {
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.18);
+}
+
+.genetic-media-shell.cyan .genetic-placeholder-core {
+  box-shadow: 0 0 24px rgba(34, 211, 238, 0.18);
+}
+
+.genetic-media-shell.amber .genetic-placeholder-core {
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.18);
+}
+
+.genetic-media-shell.blue .genetic-placeholder-core {
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.18);
+}
+
+.genetic-media-shell.slate .genetic-placeholder-core {
+  box-shadow: 0 0 24px rgba(148, 163, 184, 0.12);
+}
+
+.genetic-card-media {
+  min-height: 124px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.genetic-media-shell {
+  min-height: 116px;
+}
+
+.genetic-media-shell .booster-glow-pill {
+  top: 6px;
+  left: 10px;
+  right: auto;
+  max-width: calc(100% - 20px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.genetic-media-shell model-viewer,
+.genetic-media-shell img,
+.genetic-placeholder-core {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  transform: translate(8px, 4px);
+}
+
+
+    /* 🧬 Genetic Shop / Inventory */
+    .genetic-access-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .genetic-access-tile {
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(15, 23, 42, 0.72);
+      padding: 14px;
+    }
+    .genetic-access-tile .eyebrow,
+    .genetic-section-eyebrow {
+      font-size: 0.68rem;
+      line-height: 1;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .genetic-access-tile .value {
+      margin-top: 8px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .genetic-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: end;
+      margin-top: 18px;
+    }
+    .genetic-filter-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 150px;
+    }
+    .genetic-filter-field label {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .genetic-filter-input,
+    .genetic-filter-select {
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.76);
+      color: #f8fafc;
+      min-height: 44px;
+      padding: 0 14px;
+      outline: none;
+    }
+    .genetic-filter-input:focus,
+    .genetic-filter-select:focus {
+      border-color: rgba(34, 211, 238, 0.55);
+      box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25);
+    }
+    .genetic-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .genetic-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74));
+      padding: 18px;
+      box-shadow: 0 16px 32px rgba(2, 6, 23, 0.24);
+    }
+    .genetic-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 44%);
+      pointer-events: none;
+    }
+    .genetic-card.legendary::before { background: radial-gradient(circle at top right, rgba(244, 114, 182, 0.18), transparent 45%); }
+    .genetic-card.rare::before { background: radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 45%); }
+    .genetic-card.uncommon::before { background: radial-gradient(circle at top right, rgba(74, 222, 128, 0.16), transparent 45%); }
+    .genetic-card.common::before { background: radial-gradient(circle at top right, rgba(148, 163, 184, 0.16), transparent 45%); }
+    .genetic-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .genetic-card-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.2;
+    }
+    .genetic-card-subtitle {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .genetic-rarity-badge,
+    .genetic-owned-badge,
+    .genetic-locked-badge,
+    .genetic-listed-badge,
+    .genetic-status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .genetic-rarity-badge.common { background: rgba(148, 163, 184, 0.16); border: 1px solid rgba(148, 163, 184, 0.28); color: #cbd5e1; }
+    .genetic-rarity-badge.uncommon { background: rgba(74, 222, 128, 0.12); border: 1px solid rgba(74, 222, 128, 0.3); color: #bbf7d0; }
+    .genetic-rarity-badge.rare { background: rgba(96, 165, 250, 0.12); border: 1px solid rgba(96, 165, 250, 0.3); color: #dbeafe; }
+    .genetic-rarity-badge.legendary { background: rgba(244, 114, 182, 0.12); border: 1px solid rgba(244, 114, 182, 0.3); color: #fbcfe8; }
+    .genetic-owned-badge { background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.3); color: #d1fae5; }
+    .genetic-locked-badge { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.28); color: #fde68a; }
+    .genetic-listed-badge { background: rgba(168, 85, 247, 0.14); border: 1px solid rgba(168, 85, 247, 0.28); color: #e9d5ff; }
+    .genetic-status-badge.idle { background: rgba(148, 163, 184, 0.14); border: 1px solid rgba(148, 163, 184, 0.24); color: #e2e8f0; }
+    .genetic-status-badge.upgrading { background: rgba(59, 130, 246, 0.16); border: 1px solid rgba(59, 130, 246, 0.3); color: #dbeafe; }
+    .genetic-status-badge.ready_to_claim { background: rgba(16, 185, 129, 0.16); border: 1px solid rgba(16, 185, 129, 0.34); color: #d1fae5; }
+    .genetic-card.ring-1 { box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 14px 40px rgba(0,0,0,0.22); }
+    .genetic-card-media {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 120px;
+      margin-top: 14px;
+      border-radius: 16px;
+      border: 1px dashed rgba(148, 163, 184, 0.2);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.46), rgba(15, 23, 42, 0.18));
+    }
+    .genetic-card-media-emoji {
+      font-size: 2.2rem;
+      filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.44));
+    }
+    .genetic-card-copy {
+      position: relative;
+      z-index: 1;
+      margin-top: 14px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #cbd5e1;
+      min-height: 48px;
+    }
+    .genetic-card-meta {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .genetic-card-meta .meta-box {
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.62);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      padding: 10px 12px;
+    }
+    .genetic-card-meta .label {
+      font-size: 0.66rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .genetic-card-meta .value {
+      margin-top: 4px;
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .genetic-card-actions {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .genetic-empty-state {
+      margin-top: 20px;
+      border-radius: 20px;
+      border: 1px dashed rgba(148, 163, 184, 0.28);
+      background: rgba(15, 23, 42, 0.42);
+      padding: 22px;
+      text-align: center;
+      color: #cbd5e1;
+    }
+    .genetic-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .genetic-summary-card {
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(15, 23, 42, 0.72);
+      padding: 14px;
+    }
+    .genetic-summary-card .value {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #f8fafc;
+      line-height: 1.1;
+    }
+    .genetic-summary-card .label {
+      margin-top: 6px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #94a3b8;
+    }
+    .genetic-panel-grid {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 18px;
+    }
+    .genetic-helper-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .genetic-helper-item {
+      border-radius: 16px;
+      padding: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(15, 23, 42, 0.7);
+      color: #cbd5e1;
+      line-height: 1.55;
+    }
+    @media (max-width: 1100px) {
+      .genetic-panel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 768px) {
+      .genetic-card-grid,
+      .genetic-summary-grid,
+      .genetic-access-strip {
+        grid-template-columns: 1fr;
+      }
+      .genetic-card-actions,
+      .genetic-card-meta {
+        grid-template-columns: 1fr;
+      }
+      .genetic-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .genetic-filter-field {
+        width: 100%;
+      }
+    }
+
 </style>
 </head>
 <body>
@@ -2503,6 +2727,8 @@ body::after {
       <button type="button" class="lab-tab-button active" data-lab-tab="overview">Overview</button>
       <button type="button" class="lab-tab-button" data-lab-tab="my-genesis" id="lab-tab-my-genesis">My Genesis Lab</button>
       <button type="button" class="lab-tab-button" data-lab-tab="research-queue" id="lab-tab-research-queue">Research Queue</button>
+      <button type="button" class="lab-tab-button" data-lab-tab="genetic-shop" id="lab-tab-genetic-shop">Genetic Shop</button>
+      <button type="button" class="lab-tab-button" data-lab-tab="genetic-inventory" id="lab-tab-genetic-inventory">My Genetic Inventory</button>
       <button type="button" class="lab-tab-button" data-lab-tab="knowledge">Knowledge</button>
     </nav>
 
@@ -2616,6 +2842,137 @@ body::after {
   </div>
 </section>
 
+    <section id="lab-panel-genetic-shop" class="lab-tab-panel" hidden>
+      <div class="genetic-panel-grid">
+        <div class="glass p-5 md:p-6">
+          <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div class="section-title text-xl md:text-2xl"><span>🧬</span><span>Genetic Shop</span></div>
+              <p class="mt-2 text-sm md:text-base text-slate-300">Preview every seeded Outfit and Accessories trait, then buy the missing ones directly into your Discord-bound Genetic Inventory. This system runs parallel to the live NFT Lab and never mutates NFT-bound progression.</p>
+            </div>
+            <div class="text-sm text-slate-300">
+              <span id="geneticShopBadge" class="chip">Catalog warming up…</span>
+            </div>
+          </div>
+
+          <div id="geneticAccessStrip" class="genetic-access-strip"></div>
+
+          <div class="genetic-filter-bar">
+            <div class="genetic-filter-field">
+              <label for="geneticTraitTypeFilter">Trait Type</label>
+              <select id="geneticTraitTypeFilter" class="genetic-filter-select">
+                <option value="">All Types</option>
+                <option value="Outfit">Outfit</option>
+                <option value="Accessories">Accessories</option>
+              </select>
+            </div>
+            <div class="genetic-filter-field">
+              <label for="geneticRarityFilter">Rarity</label>
+              <select id="geneticRarityFilter" class="genetic-filter-select">
+                <option value="">All Rarities</option>
+                <option value="common">Common</option>
+                <option value="uncommon">Uncommon</option>
+                <option value="rare">Rare</option>
+                <option value="legendary">Legendary</option>
+              </select>
+            </div>
+            <div class="genetic-filter-field flex-1 min-w-[220px]">
+              <label for="geneticSearchInput">Search</label>
+              <input id="geneticSearchInput" class="genetic-filter-input" type="search" placeholder="Search trait name or lore" />
+            </div>
+          </div>
+
+          <div id="geneticShopGrid" class="genetic-card-grid"></div>
+          <div id="geneticShopEmptyState" class="genetic-empty-state hidden"></div>
+        </div>
+
+        <div class="space-y-5">
+          <div class="glass p-5 md:p-6">
+            <div class="section-title text-xl"><span>🚪</span><span>How access works</span></div>
+            <div class="genetic-helper-list">
+              <div class="genetic-helper-item">Everyone can preview the Genetic Shop. Buying is unlocked only for verified <strong>Genesis</strong> or <strong>VIP</strong> holders.</div>
+              <div class="genetic-helper-item">Bought traits do <strong>not</strong> attach to NFTs. They become Discord-bound Genetic Items owned by the player profile itself.</div>
+              <div class="genetic-helper-item">This is the clean path for players who want missing Outfit or Accessories traits without already holding the exact NFT trait on-chain.</div>
+            </div>
+          </div>
+
+          <div class="glass p-5 md:p-6">
+<div class="section-title text-xl"><span>🧪</span><span>What comes next</span></div>
+<div class="genetic-helper-list">
+  <div class="genetic-helper-item">Sprint 3A now activates start and claim actions directly inside Genetic Inventory.</div>
+  <div class="genetic-helper-item">Instant finish, booster usage, and marketplace listing remain separate follow-up layers.</div>
+  <div class="genetic-helper-item">This keeps the live Genesis chamber stable while the new user-bound progression loop grows beside it.</div>
+</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="lab-panel-genetic-inventory" class="lab-tab-panel" hidden>
+      <div class="genetic-panel-grid">
+        <div class="glass p-5 md:p-6">
+          <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div class="section-title text-xl md:text-2xl"><span>🎒</span><span>My Genetic Inventory</span></div>
+              <p class="mt-2 text-sm md:text-base text-slate-300">Review every Genetic Item already owned by this Discord profile. This inventory now supports start, claim, instant finish, and shared Lab booster actions while staying fully separate from NFT-bound Genesis progression.</p>
+            </div>
+            <div class="text-sm text-slate-300">
+              <span id="geneticInventoryBadge" class="chip">Inventory waiting…</span>
+            </div>
+          </div>
+
+          <div id="geneticInventorySummary" class="genetic-summary-grid"></div>
+
+          <div class="genetic-filter-bar">
+            <div class="genetic-filter-field">
+              <label for="geneticInventoryTraitTypeFilter">Trait Type</label>
+              <select id="geneticInventoryTraitTypeFilter" class="genetic-filter-select">
+                <option value="">All Types</option>
+                <option value="Outfit">Outfit</option>
+                <option value="Accessories">Accessories</option>
+              </select>
+            </div>
+            <div class="genetic-filter-field">
+              <label for="geneticInventoryStatusFilter">Status</label>
+              <select id="geneticInventoryStatusFilter" class="genetic-filter-select">
+                <option value="">All States</option>
+                <option value="idle">Idle</option>
+                <option value="upgrading">Upgrading</option>
+                <option value="ready_to_claim">Ready To Claim</option>
+              </select>
+            </div>
+            <div class="genetic-filter-field flex-1 min-w-[220px]">
+              <label for="geneticInventorySearchInput">Search</label>
+              <input id="geneticInventorySearchInput" class="genetic-filter-input" type="search" placeholder="Search owned traits" />
+            </div>
+          </div>
+
+          <div id="geneticInventoryGrid" class="genetic-card-grid"></div>
+          <div id="geneticInventoryEmptyState" class="genetic-empty-state hidden"></div>
+        </div>
+
+        <div class="space-y-5">
+          <div class="glass p-5 md:p-6">
+            <div class="section-title text-xl"><span>📦</span><span>Inventory rules</span></div>
+            <div class="genetic-helper-list">
+              <div class="genetic-helper-item">One Discord user can own only <strong>one exact trait</strong> per type/value combination.</div>
+              <div class="genetic-helper-item">Bought traits stay separate from NFT-bound Genesis progression and never overwrite on-chain identity.</div>
+              <div class="genetic-helper-item">When marketplace support arrives, listed items will stay visible here with a <strong>Listed for Sale</strong> badge.</div>
+            </div>
+          </div>
+
+          <div class="glass p-5 md:p-6">
+            <div class="section-title text-xl"><span>⏭️</span><span>Upgrade station roadmap</span></div>
+            <div class="genetic-helper-list">
+              <div class="genetic-helper-item">Sprint 3A now activates start and claim actions directly inside Genetic Inventory.</div>
+              <div class="genetic-helper-item">Instant finish, booster usage, and marketplace listing remain separate follow-up layers.</div>
+              <div class="genetic-helper-item">This keeps the live Genesis chamber stable while the new user-bound progression loop grows beside it.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="lab-panel-research-queue" class="lab-tab-panel" hidden>
       <div class="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-5">
         <div class="glass p-5 md:p-6">
@@ -2668,18 +3025,48 @@ body::after {
         </div>
 
         <div class="glass p-5 md:p-6">
-  <div class="section-title text-xl md:text-2xl"><span>📈</span><span>Level Timing Guide</span></div>
-  <div class="feature-list">
-    <div class="feature-item"><strong>Level 1 → 2:</strong> 24 hours</div>
-    <div class="feature-item"><strong>Level 2 → 3:</strong> 48 hours</div>
-    <div class="feature-item"><strong>Level 3 → 4:</strong> 96 hours</div>
-    <div class="feature-item"><strong>Level 4 → 5:</strong> 192 hours (8 days)</div>
-    <div class="feature-item"><strong>Level 5 → 16:</strong> after 8 days, each next level adds 24 more hours</div>
-    <div class="feature-item"><strong>Level 16+:</strong> each next level adds only 1 more hour</div>
-    <div class="feature-item"><strong>Claim rule:</strong> finished research must always be claimed manually before the next cycle can begin</div>
-    <div class="feature-item"><strong>Booster rule:</strong> Green, Blue, and Red Elixirs reduce active research time by fixed hours</div>
-  </div>
-</div>
+          <div class="section-title text-xl md:text-2xl"><span>📈</span><span>Genesis Timing Guide</span></div>
+          <div class="feature-list">
+            <div class="feature-item"><strong>Level 1 → 2:</strong> 24 hours</div>
+            <div class="feature-item"><strong>Level 2 → 3:</strong> 48 hours</div>
+            <div class="feature-item"><strong>Level 3 → 4:</strong> 96 hours</div>
+            <div class="feature-item"><strong>Level 4 → 5:</strong> 192 hours (8 days)</div>
+            <div class="feature-item"><strong>Level 5 → 16:</strong> after 8 days, each next level adds 24 more hours</div>
+            <div class="feature-item"><strong>Level 16+:</strong> each next level adds only 1 more hour</div>
+            <div class="feature-item"><strong>Claim rule:</strong> finished research must always be claimed manually before the next cycle can begin</div>
+            <div class="feature-item"><strong>Booster rule:</strong> Green, Blue, and Red Elixirs reduce active research time by fixed hours</div>
+          </div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl md:text-2xl"><span>🧬</span><span>Genetic System Quickstart</span></div>
+          <div class="feature-list">
+            <div class="feature-item">Genetic Shop lets players preview every seeded Outfit and Accessories trait and buy missing ones into a Discord-bound inventory.</div>
+            <div class="feature-item">Genetic Items do <strong>not</strong> mutate NFTs. They are owned by the verified Discord player profile and progress in a parallel system.</div>
+            <div class="feature-item">Genetic upgrades use the same progression philosophy as Genesis research, but they run at roughly double speed and currently cap at level 100.</div>
+            <div class="feature-item">The same Lab booster pool can now accelerate Genetic Items too, so the time-control layer stays unified across both systems.</div>
+          </div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl md:text-2xl"><span>🧭</span><span>Two progression lanes</span></div>
+          <div class="feature-list">
+            <div class="feature-item"><strong>Genesis Lab:</strong> NFT-bound, verified holder identity, exact trait progression, long-term on-chain mouse path.</div>
+            <div class="feature-item"><strong>Genetic Inventory:</strong> Discord-bound, buyable trait items, faster user progression, future marketplace transfer layer.</div>
+            <div class="feature-item"><strong>Golden rule:</strong> the backend remains authoritative for ownership, timers, claim state, instant finish cost, and booster usage.</div>
+            <div class="feature-item"><strong>Safety rule:</strong> these two systems stay separated so live Genesis progression is never corrupted by the newer Genetic layer.</div>
+          </div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl md:text-2xl"><span>🛠️</span><span>Action guide</span></div>
+          <div class="feature-list">
+            <div class="feature-item"><strong>Idle item:</strong> start the next upgrade cycle.</div>
+            <div class="feature-item"><strong>Upgrading item:</strong> watch the timer, use instant finish, or spend one of your shared Lab boosters.</div>
+            <div class="feature-item"><strong>Ready item:</strong> claim the completed level and send the row back to idle.</div>
+            <div class="feature-item"><strong>Next phase:</strong> marketplace listing, admin catalog tuning, and profile identity integration.</div>
+          </div>
+        </div>
 
         <div class="glass p-5 md:p-6">
           <div class="section-title text-xl md:text-2xl"><span>🧀</span><span>Holder benefits and future hints</span></div>
@@ -2748,6 +3135,13 @@ body::after {
       storePurchaseEndpoint: '/api/store/purchase.php',
       scoreTotalEndpoint: '/api/user/score-total.php',
       useBoosterEndpoint: '/api/user/use-lab-booster.php',
+      geneticTraitCatalogEndpoint: '/api/user/get-genetic-trait-catalog.php',
+      userGeneticItemsEndpoint: '/api/user/get-user-genetic-items.php',
+      buyGeneticTraitEndpoint: '/api/user/buy-genetic-trait.php',
+      startGeneticItemUpgradeEndpoint: '/api/user/start-genetic-item-upgrade.php',
+      completeGeneticItemUpgradeEndpoint: '/api/user/complete-genetic-item-upgrade.php',
+      instantFinishGeneticItemUpgradeEndpoint: '/api/user/instant-finish-genetic-item-upgrade.php',
+      useGeneticItemBoosterEndpoint: '/api/user/use-genetic-item-booster.php',
       genesisCollection: 'genesis',
       upgradeableTraitOrder: ['Theme', 'Sub-Trait', 'Outfit', 'Accessories', 'Expression', 'Background', 'Special'],
       levelOneDurationHours: 24,
@@ -2781,7 +3175,14 @@ body::after {
       actionInFlight: false,
       lastUpgradeSummary: null,
       lastSuccessfulLoadAt: null,
-      expandedTraitKey: null
+      expandedTraitKey: null,
+      geneticCatalog: [],
+      geneticCatalogSummary: null,
+      geneticHolderAccess: null,
+      geneticInventory: [],
+      geneticInventorySummary: null,
+      geneticInventoryRuntimeSummary: null,
+      geneticActionItemId: null
     };
 
 const el = {
@@ -2806,6 +3207,20 @@ const el = {
   refreshUpgradeButton: document.getElementById('refreshUpgradeButton'),
   activeResearchQueue: document.getElementById('activeResearchQueue'),
   activeQueueBadge: document.getElementById('activeQueueBadge'),
+  geneticShopBadge: document.getElementById('geneticShopBadge'),
+  geneticAccessStrip: document.getElementById('geneticAccessStrip'),
+  geneticTraitTypeFilter: document.getElementById('geneticTraitTypeFilter'),
+  geneticRarityFilter: document.getElementById('geneticRarityFilter'),
+  geneticSearchInput: document.getElementById('geneticSearchInput'),
+  geneticShopGrid: document.getElementById('geneticShopGrid'),
+  geneticShopEmptyState: document.getElementById('geneticShopEmptyState'),
+  geneticInventoryBadge: document.getElementById('geneticInventoryBadge'),
+  geneticInventorySummary: document.getElementById('geneticInventorySummary'),
+  geneticInventoryTraitTypeFilter: document.getElementById('geneticInventoryTraitTypeFilter'),
+  geneticInventoryStatusFilter: document.getElementById('geneticInventoryStatusFilter'),
+  geneticInventorySearchInput: document.getElementById('geneticInventorySearchInput'),
+  geneticInventoryGrid: document.getElementById('geneticInventoryGrid'),
+  geneticInventoryEmptyState: document.getElementById('geneticInventoryEmptyState'),
   labEntryActions: document.getElementById('labEntryActions'),
   nftPrevButton: document.getElementById('nftPrevButton'),
   nftNextButton: document.getElementById('nftNextButton'),
@@ -2991,6 +3406,8 @@ function getLabModalElements() {
     confirm: document.getElementById('lab-modal-confirm')
   };
 }
+
+
 
 function getDiscordLoginUrl() {
   const profileStyleOauthUrl = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read';
@@ -5312,7 +5729,7 @@ async function loadTraitUpgrades() {
 
 function setActionInFlight(isBusy) {
   state.actionInFlight = !!isBusy;
-  document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade], [data-use-booster], [data-buy-booster]').forEach(button => {
+  document.querySelectorAll('[data-start-upgrade], [data-claim-upgrade], [data-finish-upgrade], [data-use-booster], [data-buy-booster], [data-genetic-buy-id], [data-start-genetic-upgrade], [data-claim-genetic-upgrade]').forEach(button => {
     if (state.actionInFlight) {
       button.setAttribute('disabled', 'disabled');
     } else if (button.dataset.wasDisabled !== 'true') {
@@ -5612,6 +6029,936 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
   }
 }
 
+
+function getGeneticCategoryEmoji(traitType) {
+  if (traitType === 'Outfit') return '🧥';
+  if (traitType === 'Accessories') return '✨';
+  return '🧬';
+}
+
+function getGeneticRarityClass(rarity) {
+  const value = String(rarity || 'common').toLowerCase();
+  return ['common', 'uncommon', 'rare', 'legendary'].includes(value) ? value : 'common';
+}
+
+function getGeneticAccessLabel(access) {
+  if (!state.userId) {
+    return 'Preview Only';
+  }
+  if (access?.can_buy) {
+    return access.has_genesis && access.has_vip ? 'Genesis + VIP Unlocked' : (access.has_genesis ? 'Genesis Access Unlocked' : 'VIP Access Unlocked');
+  }
+  return 'Preview Only';
+}
+
+function getGeneticLockedMessage() {
+  if (!state.userId) {
+    return 'Login and verify Genesis or VIP to buy traits.';
+  }
+  return 'Preview is open to everyone. Buying unlocks after Genesis or VIP verification.';
+}
+
+async function loadGeneticTraitCatalog() {
+  try {
+    const params = new URLSearchParams();
+    if (state.userId) {
+      params.set('user_id', state.userId);
+    }
+    const url = `${getApiUrl(LAB_CONFIG.geneticTraitCatalogEndpoint)}${params.toString() ? `?${params.toString()}` : ''}`;
+    const res = await fetchJson(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    }, true);
+
+    if (!res.ok || !res.payload?.success) {
+      state.geneticCatalog = [];
+      state.geneticCatalogSummary = null;
+      state.geneticHolderAccess = null;
+      logLab(`Genetic catalog fallback mode: ${(res.payload?.error || res.rawText || 'request failed')}`, 'warn');
+      return;
+    }
+
+    const payload = res.payload.data || {};
+    const catalogGroups = payload.catalog || {};
+    const flattened = [];
+    Object.keys(catalogGroups).forEach(groupKey => {
+      const rows = Array.isArray(catalogGroups[groupKey]) ? catalogGroups[groupKey] : [];
+      rows.forEach(row => flattened.push(row));
+    });
+
+    state.geneticCatalog = flattened;
+    state.geneticCatalogSummary = payload.summary || null;
+    state.geneticHolderAccess = payload.holder_access || { has_genesis: false, has_vip: false, can_buy: false };
+    logLab(`Genetic Shop catalog loaded with ${flattened.length} items.`, 'info');
+  } catch (error) {
+    state.geneticCatalog = [];
+    state.geneticCatalogSummary = null;
+    state.geneticHolderAccess = null;
+    logLab(`Genetic Shop catalog failed: ${error.message}`, 'warn');
+  }
+}
+
+async function loadUserGeneticItems() {
+  if (!state.userId) {
+    state.geneticInventory = [];
+    state.geneticInventorySummary = {
+      total_items: 0,
+      outfit_items: 0,
+      accessories_items: 0,
+      idle_items: 0,
+      upgrading_items: 0,
+      ready_to_claim_items: 0,
+      listed_items: 0,
+      max_level: 0
+    };
+    return;
+  }
+
+  try {
+    const url = `${getApiUrl(LAB_CONFIG.userGeneticItemsEndpoint)}?user_id=${encodeURIComponent(state.userId)}`;
+    const res = await fetchJson(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    }, true);
+
+    if (!res.ok || !res.payload?.success) {
+      state.geneticInventory = [];
+      state.geneticInventorySummary = null;
+      logLab(`Genetic inventory fallback mode: ${(res.payload?.error || res.rawText || 'request failed')}`, 'warn');
+      return;
+    }
+
+    const payload = res.payload.data || {};
+    state.geneticInventory = Array.isArray(payload.items) ? payload.items : [];
+    state.geneticInventorySummary = payload.summary || null;
+    if (!state.geneticHolderAccess && payload.holder_access) {
+      state.geneticHolderAccess = payload.holder_access;
+    }
+    logLab(`Genetic inventory loaded with ${state.geneticInventory.length} owned items.`, 'info');
+  } catch (error) {
+    state.geneticInventory = [];
+    state.geneticInventorySummary = null;
+    logLab(`Genetic inventory failed: ${error.message}`, 'warn');
+  }
+}
+
+function getFilteredGeneticCatalog() {
+  const typeValue = (el.geneticTraitTypeFilter?.value || '').trim();
+  const rarityValue = (el.geneticRarityFilter?.value || '').trim().toLowerCase();
+  const searchValue = (el.geneticSearchInput?.value || '').trim().toLowerCase();
+
+  return (Array.isArray(state.geneticCatalog) ? state.geneticCatalog : []).filter(item => {
+    if (typeValue && String(item.trait_type || '') !== typeValue) return false;
+    if (rarityValue && String(item.rarity_tier || '').toLowerCase() !== rarityValue) return false;
+    if (searchValue) {
+      const haystack = [item.display_title, item.trait_value, item.description, item.trait_type].join(' ').toLowerCase();
+      if (!haystack.includes(searchValue)) return false;
+    }
+    return true;
+  });
+}
+
+function getFilteredGeneticInventory() {
+  const typeValue = (el.geneticInventoryTraitTypeFilter?.value || '').trim();
+  const statusValue = (el.geneticInventoryStatusFilter?.value || '').trim();
+  const searchValue = (el.geneticInventorySearchInput?.value || '').trim().toLowerCase();
+
+  return (Array.isArray(state.geneticInventory) ? state.geneticInventory : []).filter(item => {
+    const runtimeState = getGeneticInventoryRuntimeState(item);
+    if (typeValue && String(item.trait_type || '') !== typeValue) return false;
+    if (statusValue && runtimeState !== statusValue) return false;
+    if (searchValue) {
+      const haystack = [item.display_title, item.trait_value, item.description, item.trait_type].join(' ').toLowerCase();
+      if (!haystack.includes(searchValue)) return false;
+    }
+    return true;
+  });
+}
+
+function renderGeneticAccessStrip() {
+  if (!el.geneticAccessStrip) return;
+  const access = state.geneticHolderAccess || { has_genesis: false, has_vip: false, can_buy: false };
+  const totalVisible = state.geneticCatalogSummary?.total_visible_items ?? (Array.isArray(state.geneticCatalog) ? state.geneticCatalog.length : 0);
+  const ownedCount = state.geneticInventorySummary?.total_items ?? state.geneticCatalogSummary?.owned_items_in_result ?? 0;
+
+  const tiles = [
+    ['Catalog Visibility', `${formatNumber(totalVisible)} Traits`, 'Public preview stays open for everyone.'],
+    ['Holder Access', getGeneticAccessLabel(access), access.can_buy ? 'Buying is unlocked because holder verification exists.' : getGeneticLockedMessage()],
+    ['Owned Genetic Items', formatNumber(ownedCount), 'Traits bought here live on the Discord profile, not on NFTs.'],
+    ['Economy Readout', `${formatNumber(state.boosterStoreBalance ?? state.stakingStats?.total_balance ?? 0)} DSPOINC`, 'The backend price and spend flow stays authoritative.']
+  ];
+
+  el.geneticAccessStrip.innerHTML = tiles.map(([eyebrow, value, note]) => `
+    <div class="genetic-access-tile">
+      <div class="eyebrow">${escapeHtml(eyebrow)}</div>
+      <div class="value">${escapeHtml(value)}</div>
+      <div class="mt-2 text-sm text-slate-300">${escapeHtml(note)}</div>
+    </div>
+  `).join('');
+}
+
+function getGeneticInventoryRuntimeState(item) {
+  const rawStatus = String(item?.upgrade_status || 'idle').trim().toLowerCase();
+  if (rawStatus === 'idle') {
+    return 'idle';
+  }
+
+  const endsAt = parseLabUtcDate(item?.upgrade_ends_at);
+  if ((rawStatus === 'upgrading' || rawStatus === 'ready_to_claim') && endsAt) {
+    return endsAt.getTime() <= Date.now() ? 'ready_to_claim' : 'upgrading';
+  }
+
+  return rawStatus || 'idle';
+}
+
+function getGeneticNextLevel(item) {
+  const currentLevel = Math.max(1, safeNumber(item?.current_level, 1));
+  return Math.min(100, currentLevel + 1);
+}
+
+function getGeneticRemainingMs(item) {
+  const endsAt = parseLabUtcDate(item?.upgrade_ends_at);
+  if (!endsAt) return 0;
+  return Math.max(0, endsAt.getTime() - Date.now());
+}
+
+function buildGeneticInventoryRuntimeSummary(items) {
+  const summary = {
+    total_items: 0,
+    outfit_items: 0,
+    accessories_items: 0,
+    idle_items: 0,
+    upgrading_items: 0,
+    ready_to_claim_items: 0,
+    listed_items: 0,
+    max_level: 0
+  };
+
+  (Array.isArray(items) ? items : []).forEach(item => {
+    summary.total_items += 1;
+    if (String(item?.trait_type || '') === 'Outfit') summary.outfit_items += 1;
+    if (String(item?.trait_type || '') === 'Accessories') summary.accessories_items += 1;
+
+    const runtimeState = getGeneticInventoryRuntimeState(item);
+    if (runtimeState === 'ready_to_claim') {
+      summary.ready_to_claim_items += 1;
+    } else if (runtimeState === 'upgrading') {
+      summary.upgrading_items += 1;
+    } else {
+      summary.idle_items += 1;
+    }
+
+    if (item?.is_listed_for_sale) summary.listed_items += 1;
+    summary.max_level = Math.max(summary.max_level, safeNumber(item?.current_level, 1));
+  });
+
+  return summary;
+}
+
+function buildGeneticSummaryCards(summary) {
+  if (!summary) {
+    return [];
+  }
+  return [
+    ['Owned Traits', formatNumber(summary.total_items || 0)],
+    ['Outfits', formatNumber(summary.outfit_items || 0)],
+    ['Accessories', formatNumber(summary.accessories_items || 0)],
+    ['Upgrading', formatNumber(summary.upgrading_items || 0)],
+    ['Ready To Claim', formatNumber(summary.ready_to_claim_items || 0)],
+    ['Max Level', `Lv ${formatNumber(summary.max_level || 0)}`]
+  ];
+}
+
+function getGeneticCardDescription(item) {
+  const description = String(item.description || '').trim();
+  if (description) return description;
+  const rarityCount = safeNumber(item.rarity_count, 0);
+  return rarityCount > 0
+    ? `Mint-seeded ${String(item.trait_type || 'trait').toLowerCase()} with a rarity count of ${formatNumber(rarityCount)}.`
+    : 'Mint-seeded genetic trait prepared for future gameplay utility.';
+}
+
+function renderGeneticTraitCard(item) {
+  const rarityClass = getGeneticRarityClass(item.rarity_tier);
+  const owned = Boolean(item.owned);
+  const canBuy = Boolean(item.can_buy);
+
+  const badge = owned
+    ? `<span class="genetic-owned-badge">Owned</span>`
+    : (canBuy
+      ? ''
+      : `<span class="genetic-locked-badge">Preview Only</span>`);
+
+  return `
+    <article class="genetic-card ${escapeHtml(rarityClass)}">
+      <div class="genetic-card-header">
+        <div>
+          <div class="genetic-card-title">${escapeHtml(item.display_title || item.trait_value || 'Trait')}</div>
+          <div class="genetic-card-subtitle">${escapeHtml(item.trait_type || 'Genetic Trait')}</div>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(item.rarity_tier || 'common')}</span>
+          ${badge}
+        </div>
+      </div>
+      <div class="genetic-card-media">
+  ${renderGeneticMedia(item, {
+    glowLabel: item.display_title || item.trait_value || 'Genetic Trait'
+  })}
+</div>
+      <div class="genetic-card-copy">${escapeHtml(getGeneticCardDescription(item))}</div>
+      <div class="genetic-card-meta">
+        <div class="meta-box"><div class="label">Rarity Count</div><div class="value">${formatNumber(item.rarity_count || 0)}</div></div>
+        <div class="meta-box"><div class="label">Price</div><div class="value">${formatNumber(item.base_price_dspoinc || 0)}</div></div>
+      </div>
+      <div class="genetic-card-actions">
+        <button type="button" class="btn ${owned ? '' : 'primary'}" ${owned ? 'disabled' : ''} data-genetic-buy-id="${escapeHtml(item.catalog_id)}">
+          ${owned ? 'Owned' : (canBuy ? '🧬 Buy Trait' : '🔒 Verify To Buy')}
+        </button>
+        <button type="button" class="btn" disabled>${escapeHtml(item.source_origin || 'mint_seed')}</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderGeneticOwnedItemCard(item) {
+  const rarityClass = getGeneticRarityClass(item.rarity_tier);
+  const runtimeState = getGeneticInventoryRuntimeState(item);
+  const statusClass = String(runtimeState || 'idle').replace(/[^a-z_]/gi, '_');
+  const listedBadge = item.is_listed_for_sale ? `<span class="genetic-listed-badge">Listed For Sale</span>` : '';
+  const currentLevel = Math.max(1, safeNumber(item.current_level, 1));
+  const nextLevel = getGeneticNextLevel(item);
+  const isMaxLevel = currentLevel >= 100;
+  const remainingMs = getGeneticRemainingMs(item);
+  const remainingLabel = runtimeState === 'upgrading' ? formatRemainingMs(remainingMs) : '—';
+  const finishAtLabel = item.upgrade_ends_at ? formatDateTime(item.upgrade_ends_at) : '—';
+  const actionDisabled = state.actionInFlight || !!state.geneticActionItemId;
+  const activeBooster = getLabBoosterCatalog().find(booster => Number(booster.itemId) === Number(item.active_booster_item_id || 0)) || null;
+  const instantFinishPreview = runtimeState === 'upgrading' ? calculateInstantFinishCost(currentLevel, remainingMs) : 0;
+  const cardClasses = ['genetic-card', escapeHtml(rarityClass), 'genetic-card-live'];
+
+  if (runtimeState === 'upgrading') {
+    cardClasses.push('genetic-card-live--upgrading');
+  }
+  if (runtimeState === 'ready_to_claim') {
+    cardClasses.push('genetic-card-live--ready', 'ring-1', 'ring-emerald-400/40');
+  }
+  if (activeBooster?.tone) {
+    cardClasses.push(`genetic-card-live--boosted-${activeBooster.tone}`);
+  }
+
+  let primaryAction = `<button type="button" class="btn" disabled>Upgrade Unavailable</button>`;
+  if (item.is_listed_for_sale) {
+    primaryAction = `<button type="button" class="btn" disabled>Listed On Market</button>`;
+  } else if (isMaxLevel) {
+    primaryAction = `<button type="button" class="btn" disabled>Max Level Reached</button>`;
+  } else if (runtimeState === 'ready_to_claim') {
+    primaryAction = `<button type="button" class="btn primary" ${actionDisabled ? 'disabled' : ''} data-claim-genetic-upgrade="${escapeHtml(item.genetic_item_id)}">✅ Claim Upgrade</button>`;
+  } else if (runtimeState === 'upgrading') {
+    primaryAction = `<button type="button" class="btn" disabled>⏳ Upgrading…</button>`;
+  } else {
+    primaryAction = `<button type="button" class="btn primary" ${actionDisabled ? 'disabled' : ''} data-start-genetic-upgrade="${escapeHtml(item.genetic_item_id)}">🧬 Start Upgrade</button>`;
+  }
+
+  const secondaryAction = item.is_listed_for_sale
+    ? `<button type="button" class="btn" disabled>Marketplace Next</button>`
+    : `<button type="button" class="btn" disabled>${runtimeState === 'upgrading' || runtimeState === 'ready_to_claim' ? `Lv ${currentLevel} → Lv ${nextLevel}` : `Next: Lv ${nextLevel}`}</button>`;
+
+  let upgradeHint = '';
+  if (runtimeState === 'upgrading' || runtimeState === 'ready_to_claim') {
+    upgradeHint = `
+      <div class="genetic-upgrade-hint">
+        ${runtimeState === 'ready_to_claim'
+          ? 'The backend timer is complete. Claim now to increase the level and reset the item back to idle.'
+          : `Upgrade finishes at ${escapeHtml(finishAtLabel)}. ${activeBooster ? `${escapeHtml(activeBooster.name)} is already boosting this timer.` : 'You can still use instant finish or one Lab booster from your shared inventory.'}`}
+      </div>`;
+  }
+
+  let extraActions = '';
+  if (runtimeState === 'upgrading' && !item.is_listed_for_sale && !isMaxLevel) {
+    const boosterButtons = getLabBoosterCatalog().map(booster => {
+      const quantity = getBoosterInventoryQuantity(booster.itemId);
+      const disabled = actionDisabled || quantity < 1;
+      const label = `${booster.icon} ${booster.name} • x${formatNumber(quantity)}`;
+      return `<button type="button" class="genetic-mini-chip ${escapeHtml(booster.tone)}" ${disabled ? 'disabled' : ''} data-use-genetic-booster="${escapeHtml(item.genetic_item_id)}" data-genetic-booster-item-id="${escapeHtml(booster.itemId)}" title="${escapeHtml(booster.effect)}">${escapeHtml(label)}</button>`;
+    }).join('');
+
+    extraActions = `
+      <div class="genetic-upgrade-actions-stack">
+        <button type="button" class="genetic-mini-chip finish" ${actionDisabled ? 'disabled' : ''} data-instant-finish-genetic-upgrade="${escapeHtml(item.genetic_item_id)}">
+          ⚡ Instant Finish • ${formatNumber(instantFinishPreview)} DSPOINC
+        </button>
+        <div class="genetic-mini-actions">
+          ${boosterButtons}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <article class="${cardClasses.join(' ')}">
+      <div class="genetic-card-header">
+        <div>
+          <div class="genetic-card-title">${escapeHtml(item.display_title || item.trait_value || 'Trait')}</div>
+          <div class="genetic-card-subtitle">${escapeHtml(item.trait_type || 'Genetic Trait')}</div>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(item.rarity_tier || 'common')}</span>
+          <span class="genetic-status-badge ${escapeHtml(statusClass)}">${escapeHtml(String(runtimeState || 'idle').replaceAll('_', ' '))}</span>
+          ${activeBooster ? `<span class="genetic-boosted-badge">BOOSTED • ${escapeHtml(activeBooster.name)}</span>` : ''}
+          ${listedBadge}
+        </div>
+      </div>
+<div class="genetic-card-media">
+  ${renderGeneticMedia(item, {
+    glowLabel: item.display_title || item.trait_value || `Lv ${formatNumber(currentLevel)}`
+  })}
+</div>
+      <div class="genetic-card-copy">${escapeHtml(getGeneticCardDescription(item))}</div>
+      <div class="genetic-card-meta">
+        <div class="meta-box"><div class="label">Level</div><div class="value">Lv ${formatNumber(currentLevel)}</div></div>
+        <div class="meta-box"><div class="label">Acquired</div><div class="value">${escapeHtml(item.acquired_method || 'shop')}</div></div>
+      </div>
+      <div class="genetic-card-meta">
+        <div class="meta-box"><div class="label">Upgrade Path</div><div class="value">${isMaxLevel ? 'Maxed' : `Lv ${formatNumber(currentLevel)} → Lv ${formatNumber(nextLevel)}`}</div></div>
+        <div class="meta-box"><div class="label">Timer</div><div class="value">${escapeHtml(runtimeState === 'upgrading' ? remainingLabel : (runtimeState === 'ready_to_claim' ? 'Claim Ready' : 'Idle'))}</div></div>
+      </div>
+      ${upgradeHint}
+      <div class="genetic-card-actions">
+        ${primaryAction}
+        ${secondaryAction}
+      </div>
+      ${extraActions}
+    </article>
+  `;
+}
+
+
+function renderGeneticShop() {
+  const filtered = getFilteredGeneticCatalog();
+  if (el.geneticShopBadge) {
+    const access = state.geneticHolderAccess || { can_buy: false };
+    el.geneticShopBadge.textContent = `${formatNumber(filtered.length)} traits • ${access.can_buy ? 'buy unlocked' : 'preview mode'}`;
+  }
+  renderGeneticAccessStrip();
+  if (!el.geneticShopGrid || !el.geneticShopEmptyState) return;
+
+  if (!filtered.length) {
+    el.geneticShopGrid.innerHTML = '';
+    el.geneticShopEmptyState.classList.remove('hidden');
+    el.geneticShopEmptyState.innerHTML = '<div class="text-lg font-semibold text-white">No genetic traits match the current filters.</div><div class="mt-2 text-sm text-slate-300">Try another type, rarity, or search value.</div>';
+    return;
+  }
+
+  el.geneticShopEmptyState.classList.add('hidden');
+  el.geneticShopGrid.innerHTML = filtered.map(renderGeneticTraitCard).join('');
+}
+
+function renderGeneticInventory() {
+  state.geneticInventoryRuntimeSummary = buildGeneticInventoryRuntimeSummary(state.geneticInventory || []);
+  if (el.geneticInventoryBadge) {
+    const total = state.geneticInventoryRuntimeSummary?.total_items ?? (Array.isArray(state.geneticInventory) ? state.geneticInventory.length : 0);
+    const readyCount = state.geneticInventoryRuntimeSummary?.ready_to_claim_items || 0;
+    el.geneticInventoryBadge.textContent = `${formatNumber(total)} owned genetic items${readyCount ? ` • ${formatNumber(readyCount)} ready` : ''}`;
+  }
+
+  if (el.geneticInventorySummary) {
+    const cards = buildGeneticSummaryCards(state.geneticInventoryRuntimeSummary || {
+      total_items: 0,
+      outfit_items: 0,
+      accessories_items: 0,
+      idle_items: 0,
+      upgrading_items: 0,
+      ready_to_claim_items: 0,
+      listed_items: 0,
+      max_level: 0
+    });
+    el.geneticInventorySummary.innerHTML = cards.map(([label, value]) => `
+      <div class="genetic-summary-card">
+        <div class="value">${escapeHtml(value)}</div>
+        <div class="label">${escapeHtml(label)}</div>
+      </div>
+    `).join('');
+  }
+
+  if (!el.geneticInventoryGrid || !el.geneticInventoryEmptyState) return;
+  const filtered = getFilteredGeneticInventory();
+  if (!filtered.length) {
+    el.geneticInventoryGrid.innerHTML = '';
+    el.geneticInventoryEmptyState.classList.remove('hidden');
+    el.geneticInventoryEmptyState.innerHTML = state.userId
+      ? '<div class="text-lg font-semibold text-white">No owned genetic items match the current filters.</div><div class="mt-2 text-sm text-slate-300">Buy a trait in Genetic Shop to start building this inventory.</div>'
+      : '<div class="text-lg font-semibold text-white">Login to load your Genetic Inventory.</div><div class="mt-2 text-sm text-slate-300">Preview remains public, but inventory is Discord-bound.</div>';
+    return;
+  }
+
+  el.geneticInventoryEmptyState.classList.add('hidden');
+  el.geneticInventoryGrid.innerHTML = filtered.map(renderGeneticOwnedItemCard).join('');
+}
+
+async function handleStartGeneticUpgrade(geneticItemId) {
+  const item = (Array.isArray(state.geneticInventory) ? state.geneticInventory : []).find(entry => String(entry.genetic_item_id) === String(geneticItemId));
+  if (!item) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Inventory',
+      title: 'Owned Trait Not Found',
+      icon: '⚠️',
+      message: 'The selected Genetic Item could not be found in the current inventory state.',
+      note: 'Refresh the inventory and try again.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  const runtimeState = getGeneticInventoryRuntimeState(item);
+  if (runtimeState !== 'idle') {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Inventory',
+      title: 'Upgrade Already Running',
+      icon: '⏳',
+      message: 'This Genetic Item is not idle anymore. Refresh the inventory if the state looks stale.',
+      confirmText: 'Close'
+    });
+    return;
+  }
+
+const confirmed = await showLabConfirmModal({
+  eyebrow: 'Genetic Upgrade Start',
+  title: `Start ${item.display_title || item.trait_value}?`,
+  icon: '🧬',
+  message: `This starts a faster player-bound upgrade on the ${item.trait_type} Genetic Item. It uses the same curve philosophy as Genesis research, but at about double speed.`,
+  note: 'Only one active Genetic Item upgrade may run per user. The backend enforces this rule.',
+  highlightLabel: 'Next Level',
+  highlightValue: `Lv ${formatNumber(item.current_level || 1)} → Lv ${formatNumber(getGeneticNextLevel(item))}`,
+  confirmText: 'Start Upgrade',
+  cancelText: 'Cancel',
+  confirmVariant: 'primary'
+});
+
+  if (!confirmed) return;
+
+  state.geneticActionItemId = String(geneticItemId);
+  setActionInFlight(true);
+  try {
+    const res = await fetchJson(getApiUrl(LAB_CONFIG.startGeneticItemUpgradeEndpoint), {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: state.userId,
+        genetic_item_id: safeNumber(geneticItemId, 0)
+      })
+    }, true);
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Start request failed (${res.status})`);
+    }
+
+    await loadUserGeneticItems();
+    renderGeneticInventory();
+
+    const payload = res.payload?.data || {};
+    await showLabMessageModal({
+      eyebrow: 'Genetic Upgrade Started',
+      title: `${payload.display_title || item.display_title || item.trait_value} is now upgrading`,
+      icon: '⚗️',
+      message: `The Genetic Item started at Lv ${formatNumber(payload.current_level || item.current_level || 1)} and is now researching toward Lv ${formatNumber(payload.target_level || getGeneticNextLevel(item))}.`,
+      note: payload.upgrade_ends_at ? `Backend finish target: ${formatDateTime(payload.upgrade_ends_at)}.` : 'Refresh the inventory if you need the exact end time.',
+      confirmText: 'Great'
+    });
+  } catch (error) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Upgrade Failed',
+      title: 'Could Not Start Genetic Upgrade',
+      icon: '⚠️',
+      message: error.message || 'The backend rejected the upgrade start request.',
+      note: 'Common reasons are another active genetic upgrade, listed item protection, or stale inventory state.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    state.geneticActionItemId = null;
+    setActionInFlight(false);
+    renderGeneticInventory();
+  }
+}
+
+async function handleClaimGeneticUpgrade(geneticItemId) {
+  const item = (Array.isArray(state.geneticInventory) ? state.geneticInventory : []).find(entry => String(entry.genetic_item_id) === String(geneticItemId));
+  if (!item) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Inventory',
+      title: 'Owned Trait Not Found',
+      icon: '⚠️',
+      message: 'The selected Genetic Item could not be found in the current inventory state.',
+      note: 'Refresh the inventory and try again.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  const runtimeState = getGeneticInventoryRuntimeState(item);
+  if (runtimeState !== 'ready_to_claim') {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Claim Not Ready',
+      title: 'Upgrade Timer Is Still Running',
+      icon: '⏳',
+      message: 'This Genetic Item is not claim-ready yet according to the current frontend timer state.',
+      note: item.upgrade_ends_at ? `Expected finish: ${formatDateTime(item.upgrade_ends_at)}.` : 'Refresh if the inventory looks stale.',
+      confirmText: 'Close'
+    });
+    return;
+  }
+
+  state.geneticActionItemId = String(geneticItemId);
+  setActionInFlight(true);
+  try {
+    const res = await fetchJson(getApiUrl(LAB_CONFIG.completeGeneticItemUpgradeEndpoint), {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: state.userId,
+        genetic_item_id: safeNumber(geneticItemId, 0)
+      })
+    }, true);
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Claim request failed (${res.status})`);
+    }
+
+    await loadUserGeneticItems();
+    renderGeneticInventory();
+
+    const payload = res.payload?.data || {};
+    await showLabMessageModal({
+      eyebrow: 'Genetic Upgrade Claimed',
+      title: `${payload.display_title || item.display_title || item.trait_value} reached Lv ${formatNumber(payload.current_level || getGeneticNextLevel(item))}`,
+      icon: '✅',
+      message: `The Genetic Item claim completed successfully and the upgrade row is now idle again.`,
+      note: 'The next sprint can layer instant finish, boosters, and marketplace logic on top of this stable user-bound progression loop.',
+      confirmText: 'Excellent'
+    });
+  } catch (error) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Claim Failed',
+      title: 'Could Not Claim Genetic Upgrade',
+      icon: '⚠️',
+      message: error.message || 'The backend rejected the genetic upgrade claim request.',
+      note: 'Refresh the inventory if the timer state looks stale or if another tab already changed the item.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    state.geneticActionItemId = null;
+    setActionInFlight(false);
+    renderGeneticInventory();
+  }
+}
+
+
+async function handleInstantFinishGeneticUpgrade(geneticItemId) {
+  const item = (Array.isArray(state.geneticInventory) ? state.geneticInventory : []).find(entry => String(entry.genetic_item_id) === String(geneticItemId));
+  if (!item) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Inventory',
+      title: 'Owned Trait Not Found',
+      icon: '⚠️',
+      message: 'The selected Genetic Item could not be found in the current inventory state.',
+      note: 'Refresh the inventory and try again.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  const runtimeState = getGeneticInventoryRuntimeState(item);
+  if (runtimeState !== 'upgrading') {
+    await showLabMessageModal({
+      eyebrow: 'Instant Finish',
+      title: 'No Active Genetic Upgrade',
+      icon: '⏳',
+      message: 'Instant finish only works while the Genetic Item is actively upgrading.',
+      note: 'Start a fresh cycle first if this row is already idle or ready to claim.',
+      confirmText: 'Close'
+    });
+    return;
+  }
+
+  const previewCost = calculateInstantFinishCost(Math.max(1, safeNumber(item.current_level, 1)), getGeneticRemainingMs(item));
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Genetic Instant Finish',
+    title: `Finish ${item.display_title || item.trait_value}?`,
+    icon: '⚡',
+    message: 'Instantly finish this Genetic Item upgrade using DSPOINC.',
+    highlightLabel: 'Estimated DSPOINC Cost',
+    highlightValue: `${formatNumber(previewCost)} DSPOINC`,
+    note: 'Backend validation remains the source of truth for the final price, finish state, and level application.',
+    confirmText: 'Spend DSPOINC',
+    cancelText: 'Keep Running',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) return;
+
+  state.geneticActionItemId = String(geneticItemId);
+  setActionInFlight(true);
+  try {
+    const res = await fetchJson(getApiUrl(LAB_CONFIG.instantFinishGeneticItemUpgradeEndpoint), {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: state.userId,
+        genetic_item_id: safeNumber(geneticItemId, 0)
+      })
+    }, true);
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Instant finish failed (${res.status})`);
+    }
+
+    await Promise.all([
+      loadUserGeneticItems(),
+      loadStakingStats()
+    ]);
+    renderAll();
+
+    const payload = res.payload?.data || {};
+    await showLabMessageModal({
+      eyebrow: 'Genetic Instant Finish',
+      title: `${payload.display_title || item.display_title || item.trait_value} reached Lv ${formatNumber(payload.current_level || getGeneticNextLevel(item))}`,
+      icon: '⚡',
+      message: 'The active Genetic Item upgrade was instantly completed and the row is idle again.',
+      note: `${formatNumber(payload.instant_finish_cost || previewCost)} DSPOINC was consumed by the backend-authoritative finish action.`,
+      confirmText: 'Excellent'
+    });
+  } catch (error) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Instant Finish',
+      title: 'Instant Finish Failed',
+      icon: '⚠️',
+      message: error.message || 'The backend rejected the instant finish request.',
+      note: 'Refresh the inventory if another tab already changed the timer state.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    state.geneticActionItemId = null;
+    setActionInFlight(false);
+    renderGeneticInventory();
+  }
+}
+
+async function handleUseGeneticBooster(geneticItemId, itemId) {
+  const item = (Array.isArray(state.geneticInventory) ? state.geneticInventory : []).find(entry => String(entry.genetic_item_id) === String(geneticItemId));
+  const booster = getLabBoosterCatalog().find(entry => Number(entry.itemId) === Number(itemId));
+  if (!item || !booster) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Booster',
+      title: 'Booster Context Missing',
+      icon: '⚠️',
+      message: 'The selected Genetic Item or Lab booster could not be found in the current Lab state.',
+      note: 'Refresh the Lab and try again.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  const runtimeState = getGeneticInventoryRuntimeState(item);
+  if (runtimeState !== 'upgrading') {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Booster',
+      title: 'No Active Genetic Upgrade',
+      icon: '⏳',
+      message: 'Lab boosters only work while a Genetic Item is actively upgrading.',
+      note: 'Start a fresh cycle first if this row is already idle or ready to claim.',
+      confirmText: 'Close'
+    });
+    return;
+  }
+
+  const quantity = getBoosterInventoryQuantity(booster.itemId);
+  if (quantity < 1) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Booster',
+      title: `${booster.name} Not Owned`,
+      icon: '🧪',
+      message: `No ${booster.name} is currently available in your shared Lab booster inventory.`,
+      note: 'Booster inventory is shared between Genesis research and Genetic Item upgrades.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Genetic Booster',
+    title: `Use ${booster.name}?`,
+    icon: booster.icon,
+    message: `${booster.effect} will be applied to the remaining time of ${item.display_title || item.trait_value}.`,
+    highlightLabel: 'Shared Inventory',
+    highlightValue: `${formatNumber(quantity)} owned`,
+    note: 'Boosters reduce remaining time only, never the base duration. The backend consumes one item on success.',
+    confirmText: 'Use Booster',
+    cancelText: 'Keep Inventory',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) return;
+
+  state.geneticActionItemId = String(geneticItemId);
+  setActionInFlight(true);
+  try {
+    const res = await fetchJson(getApiUrl(LAB_CONFIG.useGeneticItemBoosterEndpoint), {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: state.userId,
+        genetic_item_id: safeNumber(geneticItemId, 0),
+        item_id: booster.itemId
+      })
+    }, true);
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Booster request failed (${res.status})`);
+    }
+
+    await Promise.all([
+      loadUserGeneticItems(),
+      loadLabBoosterInventory()
+    ]);
+    renderAll();
+
+    const payload = res.payload?.data || {};
+    await showLabMessageModal({
+      eyebrow: 'Genetic Booster',
+      title: `${booster.name} Applied`,
+      icon: booster.icon,
+      message: `${item.display_title || item.trait_value} now has less remaining upgrade time.`,
+      note: payload.new_ends_at ? `New backend finish target: ${formatDateTime(payload.new_ends_at)}.` : 'Refresh the inventory if the timer looks stale.',
+      highlightLabel: 'Inventory Left',
+      highlightValue: `${formatNumber(payload.remaining_inventory_quantity ?? Math.max(0, quantity - 1))}`,
+      confirmText: 'Great'
+    });
+  } catch (error) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Booster',
+      title: 'Booster Failed',
+      icon: '⚠️',
+      message: error.message || 'The backend rejected the booster usage request.',
+      note: 'Refresh the inventory if another tab already consumed the same Lab booster item.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    state.geneticActionItemId = null;
+    setActionInFlight(false);
+    renderGeneticInventory();
+  }
+}
+
+async function handleBuyGeneticTrait(catalogId) {
+  const catalogItem = (Array.isArray(state.geneticCatalog) ? state.geneticCatalog : []).find(item => String(item.catalog_id) === String(catalogId));
+  if (!catalogItem) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Shop',
+      title: 'Trait Not Found',
+      icon: '⚠️',
+      message: 'The selected Genetic Shop item could not be found in the current catalog state.',
+      note: 'Refresh the Lab and try again.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  if (!catalogItem.can_buy) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Shop Locked',
+      title: 'Buying Is Not Unlocked Yet',
+      icon: '🔒',
+      message: getGeneticLockedMessage(),
+      note: 'Preview stays public so players can discover traits before minting or verifying holder status.',
+      confirmText: 'Close'
+    });
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Genetic Shop Purchase',
+    title: `Buy ${catalogItem.display_title || catalogItem.trait_value}?`,
+    icon: '🛒',
+    message: `${catalogItem.trait_type} will be added to your Discord-bound Genetic Inventory.`,
+    highlightLabel: 'Store Price',
+    highlightValue: `${formatNumber(catalogItem.base_price_dspoinc || 0)} DSPOINC`,
+    note: 'The backend remains authoritative for holder access, duplicate ownership checks, and DSPOINC spend.',
+    confirmText: 'Buy Trait',
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  setActionInFlight(true);
+  try {
+    const res = await fetchJson(getApiUrl(LAB_CONFIG.buyGeneticTraitEndpoint), {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: state.userId,
+        catalog_id: catalogItem.catalog_id
+      })
+    }, true);
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Purchase request failed (${res.status})`);
+    }
+
+    await Promise.all([
+      loadGeneticTraitCatalog(),
+      loadUserGeneticItems(),
+      loadStakingStats(),
+      loadLabBoosterStoreCatalog()
+    ]);
+    renderAll();
+
+    await showLabMessageModal({
+      eyebrow: 'Genetic Shop',
+      title: 'Trait Purchased',
+      icon: '✅',
+      message: `${catalogItem.display_title || catalogItem.trait_value} is now stored in your Genetic Inventory.`,
+      note: 'This user-bound item can now be upgraded, instantly finished, and boosted directly inside the Genetic Inventory tab.',
+      highlightLabel: 'Spent',
+      highlightValue: `${formatNumber(catalogItem.base_price_dspoinc || 0)} DSPOINC`,
+      confirmText: 'Nice'
+    });
+
+    logLab(`Genetic trait purchased: ${catalogItem.trait_type} • ${catalogItem.trait_value}`, 'success');
+  } catch (error) {
+    logLab(`Genetic trait purchase failed: ${error.message}`, 'error');
+    await showLabMessageModal({
+      eyebrow: 'Genetic Shop',
+      title: 'Purchase Failed',
+      icon: '⚠️',
+      message: `The purchase did not complete: ${error.message}`,
+      note: 'The backend stays authoritative. Refresh the Lab if you want to verify the latest state.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    setActionInFlight(false);
+  }
+}
+
 async function loadStableApis() {
   await Promise.allSettled([
     loadProfileData(),
@@ -5638,6 +6985,8 @@ function renderAll() {
   renderGameSummary();
   renderQueueSummary();
   renderActiveResearchQueue();
+  renderGeneticShop();
+  renderGeneticInventory();
   renderNftGrid();
   renderSelectedNftPanel();
   renderSelectedTraitSummary();
@@ -5646,7 +6995,10 @@ function renderAll() {
 }
 
 function liveRefreshRender() {
+  renderGeneticInventory();
+
   if (!state.selectedNft) return;
+
   renderLabHealthStrip();
   renderOverviewCards();
   renderQueueSummary();
@@ -5695,6 +7047,110 @@ function autoOpenMyGenesisLabOnLogin() {
   });
 }
 
+/**
+ * Return a normalized media payload for one genetic catalog/inventory item.
+ * Keeps frontend logic simple and avoids trusting partial raw values.
+ */
+function getGeneticMediaConfig(item) {
+  const imageTypeRaw = String(item?.image_type || '').trim().toLowerCase();
+  const imageType = imageTypeRaw === 'glb' ? 'glb' : 'png';
+
+  const imagePath = String(item?.image_path || '').trim();
+  const previewPath = String(item?.preview_path || '').trim();
+
+  return {
+    imageType,
+    imagePath,
+    previewPath,
+    hasRenderableMedia: Boolean(imagePath || previewPath)
+  };
+}
+
+/**
+ * Return a stable viewer tone for a genetic item.
+ * Uses trait type first so the UI stays predictable even if rarity is missing.
+ */
+function getGeneticMediaTone(item) {
+  const traitType = String(item?.trait_type || '').trim().toLowerCase();
+  const rarity = String(item?.rarity_tier || '').trim().toLowerCase();
+
+  if (traitType === 'outfit') return 'violet';
+  if (traitType === 'accessories') return 'cyan';
+  if (rarity === 'legendary') return 'amber';
+  if (rarity === 'rare') return 'blue';
+
+  return 'slate';
+}
+
+/**
+ * Render shared genetic media using the same visual language as Lab boosters.
+ * Supports GLB, PNG, and a safe placeholder fallback.
+ */
+function renderGeneticMedia(item, options = {}) {
+  const media = getGeneticMediaConfig(item);
+  const tone = options.tone || getGeneticMediaTone(item);
+  const title = String(
+    item?.display_title ||
+    item?.trait_value ||
+    item?.trait_type ||
+    'Genetic Item'
+  ).trim();
+
+  const glowLabel = escapeHtml(options.glowLabel || title);
+  const ariaLabel = escapeHtml(`${title} media preview`);
+  const imagePath = escapeHtml(media.imagePath);
+  const previewPath = escapeHtml(media.previewPath);
+
+if (media.imageType === 'glb' && media.imagePath) {
+  return `
+    <div class="booster-viewer-shell genetic-media-shell ${escapeHtml(tone)}">
+      <div class="booster-glow-pill">${glowLabel}</div>
+      <model-viewer
+        class="booster-model-viewer genetic-model-viewer"
+        src="${imagePath}"
+        poster="${previewPath}"
+        alt="${ariaLabel}"
+        camera-controls
+        auto-rotate
+        rotation-per-second="24deg"
+        shadow-intensity="1"
+        exposure="1.1"
+        interaction-prompt="none"
+        loading="eager"
+        reveal="auto"
+        disable-pan
+        touch-action="pan-y"
+      ></model-viewer>
+    </div>
+  `;
+}
+
+  if (media.imagePath || media.previewPath) {
+    const finalImage = imagePath || previewPath;
+
+    return `
+      <div class="booster-viewer-shell genetic-media-shell ${escapeHtml(tone)}">
+        <div class="booster-glow-pill">${glowLabel}</div>
+        <img
+          class="genetic-media-image"
+          src="${finalImage}"
+          alt="${ariaLabel}"
+          loading="lazy"
+        />
+      </div>
+    `;
+  }
+
+  return `
+    <div class="booster-viewer-shell genetic-media-shell ${escapeHtml(tone)} genetic-media-placeholder">
+      <div class="booster-glow-pill">${glowLabel}</div>
+      <div class="genetic-placeholder-core" aria-label="${ariaLabel}">
+        <span class="genetic-placeholder-icon">🧬</span>
+      </div>
+    </div>
+  `;
+}
+
 async function loadLab() {
   if (state.loading) return;
   state.loading = true;
@@ -5705,8 +7161,11 @@ async function loadLab() {
     renderSessionNotice();
 
     if (!state.userId) {
+      await loadGeneticTraitCatalog();
+      state.geneticInventory = [];
+      state.geneticInventorySummary = null;
       renderAll();
-      logLab('No Discord session detected. Rendered shell in safe mode.', 'warn');
+      logLab('No Discord session detected. Rendered shell in safe mode with public Genetic Shop preview.', 'warn');
       return;
     }
 
@@ -5726,7 +7185,9 @@ if (!aggregateLoaded) {
 
 await Promise.all([
   loadLabBoosterStoreCatalog(),
-  loadLabBoosterInventory()
+  loadLabBoosterInventory(),
+  loadGeneticTraitCatalog(),
+  loadUserGeneticItems()
 ]);
 
 renderAll();
@@ -5779,6 +7240,75 @@ el.traitGrid?.addEventListener('keydown', event => {
   const traitKey = toggleButton.getAttribute('data-trait-key') || '';
   toggleExpandedTraitKey(traitKey);
   renderTraitGrid();
+});
+
+
+el.geneticShopGrid?.addEventListener('click', event => {
+  const buyButton = event.target.closest('[data-genetic-buy-id]');
+  if (!buyButton) {
+    return;
+  }
+
+  const catalogId = buyButton.getAttribute('data-genetic-buy-id') || '';
+  if (!catalogId || buyButton.disabled || state.actionInFlight) {
+    return;
+  }
+
+  handleBuyGeneticTrait(catalogId);
+});
+
+el.geneticInventoryGrid?.addEventListener('click', event => {
+  const startButton = event.target.closest('[data-start-genetic-upgrade]');
+  if (startButton) {
+    const geneticItemId = startButton.getAttribute('data-start-genetic-upgrade') || '';
+    if (!geneticItemId || startButton.disabled || state.actionInFlight) {
+      return;
+    }
+    handleStartGeneticUpgrade(geneticItemId);
+    return;
+  }
+
+  const claimButton = event.target.closest('[data-claim-genetic-upgrade]');
+  if (claimButton) {
+    const geneticItemId = claimButton.getAttribute('data-claim-genetic-upgrade') || '';
+    if (!geneticItemId || claimButton.disabled || state.actionInFlight) {
+      return;
+    }
+    handleClaimGeneticUpgrade(geneticItemId);
+    return;
+  }
+
+  const instantButton = event.target.closest('[data-instant-finish-genetic-upgrade]');
+  if (instantButton) {
+    const geneticItemId = instantButton.getAttribute('data-instant-finish-genetic-upgrade') || '';
+    if (!geneticItemId || instantButton.disabled || state.actionInFlight) {
+      return;
+    }
+    handleInstantFinishGeneticUpgrade(geneticItemId);
+    return;
+  }
+
+  const boosterButton = event.target.closest('[data-use-genetic-booster]');
+  if (boosterButton) {
+    const geneticItemId = boosterButton.getAttribute('data-use-genetic-booster') || '';
+    const itemId = boosterButton.getAttribute('data-genetic-booster-item-id') || '';
+    if (!geneticItemId || !itemId || boosterButton.disabled || state.actionInFlight) {
+      return;
+    }
+    handleUseGeneticBooster(geneticItemId, itemId);
+  }
+});
+
+[el.geneticTraitTypeFilter, el.geneticRarityFilter, el.geneticSearchInput].forEach(node => {
+  node?.addEventListener(node === el.geneticSearchInput ? 'input' : 'change', () => {
+    renderGeneticShop();
+  });
+});
+
+[el.geneticInventoryTraitTypeFilter, el.geneticInventoryStatusFilter, el.geneticInventorySearchInput].forEach(node => {
+  node?.addEventListener(node === el.geneticInventorySearchInput ? 'input' : 'change', () => {
+    renderGeneticInventory();
+  });
 });
 
 function setupQuickAccessLinks() {
