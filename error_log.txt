@@ -42,3 +42,8 @@
 [24-Mar-2026 20:02:45 Europe/Berlin] File exists: YES
 [24-Mar-2026 20:02:45 Europe/Berlin] PHP OS: Windows
 [24-Mar-2026 20:02:45 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world
+[27-Mar-2026 14:56:44 Europe/Berlin] 🛒 Store Purchase: Using request user_id for localhost testing: 328601656659017732
+[27-Mar-2026 14:56:44 Europe/Berlin] Local development detected. Database path: C:\xampp-server\htdocs\narrrfs-world/db/narrrf_world.sqlite
+[27-Mar-2026 14:56:44 Europe/Berlin] File exists: YES
+[27-Mar-2026 14:56:44 Europe/Berlin] PHP OS: Windows
+[27-Mar-2026 14:56:44 Europe/Berlin] Document root: C:/xampp-server/htdocs/narrrfs-world

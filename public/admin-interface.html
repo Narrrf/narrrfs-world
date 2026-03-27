@@ -32006,6 +32006,36 @@ function renderGeneticAdminStoreGrid() {
   }).join('');
 }
 
+function renderAdminGeneticPreview() {
+  const type = document.getElementById('editGeneticImageType')?.value || 'png';
+  const imagePath = document.getElementById('editGeneticImagePath')?.value || '';
+  const previewPath = document.getElementById('editGeneticPreviewPath')?.value || '';
+
+  const container = document.getElementById('geneticMediaPreview');
+  if (!container) return;
+
+  if (!imagePath) {
+    container.innerHTML = `<div class="text-xs text-gray-500">No media set</div>`;
+    return;
+  }
+
+  if (type === 'glb') {
+    container.innerHTML = `
+      <model-viewer
+        src="${imagePath}"
+        poster="${previewPath}"
+        style="width:120px;height:120px;"
+        camera-controls
+        disable-pan
+      ></model-viewer>
+    `;
+  } else {
+    container.innerHTML = `
+      <img src="${imagePath}" style="width:120px;height:120px;object-fit:contain;" />
+    `;
+  }
+}
+
 function getGeneticCatalogItemById(catalogId) {
   return geneticAdminCatalog.find(item => Number(item.catalog_id) === Number(catalogId)) || null;
 }
@@ -32049,62 +32079,66 @@ modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justif
                  class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-                  <div class="border border-cyan-800/60 rounded-lg p-4 bg-gray-800/40">
-          <div class="text-sm font-semibold text-cyan-300 mb-3">Media Configuration</div>
+<div class="grid grid-cols-2 gap-4">
+  <div>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Active</label>
+    <select id="editGeneticIsActive" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
+      <option value="1" ${(Number(item.is_active ?? 1) === 1) ? 'selected' : ''}>Active</option>
+      <option value="0" ${(Number(item.is_active ?? 1) === 0) ? 'selected' : ''}>Inactive</option>
+    </select>
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Visible</label>
+    <select id="editGeneticIsVisible" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
+      <option value="1" ${(Number(item.is_visible ?? 1) === 1) ? 'selected' : ''}>Visible</option>
+      <option value="0" ${(Number(item.is_visible ?? 1) === 0) ? 'selected' : ''}>Hidden</option>
+    </select>
+  </div>
+</div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Media Type</label>
-              <select id="editGeneticImageType" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
-                <option value="png" ${String(item.image_type || 'png').toLowerCase() === 'png' ? 'selected' : ''}>PNG</option>
-                <option value="glb" ${String(item.image_type || '').toLowerCase() === 'glb' ? 'selected' : ''}>GLB</option>
-              </select>
-            </div>
+<!-- 🧬 MEDIA CONFIG -->
+<div class="border border-cyan-800/60 rounded-lg p-4 bg-gray-800/40">
+  <div class="text-sm font-semibold text-cyan-300 mb-3">Media Configuration</div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Preview Path</label>
-              <input
-                type="text"
-                id="editGeneticPreviewPath"
-                value="${escapeHtml(item.preview_path || '')}"
-                placeholder="img/genetics/item-preview.png"
-                class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
-              >
-            </div>
-          </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">Media Type</label>
+      <select id="editGeneticImageType" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
+        <option value="png" ${String(item.image_type || 'png').toLowerCase() === 'png' ? 'selected' : ''}>PNG</option>
+        <option value="glb" ${String(item.image_type || '').toLowerCase() === 'glb' ? 'selected' : ''}>GLB</option>
+      </select>
+    </div>
 
-          <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Image / Model Path</label>
-            <input
-              type="text"
-              id="editGeneticImagePath"
-              value="${escapeHtml(item.image_path || '')}"
-              placeholder="img/genetics/item.png or models/genetics/item.glb"
-              class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
-            >
-          </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">Preview Path</label>
+      <input
+        type="text"
+        id="editGeneticPreviewPath"
+        value="${escapeHtml(item.preview_path || '')}"
+        class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+      >
+    </div>
+  </div>
 
-          <div class="mt-4 text-xs text-gray-500">
-            PNG → use image_path only<br>
-            GLB → use image_path (model) + preview_path (poster)
-          </div>
-        </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Active</label>
-            <select id="editGeneticIsActive" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
-              <option value="1" ${(Number(item.is_active ?? 1) === 1) ? 'selected' : ''}>Active</option>
-              <option value="0" ${(Number(item.is_active ?? 1) === 0) ? 'selected' : ''}>Inactive</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Visible</label>
-            <select id="editGeneticIsVisible" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white">
-              <option value="1" ${(Number(item.is_visible ?? 1) === 1) ? 'selected' : ''}>Visible</option>
-              <option value="0" ${(Number(item.is_visible ?? 1) === 0) ? 'selected' : ''}>Hidden</option>
-            </select>
-          </div>
-        </div>
+  <div class="mt-4">
+    <label class="block text-sm font-medium text-gray-300 mb-2">Image / Model Path</label>
+    <input
+      type="text"
+      id="editGeneticImagePath"
+      value="${escapeHtml(item.image_path || '')}"
+      class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white"
+    >
+  </div>
+
+  <!-- 🧠 PREVIEW CONTAINER -->
+  <div id="geneticMediaPreview" class="mt-4 flex items-center justify-center min-h-[120px] bg-gray-900/40 border border-gray-700 rounded-lg"></div>
+
+  <div class="mt-4 text-xs text-gray-500">
+    PNG → use image_path only<br>
+    GLB → image_path (model) + preview_path (poster)
+  </div>
+</div>
+
 
         <div class="flex gap-3 pt-2">
           <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
@@ -32120,6 +32154,12 @@ modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justif
   `;
 
   document.body.appendChild(modal);
+
+  ['editGeneticImageType', 'editGeneticImagePath', 'editGeneticPreviewPath'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', renderAdminGeneticPreview);
+});
+
+renderAdminGeneticPreview();
 
   document.getElementById('editGeneticCatalogForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -32155,20 +32195,21 @@ async function updateGeneticCatalogItem(catalogId) {
       return;
     }
 
-    const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-item.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        catalog_id: catalogId,
-        display_title: displayTitle,
-        base_price_dspoinc: price,
-        image_type: imageType,
-        image_path: imagePath,
-        preview_path: previewPath,
-        is_active: isActive,
-        is_visible: isVisible
-      })
-    });
+const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-item.php', {
+  method: 'POST',
+  credentials: 'include',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    catalog_id: catalogId,
+    display_title: displayTitle,
+    base_price_dspoinc: price,
+    image_type: imageType,
+    image_path: imagePath,
+    preview_path: previewPath,
+    is_active: isActive,
+    is_visible: isVisible
+  })
+});
 
     const data = await response.json();
 
@@ -32191,15 +32232,16 @@ async function toggleGeneticCatalogStatus(catalogId, currentActive, currentVisib
     const nextState = (Number(currentActive) === 1 && Number(currentVisible) === 1) ? 0 : 1;
     const actionText = nextState === 1 ? 'activated' : 'deactivated';
 
-    const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-item.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        catalog_id: catalogId,
-        is_active: nextState,
-        is_visible: nextState
-      })
-    });
+const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-item.php', {
+  method: 'POST',
+  credentials: 'include',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    catalog_id: catalogId,
+    is_active: nextState,
+    is_visible: nextState
+  })
+});
 
     const data = await response.json();
 

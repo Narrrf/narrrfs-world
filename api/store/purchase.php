@@ -20,7 +20,7 @@ ini_set('error_log', __DIR__ . '/../../error_log.txt');
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -70,11 +70,35 @@ function resolve_user_id(array $request): string {
     $requestUserId = trim((string)($request['user_id'] ?? ''));
     $isLocalhost = is_localhost_env();
 
+    // Trusted internal bot auth via Bearer token
+    $expectedToken = getenv('DISCORD_SECRET') ?: '';
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    $providedToken = '';
+
+    if (stripos($authHeader, 'Bearer ') === 0) {
+        $providedToken = trim(substr($authHeader, 7));
+    }
+
+    $isTrustedInternal = $expectedToken !== '' && hash_equals($expectedToken, $providedToken);
+
+    if ($isTrustedInternal) {
+        if ($requestUserId === '') {
+            json_response([
+                'success' => false,
+                'error' => 'Missing user_id for internal request'
+            ], 400);
+        }
+
+        return $requestUserId;
+    }
+
+    // Localhost testing
     if ($isLocalhost && $requestUserId !== '') {
         error_log("🛒 Store Purchase: Using request user_id for localhost testing: {$requestUserId}");
         return $requestUserId;
     }
 
+    // Production browser session auth
     $userId = $sessionUserId;
 
     if ($requestUserId !== '' && $sessionUserId !== '' && $requestUserId !== $sessionUserId) {

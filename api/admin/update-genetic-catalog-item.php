@@ -63,7 +63,7 @@ function get_request_data() {
 /**
  * Very light admin gate for now.
  * Localhost is allowed for current development flow.
- * Production requires session-based admin hint if present.
+ * Production accepts both legacy admin session keys and Discord OAuth admin session keys.
  */
 function ensure_admin_access() {
     if (is_localhost_env()) {
@@ -71,9 +71,22 @@ function ensure_admin_access() {
     }
 
     $isAdmin = $_SESSION['is_admin'] ?? false;
-    $adminRole = $_SESSION['admin_role'] ?? '';
+    $adminRole = strtolower(trim((string)($_SESSION['admin_role'] ?? '')));
 
-    if ($isAdmin || in_array($adminRole, ['admin', 'owner', 'super_admin'], true)) {
+    $discordAdminAuthenticated = $_SESSION['admin_authenticated'] ?? false;
+    $discordUserRole = strtolower(trim((string)($_SESSION['user_role'] ?? '')));
+
+    $allowedRoles = ['moderator', 'admin', 'owner', 'super_admin'];
+
+    $hasLegacyAdminAccess =
+        ($isAdmin === true || $isAdmin === 1 || $isAdmin === '1') ||
+        in_array($adminRole, $allowedRoles, true);
+
+    $hasDiscordAdminAccess =
+        ($discordAdminAuthenticated === true || $discordAdminAuthenticated === 1 || $discordAdminAuthenticated === '1') &&
+        in_array($discordUserRole, $allowedRoles, true);
+
+    if ($hasLegacyAdminAccess || $hasDiscordAdminAccess) {
         return true;
     }
 

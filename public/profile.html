@@ -10975,6 +10975,116 @@ setInterval(updateBingoCard, 60000);
     return events.sort((a, b) => new Date(String(b.at).replace(' ', 'T') + 'Z') - new Date(String(a.at).replace(' ', 'T') + 'Z')).slice(0, 6);
   }
 
+  function getProfileGeneticMediaConfig(item) {
+  const imageTypeRaw = String(item?.image_type || '').trim().toLowerCase();
+  const imageType = imageTypeRaw === 'glb' ? 'glb' : 'png';
+
+  return {
+    imageType,
+    imagePath: String(item?.image_path || '').trim(),
+    previewPath: String(item?.preview_path || '').trim()
+  };
+}
+
+function getProfileGeneticTone(item) {
+  const traitType = String(item?.trait_type || '').trim().toLowerCase();
+  const rarity = String(item?.rarity_tier || '').trim().toLowerCase();
+
+  if (traitType === 'outfit') return 'violet';
+  if (traitType === 'accessories') return 'cyan';
+  if (rarity === 'legendary') return 'amber';
+  if (rarity === 'rare') return 'blue';
+
+  return 'slate';
+}
+
+function renderProfileGeneticMedia(item) {
+  const media = getProfileGeneticMediaConfig(item);
+  const tone = getProfileGeneticTone(item);
+  const title = escapeHtml(item?.display_title || item?.trait_value || item?.trait_type || 'Genetic Item');
+  const ariaLabel = escapeHtml(`${title} media preview`);
+  const imagePath = escapeHtml(media.imagePath);
+  const previewPath = escapeHtml(media.previewPath);
+
+  if (media.imageType === 'glb' && media.imagePath) {
+    return `
+      <div class="profile-genetic-media-shell ${tone}">
+        <div class="profile-genetic-media-pill">${title}</div>
+        <model-viewer
+          class="profile-genetic-model-viewer"
+          src="${imagePath}"
+          poster="${previewPath}"
+          alt="${ariaLabel}"
+          camera-controls
+          auto-rotate
+          rotation-per-second="24deg"
+          shadow-intensity="1"
+          exposure="1.1"
+          interaction-prompt="none"
+          loading="eager"
+          reveal="auto"
+          disable-pan
+          touch-action="pan-y"
+        ></model-viewer>
+      </div>
+    `;
+  }
+
+  if (media.imagePath || media.previewPath) {
+    const finalImage = imagePath || previewPath;
+    return `
+      <div class="profile-genetic-media-shell ${tone}">
+        <div class="profile-genetic-media-pill">${title}</div>
+        <img
+          class="profile-genetic-media-image"
+          src="${finalImage}"
+          alt="${ariaLabel}"
+          loading="lazy"
+        />
+      </div>
+    `;
+  }
+
+  return `
+    <div class="profile-genetic-media-shell ${tone} placeholder">
+      <div class="profile-genetic-media-pill">${title}</div>
+      <div class="profile-genetic-placeholder-core" aria-label="${ariaLabel}">
+        <span class="profile-genetic-placeholder-icon">🧬</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderProfileGeneticOwnedCard(item) {
+  const runtime = getGeneticRuntimeState(item);
+  const level = Math.max(1, Number(item?.current_level || 1));
+  const statusLabel = runtime === 'ready' ? 'Ready To Claim' : runtime === 'upgrading' ? 'Upgrading' : 'Idle';
+
+  return `
+    <article class="profile-genetic-owned-card">
+      <div class="profile-genetic-owned-media">
+        ${renderProfileGeneticMedia(item)}
+      </div>
+
+      <div class="profile-genetic-owned-body">
+        <div class="profile-genetic-owned-top">
+          <div>
+            <div class="profile-genetic-owned-title">${escapeHtml(item.display_title || item.trait_value || 'Unknown Trait')}</div>
+            <div class="profile-genetic-owned-subtitle">${escapeHtml(item.trait_type || 'Genetic')} · Lv ${formatNumber(level)}</div>
+          </div>
+          <span class="profile-genetics-pill ${runtime === 'ready' ? 'ready' : runtime === 'upgrading' ? 'upgrading' : ''}">
+            ${escapeHtml(statusLabel)}
+          </span>
+        </div>
+
+        <div class="profile-genetic-owned-copy">
+          ${escapeHtml(item.description || 'Discord-bound Genetic Item progressing beside the Genesis Lab system.')}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
   function renderProfileGeneticsPanel(data) {
     const items = Array.isArray(data?.items) ? data.items : [];
     const summary = data?.summary || {};

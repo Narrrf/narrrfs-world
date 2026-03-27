@@ -2729,6 +2729,7 @@ body::after {
       <button type="button" class="lab-tab-button" data-lab-tab="research-queue" id="lab-tab-research-queue">Research Queue</button>
       <button type="button" class="lab-tab-button" data-lab-tab="genetic-shop" id="lab-tab-genetic-shop">Genetic Shop</button>
       <button type="button" class="lab-tab-button" data-lab-tab="genetic-inventory" id="lab-tab-genetic-inventory">My Genetic Inventory</button>
+      <button type="button" class="lab-tab-button" data-lab-tab="genetic-marketplace" id="lab-tab-genetic-marketplace">Marketplace</button>
       <button type="button" class="lab-tab-button" data-lab-tab="knowledge">Knowledge</button>
     </nav>
 
@@ -2973,6 +2974,113 @@ body::after {
       </div>
     </section>
 
+    <section id="lab-panel-genetic-marketplace" class="lab-tab-panel" hidden>
+  <div class="genetic-panel-grid">
+    <div class="glass p-5 md:p-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div class="section-title text-xl md:text-2xl"><span>🏪</span><span>Genetic Marketplace</span></div>
+          <p class="mt-2 text-sm md:text-base text-slate-300">
+            Trade Discord-bound Genetic Items with other holders. Listings preserve full item progression, including level state, while staying completely separate from NFT-bound Genesis Lab identity.
+          </p>
+        </div>
+        <div class="text-sm text-slate-300">
+          <span id="geneticMarketplaceBadge" class="chip">Marketplace warming up…</span>
+        </div>
+      </div>
+
+      <div class="genetic-filter-bar">
+        <div class="genetic-filter-field">
+          <label for="geneticMarketplaceTraitTypeFilter">Trait Type</label>
+          <select id="geneticMarketplaceTraitTypeFilter" class="genetic-filter-select">
+            <option value="">All Types</option>
+            <option value="Outfit">Outfit</option>
+            <option value="Accessories">Accessories</option>
+          </select>
+        </div>
+
+        <div class="genetic-filter-field">
+          <label for="geneticMarketplaceRarityFilter">Rarity</label>
+          <select id="geneticMarketplaceRarityFilter" class="genetic-filter-select">
+            <option value="">All Rarities</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="legendary">Legendary</option>
+          </select>
+        </div>
+
+        <div class="genetic-filter-field flex-1 min-w-[220px]">
+          <label for="geneticMarketplaceSearchInput">Search</label>
+          <input id="geneticMarketplaceSearchInput" class="genetic-filter-input" type="search" placeholder="Search listed trait name or rarity" />
+        </div>
+      </div>
+
+      <div id="geneticMarketplaceGrid" class="genetic-card-grid"></div>
+      <div id="geneticMarketplaceEmptyState" class="genetic-empty-state hidden"></div>
+    </div>
+
+    <div class="space-y-5">
+      <div class="glass p-5 md:p-6">
+        <div class="section-title text-xl"><span>🧠</span><span>Marketplace rules</span></div>
+        <div class="genetic-helper-list">
+          <div class="genetic-helper-item">Only idle Genetic Items can be listed. Upgrading or claim-ready runs stay blocked from sale.</div>
+          <div class="genetic-helper-item">The buyer receives the full Discord-bound item with its current level preserved.</div>
+          <div class="genetic-helper-item">One Discord user can still own only one exact trait per type/value combination.</div>
+          <div class="genetic-helper-item">DSPOINC is the only marketplace currency.</div>
+        </div>
+      </div>
+
+      <div class="glass p-5 md:p-6">
+        <div class="section-title text-xl"><span>📘</span><span>Knowledge: Trade safely</span></div>
+        <div class="genetic-helper-list">
+          <div class="genetic-helper-item">Listing an item pauses direct use in inventory and keeps it marked with a <strong>Listed For Sale</strong> state.</div>
+          <div class="genetic-helper-item">Marketplace transfers never mutate NFT-bound Genesis mice. This lane is user-bound only.</div>
+          <div class="genetic-helper-item">Collection identity, rarity, and media come from the Genetic Catalog, while owned level and runtime state come from the player inventory row.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="lab-panel-knowledge" class="lab-tab-panel" hidden>
+  <div class="knowledge-grid">
+    <div class="glass p-5 md:p-6">
+      <div class="section-title text-xl md:text-2xl"><span>📚</span><span>Lab Knowledge</span></div>
+      <p class="mt-2 text-sm md:text-base text-slate-300">
+        Narrrf’s Lab now runs two clean progression lanes: Genesis NFT-bound research and Discord-bound Genetic Items. Both stay additive, stable, and backend-authoritative.
+      </p>
+    </div>
+
+    <div class="glass p-5 md:p-6">
+      <div class="section-title text-xl"><span>🧬</span><span>Genetic System Basics</span></div>
+      <div class="genetic-helper-list">
+        <div class="genetic-helper-item">Genetic Shop lets verified Genesis or VIP holders buy missing Outfit and Accessories traits directly into Discord-bound inventory.</div>
+        <div class="genetic-helper-item">Genetic Inventory supports start, claim, instant finish, and shared Lab booster actions without mutating on-chain NFT identity.</div>
+        <div class="genetic-helper-item">Marketplace listings transfer the full owned item state between players while respecting no-duplicate ownership rules.</div>
+      </div>
+    </div>
+
+    <div class="glass p-5 md:p-6">
+      <div class="section-title text-xl"><span>🏛️</span><span>Design Rules</span></div>
+      <div class="genetic-helper-list">
+        <div class="genetic-helper-item">Genesis progression is NFT-bound and remains the source of truth for on-chain mice upgrades.</div>
+        <div class="genetic-helper-item">Genetic progression is user-bound and always separate from NFT traits.</div>
+        <div class="genetic-helper-item">Catalog rows define item identity and media. Owned rows define level, runtime, and listing state.</div>
+      </div>
+    </div>
+
+    <div class="glass p-5 md:p-6">
+      <div class="section-title text-xl"><span>🏪</span><span>Marketplace Knowledge</span></div>
+      <div class="genetic-helper-list">
+        <div class="genetic-helper-item">Listings are for idle items only.</div>
+        <div class="genetic-helper-item">Buyers cannot receive a duplicate exact trait_type + trait_value.</div>
+        <div class="genetic-helper-item">DSPOINC economy stays isolated from NFT verification and staking logic.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
     <section id="lab-panel-research-queue" class="lab-tab-panel" hidden>
       <div class="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-5">
         <div class="glass p-5 md:p-6">
@@ -3181,6 +3289,9 @@ body::after {
       geneticHolderAccess: null,
       geneticInventory: [],
       geneticInventorySummary: null,
+      geneticMarketplaceListings: [],
+      geneticMarketplaceSummary: null,
+      geneticMarketplaceLoading: false,
       geneticInventoryRuntimeSummary: null,
       geneticActionItemId: null
     };
@@ -3226,6 +3337,12 @@ const el = {
   nftNextButton: document.getElementById('nftNextButton'),
   nftQuickSelect: document.getElementById('nftQuickSelect'),
   tabButtons: document.querySelectorAll('[data-lab-tab]'),
+  geneticMarketplaceBadge: document.getElementById('geneticMarketplaceBadge'),
+  geneticMarketplaceTraitTypeFilter: document.getElementById('geneticMarketplaceTraitTypeFilter'),
+  geneticMarketplaceRarityFilter: document.getElementById('geneticMarketplaceRarityFilter'),
+  geneticMarketplaceSearchInput: document.getElementById('geneticMarketplaceSearchInput'),
+  geneticMarketplaceGrid: document.getElementById('geneticMarketplaceGrid'),
+  geneticMarketplaceEmptyState: document.getElementById('geneticMarketplaceEmptyState'),
   tabPanels: document.querySelectorAll('.lab-tab-panel')
 };
 
@@ -6224,6 +6341,259 @@ function getGeneticRemainingMs(item) {
   return Math.max(0, endsAt.getTime() - Date.now());
 }
 
+function getGeneticMarketplaceListingByItemId(geneticItemId) {
+  const listings = Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : [];
+  return listings.find(listing =>
+    Number(listing?.genetic_item_id || 0) === Number(geneticItemId) &&
+    String(listing?.status || listing?.listing_status || '').toLowerCase() === 'active'
+  ) || null;
+}
+
+function getUserActiveGeneticMarketplaceListings() {
+  const listings = Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : [];
+  if (!state.userId) return [];
+
+  return listings.filter(listing =>
+    String(listing?.seller_user_id || '') === String(state.userId) &&
+    String(listing?.status || listing?.listing_status || '').toLowerCase() === 'active'
+  );
+}
+
+function openGeneticListingModal(geneticItemId) {
+  const item = (state.geneticInventory || []).find(entry => Number(entry?.genetic_item_id || 0) === Number(geneticItemId));
+
+  if (!item) {
+    logLab('❌ Genetic item not found for listing.', 'error');
+    return;
+  }
+
+  if (document.getElementById('geneticListingModal')) {
+    document.getElementById('geneticListingModal')?.remove();
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'geneticListingModal';
+  modal.className = 'fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/80 p-4';
+
+  modal.innerHTML = `
+    <div class="w-full max-w-md rounded-3xl border border-cyan-500/40 bg-slate-950 shadow-2xl shadow-cyan-900/30">
+      <div class="border-b border-white/10 px-5 py-4">
+        <div class="text-lg font-black text-white">🧀 List Genetic Item For Sale</div>
+        <div class="mt-1 text-sm text-slate-300">
+          ${escapeHtml(item.display_title || item.trait_value || 'Unknown Trait')} · Lv ${formatNumber(item.current_level || 1)}
+        </div>
+      </div>
+
+      <div class="px-5 py-5 space-y-4">
+        <div class="text-sm text-slate-300">
+          Set the DSPOINC price for this Discord-bound Genetic Item. The full level state will transfer to the buyer.
+        </div>
+
+        <div>
+          <label for="geneticListingPriceInput" class="block text-sm font-semibold text-slate-200 mb-2">Price (DSPOINC)</label>
+          <input
+            id="geneticListingPriceInput"
+            type="number"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            class="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none"
+            placeholder="Enter price"
+          />
+        </div>
+
+        <div class="rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-100">
+          Listings are only allowed for idle items. Upgrading or claim-ready items stay blocked from sale.
+        </div>
+      </div>
+
+      <div class="flex gap-3 px-5 pb-5">
+        <button type="button" class="btn flex-1" id="cancelGeneticListingModalBtn">Cancel</button>
+        <button type="button" class="btn primary flex-1" id="confirmGeneticListingBtn">Create Listing</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => {
+    modal.remove();
+  };
+
+  document.getElementById('cancelGeneticListingModalBtn')?.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', event => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.getElementById('confirmGeneticListingBtn')?.addEventListener('click', async () => {
+    const priceValue = Number(document.getElementById('geneticListingPriceInput')?.value || 0);
+
+    if (!Number.isFinite(priceValue) || priceValue < 1) {
+      logLab('❌ Enter a valid marketplace price in DSPOINC.', 'error');
+      return;
+    }
+
+    await createGeneticMarketplaceListing(geneticItemId, priceValue);
+    closeModal();
+  });
+}
+
+async function createGeneticMarketplaceListing(geneticItemId, priceDspoinc) {
+  if (!state.userId) {
+    logLab('❌ Login required before listing Genetic Items.', 'error');
+    return;
+  }
+
+  state.actionInFlight = true;
+  state.geneticActionItemId = Number(geneticItemId);
+  renderGeneticInventory();
+
+  try {
+const response = await fetch('/api/admin/create-genetic-marketplace-listing.php', {
+  method: 'POST',
+  credentials: 'include',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    genetic_item_id: Number(geneticItemId),
+    price_dspoinc: Number(priceDspoinc)
+  })
+});
+
+const rawText = await response.text();
+let data = null;
+
+try {
+  data = JSON.parse(rawText);
+} catch (parseError) {
+  console.error('Marketplace create listing returned non-JSON:', rawText);
+  throw new Error(`Marketplace API returned non-JSON response (HTTP ${response.status})`);
+}
+
+if (!response.ok || !data?.success) {
+  throw new Error(data?.error || 'Failed to create marketplace listing');
+}
+
+    logLab(`🧀 Listed Genetic Item #${formatNumber(geneticItemId)} for ${formatNumber(priceDspoinc)} DSPOINC.`, 'success');
+    await refreshGeneticMarketplaceData();
+    await loadGeneticInventory();
+    renderGeneticInventory();
+    renderGeneticMarketplace();
+  } catch (error) {
+    console.error('createGeneticMarketplaceListing failed:', error);
+    logLab(`❌ ${error.message}`, 'error');
+  } finally {
+    state.actionInFlight = false;
+    state.geneticActionItemId = null;
+    renderGeneticInventory();
+  }
+}
+
+async function cancelGeneticMarketplaceListing(geneticItemId) {
+  if (!state.userId) {
+    logLab('❌ Login required before cancelling a marketplace listing.', 'error');
+    return;
+  }
+
+  const inventoryItem = (state.geneticInventory || []).find(entry => Number(entry?.genetic_item_id || 0) === Number(geneticItemId)) || null;
+  const activeListing = getGeneticMarketplaceListingByItemId(geneticItemId)
+    || ((inventoryItem?.listed_listing_id)
+      ? (Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : []).find(listing => Number(listing?.listing_id || 0) === Number(inventoryItem.listed_listing_id))
+      : null);
+
+  if (!activeListing) {
+    logLab('❌ No active marketplace listing found for this Genetic Item. Refresh marketplace data and try again.', 'error');
+    return;
+  }
+
+  state.actionInFlight = true;
+  state.geneticActionItemId = Number(geneticItemId);
+  renderGeneticInventory();
+
+  try {
+    const response = await fetch('/api/admin/cancel-genetic-marketplace-listing.php', {
+      method: 'POST',
+      credentials: 'include', // ✅ REQUIRED
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        listing_id: Number(activeListing.listing_id)
+      })
+    });
+
+    // 🔥 SAFE PARSE
+    const rawText = await response.text();
+    let data = null;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error('Marketplace cancel returned non-JSON:', rawText);
+      throw new Error(`Marketplace API returned non-JSON response (HTTP ${response.status})`);
+    }
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || 'Failed to cancel marketplace listing');
+    }
+
+    logLab(`❌ Cancelled marketplace listing #${formatNumber(activeListing.listing_id)}.`, 'warn');
+
+    await refreshGeneticMarketplaceData();
+    await loadGeneticInventory();
+
+    renderGeneticInventory();
+    renderGeneticMarketplace();
+
+  } catch (error) {
+    console.error('cancelGeneticMarketplaceListing failed:', error);
+    logLab(`❌ ${error.message}`, 'error');
+  } finally {
+    state.actionInFlight = false;
+    state.geneticActionItemId = null;
+    renderGeneticInventory();
+  }
+}
+
+async function refreshGeneticMarketplaceData() {
+  try {
+    state.geneticMarketplaceLoading = true;
+
+    const response = await fetch('/api/admin/get-genetic-marketplace-listings.php', {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const rawText = await response.text();
+    let data = null;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error('Marketplace fetch returned non-JSON:', rawText);
+      throw new Error(`Marketplace API returned non-JSON (HTTP ${response.status})`);
+    }
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || 'Failed to load marketplace listings');
+    }
+
+    state.geneticMarketplaceListings = Array.isArray(data.data?.listings)
+      ? data.data.listings
+      : [];
+
+    state.geneticMarketplaceSummary = data.data?.summary || null;
+
+  } catch (error) {
+    console.error('refreshGeneticMarketplaceData failed:', error);
+    state.geneticMarketplaceListings = [];
+    state.geneticMarketplaceSummary = null;
+  } finally {
+    state.geneticMarketplaceLoading = false;
+    renderGeneticMarketplace();
+  }
+}
+
 function buildGeneticInventoryRuntimeSummary(items) {
   const summary = {
     total_items: 0,
@@ -6376,6 +6746,32 @@ function renderGeneticOwnedItemCard(item) {
       </div>`;
   }
 
+  let marketplaceAction = '';
+  const activeUserListings = getUserActiveGeneticMarketplaceListings();
+  const hasAnotherActiveListing = activeUserListings.some(listing => Number(listing?.genetic_item_id || 0) !== Number(item.genetic_item_id));
+
+if (item.is_listed_for_sale) {
+  marketplaceAction = `
+    <button type="button" class="btn danger"
+      ${actionDisabled ? 'disabled' : ''}
+      data-cancel-genetic-listing="${escapeHtml(item.genetic_item_id)}">
+      ❌ Cancel Listing
+    </button>
+  `;
+} else if (
+  runtimeState === 'idle' &&
+  !isMaxLevel
+) {
+  marketplaceAction = `
+    <button type="button" class="btn"
+      ${(actionDisabled || hasAnotherActiveListing) ? 'disabled' : ''}
+      data-list-genetic-item="${escapeHtml(item.genetic_item_id)}"
+      title="${escapeHtml(hasAnotherActiveListing ? 'Only one active marketplace listing is allowed per user right now.' : 'List this idle Genetic Item on the marketplace.')}">
+      ${hasAnotherActiveListing ? 'One Listing Active' : '🧀 List For Sale'}
+    </button>
+  `;
+}
+
   let extraActions = '';
   if (runtimeState === 'upgrading' && !item.is_listed_for_sale && !isMaxLevel) {
     const boosterButtons = getLabBoosterCatalog().map(booster => {
@@ -6425,10 +6821,11 @@ function renderGeneticOwnedItemCard(item) {
         <div class="meta-box"><div class="label">Timer</div><div class="value">${escapeHtml(runtimeState === 'upgrading' ? remainingLabel : (runtimeState === 'ready_to_claim' ? 'Claim Ready' : 'Idle'))}</div></div>
       </div>
       ${upgradeHint}
-      <div class="genetic-card-actions">
-        ${primaryAction}
-        ${secondaryAction}
-      </div>
+<div class="genetic-card-actions">
+  ${primaryAction}
+  ${secondaryAction}
+  ${marketplaceAction}
+</div>
       ${extraActions}
     </article>
   `;
@@ -6495,6 +6892,245 @@ function renderGeneticInventory() {
 
   el.geneticInventoryEmptyState.classList.add('hidden');
   el.geneticInventoryGrid.innerHTML = filtered.map(renderGeneticOwnedItemCard).join('');
+}
+
+function getFilteredGeneticMarketplaceListings() {
+  const listings = Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : [];
+  const selectedTraitType = String(el.geneticMarketplaceTraitTypeFilter?.value || '').trim().toLowerCase();
+  const selectedRarity = String(el.geneticMarketplaceRarityFilter?.value || '').trim().toLowerCase();
+  const query = String(el.geneticMarketplaceSearchInput?.value || '').trim().toLowerCase();
+
+  return listings.filter(item => {
+    if (!item) return false;
+
+    const status = String(item.status || '').trim().toLowerCase();
+    if (status && status !== 'active') {
+      return false;
+    }
+
+    const traitType = String(item.trait_type || '').trim().toLowerCase();
+    const rarity = String(item.rarity_tier || '').trim().toLowerCase();
+    const title = String(item.display_title || item.trait_value || '').trim().toLowerCase();
+    const traitValue = String(item.trait_value || '').trim().toLowerCase();
+    const sellerName = String(item.seller_username || item.seller_name || 'Unknown Seller').trim().toLowerCase();
+
+    if (selectedTraitType && traitType !== selectedTraitType) {
+      return false;
+    }
+
+    if (selectedRarity && rarity !== selectedRarity) {
+      return false;
+    }
+
+    if (query) {
+      const haystack = [
+        title,
+        traitValue,
+        traitType,
+        rarity,
+        sellerName
+      ].join(' ');
+
+      if (!haystack.includes(query)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+function renderGeneticMarketplaceBuyAction(item) {
+  const listingId = Number(item?.listing_id || 0);
+  const sellerId = String(item?.seller_user_id || '').trim();
+  const isOwnListing = Boolean(state.userId) && sellerId !== '' && sellerId === String(state.userId);
+  const disabled = state.actionInFlight || listingId < 1 || !state.userId || isOwnListing;
+  const buttonClass = disabled && !state.userId ? 'btn' : 'btn primary';
+
+  if (!state.userId) {
+    return `<button type="button" class="${buttonClass}" disabled title="Login required before buying marketplace listings.">🔐 Login To Buy</button>`;
+  }
+
+  if (isOwnListing) {
+    return `<button type="button" class="btn" disabled title="You cannot buy your own marketplace listing.">Your Listing</button>`;
+  }
+
+  return `<button type="button" class="btn primary" ${disabled ? 'disabled' : ''} data-buy-genetic-marketplace-listing="${escapeHtml(String(listingId))}" title="Buy this leveled genetic item with DSPOINC.">🛒 Buy Now</button>`;
+}
+
+async function handleBuyGeneticMarketplaceListing(listingId) {
+  const activeListing = (Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : []).find(item => Number(item?.listing_id || 0) === Number(listingId));
+
+  if (!state.userId) {
+    logLab('❌ Login required before buying marketplace listings.', 'error');
+    return;
+  }
+
+  if (!activeListing) {
+    logLab('❌ Marketplace listing not found in the current Lab state. Refresh and try again.', 'error');
+    return;
+  }
+
+  if (String(activeListing.seller_user_id || '') === String(state.userId)) {
+    logLab('❌ You cannot buy your own marketplace listing.', 'error');
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Genetic Marketplace',
+    title: `Buy ${activeListing.display_title || activeListing.trait_value || 'Genetic Item'}?`,
+    icon: '🛒',
+    message: 'This purchase transfers the full user-bound Genetic Item exactly as listed, including its preserved level snapshot.',
+    note: 'The backend remains authoritative for balance checks, ownership transfer, and duplicate-trait protection.',
+    highlightLabel: 'Price',
+    highlightValue: `${formatNumber(activeListing.price_dspoinc || 0)} DSPOINC`,
+    confirmText: 'Buy Listing',
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) return;
+
+  state.actionInFlight = true;
+  renderGeneticMarketplace();
+  renderGeneticInventory();
+
+  try {
+    const response = await fetch('/api/admin/buy-genetic-marketplace-listing.php', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        listing_id: Number(listingId)
+      })
+    });
+
+    const rawText = await response.text();
+    let data = null;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error('Marketplace buy returned non-JSON:', rawText);
+      throw new Error(`Marketplace API returned non-JSON response (HTTP ${response.status})`);
+    }
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || 'Failed to buy marketplace listing');
+    }
+
+    await Promise.allSettled([
+      refreshGeneticMarketplaceData(),
+      loadUserGeneticItems(),
+      loadProfileData(),
+      loadDetailsData(),
+      loadEnhancedProfile(),
+      loadStakingStats()
+    ]);
+
+    renderAll();
+
+    await showLabMessageModal({
+      eyebrow: 'Genetic Marketplace',
+      title: 'Purchase Complete',
+      icon: '✅',
+      message: `${activeListing.display_title || activeListing.trait_value || 'Genetic Item'} is now in your Genetic Inventory.`,
+      note: 'Ownership, listing state, and DSPOINC movement were finalized by the backend.',
+      highlightLabel: 'Spent',
+      highlightValue: `${formatNumber(activeListing.price_dspoinc || 0)} DSPOINC`,
+      confirmText: 'Nice'
+    });
+
+    logLab(`Marketplace purchase completed for listing #${formatNumber(listingId)}.`, 'success');
+  } catch (error) {
+    console.error('handleBuyGeneticMarketplaceListing failed:', error);
+    logLab(`❌ ${error.message}`, 'error');
+    await showLabMessageModal({
+      eyebrow: 'Genetic Marketplace',
+      title: 'Purchase Failed',
+      icon: '⚠️',
+      message: `The marketplace purchase did not complete: ${error.message}`,
+      note: 'Refresh the Lab if you want to verify the newest backend state.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    state.actionInFlight = false;
+    renderGeneticMarketplace();
+    renderGeneticInventory();
+  }
+}
+
+function renderGeneticMarketplaceCard(item) {
+  const rarityClass = getGeneticRarityClass(item.rarity_tier);
+  const currentLevel = Math.max(1, safeNumber(item.current_level, 1));
+  const sellerName = item.seller_username || item.seller_name || 'Unknown Seller';
+  const price = Math.max(0, safeNumber(item.price_dspoinc, 0));
+
+  return `
+    <article class="genetic-card ${escapeHtml(rarityClass)} genetic-card-live">
+      <div class="genetic-card-header">
+        <div>
+          <div class="genetic-card-title">${escapeHtml(item.display_title || item.trait_value || 'Marketplace Trait')}</div>
+          <div class="genetic-card-subtitle">${escapeHtml(item.trait_type || 'Genetic Trait')}</div>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(item.rarity_tier || 'common')}</span>
+          <span class="genetic-status-badge idle">For Sale</span>
+        </div>
+      </div>
+
+      <div class="genetic-card-media">
+        ${renderGeneticMedia(item, {
+          glowLabel: item.display_title || item.trait_value || `Lv ${formatNumber(currentLevel)}`
+        })}
+      </div>
+
+      <div class="genetic-card-copy">
+        Trade-ready Genetic Item preserving its owned level and user-bound progression state.
+      </div>
+
+      <div class="genetic-card-meta">
+        <div class="meta-box"><div class="label">Level</div><div class="value">Lv ${formatNumber(currentLevel)}</div></div>
+        <div class="meta-box"><div class="label">Price</div><div class="value">${formatNumber(price)} DSPOINC</div></div>
+      </div>
+
+      <div class="genetic-card-meta">
+        <div class="meta-box"><div class="label">Seller</div><div class="value">${escapeHtml(sellerName)}</div></div>
+        <div class="meta-box"><div class="label">Status</div><div class="value">Active Listing</div></div>
+      </div>
+
+      <div class="genetic-card-actions">
+        ${renderGeneticMarketplaceBuyAction(item)}
+        <button type="button" class="btn" disabled>
+          Listing #${formatNumber(item.listing_id || 0)}
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderGeneticMarketplace() {
+  const filtered = getFilteredGeneticMarketplaceListings();
+
+  if (el.geneticMarketplaceBadge) {
+    el.geneticMarketplaceBadge.textContent = `${formatNumber(filtered.length)} active listings`;
+  }
+
+  if (!el.geneticMarketplaceGrid || !el.geneticMarketplaceEmptyState) return;
+
+  if (!filtered.length) {
+    el.geneticMarketplaceGrid.innerHTML = '';
+    el.geneticMarketplaceEmptyState.classList.remove('hidden');
+    el.geneticMarketplaceEmptyState.innerHTML = `
+      <div class="text-lg font-semibold text-white">No marketplace listings match the current filters.</div>
+      <div class="mt-2 text-sm text-slate-300">Listings will appear here once Discord-bound traits are listed for sale.</div>
+    `;
+    return;
+  }
+
+  el.geneticMarketplaceEmptyState.classList.add('hidden');
+  el.geneticMarketplaceGrid.innerHTML = filtered.map(renderGeneticMarketplaceCard).join('');
 }
 
 async function handleStartGeneticUpgrade(geneticItemId) {
@@ -6987,6 +7623,7 @@ function renderAll() {
   renderActiveResearchQueue();
   renderGeneticShop();
   renderGeneticInventory();
+  renderGeneticMarketplace();
   renderNftGrid();
   renderSelectedNftPanel();
   renderSelectedTraitSummary();
@@ -7021,6 +7658,11 @@ function switchLabTab(tabName) {
   el.tabPanels.forEach(panel => {
     panel.hidden = panel.id !== `lab-panel-${tabName}`;
   });
+
+  // 🔥 IMPORTANT: force render when marketplace tab is opened
+  if (tabName === 'genetic-marketplace') {
+    renderGeneticMarketplace();
+  }
 }
 
 function bindLabTabs() {
@@ -7081,6 +7723,8 @@ function getGeneticMediaTone(item) {
 
   return 'slate';
 }
+
+
 
 /**
  * Render shared genetic media using the same visual language as Lab boosters.
@@ -7161,11 +7805,14 @@ async function loadLab() {
     renderSessionNotice();
 
     if (!state.userId) {
-      await loadGeneticTraitCatalog();
+      await Promise.allSettled([
+        loadGeneticTraitCatalog(),
+        refreshGeneticMarketplaceData()
+      ]);
       state.geneticInventory = [];
       state.geneticInventorySummary = null;
       renderAll();
-      logLab('No Discord session detected. Rendered shell in safe mode with public Genetic Shop preview.', 'warn');
+      logLab('No Discord session detected. Rendered shell in safe mode with public Genetic Shop and marketplace preview.', 'warn');
       return;
     }
 
@@ -7187,7 +7834,8 @@ await Promise.all([
   loadLabBoosterStoreCatalog(),
   loadLabBoosterInventory(),
   loadGeneticTraitCatalog(),
-  loadUserGeneticItems()
+  loadUserGeneticItems(),
+  refreshGeneticMarketplaceData()
 ]);
 
 renderAll();
@@ -7268,6 +7916,26 @@ el.geneticInventoryGrid?.addEventListener('click', event => {
     return;
   }
 
+    const listButton = event.target.closest('[data-list-genetic-item]');
+  if (listButton) {
+    const geneticItemId = listButton.getAttribute('data-list-genetic-item') || '';
+    if (!geneticItemId || listButton.disabled || state.actionInFlight) {
+      return;
+    }
+    openGeneticListingModal(geneticItemId);
+    return;
+  }
+
+  const cancelListingButton = event.target.closest('[data-cancel-genetic-listing]');
+  if (cancelListingButton) {
+    const geneticItemId = cancelListingButton.getAttribute('data-cancel-genetic-listing') || '';
+    if (!geneticItemId || cancelListingButton.disabled || state.actionInFlight) {
+      return;
+    }
+    cancelGeneticMarketplaceListing(geneticItemId);
+    return;
+  }
+
   const claimButton = event.target.closest('[data-claim-genetic-upgrade]');
   if (claimButton) {
     const geneticItemId = claimButton.getAttribute('data-claim-genetic-upgrade') || '';
@@ -7299,16 +7967,15 @@ el.geneticInventoryGrid?.addEventListener('click', event => {
   }
 });
 
-[el.geneticTraitTypeFilter, el.geneticRarityFilter, el.geneticSearchInput].forEach(node => {
-  node?.addEventListener(node === el.geneticSearchInput ? 'input' : 'change', () => {
-    renderGeneticShop();
-  });
-});
-
-[el.geneticInventoryTraitTypeFilter, el.geneticInventoryStatusFilter, el.geneticInventorySearchInput].forEach(node => {
-  node?.addEventListener(node === el.geneticInventorySearchInput ? 'input' : 'change', () => {
-    renderGeneticInventory();
-  });
+[
+  el.geneticMarketplaceTraitTypeFilter,
+  el.geneticMarketplaceRarityFilter,
+  el.geneticMarketplaceSearchInput
+].filter(Boolean).forEach(node => {
+  node.addEventListener(
+    node === el.geneticMarketplaceSearchInput ? 'input' : 'change',
+    () => renderGeneticMarketplace()
+  );
 });
 
 function setupQuickAccessLinks() {

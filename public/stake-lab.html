@@ -2855,50 +2855,59 @@ function initWalletConnection() {
     safeClearSavedBtn.addEventListener('click', clearStakeLabSnapshots);
   }
 
-  if (isMobilePhantom) {
-    if (safeConnectBtn) {
-      safeConnectBtn.textContent = '💾 Load Saved NFT Snapshot';
-      safeConnectBtn.addEventListener('click', function () {
-        restoreSavedStakeLabNfts();
-      });
-    }
+if (isMobilePhantom) {
+  // 🧠 MOBILE PHANTOM SHOULD WORK LIKE DESKTOP NOW
 
-    if (safeDisconnectBtn) {
-      safeDisconnectBtn.classList.add('hidden');
-    }
-
-    if (safeFetchBtn) {
-      safeFetchBtn.textContent = '📱 Mobile Verification Help';
-      safeFetchBtn.addEventListener('click', function () {
-        window.location.href = 'profile.html';
-      });
-    }
-
-    if (safeVerifyBtn) {
-      safeVerifyBtn.textContent = '🔄 Refresh Saved Snapshot';
-      safeVerifyBtn.addEventListener('click', function () {
-        restoreSavedStakeLabNfts();
-      });
-    }
-  } else {
-    if (safeConnectBtn) {
-      safeConnectBtn.textContent = '🔌 Connect Phantom';
-      safeConnectBtn.addEventListener('click', connectPhantomWallet);
-    }
-
-    if (safeDisconnectBtn) {
-      safeDisconnectBtn.classList.remove('hidden');
-      safeDisconnectBtn.addEventListener('click', disconnectWallet);
-    }
-
-    if (safeFetchBtn) {
-      safeFetchBtn.addEventListener('click', fetchNFTs);
-    }
-
-    if (safeVerifyBtn) {
-      safeVerifyBtn.addEventListener('click', verifyStakeLabNFTs);
-    }
+  if (safeConnectBtn) {
+    safeConnectBtn.textContent = '🔌 Connect Phantom';
+    safeConnectBtn.addEventListener('click', connectPhantomWallet);
   }
+
+  if (safeDisconnectBtn) {
+    safeDisconnectBtn.classList.remove('hidden');
+    safeDisconnectBtn.addEventListener('click', disconnectWallet);
+  }
+
+  if (safeFetchBtn) {
+    safeFetchBtn.textContent = '🧲 Fetch My NFTs';
+    safeFetchBtn.addEventListener('click', fetchNFTs);
+  }
+
+  if (safeVerifyBtn) {
+    safeVerifyBtn.textContent = '✅ Verify Holder NFTs';
+    safeVerifyBtn.addEventListener('click', verifyStakeLabNFTs);
+  }
+
+  // 🧀 KEEP SNAPSHOT AS BACKUP TOOL
+  if (safeLoadSavedBtn) {
+    safeLoadSavedBtn.classList.remove('hidden');
+  }
+
+  if (safeClearSavedBtn) {
+    safeClearSavedBtn.classList.remove('hidden');
+  }
+
+} else {
+  // DESKTOP (unchanged)
+
+  if (safeConnectBtn) {
+    safeConnectBtn.textContent = '🔌 Connect Phantom';
+    safeConnectBtn.addEventListener('click', connectPhantomWallet);
+  }
+
+  if (safeDisconnectBtn) {
+    safeDisconnectBtn.classList.remove('hidden');
+    safeDisconnectBtn.addEventListener('click', disconnectWallet);
+  }
+
+  if (safeFetchBtn) {
+    safeFetchBtn.addEventListener('click', fetchNFTs);
+  }
+
+  if (safeVerifyBtn) {
+    safeVerifyBtn.addEventListener('click', verifyStakeLabNFTs);
+  }
+}
 
   renderStakeLabSavedSnapshot();
 
