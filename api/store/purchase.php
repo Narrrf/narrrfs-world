@@ -29,6 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/database.php';
 
+$localDiscordSecretPath = __DIR__ . '/../config/discord-secret.php';
+if (file_exists($localDiscordSecretPath)) {
+    include $localDiscordSecretPath;
+}
+
 session_start();
 
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf local fallback
