@@ -6444,6 +6444,19 @@ function openGeneticListingModal(geneticItemId) {
 async function createGeneticMarketplaceListing(geneticItemId, priceDspoinc) {
   if (!state.userId) {
     logLab('❌ Login required before listing Genetic Items.', 'error');
+
+    showLabMessageModal({
+      eyebrow: 'Marketplace',
+      title: 'Login Required',
+      icon: '🔐',
+      message: 'You need to be logged in before listing a Genetic Item.',
+      note: 'Please refresh your session and try again.',
+      tone: 'danger',
+      highlightLabel: 'Action',
+      highlightValue: 'Create Listing',
+      confirmText: 'Close'
+    });
+
     return;
   }
 
@@ -6452,60 +6465,140 @@ async function createGeneticMarketplaceListing(geneticItemId, priceDspoinc) {
   renderGeneticInventory();
 
   try {
-const response = await fetch('/api/admin/create-genetic-marketplace-listing.php', {
-  method: 'POST',
-  credentials: 'include',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    genetic_item_id: Number(geneticItemId),
-    price_dspoinc: Number(priceDspoinc)
-  })
+    const response = await fetch('/api/admin/create-genetic-marketplace-listing.php', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        genetic_item_id: Number(geneticItemId),
+        price_dspoinc: Number(priceDspoinc)
+      })
+    });
+
+    const rawText = await response.text();
+    let data = null;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error('Marketplace create listing returned non-JSON:', rawText);
+      throw new Error(`Marketplace API returned non-JSON response (HTTP ${response.status})`);
+    }
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || 'Failed to create marketplace listing');
+    }
+
+const listingData = data.data || null;
+
+logLab(`🧀 Listed Genetic Item #${formatNumber(geneticItemId)} for ${formatNumber(priceDspoinc)} DSPOINC.`, 'success');
+
+await refreshGeneticMarketplaceData();
+await loadUserGeneticItems();
+renderGeneticInventory();
+renderGeneticMarketplace();
+
+const listedItem = (Array.isArray(state.geneticInventory) ? state.geneticInventory : []).find(
+  (geneticItem) => Number(geneticItem?.genetic_item_id || 0) === Number(geneticItemId)
+);
+
+const resolvedItemTitle =
+  listedItem?.display_title ||
+  listedItem?.trait_value ||
+  `Genetic Item #${geneticItemId}`;
+
+showLabMessageModal({
+  eyebrow: 'Marketplace',
+  title: 'Listing Created',
+  icon: '🛒',
+  message: `${resolvedItemTitle} is now live on the Genetic Marketplace.`,
+  note: 'Your item is now locked for sale until it is cancelled or purchased.',
+  tone: 'success',
+  highlightLabel: 'Price',
+  highlightValue: `${formatNumber(priceDspoinc)} DSPOINC`,
+  confirmText: 'Nice'
 });
 
-const rawText = await response.text();
-let data = null;
+return listingData;
 
-try {
-  data = JSON.parse(rawText);
-} catch (parseError) {
-  console.error('Marketplace create listing returned non-JSON:', rawText);
-  throw new Error(`Marketplace API returned non-JSON response (HTTP ${response.status})`);
+return listingData;
+
+} catch (error) {
+  console.error('createGeneticMarketplaceListing failed:', error);
+  logLab(`❌ ${error.message}`, 'error');
+
+// Error modal feedback
+showLabMessageModal({
+  eyebrow: 'Marketplace',
+  title: 'Listing Failed',
+  icon: '❌',
+  message: error?.message || 'The marketplace listing could not be created.',
+  note: 'Check ownership, listing limits, and API errors, then try again.',
+  tone: 'danger',
+  highlightLabel: 'Action',
+  highlightValue: 'Create Listing',
+  confirmText: 'Close'
+});
+
+return null;
+
+} finally {
+  state.actionInFlight = false;
+  state.geneticActionItemId = null;
+  renderGeneticInventory();
 }
-
-if (!response.ok || !data?.success) {
-  throw new Error(data?.error || 'Failed to create marketplace listing');
-}
-
-    logLab(`🧀 Listed Genetic Item #${formatNumber(geneticItemId)} for ${formatNumber(priceDspoinc)} DSPOINC.`, 'success');
-    await refreshGeneticMarketplaceData();
-    await loadGeneticInventory();
-    renderGeneticInventory();
-    renderGeneticMarketplace();
-  } catch (error) {
-    console.error('createGeneticMarketplaceListing failed:', error);
-    logLab(`❌ ${error.message}`, 'error');
-  } finally {
-    state.actionInFlight = false;
-    state.geneticActionItemId = null;
-    renderGeneticInventory();
-  }
 }
 
 async function cancelGeneticMarketplaceListing(geneticItemId) {
   if (!state.userId) {
     logLab('❌ Login required before cancelling a marketplace listing.', 'error');
-    return;
+
+    showLabMessageModal({
+      eyebrow: 'Marketplace',
+      title: 'Login Required',
+      icon: '🔐',
+      message: 'You need to be logged in before cancelling a marketplace listing.',
+      note: 'Refresh your session and try again.',
+      tone: 'danger',
+      highlightLabel: 'Action',
+      highlightValue: 'Cancel Listing',
+      confirmText: 'Close'
+    });
+
+    return null;
   }
 
-  const inventoryItem = (state.geneticInventory || []).find(entry => Number(entry?.genetic_item_id || 0) === Number(geneticItemId)) || null;
-  const activeListing = getGeneticMarketplaceListingByItemId(geneticItemId)
-    || ((inventoryItem?.listed_listing_id)
-      ? (Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : []).find(listing => Number(listing?.listing_id || 0) === Number(inventoryItem.listed_listing_id))
-      : null);
+  const inventoryItem =
+    (state.geneticInventory || []).find(
+      (geneticItem) => Number(geneticItem?.genetic_item_id || 0) === Number(geneticItemId)
+    ) || null;
+
+  const activeListing =
+    getGeneticMarketplaceListingByItemId(geneticItemId) ||
+    (
+      inventoryItem?.listed_listing_id
+        ? (Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : []).find(
+            (listing) => Number(listing?.listing_id || 0) === Number(inventoryItem.listed_listing_id)
+          )
+        : null
+    );
 
   if (!activeListing) {
     logLab('❌ No active marketplace listing found for this Genetic Item. Refresh marketplace data and try again.', 'error');
-    return;
+
+    showLabMessageModal({
+      eyebrow: 'Marketplace',
+      title: 'Listing Not Found',
+      icon: '❌',
+      message: 'No active marketplace listing could be found for this Genetic Item.',
+      note: 'Refresh marketplace data and try again.',
+      tone: 'danger',
+      highlightLabel: 'Action',
+      highlightValue: 'Cancel Listing',
+      confirmText: 'Close'
+    });
+
+    return null;
   }
 
   state.actionInFlight = true;
@@ -6515,14 +6608,13 @@ async function cancelGeneticMarketplaceListing(geneticItemId) {
   try {
     const response = await fetch('/api/admin/cancel-genetic-marketplace-listing.php', {
       method: 'POST',
-      credentials: 'include', // ✅ REQUIRED
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         listing_id: Number(activeListing.listing_id)
       })
     });
 
-    // 🔥 SAFE PARSE
     const rawText = await response.text();
     let data = null;
 
@@ -6540,14 +6632,47 @@ async function cancelGeneticMarketplaceListing(geneticItemId) {
     logLab(`❌ Cancelled marketplace listing #${formatNumber(activeListing.listing_id)}.`, 'warn');
 
     await refreshGeneticMarketplaceData();
-    await loadGeneticInventory();
-
+    await loadUserGeneticItems();
     renderGeneticInventory();
     renderGeneticMarketplace();
 
+    const resolvedItemTitle =
+      inventoryItem?.display_title ||
+      inventoryItem?.trait_value ||
+      activeListing?.display_title ||
+      activeListing?.trait_value ||
+      `Genetic Item #${geneticItemId}`;
+
+    showLabMessageModal({
+      eyebrow: 'Marketplace',
+      title: 'Listing Cancelled',
+      icon: '✅',
+      message: `${resolvedItemTitle} has been returned to your active Genetic Inventory.`,
+      note: 'The marketplace entry remains in history, but it is no longer active.',
+      tone: 'success',
+      highlightLabel: 'Listing',
+      highlightValue: `#${formatNumber(activeListing.listing_id)}`,
+      confirmText: 'Close'
+    });
+
+    return data.data || null;
   } catch (error) {
     console.error('cancelGeneticMarketplaceListing failed:', error);
-    logLab(`❌ ${error.message}`, 'error');
+    logLab(`❌ ${error?.message || 'Failed to cancel marketplace listing'}`, 'error');
+
+    showLabMessageModal({
+      eyebrow: 'Marketplace',
+      title: 'Cancel Failed',
+      icon: '❌',
+      message: error?.message || 'The marketplace listing could not be cancelled.',
+      note: 'Refresh the Lab and verify the listing still belongs to you, then try again.',
+      tone: 'danger',
+      highlightLabel: 'Listing',
+      highlightValue: `#${formatNumber(activeListing?.listing_id || 0)}`,
+      confirmText: 'Close'
+    });
+
+    return null;
   } finally {
     state.actionInFlight = false;
     state.geneticActionItemId = null;
@@ -7632,7 +7757,6 @@ function renderAll() {
 }
 
 function liveRefreshRender() {
-  renderGeneticInventory();
 
   if (!state.selectedNft) return;
 

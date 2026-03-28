@@ -2,11 +2,13 @@
 // 🛒 Store Purchase API
 // Purchases a store item with DSPOINC and adds it to the user's inventory.
 //
-// Security and economy rules:
-// - Production must use session-first auth
-// - Localhost may use request user_id or Narrrf fallback
-// - DSPOINC available balance is canonical:
-//   available = total_score_ledger - active_frozen_stakes
+// Supported auth modes:
+// - Production website: Discord session auth
+// - Discord bot/internal service: Bearer DISCORD_SECRET + request user_id
+// - Localhost: request user_id override or Narrrf fallback
+//
+// Economy rules:
+// - Available DSPOINC = total ledger score - active frozen stakes
 // - Purchase runs inside a transaction
 // - Balance is re-checked inside the transaction
 // - Audit trail is written to tbl_score_adjustments
@@ -20,7 +22,7 @@ ini_set('error_log', __DIR__ . '/../../error_log.txt');
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, Accept');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -56,35 +58,93 @@ function is_localhost_env(): bool {
 }
 
 /**
- * Read request JSON safely.
+ * Read request data safely from JSON or POST.
  */
 function get_request_data(): array {
     $raw = file_get_contents('php://input');
     $decoded = json_decode($raw, true);
 
-    return is_array($decoded) ? $decoded : [];
+    if (is_array($decoded)) {
+        return $decoded;
+    }
+
+    return !empty($_POST) && is_array($_POST) ? $_POST : [];
 }
 
 /**
- * Resolve the active user using session-first auth in production.
+ * Resolve Authorization header robustly across server setups.
+ */
+function get_authorization_header(): string {
+    if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+        return (string)$_SERVER['HTTP_AUTHORIZATION'];
+    }
+
+    if (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        return (string)$_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
+
+    if (function_exists('getallheaders')) {
+        $headers = getallheaders();
+        if (is_array($headers)) {
+            foreach ($headers as $key => $value) {
+                if (strtolower((string)$key) === 'authorization') {
+                    return (string)$value;
+                }
+            }
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Resolve internal API secret from common env locations.
+ */
+function get_internal_api_secret(): string {
+    $candidates = [
+        getenv('DISCORD_SECRET') ?: '',
+        $_ENV['DISCORD_SECRET'] ?? '',
+        $_SERVER['DISCORD_SECRET'] ?? ''
+    ];
+
+    foreach ($candidates as $candidate) {
+        $candidate = trim((string)$candidate);
+        if ($candidate !== '') {
+            return $candidate;
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Resolve the active user.
+ *
+ * Rules:
+ * - Trusted bot/internal requests may use Bearer DISCORD_SECRET + request user_id
+ * - Website requests use Discord session auth
+ * - Localhost may use request user_id directly
  */
 function resolve_user_id(array $request): string {
     global $LOCAL_TEST_DISCORD_ID;
 
-    $sessionUserId = $_SESSION['discord_id'] ?? '';
+    $sessionUserId = trim((string)($_SESSION['discord_id'] ?? ''));
     $requestUserId = trim((string)($request['user_id'] ?? ''));
     $isLocalhost = is_localhost_env();
 
-    // Trusted internal bot auth via Bearer token
-    $expectedToken = getenv('DISCORD_SECRET') ?: '';
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    // 1) Trusted internal bot/service auth
+    $expectedToken = get_internal_api_secret();
+    $authHeader = get_authorization_header();
     $providedToken = '';
 
     if (stripos($authHeader, 'Bearer ') === 0) {
         $providedToken = trim(substr($authHeader, 7));
     }
 
-    $isTrustedInternal = $expectedToken !== '' && hash_equals($expectedToken, $providedToken);
+    $isTrustedInternal =
+        $expectedToken !== '' &&
+        $providedToken !== '' &&
+        hash_equals($expectedToken, $providedToken);
 
     if ($isTrustedInternal) {
         if ($requestUserId === '') {
@@ -94,18 +154,20 @@ function resolve_user_id(array $request): string {
             ], 400);
         }
 
+        error_log("🛒 Store Purchase: Trusted internal request for user_id {$requestUserId}");
         return $requestUserId;
     }
 
-    // Localhost testing
+    // 2) Localhost testing: allow explicit request user_id
     if ($isLocalhost && $requestUserId !== '') {
         error_log("🛒 Store Purchase: Using request user_id for localhost testing: {$requestUserId}");
         return $requestUserId;
     }
 
-    // Production browser session auth
+    // 3) Production browser/session auth
     $userId = $sessionUserId;
 
+    // If both are present in browser flow, they must match
     if ($requestUserId !== '' && $sessionUserId !== '' && $requestUserId !== $sessionUserId) {
         error_log("🚨 SECURITY: Store Purchase - user_id mismatch. Session: {$sessionUserId}, Request: {$requestUserId}");
         json_response([
@@ -114,6 +176,7 @@ function resolve_user_id(array $request): string {
         ], 403);
     }
 
+    // 4) Localhost fallback for Narrrf
     if ($userId === '' && $isLocalhost) {
         error_log('🛒 Store Purchase: Using local test user (Narrrf) for localhost');
         return $LOCAL_TEST_DISCORD_ID;
@@ -378,6 +441,7 @@ try {
         'item' => [
             'item_id' => $itemId,
             'name' => (string)($item['item_name'] ?? ''),
+            'item_name' => (string)($item['item_name'] ?? ''),
             'description' => (string)($item['description'] ?? '')
         ],
         'quantity' => $quantity,

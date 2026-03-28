@@ -603,13 +603,20 @@ require_once 'discord-invite.php';
               <!-- Connect Wallet Button -->
               <div id="wallet-not-connected" class="text-center">
                 <button id="connect-phantom-btn" 
-                        class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                  🔗 Connect Phantom Wallet
-                </button>
+                class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                   🔗 Connect Solana Wallet
+               </button>
                 <p class="text-xs text-gray-400 mt-2">
-                  Make sure you have <a href="https://phantom.app/" target="_blank" class="text-blue-400 underline">Phantom wallet</a> installed
+                 Use Phantom, Solflare, Backpack, or another supported Solana wallet. Ledger users can continue through supported wallet flows.
                 </p>
+                <p class="text-xs text-cyan-300 mt-3">
+  On mobile, if wallet login or signing feels easier in your profile flow, you can also use the
+  <a href="profile.html" class="text-blue-400 underline hover:text-blue-300">Profile Verify tab</a>
+  and come back here afterward.
+</p>
               </div>
+
+
 <!-- Connected Wallet Display -->
 <div id="wallet-connected" class="hidden">
   <div class="flex items-center justify-between mb-4">
@@ -2006,8 +2013,8 @@ let connectedWallet = null;
 let connectedWalletAddress = null;
 let loadedNFTs = [];
 let isFetchingNFTs = false;
-const STAKE_LAB_LOADED_NFTS_KEY = 'narrrfs_stake_lab_loaded_nfts_v1';
-const STAKE_LAB_VERIFIED_NFTS_KEY = 'narrrfs_stake_lab_verified_nfts_v1';
+const hasVerifiedSnapshot = !!localStorage.getItem('narrrf_stake_lab_verified_snapshot');
+const hasLoadedSnapshot = !!localStorage.getItem('narrrf_stake_lab_loaded_snapshot');
 
 function isMobileWalletBrowser() {
   const ua = navigator.userAgent || '';
@@ -2859,9 +2866,9 @@ if (isMobilePhantom) {
   // 🧠 MOBILE PHANTOM SHOULD WORK LIKE DESKTOP NOW
 
   if (safeConnectBtn) {
-    safeConnectBtn.textContent = '🔌 Connect Phantom';
-    safeConnectBtn.addEventListener('click', connectPhantomWallet);
-  }
+  safeConnectBtn.textContent = '🔌 Connect Solana Wallet';
+  safeConnectBtn.addEventListener('click', connectPhantomWallet);
+}
 
   if (safeDisconnectBtn) {
     safeDisconnectBtn.classList.remove('hidden');
@@ -2891,9 +2898,9 @@ if (isMobilePhantom) {
   // DESKTOP (unchanged)
 
   if (safeConnectBtn) {
-    safeConnectBtn.textContent = '🔌 Connect Phantom';
-    safeConnectBtn.addEventListener('click', connectPhantomWallet);
-  }
+  safeConnectBtn.textContent = '🔌 Connect Solana Wallet';
+  safeConnectBtn.addEventListener('click', connectPhantomWallet);
+}
 
   if (safeDisconnectBtn) {
     safeDisconnectBtn.classList.remove('hidden');
@@ -2911,16 +2918,16 @@ if (isMobilePhantom) {
 
   renderStakeLabSavedSnapshot();
 
-  if (isMobilePhantom) {
-    const hasVerifiedSnapshot = !!localStorage.getItem('narrrf_stake_lab_verified_snapshot');
-    const hasLoadedSnapshot = !!localStorage.getItem('narrrf_stake_lab_loaded_snapshot');
+if (isMobilePhantom) {
+  const hasVerifiedSnapshot = !!localStorage.getItem(STAKE_LAB_VERIFIED_NFTS_KEY);
+  const hasLoadedSnapshot = !!localStorage.getItem(STAKE_LAB_LOADED_NFTS_KEY);
 
-    if (hasVerifiedSnapshot || hasLoadedSnapshot) {
-      setTimeout(() => {
-        restoreSavedStakeLabNfts();
-      }, 150);
-    }
+  if (hasVerifiedSnapshot || hasLoadedSnapshot) {
+    setTimeout(() => {
+      restoreSavedStakeLabNfts();
+    }, 150);
   }
+}
 }
 
 // Run on page load

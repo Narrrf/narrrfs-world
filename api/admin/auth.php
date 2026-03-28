@@ -88,18 +88,23 @@ function request_value(string $key, string $default = ''): string
  */
 function is_super_admin_request(array $adminUsers): bool
 {
-    $requestAdminUsername = request_value('admin_username');
+    $sessionIsAdmin = $_SESSION['is_admin'] ?? false;
+    $sessionRole = (string)($_SESSION['admin_role'] ?? '');
+    $sessionUsername = (string)($_SESSION['admin_username'] ?? '');
 
-    if (
-        $requestAdminUsername !== '' &&
-        isset($adminUsers[$requestAdminUsername]) &&
-        ($adminUsers[$requestAdminUsername]['role'] ?? '') === 'super_admin'
-    ) {
-        return true;
+    if (!($sessionIsAdmin === true || $sessionIsAdmin === 1 || $sessionIsAdmin === '1')) {
+        return false;
     }
 
-    $sessionRole = $_SESSION['admin_role'] ?? '';
-    return $sessionRole === 'super_admin';
+    if (strtolower($sessionRole) !== 'super_admin') {
+        return false;
+    }
+
+    if ($sessionUsername === '' || !isset($adminUsers[$sessionUsername])) {
+        return false;
+    }
+
+    return (($adminUsers[$sessionUsername]['role'] ?? '') === 'super_admin');
 }
 
 /**
@@ -111,10 +116,9 @@ function checkDiscordModeratorRole(string $discordUserId, ?string $discordBotSec
         return false;
     }
 
-    if (!$discordBotSecret) {
-        // Local/dev fallback to avoid blocking current workflows when secrets are not set.
-        return true;
-    }
+if (!$discordBotSecret) {
+    return is_localhost_request();
+}
 
     $url = "https://discord.com/api/v10/guilds/{$guildId}/members/{$discordUserId}";
 
@@ -297,6 +301,7 @@ session_start();
 $discordBotSecret = getenv('DISCORD_BOT_SECRET') ?: null;
 $moderatorRoleId = '1332049628300054679';
 $guildId = getenv('DISCORD_GUILD') ?: '1332015322546311218';
+$primaryAdminUsername = getenv('ADMIN_USERNAME') ?: 'narrrf';
 
 [$adminUsers, $usersFile] = load_admin_users();
 
@@ -476,11 +481,11 @@ switch ($action) {
             ], 400);
         }
 
-        if ($removeUsername === 'narrrf') {
-            json_response([
-                'success' => false,
-                'error' => 'Cannot remove super admin account',
-            ], 400);
+        if ($removeUsername === $primaryAdminUsername) {
+    json_response([
+        'success' => false,
+        'error' => 'Cannot remove super admin account',
+    ], 400);
         }
 
         if (!isset($adminUsers[$removeUsername])) {

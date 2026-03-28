@@ -138,7 +138,7 @@ try {
     }
 
     $pdo = getMarketplaceDatabaseConnection();
-    $pdo->exec('BEGIN IMMEDIATE TRANSACTION');
+    $pdo->beginTransaction();
 
     // 🔒 Load owned item
     $stmt = $pdo->prepare("

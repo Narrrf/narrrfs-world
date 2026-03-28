@@ -3,8 +3,9 @@
 // CORS handled by .htaccess - no duplicate headers here
 
 // Enable error reporting for debugging (disable in production)
-$isLocalhost = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || 
+$isLocalhost = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
                strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+
 if ($isLocalhost) {
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
@@ -32,29 +33,24 @@ function json_response($payload, $code = 200) {
 
 // Get user from session
 session_start();
-$LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
 
+$LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
 $session_user_id = $_SESSION['discord_id'] ?? '';
 
-// Check if user_id is provided in POST/GET (for localhost testing only)
-// Also check JSON body for POST requests
-$request_user_id = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Try POST data first
-    $request_user_id = $_POST['user_id'] ?? '';
-    // If not in POST, try JSON body
-    if (!$request_user_id) {
-        $json_input = json_decode(file_get_contents('php://input'), true);
-        $request_user_id = $json_input['user_id'] ?? '';
-    }
-} else {
-    // GET request
-    $request_user_id = $_GET['user_id'] ?? '';
+// Read JSON body once
+$rawInput = file_get_contents('php://input');
+$json_input = json_decode($rawInput, true);
+if (!is_array($json_input)) {
+    $json_input = [];
 }
 
-// SECURITY: Determine if we're on localhost
-$isLocalhost = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || 
-               strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+// Check if user_id is provided in POST/GET (for localhost testing only)
+$request_user_id = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $request_user_id = $_POST['user_id'] ?? ($json_input['user_id'] ?? '');
+} else {
+    $request_user_id = $_GET['user_id'] ?? '';
+}
 
 // SECURITY FIX: Always use session user_id in production
 // Only allow request user_id override for localhost testing
@@ -65,7 +61,7 @@ if ($isLocalhost && $request_user_id) {
 } else {
     // Production: Always use session, verify request matches session
     $user_id = $session_user_id;
-    
+
     // If request user_id provided, verify it matches session (security check)
     if ($request_user_id && $request_user_id !== $session_user_id) {
         error_log("🚨 SECURITY: Unstake Stake - user_id mismatch. Session: {$session_user_id}, Request: {$request_user_id}");
@@ -90,11 +86,7 @@ if (!$user_id) {
 }
 
 // Get request data
-$rawInput = file_get_contents('php://input');
-$data = json_decode($rawInput, true);
-if (!is_array($data)) {
-    $data = $_POST;
-}
+$data = !empty($_POST) ? $_POST : $json_input;
 
 $stake_id = isset($data['stake_id']) ? (int)$data['stake_id'] : 0;
 $unstake_reason = $data['reason'] ?? '';
