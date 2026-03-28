@@ -759,6 +759,61 @@ require_once 'discord-invite.php';
     color: #f8fafc;
   }
 
+  /* 📱 Featured Lab Banner Mobile Optimization */
+@media (max-width: 768px) {
+
+  .featured-lab-shell {
+    padding: 0.75rem 0.5rem 0.25rem;
+  }
+
+  .featured-lab-grid {
+    grid-template-columns: 1fr; /* stack instead of 2 columns */
+    padding: 1.2rem;
+    gap: 1rem;
+  }
+
+  .featured-lab-title {
+    font-size: 1.5rem;
+    line-height: 1.15;
+  }
+
+  .featured-lab-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: 0.5rem;
+  }
+
+  .featured-lab-points {
+    grid-template-columns: 1fr; /* stack points */
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+
+  .featured-lab-point {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .featured-lab-cta-row {
+    margin-top: 1rem;
+    gap: 0.5rem;
+  }
+
+  .featured-lab-button {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .featured-lab-subtext {
+    font-size: 0.75rem;
+  }
+
+  /* 👉 SIDE PANEL FIX */
+  .featured-lab-side {
+    display: none; /* 🔥 THIS IS THE BIG WIN */
+  }
+}
+
   @media (max-width: 960px) {
     .featured-lab-grid {
       grid-template-columns: 1fr;
@@ -1840,6 +1895,177 @@ require_once 'discord-invite.php';
   margin-top: 0.9rem;
 }
 
+/* 🧬 Profile Genetic Summary */
+.genetic-summary-shell {
+  position: relative;
+  z-index: 18;
+  padding: 0.5rem 1rem 1.25rem;
+}
+
+.genetic-summary-wrap {
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+.genetic-summary-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), transparent 28%),
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.10), transparent 24%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.94) 50%, rgba(17, 24, 39, 0.96) 100%);
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(255,255,255,0.04) inset;
+  padding: 1.5rem;
+}
+
+.genetic-summary-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.genetic-summary-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.42rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #082f49;
+  background: linear-gradient(135deg, #67e8f9, #22d3ee);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.24);
+}
+
+.genetic-summary-title {
+  margin: 0.9rem 0 0;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  line-height: 1.08;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.genetic-summary-text {
+  margin-top: 0.75rem;
+  max-width: 50rem;
+  color: rgba(226, 232, 240, 0.92);
+  line-height: 1.65;
+  font-size: 0.98rem;
+}
+
+.genetic-summary-actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.genetic-summary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.95rem 1.25rem;
+  border-radius: 1rem;
+  text-decoration: none;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.genetic-summary-btn:hover {
+  transform: translateY(-2px);
+}
+
+.genetic-summary-btn.primary {
+  color: #111827;
+  background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+  box-shadow: 0 14px 28px rgba(245, 158, 11, 0.28);
+}
+
+.genetic-summary-btn.ghost {
+  color: #f8fafc;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+}
+
+.genetic-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+
+.genetic-summary-tile {
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(15, 23, 42, 0.5);
+  padding: 1rem;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+.genetic-summary-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.genetic-summary-value {
+  margin-top: 0.7rem;
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.genetic-summary-hint {
+  margin-top: 0.55rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #cbd5e1;
+}
+
+.genetic-summary-footer {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+@media (max-width: 1024px) {
+  .genetic-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .genetic-summary-card {
+    padding: 1.15rem;
+  }
+
+  .genetic-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .genetic-summary-btn {
+    width: 100%;
+  }
+}
+
 @media (max-width: 1100px) {
   .profile-genetics-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1909,6 +2135,139 @@ require_once 'discord-invite.php';
   .profile-v2-preserve {
     padding-top: 0.1rem;
   }
+}
+.marketplace-highlight-shell {
+  padding: 0.75rem 1rem 1rem;
+}
+
+.marketplace-highlight-wrap {
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+.marketplace-highlight-card {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1rem;
+  padding: 1.1rem;
+
+  border-radius: 1.4rem;
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.1);
+
+  background:
+    radial-gradient(circle at top right, rgba(251,191,36,0.12), transparent 40%),
+    radial-gradient(circle at bottom left, rgba(34,211,238,0.10), transparent 40%),
+    linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95));
+
+  transition: all 0.25s ease;
+}
+
+.marketplace-highlight-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(251,191,36,0.4);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+
+.marketplace-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.marketplace-text {
+  margin-top: 0.6rem;
+  font-size: 0.95rem;
+  color: rgba(226,232,240,0.9);
+}
+
+.marketplace-btn {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
+  border-radius: 0.55rem;
+
+  background: linear-gradient(135deg, #facc15, #f59e0b);
+  font-weight: 800;
+
+  box-shadow: none; /* 👈 KEY CLEANUP */
+}
+
+.marketplace-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.marketplace-badge {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #facc15;
+}
+
+.marketplace-stats {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.marketplace-stat {
+  background: rgba(255,255,255,0.05);
+  padding: 0.6rem;
+  border-radius: 0.6rem;
+}
+
+/* 📱 Mobile */
+@media (max-width: 768px) {
+  .marketplace-highlight-card {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-right {
+    display: none; /* keep clean like lab banner */
+  }
+}
+
+/* 🔻 Title smaller */
+.marketplace-title {
+  font-size: 1.4rem; /* was ~1.8 */
+  line-height: 1.15;
+}
+
+/* 🔻 Text tighter */
+.marketplace-text {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* 🔻 CTA tighter */
+.marketplace-cta {
+  margin-top: 0.7rem;
+}
+
+.marketplace-cta-inner {
+  gap: 0.3rem;
+}
+
+
+/* 🔻 Subtext smaller */
+.marketplace-sub {
+  font-size: 0.72rem;
+}
+
+/* 🔻 Right side tighter */
+.marketplace-right {
+  gap: 0.5rem;
+}
+
+.marketplace-stat {
+  padding: 0.45rem;
+  font-size: 0.75rem;
+}
+
+/* 🔻 Kicker smaller */
+.marketplace-kicker {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
 }
 </style>
 </head>
@@ -2071,6 +2430,112 @@ require_once 'discord-invite.php';
         </div>
       </div>
     </a>
+  </div>
+</section>
+
+<section class="marketplace-highlight-shell">
+  <div class="marketplace-highlight-wrap">
+
+    <a href="lab.html#genetic-marketplace-section" class="marketplace-highlight-card">
+
+      <div class="marketplace-highlight-left">
+        <div class="marketplace-kicker">🛒 Genetic Marketplace</div>
+
+        <h2 class="marketplace-title">
+          Upgrade Faster. Trade Smarter.
+        </h2>
+
+        <p class="marketplace-text">
+          Buy boosters, list genetic items, and accelerate your lab progress.
+          The marketplace connects your inventory, lab upgrades, and future game power.
+        </p>
+
+<div class="marketplace-cta">
+  <div class="marketplace-cta-inner">
+    <span class="marketplace-btn">🛍️ OPEN MARKETPLACE</span>
+    <span class="marketplace-sub">Live trading • Real progression impact</span>
+  </div>
+</div>
+
+</div> <!-- ✅ CLOSE LEFT BLOCK -->
+
+<div class="marketplace-right">
+        <div class="marketplace-badge">🔥 LIVE MARKET</div>
+
+        <div class="marketplace-stats">
+          <div class="marketplace-stat">
+            <span class="stat-label">Boosters</span>
+            <span class="stat-value">Tradeable</span>
+          </div>
+          <div class="marketplace-stat">
+            <span class="stat-label">Items</span>
+            <span class="stat-value">Player Owned</span>
+          </div>
+          <div class="marketplace-stat">
+            <span class="stat-label">Power</span>
+            <span class="stat-value">Real Impact</span>
+          </div>
+        </div>
+      </div>
+
+    </a>
+
+  </div>
+</section>
+
+<!-- 🧬 Genetic Summary Section  Lab Status-->
+<section class="genetic-summary-shell">
+  <div class="genetic-summary-wrap">
+    <div class="genetic-summary-card">
+      <div class="genetic-summary-top">
+        <div>
+          <div class="genetic-summary-kicker">🧬 Genetic System</div>
+          <h2 class="genetic-summary-title">Your Genetic & Lab Status</h2>
+          <p class="genetic-summary-text">
+            Quick overview of your owned Genetic items, active upgrades, marketplace activity, and booster inventory.
+          </p>
+        </div>
+
+        <div class="genetic-summary-actions">
+          <a href="lab.html#genetic-marketplace-section" class="genetic-summary-btn primary">
+            🏪 Open Marketplace
+          </a>
+          <a href="lab.html" class="genetic-summary-btn ghost">
+            ⚗️ Open Lab
+          </a>
+        </div>
+      </div>
+
+      <div class="genetic-summary-grid">
+        <div class="genetic-summary-tile">
+          <div class="genetic-summary-label">Owned Genetic Items</div>
+          <div class="genetic-summary-value" id="profileGeneticOwnedCount">—</div>
+          <div class="genetic-summary-hint" id="profileGeneticOwnedHint">Loading inventory…</div>
+        </div>
+
+        <div class="genetic-summary-tile">
+          <div class="genetic-summary-label">Active Upgrades</div>
+          <div class="genetic-summary-value" id="profileGeneticActiveUpgradesCount">—</div>
+          <div class="genetic-summary-hint" id="profileGeneticActiveUpgradesHint">Loading upgrade state…</div>
+        </div>
+
+        <div class="genetic-summary-tile">
+          <div class="genetic-summary-label">Active Listings</div>
+          <div class="genetic-summary-value" id="profileGeneticActiveListingsCount">—</div>
+          <div class="genetic-summary-hint" id="profileGeneticActiveListingsHint">Loading marketplace data…</div>
+        </div>
+
+        <div class="genetic-summary-tile">
+          <div class="genetic-summary-label">Boosters Owned</div>
+          <div class="genetic-summary-value" id="profileGeneticBoostersOwnedCount">—</div>
+          <div class="genetic-summary-hint" id="profileGeneticBoostersOwnedHint">Loading booster inventory…</div>
+        </div>
+      </div>
+
+      <div class="genetic-summary-footer" id="profileGeneticSummaryStatus">
+        Syncing Lab and Genetic summary…
+      </div>
+    </div>
   </div>
 </section>
 
@@ -11094,6 +11559,9 @@ function renderProfileGeneticOwnedCard(item) {
       || null;
     const highest = items.slice().sort((a, b) => (Number(b.current_level || 0) - Number(a.current_level || 0)))[0] || null;
     const activity = buildProfileGeneticActivity(items);
+    const ownedPreviewItems = items.slice()
+  .sort((a, b) => Number(b.current_level || 0) - Number(a.current_level || 0))
+  .slice(0, 4);
     const activeRuntime = active ? getGeneticRuntimeState(active) : 'idle';
     const activeProgress = active ? getGeneticProgressPercent(active) : 0;
     const accessCopy = holder.can_buy
@@ -11178,6 +11646,19 @@ function renderProfileGeneticOwnedCard(item) {
               </div>
             `}
           </article>
+
+          <article class="profile-genetics-owned-card-wrap">
+  <div class="profile-genetics-section-title">🎒 Owned Genetic Items</div>
+  ${ownedPreviewItems.length ? `
+    <div class="profile-genetics-owned-grid">
+      ${ownedPreviewItems.map(renderProfileGeneticOwnedCard).join('')}
+    </div>
+  ` : `
+    <div class="profile-genetics-empty">
+      No owned Genetic Items are available for preview yet on this profile.
+    </div>
+  `}
+</article>
 
           <div class="profile-genetics-shell">
             <article class="profile-genetics-activity-card">
@@ -11374,6 +11855,234 @@ function renderProfileGeneticOwnedCard(item) {
     }
   });
 })();
+</script>
+<script>
+/**
+ * Safely fetch JSON and return null on failure.
+ * This keeps the profile stable even if one endpoint is unavailable.
+ */
+async function fetchJsonSafe(url, options = {}) {
+  try {
+    const response = await fetch(url, {
+      credentials: 'include',
+      ...options
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data || null;
+  } catch (error) {
+    console.warn('Profile Genetic Summary fetch failed:', url, error);
+    return null;
+  }
+}
+
+/**
+ * Set the text for a profile genetic summary metric tile.
+ */
+function setProfileGeneticMetric(valueId, hintId, value, hintText) {
+  const valueEl = document.getElementById(valueId);
+  const hintEl = document.getElementById(hintId);
+
+  if (valueEl) {
+    valueEl.textContent = String(value);
+  }
+
+  if (hintEl) {
+    hintEl.textContent = hintText;
+  }
+}
+
+/**
+ * Load the compact Genetic / Lab summary for the profile page.
+ *
+ * Safe behavior:
+ * - Uses existing session identity
+ * - Degrades cleanly when an endpoint is missing
+ * - Does not block the rest of the profile
+ */
+async function loadProfileGeneticSummary() {
+  const statusEl = document.getElementById('profileGeneticSummaryStatus');
+  const sessionDiscordId = window.sessionDiscordId || localStorage.getItem('discord_id') || '';
+
+  if (!sessionDiscordId) {
+    setProfileGeneticMetric(
+      'profileGeneticOwnedCount',
+      'profileGeneticOwnedHint',
+      '—',
+      'Login with Discord to load your Genetic inventory.'
+    );
+    setProfileGeneticMetric(
+      'profileGeneticActiveUpgradesCount',
+      'profileGeneticActiveUpgradesHint',
+      '—',
+      'Login required.'
+    );
+    setProfileGeneticMetric(
+      'profileGeneticActiveListingsCount',
+      'profileGeneticActiveListingsHint',
+      '—',
+      'Login required.'
+    );
+    setProfileGeneticMetric(
+      'profileGeneticBoostersOwnedCount',
+      'profileGeneticBoostersOwnedHint',
+      '—',
+      'Login required.'
+    );
+
+    if (statusEl) {
+      statusEl.textContent = 'Discord session not detected. Genetic summary will load after login.';
+    }
+    return;
+  }
+
+  if (statusEl) {
+    statusEl.textContent = 'Syncing your Genetic inventory, upgrades, marketplace state, and boosters…';
+  }
+
+  const [
+    geneticInventoryResponse,
+    traitUpgradesResponse,
+    marketplaceResponse,
+    boosterInventoryResponse
+  ] = await Promise.all([
+    fetchJsonSafe('/api/user/get-user-genetic-items.php'),
+    fetchJsonSafe('/api/user/get-nft-trait-upgrades.php'),
+    fetchJsonSafe('/api/admin/get-genetic-marketplace-listings.php'),
+    fetchJsonSafe('/api/user/get-lab-booster-inventory.php')
+  ]);
+
+  let ownedCount = 0;
+  let activeUpgradeCount = 0;
+  let activeListingCount = 0;
+  let boosterOwnedCount = 0;
+
+  let inventoryLoaded = false;
+  let upgradesLoaded = false;
+  let marketplaceLoaded = false;
+  let boostersLoaded = false;
+
+  if (geneticInventoryResponse?.success) {
+    const geneticItems =
+      geneticInventoryResponse?.data?.items ||
+      geneticInventoryResponse?.data?.genetic_items ||
+      geneticInventoryResponse?.items ||
+      [];
+
+    if (Array.isArray(geneticItems)) {
+      ownedCount = geneticItems.length;
+      activeListingCount = geneticItems.filter(item => {
+        const listed =
+          item?.is_listed_for_sale === 1 ||
+          item?.is_listed_for_sale === '1' ||
+          item?.is_listed_for_sale === true ||
+          item?.listed_listing_id;
+        return Boolean(listed);
+      }).length;
+      inventoryLoaded = true;
+    }
+  }
+
+  if (traitUpgradesResponse?.success) {
+    const upgrades =
+      traitUpgradesResponse?.data?.upgrades ||
+      traitUpgradesResponse?.upgrades ||
+      [];
+
+    if (Array.isArray(upgrades)) {
+      activeUpgradeCount = upgrades.filter(upgrade => {
+        const status = String(upgrade?.upgrade_status || '').toLowerCase();
+        return status === 'upgrading' || status === 'ready' || status === 'ready_to_claim';
+      }).length;
+      upgradesLoaded = true;
+    }
+  }
+
+  if (marketplaceResponse?.success) {
+    const listings =
+      marketplaceResponse?.data?.listings ||
+      marketplaceResponse?.listings ||
+      [];
+
+    if (Array.isArray(listings)) {
+      const mySellerListings = listings.filter(listing => {
+        return String(listing?.seller_user_id || '') === String(sessionDiscordId);
+      });
+
+      if (!inventoryLoaded) {
+        activeListingCount = mySellerListings.length;
+      }
+
+      marketplaceLoaded = true;
+    }
+  }
+
+  if (boosterInventoryResponse?.success) {
+    const boosters =
+      boosterInventoryResponse?.data?.items ||
+      boosterInventoryResponse?.data?.inventory ||
+      boosterInventoryResponse?.items ||
+      [];
+
+    if (Array.isArray(boosters)) {
+      boosterOwnedCount = boosters.reduce((sum, booster) => {
+        return sum + Math.max(0, Number(booster?.quantity || 0));
+      }, 0);
+      boostersLoaded = true;
+    }
+  }
+
+  setProfileGeneticMetric(
+    'profileGeneticOwnedCount',
+    'profileGeneticOwnedHint',
+    inventoryLoaded ? ownedCount : '—',
+    inventoryLoaded ? 'User-bound Genetic items currently owned.' : 'Inventory endpoint unavailable right now.'
+  );
+
+  setProfileGeneticMetric(
+    'profileGeneticActiveUpgradesCount',
+    'profileGeneticActiveUpgradesHint',
+    upgradesLoaded ? activeUpgradeCount : '—',
+    upgradesLoaded ? 'Includes upgrading and ready-to-claim Lab progress.' : 'Upgrade endpoint unavailable right now.'
+  );
+
+  setProfileGeneticMetric(
+    'profileGeneticActiveListingsCount',
+    'profileGeneticActiveListingsHint',
+    (inventoryLoaded || marketplaceLoaded) ? activeListingCount : '—',
+    (inventoryLoaded || marketplaceLoaded) ? 'Listings currently active in the Genetic marketplace.' : 'Marketplace endpoint unavailable right now.'
+  );
+
+  setProfileGeneticMetric(
+    'profileGeneticBoostersOwnedCount',
+    'profileGeneticBoostersOwnedHint',
+    boostersLoaded ? boosterOwnedCount : '—',
+    boostersLoaded ? 'Total Lab boosters in your inventory.' : 'Booster inventory endpoint unavailable right now.'
+  );
+
+  const loadedCount = [inventoryLoaded, upgradesLoaded, marketplaceLoaded, boostersLoaded].filter(Boolean).length;
+
+  if (statusEl) {
+    if (loadedCount === 4) {
+      statusEl.textContent = 'Genetic and Lab status synced successfully.';
+    } else if (loadedCount > 0) {
+      statusEl.textContent = 'Partial Genetic summary loaded. Some endpoints are currently unavailable.';
+    } else {
+      statusEl.textContent = 'Unable to load Genetic summary right now, but the rest of your profile remains stable.';
+    }
+  }
+}
+
+/**
+ * Boot the compact profile genetic summary after the page is ready.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  loadProfileGeneticSummary();
+});
 </script>
 
 </body>

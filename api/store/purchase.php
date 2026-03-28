@@ -76,11 +76,15 @@ function get_request_data(): array {
  */
 function get_authorization_header(): string {
     if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
-        return (string)$_SERVER['HTTP_AUTHORIZATION'];
+        return trim((string)$_SERVER['HTTP_AUTHORIZATION']);
     }
 
     if (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        return (string)$_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+        return trim((string)$_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
+    }
+
+    if (!empty($_SERVER['Authorization'])) {
+        return trim((string)$_SERVER['Authorization']);
     }
 
     if (function_exists('getallheaders')) {
@@ -88,7 +92,7 @@ function get_authorization_header(): string {
         if (is_array($headers)) {
             foreach ($headers as $key => $value) {
                 if (strtolower((string)$key) === 'authorization') {
-                    return (string)$value;
+                    return trim((string)$value);
                 }
             }
         }
@@ -132,20 +136,31 @@ function resolve_user_id(array $request): string {
     $requestUserId = trim((string)($request['user_id'] ?? ''));
     $isLocalhost = is_localhost_env();
 
-    // 1) Trusted internal bot/service auth
-    $expectedToken = get_internal_api_secret();
-    $authHeader = get_authorization_header();
+    $expectedToken = trim((string)get_internal_api_secret());
+    $authHeader = trim((string)get_authorization_header());
     $providedToken = '';
 
     if (stripos($authHeader, 'Bearer ') === 0) {
         $providedToken = trim(substr($authHeader, 7));
     }
 
+    $hasBearerHeader = $providedToken !== '';
+    $looksLikeInternalRequest = $hasBearerHeader || ($requestUserId !== '' && $sessionUserId === '');
+
     $isTrustedInternal =
         $expectedToken !== '' &&
         $providedToken !== '' &&
         hash_equals($expectedToken, $providedToken);
 
+    error_log('[STORE PURCHASE AUTH DEBUG] expectedTokenPresent=' . ($expectedToken !== '' ? 'yes' : 'no'));
+    error_log('[STORE PURCHASE AUTH DEBUG] authHeaderPresent=' . ($authHeader !== '' ? 'yes' : 'no'));
+    error_log('[STORE PURCHASE AUTH DEBUG] providedTokenPresent=' . ($providedToken !== '' ? 'yes' : 'no'));
+    error_log('[STORE PURCHASE AUTH DEBUG] trustedInternal=' . ($isTrustedInternal ? 'yes' : 'no'));
+    error_log('[STORE PURCHASE AUTH DEBUG] sessionUserId=' . ($sessionUserId !== '' ? $sessionUserId : '[empty]'));
+    error_log('[STORE PURCHASE AUTH DEBUG] requestUserId=' . ($requestUserId !== '' ? $requestUserId : '[empty]'));
+    error_log('[STORE PURCHASE AUTH DEBUG] looksLikeInternalRequest=' . ($looksLikeInternalRequest ? 'yes' : 'no'));
+
+    // 1) Valid trusted bot/internal request
     if ($isTrustedInternal) {
         if ($requestUserId === '') {
             json_response([
@@ -158,16 +173,32 @@ function resolve_user_id(array $request): string {
         return $requestUserId;
     }
 
-    // 2) Localhost testing: allow explicit request user_id
+    // 2) Localhost testing
     if ($isLocalhost && $requestUserId !== '') {
         error_log("🛒 Store Purchase: Using request user_id for localhost testing: {$requestUserId}");
         return $requestUserId;
     }
 
-    // 3) Production browser/session auth
+    // 3) If this clearly looks like a bot/internal request, do NOT fall back to browser session auth
+    if ($looksLikeInternalRequest) {
+        if ($expectedToken === '') {
+            error_log('🚨 STORE PURCHASE: Internal-style request received but DISCORD_SECRET is missing on server');
+            json_response([
+                'success' => false,
+                'error' => 'Internal auth secret missing on server'
+            ], 500);
+        }
+
+        error_log('🚨 STORE PURCHASE: Internal-style request received but authorization failed');
+        json_response([
+            'success' => false,
+            'error' => 'Invalid internal authorization'
+        ], 401);
+    }
+
+    // 4) Normal browser/session auth
     $userId = $sessionUserId;
 
-    // If both are present in browser flow, they must match
     if ($requestUserId !== '' && $sessionUserId !== '' && $requestUserId !== $sessionUserId) {
         error_log("🚨 SECURITY: Store Purchase - user_id mismatch. Session: {$sessionUserId}, Request: {$requestUserId}");
         json_response([
@@ -176,7 +207,7 @@ function resolve_user_id(array $request): string {
         ], 403);
     }
 
-    // 4) Localhost fallback for Narrrf
+    // 5) Localhost fallback
     if ($userId === '' && $isLocalhost) {
         error_log('🛒 Store Purchase: Using local test user (Narrrf) for localhost');
         return $LOCAL_TEST_DISCORD_ID;

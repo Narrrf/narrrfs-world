@@ -133,7 +133,8 @@ $sql = "
         c.image_type,
         c.image_path,
         c.preview_path,
-        u.username AS seller_username
+        u.username AS seller_username,
+        u.avatar_url AS seller_avatar_url
     FROM tbl_genetic_market_listings l
     LEFT JOIN tbl_genetic_trait_catalog c
         ON c.catalog_id = l.catalog_id
@@ -153,6 +154,7 @@ $sql = "
             'listing_id' => (int)($row['listing_id'] ?? 0),
             'seller_user_id' => (string)($row['seller_user_id'] ?? ''),
             'seller_username' => (string)($row['seller_username'] ?? 'Holder'),
+            'seller_avatar_url' => (string)($row['seller_avatar_url'] ?? ''),
             'genetic_item_id' => (int)($row['genetic_item_id'] ?? 0),
             'trait_type' => (string)($row['trait_type'] ?? ''),
             'trait_value' => (string)($row['trait_value'] ?? ''),

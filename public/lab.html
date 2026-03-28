@@ -834,6 +834,24 @@
   box-shadow: 0 6px 18px rgba(245, 158, 11, 0.22);
 }
 
+.marketplace-seller-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.marketplace-seller-avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.14);
+  box-shadow: 0 0 14px rgba(59,130,246,0.16);
+  background: rgba(255,255,255,0.06);
+}
+
 .trait-level-badge::before {
   content: "🧀";
   font-size: 0.78rem;
@@ -1285,6 +1303,24 @@ body::after {
   background: rgba(34, 211, 238, 0.24) !important;
   opacity: 0.24 !important;
   filter: blur(56px) !important;
+}
+
+.marketplace-seller-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.marketplace-seller-avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.14);
+  box-shadow: 0 0 14px rgba(59,130,246,0.16);
+  background: rgba(255,255,255,0.06);
 }
 
 /* give main glass panels a more obvious lab-card style */
@@ -2975,6 +3011,7 @@ body::after {
     </section>
 
     <section id="lab-panel-genetic-marketplace" class="lab-tab-panel" hidden>
+      <div id="genetic-marketplace-section" class="genetic-panel-grid">
   <div class="genetic-panel-grid">
     <div class="glass p-5 md:p-6">
       <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -7191,6 +7228,7 @@ function renderGeneticMarketplaceCard(item) {
   const currentLevel = Math.max(1, safeNumber(item.current_level, 1));
   const sellerName = item.seller_username || item.seller_name || 'Unknown Seller';
   const price = Math.max(0, safeNumber(item.price_dspoinc, 0));
+  const sellerAvatarUrl = item.seller_avatar_url || item.avatar_url || 'img/grumpy-cheese.png';
 
   return `
     <article class="genetic-card ${escapeHtml(rarityClass)} genetic-card-live">
@@ -7220,10 +7258,25 @@ function renderGeneticMarketplaceCard(item) {
         <div class="meta-box"><div class="label">Price</div><div class="value">${formatNumber(price)} DSPOINC</div></div>
       </div>
 
-      <div class="genetic-card-meta">
-        <div class="meta-box"><div class="label">Seller</div><div class="value">${escapeHtml(sellerName)}</div></div>
-        <div class="meta-box"><div class="label">Status</div><div class="value">Active Listing</div></div>
+<div class="genetic-card-meta">
+  <div class="meta-box">
+    <div class="label">Seller</div>
+    <div class="value">
+      <div class="marketplace-seller-row">
+        <img
+          class="marketplace-seller-avatar"
+          src="${escapeHtml(sellerAvatarUrl || 'img/grumpy-cheese.png')}"
+          alt="${escapeHtml(sellerName)}"
+          title="${escapeHtml(sellerName)}"
+          loading="lazy"
+          onerror="this.onerror=null;this.src='img/grumpy-cheese.png';"
+        />
+        <span>${escapeHtml(sellerName)}</span>
       </div>
+    </div>
+  </div>
+  <div class="meta-box"><div class="label">Status</div><div class="value">Active Listing</div></div>
+</div>
 
       <div class="genetic-card-actions">
         ${renderGeneticMarketplaceBuyAction(item)}
@@ -7789,6 +7842,21 @@ function switchLabTab(tabName) {
   }
 }
 
+// 🧭 Handle deep linking AFTER Lab is ready
+function handleLabDeepLink() {
+  const hash = window.location.hash;
+  if (!hash) return;
+
+  if (hash.includes('genetic-marketplace')) {
+    switchLabTab('genetic-marketplace');
+
+    setTimeout(() => {
+      const el = document.querySelector(hash);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 150);
+  }
+}
+
 function bindLabTabs() {
   if (!el.tabButtons) return;
   el.tabButtons.forEach(button => {
@@ -7798,7 +7866,34 @@ function bindLabTabs() {
     });
   });
 }
+
+function handleLabDeepLink() {
+  const hash = window.location.hash || '';
+
+  if (hash.includes('genetic-marketplace')) {
+    switchLabTab('genetic-marketplace');
+
+    setTimeout(() => {
+      const target = document.querySelector(hash);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 150);
+
+    return true;
+  }
+
+  return false;
+}
+
 function autoOpenMyGenesisLabOnLogin() {
+  const hash = window.location.hash || '';
+  const isMarketplaceDeepLink = hash.includes('genetic-marketplace');
+
+  if (isMarketplaceDeepLink) {
+    return;
+  }
+
   const hasSession = !!state.userId;
   const verifiedGenesis = getVerifiedGenesisNfts();
 
@@ -7963,7 +8058,11 @@ await Promise.all([
 ]);
 
 renderAll();
+// 🧭 Handle deep link AFTER full render (CRITICAL)
+handleLabDeepLink();
+
 logLab('Lab runtime ready.', 'success');
+
   } catch (error) {
     logLab(`Lab boot failed: ${error.message}`, 'error');
     alert(`Lab failed to load: ${error.message}`);
@@ -8012,6 +8111,20 @@ el.traitGrid?.addEventListener('keydown', event => {
   const traitKey = toggleButton.getAttribute('data-trait-key') || '';
   toggleExpandedTraitKey(traitKey);
   renderTraitGrid();
+});
+
+el.geneticMarketplaceGrid?.addEventListener('click', event => {
+  const buyButton = event.target.closest('[data-buy-genetic-marketplace-listing]');
+  if (!buyButton) {
+    return;
+  }
+
+  const listingId = buyButton.getAttribute('data-buy-genetic-marketplace-listing') || '';
+  if (!listingId || buyButton.disabled || state.actionInFlight) {
+    return;
+  }
+
+  handleBuyGeneticMarketplaceListing(listingId);
 });
 
 
@@ -8125,6 +8238,7 @@ if (href === '#lab-tab-my-genesis') {
   });
 }
 
+
 function refreshGenesisChamberForMobilePaint() {
   if (!state.selectedNft) {
     return;
@@ -8160,7 +8274,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   logLab('This page prefers stable read APIs and only activates live upgrade actions when dedicated endpoints are detected.', 'info');
 
   await loadLab();
+
+const handledDeepLink = handleLabDeepLink();
+if (!handledDeepLink) {
   autoOpenMyGenesisLabOnLogin();
+}
 
   if (window.innerWidth <= 768) {
     requestAnimationFrame(() => {

@@ -72,21 +72,26 @@ function ensure_admin_access() {
 
     $isAdmin = $_SESSION['is_admin'] ?? false;
     $adminRole = strtolower(trim((string)($_SESSION['admin_role'] ?? '')));
-
-    $discordAdminAuthenticated = $_SESSION['admin_authenticated'] ?? false;
-    $discordUserRole = strtolower(trim((string)($_SESSION['user_role'] ?? '')));
+    $adminDiscordId = trim((string)($_SESSION['admin_discord_id'] ?? ''));
+    $adminAuthType = strtolower(trim((string)($_SESSION['admin_auth_type'] ?? '')));
 
     $allowedRoles = ['moderator', 'admin', 'owner', 'super_admin'];
 
-    $hasLegacyAdminAccess =
-        ($isAdmin === true || $isAdmin === 1 || $isAdmin === '1') ||
-        in_array($adminRole, $allowedRoles, true);
+    $hasAdminFlag = ($isAdmin === true || $isAdmin === 1 || $isAdmin === '1');
+    $hasAllowedRole = in_array($adminRole, $allowedRoles, true);
 
-    $hasDiscordAdminAccess =
-        ($discordAdminAuthenticated === true || $discordAdminAuthenticated === 1 || $discordAdminAuthenticated === '1') &&
-        in_array($discordUserRole, $allowedRoles, true);
+    // Supports both password admin login and Discord moderator login,
+    // because auth.php stores both through store_admin_session().
+    $hasSessionAdminAccess = $hasAdminFlag && $hasAllowedRole;
 
-    if ($hasLegacyAdminAccess || $hasDiscordAdminAccess) {
+    // Extra safety: Discord auth should have a Discord ID when auth_type=discord.
+    $hasDiscordSessionAccess =
+        $adminAuthType === 'discord' &&
+        $adminDiscordId !== '' &&
+        $hasAdminFlag &&
+        $hasAllowedRole;
+
+    if ($hasSessionAdminAccess || $hasDiscordSessionAccess) {
         return true;
     }
 
