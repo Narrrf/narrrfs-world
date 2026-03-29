@@ -80,11 +80,8 @@ function ensure_admin_access() {
     $hasAdminFlag = ($isAdmin === true || $isAdmin === 1 || $isAdmin === '1');
     $hasAllowedRole = in_array($adminRole, $allowedRoles, true);
 
-    // Supports both password admin login and Discord moderator login,
-    // because auth.php stores both through store_admin_session().
     $hasSessionAdminAccess = $hasAdminFlag && $hasAllowedRole;
 
-    // Extra safety: Discord auth should have a Discord ID when auth_type=discord.
     $hasDiscordSessionAccess =
         $adminAuthType === 'discord' &&
         $adminDiscordId !== '' &&

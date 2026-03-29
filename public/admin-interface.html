@@ -1410,21 +1410,29 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <select id="geneticAdminTypeFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyGeneticAdminStoreFilters()">
-            <option value="">All Types</option>
-            <option value="Outfit">Outfit</option>
-            <option value="Accessories">Accessories</option>
-          </select>
-          <select id="geneticAdminRarityFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyGeneticAdminStoreFilters()">
-            <option value="">All Rarities</option>
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare">Rare</option>
-            <option value="legendary">Legendary</option>
-          </select>
-          <input type="text" id="geneticAdminSearchInput" placeholder="Search trait title or name..." class="px-3 py-2 rounded text-gray-800" oninput="applyGeneticAdminStoreFilters()">
-        </div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+  <select id="geneticAdminTypeFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyGeneticAdminStoreFilters()">
+    <option value="">All Types</option>
+    <option value="Outfit">Outfit</option>
+    <option value="Accessories">Accessories</option>
+  </select>
+
+  <select id="geneticAdminRarityFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyGeneticAdminStoreFilters()">
+    <option value="">All Rarities</option>
+    <option value="common">Common</option>
+    <option value="uncommon">Uncommon</option>
+    <option value="rare">Rare</option>
+    <option value="legendary">Legendary</option>
+  </select>
+
+  <select id="geneticAdminStatusFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyGeneticAdminStoreFilters()">
+    <option value="">All States</option>
+    <option value="active">Active</option>
+    <option value="hidden">Hidden / Deactivated</option>
+  </select>
+
+  <input id="geneticAdminSearchInput" type="search" placeholder="Search trait title or name..." class="px-3 py-2 rounded text-gray-800" oninput="applyGeneticAdminStoreFilters()">
+</div>
 
         <div id="geneticStoreAdminNotice" class="text-sm text-cyan-100 bg-cyan-900 bg-opacity-30 border border-cyan-500/20 rounded-lg p-3 mb-4">Genetic catalog has not been loaded yet.</div>
         <div id="geneticStoreAdminGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -13447,33 +13455,48 @@ if (window.currentInventoryUserId) {
         const discordId = localStorage.getItem('discord_id');
         const discordName = localStorage.getItem('discord_name');
         
-        if (discordId && discordName) {
-            // User is logged in via Discord on profile page
-            currentAdmin = {
-                username: discordName,
-                discord_id: discordId,
-                role: 'moderator', // Assume moderator role for now
-                auth_type: 'discord',
-                token: 'discord_auth_' + discordId,
-                has_database_access: true
-            };
-            
-            console.log('✅ Discord admin authenticated via localStorage:', currentAdmin);
-            
-            // Show admin interface elements
-            showAdminElements();
-            
-            // Show database unlock button for Discord admins
-            showDatabaseUnlockForDiscordAdmin();
-            
-            // 🚀 CRITICAL FIX: Load game stats immediately after Discord authentication
-            console.log('🚀 Loading game stats immediately after Discord localStorage auth...');
-            setTimeout(() => {
-                loadAllGameStatsForAuthenticatedUser();
-            }, 100);
-            
-            return true;
-        }
+if (discordId && discordName) {
+    console.log('🔄 Found Discord identity in localStorage, requesting real admin session...');
+
+    const authResponse = await fetch(API_BASE_URL + '/api/admin/auth.php?action=discord_auth', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            discord_user_id: discordId
+        })
+    });
+
+    const authData = await authResponse.json();
+
+    if (!authData.success || !authData.user) {
+        console.warn('❌ Discord admin session creation failed:', authData);
+        addLog?.(`❌ Discord admin session failed: ${authData.error || 'Unknown error'}`);
+        return false;
+    }
+
+    currentAdmin = {
+        username: authData.user.username || discordName || 'Discord Admin',
+        discord_id: authData.user.discord_id || discordId,
+        role: authData.user.role || 'moderator',
+        auth_type: authData.user.auth_type || 'discord',
+        token: 'discord_auth_' + (authData.user.discord_id || discordId),
+        has_database_access: true
+    };
+
+    console.log('✅ Discord admin authenticated via auth.php session:', currentAdmin);
+
+    showAdminElements();
+    showDatabaseUnlockForDiscordAdmin();
+
+    setTimeout(() => {
+        loadAllGameStatsForAuthenticatedUser();
+    }, 100);
+
+    return true;
+}
         
         console.log('❌ No Discord authentication found');
         return false;
@@ -31840,10 +31863,10 @@ function setGeneticAdminText(id, value) {
  */
 async function loadGeneticCatalogAdminStore() {
   try {
-    addLog?.('🧬 Loading Genetic Store catalog...');
-    setGeneticAdminText('geneticStoreAdminNotice', 'Loading live genetic trait catalog...');
+    addLog?.('🧬 Loading full Genetic Store catalog for admin...');
+    setGeneticAdminText('geneticStoreAdminNotice', 'Loading full genetic trait catalog for admin...');
 
-    const response = await fetch(`${API_BASE_URL}/api/user/get-genetic-trait-catalog.php`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/get-genetic-catalog-all.php`, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
       credentials: 'include'
@@ -31855,37 +31878,32 @@ async function loadGeneticCatalogAdminStore() {
       throw new Error(data?.error || `HTTP ${response.status}`);
     }
 
-    const catalog = data?.data?.catalog || {};
-    geneticAdminCatalog = [
-      ...(Array.isArray(catalog.Outfit) ? catalog.Outfit : []),
-      ...(Array.isArray(catalog.Accessories) ? catalog.Accessories : [])
-    ];
-
+    geneticAdminCatalog = Array.isArray(data?.data?.items) ? data.data.items : [];
     geneticAdminFiltered = [...geneticAdminCatalog];
 
+    applyGeneticAdminStoreFilters();
     updateGeneticAdminStoreSummary();
-    renderGeneticAdminStoreGrid();
 
     setGeneticAdminText(
       'geneticStoreAdminNotice',
-      `Loaded ${geneticAdminCatalog.length} visible genetic traits from the live catalog.`
+      `Loaded ${geneticAdminCatalog.length} total genetic catalog traits for admin management.`
     );
 
-    addLog?.(`🧬 Loaded ${geneticAdminCatalog.length} genetic store traits`);
+    addLog?.(`🧬 Loaded ${geneticAdminCatalog.length} genetic catalog traits (admin full view)`);
   } catch (error) {
     console.error('❌ loadGeneticCatalogAdminStore failed:', error);
 
     const notice = document.getElementById('geneticStoreAdminNotice');
     if (notice) {
-      notice.textContent = `Failed to load genetic catalog: ${error.message}`;
+      notice.textContent = `Failed to load full genetic catalog: ${error.message}`;
     }
 
     const grid = document.getElementById('geneticStoreAdminGrid');
     if (grid) {
-      grid.innerHTML = `<div class="text-red-300">Failed to load genetic catalog. ${error.message}</div>`;
+      grid.innerHTML = `<div class="text-red-300">Failed to load full genetic catalog. ${error.message}</div>`;
     }
 
-    addLog?.(`❌ Genetic catalog load failed: ${error.message}`);
+    addLog?.(`❌ Full genetic catalog load failed: ${error.message}`);
   }
 }
 
@@ -31895,11 +31913,17 @@ async function loadGeneticCatalogAdminStore() {
 function applyGeneticAdminStoreFilters() {
   const typeValue = (document.getElementById('geneticAdminTypeFilter')?.value || '').trim();
   const rarityValue = (document.getElementById('geneticAdminRarityFilter')?.value || '').trim().toLowerCase();
+  const statusValue = (document.getElementById('geneticAdminStatusFilter')?.value || '').trim().toLowerCase();
   const searchValue = (document.getElementById('geneticAdminSearchInput')?.value || '').trim().toLowerCase();
 
   geneticAdminFiltered = geneticAdminCatalog.filter(item => {
+    const isActive = Number(item.is_active ?? 1) === 1;
+    const isVisible = Number(item.is_visible ?? 1) === 1;
+    const status = (isActive && isVisible) ? 'active' : 'hidden';
+
     if (typeValue && String(item.trait_type || '') !== typeValue) return false;
     if (rarityValue && String(item.rarity_tier || '').toLowerCase() !== rarityValue) return false;
+    if (statusValue && status !== statusValue) return false;
 
     if (searchValue) {
       const haystack = [
@@ -32232,16 +32256,16 @@ async function toggleGeneticCatalogStatus(catalogId, currentActive, currentVisib
     const nextState = (Number(currentActive) === 1 && Number(currentVisible) === 1) ? 0 : 1;
     const actionText = nextState === 1 ? 'activated' : 'deactivated';
 
-const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-item.php', {
-  method: 'POST',
-  credentials: 'include',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    catalog_id: catalogId,
-    is_active: nextState,
-    is_visible: nextState
-  })
-});
+    const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-item.php', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        catalog_id: catalogId,
+        is_active: nextState,
+        is_visible: nextState
+      })
+    });
 
     const data = await response.json();
 
@@ -32250,8 +32274,16 @@ const response = await fetch(API_BASE_URL + '/api/admin/update-genetic-catalog-i
       return;
     }
 
+    const targetItem = geneticAdminCatalog.find(item => Number(item.catalog_id) === Number(catalogId));
+    if (targetItem) {
+      targetItem.is_active = nextState;
+      targetItem.is_visible = nextState;
+    }
+
     addLog?.(`✅ Genetic catalog item ${actionText}: #${catalogId}`);
-    await loadGeneticCatalogAdminStore();
+
+    applyGeneticAdminStoreFilters();
+    updateGeneticAdminStoreSummary();
   } catch (error) {
     console.error('❌ toggleGeneticCatalogStatus failed:', error);
     addLog?.(`❌ Genetic catalog toggle error: ${error.message}`);

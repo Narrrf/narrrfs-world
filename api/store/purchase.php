@@ -138,14 +138,57 @@ function resolve_user_id(array $request): string {
 
     $expectedToken = trim((string)get_internal_api_secret());
     $authHeader = trim((string)get_authorization_header());
-    $providedToken = '';
 
+    $providedToken = '';
+    $authSource = 'none';
+
+    // 1) Standard Bearer Authorization header
     if (stripos($authHeader, 'Bearer ') === 0) {
         $providedToken = trim(substr($authHeader, 7));
+        $authSource = 'authorization_bearer';
     }
 
-    $hasBearerHeader = $providedToken !== '';
-    $looksLikeInternalRequest = $hasBearerHeader || ($requestUserId !== '' && $sessionUserId === '');
+    // 2) Fallback custom headers for proxies/platforms that strip Authorization
+    if ($providedToken === '') {
+        $headerCandidates = [
+            $_SERVER['HTTP_X_INTERNAL_AUTH'] ?? '',
+            $_SERVER['HTTP_X_API_SECRET'] ?? '',
+            $_SERVER['HTTP_X_DISCORD_SECRET'] ?? '',
+            $_SERVER['HTTP_X_NARRRFS_INTERNAL_AUTH'] ?? '',
+        ];
+
+        foreach ($headerCandidates as $candidate) {
+            $candidate = trim((string)$candidate);
+            if ($candidate !== '') {
+                $providedToken = $candidate;
+                $authSource = 'custom_header';
+                break;
+            }
+        }
+    }
+
+    // 3) Last-resort JSON/body fallback for trusted internal callers only
+    // Keeps production working even if hosting strips all auth headers.
+    if ($providedToken === '') {
+        $bodyCandidates = [
+            $request['internal_secret'] ?? '',
+            $request['api_secret'] ?? '',
+        ];
+
+        foreach ($bodyCandidates as $candidate) {
+            $candidate = trim((string)$candidate);
+            if ($candidate !== '') {
+                $providedToken = $candidate;
+                $authSource = 'request_body';
+                break;
+            }
+        }
+    }
+
+    $hasProvidedToken = $providedToken !== '';
+    $looksLikeInternalRequest =
+        $hasProvidedToken ||
+        ($requestUserId !== '' && $sessionUserId === '');
 
     $isTrustedInternal =
         $expectedToken !== '' &&
@@ -156,6 +199,7 @@ function resolve_user_id(array $request): string {
     error_log('[STORE PURCHASE AUTH DEBUG] authHeaderPresent=' . ($authHeader !== '' ? 'yes' : 'no'));
     error_log('[STORE PURCHASE AUTH DEBUG] providedTokenPresent=' . ($providedToken !== '' ? 'yes' : 'no'));
     error_log('[STORE PURCHASE AUTH DEBUG] trustedInternal=' . ($isTrustedInternal ? 'yes' : 'no'));
+    error_log('[STORE PURCHASE AUTH DEBUG] authSource=' . $authSource);
     error_log('[STORE PURCHASE AUTH DEBUG] sessionUserId=' . ($sessionUserId !== '' ? $sessionUserId : '[empty]'));
     error_log('[STORE PURCHASE AUTH DEBUG] requestUserId=' . ($requestUserId !== '' ? $requestUserId : '[empty]'));
     error_log('[STORE PURCHASE AUTH DEBUG] looksLikeInternalRequest=' . ($looksLikeInternalRequest ? 'yes' : 'no'));
@@ -169,7 +213,7 @@ function resolve_user_id(array $request): string {
             ], 400);
         }
 
-        error_log("🛒 Store Purchase: Trusted internal request for user_id {$requestUserId}");
+        error_log("🛒 Store Purchase: Trusted internal request for user_id {$requestUserId} via {$authSource}");
         return $requestUserId;
     }
 
@@ -179,7 +223,7 @@ function resolve_user_id(array $request): string {
         return $requestUserId;
     }
 
-    // 3) If this clearly looks like a bot/internal request, do NOT fall back to browser session auth
+    // 3) Internal-style request but failed auth
     if ($looksLikeInternalRequest) {
         if ($expectedToken === '') {
             error_log('🚨 STORE PURCHASE: Internal-style request received but DISCORD_SECRET is missing on server');
