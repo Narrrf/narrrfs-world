@@ -7121,20 +7121,57 @@ function renderGeneticMarketplaceBuyAction(item) {
 }
 
 async function handleBuyGeneticMarketplaceListing(listingId) {
-  const activeListing = (Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : []).find(item => Number(item?.listing_id || 0) === Number(listingId));
+  const activeListing = (Array.isArray(state.geneticMarketplaceListings) ? state.geneticMarketplaceListings : [])
+    .find(item => Number(item?.listing_id || 0) === Number(listingId));
 
   if (!state.userId) {
-    logLab('❌ Login required before buying marketplace listings.', 'error');
+    const message = 'Login required before buying marketplace listings.';
+    logLab(`❌ ${message}`, 'error');
+
+    await showLabMessageModal({
+      eyebrow: 'Genetic Marketplace',
+      title: 'Login Required',
+      icon: '🔒',
+      message,
+      note: 'Please log in with your Discord-linked account and try again.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+
     return;
   }
 
   if (!activeListing) {
-    logLab('❌ Marketplace listing not found in the current Lab state. Refresh and try again.', 'error');
+    const message = 'Marketplace listing not found in the current Lab state.';
+    logLab(`❌ ${message} Refresh and try again.`, 'error');
+
+    await showLabMessageModal({
+      eyebrow: 'Genetic Marketplace',
+      title: 'Listing Not Found',
+      icon: '🧬',
+      message: 'This listing is no longer available in the current marketplace view.',
+      note: 'Refresh the Lab and try again.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+
     return;
   }
 
   if (String(activeListing.seller_user_id || '') === String(state.userId)) {
-    logLab('❌ You cannot buy your own marketplace listing.', 'error');
+    const message = 'You cannot buy your own marketplace listing.';
+    logLab(`❌ ${message}`, 'error');
+
+    await showLabMessageModal({
+      eyebrow: 'Genetic Marketplace',
+      title: 'Purchase Blocked',
+      icon: '⛔',
+      message,
+      note: 'Marketplace purchases are only for items listed by other players.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+
     return;
   }
 
@@ -7142,8 +7179,8 @@ async function handleBuyGeneticMarketplaceListing(listingId) {
     eyebrow: 'Genetic Marketplace',
     title: `Buy ${activeListing.display_title || activeListing.trait_value || 'Genetic Item'}?`,
     icon: '🛒',
-    message: 'This purchase transfers the full user-bound Genetic Item exactly as listed, including its preserved level snapshot.',
-    note: 'The backend remains authoritative for balance checks, ownership transfer, and duplicate-trait protection.',
+    message: 'This purchase transfers the full user-bound Genetic Item exactly as listed, including its preserved level snapshot and current upgrade state.',
+    note: 'The backend remains authoritative for balance checks, ownership transfer, listing status, and duplicate-trait protection.',
     highlightLabel: 'Price',
     highlightValue: `${formatNumber(activeListing.price_dspoinc || 0)} DSPOINC`,
     confirmText: 'Buy Listing',
@@ -7178,7 +7215,100 @@ async function handleBuyGeneticMarketplaceListing(listingId) {
     }
 
     if (!response.ok || !data?.success) {
-      throw new Error(data?.error || 'Failed to buy marketplace listing');
+      const backendError = String(data?.error || 'Failed to buy marketplace listing');
+      const backendDetails = String(data?.details || '');
+      const normalizedError = backendError.toLowerCase();
+      const normalizedDetails = backendDetails.toLowerCase();
+
+      let playerMessage = backendError;
+      let playerTitle = 'Purchase Failed';
+      let playerIcon = '⚠️';
+      let playerNote = 'Refresh the Lab if you want to verify the newest backend state.';
+
+      if (response.status === 401 || normalizedError.includes('not logged in')) {
+        playerTitle = 'Login Required';
+        playerIcon = '🔒';
+        playerMessage = 'You must be logged in to buy marketplace items.';
+        playerNote = 'Log in with your Discord-linked account and try again.';
+      } else if (
+        response.status === 403 &&
+        (
+          normalizedError.includes('only verified genesis or vip holders can buy') ||
+          normalizedError.includes('verified genesis or vip holders')
+        )
+      ) {
+        playerTitle = 'Holder Access Required';
+        playerIcon = '🛡️';
+        playerMessage = 'Only verified Genesis or VIP holders can buy Genetic Marketplace items.';
+        playerNote = 'Verify your holder status first, then try again.';
+      } else if (
+        response.status === 409 &&
+        (
+          normalizedError.includes('already own this genetic trait') ||
+          normalizedError.includes('already own this exact genetic trait') ||
+          normalizedDetails.includes('already own this genetic trait') ||
+          normalizedDetails.includes('already own this exact genetic trait')
+        )
+      ) {
+        playerTitle = 'Duplicate Trait Blocked';
+        playerIcon = '🧬';
+        playerMessage = 'You cannot buy this item because you already own this exact Genetic trait. Only one copy of the same trait is allowed per player.';
+        playerNote = 'Try a different listing or sell your current copy first if your system rules allow it.';
+      } else if (
+        response.status === 409 &&
+        (
+          normalizedError.includes('not enough dspoinc') ||
+          normalizedError.includes('insufficient') ||
+          normalizedDetails.includes('not enough dspoinc')
+        )
+      ) {
+        playerTitle = 'Not Enough DSPOINC';
+        playerIcon = '💸';
+        playerMessage = 'You do not have enough available DSPOINC to complete this purchase.';
+        playerNote = 'Frozen staking funds do not count as spendable balance.';
+      } else if (
+        response.status === 409 &&
+        (
+          normalizedError.includes('listing is no longer active') ||
+          normalizedError.includes('listing not found') ||
+          normalizedError.includes('listing finalization failed') ||
+          normalizedError.includes('item no longer exists') ||
+          normalizedError.includes('owner mismatch') ||
+          normalizedError.includes('listing reference mismatch')
+        )
+      ) {
+        playerTitle = 'Listing Unavailable';
+        playerIcon = '📭';
+        playerMessage = 'This marketplace listing is no longer available.';
+        playerNote = 'Another player may have bought it, cancelled it, or the item state changed.';
+      } else if (
+        response.status === 409 &&
+        normalizedError.includes('cannot buy your own')
+      ) {
+        playerTitle = 'Purchase Blocked';
+        playerIcon = '⛔';
+        playerMessage = 'You cannot buy your own marketplace listing.';
+        playerNote = 'List a different item or use another player account for testing.';
+      } else if (
+        response.status === 500 &&
+        (
+          normalizedDetails.includes('for') ||
+          normalizedDetails.includes('syntax error')
+        )
+      ) {
+        playerTitle = 'Marketplace Backend Error';
+        playerIcon = '🛠️';
+        playerMessage = 'The marketplace purchase failed due to a backend database error.';
+        playerNote = 'This is not a player mistake. Please refresh and try again after the backend fix is deployed.';
+      }
+
+      const finalError = new Error(playerMessage);
+      finalError.playerTitle = playerTitle;
+      finalError.playerIcon = playerIcon;
+      finalError.playerNote = playerNote;
+      finalError.backendError = backendError;
+      finalError.backendDetails = backendDetails;
+      throw finalError;
     }
 
     await Promise.allSettled([
@@ -7197,7 +7327,7 @@ async function handleBuyGeneticMarketplaceListing(listingId) {
       title: 'Purchase Complete',
       icon: '✅',
       message: `${activeListing.display_title || activeListing.trait_value || 'Genetic Item'} is now in your Genetic Inventory.`,
-      note: 'Ownership, listing state, and DSPOINC movement were finalized by the backend.',
+      note: 'Ownership, listing state, DSPOINC movement, and transferred item progression were finalized by the backend.',
       highlightLabel: 'Spent',
       highlightValue: `${formatNumber(activeListing.price_dspoinc || 0)} DSPOINC`,
       confirmText: 'Nice'
@@ -7206,13 +7336,20 @@ async function handleBuyGeneticMarketplaceListing(listingId) {
     logLab(`Marketplace purchase completed for listing #${formatNumber(listingId)}.`, 'success');
   } catch (error) {
     console.error('handleBuyGeneticMarketplaceListing failed:', error);
-    logLab(`❌ ${error.message}`, 'error');
+
+    const playerTitle = error?.playerTitle || 'Purchase Failed';
+    const playerIcon = error?.playerIcon || '⚠️';
+    const playerMessage = error?.message || 'The marketplace purchase did not complete.';
+    const playerNote = error?.playerNote || 'Refresh the Lab if you want to verify the newest backend state.';
+
+    logLab(`❌ ${playerMessage}`, 'error');
+
     await showLabMessageModal({
       eyebrow: 'Genetic Marketplace',
-      title: 'Purchase Failed',
-      icon: '⚠️',
-      message: `The marketplace purchase did not complete: ${error.message}`,
-      note: 'Refresh the Lab if you want to verify the newest backend state.',
+      title: playerTitle,
+      icon: playerIcon,
+      message: playerMessage,
+      note: playerNote,
       confirmText: 'Close',
       confirmVariant: 'danger'
     });
