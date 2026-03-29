@@ -176,7 +176,6 @@ function resolve_user_id(array $request): string {
     }
 
     // 3) Last-resort JSON/body fallback for trusted internal callers only
-    // Keeps production working even if hosting strips all auth headers.
     if ($providedToken === '') {
         $bodyCandidates = [
             $request['internal_secret'] ?? '',
@@ -203,18 +202,6 @@ function resolve_user_id(array $request): string {
         $providedToken !== '' &&
         hash_equals($expectedToken, $providedToken);
 
-    error_log('[STORE PURCHASE AUTH DEBUG] expectedTokenPresent=' . ($expectedToken !== '' ? 'yes' : 'no'));
-    error_log('[STORE PURCHASE AUTH DEBUG] authHeaderPresent=' . ($authHeader !== '' ? 'yes' : 'no'));
-    error_log('[STORE PURCHASE AUTH DEBUG] providedTokenPresent=' . ($providedToken !== '' ? 'yes' : 'no'));
-    error_log('[STORE PURCHASE AUTH DEBUG] trustedInternal=' . ($isTrustedInternal ? 'yes' : 'no'));
-    error_log('[STORE PURCHASE AUTH DEBUG] authSource=' . $authSource);
-    error_log('[STORE PURCHASE AUTH DEBUG] sessionUserId=' . ($sessionUserId !== '' ? $sessionUserId : '[empty]'));
-    error_log('[STORE PURCHASE AUTH DEBUG] requestUserId=' . ($requestUserId !== '' ? $requestUserId : '[empty]'));
-    error_log('[STORE PURCHASE AUTH DEBUG] looksLikeInternalRequest=' . ($looksLikeInternalRequest ? 'yes' : 'no'));
-    error_log('[STORE PURCHASE AUTH DEBUG] expectedTokenLength=' . strlen($expectedToken));
-    error_log('[STORE PURCHASE AUTH DEBUG] providedTokenLength=' . strlen($providedToken));
-
-
     // 1) Valid trusted bot/internal request
     if ($isTrustedInternal) {
         if ($requestUserId === '') {
@@ -237,7 +224,7 @@ function resolve_user_id(array $request): string {
     // 3) Internal-style request but failed auth
     if ($looksLikeInternalRequest) {
         if ($expectedToken === '') {
-            error_log('🚨 STORE PURCHASE: Internal-style request received but DISCORD_SECRET is missing on server');
+            error_log('🚨 STORE PURCHASE: Internal-style request received but internal auth secret is missing on server');
             json_response([
                 'success' => false,
                 'error' => 'Internal auth secret missing on server'
