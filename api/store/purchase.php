@@ -108,7 +108,15 @@ function get_internal_api_secret(): string {
     $candidates = [
         getenv('DISCORD_SECRET') ?: '',
         $_ENV['DISCORD_SECRET'] ?? '',
-        $_SERVER['DISCORD_SECRET'] ?? ''
+        $_SERVER['DISCORD_SECRET'] ?? '',
+
+        getenv('API_SECRET') ?: '',
+        $_ENV['API_SECRET'] ?? '',
+        $_SERVER['API_SECRET'] ?? '',
+
+        getenv('INTERNAL_API_SECRET') ?: '',
+        $_ENV['INTERNAL_API_SECRET'] ?? '',
+        $_SERVER['INTERNAL_API_SECRET'] ?? ''
     ];
 
     foreach ($candidates as $candidate) {
@@ -203,6 +211,11 @@ function resolve_user_id(array $request): string {
     error_log('[STORE PURCHASE AUTH DEBUG] sessionUserId=' . ($sessionUserId !== '' ? $sessionUserId : '[empty]'));
     error_log('[STORE PURCHASE AUTH DEBUG] requestUserId=' . ($requestUserId !== '' ? $requestUserId : '[empty]'));
     error_log('[STORE PURCHASE AUTH DEBUG] looksLikeInternalRequest=' . ($looksLikeInternalRequest ? 'yes' : 'no'));
+    error_log('[STORE PURCHASE AUTH DEBUG] expectedTokenHash=' . hash('sha256', $expectedToken));
+    error_log('[STORE PURCHASE AUTH DEBUG] providedTokenHash=' . hash('sha256', $providedToken));
+    error_log('[STORE PURCHASE AUTH DEBUG] expectedTokenLength=' . strlen($expectedToken));
+    error_log('[STORE PURCHASE AUTH DEBUG] providedTokenLength=' . strlen($providedToken));
+
 
     // 1) Valid trusted bot/internal request
     if ($isTrustedInternal) {
