@@ -3,8 +3,9 @@
 # Created: October 31, 2025
 # Updated: January 6, 2026 - Added three.js asset symlinks
 # Updated: January 9, 2026 - Added glyph asset symlinks
+# Updated: March 30, 2026 - Added Genetic GLB asset symlinks
 # Purpose: Auto-restore database and symlinks on every deployment
-# This script ensures partner images, three.js assets, and glyph assets persist across all deployments forever
+# This script ensures partner images, three.js assets, glyph assets, and Genetic GLB assets persist across all deployments forever
 
 echo "🚀 Narrrf's World - Render Startup Script"
 echo "=========================================="
@@ -56,6 +57,14 @@ mkdir -p "$DATA_BASE/sounds/"
 mkdir -p "$DATA_BASE/audio/"
 mkdir -p "$DATA_BASE/models/"
 mkdir -p "$DATA_BASE/videos/"
+
+# === GENETIC ASSETS (NEW) ===
+echo "🧬 Setting up genetic asset directories..."
+mkdir -p "$DATA_BASE/genetic/accessories/"
+mkdir -p "$DATA_BASE/genetic/outfit/"
+mkdir -p "$DATA_BASE/genetic/previews/accessories/"
+mkdir -p "$DATA_BASE/genetic/previews/outfit/"
+
 chmod -R 755 "$DATA_BASE/"
 chown -R www-data:www-data "$DATA_BASE/"
 
@@ -69,9 +78,15 @@ rm -rf "$WEB_BASE/sounds/"
 rm -rf "$WEB_BASE/audio/"
 rm -rf "$WEB_BASE/models/"
 rm -rf "$WEB_BASE/videos/"
+rm -rf "$WEB_BASE/genetic/accessories/"
+rm -rf "$WEB_BASE/genetic/outfit/"
+rm -rf "$WEB_BASE/genetic/previews/accessories/"
+rm -rf "$WEB_BASE/genetic/previews/outfit/"
 
 # Create parent directories in /var/www/html/ (if needed for symlinks)
 mkdir -p "$WEB_BASE/textures/"
+mkdir -p "$WEB_BASE/genetic/previews/"
+mkdir -p "$WEB_BASE/genetic/"
 mkdir -p "$WEB_BASE/"
 
 # Create symlinks from /var/www/html/ to /data/ (ALL directories needed)
@@ -84,6 +99,10 @@ ln -s "$DATA_BASE/sounds" "$WEB_BASE/sounds"
 ln -s "$DATA_BASE/audio" "$WEB_BASE/audio"
 ln -s "$DATA_BASE/models" "$WEB_BASE/models"
 ln -s "$DATA_BASE/videos" "$WEB_BASE/videos"
+ln -s "$DATA_BASE/genetic/accessories" "$WEB_BASE/genetic/accessories"
+ln -s "$DATA_BASE/genetic/outfit" "$WEB_BASE/genetic/outfit"
+ln -s "$DATA_BASE/genetic/previews/accessories" "$WEB_BASE/genetic/previews/accessories"
+ln -s "$DATA_BASE/genetic/previews/outfit" "$WEB_BASE/genetic/previews/outfit"
 
 # Set symlink permissions
 chown -h www-data:www-data "$WEB_BASE/textures/3d models" 2>/dev/null || true
@@ -95,8 +114,12 @@ chown -h www-data:www-data "$WEB_BASE/sounds" 2>/dev/null || true
 chown -h www-data:www-data "$WEB_BASE/audio" 2>/dev/null || true
 chown -h www-data:www-data "$WEB_BASE/models" 2>/dev/null || true
 chown -h www-data:www-data "$WEB_BASE/videos" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/genetic/accessories" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/genetic/outfit" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/genetic/previews/accessories" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/genetic/previews/outfit" 2>/dev/null || true
 
-echo "✅ Three.js asset symlinks created (all directories: 3d models, grass, backgrounds, blocks, plants, sounds, audio, models, videos)"
+echo "✅ Three.js asset symlinks created (all directories: 3d models, grass, backgrounds, blocks, plants, sounds, audio, models, videos, genetic accessories, genetic outfit, genetic preview accessories, genetic preview outfit)"
 
 # STEP 3.5: Create Glyph Asset Symlinks
 echo "🎮 Setting up glyph asset symlinks..."
@@ -135,6 +158,10 @@ echo "  Backgrounds Symlink: $(ls -la "$WEB_BASE/textures/" 2>/dev/null | grep -
 echo "  Sounds Symlink: $(ls -la "$WEB_BASE/" 2>/dev/null | grep -o "sounds -> /data" || echo 'MISSING')"
 echo "  Audio Symlink: $(ls -la "$WEB_BASE/" 2>/dev/null | grep -o "audio -> /data" || echo 'MISSING')"
 echo "  Models Symlink: $(ls -la "$WEB_BASE/" 2>/dev/null | grep -o "models -> /data" || echo 'MISSING')"
+echo "  Genetic Accessories Symlink: $(ls -la "$WEB_BASE/genetic/" 2>/dev/null | grep -o "accessories -> /data" || echo 'MISSING')"
+echo "  Genetic Outfit Symlink: $(ls -la "$WEB_BASE/genetic/" 2>/dev/null | grep -o "outfit -> /data" || echo 'MISSING')"
+echo "  Genetic Preview Accessories Symlink: $(ls -la "$WEB_BASE/genetic/previews/" 2>/dev/null | grep -o "accessories -> /data" || echo 'MISSING')"
+echo "  Genetic Preview Outfit Symlink: $(ls -la "$WEB_BASE/genetic/previews/" 2>/dev/null | grep -o "outfit -> /data" || echo 'MISSING')"
 echo "  Glyph3d Symlink: $(ls -la "$GLYPH_WEB_BASE/" 2>/dev/null | grep -o "glyph3d -> /data" || echo 'MISSING')"
 echo "  3D Models Files: $(find "$DATA_BASE/textures/3d models/" -type f 2>/dev/null | wc -l) files"
 echo "  Grass Files: $(find "$DATA_BASE/textures/grass/" -type f 2>/dev/null | wc -l) files"
@@ -142,6 +169,10 @@ echo "  Background Files: $(find "$DATA_BASE/textures/backgrounds/" -type f 2>/d
 echo "  Sounds Files: $(find "$DATA_BASE/sounds/" -type f 2>/dev/null | wc -l) files"
 echo "  Audio Files: $(find "$DATA_BASE/audio/" -type f 2>/dev/null | wc -l) files"
 echo "  Model Files: $(find "$DATA_BASE/models/" -type f 2>/dev/null | wc -l) files"
+echo "  Genetic Accessories Files: $(find "$DATA_BASE/genetic/accessories/" -type f 2>/dev/null | wc -l) files"
+echo "  Genetic Outfit Files: $(find "$DATA_BASE/genetic/outfit/" -type f 2>/dev/null | wc -l) files"
+echo "  Genetic Preview Accessories Files: $(find "$DATA_BASE/genetic/previews/accessories/" -type f 2>/dev/null | wc -l) files"
+echo "  Genetic Preview Outfit Files: $(find "$DATA_BASE/genetic/previews/outfit/" -type f 2>/dev/null | wc -l) files"
 echo "  Glyph3d Files: $(find "$GLYPH_DATA_BASE/glyph3d/" -type f 2>/dev/null | wc -l) files"
 echo "  Database: $([ -f /var/www/html/db/narrrf_world.sqlite ] && echo 'EXISTS' || echo 'MISSING')"
 
@@ -151,4 +182,3 @@ echo "=========================================="
 
 # STEP 5: Start Apache
 exec apache2-foreground
-

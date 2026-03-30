@@ -124,6 +124,12 @@ public/textures/backgrounds/
 # 📋 Rules - Local Development Only (DO NOT COMMIT TO PRODUCTION)
 12.0/RULES/
 
+# 📋 Internal Status / Ops Docs - Local Only
+12.0/ACTIVE_STATUS/asset-upload-instructions-symlink.md
+
+# 🧬 Genetic GLB Assets (DO NOT COMMIT - uploaded via API to /data/)
+public/three.js/public/genetic/
+
 # 🧩 Glyph 3D Development - Local Only
 glyph 3d/
 

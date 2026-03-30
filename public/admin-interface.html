@@ -10439,29 +10439,154 @@ function renderAdminPlayerStakingOverview(stakingStats, stakingActivity) {
   `;
 }
 
-function renderAdminPlayerProfile(profile) {
-  const container = document.getElementById('adminPlayerProfileResult');
-  if (!container) return;
 
+function getAdminPlayerProfileMetricValue(primaryValue, fallbackValue) {
+  if (primaryValue === null || primaryValue === undefined || primaryValue === '') {
+    return fallbackValue;
+  }
+
+  return primaryValue;
+}
+
+function renderAdminPlayerProfileSubtabButtons(activeTab) {
+  const tabs = [
+    ['overview', '🧠 Overview'],
+    ['lab', '🧬 Lab'],
+    ['inventory', '🎒 Inventory & Store'],
+    ['staking', '🧊 Staking'],
+    ['games', '🎮 Games & Achievements'],
+    ['traits', '🎴 Traits & NFTs'],
+    ['history', '📜 History / Admin Actions']
+  ];
+
+  return `
+    <div class="flex flex-wrap gap-2">
+      ${tabs.map(([tabId, label]) => `
+        <button
+          type="button"
+          onclick="switchAdminPlayerProfileSubtab('${tabId}')"
+          class="px-4 py-2 rounded-lg border transition-all duration-200 ${activeTab === tabId
+            ? 'bg-cyan-600 text-white border-cyan-400 shadow-lg shadow-cyan-900/30'
+            : 'bg-gray-800/70 text-gray-200 border-gray-600 hover:border-cyan-500 hover:text-white'}"
+        >
+          ${label}
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderAdminPlayerProfileOverviewSection(profile) {
+  const adminLabProfile = profile.admin_lab_profile || {};
+  const summary = adminLabProfile.summary || {};
+  const stakingStats = profile.staking_stats || {};
   const roles = Array.isArray(profile.roles) ? profile.roles : [];
-  const traits = Array.isArray(profile.traits) ? profile.traits : [];
   const traitSummary = Array.isArray(profile.trait_summary) ? profile.trait_summary : [];
+  const verificationRows = Array.isArray(adminLabProfile.verified_genesis_nfts) ? adminLabProfile.verified_genesis_nfts : [];
+
+  const formatNumberSafe = (value) => Number(value || 0).toLocaleString();
+  const showValue = (value, fallback = '—') => {
+    if (value === null || value === undefined || value === '') {
+      return fallback;
+    }
+
+    return escapeAdminProfileHtml(value);
+  };
+
+  const availableBalance = getAdminPlayerProfileMetricValue(stakingStats.available_balance, profile.balance);
+  const totalBalance = getAdminPlayerProfileMetricValue(stakingStats.total_balance, profile.balance);
+  const frozenBalance = getAdminPlayerProfileMetricValue(stakingStats.frozen_balance, 0);
+  const activeUpgradeCount = getAdminPlayerProfileMetricValue(summary.active_count, 0);
+  const readyCount = getAdminPlayerProfileMetricValue(summary.ready_count, 0);
+  const geneticCount = Array.isArray(adminLabProfile.genetic_items)
+    ? adminLabProfile.genetic_items.length
+    : getAdminPlayerProfileMetricValue(summary.genetic_inventory_count, 0);
+  const boosterCount = Array.isArray(adminLabProfile.booster_inventory)
+    ? adminLabProfile.booster_inventory.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
+    : getAdminPlayerProfileMetricValue(summary.booster_inventory_count, 0);
+
+  const overviewCards = [
+    ['Available DSPOINC', `${formatNumberSafe(availableBalance)} DSPOINC`, 'text-green-300'],
+    ['Total Ledger', `${formatNumberSafe(totalBalance)} DSPOINC`, 'text-yellow-300'],
+    ['Frozen in Stakes', `${formatNumberSafe(frozenBalance)} DSPOINC`, 'text-indigo-300'],
+    ['Genesis NFTs', formatNumberSafe(profile.genesis_count), 'text-cyan-300'],
+    ['VIP NFTs', formatNumberSafe(profile.vip_count), 'text-purple-300'],
+    ['Verified NFT Rows', formatNumberSafe(verificationRows.length || summary.verified_nft_count || 0), 'text-white'],
+    ['Genetic Items', formatNumberSafe(geneticCount), 'text-pink-300'],
+    ['Boosters Owned', formatNumberSafe(boosterCount), 'text-emerald-300'],
+    ['Active Upgrades', formatNumberSafe(activeUpgradeCount), 'text-blue-300'],
+    ['Ready To Claim', formatNumberSafe(readyCount), 'text-amber-300'],
+    ['Role Count', formatNumberSafe(roles.length), 'text-white'],
+    ['Trait Groups', formatNumberSafe(traitSummary.length), 'text-white']
+  ];
+
+  const quickFacts = [
+    ['Discord ID', showValue(profile.user_id)],
+    ['Username', showValue(profile.username)],
+    ['Wallet', showValue(profile.wallet)],
+    ['Latest Verification', showValue(profile.verified_at || profile.last_verified_at || profile.updated_at)],
+    ['Highest Trait', summary.highest_level_trait ? `${escapeAdminProfileHtml(summary.highest_level_trait)} • Lv ${formatNumberSafe(summary.highest_level || 1)}` : '—'],
+    ['Lab Power', `${formatNumberSafe(summary.total_lab_power || 0)}`]
+  ];
+
+  return `
+    <div class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        ${overviewCards.map(([label, value, accentClass]) => `
+          <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg p-4">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">${escapeAdminProfileHtml(label)}</div>
+            <div class="text-lg font-semibold mt-2 ${accentClass}">${escapeAdminProfileHtml(value)}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-gray-800/70 border border-blue-500/20 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-semibold text-white">🪪 Identity Summary</h4>
+            <span class="text-sm text-gray-400">Read-only operator view</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            ${quickFacts.map(([label, value]) => `
+              <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                <div class="text-xs text-blue-300 uppercase">${escapeAdminProfileHtml(label)}</div>
+                <div class="text-sm text-white mt-1 break-all">${value}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="bg-gray-800/70 border border-purple-500/20 rounded-lg p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-semibold text-white">⚡ Operator Quick Actions</h4>
+            <span class="text-sm text-gray-400">Scoped to existing modules</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button type="button" onclick="showTab('holderVerification')" class="game-action-btn">🎴 Holder Verification</button>
+            <button type="button" onclick="showTab('labTraitSystem')" class="game-action-btn">🧬 Open Lab / Trait System</button>
+            <button type="button" onclick="switchAdminPlayerProfileSubtab('inventory')" class="game-action-btn success">🎁 Give or inspect items</button>
+            <button type="button" onclick="switchAdminPlayerProfileSubtab('staking')" class="game-action-btn">🧊 Review staking</button>
+          </div>
+          <div class="mt-4 text-sm text-gray-300 space-y-2">
+            <div>• Backend remains authoritative.</div>
+            <div>• Genesis progression stays NFT-bound.</div>
+            <div>• Genetic progression stays user-bound.</div>
+            <div>• Available DSPOINC excludes active frozen stakes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAdminPlayerGamesAchievementsSection(profile) {
   const missionsProfile = profile.missions_profile || {};
   const games = missionsProfile.games || {};
   const allTimeStats = profile.all_time_stats || {};
   const allTimeGames = allTimeStats.games || {};
   const puzzles3DAchievements = profile.puzzles_3d_achievements || {};
   const puzzles3DStats = puzzles3DAchievements.statistics || {};
-  const adminStoreActivity = profile.admin_store_activity || {};
-  const stakingStats = profile.staking_stats || {};
-  const stakingActivity = profile.staking_activity || {};
-  const adminLabProfile = profile.admin_lab_profile || {};
-  const storeCatalog = Array.isArray(profile.store_catalog) ? profile.store_catalog : [];
 
-  /**
-   * Prefer all-time game stats when available.
-   * Fall back to missions/current-season stats only when needed.
-   */
   const cheeseHuntStats = allTimeGames.cheese_hunt || games.cheese_hunt?.stats || {};
   const tetrisStats = allTimeGames.tetris || games.tetris?.stats || {};
   const snakeStats = allTimeGames.snake || games.snake?.stats || {};
@@ -10469,30 +10594,19 @@ function renderAdminPlayerProfile(profile) {
   const discordRaceStats = allTimeGames.discord_race || games.discord_race?.stats || {};
   const cheeseRumbleStats = allTimeGames.cheese_rumble || {};
   const glyphStats = allTimeGames.glyph_memory || allTimeGames.glyph || {};
-
   const totalAchievements = Number(allTimeStats.total_achievements || 0);
 
   const formatNumberSafe = (value) => Number(value || 0).toLocaleString();
-  const safeText = (value) => escapeHtml(String(value || ''));
-  const showValue = (value) => value ? safeText(value) : '—';
-
-  /**
-   * Render score or activity values safely.
-   */
-  const showNumericOrDash = (value) => {
+  const showValue = (value) => {
     if (value === null || value === undefined || value === '') {
       return '—';
     }
-
-    return formatNumberSafe(value);
+    return escapeAdminProfileHtml(value);
   };
 
-  /**
-   * Format milliseconds into a readable time string if no formatted value exists.
-   */
   const formatTimeValue = (formattedValue, msValue) => {
     if (formattedValue) {
-      return safeText(formattedValue);
+      return escapeAdminProfileHtml(formattedValue);
     }
 
     const ms = Number(msValue || 0);
@@ -10508,9 +10622,6 @@ function renderAdminPlayerProfile(profile) {
     return `${minutes}:${String(seconds).padStart(2, '0')}.${String(remainingMs).padStart(3, '0')}`;
   };
 
-  /**
-   * Calculate a safe win rate string.
-   */
   const calculateWinRate = (wins, total) => {
     const safeWins = Number(wins || 0);
     const safeTotal = Number(total || 0);
@@ -10522,117 +10633,57 @@ function renderAdminPlayerProfile(profile) {
     return `${((safeWins / safeTotal) * 100).toFixed(1)}%`;
   };
 
-  /**
-   * Render role badges for the player.
-   */
-  const renderRoleBadges = () => {
-    if (!roles.length) {
-      return '<div class="text-gray-400">No roles found</div>';
-    }
-
-    return `
-      <div class="flex flex-wrap gap-2">
-        ${roles.map(role => `
-          <span class="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">
-            ${safeText(role)}
-          </span>
-        `).join('')}
-      </div>
-    `;
-  };
-
-  /**
-   * Render grouped NFT traits.
-   * Prefers backend-provided trait_summary so duplicates appear as x2/x3/x4.
-   * Falls back to raw traits if the API has not been upgraded yet.
-   */
-  const renderTraits = () => {
-    const traitsToRender = traitSummary.length
-      ? traitSummary
-      : traits.map(trait => ({
-          trait_type: trait.trait_type,
-          trait_value: trait.trait_value,
-          count: 1
-        }));
-
-    if (!traitsToRender.length) {
-      return '<div class="text-gray-400">No verified Genesis traits</div>';
-    }
-
-    return `
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-        ${traitsToRender.map(trait => `
-          <div class="bg-gray-800/70 rounded-lg p-3 border border-yellow-500/20">
-            <div class="text-xs text-yellow-300 uppercase">${safeText(trait.trait_type)}</div>
-            <div class="flex items-center justify-between gap-3">
-              <div class="text-sm text-white font-medium">${safeText(trait.trait_value)}</div>
-              ${Number(trait.count || 1) > 1 ? `
-                <span class="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full">
-                  x${Number(trait.count)}
-                </span>
-              ` : ''}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  };
-
-  /**
-   * Build the all-time 7-game profile cards.
-   * Falls back to seasonal missions stats only if all-time values are absent.
-   */
   const gameCards = [
     {
       title: '🧀 Cheese Hunt',
       rows: [
-        ['Total Clicks', showNumericOrDash(cheeseHuntStats.total_clicks)],
-        ['Quest Clicks', showNumericOrDash(cheeseHuntStats.quest_clicks)],
-        ['Unique Eggs', showNumericOrDash(cheeseHuntStats.unique_eggs)],
-        ['DSPOINC Earned', showNumericOrDash(cheeseHuntStats.dspoinc_earned)]
+        ['Total Clicks', formatNumberSafe(cheeseHuntStats.total_clicks)],
+        ['Quest Clicks', formatNumberSafe(cheeseHuntStats.quest_clicks)],
+        ['Unique Eggs', formatNumberSafe(cheeseHuntStats.unique_eggs)],
+        ['DSPOINC Earned', formatNumberSafe(cheeseHuntStats.dspoinc_earned)]
       ]
     },
     {
       title: '🎮 Tetris',
       rows: [
-        ['Games Played', showNumericOrDash(tetrisStats.total_games || tetrisStats.games_played)],
-        ['Best Score', showNumericOrDash(tetrisStats.best_score)],
-        ['DSPOINC Earned', showNumericOrDash(tetrisStats.dspoinc_earned)],
+        ['Games Played', formatNumberSafe(tetrisStats.total_games || tetrisStats.games_played)],
+        ['Best Score', formatNumberSafe(tetrisStats.best_score)],
+        ['DSPOINC Earned', formatNumberSafe(tetrisStats.dspoinc_earned)],
         ['Last Played', showValue(tetrisStats.last_played)]
       ]
     },
     {
       title: '🐍 Snake',
       rows: [
-        ['Games Played', showNumericOrDash(snakeStats.total_games || snakeStats.games_played)],
-        ['Best Score', showNumericOrDash(snakeStats.best_score)],
-        ['DSPOINC Earned', showNumericOrDash(snakeStats.dspoinc_earned)],
+        ['Games Played', formatNumberSafe(snakeStats.total_games || snakeStats.games_played)],
+        ['Best Score', formatNumberSafe(snakeStats.best_score)],
+        ['DSPOINC Earned', formatNumberSafe(snakeStats.dspoinc_earned)],
         ['Last Played', showValue(snakeStats.last_played)]
       ]
     },
     {
       title: '👾 Space Invaders',
       rows: [
-        ['Games Played', showNumericOrDash(spaceInvadersStats.total_games || spaceInvadersStats.games_played)],
-        ['Best Score', showNumericOrDash(spaceInvadersStats.best_score)],
-        ['DSPOINC Earned', showNumericOrDash(spaceInvadersStats.dspoinc_earned)],
+        ['Games Played', formatNumberSafe(spaceInvadersStats.total_games || spaceInvadersStats.games_played)],
+        ['Best Score', formatNumberSafe(spaceInvadersStats.best_score)],
+        ['DSPOINC Earned', formatNumberSafe(spaceInvadersStats.dspoinc_earned)],
         ['Last Played', showValue(spaceInvadersStats.last_played)]
       ]
     },
     {
       title: '🏁 Discord Race',
       rows: [
-        ['Total Races', showNumericOrDash(discordRaceStats.total_races)],
-        ['Wins', showNumericOrDash(discordRaceStats.total_wins || discordRaceStats.wins)],
-        ['Podiums', showNumericOrDash(discordRaceStats.podium_finishes)],
-        ['DSPOINC Earned', showNumericOrDash(discordRaceStats.dspoinc_earned || discordRaceStats.total_dspoinc)]
+        ['Total Races', formatNumberSafe(discordRaceStats.total_races)],
+        ['Wins', formatNumberSafe(discordRaceStats.total_wins || discordRaceStats.wins)],
+        ['Podiums', formatNumberSafe(discordRaceStats.podium_finishes)],
+        ['DSPOINC Earned', formatNumberSafe(discordRaceStats.dspoinc_earned || discordRaceStats.total_dspoinc)]
       ]
     },
     {
       title: '💥 Cheese Rumble',
       rows: [
-        ['Total Rumbles', showNumericOrDash(cheeseRumbleStats.total_rumbles)],
-        ['Wins', showNumericOrDash(cheeseRumbleStats.total_wins)],
+        ['Total Rumbles', formatNumberSafe(cheeseRumbleStats.total_rumbles)],
+        ['Wins', formatNumberSafe(cheeseRumbleStats.total_wins)],
         ['Win Rate', calculateWinRate(cheeseRumbleStats.total_wins, cheeseRumbleStats.total_rumbles)],
         ['Best Position', showValue(cheeseRumbleStats.best_position)]
       ]
@@ -10640,20 +10691,23 @@ function renderAdminPlayerProfile(profile) {
     {
       title: '🔮 Glyph Memory',
       rows: [
-        ['Total Runs', showNumericOrDash(glyphStats.total_runs)],
+        ['Total Runs', formatNumberSafe(glyphStats.total_runs)],
         ['Best Time', formatTimeValue(glyphStats.best_time_formatted, glyphStats.best_time_ms)],
         ['Average Time', formatTimeValue(glyphStats.avg_time_formatted, glyphStats.avg_time_ms)],
         ['Rank', showValue(glyphStats.rank)]
       ]
+    },
+    {
+      title: '🧩 3D Riddle Game',
+      rows: [
+        ['Unlocked', formatNumberSafe(puzzles3DStats.unlocked)],
+        ['Total Available', formatNumberSafe(puzzles3DStats.total)],
+        ['Locked', formatNumberSafe(puzzles3DStats.locked)],
+        ['Completion', puzzles3DStats.total ? `${((Number(puzzles3DStats.unlocked || 0) / Number(puzzles3DStats.total || 1)) * 100).toFixed(1)}%` : '0%']
+      ]
     }
   ];
 
-  /**
-   * Achievements use mixed sources:
-   * - total from all-time stats
-   * - classic game unlocked/total from missions payload
-   * - 3D Riddle Game from dedicated puzzles achievements API
-   */
   const achievementRows = [
     ['Unlocked Total', formatNumberSafe(totalAchievements)],
     ['Tetris', `${formatNumberSafe(games.tetris?.achievements?.unlocked)}/${formatNumberSafe(games.tetris?.achievements?.total)}`],
@@ -10665,60 +10719,8 @@ function renderAdminPlayerProfile(profile) {
     ['3D Riddle Game', `${formatNumberSafe(puzzles3DStats.unlocked)}/${formatNumberSafe(puzzles3DStats.total)}`]
   ];
 
-  container.innerHTML = `
+  return `
     <div class="space-y-6">
-      <div class="stats-card">
-        <h3 class="text-2xl font-bold mb-4">${safeText(profile.username || 'Unknown User')}</h3>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="bg-gray-800/70 rounded-lg p-4">
-            <div class="text-xs text-gray-400 uppercase">Discord ID</div>
-            <div class="text-sm text-white break-all">${safeText(profile.user_id)}</div>
-          </div>
-
-          <div class="bg-gray-800/70 rounded-lg p-4">
-            <div class="text-xs text-gray-400 uppercase">Balance</div>
-            <div class="text-lg font-bold text-yellow-300">${formatNumberSafe(profile.balance)} DSPOINC</div>
-          </div>
-
-          <div class="bg-gray-800/70 rounded-lg p-4">
-            <div class="text-xs text-gray-400 uppercase">Wallet</div>
-            <div class="text-sm text-white break-all">${showValue(profile.wallet)}</div>
-          </div>
-
-          <div class="bg-gray-800/70 rounded-lg p-4">
-            <div class="text-xs text-gray-400 uppercase">NFT Counts</div>
-            <div class="text-sm text-white">Genesis: ${formatNumberSafe(profile.genesis_count)}</div>
-            <div class="text-sm text-white">VIP: ${formatNumberSafe(profile.vip_count)}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stats-card">
-        <h4 class="text-lg font-semibold mb-4">🧊 Staking Overview</h4>
-        ${renderAdminPlayerStakingOverview(stakingStats, stakingActivity)}
-      </div>
-
-      <div class="stats-card">
-        <h4 class="text-lg font-semibold mb-4">🧬 Lab Progression</h4>
-        ${renderAdminPlayerLabSection(adminLabProfile)}
-      </div>
-
-      <div class="stats-card">
-        <h4 class="text-lg font-semibold mb-4">🎭 Roles</h4>
-        ${renderRoleBadges()}
-      </div>
-
-      <div class="stats-card">
-        <h4 class="text-lg font-semibold mb-4">🧬 NFT Traits</h4>
-        ${renderTraits()}
-      </div>
-
-      <div class="stats-card">
-        <h4 class="text-lg font-semibold mb-4">🎒 Inventory & Store Activity</h4>
-        ${renderAdminPlayerInventorySection(profile, adminStoreActivity, storeCatalog)}
-      </div>
-
       <div class="stats-card">
         <h4 class="text-lg font-semibold mb-4">🎮 Complete Game Profile</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -10728,7 +10730,7 @@ function renderAdminPlayerProfile(profile) {
               <div class="space-y-1 text-sm text-gray-200">
                 ${card.rows.map(([label, value]) => `
                   <div class="flex justify-between gap-3">
-                    <span class="text-gray-400">${label}:</span>
+                    <span class="text-gray-400">${escapeAdminProfileHtml(label)}:</span>
                     <span class="text-white text-right">${value}</span>
                   </div>
                 `).join('')}
@@ -10744,7 +10746,7 @@ function renderAdminPlayerProfile(profile) {
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
             ${achievementRows.map(([label, value]) => `
               <div class="bg-gray-900/50 rounded-lg px-4 py-3">
-                <div class="text-xs text-amber-300 uppercase">${label}</div>
+                <div class="text-xs text-amber-300 uppercase">${escapeAdminProfileHtml(label)}</div>
                 <div class="text-lg font-semibold text-white mt-1">${value}</div>
               </div>
             `).join('')}
@@ -10753,17 +10755,271 @@ function renderAdminPlayerProfile(profile) {
       </div>
     </div>
   `;
+}
 
-  /**
-   * Store the current user for inventory actions that rely on global state.
-   */
+function renderAdminPlayerTraitsNftsSection(profile) {
+  const traitSummary = Array.isArray(profile.trait_summary) ? profile.trait_summary : [];
+  const traits = Array.isArray(profile.traits) ? profile.traits : [];
+  const adminLabProfile = profile.admin_lab_profile || {};
+  const groupedNfts = groupAdminLabUpgradesByToken(adminLabProfile);
+
+  const traitsToRender = traitSummary.length
+    ? traitSummary
+    : traits.map(trait => ({
+        trait_type: trait.trait_type,
+        trait_value: trait.trait_value,
+        count: 1
+      }));
+
+  const traitHtml = traitsToRender.length
+    ? `
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+        ${traitsToRender.map(trait => `
+          <div class="bg-gray-800/70 rounded-lg p-3 border border-yellow-500/20">
+            <div class="text-xs text-yellow-300 uppercase">${escapeAdminProfileHtml(trait.trait_type)}</div>
+            <div class="flex items-center justify-between gap-3">
+              <div class="text-sm text-white font-medium">${escapeAdminProfileHtml(trait.trait_value)}</div>
+              ${Number(trait.count || 1) > 1 ? `<span class="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full">x${Number(trait.count)}</span>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `
+    : '<div class="text-gray-400">No verified Genesis traits</div>';
+
+  return `
+    <div class="space-y-6">
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🎭 Roles</h4>
+        ${Array.isArray(profile.roles) && profile.roles.length ? `
+          <div class="flex flex-wrap gap-2">
+            ${profile.roles.map(role => `
+              <span class="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">${escapeAdminProfileHtml(role)}</span>
+            `).join('')}
+          </div>
+        ` : '<div class="text-gray-400">No roles found</div>'}
+      </div>
+
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🧬 NFT Traits</h4>
+        ${traitHtml}
+      </div>
+
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🖼️ Genesis NFT Progression Snapshot</h4>
+        ${groupedNfts.length ? `
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            ${groupedNfts.map(nft => `
+              <div class="bg-gray-800/70 border border-cyan-500/20 rounded-lg p-4">
+                <div class="text-lg font-semibold text-white">${escapeAdminProfileHtml(nft.nft_name || 'Unnamed NFT')}</div>
+                <div class="text-sm text-gray-300 mt-1 break-all">Token: <span class="text-cyan-300">${escapeAdminProfileHtml(nft.token_id || '—')}</span></div>
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                  <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                    <div class="text-xs text-cyan-300 uppercase">NFT Level</div>
+                    <div class="text-lg font-semibold text-white mt-1">${Number(nft.nft_level || 0).toLocaleString()}</div>
+                  </div>
+                  <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                    <div class="text-xs text-cyan-300 uppercase">Trait Rows</div>
+                    <div class="text-lg font-semibold text-white mt-1">${Number((nft.upgrades || []).length).toLocaleString()}</div>
+                  </div>
+                  <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                    <div class="text-xs text-cyan-300 uppercase">Active</div>
+                    <div class="text-lg font-semibold text-white mt-1">${Number(nft.active_count || 0).toLocaleString()}</div>
+                  </div>
+                  <div class="bg-gray-900/50 rounded-lg px-4 py-3">
+                    <div class="text-xs text-cyan-300 uppercase">Ready</div>
+                    <div class="text-lg font-semibold text-white mt-1">${Number(nft.ready_count || 0).toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : '<div class="text-gray-400">No verified Genesis NFT progression rows found.</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderAdminPlayerHistorySection(profile) {
+  const adminStoreActivity = profile.admin_store_activity || {};
+  const purchaseHistory = Array.isArray(adminStoreActivity.purchase_history) ? adminStoreActivity.purchase_history : [];
+  const usageHistory = Array.isArray(adminStoreActivity.usage_history) ? adminStoreActivity.usage_history : [];
+  const removalHistory = Array.isArray(adminStoreActivity.removal_history) ? adminStoreActivity.removal_history : [];
+  const timeline = [
+    ...purchaseHistory.map(row => ({
+      label: 'Store Purchase',
+      accent: 'text-green-300',
+      detail: `${row.item_name || 'Unknown item'} x${Number(row.quantity || 0).toLocaleString()}`,
+      meta: `${Number(row.total_spent || row.total_price || 0).toLocaleString()} DSPOINC`,
+      when: row.purchase_date || row.created_at
+    })),
+    ...usageHistory.map(row => ({
+      label: 'Item Usage',
+      accent: 'text-blue-300',
+      detail: `${row.item_name || 'Unknown item'} x${Number(row.quantity_used || row.quantity || 0).toLocaleString()}`,
+      meta: row.usage_reason || row.notes || 'Usage recorded',
+      when: row.used_at || row.created_at
+    })),
+    ...removalHistory.map(row => ({
+      label: 'Item Removal',
+      accent: 'text-red-300',
+      detail: `${row.item_name || 'Unknown item'} x${Number(row.quantity_removed || row.quantity || 0).toLocaleString()}`,
+      meta: row.reason || row.removal_reason || 'Removal recorded',
+      when: row.removed_at || row.created_at
+    }))
+  ].sort((a, b) => new Date(b.when || 0).getTime() - new Date(a.when || 0).getTime()).slice(0, 15);
+
+  return `
+    <div class="space-y-6">
+      <div class="stats-card">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
+          <div>
+            <h4 class="text-lg font-semibold">📜 Admin Timeline</h4>
+            <p class="text-sm text-gray-300 mt-1">Recent store and inventory events visible from existing stable admin endpoints.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="searchPlayerProfile()" class="game-action-btn success">🔄 Refresh Player</button>
+            <button type="button" onclick="switchAdminPlayerProfileSubtab('inventory')" class="game-action-btn">🎒 Open Inventory & Store</button>
+            <button type="button" onclick="showTab('users')" class="game-action-btn">👥 Open User Management</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          <div class="bg-gray-800/70 border border-green-500/20 rounded-lg px-4 py-3">
+            <div class="text-xs text-green-300 uppercase">Purchases</div>
+            <div class="text-lg font-semibold text-white mt-1">${Number(purchaseHistory.length).toLocaleString()}</div>
+          </div>
+          <div class="bg-gray-800/70 border border-blue-500/20 rounded-lg px-4 py-3">
+            <div class="text-xs text-blue-300 uppercase">Usage Rows</div>
+            <div class="text-lg font-semibold text-white mt-1">${Number(usageHistory.length).toLocaleString()}</div>
+          </div>
+          <div class="bg-gray-800/70 border border-red-500/20 rounded-lg px-4 py-3">
+            <div class="text-xs text-red-300 uppercase">Removal Rows</div>
+            <div class="text-lg font-semibold text-white mt-1">${Number(removalHistory.length).toLocaleString()}</div>
+          </div>
+        </div>
+
+        <div class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+          ${timeline.length ? timeline.map(item => `
+            <div class="bg-gray-900/60 border border-gray-700/50 rounded-lg p-4">
+              <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                <div>
+                  <div class="font-semibold ${item.accent}">${escapeAdminProfileHtml(item.label)}</div>
+                  <div class="text-white mt-1">${escapeAdminProfileHtml(item.detail)}</div>
+                  <div class="text-sm text-gray-300 mt-1">${escapeAdminProfileHtml(item.meta)}</div>
+                </div>
+                <div class="text-sm text-gray-400">${formatAdminProfileDate(item.when)}</div>
+              </div>
+            </div>
+          `).join('') : `
+            <div class="text-center text-gray-400 py-10">
+              <div class="text-lg mb-2">No recent admin-visible history</div>
+              <div class="text-sm">This area is ready for future audit expansion without changing existing stable modules.</div>
+            </div>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchAdminPlayerProfileSubtab(tabId) {
+  const validTabs = new Set(['overview', 'lab', 'inventory', 'staking', 'games', 'traits', 'history']);
+  const safeTab = validTabs.has(tabId) ? tabId : 'overview';
+  window.currentAdminPlayerProfileSubtab = safeTab;
+
+  if (window.currentAdminPlayerProfileData) {
+    renderAdminPlayerProfile(window.currentAdminPlayerProfileData);
+  }
+}
+
+function renderAdminPlayerProfile(profile) {
+  const container = document.getElementById('adminPlayerProfileResult');
+  if (!container) return;
+
+  window.currentAdminPlayerProfileData = profile;
+
+  const adminStoreActivity = profile.admin_store_activity || {};
+  const stakingStats = profile.staking_stats || {};
+  const stakingActivity = profile.staking_activity || {};
+  const adminLabProfile = profile.admin_lab_profile || {};
+  const storeCatalog = Array.isArray(profile.store_catalog) ? profile.store_catalog : [];
+  const activeTab = window.currentAdminPlayerProfileSubtab || 'overview';
+
+  const tabContentMap = {
+    overview: renderAdminPlayerProfileOverviewSection(profile),
+    lab: `
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🧬 Lab Progression</h4>
+        ${renderAdminPlayerLabSection(adminLabProfile)}
+      </div>
+    `,
+    inventory: `
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🎒 Inventory & Store Activity</h4>
+        ${renderAdminPlayerInventorySection(profile, adminStoreActivity, storeCatalog)}
+      </div>
+    `,
+    staking: `
+      <div class="stats-card">
+        <h4 class="text-lg font-semibold mb-4">🧊 Staking Overview</h4>
+        ${renderAdminPlayerStakingOverview(stakingStats, stakingActivity)}
+      </div>
+    `,
+    games: renderAdminPlayerGamesAchievementsSection(profile),
+    traits: renderAdminPlayerTraitsNftsSection(profile),
+    history: renderAdminPlayerHistorySection(profile)
+  };
+
+  const formatNumberSafe = (value) => Number(value || 0).toLocaleString();
+  const summary = adminLabProfile.summary || {};
+  const headerCards = [
+    ['Discord ID', escapeAdminProfileHtml(profile.user_id || '—')],
+    ['Wallet', profile.wallet ? `<span class="break-all">${escapeAdminProfileHtml(profile.wallet)}</span>` : '—'],
+    ['Genesis / VIP', `${formatNumberSafe(profile.genesis_count)} / ${formatNumberSafe(profile.vip_count)}`],
+    ['Available DSPOINC', `${formatNumberSafe(stakingStats.available_balance ?? profile.balance)} DSPOINC`],
+    ['Active Upgrades', formatNumberSafe(summary.active_count || 0)],
+    ['Genetic Items', formatNumberSafe(summary.genetic_inventory_count || (Array.isArray(adminLabProfile.genetic_items) ? adminLabProfile.genetic_items.length : 0))]
+  ];
+
+  container.innerHTML = `
+    <div class="space-y-6">
+      <div class="stats-card">
+        <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-6">
+          <div>
+            <h3 class="text-2xl font-bold mb-2">${escapeAdminProfileHtml(profile.username || 'Unknown User')}</h3>
+            <div class="text-sm text-gray-300 max-w-3xl">
+              Full operator console for identity, lab, inventory, staking, games, traits, and admin-visible history. This layout is scoped to Player Profiles only and keeps other admin modules unchanged.
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 xl:min-w-[720px]">
+            ${headerCards.map(([label, value]) => `
+              <div class="bg-gray-800/70 rounded-lg p-4 border border-cyan-500/20">
+                <div class="text-xs text-gray-400 uppercase">${escapeAdminProfileHtml(label)}</div>
+                <div class="text-sm text-white mt-1">${value}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+          <div>
+            <h4 class="text-lg font-semibold">🧭 Player Profile Operator Console</h4>
+            <p class="text-sm text-gray-300 mt-1">Switch subtabs without losing the current player context.</p>
+          </div>
+          ${renderAdminPlayerProfileSubtabButtons(activeTab)}
+        </div>
+        <div id="adminPlayerProfileSubtabContent">${tabContentMap[activeTab] || tabContentMap.overview}</div>
+      </div>
+    </div>
+  `;
+
   window.currentInventoryUserId = profile.user_id;
-
-  /**
-   * Hydrate the give-item select after the HTML exists.
-   */
   hydrateAdminPlayerProfileItemSelect(profile.user_id, storeCatalog);
 }
+
 
 
 /**
@@ -23267,18 +23523,26 @@ function clearDiscordFeed() {
     </div>
 
 <div id="playerProfilesTab" class="admin-card mb-6" style="display: none;">
-  <h2 class="text-xl font-semibold mb-4">🧠 Player Profiles</h2>
-  <p class="text-gray-300 mb-6">
-    Search and inspect any Narrrf's World player profile.
-  </p>
+  <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-2xl font-semibold mb-2">🧠 Player Profiles</h2>
+      <p class="text-gray-300 max-w-4xl">
+        Production-safe operator console for deep per-player support. Search any Narrrf's World player and inspect identity, lab progression, inventory, staking, games, traits, and admin-visible history without leaving this tab.
+      </p>
+    </div>
+    <div class="bg-blue-900/30 text-blue-100 border border-blue-500/30 rounded-lg px-4 py-3 max-w-xl">
+      <div class="font-semibold">B-mode upgrade active</div>
+      <div class="text-sm mt-1">This Player Profiles tab now uses a multi-subtab layout and leaves the rest of the admin interface untouched.</div>
+    </div>
+  </div>
 
   <div class="mb-6 relative">
-    <div class="flex gap-4">
+    <div class="flex flex-col lg:flex-row gap-4">
       <input
         id="adminPlayerSearch"
         type="text"
         placeholder="Search by Discord ID, username, or wallet..."
-        class="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
+        class="flex-1 px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white"
         oninput="searchPlayerProfilesInstant(this.value)"
         onkeydown="if (event.key === 'Enter') searchPlayerProfile()"
         autocomplete="off"
@@ -23286,9 +23550,9 @@ function clearDiscordFeed() {
 
       <button
         onclick="searchPlayerProfile()"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg"
+        class="px-5 py-3 bg-blue-600 text-white rounded-lg"
       >
-        Search
+        Search Player
       </button>
     </div>
 

@@ -2013,8 +2013,12 @@ let connectedWallet = null;
 let connectedWalletAddress = null;
 let loadedNFTs = [];
 let isFetchingNFTs = false;
-const hasVerifiedSnapshot = !!localStorage.getItem('narrrf_stake_lab_verified_snapshot');
-const hasLoadedSnapshot = !!localStorage.getItem('narrrf_stake_lab_loaded_snapshot');
+
+const STAKE_LAB_LOADED_NFTS_KEY = 'narrrfs_stake_lab_loaded_nfts_v1';
+const STAKE_LAB_VERIFIED_NFTS_KEY = 'narrrfs_stake_lab_verified_nfts_v1';
+
+const hasVerifiedSnapshot = !!localStorage.getItem(STAKE_LAB_VERIFIED_NFTS_KEY);
+const hasLoadedSnapshot = !!localStorage.getItem(STAKE_LAB_LOADED_NFTS_KEY);
 
 function isMobileWalletBrowser() {
   const ua = navigator.userAgent || '';
