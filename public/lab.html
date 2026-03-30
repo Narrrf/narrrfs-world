@@ -2305,357 +2305,521 @@ body::after {
   }
 }
 
-
-/* 🧬 Genetic media shell reuses booster viewer language */
-.genetic-media-shell {
-  min-height: 140px;
+/* 🧬 Genetic Shop / Inventory layout */
+.genetic-access-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
 }
 
+.genetic-access-tile {
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.72);
+  padding: 14px;
+}
+
+.genetic-access-tile .eyebrow,
+.genetic-section-eyebrow {
+  font-size: 0.68rem;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.genetic-access-tile .value {
+  margin-top: 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.genetic-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.genetic-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.genetic-filter-field label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.genetic-filter-input,
+.genetic-filter-select {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.76);
+  color: #f8fafc;
+  min-height: 44px;
+  padding: 0 14px;
+  outline: none;
+}
+
+.genetic-filter-input:focus,
+.genetic-filter-select:focus {
+  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25);
+}
+
+.genetic-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.genetic-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74));
+  padding: 18px;
+  box-shadow: 0 16px 32px rgba(2, 6, 23, 0.24);
+}
+
+.genetic-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 44%);
+  pointer-events: none;
+}
+
+.genetic-card.legendary::before {
+  background: radial-gradient(circle at top right, rgba(244, 114, 182, 0.18), transparent 45%);
+}
+
+.genetic-card.rare::before {
+  background: radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 45%);
+}
+
+.genetic-card.uncommon::before {
+  background: radial-gradient(circle at top right, rgba(74, 222, 128, 0.16), transparent 45%);
+}
+
+.genetic-card.common::before {
+  background: radial-gradient(circle at top right, rgba(148, 163, 184, 0.16), transparent 45%);
+}
+
+.genetic-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.genetic-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.genetic-card-subtitle {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.genetic-rarity-badge,
+.genetic-owned-badge,
+.genetic-locked-badge,
+.genetic-listed-badge,
+.genetic-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.genetic-rarity-badge.common {
+  background: rgba(148, 163, 184, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: #cbd5e1;
+}
+
+.genetic-rarity-badge.uncommon {
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: #bbf7d0;
+}
+
+.genetic-rarity-badge.rare {
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  color: #dbeafe;
+}
+
+.genetic-rarity-badge.legendary {
+  background: rgba(244, 114, 182, 0.12);
+  border: 1px solid rgba(244, 114, 182, 0.3);
+  color: #fbcfe8;
+}
+
+.genetic-owned-badge {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #d1fae5;
+}
+
+.genetic-locked-badge {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  color: #fde68a;
+}
+
+.genetic-listed-badge {
+  background: rgba(168, 85, 247, 0.14);
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  color: #e9d5ff;
+}
+
+.genetic-status-badge.idle {
+  background: rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  color: #e2e8f0;
+}
+
+.genetic-status-badge.upgrading {
+  background: rgba(59, 130, 246, 0.16);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #dbeafe;
+}
+
+.genetic-status-badge.ready_to_claim {
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.34);
+  color: #d1fae5;
+}
+
+.genetic-card.ring-1 {
+  box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 14px 40px rgba(0,0,0,0.22);
+}
+
+.genetic-card-copy {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #cbd5e1;
+  min-height: 48px;
+}
+
+.genetic-card-meta {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.genetic-card-meta .meta-box {
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 10px 12px;
+}
+
+.genetic-card-meta .label {
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.genetic-card-meta .value {
+  margin-top: 4px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.genetic-card-actions {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.genetic-empty-state {
+  margin-top: 20px;
+  border-radius: 20px;
+  border: 1px dashed rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.42);
+  padding: 22px;
+  text-align: center;
+  color: #cbd5e1;
+}
+
+.genetic-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.genetic-summary-card {
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.72);
+  padding: 14px;
+}
+
+.genetic-summary-card .value {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #f8fafc;
+  line-height: 1.1;
+}
+
+.genetic-summary-card .label {
+  margin-top: 6px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #94a3b8;
+}
+
+.genetic-panel-grid {
+  display: grid;
+  grid-template-columns: 1.12fr 0.88fr;
+  gap: 18px;
+}
+
+.genetic-helper-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.genetic-helper-item {
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.7);
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+  .genetic-panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .genetic-card-grid,
+  .genetic-summary-grid,
+  .genetic-access-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .genetic-card-actions,
+  .genetic-card-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .genetic-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .genetic-filter-field {
+    width: 100%;
+  }
+}
+
+/* 🧬 Genetic media shell — single clean source of truth */
+.genetic-card-media {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 148px;
+  min-height: 148px;
+  margin-top: 14px;
+  border-radius: 16px;
+  border: 1px dashed rgba(148, 163, 184, 0.2);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.46), rgba(15, 23, 42, 0.18));
+  overflow: hidden;
+}
+
+.genetic-media-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 148px;
+  padding: 8px 10px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Closed-state media sizing */
 .genetic-media-image,
 .genetic-placeholder-core {
-  width: 110px;
-  height: 110px;
+  width: 70px;
+  height: 70px;
   object-fit: contain;
-  transform: translate(8px, -12px);
 }
 
+/* Closed 3D state sits slightly higher so CTA has room */
+.genetic-media-shell.has-3d-cta .genetic-media-image,
+.genetic-media-shell.has-3d-cta .genetic-placeholder-core {
+  transform: translateY(-8px);
+}
+
+/* Placeholder orb */
 .genetic-placeholder-core {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1px dashed rgba(255,255,255,0.18);
-  background: radial-gradient(circle, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.18);
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,0.14), rgba(255,255,255,0.03) 62%),
+    linear-gradient(180deg, rgba(15,23,42,0.42), rgba(15,23,42,0.12));
   backdrop-filter: blur(8px);
 }
 
 .genetic-placeholder-icon {
-  font-size: 2rem;
-  opacity: 0.9;
+  font-size: 1.5rem;
+  line-height: 1;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 10px rgba(255,255,255,0.16));
 }
 
+/* Tone glows */
 .genetic-media-shell.violet .genetic-placeholder-core {
-  box-shadow: 0 0 24px rgba(139, 92, 246, 0.18);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.18);
 }
 
 .genetic-media-shell.cyan .genetic-placeholder-core {
-  box-shadow: 0 0 24px rgba(34, 211, 238, 0.18);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.18);
 }
 
 .genetic-media-shell.amber .genetic-placeholder-core {
-  box-shadow: 0 0 24px rgba(245, 158, 11, 0.18);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.18);
 }
 
 .genetic-media-shell.blue .genetic-placeholder-core {
-  box-shadow: 0 0 24px rgba(59, 130, 246, 0.18);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.18);
 }
 
 .genetic-media-shell.slate .genetic-placeholder-core {
-  box-shadow: 0 0 24px rgba(148, 163, 184, 0.12);
+  box-shadow: 0 0 18px rgba(148, 163, 184, 0.12);
 }
 
-.genetic-card-media {
-  min-height: 124px;
+/* Never show inner title pill inside media */
+.genetic-media-shell .booster-glow-pill {
+  display: none !important;
+}
+
+/* CTA row */
+.genetic-media-cta-row {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 6px;
+  z-index: 3;
 }
 
-.genetic-media-shell {
-  min-height: 116px;
+.genetic-media-cta-button {
+  min-width: 96px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(14,165,233,0.92), rgba(37,99,235,0.92));
+  box-shadow: 0 12px 24px rgba(2,132,199,0.18);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-.genetic-media-shell .booster-glow-pill {
-  top: 6px;
-  left: 10px;
-  right: auto;
-  max-width: calc(100% - 20px);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.genetic-media-cta-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(2,132,199,0.26);
+  border-color: rgba(255,255,255,0.24);
 }
 
-.genetic-media-shell model-viewer,
-.genetic-media-shell img,
-.genetic-placeholder-core {
-  width: 96px;
-  height: 96px;
-  object-fit: contain;
-  transform: translate(8px, 4px);
+.genetic-media-cta-button.secondary {
+  background: rgba(15,23,42,0.84);
+  box-shadow: none;
+}
+
+.genetic-media-cta-button.secondary:hover {
+  box-shadow: 0 10px 18px rgba(15,23,42,0.3);
+}
+
+/* Open 3D state */
+.genetic-media-shell-open,
+.genetic-media-shell.has-3d-live {
+  min-height: 148px;
+  height: 100%;
+  padding: 6px 6px 44px;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.genetic-model-viewer-open,
+.genetic-media-shell.has-3d-live model-viewer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 96px;
+  max-width: 100%;
+  transform: none !important;
+  background: transparent;
+}
+
+/* Keep hide button under large model */
+.genetic-media-shell.has-3d-live .genetic-media-cta-row,
+.genetic-media-shell-open .genetic-media-cta-row {
+  bottom: 6px;
 }
 
 
-    /* 🧬 Genetic Shop / Inventory */
-    .genetic-access-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .genetic-access-tile {
-      border-radius: 16px;
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      background: rgba(15, 23, 42, 0.72);
-      padding: 14px;
-    }
-    .genetic-access-tile .eyebrow,
-    .genetic-section-eyebrow {
-      font-size: 0.68rem;
-      line-height: 1;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #94a3b8;
-    }
-    .genetic-access-tile .value {
-      margin-top: 8px;
-      font-size: 1rem;
-      font-weight: 800;
-      color: #f8fafc;
-    }
-    .genetic-filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: end;
-      margin-top: 18px;
-    }
-    .genetic-filter-field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-width: 150px;
-    }
-    .genetic-filter-field label {
-      font-size: 0.72rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #94a3b8;
-    }
-    .genetic-filter-input,
-    .genetic-filter-select {
-      border-radius: 12px;
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      background: rgba(15, 23, 42, 0.76);
-      color: #f8fafc;
-      min-height: 44px;
-      padding: 0 14px;
-      outline: none;
-    }
-    .genetic-filter-input:focus,
-    .genetic-filter-select:focus {
-      border-color: rgba(34, 211, 238, 0.55);
-      box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25);
-    }
-    .genetic-card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
-      gap: 16px;
-      margin-top: 20px;
-    }
-    .genetic-card {
-      position: relative;
-      overflow: hidden;
-      border-radius: 22px;
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74));
-      padding: 18px;
-      box-shadow: 0 16px 32px rgba(2, 6, 23, 0.24);
-    }
-    .genetic-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 44%);
-      pointer-events: none;
-    }
-    .genetic-card.legendary::before { background: radial-gradient(circle at top right, rgba(244, 114, 182, 0.18), transparent 45%); }
-    .genetic-card.rare::before { background: radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 45%); }
-    .genetic-card.uncommon::before { background: radial-gradient(circle at top right, rgba(74, 222, 128, 0.16), transparent 45%); }
-    .genetic-card.common::before { background: radial-gradient(circle at top right, rgba(148, 163, 184, 0.16), transparent 45%); }
-    .genetic-card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      position: relative;
-      z-index: 1;
-    }
-    .genetic-card-title {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: #f8fafc;
-      line-height: 1.2;
-    }
-    .genetic-card-subtitle {
-      margin-top: 8px;
-      font-size: 0.78rem;
-      color: #94a3b8;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-    .genetic-rarity-badge,
-    .genetic-owned-badge,
-    .genetic-locked-badge,
-    .genetic-listed-badge,
-    .genetic-status-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-    .genetic-rarity-badge.common { background: rgba(148, 163, 184, 0.16); border: 1px solid rgba(148, 163, 184, 0.28); color: #cbd5e1; }
-    .genetic-rarity-badge.uncommon { background: rgba(74, 222, 128, 0.12); border: 1px solid rgba(74, 222, 128, 0.3); color: #bbf7d0; }
-    .genetic-rarity-badge.rare { background: rgba(96, 165, 250, 0.12); border: 1px solid rgba(96, 165, 250, 0.3); color: #dbeafe; }
-    .genetic-rarity-badge.legendary { background: rgba(244, 114, 182, 0.12); border: 1px solid rgba(244, 114, 182, 0.3); color: #fbcfe8; }
-    .genetic-owned-badge { background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.3); color: #d1fae5; }
-    .genetic-locked-badge { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.28); color: #fde68a; }
-    .genetic-listed-badge { background: rgba(168, 85, 247, 0.14); border: 1px solid rgba(168, 85, 247, 0.28); color: #e9d5ff; }
-    .genetic-status-badge.idle { background: rgba(148, 163, 184, 0.14); border: 1px solid rgba(148, 163, 184, 0.24); color: #e2e8f0; }
-    .genetic-status-badge.upgrading { background: rgba(59, 130, 246, 0.16); border: 1px solid rgba(59, 130, 246, 0.3); color: #dbeafe; }
-    .genetic-status-badge.ready_to_claim { background: rgba(16, 185, 129, 0.16); border: 1px solid rgba(16, 185, 129, 0.34); color: #d1fae5; }
-    .genetic-card.ring-1 { box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 14px 40px rgba(0,0,0,0.22); }
-    .genetic-card-media {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 120px;
-      margin-top: 14px;
-      border-radius: 16px;
-      border: 1px dashed rgba(148, 163, 184, 0.2);
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.46), rgba(15, 23, 42, 0.18));
-    }
-    .genetic-card-media-emoji {
-      font-size: 2.2rem;
-      filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.44));
-    }
-    .genetic-card-copy {
-      position: relative;
-      z-index: 1;
-      margin-top: 14px;
-      font-size: 0.9rem;
-      line-height: 1.55;
-      color: #cbd5e1;
-      min-height: 48px;
-    }
-    .genetic-card-meta {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 14px;
-    }
-    .genetic-card-meta .meta-box {
-      border-radius: 14px;
-      background: rgba(15, 23, 42, 0.62);
-      border: 1px solid rgba(148, 163, 184, 0.16);
-      padding: 10px 12px;
-    }
-    .genetic-card-meta .label {
-      font-size: 0.66rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #94a3b8;
-    }
-    .genetic-card-meta .value {
-      margin-top: 4px;
-      font-size: 0.94rem;
-      font-weight: 700;
-      color: #f8fafc;
-    }
-    .genetic-card-actions {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 16px;
-    }
-    .genetic-empty-state {
-      margin-top: 20px;
-      border-radius: 20px;
-      border: 1px dashed rgba(148, 163, 184, 0.28);
-      background: rgba(15, 23, 42, 0.42);
-      padding: 22px;
-      text-align: center;
-      color: #cbd5e1;
-    }
-    .genetic-summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .genetic-summary-card {
-      border-radius: 16px;
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      background: rgba(15, 23, 42, 0.72);
-      padding: 14px;
-    }
-    .genetic-summary-card .value {
-      font-size: 1.4rem;
-      font-weight: 900;
-      color: #f8fafc;
-      line-height: 1.1;
-    }
-    .genetic-summary-card .label {
-      margin-top: 6px;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: #94a3b8;
-    }
-    .genetic-panel-grid {
-      display: grid;
-      grid-template-columns: 1.12fr 0.88fr;
-      gap: 18px;
-    }
-    .genetic-helper-list {
-      display: grid;
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .genetic-helper-item {
-      border-radius: 16px;
-      padding: 14px;
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      background: rgba(15, 23, 42, 0.7);
-      color: #cbd5e1;
-      line-height: 1.55;
-    }
-    @media (max-width: 1100px) {
-      .genetic-panel-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    @media (max-width: 768px) {
-      .genetic-card-grid,
-      .genetic-summary-grid,
-      .genetic-access-strip {
-        grid-template-columns: 1fr;
-      }
-      .genetic-card-actions,
-      .genetic-card-meta {
-        grid-template-columns: 1fr;
-      }
-      .genetic-filter-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .genetic-filter-field {
-        width: 100%;
-      }
-    }
 
 </style>
 </head>
@@ -3330,7 +3494,8 @@ body::after {
       geneticMarketplaceSummary: null,
       geneticMarketplaceLoading: false,
       geneticInventoryRuntimeSummary: null,
-      geneticActionItemId: null
+      geneticActionItemId: null,
+      activeGeneticMediaViewerKey: ''
     };
 
 const el = {
@@ -6837,7 +7002,8 @@ function renderGeneticTraitCard(item) {
       </div>
       <div class="genetic-card-media">
   ${renderGeneticMedia(item, {
-    glowLabel: item.display_title || item.trait_value || 'Genetic Trait'
+    glowLabel: item.display_title || item.trait_value || 'Genetic Trait',
+    viewerKey: `shop-${Number(item.catalog_id || 0)}`
   })}
 </div>
       <div class="genetic-card-copy">${escapeHtml(getGeneticCardDescription(item))}</div>
@@ -6970,7 +7136,8 @@ if (item.is_listed_for_sale) {
       </div>
 <div class="genetic-card-media">
   ${renderGeneticMedia(item, {
-    glowLabel: item.display_title || item.trait_value || `Lv ${formatNumber(currentLevel)}`
+    glowLabel: item.display_title || item.trait_value || `Lv ${formatNumber(currentLevel)}`,
+    viewerKey: `inventory-${Number(item.genetic_item_id || 0)}`
   })}
 </div>
       <div class="genetic-card-copy">${escapeHtml(getGeneticCardDescription(item))}</div>
@@ -7382,7 +7549,8 @@ function renderGeneticMarketplaceCard(item) {
 
       <div class="genetic-card-media">
         ${renderGeneticMedia(item, {
-          glowLabel: item.display_title || item.trait_value || `Lv ${formatNumber(currentLevel)}`
+          glowLabel: item.display_title || item.trait_value || `Lv ${formatNumber(currentLevel)}`,
+          viewerKey: `market-${Number(item.listing_id || 0)}`
         })}
       </div>
 
@@ -8046,21 +8214,131 @@ function autoOpenMyGenesisLabOnLogin() {
 }
 
 /**
- * Return a normalized media payload for one genetic catalog/inventory item.
- * Keeps frontend logic simple and avoids trusting partial raw values.
+ * Return true when the Lab is running on localhost-style development.
+ */
+function isLocalLabEnvironment() {
+  const host = String(window.location.hostname || '').toLowerCase();
+  return host === 'localhost' || host === '127.0.0.1';
+}
+
+/**
+ * Normalize a genetic media path so the same catalog row can work
+ * in both production and local XAMPP development.
+ *
+ * Production:
+ *   /public/three.js/public/genetic/accessories/angel-wings.glb
+ *
+ * Local:
+ *   /public/img/genetic/glb/accessories/angel-wings.glb
+ *
+ * Preview production:
+ *   /public/three.js/public/genetic/previews/accessories/angel-wings.png
+ *
+ * Preview local:
+ *   /public/img/genetic/previews/accessories/angel-wings.png
+ */
+function normalizeGeneticMediaPath(rawPath, imageType = '') {
+  const originalPath = String(rawPath || '').trim();
+  const normalizedType = String(imageType || '').trim().toLowerCase();
+
+  if (!originalPath) {
+    return '';
+  }
+
+  // Already absolute remote URL or data URL → leave untouched
+  if (
+    /^https?:\/\//i.test(originalPath) ||
+    /^data:/i.test(originalPath) ||
+    /^blob:/i.test(originalPath)
+  ) {
+    return originalPath;
+  }
+
+  // Localhost remaps production genetic asset paths into local public/img structure
+  if (isLocalLabEnvironment()) {
+    if (normalizedType === 'glb') {
+      // Production GLB root -> local GLB root
+      if (/^\/public\/three\.js\/public\/genetic\//i.test(originalPath)) {
+        return originalPath.replace(
+          /^\/public\/three\.js\/public\/genetic\//i,
+          '/public/img/genetic/glb/'
+        );
+      }
+
+      // If local-style relative path was stored without leading slash
+      if (/^img\/genetic\/glb\//i.test(originalPath)) {
+        return `/${originalPath}`;
+      }
+
+      return originalPath;
+    }
+
+    // Preview PNG remap for localhost
+    if (/^\/public\/three\.js\/public\/genetic\/previews\//i.test(originalPath)) {
+      return originalPath.replace(
+        /^\/public\/three\.js\/public\/genetic\/previews\//i,
+        '/public/img/genetic/previews/'
+      );
+    }
+
+    if (/^img\/genetic\/previews\//i.test(originalPath)) {
+      return `/${originalPath}`;
+    }
+
+    return originalPath;
+  }
+
+  // Production:
+  // If someone stored a local dev path in DB, upgrade it to production shape.
+  if (normalizedType === 'glb') {
+    if (/^\/public\/img\/genetic\/glb\//i.test(originalPath)) {
+      return originalPath.replace(
+        /^\/public\/img\/genetic\/glb\//i,
+        '/public/three.js/public/genetic/'
+      );
+    }
+
+    if (/^img\/genetic\/glb\//i.test(originalPath)) {
+      return `/${originalPath}`.replace(
+        /^\/img\/genetic\/glb\//i,
+        '/public/three.js/public/genetic/'
+      );
+    }
+  }
+
+  if (/^\/public\/img\/genetic\/previews\//i.test(originalPath)) {
+    return originalPath.replace(
+      /^\/public\/img\/genetic\/previews\//i,
+      '/public/three.js/public/genetic/previews/'
+    );
+  }
+
+  if (/^img\/genetic\/previews\//i.test(originalPath)) {
+    return `/${originalPath}`.replace(
+      /^\/img\/genetic\/previews\//i,
+      '/public/three.js/public/genetic/previews/'
+    );
+  }
+
+  return originalPath;
+}
+
+/**
+ * Resolve the effective media config for a genetic item.
+ * This keeps rendering code environment-safe without mutating catalog data.
  */
 function getGeneticMediaConfig(item) {
-  const imageTypeRaw = String(item?.image_type || '').trim().toLowerCase();
-  const imageType = imageTypeRaw === 'glb' ? 'glb' : 'png';
+  const imageType = String(item?.image_type || 'png').trim().toLowerCase();
+  const rawImagePath = String(item?.image_path || '').trim();
+  const rawPreviewPath = String(item?.preview_path || '').trim();
 
-  const imagePath = String(item?.image_path || '').trim();
-  const previewPath = String(item?.preview_path || '').trim();
+  const imagePath = normalizeGeneticMediaPath(rawImagePath, imageType);
+  const previewPath = normalizeGeneticMediaPath(rawPreviewPath, 'png');
 
   return {
     imageType,
     imagePath,
-    previewPath,
-    hasRenderableMedia: Boolean(imagePath || previewPath)
+    previewPath
   };
 }
 
@@ -8083,8 +8361,72 @@ function getGeneticMediaTone(item) {
 
 
 /**
+ * Return the single active genetic media viewer key.
+ * Only one live GLB viewer should exist across the Lab at one time.
+ */
+function getActiveGeneticMediaViewerKey() {
+  return String(state.activeGeneticMediaViewerKey || '').trim();
+}
+
+/**
+ * Toggle the single active genetic media viewer and rerender all genetic sections.
+ */
+function setActiveGeneticMediaViewer(viewerKey) {
+  const normalizedKey = String(viewerKey || '').trim();
+  const currentKey = getActiveGeneticMediaViewerKey();
+
+  state.activeGeneticMediaViewerKey = normalizedKey && normalizedKey !== currentKey
+    ? normalizedKey
+    : '';
+
+  renderGeneticShop();
+  renderGeneticInventory();
+  renderGeneticMarketplace();
+}
+
+/**
+ * Resolve the effective media config for a genetic item.
+ * This keeps rendering code environment-safe without mutating catalog data.
+ */
+function getGeneticMediaConfig(item) {
+  const imageType = String(item?.image_type || 'png').trim().toLowerCase();
+  const rawImagePath = String(item?.image_path || '').trim();
+  const rawPreviewPath = String(item?.preview_path || '').trim();
+
+  const imagePath = normalizeGeneticMediaPath(rawImagePath, imageType);
+  const previewPath = normalizeGeneticMediaPath(rawPreviewPath, 'png');
+
+  return {
+    imageType,
+    imagePath,
+    previewPath
+  };
+}
+
+/**
+ * Return a stable viewer tone for a genetic item.
+ * Uses trait type first so the UI stays predictable even if rarity is missing.
+ */
+function getGeneticMediaTone(item) {
+  const traitType = String(item?.trait_type || '').trim().toLowerCase();
+  const rarity = String(item?.rarity_tier || '').trim().toLowerCase();
+
+  if (traitType === 'outfit') return 'violet';
+  if (traitType === 'accessories') return 'cyan';
+  if (rarity === 'legendary') return 'amber';
+  if (rarity === 'rare') return 'blue';
+
+  return 'slate';
+}
+
+/**
  * Render shared genetic media using the same visual language as Lab boosters.
  * Supports GLB, PNG, and a safe placeholder fallback.
+ *
+ * UX rules:
+ * - No repeated item title inside the media container
+ * - Closed GLB state = compact placeholder or preview + View 3D
+ * - Open GLB state = large model + Hide 3D
  */
 function renderGeneticMedia(item, options = {}) {
   const media = getGeneticMediaConfig(item);
@@ -8096,41 +8438,93 @@ function renderGeneticMedia(item, options = {}) {
     'Genetic Item'
   ).trim();
 
-  const glowLabel = escapeHtml(options.glowLabel || title);
+  const viewerKey = String(options.viewerKey || '').trim();
+  const isGlb = media.imageType === 'glb' && Boolean(media.imagePath);
+  const isViewerOpen =
+    isGlb &&
+    viewerKey !== '' &&
+    getActiveGeneticMediaViewerKey() === viewerKey;
+
+  const shellClasses = ['booster-viewer-shell', 'genetic-media-shell', escapeHtml(tone)];
+
+  if (isGlb) {
+    shellClasses.push(isViewerOpen ? 'has-3d-live' : 'has-3d-cta');
+  }
+
   const ariaLabel = escapeHtml(`${title} media preview`);
   const imagePath = escapeHtml(media.imagePath);
   const previewPath = escapeHtml(media.previewPath);
+  const escapedViewerKey = escapeHtml(viewerKey);
 
-if (media.imageType === 'glb' && media.imagePath) {
-  return `
-    <div class="booster-viewer-shell genetic-media-shell ${escapeHtml(tone)}">
-      <div class="booster-glow-pill">${glowLabel}</div>
-      <model-viewer
-        class="booster-model-viewer genetic-model-viewer"
-        src="${imagePath}"
-        poster="${previewPath}"
-        alt="${ariaLabel}"
-        camera-controls
-        auto-rotate
-        rotation-per-second="24deg"
-        shadow-intensity="1"
-        exposure="1.1"
-        interaction-prompt="none"
-        loading="eager"
-        reveal="auto"
-        disable-pan
-        touch-action="pan-y"
-      ></model-viewer>
-    </div>
-  `;
-}
+  if (isViewerOpen) {
+    return `
+      <div class="${shellClasses.join(' ')} genetic-media-shell-open">
+        <model-viewer
+          class="booster-model-viewer genetic-model-viewer genetic-model-viewer-open"
+          src="${imagePath}"
+          ${media.previewPath ? `poster="${previewPath}"` : ''}
+          alt="${ariaLabel}"
+          camera-controls
+          auto-rotate
+          rotation-per-second="24deg"
+          shadow-intensity="1"
+          exposure="1.1"
+          interaction-prompt="none"
+          loading="lazy"
+          reveal="auto"
+          disable-pan
+          touch-action="pan-y"
+        ></model-viewer>
+        <div class="genetic-media-cta-row">
+          <button
+            type="button"
+            class="genetic-media-cta-button secondary"
+            data-close-genetic-3d="${escapedViewerKey}"
+          >
+            Hide 3D
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (isGlb) {
+    const previewMarkup = media.previewPath
+      ? `
+        <img
+          class="genetic-media-image"
+          src="${previewPath}"
+          alt="${ariaLabel}"
+          loading="lazy"
+        />
+      `
+      : `
+        <div class="genetic-placeholder-core" aria-label="${ariaLabel}">
+          <span class="genetic-placeholder-icon">🧬</span>
+        </div>
+      `;
+
+    return `
+      <div class="${shellClasses.join(' ')} ${media.previewPath ? '' : 'genetic-media-placeholder'}">
+        ${previewMarkup}
+        <div class="genetic-media-cta-row">
+          <button
+            type="button"
+            class="genetic-media-cta-button"
+            data-open-genetic-3d="${escapedViewerKey}"
+          >
+            View 3D
+          </button>
+        </div>
+      </div>
+    `;
+  }
 
   if (media.imagePath || media.previewPath) {
     const finalImage = imagePath || previewPath;
 
     return `
-      <div class="booster-viewer-shell genetic-media-shell ${escapeHtml(tone)}">
-        <div class="booster-glow-pill">${glowLabel}</div>
+      <div class="${shellClasses.join(' ')}">
         <img
           class="genetic-media-image"
           src="${finalImage}"
@@ -8142,8 +8536,7 @@ if (media.imageType === 'glb' && media.imagePath) {
   }
 
   return `
-    <div class="booster-viewer-shell genetic-media-shell ${escapeHtml(tone)} genetic-media-placeholder">
-      <div class="booster-glow-pill">${glowLabel}</div>
+    <div class="${shellClasses.join(' ')} genetic-media-placeholder">
       <div class="genetic-placeholder-core" aria-label="${ariaLabel}">
         <span class="genetic-placeholder-icon">🧬</span>
       </div>
@@ -8251,6 +8644,18 @@ el.traitGrid?.addEventListener('keydown', event => {
 });
 
 el.geneticMarketplaceGrid?.addEventListener('click', event => {
+  const openViewerButton = event.target.closest('[data-open-genetic-3d]');
+  if (openViewerButton) {
+    setActiveGeneticMediaViewer(openViewerButton.getAttribute('data-open-genetic-3d') || '');
+    return;
+  }
+
+  const closeViewerButton = event.target.closest('[data-close-genetic-3d]');
+  if (closeViewerButton) {
+    setActiveGeneticMediaViewer(closeViewerButton.getAttribute('data-close-genetic-3d') || '');
+    return;
+  }
+
   const buyButton = event.target.closest('[data-buy-genetic-marketplace-listing]');
   if (!buyButton) {
     return;
@@ -8266,6 +8671,18 @@ el.geneticMarketplaceGrid?.addEventListener('click', event => {
 
 
 el.geneticShopGrid?.addEventListener('click', event => {
+  const openViewerButton = event.target.closest('[data-open-genetic-3d]');
+  if (openViewerButton) {
+    setActiveGeneticMediaViewer(openViewerButton.getAttribute('data-open-genetic-3d') || '');
+    return;
+  }
+
+  const closeViewerButton = event.target.closest('[data-close-genetic-3d]');
+  if (closeViewerButton) {
+    setActiveGeneticMediaViewer(closeViewerButton.getAttribute('data-close-genetic-3d') || '');
+    return;
+  }
+
   const buyButton = event.target.closest('[data-genetic-buy-id]');
   if (!buyButton) {
     return;
@@ -8280,6 +8697,18 @@ el.geneticShopGrid?.addEventListener('click', event => {
 });
 
 el.geneticInventoryGrid?.addEventListener('click', event => {
+  const openViewerButton = event.target.closest('[data-open-genetic-3d]');
+  if (openViewerButton) {
+    setActiveGeneticMediaViewer(openViewerButton.getAttribute('data-open-genetic-3d') || '');
+    return;
+  }
+
+  const closeViewerButton = event.target.closest('[data-close-genetic-3d]');
+  if (closeViewerButton) {
+    setActiveGeneticMediaViewer(closeViewerButton.getAttribute('data-close-genetic-3d') || '');
+    return;
+  }
+
   const startButton = event.target.closest('[data-start-genetic-upgrade]');
   if (startButton) {
     const geneticItemId = startButton.getAttribute('data-start-genetic-upgrade') || '';

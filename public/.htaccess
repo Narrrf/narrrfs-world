@@ -4,3 +4,13 @@ ErrorDocument 404 /404.html
 <FilesMatch "\.(html|php)$">
     SetHandler application/x-httpd-php
 </FilesMatch>
+
+# --- GLB / GLTF support (local development) ---
+AddType model/gltf-binary .glb
+AddType model/gltf+json .gltf
+
+# Ensure files are served inline (not forced download)
+<FilesMatch "\.(glb|gltf)$">
+    Header set Content-Type "model/gltf-binary"
+    Header set Content-Disposition "inline"
+</FilesMatch>

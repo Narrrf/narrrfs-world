@@ -129,6 +129,7 @@ public/textures/backgrounds/
 
 # 🧬 Genetic GLB Assets (DO NOT COMMIT - uploaded via API to /data/)
 public/three.js/public/genetic/
+public/img/genetic
 
 # 🧩 Glyph 3D Development - Local Only
 glyph 3d/
