@@ -470,42 +470,43 @@ try {
         ];
     }
 
-    // Helper function to get Glyph Memory leaderboard (all-time, per difficulty)
-    function getGlyphMemoryLeaderboard($db) {
-        $difficulties = ['easy', 'medium', 'hard'];
-        $result = [];
+// Helper function to get Glyph Memory leaderboard for the ACTIVE season only
+function getGlyphMemoryLeaderboard($db, $seasonName) {
+    $difficulties = ['easy', 'medium', 'hard'];
+    $result = [];
 
-        foreach ($difficulties as $difficulty) {
-            $stmt = $db->prepare("
-                SELECT
-                    discord_id,
-                    COALESCE(discord_name, 'Guest') as discord_name,
-                    difficulty,
-                    MIN(time_ms) as best_time_ms,
-                    MIN(timestamp) as timestamp
-                FROM tbl_glyph_memory_scores
-                WHERE difficulty = ?
-                GROUP BY discord_id, discord_name, difficulty
-                ORDER BY best_time_ms ASC, timestamp ASC
-                LIMIT 10
-            ");
-            $stmt->execute([$difficulty]);
-            $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($difficulties as $difficulty) {
+        $stmt = $db->prepare("
+            SELECT
+                discord_id,
+                COALESCE(MAX(discord_name), 'Guest') as discord_name,
+                difficulty,
+                MIN(time_ms) as best_time_ms,
+                MIN(timestamp) as timestamp
+            FROM tbl_glyph_memory_scores
+            WHERE difficulty = ?
+              AND COALESCE(season, ?) = ?
+            GROUP BY discord_id, difficulty
+            ORDER BY best_time_ms ASC, timestamp ASC
+            LIMIT 10
+        ");
+        $stmt->execute([$difficulty, $seasonName, $seasonName]);
+        $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            foreach ($scores as &$entry) {
-                $totalSec = floor($entry['best_time_ms'] / 1000);
-                $min = floor($totalSec / 60);
-                $sec = $totalSec % 60;
-                $entry['best_time_formatted'] = sprintf("%02d:%02d", $min, $sec);
-                $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
-            }
-            unset($entry);
-
-            $result[$difficulty] = $scores;
+        foreach ($scores as &$entry) {
+            $totalSec = floor($entry['best_time_ms'] / 1000);
+            $min = floor($totalSec / 60);
+            $sec = $totalSec % 60;
+            $entry['best_time_formatted'] = sprintf("%02d:%02d", $min, $sec);
+            $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
         }
+        unset($entry);
 
-        return $result;
+        $result[$difficulty] = $scores;
     }
+
+    return $result;
+}
 
     // Get non-arcade leaderboards
     $dspoincEarningsResult = getDspoincEarningsLeaderboard(
@@ -544,30 +545,30 @@ try {
         $useFrozenLeaderboard
     );
 
-    $glyphMemoryLeaderboard = [];
-    $tableCheck = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tbl_glyph_memory_scores'");
-    $tableCheck->execute();
-    if ($tableCheck->fetch()) {
-        $glyphMemoryLeaderboard = getGlyphMemoryLeaderboard($db);
-    }
+$glyphMemoryLeaderboard = [];
+$tableCheck = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tbl_glyph_memory_scores'");
+$tableCheck->execute();
+if ($tableCheck->fetch()) {
+    $glyphMemoryLeaderboard = getGlyphMemoryLeaderboard($db, $currentSeason);
+}
 
-    $displaySeason = $useFrozenLeaderboard ? $previousSeason : $currentSeason;
-    $isFrozen = $useFrozenLeaderboard;
+$displaySeason = $useFrozenLeaderboard ? $previousSeason : $currentSeason;
+$isFrozen = $useFrozenLeaderboard;
 
-    echo json_encode([
-        'success' => true,
-        'current_season' => $currentSeason,
-        'display_season' => $displaySeason,
-        'is_frozen' => $isFrozen,
-        'dspoinc_earnings' => $dspoincEarningsResult['leaderboard'],
-        'tetris' => $tetrisResult['leaderboard'],
-        'snake' => $snakeResult['leaderboard'],
-        'space_invaders' => $spaceInvadersResult['leaderboard'],
-        'cheese_hunt' => $cheeseHuntResult['leaderboard'],
-        'discord_race' => $discordRaceResult['leaderboard'],
-        'cheese_rumble' => $cheeseRumbleResult['leaderboard'],
-        'glyph_memory' => $glyphMemoryLeaderboard
-    ]);
+echo json_encode([
+    'success' => true,
+    'current_season' => $currentSeason,
+    'display_season' => $displaySeason,
+    'is_frozen' => $isFrozen,
+    'dspoinc_earnings' => $dspoincEarningsResult['leaderboard'],
+    'tetris' => $tetrisResult['leaderboard'],
+    'snake' => $snakeResult['leaderboard'],
+    'space_invaders' => $spaceInvadersResult['leaderboard'],
+    'cheese_hunt' => $cheeseHuntResult['leaderboard'],
+    'discord_race' => $discordRaceResult['leaderboard'],
+    'cheese_rumble' => $cheeseRumbleResult['leaderboard'],
+    'glyph_memory' => $glyphMemoryLeaderboard
+]);
 
 } catch (Exception $e) {
     echo json_encode([
