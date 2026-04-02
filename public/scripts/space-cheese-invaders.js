@@ -11180,55 +11180,79 @@ let reloadButtonInterval = null;
     // 🎵 Play sound for auto-shoot
     cheeseSoundManager.playStarWarsLaser();
     
-    // Create bullet based on weapon type
-    switch (currentWeaponType) {
-      case 'normal':
-        // Create normal bullet
-        bullets.push({
-          x: playerShip.x + playerShip.width / 2 - 2,
-          y: playerShip.y,
-          width: 4,
-          height: 10,
-          speed: 8,
-          type: 'normal'
-        });
-        break;
-        
-      case 'laser':
-        // Create laser beam
-        if (weaponAmmo.laser > 0) {
-          bullets.push({
-            x: playerShip.x + playerShip.width / 2 - 3,
-            y: playerShip.y,
-            width: 6,
-            height: 20,
-            speed: 12,
-            type: 'laser'
-          });
-          weaponAmmo.laser--;
-          updateWeaponDisplay();
-        }
-        break;
-        
-      case 'bomb':
-        // Create bomb
-        if (weaponAmmo.bomb > 0) {
-          bullets.push({
-            x: playerShip.x + playerShip.width / 2 - 4,
-            y: playerShip.y,
-            width: 8,
-            height: 8,
-            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
-            type: 'bomb'
-          });
-          weaponAmmo.bomb--;
-          updateWeaponDisplay();
-        }
-        break;
+// Create bullet based on weapon type
+switch (currentWeaponType) {
+
+  case 'normal':
+    // 🔥 Apply store upgrades (double / triple / quad shot)
+
+    if (hasQuadShotUpgrade) {
+      bullets.push(
+        { x: playerShip.x + playerShip.width / 2 - 16, y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 },
+        { x: playerShip.x + playerShip.width / 2 - 8,  y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 },
+        { x: playerShip.x + playerShip.width / 2,      y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 },
+        { x: playerShip.x + playerShip.width / 2 + 8,  y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 }
+      );
+
+    } else if (hasTripleShotUpgrade) {
+      bullets.push(
+        { x: playerShip.x + playerShip.width / 2 - 12, y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 },
+        { x: playerShip.x + playerShip.width / 2,      y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 },
+        { x: playerShip.x + playerShip.width / 2 + 12, y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 }
+      );
+
+    } else if (hasDoubleShotUpgrade) {
+      bullets.push(
+        { x: playerShip.x + playerShip.width / 2 - 12, y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 },
+        { x: playerShip.x + playerShip.width / 2 + 4,  y: playerShip.y, width: 8, height: 16, speed: 10, type: 'normal', damage: 1 }
+      );
+
+    } else {
+      // Default single shot
+      bullets.push({
+        x: playerShip.x + playerShip.width / 2 - 2,
+        y: playerShip.y,
+        width: 4,
+        height: 10,
+        speed: 8,
+        type: 'normal'
+      });
     }
-    
-    // Update auto-shoot timer
-    lastAutoShootTime = Date.now();
+    break;
+
+  case 'laser':
+    if (weaponAmmo.laser > 0) {
+      bullets.push({
+        x: playerShip.x + playerShip.width / 2 - 3,
+        y: playerShip.y,
+        width: 6,
+        height: 20,
+        speed: 12,
+        type: 'laser'
+      });
+      weaponAmmo.laser--;
+      updateWeaponDisplay();
+    }
+    break;
+
+  case 'bomb':
+    if (weaponAmmo.bomb > 0) {
+      bullets.push({
+        x: playerShip.x + playerShip.width / 2 - 4,
+        y: playerShip.y,
+        width: 8,
+        height: 8,
+        speed: 10,
+        type: 'bomb'
+      });
+      weaponAmmo.bomb--;
+      updateWeaponDisplay();
+    }
+    break;
+}
+
+// Update auto-shoot timer
+lastAutoShootTime = Date.now();
   }
   
   // 🚀 NEW: Create spectacular laser visual effect

@@ -220,14 +220,15 @@ try {
             'dspoinc_earned' => 0,
             'last_played' => null
         ],
-		// 🔮 Glyph Memory - time-trial stats (all-time for now)
-        'glyph_memory' => [
-            'total_runs' => 0,
-            'best_time_ms' => null,
-            'avg_time_ms' => null,
-            'last_played' => null,
-            'dspoinc_earned' => 0
-        ],
+		// 🔮 Glyph Memory - current season stats only
+'glyph_memory' => [
+    'total_runs' => 0,
+    'best_time_ms' => null,
+    'avg_time_ms' => null,
+    'best_pairs_matched' => 0,
+    'last_played' => null,
+    'dspoinc_earned' => 0
+],
         'overall' => [
             'total_dspoinc' => 0,
             'games_played' => 0,
@@ -628,39 +629,67 @@ try {
         error_log("Cheese Rumble query error: " . $e->getMessage());
     }
 
-    // 7. GLYPH MEMORY STATS (using discord_id from tbl_glyph_memory_scores)
+    // 7. GLYPH MEMORY STATS (current season only)
     try {
-        error_log("🔍 GLYPH MEMORY DEBUG: Querying for user $discordId");
+        error_log("🔍 GLYPH MEMORY DEBUG: Querying current season stats for user $discordId");
 
-        // NOTE: Glyph scores currently do not have a season column,
-        // so this is all-time stats for the user.
-        $glyphStmt = $db->prepare("
-            SELECT 
-                COUNT(*) AS total_runs,
-                MIN(time_ms) AS best_time_ms,
-                AVG(time_ms) AS avg_time_ms,
-                MAX(timestamp) AS last_played
-            FROM tbl_glyph_memory_scores
-            WHERE discord_id = ?
-        ");
-        $glyphStmt->execute([$discordId]);
-        $glyphData = $glyphStmt->fetch(PDO::FETCH_ASSOC);
+        $glyphData = null;
+        $glyphSeasonFilters = [
+            ['condition' => 'season = ?', 'label' => 'exact'],
+            ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
+        ];
+
+        foreach ($glyphSeasonFilters as $filter) {
+            $stmt = $db->prepare("
+                SELECT
+                    COUNT(*) as total_runs,
+                    MIN(time_ms) as best_time_ms,
+                    AVG(time_ms) as avg_time_ms,
+                    MAX(pairs_matched) as best_pairs_matched,
+                    MAX(timestamp) as last_played
+                FROM tbl_glyph_memory_scores
+                WHERE discord_id = ?
+                AND (
+                    " . $filter['condition'] . "
+                    OR (timestamp >= ? AND (? IS NULL OR timestamp < ?))
+                )
+            ");
+            $stmt->execute([
+                $discordId,
+                $currentSeason,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+            $glyphData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($glyphData && (int)$glyphData['total_runs'] > 0) {
+                error_log("✅ GLYPH MEMORY: season match (" . $filter['label'] . ") for $discordId");
+                break;
+            }
+        }
+
+        // Do not fallback to all-time for current season stats
+        if (!$glyphData || (int)$glyphData['total_runs'] === 0) {
+            error_log("⚠️ GLYPH MEMORY: No Season $currentSeason data for $discordId, showing 0 (current season only)");
+            $glyphData = null;
+        }
 
         if ($glyphData && (int)$glyphData['total_runs'] > 0) {
             $response['glyph_memory']['total_runs'] = (int)$glyphData['total_runs'];
-            $response['glyph_memory']['best_time_ms'] =
-                $glyphData['best_time_ms'] !== null ? (int)$glyphData['best_time_ms'] : null;
-            $response['glyph_memory']['avg_time_ms'] =
-                $glyphData['avg_time_ms'] !== null ? (int)round($glyphData['avg_time_ms']) : null;
+            $response['glyph_memory']['best_time_ms'] = $glyphData['best_time_ms'] !== null ? (int)$glyphData['best_time_ms'] : null;
+            $response['glyph_memory']['avg_time_ms'] = $glyphData['avg_time_ms'] !== null ? (float)$glyphData['avg_time_ms'] : null;
             $response['glyph_memory']['last_played'] = $glyphData['last_played'];
+            $response['glyph_memory']['best_pairs_matched'] = $glyphData['best_pairs_matched'] !== null ? (int)$glyphData['best_pairs_matched'] : 0;
 
-            // TODO: Decide DSPOINC reward model for Glyph Memory runs.
-            // For now we keep it at 0 so we don't impact the economy unexpectedly.
+            // Keep DSPoinc at 0 unless you later add a dedicated Glyph reward source
             $response['glyph_memory']['dspoinc_earned'] = 0;
 
-            error_log("✅ GLYPH MEMORY stats found for user $discordId: " . $glyphData['total_runs'] . " runs");
-        } else {
-            error_log("ℹ️ GLYPH MEMORY: No runs found for user $discordId");
+            error_log(
+                "✅ GLYPH MEMORY stats found for user $discordId: " .
+                $glyphData['total_runs'] . " runs, best " .
+                ($glyphData['best_time_ms'] ?? 'null') . " ms"
+            );
         }
     } catch (Exception $e) {
         error_log("Glyph Memory query error: " . $e->getMessage());
@@ -980,20 +1009,20 @@ echo json_encode([
                     'last_played' => $response['cheese_rumble']['last_played']
                 ]
             ],
-			// 🔮 Glyph Memory game descriptor for profile Current Season grid
-            'glyph_memory' => [
-                'name' => 'Glyph Memory',
-                'icon' => '🔮',
-                'url' => '/glyph/glyph.html',
-                'status' => $response['glyph_memory']['total_runs'] > 0 ? 'active' : 'not_played',
-                'stats' => [
-                    'total_runs' => $response['glyph_memory']['total_runs'],
-                    'best_time_ms' => $response['glyph_memory']['best_time_ms'],
-                    'avg_time_ms' => $response['glyph_memory']['avg_time_ms'],
-                    'dspoinc_earned' => $response['glyph_memory']['dspoinc_earned'],
-                    'last_played' => $response['glyph_memory']['last_played']
-                ]
-            ]
+'glyph_memory' => [
+    'name' => 'Glyph Memory',
+    'icon' => '🔮',
+    'url' => '/glyph/glyph.html',
+    'status' => $response['glyph_memory']['total_runs'] > 0 ? 'active' : 'not_played',
+    'stats' => [
+        'total_runs' => $response['glyph_memory']['total_runs'],
+        'best_time_ms' => $response['glyph_memory']['best_time_ms'],
+        'avg_time_ms' => $response['glyph_memory']['avg_time_ms'],
+        'best_pairs_matched' => $response['glyph_memory']['best_pairs_matched'],
+        'dspoinc_earned' => $response['glyph_memory']['dspoinc_earned'],
+        'last_played' => $response['glyph_memory']['last_played']
+    ]
+]
         ]
     ]);
 
