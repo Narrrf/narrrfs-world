@@ -116,52 +116,14 @@ function resolve_user_id() {
     return $user_id;
 }
 
-/**
- * Return holder access summary using holder verification data as backend authority.
- */
-function get_holder_access(PDO $pdo, string $userId): array {
-    if ($userId === '') {
-        return [
-            'has_genesis' => false,
-            'has_vip' => false,
-            'can_buy' => false
-        ];
-    }
-
-    $stmt = $pdo->prepare("
-        SELECT collection, nft_count
-        FROM tbl_holder_verifications
-        WHERE user_id = ?
-        ORDER BY verified_at DESC
-    ");
-    $stmt->execute([$userId]);
-
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-    $hasGenesis = false;
-    $hasVip = false;
-
-    foreach ($rows as $row) {
-        $collection = strtolower(trim((string)($row['collection'] ?? '')));
-        $nftCount = (int)($row['nft_count'] ?? 0);
-
-        if ($nftCount < 1) {
-            continue;
-        }
-
-        if (strpos($collection, 'genesis') !== false) {
-            $hasGenesis = true;
-        }
-
-        if (strpos($collection, 'vip') !== false) {
-            $hasVip = true;
-        }
-    }
+function get_genetic_access(string $userId): array {
+    $isLoggedIn = trim($userId) !== '';
 
     return [
-        'has_genesis' => $hasGenesis,
-        'has_vip' => $hasVip,
-        'can_buy' => ($hasGenesis || $hasVip)
+        'is_logged_in' => $isLoggedIn,
+        'has_genesis' => false,
+        'has_vip' => false,
+        'can_upgrade' => $isLoggedIn
     ];
 }
 
@@ -344,14 +306,14 @@ try {
 
     $pdo = getDatabaseConnection();
 
-    $holderAccess = get_holder_access($pdo, $userId);
-    if (!$holderAccess['can_buy']) {
-        json_response([
-            'success' => false,
-            'error' => 'Only verified Genesis or VIP holders can upgrade genetic traits',
-            'holder_access' => $holderAccess
-        ], 403);
-    }
+    $geneticAccess = get_genetic_access($userId);
+if (!$geneticAccess['can_upgrade']) {
+    json_response([
+        'success' => false,
+        'error' => 'Login with Discord to upgrade genetic traits',
+        'genetic_access' => $geneticAccess
+    ], 401);
+}
 
     $item = fetch_user_genetic_item($pdo, $userId, $geneticItemId);
     if (!$item) {
@@ -527,7 +489,8 @@ try {
             'upgrade_started_at' => $updatedItem['upgrade_started_at'] ?? null,
             'upgrade_ends_at' => $updatedItem['upgrade_ends_at'] ?? null,
             'is_listed_for_sale' => (int)($updatedItem['is_listed_for_sale'] ?? 0) === 1,
-            'holder_access' => $holderAccess
+            'genetic_access' => $geneticAccess,
+            'holder_access' => $geneticAccess
         ]
     ]);
 } catch (PDOException $e) {

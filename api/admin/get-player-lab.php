@@ -603,6 +603,105 @@ function build_nft_summaries($verifiedGenesisNfts, $resolvedRows) {
     return $summaries;
 }
 
+function load_user_genetic_items(PDO $pdo, $userId) {
+    if (!sqlite_table_exists($pdo, 'tbl_user_genetic_items')) {
+        return [];
+    }
+
+    $catalogExists = sqlite_table_exists($pdo, 'tbl_genetic_trait_catalog');
+
+    if ($catalogExists) {
+        $stmt = $pdo->prepare("
+            SELECT
+                ugi.genetic_item_id,
+                ugi.user_id,
+                ugi.catalog_id,
+                ugi.trait_type,
+                ugi.trait_value,
+                ugi.current_level,
+                ugi.upgrade_status,
+                ugi.upgrade_started_at,
+                ugi.upgrade_ends_at,
+                ugi.last_completed_at,
+                ugi.acquired_method,
+                ugi.is_listed_for_sale,
+                ugi.listed_listing_id,
+                ugi.last_transfer_at,
+                ugi.last_owner_user_id,
+                ugi.created_at,
+                ugi.updated_at,
+
+                gtc.display_title,
+                gtc.description,
+                gtc.rarity_tier,
+                gtc.rarity_count,
+                gtc.base_price_dspoinc,
+                gtc.image_type,
+                gtc.image_path,
+                gtc.preview_path,
+                gtc.source_origin,
+                gtc.effect_metadata_json,
+                gtc.is_active,
+                gtc.is_visible
+            FROM tbl_user_genetic_items ugi
+            LEFT JOIN tbl_genetic_trait_catalog gtc
+                ON gtc.catalog_id = ugi.catalog_id
+            WHERE ugi.user_id = ?
+            ORDER BY
+                ugi.current_level DESC,
+                LOWER(COALESCE(gtc.display_title, ugi.trait_value, '')) ASC
+        ");
+        $stmt->execute([$userId]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    } else {
+        $stmt = $pdo->prepare("
+            SELECT
+                genetic_item_id,
+                user_id,
+                catalog_id,
+                trait_type,
+                trait_value,
+                current_level,
+                upgrade_status,
+                upgrade_started_at,
+                upgrade_ends_at,
+                last_completed_at,
+                acquired_method,
+                is_listed_for_sale,
+                listed_listing_id,
+                last_transfer_at,
+                last_owner_user_id,
+                created_at,
+                updated_at
+            FROM tbl_user_genetic_items
+            WHERE user_id = ?
+            ORDER BY current_level DESC, LOWER(COALESCE(trait_value, '')) ASC
+        ");
+        $stmt->execute([$userId]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    foreach ($rows as &$row) {
+        $row['genetic_item_id'] = (int)($row['genetic_item_id'] ?? 0);
+        $row['catalog_id'] = (int)($row['catalog_id'] ?? 0);
+        $row['current_level'] = max(1, (int)($row['current_level'] ?? 1));
+        $row['is_listed_for_sale'] = (int)($row['is_listed_for_sale'] ?? 0);
+        $row['listed_listing_id'] = isset($row['listed_listing_id']) ? (int)$row['listed_listing_id'] : null;
+        $row['display_title'] = (string)($row['display_title'] ?? $row['trait_value'] ?? 'Unknown Trait');
+        $row['trait_type'] = (string)($row['trait_type'] ?? '');
+        $row['trait_value'] = (string)($row['trait_value'] ?? '');
+        $row['rarity_tier'] = (string)($row['rarity_tier'] ?? 'common');
+        $row['upgrade_status'] = (string)($row['upgrade_status'] ?? 'idle');
+        $row['acquired_method'] = (string)($row['acquired_method'] ?? 'unknown');
+    }
+    unset($row);
+
+    return $rows;
+}
+
+
 try {
     $request = get_request_data();
     $userId = trim((string)($request['user_id'] ?? ''));
@@ -701,31 +800,35 @@ try {
     }
 
     $nftSummaries = build_nft_summaries($verifiedGenesisNfts, $resolvedRows);
+    $geneticItems = load_user_genetic_items($pdo, $userId);
+    $geneticInventoryCount = count($geneticItems);
     $totalLabPower = array_reduce($nftSummaries, function ($sum, $row) {
         return $sum + (int)($row['nft_level'] ?? 0);
     }, 0);
 
     json_response([
-        'success' => true,
-        'data' => [
-            'user_id' => $userId,
-            'verified_source' => $verifiedSource,
-            'upgrade_table' => 'tbl_nft_trait_upgrades',
-            'table_created_now' => $tableCreated,
-            'verified_genesis_nfts' => $verifiedGenesisNfts,
-            'upgrades' => $resolvedRows,
-            'nft_summaries' => $nftSummaries,
-            'summary' => [
-                'verified_nft_count' => count($verifiedGenesisNfts),
-                'upgrade_row_count' => count($resolvedRows),
-                'active_count' => $activeCount,
-                'ready_count' => $readyCount,
-                'total_lab_power' => $totalLabPower,
-                'highest_level' => $highestLevel,
-                'highest_level_trait' => $highestLevelTrait
-            ]
+    'success' => true,
+    'data' => [
+        'user_id' => $userId,
+        'verified_source' => $verifiedSource,
+        'upgrade_table' => 'tbl_nft_trait_upgrades',
+        'table_created_now' => $tableCreated,
+        'verified_genesis_nfts' => $verifiedGenesisNfts,
+        'upgrades' => $resolvedRows,
+        'nft_summaries' => $nftSummaries,
+        'genetic_items' => $geneticItems,
+        'summary' => [
+            'verified_nft_count' => count($verifiedGenesisNfts),
+            'upgrade_row_count' => count($resolvedRows),
+            'active_count' => $activeCount,
+            'ready_count' => $readyCount,
+            'total_lab_power' => $totalLabPower,
+            'highest_level' => $highestLevel,
+            'highest_level_trait' => $highestLevelTrait,
+            'genetic_inventory_count' => $geneticInventoryCount
         ]
-    ]);
+    ]
+]);
 } catch (Throwable $e) {
     json_response([
         'success' => false,

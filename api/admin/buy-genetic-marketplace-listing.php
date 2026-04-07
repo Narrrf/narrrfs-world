@@ -6,7 +6,7 @@
 // - SQLite-safe: NO FOR UPDATE usage
 // - Website/session auth in production
 // - Localhost may use request user_id or Narrrf fallback
-// - Only Genesis/VIP verified holders may buy
+// - Any Discord-authenticated user may buy
 // - One user may own only one exact trait_type + trait_value combination
 // - Available DSPOINC = total ledger score - active frozen stakes
 // - Full user-bound item runtime state transfers to the new owner
@@ -134,55 +134,6 @@ function get_user_available_dspoinc(PDO $pdo, string $userId): int {
 }
 
 /**
- * Holder access check aligned with shop purchase rules.
- */
-function get_holder_access(PDO $pdo, string $userId): array {
-    if ($userId === '') {
-        return [
-            'has_genesis' => false,
-            'has_vip' => false,
-            'can_buy' => false
-        ];
-    }
-
-    $stmt = $pdo->prepare("
-        SELECT collection, nft_count
-        FROM tbl_holder_verifications
-        WHERE user_id = ?
-        ORDER BY verified_at DESC
-    ");
-    $stmt->execute([$userId]);
-
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-    $hasGenesis = false;
-    $hasVip = false;
-
-    foreach ($rows as $row) {
-        $collection = strtolower(trim((string)($row['collection'] ?? '')));
-        $nftCount = (int)($row['nft_count'] ?? 0);
-
-        if ($nftCount < 1) {
-            continue;
-        }
-
-        if (strpos($collection, 'genesis') !== false) {
-            $hasGenesis = true;
-        }
-
-        if (strpos($collection, 'vip') !== false) {
-            $hasVip = true;
-        }
-    }
-
-    return [
-        'has_genesis' => $hasGenesis,
-        'has_vip' => $hasVip,
-        'can_buy' => ($hasGenesis || $hasVip)
-    ];
-}
-
-/**
  * Duplicate trait protection: one exact trait_type + trait_value per user.
  */
 function user_owns_genetic_trait(PDO $pdo, string $userId, string $traitType, string $traitValue): bool {
@@ -197,6 +148,17 @@ function user_owns_genetic_trait(PDO $pdo, string $userId, string $traitType, st
     $stmt->execute([$userId, $traitType, $traitValue]);
 
     return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function get_genetic_access(string $userId): array {
+    $isLoggedIn = trim($userId) !== '';
+
+    return [
+        'is_logged_in' => $isLoggedIn,
+        'has_genesis' => false,
+        'has_vip' => false,
+        'can_buy' => $isLoggedIn
+    ];
 }
 
 function insert_dspoinc_change(PDO $pdo, string $userId, int $amount, string $game, string $source): void {
@@ -301,14 +263,15 @@ try {
 
     $pdo = getDatabaseConnection();
 
-    $holderAccess = get_holder_access($pdo, $buyerUserId);
-    if (!$holderAccess['can_buy']) {
-        json_response([
-            'success' => false,
-            'error' => 'Only verified Genesis or VIP holders can buy marketplace genetic items',
-            'holder_access' => $holderAccess
-        ], 403);
-    }
+// 🧬 Genetic marketplace access rule
+// Any valid Discord-authenticated user may buy Genetic marketplace items.
+
+if (!$buyerUserId || trim($buyerUserId) === '') {
+    json_response([
+        'success' => false,
+        'error' => 'Authentication required'
+    ], 401);
+}
 
     // Preload listing with catalog display data - SQLite safe, no FOR UPDATE.
     $listingStmt = $pdo->prepare("

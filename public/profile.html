@@ -11799,31 +11799,31 @@ function renderProfileGeneticOwnedCard(item) {
   `;
 }
 
-  function renderProfileGeneticsPanel(data) {
-    const items = Array.isArray(data?.items) ? data.items : [];
-    const summary = data?.summary || {};
-    const holder = data?.holder_access || {};
-    const active = items.find((item) => getGeneticRuntimeState(item) === 'upgrading')
-      || items.find((item) => getGeneticRuntimeState(item) === 'ready')
-      || null;
-    const highest = items.slice().sort((a, b) => (Number(b.current_level || 0) - Number(a.current_level || 0)))[0] || null;
-    const activity = buildProfileGeneticActivity(items);
-    const ownedPreviewItems = items.slice()
-  .sort((a, b) => Number(b.current_level || 0) - Number(a.current_level || 0))
-  .slice(0, 4);
-    const activeRuntime = active ? getGeneticRuntimeState(active) : 'idle';
-    const activeProgress = active ? getGeneticProgressPercent(active) : 0;
-    const accessCopy = holder.can_buy
-      ? (holder.has_genesis && holder.has_vip ? 'Genesis + VIP verified' : holder.has_genesis ? 'Genesis verified' : 'VIP verified')
-      : 'Preview-only until Genesis or VIP verification is active';
+function renderProfileGeneticsPanel(data) {
+  const items = Array.isArray(data?.items) ? data.items : [];
+  const summary = data?.summary || {};
+  const geneticAccess = data?.genetic_access || data?.holder_access || {};
+  const active = items.find((item) => getGeneticRuntimeState(item) === 'upgrading')
+    || items.find((item) => getGeneticRuntimeState(item) === 'ready')
+    || null;
+  const highest = items.slice().sort((a, b) => (Number(b.current_level || 0) - Number(a.current_level || 0)))[0] || null;
+  const activity = buildProfileGeneticActivity(items);
+  const ownedPreviewItems = items.slice()
+    .sort((a, b) => Number(b.current_level || 0) - Number(a.current_level || 0))
+    .slice(0, 4);
+  const activeRuntime = active ? getGeneticRuntimeState(active) : 'idle';
+  const activeProgress = active ? getGeneticProgressPercent(active) : 0;
+  const accessCopy = geneticAccess.can_buy
+    ? 'Discord access active'
+    : 'Login with Discord required';
 
-    return `
+  return `
       <div class="profile-genetics-shell">
         <section class="profile-genetics-hero">
           <div class="profile-genetics-hero-top">
             <span class="profile-genetics-kicker">🧬 Genetic Profile Bridge</span>
             <div class="profile-genetics-chip-row">
-              <span class="profile-genetics-chip">${holder.can_buy ? '✅ Genetic access active' : '🔒 Preview only'}</span>
+              <span class="profile-genetics-chip">${geneticAccess.can_buy ? '✅ Genetic access active' : '🔐 Login with Discord required'}</span>
               <span class="profile-genetics-chip">🎒 ${formatNumber(summary.total_items || 0)} owned</span>
               <span class="profile-genetics-chip">⚗️ ${formatNumber(summary.upgrading_items || 0)} upgrading</span>
             </div>
@@ -11832,7 +11832,7 @@ function renderProfileGeneticOwnedCard(item) {
           <div class="profile-genetics-hero-copy">This profile bridge surfaces the user-bound Genetic System that now runs in parallel to Genesis Lab. Outfit and Accessories traits bought through Genetic Shop remain Discord-owned items, follow the faster upgrade curve, and can later feed marketplace, admin, and Discord-bot visibility.</div>
           <div class="profile-genetics-actions">
             <a class="profile-genetics-btn primary" href="${PROFILE_GENETIC_CONFIG.labPageUrl}">🧪 Open Lab Runtime</a>
-            <a class="profile-genetics-btn secondary" href="stake-lab.html">🎴 Refresh Holder Access</a>
+            <a class="profile-genetics-btn secondary" href="stake-lab.html">🎴 Refresh Genesis Access</a>
           </div>
         </section>
 
@@ -11854,8 +11854,8 @@ function renderProfileGeneticOwnedCard(item) {
           </article>
           <article class="profile-genetics-card">
             <div class="profile-genetics-card-value">${escapeHtml(accessCopy)}</div>
-            <div class="profile-genetics-card-label">Holder Access</div>
-            <div class="profile-genetics-card-copy">Buying and upgrading stay gated by verified Genesis or VIP access.</div>
+            <div class="profile-genetics-card-label">Genetic Access</div>
+            <div class="profile-genetics-card-copy">Buying, upgrading, and trading are open to Discord-logged-in players. Genesis systems still require holder verification.</div>
           </article>
         </section>
 

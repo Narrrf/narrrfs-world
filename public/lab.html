@@ -3091,7 +3091,7 @@ body::after {
           <div class="glass p-5 md:p-6">
             <div class="section-title text-xl"><span>🚪</span><span>How access works</span></div>
             <div class="genetic-helper-list">
-              <div class="genetic-helper-item">Everyone can preview the Genetic Shop. Buying is unlocked only for verified <strong>Genesis</strong> or <strong>VIP</strong> holders.</div>
+              <div class="genetic-helper-item">Everyone can preview the Genetic Shop. Buying is unlocked for any player logged in with <strong>Discord</strong>.</div>
               <div class="genetic-helper-item">Bought traits do <strong>not</strong> attach to NFTs. They become Discord-bound Genetic Items owned by the player profile itself.</div>
               <div class="genetic-helper-item">This is the clean path for players who want missing Outfit or Accessories traits without already holding the exact NFT trait on-chain.</div>
             </div>
@@ -3182,7 +3182,7 @@ body::after {
         <div>
           <div class="section-title text-xl md:text-2xl"><span>🏪</span><span>Genetic Marketplace</span></div>
           <p class="mt-2 text-sm md:text-base text-slate-300">
-            Trade Discord-bound Genetic Items with other holders. Listings preserve full item progression, including level state, while staying completely separate from NFT-bound Genesis Lab identity.
+            Trade Discord-bound Genetic Items with other players. Listings preserve full item progression, including level state, while staying completely separate from NFT-bound Genesis Lab identity.
           </p>
         </div>
         <div class="text-sm text-slate-300">
@@ -3256,7 +3256,7 @@ body::after {
     <div class="glass p-5 md:p-6">
       <div class="section-title text-xl"><span>🧬</span><span>Genetic System Basics</span></div>
       <div class="genetic-helper-list">
-        <div class="genetic-helper-item">Genetic Shop lets verified Genesis or VIP holders buy missing Outfit and Accessories traits directly into Discord-bound inventory.</div>
+        <div class="genetic-helper-item">Genetic Shop lets Discord-logged-in players buy missing Outfit and Accessories traits directly into Discord-bound inventory.</div>
         <div class="genetic-helper-item">Genetic Inventory supports start, claim, instant finish, and shared Lab booster actions without mutating on-chain NFT identity.</div>
         <div class="genetic-helper-item">Marketplace listings transfer the full owned item state between players while respecting no-duplicate ownership rules.</div>
       </div>
@@ -6362,19 +6362,16 @@ function getGeneticRarityClass(rarity) {
 
 function getGeneticAccessLabel(access) {
   if (!state.userId) {
-    return 'Preview Only';
+    return 'Discord Login Required';
   }
-  if (access?.can_buy) {
-    return access.has_genesis && access.has_vip ? 'Genesis + VIP Unlocked' : (access.has_genesis ? 'Genesis Access Unlocked' : 'VIP Access Unlocked');
-  }
-  return 'Preview Only';
+  return 'Discord Access Unlocked';
 }
 
 function getGeneticLockedMessage() {
   if (!state.userId) {
-    return 'Login and verify Genesis or VIP to buy traits.';
+    return 'Login with Discord to buy Genetic traits.';
   }
-  return 'Preview is open to everyone. Buying unlocks after Genesis or VIP verification.';
+  return 'Genetic buying is available for every Discord-logged-in user.';
 }
 
 async function loadGeneticTraitCatalog() {
@@ -7984,18 +7981,17 @@ async function handleUseGeneticBooster(geneticItemId, itemId) {
 
 async function handleBuyGeneticTrait(catalogId) {
   const catalogItem = (Array.isArray(state.geneticCatalog) ? state.geneticCatalog : []).find(item => String(item.catalog_id) === String(catalogId));
-  if (!catalogItem) {
-    await showLabMessageModal({
-      eyebrow: 'Genetic Shop',
-      title: 'Trait Not Found',
-      icon: '⚠️',
-      message: 'The selected Genetic Shop item could not be found in the current catalog state.',
-      note: 'Refresh the Lab and try again.',
-      confirmText: 'Close',
-      confirmVariant: 'danger'
-    });
-    return;
-  }
+  if (!state.userId) {
+  await showLabMessageModal({
+    eyebrow: 'Genetic Shop',
+    title: 'Discord Login Required',
+    icon: '🔐',
+    message: 'Login with Discord to buy Genetic Shop items.',
+    note: 'Genetic items are Discord-bound and no longer require Genesis or VIP holder status.',
+    confirmText: 'Close'
+  });
+  return;
+}
 
   if (!catalogItem.can_buy) {
     await showLabMessageModal({
@@ -8016,7 +8012,7 @@ async function handleBuyGeneticTrait(catalogId) {
     message: `${catalogItem.trait_type} will be added to your Discord-bound Genetic Inventory.`,
     highlightLabel: 'Store Price',
     highlightValue: `${formatNumber(catalogItem.base_price_dspoinc || 0)} DSPOINC`,
-    note: 'The backend remains authoritative for holder access, duplicate ownership checks, and DSPOINC spend.',
+    note: 'The backend remains authoritative for Discord access, duplicate ownership checks, and DSPOINC spend.',
     confirmText: 'Buy Trait',
     cancelText: 'Cancel',
     confirmVariant: 'primary'

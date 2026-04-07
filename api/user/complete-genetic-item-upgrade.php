@@ -104,49 +104,14 @@ function resolve_user_id() {
     return $user_id;
 }
 
-function get_holder_access(PDO $pdo, string $userId): array {
-    if ($userId === '') {
-        return [
-            'has_genesis' => false,
-            'has_vip' => false,
-            'can_buy' => false
-        ];
-    }
-
-    $stmt = $pdo->prepare("
-        SELECT collection, nft_count
-        FROM tbl_holder_verifications
-        WHERE user_id = ?
-        ORDER BY verified_at DESC
-    ");
-    $stmt->execute([$userId]);
-
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-    $hasGenesis = false;
-    $hasVip = false;
-
-    foreach ($rows as $row) {
-        $collection = strtolower(trim((string)($row['collection'] ?? '')));
-        $nftCount = (int)($row['nft_count'] ?? 0);
-
-        if ($nftCount < 1) {
-            continue;
-        }
-
-        if (strpos($collection, 'genesis') !== false) {
-            $hasGenesis = true;
-        }
-
-        if (strpos($collection, 'vip') !== false) {
-            $hasVip = true;
-        }
-    }
+function get_genetic_access(string $userId): array {
+    $isLoggedIn = trim($userId) !== '';
 
     return [
-        'has_genesis' => $hasGenesis,
-        'has_vip' => $hasVip,
-        'can_buy' => ($hasGenesis || $hasVip)
+        'is_logged_in' => $isLoggedIn,
+        'has_genesis' => false,
+        'has_vip' => false,
+        'can_claim' => $isLoggedIn
     ];
 }
 
@@ -262,14 +227,14 @@ try {
 
     $pdo = getDatabaseConnection();
 
-    $holderAccess = get_holder_access($pdo, $userId);
-    if (!$holderAccess['can_buy']) {
-        json_response([
-            'success' => false,
-            'error' => 'Only verified Genesis or VIP holders can claim genetic upgrades',
-            'holder_access' => $holderAccess
-        ], 403);
-    }
+    $geneticAccess = get_genetic_access($userId);
+if (!$geneticAccess['can_claim']) {
+    json_response([
+        'success' => false,
+        'error' => 'Login with Discord to claim genetic upgrades',
+        'genetic_access' => $geneticAccess
+    ], 401);
+}
 
     $item = fetch_user_genetic_item($pdo, $userId, $geneticItemId);
     if (!$item) {
@@ -465,7 +430,8 @@ try {
             'max_level' => GENETIC_ITEM_MAX_LEVEL,
             'upgrade_status' => (string)($updatedItem['upgrade_status'] ?? 'idle'),
             'last_completed_at' => $updatedItem['last_completed_at'] ?? null,
-            'holder_access' => $holderAccess
+            'genetic_access' => $geneticAccess,
+            'holder_access' => $geneticAccess
         ]
     ]);
 } catch (PDOException $e) {

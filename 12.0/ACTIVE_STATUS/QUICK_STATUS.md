@@ -1,11 +1,11 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: March 29, 2026
-Status: ✅ LIVE — LAB EVOLUTION ACTIVE + BOOSTER/GENETIC STACK LIVE + MARKETPLACE FLOW CONNECTED
-Version: 2026-03-29
-Milestone: 🎯 Daily timeline synced through latest Lab ecosystem state (Genesis + Boosters + Genetic lane + Marketplace)
+Last Updated: April 7, 2026
+Status: ✅ LIVE — SEASON 10 LAB ACTIVE + GENETIC LANE OPENED TO DISCORD USERS + MARKETPLACE / UPGRADE FLOW EXPANDED
+Version: 2026-04-07
+Milestone: 🎯 Genetic lane rule split updated — Discord-open Genetic systems live while Genesis holder lane remains protected
 
-📋 TODAY — MARCH 29, 2026
+📋 TODAY — APRIL 7, 2026
 🧬 LAB ECOSYSTEM STATUS (LATEST DAILY SYNC)
 
 ✅ `public/lab.html` is now operating as a full ecosystem progression hub (not a side feature page)
@@ -16,6 +16,28 @@ Milestone: 🎯 Daily timeline synced through latest Lab ecosystem state (Genesi
 • Lab Booster time-control system (inventory-backed consumables)
 • Genetic item progression lane (Discord user-bound)
 • Genetic marketplace trading flow (listing / cancel / buy)
+
+🔓 GENETIC ACCESS RULE CHANGE (NEW)
+
+✅ Genetic lane is now being opened to all Discord-logged-in users
+
+New intended live rule:
+
+• Genetic Shop buy = Discord login required
+• Genetic Inventory ownership = Discord-bound
+• Genetic upgrades = Discord login required
+• Genetic marketplace listing = Discord login required
+• Genetic marketplace buying = Discord login required
+
+✅ Genesis lane remains holder-protected
+
+Still holder / verification gated:
+
+• Genesis NFT verification
+• Genesis trait upgrade chamber
+• Genesis identity and holder summary systems
+• staking / holder-only NFT verification rules
+• holder-first Genesis-specific perks
 
 ✅ Lab Booster layer remains locked to safe rules:
 
@@ -28,11 +50,13 @@ Milestone: 🎯 Daily timeline synced through latest Lab ecosystem state (Genesi
 • booster inventory retrieval and controlled exposure live
 • verified-holder airdrop onboarding executed
 
-✅ Genetic system maturity increased:
+✅ Genetic system rule split updated:
 
-• holder-gated trait catalog purchase flow active
-• user inventory + progression lifecycle direction active
-• strict separation preserved between NFT-bound Genesis state and user-bound genetic state
+• Genetic Shop purchase flow now targets Discord-authenticated users
+• Genetic inventory remains user-bound and separate from NFT-bound Genesis identity
+• Genetic upgrade flow now follows Discord session access instead of holder verification
+• Genetic marketplace buy/list/sell flow now targets Discord-authenticated users
+• strict separation preserved between NFT-bound Genesis state and user-bound Genetic state
 
 ✅ Genetic marketplace connected into live Lab loop:
 
@@ -40,6 +64,20 @@ Milestone: 🎯 Daily timeline synced through latest Lab ecosystem state (Genesi
 • cancel listing
 • buy listing
 • ownership / duplicate-trait safeguards active
+• marketplace purchase no longer depends on Genesis/VIP holder verification
+• listing / transfer keeps user-bound runtime state intact
+
+🧬 GENETIC UPGRADE FLOW (UPDATED)
+
+✅ Genetic upgrade backend expansion now in progress / aligned:
+
+• start Genetic upgrade moved to Discord-authenticated access
+• claim Genetic upgrade moved to Discord-authenticated access
+• instant finish Genetic upgrade is being aligned to the same Discord-authenticated access rule
+• listed Genetic items remain blocked from upgrade actions
+• only one active Genetic upgrade per user remains enforced
+• level cap remains 100
+• Genetic timing remains separate from NFT-bound Genesis identity
 
 ✅ Lab UX direction now reflects full command-center behavior:
 
@@ -49,11 +87,77 @@ Milestone: 🎯 Daily timeline synced through latest Lab ecosystem state (Genesi
 • active booster panel integration
 • runtime/state hardening
 
-⚠️ Active polish areas (known):
+⚠️ UI / DOC POLISH STILL OPEN
 
-• frontend/backend timer sync sensitivity
-• rapid-click / race-condition edge cases
-• final UX/mobile smoothing in complex Lab flows
+• lab.html still needs final wording cleanup in a few Genetic helper / modal / knowledge copy areas
+• profile.html still contains old holder-style Genetic access messaging in the Genetic bridge block
+• nerd-lab / status docs still need wording pass so they no longer describe Genetic buying as holder-gated
+• final cleanup still needed to remove stale holder-era wording from remaining Genetic-facing text
+
+🎯 CURRENT PRIORITIES
+Priority 1 — Genetic Lane Rollout Finalization
+
+• finalize Discord-open Genetic access across all 5 core APIs
+• finish lab.html Genetic wording cleanup
+• finish profile.html Genetic wording cleanup
+• confirm Genesis lane remains protected and separate
+
+Priority 2 — Status / Docs Sync
+
+• update QUICK_STATUS.md
+• update nerd-lab holder-facing system notes
+• remove outdated holder-gated Genetic wording from internal/public references
+
+Priority 3 — Admin / Visibility
+
+• expose clearer Genetic lane state inside admin/player profile views
+• improve visibility of owned Genetic items, upgrades, and marketplace state
+• preserve safe operator visibility without weakening Genesis gating
+
+Priority 4 — Economy / Abuse Monitoring
+
+• monitor Discord-open Genetic lane for alt-account abuse
+• watch duplicate-trait protection and marketplace spam behavior
+• audit DSPOINC spend rules against active staking freezes
+
+🚨 KNOWN RISK AREAS (UPDATED)
+
+• frontend vs backend time sync
+• multi-click / race-condition edges in Lab actions
+• inventory / upgrade / marketplace race conditions
+• alt-account farming risk after Genetic lane opening
+• low-trust marketplace spam risk from broader Discord access
+• stale UI wording causing confusion between Genesis vs Genetic authority
+• instant-finish Genetic upgrade file still needs final cleanup parity
+
+🧠 STRATEGIC STATE
+
+We now operate two cleaner progression lanes:
+
+✅ Genesis Lane
+• NFT-bound
+• holder verified
+• exact Genesis trait progression
+• long-term on-chain mouse identity
+
+✅ Genetic Lane
+• Discord-bound
+• user-owned trait inventory
+• buy / upgrade / trade flow
+• marketplace transfer of runtime state
+• separate from Genesis NFT authority
+
+✅ Shared Rules
+• backend remains authoritative
+• DSPOINC available balance = total ledger score - active frozen stakes
+• duplicate exact trait ownership protection remains active
+• Genesis and Genetic authority must stay separated
+
+🏁 FINAL STATUS
+
+Status: 🚀 SEASON 10 LIVE + LAB / MARKETPLACE / STAKING ACTIVE + GENETIC LANE OPENING TO DISCORD USERS
+Version: 2026-04-07
+Milestone: 🔓 GENETIC RULE SPLIT LIVE — DISCORD-OPEN GENETIC SYSTEMS EXPANDED WHILE GENESIS HOLDER LANE STAYS PROTECTED
 
 ---
 

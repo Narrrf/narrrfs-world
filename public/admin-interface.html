@@ -1469,6 +1469,49 @@
         <button onclick="giveItemToUser()" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">Give Item</button>
       </div>
 
+ 
+
+<!-- 🧬 Genetic Gift Block inclusive user search auto comeplte-->
+<div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mt-6">
+  <h4 class="text-lg font-semibold mb-3 text-pink-400">🧬 Gift Genetic Item</h4>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    
+    <div class="relative">
+  <input
+    type="text"
+    id="giveGeneticUserId"
+    placeholder="Search User ID or Username"
+    class="px-3 py-2 rounded text-gray-800 w-full"
+    oninput="giveGeneticSearchUsersInstant(this.value)"
+  >
+  <div
+    id="giveGeneticUserResults"
+    class="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded mt-1 max-h-40 overflow-y-auto"
+    style="display: none;"
+  ></div>
+</div>
+
+    <select id="giveGeneticCatalogId" class="px-3 py-2 rounded text-gray-800" onchange="updateAdminGeneticGiftPreview()">
+      <option value="">Select Genetic Item...</option>
+    </select>
+
+    <div id="giveGeneticPreview" class="px-3 py-2 bg-gray-700 rounded text-sm">
+      No item selected
+    </div>
+
+    <button
+      onclick="giftGeneticItemToUser()"
+      class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded"
+    >
+      Gift Genetic
+    </button>
+
+  </div>
+
+  <div id="giveGeneticStatus" class="mt-2 text-sm text-gray-300"></div>
+</div>
+
       <!-- Discord Bot Commands Reference -->
       <div class="bg-gradient-to-r from-purple-900 to-indigo-900 p-6 rounded-lg mb-6">
         <h3 class="text-xl font-semibold mb-4 text-yellow-400">🤖 Discord Bot Commands</h3>
@@ -10452,14 +10495,15 @@ function getAdminPlayerProfileMetricValue(primaryValue, fallbackValue) {
 
 function renderAdminPlayerProfileSubtabButtons(activeTab) {
   const tabs = [
-    ['overview', '🧠 Overview'],
-    ['lab', '🧬 Lab'],
-    ['inventory', '🎒 Inventory & Store'],
-    ['staking', '🧊 Staking'],
-    ['games', '🎮 Games & Achievements'],
-    ['traits', '🎴 Traits & NFTs'],
-    ['history', '📜 History / Admin Actions']
-  ];
+  ['overview', '🧠 Overview'],
+  ['lab', '🧬 Lab'],
+  ['inventory', '🎒 Inventory & Store'],
+  ['genetic', '🧬 Genetic'], // ✅ NEW
+  ['staking', '🧊 Staking'],
+  ['games', '🎮 Games & Achievements'],
+  ['traits', '🎴 Traits & NFTs'],
+  ['history', '📜 History / Admin Actions']
+];
 
   return `
     <div class="flex flex-wrap gap-2">
@@ -10842,6 +10886,77 @@ function renderAdminPlayerTraitsNftsSection(profile) {
   `;
 }
 
+function renderAdminPlayerGeneticSection(adminLabProfile) {
+  const geneticItems = Array.isArray(adminLabProfile?.genetic_items)
+    ? adminLabProfile.genetic_items
+    : [];
+
+  if (!geneticItems.length) {
+    return `
+      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-4 text-sm text-gray-300">
+        No Genetic items found for this player.
+      </div>
+    `;
+  }
+
+  const sortedItems = [...geneticItems].sort((a, b) => {
+    const levelDiff = Number(b.current_level || 0) - Number(a.current_level || 0);
+    if (levelDiff !== 0) {
+      return levelDiff;
+    }
+
+    const aTitle = String(a.display_title || a.trait_value || '').toLowerCase();
+    const bTitle = String(b.display_title || b.trait_value || '').toLowerCase();
+    return aTitle.localeCompare(bTitle);
+  });
+
+  return `
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      ${sortedItems.map(item => {
+        const title = item.display_title || item.trait_value || 'Unknown Trait';
+        const traitType = item.trait_type || 'Unknown';
+        const traitValue = item.trait_value || 'Unknown';
+        const rarity = item.rarity_tier || 'common';
+        const level = Number(item.current_level || 1);
+        const status = String(item.upgrade_status || 'idle');
+        const acquiredMethod = item.acquired_method || 'unknown';
+        const isListed = Number(item.is_listed_for_sale || 0) === 1;
+
+        const statusColor =
+          status === 'upgrading' ? 'text-cyan-300' :
+          status === 'ready_to_claim' ? 'text-green-300' :
+          'text-gray-300';
+
+        const listedBadge = isListed
+          ? `<span class="inline-block text-xs px-2 py-1 rounded bg-yellow-600 text-white font-semibold">Listed</span>`
+          : `<span class="inline-block text-xs px-2 py-1 rounded bg-gray-600 text-white font-semibold">Not Listed</span>`;
+
+        return `
+          <div class="bg-gray-800 bg-opacity-60 rounded-lg p-4 border border-gray-700">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <div class="text-lg font-bold text-pink-300">${escapeAdminProfileHtml(title)}</div>
+                <div class="text-xs text-gray-400">Genetic Item ID: ${escapeAdminProfileHtml(String(item.genetic_item_id || '-'))}</div>
+              </div>
+              ${listedBadge}
+            </div>
+
+            <div class="space-y-2 text-sm">
+              <div><span class="text-gray-400">Type:</span> <span class="text-white">${escapeAdminProfileHtml(traitType)}</span></div>
+              <div><span class="text-gray-400">Trait:</span> <span class="text-white">${escapeAdminProfileHtml(traitValue)}</span></div>
+              <div><span class="text-gray-400">Rarity:</span> <span class="text-white">${escapeAdminProfileHtml(rarity)}</span></div>
+              <div><span class="text-gray-400">Level:</span> <span class="text-green-300 font-semibold">Lv. ${escapeAdminProfileHtml(String(level))}</span></div>
+              <div><span class="text-gray-400">Status:</span> <span class="${statusColor} font-semibold">${escapeAdminProfileHtml(status)}</span></div>
+              <div><span class="text-gray-400">Acquired:</span> <span class="text-white">${escapeAdminProfileHtml(acquiredMethod)}</span></div>
+              <div><span class="text-gray-400">Catalog ID:</span> <span class="text-white">${escapeAdminProfileHtml(String(item.catalog_id || '-'))}</span></div>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
 function renderAdminPlayerHistorySection(profile) {
   const adminStoreActivity = profile.admin_store_activity || {};
   const purchaseHistory = Array.isArray(adminStoreActivity.purchase_history) ? adminStoreActivity.purchase_history : [];
@@ -10926,7 +11041,7 @@ function renderAdminPlayerHistorySection(profile) {
 }
 
 function switchAdminPlayerProfileSubtab(tabId) {
-  const validTabs = new Set(['overview', 'lab', 'inventory', 'staking', 'games', 'traits', 'history']);
+  const validTabs = new Set(['overview', 'lab', 'inventory', 'genetic', 'staking', 'games', 'traits', 'history']);
   const safeTab = validTabs.has(tabId) ? tabId : 'overview';
   window.currentAdminPlayerProfileSubtab = safeTab;
 
@@ -10949,29 +11064,35 @@ function renderAdminPlayerProfile(profile) {
   const activeTab = window.currentAdminPlayerProfileSubtab || 'overview';
 
   const tabContentMap = {
-    overview: renderAdminPlayerProfileOverviewSection(profile),
-    lab: `
-      <div class="stats-card">
-        <h4 class="text-lg font-semibold mb-4">🧬 Lab Progression</h4>
-        ${renderAdminPlayerLabSection(adminLabProfile)}
-      </div>
-    `,
-    inventory: `
-      <div class="stats-card">
-        <h4 class="text-lg font-semibold mb-4">🎒 Inventory & Store Activity</h4>
-        ${renderAdminPlayerInventorySection(profile, adminStoreActivity, storeCatalog)}
-      </div>
-    `,
-    staking: `
-      <div class="stats-card">
-        <h4 class="text-lg font-semibold mb-4">🧊 Staking Overview</h4>
-        ${renderAdminPlayerStakingOverview(stakingStats, stakingActivity)}
-      </div>
-    `,
-    games: renderAdminPlayerGamesAchievementsSection(profile),
-    traits: renderAdminPlayerTraitsNftsSection(profile),
-    history: renderAdminPlayerHistorySection(profile)
-  };
+  overview: renderAdminPlayerProfileOverviewSection(profile),
+  lab: `
+    <div class="stats-card">
+      <h4 class="text-lg font-semibold mb-4">🧬 Lab Progression</h4>
+      ${renderAdminPlayerLabSection(adminLabProfile)}
+    </div>
+  `,
+  inventory: `
+    <div class="stats-card">
+      <h4 class="text-lg font-semibold mb-4">🎒 Inventory & Store Activity</h4>
+      ${renderAdminPlayerInventorySection(profile, adminStoreActivity, storeCatalog)}
+    </div>
+  `,
+  genetic: `
+    <div class="stats-card">
+      <h4 class="text-lg font-semibold mb-4">🧬 Genetic Inventory</h4>
+      ${renderAdminPlayerGeneticSection(adminLabProfile)}
+    </div>
+  `,
+  staking: `
+    <div class="stats-card">
+      <h4 class="text-lg font-semibold mb-4">🧊 Staking Overview</h4>
+      ${renderAdminPlayerStakingOverview(stakingStats, stakingActivity)}
+    </div>
+  `,
+  games: renderAdminPlayerGamesAchievementsSection(profile),
+  traits: renderAdminPlayerTraitsNftsSection(profile),
+  history: renderAdminPlayerHistorySection(profile)
+};
 
   const formatNumberSafe = (value) => Number(value || 0).toLocaleString();
   const summary = adminLabProfile.summary || {};
@@ -12000,6 +12121,68 @@ async function refreshAdminPlayerProfileInventory() {
         }
       }, 300);
     }
+
+    function giveGeneticSearchUsersInstant(searchTerm) {
+  if (searchTimeout) clearTimeout(searchTimeout);
+
+  if (searchTerm.length < 2) {
+    document.getElementById('giveGeneticUserResults').innerHTML = '<div class="text-gray-300 p-2">Enter at least 2 characters to search...</div>';
+    document.getElementById('giveGeneticUserResults').style.display = 'none';
+    return;
+  }
+
+  searchTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'searchuser',
+          search: searchTerm
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        displayGiveGeneticUserResults(data.users || []);
+        document.getElementById('giveGeneticUserResults').style.display = 'block';
+      } else {
+        document.getElementById('giveGeneticUserResults').innerHTML = '<div class="text-gray-300 p-2">Search failed</div>';
+        document.getElementById('giveGeneticUserResults').style.display = 'block';
+      }
+    } catch (error) {
+      document.getElementById('giveGeneticUserResults').innerHTML = '<div class="text-gray-300 p-2">Search error</div>';
+      document.getElementById('giveGeneticUserResults').style.display = 'block';
+    }
+  }, 300);
+}
+
+function displayGiveGeneticUserResults(users) {
+  const container = document.getElementById('giveGeneticUserResults');
+
+  if (!users.length) {
+    container.innerHTML = '<div class="text-gray-300 p-2">No users found</div>';
+    return;
+  }
+
+  container.innerHTML = users.map(user => `
+    <div
+      class="p-2 hover:bg-gray-600 cursor-pointer border-b border-gray-600"
+      onclick="selectGiveGeneticUser('${user.user_id}', '${(user.username || 'Unknown User').replace(/'/g, "\\'")}')"
+    >
+      <div class="font-semibold text-white">${user.username || 'Unknown User'}</div>
+      <div class="text-sm text-gray-300">ID: ${user.user_id}</div>
+      <div class="text-sm text-yellow-400">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</div>
+    </div>
+  `).join('');
+}
+
+function selectGiveGeneticUser(userId, username) {
+  document.getElementById('giveGeneticUserId').value = userId;
+  document.getElementById('giveGeneticUserResults').style.display = 'none';
+  addLog(`✅ Selected user for Genetic Gift: ${username} (${userId})`);
+}
 
     // Display Give Item user search results
     function displayGiveItemUserResults(users) {
@@ -32126,7 +32309,119 @@ console.log('🐛 Parsed bug payload:', {
 
 let geneticAdminCatalog = [];
 let geneticAdminFiltered = [];
+let adminGiftGeneticCatalog = [];
 
+async function giftGeneticItemToUser() {
+  if (!currentAdmin) {
+    addLog('❌ Please authenticate first');
+    return;
+  }
+
+  const userId = document.getElementById('giveGeneticUserId')?.value?.trim() || '';
+  const catalogId = Number(document.getElementById('giveGeneticCatalogId')?.value || 0);
+
+  if (!userId || !catalogId) {
+    addLog('❌ Please provide a Discord User ID and select a Genetic item');
+    return;
+  }
+
+  const selectedItem = adminGiftGeneticCatalog.find(item => Number(item.catalog_id) === catalogId);
+  const itemLabel = selectedItem
+    ? `${selectedItem.display_title || selectedItem.trait_value} (${selectedItem.trait_type || 'Unknown'})`
+    : `catalog_id=${catalogId}`;
+
+  const confirmed = confirm(`Gift Genetic item "${itemLabel}" to user ${userId}?`);
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    addLog(`🧬 Gifting Genetic item "${itemLabel}" to user ${userId}...`);
+
+    const response = await fetch(API_BASE_URL + '/api/admin/genetic-management.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'gift_genetic_item',
+        user_id: userId,
+        catalog_id: catalogId,
+        given_by: currentAdmin.discord_id
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+  addLog(`✅ Successfully gifted Genetic item "${itemLabel}" to user ${userId}`);
+  showNotification(`✅ Genetic item gifted successfully`, 'success');
+
+  const statusEl = document.getElementById('giveGeneticStatus');
+  if (statusEl) {
+    statusEl.textContent = `Gifted ${itemLabel} to ${userId}`;
+  }
+
+  document.getElementById('giveGeneticUserId').value = '';
+
+  const resultsEl = document.getElementById('giveGeneticUserResults');
+  if (resultsEl) {
+    resultsEl.style.display = 'none';
+    resultsEl.innerHTML = '';
+  }
+
+  document.getElementById('giveGeneticCatalogId').value = '';
+  updateAdminGeneticGiftPreview();
+  return;
+}
+
+    const errorMessage = data?.error || 'Unknown gifting error';
+    addLog(`❌ Genetic gifting failed: ${errorMessage}`);
+    showNotification(`❌ ${errorMessage}`, 'error');
+
+    const statusEl = document.getElementById('giveGeneticStatus');
+    if (statusEl) {
+      statusEl.textContent = `Failed: ${errorMessage}`;
+    }
+  } catch (error) {
+    addLog(`❌ Genetic gifting request failed: ${error.message}`);
+    showNotification(`❌ ${error.message}`, 'error');
+
+    const statusEl = document.getElementById('giveGeneticStatus');
+    if (statusEl) {
+      statusEl.textContent = `Request failed: ${error.message}`;
+    }
+  }
+}
+
+
+function updateAdminGeneticGiftPreview() {
+  const select = document.getElementById('giveGeneticCatalogId');
+  const preview = document.getElementById('giveGeneticPreview');
+
+  if (!select || !preview) {
+    return;
+  }
+
+  const catalogId = Number(select.value || 0);
+  if (!catalogId) {
+    preview.textContent = 'No item selected';
+    return;
+  }
+
+  const item = adminGiftGeneticCatalog.find(entry => Number(entry.catalog_id) === catalogId);
+  if (!item) {
+    preview.textContent = 'Selected item not found';
+    return;
+  }
+
+  const title = item.display_title || item.trait_value || 'Unknown Trait';
+  const type = item.trait_type || 'Unknown';
+  const rarity = item.rarity_tier || 'common';
+  const status = (Number(item.is_active ?? 1) === 1 && Number(item.is_visible ?? 1) === 1)
+    ? 'active'
+    : 'hidden';
+
+  preview.textContent = `${title} • ${type} • ${rarity} • ${status}`;
+}
 /**
  * Safe helper: set text content when element exists.
  */
@@ -32159,6 +32454,10 @@ async function loadGeneticCatalogAdminStore() {
     geneticAdminCatalog = Array.isArray(data?.data?.items) ? data.data.items : [];
     geneticAdminFiltered = [...geneticAdminCatalog];
 
+    adminGiftGeneticCatalog = [...geneticAdminCatalog];
+    hydrateAdminGeneticGiftSelect(adminGiftGeneticCatalog);
+    updateAdminGeneticGiftPreview();
+
     applyGeneticAdminStoreFilters();
     updateGeneticAdminStoreSummary();
 
@@ -32183,6 +32482,36 @@ async function loadGeneticCatalogAdminStore() {
 
     addLog?.(`❌ Full genetic catalog load failed: ${error.message}`);
   }
+}
+
+function hydrateAdminGeneticGiftSelect(items) {
+  const select = document.getElementById('giveGeneticCatalogId');
+  if (!select) {
+    return;
+  }
+
+  const safeItems = Array.isArray(items) ? items : [];
+  const sortedItems = [...safeItems].sort((a, b) => {
+    const aTitle = String(a.display_title || a.trait_value || '').toLowerCase();
+    const bTitle = String(b.display_title || b.trait_value || '').toLowerCase();
+    return aTitle.localeCompare(bTitle);
+  });
+
+  if (!sortedItems.length) {
+    select.innerHTML = '<option value="">No genetic items found</option>';
+    return;
+  }
+
+  select.innerHTML = `
+    <option value="">Select Genetic Item...</option>
+    ${sortedItems.map(item => `
+      <option value="${Number(item.catalog_id)}">
+        ${String(item.display_title || item.trait_value || 'Unknown Trait')}
+        — ${String(item.trait_type || 'Unknown')}
+        — ${String(item.rarity_tier || 'common')}
+      </option>
+    `).join('')}
+  `;
 }
 
 /**
