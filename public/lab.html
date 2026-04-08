@@ -1013,216 +1013,211 @@
 
     .lab-tab-panel[hidden] { display: none !important; }
 
-    .viewer-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 1.25rem;
-      align-items: start;
-    }
+   .viewer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
 
-    .viewer-stage,
-    .queue-stage,
-    .knowledge-grid {
-      display: grid;
-      gap: 1rem;
-    }
+.viewer-stage,
+.queue-stage,
+.knowledge-grid {
+  display: grid;
+  gap: 1rem;
+}
 
-    .viewer-stage {
-      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr);
-      align-items: start;
-    }
+.viewer-stage {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
 
-    .viewer-stack {
-      display: grid;
-      gap: 1rem;
-      min-width: 0;
-    }
+/* Member workflow ordering: slider -> selected mouse -> snapshot */
+.viewer-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
 
-    .selected-stage-card {
-      min-height: 100%;
-    }
+.slider-stage-card {
+  order: 1;
+}
 
-    .slider-stage-card {
-      min-width: 0;
-    }
+#selectedGenesisMouseCard {
+  order: 2;
+}
 
-    .viewer-rail {
-      display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: minmax(210px, 230px);
-      gap: 0.9rem;
-      overflow-x: auto;
-      padding-bottom: 0.35rem;
-      scroll-snap-type: x proximity;
-      align-items: stretch;
-    }
+#selectedTraitSummary,
+.viewer-stage > .glass.p-5.md\:p-6:last-child {
+  order: 3;
+}
 
-    .viewer-rail::-webkit-scrollbar { height: 10px; }
-    .viewer-rail::-webkit-scrollbar-thumb {
-      background: rgba(148,163,184,0.24);
-      border-radius: 999px;
-    }
+.viewer-stack {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  align-content: start;
+}
 
-    .viewer-card {
-      scroll-snap-align: start;
-      min-height: 100%;
-    }
+.selected-stage-card,
+.slider-stage-card {
+  min-width: 0;
+  min-height: 0;
+}
 
-    .viewer-card.selected {
-      border-color: rgba(251,191,36,0.34);
-      box-shadow: 0 0 0 1px rgba(251,191,36,0.16), 0 24px 48px rgba(15,23,42,0.38);
-    }
+.slider-stage-card {
+  order: 1;
+}
 
-    .viewer-select {
-      min-width: 180px;
-      border-radius: 0.85rem;
-      border: 1px solid rgba(148,163,184,0.18);
-      background: rgba(15,23,42,0.82);
-      color: #fff;
-      padding: 0.85rem 1rem;
-      font-weight: 700;
-    }
+#selectedGenesisMouseCard {
+  order: 2;
+  position: relative;
+  overflow: visible;
+}
 
-    .slideshow-button {
-      min-width: 48px;
-      min-height: 48px;
-      border-radius: 14px;
-      border: 1px solid rgba(148,163,184,0.18);
-      background: rgba(15,23,42,0.78);
-      color: white;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: transform 0.18s ease, border-color 0.18s ease;
-    }
+#selectedTraitSummary,
+.viewer-stage > .glass.p-5.md\:p-6:last-child {
+  order: 3;
+}
 
-    .slideshow-button:hover {
-      transform: translateY(-1px);
-      border-color: rgba(34,211,238,0.35);
-    }
+.viewer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
 
-    .glass.dev-hidden,
-    .console-wrap { display: none !important; }
+.viewer-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 280px);
+  gap: 0.95rem;
+  overflow-x: auto;
+  padding: 0.2rem 0 0.5rem;
+  scroll-snap-type: x proximity;
+  align-items: stretch;
+  justify-content: start;
+}
 
-    .overview-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-      gap: 1.25rem;
-      align-items: start;
-    }
+.viewer-card {
+  scroll-snap-align: start;
+  min-height: 100%;
+  max-width: 280px;
+}
 
-    .knowledge-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+.viewer-select {
+  min-width: 220px;
+  max-width: 100%;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(148,163,184,0.18);
+  background: rgba(15,23,42,0.88);
+  color: #fff;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
 
-    .feature-list {
-      display: grid;
-      gap: 0.85rem;
-      margin-top: 1rem;
-    }
+.slideshow-button {
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,0.18);
+  background: rgba(15,23,42,0.82);
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
 
-    .feature-item {
-      padding: 0.95rem 1rem;
-      border-radius: 1rem;
-      background: rgba(15,23,42,0.58);
-      border: 1px solid rgba(148,163,184,0.14);
-    }
+.slideshow-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34,211,238,0.35);
+  background: rgba(30,41,59,0.94);
+}
 
-    .hero-action-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.85rem;
-      margin-top: 1rem;
-    }
+.glass.dev-hidden,
+.console-wrap {
+  display: none !important;
+}
 
-    .hero-action-card {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 0.7rem;
-      min-height: 132px;
-      padding: 1rem;
-      border-radius: 1rem;
-      border: 1px solid rgba(148,163,184,0.14);
-      background: linear-gradient(180deg, rgba(30,41,59,0.72), rgba(15,23,42,0.74));
-    }
+.overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 1.25rem;
+  align-items: start;
+}
 
-    .hero-action-card .label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #93c5fd;
-      font-weight: 800;
-    }
+.knowledge-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 
-    .hero-action-card .title {
-      font-size: 1rem;
-      line-height: 1.25rem;
-      font-weight: 800;
-      color: #fff;
-    }
+.feature-list {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
 
-    .hero-action-card .copy {
-      font-size: 0.9rem;
-      color: #cbd5e1;
-    }
+.feature-item {
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  background: rgba(15,23,42,0.58);
+  border: 1px solid rgba(148,163,184,0.14);
+}
 
-    .hero-action-card .btn {
-      width: 100%;
-      justify-content: center;
-    }
+.hero-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
 
-    .queue-highlight {
-      padding: 1rem 1.1rem;
-      border-radius: 1rem;
-      border: 1px solid rgba(16,185,129,0.16);
-      background: linear-gradient(180deg, rgba(16,185,129,0.12), rgba(15,23,42,0.4));
-    }
+.hero-action-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.7rem;
+  min-height: 132px;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(148,163,184,0.14);
+  background: linear-gradient(180deg, rgba(30,41,59,0.72), rgba(15,23,42,0.74));
+}
 
-    @media (max-width: 1100px) {
-      .game-hero,
-      .overview-grid,
-      .viewer-grid,
-      .knowledge-grid,
-      .viewer-stage {
-        grid-template-columns: 1fr;
-      }
+.hero-action-card .label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #93c5fd;
+  font-weight: 800;
+}
 
-      .benefit-list,
-      .summary-stat-grid,
-      .hero-action-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+.hero-action-card .title {
+  font-size: 1rem;
+  line-height: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+}
 
-    @media (max-width: 720px) {
-      .viewer-controls {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, auto)) minmax(0, 1fr);
-        gap: 0.65rem;
-        align-items: center;
-      }
+.hero-action-card .copy {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
 
-      .viewer-controls .chip {
-        grid-column: 1 / -1;
-        text-align: center;
-      }
+.hero-action-card .btn {
+  width: 100%;
+  justify-content: center;
+}
 
-      .viewer-select {
-        min-width: 0;
-        width: 100%;
-        grid-column: 1 / -1;
-      }
+.queue-highlight {
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(16,185,129,0.16);
+  background: linear-gradient(180deg, rgba(16,185,129,0.12), rgba(15,23,42,0.4));
+}
 
-      .viewer-rail {
-        grid-auto-columns: minmax(180px, 82vw);
-      }
-    }
-
-    /* =========================================================
-   GENESIS LAB VISUAL OVERRIDE — STRONGER, CURRENT FILE ONLY
-   Keeps structure. Changes visuals enough to actually show.
-   ========================================================= */
-
+/* stronger page atmosphere */
 :root {
   --lab-pink-1: rgba(244, 114, 182, 0.24);
   --lab-pink-2: rgba(236, 72, 153, 0.18);
@@ -1233,7 +1228,6 @@
   --lab-panel-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
 }
 
-/* stronger page atmosphere */
 body {
   background:
     radial-gradient(circle at 8% 10%, var(--lab-pink-1), transparent 20%),
@@ -1243,7 +1237,6 @@ body {
     linear-gradient(135deg, #020617 0%, #081225 36%, #101935 72%, #172554 100%) !important;
 }
 
-/* visible lab overlay */
 body::before {
   content: "";
   position: fixed;
@@ -1262,7 +1255,6 @@ body::before {
   mix-blend-mode: screen;
 }
 
-/* pinky-and-brain style circular tube rings */
 body::after {
   content: "";
   position: fixed;
@@ -1277,7 +1269,6 @@ body::after {
     radial-gradient(circle at 86% 82%, transparent 0 92px, rgba(244,114,182,0.10) 94px 99px, transparent 101px);
 }
 
-/* make the grid much more like a lab HUD */
 .bg-grid {
   opacity: 0.34 !important;
   background-image:
@@ -1286,7 +1277,6 @@ body::after {
   background-size: 24px 24px !important;
 }
 
-/* recolor the floating orbs so the background visibly changes */
 .orb.one {
   background: rgba(244, 114, 182, 0.42) !important;
   opacity: 0.36 !important;
@@ -1323,7 +1313,6 @@ body::after {
   background: rgba(255,255,255,0.06);
 }
 
-/* give main glass panels a more obvious lab-card style */
 .glass,
 .hero-panel,
 .benefit-card,
@@ -1335,7 +1324,6 @@ body::after {
   box-shadow: var(--lab-panel-shadow) !important;
 }
 
-/* stronger hero feel */
 .hero-panel {
   background:
     radial-gradient(circle at top right, rgba(251,191,36,0.08), transparent 26%),
@@ -1343,7 +1331,6 @@ body::after {
     linear-gradient(180deg, rgba(15,23,42,0.90), rgba(15,23,42,0.76)) !important;
 }
 
-/* more visible warm sheen */
 .hero-panel::before {
   width: 320px !important;
   height: 320px !important;
@@ -1351,10 +1338,8 @@ body::after {
   opacity: 0.95 !important;
 }
 
-/* make the right side cards stand out more */
 .summary-stat {
-  background:
-    linear-gradient(180deg, rgba(30,41,59,0.94), rgba(15,23,42,0.82)) !important;
+  background: linear-gradient(180deg, rgba(30,41,59,0.94), rgba(15,23,42,0.82)) !important;
 }
 
 .hero-action-card {
@@ -1370,7 +1355,6 @@ body::after {
   box-shadow: 0 22px 36px rgba(0,0,0,0.34) !important;
 }
 
-/* more premium chips */
 .chip {
   background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04)) !important;
   border-color: rgba(255,255,255,0.16) !important;
@@ -1382,7 +1366,6 @@ body::after {
   box-shadow: 0 10px 22px rgba(251,191,36,0.12) !important;
 }
 
-/* buttons visibly warmer */
 .btn.primary {
   background: linear-gradient(135deg, #2563eb, #0ea5e9) !important;
   box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22) !important;
@@ -1396,46 +1379,15 @@ body::after {
   transform: translateY(-1px);
 }
 
-/* knowledge cards also get themed so lower page changes are visible */
 .feature-item,
 .queue-highlight {
-  background:
-    linear-gradient(180deg, rgba(15,23,42,0.80), rgba(15,23,42,0.66)) !important;
-}
-
-/* mobile safety */
-@media (max-width: 900px) {
-  body::after {
-    opacity: 0.20;
-  }
-
-  .orb.one,
-  .orb.two,
-  .orb.three {
-    opacity: 0.18 !important;
-    filter: blur(42px) !important;
-  }
-}
-
-@media (max-width: 720px) {
-  body::before {
-    opacity: 0.18;
-  }
-
-  body::after {
-    opacity: 0.12;
-  }
-
-  .bg-grid {
-    opacity: 0.18 !important;
-  }
+  background: linear-gradient(180deg, rgba(15,23,42,0.80), rgba(15,23,42,0.66)) !important;
 }
 
 .trait-card-accordion {
   border: 1px solid rgba(59, 130, 246, 0.18);
   border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(10, 15, 30, 0.96));
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(10, 15, 30, 0.96));
   overflow: hidden;
   box-shadow: 0 12px 30px rgba(2, 8, 23, 0.28);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -1483,7 +1435,7 @@ body::after {
 
 .trait-card-kicker {
   font-size: 11px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(148, 163, 184, 0.9);
 }
@@ -1512,7 +1464,7 @@ body::after {
 .trait-toggle-stat-label {
   display: block;
   font-size: 10px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(148, 163, 184, 0.88);
 }
@@ -1554,7 +1506,7 @@ body::after {
   border-radius: 999px;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -1595,6 +1547,7 @@ body::after {
   gap: 10px;
   font-size: 12px;
   color: #cbd5e1;
+  line-height: 1.4;
 }
 
 .mini-progress-track {
@@ -1628,6 +1581,78 @@ body::after {
   background: rgba(248, 113, 113, 0.5);
 }
 
+/* better ability / queue / booster readability */
+.queue-card {
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.queue-mini-pill,
+.pill,
+.status-pill {
+  letter-spacing: 0.03em;
+}
+
+.queue-progress-label,
+.queue-progress-subtext,
+.mini-progress-label {
+  line-height: 1.45;
+}
+
+.queue-progress-label {
+  font-size: 0.86rem;
+}
+
+.queue-progress-subtext {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.booster-panel {
+  border-radius: 20px;
+  padding: 18px;
+}
+
+.booster-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.booster-card {
+  min-width: 0;
+}
+
+.booster-owned {
+  font-size: 0.74rem;
+  letter-spacing: 0.03em;
+}
+
+/* responsive */
+@media (max-width: 1100px) {
+  .game-hero,
+  .overview-grid,
+  .viewer-grid,
+  .knowledge-grid,
+  .viewer-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .benefit-list,
+  .summary-stat-grid,
+  .hero-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .viewer-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .booster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1024px) {
   .trait-card-toggle-main {
     grid-template-columns: 1fr;
@@ -1638,17 +1663,6 @@ body::after {
   }
 }
 
-@media (max-width: 640px) {
-  .trait-card-toggle-stats {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* =========================================================
-   MOBILE COMPATIBILITY HARDENING
-   Reduce heavy visual effects and force chamber content to paint
-   cleanly on Android / in-app browsers below the slider area.
-   ========================================================= */
 @media (max-width: 768px) {
   .shell {
     width: min(100%, calc(100% - 12px));
@@ -1660,6 +1674,38 @@ body::after {
   .viewer-stack {
     grid-template-columns: 1fr !important;
     gap: 0.9rem !important;
+  }
+
+  .slider-stage-card {
+    order: -1;
+  }
+
+  .viewer-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: stretch;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .viewer-controls .chip {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .viewer-controls > *:not(.chip) {
+    flex: 1 1 auto;
+  }
+
+  .viewer-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .viewer-rail {
+    grid-auto-columns: minmax(78vw, 78vw);
+    padding-bottom: 0.25rem;
   }
 
   .selected-stage-card,
@@ -1692,7 +1738,8 @@ body::after {
   .booster-panel,
   .booster-card,
   .kv,
-  .trait-summary-card {
+  .trait-summary-card,
+  .queue-card {
     overflow: visible !important;
   }
 
@@ -1700,8 +1747,6 @@ body::after {
     grid-template-columns: 1fr;
   }
 
-  /* Android / mobile WebView paint safety: heavy backdrop filters can
-     cause lower sections to vanish after horizontal slider rendering. */
   .glass,
   .hero-panel,
   .booster-panel,
@@ -1718,6 +1763,100 @@ body::after {
   body::after,
   .bg-grid,
   .orb {
+    display: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  body::before {
+    opacity: 0.18;
+  }
+
+  body::after {
+    opacity: 0.12;
+  }
+
+  .bg-grid {
+    opacity: 0.18 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .trait-card-toggle-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .viewer-rail {
+    grid-auto-columns: minmax(84vw, 84vw);
+  }
+
+  .queue-progress-label,
+  .mini-progress-label {
+    font-size: 0.8rem;
+  }
+
+  .queue-progress-subtext {
+    font-size: 0.84rem;
+  }
+}
+
+/* =========================================================
+   RIGHT-SIDE QUEUE READABILITY HOTFIX
+   ========================================================= */
+
+.queue-card,
+.queue-card * {
+  text-shadow: none !important;
+}
+
+.queue-card {
+  overflow: hidden;
+  padding: 18px !important;
+}
+
+.queue-card-inner {
+  position: relative;
+  z-index: 2;
+}
+
+.queue-nft-ghost {
+  width: 28% !important;
+  max-width: 96px !important;
+  opacity: 0.045 !important;
+  transform: translate(6px, 8px) !important;
+}
+
+.queue-mini-pill,
+.status-pill,
+.pill {
+  font-size: 0.74rem !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.1 !important;
+}
+
+.metric-label,
+.trait-card-kicker,
+.trait-toggle-stat-label {
+  font-size: 0.68rem !important;
+  letter-spacing: 0.08em !important;
+}
+
+.queue-progress-label,
+.queue-progress-subtext,
+.mini-progress-label,
+.metric-hint {
+  font-size: 0.86rem !important;
+  line-height: 1.45 !important;
+}
+
+.queue-progress-subtext {
+  color: #dbe7f5 !important;
+}
+
+@media (max-width: 1100px) {
+  .queue-nft-ghost {
     display: none !important;
   }
 }
@@ -3262,6 +3401,26 @@ body::after {
 
     <div class="viewer-grid mt-5">
       <div class="viewer-stage">
+        <div class="glass p-5 md:p-6 slider-stage-card">
+          <div class="flex flex-col gap-4">
+            <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+              <div>
+                <div class="section-title text-xl md:text-2xl"><span>🧬</span><span>Verified Collection Slider</span></div>
+                <p class="mt-2 text-sm text-slate-300">Quick-slide through your verified Genesis mice. The big featured mouse updates instantly when you switch.</p>
+              </div>
+
+              <div class="viewer-controls">
+                <button id="nftPrevButton" type="button" class="slideshow-button" aria-label="Previous Genesis mouse">←</button>
+                <button id="nftNextButton" type="button" class="slideshow-button" aria-label="Next Genesis mouse">→</button>
+                <select id="nftQuickSelect" class="viewer-select" aria-label="Select Genesis mouse"></select>
+                <span id="nftCountBadge" class="chip">Loading Genesis mice…</span>
+              </div>
+            </div>
+
+            <div id="nftGrid" class="viewer-rail"></div>
+          </div>
+        </div>
+
         <div id="selectedGenesisMouseCard" class="glass p-5 md:p-6 selected-stage-card">
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -3305,32 +3464,10 @@ body::after {
   <div id="genesisAbilityQueueBox" class="ability-queue-box"></div>
 </div>
 
-        <div class="viewer-stack">
-          <div class="glass p-5 md:p-6 slider-stage-card">
-            <div class="flex flex-col gap-4">
-              <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-                <div>
-                  <div class="section-title text-xl md:text-2xl"><span>🧬</span><span>Verified Collection Slider</span></div>
-                  <p class="mt-2 text-sm text-slate-300">Quick-slide through your verified Genesis mice. The big featured mouse updates instantly when you switch.</p>
-                </div>
-
-                <div class="viewer-controls">
-                  <button id="nftPrevButton" type="button" class="slideshow-button" aria-label="Previous Genesis mouse">←</button>
-                  <button id="nftNextButton" type="button" class="slideshow-button" aria-label="Next Genesis mouse">→</button>
-                  <select id="nftQuickSelect" class="viewer-select" aria-label="Select Genesis mouse"></select>
-                  <span id="nftCountBadge" class="chip">Loading Genesis mice…</span>
-                </div>
-              </div>
-
-              <div id="nftGrid" class="viewer-rail"></div>
-            </div>
-          </div>
-
-          <div class="glass p-5 md:p-6">
-            <div class="section-title text-lg md:text-xl"><span>📈</span><span>Selected Mouse Snapshot</span></div>
-            <p class="mt-2 text-sm text-slate-300">Review this mouse’s lab power, ready claims, strongest trait, and current chamber state before opening a research action.</p>
-            <div id="selectedTraitSummary" class="trait-summary-grid mt-4"></div>
-          </div>
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-lg md:text-xl"><span>📈</span><span>Selected Mouse Snapshot</span></div>
+          <p class="mt-2 text-sm text-slate-300">Review this mouse’s lab power, ready claims, strongest trait, and current chamber state before opening a research action.</p>
+          <div id="selectedTraitSummary" class="trait-summary-grid mt-4"></div>
         </div>
       </div>
 
@@ -4887,6 +5024,44 @@ function openGenesisLabFromQueue(tokenId) {
   });
 }
 
+async function claimReadyForSelectedNft(tokenId) {
+  const safeTokenId = String(tokenId || '').trim();
+  if (!safeTokenId) {
+    return;
+  }
+
+  selectNftByTokenId(safeTokenId, { scrollToResearch: false });
+
+  const nft = getVerifiedGenesisNfts().find(item => String(item?.token_id || '') === safeTokenId);
+  if (!nft) {
+    logLab('Selected Genesis mouse was not found.', 'error');
+    return;
+  }
+
+  const traits = normalizeNftTraits(nft);
+  const readyTrait = traits.find(trait => {
+    const row = getTraitUpgradeDisplayRow(nft, trait);
+    return mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at) === 'ready';
+  });
+
+  if (!readyTrait) {
+    openGenesisLabFromQueue(safeTokenId);
+    return;
+  }
+
+  const row = getTraitUpgradeDisplayRow(nft, readyTrait);
+  if (!row) {
+    openGenesisLabFromQueue(safeTokenId);
+    return;
+  }
+
+  await handleClaimUpgrade(
+    String(nft.token_id || ''),
+    String(row.trait_type || ''),
+    String(row.trait_value || '')
+  );
+}
+
 function getQueueBoosterTone(activeRow) {
   const boosterItemId = Number(activeRow?.active_booster_item_id || 0);
 
@@ -5173,12 +5348,49 @@ function renderNftGrid() {
 
   renderVerificationWarning('', false);
 
-  el.nftGrid.innerHTML = verified.map((nft, index) => {
+  const selectedTokenId = String(state.selectedNft?.token_id || '');
+  const selectedIndex = Math.max(
+    0,
+    verified.findIndex(nft => String(nft.token_id || '') === selectedTokenId)
+  );
+
+  const windowRadius = window.innerWidth <= 768 ? 1 : 2;
+  const visibleIndexes = [];
+
+  for (let offset = -windowRadius; offset <= windowRadius; offset += 1) {
+    let index = selectedIndex + offset;
+
+    if (index < 0) {
+      index = verified.length + index;
+    }
+
+    if (index >= verified.length) {
+      index = index - verified.length;
+    }
+
+    if (!visibleIndexes.includes(index)) {
+      visibleIndexes.push(index);
+    }
+  }
+
+  const visibleNfts = visibleIndexes.map(index => ({
+    nft: verified[index],
+    index
+  }));
+
+  el.nftGrid.innerHTML = visibleNfts.map(({ nft, index }) => {
     const summary = getNftUpgradeSummary(nft);
     const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
     const traits = normalizeNftTraits(nft);
-    const primaryAction = getPrimaryNftAction(summary);
     const tokenId = String(nft.token_id || '');
+    const hasReady = Number(summary?.readyCount || 0) > 0;
+    const actionLabel = hasReady
+      ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
+      : '🧪 View Research';
+    const actionClass = hasReady ? 'success' : 'warn';
+    const actionHandler = hasReady
+      ? `claimReadyForSelectedNft('${escapeHtml(String(tokenId))}')`
+      : `openGenesisLabFromQueue('${escapeHtml(String(tokenId))}')`;
 
     return `
       <div
@@ -5213,9 +5425,10 @@ function renderNftGrid() {
         <div class="nft-card-action-row">
           <button
             type="button"
-            class="btn compact ${primaryAction.className}"
-            data-open-research="${escapeHtml(tokenId)}">
-            ${escapeHtml(primaryAction.label)}
+            class="btn compact ${actionClass}"
+            data-open-research="true"
+            onclick="${actionHandler}">
+            ${actionLabel}
           </button>
         </div>
       </div>
@@ -5239,18 +5452,6 @@ function renderNftGrid() {
       const tokenId = card.getAttribute('data-select-nft') || '';
       if (!tokenId) return;
       selectNftByTokenId(tokenId, { scrollToResearch: false });
-    });
-  });
-
-  el.nftGrid.querySelectorAll('[data-open-research]').forEach(button => {
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      const tokenId = button.getAttribute('data-open-research') || '';
-      if (!tokenId) return;
-
-      selectNftByTokenId(tokenId, { scrollToResearch: true });
     });
   });
 
