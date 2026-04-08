@@ -32,12 +32,18 @@ session_start();
 
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf local fallback
 
+foreach ($discordSecretCandidates as $discordSecretPath) {
+    if (file_exists($discordSecretPath)) {
+        include_once $discordSecretPath;
+        break;
+    }
+}
+
 function json_response(array $payload, int $code = 200): void {
     http_response_code($code);
     echo json_encode($payload);
     exit;
 }
-
 /**
  * Return true when running in localhost-style development.
  */

@@ -232,6 +232,40 @@ require_once 'discord-invite.php';
                   </div>
                 </div>
 
+                <div class="bg-black/30 rounded-2xl border border-emerald-400/30 p-6">
+                  <h3 class="text-2xl font-bold text-emerald-300 mb-4">April 8 update — Genesis Ability Matrix (new live feature)</h3>
+                  <p class="text-slate-200 mb-4">
+                    Genesis Ability Matrix is now a working backend feature in the Lab flow (read + start + timer live). This is a Genesis lane feature and stays NFT-bound.
+                  </p>
+                  <div class="grid lg:grid-cols-2 gap-6">
+                    <div>
+                      <div class="font-bold text-cyan-300 mb-3">3 ability categories (9 total abilities)</div>
+                      <ul class="list-disc pl-6 space-y-2 text-slate-200">
+                        <li><strong>Fitness:</strong> HP / SPEED / AIR</li>
+                        <li><strong>Weapons:</strong> ATK / DEF / SPECIAL</li>
+                        <li><strong>Education:</strong> SPELLS / CRAFTING / EXPANSION</li>
+                        <li>Unlock source = highest single Genesis trait level on that NFT</li>
+                        <li>One active ability upgrade per NFT</li>
+                        <li>Level cap remains 100</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <div class="font-bold text-yellow-300 mb-3">Player steps available now</div>
+                      <ol class="list-decimal pl-6 space-y-2 text-slate-200">
+                        <li>Open <strong>My Genesis Lab</strong> and select a verified Genesis mouse</li>
+                        <li>Read matrix state via backend (current levels + unlock map + DSPOINC)</li>
+                        <li>Choose an unlocked ability and start upgrade</li>
+                        <li>System validates ownership, unlock rules, and DSPOINC</li>
+                        <li>Upgrade enters active timer state (<code>upgrading</code>)</li>
+                        <li>Read loop reflects progress until completion window is reached</li>
+                      </ol>
+                    </div>
+                  </div>
+                  <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
+                    <strong class="text-yellow-300">Current phase:</strong> backend loop is confirmed live; full Lab UI/queue/admin/profile visibility polish is still in progress.
+                  </div>
+                </div>
+
                 
 
                 <div class="bg-black/30 rounded-2xl border border-cyan-400/20 p-6">
@@ -276,6 +310,8 @@ require_once 'discord-invite.php';
                     <div>
                       <div class="font-bold text-cyan-300 mb-2">Lab APIs</div>
                       <ul class="list-disc pl-5 space-y-1">
+                        <li>/api/user/get-nft-ability-upgrades.php</li>
+                        <li>/api/user/start-nft-ability-upgrade.php</li>
                         <li>/api/user/get-nft-trait-upgrades.php</li>
                         <li>/api/user/start-nft-trait-upgrade.php</li>
                         <li>/api/user/complete-nft-trait-upgrade.php</li>

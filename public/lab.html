@@ -2819,7 +2819,282 @@ body::after {
   bottom: 6px;
 }
 
+/* 🧬 Genesis Ability Matrix — Premium Lab Styling */
+.genesis-ability-matrix {
+  margin-top: 1.5rem;
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent 28%),
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.08), transparent 28%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 0 28px rgba(168, 85, 247, 0.12);
+}
 
+.ability-status-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.ability-status-bar > div {
+  padding: 0.85rem 1rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.68);
+  color: #e2e8f0;
+  font-size: 0.92rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.ability-status-bar strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.ability-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+
+.ability-tab {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(30, 41, 59, 0.72);
+  color: #cbd5e1;
+  font-weight: 700;
+  font-size: 0.84rem;
+  padding: 0.72rem 1rem;
+  border-radius: 999px;
+  transition: all 0.22s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+
+.ability-tab:hover {
+  transform: translateY(-1px);
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #f8fafc;
+}
+
+.ability-tab.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.32), rgba(59, 130, 246, 0.24));
+  border-color: rgba(168, 85, 247, 0.55);
+  color: #ffffff;
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.18);
+}
+
+.ability-tab.locked {
+  opacity: 0.62;
+  border-style: dashed;
+}
+
+.ability-tab-meta {
+  margin-bottom: 1rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.9rem;
+  background: rgba(51, 65, 85, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  color: #cbd5e1;
+  font-size: 0.92rem;
+}
+
+.ability-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ability-card {
+  border-radius: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.9));
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.ability-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(251, 191, 36, 0.28);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.28),
+    0 0 20px rgba(34, 211, 238, 0.08);
+}
+
+.ability-card.locked {
+  opacity: 0.78;
+  border-style: dashed;
+  background:
+    linear-gradient(180deg, rgba(51, 65, 85, 0.82), rgba(30, 41, 59, 0.82));
+}
+
+.ability-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
+.ability-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #f8fafc;
+}
+
+.ability-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(71, 85, 105, 0.55);
+  color: #e2e8f0;
+}
+
+.ability-badge.idle {
+  background: rgba(14, 165, 233, 0.15);
+  color: #67e8f9;
+  border-color: rgba(34, 211, 238, 0.25);
+}
+
+.ability-badge.upgrading {
+  background: rgba(168, 85, 247, 0.18);
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.ability-badge.maxed {
+  background: rgba(16, 185, 129, 0.18);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.ability-badge.locked {
+  background: rgba(100, 116, 139, 0.22);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+.ability-card-stats {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.ability-card-stats > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.58rem 0.72rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.62);
+  color: #e2e8f0;
+  font-size: 0.88rem;
+}
+
+.ability-card-stats strong {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.ability-card-actions {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.ability-upgrade-btn {
+  width: 100%;
+  border: none;
+  border-radius: 0.85rem;
+  padding: 0.82rem 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #082f49;
+  background: linear-gradient(135deg, #67e8f9, #22d3ee, #fbbf24);
+  box-shadow: 0 10px 24px rgba(34, 211, 238, 0.16);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, opacity 0.22s ease;
+}
+
+.ability-upgrade-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(34, 211, 238, 0.22);
+}
+
+.ability-upgrade-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+  color: #cbd5e1;
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.8), rgba(51, 65, 85, 0.84));
+  box-shadow: none;
+}
+
+.ability-note {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.72rem 0.8rem;
+}
+
+.ability-queue-box {
+  margin-top: 1rem;
+  padding: 0.95rem 1rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.82), rgba(15, 23, 42, 0.88));
+  color: #e2e8f0;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+
+.ability-queue-box strong {
+  color: #fbbf24;
+}
+
+@media (max-width: 1100px) {
+  .ability-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ability-status-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ability-card.upgrading {
+  border-color: rgba(34, 211, 238, 0.35);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.12), 0 12px 28px rgba(34, 211, 238, 0.10);
+}
+
+.ability-instant-btn {
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #cbd5e1;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+}
 
 </style>
 </head>
@@ -2996,7 +3271,39 @@ body::after {
             <span id="selectedNftStatus" class="pill idle">No Genesis mouse selected</span>
           </div>
           <div id="selectedNftPanel" class="mt-5"></div>
-        </div>
+          <div id="genesisAbilityMatrixSection" class="lab-panel genesis-ability-matrix hidden mt-5">
+  <div class="panel-header">
+    <h3>Genesis Ability Matrix</h3>
+    <div class="panel-subtext">
+      Token-bound ability progression for the selected verified Genesis NFT.
+    </div>
+  </div>
+
+  <div id="genesisAbilityStatusBar" class="ability-status-bar">
+    <div>
+      <strong>Available DSPOINC:</strong>
+      <span id="genesisAbilityAvailableDsp">--</span>
+    </div>
+    <div>
+      <strong>Highest Genesis Trait Level:</strong>
+      <span id="genesisAbilityHighestTrait">--</span>
+    </div>
+    <div>
+      <strong>Active Ability Upgrade:</strong>
+      <span id="genesisAbilityActiveStatus">None</span>
+    </div>
+  </div>
+
+  <div class="ability-tabs">
+    <button class="ability-tab active" data-ability-tab="fitness" type="button">Fitness</button>
+    <button class="ability-tab" data-ability-tab="weapons" type="button">Weapons</button>
+    <button class="ability-tab" data-ability-tab="education" type="button">Education</button>
+  </div>
+
+  <div id="genesisAbilityTabMeta" class="ability-tab-meta"></div>
+  <div id="genesisAbilityCards" class="ability-cards-grid"></div>
+  <div id="genesisAbilityQueueBox" class="ability-queue-box"></div>
+</div>
 
         <div class="viewer-stack">
           <div class="glass p-5 md:p-6 slider-stage-card">
@@ -3263,6 +3570,46 @@ body::after {
     </div>
 
     <div class="glass p-5 md:p-6">
+  <div class="section-title text-xl"><span>⚡</span><span>Genesis Ability Matrix</span></div>
+  <div class="genetic-helper-list">
+    <div class="genetic-helper-item">
+      Each verified Genesis mouse now owns a <strong>9-stat ability matrix</strong> split into Fitness, Weapons, and Education categories.
+    </div>
+    <div class="genetic-helper-item">
+      Ability progression is <strong>NFT-bound</strong> and never mixed with Discord-bound Genetic items.
+    </div>
+    <div class="genetic-helper-item">
+      Only <strong>one active ability upgrade per Genesis mouse</strong> can run at a time.
+    </div>
+    <div class="genetic-helper-item">
+      Unlocks depend on the <strong>highest trait level</strong> on that specific mouse.
+    </div>
+    <div class="genetic-helper-item">
+      Ability upgrades consume <strong>DSPOINC</strong> and run on timed research cycles similar to Lab traits.
+    </div>
+  </div>
+
+  <!-- 🚧 FUTURE UI MOUNT POINT -->
+  <div id="genesisAbilityPanel" class="mt-5">
+    <!-- 
+      Genesis Ability UI will be rendered here.
+
+      Expected structure:
+      - Tabs: Fitness / Weapons / Education
+      - 9 ability cards
+      - Upgrade buttons
+      - Lock states
+      - Active upgrade state
+
+      IMPORTANT:
+      - This must connect to:
+        GET  /api/user/get-nft-ability-upgrades.php
+        POST /api/user/start-nft-ability-upgrade.php
+    -->
+  </div>
+</div>
+
+    <div class="glass p-5 md:p-6">
       <div class="section-title text-xl"><span>🏛️</span><span>Design Rules</span></div>
       <div class="genetic-helper-list">
         <div class="genetic-helper-item">Genesis progression is NFT-bound and remains the source of truth for on-chain mice upgrades.</div>
@@ -3302,7 +3649,7 @@ body::after {
             <div class="section-title text-xl"><span>💡</span><span>Fast gameplay loop</span></div>
             <div class="mt-4 text-sm text-slate-100 space-y-3">
               <p>1. Pick a verified mouse in <strong>My Genesis Lab</strong>.</p>
-              <p>2. Start a trait upgrade and let the chamber work.</p>
+              <p>2. Start a trait or ability upgrade and let the chamber work.</p>
               <p>3. Return when the timer finishes or use DSPOINC for speed.</p>
               <p>4. Claim the level and get ready for future Mouseverse utility.</p>
             </div>
@@ -3360,7 +3707,9 @@ body::after {
         <div class="glass p-5 md:p-6">
           <div class="section-title text-xl md:text-2xl"><span>🧭</span><span>Two progression lanes</span></div>
           <div class="feature-list">
-            <div class="feature-item"><strong>Genesis Lab:</strong> NFT-bound, verified holder identity, exact trait progression, long-term on-chain mouse path.</div>
+            <div class="feature-item">
+            <strong>Genesis Lab:</strong> NFT-bound progression including both trait upgrades and the new Ability Matrix system, forming the long-term identity path of each mouse.
+           </div>
             <div class="feature-item"><strong>Genetic Inventory:</strong> Discord-bound, buyable trait items, faster user progression, future marketplace transfer layer.</div>
             <div class="feature-item"><strong>Golden rule:</strong> the backend remains authoritative for ownership, timers, claim state, instant finish cost, and booster usage.</div>
             <div class="feature-item"><strong>Safety rule:</strong> these two systems stay separated so live Genesis progression is never corrupted by the newer Genetic layer.</div>
@@ -4922,67 +5271,670 @@ function getTraitSnapshotLevelBadge(nft, trait) {
   return `<span class="trait-level-badge${highLevelClass}">LVL ${formatNumber(currentLevel)}</span>`;
 }
 
-    function renderSelectedNftPanel() {
-      const nft = state.selectedNft;
-      if (!nft) {
-        el.selectedNftStatus.className = 'pill blocked';
-        el.selectedNftStatus.textContent = 'No Genesis mouse loaded';
-        el.selectedNftPanel.innerHTML = `<div class="warnbox"><div class="font-semibold text-amber-200">Your Genesis chamber is waiting</div><div class="mt-2 text-sm text-amber-100">Verify a Genesis mouse to unlock the full viewer, trait panel, and research actions inside the Lab.</div></div>`;
+function resetGenesisAbilityMatrixUi() {
+  stopGenesisAbilityPolling();
+  genesisAbilityState.tokenId = null;
+  genesisAbilityState.data = null;
+  genesisAbilityState.loading = false;
+
+  const section = document.getElementById('genesisAbilityMatrixSection');
+  const cardsEl = document.getElementById('genesisAbilityCards');
+  const queueEl = document.getElementById('genesisAbilityQueueBox');
+
+  if (section) section.classList.add('hidden');
+  if (cardsEl) cardsEl.innerHTML = '';
+  if (queueEl) queueEl.innerHTML = '';
+}
+
+const GENESIS_ABILITY_TABS = {
+  fitness: {
+    label: 'Fitness',
+    unlockLevel: 5,
+    stats: ['HP', 'SPEED', 'AIR']
+  },
+  weapons: {
+    label: 'Weapons',
+    unlockLevel: 20,
+    stats: ['ATK', 'DEF', 'SPECIAL']
+  },
+  education: {
+    label: 'Education',
+    unlockLevel: 30,
+    stats: ['SPELLS', 'CRAFTING', 'EXPANSION']
+  }
+};
+
+const genesisAbilityState = {
+  selectedTab: 'fitness',
+  tokenId: null,
+  loading: false,
+  data: null,
+  pollHandle: null,
+  listenersBound: false
+};
+
+  function bindGenesisAbilityUiEvents() {
+  if (genesisAbilityState.listenersBound) return;
+
+  const section = document.getElementById('genesisAbilityMatrixSection');
+  if (!section) return;
+
+  section.addEventListener('click', async (event) => {
+    const tabButton = event.target.closest('.ability-tab');
+    if (tabButton) {
+      const tabKey = String(tabButton.dataset.abilityTab || '').trim();
+      if (!GENESIS_ABILITY_TABS[tabKey]) {
         return;
       }
 
-      const traits = normalizeNftTraits(nft);
-      const summary = getNftUpgradeSummary(nft);
-      const active = summary.activeCount > 0;
-      const ready = summary.readyCount > 0;
-      el.selectedNftStatus.className = `pill ${ready ? 'ready' : active ? 'upgrading' : 'idle'}`;
-      el.selectedNftStatus.textContent = ready ? 'Claim ready' : active ? 'Research active' : 'Ready for research';
+      if (genesisAbilityState.selectedTab !== tabKey) {
+        genesisAbilityState.selectedTab = tabKey;
+        if (genesisAbilityState.data) {
+          renderGenesisAbilityMatrix();
+        }
+      }
+      return;
+    }
 
-      el.selectedNftPanel.innerHTML = `
-        <div class="space-y-5">
-          <div class="grid grid-cols-1 md:grid-cols-[0.95fr_1.05fr] gap-5">
-            <div>
-              ${nft.image_url ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>` : `<div class="empty-art">🐭</div>`}
-            </div>
-            <div class="space-y-4">
-              <div>
-                <div class="text-xs uppercase tracking-[0.2em] text-cyan-300 font-bold">Selected Genesis Mouse</div>
-                <div class="mt-2 text-3xl font-black leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
-                <div class="mt-2 text-sm text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token id')}</div>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Trait Slots</div><div class="mt-1 text-2xl font-black">${formatNumber(traits.length)}</div></div>
-                <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.totalLevels)}</div></div>
-                <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active Research</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.activeCount)}</div></div>
-                <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready To Claim</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.readyCount)}</div></div>
-              </div>
-              <div class="info text-sm">This Genesis mouse keeps its own research path. Build levels now to prepare for future holder utility, game flavor, and Mouseverse adventures.</div>
+    const upgradeButton = event.target.closest('[data-ability-stat]');
+    if (upgradeButton) {
+      if (upgradeButton.disabled || genesisAbilityState.loading) {
+        return;
+      }
+
+      const statName = String(upgradeButton.dataset.abilityStat || '').trim().toUpperCase();
+      const tokenId = String(genesisAbilityState.tokenId || '').trim();
+      const tabKey = String(genesisAbilityState.selectedTab || '').trim();
+      const tab = GENESIS_ABILITY_TABS[tabKey];
+
+      if (!tokenId) {
+        logLab('No Genesis mouse selected for ability upgrade.', 'error');
+        return;
+      }
+
+      if (!tab || !tab.label) {
+        logLab('Ability category context missing.', 'error');
+        return;
+      }
+
+      if (!statName) {
+        logLab('Ability stat missing.', 'error');
+        return;
+      }
+
+      try {
+        upgradeButton.disabled = true;
+        await startGenesisAbilityUpgrade(tokenId, tab.label, statName);
+      } catch (error) {
+        console.error('❌ Genesis ability upgrade click failed:', error);
+      } finally {
+        if (genesisAbilityState.data) {
+          renderGenesisAbilityMatrix();
+        }
+      }
+
+      return;
+    }
+
+    const instantFinishButton = event.target.closest('[data-ability-instant-finish]');
+    if (instantFinishButton) {
+      logLab('Genesis ability instant finish is not active in v1 yet.', 'info');
+      return;
+    }
+  });
+
+  genesisAbilityState.listenersBound = true;
+}
+
+async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
+  const safeTokenId = String(tokenId || '').trim();
+  const safeCategory = String(category || '').trim();
+  const safeAbilityKey = String(abilityKey || '').trim().toUpperCase();
+
+  if (!safeTokenId) {
+    logLab('No Genesis mouse selected for ability upgrade.', 'error');
+    return false;
+  }
+
+  if (!safeCategory) {
+    logLab('Ability category missing.', 'error');
+    return false;
+  }
+
+  if (!safeAbilityKey) {
+    logLab('Ability key missing.', 'error');
+    return false;
+  }
+
+  try {
+    genesisAbilityState.loading = true;
+    renderGenesisAbilityMatrix();
+
+    logLab(`Starting ${safeAbilityKey} research for ${safeCategory}...`, 'info');
+
+    const response = await fetch('/api/user/start-nft-ability-upgrade.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        token_id: safeTokenId,
+        category: safeCategory,
+        ability_key: safeAbilityKey
+      })
+    });
+
+    const rawText = await response.text();
+
+    let data = null;
+    try {
+      data = rawText ? JSON.parse(rawText) : null;
+    } catch (parseError) {
+      throw new Error(`Ability start API returned non-JSON response (HTTP ${response.status}).`);
+    }
+
+    if (!response.ok || !data || !data.success) {
+      throw new Error(
+        data?.message ||
+        data?.error ||
+        `Failed to start ability upgrade (HTTP ${response.status}).`
+      );
+    }
+
+    logLab(`${safeAbilityKey} research started successfully.`, 'success');
+
+    await loadGenesisAbilityMatrix(safeTokenId, { silent: true });
+    renderGenesisAbilityMatrix();
+
+    if (typeof renderSelectedNftPanel === 'function' && appState?.selectedNft) {
+      renderSelectedNftPanel(appState.selectedNft);
+    }
+
+    if (typeof startGenesisAbilityPollingIfNeeded === 'function') {
+      startGenesisAbilityPollingIfNeeded();
+    }
+
+    return true;
+  } catch (error) {
+    console.error('startGenesisAbilityUpgrade error:', error);
+    logLab(error.message || 'Failed to start Genesis ability upgrade.', 'error');
+    return false;
+  } finally {
+    genesisAbilityState.loading = false;
+    renderGenesisAbilityMatrix();
+  }
+}
+function formatAbilityDuration(seconds) {
+  const sec = Number(seconds || 0);
+  if (sec <= 0) return 'Ready';
+
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+
+  const parts = [];
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0) parts.push(`${m}m`);
+  if (h === 0 && s > 0) parts.push(`${s}s`);
+  return parts.join(' ');
+}
+
+function getAbilityTabForStat(statName) {
+  const stat = String(statName || '').toUpperCase();
+
+  if (GENESIS_ABILITY_TABS.fitness.stats.includes(stat)) return 'fitness';
+  if (GENESIS_ABILITY_TABS.weapons.stats.includes(stat)) return 'weapons';
+  if (GENESIS_ABILITY_TABS.education.stats.includes(stat)) return 'education';
+  return null;
+}
+
+function normalizeAbilityRows(rawRows) {
+  if (!Array.isArray(rawRows)) return [];
+
+  return rawRows.map(row => {
+    const statName = String(
+      row.stat_name || row.ability_key || row.ability_name || row.stat || ''
+    ).toUpperCase();
+
+    return {
+      stat_name: statName,
+      tab_key: getAbilityTabForStat(statName),
+      current_level: Number(row.current_level ?? row.level ?? 1),
+      state: String(row.state || row.upgrade_status || 'idle').toLowerCase(),
+      next_cost: Number(row.next_cost ?? row.next_upgrade_cost_dspoinc ?? row.cost ?? 0),
+      next_duration_seconds: Number(
+        row.next_duration_seconds ?? row.next_upgrade_duration_seconds ?? row.next_duration ?? 0
+      ),
+      seconds_remaining: Number(row.seconds_remaining ?? 0),
+      max_level: Number(row.max_level ?? 100),
+      can_upgrade: Boolean(row.can_upgrade ?? true),
+      required_trait_level: Number(row.required_trait_level ?? 0),
+      is_unlocked: Boolean(row.is_unlocked ?? true),
+      is_max_level: Boolean(row.is_max_level ?? false)
+    };
+  });
+}
+
+function getActiveAbilityRow(rows) {
+  return (rows || []).find(row => row.state === 'upgrading') || null;
+}
+
+function isAbilityTabUnlocked(tabKey, highestTraitLevel) {
+  const tab = GENESIS_ABILITY_TABS[tabKey];
+  if (!tab) return false;
+  return Number(highestTraitLevel || 0) >= Number(tab.unlockLevel);
+}
+
+function stopGenesisAbilityPolling() {
+  if (genesisAbilityState.pollHandle) {
+    clearInterval(genesisAbilityState.pollHandle);
+    genesisAbilityState.pollHandle = null;
+  }
+}
+
+function startGenesisAbilityPollingIfNeeded() {
+  if (typeof stopGenesisAbilityPolling === 'function') {
+    stopGenesisAbilityPolling();
+  }
+
+  const rows = Array.isArray(genesisAbilityState.data?.rows) ? genesisAbilityState.data.rows : [];
+  const activeRow = getActiveAbilityRow(rows);
+
+  if (!activeRow || !genesisAbilityState.tokenId) {
+    return;
+  }
+
+  genesisAbilityState.pollTimer = window.setInterval(() => {
+    if (!genesisAbilityState.tokenId) return;
+    loadGenesisAbilityMatrix(genesisAbilityState.tokenId, { silent: true });
+  }, 15000);
+}
+
+function renderGenesisAbilityQueueBox() {
+  const box = document.getElementById('genesisAbilityQueueBox');
+  if (!box) return;
+
+  const rows = Array.isArray(genesisAbilityState.data?.rows) ? genesisAbilityState.data.rows : [];
+  const activeRow = getActiveAbilityRow(rows);
+
+  if (!activeRow) {
+    box.innerHTML = `
+      <div class="queue-empty">
+        <div class="font-semibold">⚡ Ability Queue</div>
+        <div class="text-sm mt-1">
+          No active Genesis ability upgrade on this NFT.
+        </div>
+        <div class="text-xs mt-2 opacity-80">
+          Start one ability upgrade from the selected tab to see live queue progress here.
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const currentLevel = Number(activeRow.current_level ?? 0);
+  const nextLevel = currentLevel + 1;
+  const secondsRemaining = Number(activeRow.seconds_remaining ?? 0);
+  const category = String(activeRow.category || '').trim() || 'Ability';
+  const statName = String(activeRow.stat_name || activeRow.ability_key || 'Unknown').trim();
+  const upgradeEndsAt = activeRow.upgrade_ends_at ? String(activeRow.upgrade_ends_at) : 'Unknown';
+
+  box.innerHTML = `
+    <div class="queue-card">
+      <div class="queue-card-inner">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <div class="chip">⚡ Ability Queue</div>
+            <h4 class="mt-3 text-lg font-semibold">${escapeHtml(statName)}</h4>
+            <div class="text-sm text-slate-300 mt-1">
+              ${escapeHtml(category)} research is active on this Genesis mouse.
             </div>
           </div>
 
-          <div>
-            <div class="section-title text-lg"><span>🧾</span><span>Trait Snapshot</span></div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-              ${traits.map(trait => {
-  const levelBadge = getTraitSnapshotLevelBadge(nft, trait);
+          <span class="pill upgrading">Upgrading</span>
+        </div>
 
-  return `
-    <div class="kv trait-snapshot-card">
-      <div class="text-xs uppercase tracking-[0.18em] text-slate-400">
-        ${escapeHtml(trait.trait_type)}
-      </div>
-      <div class="trait-value-row">
-        <div class="trait-value-text">${escapeHtml(trait.value)}</div>
-        ${levelBadge}
+        <div class="queue-meta-row mt-4">
+          <span class="queue-mini-pill">Category: ${escapeHtml(category)}</span>
+          <span class="queue-mini-pill">Level: ${currentLevel} → ${nextLevel}</span>
+          <span class="queue-mini-pill">Time Left: ${escapeHtml(formatAbilityDuration(secondsRemaining))}</span>
+        </div>
+
+        <div class="mt-4 text-sm text-slate-300">
+          <strong>Ends At:</strong> ${escapeHtml(upgradeEndsAt)}
+        </div>
+
+        <div class="mt-3 text-xs text-slate-400">
+          Genesis ability upgrades auto-complete through the backend read cycle in v1. No manual claim button.
+        </div>
       </div>
     </div>
   `;
-}).join('') || `<div class="warnbox text-sm sm:col-span-2">No trait data was found on this verified Genesis snapshot.</div>`}
-            </div>
-          </div>
-        </div>
-      `;
+}
+
+function renderGenesisAbilityMatrix() {
+  const data = genesisAbilityState.data;
+
+  if (!data) return;
+
+  bindGenesisAbilityUiEvents();
+
+  const section = document.getElementById('genesisAbilityMatrixSection');
+  const cardsEl = document.getElementById('genesisAbilityCards');
+  const availableDspEl = document.getElementById('genesisAbilityAvailableDsp');
+  const highestTraitEl = document.getElementById('genesisAbilityHighestTrait');
+  const activeStatusEl = document.getElementById('genesisAbilityActiveStatus');
+  const tabMetaEl = document.getElementById('genesisAbilityTabMeta');
+
+  if (!section || !cardsEl) return;
+
+  section.classList.remove('hidden');
+
+  if (availableDspEl) {
+    availableDspEl.textContent = String(data.available_dspoinc ?? 0);
+  }
+
+  if (highestTraitEl) {
+    highestTraitEl.textContent = String(data.highest_trait_level ?? 0);
+  }
+
+  const rows = Array.isArray(data.rows) ? data.rows : [];
+  const activeRow = getActiveAbilityRow(rows);
+
+  if (activeStatusEl) {
+    activeStatusEl.textContent = activeRow
+      ? `${activeRow.stat_name} upgrading (${formatAbilityDuration(activeRow.seconds_remaining || 0)})`
+      : 'None';
+  }
+
+  document.querySelectorAll('.ability-tab').forEach(btn => {
+    const tabKey = String(btn.dataset.abilityTab || '').trim();
+    const unlocked = isAbilityTabUnlocked(tabKey, Number(data.highest_trait_level ?? 0));
+
+    btn.classList.toggle('active', tabKey === genesisAbilityState.selectedTab);
+    btn.classList.toggle('locked', !unlocked);
+  });
+
+  const currentTab = GENESIS_ABILITY_TABS[genesisAbilityState.selectedTab];
+  if (!currentTab) {
+    cardsEl.innerHTML = `<div class="ability-note">Ability tab configuration missing.</div>`;
+    renderGenesisAbilityQueueBox();
+    return;
+  }
+
+  const currentTabUnlocked = isAbilityTabUnlocked(
+    genesisAbilityState.selectedTab,
+    Number(data.highest_trait_level ?? 0)
+  );
+
+  if (tabMetaEl) {
+    tabMetaEl.textContent = currentTabUnlocked
+      ? `${currentTab.label} is unlocked.`
+      : `${currentTab.label} unlocks at highest Genesis trait level ${currentTab.unlockLevel}.`;
+  }
+
+  const tabRows = currentTab.stats.map(stat => {
+    const matchingRow = rows.find(row => String(row.stat_name || '').toUpperCase() === String(stat).toUpperCase());
+
+    if (matchingRow) {
+      return {
+        stat_name: String(matchingRow.stat_name || stat).toUpperCase(),
+        current_level: Number(matchingRow.current_level ?? 0),
+        state: String(matchingRow.state || 'idle').toLowerCase(),
+        next_cost: Number(matchingRow.next_cost ?? 0),
+        next_duration_seconds: Number(matchingRow.next_duration_seconds ?? 0),
+        seconds_remaining: Number(matchingRow.seconds_remaining ?? 0),
+        max_level: Number(matchingRow.max_level ?? 100),
+        can_upgrade: Boolean(matchingRow.can_upgrade)
+      };
     }
+
+    return {
+      stat_name: String(stat).toUpperCase(),
+      current_level: 0,
+      state: currentTabUnlocked ? 'idle' : 'locked',
+      next_cost: 0,
+      next_duration_seconds: 0,
+      seconds_remaining: 0,
+      max_level: 100,
+      can_upgrade: false
+    };
+  });
+
+  cardsEl.innerHTML = tabRows.map(row => {
+    const isLocked = !currentTabUnlocked;
+    const isThisActive = Boolean(activeRow && activeRow.stat_name === row.stat_name);
+    const activeUpgradeExists = Boolean(activeRow);
+    const isMaxed = Number(row.current_level) >= Number(row.max_level || 100);
+
+    const disableButton =
+      isLocked ||
+      isThisActive ||
+      isMaxed ||
+      !row.can_upgrade ||
+      (activeUpgradeExists && !isThisActive) ||
+      genesisAbilityState.loading;
+
+    const badgeText = isLocked
+      ? 'locked'
+      : isMaxed
+        ? 'maxed'
+        : isThisActive
+          ? 'upgrading'
+          : (row.state || 'idle');
+
+    const nextDuration = isThisActive
+      ? formatAbilityDuration(row.seconds_remaining || row.next_duration_seconds || 0)
+      : formatAbilityDuration(row.next_duration_seconds || 0);
+
+    const note = isLocked
+      ? `Requires highest Genesis trait level ${currentTab.unlockLevel}.`
+      : isMaxed
+        ? `Reached cap ${row.max_level}.`
+        : isThisActive
+          ? `This ability is currently upgrading on the selected Genesis mouse.`
+          : (activeUpgradeExists && !isThisActive)
+            ? `Another ability is already upgrading on this NFT.`
+            : `Next upgrade uses ${row.next_cost} DSPOINC and time.`;
+
+    return `
+      <div class="ability-card ${isLocked ? 'locked' : ''} ${isThisActive ? 'upgrading' : ''}">
+        <div class="ability-card-header">
+          <div class="ability-card-title">${escapeHtml(row.stat_name)}</div>
+          <span class="ability-badge ${escapeHtml(badgeText)}">${escapeHtml(badgeText)}</span>
+        </div>
+
+        <div class="ability-card-stats">
+          <div><strong>Current Level:</strong> ${row.current_level}</div>
+          <div><strong>Current State:</strong> ${escapeHtml(isLocked ? 'locked' : row.state)}</div>
+          <div><strong>Next Duration:</strong> ${isLocked || isMaxed ? '--' : nextDuration}</div>
+          <div><strong>Next Cost:</strong> ${isLocked || isMaxed ? '--' : `${row.next_cost} DSPOINC`}</div>
+        </div>
+
+        <div class="ability-card-actions">
+          <button
+            class="ability-upgrade-btn"
+            data-ability-stat="${escapeHtml(row.stat_name)}"
+            ${disableButton ? 'disabled' : ''}
+          >
+            ${isLocked ? 'Locked' : isThisActive ? 'Upgrading...' : isMaxed ? 'Maxed' : 'Upgrade'}
+          </button>
+
+          <button
+            class="ability-instant-btn"
+            data-ability-instant-finish="${escapeHtml(row.stat_name)}"
+            disabled
+            title="Genesis ability instant finish is not active in v1 yet"
+            style="opacity:.5; cursor:not-allowed;"
+          >
+            Instant Finish
+          </button>
+
+          <div class="ability-note">${escapeHtml(note)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  renderGenesisAbilityQueueBox();
+}
+
+async function loadGenesisAbilityMatrix(tokenId, options = {}) {
+  const silent = Boolean(options.silent);
+
+  if (!tokenId) return;
+
+  const normalizedTokenId = String(tokenId || '').trim();
+  const previousTokenId = String(genesisAbilityState.tokenId || '').trim();
+  const tokenChanged = previousTokenId !== normalizedTokenId;
+  const hasCachedSameTokenData = Boolean(
+    genesisAbilityState.data &&
+    previousTokenId &&
+    previousTokenId === normalizedTokenId
+  );
+  const requestTokenId = normalizedTokenId;
+
+  genesisAbilityState.tokenId = normalizedTokenId;
+  genesisAbilityState.loading = true;
+
+  bindGenesisAbilityUiEvents();
+
+  const section = document.getElementById('genesisAbilityMatrixSection');
+  const cardsEl = document.getElementById('genesisAbilityCards');
+
+  if (section) section.classList.remove('hidden');
+
+  const noRenderedCardsYet = !cardsEl || !String(cardsEl.innerHTML || '').trim();
+  if (!silent && cardsEl && (tokenChanged || !hasCachedSameTokenData || noRenderedCardsYet)) {
+    cardsEl.innerHTML = `<div class="ability-note">Loading Genesis Ability Matrix...</div>`;
+  }
+
+  try {
+    const url = `/api/user/get-nft-ability-upgrades.php?token_id=${encodeURIComponent(requestTokenId)}`;
+
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    const rawText = await res.text();
+
+let json = null;
+try {
+  json = rawText ? JSON.parse(rawText) : null;
+} catch (parseErr) {
+  throw new Error(`Ability API returned non-JSON response (HTTP ${res.status}). Check PHP fatal/output.`);
+}
+
+if (!res.ok || !json || !json.success) {
+  throw new Error(json?.message || json?.error || `Failed to load Genesis Ability Matrix (HTTP ${res.status}).`);
+}
+
+const payload = json.data || json;
+
+if (String(genesisAbilityState.tokenId || '') !== requestTokenId) {
+  return;
+}
+
+genesisAbilityState.data = {
+  token_id: payload.selected_token_id || payload.token_id || requestTokenId,
+  rows: normalizeAbilityRows(payload.rows || payload.ability_rows || []),
+  unlock_map: payload.unlock_map || {},
+  available_dspoinc: Number(payload.available_dspoinc ?? 0),
+  highest_trait_level: Number(payload.highest_trait_level ?? 0)
+};
+
+renderGenesisAbilityMatrix();
+startGenesisAbilityPollingIfNeeded();
+
+  } catch (err) {
+    console.error('loadGenesisAbilityMatrix error:', err);
+    if (cardsEl) {
+      cardsEl.innerHTML = `<div class="ability-note">${escapeHtml(err.message || 'Failed to load Genesis Ability Matrix.')}</div>`;
+    }
+  } finally {
+    genesisAbilityState.loading = false;
+  }
+}
+
+function renderSelectedNftPanel() {
+  const nft = state.selectedNft;
+  if (!nft) {
+    el.selectedNftStatus.className = 'pill blocked';
+    el.selectedNftStatus.textContent = 'No Genesis mouse loaded';
+    el.selectedNftPanel.innerHTML = `<div class="warnbox"><div class="font-semibold text-amber-200">Your Genesis chamber is waiting</div><div class="mt-2 text-sm text-amber-100">Verify a Genesis mouse to unlock the full viewer, trait panel, and research actions inside the Lab.</div></div>`;
+    resetGenesisAbilityMatrixUi();
+    return;
+  }
+
+  const traits = normalizeNftTraits(nft);
+  const summary = getNftUpgradeSummary(nft);
+  const active = summary.activeCount > 0;
+  const ready = summary.readyCount > 0;
+
+  el.selectedNftStatus.className = `pill ${ready ? 'ready' : active ? 'upgrading' : 'idle'}`;
+  el.selectedNftStatus.textContent = ready ? 'Claim ready' : active ? 'Research active' : 'Ready for research';
+
+  el.selectedNftPanel.innerHTML = `
+    <div class="space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-[0.95fr_1.05fr] gap-5">
+        <div>
+          ${nft.image_url ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>` : `<div class="empty-art">🐭</div>`}
+        </div>
+        <div class="space-y-4">
+          <div>
+            <div class="text-xs uppercase tracking-[0.2em] text-cyan-300 font-bold">Selected Genesis Mouse</div>
+            <div class="mt-2 text-3xl font-black leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
+            <div class="mt-2 text-sm text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token id')}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Trait Slots</div><div class="mt-1 text-2xl font-black">${formatNumber(traits.length)}</div></div>
+            <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.totalLevels)}</div></div>
+            <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active Research</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.activeCount)}</div></div>
+            <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready To Claim</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.readyCount)}</div></div>
+          </div>
+          <div class="info text-sm">This Genesis mouse keeps its own research path. Build levels now to prepare for future holder utility, game flavor, and Mouseverse adventures.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title text-lg"><span>🧾</span><span>Trait Snapshot</span></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+          ${traits.map(trait => {
+            const levelBadge = getTraitSnapshotLevelBadge(nft, trait);
+
+            return `
+              <div class="kv trait-snapshot-card">
+                <div class="text-xs uppercase tracking-[0.18em] text-slate-400">
+                  ${escapeHtml(trait.trait_type)}
+                </div>
+                <div class="trait-value-row">
+                  <div class="trait-value-text">${escapeHtml(trait.value)}</div>
+                  ${levelBadge}
+                </div>
+              </div>
+            `;
+          }).join('') || `<div class="warnbox text-sm sm:col-span-2">No trait data was found on this verified Genesis snapshot.</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (nft.token_id) {
+    const tokenChanged = String(genesisAbilityState.tokenId || '') !== String(nft.token_id || '');
+
+    if (tokenChanged) {
+      loadGenesisAbilityMatrix(nft.token_id);
+    } else if (genesisAbilityState.data) {
+      renderGenesisAbilityMatrix();
+    } else {
+      loadGenesisAbilityMatrix(nft.token_id);
+    }
+  } else {
+    resetGenesisAbilityMatrixUi();
+  }
+}
 
 function getLabBoosterCatalog() {
   return [
@@ -8829,6 +9781,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
+  bindGenesisAbilityUiEvents();
   bindLabTabs();
   setupQuickAccessLinks();
   switchLabTab('overview');

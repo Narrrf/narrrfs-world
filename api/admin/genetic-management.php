@@ -70,23 +70,44 @@ function get_request_data(): array {
 }
 
 /**
- * Basic admin presence check.
- *
- * IMPORTANT:
- * If your existing store-management.php uses a stronger admin session check,
- * replace this with the same shared admin auth logic so both admin APIs match.
+ * Verify the request is coming from an authenticated admin session
+ * and return a traceable admin actor name for history logs.
  */
 function require_admin_actor(array $request): string {
     $givenBy = trim((string)($request['given_by'] ?? ''));
 
-    if ($givenBy === '') {
+    $sessionDiscordId = trim((string)($_SESSION['discord_id'] ?? ''));
+    $sessionAdminLoggedIn = !empty($_SESSION['admin_logged_in']);
+    $sessionIsModerator = !empty($_SESSION['is_moderator']);
+    $sessionIsAdmin = !empty($_SESSION['is_admin']);
+    $sessionUsername = trim((string)($_SESSION['admin_username'] ?? $_SESSION['username'] ?? ''));
+
+    $hasAdminSession =
+        $sessionAdminLoggedIn ||
+        $sessionIsAdmin ||
+        $sessionIsModerator ||
+        $sessionDiscordId !== '';
+
+    if (!$hasAdminSession) {
         json_response([
             'success' => false,
-            'error' => 'Missing admin actor (given_by)'
-        ], 401);
+            'error' => 'Unauthorized admin access'
+        ], 403);
     }
 
-    return $givenBy;
+    if ($givenBy !== '') {
+        return $givenBy;
+    }
+
+    if ($sessionUsername !== '') {
+        return $sessionUsername;
+    }
+
+    if ($sessionDiscordId !== '') {
+        return $sessionDiscordId;
+    }
+
+    return 'admin_session';
 }
 
 function fetch_catalog_item(PDO $pdo, int $catalogId): ?array {

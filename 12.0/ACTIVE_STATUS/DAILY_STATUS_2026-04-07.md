@@ -1,121 +1,183 @@
 # 🧀 NARRRFS WORLD 12.0 - DAILY STATUS
 
 **Date:** April 7, 2026  
-**Status:** ✅ **SEASON 10 LAB ACTIVE + GENETIC LANE OPENED TO DISCORD USERS + RULE SPLIT SYNCHRONIZED**  
+**Status:** ✅ **SEASON 10 LAB ACTIVE + GENETIC LANE DISCORD-OPEN + GENESIS ABILITY MATRIX BACKEND LOOP ADVANCED**  
 **Version:** 2026-04-07  
-**Milestone:** 🎯 **Daily review added for today with Genesis-vs-Genetic access model updated to current live direction**
+**Milestone:** 🎯 **Genesis Ability Matrix read/start backend loop validated locally while Lab/UI/profile/admin wiring remains next**
 
 ---
 
 ## 🎯 TODAY'S CONTEXT
 
-### Reporting Feedback (✅ IMPORTANT)
-- ✅ This daily is created for **today (07.04.2026)** in the same ACTIVE_STATUS reporting style.
-- ✅ It reflects the current architecture shift: **Genetic lane Discord-open**, **Genesis lane holder-protected**.
-- ✅ It avoids overclaiming frontend/docs completion and keeps pending cleanup explicitly visible.
+### Reporting Sync (✅ IMPORTANT)
+- ✅ Daily file updated for **today (07.04.2026)** in ACTIVE_STATUS style.
+- ✅ Includes **latest same-day changes** after earlier updates (not only morning state).
+- ✅ Keeps architecture truth explicit: **Genesis lane holder-protected** and **Genetic lane Discord-bound**.
 
 ---
 
-## 🧪 UPDATE SINCE LAST MAJOR DAILY (MAIN CHANGES)
+## 🧪 TODAY + LAST DAYS ROLLUP (LATEST STATE)
 
-## 🔓 GENETIC ACCESS RULE CHANGE — NOW LIVE DIRECTION
-**Discord-authenticated Genetic lane • Holder-protected Genesis lane**
+## 🔓 GENETIC ACCESS RULE SPLIT (LIVE DIRECTION)
 
-Mice fam 🐭  
-Today’s key system truth is the access-rule split update.
+The previous holder-gated Genetic purchase wording is no longer valid.
 
-The outdated holder-gated Genetic purchase framing is no longer accurate to current backend direction.
+### ✅ Genetic lane now aligned to Discord-authenticated access
+- `api/user/buy-genetic-trait.php`
+- `api/admin/buy-genetic-marketplace-listing.php`
+- `api/user/start-genetic-item-upgrade.php`
+- `api/user/complete-genetic-item-upgrade.php`
+- `api/user/instant-finish-genetic-item-upgrade.php` still needs final cleanup parity
 
-### ✅ NEW LIVE-INTENT RULE (GENETIC LANE)
-
-Genetic systems are now aligned toward Discord-authenticated access:
-- ✅ Genetic Shop buy flow targets Discord-logged-in users (`buy-genetic-trait.php`)
-- ✅ Genetic marketplace buying targets Discord-logged-in users (`buy-genetic-marketplace-listing.php`)
-- ✅ Genetic upgrade start flow moved to Discord session access (`start-genetic-item-upgrade.php`)
-- ✅ Genetic upgrade claim flow moved to Discord session access (`complete-genetic-item-upgrade.php`)
-- ⚠️ Instant-finish Genetic upgrade is being aligned to same rule and still needs final cleanup pass (`instant-finish-genetic-item-upgrade.php`)
-
-### ✅ GENESIS LANE REMAINS PROTECTED
-
-Holder/verification protection remains the authority model for Genesis systems:
-- ✅ Genesis NFT verification
-- ✅ Genesis-specific trait progression authority
-- ✅ Holder-focused Genesis identity paths
-- ✅ Staking/holder rule protections
-
-This keeps long-term separation intact:
-- Genesis lane = NFT-bound holder authority
-- Genetic lane = Discord-bound user inventory/progression
-
-## 🧬 GENETIC UPGRADE + MARKETPLACE EXPANSION STATUS
-
-### Marketplace direction (updated)
-- ✅ Listing create/cancel/buy flow remains connected
-- ✅ Ownership + duplicate-trait safeguards remain active
-- ✅ Marketplace purchase no longer depends on Genesis/VIP holder verification
-- ✅ Listing transfer flow keeps user-bound runtime state model intact
-
-### Upgrade direction (updated)
-- ✅ Start + claim upgrades aligned to Discord-authenticated model
-- ⚠️ Instant-finish endpoint still needs parity cleanup in uploaded file/comments
-- ✅ Listed Genetic items remain blocked from upgrades
-- ✅ One active Genetic upgrade per user remains enforced
-- ✅ Level cap remains 100
-- ✅ Genetic timing remains separate from NFT-bound Genesis identity
-
-## 🖥️ UI / DOC TRUTH CHECK (STILL OPEN)
-
-To keep reporting honest and prevent overclaim:
-- ⚠️ `public/lab.html` still needs final wording cleanup in some Genetic helper/knowledge/modals
-- ⚠️ `public/profile.html` still contains old holder-era Genetic wording in the Genetic bridge area
-- ⚠️ `public/nerd-lab.html` + status/docs text still need wording pass to remove outdated holder-gated Genetic phrasing
-- ⚠️ Final cleanup pass remains pending across remaining Genetic-facing copy
+### ✅ Genesis lane remains holder-protected
+- Genesis verification and Genesis NFT authority remain protected
+- Genesis trait progression remains NFT-bound
+- Genesis systems remain separate from Discord-bound Genetic inventory paths
 
 ---
 
-## 🎯 CURRENT PRIORITY STREAM (APRIL 7)
+## 🧬 GENESIS ABILITY MATRIX (NEW FOUNDATION — STATUS UPGRADE)
 
-### Priority 1 — Genetic Lane Rollout Finalization
-- finalize Discord-open Genetic access consistency across all 5 core APIs
-- complete instant-finish Genetic upgrade cleanup parity
-- validate separation from Genesis holder authority remains strict
+### Locked design (unchanged)
+- Fitness → HP / SPEED / AIR
+- Weapons → ATK / DEF / SPECIAL
+- Education → SPELLS / CRAFTING / EXPANSION
+- unlock source = highest single Genesis trait level on that NFT
+- production unlock targets = 10 / 20 / 30
+- cap = 100
+- one active ability upgrade total per NFT
+- DSPOINC + time required
+- no instant finish in v1
+- auto-complete / auto-claim on timer finish
+- tabs always visible in Lab, visually locked until unlocked
+- each Genesis mouse owns a separate 9-stat matrix
 
-### Priority 2 — UI + Docs Sync
-- finish lab.html Genetic wording cleanup
-- finish profile.html Genetic wording cleanup
-- remove stale holder-gated Genetic language in docs/status/public notes
+### ✅ Foundation confirmed
+- SQL:
+  - `tbl_nft_ability_upgrades`
+  - `tbl_nft_ability_upgrade_history`
+- Shared helper:
+  - `api/user/genesis-ability-helpers.php`
 
-### Priority 3 — Admin / Visibility
-- improve visibility of Genetic lane state in admin/player profile views
-- expose owned Genetic items, upgrades, and marketplace lifecycle more clearly
-- preserve operator clarity without weakening Genesis protection
+### ✅ Read API locally validated
+- `api/user/get-nft-ability-upgrades.php`
+- verified ownership-first Genesis loader path aligned
+- selected token loading works
+- missing rows seed correctly
+- full 9-row matrix returns
+- unlock map + available DSPOINC return correctly
+- response remains Genesis-lane only (no Genetic leakage)
 
-### Priority 4 — Economy / Abuse Monitoring
-- monitor alt-account farming risk after Discord-open Genetic lane
-- monitor spam/quality behavior in broader-access marketplace flow
-- audit DSPOINC spend behavior versus active staking freezes
+### ✅ Start API created + locally tested
+- `api/user/start-nft-ability-upgrade.php`
+- POST flow works
+- verified Genesis ownership enforcement works
+- category + ability key validation works
+- DSPOINC spend works
+- timed upgrade start works
+- one-active-upgrade-per-NFT logic works
+- row state moves to `upgrading`
+- history flow wired
+
+### Important local stabilization fixes completed
+- aligned verified Genesis loading with ownership-first loader
+- removed dependency on missing `mint` column in `tbl_nft_ownership`
+- aligned score adjustment insert to local schema
+- corrected ledger `action` to supported action set
+- aligned trait-level helper usage with read API path
+
+### ⚠️ Temporary localhost test setting active
+- `NFT_ABILITY_UNLOCK_LEVELS` currently set to `1 / 2 / 3` for local testing
+- must be restored before production:
+  - Fitness = 10
+  - Weapons = 20
+  - Education = 30
 
 ---
 
-## 🚨 KNOWN RISK AREAS (UPDATED)
+## ⚠️ STILL NOT DONE YET
 
-- frontend/backend time sync sensitivity
-- multi-click and race-condition edges in Lab actions
-- inventory / upgrade / marketplace race windows
-- alt-account farming risk under broader Discord Genetic access
-- low-trust listing spam risk with expanded marketplace access
-- stale UI wording confusion between Genesis authority vs Genetic authority
-- instant-finish Genetic upgrade endpoint still pending final cleanup parity
+- `public/lab.html` Genesis Ability Matrix UI not wired yet
+- Lab queue integration for ability upgrades not wired yet
+- profile summary visibility for Genesis abilities not wired yet
+- admin read visibility for Genesis abilities not wired yet
+- wording cleanup still open in docs/pages (`profile.html`, `nerd-lab.html`, `project-updates.html`)
+
+---
+
+## 🎯 CURRENT PRIORITIES (UPDATED)
+
+### Priority 1 — Wire Genesis Ability Matrix into `public/lab.html`
+- section inside Selected Genesis Mouse
+- 3 always-visible tabs (Fitness / Weapons / Education)
+- 3 cards per tab
+- show stat level/state/next duration/next cost/upgrade button
+- locked categories show required trait level
+- disable parallel buttons when same NFT already has active ability upgrade
+
+### Priority 2 — Lab queue integration
+- render ability upgrades separately from trait upgrades
+- clearly label as ability upgrades
+- no claim button in v1
+- auto-complete remains read-driven
+
+### Priority 3 — Profile summary integration
+- viewer-only summary
+- selected/best Genesis mouse ability snapshot
+- unlock states + notable levels
+
+### Priority 4 — Admin read visibility
+- Player Profiles / Genesis lane view
+- show verified Genesis mice
+- show 9-stat matrix per selected NFT
+- show unlock state + active upgrade
+
+### Priority 5 — Wording cleanup pass
+- remove old holder-era Genetic wording in remaining docs/pages
+
+---
+
+## 🚨 KNOWN RISK AREAS (LATEST)
+
+- Genesis ability unlock logic must remain tied to highest single Genesis trait level
+- Genesis ability upgrades must not weaken holder-gated Genesis access
+- ability rows must remain NFT-bound (`token_id` + `collection`)
+- Genesis ability data must not merge into `tbl_user_genetic_items`
+- queue UX confusion risk between trait upgrades vs ability upgrades if labels are weak
+- stale wording may still confuse Genesis authority vs Genetic authority
+
+---
+
+## 🚫 DO NOT BREAK
+
+- do not merge Genesis ability state into `tbl_user_genetic_items`
+- do not weaken Genesis holder protection
+- do not overload `tbl_nft_trait_upgrades` with ability data
+- do not make Genesis abilities Discord-user-bound
+- do not visually mix trait/ability queue entries without clear labels
+
+---
+
+## 📁 KEY FILES (CURRENT FOCUS)
+
+- `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+- `api/user/genesis-ability-helpers.php`
+- `api/user/get-nft-ability-upgrades.php`
+- `api/user/start-nft-ability-upgrade.php`
+- `public/lab.html`
+- `api/admin/get-player-lab.php`
+- `public/profile.html`
+- `public/admin-interface.html`
 
 ---
 
 ## ✅ SUMMARY FOR THIS DAILY FILE
 
-- This daily was created with today’s date: **2026-04-07**.
-- It captures the major rule change from holder-gated Genetic framing to **Discord-authenticated Genetic lane**.
-- It preserves that **Genesis lane remains holder-protected** and separate.
-- It documents current truth: backend split largely aligned, while UI/docs + instant-finish cleanup are still in progress.
+- Daily updated to include **today’s latest state**, not just earlier April 7 snapshot.
+- Genetic lane split remains documented as Discord-open, while Genesis remains holder-protected.
+- Genesis Ability Matrix backend foundation is now advanced with read/start loop locally validated.
+- Next phase is UI/queue/profile/admin visibility integration plus wording cleanup.
 
 ---
 
-**Last Updated:** April 7, 2026 (daily created in requested ACTIVE_STATUS style + synced to today’s Genetic access-rule update)
+**Last Updated:** April 7, 2026 (daily file refreshed with today’s latest backend + architecture updates and last-days rollup)

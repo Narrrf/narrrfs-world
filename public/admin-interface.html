@@ -10495,15 +10495,16 @@ function getAdminPlayerProfileMetricValue(primaryValue, fallbackValue) {
 
 function renderAdminPlayerProfileSubtabButtons(activeTab) {
   const tabs = [
-  ['overview', '🧠 Overview'],
-  ['lab', '🧬 Lab'],
-  ['inventory', '🎒 Inventory & Store'],
-  ['genetic', '🧬 Genetic'], // ✅ NEW
-  ['staking', '🧊 Staking'],
-  ['games', '🎮 Games & Achievements'],
-  ['traits', '🎴 Traits & NFTs'],
-  ['history', '📜 History / Admin Actions']
-];
+    ['overview', '🧠 Overview'],
+    ['lab', '🧬 Lab'],
+    ['abilities', '⚡ Genesis Abilities'],
+    ['inventory', '🎒 Inventory & Store'],
+    ['genetic', '🧬 Genetic'],
+    ['staking', '🧊 Staking'],
+    ['games', '🎮 Games & Achievements'],
+    ['traits', '🎴 Traits & NFTs'],
+    ['history', '📜 History / Admin Actions']
+  ];
 
   return `
     <div class="flex flex-wrap gap-2">
@@ -10886,6 +10887,68 @@ function renderAdminPlayerTraitsNftsSection(profile) {
   `;
 }
 
+async function adminRemoveGeneticItem(encodedGeneticItemId, encodedUserId, encodedTitle) {
+  const geneticItemId = decodeURIComponent(encodedGeneticItemId || '');
+  const userId = decodeURIComponent(encodedUserId || '');
+  const itemTitle = decodeURIComponent(encodedTitle || 'this Genetic item');
+
+  if (!geneticItemId) {
+    alert('Missing Genetic item ID.');
+    return;
+  }
+
+  const confirmed = confirm(`Remove "${itemTitle}" permanently from this player?`);
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const givenBy =
+      window.currentAdminUser?.username ||
+      window.currentAdminUser?.discord_id ||
+      window.adminUsername ||
+      'admin';
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/remove-genetic-item.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        genetic_item_id: Number(geneticItemId),
+        user_id: userId,
+        given_by: givenBy
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || data.details || 'Failed to remove Genetic item');
+    }
+
+    alert(`✅ Removed "${itemTitle}" successfully.`);
+
+    if (typeof loadAdminPlayerProfile === 'function' && userId) {
+      await loadAdminPlayerProfile(userId);
+      return;
+    }
+
+    if (typeof refreshAdminPlayerProfile === 'function') {
+      await refreshAdminPlayerProfile();
+      return;
+    }
+
+    if (typeof searchUsers === 'function' && userId) {
+      await searchUsers(userId);
+    }
+  } catch (error) {
+    console.error('❌ adminRemoveGeneticItem failed:', error);
+    alert(`❌ Failed to remove Genetic item: ${error.message}`);
+  }
+}
+
 function renderAdminPlayerGeneticSection(adminLabProfile) {
   const geneticItems = Array.isArray(adminLabProfile?.genetic_items)
     ? adminLabProfile.genetic_items
@@ -10898,6 +10961,12 @@ function renderAdminPlayerGeneticSection(adminLabProfile) {
       </div>
     `;
   }
+
+  const targetUserId =
+    adminLabProfile?.user?.discord_id ||
+    adminLabProfile?.discord_id ||
+    adminLabProfile?.user_id ||
+    '';
 
   const sortedItems = [...geneticItems].sort((a, b) => {
     const levelDiff = Number(b.current_level || 0) - Number(a.current_level || 0);
@@ -10921,6 +10990,7 @@ function renderAdminPlayerGeneticSection(adminLabProfile) {
         const status = String(item.upgrade_status || 'idle');
         const acquiredMethod = item.acquired_method || 'unknown';
         const isListed = Number(item.is_listed_for_sale || 0) === 1;
+        const geneticItemId = String(item.genetic_item_id || '');
 
         const statusColor =
           status === 'upgrading' ? 'text-cyan-300' :
@@ -10931,24 +11001,43 @@ function renderAdminPlayerGeneticSection(adminLabProfile) {
           ? `<span class="inline-block text-xs px-2 py-1 rounded bg-yellow-600 text-white font-semibold">Listed</span>`
           : `<span class="inline-block text-xs px-2 py-1 rounded bg-gray-600 text-white font-semibold">Not Listed</span>`;
 
+        const safeTitle = escapeAdminProfileHtml(title);
+        const safeTraitType = escapeAdminProfileHtml(traitType);
+        const safeTraitValue = escapeAdminProfileHtml(traitValue);
+        const safeRarity = escapeAdminProfileHtml(rarity);
+        const safeStatus = escapeAdminProfileHtml(status);
+        const safeAcquiredMethod = escapeAdminProfileHtml(acquiredMethod);
+        const safeGeneticItemId = escapeAdminProfileHtml(geneticItemId);
+        const safeCatalogId = escapeAdminProfileHtml(String(item.catalog_id || '-'));
+
         return `
           <div class="bg-gray-800 bg-opacity-60 rounded-lg p-4 border border-gray-700">
             <div class="flex items-start justify-between gap-3 mb-3">
               <div>
-                <div class="text-lg font-bold text-pink-300">${escapeAdminProfileHtml(title)}</div>
-                <div class="text-xs text-gray-400">Genetic Item ID: ${escapeAdminProfileHtml(String(item.genetic_item_id || '-'))}</div>
+                <div class="text-lg font-bold text-pink-300">${safeTitle}</div>
+                <div class="text-xs text-gray-400">Genetic Item ID: ${safeGeneticItemId || '-'}</div>
               </div>
               ${listedBadge}
             </div>
 
             <div class="space-y-2 text-sm">
-              <div><span class="text-gray-400">Type:</span> <span class="text-white">${escapeAdminProfileHtml(traitType)}</span></div>
-              <div><span class="text-gray-400">Trait:</span> <span class="text-white">${escapeAdminProfileHtml(traitValue)}</span></div>
-              <div><span class="text-gray-400">Rarity:</span> <span class="text-white">${escapeAdminProfileHtml(rarity)}</span></div>
+              <div><span class="text-gray-400">Type:</span> <span class="text-white">${safeTraitType}</span></div>
+              <div><span class="text-gray-400">Trait:</span> <span class="text-white">${safeTraitValue}</span></div>
+              <div><span class="text-gray-400">Rarity:</span> <span class="text-white">${safeRarity}</span></div>
               <div><span class="text-gray-400">Level:</span> <span class="text-green-300 font-semibold">Lv. ${escapeAdminProfileHtml(String(level))}</span></div>
-              <div><span class="text-gray-400">Status:</span> <span class="${statusColor} font-semibold">${escapeAdminProfileHtml(status)}</span></div>
-              <div><span class="text-gray-400">Acquired:</span> <span class="text-white">${escapeAdminProfileHtml(acquiredMethod)}</span></div>
-              <div><span class="text-gray-400">Catalog ID:</span> <span class="text-white">${escapeAdminProfileHtml(String(item.catalog_id || '-'))}</span></div>
+              <div><span class="text-gray-400">Status:</span> <span class="${statusColor} font-semibold">${safeStatus}</span></div>
+              <div><span class="text-gray-400">Acquired:</span> <span class="text-white">${safeAcquiredMethod}</span></div>
+              <div><span class="text-gray-400">Catalog ID:</span> <span class="text-white">${safeCatalogId}</span></div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-gray-700 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onclick="adminRemoveGeneticItem('${encodeURIComponent(geneticItemId)}', '${encodeURIComponent(String(targetUserId))}', '${encodeURIComponent(String(title))}')"
+                class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all duration-200"
+              >
+                🗑️ Remove Genetic Item
+              </button>
             </div>
           </div>
         `;
@@ -11041,7 +11130,18 @@ function renderAdminPlayerHistorySection(profile) {
 }
 
 function switchAdminPlayerProfileSubtab(tabId) {
-  const validTabs = new Set(['overview', 'lab', 'inventory', 'genetic', 'staking', 'games', 'traits', 'history']);
+  const validTabs = new Set([
+    'overview',
+    'lab',
+    'abilities',
+    'inventory',
+    'genetic',
+    'staking',
+    'games',
+    'traits',
+    'history'
+  ]);
+
   const safeTab = validTabs.has(tabId) ? tabId : 'overview';
   window.currentAdminPlayerProfileSubtab = safeTab;
 
@@ -11049,7 +11149,6 @@ function switchAdminPlayerProfileSubtab(tabId) {
     renderAdminPlayerProfile(window.currentAdminPlayerProfileData);
   }
 }
-
 function renderAdminPlayerProfile(profile) {
   const container = document.getElementById('adminPlayerProfileResult');
   if (!container) return;
@@ -11069,6 +11168,12 @@ function renderAdminPlayerProfile(profile) {
     <div class="stats-card">
       <h4 class="text-lg font-semibold mb-4">🧬 Lab Progression</h4>
       ${renderAdminPlayerLabSection(adminLabProfile)}
+    </div>
+  `,
+  abilities: `
+    <div class="stats-card">
+      <h4 class="text-lg font-semibold mb-4">⚡ Genesis Ability Matrix</h4>
+      ${renderAdminPlayerGenesisAbilitiesSection(adminLabProfile)}
     </div>
   `,
   inventory: `
@@ -11210,6 +11315,146 @@ function groupAdminLabUpgradesByToken(labProfile) {
       })
     };
   }).sort((a, b) => b.nft_level - a.nft_level || String(a.token_id).localeCompare(String(b.token_id)));
+}
+
+function renderAdminPlayerGenesisAbilitiesSection(adminLabProfile) {
+  const verifiedNfts = Array.isArray(adminLabProfile?.verified_genesis_nfts)
+    ? adminLabProfile.verified_genesis_nfts
+    : [];
+
+  const abilityByToken = adminLabProfile?.ability_by_token || {};
+  const tokenIds = verifiedNfts.map(nft => String(nft?.token_id || '').trim()).filter(Boolean);
+
+  if (!tokenIds.length) {
+    return `
+      <div class="text-center text-gray-300 py-10">
+        <div class="text-lg mb-2">No verified Genesis mice found</div>
+        <div class="text-sm text-gray-400">
+          This player currently has no verified Genesis NFTs visible in the admin profile context.
+        </div>
+      </div>
+    `;
+  }
+
+  const formatNumberSafe = (value) => Number(value || 0).toLocaleString();
+
+  return `
+    <div class="space-y-6">
+      <div class="data-summary bg-cyan-900/30 text-cyan-100 border border-cyan-500/30">
+        <div class="font-semibold text-lg mb-1">Read-only Genesis ability visibility</div>
+        <div class="text-sm">
+          This panel shows NFT-bound Genesis Ability Matrix state per verified mouse.
+          It is admin-visible only and does not mutate holder-owned progression.
+        </div>
+      </div>
+
+      ${verifiedNfts.map(nft => {
+        const tokenId = String(nft?.token_id || '').trim();
+        const nftName = String(nft?.nft_name || 'Unnamed Genesis Mouse').trim();
+        const imageUrl = String(nft?.image_url || '').trim();
+        const abilityData = abilityByToken[tokenId] || {};
+        const rows = Array.isArray(abilityData.ability_rows) ? abilityData.ability_rows : [];
+        const unlockMap = abilityData.unlock_map || {};
+        const highestTraitLevel = Number(abilityData.highest_trait_level || 0);
+        const activeCount = Number(abilityData.active_ability_upgrade_count || 0);
+        const availableDspoinc = Number(abilityData.available_dspoinc || 0);
+
+        const grouped = {
+          Fitness: rows.filter(row => String(row?.category || '') === 'Fitness'),
+          Weapons: rows.filter(row => String(row?.category || '') === 'Weapons'),
+          Education: rows.filter(row => String(row?.category || '') === 'Education')
+        };
+
+        return `
+          <div class="leaderboard-container p-6 border border-cyan-500/20">
+            <div class="flex flex-col xl:flex-row gap-6">
+              <div class="xl:w-72 shrink-0">
+                <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-700/40">
+                  ${imageUrl ? `
+                    <img
+                      src="${escapeAdminProfileHtml(imageUrl)}"
+                      alt="${escapeAdminProfileHtml(nftName)}"
+                      class="w-full rounded-lg mb-4 border border-cyan-500/20"
+                    />
+                  ` : ''}
+                  <div class="text-lg font-semibold text-white">${escapeAdminProfileHtml(nftName)}</div>
+                  <div class="text-xs text-gray-400 mt-1 break-all">${escapeAdminProfileHtml(tokenId)}</div>
+
+                  <div class="grid grid-cols-2 gap-3 mt-4">
+                    <div class="bg-gray-800/70 rounded-lg p-3 border border-cyan-500/20">
+                      <div class="text-xs text-cyan-300 uppercase">Highest Trait</div>
+                      <div class="text-white font-semibold mt-1">Lv ${formatNumberSafe(highestTraitLevel)}</div>
+                    </div>
+                    <div class="bg-gray-800/70 rounded-lg p-3 border border-cyan-500/20">
+                      <div class="text-xs text-cyan-300 uppercase">Active Ability</div>
+                      <div class="text-white font-semibold mt-1">${formatNumberSafe(activeCount)}</div>
+                    </div>
+                    <div class="bg-gray-800/70 rounded-lg p-3 border border-cyan-500/20 col-span-2">
+                      <div class="text-xs text-cyan-300 uppercase">Available DSPOINC Snapshot</div>
+                      <div class="text-white font-semibold mt-1">${formatNumberSafe(availableDspoinc)} DSPOINC</div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 space-y-2">
+                    ${['Fitness', 'Weapons', 'Education'].map(category => {
+                      const unlock = unlockMap[category] || {};
+                      const unlocked = Boolean(unlock.is_unlocked);
+                      const required = Number(unlock.required_trait_level || 0);
+
+                      return `
+                        <div class="flex items-center justify-between bg-gray-800/50 rounded-lg px-3 py-2 border border-gray-700/40">
+                          <span class="text-sm text-white">${escapeAdminProfileHtml(category)}</span>
+                          <span class="text-xs font-semibold ${unlocked ? 'text-emerald-300' : 'text-amber-300'}">
+                            ${unlocked ? 'Unlocked' : `Lock ${required}`}
+                          </span>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex-1 space-y-5">
+                ${['Fitness', 'Weapons', 'Education'].map(category => {
+                  const categoryRows = grouped[category] || [];
+
+                  return `
+                    <div>
+                      <div class="leaderboard-header">${category}</div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        ${categoryRows.length ? categoryRows.map(row => {
+                          const level = Number(row?.current_level || 0);
+                          const state = String(row?.upgrade_status || row?.state || 'idle');
+                          const cost = Number(row?.last_upgrade_cost_dspoinc || row?.next_cost || 0);
+                          const duration = Number(row?.last_duration_seconds || row?.next_duration_seconds || 0);
+                          const endsAt = row?.upgrade_ends_at || null;
+
+                          return `
+                            <div class="game-stat-card">
+                              <div class="game-stat-header text-cyan-300">${escapeAdminProfileHtml(row?.ability_key || 'Unknown')}</div>
+                              <div class="game-stat-value text-white">Lv ${formatNumberSafe(level)}</div>
+                              <div class="game-stat-subvalue mt-2">State: ${escapeAdminProfileHtml(state)}</div>
+                              <div class="game-stat-subvalue">Last / Next Cost: ${formatNumberSafe(cost)} DSPOINC</div>
+                              <div class="game-stat-subvalue">Last / Next Duration: ${formatNumberSafe(duration)} sec</div>
+                              <div class="game-stat-subvalue">Ends At: ${endsAt ? escapeAdminProfileHtml(endsAt) : '—'}</div>
+                            </div>
+                          `;
+                        }).join('') : `
+                          <div class="text-sm text-gray-400 md:col-span-3">
+                            No ability rows visible yet for ${escapeAdminProfileHtml(category)}.
+                          </div>
+                        `}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
 }
 
 /**

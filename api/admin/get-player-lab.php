@@ -33,6 +33,9 @@ foreach ($databaseIncludeCandidates as $databaseIncludePath) {
     }
 }
 
+require_once __DIR__ . '/../user/genesis-ability-helpers.php';
+
+
 $discordSecretCandidates = [
     __DIR__ . '/../../config/discord-secret.php',
     __DIR__ . '/../config/discord-secret.php'
@@ -701,6 +704,188 @@ function load_user_genetic_items(PDO $pdo, $userId) {
     return $rows;
 }
 
+/**
+ * Return available DSPOINC snapshot = total score - active frozen stakes.
+ */
+function get_user_available_dspoinc(PDO $pdo, string $userId): int {
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(score), 0)
+        FROM tbl_user_scores
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $total = (int)$stmt->fetchColumn();
+
+    if (!sqlite_table_exists($pdo, 'tbl_dspoinc_stakes')) {
+        return max(0, $total);
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(amount), 0)
+        FROM tbl_dspoinc_stakes
+        WHERE user_id = ?
+          AND status = 'active'
+    ");
+    $stmt->execute([$userId]);
+    $frozen = (int)$stmt->fetchColumn();
+
+    return max(0, $total - $frozen);
+}
+
+/**
+ * Return the highest Genesis trait level for one NFT from the trait upgrade layer.
+ */
+function get_highest_genesis_trait_level_for_token(PDO $pdo, string $tokenId, string $collection = 'genesis'): int {
+    if (!sqlite_table_exists($pdo, 'tbl_nft_trait_upgrades')) {
+        return 1;
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(MAX(current_level), 1) AS highest_level
+        FROM tbl_nft_trait_upgrades
+        WHERE token_id = ?
+          AND LOWER(COALESCE(collection, 'genesis')) = LOWER(?)
+    ");
+    $stmt->execute([$tokenId, $collection]);
+
+    $highest = (int)$stmt->fetchColumn();
+    return max(1, $highest);
+}
+
+/**
+ * Return one admin-safe ability snapshot for one Genesis NFT.
+ * Read-only only. This does not mutate holder-owned state beyond helper-safe auto-finalize behavior.
+ */
+function build_admin_nft_ability_snapshot(PDO $pdo, string $userId, array $nft): array {
+    $tokenId = trim((string)($nft['token_id'] ?? ''));
+    $collection = strtolower(trim((string)($nft['collection'] ?? 'genesis')));
+
+    if ($tokenId === '') {
+        return [
+            'token_id' => '',
+            'collection' => 'genesis',
+            'highest_trait_level' => 1,
+            'unlock_map' => get_nft_ability_unlock_map(1),
+            'ability_rows' => [],
+            'active_ability_upgrade_count' => 0,
+            'auto_completed' => [],
+            'available_dspoinc' => get_user_available_dspoinc($pdo, $userId)
+        ];
+    }
+
+    if ($collection === '') {
+        $collection = 'genesis';
+    }
+
+    if (sqlite_table_exists($pdo, 'tbl_nft_ability_upgrades')) {
+        seed_missing_nft_ability_rows($pdo, $userId, $tokenId, $collection);
+        auto_finalize_expired_nft_ability_upgrades($pdo, $tokenId, $collection);
+    }
+
+    $highestTraitLevel = get_highest_genesis_trait_level_for_token($pdo, $tokenId, $collection);
+    $unlockMap = get_nft_ability_unlock_map($highestTraitLevel);
+
+    $abilityRows = [];
+    $activeAbilityUpgradeCount = 0;
+
+    if (sqlite_table_exists($pdo, 'tbl_nft_ability_upgrades')) {
+        $stmt = $pdo->prepare("
+            SELECT
+                ability_upgrade_id,
+                user_id,
+                token_id,
+                collection,
+                category,
+                ability_key,
+                current_level,
+                upgrade_status,
+                upgrade_started_at,
+                upgrade_ends_at,
+                last_completed_at,
+                last_notified_ready_at,
+                ready_notification_count,
+                base_duration_seconds,
+                last_duration_seconds,
+                last_upgrade_cost_dspoinc,
+                unlock_source_trait_level,
+                created_at,
+                updated_at,
+                last_owner_user_id
+            FROM tbl_nft_ability_upgrades
+            WHERE token_id = ?
+              AND LOWER(COALESCE(collection, 'genesis')) = LOWER(?)
+            ORDER BY
+              CASE category
+                WHEN 'Fitness' THEN 1
+                WHEN 'Weapons' THEN 2
+                WHEN 'Education' THEN 3
+                ELSE 99
+              END,
+              CASE ability_key
+                WHEN 'HP' THEN 1
+                WHEN 'SPEED' THEN 2
+                WHEN 'AIR' THEN 3
+                WHEN 'ATK' THEN 4
+                WHEN 'DEF' THEN 5
+                WHEN 'SPECIAL' THEN 6
+                WHEN 'SPELLS' THEN 7
+                WHEN 'CRAFTING' THEN 8
+                WHEN 'EXPANSION' THEN 9
+                ELSE 99
+              END
+        ");
+        $stmt->execute([$tokenId, $collection]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        foreach ($rows as $row) {
+            $row['current_level'] = max(1, (int)($row['current_level'] ?? 1));
+            $row['upgrade_status'] = (string)($row['upgrade_status'] ?? 'idle');
+            $row['next_cost'] = $row['current_level'] >= NFT_ABILITY_MAX_LEVEL
+                ? 0
+                : get_nft_ability_upgrade_cost_dspoinc((int)$row['current_level']);
+            $row['next_duration_seconds'] = $row['current_level'] >= NFT_ABILITY_MAX_LEVEL
+                ? 0
+                : get_nft_ability_upgrade_duration_seconds((int)$row['current_level']);
+            $row['state'] = $row['upgrade_status'];
+
+            if ($row['upgrade_status'] === NFT_ABILITY_STATUS_UPGRADING) {
+                $activeAbilityUpgradeCount++;
+            }
+
+            $abilityRows[] = $row;
+        }
+    }
+
+    return [
+        'token_id' => $tokenId,
+        'collection' => $collection,
+        'highest_trait_level' => $highestTraitLevel,
+        'unlock_map' => $unlockMap,
+        'ability_rows' => $abilityRows,
+        'active_ability_upgrade_count' => $activeAbilityUpgradeCount,
+        'auto_completed' => [],
+        'available_dspoinc' => get_user_available_dspoinc($pdo, $userId)
+    ];
+}
+
+/**
+ * Build ability snapshots for all verified Genesis NFTs.
+ */
+function build_admin_ability_by_token(PDO $pdo, string $userId, array $verifiedGenesisNfts): array {
+    $abilityByToken = [];
+
+    foreach ($verifiedGenesisNfts as $nft) {
+        $tokenId = trim((string)($nft['token_id'] ?? ''));
+        if ($tokenId === '') {
+            continue;
+        }
+
+        $abilityByToken[$tokenId] = build_admin_nft_ability_snapshot($pdo, $userId, $nft);
+    }
+
+    return $abilityByToken;
+}
 
 try {
     $request = get_request_data();
@@ -801,6 +986,7 @@ try {
 
     $nftSummaries = build_nft_summaries($verifiedGenesisNfts, $resolvedRows);
     $geneticItems = load_user_genetic_items($pdo, $userId);
+    $abilityByToken = build_admin_ability_by_token($pdo, $userId, $verifiedGenesisNfts);
     $geneticInventoryCount = count($geneticItems);
     $totalLabPower = array_reduce($nftSummaries, function ($sum, $row) {
         return $sum + (int)($row['nft_level'] ?? 0);
@@ -816,6 +1002,7 @@ try {
         'verified_genesis_nfts' => $verifiedGenesisNfts,
         'upgrades' => $resolvedRows,
         'nft_summaries' => $nftSummaries,
+        'ability_by_token' => $abilityByToken,
         'genetic_items' => $geneticItems,
         'summary' => [
             'verified_nft_count' => count($verifiedGenesisNfts),
