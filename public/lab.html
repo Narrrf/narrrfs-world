@@ -3981,8 +3981,17 @@ body::after {
       geneticMarketplaceLoading: false,
       geneticInventoryRuntimeSummary: null,
       geneticActionItemId: null,
-      activeGeneticMediaViewerKey: ''
+      activeGeneticMediaViewerKey: '',
+      readyTransitionResyncTimer: null,
+      readyTransitionResyncInFlight: false,
+      lastReadyTransitionResyncAt: 0,
+      uiCache: {
+        activeQueueStructureKey: '',
+        traitGridStructureKey: ''
+      }
     };
+
+    const LAB_READY_RESYNC_MIN_INTERVAL_MS = 12000;
 
 const el = {
   sessionNotice: document.getElementById('sessionNotice'),
@@ -5181,26 +5190,35 @@ function renderActiveResearchQueue() {
       const endTime = parseLabUtcDate(activeRow.upgrade_ends_at)?.getTime() || 0;
       const remainingMs = Math.max(0, endTime - Date.now());
       const elapsedMs = Math.max(0, totalMs - remainingMs);
+      const startTime = Math.max(0, endTime - totalMs);
 
       const progressPercent = totalMs > 0
         ? Math.min(100, Math.round((elapsedMs / totalMs) * 100))
         : 0;
 
+      const queueLabelBase = `Active Upgrade: ${activeRow.trait_type} • ${activeRow.trait_value}`;
+
       progressBlock = `
-        <div class="queue-progress-wrap ${boosterTone ? `boosted ${boosterTone}` : ''}">
+        <div
+          class="queue-progress-wrap ${boosterTone ? `boosted ${boosterTone}` : ''}"
+          data-queue-progress="true"
+          data-live-state="upgrading"
+          data-start-ms="${startTime}"
+          data-end-ms="${endTime}"
+          data-duration-ms="${totalMs}">
           <div class="queue-progress-label-row">
             <div class="queue-progress-label">
               ${boosterLight}
-              <span>Active Upgrade: ${escapeHtml(activeRow.trait_type)} • ${escapeHtml(activeRow.trait_value)} • ${progressPercent}%</span>
+              <span data-queue-progress-label data-base-label="${escapeHtml(queueLabelBase)}">${escapeHtml(queueLabelBase)} • ${progressPercent}%</span>
             </div>
             ${boosterBadge}
           </div>
 
           <div class="queue-progress-bar">
-            <div class="queue-progress-fill ${boosterTone}" style="width:${progressPercent}%"></div>
+            <div class="queue-progress-fill ${boosterTone}" data-queue-progress-fill style="width:${progressPercent}%"></div>
           </div>
 
-          <div class="queue-progress-subtext">
+          <div class="queue-progress-subtext" data-queue-progress-remaining>
             ${formatRemainingMs(remainingMs)} remaining
           </div>
         </div>
@@ -6446,6 +6464,10 @@ el.traitUpgradeInfo.innerHTML = `
         ? 'Complete'
         : 'Not started';
 
+    const startMs = status === 'upgrading' ? Math.max(0, endTime - totalMs) : 0;
+    const liveEndMs = status === 'upgrading' ? endTime : 0;
+    const liveDurationMs = status === 'upgrading' ? totalMs : 0;
+
     const traitKey = getTraitAccordionKey(nft, trait);
     const isExpanded = getExpandedTraitKey() === traitKey;
 
@@ -6486,13 +6508,20 @@ el.traitUpgradeInfo.innerHTML = `
           </div>
         </button>
 
-        <div class="trait-card-body" ${isExpanded ? '' : 'hidden'}>
+        <div
+          class="trait-card-body"
+          ${isExpanded ? '' : 'hidden'}
+          data-trait-progress="true"
+          data-live-state="${status}"
+          data-start-ms="${startMs}"
+          data-end-ms="${liveEndMs}"
+          data-duration-ms="${liveDurationMs}">
           <div class="mini-progress-label">
             <span>Progress</span>
-            <span>${escapeHtml(progressLabel)}</span>
+            <span data-trait-progress-label>${escapeHtml(progressLabel)}</span>
           </div>
           <div class="mini-progress-track">
-            <div class="mini-progress-fill ${statusClass}" style="width:${progressPercent}%"></div>
+            <div class="mini-progress-fill ${statusClass}" data-trait-progress-fill style="width:${progressPercent}%"></div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
@@ -6543,7 +6572,7 @@ el.traitUpgradeInfo.innerHTML = `
             ⚡ Instant Finish • ${canFinish ? `${formatNumber(instantCost)} DSPOINC` : '0 DSPOINC'}
           </button>
 
-          <div class="mt-3 text-xs text-slate-400">
+          <div class="mt-3 text-xs text-slate-400" data-trait-remaining-note>
             ${escapeHtml(chamberNote)}
           </div>
         </div>
@@ -9263,18 +9292,196 @@ function renderAll() {
   renderLabBoosterPanel();
 }
 
+function getActiveLabTabName() {
+  const activeButton = document.querySelector('.lab-tab-button.active');
+  return activeButton?.getAttribute('data-lab-tab') || 'overview';
+}
+
+/**
+ * Heavy member-facing render layer.
+ * Run only when data/selection state truly changes.
+ */
+function rerenderHeavyMemberWorkflow(options = {}) {
+  const { forceAll = false } = options;
+  const activeTab = getActiveLabTabName();
+
+  const shouldRenderMyGenesis = forceAll || activeTab === 'my-genesis';
+  const shouldRenderQueue = forceAll || activeTab === 'research-queue';
+
+  if (shouldRenderQueue) {
+    renderActiveResearchQueue();
+  }
+
+  if (shouldRenderMyGenesis) {
+    renderNftGrid();
+    renderSelectedNftPanel();
+    renderSelectedTraitSummary();
+    renderTraitGrid();
+    renderLabBoosterPanel();
+  }
+}
+
+async function runReadyTransitionResync(reason = 'timer-ready-transition') {
+  if (state.readyTransitionResyncInFlight) {
+    return;
+  }
+
+  state.readyTransitionResyncInFlight = true;
+  try {
+    await loadTraitUpgrades();
+
+    renderLabHealthStrip();
+    renderOverviewCards();
+    renderQueueSummary();
+    rerenderHeavyMemberWorkflow({ forceAll: false });
+
+    state.lastReadyTransitionResyncAt = Date.now();
+    logLab(`Timer sync applied (${reason}).`, 'info');
+  } catch (error) {
+    logLab(`Timer sync failed: ${error.message}`, 'warn');
+  } finally {
+    state.readyTransitionResyncInFlight = false;
+  }
+}
+
+function scheduleReadyTransitionResync(reason = 'timer-ready-transition') {
+  if (state.readyTransitionResyncTimer || state.readyTransitionResyncInFlight) {
+    return;
+  }
+
+  const now = Date.now();
+  const elapsed = now - safeNumber(state.lastReadyTransitionResyncAt, 0);
+  const delay = elapsed >= LAB_READY_RESYNC_MIN_INTERVAL_MS
+    ? 120
+    : (LAB_READY_RESYNC_MIN_INTERVAL_MS - elapsed);
+
+  state.readyTransitionResyncTimer = window.setTimeout(async () => {
+    state.readyTransitionResyncTimer = null;
+    await runReadyTransitionResync(reason);
+  }, Math.max(0, delay));
+}
+
+/**
+ * Light updater layer: countdown labels only.
+ * Safe for 1s tick without rebuilding heavy DOM blocks.
+ */
+function updateVisibleCountdowns(now = Date.now()) {
+  document.querySelectorAll('[data-queue-progress="true"]').forEach(block => {
+    if ((block.getAttribute('data-live-state') || '') !== 'upgrading') return;
+
+    const endMs = safeNumber(block.getAttribute('data-end-ms'), 0);
+    if (!endMs) return;
+
+    const remainingMs = Math.max(0, endMs - now);
+    const remainingEl = block.querySelector('[data-queue-progress-remaining]');
+    if (remainingEl) {
+      remainingEl.textContent = remainingMs > 0
+        ? `${formatRemainingMs(remainingMs)} remaining`
+        : 'Ready to claim';
+    }
+  });
+
+  document.querySelectorAll('[data-trait-progress="true"]').forEach(block => {
+    if ((block.getAttribute('data-live-state') || '') !== 'upgrading') return;
+
+    const endMs = safeNumber(block.getAttribute('data-end-ms'), 0);
+    if (!endMs) return;
+
+    const remainingMs = Math.max(0, endMs - now);
+    const noteEl = block.querySelector('[data-trait-remaining-note]');
+    if (noteEl) {
+      noteEl.textContent = remainingMs > 0
+        ? `Finishes ${formatRemainingLong(remainingMs)}`
+        : 'This trait is ready to claim. Claiming finalizes the new level for the current player.';
+    }
+  });
+}
+
+/**
+ * Light updater layer: progress bars + progress percentages.
+ */
+function updateVisibleProgressBars(now = Date.now()) {
+  document.querySelectorAll('[data-queue-progress="true"]').forEach(block => {
+    if ((block.getAttribute('data-live-state') || '') !== 'upgrading') return;
+
+    const endMs = safeNumber(block.getAttribute('data-end-ms'), 0);
+    const durationMs = Math.max(1, safeNumber(block.getAttribute('data-duration-ms'), 0));
+    if (!endMs) return;
+
+    const remainingMs = Math.max(0, endMs - now);
+    const elapsedMs = Math.max(0, durationMs - remainingMs);
+    const progressPercent = Math.max(0, Math.min(100, Math.round((elapsedMs / durationMs) * 100)));
+
+    const labelEl = block.querySelector('[data-queue-progress-label]');
+    const fillEl = block.querySelector('[data-queue-progress-fill]');
+    if (labelEl) {
+      const base = labelEl.getAttribute('data-base-label') || 'Active Upgrade';
+      labelEl.textContent = `${base} • ${progressPercent}%`;
+    }
+    if (fillEl) {
+      fillEl.style.width = `${progressPercent}%`;
+    }
+  });
+
+  document.querySelectorAll('[data-trait-progress="true"]').forEach(block => {
+    if ((block.getAttribute('data-live-state') || '') !== 'upgrading') return;
+
+    const endMs = safeNumber(block.getAttribute('data-end-ms'), 0);
+    const durationMs = Math.max(1, safeNumber(block.getAttribute('data-duration-ms'), 0));
+    if (!endMs) return;
+
+    const remainingMs = Math.max(0, endMs - now);
+    const elapsedMs = Math.max(0, durationMs - remainingMs);
+    const progressPercent = Math.max(0, Math.min(100, Math.round((elapsedMs / durationMs) * 100)));
+
+    const labelEl = block.querySelector('[data-trait-progress-label]');
+    const fillEl = block.querySelector('[data-trait-progress-fill]');
+    if (labelEl) {
+      labelEl.textContent = remainingMs > 0 ? `${progressPercent}%` : 'Complete';
+    }
+    if (fillEl) {
+      fillEl.style.width = `${remainingMs > 0 ? progressPercent : 100}%`;
+    }
+  });
+}
+
+/**
+ * Light updater layer: ready-state badges/flags.
+ * Returns true when a ready transition happened and heavy resync is needed.
+ */
+function updateVisibleReadyBadges(now = Date.now()) {
+  let shouldResync = false;
+
+  document.querySelectorAll('[data-queue-progress="true"]').forEach(block => {
+    if ((block.getAttribute('data-live-state') || '') !== 'upgrading') return;
+    const endMs = safeNumber(block.getAttribute('data-end-ms'), 0);
+    if (endMs && endMs <= now) {
+      block.setAttribute('data-live-state', 'ready');
+      shouldResync = true;
+    }
+  });
+
+  document.querySelectorAll('[data-trait-progress="true"]').forEach(block => {
+    if ((block.getAttribute('data-live-state') || '') !== 'upgrading') return;
+    const endMs = safeNumber(block.getAttribute('data-end-ms'), 0);
+    if (endMs && endMs <= now) {
+      block.setAttribute('data-live-state', 'ready');
+      shouldResync = true;
+    }
+  });
+
+  return shouldResync;
+}
+
 function liveRefreshRender() {
+  const now = Date.now();
+  updateVisibleCountdowns(now);
+  updateVisibleProgressBars(now);
+  const shouldResync = updateVisibleReadyBadges(now);
 
-  if (!state.selectedNft) return;
-
-  renderLabHealthStrip();
-  renderOverviewCards();
-  renderQueueSummary();
-  renderActiveResearchQueue();
-  renderNftGrid();
-  renderSelectedNftPanel();
-  renderSelectedTraitSummary();
-  renderTraitGrid();
+  if (shouldResync) {
+    scheduleReadyTransitionResync('countdown-finished');
+  }
 }
 
 
@@ -9293,6 +9500,10 @@ function switchLabTab(tabName) {
   // 🔥 IMPORTANT: force render when marketplace tab is opened
   if (tabName === 'genetic-marketplace') {
     renderGeneticMarketplace();
+  }
+
+  if (tabName === 'my-genesis' || tabName === 'research-queue') {
+    rerenderHeavyMemberWorkflow({ forceAll: false });
   }
 }
 

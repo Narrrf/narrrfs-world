@@ -2269,6 +2269,110 @@ require_once 'discord-invite.php';
   font-size: 0.7rem;
   padding: 0.3rem 0.6rem;
 }
+
+/* =========================================================
+   PROFILE 2.0 MOBILE TAB UX HOTFIX
+   Keeps all existing tabs and JS.
+   ========================================================= */
+
+.profile-v2-tab-jump {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .profile-v2-shell {
+    width: min(100%, calc(100% - 12px));
+    margin-bottom: 1rem;
+  }
+
+  .profile-v2-frame {
+    border-radius: 1rem;
+  }
+
+  .profile-v2-topbar {
+    top: 0;
+    padding: 0.75rem 0.7rem 0.8rem;
+  }
+
+  .profile-v2-kicker {
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.55rem;
+  }
+
+  .profile-v2-tab-jump {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.7rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(250, 204, 21, 0.2);
+    background: rgba(15, 23, 42, 0.92);
+    color: #fff;
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .profile-v2-tablist {
+    display: flex;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    gap: 0.55rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.15rem;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .profile-v2-tablist::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .profile-v2-tablist::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.28);
+    border-radius: 999px;
+  }
+
+  .profile-v2-tab {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 0.8rem 0.95rem;
+    border-radius: 999px;
+    scroll-snap-align: start;
+    white-space: nowrap;
+    font-size: 0.84rem;
+  }
+
+  .profile-v2-tab span:last-child {
+    max-width: none;
+  }
+
+  .profile-v2-panel-inner {
+    width: min(100%, calc(100% - 18px));
+    padding-bottom: 2rem;
+  }
+
+  .profile-v2-panel-inner::before {
+    height: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-v2-topbar {
+    padding: 0.65rem 0.55rem 0.75rem;
+  }
+
+  .profile-v2-tab {
+    font-size: 0.8rem;
+    padding: 0.72rem 0.88rem;
+  }
+
+  .profile-v2-tab-jump {
+    font-size: 0.9rem;
+    padding: 0.82rem 0.9rem;
+  }
+}
 </style>
 </head>
 
@@ -11531,6 +11635,8 @@ setInterval(updateBingoCard, 60000);
     { key: 'leaderboards', label: 'Leaderboards', emoji: '🥇' }
   ];
 
+  let mobileJump = null;
+
   function moveNode(node, target) {
     if (!node || !target || !node.parentNode) return;
     target.appendChild(node);
@@ -11548,6 +11654,9 @@ setInterval(updateBingoCard, 60000);
     document.querySelectorAll('.profile-v2-panel').forEach((panel) => {
       panel.classList.toggle('active', panel.dataset.panel === key);
     });
+    if (mobileJump) {
+      mobileJump.value = key;
+    }
     localStorage.setItem('narrrfs_profile_v2_tab', key);
   }
 
@@ -11977,6 +12086,15 @@ function renderProfileGeneticsPanel(data) {
     tablist.className = 'profile-v2-tablist';
     tablist.setAttribute('role', 'tablist');
 
+    const mobileJump = document.createElement('select');
+    mobileJump.className = 'profile-v2-tab-jump';
+    mobileJump.setAttribute('aria-label', 'Jump to profile section');
+
+    const mobilePlaceholder = document.createElement('option');
+    mobilePlaceholder.value = '';
+    mobilePlaceholder.textContent = '📱 Jump to section...';
+    mobileJump.appendChild(mobilePlaceholder);
+
     const panelsWrap = document.createElement('div');
     panelsWrap.className = 'profile-v2-panels';
 
@@ -11991,6 +12109,11 @@ function renderProfileGeneticsPanel(data) {
       button.innerHTML = `<span>${tab.emoji}</span> <span>${tab.label}</span>`;
       button.addEventListener('click', () => activateTab(tab.key));
       tablist.appendChild(button);
+
+      const mobileOption = document.createElement('option');
+      mobileOption.value = tab.key;
+      mobileOption.textContent = `${tab.emoji} ${tab.label}`;
+      mobileJump.appendChild(mobileOption);
 
       const panel = document.createElement('section');
       panel.className = 'profile-v2-panel';
@@ -12013,6 +12136,17 @@ function renderProfileGeneticsPanel(data) {
         panel.classList.add('active');
       }
     });
+
+    mobileJump.addEventListener('change', (event) => {
+      const nextTab = String(event.target.value || '').trim();
+      if (!nextTab) {
+        return;
+      }
+
+      activateTab(nextTab);
+    });
+
+    topbar.appendChild(mobileJump);
 
     topbar.appendChild(tablist);
     frame.appendChild(topbar);
