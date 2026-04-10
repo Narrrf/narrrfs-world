@@ -5263,6 +5263,85 @@ function renderActiveResearchQueue() {
   }).join('');
 }
 
+const nftSliderSwipeState = {
+  startX: 0,
+  currentX: 0,
+  deltaX: 0,
+  tracking: false
+};
+
+function bindNftSliderSwipeSupport() {
+  const rail = document.getElementById('nftGrid');
+  if (!rail || rail.dataset.swipeBound === '1') {
+    return;
+  }
+
+  const swipeThreshold = 45;
+  const verticalThreshold = 35;
+  let startY = 0;
+  let currentY = 0;
+
+  rail.addEventListener('touchstart', (event) => {
+    if (!event.touches || event.touches.length !== 1) return;
+
+    nftSliderSwipeState.tracking = true;
+    nftSliderSwipeState.startX = event.touches[0].clientX;
+    nftSliderSwipeState.currentX = nftSliderSwipeState.startX;
+    nftSliderSwipeState.deltaX = 0;
+
+    startY = event.touches[0].clientY;
+    currentY = startY;
+  }, { passive: true });
+
+  rail.addEventListener('touchmove', (event) => {
+    if (!nftSliderSwipeState.tracking || !event.touches || event.touches.length !== 1) return;
+
+    nftSliderSwipeState.currentX = event.touches[0].clientX;
+    nftSliderSwipeState.deltaX = nftSliderSwipeState.currentX - nftSliderSwipeState.startX;
+    currentY = event.touches[0].clientY;
+  }, { passive: true });
+
+  rail.addEventListener('touchend', () => {
+    if (!nftSliderSwipeState.tracking) return;
+
+    const deltaX = nftSliderSwipeState.deltaX;
+    const deltaY = currentY - startY;
+
+    nftSliderSwipeState.tracking = false;
+    nftSliderSwipeState.startX = 0;
+    nftSliderSwipeState.currentX = 0;
+    nftSliderSwipeState.deltaX = 0;
+    startY = 0;
+    currentY = 0;
+
+    if (Math.abs(deltaY) > verticalThreshold) {
+      return;
+    }
+
+    if (Math.abs(deltaX) < swipeThreshold) {
+      return;
+    }
+
+    if (deltaX < 0) {
+      selectNextNft();
+      return;
+    }
+
+    selectPreviousNft();
+  });
+
+  rail.addEventListener('touchcancel', () => {
+    nftSliderSwipeState.tracking = false;
+    nftSliderSwipeState.startX = 0;
+    nftSliderSwipeState.currentX = 0;
+    nftSliderSwipeState.deltaX = 0;
+    startY = 0;
+    currentY = 0;
+  });
+
+  rail.dataset.swipeBound = '1';
+}
+
 function syncSliderRailToSelectedCard() {
   if (!el.nftGrid || !state.selectedNft) return;
 
@@ -5474,7 +5553,8 @@ function renderNftGrid() {
   });
 
   requestAnimationFrame(() => {
-    syncSliderRailToSelectedCard();
+  syncSliderRailToSelectedCard();
+  bindNftSliderSwipeSupport();
   });
 }
 
@@ -5753,6 +5833,25 @@ function stopGenesisAbilityPolling() {
 }
 
 function startGenesisAbilityPollingIfNeeded() {
+  stopGenesisAbilityPolling();
+
+  const rows = Array.isArray(genesisAbilityState.data?.rows)
+    ? genesisAbilityState.data.rows
+    : [];
+
+  const activeRow = getActiveAbilityRow(rows);
+
+  if (!activeRow || !genesisAbilityState.tokenId) {
+    return;
+  }
+
+  genesisAbilityState.pollHandle = window.setInterval(() => {
+    if (!genesisAbilityState.tokenId) return;
+    loadGenesisAbilityMatrix(genesisAbilityState.tokenId, { silent: true });
+  }, 15000);
+}
+
+function startGenesisAbilityPollingIfNeeded() {
   if (typeof stopGenesisAbilityPolling === 'function') {
     stopGenesisAbilityPolling();
   }
@@ -5867,7 +5966,7 @@ function renderGenesisAbilityMatrix() {
       : 'None';
   }
 
-  document.querySelectorAll('.ability-tab').forEach(btn => {
+  section.querySelectorAll('.ability-tab').forEach(btn => {
     const tabKey = String(btn.dataset.abilityTab || '').trim();
     const unlocked = isAbilityTabUnlocked(tabKey, Number(data.highest_trait_level ?? 0));
 
@@ -6017,16 +6116,37 @@ async function loadGenesisAbilityMatrix(tokenId, options = {}) {
   genesisAbilityState.tokenId = normalizedTokenId;
   genesisAbilityState.loading = true;
 
+  if (tokenChanged) {
+    genesisAbilityState.data = null;
+    stopGenesisAbilityPolling();
+  }
+
   bindGenesisAbilityUiEvents();
 
   const section = document.getElementById('genesisAbilityMatrixSection');
   const cardsEl = document.getElementById('genesisAbilityCards');
+  const queueEl = document.getElementById('genesisAbilityQueueBox');
+  const activeStatusEl = document.getElementById('genesisAbilityActiveStatus');
 
   if (section) section.classList.remove('hidden');
 
   const noRenderedCardsYet = !cardsEl || !String(cardsEl.innerHTML || '').trim();
+
   if (!silent && cardsEl && (tokenChanged || !hasCachedSameTokenData || noRenderedCardsYet)) {
     cardsEl.innerHTML = `<div class="ability-note">Loading Genesis Ability Matrix...</div>`;
+  }
+
+  if (tokenChanged && queueEl) {
+    queueEl.innerHTML = `
+      <div class="queue-empty">
+        <div class="font-semibold">⚡ Ability Queue</div>
+        <div class="text-sm mt-1">Loading queue for the selected Genesis mouse...</div>
+      </div>
+    `;
+  }
+
+  if (tokenChanged && activeStatusEl) {
+    activeStatusEl.textContent = 'Loading...';
   }
 
   try {
@@ -6039,33 +6159,32 @@ async function loadGenesisAbilityMatrix(tokenId, options = {}) {
 
     const rawText = await res.text();
 
-let json = null;
-try {
-  json = rawText ? JSON.parse(rawText) : null;
-} catch (parseErr) {
-  throw new Error(`Ability API returned non-JSON response (HTTP ${res.status}). Check PHP fatal/output.`);
-}
+    let json = null;
+    try {
+      json = rawText ? JSON.parse(rawText) : null;
+    } catch (parseErr) {
+      throw new Error(`Ability API returned non-JSON response (HTTP ${res.status}). Check PHP fatal/output.`);
+    }
 
-if (!res.ok || !json || !json.success) {
-  throw new Error(json?.message || json?.error || `Failed to load Genesis Ability Matrix (HTTP ${res.status}).`);
-}
+    if (!res.ok || !json || !json.success) {
+      throw new Error(json?.message || json?.error || `Failed to load Genesis Ability Matrix (HTTP ${res.status}).`);
+    }
 
-const payload = json.data || json;
+    const payload = json.data || json;
 
-if (String(genesisAbilityState.tokenId || '') !== requestTokenId) {
-  return;
-}
+    if (String(genesisAbilityState.tokenId || '') !== requestTokenId) {
+      return;
+    }
 
-genesisAbilityState.data = {
-  token_id: payload.selected_token_id || payload.token_id || requestTokenId,
-  rows: normalizeAbilityRows(payload.rows || payload.ability_rows || []),
-  unlock_map: payload.unlock_map || {},
-  available_dspoinc: Number(payload.available_dspoinc ?? 0),
-  highest_trait_level: Number(payload.highest_trait_level ?? 0)
-};
+    genesisAbilityState.data = {
+      token_id: payload.selected_token_id || payload.token_id || requestTokenId,
+      rows: normalizeAbilityRows(payload.rows || payload.ability_rows || []),
+      unlock_map: payload.unlock_map || {},
+      available_dspoinc: Number(payload.available_dspoinc ?? 0),
+      highest_trait_level: Number(payload.highest_trait_level ?? 0)
+    };
 
-renderGenesisAbilityMatrix();
-startGenesisAbilityPollingIfNeeded();
+    startGenesisAbilityPollingIfNeeded();
 
   } catch (err) {
     console.error('loadGenesisAbilityMatrix error:', err);
@@ -6073,7 +6192,15 @@ startGenesisAbilityPollingIfNeeded();
       cardsEl.innerHTML = `<div class="ability-note">${escapeHtml(err.message || 'Failed to load Genesis Ability Matrix.')}</div>`;
     }
   } finally {
+    if (String(genesisAbilityState.tokenId || '') !== requestTokenId) {
+      return;
+    }
+
     genesisAbilityState.loading = false;
+
+    if (genesisAbilityState.data) {
+      renderGenesisAbilityMatrix();
+    }
   }
 }
 
@@ -6141,18 +6268,18 @@ function renderSelectedNftPanel() {
   `;
 
   if (nft.token_id) {
-    const tokenChanged = String(genesisAbilityState.tokenId || '') !== String(nft.token_id || '');
+  const tokenChanged = String(genesisAbilityState.tokenId || '') !== String(nft.token_id || '');
 
-    if (tokenChanged) {
-      loadGenesisAbilityMatrix(nft.token_id);
-    } else if (genesisAbilityState.data) {
-      renderGenesisAbilityMatrix();
-    } else {
-      loadGenesisAbilityMatrix(nft.token_id);
-    }
+  if (tokenChanged) {
+    loadGenesisAbilityMatrix(nft.token_id);
+  } else if (genesisAbilityState.data) {
+    renderGenesisAbilityMatrix();
   } else {
-    resetGenesisAbilityMatrixUi();
+    loadGenesisAbilityMatrix(nft.token_id);
   }
+} else {
+  resetGenesisAbilityMatrixUi();
+}
 }
 
 function getLabBoosterCatalog() {
