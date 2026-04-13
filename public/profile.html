@@ -31,15 +31,20 @@ require_once 'discord-invite.php';
 
         const data = await response.json();
         if (data?.success && data.user) {
-          const username = data.user.username || "";
-          if (username) {
-            localStorage.setItem("narrrfs_last_discord_name", username);
-            localStorage.setItem("discord_name", username);
-            localStorage.setItem("DISCORD_NAME", username);
-          }
-          window.narrrfsProfileHydrated = true;
-          console.info("✅ Narrrf Profile: Local storage credentials synced for Three.js prototype.");
-        } else {
+  const username = data.user.username || "";
+  if (username) {
+    localStorage.setItem("narrrfs_last_discord_name", username);
+    localStorage.setItem("discord_name", username);
+    localStorage.setItem("DISCORD_NAME", username);
+  }
+
+  if (window.NarrrfsCheeseAuth && typeof window.NarrrfsCheeseAuth.refresh === 'function') {
+    window.NarrrfsCheeseAuth.refresh();
+  }
+
+  window.narrrfsProfileHydrated = true;
+  console.info("✅ Narrrf Profile: Local storage credentials synced for Three.js prototype.");
+}else {
           console.warn("⚠️ Narrrf Profile: Unable to hydrate username from API response.", data);
         }
       } catch (error) {
@@ -4861,6 +4866,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       // 🚀 MOBILE COMPATIBILITY: Also store in sessionStorage for better mobile persistence
       sessionStorage.setItem("discord_id", user.discord_id);
       sessionStorage.setItem("discord_name", user.discord_name);
+      if (window.NarrrfsCheeseAuth && typeof window.NarrrfsCheeseAuth.refresh === 'function') {
+    window.NarrrfsCheeseAuth.refresh();
+  }
     }
 
     // Username & avatar
@@ -12467,7 +12475,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileGeneticSummary();
 });
 </script>
-
+<script src="js/cheese-auth-indicator.js"></script>
 </body>
 </html>
 

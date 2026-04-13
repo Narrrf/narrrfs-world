@@ -30488,6 +30488,20 @@ class BugTracker {
     this.initialized = false;
   }
 
+  getDiscordSyncedStatuses() {
+  const allowedStatusNames = new Set([
+    'Reported',
+    'Assigned',
+    'In Progress',
+    'Resolved',
+    'Rejected'
+  ]);
+
+  return (Array.isArray(this.statuses) ? this.statuses : []).filter(status =>
+    allowedStatusNames.has(String(status.status_name || '').trim())
+  );
+}
+
   async init() {
     await this.loadData();
 
@@ -30616,34 +30630,34 @@ console.log('🐛 Parsed bug payload:', {
   }
 }
 
-      populateFilters() {
-        // Populate status filter
-        const statusFilter = document.getElementById('statusFilter');
-        if (statusFilter) {
-          statusFilter.innerHTML = '<option value="">All Statuses</option>' +
-            this.statuses.map(status => 
-              `<option value="${status.status_id}">${status.icon} ${status.status_name}</option>`
-            ).join('');
-        }
+populateFilters() {
+  // Populate status filter
+  const statusFilter = document.getElementById('statusFilter');
+  if (statusFilter) {
+    statusFilter.innerHTML = '<option value="">All Statuses</option>' +
+      this.getDiscordSyncedStatuses().map(status => 
+        `<option value="${status.status_id}">${status.icon} ${status.status_name}</option>`
+      ).join('');
+  }
 
-        // Populate priority filter
-        const priorityFilter = document.getElementById('priorityFilter');
-        if (priorityFilter) {
-          priorityFilter.innerHTML = '<option value="">All Priorities</option>' +
-            this.priorities.map(priority => 
-              `<option value="${priority.priority_id}">${priority.icon} ${priority.priority_name}</option>`
-            ).join('');
-        }
+  // Populate priority filter
+  const priorityFilter = document.getElementById('priorityFilter');
+  if (priorityFilter) {
+    priorityFilter.innerHTML = '<option value="">All Priorities</option>' +
+      this.priorities.map(priority => 
+        `<option value="${priority.priority_id}">${priority.icon} ${priority.priority_name}</option>`
+      ).join('');
+  }
 
-        // Populate assignee filter
-        const assigneeFilter = document.getElementById('assigneeFilter');
-        if (assigneeFilter) {
-          assigneeFilter.innerHTML = '<option value="">All Assignees</option>' +
-            this.teamMembers.map(member => 
-              `<option value="${member}">${member}</option>`
-            ).join('');
-        }
-      }
+  // Populate assignee filter
+  const assigneeFilter = document.getElementById('assigneeFilter');
+  if (assigneeFilter) {
+    assigneeFilter.innerHTML = '<option value="">All Assignees</option>' +
+      this.teamMembers.map(member => 
+        `<option value="${member}">${member}</option>`
+      ).join('');
+  }
+}
 
       renderDashboard() {
         // Calculate all bug statistics
@@ -31121,11 +31135,11 @@ console.log('🐛 Parsed bug payload:', {
                 <div>
                   <label class="block text-sm font-medium mb-2">Status</label>
                   <select id="editStatus" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white">
-                    ${this.statuses.map(stat => 
-                      `<option value="${stat.status_id}" ${stat.status_id === bug.status_id ? 'selected' : ''}>
-                        ${stat.icon} ${stat.status_name}
-                      </option>`
-                    ).join('')}
+                    ${this.getDiscordSyncedStatuses().map(stat => 
+  `<option value="${stat.status_id}" ${stat.status_id === bug.status_id ? 'selected' : ''}>
+    ${stat.icon} ${stat.status_name}
+  </option>`
+).join('')}
                   </select>
                 </div>
               </div>
@@ -31316,9 +31330,9 @@ console.log('🐛 Parsed bug payload:', {
               <div class="mb-4">
                 <label class="block text-sm font-medium mb-2">New Status:</label>
                 <select id="bulkStatusSelect" class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600">
-                  ${this.statuses.map(status => `
-                    <option value="${status.status_id}">${status.icon} ${status.status_name}</option>
-                  `).join('')}
+                  ${this.getDiscordSyncedStatuses().map(status => `
+  <option value="${status.status_id}">${status.icon} ${status.status_name}</option>
+`).join('')}
                 </select>
               </div>
 
@@ -33155,6 +33169,6 @@ function escapeHtml(value) {
 }
     
   </script>
-
+<script src="js/cheese-auth-indicator.js"></script>
 </body>
 </html>

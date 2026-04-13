@@ -189,6 +189,49 @@ window.addEventListener('load', async function() {
     DISCORD_CONFIG.updateAllLinks();
 });
 
+// 🌐 GLOBAL SESSION HYDRATION (SAFE ADDITION - DOES NOT TOUCH EXISTING SYSTEM)
+async function hydrateNarrrfsSession() {
+    try {
+        const response = await fetch('/api/user/get-session.php', {
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data?.success && data.discord_id) {
+            window.sessionDiscordId = data.discord_id;
+            window.sessionDiscordUsername = data.discord_username || '';
+
+            // Sync to localStorage (used across your ecosystem)
+            localStorage.setItem('discord_id', data.discord_id);
+            localStorage.setItem('discord_name', data.discord_username || '');
+
+            console.log('🧀 Session hydrated globally:', data.discord_id);
+
+            // Notify cheese auth system if present
+            if (window.NarrrfsCheeseAuth?.refresh) {
+                window.NarrrfsCheeseAuth.refresh();
+            }
+
+        } else {
+            window.sessionDiscordId = '';
+            window.sessionDiscordUsername = '';
+            console.log('⚠️ No active session detected');
+        }
+
+    } catch (error) {
+        console.error('❌ Global session hydration failed:', error);
+    }
+}
+
+// Run session hydration AFTER Discord config loads
+document.addEventListener('DOMContentLoaded', function () {
+    // Delay slightly to avoid race with other scripts
+    setTimeout(() => {
+        hydrateNarrrfsSession();
+    }, 50);
+});
+
 // Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = DISCORD_CONFIG;

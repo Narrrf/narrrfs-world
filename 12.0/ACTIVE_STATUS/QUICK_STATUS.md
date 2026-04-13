@@ -1,9 +1,40 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: April 8, 2026
-Status: ✅ LIVE — SEASON 10 LAB ACTIVE + GENETIC LANE DISCORD-OPEN + GENESIS ABILITY MATRIX NOW WORKING ACROSS BACKEND + LAB UI + ADMIN VISIBILITY
-Version: 2026-04-08
-Milestone: 🎯 Genesis Ability Matrix has moved from backend foundation to real multi-surface visibility (read + start + timer + lab rendering + admin player profile visibility)
+Last Updated: April 13, 2026
+Status: ✅ LIVE — GLOBAL AUTH UNIFICATION DEPLOYED + CROSS-PAGE SESSION HYDRATION + LAB LOGIN STABILITY RESTORED
+Version: 2026-04-13
+Milestone: Global session is now API-driven across all pages (`/api/user/get-session.php`) with unified auth UI signaling and resolved random logout behavior
+
+---
+
+## 🔄 UPDATE — APRIL 13, 2026
+
+### 🌐 GLOBAL AUTH SYSTEM — LIVE
+
+The Narrrfs World ecosystem now uses a **centralized session hydration system**:
+
+- `/api/user/get-session.php` introduced
+- `discord-config.js` extended to auto-load session on all pages
+- `window.sessionDiscordId` now globally available
+
+### 🧀 AUTH UI LAYER — DEPLOYED
+
+- Floating Cheese Auth Indicator active across pages
+- Reflects real login state
+- Provides consistent entry point for auth
+
+### 🧬 LAB AUTH FIX — RESOLVED
+
+- Removed hardcoded session reset in `lab.html`
+- Lab now respects backend session
+- Eliminates cross-page login inconsistency
+
+### ⚠️ CURRENT STATE
+
+- `discord_id` → fully working (authoritative)
+- `discord_username` → optional, not yet in session
+
+System is stable and ready for production validation.
 
 ---
 

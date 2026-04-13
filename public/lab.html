@@ -9,10 +9,41 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
 
-  <script>
-    window.sessionDiscordId = '';
-    window.sessionDiscordUsername = '';
-  </script>
+<script>
+async function hydrateSession() {
+  try {
+    const res = await fetch('/api/user/get-session.php', {
+      credentials: 'include'
+    });
+
+    const data = await res.json();
+
+    if (data?.success && data.discord_id) {
+      window.sessionDiscordId = data.discord_id;
+      window.sessionDiscordUsername = data.discord_username || '';
+
+      // sync localStorage (important for your system)
+      localStorage.setItem("discord_id", data.discord_id);
+      localStorage.setItem("discord_name", data.discord_username || '');
+
+      // trigger your global auth system if present
+      if (window.NarrrfsCheeseAuth?.refresh) {
+        window.NarrrfsCheeseAuth.refresh();
+      }
+
+      console.log("✅ Session hydrated:", data.discord_id);
+    } else {
+      console.warn("⚠️ No active session");
+    }
+
+  } catch (e) {
+    console.error("❌ Session fetch failed", e);
+  }
+}
+
+// run ASAP
+hydrateSession();
+</script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="discord-config.js"></script>
@@ -10344,5 +10375,6 @@ if (!handledDeepLink) {
   state.refreshTimer = setInterval(liveRefreshRender, LAB_CONFIG.tickMs);
 });
   </script>
+  <script src="js/cheese-auth-indicator.js"></script>
 </body>
 </html>
