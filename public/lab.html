@@ -33,8 +33,16 @@ async function hydrateSession() {
 
       console.log("✅ Session hydrated:", data.discord_id);
     } else {
-      console.warn("⚠️ No active session");
-    }
+  console.warn("⚠️ No active session");
+
+  window.sessionDiscordId = '';
+  window.sessionDiscordUsername = '';
+
+  localStorage.removeItem("discord_id");
+  localStorage.removeItem("discord_name");
+  localStorage.removeItem("narrrfs_last_discord_id");
+  localStorage.removeItem("narrrfs_last_discord_name");
+}
 
   } catch (e) {
     console.error("❌ Session fetch failed", e);

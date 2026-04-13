@@ -15,9 +15,24 @@ require_once 'discord-invite.php';
     window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
     document.addEventListener("DOMContentLoaded", async () => {
       if (!window.sessionDiscordId) {
-        console.warn("🔐 Narrrf Profile: No active Discord session detected. Local storage not updated.");
-        return;
-      }
+  console.warn("🔐 Narrrf Profile: No active Discord session detected. Clearing stale local storage.");
+
+  localStorage.removeItem("discord_id");
+  localStorage.removeItem("discord_name");
+  localStorage.removeItem("narrrfs_last_discord_id");
+  localStorage.removeItem("narrrfs_last_discord_name");
+  localStorage.removeItem("DISCORD_NAME");
+  localStorage.removeItem("auth_timestamp");
+
+  sessionStorage.removeItem("discord_id");
+  sessionStorage.removeItem("discord_name");
+
+  if (window.NarrrfsCheeseAuth && typeof window.NarrrfsCheeseAuth.refresh === 'function') {
+    window.NarrrfsCheeseAuth.refresh();
+  }
+
+  return;
+}
 
       try {
         localStorage.setItem("narrrfs_last_discord_id", window.sessionDiscordId);

@@ -2,27 +2,89 @@
   const DISCORD_AUTH_URL =
     'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read';
 
-  function getDiscordSessionId() {
-    if (typeof window.sessionDiscordId === 'string' && window.sessionDiscordId.trim() !== '') {
-      return window.sessionDiscordId.trim();
-    }
+  const AUTH_STORAGE_KEYS = [
+    'discord_id',
+    'discord_name',
+    'narrrfs_last_discord_id',
+    'narrrfs_last_discord_name',
+    'DISCORD_NAME',
+    'auth_timestamp'
+  ];
 
-    const storedDiscordId = localStorage.getItem('discord_id') || localStorage.getItem('narrrfs_last_discord_id') || '';
-    return String(storedDiscordId || '').trim();
+  const authState = {
+    checked: false,
+    loggedIn: false,
+    discordId: '',
+    discordName: ''
+  };
+
+  function clearStoredAuth() {
+    AUTH_STORAGE_KEYS.forEach((key) => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
   }
 
-  function getDiscordName() {
-    const storedName =
+  function getStoredDiscordName() {
+    return String(
       localStorage.getItem('discord_name') ||
       localStorage.getItem('narrrfs_last_discord_name') ||
       localStorage.getItem('DISCORD_NAME') ||
-      '';
-
-    return String(storedName || '').trim();
+      sessionStorage.getItem('discord_name') ||
+      ''
+    ).trim();
   }
 
-  function isLoggedIn() {
-    return getDiscordSessionId() !== '';
+  async function verifySession() {
+    try {
+      const response = await fetch('/api/user/get-session.php', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const discordId = String(data?.discord_id || '').trim();
+      const discordUsername = String(data?.discord_username || '').trim();
+
+      authState.checked = true;
+      authState.loggedIn = discordId !== '';
+      authState.discordId = discordId;
+      authState.discordName = discordUsername || getStoredDiscordName();
+
+      if (authState.loggedIn) {
+        window.sessionDiscordId = discordId;
+        window.sessionDiscordUsername = discordUsername || '';
+
+        localStorage.setItem('discord_id', discordId);
+        localStorage.setItem('auth_timestamp', String(Date.now()));
+
+        if (authState.discordName) {
+          localStorage.setItem('discord_name', authState.discordName);
+        }
+
+        return;
+      }
+
+      window.sessionDiscordId = '';
+      window.sessionDiscordUsername = '';
+      clearStoredAuth();
+    } catch (error) {
+      console.error('❌ Cheese auth session verification failed:', error);
+
+      authState.checked = true;
+      authState.loggedIn = false;
+      authState.discordId = '';
+      authState.discordName = '';
+
+      window.sessionDiscordId = '';
+      window.sessionDiscordUsername = '';
+      clearStoredAuth();
+    }
   }
 
   function removeExistingIndicator() {
@@ -35,8 +97,8 @@
   function renderIndicator() {
     removeExistingIndicator();
 
-    const loggedIn = isLoggedIn();
-    const discordName = getDiscordName();
+    const loggedIn = authState.loggedIn;
+    const discordName = authState.discordName || '';
 
     const wrapper = document.createElement('div');
     wrapper.id = 'cheese-auth-indicator';
@@ -108,7 +170,7 @@
     const prominentBanner = document.getElementById('discord-login-prominent');
     if (!prominentBanner) return;
 
-    if (isLoggedIn()) {
+    if (authState.loggedIn) {
       prominentBanner.classList.add('hidden');
       prominentBanner.setAttribute('aria-hidden', 'true');
       return;
@@ -118,12 +180,14 @@
     prominentBanner.removeAttribute('aria-hidden');
   }
 
-  function syncAuthUi() {
+  async function syncAuthUi() {
+    await verifySession();
     renderIndicator();
     toggleProfileBanner();
   }
 
   document.addEventListener('DOMContentLoaded', syncAuthUi);
+  window.addEventListener('focus', syncAuthUi);
   window.addEventListener('storage', syncAuthUi);
 
   window.NarrrfsCheeseAuth = {
