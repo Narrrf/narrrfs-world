@@ -20,6 +20,205 @@
     console.log('🌍 Environment detected:', isProduction ? 'Production' : 'Local');
     console.log('🔗 API Base URL:', API_BASE_URL);
   </script>
+  <script>
+    (function () {
+      const LOCAL_ADMIN_DISCORD_ID = '328601656659017732';
+      const LOCAL_ADMIN_USERNAME = 'Narrrf';
+
+      function isLocalAdminHost() {
+        const host = String(window.location.hostname || '');
+        return host === 'localhost' || host === '127.0.0.1';
+      }
+
+      function getStoredDiscordId() {
+        return String(
+          window.sessionDiscordId ||
+          localStorage.getItem('discord_id') ||
+          localStorage.getItem('narrrfs_last_discord_id') ||
+          ''
+        ).trim();
+      }
+
+      function getStoredDiscordName() {
+        return String(
+          window.sessionDiscordUsername ||
+          localStorage.getItem('discord_name') ||
+          localStorage.getItem('narrrfs_last_discord_name') ||
+          localStorage.getItem('DISCORD_NAME') ||
+          ''
+        ).trim();
+      }
+
+      function resolveAdminActorId() {
+        const admin = window.currentAdminUser || null;
+        return String(
+          admin?.discord_id ||
+          admin?.username ||
+          getStoredDiscordId() ||
+          (isLocalAdminHost() ? LOCAL_ADMIN_DISCORD_ID : '')
+        ).trim();
+      }
+
+      function resolveActiveUserId() {
+        return String(
+          getStoredDiscordId() ||
+          resolveAdminActorId() ||
+          (isLocalAdminHost() ? LOCAL_ADMIN_DISCORD_ID : '')
+        ).trim();
+      }
+
+      function ensureAdminBootstrapForLocal() {
+        if (!isLocalAdminHost()) {
+          return;
+        }
+
+        if (!window.sessionDiscordId) {
+          window.sessionDiscordId = LOCAL_ADMIN_DISCORD_ID;
+        }
+
+        if (!window.sessionDiscordUsername) {
+          window.sessionDiscordUsername = LOCAL_ADMIN_USERNAME;
+        }
+
+        localStorage.setItem('discord_id', LOCAL_ADMIN_DISCORD_ID);
+        localStorage.setItem('discord_name', LOCAL_ADMIN_USERNAME);
+        localStorage.setItem('narrrfs_last_discord_id', LOCAL_ADMIN_DISCORD_ID);
+        localStorage.setItem('narrrfs_last_discord_name', LOCAL_ADMIN_USERNAME);
+        localStorage.setItem('DISCORD_NAME', LOCAL_ADMIN_USERNAME);
+      }
+
+      window.syncCurrentAdminUser = function syncCurrentAdminUser(admin) {
+        if (!admin || typeof admin !== 'object') {
+          return admin;
+        }
+
+        const normalizedAdmin = {
+          ...admin,
+          username:
+            admin.username ||
+            admin.discord_name ||
+            getStoredDiscordName() ||
+            (isLocalAdminHost() ? LOCAL_ADMIN_USERNAME : 'Admin'),
+          discord_id:
+            admin.discord_id ||
+            getStoredDiscordId() ||
+            (isLocalAdminHost() ? LOCAL_ADMIN_DISCORD_ID : '')
+        };
+
+        window.currentAdminUser = normalizedAdmin;
+
+        if (normalizedAdmin.discord_id) {
+          window.sessionDiscordId = normalizedAdmin.discord_id;
+          localStorage.setItem('discord_id', normalizedAdmin.discord_id);
+          localStorage.setItem('narrrfs_last_discord_id', normalizedAdmin.discord_id);
+        }
+
+        if (normalizedAdmin.username) {
+          window.sessionDiscordUsername = normalizedAdmin.username;
+          localStorage.setItem('discord_name', normalizedAdmin.username);
+          localStorage.setItem('narrrfs_last_discord_name', normalizedAdmin.username);
+          localStorage.setItem('DISCORD_NAME', normalizedAdmin.username);
+        }
+
+        return normalizedAdmin;
+      };
+
+      window.NarrrfsAdminAuth = {
+        isLocalAdminHost,
+        resolveAdminActorId,
+        resolveActiveUserId,
+        ensureAdminBootstrapForLocal
+      };
+
+      ensureAdminBootstrapForLocal();
+    })();
+  </script>
+  <script>
+    (function () {
+      const originalFetch = window.fetch.bind(window);
+      const NAR_ADMIN_TIMEOUT_MS = 15000;
+      const NAR_TARGET_PATHS = [
+        '/api/admin/point-management.php',
+        '/api/admin/get-user-adjustments.php',
+        '/api/admin/get-player-profile.php',
+        '/api/admin/get-player-lab.php',
+        '/api/admin/get-holder-verifications.php',
+        '/api/admin/get-holder-verification-stats.php',
+        '/api/admin/get-discord-role-members-live.php',
+        '/api/admin/get-discord-role-members.php',
+        '/api/user/user-game-missions.php'
+      ];
+
+      function narShouldPatchRequest(url) {
+        try {
+          return NAR_TARGET_PATHS.includes(url.pathname);
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function narResolveLocalUserId() {
+        try {
+          if (!window.NarrrfsAdminAuth || !window.NarrrfsAdminAuth.isLocalAdminHost()) {
+            return '';
+          }
+
+          return String(window.NarrrfsAdminAuth.resolveActiveUserId() || '').trim();
+        } catch (error) {
+          return '';
+        }
+      }
+
+      async function narPatchedFetch(input, init) {
+        const requestUrl = typeof input === 'string'
+          ? input
+          : (input instanceof Request ? input.url : String(input));
+        const url = new URL(requestUrl, window.location.origin);
+
+        if (!narShouldPatchRequest(url)) {
+          return originalFetch(input, init);
+        }
+
+        const requestInit = { ...(init || {}) };
+        const headers = new Headers(
+          requestInit.headers || (input instanceof Request ? input.headers : undefined) || {}
+        );
+
+        if (!requestInit.credentials) {
+          requestInit.credentials = 'include';
+        }
+
+        if (!requestInit.cache) {
+          requestInit.cache = 'no-store';
+        }
+
+        if (!headers.has('Accept')) {
+          headers.set('Accept', 'application/json');
+        }
+
+        const localUserId = narResolveLocalUserId();
+        if (localUserId && url.pathname === '/api/user/user-game-missions.php') {
+          if (!url.searchParams.has('user_id') && !url.searchParams.has('discord_id')) {
+            url.searchParams.set('user_id', localUserId);
+          }
+        }
+
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(new Error('timeout')), NAR_ADMIN_TIMEOUT_MS);
+
+        requestInit.headers = headers;
+        requestInit.signal = requestInit.signal || controller.signal;
+
+        try {
+          return await originalFetch(url.toString(), requestInit);
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
+      window.fetch = narPatchedFetch;
+    })();
+  </script>
 
   <style>
     .admin-card {
@@ -811,7 +1010,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="securityCrawler">🔒 Security Crawler</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="twelveZeroManagement">📁 12.0 Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="partners">🤝 Partners</button>
-        <button class="tab-btn px-4 py-2 rounded" data-tab="profileChest">🎁 Profile Chest Config</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="profileChest">🎁 Reward Chamber</button>
       </div>
       
       <!-- Quick Actions Section -->
@@ -1873,114 +2072,84 @@
     
     <!-- Profile Chest Configuration Tab -->
     <div class="admin-card mb-6" id="profileChestTab" style="display: none;">
-      <h2 class="text-xl font-semibold mb-4">🎁 Profile Chest Configuration</h2>
-      
-      <!-- Current Configuration Display -->
-      <div class="bg-gradient-to-r from-amber-900/40 to-yellow-900/40 p-4 rounded-lg mb-6 border-2 border-amber-500/50">
-        <h3 class="text-lg font-semibold mb-3 text-yellow-300">📊 Current Configuration</h3>
-        <div id="profileChestCurrentConfig" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
+      <h2 class="text-xl font-semibold mb-4">🎁 Reward Chamber Admin</h2>
+
+      <div class="bg-gradient-to-r from-purple-900/40 via-fuchsia-900/40 to-orange-900/40 p-6 rounded-lg mb-6 border-2 border-fuchsia-500/40">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
           <div>
-            <span class="text-yellow-400 font-semibold">Reward Range:</span>
-            <span id="currentRewardRange" class="ml-2">Loading...</span>
+            <h3 class="text-lg font-semibold text-fuchsia-200">🚀 Live Reward Chamber Overview</h3>
+            <p class="text-sm text-gray-200 mt-1">
+              This admin tab reads the same backend-authoritative Reward Chamber state that the player profile uses.
+            </p>
           </div>
-          <div>
-            <span class="text-yellow-400 font-semibold">Cooldown:</span>
-            <span id="currentCooldown" class="ml-2">Loading...</span>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="refreshRewardChamberAdmin()"
+                    class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              🔄 Refresh Chamber
+            </button>
+            <button onclick="adminTestOpenRewardBox(1)"
+                    class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              🎁 Test Open Box 1
+            </button>
+            <button onclick="adminTestOpenRewardBox(2)"
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              🎲 Test Box 2
+            </button>
+            <button onclick="adminTestOpenRewardBox(3)"
+                    class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              👑 Test Box 3
+            </button>
           </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="text-xs uppercase tracking-widest text-cyan-200 font-bold">Session State</div>
+            <div id="rewardChamberAdminSessionState" class="text-lg font-semibold mt-2 text-white">Loading...</div>
+          </div>
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="text-xs uppercase tracking-widest text-cyan-200 font-bold">Available DSPOINC</div>
+            <div id="rewardChamberAdminBalance" class="text-lg font-semibold mt-2 text-white">-</div>
+          </div>
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="text-xs uppercase tracking-widest text-cyan-200 font-bold">Visible Boxes</div>
+            <div id="rewardChamberAdminBoxCount" class="text-lg font-semibold mt-2 text-white">-</div>
+          </div>
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="text-xs uppercase tracking-widest text-cyan-200 font-bold">Server Time UTC</div>
+            <div id="rewardChamberAdminServerTime" class="text-sm font-semibold mt-2 text-white">-</div>
+          </div>
+        </div>
+
+        <div id="rewardChamberAdminStatusMessage" class="hidden mb-4 rounded-lg border px-4 py-3 text-sm"></div>
+        <div id="rewardChamberAdminLiveBoxes" class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10 text-gray-300">Loading live Reward Chamber data...</div>
         </div>
       </div>
-      
-      <!-- Configuration Form -->
-      <div class="bg-gray-800 bg-opacity-50 p-6 rounded-lg mb-6">
-        <h3 class="text-lg font-semibold mb-4 text-cyan-300">⚙️ Configuration Settings</h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Reward Range -->
-          <div>
-            <label class="block text-gray-300 mb-2 font-semibold">💰 Reward Range (DSPOINC)</label>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm text-gray-400 mb-1">Minimum</label>
-                <input type="number" id="profileChestRewardMin" min="1" max="10000" value="1" 
-                       class="w-full px-3 py-2 rounded text-gray-800 bg-white border border-gray-300 focus:border-blue-500 focus:outline-none">
-              </div>
-              <div>
-                <label class="block text-sm text-gray-400 mb-1">Maximum</label>
-                <input type="number" id="profileChestRewardMax" min="1" max="10000" value="250" 
-                       class="w-full px-3 py-2 rounded text-gray-800 bg-white border border-gray-300 focus:border-blue-500 focus:outline-none">
-              </div>
-            </div>
-            <p class="text-xs text-gray-400 mt-2">Players receive a random amount between min and max (inclusive)</p>
-          </div>
-          
-          <!-- Cooldown Settings -->
-          <div>
-            <label class="block text-gray-300 mb-2 font-semibold">⏰ Cooldown Settings</label>
-            <div class="mb-3">
-              <label class="block text-sm text-gray-400 mb-1">Cooldown Type</label>
-              <select id="profileChestCooldownType" 
-                      class="w-full px-3 py-2 rounded text-gray-800 bg-white border border-gray-300 focus:border-blue-500 focus:outline-none"
-                      onchange="updateCooldownHoursVisibility()">
-                <option value="session">Session (once per page load)</option>
-                <option value="daily" selected>Daily (24h per Discord session)</option>
-                <option value="hourly">Hourly (custom hours)</option>
-                <option value="none">None (unlimited)</option>
-              </select>
-            </div>
-            <div id="cooldownHoursContainer">
-              <label class="block text-sm text-gray-400 mb-1">Cooldown Duration (hours)</label>
-              <input type="number" id="profileChestCooldownHours" min="0.1" max="168" step="0.1" value="24" 
-                     class="w-full px-3 py-2 rounded text-gray-800 bg-white border border-gray-300 focus:border-blue-500 focus:outline-none">
-              <p class="text-xs text-gray-400 mt-1">Range: 0.1 - 168 hours (7 days max)</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="flex flex-wrap gap-3 mt-6">
-          <button onclick="saveProfileChestConfig()" 
-                  class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
-            💾 Save Configuration
-          </button>
-          <button onclick="resetProfileChestConfig()" 
-                  class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
-            🔄 Reset to Defaults
-          </button>
-        </div>
-        
-        <!-- Status Message -->
-        <div id="profileChestStatusMessage" class="mt-4 p-3 rounded-lg hidden"></div>
-      </div>
-      
-      <!-- Help Section -->
-      <div class="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 p-6 rounded-lg border-2 border-blue-500/50">
-        <h3 class="text-lg font-semibold mb-4 text-blue-300">❓ Help & Documentation</h3>
-        
-        <div class="space-y-4 text-gray-200">
-          <div>
-            <h4 class="font-semibold text-yellow-400 mb-2">💰 Reward Range</h4>
-            <p class="text-sm">Players receive a random DSPOINC amount between the minimum and maximum values (inclusive).</p>
-            <p class="text-sm mt-1"><strong>Example:</strong> Min: 1, Max: 250 → Players get 1-250 DSPOINC randomly</p>
-          </div>
-          
-          <div>
-            <h4 class="font-semibold text-yellow-400 mb-2">⏰ Cooldown Types</h4>
-            <ul class="text-sm space-y-1 ml-4 list-disc">
-              <li><strong>Session:</strong> Once per page load (resets when user refreshes page)</li>
-              <li><strong>Daily:</strong> Once per 24 hours (or custom hours) - Recommended for Discord sessions</li>
-              <li><strong>Hourly:</strong> Once per hour (or custom hours)</li>
-              <li><strong>None:</strong> Unlimited - Players can open chest multiple times</li>
+
+      <div class="bg-gradient-to-r from-slate-900/60 to-slate-800/60 p-6 rounded-lg mb-6 border border-cyan-500/30">
+        <h3 class="text-lg font-semibold mb-4 text-cyan-300">🧠 Operator Notes</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-200">
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="font-semibold text-yellow-300 mb-2">Locked architecture</div>
+            <ul class="list-disc ml-5 space-y-1">
+              <li>Reward Chamber stays backend-authoritative.</li>
+              <li>Disabled state, cooldown, pricing, and availability come from API.</li>
+              <li>Box 1 is live now. Box 2 and Box 3 remain roadmap placeholders until backend expansion is implemented.</li>
             </ul>
           </div>
-          
-          <div>
-            <h4 class="font-semibold text-yellow-400 mb-2">⚡ Instant Updates</h4>
-            <p class="text-sm">Changes are saved to localStorage and apply instantly to the profile page. No page refresh needed!</p>
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="font-semibold text-yellow-300 mb-2">Important scope</div>
+            <ul class="list-disc ml-5 space-y-1">
+              <li>This tab is live read/test tooling only.</li>
+              <li>It does not replace backend truth with localStorage config.</li>
+              <li>The older chest config tools are intentionally not used here to avoid breaking the working admin surface.</li>
+            </ul>
           </div>
         </div>
       </div>
     </div>
-    
+
     <!-- Quest System Tab -->
     <div class="admin-card mb-6" id="questsTab" style="display: none;">
       <h2 class="text-xl font-semibold mb-4">🏆 Quest System</h2>
@@ -4954,33 +5123,49 @@
     // Initialize the interface
     document.addEventListener('DOMContentLoaded', async function() {
       console.log('🚀 DOMContentLoaded event fired');
-      
       // 🔧 CRITICAL FIX: Local development bypass
       const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       if (isLocalDevelopment) {
-        console.log('🔓 Local development detected - bypassing authentication');
-        currentAdmin = {
-          username: 'Local Developer',
-          discord_id: 'local_dev',
+        const localNarrrfDiscordId = '328601656659017732';
+        const localNarrrfUsername = 'Narrrf';
+
+        console.log('🔓 Local development detected - bootstrapping Narrrf admin session');
+
+        currentAdmin = window.syncCurrentAdminUser({
+          username: localNarrrfUsername,
+          discord_id: localNarrrfDiscordId,
           role: 'admin',
           auth_type: 'local',
-          token: 'local_dev_token',
+          token: 'local_narrrf_admin_token',
           has_database_access: true
-        };
-        
-        // Show admin content immediately for local development
+        });
+
+        window.currentAdminUser = currentAdmin;
+        window.sessionDiscordId = localNarrrfDiscordId;
+        window.sessionDiscordUsername = localNarrrfUsername;
+
+        localStorage.setItem('discord_id', localNarrrfDiscordId);
+        localStorage.setItem('discord_name', localNarrrfUsername);
+        localStorage.setItem('narrrfs_last_discord_id', localNarrrfDiscordId);
+        localStorage.setItem('narrrfs_last_discord_name', localNarrrfUsername);
+        localStorage.setItem('DISCORD_NAME', localNarrrfUsername);
+        localStorage.setItem('adminRedirect', 'false');
+
+        if (window.NarrrfsCheeseAuth && typeof window.NarrrfsCheeseAuth.refresh === 'function') {
+          window.NarrrfsCheeseAuth.refresh();
+        }
+
         showAdminContent();
         loadDashboardData();
-        
-        // FORCE LOAD NOTIFICATIONS FOR LOCAL DEVELOPMENT
+
         console.log('🔔 FORCE LOADING NOTIFICATIONS FOR LOCAL DEVELOPMENT...');
         setTimeout(() => {
           loadBugNotificationCount();
           loadQuestClaimNotificationCount();
           loadBossNotificationCount();
         }, 200);
-        
-        console.log('✅ Local development admin interface unlocked');
+
+        console.log('✅ Local development admin interface unlocked for Narrrf');
         return; // Skip normal authentication flow
       }
       
@@ -5899,8 +6084,8 @@ function showTab(tabName) {
     }
 
     if (tabName === 'profileChest') {
-      loadProfileChestConfig();
-      addLog('🎁 Profile chest config tab loaded');
+      refreshRewardChamberAdmin();
+      addLog('🎁 Reward Chamber admin tab loaded');
       return;
     }
 
@@ -7156,7 +7341,7 @@ async function loadDspoincOverview() {
         const data = await response.json();
         
         if (data.success) {
-          currentAdmin = data.user;
+          currentAdmin = window.syncCurrentAdminUser(data.user);
           
           // Show admin content after authentication
           showAdminContent();
@@ -8183,34 +8368,40 @@ function updateCheeseClickStats(data) {
     function loadHolderVerificationData() {
       console.log('🎴 Loading holder verification data...');
       addLog('🎴 Loading holder verification data...');
-      
-      // Load both verification data and statistics
-      loadHolderVerificationStats();
-      
-      // Load Discord role members
-      loadDiscordRoleMembers();
-      
-      try {
-        fetch(API_BASE_URL + '/api/admin/get-holder-verifications.php')
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              updateHolderVerificationDisplay(data.verifications || []);
-            } else {
-              addLog(`❌ Failed to load holder verifications: ${data.error}`);
-            }
-          })
-          .catch(error => {
-            console.error('❌ Error loading holder verifications:', error);
-            addLog(`❌ Error loading holder verifications: ${error.message}`);
-          });
-      } catch (error) {
+
+      Promise.allSettled([
+        Promise.resolve().then(() => loadHolderVerificationStats()),
+        Promise.resolve().then(() => loadDiscordRoleMembers()),
+        fetch(API_BASE_URL + '/api/admin/get-holder-verifications.php', {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          credentials: 'include',
+          cache: 'no-store'
+        }).then(response => response.json())
+      ]).then(results => {
+        const verificationsResult = results[2];
+
+        if (verificationsResult.status === 'fulfilled') {
+          const data = verificationsResult.value || {};
+
+          if (data.success) {
+            updateHolderVerificationDisplay(Array.isArray(data.verifications) ? data.verifications : []);
+          } else {
+            addLog(`❌ Failed to load holder verifications: ${data.error || 'Unknown error'}`);
+          }
+
+          return;
+        }
+
+        console.error('❌ Error loading holder verifications:', verificationsResult.reason);
+        addLog(`❌ Error loading holder verifications: ${verificationsResult.reason?.message || 'Request failed'}`);
+      }).catch(error => {
         console.error('❌ Error in loadHolderVerificationData:', error);
         addLog(`❌ Error in loadHolderVerificationData: ${error.message}`);
-      }
+      });
     }
     
-    // Update holder verification display
+// Update holder verification display
 // Update holder verification display
 function updateHolderVerificationDisplay(verifications) {
   const legacyContainer = document.getElementById('holderVerificationContainer');
@@ -8411,7 +8602,7 @@ function renderAllVerificationOverview(verifications, discordRoleData, container
       
       try {
         // Try live Discord API first
-        const response = await fetch(API_BASE_URL + '/api/admin/get-discord-role-members-live.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/get-discord-role-members-live.php', { credentials: 'include', cache: 'no-store', headers: { 'Accept': 'application/json' } });
         const data = await response.json();
         
         if (data.success) {
@@ -8432,7 +8623,7 @@ function renderAllVerificationOverview(verifications, discordRoleData, container
     // Fallback to database version
     async function loadDiscordRoleMembersFallback() {
       try {
-        const response = await fetch(API_BASE_URL + '/api/admin/get-discord-role-members.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/get-discord-role-members.php', { credentials: 'include', cache: 'no-store', headers: { 'Accept': 'application/json' } });
         const data = await response.json();
         
         if (data.success) {
@@ -9683,6 +9874,8 @@ function renderTraitsVerifiedOverview(records) {
       searchTimeout = setTimeout(async () => {
         try {
           const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -9729,6 +9922,8 @@ function searchPlayerProfilesInstant(searchTerm) {
   searchTimeout = setTimeout(async () => {
     try {
       const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -9789,6 +9984,8 @@ function searchPlayerProfilesInstant(searchTerm) {
       searchTimeout = setTimeout(async () => {
         try {
           const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -9821,6 +10018,8 @@ function searchPlayerProfilesInstant(searchTerm) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -9921,6 +10120,8 @@ function searchPlayerProfilesInstant(searchTerm) {
   searchTimeout = setTimeout(async () => {
     try {
       const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -10005,25 +10206,255 @@ async function searchPlayerProfile() {
     `;
   }
 
+  const safeJsonFetch = async (url, options, label) => {
+    try {
+      const response = await fetch(url, options);
+      const data = await readJsonResponse(response, label);
+      return { ok: response.ok && !!data?.success, data, error: null };
+    } catch (error) {
+      console.error(`${label} failed:`, error);
+      addLog(`⚠️ ${label} load failed: ${error.message}`);
+      return { ok: false, data: null, error };
+    }
+  };
+
+  const unwrapAdminPayload = (payload) => {
+    if (!payload || typeof payload !== 'object') {
+      return {};
+    }
+
+    if (payload.data && typeof payload.data === 'object') {
+      return payload.data;
+    }
+
+    if (payload.profile && typeof payload.profile === 'object') {
+      return payload.profile;
+    }
+
+    return payload;
+  };
+
+  const normalizeAdminPlayerStakingStats = (payload, fallbackBalance) => {
+    const source = unwrapAdminPayload(payload);
+    const rootData = source.data && typeof source.data === 'object' ? source.data : {};
+    const nestedStats = source.stats && typeof source.stats === 'object' ? source.stats : {};
+    const rootDataStats = rootData.stats && typeof rootData.stats === 'object' ? rootData.stats : {};
+    const summary = source.summary && typeof source.summary === 'object' ? source.summary : {};
+
+    return {
+      ...rootData,
+      ...source,
+      total_balance:
+        source.total_balance ??
+        source.balance ??
+        rootData.total_balance ??
+        rootData.balance ??
+        nestedStats.total_balance ??
+        nestedStats.balance ??
+        rootDataStats.total_balance ??
+        rootDataStats.balance ??
+        summary.total_balance ??
+        fallbackBalance ??
+        0,
+      available_balance:
+        source.available_balance ??
+        rootData.available_balance ??
+        nestedStats.available_balance ??
+        rootDataStats.available_balance ??
+        summary.available_balance ??
+        fallbackBalance ??
+        source.balance ??
+        rootData.balance ??
+        0,
+      frozen_balance:
+        source.frozen_balance ??
+        source.total_frozen ??
+        rootData.frozen_balance ??
+        rootData.total_frozen ??
+        nestedStats.frozen_balance ??
+        nestedStats.total_frozen ??
+        rootDataStats.frozen_balance ??
+        rootDataStats.total_frozen ??
+        summary.frozen_balance ??
+        0
+    };
+  };
+
+  const normalizeAdminPlayerStakingActivity = (payload) => {
+    const source = unwrapAdminPayload(payload);
+    const rootData = source.data && typeof source.data === 'object' ? source.data : {};
+    const stakeLists = source.stakes && typeof source.stakes === 'object' ? source.stakes : {};
+    const rootDataStakeLists = rootData.stakes && typeof rootData.stakes === 'object' ? rootData.stakes : {};
+
+    return {
+      ...rootData,
+      ...source,
+      active_stakes: Array.isArray(source.active_stakes)
+        ? source.active_stakes
+        : Array.isArray(rootData.active_stakes)
+          ? rootData.active_stakes
+          : (Array.isArray(stakeLists.active_stakes)
+            ? stakeLists.active_stakes
+            : (Array.isArray(rootDataStakeLists.active_stakes) ? rootDataStakeLists.active_stakes : [])),
+      completed_stakes: Array.isArray(source.completed_stakes)
+        ? source.completed_stakes
+        : Array.isArray(rootData.completed_stakes)
+          ? rootData.completed_stakes
+          : (Array.isArray(stakeLists.completed_stakes)
+            ? stakeLists.completed_stakes
+            : (Array.isArray(rootDataStakeLists.completed_stakes) ? rootDataStakeLists.completed_stakes : [])),
+      cancelled_stakes: Array.isArray(source.cancelled_stakes)
+        ? source.cancelled_stakes
+        : Array.isArray(rootData.cancelled_stakes)
+          ? rootData.cancelled_stakes
+          : (Array.isArray(stakeLists.cancelled_stakes)
+            ? stakeLists.cancelled_stakes
+            : (Array.isArray(rootDataStakeLists.cancelled_stakes) ? rootDataStakeLists.cancelled_stakes : [])),
+      claimable_rewards: Array.isArray(source.claimable_rewards)
+        ? source.claimable_rewards
+        : Array.isArray(rootData.claimable_rewards)
+          ? rootData.claimable_rewards
+          : (Array.isArray(stakeLists.claimable_rewards)
+            ? stakeLists.claimable_rewards
+            : (Array.isArray(rootDataStakeLists.claimable_rewards) ? rootDataStakeLists.claimable_rewards : []))
+    };
+  };
+
+  const pickAdminPlayerArray = (...candidates) => {
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) {
+        return candidate;
+      }
+    }
+
+    return [];
+  };
+
+  const normalizeAdminPlayerStoreActivity = (payload) => {
+    const source = unwrapAdminPayload(payload);
+    const rootData = source.data && typeof source.data === 'object' ? source.data : {};
+    const nestedActivity = source.activity && typeof source.activity === 'object' ? source.activity : {};
+    const nestedHistory = source.history && typeof source.history === 'object' ? source.history : {};
+    const nestedStore = source.store_activity && typeof source.store_activity === 'object' ? source.store_activity : {};
+    const rootDataHistory = rootData.history && typeof rootData.history === 'object' ? rootData.history : {};
+
+    const financial =
+      (source.financial && typeof source.financial === 'object' && source.financial) ||
+      (rootData.financial && typeof rootData.financial === 'object' && rootData.financial) ||
+      (source.financial_summary && typeof source.financial_summary === 'object' && source.financial_summary) ||
+      (rootData.financial_summary && typeof rootData.financial_summary === 'object' && rootData.financial_summary) ||
+      {};
+
+    const stats =
+      (source.stats && typeof source.stats === 'object' && source.stats) ||
+      (rootData.stats && typeof rootData.stats === 'object' && rootData.stats) ||
+      {
+        inventory:
+          (source.inventory_stats && typeof source.inventory_stats === 'object' && source.inventory_stats) ||
+          (rootData.inventory_stats && typeof rootData.inventory_stats === 'object' && rootData.inventory_stats) ||
+          {},
+        purchases:
+          (source.purchase_stats && typeof source.purchase_stats === 'object' && source.purchase_stats) ||
+          (rootData.purchase_stats && typeof rootData.purchase_stats === 'object' && rootData.purchase_stats) ||
+          (source.purchase_statistics && typeof source.purchase_statistics === 'object' && source.purchase_statistics) ||
+          (rootData.purchase_statistics && typeof rootData.purchase_statistics === 'object' && rootData.purchase_statistics) ||
+          {}
+      };
+
+    return {
+      ...rootData,
+      ...source,
+      financial,
+      stats: {
+        inventory: (stats.inventory && typeof stats.inventory === 'object' ? stats.inventory : {}),
+        purchases: (stats.purchases && typeof stats.purchases === 'object' ? stats.purchases : {})
+      },
+      inventory: pickAdminPlayerArray(
+        source.inventory,
+        rootData.inventory,
+        source.inventory_items,
+        rootData.inventory_items,
+        nestedActivity.inventory,
+        nestedStore.inventory,
+        source.items,
+        rootData.items,
+        source.rows,
+        rootData.rows
+      ),
+      purchase_history: pickAdminPlayerArray(
+        source.purchase_history,
+        rootData.purchase_history,
+        nestedHistory.purchase_history,
+        rootDataHistory.purchase_history,
+        source.purchases,
+        rootData.purchases,
+        nestedHistory.purchases,
+        source.purchase_rows,
+        rootData.purchase_rows
+      ),
+      usage_history: pickAdminPlayerArray(
+        source.usage_history,
+        rootData.usage_history,
+        nestedHistory.usage_history,
+        rootDataHistory.usage_history,
+        source.usage,
+        rootData.usage,
+        source.usage_requests,
+        rootData.usage_requests,
+        nestedHistory.usage,
+        nestedHistory.requests
+      ),
+      removal_history: pickAdminPlayerArray(
+        source.removal_history,
+        rootData.removal_history,
+        nestedHistory.removal_history,
+        rootDataHistory.removal_history,
+        source.removals,
+        rootData.removals,
+        nestedHistory.removals,
+        source.admin_removals,
+        rootData.admin_removals
+      )
+    };
+  };
+
+  const normalizeAdminPlayerInventory = (payload) => {
+    const source = unwrapAdminPayload(payload);
+    const rootData = source.data && typeof source.data === 'object' ? source.data : {};
+
+    return pickAdminPlayerArray(
+      source.inventory,
+      rootData.inventory,
+      source.items,
+      rootData.items,
+      source.rows,
+      rootData.rows,
+      source.inventory_items,
+      rootData.inventory_items,
+      Array.isArray(payload) ? payload : null
+    );
+  };
+
   try {
     addLog(`🧠 Searching player profile for "${effectiveQuery}"...`);
 
-    const profileResponse = await fetch(
+    const profileResult = await safeJsonFetch(
       API_BASE_URL + '/api/admin/get-player-profile.php?q=' + encodeURIComponent(effectiveQuery),
       {
         method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      }
+        headers: { 'Accept': 'application/json' },
+        credentials: 'include',
+        cache: 'no-store'
+      },
+      'Admin player profile'
     );
 
-    const profileData = await readJsonResponse(profileResponse, 'Admin player profile');
-
-    if (!profileResponse.ok || !profileData.success) {
-      throw new Error(profileData.error || `HTTP ${profileResponse.status}`);
+    if (!profileResult.ok) {
+      throw new Error(profileResult?.data?.error || profileResult?.error?.message || 'Player profile request failed');
     }
 
-    const profile = profileData.profile || {};
-    const userId = profile.user_id;
+    const profile = profileResult.data.profile || {};
+    const userId = String(profile.user_id || '').trim();
 
     let missionsProfile = null;
     let allTimeStats = null;
@@ -10036,203 +10467,86 @@ async function searchPlayerProfile() {
     let storeCatalog = [];
 
     if (userId) {
-      /**
-       * Load missions/game profile data.
-       * This covers the per-game stats currently used by the admin player profile.
-       */
-      try {
-        const missionsResponse = await fetch(
+      const requests = await Promise.allSettled([
+        safeJsonFetch(
           API_BASE_URL + '/api/user/user-game-missions.php?discord_id=' + encodeURIComponent(userId),
           {
             method: 'GET',
-            headers: { 'Accept': 'application/json' }
-          }
-        );
-
-        const missionsData = await readJsonResponse(missionsResponse, 'Player missions profile');
-
-        if (missionsResponse.ok && missionsData.success) {
-          missionsProfile = missionsData;
-        } else {
-          console.warn('Player missions API returned unsuccessful payload:', missionsData);
-        }
-      } catch (missionsError) {
-        console.error('Player missions load failed:', missionsError);
-        addLog(`⚠️ Missions profile load failed: ${missionsError.message}`);
-      }
-
-      /**
-       * Load all-time stats.
-       * This provides Cheese Rumble, Glyph, and overall achievements totals.
-       */
-      try {
-        const allTimeResponse = await fetch(
-          API_BASE_URL + '/api/user/all-time-stats.php',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({ user_id: userId })
-          }
-        );
-
-        const allTimeData = await readJsonResponse(allTimeResponse, 'Player all-time stats');
-
-        if (allTimeResponse.ok && allTimeData.success && allTimeData.all_time_stats) {
-          allTimeStats = allTimeData.all_time_stats;
-        } else {
-          console.warn('Player all-time stats API returned unsuccessful payload:', allTimeData);
-        }
-      } catch (allTimeError) {
-        console.error('Player all-time stats load failed:', allTimeError);
-        addLog(`⚠️ All-time stats load failed: ${allTimeError.message}`);
-      }
-
-      /**
-       * Load 3D Riddle / 3D Puzzles achievements.
-       * This is separate from the missions and all-time stats payloads.
-       */
-      try {
-        const puzzlesResponse = await fetch(
-          API_BASE_URL + '/api/user/get-3d-puzzles-achievements.php',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({ user_id: userId })
-          }
-        );
-
-        const puzzlesData = await readJsonResponse(puzzlesResponse, 'Player 3D puzzles achievements');
-
-        if (puzzlesResponse.ok && puzzlesData.success && puzzlesData.data) {
-          puzzles3DAchievements = puzzlesData.data;
-        } else {
-          console.warn('Player 3D puzzles achievements API returned unsuccessful payload:', puzzlesData);
-        }
-      } catch (puzzlesError) {
-        console.error('Player 3D puzzles achievements load failed:', puzzlesError);
-        addLog(`⚠️ 3D puzzles achievements load failed: ${puzzlesError.message}`);
-      }
-
-      /**
-       * Load admin store activity.
-       * This is the main source for inventory, purchase history, usage history, and financial item data.
-       */
-      try {
-        const storeActivityResponse = await fetch(
-          `${API_BASE_URL}/api/admin/store-management.php?action=get_user_store_activity&user_id=${encodeURIComponent(userId)}`,
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include',
+            cache: 'no-store'
+          },
+          'Player missions profile'
+        ),
+        safeJsonFetch(
+          API_BASE_URL + '/api/user/all-time-stats.php?user_id=' + encodeURIComponent(userId),
           {
             method: 'GET',
-            headers: { 'Accept': 'application/json' }
-          }
-        );
-
-        const storeActivityData = await readJsonResponse(storeActivityResponse, 'Admin player store activity');
-
-        if (storeActivityResponse.ok && storeActivityData.success && storeActivityData.data) {
-          adminStoreActivity = storeActivityData.data;
-        } else {
-          console.warn('Admin store activity API returned unsuccessful payload:', storeActivityData);
-        }
-      } catch (storeActivityError) {
-        console.error('Admin store activity load failed:', storeActivityError);
-        addLog(`⚠️ Store activity load failed: ${storeActivityError.message}`);
-      }
-
-      /**
-       * Load direct inventory as a fallback.
-       * This helps if the richer admin store activity payload is incomplete.
-       */
-      try {
-        const inventoryResponse = await fetch(
-          `${API_BASE_URL}/api/admin/store-management.php?action=get_user_inventory&user_id=${encodeURIComponent(userId)}`,
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include',
+            cache: 'no-store'
+          },
+          'All-time stats'
+        ),
+        safeJsonFetch(
+          API_BASE_URL + '/api/user/get-3d-puzzles-achievements.php?user_id=' + encodeURIComponent(userId),
           {
             method: 'GET',
-            headers: { 'Accept': 'application/json' }
-          }
-        );
-
-        const inventoryData = await readJsonResponse(inventoryResponse, 'Admin player inventory');
-
-        if (inventoryResponse.ok && inventoryData.success && Array.isArray(inventoryData.items)) {
-          adminInventory = inventoryData.items;
-        } else {
-          console.warn('Admin inventory API returned unsuccessful payload:', inventoryData);
-        }
-      } catch (inventoryError) {
-        console.error('Admin inventory load failed:', inventoryError);
-        addLog(`⚠️ Inventory load failed: ${inventoryError.message}`);
-      }
-
-      /**
-       * Load staking balance overview for the admin player profile.
-       * This keeps staking as a read-only identity summary and does not touch stake controls.
-       */
-      try {
-        const stakingStatsResponse = await fetch(
-          `${API_BASE_URL}/api/user/get-staking-stats.php`,
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include',
+            cache: 'no-store'
+          },
+          '3D puzzle achievements'
+        ),
+        safeJsonFetch(
+          API_BASE_URL + '/api/admin/store-management.php?action=get_user_store_activity&user_id=' + encodeURIComponent(userId),
+          {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include',
+            cache: 'no-store'
+          },
+          'Admin store activity'
+        ),
+        safeJsonFetch(
+          API_BASE_URL + '/api/admin/store-management.php?action=get_user_inventory&user_id=' + encodeURIComponent(userId),
+          {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include',
+            cache: 'no-store'
+          },
+          'Admin inventory'
+        ),
+        safeJsonFetch(
+          API_BASE_URL + '/api/user/get-staking-stats.php',
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json'
             },
+            credentials: 'include',
+            cache: 'no-store',
             body: JSON.stringify({ user_id: userId })
-          }
-        );
-
-        const stakingStatsData = await readJsonResponse(stakingStatsResponse, 'Admin player staking stats');
-
-        if (stakingStatsResponse.ok && stakingStatsData.success && stakingStatsData.data) {
-          stakingStats = stakingStatsData.data;
-        } else {
-          console.warn('Admin player staking stats API returned unsuccessful payload:', stakingStatsData);
-        }
-      } catch (stakingStatsError) {
-        console.error('Admin player staking stats load failed:', stakingStatsError);
-        addLog(`⚠️ Staking stats load failed: ${stakingStatsError.message}`);
-      }
-
-      /**
-       * Load staking activity lists for active, completed, cancelled, and claimable stakes.
-       * This mirrors the Stake Lab data source without copying Stake Lab controls into admin.
-       */
-      try {
-        const stakingActivityResponse = await fetch(
-          `${API_BASE_URL}/api/user/get-stakes.php`,
+          },
+          'Staking stats'
+        ),
+        safeJsonFetch(
+          API_BASE_URL + '/api/user/get-stakes.php',
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json'
             },
+            credentials: 'include',
+            cache: 'no-store',
             body: JSON.stringify({ user_id: userId, status: 'all' })
-          }
-        );
-
-        const stakingActivityData = await readJsonResponse(stakingActivityResponse, 'Admin player stake activity');
-
-        if (stakingActivityResponse.ok && stakingActivityData.success && stakingActivityData.data) {
-          stakingActivity = stakingActivityData.data;
-        } else {
-          console.warn('Admin player stake activity API returned unsuccessful payload:', stakingActivityData);
-        }
-      } catch (stakingActivityError) {
-        console.error('Admin player stake activity load failed:', stakingActivityError);
-        addLog(`⚠️ Stake activity load failed: ${stakingActivityError.message}`);
-      }
-
-      /**
-       * Load admin lab progression for the selected player.
-       * This uses a dedicated admin read endpoint because the player-facing lab endpoint is session-bound.
-       */
-      try {
-        const adminLabResponse = await fetch(
+          },
+          'Staking activity'
+        ),
+        safeJsonFetch(
           `${API_BASE_URL}/api/admin/get-player-lab.php`,
           {
             method: 'POST',
@@ -10240,44 +10554,47 @@ async function searchPlayerProfile() {
               'Content-Type': 'application/json',
               'Accept': 'application/json'
             },
+            credentials: 'include',
+            cache: 'no-store',
             body: JSON.stringify({ user_id: userId })
-          }
-        );
-
-        const adminLabData = await readJsonResponse(adminLabResponse, 'Admin player lab profile');
-
-        if (adminLabResponse.ok && adminLabData.success && adminLabData.data) {
-          adminLabProfile = adminLabData.data;
-        } else {
-          console.warn('Admin player lab API returned unsuccessful payload:', adminLabData);
-        }
-      } catch (adminLabError) {
-        console.error('Admin player lab load failed:', adminLabError);
-        addLog(`⚠️ Player lab load failed: ${adminLabError.message}`);
-      }
-
-      /**
-       * Load active store items for the inline give-item control inside the player profile.
-       */
-      try {
-        const catalogResponse = await fetch(
+          },
+          'Admin player lab profile'
+        ),
+        safeJsonFetch(
           `${API_BASE_URL}/api/store/items.php`,
           {
             method: 'GET',
-            headers: { 'Accept': 'application/json' }
-          }
-        );
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include',
+            cache: 'no-store'
+          },
+          'Store catalog'
+        )
+      ]);
 
-        const catalogData = await readJsonResponse(catalogResponse, 'Store catalog');
+      const settledValues = requests.map(result => result.status === 'fulfilled' ? result.value : { ok: false, data: null, error: result.reason });
+      const [
+        missionsResult,
+        allTimeResult,
+        puzzlesResult,
+        storeActivityResult,
+        inventoryResult,
+        stakingStatsResult,
+        stakingActivityResult,
+        adminLabResult,
+        catalogResult
+      ] = settledValues;
 
-        if (catalogResponse.ok && catalogData.success && Array.isArray(catalogData.items)) {
-          storeCatalog = catalogData.items.filter(item => item && Number(item.is_active || 1) === 1);
-        } else if (catalogResponse.ok && Array.isArray(catalogData.items)) {
-          storeCatalog = catalogData.items;
-        }
-      } catch (catalogError) {
-        console.error('Store catalog load failed:', catalogError);
-        addLog(`⚠️ Store catalog load failed: ${catalogError.message}`);
+      if (missionsResult.ok) missionsProfile = missionsResult.data;
+      if (allTimeResult.ok) allTimeStats = allTimeResult.data;
+      if (puzzlesResult.ok) puzzles3DAchievements = puzzlesResult.data;
+      if (storeActivityResult.ok) adminStoreActivity = normalizeAdminPlayerStoreActivity(storeActivityResult.data);
+      if (inventoryResult.ok) adminInventory = normalizeAdminPlayerInventory(inventoryResult.data);
+      if (stakingStatsResult.ok) stakingStats = normalizeAdminPlayerStakingStats(stakingStatsResult.data, profile.balance);
+      if (stakingActivityResult.ok) stakingActivity = normalizeAdminPlayerStakingActivity(stakingActivityResult.data);
+      if (adminLabResult.ok && adminLabResult.data?.data) adminLabProfile = adminLabResult.data.data;
+      if (catalogResult.ok && Array.isArray(catalogResult.data?.items)) {
+        storeCatalog = catalogResult.data.items.filter(item => item && Number(item.is_active || 1) === 1);
       }
     }
 
@@ -12202,6 +12519,8 @@ async function refreshAdminPlayerProfileInventory() {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -12343,6 +12662,8 @@ async function refreshAdminPlayerProfileInventory() {
       searchTimeout = setTimeout(async () => {
         try {
           const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -12379,6 +12700,8 @@ async function refreshAdminPlayerProfileInventory() {
   searchTimeout = setTimeout(async () => {
     try {
       const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -12467,6 +12790,8 @@ function selectGiveGeneticUser(userId, username) {
       searchTimeout = setTimeout(async () => {
         try {
           const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -12527,6 +12852,8 @@ function selectGiveGeneticUser(userId, username) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -12592,6 +12919,8 @@ function selectGiveGeneticUser(userId, username) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -12638,6 +12967,8 @@ function selectGiveGeneticUser(userId, username) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -12684,6 +13015,8 @@ function selectGiveGeneticUser(userId, username) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -12723,6 +13056,8 @@ function selectGiveGeneticUser(userId, username) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -12762,6 +13097,8 @@ function selectGiveGeneticUser(userId, username) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -13257,6 +13594,272 @@ function closeEditStoreItemModal() {
       };
     }
     
+
+    const REWARD_CHAMBER_ADMIN_API = {
+      getBoxes: '/api/user/get-reward-boxes.php',
+      openBox: '/api/user/open-reward-box.php'
+    };
+
+    let rewardChamberAdminLastPayload = null;
+
+    /**
+     * Return localhost-compatible user id for Reward Chamber admin testing.
+     */
+    function getRewardChamberAdminLocalUserId() {
+      try {
+        if (!window.NarrrfsAdminAuth || !window.NarrrfsAdminAuth.isLocalAdminHost()) {
+          return '';
+        }
+
+        return String(window.NarrrfsAdminAuth.resolveActiveUserId() || '').trim();
+      } catch (error) {
+        return '';
+      }
+    }
+
+    /**
+     * Build a Reward Chamber API path with optional localhost user_id support.
+     */
+    function getRewardChamberAdminApiPath(basePath) {
+      const localUserId = getRewardChamberAdminLocalUserId();
+      if (!localUserId) {
+        return basePath;
+      }
+
+      const joiner = basePath.includes('?') ? '&' : '?';
+      return `${basePath}${joiner}user_id=${encodeURIComponent(localUserId)}`;
+    }
+
+    /**
+     * Format a UTC datetime string for the admin Reward Chamber view.
+     */
+    function formatRewardChamberAdminDate(value) {
+      if (!value) {
+        return '—';
+      }
+
+      const parsed = new Date(String(value).replace(' ', 'T') + 'Z');
+      if (Number.isNaN(parsed.getTime())) {
+        return String(value);
+      }
+
+      return parsed.toLocaleString();
+    }
+
+    /**
+     * Format cooldown seconds for the admin Reward Chamber view.
+     */
+    function formatRewardChamberAdminDuration(totalSeconds) {
+      const seconds = Math.max(0, Number(totalSeconds || 0));
+      if (seconds <= 0) {
+        return 'Ready now';
+      }
+
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+
+      if (hours > 0) {
+        return `${hours}h ${minutes}m ${secs}s`;
+      }
+
+      if (minutes > 0) {
+        return `${minutes}m ${secs}s`;
+      }
+
+      return `${secs}s`;
+    }
+
+    /**
+     * Show a status banner inside the Reward Chamber admin tab.
+     */
+    function showRewardChamberAdminStatus(message, type = 'info') {
+      const statusEl = document.getElementById('rewardChamberAdminStatusMessage');
+      if (!statusEl) {
+        return;
+      }
+
+      statusEl.textContent = message;
+      statusEl.className = 'mb-4 rounded-lg border px-4 py-3 text-sm';
+
+      if (type === 'success') {
+        statusEl.classList.add('bg-green-900/40', 'border-green-500/50', 'text-green-100');
+      } else if (type === 'error') {
+        statusEl.classList.add('bg-red-900/40', 'border-red-500/50', 'text-red-100');
+      } else {
+        statusEl.classList.add('bg-blue-900/40', 'border-blue-500/50', 'text-blue-100');
+      }
+
+      statusEl.classList.remove('hidden');
+    }
+
+    /**
+     * Render the live Reward Chamber boxes returned by the backend.
+     */
+    function renderRewardChamberAdminBoxes(payload) {
+      const data = payload && payload.data ? payload.data : payload;
+      rewardChamberAdminLastPayload = data || null;
+
+      const boxWrap = document.getElementById('rewardChamberAdminLiveBoxes');
+      const sessionStateEl = document.getElementById('rewardChamberAdminSessionState');
+      const balanceEl = document.getElementById('rewardChamberAdminBalance');
+      const countEl = document.getElementById('rewardChamberAdminBoxCount');
+      const serverTimeEl = document.getElementById('rewardChamberAdminServerTime');
+
+      if (!boxWrap || !sessionStateEl || !balanceEl || !countEl || !serverTimeEl) {
+        return;
+      }
+
+      const isLoggedIn = !!data?.is_logged_in;
+      const boxes = Array.isArray(data?.boxes) ? data.boxes : [];
+
+      sessionStateEl.textContent = isLoggedIn ? 'Discord session active' : 'No active session';
+      balanceEl.textContent = Number(data?.available_dspoinc || 0).toLocaleString();
+      countEl.textContent = String(boxes.length);
+      serverTimeEl.textContent = formatRewardChamberAdminDate(data?.server_time_utc || '');
+
+      if (!boxes.length) {
+        boxWrap.innerHTML = '<div class="bg-black/20 rounded-lg p-4 border border-white/10 text-gray-300">No visible reward boxes were returned by the backend.</div>';
+        return;
+      }
+
+      boxWrap.innerHTML = boxes.map((box) => {
+        const identity = box?.box_key || `box_${Number(box?.box_id || 0)}`;
+        const boxName = box?.box_name || identity;
+        const boxType = box?.box_type || 'unknown';
+        const rewardSummary = box?.reward_summary || {};
+        const userState = box?.user_state || {};
+        const disabled = !!box?.is_disabled;
+        const disabledReason = box?.disabled_reason || '';
+        const nextOpenAt = userState?.next_open_at || '';
+        const cooldownSeconds = Number(userState?.cooldown_remaining_seconds || 0);
+        const openCount = Number(userState?.open_count || 0);
+        const price = Number(box?.price_dspoinc || 0);
+        const badgeClass = disabled
+          ? 'bg-red-900/40 border border-red-500/40 text-red-100'
+          : 'bg-green-900/40 border border-green-500/40 text-green-100';
+        const badgeText = disabled ? 'Disabled' : 'Available';
+        const rewardLine = rewardSummary?.short_text || rewardSummary?.description || 'No reward summary provided.';
+        const lastRewardAmount = Number(userState?.last_reward_dspoinc_amount || 0);
+
+        return `
+          <div class="bg-slate-900/70 rounded-xl p-4 border border-white/10 shadow-lg">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold text-white">${boxName}</div>
+                <div class="text-xs uppercase tracking-widest text-slate-400 mt-1">${boxType}</div>
+              </div>
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${badgeClass}">${badgeText}</span>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-black/20 border border-white/10 text-slate-200">${identity}</span>
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-black/20 border border-white/10 text-slate-200">${price > 0 ? price.toLocaleString() + ' DSPOINC' : 'FREE'}</span>
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-black/20 border border-white/10 text-slate-200">${openCount} open(s)</span>
+            </div>
+
+            <div class="mt-4 space-y-2 text-sm text-slate-200">
+              <div><span class="text-cyan-300 font-semibold">Reward summary:</span> ${rewardLine}</div>
+              <div><span class="text-cyan-300 font-semibold">Next open at:</span> ${nextOpenAt ? formatRewardChamberAdminDate(nextOpenAt) : 'Ready now / no timer returned'}</div>
+              <div><span class="text-cyan-300 font-semibold">Cooldown remaining:</span> ${formatRewardChamberAdminDuration(cooldownSeconds)}</div>
+              <div><span class="text-cyan-300 font-semibold">Last reward:</span> ${lastRewardAmount > 0 ? lastRewardAmount.toLocaleString() + ' DSPOINC' : '—'}</div>
+              <div><span class="text-cyan-300 font-semibold">Disabled reason:</span> ${disabledReason || 'None'}</div>
+            </div>
+
+            <div class="mt-4 p-3 rounded-lg bg-black/20 border border-white/10 text-xs text-slate-300">
+              Box 2 and Box 3 remain operator-visible roadmap cards until their backend delivery paths are implemented.
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /**
+     * Fetch Reward Chamber data for the admin tab.
+     */
+    async function refreshRewardChamberAdmin() {
+      try {
+        showRewardChamberAdminStatus('Loading live Reward Chamber state...', 'info');
+
+        const response = await fetch(getRewardChamberAdminApiPath(REWARD_CHAMBER_ADMIN_API.getBoxes), {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+
+        if (!payload?.success) {
+          throw new Error(payload?.error || 'Reward Chamber API returned no success flag');
+        }
+
+        renderRewardChamberAdminBoxes(payload);
+        showRewardChamberAdminStatus('✅ Live Reward Chamber state loaded from backend.', 'success');
+        addLog('🎁 Reward Chamber admin data refreshed');
+      } catch (error) {
+        console.error('❌ [REWARD CHAMBER ADMIN] Failed to load live data:', error);
+        showRewardChamberAdminStatus(`Failed to load Reward Chamber state: ${error.message}`, 'error');
+
+        const boxWrap = document.getElementById('rewardChamberAdminLiveBoxes');
+        if (boxWrap) {
+          boxWrap.innerHTML = '<div class="bg-black/20 rounded-lg p-4 border border-red-500/40 text-red-100">Reward Chamber live data could not be loaded.</div>';
+        }
+      }
+    }
+
+    /**
+     * Run a backend test open for one Reward Chamber box from the admin tab.
+     */
+    async function adminTestOpenRewardBox(boxId) {
+      const proceed = confirm(`Open Box ${boxId} using the live backend flow for the current authenticated session?`);
+      if (!proceed) {
+        return;
+      }
+
+      try {
+        showRewardChamberAdminStatus(`Opening Box ${boxId} through the live backend flow...`, 'info');
+
+        const body = { box_id: Number(boxId) || 0 };
+        const localUserId = getRewardChamberAdminLocalUserId();
+        if (localUserId) {
+          body.user_id = localUserId;
+        }
+
+        const response = await fetch(REWARD_CHAMBER_ADMIN_API.openBox, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok || !payload?.success) {
+          throw new Error(payload?.error || payload?.message || `HTTP ${response.status}`);
+        }
+
+        const data = payload?.data || {};
+        const amount = Number(data?.open_result?.reward_dspoinc_amount || 0);
+        const successMessage = boxId === 1
+          ? `✅ Box 1 opened successfully. Reward: ${amount.toLocaleString()} DSPOINC.`
+          : `✅ Box ${boxId} request completed successfully.`;
+
+        showRewardChamberAdminStatus(successMessage, 'success');
+        addLog(`🎁 Reward Chamber admin test open succeeded for Box ${boxId}`);
+        await refreshRewardChamberAdmin();
+      } catch (error) {
+        console.error(`❌ [REWARD CHAMBER ADMIN] Box ${boxId} test open failed:`, error);
+        showRewardChamberAdminStatus(`Box ${boxId} test open failed: ${error.message}`, 'error');
+      }
+    }
+
     /**
      * Load profile chest configuration
      */
@@ -14113,14 +14716,14 @@ if (window.currentInventoryUserId) {
             
             if (data.success && data.user) {
                 // ✅ Discord user already authenticated via session
-            currentAdmin = {
+            currentAdmin = window.syncCurrentAdminUser({
                     username: data.user.discord_name || 'Discord Admin',
                     discord_id: data.user.discord_id,
                     role: data.role || 'moderator',
                     auth_type: 'discord',
                     token: 'discord_auth_' + data.user.discord_id, // ✅ Add token for Discord users
                     has_database_access: true // ✅ Grant database access to Discord admins
-                };
+                });
                 
                 console.log('✅ Discord admin authenticated via session:', currentAdmin);
                 
@@ -14163,14 +14766,14 @@ if (discordId && discordName) {
         return false;
     }
 
-    currentAdmin = {
+    currentAdmin = window.syncCurrentAdminUser({
         username: authData.user.username || discordName || 'Discord Admin',
         discord_id: authData.user.discord_id || discordId,
         role: authData.user.role || 'moderator',
         auth_type: authData.user.auth_type || 'discord',
         token: 'discord_auth_' + (authData.user.discord_id || discordId),
         has_database_access: true
-    };
+    });
 
     console.log('✅ Discord admin authenticated via auth.php session:', currentAdmin);
 
@@ -14353,22 +14956,57 @@ function showDatabaseUnlock() {
 async function authenticateDiscord() {
     try {
         addLog('🔄 Starting Discord authentication...');
-        
-        // 🚀 CRITICAL FIX: Set admin redirect flag before OAuth
+
+        const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+        if (isLocalDevelopment) {
+            const localNarrrfDiscordId = '328601656659017732';
+            const localNarrrfUsername = 'Narrrf';
+
+            currentAdmin = window.syncCurrentAdminUser({
+                username: localNarrrfUsername,
+                discord_id: localNarrrfDiscordId,
+                role: 'admin',
+                auth_type: 'local',
+                token: 'local_narrrf_admin_token',
+                has_database_access: true
+            });
+
+            window.currentAdminUser = currentAdmin;
+            window.sessionDiscordId = localNarrrfDiscordId;
+            window.sessionDiscordUsername = localNarrrfUsername;
+
+            localStorage.setItem('discord_id', localNarrrfDiscordId);
+            localStorage.setItem('discord_name', localNarrrfUsername);
+            localStorage.setItem('narrrfs_last_discord_id', localNarrrfDiscordId);
+            localStorage.setItem('narrrfs_last_discord_name', localNarrrfUsername);
+            localStorage.setItem('DISCORD_NAME', localNarrrfUsername);
+
+            if (window.NarrrfsCheeseAuth && typeof window.NarrrfsCheeseAuth.refresh === 'function') {
+                window.NarrrfsCheeseAuth.refresh();
+            }
+
+            showAdminContent();
+            loadDashboardData();
+            addLog('✅ Local Narrrf admin session activated');
+            return;
+        }
+
         localStorage.setItem('adminRedirect', 'true');
         console.log('🚀 Set adminRedirect flag for OAuth return');
-        
-        // Redirect to Discord OAuth
+
         const clientId = '1357927342265204858';
-        const redirectUri = encodeURIComponent('https://narrrfs.world/api/auth/callback.php');
+        const localCallback = `${window.location.origin}/api/auth/callback.php`;
+        const productionCallback = 'https://narrrfs.world/api/auth/callback.php';
+        const redirectUri = encodeURIComponent(isLocalDevelopment ? localCallback : productionCallback);
         const scope = 'guilds+identify+guilds.members.read';
-        
+
         const authUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=${scope}`;
-        
+
         addLog('🔗 Redirecting to Discord OAuth...');
         addLog('🚀 Admin redirect flag set - will return to admin interface');
         window.location.href = authUrl;
-        
+
     } catch (error) {
         console.error('Discord authentication error:', error);
         addLog('❌ Discord authentication error: ' + error.message);
@@ -18355,6 +18993,8 @@ function updateGameTabContent(gameType, gameData) {
         
         // Now give the DSPOINC reward using the existing points system
         const pointsResponse = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -18884,7 +19524,7 @@ function updateGameTabContent(gameType, gameData) {
           },
           body: JSON.stringify({
             action: 'sync_race_data',
-            admin_username: currentAdmin
+            admin_username: currentAdmin?.username || currentAdmin?.discord_id || 'Narrrf'
           })
         });
 
@@ -20125,7 +20765,7 @@ function updateGameTabContent(gameType, gameData) {
           },
           body: JSON.stringify({
             new_season: newSeason,
-            admin_id: currentAdmin
+            admin_id: currentAdmin?.discord_id || currentAdmin?.username || window.NarrrfsAdminAuth?.resolveAdminActorId?.() || '328601656659017732'
           })
         });
 
@@ -20996,10 +21636,28 @@ function updateSeasonStatus(activeSeason) {
 
     // Load and display user adjustments
     async function loadUserAdjustments(userId, username) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-gray-800 p-6 rounded-lg max-w-xl w-full mx-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">📊 Adjustments for ${username}</h3>
+            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+          </div>
+          <div class="text-gray-300">Loading adjustments...</div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/get-user-adjustments.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          credentials: 'include',
+          cache: 'no-store',
           body: JSON.stringify({
             action: 'get_user_adjustments',
             user_id: userId
@@ -21007,14 +21665,19 @@ function updateSeasonStatus(activeSeason) {
         });
 
         const data = await response.json();
-        
+
+        modal.remove();
+
         if (data.success) {
-          displayUserAdjustments(data.adjustments, username);
+          displayUserAdjustments(Array.isArray(data.adjustments) ? data.adjustments : [], username);
         } else {
           addLog(`❌ Failed to load adjustments for ${username}: ${data.error}`);
+          showNotification(`❌ Adjustments failed: ${data.error || 'Unknown error'}`, 'error');
         }
       } catch (error) {
+        modal.remove();
         addLog(`❌ Error loading adjustments for ${username}: ${error.message}`);
+        showNotification(`❌ Adjustments error: ${error.message}`, 'error');
       }
     }
 
@@ -21114,7 +21777,7 @@ function updateSeasonStatus(activeSeason) {
     // Load holder verification statistics
     async function loadHolderVerificationStats() {
       try {
-        const response = await fetch(API_BASE_URL + '/api/admin/get-holder-verification-stats.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/get-holder-verification-stats.php', { credentials: 'include', cache: 'no-store', headers: { 'Accept': 'application/json' } });
         const data = await response.json();
         
         if (data.success) {
@@ -21138,6 +21801,8 @@ function updateSeasonStatus(activeSeason) {
         
         const response = await fetch(API_BASE_URL + '/api/admin/get-holder-verifications.php', {
           method: 'POST',
+          credentials: 'include',
+          cache: 'no-store',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             collection: collectionFilter,
@@ -21394,6 +22059,8 @@ function updateSeasonStatus(activeSeason) {
       searchTimeout = setTimeout(async () => {
         try {
           const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -21460,6 +22127,8 @@ function updateSeasonStatus(activeSeason) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -21495,6 +22164,8 @@ function updateSeasonStatus(activeSeason) {
       searchTimeout = setTimeout(async () => {
         try {
           const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -21561,6 +22232,8 @@ function updateSeasonStatus(activeSeason) {
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          credentials: 'include',
+          cache: 'no-store',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -25739,7 +26412,7 @@ function updateDatabaseOverviewTimestamp() {
         const response = await fetch(`${API_BASE_URL}/api/admin/get-twitter-mission-stats.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ admin_id: currentAdmin || 'local_dev' })
+          body: JSON.stringify({ admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732' })
         });
         
         const data = await response.json();
@@ -25767,7 +26440,7 @@ function updateDatabaseOverviewTimestamp() {
         const response = await fetch(`${API_BASE_URL}/api/admin/get-active-twitter-missions.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ admin_id: currentAdmin || 'local_dev' })
+          body: JSON.stringify({ admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732' })
         });
         
         const data = await response.json();
@@ -25815,7 +26488,7 @@ function updateDatabaseOverviewTimestamp() {
         const response = await fetch(`${API_BASE_URL}/api/admin/get-pending-twitter-verifications.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ admin_id: currentAdmin || 'local_dev' })
+          body: JSON.stringify({ admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732' })
         });
         
         const data = await response.json();
@@ -25859,7 +26532,7 @@ function updateDatabaseOverviewTimestamp() {
         const response = await fetch(`${API_BASE_URL}/api/admin/get-twitter-mission-history.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ admin_id: currentAdmin || 'local_dev' })
+          body: JSON.stringify({ admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732' })
         });
         
         const data = await response.json();
@@ -26016,7 +26689,7 @@ function updateDatabaseOverviewTimestamp() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            admin_id: currentAdmin || 'local_dev',
+            admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732',
             user_id: userId
           })
         });
@@ -26137,7 +26810,7 @@ function updateDatabaseOverviewTimestamp() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            admin_id: currentAdmin || 'local_dev',
+            admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732',
             mission_id: missionId,
             user_id: userId,
             approved: approved
@@ -26185,7 +26858,7 @@ function updateDatabaseOverviewTimestamp() {
         addLog('🔄 Creating mission...');
         
         const requestData = { 
-          admin_id: currentAdmin || 'local_dev',
+          admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732',
           tweet_url: tweetUrl,
           mission_type: missionType,
           duration_hours: parseInt(durationHours),
@@ -26243,7 +26916,7 @@ function updateDatabaseOverviewTimestamp() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            admin_id: currentAdmin || 'local_dev',
+            admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732',
             mission_id: missionId
           })
         });
@@ -26271,7 +26944,7 @@ function updateDatabaseOverviewTimestamp() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            admin_id: currentAdmin || 'local_dev',
+            admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732',
             mission_id: missionId,
             updates: updates
           })
@@ -26302,7 +26975,7 @@ function updateDatabaseOverviewTimestamp() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            admin_id: currentAdmin || 'local_dev',
+            admin_id: currentAdmin?.discord_id || currentAdmin?.username || '328601656659017732',
             mission_id: missionId
           })
         });
@@ -30428,14 +31101,14 @@ Continue with Season 3 Reset?`)) {
         localStorage.removeItem('adminAuthTime');
         
         // Set admin user
-        currentAdmin = {
+        currentAdmin = window.syncCurrentAdminUser({
           username: discordName,
           discord_id: discordId,
           role: 'moderator',
           auth_type: 'discord',
           token: 'discord_auth_' + discordId,
           has_database_access: true
-        };
+        });
         
         // Show admin content
         showAdminContent();

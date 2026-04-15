@@ -15,24 +15,9 @@ require_once 'discord-invite.php';
     window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
     document.addEventListener("DOMContentLoaded", async () => {
       if (!window.sessionDiscordId) {
-  console.warn("🔐 Narrrf Profile: No active Discord session detected. Clearing stale local storage.");
-
-  localStorage.removeItem("discord_id");
-  localStorage.removeItem("discord_name");
-  localStorage.removeItem("narrrfs_last_discord_id");
-  localStorage.removeItem("narrrfs_last_discord_name");
-  localStorage.removeItem("DISCORD_NAME");
-  localStorage.removeItem("auth_timestamp");
-
-  sessionStorage.removeItem("discord_id");
-  sessionStorage.removeItem("discord_name");
-
-  if (window.NarrrfsCheeseAuth && typeof window.NarrrfsCheeseAuth.refresh === 'function') {
-    window.NarrrfsCheeseAuth.refresh();
-  }
-
-  return;
-}
+        console.warn("🔐 Narrrf Profile: No active Discord session detected. Local storage not updated.");
+        return;
+      }
 
       try {
         localStorage.setItem("narrrfs_last_discord_id", window.sessionDiscordId);
@@ -1636,6 +1621,388 @@ require_once 'discord-invite.php';
   font-size: 0.82rem !important;
 }
 
+/* 🎁 Reward Chamber v1 */
+.profile-reward-chamber-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-reward-chamber-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.45rem;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.14), transparent 28%),
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.16), transparent 30%),
+    linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(88, 28, 135, 0.92) 52%, rgba(120, 53, 15, 0.92));
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+  padding: 1.2rem 1.2rem 1.1rem;
+}
+
+.profile-reward-chamber-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent 32%);
+}
+
+.profile-reward-chamber-hero-top,
+.profile-reward-chamber-meta,
+.profile-reward-chamber-actions,
+.profile-reward-box-footer,
+.profile-reward-box-summary,
+.profile-reward-box-meta,
+.profile-reward-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.profile-reward-chamber-hero-top {
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-reward-chamber-kicker,
+.profile-reward-chamber-chip,
+.profile-reward-box-pill,
+.profile-reward-box-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profile-reward-chamber-kicker {
+  padding: 0.42rem 0.8rem;
+  color: #082f49;
+  background: linear-gradient(135deg, #67e8f9, #22d3ee);
+}
+
+.profile-reward-chamber-chip {
+  padding: 0.42rem 0.8rem;
+  color: #f8fafc;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.profile-reward-chamber-title {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.85rem;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  font-weight: 900;
+  color: #fff8db;
+}
+
+.profile-reward-chamber-copy,
+.profile-reward-chamber-status,
+.profile-reward-box-copy,
+.profile-reward-box-last,
+.profile-reward-box-disabled,
+.profile-reward-box-cooldown,
+.profile-reward-box-summary,
+.profile-reward-box-empty,
+.profile-reward-fallback-note,
+.profile-reward-modal-copy,
+.profile-reward-modal-note {
+  color: #dbe4f0;
+}
+
+.profile-reward-chamber-copy {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.8rem;
+  line-height: 1.65;
+  max-width: 56rem;
+}
+
+.profile-reward-chamber-meta,
+.profile-reward-chamber-actions,
+.profile-reward-chamber-status {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.9rem;
+}
+
+.profile-reward-chamber-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.profile-reward-box {
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+  border-radius: 1.35rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, rgba(15,23,42,0.94), rgba(30,41,59,0.88));
+  padding: 1rem;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.2);
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease, opacity .22s ease;
+}
+
+.profile-reward-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 34%);
+}
+
+.profile-reward-box:hover {
+  transform: translateY(-3px);
+  border-color: rgba(251, 191, 36, 0.34);
+  box-shadow: 0 22px 40px rgba(0,0,0,0.26);
+}
+
+.profile-reward-box.disabled {
+  opacity: 0.78;
+}
+
+.profile-reward-box.box-type-free {
+  border-color: rgba(34, 197, 94, 0.26);
+  box-shadow: 0 16px 34px rgba(16, 185, 129, 0.08);
+}
+
+.profile-reward-box.box-type-random {
+  border-color: rgba(59, 130, 246, 0.26);
+  box-shadow: 0 16px 34px rgba(59, 130, 246, 0.08);
+}
+
+.profile-reward-box.box-type-premium {
+  border-color: rgba(168, 85, 247, 0.28);
+  box-shadow: 0 16px 34px rgba(168, 85, 247, 0.08);
+}
+
+.profile-reward-box-header,
+.profile-reward-box-body {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-reward-box-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.profile-reward-box-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.profile-reward-box-title {
+  font-size: 1.08rem;
+  line-height: 1.2;
+  font-weight: 900;
+  color: #fff;
+}
+
+.profile-reward-box-copy {
+  margin-top: 0.8rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  min-height: 4.4rem;
+}
+
+.profile-reward-box-meta,
+.profile-reward-box-summary {
+  margin-top: 0.8rem;
+}
+
+.profile-reward-box-pill,
+.profile-reward-box-badge {
+  padding: 0.38rem 0.68rem;
+}
+
+.profile-reward-box-pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #f8fafc;
+}
+
+.profile-reward-box-badge.free {
+  color: #dcfce7;
+  background: rgba(34,197,94,0.16);
+  border: 1px solid rgba(34,197,94,0.28);
+}
+
+.profile-reward-box-badge.paid {
+  color: #dbeafe;
+  background: rgba(59,130,246,0.16);
+  border: 1px solid rgba(59,130,246,0.26);
+}
+
+.profile-reward-box-badge.premium {
+  color: #f3e8ff;
+  background: rgba(168,85,247,0.16);
+  border: 1px solid rgba(168,85,247,0.26);
+}
+
+.profile-reward-box-summary {
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.profile-reward-box-last,
+.profile-reward-box-disabled,
+.profile-reward-box-cooldown,
+.profile-reward-box-empty,
+.profile-reward-fallback-note {
+  margin-top: 0.8rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.profile-reward-box-disabled {
+  color: #fecaca;
+}
+
+.profile-reward-box-cooldown {
+  color: #fde68a;
+}
+
+.profile-reward-box-footer {
+  position: relative;
+  z-index: 1;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.profile-reward-box-button {
+  min-width: 10.5rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 0.95rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, rgba(245,158,11,0.92), rgba(217,119,6,0.92));
+  cursor: pointer;
+  transition: transform .2s ease, opacity .2s ease, border-color .2s ease;
+}
+
+.profile-reward-box-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.28);
+}
+
+.profile-reward-box-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.profile-reward-box-button.button-secondary {
+  background: linear-gradient(135deg, rgba(71,85,105,0.94), rgba(51,65,85,0.94));
+}
+
+.profile-reward-box-button.button-claim {
+  background: linear-gradient(135deg, rgba(168,85,247,0.92), rgba(124,58,237,0.92));
+}
+
+.profile-reward-chamber-loading,
+.profile-reward-chamber-error {
+  border-radius: 1.2rem;
+  padding: 1.05rem 1.1rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.profile-reward-chamber-error {
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #fecaca;
+}
+
+.profile-reward-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.76);
+  backdrop-filter: blur(8px);
+}
+
+.profile-reward-modal.active {
+  display: flex;
+}
+
+.profile-reward-modal-card {
+  width: min(32rem, 100%);
+  border-radius: 1.35rem;
+  border: 1px solid rgba(251,191,36,0.26);
+  background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(88,28,135,0.92));
+  box-shadow: 0 24px 60px rgba(0,0,0,0.34);
+  padding: 1.35rem;
+}
+
+.profile-reward-modal-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #fff8db;
+}
+
+.profile-reward-modal-amount {
+  font-size: 2.5rem;
+  line-height: 1;
+  font-weight: 900;
+  color: #fde68a;
+  margin-top: 0.8rem;
+}
+
+.profile-reward-modal-button {
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 0.95rem;
+  padding: 0.8rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, rgba(245,158,11,0.92), rgba(217,119,6,0.92));
+  color: white;
+}
+
+@media (max-width: 1100px) {
+  .profile-reward-chamber-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-reward-box-copy {
+    min-height: auto;
+  }
+
+  .profile-reward-box-footer,
+  .profile-reward-chamber-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-reward-box-button {
+    width: 100%;
+  }
+}
 
 /* 🧬 genetic profile integration */
 .profile-genetics-shell {
@@ -3737,349 +4104,100 @@ document.addEventListener('DOMContentLoaded', async function() {
 </div>
 
 <!-- 🎁 PROFILE CHEST LOOTBOX SECTION -->
-<div id="profile-chest-section" class="max-w-4xl w-full mx-auto px-4 mt-12 mb-8 relative z-10 hidden">
-  <div class="bg-gradient-to-br from-amber-900/40 via-yellow-900/30 to-orange-900/40 rounded-2xl shadow-2xl p-8 border-2 border-amber-500/50 ring-2 ring-amber-400/20">
-    <h2 class="text-2xl font-bold text-yellow-300 mb-4 text-center flex items-center justify-center gap-3">
-      <span>🎁</span>
-      <span>Treasure Chest Lootbox</span>
-      <span>🎁</span>
-    </h2>
-    <p class="text-center text-gray-300 text-sm mb-6">Click the chest to open and receive a random DSPOINC reward!</p>
-    
-    <!-- Chest Container -->
-    <div class="flex flex-col items-center justify-center">
-      <div id="profile-chest-container" class="relative cursor-pointer transform transition-transform hover:scale-110" onclick="openProfileChest()">
-        <!-- Chest Image (switches from closed to opened) -->
-        <div id="profile-chest-base" class="relative">
-          <img id="profile-chest-image" src="img/chests/chest-closed.png" alt="Treasure Chest" class="w-48 h-auto object-contain">
-          
-          <!-- Sparkle Particles Container -->
-          <div id="profile-chest-particles" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
-          
-          <!-- Glow Effect -->
-          <div id="profile-chest-glow" class="absolute inset-0 opacity-0 transition-opacity duration-500 bg-gradient-to-r from-yellow-400/0 via-yellow-400/30 to-yellow-400/0 rounded-lg"></div>
+<div id="profile-chest-section" class="max-w-6xl w-full mx-auto px-4 mt-12 mb-8 relative z-10 hidden">
+  <div class="profile-reward-chamber-shell">
+    <div class="profile-reward-chamber-hero">
+      <div class="profile-reward-chamber-hero-top">
+        <div class="flex flex-wrap gap-2">
+          <span class="profile-reward-chamber-kicker">🎁 Reward Chamber</span>
+          <span class="profile-reward-chamber-chip">Season 10 Profile Utility</span>
+          <span class="profile-reward-chamber-chip">Backend-authoritative rewards</span>
         </div>
-        
-        <!-- Reward Display (shown after opening) -->
-        <div id="profile-chest-reward" class="mt-6 text-center hidden">
-          <div class="text-4xl mb-2">🎉</div>
-          <div class="text-2xl font-bold text-yellow-300 mb-1">
-            <span id="profile-chest-reward-amount">0</span> DSPOINC
-          </div>
-          <div class="text-sm text-gray-400">Added to your balance!</div>
-        </div>
-        
-        <!-- Status Text -->
-        <div id="profile-chest-status" class="mt-4 text-center text-sm text-gray-400">
-          Click to open
+        <div id="profileRewardChamberBalanceChip" class="profile-reward-chamber-chip">Loading DSPOINC…</div>
+      </div>
+
+      <h2 class="profile-reward-chamber-title">Open your daily Reward Chamber from the profile page</h2>
+      <p class="profile-reward-chamber-copy">
+        Three reward boxes are always visible here. Availability, cooldowns, and pricing are computed by the backend.
+        Box 1 is live now. Box 2 and Box 3 stay visible so players can see the full chamber roadmap.
+      </p>
+
+      <div class="profile-reward-chamber-meta">
+        <div class="profile-reward-chamber-chip" id="profileRewardChamberServerTime">Syncing server time…</div>
+        <div class="profile-reward-chamber-chip" id="profileRewardChamberLoginState">Checking Discord session…</div>
+      </div>
+
+      <div class="profile-reward-chamber-actions">
+        <button type="button" class="profile-reward-box-button" onclick="loadRewardChamber(true)">🔄 Refresh Chamber</button>
+        <a href="lab.html" class="profile-reward-box-button button-secondary inline-flex items-center justify-center">🧬 Open Lab</a>
+      </div>
+
+      <div id="profileRewardChamberStatus" class="profile-reward-chamber-status">Loading Reward Chamber…</div>
+    </div>
+
+    <div id="profileRewardChamberLoading" class="profile-reward-chamber-loading">Loading reward boxes…</div>
+    <div id="profileRewardChamberError" class="profile-reward-chamber-error hidden"></div>
+    <div id="profileRewardChamberGrid" class="profile-reward-chamber-grid hidden"></div>
+
+    <div id="profileRewardChamberFallbackNote" class="profile-reward-fallback-note hidden">
+      Reward Chamber API is unavailable right now. Falling back to the legacy profile chest.
+    </div>
+
+    <div id="profile-reward-modal" class="profile-reward-modal" aria-hidden="true">
+      <div class="profile-reward-modal-card">
+        <div class="profile-reward-modal-title">🎉 Reward received</div>
+        <div id="profileRewardModalAmount" class="profile-reward-modal-amount">0 DSPOINC</div>
+        <div id="profileRewardModalTitle" class="profile-reward-modal-copy mt-3">DSPOINC Reward</div>
+        <div id="profileRewardModalNote" class="profile-reward-modal-note mt-2">The backend already credited your balance.</div>
+        <div class="profile-reward-modal-actions mt-5">
+          <button type="button" class="profile-reward-modal-button" onclick="closeRewardChamberModal()">Close</button>
+          <button type="button" class="profile-reward-modal-button" onclick="closeRewardChamberModal(); loadRewardChamber(true);">Refresh Chamber</button>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- 🎮 GAME PORTAL - Clean Link Cards -->
-<section class="max-w-6xl w-full mx-auto px-4 mt-12 relative z-10">
-  <div class="text-center mb-8">
-    <h2 class="text-3xl font-bold text-yellow-300 mb-2">🎮 Play Your Games</h2>
-    <p class="text-gray-400">Click any game to start playing • 🎮 Season 10 STARTED 🎮</p>
-  </div>
-  
-  <div class="flex flex-col gap-4">
-    <!-- 🧩 TETRIS GAME CARD -->
-    <a href="tetris.html" class="block group">
-      <div class="finance-card p-6 rounded-2xl border-2 border-purple-500/50 bg-gradient-to-r from-purple-900/30 to-purple-800/20 hover:border-purple-400 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 transform hover:-translate-y-1">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="text-5xl">🧩</div>
-            <div>
-              <h3 class="text-2xl font-bold text-yellow-300 mb-1">CHEESE TETRIS</h3>
-              <p class="text-sm text-gray-400">9 Epic Bosses • Frozen & Giant Blocks</p>
+    <div id="profile-chest-legacy-fallback" class="hidden">
+      <div class="bg-gradient-to-br from-amber-900/40 via-yellow-900/30 to-orange-900/40 rounded-2xl shadow-2xl p-8 border-2 border-amber-500/50 ring-2 ring-amber-400/20">
+        <h2 class="text-2xl font-bold text-yellow-300 mb-4 text-center flex items-center justify-center gap-3">
+          <span>🎁</span>
+          <span>Treasure Chest Lootbox</span>
+          <span>🎁</span>
+        </h2>
+        <p class="text-center text-gray-300 text-sm mb-6">Legacy fallback chest. This only appears if the new Reward Chamber cannot load.</p>
+        
+        <!-- Chest Container -->
+        <div class="flex flex-col items-center justify-center">
+          <div id="profile-chest-container" class="relative cursor-pointer transform transition-transform hover:scale-110" onclick="openProfileChestLegacy()">
+            <!-- Chest Image (switches from closed to opened) -->
+            <div id="profile-chest-base" class="relative">
+              <img id="profile-chest-image" src="img/chests/chest-closed.png" alt="Treasure Chest" class="w-48 h-auto object-contain">
+              
+              <!-- Sparkle Particles Container -->
+              <div id="profile-chest-particles" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+              
+              <!-- Glow Effect -->
+              <div id="profile-chest-glow" class="absolute inset-0 opacity-0 transition-opacity duration-500 bg-gradient-to-r from-yellow-400/0 via-yellow-400/30 to-yellow-400/0 rounded-lg"></div>
+            </div>
+            
+            <!-- Reward Display (shown after opening) -->
+            <div id="profile-chest-reward" class="mt-6 text-center hidden">
+              <div class="text-4xl mb-2">🎉</div>
+              <div class="text-2xl font-bold text-yellow-300 mb-1">
+                <span id="profile-chest-reward-amount">0</span> DSPOINC
+              </div>
+              <div class="text-sm text-gray-400">Added to your balance!</div>
+            </div>
+            
+            <!-- Status Text -->
+            <div id="profile-chest-status" class="mt-4 text-center text-sm text-gray-400">
+              Click to open
             </div>
           </div>
-          <div class="text-4xl text-purple-400 group-hover:text-purple-300 transition-transform group-hover:translate-x-2">▶</div>
-        </div>
-        
-        <div class="mt-4 flex gap-2 sm:gap-4 text-sm">
-          <div class="flex-1 bg-purple-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Best Score</div>
-            <div class="text-yellow-300 font-bold text-sm sm:text-lg truncate" id="tetris-best-score-card">-- DSPOINC</div>
-          </div>
-          <div class="flex-1 bg-purple-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Rank</div>
-            <div class="text-purple-300 font-bold text-sm sm:text-lg" id="tetris-rank-card">#--</div>
-          </div>
-          <div class="flex-1 bg-purple-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Achieve</div>
-            <div class="text-green-300 font-bold text-sm sm:text-lg" id="tetris-achievements-card">--/25</div>
-          </div>
-        </div>
-        
-        <div class="mt-3 text-center">
-          <span class="inline-block px-3 py-1 bg-yellow-400/20 border border-yellow-400/50 rounded-full text-xs text-yellow-300 font-semibold">
-            🎮 Season 10 STARTED 🎮 • Total Rewards: 3,550 DSPOINC
-          </span>
-        </div>
-      </div>
-    </a>
-    
-    <!-- 🐍 SNAKE GAME CARD -->
-    <a href="snake.html" class="block group">
-      <div class="finance-card p-6 rounded-2xl border-2 border-green-500/50 bg-gradient-to-r from-green-900/30 to-emerald-800/20 hover:border-green-400 hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-300 transform hover:-translate-y-1">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="text-5xl">🐍</div>
-            <div>
-              <h3 class="text-2xl font-bold text-yellow-300 mb-1">CHEESE SNAKE</h3>
-              <p class="text-sm text-gray-400">9 Boss Battles • Golden Apples • Progressive AI</p>
-            </div>
-          </div>
-          <div class="text-4xl text-green-400 group-hover:text-green-300 transition-transform group-hover:translate-x-2">▶</div>
-        </div>
-        
-        <div class="mt-4 flex gap-2 sm:gap-4 text-sm">
-          <div class="flex-1 bg-green-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Best Score</div>
-            <div class="text-yellow-300 font-bold text-sm sm:text-lg truncate" id="snake-best-score-card">-- DSPOINC</div>
-          </div>
-          <div class="flex-1 bg-green-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Rank</div>
-            <div class="text-green-300 font-bold text-sm sm:text-lg" id="snake-rank-card">#--</div>
-          </div>
-          <div class="flex-1 bg-green-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Achieve</div>
-            <div class="text-emerald-300 font-bold text-sm sm:text-lg" id="snake-achievements-card">--/20</div>
-          </div>
-        </div>
-        
-        <div class="mt-3 text-center">
-          <span class="inline-block px-3 py-1 bg-green-400/20 border border-green-400/50 rounded-full text-xs text-green-300 font-semibold">
-            🎮 Season 10 STARTED 🎮 • Total Rewards: 1,930 DSPOINC
-          </span>
-        </div>
-      </div>
-    </a>
-    
-    <!-- 👾 SPACE INVADERS GAME CARD -->
-    <a href="space-cheese-invaders.html" class="block group">
-      <div class="finance-card p-6 rounded-2xl border-2 border-blue-500/50 bg-gradient-to-r from-blue-900/30 to-indigo-800/20 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 transform hover:-translate-y-1">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="text-5xl">👾</div>
-            <div>
-              <h3 class="text-2xl font-bold text-yellow-300 mb-1">SPACE CHEESE INVADERS</h3>
-              <p class="text-sm text-gray-400">Phoenix Waves • Giant Boss • 4 Weapons</p>
-            </div>
-          </div>
-          <div class="text-4xl text-blue-400 group-hover:text-blue-300 transition-transform group-hover:translate-x-2">▶</div>
-        </div>
-        
-        <div class="mt-4 flex gap-2 sm:gap-4 text-sm">
-          <div class="flex-1 bg-blue-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Best Score</div>
-            <div class="text-yellow-300 font-bold text-sm sm:text-lg truncate" id="space-best-score-card">-- DSPOINC</div>
-          </div>
-          <div class="flex-1 bg-blue-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Rank</div>
-            <div class="text-blue-300 font-bold text-sm sm:text-lg" id="space-rank-card">#--</div>
-          </div>
-          <div class="flex-1 bg-blue-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Achieve</div>
-            <div class="text-purple-300 font-bold text-sm sm:text-lg" id="space-achievements-card">--/28</div>
-          </div>
-        </div>
-        
-        <div class="mt-3 text-center">
-          <span class="inline-block px-3 py-1 bg-green-400/20 border border-green-400/50 rounded-full text-xs text-green-300 font-semibold">
-            🎮 Season 10 STARTED 🎮 • Progressive Boss Rewards
-          </span>
-        </div>
-      </div>
-    </a>
-
-    <!-- 🔮 GLYPH MEMORY GAME CARD -->
-    <a href="/glyph/glyph.html" class="block group">
-      <div class="finance-card p-6 rounded-2xl border-2 border-fuchsia-500/50 bg-gradient-to-r from-fuchsia-900/30 to-purple-800/20 hover:border-fuchsia-400 hover:shadow-2xl hover:shadow-fuchsia-500/20 transition-all duration-300 transform hover:-translate-y-1">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="text-5xl">🔮</div>
-            <div>
-              <h3 class="text-2xl font-bold text-yellow-300 mb-1">GLYPH MEMORY</h3>
-              <p class="text-sm text-gray-400">Time Trial • Easy / Medium / Hard</p>
-            </div>
-          </div>
-          <div class="text-4xl text-fuchsia-400 group-hover:text-fuchsia-300 transition-transform group-hover:translate-x-2">▶</div>
-        </div>
-
-        <div class="mt-4 flex gap-2 sm:gap-4 text-sm">
-          <div class="flex-1 bg-fuchsia-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Best Time</div>
-            <div class="text-yellow-300 font-bold text-sm sm:text-lg truncate" id="glyph-best-time-card">--:--</div>
-          </div>
-          <div class="flex-1 bg-fuchsia-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Rank</div>
-            <div class="text-fuchsia-300 font-bold text-sm sm:text-lg" id="glyph-rank-card">#--</div>
-          </div>
-          <div class="flex-1 bg-fuchsia-800/20 p-2 sm:p-3 rounded-lg min-w-0">
-            <div class="text-gray-400 text-xs mb-1 truncate">Achieve</div>
-            <div class="text-purple-300 font-bold text-sm sm:text-lg" id="glyph-achievements-card">--/--</div>
-          </div>
-        </div>
-
-        <div class="mt-3 text-center">
-          <span class="inline-block px-3 py-1 bg-fuchsia-400/20 border border-fuchsia-400/50 rounded-full text-xs text-fuchsia-300 font-semibold">
-            🧠 All-Time Leaderboard • 3 Difficulties
-          </span>
-        </div>
-      </div>
-    </a>
-  </div>
-</section>
-
-<!-- 🔐 Login Prompt -->
-<div id="tetris-auth" class="text-center my-6 w-full max-w-2xl mx-auto">
-  <button onclick="loginAndReload()" class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-5 py-2 rounded-full shadow transition">
-    🔐 Login with Discord to Save Score
-  </button>
-</div>
-
-<!-- 🧀 Discord Login Button - MOVED TO TOP NAVIGATION AREA -->
-
-<!-- 🎮 Season Status Notification -->
-<div id="season6Active" class="max-w-6xl mx-auto bg-gradient-to-r from-blue-600/30 via-indigo-500/30 to-purple-600/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-blue-400/50 mt-6 relative z-10 border-2 border-blue-400/40">
-  <div class="flex items-center justify-center gap-3 mb-2">
-    <span class="text-2xl">⏸️</span>
-    <h3 class="text-lg font-bold text-blue-200">Season Transition in Progress</h3>
-    <span class="text-2xl">⏸️</span>
-  </div>
-  <div class="text-center">
-    <p class="text-sm text-blue-200 mb-2 font-semibold">Final leaderboard freeze until the new season fully unlocks.</p>
-    <p class="text-xs text-blue-100 mb-2 italic">Play early to claim the first live Season 10 positions.</p>
-    <div class="text-lg font-mono font-bold text-blue-300 mb-2 border-2 border-blue-300 inline-block px-4 py-1 rounded-full">
-      ⏸️ SEASON FREEZE ACTIVE 🎮
-    </div>
-    <p class="text-xs text-white mt-2 italic">Fresh competition and persistent Lab systems continue after reset. 🏆</p>
-  </div>
-</div>
-
-<!-- 🎮 Main Season Status Banner -->
-<div class="max-w-6xl mx-auto mt-10 mb-4">
-  <div class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white rounded-2xl p-6 shadow-2xl border-4 border-blue-400 animate-pulse">
-    <div class="text-center">
-      <div class="text-2xl font-extrabold mb-2">⏸️ SEASON TRANSITION ACTIVE ⏸️</div>
-      <div class="text-sm font-semibold mb-3">Leaderboards are freezing for the reset. Season 10 goes live at cutover.</div>
-      <div class="bg-gray-900 text-blue-300 inline-block px-4 py-2 rounded-full text-xs font-bold border-2 border-blue-300">
-        ⏸️ FINAL RANKINGS LOCKED • 🎮 SEASON 10 NEXT 🏆
-      </div>
-      <div class="text-xs mt-3 font-bold text-blue-100">Lab, Marketplace, and Staking remain part of the persistent ecosystem.</div>
-    </div>
-  </div>
-</div>
-
-<!-- 🏆 Leaderboard Section - FROZEN THEME (blue) for Season 10 -->
-<section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-blue-400/50 mt-2 relative z-10 border-2 border-blue-400/50">
-  <h3 id="leaderboard-title" class="text-center text-xl font-bold">🏆 Season 10 Leaderboard</h3>
-<div id="leaderboard-subtitle" class="text-center text-xs text-emerald-300 mb-4 font-semibold">
-  Fresh Season 10 competition is live across Tetris, Snake, Invaders, and Glyph.
-</div>
-  
-  <!-- 📊 Now 4 games: Tetris / Snake / Space Invaders / Glyph -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
-    <div>
-      <h4 class="text-center text-md font-semibold">🧀 Tetris Top Scores</h4>
-      <ul id="leaderboard-tetris-list" class="text-center"></ul>
-    </div>
-    <div>
-      <h4 class="text-center text-md font-semibold">🐍 Snake Top Scores</h4>
-      <ul id="leaderboard-snake-list" class="text-center"></ul>
-    </div>
-    <div>
-      <h4 class="text-center text-md font-semibold">🚀 Cheese Invaders Top Scores</h4>
-      <ul id="leaderboard-space-invaders-list" class="text-center"></ul>
-    </div>
-
-    <!-- 🔮 Glyph – 3 difficulty parts in one column -->
-    <div>
-      <h4 class="text-center text-md font-semibold mb-2">🔮 Glyph Top Scores</h4>
-
-      <div class="space-y-2 text-xs">
-        <div>
-          <div class="text-center font-semibold text-purple-300 mb-1">Easy</div>
-          <ul id="leaderboard-glyph-easy-list" class="text-center"></ul>
-        </div>
-        <div>
-          <div class="text-center font-semibold text-purple-300 mb-1">Medium</div>
-          <ul id="leaderboard-glyph-medium-list" class="text-center"></ul>
-        </div>
-        <div>
-          <div class="text-center font-semibold text-purple-300 mb-1">Hard</div>
-          <ul id="leaderboard-glyph-hard-list" class="text-center"></ul>
         </div>
       </div>
     </div>
   </div>
-</section>
-
-<!-- 🍩 Footer GENESIS 12.0 -->
-<footer class="text-center mt-16 text-xs text-yellow-600 relative z-10">
-  Powered by 🧀 Cheese Architect <b>12.0</b> · Genesis Protocol · Discord + Game + Wallet Sync Engine 🌍<br>
-  <span class="opacity-70">
-    Vault Synced | 2025 | Scroll-Safe for 100 Years of Cheese | 
-                    <a href="<?php echo $discord_url; ?>" class="underline text-pink-500 hover:text-pink-600">Join Discord</a>
-  </span>
-</footer>
-
-<!-- 🔑 Fallback Login Button - MOVED TO TOP FOR BETTER UX -->
-
-
-
-<div class="w-full flex justify-center mt-6">
-  <a href="/index.html"
-     class="bg-yellow-500 text-white px-5 py-2 rounded-full shadow hover:bg-yellow-600 text-sm sm:text-base text-center">
-    🧪 Back to the Lab
-  </a>
 </div>
-
-  
-  <!-- 🔑 Login / Sync -->
-  <!-- <a href="/profile.html" class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    🔑 Login / Sync Profile
-  </a> -->
-
-  <!-- 🧬 View Traits -->
-  <!-- <a href="#traits" class="bg-pink-500 text-white px-5 py-2 rounded-full shadow hover:bg-pink-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    �� View Traits
-  </a> -->
-
-  <!-- 🚪 Portals -->
-  <!-- <a href="#portals" class="bg-blue-500 text-white px-5 py-2 rounded-full shadow hover:bg-blue-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    🚪 Open Portals
-  </a> -->
-
-  <!-- 💰 Wallet -->
-  <!-- <a href="#wallet" class="bg-purple-500 text-white px-5 py-2 rounded-full shadow hover:bg-purple-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    💰 Manage Wallet
-  </a> -->
-</div>
-
-  <!-- 🌀 Cheese Portal to 3D Riddle Game -->
-<div class="mt-10 text-center">
-  <a href="/3d-riddle.html" class="group inline-block relative" title="🧀 3D Riddle Game portal is closed... for now.">
-    <div class="relative p-4 rounded-full bg-yellow-300/90 hover:bg-yellow-400 transition-all duration-300 shadow-2xl animate-pulse">
-      <img src="img/cheese-portal.png" alt="Enter 3D Riddle Game" class="w-24 h-24 sm:w-32 sm:h-32 mx-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-lg" />
-      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div class="text-xs bg-black/80 text-yellow-300 px-3 py-1 rounded-full shadow-md animate-pulse">
-          🧀 Portal Closed · Opening Soon!
-        </div>
-      </div>
-      
-<!-- 🔐 Dynamic Fetch Script logged in or not -->
-<!-- 👑 VIP Logic + Trophy Shelf (KEEP AS IS) -->
-<!-- 🔐 Dynamic Fetch Script logged in or not -->
-<!-- Patched profile.html by Cheese Architect 🧀✨ -->
-
-<!-- Patched profile.html with working fetch logic 🧠 -->
-<!-- Patched profile.html with working fetch logic 🧠 -->
 <script>
 const trophies = {
   "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
@@ -11085,22 +11203,584 @@ document.addEventListener('DOMContentLoaded', function() {
    * Scroll to chest section (called from Quick Access button)
    */
   function scrollToChestSection() {
-    const chestSection = document.getElementById('profile-chest-section');
-    if (chestSection) {
-      // Ensure section is visible (in case it's hidden)
-      chestSection.classList.remove('hidden');
-      
-      // Smooth scroll to chest section
-      chestSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      console.warn('⚠️ [PROFILE] Chest section not found');
+    const rewardSection = document.getElementById('profile-chest-section');
+    if (!rewardSection) {
+      console.warn('⚠️ [PROFILE] Reward Chamber section not found');
+      return;
     }
+
+    rewardSection.classList.remove('hidden');
+    rewardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ============================================================================
+  // 🎁 REWARD CHAMBER SYSTEM
+  // ============================================================================
+
+  const REWARD_CHAMBER_API = {
+    getBoxes: '/api/user/get-reward-boxes.php',
+    openBox: '/api/user/open-reward-box.php'
+  };
+
+  const rewardChamberState = {
+    hasLoaded: false,
+    isLoading: false,
+    isOpening: false,
+    useLegacyFallback: false,
+    availableDspoinc: 0,
+    userId: '',
+    isLoggedIn: false,
+    serverTimeUtc: '',
+    serverNowMs: 0,
+    fetchedAtMs: 0,
+    boxes: [],
+    countdownIntervalId: null
+  };
+
+  function getRewardChamberElements() {
+    return {
+      section: document.getElementById('profile-chest-section'),
+      grid: document.getElementById('profileRewardChamberGrid'),
+      loading: document.getElementById('profileRewardChamberLoading'),
+      error: document.getElementById('profileRewardChamberError'),
+      status: document.getElementById('profileRewardChamberStatus'),
+      balanceChip: document.getElementById('profileRewardChamberBalanceChip'),
+      serverTime: document.getElementById('profileRewardChamberServerTime'),
+      loginState: document.getElementById('profileRewardChamberLoginState'),
+      fallbackNote: document.getElementById('profileRewardChamberFallbackNote'),
+      legacyWrap: document.getElementById('profile-chest-legacy-fallback'),
+      modal: document.getElementById('profile-reward-modal'),
+      modalAmount: document.getElementById('profileRewardModalAmount'),
+      modalTitle: document.getElementById('profileRewardModalTitle'),
+      modalNote: document.getElementById('profileRewardModalNote')
+    };
+  }
+
+  function escapeRewardHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatRewardChamberNumber(value) {
+    const numeric = Number(value || 0);
+    return Number.isFinite(numeric) ? numeric.toLocaleString('en-US') : '0';
+  }
+
+  function formatRewardChamberServerTime(utcString) {
+    if (!utcString) {
+      return 'Server time unavailable';
+    }
+
+    const parsed = new Date(String(utcString).replace(' ', 'T') + 'Z');
+    if (Number.isNaN(parsed.getTime())) {
+      return `Server UTC: ${utcString}`;
+    }
+
+    return `Server UTC: ${parsed.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'UTC'
+    })}`;
+  }
+
+  function getRewardChamberApproxNowMs() {
+    if (!rewardChamberState.serverNowMs || !rewardChamberState.fetchedAtMs) {
+      return Date.now();
+    }
+
+    const elapsed = Date.now() - rewardChamberState.fetchedAtMs;
+    return rewardChamberState.serverNowMs + elapsed;
+  }
+
+  function formatRewardChamberRemainingTime(nextOpenAt) {
+    if (!nextOpenAt) {
+      return '';
+    }
+
+    const targetMs = new Date(String(nextOpenAt).replace(' ', 'T') + 'Z').getTime();
+    if (Number.isNaN(targetMs)) {
+      return '';
+    }
+
+    const diffMs = targetMs - getRewardChamberApproxNowMs();
+    if (diffMs <= 0) {
+      return 'Ready now';
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (days > 0) {
+      return `${days}d ${hours}h ${minutes}m`;
+    }
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    }
+
+    return `${seconds}s`;
+  }
+
+  function getRewardBoxThemeClass(box) {
+    const type = String(box?.type || box?.box_type || '').toLowerCase();
+    if (type.includes('free')) return 'box-type-free';
+    if (type.includes('premium')) return 'box-type-premium';
+    return 'box-type-random';
+  }
+
+  function getRewardBoxBadgeMarkup(box) {
+    const price = Number(box?.pricing?.price_dspoinc || 0);
+    if (price <= 0) {
+      return '<span class="profile-reward-box-badge free">FREE</span>';
+    }
+
+    if (price >= 2500) {
+      return `<span class="profile-reward-box-badge premium">${formatRewardChamberNumber(price)} DSPOINC</span>`;
+    }
+
+    return `<span class="profile-reward-box-badge paid">${formatRewardChamberNumber(price)} DSPOINC</span>`;
+  }
+
+  function getRewardBoxIcon(box) {
+    const boxId = Number(box?.identity?.id || box?.box_id || 0);
+    if (boxId === 1) return '🧀';
+    if (boxId === 2) return '🎲';
+    if (boxId === 3) return '👑';
+    return '🎁';
+  }
+
+  function getRewardBoxActionLabel(box) {
+    const boxId = Number(box?.identity?.id || box?.box_id || 0);
+    if (boxId === 1) {
+      return box?.is_disabled ? 'Unavailable' : 'Open Box';
+    }
+
+    if (boxId === 2) {
+      return 'Type 2 Soon';
+    }
+
+    return 'Premium Soon';
+  }
+
+  function getRewardBoxSummaryMarkup(box) {
+    const summary = box?.reward_summary || {};
+    const lines = [];
+
+    if (summary?.summary_text) {
+      lines.push(`<span>${escapeRewardHtml(summary.summary_text)}</span>`);
+    }
+
+    if (summary?.dspoinc_range_text) {
+      lines.push(`<span>${escapeRewardHtml(summary.dspoinc_range_text)}</span>`);
+    }
+
+    if (summary?.pool_counts_text) {
+      lines.push(`<span>${escapeRewardHtml(summary.pool_counts_text)}</span>`);
+    }
+
+    if (!lines.length) {
+      return '<div class="profile-reward-box-empty">Reward pool details will appear here once configured.</div>';
+    }
+
+    return `<div class="profile-reward-box-summary">${lines.join('')}</div>`;
+  }
+
+  function setRewardChamberFallbackEnabled(isEnabled, reason = '') {
+    const elements = getRewardChamberElements();
+    rewardChamberState.useLegacyFallback = isEnabled;
+
+    if (elements.legacyWrap) {
+      elements.legacyWrap.classList.toggle('hidden', !isEnabled);
+    }
+
+    if (elements.fallbackNote) {
+      elements.fallbackNote.classList.toggle('hidden', !isEnabled);
+      if (isEnabled && reason) {
+        elements.fallbackNote.textContent = reason;
+      }
+    }
+  }
+
+  function updateRewardChamberMeta() {
+    const elements = getRewardChamberElements();
+
+    if (elements.balanceChip) {
+      elements.balanceChip.textContent = `Available DSPOINC: ${formatRewardChamberNumber(rewardChamberState.availableDspoinc)}`;
+    }
+
+    if (elements.serverTime) {
+      elements.serverTime.textContent = formatRewardChamberServerTime(rewardChamberState.serverTimeUtc);
+    }
+
+    if (elements.loginState) {
+      elements.loginState.textContent = rewardChamberState.isLoggedIn
+        ? 'Discord session active'
+        : 'Discord login required';
+    }
+  }
+
+  function updateRewardChamberCountdowns() {
+    rewardChamberState.boxes.forEach((box) => {
+      const boxId = Number(box?.identity?.id || box?.box_id || 0);
+      if (!boxId) {
+        return;
+      }
+
+      const countdownEl = document.getElementById(`profileRewardCooldown-${boxId}`);
+      if (!countdownEl) {
+        return;
+      }
+
+      const nextOpenAt = box?.user_state?.next_open_at || null;
+      if (!nextOpenAt || !box?.is_disabled) {
+        countdownEl.textContent = '';
+        return;
+      }
+
+      const remaining = formatRewardChamberRemainingTime(nextOpenAt);
+      countdownEl.textContent = remaining ? `Cooldown: ${remaining}` : '';
+    });
+  }
+
+  function startRewardChamberCountdowns() {
+    if (rewardChamberState.countdownIntervalId) {
+      clearInterval(rewardChamberState.countdownIntervalId);
+    }
+
+    rewardChamberState.countdownIntervalId = window.setInterval(updateRewardChamberCountdowns, 1000);
+    updateRewardChamberCountdowns();
+  }
+
+  function renderRewardChamberBoxes() {
+    const elements = getRewardChamberElements();
+    if (!elements.grid) {
+      return;
+    }
+
+    if (!Array.isArray(rewardChamberState.boxes) || !rewardChamberState.boxes.length) {
+      elements.grid.innerHTML = '<div class="profile-reward-chamber-loading">No reward boxes are currently visible.</div>';
+      elements.grid.classList.remove('hidden');
+      return;
+    }
+
+    elements.grid.innerHTML = rewardChamberState.boxes.map((box) => {
+      const boxId = Number(box?.identity?.id || box?.box_id || 0);
+      const isLiveOpen = boxId === 1;
+      const isDisabled = Boolean(box?.is_disabled) || !isLiveOpen || rewardChamberState.isOpening;
+      const lastRewardAmount = box?.user_state?.last_reward_dspoinc_amount;
+      const lastRewardText = Number(lastRewardAmount) > 0
+        ? `<div class="profile-reward-box-last">Last reward: <strong>${formatRewardChamberNumber(lastRewardAmount)} DSPOINC</strong></div>`
+        : '';
+      const disabledText = box?.is_disabled && box?.disabled_reason
+        ? `<div class="profile-reward-box-disabled">${escapeRewardHtml(box.disabled_reason)}</div>`
+        : (!isLiveOpen ? '<div class="profile-reward-box-disabled">Backend implementation is queued for this box type.</div>' : '');
+      const actionLabel = getRewardBoxActionLabel(box);
+      const buttonClass = boxId === 3 ? 'button-claim' : (!isLiveOpen ? 'button-secondary' : '');
+      const cooldownValue = box?.user_state?.next_open_at || '';
+
+      return `
+        <article class="profile-reward-box ${getRewardBoxThemeClass(box)} ${box?.is_disabled ? 'disabled' : ''}" data-reward-box-id="${boxId}">
+          <div class="profile-reward-box-header">
+            <div>
+              <div class="profile-reward-box-title">${escapeRewardHtml(box?.identity?.name || box?.box_name || 'Reward Box')}</div>
+              <div class="profile-reward-box-meta">
+                ${getRewardBoxBadgeMarkup(box)}
+                <span class="profile-reward-box-pill">${escapeRewardHtml(box?.type || box?.box_type || 'reward_box')}</span>
+              </div>
+            </div>
+            <div class="profile-reward-box-icon">${getRewardBoxIcon(box)}</div>
+          </div>
+
+          <div class="profile-reward-box-body">
+            <div class="profile-reward-box-copy">${escapeRewardHtml(box?.identity?.description || box?.box_description || 'Reward details loading...')}</div>
+            ${getRewardBoxSummaryMarkup(box)}
+            ${lastRewardText}
+            <div id="profileRewardCooldown-${boxId}" class="profile-reward-box-cooldown" data-next-open-at="${escapeRewardHtml(cooldownValue)}"></div>
+            ${disabledText}
+          </div>
+
+          <div class="profile-reward-box-footer">
+            <div class="profile-reward-box-pill">Opened ${formatRewardChamberNumber(box?.user_state?.open_count || 0)} time(s)</div>
+            <button
+              type="button"
+              class="profile-reward-box-button ${buttonClass}"
+              onclick="handleRewardBoxAction(${boxId})"
+              ${isDisabled ? 'disabled' : ''}
+            >${escapeRewardHtml(actionLabel)}</button>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    elements.grid.classList.remove('hidden');
+    startRewardChamberCountdowns();
+  }
+
+  function applyRewardChamberPayload(data) {
+    rewardChamberState.hasLoaded = true;
+    rewardChamberState.userId = String(data?.user_id || '');
+    rewardChamberState.isLoggedIn = Boolean(data?.is_logged_in || rewardChamberState.userId);
+    rewardChamberState.availableDspoinc = Number(data?.available_dspoinc || 0);
+    rewardChamberState.serverTimeUtc = String(data?.server_time_utc || '');
+    rewardChamberState.serverNowMs = rewardChamberState.serverTimeUtc
+      ? new Date(String(rewardChamberState.serverTimeUtc).replace(' ', 'T') + 'Z').getTime()
+      : 0;
+    rewardChamberState.fetchedAtMs = Date.now();
+    rewardChamberState.boxes = Array.isArray(data?.boxes) ? data.boxes : [];
+
+    updateRewardChamberMeta();
+    renderRewardChamberBoxes();
+
+    const elements = getRewardChamberElements();
+    if (elements.status) {
+      elements.status.textContent = rewardChamberState.isLoggedIn
+        ? 'Reward Chamber synced. Box 1 is live and backend-authoritative.'
+        : 'Reward Chamber loaded. Login with Discord to open boxes.';
+    }
+  }
+
+  async function loadRewardChamber(forceRefresh = false) {
+    const elements = getRewardChamberElements();
+
+    if (rewardChamberState.isLoading) {
+      return;
+    }
+
+    if (!forceRefresh && rewardChamberState.hasLoaded && !rewardChamberState.useLegacyFallback) {
+      updateRewardChamberCountdowns();
+      return;
+    }
+
+    rewardChamberState.isLoading = true;
+    setRewardChamberFallbackEnabled(false);
+
+    if (elements.loading) {
+      elements.loading.classList.remove('hidden');
+      elements.loading.textContent = 'Loading reward boxes…';
+    }
+
+    if (elements.error) {
+      elements.error.classList.add('hidden');
+      elements.error.textContent = '';
+    }
+
+    if (elements.grid) {
+      elements.grid.classList.add('hidden');
+    }
+
+    if (elements.status) {
+      elements.status.textContent = 'Loading Reward Chamber…';
+    }
+
+    try {
+      const response = await fetch(REWARD_CHAMBER_API.getBoxes, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      const payload = await response.json();
+      if (!response.ok || !payload?.success || !payload?.data) {
+        throw new Error(payload?.error || `Reward Chamber GET failed with HTTP ${response.status}`);
+      }
+
+      applyRewardChamberPayload(payload.data);
+
+      if (elements.loading) {
+        elements.loading.classList.add('hidden');
+      }
+    } catch (error) {
+      console.error('❌ [REWARD CHAMBER] Failed to load boxes:', error);
+
+      if (elements.error) {
+        elements.error.classList.remove('hidden');
+        elements.error.textContent = `Reward Chamber could not be loaded: ${error.message}`;
+      }
+
+      if (elements.loading) {
+        elements.loading.classList.add('hidden');
+      }
+
+      if (elements.status) {
+        elements.status.textContent = 'Reward Chamber unavailable. Legacy chest fallback enabled.';
+      }
+
+      setRewardChamberFallbackEnabled(true, 'Reward Chamber API is unavailable right now. Falling back to the legacy profile chest.');
+      await updateChestStatusDisplay();
+    } finally {
+      rewardChamberState.isLoading = false;
+    }
+  }
+
+  function openRewardChamberModal(openResult) {
+    const elements = getRewardChamberElements();
+    if (!elements.modal) {
+      return;
+    }
+
+    const rewardAmount = Number(openResult?.reward_dspoinc_amount || 0);
+    const rewardType = String(openResult?.reward_type || '');
+    const rewardTitle = String(openResult?.reward_title || 'Reward Granted');
+    const deliveryPayload = openResult?.delivery_payload || {};
+
+    if (elements.modalAmount) {
+      if (rewardType === 'dspoinc') {
+        elements.modalAmount.textContent = `${formatRewardChamberNumber(rewardAmount)} DSPOINC`;
+      } else if (rewardType === 'store_item') {
+        const quantity = Number(deliveryPayload?.quantity || 1);
+        const itemName = String(deliveryPayload?.item_name || rewardTitle || 'Store Reward');
+        elements.modalAmount.textContent = `${quantity}x ${itemName}`;
+      } else if (rewardType === 'genetic_trait') {
+        const traitName = String(deliveryPayload?.display_title || rewardTitle || 'Genetic Reward');
+        elements.modalAmount.textContent = traitName;
+      } else if (rewardType === 'premium_claim') {
+        const claimId = Number(openResult?.claim_request_id || 0);
+        elements.modalAmount.textContent = claimId > 0 ? `Claim Request #${claimId}` : 'Manual Claim Created';
+      } else {
+        elements.modalAmount.textContent = rewardTitle || 'Reward Granted';
+      }
+    }
+
+    if (elements.modalTitle) {
+      elements.modalTitle.textContent = rewardTitle;
+    }
+
+    if (elements.modalNote) {
+      const nextOpenAt = openResult?.next_open_at ? formatRewardChamberRemainingTime(openResult.next_open_at) : '';
+      if (rewardType === 'premium_claim') {
+        elements.modalNote.textContent = nextOpenAt
+          ? `Your premium claim request was created and is waiting for manual review. Next open in ${nextOpenAt}.`
+          : 'Your premium claim request was created and is waiting for manual review.';
+      } else if (rewardType === 'store_item' || rewardType === 'genetic_trait') {
+        elements.modalNote.textContent = nextOpenAt
+          ? `The backend already delivered your reward. Next open in ${nextOpenAt}.`
+          : 'The backend already delivered your reward.';
+      } else {
+        elements.modalNote.textContent = nextOpenAt
+          ? `The backend already credited your balance. Next open in ${nextOpenAt}.`
+          : 'The backend already credited your balance.';
+      }
+    }
+
+    elements.modal.classList.add('active');
+    elements.modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeRewardChamberModal() {
+    const elements = getRewardChamberElements();
+    if (!elements.modal) {
+      return;
+    }
+
+    elements.modal.classList.remove('active');
+    elements.modal.setAttribute('aria-hidden', 'true');
+  }
+
+  async function openRewardBox(boxId) {
+    if (rewardChamberState.isOpening) {
+      return;
+    }
+
+    const numericBoxId = Number(boxId);
+    if (!Number.isFinite(numericBoxId) || numericBoxId < 1) {
+      return;
+    }
+
+    const elements = getRewardChamberElements();
+    rewardChamberState.isOpening = true;
+
+    if (elements.status) {
+      elements.status.textContent = 'Opening reward box…';
+    }
+
+    try {
+      const response = await fetch(REWARD_CHAMBER_API.openBox, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ box_id: numericBoxId })
+      });
+
+      const payload = await response.json();
+      if (!response.ok || !payload?.success || !payload?.data) {
+        throw new Error(payload?.error || `Reward Chamber POST failed with HTTP ${response.status}`);
+      }
+
+      const data = payload.data;
+      rewardChamberState.availableDspoinc = Number(data?.available_dspoinc || rewardChamberState.availableDspoinc || 0);
+      rewardChamberState.serverTimeUtc = String(data?.server_time_utc || rewardChamberState.serverTimeUtc || '');
+      rewardChamberState.serverNowMs = rewardChamberState.serverTimeUtc
+        ? new Date(String(rewardChamberState.serverTimeUtc).replace(' ', 'T') + 'Z').getTime()
+        : rewardChamberState.serverNowMs;
+      rewardChamberState.fetchedAtMs = Date.now();
+
+      if (data?.box) {
+        const nextBoxes = Array.isArray(rewardChamberState.boxes) ? [...rewardChamberState.boxes] : [];
+        const replaceIndex = nextBoxes.findIndex((box) => Number(box?.identity?.id || box?.box_id || 0) === numericBoxId);
+        if (replaceIndex >= 0) {
+          nextBoxes[replaceIndex] = data.box;
+        } else {
+          nextBoxes.push(data.box);
+        }
+        rewardChamberState.boxes = nextBoxes;
+      }
+
+      updateRewardChamberMeta();
+      renderRewardChamberBoxes();
+      openRewardChamberModal(data?.open_result || {});
+
+      if (elements.status) {
+        elements.status.textContent = data?.open_result?.reward_type === 'premium_claim' ? 'Premium claim request created successfully.' : 'Reward granted successfully.';
+      }
+    } catch (error) {
+      console.error('❌ [REWARD CHAMBER] Failed to open box:', error);
+      if (elements.status) {
+        elements.status.textContent = `Reward box failed: ${error.message}`;
+      }
+      alert(`Reward Chamber error: ${error.message}`);
+    } finally {
+      rewardChamberState.isOpening = false;
+      renderRewardChamberBoxes();
+    }
+  }
+
+  function handleRewardBoxAction(boxId) {
+    openRewardBox(boxId);
   }
 
   /**
    * Open profile chest and award DSPOINC reward
    */
   async function openProfileChest() {
+    if (!rewardChamberState.useLegacyFallback) {
+      await openRewardBox(1);
+      return;
+    }
+
+    await openProfileChestLegacy();
+  }
+
+  /**
+   * Open profile chest and award DSPOINC reward
+   */
+  async function openProfileChestLegacy() {
     // Prevent multiple clicks
     if (profileChestOpening) {
       return;
@@ -11518,6 +12198,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update status display
     await updateChestStatusDisplay();
+    await loadRewardChamber();
     
     // Listen for config changes from admin interface (cross-tab updates)
     window.addEventListener('storage', (e) => {
@@ -11539,6 +12220,24 @@ document.addEventListener('DOMContentLoaded', function() {
       // Update status display
       updateChestStatusDisplay();
     });
+  });
+
+
+  document.addEventListener('click', function(event) {
+    const modal = document.getElementById('profile-reward-modal');
+    if (!modal || !modal.classList.contains('active')) {
+      return;
+    }
+
+    if (event.target === modal) {
+      closeRewardChamberModal();
+    }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      closeRewardChamberModal();
+    }
   });
 
   // ❄️ CHRISTMAS SNOWFLAKE EFFECT
