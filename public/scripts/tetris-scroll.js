@@ -45,9 +45,11 @@
 
 // 🔧 MOBILE INITIALIZATION - Tetris-specific naming to avoid conflicts
 let isTetrisMobileDevice = false;
+const isTetrisLocalBypass = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
 
 // 🛑 Pause Logic — Global variable for touch controls
 let isTetrisPaused = false;
+let gameInterval = null;
 
 // 🏆 ROLE-BASED GAMEPLAY SYSTEM
 let userRoles = [];
@@ -354,8 +356,11 @@ window.tetrisStoreState = window.tetrisStoreState || {
   reactorEnabled: false
 };
 
-const TETRIS_HOLD_DELAY_BASE = 25;
-const TETRIS_HOLD_INTERVAL_BASE = 20;
+// 🎯 MOBILE CONTROL TUNING (SAFE VALUES)
+const TETRIS_HOLD_DELAY_BASE = 180;     // was 25 → prevents accidental hold
+const TETRIS_HOLD_INTERVAL_BASE = 80;   // was 20 → smoother drop
+const TETRIS_SWIPE_THRESHOLD = 40;      // was ~25 → avoids misreads
+const TETRIS_HARD_DROP_THRESHOLD = 90;  // NEW → clear intent required
 let tetrisHoldDelay = TETRIS_HOLD_DELAY_BASE;
 let tetrisHoldIntervalDuration = TETRIS_HOLD_INTERVAL_BASE;
 let reactorFirstClearPending = false;
@@ -385,13 +390,13 @@ applyTetrisStorePerks(window.tetrisStoreState);
 let tetrisTouchStartX = 0;
 let tetrisTouchStartY = 0;
 let tetrisTouchStartTime = 0;
-const TETRIS_SWIPE_THRESHOLD = 20; // Reduced for more sensitive control
 const TETRIS_SWIPE_TIME_THRESHOLD = 300; // Reduced for faster response
 const TETRIS_DOUBLE_TAP_THRESHOLD = 250; // Maximum time between taps for double tap
-const TETRIS_DOWN_SWIPE_THRESHOLD = 25; // Separate threshold for down swipes (more sensitive)
 let tetrisLastTapTime = 0;
 let tetrisLastMoveTime = 0; // Throttle rapid movements
 const TETRIS_MOVE_THROTTLE = 50; // Reduced throttle for more responsive control
+let tetrisHoldTimeout = null;
+let tetrisHoldInterval = null;
 
 // 🎮 Hold-to-drop functionality
 let tetrisIsHolding = false;
@@ -416,6 +421,14 @@ function resetTouchControlTimers() {
 }
 
 function cleanupTouchControls() {
+  if (tetrisHoldTimeout) {
+    clearTimeout(tetrisHoldTimeout);
+    tetrisHoldTimeout = null;
+  }
+  if (tetrisHoldInterval) {
+    clearInterval(tetrisHoldInterval);
+    tetrisHoldInterval = null;
+  }
   if (dropHoldTimeout) {
     clearTimeout(dropHoldTimeout);
     dropHoldTimeout = null;
@@ -584,7 +597,11 @@ function initTouchControls(canvas) {
   canvas.addEventListener("touchend", canvas.tetrisTouchEnd, { passive: false });
   
   console.log('📱 Touch controls initialized successfully');
-  console.log('📱 Canvas touch events after init:', canvas.ontouchstart, canvas.ontouchmove, canvas.ontouchend);
+  console.log('📱 Canvas touch listeners after init:', {
+    touchstart: !!canvas.tetrisTouchStart,
+    touchmove: !!canvas.tetrisTouchMove,
+    touchend: !!canvas.tetrisTouchEnd
+  });
 }
 
 function handleTouchStart(e) {
@@ -600,25 +617,33 @@ function handleTouchStart(e) {
   e.stopPropagation();
   
   const touch = e.touches[0];
-  
-  // ✅ FIX: Always reset touch position for new gesture
+
   tetrisTouchStartX = touch.clientX;
   tetrisTouchStartY = touch.clientY;
   tetrisTouchStartTime = Date.now();
-  tetrisLastMoveTime = 0; // Reset throttle timer for new gesture
-  
-  console.log('📱 Touch start position:', tetrisTouchStartX, tetrisTouchStartY);
-  console.log('📱 Touch state reset for new gesture');
 
-  // 🎮 Start hold-to-drop timer (will be cancelled if user moves finger significantly)
-  console.log('📱 Touch start - starting hold timer with delay:', tetrisHoldDelay, 'ms');
-  tetrisRotationTimer = setTimeout(() => {
-    // Check if touch is still at the same position (no movement)
-    const timeSinceStart = Date.now() - tetrisTouchStartTime;
-    if (timeSinceStart >= tetrisHoldDelay && !tetrisIsHolding) {
-      console.log('📱 Long press detected - starting hold-to-drop');
-      startTetrisHold();
-    }
+  clearTimeout(tetrisHoldTimeout);
+  clearInterval(tetrisHoldInterval);
+
+  // 🧠 DELAYED HOLD — prevents accidental drop
+  tetrisHoldTimeout = setTimeout(() => {
+    tetrisHoldInterval = setInterval(() => {
+      if (
+        !isTetrisPaused &&
+        typeof window.tetrisCollide === 'function' &&
+        window.tetrisCurrent &&
+        window.tetrisCurrent.shape
+      ) {
+        window.tetrisCurrent.row++;
+        if (window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col)) {
+          window.tetrisCurrent.row--;
+          drop();
+        }
+        if (typeof window.tetrisDraw === 'function') {
+          window.tetrisDraw();
+        }
+      }
+    }, tetrisHoldIntervalDuration);
   }, tetrisHoldDelay);
 }
 
@@ -635,117 +660,54 @@ function handleTouchMove(e) {
   const touch = e.touches[0];
   const deltaX = touch.clientX - tetrisTouchStartX;
   const deltaY = touch.clientY - tetrisTouchStartY;
-  const touchTime = Date.now() - tetrisTouchStartTime;
-  const currentTime = Date.now();
-  
-  // 🎮 Only cancel hold-to-drop if user moves finger significantly (not just small movements)
-  if (tetrisIsHolding && (Math.abs(deltaX) > 20 || Math.abs(deltaY) > 20)) {
-    console.log('📱 Significant finger movement detected - cancelling hold-to-drop');
-    stopTetrisHold();
-  }
-  
-  if (tetrisRotationTimer) {
-    console.log('📱 Finger moved - cancelling rotation timer');
-    clearTimeout(tetrisRotationTimer);
-    tetrisRotationTimer = null;
-  }
-  
-  // ✅ FIX: Throttle rapid movements to prevent too-fast control
-  if (currentTime - tetrisLastMoveTime < TETRIS_MOVE_THROTTLE) {
-    return; // Skip this move to prevent rapid-fire movements
-  }
-  
-  console.log('📱 Touch move delta:', deltaX, deltaY, 'time:', touchTime);
 
-  // Horizontal movement (left/right) - OPTIMIZED for mobile responsiveness
-  if (Math.abs(deltaX) > TETRIS_SWIPE_THRESHOLD && Math.abs(deltaY) < TETRIS_SWIPE_THRESHOLD && touchTime < TETRIS_SWIPE_TIME_THRESHOLD) {
-    if (deltaX > 0) {
-      console.log('📱 Swipe right detected');
-      if (typeof window.tetrisCollide === 'function' && typeof window.tetrisCurrent !== 'undefined' && window.tetrisCurrent.shape) {
-        console.log('📱 DEBUG: Current piece position before move:', window.tetrisCurrent.row, window.tetrisCurrent.col);
-        console.log('📱 DEBUG: Checking collision at:', window.tetrisCurrent.row, window.tetrisCurrent.col + 1);
-        const collisionResult = window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col + 1);
-        console.log('📱 DEBUG: Collision result:', collisionResult);
-        if (!collisionResult) {
-          window.tetrisCurrent.col++;
-          console.log('📱 Piece moved right to column:', window.tetrisCurrent.col);
-          window.tetrisDraw();
-          tetrisLastMoveTime = currentTime; // Update throttle timer
-          // Reset touch position for next movement
-          tetrisTouchStartX = touch.clientX;
-        } else {
-          console.log('📱 DEBUG: Movement blocked by collision');
-        }
-      } else {
-        console.log('📱 DEBUG: Game functions not available:', typeof window.tetrisCollide, typeof window.tetrisCurrent);
-      }
-    } else {
-      console.log('📱 Swipe left detected');
-      if (typeof window.tetrisCollide === 'function' && typeof window.tetrisCurrent !== 'undefined' && window.tetrisCurrent.shape) {
-        console.log('📱 DEBUG: Current piece position before move:', window.tetrisCurrent.row, window.tetrisCurrent.col);
-        console.log('📱 DEBUG: Checking collision at:', window.tetrisCurrent.row, window.tetrisCurrent.col - 1);
-        const collisionResult = window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col - 1);
-        console.log('📱 DEBUG: Collision result:', collisionResult);
-        if (!collisionResult) {
-          window.tetrisCurrent.col--;
-          console.log('📱 Piece moved left to column:', window.tetrisCurrent.col);
-          window.tetrisDraw();
-          tetrisLastMoveTime = currentTime; // Update throttle timer
-          // Reset touch position for next movement
-          tetrisTouchStartX = touch.clientX;
-        } else {
-          console.log('📱 DEBUG: Movement blocked by collision');
-        }
-      } else {
-        console.log('📱 DEBUG: Game functions not available:', typeof window.tetrisCollide, typeof window.tetrisCurrent);
-      }
+  clearTimeout(tetrisHoldTimeout);
+  clearInterval(tetrisHoldInterval);
+
+  // 🎯 HORIZONTAL MOVE
+  if (
+    Math.abs(deltaX) > TETRIS_SWIPE_THRESHOLD &&
+    typeof window.tetrisCollide === 'function' &&
+    window.tetrisCurrent &&
+    window.tetrisCurrent.shape
+  ) {
+    window.tetrisCurrent.col += deltaX > 0 ? 1 : -1;
+    if (window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col)) {
+      window.tetrisCurrent.col += deltaX > 0 ? -1 : 1;
+    }
+    tetrisTouchStartX = touch.clientX;
+    if (typeof window.tetrisDraw === 'function') {
+      window.tetrisDraw();
     }
   }
 
-  // Vertical movement (quick drop) - OPTIMIZED for better mobile control
-  if (deltaY > TETRIS_DOWN_SWIPE_THRESHOLD && Math.abs(deltaX) < TETRIS_SWIPE_THRESHOLD && touchTime < TETRIS_SWIPE_TIME_THRESHOLD) {
-    console.log('📱 Swipe down detected - quick drop');
-    if (typeof window.tetrisCollide === 'function' && typeof window.tetrisCurrent !== 'undefined' && window.tetrisCurrent.shape) {
-      // Quick drop: move piece down as far as possible
-      let dropDistance = 0;
-      while (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
-        window.tetrisCurrent.row++;
-        dropDistance++;
-      }
-      console.log('📱 Piece dropped', dropDistance, 'rows to position:', window.tetrisCurrent.row);
-      window.tetrisDraw();
-      tetrisLastMoveTime = currentTime; // Update throttle timer
-      // Reset touch position for next gesture
-      tetrisTouchStartY = touch.clientY;
+  // ⬇️ HARD DROP (clear intent only)
+  if (
+    deltaY > TETRIS_HARD_DROP_THRESHOLD &&
+    typeof window.tetrisCollide === 'function' &&
+    window.tetrisCurrent &&
+    window.tetrisCurrent.shape
+  ) {
+    while (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
+      window.tetrisCurrent.row++;
     }
+    drop();
+    tetrisTouchStartY = touch.clientY;
   }
-  
-  // Gentle downward movement (single step down) - for more precise control
-  else if (deltaY > 15 && deltaY < TETRIS_DOWN_SWIPE_THRESHOLD && Math.abs(deltaX) < 20 && touchTime < 200) {
-    console.log('📱 Gentle down movement detected');
-    if (typeof window.tetrisCollide === 'function' && typeof window.tetrisCurrent !== 'undefined' && window.tetrisCurrent.shape) {
-      if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
-        window.tetrisCurrent.row++;
-        console.log('📱 Piece moved down one step to row:', window.tetrisCurrent.row);
-        window.tetrisDraw();
-        tetrisLastMoveTime = currentTime;
-        // Reset touch position for next movement
-        tetrisTouchStartY = touch.clientY;
-      }
+  // ⬇️ SOFT DROP
+  else if (
+    deltaY > TETRIS_SWIPE_THRESHOLD &&
+    typeof window.tetrisCollide === 'function' &&
+    window.tetrisCurrent &&
+    window.tetrisCurrent.shape
+  ) {
+    window.tetrisCurrent.row++;
+    if (window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col)) {
+      window.tetrisCurrent.row--;
     }
-  }
-  
-  // 🎮 Swipe up for rotation - more intuitive for mobile
-  else if (deltaY < -TETRIS_SWIPE_THRESHOLD && Math.abs(deltaX) < TETRIS_SWIPE_THRESHOLD && touchTime < TETRIS_SWIPE_TIME_THRESHOLD) {
-    console.log('📱 Swipe up detected - rotating piece');
-    if (typeof window.tetrisRotatePiece === 'function') {
-      console.log('📱 DEBUG: Current piece position before rotation:', window.tetrisCurrent.row, window.tetrisCurrent.col);
-      window.tetrisRotatePiece();
-      console.log('📱 DEBUG: Piece rotated successfully');
+    tetrisTouchStartY = touch.clientY;
+    if (typeof window.tetrisDraw === 'function') {
       window.tetrisDraw();
-      tetrisLastMoveTime = currentTime;
-    } else {
-      console.log('📱 DEBUG: Rotation function not available');
     }
   }
 }
@@ -754,6 +716,9 @@ function handleTouchEnd(e) {
   console.log('📱 Touch end detected on Tetris canvas');
   e.preventDefault();
   e.stopPropagation();
+
+  clearTimeout(tetrisHoldTimeout);
+  clearInterval(tetrisHoldInterval);
   
   // 🎮 Stop hold-to-drop when user lifts finger
   if (tetrisIsHolding) {
@@ -1091,6 +1056,12 @@ async function startTetris() {
   const canvas = document.getElementById("tetris-canvas");
   const context = canvas.getContext("2d");
   tetrisScoreDisplay = document.getElementById("tetris-score");
+
+  // 🔄 HARD RESET INPUT STATE
+  isTetrisPaused = false;
+  clearTimeout(tetrisHoldTimeout);
+  clearInterval(tetrisHoldInterval);
+  clearInterval(gameInterval);
   
   // 🏆 Fetch user roles for role-based gameplay (CRITICAL: await this!)
   await fetchTetrisUserRoles();
@@ -2028,9 +1999,65 @@ function showBombDefusedPopup() {
 }
 
 // 🛑 Pause Logic — now mobile compatible
-let gameInterval;
 
 const pauseBtn = document.getElementById("pause-tetris-btn");
+
+function toggleTetrisPause() {
+  isTetrisPaused = !isTetrisPaused;
+
+  // 🧼 ALWAYS CLEAN INPUT STATE
+  clearTimeout(tetrisHoldTimeout);
+  clearInterval(tetrisHoldInterval);
+
+  if (isTetrisPaused) {
+    // 📱 PAUSED: Allow screen swipe (like Snake!)
+    document.body.style.overflow = "";
+    console.log('📱 Game PAUSED - Screen swipe ENABLED (user can scroll)');
+    clearInterval(gameInterval);
+
+    // 🚨 BUG #263 FIX: Re-enable all page links/buttons when paused
+    document.querySelectorAll('a, button').forEach(el => {
+      el.style.pointerEvents = '';
+      el.style.opacity = '';
+    });
+    console.log('🔓 Page links/buttons re-enabled during Tetris pause');
+  } else {
+    // 📱 RESUMED: Lock screen swipe again (like Snake!)
+    document.body.style.overflow = "hidden";
+    console.log('📱 Game RESUMED - Screen swipe LOCKED (no scrolling)');
+    clearInterval(gameInterval); // always reset interval
+    gameInterval = setInterval(drop, dropInterval);
+    drop(); // redraw immediately
+
+    // 🚨 BUG #263 FIX: Disable all page links/buttons during active gameplay (except modal buttons)
+    document.querySelectorAll('a, button').forEach(el => {
+      // Skip game control buttons (but NOT guide button!)
+      if (el.id && el.id.includes('tetris') && !el.id.includes('guide')) {
+        return; // Keep game controls enabled (pause, start, etc.)
+      }
+      // Skip buttons inside modals
+      const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
+      if (parentModal) {
+        return; // Keep modal buttons enabled
+      }
+      // Skip if button has onclick with game functions
+      if (el.onclick && (el.textContent.includes('Play Again') || el.textContent.includes('Restart'))) {
+        return; // Keep modal action buttons enabled
+      }
+      // Disable everything else (guide button, page links, etc.)
+      el.style.pointerEvents = 'none';
+      el.style.opacity = '0.5';
+    });
+    console.log('🔒 Page links/buttons disabled during Tetris gameplay (guide button blocked)');
+  }
+
+  if (pauseBtn) {
+    pauseBtn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
+  }
+
+  console.log("⏸️ Tetris paused:", isTetrisPaused);
+}
+
 if (pauseBtn) {
   pauseBtn.style.padding = "12px 24px";
   pauseBtn.style.fontSize = "18px";
@@ -2038,51 +2065,7 @@ if (pauseBtn) {
 
   const pauseHandler = (e) => {
     e.preventDefault();
-
-    isTetrisPaused = !isTetrisPaused;
-    pauseBtn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
-
-    if (isTetrisPaused) {
-      // 📱 PAUSED: Allow screen swipe (like Snake!)
-      document.body.style.overflow = "";
-      console.log('📱 Game PAUSED - Screen swipe ENABLED (user can scroll)');
-      clearInterval(gameInterval);
-      
-      // 🚨 BUG #263 FIX: Re-enable all page links/buttons when paused
-      document.querySelectorAll('a, button').forEach(el => {
-        el.style.pointerEvents = '';
-        el.style.opacity = '';
-      });
-      console.log('🔓 Page links/buttons re-enabled during Tetris pause');
-    } else {
-      // 📱 RESUMED: Lock screen swipe again (like Snake!)
-      document.body.style.overflow = "hidden";
-      console.log('📱 Game RESUMED - Screen swipe LOCKED (no scrolling)');
-      clearInterval(gameInterval); // always reset interval
-      gameInterval = setInterval(drop, dropInterval);
-      drop(); // redraw immediately
-      
-      // 🚨 BUG #263 FIX: Disable all page links/buttons during active gameplay (except modal buttons)
-      document.querySelectorAll('a, button').forEach(el => {
-        // Skip game control buttons (but NOT guide button!)
-        if (el.id && el.id.includes('tetris') && !el.id.includes('guide')) {
-          return; // Keep game controls enabled (pause, start, etc.)
-        }
-        // Skip buttons inside modals
-        const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
-        if (parentModal) {
-          return; // Keep modal buttons enabled
-        }
-        // Skip if button has onclick with game functions
-        if (el.onclick && (el.textContent.includes('Play Again') || el.textContent.includes('Restart'))) {
-          return; // Keep modal action buttons enabled
-        }
-        // Disable everything else (guide button, page links, etc.)
-        el.style.pointerEvents = 'none';
-        el.style.opacity = '0.5';
-      });
-      console.log('🔒 Page links/buttons disabled during Tetris gameplay (guide button blocked)');
-    }
+    toggleTetrisPause();
   };
 
   pauseBtn.addEventListener("click", pauseHandler);
@@ -2393,7 +2376,11 @@ if (collide(current.shape, current.row, current.col)) {
     });
     // 🚨 FIX: Save achievements to database after game ends (without popups)
     // This ensures achievements are saved even if not triggered during gameplay
-    saveAchievementsToDatabase(discordId, finalScore, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears);
+    if (!isTetrisLocalBypass) {
+      saveAchievementsToDatabase(discordId, finalScore, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears);
+    } else {
+      console.log('🏠 Local bypass active: skipping achievement DB writes');
+    }
 
     // 💾 Save score to database
     // 🔧 FIX: Send DSPOINC score directly (frontend already calculated it)
@@ -2414,40 +2401,44 @@ if (collide(current.shape, current.row, current.col)) {
 
     console.log(`🔗 API URL: ${apiUrl}`);
 
-    fetch(apiUrl, {
-          method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("✅ Score saved successfully:", data);
-            // ✅ Force leaderboard refresh after short delay
-            setTimeout(() => {
-              if (document.getElementById("leaderboard-list")) {
-            // 🌍 Environment-aware API endpoint for leaderboard (use relative path)
-            const leaderboardUrl = `/api/dev/get-leaderboard.php?t=${Date.now()}`;
-            console.log(`🔗 Leaderboard API URL: ${leaderboardUrl}`);
-
-            fetch(leaderboardUrl)
-              .then((response) => response.json())
-              .then((data) => {
-                console.log("✅ Leaderboard refreshed:", data);
-                if (typeof loadCombinedLeaderboards === "function") {
-                  loadCombinedLeaderboards();
-                }
-              })
-              .catch((error) => {
-                console.error("❌ Leaderboard refresh failed:", error);
-              });
-          }
-        }, 1000);
+    if (isTetrisLocalBypass) {
+      console.log('🏠 Local bypass active: skipping score API save/leaderboard refresh');
+    } else {
+      fetch(apiUrl, {
+            method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       })
-      .catch((error) => {
-        console.error("❌ Score save failed:", error);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("✅ Score saved successfully:", data);
+              // ✅ Force leaderboard refresh after short delay
+              setTimeout(() => {
+                if (document.getElementById("leaderboard-list")) {
+              // 🌍 Environment-aware API endpoint for leaderboard (use relative path)
+              const leaderboardUrl = `/api/dev/get-leaderboard.php?t=${Date.now()}`;
+              console.log(`🔗 Leaderboard API URL: ${leaderboardUrl}`);
+
+              fetch(leaderboardUrl)
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log("✅ Leaderboard refreshed:", data);
+                  if (typeof loadCombinedLeaderboards === "function") {
+                    loadCombinedLeaderboards();
+                  }
+                })
+                .catch((error) => {
+                  console.error("❌ Leaderboard refresh failed:", error);
+                });
+            }
+          }, 1000);
+        })
+        .catch((error) => {
+          console.error("❌ Score save failed:", error);
+        });
+    }
   }
 
   // Touch controls setup
@@ -2576,6 +2567,10 @@ if (collide(current.shape, current.row, current.col)) {
   
   // 🏆 Save Single Achievement to Database (No Popup)
   function saveAchievementToDatabase(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+    if (isTetrisLocalBypass) {
+      return;
+    }
+
     // Environment-aware API endpoint
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
     const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
@@ -2635,6 +2630,10 @@ if (collide(current.shape, current.row, current.col)) {
   
   // 🏆 Check if Achievement Already Unlocked (Inside Game Scope)
   function checkAndUnlockAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn) {
+    if (isTetrisLocalBypass) {
+      return;
+    }
+
     // Environment-aware API endpoint
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
     const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
@@ -2880,7 +2879,7 @@ if (collide(current.shape, current.row, current.col)) {
   tetrisTouchRecoveryTimeout = setTimeout(() => {
     console.log('📱 Checking Tetris touch controls after delay...');
     const tetrisCanvas = document.getElementById('tetris-canvas');
-    if (tetrisCanvas && tetrisCanvas.ontouchstart === null) {
+    if (tetrisCanvas && !tetrisCanvas.tetrisTouchStart) {
       console.log('📱 Tetris touch controls lost - re-initializing...');
       initTouchControls(tetrisCanvas);
     }
@@ -2889,7 +2888,7 @@ if (collide(current.shape, current.row, current.col)) {
   // 🔧 MOBILE FIX: Continuous touch control monitoring
   tetrisTouchMonitorInterval = setInterval(() => {
     const tetrisCanvas = document.getElementById('tetris-canvas');
-    if (tetrisCanvas && tetrisCanvas.ontouchstart === null) {
+    if (tetrisCanvas && !tetrisCanvas.tetrisTouchStart) {
       console.log('📱 Tetris touch controls lost - continuous recovery...');
       initTouchControls(tetrisCanvas);
     }
@@ -2975,7 +2974,11 @@ window.testMobileTetris = function() {
     // Test touch events
     const canvas = document.getElementById('tetris-canvas');
     if (canvas) {
-      console.log('📱 Canvas touch events:', canvas.ontouchstart, canvas.ontouchmove, canvas.ontouchend);
+      console.log('📱 Canvas touch listeners:', {
+        touchstart: !!canvas.tetrisTouchStart,
+        touchmove: !!canvas.tetrisTouchMove,
+        touchend: !!canvas.tetrisTouchEnd
+      });
     }
   } else {
     console.log('🖥️ Not a mobile device');
@@ -2995,9 +2998,9 @@ window.reinitializeTetrisTouch = function() {
     setTimeout(() => {
       console.log('📱 Touch event test:', {
         canvas: !!canvas,
-        touchstart: canvas.ontouchstart !== null,
-        touchmove: canvas.ontouchmove !== null,
-        touchend: canvas.ontouchend !== null,
+        touchstart: !!canvas.tetrisTouchStart,
+        touchmove: !!canvas.tetrisTouchMove,
+        touchend: !!canvas.tetrisTouchEnd,
         storedListeners: {
           touchstart: !!canvas.tetrisTouchStart,
           touchmove: !!canvas.tetrisTouchMove,

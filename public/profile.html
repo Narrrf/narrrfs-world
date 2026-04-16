@@ -3005,6 +3005,169 @@ require_once 'discord-invite.php';
     padding: 0.82rem 0.9rem;
   }
 }
+.lab-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10030;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.lab-modal-overlay.hidden {
+  display: none;
+}
+
+.lab-modal-card {
+  width: min(100%, 520px);
+  border-radius: 24px;
+  border: 1px solid rgba(250, 204, 21, 0.28);
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(34, 211, 238, 0.08) inset,
+    0 0 30px rgba(250, 204, 21, 0.12);
+  overflow: hidden;
+  animation: labModalScaleIn 0.2s ease-out;
+}
+
+.lab-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.08), rgba(34, 211, 238, 0.06));
+}
+
+.lab-modal-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.22), rgba(251, 146, 60, 0.2));
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  box-shadow: 0 8px 24px rgba(250, 204, 21, 0.12);
+}
+
+.lab-modal-title-wrap {
+  min-width: 0;
+}
+
+.lab-modal-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #67e8f9;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.lab-modal-title {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.lab-modal-body {
+  padding: 20px 22px 12px;
+}
+
+.lab-modal-message {
+  margin: 0 0 16px 0;
+  color: #e2e8f0;
+  font-size: 15px;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+.lab-modal-highlight {
+  border: 1px solid rgba(250, 204, 21, 0.2);
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.1), rgba(15, 23, 42, 0.15));
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.lab-modal-highlight-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #facc15;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.lab-modal-highlight-value {
+  color: #f8fafc;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.lab-modal-note {
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.lab-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 22px 22px;
+}
+
+.lab-modal-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.lab-modal-btn:hover {
+  transform: translateY(-1px);
+}
+
+.lab-modal-btn-secondary {
+  color: #e2e8f0;
+  background: linear-gradient(180deg, rgba(51, 65, 85, 0.95), rgba(30, 41, 59, 0.95));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.lab-modal-btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.26);
+}
+
+.lab-modal-btn-danger {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.24);
+}
+
+@keyframes labModalScaleIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 </style>
 </head>
 
@@ -3088,6 +3251,59 @@ require_once 'discord-invite.php';
     <p class="text-sm md:text-base text-blue-100 mt-4 italic font-semibold">
       🔐 Secure Discord OAuth2 Login • Required to play games and earn DSPOINC
     </p>
+  </div>
+</div>
+
+<!-- 🎮 QUICK GAME ACCESS - Top Navigation -->
+<div id="game-section" class="quick-access-bar">
+  <div class="quick-access-bar-inner">
+    <div class="quick-access-heading">
+      <span>🎮 QUICK ACCESS TO GAMES 🎮</span>
+    </div>
+
+    <div class="quick-access-grid">
+      <!-- 🧩 Tetris -->
+      <a href="tetris.html" class="quick-access-card quick-access-card--tetris group">
+        <div class="quick-access-card-icon group-hover:animate-bounce">🧩</div>
+        <h3 class="quick-access-card-title">Tetris</h3>
+        <p class="quick-access-card-copy">Block puzzle!</p>
+      </a>
+
+      <!-- 🐍 Snake -->
+      <a href="snake.html" class="quick-access-card quick-access-card--snake group">
+        <div class="quick-access-card-icon group-hover:animate-bounce">🐍</div>
+        <h3 class="quick-access-card-title">Snake</h3>
+        <p class="quick-access-card-copy">Eat cheese!</p>
+      </a>
+
+      <!-- 👾 Space Invaders -->
+      <a href="space-cheese-invaders.html" class="quick-access-card quick-access-card--invaders group">
+        <div class="quick-access-card-icon group-hover:animate-bounce">👾</div>
+        <h3 class="quick-access-card-title">Invaders</h3>
+        <p class="quick-access-card-copy">Defend cheese!</p>
+      </a>
+
+      <!-- 🔮 Glyph -->
+      <a href="https://narrrfs.world/glyph/glyph.html" class="quick-access-card quick-access-card--glyph group">
+        <div class="quick-access-card-icon group-hover:animate-bounce">🔮</div>
+        <h3 class="quick-access-card-title">Glyph</h3>
+        <p class="quick-access-card-copy">Decode!</p>
+      </a>
+
+      <!-- 🎁 Lootbox -->
+      <button type="button" onclick="scrollToChestSection()" class="quick-access-card quick-access-card--lootbox group">
+        <img src="img/chests/chest-closed.png" alt="Lootbox" class="group-hover:scale-110 transition-transform duration-300">
+        <h3 class="quick-access-card-title">Lootbox</h3>
+        <p class="quick-access-card-copy">Open chest!</p>
+      </button>
+
+      <!-- 🎯 Bingo -->
+      <a href="Bingo.html" class="quick-access-card quick-access-card--bingo group" id="quick-access-bingo-card">
+        <div class="quick-access-card-icon group-hover:animate-bounce">🎯</div>
+        <h3 class="quick-access-card-title">Bingo</h3>
+        <p class="quick-access-card-copy" id="quick-access-bingo-copy">Weekly event!</p>
+      </a>
+    </div>
   </div>
 </div>
 
@@ -3275,58 +3491,7 @@ require_once 'discord-invite.php';
   </div>
 </section>
 
-<!-- 🎮 QUICK GAME ACCESS - Top Navigation -->
-<div id="game-section" class="quick-access-bar">
-  <div class="quick-access-bar-inner">
-    <div class="quick-access-heading">
-      <span>🎮 QUICK ACCESS TO GAMES 🎮</span>
-    </div>
 
-    <div class="quick-access-grid">
-      <!-- 🧩 Tetris -->
-      <a href="tetris.html" class="quick-access-card quick-access-card--tetris group">
-        <div class="quick-access-card-icon group-hover:animate-bounce">🧩</div>
-        <h3 class="quick-access-card-title">Tetris</h3>
-        <p class="quick-access-card-copy">Block puzzle!</p>
-      </a>
-
-      <!-- 🐍 Snake -->
-      <a href="snake.html" class="quick-access-card quick-access-card--snake group">
-        <div class="quick-access-card-icon group-hover:animate-bounce">🐍</div>
-        <h3 class="quick-access-card-title">Snake</h3>
-        <p class="quick-access-card-copy">Eat cheese!</p>
-      </a>
-
-      <!-- 👾 Space Invaders -->
-      <a href="space-cheese-invaders.html" class="quick-access-card quick-access-card--invaders group">
-        <div class="quick-access-card-icon group-hover:animate-bounce">👾</div>
-        <h3 class="quick-access-card-title">Invaders</h3>
-        <p class="quick-access-card-copy">Defend cheese!</p>
-      </a>
-
-      <!-- 🔮 Glyph -->
-      <a href="https://narrrfs.world/glyph/glyph.html" class="quick-access-card quick-access-card--glyph group">
-        <div class="quick-access-card-icon group-hover:animate-bounce">🔮</div>
-        <h3 class="quick-access-card-title">Glyph</h3>
-        <p class="quick-access-card-copy">Decode!</p>
-      </a>
-
-      <!-- 🎁 Lootbox -->
-      <button type="button" onclick="scrollToChestSection()" class="quick-access-card quick-access-card--lootbox group">
-        <img src="img/chests/chest-closed.png" alt="Lootbox" class="group-hover:scale-110 transition-transform duration-300">
-        <h3 class="quick-access-card-title">Lootbox</h3>
-        <p class="quick-access-card-copy">Open chest!</p>
-      </button>
-
-      <!-- 🎯 Bingo -->
-      <a href="Bingo.html" class="quick-access-card quick-access-card--bingo group" id="quick-access-bingo-card">
-        <div class="quick-access-card-icon group-hover:animate-bounce">🎯</div>
-        <h3 class="quick-access-card-title">Bingo</h3>
-        <p class="quick-access-card-copy" id="quick-access-bingo-copy">Weekly event!</p>
-      </a>
-    </div>
-  </div>
-</div>
 
 <!-- 🎁 PROFILE CHEST LOOTBOX SECTION -->
 <div id="profile-chest-section" class="max-w-7xl w-full mx-auto px-4 mt-6 mb-8 relative z-10">
@@ -3385,6 +3550,38 @@ require_once 'discord-invite.php';
         </div>
       </div>
     </div>
+
+    <div id="profile-reward-confirm-modal" class="lab-modal-overlay hidden" aria-hidden="true">
+  <div class="lab-modal-card">
+    <div class="lab-modal-header">
+      <div class="lab-modal-icon">🎁</div>
+      <div class="lab-modal-title-wrap">
+        <div class="lab-modal-eyebrow">Reward Chamber Purchase</div>
+        <h3 class="lab-modal-title" id="rewardConfirmModalTitle">Confirm Box Opening</h3>
+      </div>
+    </div>
+
+    <div class="lab-modal-body">
+      <p id="rewardConfirmModalMessage" class="lab-modal-message">
+        You are about to spend DSPOINC to open this reward box.
+      </p>
+
+      <div class="lab-modal-highlight">
+        <div class="lab-modal-highlight-label">Cost</div>
+        <div id="rewardConfirmModalPrice" class="lab-modal-highlight-value">500 DSPOINC</div>
+      </div>
+
+      <p id="rewardConfirmModalNote" class="lab-modal-note">
+        This purchase uses live backend pricing and will immediately spend your DSPOINC balance.
+      </p>
+    </div>
+
+    <div class="lab-modal-footer">
+      <button type="button" class="lab-modal-btn lab-modal-btn-secondary" onclick="closeRewardPurchaseConfirmModal()">Cancel</button>
+      <button type="button" class="lab-modal-btn lab-modal-btn-primary" id="rewardConfirmModalOpenBtn">Open Box</button>
+    </div>
+  </div>
+</div>
 
     <div id="profile-chest-legacy-fallback" class="hidden">
       <div class="bg-gradient-to-br from-amber-900/40 via-yellow-900/30 to-orange-900/40 rounded-2xl shadow-2xl p-8 border-2 border-amber-500/50 ring-2 ring-amber-400/20">
@@ -11552,6 +11749,43 @@ document.addEventListener('DOMContentLoaded', function() {
     countdownIntervalId: null
   };
 
+  /**
+ * 🔊 Plays the reward open sound (coin / cling)
+ * Safe: will not throw if audio is blocked
+ */
+function playRewardOpenSound() {
+  const audio = document.getElementById('reward-open-sound');
+  if (!audio) return;
+
+  try {
+    audio.currentTime = 0;
+    audio.play().catch(() => {
+      // TODO: Autoplay blocked by browser — ignore silently
+    });
+  } catch (error) {
+    // TODO: Audio playback failed — safe fallback
+  }
+}
+
+/**
+ * Scrolls the user to the Profile Hub section on the page.
+ * This is used by Reward Chamber CTA buttons to guide players
+ * back into the main progression area.
+ */
+function scrollToProfileHub() {
+  const target = document.getElementById('profile-hub');
+
+  if (!target) {
+    console.warn('⚠️ Profile Hub element not found');
+    return;
+  }
+
+  target.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
   function getRewardChamberElements() {
     return {
       section: document.getElementById('profile-chest-section'),
@@ -11673,18 +11907,25 @@ document.addEventListener('DOMContentLoaded', function() {
     return 'Live reward chest';
   }
 
-  function getRewardBoxBadgeMarkup(box) {
-    const price = Number(box?.pricing?.price_dspoinc || 0);
-    if (price <= 0) {
-      return '<span class="profile-reward-box-badge free">FREE</span>';
-    }
+function getRewardBoxBadgeMarkup(box) {
+  const price = Number(
+    box?.pricing?.price_dspoinc ??
+    box?.price_dspoinc ??
+    0
+  );
 
-    if (price >= 2500) {
-      return `<span class="profile-reward-box-badge premium">${formatRewardChamberNumber(price)} DSPOINC</span>`;
-    }
-
-    return `<span class="profile-reward-box-badge paid">${formatRewardChamberNumber(price)} DSPOINC</span>`;
+  if (price <= 0) {
+    return '<span class="profile-reward-box-badge free">FREE</span>';
   }
+
+  const formattedPrice = `${formatRewardChamberNumber(price)} DSPOINC`;
+
+  if (price >= 2500) {
+    return `<span class="profile-reward-box-badge premium">${formattedPrice}</span>`;
+  }
+
+  return `<span class="profile-reward-box-badge paid">${formattedPrice}</span>`;
+}
 
   function getRewardBoxIcon(box) {
     const boxId = Number(box?.identity?.id || box?.box_id || 0);
@@ -12216,6 +12457,7 @@ document.addEventListener('DOMContentLoaded', function() {
       updateRewardChamberMeta();
       renderRewardChamberBoxes();
       await playRewardBoxAnimation(numericBoxId, data?.open_result || {});
+      playRewardOpenSound();
       openRewardChamberModal(data?.open_result || {});
 
       if (elements.status) {
@@ -12235,22 +12477,74 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function handleRewardBoxAction(boxId) {
+function handleRewardBoxAction(boxId) {
+  const numericBoxId = Number(boxId);
+  const box = (rewardChamberState.boxes || []).find(
+    (entry) => Number(entry?.identity?.id || entry?.box_id || 0) === numericBoxId
+  );
+
+  if (!box) {
     openRewardBox(boxId);
+    return;
   }
 
-  /**
-   * Open profile chest and award DSPOINC reward
-   */
-  async function openProfileChest() {
-    if (!rewardChamberState.useLegacyFallback) {
-      await openRewardBox(1);
-      return;
-    }
+  const price = Number(box?.pricing?.price_dspoinc ?? box?.price_dspoinc ?? 0);
 
-    await openProfileChestLegacy();
+  if (price <= 0) {
+    openRewardBox(boxId);
+    return;
   }
 
+  openRewardPurchaseConfirmModal(box);
+}
+
+let pendingRewardBoxConfirmId = null;
+
+function openRewardPurchaseConfirmModal(box) {
+  const modal = document.getElementById('profile-reward-confirm-modal');
+  const title = document.getElementById('rewardConfirmModalTitle');
+  const message = document.getElementById('rewardConfirmModalMessage');
+  const price = document.getElementById('rewardConfirmModalPrice');
+  const note = document.getElementById('rewardConfirmModalNote');
+  const confirmBtn = document.getElementById('rewardConfirmModalOpenBtn');
+
+  const numericBoxId = Number(box?.identity?.id || box?.box_id || 0);
+  const boxName = String(
+    box?.display?.flavor_name ||
+    box?.identity?.name ||
+    box?.box_name ||
+    'Reward Box'
+  );
+  const dspoincPrice = Number(box?.pricing?.price_dspoinc ?? box?.price_dspoinc ?? 0);
+
+  pendingRewardBoxConfirmId = numericBoxId;
+
+  if (title) title.textContent = `Open ${boxName}`;
+  if (message) message.textContent = `You are about to spend DSPOINC to open ${boxName}.`;
+  if (price) price.textContent = `${dspoincPrice.toLocaleString()} DSPOINC`;
+  if (note) note.textContent = 'This purchase uses live backend pricing and cannot be undone.';
+
+  if (confirmBtn) {
+    confirmBtn.onclick = async () => {
+      closeRewardPurchaseConfirmModal();
+      await openRewardBox(numericBoxId);
+    };
+  }
+
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function closeRewardPurchaseConfirmModal() {
+  const modal = document.getElementById('profile-reward-confirm-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+  pendingRewardBoxConfirmId = null;
+}
   /**
    * Open profile chest and award DSPOINC reward
    */
@@ -12708,6 +13002,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
+  document.addEventListener('click', () => {
+  const audio = document.getElementById('reward-open-sound');
+  if (!audio) return;
+
+  audio.play().then(() => {
+    audio.pause();
+    audio.currentTime = 0;
+  }).catch(() => {});
+}, { once: true });
+
   document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
       closeRewardChamberModal();
@@ -12843,19 +13147,20 @@ setInterval(updateBingoCard, 60000);
     return Array.from(root.querySelectorAll('h2,h3')).find((el) => (el.textContent || '').includes(text)) || null;
   }
 
-  function activateTab(key) {
-    document.querySelectorAll('.profile-v2-tab').forEach((button) => {
-      button.classList.toggle('active', button.dataset.tab === key);
-    });
-    document.querySelectorAll('.profile-v2-panel').forEach((panel) => {
-      panel.classList.toggle('active', panel.dataset.panel === key);
-    });
-    if (mobileJump) {
-      mobileJump.value = key;
-    }
-    localStorage.setItem('narrrfs_profile_v2_tab', key);
+function activateTab(key) {
+  document.querySelectorAll('.profile-v2-tab').forEach((button) => {
+    button.classList.toggle('active', button.dataset.tab === key);
+  });
+  document.querySelectorAll('.profile-v2-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.dataset.panel === key);
+  });
+  if (mobileJump) {
+    mobileJump.value = key;
   }
+  localStorage.setItem('narrrfs_profile_v2_tab', key);
+}
 
+window.activateProfileHubTab = activateTab;
   function ensurePanelNote(panel) {
     if (!panel) return;
     const hasMeaningfulChild = Array.from(panel.children).some((child) => {
@@ -13345,6 +13650,7 @@ function renderProfileGeneticsPanel(data) {
     topbar.appendChild(mobileJump);
 
     topbar.appendChild(tablist);
+    frame.id = 'profile-hub';
     frame.appendChild(topbar);
     frame.appendChild(panelsWrap);
     shell.appendChild(frame);
@@ -13664,6 +13970,40 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script src="js/cheese-auth-indicator.js"></script>
+<audio id="reward-open-sound" preload="auto">
+  <source src="sounds/SFX/chest.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/**
+ * Global navigation helper:
+ * Scrolls user to Profile Hub (top-level system entry point)
+ */
+function scrollToProfileHub() {
+  try {
+    if (typeof window.activateProfileHubTab === 'function') {
+      window.activateProfileHubTab('overview');
+    }
+
+    const target =
+      document.getElementById('profile-hub') ||
+      document.querySelector('.profile-v2-frame') ||
+      document.querySelector('.profile-v2-topbar');
+
+    if (!target) {
+      console.warn('⚠️ Profile Hub target not found');
+      return;
+    }
+
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  } catch (error) {
+    console.error('❌ Failed to jump to Profile Hub:', error);
+  }
+}
+</script>
 </body>
 </html>
 

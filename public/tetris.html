@@ -719,11 +719,21 @@
 <script>
   // Environment detection
   const isProduction = window.location.hostname === 'narrrfs.world';
+  const isLocalDev = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
   console.log('🎮 Tetris Standalone Page - Environment:', isProduction ? 'Production' : 'Local');
   
   // Auth check
-  const discordId = localStorage.getItem("discord_id");
-  const discordName = localStorage.getItem("discord_name");
+  let discordId = localStorage.getItem("discord_id");
+  let discordName = localStorage.getItem("discord_name");
+
+  // 🏠 Localhost bypass: auto-seed a local test user instead of redirecting
+  if ((!discordId || !discordName) && isLocalDev) {
+    discordId = '328601656659017732';
+    discordName = 'Narrrf';
+    localStorage.setItem('discord_id', discordId);
+    localStorage.setItem('discord_name', discordName);
+    console.log('🏠 Local auth bypass active for Tetris:', discordName, `(${discordId})`);
+  }
   
   if (!discordId || !discordName) {
     console.log('⚠️ No authentication found, redirecting to profile...');
@@ -1497,4 +1507,5 @@
 <script src="js/cheese-auth-indicator.js"></script>
 </body>
 </html>
+
 

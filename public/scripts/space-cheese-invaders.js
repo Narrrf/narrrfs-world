@@ -49,19 +49,16 @@ function removeHelpOverlays() {
 // Call immediately to remove any cached overlays
 removeHelpOverlays();
 
-// 🚫 ULTRA-AGGRESSIVE OVERLAY REMOVAL - Run every 100ms for first 5 seconds
+// 🚫 CONTROLLED OVERLAY CLEANUP: short startup sweep only (prevents perpetual DOM churn)
 let removalCount = 0;
+const MAX_OVERLAY_SWEEPS = 20; // ~5s at 250ms
 const aggressiveRemoval = setInterval(() => {
   removeHelpOverlays();
   removalCount++;
-  if (removalCount > 50) { // Stop after 5 seconds (50 * 100ms)
+  if (removalCount >= MAX_OVERLAY_SWEEPS) {
     clearInterval(aggressiveRemoval);
-    // Then switch to periodic removal every 2 seconds
-    setInterval(() => {
-      removeHelpOverlays();
-    }, 2000);
   }
-}, 100);
+}, 250);
 
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)

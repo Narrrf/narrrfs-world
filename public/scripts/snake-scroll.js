@@ -370,6 +370,8 @@ function initSnake() {
   let goldenApplesCollected = 0;
   let bossTimer = 0;
   let bossBattleActive = false;
+  let bossCollisionGraceUntil = 0;
+  const BOSS_COLLISION_GRACE_MS = 1000;
   let totalBossesDefeated = 0; // 🧪 Track total bosses defeated for testing
   
   // 🧀 GIANT CHEESE SNAKE BOSS CONFIGURATION - PRODUCTION MODE
@@ -1162,6 +1164,7 @@ function initSnake() {
     // Set boss battle flags
     giantSnakeBossActive = true;
     bossBattleActive = true;
+    bossCollisionGraceUntil = 0;
     
     // Create boss instance with cheese count and boss number
     giantSnakeBoss = new GiantCheeseSnakeBoss(cheeseCount, bossNumber);
@@ -1182,6 +1185,8 @@ function initSnake() {
     // After countdown completes (1.5s info + 3.4s countdown = ~4.9s), unpause for boss battle
     setTimeout(() => {
       isSnakePaused = false;
+      bossCollisionGraceUntil = Date.now() + BOSS_COLLISION_GRACE_MS;
+      console.log(`🛡️ Boss collision grace active for ${BOSS_COLLISION_GRACE_MS}ms`);
       console.log('🐍 Boss battle started! Collect all golden apples!');
     }, 4900); // Extended to match countdown timing (3, 2, 1, GO!)
   }
@@ -1223,6 +1228,11 @@ function initSnake() {
   
   function checkBossCollision() {
     if (!giantSnakeBoss || !bossBattleActive) return;
+
+    // 🛡️ Fairness buffer: prevent instant-death feel right after boss battle starts
+    if (Date.now() < bossCollisionGraceUntil) {
+      return;
+    }
     
     const playerHead = snake[0]; // 🔧 FIX: Snake uses unshift(), so head is at index 0
     
@@ -1651,18 +1661,18 @@ function initSnake() {
       const x = apple.x * gridSize;
       const y = apple.y * gridSize;
       
-      // Glow effect
-      ctx.shadowBlur = 15;
+      // Glow effect (softened for readability)
+      ctx.shadowBlur = 8;
       ctx.shadowColor = '#FFD700';
       
       // Draw golden apple
-      ctx.fillStyle = '#FFD700';
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.82)';
       ctx.beginPath();
       ctx.arc(x + gridSize / 2, y + gridSize / 2, gridSize / 2 - 2, 0, Math.PI * 2);
       ctx.fill();
       
       // Inner shine
-      ctx.fillStyle = '#FFF700';
+      ctx.fillStyle = 'rgba(255, 247, 0, 0.75)';
       ctx.beginPath();
       ctx.arc(x + gridSize / 2 - 3, y + gridSize / 2 - 3, gridSize / 4, 0, Math.PI * 2);
       ctx.fill();
@@ -1823,8 +1833,35 @@ function initSnake() {
 
     checkMutationStatus();
 
-    // 🔁 Trail glow - Role-based colors
+    // Draw static/hostile elements first, then player snake on top for readability
     const roleColors = getSnakeRoleColors();
+
+    // 🧀 Draw cheese - Role-based colors (only if not in boss battle)
+    if (!bossBattleActive) {
+      if (cheeseImg.complete) {
+        ctx.drawImage(cheeseImg, food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+      } else {
+        ctx.fillStyle = roleColors.food;
+        ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+      }
+    }
+
+    // 🐍🧀 SEASON 5: Draw Boss Battle Elements
+    if (bossBattleActive) {
+      console.log(`🎮 Boss battle active! Boss exists: ${!!giantSnakeBoss}, Apples: ${goldenApples.length}`);
+      drawGoldenApples(ctx);
+
+      if (giantSnakeBoss) {
+        console.log(`🐍 About to draw boss... Segments: ${giantSnakeBoss.segments.length}, Head: (${giantSnakeBoss.head.x}, ${giantSnakeBoss.head.y})`);
+        giantSnakeBoss.draw(ctx);
+      } else {
+        console.warn('⚠️ Boss battle active but giantSnakeBoss is null!');
+      }
+
+      drawBossUI(ctx);
+    }
+
+    // 🔁 Trail glow - Role-based colors
     for (let i = 0; i < snake.length; i++) {
       const segment = snake[i];
       
@@ -1896,6 +1933,17 @@ function initSnake() {
         // Role-based snake colors
         ctx.fillStyle = isHead ? roleColors.snake : roleColors.snake;
         ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+      }
+
+      // 🎯 Boss readability: highlight player head during boss battles
+      if (bossBattleActive && isHead) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(posX, posY, gridSize * 0.52, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
       }
 
       ctx.globalAlpha = 1;
@@ -1995,36 +2043,6 @@ function initSnake() {
       ctx.restore();
     }
 
-    // 🧀 Draw cheese - Role-based colors (only if not in boss battle)
-    if (!bossBattleActive) {
-      if (cheeseImg.complete) {
-        ctx.drawImage(cheeseImg, food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-      } else {
-        ctx.fillStyle = roleColors.food;
-        ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-      }
-    }
-    
-    // 🐍🧀 SEASON 5: Draw Boss Battle Elements
-    if (bossBattleActive) {
-      // 🧪 DEBUG: Log boss battle active
-      console.log(`🎮 Boss battle active! Boss exists: ${!!giantSnakeBoss}, Apples: ${goldenApples.length}`);
-      
-      // Draw golden apples
-      drawGoldenApples(ctx);
-      
-      // Draw boss
-      if (giantSnakeBoss) {
-        console.log(`🐍 About to draw boss... Segments: ${giantSnakeBoss.segments.length}, Head: (${giantSnakeBoss.head.x}, ${giantSnakeBoss.head.y})`);
-        giantSnakeBoss.draw(ctx);
-      } else {
-        console.warn('⚠️ Boss battle active but giantSnakeBoss is null!');
-      }
-      
-      // Draw boss UI
-      drawBossUI(ctx);
-    }
-    
     // 🏆 Draw achievement popups
     drawAchievementPopups();
   } // ✅ End of draw()
@@ -2609,7 +2627,8 @@ function initSnake() {
 let touchStartX = 0, touchStartY = 0;
 let isSnakeGameActive = false;
 let snakeScrollLocked = false;
-const SNAKE_SWIPE_THRESHOLD = 30; // Optimized for instant touch response
+const SNAKE_SWIPE_THRESHOLD = 45; // Safer threshold to avoid accidental turns
+const SNAKE_AXIS_LOCK_RATIO = 1.2; // Require clearer dominant axis
 
 function enableGlobalSnakeTouch() { 
   isSnakeGameActive = true; 
@@ -2669,35 +2688,49 @@ function unlockSnakeScroll() {
 
 // Prevent scrolling on the game canvas - Enhanced for mobile
 document.addEventListener('touchmove', function(e) {
-  if (isSnakeGameActive && !isSnakePaused) {
+  const isSnakeCanvasTarget = Boolean(e.target && (e.target.id === 'snake-canvas' || e.target.closest?.('#snake-canvas')));
+  if (isSnakeGameActive && !isSnakePaused && isSnakeCanvasTarget) {
     e.preventDefault();
     e.stopPropagation();
   }
 }, { passive: false });
 
-document.body.addEventListener("touchstart", function(e) {
+canvas.addEventListener("touchstart", function(e) {
   if (!isSnakeGameActive || isSnakePaused) return;
   e.preventDefault();
   e.stopPropagation();
+  if (!e.touches || !e.touches.length) return;
   const touch = e.touches[0];
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
 }, { passive: false });
 
-document.body.addEventListener("touchend", function(e) {
+canvas.addEventListener("touchend", function(e) {
   if (!isSnakeGameActive || isSnakePaused) return;
   e.preventDefault();
   e.stopPropagation();
+  if (!e.changedTouches || !e.changedTouches.length) return;
   const touch = e.changedTouches[0];
   const deltaX = touch.clientX - touchStartX;
   const deltaY = touch.clientY - touchStartY;
+  const absDeltaX = Math.abs(deltaX);
+  const absDeltaY = Math.abs(deltaY);
   
-  // Optimized minimum swipe distance for instant response
+  // Ignore micro-swipes/taps
   const minSwipeDistance = SNAKE_SWIPE_THRESHOLD;
+  if (Math.max(absDeltaX, absDeltaY) < minSwipeDistance) {
+    return;
+  }
+
+  const isHorizontalSwipe = absDeltaX > absDeltaY * SNAKE_AXIS_LOCK_RATIO;
+  const isVerticalSwipe = absDeltaY > absDeltaX * SNAKE_AXIS_LOCK_RATIO;
+  if (!isHorizontalSwipe && !isVerticalSwipe) {
+    return;
+  }
   
   // Only process swipes if game is active and not paused
   // 🐛 BUG #312 FIX: Prevent opposite direction turns for touch controls too
-  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+  if (isHorizontalSwipe) {
     // Horizontal swipe detection - more responsive
     if (deltaX > minSwipeDistance) {
       // Only allow right if not moving left (opposite direction)
@@ -2720,7 +2753,7 @@ document.body.addEventListener("touchend", function(e) {
         console.log('🚫 Invalid turn (touch): Cannot turn left while moving right');
       }
     }
-  } else {
+  } else if (isVerticalSwipe) {
     // Vertical swipe detection - more responsive
     if (deltaY > minSwipeDistance) {
       // Only allow down if not moving up (opposite direction)
