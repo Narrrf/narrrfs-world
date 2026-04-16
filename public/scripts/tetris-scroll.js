@@ -653,10 +653,10 @@ function handleTouchMove(e) {
     console.log('📱 Touch move ignored - game not running or functions not available');
     return;
   }
-  
+
   e.preventDefault();
   e.stopPropagation();
-  
+
   const touch = e.touches[0];
   const deltaX = touch.clientX - tetrisTouchStartX;
   const deltaY = touch.clientY - tetrisTouchStartY;
@@ -664,48 +664,74 @@ function handleTouchMove(e) {
   clearTimeout(tetrisHoldTimeout);
   clearInterval(tetrisHoldInterval);
 
-  // 🎯 HORIZONTAL MOVE
   if (
-    Math.abs(deltaX) > TETRIS_SWIPE_THRESHOLD &&
-    typeof window.tetrisCollide === 'function' &&
-    window.tetrisCurrent &&
-    window.tetrisCurrent.shape
+    typeof window.tetrisCollide !== 'function' ||
+    !window.tetrisCurrent ||
+    !window.tetrisCurrent.shape
   ) {
+    return;
+  }
+
+  const absDeltaX = Math.abs(deltaX);
+  const absDeltaY = Math.abs(deltaY);
+
+  // ⬆️ ROTATE — swipe up with clear vertical intent
+  if (deltaY < -TETRIS_SWIPE_THRESHOLD && absDeltaY > absDeltaX) {
+    const originalShape = window.tetrisCurrent.shape;
+    const rotated = originalShape[0].map((_, i) =>
+      originalShape.map(row => row[i]).reverse()
+    );
+
+    if (!window.tetrisCollide(rotated, window.tetrisCurrent.row, window.tetrisCurrent.col)) {
+      window.tetrisCurrent.shape = rotated;
+      if (typeof window.tetrisDraw === 'function') {
+        window.tetrisDraw();
+      }
+    }
+
+    tetrisTouchStartX = touch.clientX;
+    tetrisTouchStartY = touch.clientY;
+    return;
+  }
+
+  // 🎯 HORIZONTAL MOVE — only when horizontal intent is stronger
+  if (absDeltaX > TETRIS_SWIPE_THRESHOLD && absDeltaX > absDeltaY) {
     window.tetrisCurrent.col += deltaX > 0 ? 1 : -1;
+
     if (window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col)) {
       window.tetrisCurrent.col += deltaX > 0 ? -1 : 1;
     }
+
     tetrisTouchStartX = touch.clientX;
+
     if (typeof window.tetrisDraw === 'function') {
       window.tetrisDraw();
     }
+
+    return;
   }
 
-  // ⬇️ HARD DROP (clear intent only)
-  if (
-    deltaY > TETRIS_HARD_DROP_THRESHOLD &&
-    typeof window.tetrisCollide === 'function' &&
-    window.tetrisCurrent &&
-    window.tetrisCurrent.shape
-  ) {
+  // ⬇️ HARD DROP — only when vertical down intent is stronger
+  if (deltaY > TETRIS_HARD_DROP_THRESHOLD && absDeltaY > absDeltaX) {
     while (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
       window.tetrisCurrent.row++;
     }
+
     drop();
     tetrisTouchStartY = touch.clientY;
+    return;
   }
+
   // ⬇️ SOFT DROP
-  else if (
-    deltaY > TETRIS_SWIPE_THRESHOLD &&
-    typeof window.tetrisCollide === 'function' &&
-    window.tetrisCurrent &&
-    window.tetrisCurrent.shape
-  ) {
+  if (deltaY > TETRIS_SWIPE_THRESHOLD && absDeltaY > absDeltaX) {
     window.tetrisCurrent.row++;
+
     if (window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col)) {
       window.tetrisCurrent.row--;
     }
+
     tetrisTouchStartY = touch.clientY;
+
     if (typeof window.tetrisDraw === 'function') {
       window.tetrisDraw();
     }

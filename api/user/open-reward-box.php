@@ -954,7 +954,13 @@ function create_reward_claim_request(PDO $pdo, string $userId, int $boxId, array
     $status = 'pending_review';
     $rewardTitle = trim((string)($poolEntry['reward_title'] ?? $box['box_name'] ?? 'Premium Reward Claim'));
     $rewardDescription = trim((string)($poolEntry['reward_description'] ?? $box['box_description'] ?? 'Premium reward claim created from Reward Chamber'));
-    $rewardReferenceId = (int)($poolEntry['reward_reference_id'] ?? $poolEntry['catalog_id'] ?? $poolEntry['store_item_id'] ?? 0);
+    $rewardReferenceId = (int)(
+    $poolEntry['reward_reference_id']
+    ?? $poolEntry['genetic_catalog_id']
+    ?? $poolEntry['catalog_id']
+    ?? $poolEntry['store_item_id']
+    ?? 0
+);
     $poolRewardId = (int)($poolEntry['pool_reward_id'] ?? 0);
 
     $valueMap = [
@@ -1308,10 +1314,16 @@ try {
         }
 
         if ($resolvedRewardType === 'genetic_trait') {
-            $catalogId = (int)($entry['catalog_id'] ?: $entry['reward_reference_id']);
-            if ($catalogId <= 0) {
-                throw new Exception('Reward pool genetic trait reference is invalid');
-            }
+    $catalogId = (int)(
+        $entry['genetic_catalog_id']
+        ?? $entry['catalog_id']
+        ?? $entry['reward_reference_id']
+        ?? 0
+    );
+
+    if ($catalogId <= 0) {
+        throw new Exception('Reward pool genetic trait reference is invalid');
+    }
 
             $catalogRow = fetch_genetic_catalog_row($pdo, $catalogId);
             if (!$catalogRow) {

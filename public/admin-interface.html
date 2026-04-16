@@ -2195,6 +2195,8 @@
           </div>
         </div>
 
+        <div id="rewardPoolWarningBanner" class="hidden mb-4 rounded-lg border px-4 py-3 text-sm"></div>
+
         <div class="overflow-x-auto rounded-lg border border-white/10">
           <table class="min-w-full text-sm text-left text-slate-100">
             <thead class="bg-black/30 text-xs uppercase tracking-wider text-fuchsia-200">
@@ -14152,6 +14154,331 @@ function closeEditStoreItemModal() {
       return errors;
     }
 
+
+    function escapeRewardChamberTooltip(value) {
+      return escapeHtml(String(value || '').replace(/\s+/g, ' ').trim());
+    }
+
+    function getRewardChamberHelpIcon(helpText) {
+      const safeHelpText = escapeRewardChamberTooltip(helpText);
+      return `<span class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-cyan-300/40 bg-cyan-500/10 text-[10px] font-black text-cyan-100 cursor-help" title="${safeHelpText}">?</span>`;
+    }
+
+    function getRewardChamberFieldLabelHtml(label, helpText) {
+      return `${escapeHtml(label)} ${getRewardChamberHelpIcon(helpText)}`;
+    }
+
+    function getRewardChamberFriendlyRewardModeLabel(mode) {
+      const normalizedMode = String(mode || '').trim();
+      if (normalizedMode === 'dspoinc_only') return 'DSPOINC Only';
+      if (normalizedMode === 'random_pool') return 'Weighted Random Pool';
+      if (normalizedMode === 'fixed_claim') return 'Fixed Claim Flow';
+      return normalizedMode || 'Unknown';
+    }
+
+    function getRewardChamberFriendlyRewardTypeLabel(type) {
+      const normalizedType = String(type || '').trim();
+      if (normalizedType === 'store_item') return 'Store Item';
+      if (normalizedType === 'genetic_trait') return 'Genetic Trait';
+      if (normalizedType === 'dspoinc') return 'DSPOINC';
+      if (normalizedType === 'premium_claim') return 'Premium Claim';
+      return normalizedType || 'Unknown';
+    }
+
+    function getRewardChamberPoolDiagnostics(boxId, overrideBox) {
+      const box = overrideBox || getRewardChamberBoxById(boxId) || { box_id: Number(boxId || 0) };
+      const activeRows = getRewardChamberPoolRowsForBox(boxId).filter((row) => Number(row.is_active || 0) === 1);
+      const activeTypes = [...new Set(activeRows.map((row) => String(row.reward_type || '').trim()).filter(Boolean))];
+      const activeTypeLabels = activeTypes.map(getRewardChamberFriendlyRewardTypeLabel);
+      const geneticActiveRows = activeRows.filter((row) => String(row.reward_type || '').trim() === 'genetic_trait');
+      const premiumActiveRows = activeRows.filter((row) => String(row.reward_type || '').trim() === 'premium_claim');
+      const nonPremiumActiveRows = activeRows.filter((row) => String(row.reward_type || '').trim() !== 'premium_claim');
+      const hasFallback = Number(box.fallback_dspoinc_enabled || 0) === 1;
+      const fallbackMinRaw = box.fallback_dspoinc_min;
+      const fallbackMaxRaw = box.fallback_dspoinc_max;
+      const fallbackMin = fallbackMinRaw === '' || fallbackMinRaw === null ? null : Number(fallbackMinRaw);
+      const fallbackMax = fallbackMaxRaw === '' || fallbackMaxRaw === null ? null : Number(fallbackMaxRaw);
+      const fallbackRangeProvided = fallbackMin !== null || fallbackMax !== null;
+      const fallbackRangeValid = hasFallback
+        ? Number.isFinite(fallbackMin) && Number.isFinite(fallbackMax) && fallbackMin > 0 && fallbackMax > 0 && fallbackMax >= fallbackMin
+        : false;
+      const itemRollRaw = box.item_pool_roll_chance;
+      const fallbackRollRaw = box.fallback_dspoinc_roll_chance;
+      const itemRoll = itemRollRaw === '' || itemRollRaw === null ? null : Number(itemRollRaw);
+      const fallbackRoll = fallbackRollRaw === '' || fallbackRollRaw === null ? null : Number(fallbackRollRaw);
+      const hasItemRoll = itemRoll !== null && Number.isFinite(itemRoll);
+      const hasFallbackRoll = fallbackRoll !== null && Number.isFinite(fallbackRoll);
+      const rollSum = hasItemRoll && hasFallbackRoll ? (itemRoll + fallbackRoll) : null;
+      const rollCoherent = hasItemRoll && hasFallbackRoll ? Math.abs(rollSum - 100) < 0.0001 : false;
+      const activeCount = activeRows.length;
+      const boxType = String(box.box_type || '').trim();
+      const rewardMode = String(box.reward_mode || '').trim();
+      const isBox2 = Number(box.box_id || 0) === 2 || boxType === 'paid_random_box';
+      const isBox3 = Number(box.box_id || 0) === 3 || boxType === 'premium_claim_box';
+      const singleRowRisk = activeCount === 1;
+      const geneticOnly = activeCount > 0 && geneticActiveRows.length === activeCount;
+      const premiumOnly = activeCount > 0 && premiumActiveRows.length === activeCount;
+      const duplicateRisk = geneticOnly ? 'high' : (geneticActiveRows.length > 0 ? 'medium' : 'low');
+      const errors = [];
+      const warnings = [];
+      const notes = [];
+
+      if (isBox2 && rewardMode === 'random_pool' && activeCount === 0) {
+        errors.push('Box 2 is using random_pool but has 0 active reward rows. Add at least 1 active row before saving.');
+      }
+
+      if (hasFallback && !fallbackRangeValid) {
+        errors.push('Fallback DSPOINC is enabled, but min/max is not production-safe. Both must be positive and max must be greater than or equal to min.');
+      }
+
+      if (isBox3 && Number(box.is_active || 0) === 1 && premiumActiveRows.length === 0) {
+        errors.push('Box 3 is active but has no active premium_claim reward rows. Add at least 1 active premium claim row before saving.');
+      }
+
+      if (isBox2 && singleRowRisk && !hasFallback) {
+        warnings.push('Only 1 active reward row is enabled while fallback is off. This is risky for Box 2 if that reward becomes undeliverable.');
+      }
+
+      if (isBox2 && activeTypes.length === 1 && !hasFallback && activeCount > 0) {
+        warnings.push(`All active Box 2 rewards are ${activeTypeLabels[0] || 'one type'} while fallback is off. This is allowed, but risky in production.`);
+      }
+
+      if (isBox2 && geneticOnly) {
+        warnings.push('Duplicate owned traits can cause reroll or fallback failure. Use multiple active rewards or enable safe fallback.');
+      }
+
+      if ((hasItemRoll || hasFallbackRoll) && !rollCoherent) {
+        warnings.push('Item pool roll chance and fallback roll chance do not form a clean 100 total. This can confuse operators even if backend still resolves delivery.');
+      }
+
+      if (Number(box.is_active || 0) === 1 && Number(box.is_visible || 0) !== 1) {
+        warnings.push('This box is active but not visible. Players will not see it on the profile page.');
+      }
+
+      if (isBox3 && hasFallback) {
+        warnings.push('Box 3 normally should stay claim-driven. Fallback is enabled here, so verify this is intentional.');
+      }
+
+      if (isBox3 && nonPremiumActiveRows.length > 0) {
+        warnings.push('Box 3 has active rows that are not premium_claim. Verify this is intentional before production rollout.');
+      }
+
+      if (isBox3 && activeCount > 0 && !premiumOnly) {
+        notes.push('Box 3 is safest when all active rows are premium_claim entries.');
+      }
+
+      if (isBox2 && rewardMode !== 'random_pool') {
+        notes.push(`Box 2 is currently using ${getRewardChamberFriendlyRewardModeLabel(rewardMode)} instead of Weighted Random Pool.`);
+      }
+
+      return {
+        box,
+        activeRows,
+        activeCount,
+        activeTypes,
+        activeTypeLabels,
+        premiumActiveRows,
+        premiumActiveCount: premiumActiveRows.length,
+        nonPremiumActiveCount: nonPremiumActiveRows.length,
+        hasFallback,
+        fallbackRangeValid,
+        fallbackRangeProvided,
+        hasItemRoll,
+        hasFallbackRoll,
+        rollSum,
+        rollCoherent,
+        singleRowRisk,
+        geneticOnly,
+        premiumOnly,
+        duplicateRisk,
+        rewardMode,
+        isBox2,
+        isBox3,
+        errors,
+        warnings,
+        notes
+      };
+    }
+
+    function buildRewardChamberValidationList(items, tone) {
+      if (!Array.isArray(items) || !items.length) {
+        return '';
+      }
+
+      const toneMap = {
+        error: 'border-red-500/30 bg-red-950/40 text-red-100',
+        warning: 'border-yellow-500/30 bg-yellow-950/30 text-yellow-100',
+        note: 'border-cyan-500/30 bg-cyan-950/30 text-cyan-100'
+      };
+
+      return `
+        <div class="rounded-lg border p-3 ${toneMap[tone] || toneMap.note}">
+          <div class="text-[11px] font-black uppercase tracking-[0.18em] mb-2">${escapeHtml(tone)}</div>
+          <ul class="space-y-2 text-sm">
+            ${items.map((item) => `<li>• ${escapeHtml(item)}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    function getRewardChamberValidationStatusChip(diagnostics) {
+      if (diagnostics.errors.length) {
+        return '<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider bg-red-900/50 border border-red-500/40 text-red-100">Hard block</span>';
+      }
+      if (diagnostics.warnings.length) {
+        return '<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider bg-yellow-900/50 border border-yellow-500/40 text-yellow-100">Warnings</span>';
+      }
+      return '<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider bg-emerald-900/50 border border-emerald-500/40 text-emerald-100">Ready</span>';
+    }
+
+    function getRewardChamberPoolHealthHtml(diagnostics) {
+      const fallbackText = diagnostics.hasFallback
+        ? (diagnostics.fallbackRangeValid ? 'Fallback Ready' : 'Fallback Not Ready')
+        : 'Fallback Off';
+      const duplicateText = diagnostics.duplicateRisk === 'high'
+        ? 'High Duplicate Risk'
+        : (diagnostics.duplicateRisk === 'medium' ? 'Some Duplicate Risk' : 'Low Duplicate Risk');
+      const rewardMixText = diagnostics.activeTypeLabels.length
+        ? diagnostics.activeTypeLabels.join(' + ')
+        : 'No active rewards';
+      const statusText = diagnostics.errors.length
+        ? 'Blocked'
+        : (diagnostics.warnings.length ? 'Warning' : 'Healthy');
+
+      return `
+        <div class="space-y-2 text-sm font-semibold text-white">
+          <div>Status: <span class="${diagnostics.errors.length ? 'text-red-200' : (diagnostics.warnings.length ? 'text-yellow-200' : 'text-emerald-200')}">${escapeHtml(statusText)}</span></div>
+          <div>Reward Mix: <span class="text-slate-200">${escapeHtml(rewardMixText)}</span></div>
+          <div>${escapeHtml(fallbackText)}</div>
+          <div>${escapeHtml(duplicateText)}</div>
+        </div>
+      `;
+    }
+
+    function refreshRewardChamberBoxDiagnostics(boxId) {
+      const summaryEl = document.getElementById(`rewardBox_${boxId}_validationSummary`);
+      const actionsEl = document.getElementById(`rewardBox_${boxId}_saveGuardNote`);
+      const diagnostics = getRewardChamberPoolDiagnostics(boxId, collectRewardChamberBoxPayload(boxId));
+
+      if (summaryEl) {
+        summaryEl.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div>
+              <div class="text-xs uppercase tracking-[0.18em] font-black text-cyan-200">Box safety review</div>
+              <div class="text-sm text-slate-300 mt-1">Hard blocks stop broken saves. Warnings stay allowed for intentional operator choices.</div>
+            </div>
+            ${getRewardChamberValidationStatusChip(diagnostics)}
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 text-sm">
+            <div class="rounded-lg border border-white/10 bg-slate-950/70 p-3">
+              <div class="text-[11px] uppercase tracking-[0.16em] font-black text-slate-400">Active deliverable rows</div>
+              <div class="text-lg font-black text-white mt-1">${diagnostics.activeCount}</div>
+            </div>
+            <div class="rounded-lg border border-white/10 bg-slate-950/70 p-3">
+              <div class="text-[11px] uppercase tracking-[0.16em] font-black text-slate-400">Reward mix</div>
+              <div class="text-sm font-semibold text-white mt-1">${escapeHtml(diagnostics.activeTypeLabels.length ? diagnostics.activeTypeLabels.join(' + ') : 'No active rewards')}</div>
+            </div>
+            <div class="rounded-lg border border-white/10 bg-slate-950/70 p-3">
+              <div class="text-[11px] uppercase tracking-[0.16em] font-black text-slate-400">Fallback state</div>
+              <div class="text-sm font-semibold text-white mt-1">${escapeHtml(diagnostics.hasFallback ? (diagnostics.fallbackRangeValid ? 'Ready' : 'Not ready') : 'Off')}</div>
+            </div>
+            <div class="rounded-lg border border-white/10 bg-slate-950/70 p-3">
+              <div class="text-[11px] uppercase tracking-[0.16em] font-black text-slate-400">Duplicate risk</div>
+              <div class="text-sm font-semibold text-white mt-1">${escapeHtml(diagnostics.duplicateRisk.toUpperCase())}</div>
+            </div>
+          </div>
+          <div class="space-y-3">
+            ${buildRewardChamberValidationList(diagnostics.errors, 'error')}
+            ${buildRewardChamberValidationList(diagnostics.warnings, 'warning')}
+            ${buildRewardChamberValidationList(diagnostics.notes, 'note')}
+          </div>
+        `;
+      }
+
+      if (actionsEl) {
+        if (diagnostics.singleRowRisk) {
+          actionsEl.className = 'mt-3 rounded-lg border px-3 py-2 text-xs border-yellow-500/30 bg-yellow-950/30 text-yellow-100';
+          actionsEl.textContent = diagnostics.hasFallback
+            ? 'Single active reward row detected. This is allowed because fallback exists, but still verify delivery intent.'
+            : 'Single active reward row detected. This is risky without fallback if that reward becomes undeliverable.';
+        } else if (diagnostics.errors.length) {
+          actionsEl.className = 'mt-3 rounded-lg border px-3 py-2 text-xs border-red-500/30 bg-red-950/40 text-red-100';
+          actionsEl.textContent = 'This box has hard-block validation errors and cannot be saved until they are fixed.';
+        } else {
+          actionsEl.className = 'mt-3 rounded-lg border px-3 py-2 text-xs border-white/10 bg-slate-950/60 text-slate-300';
+          actionsEl.textContent = 'Save will remain available for warning-only setups. Use warnings as operator guidance, not as silent blockers.';
+        }
+      }
+
+      return diagnostics;
+    }
+
+    function attachRewardChamberBoxValidationListeners(boxId) {
+      const cardEl = document.querySelector(`[data-reward-box-card="${boxId}"]`);
+      if (!cardEl) {
+        return;
+      }
+
+      cardEl.querySelectorAll('input, select, textarea').forEach((field) => {
+        const handler = () => refreshRewardChamberBoxDiagnostics(boxId);
+        field.addEventListener('input', handler);
+        field.addEventListener('change', handler);
+      });
+    }
+
+    function getRewardChamberPoolRowDiagnostics(row) {
+      const rewardType = String(row.reward_type || '').trim();
+      const badges = [];
+
+      badges.push(Number(row.is_active || 0) === 1
+        ? '<span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-emerald-900/40 border border-emerald-500/40 text-emerald-100">Active</span>'
+        : '<span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-slate-900/40 border border-slate-500/40 text-slate-200">Inactive</span>');
+
+      badges.push(`<span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-cyan-900/40 border border-cyan-500/40 text-cyan-100">${escapeHtml(getRewardChamberFriendlyRewardTypeLabel(rewardType))}</span>`);
+
+      if (rewardType === 'genetic_trait') {
+        badges.push('<span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-yellow-900/40 border border-yellow-500/40 text-yellow-100">Duplicate Risk</span>');
+      }
+
+      if (Number(row.box_id || 0) === 3 && rewardType !== 'premium_claim') {
+        badges.push('<span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-900/40 border border-amber-500/40 text-amber-100">Box 3 mismatch</span>');
+      }
+
+      if (Number(row.box_id || 0) === 2 && rewardType === 'premium_claim') {
+        badges.push('<span class="inline-flex items-center rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wider bg-violet-900/40 border border-violet-500/40 text-violet-100">Claim-style row</span>');
+      }
+
+      return badges.join('');
+    }
+
+    function refreshRewardChamberPoolManagerBanner(diagnostics) {
+      const bannerEl = document.getElementById('rewardPoolWarningBanner');
+      if (!bannerEl) {
+        return;
+      }
+
+      const messages = [];
+      if (diagnostics.singleRowRisk) {
+        messages.push('Only 1 active reward row exists for this box.');
+      }
+      if (diagnostics.geneticOnly) {
+        messages.push('This pool is genetic-only, so duplicate ownership risk is higher.');
+      }
+      if (diagnostics.errors.length) {
+        bannerEl.className = 'mb-4 rounded-lg border px-4 py-3 text-sm border-red-500/30 bg-red-950/40 text-red-100';
+        bannerEl.innerHTML = messages.concat(diagnostics.errors).map((item) => `• ${escapeHtml(item)}`).join('<br>');
+        return;
+      }
+      if (messages.length || diagnostics.warnings.length) {
+        bannerEl.className = 'mb-4 rounded-lg border px-4 py-3 text-sm border-yellow-500/30 bg-yellow-950/30 text-yellow-100';
+        bannerEl.innerHTML = messages.concat(diagnostics.warnings.slice(0, 2)).map((item) => `• ${escapeHtml(item)}`).join('<br>');
+        return;
+      }
+
+      bannerEl.className = 'hidden mb-4 rounded-lg border px-4 py-3 text-sm';
+      bannerEl.innerHTML = '';
+    }
+
     function renderRewardChamberBoxConfigCards() {
       const wrap = document.getElementById('rewardChamberBoxConfigCards');
       if (!wrap) {
@@ -14169,10 +14496,12 @@ function closeEditStoreItemModal() {
         const cooldownLabel = Number(box.cooldown_enabled || 0) === 1
           ? `${escapeHtml(box.cooldown_type || 'custom')} · ${Number(box.cooldown_hours || 0)}h`
           : 'Cooldown off';
-        const activeRows = getRewardChamberPoolRowsForBox(boxId).filter((row) => Number(row.is_active || 0) === 1).length;
+        const diagnostics = getRewardChamberPoolDiagnostics(boxId, box);
+        const activeRows = diagnostics.activeCount;
+        const cardStatusChip = getRewardChamberValidationStatusChip(diagnostics);
 
         return `
-          <div class="bg-black/20 rounded-xl p-4 border border-white/10 shadow-lg">
+          <div class="bg-black/20 rounded-xl p-4 border border-white/10 shadow-lg" data-reward-box-card="${boxId}">
             <div class="flex items-start justify-between gap-3 mb-4">
               <div>
                 <div class="text-xl font-bold text-white">${escapeHtml(box.box_name || `Box ${boxId}`)}</div>
@@ -14181,32 +14510,45 @@ function closeEditStoreItemModal() {
               <div class="text-right text-xs text-slate-300">
                 <div>Active rows: <span class="font-semibold text-cyan-200">${activeRows}</span></div>
                 <div>Opened: <span class="font-semibold text-cyan-200">${Number(box.global_open_count || 0).toLocaleString()}</span></div>
+                <div class="mt-2">${cardStatusChip}</div>
+              </div>
+            </div>
+
+            <div id="rewardBox_${boxId}_validationSummary" class="mb-4 rounded-xl border border-cyan-500/20 bg-slate-950/55 p-4"></div>
+
+            <div class="rounded-xl border border-fuchsia-500/20 bg-fuchsia-950/10 p-4 mb-4 text-sm text-fuchsia-100">
+              <div class="text-xs uppercase tracking-[0.18em] font-black text-fuchsia-200 mb-2">Safe Box ${boxId} setup checklist</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                <div>• Review active rows before changing live pricing.</div>
+                <div>• Confirm visibility matches your rollout plan.</div>
+                <div>• Keep fallback intentional, not accidental.</div>
+                <div>• Use pool manager below to verify final deliverable rows.</div>
               </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Name</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Name', 'Player-facing box title shown in the Reward Chamber UI.')}</label>
                 <input id="rewardBox_${boxId}_box_name" type="text" value="${escapeHtml(box.box_name || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Price DSPOINC</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Price DSPOINC', 'DSPOINC cost spent immediately when the box opens.')}</label>
                 <input id="rewardBox_${boxId}_price_dspoinc" type="number" min="0" step="1" value="${Number(box.price_dspoinc || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
               </div>
               <div class="md:col-span-2">
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Description</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Description', 'Player-facing helper text for what this box is about.')}</label>
                 <textarea id="rewardBox_${boxId}_box_description" rows="2" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">${escapeHtml(box.box_description || '')}</textarea>
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Reward Mode</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Reward Mode', 'DSPOINC Only = DSPOINC logic. Weighted Random Pool = active reward rows. Fixed Claim Flow = claim-style behavior.')}</label>
                 <select id="rewardBox_${boxId}_reward_mode" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
-                  <option value="dspoinc_only" ${box.reward_mode === 'dspoinc_only' ? 'selected' : ''}>dspoinc_only</option>
-                  <option value="random_pool" ${box.reward_mode === 'random_pool' ? 'selected' : ''}>random_pool</option>
-                  <option value="fixed_claim" ${box.reward_mode === 'fixed_claim' ? 'selected' : ''}>fixed_claim</option>
+                  <option value="dspoinc_only" ${box.reward_mode === 'dspoinc_only' ? 'selected' : ''}>DSPOINC Only</option>
+                  <option value="random_pool" ${box.reward_mode === 'random_pool' ? 'selected' : ''}>Weighted Random Pool</option>
+                  <option value="fixed_claim" ${box.reward_mode === 'fixed_claim' ? 'selected' : ''}>Fixed Claim Flow</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Sort Order</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Sort Order', 'Lower numbers appear earlier in admin and frontend ordering.')}</label>
                 <input id="rewardBox_${boxId}_sort_order" type="number" step="1" value="${Number(box.sort_order || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
               </div>
             </div>
@@ -14214,25 +14556,25 @@ function closeEditStoreItemModal() {
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
               <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
                 <input id="rewardBox_${boxId}_is_active" type="checkbox" ${Number(box.is_active || 0) === 1 ? 'checked' : ''}>
-                <span>Active</span>
+                <span>${getRewardChamberFieldLabelHtml('Active', 'Inactive boxes cannot open even if all other settings look ready.')}</span>
               </label>
               <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
                 <input id="rewardBox_${boxId}_is_visible" type="checkbox" ${Number(box.is_visible || 0) === 1 ? 'checked' : ''}>
-                <span>Visible</span>
+                <span>${getRewardChamberFieldLabelHtml('Visible', 'Visible controls whether the player sees the box in profile UI. Backend authority still applies.')}</span>
               </label>
               <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
                 <input id="rewardBox_${boxId}_cooldown_enabled" type="checkbox" ${Number(box.cooldown_enabled || 0) === 1 ? 'checked' : ''}>
-                <span>Cooldown</span>
+                <span>${getRewardChamberFieldLabelHtml('Cooldown', 'Enable per-user cooldown tracking for repeat opens.')}</span>
               </label>
               <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
                 <input id="rewardBox_${boxId}_fallback_dspoinc_enabled" type="checkbox" ${Number(box.fallback_dspoinc_enabled || 0) === 1 ? 'checked' : ''}>
-                <span>Fallback DSPOINC</span>
+                <span>${getRewardChamberFieldLabelHtml('Fallback DSPOINC', 'Backend may use fallback when pool delivery fails or fallback roll wins. This is not disabled only by 100/0 roll values.')}</span>
               </label>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Cooldown Type</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Cooldown Type', 'Use daily, hourly, or custom timing. Cooldown hours still matters for custom-driven setups.')}</label>
                 <select id="rewardBox_${boxId}_cooldown_type" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                   <option value="none" ${box.cooldown_type === 'none' ? 'selected' : ''}>none</option>
                   <option value="hourly" ${box.cooldown_type === 'hourly' ? 'selected' : ''}>hourly</option>
@@ -14241,51 +14583,51 @@ function closeEditStoreItemModal() {
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Cooldown Hours</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Cooldown Hours', 'Main cooldown value used when custom timing is needed.')}</label>
                 <input id="rewardBox_${boxId}_cooldown_hours" type="number" min="0" step="0.25" value="${Number(box.cooldown_hours || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Max Opens Per User</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Max Opens Per User', 'Leave empty for unlimited. Set a number to cap lifetime opens per user.')}</label>
                 <input id="rewardBox_${boxId}_max_opens_per_user" type="number" min="0" step="1" value="${box.max_opens_per_user === '' ? '' : Number(box.max_opens_per_user || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Unlimited">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Fallback Min</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Fallback Min', 'Required when fallback is enabled. Must be positive and less than or equal to fallback max.')}</label>
                 <input id="rewardBox_${boxId}_fallback_dspoinc_min" type="number" min="0" step="1" value="${box.fallback_dspoinc_min === '' ? '' : Number(box.fallback_dspoinc_min || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Fallback Max</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Fallback Max', 'Required when fallback is enabled. Must be positive and greater than or equal to fallback min.')}</label>
                 <input id="rewardBox_${boxId}_fallback_dspoinc_max" type="number" min="0" step="1" value="${box.fallback_dspoinc_max === '' ? '' : Number(box.fallback_dspoinc_max || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Global Stock Limit</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Global Stock Limit', 'Leave empty for unlimited. Once reached, backend disables new opens.')}</label>
                 <input id="rewardBox_${boxId}_global_stock_limit" type="number" min="0" step="1" value="${box.global_stock_limit === '' ? '' : Number(box.global_stock_limit || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Unlimited">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Item Pool Roll Chance</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Item Pool Roll Chance', 'Chance to resolve a reward from active pool rows. Review together with fallback roll chance.')}</label>
                 <input id="rewardBox_${boxId}_item_pool_roll_chance" type="number" min="0" step="0.01" value="${box.item_pool_roll_chance === '' ? '' : Number(box.item_pool_roll_chance || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Fallback Roll Chance</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Fallback Roll Chance', 'Chance to use fallback directly. For clean operator logic, this and item pool roll chance should usually total 100.')}</label>
                 <input id="rewardBox_${boxId}_fallback_dspoinc_roll_chance" type="number" min="0" step="0.01" value="${box.fallback_dspoinc_roll_chance === '' ? '' : Number(box.fallback_dspoinc_roll_chance || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Visual Theme</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Visual Theme', 'Optional frontend theme key. This does not change backend reward logic.')}</label>
                 <input id="rewardBox_${boxId}_visual_theme" type="text" value="${escapeHtml(box.visual_theme || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Optional theme key">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Start At UTC</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Start At UTC', 'Optional start window. Before this time, backend marks the box unavailable.')}</label>
                 <input id="rewardBox_${boxId}_start_at" type="text" value="${escapeHtml(box.start_at || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="YYYY-MM-DD HH:MM:SS">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">End At UTC</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('End At UTC', 'Optional end window. After this time, backend marks the box unavailable.')}</label>
                 <input id="rewardBox_${boxId}_end_at" type="text" value="${escapeHtml(box.end_at || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="YYYY-MM-DD HH:MM:SS">
               </div>
               <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Image Path</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Image Path', 'Optional image override for frontend visuals.')}</label>
                 <input id="rewardBox_${boxId}_image_path" type="text" value="${escapeHtml(box.image_path || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Optional image path">
               </div>
               <div class="md:col-span-2">
-                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Disabled Reason</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">${getRewardChamberFieldLabelHtml('Disabled Reason', 'Player-facing disabled state copy when the box is inactive.')}</label>
                 <input id="rewardBox_${boxId}_disabled_reason_text" type="text" value="${escapeHtml(box.disabled_reason_text || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Why the box is disabled">
               </div>
             </div>
@@ -14293,10 +14635,13 @@ function closeEditStoreItemModal() {
             <div class="mt-4 rounded-lg bg-slate-950/70 border border-white/10 p-3 text-xs text-slate-300">
               <div class="flex flex-wrap gap-4">
                 <div><span class="text-cyan-200 font-semibold">Cooldown:</span> ${cooldownLabel}</div>
+                <div><span class="text-cyan-200 font-semibold">Mode:</span> ${escapeHtml(getRewardChamberFriendlyRewardModeLabel(box.reward_mode))}</div>
                 <div><span class="text-cyan-200 font-semibold">Created:</span> ${escapeHtml(formatRewardChamberAdminDate(box.created_at || ''))}</div>
                 <div><span class="text-cyan-200 font-semibold">Updated:</span> ${escapeHtml(formatRewardChamberAdminDate(box.updated_at || ''))}</div>
               </div>
             </div>
+
+            <div id="rewardBox_${boxId}_saveGuardNote" class="mt-3 rounded-lg border px-3 py-2 text-xs border-white/10 bg-slate-950/60 text-slate-300"></div>
 
             <div class="mt-4 flex flex-wrap gap-3">
               <button onclick="saveRewardChamberBoxConfig(${boxId})"
@@ -14311,6 +14656,12 @@ function closeEditStoreItemModal() {
           </div>
         `;
       }).join('');
+
+      boxes.forEach((box) => {
+        const boxId = Number(box.box_id || 0);
+        refreshRewardChamberBoxDiagnostics(boxId);
+        attachRewardChamberBoxValidationListeners(boxId);
+      });
     }
 
     function renderRewardChamberPoolRows() {
@@ -14328,20 +14679,16 @@ function closeEditStoreItemModal() {
         return;
       }
 
-      const activeRows = rows.filter((row) => Number(row.is_active || 0) === 1);
+      const diagnostics = getRewardChamberPoolDiagnostics(selectedBoxId, selectedBox);
+      const activeRows = diagnostics.activeRows;
       const totalWeight = activeRows.reduce((sum, row) => sum + Math.max(0, Number(row.weight || 0)), 0);
-      const hasPool = activeRows.length > 0;
-      const hasFallback = Number(selectedBox?.fallback_dspoinc_enabled || 0) === 1;
-      const healthText = hasPool
-        ? (hasFallback ? 'Pool + fallback ready' : 'Pool ready')
-        : (hasFallback ? 'Fallback only' : 'No active rows');
 
       if (selectedBoxSummary) {
         selectedBoxSummary.textContent = selectedBox ? `${selectedBox.box_name || 'Box'} (#${selectedBox.box_id})` : `Box ${selectedBoxId}`;
       }
 
       if (activeCountEl) {
-        activeCountEl.textContent = String(activeRows.length);
+        activeCountEl.textContent = String(diagnostics.activeCount);
       }
 
       if (totalWeightEl) {
@@ -14349,8 +14696,10 @@ function closeEditStoreItemModal() {
       }
 
       if (healthEl) {
-        healthEl.textContent = healthText;
+        healthEl.innerHTML = getRewardChamberPoolHealthHtml(diagnostics);
       }
+
+      refreshRewardChamberPoolManagerBanner(diagnostics);
 
       if (!rows.length) {
         tbody.innerHTML = `
@@ -14369,60 +14718,62 @@ function closeEditStoreItemModal() {
         const stateBadge = Number(row.is_active || 0) === 1
           ? '<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider bg-green-900/40 border border-green-500/40 text-green-100">Active</span>'
           : '<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider bg-slate-900/40 border border-slate-500/40 text-slate-200">Disabled</span>';
+        const rowBadges = getRewardChamberPoolRowDiagnostics(row);
 
         return `
           <tr class="border-t border-white/10 align-top" data-reward-pool-row="${escapeHtml(rowKey)}">
             <td class="px-3 py-4">
               <div class="font-bold text-white">#${Number(row.pool_reward_id || 0) > 0 ? Number(row.pool_reward_id) : 'New'}</div>
               <div class="text-xs text-slate-400 mt-1">Box ${Number(row.box_id || 0)}</div>
+              <div class="mt-3 flex flex-wrap gap-2">${rowBadges}</div>
               <input id="rewardPoolRow_${rowKey}_poolRewardId" type="hidden" value="${Number(row.pool_reward_id || 0)}">
               <input id="rewardPoolRow_${rowKey}_boxId" type="hidden" value="${Number(row.box_id || 0)}">
             </td>
             <td class="px-3 py-4">
               <div class="space-y-3">
                 <div>
-                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Reward Type</label>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Reward Type', 'Choose what backend should deliver when this row wins the weighted roll.')}</label>
                   <select id="rewardPoolRow_${rowKey}_rewardType" onchange="updateRewardPoolRowFieldVisibility('${rowKey}')"
                           class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
-                    <option value="store_item" ${rewardType === 'store_item' ? 'selected' : ''}>store_item</option>
-                    <option value="genetic_trait" ${rewardType === 'genetic_trait' ? 'selected' : ''}>genetic_trait</option>
-                    <option value="dspoinc" ${rewardType === 'dspoinc' ? 'selected' : ''}>dspoinc</option>
-                    <option value="premium_claim" ${rewardType === 'premium_claim' ? 'selected' : ''}>premium_claim</option>
+                    <option value="store_item" ${rewardType === 'store_item' ? 'selected' : ''}>Store Item</option>
+                    <option value="genetic_trait" ${rewardType === 'genetic_trait' ? 'selected' : ''}>Genetic Trait</option>
+                    <option value="dspoinc" ${rewardType === 'dspoinc' ? 'selected' : ''}>DSPOINC</option>
+                    <option value="premium_claim" ${rewardType === 'premium_claim' ? 'selected' : ''}>Premium Claim</option>
                   </select>
                 </div>
                 <div id="rewardPoolRow_${rowKey}_storeWrap">
-                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Store Item</label>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Store Item', 'Used by store_item and premium_claim rows.')}</label>
                   <select id="rewardPoolRow_${rowKey}_storeItemId" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                     ${getRewardChamberStoreItemOptionsHtml(row.store_item_id)}
                   </select>
                 </div>
                 <div id="rewardPoolRow_${rowKey}_geneticWrap">
-                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Genetic Catalog</label>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Genetic Catalog', 'Use a catalog entry that can actually be granted to the user.')}</label>
                   <select id="rewardPoolRow_${rowKey}_geneticCatalogId" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                     ${getRewardChamberGeneticCatalogOptionsHtml(row.genetic_catalog_id)}
                   </select>
                 </div>
                 <div id="rewardPoolRow_${rowKey}_dspoincWrap" class="grid grid-cols-1 gap-2">
                   <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Fixed DSPOINC</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Fixed DSPOINC', 'Use a fixed amount when the row always grants the same DSPOINC value.')}</label>
                     <input id="rewardPoolRow_${rowKey}_fixedDspoincAmount" type="number" min="0" step="1" value="${row.fixed_dspoinc_amount === '' ? '' : Number(row.fixed_dspoinc_amount || 0)}"
                            class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                   </div>
                   <div class="grid grid-cols-2 gap-2">
                     <div>
-                      <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Min</label>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Min', 'Minimum DSPOINC value when using a range payout.')}</label>
                       <input id="rewardPoolRow_${rowKey}_dspoincMin" type="number" min="0" step="1" value="${row.dspoinc_min === '' ? '' : Number(row.dspoinc_min || 0)}"
                              class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                     </div>
                     <div>
-                      <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Max</label>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Max', 'Maximum DSPOINC value when using a range payout.')}</label>
                       <input id="rewardPoolRow_${rowKey}_dspoincMax" type="number" min="0" step="1" value="${row.dspoinc_max === '' ? '' : Number(row.dspoinc_max || 0)}"
                              class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                     </div>
                   </div>
                 </div>
                 <div id="rewardPoolRow_${rowKey}_metadataWrap">
-                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Metadata JSON</label>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Metadata JSON', 'Optional premium-claim metadata for manual fulfillment workflows.')}</label>
                   <textarea id="rewardPoolRow_${rowKey}_metadataJson" rows="4"
                             class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white"
                             placeholder='{"fulfillment_type":"manual"}'>${escapeHtml(row.metadata_json || '')}</textarea>
@@ -14432,12 +14783,12 @@ function closeEditStoreItemModal() {
             <td class="px-3 py-4">
               <div class="space-y-3">
                 <div>
-                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Reward Title</label>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Reward Title', 'Operator-facing title returned to the frontend and logs.')}</label>
                   <input id="rewardPoolRow_${rowKey}_rewardTitle" type="text" value="${escapeHtml(row.reward_title || '')}"
                          class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Description</label>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Description', 'Optional helper copy describing the reward row.')}</label>
                   <textarea id="rewardPoolRow_${rowKey}_rewardDescription" rows="5"
                             class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">${escapeHtml(row.reward_description || '')}</textarea>
                 </div>
@@ -14446,12 +14797,12 @@ function closeEditStoreItemModal() {
             <td class="px-3 py-4">
               <div class="space-y-3">
                 <div>
-                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Weight</label>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Weight', 'Higher weight means this active row is more likely to win inside the box pool.')}</label>
                   <input id="rewardPoolRow_${rowKey}_weight" type="number" min="1" step="1" value="${Number(row.weight || 1)}"
                          class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                 </div>
                 <div>
-                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Sort Order</label>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">${getRewardChamberFieldLabelHtml('Sort Order', 'Operator-facing row ordering only. Lower values appear earlier in admin UI.')}</label>
                   <input id="rewardPoolRow_${rowKey}_sortOrder" type="number" step="1" value="${Number(row.sort_order || 0)}"
                          class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
                 </div>
@@ -14462,7 +14813,7 @@ function closeEditStoreItemModal() {
                 ${stateBadge}
                 <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
                   <input id="rewardPoolRow_${rowKey}_isActive" type="checkbox" ${Number(row.is_active || 0) === 1 ? 'checked' : ''}>
-                  <span>Row Active</span>
+                  <span>${getRewardChamberFieldLabelHtml('Row Active', 'Only active rows are eligible in backend reward selection.')}</span>
                 </label>
               </div>
             </td>
@@ -14621,20 +14972,23 @@ function closeEditStoreItemModal() {
     async function saveRewardChamberBoxConfig(boxId) {
       try {
         const payload = collectRewardChamberBoxPayload(boxId);
+        const diagnostics = refreshRewardChamberBoxDiagnostics(boxId);
 
         if (!payload.box_name) {
           showRewardChamberConfigStatus(`Box ${boxId} needs a name before saving.`, 'error');
           return;
         }
 
-        if (payload.fallback_dspoinc_min !== '' && payload.fallback_dspoinc_max !== '') {
-          if (Number(payload.fallback_dspoinc_max) < Number(payload.fallback_dspoinc_min)) {
-            showRewardChamberConfigStatus(`Box ${boxId} fallback max cannot be lower than fallback min.`, 'error');
-            return;
-          }
+        if (diagnostics.errors.length) {
+          showRewardChamberConfigStatus(`Box ${boxId} has hard-block validation issues. ${diagnostics.errors.join(' ')}`, 'error');
+          return;
         }
 
-        showRewardChamberConfigStatus(`Saving box ${boxId} configuration...`, 'info');
+        if (diagnostics.warnings.length) {
+          showRewardChamberConfigStatus(`⚠️ Box ${boxId} saved with warnings allowed by operator policy. ${diagnostics.warnings.join(' ')}`, 'warning');
+        } else {
+          showRewardChamberConfigStatus(`Saving box ${boxId} configuration...`, 'info');
+        }
 
         const response = await fetch(REWARD_CHAMBER_ADMIN_API.config, {
           method: 'POST',
@@ -14655,7 +15009,8 @@ function closeEditStoreItemModal() {
           throw new Error(result?.error || `HTTP ${response.status}`);
         }
 
-        showRewardChamberConfigStatus(`✅ Box ${boxId} saved successfully.`, 'success');
+        const warningSuffix = diagnostics.warnings.length ? ` Saved with ${diagnostics.warnings.length} warning(s).` : '';
+        showRewardChamberConfigStatus(`✅ Box ${boxId} saved successfully.${warningSuffix}`, 'success');
         addLog(`💾 Reward Chamber box ${boxId} saved`);
         await refreshRewardChamberAdmin();
         await refreshRewardChamberConfig(false);
