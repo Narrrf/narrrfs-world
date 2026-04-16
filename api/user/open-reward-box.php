@@ -2,9 +2,15 @@
 // 🎁 Open Reward Box API
 // Opens one Reward Chamber box for the active Discord-authenticated user.
 //
-// v1 scope:
-// - Fully implements Box Type 1 (free_dspoinc_box)
-// - Box Type 2 and Box Type 3 intentionally return not implemented yet
+// Current scope:
+// - Box Type 1: free_dspoinc_box
+// - Box Type 2: paid_random_box
+// - Box Type 3: premium_claim_box
+//
+// Current behavior:
+// - Backend computes cooldown, pricing, availability, and reward delivery
+// - Box 2 supports weighted pool / fallback delivery
+// - Box 3 creates a pending claim request
 //
 // Stability-first rules:
 // - Session auth is authoritative in production
@@ -14,8 +20,8 @@
 // - DSPOINC reward credits write to tbl_user_scores and tbl_score_adjustments
 // - Box open history and per-user box state are updated atomically
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+error_reporting(0);
+ini_set('display_errors', 0);
 
 date_default_timezone_set('UTC');
 
@@ -1183,7 +1189,7 @@ try {
     $userState = fetch_user_box_state($pdo, $boxId, $userId);
     $disabledState = calculate_disabled_state($box, $userState, $userId, $availableDspoinc, $openedAtUtc);
 
-    if ((bool)$disabledState['is_disabled']) {
+    if ((bool)($disabledState['is_disabled'] ?? false)) {
         $pdo->rollBack();
         json_response([
             'success' => false,
@@ -1195,6 +1201,7 @@ try {
     }
 
     $boxPrice = max(0, (int)($box['price_dspoinc'] ?? 0));
+
     $rewardType = 'dspoinc';
     $rewardTitle = 'DSPOINC Reward';
     $rewardReferenceId = null;
@@ -1205,6 +1212,160 @@ try {
     $poolRewardId = null;
     $openStatus = REWARD_BOX_STATUS_GRANTED;
     $deliveryPayload = [];
+    $rewardDescription = trim((string)($box['box_description'] ?? ''));
+
+    /**
+     * TODO: The admin Reward Chamber config UI should edit only DB-backed values
+     * such as pool rows, weights, prices, fallback ranges, visibility, and active flags.
+     * Frontend/admin must never become the authority for reward decisions.
+     */
+
+    /**
+     * Spend box price safely.
+     */
+    $ensureAndSpendBoxPrice = function () use ($pdo, $userId, $boxPrice, $availableDspoinc, $box) {
+        if ($boxPrice <= 0) {
+            return;
+        }
+
+        if ($availableDspoinc < $boxPrice) {
+            $pdo->rollBack();
+            json_response([
+                'success' => false,
+                'error' => 'Not enough DSPOINC',
+                'data' => [
+                    'price_dspoinc' => $boxPrice,
+                    'balance_dspoinc' => $availableDspoinc,
+                    'missing_dspoinc' => ($boxPrice - $availableDspoinc)
+                ]
+            ], 409);
+        }
+
+        insert_reward_box_spend($pdo, $userId, $boxPrice, $box);
+    };
+
+    /**
+     * Deliver a DSPOINC reward safely.
+     */
+    $grantDspoincReward = function (int $amount, string $sourceTitle) use ($pdo, $userId, $box) {
+        if ($amount <= 0) {
+            throw new Exception('Reward DSPOINC amount must be greater than zero');
+        }
+
+        insert_dspoinc_change(
+            $pdo,
+            $userId,
+            $amount,
+            REWARD_BOX_GAME_KEY,
+            $sourceTitle
+        );
+
+        insert_score_adjustment(
+            $pdo,
+            $userId,
+            REWARD_BOX_SYSTEM_ACTOR,
+            $amount,
+            'add',
+            'Reward box credit: ' . ((string)($box['box_name'] ?? 'Reward Box'))
+        );
+    };
+
+    /**
+     * TODO: Confirm reward pool source columns for genetic_trait/store_item remain stable across local and production DB snapshots.
+     * Try to resolve one paid_random_box reward entry into a deliverable reward.
+     * Returns a normalized payload array.
+     */
+    $resolvePoolEntry = function (array $entry) use ($pdo, $userId, $box) {
+        $resolvedRewardType = trim((string)($entry['reward_type'] ?? ''));
+        $resolvedRewardTitle = trim((string)($entry['reward_title'] ?? '')) ?: 'Reward Box Grant';
+        $resolvedRewardReferenceId = null;
+        $resolvedRewardAmount = null;
+        $resolvedDeliveryPayload = [];
+
+        if ($resolvedRewardType === 'store_item') {
+            $storeItemId = (int)($entry['store_item_id'] ?: $entry['reward_reference_id']);
+            if ($storeItemId <= 0) {
+                throw new Exception('Reward pool store item reference is invalid');
+            }
+
+            $storeItem = fetch_store_item_row($pdo, $storeItemId);
+            if (!$storeItem) {
+                throw new Exception('Reward pool store item could not be loaded');
+            }
+
+            $resolvedRewardReferenceId = (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? $storeItemId);
+            $resolvedRewardTitle = trim((string)($entry['reward_title'] ?? $storeItem['item_name'] ?? $storeItem['name'] ?? 'Store Reward')) ?: 'Store Reward';
+            $resolvedDeliveryPayload = grant_store_item_to_user($pdo, $userId, $storeItem, 1, 'reward_box');
+
+            return [
+                'reward_type' => 'store_item',
+                'reward_title' => $resolvedRewardTitle,
+                'reward_reference_id' => $resolvedRewardReferenceId,
+                'reward_amount' => null,
+                'reward_description' => trim((string)($entry['reward_description'] ?? $storeItem['description'] ?? $box['box_description'] ?? '')),
+                'delivery_payload' => $resolvedDeliveryPayload
+            ];
+        }
+
+        if ($resolvedRewardType === 'genetic_trait') {
+            $catalogId = (int)($entry['catalog_id'] ?: $entry['reward_reference_id']);
+            if ($catalogId <= 0) {
+                throw new Exception('Reward pool genetic trait reference is invalid');
+            }
+
+            $catalogRow = fetch_genetic_catalog_row($pdo, $catalogId);
+            if (!$catalogRow) {
+                throw new Exception('Reward pool genetic trait could not be loaded');
+            }
+
+            $traitType = trim((string)($catalogRow['trait_type'] ?? ''));
+            $traitValue = trim((string)($catalogRow['trait_value'] ?? ''));
+
+            if ($traitType === '' || $traitValue === '') {
+                throw new Exception('Reward pool genetic trait is missing trait_type or trait_value');
+            }
+
+            if (user_owns_genetic_trait($pdo, $userId, $traitType, $traitValue)) {
+                return [
+                    'reward_type' => 'duplicate_genetic_trait',
+                    'reward_title' => $resolvedRewardTitle,
+                    'reward_reference_id' => null,
+                    'reward_amount' => null,
+                    'reward_description' => trim((string)($entry['reward_description'] ?? $box['box_description'] ?? '')),
+                    'delivery_payload' => []
+                ];
+            }
+
+            $resolvedRewardReferenceId = (int)($catalogRow['catalog_id'] ?? $catalogRow['trait_catalog_id'] ?? $catalogId);
+            $resolvedRewardTitle = trim((string)($entry['reward_title'] ?? $catalogRow['display_title'] ?? $traitValue)) ?: 'Genetic Reward';
+            $resolvedDeliveryPayload = grant_genetic_trait_to_user($pdo, $userId, $catalogRow, 'reward_box');
+
+            return [
+                'reward_type' => 'genetic_trait',
+                'reward_title' => $resolvedRewardTitle,
+                'reward_reference_id' => $resolvedRewardReferenceId,
+                'reward_amount' => null,
+                'reward_description' => trim((string)($entry['reward_description'] ?? $catalogRow['description'] ?? $box['box_description'] ?? '')),
+                'delivery_payload' => $resolvedDeliveryPayload
+            ];
+        }
+
+        if ($resolvedRewardType === 'dspoinc') {
+            $resolvedRewardAmount = roll_reward_box_fallback_dspoinc_amount($box, $entry);
+            $resolvedRewardTitle = trim((string)($entry['reward_title'] ?? 'DSPOINC Reward')) ?: 'DSPOINC Reward';
+
+            return [
+                'reward_type' => 'dspoinc',
+                'reward_title' => $resolvedRewardTitle,
+                'reward_reference_id' => null,
+                'reward_amount' => $resolvedRewardAmount,
+                'reward_description' => trim((string)($entry['reward_description'] ?? $box['box_description'] ?? '')),
+                'delivery_payload' => []
+            ];
+        }
+
+        throw new Exception('Unsupported reward type in reward pool: ' . $resolvedRewardType);
+    };
 
     if ($boxType === 'free_dspoinc_box') {
         $rewardAmount = roll_free_box_dspoinc_amount($box);
@@ -1216,42 +1377,32 @@ try {
             ], 500);
         }
 
-        insert_dspoinc_change(
-            $pdo,
-            $userId,
+        $rewardDescription = trim((string)($box['box_description'] ?? 'Free DSPOINC reward from Reward Chamber'));
+        $grantDspoincReward(
             (int)$rewardAmount,
-            REWARD_BOX_GAME_KEY,
             'Free reward box: ' . ((string)($box['box_key'] ?? 'box_' . $boxId))
         );
-
-        insert_score_adjustment(
-            $pdo,
-            $userId,
-            REWARD_BOX_SYSTEM_ACTOR,
-            (int)$rewardAmount,
-            'add',
-            'Reward box credit: ' . ((string)($box['box_name'] ?? 'Reward Box'))
-        );
     } elseif ($boxType === 'paid_random_box') {
+        if ($boxPrice <= 0) {
+            $pdo->rollBack();
+            json_response([
+                'success' => false,
+                'error' => 'Invalid paid box price configuration'
+            ], 400);
+        }
+
         $poolEntries = fetch_reward_pool_entries($pdo, $boxId);
         $canFallback = (int)($box['fallback_dspoinc_enabled'] ?? 0) === 1;
 
-        if ($boxPrice > 0) {
-            if ($availableDspoinc < $boxPrice) {
-                $pdo->rollBack();
-                json_response([
-                    'success' => false,
-                    'error' => 'Not enough DSPOINC',
-                    'data' => [
-                        'price_dspoinc' => $boxPrice,
-                        'balance_dspoinc' => $availableDspoinc,
-                        'missing_dspoinc' => ($boxPrice - $availableDspoinc)
-                    ]
-                ], 409);
-            }
-
-            insert_reward_box_spend($pdo, $userId, $boxPrice, $box);
+        if (empty($poolEntries) && !$canFallback) {
+            $pdo->rollBack();
+            json_response([
+                'success' => false,
+                'error' => 'Reward pool is empty for this box'
+            ], 400);
         }
+
+        $ensureAndSpendBoxPrice();
 
         $selectedEntry = null;
         if (!should_roll_reward_box_fallback($box, $poolEntries)) {
@@ -1261,155 +1412,124 @@ try {
         }
 
         if (!$selectedEntry && !$usedFallback) {
+            if (!$canFallback) {
+                $pdo->rollBack();
+                json_response([
+                    'success' => false,
+                    'error' => 'Unable to select a reward from the pool'
+                ], 500);
+            }
             $usedFallback = true;
         }
 
         if ($selectedEntry && !$usedFallback) {
             $poolRewardId = (int)($selectedEntry['pool_reward_id'] ?? 0);
-            $rewardType = trim((string)($selectedEntry['reward_type'] ?? ''));
-            $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? '')) ?: 'Reward Box Grant';
 
-            if ($rewardType === 'store_item') {
-                $storeItemId = (int)($selectedEntry['store_item_id'] ?: $selectedEntry['reward_reference_id']);
-                $storeItem = fetch_store_item_row($pdo, $storeItemId);
-                if (!$storeItem) {
-                    if (!$canFallback) {
-                        throw new Exception('Reward pool store item could not be loaded');
-                    }
-                    $usedFallback = true;
-                } else {
-                    $rewardReferenceId = (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? $storeItemId);
-                    $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? $storeItem['item_name'] ?? $storeItem['name'] ?? 'Store Reward')) ?: 'Store Reward';
-                    $deliveryPayload = grant_store_item_to_user($pdo, $userId, $storeItem, 1, 'reward_box');
-                }
-            } elseif ($rewardType === 'genetic_trait') {
-                $catalogId = (int)($selectedEntry['catalog_id'] ?: $selectedEntry['reward_reference_id']);
-                $catalogRow = fetch_genetic_catalog_row($pdo, $catalogId);
-                if (!$catalogRow) {
-                    if (!$canFallback) {
-                        throw new Exception('Reward pool genetic trait could not be loaded');
-                    }
-                    $usedFallback = true;
-                } else {
-                    $traitType = trim((string)($catalogRow['trait_type'] ?? ''));
-                    $traitValue = trim((string)($catalogRow['trait_value'] ?? ''));
+            try {
+                $resolved = $resolvePoolEntry($selectedEntry);
 
-                    if (user_owns_genetic_trait($pdo, $userId, $traitType, $traitValue)) {
-                        $usedReroll = true;
-                        $rerollEntry = pick_weighted_reward_entry($poolEntries, [$poolRewardId]);
-                        if ($rerollEntry) {
-                            $selectedEntry = $rerollEntry;
-                            $poolRewardId = (int)($selectedEntry['pool_reward_id'] ?? 0);
-                            $rewardType = trim((string)($selectedEntry['reward_type'] ?? ''));
-                            $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? '')) ?: 'Reward Box Grant';
+                if ($resolved['reward_type'] === 'duplicate_genetic_trait') {
+                    $usedReroll = true;
 
-                            if ($rewardType === 'store_item') {
-                                $storeItemId = (int)($selectedEntry['store_item_id'] ?: $selectedEntry['reward_reference_id']);
-                                $storeItem = fetch_store_item_row($pdo, $storeItemId);
-                                if ($storeItem) {
-                                    $rewardReferenceId = (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? $storeItemId);
-                                    $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? $storeItem['item_name'] ?? $storeItem['name'] ?? 'Store Reward')) ?: 'Store Reward';
-                                    $deliveryPayload = grant_store_item_to_user($pdo, $userId, $storeItem, 1, 'reward_box');
-                                } else {
-                                    $usedFallback = true;
-                                }
-                            } elseif ($rewardType === 'genetic_trait') {
-                                $catalogId = (int)($selectedEntry['catalog_id'] ?: $selectedEntry['reward_reference_id']);
-                                $catalogRow = fetch_genetic_catalog_row($pdo, $catalogId);
-                                $traitType = trim((string)($catalogRow['trait_type'] ?? ''));
-                                $traitValue = trim((string)($catalogRow['trait_value'] ?? ''));
-                                if ($catalogRow && !user_owns_genetic_trait($pdo, $userId, $traitType, $traitValue)) {
-                                    $rewardReferenceId = (int)($catalogRow['catalog_id'] ?? $catalogRow['trait_catalog_id'] ?? $catalogId);
-                                    $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? $catalogRow['display_title'] ?? $traitValue)) ?: 'Genetic Reward';
-                                    $deliveryPayload = grant_genetic_trait_to_user($pdo, $userId, $catalogRow, 'reward_box');
-                                } else {
-                                    $usedFallback = true;
-                                }
-                            } elseif ($rewardType === 'dspoinc') {
-                                $rewardAmount = roll_reward_box_fallback_dspoinc_amount($box, $selectedEntry);
-                                $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? 'DSPOINC Reward')) ?: 'DSPOINC Reward';
-                            } else {
-                                $usedFallback = true;
-                            }
-                        } else {
+                    $rerollEntry = pick_weighted_reward_entry($poolEntries, [$poolRewardId]);
+                    if ($rerollEntry) {
+                        $selectedEntry = $rerollEntry;
+                        $poolRewardId = (int)($selectedEntry['pool_reward_id'] ?? 0);
+                        $resolved = $resolvePoolEntry($selectedEntry);
+
+                        if ($resolved['reward_type'] === 'duplicate_genetic_trait') {
                             $usedFallback = true;
                         }
                     } else {
-                        $rewardReferenceId = (int)($catalogRow['catalog_id'] ?? $catalogRow['trait_catalog_id'] ?? $catalogId);
-                        $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? $catalogRow['display_title'] ?? $traitValue)) ?: 'Genetic Reward';
-                        $deliveryPayload = grant_genetic_trait_to_user($pdo, $userId, $catalogRow, 'reward_box');
+                        $usedFallback = true;
                     }
                 }
-            } elseif ($rewardType === 'dspoinc') {
-                $rewardAmount = roll_reward_box_fallback_dspoinc_amount($box, $selectedEntry);
-                $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? 'DSPOINC Reward')) ?: 'DSPOINC Reward';
-            } else {
-                if (!$canFallback) {
-                    throw new Exception('Unsupported reward type in paid_random_box pool: ' . $rewardType);
+
+                if (!$usedFallback && $resolved['reward_type'] !== 'duplicate_genetic_trait') {
+                    $rewardType = $resolved['reward_type'];
+                    $rewardTitle = $resolved['reward_title'];
+                    $rewardReferenceId = $resolved['reward_reference_id'];
+                    $rewardAmount = $resolved['reward_amount'];
+                    $rewardDescription = trim((string)($resolved['reward_description'] ?? $rewardDescription));
+                    $deliveryPayload = $resolved['delivery_payload'];
                 }
+            } catch (Exception $poolResolutionError) {
+                if (!$canFallback) {
+                    throw $poolResolutionError;
+                }
+
                 $usedFallback = true;
             }
         }
 
         if ($usedFallback) {
             if (!$canFallback) {
-                throw new Exception('No deliverable paid_random_box reward and fallback disabled');
+                throw new Exception('No deliverable paid_random_box reward and fallback is disabled');
             }
+
             $rewardType = 'dspoinc';
             $rewardTitle = 'Fallback DSPOINC Reward';
             $rewardReferenceId = null;
             $rewardAmount = roll_reward_box_fallback_dspoinc_amount($box, null);
+            $rewardDescription = trim((string)($box['box_description'] ?? 'Fallback DSPOINC reward from Reward Chamber'));
+            $deliveryPayload = [];
         }
 
         if ($rewardType === 'dspoinc') {
+            if ($rewardDescription === '') {
+                $rewardDescription = trim((string)($box['box_description'] ?? 'DSPOINC reward from Reward Chamber'));
+            }
             $rewardAmount = (int)($rewardAmount ?? 0);
             if ($rewardAmount <= 0) {
                 throw new Exception('Fallback DSPOINC reward range is invalid');
             }
 
-            insert_dspoinc_change(
-                $pdo,
-                $userId,
+            $grantDspoincReward(
                 $rewardAmount,
-                REWARD_BOX_GAME_KEY,
                 'Reward box grant: ' . ((string)($box['box_key'] ?? 'box_' . $boxId))
-            );
-
-            insert_score_adjustment(
-                $pdo,
-                $userId,
-                REWARD_BOX_SYSTEM_ACTOR,
-                $rewardAmount,
-                'add',
-                'Reward box credit: ' . ((string)($box['box_name'] ?? 'Reward Box'))
             );
         }
     } elseif ($boxType === 'premium_claim_box') {
-        if ($boxPrice > 0) {
-            if ($availableDspoinc < $boxPrice) {
-                $pdo->rollBack();
-                json_response([
-                    'success' => false,
-                    'error' => 'Not enough DSPOINC',
-                    'data' => [
-                        'price_dspoinc' => $boxPrice,
-                        'balance_dspoinc' => $availableDspoinc,
-                        'missing_dspoinc' => ($boxPrice - $availableDspoinc)
-                    ]
-                ], 409);
-            }
-
-            insert_reward_box_spend($pdo, $userId, $boxPrice, $box);
+        if ($boxPrice <= 0) {
+            $pdo->rollBack();
+            json_response([
+                'success' => false,
+                'error' => 'Invalid premium claim box price configuration'
+            ], 400);
         }
+
+        $ensureAndSpendBoxPrice();
 
         $poolEntries = fetch_reward_pool_entries($pdo, $boxId);
         $selectedEntry = pick_weighted_reward_entry($poolEntries);
+
+        if (!$selectedEntry) {
+            $pdo->rollBack();
+            json_response([
+                'success' => false,
+                'error' => 'No premium claim reward is configured for this box'
+            ], 500);
+        }
+
         $poolRewardId = (int)($selectedEntry['pool_reward_id'] ?? 0);
         $rewardType = 'premium_claim';
         $rewardTitle = trim((string)($selectedEntry['reward_title'] ?? $box['box_name'] ?? 'Premium Claim Reward')) ?: 'Premium Claim Reward';
         $rewardReferenceId = (int)($selectedEntry['reward_reference_id'] ?? $selectedEntry['catalog_id'] ?? $selectedEntry['store_item_id'] ?? 0) ?: null;
-        $claimRequestId = create_reward_claim_request($pdo, $userId, $boxId, $selectedEntry ?: [], $box);
+        $rewardDescription = trim((string)($selectedEntry['reward_description'] ?? $box['box_description'] ?? 'Premium reward claim created from Reward Chamber'));
+
+        // TODO: Confirm tbl_reward_claim_requests final production schema/columns if this branch is expanded further.
+        $claimRequestId = create_reward_claim_request($pdo, $userId, $boxId, $selectedEntry, $box);
+        if (!$claimRequestId) {
+            throw new Exception('Premium claim request could not be created');
+        }
+
         $openStatus = REWARD_BOX_STATUS_PENDING;
+    } else {
+        $pdo->rollBack();
+        json_response([
+            'success' => false,
+            'error' => 'Unsupported reward box type: ' . $boxType
+        ], 400);
     }
 
     $nextOpenAt = calculate_next_open_at($box, $openedAtUtc);
@@ -1456,6 +1576,7 @@ try {
             'user_id' => $userId,
             'server_time_utc' => $responseNowUtc,
             'available_dspoinc' => $refreshedBalance,
+            'new_available_dspoinc' => $refreshedBalance,
             'open_result' => [
                 'open_id' => $openId,
                 'box_id' => $boxId,
@@ -1465,7 +1586,9 @@ try {
                 'reward_type' => $rewardType,
                 'reward_title' => $rewardTitle,
                 'reward_reference_id' => $rewardReferenceId,
+                'reward_description' => $rewardDescription,
                 'reward_dspoinc_amount' => $rewardType === 'dspoinc' ? (int)$rewardAmount : null,
+                'new_available_dspoinc' => $refreshedBalance,
                 'used_fallback_dspoinc' => $usedFallback,
                 'used_reroll' => $usedReroll,
                 'claim_request_id' => $claimRequestId,

@@ -146,6 +146,7 @@
         '/api/admin/get-holder-verification-stats.php',
         '/api/admin/get-discord-role-members-live.php',
         '/api/admin/get-discord-role-members.php',
+        '/api/admin/reward-chamber-config.php',
         '/api/user/user-game-missions.php'
       ];
 
@@ -2128,6 +2129,104 @@
       </div>
 
       <div class="bg-gradient-to-r from-slate-900/60 to-slate-800/60 p-6 rounded-lg mb-6 border border-cyan-500/30">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-cyan-300">⚙️ Box Configuration</h3>
+            <p class="text-sm text-gray-300 mt-1">
+              Edit backend box state, cooldown windows, pricing, fallback logic, and long-term visibility without touching runtime reward execution.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="refreshRewardChamberConfig()"
+                    class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              📥 Load Config
+            </button>
+          </div>
+        </div>
+
+        <div id="rewardChamberConfigStatusMessage" class="hidden mb-4 rounded-lg border px-4 py-3 text-sm"></div>
+        <div id="rewardChamberBoxConfigCards" class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10 text-gray-300">Loading box configuration...</div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-slate-900/60 to-slate-800/60 p-6 rounded-lg mb-6 border border-fuchsia-500/30">
+        <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-fuchsia-300">🎛️ Reward Pool Manager</h3>
+            <p class="text-sm text-gray-300 mt-1">
+              Manage weighted reward rows, type-specific payload fields, activation state, sort order, and premium claim metadata with one operator surface.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <select id="rewardChamberPoolSelectedBox" onchange="renderRewardChamberPoolRows()"
+                    class="px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              <option value="1">Box 1</option>
+              <option value="2">Box 2</option>
+              <option value="3">Box 3</option>
+            </select>
+            <button onclick="addRewardChamberPoolRow()"
+                    class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              ➕ Add Reward Row
+            </button>
+            <button onclick="refreshRewardChamberConfig()"
+                    class="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              🔄 Reload Pool Data
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="text-xs uppercase tracking-widest text-fuchsia-200 font-bold">Selected Box</div>
+            <div id="rewardPoolSelectedBoxSummary" class="text-lg font-semibold mt-2 text-white">-</div>
+          </div>
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="text-xs uppercase tracking-widest text-fuchsia-200 font-bold">Active Rows</div>
+            <div id="rewardPoolActiveRowCount" class="text-lg font-semibold mt-2 text-white">-</div>
+          </div>
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="text-xs uppercase tracking-widest text-fuchsia-200 font-bold">Total Weight</div>
+            <div id="rewardPoolTotalWeight" class="text-lg font-semibold mt-2 text-white">-</div>
+          </div>
+          <div class="bg-black/20 rounded-lg p-4 border border-white/10">
+            <div class="text-xs uppercase tracking-widest text-fuchsia-200 font-bold">Pool Health</div>
+            <div id="rewardPoolHealthSummary" class="text-sm font-semibold mt-2 text-white">-</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-white/10">
+          <table class="min-w-full text-sm text-left text-slate-100">
+            <thead class="bg-black/30 text-xs uppercase tracking-wider text-fuchsia-200">
+              <tr>
+                <th class="px-3 py-3">Row</th>
+                <th class="px-3 py-3">Type + Core Payload</th>
+                <th class="px-3 py-3">Title + Description</th>
+                <th class="px-3 py-3">Weight + Sort</th>
+                <th class="px-3 py-3">State</th>
+                <th class="px-3 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rewardChamberPoolRows">
+              <tr>
+                <td colspan="6" class="px-4 py-4 text-gray-300 bg-black/20">Loading reward pool rows...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 rounded-lg bg-black/20 border border-white/10 p-4 text-sm text-slate-300">
+          <div class="font-semibold text-yellow-300 mb-2">Field logic</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>• <strong>store_item</strong> uses the Store Item dropdown only.</div>
+            <div>• <strong>genetic_trait</strong> uses the Genetic Catalog dropdown only.</div>
+            <div>• <strong>dspoinc</strong> uses fixed amount or min/max range.</div>
+            <div>• <strong>premium_claim</strong> uses Store Item + metadata JSON.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-slate-900/60 to-slate-800/60 p-6 rounded-lg mb-6 border border-cyan-500/30">
         <h3 class="text-lg font-semibold mb-4 text-cyan-300">🧠 Operator Notes</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-200">
           <div class="bg-black/20 rounded-lg p-4 border border-white/10">
@@ -2135,15 +2234,15 @@
             <ul class="list-disc ml-5 space-y-1">
               <li>Reward Chamber stays backend-authoritative.</li>
               <li>Disabled state, cooldown, pricing, and availability come from API.</li>
-              <li>Box 1 is live now. Box 2 and Box 3 remain roadmap placeholders until backend expansion is implemented.</li>
+              <li>Box 1, Box 2, and Box 3 are all live backend-side and stay runtime-driven by the user APIs.</li>
             </ul>
           </div>
           <div class="bg-black/20 rounded-lg p-4 border border-white/10">
             <div class="font-semibold text-yellow-300 mb-2">Important scope</div>
             <ul class="list-disc ml-5 space-y-1">
-              <li>This tab is live read/test tooling only.</li>
+              <li>This tab now combines live monitoring with admin configuration.</li>
               <li>It does not replace backend truth with localStorage config.</li>
-              <li>The older chest config tools are intentionally not used here to avoid breaking the working admin surface.</li>
+              <li>Runtime reward execution still stays inside the live user endpoints.</li>
             </ul>
           </div>
         </div>
@@ -13578,33 +13677,26 @@ function closeEditStoreItemModal() {
     }
 
     // ============================================================================
-    // 🎁 PROFILE CHEST CONFIGURATION FUNCTIONS
+    // 🎁 REWARD CHAMBER ADMIN CONFIGURATION FUNCTIONS
     // ============================================================================
     
-    /**
-     * Load profile chest configuration from localStorage or use defaults
-     * @returns {Object} Configuration object
-     */
-    function getProfileChestConfigDefaults() {
-      return {
-        rewardMin: 1,
-        rewardMax: 250,
-        cooldownType: 'daily',
-        cooldownHours: 24,
-      };
-    }
-    
-
     const REWARD_CHAMBER_ADMIN_API = {
       getBoxes: '/api/user/get-reward-boxes.php',
-      openBox: '/api/user/open-reward-box.php'
+      openBox: '/api/user/open-reward-box.php',
+      config: API_BASE_URL + '/api/admin/reward-chamber-config.php'
     };
 
     let rewardChamberAdminLastPayload = null;
+    let rewardChamberAdminConfigState = {
+      boxes: [],
+      poolRows: [],
+      references: {
+        store_items: [],
+        genetic_catalog: []
+      }
+    };
+    let rewardChamberAdminDraftRowSeed = 0;
 
-    /**
-     * Return localhost-compatible user id for Reward Chamber admin testing.
-     */
     function getRewardChamberAdminLocalUserId() {
       try {
         if (!window.NarrrfsAdminAuth || !window.NarrrfsAdminAuth.isLocalAdminHost()) {
@@ -13617,9 +13709,6 @@ function closeEditStoreItemModal() {
       }
     }
 
-    /**
-     * Build a Reward Chamber API path with optional localhost user_id support.
-     */
     function getRewardChamberAdminApiPath(basePath) {
       const localUserId = getRewardChamberAdminLocalUserId();
       if (!localUserId) {
@@ -13630,25 +13719,24 @@ function closeEditStoreItemModal() {
       return `${basePath}${joiner}user_id=${encodeURIComponent(localUserId)}`;
     }
 
-    /**
-     * Format a UTC datetime string for the admin Reward Chamber view.
-     */
     function formatRewardChamberAdminDate(value) {
       if (!value) {
         return '—';
       }
 
-      const parsed = new Date(String(value).replace(' ', 'T') + 'Z');
+      const safeValue = String(value).trim();
+      if (!safeValue) {
+        return '—';
+      }
+
+      const parsed = new Date(safeValue.replace(' ', 'T') + (safeValue.endsWith('Z') ? '' : 'Z'));
       if (Number.isNaN(parsed.getTime())) {
-        return String(value);
+        return safeValue;
       }
 
       return parsed.toLocaleString();
     }
 
-    /**
-     * Format cooldown seconds for the admin Reward Chamber view.
-     */
     function formatRewardChamberAdminDuration(totalSeconds) {
       const seconds = Math.max(0, Number(totalSeconds || 0));
       if (seconds <= 0) {
@@ -13670,9 +13758,6 @@ function closeEditStoreItemModal() {
       return `${secs}s`;
     }
 
-    /**
-     * Show a status banner inside the Reward Chamber admin tab.
-     */
     function showRewardChamberAdminStatus(message, type = 'info') {
       const statusEl = document.getElementById('rewardChamberAdminStatusMessage');
       if (!statusEl) {
@@ -13693,9 +13778,26 @@ function closeEditStoreItemModal() {
       statusEl.classList.remove('hidden');
     }
 
-    /**
-     * Render the live Reward Chamber boxes returned by the backend.
-     */
+    function showRewardChamberConfigStatus(message, type = 'info') {
+      const statusEl = document.getElementById('rewardChamberConfigStatusMessage');
+      if (!statusEl) {
+        return;
+      }
+
+      statusEl.textContent = message;
+      statusEl.className = 'mb-4 rounded-lg border px-4 py-3 text-sm';
+
+      if (type === 'success') {
+        statusEl.classList.add('bg-green-900/40', 'border-green-500/50', 'text-green-100');
+      } else if (type === 'error') {
+        statusEl.classList.add('bg-red-900/40', 'border-red-500/50', 'text-red-100');
+      } else {
+        statusEl.classList.add('bg-blue-900/40', 'border-blue-500/50', 'text-blue-100');
+      }
+
+      statusEl.classList.remove('hidden');
+    }
+
     function renderRewardChamberAdminBoxes(payload) {
       const data = payload && payload.data ? payload.data : payload;
       rewardChamberAdminLastPayload = data || null;
@@ -13740,43 +13842,42 @@ function closeEditStoreItemModal() {
           : 'bg-green-900/40 border border-green-500/40 text-green-100';
         const badgeText = disabled ? 'Disabled' : 'Available';
         const rewardLine = rewardSummary?.short_text || rewardSummary?.description || 'No reward summary provided.';
+        const lastRewardTitle = String(userState?.last_reward_title || '').trim();
         const lastRewardAmount = Number(userState?.last_reward_dspoinc_amount || 0);
+        const lastRewardText = lastRewardTitle || (lastRewardAmount > 0 ? `${lastRewardAmount.toLocaleString()} DSPOINC` : '—');
 
         return `
           <div class="bg-slate-900/70 rounded-xl p-4 border border-white/10 shadow-lg">
             <div class="flex items-start justify-between gap-3">
               <div>
-                <div class="text-xl font-bold text-white">${boxName}</div>
-                <div class="text-xs uppercase tracking-widest text-slate-400 mt-1">${boxType}</div>
+                <div class="text-xl font-bold text-white">${escapeHtml(boxName)}</div>
+                <div class="text-xs uppercase tracking-widest text-slate-400 mt-1">${escapeHtml(boxType)}</div>
               </div>
               <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${badgeClass}">${badgeText}</span>
             </div>
 
             <div class="mt-4 flex flex-wrap gap-2">
-              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-black/20 border border-white/10 text-slate-200">${identity}</span>
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-black/20 border border-white/10 text-slate-200">${escapeHtml(identity)}</span>
               <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-black/20 border border-white/10 text-slate-200">${price > 0 ? price.toLocaleString() + ' DSPOINC' : 'FREE'}</span>
               <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-black/20 border border-white/10 text-slate-200">${openCount} open(s)</span>
             </div>
 
             <div class="mt-4 space-y-2 text-sm text-slate-200">
-              <div><span class="text-cyan-300 font-semibold">Reward summary:</span> ${rewardLine}</div>
+              <div><span class="text-cyan-300 font-semibold">Reward summary:</span> ${escapeHtml(rewardLine)}</div>
               <div><span class="text-cyan-300 font-semibold">Next open at:</span> ${nextOpenAt ? formatRewardChamberAdminDate(nextOpenAt) : 'Ready now / no timer returned'}</div>
               <div><span class="text-cyan-300 font-semibold">Cooldown remaining:</span> ${formatRewardChamberAdminDuration(cooldownSeconds)}</div>
-              <div><span class="text-cyan-300 font-semibold">Last reward:</span> ${lastRewardAmount > 0 ? lastRewardAmount.toLocaleString() + ' DSPOINC' : '—'}</div>
-              <div><span class="text-cyan-300 font-semibold">Disabled reason:</span> ${disabledReason || 'None'}</div>
+              <div><span class="text-cyan-300 font-semibold">Last reward:</span> ${escapeHtml(lastRewardText)}</div>
+              <div><span class="text-cyan-300 font-semibold">Disabled reason:</span> ${escapeHtml(disabledReason || 'None')}</div>
             </div>
 
             <div class="mt-4 p-3 rounded-lg bg-black/20 border border-white/10 text-xs text-slate-300">
-              Box 2 and Box 3 remain operator-visible roadmap cards until their backend delivery paths are implemented.
+              Live player-facing state is backend-driven. Use the config sections below to change box settings and reward pools safely.
             </div>
           </div>
         `;
       }).join('');
     }
 
-    /**
-     * Fetch Reward Chamber data for the admin tab.
-     */
     async function refreshRewardChamberAdmin() {
       try {
         showRewardChamberAdminStatus('Loading live Reward Chamber state...', 'info');
@@ -13811,9 +13912,6 @@ function closeEditStoreItemModal() {
       }
     }
 
-    /**
-     * Run a backend test open for one Reward Chamber box from the admin tab.
-     */
     async function adminTestOpenRewardBox(boxId) {
       const proceed = confirm(`Open Box ${boxId} using the live backend flow for the current authenticated session?`);
       if (!proceed) {
@@ -13821,9 +13919,9 @@ function closeEditStoreItemModal() {
       }
 
       try {
-        showRewardChamberAdminStatus(`Opening Box ${boxId} through the live backend flow...`, 'info');
+        showRewardChamberAdminStatus(`Opening Box ${boxId} through the live backend...`, 'info');
 
-        const body = { box_id: Number(boxId) || 0 };
+        const body = { box_id: Number(boxId) };
         const localUserId = getRewardChamberAdminLocalUserId();
         if (localUserId) {
           body.user_id = localUserId;
@@ -13839,264 +13937,889 @@ function closeEditStoreItemModal() {
           body: JSON.stringify(body)
         });
 
-        const payload = await response.json().catch(() => ({}));
+        const payload = await response.json();
 
         if (!response.ok || !payload?.success) {
-          throw new Error(payload?.error || payload?.message || `HTTP ${response.status}`);
+          throw new Error(payload?.error || `HTTP ${response.status}`);
         }
 
-        const data = payload?.data || {};
-        const amount = Number(data?.open_result?.reward_dspoinc_amount || 0);
-        const successMessage = boxId === 1
-          ? `✅ Box 1 opened successfully. Reward: ${amount.toLocaleString()} DSPOINC.`
-          : `✅ Box ${boxId} request completed successfully.`;
+        const rewardResult = payload?.reward_result || {};
+        const rewardTitle = rewardResult?.reward_title || rewardResult?.reward_type || 'Reward granted';
+        showRewardChamberAdminStatus(`✅ Box ${boxId} opened successfully: ${rewardTitle}`, 'success');
+        addLog(`🎁 Reward Chamber box ${boxId} opened in admin test mode`);
 
-        showRewardChamberAdminStatus(successMessage, 'success');
-        addLog(`🎁 Reward Chamber admin test open succeeded for Box ${boxId}`);
         await refreshRewardChamberAdmin();
+        await refreshRewardChamberConfig(false);
       } catch (error) {
-        console.error(`❌ [REWARD CHAMBER ADMIN] Box ${boxId} test open failed:`, error);
-        showRewardChamberAdminStatus(`Box ${boxId} test open failed: ${error.message}`, 'error');
+        console.error('❌ [REWARD CHAMBER ADMIN] Open test failed:', error);
+        showRewardChamberAdminStatus(`Failed to open Box ${boxId}: ${error.message}`, 'error');
       }
     }
 
-    /**
-     * Load profile chest configuration
-     */
-    function loadProfileChestConfig() {
-      try {
-        const stored = localStorage.getItem('profile_chest_config');
-        let config;
-        
-        if (stored) {
-          config = JSON.parse(stored);
-        } else {
-          config = getProfileChestConfigDefaults();
-        }
-        
-        // Populate form fields
-        document.getElementById('profileChestRewardMin').value = config.rewardMin || 1;
-        document.getElementById('profileChestRewardMax').value = config.rewardMax || 250;
-        document.getElementById('profileChestCooldownType').value = config.cooldownType || 'daily';
-        document.getElementById('profileChestCooldownHours').value = config.cooldownHours || 24;
-        
-        // Update visibility of cooldown hours field
-        updateCooldownHoursVisibility();
-        
-        // Update current configuration display
-        updateProfileChestConfigDisplay(config);
-        
-        console.log('✅ [PROFILE CHEST] Configuration loaded:', config);
-      } catch (error) {
-        console.error('❌ [PROFILE CHEST] Error loading configuration:', error);
-        showProfileChestStatus('Error loading configuration', 'error');
-      }
+    function getRewardChamberConfigActionPath(action) {
+      return getRewardChamberAdminApiPath(`${REWARD_CHAMBER_ADMIN_API.config}?action=${encodeURIComponent(action)}`);
     }
-    
-    /**
-     * Update current configuration display
-     */
-    function updateProfileChestConfigDisplay(config) {
-      const rewardRangeEl = document.getElementById('currentRewardRange');
-      const cooldownEl = document.getElementById('currentCooldown');
-      
-      if (rewardRangeEl) {
-        rewardRangeEl.textContent = `${config.rewardMin} - ${config.rewardMax} DSPOINC`;
-      }
-      
-      if (cooldownEl) {
-        let cooldownText = '';
-        switch (config.cooldownType) {
-          case 'session':
-            cooldownText = 'Session (once per page load)';
-            break;
-          case 'daily':
-            cooldownText = `Daily (${config.cooldownHours}h per Discord session)`;
-            break;
-          case 'hourly':
-            cooldownText = `Hourly (${config.cooldownHours}h)`;
-            break;
-          case 'none':
-            cooldownText = 'None (unlimited)';
-            break;
-          default:
-            cooldownText = 'Unknown';
-        }
-        cooldownEl.textContent = cooldownText;
-      }
-    }
-    
-    /**
-     * Update cooldown hours field visibility based on cooldown type
-     */
-    function updateCooldownHoursVisibility() {
-      const cooldownType = document.getElementById('profileChestCooldownType').value;
-      const hoursContainer = document.getElementById('cooldownHoursContainer');
-      
-      if (hoursContainer) {
-        if (cooldownType === 'session' || cooldownType === 'none') {
-          hoursContainer.style.display = 'none';
-        } else {
-          hoursContainer.style.display = 'block';
-        }
-      }
-    }
-    
-    /**
-     * Validate profile chest configuration
-     * @param {Object} config - Configuration to validate
-     * @returns {Object} { valid: boolean, errors: string[] }
-     */
-    function validateProfileChestConfig(config) {
-      const errors = [];
-      
-      // Validate reward range
-      if (config.rewardMin < 1 || config.rewardMin > 10000) {
-        errors.push('Reward minimum must be between 1 and 10000');
-      }
-      if (config.rewardMax < 1 || config.rewardMax > 10000) {
-        errors.push('Reward maximum must be between 1 and 10000');
-      }
-      if (config.rewardMin > config.rewardMax) {
-        errors.push('Reward minimum cannot be greater than maximum');
-      }
-      
-      // Validate cooldown type
-      const validCooldownTypes = ['session', 'daily', 'hourly', 'none'];
-      if (!validCooldownTypes.includes(config.cooldownType)) {
-        errors.push('Invalid cooldown type');
-      }
-      
-      // Validate cooldown hours
-      if (config.cooldownType === 'daily' || config.cooldownType === 'hourly') {
-        if (config.cooldownHours < 0.1 || config.cooldownHours > 168) {
-          errors.push('Cooldown hours must be between 0.1 and 168 (7 days max)');
-        }
-      }
-      
+
+    function normalizeRewardChamberBox(rawBox) {
       return {
-        valid: errors.length === 0,
-        errors: errors
+        box_id: Number(rawBox?.box_id || 0),
+        box_key: String(rawBox?.box_key || '').trim(),
+        box_name: String(rawBox?.box_name || '').trim(),
+        box_description: String(rawBox?.box_description || '').trim(),
+        box_type: String(rawBox?.box_type || '').trim(),
+        is_active: Number(rawBox?.is_active || 0),
+        is_visible: Number(rawBox?.is_visible || 0),
+        sort_order: Number(rawBox?.sort_order || 0),
+        price_dspoinc: Number(rawBox?.price_dspoinc || 0),
+        cooldown_enabled: Number(rawBox?.cooldown_enabled || 0),
+        cooldown_type: String(rawBox?.cooldown_type || 'none').trim() || 'none',
+        cooldown_hours: Number(rawBox?.cooldown_hours || 0),
+        reward_mode: String(rawBox?.reward_mode || 'dspoinc_only').trim() || 'dspoinc_only',
+        fallback_dspoinc_enabled: Number(rawBox?.fallback_dspoinc_enabled || 0),
+        fallback_dspoinc_min: rawBox?.fallback_dspoinc_min === null || rawBox?.fallback_dspoinc_min === '' ? '' : Number(rawBox?.fallback_dspoinc_min || 0),
+        fallback_dspoinc_max: rawBox?.fallback_dspoinc_max === null || rawBox?.fallback_dspoinc_max === '' ? '' : Number(rawBox?.fallback_dspoinc_max || 0),
+        item_pool_roll_chance: rawBox?.item_pool_roll_chance === null || rawBox?.item_pool_roll_chance === '' ? '' : Number(rawBox?.item_pool_roll_chance || 0),
+        fallback_dspoinc_roll_chance: rawBox?.fallback_dspoinc_roll_chance === null || rawBox?.fallback_dspoinc_roll_chance === '' ? '' : Number(rawBox?.fallback_dspoinc_roll_chance || 0),
+        global_stock_limit: rawBox?.global_stock_limit === null || rawBox?.global_stock_limit === '' ? '' : Number(rawBox?.global_stock_limit || 0),
+        global_open_count: Number(rawBox?.global_open_count || 0),
+        max_opens_per_user: rawBox?.max_opens_per_user === null || rawBox?.max_opens_per_user === '' ? '' : Number(rawBox?.max_opens_per_user || 0),
+        start_at: String(rawBox?.start_at || '').trim(),
+        end_at: String(rawBox?.end_at || '').trim(),
+        disabled_reason_text: String(rawBox?.disabled_reason_text || '').trim(),
+        visual_theme: String(rawBox?.visual_theme || '').trim(),
+        image_path: String(rawBox?.image_path || '').trim(),
+        legacy_fallback_enabled: Number(rawBox?.legacy_fallback_enabled || 0),
+        created_at: String(rawBox?.created_at || '').trim(),
+        updated_at: String(rawBox?.updated_at || '').trim()
       };
     }
-    
-    /**
-     * Save profile chest configuration
-     */
-    function saveProfileChestConfig() {
-      try {
-        // Get form values
-        const config = {
-          rewardMin: parseInt(document.getElementById('profileChestRewardMin').value, 10),
-          rewardMax: parseInt(document.getElementById('profileChestRewardMax').value, 10),
-          cooldownType: document.getElementById('profileChestCooldownType').value,
-          cooldownHours: parseFloat(document.getElementById('profileChestCooldownHours').value),
-          lastUpdated: new Date().toISOString(),
-        };
-        
-        // Validate
-        const validation = validateProfileChestConfig(config);
-        if (!validation.valid) {
-          showProfileChestStatus('Validation errors: ' + validation.errors.join(', '), 'error');
-          return;
-        }
-        
-        // Save to localStorage
-        localStorage.setItem('profile_chest_config', JSON.stringify(config));
-        
-        // Update display
-        updateProfileChestConfigDisplay(config);
-        
-        // Show success message
-        showProfileChestStatus('✅ Configuration saved successfully! Changes apply instantly to profile page.', 'success');
-        
-        // Trigger custom event for same-window updates (profile.html)
-        window.dispatchEvent(new CustomEvent('profileChestConfigUpdated'));
-        
-        // Also trigger storage event (for cross-tab updates)
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: 'profile_chest_config',
-          newValue: JSON.stringify(config),
-          storageArea: localStorage
-        }));
-        
-        console.log('✅ [PROFILE CHEST] Configuration saved:', config);
-        addLog('🎁 Profile chest configuration saved: ' + JSON.stringify(config));
-      } catch (error) {
-        console.error('❌ [PROFILE CHEST] Error saving configuration:', error);
-        showProfileChestStatus('Error saving configuration: ' + error.message, 'error');
-      }
+
+    function normalizeRewardChamberPoolRow(rawRow) {
+      const rowId = Number(rawRow?.pool_reward_id || 0);
+      const rewardType = String(rawRow?.reward_type || 'store_item').trim() || 'store_item';
+
+      return {
+        pool_reward_id: rowId,
+        temp_id: rowId > 0 ? `row_${rowId}` : `draft_${++rewardChamberAdminDraftRowSeed}`,
+        box_id: Number(rawRow?.box_id || 0),
+        reward_type: rewardType,
+        reward_title: String(rawRow?.reward_title || '').trim(),
+        reward_description: String(rawRow?.reward_description || '').trim(),
+        store_item_id: rawRow?.store_item_id === null || rawRow?.store_item_id === '' ? '' : Number(rawRow?.store_item_id || 0),
+        genetic_catalog_id: rawRow?.genetic_catalog_id === null || rawRow?.genetic_catalog_id === '' ? '' : Number(rawRow?.genetic_catalog_id || 0),
+        fixed_dspoinc_amount: rawRow?.fixed_dspoinc_amount === null || rawRow?.fixed_dspoinc_amount === '' ? '' : Number(rawRow?.fixed_dspoinc_amount || 0),
+        dspoinc_min: rawRow?.dspoinc_min === null || rawRow?.dspoinc_min === '' ? '' : Number(rawRow?.dspoinc_min || 0),
+        dspoinc_max: rawRow?.dspoinc_max === null || rawRow?.dspoinc_max === '' ? '' : Number(rawRow?.dspoinc_max || 0),
+        weight: Number(rawRow?.weight || 1),
+        is_active: Number(rawRow?.is_active ?? 1),
+        sort_order: Number(rawRow?.sort_order || 0),
+        metadata_json: String(rawRow?.metadata_json || '').trim()
+      };
     }
-    
-    /**
-     * Reset profile chest configuration to defaults
-     */
-    function resetProfileChestConfig() {
-      if (!confirm('Are you sure you want to reset to default values?\n\nDefault: 1-250 DSPOINC, 24h daily cooldown')) {
+
+    function getRewardChamberBoxById(boxId) {
+      return rewardChamberAdminConfigState.boxes.find((box) => Number(box.box_id) === Number(boxId)) || null;
+    }
+
+    function getRewardChamberCurrentPoolBoxId() {
+      const select = document.getElementById('rewardChamberPoolSelectedBox');
+      return Number(select?.value || rewardChamberAdminConfigState?.boxes?.[0]?.box_id || 1);
+    }
+
+    function getRewardChamberPoolRowsForBox(boxId) {
+      return rewardChamberAdminConfigState.poolRows
+        .filter((row) => Number(row.box_id) === Number(boxId))
+        .sort((a, b) => {
+          const sortDiff = Number(a.sort_order || 0) - Number(b.sort_order || 0);
+          if (sortDiff !== 0) {
+            return sortDiff;
+          }
+
+          const aId = Number(a.pool_reward_id || 0);
+          const bId = Number(b.pool_reward_id || 0);
+          return aId - bId;
+        });
+    }
+
+    function getRewardChamberStoreItemOptionsHtml(selectedValue) {
+      const items = Array.isArray(rewardChamberAdminConfigState?.references?.store_items)
+        ? rewardChamberAdminConfigState.references.store_items
+        : [];
+      const selectedId = String(selectedValue || '');
+
+      const options = ['<option value="">Select store item...</option>'];
+      items.forEach((item) => {
+        const itemId = String(Number(item.item_id || 0));
+        const selectedAttr = itemId === selectedId ? 'selected' : '';
+        const label = `${item.item_name || 'Unknown Item'} (${Number(item.price || 0).toLocaleString()} DSPOINC)`;
+        options.push(`<option value="${itemId}" ${selectedAttr}>${escapeHtml(label)}</option>`);
+      });
+
+      return options.join('');
+    }
+
+    function getRewardChamberGeneticCatalogOptionsHtml(selectedValue) {
+      const items = Array.isArray(rewardChamberAdminConfigState?.references?.genetic_catalog)
+        ? rewardChamberAdminConfigState.references.genetic_catalog
+        : [];
+      const selectedId = String(selectedValue || '');
+
+      const options = ['<option value="">Select genetic trait...</option>'];
+      items.forEach((item) => {
+        const catalogId = String(Number(item.catalog_id || 0));
+        const selectedAttr = catalogId === selectedId ? 'selected' : '';
+        const title = item.display_title || item.trait_value || 'Unknown Trait';
+        const subtitle = item.trait_type ? ` · ${item.trait_type}` : '';
+        options.push(`<option value="${catalogId}" ${selectedAttr}>${escapeHtml(title + subtitle)}</option>`);
+      });
+
+      return options.join('');
+    }
+
+    function getRewardChamberPoolRowPayloadFromDom(rowKey) {
+      const prefix = `rewardPoolRow_${rowKey}_`;
+      return {
+        pool_reward_id: Number(document.getElementById(`${prefix}poolRewardId`)?.value || 0),
+        box_id: Number(document.getElementById(`${prefix}boxId`)?.value || 0),
+        reward_type: String(document.getElementById(`${prefix}rewardType`)?.value || 'store_item').trim() || 'store_item',
+        reward_title: String(document.getElementById(`${prefix}rewardTitle`)?.value || '').trim(),
+        reward_description: String(document.getElementById(`${prefix}rewardDescription`)?.value || '').trim(),
+        store_item_id: String(document.getElementById(`${prefix}storeItemId`)?.value || '').trim(),
+        genetic_catalog_id: String(document.getElementById(`${prefix}geneticCatalogId`)?.value || '').trim(),
+        fixed_dspoinc_amount: String(document.getElementById(`${prefix}fixedDspoincAmount`)?.value || '').trim(),
+        dspoinc_min: String(document.getElementById(`${prefix}dspoincMin`)?.value || '').trim(),
+        dspoinc_max: String(document.getElementById(`${prefix}dspoincMax`)?.value || '').trim(),
+        weight: String(document.getElementById(`${prefix}weight`)?.value || '').trim(),
+        is_active: document.getElementById(`${prefix}isActive`)?.checked ? 1 : 0,
+        sort_order: String(document.getElementById(`${prefix}sortOrder`)?.value || '').trim(),
+        metadata_json: String(document.getElementById(`${prefix}metadataJson`)?.value || '').trim()
+      };
+    }
+
+    function validateRewardChamberPoolRowPayload(payload) {
+      const errors = [];
+      const rewardType = payload.reward_type;
+
+      if (!['store_item', 'genetic_trait', 'dspoinc', 'premium_claim'].includes(rewardType)) {
+        errors.push('Reward type is invalid.');
+      }
+
+      const weight = Number(payload.weight || 0);
+      if (!Number.isFinite(weight) || weight < 1) {
+        errors.push('Weight must be at least 1.');
+      }
+
+      const sortOrder = Number(payload.sort_order || 0);
+      if (!Number.isFinite(sortOrder)) {
+        errors.push('Sort order must be numeric.');
+      }
+
+      if (rewardType === 'store_item' || rewardType === 'premium_claim') {
+        if (!payload.store_item_id) {
+          errors.push('Store item is required for this reward type.');
+        }
+      }
+
+      if (rewardType === 'genetic_trait' && !payload.genetic_catalog_id) {
+        errors.push('Genetic catalog item is required for genetic rewards.');
+      }
+
+      if (rewardType === 'dspoinc') {
+        const fixedAmount = payload.fixed_dspoinc_amount === '' ? null : Number(payload.fixed_dspoinc_amount);
+        const min = payload.dspoinc_min === '' ? null : Number(payload.dspoinc_min);
+        const max = payload.dspoinc_max === '' ? null : Number(payload.dspoinc_max);
+
+        const hasFixed = fixedAmount !== null && Number.isFinite(fixedAmount) && fixedAmount > 0;
+        const hasRange = min !== null && max !== null && Number.isFinite(min) && Number.isFinite(max);
+
+        if (!hasFixed && !hasRange) {
+          errors.push('DSPOINC rewards need either a fixed amount or both min and max.');
+        }
+
+        if (hasRange && max < min) {
+          errors.push('DSPOINC max cannot be lower than min.');
+        }
+      }
+
+      if (rewardType === 'premium_claim' && payload.metadata_json) {
+        try {
+          JSON.parse(payload.metadata_json);
+        } catch (error) {
+          errors.push('Premium claim metadata must be valid JSON.');
+        }
+      }
+
+      return errors;
+    }
+
+    function renderRewardChamberBoxConfigCards() {
+      const wrap = document.getElementById('rewardChamberBoxConfigCards');
+      if (!wrap) {
         return;
       }
-      
+
+      const boxes = Array.isArray(rewardChamberAdminConfigState.boxes) ? rewardChamberAdminConfigState.boxes : [];
+      if (!boxes.length) {
+        wrap.innerHTML = '<div class="bg-black/20 rounded-lg p-4 border border-white/10 text-gray-300">No reward box config rows returned by backend.</div>';
+        return;
+      }
+
+      wrap.innerHTML = boxes.map((box) => {
+        const boxId = Number(box.box_id || 0);
+        const cooldownLabel = Number(box.cooldown_enabled || 0) === 1
+          ? `${escapeHtml(box.cooldown_type || 'custom')} · ${Number(box.cooldown_hours || 0)}h`
+          : 'Cooldown off';
+        const activeRows = getRewardChamberPoolRowsForBox(boxId).filter((row) => Number(row.is_active || 0) === 1).length;
+
+        return `
+          <div class="bg-black/20 rounded-xl p-4 border border-white/10 shadow-lg">
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <div class="text-xl font-bold text-white">${escapeHtml(box.box_name || `Box ${boxId}`)}</div>
+                <div class="text-xs uppercase tracking-widest text-slate-400 mt-1">${escapeHtml(box.box_key || '')} · ${escapeHtml(box.box_type || '')}</div>
+              </div>
+              <div class="text-right text-xs text-slate-300">
+                <div>Active rows: <span class="font-semibold text-cyan-200">${activeRows}</span></div>
+                <div>Opened: <span class="font-semibold text-cyan-200">${Number(box.global_open_count || 0).toLocaleString()}</span></div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Name</label>
+                <input id="rewardBox_${boxId}_box_name" type="text" value="${escapeHtml(box.box_name || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Price DSPOINC</label>
+                <input id="rewardBox_${boxId}_price_dspoinc" type="number" min="0" step="1" value="${Number(box.price_dspoinc || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Description</label>
+                <textarea id="rewardBox_${boxId}_box_description" rows="2" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">${escapeHtml(box.box_description || '')}</textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Reward Mode</label>
+                <select id="rewardBox_${boxId}_reward_mode" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                  <option value="dspoinc_only" ${box.reward_mode === 'dspoinc_only' ? 'selected' : ''}>dspoinc_only</option>
+                  <option value="random_pool" ${box.reward_mode === 'random_pool' ? 'selected' : ''}>random_pool</option>
+                  <option value="fixed_claim" ${box.reward_mode === 'fixed_claim' ? 'selected' : ''}>fixed_claim</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Sort Order</label>
+                <input id="rewardBox_${boxId}_sort_order" type="number" step="1" value="${Number(box.sort_order || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+              <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
+                <input id="rewardBox_${boxId}_is_active" type="checkbox" ${Number(box.is_active || 0) === 1 ? 'checked' : ''}>
+                <span>Active</span>
+              </label>
+              <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
+                <input id="rewardBox_${boxId}_is_visible" type="checkbox" ${Number(box.is_visible || 0) === 1 ? 'checked' : ''}>
+                <span>Visible</span>
+              </label>
+              <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
+                <input id="rewardBox_${boxId}_cooldown_enabled" type="checkbox" ${Number(box.cooldown_enabled || 0) === 1 ? 'checked' : ''}>
+                <span>Cooldown</span>
+              </label>
+              <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
+                <input id="rewardBox_${boxId}_fallback_dspoinc_enabled" type="checkbox" ${Number(box.fallback_dspoinc_enabled || 0) === 1 ? 'checked' : ''}>
+                <span>Fallback DSPOINC</span>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Cooldown Type</label>
+                <select id="rewardBox_${boxId}_cooldown_type" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                  <option value="none" ${box.cooldown_type === 'none' ? 'selected' : ''}>none</option>
+                  <option value="hourly" ${box.cooldown_type === 'hourly' ? 'selected' : ''}>hourly</option>
+                  <option value="daily" ${box.cooldown_type === 'daily' ? 'selected' : ''}>daily</option>
+                  <option value="custom" ${box.cooldown_type === 'custom' ? 'selected' : ''}>custom</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Cooldown Hours</label>
+                <input id="rewardBox_${boxId}_cooldown_hours" type="number" min="0" step="0.25" value="${Number(box.cooldown_hours || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Max Opens Per User</label>
+                <input id="rewardBox_${boxId}_max_opens_per_user" type="number" min="0" step="1" value="${box.max_opens_per_user === '' ? '' : Number(box.max_opens_per_user || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Unlimited">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Fallback Min</label>
+                <input id="rewardBox_${boxId}_fallback_dspoinc_min" type="number" min="0" step="1" value="${box.fallback_dspoinc_min === '' ? '' : Number(box.fallback_dspoinc_min || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Fallback Max</label>
+                <input id="rewardBox_${boxId}_fallback_dspoinc_max" type="number" min="0" step="1" value="${box.fallback_dspoinc_max === '' ? '' : Number(box.fallback_dspoinc_max || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Global Stock Limit</label>
+                <input id="rewardBox_${boxId}_global_stock_limit" type="number" min="0" step="1" value="${box.global_stock_limit === '' ? '' : Number(box.global_stock_limit || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Unlimited">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Item Pool Roll Chance</label>
+                <input id="rewardBox_${boxId}_item_pool_roll_chance" type="number" min="0" step="0.01" value="${box.item_pool_roll_chance === '' ? '' : Number(box.item_pool_roll_chance || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Fallback Roll Chance</label>
+                <input id="rewardBox_${boxId}_fallback_dspoinc_roll_chance" type="number" min="0" step="0.01" value="${box.fallback_dspoinc_roll_chance === '' ? '' : Number(box.fallback_dspoinc_roll_chance || 0)}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Visual Theme</label>
+                <input id="rewardBox_${boxId}_visual_theme" type="text" value="${escapeHtml(box.visual_theme || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Optional theme key">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Start At UTC</label>
+                <input id="rewardBox_${boxId}_start_at" type="text" value="${escapeHtml(box.start_at || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="YYYY-MM-DD HH:MM:SS">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">End At UTC</label>
+                <input id="rewardBox_${boxId}_end_at" type="text" value="${escapeHtml(box.end_at || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="YYYY-MM-DD HH:MM:SS">
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Image Path</label>
+                <input id="rewardBox_${boxId}_image_path" type="text" value="${escapeHtml(box.image_path || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Optional image path">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-cyan-200 mb-1">Disabled Reason</label>
+                <input id="rewardBox_${boxId}_disabled_reason_text" type="text" value="${escapeHtml(box.disabled_reason_text || '')}" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white" placeholder="Why the box is disabled">
+              </div>
+            </div>
+
+            <div class="mt-4 rounded-lg bg-slate-950/70 border border-white/10 p-3 text-xs text-slate-300">
+              <div class="flex flex-wrap gap-4">
+                <div><span class="text-cyan-200 font-semibold">Cooldown:</span> ${cooldownLabel}</div>
+                <div><span class="text-cyan-200 font-semibold">Created:</span> ${escapeHtml(formatRewardChamberAdminDate(box.created_at || ''))}</div>
+                <div><span class="text-cyan-200 font-semibold">Updated:</span> ${escapeHtml(formatRewardChamberAdminDate(box.updated_at || ''))}</div>
+              </div>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-3">
+              <button onclick="saveRewardChamberBoxConfig(${boxId})"
+                      class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                💾 Save Box
+              </button>
+              <button onclick="document.getElementById('rewardChamberPoolSelectedBox').value='${boxId}'; renderRewardChamberPoolRows();"
+                      class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                🎛️ Manage Pool
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderRewardChamberPoolRows() {
+      const selectedBoxId = getRewardChamberCurrentPoolBoxId();
+      const selectedBox = getRewardChamberBoxById(selectedBoxId);
+      const rows = getRewardChamberPoolRowsForBox(selectedBoxId);
+
+      const selectedBoxSummary = document.getElementById('rewardPoolSelectedBoxSummary');
+      const activeCountEl = document.getElementById('rewardPoolActiveRowCount');
+      const totalWeightEl = document.getElementById('rewardPoolTotalWeight');
+      const healthEl = document.getElementById('rewardPoolHealthSummary');
+      const tbody = document.getElementById('rewardChamberPoolRows');
+
+      if (!tbody) {
+        return;
+      }
+
+      const activeRows = rows.filter((row) => Number(row.is_active || 0) === 1);
+      const totalWeight = activeRows.reduce((sum, row) => sum + Math.max(0, Number(row.weight || 0)), 0);
+      const hasPool = activeRows.length > 0;
+      const hasFallback = Number(selectedBox?.fallback_dspoinc_enabled || 0) === 1;
+      const healthText = hasPool
+        ? (hasFallback ? 'Pool + fallback ready' : 'Pool ready')
+        : (hasFallback ? 'Fallback only' : 'No active rows');
+
+      if (selectedBoxSummary) {
+        selectedBoxSummary.textContent = selectedBox ? `${selectedBox.box_name || 'Box'} (#${selectedBox.box_id})` : `Box ${selectedBoxId}`;
+      }
+
+      if (activeCountEl) {
+        activeCountEl.textContent = String(activeRows.length);
+      }
+
+      if (totalWeightEl) {
+        totalWeightEl.textContent = String(totalWeight);
+      }
+
+      if (healthEl) {
+        healthEl.textContent = healthText;
+      }
+
+      if (!rows.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-4 py-4 text-gray-300 bg-black/20">
+              No reward rows configured yet for this box. Use <strong>Add Reward Row</strong> to create one.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = rows.map((row) => {
+        const rowKey = row.temp_id || `row_${row.pool_reward_id || 'draft'}`;
+        const rewardType = row.reward_type || 'store_item';
+        const stateBadge = Number(row.is_active || 0) === 1
+          ? '<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider bg-green-900/40 border border-green-500/40 text-green-100">Active</span>'
+          : '<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider bg-slate-900/40 border border-slate-500/40 text-slate-200">Disabled</span>';
+
+        return `
+          <tr class="border-t border-white/10 align-top" data-reward-pool-row="${escapeHtml(rowKey)}">
+            <td class="px-3 py-4">
+              <div class="font-bold text-white">#${Number(row.pool_reward_id || 0) > 0 ? Number(row.pool_reward_id) : 'New'}</div>
+              <div class="text-xs text-slate-400 mt-1">Box ${Number(row.box_id || 0)}</div>
+              <input id="rewardPoolRow_${rowKey}_poolRewardId" type="hidden" value="${Number(row.pool_reward_id || 0)}">
+              <input id="rewardPoolRow_${rowKey}_boxId" type="hidden" value="${Number(row.box_id || 0)}">
+            </td>
+            <td class="px-3 py-4">
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Reward Type</label>
+                  <select id="rewardPoolRow_${rowKey}_rewardType" onchange="updateRewardPoolRowFieldVisibility('${rowKey}')"
+                          class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                    <option value="store_item" ${rewardType === 'store_item' ? 'selected' : ''}>store_item</option>
+                    <option value="genetic_trait" ${rewardType === 'genetic_trait' ? 'selected' : ''}>genetic_trait</option>
+                    <option value="dspoinc" ${rewardType === 'dspoinc' ? 'selected' : ''}>dspoinc</option>
+                    <option value="premium_claim" ${rewardType === 'premium_claim' ? 'selected' : ''}>premium_claim</option>
+                  </select>
+                </div>
+                <div id="rewardPoolRow_${rowKey}_storeWrap">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Store Item</label>
+                  <select id="rewardPoolRow_${rowKey}_storeItemId" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                    ${getRewardChamberStoreItemOptionsHtml(row.store_item_id)}
+                  </select>
+                </div>
+                <div id="rewardPoolRow_${rowKey}_geneticWrap">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Genetic Catalog</label>
+                  <select id="rewardPoolRow_${rowKey}_geneticCatalogId" class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                    ${getRewardChamberGeneticCatalogOptionsHtml(row.genetic_catalog_id)}
+                  </select>
+                </div>
+                <div id="rewardPoolRow_${rowKey}_dspoincWrap" class="grid grid-cols-1 gap-2">
+                  <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Fixed DSPOINC</label>
+                    <input id="rewardPoolRow_${rowKey}_fixedDspoincAmount" type="number" min="0" step="1" value="${row.fixed_dspoinc_amount === '' ? '' : Number(row.fixed_dspoinc_amount || 0)}"
+                           class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Min</label>
+                      <input id="rewardPoolRow_${rowKey}_dspoincMin" type="number" min="0" step="1" value="${row.dspoinc_min === '' ? '' : Number(row.dspoinc_min || 0)}"
+                             class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Max</label>
+                      <input id="rewardPoolRow_${rowKey}_dspoincMax" type="number" min="0" step="1" value="${row.dspoinc_max === '' ? '' : Number(row.dspoinc_max || 0)}"
+                             class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                    </div>
+                  </div>
+                </div>
+                <div id="rewardPoolRow_${rowKey}_metadataWrap">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Metadata JSON</label>
+                  <textarea id="rewardPoolRow_${rowKey}_metadataJson" rows="4"
+                            class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white"
+                            placeholder='{"fulfillment_type":"manual"}'>${escapeHtml(row.metadata_json || '')}</textarea>
+                </div>
+              </div>
+            </td>
+            <td class="px-3 py-4">
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Reward Title</label>
+                  <input id="rewardPoolRow_${rowKey}_rewardTitle" type="text" value="${escapeHtml(row.reward_title || '')}"
+                         class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Description</label>
+                  <textarea id="rewardPoolRow_${rowKey}_rewardDescription" rows="5"
+                            class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">${escapeHtml(row.reward_description || '')}</textarea>
+                </div>
+              </div>
+            </td>
+            <td class="px-3 py-4">
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Weight</label>
+                  <input id="rewardPoolRow_${rowKey}_weight" type="number" min="1" step="1" value="${Number(row.weight || 1)}"
+                         class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-fuchsia-200 mb-1">Sort Order</label>
+                  <input id="rewardPoolRow_${rowKey}_sortOrder" type="number" step="1" value="${Number(row.sort_order || 0)}"
+                         class="w-full px-3 py-2 rounded-lg bg-slate-900/80 border border-white/10 text-white">
+                </div>
+              </div>
+            </td>
+            <td class="px-3 py-4">
+              <div class="space-y-3">
+                ${stateBadge}
+                <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm">
+                  <input id="rewardPoolRow_${rowKey}_isActive" type="checkbox" ${Number(row.is_active || 0) === 1 ? 'checked' : ''}>
+                  <span>Row Active</span>
+                </label>
+              </div>
+            </td>
+            <td class="px-3 py-4">
+              <div class="flex flex-col gap-2 min-w-[180px]">
+                <button onclick="saveRewardChamberPoolRow('${rowKey}')"
+                        class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold px-3 py-2 rounded-lg transition-all duration-300 shadow-lg">
+                  💾 Save Row
+                </button>
+                <button onclick="toggleRewardChamberPoolRow('${rowKey}')"
+                        class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-3 py-2 rounded-lg transition-all duration-300 shadow-lg">
+                  🔁 Toggle Active
+                </button>
+                <button onclick="softDeleteRewardChamberPoolRow('${rowKey}')"
+                        class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold px-3 py-2 rounded-lg transition-all duration-300 shadow-lg">
+                  🚫 Soft Disable
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      rows.forEach((row) => {
+        updateRewardPoolRowFieldVisibility(row.temp_id || `row_${row.pool_reward_id || 'draft'}`);
+      });
+    }
+
+    function updateRewardPoolRowFieldVisibility(rowKey) {
+      const rewardTypeEl = document.getElementById(`rewardPoolRow_${rowKey}_rewardType`);
+      if (!rewardTypeEl) {
+        return;
+      }
+
+      const rewardType = String(rewardTypeEl.value || 'store_item').trim() || 'store_item';
+      const storeWrap = document.getElementById(`rewardPoolRow_${rowKey}_storeWrap`);
+      const geneticWrap = document.getElementById(`rewardPoolRow_${rowKey}_geneticWrap`);
+      const dspoincWrap = document.getElementById(`rewardPoolRow_${rowKey}_dspoincWrap`);
+      const metadataWrap = document.getElementById(`rewardPoolRow_${rowKey}_metadataWrap`);
+
+      if (storeWrap) {
+        storeWrap.style.display = (rewardType === 'store_item' || rewardType === 'premium_claim') ? 'block' : 'none';
+      }
+
+      if (geneticWrap) {
+        geneticWrap.style.display = rewardType === 'genetic_trait' ? 'block' : 'none';
+      }
+
+      if (dspoincWrap) {
+        dspoincWrap.style.display = rewardType === 'dspoinc' ? 'grid' : 'none';
+      }
+
+      if (metadataWrap) {
+        metadataWrap.style.display = rewardType === 'premium_claim' ? 'block' : 'none';
+      }
+    }
+
+    async function refreshRewardChamberConfig(showStatus = true) {
       try {
-        // Clear localStorage
-        localStorage.removeItem('profile_chest_config');
-        
-        // Load defaults
-        const defaults = getProfileChestConfigDefaults();
-        
-        // Populate form with defaults
-        document.getElementById('profileChestRewardMin').value = defaults.rewardMin;
-        document.getElementById('profileChestRewardMax').value = defaults.rewardMax;
-        document.getElementById('profileChestCooldownType').value = defaults.cooldownType;
-        document.getElementById('profileChestCooldownHours').value = defaults.cooldownHours;
-        
-        // Update visibility
-        updateCooldownHoursVisibility();
-        
-        // Update display
-        updateProfileChestConfigDisplay(defaults);
-        
-        // Show success message
-        showProfileChestStatus('✅ Configuration reset to defaults!', 'success');
-        
-        // Trigger update events
-        window.dispatchEvent(new CustomEvent('profileChestConfigUpdated'));
-        
-        console.log('✅ [PROFILE CHEST] Configuration reset to defaults');
-        addLog('🎁 Profile chest configuration reset to defaults');
+        if (showStatus) {
+          showRewardChamberConfigStatus('Loading Reward Chamber config and reference data...', 'info');
+        }
+
+        const response = await fetch(getRewardChamberConfigActionPath('get_config'), {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok || !payload?.success) {
+          throw new Error(payload?.error || `HTTP ${response.status}`);
+        }
+
+        const data = payload.data || {};
+        rewardChamberAdminConfigState = {
+          boxes: Array.isArray(data.boxes) ? data.boxes.map(normalizeRewardChamberBox) : [],
+          poolRows: Array.isArray(data.pool_rows) ? data.pool_rows.map(normalizeRewardChamberPoolRow) : [],
+          references: {
+            store_items: Array.isArray(data.references?.store_items) ? data.references.store_items : [],
+            genetic_catalog: Array.isArray(data.references?.genetic_catalog) ? data.references.genetic_catalog : []
+          }
+        };
+
+        const select = document.getElementById('rewardChamberPoolSelectedBox');
+        if (select) {
+          const currentValue = String(select.value || '');
+          const boxOptions = rewardChamberAdminConfigState.boxes.map((box) => {
+            const selectedAttr = String(box.box_id) === currentValue ? 'selected' : '';
+            return `<option value="${Number(box.box_id)}" ${selectedAttr}>${escapeHtml(box.box_name || `Box ${box.box_id}`)}</option>`;
+          }).join('');
+
+          select.innerHTML = boxOptions || '<option value="1">Box 1</option>';
+
+          if (!currentValue && rewardChamberAdminConfigState.boxes[0]) {
+            select.value = String(rewardChamberAdminConfigState.boxes[0].box_id);
+          }
+        }
+
+        renderRewardChamberBoxConfigCards();
+        renderRewardChamberPoolRows();
+
+        if (showStatus) {
+          showRewardChamberConfigStatus('✅ Reward Chamber config loaded.', 'success');
+        }
+
+        addLog(`🎛️ Reward Chamber config loaded (${rewardChamberAdminConfigState.boxes.length} boxes, ${rewardChamberAdminConfigState.poolRows.length} rows)`);
       } catch (error) {
-        console.error('❌ [PROFILE CHEST] Error resetting configuration:', error);
-        showProfileChestStatus('Error resetting configuration: ' + error.message, 'error');
+        console.error('❌ [REWARD CHAMBER CONFIG] Load failed:', error);
+        if (showStatus) {
+          showRewardChamberConfigStatus(`Failed to load Reward Chamber config: ${error.message}`, 'error');
+        }
+
+        const cards = document.getElementById('rewardChamberBoxConfigCards');
+        if (cards) {
+          cards.innerHTML = `<div class="bg-black/20 rounded-lg p-4 border border-red-500/40 text-red-100">Reward Chamber config could not be loaded. ${escapeHtml(error.message)}</div>`;
+        }
+
+        const tbody = document.getElementById('rewardChamberPoolRows');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-red-100 bg-black/20">Reward Chamber pool rows could not be loaded. ${escapeHtml(error.message)}</td></tr>`;
+        }
+      }
+    }
+
+    function collectRewardChamberBoxPayload(boxId) {
+      return {
+        box_id: Number(boxId),
+        box_name: String(document.getElementById(`rewardBox_${boxId}_box_name`)?.value || '').trim(),
+        box_description: String(document.getElementById(`rewardBox_${boxId}_box_description`)?.value || '').trim(),
+        price_dspoinc: Number(document.getElementById(`rewardBox_${boxId}_price_dspoinc`)?.value || 0),
+        is_active: document.getElementById(`rewardBox_${boxId}_is_active`)?.checked ? 1 : 0,
+        is_visible: document.getElementById(`rewardBox_${boxId}_is_visible`)?.checked ? 1 : 0,
+        sort_order: Number(document.getElementById(`rewardBox_${boxId}_sort_order`)?.value || 0),
+        cooldown_enabled: document.getElementById(`rewardBox_${boxId}_cooldown_enabled`)?.checked ? 1 : 0,
+        cooldown_type: String(document.getElementById(`rewardBox_${boxId}_cooldown_type`)?.value || 'none').trim() || 'none',
+        cooldown_hours: Number(document.getElementById(`rewardBox_${boxId}_cooldown_hours`)?.value || 0),
+        reward_mode: String(document.getElementById(`rewardBox_${boxId}_reward_mode`)?.value || 'dspoinc_only').trim() || 'dspoinc_only',
+        fallback_dspoinc_enabled: document.getElementById(`rewardBox_${boxId}_fallback_dspoinc_enabled`)?.checked ? 1 : 0,
+        fallback_dspoinc_min: String(document.getElementById(`rewardBox_${boxId}_fallback_dspoinc_min`)?.value || '').trim(),
+        fallback_dspoinc_max: String(document.getElementById(`rewardBox_${boxId}_fallback_dspoinc_max`)?.value || '').trim(),
+        item_pool_roll_chance: String(document.getElementById(`rewardBox_${boxId}_item_pool_roll_chance`)?.value || '').trim(),
+        fallback_dspoinc_roll_chance: String(document.getElementById(`rewardBox_${boxId}_fallback_dspoinc_roll_chance`)?.value || '').trim(),
+        global_stock_limit: String(document.getElementById(`rewardBox_${boxId}_global_stock_limit`)?.value || '').trim(),
+        max_opens_per_user: String(document.getElementById(`rewardBox_${boxId}_max_opens_per_user`)?.value || '').trim(),
+        start_at: String(document.getElementById(`rewardBox_${boxId}_start_at`)?.value || '').trim(),
+        end_at: String(document.getElementById(`rewardBox_${boxId}_end_at`)?.value || '').trim(),
+        disabled_reason_text: String(document.getElementById(`rewardBox_${boxId}_disabled_reason_text`)?.value || '').trim(),
+        visual_theme: String(document.getElementById(`rewardBox_${boxId}_visual_theme`)?.value || '').trim(),
+        image_path: String(document.getElementById(`rewardBox_${boxId}_image_path`)?.value || '').trim()
+      };
+    }
+
+    async function saveRewardChamberBoxConfig(boxId) {
+      try {
+        const payload = collectRewardChamberBoxPayload(boxId);
+
+        if (!payload.box_name) {
+          showRewardChamberConfigStatus(`Box ${boxId} needs a name before saving.`, 'error');
+          return;
+        }
+
+        if (payload.fallback_dspoinc_min !== '' && payload.fallback_dspoinc_max !== '') {
+          if (Number(payload.fallback_dspoinc_max) < Number(payload.fallback_dspoinc_min)) {
+            showRewardChamberConfigStatus(`Box ${boxId} fallback max cannot be lower than fallback min.`, 'error');
+            return;
+          }
+        }
+
+        showRewardChamberConfigStatus(`Saving box ${boxId} configuration...`, 'info');
+
+        const response = await fetch(REWARD_CHAMBER_ADMIN_API.config, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'save_box',
+            ...payload
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result?.success) {
+          throw new Error(result?.error || `HTTP ${response.status}`);
+        }
+
+        showRewardChamberConfigStatus(`✅ Box ${boxId} saved successfully.`, 'success');
+        addLog(`💾 Reward Chamber box ${boxId} saved`);
+        await refreshRewardChamberAdmin();
+        await refreshRewardChamberConfig(false);
+      } catch (error) {
+        console.error('❌ [REWARD CHAMBER CONFIG] Box save failed:', error);
+        showRewardChamberConfigStatus(`Failed to save box ${boxId}: ${error.message}`, 'error');
+      }
+    }
+
+    function addRewardChamberPoolRow() {
+      const boxId = getRewardChamberCurrentPoolBoxId();
+      rewardChamberAdminConfigState.poolRows.push(normalizeRewardChamberPoolRow({
+        pool_reward_id: 0,
+        box_id: boxId,
+        reward_type: 'store_item',
+        reward_title: '',
+        reward_description: '',
+        store_item_id: '',
+        genetic_catalog_id: '',
+        fixed_dspoinc_amount: '',
+        dspoinc_min: '',
+        dspoinc_max: '',
+        weight: 1,
+        is_active: 1,
+        sort_order: 0,
+        metadata_json: ''
+      }));
+      renderRewardChamberPoolRows();
+      showRewardChamberConfigStatus(`New draft reward row added for Box ${boxId}. Save it when ready.`, 'info');
+    }
+
+    async function saveRewardChamberPoolRow(rowKey) {
+      try {
+        const payload = getRewardChamberPoolRowPayloadFromDom(rowKey);
+        const errors = validateRewardChamberPoolRowPayload(payload);
+
+        if (errors.length) {
+          showRewardChamberConfigStatus(errors.join(' '), 'error');
+          return;
+        }
+
+        showRewardChamberConfigStatus('Saving reward pool row...', 'info');
+
+        const response = await fetch(REWARD_CHAMBER_ADMIN_API.config, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'save_pool_row',
+            ...payload
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result?.success) {
+          throw new Error(result?.error || `HTTP ${response.status}`);
+        }
+
+        showRewardChamberConfigStatus('✅ Reward pool row saved.', 'success');
+        addLog(`💾 Reward Chamber pool row saved for box ${payload.box_id}`);
+        await refreshRewardChamberConfig(false);
+        await refreshRewardChamberAdmin();
+      } catch (error) {
+        console.error('❌ [REWARD CHAMBER CONFIG] Pool row save failed:', error);
+        showRewardChamberConfigStatus(`Failed to save pool row: ${error.message}`, 'error');
+      }
+    }
+
+    async function toggleRewardChamberPoolRow(rowKey) {
+      try {
+        const payload = getRewardChamberPoolRowPayloadFromDom(rowKey);
+        if (!payload.pool_reward_id) {
+          showRewardChamberConfigStatus('Save the new row before toggling its active state.', 'error');
+          return;
+        }
+
+        const nextActive = payload.is_active === 1 ? 0 : 1;
+
+        showRewardChamberConfigStatus('Updating reward row active state...', 'info');
+
+        const response = await fetch(REWARD_CHAMBER_ADMIN_API.config, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'toggle_pool_row',
+            pool_reward_id: payload.pool_reward_id,
+            is_active: nextActive
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result?.success) {
+          throw new Error(result?.error || `HTTP ${response.status}`);
+        }
+
+        showRewardChamberConfigStatus(`✅ Reward row ${nextActive === 1 ? 'activated' : 'disabled'}.`, 'success');
+        addLog(`🔁 Reward Chamber pool row ${payload.pool_reward_id} active=${nextActive}`);
+        await refreshRewardChamberConfig(false);
+        await refreshRewardChamberAdmin();
+      } catch (error) {
+        console.error('❌ [REWARD CHAMBER CONFIG] Pool row toggle failed:', error);
+        showRewardChamberConfigStatus(`Failed to toggle row: ${error.message}`, 'error');
+      }
+    }
+
+    async function softDeleteRewardChamberPoolRow(rowKey) {
+      try {
+        const payload = getRewardChamberPoolRowPayloadFromDom(rowKey);
+
+        if (!payload.pool_reward_id) {
+          rewardChamberAdminConfigState.poolRows = rewardChamberAdminConfigState.poolRows.filter((row) => row.temp_id !== rowKey);
+          renderRewardChamberPoolRows();
+          showRewardChamberConfigStatus('Draft reward row removed locally.', 'success');
+          return;
+        }
+
+        const confirmed = confirm(`Soft disable reward row #${payload.pool_reward_id}? This keeps the row in the database but removes it from active pool selection.`);
+        if (!confirmed) {
+          return;
+        }
+
+        showRewardChamberConfigStatus('Soft disabling reward row...', 'info');
+
+        const response = await fetch(REWARD_CHAMBER_ADMIN_API.config, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'delete_pool_row',
+            pool_reward_id: payload.pool_reward_id
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result?.success) {
+          throw new Error(result?.error || `HTTP ${response.status}`);
+        }
+
+        showRewardChamberConfigStatus('✅ Reward row soft disabled.', 'success');
+        addLog(`🚫 Reward Chamber pool row ${payload.pool_reward_id} soft disabled`);
+        await refreshRewardChamberConfig(false);
+        await refreshRewardChamberAdmin();
+      } catch (error) {
+        console.error('❌ [REWARD CHAMBER CONFIG] Pool row delete failed:', error);
+        showRewardChamberConfigStatus(`Failed to soft disable row: ${error.message}`, 'error');
       }
     }
     
-    /**
-     * Show status message
-     */
-    function showProfileChestStatus(message, type = 'info') {
-      const statusEl = document.getElementById('profileChestStatusMessage');
-      if (!statusEl) return;
-      
-      statusEl.textContent = message;
-      statusEl.className = 'mt-4 p-3 rounded-lg';
-      statusEl.classList.remove('hidden');
-      
-      // Set color based on type
-      if (type === 'success') {
-        statusEl.classList.add('bg-green-900', 'bg-opacity-50', 'border', 'border-green-500', 'text-green-200');
-      } else if (type === 'error') {
-        statusEl.classList.add('bg-red-900', 'bg-opacity-50', 'border', 'border-red-500', 'text-red-200');
-      } else {
-        statusEl.classList.add('bg-blue-900', 'bg-opacity-50', 'border', 'border-blue-500', 'text-blue-200');
-      }
-      
-      // Auto-hide after 5 seconds for success messages
-      if (type === 'success') {
-        setTimeout(() => {
-          statusEl.classList.add('hidden');
-        }, 5000);
-      }
-    }
-    
+    // ============================================================================
+    // END PROFILE CHEST CONFIGURATION FUNCTIONS
+    // ============================================================================
     // ============================================================================
     // END PROFILE CHEST CONFIGURATION FUNCTIONS
     // ============================================================================

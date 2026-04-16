@@ -577,45 +577,43 @@ try {
     // 6. CHEESE RUMBLE STATS (using user_id from tbl_rumble_participants)
     try {
         error_log("🔍 CHEESE RUMBLE DEBUG: Querying for user $discordId");
-        
-        // Query for Cheese Rumble stats - try season first, then fallback to all-time
+
         $rumbleData = null;
-        
-        // Try current season first - use timestamp filtering but ONLY for Season 7 range
-        // Cheese Rumbles don't have season column, so we use timestamp filtering
-        // CRITICAL: Only include rumbles created AFTER Season 7 officially started
-        // EXCLUDE data from the season start date itself (2026-01-02) - only count data from next day onwards
-        // This ensures we don't count data created on the same day as season start (before reset was executed)
-        $seasonStartDate = explode(' ', $currentSeasonStart)[0]; // Get just the date part (2026-01-02)
-        $seasonStartNextDay = date('Y-m-d 00:00:00', strtotime($seasonStartDate . ' +1 day')); // Next day (2026-01-03 00:00:00)
-        
+
         $stmt = $db->prepare("
-            SELECT 
+            SELECT
                 COUNT(*) as total_rumbles,
                 COUNT(CASE WHEN rp.status = 'winner' OR rp.final_position = 1 THEN 1 END) as wins,
                 COUNT(CASE WHEN rp.final_position <= 3 AND rp.final_position IS NOT NULL THEN 1 END) as podiums,
-                MIN(rp.final_position) as best_position,
+                MIN(CASE WHEN rp.final_position IS NOT NULL THEN rp.final_position END) as best_position,
                 SUM(COALESCE(rp.dspoinc_earned, 0)) as total_dspoinc_earned,
-                MAX(COALESCE(rp.joined_at, rp.updated_at, cr.finished_at)) as last_played
+                MAX(COALESCE(
+                    datetime(replace(replace(rp.updated_at, 'T', ' '), 'Z', '')),
+                    datetime(rp.joined_at / 1000, 'unixepoch')
+                )) as last_played
             FROM tbl_rumble_participants rp
-            JOIN tbl_cheese_rumbles cr ON rp.rumble_id = cr.rumble_id
             WHERE rp.user_id = ?
-            AND datetime(replace(replace(cr.created_at, 'T', ' '), 'Z', '')) >= datetime(?)
-            AND datetime(replace(replace(cr.created_at, 'T', ' '), 'Z', '')) < datetime(?)
+              AND COALESCE(
+                    datetime(replace(replace(rp.updated_at, 'T', ' '), 'Z', '')),
+                    datetime(rp.joined_at / 1000, 'unixepoch')
+                  ) >= datetime(?)
+              AND COALESCE(
+                    datetime(replace(replace(rp.updated_at, 'T', ' '), 'Z', '')),
+                    datetime(rp.joined_at / 1000, 'unixepoch')
+                  ) < datetime(?)
         ");
         $stmt->execute([
             $discordId,
-            $seasonStartNextDay, // Start from next day after season start
+            $currentSeasonStart,
             $currentSeasonEnd
         ]);
         $rumbleData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Don't fallback to all-time for current season stats - show 0 if no season data
         if (!$rumbleData || (int)$rumbleData['total_rumbles'] === 0) {
             error_log("ℹ️ CHEESE RUMBLE: No Season $currentSeason data for $discordId, showing 0 (current season only)");
-            $rumbleData = null; // Don't fallback to all-time for current season stats
+            $rumbleData = null;
         }
-        
+
         if ($rumbleData && (int)$rumbleData['total_rumbles'] > 0) {
             $response['cheese_rumble']['total_rumbles'] = (int)$rumbleData['total_rumbles'];
             $response['cheese_rumble']['wins'] = (int)$rumbleData['wins'];
@@ -623,7 +621,7 @@ try {
             $response['cheese_rumble']['best_position'] = $rumbleData['best_position'] ? (int)$rumbleData['best_position'] : null;
             $response['cheese_rumble']['dspoinc_earned'] = (int)$rumbleData['total_dspoinc_earned'];
             $response['cheese_rumble']['last_played'] = $rumbleData['last_played'];
-            error_log("✅ Cheese Rumble stats found for user $discordId: " . $rumbleData['total_rumbles'] . " rumbles, " . $rumbleData['total_dspoinc_earned'] . " DSPOINC");
+            error_log("✅ Cheese Rumble stats found for user $discordId: " . $rumbleData['total_rumbles'] . " rumbles");
         }
     } catch (Exception $e) {
         error_log("Cheese Rumble query error: " . $e->getMessage());
