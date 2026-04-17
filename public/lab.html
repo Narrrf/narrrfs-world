@@ -4544,9 +4544,80 @@ function showLabMessageModal({
       });
     }
 
+    function selectNftByTokenId(tokenId, options = {}) {
+  const { scrollToResearch = false } = options;
+  const normalizedTokenId = String(tokenId || '').trim();
+
+  if (!normalizedTokenId) {
+    logLab('Could not select Genesis mouse because token_id was empty.', 'warn');
+    return;
+  }
+
+  const nft = getVerifiedGenesisNfts().find(
+    item => String(item.token_id || '') === normalizedTokenId
+  );
+
+  if (!nft || !nft.token_id) {
+    logLab(`Could not select Genesis mouse ${normalizedTokenId}; it is not present in the verified Genesis set.`, 'warn');
+    return;
+  }
+
+  state.selectedNft = nft;
+  state.selectedNftTokenId = normalizedTokenId;
+  saveSelectedTokenId(state.selectedNftTokenId);
+
+  renderNftGrid();
+  renderSelectedNftPanel();
+  renderSelectedTraitSummary();
+  renderTraitGrid();
+  renderLabBoosterPanel();
+  renderActiveResearchQueue();
+
+  if (scrollToResearch) {
+    requestAnimationFrame(() => {
+      scrollToTraitResearchChamber();
+    });
+  }
+
+  logLab(`Selected Genesis mouse ${nft.nft_name || nft.token_id}.`, 'info');
+}
+
     function getVerifiedGenesisNfts() {
-      return (Array.isArray(state.verifiedNfts) ? state.verifiedNfts : []).filter(nft => String(nft.collection || '').toLowerCase() === LAB_CONFIG.genesisCollection);
-    }
+  const source = Array.isArray(state.verifiedNfts) ? state.verifiedNfts : [];
+  const seen = new Set();
+
+  return source
+    .filter(nft => nft && typeof nft === 'object')
+    .map(nft => {
+      const tokenId = String(
+        nft.token_id ||
+        nft.tokenId ||
+        nft.mint ||
+        nft.address ||
+        ''
+      ).trim();
+
+      const collection = String(nft.collection || '').trim().toLowerCase();
+
+      if (!tokenId || collection !== 'genesis') {
+        return null;
+      }
+
+      return {
+        ...nft,
+        token_id: tokenId,
+        collection: 'genesis',
+        nft_name: String(nft.nft_name || nft.name || `Genesis Mouse ${tokenId}`).trim(),
+        image_url: String(nft.image_url || nft.image || '').trim()
+      };
+    })
+    .filter(nft => {
+      if (!nft) return false;
+      if (seen.has(nft.token_id)) return false;
+      seen.add(nft.token_id);
+      return true;
+    });
+}
 
     function findUpgradeRow(tokenId, traitType, traitValue, upgradeRows = state.upgradeRows) {
       return (Array.isArray(upgradeRows) ? upgradeRows : []).find(row =>
@@ -4914,52 +4985,33 @@ function toggleExpandedTraitKey(key) {
       `;
     }
 
-    function ensureSelectedNft() {
-      const verified = getVerifiedGenesisNfts();
-      renderMintOpportunity();
+function ensureSelectedNft() {
+  const verified = getVerifiedGenesisNfts();
+  renderMintOpportunity();
 
   if (!verified.length) {
-        state.selectedNft = null;
-        state.selectedNftTokenId = '';
-        saveSelectedTokenId('');
-        return;
-      }
-
-      const saved = state.selectedNftTokenId || getSavedSelectedTokenId();
-      const selected = verified.find(nft => String(nft.token_id) === String(saved)) || verified[0];
-      state.selectedNft = selected;
-      state.selectedNftTokenId = String(selected.token_id);
-      saveSelectedTokenId(state.selectedNftTokenId);
-    }
-
-function selectNftByTokenId(tokenId, options = {}) {
-  const { scrollToResearch = false } = options;
-
-  const nft = getVerifiedGenesisNfts().find(item => String(item.token_id) === String(tokenId));
-  if (!nft) {
-    logLab(`Could not select Genesis mouse ${tokenId}; it is not present in the verified Genesis set.`, 'warn');
+    state.selectedNft = null;
+    state.selectedNftTokenId = '';
+    saveSelectedTokenId('');
     return;
   }
 
-  state.selectedNft = nft;
-  state.selectedNftTokenId = String(tokenId);
-  saveSelectedTokenId(state.selectedNftTokenId);
+  const saved = state.selectedNftTokenId || getSavedSelectedTokenId();
+  const selected = verified.find(nft => String(nft.token_id) === String(saved)) || verified[0];
 
-  renderNftGrid();
-  renderSelectedNftPanel();
-  renderSelectedTraitSummary();
-  renderTraitGrid();
-  renderLabBoosterPanel();
-  renderActiveResearchQueue();
-
-  if (scrollToResearch) {
-    requestAnimationFrame(() => {
-      scrollToTraitResearchChamber();
-    });
+  if (!selected || !selected.token_id) {
+    state.selectedNft = null;
+    state.selectedNftTokenId = '';
+    saveSelectedTokenId('');
+    logLab('Verified Genesis set existed, but no valid selected NFT could be resolved.', 'warn');
+    return;
   }
 
-  logLab(`Selected Genesis mouse ${nft.nft_name || nft.token_id}.`, 'info');
+  state.selectedNft = selected;
+  state.selectedNftTokenId = String(selected.token_id);
+  saveSelectedTokenId(state.selectedNftTokenId);
 }
+
 
 function getNftsWithActionableQueueState() {
   return getVerifiedGenesisNfts()
@@ -5406,10 +5458,14 @@ function syncSliderRailToSelectedCard() {
 }
 
 function renderNftGrid() {
-  const verified = getVerifiedGenesisNfts();
-  const currentIndex = verified.findIndex(
-    nft => state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id)
+  const verified = getVerifiedGenesisNfts().filter(
+    nft => nft && typeof nft === 'object' && String(nft.token_id || '').trim() !== ''
   );
+
+  const currentIndex = verified.findIndex(
+    nft => state.selectedNft && String(state.selectedNft.token_id || '') === String(nft.token_id || '')
+  );
+
   const total = verified.length;
 
   if (el.nftCountBadge) {
@@ -5425,30 +5481,44 @@ function renderNftGrid() {
     } else {
       el.nftQuickSelect.disabled = false;
       el.nftQuickSelect.innerHTML = verified.map((nft, index) => `
-        <option value="${escapeHtml(String(nft.token_id || ''))}" ${currentIndex === index ? 'selected' : ''}>
-          ${escapeHtml(nft.nft_name || `Genesis Mouse ${index + 1}`)}
-        </option>
-      `).join('');
+  <option value="${escapeHtml(String(nft.token_id || ''))}" ${currentIndex === index ? 'selected' : ''}>
+    ${escapeHtml(nft.nft_name || `Genesis Mouse ${index + 1}`)}
+  </option>
+`).join('');
     }
   }
 
   if (el.nftPrevButton) {
-    el.nftPrevButton.disabled = total <= 1;
-    el.nftPrevButton.onclick = () => {
-      if (!total) return;
-      const nextIndex = currentIndex <= 0 ? total - 1 : currentIndex - 1;
-      selectNftByTokenId(String(verified[nextIndex].token_id || ''), { scrollToResearch: false });
-    };
-  }
+  el.nftPrevButton.disabled = total <= 1;
+  el.nftPrevButton.onclick = () => {
+    if (!total || !verified.length) return;
+    const nextIndex = currentIndex <= 0 ? total - 1 : currentIndex - 1;
+    const nextNft = verified[nextIndex];
 
-  if (el.nftNextButton) {
-    el.nftNextButton.disabled = total <= 1;
-    el.nftNextButton.onclick = () => {
-      if (!total) return;
-      const nextIndex = currentIndex >= total - 1 || currentIndex < 0 ? 0 : currentIndex + 1;
-      selectNftByTokenId(String(verified[nextIndex].token_id || ''), { scrollToResearch: false });
-    };
-  }
+    if (!nextNft || !nextNft.token_id) {
+      logLab('Prev Genesis navigation skipped because the target NFT was invalid.', 'warn');
+      return;
+    }
+
+    selectNftByTokenId(String(nextNft.token_id), { scrollToResearch: false });
+  };
+}
+
+if (el.nftNextButton) {
+  el.nftNextButton.disabled = total <= 1;
+  el.nftNextButton.onclick = () => {
+    if (!total || !verified.length) return;
+    const nextIndex = currentIndex >= total - 1 || currentIndex < 0 ? 0 : currentIndex + 1;
+    const nextNft = verified[nextIndex];
+
+    if (!nextNft || !nextNft.token_id) {
+      logLab('Next Genesis navigation skipped because the target NFT was invalid.', 'warn');
+      return;
+    }
+
+    selectNftByTokenId(String(nextNft.token_id), { scrollToResearch: false });
+  };
+}
 
   if (el.nftQuickSelect) {
     el.nftQuickSelect.onchange = () => {
