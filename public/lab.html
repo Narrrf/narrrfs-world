@@ -434,7 +434,7 @@ hydrateSession();
       z-index: 1;
       width: min(1560px, calc(100% - 24px));
       margin: 0 auto;
-      padding: 16px 0 64px;
+      padding: 6px 0 40px;
     }
 
     .glass {
@@ -936,15 +936,15 @@ hydrateSession();
     .game-hero {
       display: grid;
       grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
-      gap: 1.25rem;
+      gap: 0.9rem;
       align-items: stretch;
     }
 
     .hero-panel {
       position: relative;
       overflow: hidden;
-      padding: 1.5rem;
-      border-radius: 1.75rem;
+      padding: 1rem;
+      border-radius: 1.4rem;
       border: 1px solid rgba(148,163,184,0.18);
       background: linear-gradient(145deg, rgba(15,23,42,0.92), rgba(30,41,59,0.88));
       box-shadow: var(--shadow);
@@ -997,8 +997,8 @@ hydrateSession();
     .benefit-list {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.9rem;
-      margin-top: 1.2rem;
+      gap: 0.75rem;
+      margin-top: 0.9rem;
     }
 
     .benefit-card {
@@ -1023,8 +1023,8 @@ hydrateSession();
     }
 
     .lab-tab-nav {
-      margin: 1.25rem 0;
-      padding: 0.4rem;
+      margin: 0.65rem 0 0.8rem;
+      padding: 0.3rem;
       border-radius: 1rem;
       border: 1px solid rgba(148,163,184,0.16);
       background: rgba(15,23,42,0.7);
@@ -1035,7 +1035,7 @@ hydrateSession();
     .lab-tab-button {
       border: 0;
       border-radius: 0.85rem;
-      padding: 0.85rem 1rem;
+      padding: 0.65rem 0.85rem;
       font-weight: 800;
       letter-spacing: 0.01em;
       color: #cbd5e1;
@@ -1176,6 +1176,384 @@ hydrateSession();
   background: rgba(30,41,59,0.94);
 }
 
+
+/* =========================================================
+   MERGE 2A — MY GENESIS LAB UX CLEANUP
+   Compact chamber layout, smaller featured media, denser slider
+   ========================================================= */
+
+.viewer-rail {
+  grid-auto-columns: minmax(208px, 248px);
+  gap: 0.85rem;
+}
+
+.viewer-card {
+  max-width: 248px;
+}
+
+.viewer-card .nft-image,
+.viewer-card .empty-art {
+  aspect-ratio: 1 / 0.88;
+}
+
+.selected-stage-card {
+  border: 1px solid rgba(96, 165, 250, 0.14);
+  background: linear-gradient(180deg, rgba(15,23,42,0.86), rgba(2,6,23,0.9));
+}
+
+.selected-nft-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.selected-nft-media {
+  max-width: 360px;
+}
+
+.selected-nft-media .nft-image,
+.selected-nft-media .empty-art {
+  aspect-ratio: 1 / 1;
+  max-height: 360px;
+}
+
+.selected-nft-title {
+  font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+  line-height: 1.02;
+  font-weight: 900;
+}
+
+.selected-nft-token {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  word-break: break-all;
+}
+
+.selected-nft-kv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.selected-nft-kv-grid .kv {
+  padding: 0.9rem 1rem;
+}
+
+.genesis-lab-compact-note {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.genesis-lab-compact-note .chip {
+  background: rgba(15, 23, 42, 0.82);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+
+/* =========================================================
+   MERGE 2B + 3 — GLOBAL HEADER COMPRESSION + FAVORITE TRAITS
+   ========================================================= */
+.header-shell {
+  margin-bottom: 0.55rem;
+}
+
+.header-shell .glass {
+  padding-top: 0.9rem !important;
+  padding-bottom: 0.9rem !important;
+}
+
+.hero-panel .mt-5 {
+  margin-top: 0.85rem !important;
+}
+
+.hero-panel .mt-6 {
+  margin-top: 1rem !important;
+}
+
+.hero-panel .mt-4 {
+  margin-top: 0.75rem !important;
+}
+
+.lab-link-row {
+  gap: 0.65rem;
+}
+
+.favorite-traits-panel {
+  border-radius: 18px;
+  border: 1px solid rgba(250, 204, 21, 0.16);
+  background: linear-gradient(180deg, rgba(120, 53, 15, 0.18), rgba(15, 23, 42, 0.52));
+  padding: 14px;
+}
+
+.favorite-traits-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.favorite-traits-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.favorite-trait-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  background: rgba(250, 204, 21, 0.12);
+  color: #fde68a;
+}
+
+.favorite-traits-empty {
+  margin-top: 10px;
+  font-size: 0.84rem;
+  color: #cbd5e1;
+}
+
+.favorite-traits-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.favorite-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.78);
+  color: #e2e8f0;
+  padding: 7px 11px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.favorite-toggle-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(250, 204, 21, 0.34);
+}
+
+.favorite-toggle-btn.active {
+  border-color: rgba(250, 204, 21, 0.42);
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.24), rgba(245, 158, 11, 0.18));
+  color: #fef3c7;
+}
+
+.favorite-toggle-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+  .header-shell .glass {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  .hero-title {
+    font-size: clamp(1.55rem, 6vw, 2.35rem);
+  }
+
+  .hero-panel {
+    padding: 0.9rem;
+  }
+
+  .lab-tab-nav {
+    margin-top: 0.45rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .lab-tab-button {
+    padding: 0.55rem 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  .favorite-traits-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.genesis-trait-chamber-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.genesis-trait-chamber-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.genesis-trait-chamber-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.genesis-trait-chamber-summary .chip {
+  background: rgba(15,23,42,0.78);
+}
+
+.mint-opportunity-slot {
+  margin-top: 14px;
+}
+
+.mint-opportunity-card {
+  border-radius: 20px;
+}
+
+.mint-opportunity-inner {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.56fr);
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.mint-opportunity-title {
+  margin-top: 10px;
+  font-size: clamp(1.05rem, 1.8vw, 1.45rem);
+}
+
+.mint-opportunity-copy {
+  margin-top: 9px;
+  font-size: 0.9rem;
+  line-height: 1.48;
+}
+
+.mint-opportunity-list {
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mint-opportunity-point {
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.mint-opportunity-actions {
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.mint-opportunity-actions .btn {
+  padding-top: 0.78rem;
+  padding-bottom: 0.78rem;
+}
+
+.mint-opportunity-side {
+  gap: 10px;
+}
+
+.mint-opportunity-side-card {
+  padding: 12px;
+}
+
+.mint-opportunity-visual {
+  min-height: 100%;
+  padding: 14px;
+}
+
+.mint-opportunity-visual-core {
+  width: 108px;
+  height: 108px;
+}
+
+.mint-opportunity-visual-emoji {
+  font-size: 2rem;
+}
+
+.mint-opportunity-visual-copy {
+  margin-top: 10px;
+  font-size: 0.76rem;
+}
+
+@media (max-width: 1180px) {
+  .selected-nft-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-nft-media {
+    max-width: 320px;
+  }
+
+  .mint-opportunity-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .mint-opportunity-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .viewer-rail {
+    grid-auto-columns: minmax(184px, 214px);
+    gap: 0.72rem;
+  }
+
+  .viewer-card {
+    max-width: 214px;
+  }
+
+  .selected-stage-card {
+    padding: 1rem !important;
+  }
+
+  .selected-nft-media {
+    max-width: 260px;
+  }
+
+  .selected-nft-media .nft-image,
+  .selected-nft-media .empty-art {
+    max-height: 260px;
+  }
+
+  .selected-nft-kv-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+
+  .mint-opportunity-inner {
+    padding: 14px;
+  }
+
+  .mint-opportunity-side {
+    grid-template-columns: 1fr;
+  }
+
+  .mint-opportunity-visual {
+    display: none;
+  }
+}
+
 .glass.dev-hidden,
 .console-wrap {
   display: none !important;
@@ -1194,8 +1572,8 @@ hydrateSession();
 
 .feature-list {
   display: grid;
-  gap: 0.85rem;
-  margin-top: 1rem;
+  gap: 0.7rem;
+  margin-top: 0.7rem;
 }
 
 .feature-item {
@@ -1705,7 +2083,8 @@ body::after {
 @media (max-width: 768px) {
   .shell {
     width: min(100%, calc(100% - 12px));
-    padding-bottom: 40px;
+    padding-top: 4px;
+    padding-bottom: 32px;
   }
 
   .viewer-grid,
@@ -3407,7 +3786,7 @@ body::after {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-cyan-300 font-bold">Player Identity</div><div id="identitySummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
               <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-emerald-300 font-bold">DSPOINC & Economy</div><div id="economySummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
-              <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-violet-300 font-bold">Game Identity</div><div id="gameSummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
+              <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-violet-300 font-bold">Genetic Progress</div><div id="gameSummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
             </div>
           </div>
         </div>
@@ -3427,10 +3806,15 @@ body::after {
 
 <section id="lab-panel-my-genesis" class="lab-tab-panel" hidden>
   <div class="glass p-5 md:p-6">
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-3">
       <div>
         <div class="section-title text-xl md:text-2xl"><span>🐭</span><span>My Genesis Lab</span></div>
-        <p class="mt-2 text-sm md:text-base text-slate-300">Browse one verified Genesis mouse at a time, slide through your collection, and manage real trait upgrades in a cleaner game-style chamber.</p>
+        <p class="mt-2 text-sm md:text-base text-slate-300">Switch faster between verified mice, keep the selected chamber readable, and manage research in a cleaner portfolio-friendly layout.</p>
+        <div class="genesis-lab-compact-note">
+          <span class="chip">🎯 Compact chamber view</span>
+          <span class="chip">📱 Smaller featured media</span>
+          <span class="chip">🧬 Cleaner research workflow</span>
+        </div>
       </div>
     </div>
 
@@ -3511,16 +3895,23 @@ body::after {
       </div>
 
       <div class="glass p-5 md:p-6">
-        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div class="section-title text-xl md:text-2xl"><span>⚙️</span><span>Trait Research Chamber</span></div>
-            <p class="mt-2 text-sm md:text-base text-slate-300">Choose one exact scanned trait from the selected mouse, start research, watch the timer, and claim the new level when it is ready.</p>
+        <div class="genesis-trait-chamber-shell">
+          <div class="genesis-trait-chamber-header">
+            <div>
+              <div class="section-title text-xl md:text-2xl"><span>⚙️</span><span>Trait Research Chamber</span></div>
+              <p class="mt-2 text-sm md:text-base text-slate-300">Open one exact scanned trait, start research, and keep the selected chamber easier to scan while you move through many mice.</p>
+            </div>
+            <div class="text-sm text-slate-300"><span id="upgradeModeBadge" class="chip">Upgrade system warming up…</span></div>
           </div>
-          <div class="text-sm text-slate-300"><span id="upgradeModeBadge" class="chip">Upgrade system warming up…</span></div>
+          <div class="genesis-trait-chamber-summary">
+            <span class="chip">🖱️ Selected-mouse workflow first</span>
+            <span class="chip">📦 Portfolio tools next merge</span>
+            <span class="chip">⭐ Favorite trait bulk path planned</span>
+          </div>
+          <div id="traitUpgradeInfo" class="info text-sm"></div>
+          <div id="traitGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+          <div id="labBoosterPanel"></div>
         </div>
-        <div id="traitUpgradeInfo" class="info text-sm mt-4"></div>
-        <div id="traitGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-5"></div>
-        <div id="labBoosterPanel" class="mt-5"></div>
       </div>
     </div>
   </div>
@@ -3955,6 +4346,7 @@ body::after {
       enhancedProfileEndpoint: '/api/user/enhanced-profile.php',
       missionsEndpoint: '/api/user/user-game-missions.php',
       allTimeStatsEndpoint: '/api/user/all-time-stats.php',
+      bulkFavoriteTraitUpgradeEndpoint: '/api/user/start-bulk-favorite-trait-upgrades.php',
       puzzlesEndpoint: '/api/user/get-3d-puzzles-achievements.php',
       stakingStatsEndpoint: '/api/user/get-staking-stats.php',
       stakesEndpoint: '/api/user/get-stakes.php',
@@ -3966,6 +4358,8 @@ body::after {
       instantFinishEndpoint: '/api/user/instant-finish-nft-trait-upgrade.php',
       boosterInventoryEndpoint: '/api/user/get-lab-booster-inventory.php',
       storeItemsEndpoint: '/api/store/items.php',
+      favoriteTraitsEndpoint: '/api/user/get-favorite-traits.php',
+      toggleFavoriteTraitEndpoint: '/api/user/toggle-favorite-trait.php',
       storePurchaseEndpoint: '/api/store/purchase.php',
       scoreTotalEndpoint: '/api/user/score-total.php',
       useBoosterEndpoint: '/api/user/use-lab-booster.php',
@@ -3989,6 +4383,8 @@ body::after {
       userId: '',
       username: '',
       profile: null,
+      overview: null,
+      favoriteTraits: {},
       enhancedProfile: null,
       missions: null,
       allTimeStats: null,
@@ -4522,6 +4918,158 @@ function showLabMessageModal({
       return localStorage.getItem(LAB_CONFIG.selectedTokenStorageKey) || '';
     }
 
+
+
+function normalizeFavoriteTraitsPayload(favorites) {
+  const map = {};
+
+  (Array.isArray(favorites) ? favorites : []).forEach(row => {
+    const traitType = normalizeTraitType(row?.trait_type || '');
+    if (!traitType) return;
+    map[traitType] = true;
+  });
+
+  return map;
+}
+
+async function loadFavoriteTraits() {
+  if (!state.userId) {
+    state.favoriteTraits = {};
+    return;
+  }
+
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.favoriteTraitsEndpoint),
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json'
+        }
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      state.favoriteTraits = {};
+      return;
+    }
+
+    state.favoriteTraits = normalizeFavoriteTraitsPayload(res.payload?.favorites);
+  } catch (error) {
+    console.warn('Unable to load favorite traits from API.', error);
+    state.favoriteTraits = {};
+  }
+}
+
+function saveFavoriteTraits() {
+  // Backend-authoritative now.
+  // Kept as a no-op to avoid breaking existing calls until the bulk merge is complete.
+}
+
+function isFavoriteTraitType(traitType) {
+  const normalized = normalizeTraitType(traitType || '');
+  return !!(normalized && state.favoriteTraits && state.favoriteTraits[normalized]);
+}
+
+async function toggleFavoriteTraitType(traitType) {
+  const normalized = normalizeTraitType(traitType || '');
+  if (!normalized || !state.userId || state.actionInFlight) {
+    return;
+  }
+
+  const previousMap = { ...(state.favoriteTraits || {}) };
+  const nextState = !previousMap[normalized];
+
+  state.actionInFlight = true;
+
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.toggleFavoriteTraitEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: state.userId,
+          trait_type: normalized,
+          is_favorite: nextState
+        })
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Favorite toggle failed (${res.status})`);
+    }
+
+    state.favoriteTraits = normalizeFavoriteTraitsPayload(res.payload?.favorites);
+    renderTraitGrid();
+
+    if (typeof showToast === 'function') {
+      showToast(
+        nextState
+          ? `⭐ ${normalized} added to favorite traits`
+          : `⭐ ${normalized} removed from favorite traits`,
+        'success'
+      );
+    }
+  } catch (error) {
+    state.favoriteTraits = previousMap;
+
+    if (typeof showToast === 'function') {
+      showToast(error.message || 'Unable to update favorite trait.', 'error');
+    } else {
+      console.error('Favorite trait toggle failed:', error);
+    }
+  } finally {
+    state.actionInFlight = false;
+  }
+}
+
+    function getFavoriteTraitTypes() {
+      return Object.keys(state.favoriteTraits || {}).filter(Boolean).sort((a, b) => a.localeCompare(b));
+    }
+
+    function getFavoriteTraitAutomationMarkup() {
+      const favorites = getFavoriteTraitTypes();
+      const eligibleRows = favorites.length
+        ? (Array.isArray(state.upgradeRows) ? state.upgradeRows : []).filter(row => {
+            const traitType = normalizeTraitType(row?.trait_type || '');
+            const status = mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at);
+            return favorites.includes(traitType) && status === 'idle';
+          }).length
+        : 0;
+
+      return `
+        <div class="favorite-traits-panel">
+          <div class="favorite-traits-header">
+            <div>
+              <div class="section-title text-lg"><span>⭐</span><span>Trait Automation</span></div>
+              <div class="mt-2 text-sm text-slate-300">Mark a trait type once, then use it as a portfolio favorite across all verified Genesis mice. One click can now start every eligible favorite trait upgrade across your verified Genesis collection.</div>
+            </div>
+            <span class="chip">${favorites.length ? `${formatNumber(favorites.length)} favorite types` : 'No favorites yet'}</span>
+          </div>
+          ${favorites.length ? `
+            <div class="favorite-traits-chip-row">
+              ${favorites.map(traitType => `<span class="favorite-trait-chip">★ ${escapeHtml(traitType)}</span>`).join('')}
+            </div>
+          ` : '<div class="favorite-traits-empty">No trait types are marked yet. Use the favorite toggle inside any trait card to build your personal upgrade set.</div>'}
+          <div class="favorite-toggle-meta">
+            <div class="text-xs uppercase tracking-[0.18em] text-amber-200 font-bold">Eligible favorite upgrades now: ${formatNumber(eligibleRows)}</div>
+            <div class="text-xs text-slate-400">Bulk upgrade uses your saved favorite trait types and starts all eligible idle Genesis trait upgrades through the backend authority.</div>
+          </div>
+          <div class="favorite-traits-actions">
+            <button type="button" class="btn warn" data-bulk-favorite-upgrade="true" ${favorites.length ? '' : 'disabled'}>⭐ Upgrade All Favorite Traits</button>
+          </div>
+        </div>
+      `;
+    }
+
     function normalizeNftTraits(nft) {
       const rawTraits = Array.isArray(nft?.traits) ? nft.traits : (Array.isArray(nft?.attributes) ? nft.attributes : []);
       const map = new Map();
@@ -4582,7 +5130,7 @@ function showLabMessageModal({
   logLab(`Selected Genesis mouse ${nft.nft_name || nft.token_id}.`, 'info');
 }
 
-    function getVerifiedGenesisNfts() {
+function getVerifiedGenesisNfts() {
   const source = Array.isArray(state.verifiedNfts) ? state.verifiedNfts : [];
   const seen = new Set();
 
@@ -4597,9 +5145,21 @@ function showLabMessageModal({
         ''
       ).trim();
 
-      const collection = String(nft.collection || '').trim().toLowerCase();
+      const rawCollection = String(
+        nft.collection ||
+        nft.collection_name ||
+        nft.source_collection ||
+        ''
+      ).trim().toLowerCase();
 
-      if (!tokenId || collection !== 'genesis') {
+      const hasGenesisShape =
+        Array.isArray(nft.traits) ||
+        Array.isArray(nft.attributes) ||
+        rawCollection === 'genesis' ||
+        rawCollection === 'holder' ||
+        rawCollection === 'holders';
+
+      if (!tokenId || !hasGenesisShape) {
         return null;
       }
 
@@ -4783,40 +5343,100 @@ function mapUpgradeStatus(status, endsAt) {
       `).join('');
     }
 
-    function renderOverviewCards() {
-      const verified = getVerifiedGenesisNfts();
-      const staking = state.stakingStats || {};
-      el.overviewStatsGrid.innerHTML = [
-        createStatCard('DSPOINC Total', formatCompactNumber(staking.total_balance || staking.total_available || state.profile?.dspoinc || 0), 'All known score balance tied to the current player.', 'text-cyan-300'),
-        createStatCard('Genesis NFTs', formatNumber(verified.length), 'Verified saved Genesis mice available in the lab.', 'text-violet-300'),
-        createStatCard('Lab Power', formatNumber(getAggregateTraitLevels(verified)), 'Total trait levels across verified Genesis NFTs.', 'text-emerald-300'),
-        createStatCard('Upgrade Queue', `${formatNumber(getAllActiveUpgradeCount())} / ${formatNumber(getAllReadyUpgradeCount())}`, 'Active upgrades versus ready-to-claim completions.', 'text-amber-300')
-      ].join('');
-    }
+    function getOverviewData() {
+  return state.overview && typeof state.overview === 'object'
+    ? state.overview
+    : {
+        identity: {},
+        economy: {},
+        genesis: {},
+        genetic: {}
+      };
+     }
 
-    function renderIdentitySummary() {
-      const p = state.profile || {};
-      const rows = [
-        ['User', state.username || p.username || 'Unknown User'],
-        ['Discord ID', state.userId || p.discord_id || p.user_id || 'Unavailable'],
-        ['Wallet', p.wallet_address || p.wallet || state.enhancedProfile?.wallet_address || 'No wallet linked'],
-        ['Genesis Holder Count', formatNumber(getVerifiedGenesisNfts().length)],
-        ['VIP Holder Count', formatNumber(p.vip_count || 0)]
-      ];
-      el.identitySummary.innerHTML = rows.map(([k,v]) => `<div class="flex justify-between gap-3"><span class="text-slate-400">${escapeHtml(k)}</span><span class="text-right text-white">${escapeHtml(v)}</span></div>`).join('');
-    }
+function renderOverviewCards() {
+  const overview = getOverviewData();
+  const verified = getVerifiedGenesisNfts();
 
-    function renderEconomySummary() {
-      const s = state.stakingStats || {};
-      const rows = [
-        ['Total Balance', formatNumber(s.total_balance || 0)],
-        ['Available', formatNumber(s.available_balance || s.total_available || 0)],
-        ['Frozen', formatNumber(s.frozen_balance || s.total_staked || 0)],
-        ['Active Stakes', formatNumber(s.active_stakes_count || s.active_stakes || 0)],
-        ['Ready To Claim', formatNumber(s.ready_to_claim || 0)]
-      ];
-      el.economySummary.innerHTML = rows.map(([k,v]) => `<div class="flex justify-between gap-3"><span class="text-slate-400">${escapeHtml(k)}</span><span class="text-right text-white">${escapeHtml(v)}</span></div>`).join('');
-    }
+  const totalDspoinc =
+    overview.economy?.total_dspoinc ??
+    state.stakingStats?.total_balance ??
+    state.stakingStats?.total_available ??
+    state.profile?.total_dspoinc ??
+    state.profile?.dspoinc ??
+    0;
+
+  const verifiedGenesisCount =
+    overview.identity?.verified_genesis_count ??
+    overview.genesis?.verified_genesis_count ??
+    verified.length;
+
+  const upgradeRowLabPower = (Array.isArray(state.upgradeRows) ? state.upgradeRows : []).reduce((sum, row) => {
+    return sum + Math.max(1, Number(row?.current_level ?? 1));
+  }, 0);
+
+  const selectedSummaryPower = verified.length ? getAggregateTraitLevels(verified) : 0;
+  const backendLabPower = Number(overview.genesis?.lab_power ?? 0);
+
+  const labPower = backendLabPower > 0
+    ? backendLabPower
+    : (upgradeRowLabPower > 0 ? upgradeRowLabPower : selectedSummaryPower);
+
+  const geneticItemCount =
+    overview.genetic?.owned_item_count ??
+    state.geneticInventorySummary?.owned_count ??
+    (Array.isArray(state.geneticInventory) ? state.geneticInventory.length : 0);
+
+  el.overviewStatsGrid.innerHTML = [
+    createStatCard('DSPOINC Total', formatCompactNumber(totalDspoinc), 'All known score balance tied to the current player.', 'text-cyan-300'),
+    createStatCard('Genesis NFTs', formatNumber(verifiedGenesisCount), 'Verified saved Genesis mice available in the lab.', 'text-violet-300'),
+    createStatCard('Lab Power', formatNumber(labPower), 'Combined Genesis trait upgrade strength across all NFT-bound progression rows.', 'text-emerald-300'),
+    createStatCard('Genetic Items', formatNumber(geneticItemCount), 'Owned Discord-bound Genetic items available for long-term progression.', 'text-amber-300')
+  ].join('');
+}
+
+function formatShortWallet(wallet) {
+  const value = String(wallet || '').trim();
+  if (!value) return 'No wallet linked';
+  if (value.length <= 14) return value;
+  return `${value.substring(0, 6)}...${value.substring(value.length - 4)}`;
+}
+
+function renderIdentitySummary() {
+  const p = state.profile || {};
+  const overview = getOverviewData();
+  const identity = overview.identity || {};
+
+  const rows = [
+    ['User', state.username || identity.discord_name || p.username || 'Unknown User'],
+    ['Discord ID', state.userId || identity.discord_id || p.discord_id || p.user_id || 'Unavailable'],
+    ['Wallet', formatShortWallet(identity.wallet_address || p.wallet_address || p.wallet || state.enhancedProfile?.wallet_address)],
+    ['Genesis Holder Count', formatNumber(identity.verified_genesis_count ?? getVerifiedGenesisNfts().length)],
+    ['VIP Holder Count', formatNumber(identity.verified_vip_count ?? p.vip_count ?? 0)]
+  ];
+
+  el.identitySummary.innerHTML = rows
+    .map(([k, v]) => `<div class="flex justify-between items-start gap-3"><span class="text-slate-400 shrink-0">${escapeHtml(k)}</span><span class="text-right text-white break-all">${escapeHtml(v)}</span></div>`)
+    .join('');
+}
+
+function renderEconomySummary() {
+  const s = state.stakingStats || {};
+  const overview = getOverviewData();
+  const economy = overview.economy || {};
+
+  const rows = [
+    ['Total Balance', formatNumber(economy.total_dspoinc ?? s.total_balance ?? 0)],
+    ['Available', formatNumber(economy.available_dspoinc ?? s.available_balance ?? s.total_available ?? 0)],
+    ['Frozen', formatNumber(economy.frozen_dspoinc ?? s.frozen_balance ?? s.total_staked ?? 0)],
+    ['Active Stakes', formatNumber(economy.active_stake_count ?? s.active_stakes_count ?? s.active_stakes ?? 0)],
+    ['Ready To Claim', formatNumber(economy.ready_stake_claim_count ?? s.ready_to_claim ?? 0)]
+  ];
+
+  el.economySummary.innerHTML = rows
+    .map(([k, v]) => `<div class="flex justify-between gap-3"><span class="text-slate-400">${escapeHtml(k)}</span><span class="text-right text-white">${escapeHtml(v)}</span></div>`)
+    .join('');
+}
 
     function renderGameSummary() {
       const m = state.missions || {};
@@ -4931,21 +5551,21 @@ function toggleExpandedTraitKey(key) {
       const mintUrl = 'https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis';
       const hasGenesis = verified.length > 0;
       const title = hasGenesis
-        ? 'Expand your Genesis chamber with more mice.'
-        : 'Genesis needed — unlock your first chamber slot.';
+        ? 'Expand your chamber with more verified mice.'
+        : 'Genesis needed — wake your first chamber slot.';
       const copy = hasGenesis
-        ? 'Every additional Genesis mouse brings more exact traits, more long-term research paths, and more Lab power for future games, riddles, and holder utility across the Mouseverse.'
-        : 'Your Lab is ready, but it still needs its first Genesis mouse. Mint one to unlock trait research, holder-first progression, and the permanent power path that stays tied to the NFT.';
+        ? 'Each extra Genesis mouse adds more exact traits, more research routes, and more long-term Lab power.'
+        : 'Your Lab is ready, but it still needs its first Genesis mouse to unlock trait research and permanent NFT-bound power.';
       const badge = hasGenesis ? '✨ Chamber Expansion Recommended' : '🧀 Genesis Needed';
       const primaryLabel = hasGenesis ? '🐭 Mint More Genesis Mice' : '🧀 Mint Your First Genesis Mouse';
       const sideLabel = hasGenesis ? 'New Chamber Slots' : 'First Chamber Slot';
       const sideValue = hasGenesis ? `+ traits • + routes • + power` : 'Mint to enter the chamber';
       const hint = hasGenesis
-        ? 'More verified mice means more upgradeable trait paths and more reasons to return to the Lab.'
+        ? 'More verified mice means more upgradeable paths.'
         : 'Once your first Genesis is minted and verified, the full slideshow, trait chamber, and research queue wake up here.';
       const visualCopy = hasGenesis
         ? 'More mice means more lab routes, more exact traits, and more future utility to grow.'
-        : 'No Genesis loaded yet. The chamber is waiting for its first mouse to wake the research grid.';
+        : 'No Genesis loaded yet. The chamber is waiting for its first mouse.';
 
       el.mintOpportunitySlot.innerHTML = `
         <div class="mint-opportunity-card">
@@ -4955,10 +5575,10 @@ function toggleExpandedTraitKey(key) {
               <div class="mint-opportunity-title">${escapeHtml(title)}</div>
               <div class="mint-opportunity-copy">${escapeHtml(copy)}</div>
               <div class="mint-opportunity-list">
-                <div class="mint-opportunity-point"><strong class="text-amber-200">Permanent NFT power:</strong> every verified Genesis mouse adds more real upgrade paths for your long-term chamber.</div>
-                <div class="mint-opportunity-point"><strong class="text-cyan-200">Holder-first utility:</strong> prepare for future game flavor, riddles, role perks, and Mouseverse progression.</div>
-                <div class="mint-opportunity-point"><strong class="text-emerald-200">Exact trait research:</strong> only real verified Genesis traits enter the chamber and become upgradeable.</div>
-                <div class="mint-opportunity-point"><strong class="text-amber-200">Cheese-gold expansion:</strong> mint another mouse when you want more routes, more choices, and more power to build.</div>
+                <div class="mint-opportunity-point"><strong class="text-amber-200">Permanent power:</strong> every verified mouse adds more long-term chamber routes.</div>
+                <div class="mint-opportunity-point"><strong class="text-cyan-200">Holder utility:</strong> prepare for future riddles, perks, and Mouseverse progression.</div>
+                <div class="mint-opportunity-point"><strong class="text-emerald-200">Exact traits:</strong> only real verified Genesis traits enter the chamber.</div>
+                <div class="mint-opportunity-point"><strong class="text-amber-200">Expand paths:</strong> mint another mouse for more routes, choices, and power.</div>
               </div>
               <div class="mint-opportunity-actions">
                 <a class="btn gold-link inline-flex items-center justify-center" href="${mintUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(primaryLabel)}</a>
@@ -6332,30 +6952,30 @@ function renderSelectedNftPanel() {
   el.selectedNftStatus.textContent = ready ? 'Claim ready' : active ? 'Research active' : 'Ready for research';
 
   el.selectedNftPanel.innerHTML = `
-    <div class="space-y-5">
-      <div class="grid grid-cols-1 md:grid-cols-[0.95fr_1.05fr] gap-5">
-        <div>
+    <div class="space-y-4">
+      <div class="selected-nft-layout">
+        <div class="selected-nft-media">
           ${nft.image_url ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>` : `<div class="empty-art">🐭</div>`}
         </div>
         <div class="space-y-4">
           <div>
             <div class="text-xs uppercase tracking-[0.2em] text-cyan-300 font-bold">Selected Genesis Mouse</div>
-            <div class="mt-2 text-3xl font-black leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
-            <div class="mt-2 text-sm text-slate-400 break-all">${escapeHtml(nft.token_id || 'Unknown token id')}</div>
+            <div class="mt-2 selected-nft-title">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
+            <div class="mt-2 selected-nft-token">${escapeHtml(nft.token_id || 'Unknown token id')}</div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="selected-nft-kv-grid">
             <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Trait Slots</div><div class="mt-1 text-2xl font-black">${formatNumber(traits.length)}</div></div>
             <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.totalLevels)}</div></div>
             <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active Research</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.activeCount)}</div></div>
             <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready To Claim</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.readyCount)}</div></div>
           </div>
-          <div class="info text-sm">This Genesis mouse keeps its own research path. Build levels now to prepare for future holder utility, game flavor, and Mouseverse adventures.</div>
+          <div class="info text-sm">This selected chamber stays compact so you can swap mice faster, review power faster, and keep ability and trait actions closer together.</div>
         </div>
       </div>
 
       <div>
         <div class="section-title text-lg"><span>🧾</span><span>Trait Snapshot</span></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
           ${traits.map(trait => {
             const levelBadge = getTraitSnapshotLevelBadge(nft, trait);
 
@@ -6629,7 +7249,7 @@ el.traitUpgradeInfo.innerHTML = `
   </div>
 `;
   if (!Array.isArray(traits) || !traits.length) {
-    el.traitGrid.innerHTML = `<div class="warnbox text-sm">No trait data was found for this selected Genesis mouse.</div>`;
+    el.traitGrid.innerHTML = `${getFavoriteTraitAutomationMarkup()}<div class="warnbox text-sm">No trait data was found for this selected Genesis mouse.</div>`;
     setExpandedTraitKey(null);
     return;
   }
@@ -6639,7 +7259,7 @@ el.traitUpgradeInfo.innerHTML = `
     setExpandedTraitKey(null);
   }
 
-  el.traitGrid.innerHTML = traits.map(trait => {
+  el.traitGrid.innerHTML = getFavoriteTraitAutomationMarkup() + traits.map(trait => {
     const row = getTraitUpgradeDisplayRow(nft, trait);
     const currentLevel = Math.max(1, safeNumber(row.current_level, 1));
     const nextLevel = currentLevel + 1;
@@ -6706,6 +7326,8 @@ el.traitUpgradeInfo.innerHTML = `
 
     const traitKey = getTraitAccordionKey(nft, trait);
     const isExpanded = getExpandedTraitKey() === traitKey;
+    const normalizedTraitType = normalizeTraitType(row.trait_type || trait.trait_type || '');
+    const favoriteActive = isFavoriteTraitType(normalizedTraitType);
 
     return `
       <div class="trait-card trait-card-accordion ${statusClass} ${boosterGlowClass} ${isExpanded ? 'expanded' : 'collapsed'}">
@@ -6773,6 +7395,17 @@ el.traitUpgradeInfo.innerHTML = `
               <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Instant Finish</div>
               <div class="mt-2 text-lg font-black">${canFinish ? `${formatNumber(instantCost)} DSPOINC` : '—'}</div>
             </div>
+          </div>
+
+          <div class="favorite-toggle-meta">
+            <button
+              type="button"
+              class="favorite-toggle-btn ${favoriteActive ? 'active' : ''}"
+              data-favorite-trait-type="${escapeHtml(normalizedTraitType)}"
+            >
+              ${favoriteActive ? '★ Favorite Trait' : '☆ Mark as Favorite'}
+            </button>
+            <div class="text-xs text-slate-400">Saved per trait type for this player profile. Future bulk upgrades will use these favorites across every verified Genesis mouse.</div>
           </div>
 
           <div class="info text-sm mt-4">
@@ -7156,14 +7789,96 @@ async function tryAggregateLab() {
 
     const data = res.payload.data;
 
+    state.overview = data.overview || state.overview || null;
+
     state.profile = data.profile || state.profile;
+
+    if (state.overview?.identity) {
+      state.profile = {
+        ...(state.profile || {}),
+        wallet_address: state.overview.identity.wallet_address || state.profile?.wallet_address || '',
+        wallet: state.overview.identity.wallet_address || state.profile?.wallet || '',
+        vip_count: state.overview.identity.verified_vip_count ?? state.profile?.vip_count ?? 0
+      };
+    }
+
     state.missions = data.missions_profile || data.missions || state.missions;
     state.allTimeStats = data.all_time_stats || state.allTimeStats;
     state.puzzleAchievements = data.puzzles_3d_achievements || state.puzzleAchievements;
+
     state.stakingStats = data.staking_stats || state.stakingStats;
+
+    if (state.overview?.economy) {
+      state.stakingStats = {
+        ...(state.stakingStats || {}),
+        total_balance: state.overview.economy.total_dspoinc ?? state.stakingStats?.total_balance ?? 0,
+        available_balance: state.overview.economy.available_dspoinc ?? state.stakingStats?.available_balance ?? 0,
+        frozen_balance: state.overview.economy.frozen_dspoinc ?? state.stakingStats?.frozen_balance ?? 0,
+        active_stakes_count: state.overview.economy.active_stake_count ?? state.stakingStats?.active_stakes_count ?? 0,
+        active_stakes: state.overview.economy.active_stake_count ?? state.stakingStats?.active_stakes ?? 0,
+        total_staked: state.overview.economy.active_frozen_total ?? state.stakingStats?.total_staked ?? 0,
+        ready_to_claim: state.overview.economy.ready_stake_claim_count ?? state.stakingStats?.ready_to_claim ?? 0
+      };
+    }
+
     state.stakingActivity = data.staking_activity || state.stakingActivity;
-    state.verifiedNfts = Array.isArray(data.verified_nfts) ? data.verified_nfts : state.verifiedNfts;
-    state.upgradeRows = Array.isArray(data.trait_upgrades) ? data.trait_upgrades : state.upgradeRows;
+
+    if (Array.isArray(data.verified_nfts) && data.verified_nfts.length > 0) {
+      state.verifiedNfts = data.verified_nfts
+        .filter(row => row && typeof row === 'object')
+        .map(row => {
+          const tokenId = String(
+            row.token_id ||
+            row.tokenId ||
+            row.mint ||
+            row.nft_token_id ||
+            row.nft_id ||
+            ''
+          ).trim();
+
+          const traits = Array.isArray(row.traits)
+            ? row.traits
+            : Array.isArray(row.attributes)
+              ? row.attributes
+              : Array.isArray(row.trait_rows)
+                ? row.trait_rows.map(trait => ({
+                    trait_type: trait.trait_type || trait.type || '',
+                    value: trait.trait_value || trait.value || ''
+                  }))
+                : [];
+
+          return {
+            ...row,
+            token_id: tokenId,
+            collection: 'genesis',
+            nft_name: String(
+              row.nft_name ||
+              row.name ||
+              row.mouse_name ||
+              `Genesis Mouse ${tokenId || 'Unknown'}`
+            ).trim(),
+            image_url: String(
+              row.image_url ||
+              row.image ||
+              row.image_path ||
+              row.preview_path ||
+              ''
+            ).trim(),
+            traits
+          };
+        })
+        .filter(row => row.token_id && Array.isArray(row.traits) && row.traits.length > 0);
+    }
+
+    state.upgradeRows = Array.isArray(data.trait_upgrades)
+      ? data.trait_upgrades
+      : Array.isArray(data.genesis_trait_upgrades)
+        ? data.genesis_trait_upgrades
+        : state.upgradeRows;
+
+    if (Array.isArray(data.genetic_inventory)) {
+      state.geneticInventory = data.genetic_inventory;
+    }
 
     state.aggregateLabEndpointAvailable = true;
     logLab('Loaded aggregate lab payload from dedicated endpoint.', 'success');
@@ -10140,6 +10855,96 @@ function renderGeneticMedia(item, options = {}) {
   `;
 }
 
+async function handleBulkFavoriteTraitUpgrade() {
+  if (!state.userId || state.actionInFlight) {
+    return;
+  }
+
+  const favorites = getFavoriteTraitTypes();
+  if (!favorites.length) {
+    showLabMessageModal({
+      eyebrow: 'Trait Automation',
+      title: 'No Favorite Traits Selected',
+      icon: '⭐',
+      message: 'Mark at least one trait type as a favorite inside a Genesis trait card before using bulk favorite upgrades.',
+      note: 'Favorites are saved per player profile and apply across your verified Genesis mice.',
+      confirmText: 'Understood',
+      confirmVariant: 'primary'
+    });
+    return;
+  }
+
+  state.actionInFlight = true;
+
+  try {
+    logLab(`Starting bulk favorite trait upgrade for ${favorites.length} favorite trait type(s)…`, 'info');
+
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.bulkFavoriteTraitUpgradeEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: state.userId
+        })
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Bulk favorite upgrade failed (${res.status})`);
+    }
+
+    const payload = res.payload;
+    const startedCount = Number(payload.started_count || 0);
+    const skippedCount = Number(payload.skipped_count || 0);
+    const spentTotal = Number(payload.spent_total_dspoinc || 0);
+    const remainingBalance = Number(payload.remaining_available_dspoinc || 0);
+    const eligibleCount = Number(payload.eligible_count || 0);
+
+    showLabMessageModal({
+      eyebrow: 'Trait Automation',
+      title: 'Bulk Favorite Upgrade Started',
+      icon: '⭐',
+      message: `Started ${formatNumber(startedCount)} favorite Genesis trait upgrade${startedCount === 1 ? '' : 's'} across your verified collection.`,
+      note: `Eligible checked: ${formatNumber(eligibleCount)} • Skipped: ${formatNumber(skippedCount)} • Spent: ${formatNumber(spentTotal)} DSPOINC • Remaining available: ${formatNumber(remainingBalance)} DSPOINC`,
+      confirmText: 'Excellent',
+      confirmVariant: 'primary'
+    });
+
+    logLab(`Bulk favorite upgrade started ${startedCount} row(s), skipped ${skippedCount}, spent ${spentTotal} DSPOINC.`, 'success');
+
+    await Promise.allSettled([
+      loadTraitUpgrades(),
+      tryAggregateLab(),
+      loadVerifiedNftScan(),
+      loadLabBoosterStoreCatalog(),
+      loadLabBoosterInventory()
+    ]);
+
+    renderAll();
+  } catch (error) {
+    logLab(`Bulk favorite upgrade failed: ${error.message}`, 'error');
+
+    showLabMessageModal({
+      eyebrow: 'Trait Automation',
+      title: 'Bulk Favorite Upgrade Failed',
+      icon: '⚠️',
+      message: error.message || 'The backend rejected the bulk favorite trait upgrade request.',
+      note: 'No manual Genesis upgrade or ability paths were changed by this action.',
+      confirmText: 'Understood',
+      confirmVariant: 'primary'
+    });
+  } finally {
+    state.actionInFlight = false;
+  }
+}
+
+    // 🧭 initLab() Load lab 
 async function loadLab() {
   if (state.loading) return;
   state.loading = true;
@@ -10147,6 +10952,7 @@ async function loadLab() {
     logLab('Booting lab runtime…', 'info');
     state.userId = getStoredUserId();
     state.username = getStoredUsername();
+    await loadFavoriteTraits();
     renderSessionNotice();
 
     if (!state.userId) {
@@ -10167,27 +10973,30 @@ async function loadLab() {
       localStorage.setItem('narrrfs_last_discord_name', state.username);
     }
 
-const aggregateLoaded = await tryAggregateLab();
+    const aggregateLoaded = await tryAggregateLab();
 
-if (!aggregateLoaded) {
-  await loadStableApis();
-} else if (!Array.isArray(state.upgradeRows) || state.upgradeRows.length === 0) {
-  await loadTraitUpgrades();
-}
+    if (!aggregateLoaded) {
+      await loadStableApis();
+    } else {
+      await Promise.allSettled([
+        loadVerifiedNftScan(),
+        loadTraitUpgrades()
+      ]);
+    }
 
-await Promise.all([
-  loadLabBoosterStoreCatalog(),
-  loadLabBoosterInventory(),
-  loadGeneticTraitCatalog(),
-  loadUserGeneticItems(),
-  refreshGeneticMarketplaceData()
-]);
+    await Promise.all([
+      loadLabBoosterStoreCatalog(),
+      loadLabBoosterInventory(),
+      loadGeneticTraitCatalog(),
+      loadUserGeneticItems(),
+      refreshGeneticMarketplaceData()
+    ]);
 
-renderAll();
-// 🧭 Handle deep link AFTER full render (CRITICAL)
-handleLabDeepLink();
+    renderAll();
+    // 🧭 Handle deep link AFTER full render (CRITICAL)
+    handleLabDeepLink();
 
-logLab('Lab runtime ready.', 'success');
+    logLab('Lab runtime ready.', 'success');
 
   } catch (error) {
     logLab(`Lab boot failed: ${error.message}`, 'error');
@@ -10212,7 +11021,23 @@ el.refreshUpgradeButton.addEventListener('click', async () => {
   renderAll();
 });
 
-el.traitGrid?.addEventListener('click', event => {
+el.traitGrid?.addEventListener('click', async event => {
+  const favoriteButton = event.target.closest('[data-favorite-trait-type]');
+  if (favoriteButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    await toggleFavoriteTraitType(favoriteButton.getAttribute('data-favorite-trait-type') || '');
+    return;
+  }
+
+    const bulkFavoriteButton = event.target.closest('[data-bulk-favorite-upgrade="true"]');
+  if (bulkFavoriteButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    await handleBulkFavoriteTraitUpgrade();
+    return;
+  }
+
   const toggleButton = event.target.closest('[data-trait-toggle="true"]');
   if (!toggleButton) {
     return;

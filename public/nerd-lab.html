@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php
-require_once 'discord-invite.php';
-?>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🧬 Nerd Lab - Technical Documentation | Narrrf's World</title>
+  <title>🧬 Nerd Portal - Public Technical Documentation | Narrrf's World</title>
   <link rel="icon" type="image/png" href="favicon-phantom.png" />
   <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
   <meta name="theme-color" content="#facc15" />
-  <meta name="description" content="Exclusive technical documentation for Narrrf's World - synced Season 10 system overview for Holders and VIP Holders" />
-  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Public technical portal for Narrrf's World live systems, Reward Chamber architecture, Lab progression, admin runtime, frontend surfaces, and ecosystem documentation." />
+  <meta name="robots" content="index, follow" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="🧬 Nerd Lab - Technical Documentation - Narrrf's World" />
-  <meta property="og:description" content="Exclusive technical documentation - complete live system overview" />
+  <meta property="og:title" content="🧬 Nerd Portal - Public Technical Documentation - Narrrf's World" />
+  <meta property="og:description" content="Public technical portal for Narrrf's World live systems, Reward Chamber, Lab progression, admin runtime, and ecosystem architecture." />
   <meta property="og:image" content="img/narrrf-logo-professional.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -84,7 +81,7 @@ require_once 'discord-invite.php';
   </div>
 
   <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
-    🧬 Nerd Lab v1.2 - Lab Ecosystem Synced
+    🧬 Nerd Portal v2.0 - Public System Sync
   </div>
 
   <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
@@ -101,32 +98,16 @@ require_once 'discord-invite.php';
     </div>
   </header>
 
-  <div id="access-denied" style="display:none;" class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-gray-800 border-4 border-red-500 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
-      <div class="text-6xl mb-4">🚫</div>
-      <h1 class="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
-      <p class="text-gray-300 mb-6">This page is exclusive to <strong>Holders</strong> and <strong>VIP Holders</strong>.</p>
-      <div class="space-y-3">
-        <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read" class="block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition">🔑 Login with Discord & Return</a>
-        <p class="text-xs text-gray-400 mt-2 mb-2">After logging in, return to this page to access Nerd Lab.</p>
-        <a href="<?php echo $discord_url; ?>" target="_blank" class="block bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition">🔗 Join Discord & Get NFT</a>
-        <a href="mint.html" class="block bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 px-6 rounded-xl transition">🎨 Mint Your NFT</a>
-        <a href="index.html" class="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition">🏠 Go Home</a>
-      </div>
-      <p class="text-xs text-gray-500 mt-4">Need help? Contact an admin in Discord.</p>
-    </div>
-  </div>
-
-  <div id="main-content" style="display:none;">
+  <div id="main-content">
     <section class="relative z-10 py-20 px-4 md:px-6 text-center">
       <div class="max-w-6xl mx-auto">
-        <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">🧬 Nerd Lab</h1>
+        <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">🧬 Nerd Portal</h1>
         <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
-          Complete technical documentation for Narrrf's World live systems, Cheese Engine architecture, admin runtime, staking, and the full live Lab ecosystem: Genesis progression, boosters, Genetic inventory, marketplace flow, and Discord-read mirror direction.
+          Public technical documentation for Narrrf's World live systems, Reward Chamber architecture, Cheese Engine runtime, admin surfaces, staking, frontend loops, and the full live Lab ecosystem: Genesis progression, boosters, Genetic inventory, marketplace flow, and Discord-linked system design.
         </p>
         <div class="bg-green-900/30 border border-green-500/50 rounded-xl p-4 mb-8 max-w-4xl mx-auto">
           <p class="text-green-100 text-sm">
-            <strong>2026 Live Documentation:</strong> Season 10 live systems + full Lab ecosystem (Genesis + Boosters + Genetic + Marketplace) + Admin Interface + Discord Bot + Database + Frontend + Cheese Engine 13.0 Agent System + DSPOINC Staking System
+            <strong>2026 Public Technical Portal:</strong> Season 10 live systems + Reward Chamber (3-box economy) + full Lab ecosystem (Genesis + Boosters + Genetic + Marketplace) + Admin Interface + Discord Bot + Database + Frontend + Cheese Engine 13.0 Agent System + DSPOINC Staking System
           </p>
         </div>
       </div>
@@ -151,7 +132,8 @@ require_once 'discord-invite.php';
             <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="frontend">🌐 Frontend</button>
             <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseEngine">🧠 Cheese Engine</button>
             <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="staking">🧊 Stake Lab</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-cyan-400/40 font-semibold text-sm whitespace-nowrap" data-tab="lab">🧬 Genesis Lab</button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-cyan-400/40 font-semibold text-sm whitespace-nowrap" data-tab="rewardChamber">🎁 Reward Chamber</button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="lab">🧬 Genesis Lab</button>
           </div>
         </div>
       </div>
@@ -174,6 +156,146 @@ require_once 'discord-invite.php';
         <div id="tab-frontend" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="frontendContent" class="markdown-content"></div></div></div>
         <div id="tab-cheeseEngine" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="cheeseEngineContent" class="markdown-content"></div></div></div>
         <div id="tab-staking" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="stakingContent" class="markdown-content"></div></div></div>
+        <div id="tab-rewardChamber" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="rewardChamberContent" class="markdown-content">
+              <div class="space-y-8">
+                <div class="doc-card rounded-2xl p-6 border border-yellow-400/30 bg-gradient-to-br from-yellow-900/20 via-slate-900/40 to-pink-900/10">
+                  <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center rounded-full border border-yellow-400/40 bg-yellow-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-yellow-200">Reward Chamber Live</span>
+                    <span class="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Backend Authoritative</span>
+                    <span class="inline-flex items-center rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">Public Architecture View</span>
+                  </div>
+                  <h2 class="text-3xl font-black text-white mb-3">🎁 Reward Chamber – Core Economy System</h2>
+                  <p class="text-slate-200 text-lg leading-relaxed">The Reward Chamber has moved beyond legacy chest behavior. It is now a backend-authoritative, admin-controlled, player-facing economy system that runs across profile UI, reward APIs, admin configuration, and Discord-connected premium claim flow.</p>
+                  <div class="grid md:grid-cols-3 gap-4 mt-6">
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                      <h3 class="text-yellow-300 font-bold mb-2">Backend = Authority</h3>
+                      <p class="text-sm text-slate-300">Cooldowns, pricing, availability, weighted rewards, fallback logic, and claim creation are computed server-side.</p>
+                    </div>
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                      <h3 class="text-cyan-300 font-bold mb-2">Frontend = Display Only</h3>
+                      <p class="text-sm text-slate-300">Profile surfaces live box state, costs, cooldowns, and results, but it does not decide outcomes.</p>
+                    </div>
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+                      <h3 class="text-emerald-300 font-bold mb-2">Admin = Config Layer</h3>
+                      <p class="text-sm text-slate-300">Operators manage box activation, pricing, reward pools, fallback behavior, and delivery readiness from the admin interface.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid xl:grid-cols-3 gap-6">
+                  <div class="doc-card rounded-2xl p-6 border border-emerald-400/20 bg-black/25">
+                    <div class="text-xs font-black uppercase tracking-[0.2em] text-emerald-300 mb-3">Box 1</div>
+                    <h3 class="text-2xl font-black text-white mb-3">🧀 Free DSPOINC Box</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-slate-200 text-sm">
+                      <li>Free daily reward loop</li>
+                      <li>Cooldown-based availability</li>
+                      <li>Migrates legacy chest behavior into the new chamber</li>
+                      <li>Stable entry point for the live reward economy</li>
+                    </ul>
+                  </div>
+                  <div class="doc-card rounded-2xl p-6 border border-yellow-400/20 bg-black/25">
+                    <div class="text-xs font-black uppercase tracking-[0.2em] text-yellow-300 mb-3">Box 2</div>
+                    <h3 class="text-2xl font-black text-white mb-3">🧀 Lucky Cheese Loot</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-slate-200 text-sm">
+                      <li>Paid DSPOINC box with weighted reward pool logic</li>
+                      <li>Can deliver store items, genetic items, or fallback DSPOINC</li>
+                      <li>Live admin controls: weights, active rows, pricing, fallback roll behavior</li>
+                      <li>Main production balancing surface for the chamber economy</li>
+                    </ul>
+                  </div>
+                  <div class="doc-card rounded-2xl p-6 border border-pink-400/20 bg-black/25">
+                    <div class="text-xs font-black uppercase tracking-[0.2em] text-pink-300 mb-3">Box 3</div>
+                    <h3 class="text-2xl font-black text-white mb-3">👑 Royal Cheese Mystery</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-slate-200 text-sm">
+                      <li>Premium reward box</li>
+                      <li>Creates pending admin claim requests instead of direct item delivery</li>
+                      <li>Designed for moderator review and manual fulfillment</li>
+                      <li>Connected to Discord notification and claim-status flow</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-6">
+                  <div class="bg-black/30 rounded-2xl border border-yellow-400/20 p-6">
+                    <h3 class="text-2xl font-bold text-yellow-300 mb-4">System flow</h3>
+                    <ol class="list-decimal pl-5 space-y-3 text-slate-200 text-sm">
+                      <li>Profile loads visible boxes from <code>/api/user/get-reward-boxes.php</code>.</li>
+                      <li>Player opens a box through <code>/api/user/open-reward-box.php</code>.</li>
+                      <li>Backend validates session, cooldowns, pricing, and available DSPOINC.</li>
+                      <li>Backend resolves reward delivery, fallback, or premium claim creation.</li>
+                      <li>Profile refreshes live chamber state and result messaging.</li>
+                    </ol>
+                  </div>
+                  <div class="bg-black/30 rounded-2xl border border-cyan-400/20 p-6">
+                    <h3 class="text-2xl font-bold text-cyan-300 mb-4">Connected files and APIs</h3>
+                    <div class="grid md:grid-cols-2 gap-4 text-slate-200 text-sm">
+                      <div>
+                        <div class="font-bold text-yellow-300 mb-2">Frontend</div>
+                        <ul class="list-disc pl-5 space-y-1">
+                          <li>public/profile.html</li>
+                          <li>public/admin-interface.html</li>
+                        <li>public/nerd-lab.html</li>
+                          <li>public/nerd-lab.html</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-bold text-cyan-300 mb-2">Reward APIs</div>
+                        <ul class="list-disc pl-5 space-y-1">
+                          <li>/api/user/get-reward-boxes.php</li>
+                          <li>/api/user/open-reward-box.php</li>
+                          <li>/api/admin/reward-chamber-config.php</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-bold text-emerald-300 mb-2">Runtime + Bot</div>
+                        <ul class="list-disc pl-5 space-y-1">
+                          <li>Discord bot / claim notifications</li>
+                          <li>Admin moderation flow for premium claims</li>
+                          <li>Profile-driven cooldown refresh loop</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div class="font-bold text-pink-300 mb-2">Core tables</div>
+                        <ul class="list-disc pl-5 space-y-1">
+                          <li>tbl_reward_boxes</li>
+                          <li>tbl_reward_box_reward_pool</li>
+                          <li>tbl_reward_box_open_history</li>
+                          <li>tbl_reward_claim_requests</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-black/30 rounded-2xl border border-purple-400/20 p-6">
+                  <h3 class="text-2xl font-bold text-purple-300 mb-4">Current production truth</h3>
+                  <div class="grid lg:grid-cols-2 gap-6 text-slate-200 text-sm">
+                    <div>
+                      <div class="font-bold text-white mb-3">What is live now</div>
+                      <ul class="list-disc pl-5 space-y-2">
+                        <li>Reward Chamber is fully integrated across backend, profile, and admin surfaces.</li>
+                        <li>Profile presents the chamber as a top-level player feature.</li>
+                        <li>Admin now has a dedicated Reward Chamber tab and config fetch support.</li>
+                        <li>The chamber is a core economy system, not just a visual chest widget.</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <div class="font-bold text-white mb-3">Known open work</div>
+                      <ul class="list-disc pl-5 space-y-2">
+                        <li>Box 3 claim management still needs deeper admin workflow completion.</li>
+                        <li>Economy balancing remains active work: pricing, weights, and drop-rate tuning.</li>
+                        <li>Operator safety improves when backend validation and admin warnings stay aligned.</li>
+                        <li>Public docs can describe the architecture, but execution remains protected server-side.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div id="tab-lab" class="tab-content">
           <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-cyan-400/30">
@@ -305,6 +427,7 @@ require_once 'discord-invite.php';
                         <li>public/stake-lab.html</li>
                         <li>public/profile.html</li>
                         <li>public/admin-interface.html</li>
+                        <li>public/nerd-lab.html</li>
                       </ul>
                     </div>
                     <div>
@@ -318,6 +441,9 @@ require_once 'discord-invite.php';
                         <li>/api/user/instant-finish-nft-trait-upgrade.php</li>
                         <li>/api/user/get-verified-nft-scan.php</li>
                         <li>/api/user/get-player-lab.php</li>
+                        <li>/api/user/get-reward-boxes.php</li>
+                        <li>/api/user/open-reward-box.php</li>
+                        <li>/api/user/get-player-lab.php</li>
                         <li>/api/user/get-user-genetic-items.php</li>
                         <li>/api/user/get-lab-booster-inventory.php</li>
                         <li>/api/store/purchase.php</li>
@@ -326,425 +452,11 @@ require_once 'discord-invite.php';
                     </div>
                   </div>
                 </div>
-
-                <div class="bg-black/30 rounded-2xl border border-emerald-400/20 p-6">
-                  <h3 class="text-2xl font-bold text-emerald-300 mb-4">March 19–29 status sync archive</h3>
-                  <div class="max-h-[70vh] overflow-y-auto pr-3"><ul class="list-disc pl-6 space-y-2 text-slate-200"><li>🧀 NARRRFS WORLD 13.0 - QUICK STATUS</li></ul>
-<p class="mb-2 text-slate-200"><strong class="text-yellow-300">Last Updated:</strong> March 19, 2026 🎯 STABLE – LIVE ECOSYSTEM + LAB SYSTEM EXPANSION ACTIVE</p>
-<p class="mb-2 text-slate-200"><strong class="text-yellow-300">Status:</strong> ✅ Season 10 LIVE – core website, admin, staking, verification, Discord runtime, and Genesis Lab progression flow stable-first and actively expanding</p>
-<p class="mb-2 text-slate-200"><strong class="text-yellow-300">Version:</strong> 2026-04-01</p>
-<p class="mb-2 text-slate-200"><strong class="text-yellow-300">Milestone:</strong> 🎯 Genesis Lab / NFT Trait Progression system now functionally alive with live player UX expansion, Discord DM ready-claim notifications, and ongoing production hardening</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">📋 TODAY – MARCH 19, 2026:</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">🧬 Genesis Lab / NFT Trait Progression System (✅ MAJOR BREAKTHROUGH EXPANDED):</h3>
-<p class="mb-3 text-slate-200">✅ New player-facing lab.html established as the Genesis NFT Research / Upgrade Lab</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Lab now loads:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>player identity</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>DSPOINC summary</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>staking summary</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>mission / all-time / puzzle profile data</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verified Genesis NFT collection</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>selected NFT detail state</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait research chamber</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>research queue</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>knowledge / explainer layer</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Core long-term architecture locked and implemented in working form:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verified NFT scan = immutable identity layer</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait upgrade table = progression layer</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>lab page = runtime merge of both</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ This ensures:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>upgrades belong to the NFT</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>current verified owner can use them</li></ul>
-<p class="mb-3 text-slate-200">if NFT is sold and a new owner verifies it, progression remains with that NFT</p>
-<p class="mb-3 text-slate-200">verified scan data itself is never corrupted by progression logic</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Verified Genesis NFTs now render in lab</li></ul>
-<p class="mb-3 text-slate-200">✅ Lab UX direction significantly advanced beyond the old dev-style version</p>
-<p class="mb-3 text-slate-200">✅ Genesis Lab now behaves more like a real gameplay hub and less like a raw developer overview</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Product direction now clearly locked as:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>identity hub</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>NFT gallery / featured viewer</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>progression screen</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait upgrade chamber</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>future gameplay integration point</li></ul>
-<p class="mb-3 text-slate-200">✅ Verified Genesis display direction changed from grid-first to featured viewer + slider pattern</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ New structure now supports:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>large selected Genesis mouse panel</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verified collection slider</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>selected mouse snapshot</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait chamber below</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>cleaner holder-friendly navigation</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Selected Genesis viewer now shows:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>image</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>NFT name</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>token id</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait slots</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>lab power</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>active research count</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>ready-to-claim count</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>selected mouse trait snapshot</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Verified Collection Slider now supports:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>prev / next browsing</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>dropdown quick select</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>selected card centering in slider rail</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>view research action</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Slider sync logic stabilized</li></ul>
-<p class="mb-3 text-slate-200">✅ Selection changes now update the left featured mouse correctly</p>
-<p class="mb-3 text-slate-200">✅ Verified collection rail now scrolls horizontally to the selected NFT instead of using unsafe generic page scroll behavior</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Trait preview / visual identity layer improved</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Trait data pipeline aligned</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Traits now normalize consistently across verification / storage / frontend:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Theme</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Sub-Trait</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Outfit</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Accessories</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Expression</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Background</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Special</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Trait matching design confirmed:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>token_id</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>collection</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait_type</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait_value</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Upgrade system applies to exact trait value on exact NFT</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Locked progression rules preserved:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Genesis only</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verified saved NFTs only</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>upgrades bound to exact NFT trait values</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>immutable verified NFT scan</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>separate progression table</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>1 active upgrade per NFT</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>infinite progression</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">exponential timing:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>1→2 = 24h</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>2→3 = 48h</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>3→4 = 96h</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>doubles forward</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>explicit manual claim after finish</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>DSPOINC instant finish supported as progression path</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Upgrade backend first wave connected and working locally:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>api/user/get-nft-trait-upgrades.php</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>api/user/start-nft-trait-upgrade.php</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>api/user/complete-nft-trait-upgrade.php</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>api/user/instant-finish-nft-trait-upgrade.php</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Local endpoint now returns:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>success</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verified_genesis_nfts</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>upgrades</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Upgrade table schema fixed locally</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Critical local SQL issue previously resolved:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>old table lacked upgrade_id</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ tbl_nft_trait_upgrades recreated with correct schema</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Table now supports:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>upgrade_id</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>token_id</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>collection</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait_type</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait_value</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>current_level</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>upgrade_status</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>upgrade_started_at</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>upgrade_ends_at</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>last_completed_at</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>last_owner_user_id</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>timestamps</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ This unblocked lab progression loading</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Full player upgrade loop now tested deeper than before:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>start upgrade works</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>timers update</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>ready state displays</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>claim flow tested</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>instant finish path working</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Discord notification integration working</li></ul>
-<p class="mb-3 text-slate-200">✅ Important claim-state bug investigated and narrowed to frontend/server time interpretation mismatch risk</p>
-<p class="mb-3 text-slate-200">✅ Frontend time / readiness handling now recognized as a stability-sensitive area</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Discord DM Ready-to-Claim Notification System (NEW / WORKING):</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Discord bot now monitors ready-to-claim trait upgrades</li></ul>
-<p class="mb-3 text-slate-200">✅ When a trait upgrade becomes ready, the bot DMs the matching Discord user</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ DM includes:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>NFT token / Genesis identifier</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>level info</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>claim context</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>direct lab link</li></ul>
-<p class="mb-3 text-slate-200">✅ Notification architecture added safely through bot-side polling against live DB</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ No lab frontend notification hack used</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Stable bot-side design chosen intentionally</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ New DB fields added to tbl_nft_trait_upgrades:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>ready_claim_notified_at</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>ready_claim_notification_count</li></ul>
-<p class="mb-3 text-slate-200">✅ Notification state reset / lifecycle integrated into upgrade flow</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Bot monitor now respects “send once per cycle” logic</li></ul>
-<p class="mb-3 text-slate-200">✅ This created the first live player-return loop for Lab progression</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Lab UX / Theme Expansion (NEW PROGRESS):</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ lab.html moved further away from dev-facing terminology</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Cleaner player-facing structure introduced</li></ul>
-<p class="mb-3 text-slate-200">✅ Top area now explains the Lab as a real holder progression feature</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Quick-access and holder guidance blocks expanded</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ CSS-only lab atmosphere work progressed:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>enhanced dark chamber style</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>cheese-gold glow accents</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>mint-green / cyan lab accents</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>subtle lab pulse / glow improvements</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>active tab emphasis</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>active trait card visual emphasis</li></ul>
-<p class="mb-3 text-slate-200">✅ Active trait card now visually stands out more when research is running</p>
-<p class="mb-3 text-slate-200">✅ “My Genesis Lab” tab visually highlighted as the main gameplay entry point</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Mint / Chamber Expansion CTA added to Lab</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Mint link integrated:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Lab now supports a mint-growth promotional layer:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>stronger empty-state / no-Genesis attraction</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>holder-side “expand your chamber” messaging</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>cheese-gold attention styling</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>mint-green / cyan accent styling</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>animated pulse border direction</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Wording refined away from “specimen” and toward:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>mouse</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Genesis mouse</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>chamber</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>chamber slot</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Genesis needed / chamber expansion direction</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Research Queue UX improved</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Queue now better supports actionable mouse navigation</li></ul>
-<p class="mb-3 text-slate-200">✅ Direct flow added from queue / slider toward the actual research chamber</p>
-<p class="mb-3 text-slate-200">✅ Current slider/research navigation remains in active hardening because page-scroll behavior must stay stable on all screens</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>⚠️ Known remaining lab issues</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">⚠️ Slider / chamber jump behavior was improved but still remains a sensitive UX area when combining:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>selection rerender</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>horizontal slider sync</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>scroll-to-research behavior</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">⚠️ Some recent “View Research” / chamber jump interactions caused page scroll bounce and need final stability-safe refinement</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">⚠️ Research Queue quick actions still need final polish so they always land cleanly in the actual chamber without scroll conflicts</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">⚠️ Runtime log / developer-facing log output still exists in the page and should be reduced or hidden for final player-facing polish</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">⚠️ Timezone / frontend readiness display remains a known sensitive area for claim-state truth if timestamps are interpreted differently in browser vs backend</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>⚠️ Selected NFT / trait chamber still needs final UX polish</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>⚠️ Economy-safe DSPOINC instant-finish audit still pending</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">⚠️ Final mobile-first polish still needed for some viewer / slider / chamber interactions</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">📋 LAST 10 DAYS – MARCH 2026 MAIN UPDATE STREAM:</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Admin Player Profile Expansion (COMPLETE / STABLE):</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Admin player profile significantly expanded</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Profile now merges multiple sources:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>/api/admin/get-player-profile.php</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>/api/user/user-game-missions.php</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>/api/user/all-time-stats.php</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>/api/user/get-3d-puzzles-achievements.php</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Rendering entry point stabilized:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>renderAdminPlayerProfile(profile)</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Profile now includes richer identity layer:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>DSPOINC</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>missions</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>all-time stats</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>achievements</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>NFT identity</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>traits grouping</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>wallet display</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Staking Profile Integration (COMPLETE / STABLE):</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ New staking overview block added to admin player profile</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Admin profile now shows:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Total DSPOINC</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Available</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Frozen</li></ul>
-<p class="mb-3 text-slate-200">✅ Stake counts were intentionally limited on Discord side for stability</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Stake Lab itself remains correct and full-detail</li></ul>
-<p class="mb-3 text-slate-200">✅ This created first strong profile/economy merge layer for admin tools</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Stake Lab Real-Time Rewards (COMPLETE / STABLE):</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ stake-lab.html upgraded with live reward counter</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Per-active-stake reward display updates every second</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Key functions added:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>calculateLiveStakeReward()</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>formatLiveRewardAmount()</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>updateLiveStakeRewardCounters()</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Important architecture preserved:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>frontend live visualization only</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>backend reward logic unchanged</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Unified Wallet Verification Refactor (COMPLETE / STABLE):</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Verification flow refactored into unified architecture</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Supported wallets:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Phantom</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Solflare</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Backpack</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Ledger-compatible wallets</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Main functions stabilized:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>getSolanaProvider()</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>connectSolanaWallet()</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>connectWallet()</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>signVerificationMessage()</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verifyNFTs()</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Ledger-specific handling preserved with:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>isLikelyLedgerSignError()</li></ul>
-<p class="mb-3 text-slate-200">✅ Verification system marked stability-critical and preserved</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Verified NFT Trait Display Improvements (COMPLETE):</h3>
-<p class="mb-3 text-slate-200">✅ Admin interface correctly scans and displays verified NFTs with grouped traits</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Stake Lab also shows verified NFT cards with traits</li></ul>
-<p class="mb-3 text-slate-200">✅ This UI parity enabled the new lab system to reuse the same NFT identity direction</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ New Lab Product Direction Locked</li></ul>
-<p class="mb-3 text-slate-200">✅ lab.html is no longer treated as “just another profile page”</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ It is now defined as:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>identity hub</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>NFT gallery</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>progression screen</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait upgrade management</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>future gameplay integration point</li></ul>
-<p class="mb-3 text-slate-200">✅ This is now the official progression page for Genesis NFT holders</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">📋 MARCH 18–19, 2026:</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Lab UX / Runtime Expansion (COMPLETE PARTIAL / ACTIVE):</h3>
-<p class="mb-3 text-slate-200">✅ Current Lab top section, viewer area, slider area, queue, mint CTA, and trait chamber all received active iteration</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Structure moved toward a game-style user-facing interface</li></ul>
-<p class="mb-3 text-slate-200">✅ Verified Collection Slider controls moved into the slider card where they belong logically</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Selected Genesis panel and slider relationship improved</li></ul>
-<p class="mb-3 text-slate-200">✅ Mint CTA and holder chamber-expansion messaging integrated</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Active trait highlight and tab emphasis improved</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Slider now visually follows selection</li></ul>
-<p class="mb-3 text-slate-200">✅ Discord bot DM loop now confirms when upgrades are ready to claim</p>
-<p class="mb-3 text-slate-200">✅ This created a stronger return-to-lab behavior for players</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Current remaining work is primarily:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>final scroll / jump stability</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>final mobile polish</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>final copy cleanup</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>final player-facing polish</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">📋 MARCH 15, 2026:</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Quest Claim / Admin / Bot Runtime Stability (COMPLETE):</h3>
-<p class="mb-3 text-slate-200">✅ Quest claim issue investigated through DB verification and mod channel/runtime review</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Bot claim flow recovered and confirmed working</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ X missions and quest claim behavior aligned again</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Admin moderation/runtime path confirmed functional</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Season 10 Admin Restoration Direction Continued</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Admin interface restoration order stayed active</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Working confirmed modules include:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>overview dashboard</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>bug tracker</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>player profile viewer</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>player search</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>wallet display</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>NFT trait grouping</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>staking overview</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Remaining tabs still queued for step-by-step restoration:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Store Management</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Community Funds</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Quest System</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Game Management</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Boss Management</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Discord Config</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Twitter Missions</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Database Overview</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Security Crawler</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>12.0 Management</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Partners</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Profile Chest Config</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">📋 MARCH 13–14, 2026:</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Admin Interface Restoration / UX Improvements (COMPLETE PARTIAL):</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Admin interface visual/animation restoration progressed</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Existing systems preserved without broad rewrite</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Starter/handover direction for next LLM established:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>extend player profile</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>review Cheese Rumble again</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>continue restoring admin tabs to full functionality</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Cheese Rumble Review Direction Locked</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Persistent rumbles across restarts preserved</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Focus areas confirmed:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>event pacing</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>survival curves</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>round duration</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>event distribution</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>runtime safety</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Persistence must not be broken</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">📋 MARCH 3, 2026:</h3>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Admin Overview Architecture Clarifications (COMPLETE):</h3>
-<p class="mb-3 text-slate-200">✅ Overview cards now confirmed to read from stable season data pattern</p>
-<p class="mb-3 text-slate-200">✅ Cleanup/removal of legacy compatibility paths prepared carefully</p>
-<p class="mb-3 text-slate-200">✅ New overview additions such as Glyph stats were clarified for safe implementation</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Stability-first architecture preserved</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">📋 FEBRUARY 17, 2026:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Ecosystem / Spaces / Cheese Engine Messaging Work</li></ul>
-<p class="mb-3 text-slate-200">✅ Short ecosystem pitch and “Cheese Engine” explanation refined for public communication</p>
-<p class="mb-3 text-slate-200">✅ Identity of Narrrf’s World as a community-based Web3 gaming ecosystem remained consistent</p>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">✅ Public-facing explanation aligned with:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>synchronized live games</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>community network</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>DSPOINC economy</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>partner ecosystem</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>long-term game infrastructure</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ CURRENT LIVE SYSTEMS STATUS</li><li>Website / Core Systems</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ profile pages stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ stake lab stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ admin interface core modules stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ wallet verification stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ NFT verification stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ DSPOINC economy stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Discord Runtime</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ major game bot runtime stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ profile command direction stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ quest handling recovered/stable</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Cheese Rumble persistence preserved</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Lab ready-claim DM notification system working</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Lab / Progression</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ Genesis Lab system functionally alive locally</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ verified Genesis viewer + slider working</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ selected NFT chamber working</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ trait preview / trait chamber working</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ backend progression rows working locally</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>✅ claim + instant finish + DM loop substantially advanced</li></ul>
-<p class="mb-3 text-slate-200">🔄 final production hardening and scroll/UX stabilization still ongoing</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>🎯 CURRENT PRIORITIES</li><li>Priority 1 — Finish Lab Production Hardening</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>finalize slider / chamber scroll behavior</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>finalize research queue jump flow</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>finalize selected NFT chamber UX</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>finalize trait research chamber UX polish</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verify claim-state truth under all time conditions</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>remove misleading warnings / dev-facing leftovers</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>harden race-condition protection</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Priority 2 — Expand Player Identity</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>continue richer player profile visibility</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">integrate progression state later into:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>admin interface</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Discord bot</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>game runtime readers</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Priority 3 — Complete Admin Restoration</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>continue remaining admin tabs one by one</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verify API calls</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>verify rendering</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>remove legacy fields safely</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Priority 4 — Future Gameplay Integration</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">trait levels later drive:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>multipliers</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>weapons</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>bonuses</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>unlocks</li></ul>
-<p class="mb-3 text-slate-200">but gameplay consumption should not be wired until progression stability is fully proven</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>🚨 KNOWN RISK AREAS</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>ownership drift from stale verification data</li></ul>
-<p class="mb-3 text-slate-200">duplicate upgrade starts from multi-click / multi-tab behavior</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>trait mismatch if exact trait keys are not enforced</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>DSPOINC instant-finish audit safety</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>infinite progression duration scaling at very high levels</li></ul>
-<p class="mb-3 text-slate-200">frontend/backend time interpretation mismatch for ready/claim state</p>
-<p class="mb-3 text-slate-200">scroll bounce / UI race conditions in slider → chamber navigation</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>admin restoration regressions if done too broadly</li></ul>
-<p class="mb-3 text-slate-200">All known. All should remain on incremental, stability-first handling.</p>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>📝 TIMELINE SYNC NOTE</li></ul>
-<h3 class="mt-6 mb-3 text-xl font-bold text-yellow-300">This quick status has now been updated beyond the March 17 baseline and synced with the major March 18–19 work stream, especially:</h3>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>lab UX restructuring</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>selected Genesis viewer + slider direction</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>mint CTA / chamber expansion messaging</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>Discord DM ready-to-claim notifications</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>active trait visual highlight work</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>tab emphasis / game-style lab theming</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>research queue and slider action improvements</li></ul>
-<ul class="list-disc pl-6 space-y-2 text-slate-200"><li>scroll/jump hardening work</li></ul>
-<p class="mb-3 text-slate-200">This closes the newest timeline gap between the earlier local lab baseline and the current player-facing Lab expansion work.</p>
-<p class="mb-2 text-slate-200"><strong class="text-yellow-300">Status:</strong> ✅ SEASON 10 LIVE + GENESIS LAB PROGRESSION SYSTEM ACTIVE + PLAYER UX EXPANSION ACTIVE</p>
-<p class="mb-2 text-slate-200"><strong class="text-yellow-300">Version:</strong> 2026-03-19</p>
-<p class="mb-2 text-slate-200"><strong class="text-yellow-300">Milestone:</strong> 🏆 NFT IDENTITY + PROGRESSION MERGE WORKING — NEXT STEP IS FINAL LAB UX HARDENING + PRODUCTION POLISH</p></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
 
     <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20">
       <div class="max-w-4xl mx-auto px-6">
-        <p class="mb-4">Made with 🧪 & strategy in Narrrf's Lab | <a href="<?php echo $discord_url; ?>" class="text-yellow-400 hover:text-yellow-300 underline transition-colors">Join us on Discord</a></p>
+        <p class="mb-4">Made with 🧪 & strategy in Narrrf's Lab | <a href="https://discord.gg/narrrfsworld" class="text-yellow-400 hover:text-yellow-300 underline transition-colors">Join us on Discord</a></p>
         <p class="text-sm">© 2025 Narrrf's World. Built with brain & cheese 🧠🧀</p>
       </div>
     </footer>
@@ -770,46 +482,11 @@ require_once 'discord-invite.php';
       frontend: 'FRONTEND_WEBSITE_COMPLETE_TECHNICAL.md',
       cheeseEngine: 'CHEESE_ENGINE_13.0_AGENT_SYSTEM_COMPLETE_TECHNICAL.md',
       staking: 'SYSTEM_13_DSPOINC_STAKING_COMPLETE_TECHNICAL.md',
+      rewardChamber: 'SYSTEM_15_REWARD_CHAMBER_COMPLETE_TECHNICAL.md',
       lab: 'SYSTEM_14_GENESIS_LAB_COMPLETE_TECHNICAL.md'
     };
 
     const contentCache = {};
-
-    async function checkHolderAccess() {
-      if (!isProduction) {
-        const narrrfDiscordId = '328601656659017732';
-        let localDiscordId = localStorage.getItem('discord_id');
-        if (!localDiscordId) {
-          localStorage.setItem('discord_id', narrrfDiscordId);
-          localStorage.setItem('discord_name', 'Narrrf');
-          localDiscordId = narrrfDiscordId;
-        }
-        if (localDiscordId === narrrfDiscordId) return true;
-      }
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/user/profile.php`, {
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
-        });
-        if (!response.ok) return false;
-        const userData = await response.json();
-        const holderRoleId = '1402668301414563971';
-        const vipHolderRoleId = '1332016526848692345';
-        if (userData.roleIds && Array.isArray(userData.roleIds)) {
-          if (userData.roleIds.includes(holderRoleId) || userData.roleIds.includes(vipHolderRoleId)) {
-            return true;
-          }
-        }
-        if (!userData.roles || !Array.isArray(userData.roles)) return false;
-        return userData.roles.some(role => {
-          const roleStr = String(role).toLowerCase();
-          return roleStr.includes('holder') || roleStr.includes('vip holder') || roleStr === 'holder';
-        });
-      } catch (error) {
-        console.error('Access Check Error:', error);
-        return false;
-      }
-    }
 
     function showTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -828,7 +505,7 @@ require_once 'discord-invite.php';
         contentElement.innerHTML = contentCache[tabName];
         return;
       }
-      if (tabName === 'lab') {
+      if (tabName === 'lab' || tabName === 'rewardChamber') {
         contentCache[tabName] = contentElement.innerHTML;
         return;
       }
@@ -849,7 +526,7 @@ require_once 'discord-invite.php';
           <div class="bg-yellow-900/20 border border-yellow-500/50 rounded-xl p-6">
             <p class="text-yellow-200">
               <strong>📚 Full Technical Documentation:</strong> The complete technical documentation will be loaded here once the API endpoint is configured.
-              The overview above provides a summary of this system's current synced state. Some older tabs still rely on legacy summary sources and should be refreshed with dedicated 2026 documentation files next. The Lab tab above now carries the latest March 29 ecosystem sync so Genesis, Booster, Genetic, Marketplace, and Discord mirror planning are documented together.
+              The overview above provides a summary of this system's current synced state. Public-facing tabs now include the Reward Chamber architecture and the latest ecosystem sync, while some older game tabs still rely on legacy summary sources and should be refreshed with dedicated 2026 documentation files next.
             </p>
             <p class="text-sm text-yellow-300/70 mt-4">File: <code>${fileName}</code></p>
           </div>
@@ -858,14 +535,10 @@ require_once 'discord-invite.php';
     }
 
     async function initPage() {
-      const hasAccess = await checkHolderAccess();
-      if (!hasAccess) {
-        document.getElementById('access-denied').style.display = 'flex';
-        document.getElementById('main-content').style.display = 'none';
-        return;
+      const mainContent = document.getElementById('main-content');
+      if (mainContent) {
+        mainContent.style.display = 'block';
       }
-      document.getElementById('access-denied').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => showTab(btn.getAttribute('data-tab')));
       });

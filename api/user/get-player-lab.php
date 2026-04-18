@@ -353,6 +353,107 @@ function build_holder_summary(array $verificationRows): array {
     ];
 }
 
+/**
+ * Pick one stable primary wallet for overview rendering.
+ * We prefer the first verified wallet from holder verification history.
+ */
+function get_primary_wallet(array $holderSummary): string {
+    $wallets = $holderSummary['wallets'] ?? [];
+    if (!is_array($wallets) || !$wallets) {
+        return '';
+    }
+
+    foreach ($wallets as $wallet) {
+        $wallet = trim((string)$wallet);
+        if ($wallet !== '') {
+            return $wallet;
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Build a frontend-safe overview contract for the Lab Overview tab.
+ *
+ * This does not replace the legacy payload keys yet.
+ * It gives lab.html one stable place to read identity, economy,
+ * Genesis progression, and Genetic progression without guessing field names.
+ */
+function build_lab_overview_payload(
+    array $profile,
+    array $holderSummary,
+    array $genesisTraitUpgrades,
+    array $geneticInventory,
+    array $boosterInventory,
+    array $stakingStats,
+    array $summary
+): array {
+    $primaryWallet = get_primary_wallet($holderSummary);
+
+    $genesisLabPower = 0;
+    $genesisHighestLevel = 0;
+    foreach ($genesisTraitUpgrades as $row) {
+        $level = (int)($row['current_level'] ?? 0);
+        $genesisLabPower += $level;
+        if ($level > $genesisHighestLevel) {
+            $genesisHighestLevel = $level;
+        }
+    }
+
+    $geneticTotalPower = 0;
+    $geneticHighestLevel = 0;
+    foreach ($geneticInventory as $row) {
+        $level = (int)($row['current_level'] ?? 0);
+        $geneticTotalPower += $level;
+        if ($level > $geneticHighestLevel) {
+            $geneticHighestLevel = $level;
+        }
+    }
+
+    $boosterTotal = 0;
+    foreach ($boosterInventory as $row) {
+        $boosterTotal += (int)($row['quantity'] ?? 0);
+    }
+
+    return [
+        'contract_version' => 'lab_overview_v1',
+        'identity' => [
+            'discord_id' => (string)($profile['discord_id'] ?? ''),
+            'discord_name' => (string)($profile['username'] ?? 'Unknown User'),
+            'wallet_address' => $primaryWallet,
+            'wallet_count' => (int)($holderSummary['wallet_count'] ?? 0),
+            'wallets' => is_array($holderSummary['wallets'] ?? null) ? array_values($holderSummary['wallets']) : [],
+            'verified_genesis_count' => (int)($summary['verified_genesis_count'] ?? 0),
+            'verified_vip_count' => (int)($summary['verified_vip_count'] ?? 0),
+            'latest_verified_at' => $holderSummary['latest_verified_at'] ?? null
+        ],
+        'economy' => [
+            'total_dspoinc' => (int)($profile['total_dspoinc'] ?? 0),
+            'available_dspoinc' => (int)($profile['available_dspoinc'] ?? 0),
+            'frozen_dspoinc' => (int)($profile['frozen_dspoinc'] ?? 0),
+            'active_stake_count' => (int)($stakingStats['active_stake_count'] ?? 0),
+            'active_frozen_total' => (int)($stakingStats['active_frozen_total'] ?? 0),
+            'booster_total_quantity' => $boosterTotal
+        ],
+        'genesis' => [
+            'verified_nft_count' => (int)($summary['verified_genesis_count'] ?? 0),
+            'lab_power_total' => $genesisLabPower,
+            'highest_trait_level' => $genesisHighestLevel,
+            'active_upgrade_count' => (int)($summary['genesis_active_upgrade_count'] ?? 0),
+            'ready_claim_count' => (int)($summary['genesis_ready_claim_count'] ?? 0)
+        ],
+        'genetic' => [
+            'item_count' => (int)($summary['genetic_item_count'] ?? 0),
+            'power_total' => $geneticTotalPower,
+            'highest_level' => $geneticHighestLevel,
+            'active_upgrade_count' => (int)($summary['genetic_active_upgrade_count'] ?? 0),
+            'ready_claim_count' => (int)($summary['genetic_ready_claim_count'] ?? 0),
+            'listed_count' => (int)($summary['genetic_listed_count'] ?? 0)
+        ]
+    ];
+}
+
 try {
     $request = get_request_data();
     $userId = resolve_user_id($request);
@@ -412,6 +513,12 @@ try {
     $verificationRows = $verificationStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
     $holderSummary = build_holder_summary($verificationRows);
+    $primaryWallet = get_primary_wallet($holderSummary);
+
+    // Stable aliases for frontend identity rendering.
+    $profile['wallet_address'] = $primaryWallet;
+    $profile['wallet'] = $primaryWallet;
+    $profile['linked_wallets'] = is_array($holderSummary['wallets'] ?? null) ? array_values($holderSummary['wallets']) : [];
 
     /**
      * Load Genesis NFT-bound trait progression.
@@ -548,6 +655,11 @@ try {
         'active_frozen_total' => 0
     ];
 
+    // Stable aliases for frontend economy rendering.
+    $stakingStats['total_balance'] = (int)($profile['total_dspoinc'] ?? 0);
+    $stakingStats['available_balance'] = (int)($profile['available_dspoinc'] ?? 0);
+    $stakingStats['frozen_balance'] = (int)($profile['frozen_dspoinc'] ?? 0);
+
     /**
      * Build summary counts.
      */
@@ -598,6 +710,16 @@ try {
         'booster_total_quantity' => $boosterTotal
     ];
 
+    $overview = build_lab_overview_payload(
+        $profile,
+        $holderSummary,
+        $genesisTraitUpgrades,
+        $geneticInventory,
+        $boosterInventory,
+        $stakingStats,
+        $summary
+    );
+
     json_response([
         'success' => true,
         'data' => [
@@ -608,7 +730,8 @@ try {
             'genetic_inventory' => $geneticInventory,
             'booster_inventory' => $boosterInventory,
             'staking_stats' => $stakingStats,
-            'summary' => $summary
+            'summary' => $summary,
+            'overview' => $overview
         ]
     ]);
 } catch (Throwable $e) {
