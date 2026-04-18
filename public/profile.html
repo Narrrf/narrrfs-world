@@ -3554,12 +3554,8 @@ function loadStoredWalletAndTraits() {
       updateTraitsDisplay(traitsArray);
     } catch (e) {
       console.error('Error parsing stored traits:', e);
-      renderProfileNftTraitsViewer([]);
     }
-    return;
   }
-
-  renderProfileNftTraitsViewer([]);
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -3713,23 +3709,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   <p class="text-slate-100">
     🧬 Traits: <span id="traits" class="text-emerald-300">Season Tester • Cheese Master • Game Champion</span>
   </p>
-
-  <div class="mt-4 rounded-2xl border border-cyan-400/20 bg-slate-950/35 p-4 shadow-inner">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h3 class="text-sm font-black uppercase tracking-[0.18em] text-cyan-300">🧬 NFT Traits</h3>
-        <p class="mt-1 text-xs text-slate-300">Read-only grouped viewer for the verified NFT traits currently synced to your profile.</p>
-      </div>
-      <div class="inline-flex items-center rounded-full border border-slate-500/40 bg-slate-900/60 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-300">
-        Profile Viewer
-      </div>
-    </div>
-    <div id="profile-nft-traits-viewer" class="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-3">
-      <div class="rounded-xl border border-slate-500/30 bg-slate-900/45 p-4 text-sm text-slate-300 xl:col-span-3">
-        Loading NFT trait groups...
-      </div>
-    </div>
-  </div>
 
  <!-- 🚀 Wallet season features -->
 <div id="wallet-season-features" class="mt-3 text-xs text-slate-200 bg-slate-900/40 rounded p-3 border border-slate-500/30">
@@ -5115,7 +5094,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           setText('welcome-name', 'Guest');
           setText('email', 'Please log in');
           setText('guilds', 'No guilds connected');
-        updateTraitsDisplay([]);
+        setText('traits', 'No traits available');
         setText('user-roles', 'No roles');
         setText('wallet-address', 'Wallet not linked');
         hideElement('goldenCheeseGate');
@@ -5231,10 +5210,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const traitsArray = JSON.parse(storedTraits);
                     updateTraitsDisplay(traitsArray);
                   } catch (e) {
-                    updateTraitsDisplay(user.traits || []);
+                    setText('traits', user.traits?.join(', ') || 'No traits');
                   }
                 } else {
-                  updateTraitsDisplay(user.traits || []);
+                  setText('traits', user.traits?.join(', ') || 'No traits');
                 }
                 
                 setText('user-roles', user.roles?.join(', ') || 'No roles');
@@ -5366,10 +5345,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         const traitsArray = JSON.parse(storedTraits);
         updateTraitsDisplay(traitsArray);
       } catch (e) {
-        updateTraitsDisplay(user.traits || []);
+        setText('traits', user.traits?.join(', ') || 'No traits');
       }
     } else {
-      updateTraitsDisplay(user.traits || []);
+      setText('traits', user.traits?.join(', ') || 'No traits');
     }
     
     setText('user-roles', user.roles?.join(', ') || 'No roles');
@@ -5653,7 +5632,7 @@ document.addEventListener("DOMContentLoaded", async function () {
      setText('welcome-name', 'Guest');
      setText('email', 'Please log in');
      setText('guilds', 'No guilds connected');
-     updateTraitsDisplay([]);
+     setText('traits', 'No traits available');
      setText('user-roles', 'No roles');
      setText('wallet-address', 'Wallet not linked');
      hideElement('goldenCheeseGate');
@@ -8078,173 +8057,21 @@ function updateWalletDisplay(walletAddress) {
   }
 }
 
-function escapeProfileTraitHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function getProfileTraitViewerSource(traits) {
-  if (Array.isArray(traits) && traits.length > 0) {
-    return traits;
-  }
-
-  const snapshot = loadProfileNftSnapshot();
-  if (snapshot && Array.isArray(snapshot.nfts) && snapshot.nfts.length > 0) {
-    const snapshotTraits = [];
-    snapshot.nfts.forEach((nft) => {
-      const nftTraits = Array.isArray(nft?.traits)
-        ? nft.traits
-        : (Array.isArray(nft?.attributes) ? nft.attributes : []);
-      nftTraits.forEach((trait) => {
-        if (trait) {
-          snapshotTraits.push(trait);
-        }
-      });
-    });
-    if (snapshotTraits.length > 0) {
-      return snapshotTraits;
+// Update traits display in Wallet & Traits section
+function updateTraitsDisplay(traits) {
+  const traitsElement = document.getElementById('traits');
+  if (traitsElement) {
+    if (traits && traits.length > 0) {
+      // Display first 5 traits, or all if less than 5
+      const displayTraits = traits.slice(0, 5);
+      const displayText = displayTraits.join(' • ');
+      const moreText = traits.length > 5 ? ` (+${traits.length - 5} more)` : '';
+      traitsElement.innerHTML = `<span class="text-green-600">${displayText}${moreText}</span>`;
+    } else {
+      traitsElement.innerHTML = '<span class="text-gray-500">No traits</span>';
     }
   }
-
-  try {
-    const storedTraitsRaw = localStorage.getItem('nftTraits');
-    if (!storedTraitsRaw) {
-      return [];
-    }
-
-    const storedTraits = JSON.parse(storedTraitsRaw);
-    return Array.isArray(storedTraits) ? storedTraits : [];
-  } catch (error) {
-    console.warn('Profile trait viewer fallback parse failed:', error);
-    return [];
-  }
 }
-
-function normalizeProfileTraitEntries(traits) {
-  if (!Array.isArray(traits)) {
-    return [];
-  }
-
-  return traits
-    .map((trait) => {
-      if (typeof trait === 'string') {
-        const trimmed = trait.trim();
-        if (!trimmed) {
-          return null;
-        }
-
-        const separatorIndex = trimmed.indexOf(':');
-        if (separatorIndex === -1) {
-          return {
-            traitType: 'Trait',
-            traitValue: trimmed,
-            displayLabel: trimmed
-          };
-        }
-
-        const traitType = trimmed.slice(0, separatorIndex).trim() || 'Trait';
-        const traitValue = trimmed.slice(separatorIndex + 1).trim();
-        if (!traitValue) {
-          return null;
-        }
-
-        return {
-          traitType,
-          traitValue,
-          displayLabel: `${traitType}: ${traitValue}`
-        };
-      }
-
-      if (trait && typeof trait === 'object') {
-        const traitType = String(trait.trait_type || trait.type || trait.label || 'Trait').trim() || 'Trait';
-        const traitValue = String(trait.trait_value || trait.value || trait.name || '').trim();
-        if (!traitValue) {
-          return null;
-        }
-
-        return {
-          traitType,
-          traitValue,
-          displayLabel: `${traitType}: ${traitValue}`
-        };
-      }
-
-      return null;
-    })
-    .filter(Boolean);
-}
-
-function renderProfileNftTraitsViewer(traits) {
-  const viewerElement = document.getElementById('profile-nft-traits-viewer');
-  if (!viewerElement) {
-    return;
-  }
-
-  const normalizedTraits = normalizeProfileTraitEntries(getProfileTraitViewerSource(traits));
-  if (!normalizedTraits.length) {
-    viewerElement.innerHTML = `
-      <div class="rounded-xl border border-slate-500/30 bg-slate-900/45 p-4 text-sm text-slate-300 xl:col-span-3">
-        No verified NFT trait groups are available yet. Connect and verify a wallet to sync the grouped viewer.
-      </div>
-    `;
-    return;
-  }
-
-  const traitTypeMap = new Map();
-
-  normalizedTraits.forEach((entry) => {
-    const traitType = entry.traitType || 'Trait';
-    if (!traitTypeMap.has(traitType)) {
-      traitTypeMap.set(traitType, new Map());
-    }
-
-    const valueMap = traitTypeMap.get(traitType);
-    const key = entry.traitValue;
-    const current = valueMap.get(key) || {
-      traitValue: entry.traitValue,
-      count: 0
-    };
-    current.count += 1;
-    valueMap.set(key, current);
-  });
-
-  const groupedCards = Array.from(traitTypeMap.entries())
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([traitType, values]) => {
-      const chips = Array.from(values.values())
-        .sort((a, b) => a.traitValue.localeCompare(b.traitValue))
-        .map((entry) => `
-          <div class="flex items-center justify-between gap-3 rounded-xl border border-emerald-500/20 bg-slate-900/70 px-3 py-2 shadow-sm">
-            <div class="min-w-0 flex-1 text-sm font-semibold text-slate-100 break-words">${escapeProfileTraitHtml(entry.traitValue)}</div>
-            ${entry.count > 1 ? `<span class="inline-flex shrink-0 items-center rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-900">×${entry.count}</span>` : ''}
-          </div>
-        `)
-        .join('');
-
-      return `
-        <div class="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-slate-900/85 to-teal-950/45 p-4 shadow-lg">
-          <div class="mb-3 flex items-center justify-between gap-3 border-b border-cyan-500/15 pb-3">
-            <div>
-              <div class="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">Trait Type</div>
-              <div class="mt-1 text-base font-bold text-white break-words">${escapeProfileTraitHtml(traitType)}</div>
-            </div>
-            <div class="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200">
-              ${values.size} ${values.size === 1 ? 'Trait' : 'Traits'}
-            </div>
-          </div>
-          <div class="space-y-2">${chips}</div>
-        </div>
-      `;
-    });
-
-  viewerElement.innerHTML = groupedCards.join('');
-}
-
-
 
 // Display verification results
 function displayVerificationResults(foundNFTs) {
