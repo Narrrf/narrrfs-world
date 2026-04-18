@@ -11,12 +11,22 @@
     'auth_timestamp'
   ];
 
+  const SESSION_ENDPOINT = '/api/user/get-session.php';
+  const VERIFY_THROTTLE_MS = 1500;
+  const FOCUS_VERIFY_MIN_INTERVAL_MS = 3000;
+
   const authState = {
     checked: false,
     loggedIn: false,
     discordId: '',
     discordName: ''
   };
+
+  let activeVerifyPromise = null;
+  let lastVerifyAt = 0;
+  let lastSuccessfulVerifyAt = 0;
+  let lastKnownDiscordId = '';
+  let pendingRefreshTimeout = null;
 
   function clearStoredAuth() {
     AUTH_STORAGE_KEYS.forEach((key) => {
@@ -35,56 +45,126 @@
     ).trim();
   }
 
-  async function verifySession() {
-    try {
-      const response = await fetch('/api/user/get-session.php', {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store'
-      });
+  function getStoredDiscordId() {
+    return String(
+      localStorage.getItem('discord_id') ||
+      localStorage.getItem('narrrfs_last_discord_id') ||
+      sessionStorage.getItem('discord_id') ||
+      window.sessionDiscordId ||
+      ''
+    ).trim();
+  }
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+  function applyLoggedInState(discordId, discordUsername) {
+    const resolvedName = String(discordUsername || getStoredDiscordName()).trim();
 
-      const data = await response.json();
-      const discordId = String(data?.discord_id || '').trim();
-      const discordUsername = String(data?.discord_username || '').trim();
+    authState.checked = true;
+    authState.loggedIn = true;
+    authState.discordId = discordId;
+    authState.discordName = resolvedName;
 
-      authState.checked = true;
-      authState.loggedIn = discordId !== '';
-      authState.discordId = discordId;
-      authState.discordName = discordUsername || getStoredDiscordName();
+    lastKnownDiscordId = discordId;
+    lastSuccessfulVerifyAt = Date.now();
 
-      if (authState.loggedIn) {
-        window.sessionDiscordId = discordId;
-        window.sessionDiscordUsername = discordUsername || '';
+    window.sessionDiscordId = discordId;
+    window.sessionDiscordUsername = resolvedName || '';
 
-        localStorage.setItem('discord_id', discordId);
-        localStorage.setItem('auth_timestamp', String(Date.now()));
+    localStorage.setItem('discord_id', discordId);
+    localStorage.setItem('narrrfs_last_discord_id', discordId);
+    localStorage.setItem('auth_timestamp', String(Date.now()));
 
-        if (authState.discordName) {
-          localStorage.setItem('discord_name', authState.discordName);
-        }
+    if (resolvedName) {
+      localStorage.setItem('discord_name', resolvedName);
+      localStorage.setItem('narrrfs_last_discord_name', resolvedName);
+      localStorage.setItem('DISCORD_NAME', resolvedName);
+    }
+  }
 
-        return;
-      }
+  function applyLoggedOutState(options = {}) {
+    const { clearStorage = true } = options;
 
-      window.sessionDiscordId = '';
-      window.sessionDiscordUsername = '';
-      clearStoredAuth();
-    } catch (error) {
-      console.error('❌ Cheese auth session verification failed:', error);
+    authState.checked = true;
+    authState.loggedIn = false;
+    authState.discordId = '';
+    authState.discordName = '';
 
-      authState.checked = true;
-      authState.loggedIn = false;
-      authState.discordId = '';
-      authState.discordName = '';
+    lastKnownDiscordId = '';
 
-      window.sessionDiscordId = '';
-      window.sessionDiscordUsername = '';
+    window.sessionDiscordId = '';
+    window.sessionDiscordUsername = '';
+
+    if (clearStorage) {
       clearStoredAuth();
     }
+  }
+
+  async function verifySession(options = {}) {
+    const { force = false, source = 'unknown' } = options;
+    const now = Date.now();
+
+    if (!force && activeVerifyPromise) {
+      return activeVerifyPromise;
+    }
+
+    if (!force && (now - lastVerifyAt) < VERIFY_THROTTLE_MS) {
+      return authState;
+    }
+
+    lastVerifyAt = now;
+
+    activeVerifyPromise = (async () => {
+      try {
+        const response = await fetch(SESSION_ENDPOINT, {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const discordId = String(data?.discord_id || '').trim();
+        const discordUsername = String(data?.discord_username || '').trim();
+
+        if (discordId) {
+          applyLoggedInState(discordId, discordUsername);
+          return authState;
+        }
+
+        // Only apply logged-out state on confirmed empty session.
+        applyLoggedOutState({ clearStorage: true });
+        return authState;
+      } catch (error) {
+        console.error(`❌ Cheese auth session verification failed (${source}):`, error);
+
+        // Important:
+        // Do NOT destroy local auth state on temporary fetch/network/session timing issues.
+        // Keep last known stable state if we had one before.
+        if (lastKnownDiscordId || getStoredDiscordId()) {
+          const fallbackDiscordId = lastKnownDiscordId || getStoredDiscordId();
+          const fallbackDiscordName = getStoredDiscordName();
+
+          authState.checked = true;
+          authState.loggedIn = fallbackDiscordId !== '';
+          authState.discordId = fallbackDiscordId;
+          authState.discordName = fallbackDiscordName;
+
+          window.sessionDiscordId = fallbackDiscordId;
+          window.sessionDiscordUsername = fallbackDiscordName || '';
+
+          return authState;
+        }
+
+        applyLoggedOutState({ clearStorage: false });
+        return authState;
+      } finally {
+        activeVerifyPromise = null;
+      }
+    })();
+
+    return activeVerifyPromise;
   }
 
   function removeExistingIndicator() {
@@ -168,7 +248,9 @@
 
   function toggleProfileBanner() {
     const prominentBanner = document.getElementById('discord-login-prominent');
-    if (!prominentBanner) return;
+    if (!prominentBanner) {
+      return;
+    }
 
     if (authState.loggedIn) {
       prominentBanner.classList.add('hidden');
@@ -180,17 +262,76 @@
     prominentBanner.removeAttribute('aria-hidden');
   }
 
-  async function syncAuthUi() {
-    await verifySession();
+  async function syncAuthUi(options = {}) {
+    await verifySession(options);
     renderIndicator();
     toggleProfileBanner();
+    return authState;
   }
 
-  document.addEventListener('DOMContentLoaded', syncAuthUi);
-  window.addEventListener('focus', syncAuthUi);
-  window.addEventListener('storage', syncAuthUi);
+  function scheduleRefresh(options = {}) {
+    const delay = typeof options.delay === 'number' ? options.delay : 120;
+    const refreshOptions = {
+      force: Boolean(options.force),
+      source: String(options.source || 'scheduled')
+    };
+
+    if (pendingRefreshTimeout) {
+      window.clearTimeout(pendingRefreshTimeout);
+    }
+
+    pendingRefreshTimeout = window.setTimeout(() => {
+      pendingRefreshTimeout = null;
+      syncAuthUi(refreshOptions);
+    }, delay);
+  }
+
+  function handleWindowFocus() {
+    const now = Date.now();
+    if ((now - lastSuccessfulVerifyAt) < FOCUS_VERIFY_MIN_INTERVAL_MS) {
+      return;
+    }
+
+    scheduleRefresh({
+      force: false,
+      source: 'focus',
+      delay: 100
+    });
+  }
+
+  function handleStorageEvent(event) {
+    if (!event || !AUTH_STORAGE_KEYS.includes(String(event.key || ''))) {
+      return;
+    }
+
+    // Re-render after page-level auth writers settle.
+    scheduleRefresh({
+      force: true,
+      source: 'storage',
+      delay: 250
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    syncAuthUi({
+      force: true,
+      source: 'DOMContentLoaded'
+    });
+  });
+
+  window.addEventListener('focus', handleWindowFocus);
+  window.addEventListener('storage', handleStorageEvent);
 
   window.NarrrfsCheeseAuth = {
-    refresh: syncAuthUi
+    refresh(options = {}) {
+      return syncAuthUi({
+        force: Boolean(options.force),
+        source: String(options.source || 'manual_refresh')
+      });
+    },
+    scheduleRefresh,
+    getState() {
+      return { ...authState };
+    }
   };
 })();

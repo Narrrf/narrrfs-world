@@ -13,39 +13,58 @@
 async function hydrateSession() {
   try {
     const res = await fetch('/api/user/get-session.php', {
-      credentials: 'include'
+      credentials: 'include',
+      cache: 'no-store'
     });
 
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
     const data = await res.json();
+    const discordId = String(data?.discord_id || '').trim();
+    const discordUsername = String(data?.discord_username || '').trim();
 
-    if (data?.success && data.discord_id) {
-      window.sessionDiscordId = data.discord_id;
-      window.sessionDiscordUsername = data.discord_username || '';
+    if (discordId) {
+      window.sessionDiscordId = discordId;
+      window.sessionDiscordUsername = discordUsername;
 
-      // sync localStorage (important for your system)
-      localStorage.setItem("discord_id", data.discord_id);
-      localStorage.setItem("discord_name", data.discord_username || '');
+      // Keep lightweight page sync only.
+      localStorage.setItem('discord_id', discordId);
+      localStorage.setItem('narrrfs_last_discord_id', discordId);
 
-      // trigger your global auth system if present
-      if (window.NarrrfsCheeseAuth?.refresh) {
-        window.NarrrfsCheeseAuth.refresh();
+      if (discordUsername) {
+        localStorage.setItem('discord_name', discordUsername);
+        localStorage.setItem('narrrfs_last_discord_name', discordUsername);
+        localStorage.setItem('DISCORD_NAME', discordUsername);
       }
 
-      console.log("✅ Session hydrated:", data.discord_id);
-    } else {
-  console.warn("⚠️ No active session");
+      console.log('✅ Lab session hydrated:', discordId);
+      return;
+    }
 
-  window.sessionDiscordId = '';
-  window.sessionDiscordUsername = '';
+    // Confirmed empty session: update page memory only.
+    window.sessionDiscordId = '';
+    window.sessionDiscordUsername = '';
+    console.warn('⚠️ Lab: No active session');
+  } catch (error) {
+    console.error('❌ Lab session fetch failed', error);
 
-  localStorage.removeItem("discord_id");
-  localStorage.removeItem("discord_name");
-  localStorage.removeItem("narrrfs_last_discord_id");
-  localStorage.removeItem("narrrfs_last_discord_name");
-}
+    // Important: do not clear shared auth storage on transient failures.
+    if (!window.sessionDiscordId) {
+      window.sessionDiscordId = String(
+        localStorage.getItem('discord_id') ||
+        localStorage.getItem('narrrfs_last_discord_id') ||
+        ''
+      ).trim();
 
-  } catch (e) {
-    console.error("❌ Session fetch failed", e);
+      window.sessionDiscordUsername = String(
+        localStorage.getItem('discord_name') ||
+        localStorage.getItem('narrrfs_last_discord_name') ||
+        localStorage.getItem('DISCORD_NAME') ||
+        ''
+      ).trim();
+    }
   }
 }
 
@@ -1633,6 +1652,203 @@ hydrateSession();
   border: 1px solid rgba(16,185,129,0.16);
   background: linear-gradient(180deg, rgba(16,185,129,0.12), rgba(15,23,42,0.4));
 }
+
+
+
+    .lab-command-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+      gap: 1rem;
+      margin-bottom: 0.85rem;
+      align-items: stretch;
+    }
+    .lab-command-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 1rem;
+      border-radius: 1.2rem;
+      border: 1px solid rgba(148,163,184,0.16);
+      background: linear-gradient(145deg, rgba(15,23,42,0.9), rgba(30,41,59,0.84));
+      box-shadow: var(--shadow);
+    }
+    .lab-command-panel::before {
+      content: "";
+      position: absolute;
+      inset: auto -8% -30% auto;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(34,211,238,0.16), transparent 68%);
+      pointer-events: none;
+    }
+    .lab-command-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 0.95rem;
+    }
+    .lab-command-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .lab-mini-card {
+      padding: 0.9rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(148,163,184,0.14);
+      background: rgba(15,23,42,0.58);
+    }
+    .lab-mini-card .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #93c5fd;
+      font-weight: 800;
+    }
+    .lab-mini-card .title {
+      margin-top: 0.45rem;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .lab-mini-card .copy {
+      margin-top: 0.35rem;
+      font-size: 0.88rem;
+      color: #cbd5e1;
+    }
+    .lab-tab-guide {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0.15rem 0 0.55rem;
+    }
+    .lab-tab-guide-copy {
+      font-size: 0.86rem;
+      color: #cbd5e1;
+      max-width: 70rem;
+    }
+    .overview-urgent-grid,
+    .overview-jump-grid,
+    .knowledge-faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem;
+    }
+    .overview-urgent-card,
+    .overview-jump-card,
+    .knowledge-faq-card {
+      padding: 1rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(148,163,184,0.14);
+      background: rgba(15,23,42,0.56);
+    }
+    .overview-urgent-card strong,
+    .overview-jump-card strong,
+    .knowledge-faq-card strong,
+    .workspace-helper-card strong {
+      display: block;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .overview-help-toggle {
+      width: 100%;
+      border: 1px solid rgba(148,163,184,0.14);
+      border-radius: 1rem;
+      background: rgba(15,23,42,0.48);
+      padding: 1rem 1.1rem;
+    }
+    .overview-help-toggle summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: #fff;
+      list-style: none;
+    }
+    .overview-help-toggle summary::-webkit-details-marker { display:none; }
+    .overview-help-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 0.85rem;
+    }
+    .workflow-anchor-row {
+      position: sticky;
+      top: 14px;
+      z-index: 12;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(2,6,23,0.92), rgba(15,23,42,0.82));
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(14px);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 1rem;
+    }
+    .workflow-anchor-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.14);
+      background: rgba(15,23,42,0.58);
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .workflow-anchor-link:hover {
+      border-color: rgba(34,211,238,0.32);
+      color: #fff;
+    }
+    .workspace-helper-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+    .workspace-helper-card {
+      padding: 0.95rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(148,163,184,0.14);
+      background: rgba(15,23,42,0.56);
+    }
+    .inline-lane-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(34,211,238,0.2);
+      background: rgba(8,47,73,0.45);
+      color: #a5f3fc;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    @media (max-width: 1080px) {
+      .lab-command-header,
+      .overview-grid,
+      .workspace-helper-strip,
+      .overview-urgent-grid,
+      .overview-jump-grid,
+      .knowledge-faq-grid,
+      .overview-help-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 768px) {
+      .game-hero { grid-template-columns: 1fr; }
+      .hero-panel .benefit-list,
+      .hero-panel .summary-stat-grid,
+      .lab-command-actions { grid-template-columns: 1fr; }
+    }
 
 /* stronger page atmosphere */
 :root {
@@ -3684,75 +3900,70 @@ body::after {
       </div>
     </header>
 
-    <div class="game-hero">
-      <section class="hero-panel">
+    <div class="lab-command-header">
+      <section class="lab-command-panel">
         <div class="hero-badge-row">
-          <span class="hero-kicker">🧬 Genesis Research Chamber</span>
-          <span class="chip">🧀 Holder Utility</span>
-          <span class="chip">🎮 Future Game Power</span>
+          <span class="hero-kicker">🧬 Lab Command Center</span>
+          <span class="chip">🎯 Action-first navigation</span>
+          <span class="chip">🛡️ Stable backend flow</span>
         </div>
-        <div class="mt-5 max-w-4xl">
-          <h1 class="hero-title">Upgrade your Genesis mice for the next adventures.</h1>
-          <p class="mt-4 text-base md:text-lg text-slate-200 max-w-3xl">Welcome to Narrrf’s Lab — the clean upgrade hub for verified Genesis holders. Research the real traits of your mice, grow permanent NFT power, and prepare for future role perks, riddles, special adventures, and utility across the Mouseverse.</p>
+        <div class="mt-4 max-w-4xl">
+          <h2 class="text-3xl md:text-4xl font-black tracking-tight">Start fast, understand fast, and keep every Lab lane clean.</h2>
+          <p class="mt-3 text-sm md:text-base text-slate-200 max-w-3xl">Narrrf’s Lab now opens as a command center: verify access, jump into My Genesis Lab, monitor research, and manage the Discord-bound Genetic lane without mixing systems or burying the real tools under giant intro walls.</p>
         </div>
-        <div class="benefit-list">
-          <div class="benefit-card"><div class="text-xs uppercase tracking-[0.18em] text-cyan-300 font-bold">Verified Holdership</div><div class="mt-2 text-sm text-slate-200">Only verified Genesis holders can access trait research, special lab features, and future holder-first content.</div></div>
-          <div class="benefit-card"><div class="text-xs uppercase tracking-[0.18em] text-amber-300 font-bold">Permanent Progress</div><div class="mt-2 text-sm text-slate-200">Trait levels are bound to the NFT itself, so each upgraded mouse becomes a stronger long-term collectible in the ecosystem.</div></div>
-          <div class="benefit-card"><div class="text-xs uppercase tracking-[0.18em] text-emerald-300 font-bold">Game Utility Ahead</div><div class="mt-2 text-sm text-slate-200">Lab growth is being prepared for future game bonuses, fun riddle adventures, and deeper mouse identity systems.</div></div>
-          <div class="benefit-card"><div class="text-xs uppercase tracking-[0.18em] text-violet-300 font-bold">DSPOINC Choice</div><div class="mt-2 text-sm text-slate-200">Let research finish naturally or use DSPOINC to speed things up when you want to move faster.</div></div>
+        <div id="sessionNotice" class="info text-sm mt-4">Resolving player session...</div>
+        <div id="labEntryActions" class="mt-4"></div>
+        <div class="lab-command-summary">
+          <span class="chip">🧬 Genesis = NFT-bound</span>
+          <span class="chip">🎒 Genetic = user-bound</span>
+          <span class="chip">⏱️ Queue = action hub</span>
+          <span class="chip">📚 Knowledge = help layer</span>
         </div>
-        <div id="labEntryActions" class="mt-6"></div>
-        <div class="lab-link-row mt-5">
-          <a class="btn primary inline-flex items-center justify-center" href="#lab-tab-my-genesis">🧪 Enter My Genesis Lab</a>
+        <div class="lab-command-actions">
+          <a class="btn primary inline-flex items-center justify-center" href="#lab-tab-my-genesis">🧪 Open My Genesis Lab</a>
+          <a class="btn inline-flex items-center justify-center" href="#lab-tab-research-queue">⏱️ Open Research Queue</a>
+          <a class="btn success inline-flex items-center justify-center" href="stake-lab.html">✅ Open Stake Lab</a>
           <a class="btn inline-flex items-center justify-center" href="profile.html">👤 Open Profile</a>
-          <a class="btn inline-flex items-center justify-center" href="stake-lab.html">✅ Verify in Stake Lab</a>
         </div>
       </section>
 
-      <aside class="hero-panel">
-        <div class="section-title text-xl md:text-2xl"><span>🎯</span><span>What you can do here</span></div>
-        <div class="summary-stat-grid">
-          <div class="summary-stat"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">1. Verify</div><div class="mt-2 text-sm text-slate-200">Connect your holder identity and saved Genesis scan.</div></div>
-          <div class="summary-stat"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">2. Choose a Mouse</div><div class="mt-2 text-sm text-slate-200">Slide through your verified Genesis collection and open one mouse at a time.</div></div>
-          <div class="summary-stat"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">3. Start Research</div><div class="mt-2 text-sm text-slate-200">Pick a real scanned trait and begin its upgrade path.</div></div>
-          <div class="summary-stat"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">4. Claim Power</div><div class="mt-2 text-sm text-slate-200">Return when the timer ends and claim the new level for that exact NFT trait.</div></div>
-        </div>
-        <div id="sessionNotice" class="info text-sm mt-5">Resolving player session...</div>
-        <div class="hero-action-grid">
-          <div class="hero-action-card">
-            <div>
-              <div class="label">Quick Access</div>
-              <div class="title">Jump into My Genesis Lab</div>
-              <div class="copy">Open the featured mouse viewer, switch between your verified mice, and manage trait upgrades fast.</div>
+      <aside class="lab-command-panel">
+        <div class="section-title text-xl md:text-2xl"><span>🗺️</span><span>Choose a workspace</span></div>
+        <div class="space-y-3 mt-4">
+          <details class="overview-help-toggle" open>
+            <summary>Start in My Genesis Lab</summary>
+            <div class="overview-help-grid">
+              <div class="feature-item"><strong class="text-cyan-300">Best when</strong><div class="mt-2 text-sm text-slate-200">You want to reach your verified collection fast, switch mice quickly, and upgrade without scrolling through helper blocks first.</div></div>
+              <div class="feature-item"><strong class="text-amber-300">Fast path</strong><div class="mt-2 text-sm text-slate-200">Slider → Selected mouse → Trait chamber. Boosters and chamber expansion stay lower so the core workflow stays near the top.</div></div>
+              <div class="feature-item"><strong class="text-emerald-300">Main action</strong><div class="mt-2 text-sm text-slate-200"><a class="btn primary inline-flex items-center justify-center mt-2" href="#lab-tab-my-genesis">🧪 Open My Genesis Lab</a></div></div>
+              <div class="feature-item"><strong class="text-violet-300">Good for</strong><div class="mt-2 text-sm text-slate-200">Verified holders who want the shortest route from selection to upgrade.</div></div>
             </div>
-            <a class="btn primary inline-flex items-center" href="#lab-tab-my-genesis">🧪 Open My Genesis Lab</a>
-          </div>
-          <div class="hero-action-card">
-            <div>
-              <div class="label">Quick Access</div>
-              <div class="title">Open Research Queue</div>
-              <div class="copy">Check active timers, claim-ready upgrades, and the next mice that need your attention.</div>
+          </details>
+          <details class="overview-help-toggle">
+            <summary>Then use Research Queue</summary>
+            <div class="overview-help-grid">
+              <div class="feature-item"><strong class="text-cyan-300">Best when</strong><div class="mt-2 text-sm text-slate-200">You are returning to claim, check timers, or find which mouse needs attention next.</div></div>
+              <div class="feature-item"><strong class="text-amber-300">Fast path</strong><div class="mt-2 text-sm text-slate-200">Claim ready upgrades first, then jump back into My Genesis when you want to start the next trait or ability action.</div></div>
+              <div class="feature-item"><strong class="text-emerald-300">Main action</strong><div class="mt-2 text-sm text-slate-200"><a class="btn inline-flex items-center justify-center mt-2" href="#lab-tab-research-queue">⏱️ Open Research Queue</a></div></div>
+              <div class="feature-item"><strong class="text-violet-300">Good for</strong><div class="mt-2 text-sm text-slate-200">Repeat visits where you do not need the whole Genesis viewer first.</div></div>
             </div>
-            <a class="btn inline-flex items-center" href="#lab-panel-research-queue">⏱️ View Research Queue</a>
-          </div>
-          <div class="hero-action-card">
-            <div>
-              <div class="label">Holder Tools</div>
-              <div class="title">Verify or Refresh Genesis Access</div>
-              <div class="copy">Go to Stake Lab when you need to reconnect your wallet, refresh scans, or verify new Genesis mice.</div>
+          </details>
+          <details class="overview-help-toggle">
+            <summary>How Lab works for new players</summary>
+            <div class="overview-help-grid">
+              <div class="feature-item"><strong class="text-cyan-300">1. Verify</strong><div class="mt-2 text-sm text-slate-200">Connect holder identity and keep your saved Genesis scan current.</div></div>
+              <div class="feature-item"><strong class="text-amber-300">2. Choose a mouse</strong><div class="mt-2 text-sm text-slate-200">Use the verified collection slider and quick select to open one mouse at a time.</div></div>
+              <div class="feature-item"><strong class="text-emerald-300">3. Start research</strong><div class="mt-2 text-sm text-slate-200">Use exact scanned traits or the ability matrix without mixing NFT and user-bound systems.</div></div>
+              <div class="feature-item"><strong class="text-violet-300">4. Claim power</strong><div class="mt-2 text-sm text-slate-200">Return to queue or the selected chamber when timers are ready to claim.</div></div>
             </div>
-            <a class="btn success inline-flex items-center" href="stake-lab.html">✅ Open Stake Lab</a>
-          </div>
-          <div class="hero-action-card">
-            <div>
-              <div class="label">Identity Hub</div>
-              <div class="title">Open Profile</div>
-              <div class="copy">Review your player identity, linked Discord account, and broader Narrrf’s World progression.</div>
-            </div>
-            <a class="btn inline-flex items-center" href="profile.html">👤 Open Profile</a>
-          </div>
+          </details>
         </div>
       </aside>
+    </div>
+
+    <div class="lab-tab-guide">
+      <div class="lab-tab-guide-copy">Use the tabs as your main Lab navigation. Overview is mission control. My Genesis is the NFT-bound workspace. Genetic tabs stay user-bound.</div>
+      <span class="inline-lane-badge">🧭 Stable long-term layout</span>
     </div>
 
     <nav class="lab-tab-nav" aria-label="Lab navigation tabs">
@@ -3788,17 +3999,35 @@ body::after {
               <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-emerald-300 font-bold">DSPOINC & Economy</div><div id="economySummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
               <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-violet-300 font-bold">Genetic Progress</div><div id="gameSummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
             </div>
+
+            <div>
+              <div class="section-title text-lg md:text-xl"><span>🚨</span><span>What needs attention now</span></div>
+              <div class="overview-urgent-grid mt-4">
+                <div class="overview-urgent-card"><strong>Claim-ready research</strong><div class="text-sm text-slate-300">Go to <strong>Research Queue</strong> when timers are done and finished upgrades need a clean claim pass.</div></div>
+                <div class="overview-urgent-card"><strong>Verified mice with no active work</strong><div class="text-sm text-slate-300">Open <strong>My Genesis Lab</strong> to pick the next mouse and keep the selected chamber moving.</div></div>
+                <div class="overview-urgent-card"><strong>Genetic items waiting for action</strong><div class="text-sm text-slate-300">Use <strong>My Genetic Inventory</strong> for the user-bound lane without touching NFT-bound Genesis state.</div></div>
+                <div class="overview-urgent-card"><strong>Need system clarity</strong><div class="text-sm text-slate-300">Use <strong>Knowledge</strong> whenever you need a rule explanation instead of searching through the whole page.</div></div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="glass p-5 md:p-6">
-          <div class="section-title text-xl md:text-2xl"><span>✨</span><span>Why Genesis research matters</span></div>
-          <div class="feature-list">
-            <div class="feature-item"><strong class="text-cyan-300">Holder-first access:</strong> verified Genesis mice unlock the chamber and future role-based advantages.</div>
-            <div class="feature-item"><strong class="text-amber-300">Persistent NFT progression:</strong> upgrades stay attached to the exact NFT and trait path.</div>
-            <div class="feature-item"><strong class="text-emerald-300">Adventure-ready utility:</strong> lab power is being prepared for funny riddles, games, and hidden ecosystem bonuses.</div>
-            <div class="feature-item"><strong class="text-violet-300">Simple return loop:</strong> start research, come back when it is ready, claim the new level, and grow your mouse over time.</div>
+          <div class="section-title text-xl md:text-2xl"><span>⚡</span><span>Quick jumps & Lab rules</span></div>
+          <div class="overview-jump-grid mt-4">
+            <div class="overview-jump-card"><strong>Jump to My Genesis Lab</strong><div class="text-sm text-slate-300">Choose one verified Genesis mouse, inspect traits, and use the selected-mouse workflow first.</div><a class="btn primary inline-flex items-center justify-center mt-4" href="#lab-tab-my-genesis">🧪 Open Genesis Workspace</a></div>
+            <div class="overview-jump-card"><strong>Jump to Research Queue</strong><div class="text-sm text-slate-300">See active timers, ready claims, and the fastest route back into your next Lab action.</div><a class="btn inline-flex items-center justify-center mt-4" href="#lab-tab-research-queue">⏱️ Open Queue</a></div>
           </div>
+
+          <details class="overview-help-toggle mt-5" open>
+            <summary>Why Genesis research matters</summary>
+            <div class="feature-list mt-4">
+              <div class="feature-item"><strong class="text-cyan-300">Holder-first access:</strong> verified Genesis mice unlock the chamber and future role-based advantages.</div>
+              <div class="feature-item"><strong class="text-amber-300">Persistent NFT progression:</strong> upgrades stay attached to the exact NFT and trait path.</div>
+              <div class="feature-item"><strong class="text-emerald-300">Adventure-ready utility:</strong> lab power is being prepared for funny riddles, games, and hidden ecosystem bonuses.</div>
+              <div class="feature-item"><strong class="text-violet-300">Simple return loop:</strong> start research, come back when it is ready, claim the new level, and grow your mouse over time.</div>
+            </div>
+          </details>
           <div class="card p-4 mt-4"><div class="section-title text-lg"><span>📚</span><span>Lab Queue Overview</span></div><div id="queueSummary" class="mt-4 text-sm text-slate-200 space-y-3"></div></div>
         </div>
       </div>
@@ -3820,11 +4049,41 @@ body::after {
 
     <div id="verificationWarning" class="warnbox text-sm mt-4 hidden"></div>
 
-    <div id="mintOpportunitySlot" class="mint-opportunity-slot"></div>
+    <div class="workspace-helper-strip mt-4">
+      <div class="workspace-helper-card"><strong>Choose first</strong><div class="text-sm text-slate-300">Use the verified slider to select one Genesis mouse before opening trait or ability actions.</div></div>
+      <div class="workspace-helper-card"><strong>Act second</strong><div class="text-sm text-slate-300">Keep the selected mouse readable, then open trait research or the ability matrix from the same workspace.</div></div>
+      <div class="workspace-helper-card"><strong>Claim from queue</strong><div class="text-sm text-slate-300">When timers are done, Research Queue becomes the fastest place to finish the loop cleanly.</div></div>
+    </div>
+
+    <div class="workflow-anchor-row">
+      <a class="workflow-anchor-link" href="#genesis-trait-chamber">⚙️ Trait Chamber</a>
+      <a class="workflow-anchor-link" href="#my-genesis-slider">🧬 Slider</a>
+      <a class="workflow-anchor-link" href="#selectedGenesisMouseCard">🐭 Selected Mouse</a>
+      <a class="workflow-anchor-link" href="#lab-tab-research-queue">⏱️ Queue</a>
+    </div>
 
     <div class="viewer-grid mt-5">
+      <div id="genesis-trait-chamber" class="glass p-5 md:p-6">
+        <div class="genesis-trait-chamber-shell">
+          <div class="genesis-trait-chamber-header">
+            <div>
+              <div class="section-title text-xl md:text-2xl"><span>⚙️</span><span>Trait Research Chamber</span></div>
+              <p class="mt-2 text-sm md:text-base text-slate-300">Open one exact scanned trait, start research, and keep the selected chamber easier to scan while you move through many mice.</p>
+            </div>
+            <div class="text-sm text-slate-300"><span id="upgradeModeBadge" class="chip">Upgrade system warming up…</span></div>
+          </div>
+          <div class="genesis-trait-chamber-summary">
+            <span class="chip">🖱️ Selected-mouse workflow first</span>
+            <span class="chip">⚡ Upgrade without long scroll</span>
+            <span class="chip">⭐ Favorite trait bulk path planned</span>
+          </div>
+          <div id="traitUpgradeInfo" class="info text-sm"></div>
+          <div id="traitGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+        </div>
+      </div>
+
       <div class="viewer-stage">
-        <div class="glass p-5 md:p-6 slider-stage-card">
+        <div id="my-genesis-slider" class="glass p-5 md:p-6 slider-stage-card">
           <div class="flex flex-col gap-4">
             <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
               <div>
@@ -3894,25 +4153,8 @@ body::after {
         </div>
       </div>
 
-      <div class="glass p-5 md:p-6">
-        <div class="genesis-trait-chamber-shell">
-          <div class="genesis-trait-chamber-header">
-            <div>
-              <div class="section-title text-xl md:text-2xl"><span>⚙️</span><span>Trait Research Chamber</span></div>
-              <p class="mt-2 text-sm md:text-base text-slate-300">Open one exact scanned trait, start research, and keep the selected chamber easier to scan while you move through many mice.</p>
-            </div>
-            <div class="text-sm text-slate-300"><span id="upgradeModeBadge" class="chip">Upgrade system warming up…</span></div>
-          </div>
-          <div class="genesis-trait-chamber-summary">
-            <span class="chip">🖱️ Selected-mouse workflow first</span>
-            <span class="chip">📦 Portfolio tools next merge</span>
-            <span class="chip">⭐ Favorite trait bulk path planned</span>
-          </div>
-          <div id="traitUpgradeInfo" class="info text-sm"></div>
-          <div id="traitGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
-          <div id="labBoosterPanel"></div>
-        </div>
-      </div>
+      <div id="labBoosterPanel" class="mt-5"></div>
+      <div id="mintOpportunitySlot" class="mint-opportunity-slot mt-5"></div>
     </div>
   </div>
 </section>
@@ -3998,6 +4240,12 @@ body::after {
 
           <div id="geneticInventorySummary" class="genetic-summary-grid"></div>
 
+          <div class="workspace-helper-strip mt-5">
+            <div class="workspace-helper-card"><strong>Start upgrades</strong><div class="text-sm text-slate-300">Idle items belong in this workspace when you want to begin user-bound Genetic progression.</div></div>
+            <div class="workspace-helper-card"><strong>Claim finished items</strong><div class="text-sm text-slate-300">Ready items should be claimed here without touching Genesis NFT-bound state.</div></div>
+            <div class="workspace-helper-card"><strong>Prepare trading</strong><div class="text-sm text-slate-300">Only idle Genetic items are safe candidates for marketplace listing flows.</div></div>
+          </div>
+
           <div class="genetic-filter-bar">
             <div class="genetic-filter-field">
               <label for="geneticInventoryTraitTypeFilter">Trait Type</label>
@@ -4058,6 +4306,7 @@ body::after {
           <p class="mt-2 text-sm md:text-base text-slate-300">
             Trade Discord-bound Genetic Items with other players. Listings preserve full item progression, including level state, while staying completely separate from NFT-bound Genesis Lab identity.
           </p>
+          <div class="mt-3"><span class="inline-lane-badge">🎒 Discord-bound Genetic market only</span></div>
         </div>
         <div class="text-sm text-slate-300">
           <span id="geneticMarketplaceBadge" class="chip">Marketplace warming up…</span>
@@ -4193,6 +4442,16 @@ body::after {
         <div class="genetic-helper-item">DSPOINC economy stays isolated from NFT verification and staking logic.</div>
       </div>
     </div>
+
+    <div class="glass p-5 md:p-6">
+      <div class="section-title text-xl"><span>❓</span><span>Common Lab questions</span></div>
+      <div class="knowledge-faq-grid mt-4">
+        <div class="knowledge-faq-card"><strong>Why can’t I see my Genesis mouse?</strong><div class="text-sm text-slate-300">Use Stake Lab to verify or refresh saved Genesis scans, then return to My Genesis Lab.</div></div>
+        <div class="knowledge-faq-card"><strong>Why can’t two Genesis upgrades run at once?</strong><div class="text-sm text-slate-300">Genesis progression is NFT-bound and one active upgrade per mouse keeps progression clean and authoritative.</div></div>
+        <div class="knowledge-faq-card"><strong>Why is a Genetic item blocked from sale?</strong><div class="text-sm text-slate-300">Only idle Discord-bound items can be listed. Upgrading and claim-ready states stay blocked.</div></div>
+        <div class="knowledge-faq-card"><strong>What is NFT-bound vs user-bound?</strong><div class="text-sm text-slate-300">Genesis mice store progression on the NFT lane. Genetic items belong to the Discord profile lane.</div></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -4207,6 +4466,11 @@ body::after {
             <div class="text-sm text-slate-300">
               <span id="activeQueueBadge" class="chip">Queue warming up…</span>
             </div>
+          </div>
+          <div class="workspace-helper-strip mt-5">
+            <div class="workspace-helper-card"><strong>Claim now</strong><div class="text-sm text-slate-300">Use this queue first when a timer is finished and a clean claim is ready.</div></div>
+            <div class="workspace-helper-card"><strong>Watch active research</strong><div class="text-sm text-slate-300">Monitor live Genesis research without losing the selected-mouse workflow in My Genesis.</div></div>
+            <div class="workspace-helper-card"><strong>Return to next action</strong><div class="text-sm text-slate-300">Jump back to My Genesis after you identify which mouse should start the next run.</div></div>
           </div>
           <div id="activeResearchQueue" class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-5"></div>
         </div>
@@ -11279,5 +11543,17 @@ if (!handledDeepLink) {
 });
   </script>
   <script src="js/cheese-auth-indicator.js"></script>
+<script>
+document.addEventListener('click', function(event) {
+  const link = event.target.closest('[href^="#lab-tab-"]');
+  if (!link) return;
+  const tabName = link.getAttribute('href').replace('#lab-tab-', '');
+  const tabButton = document.querySelector(`[data-lab-tab="${tabName}"]`);
+  if (!tabButton) return;
+  event.preventDefault();
+  tabButton.click();
+  tabButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+</script>
 </body>
 </html>

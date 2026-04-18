@@ -31,20 +31,20 @@ require_once 'discord-invite.php';
 
         const data = await response.json();
         if (data?.success && data.user) {
-  const username = data.user.username || "";
+  const username = String(data.user.username || "").trim();
+
   if (username) {
+    window.sessionDiscordUsername = username;
+
     localStorage.setItem("narrrfs_last_discord_name", username);
     localStorage.setItem("discord_name", username);
     localStorage.setItem("DISCORD_NAME", username);
   }
 
-  if (window.NarrrfsCheeseAuth && typeof window.NarrrfsCheeseAuth.refresh === 'function') {
-    window.NarrrfsCheeseAuth.refresh();
-  }
-
   window.narrrfsProfileHydrated = true;
-  console.info("✅ Narrrf Profile: Local storage credentials synced for Three.js prototype.");
-}else {
+  console.info("✅ Narrrf Profile: Local storage credentials synced for page usage.");
+}
+else {
           console.warn("⚠️ Narrrf Profile: Unable to hydrate username from API response.", data);
         }
       } catch (error) {
@@ -3554,8 +3554,12 @@ function loadStoredWalletAndTraits() {
       updateTraitsDisplay(traitsArray);
     } catch (e) {
       console.error('Error parsing stored traits:', e);
+      renderProfileNftTraitsViewer([]);
     }
+    return;
   }
+
+  renderProfileNftTraitsViewer([]);
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -3709,6 +3713,27 @@ document.addEventListener('DOMContentLoaded', async function() {
   <p class="text-slate-100">
     🧬 Traits: <span id="traits" class="text-emerald-300">Season Tester • Cheese Master • Game Champion</span>
   </p>
+
+  <div class="mt-4">
+  <div class="rounded-2xl border border-emerald-500/20 bg-slate-950/70 p-4 shadow-xl shadow-emerald-950/10">
+    <div class="mb-3">
+      <h3 class="text-base font-black text-emerald-300">🧬 NFT Traits</h3>
+      <p class="mt-1 text-sm text-slate-300">
+        Read-only grouped viewer for the verified NFT traits currently synced to your profile.
+      </p>
+    </div>
+
+    <div class="mb-3 inline-flex items-center rounded-full border border-slate-500/30 bg-slate-900/60 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-slate-300">
+      Profile Viewer
+    </div>
+
+    <div id="profile-nft-traits-viewer" class="grid gap-3 xl:grid-cols-3">
+      <div class="rounded-xl border border-slate-500/30 bg-slate-900/45 p-4 text-sm text-slate-300 xl:col-span-3">
+        No verified NFT trait groups are available yet. Connect and verify a wallet to sync the grouped viewer.
+      </div>
+    </div>
+  </div>
+</div>
 
  <!-- 🚀 Wallet season features -->
 <div id="wallet-season-features" class="mt-3 text-xs text-slate-200 bg-slate-900/40 rounded p-3 border border-slate-500/30">
@@ -7730,9 +7755,9 @@ function loadProfileSavedNfts() {
     });
   });
 
-  if (traitLabels.length > 0) {
-    updateTraitsDisplay(Array.from(new Set(traitLabels)));
-  }
+if (traitLabels.length > 0) {
+  updateTraitsDisplay(traitLabels);
+}
 
   displayVerificationResults((snapshot.collections || []).map(col => ({
     collection: col.collection || col.name || 'Collection',
@@ -8023,23 +8048,21 @@ function renderLabBoosterViewer(booster) {
 
 // Extract traits from NFT data and store them
 function extractAndStoreTraits(nfts) {
-  const allTraits = new Set();
-  
-  nfts.forEach(nft => {
-    if (nft.attributes && Array.isArray(nft.attributes)) {
-      nft.attributes.forEach(attr => {
-        // Format: "Trait Name: Value" or just "Value" if trait_type is missing
-        const traitName = attr.trait_type || attr.type || 'Trait';
-        const traitValue = attr.value || '';
-        if (traitValue) {
-          allTraits.add(`${traitName}: ${traitValue}`);
-        }
-      });
-    }
-  });
-  
-  // Store traits in localStorage
-  const traitsArray = Array.from(allTraits);
+  const allTraits = [];
+
+nfts.forEach(nft => {
+  if (nft.attributes && Array.isArray(nft.attributes)) {
+    nft.attributes.forEach(attr => {
+      const traitName = attr.trait_type || attr.type || 'Trait';
+      const traitValue = attr.value || '';
+      if (traitValue) {
+        allTraits.push(`${traitName}: ${traitValue}`);
+      }
+    });
+  }
+});
+
+const traitsArray = allTraits;
   localStorage.setItem('nftTraits', JSON.stringify(traitsArray));
   
   // Update Wallet & Traits section
@@ -8057,20 +8080,343 @@ function updateWalletDisplay(walletAddress) {
   }
 }
 
+let profileAccessInventoryTraits = [];
+
+function escapeProfileTraitHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function loadProfileAccessInventoryTraits() {
+  const userId = String(
+    window.sessionDiscordId ||
+    localStorage.getItem('discord_id') ||
+    localStorage.getItem('narrrfs_last_discord_id') ||
+    ''
+  ).trim();
+
+  if (!userId) {
+    profileAccessInventoryTraits = [];
+    return [];
+  }
+
+  try {
+    const response = await fetch(`/api/user/get-player-lab.php?user_id=${encodeURIComponent(userId)}`, {
+      credentials: 'include',
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const inventory = Array.isArray(payload?.data?.genetic_inventory)
+      ? payload.data.genetic_inventory
+      : [];
+
+    profileAccessInventoryTraits = inventory
+      .map((row) => {
+        const traitType = String(row?.trait_type || 'Trait').trim();
+        const traitValue = String(
+          row?.trait_value ||
+          row?.display_title ||
+          row?.name ||
+          ''
+        ).trim();
+
+        if (!traitValue) {
+          return null;
+        }
+
+        return {
+          traitType,
+          traitValue,
+          displayLabel: `${traitType}: ${traitValue}`
+        };
+      })
+      .filter(Boolean);
+
+    return profileAccessInventoryTraits;
+  } catch (error) {
+    console.warn('Profile Access inventory traits fetch failed:', error);
+    profileAccessInventoryTraits = [];
+    return [];
+  }
+}
+
+async function loadProfileAccessInventoryTraits() {
+  const userId = String(
+    window.sessionDiscordId ||
+    localStorage.getItem('discord_id') ||
+    localStorage.getItem('narrrfs_last_discord_id') ||
+    ''
+  ).trim();
+
+  if (!userId) {
+    profileAccessInventoryTraits = [];
+    return [];
+  }
+
+  try {
+    const response = await fetch(`/api/admin/get-player-lab.php?user_id=${encodeURIComponent(userId)}`, {
+      credentials: 'include',
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const inventory = Array.isArray(payload?.data?.genetic_inventory)
+      ? payload.data.genetic_inventory
+      : [];
+
+    profileAccessInventoryTraits = inventory
+      .map((row) => {
+        const traitType = String(row?.trait_type || 'Trait').trim();
+        const traitValue = String(
+          row?.trait_value ||
+          row?.display_title ||
+          row?.name ||
+          ''
+        ).trim();
+
+        if (!traitValue) {
+          return null;
+        }
+
+        return {
+          traitType,
+          traitValue,
+          displayLabel: `${traitType}: ${traitValue}`
+        };
+      })
+      .filter(Boolean);
+
+    return profileAccessInventoryTraits;
+  } catch (error) {
+    console.warn('Profile Access inventory traits fetch failed:', error);
+    profileAccessInventoryTraits = [];
+    return [];
+  }
+}
+
+function getProfileTraitViewerSource(traits) {
+  if (Array.isArray(traits) && traits.length > 0) {
+    return traits;
+  }
+
+  const snapshot = loadProfileNftSnapshot();
+  if (snapshot && Array.isArray(snapshot.nfts) && snapshot.nfts.length > 0) {
+    const snapshotTraits = [];
+    snapshot.nfts.forEach((nft) => {
+      const nftTraits = Array.isArray(nft?.traits)
+        ? nft.traits
+        : (Array.isArray(nft?.attributes) ? nft.attributes : []);
+
+      nftTraits.forEach((trait) => {
+        if (trait) {
+          snapshotTraits.push(trait);
+        }
+      });
+    });
+
+    if (snapshotTraits.length > 0) {
+      return snapshotTraits;
+    }
+  }
+
+  try {
+    const storedTraitsRaw = localStorage.getItem('nftTraits');
+    if (!storedTraitsRaw) {
+      return [];
+    }
+
+    const storedTraits = JSON.parse(storedTraitsRaw);
+    return Array.isArray(storedTraits) ? storedTraits : [];
+  } catch (error) {
+    console.warn('Profile trait viewer fallback parse failed:', error);
+    return [];
+  }
+}
+
+function getProfileAccessTraitViewerSource(traits) {
+  if (Array.isArray(profileAccessInventoryTraits) && profileAccessInventoryTraits.length > 0) {
+    return profileAccessInventoryTraits;
+  }
+
+  return getProfileTraitViewerSource(traits);
+}
+
+function getProfileAccessTraitViewerSource(traits) {
+  if (Array.isArray(profileAccessInventoryTraits) && profileAccessInventoryTraits.length > 0) {
+    return profileAccessInventoryTraits;
+  }
+
+  return getProfileTraitViewerSource(traits);
+}
+
+function normalizeProfileTraitEntries(traits) {
+  if (!Array.isArray(traits)) {
+    return [];
+  }
+
+  return traits
+    .map((trait) => {
+      if (typeof trait === 'string') {
+        const trimmed = trait.trim();
+        if (!trimmed) {
+          return null;
+        }
+
+        const separatorIndex = trimmed.indexOf(':');
+        if (separatorIndex === -1) {
+          return {
+            traitType: 'Trait',
+            traitValue: trimmed,
+            displayLabel: trimmed
+          };
+        }
+
+        const traitType = trimmed.slice(0, separatorIndex).trim() || 'Trait';
+        const traitValue = trimmed.slice(separatorIndex + 1).trim();
+
+        if (!traitValue) {
+          return null;
+        }
+
+        return {
+          traitType,
+          traitValue,
+          displayLabel: `${traitType}: ${traitValue}`
+        };
+      }
+
+      if (trait && typeof trait === 'object') {
+  const traitType = String(
+    trait.traitType || trait.trait_type || trait.type || trait.label || 'Trait'
+  ).trim() || 'Trait';
+
+  const traitValue = String(
+    trait.traitValue || trait.trait_value || trait.value || trait.name || ''
+  ).trim();
+
+  if (!traitValue) {
+    return null;
+  }
+
+  return {
+    traitType,
+    traitValue,
+    displayLabel: `${traitType}: ${traitValue}`
+  };
+}
+
+      return null;
+    })
+    .filter(Boolean);
+}
+
+function renderProfileNftTraitsViewer(traits) {
+  const viewerElement = document.getElementById('profile-nft-traits-viewer');
+  if (!viewerElement) {
+    return;
+  }
+
+  const normalizedTraits = normalizeProfileTraitEntries(getProfileAccessTraitViewerSource(traits));
+
+  if (!normalizedTraits.length) {
+    viewerElement.innerHTML = `
+      <div class="rounded-xl border border-slate-500/30 bg-slate-900/45 p-4 text-sm text-slate-300 xl:col-span-3">
+        No verified NFT trait groups are available yet. Connect and verify a wallet to sync the grouped viewer.
+      </div>
+    `;
+    return;
+  }
+
+  const traitTypeMap = new Map();
+
+  normalizedTraits.forEach((entry) => {
+    const traitType = entry.traitType || 'Trait';
+
+    if (!traitTypeMap.has(traitType)) {
+      traitTypeMap.set(traitType, new Map());
+    }
+
+    const valueMap = traitTypeMap.get(traitType);
+    const key = String(entry.traitValue || '').trim().toLowerCase();
+    const current = valueMap.get(key) || {
+      traitValue: entry.traitValue,
+      count: 0
+    };
+
+    current.count += 1;
+    valueMap.set(key, current);
+  });
+
+  const groupedCards = Array.from(traitTypeMap.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([traitType, values]) => {
+      const chips = Array.from(values.values())
+  .sort((a, b) => a.traitValue.localeCompare(b.traitValue))
+  .map((entry) => `
+    <div class="flex items-center justify-between gap-3 rounded-xl border border-emerald-500/20 bg-slate-900/70 px-3 py-2 shadow-sm">
+      <div class="min-w-0 flex-1 break-words text-sm font-semibold text-slate-100">
+        ${escapeProfileTraitHtml(entry.traitValue)}
+      </div>
+      ${entry.count > 1 ? `
+        <span class="inline-flex shrink-0 items-center rounded-full border border-amber-300/40 bg-amber-400 px-2.5 py-0.5 text-[11px] font-black tracking-[0.08em] text-slate-900 shadow-sm">
+          ${entry.count}×
+        </span>
+      ` : ''}
+    </div>
+  `)
+  .join('');
+
+      return `
+        <article class="rounded-2xl border border-emerald-500/25 bg-slate-950/75 p-4 shadow-lg shadow-emerald-950/20">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <h4 class="text-sm font-black uppercase tracking-[0.22em] text-emerald-300">
+              ${escapeProfileTraitHtml(traitType)}
+            </h4>
+            <span class="inline-flex items-center rounded-full bg-emerald-400/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-200">
+              ${values.size} value${values.size === 1 ? '' : 's'}
+            </span>
+          </div>
+          <div class="grid gap-2">
+            ${chips}
+          </div>
+        </article>
+      `;
+    })
+    .join('');
+
+  viewerElement.innerHTML = groupedCards;
+}
+
 // Update traits display in Wallet & Traits section
 function updateTraitsDisplay(traits) {
   const traitsElement = document.getElementById('traits');
+  const normalizedTraits = normalizeProfileTraitEntries(traits);
+
   if (traitsElement) {
-    if (traits && traits.length > 0) {
-      // Display first 5 traits, or all if less than 5
-      const displayTraits = traits.slice(0, 5);
+    if (normalizedTraits.length > 0) {
+      const displayTraits = normalizedTraits.slice(0, 5).map((entry) => entry.displayLabel);
       const displayText = displayTraits.join(' • ');
-      const moreText = traits.length > 5 ? ` (+${traits.length - 5} more)` : '';
+      const moreText = normalizedTraits.length > 5 ? ` (+${normalizedTraits.length - 5} more)` : '';
       traitsElement.innerHTML = `<span class="text-green-600">${displayText}${moreText}</span>`;
     } else {
       traitsElement.innerHTML = '<span class="text-gray-500">No traits</span>';
     }
   }
+
+  renderProfileNftTraitsViewer(traits);
 }
 
 // Display verification results
@@ -12833,35 +13179,43 @@ function closeRewardPurchaseConfirmModal() {
   }
   
   // Update status text on page load
-  document.addEventListener('DOMContentLoaded', async function() {
-    // Load initial config
-    PROFILE_CHEST_CONFIG = getProfileChestConfig();
-    
-    // Update status display
-    await updateChestStatusDisplay();
-    await loadRewardChamber();
-    
-    // Listen for config changes from admin interface (cross-tab updates)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'profile_chest_config') {
-        // Reload config
-        PROFILE_CHEST_CONFIG = getProfileChestConfig();
-        console.log('✅ [PROFILE CHEST] Config updated from admin interface (cross-tab):', PROFILE_CHEST_CONFIG);
-        
-        // Update status display
-        updateChestStatusDisplay();
-      }
-    });
-    
-    // Also listen for same-window updates (custom event from admin interface)
-    window.addEventListener('profileChestConfigUpdated', () => {
+// Update status text on page load
+document.addEventListener('DOMContentLoaded', async function() {
+  // Load initial config
+  PROFILE_CHEST_CONFIG = getProfileChestConfig();
+
+  // Load stored wallet + old Access traits first
+  loadStoredWalletAndTraits();
+
+  // Load inventory-based traits for admin-style duplicate counts
+  await loadProfileAccessInventoryTraits();
+  renderProfileNftTraitsViewer([]);
+
+  // Update Reward Chamber status + chamber UI
+  await updateChestStatusDisplay();
+  await loadRewardChamber();
+
+  // Listen for config changes from admin interface (cross-tab updates)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'profile_chest_config') {
+      // Reload config
       PROFILE_CHEST_CONFIG = getProfileChestConfig();
-      console.log('✅ [PROFILE CHEST] Config updated from admin interface (same-window):', PROFILE_CHEST_CONFIG);
-      
+      console.log('✅ [PROFILE CHEST] Config updated from admin interface (cross-tab):', PROFILE_CHEST_CONFIG);
+
       // Update status display
       updateChestStatusDisplay();
-    });
+    }
   });
+
+  // Also listen for same-window updates (custom event from admin interface)
+  window.addEventListener('profileChestConfigUpdated', () => {
+    PROFILE_CHEST_CONFIG = getProfileChestConfig();
+    console.log('✅ [PROFILE CHEST] Config updated from admin interface (same-window):', PROFILE_CHEST_CONFIG);
+
+    // Update status display
+    updateChestStatusDisplay();
+  });
+});
 
 
   document.addEventListener('click', function(event) {
