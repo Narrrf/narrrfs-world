@@ -4742,6 +4742,7 @@ const el = {
   tabPanels: document.querySelectorAll('.lab-tab-panel')
 };
 
+
     function logLab(message, level = 'info') {
       const timestamp = new Date().toLocaleTimeString();
       const colors = {
@@ -5334,6 +5335,41 @@ async function toggleFavoriteTraitType(traitType) {
       `;
     }
 
+function ensureSelectedNft() {
+  const verified = getVerifiedGenesisNfts();
+  renderMintOpportunity();
+
+  if (!verified.length) {
+    state.selectedNft = null;
+    state.selectedNftTokenId = '';
+    saveSelectedTokenId('');
+    return null;
+  }
+
+  const saved = String(
+    state.selectedNftTokenId ||
+    getSavedSelectedTokenId() ||
+    getSafeTokenId(state.selectedNft) ||
+    ''
+  ).trim();
+
+  const selected = verified.find((nft) => getSafeTokenId(nft) === saved) || verified[0];
+
+  if (!selected || !getSafeTokenId(selected)) {
+    state.selectedNft = null;
+    state.selectedNftTokenId = '';
+    saveSelectedTokenId('');
+    logLab('Verified Genesis set existed, but no valid selected NFT could be resolved.', 'warn');
+    return null;
+  }
+
+  state.selectedNft = selected;
+  state.selectedNftTokenId = getSafeTokenId(selected);
+  saveSelectedTokenId(state.selectedNftTokenId);
+
+  return state.selectedNft;
+}
+
     function normalizeNftTraits(nft) {
       const rawTraits = Array.isArray(nft?.traits) ? nft.traits : (Array.isArray(nft?.attributes) ? nft.attributes : []);
       const map = new Map();
@@ -5356,7 +5392,7 @@ async function toggleFavoriteTraitType(traitType) {
       });
     }
 
-    function selectNftByTokenId(tokenId, options = {}) {
+function selectNftByTokenId(tokenId, options = {}) {
   const { scrollToResearch = false } = options;
   const normalizedTokenId = String(tokenId || '').trim();
 
@@ -5366,10 +5402,10 @@ async function toggleFavoriteTraitType(traitType) {
   }
 
   const nft = getVerifiedGenesisNfts().find(
-    item => String(item.token_id || '') === normalizedTokenId
+    (item) => getSafeTokenId(item) === normalizedTokenId
   );
 
-  if (!nft || !nft.token_id) {
+  if (!isValidGenesisNft(nft)) {
     logLab(`Could not select Genesis mouse ${normalizedTokenId}; it is not present in the verified Genesis set.`, 'warn');
     return;
   }
@@ -5391,7 +5427,32 @@ async function toggleFavoriteTraitType(traitType) {
     });
   }
 
-  logLab(`Selected Genesis mouse ${nft.nft_name || nft.token_id}.`, 'info');
+  logLab(`Selected Genesis mouse ${nft.nft_name || normalizedTokenId}.`, 'info');
+}
+
+/**
+ * Safely resolve one NFT token id from any supported Genesis shape.
+ * This prevents render crashes when a transient or partial NFT object appears.
+ */
+function getSafeTokenId(nft) {
+  if (!nft || typeof nft !== 'object') {
+    return '';
+  }
+
+  return String(
+    nft.token_id ||
+    nft.tokenId ||
+    nft.mint ||
+    nft.address ||
+    ''
+  ).trim();
+}
+
+/**
+ * Return true when the supplied object is a usable Genesis NFT snapshot.
+ */
+function isValidGenesisNft(nft) {
+  return getSafeTokenId(nft) !== '';
 }
 
 function getVerifiedGenesisNfts() {
@@ -5399,15 +5460,9 @@ function getVerifiedGenesisNfts() {
   const seen = new Set();
 
   return source
-    .filter(nft => nft && typeof nft === 'object')
-    .map(nft => {
-      const tokenId = String(
-        nft.token_id ||
-        nft.tokenId ||
-        nft.mint ||
-        nft.address ||
-        ''
-      ).trim();
+    .filter((nft) => nft && typeof nft === 'object')
+    .map((nft) => {
+      const tokenId = getSafeTokenId(nft);
 
       const rawCollection = String(
         nft.collection ||
@@ -5416,14 +5471,20 @@ function getVerifiedGenesisNfts() {
         ''
       ).trim().toLowerCase();
 
-      const hasGenesisShape =
+      const hasTraitShape =
         Array.isArray(nft.traits) ||
-        Array.isArray(nft.attributes) ||
+        Array.isArray(nft.attributes);
+
+      const isGenesisCollection =
         rawCollection === 'genesis' ||
         rawCollection === 'holder' ||
         rawCollection === 'holders';
 
-      if (!tokenId || !hasGenesisShape) {
+      if (!tokenId) {
+        return null;
+      }
+
+      if (!isGenesisCollection && !hasTraitShape) {
         return null;
       }
 
@@ -5431,13 +5492,27 @@ function getVerifiedGenesisNfts() {
         ...nft,
         token_id: tokenId,
         collection: 'genesis',
-        nft_name: String(nft.nft_name || nft.name || `Genesis Mouse ${tokenId}`).trim(),
-        image_url: String(nft.image_url || nft.image || '').trim()
+        nft_name: String(
+          nft.nft_name ||
+          nft.name ||
+          `Genesis Mouse ${tokenId}`
+        ).trim(),
+        image_url: String(
+          nft.image_url ||
+          nft.image ||
+          ''
+        ).trim()
       };
     })
-    .filter(nft => {
-      if (!nft) return false;
-      if (seen.has(nft.token_id)) return false;
+    .filter((nft) => {
+      if (!nft || !nft.token_id) {
+        return false;
+      }
+
+      if (seen.has(nft.token_id)) {
+        return false;
+      }
+
       seen.add(nft.token_id);
       return true;
     });
@@ -5451,24 +5526,50 @@ function getVerifiedGenesisNfts() {
       ) || null;
     }
 
-    function buildFallbackUpgradeRow(nft, trait) {
-      return {
-        token_id: nft.token_id,
-        collection: nft.collection,
-        trait_type: trait.trait_type,
-        trait_value: trait.value,
-        current_level: 1,
-        upgrade_status: 'idle',
-        upgrade_started_at: null,
-        upgrade_ends_at: null,
-        last_completed_at: null,
-        source: 'frontend-fallback'
-      };
-    }
+function buildFallbackUpgradeRow(nft, trait) {
+  const tokenId = getSafeTokenId(nft);
 
-    function getTraitUpgradeDisplayRow(nft, trait) {
-      return findUpgradeRow(nft.token_id, trait.trait_type, trait.value) || buildFallbackUpgradeRow(nft, trait);
-    }
+  if (!tokenId || !trait) {
+    return null;
+  }
+
+  return {
+    token_id: tokenId,
+    collection: String(nft?.collection || 'genesis').trim().toLowerCase() || 'genesis',
+    trait_type: trait.trait_type,
+    trait_value: trait.value,
+    current_level: 1,
+    upgrade_status: 'idle',
+    upgrade_started_at: null,
+    upgrade_ends_at: null,
+    last_completed_at: null,
+    source: 'frontend-fallback'
+  };
+}
+
+function getTraitUpgradeDisplayRow(nft, trait) {
+  const tokenId = getSafeTokenId(nft);
+
+  if (!tokenId || !trait) {
+    return null;
+  }
+
+  const matchedRow =
+    findUpgradeRow(tokenId, trait.trait_type, trait.value) ||
+    (Array.isArray(nft?.upgrade_rows) ? nft.upgrade_rows : []).find((row) =>
+      String(row?.token_id || '') === String(tokenId || '') &&
+      normalizeTraitType(row?.trait_type || '') === normalizeTraitType(trait?.trait_type || '') &&
+      String(row?.trait_value || row?.value || '').trim().toLowerCase() ===
+        String(trait?.value || trait?.trait_value || '').trim().toLowerCase()
+    ) ||
+    (Array.isArray(nft?.trait_upgrades) ? nft.trait_upgrades : []).find((row) =>
+      normalizeTraitType(row?.trait_type || '') === normalizeTraitType(trait?.trait_type || '') &&
+      String(row?.trait_value || row?.value || '').trim().toLowerCase() ===
+        String(trait?.value || trait?.trait_value || '').trim().toLowerCase()
+    );
+
+  return matchedRow || buildFallbackUpgradeRow(nft, trait);
+}
 
 function calculateUpgradeDurationHours(currentLevel) {
   const level = Math.max(1, safeNumber(currentLevel, 1));
@@ -5508,22 +5609,41 @@ function mapUpgradeStatus(status, endsAt) {
   return 'idle';
 }
 
-    function getNftUpgradeSummary(nft) {
-      const traits = normalizeNftTraits(nft);
-      const rows = traits.map(trait => findUpgradeRow(nft.token_id, trait.trait_type, trait.value)).filter(Boolean);
-      return {
-        activeCount: rows.filter(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading').length,
-        readyCount: rows.filter(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'ready').length,
-        totalLevels: traits.reduce((sum, trait) => sum + safeNumber(findUpgradeRow(nft.token_id, trait.trait_type, trait.value)?.current_level, 1), 0),
-        traitCount: traits.length
-      };
-    }
+function getNftUpgradeSummary(nft) {
+  const tokenId = getSafeTokenId(nft);
 
-    function getNftActiveUpgradeRow(nft) {
-      return normalizeNftTraits(nft)
-        .map(trait => getTraitUpgradeDisplayRow(nft, trait))
-        .find(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading') || null;
-    }
+  if (!tokenId) {
+    return {
+      activeCount: 0,
+      readyCount: 0,
+      totalLevels: 0,
+      traitCount: 0
+    };
+  }
+
+  const traits = normalizeNftTraits(nft);
+
+  const rows = traits
+    .map((trait) => getTraitUpgradeDisplayRow(nft, trait))
+    .filter(Boolean);
+
+  return {
+    activeCount: rows.filter((row) =>
+      mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at) === 'upgrading'
+    ).length,
+    readyCount: rows.filter((row) =>
+      mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at) === 'ready'
+    ).length,
+    totalLevels: rows.reduce((sum, row) => sum + Math.max(1, safeNumber(row?.current_level, 1)), 0),
+    traitCount: traits.length
+  };
+}
+
+function getNftActiveUpgradeRow(nft) {
+  return normalizeNftTraits(nft)
+    .map((trait) => getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait))
+    .find((row) => row && mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading') || null;
+}
 
     function renderLabEntryActions() {
   if (!el.labEntryActions) return;
@@ -5544,10 +5664,22 @@ function mapUpgradeStatus(status, endsAt) {
       return `<div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] ${accentClass} font-bold">${escapeHtml(label)}</div><div class="mt-3 text-3xl font-black tracking-tight">${escapeHtml(value)}</div><div class="mt-2 text-sm text-slate-400">${escapeHtml(hint)}</div></div>`;
     }
 
-    function getAggregateTraitLevels(nfts) {
-      return (Array.isArray(nfts) ? nfts : []).reduce((total, nft) => total + normalizeNftTraits(nft).reduce((sum, trait) => sum + safeNumber(findUpgradeRow(nft.token_id, trait.trait_type, trait.value)?.current_level, 1), 0), 0);
+function getAggregateTraitLevels(nfts) {
+  return (Array.isArray(nfts) ? nfts : []).reduce((total, nft) => {
+    const tokenId = getSafeTokenId(nft);
+
+    if (!tokenId) {
+      return total;
     }
 
+    const nftTotal = normalizeNftTraits(nft).reduce((sum, trait) => {
+      const row = getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait);
+      return sum + Math.max(1, safeNumber(row?.current_level, 1));
+    }, 0);
+
+    return total + nftTotal;
+  }, 0);
+}
     function getAllActiveUpgradeCount() {
       return (state.upgradeRows || []).filter(row => mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading').length;
     }
@@ -5563,27 +5695,28 @@ function mapUpgradeStatus(status, endsAt) {
       return 'Read-safe compatibility mode';
     }
 
-    function getHighestLevelTraitAcrossVerifiedNfts() {
-      const verified = getVerifiedGenesisNfts();
-      let best = null;
+function getHighestLevelTraitAcrossVerifiedNfts() {
+  const verified = getVerifiedGenesisNfts();
+  let best = null;
 
-      verified.forEach(nft => {
-        normalizeNftTraits(nft).forEach(trait => {
-          const row = getTraitUpgradeDisplayRow(nft, trait);
-          const level = Math.max(1, safeNumber(row.current_level, 1));
-          if (!best || level > best.level) {
-            best = {
-              nftName: nft.nft_name || nft.token_id || 'Genesis NFT',
-              traitType: trait.trait_type,
-              traitValue: trait.value,
-              level
-            };
-          }
-        });
-      });
+  verified.forEach((nft) => {
+    normalizeNftTraits(nft).forEach((trait) => {
+      const row = getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait);
+      const level = Math.max(1, safeNumber(row?.current_level, 1));
 
-      return best;
-    }
+      if (!best || level > best.level) {
+        best = {
+          nftName: nft.nft_name || getSafeTokenId(nft) || 'Genesis NFT',
+          traitType: trait.trait_type,
+          traitValue: trait.value,
+          level
+        };
+      }
+    });
+  });
+
+  return best;
+}
 
     function renderLabHealthStrip() {
       if (!el.labHealthStrip) return;
@@ -5764,41 +5897,52 @@ function toggleExpandedTraitKey(key) {
   state.expandedTraitKey = state.expandedTraitKey === key ? null : key;
 }
 
-    function renderSelectedTraitSummary() {
-      if (!el.selectedTraitSummary) return;
+function renderSelectedTraitSummary(nft = null) {
+  if (!el.selectedTraitSummary) return;
 
-      const nft = state.selectedNft;
-      if (!nft) {
-        el.selectedTraitSummary.innerHTML = '';
-        return;
-      }
+  const resolvedNft = nft || state.selectedNft || ensureSelectedNft();
 
-      const summary = getNftUpgradeSummary(nft);
-      const activeRow = getNftActiveUpgradeRow(nft);
-      const highest = normalizeNftTraits(nft).reduce((best, trait) => {
-        const row = getTraitUpgradeDisplayRow(nft, trait);
-        const level = Math.max(1, safeNumber(row.current_level, 1));
-        if (!best || level > best.level) {
-          return { level, label: `${trait.trait_type}: ${trait.value}` };
-        }
-        return best;
-      }, null);
+  if (!isValidGenesisNft(resolvedNft)) {
+    el.selectedTraitSummary.innerHTML = '';
+    return;
+  }
 
-      const cards = [
-        ['NFT Lab Power', formatNumber(summary.totalLevels), 'Sum of all current trait levels on the selected Genesis NFT.'],
-        ['Trait Slots', formatNumber(summary.traitCount), 'Exact immutable scanned traits available for progression.'],
-        ['Highest Trait', highest ? `Lv ${formatNumber(highest.level)}` : 'Lv 0', highest ? highest.label : 'No trait data loaded yet.'],
-        ['Chamber State', summary.readyCount > 0 ? 'Claim Ready' : summary.activeCount > 0 ? 'Research Active' : 'Idle', activeRow ? `${activeRow.trait_type}: ${activeRow.trait_value}` : 'No active research is running on this NFT.']
-      ];
+  const traits = normalizeNftTraits(resolvedNft);
 
-      el.selectedTraitSummary.innerHTML = cards.map(([label, value, hint]) => `
-        <div class="trait-summary-card">
-          <div class="metric-label">${escapeHtml(label)}</div>
-          <div class="metric-value">${escapeHtml(value)}</div>
-          <div class="metric-hint">${escapeHtml(hint)}</div>
-        </div>
-      `).join('');
-    }
+  el.selectedTraitSummary.innerHTML = `
+    <div class="w-full">
+      <div class="section-title text-lg md:text-xl">
+        <span>🧾</span>
+        <span>Trait Snapshot</span>
+      </div>
+      <p class="mt-2 text-sm text-slate-300">
+        Review every exact scanned Genesis trait and its current Lab level before opening research.
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+        ${traits.map((trait) => {
+          const levelBadge = getTraitSnapshotLevelBadge(resolvedNft, trait);
+
+          return `
+            <div class="kv trait-snapshot-card">
+              <div class="text-xs uppercase tracking-[0.18em] text-slate-400">
+                ${escapeHtml(trait.trait_type)}
+              </div>
+              <div class="trait-value-row">
+                <div class="trait-value-text">${escapeHtml(trait.value)}</div>
+                ${levelBadge}
+              </div>
+            </div>
+          `;
+        }).join('') || `
+          <div class="warnbox text-sm sm:col-span-2">
+            No trait data was found on this verified Genesis snapshot.
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
 
     function renderVerificationWarning(html, visible) {
       el.verificationWarning.classList.toggle('hidden', !visible);
@@ -6016,14 +6160,17 @@ async function claimReadyForSelectedNft(tokenId) {
 
   selectNftByTokenId(safeTokenId, { scrollToResearch: false });
 
-  const nft = getVerifiedGenesisNfts().find(item => String(item?.token_id || '') === safeTokenId);
-  if (!nft) {
+  const nft = getVerifiedGenesisNfts().find(
+    (item) => getSafeTokenId(item) === safeTokenId
+  );
+
+  if (!isValidGenesisNft(nft)) {
     logLab('Selected Genesis mouse was not found.', 'error');
     return;
   }
 
   const traits = normalizeNftTraits(nft);
-  const readyTrait = traits.find(trait => {
+  const readyTrait = traits.find((trait) => {
     const row = getTraitUpgradeDisplayRow(nft, trait);
     return mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at) === 'ready';
   });
@@ -6040,7 +6187,7 @@ async function claimReadyForSelectedNft(tokenId) {
   }
 
   await handleClaimUpgrade(
-    String(nft.token_id || ''),
+    safeTokenId,
     String(row.trait_type || ''),
     String(row.trait_value || '')
   );
@@ -6341,14 +6488,14 @@ function syncSliderRailToSelectedCard() {
   });
 }
 
-function renderNftGrid() {
+function renderNftGrid(selectedNft = null) {
   const verified = getVerifiedGenesisNfts().filter(
-    nft => nft && typeof nft === 'object' && String(nft.token_id || '').trim() !== ''
+    (nft) => isValidGenesisNft(nft)
   );
 
   const currentIndex = verified.findIndex(
-    nft => state.selectedNft && String(state.selectedNft.token_id || '') === String(nft.token_id || '')
-  );
+  (nft) => getSafeTokenId(selectedNft || state.selectedNft) === getSafeTokenId(nft)
+);
 
   const total = verified.length;
 
@@ -6365,48 +6512,50 @@ function renderNftGrid() {
     } else {
       el.nftQuickSelect.disabled = false;
       el.nftQuickSelect.innerHTML = verified.map((nft, index) => `
-  <option value="${escapeHtml(String(nft.token_id || ''))}" ${currentIndex === index ? 'selected' : ''}>
-    ${escapeHtml(nft.nft_name || `Genesis Mouse ${index + 1}`)}
-  </option>
-`).join('');
+        <option value="${escapeHtml(getSafeTokenId(nft))}" ${currentIndex === index ? 'selected' : ''}>
+          ${escapeHtml(nft.nft_name || `Genesis Mouse ${index + 1}`)}
+        </option>
+      `).join('');
     }
   }
 
   if (el.nftPrevButton) {
-  el.nftPrevButton.disabled = total <= 1;
-  el.nftPrevButton.onclick = () => {
-    if (!total || !verified.length) return;
-    const nextIndex = currentIndex <= 0 ? total - 1 : currentIndex - 1;
-    const nextNft = verified[nextIndex];
+    el.nftPrevButton.disabled = total <= 1;
+    el.nftPrevButton.onclick = () => {
+      if (!total || !verified.length) return;
+      const nextIndex = currentIndex <= 0 ? total - 1 : currentIndex - 1;
+      const nextNft = verified[nextIndex];
+      const nextTokenId = getSafeTokenId(nextNft);
 
-    if (!nextNft || !nextNft.token_id) {
-      logLab('Prev Genesis navigation skipped because the target NFT was invalid.', 'warn');
-      return;
-    }
+      if (!nextTokenId) {
+        logLab('Prev Genesis navigation skipped because the target NFT was invalid.', 'warn');
+        return;
+      }
 
-    selectNftByTokenId(String(nextNft.token_id), { scrollToResearch: false });
-  };
-}
+      selectNftByTokenId(nextTokenId, { scrollToResearch: false });
+    };
+  }
 
-if (el.nftNextButton) {
-  el.nftNextButton.disabled = total <= 1;
-  el.nftNextButton.onclick = () => {
-    if (!total || !verified.length) return;
-    const nextIndex = currentIndex >= total - 1 || currentIndex < 0 ? 0 : currentIndex + 1;
-    const nextNft = verified[nextIndex];
+  if (el.nftNextButton) {
+    el.nftNextButton.disabled = total <= 1;
+    el.nftNextButton.onclick = () => {
+      if (!total || !verified.length) return;
+      const nextIndex = currentIndex >= total - 1 || currentIndex < 0 ? 0 : currentIndex + 1;
+      const nextNft = verified[nextIndex];
+      const nextTokenId = getSafeTokenId(nextNft);
 
-    if (!nextNft || !nextNft.token_id) {
-      logLab('Next Genesis navigation skipped because the target NFT was invalid.', 'warn');
-      return;
-    }
+      if (!nextTokenId) {
+        logLab('Next Genesis navigation skipped because the target NFT was invalid.', 'warn');
+        return;
+      }
 
-    selectNftByTokenId(String(nextNft.token_id), { scrollToResearch: false });
-  };
-}
+      selectNftByTokenId(nextTokenId, { scrollToResearch: false });
+    };
+  }
 
   if (el.nftQuickSelect) {
     el.nftQuickSelect.onchange = () => {
-      const tokenId = el.nftQuickSelect.value || '';
+      const tokenId = String(el.nftQuickSelect.value || '').trim();
       if (!tokenId) return;
       selectNftByTokenId(tokenId, { scrollToResearch: false });
     };
@@ -6438,10 +6587,10 @@ if (el.nftNextButton) {
 
   renderVerificationWarning('', false);
 
-  const selectedTokenId = String(state.selectedNft?.token_id || '');
+  const selectedTokenId = getSafeTokenId(state.selectedNft);
   const selectedIndex = Math.max(
     0,
-    verified.findIndex(nft => String(nft.token_id || '') === selectedTokenId)
+    verified.findIndex((nft) => getSafeTokenId(nft) === selectedTokenId)
   );
 
   const windowRadius = window.innerWidth <= 768 ? 1 : 2;
@@ -6463,16 +6612,16 @@ if (el.nftNextButton) {
     }
   }
 
-  const visibleNfts = visibleIndexes.map(index => ({
+  const visibleNfts = visibleIndexes.map((index) => ({
     nft: verified[index],
     index
   }));
 
   el.nftGrid.innerHTML = visibleNfts.map(({ nft, index }) => {
     const summary = getNftUpgradeSummary(nft);
-    const selected = state.selectedNft && String(state.selectedNft.token_id) === String(nft.token_id);
+    const selected = getSafeTokenId(selectedNft || state.selectedNft) === getSafeTokenId(nft);
     const traits = normalizeNftTraits(nft);
-    const tokenId = String(nft.token_id || '');
+    const tokenId = getSafeTokenId(nft);
     const hasReady = Number(summary?.readyCount || 0) > 0;
     const actionLabel = hasReady
       ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
@@ -6525,7 +6674,7 @@ if (el.nftNextButton) {
     `;
   }).join('');
 
-  el.nftGrid.querySelectorAll('[data-select-nft]').forEach(card => {
+  el.nftGrid.querySelectorAll('[data-select-nft]').forEach((card) => {
     card.addEventListener('click', (event) => {
       if (event.target.closest('[data-open-research]')) return;
 
@@ -6546,14 +6695,22 @@ if (el.nftNextButton) {
   });
 
   requestAnimationFrame(() => {
-  syncSliderRailToSelectedCard();
-  bindNftSliderSwipeSupport();
+    syncSliderRailToSelectedCard();
+    bindNftSliderSwipeSupport();
   });
 }
 
 function getTraitSnapshotLevelBadge(nft, trait) {
   const row = getTraitUpgradeDisplayRow(nft, trait);
   const currentLevel = Math.max(1, safeNumber(row?.current_level, 1));
+
+  console.log('Trait badge debug:', {
+    tokenId: getSafeTokenId(nft),
+    traitType: trait?.trait_type,
+    traitValue: trait?.value,
+    row,
+    currentLevel
+  });
 
   if (currentLevel <= 1) {
     return '';
@@ -6739,9 +6896,9 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
     await loadGenesisAbilityMatrix(safeTokenId, { silent: true });
     renderGenesisAbilityMatrix();
 
-    if (typeof renderSelectedNftPanel === 'function' && appState?.selectedNft) {
-      renderSelectedNftPanel(appState.selectedNft);
-    }
+    if (typeof renderSelectedNftPanel === 'function' && state?.selectedNft) {
+  renderSelectedNftPanel(state.selectedNft);
+}
 
     if (typeof startGenesisAbilityPollingIfNeeded === 'function') {
       startGenesisAbilityPollingIfNeeded();
@@ -6818,6 +6975,7 @@ function isAbilityTabUnlocked(tabKey, highestTraitLevel) {
   return Number(highestTraitLevel || 0) >= Number(tab.unlockLevel);
 }
 
+
 function stopGenesisAbilityPolling() {
   if (genesisAbilityState.pollHandle) {
     clearInterval(genesisAbilityState.pollHandle);
@@ -6839,24 +6997,6 @@ function startGenesisAbilityPollingIfNeeded() {
   }
 
   genesisAbilityState.pollHandle = window.setInterval(() => {
-    if (!genesisAbilityState.tokenId) return;
-    loadGenesisAbilityMatrix(genesisAbilityState.tokenId, { silent: true });
-  }, 15000);
-}
-
-function startGenesisAbilityPollingIfNeeded() {
-  if (typeof stopGenesisAbilityPolling === 'function') {
-    stopGenesisAbilityPolling();
-  }
-
-  const rows = Array.isArray(genesisAbilityState.data?.rows) ? genesisAbilityState.data.rows : [];
-  const activeRow = getActiveAbilityRow(rows);
-
-  if (!activeRow || !genesisAbilityState.tokenId) {
-    return;
-  }
-
-  genesisAbilityState.pollTimer = window.setInterval(() => {
     if (!genesisAbilityState.tokenId) return;
     loadGenesisAbilityMatrix(genesisAbilityState.tokenId, { silent: true });
   }, 15000);
@@ -7197,9 +7337,10 @@ async function loadGenesisAbilityMatrix(tokenId, options = {}) {
   }
 }
 
-function renderSelectedNftPanel() {
-  const nft = state.selectedNft;
-  if (!nft) {
+function renderSelectedNftPanel(nft = null) {
+  const resolvedNft = nft || state.selectedNft || ensureSelectedNft();
+
+  if (!isValidGenesisNft(resolvedNft)) {
     el.selectedNftStatus.className = 'pill blocked';
     el.selectedNftStatus.textContent = 'No Genesis mouse loaded';
     el.selectedNftPanel.innerHTML = `<div class="warnbox"><div class="font-semibold text-amber-200">Your Genesis chamber is waiting</div><div class="mt-2 text-sm text-amber-100">Verify a Genesis mouse to unlock the full viewer, trait panel, and research actions inside the Lab.</div></div>`;
@@ -7207,8 +7348,9 @@ function renderSelectedNftPanel() {
     return;
   }
 
-  const traits = normalizeNftTraits(nft);
-  const summary = getNftUpgradeSummary(nft);
+  const tokenId = getSafeTokenId(resolvedNft);
+  const traits = normalizeNftTraits(resolvedNft);
+  const summary = getNftUpgradeSummary(resolvedNft);
   const active = summary.activeCount > 0;
   const ready = summary.readyCount > 0;
 
@@ -7219,29 +7361,48 @@ function renderSelectedNftPanel() {
     <div class="space-y-4">
       <div class="selected-nft-layout">
         <div class="selected-nft-media">
-          ${nft.image_url ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>` : `<div class="empty-art">🐭</div>`}
+          ${resolvedNft.image_url
+            ? `<img src="${escapeHtml(resolvedNft.image_url)}" alt="${escapeHtml(resolvedNft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+            : `<div class="empty-art">🐭</div>`}
         </div>
+
         <div class="space-y-4">
           <div>
-            <div class="text-xs uppercase tracking-[0.2em] text-cyan-300 font-bold">Selected Genesis Mouse</div>
-            <div class="mt-2 selected-nft-title">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
-            <div class="mt-2 selected-nft-token">${escapeHtml(nft.token_id || 'Unknown token id')}</div>
+            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Selected Genesis Mouse</div>
+            <div class="mt-1 text-2xl font-black">${escapeHtml(resolvedNft.nft_name || `Genesis Mouse ${tokenId}`)}</div>
+            <div class="text-sm text-slate-400 mt-1">${escapeHtml(tokenId || 'Unknown token id')}</div>
           </div>
+
           <div class="selected-nft-kv-grid">
-            <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Trait Slots</div><div class="mt-1 text-2xl font-black">${formatNumber(traits.length)}</div></div>
-            <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.totalLevels)}</div></div>
-            <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active Research</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.activeCount)}</div></div>
-            <div class="kv"><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready To Claim</div><div class="mt-1 text-2xl font-black">${formatNumber(summary.readyCount)}</div></div>
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Trait Slots</div>
+              <div class="mt-1 text-2xl font-black">${formatNumber(traits.length)}</div>
+            </div>
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Lab Power</div>
+              <div class="mt-1 text-2xl font-black">${formatNumber(summary.totalLevels)}</div>
+            </div>
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Active Research</div>
+              <div class="mt-1 text-2xl font-black">${formatNumber(summary.activeCount)}</div>
+            </div>
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Ready To Claim</div>
+              <div class="mt-1 text-2xl font-black">${formatNumber(summary.readyCount)}</div>
+            </div>
           </div>
-          <div class="info text-sm">This selected chamber stays compact so you can swap mice faster, review power faster, and keep ability and trait actions closer together.</div>
+
+          <div class="info text-sm">
+            This selected chamber stays compact so you can swap mice faster, review power faster, and keep ability and trait actions closer together.
+          </div>
         </div>
       </div>
 
       <div>
         <div class="section-title text-lg"><span>🧾</span><span>Trait Snapshot</span></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-          ${traits.map(trait => {
-            const levelBadge = getTraitSnapshotLevelBadge(nft, trait);
+          ${traits.map((trait) => {
+            const levelBadge = getTraitSnapshotLevelBadge(resolvedNft, trait);
 
             return `
               <div class="kv trait-snapshot-card">
@@ -7260,19 +7421,24 @@ function renderSelectedNftPanel() {
     </div>
   `;
 
-  if (nft.token_id) {
-  const tokenChanged = String(genesisAbilityState.tokenId || '') !== String(nft.token_id || '');
+  const tokenChanged = String(genesisAbilityState.tokenId || '') !== tokenId;
+
+  if (!tokenId) {
+    resetGenesisAbilityMatrixUi();
+    return;
+  }
 
   if (tokenChanged) {
-    loadGenesisAbilityMatrix(nft.token_id);
-  } else if (genesisAbilityState.data) {
-    renderGenesisAbilityMatrix();
-  } else {
-    loadGenesisAbilityMatrix(nft.token_id);
+    loadGenesisAbilityMatrix(tokenId);
+    return;
   }
-} else {
-  resetGenesisAbilityMatrixUi();
-}
+
+  if (genesisAbilityState.data) {
+    renderGenesisAbilityMatrix();
+    return;
+  }
+
+  loadGenesisAbilityMatrix(tokenId);
 }
 
 function getLabBoosterCatalog() {
@@ -7524,12 +7690,23 @@ el.traitUpgradeInfo.innerHTML = `
   }
 
   el.traitGrid.innerHTML = getFavoriteTraitAutomationMarkup() + traits.map(trait => {
-    const row = getTraitUpgradeDisplayRow(nft, trait);
-    const currentLevel = Math.max(1, safeNumber(row.current_level, 1));
-    const nextLevel = currentLevel + 1;
-    const status = mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at);
-    const durationHours = calculateUpgradeDurationHours(currentLevel);
-    const endTime = row.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.getTime() || 0) : 0;
+    const row = getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait);
+
+if (!row) {
+  return '';
+}
+const previewImage =
+    row?.preview_path ||
+    row?.image_path ||
+    trait?.image ||
+    nft?.image_url ||
+    '';
+
+  const currentLevel = Math.max(1, safeNumber(row?.current_level, 1));
+const nextLevel = currentLevel + 1;
+const status = mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at);
+const durationHours = calculateUpgradeDurationHours(currentLevel);
+const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.getTime() || 0) : 0;
     const remainingMs = status === 'upgrading' ? Math.max(0, endTime - Date.now()) : 0;
     const totalMs = durationHours * 3600000;
     const elapsedMs = status === 'upgrading'
@@ -7541,12 +7718,13 @@ el.traitUpgradeInfo.innerHTML = `
     const instantCost = status === 'upgrading' ? calculateInstantFinishCost(currentLevel, remainingMs) : 0;
 
     const blocked = Boolean(
-      activeUpgradeRow &&
-      !(
-        String(activeUpgradeRow.trait_type) === String(row.trait_type) &&
-        String(activeUpgradeRow.trait_value) === String(row.trait_value)
-      )
-    );
+  activeUpgradeRow &&
+  row &&
+  !(
+    String(activeUpgradeRow?.trait_type || '') === String(row?.trait_type || '') &&
+    String(activeUpgradeRow?.trait_value || '') === String(row?.trait_value || '')
+  )
+);
 
     const canStart = !blocked && status === 'idle';
     const canClaim = status === 'ready';
@@ -7594,41 +7772,51 @@ el.traitUpgradeInfo.innerHTML = `
     const favoriteActive = isFavoriteTraitType(normalizedTraitType);
 
     return `
-      <div class="trait-card trait-card-accordion ${statusClass} ${boosterGlowClass} ${isExpanded ? 'expanded' : 'collapsed'}">
-        <button
-          type="button"
-          class="trait-card-toggle"
-          data-trait-toggle="true"
-          data-trait-key="${escapeHtml(traitKey)}"
-          aria-expanded="${isExpanded ? 'true' : 'false'}"
-        >
-          <div class="trait-card-toggle-main">
-            <div class="trait-card-toggle-copy">
-              <div class="trait-card-kicker">${escapeHtml(row.trait_type || trait.trait_type || 'Trait')}</div>
-              <div class="trait-card-title">${escapeHtml(row.trait_value || trait.value || 'Unknown trait')}</div>
-            </div>
+  <div class="trait-card trait-card-accordion ${statusClass} ${boosterGlowClass} ${isExpanded ? 'expanded' : 'collapsed'}">
+    <button
+      type="button"
+      class="trait-card-toggle"
+      data-trait-toggle="true"
+      data-trait-key="${escapeHtml(traitKey)}"
+      aria-expanded="${isExpanded ? 'true' : 'false'}"
+    >
+      <div class="trait-card-toggle-main">
+        ${previewImage
+          ? `<img src="${escapeHtml(previewImage)}"
+                 alt="${escapeHtml(trait.value || trait.trait_value || 'Trait preview')}"
+                 class="nft-image"
+                 loading="lazy"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+             <div class="empty-art" style="display:none;">🧬</div>`
+          : `<div class="empty-art">🧬</div>`
+        }
 
-            <div class="trait-card-toggle-stats">
-              <div class="trait-toggle-stat">
-                <span class="trait-toggle-stat-label">Current</span>
-                <span class="trait-toggle-stat-value">${formatNumber(currentLevel)}</span>
-              </div>
-              <div class="trait-toggle-stat">
-                <span class="trait-toggle-stat-label">Next</span>
-                <span class="trait-toggle-stat-value">${formatNumber(nextLevel)}</span>
-              </div>
-              <div class="trait-toggle-stat">
-                <span class="trait-toggle-stat-label">Duration</span>
-                <span class="trait-toggle-stat-value">${escapeHtml(formatDurationWords(durationHours))}</span>
-              </div>
-            </div>
+        <div class="trait-card-toggle-copy">
+          <div class="trait-card-kicker">${escapeHtml(row.trait_type || trait.trait_type || 'Trait')}</div>
+          <div class="trait-card-title">${escapeHtml(row.trait_value || trait.value || 'Unknown trait')}</div>
+        </div>
 
-            <div class="trait-card-toggle-side">
-              <span class="status-pill ${statusClass}">${escapeHtml(statusText)}</span>
-              <span class="trait-toggle-chevron" aria-hidden="true">${isExpanded ? '−' : '+'}</span>
-            </div>
+        <div class="trait-card-toggle-stats">
+          <div class="trait-toggle-stat">
+            <span class="trait-toggle-stat-label">Current</span>
+            <span class="trait-toggle-stat-value">${formatNumber(currentLevel)}</span>
           </div>
-        </button>
+          <div class="trait-toggle-stat">
+            <span class="trait-toggle-stat-label">Next</span>
+            <span class="trait-toggle-stat-value">${formatNumber(nextLevel)}</span>
+          </div>
+          <div class="trait-toggle-stat">
+            <span class="trait-toggle-stat-label">Duration</span>
+            <span class="trait-toggle-stat-value">${escapeHtml(formatDurationWords(durationHours))}</span>
+          </div>
+        </div>
+
+        <div class="trait-card-toggle-side">
+          <span class="status-pill ${statusClass}">${escapeHtml(statusText)}</span>
+          <span class="trait-toggle-chevron" aria-hidden="true">${isExpanded ? '−' : '+'}</span>
+        </div>
+      </div>
+    </button>
 
         <div
           class="trait-card-body"
@@ -10489,7 +10677,9 @@ async function loadStableApis() {
 function renderAll() {
   renderSessionNotice();
   renderLabEntryActions();
-  ensureSelectedNft();
+
+  const selectedNft = ensureSelectedNft();
+
   renderLabHealthStrip();
   renderOverviewCards();
   renderIdentitySummary();
@@ -10500,11 +10690,11 @@ function renderAll() {
   renderGeneticShop();
   renderGeneticInventory();
   renderGeneticMarketplace();
-  renderNftGrid();
-  renderSelectedNftPanel();
-  renderSelectedTraitSummary();
-  renderTraitGrid();
-  renderLabBoosterPanel();
+  renderNftGrid(selectedNft);
+  renderSelectedNftPanel(selectedNft);
+  renderSelectedTraitSummary(selectedNft);
+  renderTraitGrid(selectedNft);
+  renderLabBoosterPanel(selectedNft);
 }
 
 function getActiveLabTabName() {
