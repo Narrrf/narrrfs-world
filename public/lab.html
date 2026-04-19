@@ -5427,7 +5427,7 @@ function selectNftByTokenId(tokenId, options = {}) {
     });
   }
 
-  logLab(`Selected Genesis mouse ${nft.nft_name || normalizedTokenId}.`, 'info');
+  logLab(`Selected Genesis mouse ${getSafeNftName(nft, normalizedTokenId)}.`, 'info');
 }
 
 /**
@@ -5445,6 +5445,24 @@ function getSafeTokenId(nft) {
     nft.mint ||
     nft.address ||
     ''
+  ).trim();
+}
+
+/**
+ * Safely resolve a readable Genesis NFT name.
+ * This prevents crashes when transient render cycles receive a missing NFT object.
+ */
+function getSafeNftName(nft, fallback = 'Genesis NFT') {
+  if (!nft || typeof nft !== 'object') {
+    return String(fallback || 'Genesis NFT');
+  }
+
+  return String(
+    nft.nft_name ||
+    nft.name ||
+    getSafeTokenId(nft) ||
+    fallback ||
+    'Genesis NFT'
   ).trim();
 }
 
@@ -5624,7 +5642,7 @@ function getNftUpgradeSummary(nft) {
   const traits = normalizeNftTraits(nft);
 
   const rows = traits
-    .map((trait) => getTraitUpgradeDisplayRow(nft, trait))
+    .map((trait) => getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait))
     .filter(Boolean);
 
   return {
@@ -5706,7 +5724,7 @@ function getHighestLevelTraitAcrossVerifiedNfts() {
 
       if (!best || level > best.level) {
         best = {
-          nftName: nft.nft_name || getSafeTokenId(nft) || 'Genesis NFT',
+          nftName: getSafeNftName(nft, 'Genesis NFT'),
           traitType: trait.trait_type,
           traitValue: trait.value,
           level
@@ -6094,8 +6112,8 @@ function getNftsWithActionableQueueState() {
       }
 
       /* 6) stable fallback */
-      return String(a.nft.nft_name || a.nft.token_id || '').localeCompare(
-        String(b.nft.nft_name || b.nft.token_id || '')
+      return String(getSafeNftName(a?.nft, getSafeTokenId(a?.nft))).localeCompare(
+      String(getSafeNftName(b?.nft, getSafeTokenId(b?.nft)))
       );
     });
 }
@@ -6265,7 +6283,7 @@ function renderActiveResearchQueue() {
 
   el.activeResearchQueue.innerHTML = items.map(({ nft, summary, traits }) => {
     const tokenId = String(nft.token_id || '');
-    const nftName = nft.nft_name || 'Genesis Mouse';
+    const nftName = getSafeNftName(nft, 'Genesis Mouse');
     const shortToken = tokenId ? escapeHtml(tokenId) : '—';
 
     const hasReady = safeNumber(summary.readyCount) > 0;
@@ -6513,7 +6531,7 @@ function renderNftGrid(selectedNft = null) {
       el.nftQuickSelect.disabled = false;
       el.nftQuickSelect.innerHTML = verified.map((nft, index) => `
         <option value="${escapeHtml(getSafeTokenId(nft))}" ${currentIndex === index ? 'selected' : ''}>
-          ${escapeHtml(nft.nft_name || `Genesis Mouse ${index + 1}`)}
+          ${escapeHtml(getSafeNftName(nft, `Genesis Mouse ${index + 1}`))}
         </option>
       `).join('');
     }
@@ -6638,16 +6656,16 @@ function renderNftGrid(selectedNft = null) {
         data-nft-token-id="${escapeHtml(tokenId)}"
         role="button"
         tabindex="0"
-        aria-label="Select ${escapeHtml(nft.nft_name || 'Genesis Mouse')}">
+        aria-label="Select ${escapeHtml(getSafeNftName(nft, 'Genesis Mouse'))}">
 
         ${nft.image_url
-          ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(nft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+          ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(getSafeNftName(nft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
           : `<div class="empty-art">🐭</div>`}
 
         <div class="mt-4 flex items-start justify-between gap-3">
           <div>
             <div class="text-sm uppercase tracking-[0.18em] text-cyan-300 font-bold">Genesis Mouse ${formatNumber(index + 1)}</div>
-            <div class="mt-2 text-lg font-bold leading-tight">${escapeHtml(nft.nft_name || 'Unnamed Genesis NFT')}</div>
+            <div class="mt-2 text-lg font-bold leading-tight">${escapeHtml(getSafeNftName(nft, 'Unnamed Genesis NFT'))}</div>
             <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(tokenId || 'Unknown token')}</div>
           </div>
           <span class="pill ${summary.readyCount > 0 ? 'ready' : summary.activeCount > 0 ? 'upgrading' : selected ? 'upgrading' : 'idle'}">
@@ -7362,14 +7380,14 @@ function renderSelectedNftPanel(nft = null) {
       <div class="selected-nft-layout">
         <div class="selected-nft-media">
           ${resolvedNft.image_url
-            ? `<img src="${escapeHtml(resolvedNft.image_url)}" alt="${escapeHtml(resolvedNft.nft_name || 'Genesis NFT')}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+            ? `<img src="${escapeHtml(resolvedNft.image_url)}" alt="${escapeHtml(getSafeNftName(resolvedNft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
             : `<div class="empty-art">🐭</div>`}
         </div>
 
         <div class="space-y-4">
           <div>
             <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Selected Genesis Mouse</div>
-            <div class="mt-1 text-2xl font-black">${escapeHtml(resolvedNft.nft_name || `Genesis Mouse ${tokenId}`)}</div>
+            <div class="mt-1 text-2xl font-black">${escapeHtml(getSafeNftName(resolvedNft, `Genesis Mouse ${tokenId}`))}</div>
             <div class="text-sm text-slate-400 mt-1">${escapeHtml(tokenId || 'Unknown token id')}</div>
           </div>
 
@@ -8304,7 +8322,7 @@ async function tryAggregateLab() {
             token_id: tokenId,
             collection: 'genesis',
             nft_name: String(
-              row.nft_name ||
+              getSafeNftName(row, '' ) ||
               row.name ||
               row.mouse_name ||
               `Genesis Mouse ${tokenId || 'Unknown'}`
