@@ -8149,63 +8149,7 @@ async function loadProfileAccessInventoryTraits() {
   }
 }
 
-async function loadProfileAccessInventoryTraits() {
-  const userId = String(
-    window.sessionDiscordId ||
-    localStorage.getItem('discord_id') ||
-    localStorage.getItem('narrrfs_last_discord_id') ||
-    ''
-  ).trim();
 
-  if (!userId) {
-    profileAccessInventoryTraits = [];
-    return [];
-  }
-
-  try {
-    const response = await fetch(`/api/admin/get-player-lab.php?user_id=${encodeURIComponent(userId)}`, {
-      credentials: 'include',
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const payload = await response.json();
-    const inventory = Array.isArray(payload?.data?.genetic_inventory)
-      ? payload.data.genetic_inventory
-      : [];
-
-    profileAccessInventoryTraits = inventory
-      .map((row) => {
-        const traitType = String(row?.trait_type || 'Trait').trim();
-        const traitValue = String(
-          row?.trait_value ||
-          row?.display_title ||
-          row?.name ||
-          ''
-        ).trim();
-
-        if (!traitValue) {
-          return null;
-        }
-
-        return {
-          traitType,
-          traitValue,
-          displayLabel: `${traitType}: ${traitValue}`
-        };
-      })
-      .filter(Boolean);
-
-    return profileAccessInventoryTraits;
-  } catch (error) {
-    console.warn('Profile Access inventory traits fetch failed:', error);
-    profileAccessInventoryTraits = [];
-    return [];
-  }
-}
 
 function getProfileTraitViewerSource(traits) {
   if (Array.isArray(traits) && traits.length > 0) {
