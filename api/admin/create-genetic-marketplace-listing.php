@@ -192,24 +192,11 @@ try {
         ], 400);
     }
 
-    // 🔒 Current marketplace rule: one active listing per seller account
-    $sellerActiveListingStmt = $pdo->prepare("
-        SELECT listing_id, genetic_item_id
-        FROM tbl_genetic_market_listings
-        WHERE seller_user_id = ?
-          AND listing_status = 'active'
-        LIMIT 1
-    ");
-    $sellerActiveListingStmt->execute([$userId]);
-    $sellerActiveListing = $sellerActiveListingStmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($sellerActiveListing) {
-        $pdo->rollBack();
-        json_response([
-            'success' => false,
-            'error' => 'Only one active marketplace listing is allowed per user right now'
-        ], 400);
-    }
+    // 🔒 Marketplace rule update:
+    // Users may have multiple active listings across different genetic items.
+    // The hard protection stays item-bound, not seller-bound.
+    // If this item was previously marked as listed but has no valid active listing,
+    // heal the stale flags before creating the new listing.
 
     if ((int)($item['is_listed_for_sale'] ?? 0) === 1) {
         $healStmt = $pdo->prepare("

@@ -4463,9 +4463,17 @@ body::after {
               <div class="section-title text-xl md:text-2xl"><span>🧪</span><span>Research Queue</span></div>
               <p class="mt-2 text-sm md:text-base text-slate-300">See which Genesis mice need your attention now. This is the fastest place to find active research and claim-ready upgrades.</p>
             </div>
-            <div class="text-sm text-slate-300">
-              <span id="activeQueueBadge" class="chip">Queue warming up…</span>
-            </div>
+            <div class="text-sm text-slate-300 flex flex-wrap items-center gap-3">
+  <span id="activeQueueBadge" class="chip">Queue warming up…</span>
+  <button
+    id="claimAllReadyButton"
+    type="button"
+    class="btn success compact"
+    disabled
+  >
+    ✅ Claim All Ready
+  </button>
+</div>
           </div>
           <div class="workspace-helper-strip mt-5">
             <div class="workspace-helper-card"><strong>Claim now</strong><div class="text-sm text-slate-300">Use this queue first when a timer is finished and a clean claim is ready.</div></div>
@@ -4713,6 +4721,7 @@ const el = {
   refreshLabButton: document.getElementById('refreshLabButton'),
   refreshUpgradeButton: document.getElementById('refreshUpgradeButton'),
   activeResearchQueue: document.getElementById('activeResearchQueue'),
+  claimAllReadyButton: document.getElementById('claimAllReadyButton'),
   activeQueueBadge: document.getElementById('activeQueueBadge'),
   geneticShopBadge: document.getElementById('geneticShopBadge'),
   geneticAccessStrip: document.getElementById('geneticAccessStrip'),
@@ -5507,31 +5516,25 @@ function getVerifiedGenesisNfts() {
       }
 
       return {
-        ...nft,
+        ...(nft && typeof nft === 'object' ? nft : {}),
         token_id: tokenId,
         collection: 'genesis',
-        nft_name: String(
-          nft.nft_name ||
-          nft.name ||
-          `Genesis Mouse ${tokenId}`
-        ).trim(),
-        image_url: String(
-          nft.image_url ||
-          nft.image ||
-          ''
-        ).trim()
+        nft_name: getSafeNftName(nft, `Genesis Mouse ${tokenId}`),
+        image_url: getSafeNftImageUrl(nft)
       };
     })
     .filter((nft) => {
-      if (!nft || !nft.token_id) {
+      const safeTokenId = getSafeTokenId(nft);
+
+      if (!safeTokenId) {
         return false;
       }
 
-      if (seen.has(nft.token_id)) {
+      if (seen.has(safeTokenId)) {
         return false;
       }
 
-      seen.add(nft.token_id);
+      seen.add(safeTokenId);
       return true;
     });
 }
@@ -6042,10 +6045,17 @@ function ensureSelectedNft() {
     return;
   }
 
-  const saved = state.selectedNftTokenId || getSavedSelectedTokenId();
-  const selected = verified.find(nft => String(nft.token_id) === String(saved)) || verified[0];
+  const savedTokenId = String(
+    state.selectedNftTokenId || getSavedSelectedTokenId() || ''
+  ).trim();
 
-  if (!selected || !selected.token_id) {
+  const selected =
+    verified.find((nft) => getSafeTokenId(nft) === savedTokenId) ||
+    verified[0];
+
+  const selectedTokenId = getSafeTokenId(selected);
+
+  if (!selected || !selectedTokenId) {
     state.selectedNft = null;
     state.selectedNftTokenId = '';
     saveSelectedTokenId('');
@@ -6054,8 +6064,8 @@ function ensureSelectedNft() {
   }
 
   state.selectedNft = selected;
-  state.selectedNftTokenId = String(selected.token_id);
-  saveSelectedTokenId(state.selectedNftTokenId);
+  state.selectedNftTokenId = selectedTokenId;
+  saveSelectedTokenId(selectedTokenId);
 }
 
 
@@ -6170,6 +6180,8 @@ function openGenesisLabFromQueue(tokenId) {
   });
 }
 
+
+
 async function claimReadyForSelectedNft(tokenId) {
   const safeTokenId = String(tokenId || '').trim();
   if (!safeTokenId) {
@@ -6211,6 +6223,202 @@ async function claimReadyForSelectedNft(tokenId) {
   );
 }
 
+function getAllReadyClaimRows() {
+  const verifiedNfts = getVerifiedGenesisNfts();
+  const readyRows = [];
+  const seen = new Set();
+
+  verifiedNfts.forEach((nft) => {
+    if (!isValidGenesisNft(nft)) {
+      return;
+    }
+
+    const tokenId = getSafeTokenId(nft);
+    if (!tokenId) {
+      return;
+    }
+
+    const traits = normalizeNftTraits(nft);
+
+    traits.forEach((trait) => {
+      const row = getTraitUpgradeDisplayRow(nft, trait);
+      if (!row) {
+        return;
+      }
+
+      const status = mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at);
+      if (status !== 'ready') {
+        return;
+      }
+
+      const traitType = String(row.trait_type || '').trim();
+      const traitValue = String(row.trait_value || '').trim();
+
+      if (!traitType || !traitValue) {
+        return;
+      }
+
+      const claimKey = `${tokenId}::${traitType}::${traitValue}`;
+      if (seen.has(claimKey)) {
+        return;
+      }
+
+      seen.add(claimKey);
+      readyRows.push({
+        token_id: tokenId,
+        trait_type: traitType,
+        trait_value: traitValue
+      });
+    });
+  });
+
+  return readyRows;
+}
+
+async function handleClaimAllReadyUpgrades() {
+  if (!state.userId) {
+    await showLabMessageModal({
+      eyebrow: 'Session Required',
+      title: 'No Player Session Found',
+      icon: '🧬',
+      message: 'No player session was found for this bulk claim action.',
+      note: 'Please log in with Discord before claiming research.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  if (state.actionInFlight) {
+    logLab('A lab action is already running. Please wait for the current request to finish.', 'warn');
+    return;
+  }
+
+  const readyRows = getAllReadyClaimRows();
+
+  if (!readyRows.length) {
+    await showLabMessageModal({
+      eyebrow: 'Research Queue',
+      title: 'No Ready Claims Found',
+      icon: '🧪',
+      message: 'There are no completed Genesis trait upgrades ready to claim right now.',
+      note: 'Start or finish more research runs and return here when the queue is ready.',
+      confirmText: 'Close',
+      confirmVariant: 'primary'
+    });
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Bulk Claim',
+    title: `Claim All Ready Upgrades?`,
+    icon: '✅',
+    message: `Claim ${readyRows.length} completed Genesis trait upgrade${readyRows.length === 1 ? '' : 's'} now.`,
+    note: 'Claims will run one by one to keep the queue stable and backend-authoritative.',
+    confirmText: `Claim All (${readyRows.length})`,
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  setActionInFlight(true);
+
+  const originalButtonText = el.claimAllReadyButton
+    ? el.claimAllReadyButton.textContent
+    : '';
+
+  let successCount = 0;
+  const failedClaims = [];
+
+  try {
+    if (el.claimAllReadyButton) {
+      el.claimAllReadyButton.disabled = true;
+    }
+
+    for (let index = 0; index < readyRows.length; index += 1) {
+      const row = readyRows[index];
+
+      if (el.claimAllReadyButton) {
+        el.claimAllReadyButton.textContent = `⏳ Claiming ${index + 1} / ${readyRows.length}`;
+      }
+
+      try {
+        await claimUpgradeRequest(
+          row.token_id,
+          row.trait_type,
+          row.trait_value
+        );
+
+        successCount += 1;
+        logLab(
+          `Claimed upgrade ${index + 1}/${readyRows.length} for ${row.trait_type}: ${row.trait_value}`,
+          'success'
+        );
+      } catch (error) {
+        failedClaims.push({
+          token_id: row.token_id,
+          trait_type: row.trait_type,
+          trait_value: row.trait_value,
+          error: error.message
+        });
+
+        logLab(
+          `Bulk claim failed for ${row.trait_type}: ${row.trait_value} (${error.message})`,
+          'error'
+        );
+      }
+    }
+
+    await loadTraitUpgrades();
+    renderAll();
+
+    if (!failedClaims.length) {
+      await showLabMessageModal({
+        eyebrow: 'Bulk Claim Complete',
+        title: 'All Ready Upgrades Claimed',
+        icon: '🏆',
+        message: `Successfully claimed ${successCount} ready Genesis upgrade${successCount === 1 ? '' : 's'}.`,
+        note: 'All completed queue entries were processed cleanly.',
+        confirmText: 'Awesome',
+        confirmVariant: 'primary'
+      });
+      return;
+    }
+
+    await showLabMessageModal({
+      eyebrow: 'Bulk Claim Complete',
+      title: 'Bulk Claim Finished With Partial Errors',
+      icon: '⚠️',
+      message: `Claimed ${successCount} upgrade${successCount === 1 ? '' : 's'}, but ${failedClaims.length} claim${failedClaims.length === 1 ? ' was' : 's were'} skipped or failed.`,
+      note: 'The queue has been refreshed. Check the runtime log for exact failed rows.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } catch (error) {
+    logLab(`Bulk claim request failed: ${error.message}`, 'error');
+
+    await showLabMessageModal({
+      eyebrow: 'Bulk Claim',
+      title: 'Bulk Claim Failed',
+      icon: '⚠️',
+      message: `Claim-all failed: ${error.message}`,
+      note: 'The queue was not fully processed.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    if (el.claimAllReadyButton) {
+      el.claimAllReadyButton.textContent = originalButtonText || '✅ Claim All Ready';
+    }
+
+    setActionInFlight(false);
+    renderAll();
+  }
+}
+
 function getQueueBoosterTone(activeRow) {
   const boosterItemId = Number(activeRow?.active_booster_item_id || 0);
 
@@ -6250,24 +6458,39 @@ function getQueueBoosterLightMarkup(activeRow) {
   return `<span class="queue-boost-light ${tone}" aria-label="Boosted upgrade"></span>`;
 }
 
-function getQueueNftImageUrl(nft) {
+function getSafeNftImageUrl(nft) {
+  if (!nft || typeof nft !== 'object') {
+    return '';
+  }
+
   return String(
-    nft?.image_url ||
-    nft?.image ||
-    nft?.imageUrl ||
-    nft?.nft_image ||
+    nft.image_url ||
+    nft.image ||
+    nft.imageUrl ||
+    nft.nft_image ||
+    nft.image_path ||
+    nft.preview_path ||
     ''
   ).trim();
 }
 
 function renderActiveResearchQueue() {
   const items = getNftsWithActionableQueueState();
+  const readyRows = getAllReadyClaimRows();
+  const readyCount = readyRows.length;
 
   if (!el.activeQueueBadge || !el.activeResearchQueue) {
     return;
   }
 
   el.activeQueueBadge.textContent = `${items.length} actionable mice`;
+
+  if (el.claimAllReadyButton) {
+    el.claimAllReadyButton.disabled = readyCount < 1 || state.actionInFlight;
+    el.claimAllReadyButton.textContent = readyCount > 0
+      ? `✅ Claim All Ready (${formatNumber(readyCount)})`
+      : '✅ Claim All Ready';
+  }
 
   if (!items.length) {
     el.activeResearchQueue.innerHTML = `
@@ -6282,7 +6505,7 @@ function renderActiveResearchQueue() {
   }
 
   el.activeResearchQueue.innerHTML = items.map(({ nft, summary, traits }) => {
-    const tokenId = String(nft.token_id || '');
+    const tokenId = getSafeTokenId(nft);
     const nftName = getSafeNftName(nft, 'Genesis Mouse');
     const shortToken = tokenId ? escapeHtml(tokenId) : '—';
 
@@ -6306,7 +6529,7 @@ function renderActiveResearchQueue() {
     const boosterBadge = getQueueBoosterBadgeMarkup(activeRow);
     const boosterLight = getQueueBoosterLightMarkup(activeRow);
 
-    const nftImageUrl = getQueueNftImageUrl(nft);
+    const nftImageUrl = getSafeNftImageUrl(nft);
     const nftImageMarkup = nftImageUrl
       ? `
         <div class="queue-nft-ghost-wrap" aria-hidden="true">
@@ -6658,9 +6881,9 @@ function renderNftGrid(selectedNft = null) {
         tabindex="0"
         aria-label="Select ${escapeHtml(getSafeNftName(nft, 'Genesis Mouse'))}">
 
-        ${nft.image_url
-          ? `<img src="${escapeHtml(nft.image_url)}" alt="${escapeHtml(getSafeNftName(nft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
-          : `<div class="empty-art">🐭</div>`}
+        ${getSafeNftImageUrl(nft)
+  ? `<img src="${escapeHtml(getSafeNftImageUrl(nft))}" alt="${escapeHtml(getSafeNftName(nft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+  : `<div class="empty-art">🐭</div>`}
 
         <div class="mt-4 flex items-start justify-between gap-3">
           <div>
@@ -7379,10 +7602,10 @@ function renderSelectedNftPanel(nft = null) {
     <div class="space-y-4">
       <div class="selected-nft-layout">
         <div class="selected-nft-media">
-          ${resolvedNft.image_url
-            ? `<img src="${escapeHtml(resolvedNft.image_url)}" alt="${escapeHtml(getSafeNftName(resolvedNft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
-            : `<div class="empty-art">🐭</div>`}
-        </div>
+  ${getSafeNftImageUrl(resolvedNft)
+    ? `<img src="${escapeHtml(getSafeNftImageUrl(resolvedNft))}" alt="${escapeHtml(getSafeNftName(resolvedNft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+    : `<div class="empty-art">🐭</div>`}
+</div>
 
         <div class="space-y-4">
           <div>
@@ -7717,7 +7940,7 @@ const previewImage =
     row?.preview_path ||
     row?.image_path ||
     trait?.image ||
-    nft?.image_url ||
+    getSafeNftImageUrl(nft) ||
     '';
 
   const currentLevel = Math.max(1, safeNumber(row?.current_level, 1));
@@ -8749,6 +8972,35 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
   }
 }
 
+async function claimUpgradeRequest(tokenId, traitType, traitValue) {
+  const res = await fetchJson(
+    getApiUrl(LAB_CONFIG.claimUpgradeEndpoint),
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        user_id: state.userId,
+        token_id: tokenId,
+        collection: 'genesis',
+        trait_type: traitType,
+        trait_value: traitValue
+      })
+    },
+    true
+  );
+
+  if (!res.ok || !res.payload?.success) {
+    const message = res.payload?.error || `Claim upgrade failed (${res.status})`;
+    throw new Error(message);
+  }
+
+  return res.payload;
+}
+
 async function handleClaimUpgrade(tokenId, traitType, traitValue) {
   if (!state.userId) {
     await showLabMessageModal({
@@ -8785,39 +9037,39 @@ async function handleClaimUpgrade(tokenId, traitType, traitValue) {
 
   try {
     const res = await fetchJson(
-      getApiUrl(LAB_CONFIG.claimUpgradeEndpoint),
-      {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          user_id: state.userId,
-          token_id: tokenId,
-          collection: 'genesis',
-          trait_type: traitType,
-          trait_value: traitValue
-        })
-      },
-      true
-    );
+  getApiUrl(LAB_CONFIG.claimUpgradeEndpoint),
+  {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      user_id: state.userId,
+      token_id: tokenId,
+      collection: 'genesis',
+      trait_type: traitType,
+      trait_value: traitValue
+    })
+  },
+  true
+);
 
-    if (!res.ok || !res.payload?.success) {
-      const message = res.payload?.error || `Claim upgrade failed (${res.status})`;
-      logLab(`Claim upgrade failed: ${message}`, 'error');
-      await showLabMessageModal({
-        eyebrow: 'Claim Upgrade',
-        title: 'Claim Failed',
-        icon: '⚠️',
-        message,
-        note: 'No level increase was applied.',
-        confirmText: 'Close',
-        confirmVariant: 'danger'
-      });
-      return;
-    }
+if (!res.ok || !res.payload?.success) {
+  const message = res.payload?.error || `Claim upgrade failed (${res.status})`;
+  logLab(`Claim upgrade failed: ${message}`, 'error');
+  await showLabMessageModal({
+    eyebrow: 'Claim Upgrade',
+    title: 'Claim Failed',
+    icon: '⚠️',
+    message,
+    note: 'No level increase was applied.',
+    confirmText: 'Close',
+    confirmVariant: 'danger'
+  });
+  return;
+}
 
     logLab(`Claimed upgrade for ${traitType}: ${traitValue}`, 'success');
     await loadTraitUpgrades();
@@ -9692,10 +9944,10 @@ if (item.is_listed_for_sale) {
 ) {
   marketplaceAction = `
     <button type="button" class="btn"
-      ${(actionDisabled || hasAnotherActiveListing) ? 'disabled' : ''}
+      ${actionDisabled ? 'disabled' : ''}
       data-list-genetic-item="${escapeHtml(item.genetic_item_id)}"
-      title="${escapeHtml(hasAnotherActiveListing ? 'Only one active marketplace listing is allowed per user right now.' : 'List this idle Genetic Item on the marketplace.')}">
-      ${hasAnotherActiveListing ? 'One Listing Active' : '🧀 List For Sale'}
+      title="List this idle Genetic Item on the marketplace.">
+      🧀 List For Sale
     </button>
   `;
 }
@@ -11724,11 +11976,18 @@ document.addEventListener('visibilitychange', () => {
     });
   }
 });
-
+ // 🧭 DOM vent binding area
 document.addEventListener('DOMContentLoaded', async () => {
   bindGenesisAbilityUiEvents();
   bindLabTabs();
   setupQuickAccessLinks();
+
+  if (el.claimAllReadyButton) {
+    el.claimAllReadyButton.addEventListener('click', () => {
+      handleClaimAllReadyUpgrades();
+    });
+  }
+
   switchLabTab('overview');
   logLab('Narrrf’s Lab frontend artifact mounted.', 'success');
   logLab('This page prefers stable read APIs and only activates live upgrade actions when dedicated endpoints are detected.', 'info');
