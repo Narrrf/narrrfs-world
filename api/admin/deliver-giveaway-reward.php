@@ -434,6 +434,9 @@ $rewardReferenceId = (int)($request['reward_reference_id'] ?? 0);
 $rewardQuantity = max(1, (int)($request['reward_quantity'] ?? 1));
 $rewardSnapshotTitle = trim((string)($request['reward_snapshot_title'] ?? ''));
 
+// 🧪 Test giveaway IDs may bypass stored giveaway/winner validation.
+$isTestGiveaway = strpos($giveawayId, 'test_') === 0;
+
 if ($giveawayId === '' || $winnerUserId === '' || $rewardType === '' || $rewardReferenceId < 1) {
     json_response(['success' => false, 'error' => 'Missing required delivery fields'], 400);
 }
@@ -446,7 +449,7 @@ try {
     $pdo = get_giveaway_database_connection();
     $pdo->beginTransaction();
 
-    if (sqlite_table_exists($pdo, 'tbl_giveaways')) {
+    if (!$isTestGiveaway && sqlite_table_exists($pdo, 'tbl_giveaways')) {
         $stmt = $pdo->prepare('SELECT * FROM tbl_giveaways WHERE giveaway_id = ? LIMIT 1');
         $stmt->execute([$giveawayId]);
         $giveawayRow = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -455,7 +458,7 @@ try {
         }
     }
 
-    if (sqlite_table_exists($pdo, 'tbl_giveaway_winners')) {
+    if (!$isTestGiveaway && sqlite_table_exists($pdo, 'tbl_giveaway_winners')) {
         $stmt = $pdo->prepare('SELECT * FROM tbl_giveaway_winners WHERE giveaway_id = ? AND user_id = ? LIMIT 1');
         $stmt->execute([$giveawayId, $winnerUserId]);
         $winnerRow = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -469,7 +472,7 @@ try {
         }
     }
 
-    $sourceTag = 'giveaway_reward';
+    $sourceTag = $isTestGiveaway ? 'giveaway_test' : 'giveaway_reward';
     $deliveryPayload = [];
 
     if ($rewardType === 'store_item') {
@@ -496,12 +499,17 @@ try {
         'delivery_payload' => $deliveryPayload
     ];
 
-    update_winner_delivery_row($pdo, $giveawayId, $winnerUserId, $responsePayload);
+    if (!$isTestGiveaway) {
+        update_winner_delivery_row($pdo, $giveawayId, $winnerUserId, $responsePayload);
+    }
+
     $pdo->commit();
 
     json_response([
         'success' => true,
-        'message' => 'Giveaway reward delivered successfully',
+        'message' => $isTestGiveaway
+            ? 'Giveaway test reward delivered successfully'
+            : 'Giveaway reward delivered successfully',
         'giveaway_id' => $giveawayId,
         'winner_user_id' => $winnerUserId,
         'reward_type' => $rewardType,
