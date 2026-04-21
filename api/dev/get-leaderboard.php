@@ -222,19 +222,48 @@ LIMIT 10
     }
     unset($entry);
 
-    // Helper function to get Mouse Leaderboard
+        // Helper function to get Mouse Genesis Leaderboard
+    function getLabPowerLeaderboard($db) {
+    $stmt = $db->prepare("
+        SELECT
+            COALESCE(u.username, t.last_owner_user_id) AS discord_name,
+            t.last_owner_user_id AS discord_id,
+            SUM(t.current_level) AS total_lab_power,
+            MAX(t.current_level) AS highest_trait_level
+        FROM tbl_nft_trait_upgrades t
+        LEFT JOIN tbl_users u
+            ON u.discord_id = t.last_owner_user_id
+        WHERE COALESCE(t.collection, 'genesis') = 'genesis'
+          AND COALESCE(t.last_owner_user_id, '') <> ''
+        GROUP BY t.last_owner_user_id
+        ORDER BY total_lab_power DESC, highest_trait_level DESC, t.last_owner_user_id ASC
+        LIMIT 10
+    ");
+    $stmt->execute();
+
+    $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($leaderboard as &$entry) {
+        $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
+    }
+    unset($entry);
+
+    return $leaderboard;
+}
+
+// Helper function to get Mouse Genetic Leaderboard
 function getMouseLeaderboard($db) {
     $stmt = $db->prepare("
         SELECT
-            g.user_id AS discord_id,
             COALESCE(u.username, g.user_id) AS discord_name,
+            g.user_id AS discord_id,
             SUM(g.current_level) AS total_level,
-            COUNT(*) AS trait_count
+            COUNT(*) AS trait_count,
+            MAX(g.current_level) AS highest_trait_level
         FROM tbl_user_genetic_items g
         LEFT JOIN tbl_users u ON u.discord_id = g.user_id
-        WHERE g.upgrade_status = 'idle'
         GROUP BY g.user_id
-        ORDER BY total_level DESC, trait_count DESC
+        ORDER BY total_level DESC, trait_count DESC, highest_trait_level DESC
         LIMIT 10
     ");
     $stmt->execute();
@@ -582,6 +611,8 @@ if ($tableCheck->fetch()) {
 $displaySeason = $useFrozenLeaderboard ? $previousSeason : $currentSeason;
 $isFrozen = $useFrozenLeaderboard;
 
+
+// Add new leaderboard loads here + the function on top + update the html and tables repeat 
 echo json_encode([
     'success' => true,
     'current_season' => $currentSeason,
@@ -595,9 +626,8 @@ echo json_encode([
     'discord_race' => $discordRaceResult['leaderboard'],
     'cheese_rumble' => $cheeseRumbleResult['leaderboard'],
     'glyph_memory' => $glyphMemoryLeaderboard,
-
-    // 🧬 NEW LEADERBOARD
-    'mouse_leaderboard' => getMouseLeaderboard($db)
+    'mouse_leaderboard' => getMouseLeaderboard($db),
+    'lab_power_leaderboard' => getLabPowerLeaderboard($db)
 ]);
 
 } catch (Exception $e) {
