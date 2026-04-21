@@ -273,9 +273,23 @@ function grant_store_item_to_user(PDO $pdo, string $userId, array $storeItem, in
     $description = trim((string)($storeItem['description'] ?? ''));
     $inventoryColumns = get_table_columns($pdo, 'tbl_user_inventory');
 
+    $existing = null;
+
+if (in_array('item_name', $inventoryColumns, true)) {
     $select = $pdo->prepare("SELECT * FROM tbl_user_inventory WHERE user_id = ? AND item_name = ? LIMIT 1");
     $select->execute([$userId, $itemName]);
     $existing = $select->fetch(PDO::FETCH_ASSOC) ?: null;
+} elseif (in_array('item_id', $inventoryColumns, true)) {
+    $storeItemPk = (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? 0);
+    $select = $pdo->prepare("SELECT * FROM tbl_user_inventory WHERE user_id = ? AND item_id = ? LIMIT 1");
+    $select->execute([$userId, $storeItemPk]);
+    $existing = $select->fetch(PDO::FETCH_ASSOC) ?: null;
+} elseif (in_array('store_item_id', $inventoryColumns, true)) {
+    $storeItemPk = (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? 0);
+    $select = $pdo->prepare("SELECT * FROM tbl_user_inventory WHERE user_id = ? AND store_item_id = ? LIMIT 1");
+    $select->execute([$userId, $storeItemPk]);
+    $existing = $select->fetch(PDO::FETCH_ASSOC) ?: null;
+}
 
     if ($existing) {
         $newQuantity = (int)($existing['quantity'] ?? 0) + max(1, $quantity);

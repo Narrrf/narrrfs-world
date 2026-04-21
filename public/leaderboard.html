@@ -93,6 +93,34 @@
         </div>
       </div>
 
+      <!-- Biggest Upgraded Genetic TRait of a Mouse holder from genetic traits Leaderboard -->
+<!-- Top Genetic Leaderboard -->
+<div class="leaderboard-card rounded-xl p-6 mb-6">
+  <div class="flex items-center justify-between mb-2">
+    <h2 class="text-2xl font-bold text-cyan-300 flex items-center gap-2">
+      <span>🧬</span>
+      <span>Top Genetic</span>
+    </h2>
+
+    <!-- 🔗 LAB LINK CTA -->
+    <a href="lab.html"
+       class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700
+              text-white font-bold px-4 py-2 rounded-full shadow-lg hover:shadow-xl
+              transition-all duration-300 transform hover:scale-105
+              border-2 border-cyan-400 hover:border-cyan-300 text-sm whitespace-nowrap">
+      🔬 Enter Lab
+    </a>
+  </div>
+
+  <p class="text-sm text-cyan-200 mb-4 opacity-80">
+    Top 10 Discord-bound Genetic inventories by finished upgrade levels
+  </p>
+
+  <div id="mouse-leaderboard" class="space-y-2">
+    <!-- Populated by JavaScript -->
+  </div>
+</div>
+
       <!-- Tetris Leaderboard -->
       <div class="leaderboard-card rounded-xl p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
@@ -246,90 +274,159 @@
     const isProduction = window.location.hostname === 'narrrfs.world' || window.location.hostname === 'narrrfs-world.onrender.com';
     const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
 
-    // Load leaderboard data
-    async function loadLeaderboard() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/dev/get-leaderboard.php`, {
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
-        });
+    function displayMouseLeaderboard(leaderboard, isFrozen) {
+  const container = document.getElementById('mouse-leaderboard');
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+  if (!container) {
+    console.error('Container not found: mouse-leaderboard');
+    return;
+  }
 
-        const data = await response.json();
+  if (!leaderboard || leaderboard.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-8 text-gray-400">
+${isFrozen ? '⏸️ No genetic leaderboard data available for frozen season' : '🧬 No Genetic upgrades ranked yet! Enter the Lab to evolve your collection!'}      </div>
+    `;
+    return;
+  }
 
-        if (!data.success) {
-          throw new Error(data.error || 'Failed to load leaderboard');
-        }
+  container.innerHTML = leaderboard.map((entry, index) => {
+    const rank = index + 1;
+    const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
 
-        // Hide loading, show content
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('leaderboard-content').classList.remove('hidden');
+    const totalLevel = Number(entry.total_level || 0).toLocaleString();
+    const traitCount = Number(entry.trait_count || 0).toLocaleString();
 
-        // Update season status
-        const seasonTitle = document.getElementById('season-title');
-        const seasonSubtitle = document.getElementById('season-subtitle');
-        const seasonStatus = document.getElementById('season-status');
-        const seasonLeaderboardTitle = document.getElementById('season-leaderboard-title');
+    const avatarUrl = entry.avatar_url || `https://cdn.discordapp.com/embed/avatars/${parseInt(entry.discord_id || 0, 10) % 5}.png`;
+    const highestRole = entry.highest_role || 'Member';
+    const roleColorClass = getRoleColorClass(highestRole);
 
-        // Update main season title
-        if (data.is_frozen) {
-          seasonTitle.textContent = `⏸️ ${data.display_season} Leaderboard (Frozen)`;
-          seasonSubtitle.textContent = `🎮 ${data.current_season} is active! Play now to appear on the leaderboard.`;
-          seasonStatus.textContent = `⏸️ ${data.display_season} Frozen • 🎮 ${data.current_season} Active`;
-        } else {
-          seasonTitle.textContent = `🎮 ${data.display_season} Leaderboard (Active)`;
-          seasonSubtitle.textContent = `🏆 Compete for the top spots!`;
-          seasonStatus.textContent = `🎮 ${data.display_season} Active`;
-        }
+    return `
+      <div class="flex items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-gray-600 hover:border-cyan-400 transition-all relative overflow-visible">
+        <div class="flex items-center gap-4 flex-1 min-w-0">
+          <div class="text-2xl font-bold w-12 text-center flex-shrink-0">${medal}</div>
 
-        // Update DSPOINC earnings leaderboard season title
-        if (seasonLeaderboardTitle) {
-          seasonLeaderboardTitle.textContent = `${data.display_season} Leaderboard`;
-        }
+          <img
+            src="${avatarUrl}"
+            alt="${entry.discord_name || 'Unknown'}"
+            class="w-12 h-12 rounded-full border-2 border-gray-500 hover:border-cyan-400 transition-colors flex-shrink-0"
+            onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"
+          />
 
-        // Display DSPOINC earnings leaderboard (season top earners - at top)
-        displayLeaderboard('dspoinc-earnings', data.dspoinc_earnings || [], data.is_frozen);
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-lg truncate">
+              ${entry.discord_name || entry.discord_id || 'Unknown'}
+            </div>
 
-        // Display leaderboards (all 6 games)
-        displayLeaderboard('tetris', data.tetris || [], data.is_frozen);
-        displayLeaderboard('snake', data.snake || [], data.is_frozen);
-        displayLeaderboard('space-invaders', data.space_invaders || [], data.is_frozen);
-        displayLeaderboard('cheese-hunt', data.cheese_hunt || [], data.is_frozen);
-        displayLeaderboard('discord-race', data.discord_race || [], data.is_frozen);
-        displayLeaderboard('cheese-rumble', data.cheese_rumble || [], data.is_frozen);
-                // Glyph Memory leaderboards (3 difficulty modes)
-        const glyphMemory = data.glyph_memory || {};
-        displayGlyphLeaderboard('easy', glyphMemory.easy || []);
-        displayGlyphLeaderboard('medium', glyphMemory.medium || []);
-        displayGlyphLeaderboard('hard', glyphMemory.hard || []);
-        
-        // 🔧 CRITICAL FIX: Log API response for debugging
-        console.log('🏆 Leaderboard data loaded:', {
-          current_season: data.current_season,
-          display_season: data.display_season,
-          is_frozen: data.is_frozen,
-          dspoinc_earnings_count: (data.dspoinc_earnings || []).length,
-          tetris_count: (data.tetris || []).length,
-          snake_count: (data.snake || []).length,
-          space_invaders_count: (data.space_invaders || []).length,
-          cheese_hunt_count: (data.cheese_hunt || []).length,
-          discord_race_count: (data.discord_race || []).length,
-          cheese_rumble_count: (data.cheese_rumble || []).length,
-          glyph_easy_count: ((data.glyph_memory || {}).easy || []).length,
-          glyph_medium_count: ((data.glyph_memory || {}).medium || []).length,
-          glyph_hard_count: ((data.glyph_memory || {}).hard || []).length
-        });
+            <div class="text-xs ${roleColorClass} truncate">
+              ${highestRole}
+            </div>
+          </div>
+        </div>
 
-      } catch (error) {
-        console.error('Error loading leaderboard:', error);
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('error').classList.remove('hidden');
-        document.getElementById('error-message').textContent = error.message;
-      }
+        <div class="text-right ml-3 flex-shrink-0">
+          <div class="text-sm font-bold text-cyan-300 flex items-center justify-end gap-1">
+            <span>🧬</span>
+            <span>${totalLevel}</span>
+          </div>
+          <div class="text-xs text-gray-400">
+            ${traitCount} traits
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+// Load leaderboard data
+async function loadLeaderboard() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/dev/get-leaderboard.php`, {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to load leaderboard');
+    }
+
+    // Hide loading, show content
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('leaderboard-content').classList.remove('hidden');
+
+    // Update season status
+    const seasonTitle = document.getElementById('season-title');
+    const seasonSubtitle = document.getElementById('season-subtitle');
+    const seasonStatus = document.getElementById('season-status');
+    const seasonLeaderboardTitle = document.getElementById('season-leaderboard-title');
+
+    // Update main season title
+    if (data.is_frozen) {
+      seasonTitle.textContent = `⏸️ ${data.display_season} Leaderboard (Frozen)`;
+      seasonSubtitle.textContent = `🎮 ${data.current_season} is active! Play now to appear on the leaderboard.`;
+      seasonStatus.textContent = `⏸️ ${data.display_season} Frozen • 🎮 ${data.current_season} Active`;
+    } else {
+      seasonTitle.textContent = `🎮 ${data.display_season} Leaderboard (Active)`;
+      seasonSubtitle.textContent = `🏆 Compete for the top spots!`;
+      seasonStatus.textContent = `🎮 ${data.display_season} Active`;
+    }
+
+    // Update DSPOINC earnings leaderboard season title
+    if (seasonLeaderboardTitle) {
+      seasonLeaderboardTitle.textContent = `${data.display_season} Leaderboard`;
+    }
+
+    // Display DSPOINC earnings leaderboard (season top earners - at top)
+    displayLeaderboard('dspoinc-earnings', data.dspoinc_earnings || [], data.is_frozen);
+
+    // Display leaderboards
+    displayLeaderboard('tetris', data.tetris || [], data.is_frozen);
+    displayLeaderboard('snake', data.snake || [], data.is_frozen);
+    displayLeaderboard('space-invaders', data.space_invaders || [], data.is_frozen);
+    displayLeaderboard('cheese-hunt', data.cheese_hunt || [], data.is_frozen);
+    displayLeaderboard('discord-race', data.discord_race || [], data.is_frozen);
+    displayLeaderboard('cheese-rumble', data.cheese_rumble || [], data.is_frozen);
+
+    // 🧬 Biggest Upgraded Mouse leaderboard
+    displayMouseLeaderboard(data.mouse_leaderboard || [], data.is_frozen);
+
+    // Glyph Memory leaderboards (3 difficulty modes)
+    const glyphMemory = data.glyph_memory || {};
+    displayGlyphLeaderboard('easy', glyphMemory.easy || []);
+    displayGlyphLeaderboard('medium', glyphMemory.medium || []);
+    displayGlyphLeaderboard('hard', glyphMemory.hard || []);
+
+    // 🔧 Debug log
+    console.log('🏆 Leaderboard data loaded:', {
+      current_season: data.current_season,
+      display_season: data.display_season,
+      is_frozen: data.is_frozen,
+      dspoinc_earnings_count: (data.dspoinc_earnings || []).length,
+      tetris_count: (data.tetris || []).length,
+      snake_count: (data.snake || []).length,
+      space_invaders_count: (data.space_invaders || []).length,
+      cheese_hunt_count: (data.cheese_hunt || []).length,
+      discord_race_count: (data.discord_race || []).length,
+      cheese_rumble_count: (data.cheese_rumble || []).length,
+      mouse_leaderboard_count: (data.mouse_leaderboard || []).length,
+      glyph_easy_count: ((data.glyph_memory || {}).easy || []).length,
+      glyph_medium_count: ((data.glyph_memory || {}).medium || []).length,
+      glyph_hard_count: ((data.glyph_memory || {}).hard || []).length
+    });
+
+  } catch (error) {
+    console.error('Error loading leaderboard:', error);
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('error').classList.remove('hidden');
+    document.getElementById('error-message').textContent = error.message;
+  }
+}
 
     // Helper function to get role color class
     function getRoleColorClass(role) {

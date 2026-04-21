@@ -149,15 +149,15 @@ try {
 
         $currentStmt = $db->prepare("
             SELECT
-                discord_id,
-                discord_name,
-                MAX(score) as score,
-                MIN(timestamp) as timestamp
-            FROM tbl_tetris_scores
-            WHERE game = ? AND season = ?
-            GROUP BY discord_id, discord_name
-            ORDER BY score DESC, timestamp ASC
-            LIMIT 10
+    discord_id,
+    MAX(discord_name) as discord_name,
+    MAX(score) as score,
+    MIN(timestamp) as timestamp
+FROM tbl_tetris_scores
+WHERE game = ? AND season = ?
+GROUP BY discord_id
+ORDER BY score DESC, timestamp ASC
+LIMIT 10
         ");
         $currentStmt->execute([$game, $currentSeason]);
         $currentLeaderboard = $currentStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -221,6 +221,33 @@ try {
         $entry['score'] = round($entry['score']);
     }
     unset($entry);
+
+    // Helper function to get Mouse Leaderboard
+function getMouseLeaderboard($db) {
+    $stmt = $db->prepare("
+        SELECT
+            g.user_id AS discord_id,
+            COALESCE(u.username, g.user_id) AS discord_name,
+            SUM(g.current_level) AS total_level,
+            COUNT(*) AS trait_count
+        FROM tbl_user_genetic_items g
+        LEFT JOIN tbl_users u ON u.discord_id = g.user_id
+        WHERE g.upgrade_status = 'idle'
+        GROUP BY g.user_id
+        ORDER BY total_level DESC, trait_count DESC
+        LIMIT 10
+    ");
+    $stmt->execute();
+
+    $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($leaderboard as &$entry) {
+        $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
+    }
+    unset($entry);
+
+    return $leaderboard;
+}
 
     // Helper function to get Cheese Hunt leaderboard
     function getCheeseHuntLeaderboard($db, $currentSeason, $previousSeason, $currentSeasonStart, $currentSeasonEnd, $useFrozenLeaderboard = false) {
@@ -567,7 +594,10 @@ echo json_encode([
     'cheese_hunt' => $cheeseHuntResult['leaderboard'],
     'discord_race' => $discordRaceResult['leaderboard'],
     'cheese_rumble' => $cheeseRumbleResult['leaderboard'],
-    'glyph_memory' => $glyphMemoryLeaderboard
+    'glyph_memory' => $glyphMemoryLeaderboard,
+
+    // 🧬 NEW LEADERBOARD
+    'mouse_leaderboard' => getMouseLeaderboard($db)
 ]);
 
 } catch (Exception $e) {
