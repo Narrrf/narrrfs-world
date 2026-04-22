@@ -1529,21 +1529,44 @@ if (activeStakes.length === 0) {
  * Prefer Phantom when present, but do not hard-require isPhantom.
  * This is safer for Ledger-backed Solana accounts and future wallet support.
  */
+/**
+ * Return the best available Solana wallet provider.
+ * Checks explicit wallet namespaces first, then multi-provider arrays,
+ * then falls back to legacy window.solana.
+ */
 function getSolanaProvider() {
-  if (window.phantom?.solana?.isPhantom) {
-    return window.phantom.solana;
-  }
+  const directCandidates = [
+    window.phantom?.solana,
+    window.solflare,
+    window.solflare?.solana,
+    window.backpack,
+    window.backpack?.solana,
+    window.xnft?.solana,
+    window.solana
+  ].filter(Boolean);
 
-  if (window.solana?.isPhantom) {
-    return window.solana;
+  for (const provider of directCandidates) {
+    if (provider && typeof provider.connect === 'function') {
+      return provider;
+    }
   }
 
   /**
-   * Wallet Standard style fallback.
-   * Some wallets expose providers differently than legacy Phantom injection.
+   * Some browser environments expose multiple providers on window.solana.providers.
+   * Prefer explicit wallet flags if available.
    */
-  if (window.solana && typeof window.solana.connect === 'function') {
-    return window.solana;
+  const multiProviders = Array.isArray(window.solana?.providers)
+    ? window.solana.providers
+    : [];
+
+  const preferredProvider =
+    multiProviders.find(provider => provider?.isPhantom) ||
+    multiProviders.find(provider => provider?.isSolflare) ||
+    multiProviders.find(provider => provider?.isBackpack) ||
+    multiProviders.find(provider => typeof provider?.connect === 'function');
+
+  if (preferredProvider) {
+    return preferredProvider;
   }
 
   return null;
@@ -1920,15 +1943,41 @@ async function requestVerificationProof() {
 /**
  * Connect to the current Solana wallet provider.
  */
+/**
+ * Connect to the current Solana wallet provider safely.
+ * Uses onlyIfTrusted first when supported, then falls back to interactive connect.
+ */
 async function connectSolanaWallet() {
   const provider = getSolanaProvider();
 
   if (!provider) {
-    throw new Error('No supported Solana wallet found. Please install Phantom or another Solana wallet.');
+    throw new Error(
+      'No supported Solana wallet found. Please open this page in Phantom, Solflare, or Backpack.'
+    );
   }
 
-  const response = await provider.connect();
-  const publicKey = response?.publicKey?.toString?.();
+  let response = null;
+
+  /**
+   * Try a silent/trusted reconnect first where supported.
+   * This avoids unnecessary prompts for already-approved wallets,
+   * but still falls back to normal interactive connect.
+   */
+  try {
+    if (typeof provider.connect === 'function') {
+      response = await provider.connect({ onlyIfTrusted: true });
+    }
+  } catch (error) {
+    // Silent attempt can fail normally; continue to interactive connect.
+  }
+
+  if (!response?.publicKey) {
+    response = await provider.connect();
+  }
+
+  const publicKey =
+    response?.publicKey?.toString?.() ||
+    provider.publicKey?.toString?.();
 
   if (!publicKey) {
     throw new Error('Wallet connected but no public key was returned.');

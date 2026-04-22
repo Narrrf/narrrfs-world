@@ -11933,6 +11933,27 @@ el.geneticInventoryGrid?.addEventListener('click', event => {
   }
 });
 
+
+[
+  el.geneticInventoryTraitTypeFilter,
+  el.geneticInventoryStatusFilter,
+  el.geneticInventorySearchInput
+].filter(Boolean).forEach(node => {
+  node.addEventListener(
+    node === el.geneticInventorySearchInput ? 'input' : 'change',
+    () => renderGeneticInventory()
+  );
+});
+[
+  el.geneticTraitTypeFilter,
+  el.geneticRarityFilter,
+  el.geneticSearchInput
+].filter(Boolean).forEach(node => {
+  node.addEventListener(
+    node === el.geneticSearchInput ? 'input' : 'change',
+    () => renderGeneticShop()
+  );
+});
 [
   el.geneticMarketplaceTraitTypeFilter,
   el.geneticMarketplaceRarityFilter,

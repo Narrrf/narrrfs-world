@@ -1,256 +1,126 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
 Last Updated: April 22, 2026
-Status: ⚠️ LIVE — REWARD CHAMBER PUBLIC PROMO SYSTEM IMPLEMENTED; GIVEAWAY DELIVERY UNDER ACTIVE INVESTIGATION
+Status: ✅ STABLE — CORE SYSTEMS ALIGNED (LAB + DSPOINC + REWARDS + BOT)
 Version: 2026-04-22
-Milestone: Reward Box openings now auto-broadcast to public Discord promo channel (DM + mod log + public feed), while giveaway delivery reliability remains the current open fix path
+Milestone: Major sync completed across Lab UX, DSPOINC ledger alignment, Reward/Giveaway reliability, and Winners filtering logic; system is ready for next phase (Lab + Admin integration)
 
 ---
 
 ## 🔄 UPDATE — APRIL 22, 2026
 
-### 🧬 GENETIC LEADERBOARD — FIX & RESYNC
+### 📊 QUICK STATUS UPDATE (AGENT SYNC)
 
-Identified inconsistency in Genetic Leaderboard ranking values.
+## ✅ SYSTEM STATE: STABLE
 
-Observed issue:
+Core systems are aligned and functioning correctly across:
 
-- displayed ranks did not reflect true highest trait levels
-- likely caused by outdated aggregation logic and/or unsynced frontend/backend calculation
+- Lab UI
+- DSPOINC economy
+- Reward systems
+- Discord bot
 
-### 🛠️ FIX IMPLEMENTED
+### 🔧 MAJOR FIXES COMPLETED
 
-- leaderboard calculation logic corrected
-- ranking now reflects true highest upgraded trait per player
-- trait count + level aggregation aligned to intended rules
-- frontend leaderboard view updated accordingly
+#### 🧭 Lab UX (critical fix)
 
-### 🔄 CURRENT STATE (IMPORTANT)
+- ❌ Removed forced scroll to Selected Genesis Mouse
+- ❌ Removed pixel-based scroll (`LAB_LANDING_OFFSET`)
+- ✅ Implemented element-based scroll (`scrollToLabMenu()`)
+- ✅ Mobile-first behavior fixed
+- ✅ Stable landing at Lab menu
 
-Servers are currently:
+#### 💰 DSPOINC Economy (aligned)
 
-- restarting
-- resyncing leaderboard values
+Ledger model:
 
-⚠️ During this phase:
+- `tbl_user_scores` → source of truth
+- `tbl_score_adjustments` → audit layer
 
-- temporary mismatches may still appear
-- cache/API responses may return stale values until full sync completes
+Fixes:
 
-### 🧠 FOR SYNC AGENT — REQUIRED ACTIONS
+- Reward Box spend now logged as negative
+- Instant Finish now deducts correctly
 
-1) Verify backend source of truth
+Admin addpoints modes:
 
-- inspect leaderboard API / aggregation query path
-- enforce: `max trait level per trait per user`
-- prevent duplicate counting
-- prevent stale cached outputs
+- `/addpoints prize` → `admin_prize` ✅ (included in winners)
+- `/addpoints correction` → `admin_adjustment` ❌ (excluded)
 
-2) Verify frontend rendering
+#### 🎁 Reward Systems
 
-- inspect `public/leaderboard.html` rendering mapping
-- ensure correct fields: trait count + highest trait level
-- remove legacy fallback/mapping drift
+Reward Chamber:
 
-3) Clear all cache layers
+- ✅ Spend + reward correctly logged
+- ✅ Both tables written consistently
 
-- browser hard reload
-- server/API cache
-- CDN cache (if active)
+Giveaway System:
 
-4) Validate live data after restart
+- ✅ Store item + genetic trait delivery working
+- ✅ Fallback DSPOINC working
+- ✅ Bot delivery + DB state verified
 
-- compare DB values vs API response vs frontend display
-- top 3 must match exactly:
-  - `lukeskypestalker`
-  - `nihisanno`
-  - `narrrf`
+#### 🏆 Winners System
 
-### ⚠️ ROOT CAUSE (LIKELY)
+Now reads from `tbl_user_scores` only.
 
-Likely mismatch between:
+Filtering:
 
-- genetic progression system (Discord/user-bound)
-- leaderboard aggregation layer
+- ❌ Excludes: staking returns, corrections
+- ✅ Includes: games, reward boxes, missions, admin prizes
 
-Architecture reminder:
+#### 🤖 Bot System
 
-👉 Genetic progression is user-bound, not NFT-bound.
+Working systems:
 
-Potential failure mode:
+- Giveaway delivery
+- Winners command (test + live)
+- Addpoints (prize + correction)
+- Reward notifications
 
-- mixed or duplicated aggregation sources
+### 🧪 VERIFIED FLOWS
 
-### 📊 IMPACT
+- Reward Box → spend + reward → DB + UI + bot
+- Instant Finish → spend → correct state transition
+- Addpoints → correct ledger + audit
+- Winners → accurate leaderboard
 
-- leaderboard integrity was temporarily compromised ❌
-- corrected logic now restores deterministic ranking behavior ✅
+### ⚠️ KNOWN REMAINING AREAS
 
-This is critical for:
+#### 🧬 Lab system (next focus)
 
-- competitive fairness
-- lab progression trust
-- future ranking systems
+- upgrade lifecycle validation
+- booster usage verification
+- concurrency (double upgrades)
+- state transitions (`upgrading`, `ready`, etc.)
 
-### 🏁 TARGET STATE
+#### 🛠 Admin interface
 
-Leaderboard must be:
+Needs alignment with:
 
-- ✅ deterministic
-- ✅ backend-authoritative
-- ✅ fully synced across DB, API, and frontend
+- new addpoints modes
+- lab controls
+- reward delivery consistency
 
-### 🚀 NEXT STEP
+### 🎯 NEXT OBJECTIVES
 
-- monitor rankings after restart/resync
-- confirm stability over time
-- prepare: **FINAL SYNCED LEADERBOARD** announcement
+- 🔬 Full Lab system audit
+- 🧪 Verify all Lab API flows (`start upgrade`, `instant finish`, `complete upgrade`)
+- 🧃 Booster system validation
+- 🧭 Admin interface integration
+- 🔒 State + concurrency protection
 
----
+### 🧠 SYSTEM PRINCIPLE (LOCKED)
 
-### 🎁 REWARD CHAMBER — PUBLIC PROMO SYSTEM ✅ IMPLEMENTED
+- Backend = authoritative
+- UI = reflection only
+- Bot = executor / notifier
+- Ledger = append-only
+- No assumptions anywhere
 
-Reward Box openings are now automatically broadcasted to a public Discord channel.
+### 🏁 STATUS
 
-System behavior:
-
-1) Player opens Reward Box (Profile → Reward Chamber)
-2) Backend logs event
-3) Bot detects event via polling
-4) Bot sends:
-   - 📩 DM to user
-   - 🛠️ Log to mod channel
-   - 🌍 Public promo message (new)
-
-### 🌍 PUBLIC MESSAGE FEATURES
-
-Public embed now includes:
-
-- username mention
-- reward value (DSPOINC/item)
-- reward type
-- timestamp
-- CTA buttons:
-  - 🎁 Open Reward Chamber
-  - 👤 Open Profile
-
-Configured channel:
-
-- `REWARD_BOX_PUBLIC_CHANNEL_ID`
-
-### 🧠 SYSTEM ARCHITECTURE (IMPORTANT)
-
-Flow:
-
-- DB event → `reward_box_open`
-
-Bot poller:
-
-- `monitorRewardBoxOpenDMs()`
-  - `sendRewardBoxOpenDM()`
-  - `sendRewardBoxOpenModLog()`
-  - `sendRewardBoxOpenPublicLog()` ✅ NEW
-
-Notification tracking:
-
-- `tbl_discord_claim_notifications`
-
-### ⚠️ FINAL FIX APPLIED
-
-- Removed duplicate `publicSent` DB insert
-
-Ensures:
-
-- no redundant writes
-- clean notification state
-- future-safe logic
-
-### 🚀 RESULT
-
-Reward Chamber promo broadcast system is now:
-
-- ✅ stable
-- ✅ visually strong (engagement-facing)
-- ✅ scalable (DB-driven + idempotent)
-- ✅ aligned with Reward Chamber growth loop
-
-This is now a core viral mechanic in the ecosystem.
-
----
-
-### 🔗 RELATED SYSTEMS (IMPORTANT CONTEXT)
-
-#### 🧬 Player Data Backbone
-
-API layer continues to authoritatively handle:
-
-- inventory
-- traits
-- lab data
-
-Used by both bot and frontend surfaces.
-
-#### 🎁 Giveaway System (STILL IN PROGRESS)
-
-Current state:
-
-- ✅ Winner selection works
-- ❌ Delivery not fully reliable
-
-Core delivery path:
-
-- `callGiveawayRewardDelivery(...)`
-- `POST /api/admin/deliver-giveaway-reward.php`
-- internal bearer auth bridge
-
-### ⚠️ OPEN ISSUE — GIVEAWAY DELIVERY
-
-Likely failure areas:
-
-- internal API secret mismatch
-- missing response logging in bot
-- invalid `reward_reference_id`
-- DB insert branch issues
-- Discord ID ↔ `user_id` mapping mismatch
-
-### 🔧 NEXT REQUIRED ACTIONS (FOR NEXT AGENT)
-
-1) Add debug logging in `callGiveawayRewardDelivery(...)`
-   - log `response.status`
-   - log response body
-
-2) Manual API test
-   - `POST /api/admin/deliver-giveaway-reward.php`
-   - if fail → backend issue
-   - if success → bot integration issue
-
-3) Verify auth parity
-   - bot `API_SECRET` / `INTERNAL_API_SECRET`
-   - PHP `get_internal_api_secret()`
-
-4) Validate DB writes
-   - `tbl_user_inventory`
-   - `tbl_user_genetic_items`
-
-### 🏁 CURRENT SYSTEM STATUS
-
-| System | Status |
-|---|---|
-| Reward Chamber | ✅ FULLY LIVE |
-| Public Promo Feed | ✅ LIVE |
-| Lab System | ✅ STABLE |
-| Leaderboard | ⚠️ RESYNCING |
-| Giveaway Delivery | ⚠️ UNDER INVESTIGATION |
-
-### 🎯 STRATEGIC IMPACT
-
-This update introduces:
-
-- 📢 Social proof loop
-- 🎰 engagement/retention mechanic
-- 🧀 Organic CTA funnel to Profile/Lab
-
-This is now one of the strongest retention + conversion mechanics in Narrrfs World.
+READY FOR NEXT PHASE → LAB + ADMIN INTEGRATION
 
 ## 🔄 UPDATE — APRIL 20, 2026
 
