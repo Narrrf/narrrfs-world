@@ -285,6 +285,43 @@ function insert_genetic_item_history(
  * Mirror the current frontend preview formula so UI and backend stay aligned.
  * Backend remains authoritative for the final charge.
  */
+
+function insert_optional_score_adjustment_audit(PDO $pdo, string $userId, int $amount, string $reason): void {
+    $tableExistsStmt = $pdo->prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'tbl_score_adjustments'");
+    $tableExistsStmt->execute();
+    $exists = $tableExistsStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$exists) {
+        return;
+    }
+
+    $userExistsStmt = $pdo->prepare("SELECT discord_id FROM tbl_users WHERE discord_id = ? LIMIT 1");
+    $userExistsStmt->execute([$userId]);
+    $userExists = $userExistsStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$userExists) {
+        return;
+    }
+
+    $stmt = $pdo->prepare("
+        INSERT INTO tbl_score_adjustments (
+            user_id,
+            admin_id,
+            amount,
+            action,
+            reason,
+            timestamp
+        ) VALUES (?, ?, ?, 'remove', ?, CURRENT_TIMESTAMP)
+    ");
+
+    $stmt->execute([
+        $userId,
+        $userId,
+        -abs($amount),
+        $reason
+    ]);
+}
+
 function calculate_genetic_instant_finish_cost(int $currentLevel, int $remainingSeconds): int {
     $level = max(1, $currentLevel);
     $remainingHours = max(0, $remainingSeconds / 3600);
@@ -505,6 +542,13 @@ if (!$geneticAccess['can_instant_finish']) {
         'Genetic Instant Finish: ' . ((string)($item['display_title'] ?? $item['trait_value'] ?? 'Unknown Trait')),
         'genetic_item_id=' . $geneticItemId
     );
+
+    insert_optional_score_adjustment_audit(
+    $pdo,
+    $userId,
+    $instantFinishCost,
+    'Genetic Instant Finish: ' . ((string)($item['display_title'] ?? $item['trait_value'] ?? 'Unknown Trait'))
+);
 
     $updateStmt = $pdo->prepare("
         UPDATE tbl_user_genetic_items

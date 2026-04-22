@@ -1,9 +1,9 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
 Last Updated: April 22, 2026
-Status: ⚠️ LIVE — GENETIC LEADERBOARD FIXED + RESYNC IN PROGRESS; GIVEAWAY DELIVERY PIPELINE UNDER ACTIVE VALIDATION
+Status: ⚠️ LIVE — REWARD CHAMBER PUBLIC PROMO SYSTEM IMPLEMENTED; GIVEAWAY DELIVERY UNDER ACTIVE INVESTIGATION
 Version: 2026-04-22
-Milestone: Leaderboard aggregation was corrected to restore ranking integrity, while bot → API giveaway delivery bridge is now under deep diagnostic review to restore reliable reward delivery/testing
+Milestone: Reward Box openings now auto-broadcast to public Discord promo channel (DM + mod log + public feed), while giveaway delivery reliability remains the current open fix path
 
 ---
 
@@ -108,82 +108,149 @@ Leaderboard must be:
 
 ---
 
-### 🎁 GIVEAWAY SYSTEM — DEEP STATUS & FAILURE ANALYSIS
+### 🎁 REWARD CHAMBER — PUBLIC PROMO SYSTEM ✅ IMPLEMENTED
 
-Current issue state:
+Reward Box openings are now automatically broadcasted to a public Discord channel.
 
-- giveaway winners are being selected
-- reward delivery is not consistently completing
-- test command is also still failing
+System behavior:
 
-### 🧠 SYSTEM ARCHITECTURE (CURRENT)
+1) Player opens Reward Box (Profile → Reward Chamber)
+2) Backend logs event
+3) Bot detects event via polling
+4) Bot sends:
+   - 📩 DM to user
+   - 🛠️ Log to mod channel
+   - 🌍 Public promo message (new)
 
-1) Discord bot trigger layer
-- slash command flow + giveaway button handlers
-- winner selection + delivery trigger
+### 🌍 PUBLIC MESSAGE FEATURES
 
-2) Delivery bridge (critical)
-- bot calls: `/api/admin/deliver-giveaway-reward.php`
-- auth: `Authorization: Bearer INTERNAL_SECRET`
-- execution path: `callGiveawayRewardDelivery(...)`
+Public embed now includes:
 
-3) PHP delivery API (authoritative)
-- validates internal authorization
-- routes reward type (`store_item` / `genetic_trait`)
-- inserts into `tbl_user_inventory` or `tbl_user_genetic_items`
+- username mention
+- reward value (DSPOINC/item)
+- reward type
+- timestamp
+- CTA buttons:
+  - 🎁 Open Reward Chamber
+  - 👤 Open Profile
 
-4) Player visibility layer
-- profile/lab/inventory surfaces
+Configured channel:
 
-### 🚨 MOST LIKELY FAILURE POINTS (ACTIVE INVESTIGATION)
+- `REWARD_BOX_PUBLIC_CHANNEL_ID`
 
-1) Internal auth mismatch
-- bot env secret and PHP internal secret may not match exactly
+### 🧠 SYSTEM ARCHITECTURE (IMPORTANT)
 
-2) Response visibility gap in bot logs
-- failures are not logged with full response details in normal flow
+Flow:
 
-3) Invalid `reward_reference_id`
-- ID may not exist / may target wrong table / may conflict with ownership state
+- DB event → `reward_box_open`
 
-4) DB insert branch failure
-- SQLite/schema branch may fail in certain paths
+Bot poller:
 
-5) User identity mismatch
-- ensure winner Discord ID maps exactly to expected backend `user_id` value
+- `monitorRewardBoxOpenDMs()`
+  - `sendRewardBoxOpenDM()`
+  - `sendRewardBoxOpenModLog()`
+  - `sendRewardBoxOpenPublicLog()` ✅ NEW
 
-### 🔍 REQUIRED INVESTIGATION ORDER
+Notification tracking:
 
-Step 1 — Add temporary response logging in `callGiveawayRewardDelivery(...)`
+- `tbl_discord_claim_notifications`
 
-- log HTTP status + payload for every delivery call
+### ⚠️ FINAL FIX APPLIED
 
-Step 2 — Verify internal secret parity
+- Removed duplicate `publicSent` DB insert
 
-- bot env/config secret must exactly match PHP `get_internal_api_secret()` result
+Ensures:
 
-Step 3 — Direct API delivery test (manual)
+- no redundant writes
+- clean notification state
+- future-safe logic
 
-- POST `/api/admin/deliver-giveaway-reward.php` with valid bearer token + sample reward payload
-- if manual test fails: issue is API/backend
-- if manual test passes: issue is bot integration path
+### 🚀 RESULT
 
-Step 4 — Validate DB inserts after test call
+Reward Chamber promo broadcast system is now:
 
-- verify writes in `tbl_user_inventory` / `tbl_user_genetic_items`
+- ✅ stable
+- ✅ visually strong (engagement-facing)
+- ✅ scalable (DB-driven + idempotent)
+- ✅ aligned with Reward Chamber growth loop
 
-Step 5 — Validate test command input data
+This is now a core viral mechanic in the ecosystem.
 
-- ensure referenced store/genetic IDs exist and are valid/active
+---
 
-### ✅ ARCHITECTURE RULE CONFIRMED
+### 🔗 RELATED SYSTEMS (IMPORTANT CONTEXT)
 
-The system direction remains correct:
+#### 🧬 Player Data Backbone
 
-- ❌ no reward logic in bot runtime
-- ✅ backend-authoritative reward delivery
+API layer continues to authoritatively handle:
 
-This remains aligned with Narrrfs World global authority model.
+- inventory
+- traits
+- lab data
+
+Used by both bot and frontend surfaces.
+
+#### 🎁 Giveaway System (STILL IN PROGRESS)
+
+Current state:
+
+- ✅ Winner selection works
+- ❌ Delivery not fully reliable
+
+Core delivery path:
+
+- `callGiveawayRewardDelivery(...)`
+- `POST /api/admin/deliver-giveaway-reward.php`
+- internal bearer auth bridge
+
+### ⚠️ OPEN ISSUE — GIVEAWAY DELIVERY
+
+Likely failure areas:
+
+- internal API secret mismatch
+- missing response logging in bot
+- invalid `reward_reference_id`
+- DB insert branch issues
+- Discord ID ↔ `user_id` mapping mismatch
+
+### 🔧 NEXT REQUIRED ACTIONS (FOR NEXT AGENT)
+
+1) Add debug logging in `callGiveawayRewardDelivery(...)`
+   - log `response.status`
+   - log response body
+
+2) Manual API test
+   - `POST /api/admin/deliver-giveaway-reward.php`
+   - if fail → backend issue
+   - if success → bot integration issue
+
+3) Verify auth parity
+   - bot `API_SECRET` / `INTERNAL_API_SECRET`
+   - PHP `get_internal_api_secret()`
+
+4) Validate DB writes
+   - `tbl_user_inventory`
+   - `tbl_user_genetic_items`
+
+### 🏁 CURRENT SYSTEM STATUS
+
+| System | Status |
+|---|---|
+| Reward Chamber | ✅ FULLY LIVE |
+| Public Promo Feed | ✅ LIVE |
+| Lab System | ✅ STABLE |
+| Leaderboard | ⚠️ RESYNCING |
+| Giveaway Delivery | ⚠️ UNDER INVESTIGATION |
+
+### 🎯 STRATEGIC IMPACT
+
+This update introduces:
+
+- 📢 Social proof loop
+- 🎰 engagement/retention mechanic
+- 🧀 Organic CTA funnel to Profile/Lab
+
+This is now one of the strongest retention + conversion mechanics in Narrrfs World.
 
 ## 🔄 UPDATE — APRIL 20, 2026
 

@@ -1043,13 +1043,13 @@ function insert_reward_box_spend(PDO $pdo, string $userId, int $amount, array $b
     );
 
     insert_score_adjustment(
-        $pdo,
-        $userId,
-        REWARD_BOX_SYSTEM_ACTOR,
-        $amount,
-        'remove',
-        'Reward box spend: ' . ((string)($box['box_name'] ?? 'Reward Box'))
-    );
+    $pdo,
+    $userId,
+    REWARD_BOX_SYSTEM_ACTOR,
+    -abs($amount),
+    'remove',
+    'Reward box spend: ' . ((string)($box['box_name'] ?? 'Reward Box'))
+);
 }
 /**
  * Build the response box payload in the same shape as get-reward-boxes.php.

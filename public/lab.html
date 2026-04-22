@@ -3961,20 +3961,26 @@ body::after {
       </aside>
     </div>
 
-    <div class="lab-tab-guide">
-      <div class="lab-tab-guide-copy">Use the tabs as your main Lab navigation. Overview is mission control. My Genesis is the NFT-bound workspace. Genetic tabs stay user-bound.</div>
-      <span class="inline-lane-badge">🧭 Stable long-term layout</span>
-    </div>
+<div id="lab-main-menu">
 
-    <nav class="lab-tab-nav" aria-label="Lab navigation tabs">
-      <button type="button" class="lab-tab-button active" data-lab-tab="overview">Overview</button>
-      <button type="button" class="lab-tab-button" data-lab-tab="my-genesis" id="lab-tab-my-genesis">My Genesis Lab</button>
-      <button type="button" class="lab-tab-button" data-lab-tab="research-queue" id="lab-tab-research-queue">Research Queue</button>
-      <button type="button" class="lab-tab-button" data-lab-tab="genetic-shop" id="lab-tab-genetic-shop">Genetic Shop</button>
-      <button type="button" class="lab-tab-button" data-lab-tab="genetic-inventory" id="lab-tab-genetic-inventory">My Genetic Inventory</button>
-      <button type="button" class="lab-tab-button" data-lab-tab="genetic-marketplace" id="lab-tab-genetic-marketplace">Marketplace</button>
-      <button type="button" class="lab-tab-button" data-lab-tab="knowledge">Knowledge</button>
-    </nav>
+  <div class="lab-tab-guide">
+    <div class="lab-tab-guide-copy">
+      Use the tabs as your main Lab navigation. Overview is mission control. My Genesis is the NFT-bound workspace. Genetic tabs stay user-bound.
+    </div>
+    <span class="inline-lane-badge">🧭 Stable long-term layout</span>
+  </div>
+
+  <nav class="lab-tab-nav" aria-label="Lab navigation tabs">
+    <button type="button" class="lab-tab-button active" data-lab-tab="overview">Overview</button>
+    <button type="button" class="lab-tab-button" data-lab-tab="my-genesis" id="lab-tab-my-genesis">My Genesis Lab</button>
+    <button type="button" class="lab-tab-button" data-lab-tab="research-queue" id="lab-tab-research-queue">Research Queue</button>
+    <button type="button" class="lab-tab-button" data-lab-tab="genetic-shop" id="lab-tab-genetic-shop">Genetic Shop</button>
+    <button type="button" class="lab-tab-button" data-lab-tab="genetic-inventory" id="lab-tab-genetic-inventory">My Genetic Inventory</button>
+    <button type="button" class="lab-tab-button" data-lab-tab="genetic-marketplace" id="lab-tab-genetic-marketplace">Marketplace</button>
+    <button type="button" class="lab-tab-button" data-lab-tab="knowledge">Knowledge</button>
+  </nav>
+
+</div>
 
     <section id="lab-panel-overview" class="lab-tab-panel">
       <div class="overview-grid">
@@ -6136,6 +6142,23 @@ function getPrimaryNftAction(summary) {
     return { label: 'View Research', className: 'warn' };
   }
   return { label: 'Open Lab', className: 'primary' };
+}
+
+function scrollToLabMenu() {
+  const menu = document.getElementById('lab-main-menu');
+  if (!menu) return;
+
+  const isMobile = window.innerWidth <= 768;
+
+  const offset = isMobile ? 16 : 32;
+
+  const y = menu.getBoundingClientRect().top + window.scrollY - offset;
+
+  window.scrollTo({
+    top: y,
+    left: 0,
+    behavior: 'auto'
+  });
 }
 
 function scrollToSelectedGenesisMouse() {
@@ -11182,7 +11205,6 @@ function switchLabTab(tabName) {
   }
 }
 
-// 🧭 Handle deep linking AFTER Lab is ready
 function handleLabDeepLink() {
   const hash = window.location.hash;
   if (!hash) return;
@@ -11242,10 +11264,6 @@ function autoOpenMyGenesisLabOnLogin() {
   }
 
   switchLabTab('my-genesis');
-
-  requestAnimationFrame(() => {
-    scrollToSelectedGenesisMouse();
-  });
 }
 
 /**
@@ -11934,9 +11952,6 @@ function setupQuickAccessLinks() {
 if (href === '#lab-tab-my-genesis') {
   event.preventDefault();
   switchLabTab('my-genesis');
-  requestAnimationFrame(() => {
-    scrollToSelectedGenesisMouse();
-  });
   return;
 }
 
@@ -11976,11 +11991,15 @@ document.addEventListener('visibilitychange', () => {
     });
   }
 });
- // 🧭 DOM vent binding area
+// 🧭 DOM event binding area
 document.addEventListener('DOMContentLoaded', async () => {
   bindGenesisAbilityUiEvents();
   bindLabTabs();
   setupQuickAccessLinks();
+
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
 
   if (el.claimAllReadyButton) {
     el.claimAllReadyButton.addEventListener('click', () => {
@@ -11989,15 +12008,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   switchLabTab('overview');
+
   logLab('Narrrf’s Lab frontend artifact mounted.', 'success');
   logLab('This page prefers stable read APIs and only activates live upgrade actions when dedicated endpoints are detected.', 'info');
 
   await loadLab();
 
-const handledDeepLink = handleLabDeepLink();
-if (!handledDeepLink) {
-  autoOpenMyGenesisLabOnLogin();
-}
+  const handledDeepLink = handleLabDeepLink();
+
+  if (!handledDeepLink) {
+    autoOpenMyGenesisLabOnLogin();
+
+    // ✅ NEW: scroll to actual menu element (device-safe)
+    requestAnimationFrame(() => {
+      scrollToLabMenu();
+    });
+  }
 
   if (window.innerWidth <= 768) {
     requestAnimationFrame(() => {
