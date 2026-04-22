@@ -1,11 +1,189 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: April 20, 2026
-Status: ✅ LIVE — LAB NFT RENDERING STABILIZED + PROFILE IDENTITY PIPELINE SYNCED + DEFENSIVE FRONTEND MODEL ENFORCED
-Version: 2026-04-20
-Milestone: Lab frontend now uses a safe-access defensive rendering layer that prevents undefined NFT data crashes while preserving backend-authoritative progression logic
+Last Updated: April 22, 2026
+Status: ⚠️ LIVE — GENETIC LEADERBOARD FIXED + RESYNC IN PROGRESS; GIVEAWAY DELIVERY PIPELINE UNDER ACTIVE VALIDATION
+Version: 2026-04-22
+Milestone: Leaderboard aggregation was corrected to restore ranking integrity, while bot → API giveaway delivery bridge is now under deep diagnostic review to restore reliable reward delivery/testing
 
 ---
+
+## 🔄 UPDATE — APRIL 22, 2026
+
+### 🧬 GENETIC LEADERBOARD — FIX & RESYNC
+
+Identified inconsistency in Genetic Leaderboard ranking values.
+
+Observed issue:
+
+- displayed ranks did not reflect true highest trait levels
+- likely caused by outdated aggregation logic and/or unsynced frontend/backend calculation
+
+### 🛠️ FIX IMPLEMENTED
+
+- leaderboard calculation logic corrected
+- ranking now reflects true highest upgraded trait per player
+- trait count + level aggregation aligned to intended rules
+- frontend leaderboard view updated accordingly
+
+### 🔄 CURRENT STATE (IMPORTANT)
+
+Servers are currently:
+
+- restarting
+- resyncing leaderboard values
+
+⚠️ During this phase:
+
+- temporary mismatches may still appear
+- cache/API responses may return stale values until full sync completes
+
+### 🧠 FOR SYNC AGENT — REQUIRED ACTIONS
+
+1) Verify backend source of truth
+
+- inspect leaderboard API / aggregation query path
+- enforce: `max trait level per trait per user`
+- prevent duplicate counting
+- prevent stale cached outputs
+
+2) Verify frontend rendering
+
+- inspect `public/leaderboard.html` rendering mapping
+- ensure correct fields: trait count + highest trait level
+- remove legacy fallback/mapping drift
+
+3) Clear all cache layers
+
+- browser hard reload
+- server/API cache
+- CDN cache (if active)
+
+4) Validate live data after restart
+
+- compare DB values vs API response vs frontend display
+- top 3 must match exactly:
+  - `lukeskypestalker`
+  - `nihisanno`
+  - `narrrf`
+
+### ⚠️ ROOT CAUSE (LIKELY)
+
+Likely mismatch between:
+
+- genetic progression system (Discord/user-bound)
+- leaderboard aggregation layer
+
+Architecture reminder:
+
+👉 Genetic progression is user-bound, not NFT-bound.
+
+Potential failure mode:
+
+- mixed or duplicated aggregation sources
+
+### 📊 IMPACT
+
+- leaderboard integrity was temporarily compromised ❌
+- corrected logic now restores deterministic ranking behavior ✅
+
+This is critical for:
+
+- competitive fairness
+- lab progression trust
+- future ranking systems
+
+### 🏁 TARGET STATE
+
+Leaderboard must be:
+
+- ✅ deterministic
+- ✅ backend-authoritative
+- ✅ fully synced across DB, API, and frontend
+
+### 🚀 NEXT STEP
+
+- monitor rankings after restart/resync
+- confirm stability over time
+- prepare: **FINAL SYNCED LEADERBOARD** announcement
+
+---
+
+### 🎁 GIVEAWAY SYSTEM — DEEP STATUS & FAILURE ANALYSIS
+
+Current issue state:
+
+- giveaway winners are being selected
+- reward delivery is not consistently completing
+- test command is also still failing
+
+### 🧠 SYSTEM ARCHITECTURE (CURRENT)
+
+1) Discord bot trigger layer
+- slash command flow + giveaway button handlers
+- winner selection + delivery trigger
+
+2) Delivery bridge (critical)
+- bot calls: `/api/admin/deliver-giveaway-reward.php`
+- auth: `Authorization: Bearer INTERNAL_SECRET`
+- execution path: `callGiveawayRewardDelivery(...)`
+
+3) PHP delivery API (authoritative)
+- validates internal authorization
+- routes reward type (`store_item` / `genetic_trait`)
+- inserts into `tbl_user_inventory` or `tbl_user_genetic_items`
+
+4) Player visibility layer
+- profile/lab/inventory surfaces
+
+### 🚨 MOST LIKELY FAILURE POINTS (ACTIVE INVESTIGATION)
+
+1) Internal auth mismatch
+- bot env secret and PHP internal secret may not match exactly
+
+2) Response visibility gap in bot logs
+- failures are not logged with full response details in normal flow
+
+3) Invalid `reward_reference_id`
+- ID may not exist / may target wrong table / may conflict with ownership state
+
+4) DB insert branch failure
+- SQLite/schema branch may fail in certain paths
+
+5) User identity mismatch
+- ensure winner Discord ID maps exactly to expected backend `user_id` value
+
+### 🔍 REQUIRED INVESTIGATION ORDER
+
+Step 1 — Add temporary response logging in `callGiveawayRewardDelivery(...)`
+
+- log HTTP status + payload for every delivery call
+
+Step 2 — Verify internal secret parity
+
+- bot env/config secret must exactly match PHP `get_internal_api_secret()` result
+
+Step 3 — Direct API delivery test (manual)
+
+- POST `/api/admin/deliver-giveaway-reward.php` with valid bearer token + sample reward payload
+- if manual test fails: issue is API/backend
+- if manual test passes: issue is bot integration path
+
+Step 4 — Validate DB inserts after test call
+
+- verify writes in `tbl_user_inventory` / `tbl_user_genetic_items`
+
+Step 5 — Validate test command input data
+
+- ensure referenced store/genetic IDs exist and are valid/active
+
+### ✅ ARCHITECTURE RULE CONFIRMED
+
+The system direction remains correct:
+
+- ❌ no reward logic in bot runtime
+- ✅ backend-authoritative reward delivery
+
+This remains aligned with Narrrfs World global authority model.
 
 ## 🔄 UPDATE — APRIL 20, 2026
 

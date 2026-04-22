@@ -245,6 +245,71 @@ function user_owns_genetic_trait(PDO $pdo, string $userId, string $traitType, st
     $stmt->execute([$userId, $traitType, $traitValue]);
     return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
 }
+function roll_fallback_dspoinc_amount(int $min, int $max): int {
+    if ($max < $min) {
+        throw new Exception('Invalid fallback DSPOINC range');
+    }
+
+    if ($min === $max) {
+        return $min;
+    }
+
+    return random_int($min, $max);
+}
+
+function grant_dspoinc_to_user(PDO $pdo, string $userId, int $amount, string $sourceTag, string $reason): array {
+    if ($amount < 1) {
+        throw new Exception('Fallback DSPOINC amount must be at least 1');
+    }
+
+    if (!sqlite_table_exists($pdo, 'tbl_user_scores')) {
+        throw new Exception('tbl_user_scores table not found');
+    }
+
+    $stmt = $pdo->prepare("
+        INSERT INTO tbl_user_scores (user_id, score, game, source, timestamp)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ");
+    $stmt->execute([$userId, $amount, 'giveaway', $sourceTag]);
+
+    if (sqlite_table_exists($pdo, 'tbl_score_adjustments')) {
+        $columns = get_table_columns($pdo, 'tbl_score_adjustments');
+
+        $insertColumns = [];
+        $placeholders = [];
+        $values = [];
+
+        $map = [
+            'user_id' => $userId,
+            'admin_id' => 'giveaway_system',
+            'amount' => $amount,
+            'action' => 'add',
+            'reason' => $reason,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        foreach ($map as $column => $value) {
+            if (in_array($column, $columns, true)) {
+                $insertColumns[] = $column;
+                $placeholders[] = '?';
+                $values[] = $value;
+            }
+        }
+
+        if ($insertColumns) {
+            $stmt = $pdo->prepare(
+                'INSERT INTO tbl_score_adjustments (' . implode(', ', $insertColumns) . ') VALUES (' . implode(', ', $placeholders) . ')'
+            );
+            $stmt->execute($values);
+        }
+    }
+
+    return [
+        'dspoinc_amount' => $amount,
+        'source' => $sourceTag,
+        'reason' => $reason
+    ];
+}
 
 function insert_genetic_item_history(PDO $pdo, ?int $geneticItemId, string $userId, array $newValue): void {
     if (!sqlite_table_exists($pdo, 'tbl_genetic_item_history')) {
@@ -470,6 +535,15 @@ try {
         if (!$giveawayRow) {
             throw new Exception('Giveaway not found');
         }
+        $fallbackDspoincEnabled = false;
+$fallbackDspoincMin = 0;
+$fallbackDspoincMax = 0;
+
+if (!$isTestGiveaway) {
+    $fallbackDspoincEnabled = (int)($giveawayRow['fallback_dspoinc_enabled'] ?? 0) === 1;
+    $fallbackDspoincMin = max(0, (int)($giveawayRow['fallback_dspoinc_min'] ?? 0));
+    $fallbackDspoincMax = max(0, (int)($giveawayRow['fallback_dspoinc_max'] ?? 0));
+}
     }
 
     if (!$isTestGiveaway && sqlite_table_exists($pdo, 'tbl_giveaway_winners')) {
@@ -496,22 +570,55 @@ try {
         }
 
         $deliveryPayload = grant_store_item_to_user($pdo, $winnerUserId, $storeItem, $rewardQuantity, $sourceTag);
-    } elseif ($rewardType === 'genetic_trait') {
+        } elseif ($rewardType === 'genetic_trait') {
         $catalogRow = fetch_genetic_catalog_row($pdo, $rewardReferenceId);
         if (!$catalogRow) {
             throw new Exception('Genetic catalog row not found');
         }
 
-        $deliveryPayload = grant_genetic_trait_to_user($pdo, $winnerUserId, $catalogRow, $sourceTag);
+        try {
+            $deliveryPayload = grant_genetic_trait_to_user($pdo, $winnerUserId, $catalogRow, $sourceTag);
+        } catch (Throwable $geneticError) {
+            $message = trim((string)$geneticError->getMessage());
+            $isDuplicateOwnership = stripos($message, 'already owns this genetic trait') !== false;
+
+            if (!$isDuplicateOwnership || !$fallbackDspoincEnabled) {
+                throw $geneticError;
+            }
+
+            if ($fallbackDspoincMax < $fallbackDspoincMin || $fallbackDspoincMax < 1) {
+                throw new Exception('Fallback DSPOINC is enabled but configured with an invalid range');
+            }
+
+            $fallbackAmount = roll_fallback_dspoinc_amount($fallbackDspoincMin, $fallbackDspoincMax);
+
+            $fallbackPayload = grant_dspoinc_to_user(
+                $pdo,
+                $winnerUserId,
+                $fallbackAmount,
+                'giveaway_fallback_dspoinc',
+                'Giveaway fallback DSPOINC because reward was already owned'
+            );
+
+            $deliveryPayload = [
+                'used_fallback_dspoinc' => true,
+                'fallback_reason' => $message,
+                'fallback_dspoinc_amount' => $fallbackAmount,
+                'original_reward_type' => $rewardType,
+                'original_reward_reference_id' => $rewardReferenceId,
+                'fallback_delivery' => $fallbackPayload
+            ];
+        }
     }
 
     $responsePayload = [
-        'reward_type' => $rewardType,
-        'reward_reference_id' => $rewardReferenceId,
-        'reward_snapshot_title' => $rewardSnapshotTitle,
-        'winner_user_id' => $winnerUserId,
-        'delivery_payload' => $deliveryPayload
-    ];
+    'reward_type' => $rewardType,
+    'reward_reference_id' => $rewardReferenceId,
+    'reward_snapshot_title' => $rewardSnapshotTitle,
+    'winner_user_id' => $winnerUserId,
+    'delivery_payload' => $deliveryPayload,
+    'used_fallback_dspoinc' => (bool)($deliveryPayload['used_fallback_dspoinc'] ?? false)
+];
 
     if (!$isTestGiveaway) {
         update_winner_delivery_row($pdo, $giveawayId, $winnerUserId, $responsePayload);
@@ -519,7 +626,7 @@ try {
 
     $pdo->commit();
 
-    json_response([
+        json_response([
         'success' => true,
         'message' => $isTestGiveaway
             ? 'Giveaway test reward delivered successfully'
@@ -529,7 +636,8 @@ try {
         'reward_type' => $rewardType,
         'reward_reference_id' => $rewardReferenceId,
         'reward_snapshot_title' => $rewardSnapshotTitle,
-        'delivery_payload' => $deliveryPayload
+        'delivery_payload' => $deliveryPayload,
+        'used_fallback_dspoinc' => (bool)($deliveryPayload['used_fallback_dspoinc'] ?? false)
     ]);
 } catch (Throwable $error) {
     if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
