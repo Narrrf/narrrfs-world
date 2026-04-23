@@ -446,6 +446,148 @@ function nft_has_active_upgrade(PDO $pdo, $token_id, $collection) {
     return $row;
 }
 
+/**
+ * Return true when a SQLite table exists.
+ */
+function sqlite_table_exists(PDO $pdo, string $tableName): bool {
+    $stmt = $pdo->prepare("
+        SELECT name
+        FROM sqlite_master
+        WHERE type = 'table'
+          AND name = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$tableName]);
+
+    return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Return canonical available DSPOINC = total score - active frozen stakes.
+ */
+function get_user_available_dspoinc(PDO $pdo, string $userId): int {
+    if ($userId === '') {
+        return 0;
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(score), 0)
+        FROM tbl_user_scores
+        WHERE user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $total = (int)$stmt->fetchColumn();
+
+    if (!sqlite_table_exists($pdo, 'tbl_dspoinc_stakes')) {
+        return max(0, $total);
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(amount), 0)
+        FROM tbl_dspoinc_stakes
+        WHERE user_id = ?
+          AND status = 'active'
+    ");
+    $stmt->execute([$userId]);
+    $frozen = (int)$stmt->fetchColumn();
+
+    return max(0, $total - $frozen);
+}
+
+/**
+ * Compute cost for the next trait level.
+ * This keeps the current live trait-start lane aligned with the existing Lab economy.
+ */
+function calculate_trait_upgrade_cost_dspoinc(int $currentLevel): int {
+    $level = max(1, $currentLevel);
+    $nextLevel = $level + 1;
+
+    return max(100, ($nextLevel - 1) * 100);
+}
+
+/**
+ * Mirror trait start spend into the profile/admin audit layer when available.
+ */
+function insert_optional_score_adjustment_audit(PDO $pdo, string $userId, int $amount, string $reason): void {
+    if (!sqlite_table_exists($pdo, 'tbl_score_adjustments')) {
+        return;
+    }
+
+    $userExistsStmt = $pdo->prepare("
+        SELECT discord_id
+        FROM tbl_users
+        WHERE discord_id = ?
+        LIMIT 1
+    ");
+    $userExistsStmt->execute([$userId]);
+
+    if (!$userExistsStmt->fetch(PDO::FETCH_ASSOC)) {
+        return;
+    }
+
+    $auditStmt = $pdo->prepare("
+        INSERT INTO tbl_score_adjustments (
+            user_id,
+            admin_id,
+            amount,
+            action,
+            reason,
+            timestamp
+        ) VALUES (?, ?, ?, 'remove', ?, CURRENT_TIMESTAMP)
+    ");
+    $auditStmt->execute([
+        $userId,
+        $userId,
+        -abs($amount),
+        $reason
+    ]);
+}
+
+/**
+ * Record one trait-upgrade spend in both:
+ * - tbl_user_scores (authoritative ledger)
+ * - tbl_score_adjustments (profile/admin audit layer)
+ */
+function record_trait_upgrade_spend(
+    PDO $pdo,
+    string $userId,
+    int $amount,
+    string $reason,
+    string $tokenId,
+    string $traitType,
+    string $traitValue
+): void {
+    $amount = abs($amount);
+    if ($amount <= 0) {
+        return;
+    }
+
+    $stmt = $pdo->prepare("
+        INSERT INTO tbl_user_scores (
+            user_id,
+            score,
+            game,
+            season,
+            timestamp
+        ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ");
+    $stmt->execute([
+        $userId,
+        -$amount,
+        'lab_trait_upgrade',
+        'Genesis Lab'
+    ]);
+
+    $fullReason = $reason . ' (token ' . $tokenId . ', ' . $traitType . ' → ' . $traitValue . ')';
+
+    insert_optional_score_adjustment_audit(
+        $pdo,
+        $userId,
+        $amount,
+        $fullReason
+    );
+}
+
 function calculate_upgrade_duration_hours($currentLevel) {
     $level = max(1, (int)$currentLevel);
 
@@ -539,6 +681,7 @@ try {
         }
     }
 
+    $availableDspoinc = get_user_available_dspoinc($pdo, $user_id);
     $existingRow = get_existing_upgrade_row($pdo, $token_id, 'genesis', $trait_type, $trait_value);
 
     if ($existingRow) {
@@ -580,22 +723,49 @@ try {
             ], 409);
         }
 
+        $upgradeCost = calculate_trait_upgrade_cost_dspoinc($currentLevel);
+
+        if ($availableDspoinc < $upgradeCost) {
+            json_response([
+                'success' => false,
+                'error' => 'Not enough available DSPOINC for this trait upgrade',
+                'data' => [
+                    'available_dspoinc' => $availableDspoinc,
+                    'required_dspoinc' => $upgradeCost
+                ]
+            ], 409);
+        }
+
         $durationHours = calculate_upgrade_duration_hours($currentLevel);
         $startedAt = gmdate('Y-m-d H:i:s');
         $endsAt = gmdate('Y-m-d H:i:s', time() + ($durationHours * 3600));
 
-$updateStmt = $pdo->prepare("
-    UPDATE tbl_nft_trait_upgrades
-    SET upgrade_status = 'upgrading',
-        upgrade_started_at = ?,
-        upgrade_ends_at = ?,
-        last_owner_user_id = ?,
-        ready_claim_notified_at = NULL,
-        ready_claim_notification_count = 0,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE upgrade_id = ?
-");
-$updateStmt->execute([$startedAt, $endsAt, $user_id, $existingRow['upgrade_id']]);
+        $pdo->beginTransaction();
+
+        $updateStmt = $pdo->prepare("
+            UPDATE tbl_nft_trait_upgrades
+            SET upgrade_status = 'upgrading',
+                upgrade_started_at = ?,
+                upgrade_ends_at = ?,
+                last_owner_user_id = ?,
+                ready_claim_notified_at = NULL,
+                ready_claim_notification_count = 0,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE upgrade_id = ?
+        ");
+        $updateStmt->execute([$startedAt, $endsAt, $user_id, $existingRow['upgrade_id']]);
+
+        record_trait_upgrade_spend(
+            $pdo,
+            $user_id,
+            $upgradeCost,
+            'Genesis trait upgrade spend',
+            $token_id,
+            $trait_type,
+            $trait_value
+        );
+
+        $pdo->commit();
 
         json_response([
             'success' => true,
@@ -612,34 +782,51 @@ $updateStmt->execute([$startedAt, $endsAt, $user_id, $existingRow['upgrade_id']]
                 'upgrade_started_at' => $startedAt,
                 'upgrade_ends_at' => $endsAt,
                 'duration_hours' => $durationHours,
+                'spent_dspoinc' => $upgradeCost,
+                'available_dspoinc_after' => max(0, $availableDspoinc - $upgradeCost),
                 'source' => 'updated_existing_row'
             ]
         ]);
     }
 
     $currentLevel = 1;
+    $upgradeCost = calculate_trait_upgrade_cost_dspoinc($currentLevel);
+
+    if ($availableDspoinc < $upgradeCost) {
+        json_response([
+            'success' => false,
+            'error' => 'Not enough available DSPOINC for this trait upgrade',
+            'data' => [
+                'available_dspoinc' => $availableDspoinc,
+                'required_dspoinc' => $upgradeCost
+            ]
+        ], 409);
+    }
+
     $durationHours = calculate_upgrade_duration_hours($currentLevel);
     $startedAt = gmdate('Y-m-d H:i:s');
     $endsAt = gmdate('Y-m-d H:i:s', time() + ($durationHours * 3600));
 
-$insertStmt = $pdo->prepare("
-    INSERT INTO tbl_nft_trait_upgrades (
-        token_id,
-        collection,
-        trait_type,
-        trait_value,
-        current_level,
-        upgrade_status,
-        upgrade_started_at,
-        upgrade_ends_at,
-        last_completed_at,
-        last_owner_user_id,
-        ready_claim_notified_at,
-        ready_claim_notification_count,
-        created_at,
-        updated_at
-    ) VALUES (?, ?, ?, ?, ?, 'upgrading', ?, ?, NULL, ?, NULL, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-");
+    $pdo->beginTransaction();
+
+    $insertStmt = $pdo->prepare("
+        INSERT INTO tbl_nft_trait_upgrades (
+            token_id,
+            collection,
+            trait_type,
+            trait_value,
+            current_level,
+            upgrade_status,
+            upgrade_started_at,
+            upgrade_ends_at,
+            last_completed_at,
+            last_owner_user_id,
+            ready_claim_notified_at,
+            ready_claim_notification_count,
+            created_at,
+            updated_at
+        ) VALUES (?, ?, ?, ?, ?, 'upgrading', ?, ?, NULL, ?, NULL, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ");
     $insertStmt->execute([
         $token_id,
         'genesis',
@@ -652,6 +839,18 @@ $insertStmt = $pdo->prepare("
     ]);
 
     $upgradeId = $pdo->lastInsertId();
+
+    record_trait_upgrade_spend(
+        $pdo,
+        $user_id,
+        $upgradeCost,
+        'Genesis trait upgrade spend',
+        $token_id,
+        $trait_type,
+        $trait_value
+    );
+
+    $pdo->commit();
 
     json_response([
         'success' => true,
@@ -668,10 +867,16 @@ $insertStmt = $pdo->prepare("
             'upgrade_started_at' => $startedAt,
             'upgrade_ends_at' => $endsAt,
             'duration_hours' => $durationHours,
+            'spent_dspoinc' => $upgradeCost,
+            'available_dspoinc_after' => max(0, $availableDspoinc - $upgradeCost),
             'source' => 'inserted_new_row'
         ]
     ]);
 } catch (Exception $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
     json_response([
         'success' => false,
         'error' => 'Failed to start NFT trait upgrade',

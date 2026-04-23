@@ -5316,39 +5316,66 @@ async function toggleFavoriteTraitType(traitType) {
     }
 
     function getFavoriteTraitAutomationMarkup() {
-      const favorites = getFavoriteTraitTypes();
-      const eligibleRows = favorites.length
-        ? (Array.isArray(state.upgradeRows) ? state.upgradeRows : []).filter(row => {
-            const traitType = normalizeTraitType(row?.trait_type || '');
-            const status = mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at);
-            return favorites.includes(traitType) && status === 'idle';
-          }).length
-        : 0;
+  const favorites = getFavoriteTraitTypes();
 
-      return `
-        <div class="favorite-traits-panel">
-          <div class="favorite-traits-header">
-            <div>
-              <div class="section-title text-lg"><span>⭐</span><span>Trait Automation</span></div>
-              <div class="mt-2 text-sm text-slate-300">Mark a trait type once, then use it as a portfolio favorite across all verified Genesis mice. One click can now start every eligible favorite trait upgrade across your verified Genesis collection.</div>
-            </div>
-            <span class="chip">${favorites.length ? `${formatNumber(favorites.length)} favorite types` : 'No favorites yet'}</span>
-          </div>
-          ${favorites.length ? `
-            <div class="favorite-traits-chip-row">
-              ${favorites.map(traitType => `<span class="favorite-trait-chip">★ ${escapeHtml(traitType)}</span>`).join('')}
-            </div>
-          ` : '<div class="favorite-traits-empty">No trait types are marked yet. Use the favorite toggle inside any trait card to build your personal upgrade set.</div>'}
-          <div class="favorite-toggle-meta">
-            <div class="text-xs uppercase tracking-[0.18em] text-amber-200 font-bold">Eligible favorite upgrades now: ${formatNumber(eligibleRows)}</div>
-            <div class="text-xs text-slate-400">Bulk upgrade uses your saved favorite trait types and starts all eligible idle Genesis trait upgrades through the backend authority.</div>
-          </div>
-          <div class="favorite-traits-actions">
-            <button type="button" class="btn warn" data-bulk-favorite-upgrade="true" ${favorites.length ? '' : 'disabled'}>⭐ Upgrade All Favorite Traits</button>
+  const eligibleFavoriteRows = favorites.length
+    ? (Array.isArray(state.upgradeRows) ? state.upgradeRows : []).filter(row => {
+        const traitType = normalizeTraitType(row?.trait_type || '');
+        const status = mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at);
+        return favorites.includes(traitType) && status === 'idle';
+      })
+    : [];
+
+  const eligibleRows = eligibleFavoriteRows.length;
+
+  const estimatedBulkCost = eligibleFavoriteRows.reduce((sum, row) => {
+    return sum + Number(row?.cost_dspoinc || 0);
+  }, 0);
+
+  return `
+    <div class="favorite-traits-panel">
+      <div class="favorite-traits-header">
+        <div>
+          <div class="section-title text-lg"><span>⭐</span><span>Trait Automation</span></div>
+          <div class="mt-2 text-sm text-slate-300">
+            Mark a trait type once, then use it as a portfolio favorite across all verified Genesis mice.
+            One click can now start every eligible favorite trait upgrade across your verified Genesis collection.
           </div>
         </div>
-      `;
-    }
+        <span class="chip">${favorites.length ? `${formatNumber(favorites.length)} favorite types` : 'No favorites yet'}</span>
+      </div>
+
+      ${favorites.length ? `
+        <div class="favorite-traits-chip-row">
+          ${favorites.map(traitType => `<span class="favorite-trait-chip">★ ${escapeHtml(traitType)}</span>`).join('')}
+        </div>
+      ` : '<div class="favorite-traits-empty">No trait types are marked yet. Use the favorite toggle inside any trait card to build your personal upgrade set.</div>'}
+
+      <div class="favorite-toggle-meta">
+        <div class="text-xs uppercase tracking-[0.18em] text-amber-200 font-bold">
+          Eligible favorite upgrades now: ${formatNumber(eligibleRows)}
+        </div>
+        <div class="text-xs uppercase tracking-[0.18em] text-cyan-200 font-bold mt-1">
+  Estimated bulk cost preview: ${formatNumber(estimatedBulkCost)} DSPOINC
+</div>
+        <div class="text-xs text-slate-400">
+          Bulk upgrade uses your saved favorite trait types and starts all eligible idle Genesis trait upgrades through the backend authority.
+        </div>
+      </div>
+
+      <div class="favorite-traits-actions">
+        <button
+  type="button"
+  class="btn warn"
+  data-bulk-favorite-upgrade="true"
+  ${eligibleRows > 0 ? '' : 'disabled'}
+>
+  ⭐ Upgrade All Favorite Traits
+</button>
+      </div>
+    </div>
+  `;
+}
 
 function ensureSelectedNft() {
   const verified = getVerifiedGenesisNfts();
@@ -11616,6 +11643,16 @@ async function handleBulkFavoriteTraitUpgrade() {
     return;
   }
 
+  const eligibleFavoriteRows = (Array.isArray(state.upgradeRows) ? state.upgradeRows : []).filter(row => {
+    const traitType = normalizeTraitType(row?.trait_type || '');
+    const status = mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at);
+    return favorites.includes(traitType) && status === 'idle';
+  });
+
+  const estimatedBulkCost = eligibleFavoriteRows.reduce((sum, row) => {
+    return sum + Number(row?.cost_dspoinc || 0);
+  }, 0);
+
   state.actionInFlight = true;
 
   try {
@@ -11653,7 +11690,7 @@ async function handleBulkFavoriteTraitUpgrade() {
       title: 'Bulk Favorite Upgrade Started',
       icon: '⭐',
       message: `Started ${formatNumber(startedCount)} favorite Genesis trait upgrade${startedCount === 1 ? '' : 's'} across your verified collection.`,
-      note: `Eligible checked: ${formatNumber(eligibleCount)} • Skipped: ${formatNumber(skippedCount)} • Spent: ${formatNumber(spentTotal)} DSPOINC • Remaining available: ${formatNumber(remainingBalance)} DSPOINC`,
+      note: `Preview: ${formatNumber(estimatedBulkCost)} DSPOINC • Final spend: ${formatNumber(spentTotal)} DSPOINC • Eligible checked: ${formatNumber(eligibleCount)} • Skipped: ${formatNumber(skippedCount)} • Remaining available: ${formatNumber(remainingBalance)} DSPOINC`,
       confirmText: 'Excellent',
       confirmVariant: 'primary'
     });
@@ -11677,7 +11714,7 @@ async function handleBulkFavoriteTraitUpgrade() {
       title: 'Bulk Favorite Upgrade Failed',
       icon: '⚠️',
       message: error.message || 'The backend rejected the bulk favorite trait upgrade request.',
-      note: 'No manual Genesis upgrade or ability paths were changed by this action.',
+      note: `Estimated preview before request: ${formatNumber(estimatedBulkCost)} DSPOINC. No manual Genesis upgrade or ability paths were changed by this action.`,
       confirmText: 'Understood',
       confirmVariant: 'primary'
     });

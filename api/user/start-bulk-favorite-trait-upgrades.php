@@ -51,7 +51,6 @@ session_start();
 
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf local fallback
 const GENESIS_COLLECTION = 'genesis';
-const BULK_UPGRADE_DEFAULT_DURATION_HOURS = 8;
 const BULK_UPGRADE_BASE_COST = 100;
 
 /**
@@ -234,13 +233,78 @@ function get_user_available_dspoinc(PDO $pdo, string $userId): int {
     return max(0, $total - $frozen);
 }
 
+function insert_optional_score_adjustment_audit(PDO $pdo, string $userId, int $amount, string $reason): void {
+    $tableExistsStmt = $pdo->prepare("
+        SELECT name
+        FROM sqlite_master
+        WHERE type = 'table'
+          AND name = 'tbl_score_adjustments'
+        LIMIT 1
+    ");
+    $tableExistsStmt->execute();
+
+    if (!$tableExistsStmt->fetch(PDO::FETCH_ASSOC)) {
+        return;
+    }
+
+    $userExistsStmt = $pdo->prepare("
+    SELECT discord_id
+    FROM tbl_users
+    WHERE discord_id = ?
+    LIMIT 1
+");
+$userExistsStmt->execute([$userId]);
+
+    if (!$userExistsStmt->fetch(PDO::FETCH_ASSOC)) {
+        return;
+    }
+
+    $auditStmt = $pdo->prepare("
+        INSERT INTO tbl_score_adjustments (
+            user_id,
+            admin_id,
+            amount,
+            action,
+            reason,
+            timestamp
+        ) VALUES (?, ?, ?, 'remove', ?, CURRENT_TIMESTAMP)
+    ");
+    $auditStmt->execute([
+        $userId,
+        $userId,
+        -abs($amount),
+        $reason
+    ]);
+}
+
 /**
- * Credit a negative DSPOINC ledger entry for upgrade cost.
+ * Record one bulk Genesis trait upgrade spend in both:
+ * - tbl_user_scores (authoritative ledger)
+ * - tbl_score_adjustments (profile/admin audit layer)
  */
 function record_upgrade_spend(PDO $pdo, string $userId, int $amount, string $reason, array $metadata = []): void {
     $amount = abs($amount);
     if ($amount <= 0) {
         return;
+    }
+
+    $reasonSuffixParts = [];
+
+    if (!empty($metadata['token_id'])) {
+        $reasonSuffixParts[] = 'token ' . (string)$metadata['token_id'];
+    }
+
+    if (!empty($metadata['trait_type']) && !empty($metadata['trait_value'])) {
+        $reasonSuffixParts[] = (string)$metadata['trait_type'] . ' → ' . (string)$metadata['trait_value'];
+    }
+
+    if (!empty($metadata['upgrade_id'])) {
+        $reasonSuffixParts[] = 'upgrade_id: ' . (int)$metadata['upgrade_id'];
+    }
+
+    $fullReason = $reason;
+    if (!empty($reasonSuffixParts)) {
+        $fullReason .= ' (' . implode(', ', $reasonSuffixParts) . ')';
     }
 
     $stmt = $pdo->prepare("
@@ -259,9 +323,12 @@ function record_upgrade_spend(PDO $pdo, string $userId, int $amount, string $rea
         'Genesis Lab'
     ]);
 
-    // Optional audit trail skipped for now because tbl_score_adjustments
-    // schema differs across environments. tbl_user_scores remains the
-    // authoritative DSPOINC ledger for this bulk upgrade spend.
+    insert_optional_score_adjustment_audit(
+        $pdo,
+        $userId,
+        $amount,
+        $fullReason
+    );
 }
 
 /**
@@ -390,7 +457,31 @@ function get_next_upgrade_cost(int $currentLevel): int {
  * v1 simple model: fixed 8h.
  */
 function get_next_upgrade_duration_hours(int $currentLevel): int {
-    return BULK_UPGRADE_DEFAULT_DURATION_HOURS;
+    $currentLevel = max(1, $currentLevel);
+    $nextLevel = $currentLevel + 1;
+
+    if ($nextLevel === 2) {
+        return 24;
+    }
+
+    if ($nextLevel === 3) {
+        return 48;
+    }
+
+    if ($nextLevel === 4) {
+        return 96;
+    }
+
+    if ($nextLevel === 5) {
+        return 192;
+    }
+
+    if ($nextLevel >= 6 && $nextLevel <= 16) {
+        return 192 + (($nextLevel - 5) * 24);
+    }
+
+    $level16Duration = 192 + ((16 - 5) * 24); // 456h at level 16
+    return $level16Duration + ($nextLevel - 16);
 }
 
 /**
