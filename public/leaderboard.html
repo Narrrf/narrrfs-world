@@ -195,6 +195,24 @@
         </div>
       </div>
 
+      <!-- Cheese Runner Leaderboard -->
+<div class="leaderboard-card rounded-xl p-6 mb-6">
+  <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <h2 class="text-2xl font-bold text-yellow-300 flex items-center gap-2">
+      <span>🧀</span>
+      <span>Cheese Runner Leaderboard</span>
+    </h2>
+    <a href="cheeseman.html" 
+       class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-gray-900 font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-300 hover:border-yellow-200 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
+      🎮 Play Cheese Runner
+    </a>
+  </div>
+
+  <div id="cheeseman-leaderboard" class="space-y-2">
+    <!-- Populated by JavaScript -->
+  </div>
+</div>
+
       <!-- Cheese Hunt Leaderboard -->
       <div class="leaderboard-card rounded-xl p-6 mb-6">
         <h2 class="text-2xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
@@ -477,6 +495,7 @@ displayLeaderboard('dspoinc-earnings', data.dspoinc_earnings || [], data.is_froz
 displayLeaderboard('tetris', data.tetris || [], data.is_frozen);
 displayLeaderboard('snake', data.snake || [], data.is_frozen);
 displayLeaderboard('space-invaders', data.space_invaders || [], data.is_frozen);
+displayLeaderboard('cheeseman', data.cheeseman || [], data.is_frozen);
 displayLeaderboard('cheese-hunt', data.cheese_hunt || [], data.is_frozen);
 displayLeaderboard('discord-race', data.discord_race || [], data.is_frozen);
 displayLeaderboard('cheese-rumble', data.cheese_rumble || [], data.is_frozen);

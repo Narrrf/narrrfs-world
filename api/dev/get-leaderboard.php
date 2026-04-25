@@ -203,7 +203,7 @@ LIMIT 10
     $totalScoresStmt = $db->prepare("
         SELECT COUNT(*) as total_scores
         FROM tbl_tetris_scores
-        WHERE season = ? AND game IN ('tetris', 'snake', 'space_invaders')
+        WHERE season = ? AND game IN ('tetris', 'snake', 'space_invaders', 'cheeseman')
     ");
     $totalScoresStmt->execute([$currentSeason]);
     $totalScoresAcrossAllGames = $totalScoresStmt->fetchColumn() ?: 0;
@@ -216,6 +216,9 @@ LIMIT 10
     $tetrisResult = getLeaderboard($db, 'tetris', $currentSeason, $previousSeason, $useFrozenLeaderboard);
     $snakeResult = getLeaderboard($db, 'snake', $currentSeason, $previousSeason, $useFrozenLeaderboard);
     $spaceInvadersResult = getLeaderboard($db, 'space_invaders', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+    $cheesemanResult = getLeaderboard($db, 'cheeseman', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+
+
 
     foreach ($spaceInvadersResult['leaderboard'] as &$entry) {
         $entry['score'] = round($entry['score']);
@@ -622,6 +625,11 @@ echo json_encode([
     'tetris' => $tetrisResult['leaderboard'],
     'snake' => $snakeResult['leaderboard'],
     'space_invaders' => $spaceInvadersResult['leaderboard'],
+    'cheeseman' => $cheesemanResult['leaderboard'],
+    'cheeseman_meta' => [
+        'is_frozen' => $cheesemanResult['is_frozen'] ?? false,
+        'season_shown' => $cheesemanResult['season_shown'] ?? $currentSeason
+    ],
     'cheese_hunt' => $cheeseHuntResult['leaderboard'],
     'discord_race' => $discordRaceResult['leaderboard'],
     'cheese_rumble' => $cheeseRumbleResult['leaderboard'],

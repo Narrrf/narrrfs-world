@@ -1,9 +1,9 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: April 22, 2026
-Status: ✅ STABLE — CORE SYSTEMS ALIGNED (LAB + DSPOINC + REWARDS + BOT)
-Version: 2026-04-22
-Milestone: Major sync completed across Lab UX, DSPOINC ledger alignment, Reward/Giveaway reliability, and Winners filtering logic; system is ready for next phase (Lab + Admin integration)
+Last Updated: April 24, 2026
+Status: ✅ STABLE — CHEESE RUNNER (CHEESEMAN) FULLY INTEGRATED + CORE SYSTEM COMPLETE
+Version: 2026-04-24
+Milestone: Cheeseman is now integrated into unified scoring + leaderboard + season stats pipeline with DSPOINC conversion and backend-authoritative score writes
 
 ---
 
@@ -121,6 +121,131 @@ Needs alignment with:
 ### 🏁 STATUS
 
 READY FOR NEXT PHASE → LAB + ADMIN INTEGRATION
+
+---
+
+## 🔄 UPDATE — APRIL 24, 2026
+
+### 🧀 CHEESE RUNNER (CHEESEMAN) — SYSTEM STATUS UPDATE
+
+**STATUS: ✅ FULLY INTEGRATED (CORE SYSTEM COMPLETE)**
+
+### 🎮 GAME
+
+- Pac-Man style grid-based game implemented
+- Role multipliers + theme system active
+- DSPOINC conversion integrated
+- Mobile + desktop optimized
+
+### 💾 BACKEND
+
+- Dedicated Cheeseman score API implemented
+- Writes to:
+  - `tbl_tetris_scores` (leaderboard)
+  - `tbl_user_scores` (DSPOINC ledger)
+- Session-based auth + localhost fallback
+
+### 🏆 LEADERBOARD
+
+- Fully integrated
+- Appears in:
+  - main leaderboard
+  - season leaderboard
+- Uses game key: `cheeseman`
+
+### 📊 SEASON STATS
+
+- Added to:
+  - `season_stats`
+  - `top_performers`
+  - `all_time_legends`
+
+### ⚠️ OPEN TASKS
+
+1) Add Cheeseman to `api/user/all-time-stats.php` (profile overview currently missing)
+2) Verify frontend score submission call
+3) Add Cheeseman to admin interface stats view
+4) Optional: extend profile UI for Cheeseman-specific stats
+
+### 🧠 ARCHITECTURE STATUS
+
+- Fully aligned with existing system
+- No duplicate reward systems
+- Uses unified scoring + leaderboard pipeline
+
+### ✅ READY FOR
+
+- Production usage
+- Future expansions (missions, rewards, achievements)
+
+---
+
+## 🔄 UPDATE — APRIL 23, 2026
+
+### 🧬 LAB TRAIT UPGRADE ECONOMY + BULK TRAIT STABILIZATION
+
+### ✅ Completed today
+
+- Fixed `api/user/start-bulk-favorite-trait-upgrades.php` so bulk favorite Genesis trait upgrades also write DSPOINC audit rows into `tbl_score_adjustments`.
+- Confirmed bulk favorite upgrades still write negative ledger rows into `tbl_user_scores` under `game = 'lab_trait_upgrade'`.
+- Fixed bulk audit helper validation to use `tbl_users.discord_id` (replacing wrong `user_id` lookup).
+- Verified with live SQL that new bulk favorite spends now appear in:
+  - `tbl_user_scores`
+  - `tbl_score_adjustments`
+- Added/verified frontend bulk cost visibility in `public/lab.html` using backend-fed `cost_dspoinc`.
+- Merged spend logging into `api/user/start-nft-trait-upgrade.php` so normal single Genesis trait upgrade starts now also write:
+  - negative `tbl_user_scores` rows
+  - negative `tbl_score_adjustments` rows
+- Preserved existing Genesis trait validation logic:
+  - verified NFT ownership
+  - active-upgrade checks
+  - existing-row vs insert-row handling
+  - duration ladder behavior
+
+### 💰 Important economy status
+
+- Backend remains authoritative.
+- Profile red/green display still uses amount sign only.
+- Genesis trait upgrade starts now follow ledger + audit visibility like other economy-sensitive systems.
+- Bulk favorite Genesis trait spends now appear in recent DSPOINC transaction history as intended.
+
+### 🛠️ Live recovery work completed
+
+- During testing, all live `upgrading` Genesis trait rows were accidentally reset.
+- Recovery succeeded using backup table:
+  - `tbl_nft_trait_upgrades_local_reset_backup`
+- Restored all previously upgrading Genesis rows from backup.
+- Verified Narrrf’s corrected bulk-upgrade durations were preserved after restore.
+- Final live state was confirmed healthy before push.
+
+### 🧪 SQL validations performed
+
+- Confirmed new bulk favorite spend rows in `tbl_score_adjustments`.
+- Confirmed ledger rows remain negative in `tbl_user_scores`.
+- Confirmed restored live Genesis upgrading row count returned to expected value.
+- Confirmed corrected duration ladder on restored affected Narrrf rows.
+
+### 📁 Files changed for push
+
+- `api/user/start-bulk-favorite-trait-upgrades.php`
+- `api/user/start-nft-trait-upgrade.php`
+- `public/lab.html`
+
+### ⚠️ Known remaining note
+
+- Bulk trait cost logic was aligned for visibility/history flow, but trait economy remains sensitive.
+- Future review should confirm single-trait and bulk-trait start use the exact intended long-term cost formula everywhere.
+- Do not run destructive upgrade-reset SQL on live again; always clone DB or use dedicated local DB copies first.
+
+### 🎯 Recommended next agent focus
+
+- Deep review of `lab.html` and admin-interface integration.
+- Verify all Genesis trait start / bulk / instant-finish flows remain aligned across:
+  - API
+  - DB
+  - profile transaction history
+  - bot-facing economy assumptions
+- Optional hardening: wrap multi-write trait-start flows in stronger transaction-safe patterns.
 
 ## 🔄 UPDATE — APRIL 20, 2026
 

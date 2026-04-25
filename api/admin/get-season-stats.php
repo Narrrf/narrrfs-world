@@ -69,7 +69,7 @@ try {
     $stmt->execute();
     $available_seasons = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-    // Get season statistics
+    // Get season statistics all 8 games 
     $season_stats = [];
     
     if ($game_type === 'all' || $game_type === 'tetris') {
@@ -119,6 +119,22 @@ try {
         $season_stats['space_invaders'] = $stmt->fetch(PDO::FETCH_ASSOC);
         error_log("Space Invaders stats for season '$target_season': " . json_encode($season_stats['space_invaders']));
     }
+
+    if ($game_type === 'all' || $game_type === 'cheeseman') {
+    $stmt = $pdo->prepare("
+        SELECT 
+            COUNT(*) as total_scores,
+            MAX(score) as max_score,
+            AVG(score) as avg_score,
+            COUNT(DISTINCT discord_id) as unique_players,
+            COUNT(CASE WHEN is_top_performer = 1 THEN 1 END) as top_performers
+        FROM tbl_tetris_scores 
+        WHERE game = 'cheeseman' AND season = ?
+    ");
+    $stmt->execute([$target_season]);
+    $season_stats['cheeseman'] = $stmt->fetch(PDO::FETCH_ASSOC);
+    error_log("Cheeseman stats for season '$target_season': " . json_encode($season_stats['cheeseman']));
+}
 
     // Add Cheese Hunt statistics
     if ($game_type === 'all' || $game_type === 'cheese_hunt') {
@@ -284,6 +300,26 @@ try {
         }
     }
 
+    // Cheese Runner 
+
+        if ($game_type === 'all' || $game_type === 'cheeseman') {
+        $stmt = $pdo->prepare("
+            SELECT 
+                discord_id,
+                discord_name,
+                MAX(score) as score,
+                MIN(timestamp) as timestamp,
+                MAX(is_top_performer) as is_top_performer
+            FROM tbl_tetris_scores 
+            WHERE game = 'cheeseman' AND season = ? 
+            GROUP BY discord_id, discord_name
+            ORDER BY score DESC 
+            LIMIT 10
+        ");
+        $stmt->execute([$target_season]);
+        $top_performers['cheeseman'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Get all-time top performers (marked as legends)
     $all_time_legends = [];
     
@@ -346,6 +382,23 @@ try {
         foreach ($all_time_legends['space_invaders'] as &$entry) {
             $entry['score'] = round($entry['score'] / 100);
         }
+    }
+
+        if ($game_type === 'all' || $game_type === 'cheeseman') {
+        $stmt = $pdo->prepare("
+            SELECT 
+                discord_id,
+                discord_name,
+                score,
+                season,
+                timestamp
+            FROM tbl_tetris_scores 
+            WHERE game = 'cheeseman' AND is_top_performer = 1 
+            ORDER BY score DESC 
+            LIMIT 5
+        ");
+        $stmt->execute();
+        $all_time_legends['cheeseman'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Get season timeline

@@ -306,22 +306,56 @@ $response['all_time_stats']['games']['glyph_memory'] = [
     'avg_time_ms' => isset($glyph['avg_time_ms']) ? (int)round($glyph['avg_time_ms']) : null,
     'last_played' => $glyph['last_played'] ?? null
 ];
+
+
+// 8. CHEESE RUNNER / CHEESEMAN - All-time stats
+$cheesemanStmt = $db->prepare("
+    SELECT
+        COUNT(*) as total_games,
+        MAX(score) as best_score,
+        SUM(score) as total_score,
+        AVG(score) as avg_score,
+        MAX(timestamp) as last_played
+    FROM tbl_tetris_scores
+    WHERE discord_id = :user_id
+    AND game = 'cheeseman'
+");
+$cheesemanStmt->execute([':user_id' => $user_id]);
+$cheesemanData = $cheesemanStmt->fetch(PDO::FETCH_ASSOC);
+
+$totalGames = (int)($cheesemanData['total_games'] ?? 0);
+$totalScore = (int)($cheesemanData['total_score'] ?? 0);
+$avgScore = $totalGames > 0 ? round($totalScore / $totalGames, 2) : 0;
+
+$response['all_time_stats']['games']['cheeseman'] = [
+    'name' => 'Cheese Runner',
+    'icon' => '🧀',
+    'total_games' => $totalGames,
+    'best_score' => (int)($cheesemanData['best_score'] ?? 0),
+    'total_score' => $totalScore,
+    'avg_score' => $avgScore,
+    'last_played' => $cheesemanData['last_played'] ?? null
+];
+
     
     // Calculate total games played across all games (including Cheese Rumble - 6th game)
-$response['all_time_stats']['total_games_played'] = 
+$response['all_time_stats']['total_games_played'] =
     $response['all_time_stats']['games']['tetris']['total_games'] +
     $response['all_time_stats']['games']['snake']['total_games'] +
     $response['all_time_stats']['games']['space_invaders']['total_games'] +
+    $response['all_time_stats']['games']['cheeseman']['total_games'] +
     $response['all_time_stats']['games']['cheese_hunt']['total_clicks'] +
     $response['all_time_stats']['games']['discord_race']['total_races'] +
     $response['all_time_stats']['games']['cheese_rumble']['total_rumbles'] +
     $response['all_time_stats']['games']['glyph_memory']['total_runs'];
+
     
     // Calculate total DSPOINC earned (from tbl_tetris_scores only)
-    $response['all_time_stats']['total_dspoinc_earned'] = 
-        $response['all_time_stats']['games']['tetris']['total_score'] +
-        $response['all_time_stats']['games']['snake']['total_score'] +
-        $response['all_time_stats']['games']['space_invaders']['total_score'];
+   $response['all_time_stats']['total_dspoinc_earned'] =
+    $response['all_time_stats']['games']['tetris']['total_score'] +
+    $response['all_time_stats']['games']['snake']['total_score'] +
+    $response['all_time_stats']['games']['space_invaders']['total_score'] +
+    $response['all_time_stats']['games']['cheeseman']['total_score'];
     
     // Achievement counts
     $achievementsStmt = $db->prepare("

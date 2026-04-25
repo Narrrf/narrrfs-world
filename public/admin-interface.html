@@ -2714,6 +2714,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="tetris" onclick="forceLoadTabOnClick('tetris')">🧩 Tetris</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake" onclick="forceLoadTabOnClick('snake')">🐍 Snake</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="space-invaders" onclick="forceLoadTabOnClick('space-invaders')">👾 Space Invaders</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheeseman" onclick="forceLoadTabOnClick('cheeseman')">🧀 Cheese Runner</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="forceLoadTabOnClick('cheese-hunt')">🧀 Cheese Hunt</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="forceLoadTabOnClick('discord-race')">🏁 Discord Race</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-rumble" onclick="forceLoadTabOnClick('cheese-rumble')">💥 Cheese Rumble</button>
@@ -2857,14 +2858,16 @@
             <div>
               <label class="block text-sm font-medium mb-2">🎮 Game Filter:</label>
               <select id="gameFilter" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
-                <option value="all">All Games</option>
-                <option value="tetris">Tetris Only</option>
-                <option value="snake">Snake Only</option>
-                <option value="space_invaders">Space Invaders Only</option>
-                <option value="cheese_hunt">Cheese Hunt Only</option>
-                <option value="discord_race">Discord Race Only</option>
-                <option value="cheese_rumble">Cheese Rumble Only</option>
-              </select>
+  <option value="all">All Games</option>
+  <option value="tetris">Tetris Only</option>
+  <option value="snake">Snake Only</option>
+  <option value="space_invaders">Space Invaders Only</option>
+  <option value="cheeseman">Cheese Runner Only</option>
+  <option value="cheese_hunt">Cheese Hunt Only</option>
+  <option value="discord_race">Discord Race Only</option>
+  <option value="cheese_rumble">Cheese Rumble Only</option>
+  <option value="glyph_memory">Glyph Memory Only</option>
+</select>
             </div>
           </div>
           <div id="seasonStats" class="space-y-4">
@@ -3017,6 +3020,55 @@
           </div>
         </div>
       </div>
+
+      <!-- Cheese Runner Tab -->
+<div id="cheesemanTab" class="game-tab-content" style="display: none;">
+  <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+    <h3 class="text-lg font-semibold mb-3 text-yellow-300">🧀 Cheese Runner Management</h3>
+
+    <div class="game-stats-grid">
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>🎮</span><span>Total Runs</span></div>
+        <div class="game-stat-value" id="cheesemanTotalScores">-</div>
+        <div class="game-stat-label">All saved Cheese Runner runs</div>
+        <div class="game-stat-subvalue">Players: <span id="cheesemanUniquePlayers" class="text-blue-400">-</span></div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>🏆</span><span>Best Score</span></div>
+        <div class="game-stat-value" id="cheesemanMaxScore">-</div>
+        <div class="game-stat-label">Highest Cheese Runner score</div>
+        <div class="game-stat-subvalue">Season source: tbl_tetris_scores</div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>💰</span><span>Total DSPOINC</span></div>
+        <div class="game-stat-value" id="cheesemanTotalDspoinc">-</div>
+        <div class="game-stat-label">Awarded through Cheese Runner</div>
+        <div class="game-stat-subvalue">Ledger source: tbl_user_scores</div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>📈</span><span>Recent Activity</span></div>
+        <div class="game-stat-value" id="cheesemanRecent24h">-</div>
+        <div class="game-stat-label">Last 24 hours</div>
+        <div class="game-stat-subvalue">7 days: <span id="cheesemanRecent7d" class="text-green-400">-</span></div>
+      </div>
+    </div>
+
+    <div class="bg-gray-700 p-4 rounded mb-4">
+      <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Cheese Runner Players</h4>
+      <div id="cheesemanLeaderboard" class="space-y-2">
+        <div class="text-gray-400 text-center">Loading Cheese Runner leaderboard...</div>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <button onclick="loadCheesemanData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+      <a href="cheeseman.html" target="_blank" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded admin-button">🎮 Open Game</a>
+    </div>
+  </div>
+</div>
 
 <div id="glyphMemoryTab" class="game-tab-content hidden" style="display: none;">
   <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
@@ -6476,6 +6528,7 @@ addLog('✅ Overview game statistics loaded successfully for all overview panels
           loadTetrisData(),
           loadSnakeData(),
                   loadSpaceInvadersData(),
+                  loadCheesemanData(),
           loadCheeseHuntData(),
           loadDiscordRaceData()
         ];
@@ -6509,7 +6562,7 @@ addLog('✅ Overview game statistics loaded successfully for all overview panels
 
     // Mark game tabs as having data loaded
     function markGameTabsAsLoaded() {
-      const gameTabs = ['tetris', 'snake', 'space-invaders', 'cheese-hunt', 'discord-race'];
+      const gameTabs = ['tetris', 'snake', 'space-invaders', 'cheeseman', 'cheese-hunt', 'discord-race'];
       
       gameTabs.forEach(gameName => {
         const button = document.querySelector(`[data-game-tab="${gameName}"]`);
@@ -18440,6 +18493,19 @@ function updateGameTabContent(gameType, gameData) {
           await forceRefreshTabDisplay('space-invaders');
         }
       },
+            cheeseman: {
+        key: 'cheeseman',
+        label: '🧀 Cheese Runner',
+        buttonLabel: '🧀 Cheese Runner',
+        tabId: 'cheesemanTab',
+        tabButtonSelector: '[data-game-tab="cheeseman"]',
+        load: async () => {
+          await loadCheesemanData();
+        },
+        refresh: async () => {
+          await loadCheesemanData();
+        }
+      },
       'cheese-hunt': {
         key: 'cheese-hunt',
         label: '🧀 Cheese Hunt',
@@ -19517,6 +19583,138 @@ function updateGameTabContent(gameType, gameData) {
         }
       }
     }
+
+    /**
+ * Load Cheese Runner admin stats from the shared game stats API.
+ * Cheese Runner uses game key "cheeseman" in tbl_tetris_scores and tbl_user_scores.
+ */
+async function loadCheesemanData() {
+  if (!currentAdmin) {
+    addLog('❌ Please authenticate first');
+    return;
+  }
+
+  addLog('🔄 Loading Cheese Runner data...');
+
+  const cheesemanTab = document.getElementById('cheesemanTab');
+  cheesemanTab?.classList.add('loading');
+
+  try {
+    const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php', {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await response.json();
+    const cheesemanData = data?.data?.games?.cheeseman || data?.games?.cheeseman || null;
+
+    if (!data.success || !cheesemanData) {
+      throw new Error(data.error || 'Cheese Runner data missing from get-all-games-stats.php');
+    }
+
+    displayCheesemanData(cheesemanData);
+    addLog('✅ Cheese Runner data loaded successfully');
+  } catch (error) {
+    addLog(`❌ Cheese Runner data loading error: ${error.message}`);
+    console.error('❌ Cheese Runner admin load failed:', error);
+  } finally {
+    cheesemanTab?.classList.remove('loading');
+  }
+}
+
+/**
+ * Render Cheese Runner admin stats into the Game Management tab.
+ */
+function displayCheesemanData(cheesemanData) {
+  const formatNumber = (value) => Number(value || 0).toLocaleString();
+
+  const seasonData = cheesemanData.season_data || cheesemanData.current_data || cheesemanData || {};
+  const allTimeData = cheesemanData.all_time || {};
+  const topPlayers = cheesemanData.top_players || cheesemanData.leaderboard || [];
+
+  const totalScores =
+    seasonData.total_scores ??
+    seasonData.total_games ??
+    allTimeData.total_scores ??
+    allTimeData.total_games ??
+    0;
+
+  const uniquePlayers =
+    seasonData.unique_players ??
+    allTimeData.unique_players ??
+    0;
+
+  const maxScore =
+    seasonData.max_score ??
+    seasonData.best_score ??
+    allTimeData.max_score ??
+    allTimeData.best_score ??
+    0;
+
+  const totalDspoinc =
+    seasonData.total_score ??
+    seasonData.total_dspoinc ??
+    allTimeData.total_score ??
+    allTimeData.total_dspoinc ??
+    0;
+
+  const recent24h = seasonData.recent_24h ?? 0;
+  const recent7d = seasonData.recent_7d ?? 0;
+
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  setText('cheesemanTotalScores', formatNumber(totalScores));
+  setText('cheesemanUniquePlayers', formatNumber(uniquePlayers));
+  setText('cheesemanMaxScore', formatNumber(maxScore));
+  setText('cheesemanTotalDspoinc', formatNumber(totalDspoinc));
+  setText('cheesemanRecent24h', formatNumber(recent24h));
+  setText('cheesemanRecent7d', formatNumber(recent7d));
+
+  const leaderboardEl = document.getElementById('cheesemanLeaderboard');
+  if (!leaderboardEl) {
+    return;
+  }
+
+  if (!Array.isArray(topPlayers) || topPlayers.length === 0) {
+    leaderboardEl.innerHTML = '<div class="text-gray-400 text-center">No Cheese Runner scores yet</div>';
+    return;
+  }
+
+  leaderboardEl.innerHTML = topPlayers.slice(0, 10).map((player, index) => {
+    const playerName =
+      player.discord_name ||
+      player.username ||
+      player.discord_id ||
+      player.user_id ||
+      'Unknown Mouse';
+
+    const score =
+      player.score ||
+      player.best_score ||
+      player.total_score ||
+      0;
+
+    return `
+      <div class="leaderboard-item">
+        <div class="leaderboard-rank ${index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : ''}">
+          #${index + 1}
+        </div>
+        <div class="leaderboard-player">
+          <div class="leaderboard-name">${playerName}</div>
+          <div class="leaderboard-score">🧀 Cheese Runner</div>
+        </div>
+        <div class="leaderboard-score">
+          <div class="leaderboard-score-main">${formatNumber(score)} DSPOINC</div>
+          <div class="leaderboard-score-sub">${player.timestamp || player.last_played || ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
     // Space Invaders Tab Functions (Combined with Cheese Invaders)
     async function loadSpaceInvadersData() {

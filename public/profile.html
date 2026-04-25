@@ -3290,6 +3290,13 @@ else {
         <p class="quick-access-card-copy">Decode!</p>
       </a>
 
+      <!-- 🧀 Cheese Runner -->
+<a href="cheeseman.html" class="quick-access-card quick-access-card--cheeseman group">
+  <div class="quick-access-card-icon group-hover:animate-bounce">🧀</div>
+  <h3 class="quick-access-card-title">Cheese Runner</h3>
+  <p class="quick-access-card-copy">Maze run!</p>
+</a>
+
       <!-- 🎁 Lootbox -->
       <button type="button" onclick="scrollToChestSection()" class="quick-access-card quick-access-card--lootbox group">
         <img src="img/chests/chest-closed.png" alt="Lootbox" class="group-hover:scale-110 transition-transform duration-300">
@@ -6133,6 +6140,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       skillsBox.innerHTML = '<span class="text-gray-300">No skills yet</span>';
     }
   }
+
+
 
   // 5. Access Levels (portals): show unlocked based on role/trait logic
   const portals = [
@@ -9769,6 +9778,15 @@ function getGameStats(gameKey, game) {
     switch (gameKey) {
       case 'tetris':
       case 'snake':
+              case 'cheeseman':
+        statsHTML = `
+          <div class="text-blue-300">Games Played: ${stats.total_games || 0}</div>
+          <div class="text-yellow-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : '0'}</div>
+          <div class="text-green-300">Total Score: ${stats.total_score ? stats.total_score.toLocaleString() : '0'}</div>
+          <div class="text-purple-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
+          <div class="text-gray-300">Last Played: ${stats.last_played || 'Never'}</div>
+        `;
+        break;
       case 'space_invaders':
         statsHTML = `
           <div class="text-blue-300">Best Score: ${stats.best_score != null ? stats.best_score.toLocaleString() : 'N/A'}</div>
@@ -10280,6 +10298,39 @@ const gamesPlayed = Object.values(stats.games).filter(game => {
           </div>
         </div>
       `;
+
+            // Cheese Runner / Cheeseman (8th Game)
+      const cheeseman = stats.games.cheeseman;
+      const cheesemanStats = cheeseman?.stats || cheeseman || {};
+
+      if (cheeseman) {
+        cardsHTML += `
+          <div class="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-lg p-3 border border-yellow-500/30">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl">${cheeseman.icon || '🧀'}</span>
+              <span class="text-white font-semibold">${cheeseman.name || 'Cheese Runner'}</span>
+            </div>
+            <div class="text-xs space-y-1">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Games Played:</span>
+                <span class="text-white font-semibold">${Number(cheesemanStats.total_games || 0).toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Best Score:</span>
+                <span class="text-yellow-300">${Number(cheesemanStats.best_score || 0).toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Avg Score:</span>
+                <span class="text-orange-300">${Number(
+                  (cheesemanStats.total_games || 0) > 0
+                    ? Math.round((cheesemanStats.total_score || 0) / cheesemanStats.total_games)
+                    : 0
+                ).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
       
       // Snake
       const snake = stats.games.snake;

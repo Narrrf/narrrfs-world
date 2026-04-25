@@ -122,7 +122,7 @@ try {
         'success' => true,
         'data' => [
             'overview' => [
-                'games_configured' => 7,
+                'games_configured' => 8,
                 'games_with_activity' => 0,
                 'current_season' => $fullSeasonName,
                 'last_updated' => date('Y-m-d H:i:s'),
@@ -622,10 +622,67 @@ try {
         error_log("Cheese Rumble stats error: " . $e->getMessage());
     }
 
-    /**
-     * 7. GLYPH MEMORY
-     * All-time time-trial system.
-     */
+    // 🧀 7 Cheese Runner / Cheeseman Admin Stats
+$cheesemanSeasonStmt = $db->prepare("
+    SELECT
+        COUNT(*) AS total_scores,
+        COUNT(DISTINCT discord_id) AS unique_players,
+        MAX(score) AS max_score,
+        SUM(score) AS total_score,
+        COUNT(CASE WHEN timestamp >= datetime('now', '-24 hours') THEN 1 END) AS recent_24h,
+        COUNT(CASE WHEN timestamp >= datetime('now', '-7 days') THEN 1 END) AS recent_7d
+    FROM tbl_tetris_scores
+    WHERE game = 'cheeseman'
+");
+$cheesemanSeasonStmt->execute();
+$cheesemanSeasonData = $cheesemanSeasonStmt->fetch(PDO::FETCH_ASSOC);
+
+$cheesemanTopStmt = $db->prepare("
+    SELECT
+        s.discord_id,
+        COALESCE(u.username, s.discord_name, s.discord_id) AS discord_name,
+        MAX(s.score) AS score,
+        MAX(s.timestamp) AS timestamp
+    FROM tbl_tetris_scores s
+    LEFT JOIN tbl_users u ON u.discord_id = s.discord_id
+    WHERE s.game = 'cheeseman'
+    GROUP BY s.discord_id
+    ORDER BY score DESC
+    LIMIT 10
+");
+$cheesemanTopStmt->execute();
+$cheesemanTopPlayers = $cheesemanTopStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$response['data']['games']['cheeseman'] = [
+    'name' => 'Cheese Runner',
+    'icon' => '🧀',
+    'game_key' => 'cheeseman',
+    'season_data' => [
+        'total_scores' => (int)($cheesemanSeasonData['total_scores'] ?? 0),
+        'total_games' => (int)($cheesemanSeasonData['total_scores'] ?? 0),
+        'unique_players' => (int)($cheesemanSeasonData['unique_players'] ?? 0),
+        'max_score' => (int)($cheesemanSeasonData['max_score'] ?? 0),
+        'best_score' => (int)($cheesemanSeasonData['max_score'] ?? 0),
+        'total_score' => (int)($cheesemanSeasonData['total_score'] ?? 0),
+        'total_dspoinc' => (int)($cheesemanSeasonData['total_score'] ?? 0),
+        'recent_24h' => (int)($cheesemanSeasonData['recent_24h'] ?? 0),
+        'recent_7d' => (int)($cheesemanSeasonData['recent_7d'] ?? 0)
+    ],
+    'top_players' => $cheesemanTopPlayers,
+    'leaderboard' => $cheesemanTopPlayers
+];
+
+if (safeInt($cheesemanSeasonData['total_scores'] ?? 0) > 0) {
+    $gamesWithActivity++;
+}
+
+$summedUniquePlayerEntries += safeInt($cheesemanSeasonData['unique_players'] ?? 0);
+$totalEntriesAcrossGames += safeInt($cheesemanSeasonData['total_scores'] ?? 0);
+addPlayerIdsToRegistry($allPlayerRegistry, $cheesemanTopPlayers);
+
+/**
+ * 8. GLYPH MEMORY
+ */
     try {
         $tableCheckStmt = $db->prepare("
             SELECT name
@@ -861,7 +918,7 @@ try {
         $recentActivityStmt = $db->prepare("
             SELECT game, discord_name, timestamp, score
             FROM tbl_tetris_scores
-            WHERE game IN ('tetris', 'snake', 'space_invaders')
+            WHERE game IN ('tetris', 'snake', 'space_invaders', 'cheeseman')
             AND season = ?
             ORDER BY timestamp DESC
             LIMIT 10

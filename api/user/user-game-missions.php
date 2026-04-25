@@ -198,6 +198,13 @@ try {
             'last_played' => null,
             'dspoinc_earned' => 0
         ],
+                'cheeseman' => [
+            'total_games' => 0,
+            'best_score' => 0,
+            'total_score' => 0,
+            'last_played' => null,
+            'dspoinc_earned' => 0
+        ],
         'cheese_hunt' => [
             'total_clicks' => 0,
             'quest_clicks' => 0,
@@ -397,6 +404,64 @@ try {
         }
     } catch (Exception $e) {
         error_log("Space Invaders query error: " . $e->getMessage());
+    }
+
+        // 4. CHEESE RUNNER / CHEESEMAN STATS
+    try {
+        error_log("🔍 CHEESEMAN DEBUG: Querying for user $discordId");
+
+        $cheesemanData = null;
+        $cheesemanSeasonFilters = [
+            ['condition' => 'season = ?', 'label' => 'exact'],
+            ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
+        ];
+
+        foreach ($cheesemanSeasonFilters as $filter) {
+            $stmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_games,
+                    MAX(score) as best_score,
+                    SUM(score) as total_score,
+                    MAX(timestamp) as last_played
+                FROM tbl_tetris_scores 
+                WHERE discord_id = ? 
+                AND game = 'cheeseman'
+                AND (
+                    " . $filter['condition'] . "
+                    OR (timestamp >= ? AND (? IS NULL OR timestamp < ?))
+                )
+            ");
+
+            $stmt->execute([
+                $discordId,
+                $currentSeason,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+
+            $cheesemanData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($cheesemanData && (int)$cheesemanData['total_games'] > 0) {
+                error_log("✅ CHEESEMAN: season match (" . $filter['label'] . ") for $discordId");
+                break;
+            }
+        }
+
+        if ($cheesemanData && (int)$cheesemanData['total_games'] > 0) {
+            $response['cheeseman'] = [
+                'total_games' => (int)$cheesemanData['total_games'],
+                'best_score' => (int)$cheesemanData['best_score'],
+                'total_score' => (int)$cheesemanData['total_score'],
+                'last_played' => $cheesemanData['last_played'],
+                'dspoinc_earned' => (int)$cheesemanData['total_score']
+            ];
+
+            $response['overall']['games_played'] += 1;
+            $response['overall']['total_dspoinc'] += (int)$cheesemanData['total_score'];
+        }
+    } catch (Exception $e) {
+        error_log("Cheeseman stats query error: " . $e->getMessage());
     }
 
         // 🔧 CRITICAL FIX: Direct Discord ID to cheese clicks mapping
@@ -736,7 +801,7 @@ try {
     error_log("  Space Invaders: " . $response['space_invaders']['total_games'] . " games, " . $response['space_invaders']['dspoinc_earned'] . " DSPOINC");
     error_log("  Cheese Hunt: " . $response['cheese_hunt']['total_clicks'] . " clicks, " . $response['cheese_hunt']['dspoinc_earned'] . " DSPOINC");
     error_log("  Discord Race: " . $response['discord_race']['total_races'] . " races, " . $response['discord_race']['dspoinc_earned'] . " DSPOINC");
-    error_log("  Total Games Played: " . $response['overall']['games_played'] . "/7");
+    error_log("  Total Games Played: " . $response['overall']['games_played'] . "/8");
     error_log("  Total DSPOINC: " . $response['overall']['total_dspoinc']);
     
     // Additional debugging for Cheese Hunt
@@ -967,6 +1032,24 @@ echo json_encode([
                     'completion_percentage' => 0
                 ]
             ],
+                        'cheeseman' => [
+    'name' => 'Cheese Runner',
+    'icon' => '🧀',
+    'url' => '/cheeseman.html',
+    'status' => ($response['cheeseman']['total_games'] ?? 0) > 0 ? 'active' : 'not_played',
+    'stats' => [
+        'total_games' => $response['cheeseman']['total_games'] ?? 0,
+        'best_score' => $response['cheeseman']['best_score'] ?? 0,
+        'total_score' => $response['cheeseman']['total_score'] ?? 0,
+        'dspoinc_earned' => $response['cheeseman']['dspoinc_earned'] ?? 0,
+        'last_played' => $response['cheeseman']['last_played'] ?? null
+    ],
+    'achievements' => [
+        'total_available' => 0,
+        'unlocked' => 0,
+        'completion_percentage' => 0
+    ]
+],
             'cheese_hunt' => [
                 'name' => 'Cheese Hunt',
                 'icon' => '🧀',
