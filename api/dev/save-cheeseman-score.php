@@ -321,6 +321,16 @@ try {
         ])
     ]);
 
+        adaptive_insert($pdo, 'tbl_score_adjustments', [
+        'user_id' => $userId,
+        'amount' => $validated['dspoinc_score'],
+        'action' => 'add',
+        'reason' => 'cheeseman game score: ' . $validated['dspoinc_score'] . ' DSPOINC (frontend calculated)',
+        'timestamp' => $timestamp,
+        'created_at' => $timestamp,
+        'admin_id' => 'system'
+    ]);
+
     $pdo->commit();
 
     json_response([

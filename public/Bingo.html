@@ -256,6 +256,10 @@ require_once 'discord-invite.php';
         <input type="radio" name="gameMode" value="progressiveFull" class="text-yellow-400 focus:ring-yellow-400">
         <span class="text-white">🎯 Progressive Full (Complete Blackout - All 25 Cells)</span>
       </label>
+      <label class="flex items-center gap-2">
+  <input type="radio" name="gameMode" value="arrowMode">
+  <span>🏹 Arrow Mode</span>
+</label>
 	      <label class="flex items-center gap-2 cursor-pointer">
       <input type="radio" name="gameMode" value="xMode" class="text-yellow-400 focus:ring-yellow-400">
       <span class="text-white">❌ X Mode (both diagonals form an X)</span>
@@ -615,6 +619,15 @@ function renderTickets() {
           cell.classList.add('ring-2', 'ring-blue-400', 'ring-opacity-50');
         }
 
+if (currentMode === 'arrowMode') {
+  const arrowPositions = getArrowModePositions();
+  const isArrowCell = arrowPositions.some(([r, c]) => r === rIndex && c === cIndex);
+
+  if (isArrowCell) {
+    cell.classList.add('ring-2', 'ring-yellow-300', 'ring-opacity-70');
+  }
+}
+
         // 🎯 Highlight all cells in Progressive Full mode
         if (currentMode === 'progressiveFull') {
           cell.classList.add('ring-1', 'ring-purple-400', 'ring-opacity-30');
@@ -782,9 +795,35 @@ function getCurrentGameMode() {
   return selectedMode ? selectedMode.value : 'normal';
 }
 
+// 🏹 Arrow Mode Pattern (Diagonal + Left Arrow Body)
+function getArrowModePositions() {
+  return [
+    [0, 0], [0, 1], [0, 2], // top row (arrow head)
+    [1, 0], [1, 1],         // second row
+    [2, 0], [2, 2],         // third row
+    [3, 3],
+    [4, 4]
+  ];
+}
+
 function getTicketHitCount(ticketObj) {
   const ticket = ticketObj.grid;
   const gameMode = getCurrentGameMode();
+
+  if (gameMode === 'arrowMode') {
+  const arrowPositions = getArrowModePositions();
+  let hits = 0;
+
+  arrowPositions.forEach(([row, col]) => {
+    const num = ticket[row][col];
+
+    if (num === 'FREE' || calledNumbers.includes(num)) {
+      hits++;
+    }
+  });
+
+  return hits;
+}
 
   if (gameMode === 'corners') {
     // For 4 corners mode, only count corner hits
@@ -846,6 +885,21 @@ function getTicketHitCount(ticketObj) {
 function isTicketOneAwayFromBingo(ticketObj) {
   const ticket = ticketObj.grid;
   const gameMode = getCurrentGameMode();
+
+  if (gameMode === 'arrowMode') {
+    const arrowPositions = getArrowModePositions();
+    let hits = 0;
+
+    arrowPositions.forEach(([row, col]) => {
+      const num = ticket[row][col];
+
+      if (num === 'FREE' || calledNumbers.includes(num)) {
+        hits++;
+      }
+    });
+
+    return hits === arrowPositions.length - 1;
+  }
 
   if (gameMode === 'corners') {
     // For 4 corners mode, check if 3 corners are hit
@@ -1046,6 +1100,15 @@ function clearCards() {
 
 function checkBingo(ticket, ticketIndex, calledNumbers) {
   const gameMode = getCurrentGameMode();
+
+  if (gameMode === 'arrowMode') {
+    const arrowPositions = getArrowModePositions();
+
+    return arrowPositions.every(([row, col]) => {
+      const num = ticket[row][col];
+      return num === 'FREE' || calledNumbers.includes(num);
+    });
+  }
 
   if (gameMode === 'corners') {
     // For 4 corners mode, check if all 4 corners are hit
