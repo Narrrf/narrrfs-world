@@ -5827,7 +5827,11 @@ function renderOverviewCards() {
   }, 0);
 
   const selectedSummaryPower = verified.length ? getAggregateTraitLevels(verified) : 0;
-  const backendLabPower = Number(overview.genesis?.lab_power ?? 0);
+  const backendLabPower = Number(
+  overview.genesis?.lab_power_total ??
+  overview.genesis?.lab_power ??
+  0
+);
 
   const labPower = backendLabPower > 0
     ? backendLabPower

@@ -225,8 +225,10 @@ LIMIT 10
     }
     unset($entry);
 
-        // Helper function to get Mouse Genesis Leaderboard
-    function getLabPowerLeaderboard($db) {
+    
+// Helper function to get Mouse Genesis Lab Power Leaderboard
+// Helper function to get Mouse Genesis Lab Power Leaderboard
+function getLabPowerLeaderboard($db) {
     $stmt = $db->prepare("
         SELECT
             COALESCE(u.username, t.last_owner_user_id) AS discord_name,
@@ -481,53 +483,55 @@ function getMouseLeaderboard($db) {
         ];
     }
 
-    // Helper function to get DSPOINC earnings leaderboard (season-based)
-    function getDspoincEarningsLeaderboard($db, $currentSeason, $currentSeasonStart, $currentSeasonEnd, $useFrozenLeaderboard = false) {
-        if ($useFrozenLeaderboard || !$currentSeasonStart || !$currentSeasonEnd) {
-            return [
-                'leaderboard' => [],
-                'is_frozen' => true,
-                'season_shown' => $currentSeason
-            ];
-        }
-
-        $stmt = $db->prepare("
-            SELECT
-                user_id as discord_id,
-                SUM(amount) as total_dspoinc,
-                MIN(timestamp) as first_earned,
-                MAX(timestamp) as last_earned
-            FROM tbl_score_adjustments
-            WHERE action = 'add'
-            AND amount > 0
-            AND timestamp >= ?
-            AND timestamp <= ?
-            GROUP BY user_id
-            ORDER BY total_dspoinc DESC, first_earned ASC
-            LIMIT 10
-        ");
-        $stmt->execute([
-            $currentSeasonStart,
-            $currentSeasonEnd
-        ]);
-        $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($leaderboard as &$entry) {
-            $entry['score'] = (int) $entry['total_dspoinc'];
-        }
-        unset($entry);
-
-        foreach ($leaderboard as &$entry) {
-            $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
-        }
-        unset($entry);
-
+// Helper function to get DSPOINC net leaderboard for the active season.
+// Counts earned DSPOINC and subtracts season spends like reward box openings.
+function getDspoincEarningsLeaderboard($db, $currentSeason, $currentSeasonStart, $currentSeasonEnd, $useFrozenLeaderboard = false) {
+    if ($useFrozenLeaderboard || !$currentSeasonStart || !$currentSeasonEnd) {
         return [
-            'leaderboard' => $leaderboard,
-            'is_frozen' => false,
+            'leaderboard' => [],
+            'is_frozen' => true,
             'season_shown' => $currentSeason
         ];
     }
+
+    $stmt = $db->prepare("
+        SELECT
+            user_id as discord_id,
+            SUM(score) as net_dspoinc,
+            SUM(CASE WHEN score > 0 THEN score ELSE 0 END) as earned_dspoinc,
+            SUM(CASE WHEN score < 0 THEN score ELSE 0 END) as spent_dspoinc,
+            MIN(timestamp) as first_earned,
+            MAX(timestamp) as last_earned
+        FROM tbl_user_scores
+        WHERE timestamp >= ?
+          AND timestamp <= ?
+          AND COALESCE(source, '') NOT IN ('staking_return', 'admin_adjustment')
+        GROUP BY user_id
+        HAVING net_dspoinc > 0
+        ORDER BY net_dspoinc DESC, first_earned ASC
+        LIMIT 10
+    ");
+    $stmt->execute([
+        $currentSeasonStart,
+        $currentSeasonEnd
+    ]);
+
+    $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($leaderboard as &$entry) {
+        $entry['score'] = (int)$entry['net_dspoinc'];
+        $entry['earned_dspoinc'] = (int)($entry['earned_dspoinc'] ?? 0);
+        $entry['spent_dspoinc'] = (int)($entry['spent_dspoinc'] ?? 0);
+        $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
+    }
+    unset($entry);
+
+    return [
+        'leaderboard' => $leaderboard,
+        'is_frozen' => false,
+        'season_shown' => $currentSeason
+    ];
+}
 
 // Helper function to get Glyph Memory leaderboard for the ACTIVE season only
 function getGlyphMemoryLeaderboard($db, $seasonName) {

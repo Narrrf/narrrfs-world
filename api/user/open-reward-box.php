@@ -802,15 +802,36 @@ function grant_store_item_to_user(PDO $pdo, string $userId, array $storeItem, in
         throw new Exception('Store reward is missing item_name');
     }
 
+    $storeItemId = (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? 0);
+    if ($storeItemId <= 0) {
+        throw new Exception('Store reward is missing item_id');
+    }
+
+    $safeQuantity = max(1, $quantity);
     $description = trim((string)($storeItem['description'] ?? ''));
     $inventoryColumns = get_table_columns($pdo, 'tbl_user_inventory');
 
-    $select = $pdo->prepare("SELECT * FROM tbl_user_inventory WHERE user_id = ? AND item_name = ? LIMIT 1");
-    $select->execute([$userId, $itemName]);
+    /**
+     * Look up existing inventory with the column that actually exists.
+     * Production tbl_user_inventory uses item_id, not item_name.
+     */
+    if (in_array('item_id', $inventoryColumns, true)) {
+        $select = $pdo->prepare("SELECT * FROM tbl_user_inventory WHERE user_id = ? AND item_id = ? LIMIT 1");
+        $select->execute([$userId, $storeItemId]);
+    } elseif (in_array('store_item_id', $inventoryColumns, true)) {
+        $select = $pdo->prepare("SELECT * FROM tbl_user_inventory WHERE user_id = ? AND store_item_id = ? LIMIT 1");
+        $select->execute([$userId, $storeItemId]);
+    } elseif (in_array('item_name', $inventoryColumns, true)) {
+        $select = $pdo->prepare("SELECT * FROM tbl_user_inventory WHERE user_id = ? AND item_name = ? LIMIT 1");
+        $select->execute([$userId, $itemName]);
+    } else {
+        throw new Exception('tbl_user_inventory has no compatible item lookup column');
+    }
+
     $existing = $select->fetch(PDO::FETCH_ASSOC) ?: null;
 
     if ($existing) {
-        $newQuantity = (int)($existing['quantity'] ?? 0) + max(1, $quantity);
+        $newQuantity = (int)($existing['quantity'] ?? 0) + $safeQuantity;
         $sets = ['quantity = ?'];
         $params = [$newQuantity];
 
@@ -818,14 +839,27 @@ function grant_store_item_to_user(PDO $pdo, string $userId, array $storeItem, in
             $sets[] = 'updated_at = CURRENT_TIMESTAMP';
         }
 
-        $params[] = (int)($existing['inventory_id'] ?? $existing['user_inventory_id'] ?? $existing['id'] ?? 0);
-        $pkColumn = in_array('inventory_id', $inventoryColumns, true) ? 'inventory_id' : (in_array('user_inventory_id', $inventoryColumns, true) ? 'user_inventory_id' : 'id');
+        if (in_array('last_used_at', $inventoryColumns, true)) {
+            // Keep last_used_at unchanged when granting new inventory.
+        }
+
+        $pkColumn = in_array('inventory_id', $inventoryColumns, true)
+            ? 'inventory_id'
+            : (in_array('user_inventory_id', $inventoryColumns, true) ? 'user_inventory_id' : 'id');
+
+        $inventoryId = (int)($existing[$pkColumn] ?? 0);
+        if ($inventoryId <= 0) {
+            throw new Exception('Existing inventory row is missing primary key');
+        }
+
+        $params[] = $inventoryId;
 
         $stmt = $pdo->prepare("UPDATE tbl_user_inventory SET " . implode(', ', $sets) . " WHERE {$pkColumn} = ?");
         $stmt->execute($params);
 
         return [
-            'inventory_id' => (int)($existing['inventory_id'] ?? $existing['user_inventory_id'] ?? $existing['id'] ?? 0),
+            'inventory_id' => $inventoryId,
+            'item_id' => $storeItemId,
             'item_name' => $itemName,
             'quantity' => $newQuantity,
             'description' => $description,
@@ -840,10 +874,10 @@ function grant_store_item_to_user(PDO $pdo, string $userId, array $storeItem, in
     $columnValueMap = [
         'user_id' => $userId,
         'item_name' => $itemName,
-        'quantity' => max(1, $quantity),
+        'quantity' => $safeQuantity,
         'description' => $description,
-        'item_id' => (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? 0),
-        'store_item_id' => (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? 0),
+        'item_id' => $storeItemId,
+        'store_item_id' => $storeItemId,
         'source' => $sourceTag,
         'acquired_method' => $sourceTag,
         'is_used' => 0,
@@ -866,17 +900,28 @@ function grant_store_item_to_user(PDO $pdo, string $userId, array $storeItem, in
         $params[] = $columnValueMap[$column];
     }
 
-    if (empty($insertValues)) {
-        throw new Exception('tbl_user_inventory does not expose compatible insert columns');
+    if (!in_array('user_id', $insertValues, true) || !in_array('quantity', $insertValues, true)) {
+        throw new Exception('tbl_user_inventory is missing required user_id or quantity columns');
     }
 
-    $stmt = $pdo->prepare('INSERT INTO tbl_user_inventory (' . implode(', ', $insertValues) . ') VALUES (' . implode(', ', $placeholders) . ')');
+    if (
+        !in_array('item_id', $insertValues, true) &&
+        !in_array('store_item_id', $insertValues, true) &&
+        !in_array('item_name', $insertValues, true)
+    ) {
+        throw new Exception('tbl_user_inventory does not expose compatible item insert columns');
+    }
+
+    $stmt = $pdo->prepare(
+        'INSERT INTO tbl_user_inventory (' . implode(', ', $insertValues) . ') VALUES (' . implode(', ', $placeholders) . ')'
+    );
     $stmt->execute($params);
 
     return [
         'inventory_id' => (int)$pdo->lastInsertId(),
+        'item_id' => $storeItemId,
         'item_name' => $itemName,
-        'quantity' => max(1, $quantity),
+        'quantity' => $safeQuantity,
         'description' => $description,
         'source' => $sourceTag
     ];

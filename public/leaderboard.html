@@ -447,10 +447,11 @@ function displayLabPowerLeaderboard(leaderboard, isFrozen) {
 }
 async function loadLeaderboard() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/dev/get-leaderboard.php`, {
-      credentials: 'include',
-      headers: { 'Accept': 'application/json' }
-    });
+    const response = await fetch(`${API_BASE_URL}/api/dev/get-leaderboard.php?t=${Date.now()}`, {
+  credentials: 'include',
+  cache: 'no-store',
+  headers: { 'Accept': 'application/json' }
+});
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);

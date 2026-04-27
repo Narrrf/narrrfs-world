@@ -12870,60 +12870,83 @@ function closeRewardPurchaseConfirmModal() {
       // Create particles
       createChestParticles();
       
-      // Play sound effect (if available)
-      // Helper function for fallback beep sound
-      const playBeepSound = () => {
+      // Play chest opening sound and reward-type sound.
+      // Chest opening uses the existing mp3. Store/genetic reward sounds are generated with Web Audio,
+      // so no new sound files are required yet.
+      const playSynthRewardSound = (type = 'common') => {
         try {
           const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
-          oscillator.connect(gainNode);
           gainNode.connect(audioContext.destination);
-          oscillator.frequency.value = 800;
-          oscillator.type = 'sine';
-          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-          oscillator.start(audioContext.currentTime);
-          oscillator.stop(audioContext.currentTime + 0.5);
+
+          const playTone = (frequency, startTime, duration, waveType = 'sine', volume = 0.22) => {
+            const oscillator = audioContext.createOscillator();
+            oscillator.connect(gainNode);
+            oscillator.frequency.setValueAtTime(frequency, startTime);
+            oscillator.type = waveType;
+            gainNode.gain.setValueAtTime(volume, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+          };
+
+          const now = audioContext.currentTime;
+
+          if (type === 'store_item' || type === 'premium_claim') {
+            // Premium / store-style Windows success chime.
+            playTone(523, now, 0.18, 'triangle', 0.26);
+            playTone(659, now + 0.16, 0.22, 'triangle', 0.24);
+            playTone(784, now + 0.34, 0.28, 'triangle', 0.22);
+            return;
+          }
+
+          if (type === 'genetic_trait') {
+            // Sci-fi genetic unlock sound.
+            playTone(392, now, 0.16, 'sine', 0.22);
+            playTone(740, now + 0.12, 0.20, 'sine', 0.20);
+            playTone(988, now + 0.28, 0.24, 'sine', 0.18);
+            return;
+          }
+
+          // Common fallback sound for DSPOINC / unknown reward types.
+          playTone(800, now, 0.5, 'sine', 0.3);
         } catch (e) {
-          console.warn('⚠️ [PROFILE CHEST] Fallback beep sound not available:', e);
+          console.warn('⚠️ [PROFILE CHEST] Synth reward sound not available:', e);
         }
       };
 
-      try {
-        // Play chest opening sound - using chest.mp3 from SFX folder
-        const audioPath = 'sounds/SFX/chest.mp3'; // Relative path (works both locally and in production)
-        console.log(`🔊 [PROFILE CHEST] Attempting to play sound from: ${audioPath}`);
-        
-        const audio = new Audio(audioPath);
-        audio.volume = 0.5;
+      const playChestOpeningSound = () => {
+        try {
+          const audioPath = 'sounds/SFX/chest.mp3';
+          console.log(`🔊 [PROFILE CHEST] Attempting to play chest sound from: ${audioPath}`);
 
-        // Wait for audio to load before playing
-        audio.addEventListener('canplaythrough', () => {
-          console.log(`🔊 [PROFILE CHEST] Audio file loaded successfully: ${audioPath}`);
-          audio.play().then(() => {
-            console.log(`✅ [PROFILE CHEST] Sound playback started: ${audioPath}`);
-          }).catch(playErr => {
-            console.warn(`⚠️ [PROFILE CHEST] Failed to play sound after loading:`, playErr);
-            playBeepSound(); // Fallback beep
-          });
-        }, { once: true });
+          const audio = new Audio(audioPath);
+          audio.volume = 0.5;
 
-        audio.addEventListener('error', (e) => {
-          console.error(`❌ [PROFILE CHEST] Error loading audio file ${audioPath}:`, e);
-          playBeepSound(); // Fallback beep
-        }, { once: true });
+          audio.addEventListener('canplaythrough', () => {
+            audio.play().catch(playErr => {
+              console.warn('⚠️ [PROFILE CHEST] Chest sound failed, using common synth sound:', playErr);
+              playSynthRewardSound('common');
+            });
+          }, { once: true });
 
-        // Attempt to load the audio
-        audio.load();
-      } catch (error) {
-        console.error(`❌ [PROFILE CHEST] Failed to create Audio object:`, error);
-        playBeepSound(); // Fallback beep
-      }
-      
+          audio.addEventListener('error', (e) => {
+            console.warn(`⚠️ [PROFILE CHEST] Chest sound file failed: ${audioPath}`, e);
+            playSynthRewardSound('common');
+          }, { once: true });
+
+          audio.load();
+        } catch (error) {
+          console.warn('⚠️ [PROFILE CHEST] Failed to create chest Audio object:', error);
+          playSynthRewardSound('common');
+        }
+      };
+
+      playChestOpeningSound();
+
       // 2. Wait for animation to complete
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // 3. Call API to award reward
       const apiBaseUrl = window.location.origin;
       const payload = {
@@ -12934,23 +12957,33 @@ function closeRewardPurchaseConfirmModal() {
         base_reward: rewardAmount,
         session_id: profileChestSessionId
       };
-      
+
       console.log('🎁 [PROFILE CHEST] Awarding reward:', payload);
-      
+
       const response = await fetch(`${apiBaseUrl}/api/dev/riddle-reward.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload)
       });
-      
+
       const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
-      
+
       if (response.ok && result.success) {
+        const rewardType = String(
+          result.reward_type ||
+          result.reward?.reward_type ||
+          result.reward?.type ||
+          result.type ||
+          'common'
+        ).trim();
+
+        playSynthRewardSound(rewardType);
+
         // 4. Show reward display
         const rewardEl = document.getElementById('profile-chest-reward');
         const rewardAmountEl = document.getElementById('profile-chest-reward-amount');
-        
+
         if (rewardAmountEl) {
           rewardAmountEl.textContent = rewardAmount.toLocaleString();
         }
@@ -12962,7 +12995,7 @@ function closeRewardPurchaseConfirmModal() {
           statusEl.textContent = 'Chest opened!';
           statusEl.className = 'mt-4 text-center text-sm text-green-400';
         }
-        
+
         // 5. Update DSPOINC balance display
         await updateProfileBalanceAfterChest(rewardAmount);
         
