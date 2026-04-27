@@ -593,6 +593,7 @@ lastComboCollectAt = 0;
 
   /**
    * Adds animated reward text above the player.
+   * Keeps the list capped so long sessions do not overload the browser.
    */
   function addFloatingText(text, row, col, color = '#facc15') {
     floatingTexts.push({
@@ -602,6 +603,10 @@ lastComboCollectAt = 0;
       life: 34,
       color
     });
+
+    if (floatingTexts.length > 24) {
+      floatingTexts = floatingTexts.slice(-24);
+    }
   }
 
   /**
@@ -1559,22 +1564,47 @@ drawFloatingTexts();
     return invaderImg;
   }
 
+  /**
+   * Draws all Cheese Evils.
+   * Normal state uses enemy sprites.
+   * Vulnerable state uses a clear cyan/white "EAT" marker so players know enemies are safe to hunt.
+   */
   function drawEnemies() {
     enemies.forEach(enemy => {
       const x = enemy.col * TILE_SIZE;
       const y = enemy.row * TILE_SIZE;
-      const activeImg = getEnemyImage(enemy);
+      const isVulnerable = isPowerModeActive();
 
       ctx.save();
 
-      if (enemy.isStunned) {
-        ctx.globalAlpha = 0.55 + Math.sin(performance.now() / 120) * 0.2;
+      if (isVulnerable) {
+        ctx.globalAlpha = 1;
+        ctx.shadowColor = '#22d3ee';
+        ctx.shadowBlur = 18;
+
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(x + 3, y + 3, TILE_SIZE - 6, TILE_SIZE - 6);
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('EAT', x + TILE_SIZE / 2, y + TILE_SIZE / 2);
+
+        ctx.restore();
+        return;
       }
 
-      if (activeImg.complete && activeImg.naturalWidth > 0) {
+      const activeImg = getEnemyImage(enemy);
+
+      if (activeImg && activeImg.complete && activeImg.naturalWidth > 0) {
         ctx.drawImage(activeImg, x - 3, y - 4, TILE_SIZE + 6, TILE_SIZE + 6);
       } else {
-        ctx.fillStyle = enemy.isStunned ? '#93c5fd' : enemy.color;
+        ctx.fillStyle = enemy.color;
         ctx.beginPath();
         ctx.arc(x + TILE_SIZE / 2, y + TILE_SIZE / 2, TILE_SIZE / 2 - 3, Math.PI, 0);
         ctx.lineTo(x + TILE_SIZE - 3, y + TILE_SIZE - 3);
