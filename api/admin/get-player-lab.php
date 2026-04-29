@@ -869,6 +869,8 @@ function build_admin_nft_ability_snapshot(PDO $pdo, string $userId, array $nft):
     ];
 }
 
+
+
 /**
  * Build ability snapshots for all verified Genesis NFTs.
  */
@@ -887,6 +889,7 @@ function build_admin_ability_by_token(PDO $pdo, string $userId, array $verifiedG
     return $abilityByToken;
 }
 
+
 try {
     $request = get_request_data();
     $userId = trim((string)($request['user_id'] ?? ''));
@@ -901,10 +904,11 @@ try {
     $pdo = get_lab_database_connection();
     $tableCreated = ensure_upgrade_table($pdo);
 
-    $verifiedSource = 'none';
-    $verifiedGenesisNfts = load_current_verified_genesis_nfts($pdo, $userId, $verifiedSource);
+$verifiedSource = 'none';
+$verifiedGenesisNfts = load_current_verified_genesis_nfts($pdo, $userId, $verifiedSource);
 
-    $resolvedRows = [];
+$resolvedRows = [];
+
     $selectUpgrade = $pdo->prepare("SELECT upgrade_id, token_id, collection, trait_type, trait_value, current_level,
         upgrade_status, upgrade_started_at, upgrade_ends_at, last_completed_at,
         last_owner_user_id, created_at, updated_at

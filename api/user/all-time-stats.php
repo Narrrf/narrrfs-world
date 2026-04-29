@@ -263,27 +263,29 @@ try {
         'best_position' => $race['best_position'] !== null ? (int)$race['best_position'] : null
     ];
     
-    // 6. CHEESE RUMBLE - All-time stats
-    $rumbleStmt = $db->prepare("
-        SELECT 
-            COUNT(*) as total_rumbles,
-            COUNT(CASE WHEN status = 'winner' OR final_position = 1 THEN 1 END) as total_wins,
-            COUNT(CASE WHEN final_position <= 3 AND final_position IS NOT NULL THEN 1 END) as podium_finishes,
-            MIN(final_position) as best_position
-        FROM tbl_rumble_participants 
-        WHERE user_id = :user_id
-    ");
-    $rumbleStmt->execute([':user_id' => $user_id]);
-    $rumble = $rumbleStmt->fetch(PDO::FETCH_ASSOC);
-    
-    $response['all_time_stats']['games']['cheese_rumble'] = [
-        'name' => 'Cheese Rumble',
-        'icon' => '💥',
-        'total_rumbles' => (int)($rumble['total_rumbles'] ?? 0),
-        'total_wins' => (int)($rumble['total_wins'] ?? 0),
-        'podium_finishes' => (int)($rumble['podium_finishes'] ?? 0),
-        'best_position' => $rumble['best_position'] !== null ? (int)$rumble['best_position'] : null
-    ];
+// 6. CHEESE RUMBLE - All-time stats
+$rumbleStmt = $db->prepare("
+    SELECT
+        COUNT(DISTINCT rp.rumble_id) as total_rumbles,
+        COUNT(CASE WHEN rp.status = 'winner' OR rp.final_position = 1 THEN 1 END) as total_wins,
+        COUNT(CASE WHEN rp.final_position <= 3 AND rp.final_position IS NOT NULL THEN 1 END) as podium_finishes,
+        MIN(rp.final_position) as best_position
+    FROM tbl_rumble_participants rp
+    LEFT JOIN tbl_cheese_rumbles cr
+        ON cr.rumble_id = rp.rumble_id
+    WHERE rp.user_id = :user_id
+");
+$rumbleStmt->execute([':user_id' => $user_id]);
+$rumble = $rumbleStmt->fetch(PDO::FETCH_ASSOC);
+
+$response['all_time_stats']['games']['cheese_rumble'] = [
+    'name' => 'Cheese Rumble',
+    'icon' => '💥',
+    'total_rumbles' => (int)($rumble['total_rumbles'] ?? 0),
+    'total_wins' => (int)($rumble['total_wins'] ?? 0),
+    'podium_finishes' => (int)($rumble['podium_finishes'] ?? 0),
+    'best_position' => $rumble['best_position'] !== null ? (int)$rumble['best_position'] : null
+];
 	
 	// 7. GLYPH MEMORY - All-time stats
 $glyphStmt = $db->prepare("

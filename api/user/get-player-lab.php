@@ -372,6 +372,116 @@ function get_primary_wallet(array $holderSummary): string {
     return '';
 }
 
+
+/**
+ * Seed and sync Genesis trait power rows.
+ *
+ * Plain language:
+ * Every verified Genesis mouse trait must exist in tbl_nft_trait_upgrades.
+ * Missing traits become level 1 base-power rows.
+ * Existing upgraded traits keep their level but move to the currently verified owner.
+ */
+function sync_genesis_trait_power_rows(PDO $pdo, string $userId): void {
+    if ($userId === '') {
+        return;
+    }
+
+    $traitStmt = $pdo->prepare("
+        SELECT
+            trait_id,
+            ownership_id,
+            user_id,
+            username,
+            wallet,
+            token_id,
+            collection,
+            nft_name,
+            trait_type,
+            trait_value
+        FROM tbl_nft_traits
+        WHERE user_id = ?
+          AND COALESCE(collection, 'genesis') = 'genesis'
+          AND COALESCE(token_id, '') <> ''
+          AND COALESCE(trait_type, '') <> ''
+          AND COALESCE(trait_value, '') <> ''
+        ORDER BY token_id ASC, trait_type ASC, trait_value ASC
+    ");
+    $traitStmt->execute([$userId]);
+    $traitRows = $traitStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    if (!$traitRows) {
+        return;
+    }
+
+    $findStmt = $pdo->prepare("
+        SELECT upgrade_id, current_level, last_owner_user_id
+        FROM tbl_nft_trait_upgrades
+        WHERE token_id = ?
+          AND COALESCE(collection, 'genesis') = 'genesis'
+          AND trait_type = ?
+          AND trait_value = ?
+        LIMIT 1
+    ");
+
+    $updateOwnerStmt = $pdo->prepare("
+        UPDATE tbl_nft_trait_upgrades
+        SET last_owner_user_id = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE upgrade_id = ?
+          AND COALESCE(last_owner_user_id, '') <> ?
+    ");
+
+    $insertStmt = $pdo->prepare("
+        INSERT INTO tbl_nft_trait_upgrades (
+            token_id,
+            collection,
+            trait_type,
+            trait_value,
+            current_level,
+            upgrade_status,
+            upgrade_started_at,
+            upgrade_ends_at,
+            last_completed_at,
+            last_owner_user_id,
+            created_at,
+            updated_at
+        ) VALUES (
+            ?, 'genesis', ?, ?, 1, 'idle', NULL, NULL, NULL, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+    ");
+
+    foreach ($traitRows as $trait) {
+        $tokenId = trim((string)($trait['token_id'] ?? ''));
+        $traitType = trim((string)($trait['trait_type'] ?? ''));
+        $traitValue = trim((string)($trait['trait_value'] ?? ''));
+
+        if ($tokenId === '' || $traitType === '' || $traitValue === '') {
+            continue;
+        }
+
+        $findStmt->execute([$tokenId, $traitType, $traitValue]);
+        $existing = $findStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+            $upgradeId = (int)($existing['upgrade_id'] ?? 0);
+
+            if ($upgradeId > 0) {
+                $updateOwnerStmt->execute([$userId, $upgradeId, $userId]);
+            }
+
+            continue;
+        }
+
+        $insertStmt->execute([
+            $tokenId,
+            $traitType,
+            $traitValue,
+            $userId
+        ]);
+    }
+}
+
+
 /**
  * Build a frontend-safe overview contract for the Lab Overview tab.
  *
@@ -513,6 +623,11 @@ try {
 
     $holderSummary = build_holder_summary($verificationRows);
     $primaryWallet = get_primary_wallet($holderSummary);
+
+    /**
+ * Ensure verified Genesis traits have backend power rows before loading Lab power.
+ */
+sync_genesis_trait_power_rows($pdo, $userId);
 
     // Stable aliases for frontend identity rendering.
     $profile['wallet_address'] = $primaryWallet;

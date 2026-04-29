@@ -9815,15 +9815,15 @@ function getGameStats(gameKey, game) {
         `;
         break;
 
-      case 'cheese_rumble':
-        statsHTML = `
-          <div class="text-blue-300">Total Rumbles: ${stats.total_rumbles || 0}</div>
-          <div class="text-green-300">Wins: ${stats.wins || 0}</div>
-          <div class="text-purple-300">Podium Finishes: ${stats.podium_finishes || 0}</div>
-          <div class="text-yellow-300">Best Position: ${stats.best_position || 'N/A'}</div>
-          <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
-        `;
-        break;
+         case 'cheese_rumble':
+  statsHTML = `
+    <div class="text-blue-300">Total Rumbles: ${Number(stats.total_rumbles || 0).toLocaleString()}</div>
+    <div class="text-green-300">Wins: ${Number(stats.total_wins || 0).toLocaleString()}</div>
+    <div class="text-purple-300">Podium Finishes: ${Number(stats.podium_finishes || 0).toLocaleString()}</div>
+    <div class="text-yellow-300">Best Position: ${stats.best_position !== null && stats.best_position !== undefined ? `#${stats.best_position}` : '#N/A'}</div>
+    <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? Number(stats.dspoinc_earned).toLocaleString() : '0'}</div>
+  `;
+  break;
 
       // 🔮 Glyph Memory current-season card
       case 'glyph_memory':
@@ -10436,7 +10436,11 @@ const gamesPlayed = Object.values(stats.games).filter(game => {
       const rumble = stats.games.cheese_rumble;
       const rumbleStats = rumble?.stats || {};
 
-      if (rumble) {
+            if (rumble) {
+        const totalRumbles = Number(rumble.total_rumbles || 0);
+        const totalWins = Number(rumble.total_wins || rumble.wins || 0);
+        const bestPosition = rumble.best_position;
+
         cardsHTML += `
           <div class="bg-gradient-to-br from-orange-900/20 to-red-900/20 rounded-lg p-3 border border-orange-500/30">
             <div class="flex items-center gap-2 mb-2">
@@ -10446,19 +10450,20 @@ const gamesPlayed = Object.values(stats.games).filter(game => {
             <div class="text-xs space-y-1">
               <div class="flex justify-between">
                 <span class="text-gray-400">Total Rumbles:</span>
-                <span class="text-white font-semibold">${Number(rumbleStats.total_rumbles || 0).toLocaleString()}</span>
+                <span class="text-white font-semibold">${totalRumbles.toLocaleString()}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Wins:</span>
-                <span class="text-orange-300">${rumbleStats.wins || 0} (${(rumbleStats.total_rumbles || 0) > 0 ? Math.round(((rumbleStats.wins || 0) / rumbleStats.total_rumbles) * 100) : 0}%)</span>
+                <span class="text-orange-300">${totalWins.toLocaleString()} (${totalRumbles > 0 ? Math.round((totalWins / totalRumbles) * 100) : 0}%)</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Best Position:</span>
-                <span class="text-red-300">#${rumbleStats.best_position || 'N/A'}</span>
+                <span class="text-red-300">${bestPosition !== null && bestPosition !== undefined ? `#${bestPosition}` : '#N/A'}</span>
               </div>
             </div>
           </div>
         `;
+      
            
       
 		      // Glyph Memory (7th Game) - all-time time-trial stats
