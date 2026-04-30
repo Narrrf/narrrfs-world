@@ -18,7 +18,7 @@ try {
         LIMIT 1
     ");
     $seasonStmt->execute();
-    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 9';
+    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 11';
 
     // 🔍 Get the previous season (for frozen leaderboard fallback)
     $prevSeasonStmt = $db->prepare("
@@ -29,7 +29,7 @@ try {
         LIMIT 1
     ");
     $prevSeasonStmt->execute();
-    $previousSeason = $prevSeasonStmt->fetchColumn() ?: 'Season 8';
+    $previousSeason = $prevSeasonStmt->fetchColumn() ?: 'Season 10';
 
     error_log("Current season: $currentSeason, Previous season: $previousSeason");
 
@@ -208,7 +208,7 @@ LIMIT 10
     $totalScoresStmt->execute([$currentSeason]);
     $totalScoresAcrossAllGames = $totalScoresStmt->fetchColumn() ?: 0;
 
-    error_log("Total scores across all 3 games in $currentSeason: $totalScoresAcrossAllGames");
+    error_log("Total scores across all arcade games in $currentSeason: $totalScoresAcrossAllGames");
 
     $useFrozenLeaderboard = ($totalScoresAcrossAllGames < 3);
 

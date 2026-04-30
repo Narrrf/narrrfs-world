@@ -106,7 +106,7 @@ try {
     // 🔍 Automatically detect current season from tbl_seasons table (where is_active = 1)
     $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY start_date DESC LIMIT 1");
     $seasonDetectStmt->execute();
-    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 9'; // Fallback to Season 9
+    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 11'; // Fallback to Season 11
     
     error_log("🔍 Current season detected: $currentSeason");
 
@@ -349,7 +349,7 @@ try {
         $message = "Score saved for $game: $raw_score cheese = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     } elseif ($game === 'space_invaders') {
         // Show 10:1 conversion in message
-        $message = "Score saved for $game: $raw_score DSPOINC displayed → " . round($dspoinc_score) . " DSPOINC saved (10:1 Season 5 conversion)";
+        $message = "Score saved for $game: $raw_score DSPOINC displayed → " . round($dspoinc_score) . " DSPOINC saved (10:1 arcade conversion)";
     } else {
         $message = "Score saved for $game: $raw_score $unit = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     }
