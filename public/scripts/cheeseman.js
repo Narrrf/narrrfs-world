@@ -36,6 +36,12 @@ const COMBO_BONUS_PER_STACK = 0.15;
 const ENEMY_MOVE_DELAY_BY_LEVEL = [5, 5, 4, 4, 3, 3, 2, 2, 1, 1];
 const ENEMY_SMART_CHANCE_BY_LEVEL = [0.08, 0.12, 0.18, 0.25, 0.34, 0.44, 0.55, 0.66, 0.76, 0.86];
 
+const GLYPH_BOOST_IMAGE_SRC = 'img/cheeseman/F.png';
+const GLYPH_BOOST_DURATION_MS = 6000;
+const GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START = 1; //0.18; normal 
+const GLYPH_BOOST_SCORE_BONUS = 100;
+const GLYPH_BOOST_TICK_SPEED_MULTIPLIER = 0.65;
+
   const ROLE_MULTIPLIERS = {
     'VIP Holder': 2.0,
     '🎴 VIP Holder': 2.0,
@@ -77,6 +83,8 @@ const ENEMY_SMART_CHANCE_BY_LEVEL = [0.08, 0.12, 0.18, 0.25, 0.34, 0.44, 0.55, 0
 
   const MAX_LEVEL_TEMPLATE_COUNT = 10;
   const TETRIS_WALL_BLOCK_TYPES = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
+
+
 
   const tetrisWallImages = TETRIS_WALL_BLOCK_TYPES.reduce((images, blockType) => {
     const image = new Image();
@@ -359,6 +367,9 @@ const LEVEL_TEMPLATES = [
   const comboBarEl = document.getElementById('cheeseman-combo-bar');
   const comboTextEl = document.getElementById('cheeseman-combo-text');
 
+const glyphBoostImage = new Image();
+glyphBoostImage.src = GLYPH_BOOST_IMAGE_SRC;
+
 const cheeseImg = new Image();
 cheeseImg.src = 'img/cheeseman/cheeseman1.png';
 
@@ -398,6 +409,9 @@ let lastComboCollectAt = 0;
 let floatingTexts = [];
   let hitExplosions = [];
   let cheesemanAudioContext = null;
+
+let glyphBoostItem = null; // glyphBoostItem = current item on board or null
+let glyphBoostUntil = 0; // glyphBoostUntil = time when boost ends
 
 /**
  * Creates the player at the starting tile and stores the previous tile.
@@ -639,6 +653,114 @@ lastComboCollectAt = 0;
     });
   }
 
+  // Glyph Power Booster Functions
+  function isGlyphBoostActive() {
+  return performance.now() < glyphBoostUntil;
+}
+function clearGlyphBoost() {
+  glyphBoostUntil = 0;
+}
+/**
+ * Activates the rare Glyph Boost item.
+ * The mouse becomes faster and protected for a short time.
+ */
+function activateGlyphBoost() {
+  glyphBoostUntil = performance.now() + GLYPH_BOOST_DURATION_MS;
+  score += GLYPH_BOOST_SCORE_BONUS;
+  glyphBoostItem = null;
+
+  setStatus('🖤 Glyph Boost active! Faster and undefeatable!');
+  playSound('power');
+
+  if (!isRunning || isPaused) {
+    return;
+  }
+
+  startGameTimer();
+}
+
+/**
+ * Ends Glyph Boost when its timer expires and restores normal game speed.
+ */
+function updateGlyphBoost() {
+  if (!glyphBoostUntil) {
+    return;
+  }
+
+  if (isGlyphBoostActive()) {
+    return;
+  }
+
+  glyphBoostUntil = 0;
+  setStatus('Glyph Boost faded.');
+
+  if (!isRunning || isPaused) {
+    return;
+  }
+
+  startGameTimer();
+}
+
+/**
+ * Spawns the rare Glyph Boost item on a safe visible board tile.
+ * It never spawns inside walls, enemy nests, the player tile, or enemy tiles.
+ */
+function spawnGlyphBoostItem() {
+  glyphBoostItem = null;
+
+  if (Math.random() > GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START) {
+    return;
+  }
+
+  const validTiles = [];
+
+  for (let row = 1; row < GRID_ROWS - 1; row += 1) {
+    for (let col = 1; col < GRID_COLS - 1; col += 1) {
+      const tile = maze[row]?.[col];
+
+      if (!tile || tile === 'wall' || tile === 'nest') {
+        continue;
+      }
+
+      if (!canMove(row, col)) {
+        continue;
+      }
+
+      if (row === player.row && col === player.col) {
+        continue;
+      }
+
+      const hasEnemyOnTile = enemies.some(enemy => enemy.row === row && enemy.col === col);
+      if (hasEnemyOnTile) {
+        continue;
+      }
+
+      validTiles.push({ row, col });
+    }
+  }
+
+  if (!validTiles.length) {
+    console.warn('🖤 Glyph Boost: no valid spawn tile found.');
+    return;
+  }
+
+  glyphBoostItem = validTiles[Math.floor(Math.random() * validTiles.length)];
+  console.log('🖤 Glyph Boost spawned at:', glyphBoostItem);
+}
+
+function getCurrentTickMs() {
+  const baseTickMs = Math.max(MIN_TICK_MS, BASE_TICK_MS - ((level - 1) * 8));
+
+  if (isGlyphBoostActive()) {
+    return Math.max(MIN_TICK_MS, Math.floor(baseTickMs * GLYPH_BOOST_TICK_SPEED_MULTIPLIER));
+  }
+
+  return baseTickMs;
+}
+
+
+
+
   /**
    * Updates the combo HUD scale below the score cards.
    */
@@ -767,41 +889,48 @@ lastComboCollectAt = 0;
     });
   }
 
-  function resetGame() {
-    clearGameTimer();
-    buildMaze();
+function resetGame() {
+  clearGameTimer();
 
-    player = createPlayer();
-    enemies = createEnemies();
-    currentDirection = DIRECTIONS.left;
-    nextDirection = DIRECTIONS.left;
-    score = 0;
-    level = 1;
-    lives = 3;
-    isRunning = false;
-    isPaused = false;
-    hasScoreBeenSaved = false;
-    powerModeUntil = 0;
-    comboStack = 0;
-comboPickupCount = 0;
-lastComboCollectAt = 0;
-    floatingTexts = [];
-        hitExplosions = [];
-        enemyMoveCounter = 0;
+  score = 0;
+  level = 1;
+  lives = 3;
+  isRunning = false;
+  isPaused = false;
+  hasScoreBeenSaved = false;
+  powerModeUntil = 0;
+  glyphBoostUntil = 0;
+  glyphBoostItem = null;
+  comboStack = 0;
+  comboPickupCount = 0;
+  lastComboCollectAt = 0;
+  floatingTexts = [];
+  hitExplosions = [];
+  enemyMoveCounter = 0;
 
-    if (modal) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
+  buildMaze();
 
-    if (saveStatusEl) {
-      saveStatusEl.textContent = '';
-    }
+  player = createPlayer();
+  enemies = createEnemies();
+  spawnGlyphBoostItem();
 
-    setStatus('Ready to run.');
-    updateScoreDisplay();
-    render();
+  currentDirection = DIRECTIONS.left;
+  nextDirection = DIRECTIONS.left;
+
+if (modal) {
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  modal.style.display = 'none';
+}
+
+  if (saveStatusEl) {
+    saveStatusEl.textContent = '';
   }
+
+  setStatus('Ready to run.');
+  updateScoreDisplay();
+  render();
+}
 
   function startGame() {
     if (isRunning && !isPaused) {
@@ -837,11 +966,14 @@ lastComboCollectAt = 0;
     startGameTimer();
   }
 
-  function startGameTimer() {
-    clearGameTimer();
-    const tickMs = Math.max(MIN_TICK_MS, BASE_TICK_MS - ((level - 1) * 7));
-    gameTimer = window.setInterval(gameTick, tickMs);
-  }
+/**
+ * Starts or restarts the Cheese Runner game loop.
+ * Uses the current tick speed so temporary boosts can safely speed up and fade out.
+ */
+function startGameTimer() {
+  clearGameTimer();
+  gameTimer = window.setInterval(gameTick, getCurrentTickMs());
+}
 
   function clearGameTimer() {
     if (!gameTimer) {
@@ -852,6 +984,18 @@ lastComboCollectAt = 0;
     gameTimer = null;
   }
 
+function collectGlyphBoostItem() {
+  if (!glyphBoostItem) {
+    return;
+  }
+
+  if (player.row !== glyphBoostItem.row || player.col !== glyphBoostItem.col) {
+    return;
+  }
+
+  activateGlyphBoost();
+}
+
 /**
  * Runs one game tick.
  * Movement, collection, enemy movement, collision checks, UI updates, and level clear checks happen here.
@@ -861,7 +1005,14 @@ function gameTick() {
     return;
   }
 
+  if (lives <= 0) {
+    clearGameTimer();
+    endGame();
+    return;
+  }
+
   updatePowerMode();
+  updateGlyphBoost();
 
   movePlayer();
 
@@ -872,6 +1023,7 @@ function gameTick() {
   }
 
   collectTile();
+  collectGlyphBoostItem();
   moveEnemies();
 
   if (checkEnemyCollisions()) {
@@ -1196,7 +1348,19 @@ function resolveEnemyCollision(enemy) {
     return false;
   }
 
-  lives -= 1;
+if (isGlyphBoostActive() && lives > 0) {
+  setStatus('🖤 Glyph Boost protected you!');
+  playSound('power');
+  return false;
+}
+
+if (lives <= 0) {
+  clearGameTimer();
+  endGame();
+  return true;
+}
+
+lives -= 1;
   playSound('hit');
   addHitExplosion(player.row, player.col);
 
@@ -1375,55 +1539,77 @@ lastComboCollectAt = 0;
     });
   }
 
-  /**
- * Adds safe Game Over navigation links when the HTML modal does not already provide them.
- * This keeps players from being trapped with only Play Again after a run ends.
+/**
+ * Keeps backward compatibility for older HTML modals.
+ * Current cheeseman.html already contains real Game Over navigation buttons.
  */
 function ensureGameOverNavigationLinks() {
-  if (!modal || modal.querySelector('[data-cheeseman-gameover-nav]')) {
+  if (!modal) {
+    return;
+  }
+
+  if (modal.querySelector('[data-cheeseman-gameover-nav]')) {
+    return;
+  }
+
+  const playAgainButton = modal.querySelector('#cheeseman-play-again-btn');
+  if (!playAgainButton) {
+    return;
+  }
+
+  const existingNavigationLink = modal.querySelector('a[href="profile.html"], a[href="index.html"], a[href="leaderboard.html"]');
+  if (existingNavigationLink) {
     return;
   }
 
   const navigationWrap = document.createElement('div');
   navigationWrap.dataset.cheesemanGameoverNav = 'true';
-  navigationWrap.className = 'mt-4 flex flex-wrap justify-center gap-3';
+  navigationWrap.className = 'grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4';
   navigationWrap.innerHTML = `
-    <a href="profile.html" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-500">👤 Profile</a>
-    <a href="index.html" class="inline-flex items-center justify-center rounded-full bg-gray-700 px-4 py-2 font-bold text-white hover:bg-gray-600">🏠 Home</a>
-    <a href="leaderboard.html" class="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 font-bold text-white hover:bg-purple-500">🏆 Leaderboard</a>
+    <a href="profile.html" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 font-black text-white hover:bg-blue-500">👤 Profile</a>
+    <a href="index.html" class="inline-flex items-center justify-center rounded-xl bg-gray-700 px-4 py-3 font-black text-white hover:bg-gray-600">🏠 Home</a>
+    <a href="leaderboard.html" class="inline-flex items-center justify-center rounded-xl bg-purple-600 px-4 py-3 font-black text-white hover:bg-purple-500">🏆 Leaderboard</a>
   `;
 
-  const modalCard = modal.querySelector('.bg-yellow-100, .bg-gray-900, .rounded-2xl, .rounded-xl') || modal.firstElementChild || modal;
-  modalCard.appendChild(navigationWrap);
+  playAgainButton.parentElement.insertBefore(navigationWrap, playAgainButton);
 }
 
-  async function endGame() {
-    isRunning = false;
-    isPaused = false;
-    clearGameTimer();
-    setStatus('Game over.');
+/**
+ * Ends the current Cheese Runner run safely.
+ * This stops the timer, clears temporary boost state, updates the final modal, and saves the score once.
+ */
+async function endGame() {
+  clearGameTimer();
+  isRunning = false;
+  isPaused = false;
+  glyphBoostUntil = 0;
+  glyphBoostItem = null;
+  powerModeUntil = 0;
 
-    comboStack = 0;
-comboPickupCount = 0;
-lastComboCollectAt = 0;
-    updateComboDisplay();
+  updateScoreDisplay();
+  render();
 
-    updateScoreDisplay();
-    render();
-
-    const dspoincReward = calculateDspoincReward();
-
-    if (finalScoreEl) finalScoreEl.textContent = `Score: ${score.toLocaleString()}`;
-    if (finalDspoincEl) finalDspoincEl.textContent = `DSPOINC: ${dspoincReward.toLocaleString()}`;
-
-    if (modal) {
-  ensureGameOverNavigationLinks();
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-}
-
-    await submitCheesemanScore();
+  if (finalScoreEl) {
+    finalScoreEl.textContent = `Score: ${score.toLocaleString()}`;
   }
+
+  if (finalDspoincEl) {
+    finalDspoincEl.textContent = `DSPOINC: ${calculateDspoincReward().toLocaleString()}`;
+  }
+
+  if (saveStatusEl) {
+    saveStatusEl.textContent = 'Saving score...';
+  }
+
+  if (modal) {
+    ensureGameOverNavigationLinks();
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.style.display = 'flex';
+  }
+
+  await submitCheesemanScore();
+}
 
   /**
    * Save Cheese Runner score through the backend-authoritative API.
@@ -1579,13 +1765,15 @@ function updatePowerMode() {
   }
 }
 
-  function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-drawMaze();
-drawEnemies();
-drawPlayer();
-drawHitExplosions();
-drawFloatingTexts();
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawMaze();
+  drawGlyphBoostItem();
+  drawEnemies();
+  drawPlayer();
+  drawHitExplosions();
+  drawFloatingTexts();
 
     if (!isRunning && score === 0) {
       drawCenterText('PRESS START');
@@ -1606,20 +1794,30 @@ drawFloatingTexts();
         ctx.fillStyle = '#020617';
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-                 if (tile === 'wall') {
-          const wallImg = getWallImageForTile(row, col);
+ if (tile === 'wall') {
+  const wallImg = getWallImageForTile(row, col);
 
-          if (wallImg && wallImg.complete && wallImg.naturalWidth > 0) {
-            ctx.drawImage(wallImg, x + 1, y + 1, TILE_SIZE - 2, TILE_SIZE - 2);
-          } else {
-            ctx.fillStyle = '#1d4ed8';
-            ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
-            ctx.strokeStyle = '#60a5fa';
-            ctx.strokeRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-          }
+  if (wallImg && wallImg.complete && wallImg.naturalWidth > 0) {
+    ctx.drawImage(wallImg, x + 1, y + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+  } else {
+    // TODO: This is only a temporary first-frame placeholder while wall PNGs finish loading.
+    // It intentionally uses cheese colors so players never see unrelated blue debug blocks.
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
 
-          continue;
-        }
+    ctx.fillStyle = 'rgba(120, 53, 15, 0.28)';
+    ctx.beginPath();
+    ctx.arc(x + TILE_SIZE * 0.35, y + TILE_SIZE * 0.35, 3, 0, Math.PI * 2);
+    ctx.arc(x + TILE_SIZE * 0.68, y + TILE_SIZE * 0.58, 2.5, 0, Math.PI * 2);
+    ctx.arc(x + TILE_SIZE * 0.48, y + TILE_SIZE * 0.78, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#f59e0b';
+    ctx.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+  }
+
+  continue;
+}
 
         if (tile === 'nest') {
           ctx.fillStyle = 'rgba(124, 58, 237, 0.22)';
@@ -1651,14 +1849,106 @@ drawFloatingTexts();
     }
   }
 
-  function drawPlayer() {
-    const x = player.col * TILE_SIZE;
-    const y = player.row * TILE_SIZE;
+/**
+ * Draws the rare Glyph Boost item on the board.
+ * The bright backing ring makes the dark F.png readable on the dark maze.
+ */
+function drawGlyphBoostItem() {
+  if (!glyphBoostItem) {
+    return;
+  }
 
-    if (cheeseImg.complete && cheeseImg.naturalWidth > 0) {
-      ctx.drawImage(cheeseImg, x - 2, y - 4, TILE_SIZE + 4, TILE_SIZE + 6);
-      return;
-    }
+  const x = glyphBoostItem.col * TILE_SIZE;
+  const y = glyphBoostItem.row * TILE_SIZE;
+  const centerX = x + TILE_SIZE / 2;
+  const centerY = y + TILE_SIZE / 2;
+  const pulse = 0.9 + Math.sin(performance.now() / 140) * 0.08;
+
+  ctx.save();
+
+  // Bright readable backing so the dark F.png does not disappear into the maze.
+  ctx.shadowColor = '#facc15';
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = 'rgba(250, 204, 21, 0.9)';
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, TILE_SIZE * 0.46 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Purple inner ring to make it feel like a rare glyph/power item.
+  ctx.shadowColor = '#a855f7';
+  ctx.shadowBlur = 12;
+  ctx.strokeStyle = '#a855f7';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, TILE_SIZE * 0.36 * pulse, 0, Math.PI * 2);
+  ctx.stroke();
+
+  if (glyphBoostImage && glyphBoostImage.complete && glyphBoostImage.naturalWidth > 0) {
+    ctx.shadowBlur = 0;
+    ctx.drawImage(
+      glyphBoostImage,
+      x + 6,
+      y + 6,
+      TILE_SIZE - 12,
+      TILE_SIZE - 12
+    );
+    ctx.restore();
+    return;
+  }
+
+  // Fallback when the image is not loaded yet.
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#111827';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('F', centerX, centerY);
+
+  ctx.restore();
+}
+
+/**
+ * Draws a clear active sign around the mouse while Glyph Boost is active.
+ * This tells players the mouse is faster and protected.
+ */
+function drawGlyphBoostAura() {
+  if (!isGlyphBoostActive()) {
+    return;
+  }
+
+  const centerX = player.col * TILE_SIZE + TILE_SIZE / 2;
+  const centerY = player.row * TILE_SIZE + TILE_SIZE / 2;
+  const pulse = 0.5 + Math.sin(performance.now() / 120) * 0.12;
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(168, 85, 247, 0.95)';
+  ctx.lineWidth = 3;
+  ctx.shadowColor = '#a855f7';
+  ctx.shadowBlur = 18;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, TILE_SIZE * pulse, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = '#f5d0fe';
+  ctx.font = 'bold 10px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('F BOOST', centerX, centerY - TILE_SIZE * 0.72);
+  ctx.restore();
+}
+
+function drawPlayer() {
+  const x = player.col * TILE_SIZE;
+  const y = player.row * TILE_SIZE;
+
+  if (isGlyphBoostActive()) {
+    drawGlyphBoostAura();
+  }
+
+  if (cheeseImg.complete && cheeseImg.naturalWidth > 0) {
+    ctx.drawImage(cheeseImg, x - 2, y - 4, TILE_SIZE + 4, TILE_SIZE + 6);
+    return;
+  }
 
     ctx.fillStyle = '#facc15';
     ctx.beginPath();
@@ -1813,6 +2103,24 @@ function playSound(type) {
   }
 }
 
+/**
+ * Restarts Cheese Runner from the Game Over modal.
+ * This clears the forced modal display style before starting a fresh run.
+ */
+function restartCheesemanGame() {
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    modal.style.display = 'none';
+  }
+
+  resetGame();
+  startGame();
+}
+
+window.restartCheesemanGame = restartCheesemanGame;
+
+
   function bindControls() {
     window.addEventListener('keydown', event => {
       const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'a', 's', 'd', 'w', 'p', 'P', 'Enter'];
@@ -1864,10 +2172,17 @@ function playSound(type) {
       resetGame();
       startGame();
     });
-    playAgainBtn?.addEventListener('click', () => {
-      resetGame();
-      startGame();
-    });
+playAgainBtn?.addEventListener('click', event => {
+  event.preventDefault();
+  event.stopPropagation();
+  restartCheesemanGame();
+});
+
+playAgainBtn?.addEventListener('touchend', event => {
+  event.preventDefault();
+  event.stopPropagation();
+  restartCheesemanGame();
+}, { passive: false });
   }
 
   async function initCheeseman() {
