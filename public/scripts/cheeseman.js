@@ -26,7 +26,7 @@ const ENEMY_RESPAWN_LOCK_TICKS = 10;
 const BASE_TICK_MS = 175;
 const MIN_TICK_MS = 105;
   
-  const DSPOINC_CONVERSION_RATE = 10;
+  const DSPOINC_CONVERSION_RATE = 25;
 
   const COMBO_WINDOW_MS = 2200;
 const COMBO_MAX_STACK = 10;
@@ -397,13 +397,20 @@ let comboPickupCount = 0;
 let lastComboCollectAt = 0;
 let floatingTexts = [];
   let hitExplosions = [];
+  let cheesemanAudioContext = null;
 
-  function createPlayer() {
-    return {
-      row: PLAYER_START.row,
-      col: PLAYER_START.col
-    };
-  }
+/**
+ * Creates the player at the starting tile and stores the previous tile.
+ * Previous tile tracking is required to detect cross-tile enemy collisions.
+ */
+function createPlayer() {
+  return {
+    row: PLAYER_START.row,
+    col: PLAYER_START.col,
+    previousRow: PLAYER_START.row,
+    previousCol: PLAYER_START.col
+  };
+}
 
   function isLocalDevelopment() {
     return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -745,16 +752,18 @@ lastComboCollectAt = 0;
       const nestSpawn = nestSpawns[index] || ENEMY_NEST_CENTER;
 
       return {
-        row: nestSpawn.row,
-        col: nestSpawn.col,
-        startRow: nestSpawn.row,
-        startCol: nestSpawn.col,
-        color: start.color,
-        name: start.name,
-        direction: Object.values(DIRECTIONS)[index % 4],
-        isStunned: false,
-        respawnLockTicks: ENEMY_RESPAWN_LOCK_TICKS
-      };
+  row: nestSpawn.row,
+  col: nestSpawn.col,
+  previousRow: nestSpawn.row,
+  previousCol: nestSpawn.col,
+  startRow: nestSpawn.row,
+  startCol: nestSpawn.col,
+  color: start.color,
+  name: start.name,
+  direction: Object.values(DIRECTIONS)[index % 4],
+  isStunned: false,
+  respawnLockTicks: ENEMY_RESPAWN_LOCK_TICKS
+};
     });
   }
 
@@ -843,22 +852,41 @@ lastComboCollectAt = 0;
     gameTimer = null;
   }
 
-  function gameTick() {
-    if (!isRunning || isPaused) {
-      return;
-    }
+/**
+ * Runs one game tick.
+ * Movement, collection, enemy movement, collision checks, UI updates, and level clear checks happen here.
+ */
+function gameTick() {
+  if (!isRunning || isPaused) {
+    return;
+  }
 
-    movePlayer();
-    collectTile();
-    moveEnemies();
-    checkEnemyCollisions();
+  updatePowerMode();
+
+  movePlayer();
+
+  if (checkEnemyCollisions()) {
     updateScoreDisplay();
     render();
-
-    if (crumbsRemaining <= 0) {
-      advanceLevel();
-    }
+    return;
   }
+
+  collectTile();
+  moveEnemies();
+
+  if (checkEnemyCollisions()) {
+    updateScoreDisplay();
+    render();
+    return;
+  }
+
+  updateScoreDisplay();
+  render();
+
+  if (crumbsRemaining <= 0) {
+    advanceLevel();
+  }
+}
 
   function setDirection(directionName) {
     const direction = DIRECTIONS[directionName];
@@ -869,21 +897,26 @@ lastComboCollectAt = 0;
     nextDirection = direction;
   }
 
-  function movePlayer() {
-    if (canMove(player.row + nextDirection.row, player.col + nextDirection.col)) {
-      currentDirection = nextDirection;
-    }
+/**
+ * Moves the player one tile and records the tile they came from.
+ * Previous-position tracking lets collision logic catch cross-tile swaps.
+ */
+function movePlayer() {
+  player.previousRow = player.row;
+  player.previousCol = player.col;
 
-    const nextRow = player.row + currentDirection.row;
-    const nextCol = normalizeColumn(player.col + currentDirection.col);
+  if (canMove(player.row + nextDirection.row, player.col + nextDirection.col)) {
+    currentDirection = nextDirection;
+  }
 
-    if (!canMove(nextRow, nextCol)) {
-      return;
-    }
+  const nextRow = player.row + currentDirection.row;
+  const nextCol = player.col + currentDirection.col;
 
+  if (canMove(nextRow, nextCol)) {
     player.row = nextRow;
     player.col = nextCol;
   }
+}
 
   function collectTile() {
     const tile = maze[player.row]?.[player.col];
@@ -954,7 +987,9 @@ lastComboCollectAt = 0;
     enemyMoveCounter = 0;
 
     enemies.forEach(enemy => {
-      enemy.isStunned = isPowerModeActive();
+  enemy.previousRow = enemy.row;
+  enemy.previousCol = enemy.col;
+  enemy.isStunned = isPowerModeActive();
 
             if (enemy.respawnLockTicks > 0) {
         enemy.respawnLockTicks -= 1;
@@ -1058,8 +1093,8 @@ lastComboCollectAt = 0;
    */
   function showLifeRestartCountdown(onComplete) {
     showLevelTransitionCountdown('again', () => {
-      onComplete();
-    });
+  onComplete();
+}, 'life');
 
     const content = document.getElementById('cheeseman-level-transition-content');
 
@@ -1113,49 +1148,90 @@ lastComboCollectAt = 0;
     });
   }
 
-  function checkEnemyCollisions() {
-    enemies.forEach(enemy => {
-      if (enemy.row !== player.row || enemy.col !== player.col) {
-        return;
-      }
+/**
+ * Returns true when the player and enemy occupy the same tile.
+ */
+function isSameTileCollision(enemy) {
+  return enemy.row === player.row && enemy.col === player.col;
+}
 
-           if (isPowerModeActive()) {
-        score += SCORE_ENEMY;
+/**
+ * Returns true when the player and enemy cross through each other between ticks.
+ * This fixes the classic Pac-Man style bug where both actors swap tiles and never share one.
+ */
+function isCrossTileCollision(enemy) {
+  return (
+    enemy.row === player.previousRow &&
+    enemy.col === player.previousCol &&
+    enemy.previousRow === player.row &&
+    enemy.previousCol === player.col
+  );
+}
 
-        addHitExplosion(enemy.row, enemy.col);
-        addFloatingText(`EATEN +${SCORE_ENEMY}`, enemy.row, enemy.col, '#22c55e');
-
-        enemy.row = enemy.startRow;
-        enemy.col = enemy.startCol;
-        enemy.direction = DIRECTIONS.up;
-        enemy.isStunned = false;
-        enemy.respawnLockTicks = ENEMY_RESPAWN_LOCK_TICKS;
-
-        setStatus(`${enemy.name} eaten! It respawns in the nest.`);
-        playSound('enemy');
-        return;
-      }
-
-            lives -= 1;
-      playSound('hit');
-      addHitExplosion(player.row, player.col);
-      updateScoreDisplay();
-      render();
-
-      if (lives <= 0) {
-        endGame();
-        return;
-      }
-
-      restartLifeAfterHit();
-    });
+/**
+ * Handles one confirmed enemy collision and returns whether gameplay should stop this tick.
+ * Vulnerable enemies are eaten; normal enemies cost one life.
+ */
+function resolveEnemyCollision(enemy) {
+  if (enemy.respawnLockTicks > 0) {
+    return false;
   }
+
+  if (isPowerModeActive()) {
+    score += SCORE_ENEMY;
+
+    addHitExplosion(enemy.row, enemy.col);
+    addFloatingText(`EATEN +${SCORE_ENEMY}`, enemy.row, enemy.col, '#22c55e');
+
+    enemy.row = enemy.startRow;
+    enemy.col = enemy.startCol;
+    enemy.previousRow = enemy.startRow;
+    enemy.previousCol = enemy.startCol;
+    enemy.direction = DIRECTIONS.up;
+    enemy.isStunned = false;
+    enemy.respawnLockTicks = ENEMY_RESPAWN_LOCK_TICKS;
+
+    setStatus(`${enemy.name} eaten! It respawns in the nest.`);
+    playSound('enemy');
+    return false;
+  }
+
+  lives -= 1;
+  playSound('hit');
+  addHitExplosion(player.row, player.col);
+
+  if (lives <= 0) {
+    endGame();
+    return true;
+  }
+
+  restartLifeAfterHit();
+  return true;
+}
+
+/**
+ * Checks enemy collisions for exact tile overlap and cross-tile swaps.
+ * Returns true when the active tick should stop because the player lost a life or the game ended.
+ */
+function checkEnemyCollisions() {
+  for (const enemy of enemies) {
+    if (!isSameTileCollision(enemy) && !isCrossTileCollision(enemy)) {
+      continue;
+    }
+
+    if (resolveEnemyCollision(enemy)) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
     /**
    * Shows a Snake-style level transition popup without changing layout or scroll position.
    * The game timer stays stopped until the countdown finishes.
    */
-  function showLevelTransitionCountdown(nextLevel, onComplete) {
+  function showLevelTransitionCountdown(nextLevel, onComplete, transitionType = 'level') {
     const savedScrollX = window.scrollX || window.pageXOffset || 0;
     const savedScrollY = window.scrollY || window.pageYOffset || 0;
 
@@ -1174,15 +1250,15 @@ lastComboCollectAt = 0;
                   max-width: 90vw;
                   width: 420px;
                   pointer-events: auto;">
-        <div style="font-size: clamp(22px, 5vw, 32px); color: #facc15; text-shadow: 0 0 18px rgba(250, 204, 21, 0.8);">
-          🧀 LEVEL PASSED!
-        </div>
-        <div style="font-size: clamp(16px, 4vw, 22px); color: #bbf7d0; margin-top: 8px;">
-          Level ${nextLevel} starts soon
-        </div>
-        <div style="font-size: 14px; color: #e5e7eb; margin-top: 8px;">
-          +${SCORE_LEVEL_CLEAR} clear bonus
-        </div>
+        <div style="font-size: clamp(22px, 5vw, 32px); color: ${transitionType === 'life' ? '#fb923c' : '#facc15'}; text-shadow: 0 0 18px ${transitionType === 'life' ? 'rgba(249, 115, 22, 0.8)' : 'rgba(250, 204, 21, 0.8)'};">
+  ${transitionType === 'life' ? '💥 MOUSE CAUGHT!' : '🧀 LEVEL PASSED!'}
+</div>
+<div style="font-size: clamp(16px, 4vw, 22px); color: ${transitionType === 'life' ? '#fde68a' : '#bbf7d0'}; margin-top: 8px;">
+  ${transitionType === 'life' ? 'Life lost · Get ready' : `Level ${nextLevel} starts soon`}
+</div>
+<div style="font-size: 14px; color: #e5e7eb; margin-top: 8px;">
+  ${transitionType === 'life' ? `Remaining lives: ${lives}` : `+${SCORE_LEVEL_CLEAR} clear bonus`}
+</div>
       </div>
       <style>
         @keyframes cheesemanCountdownPulse {
@@ -1299,6 +1375,28 @@ lastComboCollectAt = 0;
     });
   }
 
+  /**
+ * Adds safe Game Over navigation links when the HTML modal does not already provide them.
+ * This keeps players from being trapped with only Play Again after a run ends.
+ */
+function ensureGameOverNavigationLinks() {
+  if (!modal || modal.querySelector('[data-cheeseman-gameover-nav]')) {
+    return;
+  }
+
+  const navigationWrap = document.createElement('div');
+  navigationWrap.dataset.cheesemanGameoverNav = 'true';
+  navigationWrap.className = 'mt-4 flex flex-wrap justify-center gap-3';
+  navigationWrap.innerHTML = `
+    <a href="profile.html" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-500">👤 Profile</a>
+    <a href="index.html" class="inline-flex items-center justify-center rounded-full bg-gray-700 px-4 py-2 font-bold text-white hover:bg-gray-600">🏠 Home</a>
+    <a href="leaderboard.html" class="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 font-bold text-white hover:bg-purple-500">🏆 Leaderboard</a>
+  `;
+
+  const modalCard = modal.querySelector('.bg-yellow-100, .bg-gray-900, .rounded-2xl, .rounded-xl') || modal.firstElementChild || modal;
+  modalCard.appendChild(navigationWrap);
+}
+
   async function endGame() {
     isRunning = false;
     isPaused = false;
@@ -1319,9 +1417,10 @@ lastComboCollectAt = 0;
     if (finalDspoincEl) finalDspoincEl.textContent = `DSPOINC: ${dspoincReward.toLocaleString()}`;
 
     if (modal) {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
+  ensureGameOverNavigationLinks();
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
 
     await submitCheesemanScore();
   }
@@ -1358,7 +1457,7 @@ lastComboCollectAt = 0;
       level,
       lives_remaining: lives,
       role_multiplier: getCheesemanRoleScoreMultiplier(),
-      client_version: 'cheeseman-1.0.2'
+      client_version: 'cheeseman-1.0.3'
     };
 
     const apiBaseUrl = window.location.hostname === 'narrrfs.world'
@@ -1459,6 +1558,26 @@ async function saveCheeseRunnerScore(score, dspoinc) {
   function isPowerModeActive() {
     return performance.now() < powerModeUntil;
   }
+
+  /**
+ * Keeps power mode state in sync every tick.
+ * When the timer ends, enemies return to normal movement/visual state.
+ */
+function updatePowerMode() {
+  if (isPowerModeActive()) {
+    enemies.forEach(enemy => {
+      enemy.isStunned = true;
+    });
+    return;
+  }
+
+  if (powerModeUntil > 0) {
+    powerModeUntil = 0;
+    enemies.forEach(enemy => {
+      enemy.isStunned = false;
+    });
+  }
+}
 
   function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1634,42 +1753,69 @@ drawFloatingTexts();
     }
   }
 
-  function playSound(type) {
-    try {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) {
-        return;
-      }
-
-      const audioContext = new AudioContextClass();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      const frequencies = {
-        crumb: 520,
-        power: 780,
-        enemy: 660,
-        hit: 160,
-        level: 880
-      };
-
-      oscillator.frequency.value = frequencies[type] || 440;
-      oscillator.type = type === 'hit' ? 'sawtooth' : 'sine';
-      gainNode.gain.setValueAtTime(0.18, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.14);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.15);
-    } catch (error) {
-      // Audio is optional.
-    }
+function getCheesemanAudioContext() {
+  if (cheesemanAudioContext) {
+    return cheesemanAudioContext;
   }
+
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    return null;
+  }
+
+  cheesemanAudioContext = new AudioContextClass();
+  return cheesemanAudioContext;
+}
+
+function playSound(type) {
+  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    return;
+  }
+
+  try {
+    const audioContext = getCheesemanAudioContext();
+    if (!audioContext) {
+      return;
+    }
+
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
+
+    const soundMap = {
+      crumb: { frequency: 520, endFrequency: 720, type: 'sine', volume: 0.16, duration: 0.08 },
+      power: { frequency: 780, endFrequency: 1040, type: 'triangle', volume: 0.2, duration: 0.16 },
+      enemy: { frequency: 220, endFrequency: 880, type: 'square', volume: 0.22, duration: 0.22 },
+      hit: { frequency: 160, endFrequency: 80, type: 'sawtooth', volume: 0.22, duration: 0.22 },
+      level: { frequency: 660, endFrequency: 990, type: 'triangle', volume: 0.2, duration: 0.24 }
+    };
+
+    const config = soundMap[type] || soundMap.crumb;
+    const now = audioContext.currentTime;
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = config.type;
+    oscillator.frequency.setValueAtTime(config.frequency, now);
+    oscillator.frequency.exponentialRampToValueAtTime(config.endFrequency, now + config.duration);
+
+    gainNode.gain.setValueAtTime(config.volume, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + config.duration);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + config.duration);
+  } catch (error) {
+    console.warn('⚠️ Cheeseman sound failed:', error);
+  }
+}
 
   function bindControls() {
     window.addEventListener('keydown', event => {
-      const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'a', 's', 'd', 'w', 'Enter'];
+      const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'a', 's', 'd', 'w', 'p', 'P', 'Enter'];
 
       if (keys.includes(event.key)) {
         event.preventDefault();
@@ -1679,7 +1825,7 @@ drawFloatingTexts();
       if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') setDirection('down');
       if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') setDirection('left');
       if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') setDirection('right');
-      if (event.key === ' ') togglePause();
+      if (event.key === ' ' || event.key.toLowerCase() === 'p') togglePause();
       if (event.key === 'Enter') startGame();
     }, { passive: false });
 

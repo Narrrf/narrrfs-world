@@ -2318,11 +2318,22 @@ class CheeseSoundManager {
   }
 
   // 🎵 NEW: Play weapon-specific sounds
-  playWeaponSound(weaponType) {
-    if (!this.soundEnabled) {
-      console.log('🔇 Sound disabled, skipping weapon sound');
-      return;
-    }
+playWeaponSound(weaponType) {
+  // Respect the global Narrrfs sound toggle from cheese-auth-indicator.js.
+  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    return;
+  }
+
+  if (!this.soundEnabled) {
+    console.log('🔇 Sound disabled, skipping weapon sound');
+    return;
+  }
+
+  if (this.audioContext && this.audioContext.state === 'suspended') {
+    this.audioContext.resume().catch(error => {
+      console.warn('⚠️ Could not resume Space Invaders audio context:', error);
+    });
+  }
     
     console.log(`🎵 Playing weapon sound: ${weaponType}`);
     
@@ -2350,13 +2361,32 @@ class CheeseSoundManager {
   }
 
   // 🎵 FALLBACK: Generate weapon sounds programmatically
-  playProgrammaticWeaponSound(weaponType) {
-    if (!this.audioContext) {
-      console.log('No audio context available for programmatic sound');
-      return;
-    }
+playProgrammaticWeaponSound(weaponType) {
+  // Respect the global Narrrfs sound toggle from cheese-auth-indicator.js.
+  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    return;
+  }
 
-    try {
+  if (!this.soundEnabled) {
+    return;
+  }
+
+  if (!this.audioContext) {
+    this.initAudioContext();
+  }
+
+  if (!this.audioContext) {
+    console.log('No audio context available for programmatic sound');
+    return;
+  }
+
+  if (this.audioContext.state === 'suspended') {
+    this.audioContext.resume().catch(error => {
+      console.warn('⚠️ Could not resume Space Invaders audio context:', error);
+    });
+  }
+
+  try {
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
       

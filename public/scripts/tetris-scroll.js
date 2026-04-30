@@ -252,79 +252,86 @@ window.addEventListener("keydown", function (e) {
   }
 }, { passive: false });
 
-// 🎵 TETRIS SOUND SYSTEM - Professional Web Audio API sounds
+// 🎵 TETRIS SOUND SYSTEM - Stable shared Web Audio API sounds
 class TetrisSoundManager {
   constructor() {
     this.audioContext = null;
-    this.sounds = {};
-    this.initAudio();
+    this.soundEnabled = true;
+    this.masterVolume = 0.7;
   }
 
-  initAudio() {
-    try {
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      console.log('🎵 Tetris Sound System initialized');
-    } catch (error) {
-      console.warn('🎵 Audio not supported:', error);
+  /**
+   * Create one shared AudioContext after player interaction.
+   * This avoids browser limits from creating too many audio contexts.
+   */
+  getAudioContext() {
+    if (this.audioContext) {
+      return this.audioContext;
     }
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+      return null;
+    }
+
+    this.audioContext = new AudioContextClass();
+    return this.audioContext;
   }
 
-  // Generate professional sound effects using Web Audio API
+  /**
+   * Play one short generated Tetris sound.
+   */
   playSound(type) {
-    if (!this.audioContext) return;
+    if (!this.soundEnabled) {
+      return;
+    }
 
-    const oscillator = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(this.audioContext.destination);
+    if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+      return;
+    }
 
-    // Professional sound design
-    switch (type) {
-      case 'piecePlace':
-        // Soft landing sound - low frequency with quick decay
-        oscillator.frequency.setValueAtTime(220, this.audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(110, this.audioContext.currentTime + 0.1);
-        oscillator.type = 'sine';
-        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.15);
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.15);
-        break;
+    try {
+      const audioContext = this.getAudioContext();
+      if (!audioContext) {
+        return;
+      }
 
-      case 'lineClear':
-        // Satisfying clear sound - ascending chord
-        oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(880, this.audioContext.currentTime + 0.2);
-        oscillator.type = 'triangle';
-        gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.3);
-        break;
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().catch(error => {
+          console.warn('⚠️ Could not resume Tetris audio context:', error);
+        });
+      }
 
-      case 'levelUp':
-        // Triumphant level up sound - ascending scale
-        oscillator.frequency.setValueAtTime(523, this.audioContext.currentTime); // C5
-        oscillator.frequency.setValueAtTime(659, this.audioContext.currentTime + 0.1); // E5
-        oscillator.frequency.setValueAtTime(784, this.audioContext.currentTime + 0.2); // G5
-        oscillator.type = 'square';
-        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.4);
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.4);
-        break;
+      const soundMap = {
+        piecePlace: { frequency: 220, endFrequency: 110, type: 'sine', volume: 0.18, duration: 0.12 },
+        lineClear: { frequency: 440, endFrequency: 880, type: 'triangle', volume: 0.26, duration: 0.22 },
+        levelUp: { frequency: 523, endFrequency: 1046, type: 'triangle', volume: 0.3, duration: 0.32 },
+        gameOver: { frequency: 440, endFrequency: 110, type: 'sawtooth', volume: 0.28, duration: 0.45 },
+        move: { frequency: 330, endFrequency: 390, type: 'sine', volume: 0.08, duration: 0.045 },
+        rotate: { frequency: 520, endFrequency: 700, type: 'square', volume: 0.09, duration: 0.055 },
+        drop: { frequency: 180, endFrequency: 90, type: 'triangle', volume: 0.12, duration: 0.08 }
+      };
 
-      case 'gameOver':
-        // Dramatic game over sound - descending tone
-        oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(110, this.audioContext.currentTime + 0.5);
-        oscillator.type = 'sawtooth';
-        gainNode.gain.setValueAtTime(0.6, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.6);
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + 0.6);
-        break;
+      const config = soundMap[type] || soundMap.move;
+      const now = audioContext.currentTime;
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.type = config.type;
+      oscillator.frequency.setValueAtTime(config.frequency, now);
+      oscillator.frequency.exponentialRampToValueAtTime(config.endFrequency, now + config.duration);
+
+      gainNode.gain.setValueAtTime(config.volume * this.masterVolume, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + config.duration);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start(now);
+      oscillator.stop(now + config.duration);
+    } catch (error) {
+      console.warn('⚠️ Tetris sound failed:', error);
     }
   }
 }

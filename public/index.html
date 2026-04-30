@@ -502,6 +502,22 @@ require_once 'discord-invite.php';
 <!-- 🔊 Preloaded Audio -->
 <audio id="cheese-click-audio" src="sounds/cheese-egg-click.wav" preload="auto"></audio>
 
+<script>
+  window.NarrrfsSound = window.NarrrfsSound || {
+    isEnabled() {
+      return localStorage.getItem('narrrfs_sound_enabled') !== 'false';
+    },
+    setEnabled(enabled) {
+      localStorage.setItem('narrrfs_sound_enabled', enabled ? 'true' : 'false');
+    },
+    toggle() {
+      const next = !this.isEnabled();
+      this.setEnabled(next);
+      return next;
+    }
+  };
+</script>
+
 <!-- 🧠 Cheese Egg Logic -->
 <script>
   const MOVE_INTERVAL = 12000; // Base interval (not used directly anymore)
@@ -1479,15 +1495,18 @@ require_once 'discord-invite.php';
       }
     }, 300);
     
-    // Play sound with better error handling
-    if (cheeseClickSound) {
-      try {
-        cheeseClickSound.currentTime = 0; // Reset audio
-        await cheeseClickSound.play();
-      } catch (e) {
-        console.log('Audio play failed:', e);
-      }
-    }
+// Play sound with global Narrrfs sound control.
+if (
+  cheeseClickSound &&
+  (!window.NarrrfsSound || window.NarrrfsSound.isEnabled())
+) {
+  try {
+    cheeseClickSound.currentTime = 0;
+    await cheeseClickSound.play();
+  } catch (e) {
+    console.log('Audio play failed:', e);
+  }
+}
     
     // Get user wallet or Discord ID with better validation
     let currentUserWallet = localStorage.getItem('discord_id');

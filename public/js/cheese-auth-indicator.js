@@ -174,8 +174,40 @@
     }
   }
 
+  const SOUND_STORAGE_KEY = 'narrrfs_sound_enabled';
+
+/**
+ * Global Narrrfs sound controller.
+ * This lets every page and game respect one shared sound preference.
+ */
+window.NarrrfsSound = window.NarrrfsSound || {
+  isEnabled() {
+    return localStorage.getItem(SOUND_STORAGE_KEY) !== 'false';
+  },
+
+  setEnabled(enabled) {
+    localStorage.setItem(SOUND_STORAGE_KEY, enabled ? 'true' : 'false');
+
+    window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
+      detail: { enabled }
+    }));
+  },
+
+  toggle() {
+    const nextEnabled = !this.isEnabled();
+    this.setEnabled(nextEnabled);
+    return nextEnabled;
+  }
+};
+
   function renderIndicator() {
     removeExistingIndicator();
+
+    // Remove existing sound toggle (prevent duplicates)
+const existingSoundBtn = document.getElementById('narrrfs-sound-toggle');
+if (existingSoundBtn) {
+  existingSoundBtn.remove();
+}
 
     const loggedIn = authState.loggedIn;
     const discordName = authState.discordName || '';
@@ -244,6 +276,37 @@
     link.appendChild(textWrap);
     wrapper.appendChild(link);
     document.body.appendChild(wrapper);
+
+    // 🔊 Create Sound Toggle Button
+const soundButton = document.createElement('button');
+soundButton.id = 'narrrfs-sound-toggle';
+soundButton.type = 'button';
+soundButton.style.position = 'fixed';
+soundButton.style.right = '16px';
+soundButton.style.bottom = '80px'; // above auth button
+soundButton.style.zIndex = '9999';
+soundButton.style.padding = '6px 10px';
+soundButton.style.borderRadius = '999px';
+soundButton.style.fontSize = '12px';
+soundButton.style.border = '1px solid rgba(250, 204, 21, 0.5)';
+soundButton.style.background = 'rgba(15, 23, 42, 0.85)';
+soundButton.style.color = '#fde68a';
+soundButton.style.cursor = 'pointer';
+soundButton.style.backdropFilter = 'blur(6px)';
+
+// Initial state
+const enabled = window.NarrrfsSound?.isEnabled();
+soundButton.textContent = enabled ? '🔊 Sound ON' : '🔇 Sound OFF';
+
+// Toggle behavior
+soundButton.onclick = () => {
+  const next = window.NarrrfsSound.toggle();
+  soundButton.textContent = next ? '🔊 Sound ON' : '🔇 Sound OFF';
+};
+
+// Add to page
+document.body.appendChild(soundButton);
+
   }
 
   function toggleProfileBanner() {

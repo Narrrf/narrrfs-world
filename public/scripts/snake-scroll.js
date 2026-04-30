@@ -68,11 +68,19 @@ class SnakeSoundManager {
   }
 
   // Generate professional sound effects using Web Audio API
-  playSound(type) {
-    if (!this.audioContext) return;
+ playSound(type) {
+  // Respect the global Narrrfs sound toggle from cheese-auth-indicator.js.
+  // When players turn sound off, Snake must not create Web Audio sounds that can pause music apps.
+  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    return;
+  }
 
-    const oscillator = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
+  if (!this.audioContext) {
+    return;
+  }
+
+  const oscillator = this.audioContext.createOscillator();
+  const gainNode = this.audioContext.createGain();
     
     oscillator.connect(gainNode);
     gainNode.connect(this.audioContext.destination);

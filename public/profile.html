@@ -12022,17 +12022,17 @@ document.addEventListener('DOMContentLoaded', function() {
  * Safe: will not throw if audio is blocked
  */
 function playRewardOpenSound() {
+  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    return;
+  }
+
   const audio = document.getElementById('reward-open-sound');
   if (!audio) return;
 
   try {
     audio.currentTime = 0;
-    audio.play().catch(() => {
-      // TODO: Autoplay blocked by browser — ignore silently
-    });
-  } catch (error) {
-    // TODO: Audio playback failed — safe fallback
-  }
+    audio.play().catch(() => {});
+  } catch (error) {}
 }
 
 /**
@@ -12879,6 +12879,9 @@ function closeRewardPurchaseConfirmModal() {
       // Chest opening uses the existing mp3. Store/genetic reward sounds are generated with Web Audio,
       // so no new sound files are required yet.
       const playSynthRewardSound = (type = 'common') => {
+        if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+  return;
+}
         try {
           const audioContext = new (window.AudioContext || window.webkitAudioContext)();
           const gainNode = audioContext.createGain();
@@ -12921,6 +12924,9 @@ function closeRewardPurchaseConfirmModal() {
       };
 
       const playChestOpeningSound = () => {
+        if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    return;
+  }
         try {
           const audioPath = 'sounds/SFX/chest.mp3';
           console.log(`🔊 [PROFILE CHEST] Attempting to play chest sound from: ${audioPath}`);

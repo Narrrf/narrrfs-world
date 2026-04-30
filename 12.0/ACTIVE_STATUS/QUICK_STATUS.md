@@ -1,9 +1,9 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: April 29, 2026
-Status: ✅ STABLE — EMPIRE AIRDROP SYSTEM FULLY INTEGRATED (PRODUCTION READY)
-Version: 2026-04-29
-Milestone: Full approval-based airdrop infrastructure is now live across Discord bot, DB state lifecycle, local secure execution service, and recipient DM notifications
+Last Updated: April 30, 2026
+Status: ✅ STABLE — GLOBAL AUDIO CONTROL ACTIVE (FRONTEND SYNC COMPLETE)
+Version: 2026-04-30
+Milestone: Unified ON/OFF sound guard is now integrated across core pages and games via `window.NarrrfsSound.isEnabled()` with localStorage-backed state
 
 ---
 
@@ -184,6 +184,206 @@ to:
 ```
 
 This is now in a production-ready state.
+
+---
+
+## 🔄 UPDATE — APRIL 30, 2026
+
+# 🔊 NARRRFS WORLD — AUDIO SYSTEM UPDATE (GLOBAL SOUND CONTROL)
+
+## ✅ OVERVIEW
+
+Implemented a global sound ON/OFF system across core frontend pages and games using:
+
+```js
+window.NarrrfsSound.isEnabled()
+```
+
+All playback now respects a unified toggle stored in localStorage.
+
+---
+
+## 🧠 CORE BEHAVIOR
+
+- Sound state key:
+  - `localStorage: narrrfs_sound_enabled`
+- Default state: **enabled**
+- Required guard pattern for all sound playback:
+
+```js
+if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) return;
+```
+
+---
+
+## 📄 UPDATED PAGES / SYSTEMS
+
+### ✅ `index.html`
+- Cheese egg click sound now respects global toggle
+
+### ✅ `profile.html`
+- Reward chamber sounds now aligned with global toggle:
+  - synth reward sounds ✅
+  - chest MP3 sound ✅
+
+### ✅ `public/scripts/cheeseman.js`
+- Fixed sound break after enemy consumption
+- Added fallback + recovery behavior
+- Integrated sound toggle support
+
+### ✅ Tetris systems (`public/tetris.html`, `public/scripts/tetris-scroll.js`)
+- Sound behavior aligned with global toggle
+
+---
+
+## 📄 NO CHANGES REQUIRED
+
+### ➖ `public/lab.html`
+- No audio system present
+- No changes needed
+
+---
+
+## ⚠️ IMPORTANT NOTES
+
+### 1) Dual sound system in use
+- MP3 (`Audio` object)
+- Web Audio API (synth sounds)
+
+Both are now aligned with the global toggle.
+
+### 2) Known limitation (future task)
+Current synth logic can create new contexts per play:
+
+```js
+new AudioContext()
+```
+
+This may:
+- break sound after many plays
+- hit browser limits
+
+Future improvement:
+- introduce a **global shared AudioContext**
+
+### 3) Consistency rule (mandatory)
+All future sound features must:
+- use global check
+- never bypass toggle
+- never autoplay without guard
+
+---
+
+## 🧩 NEXT SUGGESTED STEP (OPTIONAL)
+
+Create central sound manager:
+
+```js
+window.NarrrfsSound.play(type)
+```
+
+Benefits:
+- standardize sound behavior across all games/pages
+- reduce duplicated logic
+- prevent recurring audio bugs
+
+---
+
+## ✅ STATUS
+
+```text
+GLOBAL AUDIO CONTROL: ACTIVE
+AFFECTED SYSTEMS: STABLE
+FRONTEND SYNC: COMPLETE
+```
+
+---
+
+## 🔄 UPDATE — APRIL 30, 2026 (CHEESE RUNNER PATCH)
+
+# 🧀 QUICK STATUS HANDOVER — CHEESE RUNNER + GLOBAL SOUND PATCH
+
+Date: April 30, 2026  
+System Area: Cheeseman / Cheese Runner, Global Sound Toggle  
+Status: ✅ Local testing successful — ready for production push / production restart
+
+---
+
+## ✅ COMPLETED CHEESEMAN / CHEESE RUNNER BUG BATCH
+
+Cheeseman has been stabilized locally and is ready for production deployment.
+
+### Files involved
+
+- `public/scripts/cheeseman.js`
+- `public/cheeseman.html`
+- Backend note: `api/dev/save-cheeseman-score.php` still needs economy cap audit as next hardening step
+
+---
+
+## ✅ FIXED BUGS
+
+### 1) Game start/runtime crash fixed
+- `gameTick()` called `updatePowerMode()` before helper existed.
+- Added safe `updatePowerMode()` helper below `isPowerModeActive()`.
+- Game now starts and runs smoothly.
+
+### 2) Enemy collision fixed
+- Added previous tile tracking for:
+  - player
+  - enemies
+- Added same-tile collision check.
+- Added cross-tile collision check.
+- Fixes player/enemy pass-through during tile swaps in same tick.
+
+### 3) Power mode enemy eating fixed
+- Vulnerable enemies now use same collision resolver.
+- Enemies can be eaten during power mode.
+- Respawned enemies return safely to nest/start tile.
+
+### 4) Enemy nest anti-farm protection confirmed
+- `respawnLockTicks` prevents immediate re-eat in nest.
+- This is intentional and should remain for economy/gameplay balance.
+
+### 5) Pause key fixed
+- `P` / `p` now toggles pause.
+- Existing Space pause still works.
+
+### 6) Wrong death message fixed
+- Life-loss transition now shows correct mouse-caught/death messaging.
+- No longer incorrectly shows “LEVEL PASSED” after death.
+
+### 7) Game Over navigation improved
+- Game Over modal now includes safe navigation to:
+  - Profile
+  - Home
+  - Leaderboard
+- Player is no longer trapped with only “Play Again.”
+
+### 8) DSPOINC frontend economy reduced
+- Conversion updated:
+  - Old: `DSPOINC_CONVERSION_RATE = 10`
+  - New: `DSPOINC_CONVERSION_RATE = 25`
+- Reduces normal Cheese Runner output and lowers farm risk.
+
+---
+
+## ✅ LOCAL TEST STATUS
+
+Confirmed locally:
+
+- Game starts
+- Maze renders
+- Pause toggles
+- Game loop runs without repeated console errors
+- Enemy collision works
+- Power cheese enemy eating works
+- Respawn nest lock works
+- Debug state available via:
+
+```js
+window.cheesemanDebugState?.()
+```
 
 ---
 
