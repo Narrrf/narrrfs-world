@@ -10,6 +10,7 @@
 
 <link rel="preload" as="image" href="img/cheeseman/cheeseman1.png">
 <link rel="preload" as="image" href="img/cheeseman/F.png">
+<link rel="preload" as="image" href="img/cheeseman/mushroom.png">
 <link rel="preload" as="image" href="img/tetris/block_I.png">
 <link rel="preload" as="image" href="img/tetris/block_O.png">
 <link rel="preload" as="image" href="img/tetris/block_T.png">
@@ -17,6 +18,7 @@
 <link rel="preload" as="image" href="img/tetris/block_Z.png">
 <link rel="preload" as="image" href="img/tetris/block_J.png">
 <link rel="preload" as="image" href="img/tetris/block_L.png">
+
 
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -326,7 +328,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm text-gray-200 leading-relaxed">
         <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
           <h4 class="text-yellow-300 font-black mb-2">🧀 Goal</h4>
-          <p>Collect crumbs, survive enemy chases, use power cheese at the right moment, and clear every level by eating all collectibles.</p>
+          <p>Collect crumbs, power cheese, tunnel crumbs, and rare items while surviving enemy chases. Clear each level by collecting all active collectibles on the maze.</p>
         </div>
 
         <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
@@ -336,22 +338,37 @@
 
         <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
           <h4 class="text-purple-300 font-black mb-2">🖤 Glyph Boost</h4>
-          <p>The rare F glyph item can appear on the board. Collecting it gives the mouse a short speed boost and protection from enemy damage.</p>
+          <p>The rare F glyph item can appear on safe maze tiles. Collecting it gives the mouse a short speed boost and protection from enemy damage. It protects you, but Power Cheese remains the enemy-eating tool.</p>
+        </div>
+
+        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
+          <h4 class="text-red-300 font-black mb-2">🍄 Confusion Mushroom</h4>
+          <p>The Mushroom is a poison pickup. If you collect it, your controls are reversed for a short time. Eating it at the wrong moment can send the mouse straight into danger.</p>
+        </div>
+
+        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
+          <h4 class="text-blue-300 font-black mb-2">🚪 Tunnel Lanes</h4>
+          <p>Some levels now have open tunnel lanes marked by side exits. Move through the left edge to reappear on the right, or through the right edge to reappear on the left.</p>
         </div>
 
         <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
           <h4 class="text-red-300 font-black mb-2">👾 Enemies</h4>
-          <p>Enemies become smarter as levels rise. Freshly respawned enemies have a short nest protection lock to prevent farming.</p>
+          <p>Enemies become smarter as levels rise. Freshly respawned enemies have a short nest protection lock to prevent score farming inside the nest.</p>
         </div>
 
         <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
           <h4 class="text-orange-300 font-black mb-2">🔥 Combo Bar</h4>
-          <p>Eating cheese quickly builds combo levels. Higher combo levels improve score pace and make fast clean runs more rewarding.</p>
+          <p>Collecting cheese quickly builds combo levels. Higher combo levels improve score pace and reward fast, clean routes through the maze.</p>
         </div>
 
         <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
+          <h4 class="text-green-300 font-black mb-2">🧭 Level Progression</h4>
+          <p>Cheese Runner now has an expanded level pool with more open lanes, tunnel rows, trickier mid-map routes, and rising enemy pressure as the run continues.</p>
+        </div>
+
+        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20 md:col-span-2">
           <h4 class="text-green-300 font-black mb-2">✅ Fair Play</h4>
-          <p>Scores are saved through the Cheese Runner backend. DSPOINC rewards are calculated from score, role multiplier, and the current conversion rules.</p>
+          <p>Scores are saved through the Cheese Runner backend. Raw score feeds the seasonal leaderboard, while DSPOINC rewards are calculated from score, role multiplier, and the current conversion rules. Backend save remains authoritative.</p>
         </div>
       </div>
     </div>
@@ -367,7 +384,7 @@
         <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
           <h4 class="text-yellow-300 font-black mb-2">🧮 Reward Formula</h4>
           <p><strong>DSPOINC reward:</strong> floor((score × role multiplier) / 25)</p>
-          <p class="text-gray-400 mt-2">The frontend display uses the current Cheese Runner conversion rate. Backend save remains the authority.</p>
+          <p class="text-gray-400 mt-2">The frontend display uses the current Cheese Runner conversion rate. Backend save remains the authority for the final ledger write.</p>
         </div>
 
         <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
@@ -385,12 +402,27 @@
 
         <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
           <h4 class="text-red-300 font-black mb-2">🛡️ Economy Safety</h4>
-          <p>Cheese Runner uses safer reward balance with a conversion rate of 25. This keeps runs fun while reducing farming risk.</p>
+          <p>Cheese Runner uses a safer conversion rate of 25 to keep runs rewarding while reducing farming risk. Glyph Boost protects movement, but it does not automatically farm enemy points.</p>
+        </div>
+
+        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
+          <h4 class="text-cyan-300 font-black mb-2">🧀 Score Sources</h4>
+          <p><strong>Crumbs / tunnel crumbs:</strong> +10 score</p>
+          <p><strong>Power cheese:</strong> +50 score</p>
+          <p><strong>Vulnerable enemy:</strong> +200 score</p>
+          <p><strong>Level clear:</strong> +500 score</p>
+          <p><strong>F Glyph Boost:</strong> +100 score and temporary protection/speed</p>
+          <p><strong>Confusion Mushroom:</strong> reverses controls temporarily, no direct reward</p>
+        </div>
+
+        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
+          <h4 class="text-orange-300 font-black mb-2">🔥 Combo Impact</h4>
+          <p>Fast cheese collection can increase score through the combo system. Higher score means higher DSPOINC output after role multiplier and conversion rate are applied.</p>
         </div>
 
         <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20 md:col-span-2">
           <h4 class="text-cyan-300 font-black mb-2">📊 Leaderboard Source</h4>
-          <p>Raw Cheese Runner scores go to the seasonal leaderboard. DSPOINC rewards go to the player ledger and winner systems when the backend save succeeds.</p>
+          <p>Raw Cheese Runner scores go to the seasonal leaderboard. DSPOINC rewards go to the player ledger and winners systems when the backend save succeeds. Season 11 uses the active season backend flow.</p>
         </div>
       </div>
     </div>
@@ -743,6 +775,6 @@
     scores.classList.add('hidden');
   }
 </script>
-<script src="scripts/cheeseman.js?v=1.1.6"></script>
+<script src="scripts/cheeseman.js?v=1.1.8"></script>
 </body>
 </html>

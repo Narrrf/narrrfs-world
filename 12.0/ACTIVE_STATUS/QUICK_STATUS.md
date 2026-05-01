@@ -1,13 +1,778 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: April 30, 2026
-Status: ✅ STABLE — GLOBAL AUDIO CONTROL ACTIVE (FRONTEND SYNC COMPLETE)
-Version: 2026-04-30
-Milestone: Unified ON/OFF sound guard is now integrated across core pages and games via `window.NarrrfsSound.isEnabled()` with localStorage-backed state
+Last Updated: May 1, 2026
+Status: ✅ STABLE — SEASON 11 ACTIVE / SEASON 10 FROZEN / FRONTEND + API SYNC COMPLETE
+Version: 2026-05-01
+Milestone: Season 10 was frozen at the cutoff snapshot, Season 11 is active, fresh leaderboards are reset, and public/admin season surfaces are synced.
 
 ---
 
 ## 🔄 UPDATE — APRIL 27, 2026
+
+---
+
+## 🔄 UPDATE — MAY 1, 2026
+
+# 🏆 NARRRFS WORLD — SEASON 10 → SEASON 11 RESET COMPLETE
+
+## ✅ OVERVIEW
+
+Season 10 has been frozen and Season 11 is now active.
+
+The reset was completed with a stability-first approach:
+
+- old season frozen at exact cutoff
+- live DB snapshot created
+- Season 11 activated in `tbl_seasons`
+- Season 10 preserved as frozen previous season
+- wrong-season score rows corrected surgically
+- frontend and backend season copy aligned
+- persistent systems preserved
+
+Official cutoff used:
+
+```text
+2026-04-30 22:00:00 UTC
+```
+
+Snapshot created:
+
+`/data/narrrf_world_season10_cutoff_20260430_220000.sqlite`
+
+Live DB:
+
+`/var/www/html/db/narrrf_world.sqlite`
+
+Persistent DB baseline:
+
+`/data/narrrf_world.sqlite`
+
+## 🧊 SEASON STATE
+
+### ✅ Season 10
+- frozen / previous season
+- final rankings locked
+- still visible as frozen leaderboard where intended
+- no longer active in `tbl_seasons`
+
+### ✅ Season 11
+- active current season
+- starts at `2026-04-30 22:00:00`
+- ends at `2026-05-30 22:00:00`
+- fresh arcade leaderboards reset to zero after correction
+
+Verified DB state:
+
+- Season 11 = active
+- Season 10 = inactive / frozen
+- Only one active season exists
+
+## 💾 DATABASE ACTIONS COMPLETED
+
+### ✅ Snapshot
+- Created cutoff database snapshot at exact reset time
+
+### ✅ Season transition
+Updated `tbl_seasons`:
+
+- Season 10 `end_date` set to cutoff
+- Season 10 `is_active = 0`
+- Season 11 inserted/updated
+- Season 11 `is_active = 1`
+
+### ✅ Season settings
+Confirmed `tbl_season_settings` rows exist for:
+
+- Season 10
+- Season 11
+
+### ✅ Wrong-season score correction
+After activation, two Tetris rows appeared in Season 11 but belonged to Season 10 due to cutoff/local-time interpretation.
+
+Corrected exact rows only:
+
+- `rowid 10926`
+- `rowid 10927`
+
+Correction method:
+
+- moved only those two exact rows back to Season 10
+- avoided broad timestamp update
+- persisted corrected DB to `/data/narrrf_world.sqlite`
+
+Final expected state:
+
+- Season 11 arcade scores = 0 immediately after reset/correction
+- Season 10 frozen leaderboard remains visible
+
+## 🔌 API FILES UPDATED / VERIFIED
+
+### ✅ `api/dev/get-leaderboard.php`
+
+Current behavior:
+
+- detects active season from `tbl_seasons`
+- fallback current season is now Season 11
+- fallback previous season is now Season 10
+- returns correct frozen transition payload
+
+Expected API payload:
+
+```json
+{
+  "current_season": "Season 11",
+  "display_season": "Season 10",
+  "is_frozen": true
+}
+```
+
+This API supports frozen/display season logic and includes visible boards such as Tetris, Snake, Space Invaders, Cheese Runner, Cheese Hunt, Discord Race, Cheese Rumble, Glyph Memory, Mouse Leaderboard, and Lab Power. `leaderboard.html` consumes `current_season`, `display_season`, and `is_frozen` to show frozen Season 10 while Season 11 is active.
+
+### ✅ `api/dev/save-score.php`
+
+Updated / verified:
+
+- active season read from `tbl_seasons`
+- fallback set to Season 11
+- Tetris / Snake / Space Invaders / Glyph Memory write to active season
+
+### ✅ `api/dev/save-cheeseman-score.php`
+
+Updated / verified:
+
+- Cheese Runner / Cheeseman writes to active season
+- fallback set to Season 11
+- writes to:
+  - `tbl_tetris_scores`
+  - `tbl_user_scores`
+
+The Cheeseman score API keeps `tbl_tetris_scores` as seasonal leaderboard source and `tbl_user_scores` as DSPOINC ledger source of truth, while using active season lookup.
+
+### ✅ `api/admin/get-all-games-stats.php`
+
+Updated / verified:
+
+- stale fallback changed away from old season
+- admin stats aligned to active Season 11
+
+## 🌐 FRONTEND FILES UPDATED / VERIFIED
+
+### ✅ Core pages
+
+Season 11 visible copy and frozen Season 10 transition wording updated in:
+
+- `public/index.html`
+- `public/profile.html`
+- `public/admin-interface.html`
+- `public/leaderboard.html`
+
+Profile season logic now reads leaderboard API response and switches UI using `current_season`, `display_season`, and `is_frozen`, showing frozen Season 10 and active/upcoming Season 11 messaging dynamically.
+
+### ✅ Game pages
+
+Visible Season 10 active text updated to Season 11 where needed:
+
+- `public/tetris.html`
+- `public/snake.html`
+- `public/space-cheese-invaders.html`
+- `public/cheeseman.html`
+
+### ✅ Additional public pages synced
+
+Old Season 10 marketing copy cleaned in:
+
+- `public/faq.html`
+- `public/get-roles.html`
+- `public/mint.html`
+- `public/nerd-lab.html`
+
+Removed stale active-season phrases like:
+
+- “Season 10 LIVE”
+- “Season 10 RUNNING”
+- “Season 10 STARTED”
+
+Allowed remaining Season 10 references only for:
+
+- frozen season
+- previous/historical season
+- `season_10` selector option
+
+## 🛠 ADMIN INTERFACE SEASON FIXES
+
+### ✅ Season selector updated
+
+```html
+<option value="season_11">Season 11</option>
+<option value="season_10">Season 10</option>
+```
+
+### ✅ Season label map corrected
+
+Correct structure:
+
+- `season_11: 'Season 11'`
+- `season_10: 'Season 10'`
+
+### ✅ Season display function stabilized
+
+`updateSeasonDisplay()` cleaned so overview elements are declared before use and stale fallback text no longer points to old season wording.
+
+## 🧪 FINAL GREP / VALIDATION
+
+Validation pattern used:
+
+`Select-String -Path api\**\*.php,public\*.html -Pattern "Season 9 Active","Season 10 LIVE","Season 10 RUNNING","Season 10 STARTED","fetchColumn\(\) \?: 'Season 9'"`
+
+Expected result after fix pass:
+
+- no output
+
+Meaning:
+
+- no stale Season 9 active fallback
+- no stale Season 10 active/live/running/started copy
+- Season 10 remains only as frozen/previous/historical
+
+## ✅ PUSHED / DEPLOYED FILE SCOPE
+
+- `api/dev/get-leaderboard.php`
+- `api/dev/save-cheeseman-score.php`
+- `api/dev/save-score.php`
+- `api/admin/get-all-games-stats.php`
+- `public/admin-interface.html`
+- `public/cheeseman.html`
+- `public/faq.html`
+- `public/get-roles.html`
+- `public/index.html`
+- `public/mint.html`
+- `public/nerd-lab.html`
+- `public/profile.html`
+- `public/snake.html`
+- `public/space-cheese-invaders.html`
+- `public/tetris.html`
+
+No unrelated broad rewrites intended.
+
+## 🧠 IMPORTANT SYSTEM RULES PRESERVED
+
+Do **not** reset across season transition:
+
+- DSPOINC balances
+- staking
+- Lab progression
+- Genesis trait upgrades
+- Genetic inventory
+- marketplace
+- reward boxes
+- holder verifications
+- user identity
+- all-time profile systems
+
+Persistent systems remain active across transition.
+
+Project principle remains locked:
+
+- Backend = authoritative
+- Frontend = reflection only
+- Bot = executor / notifier
+- Ledger = append-only
+- No assumptions
+
+## ⚠️ KNOWN FOLLOW-UP / NEXT RESET IMPROVEMENT
+
+### 1) Archive endpoint upgrade needed
+
+`api/admin/archive-season-stats.php` still documents archive scope as legacy arcade set and does not yet fully include Cheeseman in arcade archival scope.
+
+Future task before Season 11 → Season 12:
+
+- add Cheeseman to arcade archival logic after full schema review
+- likely target pattern:
+  - `game IN ('tetris', 'snake', 'space_invaders', 'cheeseman')`
+
+Do not change blindly without checking full file + historical schema.
+
+### 2) Keep local DB synced for season testing
+
+Issue encountered:
+
+- local profile showed Season 10 active
+- cause = outdated local DB
+- after syncing live DB locally, API correctly returned:
+  - `current_season = Season 11`
+  - `display_season = Season 10`
+  - `is_frozen = true`
+
+Rule:
+
+- always sync live DB to local before testing active-season state
+
+### 3) Timezone caution
+
+- cutoff authority is UTC
+- local time appeared offset by ~2 hours
+
+Rule:
+
+- use UTC as DB authority
+- when gameplay timing is known, correct by exact `rowid` instead of broad timestamp updates
+
+## 🏁 FINAL STATUS
+
+✅ Season 10 frozen  
+✅ Season 11 active  
+✅ Season 11 scores reset to 0 after correction  
+✅ Season 10 frozen leaderboard visible  
+✅ APIs aligned  
+✅ Frontends updated  
+✅ Admin season UI synced  
+✅ Persistent systems preserved  
+✅ Push completed
+
+Status line:
+
+`Status: ✅ STABLE — SEASON 11 ACTIVE / SEASON 10 FROZEN / FRONTEND + API SYNC COMPLETE`
+
+---
+
+## 🔄 UPDATE — MAY 1, 2026
+
+# 🧀 CHEESE RUNNER / CHEESEMAN — SEASON 11 FEATURE + PROFILE LEADERBOARD SYNC
+
+## ✅ OVERVIEW
+
+Cheese Runner / Cheeseman received a Season 11 gameplay expansion and profile leaderboard integration pass.
+
+System areas touched / reviewed:
+
+- `public/scripts/cheeseman.js`
+- `public/cheeseman.html`
+- `public/profile.html`
+- `api/dev/get-leaderboard.php`
+- `api/user/all-time-stats.php`
+- `api/user/user-game-missions.php`
+- `api/dev/save-cheeseman-score.php`
+
+Current state:
+
+```text
+CHEESE RUNNER CORE: ✅ LOCAL FEATURE TESTING ACTIVE
+SEASON 11 LEVEL EXPANSION: ✅ ADDED LOCALLY
+CONFUSION MUSHROOM: ✅ ADDED LOCALLY
+TUNNEL / WRAP LANES: ✅ ADDED LOCALLY
+PROFILE 5-GAME LEADERBOARD: ✅ COPY-PASTE BLOCK PREPARED
+API SUPPORT: 🟡 MOSTLY READY / USER-GAME-MISSIONS PATCH REQUIRED
+PRODUCTION PUSH: 🟡 PENDING FINAL LOCAL TEST + API PATCH VERIFY
+```
+
+## ✅ CHEESE RUNNER GAMEPLAY EXPANSION
+
+### 1) Confusion Mushroom added
+
+Ticket:
+
+- `#794 — Add the "confusion Mushroom"`
+
+Feature behavior:
+
+- Mushroom appears as a rare item on safe maze tiles
+- Uses image: `public/img/cheeseman/mushroom.png`
+- On collect, activates poison/confusion timer
+- Player controls reverse temporarily
+- This is intentionally a risk item, not a reward item
+
+Current constants in `cheeseman.js`:
+
+```js
+const CONFUSION_MUSHROOM_IMAGE_SRC = 'img/cheeseman/mushroom.png';
+const CONFUSION_MUSHROOM_DURATION_MS = 5000;
+const CONFUSION_MUSHROOM_DROP_CHANCE_ON_LEVEL_START = 1; // 0.12 production
+const CONFUSION_MUSHROOM_SCORE_PENALTY = 0;
+```
+
+Important production note:
+
+```js
+const CONFUSION_MUSHROOM_DROP_CHANCE_ON_LEVEL_START = 1;
+```
+
+is still local test mode. Before production:
+
+```js
+const CONFUSION_MUSHROOM_DROP_CHANCE_ON_LEVEL_START = 0.12;
+```
+
+Implemented systems:
+
+- mushroom image preloading in `cheeseman.html`
+- mushroom image object in `cheeseman.js`
+- mushroom state:
+  - `confusionMushroomItem`
+  - `confusionMushroomUntil`
+- spawn helper rules:
+  - no wall
+  - no nest
+  - no player tile
+  - no enemy tile
+  - no overlap with F Glyph Boost item
+- collection helper:
+  - collected after normal cheese / F Glyph collection
+- timer helper:
+  - ends confusion after duration
+- active visual:
+  - confused aura/sign on mouse
+- controls:
+  - `setDirection()` now applies `applyConfusionToDirection(direction)`
+
+Testing target:
+
+- ✅ Mushroom appears on safe tile
+- ✅ Mushroom image visible
+- ✅ Mushroom disappears when collected
+- ✅ Status says controls reversed
+- ✅ Keyboard controls reverse
+- ✅ touch/D-pad controls reverse
+- ✅ confusion fades after timer
+- ✅ normal controls return
+
+### 2) Tunnel / wrap lanes added
+
+Ticket context:
+
+- `#793` (feature inspirations set)
+
+Implemented from this batch:
+
+- Horizontal tunnel / wrap lanes
+
+Feature behavior:
+
+- rows now include tunnel exits marked `T`
+- left edge wraps to right edge
+- right edge wraps to left edge
+- creates Pac-Man style escape lanes
+
+Current constants:
+
+```js
+const TILE_TUNNEL = 'tunnel';
+const WRAP_TUNNELS_ENABLED = true;
+```
+
+Implementation details:
+
+- `buildMaze()` converts `T` to `TILE_TUNNEL`
+- tunnel tiles count as collectibles
+- `collectTile()` collects both:
+  - `crumb`
+  - `TILE_TUNNEL`
+- `canMove()` already uses `normalizeColumn(col)`
+- `movePlayer()` patched so wrapped columns are safely assigned after normalization
+
+Correct collection logic:
+
+```js
+if (tile === 'crumb' || tile === TILE_TUNNEL) {
+  ...
+}
+```
+
+Testing target:
+
+- ✅ T row tiles render/work as open lanes
+- ✅ left edge exits to right edge
+- ✅ right edge exits to left edge
+- ✅ player column never becomes -1 or 19
+- ✅ tunnel crumbs are collectable
+- ✅ level still clears after tunnel tile collection
+- ✅ enemy collision still works after wrap
+
+### 3) Level expansion from 10 to 20 maps
+
+Changed:
+
+```js
+const MAX_LEVEL_TEMPLATE_COUNT = 10;
+```
+
+to:
+
+```js
+const MAX_LEVEL_TEMPLATE_COUNT = 20;
+```
+
+`LEVEL_TEMPLATES` now contains 20 maps.
+
+Design updates:
+
+- more tunnel exits
+- more open middle paths
+- multiple side lanes on some maps
+- increased difficulty through denser walls / risk routes
+- nests remain protected
+
+Map size unchanged:
+
+- 21 rows
+- 19 columns per row
+
+Validation note:
+
+- run `validateLevelTemplates()` in browser console after hard refresh
+- expected: no row length / shape warnings
+
+## ✅ CHEESE RUNNER HTML GUIDE UPDATED
+
+`cheeseman.html` guide/DSPOINC help updated for Season 11 features.
+
+Updated sections:
+
+- Cheese Runner Game Guide
+- DSPOINC Scores - Cheese Runner Rewards
+- Controls & Help scoring text
+
+New guide content includes:
+
+- Confusion Mushroom
+- Tunnel lanes
+- expanded level progression
+- Glyph Boost clarified
+- Power Cheese remains enemy-eating tool
+- Mushroom = risk item, no direct reward
+- F Glyph Boost = +100 score and temporary speed/protection
+
+Current reward explanation:
+
+- `floor((score × role multiplier) / 25)`
+
+Documented score sources:
+
+- crumbs / tunnel crumbs: +10
+- power cheese: +50
+- vulnerable enemy: +200
+- level clear: +500
+- F Glyph Boost pickup: +100
+- Confusion Mushroom: no direct score reward
+
+## ✅ PROFILE 5-GAME LEADERBOARD INTEGRATION
+
+A new `profile.html` leaderboard block was prepared to replace older 4-game section.
+
+Old board:
+
+- Tetris
+- Snake
+- Space Invaders
+- Glyph Memory
+
+New 5-game board:
+
+- Tetris
+- Snake
+- Space Invaders
+- Cheese Runner
+- Glyph Memory
+
+New Cheese Runner card:
+
+- 🧀 Cheese Runner
+- Maze chase, tunnel lanes, Glyph Boost, and Confusion Mushroom
+
+Frontend key expected from leaderboard API:
+
+- `result.cheeseman`
+
+Block includes:
+
+- 5 themed cards
+- Play buttons for all games
+- Cheese Runner link: `cheeseman.html`
+- compact top 5 for score games
+- top 3 per difficulty for Glyph Memory
+- Full leaderboard button
+- frozen/current season header logic
+- `credentials: 'include'`
+- `cache: 'no-store'`
+
+## ✅ API REVIEW RESULTS
+
+### `api/dev/get-leaderboard.php`
+
+Status:
+
+- ✅ No change required for Cheese Runner profile leaderboard
+
+Verified behavior:
+
+- active season from `tbl_seasons`
+- previous/frozen fallback = Season 10
+- current fallback = Season 11
+- already includes:
+  - `$cheesemanResult = getLeaderboard($db, 'cheeseman', $currentSeason, $previousSeason, $useFrozenLeaderboard);`
+  - `'cheeseman' => $cheesemanResult['leaderboard'],`
+  - `'cheeseman_meta' => [...]`
+
+### `api/user/all-time-stats.php`
+
+Status:
+
+- ✅ No change required for Cheese Runner all-time stats
+
+Verified behavior:
+
+- includes Cheese Runner / Cheeseman all-time stats
+- reads from `tbl_tetris_scores`
+- filter: `game = 'cheeseman'`
+- contributes to all-time totals
+
+Future note:
+
+- archive flow should include `cheeseman` before Season 11 → 12 reset to preserve historical continuity
+
+### `api/user/user-game-missions.php`
+
+Status:
+
+- ⚠️ Change required before production
+
+Issues:
+
+1) stale fallback season:
+
+```php
+$currentSeason = 'Season 9'; // Default fallback
+```
+
+must be:
+
+```php
+$currentSeason = 'Season 11'; // Default fallback
+```
+
+2) Cheese Runner DSPOINC source currently wrong
+
+Current issue:
+
+```php
+'dspoinc_earned' => (int)$cheesemanData['total_score']
+```
+
+Correct behavior:
+
+- best/total score from `tbl_tetris_scores`
+- DSPOINC earned from `tbl_user_scores`
+
+Use query pattern:
+
+```sql
+SELECT COALESCE(SUM(score), 0) as dspoinc_earned
+FROM tbl_user_scores
+WHERE user_id = ?
+AND game = 'cheeseman'
+AND source = 'game_reward'
+AND timestamp >= ?
+AND (? IS NULL OR timestamp < ?)
+```
+
+Also overall contribution should be:
+
+```php
+$response['overall']['games_played'] += (int)$cheesemanData['total_games'];
+$response['overall']['total_dspoinc'] += $cheesemanDspoincEarned;
+```
+
+and not raw score / +1 game shortcuts.
+
+## ⚠️ PRODUCTION PREP CHECKLIST
+
+Before push, confirm:
+
+- ✅ no duplicate const declarations in `cheeseman.js`
+- ✅ no duplicate mushroom helper functions
+- ✅ `public/img/cheeseman/mushroom.png` exists
+- ✅ `cheeseman.html` preloads mushroom image
+- ✅ `CONFUSION_MUSHROOM_DROP_CHANCE_ON_LEVEL_START` changed `1` → `0.12`
+- ✅ `GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START` changed `1` → `0.18`
+- ✅ `MAX_LEVEL_TEMPLATE_COUNT = 20`
+- ✅ all 20 templates are `21 × 19`
+- ✅ `buildMaze` handles `T`
+- ✅ `collectTile` collects `TILE_TUNNEL`
+- ✅ `movePlayer` normalizes wrapped columns
+- ✅ `profile.html` 5-game leaderboard block is active
+- ✅ `user-game-missions.php` Season 11 fallback fixed
+- ✅ `user-game-missions.php` Cheese Runner DSPOINC uses ledger
+- ✅ browser console has no red runtime errors
+
+## 🧪 LOCAL TEST PLAN
+
+Cheese Runner:
+
+1. hard refresh `cheeseman.html`
+2. start game
+3. confirm F Glyph appears
+4. confirm Mushroom appears
+5. confirm tunnel rows wrap left ↔ right
+6. collect Mushroom
+7. confirm controls reverse
+8. wait 5 seconds
+9. confirm controls normalize
+10. collect F Glyph
+11. confirm speed/protection behavior
+12. confirm Power Cheese still eats enemies
+13. confirm 0 lives ends game
+14. confirm Play Again closes overlay + fresh run
+15. confirm level clears with tunnel crumbs
+
+Profile leaderboard:
+
+1. open `profile.html`
+2. confirm 5 cards render
+3. confirm Cheese Runner card appears
+4. confirm Cheese Runner scores use `result.cheeseman`
+5. confirm frozen/active season header updates
+6. confirm Full Leaderboard link works
+
+API checks:
+
+- `/api/dev/get-leaderboard.php`
+- `/api/user/all-time-stats.php?user_id=328601656659017732`
+- `/api/user/user-game-missions.php?user_id=328601656659017732`
+
+Expected:
+
+- `get-leaderboard.php` includes `cheeseman`
+- `all-time-stats.php` includes `games.cheeseman`
+- `user-game-missions.php` includes `cheeseman` with DSPOINC from `tbl_user_scores`
+
+## ✅ CURRENT STATUS SUMMARY
+
+- Cheese Runner Season 11 expansion: 🟡 local testing / close to push
+- Confusion Mushroom: ✅ implemented locally
+- Tunnel lanes: ✅ implemented locally
+- 20-level pool: ✅ implemented locally
+- Cheese Runner guide updates: ✅ prepared / applied locally
+- Profile 5-game leaderboard: ✅ prepared
+- Leaderboard API: ✅ supports cheeseman
+- All-time stats API: ✅ supports cheeseman
+- User game missions API: ⚠️ needs final patch before production
+- Archive season stats: ⚠️ add cheeseman before next season reset
+
+## 🎯 NEXT WORK AFTER PUSH
+
+After this batch is verified/pushed, Cheese Runner can move into deeper mode work:
+
+- Time Attack Mode
+- Endless Mode
+- Survival Waves
+- Boss Chase Mode
+- Daily Challenge Mode
+
+Important:
+
+- do not start mode expansion until this stability/API pass is production-verified
+
+---
 
 # 📊 QUICK STATUS UPDATE — LAB / ECONOMY / LOOTBOX SYSTEM
 
@@ -384,6 +1149,360 @@ Confirmed locally:
 ```js
 window.cheesemanDebugState?.()
 ```
+
+---
+
+## 🔄 UPDATE — APRIL 30, 2026
+
+# 🧀 CHEESE RUNNER / CHEESEMAN — STABILITY + FEATURE BATCH
+
+## ✅ OVERVIEW
+
+Cheese Runner / Cheeseman received a major stabilization and UX batch.
+
+System area:
+
+- `public/cheeseman.html`
+- `public/scripts/cheeseman.js`
+- `api/dev/save-cheeseman-score.php`
+- Leaderboard / DSPOINC economy integration
+
+Current state:
+
+```text
+CHEESE RUNNER: ✅ LOCAL TESTING ACTIVE / MOSTLY STABLE
+CORE GAMEPLAY: ✅ RUNNING
+BUG BATCH: ✅ MAJOR FIXES APPLIED
+NEW FEATURE: ✅ GLYPH BOOST ITEM ADDED
+NEXT PHASE: 🎮 ADDITIONAL GAME MODES PLANNED
+```
+
+## ✅ COMPLETED FIXES
+
+### 1) Game start/runtime crash fixed
+
+Problem:
+- game did not start after clicking Start
+- console: `ReferenceError: updatePowerMode is not defined`
+
+Fix:
+- added `updatePowerMode()` helper under `isPowerModeActive()`
+- game loop now starts and runs normally
+
+### 2) Enemy collision system fixed
+
+Problem:
+- player could walk through enemies
+- enemy/player tile swaps not detected
+- power cheese enemy eating unreliable
+
+Fix:
+- added previous-position tracking for:
+  - player
+  - enemies
+- added:
+  - same-tile collision detection
+  - cross-tile collision detection
+  - centralized collision resolver
+
+Result:
+- enemy touch = life loss
+- power cheese touch = enemy eaten
+- cross-tile swap still resolves collision
+
+### 3) Pause controls fixed
+
+Problem:
+- `P` key pause did not work
+
+Fix:
+- added `P / p` support to input guard + pause handler
+- Space pause remains active
+
+Result:
+- Space = pause/resume
+- P = pause/resume
+- Pause button = pause/resume
+
+### 4) Wrong death transition fixed
+
+Problem:
+- life loss could show “LEVEL PASSED.”
+
+Fix:
+- added transition type handling for life loss
+- life loss now shows death/mouse-caught messaging
+
+### 5) Game Over navigation improved
+
+Problem / ticket:
+- `#753` no option back to profile (only Play Again)
+
+Fix:
+- Game Over modal now includes:
+  - Profile
+  - Home
+  - Leaderboard
+  - Play Again
+
+Result:
+- `#753` can be closed after production verification
+
+Additional follow-up:
+- Play Again did not close overlay due to forced inline `modal.style.display = 'flex'`
+- required patch behavior:
+  - reset modal display to `none` in reset/restart flow
+  - use `restartCheesemanGame()` helper
+  - bind Play Again click/touch to helper
+  - expose `window.restartCheesemanGame`
+
+### 6) DSPOINC frontend reward balance reduced
+
+Changed conversion:
+
+```js
+const DSPOINC_CONVERSION_RATE = 25;
+```
+
+Previous value:
+
+```js
+const DSPOINC_CONVERSION_RATE = 10;
+```
+
+Result:
+- rewards are less farmable
+- frontend reward display is safer
+
+Important:
+- backend validation still needs final hardening in `save-cheeseman-score.php`
+- backend remains authoritative and must guard against modified clients
+
+## ✅ NEW FEATURE — RARE GLYPH BOOST ITEM
+
+Added first rare drop item using:
+
+- `public/img/cheeseman/F.png`
+
+Internal system:
+
+- `GLYPH_BOOST`
+
+Player-facing behavior:
+- rare F glyph appears on maze
+- collect to activate Glyph Boost
+- mouse becomes faster + protected briefly
+
+Current test setting:
+
+```js
+const GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START = 1;
+```
+
+Production target:
+
+```js
+const GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START = 0.18;
+```
+
+Implemented systems:
+
+- Glyph item state:
+  - `glyphBoostItem`
+  - `glyphBoostUntil`
+  - `glyphBoostImage`
+- spawn helper:
+  - safe visible tile only
+  - no walls
+  - no nest
+  - no player tile
+  - no enemy tile
+- collection helper:
+  - collects after normal cheese tile collection
+- boost behavior:
+  - temporary faster game tick
+  - enemy collision protection
+  - does not auto-eat enemies
+- visuals:
+  - visible yellow/purple glyph item
+  - active boost aura on mouse
+  - “F BOOST” style active sign
+
+Design decision:
+
+- Power Cheese = lets mouse eat enemies
+- Glyph Boost = protects/speeds mouse, does not eat enemies
+
+This preserves gameplay clarity and economy balance.
+
+## ✅ VISUAL / UX IMPROVEMENTS
+
+### 1) Wall-image preload added
+
+Preload links added in `cheeseman.html` for:
+
+- `img/cheeseman/cheeseman1.png`
+- `img/cheeseman/F.png`
+- Tetris wall block PNGs used for Cheese Runner maze walls
+
+### 2) Blue fallback blocks replaced
+
+Problem:
+- first render could show blue debug-style blocks before wall images loaded
+
+Fix:
+- replaced blue fallback with cheese-colored placeholders
+
+## ✅ GUIDE / HELP SECTION ADDED
+
+Added Snake/Tetris-style sections under game container in `cheeseman.html`:
+
+- Cheese Runner Game Guide
+- DSPOINC Scores / Cheese Runner Rewards
+- Cheese Runner Controls & Help
+
+Includes gameplay info:
+
+- Movement:
+  - Arrow keys
+  - WASD
+  - mobile swipe
+  - touch D-pad
+- Controls:
+  - Start
+  - Pause
+  - P key
+  - Restart
+- Scoring:
+  - crumbs +10
+  - power cheese +50
+  - stunned enemy +200
+  - level clear +500
+- Role multipliers:
+  - VIP Holder 2.0x
+  - Holder 1.5x
+  - Champion 1.4x
+  - WL / Season Tester 1.3x
+  - Early Bird 1.2x
+  - Cheese Hunter 1.1x
+- DSPOINC formula:
+  - `floor((score × role multiplier) / 25)`
+
+## ⚠️ CURRENT TEST MODE NOTES
+
+Before production, confirm:
+
+```js
+const GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START = 0.18;
+```
+
+and not:
+
+```js
+const GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START = 1;
+```
+
+Also confirm cache version bump in `cheeseman.html`:
+
+```html
+<script src="scripts/cheeseman.js?v=1.1.6"></script>
+```
+
+or newer.
+
+## ⚠️ OPEN / WATCH ITEMS
+
+### 1) Backend economy hardening
+
+Review:
+
+- `api/dev/save-cheeseman-score.php`
+
+Needed:
+
+- conservative max DSPOINC cap
+- validation against impossible score/reward values
+- keep append-only writes
+- no DB schema change
+- keep API contract stable
+
+### 2) Play Again modal behavior
+
+Observed locally:
+- modal has Profile / Home / Leaderboard / Play Again
+- Play Again needed extra fix because modal had inline `display: flex`
+
+Required confirmed patch:
+
+- `resetGame()` clears modal style (`modal.style.display = 'none'`)
+- `restartCheesemanGame()` helper exists
+- Play Again calls `restartCheesemanGame()`
+
+### 3) Zero-lives safety guard
+
+Observed bug:
+- at 0 lives, player could continue moving / collisions not finalizing
+
+Required confirmed patch:
+
+- `gameTick()` stops immediately if `lives <= 0`
+- `resolveEnemyCollision()` does not allow Glyph Boost protection at 0 lives
+- `endGame()` clears:
+  - timer
+  - running state
+  - pause state
+  - glyph boost state
+  - power mode state
+
+## ✅ LOCAL TEST CHECKLIST
+
+Before production push:
+
+- ✅ Game starts
+- ✅ Role bonus loads
+- ✅ Pause works with P and button
+- ✅ Enemy collision works
+- ✅ Cross-tile collision works
+- ✅ Power cheese eats enemies
+- ✅ Glyph Boost appears visibly
+- ✅ Glyph Boost can be collected
+- ✅ Glyph Boost speeds mouse temporarily
+- ✅ Glyph Boost protects mouse only while active
+- ✅ Boost fades and speed returns normal
+- ✅ 0 lives always opens Game Over
+- ✅ Game Over modal has Profile/Home/Leaderboard/Play Again
+- ✅ Play Again closes overlay and starts fresh run
+- ✅ Guide/help sections display correctly
+- ✅ Console has no red runtime errors
+
+## 🎮 NEXT PHASE — GAME MODES
+
+After this stabilization batch, Cheese Runner is ready for additional mode planning.
+
+Planned (not implemented yet):
+
+- Time Attack Mode
+- Endless Mode
+- Survival Waves
+- Boss Chase Mode
+- Daily Challenge Mode
+- Future multiplayer mode
+
+Important rule:
+
+- do not implement new modes until current stability fixes are production-verified
+
+Priority:
+
+- Stability > economy safety > mode design > polish
+
+## ✅ STATUS SUMMARY
+
+- Cheese Runner core bug batch: ✅ mostly complete
+- Glyph Boost item: ✅ implemented locally
+- Game guide/DSPOINC help: ✅ added
+- Production readiness: 🟡 pending final local verification of Play Again + 0-lives guard
+- Next milestone: 🎮 mode expansion planning
 
 ---
 

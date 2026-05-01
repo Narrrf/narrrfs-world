@@ -146,7 +146,7 @@ try {
     }
 
     // Get current active season from database
-    $currentSeason = 'Season 9'; // Default fallback
+    $currentSeason = 'Season 11'; // Default fallback
     $currentSeasonStart = null;
     $currentSeasonEnd = null;
     try {
@@ -448,17 +448,42 @@ try {
             }
         }
 
+        $cheesemanDspoincEarned = 0;
+
+        try {
+            $dspoincStmt = $db->prepare("
+                SELECT COALESCE(SUM(score), 0) as dspoinc_earned
+                FROM tbl_user_scores
+                WHERE user_id = ?
+                AND game = 'cheeseman'
+                AND source = 'game_reward'
+                AND timestamp >= ?
+                AND (? IS NULL OR timestamp < ?)
+            ");
+
+            $dspoincStmt->execute([
+                $discordId,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+
+            $cheesemanDspoincEarned = (int)$dspoincStmt->fetchColumn();
+        } catch (Exception $ledgerError) {
+            error_log("Cheeseman DSPOINC ledger query error: " . $ledgerError->getMessage());
+        }
+
         if ($cheesemanData && (int)$cheesemanData['total_games'] > 0) {
             $response['cheeseman'] = [
                 'total_games' => (int)$cheesemanData['total_games'],
                 'best_score' => (int)$cheesemanData['best_score'],
                 'total_score' => (int)$cheesemanData['total_score'],
                 'last_played' => $cheesemanData['last_played'],
-                'dspoinc_earned' => (int)$cheesemanData['total_score']
+                'dspoinc_earned' => $cheesemanDspoincEarned
             ];
 
-            $response['overall']['games_played'] += 1;
-            $response['overall']['total_dspoinc'] += (int)$cheesemanData['total_score'];
+            $response['overall']['games_played'] += (int)$cheesemanData['total_games'];
+            $response['overall']['total_dspoinc'] += $cheesemanDspoincEarned;
         }
     } catch (Exception $e) {
         error_log("Cheeseman stats query error: " . $e->getMessage());

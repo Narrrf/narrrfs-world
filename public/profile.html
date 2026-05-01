@@ -5686,7 +5686,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 <!-- 🧠 Load Scroll Scripts -->
-<!-- 🎮 Game scripts removed - games now on standalone pages (tetris.html, snake.html) -->
+<!-- 🎮 Game scripts removed - games now on standalone pages -->
 <!-- <script src="scripts/tetris-scroll.js?v=11.6.0&season5_boss_system=1730649600"></script> -->
 <!-- <script src="scripts/snake-scroll.js?v=5.4.0&season5_boss_system=1730649600"></script> -->
 <!-- Space Invaders script removed from profile page - it has its own dedicated page -->
@@ -5695,13 +5695,14 @@ document.addEventListener("DOMContentLoaded", async function () {
   console.log('🎮 Tetris: /tetris.html');
   console.log('🐍 Snake: /snake.html');
   console.log('👾 Space Invaders: /space-cheese-invaders.html');
+  console.log('🧀 Cheese Runner: /cheeseman.html');
+  console.log('🔮 Glyph Memory: profile / leaderboard integration');
 </script>
-
 
 <!-- 🏆 Restored Leaderboard Section -->
 <section id="tetris-auth" class="max-w-6xl mx-auto px-4 mt-10">
   <div class="text-center text-xs text-slate-400">
-    🥇 Live profile leaderboards across Tetris, Snake, Space Invaders, and Glyph Memory
+    🥇 Live profile leaderboards across Tetris, Snake, Space Invaders, Cheese Runner, and Glyph Memory
   </div>
 </section>
 
@@ -5714,276 +5715,354 @@ document.addEventListener("DOMContentLoaded", async function () {
 <section id="leaderboard" class="max-w-6xl mx-auto px-4 mt-6 mb-10">
   <div class="rounded-3xl border border-yellow-400/20 bg-slate-900/70 backdrop-blur-md shadow-2xl overflow-hidden">
     <div class="px-6 py-6 border-b border-white/10 bg-gradient-to-r from-amber-500/10 via-yellow-400/10 to-cyan-400/10">
-      <h3 id="leaderboard-title" class="text-2xl md:text-3xl font-extrabold text-center text-yellow-300">🏆 Leaderboards</h3>
+      <h3 id="leaderboard-title" class="text-2xl md:text-3xl font-extrabold text-center text-yellow-300">
+        🏆 Season Leaderboards
+      </h3>
       <div id="leaderboard-subtitle" class="text-center text-xs text-slate-300 mt-2">
         Preparing leaderboard and ecosystem state...
       </div>
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+        <span class="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-cyan-200">🧩 Tetris</span>
+        <span class="rounded-full border border-green-400/30 bg-green-400/10 px-3 py-1 text-green-200">🐍 Snake</span>
+        <span class="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1 text-purple-200">👾 Space Invaders</span>
+        <span class="rounded-full border border-yellow-400/30 bg-yellow-400/10 px-3 py-1 text-yellow-200">🧀 Cheese Runner</span>
+        <span class="rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-1 text-fuchsia-200">🔮 Glyph Memory</span>
+      </div>
     </div>
 
-    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="rounded-2xl border border-cyan-400/15 bg-white/5 p-4">
-        <h4 class="text-lg font-bold text-cyan-300 mb-3">🧩 Tetris</h4>
-        <ol id="leaderboard-tetris-list" class="space-y-2 text-slate-200"></ol>
-      </div>
-
-      <div class="rounded-2xl border border-green-400/15 bg-white/5 p-4">
-        <h4 class="text-lg font-bold text-green-300 mb-3">🐍 Snake</h4>
-        <ol id="leaderboard-snake-list" class="space-y-2 text-slate-200"></ol>
-      </div>
-
-      <div class="rounded-2xl border border-purple-400/15 bg-white/5 p-4">
-        <h4 class="text-lg font-bold text-purple-300 mb-3">👾 Space Invaders</h4>
-        <ol id="leaderboard-space-invaders-list" class="space-y-2 text-slate-200"></ol>
-      </div>
-
-      <div class="rounded-2xl border border-fuchsia-400/15 bg-white/5 p-4">
-        <h4 class="text-lg font-bold text-fuchsia-300 mb-3">🔮 Glyph Memory</h4>
-        <div class="grid grid-cols-1 gap-4">
+    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <!-- 🧩 Tetris -->
+      <article class="rounded-2xl border border-cyan-400/20 bg-gradient-to-br from-cyan-950/50 via-slate-900/80 to-blue-950/50 p-4 shadow-xl">
+        <div class="flex items-start justify-between gap-3 mb-4">
           <div>
+            <h4 class="text-lg font-black text-cyan-300">🧩 Tetris</h4>
+            <p class="text-xs text-slate-400 mt-1">Classic blocks, clean clears, seasonal score chase.</p>
+          </div>
+          <a href="tetris.html" class="rounded-full bg-cyan-400 px-3 py-1 text-xs font-black text-slate-950 hover:bg-cyan-300">Play</a>
+        </div>
+        <ol id="leaderboard-tetris-list" class="space-y-2 text-slate-200"></ol>
+      </article>
+
+      <!-- 🐍 Snake -->
+      <article class="rounded-2xl border border-green-400/20 bg-gradient-to-br from-green-950/50 via-slate-900/80 to-emerald-950/50 p-4 shadow-xl">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h4 class="text-lg font-black text-green-300">🐍 Snake</h4>
+            <p class="text-xs text-slate-400 mt-1">Cheese paths, boss mode pressure, survival scoring.</p>
+          </div>
+          <a href="snake.html" class="rounded-full bg-green-400 px-3 py-1 text-xs font-black text-slate-950 hover:bg-green-300">Play</a>
+        </div>
+        <ol id="leaderboard-snake-list" class="space-y-2 text-slate-200"></ol>
+      </article>
+
+      <!-- 👾 Space Invaders -->
+      <article class="rounded-2xl border border-purple-400/20 bg-gradient-to-br from-purple-950/50 via-slate-900/80 to-pink-950/50 p-4 shadow-xl">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h4 class="text-lg font-black text-purple-300">👾 Space Invaders</h4>
+            <p class="text-xs text-slate-400 mt-1">Blast waves, survive pressure, climb the season board.</p>
+          </div>
+          <a href="space-cheese-invaders.html" class="rounded-full bg-purple-400 px-3 py-1 text-xs font-black text-slate-950 hover:bg-purple-300">Play</a>
+        </div>
+        <ol id="leaderboard-space-invaders-list" class="space-y-2 text-slate-200"></ol>
+      </article>
+
+      <!-- 🧀 Cheese Runner -->
+      <article class="rounded-2xl border border-yellow-400/25 bg-gradient-to-br from-yellow-950/55 via-slate-900/80 to-orange-950/55 p-4 shadow-xl">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h4 class="text-lg font-black text-yellow-300">🧀 Cheese Runner</h4>
+            <p class="text-xs text-slate-400 mt-1">Maze chase, tunnel lanes, Glyph Boost, and Confusion Mushroom.</p>
+          </div>
+          <a href="cheeseman.html" class="rounded-full bg-yellow-400 px-3 py-1 text-xs font-black text-slate-950 hover:bg-yellow-300">Play</a>
+        </div>
+        <ol id="leaderboard-cheeseman-list" class="space-y-2 text-slate-200"></ol>
+      </article>
+
+      <!-- 🔮 Glyph Memory -->
+      <article class="rounded-2xl border border-fuchsia-400/20 bg-gradient-to-br from-fuchsia-950/50 via-slate-900/80 to-indigo-950/50 p-4 shadow-xl lg:col-span-2 xl:col-span-2">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h4 class="text-lg font-black text-fuchsia-300">🔮 Glyph Memory</h4>
+            <p class="text-xs text-slate-400 mt-1">Fast memory runs by difficulty. Lower time ranks higher.</p>
+          </div>
+          <a href="glyph-memory.html" class="rounded-full bg-fuchsia-400 px-3 py-1 text-xs font-black text-slate-950 hover:bg-fuchsia-300">Play</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="rounded-xl border border-fuchsia-400/10 bg-black/20 p-3">
             <div class="text-xs uppercase tracking-wider text-fuchsia-200 mb-2">Easy</div>
             <ol id="leaderboard-glyph-easy-list" class="space-y-2 text-slate-200"></ol>
           </div>
-          <div>
+          <div class="rounded-xl border border-fuchsia-400/10 bg-black/20 p-3">
             <div class="text-xs uppercase tracking-wider text-fuchsia-200 mb-2">Medium</div>
             <ol id="leaderboard-glyph-medium-list" class="space-y-2 text-slate-200"></ol>
           </div>
-          <div>
+          <div class="rounded-xl border border-fuchsia-400/10 bg-black/20 p-3">
             <div class="text-xs uppercase tracking-wider text-fuchsia-200 mb-2">Hard</div>
             <ol id="leaderboard-glyph-hard-list" class="space-y-2 text-slate-200"></ol>
           </div>
         </div>
-      </div>
+      </article>
+    </div>
+
+    <div class="px-6 pb-6 text-center">
+      <a href="leaderboard.html" class="inline-flex items-center justify-center rounded-full border border-yellow-400/40 bg-yellow-400/10 px-5 py-2 text-sm font-black text-yellow-200 hover:bg-yellow-400/20">
+        🏆 Open Full Leaderboard
+      </a>
     </div>
   </div>
 </section>
 
 <!-- 🏆 Leaderboard Logic -->
 <script>
-  async function loadCombinedLeaderboards() {
-    try {
-      // 🌍 Environment-aware API endpoint (works both locally and in production)
-      const isProduction =
-        window.location.hostname === "narrrfs-world.onrender.com" ||
-        window.location.hostname === "narrrfs.world";
-      const apiBaseUrl = isProduction ? "https://narrrfs.world" : "";
-      const leaderboardUrl = `${apiBaseUrl}/api/dev/get-leaderboard.php`;
+  /**
+   * Formats leaderboard names safely for the compact profile cards.
+   */
+  function formatLeaderboardName(entry) {
+    const name = String(entry?.discord_name || '').trim();
+    const discordId = String(entry?.discord_id || '').trim();
 
-      console.log(`🌍 Environment: ${isProduction ? "Production" : "Local"}`);
-      console.log(`🔗 Leaderboard API URL: ${leaderboardUrl}`);
+    if (name) {
+      return name;
+    }
 
-      const res = await fetch(leaderboardUrl);
-      const result = await res.json();
+    if (discordId.length > 10) {
+      return `${discordId.slice(0, 6)}...${discordId.slice(-4)}`;
+    }
 
-      console.log("📊 Leaderboard data received:", result);
+    return discordId || 'Unknown Mouse';
+  }
 
-      // 🏷️ Update leaderboard header based on frozen status
-      const leaderboardHeader = document.querySelector("#leaderboard h3");
-      const leaderboardSubtitle = document.querySelector(
-        "#leaderboard .text-center.text-xs"
-      );
+  /**
+   * Formats normal score-game entries for Tetris, Snake, Space Invaders, and Cheese Runner.
+   */
+  function renderScoreLeaderboard(listEl, data, emptyLabel) {
+    if (!listEl) {
+      return;
+    }
 
-      if (result.is_frozen && result.display_season) {
-        // Show frozen Season leaderboard
-        if (leaderboardHeader) {
-          leaderboardHeader.innerHTML =
-            `⏸️ ${result.display_season} Leaderboard - FREEZED (Final Rankings)`;
-        }
-        if (leaderboardSubtitle) {
-          const nextSeason = result.current_season || "Current Season";
-          leaderboardSubtitle.innerHTML =
-            `🚀 ${nextSeason} Starting Soon • ${result.display_season} Final Rankings • Check Your Position!`;
-        }
-      } else if (result.display_season) {
-        // Show current active season leaderboard
-        if (leaderboardHeader) {
-          leaderboardHeader.innerHTML =
-            `🏆 ${result.display_season} Leaderboard (Live Rankings)`;
-        }
-        if (leaderboardSubtitle) {
-          leaderboardSubtitle.innerHTML =
-            "🎮 Active Season • Compete for the Top Spots!";
-        }
-      }
+    listEl.innerHTML = '';
 
-      // 🔗 DOM targets
-      const tetrisList = document.getElementById("leaderboard-tetris-list");
-      const snakeList = document.getElementById("leaderboard-snake-list");
-      const spaceInvadersList = document.getElementById(
-        "leaderboard-space-invaders-list"
-      );
+    const rows = Array.isArray(data) ? data.slice(0, 5) : [];
 
-      // 🔮 Glyph lists (3 difficulty parts)
-      const glyphEasyList = document.getElementById(
-        "leaderboard-glyph-easy-list"
-      );
-      const glyphMediumList = document.getElementById(
-        "leaderboard-glyph-medium-list"
-      );
-      const glyphHardList = document.getElementById(
-        "leaderboard-glyph-hard-list"
-      );
+    if (!rows.length) {
+      listEl.innerHTML = `<li class="rounded-xl border border-white/5 bg-black/20 px-3 py-2 text-sm text-slate-500">${emptyLabel}</li>`;
+      return;
+    }
 
-      // Clear old content safely
-      if (tetrisList) tetrisList.innerHTML = "";
-      if (snakeList) snakeList.innerHTML = "";
-      if (spaceInvadersList) spaceInvadersList.innerHTML = "";
-      if (glyphEasyList) glyphEasyList.innerHTML = "";
-      if (glyphMediumList) glyphMediumList.innerHTML = "";
-      if (glyphHardList) glyphHardList.innerHTML = "";
+    rows.forEach((entry, index) => {
+      const li = document.createElement('li');
+      const rank = index + 1;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+      const name = formatLeaderboardName(entry);
+      const score = Number(entry?.score || 0).toLocaleString();
 
-      // 🧩 Tetris Leaderboard
-      if (tetrisList) {
-        if (Array.isArray(result.tetris) && result.tetris.length > 0) {
-          result.tetris.forEach((entry, i) => {
-            const li = document.createElement("li");
-            const name =
-              entry.discord_name ||
-              `${entry.discord_id.slice(0, 6)}...${entry.discord_id.slice(-4)}`;
-            li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-            li.className = "mb-2 text-sm";
-            tetrisList.appendChild(li);
-          });
-        } else {
-          tetrisList.innerHTML =
-            '<li class="text-gray-500 text-sm">No Tetris scores yet</li>';
-        }
-      }
+      li.className = 'flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-black/25 px-3 py-2 text-sm hover:bg-white/10 transition';
 
-      // 🐍 Snake Leaderboard
-      if (snakeList) {
-        if (Array.isArray(result.snake) && result.snake.length > 0) {
-          result.snake.forEach((entry, i) => {
-            const li = document.createElement("li");
-            const name =
-              entry.discord_name ||
-              `${entry.discord_id.slice(0, 6)}...${entry.discord_id.slice(-4)}`;
-            li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-            li.className = "mb-2 text-sm";
-            snakeList.appendChild(li);
-          });
-        } else {
-          snakeList.innerHTML =
-            '<li class="text-gray-500 text-sm">No Snake scores yet</li>';
-        }
-      }
+      li.innerHTML = `
+        <div class="min-w-0">
+          <div class="font-black text-slate-100 truncate">${medal} ${name}</div>
+          <div class="text-[11px] text-slate-500">Season rank ${rank}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-black text-emerald-300">${score}</div>
+          <div class="text-[11px] text-slate-500">score</div>
+        </div>
+      `;
 
-      // 👾 Space Invaders Leaderboard
-      if (spaceInvadersList) {
-        if (
-          Array.isArray(result.space_invaders) &&
-          result.space_invaders.length > 0
-        ) {
-          result.space_invaders.forEach((entry, i) => {
-            const li = document.createElement("li");
-            const name =
-              entry.discord_name ||
-              `${entry.discord_id.slice(0, 6)}...${entry.discord_id.slice(-4)}`;
-            li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-            li.className = "mb-2 text-sm";
-            spaceInvadersList.appendChild(li);
-          });
-        } else {
-          spaceInvadersList.innerHTML =
-            '<li class="text-gray-500 text-sm">No Space Invaders scores yet</li>';
-        }
-      }
-
-      // 🔮 Glyph Memory Leaderboard – 3 difficulty parts (easy / medium / hard)
-      // PHP sends: glyph_memory: { easy: [...], medium: [...], hard: [...] }
-      const glyphMemory = result.glyph_memory || {};
-      const glyphEasyData = Array.isArray(glyphMemory.easy)
-        ? glyphMemory.easy
-        : [];
-      const glyphMediumData = Array.isArray(glyphMemory.medium)
-        ? glyphMemory.medium
-        : [];
-      const glyphHardData = Array.isArray(glyphMemory.hard)
-        ? glyphMemory.hard
-        : [];
-
-      // Helper to render one difficulty list
-      const renderGlyphDifficulty = (listEl, data, label) => {
-  if (!listEl) return;
-
-  // Show only top 3 entries for this difficulty
-  const top = Array.isArray(data) ? data.slice(0, 3) : [];
-
-  if (top.length > 0) {
-    top.forEach((entry, i) => {
-      const li = document.createElement("li");
-      const name =
-        entry.discord_name ||
-        `${entry.discord_id.slice(0, 6)}...${entry.discord_id.slice(-4)}`;
-
-      // Use formatted best time straight from API (MM:SS)
-      const timeLabel =
-        entry.best_time_formatted ||
-        (entry.best_time_ms != null
-          ? `${Math.round(entry.best_time_ms / 1000)}s`
-          : "?");
-
-      li.textContent = `#${i + 1} ${name} – ${timeLabel}`;
-      li.className = "mb-1 text-xs";
       listEl.appendChild(li);
     });
-  } else {
-    listEl.innerHTML =
-      `<li class="text-gray-500 text-xs">No Glyph ${label} scores yet</li>`;
   }
-};
 
-      renderGlyphDifficulty(glyphEasyList, glyphEasyData, "Easy");
-      renderGlyphDifficulty(glyphMediumList, glyphMediumData, "Medium");
-      renderGlyphDifficulty(glyphHardList, glyphHardData, "Hard");
+  /**
+   * Formats one Glyph Memory difficulty list.
+   */
+  function renderGlyphDifficulty(listEl, data, label) {
+    if (!listEl) {
+      return;
+    }
 
-      console.log("✅ Leaderboards updated successfully");
+    listEl.innerHTML = '';
+
+    const rows = Array.isArray(data) ? data.slice(0, 3) : [];
+
+    if (!rows.length) {
+      listEl.innerHTML = `<li class="rounded-lg border border-white/5 bg-black/20 px-2 py-2 text-xs text-slate-500">No Glyph ${label} scores yet</li>`;
+      return;
+    }
+
+    rows.forEach((entry, index) => {
+      const li = document.createElement('li');
+      const rank = index + 1;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+      const name = formatLeaderboardName(entry);
+      const timeLabel =
+        entry?.best_time_formatted ||
+        (entry?.best_time_ms != null ? `${Math.round(Number(entry.best_time_ms) / 1000)}s` : '?');
+
+      li.className = 'flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-black/25 px-2 py-2 text-xs hover:bg-white/10 transition';
+      li.innerHTML = `
+        <span class="truncate font-bold text-slate-100">${medal} ${name}</span>
+        <span class="font-black text-fuchsia-300">${timeLabel}</span>
+      `;
+
+      listEl.appendChild(li);
+    });
+  }
+
+  /**
+   * Loads the combined 5-game leaderboard cards for the profile page.
+   * The backend leaderboard API already supports cheeseman as the Cheese Runner key.
+   */
+  async function loadCombinedLeaderboards() {
+    try {
+      const isProduction =
+        window.location.hostname === 'narrrfs-world.onrender.com' ||
+        window.location.hostname === 'narrrfs.world';
+
+      const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+      const leaderboardUrl = `${apiBaseUrl}/api/dev/get-leaderboard.php`;
+
+      console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+      console.log(`🔗 Leaderboard API URL: ${leaderboardUrl}`);
+
+      const res = await fetch(leaderboardUrl, {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          Accept: 'application/json'
+        }
+      });
+
+      const result = await res.json();
+      console.log('📊 Leaderboard data received:', result);
+
+      const leaderboardHeader = document.getElementById('leaderboard-title');
+      const leaderboardSubtitle = document.getElementById('leaderboard-subtitle');
+      const mainSeasonSubtitle = document.getElementById('main-season-subtitle');
+
+      if (result.is_frozen && result.display_season) {
+        const nextSeason = result.current_season || 'Current Season';
+
+        if (leaderboardHeader) {
+          leaderboardHeader.innerHTML = `⏸️ ${result.display_season} Leaderboard — FROZEN FINAL RANKINGS`;
+        }
+
+        if (leaderboardSubtitle) {
+          leaderboardSubtitle.innerHTML = `🚀 ${nextSeason} active / starting • Showing ${result.display_season} final rankings until fresh season boards unlock.`;
+        }
+
+        if (mainSeasonSubtitle) {
+          mainSeasonSubtitle.innerHTML = `🧊 ${result.display_season} frozen rankings are shown while ${nextSeason} Season 11 boards warm up.`;
+        }
+      } else {
+        const shownSeason = result.display_season || result.current_season || 'Current Season';
+
+        if (leaderboardHeader) {
+          leaderboardHeader.innerHTML = `🏆 ${shownSeason} Leaderboards — Live Rankings`;
+        }
+
+        if (leaderboardSubtitle) {
+          leaderboardSubtitle.innerHTML = '🎮 Five active game boards • Compete for the top spots across the Narrrfs arcade.';
+        }
+
+        if (mainSeasonSubtitle) {
+          mainSeasonSubtitle.innerHTML = `✅ ${shownSeason} active • Tetris, Snake, Space Invaders, Cheese Runner, and Glyph Memory are live.`;
+        }
+      }
+
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-tetris-list'),
+        result.tetris,
+        'No Tetris scores yet'
+      );
+
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-snake-list'),
+        result.snake,
+        'No Snake scores yet'
+      );
+
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-space-invaders-list'),
+        result.space_invaders,
+        'No Space Invaders scores yet'
+      );
+
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-cheeseman-list'),
+        result.cheeseman,
+        'No Cheese Runner scores yet'
+      );
+
+      const glyphMemory = result.glyph_memory || {};
+      renderGlyphDifficulty(
+        document.getElementById('leaderboard-glyph-easy-list'),
+        Array.isArray(glyphMemory.easy) ? glyphMemory.easy : [],
+        'Easy'
+      );
+
+      renderGlyphDifficulty(
+        document.getElementById('leaderboard-glyph-medium-list'),
+        Array.isArray(glyphMemory.medium) ? glyphMemory.medium : [],
+        'Medium'
+      );
+
+      renderGlyphDifficulty(
+        document.getElementById('leaderboard-glyph-hard-list'),
+        Array.isArray(glyphMemory.hard) ? glyphMemory.hard : [],
+        'Hard'
+      );
+
+      console.log('✅ Profile 5-game leaderboards updated successfully');
     } catch (err) {
-      console.error("❌ Leaderboard fetch failed:", err);
+      console.error('❌ Leaderboard fetch failed:', err);
 
-      // Show error in leaderboards
-      const tetrisList = document.getElementById("leaderboard-tetris-list");
-      const snakeList = document.getElementById("leaderboard-snake-list");
-      const spaceInvadersList = document.getElementById(
-        "leaderboard-space-invaders-list"
-      );
-      const glyphEasyList = document.getElementById(
-        "leaderboard-glyph-easy-list"
-      );
-      const glyphMediumList = document.getElementById(
-        "leaderboard-glyph-medium-list"
-      );
-      const glyphHardList = document.getElementById(
-        "leaderboard-glyph-hard-list"
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-tetris-list'),
+        [],
+        'Failed to load Tetris scores'
       );
 
-      if (tetrisList) {
-        tetrisList.innerHTML =
-          '<li class="text-red-500 text-sm">Failed to load Tetris scores</li>';
-      }
-      if (snakeList) {
-        snakeList.innerHTML =
-          '<li class="text-red-500 text-sm">Failed to load Snake scores</li>';
-      }
-      if (spaceInvadersList) {
-        spaceInvadersList.innerHTML =
-          '<li class="text-red-500 text-sm">Failed to load Space Invaders scores</li>';
-      }
-      if (glyphEasyList) {
-        glyphEasyList.innerHTML =
-          '<li class="text-red-500 text-xs">Failed to load Glyph Easy scores</li>';
-      }
-      if (glyphMediumList) {
-        glyphMediumList.innerHTML =
-          '<li class="text-red-500 text-xs">Failed to load Glyph Medium scores</li>';
-      }
-      if (glyphHardList) {
-        glyphHardList.innerHTML =
-          '<li class="text-red-500 text-xs">Failed to load Glyph Hard scores</li>';
-      }
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-snake-list'),
+        [],
+        'Failed to load Snake scores'
+      );
+
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-space-invaders-list'),
+        [],
+        'Failed to load Space Invaders scores'
+      );
+
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-cheeseman-list'),
+        [],
+        'Failed to load Cheese Runner scores'
+      );
+
+      renderGlyphDifficulty(
+        document.getElementById('leaderboard-glyph-easy-list'),
+        [],
+        'Easy'
+      );
+
+      renderGlyphDifficulty(
+        document.getElementById('leaderboard-glyph-medium-list'),
+        [],
+        'Medium'
+      );
+
+      renderGlyphDifficulty(
+        document.getElementById('leaderboard-glyph-hard-list'),
+        [],
+        'Hard'
+      );
     }
   }
 
-  // Load leaderboards when page loads
   loadCombinedLeaderboards();
 </script>
 

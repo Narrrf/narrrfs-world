@@ -42,6 +42,14 @@ const GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START = 1; //0.18; normal
 const GLYPH_BOOST_SCORE_BONUS = 100;
 const GLYPH_BOOST_TICK_SPEED_MULTIPLIER = 0.65;
 
+const CONFUSION_MUSHROOM_IMAGE_SRC = 'img/cheeseman/mushroom.png';
+const CONFUSION_MUSHROOM_DURATION_MS = 5000;
+const CONFUSION_MUSHROOM_DROP_CHANCE_ON_LEVEL_START = 1; // 0.12 production
+const CONFUSION_MUSHROOM_SCORE_PENALTY = 0;
+
+const TILE_TUNNEL = 'tunnel';
+const WRAP_TUNNELS_ENABLED = true;
+
   const ROLE_MULTIPLIERS = {
     'VIP Holder': 2.0,
     '🎴 VIP Holder': 2.0,
@@ -81,7 +89,7 @@ const GLYPH_BOOST_TICK_SPEED_MULTIPLIER = 0.65;
     '🧀 Cheese Hunter': 'cheese'
   };
 
-  const MAX_LEVEL_TEMPLATE_COUNT = 10;
+  const MAX_LEVEL_TEMPLATE_COUNT = 20;
   const TETRIS_WALL_BLOCK_TYPES = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
 
 
@@ -96,149 +104,149 @@ const GLYPH_BOOST_TICK_SPEED_MULTIPLIER = 0.65;
 const LEVEL_TEMPLATES = [
   [
     '###################',
-    '#o......#........o#',
-    '#.####..#..####...#',
-    '#......##......#..#',
+    'To......#........oT',
+    '#.###...#...###...#',
+    '#.................#',
     '###.##....##.###..#',
     '#...#..##..#......#',
-    '#.#.#.####.#.####.#',
-    '#.#..........#....#',
-    '#.#####.###.###.#.#',
+    'T.#.#......#.#....T',
+    '#.#...####...#....#',
+    '#.###...#...###.#.#',
     '#.....#.NNN.#...#.#',
     '###.#...NNN...#.#.#',
     '#...#.#.NNN.#.#...#',
     '#.#.###...###.###.#',
-    '#.#.............#.#',
+    'T.................T',
     '#.###.#####.###.#.#',
     '#o....#..P..#....o#',
     '###.#.#.###.#.#.###',
     '#...#...#...#.....#',
-    '#.#####.#.#####.#.#',
-    '#.................#',
+    '#.###...#...###.#.#',
+    'T.................T',
     '###################'
   ],
   [
     '###################',
-    '#o..#........#...o#',
-    '#.#.#.######.#.#..#',
-    '#.#........#...#..#',
-    '#.#####.##.#####.##',
-    '#.....#....#......#',
+    'To..#........#...oT',
+    '#.#.#..####..#.#..#',
+    '#.#............#..#',
+    '#.###..##.##..###.#',
+    'T.....#....#......T',
     '###.#.####.#.####.#',
     '#...#......#....#.#',
-    '#.###.########.#..#',
+    '#.###...####...#..#',
     '#.#....NNNNN...#..#',
-    '#.#.##.NNNNN.###.##',
+    '#...##.NNNNN.##...#',
     '#...#..NNNNN....#.#',
-    '###.######.####.#.#',
-    '#.....#.......#...#',
-    '#.###.#.#####.###.#',
+    '###.###....####.#.#',
+    'T.....#.......#...T',
+    '#.###.#..#..#.###.#',
     '#o..#....P....#..o#',
     '###.###.###.###.###',
     '#.....#.....#.....#',
-    '#.###.###.#.###.#.#',
-    '#........#........#',
+    '#.###.....#.....#.#',
+    'T........#........T',
     '###################'
   ],
   [
     '###################',
-    '#o.....#...#.....o#',
+    'To.....#...#.....oT',
     '#.###..#.#.#..###.#',
-    '#...#....#....#...#',
-    '###.#.#######.#.###',
+    '#...#.........#...#',
+    '###.#.###.###.#.###',
     '#...#...#.#...#...#',
-    '#.#####.#.#.#####.#',
-    '#.......#.#.......#',
+    '#.###...#.#...###.#',
+    'T.......#.#.......T',
     '#.###.###.###.###.#',
     '#...#...NNN...#...#',
     '###.###.NNN.###.###',
     '#...#...NNN...#...#',
     '#.###.###.###.###.#',
-    '#.......#.#.......#',
-    '#.#####.#.#.#####.#',
+    'T.......#.#.......T',
+    '#.###...#.#...###.#',
     '#o....#..P..#....o#',
     '###.#.#.###.#.#.###',
     '#...#.........#...#',
-    '#.#.###########.#.#',
-    '#.................#',
+    '#.#.###...###.#.#.#',
+    'T.................T',
     '###################'
   ],
   [
     '###################',
-    '#o...............o#',
-    '###.###.###.###.###',
+    'To...............oT',
+    '###.###.....###.###',
     '#...#.....#.....#.#',
     '#.#.#.###.#.###.#.#',
-    '#.#.....#...#.....#',
-    '#.#####.###.#####.#',
+    'T.#.....#...#.....T',
+    '#.###...###...###.#',
     '#.....#.....#.....#',
     '###.#.#.###.#.#.###',
     '#...#...NNN...#...#',
-    '#.#####.NNN.#####.#',
+    '#.###...NNN...###.#',
     '#...#...NNN...#...#',
     '###.#.###.###.#.###',
-    '#.....#.....#.....#',
-    '#.#####.###.#####.#',
+    'T.....#.....#.....T',
+    '#.###...###...###.#',
     '#o......#P#......o#',
     '###.###.#.#.###.###',
     '#.....#.....#.....#',
-    '#.###.#######.###.#',
-    '#.................#',
+    '#.###...###...###.#',
+    'T.................T',
     '###################'
   ],
   [
     '###################',
-    '#o..#...#.#...#..o#',
+    'To..#...#.#...#..oT',
     '#.#.#.#.#.#.#.#.#.#',
-    '#.#...#...#...#...#',
-    '#.###.#######.###.#',
-    '#.....#.....#.....#',
+    '#.#...#.....#...#.#',
+    '#.###...###...###.#',
+    'T.....#.....#.....T',
     '###.#.#.###.#.#.###',
     '#...#.........#...#',
-    '#.#####.###.#####.#',
+    '#.###...###...###.#',
     '#.....#.NNN.#.....#',
     '###.#...NNN...#.###',
     '#.....#.NNN.#.....#',
-    '#.#####.###.#####.#',
+    '#.###...###...###.#',
     '#...#.........#...#',
-    '###.#.###.###.#.###',
+    '###.#...###...#.###',
     '#o....#..P..#....o#',
     '#.###.#.###.#.###.#',
-    '#...#...#.#...#...#',
+    'T...#...#.#...#...T',
     '#.#.###.#.#.###.#.#',
-    '#.................#',
+    'T.................T',
     '###################'
   ],
   [
     '###################',
-    '#o....#.....#....o#',
+    'To....#.....#....oT',
     '#.###.#.###.#.###.#',
-    '#.#...#.#.#.#...#.#',
+    '#.#...#.....#...#.#',
     '#.#.###.#.#.###.#.#',
-    '#.....#.....#.....#',
+    'T.....#.....#.....T',
     '#####.###.###.#####',
     '#.................#',
-    '#.#.#.###.###.#.#.#',
+    'T.#.#.###.###.#.#.T',
     '#.#...NNNNN...#.#.#',
     '#.###.NNNNN.###.#.#',
     '#.#...NNNNN...#...#',
-    '#.#.#.###.###.#.#.#',
+    'T.#.#.###.###.#.#.T',
     '#.................#',
     '#####.###.###.#####',
     '#o......P......#.o#',
     '#.###.#####.###.#.#',
     '#...#.......#.....#',
-    '#.#.###.#.###.###.#',
-    '#.................#',
+    '#.#.###...###.###.#',
+    'T.................T',
     '###################'
   ],
   [
     '###################',
-    '#o....#..#..#....o#',
+    'To....#..#..#....oT',
     '#.##..#..#..#..##.#',
     '#...#.........#...#',
-    '###.#.#######.#.###',
-    '#.....#.....#.....#',
+    '###.#.###.###.#.###',
+    'T.....#.....#.....T',
     '#.###.#.###.#.###.#',
     '#.#...#.....#...#.#',
     '#.#.###.###.###.#.#',
@@ -246,68 +254,68 @@ const LEVEL_TEMPLATES = [
     '###.#.#NNNNN#.#.###',
     '#...#..NNNNN..#...#',
     '#.#.###.###.###.#.#',
-    '#.#...#.....#...#.#',
+    'T.#...#.....#...#.T',
     '#.###.###.###.###.#',
     '#o....#..P..#....o#',
     '###.#.#.###.#.#.###',
     '#...#.........#...#',
-    '#.#.###########.#.#',
-    '#.................#',
+    '#.#.###...###.#.#.#',
+    'T.................T',
     '###################'
   ],
   [
     '###################',
-    '#o#.....#.....#..o#',
+    'To#.....#.....#..oT',
     '#.#.###.#.###.#.#.#',
     '#...#...#...#...#.#',
-    '###.#.#####.#.###.#',
-    '#...#.......#.....#',
-    '#.#####.###.#####.#',
+    '###.#.###.#.###.#.#',
+    'T...#.......#.....T',
+    '#.###...###...###.#',
     '#.....#.....#.....#',
     '###.#.###.###.#.###',
     '#...#...NNN...#...#',
-    '#.#####.NNN.#####.#',
+    '#.###...NNN...###.#',
     '#...#...NNN...#...#',
     '###.#.###.###.#.###',
-    '#.....#.....#.....#',
-    '#.#####.###.#####.#',
+    'T.....#.....#.....T',
+    '#.###...###...###.#',
     '#o....#..P..#....o#',
     '#.###.#.###.#.###.#',
     '#...#.........#...#',
-    '#.#.###########.#.#',
-    '#.................#',
+    '#.#.###...###.#.#.#',
+    'T.................T',
     '###################'
   ],
   [
     '###################',
-    '#o...............o#',
+    'To...............oT',
     '#.##.#.#####.#.##.#',
     '#....#.......#....#',
     '####.###...###.####',
-    '#.......#.#.......#',
-    '#.#####.#.#.#####.#',
+    'T.......#.#.......T',
+    '#.###...#.#...###.#',
     '#.#.....#.#.....#.#',
     '#.#.###.....###.#.#',
     '#...#..NNNNN..#...#',
     '###.#.#NNNNN#.#.###',
     '#...#..NNNNN..#...#',
     '#.#.###.....###.#.#',
-    '#.#.....#.#.....#.#',
-    '#.#####.#.#.#####.#',
+    'T.#.....#.#.....#.T',
+    '#.###...#.#...###.#',
     '#o......P......#.o#',
     '####.###.#.###.####',
     '#....#.......#....#',
-    '#.##.#.#####.#.##.#',
-    '#.................#',
+    '#.##.#...#...#.##.#',
+    'T.................T',
     '###################'
   ],
   [
     '###################',
-    '#o..#...#.#...#..o#',
+    'To..#...#.#...#..oT',
     '#.#.#.#.#.#.#.#.#.#',
     '#.#...#.....#...#.#',
-    '#.###.#######.###.#',
-    '#.....#.....#.....#',
+    '#.###...###...###.#',
+    'T.....#.....#.....T',
     '###.#.#.###.#.#.###',
     '#...#...#.#...#...#',
     '#.###.###.###.###.#',
@@ -315,13 +323,243 @@ const LEVEL_TEMPLATES = [
     '#.#.##.NNNNN.##.#.#',
     '#.#....NNNNN....#.#',
     '#.###.###.###.###.#',
-    '#...#...#.#...#...#',
+    'T...#...#.#...#...T',
     '###.#.#.#.#.#.#.###',
     '#o....#..P..#....o#',
-    '#.#####.###.#####.#',
+    '#.###...###...###.#',
     '#.....#.....#.....#',
+    '#.###...###...###.#',
+    'T.................T',
+    '###################'
+  ],
+    [
+    '###################',
+    'To.....#...#.....oT',
+    '#.###..#...#..###.#',
+    '#...#.........#...#',
+    '#.#.###.#.#.###.#.#',
+    'T.#.....#.#.....#.T',
+    '#.###...#.#...###.#',
+    '#.....#.....#.....#',
+    '#.###.#.###.#.###.#',
+    '#...#...NNN...#...#',
+    '###...#.NNN.#...###',
+    '#...#...NNN...#...#',
+    '#.###.#.###.#.###.#',
+    '#.....#.....#.....#',
+    'T.###...###...###.T',
+    '#o....#..P..#....o#',
+    '#.###.#.###.#.###.#',
+    '#...#.........#...#',
+    '#.###...###...###.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To...............oT',
     '#.###.###.###.###.#',
-    '#.................#',
+    '#...#.....#.....#.#',
+    '###.#.###...###.#.#',
+    'T...#...#...#...#.T',
+    '#.###.#.###.#.###.#',
+    '#.....#.....#.....#',
+    '#.#.###.###.###.#.#',
+    '#.#....NNNNN....#.#',
+    '#...##.NNNNN.##...#',
+    '#.#....NNNNN....#.#',
+    '#.#.###.###.###.#.#',
+    '#.....#.....#.....#',
+    'T.###...#.#...###.T',
+    '#o......P......#.o#',
+    '###.###.#.#.###.###',
+    '#.....#.....#.....#',
+    '#.###...###...###.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To..#.........#..oT',
+    '#.#.#.###.###.#.#.#',
+    '#.#.....#.#.....#.#',
+    '#.###.#.#.#.#.###.#',
+    'T.....#.....#.....T',
+    '###.#.###.###.#.###',
+    '#...#.........#...#',
+    '#.###.###.###.###.#',
+    '#.....#.NNN.#.....#',
+    '###.#...NNN...#.###',
+    '#.....#.NNN.#.....#',
+    '#.###.###.###.###.#',
+    '#...#.........#...#',
+    'T.#.###.....###.#.T',
+    '#o....#..P..#....o#',
+    '#.###.#.###.#.###.#',
+    '#...#...#.#...#...#',
+    '#.#.###.#.#.###.#.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To....#.....#....oT',
+    '#.##..#.....#..##.#',
+    '#...#...###...#...#',
+    '###.#.#.....#.#.###',
+    'T.....#.###.#.....T',
+    '#.###.#.....#.###.#',
+    '#.#.............#.#',
+    '#.#.###.###.###.#.#',
+    '#...#..NNNNN..#...#',
+    '###...#NNNNN#...###',
+    '#...#..NNNNN..#...#',
+    '#.#.###.###.###.#.#',
+    '#.#.............#.#',
+    'T.###.#.....#.###.T',
+    '#o......P......#.o#',
+    '#.###.###.###.###.#',
+    '#.....#.....#.....#',
+    '#.###...###...###.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To#.....#.#.....#oT',
+    '#.#.###.#.#.###.#.#',
+    '#...#...#.#...#...#',
+    '###.#.#.....#.#.###',
+    'T...#.#.###.#.#...T',
+    '#.###.#.....#.###.#',
+    '#.....###.###.....#',
+    '#.###...#.#...###.#',
+    '#...#...NNN...#...#',
+    '#.###.#.NNN.#.###.#',
+    '#...#...NNN...#...#',
+    '#.###...#.#...###.#',
+    '#.....###.###.....#',
+    'T.###.#.....#.###.T',
+    '#o....#..P..#....o#',
+    '###.#.#.###.#.#.###',
+    '#...#.........#...#',
+    '#.#.###...###.#.#.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To...............oT',
+    '#.###.#.###.#.###.#',
+    '#.....#.....#.....#',
+    '#.#.#####.#####.#.#',
+    'T.#.............#.T',
+    '#.###.###.###.###.#',
+    '#...#...#.#...#...#',
+    '###.#.#.....#.#.###',
+    '#...#..NNNNN..#...#',
+    '#.###.#NNNNN#.###.#',
+    '#...#..NNNNN..#...#',
+    '###.#.#.....#.#.###',
+    '#...#...#.#...#...#',
+    'T.###.###.###.###.T',
+    '#o......P......#.o#',
+    '#.###.#####.###.#.#',
+    '#.....#.....#.....#',
+    '#.###...###...###.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To..#...#.#...#..oT',
+    '#.#.#.#.#.#.#.#.#.#',
+    '#.#...#.....#...#.#',
+    '#.###.###.###.###.#',
+    'T.....#.....#.....T',
+    '###.#...###...#.###',
+    '#...#.........#...#',
+    '#.#####.#.#.#####.#',
+    '#.....#.NNN.#.....#',
+    '#.###...NNN...###.#',
+    '#.....#.NNN.#.....#',
+    '#.#####.#.#.#####.#',
+    '#...#.........#...#',
+    'T.###...###...###.T',
+    '#o....#..P..#....o#',
+    '###.#.#.###.#.#.###',
+    '#...#...#.#...#...#',
+    '#.#.###.#.#.###.#.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To.....#...#.....oT',
+    '#.###..#.#.#..###.#',
+    '#...#.........#...#',
+    '###.#.#######.#.###',
+    'T...#...#.#...#...T',
+    '#.###...#.#...###.#',
+    '#.....#.....#.....#',
+    '#.#.###.###.###.#.#',
+    '#.#....NNNNN....#.#',
+    'T...##.NNNNN.##...T',
+    '#.#....NNNNN....#.#',
+    '#.#.###.###.###.#.#',
+    '#.....#.....#.....#',
+    'T.###...#.#...###.T',
+    '#o....#..P..#....o#',
+    '#.###.#.###.#.###.#',
+    '#...#.........#...#',
+    '#.#.###...###.#.#.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To...............oT',
+    '#.##.#.#####.#.##.#',
+    '#....#.......#....#',
+    '####...###.###...##',
+    'T.......#.#.......T',
+    '#.###...#.#...###.#',
+    '#.#.....#.#.....#.#',
+    '#.#.###.....###.#.#',
+    '#...#..NNNNN..#...#',
+    '###.#.#NNNNN#.#.###',
+    '#...#..NNNNN..#...#',
+    '#.#.###.....###.#.#',
+    '#.#.....#.#.....#.#',
+    'T.###...#.#...###.T',
+    '#o......P......#.o#',
+    '####.###.#.###.####',
+    '#....#.......#....#',
+    '#.##.#...#...#.##.#',
+    'T.................T',
+    '###################'
+  ],
+  [
+    '###################',
+    'To..#...#.#...#..oT',
+    '#.#.#.#...#.#.#.#.#',
+    '#.#...###.###...#.#',
+    '#.###...#.#...###.#',
+    'T.....#.....#.....T',
+    '###.#.#.###.#.#.###',
+    '#...#.........#...#',
+    '#.###.###.###.###.#',
+    '#.#....NNNNN....#.#',
+    '#...##.NNNNN.##...#',
+    '#.#....NNNNN....#.#',
+    '#.###.###.###.###.#',
+    'T...#...#.#...#...T',
+    '###.#.#.#.#.#.#.###',
+    '#o....#..P..#....o#',
+    '#.###...###...###.#',
+    '#.....#.....#.....#',
+    '#.###...###...###.#',
+    'T.................T',
     '###################'
   ]
 ];
@@ -370,6 +608,9 @@ const LEVEL_TEMPLATES = [
 const glyphBoostImage = new Image();
 glyphBoostImage.src = GLYPH_BOOST_IMAGE_SRC;
 
+const confusionMushroomImage = new Image();
+confusionMushroomImage.src = CONFUSION_MUSHROOM_IMAGE_SRC;
+
 const cheeseImg = new Image();
 cheeseImg.src = 'img/cheeseman/cheeseman1.png';
 
@@ -412,6 +653,9 @@ let floatingTexts = [];
 
 let glyphBoostItem = null; // glyphBoostItem = current item on board or null
 let glyphBoostUntil = 0; // glyphBoostUntil = time when boost ends
+
+let confusionMushroomItem = null;
+let confusionMushroomUntil = 0;
 
 /**
  * Creates the player at the starting tile and stores the previous tile.
@@ -503,6 +747,55 @@ function createPlayer() {
     }
   }
 
+  function getWrappedPosition(row, col) {
+  if (!WRAP_TUNNELS_ENABLED) {
+    return { row, col };
+  }
+
+  if (col < 0) {
+    return { row, col: GRID_COLS - 1 };
+  }
+
+  if (col >= GRID_COLS) {
+    return { row, col: 0 };
+  }
+
+  return { row, col };
+}
+
+function isTunnelRow(row) {
+  return maze[row]?.[0] === TILE_TUNNEL && maze[row]?.[GRID_COLS - 1] === TILE_TUNNEL;
+}
+
+function getWrappedPosition(row, col) {
+  if (!WRAP_TUNNELS_ENABLED || !isTunnelRow(row)) {
+    return { row, col };
+  }
+
+  if (col < 0) {
+    return { row, col: GRID_COLS - 1 };
+  }
+
+  if (col >= GRID_COLS) {
+    return { row, col: 0 };
+  }
+
+  return { row, col };
+}
+
+
+  function collectConfusionMushroomItem() {
+  if (!confusionMushroomItem) {
+    return;
+  }
+
+  if (player.row !== confusionMushroomItem.row || player.col !== confusionMushroomItem.col) {
+    return;
+  }
+
+  activateConfusionMushroom();
+}
+
   function getCheesemanPrimaryRoleName() {
     for (const roleName of ROLE_PRIORITY) {
       if (cheesemanUserRoleNames.includes(roleName)) {
@@ -584,6 +877,42 @@ function createPlayer() {
 comboPickupCount = 0;
 lastComboCollectAt = 0;
   }
+
+  function applyConfusionToDirection(direction) {
+  if (!isConfusionMushroomActive()) {
+    return direction;
+  }
+
+  return {
+    row: direction.row * -1,
+    col: direction.col * -1
+  };
+}
+
+function drawConfusionAura() {
+  if (!isConfusionMushroomActive()) {
+    return;
+  }
+
+  const centerX = player.col * TILE_SIZE + TILE_SIZE / 2;
+  const centerY = player.row * TILE_SIZE + TILE_SIZE / 2;
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(239, 68, 68, 0.95)';
+  ctx.lineWidth = 3;
+  ctx.shadowColor = '#ef4444';
+  ctx.shadowBlur = 16;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, TILE_SIZE * 0.55, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = '#fecaca';
+  ctx.font = 'bold 10px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('CONFUSED', centerX, centerY - TILE_SIZE * 0.78);
+  ctx.restore();
+}
 
   /**
    * Adds one combo stack and returns the multiplier used for this pickup.
@@ -748,6 +1077,101 @@ function spawnGlyphBoostItem() {
   console.log('🖤 Glyph Boost spawned at:', glyphBoostItem);
 }
 
+/**
+ * Returns true while the Confusion Mushroom poison effect is active.
+ * During this time, player controls are reversed.
+ */
+function isConfusionMushroomActive() {
+  return performance.now() < confusionMushroomUntil;
+}
+
+/**
+ * Clears the Confusion Mushroom item and active poison timer.
+ */
+function clearConfusionMushroom() {
+  confusionMushroomUntil = 0;
+  confusionMushroomItem = null;
+}
+
+/**
+ * Activates the Confusion Mushroom poison effect.
+ * This does not change score directly; the danger is reversed movement.
+ */
+function activateConfusionMushroom() {
+  confusionMushroomUntil = performance.now() + CONFUSION_MUSHROOM_DURATION_MS;
+  confusionMushroomItem = null;
+
+  setStatus('🍄 Confusion Mushroom! Controls reversed!');
+  playSound('hit');
+}
+
+/**
+ * Ends Confusion Mushroom when its timer expires.
+ */
+function updateConfusionMushroom() {
+  if (!confusionMushroomUntil) {
+    return;
+  }
+
+  if (isConfusionMushroomActive()) {
+    return;
+  }
+
+  confusionMushroomUntil = 0;
+  setStatus('Confusion faded. Controls normal again.');
+}
+
+/**
+ * Spawns the Confusion Mushroom on a safe visible board tile.
+ * It never spawns inside walls, enemy nests, the player tile, enemy tiles, or the active Glyph Boost tile.
+ */
+function spawnConfusionMushroomItem() {
+  confusionMushroomItem = null;
+
+  if (Math.random() > CONFUSION_MUSHROOM_DROP_CHANCE_ON_LEVEL_START) {
+    return;
+  }
+
+  const validTiles = [];
+
+  for (let row = 1; row < GRID_ROWS - 1; row += 1) {
+    for (let col = 1; col < GRID_COLS - 1; col += 1) {
+      const tile = maze[row]?.[col];
+
+      if (!tile || tile === 'wall' || tile === 'nest') {
+        continue;
+      }
+
+      if (!canMove(row, col)) {
+        continue;
+      }
+
+      if (row === player.row && col === player.col) {
+        continue;
+      }
+
+      if (glyphBoostItem && row === glyphBoostItem.row && col === glyphBoostItem.col) {
+        continue;
+      }
+
+      const hasEnemyOnTile = enemies.some(enemy => enemy.row === row && enemy.col === col);
+      if (hasEnemyOnTile) {
+        continue;
+      }
+
+      validTiles.push({ row, col });
+    }
+  }
+
+  if (!validTiles.length) {
+    console.warn('🍄 Confusion Mushroom: no valid spawn tile found.');
+    return;
+  }
+
+  confusionMushroomItem = validTiles[Math.floor(Math.random() * validTiles.length)];
+  console.log('🍄 Confusion Mushroom spawned at:', confusionMushroomItem);
+}
+
 function getCurrentTickMs() {
   const baseTickMs = Math.max(MIN_TICK_MS, BASE_TICK_MS - ((level - 1) * 8));
 
@@ -837,27 +1261,32 @@ function getCurrentTickMs() {
     return tetrisWallImages[blockType];
   }
 
-  function buildMaze() {
-    crumbsRemaining = 0;
+function buildMaze() {
+  crumbsRemaining = 0;
 
-    maze = getCurrentLevelTemplate().map(rowText => rowText.split('').map(cell => {
-      if (cell === '#') return 'wall';
+  maze = getCurrentLevelTemplate().map(rowText => rowText.split('').map(cell => {
+    if (cell === '#') return 'wall';
 
-      if (cell === 'N') return 'nest';
+    if (cell === 'N') return 'nest';
 
-      if (cell === 'o') {
-        crumbsRemaining += 1;
-        return 'power';
-      }
+    if (cell === 'T') {
+      crumbsRemaining += 1;
+      return TILE_TUNNEL;
+    }
 
-      if (cell === '.') {
-        crumbsRemaining += 1;
-        return 'crumb';
-      }
+    if (cell === 'o') {
+      crumbsRemaining += 1;
+      return 'power';
+    }
 
-      return 'empty';
-    }));
-  }
+    if (cell === '.') {
+      crumbsRemaining += 1;
+      return 'crumb';
+    }
+
+    return 'empty';
+  }));
+}
 
   /**
    * Creates enemies inside the central nest.
@@ -901,6 +1330,8 @@ function resetGame() {
   powerModeUntil = 0;
   glyphBoostUntil = 0;
   glyphBoostItem = null;
+  confusionMushroomUntil = 0;
+confusionMushroomItem = null;
   comboStack = 0;
   comboPickupCount = 0;
   lastComboCollectAt = 0;
@@ -913,6 +1344,7 @@ function resetGame() {
   player = createPlayer();
   enemies = createEnemies();
   spawnGlyphBoostItem();
+  spawnConfusionMushroomItem();
 
   currentDirection = DIRECTIONS.left;
   nextDirection = DIRECTIONS.left;
@@ -984,6 +1416,21 @@ function startGameTimer() {
     gameTimer = null;
   }
 
+  /**
+ * Collects the Confusion Mushroom when the player steps onto it.
+ */
+function collectConfusionMushroomItem() {
+  if (!confusionMushroomItem) {
+    return;
+  }
+
+  if (player.row !== confusionMushroomItem.row || player.col !== confusionMushroomItem.col) {
+    return;
+  }
+
+  activateConfusionMushroom();
+}
+
 function collectGlyphBoostItem() {
   if (!glyphBoostItem) {
     return;
@@ -1013,6 +1460,7 @@ function gameTick() {
 
   updatePowerMode();
   updateGlyphBoost();
+  updateConfusionMushroom();
 
   movePlayer();
 
@@ -1024,6 +1472,7 @@ function gameTick() {
 
   collectTile();
   collectGlyphBoostItem();
+  collectConfusionMushroomItem();
   moveEnemies();
 
   if (checkEnemyCollisions()) {
@@ -1040,70 +1489,83 @@ function gameTick() {
   }
 }
 
-  function setDirection(directionName) {
-    const direction = DIRECTIONS[directionName];
-    if (!direction) {
-      return;
-    }
+/**
+ * Sets the next player direction from keyboard, swipe, or touch controls.
+ * Confusion Mushroom reverses the requested direction while its timer is active.
+ */
+function setDirection(directionName) {
+  const direction = DIRECTIONS[directionName];
 
-    nextDirection = direction;
+  if (!direction) {
+    return;
   }
+
+  nextDirection = applyConfusionToDirection(direction);
+}
 
 /**
  * Moves the player one tile and records the tile they came from.
  * Previous-position tracking lets collision logic catch cross-tile swaps.
  */
+/**
+ * Moves the player one tile and records the tile they came from.
+ * Horizontal movement wraps through open side tunnels by normalizing the target column.
+ */
 function movePlayer() {
   player.previousRow = player.row;
   player.previousCol = player.col;
 
-  if (canMove(player.row + nextDirection.row, player.col + nextDirection.col)) {
+  const requestedRow = player.row + nextDirection.row;
+  const requestedCol = player.col + nextDirection.col;
+
+  if (canMove(requestedRow, requestedCol)) {
     currentDirection = nextDirection;
   }
 
   const nextRow = player.row + currentDirection.row;
   const nextCol = player.col + currentDirection.col;
+  const normalizedNextCol = normalizeColumn(nextCol);
 
   if (canMove(nextRow, nextCol)) {
     player.row = nextRow;
-    player.col = nextCol;
+    player.col = normalizedNextCol;
   }
 }
 
-  function collectTile() {
-    const tile = maze[player.row]?.[player.col];
+function collectTile() {
+  const tile = maze[player.row]?.[player.col];
 
-    if (tile === 'crumb') {
-      const comboMultiplier = registerComboPickup();
-      const gainedScore = Math.round(SCORE_CRUMB * comboMultiplier);
+  if (tile === 'crumb' || tile === TILE_TUNNEL) {
+    const comboMultiplier = registerComboPickup();
+    const gainedScore = Math.round(SCORE_CRUMB * comboMultiplier);
 
-      score += gainedScore;
-      crumbsRemaining -= 1;
-      maze[player.row][player.col] = 'empty';
+    score += gainedScore;
+    crumbsRemaining -= 1;
+    maze[player.row][player.col] = 'empty';
 
-      addFloatingText(`+${gainedScore} x${comboMultiplier.toFixed(1)}`, player.row, player.col);
-      playSound('crumb');
-      return;
-    }
-
-    if (tile === 'power') {
-      const comboMultiplier = registerComboPickup();
-      const gainedScore = Math.round(SCORE_POWER * comboMultiplier);
-
-      score += gainedScore;
-      crumbsRemaining -= 1;
-      maze[player.row][player.col] = 'empty';
-      powerModeUntil = performance.now() + POWER_MODE_MS;
-
-      enemies.forEach(enemy => {
-        enemy.isStunned = true;
-      });
-
-      addFloatingText(`POWER +${gainedScore} x${comboMultiplier.toFixed(1)}`, player.row, player.col, '#fb923c');
-      setStatus('Power Cheese active! Eat the enemies!');
-      playSound('power');
-    }
+    addFloatingText(`+${gainedScore} x${comboMultiplier.toFixed(1)}`, player.row, player.col);
+    playSound('crumb');
+    return;
   }
+
+  if (tile === 'power') {
+    const comboMultiplier = registerComboPickup();
+    const gainedScore = Math.round(SCORE_POWER * comboMultiplier);
+
+    score += gainedScore;
+    crumbsRemaining -= 1;
+    maze[player.row][player.col] = 'empty';
+    powerModeUntil = performance.now() + POWER_MODE_MS;
+
+    enemies.forEach(enemy => {
+      enemy.isStunned = true;
+    });
+
+    addFloatingText(`POWER +${gainedScore} x${comboMultiplier.toFixed(1)}`, player.row, player.col, '#fb923c');
+    setStatus('Power Cheese active! Eat the enemies!');
+    playSound('power');
+  }
+}
 
     /**
    * Returns which handcrafted template difficulty is active.
@@ -1584,6 +2046,8 @@ async function endGame() {
   isPaused = false;
   glyphBoostUntil = 0;
   glyphBoostItem = null;
+  confusionMushroomUntil = 0;
+confusionMushroomItem = null;
   powerModeUntil = 0;
 
   updateScoreDisplay();
@@ -1770,6 +2234,7 @@ function render() {
 
   drawMaze();
   drawGlyphBoostItem();
+  drawConfusionMushroomItem();
   drawEnemies();
   drawPlayer();
   drawHitExplosions();
@@ -1908,6 +2373,62 @@ function drawGlyphBoostItem() {
 }
 
 /**
+ * Draws the Confusion Mushroom item on the board.
+ * The bright red/purple backing keeps mushroom.png readable on the dark maze.
+ */
+function drawConfusionMushroomItem() {
+  if (!confusionMushroomItem) {
+    return;
+  }
+
+  const x = confusionMushroomItem.col * TILE_SIZE;
+  const y = confusionMushroomItem.row * TILE_SIZE;
+  const centerX = x + TILE_SIZE / 2;
+  const centerY = y + TILE_SIZE / 2;
+  const pulse = 0.9 + Math.sin(performance.now() / 130) * 0.08;
+
+  ctx.save();
+
+  ctx.shadowColor = '#ef4444';
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.88)';
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, TILE_SIZE * 0.46 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.shadowColor = '#a855f7';
+  ctx.shadowBlur = 14;
+  ctx.strokeStyle = '#a855f7';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, TILE_SIZE * 0.36 * pulse, 0, Math.PI * 2);
+  ctx.stroke();
+
+  if (confusionMushroomImage && confusionMushroomImage.complete && confusionMushroomImage.naturalWidth > 0) {
+    ctx.shadowBlur = 0;
+    ctx.drawImage(
+      confusionMushroomImage,
+      x + 4,
+      y + 4,
+      TILE_SIZE - 8,
+      TILE_SIZE - 8
+    );
+    ctx.restore();
+    return;
+  }
+
+  // TODO: Keep this fallback until mushroom.png loading is verified on production.
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#fecaca';
+  ctx.font = 'bold 16px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🍄', centerX, centerY);
+
+  ctx.restore();
+}
+
+/**
  * Draws a clear active sign around the mouse while Glyph Boost is active.
  * This tells players the mouse is faster and protected.
  */
@@ -1944,6 +2465,10 @@ function drawPlayer() {
   if (isGlyphBoostActive()) {
     drawGlyphBoostAura();
   }
+
+  if (isConfusionMushroomActive()) {
+  drawConfusionAura();
+}
 
   if (cheeseImg.complete && cheeseImg.naturalWidth > 0) {
     ctx.drawImage(cheeseImg, x - 2, y - 4, TILE_SIZE + 4, TILE_SIZE + 6);
