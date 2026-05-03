@@ -1,13 +1,499 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: May 1, 2026
-Status: ✅ STABLE — SEASON 11 ACTIVE / SEASON 10 FROZEN / FRONTEND + API SYNC COMPLETE
-Version: 2026-05-01
-Milestone: Season 10 was frozen at the cutoff snapshot, Season 11 is active, fresh leaderboards are reset, and public/admin season surfaces are synced.
+Last Updated: May 3, 2026
+Status: ✅ STABLE — SEASON 11 ACTIVE + AIRDROP AGENT 1.1 MULTI-TOKEN EXPANSION COMPLETE
+Version: 2026-05-03
+Milestone: Season 11 is active and the Discord manual airdrop system is now production-tested across EMPIRE, GHC, FOOK, and SMZ with dynamic token mint execution.
 
 ---
 
 ## 🔄 UPDATE — APRIL 27, 2026
+
+---
+
+## 🔄 UPDATE — MAY 3, 2026
+
+# 🚀 AIRDROP AGENT 1.1 — MULTI-TOKEN AIRDROP SYSTEM COMPLETE
+
+## ✅ OVERVIEW
+
+The manual Discord `/airdrop` flow was upgraded from EMPIRE-only to confirmed multi-token support.
+
+Production-tested tokens:
+
+- ✅ EMPIRE
+- ✅ GHC
+- ✅ FOOK
+- ✅ SMZ
+
+Confirmed flow:
+
+```text
+/airdrop prepare
+→ token selector
+→ DB batch stores token_mint
+→ admin approval button
+→ /airdrop execute
+→ local airdrop-service receives --token-mint
+→ blockchain send
+→ audit log
+→ DB status update
+→ Discord confirmation
+→ user DM notification attempt
+```
+
+## ✅ FILES UPDATED / VERIFIED
+
+### Discord Bot
+
+Main command file:
+
+- `discord/commands/airdrop-prepare.js`
+
+Completed updates:
+
+- token registry added for EMPIRE, GHC, FOOK, SMZ
+- `/airdrop prepare` token dropdown added
+- selected token mint stored in `tbl_airdrop_batches.token_mint`
+- `/airdrop execute` reads `token_mint` from DB
+- execute now passes `--token-mint <mint>` to local service
+- `/airdrop export` now reads `token_mint`
+- export embed uses dynamic token symbol
+- execute success message uses dynamic token symbol
+- DM notification uses dynamic token symbol
+
+### Discord Bot Approval Handler
+
+Main bot file:
+
+- `discord/index.js`
+
+Completed updates:
+
+- approval handler query now selects `token_mint`
+- approval/rejection embed resolves token from stored mint
+- approval/rejection copy now shows:
+  - `${TOKEN} Airdrop Approved`
+  - `${TOKEN} Airdrop Rejected`
+- removed duplicate `const DEBUG = true` blocker before deployment
+- preserved global `queryDb()` as single DB access function
+
+### Local Airdrop Service
+
+Service file:
+
+- `airdrop-service/src/airdrop-service.js`
+
+Completed updates:
+
+- dynamic `--token-mint` support added
+- EMPIRE fallback preserved for backward compatibility
+- token decimals read from on-chain mint by default
+- classic SPL Token + Token-2022 support added
+- token program detection added (required for GHC)
+- correct token program ID passed into:
+  - `getMint`
+  - `getOrCreateAssociatedTokenAccount`
+  - `getAccount`
+  - `transfer`
+- error logging improved (stack/raw error visibility)
+
+## ✅ ENV UPDATES REQUIRED
+
+Token mints must exist in both environments.
+
+### Discord Bot ENV
+
+Required (prepare stores token mint into DB):
+
+- `EMPIRE_TOKEN_MINT=EmpirdtfUMfBQXEjnNmTngeimjfizfuSBD3TN9zqzydj`
+- `GHC_TOKEN_MINT=GHCCfxnhY8zav38TcBApsbQA9CMiGsEG2716CH9TDdjf`
+- `FOOK_TOKEN_MINT=G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump`
+- `SMZ_TOKEN_MINT=C7CJizyZRgNornuF3bvkTMAidJon1HeTNENMhy1PVCRd`
+- `LOCAL_AIRDROP_EXECUTION_ENABLED=true`
+- `AIRDROP_SERVICE_PATH=C:\xampp-server\htdocs\narrrfs-world\airdrop-service`
+
+Rule:
+
+- never place airdrop private key in Discord bot ENV
+
+### Airdrop Service ENV
+
+Required (local sender executes chain transfers):
+
+- `HELIUS_API_KEY=<secret>`
+- `SOLANA_CLUSTER=mainnet`
+- `EMPIRE_TOKEN_MINT=EmpirdtfUMfBQXEjnNmTngeimjfizfuSBD3TN9zqzydj`
+- `GHC_TOKEN_MINT=GHCCfxnhY8zav38TcBApsbQA9CMiGsEG2716CH9TDdjf`
+- `FOOK_TOKEN_MINT=G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump`
+- `SMZ_TOKEN_MINT=C7CJizyZRgNornuF3bvkTMAidJon1HeTNENMhy1PVCRd`
+- `AIRDROP_PRIVATE_KEY=[temporary-funded-wallet-json-array]`
+- `MAX_RECIPIENTS_PER_BATCH=500`
+- `MAX_TOTAL_TOKENS_PER_BATCH=1000000`
+- `TX_DELAY_MS=500`
+
+## ⚠️ IMPORTANT DECIMALS NOTE
+
+Do not use one global decimals override across all tokens.
+
+Service now reads decimals directly from on-chain mint.
+
+Reason:
+
+- EMPIRE confirmed at decimals `5` in execution logs
+- GHC/FOOK/SMZ may differ
+- global `AIRDROP_TOKEN_DECIMALS=6` can break EMPIRE
+
+Keep on-chain decimals as default.
+
+## ✅ CONFIRMED TESTS
+
+### EMPIRE
+- manual `/airdrop` flow executed successfully
+- blockchain send completed
+- service log contained signature
+- Discord post-processing issue fixed (missing `+` in string concat)
+
+### GHC
+- initial failure: `TokenInvalidAccountOwnerError`
+- cause: token program mismatch (needed Token-2022 compatibility)
+- fix: token program detection added
+- result: GHC dry-run passed + real execution confirmed
+
+### FOOK
+- real execution confirmed
+- Discord success output confirmed token label:
+  - `✅ Batch 16 executed locally. Recipients: 1 Amount each: 1000 FOOK`
+- DM notification attempts confirmed
+
+### SMZ
+- real execution confirmed
+
+Final: all four manual token flows validated.
+
+## ✅ CURRENT FINAL STATE
+
+Manual `/airdrop` now supports:
+
+- ✅ EMPIRE
+- ✅ GHC
+- ✅ FOOK
+- ✅ SMZ
+
+System state:
+
+- ✅ Multi-token ready
+- ✅ Token-2022 compatible
+- ✅ Local-key protected
+- ✅ Discord-integrated
+- ✅ Backend-authoritative
+- ✅ Production-tested
+
+## ⚠️ KNOWN REMAINING COSMETIC CLEANUP
+
+`airdrop-service.js` still contains some old EMPIRE wording in labels/comments (cosmetic only).
+
+Future cleanup:
+
+- rename visible log copy from EMPIRE to generic `Token` / dynamic `${tokenSymbol}` where safe
+- do not alter execution logic unless needed
+
+## 🎁 GIVEAWAY FLOW STATUS
+
+Giveaway airdrops remain intentionally EMPIRE-only.
+
+Do not convert giveaway multi-token logic yet.
+
+Current giveaway integration uses:
+
+- `createGiveawayEmpireAirdropBatch()`
+- `tbl_giveaways.empire_airdrop_batch_id`
+- `tbl_giveaways.empire_airdrop_status`
+
+Future multi-token giveaway support should only happen after schema + command review.
+
+## 🚫 OPERATOR SAFETY RULES
+
+- NEVER re-execute a successful batch
+- ALWAYS check logs for signatures
+- IF chain send succeeded but Discord post-processing failed, repair DB status manually instead of re-executing
+- PRIVATE KEYS stay only in local airdrop-service ENV
+- Discord bot ENV gets token mints only (never `AIRDROP_PRIVATE_KEY`)
+- use dry-run before large drops
+- use temporary funded airdrop wallet, not treasury
+
+## 🧾 DB REPAIR NOTES FROM TESTING
+
+If execution fails before chain send:
+
+```sql
+UPDATE tbl_airdrop_batches
+SET status = 'approved'
+WHERE batch_id = <id>
+  AND status = 'execute_failed';
+```
+
+Only do this after confirming no successful signature exists.
+
+If chain send succeeded but Discord post-processing failed:
+
+```sql
+UPDATE tbl_airdrop_batches
+SET status = 'executed',
+    executed_at = COALESCE(executed_at, CURRENT_TIMESTAMP)
+WHERE batch_id = <id>;
+
+UPDATE tbl_airdrop_recipients
+SET status = 'sent'
+WHERE batch_id = <id>;
+```
+
+Never re-run the same successful batch.
+
+## 🧠 FUTURE ROADMAP
+
+Optional follow-up items:
+
+- multi-token giveaway payouts
+- DB transaction signature sync
+- retry failed recipients only
+- partial success handling
+- admin UI airdrop dashboard
+- role-based bulk airdrops
+- scheduled airdrops
+- cleaner token labels in service logs
+- native SOL airdrop support
+
+## 🏁 FINAL QUICK STATUS SUMMARY
+
+Airdrop Agent 1.1 completed multi-token manual airdrop expansion. EMPIRE, GHC, FOOK, and SMZ are production-tested through Discord prepare → approval → local execute → blockchain send → logs → Discord confirmation. Local airdrop-service now supports dynamic `--token-mint` and Token-2022 mint owners. Giveaway airdrops remain EMPIRE-only by design.
+
+---
+
+## 🔄 UPDATE — MAY 3, 2026 — GIVEAWAY MULTI-TOKEN APPROVAL PAYOUTS
+
+# 🎁 GIVEAWAY TOKEN PAYOUT EXPANSION — APPROVAL MODE READY
+
+## ✅ OVERVIEW
+
+Giveaway payout flow was upgraded from EMPIRE-only preparation to generic multi-token payout preparation.
+
+Supported giveaway payout tokens:
+
+- ✅ EMPIRE
+- ✅ GHC
+- ✅ FOOK
+- ✅ SMZ
+
+Current status:
+
+- ✅ Approval-mode giveaway token payouts ready for controlled test
+- ⏳ Auto-payout intentionally **not** implemented yet
+
+Expected approved giveaway payout flow:
+
+```text
+/giveaway create
+→ token_payout selector
+→ token_amount per winner
+→ giveaway ends
+→ winner selected
+→ wallet fetched from tbl_holder_verifications
+→ token-aware airdrop batch created
+→ admin approval message posted
+→ admin approves batch
+→ /airdrop execute batch_id
+→ local airdrop-service sends selected token
+→ giveaway post updates to TOKEN paid out
+→ channel message includes TX if found
+→ winner DM includes Solscan TX button
+```
+
+## ✅ FILES UPDATED / VERIFIED
+
+### `discord/commands/giveaway.js`
+
+Completed changes:
+
+- Added giveaway payout token registry for EMPIRE / GHC / FOOK / SMZ
+- Added `resolveGiveawayPayoutToken()`
+- Replaced hardcoded EMPIRE payout preparation with generic `createGiveawayTokenAirdropBatch()`
+- Kept compatibility wrapper: `createGiveawayEmpireAirdropBatch()`
+- Generic function now creates pending `tbl_airdrop_batches` row with selected `token_mint`
+- Generic function creates `tbl_airdrop_recipients` row for winner wallet
+- Generic function updates `tbl_giveaways` generic payout fields:
+  - `token_airdrop_batch_id`
+  - `token_airdrop_status`
+  - `token_payout_symbol`
+  - `token_payout_mint`
+  - `token_payout_amount`
+- Legacy EMPIRE fields preserved for backward compatibility:
+  - `empire_airdrop_batch_id`
+  - `empire_airdrop_status`
+  - `empire_payout_enabled`
+  - `empire_amount`
+- Winner loop now calls `createGiveawayTokenAirdropBatch()`
+- Winner celebration embed now shows dynamic token payout text (GHC/FOOK/SMZ/EMPIRE)
+- `/giveaway create` now uses `token_payout` + `token_amount`
+- Old create options replaced: `empire_payout_enabled`, `empire_amount`
+- `addActiveGiveaway()` now stores generic token payout fields
+- `ensureGiveawayStructuredColumns()` verifies new token payout DB columns
+
+### `discord/commands/airdrop-prepare.js`
+
+Completed changes:
+
+- Giveaway post-execute sync is token-aware
+- Sync lookup checks:
+  - `WHERE token_airdrop_batch_id = ? OR empire_airdrop_batch_id = ?`
+- Giveaway status updates support generic fields:
+  - `token_airdrop_status = executed`
+  - `token_payout_executed_at = CURRENT_TIMESTAMP`
+- Legacy EMPIRE status support preserved via `empire_airdrop_status`
+- Giveaway public post now updates dynamically:
+  - `✅ Status: GHC paid out`
+  - `✅ Status: FOOK paid out`
+  - `✅ Status: SMZ paid out`
+  - `✅ Status: EMPIRE paid out`
+- Channel confirmation now uses correct token symbol
+- Airdrop audit log is read after execution
+- Recipient DM now includes:
+  - token amount
+  - wallet
+  - transaction signature
+  - Solscan link
+  - `🔎 View TX` button when signature exists
+- Giveaway payout channel message now includes TX when found
+
+Note:
+
+- TX-aware DM loop is the active loop in uploaded file
+- minor duplicate console stdout logging may remain (non-blocking cleanup)
+
+### `discord/commands/giveaway-handlers.js`
+
+No payout execution changes needed in this phase.
+
+Current role:
+
+- join button handling
+- participant view button handling
+- no blockchain payout execution logic here
+
+### `airdrop-service/src/airdrop-service.js`
+
+No new giveaway-phase changes required.
+
+Already confirmed from Airdrop Agent 1.1:
+
+- dynamic `--token-mint`
+- classic SPL + Token-2022 support
+- audit logs with signatures
+- on-chain decimals
+- private key local only
+
+## ✅ DB COLUMNS REQUIRED
+
+Required generic columns in `tbl_giveaways`:
+
+- `token_payout_enabled`
+- `token_payout_symbol`
+- `token_payout_mint`
+- `token_payout_amount`
+- `token_airdrop_batch_id`
+- `token_airdrop_status`
+- `token_payout_executed_at`
+
+Legacy EMPIRE columns must remain:
+
+- `empire_payout_enabled`
+- `empire_amount`
+- `empire_airdrop_batch_id`
+- `empire_airdrop_status`
+
+Do not remove legacy fields.
+
+## ✅ ENV REQUIREMENTS
+
+Discord bot must contain token mints:
+
+- `EMPIRE_TOKEN_MINT=EmpirdtfUMfBQXEjnNmTngeimjfizfuSBD3TN9zqzydj`
+- `GHC_TOKEN_MINT=GHCCfxnhY8zav38TcBApsbQA9CMiGsEG2716CH9TDdjf`
+- `FOOK_TOKEN_MINT=G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump`
+- `SMZ_TOKEN_MINT=C7CJizyZRgNornuF3bvkTMAidJon1HeTNENMhy1PVCRd`
+
+Airdrop service still requires:
+
+- `HELIUS_API_KEY=<secret>`
+- `SOLANA_CLUSTER=mainnet`
+- `AIRDROP_PRIVATE_KEY=[temporary-funded-airdrop-wallet-json-array]`
+
+Rule: private key remains only in `airdrop-service/.env`.
+
+## 🧪 FIRST CONTROLLED TEST PLAN
+
+1. Deploy/restart bot and re-register slash commands
+2. Run approval-mode only test:
+
+```text
+/giveaway create prize:"Test GHC Payout" winners:1 duration_minutes:1 token_payout:GHC token_amount:1
+```
+
+3. Then:
+   - join giveaway
+   - wait for end or manually end
+   - winner selected
+   - approval embed appears in airdrop admin channel
+   - approve batch
+   - execute with `/airdrop execute batch_id:<id>`
+
+Expected result:
+
+- giveaway message updates to `✅ Status: GHC paid out`
+- channel payout message includes TX
+- winner DM includes View TX button
+- batch status = `executed`
+- recipient status = `sent`
+
+After GHC, repeat FOOK and SMZ with amount `1`.
+
+## ⚠️ IMPORTANT SAFETY RULES
+
+- Auto-payout not implemented yet
+- New giveaway payout flow still requires:
+  - admin approval
+  - `/airdrop execute`
+- Do not bypass approval
+- Do not re-execute successful batches
+- Always check airdrop-service logs for signatures
+- If chain send succeeds but Discord post-processing fails, repair DB manually (do not rerun)
+- Private keys local only
+- Use test amount `1` first for each token
+
+## ⏳ AUTO-PAYOUT FUTURE WORK
+
+Auto-payout discussed but intentionally postponed.
+
+Future auto-payout only after approval-mode giveaway payouts are stable.
+
+Required future safety gates:
+
+- `AUTO_GIVEAWAY_PAYOUT_ENABLED=true`
+- `LOCAL_AIRDROP_EXECUTION_ENABLED=true`
+- `MAX_AUTO_GIVEAWAY_TOKEN_AMOUNT=<safe cap>`
+
+Future auto payout must:
+
+- be admin-only
+- be ENV-gated
+- run only where local airdrop-service exists
+- enforce max amount caps
+- reuse existing airdrop execution logic
+- never place private keys in hosted Discord bot env
+
+## ✅ CURRENT FINAL STATUS SUMMARY
+
+Giveaway token payout expansion is approval-mode ready. `/giveaway create` now supports `token_payout` + `token_amount` for EMPIRE, GHC, FOOK, and SMZ. Giveaway ending creates token-aware pending airdrop approval batches; `/airdrop execute` now syncs giveaway status dynamically and sends TX-aware DMs. Auto-payout remains intentionally postponed.
 
 ---
 

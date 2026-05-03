@@ -328,7 +328,7 @@ function getMouseLeaderboard($db) {
                     MIN(timestamp) as timestamp
                 FROM tbl_cheese_clicks
                 WHERE timestamp >= ?
-                AND timestamp <= ?
+                  AND timestamp <= ?
                 GROUP BY user_wallet
                 ORDER BY score DESC, timestamp ASC
                 LIMIT 10
@@ -399,7 +399,7 @@ function getMouseLeaderboard($db) {
                     MIN(finished_at) as timestamp
                 FROM tbl_race_participants
                 WHERE finished_at >= ?
-                AND finished_at <= ?
+                  AND finished_at <= ?
                 GROUP BY user_id
                 ORDER BY total_races DESC, wins DESC, timestamp ASC
                 LIMIT 10
@@ -412,7 +412,7 @@ function getMouseLeaderboard($db) {
         }
 
         foreach ($leaderboard as &$entry) {
-            $entry['score'] = (int) $entry['total_races'];
+            $entry['score'] = (int)$entry['total_races'];
         }
         unset($entry);
 
@@ -438,36 +438,29 @@ function getMouseLeaderboard($db) {
             ];
         }
 
-        if (!$seasonStartNextDay || !$currentSeasonEnd) {
-            return [
-                'leaderboard' => [],
-                'is_frozen' => false,
-                'season_shown' => $currentSeason
-            ];
-        }
-
         $stmt = $db->prepare("
             SELECT
                 rp.user_id as discord_id,
                 COUNT(*) as total_rumbles,
                 COUNT(CASE WHEN rp.final_position = 1 THEN 1 END) as wins,
-                MIN(cr.created_at) as timestamp
+                MIN(COALESCE(cr.ended_at, cr.finished_at, cr.started_at, cr.created_at)) as timestamp
             FROM tbl_rumble_participants rp
             JOIN tbl_cheese_rumbles cr ON rp.rumble_id = cr.rumble_id
-            WHERE datetime(replace(replace(cr.created_at, 'T', ' '), 'Z', '')) >= datetime(?)
-            AND datetime(replace(replace(cr.created_at, 'T', ' '), 'Z', '')) < datetime(?)
+            WHERE cr.season = ?
+              AND cr.status = 'finished'
             GROUP BY rp.user_id
             ORDER BY total_rumbles DESC, wins DESC, timestamp ASC
             LIMIT 10
         ");
-        $stmt->execute([
-            $seasonStartNextDay,
-            $currentSeasonEnd
-        ]);
+
+        // IMPORTANT: Cheese Rumble is now season-column based.
+        // Do not execute again with date params here.
+        $stmt->execute([$currentSeason]);
+
         $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($leaderboard as &$entry) {
-            $entry['score'] = (int) $entry['total_rumbles'];
+            $entry['score'] = (int)$entry['total_rumbles'];
         }
         unset($entry);
 
@@ -599,14 +592,14 @@ function getGlyphMemoryLeaderboard($db, $seasonName) {
     );
 
     $cheeseRumbleResult = getCheeseRumbleLeaderboard(
-        $db,
-        $currentSeason,
-        $previousSeason,
-        $currentSeasonStart,
-        $currentSeasonEnd,
-        $seasonStartNextDay,
-        $useFrozenLeaderboard
-    );
+    $db,
+    $currentSeason,
+    $previousSeason,
+    $currentSeasonStart,
+    $currentSeasonEnd,
+    $currentSeasonStart,
+    $useFrozenLeaderboard
+);
 
 $glyphMemoryLeaderboard = [];
 $tableCheck = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tbl_glyph_memory_scores'");
