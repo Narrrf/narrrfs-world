@@ -5,6 +5,9 @@
 discord/
 /discord/
 
+# 🤖 Discord Bot - Local Development (Complete folder)
+FOX/
+
 # 🔒 Security Documentation - Local Development Only
 SECURITY_*.md
 *SECURITY*.md

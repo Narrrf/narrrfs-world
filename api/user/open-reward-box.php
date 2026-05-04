@@ -620,9 +620,17 @@ function fetch_reward_pool_entries(PDO $pdo, int $boxId): array {
         $catalogId = (int)($row['catalog_id'] ?? $row['genetic_catalog_id'] ?? $row['trait_catalog_id'] ?? 0);
         $rewardReferenceId = (int)($row['reward_reference_id'] ?? 0);
         $weight = max(1, (int)($row['weight'] ?? 1));
-        $rewardDspoincAmount = isset($row['reward_dspoinc_amount']) ? (int)$row['reward_dspoinc_amount'] : null;
-        $rewardDspoincMin = isset($row['reward_dspoinc_min']) ? (int)$row['reward_dspoinc_min'] : null;
-        $rewardDspoincMax = isset($row['reward_dspoinc_max']) ? (int)$row['reward_dspoinc_max'] : null;
+        $rewardDspoincAmount = isset($row['fixed_dspoinc_amount'])
+    ? (int)$row['fixed_dspoinc_amount']
+    : (isset($row['reward_dspoinc_amount']) ? (int)$row['reward_dspoinc_amount'] : null);
+
+$rewardDspoincMin = isset($row['dspoinc_min'])
+    ? (int)$row['dspoinc_min']
+    : (isset($row['reward_dspoinc_min']) ? (int)$row['reward_dspoinc_min'] : null);
+
+$rewardDspoincMax = isset($row['dspoinc_max'])
+    ? (int)$row['dspoinc_max']
+    : (isset($row['reward_dspoinc_max']) ? (int)$row['reward_dspoinc_max'] : null);
 
         if ($rewardType === '') {
             continue;
@@ -1439,8 +1447,8 @@ try {
             (int)$rewardAmount,
             'Free reward box: ' . ((string)($box['box_key'] ?? 'box_' . $boxId))
         );
-    } elseif ($boxType === 'paid_random_box') {
-        if ($boxPrice <= 0) {
+    } elseif ($boxType === 'paid_random_box' || $boxType === 'free_random_box') {
+    if ($boxType === 'paid_random_box' && $boxPrice <= 0) {
             $pdo->rollBack();
             json_response([
                 'success' => false,
@@ -1517,6 +1525,12 @@ try {
 
                 $usedFallback = true;
             }
+            error_log(
+    '🎁 Reward Box Pool Resolution Failed: box_id=' . $boxId .
+    ' pool_reward_id=' . $poolRewardId .
+    ' reward_type=' . (string)($selectedEntry['reward_type'] ?? '') .
+    ' error=' . $poolResolutionError->getMessage()
+);
         }
 
         if ($usedFallback) {
