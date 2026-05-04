@@ -1206,7 +1206,7 @@ try {
     }
 
     $boxType = trim((string)($box['box_type'] ?? ''));
-    if (!in_array($boxType, ['free_dspoinc_box', 'paid_random_box', 'premium_claim_box'], true)) {
+    if (!in_array($boxType, ['free_dspoinc_box', 'free_random_box', 'paid_random_box', 'premium_claim_box'], true)) {
         json_response([
             'success' => false,
             'error' => 'Unsupported reward box type',
