@@ -1518,19 +1518,20 @@ try {
                     $rewardDescription = trim((string)($resolved['reward_description'] ?? $rewardDescription));
                     $deliveryPayload = $resolved['delivery_payload'];
                 }
-            } catch (Exception $poolResolutionError) {
+                        } catch (Exception $poolResolutionError) {
+                error_log(
+                    '🎁 Reward Box Pool Resolution Failed: box_id=' . $boxId .
+                    ' pool_reward_id=' . $poolRewardId .
+                    ' reward_type=' . (string)($selectedEntry['reward_type'] ?? '') .
+                    ' error=' . $poolResolutionError->getMessage()
+                );
+
                 if (!$canFallback) {
                     throw $poolResolutionError;
                 }
 
                 $usedFallback = true;
             }
-            error_log(
-    '🎁 Reward Box Pool Resolution Failed: box_id=' . $boxId .
-    ' pool_reward_id=' . $poolRewardId .
-    ' reward_type=' . (string)($selectedEntry['reward_type'] ?? '') .
-    ' error=' . $poolResolutionError->getMessage()
-);
         }
 
         if ($usedFallback) {
