@@ -10,6 +10,7 @@
 // - Every successful partner balance query is written to tbl_spoinc_bridge_balance_queries.
 // - Partner API keys are stored only as SHA-256 hashes in tbl_spoinc_bridge_api_keys.
 // - Partner-provided timestamps are stored only as metadata; server time is authoritative.
+// - Partner requests may be wallet-only; the Discord user is resolved from verified wallets.
 
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
@@ -243,6 +244,7 @@ function ensure_spoinc_bridge_balance_query_table(PDO $pdo): void {
     ");
 
     $pdo->exec("CREATE INDEX IF NOT EXISTS idx_spoinc_bridge_balance_queries_discord_id ON tbl_spoinc_bridge_balance_queries (discord_id)");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_spoinc_bridge_balance_queries_wallet ON tbl_spoinc_bridge_balance_queries (wallet)");
     $pdo->exec("CREATE INDEX IF NOT EXISTS idx_spoinc_bridge_balance_queries_partner_request_id ON tbl_spoinc_bridge_balance_queries (partner_request_id)");
     $pdo->exec("CREATE INDEX IF NOT EXISTS idx_spoinc_bridge_balance_queries_created_at ON tbl_spoinc_bridge_balance_queries (created_at)");
 }
@@ -362,7 +364,7 @@ function validate_discord_id(string $discordId): void {
     if ($discordId === '' || !preg_match('/^\d{15,25}$/', $discordId)) {
         json_response([
             'success' => false,
-            'error' => 'Invalid or missing discord_id'
+            'error' => 'Invalid discord_id'
         ], 400);
     }
 }
@@ -380,15 +382,89 @@ function validate_solana_wallet(string $wallet): void {
 }
 
 /**
- * Validate a partner request ID so balance records can be traced safely.
+ * Resolve a Discord user ID from a registered Solana wallet.
+ * Plain language: Gensuki knows the wallet, Narrrfs resolves the linked Discord account.
  */
-function validate_partner_request_id(string $partnerRequestId): void {
-    if ($partnerRequestId === '' || strlen($partnerRequestId) > 120) {
+function resolve_discord_id_from_registered_wallet(PDO $pdo, string $wallet): string {
+    $stmt = $pdo->prepare("
+        SELECT user_id
+        FROM tbl_holder_verifications
+        WHERE wallet = ?
+        ORDER BY verified_at DESC
+        LIMIT 1
+    ");
+    $stmt->execute([$wallet]);
+
+    $discordId = trim((string)$stmt->fetchColumn());
+
+    if ($discordId === '') {
         json_response([
             'success' => false,
-            'error' => 'Invalid or missing partner_request_id'
+            'error' => 'User not available for this wallet',
+            'code' => 'USER_NOT_AVAILABLE'
+        ], 404);
+    }
+
+    validate_discord_id($discordId);
+    return $discordId;
+}
+
+/**
+ * Confirm that a provided Discord ID owns the provided registered wallet.
+ * Plain language: this prevents mixed wallet/user requests from returning another account balance.
+ */
+function require_wallet_matches_discord_id(PDO $pdo, string $wallet, string $discordId): void {
+    $stmt = $pdo->prepare("
+        SELECT 1
+        FROM tbl_holder_verifications
+        WHERE wallet = ?
+          AND user_id = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$wallet, $discordId]);
+
+    if (!$stmt->fetchColumn()) {
+        json_response([
+            'success' => false,
+            'error' => 'Wallet does not match the provided Discord ID',
+            'code' => 'WALLET_DISCORD_MISMATCH'
+        ], 403);
+    }
+}
+
+/**
+ * Resolve the balance owner for the partner request.
+ * Plain language: wallet is required; Discord ID is optional and only used as an extra safety check.
+ */
+function resolve_bridge_balance_owner_discord_id(PDO $pdo, string $wallet, string $providedDiscordId): string {
+    if ($providedDiscordId !== '') {
+        validate_discord_id($providedDiscordId);
+        require_wallet_matches_discord_id($pdo, $wallet, $providedDiscordId);
+        return $providedDiscordId;
+    }
+
+    return resolve_discord_id_from_registered_wallet($pdo, $wallet);
+}
+
+/**
+ * Resolve a partner request ID so every balance record stays traceable.
+ * Plain language: Gensuki may send only wallet + API key; when no ID is sent, we create one.
+ */
+function resolve_partner_request_id(string $partnerRequestId): string {
+    $partnerRequestId = trim($partnerRequestId);
+
+    if ($partnerRequestId === '') {
+        return 'gensuki-balance-' . time() . '-' . bin2hex(random_bytes(4));
+    }
+
+    if (strlen($partnerRequestId) > 120) {
+        json_response([
+            'success' => false,
+            'error' => 'Invalid partner_request_id'
         ], 400);
     }
+
+    return $partnerRequestId;
 }
 
 /**
@@ -434,19 +510,22 @@ try {
     $wallet = trim((string)($request['wallet'] ?? ''));
     $partnerRequestedAtUnix = isset($request['requested_at_unix']) ? (int)$request['requested_at_unix'] : null;
 
-    validate_partner_request_id($partnerRequestId);
-    validate_discord_id($discordId);
+    $partnerRequestId = resolve_partner_request_id($partnerRequestId);
     validate_solana_wallet($wallet);
 
+    $resolvedDiscordId = resolve_bridge_balance_owner_discord_id($pdo, $wallet, $discordId);
+
     $serverUnixTimestamp = time();
-    $balance = get_user_dspoinc_balance_snapshot($pdo, $discordId);
+    $balance = get_user_dspoinc_balance_snapshot($pdo, $resolvedDiscordId);
     $maxSpoincConvertible = $balance['available_dspoinc'] / SPOINC_BRIDGE_CONVERSION_RATE_DSPOINC_PER_SPOINC;
 
     $metadata = [
-        'endpoint_version' => 'spoinc_bridge_api_agent_1_0_read_only_balance_db_key_hash',
+        'endpoint_version' => 'spoinc_bridge_api_agent_1_1_wallet_lookup_read_only_balance_db_key_hash',
         'auth_source' => $authContext['auth_source'],
         'api_key_id' => $authContext['api_key_id'],
         'key_label' => $authContext['key_label'],
+        'provided_discord_id' => $discordId !== '' ? $discordId : null,
+        'wallet_lookup_mode' => $discordId !== '' ? 'wallet_and_discord_id_verified' : 'wallet_only_resolved',
         'partner_requested_at_unix' => $partnerRequestedAtUnix,
         'server_time_utc' => gmdate('Y-m-d H:i:s', $serverUnixTimestamp),
         'dry_run_local_test' => is_localhost_env() && $authContext['auth_source'] === 'localhost_test_token'
@@ -455,7 +534,7 @@ try {
     $queryId = insert_balance_query_record($pdo, [
         'partner_request_id' => $partnerRequestId,
         'partner_name' => SPOINC_BRIDGE_PARTNER_NAME,
-        'discord_id' => $discordId,
+        'discord_id' => $resolvedDiscordId,
         'wallet' => $wallet,
         'available_dspoinc' => $balance['available_dspoinc'],
         'total_dspoinc' => $balance['total_dspoinc'],
@@ -471,7 +550,7 @@ try {
         'partner' => SPOINC_BRIDGE_PARTNER_NAME,
         'partner_request_id' => $partnerRequestId,
         'query_id' => $queryId,
-        'discord_id' => $discordId,
+        'discord_id' => $resolvedDiscordId,
         'wallet' => $wallet,
         'available_dspoinc' => $balance['available_dspoinc'],
         'total_dspoinc' => $balance['total_dspoinc'],
