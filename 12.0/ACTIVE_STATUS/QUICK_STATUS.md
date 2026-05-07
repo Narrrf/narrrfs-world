@@ -1,13 +1,282 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: May 3, 2026
-Status: ✅ STABLE — SEASON 11 ACTIVE + AIRDROP AGENT 1.1 MULTI-TOKEN EXPANSION COMPLETE
-Version: 2026-05-03
-Milestone: Season 11 is active and the Discord manual airdrop system is now production-tested across EMPIRE, GHC, FOOK, and SMZ with dynamic token mint execution.
+Last Updated: May 7, 2026
+Status: ✅ STABLE — SEASON 11 ACTIVE + SPOINC BRIDGE READ-ONLY PHASE STARTED (WAITING GENSUKI CONTRACT)
+Version: 2026-05-07
+Milestone: SPOINC Bridge API Agent 1.0 read-only partner balance layer is prepared (no live balance movement enabled yet).
 
 ---
 
 ## 🔄 UPDATE — APRIL 27, 2026
+
+---
+
+## 🔄 UPDATE — MAY 7, 2026
+
+# 🌉 SPOINC BRIDGE API AGENT 1.0 — READ-ONLY BALANCE PHASE STARTED
+
+## ✅ OVERVIEW
+
+Narrrfs World started the first secure backend bridge layer for upcoming SPOINC token / DSPOINC exchange integration with Gensuki.
+
+Purpose:
+
+```text
+DSPOINC = off-chain Narrrfs World play currency
+SPOINC = real Solana token
+Confirmed ratio: 10,000 DSPOINC = 1 SPOINC
+```
+
+This bridge is intended to let Gensuki query backend-authoritative DSPOINC balances and later coordinate swap events.
+
+## ✅ CURRENT STATUS
+
+Current phase:
+
+- ✅ Read-only partner balance endpoint created
+- ✅ Balance query audit table planned/created by endpoint
+- ✅ Local `swap-lab.html` frontend shell created
+- ✅ No automatic DSPOINC credit enabled
+- ✅ No automatic DSPOINC deduction enabled
+- ✅ Waiting for Gensuki endpoint / confirmation contract
+
+## ✅ FILES ADDED / PREPARED
+
+### Partner API
+
+New file:
+
+- `api/partner/spoinc/get-dspoinc-balance.php`
+
+Purpose:
+
+Secure partner endpoint for Gensuki to query user DSPOINC balance.
+
+Rules:
+
+- POST only
+- `Authorization: Bearer <GENSUKI_API_KEY>`
+- clean JSON only
+- no private keys
+- no Solana sends
+- no DSPOINC credit
+- no DSPOINC deduction
+- every successful balance query is logged
+
+Backend-authoritative balance pattern:
+
+```text
+available_dspoinc = SUM(tbl_user_scores.score) - active tbl_dspoinc_stakes.amount
+```
+
+No frontend balance is used as authority.
+
+### Frontend Shell
+
+New local page:
+
+- `public/swap-lab.html`
+
+Note:
+
+- page name is `swap-lab.html` because `stake-lab.html` already exists for Lab staking/upgrade ecosystem
+
+Current page behavior:
+
+- hydrates Discord session
+- shows bridge rate
+- shows available/frozen DSPOINC placeholders until user endpoint exists
+- previews DSPOINC ↔ SPOINC conversion
+- prepares pending swap intent UI flow
+- does not expose partner API keys
+- does not credit/deduct from frontend
+
+## ✅ DATABASE TABLE FOR PHASE 1
+
+Create / confirm:
+
+```sql
+CREATE TABLE IF NOT EXISTS tbl_spoinc_bridge_balance_queries (
+    query_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    partner_request_id TEXT,
+    partner_name TEXT DEFAULT 'gensuki',
+    discord_id TEXT,
+    wallet TEXT,
+    available_dspoinc INTEGER NOT NULL DEFAULT 0,
+    total_dspoinc INTEGER NOT NULL DEFAULT 0,
+    frozen_dspoinc INTEGER NOT NULL DEFAULT 0,
+    conversion_rate_dspoinc_per_spoinc INTEGER NOT NULL DEFAULT 10000,
+    max_spoinc_convertible REAL NOT NULL DEFAULT 0,
+    unix_timestamp INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    request_ip TEXT,
+    metadata_json TEXT
+);
+```
+
+Recommended indexes:
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_spoinc_bridge_balance_queries_discord_id
+ON tbl_spoinc_bridge_balance_queries (discord_id);
+
+CREATE INDEX IF NOT EXISTS idx_spoinc_bridge_balance_queries_wallet
+ON tbl_spoinc_bridge_balance_queries (wallet);
+
+CREATE INDEX IF NOT EXISTS idx_spoinc_bridge_balance_queries_created_at
+ON tbl_spoinc_bridge_balance_queries (created_at);
+
+CREATE INDEX IF NOT EXISTS idx_spoinc_bridge_balance_queries_partner_request_id
+ON tbl_spoinc_bridge_balance_queries (partner_request_id);
+```
+
+## ✅ ENV REQUIRED
+
+Add one of these to production ENV:
+
+- `GENSUKI_API_KEY=<shared-secret-from-Zeno>`
+
+Alternative accepted names:
+
+- `SPOINC_BRIDGE_API_KEY=<shared-secret-from-Zeno>`
+- `PARTNER_GENSUKI_API_KEY=<shared-secret-from-Zeno>`
+
+Localhost test token:
+
+- `local-spoinc-bridge-test`
+
+## ✅ FIRST TEST CURL
+
+```bash
+curl -X POST "https://narrrfs.world/api/partner/spoinc/get-dspoinc-balance.php" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $GENSUKI_API_KEY" \
+  -d '{
+    "partner_request_id": "gensuki-unique-id-123",
+    "discord_id": "328601656659017732",
+    "wallet": "A633zMm3rp7Jhi3K4Ks85K4sgkMR4SyYdk2hK8RW5mYU",
+    "requested_at_unix": 1770000000
+  }'
+```
+
+Expected response shape:
+
+```json
+{
+  "success": true,
+  "partner": "gensuki",
+  "partner_request_id": "gensuki-unique-id-123",
+  "discord_id": "328601656659017732",
+  "wallet": "A633zMm3rp7Jhi3K4Ks85K4sgkMR4SyYdk2hK8RW5mYU",
+  "available_dspoinc": 110000000,
+  "total_dspoinc": 110000000,
+  "frozen_dspoinc": 0,
+  "conversion": {
+    "dspoinc_per_spoinc": 10000,
+    "max_spoinc_convertible": 11000
+  },
+  "unix_timestamp": 1770000000,
+  "created_at": "2026-05-07 13:00:00"
+}
+```
+
+## ⏸️ WAITING FOR GENSUKI / ZENO
+
+Before automatic swap funding/removal, Gensuki must confirm endpoint contract:
+
+1. Do we call Gensuki, or does Gensuki call us?
+2. Exact payload for finished transaction?
+3. Do they provide `quote_id` / `partner_request_id`?
+4. What SPOINC mint address and decimals?
+5. Which wallet receives SPOINC deposits?
+6. How is transaction confirmation proven?
+7. API key only, or signed webhook?
+
+## 🚫 DO NOT IMPLEMENT YET
+
+Do not build live automatic swap execution until Gensuki answers above.
+
+Not yet:
+
+- automatic DSPOINC credit
+- automatic DSPOINC deduction
+- `confirm-swap.php` live processing
+- partner callback processing
+- blockchain send logic
+- private key handling
+
+## 🧠 NEXT FILES AFTER GENSUKI CONFIRMATION
+
+Planned backend files:
+
+- `api/user/spoinc/get-swap-profile.php`
+- `api/user/spoinc/create-swap-intent.php`
+- `api/partner/spoinc/confirm-swap.php`
+
+Planned table:
+
+```sql
+CREATE TABLE IF NOT EXISTS tbl_spoinc_bridge_swap_requests (
+    swap_request_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    partner_request_id TEXT UNIQUE,
+    partner_name TEXT DEFAULT 'gensuki',
+    discord_id TEXT NOT NULL,
+    wallet TEXT NOT NULL,
+    direction TEXT NOT NULL,
+    dspoinc_amount INTEGER NOT NULL,
+    spoinc_amount REAL NOT NULL,
+    conversion_rate_dspoinc_per_spoinc INTEGER NOT NULL DEFAULT 10000,
+    status TEXT NOT NULL DEFAULT 'pending',
+    solana_tx_signature TEXT,
+    bucket_wallet TEXT,
+    unix_timestamp INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    confirmed_at DATETIME,
+    processed_at DATETIME,
+    error_message TEXT,
+    metadata_json TEXT
+);
+```
+
+Allowed directions:
+
+- `dspoinc_to_spoinc`
+- `spoinc_to_dspoinc`
+
+## 🔐 SPOINC BRIDGE SAFETY RULES
+
+- no private key in PHP
+- no private key in frontend
+- no private key in Discord bot ENV
+- no swap credit without verified transaction
+- no DSPOINC deduction without recorded request and confirmed external transaction
+- all balance responses timestamped
+- every partner request logged
+- every swap intent idempotent
+- every confirmed swap replay-safe
+- clean JSON only
+- append-only DSPOINC ledger writes
+- dry-run / local test first
+
+## 🏁 CURRENT FINAL STATE
+
+SPOINC Bridge API Agent 1.0 is in safe waiting mode:
+
+- ✅ Balance API prepared
+- ✅ Query logging prepared
+- ✅ `swap-lab.html` frontend shell prepared
+- ✅ Gensuki API key support prepared
+- ⏸️ Waiting for Gensuki contract
+- 🚫 No balance movement enabled yet
+
+Handover directive locked:
+
+```text
+Please keep this as paused/waiting-for-Gensuki status.
+Do not mark swap execution as complete.
+Implemented scope is read-only partner balance endpoint, query logging table, and local swap-lab.html shell only.
+Automatic DSPOINC credit/deduction must wait for confirmed Gensuki endpoint contract.
+```
 
 ---
 
@@ -494,6 +763,77 @@ Future auto payout must:
 ## ✅ CURRENT FINAL STATUS SUMMARY
 
 Giveaway token payout expansion is approval-mode ready. `/giveaway create` now supports `token_payout` + `token_amount` for EMPIRE, GHC, FOOK, and SMZ. Giveaway ending creates token-aware pending airdrop approval batches; `/airdrop execute` now syncs giveaway status dynamically and sends TX-aware DMs. Auto-payout remains intentionally postponed.
+
+---
+
+## 🔄 UPDATE — MAY 5, 2026 — CHEESE RACE STABILITY + 100-PLAYER TESTING COMPLETE
+
+### 🧀 CHEESE RACE MAJOR STABILITY PASS
+
+Status: ✅ Cheese Race command upgraded, tested, and ready for wider Friday event validation.
+
+Main file:
+
+- `discord/commands/cheese-race.js`
+
+New test command:
+
+- `discord/commands/cheese-race-test.js`
+
+### ✅ WHAT WAS FIXED
+
+- Added dedicated `/cheese-race-test` command using fake racers
+- Test mode supports up to 100 fake racers
+- Test mode uses fake DB responses (no real DSPOINC/role/participant writes)
+- Race engine path tested through real active race runtime flow
+- Fixed fake Discord mention issue in test mode
+  - fake racer names now shown instead of unknown-user mentions
+  - live mode still pings real winner + lucky loser users
+- Improved final race result display
+  - final standings limited for large races to avoid Discord embed limits
+  - long result descriptions safely trimmed before send
+- Fixed duplicate winner messages
+  - public final result embed remains main winner announcement
+  - prize logic no longer sends extra duplicate winner plain message
+- Improved race pacing
+  - player speed range increased so races can realistically reach 100%
+  - duration remains a safety cap, not intended finish mechanic
+- Added safety final-sprint fallback
+  - if duration expires before 100%, leader is visually pushed to finish before ending
+  - prevents confusing winner declarations at ~40–60%
+- Confirmed 100-player test race reaches clear finish
+- Confirmed small real mod test race works with live rewards
+- Added/verified themed winner DM path
+  - winner DM uses Cheese Race themed embed + ecosystem buttons
+  - if privacy blocks DM, bot logs failure and can notify channel instead
+- Confirmed DM issue was Discord privacy related, not reward logic
+
+### ✅ DB / REWARD SAFETY
+
+- Test command does not write real rewards
+- Live race still writes real DSPOINC rewards
+- Winner and Lucky Loser rewards preserved
+- Race participant records remain part of live DB flow
+- No reward tables/economy logic intentionally removed
+- Marketplace old-notification replay issue diagnosed separately
+  - cause: old sold listings without notification rows
+  - fix: missing `tbl_discord_marketplace_notifications` rows backfilled
+  - unique notification tracking remains required to avoid replay DMs
+
+### ✅ OPERATIONAL NOTES
+
+Recommended minimum live duration for now:
+
+- 120 seconds works well in real test
+- duration should remain available as admin safety setting
+- for large Friday events, prefer 50–100 fake racer tests before live start
+
+Recommended pre-event checks:
+
+```bash
+node -c commands/cheese-race.js
+node -c commands/cheese-race-test.js
+```
 
 ---
 

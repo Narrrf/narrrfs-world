@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌉 SPOINC Stake Lab | Narrrf's World</title>
+  <meta name="description" content="Narrrfs World SPOINC bridge lab for DSPOINC and SPOINC swap intents." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon-phantom.png" type="image/png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --cheese: #facc15;
+      --cyan: #22d3ee;
+      --emerald: #10b981;
+      --danger: #ef4444;
+      --panel: rgba(15, 23, 42, 0.82);
+      --border: rgba(250, 204, 21, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: #fff;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 14% 16%, rgba(250, 204, 21, 0.16), transparent 28%),
+        radial-gradient(circle at 86% 10%, rgba(34, 211, 238, 0.14), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.10), transparent 34%),
+        linear-gradient(135deg, #020617, #0f172a 48%, #111827);
+    }
+
+    .glass {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.68));
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 24px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(18px);
+    }
+
+    .stat-card {
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      background: rgba(255, 255, 255, 0.055);
+      padding: 16px;
+    }
+
+    .label {
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .input {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(2, 6, 23, 0.68);
+      color: #fff;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    .input:focus {
+      border-color: rgba(250, 204, 21, 0.65);
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.10);
+    }
+
+    .btn {
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-weight: 900;
+      transition: transform 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
+    }
+
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.48; cursor: not-allowed; }
+
+    .primary {
+      background: linear-gradient(135deg, #facc15, #f59e0b);
+      color: #111827;
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(250, 204, 21, 0.24);
+      background: rgba(250, 204, 21, 0.10);
+      color: #fde68a;
+      padding: 7px 11px;
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <header class="sticky top-0 z-40 border-b border-yellow-400/20 bg-black/70 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+      <a href="index.html" class="text-lg font-black text-yellow-300 md:text-xl">🧀 Narrrf's World</a>
+      <nav class="flex flex-wrap items-center gap-4 text-sm text-slate-200">
+        <a class="hover:text-yellow-300" href="index.html">Home</a>
+        <a class="hover:text-yellow-300" href="profile.html">Profile</a>
+        <a class="hover:text-yellow-300" href="lab.html">Lab</a>
+        <a class="hover:text-yellow-300" href="leaderboard.html">Leaderboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 md:py-12">
+    <section class="glass overflow-hidden p-5 md:p-8">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div class="max-w-3xl">
+          <div class="pill mb-4">🌉 SPOINC Bridge Lab</div>
+          <h1 class="text-3xl font-black tracking-tight text-white md:text-5xl">Swap DSPOINC ↔ SPOINC safely through partner bridge intents.</h1>
+          <p class="mt-4 max-w-2xl text-slate-300">
+            This page is a frontend shell for user swap requests. Final DSPOINC credits or deductions must be processed only after the backend records the swap intent and verifies the confirmed partner transaction.
+          </p>
+        </div>
+
+        <div class="stat-card min-w-full lg:min-w-[340px]">
+          <div class="label">Session</div>
+          <div id="sessionStatus" class="mt-2 text-lg font-bold text-yellow-200">Checking Discord session...</div>
+          <div id="sessionMeta" class="mt-2 text-sm text-slate-400">Connect with Discord before using the bridge.</div>
+          <button id="refreshSessionBtn" class="btn secondary mt-4 w-full" type="button">Refresh Session</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6 grid gap-6 lg:grid-cols-3">
+      <article class="stat-card">
+        <div class="label">Available DSPOINC</div>
+        <div id="availableDspoinc" class="mt-2 text-3xl font-black text-emerald-300">—</div>
+        <p class="mt-2 text-sm text-slate-400">Backend-authoritative amount after active stakes are frozen.</p>
+      </article>
+      <article class="stat-card">
+        <div class="label">Frozen DSPOINC</div>
+        <div id="frozenDspoinc" class="mt-2 text-3xl font-black text-cyan-300">—</div>
+        <p class="mt-2 text-sm text-slate-400">Locked in active DSPOINC stakes.</p>
+      </article>
+      <article class="stat-card">
+        <div class="label">Bridge Rate</div>
+        <div class="mt-2 text-3xl font-black text-yellow-300">10,000:1</div>
+        <p class="mt-2 text-sm text-slate-400">10,000 DSPOINC equals 1 SPOINC.</p>
+      </article>
+    </section>
+
+    <section class="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <form id="swapForm" class="glass p-5 md:p-6">
+        <h2 class="text-2xl font-black text-yellow-200">Create Swap Intent</h2>
+        <p class="mt-2 text-sm text-slate-400">This creates a pending backend intent. It does not credit, deduct, or send tokens by itself.</p>
+
+        <div class="mt-6 grid gap-4 md:grid-cols-2">
+          <label class="block">
+            <span class="label">Direction</span>
+            <select id="direction" class="input mt-2">
+              <option value="dspoinc_to_spoinc">DSPOINC → SPOINC</option>
+              <option value="spoinc_to_dspoinc">SPOINC → DSPOINC</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="label">Solana Wallet</span>
+            <input id="wallet" class="input mt-2" type="text" autocomplete="off" placeholder="Paste Solana wallet" />
+          </label>
+
+          <label class="block">
+            <span class="label">DSPOINC Amount</span>
+            <input id="dspoincAmount" class="input mt-2" type="number" min="0" step="10000" placeholder="100000" />
+          </label>
+
+          <label class="block">
+            <span class="label">SPOINC Amount</span>
+            <input id="spoincAmount" class="input mt-2" type="number" min="0" step="0.0001" placeholder="10" />
+          </label>
+        </div>
+
+        <div id="formWarning" class="mt-5 hidden rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-200"></div>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button id="previewBtn" class="btn secondary" type="button">Preview Conversion</button>
+          <button id="submitBtn" class="btn primary" type="submit">Create Pending Swap Intent</button>
+        </div>
+      </form>
+
+      <aside class="glass p-5 md:p-6">
+        <h2 class="text-2xl font-black text-cyan-200">Preview</h2>
+        <div class="mt-5 space-y-4">
+          <div class="stat-card">
+            <div class="label">You send</div>
+            <div id="previewSend" class="mt-2 text-xl font-black">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">You receive</div>
+            <div id="previewReceive" class="mt-2 text-xl font-black">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Status</div>
+            <div id="previewStatus" class="mt-2 text-sm text-slate-300">Ready for input.</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="glass mt-6 p-5 md:p-6">
+      <h2 class="text-2xl font-black text-emerald-200">Bridge Safety Rules</h2>
+      <div class="mt-4 grid gap-3 md:grid-cols-3">
+        <div class="stat-card text-sm text-slate-300">✅ Frontend never stores partner API keys.</div>
+        <div class="stat-card text-sm text-slate-300">✅ Backend creates swap intent before any movement.</div>
+        <div class="stat-card text-sm text-slate-300">✅ Confirmed partner transaction required before DSPOINC changes.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const DSPOINC_PER_SPOINC = 10000;
+    const state = {
+      discordId: '',
+      discordUsername: '',
+      availableDspoinc: 0,
+      frozenDspoinc: 0,
+      totalDspoinc: 0
+    };
+
+    const elements = {
+      sessionStatus: document.getElementById('sessionStatus'),
+      sessionMeta: document.getElementById('sessionMeta'),
+      refreshSessionBtn: document.getElementById('refreshSessionBtn'),
+      availableDspoinc: document.getElementById('availableDspoinc'),
+      frozenDspoinc: document.getElementById('frozenDspoinc'),
+      direction: document.getElementById('direction'),
+      wallet: document.getElementById('wallet'),
+      dspoincAmount: document.getElementById('dspoincAmount'),
+      spoincAmount: document.getElementById('spoincAmount'),
+      formWarning: document.getElementById('formWarning'),
+      previewBtn: document.getElementById('previewBtn'),
+      submitBtn: document.getElementById('submitBtn'),
+      swapForm: document.getElementById('swapForm'),
+      previewSend: document.getElementById('previewSend'),
+      previewReceive: document.getElementById('previewReceive'),
+      previewStatus: document.getElementById('previewStatus')
+    };
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString();
+    }
+
+    function setWarning(message) {
+      elements.formWarning.textContent = message || '';
+      elements.formWarning.classList.toggle('hidden', !message);
+    }
+
+    function getDirectionLabel(direction) {
+      return direction === 'spoinc_to_dspoinc' ? 'SPOINC → DSPOINC' : 'DSPOINC → SPOINC';
+    }
+
+    function syncAmountsFromDspoinc() {
+      const dspoinc = Number(elements.dspoincAmount.value || 0);
+      elements.spoincAmount.value = dspoinc > 0 ? (dspoinc / DSPOINC_PER_SPOINC).toFixed(4).replace(/\.0000$/, '') : '';
+      updatePreview();
+    }
+
+    function syncAmountsFromSpoinc() {
+      const spoinc = Number(elements.spoincAmount.value || 0);
+      elements.dspoincAmount.value = spoinc > 0 ? Math.round(spoinc * DSPOINC_PER_SPOINC) : '';
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const direction = elements.direction.value;
+      const dspoinc = Number(elements.dspoincAmount.value || 0);
+      const spoinc = Number(elements.spoincAmount.value || 0);
+
+      if (!dspoinc || !spoinc) {
+        elements.previewSend.textContent = '—';
+        elements.previewReceive.textContent = '—';
+        elements.previewStatus.textContent = 'Enter an amount to preview the bridge conversion.';
+        return;
+      }
+
+      if (direction === 'dspoinc_to_spoinc') {
+        elements.previewSend.textContent = `${formatNumber(dspoinc)} DSPOINC`;
+        elements.previewReceive.textContent = `${formatNumber(spoinc)} SPOINC`;
+      } else {
+        elements.previewSend.textContent = `${formatNumber(spoinc)} SPOINC`;
+        elements.previewReceive.textContent = `${formatNumber(dspoinc)} DSPOINC`;
+      }
+
+      elements.previewStatus.textContent = `${getDirectionLabel(direction)} pending intent preview. Backend confirmation still required.`;
+    }
+
+    async function hydrateSession() {
+      setWarning('');
+      elements.sessionStatus.textContent = 'Checking Discord session...';
+
+      try {
+        const response = await fetch('/api/user/get-session.php', {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error(`Session HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        state.discordId = String(data.discord_id || '').trim();
+        state.discordUsername = String(data.discord_username || '').trim();
+
+        if (!state.discordId) {
+          elements.sessionStatus.textContent = 'Discord login required';
+          elements.sessionMeta.textContent = 'Open profile/login first, then return to Stake Lab.';
+          return;
+        }
+
+        localStorage.setItem('discord_id', state.discordId);
+        if (state.discordUsername) {
+          localStorage.setItem('discord_name', state.discordUsername);
+        }
+
+        elements.sessionStatus.textContent = state.discordUsername || state.discordId;
+        elements.sessionMeta.textContent = `Discord ID: ${state.discordId}`;
+        await loadBridgeProfile();
+      } catch (error) {
+        state.discordId = String(localStorage.getItem('discord_id') || '').trim();
+        state.discordUsername = String(localStorage.getItem('discord_name') || '').trim();
+
+        if (state.discordId) {
+          elements.sessionStatus.textContent = state.discordUsername || state.discordId;
+          elements.sessionMeta.textContent = `Using stored Discord ID: ${state.discordId}`;
+          await loadBridgeProfile();
+          return;
+        }
+
+        elements.sessionStatus.textContent = 'Session unavailable';
+        elements.sessionMeta.textContent = error.message || 'Could not load session.';
+      }
+    }
+
+    async function loadBridgeProfile() {
+      try {
+        const response = await fetch('/api/user/spoinc/get-swap-profile.php', {
+          method: 'POST',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: state.discordId })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Profile HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Swap profile unavailable');
+        }
+
+        state.availableDspoinc = Number(data.available_dspoinc || 0);
+        state.frozenDspoinc = Number(data.frozen_dspoinc || 0);
+        state.totalDspoinc = Number(data.total_dspoinc || 0);
+
+        elements.availableDspoinc.textContent = `${formatNumber(state.availableDspoinc)} DSPOINC`;
+        elements.frozenDspoinc.textContent = `${formatNumber(state.frozenDspoinc)} DSPOINC`;
+      } catch (error) {
+        // TODO: Replace this fallback after /api/user/spoinc/get-swap-profile.php exists.
+        elements.availableDspoinc.textContent = 'Endpoint needed';
+        elements.frozenDspoinc.textContent = 'Endpoint needed';
+        elements.previewStatus.textContent = 'Backend user swap profile endpoint must be created before live use.';
+      }
+    }
+
+    function validateSwapPayload() {
+      const wallet = elements.wallet.value.trim();
+      const direction = elements.direction.value;
+      const dspoincAmount = Math.round(Number(elements.dspoincAmount.value || 0));
+      const spoincAmount = Number(elements.spoincAmount.value || 0);
+
+      if (!state.discordId) {
+        return { ok: false, error: 'Discord login required.' };
+      }
+
+      if (!wallet) {
+        return { ok: false, error: 'Solana wallet is required.' };
+      }
+
+      if (!dspoincAmount || dspoincAmount <= 0 || !spoincAmount || spoincAmount <= 0) {
+        return { ok: false, error: 'Enter a valid DSPOINC or SPOINC amount.' };
+      }
+
+      if (dspoincAmount % DSPOINC_PER_SPOINC !== 0) {
+        return { ok: false, error: 'DSPOINC amount should be divisible by 10,000 for clean SPOINC conversion.' };
+      }
+
+      if (direction === 'dspoinc_to_spoinc' && state.availableDspoinc > 0 && dspoincAmount > state.availableDspoinc) {
+        return { ok: false, error: 'Amount exceeds available DSPOINC.' };
+      }
+
+      return {
+        ok: true,
+        payload: {
+          wallet,
+          direction,
+          dspoinc_amount: dspoincAmount,
+          spoinc_amount: spoincAmount,
+          conversion_rate_dspoinc_per_spoinc: DSPOINC_PER_SPOINC
+        }
+      };
+    }
+
+    async function createSwapIntent(event) {
+      event.preventDefault();
+      setWarning('');
+      updatePreview();
+
+      const validation = validateSwapPayload();
+      if (!validation.ok) {
+        setWarning(validation.error);
+        return;
+      }
+
+      elements.submitBtn.disabled = true;
+      elements.previewStatus.textContent = 'Creating pending swap intent...';
+
+      try {
+        const response = await fetch('/api/user/spoinc/create-swap-intent.php', {
+          method: 'POST',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(validation.payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Swap intent HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Swap intent rejected');
+        }
+
+        elements.previewStatus.textContent = `Pending swap intent created: ${data.swap_request_id || data.partner_request_id || 'recorded'}. Continue with Gensuki confirmation flow.`;
+        await loadBridgeProfile();
+      } catch (error) {
+        setWarning(`${error.message}. Backend swap intent endpoint must exist before live use.`);
+        elements.previewStatus.textContent = 'Swap intent not created.';
+      } finally {
+        elements.submitBtn.disabled = false;
+      }
+    }
+
+    elements.refreshSessionBtn.addEventListener('click', hydrateSession);
+    elements.previewBtn.addEventListener('click', updatePreview);
+    elements.swapForm.addEventListener('submit', createSwapIntent);
+    elements.dspoincAmount.addEventListener('input', syncAmountsFromDspoinc);
+    elements.spoincAmount.addEventListener('input', syncAmountsFromSpoinc);
+    elements.direction.addEventListener('change', updatePreview);
+
+    hydrateSession();
+  </script>
+</body>
+</html>
