@@ -67,29 +67,42 @@ function get_all_nft_ability_definitions(): array {
 /**
  * Return the upgrade duration in seconds for the NEXT level,
  * based on the current level before upgrade completes.
+ *
+ * DEVS FOR DECADES:
+ * Ability upgrades are NFT-bound Genesis research timers.
+ * Keep this separate from Genesis trait upgrade timers and Genetic item timers.
+ * Early levels stay friendly, but higher ability levels become long-term progression.
  */
 function get_nft_ability_upgrade_duration_seconds(int $currentLevel): int {
-    if ($currentLevel <= 5) {
+    if ($currentLevel <= 2) {
         return 3600; // 1h
     }
 
-    if ($currentLevel <= 15) {
+    if ($currentLevel <= 5) {
         return 7200; // 2h
     }
 
-    if ($currentLevel <= 30) {
+    if ($currentLevel <= 10) {
         return 14400; // 4h
     }
 
-    if ($currentLevel <= 50) {
+    if ($currentLevel <= 20) {
         return 28800; // 8h
     }
 
-    if ($currentLevel <= 75) {
+    if ($currentLevel <= 35) {
         return 43200; // 12h
     }
 
-    return 86400; // 24h
+    if ($currentLevel <= 50) {
+        return 86400; // 24h
+    }
+
+    if ($currentLevel <= 75) {
+        return 129600; // 36h
+    }
+
+    return 172800; // 48h
 }
 
 /**

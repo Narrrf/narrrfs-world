@@ -193,8 +193,27 @@ window.addEventListener('load', async function() {
 async function hydrateNarrrfsSession() {
     try {
         const response = await fetch('/api/user/get-session.php', {
-            credentials: 'include'
-        });
+    credentials: 'include',
+    cache: 'no-store'
+});
+
+/**
+ * Keep Discord PHP session warm while the user is active on Narrrfs pages.
+ * DEVS FOR DECADES:
+ * This does not log users in.
+ * It only refreshes an already-valid PHP session by calling get-session.php.
+ */
+function startNarrrfsSessionKeepAlive() {
+    const keepAliveMs = 10 * 60 * 1000; // 10 minutes
+
+    window.setInterval(() => {
+        if (document.hidden) {
+            return;
+        }
+
+        hydrateNarrrfsSession();
+    }, keepAliveMs);
+}
 
         const data = await response.json();
 
@@ -214,10 +233,12 @@ async function hydrateNarrrfsSession() {
             }
 
         } else {
-            window.sessionDiscordId = '';
-            window.sessionDiscordUsername = '';
-            console.log('⚠️ No active session detected');
-        }
+    // Do not wipe localStorage here.
+    // Backend session is authority, but transient session/API misses should not destroy page memory.
+    window.sessionDiscordId = '';
+    window.sessionDiscordUsername = '';
+    console.log('⚠️ No active session detected');
+}
 
     } catch (error) {
         console.error('❌ Global session hydration failed:', error);
@@ -229,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Delay slightly to avoid race with other scripts
     setTimeout(() => {
         hydrateNarrrfsSession();
+        startNarrrfsSessionKeepAlive();
     }, 50);
 });
 

@@ -1,13 +1,903 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: May 7, 2026
-Status: ✅ STABLE — SEASON 11 ACTIVE + SPOINC BRIDGE READ-ONLY PHASE STARTED (WAITING GENSUKI CONTRACT)
-Version: 2026-05-07
-Milestone: SPOINC Bridge API Agent 1.0 read-only partner balance layer is prepared (no live balance movement enabled yet).
+Last Updated: May 10, 2026
+Status: ✅ STABLE — SEASON 11 ACTIVE + LAB SYSTEM 9.5+ UX HARDENING INTEGRATED
+Version: 2026-05-10
+Milestone: Genesis Lab received UX/stability hardening with ability popup cost alignment and favorite automation safety pass.
 
 ---
 
 ## 🔄 UPDATE — APRIL 27, 2026
+
+---
+
+## 🔄 UPDATE — MAY 10, 2026 — FINAL PUSH HANDOVER
+
+# 🧀 NARRRFS WORLD 13.0 — LAB / PROFILE / AUTH STABILITY PUSH
+
+## ✅ OVERVIEW
+
+This push contains a major user-facing quality-of-life and stability update across:
+
+- Lab System 9.5+
+- Genetic Marketplace
+- Genesis mouse organization
+- Favorite Trait automation
+- DSPOINC Journey history
+- Discord login/session stability
+
+This was delivered incrementally while keeping backend authority intact.
+
+No DSPOINC ledger model rewrite was done.
+No marketplace buy/cancel/create economy logic was rewritten.
+No inventory schema rewrite was done.
+No Genesis NFT ownership model was changed.
+
+---
+
+## ✅ FILES TO PUSH TODAY
+
+Modified files:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+api/auth/callback.php
+api/user/genesis-ability-helpers.php
+api/user/get-favorite-traits.php
+api/user/get-session.php
+api/user/recent-adjustments.php
+api/user/start-bulk-favorite-trait-upgrades.php
+api/user/toggle-favorite-trait.php
+public/discord-config.js
+public/lab.html
+public/profile.html
+```
+
+Untracked new files:
+
+```text
+api/config/session.php
+api/user/get-genetic-marketplace-history.php
+api/user/get-nft-custom-names.php
+api/user/save-nft-custom-name.php
+```
+
+## 🧬 LAB SYSTEM — FINAL STATE
+
+### ✅ Genesis Ability Matrix UX / Timer / Cost Alignment
+
+The Genesis Ability Matrix was hardened for clearer player UX.
+
+Key changes:
+
+- Ability popup now uses the same normalized row data as the cards.
+- Ability popup cost now matches card cost.
+- Ability popup duration now matches card duration.
+- Ability duration logic reviewed in `genesis-ability-helpers.php`.
+- Ability progression remains NFT-bound and separate from Genesis trait upgrades and Discord-bound Genetic items.
+
+Tracked files:
+
+- `api/user/genesis-ability-helpers.php`
+- `api/user/start-nft-ability-upgrade.php`
+- `public/lab.html`
+
+Design rule:
+Genesis ability upgrades are NFT-bound and must not be merged into Discord-bound Genetic inventory.
+
+### ✅ Favorite Trait Automation Safety Pass
+
+Favorite Trait automation was hardened and improved.
+
+Tracked files:
+
+- `api/user/get-favorite-traits.php`
+- `api/user/toggle-favorite-trait.php`
+- `api/user/start-bulk-favorite-trait-upgrades.php`
+- `public/lab.html`
+
+Important behavior:
+
+- Favorite preferences are user-bound.
+- Genesis upgrades remain NFT-bound.
+- Bulk favorite upgrades are backend-authoritative.
+- Backend controls eligibility, cost, and execution.
+- Frontend only previews and triggers requests.
+
+Do not bypass backend cost/eligibility checks.
+
+## 🐭 LAB SYSTEM 9.6 — PERSONAL GENESIS MOUSE NAMES
+
+### ✅ New Feature
+
+Players can now give verified Genesis mice personal display names inside the Lab.
+
+New APIs:
+
+- `api/user/get-nft-custom-names.php`
+- `api/user/save-nft-custom-name.php`
+
+Frontend:
+
+- `public/lab.html`
+
+Behavior:
+
+- Custom name appears as primary label in Lab.
+- Original NFT metadata name remains visible.
+- Token ID remains visible.
+- Rename modal is themed to match Lab style.
+- Empty name clears custom label.
+- Names are user-bound and display-only.
+
+Critical rule:
+Custom names must never replace `token_id`, `collection`, ownership checks, trait identity, ability identity, marketplace identity, or payout identity.
+
+Always use:
+
+- `user_id + token_id + collection`
+
+for backend identity/authority.
+
+## 🧬 GENETIC MARKETPLACE TRADING HISTORY
+
+### ✅ New Feature
+
+Player requests #811 and #815 were addressed with a **My Trading History** panel in the existing Lab Marketplace tab.
+
+New API:
+
+- `api/user/get-genetic-marketplace-history.php`
+
+Frontend:
+
+- `public/lab.html`
+
+History shows:
+
+- Bought count
+- Sold count
+- Active listed count
+- Cancelled count
+- DSPOINC spent
+- DSPOINC earned
+- Full history rows
+
+Filters:
+
+- All
+- Bought
+- Sold
+- Listed
+- Cancelled
+
+Final UX:
+
+- Summary visible by default
+- Full rows collapsed by default
+- `📜 Show History` / `📕 Hide History` toggle
+- Blue/cyan default toggle styling + amber expanded styling
+
+Important behavior:
+History API is read-only. It does not mutate listings, inventory, DSPOINC, item levels, or ownership.
+
+Existing marketplace execution files preserved:
+
+- `api/admin/get-genetic-marketplace-listings.php`
+- `api/admin/create-genetic-marketplace-listing.php`
+- `api/admin/cancel-genetic-marketplace-listing.php`
+- `api/admin/buy-genetic-marketplace-listing.php`
+
+No marketplace economy rewrite was done.
+
+## 💰 PROFILE — DSPOINC JOURNEY FULL HISTORY PAGINATION
+
+### ✅ New Feature
+
+Players requested full DSPOINC Journey visibility beyond a short recent list.
+
+Backend updated:
+
+- `api/user/recent-adjustments.php`
+
+Frontend updated:
+
+- `public/profile.html`
+
+Backend now supports:
+
+- `limit`
+- `offset`
+- `pagination.total`
+- `pagination.current_page`
+- `pagination.total_pages`
+- `pagination.has_more`
+
+Profile Journey UI now supports:
+
+- 20 rows per page
+- Previous button
+- Next button
+- Page info
+- Total row count
+- POST request first
+- GET fallback support
+
+Example UI:
+
+```text
+Showing 1–20 of 184 • Page 1 / 10
+← Previous     Next →
+```
+
+Important:
+This is read-only history display. It does not calculate balances or mutate DSPOINC.
+Ledger authority remains `tbl_user_scores` / `tbl_score_adjustments`.
+
+Local tests passed:
+
+- `/api/user/recent-adjustments.php?user_id=328601656659017732&limit=20&offset=0`
+- `/api/user/recent-adjustments.php?user_id=328601656659017732&limit=20&offset=20`
+
+## 🔐 DISCORD LOGIN / SESSION STABILITY
+
+### ✅ Goal
+
+Players reported repeated daily logouts.
+
+A centralized PHP session bootstrap was added to stabilize Discord sessions.
+
+New file:
+
+- `api/config/session.php`
+
+Purpose:
+
+- configure PHP session before `session_start()`
+- set longer session lifetime
+- use consistent cookie settings
+- refresh activity with `narrrfs_touch_session()`
+
+Target lifetime:
+
+- 30 days
+
+Updated files:
+
+- `api/auth/callback.php`
+- `api/user/get-session.php`
+- `public/discord-config.js`
+- `public/profile.html`
+
+Expected behavior:
+
+- OAuth callback creates longer stable PHP session
+- `get-session.php` refreshes active session
+- `discord-config.js` keeps session warm while user is active
+- Profile/Lab no longer force unnecessary relogins from stale frontend-only storage
+
+Important caution:
+Every PHP file that relies on Discord session auth should eventually include `api/config/session.php` before `session_start()`.
+This push covers the core auth/session path first.
+
+## ⚠️ IMPORTANT PRE-PUSH CHECK
+
+Before production push, verify these files contain final shared-session bootstrap changes:
+
+- `api/user/get-session.php`
+- `public/profile.html`
+
+Expected in `get-session.php`:
+
+```php
+require_once __DIR__ . '/../config/session.php';
+narrrfs_touch_session();
+```
+
+If either file still uses plain `session_start()` only, update before push.
+
+Reason:
+Session stability improvements only work if active auth/session entry points use shared session config.
+
+## ✅ LOCAL TEST STATUS
+
+Confirmed locally during work:
+
+- ✅ Genetic Marketplace History API returns data
+- ✅ Lab Trading History renders data
+- ✅ Trading History filters work
+- ✅ Trading History collapsible UX works
+- ✅ Marketplace layout fixed after nested grid issue
+- ✅ Show History button styled
+- ✅ DSPOINC Journey backend pagination works
+- ✅ DSPOINC Journey frontend pagination works
+- ✅ Recent adjustments offset 0 and offset 20 tested
+- ✅ Lab no longer crashes after `isLocalHost` helper was added
+
+## 🧠 SYSTEM AUTHORITY RULES TO KEEP
+
+Do not change without new scoped task:
+
+- Backend remains authoritative
+- Frontend never decides DSPOINC cost
+- Frontend never decides reward delivery
+- Frontend never mutates inventory directly
+- Frontend never calculates final marketplace ownership
+- Frontend never replaces token_id identity with custom names
+
+Protected systems:
+
+- `tbl_user_scores`
+- `tbl_score_adjustments`
+- `tbl_user_inventory`
+- `tbl_user_genetic_items`
+- `tbl_nft_trait_upgrades`
+- `tbl_nft_ability_upgrades`
+- Genetic Marketplace buy/cancel/create logic
+- Discord sold-listing monitor
+- Airdrop execution logic
+- Lootbox reward logic
+
+## 🧾 COMMIT-STYLE SUMMARY
+
+```text
+Lab/Profile/Auth: add Genesis mouse custom names, Genetic Marketplace trading history, DSPOINC Journey pagination, Ability/Favorite UX hardening, and shared 30-day Discord session bootstrap.
+```
+
+## 🏁 FINAL PUSH STATUS
+
+- ✅ Ready for controlled production push after final session file verification
+- ✅ Community announcement can mention:
+  - Lab marketplace trading history
+  - Personal Genesis mouse names
+  - Better Lab upgrade clarity
+  - DSPOINC Journey full history pages
+  - More stable Discord login sessions
+
+---
+
+## 🔄 UPDATE — MAY 10, 2026
+
+# 🧬 LAB SYSTEM 9.5+ — GENESIS UX HARDENING + FAVORITE AUTOMATION SAFETY
+
+## ✅ OVERVIEW
+
+The Genesis Lab received a major stability and UX hardening pass focused on:
+
+- Verified Collection Slider readability
+- Trait Research Chamber cleanup
+- Genesis Ability Matrix clarity
+- Favorite Trait automation safety
+- Player-facing visual polish
+- Backend/frontend alignment for ability costs and timers
+
+This continues the existing Lab direction where `lab.html` is the official Genesis NFT holder progression screen, combining NFT gallery, progression management, trait research, ability progression, and future gameplay integration.
+
+## ✅ FILES TO UPDATE / TRACK
+
+Primary changed files:
+
+- `public/lab.html`
+- `api/user/genesis-ability-helpers.php`
+- `api/user/start-nft-ability-upgrade.php`
+- `api/user/toggle-favorite-trait.php`
+- `api/user/get-favorite-traits.php`
+- `api/user/start-bulk-favorite-trait-upgrades.php`
+
+Related existing trait progression files preserved:
+
+- `api/user/start-nft-trait-upgrade.php`
+- `api/user/complete-nft-trait-upgrade.php`
+- `api/user/instant-finish-nft-trait-upgrade.php`
+- `api/user/use-lab-booster.php`
+
+No broad rewrite was done. Changes were incremental and Lab-focused.
+
+---
+
+## ✅ GENESIS ABILITY MATRIX FIXES
+
+### Popup Cost Bug Fixed
+
+The Genesis Ability Matrix popup now reads ability data from the same normalized row source used by the cards.
+
+Fixed frontend behavior:
+
+- Popup cost now shows the correct DSPOINC cost.
+- Popup duration now matches the displayed card duration.
+- Popup no longer shows empty / missing cost when the card shows `250 DSPOINC`.
+
+Implementation direction:
+
+- `lab.html` now uses `genesisAbilityState.data.rows` for ability popup preview data.
+- Cost fallback supports `next_cost`, `next_cost_dspoinc`, `next_upgrade_cost_dspoinc`, and `cost`.
+
+Status:
+
+```text
+✅ Ability popup cost fixed
+✅ Popup/card values aligned
+✅ Browser hard refresh required after deploy if stale cache appears
+```
+
+---
+
+## 🔄 UPDATE — MAY 10, 2026 — CONTINUATION
+
+# 🐭 LAB SYSTEM 9.6 — GENESIS PERSONAL MOUSE NAMES
+
+## ✅ OVERVIEW
+
+A new player-requested Lab UX feature was added for Genesis mouse organization:
+
+> Players can now give verified Genesis mice personal display names inside the Lab.
+
+Feedback reference (#724):
+
+```text
+Idea for renaming the mice in the lab with personal names - might be easier for organising researches.
+```
+
+This is display-only. It does **not** modify NFT metadata, token IDs, traits, ability rows, marketplace identity, or ownership logic.
+
+## ✅ FILES ADDED
+
+New backend APIs:
+
+- `api/user/get-nft-custom-names.php`
+- `api/user/save-nft-custom-name.php`
+
+Read endpoint returns saved custom names as both list + fast token_id map.
+Save endpoint saves or clears one personal name for one verified Genesis NFT.
+
+Auth style follows Lab APIs:
+
+- session-first in production
+- localhost `user_id` support for testing
+- JSON-only responses
+- user-bound data
+- no NFT metadata mutation
+
+## ✅ DATABASE TABLE
+
+```sql
+CREATE TABLE IF NOT EXISTS tbl_nft_custom_names (
+  custom_name_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
+  token_id TEXT NOT NULL,
+  collection TEXT NOT NULL DEFAULT 'genesis',
+  custom_name TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, token_id, collection)
+);
+```
+
+Important rule:
+Custom names are user-bound display labels only. They must never replace token_id, metadata name, upgrade identity, marketplace identity, or ownership checks.
+
+## ✅ BACKEND BEHAVIOR
+
+### `get-nft-custom-names.php`
+
+Purpose: return all saved custom Genesis names for active user.
+
+Status:
+
+- ✅ Read endpoint working locally
+- ✅ Returns map for fast frontend lookup
+- ✅ No side effects
+
+### `save-nft-custom-name.php`
+
+Purpose: save or clear one personal name for one verified Genesis NFT.
+
+Rules:
+
+- `custom_name` max length: 32 chars
+- empty `custom_name` clears saved name
+- only `collection = genesis` currently supported
+- verifies ownership/progression authorization for token
+- does not touch upgrades, metadata, marketplace, or traits
+
+Status:
+
+- ✅ Save endpoint working locally
+- ✅ Clear-name behavior supported
+- ✅ Ownership guard active
+- ✅ Fake token IDs rejected
+
+## ✅ FRONTEND LAB INTEGRATION
+
+Changed file:
+
+- `public/lab.html`
+
+New frontend state:
+
+- `state.nftCustomNames = {};`
+
+New endpoints in Lab config:
+
+- `nftCustomNamesEndpoint: '/api/user/get-nft-custom-names.php'`
+- `saveNftCustomNameEndpoint: '/api/user/save-nft-custom-name.php'`
+
+Helpers added:
+
+- `getOriginalNftName(nft)`
+- `getNftCustomNameByTokenId(tokenId)`
+- `getSafeNftName(nft, fallback)`
+- `getNftOriginalNameMarkup(nft)`
+- `loadNftCustomNames()`
+- `saveNftCustomName(tokenId, customName)`
+- `promptRenameGenesisMouse(tokenId)`
+
+Behavior:
+
+- ✅ Slider card uses custom name as primary display name
+- ✅ Original metadata name remains visible underneath
+- ✅ Token ID remains visible
+- ✅ Selected Genesis panel uses custom name
+- ✅ Rename controls added to slider and selected panel
+- ✅ Save updates UI instantly
+- ✅ Empty name clears custom name
+
+Important: `getSafeNftName()` now prefers custom name visually, while original metadata remains available via `getOriginalNftName()`.
+
+## ✅ THEMED RENAME MODAL
+
+Browser-native `window.prompt()` was replaced with Narrrfs-themed Lab modal.
+
+Modal includes:
+
+- Lab-styled backdrop/glass panel
+- mouse preview image
+- original metadata name
+- token ID
+- input for personal name
+- Save Name / Clear Name / Cancel
+- Enter = save
+- Escape/backdrop click = close
+
+Status:
+
+- ✅ Prompt replaced
+- ✅ Modal matches Lab style
+- ✅ Save/Clear uses same backend API
+
+## ✅ VALIDATION DONE
+
+- ✅ Save custom name succeeded
+- ✅ Get custom names returned saved map
+- ✅ Slider updated instantly after rename
+- ✅ Original NFT name remains visible
+- ✅ Rename modal opens/saves correctly
+
+Example confirmed:
+
+- Token ID: `9Tet4UUCu3zYPckyfypF9zG1RGg2R1bttiKkH8aR9s1f`
+- Custom name: `Cheese Wizard`
+
+## ⚠️ CAUTIONS
+
+Never use custom names for backend identity.
+
+Never pass custom names into:
+
+- trait upgrade identity
+- ability upgrade identity
+- marketplace item identity
+- NFT ownership checks
+- payout checks
+- holder verification logic
+
+Always use:
+
+- `token_id + collection + user_id`
+
+Custom names remain player-facing organization labels only.
+
+## 🧠 AUTHORITY NOTE
+
+`api/user/get-player-lab.php` remains the read-only aggregate Lab authority endpoint and preserves separation between NFT-bound Genesis progression and Discord user-bound Genetic progression.
+
+Do not merge custom names into that authority model unless explicitly planned later.
+
+## 🏁 STATUS
+
+Status: ✅ STABLE LOCAL — GENESIS PERSONAL MOUSE NAMES READY FOR CONTROLLED PRODUCTION PUSH  
+Version: 2026-05-10  
+Milestone: Lab 9.6 personal Genesis mouse naming complete
+
+---
+
+## 🔄 UPDATE — MAY 10, 2026 — LAB SYSTEM 9.5+ MARKETPLACE HISTORY UX
+
+# 🧬 GENETIC MARKETPLACE TRADING HISTORY — FRONTEND + READ-ONLY BACKEND INTEGRATED
+
+## ✅ OVERVIEW
+
+The Lab received a major Genetic Marketplace UX upgrade requested by players:
+
+- `#811` — Trading history overview would be useful in Marketplace / Inventory
+- `#815` — Players want marketplace sell/buy data and trading history
+
+A new Trading History feature was added to the Lab marketplace area so players can review Genetic Marketplace activity without leaving `lab.html`.
+
+This feature is intentionally read-only and does not change marketplace execution logic, item ownership rules, DSPOINC ledger rules, inventory schema, or Discord notification behavior.
+
+## ✅ FINAL USER-FACING FEATURE
+
+Added a new **My Trading History** panel inside the existing `Marketplace` tab of `public/lab.html`.
+
+The panel shows:
+
+- Bought count
+- Sold count
+- Active listed count
+- Cancelled count
+- DSPOINC spent
+- DSPOINC earned
+- Total history row count
+- Filter buttons:
+  - All
+  - Bought
+  - Sold
+  - Listed
+  - Cancelled
+
+History card list behavior:
+
+- Summary stats remain visible
+- Full history rows are hidden by default
+- Player can click `📜 Show History`
+- Button changes to `📕 Hide History` when expanded
+- Toggle button uses marketplace-themed blue/cyan styling and amber while expanded
+
+## ✅ BACKEND API ADDED
+
+New read-only API:
+
+```text
+api/user/get-genetic-marketplace-history.php
+```
+
+Purpose:
+Return the active user's Genetic Marketplace trading history.
+
+Rules:
+
+- read-only only
+- does not mutate listings
+- does not mutate inventory
+- does not mutate DSPOINC
+- does not touch item upgrade state
+- production uses session-first auth
+- localhost supports `user_id` for testing
+- returns only rows where:
+  - `seller_user_id = user`
+  - OR `buyer_user_id = user`
+
+Supported actions:
+
+- `bought`
+- `sold`
+- `listed`
+- `cancelled`
+
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": {
+    "summary": {
+      "total_buys": 0,
+      "total_sells": 0,
+      "total_active_listings": 0,
+      "total_cancelled": 0,
+      "dspoinc_spent": 0,
+      "dspoinc_earned": 0
+    },
+    "history": [],
+    "limit": 100
+  }
+}
+```
+
+Local API tests confirmed:
+
+- `/api/user/get-genetic-marketplace-history.php?user_id=328601656659017732`
+- `/api/user/get-genetic-marketplace-history.php?user_id=328601656659017732&status=sold`
+- `/api/user/get-genetic-marketplace-history.php?user_id=328601656659017732&role=seller`
+- `/api/user/get-genetic-marketplace-history.php?user_id=328601656659017732&role=buyer`
+
+Status:
+
+- ✅ Backend history API tested locally
+- ✅ Data returned correctly
+- ✅ Read-only behavior preserved
+
+## ✅ FRONTEND FILE UPDATED
+
+Primary changed file:
+
+- `public/lab.html`
+
+Added to `LAB_CONFIG`:
+
+- `geneticMarketplaceHistoryEndpoint: '/api/user/get-genetic-marketplace-history.php'`
+
+Added state:
+
+- `geneticMarketplaceHistory: []`
+- `geneticMarketplaceHistorySummary: null`
+- `geneticMarketplaceHistoryLoading: false`
+- `geneticMarketplaceHistoryFilter: 'all'`
+- `geneticMarketplaceHistoryExpanded: false`
+
+Added DOM refs:
+
+- `geneticMarketplaceHistoryBadge`
+- `geneticMarketplaceHistoryToggle`
+- `geneticMarketplaceHistoryBody`
+- `geneticMarketplaceHistorySummary`
+- `geneticMarketplaceHistoryGrid`
+- `geneticMarketplaceHistoryEmptyState`
+
+Added functions:
+
+- `refreshGeneticMarketplaceHistory()`
+- `getFilteredGeneticMarketplaceHistory()`
+- `getGeneticMarketplaceHistoryActionMeta()`
+- `formatGeneticMarketplaceHistoryDate()`
+- `renderGeneticMarketplaceHistoryCard()`
+- `renderGeneticMarketplaceHistory()`
+
+Added helper:
+
+- `isLocalHost()`
+
+Reason:
+History loader needs safe local test-user handling; this fixed local boot issue:
+
+```text
+isLocalHost is not defined
+```
+
+Status:
+
+- ✅ Fixed
+
+## ✅ MARKETPLACE HISTORY LOAD FLOW
+
+`loadLab()` now loads marketplace history on startup together with marketplace data.
+
+History refresh also runs after:
+
+- Create listing
+- Cancel listing
+- Buy listing
+
+Important behavior:
+Marketplace execution remains backend-authoritative. Frontend only reloads read-only history after successful actions.
+
+## ✅ MARKETPLACE LAYOUT FIX
+
+Issue during integration:
+Marketplace tab became squeezed into one narrow column.
+
+Cause was accidental nested grid wrapper.
+
+Fix restored proper structure under:
+
+- `<section id="lab-panel-genetic-marketplace" class="lab-tab-panel" hidden>`
+- `<div id="genetic-marketplace-section" class="genetic-panel-grid">`
+
+Status:
+
+- ✅ Marketplace restored to proper 2-column layout
+- ✅ My Trading History now sits near top of Marketplace tab
+- ✅ Active listing cards render below history summary
+
+## ✅ UI/UX FINAL POLISH
+
+Trading History was initially too large because all cards rendered immediately.
+
+Final UX:
+
+- Summary visible by default
+- History rows collapsed by default
+- Player manually expands with Show History
+
+Added styles:
+
+- `.genetic-history-toggle`
+- `.genetic-history-toggle:hover`
+- `.genetic-history-toggle[aria-expanded="true"]`
+
+Status:
+
+- ✅ Useful without being visually overwhelming
+- ✅ Toggle button clearly visible
+- ✅ Expanded/collapsed state survives re-render
+
+## ✅ FILES TO TRACK FOR THIS UPDATE
+
+Primary:
+
+- `public/lab.html`
+- `api/user/get-genetic-marketplace-history.php`
+
+Related marketplace files preserved:
+
+- `api/admin/get-genetic-marketplace-listings.php`
+- `api/admin/create-genetic-marketplace-listing.php`
+- `api/admin/cancel-genetic-marketplace-listing.php`
+- `api/admin/buy-genetic-marketplace-listing.php`
+
+Important:
+
+- No buy/cancel/create economy logic rewritten
+- No DSPOINC transfer logic changed
+- No inventory transfer logic changed
+- No Discord sold-listing monitor changed
+
+## ✅ LOCAL TEST STATUS
+
+Confirmed locally:
+
+- ✅ Backend endpoint returns rows
+- ✅ Lab loads history summary
+- ✅ Bought / Sold / Listed / Cancelled filters work
+- ✅ Trading History is collapsible
+- ✅ Show History button styled
+- ✅ Marketplace layout restored
+- ✅ No Lab boot crash after adding `isLocalHost()`
+
+## 🧠 DEV NOTES FOR NEXT AGENT
+
+This solves player requests for marketplace buy/sell history.
+
+Do not rebuild as separate Lab tab unless explicitly requested.
+
+Intended placement:
+
+- `Lab → Marketplace → My Trading History`
+
+Optional future improvements (only if requested):
+
+1. Add small marketplace summary card to `profile.html`
+2. Add `/playerprofile` marketplace summary in Discord
+3. Add admin marketplace history lookup by user
+4. Add pagination if history grows beyond 100 rows
+5. Add date-range filter for high volume
+
+## 🚫 DO NOT TOUCH WITHOUT NEW REQUEST
+
+Do not modify:
+
+- `tbl_user_scores` ledger model
+- `tbl_score_adjustments` audit model
+- `tbl_user_genetic_items` schema
+- marketplace buy/cancel/create transfer logic
+- Discord marketplace sold-listing monitor
+- Genesis NFT-bound progression logic
+
+## ✅ FINAL STATE
+
+- ✅ Genetic Marketplace Trading History implemented
+- ✅ Backend read-only history API working
+- ✅ Lab frontend integrated
+- ✅ Local testing passed
+- ✅ User-facing marketplace UX improved
+- ✅ Existing economy and inventory systems preserved
+
+Short commit-style summary:
+
+```text
+Lab 9.5+: add Genetic Marketplace trading history with read-only backend API, collapsible Lab UI, summary stats, action filters, local test support, and marketplace layout fix.
+```
 
 ---
 

@@ -131,7 +131,11 @@ try {
 
     $pdo = get_db();
 
-    // 🔍 Fetch favorites
+    // 🔍 Fetch favorite
+    // BUG #726:
+    // The Lab automation supports one active favorite trait type at a time.
+    // Keep this endpoint read-only, but only return the winning favorite row if
+    // older duplicate favorite rows still exist in the database.
     $stmt = $pdo->prepare("
         SELECT
             trait_type,
@@ -143,6 +147,7 @@ try {
         WHERE user_id = ?
           AND is_favorite = 1
         ORDER BY priority_order DESC, created_at ASC
+        LIMIT 1
     ");
 
     $stmt->execute([$userId]);

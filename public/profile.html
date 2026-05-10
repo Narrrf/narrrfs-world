@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . '/../api/config/session.php';
+narrrfs_touch_session();
+
 $discordId = $_SESSION['discord_id'] ?? '';
 
 // Include Discord invite configuration
@@ -4533,13 +4535,37 @@ document.addEventListener('DOMContentLoaded', async function() {
     </div>
     <div class="bg-gradient-to-br from-gray-800/30 via-purple-800/20 to-gray-700/30 rounded-xl shadow-lg p-4 mt-6 max-w-lg w-full mx-auto border border-purple-400/30">
       <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
-      <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
-        <!-- Populated by JS -->
-      </ul>
-      <!-- 🆘 ADDED: No score history message element -->
-      <div id="no-score-history" class="text-gray-400 text-center py-4 hidden">
-        No recent score changes found.
-      </div>
+      <ul id="recentAdjustments" class="text-sm space-y-1 text-yellow-100"></ul>
+
+<div id="no-score-history" class="text-gray-400 text-center py-4 hidden">
+  No recent score changes found.
+</div>
+
+<!-- DSPOINC Journey pagination.
+     DEVS FOR DECADES:
+     This only paginates read-only score adjustment history.
+     It does not change DSPOINC balances, staking, rewards, or ledger writes. -->
+<div id="recentAdjustmentsPagination" class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-yellow-100 hidden">
+  <button
+    id="recentAdjustmentsPrev"
+    type="button"
+    class="px-3 py-2 rounded-lg bg-purple-900/60 border border-purple-400/30 hover:bg-purple-800/70 disabled:opacity-40 disabled:cursor-not-allowed transition"
+  >
+    ← Previous
+  </button>
+
+  <div id="recentAdjustmentsPageInfo" class="text-center text-yellow-200">
+    Showing DSPOINC changes
+  </div>
+
+  <button
+    id="recentAdjustmentsNext"
+    type="button"
+    class="px-3 py-2 rounded-lg bg-purple-900/60 border border-purple-400/30 hover:bg-purple-800/70 disabled:opacity-40 disabled:cursor-not-allowed transition"
+  >
+    Next →
+  </button>
+</div>
     </div>
   </div>
 
@@ -6692,136 +6718,250 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
 
-  // 🐛 BUG #335 FIX: Fetch recent adjustments - use userId instead of user.discord_id
-  // 🚨 CRITICAL FIX (Nov 22, 2025): Use POST method with JSON body for better production compatibility
-  // This ensures it works in production where GET parameters might not work due to CORS/session issues
-  if (userId) {
-    // 🌍 Environment-aware API endpoint (works both locally and in production)
-    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
-    
-    console.log('📊 Loading Recent Score Changes for user:', userId, '(Environment:', isProduction ? 'Production' : 'Local', ')');
-    
-    // Use POST with JSON body for better compatibility (also supports GET as fallback)
-    fetch(`${apiBaseUrl}/api/user/recent-adjustments.php`, { 
+  // DSPOINC Journey pagination state.
+// DEVS FOR DECADES:
+// This is read-only UI state for profile.html.
+// Backend remains authoritative through api/user/recent-adjustments.php.
+const recentAdjustmentsState = {
+  page: 1,
+  pageSize: 20,
+  total: 0,
+  totalPages: 1,
+  loading: false
+};
+
+function formatRecentAdjustmentAmount(amount) {
+  const value = Number(amount || 0);
+  return `${value > 0 ? '+' : ''}${value.toLocaleString()}`;
+}
+
+function formatRecentAdjustmentTimestamp(timestamp) {
+  if (!timestamp) {
+    return '';
+  }
+
+  return String(timestamp).replace('T', ' ').slice(0, 19);
+}
+
+function renderRecentAdjustments(response) {
+  const recentList = document.getElementById('recentAdjustments');
+  const emptyMsg = document.getElementById('no-score-history');
+  const paginationEl = document.getElementById('recentAdjustmentsPagination');
+  const pageInfo = document.getElementById('recentAdjustmentsPageInfo');
+  const prevButton = document.getElementById('recentAdjustmentsPrev');
+  const nextButton = document.getElementById('recentAdjustmentsNext');
+
+  const adjustments = Array.isArray(response?.adjustments) ? response.adjustments : [];
+  const pagination = response?.pagination || {};
+
+  recentAdjustmentsState.total = Number(pagination.total || adjustments.length || 0);
+  recentAdjustmentsState.totalPages = Math.max(1, Number(pagination.total_pages || 1));
+  recentAdjustmentsState.page = Math.max(1, Number(pagination.current_page || recentAdjustmentsState.page || 1));
+
+  if (!recentList || !emptyMsg) {
+    return;
+  }
+
+  if (!adjustments.length) {
+    recentList.innerHTML = '';
+    emptyMsg.style.display = '';
+
+    if (paginationEl) {
+      paginationEl.classList.add('hidden');
+    }
+
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+
+  recentList.innerHTML = adjustments
+    .slice()
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .map((adjustment) => {
+      const amount = Number(adjustment.amount || 0);
+      const reason = adjustment.reason || adjustment.action || 'Score adjustment';
+      const timestamp = formatRecentAdjustmentTimestamp(adjustment.timestamp);
+
+      return `<li>
+        <span class="font-mono">${timestamp}</span>
+        : <b class="${amount > 0 ? 'text-green-400' : 'text-red-400'}">${formatRecentAdjustmentAmount(amount)}</b>
+        <span class="italic">(${reason})</span>
+      </li>`;
+    })
+    .join('');
+
+  if (paginationEl) {
+    paginationEl.classList.toggle('hidden', recentAdjustmentsState.total <= recentAdjustmentsState.pageSize);
+  }
+
+  if (pageInfo) {
+    const startRow = ((recentAdjustmentsState.page - 1) * recentAdjustmentsState.pageSize) + 1;
+    const endRow = Math.min(recentAdjustmentsState.page * recentAdjustmentsState.pageSize, recentAdjustmentsState.total);
+
+    pageInfo.textContent =
+      `Showing ${startRow.toLocaleString()}–${endRow.toLocaleString()} of ${recentAdjustmentsState.total.toLocaleString()} • Page ${recentAdjustmentsState.page} / ${recentAdjustmentsState.totalPages}`;
+  }
+
+  if (prevButton) {
+    prevButton.disabled = recentAdjustmentsState.loading || recentAdjustmentsState.page <= 1;
+  }
+
+  if (nextButton) {
+    prevButton.disabled = recentAdjustmentsState.loading || recentAdjustmentsState.page <= 1;
+    nextButton.disabled = recentAdjustmentsState.loading || recentAdjustmentsState.page >= recentAdjustmentsState.totalPages;
+  }
+}
+
+async function loadRecentAdjustmentsPage(userId, page = 1) {
+  if (!userId) {
+    console.log('⚠️ No userId found, skipping Recent Score Changes load');
+    return;
+  }
+
+  const isProduction =
+    window.location.hostname === 'narrrfs-world.onrender.com' ||
+    window.location.hostname === 'narrrfs.world';
+
+  const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+  const safePage = Math.max(1, Number(page || 1));
+  const limit = recentAdjustmentsState.pageSize;
+  const offset = (safePage - 1) * limit;
+
+  recentAdjustmentsState.loading = true;
+
+  const prevButton = document.getElementById('recentAdjustmentsPrev');
+  const nextButton = document.getElementById('recentAdjustmentsNext');
+
+  if (prevButton) prevButton.disabled = true;
+  if (nextButton) nextButton.disabled = true;
+
+  console.log('📊 Loading Recent Score Changes page:', safePage, 'for user:', userId);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/user/recent-adjustments.php`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ user_id: userId })
-    })
-      .then(res => {
-        console.log('📊 Recent adjustments API response status:', res.status, res.statusText);
-        if (!res.ok) {
-          // Try to get error details from response
-          return res.json().then(errData => {
-            console.error('❌ Recent adjustments API error:', errData);
-            throw new Error(`HTTP ${res.status}: ${errData.error || res.statusText}`);
-          }).catch(() => {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-          });
-        }
-        return res.json();
+      body: JSON.stringify({
+        user_id: userId,
+        limit,
+        offset
       })
-      .then(response => {
-        console.log('📊 Recent adjustments API response:', response);
-        const recentList = document.getElementById('recentAdjustments');
-        const emptyMsg = document.getElementById('no-score-history');
-        const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+    });
 
-        // Log all adjustments for debugging (especially staking entries)
-        console.log('📊 All adjustments received:', adjustments);
-        const stakingEntries = adjustments.filter(a => a.action === 'stake_freeze' || (a.reason && a.reason.includes('DSPOINC frozen for staking')));
-        console.log('📊 Staking entries found:', stakingEntries);
+    console.log('📊 Recent adjustments API response status:', response.status, response.statusText);
 
-        // If there are adjustments, hide the message and show the list
-        if (adjustments.length > 0) {
-          console.log('📊 Displaying', adjustments.length, 'recent score changes');
-          if (recentList) {
-            recentList.innerHTML = adjustments
-              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-              .slice(0, 10)
-              .map(a => {
-                // Format reason for staking entries
-                const reason = a.reason || a.action || 'Score adjustment';
-                return `<li>
-                  <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                  : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount.toLocaleString()}</b>
-                  <span class="italic">(${reason})</span>
-                </li>`;
-              }).join('');
-          }
-          if (emptyMsg) emptyMsg.style.display = "none";
-        } else {
-          console.log('📊 No recent score changes found');
-          // No score changes: show the empty msg and clear the list
-          if (recentList) recentList.innerHTML = '';
-          if (emptyMsg) emptyMsg.style.display = "";
-        }
-      })
-      .catch((error) => {
-        console.error('❌ Error loading recent adjustments (POST):', error);
-        
-        // 🚨 FALLBACK: Try GET method if POST fails (for backward compatibility)
-        console.log('🔄 Trying GET method as fallback...');
-        fetch(`${apiBaseUrl}/api/user/recent-adjustments.php?user_id=${encodeURIComponent(userId)}`, { 
-          method: 'GET',
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
-        })
-          .then(res => {
-            console.log('📊 Recent adjustments API (GET fallback) response status:', res.status);
-            if (!res.ok) {
-              return res.json().then(errData => {
-                console.error('❌ Recent adjustments API (GET) error:', errData);
-                throw new Error(`HTTP ${res.status}: ${errData.error || res.statusText}`);
-              }).catch(() => {
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-              });
-            }
-            return res.json();
-          })
-          .then(response => {
-            console.log('📊 Recent adjustments API (GET fallback) response:', response);
-            const recentList = document.getElementById('recentAdjustments');
-            const emptyMsg = document.getElementById('no-score-history');
-            const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`);
+    }
 
-            if (adjustments.length > 0) {
-              console.log('📊 Displaying', adjustments.length, 'recent score changes (GET fallback)');
-              if (recentList) {
-                recentList.innerHTML = adjustments
-                  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                  .slice(0, 10)
-                  .map(a =>
-                    `<li>
-                      <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                      : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                      <span class="italic">(${a.reason || a.action || 'Score adjustment'})</span>
-                    </li>`
-                  ).join('');
-              }
-              if (emptyMsg) emptyMsg.style.display = "none";
-            } else {
-              console.log('📊 No recent score changes found (GET fallback)');
-              if (recentList) recentList.innerHTML = '';
-              if (emptyMsg) emptyMsg.style.display = "";
-            }
-          })
-          .catch((fallbackError) => {
-            console.error('❌ Error loading recent adjustments (GET fallback also failed):', fallbackError);
-            // On error, show a fallback error in the list and show the empty msg
-            const recentList = document.getElementById('recentAdjustments');
-            if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
-            const emptyMsg = document.getElementById('no-score-history');
-            if (emptyMsg) emptyMsg.style.display = "";
-          });
+    const data = await response.json();
+    console.log('📊 Recent adjustments API response:', data);
+
+    renderRecentAdjustments(data);
+  } catch (error) {
+    console.error('❌ Error loading recent adjustments (POST):', error);
+    console.log('🔄 Trying GET method as fallback...');
+
+    try {
+      const fallbackUrl =
+        `${apiBaseUrl}/api/user/recent-adjustments.php?user_id=${encodeURIComponent(userId)}&limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`;
+
+      const fallbackResponse = await fetch(fallbackUrl, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
       });
-  } else {
-    console.log('⚠️ No userId found, skipping Recent Score Changes load');
+
+      console.log('📊 Recent adjustments API (GET fallback) response status:', fallbackResponse.status);
+
+      if (!fallbackResponse.ok) {
+        const errorData = await fallbackResponse.json().catch(() => ({}));
+        throw new Error(`HTTP ${fallbackResponse.status}: ${errorData.error || fallbackResponse.statusText}`);
+      }
+
+      const fallbackData = await fallbackResponse.json();
+      console.log('📊 Recent adjustments API (GET fallback) response:', fallbackData);
+
+      renderRecentAdjustments(fallbackData);
+    } catch (fallbackError) {
+      console.error('❌ Error loading recent adjustments (GET fallback also failed):', fallbackError);
+
+      const recentList = document.getElementById('recentAdjustments');
+      const emptyMsg = document.getElementById('no-score-history');
+      const paginationEl = document.getElementById('recentAdjustmentsPagination');
+
+      if (recentList) {
+        recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
+      }
+
+      if (emptyMsg) {
+        emptyMsg.style.display = '';
+      }
+
+      if (paginationEl) {
+        paginationEl.classList.add('hidden');
+      }
+    }
+  } finally {
+    recentAdjustmentsState.loading = false;
+
+    const prevButtonFinal = document.getElementById('recentAdjustmentsPrev');
+    const nextButtonFinal = document.getElementById('recentAdjustmentsNext');
+
+    if (prevButtonFinal) {
+      prevButtonFinal.disabled = recentAdjustmentsState.page <= 1;
+    }
+
+    if (nextButtonFinal) {
+      nextButtonFinal.disabled = recentAdjustmentsState.page >= recentAdjustmentsState.totalPages;
+    }
   }
+}
+
+function bindRecentAdjustmentsPagination(userId) {
+  const prevButton = document.getElementById('recentAdjustmentsPrev');
+  const nextButton = document.getElementById('recentAdjustmentsNext');
+
+  if (prevButton && !prevButton.dataset.bound) {
+    prevButton.dataset.bound = '1';
+    prevButton.addEventListener('click', () => {
+      if (recentAdjustmentsState.page <= 1 || recentAdjustmentsState.loading) {
+        return;
+      }
+
+      loadRecentAdjustmentsPage(userId, recentAdjustmentsState.page - 1);
+    });
+  }
+
+  if (nextButton && !nextButton.dataset.bound) {
+    nextButton.dataset.bound = '1';
+    nextButton.addEventListener('click', () => {
+      if (recentAdjustmentsState.page >= recentAdjustmentsState.totalPages || recentAdjustmentsState.loading) {
+        return;
+      }
+
+      loadRecentAdjustmentsPage(userId, recentAdjustmentsState.page + 1);
+    });
+  }
+}
+
+
+// 🐛 BUG #335 FIX: Fetch recent adjustments - use userId instead of user.discord_id
+// DSPOINC Journey pagination:
+// Backend now supports limit + offset and returns pagination metadata.
+// Keep this read-only. Do not calculate balances from this frontend list.
+if (userId) {
+  bindRecentAdjustmentsPagination(userId);
+  await loadRecentAdjustmentsPage(userId, 1);
+} else {
+  console.log('⚠️ No userId found, skipping Recent Score Changes load');
+}
 
 
   // 2. Load and display quests for this user

@@ -204,6 +204,25 @@ try {
         $newIsFavorite = $currentState === 1 ? 0 : 1;
     }
 
+        // BUG #726:
+    // Only one favorite trait type may be active per user.
+    // DEVS FOR DECADES:
+    // The current favorite model is user-bound trait_type, not token_id + trait_value.
+    // Before enabling a new favorite, disable all other favorite rows for this user so
+    // bulk automation cannot choose between multiple favorite trait types for one mouse.
+    if ($newIsFavorite === 1) {
+        $clearOtherFavoritesStmt = $pdo->prepare("
+            UPDATE tbl_user_favorite_traits
+            SET
+                is_favorite = 0,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?
+              AND trait_type <> ?
+              AND is_favorite = 1
+        ");
+        $clearOtherFavoritesStmt->execute([$userId, $traitType]);
+    }
+
     if ($existingRow) {
         $updateStmt = $pdo->prepare("
             UPDATE tbl_user_favorite_traits
@@ -237,7 +256,7 @@ try {
         ]);
     }
 
-    $favoritesStmt = $pdo->prepare("
+       $favoritesStmt = $pdo->prepare("
         SELECT
             trait_type,
             priority_order
@@ -245,6 +264,7 @@ try {
         WHERE user_id = ?
           AND is_favorite = 1
         ORDER BY priority_order DESC, created_at ASC
+        LIMIT 1
     ");
     $favoritesStmt->execute([$userId]);
     $favoriteRows = $favoritesStmt->fetchAll();

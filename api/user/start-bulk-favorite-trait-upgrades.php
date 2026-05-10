@@ -574,7 +574,21 @@ try {
 
     $pdo = get_lab_database_connection();
 
-    $favoriteTraitTypes = fetch_favorite_trait_types($pdo, $userId);
+       $favoriteTraitTypes = fetch_favorite_trait_types($pdo, $userId);
+
+    // BUG #726:
+    // Bulk automation must never process multiple favorite trait types for one user.
+    // DEVS FOR DECADES:
+    // tokenAlreadyQueued already prevents more than one upgrade per mouse, but if the
+    // favorite map contains multiple trait types, row order can decide the selected
+    // target. Force one favorite type here so the backend stays safe even with old DB rows.
+    if (count($favoriteTraitTypes) > 1) {
+        $firstFavoriteTraitType = array_key_first($favoriteTraitTypes);
+        $favoriteTraitTypes = $firstFavoriteTraitType
+            ? [$firstFavoriteTraitType => true]
+            : [];
+    }
+
     if (empty($favoriteTraitTypes)) {
         json_response([
             'success' => false,

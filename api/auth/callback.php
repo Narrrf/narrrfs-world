@@ -1,8 +1,6 @@
 <?php
-// 🚀 EXTENDED SESSION LIFETIME FOR MOBILE COMPATIBILITY
-ini_set('session.gc_maxlifetime', 86400); // 24 hours
-ini_set('session.cookie_lifetime', 86400); // 24 hours
-session_start();
+require_once __DIR__ . '/../config/session.php';
+narrrfs_touch_session();
 
 $clientId = '1357927342265204858'; // Use exact client ID from working URL
 $clientSecret = getenv('DISCORD_SECRET');

@@ -365,6 +365,55 @@ hydrateSession();
   font-size: 0.82rem;
 }
 
+/* Genetic Marketplace history toggle.
+   DEVS FOR DECADES:
+   This is visual-only. It does not change marketplace history loading,
+   filters, buying, selling, cancelling, DSPOINC, or inventory behavior. */
+.genetic-history-toggle {
+  border: 1px solid rgba(34, 211, 238, 0.42);
+  background:
+    linear-gradient(135deg, rgba(8, 145, 178, 0.95), rgba(37, 99, 235, 0.95));
+  color: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 10px 24px rgba(14, 165, 233, 0.18);
+}
+
+.genetic-history-toggle:hover {
+  border-color: rgba(103, 232, 249, 0.72);
+  background:
+    linear-gradient(135deg, rgba(6, 182, 212, 1), rgba(59, 130, 246, 1));
+  box-shadow:
+    0 0 0 1px rgba(103, 232, 249, 0.16),
+    0 14px 32px rgba(14, 165, 233, 0.28);
+  transform: translateY(-1px);
+}
+
+.genetic-history-toggle[aria-expanded="true"] {
+  border-color: rgba(250, 204, 21, 0.58);
+  background:
+    linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95));
+  box-shadow:
+    0 0 0 1px rgba(250, 204, 21, 0.10),
+    0 12px 28px rgba(245, 158, 11, 0.20);
+}
+
+/* Genesis mouse personal names.
+   DEVS FOR DECADES:
+   Custom names are display-only player labels. They must never replace token_id,
+   metadata name, upgrade identity, marketplace identity, or ownership checks. */
+.viewer-card .btn.ghost,
+.selected-nft-layout .btn.ghost {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.viewer-card .btn.ghost:hover,
+.selected-nft-layout .btn.ghost:hover {
+  border-color: rgba(34, 211, 238, 0.38);
+  background: rgba(8, 47, 73, 0.45);
+}
+
 .chamber-pulse {
   animation: chamberPulseHighlight 1.2s ease-out;
 }
@@ -381,6 +430,231 @@ hydrateSession();
   100% {
     box-shadow: 0 0 0 rgba(34,211,238,0);
     transform: translateY(0);
+  }
+}
+
+/* Genesis mouse rename modal.
+   DEVS FOR DECADES:
+   This replaces the browser-native prompt with a themed Lab modal.
+   It remains display-only and calls the same saveNftCustomName() API path. */
+.lab-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(34, 211, 238, 0.18), transparent 32%),
+    rgba(2, 6, 23, 0.76);
+  backdrop-filter: blur(12px);
+}
+
+.lab-modal-backdrop[hidden] {
+  display: none !important;
+}
+
+.lab-modal-shell {
+  position: relative;
+  width: min(560px, 100%);
+  overflow: hidden;
+  border-radius: 26px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.96)),
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.18), transparent 38%);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 40px rgba(34, 211, 238, 0.10);
+}
+
+.lab-modal-glow {
+  position: absolute;
+  inset: -35%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(250, 204, 21, 0.14), transparent 24%),
+    radial-gradient(circle at 70% 20%, rgba(34, 211, 238, 0.16), transparent 28%);
+  opacity: 0.9;
+}
+
+.lab-modal-header,
+.rename-mouse-body,
+.lab-modal-actions {
+  position: relative;
+  z-index: 2;
+}
+
+.lab-modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 22px 22px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lab-modal-kicker {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #67e8f9;
+}
+
+.lab-modal-title {
+  margin: 6px 0 0;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  font-weight: 950;
+  color: #f8fafc;
+}
+
+.lab-modal-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lab-modal-close:hover {
+  border-color: rgba(34, 211, 238, 0.42);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.rename-mouse-body {
+  padding: 18px 22px 10px;
+}
+
+.rename-mouse-preview {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.rename-mouse-art {
+  width: 68px;
+  height: 68px;
+  min-width: 68px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(250, 204, 21, 0.18), transparent 45%),
+    rgba(2, 6, 23, 0.7);
+  font-size: 2rem;
+}
+
+.rename-mouse-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rename-mouse-info {
+  min-width: 0;
+}
+
+.rename-mouse-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.rename-mouse-original {
+  margin-top: 4px;
+  font-weight: 900;
+  color: #f8fafc;
+  word-break: break-word;
+}
+
+.rename-mouse-token {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #64748b;
+  word-break: break-all;
+}
+
+.rename-mouse-input-label {
+  display: block;
+  margin-top: 16px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #67e8f9;
+}
+
+.rename-mouse-input {
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background: rgba(2, 6, 23, 0.76);
+  color: #f8fafc;
+  padding: 13px 14px;
+  font-weight: 800;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.rename-mouse-input:focus {
+  border-color: rgba(34, 211, 238, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 3px rgba(34, 211, 238, 0.10);
+}
+
+.rename-mouse-hint {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+.lab-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 22px 22px;
+  flex-wrap: wrap;
+}
+
+.lab-modal-action-spacer {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .rename-mouse-preview {
+    align-items: flex-start;
+  }
+
+  .lab-modal-actions {
+    align-items: stretch;
+  }
+
+  .lab-modal-actions .btn {
+    width: 100%;
+  }
+
+  .lab-modal-action-spacer {
+    display: none;
   }
 }
 
@@ -548,6 +822,35 @@ hydrateSession();
       opacity: .42;
       cursor: not-allowed;
     }
+
+    /* Genesis Ability v1 disabled action state.
+   DEVS FOR DECADES:
+   Ability instant finish is intentionally unavailable in v1.
+   This style makes that clear without wiring unfinished backend behavior. */
+.ability-instant-btn.disabled-v1,
+.ability-instant-btn:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  border: 1px dashed rgba(148, 163, 184, 0.28);
+  background: linear-gradient(135deg, rgba(51, 65, 85, 0.74), rgba(15, 23, 42, 0.82));
+  color: #94a3b8;
+  box-shadow: none;
+  pointer-events: auto;
+}
+
+.ability-instant-btn.disabled-v1:hover {
+  transform: none;
+  border-color: rgba(148, 163, 184, 0.28);
+  box-shadow: none;
+}
+
+.ability-disabled-note {
+  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #94a3b8;
+}
 
     .btn.primary { background: linear-gradient(135deg, rgba(14,165,233,0.86), rgba(37,99,235,0.86)); }
     .btn.success { background: linear-gradient(135deg, rgba(16,185,129,0.82), rgba(5,150,105,0.82)); }
@@ -869,6 +1172,118 @@ hydrateSession();
       background: linear-gradient(135deg, #ef4444, #dc2626);
       box-shadow: 0 10px 24px rgba(239, 68, 68, 0.24);
     }
+
+/* Trait Research Chamber compact identity mode.
+   DEVS FOR DECADES:
+   The selected Genesis mouse image already exists in the selected mouse panel and slider.
+   Do not repeat the same NFT image inside every trait row. Trait cards should focus on
+   exact trait identity, level, status, and available action. */
+.trait-card-toggle-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.trait-card-identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.trait-card-icon {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 1.45rem;
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(250, 204, 21, 0.22), transparent 42%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.76));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 10px 24px rgba(2, 132, 199, 0.10);
+}
+
+.trait-card-text {
+  min-width: 0;
+}
+
+.trait-card-type {
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.trait-card-value {
+  margin-top: 5px;
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 900;
+  color: #f8fafc;
+  word-break: break-word;
+}
+
+.trait-card-status-stack {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.trait-card-toggle-main .nft-image,
+.trait-card-toggle-main .empty-art {
+  display: none !important;
+}
+
+.trait-card.expanded .trait-card-icon {
+  border-color: rgba(34, 211, 238, 0.34);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.08),
+    0 14px 32px rgba(2, 132, 199, 0.14);
+}
+
+.trait-card.ready .trait-card-icon {
+  border-color: rgba(16, 185, 129, 0.28);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(16, 185, 129, 0.22), transparent 42%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(5, 46, 22, 0.55));
+}
+
+.trait-card.upgrading .trait-card-icon {
+  border-color: rgba(34, 211, 238, 0.30);
+}
+
+.trait-card.blocked .trait-card-icon {
+  border-color: rgba(239, 68, 68, 0.28);
+  filter: grayscale(0.2);
+}
+
+@media (max-width: 768px) {
+  .trait-card-toggle-main {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .trait-card-status-stack {
+    justify-content: flex-start;
+  }
+
+  .trait-card-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 16px;
+  }
+}
 
     .trait-snapshot-card {
   position: relative;
@@ -1202,12 +1617,130 @@ hydrateSession();
    ========================================================= */
 
 .viewer-rail {
-  grid-auto-columns: minmax(208px, 248px);
-  gap: 0.85rem;
+  grid-auto-columns: minmax(224px, 264px);
+  gap: 1rem;
+  padding: 0.35rem 0.2rem 0.8rem;
 }
 
 .viewer-card {
-  max-width: 248px;
+  max-width: 264px;
+  padding: 1rem !important;
+  overflow: hidden;
+}
+
+/* Verified Collection Slider status frames.
+   DEVS FOR DECADES:
+   These classes are visual only. The real upgrade state still comes from
+   getNftUpgradeSummary() and backend-authoritative Lab APIs.
+   Green = active upgrade, grey = idle, yellow = ready to claim. */
+.viewer-card.status-idle {
+  border-color: rgba(148, 163, 184, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(148, 163, 184, 0.08),
+    0 10px 24px rgba(15, 23, 42, 0.22);
+}
+
+.viewer-card.status-active {
+  border-color: rgba(16, 185, 129, 0.62);
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 185, 129, 0.18),
+    0 0 0 1px rgba(16, 185, 129, 0.12),
+    0 14px 34px rgba(16, 185, 129, 0.14);
+}
+
+.viewer-card.status-ready {
+  border-color: rgba(250, 204, 21, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(250, 204, 21, 0.20),
+    0 0 0 1px rgba(250, 204, 21, 0.16),
+    0 14px 34px rgba(250, 204, 21, 0.16);
+}
+
+.viewer-card.status-ready::before,
+.viewer-card.status-active::before,
+.viewer-card.status-idle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.72;
+}
+
+.viewer-card.status-ready::before {
+  background: linear-gradient(180deg, rgba(250, 204, 21, 0.09), transparent 42%);
+}
+
+.viewer-card.status-active::before {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08), transparent 42%);
+}
+
+.viewer-card.status-idle::before {
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.045), transparent 42%);
+}
+
+.viewer-card-status-chip {
+  margin-top: 0.65rem;
+  width: 100%;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.viewer-card-status-chip.status-ready {
+  background: rgba(250, 204, 21, 0.15);
+  color: #fde68a;
+  border: 1px solid rgba(250, 204, 21, 0.34);
+}
+
+.viewer-card-status-chip.status-active {
+  background: rgba(16, 185, 129, 0.14);
+  color: #a7f3d0;
+  border: 1px solid rgba(16, 185, 129, 0.32);
+}
+
+.viewer-card-status-chip.status-idle {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.viewer-card-heading-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.55rem;
+}
+
+.viewer-card-title-wrap {
+  min-width: 0;
+}
+
+.viewer-card-status-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-width: 0;
+}
+
+.viewer-card-status-row .pill {
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.viewer-card .nft-image,
+.viewer-card .empty-art {
+  border-radius: 16px;
+}
+
+.viewer-card .viewer-meta-strip {
+  gap: 0.45rem;
+}
+
+.viewer-card .queue-mini-pill {
+  max-width: 100%;
+  white-space: nowrap;
 }
 
 .viewer-card .nft-image,
@@ -1534,12 +2067,14 @@ hydrateSession();
 
 @media (max-width: 768px) {
   .viewer-rail {
-    grid-auto-columns: minmax(184px, 214px);
-    gap: 0.72rem;
+    grid-auto-columns: minmax(196px, 226px);
+    gap: 0.78rem;
+    padding: 0.35rem 0.15rem 0.8rem;
   }
 
   .viewer-card {
-    max-width: 214px;
+    max-width: 226px;
+    padding: 0.9rem !important;
   }
 
   .selected-stage-card {
@@ -4303,8 +4838,7 @@ body::after {
     </section>
 
     <section id="lab-panel-genetic-marketplace" class="lab-tab-panel" hidden>
-      <div id="genetic-marketplace-section" class="genetic-panel-grid">
-  <div class="genetic-panel-grid">
+  <div id="genetic-marketplace-section" class="genetic-panel-grid">
     <div class="glass p-5 md:p-6">
       <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
@@ -4346,6 +4880,47 @@ body::after {
         </div>
       </div>
 
+      <div class="glass p-5 md:p-6 mt-6">
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <div class="section-title text-xl md:text-2xl"><span>📜</span><span>My Trading History</span></div>
+      <p class="mt-2 text-sm md:text-base text-slate-300">
+        Review your Genetic Marketplace buys, sells, active listings, and cancelled listings.
+        This is read-only history from the backend marketplace ledger.
+      </p>
+      <div class="mt-3"><span class="inline-lane-badge">🧾 Buyer + seller history</span></div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 text-sm text-slate-300">
+      <span id="geneticMarketplaceHistoryBadge" class="chip">History loading…</span>
+      <button
+  type="button"
+  id="geneticMarketplaceHistoryToggle"
+  class="btn compact genetic-history-toggle"
+  aria-expanded="false"
+  aria-controls="geneticMarketplaceHistoryBody"
+>
+  📜 Show History
+</button>
+    </div>
+  </div>
+
+  <div id="geneticMarketplaceHistorySummary" class="genetic-summary-grid mt-5"></div>
+
+  <div id="geneticMarketplaceHistoryBody" class="hidden">
+    <div class="genetic-filter-bar">
+      <button type="button" class="btn compact genetic-marketplace-history-filter active" data-marketplace-history-filter="all">All</button>
+      <button type="button" class="btn compact genetic-marketplace-history-filter" data-marketplace-history-filter="bought">Bought</button>
+      <button type="button" class="btn compact genetic-marketplace-history-filter" data-marketplace-history-filter="sold">Sold</button>
+      <button type="button" class="btn compact genetic-marketplace-history-filter" data-marketplace-history-filter="listed">Listed</button>
+      <button type="button" class="btn compact genetic-marketplace-history-filter" data-marketplace-history-filter="cancelled">Cancelled</button>
+    </div>
+
+    <div id="geneticMarketplaceHistoryGrid" class="genetic-card-grid"></div>
+    <div id="geneticMarketplaceHistoryEmptyState" class="genetic-empty-state hidden"></div>
+  </div>
+</div>
+
       <div id="geneticMarketplaceGrid" class="genetic-card-grid"></div>
       <div id="geneticMarketplaceEmptyState" class="genetic-empty-state hidden"></div>
     </div>
@@ -4370,7 +4945,6 @@ body::after {
         </div>
       </div>
     </div>
-  </div>
 </section>
 
 <section id="lab-panel-knowledge" class="lab-tab-panel" hidden>
@@ -4637,17 +5211,21 @@ body::after {
       boosterInventoryEndpoint: '/api/user/get-lab-booster-inventory.php',
       storeItemsEndpoint: '/api/store/items.php',
       favoriteTraitsEndpoint: '/api/user/get-favorite-traits.php',
-      toggleFavoriteTraitEndpoint: '/api/user/toggle-favorite-trait.php',
-      storePurchaseEndpoint: '/api/store/purchase.php',
+toggleFavoriteTraitEndpoint: '/api/user/toggle-favorite-trait.php',
+nftCustomNamesEndpoint: '/api/user/get-nft-custom-names.php',
+saveNftCustomNameEndpoint: '/api/user/save-nft-custom-name.php',
+storePurchaseEndpoint: '/api/store/purchase.php',
+
       scoreTotalEndpoint: '/api/user/score-total.php',
       useBoosterEndpoint: '/api/user/use-lab-booster.php',
       geneticTraitCatalogEndpoint: '/api/user/get-genetic-trait-catalog.php',
-      userGeneticItemsEndpoint: '/api/user/get-user-genetic-items.php',
-      buyGeneticTraitEndpoint: '/api/user/buy-genetic-trait.php',
-      startGeneticItemUpgradeEndpoint: '/api/user/start-genetic-item-upgrade.php',
-      completeGeneticItemUpgradeEndpoint: '/api/user/complete-genetic-item-upgrade.php',
-      instantFinishGeneticItemUpgradeEndpoint: '/api/user/instant-finish-genetic-item-upgrade.php',
-      useGeneticItemBoosterEndpoint: '/api/user/use-genetic-item-booster.php',
+userGeneticItemsEndpoint: '/api/user/get-user-genetic-items.php',
+buyGeneticTraitEndpoint: '/api/user/buy-genetic-trait.php',
+startGeneticItemUpgradeEndpoint: '/api/user/start-genetic-item-upgrade.php',
+completeGeneticItemUpgradeEndpoint: '/api/user/complete-genetic-item-upgrade.php',
+instantFinishGeneticItemUpgradeEndpoint: '/api/user/instant-finish-genetic-item-upgrade.php',
+useGeneticItemBoosterEndpoint: '/api/user/use-genetic-item-booster.php',
+geneticMarketplaceHistoryEndpoint: '/api/user/get-genetic-marketplace-history.php',
       genesisCollection: 'genesis',
       upgradeableTraitOrder: ['Theme', 'Sub-Trait', 'Outfit', 'Accessories', 'Expression', 'Background', 'Special'],
       levelOneDurationHours: 24,
@@ -4663,7 +5241,8 @@ body::after {
       profile: null,
       overview: null,
       favoriteTraits: {},
-      enhancedProfile: null,
+nftCustomNames: {},
+enhancedProfile: null,
       missions: null,
       allTimeStats: null,
       puzzleAchievements: null,
@@ -4690,9 +5269,14 @@ body::after {
       geneticInventory: [],
       geneticInventorySummary: null,
       geneticMarketplaceListings: [],
-      geneticMarketplaceSummary: null,
-      geneticMarketplaceLoading: false,
-      geneticInventoryRuntimeSummary: null,
+geneticMarketplaceSummary: null,
+geneticMarketplaceLoading: false,
+geneticMarketplaceHistory: [],
+geneticMarketplaceHistorySummary: null,
+geneticMarketplaceHistoryLoading: false,
+geneticMarketplaceHistoryFilter: 'all',
+geneticMarketplaceHistoryExpanded: false,
+geneticInventoryRuntimeSummary: null,
       geneticActionItemId: null,
       activeGeneticMediaViewerKey: '',
       readyTransitionResyncTimer: null,
@@ -4754,6 +5338,12 @@ const el = {
   geneticMarketplaceSearchInput: document.getElementById('geneticMarketplaceSearchInput'),
   geneticMarketplaceGrid: document.getElementById('geneticMarketplaceGrid'),
   geneticMarketplaceEmptyState: document.getElementById('geneticMarketplaceEmptyState'),
+  geneticMarketplaceHistoryBadge: document.getElementById('geneticMarketplaceHistoryBadge'),
+geneticMarketplaceHistoryToggle: document.getElementById('geneticMarketplaceHistoryToggle'),
+geneticMarketplaceHistoryBody: document.getElementById('geneticMarketplaceHistoryBody'),
+geneticMarketplaceHistorySummary: document.getElementById('geneticMarketplaceHistorySummary'),
+geneticMarketplaceHistoryGrid: document.getElementById('geneticMarketplaceHistoryGrid'),
+geneticMarketplaceHistoryEmptyState: document.getElementById('geneticMarketplaceHistoryEmptyState'),
   tabPanels: document.querySelectorAll('.lab-tab-panel')
 };
 
@@ -4773,6 +5363,19 @@ const el = {
         el.labConsole.prepend(line);
       }
     }
+
+     /**
+ * Return true when the Lab is running on a local development host.
+ * Plain language for DEVS:
+ * This mirrors the backend localhost detection used by Lab APIs.
+ * It is frontend-only and is used to safely attach the local test user_id
+ * during localhost testing.
+ */
+function isLocalHost() {
+  const host = String(window.location.hostname || '').trim().toLowerCase();
+
+  return host === 'localhost' || host === '127.0.0.1';
+}
 
     function escapeHtml(value) {
       return String(value ?? '')
@@ -5202,14 +5805,190 @@ function showLabMessageModal({
 
 function normalizeFavoriteTraitsPayload(favorites) {
   const map = {};
+  const rows = Array.isArray(favorites) ? favorites : [];
 
-  (Array.isArray(favorites) ? favorites : []).forEach(row => {
-    const traitType = normalizeTraitType(row?.trait_type || '');
-    if (!traitType) return;
-    map[traitType] = true;
-  });
+  // BUG #726:
+  // Lab automation supports one active favorite trait type at a time.
+  // If older backend/cache responses contain multiple rows, keep only the first valid one.
+  const firstValidTraitType = rows
+    .map(row => normalizeTraitType(row?.trait_type || ''))
+    .find(Boolean);
+
+  if (firstValidTraitType) {
+    map[firstValidTraitType] = true;
+  }
 
   return map;
+}
+
+/**
+ * Load saved display names for verified Genesis NFTs.
+ * Plain-language: player nicknames help organize many mice in the Lab.
+ */
+async function loadNftCustomNames() {
+  state.nftCustomNames = {};
+
+  if (!state.userId) {
+    return;
+  }
+
+  try {
+    const res = await fetchJson(
+      `${getApiUrl(LAB_CONFIG.nftCustomNamesEndpoint)}?user_id=${encodeURIComponent(state.userId)}&collection=genesis`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Custom names load failed (${res.status})`);
+    }
+
+    state.nftCustomNames = (
+      res.payload?.map &&
+      typeof res.payload.map === 'object'
+    )
+      ? res.payload.map
+      : {};
+
+    logLab(`Loaded ${Object.keys(state.nftCustomNames).length} custom Genesis name(s).`, 'success');
+  } catch (error) {
+    state.nftCustomNames = {};
+    logLab(`Custom Genesis names load skipped: ${error.message}`, 'warn');
+  }
+}
+
+/**
+ * Save or clear one Genesis mouse custom display name.
+ */
+async function saveNftCustomName(tokenId, customName) {
+  const safeTokenId = String(tokenId || '').trim();
+  const safeName = String(customName || '').trim();
+
+  if (!state.userId || !safeTokenId || state.actionInFlight) {
+    return;
+  }
+
+  const previousMap = { ...(state.nftCustomNames || {}) };
+
+  if (safeName) {
+    state.nftCustomNames = {
+      ...(state.nftCustomNames || {}),
+      [safeTokenId]: safeName
+    };
+  } else {
+    state.nftCustomNames = { ...(state.nftCustomNames || {}) };
+    delete state.nftCustomNames[safeTokenId];
+  }
+
+  renderAll();
+  setActionInFlight(true);
+
+  try {
+    const res = await fetchJson(
+      getApiUrl(LAB_CONFIG.saveNftCustomNameEndpoint),
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: state.userId,
+          token_id: safeTokenId,
+          collection: 'genesis',
+          custom_name: safeName
+        })
+      },
+      true
+    );
+
+    if (!res.ok || !res.payload?.success) {
+      throw new Error(res.payload?.error || `Custom name save failed (${res.status})`);
+    }
+
+    await loadNftCustomNames();
+    renderAll();
+
+    if (typeof showToast === 'function') {
+      showToast(
+        safeName ? `🐭 Mouse renamed to ${safeName}` : '🐭 Mouse nickname cleared',
+        'success'
+      );
+    } else {
+      logLab(safeName ? `Mouse renamed to ${safeName}.` : 'Mouse nickname cleared.', 'success');
+    }
+  } catch (error) {
+    state.nftCustomNames = previousMap;
+    renderAll();
+
+    if (typeof showToast === 'function') {
+      showToast(error.message || 'Unable to save mouse name.', 'error');
+    } else {
+      logLab(`Custom name save failed: ${error.message}`, 'error');
+    }
+  } finally {
+    setActionInFlight(false);
+  }
+}
+
+/**
+ * Open the themed Genesis mouse rename modal.
+ */
+function promptRenameGenesisMouse(tokenId) {
+  const safeTokenId = String(tokenId || '').trim();
+
+  if (!safeTokenId) {
+    return;
+  }
+
+  const modal = document.getElementById('renameMouseModal');
+  const input = document.getElementById('renameMouseInput');
+  const originalNameEl = document.getElementById('renameMouseOriginalName');
+  const tokenIdEl = document.getElementById('renameMouseTokenId');
+  const artEl = document.getElementById('renameMouseArt');
+
+  if (!modal || !input || !originalNameEl || !tokenIdEl || !artEl) {
+    // Fallback keeps the feature usable if modal markup is missing during development.
+    const nft = getVerifiedGenesisNfts().find(item => getSafeTokenId(item) === safeTokenId);
+    const currentName = getNftCustomNameByTokenId(safeTokenId);
+    const originalName = getOriginalNftName(nft, 'Genesis Mouse');
+    const nextName = window.prompt(
+      `Name this Genesis mouse.\n\nOriginal: ${originalName}\n\nLeave empty and press OK to clear the nickname.`,
+      currentName
+    );
+
+    if (nextName !== null) {
+      saveNftCustomName(safeTokenId, nextName);
+    }
+
+    return;
+  }
+
+  const nft = getVerifiedGenesisNfts().find(item => getSafeTokenId(item) === safeTokenId);
+  const currentName = getNftCustomNameByTokenId(safeTokenId);
+  const originalName = getOriginalNftName(nft, 'Genesis Mouse');
+  const imageUrl = getSafeNftImageUrl(nft);
+
+  modal.dataset.tokenId = safeTokenId;
+  input.value = currentName || '';
+  originalNameEl.textContent = originalName || 'Genesis Mouse';
+  tokenIdEl.textContent = safeTokenId;
+
+  artEl.innerHTML = imageUrl
+    ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(originalName || 'Genesis Mouse')}" loading="lazy" onerror="this.remove();">`
+    : '🐭';
+
+  modal.hidden = false;
+
+  window.setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 30);
 }
 
 async function loadFavoriteTraits() {
@@ -5262,6 +6041,13 @@ async function toggleFavoriteTraitType(traitType) {
   const previousMap = { ...(state.favoriteTraits || {}) };
   const nextState = !previousMap[normalized];
 
+  // BUG #726:
+  // Only one favorite trait type may be active in the Lab UI.
+  // Clicking the active favorite must visibly deselect it.
+  // Clicking a different favorite replaces the previous favorite immediately.
+  state.favoriteTraits = nextState ? { [normalized]: true } : {};
+  renderTraitGrid();
+
   state.actionInFlight = true;
 
   try {
@@ -5287,19 +6073,32 @@ async function toggleFavoriteTraitType(traitType) {
       throw new Error(res.payload?.error || `Favorite toggle failed (${res.status})`);
     }
 
-    state.favoriteTraits = normalizeFavoriteTraitsPayload(res.payload?.favorites);
+    const normalizedResponseFavorites = normalizeFavoriteTraitsPayload(res.payload?.favorites);
+
+    // Preserve the clicked action in the UI.
+    // This prevents stale backend/cache responses from re-selecting the trait
+    // that the user just deselected.
+    state.favoriteTraits = nextState
+      ? { [normalized]: true }
+      : normalizedResponseFavorites;
+
+    if (!nextState) {
+      delete state.favoriteTraits[normalized];
+    }
+
     renderTraitGrid();
 
     if (typeof showToast === 'function') {
       showToast(
         nextState
-          ? `⭐ ${normalized} added to favorite traits`
+          ? `⭐ ${normalized} added as the favorite trait`
           : `⭐ ${normalized} removed from favorite traits`,
         'success'
       );
     }
   } catch (error) {
     state.favoriteTraits = previousMap;
+    renderTraitGrid();
 
     if (typeof showToast === 'function') {
       showToast(error.message || 'Unable to update favorite trait.', 'error');
@@ -5338,8 +6137,8 @@ async function toggleFavoriteTraitType(traitType) {
         <div>
           <div class="section-title text-lg"><span>⭐</span><span>Trait Automation</span></div>
           <div class="mt-2 text-sm text-slate-300">
-            Mark a trait type once, then use it as a portfolio favorite across all verified Genesis mice.
-            One click can now start every eligible favorite trait upgrade across your verified Genesis collection.
+            Mark one favorite trait type at a time for controlled Genesis upgrade automation.
+Changing the favorite replaces the previous favorite to prevent duplicate auto-upgrade targets.
           </div>
         </div>
         <span class="chip">${favorites.length ? `${formatNumber(favorites.length)} favorite types` : 'No favorites yet'}</span>
@@ -5349,7 +6148,7 @@ async function toggleFavoriteTraitType(traitType) {
         <div class="favorite-traits-chip-row">
           ${favorites.map(traitType => `<span class="favorite-trait-chip">★ ${escapeHtml(traitType)}</span>`).join('')}
         </div>
-      ` : '<div class="favorite-traits-empty">No trait types are marked yet. Use the favorite toggle inside any trait card to build your personal upgrade set.</div>'}
+      ` : '<div class="favorite-traits-empty">No favorite trait is marked yet. Use the favorite toggle inside one trait card to choose the current automation target.</div>'}
 
       <div class="favorite-toggle-meta">
         <div class="text-xs uppercase tracking-[0.18em] text-amber-200 font-bold">
@@ -5359,7 +6158,7 @@ async function toggleFavoriteTraitType(traitType) {
   Estimated bulk cost preview: ${formatNumber(estimatedBulkCost)} DSPOINC
 </div>
         <div class="text-xs text-slate-400">
-          Bulk upgrade uses your saved favorite trait types and starts all eligible idle Genesis trait upgrades through the backend authority.
+          Bulk upgrade uses your one saved favorite trait type and starts eligible idle Genesis trait upgrades through the backend authority.
         </div>
       </div>
 
@@ -5370,7 +6169,7 @@ async function toggleFavoriteTraitType(traitType) {
   data-bulk-favorite-upgrade="true"
   ${eligibleRows > 0 ? '' : 'disabled'}
 >
-  ⭐ Upgrade All Favorite Traits
+  ⭐ Upgrade Favorite Trait
 </button>
       </div>
     </div>
@@ -5491,10 +6290,11 @@ function getSafeTokenId(nft) {
 }
 
 /**
- * Safely resolve a readable Genesis NFT name.
- * This prevents crashes when transient render cycles receive a missing NFT object.
+ * Return the original metadata name for a Genesis NFT.
+ * Plain-language: this never reads the player nickname table.
+ * Use it when DEVS need to see the real NFT metadata name.
  */
-function getSafeNftName(nft, fallback = 'Genesis NFT') {
+function getOriginalNftName(nft, fallback = 'Genesis NFT') {
   if (!nft || typeof nft !== 'object') {
     return String(fallback || 'Genesis NFT');
   }
@@ -5506,6 +6306,52 @@ function getSafeNftName(nft, fallback = 'Genesis NFT') {
     fallback ||
     'Genesis NFT'
   ).trim();
+}
+
+/**
+ * Return a saved player nickname for one Genesis NFT token.
+ * DEVS FOR DECADES:
+ * Custom names are display-only and never replace token_id, metadata, traits,
+ * ability rows, marketplace identity, or upgrade ownership.
+ */
+function getNftCustomNameByTokenId(tokenId) {
+  const safeTokenId = String(tokenId || '').trim();
+
+  if (!safeTokenId || !state.nftCustomNames || typeof state.nftCustomNames !== 'object') {
+    return '';
+  }
+
+  return String(state.nftCustomNames[safeTokenId] || '').trim();
+}
+
+/**
+ * Safely resolve the Lab display name for a Genesis NFT.
+ * Player custom name wins visually, original metadata remains available separately.
+ */
+function getSafeNftName(nft, fallback = 'Genesis NFT') {
+  const tokenId = getSafeTokenId(nft);
+  const customName = getNftCustomNameByTokenId(tokenId);
+
+  if (customName) {
+    return customName;
+  }
+
+  return getOriginalNftName(nft, fallback);
+}
+
+/**
+ * Return small original-name markup when a player nickname exists.
+ */
+function getNftOriginalNameMarkup(nft) {
+  const tokenId = getSafeTokenId(nft);
+  const customName = getNftCustomNameByTokenId(tokenId);
+  const originalName = getOriginalNftName(nft, '');
+
+  if (!customName || !originalName || customName === originalName) {
+    return '';
+  }
+
+  return `<div class="mt-1 text-xs text-slate-500">Original: ${escapeHtml(originalName)}</div>`;
 }
 
 /**
@@ -5623,6 +6469,18 @@ function getTraitUpgradeDisplayRow(nft, trait) {
     );
 
   return matchedRow || buildFallbackUpgradeRow(nft, trait);
+}
+
+/**
+ * Calculate the visible DSPOINC preview cost for starting the next Genesis trait upgrade.
+ * Plain language for DEVS: this mirrors the current backend formula in start-nft-trait-upgrade.php.
+ * Backend remains the final authority; this is only for clearer player confirmation text.
+ */
+function calculateTraitStartCostPreview(currentLevel) {
+  const level = Math.max(1, safeNumber(currentLevel, 1));
+  const nextLevel = level + 1;
+
+  return Math.max(100, (nextLevel - 1) * 100);
 }
 
 function calculateUpgradeDurationHours(currentLevel) {
@@ -6918,9 +7776,17 @@ function renderNftGrid(selectedNft = null) {
     const traits = normalizeNftTraits(nft);
     const tokenId = getSafeTokenId(nft);
     const hasReady = Number(summary?.readyCount || 0) > 0;
-    const actionLabel = hasReady
-      ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
-      : '🧪 View Research';
+const hasActive = Number(summary?.activeCount || 0) > 0;
+const sliderStatusKey = hasReady ? 'ready' : hasActive ? 'active' : 'idle';
+const sliderStatusLabel = hasReady
+  ? `Ready to Claim (${formatNumber(summary.readyCount || 0)})`
+  : hasActive
+    ? `Research Active (${formatNumber(summary.activeCount || 0)})`
+    : 'Idle';
+
+const actionLabel = hasReady
+  ? `✅ Claim Ready (${formatNumber(summary.readyCount || 0)})`
+  : '🧪 View Research';
     const actionClass = hasReady ? 'success' : 'warn';
     const actionHandler = hasReady
       ? `claimReadyForSelectedNft('${escapeHtml(String(tokenId))}')`
@@ -6928,7 +7794,7 @@ function renderNftGrid(selectedNft = null) {
 
     return `
       <div
-        class="card viewer-card ${selected ? 'selected' : ''} text-left p-4"
+        class="card viewer-card status-${sliderStatusKey} ${selected ? 'selected' : ''} text-left p-4"
         data-select-nft="${escapeHtml(tokenId)}"
         data-nft-token-id="${escapeHtml(tokenId)}"
         role="button"
@@ -6939,44 +7805,62 @@ function renderNftGrid(selectedNft = null) {
   ? `<img src="${escapeHtml(getSafeNftImageUrl(nft))}" alt="${escapeHtml(getSafeNftName(nft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
   : `<div class="empty-art">🐭</div>`}
 
-        <div class="mt-4 flex items-start justify-between gap-3">
-          <div>
-            <div class="text-sm uppercase tracking-[0.18em] text-cyan-300 font-bold">Genesis Mouse ${formatNumber(index + 1)}</div>
-            <div class="mt-2 text-lg font-bold leading-tight">${escapeHtml(getSafeNftName(nft, 'Unnamed Genesis NFT'))}</div>
-            <div class="mt-1 text-xs text-slate-400 break-all">${escapeHtml(tokenId || 'Unknown token')}</div>
-          </div>
-          <span class="pill ${summary.readyCount > 0 ? 'ready' : summary.activeCount > 0 ? 'upgrading' : selected ? 'upgrading' : 'idle'}">
-            ${summary.readyCount > 0 ? 'Ready' : summary.activeCount > 0 ? 'Active' : selected ? 'Selected' : 'Idle'}
-          </span>
-        </div>
+<div class="mt-4 viewer-card-heading-row">
+  <div class="viewer-card-title-wrap">
+    <div class="text-sm uppercase tracking-[0.18em] text-cyan-300 font-bold">
+      Genesis Mouse ${formatNumber(index + 1)}
+    </div>
+    <div class="mt-2 text-lg font-bold leading-tight">
+  ${escapeHtml(getSafeNftName(nft, 'Unnamed Genesis NFT'))}
+</div>
+${getNftOriginalNameMarkup(nft)}
+<div class="mt-1 text-xs text-slate-400 break-all">
+  ${escapeHtml(tokenId || 'Unknown token')}
+</div>
+  </div>
 
-        <div class="viewer-meta-strip mt-4">
-          <span class="queue-mini-pill">🧬 Traits ${formatNumber(traits.length)}</span>
-          <span class="queue-mini-pill">⚡ Power ${formatNumber(summary.totalLevels)}</span>
-          <span class="queue-mini-pill">✅ Ready ${formatNumber(summary.readyCount)}</span>
-        </div>
+  <div class="viewer-card-status-row">
+  <span class="viewer-card-status-chip status-${sliderStatusKey}">
+    ${sliderStatusLabel}
+  </span>
+</div>
+</div>
 
         <div class="nft-card-action-row">
           <button
-            type="button"
-            class="btn compact ${actionClass}"
-            data-open-research="true"
-            onclick="${actionHandler}">
-            ${actionLabel}
-          </button>
+  type="button"
+  class="btn compact ${actionClass}"
+  data-open-research="true"
+  onclick="${actionHandler}">
+  ${actionLabel}
+</button>
+<button
+  type="button"
+  class="btn compact ghost"
+  data-rename-nft="${escapeHtml(tokenId)}">
+  ✏️ Rename
+</button>
         </div>
       </div>
     `;
   }).join('');
 
   el.nftGrid.querySelectorAll('[data-select-nft]').forEach((card) => {
-    card.addEventListener('click', (event) => {
-      if (event.target.closest('[data-open-research]')) return;
+   card.addEventListener('click', (event) => {
+  const renameButton = event.target.closest('[data-rename-nft]');
+  if (renameButton) {
+    event.preventDefault();
+    event.stopPropagation();
+    promptRenameGenesisMouse(renameButton.getAttribute('data-rename-nft') || '');
+    return;
+  }
 
-      const tokenId = card.getAttribute('data-select-nft') || '';
-      if (!tokenId) return;
-      selectNftByTokenId(tokenId, { scrollToResearch: false });
-    });
+  if (event.target.closest('[data-open-research]')) return;
+
+  const tokenId = card.getAttribute('data-select-nft') || '';
+  if (!tokenId) return;
+  selectNftByTokenId(tokenId, { scrollToResearch: false });
+});
 
     card.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -7107,6 +7991,64 @@ const genesisAbilityState = {
       }
 
       try {
+        const abilityRows = Array.isArray(genesisAbilityState.data?.rows)
+  ? genesisAbilityState.data.rows
+  : [];
+
+const abilityRow = abilityRows.find(row =>
+  String(row?.stat_name || row?.ability_key || '').trim().toUpperCase() === statName
+) || null;
+
+const currentLevel = Math.max(0, safeNumber(abilityRow?.current_level, 0));
+const nextLevel = currentLevel + 1;
+const previewCost = Math.max(
+  0,
+  safeNumber(
+    abilityRow?.next_cost ??
+    abilityRow?.next_cost_dspoinc ??
+    abilityRow?.next_upgrade_cost_dspoinc ??
+    abilityRow?.cost ??
+    0,
+    0
+  )
+);
+const durationSeconds = Math.max(
+  0,
+  safeNumber(
+    abilityRow?.next_duration_seconds ??
+    abilityRow?.next_upgrade_duration_seconds ??
+    abilityRow?.next_duration ??
+    0,
+    0
+  )
+);
+const durationText = formatAbilityDuration(durationSeconds);
+
+        const confirmed = await showLabConfirmModal({
+          eyebrow: 'Start Genesis Ability Research',
+          title: `Upgrade ${statName}?`,
+          icon: '🧬',
+          message:
+            `This starts one timed ability upgrade on the selected Genesis mouse.\n\n` +
+            `Category: ${tab.label}\n` +
+            `Ability: ${statName}\n` +
+            `Current Level: Lv ${formatNumber(currentLevel)}\n` +
+            `Target Level: Lv ${formatNumber(nextLevel)}\n` +
+            `Research Time: ${durationText}\n` +
+            `DSPOINC Spend: ${formatNumber(previewCost)} DSPOINC`,
+          highlightLabel: 'Ability Upgrade Preview',
+          highlightValue: `${formatNumber(previewCost)} DSPOINC • ${durationText}`,
+          note:
+            'Backend authority verifies Genesis ownership, category unlock, available DSPOINC, and the one-active-ability-upgrade-per-NFT rule before anything is spent.',
+          confirmText: 'Start & Spend DSPOINC',
+          cancelText: 'Cancel',
+          confirmVariant: 'primary'
+        });
+
+        if (!confirmed) {
+          return;
+        }
+
         upgradeButton.disabled = true;
         await startGenesisAbilityUpgrade(tokenId, tab.label, statName);
       } catch (error) {
@@ -7508,14 +8450,17 @@ function renderGenesisAbilityMatrix() {
           </button>
 
           <button
-            class="ability-instant-btn"
-            data-ability-instant-finish="${escapeHtml(row.stat_name)}"
-            disabled
-            title="Genesis ability instant finish is not active in v1 yet"
-            style="opacity:.5; cursor:not-allowed;"
-          >
-            Instant Finish
-          </button>
+  class="ability-instant-btn disabled-v1"
+  data-ability-instant-finish="${escapeHtml(row.stat_name)}"
+  disabled
+  aria-disabled="true"
+  title="Ability instant finish is disabled in v1"
+>
+  ⏸️ Instant Finish Disabled
+</button>
+<div class="ability-disabled-note">
+  Instant finish is planned for a later Ability Matrix version.
+</div>
 
           <div class="ability-note">${escapeHtml(note)}</div>
         </div>
@@ -7665,7 +8610,25 @@ function renderSelectedNftPanel(nft = null) {
           <div>
             <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Selected Genesis Mouse</div>
             <div class="mt-1 text-2xl font-black">${escapeHtml(getSafeNftName(resolvedNft, `Genesis Mouse ${tokenId}`))}</div>
-            <div class="text-sm text-slate-400 mt-1">${escapeHtml(tokenId || 'Unknown token id')}</div>
+${getNftOriginalNameMarkup(resolvedNft)}
+<div class="text-sm text-slate-400 mt-1">${escapeHtml(tokenId || 'Unknown token id')}</div>
+
+<div class="mt-3 flex flex-wrap gap-2">
+  <button
+    type="button"
+    class="btn compact ghost"
+    onclick="promptRenameGenesisMouse('${escapeHtml(tokenId)}')">
+    ✏️ Rename Mouse
+  </button>
+  ${getNftCustomNameByTokenId(tokenId)
+    ? `<button
+        type="button"
+        class="btn compact ghost"
+        onclick="saveNftCustomName('${escapeHtml(tokenId)}', '')">
+        🧹 Clear Name
+      </button>`
+    : ''}
+</div>
           </div>
 
           <div class="selected-nft-kv-grid">
@@ -7921,6 +8884,25 @@ function renderLabBoosterPanel() {
   attachLabBoosterListeners();
 }
 
+/**
+ * Return a small visual icon for trait cards.
+ * Plain-language: this replaces repeated NFT images inside every trait row
+ * with a lightweight themed marker for the trait type.
+ */
+function getTraitTypeIcon(traitType) {
+  const normalized = normalizeTraitType(traitType || '');
+
+  if (normalized === 'Theme') return '🎨';
+  if (normalized === 'Sub-Trait') return '🧬';
+  if (normalized === 'Outfit') return '🧥';
+  if (normalized === 'Accessories') return '🔑';
+  if (normalized === 'Expression') return '😺';
+  if (normalized === 'Background') return '🌆';
+  if (normalized === 'Special') return '✨';
+
+  return '🧪';
+}
+
 function getTraitBoosterGlowClass(row, status) {
   if (!row || status !== 'upgrading') {
     return '';
@@ -7990,12 +8972,7 @@ el.traitUpgradeInfo.innerHTML = `
 if (!row) {
   return '';
 }
-const previewImage =
-    row?.preview_path ||
-    row?.image_path ||
-    trait?.image ||
-    getSafeNftImageUrl(nft) ||
-    '';
+const traitTypeIcon = getTraitTypeIcon(row?.trait_type || trait?.trait_type || '');
 
   const currentLevel = Math.max(1, safeNumber(row?.current_level, 1));
 const nextLevel = currentLevel + 1;
@@ -8075,16 +9052,18 @@ const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.ge
       data-trait-key="${escapeHtml(traitKey)}"
       aria-expanded="${isExpanded ? 'true' : 'false'}"
     >
-      <div class="trait-card-toggle-main">
-        ${previewImage
-          ? `<img src="${escapeHtml(previewImage)}"
-                 alt="${escapeHtml(trait.value || trait.trait_value || 'Trait preview')}"
-                 class="nft-image"
-                 loading="lazy"
-                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-             <div class="empty-art" style="display:none;">🧬</div>`
-          : `<div class="empty-art">🧬</div>`
-        }
+            <div class="trait-card-toggle-main">
+        <div class="trait-card-identity">
+          <div class="trait-card-icon" aria-hidden="true">${traitTypeIcon}</div>
+          <div class="trait-card-text">
+            <div class="trait-card-type">
+              ${escapeHtml(row.trait_type || trait.trait_type || 'Trait')}
+            </div>
+            <div class="trait-card-value">
+              ${escapeHtml(row.trait_value || trait.value || trait.trait_value || 'Unknown trait')}
+            </div>
+          </div>
+        </div>
 
         <div class="trait-card-toggle-copy">
           <div class="trait-card-kicker">${escapeHtml(row.trait_type || trait.trait_type || 'Trait')}</div>
@@ -8956,13 +9935,28 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
     return;
   }
 
+  const nft = state.selectedNft;
+  const row = nft ? getTraitUpgradeDisplayRow(nft, { trait_type: traitType, value: traitValue }) : null;
+  const currentLevel = Math.max(1, safeNumber(row?.current_level, 1));
+  const nextLevel = currentLevel + 1;
+  const previewCost = calculateTraitStartCostPreview(currentLevel);
+  const durationHours = calculateUpgradeDurationHours(currentLevel);
+
   const confirmed = await showLabConfirmModal({
-    eyebrow: 'Start Research',
-    title: `Start ${traitType} Upgrade?`,
+    eyebrow: 'Start Genesis Trait Research',
+    title: `Upgrade ${traitType}: ${traitValue}?`,
     icon: '🚀',
-    message: `Begin timed research for ${traitType}: ${traitValue}.`,
-    note: 'The backend remains authoritative and will still verify ownership, NFT trait match, and one-active-upgrade-per-NFT rules.',
-    confirmText: 'Start Upgrade',
+    message:
+      `This starts a timed Genesis trait upgrade for the selected mouse.\n\n` +
+      `Current Level: Lv ${formatNumber(currentLevel)}\n` +
+      `Target Level: Lv ${formatNumber(nextLevel)}\n` +
+      `Research Time: ${formatDurationWords(durationHours)}\n` +
+      `DSPOINC Spend: ${formatNumber(previewCost)} DSPOINC`,
+    highlightLabel: 'Upgrade Cost Preview',
+    highlightValue: `${formatNumber(previewCost)} DSPOINC • ${formatDurationWords(durationHours)}`,
+    note:
+      'Backend authority still verifies ownership, exact NFT trait match, available DSPOINC, and the one-active-upgrade-per-NFT rule before anything is spent.',
+    confirmText: 'Start & Spend DSPOINC',
     cancelText: 'Cancel',
     confirmVariant: 'primary'
   });
@@ -9000,16 +9994,37 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
         title: 'Upgrade Start Failed',
         icon: '⚠️',
         message,
-        note: 'No progression changes were applied.',
+        note: 'No DSPOINC was spent by this page action if the backend rejected the request.',
         confirmText: 'Close',
         confirmVariant: 'danger'
       });
       return;
     }
 
-    logLab(`Started upgrade for ${traitType}: ${traitValue}`, 'success');
+    const startData = res.payload?.data || {};
+    const spentDspoinc = Number(startData.spent_dspoinc || previewCost);
+    const backendDurationHours = Number(startData.duration_hours || durationHours);
+    const backendNextLevel = Number(startData.next_level || nextLevel);
+
+    logLab(
+      `Started upgrade for ${traitType}: ${traitValue} (-${formatNumber(spentDspoinc)} DSPOINC)`,
+      'success'
+    );
+
     await loadTraitUpgrades();
     renderAll();
+
+    await showLabMessageModal({
+      eyebrow: 'Genesis Research Started',
+      title: `${traitType}: ${traitValue} is now upgrading`,
+      icon: '🚀',
+      message:
+        `Target Level: Lv ${formatNumber(backendNextLevel)}\n` +
+        `Research Time: ${formatDurationWords(backendDurationHours)}\n` +
+        `DSPOINC Spent: ${formatNumber(spentDspoinc)} DSPOINC`,
+      note: 'The upgrade is now running on the backend. When the timer finishes, claim it to apply the new level.',
+      confirmText: 'Excellent'
+    });
   } catch (error) {
     logLab(`Start upgrade request failed: ${error.message}`, 'error');
     await showLabMessageModal({
@@ -9165,15 +10180,20 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
   const previewCost = calculateInstantFinishCost(currentLevel, remainingMs);
 
   const confirmed = await showLabConfirmModal({
-    eyebrow: 'Instant Finish',
-    title: `Finish ${traitType} Research?`,
+    eyebrow: 'Genesis Instant Finish',
+    title: `Finish ${traitType}: ${traitValue}?`,
     icon: '⚡',
-    message: `Instantly finish ${traitType}: ${traitValue}.`,
-    highlightLabel: 'Estimated DSPOINC Cost',
+    message:
+      `This spends DSPOINC to skip the remaining timer for this Genesis trait upgrade.\n\n` +
+      `Current Level: Lv ${formatNumber(currentLevel)}\n` +
+      `Remaining Time: ${formatRemainingLong(remainingMs)}\n` +
+      `Estimated Instant Finish Cost: ${formatNumber(previewCost)} DSPOINC`,
+    highlightLabel: 'Instant Finish Cost Preview',
     highlightValue: `${formatNumber(previewCost)} DSPOINC`,
-    note: 'Backend validation remains the source of truth for the final price, ownership check, and finish state.',
+    note:
+      'Backend authority recalculates the final price and verifies ownership, balance, and timer state before spending. Instant finish makes the trait ready to claim; it does not auto-claim the level.',
     confirmText: 'Spend DSPOINC',
-    cancelText: 'Keep Running',
+    cancelText: 'Keep Timer Running',
     confirmVariant: 'primary'
   });
 
@@ -9602,9 +10622,12 @@ const listingData = data.data || null;
 logLab(`🧀 Listed Genetic Item #${formatNumber(geneticItemId)} for ${formatNumber(priceDspoinc)} DSPOINC.`, 'success');
 
 await refreshGeneticMarketplaceData();
+await refreshGeneticMarketplaceHistory();
 await loadUserGeneticItems();
+
 renderGeneticInventory();
 renderGeneticMarketplace();
+renderGeneticMarketplaceHistory();
 
 const listedItem = (Array.isArray(state.geneticInventory) ? state.geneticInventory : []).find(
   (geneticItem) => Number(geneticItem?.genetic_item_id || 0) === Number(geneticItemId)
@@ -9626,8 +10649,6 @@ showLabMessageModal({
   highlightValue: `${formatNumber(priceDspoinc)} DSPOINC`,
   confirmText: 'Nice'
 });
-
-return listingData;
 
 return listingData;
 
@@ -9740,9 +10761,12 @@ async function cancelGeneticMarketplaceListing(geneticItemId) {
     logLab(`❌ Cancelled marketplace listing #${formatNumber(activeListing.listing_id)}.`, 'warn');
 
     await refreshGeneticMarketplaceData();
-    await loadUserGeneticItems();
-    renderGeneticInventory();
-    renderGeneticMarketplace();
+await refreshGeneticMarketplaceHistory();
+await loadUserGeneticItems();
+
+renderGeneticInventory();
+renderGeneticMarketplace();
+renderGeneticMarketplaceHistory();
 
     const resolvedItemTitle =
       inventoryItem?.display_title ||
@@ -10520,6 +11544,301 @@ function renderGeneticMarketplace() {
 
   el.geneticMarketplaceEmptyState.classList.add('hidden');
   el.geneticMarketplaceGrid.innerHTML = filtered.map(renderGeneticMarketplaceCard).join('');
+}
+
+/**
+ * Load the active user's Genetic Marketplace trading history.
+ * Plain language for DEVS: this is read-only display data. It never decides ownership,
+ * prices, payouts, inventory state, or DSPOINC movement.
+ */
+async function refreshGeneticMarketplaceHistory() {
+  if (!state.userId) {
+    state.geneticMarketplaceHistory = [];
+    state.geneticMarketplaceHistorySummary = null;
+    renderGeneticMarketplaceHistory();
+    return;
+  }
+
+  try {
+    state.geneticMarketplaceHistoryLoading = true;
+    renderGeneticMarketplaceHistory();
+
+    const params = new URLSearchParams();
+params.set('limit', '100');
+
+/**
+ * Local marketplace history test user.
+ * Plain language for DEVS:
+ * Local browser storage can contain stale Discord IDs from other tests.
+ * The backend API was verified with LAB_CONFIG.localTestUserId, so local Lab history
+ * should use the same user until production session auth is used.
+ */
+const historyUserId = isLocalHost()
+  ? String(LAB_CONFIG.localTestUserId || state.userId || '').trim()
+  : String(state.userId || '').trim();
+
+if (isLocalHost() && historyUserId) {
+  params.set('user_id', historyUserId);
+}
+
+console.log('🧾 Marketplace history request:', {
+  endpoint: LAB_CONFIG.geneticMarketplaceHistoryEndpoint,
+  historyUserId,
+  url: `${LAB_CONFIG.geneticMarketplaceHistoryEndpoint}?${params.toString()}`
+});
+
+const response = await fetch(`${LAB_CONFIG.geneticMarketplaceHistoryEndpoint}?${params.toString()}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store'
+    });
+
+    const rawText = await response.text();
+    let data = null;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error('Marketplace history returned non-JSON:', rawText);
+      throw new Error(`Marketplace history API returned non-JSON (HTTP ${response.status})`);
+    }
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || 'Failed to load marketplace history');
+    }
+
+    state.geneticMarketplaceHistory = Array.isArray(data.data?.history)
+      ? data.data.history
+      : [];
+
+    state.geneticMarketplaceHistorySummary = data.data?.summary || null;
+  } catch (error) {
+    console.error('refreshGeneticMarketplaceHistory failed:', error);
+    state.geneticMarketplaceHistory = [];
+    state.geneticMarketplaceHistorySummary = null;
+  } finally {
+    state.geneticMarketplaceHistoryLoading = false;
+    renderGeneticMarketplaceHistory();
+  }
+}
+
+/**
+ * Return the currently selected marketplace history rows.
+ */
+function getFilteredGeneticMarketplaceHistory() {
+  const rows = Array.isArray(state.geneticMarketplaceHistory)
+    ? state.geneticMarketplaceHistory
+    : [];
+
+  const filter = String(state.geneticMarketplaceHistoryFilter || 'all').trim().toLowerCase();
+
+  if (filter === 'all') {
+    return rows;
+  }
+
+  return rows.filter((entry) => String(entry?.action || '').trim().toLowerCase() === filter);
+}
+
+/**
+ * Return player-facing label data for a history action.
+ */
+function getGeneticMarketplaceHistoryActionMeta(action) {
+  const normalized = String(action || '').trim().toLowerCase();
+
+  if (normalized === 'bought') {
+    return { icon: '🛒', label: 'Bought', tone: 'text-emerald-300' };
+  }
+
+  if (normalized === 'sold') {
+    return { icon: '💰', label: 'Sold', tone: 'text-yellow-300' };
+  }
+
+  if (normalized === 'listed') {
+    return { icon: '📦', label: 'Listed', tone: 'text-cyan-300' };
+  }
+
+  if (normalized === 'cancelled') {
+    return { icon: '↩️', label: 'Cancelled', tone: 'text-slate-300' };
+  }
+
+  return { icon: '🧾', label: action || 'History', tone: 'text-slate-300' };
+}
+
+/**
+ * Format marketplace history timestamps in a readable way.
+ */
+function formatGeneticMarketplaceHistoryDate(value) {
+  if (!value) {
+    return 'Unknown time';
+  }
+
+  const date = new Date(String(value).replace(' ', 'T'));
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleString();
+}
+
+/**
+ * Render one Genetic Marketplace history card.
+ */
+function renderGeneticMarketplaceHistoryCard(entry) {
+  const meta = getGeneticMarketplaceHistoryActionMeta(entry?.action);
+  const title = entry?.display_title || entry?.trait_value || 'Genetic Item';
+  const traitType = entry?.trait_type || 'Trait';
+  const traitValue = entry?.trait_value || title;
+  const rarity = entry?.rarity_tier || 'common';
+  const level = Number(entry?.current_level || 1);
+  const price = Number(entry?.price_dspoinc || 0);
+  const sellerName = entry?.seller_username || 'Seller';
+  const buyerName = entry?.buyer_username || 'Buyer';
+  const action = String(entry?.action || '').trim().toLowerCase();
+  const otherPlayer =
+    action === 'bought'
+      ? sellerName
+      : (action === 'sold' ? buyerName : '');
+  const eventTime = formatGeneticMarketplaceHistoryDate(entry?.event_time || entry?.updated_at || entry?.created_at);
+
+  return `
+    <article class="genetic-card">
+      <div class="genetic-card-header">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Marketplace History</div>
+          <h3 class="mt-1 text-lg font-black text-white">${escapeHtml(title)}</h3>
+          <div class="mt-1 text-sm text-slate-300">${escapeHtml(traitType)} • ${escapeHtml(traitValue)}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-black ${meta.tone}">${meta.icon} ${escapeHtml(meta.label)}</div>
+          <div class="mt-1 text-xs text-slate-400">#${formatNumber(entry?.listing_id || 0)}</div>
+        </div>
+      </div>
+
+      <div class="genetic-card-meta mt-4">
+        <span class="genetic-pill">Lv ${formatNumber(level)}</span>
+        <span class="genetic-pill">${escapeHtml(rarity)}</span>
+        <span class="genetic-pill">${formatNumber(price)} DSPOINC</span>
+      </div>
+
+      <div class="mt-4 grid gap-2 text-sm text-slate-300">
+        <div><span class="text-slate-500">When:</span> ${escapeHtml(eventTime)}</div>
+        ${
+          otherPlayer
+            ? `<div><span class="text-slate-500">Other player:</span> ${escapeHtml(otherPlayer)}</div>`
+            : ''
+        }
+        <div><span class="text-slate-500">Status:</span> ${escapeHtml(entry?.status || 'unknown')}</div>
+      </div>
+    </article>
+  `;
+}
+
+/**
+ * Render summary cards + filtered marketplace history.
+ */
+function renderGeneticMarketplaceHistory() {
+  const summary = state.geneticMarketplaceHistorySummary || {
+    total_buys: 0,
+    total_sells: 0,
+    total_active_listings: 0,
+    total_cancelled: 0,
+    dspoinc_spent: 0,
+    dspoinc_earned: 0
+  };
+
+  const rows = getFilteredGeneticMarketplaceHistory();
+
+  if (el.geneticMarketplaceHistoryBody) {
+  el.geneticMarketplaceHistoryBody.classList.toggle(
+    'hidden',
+    !state.geneticMarketplaceHistoryExpanded
+  );
+}
+
+if (el.geneticMarketplaceHistoryToggle) {
+  el.geneticMarketplaceHistoryToggle.setAttribute(
+    'aria-expanded',
+    state.geneticMarketplaceHistoryExpanded ? 'true' : 'false'
+  );
+
+ el.geneticMarketplaceHistoryToggle.textContent = state.geneticMarketplaceHistoryExpanded
+  ? '📕 Hide History'
+  : '📜 Show History';
+}
+
+  if (el.geneticMarketplaceHistoryBadge) {
+    if (state.geneticMarketplaceHistoryLoading) {
+      el.geneticMarketplaceHistoryBadge.textContent = 'History loading…';
+    } else {
+      el.geneticMarketplaceHistoryBadge.textContent = `${formatNumber(rows.length)} history rows`;
+    }
+  }
+
+  if (el.geneticMarketplaceHistorySummary) {
+    const cards = [
+      ['Bought', formatNumber(summary.total_buys || 0)],
+      ['Sold', formatNumber(summary.total_sells || 0)],
+      ['Listed', formatNumber(summary.total_active_listings || 0)],
+      ['Cancelled', formatNumber(summary.total_cancelled || 0)],
+      ['Spent', `${formatNumber(summary.dspoinc_spent || 0)} DSPOINC`],
+      ['Earned', `${formatNumber(summary.dspoinc_earned || 0)} DSPOINC`]
+    ];
+
+    el.geneticMarketplaceHistorySummary.innerHTML = cards.map(([label, value]) => `
+      <div class="genetic-summary-card">
+        <div class="value">${escapeHtml(value)}</div>
+        <div class="label">${escapeHtml(label)}</div>
+      </div>
+    `).join('');
+  }
+
+  if (!el.geneticMarketplaceHistoryGrid || !el.geneticMarketplaceHistoryEmptyState) {
+    return;
+  }
+
+  if (state.geneticMarketplaceHistoryLoading) {
+    el.geneticMarketplaceHistoryGrid.innerHTML = '';
+    el.geneticMarketplaceHistoryEmptyState.classList.remove('hidden');
+    el.geneticMarketplaceHistoryEmptyState.innerHTML = `
+      <div class="text-lg font-semibold text-white">Loading trading history…</div>
+      <div class="mt-2 text-sm text-slate-300">Reading your backend marketplace activity.</div>
+    `;
+    return;
+  }
+
+  if (!state.userId) {
+    el.geneticMarketplaceHistoryGrid.innerHTML = '';
+    el.geneticMarketplaceHistoryEmptyState.classList.remove('hidden');
+    el.geneticMarketplaceHistoryEmptyState.innerHTML = `
+      <div class="text-lg font-semibold text-white">Login required for trading history.</div>
+      <div class="mt-2 text-sm text-slate-300">Marketplace listings are public, but your buy/sell history is Discord-bound.</div>
+    `;
+    return;
+  }
+
+  if (!rows.length) {
+    el.geneticMarketplaceHistoryGrid.innerHTML = '';
+    el.geneticMarketplaceHistoryEmptyState.classList.remove('hidden');
+    const debugHistoryUser = isLocalHost()
+  ? String(LAB_CONFIG.localTestUserId || state.userId || '').trim()
+  : String(state.userId || '').trim();
+
+el.geneticMarketplaceHistoryEmptyState.innerHTML = `
+  <div class="text-lg font-semibold text-white">No trading history for this filter yet.</div>
+  <div class="mt-2 text-sm text-slate-300">Buy, sell, list, or cancel Genetic Items to build your marketplace history.</div>
+  ${
+    isLocalHost()
+      ? `<div class="mt-2 text-xs text-slate-500">Local debug user: ${escapeHtml(debugHistoryUser || 'none')}</div>`
+      : ''
+  }
+`;
+    return;
+  }
+
+  el.geneticMarketplaceHistoryEmptyState.classList.add('hidden');
+  el.geneticMarketplaceHistoryGrid.innerHTML = rows.map(renderGeneticMarketplaceHistoryCard).join('');
 }
 
 async function handleStartGeneticUpgrade(geneticItemId) {
@@ -11735,20 +13054,21 @@ async function loadLab() {
     logLab('Booting lab runtime…', 'info');
     state.userId = getStoredUserId();
     state.username = getStoredUsername();
-    await loadFavoriteTraits();
-    renderSessionNotice();
+   await loadFavoriteTraits();
+renderSessionNotice();
 
     if (!state.userId) {
-      await Promise.allSettled([
-        loadGeneticTraitCatalog(),
-        refreshGeneticMarketplaceData()
-      ]);
-      state.geneticInventory = [];
-      state.geneticInventorySummary = null;
-      renderAll();
-      logLab('No Discord session detected. Rendered shell in safe mode with public Genetic Shop and marketplace preview.', 'warn');
-      return;
-    }
+  await Promise.allSettled([
+    loadGeneticTraitCatalog(),
+    refreshGeneticMarketplaceData(),
+    refreshGeneticMarketplaceHistory()
+  ]);
+  state.geneticInventory = [];
+  state.geneticInventorySummary = null;
+  renderAll();
+  logLab('No Discord session detected. Rendered shell in safe mode with public Genetic Shop and marketplace preview.', 'warn');
+  return;
+}
 
     localStorage.setItem('discord_id', state.userId);
     if (state.username) {
@@ -11756,7 +13076,9 @@ async function loadLab() {
       localStorage.setItem('narrrfs_last_discord_name', state.username);
     }
 
-    const aggregateLoaded = await tryAggregateLab();
+    await loadNftCustomNames();
+
+const aggregateLoaded = await tryAggregateLab();
 
     if (!aggregateLoaded) {
       await loadStableApis();
@@ -11768,12 +13090,13 @@ async function loadLab() {
     }
 
     await Promise.all([
-      loadLabBoosterStoreCatalog(),
-      loadLabBoosterInventory(),
-      loadGeneticTraitCatalog(),
-      loadUserGeneticItems(),
-      refreshGeneticMarketplaceData()
-    ]);
+  loadLabBoosterStoreCatalog(),
+  loadLabBoosterInventory(),
+  loadGeneticTraitCatalog(),
+  loadUserGeneticItems(),
+  refreshGeneticMarketplaceData(),
+  refreshGeneticMarketplaceHistory()
+]);
 
     renderAll();
     // 🧭 Handle deep link AFTER full render (CRITICAL)
@@ -12006,6 +13329,43 @@ el.geneticInventoryGrid?.addEventListener('click', event => {
   );
 });
 
+if (el.geneticMarketplaceHistoryToggle && el.geneticMarketplaceHistoryBody) {
+  el.geneticMarketplaceHistoryToggle.addEventListener('click', () => {
+    state.geneticMarketplaceHistoryExpanded = !state.geneticMarketplaceHistoryExpanded;
+
+    el.geneticMarketplaceHistoryBody.classList.toggle(
+      'hidden',
+      !state.geneticMarketplaceHistoryExpanded
+    );
+
+    el.geneticMarketplaceHistoryToggle.setAttribute(
+      'aria-expanded',
+      state.geneticMarketplaceHistoryExpanded ? 'true' : 'false'
+    );
+
+    el.geneticMarketplaceHistoryToggle.textContent = state.geneticMarketplaceHistoryExpanded
+      ? 'Hide History'
+      : 'Show History';
+  });
+}
+
+document.querySelectorAll('[data-marketplace-history-filter]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const filter = String(button.dataset.marketplaceHistoryFilter || 'all').trim().toLowerCase();
+
+    state.geneticMarketplaceHistoryFilter = filter || 'all';
+
+    document.querySelectorAll('[data-marketplace-history-filter]').forEach((otherButton) => {
+      otherButton.classList.toggle(
+        'active',
+        String(otherButton.dataset.marketplaceHistoryFilter || 'all').trim().toLowerCase() === state.geneticMarketplaceHistoryFilter
+      );
+    });
+
+    renderGeneticMarketplaceHistory();
+  });
+});
+
 function setupQuickAccessLinks() {
   document.querySelectorAll('[href="#lab-tab-my-genesis"], [href="#lab-panel-research-queue"]').forEach(link => {
     link.addEventListener('click', event => {
@@ -12069,6 +13429,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+    // 🐭 Bind themed Genesis mouse rename modal actions.
+  // DEVS FOR DECADES:
+  // This replaces the browser-native prompt with a Lab-styled modal.
+  // It still uses saveNftCustomName(), so custom names remain display-only labels.
+  const renameModal = document.getElementById('renameMouseModal');
+  const renameInput = document.getElementById('renameMouseInput');
+
+  if (renameModal && renameInput && renameModal.dataset.bound !== '1') {
+    renameModal.addEventListener('click', (event) => {
+      const clickedBackdrop = event.target === renameModal;
+      const cancelButton = event.target.closest('[data-rename-cancel]');
+      const clearButton = event.target.closest('[data-rename-clear]');
+      const saveButton = event.target.closest('[data-rename-save]');
+      const tokenId = String(renameModal.dataset.tokenId || '').trim();
+
+      if (clickedBackdrop || cancelButton) {
+        renameModal.hidden = true;
+        return;
+      }
+
+      if (clearButton) {
+        renameModal.hidden = true;
+        saveNftCustomName(tokenId, '');
+        return;
+      }
+
+      if (saveButton) {
+        renameModal.hidden = true;
+        saveNftCustomName(tokenId, renameInput.value);
+      }
+    });
+
+    renameInput.addEventListener('keydown', (event) => {
+      const tokenId = String(renameModal.dataset.tokenId || '').trim();
+
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        renameModal.hidden = true;
+        saveNftCustomName(tokenId, renameInput.value);
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        renameModal.hidden = true;
+      }
+    });
+
+    renameModal.dataset.bound = '1';
+  }
+
   switchLabTab('overview');
 
   logLab('Narrrf’s Lab frontend artifact mounted.', 'success');
@@ -12110,5 +13521,53 @@ document.addEventListener('click', function(event) {
   tabButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 </script>
+<!-- 🐭 Genesis Mouse Rename Modal -->
+<div id="renameMouseModal" class="lab-modal-backdrop" hidden>
+  <div class="lab-modal-shell rename-mouse-modal" role="dialog" aria-modal="true" aria-labelledby="renameMouseTitle">
+    <div class="lab-modal-glow"></div>
+
+    <div class="lab-modal-header">
+      <div>
+        <div class="lab-modal-kicker">Genesis Identity Lab</div>
+        <h3 id="renameMouseTitle" class="lab-modal-title">🐭 Rename Genesis Mouse</h3>
+      </div>
+      <button type="button" class="lab-modal-close" data-rename-cancel="true" aria-label="Close rename modal">×</button>
+    </div>
+
+    <div class="rename-mouse-body">
+      <div class="rename-mouse-preview">
+        <div class="rename-mouse-art" id="renameMouseArt">🐭</div>
+        <div class="rename-mouse-info">
+          <div class="rename-mouse-label">Original metadata name</div>
+          <div class="rename-mouse-original" id="renameMouseOriginalName">Genesis Mouse</div>
+          <div class="rename-mouse-token" id="renameMouseTokenId">Token ID</div>
+        </div>
+      </div>
+
+      <label class="rename-mouse-input-label" for="renameMouseInput">
+        Personal mouse name
+      </label>
+      <input
+        id="renameMouseInput"
+        class="rename-mouse-input"
+        type="text"
+        maxlength="32"
+        placeholder="Example: Cheese Wizard"
+        autocomplete="off"
+      />
+
+      <div class="rename-mouse-hint">
+        This name is display-only for your Lab. It never changes NFT metadata, token ID, traits, abilities, or marketplace identity.
+      </div>
+    </div>
+
+    <div class="lab-modal-actions">
+      <button type="button" class="btn ghost" data-rename-clear="true">🧹 Clear Name</button>
+      <div class="lab-modal-action-spacer"></div>
+      <button type="button" class="btn ghost" data-rename-cancel="true">Cancel</button>
+      <button type="button" class="btn success" data-rename-save="true">💾 Save Name</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
