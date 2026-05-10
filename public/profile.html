@@ -1,6 +1,31 @@
 <?php
-require_once __DIR__ . '/../api/config/session.php';
-narrrfs_touch_session();
+// 🔐 Shared Narrrfs session bootstrap for profile page.
+// DEVS FOR DECADES:
+// profile.html is served from /var/www/html on production,
+// but may live in /public locally. Try both safe paths before failing.
+$sessionBootstrapCandidates = [
+    __DIR__ . '/api/config/session.php',
+    __DIR__ . '/../api/config/session.php'
+];
+
+$sessionBootstrapLoaded = false;
+
+foreach ($sessionBootstrapCandidates as $sessionBootstrapPath) {
+    if (file_exists($sessionBootstrapPath)) {
+        require_once $sessionBootstrapPath;
+        $sessionBootstrapLoaded = true;
+        break;
+    }
+}
+
+if (!$sessionBootstrapLoaded) {
+    error_log('❌ Narrrf Profile: api/config/session.php not found from profile.html');
+    session_start();
+}
+
+if (function_exists('narrrfs_touch_session')) {
+    narrrfs_touch_session();
+}
 
 $discordId = $_SESSION['discord_id'] ?? '';
 
