@@ -81,11 +81,13 @@ try {
                 continue;
             }
             
-            // Validate file size (max 5MB)
-            if ($file_size > 5 * 1024 * 1024) {
-                $errors[] = "File '$file_name' is too large. Maximum size is 5MB.";
-                continue;
-            }
+            // Validate file size (max 12MB)
+$max_file_size = 12 * 1024 * 1024;
+
+if ($file_size > $max_file_size) {
+    $errors[] = "File '$file_name' is too large. Maximum size is 12MB.";
+    continue;
+}
             
             // Generate unique filename
             // Generate unique Samuzi filename

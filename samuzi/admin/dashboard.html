@@ -1755,13 +1755,21 @@ select option {
 
                 const result = await response.json();
                 if (result.success) {
-                    showAlert('✅ Artwork uploaded successfully!');
-                    currentPage = 1; // Reset to first page
-                    loadPhotos(currentPage);
-                    loadPhotoCount(); // Update photo count
-                } else {
-                    showAlert('❌ Upload failed: ' + result.message, 'error');
-                }
+    const warningText = Array.isArray(result.errors) && result.errors.length
+        ? ' Some files were skipped: ' + result.errors.join(' | ')
+        : '';
+
+    showAlert('✅ Artwork uploaded successfully!' + warningText);
+    currentPage = 1;
+    loadPhotos(currentPage);
+    loadPhotoCount();
+} else {
+    const errorText = Array.isArray(result.errors) && result.errors.length
+        ? result.errors.join(' | ')
+        : (result.message || 'Unknown upload error');
+
+    showAlert('❌ Upload failed: ' + errorText, 'error');
+}
             } catch (error) {
                 console.error('Upload error:', error);
                 showAlert('❌ Error uploading artwork', 'error');

@@ -4,177 +4,508 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About — Samuzi NFT</title>
-    <meta name="description" content="About Samuzi NFT. Community-first Web3 brand building with long-term utility.">
-    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-blank-2">
+    <meta name="description" content="About Samuzi NFT. A Solana-based digital collectible brand inspired by futuristic samurai culture, streetwear energy, lore, and community.">
+    <meta name="keywords" content="Samuzi NFT, Solana NFT, Web3 collectibles, samurai NFT, cyberpunk NFT, SMZ">
+    <meta property="og:title" content="About Samuzi NFT">
+    <meta property="og:description" content="A Solana-based digital collectible brand built around art, lore, community, and long-term creative utility.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#07070b">
+
+    <link rel="icon" href="./favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-about-1">
+
     <style>
-       body {
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at 50% 0%, rgba(225,29,72,0.22), transparent 36%),
-        radial-gradient(circle at 82% 18%, rgba(249,115,22,0.13), transparent 28%),
-        linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
-    color: #f8fafc;
-}
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(225,29,72,0.22), transparent 36%),
+                radial-gradient(circle at 82% 18%, rgba(249,115,22,0.13), transparent 28%),
+                linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
+            color: #f8fafc;
+        }
 
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        linear-gradient(to bottom, rgba(0,0,0,0.24), rgba(0,0,0,0.82)),
-        url("./assets/background/phase3-coming-soon.jpg");
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
-    opacity: 0.42;
-    pointer-events: none;
-    z-index: -2;
-}
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(to bottom, rgba(0,0,0,0.22), rgba(0,0,0,0.84)),
+                url("./assets/background/phase3-coming-soon.jpg");
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            opacity: 0.44;
+            pointer-events: none;
+            z-index: -2;
+        }
 
-body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(circle at 50% 28%, rgba(225,29,72,0.18), transparent 34%),
-        linear-gradient(to bottom, rgba(7,7,11,0.12), rgba(7,7,11,0.88));
-    pointer-events: none;
-    z-index: -1;
-}
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 24%, rgba(225,29,72,0.20), transparent 34%),
+                radial-gradient(circle at 70% 12%, rgba(249,115,22,0.12), transparent 28%),
+                linear-gradient(to bottom, rgba(7,7,11,0.10), rgba(7,7,11,0.88));
+            pointer-events: none;
+            z-index: -1;
+        }
 
-.samuzi-header-logo {
-    height: 72px;
-    width: 72px;
-    object-fit: contain;
-    border-radius: 999px;
-    padding: 4px;
-    background:
-        radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
-    border: 1px solid rgba(249,115,22,0.28);
-    box-shadow:
-        0 0 20px rgba(249,115,22,0.20),
-        0 0 40px rgba(225,29,72,0.12);
-}
+        .samuzi-header-logo {
+            height: 72px;
+            width: 72px;
+            object-fit: contain;
+            border-radius: 999px;
+            padding: 4px;
+            background:
+                radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
+            border: 1px solid rgba(249,115,22,0.28);
+            box-shadow:
+                0 0 20px rgba(249,115,22,0.20),
+                0 0 40px rgba(225,29,72,0.12);
+        }
 
-.nav-list a.nav-locked {
-    color: rgba(203, 213, 225, 0.42);
-    cursor: not-allowed;
-    opacity: 0.55;
-    filter: grayscale(1);
-    background: rgba(255,255,255,0.025);
-    border-color: rgba(255,255,255,0.045);
-    box-shadow: none;
-}
+        .about-hero {
+            padding: clamp(4rem, 8vw, 7rem) 0 3rem;
+        }
 
-.locked-page {
-    min-height: calc(100vh - 260px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 0;
-}
+        .about-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 0.95rem;
+            border-radius: 999px;
+            color: #ffffff;
+            background: rgba(225,29,72,0.16);
+            border: 1px solid rgba(225,29,72,0.34);
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            box-shadow: 0 0 34px rgba(225,29,72,0.22);
+        }
 
-.locked-panel {
-    width: min(920px, 100%);
-    text-align: center;
-    background: linear-gradient(180deg, rgba(18,18,28,0.90), rgba(9,9,15,0.84));
-    border: 1px solid rgba(225,29,72,0.32);
-    border-radius: 28px;
-    padding: clamp(2rem, 5vw, 4rem);
-    box-shadow: 0 24px 80px rgba(0,0,0,0.58);
-    backdrop-filter: blur(16px);
-}
+        .about-title {
+            max-width: 1020px;
+            margin: 1.25rem 0 1.1rem;
+            color: #ffffff;
+            font-size: clamp(3rem, 8vw, 7rem);
+            line-height: 0.9;
+            font-weight: 950;
+            letter-spacing: -0.07em;
+            text-shadow:
+                0 8px 28px rgba(0,0,0,0.70),
+                0 0 38px rgba(225,29,72,0.24);
+        }
 
-.locked-kicker {
-    display: inline-flex;
-    margin-bottom: 1rem;
-    padding: 0.52rem 0.9rem;
-    border-radius: 999px;
-    color: #ffffff;
-    background: rgba(225,29,72,0.16);
-    border: 1px solid rgba(225,29,72,0.34);
-    font-size: 0.78rem;
-    font-weight: 900;
-    letter-spacing: 0.10em;
-    text-transform: uppercase;
-}
+        .about-title span {
+            display: block;
+            color: #fff1e7;
+        }
 
-.locked-panel h1 {
-    color: #ffffff;
-    font-size: clamp(2.3rem, 6vw, 5rem);
-    line-height: 0.95;
-    margin-bottom: 1rem;
-    letter-spacing: -0.05em;
-    text-shadow:
-        0 8px 28px rgba(0,0,0,0.70),
-        0 0 38px rgba(225,29,72,0.24);
-}
+        .about-intro {
+            max-width: 900px;
+            color: #dbe4f0;
+            font-size: clamp(1.05rem, 2vw, 1.28rem);
+            line-height: 1.85;
+            text-shadow: 0 3px 16px rgba(0,0,0,0.82);
+        }
 
-.locked-panel p {
-    max-width: 700px;
-    margin: 0 auto 2rem;
-    color: #cbd5e1;
-    font-size: 1.05rem;
-    line-height: 1.8;
-}
+        .about-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.8rem;
+        }
 
-.locked-actions {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
+        .about-section {
+            padding: 1.6rem 0;
+        }
 
-.locked-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.95rem 1.35rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 800;
-    color: #ffffff;
-    border: 1px solid rgba(249,115,22,0.30);
-    background: linear-gradient(135deg, #e11d48, #f97316);
-    box-shadow: 0 12px 34px rgba(225,29,72,0.26);
-}
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.15rem;
+        }
 
-.locked-button.secondary {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.12);
-    box-shadow: none;
-}
+        .about-card {
+            grid-column: span 4;
+            background: linear-gradient(180deg, rgba(18,18,28,0.90), rgba(9,9,15,0.84));
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 24px;
+            padding: clamp(1.25rem, 2.5vw, 1.8rem);
+            box-shadow: 0 18px 58px rgba(0,0,0,0.46);
+            backdrop-filter: blur(16px);
+        }
 
-@media (max-width: 640px) {
-    .locked-actions {
-        flex-direction: column;
-    }
+        .about-card.wide {
+            grid-column: span 8;
+        }
 
-    .locked-button {
-        width: 100%;
-    }
-}
+        .about-card.full {
+            grid-column: 1 / -1;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            margin-bottom: 0.8rem;
+            color: #fecaca;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .about-card h2,
+        .about-card h3 {
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 0.85rem;
+        }
+
+        .about-card h2 {
+            font-size: clamp(1.75rem, 3vw, 2.65rem);
+        }
+
+        .about-card h3 {
+            font-size: 1.35rem;
+        }
+
+        .about-card p,
+        .about-card li {
+            color: #cbd5e1;
+            line-height: 1.78;
+        }
+
+        .about-card ul {
+            padding-left: 1.1rem;
+            margin-top: 0.85rem;
+        }
+
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-box {
+            padding: 1.1rem;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.09);
+        }
+
+        .stat-box strong {
+            display: block;
+            color: #ffffff;
+            font-size: 1.45rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-box span {
+            color: #cbd5e1;
+            line-height: 1.55;
+        }
+
+        .mission-panel {
+            margin-top: 1rem;
+            padding: clamp(1.4rem, 3vw, 2.2rem);
+            border-radius: 26px;
+            background:
+                radial-gradient(circle at 20% 0%, rgba(225,29,72,0.16), transparent 36%),
+                linear-gradient(180deg, rgba(18,18,28,0.92), rgba(9,9,15,0.86));
+            border: 1px solid rgba(225,29,72,0.28);
+            box-shadow: 0 22px 70px rgba(0,0,0,0.52);
+            backdrop-filter: blur(16px);
+        }
+
+        .mission-panel h2 {
+            color: #ffffff;
+            font-size: clamp(1.9rem, 4vw, 3.4rem);
+            line-height: 1;
+            margin-bottom: 1rem;
+            letter-spacing: -0.04em;
+        }
+
+        .mission-panel p {
+            color: #cbd5e1;
+            line-height: 1.82;
+            max-width: 900px;
+        }
+
+        .final-about {
+            padding: 2rem 0 5rem;
+        }
+
+        .final-about .mission-panel {
+            text-align: center;
+        }
+
+        .final-about .about-actions {
+            justify-content: center;
+        }
+
+        @media (max-width: 980px) {
+            .about-card,
+            .about-card.wide {
+                grid-column: 1 / -1;
+            }
+
+            .stats-strip {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .about-actions {
+                flex-direction: column;
+            }
+
+            .about-actions a {
+                width: 100%;
+            }
+        }
     </style>
 </head>
+
 <body>
-<header class="header"><div class="container"><div class="header-content"><div class="logo"><img src="./favicon.png" alt="Samuzi NFT Logo" class="logo-image samuzi-header-logo"></div><nav class="nav-inline"><ul class="nav-list"><li><a href="index.html">Home</a></li><li><a href="projects.html">Projects</a></li><li><a href="contact.html">Contact</a></li><li><a href="about.html" class="active">About</a></li><li><a href="legal.html">Legal</a></li></ul></nav></div></div></header>
-<main class="main-content">
+<header class="header">
     <div class="container">
-        <section class="locked-page">
-            <div class="locked-panel">
-                <div class="locked-kicker">About Locked</div>
-                <h1>The story unlocks soon.</h1>
-                <p>
-                    Samuzi Phase 3 storytelling is being prepared. This page stays locked during customer preview
-                    while the final brand content is reviewed.
-                </p>
-                <div class="locked-actions">
-                    <a href="index.html" class="locked-button">Back to Home</a>
-                    <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="locked-button secondary">Follow on X</a>
+        <div class="header-content">
+            <div class="logo">
+                <img src="./favicon.png" alt="Samuzi NFT Logo" class="logo-image samuzi-header-logo">
+            </div>
+
+            <nav class="nav-inline">
+                <ul class="nav-list">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html" class="active">About</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                    <li><a href="projects.html">Events</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="legal.html">Legal</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <section class="about-hero">
+        <div class="container">
+            <div class="about-kicker">🌸 About Samuzi NFT</div>
+
+            <h1 class="about-title">
+                Cyber samurai culture.
+                <span>Built on Solana.</span>
+            </h1>
+
+            <p class="about-intro">
+                Samuzi NFT is a digital collectible brand inspired by futuristic samurai identity,
+                elegant streetwear energy, cyberpunk storytelling, and community-powered Web3 culture.
+                Phase 1 and Phase 2 are sold out. Phase 3 is preparing the next chapter.
+            </p>
+
+            <div class="about-actions">
+                <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
+                    Join Discord
+                </a>
+                <a href="whitepaper.html" class="button-secondary">
+                    Read Whitepaper
+                </a>
+                <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="button-secondary">
+                    Follow on X
+                </a>
+            </div>
+
+            <div class="stats-strip">
+                <div class="stat-box">
+                    <strong>Solana</strong>
+                    <span>Fast, scalable blockchain infrastructure for digital collectibles.</span>
+                </div>
+                <div class="stat-box">
+                    <strong>Sold Out</strong>
+                    <span>Phase 1 and Phase 2 completed with community momentum.</span>
+                </div>
+                <div class="stat-box">
+                    <strong>Phase 3</strong>
+                    <span>The next expansion is focused on art, lore, access, and growth.</span>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
+
+    <section class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <article class="about-card wide">
+                    <span class="eyebrow">What is Samuzi NFT?</span>
+                    <h2>A movement of rebellion, creativity, and identity.</h2>
+                    <p>
+                        Samuzi NFT is a uniquely designed digital collectible series on the Solana blockchain.
+                        The project combines futuristic samurai culture with modern fashion attitude and Web3
+                        community building. Each Samuzi character represents freedom, individuality, and the
+                        spirit of digital ownership.
+                    </p>
+                    <p>
+                        The long-term goal is to grow Samuzi into a lifestyle brand powered by digital assets,
+                        bridging NFT culture with art, fashion, storytelling, community experiences, and future
+                        creative utility.
+                    </p>
+                </article>
+
+                <article class="about-card">
+                    <span class="eyebrow">Brand Core</span>
+                    <h3>Art first</h3>
+                    <p>
+                        Strong character design, visual identity, rarity, and lore are at the center of the
+                        Samuzi universe.
+                    </p>
+                </article>
+
+                <article class="about-card">
+                    <span class="eyebrow">Community</span>
+                    <h3>Built with holders</h3>
+                    <p>
+                        Samuzi is shaped around community access, transparent updates, holder recognition,
+                        and collaborative growth.
+                    </p>
+                </article>
+
+                <article class="about-card">
+                    <span class="eyebrow">Chain</span>
+                    <h3>Why Solana?</h3>
+                    <p>
+                        Solana provides speed, scalability, and low transaction costs, making it a strong
+                        foundation for collectible access and future ecosystem features.
+                    </p>
+                </article>
+
+                <article class="about-card full">
+                    <span class="eyebrow">Art & Lore</span>
+                    <h2>Digital warriors in a corrupted future.</h2>
+                    <p>
+                        The Samuzi lore revolves around a cyberpunk universe where digital warriors fight for
+                        decentralization, creativity, and freedom from the corrupted systems of old. The art style
+                        blends samurai tradition, futuristic armor, streetwear, and bold collectible traits.
+                    </p>
+                    <ul>
+                        <li>Cyberpunk samurai-inspired character universe.</li>
+                        <li>Unique collectible traits and rarity-driven artwork.</li>
+                        <li>Storytelling potential through lore, comics, animations, and community content.</li>
+                        <li>Visual identity built for long-term brand expansion.</li>
+                    </ul>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-section">
+        <div class="container">
+            <div class="mission-panel">
+                <span class="eyebrow">Mission</span>
+                <h2>Building a lifestyle brand from digital culture.</h2>
+                <p>
+                    Samuzi’s mission is to create a meaningful Web3 brand where holders are more than collectors.
+                    Through digital access, creative drops, partner opportunities, community raffles, exclusive
+                    discussions, and future experiences, Samuzi aims to connect art, community, and long-term
+                    cultural identity.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <article class="about-card">
+                    <span class="eyebrow">Utility</span>
+                    <h3>Holder-only access</h3>
+                    <p>
+                        Holder spaces, private discussions, exclusive drops, and project updates can give the
+                        community closer access to Samuzi’s growth.
+                    </p>
+                </article>
+
+                <article class="about-card">
+                    <span class="eyebrow">Rewards</span>
+                    <h3>Raffles & partner access</h3>
+                    <p>
+                        The community can receive access to raffles, collaborations, partner allowlists, digital
+                        content, and future reward opportunities.
+                    </p>
+                </article>
+
+                <article class="about-card">
+                    <span class="eyebrow">Future Vision</span>
+                    <h3>Gaming and lore expansion</h3>
+                    <p>
+                        Future concepts may include game-related integrations, deeper lore, comic or animation
+                        concepts, and community-led creative direction.
+                    </p>
+                </article>
+
+                <article class="about-card full">
+                    <span class="eyebrow">Community First</span>
+                    <h2>Samuzi is not just a project. It is a movement.</h2>
+                    <p>
+                        The project is building an inclusive and active community where creativity meets opportunity.
+                        AMAs, contests, collaborations, giveaways, transparent communication, and holder recognition
+                        are part of the long-term Samuzi philosophy.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="final-about">
+        <div class="container">
+            <div class="mission-panel">
+                <span class="eyebrow">Welcome to Samuzi</span>
+                <h2>The next chapter is loading.</h2>
+                <p>
+                    Phase 3 is the next signal for the Samuzi ecosystem. Follow the official channels and join
+                    the community to stay close to new updates.
+                </p>
+
+                <div class="about-actions">
+                    <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
+                        Join Discord
+                    </a>
+                    <a href="whitepaper.html" class="button-secondary">
+                        Read Whitepaper
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Samuzi NFT</h4>
+                <p>Solana digital collectibles.</p>
+                <p>© 2026 Samuzi NFT</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Status</h4>
+                <p>Phase 1 & 2 sold out</p>
+                <p>Phase 3 preparing</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Official Links</h4>
+                <p><a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer">𝕏 @samuziNFT</a></p>
+                <p><a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">Discord Community</a></p>
+            </div>
+        </div>
     </div>
-</main><footer class="footer"><div class="container"><div class="footer-content"><div class="footer-section"><h4>Samuzi NFT</h4><p>© 2026</p></div></div></div></footer>
+</footer>
 </body>
 </html>

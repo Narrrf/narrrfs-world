@@ -3,178 +3,490 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects — Samuzi NFT</title>
-    <meta name="description" content="Project and showcase page for Samuzi NFT. Blank template ready for content.">
-    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-blank-2">
+    <title>Events — Samuzi NFT</title>
+    <meta name="description" content="Samuzi NFT events, raffles, giveaways, partner drops, and community announcements are coming soon.">
+    <meta name="keywords" content="Samuzi NFT events, Samuzi giveaways, Samuzi raffles, Solana NFT events, Samuzi community">
+    <meta property="og:title" content="Events — Samuzi NFT">
+    <meta property="og:description" content="Community events, raffles, giveaways, and Phase 3 announcements are coming soon.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#07070b">
+
+    <link rel="icon" href="./favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-events-1">
+
     <style>
-       body {
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at 50% 0%, rgba(225,29,72,0.22), transparent 36%),
-        radial-gradient(circle at 82% 18%, rgba(249,115,22,0.13), transparent 28%),
-        linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
-    color: #f8fafc;
-}
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(225,29,72,0.22), transparent 36%),
+                radial-gradient(circle at 82% 18%, rgba(249,115,22,0.13), transparent 28%),
+                linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
+            color: #f8fafc;
+        }
 
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        linear-gradient(to bottom, rgba(0,0,0,0.24), rgba(0,0,0,0.82)),
-        url("./assets/background/phase3-coming-soon.jpg");
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
-    opacity: 0.42;
-    pointer-events: none;
-    z-index: -2;
-}
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(to bottom, rgba(0,0,0,0.22), rgba(0,0,0,0.84)),
+                url("./assets/background/phase3-coming-soon.jpg");
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            opacity: 0.44;
+            pointer-events: none;
+            z-index: -2;
+        }
 
-body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(circle at 50% 28%, rgba(225,29,72,0.18), transparent 34%),
-        linear-gradient(to bottom, rgba(7,7,11,0.12), rgba(7,7,11,0.88));
-    pointer-events: none;
-    z-index: -1;
-}
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 24%, rgba(225,29,72,0.20), transparent 34%),
+                radial-gradient(circle at 70% 12%, rgba(249,115,22,0.12), transparent 28%),
+                linear-gradient(to bottom, rgba(7,7,11,0.10), rgba(7,7,11,0.88));
+            pointer-events: none;
+            z-index: -1;
+        }
 
-.samuzi-header-logo {
-    height: 72px;
-    width: 72px;
-    object-fit: contain;
-    border-radius: 999px;
-    padding: 4px;
-    background:
-        radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
-    border: 1px solid rgba(249,115,22,0.28);
-    box-shadow:
-        0 0 20px rgba(249,115,22,0.20),
-        0 0 40px rgba(225,29,72,0.12);
-}
+        .samuzi-header-logo {
+            height: 72px;
+            width: 72px;
+            object-fit: contain;
+            border-radius: 999px;
+            padding: 4px;
+            background:
+                radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
+            border: 1px solid rgba(249,115,22,0.28);
+            box-shadow:
+                0 0 20px rgba(249,115,22,0.20),
+                0 0 40px rgba(225,29,72,0.12);
+        }
 
-.nav-list a.nav-locked {
-    color: rgba(203, 213, 225, 0.42);
-    cursor: not-allowed;
-    opacity: 0.55;
-    filter: grayscale(1);
-    background: rgba(255,255,255,0.025);
-    border-color: rgba(255,255,255,0.045);
-    box-shadow: none;
-}
+        .events-hero {
+            min-height: calc(100vh - 92px);
+            display: flex;
+            align-items: center;
+            padding: clamp(4rem, 8vw, 7rem) 0 4rem;
+        }
 
-.locked-page {
-    min-height: calc(100vh - 260px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 0;
-}
+        .events-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+            gap: clamp(1.5rem, 4vw, 3rem);
+            align-items: center;
+        }
 
-.locked-panel {
-    width: min(920px, 100%);
-    text-align: center;
-    background: linear-gradient(180deg, rgba(18,18,28,0.90), rgba(9,9,15,0.84));
-    border: 1px solid rgba(225,29,72,0.32);
-    border-radius: 28px;
-    padding: clamp(2rem, 5vw, 4rem);
-    box-shadow: 0 24px 80px rgba(0,0,0,0.58);
-    backdrop-filter: blur(16px);
-}
+        .events-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 0.95rem;
+            border-radius: 999px;
+            color: #ffffff;
+            background: rgba(225,29,72,0.16);
+            border: 1px solid rgba(225,29,72,0.34);
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            box-shadow: 0 0 34px rgba(225,29,72,0.22);
+        }
 
-.locked-kicker {
-    display: inline-flex;
-    margin-bottom: 1rem;
-    padding: 0.52rem 0.9rem;
-    border-radius: 999px;
-    color: #ffffff;
-    background: rgba(225,29,72,0.16);
-    border: 1px solid rgba(225,29,72,0.34);
-    font-size: 0.78rem;
-    font-weight: 900;
-    letter-spacing: 0.10em;
-    text-transform: uppercase;
-}
+        .events-title {
+            max-width: 980px;
+            margin: 1.25rem 0 1.1rem;
+            color: #ffffff;
+            font-size: clamp(3rem, 8vw, 7rem);
+            line-height: 0.9;
+            font-weight: 950;
+            letter-spacing: -0.07em;
+            text-shadow:
+                0 8px 28px rgba(0,0,0,0.70),
+                0 0 38px rgba(225,29,72,0.24);
+        }
 
-.locked-panel h1 {
-    color: #ffffff;
-    font-size: clamp(2.3rem, 6vw, 5rem);
-    line-height: 0.95;
-    margin-bottom: 1rem;
-    letter-spacing: -0.05em;
-    text-shadow:
-        0 8px 28px rgba(0,0,0,0.70),
-        0 0 38px rgba(225,29,72,0.24);
-}
+        .events-title span {
+            display: block;
+            color: #fff1e7;
+        }
 
-.locked-panel p {
-    max-width: 700px;
-    margin: 0 auto 2rem;
-    color: #cbd5e1;
-    font-size: 1.05rem;
-    line-height: 1.8;
-}
+        .events-copy {
+            max-width: 820px;
+            color: #dbe4f0;
+            font-size: clamp(1.05rem, 2vw, 1.28rem);
+            line-height: 1.85;
+            text-shadow: 0 3px 16px rgba(0,0,0,0.82);
+        }
 
-.locked-actions {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
+        .events-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.8rem;
+        }
 
-.locked-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.95rem 1.35rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 800;
-    color: #ffffff;
-    border: 1px solid rgba(249,115,22,0.30);
-    background: linear-gradient(135deg, #e11d48, #f97316);
-    box-shadow: 0 12px 34px rgba(225,29,72,0.26);
-}
+        .events-panel,
+        .event-card,
+        .events-final-panel {
+            background: linear-gradient(180deg, rgba(18,18,28,0.92), rgba(9,9,15,0.84));
+            border: 1px solid rgba(225,29,72,0.30);
+            border-radius: 28px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.54);
+            backdrop-filter: blur(16px);
+        }
 
-.locked-button.secondary {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.12);
-    box-shadow: none;
-}
+        .events-panel {
+            padding: clamp(1.35rem, 3vw, 2.3rem);
+        }
 
-@media (max-width: 640px) {
-    .locked-actions {
-        flex-direction: column;
-    }
+        .panel-kicker {
+            display: inline-flex;
+            margin-bottom: 1rem;
+            padding: 0.48rem 0.82rem;
+            border-radius: 999px;
+            color: #ffffff;
+            background: rgba(225,29,72,0.16);
+            border: 1px solid rgba(225,29,72,0.34);
+            font-size: 0.74rem;
+            font-weight: 900;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+        }
 
-    .locked-button {
-        width: 100%;
-    }
-}
+        .events-panel h2 {
+            color: #ffffff;
+            font-size: clamp(1.8rem, 3vw, 2.8rem);
+            line-height: 1.05;
+            margin-bottom: 0.9rem;
+        }
+
+        .events-panel p {
+            color: #cbd5e1;
+            line-height: 1.8;
+        }
+
+        .coming-list {
+            display: grid;
+            gap: 0.9rem;
+            margin-top: 1.4rem;
+        }
+
+        .coming-list div {
+            padding: 1rem;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.09);
+        }
+
+        .coming-list strong {
+            display: block;
+            color: #ffffff;
+            margin-bottom: 0.35rem;
+        }
+
+        .coming-list span {
+            color: #cbd5e1;
+            line-height: 1.55;
+            font-size: 0.94rem;
+        }
+
+        .events-section {
+            padding: 2.4rem 0;
+        }
+
+        .events-heading {
+            margin-bottom: 1.5rem;
+        }
+
+        .events-heading h2 {
+            color: #ffffff;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            line-height: 1.05;
+            margin: 1rem 0 0.7rem;
+            letter-spacing: -0.04em;
+        }
+
+        .events-heading p {
+            color: #cbd5e1;
+            max-width: 820px;
+            line-height: 1.8;
+        }
+
+        .event-types-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .event-card {
+            padding: 1.25rem;
+            border-color: rgba(255,255,255,0.10);
+        }
+
+        .event-card span {
+            display: inline-flex;
+            color: #fecaca;
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            margin-bottom: 0.7rem;
+        }
+
+        .event-card h3 {
+            color: #ffffff;
+            margin-bottom: 0.55rem;
+        }
+
+        .event-card p {
+            color: #cbd5e1;
+            line-height: 1.7;
+        }
+
+        .events-final {
+            padding: 2rem 0 5rem;
+        }
+
+        .events-final-panel {
+            text-align: center;
+            padding: clamp(1.6rem, 4vw, 3rem);
+        }
+
+        .events-final-panel h2 {
+            color: #ffffff;
+            font-size: clamp(1.9rem, 4vw, 3.4rem);
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 1rem 0;
+        }
+
+        .events-final-panel p {
+            color: #cbd5e1;
+            line-height: 1.82;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .events-final-panel .events-actions {
+            justify-content: center;
+        }
+
+        @media (max-width: 980px) {
+            .events-grid,
+            .event-types-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .events-hero {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .events-actions {
+                flex-direction: column;
+            }
+
+            .events-actions a {
+                width: 100%;
+            }
+        }
     </style>
 </head>
+
 <body>
-<header class="header"><div class="container"><div class="header-content"><div class="logo"><img src="./favicon.png" alt="Samuzi NFT Logo" class="logo-image samuzi-header-logo"></div><nav class="nav-inline"><ul class="nav-list"><li><a href="index.html">Home</a></li><li><a href="projects.html" class="active">Projects</a></li><li><a href="contact.html">Contact</a></li><li><a href="about.html">About</a></li><li><a href="legal.html">Legal</a></li></ul></nav></div></div></header>
-<main class="main-content">
+<header class="header">
     <div class="container">
-        <section class="locked-page">
-            <div class="locked-panel">
-                <div class="locked-kicker">Projects Locked</div>
-                <h1>Roadmap access opens soon.</h1>
-                <p>
-                    The Samuzi project showcase is prepared, but public access is locked during the customer preview phase.
-                    Full roadmap cards and launch details unlock after approval.
-                </p>
-                <div class="locked-actions">
-                    <a href="index.html" class="locked-button">Back to Home</a>
-                    <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="locked-button secondary">Follow on X</a>
+        <div class="header-content">
+            <div class="logo">
+                <img src="./favicon.png" alt="Samuzi NFT Logo" class="logo-image samuzi-header-logo">
+            </div>
+
+            <nav class="nav-inline">
+                <ul class="nav-list">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                    <li><a href="projects.html" class="active">Events</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="legal.html">Legal</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <section class="events-hero">
+        <div class="container">
+            <div class="events-grid">
+                <div>
+                    <div class="events-kicker">🎁 Events & Giveaways</div>
+
+                    <h1 class="events-title">
+                        Community events.
+                        <span>Coming soon.</span>
+                    </h1>
+
+                    <p class="events-copy">
+                        This area will become the public board for Samuzi raffles, giveaways, partner drops,
+                        holder rewards, community events, and Phase 3 announcements. The admin system is ready —
+                        content will be published here after final review.
+                    </p>
+
+                    <div class="events-actions">
+                        <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
+                            Join Discord
+                        </a>
+                        <a href="whitepaper.html" class="button-secondary">
+                            Read Whitepaper
+                        </a>
+                        <a href="contact.html" class="button-secondary">
+                            Contact Samuzi
+                        </a>
+                    </div>
+                </div>
+
+                <div class="events-panel">
+                    <span class="panel-kicker">Admin-ready</span>
+                    <h2>Events can be posted later.</h2>
+                    <p>
+                        The backend flow is already prepared through the existing project/showcase system.
+                        We keep the internal route stable, but present it publicly as Samuzi Events.
+                    </p>
+
+                    <div class="coming-list">
+                        <div>
+                            <strong>Raffles & Giveaways</strong>
+                            <span>Public entries for community prizes, NFT giveaways, and holder reward campaigns.</span>
+                        </div>
+                        <div>
+                            <strong>Partner Drops</strong>
+                            <span>Collab events, allowlist access, partner project signals, and cross-community updates.</span>
+                        </div>
+                        <div>
+                            <strong>Phase Updates</strong>
+                            <span>Short announcement cards for Phase 3 milestones, lore drops, and collection updates.</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
+
+    <section class="events-section">
+        <div class="container">
+            <div class="events-heading">
+                <span class="status-pill">What will appear here</span>
+                <h2>One board for Samuzi community activity.</h2>
+                <p>
+                    The customer can use this area later as a flexible public news board.
+                    It can show planned events, completed giveaways, partner collaborations, and upcoming holder-only activities.
+                </p>
+            </div>
+
+            <div class="event-types-grid">
+                <article class="event-card">
+                    <span>01 · Giveaway</span>
+                    <h3>NFT & reward campaigns</h3>
+                    <p>
+                        Announce community giveaways, digital rewards, NFT raffles, and special holder campaigns.
+                    </p>
+                </article>
+
+                <article class="event-card">
+                    <span>02 · Raffle</span>
+                    <h3>Community prize events</h3>
+                    <p>
+                        Publish raffle details, entry windows, winner notes, and official event status updates.
+                    </p>
+                </article>
+
+                <article class="event-card">
+                    <span>03 · Collaboration</span>
+                    <h3>Partner access</h3>
+                    <p>
+                        Promote partner drops, allowlist access, cross-community events, and collaboration news.
+                    </p>
+                </article>
+
+                <article class="event-card">
+                    <span>04 · Holder Reward</span>
+                    <h3>Access for supporters</h3>
+                    <p>
+                        Highlight private holder benefits, Discord activities, role-based rewards, and bonus content.
+                    </p>
+                </article>
+
+                <article class="event-card">
+                    <span>05 · Phase Update</span>
+                    <h3>Project progress</h3>
+                    <p>
+                        Share Phase 3 signals, collection updates, lore releases, marketplace notes, and ecosystem progress.
+                    </p>
+                </article>
+
+                <article class="event-card">
+                    <span>06 · Announcement</span>
+                    <h3>Official news</h3>
+                    <p>
+                        Keep important Samuzi information visible beyond Discord and social media feeds.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="events-final">
+        <div class="container">
+            <div class="events-final-panel">
+                <span class="status-pill">Launch note</span>
+                <h2>Events unlock after detailed review.</h2>
+                <p>
+                    The page is intentionally styled and ready, but no live event cards are published yet.
+                    Follow Discord and X for the fastest updates while the public board is being finalized.
+                </p>
+
+                <div class="events-actions">
+                    <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
+                        Join Discord
+                    </a>
+                    <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="button-secondary">
+                        Follow on X
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Samuzi NFT</h4>
+                <p>Solana digital collectibles.</p>
+                <p>© 2026 Samuzi NFT</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Events</h4>
+                <p>Giveaways, raffles, drops.</p>
+                <p>Coming soon.</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Official Links</h4>
+                <p><a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer">𝕏 @samuziNFT</a></p>
+                <p><a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">Discord Community</a></p>
+            </div>
+        </div>
     </div>
-</main><footer class="footer"><div class="container"><div class="footer-content"><div class="footer-section"><h4>Samuzi NFT</h4><p>© 2026</p></div></div></div></footer>
+</footer>
 </body>
 </html>

@@ -4,178 +4,594 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact — Samuzi NFT</title>
-    <meta name="description" content="Contact page for Samuzi NFT. Official inquiries, partnerships, and support.">
-    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-blank-2">
+    <meta name="description" content="Contact Samuzi NFT for official inquiries, collaborations, partnerships, and community support.">
+    <meta name="keywords" content="Samuzi NFT contact, Samuzi Discord, Samuzi NFT email, Solana NFT project">
+    <meta property="og:title" content="Contact — Samuzi NFT">
+    <meta property="og:description" content="Official contact page for Samuzi NFT.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#07070b">
+
+    <link rel="icon" href="./favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-contact-1">
+
     <style>
-       body {
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at 50% 0%, rgba(225,29,72,0.22), transparent 36%),
-        radial-gradient(circle at 82% 18%, rgba(249,115,22,0.13), transparent 28%),
-        linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
-    color: #f8fafc;
-}
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(225,29,72,0.22), transparent 36%),
+                radial-gradient(circle at 82% 18%, rgba(249,115,22,0.13), transparent 28%),
+                linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
+            color: #f8fafc;
+        }
 
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        linear-gradient(to bottom, rgba(0,0,0,0.24), rgba(0,0,0,0.82)),
-        url("./assets/background/phase3-coming-soon.jpg");
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
-    opacity: 0.42;
-    pointer-events: none;
-    z-index: -2;
-}
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(to bottom, rgba(0,0,0,0.22), rgba(0,0,0,0.84)),
+                url("./assets/background/phase3-coming-soon.jpg");
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            opacity: 0.44;
+            pointer-events: none;
+            z-index: -2;
+        }
 
-body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(circle at 50% 28%, rgba(225,29,72,0.18), transparent 34%),
-        linear-gradient(to bottom, rgba(7,7,11,0.12), rgba(7,7,11,0.88));
-    pointer-events: none;
-    z-index: -1;
-}
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 24%, rgba(225,29,72,0.20), transparent 34%),
+                radial-gradient(circle at 70% 12%, rgba(249,115,22,0.12), transparent 28%),
+                linear-gradient(to bottom, rgba(7,7,11,0.10), rgba(7,7,11,0.88));
+            pointer-events: none;
+            z-index: -1;
+        }
 
-.samuzi-header-logo {
-    height: 72px;
-    width: 72px;
-    object-fit: contain;
-    border-radius: 999px;
-    padding: 4px;
-    background:
-        radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
-    border: 1px solid rgba(249,115,22,0.28);
-    box-shadow:
-        0 0 20px rgba(249,115,22,0.20),
-        0 0 40px rgba(225,29,72,0.12);
-}
+        .samuzi-header-logo {
+            height: 72px;
+            width: 72px;
+            object-fit: contain;
+            border-radius: 999px;
+            padding: 4px;
+            background:
+                radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
+            border: 1px solid rgba(249,115,22,0.28);
+            box-shadow:
+                0 0 20px rgba(249,115,22,0.20),
+                0 0 40px rgba(225,29,72,0.12);
+        }
 
-.nav-list a.nav-locked {
-    color: rgba(203, 213, 225, 0.42);
-    cursor: not-allowed;
-    opacity: 0.55;
-    filter: grayscale(1);
-    background: rgba(255,255,255,0.025);
-    border-color: rgba(255,255,255,0.045);
-    box-shadow: none;
-}
+        .contact-hero {
+            padding: clamp(4rem, 8vw, 7rem) 0 3rem;
+        }
 
-.locked-page {
-    min-height: calc(100vh - 260px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 0;
-}
+        .contact-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 0.95rem;
+            border-radius: 999px;
+            color: #ffffff;
+            background: rgba(225,29,72,0.16);
+            border: 1px solid rgba(225,29,72,0.34);
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            box-shadow: 0 0 34px rgba(225,29,72,0.22);
+        }
 
-.locked-panel {
-    width: min(920px, 100%);
-    text-align: center;
-    background: linear-gradient(180deg, rgba(18,18,28,0.90), rgba(9,9,15,0.84));
-    border: 1px solid rgba(225,29,72,0.32);
-    border-radius: 28px;
-    padding: clamp(2rem, 5vw, 4rem);
-    box-shadow: 0 24px 80px rgba(0,0,0,0.58);
-    backdrop-filter: blur(16px);
-}
+        .contact-title {
+            max-width: 1020px;
+            margin: 1.25rem 0 1.1rem;
+            color: #ffffff;
+            font-size: clamp(3rem, 8vw, 7rem);
+            line-height: 0.9;
+            font-weight: 950;
+            letter-spacing: -0.07em;
+            text-shadow:
+                0 8px 28px rgba(0,0,0,0.70),
+                0 0 38px rgba(225,29,72,0.24);
+        }
 
-.locked-kicker {
-    display: inline-flex;
-    margin-bottom: 1rem;
-    padding: 0.52rem 0.9rem;
-    border-radius: 999px;
-    color: #ffffff;
-    background: rgba(225,29,72,0.16);
-    border: 1px solid rgba(225,29,72,0.34);
-    font-size: 0.78rem;
-    font-weight: 900;
-    letter-spacing: 0.10em;
-    text-transform: uppercase;
-}
+        .contact-title span {
+            display: block;
+            color: #fff1e7;
+        }
 
-.locked-panel h1 {
-    color: #ffffff;
-    font-size: clamp(2.3rem, 6vw, 5rem);
-    line-height: 0.95;
-    margin-bottom: 1rem;
-    letter-spacing: -0.05em;
-    text-shadow:
-        0 8px 28px rgba(0,0,0,0.70),
-        0 0 38px rgba(225,29,72,0.24);
-}
+        .contact-intro {
+            max-width: 880px;
+            color: #dbe4f0;
+            font-size: clamp(1.05rem, 2vw, 1.28rem);
+            line-height: 1.85;
+            text-shadow: 0 3px 16px rgba(0,0,0,0.82);
+        }
 
-.locked-panel p {
-    max-width: 700px;
-    margin: 0 auto 2rem;
-    color: #cbd5e1;
-    font-size: 1.05rem;
-    line-height: 1.8;
-}
+        .contact-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.8rem;
+        }
 
-.locked-actions {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
+        .contact-section {
+            padding: 1.6rem 0;
+        }
 
-.locked-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.95rem 1.35rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 800;
-    color: #ffffff;
-    border: 1px solid rgba(249,115,22,0.30);
-    background: linear-gradient(135deg, #e11d48, #f97316);
-    box-shadow: 0 12px 34px rgba(225,29,72,0.26);
-}
+        .contact-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 0.95fr) minmax(360px, 1.05fr);
+            gap: 1.25rem;
+            align-items: start;
+        }
 
-.locked-button.secondary {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.12);
-    box-shadow: none;
-}
+        .contact-card,
+        .contact-form-card,
+        .contact-final-panel {
+            background: linear-gradient(180deg, rgba(18,18,28,0.90), rgba(9,9,15,0.84));
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 24px;
+            box-shadow: 0 18px 58px rgba(0,0,0,0.46);
+            backdrop-filter: blur(16px);
+        }
 
-@media (max-width: 640px) {
-    .locked-actions {
-        flex-direction: column;
-    }
+        .contact-card,
+        .contact-form-card {
+            padding: clamp(1.35rem, 3vw, 2rem);
+        }
 
-    .locked-button {
-        width: 100%;
-    }
-}
+        .contact-card + .contact-card {
+            margin-top: 1rem;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            margin-bottom: 0.8rem;
+            color: #fecaca;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .contact-card h2,
+        .contact-form-card h2,
+        .contact-final-panel h2 {
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 0.85rem;
+        }
+
+        .contact-card h2,
+        .contact-form-card h2 {
+            font-size: clamp(1.65rem, 3vw, 2.5rem);
+        }
+
+        .contact-card p,
+        .contact-card li,
+        .contact-form-card p,
+        .contact-final-panel p {
+            color: #cbd5e1;
+            line-height: 1.78;
+        }
+
+        .contact-list {
+            display: grid;
+            gap: 0.85rem;
+            margin-top: 1.1rem;
+        }
+
+        .contact-link-card {
+            display: flex;
+            gap: 0.9rem;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.09);
+            text-decoration: none;
+        }
+
+        .contact-link-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(249,115,22,0.28);
+            background: rgba(255,255,255,0.075);
+        }
+
+        .contact-link-icon {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(225,29,72,0.24), rgba(249,115,22,0.18));
+            border: 1px solid rgba(249,115,22,0.22);
+            font-size: 1.25rem;
+        }
+
+        .contact-link-card strong {
+            display: block;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+        }
+
+        .contact-link-card span {
+            display: block;
+            color: #cbd5e1;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .contact-form {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.25rem;
+        }
+
+        .form-group {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .form-group label {
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            color: #ffffff;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 16px;
+            padding: 0.95rem 1rem;
+            font: inherit;
+            outline: none;
+            transition: all 0.22s ease;
+        }
+
+        .form-group textarea {
+            min-height: 160px;
+            resize: vertical;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(203,213,225,0.58);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: rgba(249,115,22,0.62);
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.16);
+            background: rgba(255,255,255,0.10);
+        }
+
+        .form-note {
+            color: #94a3b8;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .form-alert {
+            display: none;
+            padding: 0.95rem 1rem;
+            border-radius: 16px;
+            font-weight: 800;
+            line-height: 1.5;
+        }
+
+        .form-alert.success {
+            display: block;
+            color: #bbf7d0;
+            background: rgba(34,197,94,0.16);
+            border: 1px solid rgba(34,197,94,0.32);
+        }
+
+        .form-alert.error {
+            display: block;
+            color: #fecaca;
+            background: rgba(239,68,68,0.16);
+            border: 1px solid rgba(239,68,68,0.32);
+        }
+
+        .contact-final {
+            padding: 2rem 0 5rem;
+        }
+
+        .contact-final-panel {
+            text-align: center;
+            padding: clamp(1.6rem, 4vw, 3rem);
+            border-color: rgba(225,29,72,0.28);
+        }
+
+        .contact-final-panel h2 {
+            font-size: clamp(1.9rem, 4vw, 3.4rem);
+            letter-spacing: -0.04em;
+        }
+
+        .contact-final-panel .contact-actions {
+            justify-content: center;
+        }
+
+        @media (max-width: 980px) {
+            .contact-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .contact-actions {
+                flex-direction: column;
+            }
+
+            .contact-actions a,
+            .contact-actions button {
+                width: 100%;
+            }
+
+            .contact-link-card {
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
+
 <body>
-<header class="header"><div class="container"><div class="header-content"><div class="logo"><img src="./favicon.png" alt="Samuzi NFT Logo" class="logo-image samuzi-header-logo"></div><nav class="nav-inline"><ul class="nav-list"><li><a href="index.html">Home</a></li><li><a href="projects.html">Projects</a></li><li><a href="contact.html" class="active">Contact</a></li><li><a href="about.html">About</a></li><li><a href="legal.html">Legal</a></li></ul></nav></div></div></header>
-<main class="main-content">
+<header class="header">
     <div class="container">
-        <section class="locked-page">
-            <div class="locked-panel">
-                <div class="locked-kicker">Contact Locked</div>
-                <h1>Official contact opens soon.</h1>
+        <div class="header-content">
+            <div class="logo">
+                <img src="./favicon.png" alt="Samuzi NFT Logo" class="logo-image samuzi-header-logo">
+            </div>
+
+            <nav class="nav-inline">
+                <ul class="nav-list">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                    <li><a href="projects.html">Events</a></li>
+                    <li><a href="contact.html" class="active">Contact</a></li>
+                    <li><a href="legal.html">Legal</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <section class="contact-hero">
+        <div class="container">
+            <div class="contact-kicker">📬 Contact Samuzi NFT</div>
+
+            <h1 class="contact-title">
+                Connect with
+                <span>the Samuzi team.</span>
+            </h1>
+
+            <p class="contact-intro">
+                For partnerships, collaborations, holder support, community questions, and official project inquiries,
+                use the verified Samuzi channels below. The community lives on Discord, updates move through X,
+                and direct inquiries can be sent by email.
+            </p>
+
+            <div class="contact-actions">
+                <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
+                    Join Discord
+                </a>
+                <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="button-secondary">
+                    Follow on X
+                </a>
+                <a href="mailto:Samuzinft@gmail.com" class="button-secondary">
+                    Email Samuzi
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-section">
+        <div class="container">
+            <div class="contact-layout">
+                <div>
+                    <article class="contact-card">
+                        <span class="eyebrow">Official Channels</span>
+                        <h2>Use only verified Samuzi links.</h2>
+                        <p>
+                            To protect the community, always use official Samuzi communication channels.
+                            Never trust random DMs, unofficial mint links, or private payment requests.
+                        </p>
+
+                        <div class="contact-list">
+                            <a class="contact-link-card" href="mailto:Samuzinft@gmail.com">
+                                <div class="contact-link-icon">✉️</div>
+                                <div>
+                                    <strong>Email</strong>
+                                    <span>Samuzinft@gmail.com</span>
+                                </div>
+                            </a>
+
+                            <a class="contact-link-card" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
+                                <div class="contact-link-icon">💬</div>
+                                <div>
+                                    <strong>Discord</strong>
+                                    <span>discord.gg/D55VGqsQWH</span>
+                                </div>
+                            </a>
+
+                            <a class="contact-link-card" href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer">
+                                <div class="contact-link-icon">𝕏</div>
+                                <div>
+                                    <strong>X / Twitter</strong>
+                                    <span>@samuziNFT</span>
+                                </div>
+                            </a>
+                        </div>
+                    </article>
+
+                    <article class="contact-card">
+                        <span class="eyebrow">Best For</span>
+                        <h2>What to contact us about</h2>
+                        <ul>
+                            <li>Project collaborations and partnership requests.</li>
+                            <li>Community support and holder questions.</li>
+                            <li>Artist, gaming, marketplace, or Web3 collaboration ideas.</li>
+                            <li>Official website, Discord, or social channel questions.</li>
+                        </ul>
+                    </article>
+                </div>
+
+                <article class="contact-form-card">
+                    <span class="eyebrow">Direct Message</span>
+                    <h2>Send an inquiry</h2>
+                    <p>
+                        This form is ready for the website email flow. Until the production email service is fully configured,
+                        messages may be captured without email delivery.
+                    </p>
+
+                    <form id="contactForm" class="contact-form">
+                        <div id="contactAlert" class="form-alert"></div>
+
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input id="name" name="name" type="text" placeholder="Your name" autocomplete="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" placeholder="Tell us how we can help..." required></textarea>
+                        </div>
+
+                        <button id="contactSubmit" type="submit" class="button-primary">
+                            Send Message
+                        </button>
+
+                        <p class="form-note">
+                            For fastest community support, join the Discord. For official inquiries,
+                            email delivery will route to Samuzinft@gmail.com once production mail is configured.
+                        </p>
+                    </form>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-final">
+        <div class="container">
+            <div class="contact-final-panel">
+                <span class="eyebrow">Community First</span>
+                <h2>Enter the Samuzi circle.</h2>
                 <p>
-                    The Samuzi contact page is locked for the preview phase. Until launch approval,
-                    the official public signal remains the homepage and X channel.
+                    Phase 3 is preparing. Join the community, read the whitepaper, and stay close to official updates.
                 </p>
-                <div class="locked-actions">
-                    <a href="index.html" class="locked-button">Back to Home</a>
-                    <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="locked-button secondary">Follow on X</a>
+
+                <div class="contact-actions">
+                    <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
+                        Join Discord
+                    </a>
+                    <a href="whitepaper.html" class="button-secondary">
+                        Read Whitepaper
+                    </a>
+                    <a href="about.html" class="button-secondary">
+                        About Samuzi
+                    </a>
                 </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
 </main>
-<footer class="footer"><div class="container"><div class="footer-content"><div class="footer-section"><h4>Samuzi NFT</h4><p>© 2026</p></div></div></div></footer>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Samuzi NFT</h4>
+                <p>Solana digital collectibles.</p>
+                <p>© 2026 Samuzi NFT</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p><a href="mailto:Samuzinft@gmail.com">Samuzinft@gmail.com</a></p>
+                <p>Official inquiries only.</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Official Links</h4>
+                <p><a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer">𝕏 @samuziNFT</a></p>
+                <p><a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">Discord Community</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const contactForm = document.getElementById('contactForm');
+    const contactAlert = document.getElementById('contactAlert');
+    const contactSubmit = document.getElementById('contactSubmit');
+
+    function showContactAlert(message, type = 'success') {
+        contactAlert.textContent = message;
+        contactAlert.className = `form-alert ${type}`;
+    }
+
+    contactForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const payload = {
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            message: document.getElementById('message').value.trim()
+        };
+
+        if (!payload.name || !payload.email || !payload.message) {
+            showContactAlert('Please fill all fields before sending.', 'error');
+            return;
+        }
+
+        contactSubmit.disabled = true;
+        contactSubmit.textContent = 'Sending...';
+        contactAlert.className = 'form-alert';
+        contactAlert.textContent = '';
+
+        try {
+            const response = await fetch('./api/send-email.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showContactAlert(result.message || 'Message received. Thank you.', 'success');
+                contactForm.reset();
+            } else {
+                showContactAlert(result.message || 'Could not send message. Please use email or Discord.', 'error');
+            }
+        } catch (error) {
+            console.error('[SAMUZI] Contact form error:', error);
+            showContactAlert('Connection error. Please use email or Discord for now.', 'error');
+        } finally {
+            contactSubmit.disabled = false;
+            contactSubmit.textContent = 'Send Message';
+        }
+    });
+</script>
 </body>
 </html>

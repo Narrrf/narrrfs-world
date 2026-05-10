@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whitepaper — Samuzi NFT</title>
+    <meta name="description" content="Samuzi NFT whitepaper. A Solana-based digital collectible brand built around art, community, utility, and long-term Web3 growth.">
+    <meta name="keywords" content="Samuzi NFT, Samuzi whitepaper, Solana NFT, SMZ, digital collectibles, Web3, NFT community">
+    <meta property="og:title" content="Samuzi NFT — Whitepaper">
+    <meta property="og:description" content="Art-driven, community-powered, and future-focused digital collectibles on Solana.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#07070b">
+
+    <link rel="icon" href="./favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-whitepaper-1">
+
+    <style>
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(225,29,72,0.22), transparent 36%),
+                radial-gradient(circle at 82% 18%, rgba(249,115,22,0.13), transparent 28%),
+                linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
+            color: #f8fafc;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(to bottom, rgba(0,0,0,0.22), rgba(0,0,0,0.84)),
+                url("./assets/background/phase3-coming-soon.jpg");
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            opacity: 0.44;
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 24%, rgba(225,29,72,0.20), transparent 34%),
+                radial-gradient(circle at 70% 12%, rgba(249,115,22,0.12), transparent 28%),
+                linear-gradient(to bottom, rgba(7,7,11,0.10), rgba(7,7,11,0.88));
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .samuzi-header-logo {
+            height: 72px;
+            width: 72px;
+            object-fit: contain;
+            border-radius: 999px;
+            padding: 4px;
+            background:
+                radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
+            border: 1px solid rgba(249,115,22,0.28);
+            box-shadow:
+                0 0 20px rgba(249,115,22,0.20),
+                0 0 40px rgba(225,29,72,0.12);
+        }
+
+        .whitepaper-hero {
+            padding: clamp(4rem, 8vw, 7rem) 0 3rem;
+        }
+
+        .whitepaper-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 0.95rem;
+            border-radius: 999px;
+            color: #ffffff;
+            background: rgba(225,29,72,0.16);
+            border: 1px solid rgba(225,29,72,0.34);
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            box-shadow: 0 0 34px rgba(225,29,72,0.22);
+        }
+
+        .whitepaper-title {
+            max-width: 980px;
+            margin: 1.25rem 0 1.1rem;
+            color: #ffffff;
+            font-size: clamp(3rem, 8vw, 7rem);
+            line-height: 0.9;
+            font-weight: 950;
+            letter-spacing: -0.07em;
+            text-shadow:
+                0 8px 28px rgba(0,0,0,0.70),
+                0 0 38px rgba(225,29,72,0.24);
+        }
+
+        .whitepaper-title span {
+            display: block;
+            color: #fff1e7;
+        }
+
+        .whitepaper-intro {
+            max-width: 860px;
+            color: #dbe4f0;
+            font-size: clamp(1.05rem, 2vw, 1.28rem);
+            line-height: 1.85;
+            text-shadow: 0 3px 16px rgba(0,0,0,0.82);
+        }
+
+        .whitepaper-meta {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 2.4rem;
+            max-width: 980px;
+        }
+
+        .meta-card,
+        .whitepaper-card,
+        .roadmap-card {
+            background: linear-gradient(180deg, rgba(18,18,28,0.90), rgba(9,9,15,0.84));
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 22px;
+            box-shadow: 0 18px 58px rgba(0,0,0,0.46);
+            backdrop-filter: blur(16px);
+        }
+
+        .meta-card {
+            padding: 1.15rem;
+        }
+
+        .meta-card strong {
+            display: block;
+            color: #ffffff;
+            margin-bottom: 0.35rem;
+        }
+
+        .meta-card span {
+            color: #cbd5e1;
+            line-height: 1.55;
+            font-size: 0.94rem;
+        }
+
+        .whitepaper-section {
+            padding: 1.5rem 0;
+        }
+
+        .whitepaper-card {
+            padding: clamp(1.4rem, 3vw, 2.25rem);
+            border-color: rgba(225,29,72,0.22);
+        }
+
+        .section-eyebrow {
+            display: inline-flex;
+            margin-bottom: 0.85rem;
+            color: #fecaca;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .whitepaper-card h2 {
+            color: #ffffff;
+            font-size: clamp(1.65rem, 3vw, 2.55rem);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        .whitepaper-card h3 {
+            color: #ffffff;
+            margin: 1.35rem 0 0.55rem;
+            font-size: 1.2rem;
+        }
+
+        .whitepaper-card p,
+        .whitepaper-card li {
+            color: #cbd5e1;
+            line-height: 1.82;
+        }
+
+        .whitepaper-card ul {
+            margin: 1rem 0 0;
+            padding-left: 1.1rem;
+        }
+
+        .whitepaper-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 1.2rem;
+        }
+
+        .mini-card {
+            padding: 1rem;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.09);
+        }
+
+        .mini-card strong {
+            display: block;
+            color: #ffffff;
+            margin-bottom: 0.45rem;
+        }
+
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 1.35rem;
+        }
+
+        .roadmap-card {
+            padding: 1.15rem;
+            border-color: rgba(255,255,255,0.10);
+        }
+
+        .roadmap-card .phase {
+            color: #fecaca;
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            margin-bottom: 0.65rem;
+        }
+
+        .roadmap-card h3 {
+            margin: 0 0 0.65rem;
+        }
+
+        .team-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 1.2rem;
+        }
+
+        .disclaimer-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 18px;
+            background: rgba(225,29,72,0.10);
+            border: 1px solid rgba(225,29,72,0.22);
+        }
+
+        .whitepaper-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.8rem;
+        }
+
+        @media (max-width: 900px) {
+            .whitepaper-meta,
+            .roadmap-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .whitepaper-grid,
+            .team-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .whitepaper-actions {
+                flex-direction: column;
+            }
+
+            .whitepaper-actions a {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<header class="header">
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">
+                <img src="./favicon.png" alt="Samuzi NFT Logo" class="logo-image samuzi-header-logo">
+            </div>
+
+            <nav class="nav-inline">
+                <ul class="nav-list">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="whitepaper.html" class="active">Whitepaper</a></li>
+                    <li><a href="projects.html">Events</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="legal.html">Legal</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <section class="whitepaper-hero">
+        <div class="container">
+            <div class="whitepaper-kicker">⚔️ Samuzi NFT · Whitepaper</div>
+
+            <h1 class="whitepaper-title">
+                Art-driven.
+                <span>Community-powered.</span>
+            </h1>
+
+            <p class="whitepaper-intro">
+                Samuzi NFT is a Solana-based digital collectible brand built around bold visual identity,
+                futuristic samurai culture, community participation, and long-term creative utility.
+                The project is designed to grow as a digital brand where art, access, collaboration,
+                and Web3 culture meet.
+            </p>
+
+            <div class="whitepaper-actions">
+                <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
+                    Join Discord
+                </a>
+                <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="button-secondary">
+                    Follow on X
+                </a>
+            </div>
+
+            <div class="whitepaper-meta">
+                <div class="meta-card">
+                    <strong>Chain</strong>
+                    <span>Built around the Solana blockchain ecosystem.</span>
+                </div>
+                <div class="meta-card">
+                    <strong>Status</strong>
+                    <span>Phase 1 and Phase 2 sold out. Phase 3 is in preparation.</span>
+                </div>
+                <div class="meta-card">
+                    <strong>Focus</strong>
+                    <span>Digital collectibles, community access, art, lore, and future experiences.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">01 · Introduction</span>
+                <h2>What is Samuzi NFT?</h2>
+                <p>
+                    Samuzi NFT is a digital art-based collectible project inspired by the fusion of futuristic
+                    samurai culture, cyberpunk storytelling, and streetwear-inspired visual identity.
+                    Each Samuzi character represents individuality, creative rebellion, and participation
+                    in a community-powered Web3 movement.
+                </p>
+                <p>
+                    The project is not only about collecting artwork. It is about building a long-term digital
+                    brand that can connect art, community, collaborations, digital access, creative content,
+                    and future utility layers.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">02 · Vision & Mission</span>
+                <h2>Building a lasting digital brand</h2>
+
+                <div class="whitepaper-grid">
+                    <div class="mini-card">
+                        <strong>Vision</strong>
+                        <p>
+                            To create a long-lasting digital brand that values artistic identity,
+                            community-driven growth, and transparent development in the decentralized space.
+                        </p>
+                    </div>
+
+                    <div class="mini-card">
+                        <strong>Mission</strong>
+                        <p>
+                            To launch unique NFT collections, grow an active community, and reward loyal
+                            holders through digital access, creative experiences, collaborations, and future
+                            ecosystem features.
+                        </p>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">03 · The Art</span>
+                <h2>Samurai energy with a future-facing identity</h2>
+                <p>
+                    Samuzi NFT collections are built around strong character design, rarity, and visual attitude.
+                    The art direction merges warrior mythology, futuristic fashion, digital culture, and
+                    collectible trait systems.
+                </p>
+
+                <ul>
+                    <li>Unique collectible characters with distinct visual traits.</li>
+                    <li>Multiple rarity tiers and special edition artwork.</li>
+                    <li>Cyberpunk and samurai-inspired worldbuilding.</li>
+                    <li>Digital ownership verified through blockchain infrastructure.</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">04 · Holder Utilities</span>
+                <h2>Access, participation, and future community value</h2>
+                <p>
+                    Samuzi NFT is designed with a community-first utility approach. Holder benefits may evolve
+                    over time as the project expands, partnerships grow, and new digital experiences are released.
+                </p>
+
+                <div class="whitepaper-grid">
+                    <div class="mini-card">
+                        <strong>Community Access</strong>
+                        <p>Private Discord areas, holder discussions, community updates, and role-based access.</p>
+                    </div>
+                    <div class="mini-card">
+                        <strong>Digital Drops</strong>
+                        <p>Early access to upcoming collections, bonus artwork, partner drops, and digital content.</p>
+                    </div>
+                    <div class="mini-card">
+                        <strong>Rewards & Raffles</strong>
+                        <p>Community raffles, giveaways, allowlist opportunities, and partner project access.</p>
+                    </div>
+                    <div class="mini-card">
+                        <strong>Creative Participation</strong>
+                        <p>Feedback sessions, community surveys, project discussions, and future creative decisions.</p>
+                    </div>
+                </div>
+
+                <div class="disclaimer-box">
+                    <p>
+                        Any token, staking, marketplace, or reward-related feature will be communicated through
+                        official Samuzi channels when finalized. Nothing on this page should be understood as a
+                        financial promise, investment offer, or guaranteed return.
+                    </p>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">05 · Why Solana?</span>
+                <h2>Speed, scale, and low transaction costs</h2>
+                <p>
+                    Samuzi NFT is connected to the Solana ecosystem because of its speed, scalability,
+                    and low transaction fees. These qualities help make digital collectibles, community
+                    interaction, and future ecosystem features more accessible for holders and supporters.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">06 · Roadmap</span>
+                <h2>The Samuzi path forward</h2>
+                <p>
+                    The roadmap is designed as a flexible growth path. Community feedback, technical readiness,
+                    partner opportunities, and market conditions may influence timing and priority.
+                </p>
+
+                <div class="roadmap-grid">
+                    <div class="roadmap-card">
+                        <div class="phase">Phase 1 · Genesis</div>
+                        <h3>Foundation Launch</h3>
+                        <ul>
+                            <li>Website release</li>
+                            <li>Genesis collection mint</li>
+                            <li>Community setup and onboarding</li>
+                            <li>Early supporter recognition</li>
+                        </ul>
+                    </div>
+
+                    <div class="roadmap-card">
+                        <div class="phase">Phase 2 · Community</div>
+                        <h3>Growth & Access</h3>
+                        <ul>
+                            <li>Phase 1 and 2 sold out</li>
+                            <li>Holder-focused Discord features</li>
+                            <li>Partnership announcements</li>
+                            <li>Community raffles and digital access events</li>
+                        </ul>
+                    </div>
+
+                    <div class="roadmap-card">
+                        <div class="phase">Phase 3 · Expansion</div>
+                        <h3>The Next Chapter</h3>
+                        <ul>
+                            <li>New collection planning</li>
+                            <li>Community-led proposals</li>
+                            <li>Digital marketplace partnerships</li>
+                            <li>Lore expansion and future experience concepts</li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">07 · Team</span>
+                <h2>Community operators and builders</h2>
+                <p>
+                    Samuzi NFT is supported by a team focused on vision, administration, collaborations,
+                    moderation, and community safety.
+                </p>
+
+                <div class="team-list">
+                    <div class="mini-card">
+                        <strong>Founder & Visionary</strong>
+                        <p>Samuzi</p>
+                    </div>
+                    <div class="mini-card">
+                        <strong>Administrator</strong>
+                        <p>Sameen Sheshi</p>
+                    </div>
+                    <div class="mini-card">
+                        <strong>Collaboration Management</strong>
+                        <p>Atif Zaheer</p>
+                    </div>
+                    <div class="mini-card">
+                        <strong>Moderation Team</strong>
+                        <p>Community moderators supporting onboarding, safety, and engagement.</p>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">08 · Security & Transparency</span>
+                <h2>Open communication and responsible growth</h2>
+                <ul>
+                    <li>Official updates shared through Samuzi channels.</li>
+                    <li>Smart contract and mint details communicated before launch events.</li>
+                    <li>Community wallet and project updates shared with transparency where applicable.</li>
+                    <li>Open communication through Discord, X, and public announcements.</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">09 · Community Philosophy</span>
+                <h2>Community first, always</h2>
+                <p>
+                    Samuzi NFT is built around active participation, transparent communication, and recognition
+                    of loyal holders and contributors. The goal is to create a fair and inclusive environment
+                    where creativity, collaboration, and opportunity can grow together.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">10 · Legal Disclaimer</span>
+                <h2>Digital collectibles notice</h2>
+                <p>
+                    Samuzi NFT is a digital collectible and community-access project. NFTs are acquired voluntarily
+                    and should be considered digital art and access collectibles. Nothing on this website or in this
+                    whitepaper is financial advice, investment advice, or a guarantee of profit, income, liquidity,
+                    future value, or specific utility.
+                </p>
+                <p>
+                    Project plans, utilities, roadmap items, partnerships, and features may change over time.
+                    Always use official Samuzi links, verify information before taking action, and conduct your own
+                    research before purchasing any digital asset.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="whitepaper-section">
+        <div class="container">
+            <article class="whitepaper-card">
+                <span class="section-eyebrow">Final Thoughts</span>
+                <h2>Welcome to Samuzi</h2>
+                <p>
+                    Samuzi NFT is a new era of digital collectibles: art-driven, community-powered,
+                    and future-focused. With strong visuals, active engagement, and continuous growth,
+                    Samuzi is building toward a deeper digital brand experience.
+                </p>
+
+                <div class="whitepaper-actions">
+                    <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
+                        Enter Discord
+                    </a>
+                    <a href="contact.html" class="button-secondary">
+                        Contact Samuzi
+                    </a>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Samuzi NFT</h4>
+                <p>Solana digital collectibles.</p>
+                <p>© 2026 Samuzi NFT</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Status</h4>
+                <p>Phase 1 & 2 sold out</p>
+                <p>Phase 3 preparing</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Official Links</h4>
+                <p><a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer">𝕏 @samuziNFT</a></p>
+                <p><a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">Discord Community</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

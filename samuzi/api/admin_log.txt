@@ -14,3 +14,12 @@
 2026-05-10 15:09:09 - Admin login successful from IP: ::1
 2026-05-10 15:09:34 - Settings updated by admin: {"company_name":"Samuzi NFT","phone_number":"","slider_speed":"5","hero_background":"phase3-coming-soon.jpg","background_transparency":"full","page_backgrounds":{"index":"background2.png","projects":"background2.png","about":"background2.png","contact":"background2.png","legal":"background2.png"},"bubble_effect":"medium","bubble_enabled":true,"bubble_intensity":"medium","bubble_color":"#12d9d6","bubble_opacity":"low","bubble_speed":"slow","bubble_pages":{"index":false,"projects":false,"about":false,"contact":false,"legal":false}}
 2026-05-10 15:10:01 - Admin logout: admin from IP: ::1
+2026-05-10 17:04:34 - Admin login successful from IP: ::1
+2026-05-10 17:05:34 - Photo uploaded and resized: samuzi_slider_20260510_170534_0.webp (original: IMG-20260510-WA0093.webp, 56.16 KB -> 56.16 KB) by admin
+2026-05-10 17:38:23 - Photo uploaded and resized: samuzi_slider_20260510_173823_0.png (original: 372.png, 1.55 MB -> 1.55 MB) by admin
+2026-05-10 17:38:26 - Photo uploaded and resized: samuzi_slider_20260510_173826_0.png (original: 524.png, 1.51 MB -> 1.51 MB) by admin
+2026-05-10 17:38:29 - Photo uploaded and resized: samuzi_slider_20260510_173829_0.png (original: 490.png, 1.52 MB -> 1.52 MB) by admin
+2026-05-10 17:38:32 - Slider artwork deleted: samuzi_slider_20260510_173823_0.png by admin
+2026-05-10 17:38:34 - Slider artwork deleted: samuzi_slider_20260510_173826_0.png by admin
+2026-05-10 17:38:36 - Slider artwork deleted: samuzi_slider_20260510_173829_0.png by admin
+2026-05-10 17:41:40 - Admin logout: admin from IP: ::1
