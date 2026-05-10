@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samuzi Admin — Slider Art</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f8fafc;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.18), transparent 38%),
+                linear-gradient(180deg, #07070b 0%, #0f1016 55%, #050507 100%);
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.45);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            padding: 18px 20px;
+        }
+
+        .header-content {
+            max-width: 1180px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            font-size: 1.55rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn,
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 0;
+            border-radius: 999px;
+            padding: 11px 16px;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            color: #ffffff;
+            background: linear-gradient(135deg, #e11d48, #f97316);
+            box-shadow: 0 10px 30px rgba(225, 29, 72, 0.24);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover,
+        .link-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 38px rgba(225, 29, 72, 0.34);
+        }
+
+        .link-btn.secondary {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.13);
+            box-shadow: none;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 28px 20px 50px;
+        }
+
+        .panel {
+            background: linear-gradient(180deg, rgba(17,17,24,0.92), rgba(10,10,16,0.86));
+            border: 1px solid rgba(225,29,72,0.26);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 18px 58px rgba(0,0,0,0.45);
+            backdrop-filter: blur(14px);
+            margin-bottom: 22px;
+        }
+
+        .panel h2 {
+            margin-bottom: 10px;
+        }
+
+        .muted {
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .upload-zone {
+            margin-top: 18px;
+            border: 2px dashed rgba(249,115,22,0.45);
+            border-radius: 22px;
+            padding: 34px 18px;
+            text-align: center;
+            background: rgba(255,255,255,0.045);
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            background: rgba(225,29,72,0.11);
+            border-color: rgba(249,115,22,0.8);
+        }
+
+        .upload-zone strong {
+            display: block;
+            font-size: 1.15rem;
+            margin-bottom: 8px;
+        }
+
+        .alert {
+            display: none;
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .alert.success {
+            display: block;
+            background: rgba(34,197,94,0.16);
+            border: 1px solid rgba(34,197,94,0.32);
+            color: #bbf7d0;
+        }
+
+        .alert.error {
+            display: block;
+            background: rgba(239,68,68,0.16);
+            border: 1px solid rgba(239,68,68,0.32);
+            color: #fecaca;
+        }
+
+        .gallery-header {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 16px;
+        }
+
+        .art-card {
+            overflow: hidden;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.055);
+            border: 1px solid rgba(255,255,255,0.10);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.32);
+        }
+
+        .art-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .art-meta {
+            padding: 12px;
+        }
+
+        .art-meta strong {
+            display: block;
+            font-size: 0.88rem;
+            overflow-wrap: anywhere;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .art-meta span {
+            color: #94a3b8;
+            font-size: 0.82rem;
+        }
+
+        .empty {
+            padding: 30px;
+            text-align: center;
+            color: #cbd5e1;
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 18px;
+            background: rgba(255,255,255,0.045);
+        }
+
+        @media (max-width: 700px) {
+            .header-content {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .header-actions,
+            .link-btn {
+                width: 100%;
+            }
+
+            .link-btn,
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>🖼️ Samuzi Slider Art</h1>
+            <div class="header-actions">
+                <a class="link-btn secondary" href="../index.html" target="_blank">View Homepage</a>
+                <a class="link-btn secondary" href="dashboard.html">Back to Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="alertBox" class="alert"></div>
+
+        <section class="panel">
+            <h2>Upload Phase 3 art</h2>
+            <p class="muted">
+                Upload Samuzi collection art, Phase 3 banners, or teaser images here.
+                Newest uploads appear first on the homepage showcase.
+            </p>
+
+            <div id="uploadZone" class="upload-zone">
+                <strong>Drop images here or click to upload</strong>
+                <span class="muted">Supported: JPG, PNG, GIF, WebP · Max 5MB each</span>
+            </div>
+
+            <input id="sliderPhotos" type="file" accept="image/*" multiple hidden>
+        </section>
+
+        <section class="panel">
+            <div class="gallery-header">
+                <div>
+                    <h2>Current slider images</h2>
+                    <p class="muted">Loaded from <code>slider-photos/</code>.</p>
+                </div>
+                <button class="btn" type="button" onclick="loadSliderPhotos()">Refresh</button>
+            </div>
+
+            <div id="gallery" class="gallery">
+                <div class="empty">Loading slider images...</div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        async function checkAuth() {
+            try {
+                const response = await fetch('check-auth.php', { cache: 'no-store' });
+                const result = await response.json();
+
+                if (!result.success || !result.logged_in) {
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        function showAlert(message, type = 'success') {
+            const box = document.getElementById('alertBox');
+            box.textContent = message;
+            box.className = `alert ${type}`;
+
+            window.setTimeout(() => {
+                box.className = 'alert';
+                box.textContent = '';
+            }, 5000);
+        }
+
+        async function uploadSliderPhotos(files) {
+            if (!files || files.length === 0) return;
+
+            const formData = new FormData();
+
+            Array.from(files).forEach((file) => {
+                formData.append('photos[]', file);
+            });
+
+            formData.append('upload_type', 'slider');
+
+            try {
+                const response = await fetch('upload-photos.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    showAlert(result.message || 'Upload failed.', 'error');
+                    return;
+                }
+
+                showAlert(`✅ ${result.uploaded_files.length} image(s) uploaded to homepage slider.`);
+                await loadSliderPhotos();
+            } catch (error) {
+                console.error('Slider upload failed:', error);
+                showAlert('Upload failed. Check console/server logs.', 'error');
+            }
+        }
+
+        async function loadSliderPhotos() {
+            const gallery = document.getElementById('gallery');
+
+            try {
+                const response = await fetch('../api/get-slider-photos.php', { cache: 'no-store' });
+                const result = await response.json();
+
+                if (!result.success || !Array.isArray(result.photos) || result.photos.length === 0) {
+                    gallery.innerHTML = '<div class="empty">No slider images uploaded yet.</div>';
+                    return;
+                }
+
+                gallery.innerHTML = result.photos.map((photo) => {
+                    const filename = photo.filename || '';
+                    const date = photo.date || '';
+                    return `
+                        <article class="art-card">
+                            <img src="../slider-photos/${filename}" alt="Samuzi slider art" loading="lazy">
+                            <div class="art-meta">
+                                <strong>${filename}</strong>
+                                <span>${date}</span>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Slider load failed:', error);
+                gallery.innerHTML = '<div class="empty">Could not load slider images.</div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await loadSliderPhotos();
+
+            const input = document.getElementById('sliderPhotos');
+            const zone = document.getElementById('uploadZone');
+
+            zone.addEventListener('click', () => input.click());
+
+            input.addEventListener('change', () => {
+                uploadSliderPhotos(input.files);
+                input.value = '';
+            });
+
+            zone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                zone.classList.add('dragover');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('dragover');
+            });
+
+            zone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                zone.classList.remove('dragover');
+                uploadSliderPhotos(event.dataTransfer.files);
+            });
+        });
+    </script>
+</body>
+</html>

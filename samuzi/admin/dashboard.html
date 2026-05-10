@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samuzi Admin — Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            padding: 35px;
+            box-shadow: 0 6px 30px rgba(0,102,204,0.25);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 40px;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg,
+                rgba(255,255,255,0.1) 0%,
+                rgba(255,255,255,0.05) 25%,
+                rgba(255,255,255,0.1) 50%,
+                rgba(255,255,255,0.05) 75%,
+                rgba(255,255,255,0.1) 100%);
+            background-size: 60px 60px;
+            z-index: 1;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .view-website-btn {
+            background: rgba(0,102,204,0.8);
+            color: white;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin-right: 10px;
+            transition: background 0.3s ease;
+            font-size: 14px;
+        }
+
+        .view-website-btn:hover {
+            background: rgba(0,102,204,1);
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .welcome-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid #0066cc;
+        }
+        
+        .welcome-section h2 {
+            color: #0066cc;
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 35px;
+            margin-bottom: 40px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Professional grid positioning for balanced layout */
+        .dashboard-card:nth-child(1) { /* Website Settings - Basic */
+            grid-column: 1 / 3;
+            grid-row: 1;
+            min-height: 400px;
+        }
+        
+        .dashboard-card:nth-child(2) { /* Website Settings - Background */
+            grid-column: 1 / 3;
+            grid-row: 2;
+            min-height: 400px;
+        }
+        
+        .dashboard-card:nth-child(3) { /* Website Settings - Bubbles */
+            grid-column: 1 / 3;
+            grid-row: 3;
+            min-height: 400px;
+        }
+        
+        .dashboard-card:nth-child(4) { /* Website Overview */
+            grid-column: 1;
+            grid-row: 4;
+            min-width: 280px;
+            max-width: 320px;
+        }
+        
+        .dashboard-card:nth-child(5) { /* Pool Photos */
+            grid-column: 2;
+            grid-row: 4;
+            min-width: 320px;
+            max-width: 400px;
+        }
+        
+        .dashboard-card:nth-child(6) { /* Project Management */
+            grid-column: 3;
+            grid-row: 4;
+            min-width: 280px;
+            max-width: 320px;
+        }
+        
+        .dashboard-card:nth-child(7) { /* Email Settings */
+            grid-column: 1 / 3;
+            grid-row: 5;
+            min-height: 400px;
+        }
+        
+        .dashboard-card:nth-child(8) { /* Recent Activity */
+            grid-column: 1;
+            grid-row: 6;
+            min-width: 280px;
+            max-width: 320px;
+        }
+        
+        .dashboard-card:nth-child(9) { /* Quick Actions */
+            grid-column: 2 / 4;
+            grid-row: 6;
+        }
+        
+        /* Responsive Design for Professional Layout */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
+            
+            .dashboard-card:nth-child(1) { /* Website Settings - Basic */
+                grid-column: 1 / 3;
+                grid-row: 1;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(2) { /* Website Settings - Background */
+                grid-column: 1 / 3;
+                grid-row: 2;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(3) { /* Website Settings - Bubbles */
+                grid-column: 1 / 3;
+                grid-row: 3;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(4) { /* Website Overview */
+                grid-column: 1;
+                grid-row: 4;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(5) { /* Pool Photos */
+                grid-column: 2;
+                grid-row: 4;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(6) { /* Project Management */
+                grid-column: 1 / 3;
+                grid-row: 5;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(7) { /* Email Settings */
+                grid-column: 1 / 3;
+                grid-row: 6;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(8) { /* Recent Activity */
+                grid-column: 1;
+                grid-row: 7;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(9) { /* Quick Actions */
+                grid-column: 2;
+                grid-row: 7;
+                max-width: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                gap: 20px;
+            }
+            
+            .dashboard-card:nth-child(n) {
+                grid-column: 1;
+                grid-row: auto;
+                max-width: none;
+                min-width: auto;
+                min-height: auto;
+            }
+            
+            .container {
+                padding: 20px 15px;
+            }
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,102,204,0.08);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0066cc, #004499);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,102,204,0.15);
+            border-color: rgba(0,102,204,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0,102,204,0.1);
+        }
+
+        .card-icon {
+            font-size: 2.2rem;
+            margin-right: 18px;
+            background: linear-gradient(135deg, #0066cc, #004499);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0066cc;
+            letter-spacing: -0.5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px 15px;
+            background: linear-gradient(135deg, rgba(0,102,204,0.08), rgba(0,68,153,0.05));
+            border-radius: 12px;
+            border: 1px solid rgba(0,102,204,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,102,204,0.2);
+            background: linear-gradient(135deg, rgba(0,102,204,0.12), rgba(0,68,153,0.08));
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #0066cc;
+            display: block;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,102,204,0.1);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 8px;
+            box-shadow: 0 4px 15px rgba(0,102,204,0.25);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.3px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #004499, #003366);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,102,204,0.4);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .photo-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .photo-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 40px;
+        }
+        
+        .photo-actions span {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 8px;
+            font-size: 0.75rem;
+        }
+
+        .photo-actions button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            min-width: 30px;
+        }
+
+        .photo-actions button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .upload-area {
+            border: 2px dashed #0066cc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: #e9ecef;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #004499;
+        }
+
+        .settings-form {
+            margin-top: 20px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .pagination-btn {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .pagination-btn:hover {
+            background: #004499;
+        }
+
+        .pagination-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        .form-help {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .form-group h4 {
+            margin: 1.5rem 0 1rem 0;
+            color: #0066cc;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-group h4:first-child {
+            margin-top: 0;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0066cc;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 18px 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Settings Section Styling */
+        .settings-section {
+            margin-bottom: 35px;
+            border: 2px solid rgba(0,102,204,0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0,102,204,0.02), rgba(0,68,153,0.01));
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            padding: 20px 25px;
+            background: linear-gradient(135deg, rgba(0,102,204,0.08), rgba(0,68,153,0.05));
+            border-bottom: 2px solid rgba(0,102,204,0.15);
+        }
+
+        .section-icon {
+            font-size: 1.8rem;
+            margin-right: 15px;
+            background: linear-gradient(135deg, #0066cc, #004499);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0066cc;
+            letter-spacing: -0.3px;
+        }
+
+        .section-content {
+            padding: 25px;
+        }
+
+        /* Page Backgrounds Grid */
+        .page-backgrounds-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .page-bg-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .page-bg-item label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 0;
+        }
+
+        .page-bg-item select {
+            padding: 10px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        .page-bg-item select:focus {
+            border-color: #0066cc;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.15);
+        }
+
+        /* Bubble Controls */
+        .bubble-controls {
+            display: grid;
+            gap: 20px;
+        }
+
+        .color-selector {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .color-selector select {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .custom-color-picker {
+            width: 50px;
+            height: 45px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .custom-color-picker:hover {
+            border-color: #0066cc;
+            transform: scale(1.05);
+        }
+
+        .bubble-settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Page Bubbles Grid */
+        .page-bubbles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .bubble-page-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: rgba(0,102,204,0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(0,102,204,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .bubble-page-item:hover {
+            background: rgba(0,102,204,0.1);
+            border-color: rgba(0,102,204,0.2);
+            transform: translateY(-1px);
+        }
+
+        .bubble-page-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #0066cc;
+        }
+
+        .bubble-page-item span {
+            font-weight: 500;
+            color: #333;
+        }
+
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .admin-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* =========================================================
+   SAMUZI ADMIN DASHBOARD OVERRIDE
+   Keeps existing layout/functions, replaces old pool theme.
+   ========================================================= */
+
+:root {
+    --samuzi-bg: #07070b;
+    --samuzi-panel: rgba(14, 14, 22, 0.90);
+    --samuzi-panel-strong: rgba(18, 18, 28, 0.96);
+    --samuzi-text: #f8fafc;
+    --samuzi-muted: #cbd5e1;
+    --samuzi-dim: #94a3b8;
+    --samuzi-red: #e11d48;
+    --samuzi-orange: #f97316;
+    --samuzi-border: rgba(255,255,255,0.10);
+    --samuzi-border-red: rgba(225,29,72,0.30);
+    --samuzi-shadow: 0 18px 58px rgba(0,0,0,0.48);
+}
+
+body {
+    color: var(--samuzi-text) !important;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(225,29,72,0.20), transparent 36%),
+        radial-gradient(circle at 82% 18%, rgba(249,115,22,0.12), transparent 28%),
+        linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%) !important;
+    background-attachment: fixed !important;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(to bottom, rgba(0,0,0,0.18), rgba(0,0,0,0.78)),
+        url("../assets/background/phase3-coming-soon.jpg");
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    opacity: 0.30;
+    pointer-events: none;
+    z-index: -2;
+}
+
+.header {
+    background: rgba(7,7,11,0.82) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    box-shadow: 0 10px 34px rgba(0,0,0,0.42) !important;
+    border-radius: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 22px 28px !important;
+    backdrop-filter: blur(14px);
+}
+
+.header::before {
+    display: none !important;
+}
+
+.header h1 {
+    color: #ffffff !important;
+    text-shadow: 0 6px 22px rgba(0,0,0,0.60) !important;
+}
+
+.admin-info span {
+    color: var(--samuzi-muted) !important;
+}
+
+.container {
+    background: transparent !important;
+    padding-top: 32px !important;
+}
+
+.welcome-section,
+.dashboard-card {
+    color: var(--samuzi-text) !important;
+    background: linear-gradient(180deg, rgba(18,18,28,0.92), rgba(9,9,15,0.88)) !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+    border-left: 1px solid var(--samuzi-border-red) !important;
+    border-radius: 22px !important;
+    box-shadow: var(--samuzi-shadow) !important;
+    backdrop-filter: blur(14px);
+}
+
+.welcome-section {
+    border-left: 4px solid var(--samuzi-red) !important;
+}
+
+.welcome-section h2,
+.card-title,
+.section-title,
+.form-group h4,
+.stat-number {
+    color: #ffffff !important;
+}
+
+.welcome-section p,
+.dashboard-card p,
+.form-help,
+.stat-label,
+.page-info,
+.form-group label,
+.page-bg-item label,
+.bubble-page-item span {
+    color: var(--samuzi-muted) !important;
+}
+
+.dashboard-card::before {
+    background: linear-gradient(90deg, var(--samuzi-red), var(--samuzi-orange)) !important;
+}
+
+.dashboard-card:hover {
+    border-color: rgba(225,29,72,0.34) !important;
+    box-shadow: 0 22px 70px rgba(0,0,0,0.56), 0 0 32px rgba(225,29,72,0.18) !important;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+.card-icon,
+.section-icon {
+    background: linear-gradient(135deg, var(--samuzi-red), var(--samuzi-orange)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+.stat-item,
+.settings-section,
+.section-header,
+.bubble-page-item,
+.pagination-controls {
+    background: rgba(255,255,255,0.045) !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select,
+.page-bg-item select,
+.color-selector select {
+    color: #ffffff !important;
+    background: rgba(255,255,255,0.07) !important;
+    border: 1px solid rgba(255,255,255,0.14) !important;
+    box-shadow: none !important;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus,
+.page-bg-item select:focus {
+    border-color: rgba(249,115,22,0.62) !important;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.16) !important;
+    background: rgba(255,255,255,0.10) !important;
+    transform: none !important;
+}
+
+select option {
+    color: #111827;
+}
+
+.btn,
+.view-website-btn,
+.logout-btn,
+.pagination-btn {
+    color: #ffffff !important;
+    border: 1px solid rgba(249,115,22,0.28) !important;
+    background: linear-gradient(135deg, var(--samuzi-red), var(--samuzi-orange)) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 10px 30px rgba(225,29,72,0.24) !important;
+}
+
+.btn:hover,
+.view-website-btn:hover,
+.logout-btn:hover,
+.pagination-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 14px 38px rgba(225,29,72,0.34) !important;
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.14) !important;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #f97316) !important;
+    color: #111827 !important;
+}
+
+.upload-area {
+    color: #ffffff !important;
+    background: rgba(255,255,255,0.045) !important;
+    border: 2px dashed rgba(249,115,22,0.45) !important;
+    border-radius: 18px !important;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+    background: rgba(225,29,72,0.11) !important;
+    border-color: rgba(249,115,22,0.8) !important;
+}
+
+.photo-item {
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.05);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.32) !important;
+}
+
+.alert-success {
+    background: rgba(34,197,94,0.16) !important;
+    color: #bbf7d0 !important;
+    border: 1px solid rgba(34,197,94,0.32) !important;
+}
+
+.alert-error {
+    background: rgba(239,68,68,0.16) !important;
+    color: #fecaca !important;
+    border: 1px solid rgba(239,68,68,0.32) !important;
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 18px 16px !important;
+    }
+
+    .admin-info,
+    .view-website-btn,
+    .logout-btn {
+        width: 100%;
+    }
+
+    .view-website-btn,
+    .logout-btn {
+        text-align: center;
+    }
+}
+
+/* Samuzi dashboard cleanup */
+.samuzi-info-box {
+    background: linear-gradient(180deg, rgba(18,18,28,0.92), rgba(9,9,15,0.88)) !important;
+    border: 1px solid rgba(225,29,72,0.30) !important;
+    color: #f8fafc !important;
+    padding: 18px !important;
+    border-radius: 16px !important;
+    margin: 20px 0 !important;
+    box-shadow: 0 12px 34px rgba(0,0,0,0.38);
+}
+
+.samuzi-info-box p,
+.samuzi-info-box strong,
+.samuzi-info-box span {
+    color: #f8fafc !important;
+}
+
+.samuzi-info-box .muted {
+    color: #cbd5e1 !important;
+}
+
+.samuzi-info-inner {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(255,255,255,0.055) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+.dashboard-card input[readonly] {
+    opacity: 0.82;
+}
+
+.pagination-controls span,
+#recentActivity p {
+    color: #cbd5e1 !important;
+}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>⚔️ Samuzi Admin Dashboard</h1>
+<div class="admin-info">
+    <span>Logged in as: <strong id="adminUsername">admin</strong></span>
+    <a href="../index.html" target="_blank" class="view-website-btn">🌐 View Website</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h2>⚔️ Welcome to the Samuzi control center</h2>
+<p>Manage the launch page, slider artwork, project showcase, background settings, and email configuration from one place.</p>
+        </div>
+        
+        <div id="alertMessage" class="alert"></div>
+
+        <div class="dashboard-grid">
+            <!-- Website Settings - Basic -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🏢</div>
+                    <div class="card-title">Core Settings</div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="companyName">Brand Name:</label>
+                        <input type="text" id="companyName" value="Samuzi NFT">
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone / Contact Note:</label>
+                        <input type="text" id="phoneNumber" value="" placeholder="Optional contact note or Discord/X handle">
+                    </div>
+                    <div class="form-group">
+                        <label for="sliderSpeed">Slider Speed (seconds):</label>
+                        <select id="sliderSpeed">
+                            <option value="3">3 seconds</option>
+                            <option value="5" selected>5 seconds</option>
+                            <option value="7">7 seconds</option>
+                            <option value="10">10 seconds</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Website Settings - Background -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🎨</div>
+                    <div class="card-title">Background Settings</div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="heroBackground">🎨 Main Background Image:</label>
+                        <select id="heroBackground" style="font-size: 1.1rem; padding: 10px;">
+                            <option value="background1.png">Background 1</option>
+<option value="background2.png">Background 2</option>
+<option value="background3.png">Background 3</option>
+<option value="background4.png">Background 4</option>
+<option value="phase3-coming-soon.jpg">Phase 3 Coming Soon</option>
+                        </select>
+                        <small class="form-help">Main visual background used by the launch page and previews.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="backgroundTransparency">🔍 Background Visibility:</label>
+                        <select id="backgroundTransparency" style="font-size: 1.1rem; padding: 10px;">
+                            <option value="full">Full visibility</option>
+<option value="hero-only">Hero focused</option>
+<option value="subtle">Subtle background</option>
+<option value="complete">Strong dark overlay</option>
+                        </select>
+                        <small class="form-help">Controls how strongly the background artwork appears behind the content.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>📄 Page Backgrounds:</label>
+                        <div class="page-backgrounds-grid">
+    <div class="page-bg-item">
+        <label for="indexBackground">🏠 Home:</label>
+        <select id="indexBackground">
+            <option value="background1.png">Background 1</option>
+            <option value="background2.png">Background 2</option>
+            <option value="background3.png">Background 3</option>
+            <option value="background4.png">Background 4</option>
+        </select>
+    </div>
+
+    <div class="page-bg-item">
+        <label for="projectsBackground">🗡️ Projects:</label>
+        <select id="projectsBackground">
+            <option value="background1.png">Background 1</option>
+            <option value="background2.png">Background 2</option>
+            <option value="background3.png">Background 3</option>
+            <option value="background4.png">Background 4</option>
+        </select>
+    </div>
+
+    <div class="page-bg-item">
+        <label for="aboutBackground">📜 About:</label>
+        <select id="aboutBackground">
+            <option value="background1.png">Background 1</option>
+            <option value="background2.png">Background 2</option>
+            <option value="background3.png">Background 3</option>
+            <option value="background4.png">Background 4</option>
+        </select>
+    </div>
+
+    <div class="page-bg-item">
+        <label for="contactBackground">📬 Contact:</label>
+        <select id="contactBackground">
+            <option value="background1.png">Background 1</option>
+            <option value="background2.png">Background 2</option>
+            <option value="background3.png">Background 3</option>
+            <option value="background4.png">Background 4</option>
+        </select>
+    </div>
+
+    <div class="page-bg-item">
+        <label for="legalBackground">⚖️ Legal:</label>
+        <select id="legalBackground">
+            <option value="background1.png">Background 1</option>
+            <option value="background2.png">Background 2</option>
+            <option value="background3.png">Background 3</option>
+            <option value="background4.png">Background 4</option>
+        </select>
+    </div>
+</div>
+                        <small class="form-help">Choose the background artwork for each public page.</small>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Website Settings - Bubbles -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🫧</div>
+                    <div class="card-title">Visual Effects</div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="bubbleEffect">🫧 Ambient Effect:</label>
+                        <select id="bubbleEffect">
+    <option value="off">Off</option>
+    <option value="subtle">Subtle</option>
+    <option value="medium">Medium</option>
+    <option value="strong">Strong</option>
+    <option value="extreme">Extreme</option>
+</select>
+<small class="form-help">Optional ambient motion layer for the public pages.</small>
+                    </div>
+                    
+                    <div class="bubble-controls">
+                        <div class="form-group">
+                            <label for="bubbleColor">🎨 Effect Color:</label>
+                            <div class="color-selector">
+                                <select id="bubbleColor">
+                                    <option value="blue">Blue</option>
+<option value="white">White</option>
+<option value="lightblue">Light Blue</option>
+<option value="cyan">Cyan</option>
+<option value="silver">Silver</option>
+<option value="transparent">Transparent</option>
+<option value="custom">Custom</option>
+                                </select>
+                                <input type="color" id="customBubbleColor" value="#e11d48" class="custom-color-picker" title="Choose custom effect color">
+                            </div>
+                            <small class="form-help">Choose custom to use your own color.</small>
+                        </div>
+                        
+                        <div class="bubble-settings-grid">
+                            <div class="form-group">
+                                <label for="bubbleOpacity">👁️ Opacity:</label>
+                                <select id="bubbleOpacity">
+                                    <option value="low">Low</option>
+<option value="medium" selected>Medium</option>
+<option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bubbleSpeed">⚡ Speed:</label>
+                                <select id="bubbleSpeed">
+                                   <option value="slow">Slow</option>
+<option value="medium" selected>Medium</option>
+<option value="fast">Fast</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>📄 Enable effect on pages:</label>
+                        <div class="page-bubbles-grid">
+    <label class="bubble-page-item">
+        <input type="checkbox" id="bubbleIndex" checked>
+        <span>🏠 Home</span>
+    </label>
+    <label class="bubble-page-item">
+        <input type="checkbox" id="bubbleProjects" checked>
+        <span>🗡️ Projects</span>
+    </label>
+    <label class="bubble-page-item">
+        <input type="checkbox" id="bubbleAbout" checked>
+        <span>📜 About</span>
+    </label>
+    <label class="bubble-page-item">
+        <input type="checkbox" id="bubbleContact" checked>
+        <span>📬 Contact</span>
+    </label>
+    <label class="bubble-page-item">
+        <input type="checkbox" id="bubbleLegal" checked>
+        <span>⚖️ Legal</span>
+    </label>
+</div>
+                        <small class="form-help">Choose where the ambient effect should appear.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                       <button class="btn btn-primary" onclick="previewBackground()" style="margin-right: 10px;">👁️ Preview</button>
+<button class="btn btn-info" onclick="window.open('../index.html', '_blank')" style="margin-right: 10px;">🌐 View Website</button>
+<button class="btn btn-success" onclick="saveWebsiteSettings()">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Website Overview -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Website Overview</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">5</span>
+                        <div class="stat-label">Pages</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalEmails">0</span>
+                        <div class="stat-label">Emails</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalPhotos">0</span>
+                        <div class="stat-label">Photos</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <div class="stat-label">Functional</div>
+                    </div>
+                </div>
+                <a href="../index.html" class="btn" target="_blank">View Website</a>
+            </div>
+
+            <!-- Photo Management -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📸</div>
+                    <div class="card-title">Slider Artwork</div>
+                </div>
+                <p>Upload and manage Samuzi Phase 3 slider artwork.</p>
+                <div class="upload-area" id="uploadArea">
+                    <div>📁 Click here or drop images here</div>
+                    <div style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                        Supported formats: JPG, PNG, GIF, WebP
+                    </div>
+                </div>
+                <input type="file" id="photoUpload" multiple accept="image/*" style="display: none;">
+                <div class="photo-grid" id="photoGrid">
+                    <!-- Photos will be loaded here -->
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div class="pagination-controls" id="paginationControls" style="display: none;">
+                    <button id="prevPage" class="pagination-btn">← Previous</button>
+<span id="pageInfo" class="page-info">Page 1 of 1</span>
+<button id="nextPage" class="pagination-btn">Next →</button>
+                </div>
+            </div>
+
+            <!-- Project Management -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🗡️</div>
+                    <div class="card-title">Project Management</div>
+                </div>
+                <p>Manage Samuzi roadmap cards, announcements, and launch showcase items.</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalProjects">0</span>
+                        <div class="stat-label">Projects</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="recentProjects">0</span>
+                        <div class="stat-label">This Week</div>
+                    </div>
+                </div>
+                <a href="projects.html" class="btn btn-success">Manage Projects</a>
+                <button class="btn" onclick="window.open('projects.html', '_blank')">New Project</button>
+            </div>
+
+            <!-- Email Settings -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📧</div>
+                    <div class="card-title">Email Settings</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number" id="todayEmails">0</span>
+                        <div class="stat-label">Today</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="weekEmails">0</span>
+                        <div class="stat-label">This Week</div>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <h4>📧 Incoming Contact Messages</h4>
+                    <div class="form-group">
+                        <label for="emailAddress">Recipient Email:</label>
+                        <input type="email" id="emailAddress" value="" placeholder="contact@samuzi.example">
+                        <small class="form-help">
+    This is the email address that should receive contact form messages.
+</small>
+                    </div>
+                    
+                    <h4>📤 Outgoing Email — Resend API</h4>
+<div class="form-group samuzi-info-box">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="font-size:1.5rem;">✅</span>
+        <strong>Resend email delivery</strong>
+    </div>
+
+    <p class="muted" style="margin:10px 0;">
+        Configure a Resend API key through Render environment variables for production.
+        Until then, contact messages can be captured without delivery.
+    </p>
+
+    <div class="samuzi-info-inner">
+        <strong>From Email:</strong> <span id="resendFromEmail">onboarding@resend.dev</span><br>
+        <strong>Sender Name:</strong> <span id="resendFromName">Samuzi NFT Website</span><br>
+        <strong>Recipient:</strong> <span id="resendToEmail">Not configured</span>
+    </div>
+</div>
+                    
+                    <div class="form-group">
+                        <label for="fromEmail">From Email:</label>
+                        <input type="email" id="fromEmail" value="onboarding@resend.dev" readonly style="background-color: #f5f5f5;">
+                        <small class="form-help">
+    Use onboarding@resend.dev for testing, or a verified domain sender for production.
+</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fromName">Sender Name:</label>
+                        <input type="text" id="fromName" value="Samuzi NFT Website">
+                        <small class="form-help">Name displayed as the email sender.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-info" onclick="testEmailConnection()">📧 Test Email Connection</button>
+                        <small class="form-help">Tests the Resend API connection.</small>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="saveEmailSettings()">💾 Save Email Settings</button>
+                </div>
+            </div>
+
+
+            <!-- Recent Activity -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">Recent Activity</div>
+                </div>
+                <div id="recentActivity">
+                    <!-- Recent activities will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">Quick Actions</div>
+                </div>
+                <p>Quick maintenance shortcuts for the Samuzi website.</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="backupWebsite()">Backup Website</button>
+<button class="btn btn-warning" onclick="clearCache()">Clear Cache</button>
+<button class="btn" onclick="viewLogs()">View Logs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('check-auth.php');
+                const result = await response.json();
+                
+                if (!result.success || !result.logged_in) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Store session info for client-side use
+                sessionStorage.setItem('admin_logged_in', 'true');
+                sessionStorage.setItem('admin_username', result.username || 'admin');
+                
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                // Call logout API to clear server session
+                await fetch('logout.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (error) {
+                console.error('Logout API error:', error);
+            } finally {
+                // Clear client-side session data
+                sessionStorage.removeItem('admin_logged_in');
+                sessionStorage.removeItem('admin_username');
+                
+                // Redirect to login page
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load email statistics
+                const emailStats = await loadEmailStats();
+                document.getElementById('totalEmails').textContent = emailStats.total || '0';
+                document.getElementById('todayEmails').textContent = emailStats.today || '0';
+                document.getElementById('weekEmails').textContent = emailStats.week || '0';
+
+                // Load photo count
+                const photoCount = await loadPhotoCount();
+                document.getElementById('totalPhotos').textContent = photoCount || '0';
+
+                // Load project statistics
+                await loadProjectStats();
+
+                // Load recent activity
+                await loadRecentActivity();
+
+                // Load photos
+                await loadPhotos();
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load email statistics
+        async function loadEmailStats() {
+            try {
+                const response = await fetch('get-stats.php');
+                const data = await response.json();
+                return data.email_stats || { total: 0, today: 0, week: 0 };
+            } catch (error) {
+                console.error('Error loading email stats:', error);
+                return { total: 0, today: 0, week: 0 };
+            }
+        }
+
+        // Load photo count
+        async function loadPhotoCount() {
+            try {
+                const response = await fetch('get-photos.php');
+                const data = await response.json();
+                return data.count || 0;
+            } catch (error) {
+                console.error('Error loading photo count:', error);
+                return 0;
+            }
+        }
+
+        // Load project statistics
+        async function loadProjectStats() {
+            try {
+                const response = await fetch('projects.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const projects = data.projects || [];
+                    const totalProjects = projects.length;
+                    
+                    // Count recent projects (this week)
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    const recentProjects = projects.filter(project => 
+                        new Date(project.created_at) >= weekAgo
+                    ).length;
+                    
+                    document.getElementById('totalProjects').textContent = totalProjects;
+                    document.getElementById('recentProjects').textContent = recentProjects;
+                }
+            } catch (error) {
+                console.error('Error loading project stats:', error);
+                document.getElementById('totalProjects').textContent = '0';
+                document.getElementById('recentProjects').textContent = '0';
+            }
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch('get-activity.php');
+                const data = await response.json();
+                const activityDiv = document.getElementById('recentActivity');
+                
+                if (data.activities && data.activities.length > 0) {
+                    activityDiv.innerHTML = data.activities.map(activity => 
+                        `<div style="padding: 10px; border-bottom: 1px solid #eee;">
+                            <strong>${activity.time}</strong><br>
+                            ${activity.message}
+                        </div>`
+                    ).join('');
+                } else {
+                    activityDiv.innerHTML = '<p style="color: #666;">Keine aktuellen Aktivitäten</p>';
+                }
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recentActivity').innerHTML = '<p style="color: #cbd5e1;">Could not load recent activity.</p>';
+            }
+        }
+
+        // Pagination variables
+        let currentPage = 1;
+        const photosPerPage = 10;
+        let allPhotos = [];
+
+        // Load photos with pagination
+        async function loadPhotos(page = 1) {
+            try {
+                const response = await fetch('get-photos.php?t=' + Date.now());
+                const data = await response.json();
+                const photoGrid = document.getElementById('photoGrid');
+                const paginationControls = document.getElementById('paginationControls');
+                
+                if (data.photos && data.photos.length > 0) {
+                    allPhotos = data.photos;
+                    const totalPages = Math.ceil(allPhotos.length / photosPerPage);
+                    const startIndex = (page - 1) * photosPerPage;
+                    const endIndex = startIndex + photosPerPage;
+                    const photosToShow = allPhotos.slice(startIndex, endIndex);
+                    
+                    console.log('🔍 Loading photos:', photosToShow);
+                    
+                    photoGrid.innerHTML = photosToShow.map(photo => {
+                        console.log('📸 Creating photo item for:', photo.filename);
+                        const html = `<div class="photo-item">
+                            <img src="../slider-photos/${photo.filename}" alt="${photo.name}">
+                            <div class="photo-actions">
+                                <span>${photo.name}</span>
+                                <button class="delete-photo-btn" data-filename="${photo.filename}">🗑️</button>
+                            </div>
+                        </div>`;
+                        console.log('📸 Generated HTML for', photo.filename, ':', html);
+                        return html;
+                    }).join('');
+                    
+                    console.log('📸 Final photoGrid HTML:', photoGrid.innerHTML);
+                    
+                    // Show pagination controls if more than 10 photos
+                    if (allPhotos.length > photosPerPage) {
+                        paginationControls.style.display = 'flex';
+                        updatePaginationControls(page, totalPages);
+                    } else {
+                        paginationControls.style.display = 'none';
+                    }
+                } else {
+                    photoGrid.innerHTML = '<p style="color: #cbd5e1; grid-column: 1/-1; text-align: center; padding: 20px;">No slider artwork uploaded yet.</p>';
+                    paginationControls.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading photos:', error);
+            }
+        }
+
+        // Update pagination controls
+        function updatePaginationControls(currentPage, totalPages) {
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            const pageInfo = document.getElementById('pageInfo');
+            
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        }
+
+        // Photo upload handling
+        document.getElementById('uploadArea').addEventListener('click', () => {
+            document.getElementById('photoUpload').click();
+        });
+
+        document.getElementById('uploadArea').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        });
+
+        document.getElementById('uploadArea').addEventListener('dragleave', (e) => {
+            e.currentTarget.classList.remove('dragover');
+        });
+
+        document.getElementById('uploadArea').addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            uploadPhotos(files);
+        });
+
+        document.getElementById('photoUpload').addEventListener('change', (e) => {
+            uploadPhotos(e.target.files);
+        });
+
+        // Pagination event listeners
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadPhotos(currentPage);
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const totalPages = Math.ceil(allPhotos.length / photosPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadPhotos(currentPage);
+            }
+        });
+
+        // Event delegation for delete buttons
+        document.addEventListener('click', (e) => {
+            console.log('🖱️ Click detected on:', e.target);
+            if (e.target.classList.contains('delete-photo-btn')) {
+                const filename = e.target.getAttribute('data-filename');
+                console.log('🗑️ Delete button clicked for:', filename);
+                deletePhoto(filename);
+            }
+        });
+
+        // Upload photos
+        async function uploadPhotos(files) {
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('photos[]', file);
+            }
+            formData.append('upload_type', 'slider');
+
+            try {
+                const response = await fetch('upload-photos.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Artwork uploaded successfully!');
+                    currentPage = 1; // Reset to first page
+                    loadPhotos(currentPage);
+                    loadPhotoCount(); // Update photo count
+                } else {
+                    showAlert('❌ Upload failed: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showAlert('❌ Error uploading artwork', 'error');
+            }
+        }
+
+        // Delete photo
+        async function deletePhoto(filename) {
+            console.log('🗑️ Delete photo called with filename:', filename);
+            if (!confirm('Are you sure you want to delete this image?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`delete-photo.php?filename=${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Image deleted successfully!');
+                    // Check if we need to go back a page
+                    const totalPages = Math.ceil((allPhotos.length - 1) / photosPerPage);
+                    if (currentPage > totalPages && totalPages > 0) {
+                        currentPage = totalPages;
+                    }
+                    loadPhotos(currentPage);
+                    loadPhotoCount(); // Update photo count
+                } else {
+                    showAlert('❌ Delete failed: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showAlert('❌ Error deleting image', 'error');
+            }
+        }
+
+        // Save email settings (Resend.com API only, no SMTP)
+        async function saveEmailSettings() {
+            const emailSettings = {
+                email_address: document.getElementById('emailAddress').value,
+                from_email: document.getElementById('fromEmail').value,
+                from_name: document.getElementById('fromName').value,
+                sender_email: document.getElementById('fromEmail').value
+            };
+            
+            try {
+                const response = await fetch('save-settings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(emailSettings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Email settings saved.');
+                    // Update display
+                    document.getElementById('resendFromEmail').textContent = emailSettings.from_email;
+                    document.getElementById('resendFromName').textContent = emailSettings.from_name;
+                } else {
+                    showAlert('❌ Error saving settings.', 'error');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showAlert('❌ Error saving email settings.', 'error');
+            }
+        }
+
+        // Test email connection (Resend.com API only)
+        async function testEmailConnection() {
+            const emailSettings = {
+                email_address: document.getElementById('emailAddress').value,
+                from_email: document.getElementById('fromEmail').value,
+                from_name: document.getElementById('fromName').value
+            };
+            
+            try {
+                showAlert('🔄 Testing Resend API connection...', 'info');
+                
+                const response = await fetch('test-email-connection.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(emailSettings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert(`✅ Email connection tested successfully via ${result.service || 'Resend'}.`, 'success');
+                } else {
+                    showAlert(`❌ Email test failed: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Test error:', error);
+                showAlert('❌ Error testing email connection.', 'error');
+            }
+        }
+
+        // Preview background setting
+        function previewBackground() {
+            const selectedBackground = document.getElementById('heroBackground').value;
+            let backgroundPath;
+            
+            if (['background1.png', 'background2.png', 'background3.png', 'background4.png'].includes(selectedBackground)) {
+                backgroundPath = '../assets/background/' + selectedBackground;
+            } else {
+                backgroundPath = '../slider-photos/' + selectedBackground;
+            }
+            
+            // Open preview window with full page background
+            const previewWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
+            previewWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Samuzi Background Preview - ${selectedBackground}</title>
+                    <style>
+                        body { 
+                            margin: 0; 
+                            padding: 0; 
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            background: url('${backgroundPath}');
+                            background-size: cover;
+                            background-position: center;
+                            background-attachment: fixed;
+                            background-repeat: no-repeat;
+                            min-height: 100vh;
+                        }
+                        .preview-overlay {
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: rgba(0, 0, 0, 0.3);
+                            z-index: -1;
+                            pointer-events: none;
+                        }
+                        .preview-header {
+                            background: rgba(0, 102, 204, 0.9);
+                            color: white;
+                            padding: 1rem;
+                            text-align: center;
+                            backdrop-filter: blur(10px);
+                        }
+                        .preview-hero {
+                            height: 70vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            text-align: center;
+                            position: relative;
+                        }
+                        .preview-content {
+                            position: relative;
+                            z-index: 2;
+                        }
+                        .preview-title {
+                            font-size: 3rem;
+                            font-weight: bold;
+                            margin-bottom: 1rem;
+                            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+                        }
+                        .preview-subtitle {
+                            font-size: 1.5rem;
+                            margin-bottom: 2rem;
+                            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+                        }
+                        .preview-button {
+                            background: #ff6600;
+                            color: white;
+                            padding: 15px 30px;
+                            border: none;
+                            border-radius: 25px;
+                            font-size: 1.1rem;
+                            font-weight: bold;
+                            cursor: pointer;
+                            text-shadow: none;
+                        }
+                        .preview-main {
+                            background: rgba(26, 26, 26, 0.7);
+                            color: white;
+                            padding: 2rem;
+                            margin: 2rem;
+                            border-radius: 15px;
+                            backdrop-filter: blur(10px);
+                        }
+                        .preview-info {
+                            position: fixed;
+                            bottom: 20px;
+                            right: 20px;
+                            background: rgba(0,0,0,0.8);
+                            padding: 15px;
+                            border-radius: 10px;
+                            font-size: 0.9rem;
+                            color: white;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="preview-overlay"></div>
+                    <div class="preview-header">
+                        <h1>SAMUZI NFT</h1>
+                    </div>
+                    <div class="preview-hero">
+                        <div class="preview-content">
+                            <h2 class="preview-title">The Journey Continues</h2>
+<p class="preview-subtitle">Phase 3 is loading. New signals coming soon.</p>
+<button class="preview-button">Follow the Launch</button>
+                        </div>
+                    </div>
+                    <div class="preview-main">
+                        <h3>Samuzi Phase 3 Preview</h3>
+<p>This preview shows how the selected background artwork feels behind a dark Samuzi launch layout.</p>
+                    </div>
+                    <div class="preview-info">
+                        <strong>Vorschau: ${selectedBackground}</strong><br>
+                        Full-page background preview<br>
+<em>Approximate launch page background feel</em>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // Save website settings
+        async function saveWebsiteSettings() {
+            const bubbleColor = document.getElementById('bubbleColor').value;
+            const customColor = document.getElementById('customBubbleColor').value;
+            
+            const settings = {
+                company_name: document.getElementById('companyName').value,
+                phone_number: document.getElementById('phoneNumber').value,
+                slider_speed: document.getElementById('sliderSpeed').value,
+                hero_background: document.getElementById('heroBackground').value,
+                background_transparency: document.getElementById('backgroundTransparency').value,
+                page_backgrounds: {
+    index: document.getElementById('indexBackground').value,
+    projects: document.getElementById('projectsBackground').value,
+    about: document.getElementById('aboutBackground').value,
+    contact: document.getElementById('contactBackground').value,
+    legal: document.getElementById('legalBackground').value
+},
+                bubble_effect: document.getElementById('bubbleEffect').value,
+                bubble_enabled: document.getElementById('bubbleEffect').value !== 'off',
+                bubble_intensity: document.getElementById('bubbleEffect').value,
+                bubble_color: bubbleColor === 'custom' ? customColor : bubbleColor,
+                bubble_opacity: document.getElementById('bubbleOpacity').value,
+                bubble_speed: document.getElementById('bubbleSpeed').value,
+                bubble_pages: {
+    index: document.getElementById('bubbleIndex').checked,
+    projects: document.getElementById('bubbleProjects').checked,
+    about: document.getElementById('bubbleAbout').checked,
+    contact: document.getElementById('bubbleContact').checked,
+    legal: document.getElementById('bubbleLegal').checked
+}
+            };
+
+            try {
+                const response = await fetch('save-settings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Website settings saved. Background and visual settings are now active.');
+                } else {
+                    showAlert('❌ Error saving website settings.', 'error');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showAlert('❌ Error saving website settings.', 'error');
+            }
+        }
+
+        // Quick actions
+        function backupWebsite() {
+            showAlert('🔄 Website backup started...');
+            // In real implementation, trigger backup process
+        }
+
+        function clearCache() {
+            showAlert('🗑️ Cache clear started...');
+            // In real implementation, clear cache
+        }
+
+        function viewLogs() {
+            window.open('logs.html', '_blank');
+        }
+
+
+        // Load email settings (Resend.com API only)
+        async function loadEmailSettings() {
+            try {
+                const response = await fetch('get-settings.php');
+                const result = await response.json();
+                
+                if (result.success && result.settings) {
+                    const settings = result.settings;
+                    
+                    // Load Resend settings into form
+                    if (settings.email_address) document.getElementById('emailAddress').value = settings.email_address;
+                    if (settings.from_email || settings.sender_email) {
+                        const fromEmail = settings.from_email || settings.sender_email || 'onboarding@resend.dev';
+                        document.getElementById('fromEmail').value = fromEmail;
+                        document.getElementById('resendFromEmail').textContent = fromEmail;
+                    }
+                    if (settings.from_name) {
+                        document.getElementById('fromName').value = settings.from_name;
+                        document.getElementById('resendFromName').textContent = settings.from_name;
+                    }
+                    
+                    // Show Resend API status
+                    const hasResendKey = settings.resend_api_key && settings.resend_api_key.length > 0;
+                    if (hasResendKey) {
+                        console.log('✅ Resend API key configured (from environment variable or hardcoded for local)');
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load email settings:', error);
+            }
+        }
+
+        async function loadWebsiteSettings() {
+            try {
+                const response = await fetch('get-settings.php');
+                const result = await response.json();
+                
+                if (result.success && result.settings) {
+                    const settings = result.settings;
+                    
+                    // Load website settings into form
+                    if (settings.company_name) document.getElementById('companyName').value = settings.company_name;
+                    if (settings.phone_number) document.getElementById('phoneNumber').value = settings.phone_number;
+                    if (settings.slider_speed) document.getElementById('sliderSpeed').value = settings.slider_speed;
+                    if (settings.hero_background) document.getElementById('heroBackground').value = settings.hero_background;
+                    if (settings.background_transparency) document.getElementById('backgroundTransparency').value = settings.background_transparency;
+                    
+                    // Load page backgrounds
+                    if (settings.page_backgrounds) {
+                       if (settings.page_backgrounds.index) document.getElementById('indexBackground').value = settings.page_backgrounds.index;
+if (settings.page_backgrounds.projects) document.getElementById('projectsBackground').value = settings.page_backgrounds.projects;
+if (settings.page_backgrounds.about) document.getElementById('aboutBackground').value = settings.page_backgrounds.about;
+if (settings.page_backgrounds.contact) document.getElementById('contactBackground').value = settings.page_backgrounds.contact;
+if (settings.page_backgrounds.legal) document.getElementById('legalBackground').value = settings.page_backgrounds.legal;
+                    }
+                    if (settings.bubble_effect) document.getElementById('bubbleEffect').value = settings.bubble_effect;
+                    if (settings.bubble_opacity) document.getElementById('bubbleOpacity').value = settings.bubble_opacity;
+                    if (settings.bubble_speed) document.getElementById('bubbleSpeed').value = settings.bubble_speed;
+                    
+                    // Handle bubble color (custom or preset)
+                    if (settings.bubble_color) {
+                        const isCustomColor = !['blue', 'white', 'lightblue', 'cyan', 'silver', 'transparent'].includes(settings.bubble_color);
+                        if (isCustomColor) {
+                            document.getElementById('bubbleColor').value = 'custom';
+                            document.getElementById('customBubbleColor').value = settings.bubble_color;
+                        } else {
+                            document.getElementById('bubbleColor').value = settings.bubble_color;
+                        }
+                    }
+                    
+                    // Load page-specific bubble settings
+                    if (settings.bubble_pages) {
+                        if (settings.bubble_pages.index !== undefined) document.getElementById('bubbleIndex').checked = settings.bubble_pages.index;
+if (settings.bubble_pages.projects !== undefined) document.getElementById('bubbleProjects').checked = settings.bubble_pages.projects;
+if (settings.bubble_pages.about !== undefined) document.getElementById('bubbleAbout').checked = settings.bubble_pages.about;
+if (settings.bubble_pages.contact !== undefined) document.getElementById('bubbleContact').checked = settings.bubble_pages.contact;
+if (settings.bubble_pages.legal !== undefined) document.getElementById('bubbleLegal').checked = settings.bubble_pages.legal;
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load website settings:', error);
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            await loadDashboardData();
+            await loadEmailSettings();
+            await loadWebsiteSettings();
+            
+            // Set admin username
+            const adminUser = sessionStorage.getItem('admin_username') || 'admin';
+            document.getElementById('adminUsername').textContent = adminUser;
+            
+            // Add event listener for background preview
+            const heroBackgroundSelect = document.getElementById('heroBackground');
+            if (heroBackgroundSelect) {
+                heroBackgroundSelect.addEventListener('change', function() {
+                    console.log('Background changed to:', this.value);
+                    // Optional: Auto-preview on change
+                    // previewBackground();
+                });
+            }
+            
+        });
+        
+    </script>
+</body>
+</html>

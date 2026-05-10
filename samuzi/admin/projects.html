@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samuzi Admin - Project Management</title>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --bg: #07070b;
+        --panel: rgba(13, 13, 20, 0.88);
+        --panel-strong: rgba(18, 18, 28, 0.96);
+        --text: #f8fafc;
+        --muted: #cbd5e1;
+        --dim: #94a3b8;
+        --red: #e11d48;
+        --orange: #f97316;
+        --gold: #f59e0b;
+        --border: rgba(255,255,255,0.10);
+        --border-red: rgba(225,29,72,0.34);
+        --shadow: 0 18px 58px rgba(0,0,0,0.48);
+    }
+
+    body {
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text);
+        background:
+            radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.18), transparent 36%),
+            radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.10), transparent 28%),
+            linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
+        background-attachment: fixed;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+            linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.72)),
+            url("../assets/background/phase3-coming-soon.jpg");
+        background-size: cover;
+        background-position: center top;
+        background-repeat: no-repeat;
+        opacity: 0.34;
+        pointer-events: none;
+        z-index: -2;
+    }
+
+    body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+            radial-gradient(circle at 50% 18%, rgba(225,29,72,0.18), transparent 34%),
+            linear-gradient(to bottom, rgba(7,7,11,0.38), rgba(7,7,11,0.90));
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(7, 7, 11, 0.78);
+        color: white;
+        padding: 18px 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 8px 28px rgba(0,0,0,0.32);
+        backdrop-filter: blur(14px);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .header h1 {
+        font-size: clamp(1.35rem, 3vw, 1.8rem);
+        letter-spacing: -0.02em;
+        text-shadow: 0 4px 18px rgba(0,0,0,0.55);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .back-btn,
+    .view-website-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: white;
+        text-decoration: none;
+        border: 1px solid rgba(255,255,255,0.14);
+        padding: 9px 16px;
+        border-radius: 999px;
+        transition: all 0.22s ease;
+        font-size: 14px;
+        font-weight: 700;
+        background: rgba(255,255,255,0.07);
+    }
+
+    .view-website-btn {
+        background: linear-gradient(135deg, rgba(225,29,72,0.80), rgba(249,115,22,0.72));
+        border-color: rgba(249,115,22,0.30);
+        box-shadow: 0 10px 30px rgba(225,29,72,0.22);
+    }
+
+    .back-btn:hover,
+    .view-website-btn:hover {
+        transform: translateY(-2px);
+        color: #ffffff;
+        background: rgba(255,255,255,0.12);
+    }
+
+    .view-website-btn:hover {
+        background: linear-gradient(135deg, rgba(225,29,72,1), rgba(249,115,22,0.92));
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 34px 20px 58px;
+    }
+
+    .projects-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .projects-header h2 {
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        color: #ffffff;
+        text-shadow: 0 4px 18px rgba(0,0,0,0.55);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: white;
+        border: none;
+        padding: 12px 18px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 800;
+        transition: all 0.22s ease;
+        text-decoration: none;
+        background: linear-gradient(135deg, var(--red), var(--orange));
+        box-shadow: 0 10px 30px rgba(225,29,72,0.24);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 40px rgba(225,29,72,0.34);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #e11d48, #f97316);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #b91c1c, #ef4444);
+    }
+
+    .btn-secondary {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.14);
+        box-shadow: none;
+    }
+
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 24px;
+        margin-bottom: 30px;
+    }
+
+    .project-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(18,18,28,0.92), rgba(9,9,15,0.88));
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        transition: all 0.28s ease;
+        backdrop-filter: blur(14px);
+    }
+
+    .project-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at 20% 0%, rgba(225,29,72,0.16), transparent 35%),
+            radial-gradient(circle at 90% 20%, rgba(249,115,22,0.10), transparent 28%);
+        pointer-events: none;
+    }
+
+    .project-card > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .project-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(225,29,72,0.34);
+        box-shadow: 0 22px 70px rgba(0,0,0,0.56), 0 0 32px rgba(225,29,72,0.18);
+    }
+
+    .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .project-title {
+        font-size: 1.25rem;
+        line-height: 1.25;
+        font-weight: 850;
+        color: #ffffff;
+        margin-bottom: 7px;
+    }
+
+    .project-location {
+        color: var(--muted);
+        font-size: 0.92rem;
+    }
+
+    .project-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .project-actions button {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .edit-btn {
+        background: rgba(245,158,11,0.95);
+        color: #111827;
+    }
+
+    .delete-btn {
+        background: rgba(225,29,72,0.95);
+        color: white;
+    }
+
+    .edit-btn:hover,
+    .delete-btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+    }
+
+    .project-details {
+        margin-bottom: 15px;
+    }
+
+    .project-detail {
+        margin-bottom: 9px;
+        font-size: 0.92rem;
+        color: var(--muted);
+        line-height: 1.5;
+    }
+
+    .project-detail strong {
+        color: #ffffff;
+    }
+
+    .project-photos {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+    }
+
+    .project-photo {
+        width: 68px;
+        height: 68px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(255,255,255,0.05);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.72);
+        backdrop-filter: blur(8px);
+        padding: 20px;
+    }
+
+    .modal-content {
+        background: linear-gradient(180deg, rgba(18,18,28,0.98), rgba(9,9,15,0.98));
+        border: 1px solid rgba(225,29,72,0.30);
+        color: #ffffff;
+        margin: 2vh auto;
+        padding: clamp(20px, 3vw, 30px);
+        border-radius: 24px;
+        width: min(920px, 100%);
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.68);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 22px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .modal-header h2 {
+        font-size: 1.45rem;
+    }
+
+    .close {
+        color: #cbd5e1;
+        font-size: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .close:hover {
+        color: #ffffff;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 750;
+        color: #ffffff;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 12px 13px;
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        color: #ffffff;
+        background: rgba(255,255,255,0.07);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: rgba(203,213,225,0.62);
+    }
+
+    .form-group select option {
+        color: #111827;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: rgba(249,115,22,0.62);
+        box-shadow: 0 0 0 3px rgba(249,115,22,0.16);
+        background: rgba(255,255,255,0.10);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .features-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: rgba(255,255,255,0.045);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .feature-item input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        accent-color: var(--red);
+    }
+
+    .feature-item label {
+        margin: 0;
+        color: var(--muted);
+        font-weight: 650;
+    }
+
+    .photo-upload-area {
+        border: 2px dashed rgba(249,115,22,0.45);
+        border-radius: 18px;
+        padding: 24px 18px;
+        text-align: center;
+        background: rgba(255,255,255,0.045);
+        margin: 10px 0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #ffffff;
+    }
+
+    .photo-upload-area:hover {
+        background: rgba(225,29,72,0.10);
+        border-color: rgba(249,115,22,0.75);
+    }
+
+    .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .photo-item {
+        position: relative;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(255,255,255,0.05);
+    }
+
+    .photo-item img {
+        width: 100%;
+        height: 105px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .photo-remove {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: rgba(225,29,72,0.92);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 14px;
+        margin: 0 0 18px;
+        display: none;
+        font-weight: 750;
+    }
+
+    .alert-success {
+        background: rgba(34,197,94,0.16);
+        color: #bbf7d0;
+        border: 1px solid rgba(34,197,94,0.32);
+    }
+
+    .alert-error {
+        background: rgba(239,68,68,0.16);
+        color: #fecaca;
+        border: 1px solid rgba(239,68,68,0.32);
+    }
+
+    @media (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-actions,
+        .back-btn,
+        .view-website-btn {
+            width: 100%;
+        }
+
+        .projects-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .projects-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .modal {
+            padding: 10px;
+        }
+
+        .modal-content {
+            margin: 0 auto;
+            width: 100%;
+            max-height: 96vh;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>⚙️ Project Management</h1>
+            <div class="header-actions">
+                <a href="../projects.html" target="_blank" class="view-website-btn">🌐 View Projects Page</a>
+                <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alertMessage" class="alert"></div>
+
+        <div class="projects-header">
+            <h2>Manage Projects</h2>
+            <button class="btn btn-success" onclick="openProjectModal()">+ New Project</button>
+        </div>
+
+        <div class="projects-grid" id="projectsGrid">
+            <!-- Projects will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create New Project</h2>
+                <span class="close" onclick="closeProjectModal()">&times;</span>
+            </div>
+
+            <form id="projectForm">
+                <input type="hidden" id="projectId" name="id">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="projectTitle">Project Title *</label>
+                        <input type="text" id="projectTitle" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectLocation">Category / Location *</label>
+                        <input type="text" id="projectLocation" name="location" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="projectType">Showcase Type *</label>
+                        <select id="projectType" name="project_type" required>
+                            <option value="">Choose type...</option>
+<option value="Phase 3 Update">Phase 3 Update</option>
+<option value="NFT Collection">NFT Collection</option>
+<option value="Roadmap Milestone">Roadmap Milestone</option>
+<option value="Community Event">Community Event</option>
+<option value="Partner Feature">Partner Feature</option>
+<option value="Utility Preview">Utility Preview</option>
+<option value="Announcement">Announcement</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="completionDate">Release / Target Date</label>
+                        <input type="date" id="completionDate" name="completion_date">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="poolSize">Supply / Scope</label>
+<input type="text" id="poolSize" name="pool_size" placeholder="Example: 3,333 NFTs / Phase 3 teaser / WL campaign">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectDescription">Project Description *</label>
+                    <textarea id="projectDescription" name="description" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Highlights</label>
+                    <div class="features-list">
+                        <div class="feature-item">
+    <input type="checkbox" id="feature_art" name="features" value="Original Samuzi Art">
+    <label for="feature_art">Original Samuzi Art</label>
+</div>
+<div class="feature-item">
+    <input type="checkbox" id="feature_phase3" name="features" value="Phase 3 Related">
+    <label for="feature_phase3">Phase 3 Related</label>
+</div>
+<div class="feature-item">
+    <input type="checkbox" id="feature_utility" name="features" value="Utility Preview">
+    <label for="feature_utility">Utility Preview</label>
+</div>
+<div class="feature-item">
+    <input type="checkbox" id="feature_community" name="features" value="Community Focused">
+    <label for="feature_community">Community Focused</label>
+</div>
+<div class="feature-item">
+    <input type="checkbox" id="feature_mint" name="features" value="Mint Information">
+    <label for="feature_mint">Mint Information</label>
+</div>
+<div class="feature-item">
+    <input type="checkbox" id="feature_partner" name="features" value="Partner / Collaboration">
+    <label for="feature_partner">Partner / Collaboration</label>
+</div>
+<div class="feature-item">
+    <input type="checkbox" id="feature_lore" name="features" value="Lore / Story">
+    <label for="feature_lore">Lore / Story</label>
+</div>
+<div class="feature-item">
+    <input type="checkbox" id="feature_roadmap" name="features" value="Roadmap Signal">
+    <label for="feature_roadmap">Roadmap Signal</label>
+</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="specialFeatures">Additional Notes</label>
+<textarea id="specialFeatures" name="special_features" rows="3" placeholder="Extra notes, launch context, links, or internal details..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Project Images</label>
+                    <div class="photo-upload-area" onclick="document.getElementById('projectPhotos').click()">
+                        <div>📁 Click here or drop images here</div>
+<div style="font-size: 0.9rem; color: #94a3b8; margin-top: 10px;">
+    Supported formats: JPG, PNG, GIF, WebP
+</div>
+                        </div>
+                    </div>
+                    <input type="file" id="projectPhotos" multiple accept="image/*" style="display: none;" onchange="handlePhotoUpload(this.files)">
+                    <div class="photo-grid" id="projectPhotoGrid">
+                        <!-- Project photos will be displayed here -->
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; text-align: right;">
+                    <button type="button" class="btn btn-secondary" onclick="closeProjectModal()">Cancel</button>
+                    <button type="submit" class="btn" id="submitBtn">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let projects = [];
+        let currentEditingProject = null;
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch('check-auth.php');
+                const result = await response.json();
+                
+                if (!result.success || !result.logged_in) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Load projects
+        async function loadProjects() {
+            try {
+                const response = await fetch('projects.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    projects = result.projects;
+                    displayProjects();
+                } else {
+                    showAlert('Error loading projects: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                showAlert('Error loading projects', 'error');
+            }
+        }
+
+        // Display projects
+        function displayProjects() {
+            const grid = document.getElementById('projectsGrid');
+            
+            if (projects.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">No projects found yet. Create your first project!</div>';
+                return;
+            }
+
+            grid.innerHTML = projects.map(project => `
+                <div class="project-card">
+                    <div class="project-header">
+                        <div>
+                            <div class="project-title">${project.title}</div>
+                            <div class="project-location">📍 ${project.location}</div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="edit-btn" onclick="editProject('${project.id}')">✏️</button>
+                            <button class="delete-btn" onclick="deleteProject('${project.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="project-details">
+                            <div class="project-detail"><strong>Type:</strong> ${project.project_type}</div>
+                            <div class="project-detail"><strong>Size:</strong> ${project.pool_size || 'Not specified'}</div>
+                            <div class="project-detail"><strong>Completion:</strong> ${project.completion_date}</div>
+                            <div class="project-detail"><strong>Description:</strong> ${project.description.substring(0, 100)}${project.description.length > 100 ? '...' : ''}</div>
+                        ${project.features && project.features.length > 0 ? `
+                            <div class="project-detail"><strong>Features:</strong> ${project.features.join(', ')}</div>
+                        ` : ''}
+                    </div>
+                    
+                    ${project.photos && project.photos.length > 0 ? `
+                        <div class="project-photos">
+                            ${project.photos.slice(0, 4).map(photo => `
+    <img src="../assets/${photo}" alt="Project Photo" class="project-photo">
+`).join('')}
+                            ${project.photos.length > 4 ? `<div class="project-photo" style="display: flex; align-items: center; justify-content: center; background: #f8f9fa; color: #666;">+${project.photos.length - 4}</div>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Open project modal
+        function openProjectModal(projectId = null) {
+            currentEditingProject = projectId;
+            const modal = document.getElementById('projectModal');
+            const title = document.getElementById('modalTitle');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (projectId) {
+                title.textContent = 'Edit Project';
+                submitBtn.textContent = 'Save Changes';
+                loadProjectData(projectId);
+            } else {
+                title.textContent = 'Create New Project';
+                submitBtn.textContent = 'Save Project';
+                document.getElementById('projectForm').reset();
+                document.getElementById('projectPhotoGrid').innerHTML = '';
+                window.currentUploadedPhotos = [];
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // Close project modal
+        function closeProjectModal() {
+            document.getElementById('projectModal').style.display = 'none';
+            currentEditingProject = null;
+        }
+
+        // Load project data for editing
+        function loadProjectData(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+
+            document.getElementById('projectId').value = project.id;
+            document.getElementById('projectTitle').value = project.title;
+            document.getElementById('projectLocation').value = project.location;
+            document.getElementById('projectType').value = project.project_type;
+            document.getElementById('projectDescription').value = project.description;
+            document.getElementById('completionDate').value = project.completion_date;
+            document.getElementById('poolSize').value = project.pool_size || '';
+            document.getElementById('specialFeatures').value = project.special_features || '';
+
+            // Load features
+            document.querySelectorAll('input[name="features"]').forEach(checkbox => {
+                checkbox.checked = project.features && project.features.includes(checkbox.value);
+            });
+
+            // Load photos
+            displayProjectPhotos(project.photos || []);
+        }
+
+        // Handle photo upload
+        async function handlePhotoUpload(files) {
+            const photoGrid = document.getElementById('projectPhotoGrid');
+            const uploadedPhotos = [];
+            
+            for (let file of files) {
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('photos[]', file);
+                formData.append('upload_type', 'project');
+                
+                try {
+                    const response = await fetch('upload-photos.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success && result.uploaded_files.length > 0) {
+                        const uploadedFile = result.uploaded_files[0];
+                        uploadedPhotos.push(uploadedFile.new_name);
+                        
+                        // Display the photo
+                        const photoItem = document.createElement('div');
+                        photoItem.className = 'photo-item';
+                        photoItem.innerHTML = `
+                            <img src="../assets/${uploadedFile.new_name}" alt="Project Photo">
+                            <button class="photo-remove" onclick="removeProjectPhoto(this, '${uploadedFile.new_name}')">×</button>
+                        `;
+                        photoGrid.appendChild(photoItem);
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                }
+            }
+            
+            // ADD uploaded photos to existing ones (don't replace)
+            if (window.currentUploadedPhotos && Array.isArray(window.currentUploadedPhotos)) {
+                window.currentUploadedPhotos = [...window.currentUploadedPhotos, ...uploadedPhotos];
+            } else {
+                window.currentUploadedPhotos = uploadedPhotos;
+            }
+        }
+
+        // Display project photos
+        function displayProjectPhotos(photos) {
+            const photoGrid = document.getElementById('projectPhotoGrid');
+            photoGrid.innerHTML = '';
+            
+            photos.forEach(photo => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                photoItem.innerHTML = `
+    <img src="../assets/${photo}" alt="Project Photo">
+    <button class="photo-remove" onclick="removeProjectPhoto(this, '${photo}')">×</button>
+`;
+                photoGrid.appendChild(photoItem);
+            });
+            
+            // Update current uploaded photos for editing
+            window.currentUploadedPhotos = photos;
+        }
+
+        // Remove project photo
+        function removeProjectPhoto(button, filename = null) {
+            if (filename && window.currentUploadedPhotos) {
+                // Remove from uploaded photos array
+                window.currentUploadedPhotos = window.currentUploadedPhotos.filter(photo => photo !== filename);
+            }
+            button.parentElement.remove();
+        }
+
+        // Edit project
+        function editProject(projectId) {
+            openProjectModal(projectId);
+        }
+
+        // Delete project
+        async function deleteProject(projectId) {
+            if (!confirm('Are you sure you want to delete this project?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('projects.php', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: projectId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Project deleted successfully!');
+                    loadProjects();
+                } else {
+                    showAlert('❌ Error deleting project: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showAlert('❌ Error deleting project', 'error');
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Handle form submission
+        document.getElementById('projectForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const projectData = {
+                title: formData.get('title'),
+                location: formData.get('location'),
+                project_type: formData.get('project_type'),
+                description: formData.get('description'),
+                completion_date: formData.get('completion_date'),
+                pool_size: formData.get('pool_size'),
+                special_features: formData.get('special_features'),
+                features: Array.from(document.querySelectorAll('input[name="features"]:checked')).map(cb => cb.value),
+                photos: window.currentUploadedPhotos || []
+            };
+
+            if (currentEditingProject) {
+                projectData.id = currentEditingProject;
+            }
+
+            try {
+                const method = currentEditingProject ? 'PUT' : 'POST';
+                const response = await fetch('projects.php', {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(projectData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert(`✅ Project ${currentEditingProject ? 'updated' : 'created'}!`);
+                    closeProjectModal();
+                    loadProjects();
+                } else {
+                    showAlert('❌ Error saving project: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showAlert('❌ Error saving project', 'error');
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('projectModal');
+            if (event.target === modal) {
+                closeProjectModal();
+            }
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            await loadProjects();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+2026-05-10 11:07:04 - Photo uploaded and resized: samuzi_slider_20260510_110704_0.webp (original: logos.webp, 36.68 KB -> 36.68 KB) by Discord Moderator
+2026-05-10 11:34:16 - Project deleted: Luxuspool mit Naturstein-umrandung (project_20250128_160000_1) by Discord Moderator
+2026-05-10 11:34:18 - Project deleted: Designpool im Innenhof (Urban Style) (project_20250128_160001_2) by Discord Moderator
+2026-05-10 11:34:20 - Project deleted: Kompaktpool für kleine Gärten (project_20250128_160002_3) by Discord Moderator
+2026-05-10 11:34:24 - Project deleted: Moderner Familienpool (project_20250128_160003_4) by Discord Moderator
+2026-05-10 11:34:27 - Project deleted: Renovierung eines Bestandsbeckens (project_20250128_160004_5) by Discord Moderator
+2026-05-10 11:35:55 - Photo uploaded and resized: samuzi_project_20260510_113555_0.webp (original: U8eNEi-6kS5Tlwf2Ql4Dh.webp, 26.30 KB -> 26.30 KB) by Discord Moderator
+2026-05-10 11:36:12 - Project created: Test (project_20260510_113612_6a00518c6b2f3) by Discord Moderator
+2026-05-10 11:39:44 - Photo uploaded and resized: samuzi_project_20260510_113944_0.webp (original: 20251030_020101171.webp, 33.67 KB -> 33.67 KB) by Discord Moderator
+2026-05-10 11:39:47 - Project updated: Test (project_20260510_113612_6a00518c6b2f3) by Discord Moderator
+2026-05-10 11:40:54 - Photo uploaded and resized: samuzi_slider_20260510_114054_0.gif (original: cb576b4583ec8bba14a608f90022c880_b4ca91b164b74f73ac5a36f995056e27-1.gif, 1.72 MB -> 1.72 MB) by Discord Moderator
+2026-05-10 14:57:51 - Admin logout: Discord Moderator from IP: ::1
+2026-05-10 15:08:38 - Failed admin login attempt from IP: ::1 (Username: admin)
+2026-05-10 15:09:09 - Admin login successful from IP: ::1
+2026-05-10 15:09:34 - Settings updated by admin: {"company_name":"Samuzi NFT","phone_number":"","slider_speed":"5","hero_background":"phase3-coming-soon.jpg","background_transparency":"full","page_backgrounds":{"index":"background2.png","projects":"background2.png","about":"background2.png","contact":"background2.png","legal":"background2.png"},"bubble_effect":"medium","bubble_enabled":true,"bubble_intensity":"medium","bubble_color":"#12d9d6","bubble_opacity":"low","bubble_speed":"slow","bubble_pages":{"index":false,"projects":false,"about":false,"contact":false,"legal":false}}
+2026-05-10 15:10:01 - Admin logout: admin from IP: ::1

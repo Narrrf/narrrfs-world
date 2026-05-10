@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samuzi NFT — Phase 3 Coming Soon</title>
+    <meta name="description" content="Samuzi NFT Phase 3 is coming soon. The journey continues with new utility, community value, and launch updates.">
+    <meta name="keywords" content="Samuzi NFT, SMZ, Web3, Solana, NFT, Phase 3, Coming Soon">
+    <meta property="og:title" content="Samuzi NFT — Phase 3 Coming Soon">
+    <meta property="og:description" content="The journey continues. Phase 3 is loading.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#07070b">
+
+    <link rel="icon" href="./favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="./favicon.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-phase3-1">
+
+    <style>
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.16), rgba(7, 7, 11, 0) 38%),
+                linear-gradient(180deg, #07070b 0%, #0b0b12 52%, #050507 100%);
+            background-attachment: fixed;
+        }
+
+        .phase3-page {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phase3-page::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(to bottom, rgba(7, 7, 11, 0.20), rgba(7, 7, 11, 0.88)),
+                var(--samuzi-page-bg, none);
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            opacity: var(--samuzi-page-bg-opacity, 1);
+            z-index: -3;
+            pointer-events: none;
+        }
+
+        .phase3-page::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 22%, rgba(225, 29, 72, 0.22), rgba(225, 29, 72, 0) 34%),
+                radial-gradient(circle at 70% 12%, rgba(249, 115, 22, 0.12), rgba(249, 115, 22, 0) 28%),
+                linear-gradient(to bottom, rgba(0,0,0,0.14), rgba(0,0,0,0.74));
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .launch-hero {
+            min-height: calc(100vh - 92px);
+            display: flex;
+            align-items: center;
+            padding: 5.5rem 0 4rem;
+        }
+
+        .launch-hero-inner {
+            max-width: 980px;
+        }
+
+        .samuzi-header-logo {
+    height: 72px;
+    width: 72px;
+    object-fit: contain;
+    border-radius: 999px;
+    padding: 4px;
+    background:
+        radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
+    border: 1px solid rgba(249,115,22,0.28);
+    box-shadow:
+        0 0 20px rgba(249,115,22,0.20),
+        0 0 40px rgba(225,29,72,0.12);
+}
+
+.nav-list a.nav-locked {
+    color: rgba(203, 213, 225, 0.42);
+    cursor: not-allowed;
+    opacity: 0.55;
+    filter: grayscale(1);
+    background: rgba(255,255,255,0.025);
+    border-color: rgba(255,255,255,0.045);
+    box-shadow: none;
+}
+
+.nav-list a.nav-locked:hover {
+    color: rgba(203, 213, 225, 0.48);
+    background: rgba(255,255,255,0.035);
+    transform: none;
+}
+
+.button-secondary.button-locked {
+    color: rgba(203, 213, 225, 0.55);
+    cursor: not-allowed;
+    opacity: 0.62;
+    filter: grayscale(1);
+    background: rgba(255,255,255,0.045);
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: none;
+}
+
+.button-secondary.button-locked:hover {
+    transform: none;
+    color: rgba(203, 213, 225, 0.55);
+    background: rgba(255,255,255,0.045);
+}
+
+.preview-lock-note {
+    display: inline-flex;
+    margin-top: 1rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    color: #cbd5e1;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.9rem;
+}
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.55rem 0.95rem;
+            border-radius: 999px;
+            background: rgba(7, 7, 11, 0.58);
+            border: 1px solid rgba(225, 29, 72, 0.42);
+            color: #ffffff;
+            box-shadow: 0 0 34px rgba(225, 29, 72, 0.28);
+            backdrop-filter: blur(12px);
+            font-size: 0.84rem;
+            font-weight: 800;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+        }
+
+        .launch-title {
+            max-width: 920px;
+            margin: 1.25rem 0 1.15rem;
+            color: #ffffff;
+            font-size: clamp(3rem, 8vw, 7.6rem);
+            line-height: 0.88;
+            font-weight: 950;
+            letter-spacing: -0.07em;
+            text-shadow:
+                0 8px 28px rgba(0,0,0,0.70),
+                0 0 38px rgba(225,29,72,0.24);
+        }
+
+        .launch-title span {
+            display: block;
+            color: #fff1e7;
+            text-shadow:
+                0 0 16px rgba(249, 115, 22, 0.26),
+                0 0 42px rgba(225, 29, 72, 0.20);
+        }
+
+        .launch-copy {
+            max-width: 760px;
+            color: #dbe4f0;
+            font-size: clamp(1.05rem, 2vw, 1.28rem);
+            line-height: 1.8;
+            text-shadow: 0 3px 16px rgba(0,0,0,0.82);
+        }
+
+        .launch-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .launch-status-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 3rem;
+            max-width: 920px;
+        }
+
+        .launch-status-card {
+            background: linear-gradient(180deg, rgba(9, 9, 15, 0.82), rgba(12, 12, 20, 0.62));
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 18px;
+            padding: 1.15rem;
+            box-shadow: 0 14px 44px rgba(0,0,0,0.42);
+            backdrop-filter: blur(14px);
+        }
+
+        .launch-status-card strong {
+            display: block;
+            color: #ffffff;
+            font-size: 1rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .launch-status-card span {
+            color: #cbd5e1;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .launch-section {
+            padding: 2.5rem 0 4rem;
+        }
+
+        .launch-panel {
+            background: linear-gradient(180deg, rgba(11, 11, 18, 0.82), rgba(7, 7, 11, 0.78));
+            border: 1px solid rgba(225, 29, 72, 0.26);
+            border-radius: 26px;
+            padding: clamp(1.2rem, 3vw, 2rem);
+            box-shadow: 0 18px 58px rgba(0,0,0,0.50);
+            backdrop-filter: blur(16px);
+        }
+
+        .phase3-slider {
+    position: relative;
+    margin-top: 1.35rem;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid rgba(225, 29, 72, 0.24);
+    background: rgba(0,0,0,0.34);
+    box-shadow: 0 18px 55px rgba(0,0,0,0.44);
+}
+
+.phase3-slider-main {
+    position: relative;
+    height: clamp(360px, 52vw, 680px);
+    overflow: hidden;
+}
+
+.phase3-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.025);
+    transition: opacity 900ms ease, transform 1400ms ease;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.phase3-slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: inherit;
+    background-size: cover;
+    background-position: center;
+    filter: blur(22px) brightness(0.42) saturate(1.15);
+    transform: scale(1.08);
+    z-index: 0;
+}
+
+.phase3-slide.active {
+    opacity: 1;
+    transform: scale(1);
+    z-index: 2;
+}
+
+.phase3-slide img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    filter: saturate(1.1) contrast(1.05);
+}
+
+.phase3-slide::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background:
+        linear-gradient(to right, rgba(0,0,0,0.48), rgba(0,0,0,0.08) 55%, rgba(0,0,0,0.42)),
+        linear-gradient(to top, rgba(0,0,0,0.68), rgba(0,0,0,0.02));
+    pointer-events: none;
+}
+
+.phase3-slider-caption {
+    position: absolute;
+    left: clamp(1rem, 3vw, 2rem);
+    bottom: clamp(1rem, 3vw, 2rem);
+    z-index: 5;
+    max-width: 620px;
+}
+
+.phase3-slider-caption span {
+    display: inline-flex;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(225,29,72,0.18);
+    border: 1px solid rgba(225,29,72,0.34);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    backdrop-filter: blur(10px);
+}
+
+.phase3-slider-caption h3 {
+    color: #ffffff;
+    font-size: clamp(1.45rem, 3vw, 2.65rem);
+    line-height: 1.05;
+    margin-bottom: 0.6rem;
+    text-shadow: 0 8px 28px rgba(0,0,0,0.75);
+}
+
+.phase3-slider-caption p {
+    color: #dbe4f0;
+    line-height: 1.7;
+    max-width: 560px;
+    text-shadow: 0 4px 18px rgba(0,0,0,0.78);
+}
+
+.phase3-slider-controls {
+    position: absolute;
+    right: clamp(1rem, 3vw, 2rem);
+    bottom: clamp(1rem, 3vw, 2rem);
+    z-index: 8;
+    display: flex;
+    gap: 0.6rem;
+}
+
+.phase3-slider-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(7,7,11,0.56);
+    color: #ffffff;
+    font-size: 1.35rem;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.22s ease;
+}
+
+.phase3-slider-btn:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(225,29,72,0.90), rgba(249,115,22,0.82));
+}
+
+.phase3-slider-dots {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.9rem;
+    background: rgba(7,7,11,0.78);
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.phase3-slider-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    border: none;
+    background: rgba(255,255,255,0.28);
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+
+.phase3-slider-dot.active {
+    width: 26px;
+    background: linear-gradient(135deg, #e11d48, #f97316);
+}
+
+.showcase-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    color: #cbd5e1;
+    text-align: center;
+    padding: 1rem;
+    font-weight: 700;
+    border-radius: 20px;
+    border: 1px dashed rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.04);
+}
+
+@media (max-width: 700px) {
+    .phase3-slider-main {
+        height: 360px;
+    }
+
+    .phase3-slider-caption {
+        right: 1rem;
+    }
+
+    .phase3-slider-caption p {
+        display: none;
+    }
+
+    .phase3-slider-controls {
+        top: 1rem;
+        bottom: auto;
+    }
+}
+
+        .launch-note {
+            color: #94a3b8;
+            font-size: 0.92rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .launch-status-row,
+            .showcase-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .launch-hero {
+                min-height: auto;
+                padding: 4rem 0 2rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .launch-actions {
+                flex-direction: column;
+            }
+
+            .launch-actions a {
+                width: 100%;
+            }
+
+            .brand-mark {
+                font-size: 0.72rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="phase3-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="./favicon.png" alt="Samuzi NFT Logo" class="logo-image samuzi-header-logo">
+                </div>
+
+                <nav class="nav-inline">
+    <ul class="nav-list">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="#" class="nav-locked" aria-disabled="true" data-locked-link>Projects</a></li>
+        <li><a href="#" class="nav-locked" aria-disabled="true" data-locked-link>Contact</a></li>
+        <li><a href="#" class="nav-locked" aria-disabled="true" data-locked-link>About</a></li>
+        <li><a href="#" class="nav-locked" aria-disabled="true" data-locked-link>Legal</a></li>
+    </ul>
+</nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="launch-hero">
+            <div class="container">
+                <div class="launch-hero-inner">
+                    <div class="brand-mark">⚔️ SAMUZI NFT · PHASE 3</div>
+
+                    <h1 class="launch-title">
+                        The Journey
+                        <span>Continues</span>
+                    </h1>
+
+                    <p class="launch-copy">
+                        Samuzi enters its next chapter. Phase 3 is loading with a stronger brand presence,
+                        sharper community focus, and new launch details coming soon. Stay close — the next signal
+                        will matter.
+                    </p>
+
+                    <div class="launch-actions">
+                        <a class="button-primary" href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer">
+                            Follow on X
+                        </a>
+                        <a class="button-secondary button-locked" href="#" aria-disabled="true" data-locked-link>
+    Roadmap Locked
+</a>
+                    </div>
+
+                    <div class="preview-lock-note">
+    Preview mode: full navigation unlocks after customer approval.
+</div>
+
+                    <div class="launch-status-row">
+                        <div class="launch-status-card">
+    <strong>Phase 3</strong>
+    <span>The coming soon page is live while the full website rollout is prepared.</span>
+</div>
+                        <div class="launch-status-card">
+                            <strong>Mint Details</strong>
+                            <span>Date, timing, supply notes, and official launch information will be announced soon.</span>
+                        </div>
+                        <div class="launch-status-card">
+                            <strong>Community First</strong>
+                            <span>Follow official channels and stay ready for the next Samuzi update.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="launch-section">
+            <div class="container">
+                <div class="launch-panel">
+                    <span class="status-pill">Official Launch Watch</span>
+                    <h2 class="site-section-title" style="margin-top:1rem;">Samuzi is preparing the next signal.</h2>
+                    <p class="site-section-copy">
+                        This landing page is the first production step for the new Samuzi web presence.
+                        The admin-managed slider, project showcase, and background settings remain intact and will be finalized step-by-step.
+                    </p>
+
+                    <div class="site-grid">
+                        <div class="site-card">
+                            <span class="eyebrow">01 · Identity</span>
+                            <h3>Dark Samurai Brand</h3>
+                            <p>Cinematic black, red, ember, and mythic Japanese warrior energy define the Phase 3 look.</p>
+                        </div>
+
+                        <div class="site-card">
+                            <span class="eyebrow">02 · Utility</span>
+                            <h3>Phase 3 Foundation</h3>
+                            <p>The page is structured for future mint details, roadmap updates, partner highlights, and project modules.</p>
+                        </div>
+
+                        <div class="site-card">
+                            <span class="eyebrow">03 · Community</span>
+                            <h3>Stay Connected</h3>
+                            <p>Official announcements will be routed through Samuzi channels before the full launch opens.</p>
+                        </div>
+                    </div>
+
+                    <div id="sliderShowcase" class="phase3-slider" aria-live="polite">
+    <div class="showcase-placeholder">Slider photos will appear here after upload.</div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Samuzi NFT</h4>
+                    <p>Community. Utility. Growth.</p>
+                    <p>© 2026 Samuzi NFT</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Status</h4>
+                    <p>Website relaunch in progress</p>
+                    <p>Phase 3 updates coming soon</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Social</h4>
+                    <p><a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer">𝕏 @samuziNFT</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const PAGE_KEY = 'index';
+        const PHASE3_HERO_BACKGROUND = './assets/background/phase3-coming-soon.jpg';
+
+        function resolveBackgroundPath(filename) {
+            if (!filename || typeof filename !== 'string') {
+                return './assets/background/background2.png';
+            }
+
+            if (filename.startsWith('http://') || filename.startsWith('https://') || filename.startsWith('./') || filename.startsWith('/')) {
+                return filename;
+            }
+
+            if (['background1.png', 'background2.png', 'background3.png', 'background4.png'].includes(filename)) {
+                return `./assets/background/${filename}`;
+            }
+
+            if (filename.startsWith('custom_')) {
+                return `./assets/custom-backgrounds/${filename}`;
+            }
+
+            return `./slider-photos/${filename}`;
+        }
+
+        function testImage(path) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = path;
+            });
+        }
+
+        async function applyPageBackground() {
+            let fallbackBackground = './assets/background/background2.png';
+            let transparency = 'full';
+
+            try {
+                const response = await fetch('./api/get-bubble-settings.php', { cache: 'no-store' });
+                const result = await response.json();
+
+                if (result && result.success) {
+                    const pageBackground = result.page_backgrounds && result.page_backgrounds[PAGE_KEY]
+                        ? result.page_backgrounds[PAGE_KEY]
+                        : result.hero_background;
+
+                    fallbackBackground = resolveBackgroundPath(pageBackground);
+                    transparency = result.background_transparency || 'full';
+                }
+            } catch (error) {
+                console.warn('[SAMUZI] Background settings could not be loaded. Using fallback.', error);
+            }
+
+            const hasPhase3Background = await testImage(PHASE3_HERO_BACKGROUND);
+            const activeBackground = hasPhase3Background ? PHASE3_HERO_BACKGROUND : fallbackBackground;
+
+            document.body.style.setProperty('--samuzi-page-bg', `url("${activeBackground}")`);
+
+            const opacityMap = {
+                full: '1',
+                subtle: '0.72',
+                'hero-only': '0.58',
+                complete: '0.35'
+            };
+
+            document.body.style.setProperty('--samuzi-page-bg-opacity', opacityMap[transparency] || '1');
+        }
+
+        let phase3SliderPhotos = [];
+let phase3SliderIndex = 0;
+let phase3SliderTimer = null;
+
+function renderPhase3Slider() {
+    const container = document.getElementById('sliderShowcase');
+    if (!container) return;
+
+    if (!Array.isArray(phase3SliderPhotos) || phase3SliderPhotos.length === 0) {
+        container.innerHTML = '<div class="showcase-placeholder">Slider photos will appear here after upload.</div>';
+        return;
+    }
+
+    const slidesHtml = phase3SliderPhotos.map((photo, index) => {
+        const filename = photo.filename || '';
+        const activeClass = index === phase3SliderIndex ? 'active' : '';
+
+       return `
+    <div class="phase3-slide ${activeClass}" style="background-image: url('./slider-photos/${filename}')">
+        <img src="./slider-photos/${filename}" alt="Samuzi Phase 3 artwork" loading="${index === 0 ? 'eager' : 'lazy'}">
+    </div>
+`;
+    }).join('');
+
+    const dotsHtml = phase3SliderPhotos.map((photo, index) => {
+        const activeClass = index === phase3SliderIndex ? 'active' : '';
+        return `<button class="phase3-slider-dot ${activeClass}" type="button" aria-label="Show slide ${index + 1}" onclick="goToPhase3Slide(${index})"></button>`;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="phase3-slider-main">
+            ${slidesHtml}
+
+            <div class="phase3-slider-caption">
+                <span>Samuzi Art Preview</span>
+                <h3>Phase 3 visuals are loading.</h3>
+                <p>New artwork, launch signals, and community updates rotate here from the admin-managed slider folder.</p>
+            </div>
+
+            <div class="phase3-slider-controls">
+                <button class="phase3-slider-btn" type="button" onclick="changePhase3Slide(-1)" aria-label="Previous slide">‹</button>
+                <button class="phase3-slider-btn" type="button" onclick="changePhase3Slide(1)" aria-label="Next slide">›</button>
+            </div>
+        </div>
+
+        <div class="phase3-slider-dots">
+            ${dotsHtml}
+        </div>
+    `;
+}
+
+function changePhase3Slide(direction = 1) {
+    if (!phase3SliderPhotos.length) return;
+
+    phase3SliderIndex = (phase3SliderIndex + direction + phase3SliderPhotos.length) % phase3SliderPhotos.length;
+    renderPhase3Slider();
+    restartPhase3SliderTimer();
+}
+
+function goToPhase3Slide(index) {
+    if (!phase3SliderPhotos.length) return;
+
+    phase3SliderIndex = index;
+    renderPhase3Slider();
+    restartPhase3SliderTimer();
+}
+
+function restartPhase3SliderTimer() {
+    if (phase3SliderTimer) {
+        clearInterval(phase3SliderTimer);
+    }
+
+    if (phase3SliderPhotos.length <= 1) {
+        return;
+    }
+
+    phase3SliderTimer = setInterval(() => {
+        phase3SliderIndex = (phase3SliderIndex + 1) % phase3SliderPhotos.length;
+        renderPhase3Slider();
+    }, 5000);
+}
+
+async function loadSliderShowcase() {
+    const container = document.getElementById('sliderShowcase');
+    if (!container) return;
+
+    try {
+        const response = await fetch('./api/get-slider-photos.php', { cache: 'no-store' });
+        const result = await response.json();
+
+        if (!result || !result.success || !Array.isArray(result.photos) || result.photos.length === 0) {
+            container.innerHTML = '<div class="showcase-placeholder">Slider photos will appear here after upload.</div>';
+            return;
+        }
+
+        phase3SliderPhotos = result.photos;
+        phase3SliderIndex = 0;
+
+        renderPhase3Slider();
+        restartPhase3SliderTimer();
+    } catch (error) {
+        console.warn('[SAMUZI] Slider showcase could not be loaded.', error);
+        container.innerHTML = '<div class="showcase-placeholder">Slider could not be loaded. Check api/get-slider-photos.php.</div>';
+    }
+}
+
+        document.addEventListener('DOMContentLoaded', () => {
+    applyPageBackground();
+    loadSliderShowcase();
+
+    document.querySelectorAll('[data-locked-link]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log('[SAMUZI] Preview mode: this page is locked until launch approval.');
+        });
+    });
+});
+    </script>
+</body>
+</html>

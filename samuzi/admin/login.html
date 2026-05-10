@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samuzi Admin — Login</title>
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="../favicon.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #07070b;
+            --panel: rgba(13, 13, 20, 0.88);
+            --panel-strong: rgba(18, 18, 28, 0.96);
+            --text: #f8fafc;
+            --muted: #cbd5e1;
+            --dim: #94a3b8;
+            --red: #e11d48;
+            --orange: #f97316;
+            --border: rgba(255,255,255,0.10);
+            --border-red: rgba(225,29,72,0.34);
+            --shadow: 0 24px 80px rgba(0,0,0,0.58);
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(225,29,72,0.22), transparent 36%),
+                radial-gradient(circle at 82% 18%, rgba(249,115,22,0.13), transparent 28%),
+                linear-gradient(180deg, #07070b 0%, #101018 52%, #050507 100%);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(to bottom, rgba(0,0,0,0.24), rgba(0,0,0,0.82)),
+                url("../assets/background/phase3-coming-soon.jpg");
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            opacity: 0.38;
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 28%, rgba(225,29,72,0.18), transparent 34%),
+                linear-gradient(to bottom, rgba(7,7,11,0.12), rgba(7,7,11,0.88));
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .login-shell {
+            width: min(100%, 980px);
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 22px;
+            align-items: stretch;
+        }
+
+        .brand-panel,
+        .login-container {
+            background: linear-gradient(180deg, rgba(18,18,28,0.92), rgba(9,9,15,0.88));
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 26px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            overflow: hidden;
+        }
+
+        .brand-panel {
+            position: relative;
+            min-height: 560px;
+            padding: clamp(26px, 4vw, 42px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .brand-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 0%, rgba(225,29,72,0.18), transparent 36%),
+                radial-gradient(circle at 90% 18%, rgba(249,115,22,0.12), transparent 28%);
+            pointer-events: none;
+        }
+
+        .brand-panel > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border-radius: 999px;
+            padding: 4px;
+            background:
+                radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
+            border: 1px solid rgba(249,115,22,0.28);
+            box-shadow:
+                0 0 20px rgba(249,115,22,0.20),
+                0 0 40px rgba(225,29,72,0.12);
+        }
+
+        .brand-name {
+            font-size: 1.35rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-kicker {
+            display: inline-flex;
+            width: fit-content;
+            margin-bottom: 1rem;
+            padding: 0.52rem 0.9rem;
+            border-radius: 999px;
+            color: #ffffff;
+            background: rgba(225,29,72,0.16);
+            border: 1px solid rgba(225,29,72,0.34);
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+        }
+
+        .brand-title {
+            max-width: 460px;
+            color: #ffffff;
+            font-size: clamp(2.35rem, 5vw, 4.4rem);
+            line-height: 0.92;
+            font-weight: 950;
+            letter-spacing: -0.06em;
+            text-shadow:
+                0 8px 28px rgba(0,0,0,0.70),
+                0 0 38px rgba(225,29,72,0.24);
+        }
+
+        .brand-copy {
+            max-width: 470px;
+            color: var(--muted);
+            line-height: 1.75;
+            margin-top: 1.1rem;
+        }
+
+        .brand-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 2rem;
+            list-style: none;
+        }
+
+        .brand-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .login-container {
+            padding: clamp(26px, 4vw, 42px);
+            align-self: center;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-header img {
+            width: 82px;
+            height: 82px;
+            object-fit: contain;
+            border-radius: 999px;
+            margin-bottom: 14px;
+            padding: 5px;
+            background:
+                radial-gradient(circle, rgba(249,115,22,0.28), rgba(225,29,72,0.08) 62%, rgba(0,0,0,0.35));
+            border: 1px solid rgba(249,115,22,0.28);
+        }
+
+        .login-header h1 {
+            color: #ffffff;
+            font-size: 1.85rem;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-weight: 750;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 14px;
+            font-size: 1rem;
+            color: #ffffff;
+            background: rgba(255,255,255,0.07);
+            transition: all 0.22s ease;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(203,213,225,0.58);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(249,115,22,0.62);
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.16);
+            background: rgba(255,255,255,0.10);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px 18px;
+            color: #ffffff;
+            border: 1px solid rgba(249,115,22,0.30);
+            border-radius: 999px;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            margin-top: 8px;
+            background: linear-gradient(135deg, var(--red), var(--orange));
+            box-shadow: 0 12px 34px rgba(225,29,72,0.26);
+            transition: all 0.22s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 42px rgba(225,29,72,0.34);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.62;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message,
+        .success-message {
+            padding: 13px 14px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+            display: none;
+            font-weight: 750;
+            line-height: 1.45;
+        }
+
+        .error-message {
+            color: #fecaca;
+            background: rgba(239,68,68,0.16);
+            border: 1px solid rgba(239,68,68,0.32);
+        }
+
+        .success-message {
+            color: #bbf7d0;
+            background: rgba(34,197,94,0.16);
+            border: 1px solid rgba(34,197,94,0.32);
+        }
+
+        .admin-info {
+            margin-top: 28px;
+            padding: 18px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.10);
+        }
+
+        .admin-info h3 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+        }
+
+        .admin-info p,
+        .admin-info li {
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+
+        .admin-info ul {
+            list-style: none;
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 18px;
+            width: 100%;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #ffffff;
+        }
+
+        @media (max-width: 880px) {
+            .login-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-panel {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 14px;
+            }
+
+            .brand-panel,
+            .login-container {
+                border-radius: 20px;
+            }
+
+            .brand-logo {
+                width: 58px;
+                height: 58px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="login-shell">
+        <section class="brand-panel">
+            <div class="brand-mark">
+                <img src="../favicon.png" alt="Samuzi NFT Logo" class="brand-logo">
+                <div>
+                    <div class="brand-name">Samuzi NFT</div>
+                    <div style="color:#cbd5e1;font-size:0.9rem;">Admin Control Center</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="brand-kicker">Phase 3 Admin</div>
+                <h2 class="brand-title">The control room is locked.</h2>
+                <p class="brand-copy">
+                    Manage the Samuzi launch page, slider artwork, project showcase,
+                    background settings, and email configuration from one secure dashboard.
+                </p>
+
+                <ul class="brand-list">
+                    <li>🖼️ Upload and manage Phase 3 slider artwork</li>
+                    <li>🗡️ Create roadmap and showcase project cards</li>
+                    <li>🎨 Adjust visual effects and page backgrounds</li>
+                    <li>📧 Configure contact message delivery</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="login-container">
+            <div class="login-header">
+                <img src="../favicon.png" alt="Samuzi NFT Logo">
+                <h1>Admin Login</h1>
+                <p>Enter your credentials to access the Samuzi dashboard.</p>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" autocomplete="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    Login
+                </button>
+            </form>
+
+            <div class="admin-info">
+                <h3>🔐 Admin access</h3>
+                <p>This area controls the customer preview and production launch settings.</p>
+                <ul>
+                    <li>📊 Website overview</li>
+                    <li>🖼️ Slider artwork</li>
+                    <li>🗡️ Project showcase</li>
+                    <li>⚙️ Website settings</li>
+                </ul>
+            </div>
+
+            <a href="../index.html" class="back-link">← Back to preview page</a>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+
+            loginBtn.textContent = 'Logging in...';
+            loginBtn.disabled = true;
+
+            try {
+                const response = await fetch('login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    successMessage.textContent = '✅ Login successful. Redirecting...';
+                    successMessage.style.display = 'block';
+
+                    sessionStorage.setItem('admin_logged_in', 'true');
+                    sessionStorage.setItem('admin_username', result.admin_info?.username || 'admin');
+
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 800);
+                } else {
+                    errorMessage.textContent = '❌ ' + (result.message || 'Login failed.');
+                    errorMessage.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = '❌ Connection error. Please try again.';
+                errorMessage.style.display = 'block';
+            } finally {
+                loginBtn.textContent = 'Login';
+                loginBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('username').focus();
+
+        async function checkExistingSession() {
+            try {
+                const response = await fetch('check-auth.php', { cache: 'no-store' });
+                const result = await response.json();
+
+                if (result.success && result.logged_in) {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.log('No active admin session.');
+            }
+        }
+
+        checkExistingSession();
+    </script>
+</body>
+</html>

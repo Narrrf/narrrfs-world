@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Allow important assets
+Allow: /favicon.ico
+Allow: /favicon.png
+Allow: /favicon-16.png
+Allow: /favicon-32.png
+Allow: /favicon-48.png
+Allow: /apple-touch-icon.png
+Allow: /og-image.png
+
+# Sitemap placeholder (set your final production domain)
+Sitemap: https://example.com/sitemap.xml
