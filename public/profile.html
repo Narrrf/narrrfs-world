@@ -12851,34 +12851,49 @@ function getRewardBoxBadgeMarkup(box) {
     }
   }
 
-  function openRewardChamberModal(openResult) {
-    const elements = getRewardChamberElements();
-    if (!elements.modal) {
-      return;
-    }
+function openRewardChamberModal(openResult) {
+  const elements = getRewardChamberElements();
+  if (!elements.modal) {
+    return;
+  }
 
-    const rewardAmount = Number(openResult?.reward_dspoinc_amount || 0);
-    const rewardType = String(openResult?.reward_type || '');
-    const rewardTitle = String(openResult?.reward_title || 'Reward Granted');
-    const deliveryPayload = openResult?.delivery_payload || {};
+  const rewardAmount = Number(openResult?.reward_dspoinc_amount || 0);
+  const rewardType = String(openResult?.reward_type || '');
+  const rewardTitle = String(openResult?.reward_title || 'Reward Granted');
+  const deliveryPayload = openResult?.delivery_payload || {};
 
-    if (elements.modalAmount) {
-      if (rewardType === 'dspoinc') {
-        elements.modalAmount.textContent = `${formatRewardChamberNumber(rewardAmount)} DSPOINC`;
-      } else if (rewardType === 'store_item') {
-        const quantity = Number(deliveryPayload?.quantity || 1);
-        const itemName = String(deliveryPayload?.item_name || rewardTitle || 'Store Reward');
-        elements.modalAmount.textContent = `${quantity}x ${itemName}`;
-      } else if (rewardType === 'genetic_trait') {
-        const traitName = String(deliveryPayload?.display_title || rewardTitle || 'Genetic Reward');
-        elements.modalAmount.textContent = traitName;
-      } else if (rewardType === 'premium_claim') {
-        const claimId = Number(openResult?.claim_request_id || 0);
-        elements.modalAmount.textContent = claimId > 0 ? `Claim Request #${claimId}` : 'Manual Claim Created';
-      } else {
-        elements.modalAmount.textContent = rewardTitle || 'Reward Granted';
-      }
+  if (elements.modalAmount) {
+    if (rewardType === 'dspoinc') {
+      elements.modalAmount.textContent = `${formatRewardChamberNumber(rewardAmount)} DSPOINC`;
+    } else if (rewardType === 'store_item') {
+      // TODO: Reward Chamber payloads may include the player's final inventory total.
+      // Plain language for DEVS:
+      // The win modal must show the amount won from this box opening, not the total
+      // inventory amount the player owns after delivery.
+      const awardedQuantity = Number(
+        deliveryPayload?.awarded_quantity ??
+        deliveryPayload?.reward_quantity ??
+        deliveryPayload?.quantity_awarded ??
+        1
+      );
+
+      const safeAwardedQuantity = Number.isFinite(awardedQuantity) && awardedQuantity > 0
+        ? Math.floor(awardedQuantity)
+        : 1;
+
+      const itemName = String(deliveryPayload?.item_name || rewardTitle || 'Store Reward');
+      elements.modalAmount.textContent = `+${safeAwardedQuantity}x ${itemName}`;
+    } else if (rewardType === 'genetic_trait') {
+      const traitName = String(deliveryPayload?.display_title || rewardTitle || 'Genetic Reward');
+      elements.modalAmount.textContent = traitName;
+    } else if (rewardType === 'premium_claim') {
+      const claimId = Number(openResult?.claim_request_id || 0);
+      elements.modalAmount.textContent = claimId > 0 ? `Claim Request #${claimId}` : 'Manual Claim Created';
+    } else {
+      elements.modalAmount.textContent = rewardTitle || 'Reward Granted';
     }
+  }
+
 
     if (elements.modalTitle) {
       elements.modalTitle.textContent = rewardTitle;

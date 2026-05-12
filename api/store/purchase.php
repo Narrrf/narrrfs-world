@@ -341,6 +341,20 @@ try {
     $request = get_request_data();
     $userId = resolve_user_id($request);
     $itemId = (int)($request['item_id'] ?? 0);
+    // Lab Elixirs are valid inventory and lootbox reward items,
+// but they are no longer directly purchasable from the store.
+// Plain language for DEVS:
+// Keep these items active in tbl_store_items so lootboxes, inventory,
+// Lab booster display, and item usage can still resolve them.
+// Block only the direct store purchase path here.
+$lootboxOnlyItemIds = [33, 34, 35];
+
+if (in_array($itemId, $lootboxOnlyItemIds, true)) {
+    json_response([
+        'success' => false,
+        'error' => 'This Lab Elixir is lootbox-only and cannot be bought directly.'
+    ], 403);
+}
     $quantity = (int)($request['quantity'] ?? 1);
 
     if ($userId === '') {

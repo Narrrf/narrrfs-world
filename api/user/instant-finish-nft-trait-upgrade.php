@@ -31,7 +31,13 @@ if (file_exists($localDiscordSecretPath)) {
 session_start();
 
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf local fallback
+
+//instant finish genesis 
 const INSTANT_FINISH_BASE_COST = 10000;
+const INSTANT_FINISH_HOURLY_COST = 220;
+const INSTANT_FINISH_LEVEL_STEP = 0.35;
+const INSTANT_FINISH_LEVEL_MULTIPLIER_CAP = 8.0;
+const INSTANT_FINISH_MAX_COST = 500000;
 
 /**
  * Return a JSON response and stop execution.
@@ -489,17 +495,25 @@ function resolve_runtime_status($status, $upgradeEndsAt) {
 }
 
 /**
- * Calculate the backend instant-finish cost.
- * Mirrors the frontend preview formula intentionally:
- * base_cost * 2.35^(level-1) * max(1, remaining_hours / 24)
+ * Calculate the backend-authoritative Genesis trait instant finish cost.
+ *
+ * Plain language for DEVS:
+ * Instant finish is the direct DSPOINC convenience path.
+ * Elixirs are lootbox-only reward utility, so this price can stay meaningful
+ * without competing against direct store-bought boosters.
  */
 function calculate_instant_finish_cost($current_level, $remaining_seconds) {
     $level = max(1, (int)$current_level);
     $remainingHours = max(0, (float)$remaining_seconds / 3600);
-    $levelMultiplier = pow(2.35, max(0, $level - 1));
-    $timeMultiplier = max(1, $remainingHours / 24);
 
-    return (int)ceil(INSTANT_FINISH_BASE_COST * $levelMultiplier * $timeMultiplier);
+    $levelMultiplier = min(
+        INSTANT_FINISH_LEVEL_MULTIPLIER_CAP,
+        1 + (max(0, $level - 1) * INSTANT_FINISH_LEVEL_STEP)
+    );
+
+    $rawCost = INSTANT_FINISH_BASE_COST + ($remainingHours * INSTANT_FINISH_HOURLY_COST * $levelMultiplier);
+
+    return (int)min(INSTANT_FINISH_MAX_COST, ceil($rawCost));
 }
 
 /**

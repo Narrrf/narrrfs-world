@@ -1,13 +1,298 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: May 10, 2026
-Status: ✅ STABLE — SEASON 11 ACTIVE + LAB SYSTEM 9.5+ UX HARDENING INTEGRATED
-Version: 2026-05-10
-Milestone: Genesis Lab received UX/stability hardening with ability popup cost alignment and favorite automation safety pass.
+Last Updated: May 12, 2026
+Status: ✅ READY FOR CONTROLLED PRODUCTION PUSH — LAB SYSTEM 9.6 ECONOMY / REWARD CHAMBER / GENETIC MAX-2 PATCH COMPLETE
+Version: 2026-05-12
+Milestone: Lab System 9.6 economy and UX correction pass finalized, including Instant Finish rebalance, lootbox-only Elixirs, Reward Chamber awarded-amount fixes, and Genetic exact-trait max-2 ownership rollout.
 
 ---
 
 ## 🔄 UPDATE — APRIL 27, 2026
+
+---
+
+## 🔄 UPDATE — MAY 11, 2026 — LAB SYSTEM 9.6 PUSH HANDOVER
+
+# 🧠 NARRRFS WORLD 13.0 — LAB ECONOMY / REWARD CHAMBER / GENETIC MAX-2 PATCH
+
+## ✅ OVERVIEW
+
+This push finalizes the Lab System 9.6 economy and UX correction pass before production release.
+
+Main scope:
+
+- Lab System 9.6
+- Reward Chamber / Lootboxes
+- Genesis Trait Instant Finish
+- Genetic Item Instant Finish
+- Lab Elixirs
+- Genetic Marketplace
+- Genetic Shop ownership limit
+- Profile reward modal
+- Discord reward DM copy
+- Database migration for Genetic Items
+
+No DSPOINC ledger rewrite was done.
+No inventory schema rewrite was done.
+No lootbox reward pool logic rewrite was done.
+No Genesis NFT ownership model change was done.
+No marketplace create/cancel/listing structure rewrite was done.
+
+Backend authority remains the rule.
+
+## ✅ BUG / FEEDBACK ITEMS ADDRESSED
+
+- #832 — Some pictures not displayed in Genesis NFT slider
+- #833 — Genetic Marketplace cards too cramped / long names need broader space
+- #836 — Instant Finish prices too steep
+- #837 — Winning Elixir shows total owned instead of amount won
+- #839 — Upgrade prices / Instant Finish economy review
+- Discord Poll — Allow owning 2 Genetic Items of same exact trait
+
+## 🖼️ #832 — GENESIS NFT SLIDER IMAGE RESOLVER
+
+`public/lab.html` was updated so NFT image display is more robust.
+
+The image resolver now checks more possible NFT/media fields and normalizes `ipfs://` URLs for browser display. This improves missing Genesis NFT images in the Lab slider without changing NFT identity, token ownership, traits, or progression state.
+
+Important rule:
+
+- Image resolution is display-only.
+- Never use image URL as NFT identity.
+- NFT authority remains `token_id + collection + ownership verification`.
+
+## 🧬 #833 — GENETIC MARKETPLACE COMPACT CARD LAYOUT
+
+Marketplace card presentation in `public/lab.html` was adjusted so long Genetic Item names and tags have more usable room.
+
+This is frontend-only and scoped to marketplace grid/cards. It does not change listing creation, buying, cancellation, DSPOINC flow, item ownership, or Genetic item progression.
+
+Important rule:
+
+Marketplace visual changes must not mutate marketplace economy or item ownership.
+
+## ⚡ #836 / #839 — INSTANT FINISH ECONOMY REBALANCED
+
+The old Instant Finish formula was too aggressive and produced extreme prices.
+
+### Genesis Trait Instant Finish
+
+`api/user/instant-finish-nft-trait-upgrade.php` now uses a capped linear-style model:
+
+- Base: `10,000` DSPOINC
+- Hourly: `220` DSPOINC per remaining hour
+- Level step: `+0.35` per level
+- Multiplier cap: `8x`
+- Max cost cap: `500,000` DSPOINC
+
+Backend remains authoritative. Frontend previews are advisory only. API still moves active row to `ready_to_claim`; it does not auto-claim.
+
+### Genetic Item Instant Finish
+
+`api/user/instant-finish-genetic-item-upgrade.php` was also updated:
+
+- Base: `6,000` DSPOINC
+- Hourly: `140` DSPOINC per remaining hour
+- Level step: `+0.25` per level
+- Multiplier cap: `6x`
+- Max cost cap: `300,000` DSPOINC
+
+Genetic instant finish remains user-bound (not NFT-bound), blocks listed items, and computes final price in backend.
+
+Important rule:
+
+Frontend may preview Instant Finish price; backend always recalculates final charged cost.
+
+## 🧪 ELIXIRS CHANGED TO LOOTBOX-ONLY UTILITY
+
+Green, Blue, and Red Elixirs are no longer directly buyable from the store.
+
+Final design:
+
+- Green Elixir: `-6h`
+- Blue Elixir: `-18h`
+- Red Elixir: `-48h`
+
+Source: Reward Chamber lootboxes / special Lab drops.
+
+Store buying: blocked.
+Inventory use: allowed.
+Lab display: allowed.
+Lootbox drop: allowed.
+
+Important correction from testing:
+
+Do **not** set `tbl_store_items.is_active = 0` for Elixirs.
+
+Correct model:
+
+- Elixirs stay active items.
+- `api/store/purchase.php` blocks direct purchase for item IDs `33, 34, 35`.
+
+## 🎁 #837 — REWARD CHAMBER ELIXIR WIN DISPLAY FIXED
+
+Bug: modal previously showed total owned after delivery instead of amount won from the opened box.
+
+Backend fix in `api/user/open-reward-box.php` now includes explicit awarded fields:
+
+- `awarded_quantity`
+- `reward_quantity`
+- `quantity_awarded`
+
+Compatibility fields retained:
+
+- `quantity` (legacy)
+- `inventory_quantity_after`
+
+Frontend/Profile fix:
+
+- `public/profile.html` now displays awarded amount (example: `+1x Green Elixir`).
+
+Discord bot copy fix:
+
+- `discord/index.js` formats reward inventory lines as awarded quantity.
+
+## 🧬 GENETIC ITEM OWNERSHIP LIMIT CHANGED: 1 → 2
+
+Community request from Discord poll adopted:
+
+- One user may own up to `2` copies of same exact `trait_type + trait_value`.
+- Third copy is blocked.
+
+### Database Migration Completed
+
+Completed and verified:
+
+- `UNIQUE(user_id, trait_type, trait_value)` removed
+- lookup index added: `idx_user_genetic_items_trait_limit_lookup(user_id, trait_type, trait_value)`
+- `PRAGMA integrity_check`: `ok`
+- `tbl_user_genetic_items` count after migration: `104`
+
+### API Enforcement Updated
+
+- `api/user/buy-genetic-trait.php` updated to max-2 rule enforcement.
+- `api/user/buy-genetic-marketplace-listing.php` updated to same max-2 rule.
+
+Marketplace buy behavior preserved:
+
+- full item state transfer intact (including level/progression)
+- second copy allowed
+- third copy blocked
+
+## 🧬 LAB FRONTEND KNOWLEDGE/TEXT UPDATED
+
+`public/lab.html` player-facing text now reflects:
+
+- Instant Finish spends DSPOINC directly
+- backend recalculates final charged cost
+- Elixirs are lootbox-only boosters
+- Elixirs consume inventory and reduce active timers
+- exact-trait ownership limit is now 2 copies
+- upgrade-one / sell-one strategy supported
+
+Lab Elixir cards keep `Lootbox Only` behavior and no direct `Buy 1` flow.
+
+## ✅ FILES TOUCHED / REVIEWED FOR THIS PUSH
+
+```text
+public/lab.html
+public/profile.html
+discord/index.js
+api/user/open-reward-box.php
+api/store/purchase.php
+api/user/instant-finish-nft-trait-upgrade.php
+api/user/instant-finish-genetic-item-upgrade.php
+api/user/use-lab-booster.php
+api/user/use-genetic-item-booster.php
+api/user/buy-genetic-trait.php
+api/user/buy-genetic-marketplace-listing.php
+api/user/get-genetic-marketplace-listings.php
+api/user/create-genetic-marketplace-listing.php
+api/user/cancel-genetic-marketplace-listing.php
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+```
+
+## ✅ REQUIRED PRE-PUSH CHECKS
+
+Run syntax checks:
+
+```bash
+php -l /var/www/html/api/user/buy-genetic-trait.php
+php -l /var/www/html/api/user/buy-genetic-marketplace-listing.php
+php -l /var/www/html/api/user/open-reward-box.php
+php -l /var/www/html/api/store/purchase.php
+php -l /var/www/html/api/user/instant-finish-nft-trait-upgrade.php
+php -l /var/www/html/api/user/instant-finish-genetic-item-upgrade.php
+php -l /var/www/html/api/user/use-lab-booster.php
+php -l /var/www/html/api/user/use-genetic-item-booster.php
+```
+
+Verify DB:
+
+```bash
+sqlite3 /var/www/html/db/narrrf_world.sqlite "PRAGMA integrity_check;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_user_genetic_items;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "PRAGMA index_list('tbl_user_genetic_items');"
+```
+
+Expected:
+
+- integrity_check = ok
+- tbl_user_genetic_items count = 104
+- no UNIQUE autoindex on `(user_id, trait_type, trait_value)`
+- `idx_user_genetic_items_trait_limit_lookup` exists
+
+## ✅ MANUAL TEST CHECKLIST BEFORE COMMUNITY ANNOUNCEMENT
+
+1. Lab loads Genesis NFTs.
+2. Genesis slider images display better; missing images fall back safely.
+3. Marketplace cards are more readable with long names.
+4. Genesis Instant Finish no longer shows extreme prices.
+5. Genetic Item Instant Finish uses lower capped formula.
+6. Elixir cards show Lootbox Only.
+7. Elixir direct purchase is blocked by `purchase.php`.
+8. Existing owned Elixirs can still be used.
+9. Reward Chamber Elixir win shows `+1x` won amount, not total owned.
+10. Discord Reward Chamber DM also shows `+1x` won amount.
+11. Genetic Shop allows second exact-trait copy.
+12. Genetic Shop blocks third exact-trait copy.
+13. Marketplace buy allows second exact-trait copy.
+14. Marketplace buy blocks third exact-trait copy.
+15. Listing/cancelling Genetic Items still works.
+16. Listed Genetic Items still cannot receive boosters or instant finish.
+
+## 🧠 PROTECTED RULES GOING FORWARD
+
+- Backend remains authoritative.
+- Frontend never decides final DSPOINC cost.
+- Frontend never mutates inventory directly.
+- Frontend never decides lootbox reward delivery.
+- Frontend never bypasses marketplace ownership checks.
+- Elixirs stay active items but are blocked from direct purchase.
+- Genetic max-2 rule is enforced in backend, not only frontend.
+
+Protected systems:
+
+- `tbl_user_scores`
+- `tbl_score_adjustments`
+- `tbl_user_inventory`
+- `tbl_user_genetic_items`
+- `tbl_nft_trait_upgrades`
+- `tbl_nft_ability_upgrades`
+- `tbl_genetic_market_listings`
+- `tbl_reward_box_open_history`
+- `tbl_reward_box_reward_pool`
+- `tbl_reward_box_user_state`
+
+## 🧾 COMMIT-STYLE SUMMARY
+
+```text
+Lab 9.6: rebalance Instant Finish economy, make Elixirs lootbox-only utility, fix Reward Chamber awarded item display, allow max 2 Genetic exact-trait copies, and improve Lab marketplace/slider UX.
+```
+
+## 🏁 FINAL PUSH STATUS
+
+Ready for controlled production push after final syntax checks and manual test checklist.
 
 ---
 

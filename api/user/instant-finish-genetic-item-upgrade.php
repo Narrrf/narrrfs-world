@@ -35,7 +35,13 @@ session_start();
 
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf local fallback
 const GENETIC_ITEM_MAX_LEVEL = 100;
-const GENETIC_INSTANT_FINISH_BASE_COST = 10000;
+
+// instant finish genetic items
+const GENETIC_INSTANT_FINISH_BASE_COST = 6000;
+const GENETIC_INSTANT_FINISH_HOURLY_COST = 140;
+const GENETIC_INSTANT_FINISH_LEVEL_STEP = 0.25;
+const GENETIC_INSTANT_FINISH_LEVEL_MULTIPLIER_CAP = 6.0;
+const GENETIC_INSTANT_FINISH_MAX_COST = 300000;
 
 /**
  * Return a JSON response and stop execution.
@@ -322,13 +328,26 @@ function insert_optional_score_adjustment_audit(PDO $pdo, string $userId, int $a
     ]);
 }
 
+/**
+ * Calculate the backend-authoritative Genetic Item instant finish cost.
+ *
+ * Plain language for DEVS:
+ * Genetic Items are Discord-user-bound progression, not NFT-bound Genesis traits.
+ * This price is intentionally lower than Genesis instant finish, but still a real
+ * DSPOINC sink for long-term fairness.
+ */
 function calculate_genetic_instant_finish_cost(int $currentLevel, int $remainingSeconds): int {
     $level = max(1, $currentLevel);
-    $remainingHours = max(0, $remainingSeconds / 3600);
-    $levelMultiplier = pow(2.35, max(0, $level - 1));
-    $timeMultiplier = max(1, $remainingHours / 24);
+    $remainingHours = max(0, (float)$remainingSeconds / 3600);
 
-    return (int)ceil(GENETIC_INSTANT_FINISH_BASE_COST * $levelMultiplier * $timeMultiplier);
+    $levelMultiplier = min(
+        GENETIC_INSTANT_FINISH_LEVEL_MULTIPLIER_CAP,
+        1 + (max(0, $level - 1) * GENETIC_INSTANT_FINISH_LEVEL_STEP)
+    );
+
+    $rawCost = GENETIC_INSTANT_FINISH_BASE_COST + ($remainingHours * GENETIC_INSTANT_FINISH_HOURLY_COST * $levelMultiplier);
+
+    return (int)min(GENETIC_INSTANT_FINISH_MAX_COST, ceil($rawCost));
 }
 
 try {

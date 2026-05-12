@@ -6,7 +6,7 @@
 // - Any Discord-authenticated user may buy
 // - Preview is public, purchase requires Discord login
 // - Genetic traits are user-bound, not NFT-bound
-// - One user may own only one exact trait_type + trait_value
+// - One user may own up to 2 copies of the same exact trait_type + trait_value
 // - DSPOINC is the only currency
 // - Catalog source of truth is tbl_genetic_trait_catalog
 // - Owned item source of truth is tbl_user_genetic_items
@@ -36,6 +36,8 @@ if (file_exists($localDiscordSecretPath)) {
 session_start();
 
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf local fallback
+
+const GENETIC_MAX_OWNED_PER_EXACT_TRAIT = 2;
 
 function json_response($payload, $code = 200) {
     http_response_code($code);
@@ -169,18 +171,30 @@ function get_genetic_access(string $userId): array {
     ];
 }
 
-function user_owns_genetic_trait(PDO $pdo, string $userId, string $traitType, string $traitValue): bool {
+/**
+ * Count how many copies of one exact Genetic trait a user owns.
+ * Plain language for DEVS:
+ * Players may own up to 2 copies of the same exact trait_type + trait_value.
+ * This lets one copy upgrade while another copy can be listed or sold later.
+ */
+function count_user_genetic_trait_copies(PDO $pdo, string $userId, string $traitType, string $traitValue): int {
     $stmt = $pdo->prepare("
-        SELECT genetic_item_id
+        SELECT COUNT(*) AS owned_count
         FROM tbl_user_genetic_items
         WHERE user_id = ?
           AND trait_type = ?
           AND trait_value = ?
-        LIMIT 1
     ");
     $stmt->execute([$userId, $traitType, $traitValue]);
 
-    return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * Return true when the player already reached the exact-trait ownership limit.
+ */
+function user_reached_genetic_trait_limit(PDO $pdo, string $userId, string $traitType, string $traitValue): bool {
+    return count_user_genetic_trait_copies($pdo, $userId, $traitType, $traitValue) >= GENETIC_MAX_OWNED_PER_EXACT_TRAIT;
 }
 
 function insert_dspoinc_spend(PDO $pdo, string $userId, int $amount, string $reason, string $reference): void {
@@ -294,17 +308,18 @@ try {
     }
 
     $geneticAccess = get_genetic_access($userId);
-    if (user_owns_genetic_trait($pdo, $userId, $traitType, $traitValue)) {
-        json_response([
-            'success' => false,
-            'error' => 'You already own this genetic trait',
-            'data' => [
-                'catalog_id' => $catalogId,
-                'trait_type' => $traitType,
-                'trait_value' => $traitValue
-            ]
-        ], 409);
-    }
+    if (user_reached_genetic_trait_limit($pdo, $userId, $traitType, $traitValue)) {
+    json_response([
+        'success' => false,
+        'error' => 'You already own the maximum 2 copies of this genetic trait',
+        'data' => [
+            'catalog_id' => $catalogId,
+            'trait_type' => $traitType,
+            'trait_value' => $traitValue,
+            'max_owned_per_exact_trait' => GENETIC_MAX_OWNED_PER_EXACT_TRAIT
+        ]
+    ], 409);
+}
 
 // Use canonical available balance (total - frozen stakes)
 $currentBalance = get_user_available_dspoinc($pdo, $userId);
@@ -324,11 +339,14 @@ if ($currentBalance < $price) {
 $pdo->beginTransaction();
 
 // Re-check ownership inside the transaction for safer duplicate prevention.
-if (user_owns_genetic_trait($pdo, $userId, $traitType, $traitValue)) {
+if (user_reached_genetic_trait_limit($pdo, $userId, $traitType, $traitValue)) {
     $pdo->rollBack();
     json_response([
         'success' => false,
-        'error' => 'You already own this genetic trait'
+        'error' => 'You already own the maximum 2 copies of this genetic trait',
+        'data' => [
+            'max_owned_per_exact_trait' => GENETIC_MAX_OWNED_PER_EXACT_TRAIT
+        ]
     ], 409);
 }
 
@@ -422,13 +440,16 @@ insert_dspoinc_spend(
         $pdo->rollBack();
     }
 
-    // SQLite unique constraint collision = duplicate ownership
-    if (strpos(strtolower($e->getMessage()), 'unique') !== false) {
-        json_response([
-            'success' => false,
-            'error' => 'You already own this genetic trait'
-        ], 409);
-    }
+    // SQLite unique constraint collision fallback.
+// Plain language for DEVS:
+// The exact-trait UNIQUE constraint was removed for the max-2 rule,
+// but keep this friendly fallback for any future DB constraint collision.
+if (strpos(strtolower($e->getMessage()), 'unique') !== false) {
+    json_response([
+        'success' => false,
+        'error' => 'You already own the maximum 2 copies of this genetic trait'
+    ], 409);
+}
 
     error_log('🧬 Buy Genetic Trait PDO ERROR: ' . $e->getMessage());
 

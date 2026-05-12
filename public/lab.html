@@ -4404,6 +4404,66 @@ body::after {
   font-weight: 700;
 }
 
+/* 🏪 Marketplace card readability fix.
+   DEVS FOR DECADES:
+   This only changes active marketplace listing presentation.
+   It does not touch marketplace buy/cancel/create logic, DSPOINC, inventory,
+   listing ownership, or Genetic item progression state. */
+#geneticMarketplaceGrid.genetic-card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 14px;
+}
+
+#geneticMarketplaceGrid .genetic-card-live {
+  padding: 14px;
+}
+
+#geneticMarketplaceGrid .genetic-card-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+#geneticMarketplaceGrid .genetic-card-header > .flex {
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+#geneticMarketplaceGrid .genetic-card-title {
+  font-size: 1rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+#geneticMarketplaceGrid .genetic-card-subtitle {
+  margin-top: 5px;
+  font-size: 0.7rem;
+}
+
+#geneticMarketplaceGrid .genetic-card-copy {
+  min-height: 0;
+  margin-top: 10px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+#geneticMarketplaceGrid .genetic-card-media {
+  height: 112px;
+  min-height: 112px;
+  margin-top: 10px;
+}
+
+#geneticMarketplaceGrid .genetic-card-meta {
+  margin-top: 10px;
+}
+
+#geneticMarketplaceGrid .genetic-card-actions {
+  margin-top: 12px;
+}
+
 </style>
 </head>
 <body>
@@ -4819,9 +4879,9 @@ body::after {
           <div class="glass p-5 md:p-6">
             <div class="section-title text-xl"><span>📦</span><span>Inventory rules</span></div>
             <div class="genetic-helper-list">
-              <div class="genetic-helper-item">One Discord user can own only <strong>one exact trait</strong> per type/value combination.</div>
+              <div class="genetic-helper-item"><div class="genetic-helper-item">One Discord user can own up to <strong>2 copies of the same exact trait</strong> per type/value combination, so one copy can be upgraded while another can be listed for sale.</div></div>
               <div class="genetic-helper-item">Bought traits stay separate from NFT-bound Genesis progression and never overwrite on-chain identity.</div>
-              <div class="genetic-helper-item">When marketplace support arrives, listed items will stay visible here with a <strong>Listed for Sale</strong> badge.</div>
+              <div class="genetic-helper-item"><div class="genetic-helper-item">Listed items stay visible here with a <strong>Listed for Sale</strong> badge, but cannot be upgraded, claimed, boosted, or instant-finished while listed.</div></div>
             </div>
           </div>
 
@@ -4829,7 +4889,7 @@ body::after {
             <div class="section-title text-xl"><span>⏭️</span><span>Upgrade station roadmap</span></div>
             <div class="genetic-helper-list">
               <div class="genetic-helper-item">Sprint 3A now activates start and claim actions directly inside Genetic Inventory.</div>
-              <div class="genetic-helper-item">Instant finish, booster usage, and marketplace listing remain separate follow-up layers.</div>
+              <div class="genetic-helper-item"><div class="genetic-helper-item">Instant Finish, booster usage, and marketplace listing are active tools, but each action stays backend-authoritative and scoped to the selected Genetic Item.</div></div>
               <div class="genetic-helper-item">This keeps the live Genesis chamber stable while the new user-bound progression loop grows beside it.</div>
             </div>
           </div>
@@ -4931,7 +4991,7 @@ body::after {
         <div class="genetic-helper-list">
           <div class="genetic-helper-item">Only idle Genetic Items can be listed. Upgrading or claim-ready runs stay blocked from sale.</div>
           <div class="genetic-helper-item">The buyer receives the full Discord-bound item with its current level preserved.</div>
-          <div class="genetic-helper-item">One Discord user can still own only one exact trait per type/value combination.</div>
+          <div class="genetic-helper-item"><div class="genetic-helper-item">One Discord user can own up to 2 copies of the same exact trait per type/value combination. Buying a third copy is blocked by the backend.</div></div>
           <div class="genetic-helper-item">DSPOINC is the only marketplace currency.</div>
         </div>
       </div>
@@ -4961,7 +5021,7 @@ body::after {
       <div class="genetic-helper-list">
         <div class="genetic-helper-item">Genetic Shop lets Discord-logged-in players buy missing Outfit and Accessories traits directly into Discord-bound inventory.</div>
         <div class="genetic-helper-item">Genetic Inventory supports start, claim, instant finish, and shared Lab booster actions without mutating on-chain NFT identity.</div>
-        <div class="genetic-helper-item">Marketplace listings transfer the full owned item state between players while respecting no-duplicate ownership rules.</div>
+        <div class="genetic-helper-item"><div class="genetic-helper-item">Marketplace listings transfer the full owned item state between players while respecting the 2-copy exact-trait ownership limit.</div></div>
       </div>
     </div>
 
@@ -5109,7 +5169,10 @@ body::after {
             <div class="feature-item"><strong>Level 5 → 16:</strong> after 8 days, each next level adds 24 more hours</div>
             <div class="feature-item"><strong>Level 16+:</strong> each next level adds only 1 more hour</div>
             <div class="feature-item"><strong>Claim rule:</strong> finished research must always be claimed manually before the next cycle can begin</div>
-            <div class="feature-item"><strong>Booster rule:</strong> Green, Blue, and Red Elixirs reduce active research time by fixed hours</div>
+            <div class="feature-item"><strong>Instant Finish:</strong> spends DSPOINC to finish the active timer immediately. It is the direct convenience path and the backend always recalculates the final price.</div>
+<div class="feature-item"><strong>Elixir rule:</strong> Green, Blue, and Red Elixirs reduce active research time by fixed hours and consume 1 inventory item.</div>
+<div class="feature-item"><strong>Lootbox-only boosters:</strong> Elixirs are not sold directly in the store. They come from Reward Chamber lootboxes and special Lab reward drops.</div>
+<div class="feature-item"><strong>Economy rule:</strong> DSPOINC is used for direct Instant Finish, while Elixirs stay rare reward utility for long-term fairness.</div>
           </div>
         </div>
 
@@ -5129,7 +5192,7 @@ body::after {
             <div class="feature-item">
             <strong>Genesis Lab:</strong> NFT-bound progression including both trait upgrades and the new Ability Matrix system, forming the long-term identity path of each mouse.
            </div>
-            <div class="feature-item"><strong>Genetic Inventory:</strong> Discord-bound, buyable trait items, faster user progression, future marketplace transfer layer.</div>
+            <div class="feature-item"><div class="feature-item"><strong>Genetic Inventory:</strong> Discord-bound, buyable trait items, faster user progression, and live marketplace transfer support.</div></div>
             <div class="feature-item"><strong>Golden rule:</strong> the backend remains authoritative for ownership, timers, claim state, instant finish cost, and booster usage.</div>
             <div class="feature-item"><strong>Safety rule:</strong> these two systems stay separated so live Genesis progression is never corrupted by the newer Genetic layer.</div>
           </div>
@@ -6500,13 +6563,27 @@ function calculateUpgradeDurationHours(currentLevel) {
   return 456 + (level - 15);
 }
 
-    function calculateInstantFinishCost(currentLevel, remainingMs) {
-      const level = Math.max(1, safeNumber(currentLevel, 1));
-      const remainingHours = Math.max(0, safeNumber(remainingMs) / 3600000);
-      const levelMultiplier = Math.pow(2.35, Math.max(0, level - 1));
-      const timeMultiplier = Math.max(1, remainingHours / 24);
-      return Math.ceil(LAB_CONFIG.instantFinishBaseCost * levelMultiplier * timeMultiplier);
-    }
+function calculateInstantFinishCost(currentLevel, remainingMs, lane = 'genesis') {
+  const level = Math.max(1, safeNumber(currentLevel, 1));
+  const remainingHours = Math.max(0, safeNumber(remainingMs) / 3600000);
+
+  const isGeneticLane = String(lane || '').toLowerCase() === 'genetic';
+
+  const baseCost = isGeneticLane ? 6000 : 10000;
+  const hourlyCost = isGeneticLane ? 140 : 220;
+  const levelStep = isGeneticLane ? 0.25 : 0.35;
+  const multiplierCap = isGeneticLane ? 6 : 8;
+  const maxCost = isGeneticLane ? 300000 : 500000;
+
+  const levelMultiplier = Math.min(
+    multiplierCap,
+    1 + (Math.max(0, level - 1) * levelStep)
+  );
+
+  const rawCost = baseCost + (remainingHours * hourlyCost * levelMultiplier);
+
+  return Math.min(maxCost, Math.ceil(rawCost));
+}
 
 function mapUpgradeStatus(status, endsAt) {
   const normalized = String(status || '').trim().toLowerCase();
@@ -7370,20 +7447,67 @@ function getQueueBoosterLightMarkup(activeRow) {
   return `<span class="queue-boost-light ${tone}" aria-label="Boosted upgrade"></span>`;
 }
 
+/**
+ * Normalize NFT media URLs for browser display.
+ * Plain language for DEVS:
+ * Verified NFT providers do not always use the same image field.
+ * Some rows use image_url, some use metadata.image, some use IPFS URLs.
+ * This function only resolves display media and never changes NFT identity,
+ * token_id, collection, ownership, traits, or Lab progression.
+ */
+function normalizeNftMediaUrl(rawUrl) {
+  const url = String(rawUrl || '').trim();
+
+  if (!url) {
+    return '';
+  }
+
+  if (/^ipfs:\/\//i.test(url)) {
+    return url.replace(/^ipfs:\/\//i, 'https://ipfs.io/ipfs/');
+  }
+
+  if (/^\/\//.test(url)) {
+    return `${window.location.protocol}${url}`;
+  }
+
+  return url;
+}
+
+/**
+ * Return the safest available display image for a verified Genesis NFT.
+ */
 function getSafeNftImageUrl(nft) {
   if (!nft || typeof nft !== 'object') {
     return '';
   }
 
-  return String(
-    nft.image_url ||
-    nft.image ||
-    nft.imageUrl ||
-    nft.nft_image ||
-    nft.image_path ||
-    nft.preview_path ||
-    ''
-  ).trim();
+  const candidates = [
+    nft.image_url,
+    nft.image,
+    nft.imageUrl,
+    nft.nft_image,
+    nft.image_path,
+    nft.preview_path,
+    nft.metadata?.image,
+    nft.metadata?.image_url,
+    nft.metadata?.imageUrl,
+    nft.meta?.image,
+    nft.content?.links?.image,
+    nft.content?.files?.[0]?.uri,
+    nft.files?.[0]?.uri,
+    nft.media?.[0]?.uri,
+    nft.json?.image
+  ];
+
+  for (const candidate of candidates) {
+    const normalizedUrl = normalizeNftMediaUrl(candidate);
+
+    if (normalizedUrl) {
+      return normalizedUrl;
+    }
+  }
+
+  return '';
 }
 
 function renderActiveResearchQueue() {
@@ -7801,8 +7925,8 @@ const actionLabel = hasReady
         tabindex="0"
         aria-label="Select ${escapeHtml(getSafeNftName(nft, 'Genesis Mouse'))}">
 
-        ${getSafeNftImageUrl(nft)
-  ? `<img src="${escapeHtml(getSafeNftImageUrl(nft))}" alt="${escapeHtml(getSafeNftName(nft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+       ${getSafeNftImageUrl(nft)
+  ? `<img src="${escapeHtml(getSafeNftImageUrl(nft))}" alt="${escapeHtml(getSafeNftName(nft, 'Genesis NFT'))}" class="nft-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
   : `<div class="empty-art">🐭</div>`}
 
 <div class="mt-4 viewer-card-heading-row">
@@ -8602,8 +8726,8 @@ function renderSelectedNftPanel(nft = null) {
       <div class="selected-nft-layout">
         <div class="selected-nft-media">
   ${getSafeNftImageUrl(resolvedNft)
-    ? `<img src="${escapeHtml(getSafeNftImageUrl(resolvedNft))}" alt="${escapeHtml(getSafeNftName(resolvedNft, 'Genesis NFT'))}" class="nft-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
-    : `<div class="empty-art">🐭</div>`}
+  ? `<img src="${escapeHtml(getSafeNftImageUrl(resolvedNft))}" alt="${escapeHtml(getSafeNftName(resolvedNft, 'Genesis NFT'))}" class="nft-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
+  : `<div class="empty-art">🐭</div>`}
 </div>
 
         <div class="space-y-4">
@@ -8705,6 +8829,8 @@ function getLabBoosterCatalog() {
       itemId: 33,
       name: 'Green Elixir',
       effect: '-6 hours remaining time',
+      sourceLabel: 'Lootbox Drop Only',
+      sourceDescription: 'Found inside Reward Chamber lootboxes and special Lab reward drops.',
       icon: '🟢',
       tone: 'green',
       glbPath: 'img/lab/green_elixir.glb',
@@ -8715,6 +8841,8 @@ function getLabBoosterCatalog() {
       itemId: 34,
       name: 'Blue Elixir',
       effect: '-18 hours remaining time',
+      sourceLabel: 'Lootbox Drop Only',
+      sourceDescription: 'Found inside Reward Chamber lootboxes and special Lab reward drops.',
       icon: '🔵',
       tone: 'blue',
       glbPath: 'img/lab/blue_elixir.glb',
@@ -8725,6 +8853,8 @@ function getLabBoosterCatalog() {
       itemId: 35,
       name: 'Red Elixir',
       effect: '-48 hours remaining time',
+      sourceLabel: 'Lootbox Drop Only',
+      sourceDescription: 'Found inside Reward Chamber lootboxes and special Lab reward drops.',
       icon: '🔴',
       tone: 'red',
       glbPath: 'img/lab/red_elixir.glb',
@@ -8824,9 +8954,10 @@ function renderLabBoosterPanel() {
       </div>
 
       <div class="info text-sm mt-4">
-        The backend remains authoritative. Each elixir reduces the <strong>remaining time</strong> for the active upgrade and consumes <strong>1 inventory item</strong>.
-        Current finish target: <strong>${escapeHtml(finishesAtLabel)}</strong>.
-      </div>
+  The backend remains authoritative. Each elixir reduces the <strong>remaining time</strong> for the active upgrade and consumes <strong>1 inventory item</strong>.
+  Elixirs are <strong>lootbox-only Lab boosters</strong>; they are not sold directly in the store.
+  Current finish target: <strong>${escapeHtml(finishesAtLabel)}</strong>.
+</div>
 
       <div class="booster-grid">
         ${getLabBoosterCatalog().map(booster => {
@@ -8846,7 +8977,12 @@ function renderLabBoosterPanel() {
                     <div class="text-lg font-black text-white">${escapeHtml(booster.name)}</div>
                   </div>
                   <div class="mt-2 text-sm text-slate-300">${escapeHtml(booster.effect)}</div>
-                  <div class="mt-2 text-xs text-slate-400">Store: ${escapeHtml(getLabBoosterPriceLabel(booster.itemId))}</div>
+                  <div class="mt-2 text-xs text-amber-200 font-black uppercase tracking-[0.12em]">
+  🎁 ${escapeHtml(booster.sourceLabel || 'Lootbox Drop Only')}
+</div>
+<div class="mt-1 text-xs text-slate-400">
+  ${escapeHtml(booster.sourceDescription || 'Available through Lab reward drops.')}
+</div>
                 </div>
                 <span class="booster-owned">Owned: ${formatNumber(ownedQuantity)}</span>
               </div>
@@ -8854,26 +8990,25 @@ function renderLabBoosterPanel() {
               ${renderLabBoosterViewer(booster)}
 
               <div class="nft-card-action-row">
-                <button
-                  type="button"
-                  class="btn primary flex-1"
-                  data-use-booster="${escapeHtml(String(booster.itemId))}"
-                  ${ownedQuantity > 0 && !state.actionInFlight ? '' : 'disabled'}
-                  title="${escapeHtml(disabledReason)}"
-                >
-                  🧪 Use Booster
-                </button>
+  <button
+    type="button"
+    class="btn primary flex-1"
+    data-use-booster="${escapeHtml(String(booster.itemId))}"
+    ${ownedQuantity > 0 && !state.actionInFlight ? '' : 'disabled'}
+    title="${escapeHtml(disabledReason)}"
+  >
+    🧪 Use Booster
+  </button>
 
-                <button
-                  type="button"
-                  class="btn ghost flex-1"
-                  data-buy-booster="${escapeHtml(String(booster.itemId))}"
-                  ${state.actionInFlight ? 'disabled' : ''}
-                  title="${escapeHtml(state.actionInFlight ? 'Another lab action is running' : 'Buy 1 booster from the Narrrf store')}"
-                >
-                  🛒 Buy 1
-                </button>
-              </div>
+  <button
+    type="button"
+    class="btn ghost flex-1"
+    disabled
+    title="Elixirs are lootbox-only and cannot be bought directly."
+  >
+    🎁 Lootbox Only
+  </button>
+</div>
             </div>
           `;
         }).join('')}
@@ -9217,15 +9352,21 @@ const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.ge
     }
 
 async function handleBuyBooster(itemId) {
-  if (!state.userId) {
+  // TODO: Lab Elixirs are now lootbox-only.
+  // Plain language for DEVS:
+  // This frontend guard prevents old buttons, cached HTML, or manual UI triggers
+  // from starting a direct Elixir purchase flow. The backend store authority is
+  // still the real protection because purchase.php blocks item IDs 33, 34, and 35
+  // while keeping them active for lootboxes, inventory display, and booster usage.
+  if ([33, 34, 35].includes(Number(itemId || 0))) {
     await showLabMessageModal({
-      eyebrow: 'Session Required',
-      title: 'No Player Session Found',
-      icon: '🛒',
-      message: 'No player session was found for this store purchase.',
-      note: 'Please log in with Discord before buying Lab boosters.',
-      confirmText: 'Close',
-      confirmVariant: 'danger'
+      eyebrow: 'Lootbox Drop Only',
+      title: 'Elixirs Cannot Be Bought Directly',
+      icon: '🎁',
+      message: 'Green, Blue, and Red Elixirs are special Lab booster drops from the Reward Chamber.',
+      note: 'Use Instant Finish when you want to spend DSPOINC directly. Use Elixirs when you earn them from lootboxes or special rewards.',
+      confirmText: 'Understood',
+      confirmVariant: 'primary'
     });
     return;
   }
@@ -12032,7 +12173,11 @@ async function handleInstantFinishGeneticUpgrade(geneticItemId) {
     return;
   }
 
-  const previewCost = calculateInstantFinishCost(Math.max(1, safeNumber(item.current_level, 1)), getGeneticRemainingMs(item));
+  const previewCost = calculateInstantFinishCost(
+  Math.max(1, safeNumber(item.current_level, 1)),
+  getGeneticRemainingMs(item),
+  'genetic'
+);
   const confirmed = await showLabConfirmModal({
     eyebrow: 'Genetic Instant Finish',
     title: `Finish ${item.display_title || item.trait_value}?`,

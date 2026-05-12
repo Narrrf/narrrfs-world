@@ -23,3 +23,6 @@
 2026-05-10 17:38:34 - Slider artwork deleted: samuzi_slider_20260510_173826_0.png by admin
 2026-05-10 17:38:36 - Slider artwork deleted: samuzi_slider_20260510_173829_0.png by admin
 2026-05-10 17:41:40 - Admin logout: admin from IP: ::1
+2026-05-12 02:16:32 - Failed admin login attempt from IP: ::1 (Username: admin)
+2026-05-12 02:16:35 - Failed admin login attempt from IP: ::1 (Username: admin)
+2026-05-12 02:16:48 - Admin login successful from IP: ::1

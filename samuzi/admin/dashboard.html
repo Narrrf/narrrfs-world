@@ -1068,6 +1068,106 @@ select option {
 #recentActivity p {
     color: #cbd5e1 !important;
 }
+/* =========================================================
+   SAMUZI ADMIN CUSTOMER-SAFE NOTICES
+   Marks unfinished tools clearly for customer preview.
+   ========================================================= */
+
+.construction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    color: #111827 !important;
+    background: linear-gradient(135deg, #facc15, #f59e0b) !important;
+    border: 1px solid rgba(250, 204, 21, 0.65) !important;
+    font-size: 0.78rem;
+    font-weight: 950;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 0 24px rgba(250, 204, 21, 0.26);
+    white-space: nowrap;
+}
+
+.customer-warning-box {
+    margin: 14px 0 18px;
+    padding: 15px 16px;
+    border-radius: 16px;
+    color: #fff7cc !important;
+    background:
+        linear-gradient(180deg, rgba(250,204,21,0.16), rgba(245,158,11,0.10)) !important;
+    border: 1px solid rgba(250,204,21,0.42) !important;
+    box-shadow: 0 12px 34px rgba(0,0,0,0.30);
+}
+
+.customer-warning-box strong {
+    color: #fef3c7 !important;
+}
+
+.customer-warning-box p,
+.customer-warning-box li,
+.customer-warning-box span {
+    color: #fde68a !important;
+    line-height: 1.6;
+}
+
+.customer-warning-box ul {
+    margin: 10px 0 0 18px;
+}
+
+.customer-warning-box.cheese {
+    border-color: rgba(250,204,21,0.58) !important;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(250,204,21,0.20), transparent 34%),
+        linear-gradient(180deg, rgba(146,64,14,0.36), rgba(24,24,27,0.72)) !important;
+}
+
+.feature-under-construction {
+    position: relative;
+}
+
+.feature-under-construction .settings-form,
+.feature-under-construction .stats-grid,
+.feature-under-construction .btn:not(.safe-view-btn) {
+    opacity: 0.42;
+    filter: grayscale(0.45);
+}
+
+.feature-under-construction .settings-form,
+.feature-under-construction .btn:not(.safe-view-btn) {
+    pointer-events: none;
+}
+
+.feature-disabled-note {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    color: #111827 !important;
+    background: linear-gradient(135deg, #facc15, #f97316) !important;
+    border: 1px solid rgba(250,204,21,0.55) !important;
+    font-weight: 950;
+    box-shadow: 0 10px 28px rgba(250,204,21,0.20);
+}
+
+.card-header {
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .construction-badge {
+        margin-left: 0;
+        margin-top: 8px;
+    }
+
+    .card-header {
+        flex-wrap: wrap;
+    }
+}
     </style>
 </head>
 <body>
@@ -1085,7 +1185,10 @@ select option {
     <div class="container">
         <div class="welcome-section">
             <h2>⚔️ Welcome to the Samuzi control center</h2>
-<p>Manage the launch page, slider artwork, project showcase, background settings, and email configuration from one place.</p>
+<p>
+    Manage the Samuzi preview basics and slider artwork from one place.
+    Background settings, visual effects, event management, and email delivery are marked clearly while they are being finalized.
+</p>
         </div>
         
         <div id="alertMessage" class="alert"></div>
@@ -1119,11 +1222,20 @@ select option {
             </div>
 
             <!-- Website Settings - Background -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <div class="card-icon">🎨</div>
-                    <div class="card-title">Background Settings</div>
-                </div>
+<div class="dashboard-card feature-under-construction">
+    <div class="card-header">
+        <div class="card-icon">🎨</div>
+        <div class="card-title">Background Settings</div>
+        <span class="construction-badge">🧀 Under Construction</span>
+    </div>
+
+    <div class="customer-warning-box">
+        <strong>⚠️ Not ready for customer use yet</strong>
+        <p>
+            Background editing is prepared in the admin layout, but it is currently locked for this first live preview.
+            The public website background is already set manually to the approved Phase 3 Samuzi artwork.
+        </p>
+    </div>
                 <div class="settings-form">
                     <div class="form-group">
                         <label for="heroBackground">🎨 Main Background Image:</label>
@@ -1208,11 +1320,20 @@ select option {
             </div>
 
             <!-- Website Settings - Bubbles -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <div class="card-icon">🫧</div>
-                    <div class="card-title">Visual Effects</div>
-                </div>
+<div class="dashboard-card feature-under-construction">
+    <div class="card-header">
+        <div class="card-icon">🫧</div>
+        <div class="card-title">Visual Effects</div>
+        <span class="construction-badge">🧀 Under Construction</span>
+    </div>
+
+    <div class="customer-warning-box">
+        <strong>⚠️ Not ready for customer use yet</strong>
+        <p>
+            Visual effects are reserved for the next admin update. They are disabled for now so the live Samuzi preview
+            stays stable for partner presentations.
+        </p>
+    </div>
                 <div class="settings-form">
                     <div class="form-group">
                         <label for="bubbleEffect">🫧 Ambient Effect:</label>
@@ -1331,9 +1452,20 @@ select option {
                 <div class="card-header">
                     <div class="card-icon">📸</div>
                     <div class="card-title">Slider Artwork</div>
-                </div>
-                <p>Upload and manage Samuzi Phase 3 slider artwork.</p>
-                <div class="upload-area" id="uploadArea">
+</div>
+
+<p>Upload and manage Samuzi Phase 3 slider artwork.</p>
+
+<div class="customer-warning-box cheese">
+    <strong>🧀 Important preview note for slider uploads</strong>
+    <p>
+        Slider uploads work on the live Render preview, but the current preview server has no paid persistent disk.
+        After you upload, delete, or replace slider artwork, please message Markus so the same images can be added
+        to the local project and pushed into the repository. This keeps the artwork safe after future deploys or restarts.
+    </p>
+</div>
+
+<div class="upload-area" id="uploadArea">
                     <div>📁 Click here or drop images here</div>
                     <div style="font-size: 0.9rem; color: #666; margin-top: 10px;">
                         Supported formats: JPG, PNG, GIF, WebP
@@ -1352,33 +1484,58 @@ select option {
                 </div>
             </div>
 
-            <!-- Project Management -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <div class="card-icon">🗡️</div>
-                    <div class="card-title">Project Management</div>
-                </div>
-                <p>Manage Samuzi roadmap cards, announcements, and launch showcase items.</p>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-number" id="totalProjects">0</span>
-                        <div class="stat-label">Projects</div>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="recentProjects">0</span>
-                        <div class="stat-label">This Week</div>
-                    </div>
-                </div>
-                <a href="projects.html" class="btn btn-success">Manage Projects</a>
-                <button class="btn" onclick="window.open('projects.html', '_blank')">New Project</button>
-            </div>
+           <!-- Event / Project Management -->
+<div class="dashboard-card feature-under-construction">
+    <div class="card-header">
+        <div class="card-icon">🎁</div>
+        <div class="card-title">Events Management</div>
+        <span class="construction-badge">🧀 Under Construction</span>
+    </div>
+
+    <p>Future area for Samuzi events, raffles, giveaways, partner drops, and launch announcements.</p>
+
+    <div class="customer-warning-box">
+        <strong>⚠️ Not ready for customer use yet</strong>
+        <p>
+            This tool is intentionally locked during the first live preview. Events and giveaway posts will be enabled
+            after the public Events page and admin form are finalized.
+        </p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-item">
+            <span class="stat-number" id="totalProjects">0</span>
+            <div class="stat-label">Events</div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="recentProjects">0</span>
+            <div class="stat-label">This Week</div>
+        </div>
+    </div>
+
+    <span class="feature-disabled-note">🧀 Events tool coming soon</span>
+</div>
 
             <!-- Email Settings -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <div class="card-icon">📧</div>
-                    <div class="card-title">Email Settings</div>
-                </div>
+<div class="dashboard-card feature-under-construction">
+    <div class="card-header">
+        <div class="card-icon">📧</div>
+        <div class="card-title">Email Settings</div>
+        <span class="construction-badge">🧀 Under Construction</span>
+    </div>
+
+    <div class="customer-warning-box">
+        <strong>⚠️ Email delivery is not active yet</strong>
+        <p>
+            The contact form layout is ready, but real email delivery is locked until the Resend API key
+            and verified sender domain are configured. For now, please use Discord or direct email for important messages.
+        </p>
+        <ul>
+            <li>Recipient target: <strong>Samuzinft@gmail.com</strong></li>
+            <li>Production sender will be configured after Resend/domain verification.</li>
+            <li>Do not rely on the contact form for live partner/customer communication yet.</li>
+        </ul>
+    </div>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <span class="stat-number" id="todayEmails">0</span>
@@ -1433,11 +1590,12 @@ select option {
                     </div>
                     
                     <div class="form-group">
-                        <button class="btn btn-info" onclick="testEmailConnection()">📧 Test Email Connection</button>
-                        <small class="form-help">Tests the Resend API connection.</small>
-                    </div>
-                    
-                    <button class="btn btn-success" onclick="saveEmailSettings()">💾 Save Email Settings</button>
+    <span class="feature-disabled-note">🧀 Email API setup coming soon</span>
+    <small class="form-help">
+        Testing and saving email delivery settings will be enabled after the Resend API key
+        and verified sender are configured.
+    </small>
+</div>
                 </div>
             </div>
 

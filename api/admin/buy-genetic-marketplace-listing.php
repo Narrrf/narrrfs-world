@@ -37,6 +37,8 @@ session_start();
 
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf local fallback
 
+const GENETIC_MAX_OWNED_PER_EXACT_TRAIT = 2;
+
 function json_response($payload, $code = 200) {
     http_response_code($code);
     echo json_encode($payload);
@@ -134,20 +136,30 @@ function get_user_available_dspoinc(PDO $pdo, string $userId): int {
 }
 
 /**
- * Duplicate trait protection: one exact trait_type + trait_value per user.
+ * Count how many copies of one exact Genetic trait a user owns.
+ * Plain language for DEVS:
+ * Players may own up to 2 copies of the same exact trait_type + trait_value.
+ * This supports the community request to upgrade one copy while listing/selling
+ * another copy on the marketplace.
  */
-function user_owns_genetic_trait(PDO $pdo, string $userId, string $traitType, string $traitValue): bool {
+function count_user_genetic_trait_copies(PDO $pdo, string $userId, string $traitType, string $traitValue): int {
     $stmt = $pdo->prepare("
-        SELECT genetic_item_id
+        SELECT COUNT(*) AS owned_count
         FROM tbl_user_genetic_items
         WHERE user_id = ?
           AND trait_type = ?
           AND trait_value = ?
-        LIMIT 1
     ");
     $stmt->execute([$userId, $traitType, $traitValue]);
 
-    return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * Return true when the player already reached the exact-trait ownership limit.
+ */
+function user_reached_genetic_trait_limit(PDO $pdo, string $userId, string $traitType, string $traitValue): bool {
+    return count_user_genetic_trait_copies($pdo, $userId, $traitType, $traitValue) >= GENETIC_MAX_OWNED_PER_EXACT_TRAIT;
 }
 
 function get_genetic_access(string $userId): array {
@@ -339,10 +351,10 @@ if (!$buyerUserId || trim($buyerUserId) === '') {
         ], 409);
     }
 
-    if (user_owns_genetic_trait($pdo, $buyerUserId, $traitType, $traitValue)) {
+    if (user_reached_genetic_trait_limit($pdo, $buyerUserId, $traitType, $traitValue)) {
         json_response([
             'success' => false,
-            'error' => 'You already own this genetic trait',
+            'error' => 'You already own the maximum 2 copies of this genetic trait',
             'data' => [
                 'trait_type' => $traitType,
                 'trait_value' => $traitValue,
@@ -413,11 +425,11 @@ if (!$buyerUserId || trim($buyerUserId) === '') {
         ], 409);
     }
 
-    if (user_owns_genetic_trait($pdo, $buyerUserId, $traitType, $traitValue)) {
+    if (user_reached_genetic_trait_limit($pdo, $buyerUserId, $traitType, $traitValue)) {
         $pdo->rollBack();
         json_response([
             'success' => false,
-            'error' => 'You already own this genetic trait'
+            'error' => 'You already own the maximum 2 copies of this genetic trait'
         ], 409);
     }
 
@@ -682,7 +694,7 @@ if (!$buyerUserId || trim($buyerUserId) === '') {
     if (strpos(strtolower($e->getMessage()), 'unique') !== false) {
         json_response([
             'success' => false,
-            'error' => 'You already own this genetic trait'
+            'error' => 'You already own the maximum 2 copies of this genetic trait'
         ], 409);
     }
 

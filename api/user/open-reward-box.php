@@ -866,13 +866,24 @@ function grant_store_item_to_user(PDO $pdo, string $userId, array $storeItem, in
         $stmt->execute($params);
 
         return [
-            'inventory_id' => $inventoryId,
-            'item_id' => $storeItemId,
-            'item_name' => $itemName,
-            'quantity' => $newQuantity,
-            'description' => $description,
-            'source' => $sourceTag
-        ];
+    'inventory_id' => $inventoryId,
+    'item_id' => $storeItemId,
+    'item_name' => $itemName,
+
+    // TODO: Keep quantity as the final inventory total for backwards compatibility.
+    // Plain language for DEVS:
+    // Reward Chamber UI must show awarded_quantity, not this final total.
+    'quantity' => $newQuantity,
+    'inventory_quantity_after' => $newQuantity,
+
+    // Amount won from this exact reward box opening.
+    'awarded_quantity' => $safeQuantity,
+    'reward_quantity' => $safeQuantity,
+    'quantity_awarded' => $safeQuantity,
+
+    'description' => $description,
+    'source' => $sourceTag
+];
     }
 
     $insertValues = [];
@@ -926,13 +937,22 @@ function grant_store_item_to_user(PDO $pdo, string $userId, array $storeItem, in
     $stmt->execute($params);
 
     return [
-        'inventory_id' => (int)$pdo->lastInsertId(),
-        'item_id' => $storeItemId,
-        'item_name' => $itemName,
-        'quantity' => $safeQuantity,
-        'description' => $description,
-        'source' => $sourceTag
-    ];
+    'inventory_id' => (int)$pdo->lastInsertId(),
+    'item_id' => $storeItemId,
+    'item_name' => $itemName,
+
+    // For a new row, final inventory total equals the awarded amount.
+    'quantity' => $safeQuantity,
+    'inventory_quantity_after' => $safeQuantity,
+
+    // Amount won from this exact reward box opening.
+    'awarded_quantity' => $safeQuantity,
+    'reward_quantity' => $safeQuantity,
+    'quantity_awarded' => $safeQuantity,
+
+    'description' => $description,
+    'source' => $sourceTag
+];
 }
 
 /**
