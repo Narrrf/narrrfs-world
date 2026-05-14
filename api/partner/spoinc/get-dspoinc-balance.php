@@ -17,7 +17,41 @@ ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
 date_default_timezone_set('UTC');
+
+/**
+ * Allow trusted browser clients to call the partner balance API.
+ *
+ * DEVS FOR DECADES:
+ * CORS is only browser access control. Real API security still comes from:
+ * - Bearer key
+ * - hashed partner API key table
+ * - wallet verification
+ * - read-only balance logic
+ */
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+$allowedOrigins = [
+    'https://narrrfs.world',
+    'https://www.narrrfs.world',
+    'http://localhost',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:8080',
+    'http://127.0.0.1',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:8080'
+];
+
+if ($origin !== '' && in_array($origin, $allowedOrigins, true)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Vary: Origin');
+}
+
 header('Content-Type: application/json');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, Accept');
+header('Access-Control-Max-Age: 86400');
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     http_response_code(200);

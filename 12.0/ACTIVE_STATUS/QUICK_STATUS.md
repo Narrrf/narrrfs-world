@@ -5,6 +5,23 @@ Status: ✅ READY FOR CONTROLLED PRODUCTION PUSH — LAB SYSTEM 9.6 ECONOMY / RE
 Version: 2026-05-12
 Milestone: Lab System 9.6 economy and UX correction pass finalized, including Instant Finish rebalance, lootbox-only Elixirs, Reward Chamber awarded-amount fixes, and Genetic exact-trait max-2 ownership rollout.
 
+
+---
+
+## 🔄 UPDATE — MAY 13, 2026 — DISCORD BOT RACE/RUMBLE TOKEN PAYOUT + WATCHDOG STABILITY PASS
+
+### ✅ Scope
+
+This update focused on the Discord bot Race/Rumble systems and live-bot stability after the weekly event testing.
+
+Main files touched/reviewed:
+
+```text
+discord/index.js
+discord/commands/cheese-race.js
+discord/commands/cheese-rumble.js
+discord/commands/airdrop-prepare.js
+discord/watch-narrrfs-bot.ps1
 ---
 
 ## 🔄 UPDATE — APRIL 27, 2026
