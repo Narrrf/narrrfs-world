@@ -52,10 +52,49 @@ try {
     error_log("🏠 Environment: " . ($isLocalDev ? 'LOCAL' : 'PRODUCTION') . ", Database path selected: $dbPath (exists: " . (file_exists($dbPath) ? 'YES' : 'NO') . ")");
     
     $pdo = new PDO("sqlite:$dbPath");
-    $stmt = $pdo->prepare("INSERT INTO tbl_bingo_tickets (user_id, ticket_json) VALUES (?, ?)");
-    $stmt->execute([$user_id, $ticket_json]);
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    echo json_encode(["success" => true, "message" => "Ticket saved successfully!"]);
+$ticket_id = trim((string)($ticket['id'] ?? ''));
+
+if ($ticket_id !== '') {
+    /**
+     * Update an existing Bingo ticket.
+     * Plain-language:
+     * When a player moves a saved card to another event category,
+     * we update the old DB row instead of creating a duplicate card.
+     */
+    $updateStmt = $pdo->prepare("
+        UPDATE tbl_bingo_tickets
+        SET ticket_json = ?
+        WHERE user_id = ?
+          AND json_extract(ticket_json, '$.id') = ?
+    ");
+    $updateStmt->execute([$ticket_json, $user_id, $ticket_id]);
+
+    if ($updateStmt->rowCount() > 0) {
+        echo json_encode([
+            "success" => true,
+            "message" => "Ticket updated successfully!"
+        ]);
+        exit;
+    }
+}
+
+/**
+ * Insert a new Bingo ticket.
+ * Plain-language:
+ * This only runs for brand-new cards or old records that do not exist yet.
+ */
+$insertStmt = $pdo->prepare("
+    INSERT INTO tbl_bingo_tickets (user_id, ticket_json)
+    VALUES (?, ?)
+");
+$insertStmt->execute([$user_id, $ticket_json]);
+
+echo json_encode([
+    "success" => true,
+    "message" => "Ticket saved successfully!"
+]);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["error" => "Database error: " . $e->getMessage()]);

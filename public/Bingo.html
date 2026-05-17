@@ -61,6 +61,26 @@ require_once 'discord-invite.php';
       animation: labBubble 4s ease-in-out infinite;
     }
 
+    /* ☀️ Summer Lab particles.
+   Plain-language: replaces old Christmas snow with soft cheese/lab atmosphere. */
+@keyframes summerParticleFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: translateY(-14px) rotate(8deg) scale(1.08);
+  }
+}
+
+.summer-lab-particle {
+  position: fixed;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(0 0 8px rgba(252, 211, 77, 0.35));
+  animation: summerParticleFloat 5s ease-in-out infinite;
+}
+
     /* Grid inputs */
     input.grid-input {
       width: 2rem;
@@ -87,8 +107,38 @@ require_once 'discord-invite.php';
       box-shadow: 0 0 15px #fcd34d;
     }
 
-    /* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS */
-    @keyframes snowfall {
+    /* 🧀 Bingo ready glow.
+   Plain-language: highlights tickets that are 1 away without using red danger styling. */
+@keyframes cheeseReadyGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 16px rgba(252, 211, 77, 0.45),
+      0 0 34px rgba(245, 158, 11, 0.25);
+    transform: translateY(0);
+  }
+
+  50% {
+    box-shadow:
+      0 0 24px rgba(252, 211, 77, 0.85),
+      0 0 52px rgba(245, 158, 11, 0.45);
+    transform: translateY(-1px);
+  }
+}
+
+.cheese-ready-glow {
+  animation: cheeseReadyGlow 1.8s ease-in-out infinite;
+  background:
+    radial-gradient(circle at top left, rgba(252, 211, 77, 0.12), transparent 36%),
+    rgba(8, 5, 16, 0.94) !important;
+}
+
+.cheese-title-glow {
+  text-shadow:
+    0 0 8px rgba(252, 211, 77, 0.75),
+    0 0 18px rgba(245, 158, 11, 0.45);
+}
+
+    /* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS     @keyframes snowfall {
       0% {
         transform: translateY(-100vh) rotate(0deg);
         opacity: 0;
@@ -103,7 +153,8 @@ require_once 'discord-invite.php';
         transform: translateY(100vh) rotate(360deg);
         opacity: 0;
       }
-    }
+    } */
+
 
     @keyframes snowflakeFloat {
       0%, 100% {
@@ -120,18 +171,10 @@ require_once 'discord-invite.php';
       }
     }
 
-    .snowflake {
-      position: fixed;
-      top: -10px;
-      color: #ffffff;
-      font-size: 1em;
-      font-family: Arial, sans-serif;
-      text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-      user-select: none;
-      pointer-events: none;
-      z-index: 1000;
-      animation: snowfall linear infinite, snowflakeFloat ease-in-out infinite;
-    }
+/* ☀️ Summer theme: snowflakes disabled but kept safe for future seasonal reuse. */
+.snowflake {
+  display: none !important;
+}
 
     .snowflake:nth-child(odd) {
       animation-duration: 8s, 3s;
@@ -153,21 +196,27 @@ require_once 'discord-invite.php';
       animation-duration: 9s, 3.5s;
     }
 
-    /* 🎄 CHRISTMAS THEMING - Subtle accents */
-    .christmas-glow {
-      text-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(0, 255, 0, 0.5);
-    }
+   /* ☀️ Summer Lab accent glow.
+   Plain-language: keeps old class name working without Christmas red/green colors. */
+.christmas-glow {
+  text-shadow:
+    0 0 10px rgba(252, 211, 77, 0.55),
+    0 0 20px rgba(16, 185, 129, 0.35);
+}
   </style>
 </head>
-<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-emerald-900 text-white font-sans min-h-screen overflow-x-hidden">
 
-<!-- 🌟 Floating Background Elements -->
-<div class="fixed inset-0 pointer-events-none z-0">
-  <div class="absolute top-20 left-10 w-4 h-4 bg-yellow-400/30 rounded-full blur-md float-animation"></div>
-  <div class="absolute top-40 right-20 w-6 h-6 bg-purple-400/20 rounded-full blur-md float-animation" style="animation-delay: 1s;"></div>
-  <div class="absolute bottom-40 left-20 w-5 h-5 bg-blue-400/25 rounded-full blur-md float-animation" style="animation-delay: 2s;"></div>
-  <div class="absolute top-60 left-1/2 w-3 h-3 bg-green-400/30 rounded-full blur-md float-animation" style="animation-delay: 0.5s;"></div>
-  <div class="absolute bottom-60 right-1/3 w-4 h-4 bg-pink-400/20 rounded-full blur-md float-animation" style="animation-delay: 1.5s;"></div>
+<!-- ☀️ Summer Lab Background Elements -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+  <div class="absolute -top-24 -left-24 w-80 h-80 bg-yellow-300/10 rounded-full blur-3xl float-animation"></div>
+  <div class="absolute top-32 -right-20 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl float-animation" style="animation-delay: 1s;"></div>
+  <div class="absolute bottom-10 left-1/4 w-72 h-72 bg-cyan-400/10 rounded-full blur-3xl float-animation" style="animation-delay: 2s;"></div>
+  <div class="absolute bottom-24 right-1/4 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl float-animation" style="animation-delay: 0.5s;"></div>
+
+  <div class="absolute top-28 left-12 w-3 h-3 bg-yellow-300/50 rounded-full blur-sm float-animation"></div>
+  <div class="absolute top-56 right-24 w-4 h-4 bg-emerald-300/35 rounded-full blur-sm float-animation" style="animation-delay: 1.5s;"></div>
+  <div class="absolute bottom-44 left-20 w-3 h-3 bg-cyan-300/35 rounded-full blur-sm float-animation" style="animation-delay: 2.5s;"></div>
 </div>
 
 <!-- 🧪 Lab Status Badge - Only shown when logged in -->
@@ -240,32 +289,46 @@ require_once 'discord-invite.php';
 
   <div id="ticketGrids"></div>
 
+<!-- 🐒 Game Mode + Event Sort Controls -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+
   <!-- 🐒 Game Mode Selection for Golden Baboons Bingo -->
-  <section class="bg-black/90 backdrop-blur-md border border-yellow-400/30 p-4 rounded-xl shadow-2xl mb-4">
+  <section class="bg-black/90 backdrop-blur-md border border-yellow-400/30 p-4 rounded-xl shadow-2xl">
     <label class="block mb-2 text-yellow-300 font-semibold">🎮 Game Mode:</label>
-    <div class="flex flex-col gap-3 mb-4">
+    <div class="flex flex-col gap-3">
       <label class="flex items-center gap-2 cursor-pointer">
         <input type="radio" name="gameMode" value="normal" checked class="text-yellow-400 focus:ring-yellow-400">
         <span class="text-white">🧀 Normal Bingo (Rows/Columns/Diagonals)</span>
       </label>
+
       <label class="flex items-center gap-2 cursor-pointer">
         <input type="radio" name="gameMode" value="corners" class="text-yellow-400 focus:ring-yellow-400">
         <span class="text-white">🔲 4 Corners Only</span>
       </label>
+
       <label class="flex items-center gap-2 cursor-pointer">
         <input type="radio" name="gameMode" value="progressiveFull" class="text-yellow-400 focus:ring-yellow-400">
         <span class="text-white">🎯 Progressive Full (Complete Blackout - All 25 Cells)</span>
       </label>
-      <label class="flex items-center gap-2">
-  <input type="radio" name="gameMode" value="arrowMode">
-  <span>🏹 Arrow Mode</span>
-</label>
-	      <label class="flex items-center gap-2 cursor-pointer">
-      <input type="radio" name="gameMode" value="xMode" class="text-yellow-400 focus:ring-yellow-400">
-      <span class="text-white">❌ X Mode (both diagonals form an X)</span>
-    </label>
+
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="gameMode" value="arrowMode" class="text-yellow-400 focus:ring-yellow-400">
+        <span class="text-white">🏹 Arrow Mode</span>
+      </label>
+
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="gameMode" value="xMode" class="text-yellow-400 focus:ring-yellow-400">
+        <span class="text-white">❌ X Mode (both diagonals form an X)</span>
+      </label>
     </div>
   </section>
+
+  <!-- 🎫 Event Sort Controls -->
+  <section id="ticketEventFilterPanel" class="bg-black/90 backdrop-blur-md border border-yellow-400/30 p-4 rounded-xl shadow-2xl">
+    <div class="font-bold text-yellow-300 mb-2">🎫 Card Event Sort:</div>
+  </section>
+
+</div>
 
   <section class="bg-black/90 backdrop-blur-md border border-yellow-400/30 p-4 rounded-xl shadow-2xl mb-8">
     <label class="block mb-2 text-yellow-300 font-semibold">Enter Called Numbers (one at a time):</label>
@@ -300,6 +363,15 @@ require_once 'discord-invite.php';
 <script>
 let tickets = []; // ✅ Declare only once
 let calledNumbers = [];
+
+let activeTicketEventFilter = 'all';
+
+const BINGO_EVENT_CATEGORIES = {
+  all: 'All Cards',
+  goldenBaboons: 'Golden Baboons',
+  builder161Vr: 'Builder161 VR',
+  other: 'Other'
+};
 
 // 🔐 Session + environment boot
 window.addEventListener('DOMContentLoaded', async () => {
@@ -413,6 +485,108 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
+/**
+ * Keeps Bingo card event categories stable.
+ * Plain-language:
+ * This prevents broken or old saved tickets from crashing filters.
+ */
+function normalizeTicketEventCategory(category) {
+  if (category && BINGO_EVENT_CATEGORIES[category]) {
+    return category;
+  }
+
+  return 'other';
+}
+
+/**
+ * Creates the event selector used when creating, editing, or moving tickets.
+ * Plain-language:
+ * Players can mark cards by event without relying on ticket names.
+ */
+function createTicketEventSelect(selectedCategory = 'other') {
+  const select = document.createElement('select');
+  select.className =
+    'w-full p-2 border border-yellow-400/50 rounded mb-2 bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent';
+
+  Object.entries(BINGO_EVENT_CATEGORIES)
+    .filter(([value]) => value !== 'all')
+    .forEach(([value, label]) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      option.selected = value === normalizeTicketEventCategory(selectedCategory);
+      select.appendChild(option);
+    });
+
+  return select;
+}
+
+/**
+ * Saves only the event category change for an existing ticket.
+ * Plain-language:
+ * This lets players move old cards into the correct event without editing numbers.
+ */
+function updateTicketEventCategory(ticketIndex, eventCategory) {
+  const ticketObj = tickets[ticketIndex];
+
+  if (!ticketObj) {
+    return;
+  }
+
+  ticketObj.eventCategory = normalizeTicketEventCategory(eventCategory);
+
+  const savePayload = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ticket: ticketObj })
+  };
+
+  fetch('/api/save-bingo-ticket.php', savePayload)
+    .then((res) => res.text())
+    .then((msg) => console.log('🎫 Ticket event category saved:', msg))
+    .catch((err) => console.error('Error saving ticket event category:', err));
+
+  renderTickets();
+}
+
+/**
+ * Creates mobile-friendly filter buttons for Bingo card events.
+ * Plain-language:
+ * Players can quickly show only Golden Baboons, Builder161 VR, or other cards.
+ * Buttons use soft cards instead of circles so long event names do not get cut.
+ */
+function renderTicketEventFilters(container) {
+  const filterWrap = document.createElement('div');
+  filterWrap.className = 'grid grid-cols-2 sm:grid-cols-4 gap-2';
+
+  Object.entries(BINGO_EVENT_CATEGORIES).forEach(([value, label]) => {
+    const count = value === 'all'
+      ? tickets.length
+      : tickets.filter((ticket) => normalizeTicketEventCategory(ticket.eventCategory) === value).length;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.innerHTML = `
+      <span class="block text-sm font-extrabold leading-tight">${label}</span>
+      <span class="block text-xs opacity-80 mt-1">${count} cards</span>
+    `;
+
+    button.className =
+      value === activeTicketEventFilter
+        ? 'min-h-[76px] w-full px-3 py-3 rounded-2xl bg-yellow-300 text-black font-bold border border-yellow-200 shadow-[0_0_22px_rgba(252,211,77,0.45)] transition-all duration-200'
+        : 'min-h-[76px] w-full px-3 py-3 rounded-2xl bg-slate-800/90 text-yellow-200 font-bold border border-yellow-400/30 hover:bg-yellow-300 hover:text-black hover:shadow-[0_0_18px_rgba(252,211,77,0.35)] transition-all duration-200';
+
+    button.onclick = () => {
+      activeTicketEventFilter = value;
+      renderTickets();
+    };
+
+    filterWrap.appendChild(button);
+  });
+
+  container.appendChild(filterWrap);
+}
+
 // 🧮 Ticket creation
 function addTicketGrid() {
   const gridDiv = document.createElement('div');
@@ -425,6 +599,9 @@ function addTicketGrid() {
   nameInput.className =
     'w-full p-2 border border-yellow-400/50 rounded mb-2 bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:border-transparent';
   gridDiv.appendChild(nameInput);
+
+  const eventSelect = createTicketEventSelect('other');
+  gridDiv.appendChild(eventSelect);
 
   const table = document.createElement('table');
   table.className = 'mx-auto bg-transparent';
@@ -463,7 +640,7 @@ function addTicketGrid() {
   saveBtn.textContent = 'Save Ticket';
   saveBtn.className =
     'mt-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold px-4 py-2 rounded-full shadow border-2 border-yellow-700 transition';
-  saveBtn.onclick = () => saveTicket(gridDiv, nameInput.value);
+  saveBtn.onclick = () => saveTicket(gridDiv, nameInput.value, null, eventSelect.value);
 
   gridDiv.appendChild(table);
   gridDiv.appendChild(saveBtn);
@@ -471,7 +648,7 @@ function addTicketGrid() {
   document.getElementById('ticketGrids').appendChild(gridDiv);
 }
 
-function saveTicket(gridDiv, ticketName, ticketId = null) {
+function saveTicket(gridDiv, ticketName, ticketId = null, eventCategory = 'other') {
   const inputs = gridDiv.querySelectorAll('input[type=number]');
   const ticket = [];
 
@@ -494,10 +671,11 @@ function saveTicket(gridDiv, ticketName, ticketId = null) {
   // If editing, use the same ticketId
   const id = ticketId || generateID();
   const ticketObj = {
-    id,
-    name: ticketName || `Ticket-${tickets.length + 1}`,
-    grid: ticket
-  };
+  id,
+  name: ticketName || `Ticket-${tickets.length + 1}`,
+  grid: ticket,
+  eventCategory: normalizeTicketEventCategory(eventCategory)
+};
 
   // If editing: remove existing ticket with same id
   const existingIndex = tickets.findIndex((t) => t.id === id);
@@ -544,16 +722,54 @@ function renderTickets() {
   const container = document.getElementById('ticketsContainer');
   container.innerHTML = '';
 
+  const ticketEventFilterPanel = document.getElementById('ticketEventFilterPanel');
+
+if (ticketEventFilterPanel) {
+  ticketEventFilterPanel.innerHTML = '<div class="font-bold text-yellow-400 mb-2">🎫 Card Event Sort:</div>';
+  renderTicketEventFilters(ticketEventFilterPanel);
+}
+
   // 🐒 Sort tickets by hit count (most hits first) for Golden Baboons Bingo
   const sortedTickets = [...tickets]
-    .map((ticketObj, originalIndex) => ({
+  .map((ticketObj, originalIndex) => {
+    const ticket = ticketObj.grid;
+    const hitCount = getTicketHitCount(ticketObj);
+    const isOneAway = isTicketOneAwayFromBingo(ticketObj);
+    const hasBingo = checkBingo(ticket, originalIndex, calledNumbers);
+
+    return {
       ...ticketObj,
       originalIndex,
-      hitCount: getTicketHitCount(ticketObj)
-    }))
-    .sort((a, b) => b.hitCount - a.hitCount);
+      hitCount,
+      isOneAway,
+      hasBingo
+    };
+  })
+  .sort((a, b) => {
+    if (a.hasBingo !== b.hasBingo) {
+      return a.hasBingo ? -1 : 1;
+    }
 
-  sortedTickets.forEach((ticketData, displayIndex) => {
+    if (a.isOneAway !== b.isOneAway) {
+      return a.isOneAway ? -1 : 1;
+    }
+
+    if (a.hitCount !== b.hitCount) {
+      return b.hitCount - a.hitCount;
+    }
+
+    return String(a.name || '').localeCompare(String(b.name || ''));
+  });
+
+  const visibleTickets = sortedTickets.filter((ticketObj) => {
+  if (activeTicketEventFilter === 'all') {
+    return true;
+  }
+
+  return normalizeTicketEventCategory(ticketObj.eventCategory) === activeTicketEventFilter;
+});
+
+  visibleTickets.forEach((ticketData, displayIndex) => {
     const ticketObj = ticketData;
     const originalIndex = ticketData.originalIndex;
     const ticket = ticketObj.grid;
@@ -566,7 +782,8 @@ function renderTickets() {
 
     // 🐒 Add hit count and "1 away" warning for Golden Baboons Bingo
     const hitCount = ticketData.hitCount;
-    const isOneAway = isTicketOneAwayFromBingo(ticketObj);
+    const isOneAway = ticketData.isOneAway;
+    const hasBingo = ticketData.hasBingo;
 
     let titleText = `${ticketObj.name} (ID: ${ticketObj.id}) - ${hitCount} hits`;
     if (isOneAway) {
@@ -576,12 +793,31 @@ function renderTickets() {
     title.textContent = titleText;
 
     // 🐒 Add special styling for tickets 1 away from bingo
-    if (isOneAway) {
-      grid.classList.add('border-red-400', 'ring-2', 'ring-red-400', 'ring-opacity-50');
-      title.classList.add('text-red-400', 'animate-pulse');
-    }
+    if (hasBingo) {
+  grid.classList.add('border-green-400', 'ring-4', 'ring-green-400', 'ring-opacity-70', 'gold-shadow');
+  title.classList.add('text-green-400', 'animate-pulse');
+} else if (isOneAway) {
+  grid.classList.add(
+    'border-yellow-300',
+    'ring-4',
+    'ring-yellow-300',
+    'ring-opacity-70',
+    'cheese-ready-glow'
+  );
+  title.classList.add('text-yellow-300', 'cheese-title-glow');
+}
 
     grid.appendChild(title);
+
+    const eventBadge = document.createElement('div');
+eventBadge.className = 'text-xs text-emerald-300 font-bold mb-2';
+eventBadge.textContent = `Event: ${BINGO_EVENT_CATEGORIES[normalizeTicketEventCategory(ticketObj.eventCategory)]}`;
+grid.appendChild(eventBadge);
+
+const moveSelect = createTicketEventSelect(ticketObj.eventCategory);
+moveSelect.classList.add('text-sm');
+moveSelect.onchange = () => updateTicketEventCategory(originalIndex, moveSelect.value);
+grid.appendChild(moveSelect);
 
     const header = document.createElement('div');
     header.className = 'flex justify-center mb-1 font-bold';
@@ -687,6 +923,9 @@ function editTicket(tIndex) {
   nameInput.value = ticketObj.name || '';
   gridDiv.appendChild(nameInput);
 
+  const eventSelect = createTicketEventSelect(ticketObj.eventCategory);
+gridDiv.appendChild(eventSelect);
+
   // Ticket grid table
   const table = document.createElement('table');
   table.className = 'mx-auto bg-transparent';
@@ -727,62 +966,62 @@ function editTicket(tIndex) {
   saveBtn.textContent = 'Save Changes';
   saveBtn.className =
     'mt-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold px-4 py-2 rounded-full shadow border-2 border-yellow-700 transition';
-  saveBtn.onclick = () => saveTicket(gridDiv, nameInput.value, ticketObj.id); // Pass the same ID
+  saveBtn.onclick = () => saveTicket(gridDiv, nameInput.value, ticketObj.id, eventSelect.value); // Pass the same ID
   gridDiv.appendChild(table);
   gridDiv.appendChild(saveBtn);
 
   document.getElementById('ticketGrids').appendChild(gridDiv);
 }
 
-function deleteTicket(index) {
+/**
+ * Deletes one saved Bingo ticket from backend and then removes it from the visible page.
+ * Plain-language:
+ * The ticket is only removed from the screen after the API confirms success.
+ * This avoids fake deletes where the card disappears locally but comes back after reload.
+ */
+async function deleteTicket(index) {
   const ticketObj = tickets[index];
-  if (!ticketObj || !ticketObj.id) return;
 
-  if (!confirm('Are you sure you want to delete this ticket?')) return;
-
-  // 🧀 Environment detection for local vs production
-  const isLocalDevelopment =
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
-
-  const deletePayload = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ticket_id: ticketObj.id })
-  };
-
-  if (isLocalDevelopment) {
-    // 🔧 LOCAL DEVELOPMENT: Actually delete from database for testing
-    console.log('🏠 Local development: Deleting ticket from database for testing');
-    console.log('🗑️ Ticket to delete:', ticketObj.id);
-
-    fetch('/api/delete-bingo-ticket.php', deletePayload)
-      .then((res) => res.json())
-      .then((response) => {
-        console.log(
-          '🏠 Local development: Ticket deleted successfully:',
-          response.message || 'Deleted'
-        );
-        tickets.splice(index, 1);
-        renderTickets();
-      })
-      .catch((err) => {
-        console.error('🏠 Local development: Error deleting ticket:', err);
-        // Still remove from local array even if API fails
-        tickets.splice(index, 1);
-        renderTickets();
-      });
+  if (!ticketObj || !ticketObj.id) {
+    alert('Could not delete this ticket because the ticket ID is missing.');
     return;
   }
 
-  fetch('/api/delete-bingo-ticket.php', deletePayload)
-    .then((res) => res.json())
-    .then((response) => {
-      console.log(response.message || 'Deleted');
-      tickets.splice(index, 1);
-      renderTickets();
-    })
-    .catch((err) => console.error('Delete failed:', err));
+  const confirmed = confirm(`Delete ticket "${ticketObj.name || ticketObj.id}"?`);
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/delete-bingo-ticket.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      cache: 'no-store',
+      body: JSON.stringify({ ticket_id: ticketObj.id })
+    });
+
+    const rawText = await response.text();
+    let result = null;
+
+    try {
+      result = rawText ? JSON.parse(rawText) : null;
+    } catch (error) {
+      throw new Error(`Delete API returned invalid JSON: ${rawText.slice(0, 160)}`);
+    }
+
+    if (!response.ok || !result || result.success !== true) {
+      throw new Error(result?.error || result?.message || `Delete failed with HTTP ${response.status}`);
+    }
+
+    tickets.splice(index, 1);
+    renderTickets();
+
+    console.log('🗑️ Bingo ticket deleted:', ticketObj.id);
+  } catch (error) {
+    console.error('❌ Bingo ticket delete failed:', error);
+    alert(`Delete failed: ${error.message || 'Unknown error'}`);
+  }
 }
 
 function generateID() {
@@ -1193,38 +1432,36 @@ function checkBingo(ticket, ticketIndex, calledNumbers) {
   }
 }
 
-// ❄️ CHRISTMAS SNOWFLAKE EFFECT
-function createSnowflakes() {
-  const snowflakeContainer = document.createElement('div');
-  snowflakeContainer.id = 'snowflake-container';
-  snowflakeContainer.style.position = 'fixed';
-  snowflakeContainer.style.top = '0';
-  snowflakeContainer.style.left = '0';
-  snowflakeContainer.style.width = '100%';
-  snowflakeContainer.style.height = '100%';
-  snowflakeContainer.style.pointerEvents = 'none';
-  snowflakeContainer.style.zIndex = '999';
-  document.body.appendChild(snowflakeContainer);
+// ☀️ Summer Lab background particles.
+// Plain-language: keeps the page alive with soft cheese/lab bubbles instead of winter snow.
+function createSummerLabParticles() {
+  const particleContainer = document.createElement('div');
+  particleContainer.id = 'summer-lab-particle-container';
+  particleContainer.style.position = 'fixed';
+  particleContainer.style.inset = '0';
+  particleContainer.style.pointerEvents = 'none';
+  particleContainer.style.zIndex = '1';
+  document.body.appendChild(particleContainer);
 
-  const snowflakeSymbols = ['❄', '❅', '❆', '✻', '✼', '✽', '✾', '✿'];
-  const numSnowflakes = 50;
+  const particleSymbols = ['🧀', '☀️', '✨', '🫧'];
+  const particleCount = 18;
 
-  for (let i = 0; i < numSnowflakes; i++) {
-    const snowflake = document.createElement('div');
-    snowflake.className = 'snowflake';
-    snowflake.textContent =
-      snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
-    snowflake.style.left = Math.random() * 100 + '%';
-    snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
-    snowflake.style.animationDelay = Math.random() * 5 + 's';
-    snowflake.style.opacity = Math.random() * 0.5 + 0.5;
-    snowflakeContainer.appendChild(snowflake);
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'summer-lab-particle';
+    particle.textContent = particleSymbols[Math.floor(Math.random() * particleSymbols.length)];
+    particle.style.left = `${Math.random() * 100}%`;
+    particle.style.top = `${Math.random() * 100}%`;
+    particle.style.fontSize = `${Math.random() * 8 + 10}px`;
+    particle.style.animationDelay = `${Math.random() * 6}s`;
+    particle.style.opacity = `${Math.random() * 0.25 + 0.12}`;
+    particleContainer.appendChild(particle);
   }
 }
 
-// Initialize snowflakes when page loads
+// Initialize summer background particles when page loads.
 document.addEventListener('DOMContentLoaded', function () {
-  createSnowflakes();
+  createSummerLabParticles();
 });
 </script>
 

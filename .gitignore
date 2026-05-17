@@ -31,6 +31,8 @@ public/img/partners/
 public/scripts/tetris-scroll-backup*.js
 public/scripts/tetris-scroll (1).js
 
+# Local LLM sync archive folders - do not deploy
+12.0/ACTIVE_STATUS/ARCHIVE/
 
 # 🛑 AI, Backup, Data Science, and Export folders
 AI Major 10.0/
