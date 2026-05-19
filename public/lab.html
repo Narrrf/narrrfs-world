@@ -4372,8 +4372,17 @@ body::after {
 
 .ability-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 1rem;
+  align-items: stretch;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.ability-card {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
 }
 
 .ability-card {
@@ -4522,7 +4531,7 @@ body::after {
 }
 
 .ability-queue-box {
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   padding: 0.95rem 1rem;
   border-radius: 0.95rem;
   border: 1px solid rgba(168, 85, 247, 0.22);
@@ -4535,13 +4544,259 @@ body::after {
   color: #fbbf24;
 }
 
-@media (max-width: 1100px) {
+/* Genesis Ability Matrix premium layout.
+   DEVS FOR DECADES:
+   This is visual-only. Backend remains authoritative for owner binding,
+   unlock levels, DSPOINC cost, timers, active upgrade locks, and final state. */
+#genesisAbilityMatrixSection {
+  position: relative;
+  overflow: hidden;
+  margin-top: 1.4rem;
+  padding: 1.4rem !important;
+  border-radius: 1.55rem;
+  border-color: rgba(34, 211, 238, 0.24);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.15), transparent 32%),
+    radial-gradient(circle at top right, rgba(168, 85, 247, 0.18), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.97), rgba(2, 6, 23, 0.95));
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(255, 255, 255, 0.035) inset,
+    0 0 34px rgba(34, 211, 238, 0.07);
+}
+
+#genesisAbilityMatrixSection::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.045) 48%, transparent 72%),
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: auto, 24px 24px, 24px 24px;
+  opacity: 0.42;
+}
+
+#genesisAbilityMatrixSection > * {
+  position: relative;
+  z-index: 2;
+}
+
+.ability-matrix-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ability-matrix-copy {
+  width: 100%;
+  max-width: 1040px;
+}
+
+.ability-matrix-mini-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.ability-matrix-mini-list span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0.42rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  background: rgba(15, 23, 42, 0.54);
+  color: #dbeafe;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.ability-matrix-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  background: rgba(8, 47, 73, 0.45);
+  color: #67e8f9;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ability-matrix-subtitle {
+  margin-top: 0.45rem;
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.ability-status-bar {
+  padding: 0.75rem;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(2, 6, 23, 0.34);
+}
+
+.ability-status-bar > div {
+  position: relative;
+  overflow: hidden;
+  min-height: 76px;
+  border-radius: 1rem;
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.13), transparent 42%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.72));
+}
+
+.ability-status-bar > div::after {
+  content: "";
+  position: absolute;
+  right: -18px;
+  bottom: -24px;
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.ability-status-bar span {
+  position: relative;
+  z-index: 2;
+  display: block;
+  font-size: 1.12rem;
+  font-weight: 950;
+  color: #f8fafc;
+  letter-spacing: 0.02em;
+}
+
+.ability-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.ability-tab {
+  width: 100%;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  background:
+    radial-gradient(circle at top right, rgba(148, 163, 184, 0.10), transparent 42%),
+    rgba(15, 23, 42, 0.72);
+}
+
+.ability-tab::before {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.ability-tab[data-ability-tab="fitness"]::before {
+  content: "Step 1 · Lv5+";
+}
+
+.ability-tab[data-ability-tab="weapons"]::before {
+  content: "Step 2 · Lv20+";
+}
+
+.ability-tab[data-ability-tab="education"]::before {
+  content: "Step 3 · Lv30+";
+}
+
+.ability-tab.active {
+  border-color: rgba(34, 211, 238, 0.58);
+  background:
+    radial-gradient(circle at top right, rgba(250, 204, 21, 0.18), transparent 38%),
+    linear-gradient(135deg, rgba(8, 145, 178, 0.58), rgba(88, 28, 135, 0.42));
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.12),
+    0 14px 32px rgba(14, 165, 233, 0.14);
+}
+
+.ability-tab.locked {
+  opacity: 0.72;
+  border-style: dashed;
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.68), rgba(15, 23, 42, 0.68));
+}
+
+.ability-tab-meta {
+  margin-top: 1rem;
+  border-color: rgba(34, 211, 238, 0.16);
+  background:
+    linear-gradient(135deg, rgba(8, 47, 73, 0.52), rgba(30, 41, 59, 0.48));
+  color: #dbeafe;
+}
+
+/* Ability Matrix desktop/tablet fill rule.
+   DEVS FOR DECADES:
+   The active lane shows 3 ability cards. They should use the full Matrix width
+   when space exists, then naturally stack on mobile. Visual-only. */
+@media (min-width: 901px) {
+  #genesisAbilityMatrixSection .ability-status-bar,
+  #genesisAbilityMatrixSection .ability-tabs,
+  #genesisAbilityMatrixSection .ability-cards-grid {
+    width: 100%;
+  }
+
+  #genesisAbilityMatrixSection .ability-status-bar,
+  #genesisAbilityMatrixSection .ability-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #genesisAbilityMatrixSection .ability-cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .ability-matrix-intro {
+    flex-direction: column;
+  }
+
+  .ability-status-bar,
+  .ability-tabs,
   .ability-cards-grid {
     grid-template-columns: 1fr;
   }
 
-  .ability-status-bar {
-    grid-template-columns: 1fr;
+  .ability-tab {
+    min-height: 62px;
+  }
+
+  #genesisAbilityMatrixSection {
+    padding: 1rem !important;
+    border-radius: 1.2rem;
+  }
+
+  .ability-matrix-subtitle {
+    font-size: 0.86rem;
+  }
+
+  .ability-matrix-mini-list {
+    flex-direction: column;
+  }
+
+  .ability-matrix-mini-list span {
+    width: 100%;
   }
 }
 
@@ -4557,6 +4812,85 @@ body::after {
   border-radius: 12px;
   padding: 10px 14px;
   font-weight: 700;
+}
+
+/* 🧬 FINAL Genesis Ability Matrix layout authority.
+   DEVS FOR DECADES:
+   This scoped block intentionally comes AFTER the older Ability Matrix CSS.
+   It prevents old grid/media rules from forcing Ability cards into a left-bound
+   single column on desktop. Visual-only: backend remains authoritative for
+   ownership, unlock levels, DSPOINC cost, timers, and ability state. */
+#genesisAbilityMatrixSection {
+  width: 100%;
+  max-width: 100%;
+}
+
+#genesisAbilityMatrixSection .ability-status-bar,
+#genesisAbilityMatrixSection .ability-tabs,
+#genesisAbilityMatrixSection #genesisAbilityCards.ability-cards-grid {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+#genesisAbilityMatrixSection #genesisAbilityCards.ability-cards-grid {
+  display: grid !important;
+  gap: 1rem !important;
+  align-items: stretch !important;
+  margin-top: 1rem !important;
+}
+
+#genesisAbilityMatrixSection #genesisAbilityCards.ability-cards-grid > .ability-card {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 100%;
+}
+
+/* Desktop / wide tablet:
+   The active Ability lane always has 3 canonical cards:
+   Fitness = HP/SPEED/AIR, Weapons = ATK/DEF/SPECIAL, Education = SPELLS/CRAFTING/EXPANSION. */
+@media (min-width: 901px) {
+  #genesisAbilityMatrixSection .ability-status-bar,
+  #genesisAbilityMatrixSection .ability-tabs,
+  #genesisAbilityMatrixSection #genesisAbilityCards.ability-cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mobile:
+   Stack everything cleanly so no card gets squeezed. */
+@media (max-width: 900px) {
+  #genesisAbilityMatrixSection {
+    padding: 1rem !important;
+    border-radius: 1.2rem;
+  }
+
+  #genesisAbilityMatrixSection .ability-matrix-intro {
+    flex-direction: column;
+  }
+
+  #genesisAbilityMatrixSection .ability-status-bar,
+  #genesisAbilityMatrixSection .ability-tabs,
+  #genesisAbilityMatrixSection #genesisAbilityCards.ability-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #genesisAbilityMatrixSection .ability-tab {
+    min-height: 62px;
+  }
+
+  #genesisAbilityMatrixSection .ability-matrix-subtitle {
+    font-size: 0.86rem;
+  }
+
+  #genesisAbilityMatrixSection .ability-matrix-mini-list {
+    flex-direction: column;
+  }
+
+  #genesisAbilityMatrixSection .ability-matrix-mini-list span {
+    width: 100%;
+  }
 }
 
 /* 🏪 Marketplace card readability fix.
@@ -4868,15 +5202,28 @@ body::after {
             <span id="selectedNftStatus" class="pill idle">No Genesis mouse selected</span>
           </div>
           <div id="selectedNftPanel" class="mt-5"></div>
-          <div id="genesisAbilityMatrixSection" class="lab-panel genesis-ability-matrix hidden mt-5">
-  <div class="panel-header">
-    <h3>Genesis Ability Matrix</h3>
-    <div class="panel-subtext">
-      Token-bound ability progression for the selected verified Genesis NFT.
-    </div>
-  </div>
+                    <div id="selectedNftPanel" class="mt-5"></div>
 
-  <div id="genesisAbilityStatusBar" class="ability-status-bar">
+          <div id="genesisAbilityMatrixSection" class="glass p-5 md:p-6 hidden">
+            <div class="ability-matrix-intro">
+              <div class="ability-matrix-copy">
+                <div class="ability-matrix-kicker">⚡ Genesis Ability Matrix</div>
+                <div class="section-title text-lg md:text-xl mt-3">
+                  <span>🧬</span>
+                  <span>Build your personal RPG Mouse character</span>
+                </div>
+                <p class="ability-matrix-subtitle">
+                  This 9-stat matrix forms the long-term RPG identity of your selected Genesis mouse. Combine Fitness, Weapons, Education, 6 Genesis traits, and Genetic Items to create thousands of possible personal Mouse Fighter builds for Narrrf’s World games and future connected systems. Ability levels, timers, and progress follow the NFT when ownership changes.
+                </p>
+                <div class="ability-matrix-mini-list">
+                  <span>🏃 Fitness shapes movement and survival</span>
+                  <span>⚔️ Weapons shapes combat power</span>
+                  <span>📚 Education shapes magic, crafting, and expansion</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="genesisAbilityStatusBar" class="ability-status-bar">
     <div>
       <strong>Available DSPOINC:</strong>
       <span id="genesisAbilityAvailableDsp">--</span>
@@ -4892,10 +5239,16 @@ body::after {
   </div>
 
   <div class="ability-tabs">
-    <button class="ability-tab active" data-ability-tab="fitness" type="button">Fitness</button>
-    <button class="ability-tab" data-ability-tab="weapons" type="button">Weapons</button>
-    <button class="ability-tab" data-ability-tab="education" type="button">Education</button>
-  </div>
+  <button class="ability-tab active" data-ability-tab="fitness" type="button">
+    🏃 Fitness
+  </button>
+  <button class="ability-tab" data-ability-tab="weapons" type="button">
+    ⚔️ Weapons
+  </button>
+  <button class="ability-tab" data-ability-tab="education" type="button">
+    📚 Education
+  </button>
+</div>
 
   <div id="genesisAbilityTabMeta" class="ability-tab-meta"></div>
   <div id="genesisAbilityCards" class="ability-cards-grid"></div>
@@ -5193,8 +5546,8 @@ body::after {
       Only <strong>one active ability upgrade per Genesis mouse</strong> can run at a time.
     </div>
     <div class="genetic-helper-item">
-      Unlocks depend on the <strong>highest trait level</strong> on that specific mouse.
-    </div>
+  Unlocks depend on the <strong>highest single Genesis trait level</strong> on that specific mouse: Fitness at Lv5+, Weapons at Lv20+, and Education at Lv30+.
+</div>
     <div class="genetic-helper-item">
       Ability upgrades consume <strong>DSPOINC</strong> and run on timed research cycles similar to Lab traits.
     </div>
@@ -8197,19 +8550,63 @@ const GENESIS_ABILITY_TABS = {
   fitness: {
     label: 'Fitness',
     unlockLevel: 5,
+    stepLabel: 'Step 1',
+    role: 'Body training',
+    summary: 'HP, SPEED, and AIR unlock when this mouse has at least one Genesis trait at Lv5+.',
     stats: ['HP', 'SPEED', 'AIR']
   },
   weapons: {
     label: 'Weapons',
     unlockLevel: 20,
+    stepLabel: 'Step 2',
+    role: 'Combat training',
+    summary: 'ATK, DEF, and SPECIAL unlock when this mouse has at least one Genesis trait at Lv20+.',
     stats: ['ATK', 'DEF', 'SPECIAL']
   },
   education: {
     label: 'Education',
     unlockLevel: 30,
+    stepLabel: 'Step 3',
+    role: 'Knowledge training',
+    summary: 'SPELLS, CRAFTING, and EXPANSION unlock when this mouse has at least one Genesis trait at Lv30+.',
     stats: ['SPELLS', 'CRAFTING', 'EXPANSION']
   }
 };
+
+/**
+ * Build clear player-facing unlock text for the Genesis Ability Matrix.
+ * Plain language for DEVS:
+ * Ability categories unlock from the selected NFT's highest single Genesis trait level.
+ * This is display-only; backend still decides final eligibility and spending.
+ */
+function getGenesisAbilityUnlockMessage(tab, highestTraitLevel) {
+  const currentLevel = Math.max(0, Number(highestTraitLevel || 0));
+  const requiredLevel = Math.max(0, Number(tab?.unlockLevel || 0));
+  const missingLevels = Math.max(0, requiredLevel - currentLevel);
+
+  if (!tab || !tab.label) {
+    return 'Ability unlock data is missing for this tab.';
+  }
+
+  if (currentLevel >= requiredLevel) {
+    return `${tab.stepLabel}: ${tab.label} unlocked — this mouse has a highest Genesis trait at Lv ${formatNumber(currentLevel)}. ${tab.summary}`;
+  }
+
+  return `${tab.stepLabel}: ${tab.label} locked — this mouse needs one Genesis trait at Lv ${formatNumber(requiredLevel)}+. Current highest trait is Lv ${formatNumber(currentLevel)}. Train any Genesis trait ${formatNumber(missingLevels)} more level${missingLevels === 1 ? '' : 's'} to unlock this category.`;
+}
+
+/**
+ * Return the button/action text for one Ability card.
+ * Plain language for DEVS:
+ * Disabled cards must explain why the player cannot start research yet.
+ */
+function getGenesisAbilityButtonLabel({ isLocked, isMaxed, isThisActive, activeUpgradeExists }) {
+  if (isLocked) return 'Locked';
+  if (isMaxed) return 'Max Level';
+  if (isThisActive) return 'Upgrading';
+  if (activeUpgradeExists) return 'Busy';
+  return 'Start Upgrade';
+}
 
 const genesisAbilityState = {
   selectedTab: 'fitness',
@@ -8635,10 +9032,10 @@ function renderGenesisAbilityMatrix() {
     Number(data.highest_trait_level ?? 0)
   );
 
+    const highestTraitLevel = Number(data.highest_trait_level ?? 0);
+
   if (tabMetaEl) {
-    tabMetaEl.textContent = currentTabUnlocked
-      ? `${currentTab.label} is unlocked.`
-      : `${currentTab.label} unlocks at highest Genesis trait level ${currentTab.unlockLevel}.`;
+    tabMetaEl.textContent = getGenesisAbilityUnlockMessage(currentTab, highestTraitLevel);
   }
 
   const tabRows = currentTab.stats.map(stat => {
@@ -8695,15 +9092,27 @@ function renderGenesisAbilityMatrix() {
       ? formatAbilityDuration(row.seconds_remaining || row.next_duration_seconds || 0)
       : formatAbilityDuration(row.next_duration_seconds || 0);
 
+    const lockedMessage = getGenesisAbilityUnlockMessage(
+      currentTab,
+      Number(data.highest_trait_level ?? 0)
+    );
+
     const note = isLocked
-      ? `Requires highest Genesis trait level ${currentTab.unlockLevel}.`
+      ? lockedMessage
       : isMaxed
-        ? `Reached cap ${row.max_level}.`
+        ? `Reached cap Lv ${formatNumber(row.max_level)}. This stat cannot be upgraded further.`
         : isThisActive
-          ? `This ability is currently upgrading on the selected Genesis mouse.`
+          ? `This ability is currently upgrading on the selected Genesis mouse. The timer follows the NFT.`
           : (activeUpgradeExists && !isThisActive)
-            ? `Another ability is already upgrading on this NFT.`
-            : `Next upgrade uses ${row.next_cost} DSPOINC and time.`;
+            ? `Another ability is already upgrading on this NFT. Only one active ability upgrade can run per Genesis mouse.`
+            : `Ready for research. Next upgrade uses ${formatNumber(row.next_cost)} DSPOINC and takes ${nextDuration}.`;
+
+    const buttonLabel = getGenesisAbilityButtonLabel({
+      isLocked,
+      isMaxed,
+      isThisActive,
+      activeUpgradeExists
+    });
 
     return `
       <div class="ability-card ${isLocked ? 'locked' : ''} ${isThisActive ? 'upgrading' : ''}">
@@ -8716,30 +9125,34 @@ function renderGenesisAbilityMatrix() {
           <div><strong>Current Level:</strong> ${row.current_level}</div>
           <div><strong>Current State:</strong> ${escapeHtml(isLocked ? 'locked' : row.state)}</div>
           <div><strong>Next Duration:</strong> ${isLocked || isMaxed ? '--' : nextDuration}</div>
-          <div><strong>Next Cost:</strong> ${isLocked || isMaxed ? '--' : `${row.next_cost} DSPOINC`}</div>
+          <div><strong>Next Cost:</strong> ${isLocked || isMaxed ? '--' : `${formatNumber(row.next_cost)} DSPOINC`}</div>
         </div>
 
-        <div class="ability-card-actions">
+                <div class="ability-card-actions">
           <button
+            type="button"
             class="ability-upgrade-btn"
             data-ability-stat="${escapeHtml(row.stat_name)}"
+            title="${escapeHtml(note)}"
             ${disableButton ? 'disabled' : ''}
           >
-            ${isLocked ? 'Locked' : isThisActive ? 'Upgrading...' : isMaxed ? 'Maxed' : 'Upgrade'}
+            ${escapeHtml(buttonLabel)}
           </button>
 
           <button
-  class="ability-instant-btn disabled-v1"
-  data-ability-instant-finish="${escapeHtml(row.stat_name)}"
-  disabled
-  aria-disabled="true"
-  title="Ability instant finish is disabled in v1"
->
-  ⏸️ Instant Finish Disabled
-</button>
-<div class="ability-disabled-note">
-  Instant finish is planned for a later Ability Matrix version.
-</div>
+            type="button"
+            class="ability-instant-btn disabled-v1"
+            data-ability-instant-finish="${escapeHtml(row.stat_name)}"
+            disabled
+            aria-disabled="true"
+            title="Ability instant finish is disabled in v1"
+          >
+            ⏸️ Instant Finish Disabled
+          </button>
+
+                    <div class="ability-disabled-note">
+            Instant finish is planned for a later Ability Matrix version.
+          </div>
 
           <div class="ability-note">${escapeHtml(note)}</div>
         </div>

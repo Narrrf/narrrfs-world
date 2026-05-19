@@ -29,13 +29,29 @@ const rest = new REST({
 async function deployCommandsWithRetry(maxRetries = 3, retryDelay = 2000) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            console.log(`[DEPLOY] Attempt ${attempt}/${maxRetries}: Refreshing ${commands.length} application (/) commands...`);
+            console.log(`[DEPLOY] Attempt ${attempt}/${maxRetries}: Refreshing ${commands.length} guild-only application (/) commands...`);
 
-            // Register all commands for a single guild (dev mode, fast)
-            const data = await rest.put(
-                Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, process.env.DISCORD_GUILD),
-                { body: commands },
-            );
+/**
+ * Clear old GLOBAL slash commands before guild deployment.
+ * Plain language for DEVS:
+ * Narrrf's World commands are only meant for the official Discord guild.
+ * If commands were ever deployed globally in the past, Discord may still show
+ * them in other servers. This empty global deployment removes those stale
+ * global commands while the guild-only deployment below restores commands
+ * inside the official Narrrf's World server.
+ */
+await rest.put(
+    Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
+    { body: [] },
+);
+
+console.log('✅ Cleared old global application commands.');
+
+// Register all commands for the official Narrrf's World guild only.
+const data = await rest.put(
+    Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, process.env.DISCORD_GUILD),
+    { body: commands },
+);
 
             console.log(`✅ Successfully reloaded ${data.length} application (/) commands.`);
             return data;

@@ -160,13 +160,24 @@ function get_nft_ability_unlock_map(int $highestTraitLevel): array {
 }
 
 /**
- * Ensure all 9 ability rows exist for one NFT.
+ * Ensure all 9 ability rows exist for one NFT and heal stale owner markers.
+ *
+ * Plain language for DEVS:
+ * Genesis Ability levels are NFT-bound. They belong to the Genesis token_id,
+ * not permanently to the Discord user who first created the row. When a mouse
+ * changes hands and the new holder verifies ownership, idle ability rows must
+ * follow the current owner while keeping level, status, timers, and history.
  */
 function seed_missing_nft_ability_rows(PDO $pdo, string $userId, string $tokenId, string $collection): void {
     $definitions = get_all_nft_ability_definitions();
 
     $selectStmt = $pdo->prepare("
-        SELECT category, ability_key
+        SELECT
+            ability_upgrade_id,
+            user_id,
+            category,
+            ability_key,
+            upgrade_status
         FROM tbl_nft_ability_upgrades
         WHERE token_id = ?
           AND collection = ?
@@ -174,9 +185,48 @@ function seed_missing_nft_ability_rows(PDO $pdo, string $userId, string $tokenId
     $selectStmt->execute([$tokenId, $collection]);
 
     $existing = [];
-    foreach ($selectStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    $existingRows = $selectStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($existingRows as $row) {
         $existingKey = ($row['category'] ?? '') . '::' . ($row['ability_key'] ?? '');
         $existing[$existingKey] = true;
+    }
+
+    /**
+     * Heal stale ability rows to the current verified holder.
+     *
+     * DEVS FOR DECADES:
+     * Genesis Ability levels and timers are NFT-bound. If a Genesis mouse is
+     * sold or transferred while an ability timer is active, the timer follows
+     * the NFT. The old holder loses access after ownership verification changes.
+     *
+     * This keeps current_level, upgrade_status, timer fields, cost fields, and
+     * history intact. It only updates user ownership markers so the current
+     * verified holder controls the NFT-bound progression.
+     */
+    $healOwnerStmt = $pdo->prepare("
+        UPDATE tbl_nft_ability_upgrades
+        SET
+            user_id = ?,
+            last_owner_user_id = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE ability_upgrade_id = ?
+          AND COALESCE(user_id, '') <> ?
+    ");
+
+    foreach ($existingRows as $row) {
+        $abilityUpgradeId = (int)($row['ability_upgrade_id'] ?? 0);
+
+        if ($abilityUpgradeId < 1) {
+            continue;
+        }
+
+        $healOwnerStmt->execute([
+            $userId,
+            $userId,
+            $abilityUpgradeId,
+            $userId
+        ]);
     }
 
     $insertStmt = $pdo->prepare("
@@ -188,9 +238,10 @@ function seed_missing_nft_ability_rows(PDO $pdo, string $userId, string $tokenId
             ability_key,
             current_level,
             upgrade_status,
+            last_owner_user_id,
             created_at,
             updated_at
-        ) VALUES (?, ?, ?, ?, ?, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     ");
 
     foreach ($definitions as $definition) {
@@ -208,7 +259,8 @@ function seed_missing_nft_ability_rows(PDO $pdo, string $userId, string $tokenId
             $collection,
             $category,
             $abilityKey,
-            NFT_ABILITY_STATUS_IDLE
+            NFT_ABILITY_STATUS_IDLE,
+            $userId
         ]);
     }
 }
@@ -344,12 +396,12 @@ function insert_nft_ability_history(
 /**
  * Auto-complete all expired ability upgrades for one NFT.
  *
- * This keeps the system auto-claimed:
- * - level increases automatically
- * - row returns to idle
- * - completion timestamp is recorded
+ * Plain language for DEVS:
+ * Ability timers are NFT-bound. If a mouse changes owner while a timer is active,
+ * completion belongs to the current verified holder when that holder triggers
+ * Lab refresh/start logic. Passing $currentOwnerUserId keeps history aligned.
  */
-function auto_finalize_expired_nft_ability_upgrades(PDO $pdo, string $tokenId, string $collection): array {
+function auto_finalize_expired_nft_ability_upgrades(PDO $pdo, string $tokenId, string $collection, ?string $currentOwnerUserId = null): array {
     $stmt = $pdo->prepare("
         SELECT
             ability_upgrade_id,
@@ -388,6 +440,8 @@ function auto_finalize_expired_nft_ability_upgrades(PDO $pdo, string $tokenId, s
     $updateStmt = $pdo->prepare("
         UPDATE tbl_nft_ability_upgrades
         SET
+            user_id = ?,
+            last_owner_user_id = ?,
             current_level = ?,
             upgrade_status = ?,
             upgrade_started_at = NULL,
@@ -408,14 +462,22 @@ function auto_finalize_expired_nft_ability_upgrades(PDO $pdo, string $tokenId, s
         }
 
         $newLevel = min(NFT_ABILITY_MAX_LEVEL, $currentLevel + 1);
+        $completionUserId = trim((string)($currentOwnerUserId ?? ''));
+        if ($completionUserId === '') {
+            $completionUserId = (string)($row['user_id'] ?? '');
+        }
 
         $updateStmt->execute([
+            $completionUserId,
+            $completionUserId,
             $newLevel,
             NFT_ABILITY_STATUS_IDLE,
             (int)$row['ability_upgrade_id']
         ]);
 
         $newValue = array_merge($row, [
+            'user_id' => $completionUserId,
+            'last_owner_user_id' => $completionUserId,
             'current_level' => $newLevel,
             'upgrade_status' => NFT_ABILITY_STATUS_IDLE,
             'upgrade_started_at' => null,
@@ -426,7 +488,7 @@ function auto_finalize_expired_nft_ability_upgrades(PDO $pdo, string $tokenId, s
         insert_nft_ability_history(
             $pdo,
             (int)$row['ability_upgrade_id'],
-            (string)$row['user_id'],
+            $completionUserId,
             (string)$row['token_id'],
             (string)$row['collection'],
             (string)$row['category'],
@@ -441,7 +503,8 @@ function auto_finalize_expired_nft_ability_upgrades(PDO $pdo, string $tokenId, s
             'ability_upgrade_id' => (int)$row['ability_upgrade_id'],
             'category' => (string)$row['category'],
             'ability_key' => (string)$row['ability_key'],
-            'new_level' => $newLevel
+            'new_level' => $newLevel,
+            'user_id' => $completionUserId
         ];
     }
 

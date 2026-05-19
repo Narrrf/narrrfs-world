@@ -1,10 +1,243 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: May 18, 2026
-Status: ✅ LAB SYSTEM 9.6 FINAL PATCH COMPLETE — GENETIC MAX-2 + MARKETPLACE RECOVERY + PRODUCTION MIGRATION VERIFIED
-Version: 2026-05-18
-Milestone: Final Lab 9.6 production hardening completed with Genetic max-2 enforcement, SQLite constraint migration, stale marketplace ownership recovery, and economy/display guardrails confirmed.
+## ?? UPDATE � MAY 19, 2026 � LEADERBOARD MOBILE USERNAME FIX
 
+Fixed feedback cluster #849, #850, and #852 on `leaderboard.html`.
+
+Scope:
+- Mobile portrait leaderboard readability
+- Top Genetic leaderboard username visibility
+- General leaderboard row layout on small screens
+
+Fix:
+- Added shared mobile-safe leaderboard CSS classes.
+- Kept desktop horizontal layout.
+- On small screens, leaderboard rows can wrap so usernames remain visible.
+- Player names now use safe word wrapping instead of being squeezed/truncated away.
+- Backend/API scoring and leaderboard queries were not changed.
+
+Files:
+- `public/leaderboard.html`
+
+Protected:
+- No scoring logic changed.
+- No backend API changes.
+- No DB changes.
+
+Last Updated: May 19, 2026
+Status: ✅ LAB SYSTEM 9.7 URGENT BUG PUSH — PRE-PRODUCTION HANDOVER READY
+Version: 2026-05-19
+Milestone: Lab 9.7 urgent bug push prepared with leaderboard mobile fixes, Discord command server-safety cleanup, Genesis Ability Matrix NFT-owner repair, and frontend matrix clarity tuning.
+
+
+---
+
+## 🔄 UPDATE — MAY 19, 2026 — LAB SYSTEM 9.7 URGENT BUG PUSH / PRE-PRODUCTION HANDOVER
+
+### Status
+
+Lab System 9.7 is preparing a production push focused on urgent player-facing bugs, Discord command safety, leaderboard mobile fixes, and the tuned Genesis Ability Matrix.
+
+This push is backend-authoritative and DB-safe:
+
+- No DSPOINC ledger rewrite.
+- No marketplace economy rewrite.
+- No Genesis ownership rewrite.
+- No Genetic max-2 rollback.
+- No Elixir store disable rollback.
+- No deletion of marketplace history.
+
+---
+
+## ✅ 1. Leaderboard mobile username/display bug cluster fixed
+
+Bug cluster:
+
+- #849 — portrait mobile player names not displayed properly
+- #850 — Top Genetic leaderboard player names missing on portrait mobile
+- #852 — leaderboard theming/usernames on mobile
+
+Scope:
+
+- `public/leaderboard.html`
+
+Fix:
+
+- Added safe mobile leaderboard CSS classes.
+- Removed dangerous username wrapping that caused names to break letter-by-letter.
+- Kept usernames visible with ellipsis instead of hiding names.
+- Patched normal leaderboard rows and Top Genetic / Lab Power rows to use stable mobile-safe layout classes.
+- Fixed duplicated/old CSS blocks that were overriding safe mobile layout.
+
+Protected:
+
+- No scoring logic changed.
+- No backend leaderboard API logic changed.
+- No DB changes.
+
+Relevant files:
+
+- `public/leaderboard.html`
+- `api/dev/get-leaderboard.php`
+
+Notes:
+
+- Backend already enriches leaderboard rows with username/avatar/roles, so issue was frontend layout only.
+- Current `leaderboard.html` contains final mobile readability CSS for `.narrrf-leaderboard-*` classes.
+
+---
+
+## ✅ 2. Discord bot commands visible in other servers fixed
+
+Bug:
+
+- #830 — users saw Narrrf bot slash commands in other Discord servers and could trigger errors like:
+  - `Cannot read properties of null (reading 'members')`
+
+Cause:
+
+- Old global Discord application commands were likely still published.
+- Current guild deploy was already guild-scoped, but old global commands needed one-time cleanup.
+
+Files:
+
+- `discord/deploy-commands.js`
+- `discord/index.js`
+
+Fix:
+
+- `deploy-commands.js` now clears old global commands using `Routes.applicationCommands(DISCORD_CLIENT_ID)` with empty body.
+- Then redeploys guild-only commands using `Routes.applicationGuildCommands(DISCORD_CLIENT_ID, DISCORD_GUILD)`.
+- `index.js` has runtime guild safety gate so even if Discord exposes command somewhere unexpected, bot blocks before command logic runs.
+
+Protected:
+
+- Commands remain available in official Narrrf’s World Discord.
+- Commands should disappear from other servers after Discord cache/propagation.
+- Bot no longer reaches guild/member-dependent code outside official guild.
+
+---
+
+## ✅ 3. Genesis Ability Matrix NFT-bound owner repair completed
+
+Bug cluster:
+
+- #879, #880, #881, #882, #884, #886, #888, #890, #893
+- Dallas Ability upgrade issue cluster (Speed/Air and acceptance failures)
+
+Affected user:
+
+- Dallas user_id: `854353478646366230`
+
+Core rule confirmed:
+
+Genesis Trait levels and Genesis Ability levels are NFT-bound, not permanently user-bound.
+
+If a Genesis NFT changes owner:
+
+- new verified owner inherits token trait/ability progression
+- old owner loses access
+- timers/status/progression follow NFT token
+- no reset, no duplicate split
+
+Investigation:
+
+- Dallas had 3 Genesis NFTs.
+- All 3 had complete static trait rows (6 traits each).
+- Only `NarrrfsWorldGenesis1290` had highest trait level 6, so Fitness should unlock there.
+- Ability rows for that NFT were mixed:
+  - Fitness rows owned by Dallas
+  - Weapons/Education rows still owned by old holder `328601656659017732`
+- Global audit showed stale ability-owner pattern on multiple transferred NFTs.
+
+DB repair:
+
+- Backup created before global repair.
+- Global idle stale Ability rows repaired to match current owner from `tbl_nft_traits`.
+- Final audit returned no stale rows.
+- `PRAGMA integrity_check` returned `ok`.
+
+Dallas verification after repair:
+
+- All 9 Ability rows for token `CbbuGWZwx2n5ZJyAiZrt8uJrSEQkqvk8mv7NbDAAtSpV` now have:
+  - `user_id = 854353478646366230`
+  - `last_owner_user_id = 854353478646366230`
+  - `upgrade_status = idle` (except active/ready states as applicable)
+
+Backend permanent fix:
+
+- `api/user/genesis-ability-helpers.php`
+  - `seed_missing_nft_ability_rows(...)` now heals stale owner markers to current verified holder.
+  - Ability rows keep current level, status, timers, costs, and history.
+- Active timers follow current NFT owner under NFT-bound rule.
+- `auto_finalize_expired_nft_ability_upgrades(...)` accepts current owner and writes completion/history against verified holder.
+- `api/user/start-nft-ability-upgrade.php` now calls auto-finalize with current `$userId`.
+
+Protected:
+
+- Ability levels stay token-bound.
+- Trait levels stay token-bound.
+- No ability reset.
+- No timer reset.
+- Old holder cannot use token after verification changes.
+- Backend still verifies token ownership before starting Ability upgrades.
+
+Relevant files:
+
+- `api/user/genesis-ability-helpers.php`
+- `api/user/start-nft-ability-upgrade.php`
+- `public/lab.html`
+
+---
+
+## ✅ 4. Genesis Ability Matrix frontend tuned and clarified
+
+Scope:
+
+- `public/lab.html`
+
+Goal:
+
+Make Ability Matrix easier for players to understand before they click.
+
+Player-facing unlock rule now explained:
+
+- Fitness = Step 1, unlocks at highest Genesis trait Lv5+
+  - HP / SPEED / AIR
+- Weapons = Step 2, unlocks at highest Genesis trait Lv20+
+  - ATK / DEF / SPECIAL
+- Education = Step 3, unlocks at highest Genesis trait Lv30+
+  - SPELLS / CRAFTING / EXPANSION
+
+Frontend improvements:
+
+- Added clear unlock messages using highest single Genesis trait level.
+- Locked ability buttons show `Locked`.
+- Busy state shows `Busy`.
+- Active state shows `Upgrading`.
+- Ready state shows `Start Upgrade`.
+- Locked cards explain required level and current highest trait level.
+- Matrix copy now explains this builds long-term RPG Mouse character.
+- Copy explains 9-stat system combines Fitness, Weapons, Education, 6 Genesis traits, and Genetic Items into thousands of builds.
+- Copy explains Ability levels/timers/progress follow NFT when ownership changes.
+
+Visual frontend polish:
+
+- Ability Matrix has stronger themed shell.
+- Status cards/tabs/cards intended as 3-column desktop layout and mobile stack.
+- Missing closing `</div>` in Ability card template was identified as reason cards nested/left-bound.
+- Fix required closing outer `.ability-card` after `.ability-card-actions`.
+
+Important DOM fix:
+
+In `public/lab.html`, Ability card template must end like:
+
+```html
+          <div class="ability-note">${escapeHtml(note)}</div>
+        </div>
+      </div>
+    `;
+```
 
 ---
 

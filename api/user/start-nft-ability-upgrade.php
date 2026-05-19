@@ -858,8 +858,16 @@ try {
 
     $collection = normalize_collection_label((string)($selectedNft['collection'] ?? GENESIS_ABILITY_COLLECTION));
 
-    seed_missing_nft_ability_rows($pdo, $userId, $tokenId, $collection);
-    auto_finalize_expired_nft_ability_upgrades($pdo, $tokenId, $collection);
+        seed_missing_nft_ability_rows($pdo, $userId, $tokenId, $collection);
+
+    /**
+     * Auto-complete expired NFT-bound ability timers for the current holder.
+     * Plain language for DEVS:
+     * If a Genesis mouse was sold while an ability timer was running, the timer
+     * follows the NFT. Completion/history must therefore use the current verified
+     * holder, not a stale old row owner.
+     */
+    auto_finalize_expired_nft_ability_upgrades($pdo, $tokenId, $collection, $userId);
 
     $highestTraitLevel = get_highest_genesis_trait_level_for_nft($pdo, $selectedNft);
 

@@ -32,6 +32,119 @@
     .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-weight: bold; }
     .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; font-weight: bold; }
     .rank-3 { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; font-weight: bold; }
+
+        /**
+     * Mobile leaderboard readability fix.
+     * Plain language for DEVS:
+     * Leaderboard rows must keep rank, avatar, name, and score readable on phones.
+     * Do not use word-break:anywhere here because it can break usernames into
+     * one letter per line when the score column takes too much space.
+     */
+    .narrrf-leaderboard-row {
+      min-width: 0;
+    }
+
+    .narrrf-leaderboard-player {
+      min-width: 0;
+    }
+
+    .narrrf-leaderboard-name {
+      min-width: 0;
+      line-height: 1.15;
+    }
+
+    .narrrf-leaderboard-name span,
+    .narrrf-leaderboard-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .narrrf-leaderboard-role {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .narrrf-leaderboard-score {
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      .leaderboard-card {
+        padding: 1rem !important;
+      }
+
+      .leaderboard-card h2 {
+        font-size: 1.25rem !important;
+        line-height: 1.2 !important;
+      }
+
+      .narrrf-leaderboard-row {
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 0.65rem !important;
+        padding: 0.85rem !important;
+      }
+
+      .narrrf-leaderboard-player {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        gap: 0.65rem !important;
+      }
+
+      .narrrf-leaderboard-rank {
+        width: 2.15rem !important;
+        min-width: 2.15rem !important;
+        font-size: 1rem !important;
+      }
+
+      .narrrf-leaderboard-avatar {
+        width: 2.35rem !important;
+        height: 2.35rem !important;
+      }
+
+      .narrrf-leaderboard-name {
+        font-size: 0.95rem !important;
+      }
+
+      .narrrf-leaderboard-role {
+        font-size: 0.7rem !important;
+      }
+
+      .narrrf-leaderboard-score {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        max-width: 6.25rem !important;
+        margin-left: 0.35rem !important;
+        padding-left: 0 !important;
+        text-align: right !important;
+      }
+
+      .narrrf-leaderboard-score-main {
+        justify-content: flex-end !important;
+        font-size: 0.95rem !important;
+      }
+
+      .narrrf-leaderboard-score-sub {
+        font-size: 0.65rem !important;
+        white-space: normal !important;
+        line-height: 1.1 !important;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .narrrf-leaderboard-score {
+        max-width: 5rem !important;
+      }
+
+      .narrrf-leaderboard-score-sub {
+        display: none !important;
+      }
+    }
+    
   </style>
 </head>
 <body>
@@ -343,40 +456,41 @@ ${isFrozen ? '⏸️ No genetic leaderboard data available for frozen season' : 
     const highestRole = entry.highest_role || 'Member';
     const roleColorClass = getRoleColorClass(highestRole);
 
-    return `
-      <div class="flex items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-gray-600 hover:border-cyan-400 transition-all relative overflow-visible">
-        <div class="flex items-center gap-4 flex-1 min-w-0">
-          <div class="text-2xl font-bold w-12 text-center flex-shrink-0">${medal}</div>
+return `
+  <div class="narrrf-leaderboard-row flex flex-wrap md:flex-nowrap items-start md:items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-gray-600 hover:border-cyan-400 transition-all relative overflow-visible">
+    <div class="narrrf-leaderboard-player flex items-start md:items-center gap-4 flex-1 min-w-0">
+      <div class="narrrf-leaderboard-rank text-2xl font-bold w-12 text-center flex-shrink-0">${medal}</div>
 
-          <img
-            src="${avatarUrl}"
-            alt="${entry.discord_name || 'Unknown'}"
-            class="w-12 h-12 rounded-full border-2 border-gray-500 hover:border-cyan-400 transition-colors flex-shrink-0"
-            onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"
-          />
+      <img
+        src="${avatarUrl}"
+        alt="${entry.discord_name || 'Unknown'}"
+        class="narrrf-leaderboard-avatar w-12 h-12 rounded-full border-2 border-gray-500 hover:border-cyan-400 transition-colors flex-shrink-0"
+        onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"
+      />
 
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-lg truncate">
-              ${entry.discord_name || entry.discord_id || 'Unknown'}
-            </div>
-
-            <div class="text-xs ${roleColorClass} truncate">
-              ${highestRole}
-            </div>
-          </div>
+      <div class="flex-1 min-w-0">
+        <div class="narrrf-leaderboard-name font-semibold text-lg">
+          ${entry.discord_name || entry.discord_id || 'Unknown'}
         </div>
 
-        <div class="text-right ml-3 flex-shrink-0">
-          <div class="text-sm font-bold text-cyan-300 flex items-center justify-end gap-1">
-  <span>🧬</span>
-  <span>${totalLevel}</span>
-</div>
-<div class="text-xs text-gray-400">
-  ${traitCount} traits • Highest Trait Lv ${Number(entry.highest_trait_level || 0)}
-</div>
+        <div class="narrrf-leaderboard-role text-xs ${roleColorClass} mt-1">
+          ${highestRole}
         </div>
       </div>
-    `;
+    </div>
+
+    <div class="narrrf-leaderboard-score text-right ml-3 flex-shrink-0">
+      <div class="narrrf-leaderboard-score-main text-sm font-bold text-cyan-300 flex items-center justify-end gap-1">
+        <span>🧬</span>
+        <span>${totalLevel}</span>
+      </div>
+
+      <div class="narrrf-leaderboard-score-sub text-xs text-gray-400">
+        ${traitCount} traits • Highest Trait Lv ${Number(entry.highest_trait_level || 0)}
+      </div>
+    </div>
+  </div>
+`;
   }).join('');
 }
 // Load leaderboard data
@@ -411,33 +525,33 @@ function displayLabPowerLeaderboard(leaderboard, isFrozen) {
     const roleColorClass = getRoleColorClass(highestRole);
 
     return `
-      <div class="flex items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-gray-600 hover:border-emerald-400 transition-all relative overflow-visible">
-        <div class="flex items-center gap-4 flex-1 min-w-0">
-          <div class="text-2xl font-bold w-12 text-center flex-shrink-0">${medal}</div>
+            <div class="narrrf-leaderboard-row flex flex-wrap sm:flex-nowrap items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-gray-600 hover:border-emerald-400 transition-all relative overflow-visible">
+        <div class="narrrf-leaderboard-player flex items-center gap-4 flex-1 min-w-0">
+          <div class="narrrf-leaderboard-rank text-2xl font-bold w-12 text-center flex-shrink-0">${medal}</div>
 
           <img
             src="${avatarUrl}"
             alt="${entry.discord_name || 'Unknown'}"
-            class="w-12 h-12 rounded-full border-2 border-gray-500 hover:border-emerald-400 transition-colors flex-shrink-0"
+            class="narrrf-leaderboard-avatar w-12 h-12 rounded-full border-2 border-gray-500 hover:border-emerald-400 transition-colors flex-shrink-0"
             onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"
           />
 
           <div class="flex-1 min-w-0">
-            <div class="font-semibold text-lg truncate">
+                        <div class="narrrf-leaderboard-name font-semibold text-lg">
               ${entry.discord_name || entry.discord_id || 'Unknown'}
             </div>
 
-            <div class="text-xs ${roleColorClass} truncate">
+            <div class="narrrf-leaderboard-role text-xs ${roleColorClass}">
               ${highestRole}
             </div>
           </div>
         </div>
 
-        <div class="text-right ml-3 flex-shrink-0">
-          <div class="text-sm font-bold text-emerald-300">
+        <div class="narrrf-leaderboard-score text-right ml-3 flex-shrink-0">
+          <div class="narrrf-leaderboard-score-main text-sm font-bold text-emerald-300">
             ⚡ ${totalLabPower}
           </div>
-          <div class="text-xs text-gray-400">
+          <div class="narrrf-leaderboard-score-sub text-xs text-gray-400">
             Highest Trait Lv ${highestTraitLevel}
           </div>
         </div>
@@ -793,27 +907,27 @@ console.log('🏆 Leaderboard data loaded:', {
         }
         
         return `
-          <div class="flex items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border ${specialBorderClass} hover:border-yellow-400 transition-all ${specialGlowClass} relative overflow-visible">
-            <div class="flex items-center gap-4 flex-1 min-w-0">
-              <div class="text-2xl font-bold w-12 text-center flex-shrink-0">${medal}</div>
-              <img src="${avatarUrl}" alt="${entry.discord_name || 'Unknown'}" class="w-12 h-12 rounded-full border-2 ${avatarBorderClass} hover:border-yellow-400 transition-colors flex-shrink-0" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
-              <div class="flex-1 min-w-0">
-                <div class="font-semibold text-lg flex items-center gap-2 flex-wrap">
-                  <span class="truncate">${entry.discord_name || entry.discord_id || 'Unknown'}</span>
-                  ${monthlyLegendRole ? '<span class="text-lg animate-pulse flex-shrink-0">👑</span>' : ''}
-                </div>
-                <div class="text-xs font-bold ${roleColorClass} flex items-center gap-2 flex-wrap mt-1">
-                  <span>${highestRole}</span>
-                </div>
-                ${monthlyLegendBadge ? `<div class="mt-2">${monthlyLegendBadge}</div>` : ''}
-              </div>
-            </div>
-            <div class="text-right ml-4 flex-shrink-0">
-              <div class="text-xl font-bold text-yellow-300">${formattedScore}</div>
-              <div class="text-xs text-gray-400">${scoreLabel}</div>
-            </div>
-          </div>
-        `;
+  <div class="narrrf-leaderboard-row flex flex-wrap sm:flex-nowrap items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border ${specialBorderClass} hover:border-yellow-400 transition-all ${specialGlowClass} relative overflow-visible">
+    <div class="narrrf-leaderboard-player flex items-center gap-4 flex-1 min-w-0">
+      <div class="narrrf-leaderboard-rank text-2xl font-bold w-12 text-center flex-shrink-0">${medal}</div>
+      <img src="${avatarUrl}" alt="${entry.discord_name || 'Unknown'}" class="narrrf-leaderboard-avatar w-12 h-12 rounded-full border-2 ${avatarBorderClass} hover:border-yellow-400 transition-colors flex-shrink-0" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
+      <div class="flex-1 min-w-0">
+        <div class="narrrf-leaderboard-name font-semibold text-lg flex items-center gap-2 flex-wrap">
+          <span class="min-w-0">${entry.discord_name || entry.discord_id || 'Unknown'}</span>
+          ${monthlyLegendRole ? '<span class="text-lg animate-pulse flex-shrink-0">👑</span>' : ''}
+        </div>
+        <div class="narrrf-leaderboard-role text-xs font-bold ${roleColorClass} flex items-center gap-2 flex-wrap mt-1">
+          <span>${highestRole}</span>
+        </div>
+        ${monthlyLegendBadge ? `<div class="mt-2">${monthlyLegendBadge}</div>` : ''}
+      </div>
+    </div>
+    <div class="narrrf-leaderboard-score text-right ml-4 flex-shrink-0">
+      <div class="narrrf-leaderboard-score-main text-xl font-bold text-yellow-300">${formattedScore}</div>
+      <div class="narrrf-leaderboard-score-sub text-xs text-gray-400">${scoreLabel}</div>
+    </div>
+  </div>
+`;
       }).join('');
     }
 
