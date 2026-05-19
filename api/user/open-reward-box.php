@@ -65,6 +65,13 @@ const REWARD_BOX_OPEN_METHOD_AUTO = 'auto';
 const REWARD_BOX_STATUS_GRANTED = 'granted';
 const REWARD_BOX_STATUS_PENDING = 'pending';
 
+// 🎮 Arcade-bound store unlocks are lifetime one-per-user rewards.
+// Plain language for DEVS:
+// These items unlock arcade/game features and should not stack.
+// Reward Chamber must reroll them when the user already owns, bought,
+// won, requested, or used the same unlock before.
+const REWARD_BOX_ONE_PER_USER_ARCADE_ITEM_IDS = [21, 22, 23, 24, 25, 26];
+
 /**
  * Return a JSON response and stop execution.
  */
@@ -756,6 +763,95 @@ function fetch_store_item_row(PDO $pdo, int $storeItemId): ?array {
 }
 
 /**
+ * Return true when a store item is a lifetime one-per-user arcade unlock.
+ * Plain language for DEVS:
+ * Arcade-bound store items unlock game powers/features. They should not stack.
+ */
+function is_reward_box_one_per_user_arcade_item(int $storeItemId): bool {
+    return in_array($storeItemId, REWARD_BOX_ONE_PER_USER_ARCADE_ITEM_IDS, true);
+}
+
+/**
+ * Return true when the user already received this one-per-user arcade unlock.
+ * Plain language for DEVS:
+ * Checking only tbl_user_inventory is not enough because /useitem deducts
+ * inventory immediately when a pending admin review request is created.
+ * This lifetime check prevents duplicate wins from Reward Chamber and forces reroll.
+ */
+function user_already_received_one_per_user_arcade_item(PDO $pdo, string $userId, int $storeItemId): bool {
+    if ($userId === '' || $storeItemId < 1 || !is_reward_box_one_per_user_arcade_item($storeItemId)) {
+        return false;
+    }
+
+    $checks = [];
+
+    if (sqlite_table_exists($pdo, 'tbl_user_inventory')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_user_inventory
+            WHERE user_id = ?
+              AND item_id = ?
+              AND COALESCE(quantity, 0) > 0
+            LIMIT 1
+        ";
+    }
+
+    if (sqlite_table_exists($pdo, 'tbl_item_usage_requests')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_item_usage_requests
+            WHERE user_id = ?
+              AND item_id = ?
+              AND status IN ('pending', 'approved')
+            LIMIT 1
+        ";
+    }
+
+    if (sqlite_table_exists($pdo, 'tbl_item_usage_history')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_item_usage_history
+            WHERE user_id = ?
+              AND item_id = ?
+              AND status IN ('pending', 'approved', 'used')
+            LIMIT 1
+        ";
+    }
+
+    if (sqlite_table_exists($pdo, 'tbl_purchase_history')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_purchase_history
+            WHERE user_id = ?
+              AND item_id = ?
+            LIMIT 1
+        ";
+    }
+
+    if (sqlite_table_exists($pdo, 'tbl_reward_box_open_history')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_reward_box_open_history
+            WHERE user_id = ?
+              AND reward_type = 'store_item'
+              AND reward_reference_id = ?
+            LIMIT 1
+        ";
+    }
+
+    foreach ($checks as $sql) {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$userId, $storeItemId]);
+
+        if ($stmt->fetchColumn()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Load one genetic catalog row by id.
  */
 function fetch_genetic_catalog_row(PDO $pdo, int $catalogId): ?array {
@@ -1373,8 +1469,20 @@ try {
             }
 
             $resolvedRewardReferenceId = (int)($storeItem['item_id'] ?? $storeItem['store_item_id'] ?? $storeItem['id'] ?? $storeItemId);
-            $resolvedRewardTitle = trim((string)($entry['reward_title'] ?? $storeItem['item_name'] ?? $storeItem['name'] ?? 'Store Reward')) ?: 'Store Reward';
-            $resolvedDeliveryPayload = grant_store_item_to_user($pdo, $userId, $storeItem, 1, 'reward_box');
+$resolvedRewardTitle = trim((string)($entry['reward_title'] ?? $storeItem['item_name'] ?? $storeItem['name'] ?? 'Store Reward')) ?: 'Store Reward';
+
+if (user_already_received_one_per_user_arcade_item($pdo, $userId, $resolvedRewardReferenceId)) {
+    return [
+        'reward_type' => 'duplicate_store_item',
+        'reward_title' => $resolvedRewardTitle,
+        'reward_reference_id' => null,
+        'reward_amount' => null,
+        'reward_description' => trim((string)($entry['reward_description'] ?? $storeItem['description'] ?? $box['box_description'] ?? '')),
+        'delivery_payload' => []
+    ];
+}
+
+$resolvedDeliveryPayload = grant_store_item_to_user($pdo, $userId, $storeItem, 1, 'reward_box');
 
             return [
                 'reward_type' => 'store_item',
@@ -1513,24 +1621,42 @@ try {
             try {
                 $resolved = $resolvePoolEntry($selectedEntry);
 
-                if ($resolved['reward_type'] === 'duplicate_genetic_trait') {
-                    $usedReroll = true;
+                if (in_array($resolved['reward_type'], ['duplicate_genetic_trait', 'duplicate_store_item'], true)) {
+    $usedReroll = true;
+    $excludedPoolRewardIds = [$poolRewardId];
 
-                    $rerollEntry = pick_weighted_reward_entry($poolEntries, [$poolRewardId]);
-                    if ($rerollEntry) {
-                        $selectedEntry = $rerollEntry;
-                        $poolRewardId = (int)($selectedEntry['pool_reward_id'] ?? 0);
-                        $resolved = $resolvePoolEntry($selectedEntry);
+    // Try a small number of rerolls before using fallback DSPOINC.
+    // Plain language for DEVS:
+    // Some reward rows can be valid globally but blocked for this user
+    // because they already own/used a lifetime arcade unlock or duplicate trait.
+    // We reroll safely inside the same backend transaction.
+    for ($rerollAttempt = 0; $rerollAttempt < 10; $rerollAttempt++) {
+        $rerollEntry = pick_weighted_reward_entry($poolEntries, $excludedPoolRewardIds);
 
-                        if ($resolved['reward_type'] === 'duplicate_genetic_trait') {
-                            $usedFallback = true;
-                        }
-                    } else {
-                        $usedFallback = true;
-                    }
-                }
+        if (!$rerollEntry) {
+            $usedFallback = true;
+            break;
+        }
 
-                if (!$usedFallback && $resolved['reward_type'] !== 'duplicate_genetic_trait') {
+        $selectedEntry = $rerollEntry;
+        $poolRewardId = (int)($selectedEntry['pool_reward_id'] ?? 0);
+        $resolved = $resolvePoolEntry($selectedEntry);
+
+        if (!in_array($resolved['reward_type'], ['duplicate_genetic_trait', 'duplicate_store_item'], true)) {
+            break;
+        }
+
+        if ($poolRewardId > 0) {
+            $excludedPoolRewardIds[] = $poolRewardId;
+        }
+    }
+
+    if (in_array($resolved['reward_type'], ['duplicate_genetic_trait', 'duplicate_store_item'], true)) {
+        $usedFallback = true;
+    }
+}
+
+if (!$usedFallback && !in_array($resolved['reward_type'], ['duplicate_genetic_trait', 'duplicate_store_item'], true)) {
                     $rewardType = $resolved['reward_type'];
                     $rewardTitle = $resolved['reward_title'];
                     $rewardReferenceId = $resolved['reward_reference_id'];

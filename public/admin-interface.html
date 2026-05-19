@@ -1572,10 +1572,42 @@
       <!-- Store Items -->
       <div class="mb-6">
         <h3 class="text-lg font-semibold mb-3">📦 Available Store Items</h3>
-        <button onclick="loadStoreItems()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-3">Refresh Items</button>
-        <div id="storeItems" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="text-gray-300">Click "Refresh Items" to load store items...</div>
-        </div>
+
+<div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-3">
+  <button onclick="loadStoreItems()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+    Refresh Items
+  </button>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 flex-1">
+    <select id="storeItemStatusFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyStoreItemFilters()">
+      <option value="">All Store States</option>
+      <option value="active">Active</option>
+      <option value="inactive">Deactivated</option>
+    </select>
+
+    <input
+      id="storeItemSearchInput"
+      type="search"
+      placeholder="Search store item..."
+      class="px-3 py-2 rounded text-gray-800"
+      oninput="applyStoreItemFilters()"
+    >
+
+    <select id="storeItemQuantityFilter" class="px-3 py-2 rounded text-gray-800" onchange="applyStoreItemFilters()">
+      <option value="">All Stock States</option>
+      <option value="available">Available Stock</option>
+      <option value="empty">No Stock / 0</option>
+    </select>
+  </div>
+</div>
+
+<div id="storeItemsFilterNotice" class="text-sm text-blue-100 bg-blue-900 bg-opacity-30 border border-blue-500/20 rounded-lg p-3 mb-4">
+  Load store items, then filter by active/deactivated, search text, or stock.
+</div>
+
+<div id="storeItems" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="text-gray-300">Click "Refresh Items" to load store items...</div>
+</div>
       </div>
 
 
@@ -13307,8 +13339,10 @@ function selectGiveGeneticUser(userId, username) {
       }).join('');
     }
 
-    // Load store items
-    async function loadStoreItems() {
+let adminStoreItemsCache = [];
+
+// Load store items
+async function loadStoreItems() {
   try {
     const response = await fetch(API_BASE_URL + '/api/admin/store-management.php', {
       method: 'POST',
@@ -13318,15 +13352,84 @@ function selectGiveGeneticUser(userId, username) {
     const data = await response.json();
     
     if (data.success) {
-      displayStoreItems(data.items);
-      populateGiveItemDropdown(data.items);
-      addLog(`🏪 Loaded ${data.items.length} store items`);
+      adminStoreItemsCache = Array.isArray(data.items) ? data.items : [];
+
+      applyStoreItemFilters();
+      populateGiveItemDropdown(adminStoreItemsCache);
+
+      addLog(`🏪 Loaded ${adminStoreItemsCache.length} store items`);
     } else {
       addLog(`❌ Failed to load store items: ${data.error}`);
     }
   } catch (error) {
     addLog(`❌ Store items error: ${error.message}`);
   }
+}
+
+/**
+ * Filter Store Management cards without changing backend state.
+ * Plain language for DEVS:
+ * This only changes what the admin sees in the browser.
+ * It does not activate, deactivate, delete, buy, grant, or mutate store items.
+ */
+function applyStoreItemFilters() {
+  const statusValue = String(document.getElementById('storeItemStatusFilter')?.value || '').trim().toLowerCase();
+  const searchValue = String(document.getElementById('storeItemSearchInput')?.value || '').trim().toLowerCase();
+  const quantityValue = String(document.getElementById('storeItemQuantityFilter')?.value || '').trim().toLowerCase();
+
+  const sourceItems = Array.isArray(adminStoreItemsCache) ? adminStoreItemsCache : [];
+
+  const filteredItems = sourceItems.filter(item => {
+    const isActive = Number(item.is_active ?? item.active ?? 1) === 1;
+    const quantity = Number(item.quantity ?? 0);
+
+    if (statusValue === 'active' && !isActive) {
+      return false;
+    }
+
+    if (statusValue === 'inactive' && isActive) {
+      return false;
+    }
+
+    if (quantityValue === 'available' && quantity <= 0) {
+      return false;
+    }
+
+    if (quantityValue === 'empty' && quantity > 0) {
+      return false;
+    }
+
+    if (searchValue) {
+      const haystack = [
+        item.item_id,
+        item.item_name,
+        item.description,
+        item.price,
+        item.quantity
+      ].join(' ').toLowerCase();
+
+      if (!haystack.includes(searchValue)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  updateStoreItemsFilterNotice(filteredItems.length, sourceItems.length);
+  displayStoreItems(filteredItems);
+}
+
+/**
+ * Show admins how many store rows are visible after filtering.
+ */
+function updateStoreItemsFilterNotice(visibleCount, totalCount) {
+  const notice = document.getElementById('storeItemsFilterNotice');
+  if (!notice) {
+    return;
+  }
+
+  notice.textContent = `Showing ${Number(visibleCount || 0).toLocaleString()} of ${Number(totalCount || 0).toLocaleString()} store items.`;
 }
     
     // NEW: Populate give item dropdown with available items

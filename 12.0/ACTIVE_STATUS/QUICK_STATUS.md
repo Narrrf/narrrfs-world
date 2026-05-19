@@ -1,10 +1,265 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
-Last Updated: May 12, 2026
-Status: ✅ READY FOR CONTROLLED PRODUCTION PUSH — LAB SYSTEM 9.6 ECONOMY / REWARD CHAMBER / GENETIC MAX-2 PATCH COMPLETE
-Version: 2026-05-12
-Milestone: Lab System 9.6 economy and UX correction pass finalized, including Instant Finish rebalance, lootbox-only Elixirs, Reward Chamber awarded-amount fixes, and Genetic exact-trait max-2 ownership rollout.
+Last Updated: May 18, 2026
+Status: ✅ LAB SYSTEM 9.6 FINAL PATCH COMPLETE — GENETIC MAX-2 + MARKETPLACE RECOVERY + PRODUCTION MIGRATION VERIFIED
+Version: 2026-05-18
+Milestone: Final Lab 9.6 production hardening completed with Genetic max-2 enforcement, SQLite constraint migration, stale marketplace ownership recovery, and economy/display guardrails confirmed.
 
+
+---
+
+## 🔄 UPDATE — MAY 18, 2026 — LAB SYSTEM 9.6 GENETIC MAX-2 + MARKETPLACE RECOVERY PATCH
+
+## ✅ Scope
+
+This update finalizes the Lab System 9.6 patch after community feedback and production testing.
+
+Main focus:
+
+- Lab System 9.6
+- Genetic Item ownership max-2 rule
+- Genetic Marketplace recovery
+- Reward Chamber display fix
+- Elixir lootbox-only economy
+- Instant Finish economy rebalance
+- Lab frontend Knowledge text cleanup
+- Production SQLite migration
+
+## ✅ Confirmed Working
+
+### Genetic Item max-2 ownership now works
+
+Community request:
+
+Players wanted to own 2 copies of the same exact Genetic Item:
+
+- one to upgrade
+- one to sell/list on marketplace
+
+Final rule:
+
+- One Discord user can own up to 2 copies of the same exact `trait_type + trait_value`.
+- Third copy is blocked by backend.
+
+### Production DB migration completed
+
+Production DB originally still had:
+
+- `UNIQUE(user_id, trait_type, trait_value)`
+
+This caused users with only 1 copy to still be blocked from buying the 2nd copy.
+
+Migration was applied on production using `/tmp/genetic_max2_migration.sql`.
+
+Verified final state:
+
+- `PRAGMA integrity_check = ok`
+- `sqlite_autoindex_tbl_user_genetic_items_1` removed
+- `UNIQUE(user_id, trait_type, trait_value)` removed
+- `idx_user_genetic_items_trait_limit_lookup` exists
+- `tbl_user_genetic_items` count after migration = `133`
+
+Important:
+
+- Do not re-add `UNIQUE(user_id, trait_type, trait_value)`.
+- Backend now enforces max-2.
+- DB must allow duplicate exact traits up to backend-controlled limit.
+
+## ✅ Backend Files Updated / Relevant
+
+- `api/user/buy-genetic-trait.php`
+- `api/user/buy-genetic-marketplace-listing.php`
+
+Both should enforce:
+
+- `GENETIC_MAX_OWNED_PER_EXACT_TRAIT = 2`
+
+Expected behavior:
+
+- 0 copies → buy allowed
+- 1 copy → second buy allowed
+- 2 copies → third buy blocked
+
+The frontend should only display backend result. It must not enforce this rule alone.
+
+## ✅ Lab Frontend Knowledge / Text Cleanup
+
+`public/lab.html` was reviewed for old wording.
+
+Text should now reflect:
+
+- Genetic Items are Discord-bound
+- users can own up to 2 copies of the same exact trait
+- one copy can be upgraded while another can be listed/sold
+- marketplace listings transfer full item state
+- listed items cannot be upgraded, claimed, boosted, or instant-finished while listed
+- normal Genetic Item start upgrades are free timed research
+- Genetic Instant Finish costs DSPOINC and is backend-calculated
+- Elixirs are lootbox-only boosters
+
+Important frontend clarification:
+
+- Normal Genetic Item Upgrade = free timer start
+- Genetic Instant Finish = paid DSPOINC shortcut
+- Elixirs = inventory booster utility from lootboxes/rewards
+
+## ✅ Instant Finish Economy Rebalance
+
+Genesis and Genetic instant-finish pricing was rebalanced to avoid extreme DSPOINC pricing.
+
+Final model:
+
+Genesis Instant Finish:
+
+- Base: 10,000 DSPOINC
+- Hourly: 220 DSPOINC
+- Level step: +0.35
+- Multiplier cap: 8x
+- Max cap: 500,000 DSPOINC
+
+Genetic Instant Finish:
+
+- Base: 6,000 DSPOINC
+- Hourly: 140 DSPOINC
+- Level step: +0.25
+- Multiplier cap: 6x
+- Max cap: 300,000 DSPOINC
+
+Backend remains authoritative.
+
+## ✅ Elixir Economy Final Rule
+
+Green, Blue, and Red Elixirs are no longer directly buyable.
+
+Final rule:
+
+- Elixirs stay active items
+- do NOT set `tbl_store_items.is_active = 0`
+- `purchase.php` blocks direct buying for item IDs 33, 34, 35
+- lootboxes/rewards/inventory/Lab display must still resolve them
+
+Elixir effects:
+
+- Green Elixir = -6h
+- Blue Elixir = -18h
+- Red Elixir = -48h
+
+Important incident note:
+
+Setting Elixirs inactive broke local Lab/item resolution. Do not repeat.
+
+## ✅ Reward Chamber Display Fix
+
+Bug fixed:
+
+Winning an Elixir showed total owned instead of amount won.
+
+Backend `open-reward-box.php` should expose awarded quantity separately:
+
+- `quantity` = final inventory total / compatibility
+- `inventory_quantity_after` = final inventory total
+- `awarded_quantity` = amount won from this box
+- `reward_quantity` = amount won from this box
+- `quantity_awarded` = amount won from this box
+
+Frontend/Profile and Discord copy now display:
+
+- `+1x Green Elixir`
+
+instead of final inventory total.
+
+## ✅ Marketplace Recovery Incident — Listing #27 / Item #34
+
+A stale marketplace listing from DB crash recovery was fixed.
+
+Problem:
+
+- Listing #27 pointed to `genetic_item_id 34`
+- listing was cancelled, but item #34 was missing from `tbl_user_genetic_items`
+- user inventory did not show restored item
+
+Investigation showed marketplace history proved ownership:
+
+- Listing #25 sold `genetic_item_id 34` to user `328601656659017732`
+- Listing #27 was later created by same user for item #34
+- owned row disappeared during DB crash/recovery
+
+Repair applied with `/tmp/restore_genetic_item34.sql`.
+
+Restored item:
+
+- `genetic_item_id: 34`
+- `user_id: 328601656659017732`
+- `catalog_id: 54`
+- `trait_type: Accessories`
+- `trait_value: Cheese`
+- `current_level: 1`
+- `upgrade_status: idle`
+- `acquired_method: marketplace_recovery`
+- `is_listed_for_sale: 0`
+- `listed_listing_id: NULL`
+- `last_owner_user_id: 1224428436928594015`
+
+Verified after repair:
+
+- item #34 visible again in inventory
+- user also owns item #44 Cheese level 4 upgrading
+- max-2 rule allows both Cheese copies
+
+## ✅ Production Safety Checks Completed
+
+Production DB checks completed:
+
+- `PRAGMA integrity_check = ok`
+- Genetic max-2 migration verified
+- stale listing cleanup verified
+- item #34 marketplace recovery verified
+
+## 🧪 Still Recommended Before Final Push / Announcement
+
+Run quick syntax checks on edited PHP files:
+
+```bash
+php -l /var/www/html/api/user/buy-genetic-trait.php
+php -l /var/www/html/api/user/buy-genetic-marketplace-listing.php
+php -l /var/www/html/api/user/open-reward-box.php
+php -l /var/www/html/api/store/purchase.php
+php -l /var/www/html/api/user/instant-finish-nft-trait-upgrade.php
+php -l /var/www/html/api/user/instant-finish-genetic-item-upgrade.php
+php -l /var/www/html/api/user/use-lab-booster.php
+php -l /var/www/html/api/user/use-genetic-item-booster.php
+```
+
+Manual tests to keep listed:
+
+- Buy first Genetic copy → success
+- Buy second exact Genetic copy → success
+- Buy third exact Genetic copy → blocked
+- Marketplace buy second exact copy → success
+- Marketplace buy third exact copy → blocked
+- Listed item cannot be upgraded/boosted/instant-finished
+- Normal Genetic upgrade start behaves as free timed research
+- Genetic instant finish charges DSPOINC
+- Genesis instant finish charges capped DSPOINC
+- Elixirs show Lootbox Only
+- Owned Elixirs can still be used
+- Direct Elixir purchase blocked
+- Reward Chamber Elixir win shows +1x, not total owned
+
+## 🚨 Guardrails Going Forward
+
+- Do not restore `UNIQUE(user_id, trait_type, trait_value)`
+- Do not disable Elixirs with `is_active = 0`
+- Do not make frontend authoritative for prices, inventory, ownership, or reward delivery
+- Do not delete marketplace history rows for recovery cases
+- Cancel stale listings; preserve audit/history
+- Only restore missing owned items when marketplace history proves ownership
+
+## 🧾 Commit-style summary
+
+```text
+Lab 9.6: finalize Genetic max-2 ownership, migrate production DB constraint, restore stale marketplace recovery item, and lock economy/display guardrails.
+```
 
 ---
 

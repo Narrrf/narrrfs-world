@@ -40,6 +40,12 @@ session_start();
 
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf local fallback
 
+// 🎮 Arcade-bound store unlocks are lifetime one-per-user items.
+// Plain language for DEVS:
+// These items unlock arcade/game features and should not stack.
+// Direct store purchase must block duplicates, while Reward Chamber rerolls them.
+const STORE_ONE_PER_USER_ARCADE_ITEM_IDS = [21, 22, 23, 24, 25, 26];
+
 /**
  * Return a JSON response and stop execution.
  */
@@ -330,6 +336,117 @@ function get_user_balance_snapshot(SQLite3 $db, string $userId): array {
     ];
 }
 
+/**
+ * Return true when a store item is a lifetime one-per-user arcade unlock.
+ */
+function is_store_one_per_user_arcade_item(int $itemId): bool {
+    return in_array($itemId, STORE_ONE_PER_USER_ARCADE_ITEM_IDS, true);
+}
+
+/**
+ * Return true if a table exists in the SQLite database.
+ */
+function store_purchase_table_exists(SQLite3 $db, string $tableName): bool {
+    $stmt = $db->prepare("
+        SELECT name
+        FROM sqlite_master
+        WHERE type = 'table'
+          AND name = ?
+        LIMIT 1
+    ");
+    $stmt->bindValue(1, $tableName, SQLITE3_TEXT);
+
+    $result = $stmt->execute();
+    $row = $result ? $result->fetchArray(SQLITE3_ASSOC) : false;
+
+    return (bool)$row;
+}
+
+/**
+ * Return true when the user already received this one-per-user arcade unlock.
+ * Plain language for DEVS:
+ * Inventory can be empty after /useitem because that flow deducts the item
+ * immediately when the admin review request is created. So this checks lifetime
+ * evidence across inventory, requests, purchase history, usage history, and
+ * Reward Chamber history.
+ */
+function user_already_received_store_arcade_item(SQLite3 $db, string $userId, int $itemId): bool {
+    if ($userId === '' || $itemId < 1 || !is_store_one_per_user_arcade_item($itemId)) {
+        return false;
+    }
+
+    $checks = [];
+
+    if (store_purchase_table_exists($db, 'tbl_user_inventory')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_user_inventory
+            WHERE user_id = ?
+              AND item_id = ?
+              AND COALESCE(quantity, 0) > 0
+            LIMIT 1
+        ";
+    }
+
+    if (store_purchase_table_exists($db, 'tbl_item_usage_requests')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_item_usage_requests
+            WHERE user_id = ?
+              AND item_id = ?
+              AND status IN ('pending', 'approved')
+            LIMIT 1
+        ";
+    }
+
+    if (store_purchase_table_exists($db, 'tbl_item_usage_history')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_item_usage_history
+            WHERE user_id = ?
+              AND item_id = ?
+              AND status IN ('pending', 'approved', 'used')
+            LIMIT 1
+        ";
+    }
+
+    if (store_purchase_table_exists($db, 'tbl_purchase_history')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_purchase_history
+            WHERE user_id = ?
+              AND item_id = ?
+            LIMIT 1
+        ";
+    }
+
+    if (store_purchase_table_exists($db, 'tbl_reward_box_open_history')) {
+        $checks[] = "
+            SELECT 1
+            FROM tbl_reward_box_open_history
+            WHERE user_id = ?
+              AND reward_type = 'store_item'
+              AND reward_reference_id = ?
+            LIMIT 1
+        ";
+    }
+
+    foreach ($checks as $sql) {
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(1, $userId, SQLITE3_TEXT);
+        $stmt->bindValue(2, $itemId, SQLITE3_INTEGER);
+
+        $result = $stmt->execute();
+        $row = $result ? $result->fetchArray(SQLITE3_ASSOC) : false;
+
+        if ($row) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         json_response([
@@ -414,6 +531,24 @@ if (in_array($itemId, $lootboxOnlyItemIds, true)) {
             'error' => 'Item not found or not available'
         ], 404);
     }
+
+    if (is_store_one_per_user_arcade_item($itemId)) {
+    if ($quantity !== 1) {
+        $db->exec('ROLLBACK');
+        json_response([
+            'success' => false,
+            'error' => 'This Arcade unlock is limited to 1 per user.'
+        ], 403);
+    }
+
+    if (user_already_received_store_arcade_item($db, $userId, $itemId)) {
+        $db->exec('ROLLBACK');
+        json_response([
+            'success' => false,
+            'error' => 'You already received this Arcade unlock. It is limited to 1 per user.'
+        ], 403);
+    }
+}
 
     $unitPrice = (int)($item['price'] ?? 0);
     if ($unitPrice <= 0) {

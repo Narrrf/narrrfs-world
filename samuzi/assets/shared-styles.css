@@ -638,3 +638,59 @@ a:hover {
         padding: 1.15rem;
     }
 }
+/* =========================================================
+   SAMUZI LOGO FINAL — soft circular blend, no shimmer
+   ========================================================= */
+
+.logo {
+    width: 112px !important;
+    height: 112px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+.logo-image,
+.samuzi-header-logo {
+    width: 112px !important;
+    height: 112px !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    filter: none !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    display: block !important;
+
+    /* This removes the square/rounded-box edge and blends it into the dark header */
+    -webkit-mask-image: radial-gradient(
+        circle at center,
+        #000 0%,
+        #000 63%,
+        rgba(0,0,0,0.75) 72%,
+        transparent 82%
+    );
+    mask-image: radial-gradient(
+        circle at center,
+        #000 0%,
+        #000 63%,
+        rgba(0,0,0,0.75) 72%,
+        transparent 82%
+    );
+}
+
+.logo::before,
+.logo::after,
+.logo-image::before,
+.logo-image::after,
+.samuzi-header-logo::before,
+.samuzi-header-logo::after {
+    display: none !important;
+    content: none !important;
+}

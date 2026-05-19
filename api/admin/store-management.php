@@ -56,8 +56,28 @@ $action = $input['action'] ?? $_GET['action'] ?? '';
 switch ($action) {
     case 'get_items':
         try {
-            // Get all active store items
-            $stmt = $db->prepare('SELECT * FROM tbl_store_items WHERE is_active = 1 ORDER BY item_name');
+            // Get all store items for admin management.
+// Plain language for DEVS:
+// The admin Store Management screen must show active and deactivated rows so
+// admins can filter, inspect, and reactivate old items. Public purchase rules
+// still live in api/store/purchase.php and must remain backend-authoritative.
+$stmt = $db->prepare('
+    SELECT
+        item_id,
+        item_name,
+        description,
+        price,
+        image_url,
+        COALESCE(is_active, active, 1) AS is_active,
+        COALESCE(active, is_active, 1) AS active,
+        COALESCE(quantity, 0) AS quantity,
+        created_at,
+        updated_at
+    FROM tbl_store_items
+    ORDER BY
+        COALESCE(is_active, active, 1) DESC,
+        item_name ASC
+');
             $result = $stmt->execute();
             
             $items = [];

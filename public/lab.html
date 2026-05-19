@@ -271,6 +271,30 @@ hydrateSession();
     0 0 24px rgba(239,68,68,0.10);
 }
 
+/* Research Queue status frames.
+   DEVS FOR DECADES:
+   These colors are visual-only and mirror the slider/status language.
+   They do not decide upgrade readiness. Backend + loaded upgrade rows remain authoritative. */
+.queue-card--ready {
+  border-color: rgba(16, 185, 129, 0.42);
+  box-shadow:
+    0 12px 30px rgba(2, 132, 199, 0.10),
+    0 0 0 1px rgba(16, 185, 129, 0.14),
+    0 0 28px rgba(16, 185, 129, 0.12);
+}
+
+.queue-card--active {
+  border-color: rgba(59, 130, 246, 0.38);
+  box-shadow:
+    0 12px 30px rgba(2, 132, 199, 0.10),
+    0 0 0 1px rgba(59, 130, 246, 0.12),
+    0 0 24px rgba(59, 130, 246, 0.10);
+}
+
+.queue-card--idle {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
 .queue-progress-label-row {
   display: flex;
   align-items: center;
@@ -2753,6 +2777,137 @@ body::after {
 .queue-card {
   border-radius: 18px;
   padding: 16px;
+}
+
+/* Research Queue status frames.
+   DEVS FOR DECADES:
+   These colors are visual-only. Backend upgrade rows still decide whether
+   a mouse is idle, upgrading, or ready to claim. This only makes the
+   Research Queue match the slider status glow language. */
+#activeResearchQueue .queue-card.queue-card--ready {
+  border-color: rgba(16, 185, 129, 0.72) !important;
+  background:
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.22), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(34, 211, 238, 0.10), transparent 30%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.56)) !important;
+  box-shadow:
+    0 0 0 1px rgba(16, 185, 129, 0.24),
+    0 0 26px rgba(16, 185, 129, 0.28),
+    0 16px 38px rgba(2, 132, 199, 0.14) !important;
+}
+
+#activeResearchQueue .queue-card.queue-card--ready::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(16, 185, 129, 0.18), transparent 36%),
+    linear-gradient(315deg, rgba(34, 211, 238, 0.10), transparent 40%);
+  opacity: 0.9;
+}
+
+#activeResearchQueue .queue-card.queue-card--active {
+  border-color: rgba(59, 130, 246, 0.50) !important;
+  box-shadow:
+    0 0 0 1px rgba(59, 130, 246, 0.16),
+    0 0 22px rgba(59, 130, 246, 0.16),
+    0 14px 34px rgba(2, 132, 199, 0.10) !important;
+}
+
+#activeResearchQueue .queue-card.queue-card--idle {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+/* Research Queue ready badge emphasis.
+   Plain language:
+   This makes claim-ready state visually obvious without changing claim logic. */
+#activeResearchQueue .pill.ready {
+  border-color: rgba(16, 185, 129, 0.72) !important;
+  background:
+    linear-gradient(135deg, rgba(6, 95, 70, 0.96), rgba(16, 185, 129, 0.72)) !important;
+  color: #d1fae5 !important;
+  box-shadow:
+    0 0 0 1px rgba(16, 185, 129, 0.22),
+    0 0 18px rgba(16, 185, 129, 0.28) !important;
+}
+
+/* Genetic Inventory booster action buttons.
+   DEVS FOR DECADES:
+   These buttons consume shared Lab Elixir inventory through the backend.
+   This CSS is visual-only and makes the booster actions look pressable.
+   It must not change inventory, timer, or economy logic. */
+.genetic-upgrade-actions-stack {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), transparent 34%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.46));
+}
+
+.genetic-mini-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .genetic-mini-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.genetic-mini-chip {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.genetic-mini-chip:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, 0.46);
+  box-shadow: 0 10px 24px rgba(14, 165, 233, 0.16);
+}
+
+.genetic-mini-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.genetic-mini-chip.green {
+  border-color: rgba(16, 185, 129, 0.34);
+  background: linear-gradient(135deg, rgba(6, 95, 70, 0.82), rgba(15, 23, 42, 0.78));
+}
+
+.genetic-mini-chip.blue {
+  border-color: rgba(59, 130, 246, 0.34);
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.82), rgba(15, 23, 42, 0.78));
+}
+
+.genetic-mini-chip.red {
+  border-color: rgba(239, 68, 68, 0.34);
+  background: linear-gradient(135deg, rgba(153, 27, 27, 0.82), rgba(15, 23, 42, 0.78));
+}
+
+.genetic-mini-chip.finish {
+  border-color: rgba(250, 204, 21, 0.38);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.90), rgba(217, 119, 6, 0.86));
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.14);
 }
 
 .queue-mini-pill,
@@ -7625,7 +7780,7 @@ function renderActiveResearchQueue() {
     }
 
     return `
-      <div class="queue-card ${boosterTone ? `boosted-card ${boosterTone}` : ''}">
+      <div class="queue-card ${hasReady ? 'queue-card--ready' : (hasActive ? 'queue-card--active' : 'queue-card--idle')} ${boosterTone ? `boosted-card ${boosterTone}` : ''}">
         ${nftImageMarkup}
 
         <div class="queue-card-inner">
@@ -13257,19 +13412,71 @@ const aggregateLoaded = await tryAggregateLab();
   }
 }
 
-el.refreshLabButton.addEventListener('click', async () => {
+/**
+ * Run a manual refresh button action with visible feedback.
+ * Plain language for DEVS:
+ * These overview buttons do not change economy or inventory directly.
+ * They only reload backend-authoritative Lab data and repaint the UI.
+ */
+async function runManualLabRefreshButton(button, workingLabel, action) {
+  if (!button || typeof action !== 'function') {
+    return;
+  }
+
+  const originalLabel = button.textContent;
+
+  try {
+    button.disabled = true;
+    button.textContent = workingLabel;
+    await action();
+  } catch (error) {
+    console.error('Manual Lab refresh failed:', error);
+    logLab(`Manual refresh failed: ${error.message || error}`, 'error');
+
+    await showLabMessageModal({
+      eyebrow: 'Lab Refresh',
+      title: 'Refresh Failed',
+      icon: '⚠️',
+      message: error.message || 'The Lab refresh action failed.',
+      note: 'Check the browser console and Network tab for the rejected endpoint.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    button.disabled = false;
+    button.textContent = originalLabel;
+  }
+}
+
+el.refreshLabButton?.addEventListener('click', async () => {
   logLab('Manual full lab refresh triggered.', 'info');
-  await loadLab();
+
+  await runManualLabRefreshButton(
+    el.refreshLabButton,
+    '⏳ Refreshing Lab…',
+    async () => {
+      await loadLab();
+    }
+  );
 });
 
-el.refreshUpgradeButton.addEventListener('click', async () => {
+el.refreshUpgradeButton?.addEventListener('click', async () => {
   logLab('Manual upgrade refresh triggered.', 'info');
-  await Promise.all([
-    loadTraitUpgrades(),
-    loadLabBoosterStoreCatalog(),
-    loadLabBoosterInventory()
-  ]);
-  renderAll();
+
+  await runManualLabRefreshButton(
+    el.refreshUpgradeButton,
+    '⏳ Refreshing Upgrades…',
+    async () => {
+      await Promise.all([
+        loadTraitUpgrades(),
+        loadLabBoosterStoreCatalog(),
+        loadLabBoosterInventory(),
+        loadUserGeneticItems()
+      ]);
+
+      renderAll();
+    }
+  );
 });
 
 el.traitGrid?.addEventListener('click', async event => {
