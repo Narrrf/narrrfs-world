@@ -2275,6 +2275,241 @@ hydrateSession();
       font-size: 0.88rem;
       color: #cbd5e1;
     }
+
+    /* 🧭 Lab Control Dock.
+   DEVS FOR DECADES:
+   This is frontend-only navigation clarity. It does not change Lab tab logic,
+   backend authority, economy, inventory, NFT ownership, upgrades, or marketplace behavior. */
+.lab-control-dock {
+  position: sticky;
+  top: 10px;
+  z-index: 30;
+  margin: 1rem 0 1.15rem;
+  padding: 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.13), transparent 30%),
+    radial-gradient(circle at top right, rgba(250, 204, 21, 0.10), transparent 28%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.86));
+  box-shadow:
+    0 22px 60px rgba(2, 6, 23, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+}
+
+.lab-control-dock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 2px 4px 12px;
+}
+
+.lab-control-kicker {
+  color: #67e8f9;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lab-control-title {
+  margin-top: 4px;
+  color: #f8fafc;
+  font-size: 1.08rem;
+  line-height: 1.15;
+  font-weight: 950;
+}
+
+.lab-control-copy {
+  margin-top: 4px;
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.lab-control-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  background: rgba(8, 47, 73, 0.42);
+  padding: 7px 11px;
+  color: #a5f3fc;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.lab-control-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22d3ee;
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.8);
+}
+
+.lab-control-dock .lab-tab-nav {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.lab-control-dock .lab-tab-button {
+  position: relative;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 10px 11px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.78), rgba(15, 23, 42, 0.70));
+  color: #e2e8f0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.lab-control-dock .lab-tab-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, 0.42);
+  background:
+    linear-gradient(180deg, rgba(8, 47, 73, 0.76), rgba(15, 23, 42, 0.76));
+  box-shadow: 0 12px 28px rgba(14, 165, 233, 0.12);
+}
+
+.lab-control-dock .lab-tab-button.active {
+  border-color: rgba(250, 204, 21, 0.72);
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 38%),
+    linear-gradient(135deg, rgba(120, 53, 15, 0.96), rgba(30, 64, 175, 0.90));
+  color: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(250, 204, 21, 0.15),
+    0 16px 36px rgba(245, 158, 11, 0.16),
+    0 0 30px rgba(34, 211, 238, 0.10);
+}
+
+.lab-control-dock .lab-tab-button.active::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 7px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #facc15, #22d3ee);
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.55);
+}
+
+.lab-tab-icon {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: rgba(2, 6, 23, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 1.05rem;
+}
+
+.lab-tab-text {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.lab-tab-title {
+  display: block;
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.05;
+  font-weight: 950;
+  white-space: normal;
+}
+
+.lab-tab-subtitle {
+  display: block;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.63rem;
+  line-height: 1.1;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lab-control-dock .lab-tab-button.active .lab-tab-subtitle {
+  color: rgba(254, 240, 138, 0.95);
+}
+
+@media (max-width: 1180px) {
+  .lab-control-dock .lab-tab-nav {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
+  }
+
+  .lab-control-dock .lab-tab-button {
+    min-width: 178px;
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 720px) {
+  .lab-control-dock {
+    top: 6px;
+    margin-top: 0.75rem;
+    padding: 11px;
+    border-radius: 20px;
+  }
+
+  .lab-control-dock-header {
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+
+  .lab-control-title {
+    font-size: 1rem;
+  }
+
+  .lab-control-copy {
+    font-size: 0.76rem;
+  }
+
+  .lab-control-status {
+    align-self: flex-start;
+  }
+
+  .lab-control-dock .lab-tab-button {
+    min-width: 166px;
+    min-height: 66px;
+    padding: 9px;
+  }
+
+  .lab-tab-icon {
+    width: 31px;
+    height: 31px;
+    min-width: 31px;
+  }
+}
+
     .lab-tab-guide {
       display: flex;
       flex-wrap: wrap;
@@ -4814,6 +5049,123 @@ body::after {
   font-weight: 700;
 }
 
+/* 📊 Marketplace side panel for list mode.
+   DEVS FOR DECADES:
+   This is display-only. It uses already-loaded marketplace/history state.
+   It does not decide ownership, listing validity, prices, payouts, or inventory. */
+.marketplace-pulse-card {
+  border-radius: 20px;
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.74));
+  padding: 16px;
+  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.22);
+}
+
+.marketplace-pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.marketplace-pulse-stat {
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.72);
+  padding: 11px;
+}
+
+.marketplace-pulse-label {
+  color: #94a3b8;
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.marketplace-pulse-value {
+  margin-top: 5px;
+  color: #f8fafc;
+  font-size: 1.02rem;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.marketplace-pulse-note {
+  margin-top: 10px;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.marketplace-mini-history {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 0.72rem;
+}
+
+.marketplace-mini-history th,
+.marketplace-mini-history td {
+  padding: 7px 6px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.marketplace-mini-history th {
+  color: #67e8f9;
+  font-size: 0.58rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.marketplace-mini-history td {
+  color: #e2e8f0;
+}
+
+.marketplace-mini-history .mini-title {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.marketplace-mini-history .mini-price {
+  color: #fde68a;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.marketplace-mini-history-action {
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.marketplace-mini-history-action.bought {
+  color: #6ee7b7;
+}
+
+.marketplace-mini-history-action.sold {
+  color: #facc15;
+}
+
+.marketplace-mini-history-action.listed {
+  color: #67e8f9;
+}
+
+.marketplace-mini-history-action.cancelled {
+  color: #fca5a5;
+}
+
+@media (max-width: 980px) {
+  .marketplace-pulse-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* 🧬 FINAL Genesis Ability Matrix layout authority.
    DEVS FOR DECADES:
    This scoped block intentionally comes AFTER the older Ability Matrix CSS.
@@ -4890,6 +5242,368 @@ body::after {
 
   #genesisAbilityMatrixSection .ability-matrix-mini-list span {
     width: 100%;
+  }
+}
+
+/* 🏪 Marketplace view toggle + list view.
+   DEVS FOR DECADES:
+   This is frontend-only display logic for issue #814.
+   It does not change marketplace filters, buy/cancel/create APIs, DSPOINC,
+   inventory ownership, listing state, or Genetic progression rules. */
+.genetic-marketplace-view-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.genetic-marketplace-view-btn {
+  min-width: 92px;
+}
+
+.genetic-marketplace-view-btn.active {
+  border-color: rgba(34, 211, 238, 0.62);
+  background:
+    linear-gradient(135deg, rgba(8, 145, 178, 0.95), rgba(37, 99, 235, 0.95));
+  color: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(103, 232, 249, 0.12),
+    0 10px 24px rgba(14, 165, 233, 0.18);
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 211, 238, 0.20);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), transparent 26%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.72), rgba(15, 23, 42, 0.72));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 42px rgba(2, 6, 23, 0.24);
+}
+
+/* Safety guard:
+   If stale card markup survives a failed render, never show GLB/card blocks in List mode. */
+#geneticMarketplaceGrid.genetic-marketplace-list-view > .genetic-card-live {
+  display: none !important;
+}
+
+/* 📋 Marketplace spreadsheet list view.
+   DEVS FOR DECADES:
+   This is frontend-only display logic for issue #814.
+   The list view is a comparison table, not a card grid. Buy/cancel/create APIs,
+   DSPOINC, inventory ownership, listing state, and Genetic progression remain backend-owned. */
+.genetic-marketplace-table {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.78rem;
+}
+
+.genetic-marketplace-table th,
+.genetic-marketplace-table td {
+  padding: 8px 9px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.genetic-marketplace-table th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+  color: #67e8f9;
+  font-size: 0.64rem;
+  font-weight: 950;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.genetic-marketplace-table tbody tr {
+  background: rgba(15, 23, 42, 0.54);
+  transition: background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.genetic-marketplace-table tbody tr:nth-child(even) {
+  background: rgba(30, 41, 59, 0.42);
+}
+
+.genetic-marketplace-table tbody tr:hover {
+  background: rgba(8, 145, 178, 0.18);
+  box-shadow: inset 3px 0 0 rgba(34, 211, 238, 0.55);
+}
+
+.genetic-marketplace-table .table-title-cell {
+  max-width: 175px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.genetic-marketplace-table .table-seller-cell {
+  max-width: 135px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #cbd5e1;
+}
+
+.genetic-marketplace-table .table-number-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.genetic-marketplace-table .table-center-cell {
+  text-align: center;
+}
+
+.genetic-marketplace-table .table-price-cell {
+  color: #fde68a;
+  font-weight: 950;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.genetic-marketplace-table .table-action-cell {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  min-width: 178px;
+  text-align: right;
+  background:
+    linear-gradient(90deg, rgba(2, 6, 23, 0.20), rgba(15, 23, 42, 0.98) 22%);
+  box-shadow: -12px 0 22px rgba(2, 6, 23, 0.28);
+}
+
+.genetic-marketplace-table th.table-action-cell {
+  z-index: 4;
+}
+
+.genetic-marketplace-table .table-action-wrap {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.genetic-marketplace-table .btn {
+  padding: 7px 9px;
+  font-size: 0.70rem;
+  border-radius: 10px;
+  min-height: 32px;
+}
+
+.genetic-marketplace-table .btn.primary {
+  min-width: 74px;
+}
+
+.genetic-marketplace-table .genetic-rarity-badge {
+  font-size: 0.62rem;
+  padding: 4px 7px;
+}
+
+.genetic-marketplace-detail-row td {
+  padding: 0;
+  white-space: normal;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.94));
+}
+
+.genetic-marketplace-list-detail {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+  border-top: 1px solid rgba(34, 211, 238, 0.16);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+}
+
+.genetic-marketplace-list-detail .genetic-media-shell {
+  min-height: 150px;
+}
+
+.genetic-marketplace-list-detail-info {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.genetic-marketplace-list-detail-title {
+  font-size: 1rem;
+  font-weight: 950;
+  color: #f8fafc;
+}
+
+.genetic-marketplace-list-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.genetic-marketplace-list-detail-pill {
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.72);
+  padding: 9px 10px;
+}
+
+.genetic-marketplace-list-detail-label {
+  color: #94a3b8;
+  font-size: 0.64rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.genetic-marketplace-list-detail-value {
+  margin-top: 3px;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.genetic-marketplace-list-detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  #geneticMarketplaceGrid.genetic-marketplace-list-view {
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
+  .genetic-marketplace-table {
+    min-width: 940px;
+    font-size: 0.74rem;
+  }
+
+  .genetic-marketplace-table th,
+  .genetic-marketplace-table td {
+    padding: 7px;
+  }
+
+  .genetic-marketplace-list-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .genetic-marketplace-list-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .genetic-marketplace-list-detail .genetic-media-shell {
+    min-height: 130px;
+  }
+}
+
+
+/* 📋 Marketplace spreadsheet list view.
+   DEVS FOR DECADES:
+   This is frontend-only display logic for issue #814.
+   List view is intentionally table-like: no GLB/media previews, no large cards,
+   no graphical seller blocks. It lets players compare many listings quickly.
+   Marketplace buy/cancel/create logic, DSPOINC, inventory, and ownership stay backend-owned. */
+.genetic-marketplace-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.genetic-marketplace-table th,
+.genetic-marketplace-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.genetic-marketplace-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(15, 23, 42, 0.96);
+  color: #67e8f9;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.genetic-marketplace-table tbody tr {
+  background: rgba(15, 23, 42, 0.48);
+  transition: background 0.16s ease;
+}
+
+.genetic-marketplace-table tbody tr:nth-child(even) {
+  background: rgba(30, 41, 59, 0.38);
+}
+
+.genetic-marketplace-table tbody tr:hover {
+  background: rgba(8, 145, 178, 0.16);
+}
+
+.genetic-marketplace-table .table-title-cell {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.genetic-marketplace-table .table-seller-cell {
+  max-width: 155px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.genetic-marketplace-table .table-number-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.genetic-marketplace-table .table-center-cell {
+  text-align: center;
+}
+
+.genetic-marketplace-table .table-action-cell {
+  text-align: right;
+  min-width: 150px;
+}
+
+.genetic-marketplace-table .btn {
+  padding: 7px 10px;
+  font-size: 0.74rem;
+  border-radius: 10px;
+}
+
+.genetic-marketplace-table .genetic-rarity-badge {
+  font-size: 0.66rem;
+  padding: 4px 7px;
+}
+
+@media (max-width: 768px) {
+  #geneticMarketplaceGrid.genetic-marketplace-list-view {
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
+  .genetic-marketplace-table {
+    min-width: 860px;
+    font-size: 0.78rem;
+  }
+
+  .genetic-marketplace-table th,
+  .genetic-marketplace-table td {
+    padding: 8px;
   }
 }
 
@@ -5045,25 +5759,79 @@ body::after {
       </aside>
     </div>
 
-<div id="lab-main-menu">
-
-  <div class="lab-tab-guide">
-    <div class="lab-tab-guide-copy">
-      Use the tabs as your main Lab navigation. Overview is mission control. My Genesis is the NFT-bound workspace. Genetic tabs stay user-bound.
+<div id="lab-main-menu" class="lab-control-dock">
+  <div class="lab-control-dock-header">
+    <div>
+      <div class="lab-control-kicker">🧭 Lab Control Panel</div>
+      <div class="lab-control-title">Choose your workspace</div>
+      <div class="lab-control-copy">
+        Genesis actions are NFT-bound. Genetic Shop, Inventory, and Marketplace are Discord-user-bound.
+      </div>
     </div>
-    <span class="inline-lane-badge">🧭 Stable long-term layout</span>
+
+    <div class="lab-control-status">
+      <span class="lab-control-status-dot"></span>
+      Main navigation
+    </div>
   </div>
 
   <nav class="lab-tab-nav" aria-label="Lab navigation tabs">
-    <button type="button" class="lab-tab-button active" data-lab-tab="overview">Overview</button>
-    <button type="button" class="lab-tab-button" data-lab-tab="my-genesis" id="lab-tab-my-genesis">My Genesis Lab</button>
-    <button type="button" class="lab-tab-button" data-lab-tab="research-queue" id="lab-tab-research-queue">Research Queue</button>
-    <button type="button" class="lab-tab-button" data-lab-tab="genetic-shop" id="lab-tab-genetic-shop">Genetic Shop</button>
-    <button type="button" class="lab-tab-button" data-lab-tab="genetic-inventory" id="lab-tab-genetic-inventory">My Genetic Inventory</button>
-    <button type="button" class="lab-tab-button" data-lab-tab="genetic-marketplace" id="lab-tab-genetic-marketplace">Marketplace</button>
-    <button type="button" class="lab-tab-button" data-lab-tab="knowledge">Knowledge</button>
-  </nav>
+    <button type="button" class="lab-tab-button active" data-lab-tab="overview">
+      <span class="lab-tab-icon">🧠</span>
+      <span class="lab-tab-text">
+        <span class="lab-tab-title">Overview</span>
+        <span class="lab-tab-subtitle">Mission control</span>
+      </span>
+    </button>
 
+    <button type="button" class="lab-tab-button" data-lab-tab="my-genesis" id="lab-tab-my-genesis">
+      <span class="lab-tab-icon">🧬</span>
+      <span class="lab-tab-text">
+        <span class="lab-tab-title">My Genesis Lab</span>
+        <span class="lab-tab-subtitle">NFT workspace</span>
+      </span>
+    </button>
+
+    <button type="button" class="lab-tab-button" data-lab-tab="research-queue" id="lab-tab-research-queue">
+      <span class="lab-tab-icon">⏱️</span>
+      <span class="lab-tab-text">
+        <span class="lab-tab-title">Research Queue</span>
+        <span class="lab-tab-subtitle">Timers & claims</span>
+      </span>
+    </button>
+
+    <button type="button" class="lab-tab-button" data-lab-tab="genetic-shop" id="lab-tab-genetic-shop">
+      <span class="lab-tab-icon">🧪</span>
+      <span class="lab-tab-text">
+        <span class="lab-tab-title">Genetic Shop</span>
+        <span class="lab-tab-subtitle">Buy traits</span>
+      </span>
+    </button>
+
+    <button type="button" class="lab-tab-button" data-lab-tab="genetic-inventory" id="lab-tab-genetic-inventory">
+      <span class="lab-tab-icon">🎒</span>
+      <span class="lab-tab-text">
+        <span class="lab-tab-title">My Genetic Inventory</span>
+        <span class="lab-tab-subtitle">Upgrade items</span>
+      </span>
+    </button>
+
+    <button type="button" class="lab-tab-button" data-lab-tab="genetic-marketplace" id="lab-tab-genetic-marketplace">
+      <span class="lab-tab-icon">🏪</span>
+      <span class="lab-tab-text">
+        <span class="lab-tab-title">Marketplace</span>
+        <span class="lab-tab-subtitle">Trade items</span>
+      </span>
+    </button>
+
+    <button type="button" class="lab-tab-button" data-lab-tab="knowledge">
+      <span class="lab-tab-icon">📘</span>
+      <span class="lab-tab-text">
+        <span class="lab-tab-title">Knowledge</span>
+        <span class="lab-tab-subtitle">Rules & help</span>
+      </span>
+    </button>
+  </nav>
 </div>
 
     <section id="lab-panel-overview" class="lab-tab-panel">
@@ -5442,11 +6210,38 @@ body::after {
           </select>
         </div>
 
-        <div class="genetic-filter-field flex-1 min-w-[220px]">
-          <label for="geneticMarketplaceSearchInput">Search</label>
-          <input id="geneticMarketplaceSearchInput" class="genetic-filter-input" type="search" placeholder="Search listed trait name or rarity" />
-        </div>
+       <div class="genetic-filter-field flex-1 min-w-[220px]">
+  <label for="geneticMarketplaceSearchInput">Search</label>
+  <input id="geneticMarketplaceSearchInput" class="genetic-filter-input" type="search" placeholder="Search listed trait name or rarity" />
+</div>
+
+<div class="genetic-filter-field">
+  <label>View</label>
+  <div class="genetic-marketplace-view-toggle" role="group" aria-label="Marketplace view mode">
+    <button
+      type="button"
+      id="geneticMarketplaceCardViewButton"
+      class="btn compact genetic-marketplace-view-btn active"
+      data-genetic-marketplace-view="card"
+      aria-pressed="true"
+    >
+      🧬 Cards
+    </button>
+    <button
+      type="button"
+      id="geneticMarketplaceListViewButton"
+      class="btn compact genetic-marketplace-view-btn"
+      data-genetic-marketplace-view="list"
+      aria-pressed="false"
+    >
+      📋 List
+    </button>
+  </div>
+</div>
       </div>
+
+        <div id="geneticMarketplaceGrid" class="genetic-card-grid"></div>
+      <div id="geneticMarketplaceEmptyState" class="genetic-empty-state hidden"></div>
 
       <div class="glass p-5 md:p-6 mt-6">
   <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -5489,30 +6284,10 @@ body::after {
   </div>
 </div>
 
-      <div id="geneticMarketplaceGrid" class="genetic-card-grid"></div>
-      <div id="geneticMarketplaceEmptyState" class="genetic-empty-state hidden"></div>
+    
     </div>
 
-    <div class="space-y-5">
-      <div class="glass p-5 md:p-6">
-        <div class="section-title text-xl"><span>🧠</span><span>Marketplace rules</span></div>
-        <div class="genetic-helper-list">
-          <div class="genetic-helper-item">Only idle Genetic Items can be listed. Upgrading or claim-ready runs stay blocked from sale.</div>
-          <div class="genetic-helper-item">The buyer receives the full Discord-bound item with its current level preserved.</div>
-          <div class="genetic-helper-item"><div class="genetic-helper-item">One Discord user can own up to 2 copies of the same exact trait per type/value combination. Buying a third copy is blocked by the backend.</div></div>
-          <div class="genetic-helper-item">DSPOINC is the only marketplace currency.</div>
-        </div>
-      </div>
-
-      <div class="glass p-5 md:p-6">
-        <div class="section-title text-xl"><span>📘</span><span>Knowledge: Trade safely</span></div>
-        <div class="genetic-helper-list">
-          <div class="genetic-helper-item">Listing an item pauses direct use in inventory and keeps it marked with a <strong>Listed For Sale</strong> state.</div>
-          <div class="genetic-helper-item">Marketplace transfers never mutate NFT-bound Genesis mice. This lane is user-bound only.</div>
-          <div class="genetic-helper-item">Collection identity, rarity, and media come from the Genetic Catalog, while owned level and runtime state come from the player inventory row.</div>
-        </div>
-      </div>
-    </div>
+<div id="geneticMarketplaceSidePanel" class="space-y-5"></div>
 </section>
 
 <section id="lab-panel-knowledge" class="lab-tab-panel" hidden>
@@ -5847,6 +6622,8 @@ geneticMarketplaceHistorySummary: null,
 geneticMarketplaceHistoryLoading: false,
 geneticMarketplaceHistoryFilter: 'all',
 geneticMarketplaceHistoryExpanded: false,
+geneticMarketplaceViewMode: 'card',
+geneticMarketplaceExpandedListingId: '',
 geneticInventoryRuntimeSummary: null,
       geneticActionItemId: null,
       activeGeneticMediaViewerKey: '',
@@ -5907,7 +6684,9 @@ const el = {
   geneticMarketplaceTraitTypeFilter: document.getElementById('geneticMarketplaceTraitTypeFilter'),
   geneticMarketplaceRarityFilter: document.getElementById('geneticMarketplaceRarityFilter'),
   geneticMarketplaceSearchInput: document.getElementById('geneticMarketplaceSearchInput'),
-  geneticMarketplaceGrid: document.getElementById('geneticMarketplaceGrid'),
+geneticMarketplaceCardViewButton: document.getElementById('geneticMarketplaceCardViewButton'),
+geneticMarketplaceListViewButton: document.getElementById('geneticMarketplaceListViewButton'),
+geneticMarketplaceGrid: document.getElementById('geneticMarketplaceGrid'),
   geneticMarketplaceEmptyState: document.getElementById('geneticMarketplaceEmptyState'),
   geneticMarketplaceHistoryBadge: document.getElementById('geneticMarketplaceHistoryBadge'),
 geneticMarketplaceHistoryToggle: document.getElementById('geneticMarketplaceHistoryToggle'),
@@ -11557,6 +12336,7 @@ async function refreshGeneticMarketplaceData() {
   } finally {
     state.geneticMarketplaceLoading = false;
     renderGeneticMarketplace();
+renderGeneticMarketplaceSidePanel();
   }
 }
 
@@ -11908,6 +12688,129 @@ function getFilteredGeneticMarketplaceListings() {
   });
 }
 
+
+/**
+ * Render one spreadsheet-style marketplace table row.
+ * Plain language for DEVS:
+ * This is display-only for #814. It avoids GLB/media previews in the row itself
+ * so players can compare many listings like an Excel table.
+ */
+function renderGeneticMarketplaceTableRow(item) {
+  const currentLevel = Number(item?.item_level_snapshot || item?.current_level || 1);
+  const price = Number(item?.price_dspoinc || 0);
+  const rarityTier = String(item?.rarity_tier || 'common').trim();
+  const rarityClass = getGeneticRarityClass(rarityTier);
+  const sellerName = String(item?.seller_username || item?.seller_name || 'Unknown Seller').trim();
+  const title = String(item?.display_title || item?.trait_value || 'Marketplace Trait').trim();
+  const traitType = String(item?.trait_type || 'Genetic Trait').trim();
+  const listingId = Number(item?.listing_id || 0);
+  const geneticItemId = Number(item?.genetic_item_id || 0);
+  const createdAt = String(item?.created_at || '').trim();
+  const isExpanded = String(state.geneticMarketplaceExpandedListingId || '') === String(listingId);
+  const escapedListingId = escapeHtml(String(listingId));
+
+  return `
+    <tr>
+      <td class="table-number-cell">#${formatNumber(listingId)}</td>
+      <td class="table-title-cell" title="${escapeHtml(title)}">${escapeHtml(title)}</td>
+      <td>${escapeHtml(traitType)}</td>
+      <td><span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(rarityTier)}</span></td>
+      <td class="table-center-cell">Lv ${formatNumber(currentLevel)}</td>
+      <td class="table-price-cell">${formatNumber(price)} DSPOINC</td>
+      <td class="table-seller-cell" title="${escapeHtml(sellerName)}">${escapeHtml(sellerName)}</td>
+      <td class="table-number-cell">#${formatNumber(geneticItemId)}</td>
+      <td>${escapeHtml(createdAt || '—')}</td>
+      <td class="table-action-cell">
+        <div class="table-action-wrap">
+          <button
+            type="button"
+            class="btn compact"
+            data-view-genetic-marketplace-listing="${escapedListingId}"
+            aria-expanded="${isExpanded ? 'true' : 'false'}"
+            title="View item details and media preview."
+          >
+            ${isExpanded ? 'Hide' : 'View'}
+          </button>
+          ${renderGeneticMarketplaceBuyAction(item)}
+        </div>
+      </td>
+    </tr>
+    ${isExpanded ? renderGeneticMarketplaceTableDetailRow(item) : ''}
+  `;
+}
+
+/**
+ * Render the expanded Marketplace table detail row.
+ * Plain language for DEVS:
+ * The table row stays compact. The detail row gives users the visual/media view
+ * and the same backend-owned Buy action as the card view.
+ */
+function renderGeneticMarketplaceTableDetailRow(item) {
+  const listingId = Number(item?.listing_id || 0);
+  const currentLevel = Number(item?.item_level_snapshot || item?.current_level || 1);
+  const price = Number(item?.price_dspoinc || 0);
+  const title = String(item?.display_title || item?.trait_value || 'Marketplace Trait').trim();
+  const traitType = String(item?.trait_type || 'Genetic Trait').trim();
+  const traitValue = String(item?.trait_value || title).trim();
+  const sellerName = String(item?.seller_username || item?.seller_name || 'Unknown Seller').trim();
+  const rarityTier = String(item?.rarity_tier || 'common').trim();
+  const geneticItemId = Number(item?.genetic_item_id || 0);
+  const viewerKey = `marketplace-list-${listingId}`;
+
+  return `
+    <tr class="genetic-marketplace-detail-row">
+      <td colspan="10">
+        <div class="genetic-marketplace-list-detail">
+          <div>
+            ${renderGeneticMedia(item, { viewerKey })}
+          </div>
+
+          <div class="genetic-marketplace-list-detail-info">
+            <div>
+              <div class="genetic-marketplace-list-detail-title">${escapeHtml(title)}</div>
+              <div class="genetic-card-subtitle">${escapeHtml(traitType)} · ${escapeHtml(traitValue)} · Listing #${formatNumber(listingId)}</div>
+            </div>
+
+            <div class="genetic-marketplace-list-detail-grid">
+              <div class="genetic-marketplace-list-detail-pill">
+                <div class="genetic-marketplace-list-detail-label">Rarity</div>
+                <div class="genetic-marketplace-list-detail-value">${escapeHtml(rarityTier)}</div>
+              </div>
+              <div class="genetic-marketplace-list-detail-pill">
+                <div class="genetic-marketplace-list-detail-label">Level</div>
+                <div class="genetic-marketplace-list-detail-value">Lv ${formatNumber(currentLevel)}</div>
+              </div>
+              <div class="genetic-marketplace-list-detail-pill">
+                <div class="genetic-marketplace-list-detail-label">Price</div>
+                <div class="genetic-marketplace-list-detail-value">${formatNumber(price)} DSPOINC</div>
+              </div>
+              <div class="genetic-marketplace-list-detail-pill">
+                <div class="genetic-marketplace-list-detail-label">Seller</div>
+                <div class="genetic-marketplace-list-detail-value">${escapeHtml(sellerName)}</div>
+              </div>
+              <div class="genetic-marketplace-list-detail-pill">
+                <div class="genetic-marketplace-list-detail-label">Genetic Item ID</div>
+                <div class="genetic-marketplace-list-detail-value">#${formatNumber(geneticItemId)}</div>
+              </div>
+              <div class="genetic-marketplace-list-detail-pill">
+                <div class="genetic-marketplace-list-detail-label">Transfer Rule</div>
+                <div class="genetic-marketplace-list-detail-value">Full user-bound item state transfers on buy.</div>
+              </div>
+            </div>
+
+            <div class="genetic-marketplace-list-detail-actions">
+              ${renderGeneticMarketplaceBuyAction(item)}
+              <button type="button" class="btn" data-view-genetic-marketplace-listing="${escapeHtml(String(listingId))}">
+                Close Details
+              </button>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
 function renderGeneticMarketplaceBuyAction(item) {
   const listingId = Number(item?.listing_id || 0);
   const sellerId = String(item?.seller_user_id || '').trim();
@@ -12232,14 +13135,209 @@ function renderGeneticMarketplaceCard(item) {
   `;
 }
 
+/**
+ * Return compact marketplace stats for the current active listing view.
+ * Plain language for DEVS:
+ * These are frontend display stats only. Backend remains authoritative for
+ * listing validity, ownership, buying, cancelling, and DSPOINC movement.
+ */
+function getGeneticMarketplacePulseStats() {
+  const filteredListings = getFilteredGeneticMarketplaceListings();
+  const allListings = Array.isArray(state.geneticMarketplaceListings)
+    ? state.geneticMarketplaceListings
+    : [];
+
+  const filteredPrices = filteredListings
+    .map(item => Number(item?.price_dspoinc || 0))
+    .filter(price => price > 0);
+
+  const allPrices = allListings
+    .map(item => Number(item?.price_dspoinc || 0))
+    .filter(price => price > 0);
+
+  const lowestFilteredPrice = filteredPrices.length ? Math.min(...filteredPrices) : 0;
+  const highestFilteredPrice = filteredPrices.length ? Math.max(...filteredPrices) : 0;
+  const averageFilteredPrice = filteredPrices.length
+    ? Math.round(filteredPrices.reduce((sum, price) => sum + price, 0) / filteredPrices.length)
+    : 0;
+
+  return {
+    filteredCount: filteredListings.length,
+    totalCount: allListings.length,
+    lowestFilteredPrice,
+    highestFilteredPrice,
+    averageFilteredPrice,
+    totalMarketValue: allPrices.reduce((sum, price) => sum + price, 0)
+  };
+}
+
+/**
+ * Render one compact history row for the Marketplace side panel.
+ * Plain language for DEVS:
+ * This is read-only display. It does not deliver rewards, transfer items,
+ * move DSPOINC, or mutate marketplace history.
+ */
+function renderGeneticMarketplaceMiniHistoryRow(entry) {
+  const action = String(entry?.action || 'listed').trim().toLowerCase();
+  const title = String(entry?.display_title || entry?.trait_value || 'Genetic Item').trim();
+  const price = Number(entry?.price_dspoinc || 0);
+  const level = Number(entry?.current_level || entry?.item_level_snapshot || 1);
+
+  return `
+    <tr>
+      <td><span class="marketplace-mini-history-action ${escapeHtml(action)}">${escapeHtml(action || 'event')}</span></td>
+      <td class="mini-title" title="${escapeHtml(title)}">${escapeHtml(title)}</td>
+      <td>Lv ${formatNumber(level)}</td>
+      <td class="mini-price">${formatNumber(price)}</td>
+    </tr>
+  `;
+}
+
+/**
+ * Render the right Marketplace side panel.
+ * Plain language for DEVS:
+ * Card mode teaches rules. List mode becomes a Market Pulse panel so players
+ * can see activity, prices, and recent ledger movement while comparing rows.
+ */
+function renderGeneticMarketplaceSidePanel() {
+  const panel = document.getElementById('geneticMarketplaceSidePanel');
+
+  if (!panel) {
+    return;
+  }
+
+  const viewMode = state.geneticMarketplaceViewMode === 'list' ? 'list' : 'card';
+
+  if (viewMode !== 'list') {
+    panel.innerHTML = `
+      <div class="glass p-5 md:p-6">
+        <div class="section-title text-xl"><span>🧠</span><span>Marketplace rules</span></div>
+        <div class="genetic-helper-list">
+          <div class="genetic-helper-item">Only idle Genetic Items can be listed. Upgrading or claim-ready runs stay blocked from sale.</div>
+          <div class="genetic-helper-item">The buyer receives the full Discord-bound item with its current level preserved.</div>
+          <div class="genetic-helper-item">One Discord user can own up to 2 copies of the same exact trait per type/value combination. Buying a third copy is blocked by the backend.</div>
+          <div class="genetic-helper-item">DSPOINC is the only marketplace currency.</div>
+        </div>
+      </div>
+
+      <div class="glass p-5 md:p-6">
+        <div class="section-title text-xl"><span>📘</span><span>Knowledge: Trade safely</span></div>
+        <div class="genetic-helper-list">
+          <div class="genetic-helper-item">Listing an item pauses direct use in inventory and keeps it marked with a <strong>Listed For Sale</strong> state.</div>
+          <div class="genetic-helper-item">Marketplace transfers never mutate NFT-bound Genesis mice. This lane is user-bound only.</div>
+          <div class="genetic-helper-item">Collection identity, rarity, and media come from the Genetic Catalog, while owned level and runtime state come from the player inventory row.</div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const pulseStats = getGeneticMarketplacePulseStats();
+  const historyRows = Array.isArray(state.geneticMarketplaceHistory)
+    ? state.geneticMarketplaceHistory.slice(0, 8)
+    : [];
+
+  const summary = state.geneticMarketplaceHistorySummary || {};
+  const boughtCount = Number(summary.bought_count || summary.bought || 0);
+  const soldCount = Number(summary.sold_count || summary.sold || 0);
+  const earned = Number(summary.earned_dspoinc || summary.earned || 0);
+  const spent = Number(summary.spent_dspoinc || summary.spent || 0);
+
+  panel.innerHTML = `
+    <div class="marketplace-pulse-card">
+      <div class="section-title text-xl"><span>📊</span><span>Market Pulse</span></div>
+      <p class="marketplace-pulse-note">
+        List mode is for fast economy overview: compare active prices, see recent market movement, then buy from the table.
+      </p>
+
+      <div class="marketplace-pulse-grid">
+        <div class="marketplace-pulse-stat">
+          <div class="marketplace-pulse-label">Visible Listings</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.filteredCount)} / ${formatNumber(pulseStats.totalCount)}</div>
+        </div>
+        <div class="marketplace-pulse-stat">
+          <div class="marketplace-pulse-label">Avg Visible Price</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.averageFilteredPrice)} DSPOINC</div>
+        </div>
+        <div class="marketplace-pulse-stat">
+          <div class="marketplace-pulse-label">Lowest Visible</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.lowestFilteredPrice)} DSPOINC</div>
+        </div>
+        <div class="marketplace-pulse-stat">
+          <div class="marketplace-pulse-label">Highest Visible</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.highestFilteredPrice)} DSPOINC</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="marketplace-pulse-card">
+      <div class="section-title text-xl"><span>🧾</span><span>Trading Ledger</span></div>
+      <div class="marketplace-pulse-grid">
+        <div class="marketplace-pulse-stat">
+          <div class="marketplace-pulse-label">Bought</div>
+          <div class="marketplace-pulse-value">${formatNumber(boughtCount)}</div>
+        </div>
+        <div class="marketplace-pulse-stat">
+          <div class="marketplace-pulse-label">Sold</div>
+          <div class="marketplace-pulse-value">${formatNumber(soldCount)}</div>
+        </div>
+        <div class="marketplace-pulse-stat">
+          <div class="marketplace-pulse-label">Spent</div>
+          <div class="marketplace-pulse-value">${formatNumber(spent)}</div>
+        </div>
+        <div class="marketplace-pulse-stat">
+          <div class="marketplace-pulse-label">Earned</div>
+          <div class="marketplace-pulse-value">${formatNumber(earned)}</div>
+        </div>
+      </div>
+
+      <table class="marketplace-mini-history">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Item</th>
+            <th>Lv</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            historyRows.length
+              ? historyRows.map(renderGeneticMarketplaceMiniHistoryRow).join('')
+              : `<tr><td colspan="4">No trading history loaded yet.</td></tr>`
+          }
+        </tbody>
+      </table>
+
+      <p class="marketplace-pulse-note">
+        This panel uses the existing backend marketplace ledger. Global public market-wide sales can be added later with a dedicated public history endpoint.
+      </p>
+    </div>
+  `;
+}
+
 function renderGeneticMarketplace() {
   const filtered = getFilteredGeneticMarketplaceListings();
+  const viewMode = state.geneticMarketplaceViewMode === 'list' ? 'list' : 'card';
 
   if (el.geneticMarketplaceBadge) {
-    el.geneticMarketplaceBadge.textContent = `${formatNumber(filtered.length)} active listings`;
+    el.geneticMarketplaceBadge.textContent = `${formatNumber(filtered.length)} active listings · ${viewMode === 'list' ? 'List view' : 'Card view'}`;
+  }
+
+  if (el.geneticMarketplaceCardViewButton && el.geneticMarketplaceListViewButton) {
+    const isListView = viewMode === 'list';
+
+    el.geneticMarketplaceCardViewButton.classList.toggle('active', !isListView);
+    el.geneticMarketplaceListViewButton.classList.toggle('active', isListView);
+
+    el.geneticMarketplaceCardViewButton.setAttribute('aria-pressed', !isListView ? 'true' : 'false');
+    el.geneticMarketplaceListViewButton.setAttribute('aria-pressed', isListView ? 'true' : 'false');
   }
 
   if (!el.geneticMarketplaceGrid || !el.geneticMarketplaceEmptyState) return;
+
+  el.geneticMarketplaceGrid.classList.toggle('genetic-card-grid', viewMode !== 'list');
+  el.geneticMarketplaceGrid.classList.toggle('genetic-marketplace-list-view', viewMode === 'list');
 
   if (!filtered.length) {
     el.geneticMarketplaceGrid.innerHTML = '';
@@ -12251,8 +13349,56 @@ function renderGeneticMarketplace() {
     return;
   }
 
-  el.geneticMarketplaceEmptyState.classList.add('hidden');
-  el.geneticMarketplaceGrid.innerHTML = filtered.map(renderGeneticMarketplaceCard).join('');
+el.geneticMarketplaceEmptyState.classList.add('hidden');
+
+if (viewMode === 'list') {
+  // 📋 Marketplace spreadsheet view.
+  // Plain language for DEVS:
+  // Clear old card/GLB markup before building rows. If one row has bad data or
+  // a renderer error, we must not leave old visual cards on screen in List mode.
+  el.geneticMarketplaceGrid.innerHTML = '';
+
+  let marketplaceTableRows = '';
+
+  try {
+    marketplaceTableRows = filtered.map(renderGeneticMarketplaceTableRow).join('');
+  } catch (error) {
+    console.error('❌ Genetic Marketplace list table render failed:', error);
+
+    marketplaceTableRows = `
+      <tr>
+        <td colspan="11" class="text-red-300 font-bold">
+          Marketplace list view could not render one row. Check browser console.
+        </td>
+      </tr>
+    `;
+  }
+
+  el.geneticMarketplaceGrid.innerHTML = `
+    <table class="genetic-marketplace-table">
+      <thead>
+  <tr>
+    <th>Listing</th>
+    <th>Item</th>
+    <th>Type</th>
+    <th>Rarity</th>
+    <th>Level</th>
+    <th>Price</th>
+    <th>Seller</th>
+    <th>Item ID</th>
+    <th>Listed</th>
+    <th class="table-action-cell">Actions</th>
+  </tr>
+</thead>
+      <tbody>
+        ${marketplaceTableRows}
+      </tbody>
+    </table>
+  `;
+  return;
+}
+
+el.geneticMarketplaceGrid.innerHTML = filtered.map(renderGeneticMarketplaceCard).join('');
 }
 
 /**
@@ -12327,9 +13473,10 @@ const response = await fetch(`${LAB_CONFIG.geneticMarketplaceHistoryEndpoint}?${
     state.geneticMarketplaceHistory = [];
     state.geneticMarketplaceHistorySummary = null;
   } finally {
-    state.geneticMarketplaceHistoryLoading = false;
-    renderGeneticMarketplaceHistory();
-  }
+  state.geneticMarketplaceHistoryLoading = false;
+  renderGeneticMarketplaceHistory();
+  renderGeneticMarketplaceSidePanel();
+}
 }
 
 /**
@@ -12389,6 +13536,48 @@ function formatGeneticMarketplaceHistoryDate(value) {
   }
 
   return date.toLocaleString();
+}
+
+/**
+ * Render one spreadsheet-style Marketplace History table row.
+ * Plain language for DEVS:
+ * This is display-only for #814. History stays read-only and backend-authoritative.
+ * In List mode, history must not render card/media/GLB layouts.
+ */
+function renderGeneticMarketplaceHistoryTableRow(entry) {
+  const meta = getGeneticMarketplaceHistoryActionMeta(entry?.action);
+  const title = String(entry?.display_title || entry?.trait_value || 'Genetic Item').trim();
+  const traitType = String(entry?.trait_type || 'Trait').trim();
+  const traitValue = String(entry?.trait_value || title).trim();
+  const rarity = String(entry?.rarity_tier || 'common').trim();
+  const rarityClass = getGeneticRarityClass(rarity);
+  const level = Number(entry?.current_level || 1);
+  const price = Number(entry?.price_dspoinc || 0);
+  const sellerName = String(entry?.seller_username || 'Seller').trim();
+  const buyerName = String(entry?.buyer_username || 'Buyer').trim();
+  const action = String(entry?.action || '').trim().toLowerCase();
+  const otherPlayer = action === 'bought'
+    ? sellerName
+    : (action === 'sold' ? buyerName : '');
+  const eventTime = formatGeneticMarketplaceHistoryDate(entry?.event_time || entry?.updated_at || entry?.created_at);
+  const listingId = Number(entry?.listing_id || 0);
+
+  return `
+    <tr>
+      <td class="table-number-cell">#${formatNumber(listingId)}</td>
+      <td><span class="${escapeHtml(meta.tone)}">${escapeHtml(meta.icon)} ${escapeHtml(meta.label)}</span></td>
+      <td class="table-title-cell" title="${escapeHtml(title)}">${escapeHtml(title)}</td>
+      <td>${escapeHtml(traitType)}</td>
+      <td class="table-title-cell" title="${escapeHtml(traitValue)}">${escapeHtml(traitValue)}</td>
+      <td><span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(rarity)}</span></td>
+      <td class="table-center-cell">Lv ${formatNumber(level)}</td>
+      <td class="table-number-cell">${formatNumber(price)}</td>
+      <td>DSPOINC</td>
+      <td class="table-seller-cell" title="${escapeHtml(otherPlayer || '—')}">${escapeHtml(otherPlayer || '—')}</td>
+      <td>${escapeHtml(entry?.status || 'unknown')}</td>
+      <td>${escapeHtml(eventTime || '—')}</td>
+    </tr>
+  `;
 }
 
 /**
@@ -12546,8 +13735,41 @@ el.geneticMarketplaceHistoryEmptyState.innerHTML = `
     return;
   }
 
-  el.geneticMarketplaceHistoryEmptyState.classList.add('hidden');
-  el.geneticMarketplaceHistoryGrid.innerHTML = rows.map(renderGeneticMarketplaceHistoryCard).join('');
+ el.geneticMarketplaceHistoryEmptyState.classList.add('hidden');
+
+const historyViewMode = state.geneticMarketplaceViewMode === 'list' ? 'list' : 'card';
+
+el.geneticMarketplaceHistoryGrid.classList.toggle('genetic-card-grid', historyViewMode !== 'list');
+el.geneticMarketplaceHistoryGrid.classList.toggle('genetic-marketplace-list-view', historyViewMode === 'list');
+
+if (historyViewMode === 'list') {
+  el.geneticMarketplaceHistoryGrid.innerHTML = `
+    <table class="genetic-marketplace-table">
+      <thead>
+        <tr>
+          <th>Listing</th>
+          <th>Action</th>
+          <th>Item</th>
+          <th>Type</th>
+          <th>Trait</th>
+          <th>Rarity</th>
+          <th>Level</th>
+          <th>Price</th>
+          <th>Currency</th>
+          <th>Other Player</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(renderGeneticMarketplaceHistoryTableRow).join('')}
+      </tbody>
+    </table>
+  `;
+  return;
+}
+
+el.geneticMarketplaceHistoryGrid.innerHTML = rows.map(renderGeneticMarketplaceHistoryCard).join('');
 }
 
 async function handleStartGeneticUpgrade(geneticItemId) {
@@ -13250,9 +14472,16 @@ function switchLabTab(tabName) {
   if (!el.tabButtons || !el.tabPanels) return;
 
   el.tabButtons.forEach(button => {
-    const isActive = button.getAttribute('data-lab-tab') === tabName;
-    button.classList.toggle('active', isActive);
-  });
+  const isActive = button.getAttribute('data-lab-tab') === tabName;
+  button.classList.toggle('active', isActive);
+
+  if (isActive) {
+    button.setAttribute('aria-current', 'page');
+    button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  } else {
+    button.removeAttribute('aria-current');
+  }
+});
 
   el.tabPanels.forEach(panel => {
     panel.hidden = panel.id !== `lab-panel-${tabName}`;
@@ -13975,6 +15204,21 @@ el.geneticShopGrid?.addEventListener('click', event => {
     return;
   }
 
+  const viewListingButton = event.target.closest('[data-view-genetic-marketplace-listing]');
+if (viewListingButton) {
+  const listingId = String(viewListingButton.getAttribute('data-view-genetic-marketplace-listing') || '').trim();
+
+  if (!listingId) {
+    return;
+  }
+
+  state.geneticMarketplaceExpandedListingId =
+    String(state.geneticMarketplaceExpandedListingId || '') === listingId ? '' : listingId;
+
+  renderGeneticMarketplace();
+  return;
+}
+
   const buyButton = event.target.closest('[data-genetic-buy-id]');
   if (!buyButton) {
     return;
@@ -14090,8 +15334,26 @@ el.geneticInventoryGrid?.addEventListener('click', event => {
 ].filter(Boolean).forEach(node => {
   node.addEventListener(
     node === el.geneticMarketplaceSearchInput ? 'input' : 'change',
-    () => renderGeneticMarketplace()
+    () => {
+      renderGeneticMarketplace();
+      renderGeneticMarketplaceSidePanel();
+    }
   );
+});
+
+document.querySelectorAll('[data-genetic-marketplace-view]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const nextView = String(button.dataset.geneticMarketplaceView || 'card').trim().toLowerCase();
+
+    if (nextView !== 'card' && nextView !== 'list') {
+      return;
+    }
+
+state.geneticMarketplaceViewMode = nextView;
+renderGeneticMarketplace();
+renderGeneticMarketplaceHistory();
+renderGeneticMarketplaceSidePanel();
+  });
 });
 
 if (el.geneticMarketplaceHistoryToggle && el.geneticMarketplaceHistoryBody) {

@@ -1,5 +1,82 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+---
+
+## 🔄 UPDATE — MAY 20, 2026 — LAB SYSTEM 9.9 GUI MARKETPLACE LIST VIEW + LIVE MARKET RELIST MILESTONE
+
+### Status
+
+Lab System 9.9 reached a major GUI and marketplace usability milestone.
+
+Main focus:
+
+- Lab Control Panel navigation visibility upgrade
+- Genetic Marketplace Excel-style List View
+- Marketplace Market Pulse side panel
+- Trading Ledger / history overview in List mode
+- Live marketplace ghost listing cleanup
+- Safe relist of proven valid Genetic Marketplace items
+- Marketplace table tuned for long-term economy visibility
+
+This update stayed frontend-safe and backend-authoritative:
+
+- No DSPOINC ledger rewrite.
+- No inventory schema rewrite.
+- No marketplace economy rewrite.
+- No buy/cancel/create API behavior rewrite.
+- No Genesis ownership rewrite.
+- No marketplace history deletion.
+- No Genetic max-2 rollback.
+- DB repair/relist used backup-first SQL through `/tmp/*.sql` files.
+
+---
+
+## ✅ 1. Lab Control Panel navigation upgraded
+
+File:
+
+```text
+public/lab.html
+
+---
+
+## 🔄 UPDATE — MAY 20, 2026 — LAB SYSTEM 9.9 MARKETPLACE / GENETIC INVENTORY / DALLAS ABILITY RECOVERY PASS
+
+### Status
+
+Lab System 9.9 continued after the Lab 9.7/9.8 urgent push.
+
+Main focus:
+
+- Genetic Marketplace stuck listing recovery
+- Genetic inventory visibility / duplicate confusion
+- Admin marketplace API hardening
+- LennyLOCO targeted Genetic item restore
+- Dallas Genesis Ability Matrix owner-state follow-up
+- Confirmation that current Lab frontend updates are working for most users
+
+This pass stayed backend-authoritative and DB-safe:
+
+- No DSPOINC ledger rewrite.
+- No inventory schema rewrite.
+- No marketplace economy rewrite.
+- No Genesis ownership rewrite.
+- No Genetic max-2 rollback.
+- No marketplace history deletion.
+- SQLite backups were created before repair scripts.
+- Long SQL was run through nano-created `/tmp/*.sql` files.
+
+---
+
+## ✅ 1. Genetic Marketplace stuck listing audit + Luke/Narrrf test repair
+
+User reports showed Genetic inventory items stuck in market, unable to delist, or showing doubled/weirdly in `lab.html`.
+
+Initial audit script:
+
+```text
+/tmp/audit_genetic_inventory_marketplace.sql
+
 ## ?? UPDATE � MAY 19, 2026 � LEADERBOARD MOBILE USERNAME FIX
 
 Fixed feedback cluster #849, #850, and #852 on `leaderboard.html`.
