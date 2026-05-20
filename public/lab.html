@@ -5298,7 +5298,7 @@ body::after {
    DSPOINC, inventory ownership, listing state, and Genetic progression remain backend-owned. */
 .genetic-marketplace-table {
   width: 100%;
-  min-width: 1040px;
+  min-width: 760px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.78rem;
@@ -5372,18 +5372,35 @@ body::after {
 }
 
 .genetic-marketplace-table .table-action-cell {
-  position: sticky;
-  right: 0;
-  z-index: 2;
-  min-width: 178px;
+  min-width: 150px;
+  width: 150px;
+  max-width: 150px;
   text-align: right;
-  background:
-    linear-gradient(90deg, rgba(2, 6, 23, 0.20), rgba(15, 23, 42, 0.98) 22%);
-  box-shadow: -12px 0 22px rgba(2, 6, 23, 0.28);
+  background: rgba(15, 23, 42, 0.96);
 }
 
-.genetic-marketplace-table th.table-action-cell {
-  z-index: 4;
+.genetic-marketplace-table .table-action-wrap {
+  display: grid;
+  grid-template-columns: 54px 84px;
+  gap: 6px;
+  justify-content: end;
+  align-items: center;
+}
+
+.genetic-marketplace-table .table-action-wrap .btn {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 6px;
+  font-size: 0.70rem;
+  line-height: 1.05;
+  border-radius: 10px;
+}
+
+.genetic-marketplace-table .table-seller-cell {
+  max-width: 115px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #cbd5e1;
 }
 
 .genetic-marketplace-table .table-action-wrap {
@@ -5482,14 +5499,33 @@ body::after {
     margin-right: -4px;
   }
 
-  .genetic-marketplace-table {
-    min-width: 940px;
-    font-size: 0.74rem;
+.genetic-marketplace-table {
+    min-width: 820px;
+    font-size: 0.70rem;
   }
 
-  .genetic-marketplace-table th,
+.genetic-marketplace-table th,
   .genetic-marketplace-table td {
-    padding: 7px;
+    padding: 6px;
+  }
+
+  .genetic-marketplace-table .table-title-cell {
+    max-width: 118px;
+  }
+
+  .genetic-marketplace-table .table-seller-cell {
+    max-width: 82px;
+  }
+
+  .genetic-marketplace-table .table-action-cell {
+    min-width: 128px;
+    width: 128px;
+    max-width: 128px;
+  }
+
+  .genetic-marketplace-table .table-action-wrap {
+    grid-template-columns: 48px 70px;
+    gap: 5px;
   }
 
   .genetic-marketplace-list-detail {
@@ -5554,13 +5590,13 @@ body::after {
 }
 
 .genetic-marketplace-table .table-title-cell {
-  max-width: 220px;
+  max-width: 145px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .genetic-marketplace-table .table-seller-cell {
-  max-width: 155px;
+  max-width: 112px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -5597,8 +5633,8 @@ body::after {
   }
 
   .genetic-marketplace-table {
-    min-width: 860px;
-    font-size: 0.78rem;
+    min-width: 720px;
+    font-size: 0.72rem;
   }
 
   .genetic-marketplace-table th,
@@ -5666,6 +5702,886 @@ body::after {
 #geneticMarketplaceGrid .genetic-card-actions {
   margin-top: 12px;
 }
+
+/* ✅ Final Marketplace List View fit override.
+   DEVS FOR DECADES:
+   This fixes the List View action buttons being pushed outside the Marketplace panel.
+   It is frontend-only table layout CSS. It does not touch buy/cancel/create APIs,
+   DSPOINC, inventory ownership, listing history, or marketplace economy rules. */
+#geneticMarketplaceGrid.genetic-marketplace-list-view {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table {
+  width: 100%;
+  min-width: 760px;
+  table-layout: fixed;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th,
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td {
+  padding: 8px 7px;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th:nth-child(1),
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td:nth-child(1) {
+  width: 7%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th:nth-child(2),
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td:nth-child(2) {
+  width: 17%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th:nth-child(3),
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td:nth-child(3) {
+  width: 12%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th:nth-child(4),
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td:nth-child(4) {
+  width: 13%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th:nth-child(5),
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td:nth-child(5) {
+  width: 7%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th:nth-child(6),
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td:nth-child(6) {
+  width: 16%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th:nth-child(7),
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td:nth-child(7) {
+  width: 12%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th:nth-child(8),
+#geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td:nth-child(8) {
+  width: 16%;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .table-title-cell,
+#geneticMarketplaceGrid.genetic-marketplace-list-view .table-seller-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-cell {
+  position: sticky;
+  right: 0;
+  z-index: 5;
+  width: 136px;
+  min-width: 136px;
+  max-width: 136px;
+  background:
+    linear-gradient(90deg, rgba(2, 6, 23, 0.08), rgba(15, 23, 42, 0.98) 18%);
+  box-shadow: -8px 0 16px rgba(2, 6, 23, 0.28);
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view th.table-action-cell {
+  z-index: 6;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-wrap {
+  display: grid !important;
+  grid-template-columns: 46px 78px;
+  gap: 5px;
+  justify-content: end;
+  align-items: center;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-wrap .btn {
+  width: 100%;
+  min-width: 0 !important;
+  min-height: 31px;
+  padding: 7px 5px;
+  font-size: 0.68rem;
+  line-height: 1;
+  border-radius: 10px;
+}
+
+#geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-wrap .btn.primary {
+  min-width: 0 !important;
+}
+
+@media (max-width: 768px) {
+  #geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table {
+    min-width: 720px;
+    font-size: 0.68rem;
+  }
+
+  #geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table th,
+  #geneticMarketplaceGrid.genetic-marketplace-list-view .genetic-marketplace-table td {
+    padding: 7px 5px;
+  }
+
+  #geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-cell {
+    width: 126px;
+    min-width: 126px;
+    max-width: 126px;
+  }
+
+  #geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-wrap {
+    grid-template-columns: 43px 72px;
+    gap: 4px;
+  }
+
+  #geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-wrap .btn {
+    font-size: 0.64rem;
+    padding: 7px 4px;
+  }
+}
+
+/* 📱 Mobile Lab Control Dock fix.
+   DEVS FOR DECADES:
+   Desktop keeps the premium sticky Lab Control Panel.
+   Mobile uses a normal compact scroll menu so it does not cover the playable Lab area.
+   This is frontend-only navigation CSS. It does not change tab logic, backend
+   authority, economy, inventory, NFT ownership, upgrades, or marketplace behavior. */
+@media (max-width: 720px) {
+  .lab-control-dock {
+    position: relative !important;
+    top: auto !important;
+    z-index: 8 !important;
+    margin: 0.55rem 0 0.85rem !important;
+    padding: 9px !important;
+    border-radius: 18px !important;
+  }
+
+  .lab-control-dock-header {
+    padding: 0 2px 7px !important;
+    gap: 4px !important;
+  }
+
+  .lab-control-kicker {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.13em !important;
+  }
+
+  .lab-control-title {
+    margin-top: 2px !important;
+    font-size: 0.92rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .lab-control-copy,
+  .lab-control-status {
+    display: none !important;
+  }
+
+  .lab-control-dock .lab-tab-nav {
+    display: flex !important;
+    gap: 7px !important;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding: 0 0 3px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lab-control-dock .lab-tab-nav::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .lab-control-dock .lab-tab-nav::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(34, 211, 238, 0.34);
+  }
+
+  .lab-control-dock .lab-tab-button {
+    min-width: 132px !important;
+    min-height: 50px !important;
+    padding: 7px 8px !important;
+    border-radius: 14px !important;
+    gap: 7px !important;
+    scroll-snap-align: start;
+  }
+
+  .lab-tab-icon {
+    width: 27px !important;
+    height: 27px !important;
+    min-width: 27px !important;
+    border-radius: 10px !important;
+    font-size: 0.88rem !important;
+  }
+
+  .lab-tab-title {
+    font-size: 0.72rem !important;
+    line-height: 1.05 !important;
+  }
+
+  .lab-tab-subtitle {
+    font-size: 0.52rem !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0.03em !important;
+  }
+
+  .lab-control-dock .lab-tab-button.active::after {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 5px !important;
+    height: 2px !important;
+  }
+}
+/* 🏪 Premium Marketplace Cards.
+   DEVS FOR DECADES:
+   This improves card-mode readability and uses the existing shared genetic media viewer.
+   It does not change marketplace buy/cancel/create APIs, DSPOINC, inventory,
+   listing ownership, listing history, or Genetic item progression. */
+#geneticMarketplaceGrid.genetic-card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)) !important;
+  align-items: stretch;
+}
+
+#geneticMarketplaceGrid .marketplace-card-pro {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px !important;
+  border-radius: 24px;
+  border-color: rgba(34, 211, 238, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.13), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.08), transparent 30%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.84));
+  box-shadow:
+    0 18px 42px rgba(2, 6, 23, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+#geneticMarketplaceGrid .marketplace-card-pro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 34%);
+  opacity: 0.6;
+}
+
+#geneticMarketplaceGrid .marketplace-card-pro > * {
+  position: relative;
+  z-index: 2;
+}
+
+.marketplace-card-pro-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: -2px;
+}
+
+.marketplace-card-pro-listing {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background: rgba(8, 47, 73, 0.45);
+  color: #a5f3fc;
+  padding: 5px 9px;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.marketplace-card-pro-header {
+  align-items: flex-start;
+}
+
+.marketplace-card-pro-media .genetic-media-shell {
+  min-height: 132px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at center, rgba(34, 211, 238, 0.10), transparent 42%),
+    rgba(2, 6, 23, 0.46);
+}
+
+.marketplace-card-pro-media .genetic-media-cta-button {
+  min-width: 112px;
+  padding: 9px 16px;
+  border: 1px solid rgba(103, 232, 249, 0.34);
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.98), rgba(37, 99, 235, 0.98));
+  box-shadow:
+    0 10px 22px rgba(14, 165, 233, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.marketplace-card-pro-media .genetic-media-cta-button.secondary {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.marketplace-card-pro-stats {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: 10px;
+}
+
+.marketplace-card-pro-stat,
+.marketplace-card-pro-seller,
+.marketplace-card-pro-detail {
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.68);
+}
+
+.marketplace-card-pro-stat {
+  padding: 11px 12px;
+}
+
+.marketplace-card-pro-stat .label,
+.marketplace-card-pro-seller .label {
+  color: #94a3b8;
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.marketplace-card-pro-stat .value,
+.marketplace-card-pro-seller .value {
+  margin-top: 4px;
+  color: #f8fafc;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.marketplace-card-pro-stat.highlight .value {
+  color: #fde68a;
+}
+
+.marketplace-card-pro-seller {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.marketplace-card-pro-seller-text {
+  min-width: 0;
+}
+
+.marketplace-card-pro-seller .value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marketplace-card-pro-detail {
+  padding: 12px;
+}
+
+.marketplace-card-pro-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.marketplace-card-pro-detail-grid div {
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.10);
+  padding: 8px;
+}
+
+.marketplace-card-pro-detail-grid span {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.58rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.marketplace-card-pro-detail-grid strong {
+  display: block;
+  margin-top: 3px;
+  color: #e2e8f0;
+  font-size: 0.78rem;
+}
+
+.marketplace-card-pro-detail p {
+  margin: 10px 0 0;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.marketplace-card-pro-actions {
+  display: grid !important;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+  margin-top: auto;
+}
+
+.marketplace-card-pro-actions .btn {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  min-height: 42px;
+}
+
+.marketplace-card-inspect-btn {
+  border-color: rgba(34, 211, 238, 0.24);
+  background: rgba(15, 23, 42, 0.72);
+}
+
+@media (max-width: 720px) {
+  #geneticMarketplaceGrid.genetic-card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  #geneticMarketplaceGrid .marketplace-card-pro {
+    padding: 13px !important;
+    border-radius: 20px;
+  }
+
+  .marketplace-card-pro-media .genetic-media-shell {
+    min-height: 118px;
+  }
+
+  .marketplace-card-pro-stats,
+  .marketplace-card-pro-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-card-pro-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-card-pro-actions .btn {
+    min-height: 44px;
+  }
+}
+
+/* 🧭 Genesis Quick Dock.
+   DEVS FOR DECADES:
+   This is a frontend-only fast navigation strip inside My Genesis Lab.
+   It does not change Genesis trait logic, Ability Matrix backend authority,
+   timers, DSPOINC, ownership, claiming, queue state, or NFT-bound progression. */
+.genesis-quick-dock {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 10px;
+  border-radius: 22px;
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), transparent 34%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(2, 6, 23, 0.62));
+  box-shadow:
+    0 14px 36px rgba(2, 6, 23, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.genesis-quick-link {
+  min-height: 58px;
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  padding: 10px 11px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.72), rgba(15, 23, 42, 0.68)) !important;
+  color: #e2e8f0 !important;
+  text-decoration: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.genesis-quick-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, 0.42) !important;
+  background:
+    linear-gradient(180deg, rgba(8, 47, 73, 0.78), rgba(15, 23, 42, 0.78)) !important;
+  box-shadow: 0 12px 28px rgba(14, 165, 233, 0.13);
+}
+
+.genesis-quick-link--ability {
+  border-color: rgba(250, 204, 21, 0.34) !important;
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.12), transparent 40%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.78), rgba(15, 23, 42, 0.70)) !important;
+}
+
+.genesis-quick-link--ability:hover {
+  border-color: rgba(250, 204, 21, 0.62) !important;
+  box-shadow:
+    0 12px 28px rgba(245, 158, 11, 0.12),
+    0 0 24px rgba(34, 211, 238, 0.10);
+}
+
+.genesis-quick-icon {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(2, 6, 23, 0.42);
+  font-size: 1rem;
+}
+
+.genesis-quick-text {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.genesis-quick-text span {
+  color: #f8fafc;
+  font-size: 0.78rem;
+  line-height: 1.05;
+  font-weight: 950;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.genesis-quick-text small {
+  color: rgba(226, 232, 240, 0.68);
+  font-size: 0.58rem;
+  line-height: 1.05;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 980px) {
+  .genesis-quick-dock {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 9px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .genesis-quick-dock::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .genesis-quick-dock::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(34, 211, 238, 0.34);
+  }
+
+  .genesis-quick-link {
+    min-width: 158px;
+    min-height: 54px;
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 520px) {
+  .genesis-quick-dock {
+    margin-top: 14px;
+    padding: 8px;
+    border-radius: 18px;
+  }
+
+  .genesis-quick-link {
+    min-width: 138px;
+    min-height: 48px;
+    padding: 7px 8px !important;
+    border-radius: 14px !important;
+    gap: 7px;
+  }
+
+  .genesis-quick-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 10px;
+    font-size: 0.84rem;
+  }
+
+  .genesis-quick-text span {
+    font-size: 0.70rem;
+  }
+
+  .genesis-quick-text small {
+    font-size: 0.50rem;
+  }
+}
+
+/* ⚡ Ability Matrix selected mouse switcher.
+   DEVS FOR DECADES:
+   This is frontend-only fast navigation for big Genesis holders.
+   It reuses the normal selected NFT flow and does not change NFT ownership,
+   Ability backend authority, timers, costs, upgrade eligibility, or DSPOINC. */
+.ability-matrix-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ⚡ Ability Matrix selected mouse switcher.
+   DEVS FOR DECADES:
+   This is frontend-only fast navigation for big Genesis holders.
+   It reuses the normal selected NFT flow and does not change NFT ownership,
+   Ability backend authority, timers, costs, upgrade eligibility, or DSPOINC. */
+.ability-matrix-title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.ability-mouse-switcher-pro {
+  width: min(820px, 100%);
+  display: grid;
+  grid-template-columns: 44px minmax(190px, 1fr) minmax(220px, 1.15fr) 44px;
+  align-items: stretch;
+  gap: 8px;
+  margin: 10px auto 0;
+  padding: 9px;
+  border-radius: 20px;
+  border: 1px solid rgba(34, 211, 238, 0.20);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), transparent 35%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.70), rgba(2, 6, 23, 0.54));
+  box-shadow:
+    0 14px 34px rgba(2, 6, 23, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.ability-mouse-nav-button {
+  border-radius: 15px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 45%),
+    rgba(15, 23, 42, 0.78);
+  color: #e0f2fe;
+  font-size: 1.25rem;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ability-mouse-nav-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(103, 232, 249, 0.58);
+  background:
+    linear-gradient(135deg, rgba(8, 145, 178, 0.84), rgba(37, 99, 235, 0.82));
+  box-shadow: 0 12px 26px rgba(14, 165, 233, 0.16);
+}
+
+.ability-mouse-nav-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.ability-selected-mouse-name-card,
+.ability-mouse-select-wrap {
+  min-width: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.12), transparent 38%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.72));
+  padding: 9px 12px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 28px rgba(2, 6, 23, 0.18);
+}
+
+.ability-selected-mouse-label,
+.ability-mouse-select-wrap span {
+  display: block;
+  color: #67e8f9;
+  font-size: 0.58rem;
+  font-weight: 950;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.ability-selected-mouse-name {
+  margin-top: 3px;
+  color: #fef3c7;
+  font-size: 0.96rem;
+  line-height: 1.1;
+  font-weight: 950;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ability-selected-mouse-count {
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ability-mouse-select-wrap {
+  border-color: rgba(34, 211, 238, 0.22);
+}
+
+.ability-mouse-quick-select {
+  width: 100%;
+  margin-top: 5px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #f8fafc;
+  font-size: 0.86rem;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.ability-mouse-quick-select option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+@media (max-width: 860px) {
+  .ability-mouse-switcher-pro {
+    width: 100%;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+  }
+
+  .ability-mouse-select-wrap {
+    grid-column: 1 / -1;
+    order: 4;
+  }
+}
+
+@media (max-width: 520px) {
+  .ability-mouse-switcher-pro {
+    padding: 8px;
+    border-radius: 18px;
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+  }
+
+  .ability-mouse-nav-button {
+    border-radius: 13px;
+    font-size: 1.05rem;
+  }
+
+  .ability-selected-mouse-name-card,
+  .ability-mouse-select-wrap {
+    padding: 8px 10px;
+  }
+
+  .ability-selected-mouse-name,
+  .ability-mouse-quick-select {
+    font-size: 0.80rem;
+  }
+
+  .ability-selected-mouse-count {
+    font-size: 0.58rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .ability-matrix-title-row {
+    gap: 10px;
+  }
+
+  .ability-mouse-switcher {
+    width: 100%;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+  }
+
+  .ability-selected-mouse-name-card {
+    padding: 8px 10px;
+  }
+
+  .ability-selected-mouse-name {
+    font-size: 0.86rem;
+  }
+}
+
+/* ✅ Final Ability Matrix recovery layout.
+   DEVS FOR DECADES:
+   This repairs the Ability Matrix after the mouse switcher/dropdown addition.
+   The switcher is a normal top control row. Status, tabs, ability cards, and
+   queue must stack vertically. Backend remains authoritative for NFT ownership,
+   ability levels, timers, DSPOINC costs, and upgrade eligibility. */
+#genesisAbilityMatrixSection {
+  display: block !important;
+}
+
+#genesisAbilityMatrixSection .ability-matrix-intro,
+#genesisAbilityMatrixSection .ability-status-bar,
+#genesisAbilityMatrixSection .ability-tabs,
+#genesisAbilityMatrixSection .ability-tab-meta,
+#genesisAbilityMatrixSection #genesisAbilityCards,
+#genesisAbilityMatrixSection #genesisAbilityQueueBox {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+#genesisAbilityMatrixSection .ability-matrix-intro {
+  display: block !important;
+  margin-bottom: 1rem !important;
+}
+
+#genesisAbilityMatrixSection .ability-matrix-copy {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+#genesisAbilityMatrixSection .ability-matrix-title-row {
+  display: block !important;
+}
+
+#genesisAbilityMatrixSection .ability-mouse-switcher-pro {
+  width: min(860px, 100%) !important;
+  margin: 1rem 0 0 !important;
+}
+
+@media (min-width: 901px) {
+  #genesisAbilityMatrixSection .ability-status-bar,
+  #genesisAbilityMatrixSection .ability-tabs,
+  #genesisAbilityMatrixSection #genesisAbilityCards.ability-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  #genesisAbilityMatrixSection .ability-status-bar,
+  #genesisAbilityMatrixSection .ability-tabs,
+  #genesisAbilityMatrixSection #genesisAbilityCards.ability-cards-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  #genesisAbilityMatrixSection .ability-mouse-switcher-pro {
+    grid-template-columns: 42px minmax(0, 1fr) 42px !important;
+  }
+
+  #genesisAbilityMatrixSection .ability-mouse-select-wrap {
+    grid-column: 1 / -1 !important;
+  }
+}
+
 
 </style>
 </head>
@@ -5913,12 +6829,47 @@ body::after {
       <div class="workspace-helper-card"><strong>Claim from queue</strong><div class="text-sm text-slate-300">When timers are done, Research Queue becomes the fastest place to finish the loop cleanly.</div></div>
     </div>
 
-    <div class="workflow-anchor-row">
-      <a class="workflow-anchor-link" href="#genesis-trait-chamber">⚙️ Trait Chamber</a>
-      <a class="workflow-anchor-link" href="#my-genesis-slider">🧬 Slider</a>
-      <a class="workflow-anchor-link" href="#selectedGenesisMouseCard">🐭 Selected Mouse</a>
-      <a class="workflow-anchor-link" href="#lab-tab-research-queue">⏱️ Queue</a>
-    </div>
+    <div class="workflow-anchor-row genesis-quick-dock" aria-label="Genesis quick navigation">
+  <a class="workflow-anchor-link genesis-quick-link" href="#genesis-trait-chamber">
+    <span class="genesis-quick-icon">⚙️</span>
+    <span class="genesis-quick-text">
+      <span>Trait Chamber</span>
+      <small>Upgrade traits</small>
+    </span>
+  </a>
+
+  <a class="workflow-anchor-link genesis-quick-link" href="#my-genesis-slider">
+    <span class="genesis-quick-icon">🧬</span>
+    <span class="genesis-quick-text">
+      <span>Slider</span>
+      <small>Pick mouse</small>
+    </span>
+  </a>
+
+  <a class="workflow-anchor-link genesis-quick-link" href="#selectedGenesisMouseCard">
+    <span class="genesis-quick-icon">🐭</span>
+    <span class="genesis-quick-text">
+      <span>Selected Mouse</span>
+      <small>Current NFT</small>
+    </span>
+  </a>
+
+  <a class="workflow-anchor-link genesis-quick-link genesis-quick-link--ability" href="#genesisAbilityMatrixSection">
+    <span class="genesis-quick-icon">⚡</span>
+    <span class="genesis-quick-text">
+      <span>Ability Matrix</span>
+      <small>HP / ATK / SPELLS</small>
+    </span>
+  </a>
+
+  <a class="workflow-anchor-link genesis-quick-link" href="#lab-tab-research-queue" data-lab-jump-tab="research-queue">
+    <span class="genesis-quick-icon">⏱️</span>
+    <span class="genesis-quick-text">
+      <span>Queue</span>
+      <small>Claim timers</small>
+    </span>
+  </a>
+</div>
 
     <div class="viewer-grid mt-5">
       <div id="genesis-trait-chamber" class="glass p-5 md:p-6">
@@ -5973,23 +6924,63 @@ body::after {
                     <div id="selectedNftPanel" class="mt-5"></div>
 
           <div id="genesisAbilityMatrixSection" class="glass p-5 md:p-6 hidden">
-            <div class="ability-matrix-intro">
-              <div class="ability-matrix-copy">
-                <div class="ability-matrix-kicker">⚡ Genesis Ability Matrix</div>
-                <div class="section-title text-lg md:text-xl mt-3">
-                  <span>🧬</span>
-                  <span>Build your personal RPG Mouse character</span>
-                </div>
-                <p class="ability-matrix-subtitle">
-                  This 9-stat matrix forms the long-term RPG identity of your selected Genesis mouse. Combine Fitness, Weapons, Education, 6 Genesis traits, and Genetic Items to create thousands of possible personal Mouse Fighter builds for Narrrf’s World games and future connected systems. Ability levels, timers, and progress follow the NFT when ownership changes.
-                </p>
-                <div class="ability-matrix-mini-list">
-                  <span>🏃 Fitness shapes movement and survival</span>
-                  <span>⚔️ Weapons shapes combat power</span>
-                  <span>📚 Education shapes magic, crafting, and expansion</span>
-                </div>
-              </div>
-            </div>
+  <div class="ability-matrix-intro">
+    <div class="ability-matrix-copy">
+      <div class="ability-matrix-kicker">⚡ Genesis Ability Matrix</div>
+
+      <div class="ability-matrix-title-row">
+        <div class="section-title text-lg md:text-xl mt-3">
+          <span>🧬</span>
+          <span>Build your personal RPG Mouse character</span>
+        </div>
+      </div>
+
+      <div class="ability-mouse-switcher ability-mouse-switcher-pro" aria-label="Switch selected Genesis mouse from Ability Matrix">
+        <button
+          id="abilityPrevMouseButton"
+          type="button"
+          class="ability-mouse-nav-button"
+          aria-label="Previous Genesis mouse"
+          title="Previous Genesis mouse"
+        >
+          ←
+        </button>
+
+        <div class="ability-selected-mouse-name-card">
+          <div class="ability-selected-mouse-label">Selected Mouse</div>
+          <div id="abilitySelectedMouseName" class="ability-selected-mouse-name">No mouse selected</div>
+          <div id="abilitySelectedMouseCount" class="ability-selected-mouse-count">—</div>
+        </div>
+
+        <label class="ability-mouse-select-wrap" for="abilityMouseQuickSelect">
+          <span>Jump to mouse</span>
+          <select id="abilityMouseQuickSelect" class="ability-mouse-quick-select">
+            <option value="">No verified Genesis loaded</option>
+          </select>
+        </label>
+
+        <button
+          id="abilityNextMouseButton"
+          type="button"
+          class="ability-mouse-nav-button"
+          aria-label="Next Genesis mouse"
+          title="Next Genesis mouse"
+        >
+          →
+        </button>
+      </div>
+
+      <p class="ability-matrix-subtitle">
+        This 9-stat matrix forms the long-term RPG identity of your selected Genesis mouse. Combine Fitness, Weapons, Education, 6 Genesis traits, and Genetic Items to create thousands of possible personal Mouse Fighter builds for Narrrf’s World games and future connected systems. Ability levels, timers, and progress follow the NFT when ownership changes.
+      </p>
+
+      <div class="ability-matrix-mini-list">
+        <span>🏃 Fitness shapes movement and survival</span>
+        <span>⚔️ Weapons shapes combat power</span>
+        <span>📚 Education shapes magic, crafting, and expansion</span>
+      </div>
+    </div>
+  </div>
 
             <div id="genesisAbilityStatusBar" class="ability-status-bar">
     <div>
@@ -6677,8 +7668,13 @@ const el = {
   geneticInventoryEmptyState: document.getElementById('geneticInventoryEmptyState'),
   labEntryActions: document.getElementById('labEntryActions'),
   nftPrevButton: document.getElementById('nftPrevButton'),
-  nftNextButton: document.getElementById('nftNextButton'),
-  nftQuickSelect: document.getElementById('nftQuickSelect'),
+nftNextButton: document.getElementById('nftNextButton'),
+nftQuickSelect: document.getElementById('nftQuickSelect'),
+abilityPrevMouseButton: document.getElementById('abilityPrevMouseButton'),
+abilityNextMouseButton: document.getElementById('abilityNextMouseButton'),
+abilitySelectedMouseName: document.getElementById('abilitySelectedMouseName'),
+abilitySelectedMouseCount: document.getElementById('abilitySelectedMouseCount'),
+abilityMouseQuickSelect: document.getElementById('abilityMouseQuickSelect'),
   tabButtons: document.querySelectorAll('[data-lab-tab]'),
   geneticMarketplaceBadge: document.getElementById('geneticMarketplaceBadge'),
   geneticMarketplaceTraitTypeFilter: document.getElementById('geneticMarketplaceTraitTypeFilter'),
@@ -9052,6 +10048,170 @@ function syncSliderRailToSelectedCard() {
   });
 }
 
+/**
+ * Return selected Genesis mouse position data for the Ability Matrix switcher.
+ * Plain language for DEVS:
+ * This is frontend navigation only. It does not decide ownership, ability
+ * levels, timers, costs, or upgrade eligibility. Backend Ability APIs remain
+ * authoritative for all progression rules.
+ */
+function getSelectedGenesisMouseNavigationState() {
+  const verified = getVerifiedGenesisNfts().filter(
+    (nft) => isValidGenesisNft(nft)
+  );
+
+  const selectedTokenId = getSafeTokenId(state.selectedNft);
+  const currentIndex = verified.findIndex(
+    (nft) => getSafeTokenId(nft) === selectedTokenId
+  );
+
+  return {
+    verified,
+    total: verified.length,
+    currentIndex
+  };
+}
+
+/**
+ * Switch the selected Genesis mouse from inside the Ability Matrix.
+ * Plain language for DEVS:
+ * Big holders can move between mice without scrolling back to the top slider.
+ * It reuses selectNftByTokenId(), so all existing render/ability refresh logic
+ * stays centralized in the normal Lab selection flow.
+ */
+function switchAbilityMatrixMouse(direction) {
+  const { verified, total, currentIndex } = getSelectedGenesisMouseNavigationState();
+
+  if (!total || total <= 1) {
+    return;
+  }
+
+  const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
+  const nextIndex = direction === 'prev'
+    ? (safeCurrentIndex <= 0 ? total - 1 : safeCurrentIndex - 1)
+    : (safeCurrentIndex >= total - 1 ? 0 : safeCurrentIndex + 1);
+
+  const nextNft = verified[nextIndex];
+  const nextTokenId = getSafeTokenId(nextNft);
+
+  if (!nextTokenId) {
+    logLab('Ability mouse switch skipped because the target NFT was invalid.', 'warn');
+    return;
+  }
+
+  selectNftByTokenId(nextTokenId, { scrollToResearch: false });
+
+    window.setTimeout(() => {
+    const abilitySection = document.getElementById('genesisAbilityMatrixSection');
+    if (!abilitySection) {
+      return;
+    }
+
+    // Keep the player exactly where they are inside the Ability Matrix.
+    // Plain language for DEVS:
+    // The Ability Matrix switcher is used by big holders who cycle many mice.
+    // Do not scroll the page here; only pulse the panel so the refresh feels responsive.
+    abilitySection.classList.remove('chamber-pulse');
+    void abilitySection.offsetWidth;
+    abilitySection.classList.add('chamber-pulse');
+  }, 120);
+}
+
+/**
+ * Jump directly to one Genesis mouse from the Ability Matrix dropdown.
+ * Plain language for DEVS:
+ * This solves the 100+ mice problem. It uses the same selected NFT flow as
+ * the top slider, so all Ability Matrix rendering stays centralized.
+ */
+function selectAbilityMatrixMouseByTokenId(tokenId) {
+  const safeTokenId = String(tokenId || '').trim();
+
+  if (!safeTokenId) {
+    return;
+  }
+
+  const { verified } = getSelectedGenesisMouseNavigationState();
+  const exists = verified.some((nft) => getSafeTokenId(nft) === safeTokenId);
+
+  if (!exists) {
+    logLab('Ability mouse dropdown skipped because the token was not in verified Genesis NFTs.', 'warn');
+    return;
+  }
+
+  selectNftByTokenId(safeTokenId, { scrollToResearch: false });
+
+   window.setTimeout(() => {
+    const abilitySection = document.getElementById('genesisAbilityMatrixSection');
+    if (!abilitySection) {
+      return;
+    }
+
+    // Keep the player exactly where they are inside the Ability Matrix.
+    // Plain language for DEVS:
+    // Dropdown selection is meant for fast mouse switching, not page navigation.
+    // Backend selection/ability rendering still refreshes through selectNftByTokenId().
+    abilitySection.classList.remove('chamber-pulse');
+    void abilitySection.offsetWidth;
+    abilitySection.classList.add('chamber-pulse');
+  }, 120);
+}
+
+/**
+ * Refresh the selected mouse controls inside the Ability Matrix.
+ * Plain language for DEVS:
+ * This is frontend navigation only. It mirrors the top Genesis slider/dropdown
+ * so large holders can jump between 100+ mice without scrolling back up.
+ * Backend Ability APIs remain authoritative for ownership, costs, timers,
+ * unlocks, and upgrade eligibility.
+ */
+function renderAbilityMouseSwitcher() {
+  const { verified, total, currentIndex } = getSelectedGenesisMouseNavigationState();
+  const selected = currentIndex >= 0 ? verified[currentIndex] : state.selectedNft;
+  const selectedTokenId = selected ? getSafeTokenId(selected) : '';
+  const selectedName = selected
+    ? getSafeNftName(selected, 'Selected Genesis Mouse')
+    : 'No mouse selected';
+
+  if (el.abilitySelectedMouseName) {
+    el.abilitySelectedMouseName.textContent = selectedName;
+    el.abilitySelectedMouseName.title = selectedName;
+  }
+
+  if (el.abilitySelectedMouseCount) {
+    el.abilitySelectedMouseCount.textContent = total
+      ? `${currentIndex >= 0 ? currentIndex + 1 : 1} / ${total} verified mice`
+      : 'No verified mice';
+  }
+
+  if (el.abilityMouseQuickSelect) {
+    if (!total) {
+      el.abilityMouseQuickSelect.innerHTML = '<option value="">No verified Genesis loaded</option>';
+      el.abilityMouseQuickSelect.disabled = true;
+    } else {
+      el.abilityMouseQuickSelect.disabled = false;
+      el.abilityMouseQuickSelect.innerHTML = verified.map((nft, index) => {
+        const tokenId = getSafeTokenId(nft);
+        const mouseName = getSafeNftName(nft, `Genesis Mouse ${index + 1}`);
+        const selectedAttr = tokenId === selectedTokenId ? 'selected' : '';
+
+        return `
+          <option value="${escapeHtml(tokenId)}" ${selectedAttr}>
+            ${escapeHtml(`${index + 1}. ${mouseName}`)}
+          </option>
+        `;
+      }).join('');
+    }
+  }
+
+  if (el.abilityPrevMouseButton) {
+    el.abilityPrevMouseButton.disabled = total <= 1;
+  }
+
+  if (el.abilityNextMouseButton) {
+    el.abilityNextMouseButton.disabled = total <= 1;
+  }
+}
+
 function renderNftGrid(selectedNft = null) {
   const verified = getVerifiedGenesisNfts().filter(
     (nft) => isValidGenesisNft(nft)
@@ -9082,6 +10242,24 @@ function renderNftGrid(selectedNft = null) {
       `).join('');
     }
   }
+
+if (el.abilityPrevMouseButton) {
+  el.abilityPrevMouseButton.onclick = () => {
+    switchAbilityMatrixMouse('prev');
+  };
+}
+
+if (el.abilityNextMouseButton) {
+  el.abilityNextMouseButton.onclick = () => {
+    switchAbilityMatrixMouse('next');
+  };
+}
+
+if (el.abilityMouseQuickSelect) {
+  el.abilityMouseQuickSelect.onchange = () => {
+    selectAbilityMatrixMouseByTokenId(el.abilityMouseQuickSelect.value);
+  };
+}
 
   if (el.nftPrevButton) {
     el.nftPrevButton.disabled = total <= 1;
@@ -9534,16 +10712,43 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
 
   if (!safeTokenId) {
     logLab('No Genesis mouse selected for ability upgrade.', 'error');
+    await showLabMessageModal({
+      eyebrow: 'Genesis Ability Matrix',
+      title: 'No Genesis Mouse Selected',
+      icon: '⚠️',
+      message: 'Please select a verified Genesis mouse before starting Ability research.',
+      note: 'No DSPOINC was spent.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
     return false;
   }
 
   if (!safeCategory) {
     logLab('Ability category missing.', 'error');
+    await showLabMessageModal({
+      eyebrow: 'Genesis Ability Matrix',
+      title: 'Ability Category Missing',
+      icon: '⚠️',
+      message: 'The Lab could not detect which Ability category should be upgraded.',
+      note: 'Refresh the Lab and try again. No DSPOINC was spent.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
     return false;
   }
 
   if (!safeAbilityKey) {
     logLab('Ability key missing.', 'error');
+    await showLabMessageModal({
+      eyebrow: 'Genesis Ability Matrix',
+      title: 'Ability Missing',
+      icon: '⚠️',
+      message: 'The Lab could not detect which Ability should be upgraded.',
+      note: 'Refresh the Lab and try again. No DSPOINC was spent.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
     return false;
   }
 
@@ -9576,11 +10781,12 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
     }
 
     if (!response.ok || !data || !data.success) {
-      throw new Error(
+      const backendMessage =
         data?.message ||
         data?.error ||
-        `Failed to start ability upgrade (HTTP ${response.status}).`
-      );
+        `Failed to start ability upgrade (HTTP ${response.status}).`;
+
+      throw new Error(backendMessage);
     }
 
     logLab(`${safeAbilityKey} research started successfully.`, 'success');
@@ -9589,23 +10795,64 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
     renderGenesisAbilityMatrix();
 
     if (typeof renderSelectedNftPanel === 'function' && state?.selectedNft) {
-  renderSelectedNftPanel(state.selectedNft);
-}
+      renderSelectedNftPanel(state.selectedNft);
+    }
 
     if (typeof startGenesisAbilityPollingIfNeeded === 'function') {
       startGenesisAbilityPollingIfNeeded();
     }
 
+    await showLabMessageModal({
+      eyebrow: 'Genesis Ability Research',
+      title: `${safeAbilityKey} Research Started`,
+      icon: '🚀',
+      message: `${safeAbilityKey} is now upgrading on the selected Genesis mouse.`,
+      note: 'The timer and Ability state are NFT-bound and verified by the backend.',
+      confirmText: 'Nice'
+    });
+
     return true;
   } catch (error) {
+    const message = String(error?.message || 'Failed to start Genesis ability upgrade.').trim();
+
     console.error('startGenesisAbilityUpgrade error:', error);
-    logLab(error.message || 'Failed to start Genesis ability upgrade.', 'error');
+    logLab(message, 'error');
+
+    /**
+     * Show backend rejections as a real modal.
+     * Plain language for DEVS:
+     * Mobile users may not see the small Lab log line after the confirm modal closes.
+     * Ability upgrades are backend-authoritative, so when the API rejects the action
+     * we must display the backend reason clearly instead of making the click feel dead.
+     */
+    const isDspoincProblem =
+      message.toLowerCase().includes('dspoinc') ||
+      message.toLowerCase().includes('balance') ||
+      message.toLowerCase().includes('insufficient') ||
+      message.toLowerCase().includes('not enough');
+
+    await showLabMessageModal({
+      eyebrow: 'Genesis Ability Research',
+      title: isDspoincProblem ? 'Not Enough Available DSPOINC' : 'Ability Upgrade Failed',
+      icon: '⚠️',
+      message: isDspoincProblem
+        ? `This Ability upgrade could not start because you do not have enough available DSPOINC.\n\nBackend message: ${message}`
+        : `The Ability upgrade did not start.\n\nBackend message: ${message}`,
+      note: isDspoincProblem
+        ? 'Staked or frozen DSPOINC cannot be spent. Only available DSPOINC can be used for Ability research. No DSPOINC was spent.'
+        : 'No DSPOINC was spent if the backend rejected the request. Refresh the Lab if you want to verify the latest state.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+
     return false;
   } finally {
     genesisAbilityState.loading = false;
     renderGenesisAbilityMatrix();
   }
 }
+
+
 function formatAbilityDuration(seconds) {
   const sec = Number(seconds || 0);
   if (sec <= 0) return 'Ready';
@@ -9773,6 +11020,7 @@ function renderGenesisAbilityMatrix() {
   if (!section || !cardsEl) return;
 
   section.classList.remove('hidden');
+  renderAbilityMouseSwitcher();
 
   if (availableDspEl) {
     availableDspEl.textContent = String(data.available_dspoinc ?? 0);
@@ -12057,6 +13305,33 @@ function openGeneticListingModal(geneticItemId) {
   });
 }
 
+/**
+ * Let quick dock links switch Lab tabs when needed.
+ * Plain language for DEVS:
+ * Normal anchor links stay simple scroll links. Links with data-lab-jump-tab
+ * intentionally switch the main Lab workspace first, then scroll to the target.
+ */
+document.querySelectorAll('[data-lab-jump-tab]').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const tabName = String(link.getAttribute('data-lab-jump-tab') || '').trim();
+    const targetHash = String(link.getAttribute('href') || '').trim();
+
+    if (!tabName || typeof switchLabTab !== 'function') {
+      return;
+    }
+
+    event.preventDefault();
+    switchLabTab(tabName);
+
+    window.setTimeout(() => {
+      const target = targetHash ? document.querySelector(targetHash) : null;
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 80);
+  });
+});
+
 async function createGeneticMarketplaceListing(geneticItemId, priceDspoinc) {
   if (!state.userId) {
     logLab('❌ Login required before listing Genetic Items.', 'error');
@@ -12453,7 +13728,17 @@ function renderGeneticOwnedItemCard(item) {
   const finishAtLabel = item.upgrade_ends_at ? formatDateTime(item.upgrade_ends_at) : '—';
   const actionDisabled = state.actionInFlight || !!state.geneticActionItemId;
   const activeBooster = getLabBoosterCatalog().find(booster => Number(booster.itemId) === Number(item.active_booster_item_id || 0)) || null;
-  const instantFinishPreview = runtimeState === 'upgrading' ? calculateInstantFinishCost(currentLevel, remainingMs) : 0;
+  /**
+ * Show the Genetic Instant Finish preview with the Genetic pricing lane.
+ * Plain language for DEVS:
+ * calculateInstantFinishCost() defaults to the Genesis trait formula.
+ * Genetic Items have their own backend formula, so the inventory card preview
+ * must pass "genetic" here to match the confirmation popup/API preview.
+ * Backend still recalculates the final DSPOINC cost before spending.
+ */
+const instantFinishPreview = runtimeState === 'upgrading'
+  ? calculateInstantFinishCost(currentLevel, remainingMs, 'genetic')
+  : 0;
   const cardClasses = ['genetic-card', escapeHtml(rarityClass), 'genetic-card-live'];
 
   if (runtimeState === 'upgrading') {
@@ -12718,9 +14003,7 @@ function renderGeneticMarketplaceTableRow(item) {
       <td class="table-center-cell">Lv ${formatNumber(currentLevel)}</td>
       <td class="table-price-cell">${formatNumber(price)} DSPOINC</td>
       <td class="table-seller-cell" title="${escapeHtml(sellerName)}">${escapeHtml(sellerName)}</td>
-      <td class="table-number-cell">#${formatNumber(geneticItemId)}</td>
-      <td>${escapeHtml(createdAt || '—')}</td>
-      <td class="table-action-cell">
+<td class="table-action-cell">
         <div class="table-action-wrap">
           <button
             type="button"
@@ -12759,7 +14042,7 @@ function renderGeneticMarketplaceTableDetailRow(item) {
 
   return `
     <tr class="genetic-marketplace-detail-row">
-      <td colspan="10">
+  <td colspan="8">
         <div class="genetic-marketplace-list-detail">
           <div>
             ${renderGeneticMedia(item, { viewerKey })}
@@ -13071,45 +14354,51 @@ async function handleBuyGeneticMarketplaceListing(listingId) {
 
 function renderGeneticMarketplaceCard(item) {
   const rarityClass = getGeneticRarityClass(item.rarity_tier);
-  const currentLevel = Math.max(1, safeNumber(item.current_level, 1));
+  const currentLevel = Math.max(1, safeNumber(item.current_level || item.item_level_snapshot, 1));
   const sellerName = item.seller_username || item.seller_name || 'Unknown Seller';
   const price = Math.max(0, safeNumber(item.price_dspoinc, 0));
   const sellerAvatarUrl = item.seller_avatar_url || item.avatar_url || 'img/grumpy-cheese.png';
+  const listingId = Number(item.listing_id || 0);
+  const escapedListingId = escapeHtml(String(listingId));
+  const isExpanded = String(state.geneticMarketplaceExpandedListingId || '') === String(listingId);
+  const title = String(item.display_title || item.trait_value || 'Marketplace Trait').trim();
+  const traitType = String(item.trait_type || 'Genetic Trait').trim();
+  const traitValue = String(item.trait_value || title).trim();
 
   return `
-    <article class="genetic-card ${escapeHtml(rarityClass)} genetic-card-live">
-      <div class="genetic-card-header">
-        <div>
-          <div class="genetic-card-title">${escapeHtml(item.display_title || item.trait_value || 'Marketplace Trait')}</div>
-          <div class="genetic-card-subtitle">${escapeHtml(item.trait_type || 'Genetic Trait')}</div>
-        </div>
-        <div class="flex flex-col items-end gap-2">
-          <span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(item.rarity_tier || 'common')}</span>
-          <span class="genetic-status-badge idle">For Sale</span>
-        </div>
+    <article class="genetic-card ${escapeHtml(rarityClass)} genetic-card-live marketplace-card-pro">
+      <div class="marketplace-card-pro-topline">
+        <span class="marketplace-card-pro-listing">#${formatNumber(listingId)}</span>
+        <span class="genetic-status-badge idle">For Sale</span>
       </div>
 
-      <div class="genetic-card-media">
+      <div class="genetic-card-header marketplace-card-pro-header">
+        <div>
+          <div class="genetic-card-title">${escapeHtml(title)}</div>
+          <div class="genetic-card-subtitle">${escapeHtml(traitType)} · ${escapeHtml(traitValue)}</div>
+        </div>
+        <span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(item.rarity_tier || 'common')}</span>
+      </div>
+
+      <div class="genetic-card-media marketplace-card-pro-media">
         ${renderGeneticMedia(item, {
-          glowLabel: item.display_title || item.trait_value || `Lv ${formatNumber(currentLevel)}`,
-          viewerKey: `market-${Number(item.listing_id || 0)}`
+          glowLabel: title || `Lv ${formatNumber(currentLevel)}`,
+          viewerKey: `market-${listingId}`
         })}
       </div>
 
-      <div class="genetic-card-copy">
-        Trade-ready Genetic Item preserving its owned level and user-bound progression state.
+      <div class="marketplace-card-pro-stats">
+        <div class="marketplace-card-pro-stat">
+          <div class="label">Level</div>
+          <div class="value">Lv ${formatNumber(currentLevel)}</div>
+        </div>
+        <div class="marketplace-card-pro-stat highlight">
+          <div class="label">Price</div>
+          <div class="value">${formatNumber(price)} DSPOINC</div>
+        </div>
       </div>
 
-      <div class="genetic-card-meta">
-        <div class="meta-box"><div class="label">Level</div><div class="value">Lv ${formatNumber(currentLevel)}</div></div>
-        <div class="meta-box"><div class="label">Price</div><div class="value">${formatNumber(price)} DSPOINC</div></div>
-      </div>
-
-<div class="genetic-card-meta">
-  <div class="meta-box">
-    <div class="label">Seller</div>
-    <div class="value">
-      <div class="marketplace-seller-row">
+      <div class="marketplace-card-pro-seller">
         <img
           class="marketplace-seller-avatar"
           src="${escapeHtml(sellerAvatarUrl || 'img/grumpy-cheese.png')}"
@@ -13118,18 +14407,50 @@ function renderGeneticMarketplaceCard(item) {
           loading="lazy"
           onerror="this.onerror=null;this.src='img/grumpy-cheese.png';"
         />
-        <span>${escapeHtml(sellerName)}</span>
+        <div class="marketplace-card-pro-seller-text">
+          <div class="label">Seller</div>
+          <div class="value" title="${escapeHtml(sellerName)}">${escapeHtml(sellerName)}</div>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="meta-box"><div class="label">Status</div><div class="value">Active Listing</div></div>
-</div>
 
-      <div class="genetic-card-actions">
-        ${renderGeneticMarketplaceBuyAction(item)}
-        <button type="button" class="btn" disabled>
-          Listing #${formatNumber(item.listing_id || 0)}
+      ${isExpanded ? `
+        <div class="marketplace-card-pro-detail">
+          <div class="marketplace-card-pro-detail-grid">
+            <div>
+              <span>Rarity</span>
+              <strong>${escapeHtml(item.rarity_tier || 'common')}</strong>
+            </div>
+            <div>
+              <span>Item ID</span>
+              <strong>#${formatNumber(item.genetic_item_id || 0)}</strong>
+            </div>
+            <div>
+              <span>Listing</span>
+              <strong>#${formatNumber(listingId)}</strong>
+            </div>
+            <div>
+              <span>Transfer</span>
+              <strong>Full item state</strong>
+            </div>
+          </div>
+          <p>
+            Buyer receives this Discord-bound Genetic Item with its current level preserved.
+            Backend still verifies ownership, DSPOINC, and max-2 exact trait rules.
+          </p>
+        </div>
+      ` : ''}
+
+      <div class="genetic-card-actions marketplace-card-pro-actions">
+        <button
+          type="button"
+          class="btn ghost compact marketplace-card-inspect-btn"
+          data-view-genetic-marketplace-listing="${escapedListingId}"
+          aria-expanded="${isExpanded ? 'true' : 'false'}"
+          title="Show marketplace item details."
+        >
+          ${isExpanded ? 'Hide Details' : 'Details'}
         </button>
+        ${renderGeneticMarketplaceBuyAction(item)}
       </div>
     </article>
   `;
@@ -13367,7 +14688,7 @@ if (viewMode === 'list') {
 
     marketplaceTableRows = `
       <tr>
-        <td colspan="11" class="text-red-300 font-bold">
+        <td colspan="8" class="text-red-300 font-bold">
           Marketplace list view could not render one row. Check browser console.
         </td>
       </tr>
@@ -13385,9 +14706,7 @@ if (viewMode === 'list') {
     <th>Level</th>
     <th>Price</th>
     <th>Seller</th>
-    <th>Item ID</th>
-    <th>Listed</th>
-    <th class="table-action-cell">Actions</th>
+<th class="table-action-cell">Actions</th>
   </tr>
 </thead>
       <tbody>
@@ -15171,9 +16490,24 @@ el.geneticMarketplaceGrid?.addEventListener('click', event => {
     return;
   }
 
-  const closeViewerButton = event.target.closest('[data-close-genetic-3d]');
+    const closeViewerButton = event.target.closest('[data-close-genetic-3d]');
   if (closeViewerButton) {
     setActiveGeneticMediaViewer(closeViewerButton.getAttribute('data-close-genetic-3d') || '');
+    return;
+  }
+
+  const viewListingButton = event.target.closest('[data-view-genetic-marketplace-listing]');
+  if (viewListingButton) {
+    const listingId = String(viewListingButton.getAttribute('data-view-genetic-marketplace-listing') || '').trim();
+
+    if (!listingId) {
+      return;
+    }
+
+    state.geneticMarketplaceExpandedListingId =
+      String(state.geneticMarketplaceExpandedListingId || '') === listingId ? '' : listingId;
+
+    renderGeneticMarketplace();
     return;
   }
 
@@ -15203,21 +16537,6 @@ el.geneticShopGrid?.addEventListener('click', event => {
     setActiveGeneticMediaViewer(closeViewerButton.getAttribute('data-close-genetic-3d') || '');
     return;
   }
-
-  const viewListingButton = event.target.closest('[data-view-genetic-marketplace-listing]');
-if (viewListingButton) {
-  const listingId = String(viewListingButton.getAttribute('data-view-genetic-marketplace-listing') || '').trim();
-
-  if (!listingId) {
-    return;
-  }
-
-  state.geneticMarketplaceExpandedListingId =
-    String(state.geneticMarketplaceExpandedListingId || '') === listingId ? '' : listingId;
-
-  renderGeneticMarketplace();
-  return;
-}
 
   const buyButton = event.target.closest('[data-genetic-buy-id]');
   if (!buyButton) {

@@ -1,5 +1,85 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 🔄 SPOINC BRIDGE / GENSUKI UPDATE — INTERNAL POOL + TOKEN ROUTING
+
+Zeno confirmed the Gensuki internal swap system now supports the first predefined test tokens:
+
+- FOOK
+- EMPIRE
+- SOL
+- USDT
+- USDC
+
+FOOK mint provided to Zeno:
+
+G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump
+
+Planned clean bridge flow:
+
+Other token → Gensuki internal swap → SPOINC → Narrrfs SPOINC ↔ DSPOINC bridge
+
+Later reverse flow:
+
+DSPOINC → SPOINC → Gensuki internal swap → other token
+
+Important architecture boundary:
+
+Narrrfs must not directly price DSPOINC against FOOK, EMPIRE, USDT, USDC, or SOL.
+Narrrfs should only maintain the SPOINC ↔ DSPOINC bridge rate and ledger logic.
+
+Gensuki side will handle token swaps and keep the internal pool in SOL.
+When users swap SPOINC to FOOK / EMPIRE / USDT / USDC, those tokens are converted through SOL to maintain the internal pool in SOL only.
+
+Mainnet warning from Zeno:
+
+- Slippage and fee values for FOOK / EMPIRE will be subtracted during swaps.
+- Small fractional amount adjustments may occur, e.g. around $0.001 depending on token swap fee/slippage.
+- API should return pool value.
+- Pool funds are kept on-chain in the contract.
+- Withdraw is locked until the 50 SOL threshold is reached.
+- Initial fill with 1 SOL is okay.
+- After threshold, pool can later migrate/open to Raydium or Meteora/MetaDAO-style pool with custom fees.
+- Zeno says API should be ready by Friday.
+- Gensuki is deploying through GitLab for now because of GitHub security concerns.
+
+---
+
+## 🔄 UPDATE — MAY 20, 2026 — LAB SYSTEM 9.92 ABILITY MATRIX SWITCHER + QUICK DOCK UX STABILIZATION
+
+### Status
+
+Lab System 9.92 continued after the Lab 9.9 GUI Marketplace/List View milestone.
+
+Main focus:
+
+- Genesis Ability Matrix selected mouse switcher polish
+- Ability Matrix mouse dropdown / previous / next navigation
+- Preventing unwanted page scroll after selecting a mouse inside Ability Matrix
+- Genesis Quick Dock refinement
+- Keeping mobile Lab navigation compact and non-sticky
+- Preserving the fragile Ability Matrix HTML structure after recent layout breakage
+- Keeping Marketplace Cards/List mode frontend changes backend-safe
+
+This pass stayed frontend-safe and backend-authoritative:
+
+- No DSPOINC ledger rewrite.
+- No inventory schema rewrite.
+- No marketplace economy rewrite.
+- No Genesis ownership rewrite.
+- No Genetic max-2 rollback.
+- No Ability Instant Finish activation.
+- No marketplace history deletion.
+- No DB migration in this pass.
+
+---
+
+## ✅ 1. Genesis Ability Matrix selected mouse switcher improved
+
+Scope:
+
+```text
+public/lab.html
+
 ---
 
 ## 🔄 UPDATE — MAY 20, 2026 — LAB SYSTEM 9.9 GUI MARKETPLACE LIST VIEW + LIVE MARKET RELIST MILESTONE
