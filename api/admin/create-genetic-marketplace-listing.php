@@ -2,8 +2,8 @@
 // 🧬 Create Genetic Marketplace Listing API
 // Creates a listing for a user-owned genetic item
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+error_reporting(0);
+ini_set('display_errors', 0);
 
 date_default_timezone_set('UTC');
 

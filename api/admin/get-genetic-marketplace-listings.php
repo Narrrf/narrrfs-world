@@ -135,7 +135,12 @@ $sql = "
         c.preview_path,
         u.username AS seller_username,
         u.avatar_url AS seller_avatar_url
-    FROM tbl_genetic_market_listings l
+        FROM tbl_genetic_market_listings l
+    INNER JOIN tbl_user_genetic_items i
+        ON i.genetic_item_id = l.genetic_item_id
+        AND CAST(i.user_id AS TEXT) = CAST(l.seller_user_id AS TEXT)
+        AND COALESCE(i.is_listed_for_sale, 0) = 1
+        AND COALESCE(i.listed_listing_id, 0) = l.listing_id
     LEFT JOIN tbl_genetic_trait_catalog c
         ON c.catalog_id = l.catalog_id
     LEFT JOIN tbl_users u

@@ -15,7 +15,7 @@ Fix:
 - On small screens, leaderboard rows can wrap so usernames remain visible.
 - Player names now use safe word wrapping instead of being squeezed/truncated away.
 - Backend/API scoring and leaderboard queries were not changed.
-
+anaged some points on the NFT ownership and abilitys system please @
 Files:
 - `public/leaderboard.html`
 

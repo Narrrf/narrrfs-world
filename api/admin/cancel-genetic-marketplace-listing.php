@@ -205,11 +205,55 @@ FROM tbl_genetic_market_listings
     $itemStmt->execute([$geneticItemId]);
     $item = $itemStmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$item) {
+        if (!$item) {
+        $pdo->beginTransaction();
+
+        // 🧯 Recovery-safe stale listing cleanup.
+        // Plain language for DEVS:
+        // After the May 17 SQLite recovery incident, some active marketplace rows can
+        // point to owned Genetic Item rows that no longer exist. The seller still owns
+        // the listing row, but there is no item row to restore. In that case, cancel
+        // the ghost listing, preserve marketplace history, and do not recreate items
+        // without separate proof from marketplace/reward history.
+        $staleCancelStmt = $pdo->prepare("
+            UPDATE tbl_genetic_market_listings
+            SET
+                listing_status = 'cancelled',
+                updated_at = CURRENT_TIMESTAMP,
+                cancelled_at = CURRENT_TIMESTAMP
+            WHERE listing_id = ?
+              AND seller_user_id = ?
+              AND listing_status = 'active'
+        ");
+        $staleCancelStmt->execute([$listingId, $userId]);
+
+        if ($staleCancelStmt->rowCount() !== 1) {
+            $pdo->rollBack();
+
+            json_response([
+                'success' => false,
+                'error' => 'Stale marketplace listing could not be cancelled'
+            ], 409);
+        }
+
+        $pdo->commit();
+
         json_response([
-            'success' => false,
-            'error' => 'Owned genetic item linked to this listing was not found'
-        ], 404);
+            'success' => true,
+            'message' => 'Stale marketplace listing cancelled successfully',
+            'data' => [
+                'listing_id' => $listingId,
+                'genetic_item_id' => $geneticItemId,
+                'trait_type' => (string)$listing['trait_type'],
+                'trait_value' => (string)$listing['trait_value'],
+                'display_title' => (string)$listing['trait_value'],
+                'current_level' => (int)($listing['item_level_snapshot'] ?? 1),
+                'price_dspoinc' => (int)($listing['price_dspoinc'] ?? 0),
+                'status' => 'cancelled',
+                'is_listed_for_sale' => 0,
+                'stale_cleanup' => true
+            ]
+        ]);
     }
 
     if ((string)$item['user_id'] !== (string)$userId) {
@@ -229,8 +273,19 @@ SET
     updated_at = CURRENT_TIMESTAMP,
     cancelled_at = CURRENT_TIMESTAMP
 WHERE listing_id = ?
+  AND seller_user_id = ?
+  AND listing_status = 'active'
     ");
-    $cancelStmt->execute([$listingId]);
+    $cancelStmt->execute([$listingId, $userId]);
+
+    if ($cancelStmt->rowCount() !== 1) {
+        $pdo->rollBack();
+
+        json_response([
+            'success' => false,
+            'error' => 'Marketplace listing could not be cancelled'
+        ], 409);
+    }
 
     // 🔓 Restore owned item back to normal inventory state
 $unlistStmt = $pdo->prepare("
