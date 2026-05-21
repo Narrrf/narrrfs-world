@@ -631,7 +631,16 @@ function fetch_nft_trait_upgrade_rows(PDO $pdo, string $tokenId, string $collect
 
 /**
  * Compute highest Genesis trait level for the selected NFT.
- * Missing rows default to level 1.
+ *
+ * Plain language for DEVS:
+ * Ability category unlocks depend on the highest single Genesis trait upgrade
+ * level on this NFT token. The authoritative progression source is
+ * tbl_nft_trait_upgrades, keyed by token_id + collection.
+ *
+ * Do NOT require an exact match against static tbl_nft_traits metadata here.
+ * Some historical/static trait rows can differ in formatting or trait-value shape,
+ * which can incorrectly make Fitness look locked even when the NFT has a real
+ * level 5+ upgraded trait row.
  */
 function get_highest_genesis_trait_level_for_nft(PDO $pdo, array $selectedNft): int {
     $tokenId = trim((string)($selectedNft['token_id'] ?? ''));
@@ -643,40 +652,11 @@ function get_highest_genesis_trait_level_for_nft(PDO $pdo, array $selectedNft): 
 
     $traitRows = fetch_nft_trait_upgrade_rows($pdo, $tokenId, $collection);
 
-    $levelMap = [];
-    foreach ($traitRows as $row) {
-        $traitType = normalize_trait_type((string)($row['trait_type'] ?? ''));
-        $traitValue = trim((string)($row['trait_value'] ?? ''));
-        $currentLevel = max(1, (int)($row['current_level'] ?? 1));
-
-        if ($traitType === '' || $traitValue === '') {
-            continue;
-        }
-
-        $levelMap[strtolower($traitType . '::' . $traitValue)] = $currentLevel;
-    }
-
     $highest = 1;
-    $nftTraits = normalize_traits_array($selectedNft['traits'] ?? []);
 
-    if (!$nftTraits) {
-        foreach ($levelMap as $level) {
-            $highest = max($highest, (int)$level);
-        }
-        return max(1, $highest);
-    }
-
-    foreach ($nftTraits as $trait) {
-        $traitType = normalize_trait_type((string)($trait['trait_type'] ?? ''));
-        $traitValue = trim((string)($trait['trait_value'] ?? ''));
-
-        if ($traitType === '' || $traitValue === '') {
-            continue;
-        }
-
-        $compoundKey = strtolower($traitType . '::' . $traitValue);
-        $level = isset($levelMap[$compoundKey]) ? (int)$levelMap[$compoundKey] : 1;
-        $highest = max($highest, $level);
+    foreach ($traitRows as $row) {
+        $currentLevel = max(1, (int)($row['current_level'] ?? 1));
+        $highest = max($highest, $currentLevel);
     }
 
     return max(1, $highest);

@@ -1,5 +1,56 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+---
+
+## 🔄 UPDATE — MAY 21, 2026 — LAB SYSTEM 9.92 PRE-PUSH PLAYER BUGFIX PACK
+
+### Status
+
+Lab System 9.92 received a focused pre-production bugfix pack after live member feedback.
+
+Main focus:
+
+- Genesis Ability Matrix unlock bug for Fitness abilities
+- Better Ability failure feedback modal for mobile users
+- Ability Queue end-time display polish
+- Genetic Marketplace mobile List mode price visibility
+- Profile Store Catalog available DSPOINC display
+- Profile Statistics synced game total corrected to `/8`
+- Genetic Instant Finish preview consistency
+- Quick Status sync before Render push
+
+This pass stays backend-authoritative and scoped:
+
+- No DSPOINC ledger rewrite.
+- No DB schema migration.
+- No inventory schema rewrite.
+- No Genesis ownership rewrite.
+- No marketplace economy rewrite.
+- No Ability Instant Finish activation.
+- No Genetic max-2 rollback.
+- No marketplace history deletion.
+- No SQL repair used for the Ability unlock bug.
+- Backend remains final authority for ownership, costs, timers, unlocks, and spending.
+
+---
+
+## ✅ 1. Genesis Ability Matrix locked-category bug identified and patched
+
+### Bug
+
+Members reported that Fitness abilities could not be upgraded even when the selected Genesis mouse had the required minimum trait progress.
+
+Affected examples:
+
+- Luke / Justme: `1224428436928594015`
+- Capital: `1432482985935896577`
+
+Frontend modal showed correct Ability payload, for example:
+
+```text
+Category: Fitness
+Ability: HP / SPEED
+
 ## 🔄 SPOINC BRIDGE / GENSUKI UPDATE — INTERNAL POOL + TOKEN ROUTING
 
 Zeno confirmed the Gensuki internal swap system now supports the first predefined test tokens:
@@ -11,8 +62,6 @@ Zeno confirmed the Gensuki internal swap system now supports the first predefine
 - USDC
 
 FOOK mint provided to Zeno:
-
-G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump
 
 Planned clean bridge flow:
 

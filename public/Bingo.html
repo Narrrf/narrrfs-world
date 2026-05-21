@@ -1310,21 +1310,38 @@ function renderCalledNumbers() {
   });
 }
 
+/**
+ * Returns true when a ticket belongs to the currently selected event filter.
+ * Plain-language:
+ * Bingo popups should only check the cards the player is actively viewing.
+ */
+function isTicketInActiveEventFilter(ticketObj) {
+  if (activeTicketEventFilter === 'all') {
+    return true;
+  }
+
+  return normalizeTicketEventCategory(ticketObj.eventCategory) === activeTicketEventFilter;
+}
+
 function markNumbers() {
   if (calledNumbers.length === 0) {
     alert('Please enter called numbers.');
     return;
   }
 
-  // 🐒 Check for bingo first, then re-render for Golden Baboons auto-sorting
+  // 🐒 Only check bingo for cards in the active event filter.
   tickets.forEach((ticketObj, ticketIndex) => {
+    if (!isTicketInActiveEventFilter(ticketObj)) {
+      return;
+    }
+
     const ticket = ticketObj.grid;
+
     if (checkBingo(ticket, ticketIndex, calledNumbers)) {
       showNotification(`🎉 BINGO! Ticket: ${ticketObj.name} (ID: ${ticketObj.id})`);
     }
   });
 
-  // 🐒 Re-render tickets with updated sorting for Golden Baboons Bingo
   renderTickets();
 }
 

@@ -5371,6 +5371,23 @@ body::after {
   font-variant-numeric: tabular-nums;
 }
 
+/* Mobile Marketplace price mirror.
+   DEVS FOR DECADES:
+   The real price column stays in the table for desktop/list comparison.
+   On phones, the sticky Actions column can hide the price column off-screen,
+   so this mirrors the same display price above View/Buy.
+   This is visual-only. Buy price and DSPOINC spending remain backend-owned. */
+.table-mobile-price-pill {
+  display: none;
+  color: #fde68a;
+  font-weight: 950;
+  font-size: 0.64rem;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+
 .genetic-marketplace-table .table-action-cell {
   min-width: 150px;
   width: 150px;
@@ -5834,6 +5851,13 @@ body::after {
   #geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-wrap .btn {
     font-size: 0.64rem;
     padding: 7px 4px;
+  }
+
+    #geneticMarketplaceGrid.genetic-marketplace-list-view .table-mobile-price-pill {
+    display: block;
+  }
+  #geneticMarketplaceGrid.genetic-marketplace-list-view .table-action-cell {
+    vertical-align: middle;
   }
 }
 
@@ -10782,11 +10806,20 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
 
     if (!response.ok || !data || !data.success) {
       const backendMessage =
-        data?.message ||
-        data?.error ||
-        `Failed to start ability upgrade (HTTP ${response.status}).`;
+  data?.message ||
+  data?.error ||
+  `Failed to start ability upgrade (HTTP ${response.status}).`;
 
-      throw new Error(backendMessage);
+const backendDetails = data?.data ? `\n\nBackend data: ${JSON.stringify(data.data)}` : '';
+
+throw new Error(
+  `${backendMessage}\n\n` +
+  `Debug payload:\n` +
+  `Token: ${safeTokenId}\n` +
+  `Category: ${safeCategory}\n` +
+  `Ability: ${safeAbilityKey}` +
+  backendDetails
+);
     }
 
     logLab(`${safeAbilityKey} research started successfully.`, 'success');
@@ -10836,11 +10869,11 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
       title: isDspoincProblem ? 'Not Enough Available DSPOINC' : 'Ability Upgrade Failed',
       icon: '⚠️',
       message: isDspoincProblem
-        ? `This Ability upgrade could not start because you do not have enough available DSPOINC.\n\nBackend message: ${message}`
-        : `The Ability upgrade did not start.\n\nBackend message: ${message}`,
-      note: isDspoincProblem
-        ? 'Staked or frozen DSPOINC cannot be spent. Only available DSPOINC can be used for Ability research. No DSPOINC was spent.'
-        : 'No DSPOINC was spent if the backend rejected the request. Refresh the Lab if you want to verify the latest state.',
+  ? `This Ability upgrade could not start because you do not have enough available DSPOINC.\n\n${message}`
+  : `The Ability upgrade did not start.\n\n${message}`,
+note: isDspoincProblem
+  ? 'Staked or frozen DSPOINC cannot be spent. Only available DSPOINC can be used for Ability research. No DSPOINC was spent.'
+  : 'No DSPOINC was spent if the backend rejected the request. Please screenshot this message so we can see token, category, ability, and backend data.',
       confirmText: 'Close',
       confirmVariant: 'danger'
     });
@@ -10886,21 +10919,25 @@ function normalizeAbilityRows(rawRows) {
     ).toUpperCase();
 
     return {
-      stat_name: statName,
-      tab_key: getAbilityTabForStat(statName),
-      current_level: Number(row.current_level ?? row.level ?? 1),
-      state: String(row.state || row.upgrade_status || 'idle').toLowerCase(),
-      next_cost: Number(row.next_cost ?? row.next_upgrade_cost_dspoinc ?? row.cost ?? 0),
-      next_duration_seconds: Number(
-        row.next_duration_seconds ?? row.next_upgrade_duration_seconds ?? row.next_duration ?? 0
-      ),
-      seconds_remaining: Number(row.seconds_remaining ?? 0),
-      max_level: Number(row.max_level ?? 100),
-      can_upgrade: Boolean(row.can_upgrade ?? true),
-      required_trait_level: Number(row.required_trait_level ?? 0),
-      is_unlocked: Boolean(row.is_unlocked ?? true),
-      is_max_level: Boolean(row.is_max_level ?? false)
-    };
+  stat_name: statName,
+  ability_key: String(row.ability_key || statName || '').toUpperCase(),
+  category: String(row.category || getAbilityTabForStat(statName) || '').trim(),
+  tab_key: getAbilityTabForStat(statName),
+  current_level: Number(row.current_level ?? row.level ?? 1),
+  state: String(row.state || row.upgrade_status || 'idle').toLowerCase(),
+  next_cost: Number(row.next_cost ?? row.next_upgrade_cost_dspoinc ?? row.cost ?? 0),
+  next_duration_seconds: Number(
+    row.next_duration_seconds ?? row.next_upgrade_duration_seconds ?? row.next_duration ?? 0
+  ),
+  seconds_remaining: Number(row.seconds_remaining ?? 0),
+  upgrade_started_at: String(row.upgrade_started_at || '').trim(),
+  upgrade_ends_at: String(row.upgrade_ends_at || row.ends_at || '').trim(),
+  max_level: Number(row.max_level ?? 100),
+  can_upgrade: Boolean(row.can_upgrade ?? true),
+  required_trait_level: Number(row.required_trait_level ?? 0),
+  is_unlocked: Boolean(row.is_unlocked ?? true),
+  is_max_level: Boolean(row.is_max_level ?? false)
+};
   });
 }
 
@@ -10940,6 +10977,38 @@ function startGenesisAbilityPollingIfNeeded() {
     loadGenesisAbilityMatrix(genesisAbilityState.tokenId, { silent: true });
   }, 15000);
 }
+/**
+ * Format an ability upgrade end timestamp for the queue.
+ * Plain language for DEVS:
+ * The backend owns the real timer. This helper only turns the backend timestamp
+ * into a readable local time for players. It never decides upgrade completion.
+ */
+function formatAbilityQueueEndTime(rawValue) {
+  const value = String(rawValue || '').trim();
+
+  if (!value) {
+    return 'Unknown';
+  }
+
+  const normalizedValue = value.includes('T')
+    ? value
+    : value.replace(' ', 'T') + 'Z';
+
+  const parsedDate = new Date(normalizedValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 
 function renderGenesisAbilityQueueBox() {
   const box = document.getElementById('genesisAbilityQueueBox');
@@ -10968,7 +11037,7 @@ function renderGenesisAbilityQueueBox() {
   const secondsRemaining = Number(activeRow.seconds_remaining ?? 0);
   const category = String(activeRow.category || '').trim() || 'Ability';
   const statName = String(activeRow.stat_name || activeRow.ability_key || 'Unknown').trim();
-  const upgradeEndsAt = activeRow.upgrade_ends_at ? String(activeRow.upgrade_ends_at) : 'Unknown';
+  const upgradeEndsAt = formatAbilityQueueEndTime(activeRow.upgrade_ends_at);
 
   box.innerHTML = `
     <div class="queue-card">
@@ -10992,7 +11061,7 @@ function renderGenesisAbilityQueueBox() {
         </div>
 
         <div class="mt-4 text-sm text-slate-300">
-          <strong>Ends At:</strong> ${escapeHtml(upgradeEndsAt)}
+          <strong>Upgrade Ends:</strong> ${escapeHtml(upgradeEndsAt)}
         </div>
 
         <div class="mt-3 text-xs text-slate-400">
@@ -14004,6 +14073,7 @@ function renderGeneticMarketplaceTableRow(item) {
       <td class="table-price-cell">${formatNumber(price)} DSPOINC</td>
       <td class="table-seller-cell" title="${escapeHtml(sellerName)}">${escapeHtml(sellerName)}</td>
 <td class="table-action-cell">
+        <div class="table-mobile-price-pill">${formatNumber(price)} DSPOINC</div>
         <div class="table-action-wrap">
           <button
             type="button"

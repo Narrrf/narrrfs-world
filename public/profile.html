@@ -9377,10 +9377,32 @@ async function loadProfileStore(discordId, baseUrlOverride) {
     profileStoreState.items = itemsMap;
     profileStoreState.ownedIds = ownedIds;
     profileStoreState.settingsByGame = settingsByGame;
-    profileStoreState.balance =
-      balanceData && typeof balanceData.total_dspoinc !== 'undefined'
-        ? Number(balanceData.total_dspoinc)
-        : null;
+    /**
+ * Store Catalog must show spendable DSPOINC, not total ledger DSPOINC.
+ * Plain language for DEVS:
+ * Players can stake/freeze DSPOINC. Frozen DSPOINC stays in the total balance,
+ * but it cannot be spent in the Profile Store. The backend purchase endpoint
+ * remains the final authority; this only makes the visible catalog balance match
+ * the same available-balance rule used by Lab/Marketplace.
+ */
+const profileStoreTotalDspoinc = Number(balanceData?.total_dspoinc ?? 0);
+const profileStoreFrozenDspoinc = Number(
+  balanceData?.frozen_dspoinc ??
+  balanceData?.frozen_stakes ??
+  balanceData?.staked_dspoinc ??
+  balanceData?.active_stakes ??
+  0
+);
+
+const profileStoreAvailableDspoinc = Number(
+  balanceData?.available_dspoinc ??
+  balanceData?.available ??
+  Math.max(0, profileStoreTotalDspoinc - profileStoreFrozenDspoinc)
+);
+
+profileStoreState.balance = balanceData
+  ? Math.max(0, profileStoreAvailableDspoinc)
+  : null;
 
     renderProfileStore();
   } catch (error) {
@@ -9605,7 +9627,7 @@ function renderProfileStore() {
 
   if (balanceEl) {
     if (profileStoreState.balance !== null) {
-      balanceEl.textContent = `Balance: ${formatProfileStoreNumber(profileStoreState.balance)} DSPOINC`;
+      balanceEl.textContent = `Available: ${formatProfileStoreNumber(profileStoreState.balance)} DSPOINC`;
       balanceEl.classList.remove('hidden');
     } else {
       balanceEl.classList.add('hidden');
@@ -10480,7 +10502,16 @@ function displayAllTimeStats(stats) {
     // Update overview summary cards
     const overviewEl = document.getElementById('allTimeOverview');
     if (overviewEl) {
-const gamesPlayed = Object.values(stats.games).filter(game => {
+/**
+ * Count how many synced Narrrfs World games the player has touched.
+ * Plain language for DEVS:
+ * The profile Statistics card should show progress against the current synced
+ * game ecosystem total. Keep this display-only. It does not decide rewards,
+ * missions, scores, achievements, or leaderboard eligibility.
+ */
+const PROFILE_SYNCED_GAME_TOTAL = 8;
+
+const gamesPlayed = Object.values(stats.games || {}).filter(game => {
   if (game.total_games) return game.total_games > 0;
   if (game.total_clicks) return game.total_clicks > 0;
   if (game.total_races) return game.total_races > 0;
@@ -10507,7 +10538,7 @@ const gamesPlayed = Object.values(stats.games).filter(game => {
         </div>
         <div class="bg-gradient-to-br from-blue-900/30 to-blue-700/30 rounded-lg p-4 border border-blue-500/30 text-center">
           <div class="text-blue-300 text-xs mb-1">Games Played</div>
-          <div class="text-white font-bold text-xl">${gamesPlayed}/6</div>
+          <div class="text-white font-bold text-xl">${gamesPlayed}/${PROFILE_SYNCED_GAME_TOTAL}</div>
           <div class="text-blue-200 text-xs mt-1">Unique games</div>
         </div>
       `;
