@@ -838,44 +838,117 @@ function preloadGlyphImages(sources) {
     }
   }
 
+  /**
+   * Resolve the logged-in Discord player for score saving.
+   *
+   * Plain language for DEVS:
+   * Glyph Memory local best times are browser-only. The leaderboard needs a
+   * real Discord ID. Mobile browsers can lose localStorage while still keeping
+   * sessionStorage or the shared Narrrfs page globals, so check all known safe
+   * places before deciding the score is local-only.
+   */
+  function resolveGlyphScorePlayer() {
+    const discordId = String(
+      window.sessionDiscordId ||
+      localStorage.getItem('discord_id') ||
+      sessionStorage.getItem('discord_id') ||
+      localStorage.getItem('narrrfs_last_discord_id') ||
+      ''
+    ).trim();
+
+    const discordName = String(
+      window.sessionDiscordUsername ||
+      localStorage.getItem('discord_name') ||
+      sessionStorage.getItem('discord_name') ||
+      localStorage.getItem('narrrfs_last_discord_name') ||
+      localStorage.getItem('DISCORD_NAME') ||
+      'Player'
+    ).trim();
+
+    if (discordId) {
+      localStorage.setItem('discord_id', discordId);
+      sessionStorage.setItem('discord_id', discordId);
+    }
+
+    if (discordName && discordName !== 'Player') {
+      localStorage.setItem('discord_name', discordName);
+      sessionStorage.setItem('discord_name', discordName);
+    }
+
+    return { discordId, discordName };
+  }
+
   // 🧩 Save Glyph Memory score to database (if Discord logged in)
   async function saveGlyphScore(difficulty, timeMs, pairsMatched) {
-    // Check if Discord is logged in
-    const discordId = localStorage.getItem("discord_id");
-    const discordName = localStorage.getItem("discord_name");
-    
-    if (!discordId) {
-      // Not logged in - use localStorage only (existing behavior)
-      console.log("🧩 Not logged in - score saved to localStorage only");
+    const normalizedDifficulty = String(difficulty || '').trim().toLowerCase();
+    const allowedDifficulties = ['easy', 'medium', 'hard'];
+
+    if (!allowedDifficulties.includes(normalizedDifficulty)) {
+      console.warn('⚠️ Glyph score not saved: invalid difficulty payload', {
+        difficulty,
+        normalizedDifficulty,
+        timeMs,
+        pairsMatched
+      });
       return;
     }
+
+    const { discordId, discordName } = resolveGlyphScorePlayer();
+
+    if (!discordId) {
+      // Not logged in - use localStorage only (existing behavior)
+      console.warn('🧩 Glyph score stayed local only: no Discord ID found for backend save', {
+        difficulty: normalizedDifficulty,
+        time_ms: timeMs,
+        pairs_matched: pairsMatched
+      });
+      return;
+    }
+
+    const scorePayload = {
+      game: 'glyph_memory',
+      discord_id: discordId,
+      discord_name: discordName || 'Player',
+      difficulty: normalizedDifficulty,
+      time_ms: timeMs,
+      pairs_matched: pairsMatched,
+      wallet: '' // Not required for glyph memory
+    };
+
+    console.log('🧩 Saving Glyph Memory score payload:', scorePayload);
 
     try {
       const response = await fetch('/api/dev/save-score.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          game: 'glyph_memory',
-          discord_id: discordId,
-          discord_name: discordName || "Player",
-          difficulty: difficulty,
-          time_ms: timeMs,
-          pairs_matched: pairsMatched,
-          wallet: '' // Not required for glyph memory
-        })
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(scorePayload)
       });
 
       const data = await response.json();
-      if (data.success) {
-        console.log("✅ Glyph Memory score saved to database:", data.message);
-        // Refresh leaderboard after saving score
+
+      if (response.ok && data.success) {
+        console.log('✅ Glyph Memory score saved to database:', data.message || data);
+        // Refresh leaderboard after saving score.
         fetchLeaderboard();
-      } else {
-        console.warn("⚠️ Failed to save Glyph Memory score:", data.error);
+        return;
       }
+
+      console.warn('⚠️ Failed to save Glyph Memory score:', {
+        status: response.status,
+        response: data,
+        payload: scorePayload
+      });
     } catch (error) {
-      console.error("❌ Error saving Glyph Memory score:", error);
-      // Don't show error to user - localStorage fallback already saved the best time
+      console.error('❌ Error saving Glyph Memory score:', {
+        error,
+        payload: scorePayload
+      });
+      // LocalStorage fallback already saved the best time.
     }
   }
 

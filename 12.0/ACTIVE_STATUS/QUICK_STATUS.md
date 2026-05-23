@@ -2,6 +2,62 @@
 
 ---
 
+## 🔄 FOLLOW-UP — SPOINC BRIDGE / GENSUKI SWAP ROUTE MESSAGES
+
+Zeno confirmed that Narrrfs does not need to add EMPIRE / FOOK minimum swap warnings in the first SPOINC bridge implementation.
+
+Reason:
+
+- Gensuki swap already has its own user-facing message when a minimum swap amount or route error happens.
+- Gensuki is improving deep liquidity/routing by adding LiFi and OpenOcean routes.
+- If any route/minimum/slippage error happens, Gensuki will return the error directly through their swap flow/API.
+- Narrrfs v1 remains scoped to DSPOINC ↔ SPOINC only.
+
+Current Narrrfs v1 payload needs remain focused on:
+
+```text
+SPOINC amount
+DSPOINC amount
+direction
+wallet
+transaction signature / proof
+status
+unique idempotency ID
+confirmation timestamp
+pool value if Gensuki wants Narrrfs to display it
+
+---
+
+## 🔄 UPDATE — MAY 23, 2026 — SPOINC BRIDGE / GENSUKI API SCOPE CLARIFICATION
+
+### Status
+
+Zeno / Gensuki confirmed the custom swap system is progressing and payloads are still under checking.
+
+Important current state:
+
+- Gensuki API/payload details are expected after their internal check.
+- Gensuki is handling predefined token swap routing on their side.
+- Narrrfs side must stay scoped to SPOINC ↔ DSPOINC only for the first implementation.
+- Do not build direct DSPOINC pricing or direct DSPOINC swaps against FOOK, EMPIRE, SOL, USDT, or USDC.
+
+### Confirmed Gensuki-side token routing
+
+Gensuki side supports / is adding the first predefined test tokens:
+
+- FOOK
+- EMPIRE
+- SOL
+- USDT
+- USDC
+
+FOOK token mint shared with Zeno:
+
+```text
+G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump
+
+---
+
 ## 🔄 UPDATE — MAY 21, 2026 — LAB SYSTEM 9.92 PRE-PUSH PLAYER BUGFIX PACK
 
 ### Status
