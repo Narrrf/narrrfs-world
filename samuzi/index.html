@@ -1313,14 +1313,13 @@ function renderPhase3Slider() {
             return `
                 <div class="phase3-slide motion-active ${activeClass}" style="background-image: url('./assets/background/phase3-coming-soon.jpg')">
                     <video
-                        class="phase3-video"
-                        src="${videoPath}"
-                        muted
-                        loop
-                        playsinline
-                        preload="${index === 0 ? 'auto' : 'metadata'}"
-                        ${index === phase3SliderIndex ? 'autoplay' : ''}
-                    ></video>
+    class="phase3-video"
+    src="${videoPath}"
+    muted
+    playsinline
+    preload="${index === 0 ? 'auto' : 'metadata'}"
+    ${index === phase3SliderIndex ? 'autoplay' : ''}
+></video>
                 </div>
             `;
         }
@@ -1391,13 +1390,23 @@ function playActivePhase3Video() {
     videos.forEach((video) => {
         const parentSlide = video.closest('.phase3-slide');
 
+        video.onended = null;
+
         if (parentSlide && parentSlide.classList.contains('active')) {
-            video.currentTime = video.currentTime || 0;
+            video.currentTime = 0;
+
+            video.onended = () => {
+                if (phase3MotionMode) {
+                    changePhase3Slide(1);
+                }
+            };
+
             video.play().catch(() => {
                 // Browser may block autoplay in rare cases. Videos are muted, so this should normally work.
             });
         } else {
             video.pause();
+            video.currentTime = 0;
         }
     });
 }
@@ -1428,9 +1437,13 @@ function restartPhase3SliderTimer() {
     const activeSlides = getPhase3ActiveSlides();
 
     if (activeSlides.length > 1) {
-        phase3SliderTimer = setInterval(() => {
-            changePhase3Slide(1);
-        }, phase3MotionMode ? 9000 : 5000);
+        if (phase3MotionMode) {
+    return;
+}
+
+phase3SliderTimer = setInterval(() => {
+    changePhase3Slide(1);
+}, 5000);
     }
 }
 
