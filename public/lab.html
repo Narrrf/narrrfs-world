@@ -8868,13 +8868,35 @@ async function loadNftCustomNames() {
 
 /**
  * Save or clear one Genesis mouse custom display name.
+ *
+ * Plain language for DEVS:
+ * Custom names are player-facing labels only. They must never become NFT
+ * identity, trait identity, ability identity, marketplace identity, or backend
+ * ownership proof. This function returns true only when the backend confirms
+ * the save, so the rename modal can stay open on failure.
  */
 async function saveNftCustomName(tokenId, customName) {
   const safeTokenId = String(tokenId || '').trim();
   const safeName = String(customName || '').trim();
 
-  if (!state.userId || !safeTokenId || state.actionInFlight) {
-    return;
+  if (!state.userId || !safeTokenId) {
+    logLab('Custom name save skipped: missing user or token.', 'warn');
+
+    if (typeof showToast === 'function') {
+      showToast('Unable to save mouse name: missing user or token.', 'error');
+    }
+
+    return false;
+  }
+
+  if (state.actionInFlight) {
+    logLab('Custom name save skipped: another Lab action is already running.', 'warn');
+
+    if (typeof showToast === 'function') {
+      showToast('Another Lab action is still running. Please try again in a moment.', 'error');
+    }
+
+    return false;
   }
 
   const previousMap = { ...(state.nftCustomNames || {}) };
@@ -8903,7 +8925,7 @@ async function saveNftCustomName(tokenId, customName) {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          user_id: activeUserId,
+          user_id: state.userId,
           token_id: safeTokenId,
           collection: 'genesis',
           custom_name: safeName
@@ -8911,6 +8933,8 @@ async function saveNftCustomName(tokenId, customName) {
       },
       true
     );
+
+    console.info('🐭 Custom name save response:', res);
 
     if (!res.ok || !res.payload?.success) {
       throw new Error(res.payload?.error || `Custom name save failed (${res.status})`);
@@ -8927,6 +8951,8 @@ async function saveNftCustomName(tokenId, customName) {
     } else {
       logLab(safeName ? `Mouse renamed to ${safeName}.` : 'Mouse nickname cleared.', 'success');
     }
+
+    return true;
   } catch (error) {
     state.nftCustomNames = previousMap;
     renderAll();
@@ -8936,6 +8962,8 @@ async function saveNftCustomName(tokenId, customName) {
     } else {
       logLab(`Custom name save failed: ${error.message}`, 'error');
     }
+
+    return false;
   } finally {
     setActionInFlight(false);
   }
@@ -18190,15 +18218,17 @@ if (el.activeResearchQueue && el.activeResearchQueue.dataset.queueActionsBound !
   el.activeResearchQueue.dataset.queueActionsBound = '1';
 }
 
-    // 🐭 Bind themed Genesis mouse rename modal actions.
+  // 🐭 Bind themed Genesis mouse rename modal actions.
   // DEVS FOR DECADES:
   // This replaces the browser-native prompt with a Lab-styled modal.
   // It still uses saveNftCustomName(), so custom names remain display-only labels.
+  // The modal now waits for backend confirmation before closing, so failed saves
+  // stay visible and expose the real API error instead of silently resetting.
   const renameModal = document.getElementById('renameMouseModal');
   const renameInput = document.getElementById('renameMouseInput');
 
   if (renameModal && renameInput && renameModal.dataset.bound !== '1') {
-    renameModal.addEventListener('click', (event) => {
+    renameModal.addEventListener('click', async (event) => {
       const clickedBackdrop = event.target === renameModal;
       const cancelButton = event.target.closest('[data-rename-cancel]');
       const clearButton = event.target.closest('[data-rename-clear]');
@@ -18211,24 +18241,38 @@ if (el.activeResearchQueue && el.activeResearchQueue.dataset.queueActionsBound !
       }
 
       if (clearButton) {
-        renameModal.hidden = true;
-        saveNftCustomName(tokenId, '');
+        const saved = await saveNftCustomName(tokenId, '');
+
+        if (saved) {
+          renameModal.hidden = true;
+        }
+
         return;
       }
 
       if (saveButton) {
-        renameModal.hidden = true;
-        saveNftCustomName(tokenId, renameInput.value);
+        const saved = await saveNftCustomName(tokenId, renameInput.value);
+
+        if (saved) {
+          renameModal.hidden = true;
+        }
+
+        return;
       }
     });
 
-    renameInput.addEventListener('keydown', (event) => {
+    renameInput.addEventListener('keydown', async (event) => {
       const tokenId = String(renameModal.dataset.tokenId || '').trim();
 
       if (event.key === 'Enter') {
         event.preventDefault();
-        renameModal.hidden = true;
-        saveNftCustomName(tokenId, renameInput.value);
+
+        const saved = await saveNftCustomName(tokenId, renameInput.value);
+
+        if (saved) {
+          renameModal.hidden = true;
+        }
+
         return;
       }
 
