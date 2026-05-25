@@ -1168,6 +1168,86 @@ select option {
         flex-wrap: wrap;
     }
 }
+
+/* =========================================================
+   SAMUZI ADMIN — Motion Art uploader
+   ========================================================= */
+
+.motion-admin-divider {
+    margin: 28px 0 22px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(249,115,22,0.45), transparent);
+}
+
+.motion-admin-title {
+    color: #ffffff;
+    font-size: 1.18rem;
+    margin-bottom: 8px;
+}
+
+.motion-admin-copy {
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.motion-upload-area {
+    border-color: rgba(255, 214, 102, 0.55) !important;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(249,115,22,0.12), transparent 40%),
+        rgba(255,255,255,0.045) !important;
+}
+
+.motion-video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 18px;
+    margin-top: 22px;
+}
+
+.motion-video-item {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(249,115,22,0.22);
+    background: rgba(0,0,0,0.36);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.34);
+}
+
+.motion-video-item video {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    display: block;
+    background: #000;
+}
+
+.motion-video-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.72);
+    color: #ffffff;
+}
+
+.motion-video-actions span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.78rem;
+}
+
+.motion-delete-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 5px 8px;
+    cursor: pointer;
+    color: #ffffff;
+    background: rgba(225,29,72,0.80);
+}
     </style>
 </head>
 <body>
@@ -1319,106 +1399,110 @@ select option {
                 </div>
             </div>
 
-            <!-- Website Settings - Bubbles -->
-<div class="dashboard-card feature-under-construction">
+           <!-- Website Settings - Visual Effects -->
+<div class="dashboard-card">
     <div class="card-header">
-        <div class="card-icon">🫧</div>
+        <div class="card-icon">⚡</div>
         <div class="card-title">Visual Effects</div>
-        <span class="construction-badge">🧀 Under Construction</span>
+        <span class="construction-badge" style="background:linear-gradient(135deg,#22c55e,#84cc16)!important;">✅ Active Toy</span>
     </div>
 
-    <div class="customer-warning-box">
-        <strong>⚠️ Not ready for customer use yet</strong>
+    <div class="customer-warning-box cheese">
+        <strong>⚡ Visual Effects Playground</strong>
         <p>
-            Visual effects are reserved for the next admin update. They are disabled for now so the live Samuzi preview
-            stays stable for partner presentations.
+            Add cinematic lightning, shadow storm, and colored flash effects to selected Samuzi pages.
+            Keep the effect subtle for customer previews, or switch it off anytime.
         </p>
     </div>
-                <div class="settings-form">
-                    <div class="form-group">
-                        <label for="bubbleEffect">🫧 Ambient Effect:</label>
-                        <select id="bubbleEffect">
-    <option value="off">Off</option>
-    <option value="subtle">Subtle</option>
-    <option value="medium">Medium</option>
-    <option value="strong">Strong</option>
-    <option value="extreme">Extreme</option>
-</select>
-<small class="form-help">Optional ambient motion layer for the public pages.</small>
-                    </div>
-                    
-                    <div class="bubble-controls">
-                        <div class="form-group">
-                            <label for="bubbleColor">🎨 Effect Color:</label>
-                            <div class="color-selector">
-                                <select id="bubbleColor">
-                                    <option value="blue">Blue</option>
-<option value="white">White</option>
-<option value="lightblue">Light Blue</option>
-<option value="cyan">Cyan</option>
-<option value="silver">Silver</option>
-<option value="transparent">Transparent</option>
-<option value="custom">Custom</option>
-                                </select>
-                                <input type="color" id="customBubbleColor" value="#e11d48" class="custom-color-picker" title="Choose custom effect color">
-                            </div>
-                            <small class="form-help">Choose custom to use your own color.</small>
-                        </div>
-                        
-                        <div class="bubble-settings-grid">
-                            <div class="form-group">
-                                <label for="bubbleOpacity">👁️ Opacity:</label>
-                                <select id="bubbleOpacity">
-                                    <option value="low">Low</option>
-<option value="medium" selected>Medium</option>
-<option value="high">High</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="bubbleSpeed">⚡ Speed:</label>
-                                <select id="bubbleSpeed">
-                                   <option value="slow">Slow</option>
-<option value="medium" selected>Medium</option>
-<option value="fast">Fast</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>📄 Enable effect on pages:</label>
-                        <div class="page-bubbles-grid">
-    <label class="bubble-page-item">
-        <input type="checkbox" id="bubbleIndex" checked>
-        <span>🏠 Home</span>
-    </label>
-    <label class="bubble-page-item">
-        <input type="checkbox" id="bubbleProjects" checked>
-        <span>🗡️ Projects</span>
-    </label>
-    <label class="bubble-page-item">
-        <input type="checkbox" id="bubbleAbout" checked>
-        <span>📜 About</span>
-    </label>
-    <label class="bubble-page-item">
-        <input type="checkbox" id="bubbleContact" checked>
-        <span>📬 Contact</span>
-    </label>
-    <label class="bubble-page-item">
-        <input type="checkbox" id="bubbleLegal" checked>
-        <span>⚖️ Legal</span>
-    </label>
-</div>
-                        <small class="form-help">Choose where the ambient effect should appear.</small>
-                    </div>
-                    
-                    <div class="form-group">
-                       <button class="btn btn-primary" onclick="previewBackground()" style="margin-right: 10px;">👁️ Preview</button>
-<button class="btn btn-info" onclick="window.open('../index.html', '_blank')" style="margin-right: 10px;">🌐 View Website</button>
-<button class="btn btn-success" onclick="saveWebsiteSettings()">Save Settings</button>
-                    </div>
+
+    <div class="settings-form">
+        <div class="form-group">
+            <label for="bubbleEffect">⚡ Effect Mode:</label>
+            <select id="bubbleEffect">
+                <option value="off">Off</option>
+                <option value="golden-lightning">Golden Lightning</option>
+                <option value="blue-lightning">Blue Lightning</option>
+                <option value="silver-lightning">Silver Lightning</option>
+                <option value="shadow-storm">Shadow Storm</option>
+                <option value="cyber-storm">Cyber Storm</option>
+            </select>
+            <small class="form-help">Choose the visual lightning style for the public pages.</small>
+        </div>
+
+        <div class="bubble-controls">
+            <div class="form-group">
+                <label for="bubbleColor">🎨 Lightning Color:</label>
+                <div class="color-selector">
+                    <select id="bubbleColor">
+                        <option value="gold">Gold</option>
+                        <option value="blue">Blue</option>
+                        <option value="silver">Silver</option>
+                        <option value="red">Red</option>
+                        <option value="cyan">Cyan</option>
+                        <option value="white">White</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <input type="color" id="customBubbleColor" value="#facc15" class="custom-color-picker" title="Choose custom lightning color">
+                </div>
+                <small class="form-help">Choose a preset or custom lightning color.</small>
+            </div>
+
+            <div class="bubble-settings-grid">
+                <div class="form-group">
+                    <label for="bubbleOpacity">👁️ Intensity:</label>
+                    <select id="bubbleOpacity">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="cinematic">Cinematic</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bubbleSpeed">⚡ Frequency:</label>
+                    <select id="bubbleSpeed">
+                        <option value="slow">Slow</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="fast">Fast</option>
+                        <option value="storm">Random Storm</option>
+                    </select>
                 </div>
             </div>
+        </div>
+
+        <div class="form-group">
+            <label>📄 Enable effect on pages:</label>
+            <div class="page-bubbles-grid">
+                <label class="bubble-page-item">
+                    <input type="checkbox" id="bubbleIndex" checked>
+                    <span>🏠 Home</span>
+                </label>
+                <label class="bubble-page-item">
+                    <input type="checkbox" id="bubbleProjects" checked>
+                    <span>🗡️ Events</span>
+                </label>
+                <label class="bubble-page-item">
+                    <input type="checkbox" id="bubbleAbout" checked>
+                    <span>📜 About</span>
+                </label>
+                <label class="bubble-page-item">
+                    <input type="checkbox" id="bubbleContact" checked>
+                    <span>📬 Contact</span>
+                </label>
+                <label class="bubble-page-item">
+                    <input type="checkbox" id="bubbleLegal" checked>
+                    <span>⚖️ Legal</span>
+                </label>
+            </div>
+            <small class="form-help">Choose where the lightning effect should appear.</small>
+        </div>
+
+        <div class="form-group">
+            <button class="btn btn-info" onclick="window.open('../index.html', '_blank')" style="margin-right: 10px;">🌐 View Website</button>
+            <button class="btn btn-success" onclick="saveWebsiteSettings()">Save Visual Effects</button>
+        </div>
+    </div>
+</div>
 
             <!-- Website Overview -->
             <div class="dashboard-card">
@@ -1475,6 +1559,32 @@ select option {
                 <div class="photo-grid" id="photoGrid">
                     <!-- Photos will be loaded here -->
                 </div>
+
+                <div class="motion-admin-divider"></div>
+
+<h3 class="motion-admin-title">⚔️ Secret Motion Art Slider</h3>
+<p class="motion-admin-copy">
+    Upload MP4 motion art for the hidden Phase 3 slash unlock on the homepage.
+</p>
+
+<div class="customer-warning-box cheese" style="margin-top: 12px;">
+    <strong>🧀 Important preview note for motion uploads</strong><br>
+    Motion uploads work on live Render preview, but the current preview server has no paid persistent disk.
+    After upload/delete/replace, please message Markus so the same MP4 files can be added locally and pushed into the repository.
+</div>
+
+<div class="upload-area motion-upload-area" id="motionUploadArea">
+    <div>⚔️ Click here or drop MP4 motion art here</div>
+    <div style="font-size: 0.9rem; color: #999; margin-top: 10px;">
+        Supported format: MP4 only · Max 20MB each
+    </div>
+</div>
+
+<input type="file" id="motionUpload" multiple accept="video/mp4" style="display: none;">
+
+<div class="motion-video-grid" id="motionVideoGrid">
+    <!-- Motion videos will be loaded here -->
+</div>
                 
                 <!-- Pagination Controls -->
                 <div class="pagination-controls" id="paginationControls" style="display: none;">
@@ -1871,6 +1981,30 @@ select option {
             uploadPhotos(e.target.files);
         });
 
+        // Motion Art upload handling
+document.getElementById('motionUploadArea').addEventListener('click', () => {
+    document.getElementById('motionUpload').click();
+});
+
+document.getElementById('motionUploadArea').addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.add('dragover');
+});
+
+document.getElementById('motionUploadArea').addEventListener('dragleave', (e) => {
+    e.currentTarget.classList.remove('dragover');
+});
+
+document.getElementById('motionUploadArea').addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('dragover');
+    uploadMotionVideos(e.dataTransfer.files);
+});
+
+document.getElementById('motionUpload').addEventListener('change', (e) => {
+    uploadMotionVideos(e.target.files);
+});
+
         // Pagination event listeners
         document.getElementById('prevPage').addEventListener('click', () => {
             if (currentPage > 1) {
@@ -1933,6 +2067,113 @@ select option {
                 showAlert('❌ Error uploading artwork', 'error');
             }
         }
+
+        async function uploadMotionVideos(files) {
+    if (!files || !files.length) {
+        return;
+    }
+
+    const formData = new FormData();
+
+    for (let file of files) {
+        formData.append('photos[]', file);
+    }
+
+    formData.append('upload_type', 'motion');
+
+    try {
+        const response = await fetch('upload-photos.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const warningText = Array.isArray(result.errors) && result.errors.length
+                ? ' Some files were skipped: ' + result.errors.join(' | ')
+                : '';
+
+            showAlert('✅ Motion Art uploaded successfully!' + warningText);
+            loadMotionVideos();
+        } else {
+            const errorText = Array.isArray(result.errors) && result.errors.length
+                ? result.errors.join(' | ')
+                : result.message;
+
+            showAlert('❌ Motion upload failed: ' + errorText, 'error');
+        }
+    } catch (error) {
+        console.error('Motion upload error:', error);
+        showAlert('❌ Error uploading Motion Art', 'error');
+    }
+}
+
+async function loadMotionVideos() {
+    const grid = document.getElementById('motionVideoGrid');
+
+    if (!grid) {
+        return;
+    }
+
+    try {
+        const response = await fetch('get-motion-videos.php', { cache: 'no-store' });
+        const result = await response.json();
+
+        if (!result.success || !Array.isArray(result.videos) || result.videos.length === 0) {
+            grid.innerHTML = '<p style="color:#cbd5e1;">No motion videos uploaded yet.</p>';
+            return;
+        }
+
+        grid.innerHTML = result.videos.map((video) => `
+            <div class="motion-video-item">
+                <video src="${video.url}" muted loop playsinline controls preload="metadata"></video>
+                <div class="motion-video-actions">
+                    <span title="${video.filename}">${video.filename}</span>
+                    <button
+                        type="button"
+                        class="motion-delete-btn"
+                        onclick="deleteMotionVideo('${video.filename.replace(/'/g, "\\'")}')"
+                        title="Delete motion video"
+                    >
+                        🗑️
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading motion videos:', error);
+        grid.innerHTML = '<p style="color:#fecaca;">Motion videos could not be loaded.</p>';
+    }
+}
+
+async function deleteMotionVideo(filename) {
+    if (!confirm('Delete this Motion Art video?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('delete-motion-video.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ filename })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showAlert('✅ Motion video deleted successfully!');
+            loadMotionVideos();
+        } else {
+            showAlert('❌ Delete failed: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Delete motion video error:', error);
+        showAlert('❌ Error deleting motion video', 'error');
+    }
+}
 
         // Delete photo
         async function deletePhoto(filename) {
@@ -2195,10 +2436,11 @@ select option {
 
                 const result = await response.json();
                 if (result.success) {
-                    showAlert('✅ Website settings saved. Background and visual settings are now active.');
-                } else {
-                    showAlert('❌ Error saving website settings.', 'error');
-                }
+    showAlert('✅ Visual Effects saved successfully. Reloading saved values...');
+    await loadWebsiteSettings();
+} else {
+    showAlert('❌ Error saving website settings.', 'error');
+}
             } catch (error) {
                 console.error('Save error:', error);
                 showAlert('❌ Error saving website settings.', 'error');
@@ -2224,7 +2466,9 @@ select option {
         // Load email settings (Resend.com API only)
         async function loadEmailSettings() {
             try {
-                const response = await fetch('get-settings.php');
+                const response = await fetch('get-settings.php?_=' + Date.now(), {
+    cache: 'no-store'
+});
                 const result = await response.json();
                 
                 if (result.success && result.settings) {
@@ -2254,79 +2498,168 @@ select option {
         }
 
         async function loadWebsiteSettings() {
-            try {
-                const response = await fetch('get-settings.php');
-                const result = await response.json();
-                
-                if (result.success && result.settings) {
-                    const settings = result.settings;
-                    
-                    // Load website settings into form
-                    if (settings.company_name) document.getElementById('companyName').value = settings.company_name;
-                    if (settings.phone_number) document.getElementById('phoneNumber').value = settings.phone_number;
-                    if (settings.slider_speed) document.getElementById('sliderSpeed').value = settings.slider_speed;
-                    if (settings.hero_background) document.getElementById('heroBackground').value = settings.hero_background;
-                    if (settings.background_transparency) document.getElementById('backgroundTransparency').value = settings.background_transparency;
-                    
-                    // Load page backgrounds
-                    if (settings.page_backgrounds) {
-                       if (settings.page_backgrounds.index) document.getElementById('indexBackground').value = settings.page_backgrounds.index;
-if (settings.page_backgrounds.projects) document.getElementById('projectsBackground').value = settings.page_backgrounds.projects;
-if (settings.page_backgrounds.about) document.getElementById('aboutBackground').value = settings.page_backgrounds.about;
-if (settings.page_backgrounds.contact) document.getElementById('contactBackground').value = settings.page_backgrounds.contact;
-if (settings.page_backgrounds.legal) document.getElementById('legalBackground').value = settings.page_backgrounds.legal;
+    try {
+        const response = await fetch('get-settings.php?_=' + Date.now(), {
+            cache: 'no-store'
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.settings) {
+            const settings = result.settings;
+
+            // Load website settings into form
+            if (settings.company_name && document.getElementById('companyName')) {
+                document.getElementById('companyName').value = settings.company_name;
+            }
+
+            if (settings.phone_number && document.getElementById('phoneNumber')) {
+                document.getElementById('phoneNumber').value = settings.phone_number;
+            }
+
+            if (settings.slider_speed && document.getElementById('sliderSpeed')) {
+                document.getElementById('sliderSpeed').value = settings.slider_speed;
+            }
+
+            if (settings.hero_background && document.getElementById('heroBackground')) {
+                document.getElementById('heroBackground').value = settings.hero_background;
+            }
+
+            if (settings.background_transparency && document.getElementById('backgroundTransparency')) {
+                document.getElementById('backgroundTransparency').value = settings.background_transparency;
+            }
+
+            // Load page backgrounds
+            if (settings.page_backgrounds) {
+                if (settings.page_backgrounds.index && document.getElementById('indexBackground')) {
+                    document.getElementById('indexBackground').value = settings.page_backgrounds.index;
+                }
+
+                if (settings.page_backgrounds.projects && document.getElementById('projectsBackground')) {
+                    document.getElementById('projectsBackground').value = settings.page_backgrounds.projects;
+                }
+
+                if (settings.page_backgrounds.about && document.getElementById('aboutBackground')) {
+                    document.getElementById('aboutBackground').value = settings.page_backgrounds.about;
+                }
+
+                if (settings.page_backgrounds.contact && document.getElementById('contactBackground')) {
+                    document.getElementById('contactBackground').value = settings.page_backgrounds.contact;
+                }
+
+                if (settings.page_backgrounds.legal && document.getElementById('legalBackground')) {
+                    document.getElementById('legalBackground').value = settings.page_backgrounds.legal;
+                }
+            }
+
+            // Load Visual Effects settings safely
+            const allowedEffects = [
+                'off',
+                'golden-lightning',
+                'blue-lightning',
+                'silver-lightning',
+                'shadow-storm',
+                'cyber-storm'
+            ];
+
+            const allowedColors = [
+                'gold',
+                'blue',
+                'silver',
+                'red',
+                'cyan',
+                'white'
+            ];
+
+            const savedEffect = settings.bubble_effect || 'off';
+            const savedColor = settings.bubble_color || 'gold';
+            const savedOpacity = settings.bubble_opacity || 'medium';
+            const savedSpeed = settings.bubble_speed || 'medium';
+
+            if (document.getElementById('bubbleEffect')) {
+                document.getElementById('bubbleEffect').value = allowedEffects.includes(savedEffect)
+                    ? savedEffect
+                    : 'off';
+            }
+
+            if (document.getElementById('bubbleOpacity')) {
+                document.getElementById('bubbleOpacity').value = savedOpacity;
+            }
+
+            if (document.getElementById('bubbleSpeed')) {
+                document.getElementById('bubbleSpeed').value = savedSpeed;
+            }
+
+            if (document.getElementById('bubbleColor')) {
+                if (allowedColors.includes(savedColor)) {
+                    document.getElementById('bubbleColor').value = savedColor;
+                } else if (savedColor.startsWith && savedColor.startsWith('#')) {
+                    document.getElementById('bubbleColor').value = 'custom';
+
+                    if (document.getElementById('customBubbleColor')) {
+                        document.getElementById('customBubbleColor').value = savedColor;
                     }
-                    if (settings.bubble_effect) document.getElementById('bubbleEffect').value = settings.bubble_effect;
-                    if (settings.bubble_opacity) document.getElementById('bubbleOpacity').value = settings.bubble_opacity;
-                    if (settings.bubble_speed) document.getElementById('bubbleSpeed').value = settings.bubble_speed;
-                    
-                    // Handle bubble color (custom or preset)
-                    if (settings.bubble_color) {
-                        const isCustomColor = !['blue', 'white', 'lightblue', 'cyan', 'silver', 'transparent'].includes(settings.bubble_color);
-                        if (isCustomColor) {
-                            document.getElementById('bubbleColor').value = 'custom';
-                            document.getElementById('customBubbleColor').value = settings.bubble_color;
-                        } else {
-                            document.getElementById('bubbleColor').value = settings.bubble_color;
-                        }
-                    }
-                    
-                    // Load page-specific bubble settings
-                    if (settings.bubble_pages) {
-                        if (settings.bubble_pages.index !== undefined) document.getElementById('bubbleIndex').checked = settings.bubble_pages.index;
-if (settings.bubble_pages.projects !== undefined) document.getElementById('bubbleProjects').checked = settings.bubble_pages.projects;
-if (settings.bubble_pages.about !== undefined) document.getElementById('bubbleAbout').checked = settings.bubble_pages.about;
-if (settings.bubble_pages.contact !== undefined) document.getElementById('bubbleContact').checked = settings.bubble_pages.contact;
-if (settings.bubble_pages.legal !== undefined) document.getElementById('bubbleLegal').checked = settings.bubble_pages.legal;
+                } else {
+                    document.getElementById('bubbleColor').value = 'gold';
+
+                    if (document.getElementById('customBubbleColor')) {
+                        document.getElementById('customBubbleColor').value = '#facc15';
                     }
                 }
-            } catch (error) {
-                console.log('Could not load website settings:', error);
+            }
+
+            // Load page-specific Visual Effects settings
+            if (settings.bubble_pages) {
+                if (settings.bubble_pages.index !== undefined && document.getElementById('bubbleIndex')) {
+                    document.getElementById('bubbleIndex').checked = settings.bubble_pages.index;
+                }
+
+                if (settings.bubble_pages.projects !== undefined && document.getElementById('bubbleProjects')) {
+                    document.getElementById('bubbleProjects').checked = settings.bubble_pages.projects;
+                }
+
+                if (settings.bubble_pages.about !== undefined && document.getElementById('bubbleAbout')) {
+                    document.getElementById('bubbleAbout').checked = settings.bubble_pages.about;
+                }
+
+                if (settings.bubble_pages.contact !== undefined && document.getElementById('bubbleContact')) {
+                    document.getElementById('bubbleContact').checked = settings.bubble_pages.contact;
+                }
+
+                if (settings.bubble_pages.legal !== undefined && document.getElementById('bubbleLegal')) {
+                    document.getElementById('bubbleLegal').checked = settings.bubble_pages.legal;
+                }
             }
         }
+    } catch (error) {
+        console.log('Could not load website settings:', error);
+    }
+}
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', async function() {
-            await checkAuth();
-            await loadDashboardData();
-            await loadEmailSettings();
-            await loadWebsiteSettings();
-            
-            // Set admin username
-            const adminUser = sessionStorage.getItem('admin_username') || 'admin';
-            document.getElementById('adminUsername').textContent = adminUser;
-            
-            // Add event listener for background preview
-            const heroBackgroundSelect = document.getElementById('heroBackground');
-            if (heroBackgroundSelect) {
-                heroBackgroundSelect.addEventListener('change', function() {
-                    console.log('Background changed to:', this.value);
-                    // Optional: Auto-preview on change
-                    // previewBackground();
-                });
-            }
-            
+document.addEventListener('DOMContentLoaded', async function() {
+    await checkAuth();
+    await loadDashboardData();
+    await loadEmailSettings();
+    await loadWebsiteSettings();
+
+    // Load Secret Motion Art videos
+    await loadMotionVideos();
+    
+    // Set admin username
+    const adminUser = sessionStorage.getItem('admin_username') || 'admin';
+    document.getElementById('adminUsername').textContent = adminUser;
+
+    // Add event listener for background preview
+    const heroBackgroundSelect = document.getElementById('heroBackground');
+    if (heroBackgroundSelect) {
+        heroBackgroundSelect.addEventListener('change', function() {
+            console.log('Background changed to:', this.value);
+            // Optional: Auto-preview on change
+            // previewBackground();
         });
+    }
+});
         
     </script>
 </body>

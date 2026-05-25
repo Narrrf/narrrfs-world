@@ -58,8 +58,15 @@ try {
     $photos = isset($_FILES['photos']) ? $_FILES['photos'] : $_FILES['photos[]'];
     
     // Determine upload directory based on request
-    $upload_type = isset($_POST['upload_type']) ? $_POST['upload_type'] : 'slider';
-    $upload_dir = ($upload_type === 'project') ? '../assets/' : '../slider-photos/';
+$upload_type = isset($_POST['upload_type']) ? $_POST['upload_type'] : 'slider';
+
+if ($upload_type === 'project') {
+    $upload_dir = '../assets/';
+} elseif ($upload_type === 'motion') {
+    $upload_dir = '../slider-motion/';
+} else {
+    $upload_dir = '../slider-photos/';
+}
     
     // Create upload directory if it doesn't exist
     if (!is_dir($upload_dir)) {
@@ -74,67 +81,96 @@ try {
             $file_size = $photos['size'][$i];
             $file_type = $photos['type'][$i];
             
-            // Validate file type
-            $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            if (!in_array($file_type, $allowed_types)) {
-                $errors[] = "File '$file_name' has invalid type. Only JPG, PNG, GIF, and WebP are allowed.";
-                continue;
-            }
-            
-            // Validate file size (max 12MB)
-$max_file_size = 12 * 1024 * 1024;
+            // Validate file type and size
+if ($upload_type === 'motion') {
+    $allowed_types = ['video/mp4'];
 
-if ($file_size > $max_file_size) {
-    $errors[] = "File '$file_name' is too large. Maximum size is 12MB.";
-    continue;
+    if (!in_array($file_type, $allowed_types)) {
+        $errors[] = "File '$file_name' has invalid type. Only MP4 videos are allowed for Motion Art.";
+        continue;
+    }
+
+    // Motion videos: max 20MB each
+    if ($file_size > 20 * 1024 * 1024) {
+        $errors[] = "File '$file_name' is too large. Maximum size for Motion Art is 20MB.";
+        continue;
+    }
+} else {
+    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
+    if (!in_array($file_type, $allowed_types)) {
+        $errors[] = "File '$file_name' has invalid type. Only JPG, PNG, GIF, and WebP are allowed.";
+        continue;
+    }
+
+    // Images: max 5MB each
+    if ($file_size > 5 * 1024 * 1024) {
+        $errors[] = "File '$file_name' is too large. Maximum size is 5MB.";
+        continue;
+    }
 }
             
             // Generate unique filename
-            // Generate unique Samuzi filename
+// Generate unique Samuzi filename
 $file_extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-$prefix = ($upload_type === 'project') ? 'samuzi_project_' : 'samuzi_slider_';
+
+if ($upload_type === 'project') {
+    $prefix = 'samuzi_project_';
+} elseif ($upload_type === 'motion') {
+    $prefix = 'samuzi_motion_';
+} else {
+    $prefix = 'samuzi_slider_';
+}
+
 $new_filename = $prefix . date('Ymd_His') . '_' . $i . '.' . $file_extension;
 $upload_path = $upload_dir . $new_filename;
             
             // Move uploaded file first
             if (move_uploaded_file($file_tmp, $upload_path)) {
-                // Resize image for optimal web performance
-                $resize_result = resizeImageForWeb($upload_path, $upload_path, 1920, 1080, 85);
-                
-                if ($resize_result['success']) {
-                    $uploaded_files[] = [
-                        'original_name' => $file_name,
-                        'new_name' => $new_filename,
-                        'size' => $resize_result['new_size'],
-                        'path' => $upload_path,
-                        'original_size' => $file_size,
-                        'resized' => true
-                    ];
-                    
-                    // Log successful upload with resize info
-                    $log_entry = date('Y-m-d H:i:s') . " - Photo uploaded and resized: " . $new_filename . " (original: " . $file_name . ", " . formatBytes($file_size) . " -> " . formatBytes($resize_result['new_size']) . ") by " . $_SESSION['admin_username'] . "\n";
-                    file_put_contents('../api/admin_log.txt', $log_entry, FILE_APPEND | LOCK_EX);
-                } else {
-                    // Keep original if resize fails
-                    $uploaded_files[] = [
-                        'original_name' => $file_name,
-                        'new_name' => $new_filename,
-                        'size' => $file_size,
-                        'path' => $upload_path,
-                        'resized' => false
-                    ];
-                    
-                    // Log upload without resize
-                    $log_entry = date('Y-m-d H:i:s') . " - Photo uploaded (resize failed): " . $new_filename . " (original: " . $file_name . ") by " . $_SESSION['admin_username'] . "\n";
-                    file_put_contents('../api/admin_log.txt', $log_entry, FILE_APPEND | LOCK_EX);
-                }
-            } else {
-                $errors[] = "Failed to upload file '$file_name'";
-            }
+    if ($upload_type === 'motion') {
+        $uploaded_files[] = [
+            'original_name' => $file_name,
+            'new_name' => $new_filename,
+            'size' => $file_size,
+            'path' => $upload_path,
+            'type' => 'motion',
+            'resized' => false
+        ];
+
+        $log_entry = date('Y-m-d H:i:s') . " - Motion video uploaded: " . $new_filename . " (original: " . $file_name . ", " . formatBytes($file_size) . ") by " . $_SESSION['admin_username'] . "\n";
+        file_put_contents('../api/admin_log.txt', $log_entry, FILE_APPEND | LOCK_EX);
+    } else {
+        // Resize image for optimal web performance
+        $resize_result = resizeImageForWeb($upload_path, $upload_path, 1920, 1080, 85);
+
+        if ($resize_result['success']) {
+            $uploaded_files[] = [
+                'original_name' => $file_name,
+                'new_name' => $new_filename,
+                'size' => $resize_result['new_size'],
+                'path' => $upload_path,
+                'original_size' => $file_size,
+                'resized' => true
+            ];
+
+            $log_entry = date('Y-m-d H:i:s') . " - Photo uploaded and resized: " . $new_filename . " (original: " . $file_name . ", " . formatBytes($file_size) . " -> " . formatBytes($resize_result['new_size']) . ") by " . $_SESSION['admin_username'] . "\n";
+            file_put_contents('../api/admin_log.txt', $log_entry, FILE_APPEND | LOCK_EX);
         } else {
-            $errors[] = "Error uploading file: " . $photos['name'][$i];
+            $uploaded_files[] = [
+                'original_name' => $file_name,
+                'new_name' => $new_filename,
+                'size' => $file_size,
+                'path' => $upload_path,
+                'resized' => false
+            ];
+
+            $log_entry = date('Y-m-d H:i:s') . " - Photo uploaded (resize failed): " . $new_filename . " (original: " . $file_name . ") by " . $_SESSION['admin_username'] . "\n";
+            file_put_contents('../api/admin_log.txt', $log_entry, FILE_APPEND | LOCK_EX);
         }
     }
+} else {
+    $errors[] = "Failed to upload file '$file_name'";
+}
     
     ob_clean();
     http_response_code(200);

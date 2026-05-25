@@ -32,7 +32,7 @@ try {
     // Saved admin settings override these values.
     $default_settings = [
         'bubble_effect' => 'off',
-        'bubble_color' => '#12d9d6',
+        'bubble_color' => 'gold',
         'bubble_opacity' => 'low',
         'bubble_speed' => 'slow',
         'hero_background' => 'phase3-coming-soon.jpg',

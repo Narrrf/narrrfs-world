@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
-    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-phase3-1">
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-motion-secret-1">
 
     <style>
         body {
@@ -880,13 +880,46 @@
             <div class="launch-panel">
                 <span class="status-pill">Samuzi Art Preview</span>
                 <h2 class="site-section-title" style="margin-top:1rem;">Phase 3 visuals are loading.</h2>
-                <p class="site-section-copy">
-                    New artwork, launch signals, and community updates rotate here from the admin-managed slider folder.
-                </p>
+               <p class="site-section-copy">
+    New artwork, launch signals, and community updates rotate here from the admin-managed slider folder.
+</p>
 
-                <div id="sliderShowcase" class="phase3-slider" aria-live="polite">
-                    <div class="showcase-placeholder">Slider photos will appear here after upload.</div>
-                </div>
+<div class="phase3-secret-row">
+    <button
+        id="phase3SecretSlash"
+        class="phase3-secret-slash"
+        type="button"
+        aria-label="Unlock hidden Phase 3 motion signal"
+    >
+        <span class="phase3-secret-core"></span>
+        <span class="phase3-secret-text">Phase 3 signal</span>
+    </button>
+</div>
+
+<div id="sliderShowcase" class="phase3-slider" aria-live="polite">
+    <div class="showcase-placeholder">Slider photos will appear here after upload.</div>
+</div>
+
+<div id="phase3SecretModal" class="phase3-secret-modal" aria-hidden="true">
+    <div class="phase3-secret-backdrop" data-secret-close></div>
+
+    <div class="phase3-secret-dialog" role="dialog" aria-modal="true" aria-labelledby="phase3SecretTitle">
+        <button class="phase3-secret-close" type="button" data-secret-close aria-label="Close secret signal">×</button>
+
+        <div class="phase3-secret-mark">⚔️</div>
+
+        <h2 id="phase3SecretTitle">Secret Phase 3 Signal</h2>
+
+        <p>
+            The blade has cut through the theme. Motion Art protocol is ready.
+            Activate the hidden preview to reveal the moving Samuzi collection signal.
+        </p>
+
+        <button id="activateMotionPreview" class="button-primary" type="button">
+            Activate Motion Preview
+        </button>
+    </div>
+</div>
             </div>
         </div>
     </section>
@@ -1010,64 +1043,200 @@
         let phase3SliderPhotos = [];
 let phase3SliderIndex = 0;
 let phase3SliderTimer = null;
+let phase3MotionMode = false;
+
+/*
+    Put your uploaded MP4 filenames here.
+    Folder must be: samuzi/slider-motion/
+*/
+let phase3MotionSlides = [
+    {
+        filename: 'samuzi-motion-1.mp4',
+        title: 'Motion Art protocol unlocked.',
+        caption: 'The Phase 3 collection begins to move.'
+    },
+    {
+        filename: 'samuzi-motion-2.mp4',
+        title: 'The blade signal is active.',
+        caption: 'Hidden motion previews are now live inside the Samuzi page.'
+    },
+    {
+        filename: 'samuzi-motion-3.mp4',
+        title: 'Phase 3 is approaching.',
+        caption: 'A new layer of Samuzi art is preparing for mint.'
+    },
+    {
+        filename: 'samuzi-motion-4.mp4',
+        title: 'Samuzi motion signal detected.',
+        caption: 'The collection begins to reveal its moving form.'
+    },
+    {
+        filename: 'samuzi-motion-5.mp4',
+        title: 'Cyber samurai energy online.',
+        caption: 'Phase 3 motion artwork is now active inside the hidden preview.'
+    },
+    {
+        filename: 'samuzi-motion-6.mp4',
+        title: 'The secret cut opened.',
+        caption: 'A hidden layer of the Samuzi collection has been unlocked.'
+    },
+    {
+        filename: 'samuzi-motion-7.mp4',
+        title: 'Phase 3 is moving.',
+        caption: 'The next chapter of Samuzi prepares for launch.'
+    },
+    {
+        filename: 'samuzi-motion-8.mp4',
+        title: 'The blade leaves a signal.',
+        caption: 'Motion art previews are live for those who find the hidden cut.'
+    },
+    {
+        filename: 'samuzi-motion-9.mp4',
+        title: 'Digital warriors awakened.',
+        caption: 'The Samuzi Phase 3 motion layer is now visible.'
+    },
+    {
+        filename: 'samuzi-motion-10.mp4',
+        title: 'The journey continues.',
+        caption: 'Phase 3 carries the Samuzi story into motion.'
+    },
+    {
+        filename: 'samuzi-motion-11.mp4',
+        title: 'Mint signal loading.',
+        caption: 'The hidden preview is ready for the next Samuzi chapter.'
+    }
+];
+
+function getPhase3ActiveSlides() {
+    return phase3MotionMode ? phase3MotionSlides : phase3SliderPhotos;
+}
 
 function renderPhase3Slider() {
     const container = document.getElementById('sliderShowcase');
     if (!container) return;
 
-    if (!Array.isArray(phase3SliderPhotos) || phase3SliderPhotos.length === 0) {
+    const activeSlides = getPhase3ActiveSlides();
+
+    if (!Array.isArray(activeSlides) || activeSlides.length === 0) {
         container.innerHTML = '<div class="showcase-placeholder">Slider photos will appear here after upload.</div>';
         return;
     }
 
-    const slidesHtml = phase3SliderPhotos.map((photo, index) => {
-        const filename = photo.filename || '';
+    if (phase3SliderIndex >= activeSlides.length) {
+        phase3SliderIndex = 0;
+    }
+
+    const slidesHtml = activeSlides.map((slide, index) => {
+        const filename = slide.filename || '';
         const activeClass = index === phase3SliderIndex ? 'active' : '';
 
-       return `
-    <div class="phase3-slide ${activeClass}" style="background-image: url('./slider-photos/${filename}')">
-        <img src="./slider-photos/${filename}" alt="Samuzi Phase 3 artwork" loading="${index === 0 ? 'eager' : 'lazy'}">
-    </div>
-`;
+        if (phase3MotionMode) {
+            const videoPath = `./slider-motion/${filename}`;
+
+            return `
+                <div class="phase3-slide motion-active ${activeClass}" style="background-image: url('./assets/background/phase3-coming-soon.jpg')">
+                    <video
+                        class="phase3-video"
+                        src="${videoPath}"
+                        muted
+                        loop
+                        playsinline
+                        preload="${index === 0 ? 'auto' : 'metadata'}"
+                        ${index === phase3SliderIndex ? 'autoplay' : ''}
+                    ></video>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="phase3-slide ${activeClass}" style="background-image: url('./slider-photos/${filename}')">
+                <img src="./slider-photos/${filename}" alt="Samuzi Phase 3 artwork" loading="${index === 0 ? 'eager' : 'lazy'}">
+            </div>
+        `;
     }).join('');
 
-    const dotsHtml = phase3SliderPhotos.map((photo, index) => {
+    const dotsHtml = activeSlides.map((slide, index) => {
         const activeClass = index === phase3SliderIndex ? 'active' : '';
         return `<button class="phase3-slider-dot ${activeClass}" type="button" aria-label="Show slide ${index + 1}" onclick="goToPhase3Slide(${index})"></button>`;
     }).join('');
 
-    container.innerHTML = `
+    const captionTitle = phase3MotionMode
+        ? (activeSlides[phase3SliderIndex]?.title || 'Motion Art protocol unlocked.')
+        : 'Phase 3 visuals are loading.';
+
+    const captionText = phase3MotionMode
+        ? (activeSlides[phase3SliderIndex]?.caption || 'The hidden Samuzi motion preview is now active.')
+        : 'New artwork, launch signals, and community updates rotate here from the admin-managed slider folder.';
+
+    const captionPill = phase3MotionMode ? 'Secret Motion Preview' : 'Samuzi Art Preview';
+
+const modeSwitchHtml = phase3MotionMode
+    ? `
+        <button
+            class="phase3-return-btn"
+            type="button"
+            onclick="returnToPhase3ArtPreview()"
+            aria-label="Return to normal Samuzi art preview"
+        >
+            Return to Art Preview
+        </button>
+    `
+    : '';
+
+container.innerHTML = `
         <div class="phase3-slider-main">
             ${slidesHtml}
 
             <div class="phase3-slider-caption">
-                <span>Samuzi Art Preview</span>
-                <h3>Phase 3 visuals are loading.</h3>
-                <p>New artwork, launch signals, and community updates rotate here from the admin-managed slider folder.</p>
+                <span>${captionPill}</span>
+                <h3>${captionTitle}</h3>
+                <p>${captionText}</p>
             </div>
 
             <div class="phase3-slider-controls">
-                <button class="phase3-slider-btn" type="button" onclick="changePhase3Slide(-1)" aria-label="Previous slide">‹</button>
-                <button class="phase3-slider-btn" type="button" onclick="changePhase3Slide(1)" aria-label="Next slide">›</button>
-            </div>
+    ${modeSwitchHtml}
+    <button class="phase3-slider-btn" type="button" onclick="changePhase3Slide(-1)" aria-label="Previous slide">‹</button>
+    <button class="phase3-slider-btn" type="button" onclick="changePhase3Slide(1)" aria-label="Next slide">›</button>
+</div>
         </div>
 
         <div class="phase3-slider-dots">
             ${dotsHtml}
         </div>
     `;
+
+    playActivePhase3Video();
+}
+
+function playActivePhase3Video() {
+    const videos = document.querySelectorAll('.phase3-video');
+
+    videos.forEach((video) => {
+        const parentSlide = video.closest('.phase3-slide');
+
+        if (parentSlide && parentSlide.classList.contains('active')) {
+            video.currentTime = video.currentTime || 0;
+            video.play().catch(() => {
+                // Browser may block autoplay in rare cases. Videos are muted, so this should normally work.
+            });
+        } else {
+            video.pause();
+        }
+    });
 }
 
 function changePhase3Slide(direction = 1) {
-    if (!phase3SliderPhotos.length) return;
+    const activeSlides = getPhase3ActiveSlides();
+    if (!activeSlides.length) return;
 
-    phase3SliderIndex = (phase3SliderIndex + direction + phase3SliderPhotos.length) % phase3SliderPhotos.length;
+    phase3SliderIndex = (phase3SliderIndex + direction + activeSlides.length) % activeSlides.length;
     renderPhase3Slider();
     restartPhase3SliderTimer();
 }
 
 function goToPhase3Slide(index) {
-    if (!phase3SliderPhotos.length) return;
+    const activeSlides = getPhase3ActiveSlides();
+    if (!activeSlides.length) return;
 
     phase3SliderIndex = index;
     renderPhase3Slider();
@@ -1079,45 +1248,217 @@ function restartPhase3SliderTimer() {
         clearInterval(phase3SliderTimer);
     }
 
-    if (phase3SliderPhotos.length <= 1) {
-        return;
-    }
+    const activeSlides = getPhase3ActiveSlides();
 
-    phase3SliderTimer = setInterval(() => {
-        phase3SliderIndex = (phase3SliderIndex + 1) % phase3SliderPhotos.length;
-        renderPhase3Slider();
-    }, 5000);
+    if (activeSlides.length > 1) {
+        phase3SliderTimer = setInterval(() => {
+            changePhase3Slide(1);
+        }, phase3MotionMode ? 9000 : 5000);
+    }
 }
 
-async function loadSliderShowcase() {
-    const container = document.getElementById('sliderShowcase');
-    if (!container) return;
-
+async function loadPhase3SliderPhotos() {
     try {
         const response = await fetch('./api/get-slider-photos.php', { cache: 'no-store' });
         const result = await response.json();
 
-        if (!result || !result.success || !Array.isArray(result.photos) || result.photos.length === 0) {
-            container.innerHTML = '<div class="showcase-placeholder">Slider photos will appear here after upload.</div>';
-            return;
+        if (result && result.success && Array.isArray(result.photos)) {
+            phase3SliderPhotos = result.photos;
         }
-
-        phase3SliderPhotos = result.photos;
-        phase3SliderIndex = 0;
-
-        renderPhase3Slider();
-        restartPhase3SliderTimer();
     } catch (error) {
-        console.warn('[SAMUZI] Slider showcase could not be loaded.', error);
-        container.innerHTML = '<div class="showcase-placeholder">Slider could not be loaded. Check api/get-slider-photos.php.</div>';
+        console.warn('[SAMUZI] Slider photos could not be loaded.', error);
+    }
+
+    renderPhase3Slider();
+    restartPhase3SliderTimer();
+}
+
+async function loadPhase3MotionSlides() {
+    try {
+        const response = await fetch('./api/get-motion-videos.php', { cache: 'no-store' });
+        const result = await response.json();
+
+        if (result && result.success && Array.isArray(result.videos) && result.videos.length > 0) {
+            phase3MotionSlides = result.videos;
+        }
+    } catch (error) {
+        console.warn('[SAMUZI] Motion videos could not be loaded. Using fallback list.', error);
     }
 }
 
-        document.addEventListener('DOMContentLoaded', () => {
-    applyPageBackground();
-    loadSliderShowcase();
+function playSamuziBladeSound() {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
 
+    if (!AudioContext) {
+        return;
+    }
+
+    const ctx = new AudioContext();
+
+    if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+    }
+
+    const now = ctx.currentTime;
+
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.55, now + 0.015);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.62);
+    master.connect(ctx.destination);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1800, now);
+    filter.frequency.exponentialRampToValueAtTime(5200, now + 0.16);
+    filter.Q.setValueAtTime(1.8, now);
+    filter.connect(master);
+
+    const noiseBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.48), ctx.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+
+    for (let i = 0; i < noiseData.length; i++) {
+        const progress = i / noiseData.length;
+        const fade = Math.pow(1 - progress, 2.2);
+        noiseData[i] = (Math.random() * 2 - 1) * fade;
+    }
+
+    const slashNoise = ctx.createBufferSource();
+    slashNoise.buffer = noiseBuffer;
+    slashNoise.connect(filter);
+    slashNoise.start(now);
+    slashNoise.stop(now + 0.48);
+
+    const blade = ctx.createOscillator();
+    const bladeGain = ctx.createGain();
+
+    blade.type = 'sawtooth';
+    blade.frequency.setValueAtTime(1600, now);
+    blade.frequency.exponentialRampToValueAtTime(260, now + 0.34);
+
+    bladeGain.gain.setValueAtTime(0.0001, now);
+    bladeGain.gain.exponentialRampToValueAtTime(0.22, now + 0.018);
+    bladeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+
+    blade.connect(bladeGain);
+    bladeGain.connect(master);
+
+    blade.start(now);
+    blade.stop(now + 0.4);
+
+    const metal = ctx.createOscillator();
+    const metalGain = ctx.createGain();
+
+    metal.type = 'triangle';
+    metal.frequency.setValueAtTime(880, now + 0.08);
+    metal.frequency.exponentialRampToValueAtTime(1240, now + 0.22);
+
+    metalGain.gain.setValueAtTime(0.0001, now + 0.07);
+    metalGain.gain.exponentialRampToValueAtTime(0.11, now + 0.10);
+    metalGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+
+    metal.connect(metalGain);
+    metalGain.connect(master);
+
+    metal.start(now + 0.07);
+    metal.stop(now + 0.58);
+
+    setTimeout(() => {
+        ctx.close().catch(() => {});
+    }, 900);
+}
+
+function openPhase3SecretModal() {
+    const modal = document.getElementById('phase3SecretModal');
+    const slash = document.getElementById('phase3SecretSlash');
+
+    if (slash) {
+        slash.classList.add('unlocked');
+        setTimeout(() => slash.classList.remove('unlocked'), 950);
+    }
+
+    playSamuziBladeSound();
+
+    if (modal) {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+}
+
+function closePhase3SecretModal() {
+    const modal = document.getElementById('phase3SecretModal');
+
+    if (modal) {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function activatePhase3MotionPreview() {
+    phase3MotionMode = true;
+    phase3SliderIndex = 0;
+    document.body.classList.add('phase3-motion-preview-active');
+
+    closePhase3SecretModal();
+    renderPhase3Slider();
+    restartPhase3SliderTimer();
+
+    const slider = document.getElementById('sliderShowcase');
+    if (slider) {
+        slider.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function returnToPhase3ArtPreview() {
+    document.body.classList.remove('phase3-motion-preview-active');
+
+    document.querySelectorAll('.phase3-video').forEach((video) => {
+        video.pause();
+        video.currentTime = 0;
+    });
+
+    phase3MotionMode = false;
+    phase3SliderIndex = 0;
+
+    renderPhase3Slider();
+    restartPhase3SliderTimer();
+
+    const slider = document.getElementById('sliderShowcase');
+    if (slider) {
+        slider.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function bindPhase3SecretUnlock() {
+    const slash = document.getElementById('phase3SecretSlash');
+    const activateButton = document.getElementById('activateMotionPreview');
+    const closeButtons = document.querySelectorAll('[data-secret-close]');
+
+    if (slash) {
+        slash.addEventListener('click', openPhase3SecretModal);
+    }
+
+    if (activateButton) {
+        activateButton.addEventListener('click', activatePhase3MotionPreview);
+    }
+
+    closeButtons.forEach((button) => {
+        button.addEventListener('click', closePhase3SecretModal);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closePhase3SecretModal();
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    applyPageBackground();
+    await loadPhase3MotionSlides();
+    loadPhase3SliderPhotos();
+    bindPhase3SecretUnlock();
 });
     </script>
+    <script src="./assets/visual-effects.js?v=samuzi-lightning-1"></script>
 </body>
 </html>

@@ -694,3 +694,647 @@ a:hover {
     display: none !important;
     content: none !important;
 }
+
+/* =========================================================
+   SAMUZI PHASE 3 SECRET MOTION UNLOCK
+   Hidden flaming slash + modal + video slider support
+   ========================================================= */
+
+.phase3-secret-row {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin: 1.15rem 0 1.35rem;
+    z-index: 5;
+}
+
+.phase3-secret-slash {
+    position: relative;
+    width: min(420px, 88vw);
+    height: 46px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transform: rotate(-2deg);
+    opacity: 0.68;
+    transition: all 0.28s ease;
+}
+
+.phase3-secret-slash:hover {
+    opacity: 1;
+    transform: rotate(-2deg) scale(1.025);
+}
+
+.phase3-secret-core {
+    position: absolute;
+    left: 7%;
+    right: 7%;
+    top: 50%;
+    height: 8px;
+    transform: translateY(-50%) skewX(-26deg);
+    border-radius: 999px;
+    background:
+        linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 215, 91, 0.25) 10%,
+            rgba(255, 241, 150, 1) 30%,
+            rgba(249, 115, 22, 1) 52%,
+            rgba(255, 210, 74, 0.95) 74%,
+            transparent 100%);
+    box-shadow:
+        0 0 12px rgba(255, 230, 120, 0.9),
+        0 0 28px rgba(249, 115, 22, 0.75),
+        0 0 56px rgba(225, 29, 72, 0.35);
+    overflow: visible;
+}
+
+.phase3-secret-core::before {
+    content: "";
+    position: absolute;
+    inset: -14px -8px;
+    background:
+        radial-gradient(circle at 30% 50%, rgba(255, 234, 135, 0.38), transparent 28%),
+        radial-gradient(circle at 60% 50%, rgba(249, 115, 22, 0.35), transparent 34%),
+        linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+    filter: blur(10px);
+    opacity: 0.9;
+}
+
+.phase3-secret-core::after {
+    content: "";
+    position: absolute;
+    left: 3%;
+    right: 3%;
+    top: 50%;
+    height: 2px;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    box-shadow: 0 0 14px rgba(255,255,255,0.88);
+}
+
+.phase3-secret-text {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    color: rgba(254, 243, 199, 0.68);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-shadow: 0 0 18px rgba(249, 115, 22, 0.8);
+    opacity: 0;
+    transition: opacity 0.28s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.phase3-secret-slash:hover .phase3-secret-text {
+    opacity: 1;
+}
+
+.phase3-secret-slash.unlocked .phase3-secret-core {
+    animation: samuziBladeUnlock 900ms ease both;
+}
+
+@keyframes samuziBladeUnlock {
+    0% {
+        transform: translateY(-50%) skewX(-26deg) scaleX(0.45);
+        filter: brightness(1);
+    }
+    45% {
+        transform: translateY(-50%) skewX(-26deg) scaleX(1.18);
+        filter: brightness(1.8);
+    }
+    100% {
+        transform: translateY(-50%) skewX(-26deg) scaleX(1);
+        filter: brightness(1.1);
+    }
+}
+
+.phase3-secret-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.phase3-secret-modal.is-open {
+    display: flex;
+}
+
+.phase3-secret-backdrop {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 50% 35%, rgba(249, 115, 22, 0.18), transparent 32%),
+        rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(10px);
+}
+
+.phase3-secret-dialog {
+    position: relative;
+    width: min(560px, 100%);
+    padding: clamp(1.4rem, 4vw, 2.4rem);
+    border-radius: 28px;
+    color: #ffffff;
+    text-align: center;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.18), transparent 34%),
+        linear-gradient(180deg, rgba(18,18,28,0.96), rgba(7,7,11,0.94));
+    border: 1px solid rgba(249, 115, 22, 0.34);
+    box-shadow:
+        0 30px 90px rgba(0,0,0,0.72),
+        0 0 60px rgba(225,29,72,0.22);
+    overflow: hidden;
+}
+
+.phase3-secret-dialog::before {
+    content: "";
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    top: 24px;
+    height: 4px;
+    transform: rotate(-8deg);
+    background: linear-gradient(90deg, transparent, #fff1a8, #f97316, transparent);
+    box-shadow: 0 0 34px rgba(249, 115, 22, 0.75);
+}
+
+.phase3-secret-close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #ffffff;
+    background: rgba(255,255,255,0.06);
+    cursor: pointer;
+    font-size: 1.4rem;
+}
+
+.phase3-secret-mark {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(225,29,72,0.30), rgba(249,115,22,0.24));
+    border: 1px solid rgba(249,115,22,0.30);
+    box-shadow: 0 0 32px rgba(249,115,22,0.30);
+    font-size: 1.8rem;
+}
+
+.phase3-secret-dialog h2 {
+    color: #ffffff;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    margin-bottom: 0.9rem;
+}
+
+.phase3-secret-dialog p {
+    color: #cbd5e1;
+    line-height: 1.8;
+    margin: 0 auto 1.4rem;
+    max-width: 440px;
+}
+
+.phase3-video {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    filter: saturate(1.08) contrast(1.05);
+    background: #000;
+}
+
+.phase3-slide.motion-active::before {
+    filter: blur(24px) brightness(0.34) saturate(1.3);
+}
+
+.phase3-slide.motion-active::after {
+    background:
+        linear-gradient(to right, rgba(0,0,0,0.42), rgba(0,0,0,0.04) 55%, rgba(0,0,0,0.42)),
+        linear-gradient(to top, rgba(0,0,0,0.58), rgba(0,0,0,0.02));
+}
+/* =========================================================
+   SAMUZI PHASE 3 — return from motion mode
+   ========================================================= */
+
+.phase3-return-btn {
+    min-height: 44px;
+    padding: 0 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 217, 102, 0.38);
+    color: #fff7cc;
+    background:
+        linear-gradient(135deg, rgba(225, 29, 72, 0.78), rgba(249, 115, 22, 0.72));
+    font-weight: 900;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow:
+        0 0 18px rgba(249, 115, 22, 0.32),
+        0 10px 28px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    transition: all 0.22s ease;
+    white-space: nowrap;
+}
+
+.phase3-return-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 241, 168, 0.75);
+    box-shadow:
+        0 0 26px rgba(249, 115, 22, 0.46),
+        0 14px 34px rgba(0, 0, 0, 0.42);
+}
+
+@media (max-width: 700px) {
+    .phase3-slider-controls {
+        left: 1rem;
+        right: 1rem;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .phase3-return-btn {
+        width: 100%;
+        order: 3;
+    }
+}
+/* =========================================================
+   SAMUZI VISUAL EFFECTS ENGINE — Lightning / Shadow Storm
+   Controlled by admin Visual Effects panel
+   ========================================================= */
+
+.samuzi-effect-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: var(--samuzi-lightning-opacity, 0.62);
+    mix-blend-mode: screen;
+}
+
+.samuzi-effects-active .header,
+.samuzi-effects-active main,
+.samuzi-effects-active .main-content,
+.samuzi-effects-active .footer {
+    position: relative;
+    z-index: 2;
+}
+
+.samuzi-lightning-flash,
+.samuzi-lightning-shadow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.samuzi-lightning-flash {
+    background:
+        radial-gradient(circle at 22% 18%, var(--samuzi-lightning-color), transparent 24%),
+        radial-gradient(circle at 82% 28%, rgba(255,255,255,0.72), transparent 20%),
+        linear-gradient(120deg, transparent, rgba(255,255,255,0.22), transparent);
+    filter: blur(8px);
+}
+
+.samuzi-lightning-shadow {
+    background:
+        radial-gradient(circle at 50% 12%, rgba(0,0,0,0.2), transparent 35%),
+        linear-gradient(to bottom, rgba(0,0,0,0.18), rgba(0,0,0,0.62));
+    mix-blend-mode: multiply;
+}
+
+.samuzi-effect-layer.is-flashing .samuzi-lightning-flash {
+    animation: samuziLightningFlash 720ms ease-out both;
+}
+
+.samuzi-effect-layer.is-flashing .samuzi-lightning-shadow {
+    animation: samuziShadowPulse 760ms ease-out both;
+}
+
+.samuzi-lightning-bolt {
+    position: absolute;
+    width: 6px;
+    min-height: 140px;
+    opacity: 0;
+    transform-origin: top center;
+    background:
+        linear-gradient(
+            to bottom,
+            transparent 0%,
+            rgba(255,255,255,0.98) 8%,
+            var(--samuzi-lightning-color) 18%,
+            rgba(255,255,255,0.96) 30%,
+            var(--samuzi-lightning-color) 42%,
+            rgba(255,255,255,0.88) 58%,
+            transparent 100%
+        );
+    clip-path: polygon(
+        45% 0%,
+        72% 18%,
+        55% 19%,
+        82% 39%,
+        58% 38%,
+        86% 65%,
+        50% 53%,
+        66% 100%,
+        24% 58%,
+        44% 59%,
+        18% 32%,
+        42% 36%,
+        20% 12%,
+        44% 15%
+    );
+    filter:
+        drop-shadow(0 0 8px var(--samuzi-lightning-color))
+        drop-shadow(0 0 22px var(--samuzi-lightning-color))
+        drop-shadow(0 0 44px rgba(255,255,255,0.45));
+    animation: samuziBoltStrike 760ms ease-out both;
+}
+
+.samuzi-effect-layer[data-effect="golden-lightning"] {
+    --samuzi-lightning-color: #facc15;
+}
+
+.samuzi-effect-layer[data-effect="blue-lightning"] {
+    --samuzi-lightning-color: #38bdf8;
+}
+
+.samuzi-effect-layer[data-effect="silver-lightning"] {
+    --samuzi-lightning-color: #e5e7eb;
+}
+
+.samuzi-effect-layer[data-effect="shadow-storm"] {
+    mix-blend-mode: normal;
+}
+
+.samuzi-effect-layer[data-effect="shadow-storm"] .samuzi-lightning-flash {
+    background:
+        radial-gradient(circle at 28% 18%, rgba(251,113,133,0.50), transparent 24%),
+        radial-gradient(circle at 78% 26%, rgba(249,115,22,0.32), transparent 22%),
+        linear-gradient(120deg, transparent, rgba(255,255,255,0.14), transparent);
+}
+
+.samuzi-effect-layer[data-effect="shadow-storm"] .samuzi-lightning-shadow {
+    background:
+        radial-gradient(circle at 50% 12%, rgba(225,29,72,0.12), transparent 30%),
+        linear-gradient(to bottom, rgba(0,0,0,0.24), rgba(0,0,0,0.72));
+}
+
+.samuzi-effect-layer[data-effect="cyber-storm"] {
+    --samuzi-lightning-color: #22d3ee;
+}
+
+.samuzi-effect-layer[data-effect="cyber-storm"] .samuzi-lightning-flash {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(34,211,238,0.44), transparent 25%),
+        radial-gradient(circle at 82% 28%, rgba(59,130,246,0.34), transparent 22%),
+        linear-gradient(120deg, transparent, rgba(255,255,255,0.18), transparent);
+}
+
+@keyframes samuziBoltStrike {
+    0% {
+        opacity: 0;
+        transform: translateY(-18px) scaleY(0.55) rotate(var(--bolt-rotate, 0deg));
+    }
+    14% {
+        opacity: 1;
+    }
+    30% {
+        opacity: 0.28;
+    }
+    44% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(14px) scaleY(1.08) rotate(var(--bolt-rotate, 0deg));
+    }
+}
+
+@keyframes samuziLightningFlash {
+    0% {
+        opacity: 0;
+    }
+    12% {
+        opacity: 0.62;
+    }
+    22% {
+        opacity: 0.12;
+    }
+    34% {
+        opacity: 0.42;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes samuziShadowPulse {
+    0% {
+        opacity: 0;
+    }
+    18% {
+        opacity: 0.52;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    .samuzi-effect-layer {
+        opacity: calc(var(--samuzi-lightning-opacity, 0.62) * 0.68);
+    }
+
+    .samuzi-lightning-bolt {
+        width: 4px;
+        min-height: 100px;
+        max-height: 220px;
+    }
+
+    .samuzi-lightning-flash {
+        filter: blur(14px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .samuzi-effect-layer {
+        display: none !important;
+    }
+}
+/* =========================================================
+   SAMUZI VISUAL EFFECTS — stronger mode differences
+   ========================================================= */
+
+.samuzi-lightning-bolt.bolt-gold {
+    filter:
+        drop-shadow(0 0 10px #facc15)
+        drop-shadow(0 0 28px #f97316)
+        drop-shadow(0 0 52px rgba(255,255,255,0.42));
+}
+
+.samuzi-lightning-bolt.bolt-blue {
+    filter:
+        drop-shadow(0 0 10px #38bdf8)
+        drop-shadow(0 0 30px #2563eb)
+        drop-shadow(0 0 52px rgba(191,219,254,0.46));
+    clip-path: polygon(
+        50% 0%,
+        68% 20%,
+        54% 20%,
+        88% 48%,
+        58% 42%,
+        72% 100%,
+        28% 52%,
+        46% 54%,
+        16% 26%,
+        42% 32%
+    );
+}
+
+.samuzi-lightning-bolt.bolt-silver {
+    opacity: 0.88;
+    filter:
+        drop-shadow(0 0 8px #ffffff)
+        drop-shadow(0 0 22px #e5e7eb)
+        drop-shadow(0 0 38px rgba(255,255,255,0.52));
+    animation-duration: 520ms;
+}
+
+.samuzi-lightning-bolt.bolt-shadow {
+    filter:
+        drop-shadow(0 0 12px #fb7185)
+        drop-shadow(0 0 34px #e11d48)
+        drop-shadow(0 0 70px rgba(249,115,22,0.44));
+}
+
+.samuzi-lightning-bolt.bolt-cyber {
+    opacity: 0.94;
+    filter:
+        drop-shadow(0 0 8px #22d3ee)
+        drop-shadow(0 0 24px #3b82f6)
+        drop-shadow(0 0 46px rgba(34,211,238,0.54));
+    animation-duration: 620ms;
+}
+
+.samuzi-effect-layer[data-effect="golden-lightning"].is-flashing .samuzi-lightning-flash {
+    background:
+        radial-gradient(circle at 25% 16%, rgba(250,204,21,0.54), transparent 24%),
+        radial-gradient(circle at 74% 22%, rgba(249,115,22,0.34), transparent 22%),
+        linear-gradient(120deg, transparent, rgba(255,246,186,0.24), transparent);
+}
+
+.samuzi-effect-layer[data-effect="blue-lightning"].is-flashing .samuzi-lightning-flash {
+    background:
+        radial-gradient(circle at 16% 18%, rgba(56,189,248,0.50), transparent 25%),
+        radial-gradient(circle at 84% 28%, rgba(37,99,235,0.42), transparent 22%),
+        linear-gradient(120deg, transparent, rgba(191,219,254,0.24), transparent);
+}
+
+.samuzi-effect-layer[data-effect="silver-lightning"].is-flashing .samuzi-lightning-flash {
+    background:
+        radial-gradient(circle at 50% 18%, rgba(255,255,255,0.58), transparent 28%),
+        linear-gradient(120deg, transparent, rgba(229,231,235,0.28), transparent);
+}
+
+.samuzi-effect-layer[data-effect="shadow-storm"].is-shadow-storming .samuzi-lightning-shadow {
+    animation: samuziDeepShadowStorm 920ms ease-out both;
+}
+
+.samuzi-effect-layer[data-effect="cyber-storm"].is-cyber-striking .samuzi-lightning-flash {
+    animation: samuziCyberFlash 620ms steps(4, end) both;
+}
+
+@keyframes samuziDeepShadowStorm {
+    0% {
+        opacity: 0;
+    }
+    18% {
+        opacity: 0.78;
+    }
+    42% {
+        opacity: 0.36;
+    }
+    70% {
+        opacity: 0.62;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes samuziCyberFlash {
+    0% {
+        opacity: 0;
+        filter: blur(6px) hue-rotate(0deg);
+    }
+    20% {
+        opacity: 0.78;
+        filter: blur(4px) hue-rotate(28deg);
+    }
+    40% {
+        opacity: 0.12;
+    }
+    60% {
+        opacity: 0.62;
+        filter: blur(10px) hue-rotate(-22deg);
+    }
+    100% {
+        opacity: 0;
+    }
+}
+/* =========================================================
+   SAMUZI PERFORMANCE GUARD — Motion slider + visible lightweight lightning
+   Keeps MP4 slider smooth but keeps lightning visible above the video
+   ========================================================= */
+
+body.phase3-motion-preview-active .samuzi-effect-layer {
+    z-index: 45 !important;
+    opacity: 0.48 !important;
+    mix-blend-mode: screen !important;
+    pointer-events: none !important;
+}
+
+body.phase3-motion-preview-active .samuzi-lightning-bolt {
+    display: block !important;
+    opacity: 0;
+    width: 3px !important;
+    min-height: 90px !important;
+    max-height: 190px !important;
+    filter:
+        drop-shadow(0 0 6px var(--samuzi-lightning-color))
+        drop-shadow(0 0 14px var(--samuzi-lightning-color)) !important;
+    animation-duration: 460ms !important;
+}
+
+body.phase3-motion-preview-active .samuzi-lightning-flash {
+    display: block !important;
+    filter: blur(16px) !important;
+    opacity: 0;
+}
+
+body.phase3-motion-preview-active .samuzi-lightning-shadow {
+    display: none !important;
+}
+
+body.phase3-motion-preview-active .phase3-video {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
