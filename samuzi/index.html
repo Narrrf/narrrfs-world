@@ -1206,6 +1206,7 @@
 let phase3SliderIndex = 0;
 let phase3SliderTimer = null;
 let phase3MotionMode = false;
+let phase3MotionSoundEnabled = false;
 
 /*
     Put your uploaded MP4 filenames here.
@@ -1351,6 +1352,15 @@ const modeSwitchHtml = phase3MotionMode
         <button
             class="phase3-return-btn"
             type="button"
+            onclick="togglePhase3MotionSound()"
+            aria-label="Toggle motion art sound"
+        >
+            ${phase3MotionSoundEnabled ? 'Mute Motion Sound' : 'Enable Motion Sound'}
+        </button>
+
+        <button
+            class="phase3-return-btn"
+            type="button"
             onclick="returnToPhase3ArtPreview()"
             aria-label="Return to normal Samuzi art preview"
         >
@@ -1393,7 +1403,9 @@ function playActivePhase3Video() {
         video.onended = null;
 
         if (parentSlide && parentSlide.classList.contains('active')) {
-            video.currentTime = 0;
+            video.currentTime = video.currentTime || 0;
+            video.muted = !phase3MotionSoundEnabled;
+            video.volume = phase3MotionSoundEnabled ? 0.55 : 0;
 
             video.onended = () => {
                 if (phase3MotionMode) {
@@ -1402,13 +1414,30 @@ function playActivePhase3Video() {
             };
 
             video.play().catch(() => {
-                // Browser may block autoplay in rare cases. Videos are muted, so this should normally work.
+                // Browser blocked sound autoplay. Fall back to muted mode.
+                video.muted = true;
+                video.volume = 0;
+                phase3MotionSoundEnabled = false;
             });
         } else {
             video.pause();
             video.currentTime = 0;
+            video.muted = true;
+            video.volume = 0;
         }
     });
+}
+
+function togglePhase3MotionSound() {
+    phase3MotionSoundEnabled = !phase3MotionSoundEnabled;
+
+    document.querySelectorAll('.phase3-video').forEach((video) => {
+        video.muted = !phase3MotionSoundEnabled;
+        video.volume = phase3MotionSoundEnabled ? 0.55 : 0;
+    });
+
+    playActivePhase3Video();
+    renderPhase3Slider();
 }
 
 function changePhase3Slide(direction = 1) {
@@ -1602,9 +1631,14 @@ function activatePhase3MotionPreview() {
 function returnToPhase3ArtPreview() {
     document.body.classList.remove('phase3-motion-preview-active');
 
+    // Reset motion sound when leaving the secret MP4 slider
+    phase3MotionSoundEnabled = false;
+
     document.querySelectorAll('.phase3-video').forEach((video) => {
         video.pause();
         video.currentTime = 0;
+        video.muted = true;
+        video.volume = 0;
     });
 
     phase3MotionMode = false;
