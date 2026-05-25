@@ -16367,6 +16367,7 @@ el.geneticMarketplaceHistoryGrid.innerHTML = rows.map(renderGeneticMarketplaceHi
 
 async function handleStartGeneticUpgrade(geneticItemId) {
   const item = (Array.isArray(state.geneticInventory) ? state.geneticInventory : []).find(entry => String(entry.genetic_item_id) === String(geneticItemId));
+
   if (!item) {
     await showLabMessageModal({
       eyebrow: 'Genetic Inventory',
@@ -16381,6 +16382,7 @@ async function handleStartGeneticUpgrade(geneticItemId) {
   }
 
   const runtimeState = getGeneticInventoryRuntimeState(item);
+
   if (runtimeState !== 'idle') {
     await showLabMessageModal({
       eyebrow: 'Genetic Inventory',
@@ -16392,30 +16394,48 @@ async function handleStartGeneticUpgrade(geneticItemId) {
     return;
   }
 
-const confirmed = await showLabConfirmModal({
-  eyebrow: 'Genetic Upgrade Start',
-  title: `Start ${item.display_title || item.trait_value}?`,
-  icon: '🧬',
-  message: `This starts a faster player-bound upgrade on the ${item.trait_type} Genetic Item. It uses the same curve philosophy as Genesis research, but at about double speed.`,
-  note: 'Only one active Genetic Item upgrade may run per user. The backend enforces this rule.',
-  highlightLabel: 'Next Level',
-  highlightValue: `Lv ${formatNumber(item.current_level || 1)} → Lv ${formatNumber(getGeneticNextLevel(item))}`,
-  confirmText: 'Start Upgrade',
-  cancelText: 'Cancel',
-  confirmVariant: 'primary'
-});
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Genetic Upgrade Start',
+    title: `Start ${item.display_title || item.trait_value}?`,
+    icon: '🧬',
+    message: `This starts a faster player-bound upgrade on the ${item.trait_type} Genetic Item. It uses the same curve philosophy as Genesis research, but at about double speed.`,
+    note: 'Only one active Genetic Item upgrade may run per user. The backend enforces this rule.',
+    highlightLabel: 'Next Level',
+    highlightValue: `Lv ${formatNumber(item.current_level || 1)} → Lv ${formatNumber(getGeneticNextLevel(item))}`,
+    confirmText: 'Start Upgrade',
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
 
-  if (!confirmed) return;
+  if (!confirmed) {
+    return;
+  }
+
+  const activeUserId = getActiveLabUserId();
+
+  if (!activeUserId) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Upgrade',
+      title: 'Discord Login Required',
+      icon: '🔐',
+      message: 'Login with Discord to start Genetic Item upgrades.',
+      note: 'Genetic Items are Discord-user-bound and require an active profile session.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
 
   state.geneticActionItemId = String(geneticItemId);
   setActionInFlight(true);
+
   try {
     const res = await fetchJson(getApiUrl(LAB_CONFIG.startGeneticItemUpgradeEndpoint), {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        user_id: state.userId,
+        user_id: activeUserId,
         genetic_item_id: safeNumber(geneticItemId, 0)
       })
     }, true);
@@ -16428,6 +16448,7 @@ const confirmed = await showLabConfirmModal({
     renderGeneticInventory();
 
     const payload = res.payload?.data || {};
+
     await showLabMessageModal({
       eyebrow: 'Genetic Upgrade Started',
       title: `${payload.display_title || item.display_title || item.trait_value} is now upgrading`,
@@ -16481,6 +16502,21 @@ async function handleClaimGeneticUpgrade(geneticItemId) {
     return;
   }
 
+  const activeUserId = getActiveLabUserId();
+
+  if (!activeUserId) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Claim Failed',
+      title: 'Discord Login Required',
+      icon: '🔐',
+      message: 'Login with Discord to claim Genetic Item upgrades.',
+      note: 'Genetic Items are Discord-user-bound and require an active profile session.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
   state.geneticActionItemId = String(geneticItemId);
   setActionInFlight(true);
   try {
@@ -16489,7 +16525,7 @@ async function handleClaimGeneticUpgrade(geneticItemId) {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        user_id: state.userId,
+        user_id: activeUserId,
         genetic_item_id: safeNumber(geneticItemId, 0)
       })
     }, true);
@@ -16576,6 +16612,21 @@ async function handleInstantFinishGeneticUpgrade(geneticItemId) {
 
   if (!confirmed) return;
 
+   const activeUserId = getActiveLabUserId();
+
+  if (!activeUserId) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Instant Finish',
+      title: 'Discord Login Required',
+      icon: '🔐',
+      message: 'Login with Discord to instant-finish Genetic Item upgrades.',
+      note: 'Genetic Items are Discord-user-bound and require an active profile session.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
   state.geneticActionItemId = String(geneticItemId);
   setActionInFlight(true);
   try {
@@ -16584,7 +16635,7 @@ async function handleInstantFinishGeneticUpgrade(geneticItemId) {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        user_id: state.userId,
+        user_id: activeUserId,
         genetic_item_id: safeNumber(geneticItemId, 0)
       })
     }, true);
@@ -16691,7 +16742,7 @@ async function handleUseGeneticBooster(geneticItemId, itemId) {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        user_id: state.userId,
+        user_id: activeUserId,
         genetic_item_id: safeNumber(geneticItemId, 0),
         item_id: booster.itemId
       })
