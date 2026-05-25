@@ -2353,6 +2353,55 @@ hydrateSession();
   box-shadow: 0 0 14px rgba(34, 211, 238, 0.8);
 }
 
+/* 🧭 Desktop Lab Control sticky preference.
+   DEVS FOR DECADES:
+   This is frontend-only player comfort. Some small desktop/laptop screens need
+   the Lab Control Panel to scroll normally instead of sticking at the top.
+   Mobile remains non-sticky through the existing mobile override below. */
+.lab-control-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lab-control-sticky-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(250, 204, 21, 0.38);
+  background: rgba(245, 158, 11, 0.16);
+  color: #fde68a;
+  padding: 7px 11px;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.lab-control-sticky-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(250, 204, 21, 0.7);
+  background: rgba(245, 158, 11, 0.24);
+}
+
+.lab-control-sticky-toggle[aria-pressed="false"] {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.58);
+  color: #cbd5e1;
+}
+
+.lab-control-dock.lab-control-dock--static {
+  position: relative;
+  top: auto;
+  z-index: 12;
+}
+
 .lab-control-dock .lab-tab-nav {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -5270,6 +5319,447 @@ body::after {
     0 10px 24px rgba(14, 165, 233, 0.18);
 }
 
+/* 📋 Shared Lab list-view shells.
+   DEVS FOR DECADES:
+   These list modes are frontend-only display layers.
+   They do not mutate inventory, DSPOINC, timers, ownership, listings, or rewards. */
+#geneticInventoryGrid.genetic-inventory-list-view,
+#geneticShopGrid.genetic-shop-list-view,
+#activeResearchQueue.research-queue-list-view {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 211, 238, 0.20);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), transparent 26%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.72), rgba(15, 23, 42, 0.72));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 42px rgba(2, 6, 23, 0.24);
+}
+
+/* Safety guard:
+   If stale card markup survives a failed render, do not show cards in list mode. */
+#geneticInventoryGrid.genetic-inventory-list-view > .genetic-card-live,
+#geneticShopGrid.genetic-shop-list-view > .genetic-card,
+#activeResearchQueue.research-queue-list-view > .queue-card {
+  display: none !important;
+}
+
+/* Shared compact tables for Inventory / Shop / Queue list modes. */
+.lab-list-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.78rem;
+}
+
+.lab-list-table th,
+.lab-list-table td {
+  padding: 8px 9px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.lab-list-table th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+  color: #67e8f9;
+  font-size: 0.64rem;
+  font-weight: 950;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.lab-list-table tbody tr {
+  background: rgba(15, 23, 42, 0.54);
+  transition: background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.lab-list-table tbody tr:hover {
+  background: rgba(8, 47, 73, 0.72);
+}
+
+.lab-list-title {
+  font-weight: 950;
+  color: #f8fafc;
+}
+
+.lab-list-subtitle {
+  margin-top: 2px;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.lab-list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.lab-list-actions .btn {
+  padding: 7px 9px;
+  font-size: 0.72rem;
+}
+
+.lab-list-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.66);
+  color: #cbd5e1;
+}
+
+.lab-list-status-pill.idle {
+  border-color: rgba(34, 211, 238, 0.28);
+  color: #67e8f9;
+}
+
+.lab-list-status-pill.upgrading {
+  border-color: rgba(59, 130, 246, 0.36);
+  color: #93c5fd;
+}
+
+.lab-list-status-pill.ready_to_claim {
+  border-color: rgba(16, 185, 129, 0.42);
+  color: #86efac;
+}
+
+.lab-list-status-pill.listed {
+  border-color: rgba(250, 204, 21, 0.42);
+  color: #fde68a;
+}
+
+/* 🧪 Premium Research Queue List Mode polish.
+   DEVS FOR DECADES:
+   This is a frontend-only queue display layer.
+   It does not decide claim readiness, timer completion, ownership, costs,
+   DSPOINC, or Genesis progression. Backend-loaded upgrade rows remain source of truth. */
+#activeResearchQueue.research-queue-list-view {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 10px;
+  border-radius: 22px;
+  border: 1px solid rgba(139, 92, 246, 0.26);
+  background:
+    radial-gradient(circle at top left, rgba(139, 92, 246, 0.13), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.92));
+  box-shadow:
+    0 22px 55px rgba(2, 6, 23, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table {
+  width: 100%;
+  min-width: 720px;
+  border-spacing: 0 8px;
+  border-collapse: separate;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table thead th {
+  border-bottom: 0;
+  padding: 9px 10px;
+  background:
+    linear-gradient(180deg, rgba(76, 29, 149, 0.98), rgba(2, 6, 23, 0.98));
+  color: #c4b5fd;
+  text-shadow: 0 0 12px rgba(139, 92, 246, 0.16);
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table tbody tr {
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.64));
+  box-shadow:
+    inset 0 0 0 1px rgba(148, 163, 184, 0.10),
+    0 8px 18px rgba(2, 6, 23, 0.16);
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table tbody tr:hover {
+  background:
+    linear-gradient(90deg, rgba(76, 29, 149, 0.72), rgba(8, 47, 73, 0.70));
+  box-shadow:
+    inset 0 0 0 1px rgba(139, 92, 246, 0.24),
+    0 10px 24px rgba(139, 92, 246, 0.12);
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table td {
+  padding: 11px 10px;
+  border-bottom: 0;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table tbody tr td:first-child {
+  border-top-left-radius: 14px;
+  border-bottom-left-radius: 14px;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table tbody tr td:last-child {
+  border-top-right-radius: 14px;
+  border-bottom-right-radius: 14px;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-title,
+#activeResearchQueue.research-queue-list-view .lab-list-subtitle {
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#activeResearchQueue.research-queue-list-view .table-action-cell {
+  min-width: 145px;
+  width: 145px;
+  position: relative;
+  right: auto;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.92));
+  box-shadow: none;
+}
+
+#activeResearchQueue.research-queue-list-view thead .table-action-cell {
+  z-index: 3;
+  background:
+    linear-gradient(180deg, rgba(76, 29, 149, 0.98), rgba(2, 6, 23, 0.98));
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-actions .btn {
+  min-width: 120px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* 🧪 Final compact Research Queue List overrides.
+   DEVS FOR DECADES:
+   This is display-only. Claim readiness and claim execution remain controlled
+   by loaded upgrade rows and backend-authoritative claim APIs. */
+#activeResearchQueue.research-queue-list-view {
+  overflow-x: hidden;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table th,
+#activeResearchQueue.research-queue-list-view .lab-list-table td {
+  padding: 10px 8px;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(1),
+#activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(1) {
+  width: 34%;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(2),
+#activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(2) {
+  width: 92px;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(3),
+#activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(3),
+#activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(4),
+#activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(4) {
+  width: 62px;
+  text-align: center;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(5),
+#activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(5) {
+  width: 150px;
+}
+
+#activeResearchQueue.research-queue-list-view .table-action-cell {
+  width: 154px;
+  min-width: 154px;
+  position: relative;
+  right: auto;
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.92));
+  box-shadow: none;
+}
+
+#activeResearchQueue.research-queue-list-view .research-current-cell {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+#activeResearchQueue.research-queue-list-view .lab-list-actions .btn {
+  min-width: 118px;
+  max-width: 138px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 🧬 Premium Genetic Inventory List Mode polish.
+   DEVS FOR DECADES:
+   This is visual-only styling for the Inventory table view.
+   It must not change upgrade logic, inventory state, listing behavior,
+   DSPOINC, timers, backend authority, or marketplace rules. */
+#geneticInventoryGrid.genetic-inventory-list-view {
+  padding: 10px;
+  border-radius: 22px;
+  border: 1px solid rgba(34, 211, 238, 0.26);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.13), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.92));
+  box-shadow:
+    0 22px 55px rgba(2, 6, 23, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table {
+  min-width: 980px;
+  border-spacing: 0 8px;
+  border-collapse: separate;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table thead th {
+  border-bottom: 0;
+  padding: 9px 10px;
+  background:
+    linear-gradient(180deg, rgba(8, 47, 73, 0.98), rgba(2, 6, 23, 0.98));
+  color: #67e8f9;
+  text-shadow: 0 0 12px rgba(34, 211, 238, 0.16);
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table tbody tr {
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.64));
+  box-shadow:
+    inset 0 0 0 1px rgba(148, 163, 184, 0.10),
+    0 8px 18px rgba(2, 6, 23, 0.16);
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table tbody tr:hover {
+  background:
+    linear-gradient(90deg, rgba(8, 47, 73, 0.88), rgba(30, 41, 59, 0.74));
+  box-shadow:
+    inset 0 0 0 1px rgba(34, 211, 238, 0.22),
+    0 10px 24px rgba(14, 165, 233, 0.13);
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table td {
+  padding: 11px 10px;
+  border-bottom: 0;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table tbody tr td:first-child {
+  border-top-left-radius: 14px;
+  border-bottom-left-radius: 14px;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table tbody tr td:last-child {
+  border-top-right-radius: 14px;
+  border-bottom-right-radius: 14px;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-title {
+  max-width: 190px;
+  color: #f8fafc;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-subtitle {
+  max-width: 190px;
+  color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .genetic-rarity-badge {
+  min-width: 92px;
+  justify-content: center;
+  text-align: center;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-status-pill {
+  min-width: 92px;
+  justify-content: center;
+  text-align: center;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .table-action-cell {
+  min-width: 190px;
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(2, 6, 23, 0.72), rgba(2, 6, 23, 0.96) 28%);
+  box-shadow: -12px 0 22px rgba(2, 6, 23, 0.36);
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view thead .table-action-cell {
+  z-index: 4;
+  background:
+    linear-gradient(90deg, rgba(8, 47, 73, 0.90), rgba(2, 6, 23, 0.98));
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-actions {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-actions .btn {
+  min-width: 70px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  #geneticInventoryGrid.genetic-inventory-list-view {
+    padding: 8px;
+  }
+
+  #geneticInventoryGrid.genetic-inventory-list-view .lab-list-table {
+    min-width: 920px;
+  }
+
+  #geneticInventoryGrid.genetic-inventory-list-view .table-action-cell {
+    min-width: 170px;
+  }
+}
+
 #geneticMarketplaceGrid.genetic-marketplace-list-view {
   display: block;
   overflow-x: auto;
@@ -5324,6 +5814,47 @@ body::after {
   font-weight: 950;
   letter-spacing: 0.10em;
   text-transform: uppercase;
+}
+
+/* 📊 Sortable Marketplace headers.
+   DEVS FOR DECADES:
+   This is frontend-only table sorting for large marketplace views.
+   Sorting changes display order only. It does not change listings, prices,
+   ownership, DSPOINC, inventory, or marketplace backend rules. */
+.genetic-marketplace-sort-button {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.genetic-marketplace-sort-button:hover {
+  color: #facc15;
+}
+
+.genetic-marketplace-sort-button.is-active {
+  color: #fde68a;
+}
+
+.genetic-marketplace-sort-arrow {
+  color: #facc15;
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.genetic-marketplace-sort-button.table-number-sort,
+.genetic-marketplace-sort-button.table-center-sort {
+  justify-content: flex-end;
+  text-align: right;
 }
 
 .genetic-marketplace-table tbody tr {
@@ -5895,6 +6426,10 @@ body::after {
 
   .lab-control-copy,
   .lab-control-status {
+    display: none !important;
+  }
+
+  .lab-control-actions {
     display: none !important;
   }
 
@@ -6709,9 +7244,20 @@ body::after {
       </div>
     </div>
 
-    <div class="lab-control-status">
-      <span class="lab-control-status-dot"></span>
-      Main navigation
+        <div class="lab-control-actions">
+      <button
+        type="button"
+        id="labControlStickyToggle"
+        class="lab-control-sticky-toggle"
+        aria-pressed="true"
+        title="Switch the desktop Lab Control Panel between sticky and normal scroll mode">
+        📌 Sticky ON
+      </button>
+
+      <div class="lab-control-status">
+        <span class="lab-control-status-dot"></span>
+        Main navigation
+      </div>
     </div>
   </div>
 
@@ -7067,32 +7613,62 @@ body::after {
           <div id="geneticAccessStrip" class="genetic-access-strip"></div>
 
           <div class="genetic-filter-bar">
-            <div class="genetic-filter-field">
-              <label for="geneticTraitTypeFilter">Trait Type</label>
-              <select id="geneticTraitTypeFilter" class="genetic-filter-select">
-                <option value="">All Types</option>
-                <option value="Outfit">Outfit</option>
-                <option value="Accessories">Accessories</option>
-              </select>
-            </div>
-            <div class="genetic-filter-field">
-              <label for="geneticRarityFilter">Rarity</label>
-              <select id="geneticRarityFilter" class="genetic-filter-select">
-                <option value="">All Rarities</option>
-                <option value="common">Common</option>
-                <option value="uncommon">Uncommon</option>
-                <option value="rare">Rare</option>
-                <option value="legendary">Legendary</option>
-              </select>
-            </div>
-            <div class="genetic-filter-field flex-1 min-w-[220px]">
-              <label for="geneticSearchInput">Search</label>
-              <input id="geneticSearchInput" class="genetic-filter-input" type="search" placeholder="Search trait name or lore" />
-            </div>
-          </div>
+  <div class="genetic-filter-field">
+    <label for="geneticTraitTypeFilter">Trait Type</label>
+    <select id="geneticTraitTypeFilter" class="genetic-filter-select">
+      <option value="">All Types</option>
+      <option value="Outfit">Outfit</option>
+      <option value="Accessories">Accessories</option>
+    </select>
+  </div>
 
+  <div class="genetic-filter-field">
+    <label for="geneticRarityFilter">Rarity</label>
+    <select id="geneticRarityFilter" class="genetic-filter-select">
+      <option value="">All Rarities</option>
+      <option value="common">Common</option>
+      <option value="uncommon">Uncommon</option>
+      <option value="rare">Rare</option>
+      <option value="legendary">Legendary</option>
+    </select>
+  </div>
+
+  <div class="genetic-filter-field flex-1 min-w-[220px]">
+    <label for="geneticSearchInput">Search</label>
+    <input
+      id="geneticSearchInput"
+      class="genetic-filter-input"
+      type="search"
+      placeholder="Search trait name or lore"
+    />
+  </div>
+
+  <div class="genetic-filter-field">
+    <label>View</label>
+    <div class="genetic-marketplace-view-toggle" role="group" aria-label="Genetic Shop view mode">
+      <button
+        type="button"
+        id="geneticShopCardViewButton"
+        class="btn compact genetic-marketplace-view-btn active"
+        data-genetic-shop-view="card"
+        aria-pressed="true"
+      >
+        🧬 Cards
+      </button>
+      <button
+        type="button"
+        id="geneticShopListViewButton"
+        class="btn compact genetic-marketplace-view-btn"
+        data-genetic-shop-view="list"
+        aria-pressed="false"
+      >
+        📋 List
+      </button>
+    </div>
+  </div>
+</div>
           <div id="geneticShopGrid" class="genetic-card-grid"></div>
-          <div id="geneticShopEmptyState" class="genetic-empty-state hidden"></div>
+<div id="geneticShopEmptyState" class="genetic-empty-state hidden"></div>
         </div>
 
         <div class="space-y-5">
@@ -7138,29 +7714,53 @@ body::after {
             <div class="workspace-helper-card"><strong>Prepare trading</strong><div class="text-sm text-slate-300">Only idle Genetic items are safe candidates for marketplace listing flows.</div></div>
           </div>
 
-          <div class="genetic-filter-bar">
-            <div class="genetic-filter-field">
-              <label for="geneticInventoryTraitTypeFilter">Trait Type</label>
-              <select id="geneticInventoryTraitTypeFilter" class="genetic-filter-select">
-                <option value="">All Types</option>
-                <option value="Outfit">Outfit</option>
-                <option value="Accessories">Accessories</option>
-              </select>
-            </div>
-            <div class="genetic-filter-field">
-              <label for="geneticInventoryStatusFilter">Status</label>
-              <select id="geneticInventoryStatusFilter" class="genetic-filter-select">
-                <option value="">All States</option>
-                <option value="idle">Idle</option>
-                <option value="upgrading">Upgrading</option>
-                <option value="ready_to_claim">Ready To Claim</option>
-              </select>
-            </div>
-            <div class="genetic-filter-field flex-1 min-w-[220px]">
-              <label for="geneticInventorySearchInput">Search</label>
-              <input id="geneticInventorySearchInput" class="genetic-filter-input" type="search" placeholder="Search owned traits" />
-            </div>
-          </div>
+          <div class="genetic-filter-field">
+  <label for="geneticInventoryTraitTypeFilter">Trait Type</label>
+  <select id="geneticInventoryTraitTypeFilter" class="genetic-filter-select">
+    <option value="">All Types</option>
+    <option value="Outfit">Outfit</option>
+    <option value="Accessories">Accessories</option>
+  </select>
+</div>
+
+<div class="genetic-filter-field">
+  <label for="geneticInventoryStatusFilter">Status</label>
+  <select id="geneticInventoryStatusFilter" class="genetic-filter-select">
+    <option value="">All States</option>
+    <option value="idle">Idle</option>
+    <option value="upgrading">Upgrading</option>
+    <option value="ready_to_claim">Ready To Claim</option>
+  </select>
+</div>
+
+<div class="genetic-filter-field flex-1 min-w-[220px]">
+  <label for="geneticInventorySearchInput">Search</label>
+  <input id="geneticInventorySearchInput" class="genetic-filter-input" type="search" placeholder="Search owned traits" />
+</div>
+
+<div class="genetic-filter-field">
+  <label>View</label>
+  <div class="genetic-marketplace-view-toggle" role="group" aria-label="Genetic Inventory view mode">
+    <button
+      type="button"
+      id="geneticInventoryCardViewButton"
+      class="btn compact genetic-marketplace-view-btn active"
+      data-genetic-inventory-view="card"
+      aria-pressed="true"
+    >
+      🎒 Cards
+    </button>
+    <button
+      type="button"
+      id="geneticInventoryListViewButton"
+      class="btn compact genetic-marketplace-view-btn"
+      data-genetic-inventory-view="list"
+      aria-pressed="false"
+    >
+      📋 List
+    </button>
+  </div>
+</div>
 
           <div id="geneticInventoryGrid" class="genetic-card-grid"></div>
           <div id="geneticInventoryEmptyState" class="genetic-empty-state hidden"></div>
@@ -7401,8 +8001,30 @@ body::after {
               <div class="section-title text-xl md:text-2xl"><span>🧪</span><span>Research Queue</span></div>
               <p class="mt-2 text-sm md:text-base text-slate-300">See which Genesis mice need your attention now. This is the fastest place to find active research and claim-ready upgrades.</p>
             </div>
-            <div class="text-sm text-slate-300 flex flex-wrap items-center gap-3">
+           <div class="text-sm text-slate-300 flex flex-wrap items-center gap-3">
   <span id="activeQueueBadge" class="chip">Queue warming up…</span>
+
+  <div class="genetic-marketplace-view-toggle" role="group" aria-label="Research Queue view mode">
+    <button
+      type="button"
+      id="researchQueueCardViewButton"
+      class="btn compact genetic-marketplace-view-btn active"
+      data-research-queue-view="card"
+      aria-pressed="true"
+    >
+      🧪 Cards
+    </button>
+    <button
+      type="button"
+      id="researchQueueListViewButton"
+      class="btn compact genetic-marketplace-view-btn"
+      data-research-queue-view="list"
+      aria-pressed="false"
+    >
+      📋 List
+    </button>
+  </div>
+
   <button
     id="claimAllReadyButton"
     type="button"
@@ -7639,7 +8261,14 @@ geneticMarketplaceHistoryFilter: 'all',
 geneticMarketplaceHistoryExpanded: false,
 geneticMarketplaceViewMode: 'card',
 geneticMarketplaceExpandedListingId: '',
+geneticShopViewMode: 'card',
+geneticInventoryViewMode: 'card',
+researchQueueViewMode: 'card',
 geneticInventoryRuntimeSummary: null,
+geneticMarketplaceSort: {
+  key: 'created_at',
+  direction: 'desc'
+},
       geneticActionItemId: null,
       activeGeneticMediaViewerKey: '',
       readyTransitionResyncTimer: null,
@@ -7676,19 +8305,25 @@ const el = {
   activeResearchQueue: document.getElementById('activeResearchQueue'),
   claimAllReadyButton: document.getElementById('claimAllReadyButton'),
   activeQueueBadge: document.getElementById('activeQueueBadge'),
+  researchQueueCardViewButton: document.getElementById('researchQueueCardViewButton'),
+researchQueueListViewButton: document.getElementById('researchQueueListViewButton'),
   geneticShopBadge: document.getElementById('geneticShopBadge'),
   geneticAccessStrip: document.getElementById('geneticAccessStrip'),
   geneticTraitTypeFilter: document.getElementById('geneticTraitTypeFilter'),
-  geneticRarityFilter: document.getElementById('geneticRarityFilter'),
-  geneticSearchInput: document.getElementById('geneticSearchInput'),
-  geneticShopGrid: document.getElementById('geneticShopGrid'),
+geneticRarityFilter: document.getElementById('geneticRarityFilter'),
+geneticSearchInput: document.getElementById('geneticSearchInput'),
+geneticShopCardViewButton: document.getElementById('geneticShopCardViewButton'),
+geneticShopListViewButton: document.getElementById('geneticShopListViewButton'),
+geneticShopGrid: document.getElementById('geneticShopGrid'),
   geneticShopEmptyState: document.getElementById('geneticShopEmptyState'),
   geneticInventoryBadge: document.getElementById('geneticInventoryBadge'),
   geneticInventorySummary: document.getElementById('geneticInventorySummary'),
   geneticInventoryTraitTypeFilter: document.getElementById('geneticInventoryTraitTypeFilter'),
   geneticInventoryStatusFilter: document.getElementById('geneticInventoryStatusFilter'),
-  geneticInventorySearchInput: document.getElementById('geneticInventorySearchInput'),
-  geneticInventoryGrid: document.getElementById('geneticInventoryGrid'),
+ geneticInventorySearchInput: document.getElementById('geneticInventorySearchInput'),
+geneticInventoryCardViewButton: document.getElementById('geneticInventoryCardViewButton'),
+geneticInventoryListViewButton: document.getElementById('geneticInventoryListViewButton'),
+geneticInventoryGrid: document.getElementById('geneticInventoryGrid'),
   geneticInventoryEmptyState: document.getElementById('geneticInventoryEmptyState'),
   labEntryActions: document.getElementById('labEntryActions'),
   nftPrevButton: document.getElementById('nftPrevButton'),
@@ -8268,7 +8903,7 @@ async function saveNftCustomName(tokenId, customName) {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          user_id: state.userId,
+          user_id: activeUserId,
           token_id: safeTokenId,
           collection: 'genesis',
           custom_name: safeName
@@ -9817,16 +10452,102 @@ function getSafeNftImageUrl(nft) {
   return '';
 }
 
+/**
+ * Render one row in Research Queue List mode.
+ *
+ * Plain language for DEVS:
+ * This is a compact display-only row for Genesis NFT research.
+ * Readiness, timers, ownership, and claim logic still come from the existing
+ * loaded upgrade rows and backend-authoritative claim endpoints.
+ */
+function renderResearchQueueTableRow(queueItem) {
+  const nft = queueItem?.nft || {};
+  const summary = queueItem?.summary || {};
+  const tokenId = getSafeTokenId(nft);
+  const nftName = getSafeNftName(nft, 'Genesis Mouse');
+  const shortToken = tokenId ? `${tokenId.slice(0, 4)}…${tokenId.slice(-4)}` : '—';
+  const hasReady = safeNumber(summary.readyCount) > 0;
+  const hasActive = safeNumber(summary.activeCount) > 0;
+  const activeRow = getNftActiveUpgradeRow(nft);
+
+  const statusClass = hasReady
+    ? 'ready_to_claim'
+    : (hasActive ? 'upgrading' : 'idle');
+
+  const statusLabel = hasReady
+    ? 'Ready'
+    : (hasActive ? 'Active' : 'Idle');
+
+  const activeTraitLabel = activeRow
+    ? `${activeRow.trait_type || 'Trait'} • ${activeRow.trait_value || 'Unknown'}`
+    : '—';
+
+  let remainingLabel = '—';
+  let finishAtLabel = '—';
+  let progressLabel = hasReady
+    ? `${formatNumber(summary.readyCount || 0)} ready`
+    : '—';
+
+  if (activeRow && activeRow.upgrade_status === 'upgrading') {
+    const currentLevel = Math.max(1, safeNumber(activeRow.current_level, 1));
+    const durationHours = calculateUpgradeDurationHours(currentLevel);
+    const totalMs = durationHours * 60 * 60 * 1000;
+    const endTime = parseLabUtcDate(activeRow.upgrade_ends_at)?.getTime() || 0;
+    const remainingMs = Math.max(0, endTime - Date.now());
+    const elapsedMs = Math.max(0, totalMs - remainingMs);
+    const progressPercent = totalMs > 0
+      ? Math.min(100, Math.round((elapsedMs / totalMs) * 100))
+      : 0;
+
+    remainingLabel = formatRemainingMs(remainingMs);
+    finishAtLabel = activeRow.upgrade_ends_at ? formatDateTime(activeRow.upgrade_ends_at) : '—';
+    progressLabel = `${formatNumber(progressPercent)}%`;
+  }
+
+  const actionLabel = hasReady
+  ? `✅ Claim ${formatNumber(summary.readyCount || 0)}`
+  : '🧪 View';
+
+  const actionClass = hasReady ? 'success' : 'warn';
+
+  return `
+    <tr>
+      <td>
+        <div class="lab-list-title">${escapeHtml(nftName)}</div>
+        <div class="lab-list-subtitle">${escapeHtml(shortToken)}</div>
+      </td>
+      <td>
+        <span class="lab-list-status-pill ${escapeHtml(statusClass)}">${escapeHtml(statusLabel)}</span>
+      </td>
+      <td class="text-right">${formatNumber(summary.readyCount || 0)}</td>
+      <td class="text-right">${formatNumber(summary.activeCount || 0)}</td>
+                  <td class="research-current-cell">${escapeHtml(activeTraitLabel)}</td>
+      <td class="table-action-cell">
+        <div class="lab-list-actions">
+          <button
+            type="button"
+            class="btn ${escapeHtml(actionClass)} compact"
+            data-queue-token="${escapeHtml(tokenId)}"
+          >
+            ${escapeHtml(actionLabel)}
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
 function renderActiveResearchQueue() {
   const items = getNftsWithActionableQueueState();
   const readyRows = getAllReadyClaimRows();
   const readyCount = readyRows.length;
+  const viewMode = state.researchQueueViewMode === 'list' ? 'list' : 'card';
 
   if (!el.activeQueueBadge || !el.activeResearchQueue) {
     return;
   }
 
-  el.activeQueueBadge.textContent = `${items.length} actionable mice`;
+  el.activeQueueBadge.textContent = `${items.length} actionable mice · ${viewMode === 'list' ? 'List view' : 'Card view'}`;
 
   if (el.claimAllReadyButton) {
     el.claimAllReadyButton.disabled = readyCount < 1 || state.actionInFlight;
@@ -9834,6 +10555,22 @@ function renderActiveResearchQueue() {
       ? `✅ Claim All Ready (${formatNumber(readyCount)})`
       : '✅ Claim All Ready';
   }
+
+    if (el.researchQueueCardViewButton && el.researchQueueListViewButton) {
+    const isListView = viewMode === 'list';
+
+    el.researchQueueCardViewButton.classList.toggle('active', !isListView);
+    el.researchQueueListViewButton.classList.toggle('active', isListView);
+
+    el.researchQueueCardViewButton.setAttribute('aria-pressed', !isListView ? 'true' : 'false');
+    el.researchQueueListViewButton.setAttribute('aria-pressed', isListView ? 'true' : 'false');
+  }
+
+  el.activeResearchQueue.classList.toggle('grid', viewMode !== 'list');
+  el.activeResearchQueue.classList.toggle('grid-cols-1', viewMode !== 'list');
+  el.activeResearchQueue.classList.toggle('xl:grid-cols-2', viewMode !== 'list');
+  el.activeResearchQueue.classList.toggle('gap-4', viewMode !== 'list');
+  el.activeResearchQueue.classList.toggle('research-queue-list-view', viewMode === 'list');
 
   if (!items.length) {
     el.activeResearchQueue.innerHTML = `
@@ -9843,6 +10580,43 @@ function renderActiveResearchQueue() {
           Start a trait upgrade in <strong>My Genesis Lab</strong> and your actionable mice will appear here.
         </div>
       </div>
+    `;
+    return;
+  }
+
+    if (viewMode === 'list') {
+    let queueTableRows = '';
+
+    try {
+      queueTableRows = items.map(renderResearchQueueTableRow).join('');
+    } catch (error) {
+      console.error('❌ Research Queue list table render failed:', error);
+
+      queueTableRows = `
+        <tr>
+          <td colspan="6" class="text-red-300 font-bold">
+            Research Queue list view could not render one row. Check browser console.
+          </td>
+        </tr>
+      `;
+    }
+
+    el.activeResearchQueue.innerHTML = `
+      <table class="lab-list-table">
+                  <thead>
+          <tr>
+            <th>Mouse</th>
+            <th>Status</th>
+            <th class="text-right">Ready</th>
+            <th class="text-right">Active</th>
+            <th>Research</th>
+            <th class="table-action-cell">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${queueTableRows}
+        </tbody>
+      </table>
     `;
     return;
   }
@@ -13740,6 +14514,71 @@ function getGeneticCardDescription(item) {
     : 'Mint-seeded genetic trait prepared for future gameplay utility.';
 }
 
+/**
+ * Render one row in Genetic Shop List mode.
+ *
+ * Plain language for DEVS:
+ * This is a compact catalog display only. Buying still uses the existing
+ * backend-authoritative buy flow, DSPOINC checks, and max-2 exact trait rules.
+ */
+function renderGeneticShopTableRow(item) {
+  const rawCatalogId = Number(item.catalog_id || 0);
+  const catalogId = escapeHtml(rawCatalogId);
+  const shopViewerKey = escapeHtml(`shop-${rawCatalogId}`);
+  const rarityClass = getGeneticRarityClass(item.rarity_tier);
+  const title = item.display_title || item.trait_value || 'Genetic Trait';
+  const subtitle = `${item.trait_type || 'Trait'} • ${item.trait_value || 'Unknown'}`;
+  const price = safeNumber(item.base_price_dspoinc, 0);
+  const rarityCount = safeNumber(item.rarity_count, 0);
+  const access = state.geneticHolderAccess || { can_buy: false };
+
+  // Plain language for DEVS:
+  // Disable only while another Lab action is running or when backend access says
+  // buying is not available. Do NOT disable because geneticActionItemId is empty;
+  // an empty action id means no item action is currently running.
+  const actionDisabled = state.actionInFlight || !!state.geneticActionItemId || !access.can_buy;
+
+  const buyLabel = access.can_buy
+    ? `Buy ${formatNumber(price)}`
+    : 'Preview';
+
+  return `
+    <tr>
+      <td>
+        <div class="lab-list-title">${escapeHtml(title)}</div>
+        <div class="lab-list-subtitle">${escapeHtml(subtitle)}</div>
+      </td>
+      <td>
+        <span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(item.rarity_tier || 'common')}</span>
+      </td>
+      <td>${escapeHtml(item.trait_type || '—')}</td>
+      <td>${escapeHtml(item.trait_value || '—')}</td>
+      <td class="text-right">${formatNumber(rarityCount)}</td>
+      <td class="text-right">${formatNumber(price)}</td>
+      <td class="table-action-cell">
+        <div class="lab-list-actions">
+          <button
+            type="button"
+            class="btn compact"
+            data-open-genetic-shop-3d="${shopViewerKey}"
+          >
+            View 3D
+          </button>
+          <button
+            type="button"
+            class="btn primary compact"
+            ${actionDisabled ? 'disabled' : ''}
+            data-genetic-buy-id="${catalogId}"
+          >
+            ${escapeHtml(buyLabel)}
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+
 function renderGeneticTraitCard(item) {
   const rarityClass = getGeneticRarityClass(item.rarity_tier);
   const owned = Boolean(item.owned);
@@ -13781,6 +14620,85 @@ function renderGeneticTraitCard(item) {
         <button type="button" class="btn" disabled>${escapeHtml(item.source_origin || 'mint_seed')}</button>
       </div>
     </article>
+  `;
+}
+
+/**
+ * Render one row in My Genetic Inventory List mode.
+ *
+ * Plain language for DEVS:
+ * This is a compact display-only version of the existing Genetic inventory card.
+ * The buttons keep using the same backend-authoritative handlers as card mode.
+ */
+function renderGeneticInventoryTableRow(item) {
+  const rarityClass = getGeneticRarityClass(item.rarity_tier);
+  const runtimeState = getGeneticInventoryRuntimeState(item);
+  const currentLevel = Math.max(1, safeNumber(item.current_level, 1));
+  const nextLevel = getGeneticNextLevel(item);
+  const isMaxLevel = currentLevel >= 100;
+  const remainingMs = getGeneticRemainingMs(item);
+  const remainingLabel = runtimeState === 'upgrading' ? formatRemainingMs(remainingMs) : '—';
+  const finishAtLabel = item.upgrade_ends_at ? formatDateTime(item.upgrade_ends_at) : '—';
+  const actionDisabled = state.actionInFlight || !!state.geneticActionItemId;
+  const isListed = Number(item.is_listed_for_sale || 0) === 1;
+  const itemId = escapeHtml(item.genetic_item_id || '');
+  const title = item.display_title || item.trait_value || 'Genetic Item';
+  const subtitle = `${item.trait_type || 'Trait'} • ${item.trait_value || 'Unknown'}`;
+  const statusLabel = isListed
+    ? 'Listed'
+    : String(runtimeState || 'idle').replace(/_/g, ' ');
+
+  let primaryAction = `<button type="button" class="btn" disabled>Unavailable</button>`;
+
+  if (isListed) {
+    primaryAction = `<button type="button" class="btn" disabled>Listed</button>`;
+  } else if (isMaxLevel) {
+    primaryAction = `<button type="button" class="btn" disabled>Max</button>`;
+  } else if (runtimeState === 'ready_to_claim') {
+    primaryAction = `<button type="button" class="btn primary" ${actionDisabled ? 'disabled' : ''} data-claim-genetic-upgrade="${itemId}">Claim</button>`;
+  } else if (runtimeState === 'upgrading') {
+    primaryAction = `<button type="button" class="btn" disabled>Upgrading</button>`;
+  } else {
+    primaryAction = `<button type="button" class="btn primary" ${actionDisabled ? 'disabled' : ''} data-start-genetic-upgrade="${itemId}">Start</button>`;
+  }
+
+  const instantFinishPreview = runtimeState === 'upgrading'
+    ? calculateInstantFinishCost(currentLevel, remainingMs, 'genetic')
+    : 0;
+
+  const instantFinishAction = runtimeState === 'upgrading' && !isListed
+    ? `<button type="button" class="btn warn" ${actionDisabled ? 'disabled' : ''} data-instant-finish-genetic="${itemId}">Finish ${formatNumber(instantFinishPreview)}</button>`
+    : '';
+
+  const listAction = runtimeState === 'idle' && !isListed && !isMaxLevel
+  ? `<button type="button" class="btn" ${actionDisabled ? 'disabled' : ''} data-list-genetic-item="${itemId}">List</button>`
+  : '';
+
+  return `
+    <tr>
+      <td>
+        <div class="lab-list-title">${escapeHtml(title)}</div>
+        <div class="lab-list-subtitle">${escapeHtml(subtitle)}</div>
+      </td>
+      <td>
+        <span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(item.rarity_tier || 'common')}</span>
+      </td>
+      <td>${escapeHtml(item.trait_type || '—')}</td>
+      <td class="text-right">${formatNumber(currentLevel)}</td>
+      <td class="text-right">${isMaxLevel ? 'Max' : formatNumber(nextLevel)}</td>
+      <td>
+        <span class="lab-list-status-pill ${escapeHtml(isListed ? 'listed' : runtimeState)}">${escapeHtml(statusLabel)}</span>
+      </td>
+      <td>${escapeHtml(remainingLabel)}</td>
+      <td>${escapeHtml(finishAtLabel)}</td>
+      <td class="table-action-cell">
+        <div class="lab-list-actions">
+          ${primaryAction}
+          ${instantFinishAction}
+          ${listAction}
+        </div>
+      </td>
+    </tr>
   `;
 }
 
@@ -13936,12 +14854,29 @@ if (item.is_listed_for_sale) {
 
 function renderGeneticShop() {
   const filtered = getFilteredGeneticCatalog();
+  const viewMode = state.geneticShopViewMode === 'list' ? 'list' : 'card';
+
   if (el.geneticShopBadge) {
     const access = state.geneticHolderAccess || { can_buy: false };
-    el.geneticShopBadge.textContent = `${formatNumber(filtered.length)} traits • ${access.can_buy ? 'buy unlocked' : 'preview mode'}`;
+    el.geneticShopBadge.textContent = `${formatNumber(filtered.length)} traits • ${access.can_buy ? 'buy unlocked' : 'preview mode'} · ${viewMode === 'list' ? 'List view' : 'Card view'}`;
   }
+
+  if (el.geneticShopCardViewButton && el.geneticShopListViewButton) {
+    const isListView = viewMode === 'list';
+
+    el.geneticShopCardViewButton.classList.toggle('active', !isListView);
+    el.geneticShopListViewButton.classList.toggle('active', isListView);
+
+    el.geneticShopCardViewButton.setAttribute('aria-pressed', !isListView ? 'true' : 'false');
+    el.geneticShopListViewButton.setAttribute('aria-pressed', isListView ? 'true' : 'false');
+  }
+
   renderGeneticAccessStrip();
+
   if (!el.geneticShopGrid || !el.geneticShopEmptyState) return;
+
+  el.geneticShopGrid.classList.toggle('genetic-card-grid', viewMode !== 'list');
+  el.geneticShopGrid.classList.toggle('genetic-shop-list-view', viewMode === 'list');
 
   if (!filtered.length) {
     el.geneticShopGrid.innerHTML = '';
@@ -13951,15 +14886,67 @@ function renderGeneticShop() {
   }
 
   el.geneticShopEmptyState.classList.add('hidden');
+
+  if (viewMode === 'list') {
+    let shopTableRows = '';
+
+    try {
+      shopTableRows = filtered.map(renderGeneticShopTableRow).join('');
+    } catch (error) {
+      console.error('❌ Genetic Shop list table render failed:', error);
+
+      shopTableRows = `
+        <tr>
+          <td colspan="7" class="text-red-300 font-bold">
+            Genetic Shop list view could not render one row. Check browser console.
+          </td>
+        </tr>
+      `;
+    }
+
+    el.geneticShopGrid.innerHTML = `
+      <table class="lab-list-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Rarity</th>
+            <th>Type</th>
+            <th>Trait</th>
+            <th class="text-right">Supply</th>
+            <th class="text-right">Price</th>
+            <th class="table-action-cell">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${shopTableRows}
+        </tbody>
+      </table>
+    `;
+    return;
+  }
+
   el.geneticShopGrid.innerHTML = filtered.map(renderGeneticTraitCard).join('');
 }
 
 function renderGeneticInventory() {
   state.geneticInventoryRuntimeSummary = buildGeneticInventoryRuntimeSummary(state.geneticInventory || []);
+
+  const viewMode = state.geneticInventoryViewMode === 'list' ? 'list' : 'card';
+
   if (el.geneticInventoryBadge) {
     const total = state.geneticInventoryRuntimeSummary?.total_items ?? (Array.isArray(state.geneticInventory) ? state.geneticInventory.length : 0);
     const readyCount = state.geneticInventoryRuntimeSummary?.ready_to_claim_items || 0;
-    el.geneticInventoryBadge.textContent = `${formatNumber(total)} owned genetic items${readyCount ? ` • ${formatNumber(readyCount)} ready` : ''}`;
+    el.geneticInventoryBadge.textContent = `${formatNumber(total)} owned genetic items${readyCount ? ` • ${formatNumber(readyCount)} ready` : ''} · ${viewMode === 'list' ? 'List view' : 'Card view'}`;
+  }
+
+  if (el.geneticInventoryCardViewButton && el.geneticInventoryListViewButton) {
+    const isListView = viewMode === 'list';
+
+    el.geneticInventoryCardViewButton.classList.toggle('active', !isListView);
+    el.geneticInventoryListViewButton.classList.toggle('active', isListView);
+
+    el.geneticInventoryCardViewButton.setAttribute('aria-pressed', !isListView ? 'true' : 'false');
+    el.geneticInventoryListViewButton.setAttribute('aria-pressed', isListView ? 'true' : 'false');
   }
 
   if (el.geneticInventorySummary) {
@@ -13982,7 +14969,12 @@ function renderGeneticInventory() {
   }
 
   if (!el.geneticInventoryGrid || !el.geneticInventoryEmptyState) return;
+
   const filtered = getFilteredGeneticInventory();
+
+  el.geneticInventoryGrid.classList.toggle('genetic-card-grid', viewMode !== 'list');
+  el.geneticInventoryGrid.classList.toggle('genetic-inventory-list-view', viewMode === 'list');
+
   if (!filtered.length) {
     el.geneticInventoryGrid.innerHTML = '';
     el.geneticInventoryEmptyState.classList.remove('hidden');
@@ -13993,7 +14985,181 @@ function renderGeneticInventory() {
   }
 
   el.geneticInventoryEmptyState.classList.add('hidden');
+
+  if (viewMode === 'list') {
+    let inventoryTableRows = '';
+
+    try {
+      inventoryTableRows = filtered.map(renderGeneticInventoryTableRow).join('');
+    } catch (error) {
+      console.error('❌ Genetic Inventory list table render failed:', error);
+
+      inventoryTableRows = `
+        <tr>
+          <td colspan="9" class="text-red-300 font-bold">
+            Genetic Inventory list view could not render one row. Check browser console.
+          </td>
+        </tr>
+      `;
+    }
+
+    el.geneticInventoryGrid.innerHTML = `
+      <table class="lab-list-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Rarity</th>
+            <th>Type</th>
+            <th class="text-right">Lv</th>
+            <th class="text-right">Next</th>
+            <th>Status</th>
+            <th>Remaining</th>
+            <th>Finish At</th>
+            <th class="table-action-cell">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${inventoryTableRows}
+        </tbody>
+      </table>
+    `;
+    return;
+  }
+
   el.geneticInventoryGrid.innerHTML = filtered.map(renderGeneticOwnedItemCard).join('');
+}
+
+/**
+ * Normalize text values for Marketplace List sorting.
+ */
+function getMarketplaceTextValue(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+/**
+ * Normalize numeric values for Marketplace List sorting.
+ */
+function getMarketplaceNumberValue(value, fallback = 0) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : fallback;
+}
+
+/**
+ * Toggle the Marketplace List sort state and rerender the marketplace.
+ *
+ * Plain language for DEVS:
+ * This only changes frontend display order. The backend remains authoritative
+ * for listings, ownership, prices, DSPOINC, duplicate checks, and transfers.
+ */
+function setGeneticMarketplaceSort(sortKey) {
+  const safeSortKey = String(sortKey || '').trim();
+
+  if (!safeSortKey) {
+    return;
+  }
+
+  const currentSort = state.geneticMarketplaceSort || { key: 'created_at', direction: 'desc' };
+  const nextDirection = currentSort.key === safeSortKey && currentSort.direction === 'asc'
+    ? 'desc'
+    : 'asc';
+
+  state.geneticMarketplaceSort = {
+    key: safeSortKey,
+    direction: nextDirection
+  };
+
+  renderGeneticMarketplace();
+}
+
+/**
+ * Return the value used for one Marketplace sorting column.
+ */
+function getGeneticMarketplaceSortValue(item, sortKey) {
+  switch (sortKey) {
+    case 'listing_id':
+      return getMarketplaceNumberValue(item?.listing_id, 0);
+
+    case 'title':
+      return getMarketplaceTextValue(item?.display_title || item?.trait_value || '');
+
+    case 'trait_type':
+      return getMarketplaceTextValue(item?.trait_type || '');
+
+    case 'rarity':
+      return getMarketplaceTextValue(item?.rarity_tier || 'common');
+
+    case 'level':
+      return getMarketplaceNumberValue(item?.item_level_snapshot || item?.current_level, 1);
+
+    case 'price':
+      return getMarketplaceNumberValue(item?.price_dspoinc, 0);
+
+    case 'seller':
+      return getMarketplaceTextValue(item?.seller_username || item?.seller_name || item?.seller_user_id || '');
+
+    case 'created_at':
+      return Date.parse(String(item?.created_at || item?.listed_at || '')) || 0;
+
+    default:
+      return getMarketplaceTextValue(item?.display_title || item?.trait_value || '');
+  }
+}
+
+/**
+ * Return a sorted copy of Marketplace listings for display.
+ *
+ * Plain language for DEVS:
+ * Never sort the original state array in place. Other renderers may depend on
+ * the backend order or the unmodified state object.
+ */
+function getSortedGeneticMarketplaceListings(listings) {
+  const rows = Array.isArray(listings) ? [...listings] : [];
+  const sort = state.geneticMarketplaceSort || { key: 'created_at', direction: 'desc' };
+  const directionMultiplier = sort.direction === 'desc' ? -1 : 1;
+
+  rows.sort((leftItem, rightItem) => {
+    const leftValue = getGeneticMarketplaceSortValue(leftItem, sort.key);
+    const rightValue = getGeneticMarketplaceSortValue(rightItem, sort.key);
+
+    if (typeof leftValue === 'number' && typeof rightValue === 'number') {
+      return (leftValue - rightValue) * directionMultiplier;
+    }
+
+    return String(leftValue).localeCompare(String(rightValue), undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    }) * directionMultiplier;
+  });
+
+  return rows;
+}
+
+/**
+ * Render one clickable Marketplace List column header.
+ */
+function renderGeneticMarketplaceSortableHeader(label, sortKey, align = 'left') {
+  const currentSort = state.geneticMarketplaceSort || { key: 'created_at', direction: 'desc' };
+  const isActive = currentSort.key === sortKey;
+  const arrow = isActive
+    ? (currentSort.direction === 'asc' ? '▲' : '▼')
+    : '↕';
+
+  const alignClass = align === 'right'
+    ? 'table-number-sort'
+    : (align === 'center' ? 'table-center-sort' : '');
+
+  return `
+    <button
+      type="button"
+      class="genetic-marketplace-sort-button ${alignClass} ${isActive ? 'is-active' : ''}"
+      data-marketplace-sort-key="${escapeHtml(sortKey)}"
+      title="Sort Marketplace by ${escapeHtml(label)}"
+      aria-label="Sort Marketplace by ${escapeHtml(label)}"
+    >
+      <span>${escapeHtml(label)}</span>
+      <span class="genetic-marketplace-sort-arrow" aria-hidden="true">${escapeHtml(arrow)}</span>
+    </button>
+  `;
 }
 
 function getFilteredGeneticMarketplaceListings() {
@@ -14628,11 +15794,20 @@ function renderGeneticMarketplaceSidePanel() {
     ? state.geneticMarketplaceHistory.slice(0, 8)
     : [];
 
-  const summary = state.geneticMarketplaceHistorySummary || {};
-  const boughtCount = Number(summary.bought_count || summary.bought || 0);
-  const soldCount = Number(summary.sold_count || summary.sold || 0);
-  const earned = Number(summary.earned_dspoinc || summary.earned || 0);
-  const spent = Number(summary.spent_dspoinc || summary.spent || 0);
+const summary = state.geneticMarketplaceHistorySummary || {};
+
+/**
+ * Trading Ledger summary normalization.
+ * Plain language for DEVS:
+ * The read-only marketplace history API returns total_buys / total_sells and
+ * dspoinc_spent / dspoinc_earned. Older frontend drafts used bought_count /
+ * sold_count and earned_dspoinc / spent_dspoinc. Keep all aliases here so the
+ * List Mode ledger stays stable without changing backend marketplace logic.
+ */
+const boughtCount = Number(summary.total_buys ?? summary.bought_count ?? summary.bought ?? 0);
+const soldCount = Number(summary.total_sells ?? summary.sold_count ?? summary.sold ?? 0);
+const spent = Number(summary.dspoinc_spent ?? summary.spent_dspoinc ?? summary.spent ?? 0);
+const earned = Number(summary.dspoinc_earned ?? summary.earned_dspoinc ?? summary.earned ?? 0);
 
   panel.innerHTML = `
     <div class="marketplace-pulse-card">
@@ -14749,10 +15924,11 @@ if (viewMode === 'list') {
   // a renderer error, we must not leave old visual cards on screen in List mode.
   el.geneticMarketplaceGrid.innerHTML = '';
 
+  const visibleMarketplaceListings = getSortedGeneticMarketplaceListings(filtered);
   let marketplaceTableRows = '';
 
   try {
-    marketplaceTableRows = filtered.map(renderGeneticMarketplaceTableRow).join('');
+    marketplaceTableRows = visibleMarketplaceListings.map(renderGeneticMarketplaceTableRow).join('');
   } catch (error) {
     console.error('❌ Genetic Marketplace list table render failed:', error);
 
@@ -14768,17 +15944,17 @@ if (viewMode === 'list') {
   el.geneticMarketplaceGrid.innerHTML = `
     <table class="genetic-marketplace-table">
       <thead>
-  <tr>
-    <th>Listing</th>
-    <th>Item</th>
-    <th>Type</th>
-    <th>Rarity</th>
-    <th>Level</th>
-    <th>Price</th>
-    <th>Seller</th>
-<th class="table-action-cell">Actions</th>
-  </tr>
-</thead>
+        <tr>
+          <th>${renderGeneticMarketplaceSortableHeader('Listing', 'listing_id', 'right')}</th>
+          <th>${renderGeneticMarketplaceSortableHeader('Item', 'title')}</th>
+          <th>${renderGeneticMarketplaceSortableHeader('Type', 'trait_type')}</th>
+          <th>${renderGeneticMarketplaceSortableHeader('Rarity', 'rarity')}</th>
+          <th>${renderGeneticMarketplaceSortableHeader('Level', 'level', 'center')}</th>
+          <th>${renderGeneticMarketplaceSortableHeader('Price', 'price', 'right')}</th>
+          <th>${renderGeneticMarketplaceSortableHeader('Seller', 'seller')}</th>
+          <th class="table-action-cell">Actions</th>
+        </tr>
+      </thead>
       <tbody>
         ${marketplaceTableRows}
       </tbody>
@@ -15531,27 +16707,44 @@ async function handleUseGeneticBooster(geneticItemId, itemId) {
   }
 }
 
-async function handleBuyGeneticTrait(catalogId) {
-  const catalogItem = (Array.isArray(state.geneticCatalog) ? state.geneticCatalog : []).find(item => String(item.catalog_id) === String(catalogId));
-  if (!state.userId) {
-  await showLabMessageModal({
-    eyebrow: 'Genetic Shop',
-    title: 'Discord Login Required',
-    icon: '🔐',
-    message: 'Login with Discord to buy Genetic Shop items.',
-    note: 'Genetic items are Discord-bound and no longer require Genesis or VIP holder status.',
-    confirmText: 'Close'
-  });
-  return;
+/**
+ * Resolve the active Lab user ID for frontend API requests.
+ *
+ * Plain language for DEVS:
+ * Production PHP remains session-first and rejects mismatches.
+ * Localhost APIs already allow request user_id for testing, so this helper
+ * gives local Lab buttons the same Narrrf fallback used by the backend.
+ */
+function getActiveLabUserId() {
+  const storedUserId = String(
+    state.userId ||
+    window.sessionDiscordId ||
+    localStorage.getItem('discord_id') ||
+    localStorage.getItem('narrrfs_last_discord_id') ||
+    ''
+  ).trim();
+
+  if (storedUserId) {
+    return storedUserId;
+  }
+
+  const host = String(window.location.hostname || '').toLowerCase();
+  const isLocalhost = host === 'localhost' || host === '127.0.0.1';
+
+  return isLocalhost ? '328601656659017732' : '';
 }
 
-  if (!catalogItem.can_buy) {
+async function handleBuyGeneticTrait(catalogId) {
+  const catalogItem = (Array.isArray(state.geneticCatalog) ? state.geneticCatalog : []).find(item => String(item.catalog_id) === String(catalogId));
+  const activeUserId = getActiveLabUserId();
+
+  if (!activeUserId) {
     await showLabMessageModal({
-      eyebrow: 'Genetic Shop Locked',
-      title: 'Buying Is Not Unlocked Yet',
-      icon: '🔒',
-      message: getGeneticLockedMessage(),
-      note: 'Preview stays public so players can discover traits before minting or verifying holder status.',
+      eyebrow: 'Genetic Shop',
+      title: 'Discord Login Required',
+      icon: '🔐',
+      message: 'Login with Discord to buy Genetic Shop items.',
+      note: 'Genetic items are Discord-bound and no longer require Genesis or VIP holder status.',
       confirmText: 'Close'
     });
     return;
@@ -15581,9 +16774,9 @@ async function handleBuyGeneticTrait(catalogId) {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        user_id: state.userId,
-        catalog_id: catalogItem.catalog_id
-      })
+  user_id: activeUserId,
+  catalog_id: catalogItem.catalog_id
+})
     }, true);
 
     if (!res.ok || !res.payload?.success) {
@@ -16388,7 +17581,9 @@ async function loadLab() {
    await loadFavoriteTraits();
 renderSessionNotice();
 
-    if (!state.userId) {
+    const activeUserId = state.userId || window.sessionDiscordId || localStorage.getItem('discord_id') || localStorage.getItem('narrrfs_last_discord_id') || (window.location.hostname === 'localhost' ? '328601656659017732' : '');
+
+if (!activeUserId) {
   await Promise.allSettled([
     loadGeneticTraitCatalog(),
     refreshGeneticMarketplaceData(),
@@ -16554,6 +17749,18 @@ el.traitGrid?.addEventListener('keydown', event => {
 });
 
 el.geneticMarketplaceGrid?.addEventListener('click', event => {
+    const sortButton = event.target.closest('[data-marketplace-sort-key]');
+  if (sortButton) {
+    event.preventDefault();
+
+    const sortKey = String(sortButton.dataset.marketplaceSortKey || '').trim();
+
+    if (sortKey) {
+      setGeneticMarketplaceSort(sortKey);
+    }
+
+    return;
+  }
   const openViewerButton = event.target.closest('[data-open-genetic-3d]');
   if (openViewerButton) {
     setActiveGeneticMediaViewer(openViewerButton.getAttribute('data-open-genetic-3d') || '');
@@ -16595,7 +17802,75 @@ el.geneticMarketplaceGrid?.addEventListener('click', event => {
 });
 
 
+
+el.geneticInventoryCardViewButton?.addEventListener('click', () => {
+  if (state.geneticInventoryViewMode === 'card') {
+    return;
+  }
+
+  state.geneticInventoryViewMode = 'card';
+  renderGeneticInventory();
+});
+
+el.geneticInventoryListViewButton?.addEventListener('click', () => {
+  if (state.geneticInventoryViewMode === 'list') {
+    return;
+  }
+
+  state.geneticInventoryViewMode = 'list';
+  renderGeneticInventory();
+});
+
+el.geneticShopCardViewButton?.addEventListener('click', () => {
+  if (state.geneticShopViewMode === 'card') {
+    return;
+  }
+
+  state.geneticShopViewMode = 'card';
+  renderGeneticShop();
+});
+
+el.researchQueueCardViewButton?.addEventListener('click', () => {
+  if (state.researchQueueViewMode === 'card') {
+    return;
+  }
+
+  state.researchQueueViewMode = 'card';
+  renderActiveResearchQueue();
+});
+
+el.researchQueueListViewButton?.addEventListener('click', () => {
+  if (state.researchQueueViewMode === 'list') {
+    return;
+  }
+
+  state.researchQueueViewMode = 'list';
+  renderActiveResearchQueue();
+});
+
+el.geneticShopListViewButton?.addEventListener('click', () => {
+  if (state.geneticShopViewMode === 'list') {
+    return;
+  }
+
+  state.geneticShopViewMode = 'list';
+  renderGeneticShop();
+});
+
 el.geneticShopGrid?.addEventListener('click', event => {
+  const openShopViewerButton = event.target.closest('[data-open-genetic-shop-3d]');
+  if (openShopViewerButton) {
+    const viewerKey = openShopViewerButton.getAttribute('data-open-genetic-shop-3d') || '';
+
+    // Plain language for DEVS:
+    // Shop List mode has no media cell. Switch to Cards mode and open the
+    // existing card media viewer for the selected catalog item.
+    state.geneticShopViewMode = 'card';
+    setActiveGeneticMediaViewer(viewerKey);
+    renderGeneticShop();
+    return;
+  }
+
   const openViewerButton = event.target.closest('[data-open-genetic-3d]');
   if (openViewerButton) {
     setActiveGeneticMediaViewer(openViewerButton.getAttribute('data-open-genetic-3d') || '');
@@ -16782,6 +18057,51 @@ document.querySelectorAll('[data-marketplace-history-filter]').forEach((button) 
   });
 });
 
+const LAB_CONTROL_STICKY_STORAGE_KEY = 'narrrfs_lab_control_sticky_mode';
+
+/**
+ * Let desktop players choose whether the Lab Control Panel sticks or scrolls.
+ * Plain language for DEVS:
+ * Big desktop screens usually like sticky navigation. Smaller laptops may lose
+ * too much vertical space, so this stores a local browser preference and only
+ * changes the visual dock position. It does not change Lab tabs or backend state.
+ */
+function setupLabControlStickyPreference() {
+  const dock = document.getElementById('lab-main-menu');
+  const toggle = document.getElementById('labControlStickyToggle');
+
+  if (!dock || !toggle || toggle.dataset.bound === '1') {
+    return;
+  }
+
+  function applyStickyPreference(isSticky) {
+    dock.classList.toggle('lab-control-dock--static', !isSticky);
+    toggle.setAttribute('aria-pressed', isSticky ? 'true' : 'false');
+    toggle.textContent = isSticky ? '📌 Sticky ON' : '📍 Sticky OFF';
+    toggle.title = isSticky
+      ? 'Click to let the Lab Control Panel scroll normally'
+      : 'Click to make the Lab Control Panel sticky on desktop';
+  }
+
+  const savedMode = localStorage.getItem(LAB_CONTROL_STICKY_STORAGE_KEY);
+  const startsSticky = savedMode !== 'off';
+
+  applyStickyPreference(startsSticky);
+
+  toggle.addEventListener('click', () => {
+    const nextSticky = toggle.getAttribute('aria-pressed') !== 'true';
+
+    localStorage.setItem(
+      LAB_CONTROL_STICKY_STORAGE_KEY,
+      nextSticky ? 'on' : 'off'
+    );
+
+    applyStickyPreference(nextSticky);
+  });
+
+  toggle.dataset.bound = '1';
+}
+
 function setupQuickAccessLinks() {
   document.querySelectorAll('[href="#lab-tab-my-genesis"], [href="#lab-panel-research-queue"]').forEach(link => {
     link.addEventListener('click', event => {
@@ -16833,6 +18153,7 @@ document.addEventListener('visibilitychange', () => {
 document.addEventListener('DOMContentLoaded', async () => {
   bindGenesisAbilityUiEvents();
   bindLabTabs();
+  setupLabControlStickyPreference();
   setupQuickAccessLinks();
 
   if ('scrollRestoration' in history) {
@@ -16844,6 +18165,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       handleClaimAllReadyUpgrades();
     });
   }
+
+if (el.activeResearchQueue && el.activeResearchQueue.dataset.queueActionsBound !== '1') {
+  el.activeResearchQueue.addEventListener('click', async event => {
+    const queueButton = event.target.closest('[data-queue-token]');
+    if (!queueButton) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const tokenId = String(queueButton.getAttribute('data-queue-token') || '').trim();
+    if (!tokenId || state.actionInFlight) {
+      return;
+    }
+
+    // Plain language for DEVS:
+    // Research Queue List mode uses the existing queue claim helper.
+    // claimReadyForSelectedNft() already selects the NFT, finds the first ready
+    // Genesis trait, and calls the backend-authoritative claim flow.
+    await claimReadyForSelectedNft(tokenId);
+  });
+
+  el.activeResearchQueue.dataset.queueActionsBound = '1';
+}
 
     // 🐭 Bind themed Genesis mouse rename modal actions.
   // DEVS FOR DECADES:

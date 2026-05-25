@@ -2,6 +2,114 @@
 
 ---
 
+## ✅ UPDATE — MAY 25, 2026 — LAB SYSTEM 9.92 MULTI-TAB LIST MODE GUI PASS COMPLETED
+
+### Status
+
+Lab System 9.92 multi-tab List/Card GUI pass completed and verified locally.
+
+Scope:
+
+```text
+public/lab.html
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+
+---
+
+## ✅ UPDATE — MAY 24, 2026 — LAB SYSTEM 9.92 MARKETPLACE LIST SORTING VERIFIED
+
+### Status
+
+Lab System 9.92 Marketplace List sorting pass completed and verified locally.
+
+Scope:
+
+```text
+public/lab.html
+
+---
+
+## 🔄 UPDATE — MAY 24, 2026 — LAB SYSTEM 9.92 NEWEST HANDOVER / NEXT BUG PASS STANDBY
+
+### Status
+
+Lab System 9.92 Newest handover prepared.
+
+The current chat became very long, so a full restart package was written for the next Lab agent to continue without major loss.
+
+Main purpose of the handover:
+
+- Preserve all current Lab architecture rules
+- Preserve recent DB repair knowledge
+- Preserve live tester context
+- Preserve Marketplace/List View rollback warning
+- Define the next 2 safe bugs to solve first
+- Avoid repeating the broken advanced filter integration attempt
+- Keep backend economy and DB logic protected
+
+Current state:
+
+- ✅ Late-night DB/static Genesis trait recovery pass is documented
+- ✅ Render `/data` DB persistence flow is documented
+- ✅ LennyLOCO goodwill + static trait recovery context is documented
+- ✅ Cryptime Glyph Memory retest is pending
+- ✅ Pete custom Genesis mouse name retest is pending
+- ✅ Luke/Justme Space Invaders score repair context is documented
+- ✅ Marketplace List mode expansion plan exists
+- ✅ New agent handover is ready
+
+---
+
+## ✅ 1. New agent restart package created
+
+A professional starter message was prepared for:
+
+```text
+Lab System 9.92 Newest
+
+---
+
+## 🔄 UPDATE — MAY 24, 2026 — LAB SYSTEM 9.92 LATE-NIGHT RECOVERY / STATIC GENESIS TRAIT REPAIR / PLAYER GOODWILL FIXES
+
+### Status
+
+Late-night Lab/DB recovery pass completed after live member reports from LennyLOCO, Justme/Luke, Cryptime, and Pete.
+
+Main focus:
+
+- Render `/data` SQLite persistence verification after restart
+- Genetic Item goodwill level correction for LennyLOCO
+- Genesis static trait row corruption audit and repair
+- Space Invaders screenshot score recovery for Justme/Luke
+- Glyph Memory save issue investigation for Cryptime
+- Genesis mouse custom name save issue prepared for Pete test
+- DB-safe repair scripts with backups and integrity checks
+
+This pass stayed backend-authoritative and DB-safe:
+
+- No DSPOINC ledger rewrite.
+- No inventory schema rewrite.
+- No marketplace economy rewrite.
+- No Genesis ownership model rewrite.
+- No Ability system rewrite.
+- No manual repair without SQL audit first.
+- SQLite backups were created before DB writes.
+- Runtime DB was persisted back to `/data/narrrf_world.sqlite` after repairs.
+- Remaining questionable/unverified rows were intentionally not blindly repaired.
+
+---
+
+## ✅ 1. Render SQLite persistence path verified
+
+Concern:
+git status
+After running:
+
+```bash
+sqlite3 /var/www/html/db/narrrf_world.sqlite ".backup '/data/narrrf_world.sqlite'"
+
+---
+
 ## 🔄 FOLLOW-UP — SPOINC BRIDGE / GENSUKI SWAP ROUTE MESSAGES
 
 Zeno confirmed that Narrrfs does not need to add EMPIRE / FOOK minimum swap warnings in the first SPOINC bridge implementation.

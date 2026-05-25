@@ -163,12 +163,33 @@ function normalize_custom_name(string $rawName): string {
 }
 
 /**
- * Return true when the user has a backend Genesis progression row for this NFT.
- * DEVS FOR DECADES:
- * This is a conservative ownership guard. Lab progression rows are NFT-bound and
- * created from verified Genesis data. Do not save names for arbitrary token IDs.
+ * Return true when the user has verified Genesis ownership/progression data for this NFT.
+ *
+ * Plain language for DEVS:
+ * Custom mouse names are display-only labels. They should be allowed when the
+ * selected Genesis mouse is already present in the verified NFT trait table OR
+ * in progression tables. Do not require an upgrade row, because some verified
+ * mice may not have started trait/ability progression yet.
  */
 function user_has_verified_genesis_token(PDO $pdo, string $userId, string $tokenId, string $collection): bool {
+    $normalizedCollection = strtolower($collection);
+
+    // Primary ownership source for verified Genesis mice loaded into the Lab.
+    $nftTraitStmt = $pdo->prepare("
+        SELECT 1
+        FROM tbl_nft_traits
+        WHERE CAST(user_id AS TEXT) = CAST(? AS TEXT)
+          AND token_id = ?
+          AND LOWER(collection) = ?
+        LIMIT 1
+    ");
+    $nftTraitStmt->execute([$userId, $tokenId, $normalizedCollection]);
+
+    if ($nftTraitStmt->fetchColumn()) {
+        return true;
+    }
+
+    // Fallback for NFTs that already have Genesis trait progression rows.
     $traitStmt = $pdo->prepare("
         SELECT 1
         FROM tbl_nft_trait_upgrades
@@ -177,12 +198,13 @@ function user_has_verified_genesis_token(PDO $pdo, string $userId, string $token
           AND LOWER(collection) = ?
         LIMIT 1
     ");
-    $traitStmt->execute([$userId, $tokenId, strtolower($collection)]);
+    $traitStmt->execute([$userId, $tokenId, $normalizedCollection]);
 
     if ($traitStmt->fetchColumn()) {
         return true;
     }
 
+    // Fallback for NFTs that already have Genesis ability progression rows.
     $abilityStmt = $pdo->prepare("
         SELECT 1
         FROM tbl_nft_ability_upgrades
@@ -191,7 +213,7 @@ function user_has_verified_genesis_token(PDO $pdo, string $userId, string $token
           AND LOWER(collection) = ?
         LIMIT 1
     ");
-    $abilityStmt->execute([$userId, $tokenId, strtolower($collection)]);
+    $abilityStmt->execute([$userId, $tokenId, $normalizedCollection]);
 
     return (bool)$abilityStmt->fetchColumn();
 }
