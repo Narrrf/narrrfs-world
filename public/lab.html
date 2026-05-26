@@ -5551,28 +5551,55 @@ body::after {
   white-space: nowrap;
 }
 
-/* 🧪 Final compact Research Queue List overrides.
+/* 🧪 Final Research Queue List responsive layout.
    DEVS FOR DECADES:
    This is display-only. Claim readiness and claim execution remain controlled
-   by loaded upgrade rows and backend-authoritative claim APIs. */
+   by loaded upgrade rows and backend-authoritative claim APIs.
+   Desktop should fit the full Queue table inside the Lab panel.
+   Small screens should keep horizontal scrolling so players can reach every column. */
 #activeResearchQueue.research-queue-list-view {
+  display: block;
   overflow-x: hidden;
+  overflow-y: hidden;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.75) rgba(15, 23, 42, 0.78);
+}
+
+#activeResearchQueue.research-queue-list-view::-webkit-scrollbar {
+  height: 10px;
+}
+
+#activeResearchQueue.research-queue-list-view::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+}
+
+#activeResearchQueue.research-queue-list-view::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(139, 92, 246, 0.95), rgba(34, 211, 238, 0.82));
 }
 
 #activeResearchQueue.research-queue-list-view .lab-list-table {
   width: 100%;
   min-width: 0;
   table-layout: fixed;
+  border-spacing: 0 8px;
+  border-collapse: separate;
 }
 
 #activeResearchQueue.research-queue-list-view .lab-list-table th,
 #activeResearchQueue.research-queue-list-view .lab-list-table td {
   padding: 10px 8px;
+  white-space: nowrap;
 }
 
 #activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(1),
 #activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(1) {
-  width: 34%;
+  width: 30%;
 }
 
 #activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(2),
@@ -5590,21 +5617,23 @@ body::after {
 
 #activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(5),
 #activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(5) {
-  width: 150px;
+  width: auto;
 }
 
 #activeResearchQueue.research-queue-list-view .table-action-cell {
-  width: 154px;
-  min-width: 154px;
+  width: 142px;
+  min-width: 142px;
   position: relative;
   right: auto;
+  z-index: 2;
   background:
     linear-gradient(90deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.92));
   box-shadow: none;
 }
 
-#activeResearchQueue.research-queue-list-view .research-current-cell {
-  max-width: 150px;
+#activeResearchQueue.research-queue-list-view .research-current-cell,
+#activeResearchQueue.research-queue-list-view .lab-list-title,
+#activeResearchQueue.research-queue-list-view .lab-list-subtitle {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5616,15 +5645,60 @@ body::after {
 }
 
 #activeResearchQueue.research-queue-list-view .lab-list-actions .btn {
-  min-width: 118px;
-  max-width: 138px;
-  padding: 8px 10px;
+  min-width: 110px;
+  max-width: 126px;
+  padding: 8px 9px;
   border-radius: 999px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Small screens: allow the table to become wider than the panel and scroll. */
+@media (max-width: 900px) {
+  #activeResearchQueue.research-queue-list-view {
+    overflow-x: auto;
+  }
+
+  #activeResearchQueue.research-queue-list-view .lab-list-table {
+    width: max-content;
+    min-width: 820px;
+    table-layout: auto;
+  }
+
+  #activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(1),
+  #activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(1) {
+    min-width: 250px;
+    max-width: 280px;
+    width: auto;
+  }
+
+  #activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(2),
+  #activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(2) {
+    min-width: 100px;
+    width: auto;
+  }
+
+  #activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(3),
+  #activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(3),
+  #activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(4),
+  #activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(4) {
+    min-width: 70px;
+    width: auto;
+  }
+
+  #activeResearchQueue.research-queue-list-view .lab-list-table th:nth-child(5),
+  #activeResearchQueue.research-queue-list-view .lab-list-table td:nth-child(5) {
+    min-width: 240px;
+    max-width: 320px;
+    width: auto;
+  }
+
+  #activeResearchQueue.research-queue-list-view .table-action-cell {
+    min-width: 145px;
+    width: 145px;
+  }
+}
 /* 🧬 Premium Genetic Inventory List Mode polish.
    DEVS FOR DECADES:
    This is visual-only styling for the Inventory table view.
@@ -5743,6 +5817,7 @@ body::after {
 #geneticInventoryGrid.genetic-inventory-list-view .lab-list-actions .btn {
   min-width: 70px;
   border-radius: 999px;
+    pointer-events: auto;
   white-space: nowrap;
 }
 
@@ -13618,7 +13693,15 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
       'success'
     );
 
-    await loadTraitUpgrades();
+        await loadTraitUpgrades();
+
+    // Plain language for DEVS:
+    // The new active timer is now loaded from the backend, so the action lock can
+    // be released before rebuilding the Lab DOM. If renderAll() runs while
+    // state.actionInFlight is still true, newly rendered Elixir buttons are born
+    // disabled and attachLabBoosterListeners() remembers them as disabled until
+    // the player reloads the page.
+    setActionInFlight(false);
     renderAll();
 
     await showLabMessageModal({
@@ -14695,7 +14778,7 @@ function renderGeneticInventoryTableRow(item) {
     : 0;
 
   const instantFinishAction = runtimeState === 'upgrading' && !isListed
-    ? `<button type="button" class="btn warn" ${actionDisabled ? 'disabled' : ''} data-instant-finish-genetic="${itemId}">Finish ${formatNumber(instantFinishPreview)}</button>`
+    ? `<button type="button" class="btn warn" ${actionDisabled ? 'disabled' : ''} data-instant-finish-genetic-upgrade="${itemId}">Finish ${formatNumber(instantFinishPreview)}</button>`
     : '';
 
   const listAction = runtimeState === 'idle' && !isListed && !isMaxLevel
@@ -16719,7 +16802,7 @@ async function handleUseGeneticBooster(geneticItemId, itemId) {
     return;
   }
 
-  const confirmed = await showLabConfirmModal({
+    const confirmed = await showLabConfirmModal({
     eyebrow: 'Genetic Booster',
     title: `Use ${booster.name}?`,
     icon: booster.icon,
@@ -16733,6 +16816,20 @@ async function handleUseGeneticBooster(geneticItemId, itemId) {
   });
 
   if (!confirmed) return;
+
+  const activeUserId = getActiveLabUserId();
+  if (!activeUserId) {
+    await showLabMessageModal({
+      eyebrow: 'Genetic Booster',
+      title: 'Discord Login Required',
+      icon: '🔐',
+      message: 'Login with Discord to use Lab boosters on Genetic Item upgrades.',
+      note: 'Genetic Items are Discord-user-bound, and the backend must verify the active player before consuming booster inventory.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
 
   state.geneticActionItemId = String(geneticItemId);
   setActionInFlight(true);
@@ -18028,9 +18125,12 @@ el.geneticInventoryGrid?.addEventListener('click', event => {
     return;
   }
 
-  const instantButton = event.target.closest('[data-instant-finish-genetic-upgrade]');
+  const instantButton = event.target.closest('[data-instant-finish-genetic-upgrade], [data-instant-finish-genetic]');
   if (instantButton) {
-    const geneticItemId = instantButton.getAttribute('data-instant-finish-genetic-upgrade') || '';
+    const geneticItemId =
+  instantButton.getAttribute('data-instant-finish-genetic-upgrade') ||
+  instantButton.getAttribute('data-instant-finish-genetic') ||
+  '';
     if (!geneticItemId || instantButton.disabled || state.actionInFlight) {
       return;
     }
@@ -18048,6 +18148,36 @@ el.geneticInventoryGrid?.addEventListener('click', event => {
     handleUseGeneticBooster(geneticItemId, itemId);
   }
 });
+
+// 🧬 Genetic Inventory List mode Instant Finish safety listener.
+// Plain language for DEVS:
+// The main inventory grid listener handles card/list actions, but List mode has
+// sticky table action cells and many nested button layouts. This capture listener
+// guarantees the Instant Finish button reaches the same backend-authoritative
+// handler as Card mode without changing costs, ownership, timers, or inventory.
+document.addEventListener('click', (event) => {
+  const instantButton = event.target.closest(
+    '#geneticInventoryGrid [data-instant-finish-genetic-upgrade], #geneticInventoryGrid [data-instant-finish-genetic]'
+  );
+
+  if (!instantButton) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const geneticItemId =
+    instantButton.getAttribute('data-instant-finish-genetic-upgrade') ||
+    instantButton.getAttribute('data-instant-finish-genetic') ||
+    '';
+
+  if (!geneticItemId || instantButton.disabled || state.actionInFlight) {
+    return;
+  }
+
+  handleInstantFinishGeneticUpgrade(geneticItemId);
+}, true);
 
 
 [

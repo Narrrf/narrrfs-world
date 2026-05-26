@@ -2,6 +2,84 @@
 
 ---
 
+## 🚨 UPDATE — MAY 25, 2026 — REWARD CHAMBER BOX #2 ECONOMY LOCK
+
+### Status
+
+Reward Box #2 / Lucky Cheese Loot was temporarily disabled and hidden after live audit showed the box was DSPOINC-positive and farmable.
+
+### Confirmed issue
+
+Live audit showed:
+
+- Box price: 149,999 DSPOINC
+- Old direct DSPOINC reward range: 44,444–444,444
+- Old direct DSPOINC row weight: 250
+- Old fallback range: 33,333–270,000
+- Old fallback chance: 35%
+- Max opens per user: 1000
+- Cooldown disabled
+
+MiracleWin audit sample:
+
+- 135 opens
+- 20,249,865 DSPOINC spent
+- 22,584,986 DSPOINC won
+- +2,335,121 DSPOINC net from DSPOINC rewards alone
+- 25 genetic trait wins
+- 10 store item wins
+
+All users last 24h:
+
+- 150 Box #2 opens
+- 22,499,850 DSPOINC spent
+- 24,554,763 DSPOINC won
+- +2,054,913 DSPOINC net
+
+### Emergency DB action completed
+
+Box #2 was set to:
+
+- is_active = 0
+- is_visible = 0
+- fallback_dspoinc_min = 25,000
+- fallback_dspoinc_max = 90,000
+- fallback_dspoinc_roll_chance = 20
+- max_opens_per_user = 25
+- cooldown_enabled = 1
+- cooldown_type = daily
+- cooldown_hours = 24
+- direct DSPOINC row #11 changed to 25,000–140,000
+- direct DSPOINC row #11 weight changed to 40
+
+### Guardrails
+
+Do not reactivate Box #2 until `api/user/open-reward-box.php` fallback/reroll behavior is reviewed.
+
+Do not delete reward history rows.
+
+Do not rewrite DSPOINC ledger without a separate admin decision.
+
+---
+
+---
+
+## 🔄 FOLLOW-UP — MAY 25, 2026 — GENSUKI CORS LOCALHOST CORRECTION
+
+Zeno clarified that Gensuki already allows localhost by default, apparently on any port.
+
+Correction to previous CORS note:
+
+Live Narrrfs origins still matter:
+
+```text
+https://narrrfs.world
+https://www.narrrfs.world
+
+---
+
+
+
 ## ✅ UPDATE — MAY 25, 2026 — LAB SYSTEM 9.92 MULTI-TAB LIST MODE GUI PASS COMPLETED
 
 ### Status
