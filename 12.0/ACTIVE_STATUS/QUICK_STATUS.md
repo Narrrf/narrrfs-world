@@ -1,4 +1,217 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
+---
+
+## ✅ UPDATE — MAY 27, 2026 — REWARD CHAMBER COOLDOWN / OPEN COUNT API PATCH READY
+
+### Status
+
+Reward Chamber cooldown and max-open logic has been reviewed after the Box #2 economy rebalance.
+
+The live DB confirmed that Reward Chamber open history is intact. Users who thought opened boxes disappeared still have their rows in:
+
+```text
+tbl_reward_box_open_history
+
+---
+
+## ✅ UPDATE — MAY 27, 2026 — CHEESEMIND AI PATCH 4 CONCEALMENT PASS VERIFIED
+
+### Status
+
+Cheese Runner / Cheeseman CheeseMind AI visual polish and production concealment pass is completed and locally verified.
+
+This closes the first CheeseMind AI implementation cycle:
+
+- Patch 1: CheeseMind memory foundation
+- Patch 2: Tactical enemy brain
+- Patch 3: Enemy coordination layer
+- Patch 4: Visual counterplay + production concealment
+
+### Confirmed working locally
+
+Latest local tests confirmed:
+
+- ✅ `cheeseman.js` syntax error from duplicate `CHEESEMIND_TARGET_MARKER_RADIUS` declaration is fixed.
+- ✅ `window.cheesemanDebugState?.()` works again.
+- ✅ `cheeseMind` debug state is active.
+- ✅ `cheeseMindFullVisualDebugEnabled` is `false` by default.
+- ✅ `window.cheesemanSetCheeseMindVisualDebug?.(true)` works on localhost.
+- ✅ Full AI target lines / badges can be enabled locally for testing.
+- ✅ Full AI target lines / badges are hidden by default for normal gameplay.
+- ✅ CheeseMind AI itself remains active while visuals are hidden.
+- ✅ Portal tiles remain travel lanes only.
+- ✅ Visible collectible debug remains active.
+- ✅ Power Cheese enemy reward cap remains active.
+
+### Current CheeseMind production behavior
+
+```text
+Normal players:
+- CheeseMind AI remains fully active
+- enemies still hunt, predict, cut off, guard, and flee during Power Cheese
+- exact target lines are hidden
+- exact target markers are hidden
+- enemy algorithm badges are hidden
+- observatory messages are hidden unless local debug visuals are enabled
+
+Local testers:
+- can enable full AI visuals with:
+  window.cheesemanSetCheeseMindVisualDebug(true)
+
+- can disable them again with:
+  window.cheesemanSetCheeseMindVisualDebug(false)
+
+---
+
+## ✅ UPDATE — MAY 27, 2026 — CHEESEMIND AI PATCH 3–4 VERIFIED / VISUAL POLISH NEXT
+
+### Status
+
+Cheese Runner / Cheeseman has now passed the first major CheeseMind AI evolution.
+
+This is no longer a simple Pac-Man-style enemy chase system. The current local build has:
+
+- run-local CheeseMind memory
+- enemy role identities
+- tactical enemy targeting
+- team coordination
+- Power Cheese AI override
+- visual counterplay markers
+- debug tools for local verification
+
+### Confirmed working locally
+
+Tested and confirmed:
+
+- ✅ CheeseMind Foundation works.
+- ✅ `window.cheesemanDebugState?.().cheeseMind` returns active AI memory.
+- ✅ Enemy roles are active:
+  - Cheese Destroyer = hunter / Pressure Hunter
+  - Cheese Emperor = predictor / Route Predictor
+  - Cheese Invader = controller / Lane Controller
+- ✅ Cheese Emperor prediction works at debug level 3.
+- ✅ Cheese Invader controller logic works at debug level 5+.
+- ✅ CheeseMind coordination works at debug level 7.
+- ✅ Confirmed coordinated enemy jobs:
+  - Destroyer → `pressure-player`
+  - Emperor → `cutoff-route`
+  - Invader → `guard-power-cheese`
+- ✅ Power Cheese correctly overrides all enemy AI with `flee-from-player`.
+- ✅ CheeseMind Observatory status pulse works.
+- ✅ CheeseMind canvas visual counterplay markers work.
+- ✅ Enemy badges / target lines / tactical signs display correctly.
+- ✅ The game now feels like the mouse is being actively hunted by a smarter AI.
+
+### Confirmed console tests
+
+Useful local debug commands:
+
+```js
+window.cheesemanDebugState?.().cheeseMind.enemyRoles.map(enemy => ({
+  name: enemy.name,
+  role: enemy.role,
+  reason: enemy.lastTarget?.reason,
+  target: enemy.lastTarget,
+  decision: enemy.lastDecision
+}))
+
+---
+
+## ✅ UPDATE — MAY 27, 2026 — CHEESE RUNNER CHEESEMIND AI PATCH 1–2 VERIFIED / PATCH 3 NEXT
+
+### Status
+
+Cheese Runner / Cheeseman received the first real CheeseMind AI implementation pass.
+
+This is no longer only a simple enemy chase system. The game now has a run-local AI memory layer, enemy role identities, tactical target decisions, and observability/debug tools for testing.
+
+### Confirmed working locally
+
+Recent tested fixes and systems:
+
+- ✅ Portal / tunnel tiles are now movement lanes only.
+- ✅ Portal / tunnel tiles no longer count as hidden cheese.
+- ✅ Portal / tunnel tiles no longer give crumb score.
+- ✅ Level clear is based on visible cheese / real collectibles only.
+- ✅ Player-facing status text explains that blue portals are travel lanes only.
+- ✅ Debug state exposes portal collectible status and visible collectible counts.
+- ✅ Power Cheese enemy eating is now a capped skill reward.
+- ✅ Multiple enemy eating during Power Cheese works.
+- ✅ Power Cheese enemy reward is capped per activation.
+- ✅ Nest/spawn-area farming is blocked.
+- ✅ `window.cheesemanDebugState?.()` is used for local verification.
+- ✅ CheeseMind Foundation exists and tracks player behavior during the current run.
+- ✅ CheeseMind enemy roles exist and are copied into active enemies.
+- ✅ CheeseMind Tactical Enemy Brain exists.
+- ✅ Cheese Emperor prediction behavior is confirmed at debug level 3.
+- ✅ Cheese Invader controller behavior is confirmed at debug level 7.
+- ✅ Power Mode correctly overrides AI with `flee-from-player`.
+- ✅ CheeseMind debug level helper works locally.
+- ✅ CheeseMind Observatory status pulse was added to make AI thinking visible to testers.
+
+### Current important gameplay/economy rules
+
+```text
+Portals:
+- passable
+- visible blue travel lanes
+- not score items
+- not hidden cheese
+- not required for level clear
+
+Power Cheese:
+- lets players eat multiple enemies
+- enemy reward is capped per Power Cheese activation
+- no enemy reward inside nest/spawn area
+- no respawn-lock farming
+- no backend/API change required for this frontend gameplay pass
+
+CheeseMind AI:
+- learns only inside the active run
+- does not persist player behavior
+- does not touch DB
+- does not change score API
+- does not add DSPOINC sources
+- must stay deterministic enough for frontend gameplay
+
+---
+
+## 🔄 UPDATE — MAY 27, 2026 — CHEESE RUNNER / CHEESEMIND AI ROADMAP LOCKED
+
+### Status
+
+Cheese Runner / Cheeseman bugfix and design expansion pass is active.
+
+Recent tested fixes are working locally:
+
+- ✅ Portal / tunnel tiles are now movement lanes only.
+- ✅ Portal / tunnel tiles no longer count as hidden cheese.
+- ✅ Portal / tunnel tiles no longer give crumb score.
+- ✅ Level clear is now based on visible cheese / actual collectibles only.
+- ✅ Player-facing status text now explains that blue portals are travel lanes only.
+- ✅ Debug state exposes portal collectible status and visible collectible counts.
+- ✅ Power Cheese enemy eating was expanded into a capped skill reward.
+- ✅ Multiple enemy eating is allowed during Power Cheese.
+- ✅ Power Cheese enemy reward is capped per activation.
+- ✅ Nest/spawn-area farming is blocked.
+- ✅ `window.cheesemanDebugState?.()` is used for local verification.
+
+Current important gameplay/economy rules:
+
+```text
+Portals:
+- passable
+- visible blue travel lanes
+- not score items
+- not hidden cheese
+- not required for level clear
+
+Power Cheese:
+- lets players eat multiple enemies
+- enemy reward is capped per Power Cheese activation
+- no enemy reward inside nest/spawn area
+- no respawn-lock farming
+- no backend/API change required for this frontend gameplay pass
 
 ---
 

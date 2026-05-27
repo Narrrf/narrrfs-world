@@ -18,10 +18,16 @@ const ENEMY_NEST_CENTER = { row: 10, col: 9 };
 const ENEMY_RESPAWN_LOCK_TICKS = 10;
 
   const SCORE_CRUMB = 10;
-  const SCORE_POWER = 50;
-  const SCORE_ENEMY = 200;
-  const SCORE_LEVEL_CLEAR = 500;
-  const POWER_MODE_MS = 8000;
+const SCORE_POWER = 50;
+const SCORE_ENEMY = 200;
+const SCORE_LEVEL_CLEAR = 500;
+const POWER_MODE_MS = 8000;
+
+// Power Cheese reward cap.
+// Plain language for DEVS:
+// Skilled players may eat several enemies during one Power Cheese,
+// but the reward is capped so DSPOINC cannot be farmed endlessly.
+const POWER_CHEESE_ENEMY_REWARD_CAP = 3;
 
 const BASE_TICK_MS = 175;
 const MIN_TICK_MS = 105;
@@ -35,6 +41,51 @@ const COMBO_BONUS_PER_STACK = 0.15;
 
 const ENEMY_MOVE_DELAY_BY_LEVEL = [5, 5, 4, 4, 3, 3, 2, 2, 1, 1];
 const ENEMY_SMART_CHANCE_BY_LEVEL = [0.08, 0.12, 0.18, 0.25, 0.34, 0.44, 0.55, 0.66, 0.76, 0.86];
+
+// 🧠 CheeseMind AI memory settings.
+// Plain language for DEVS:
+// CheeseMind learns only during the current run. It does not persist player behavior,
+// does not touch the DB, and does not change scoring or DSPOINC.
+const CHEESEMIND_PLAYER_TRAIL_LIMIT = 32;
+const CHEESEMIND_RECENT_TURN_LIMIT = 16;
+const CHEESEMIND_DEBUG_MAP_LIMIT = 12;
+
+// 🧠 CheeseMind tactical AI settings.
+// Plain language for DEVS:
+// These values let enemies become smarter by level without becoming unfair at level 1.
+const CHEESEMIND_PREDICTION_MIN_LEVEL = 3;
+const CHEESEMIND_CONTROL_MIN_LEVEL = 5;
+const CHEESEMIND_TUNNEL_COUNTER_MIN_LEVEL = 7;
+const CHEESEMIND_MAX_PREDICTION_TILES = 6;
+const CHEESEMIND_RANDOM_FALLBACK_CHANCE = 0.18;
+
+// 🧠 CheeseMind team coordination settings.
+// Plain language for DEVS:
+// Patch 3 makes enemies act like a squad instead of three isolated chasers.
+// This changes target selection only. It does not change DB, API, score, or DSPOINC.
+const CHEESEMIND_COORDINATION_MIN_LEVEL = 6;
+const CHEESEMIND_CUTOFF_MIN_LEVEL = 6;
+const CHEESEMIND_ASSIGNMENT_OVERLAP_PENALTY = 1.15;
+
+// 🧠 CheeseMind Observatory settings.
+// Plain language for DEVS:
+// These messages make enemy thinking visible to testers without changing movement, DB, API, scoring, or DSPOINC.
+const CHEESEMIND_OBSERVATORY_STATUS_COOLDOWN_MS = 4500;
+
+// 🧠 CheeseMind visual counterplay settings.
+// Plain language for DEVS:
+// These canvas hints let players understand enemy intent without opening console.
+// They are visual-only and must never affect score, DSPOINC, DB, API, or movement.
+const CHEESEMIND_VISUAL_SIGNAL_MIN_LEVEL = 3;
+const CHEESEMIND_TARGET_MARKER_RADIUS = 8;
+const CHEESEMIND_ENEMY_BADGE_RADIUS = 7;
+
+// 🧠 CheeseMind production concealment.
+// Plain language for DEVS:
+// The AI stays active, but exact target lines/markers must not expose the algorithm
+// to normal players. Local debug can turn full visuals back on for testing.
+const CHEESEMIND_PRODUCTION_FULL_VISUALS_ENABLED = false;
+const CHEESEMIND_LOCAL_VISUAL_DEBUG_STORAGE_KEY = 'narrrfs_cheesemind_visual_debug';
 
 const GLYPH_BOOST_IMAGE_SRC = 'img/cheeseman/F.png';
 const GLYPH_BOOST_DURATION_MS = 6000;
@@ -572,10 +623,31 @@ const LEVEL_TEMPLATES = [
   };
 
   const ENEMY_STARTS = [
-    { row: 9, col: 9, color: '#ef4444', name: 'Cheese Destroyer' },
-    { row: 9, col: 8, color: '#a855f7', name: 'Cheese Emperor' },
-    { row: 9, col: 10, color: '#22c55e', name: 'Cheese Invader' }
-  ];
+  {
+    row: 9,
+    col: 9,
+    color: '#ef4444',
+    name: 'Cheese Destroyer',
+    strategyRole: 'hunter',
+    strategyLabel: 'Pressure Hunter'
+  },
+  {
+    row: 9,
+    col: 8,
+    color: '#a855f7',
+    name: 'Cheese Emperor',
+    strategyRole: 'predictor',
+    strategyLabel: 'Route Predictor'
+  },
+  {
+    row: 9,
+    col: 10,
+    color: '#22c55e',
+    name: 'Cheese Invader',
+    strategyRole: 'controller',
+    strategyLabel: 'Lane Controller'
+  }
+];
 
   const canvas = document.getElementById('cheeseman-canvas');
   if (!canvas) {
@@ -626,10 +698,12 @@ cheeseImg.src = 'img/cheeseman/cheeseman1.png';
     const cheeseExplosionImg = new Image();
   cheeseExplosionImg.src = 'img/space/cheese-explosion.png';
 
-  let maze = [];
-  let player = createPlayer();
-  let enemies = [];
-  let currentDirection = DIRECTIONS.left;
+let maze = [];
+let player = createPlayer();
+let enemies = [];
+let cheeseMind = createCheeseMindState();
+let cheeseMindLastObservatoryStatusAt = 0;
+let currentDirection = DIRECTIONS.left;
   let nextDirection = DIRECTIONS.left;
   let score = 0;
   let level = 1;
@@ -639,7 +713,8 @@ cheeseImg.src = 'img/cheeseman/cheeseman1.png';
   let isRunning = false;
   let isPaused = false;
   let hasScoreBeenSaved = false;
-  let powerModeUntil = 0;
+let powerModeUntil = 0;
+let powerCheeseEnemyRewardsUsed = 0;
 let enemyMoveCounter = 0;
 let cheesemanUserRoleNames = [];
   let touchStartX = 0;
@@ -1261,6 +1336,162 @@ function getCurrentTickMs() {
     return tetrisWallImages[blockType];
   }
 
+/**
+ * Creates a fresh CheeseMind memory object for the current run.
+ * Plain language for DEVS:
+ * This is short-term AI memory only. It is reset every game and never saved to DB.
+ */
+function createCheeseMindState() {
+  return {
+  playerTrail: [],
+  visitedHeatmap: {},
+  tunnelUsage: {},
+  recentTurns: [],
+  dangerEscapes: [],
+  powerCheeseRushes: 0,
+  lastKnownPlayerTile: null,
+  lastRecordedDirection: null,
+  ticksObserved: 0,
+  coordinationTick: 0,
+  enemyAssignments: {}
+};
+}
+
+/**
+ * Resets CheeseMind memory for a fresh run.
+ */
+function resetCheeseMind() {
+  cheeseMind = createCheeseMindState();
+}
+
+/**
+ * Builds a stable row/column key for CheeseMind maps.
+ */
+function getCheeseMindTileKey(row, col) {
+  return `${row},${col}`;
+}
+
+/**
+ * Adds one visit to a CheeseMind count map.
+ */
+function incrementCheeseMindCounter(counterMap, key) {
+  counterMap[key] = Number(counterMap[key] || 0) + 1;
+}
+
+/**
+ * Records the mouse position and habits for CheeseMind.
+ * Plain language for DEVS:
+ * This does not move enemies yet. It only builds the memory layer that later AI uses.
+ */
+function recordCheeseMindPlayerStep() {
+  if (!player || !cheeseMind) {
+    return;
+  }
+
+  const tileKey = getCheeseMindTileKey(player.row, player.col);
+  const previousTrailEntry = cheeseMind.playerTrail[cheeseMind.playerTrail.length - 1];
+
+  if (previousTrailEntry && previousTrailEntry.key === tileKey) {
+    return;
+  }
+
+  const tile = maze[player.row]?.[player.col] || 'unknown';
+  const directionName = getDirectionName(currentDirection);
+
+  cheeseMind.ticksObserved += 1;
+  cheeseMind.lastKnownPlayerTile = {
+    row: player.row,
+    col: player.col,
+    key: tileKey,
+    tile
+  };
+
+  cheeseMind.playerTrail.push({
+    row: player.row,
+    col: player.col,
+    key: tileKey,
+    tile,
+    direction: directionName,
+    tick: cheeseMind.ticksObserved
+  });
+
+  if (cheeseMind.playerTrail.length > CHEESEMIND_PLAYER_TRAIL_LIMIT) {
+    cheeseMind.playerTrail.shift();
+  }
+
+  incrementCheeseMindCounter(cheeseMind.visitedHeatmap, tileKey);
+
+  if (tile === TILE_TUNNEL) {
+    incrementCheeseMindCounter(cheeseMind.tunnelUsage, tileKey);
+  }
+
+  if (directionName && directionName !== cheeseMind.lastRecordedDirection) {
+    cheeseMind.recentTurns.push({
+      direction: directionName,
+      row: player.row,
+      col: player.col,
+      tick: cheeseMind.ticksObserved
+    });
+
+    if (cheeseMind.recentTurns.length > CHEESEMIND_RECENT_TURN_LIMIT) {
+      cheeseMind.recentTurns.shift();
+    }
+
+    cheeseMind.lastRecordedDirection = directionName;
+  }
+}
+
+/**
+ * Converts a direction object back into its readable name.
+ */
+function getDirectionName(direction) {
+  if (!direction) {
+    return '';
+  }
+
+  const entry = Object.entries(DIRECTIONS).find(([, value]) => {
+    return value.row === direction.row && value.col === direction.col;
+  });
+
+  return entry ? entry[0] : '';
+}
+
+/**
+ * Returns the most-used CheeseMind map entries for debugging.
+ */
+function getTopCheeseMindCounterEntries(counterMap, limit = CHEESEMIND_DEBUG_MAP_LIMIT) {
+  return Object.entries(counterMap)
+    .map(([key, count]) => ({ key, count }))
+    .sort((left, right) => right.count - left.count)
+    .slice(0, limit);
+}
+
+/**
+ * Builds a safe debug snapshot of CheeseMind memory.
+ */
+function getCheeseMindDebugState() {
+  return {
+    enabled: true,
+    version: 'foundation-1',
+    ticksObserved: cheeseMind.ticksObserved,
+    lastKnownPlayerTile: cheeseMind.lastKnownPlayerTile,
+    playerTrailLength: cheeseMind.playerTrail.length,
+    playerTrail: cheeseMind.playerTrail.slice(-8),
+    recentTurns: cheeseMind.recentTurns.slice(-8),
+    topVisitedTiles: getTopCheeseMindCounterEntries(cheeseMind.visitedHeatmap),
+    tunnelUsage: getTopCheeseMindCounterEntries(cheeseMind.tunnelUsage),
+coordinationTick: cheeseMind.coordinationTick,
+enemyAssignments: cheeseMind.enemyAssignments,
+enemyRoles: enemies.map(enemy => ({
+  name: enemy.name,
+  role: enemy.strategyRole,
+  label: enemy.strategyLabel,
+  lastTarget: enemy.lastCheeseMindTarget || null,
+  lastDecision: enemy.lastCheeseMindDecision || null
+}))
+  };
+}
+
 function buildMaze() {
   crumbsRemaining = 0;
 
@@ -1270,9 +1501,10 @@ function buildMaze() {
     if (cell === 'N') return 'nest';
 
     if (cell === 'T') {
-      crumbsRemaining += 1;
-      return TILE_TUNNEL;
-    }
+  // Portals are movement tiles only.
+  // They must never count as hidden cheese or required level-clear collectibles.
+  return TILE_TUNNEL;
+}
 
     if (cell === 'o') {
       crumbsRemaining += 1;
@@ -1311,6 +1543,8 @@ function buildMaze() {
   startCol: nestSpawn.col,
   color: start.color,
   name: start.name,
+  strategyRole: start.strategyRole,
+  strategyLabel: start.strategyLabel,
   direction: Object.values(DIRECTIONS)[index % 4],
   isStunned: false,
   respawnLockTicks: ENEMY_RESPAWN_LOCK_TICKS
@@ -1328,7 +1562,8 @@ function resetGame() {
   isPaused = false;
   hasScoreBeenSaved = false;
   powerModeUntil = 0;
-  glyphBoostUntil = 0;
+powerCheeseEnemyRewardsUsed = 0;
+glyphBoostUntil = 0;
   glyphBoostItem = null;
   confusionMushroomUntil = 0;
 confusionMushroomItem = null;
@@ -1341,10 +1576,11 @@ confusionMushroomItem = null;
 
   buildMaze();
 
-  player = createPlayer();
-  enemies = createEnemies();
-  spawnGlyphBoostItem();
-  spawnConfusionMushroomItem();
+player = createPlayer();
+resetCheeseMind();
+enemies = createEnemies();
+spawnGlyphBoostItem();
+spawnConfusionMushroomItem();
 
   currentDirection = DIRECTIONS.left;
   nextDirection = DIRECTIONS.left;
@@ -1376,8 +1612,7 @@ if (modal) {
 
     isRunning = true;
     isPaused = false;
-    setStatus('Running through the cheese maze!');
-    startGameTimer();
+setStatus('Eat the visible cheese. Blue portals are travel lanes only.');    startGameTimer();
   }
 
   function togglePause() {
@@ -1394,8 +1629,7 @@ if (modal) {
       return;
     }
 
-    setStatus('Running through the cheese maze!');
-    startGameTimer();
+setStatus('Eat the visible cheese. Blue portals are travel lanes only.');    startGameTimer();
   }
 
 /**
@@ -1463,8 +1697,9 @@ function gameTick() {
   updateConfusionMushroom();
 
   movePlayer();
+recordCheeseMindPlayerStep();
 
-  if (checkEnemyCollisions()) {
+if (checkEnemyCollisions()) {
     updateScoreDisplay();
     render();
     return;
@@ -1532,21 +1767,59 @@ function movePlayer() {
   }
 }
 
+/**
+ * Counts remaining visible collectibles by tile type.
+ * Plain language for DEVS:
+ * This helps debug level-clear reports without treating portal lanes as cheese.
+ * Crumbs and power cheese are required to clear the level; portals are not.
+ */
+function countRemainingVisibleCollectibles() {
+  const counts = {
+    crumbs: 0,
+    powerCheese: 0,
+    total: 0
+  };
+
+  maze.forEach(row => {
+    row.forEach(tile => {
+      if (tile === 'crumb') {
+        counts.crumbs += 1;
+        counts.total += 1;
+        return;
+      }
+
+      if (tile === 'power') {
+        counts.powerCheese += 1;
+        counts.total += 1;
+      }
+    });
+  });
+
+  return counts;
+}
+
 function collectTile() {
   const tile = maze[player.row]?.[player.col];
 
-  if (tile === 'crumb' || tile === TILE_TUNNEL) {
-    const comboMultiplier = registerComboPickup();
-    const gainedScore = Math.round(SCORE_CRUMB * comboMultiplier);
+  if (tile === 'crumb') {
+  const comboMultiplier = registerComboPickup();
+  const gainedScore = Math.round(SCORE_CRUMB * comboMultiplier);
 
-    score += gainedScore;
-    crumbsRemaining -= 1;
-    maze[player.row][player.col] = 'empty';
+  score += gainedScore;
+  crumbsRemaining -= 1;
+  maze[player.row][player.col] = 'empty';
 
-    addFloatingText(`+${gainedScore} x${comboMultiplier.toFixed(1)}`, player.row, player.col);
-    playSound('crumb');
-    return;
-  }
+  addFloatingText(`+${gainedScore} x${comboMultiplier.toFixed(1)}`, player.row, player.col);
+  playSound('crumb');
+  return;
+}
+
+if (tile === TILE_TUNNEL) {
+  // Portals are travel lanes only.
+  // They do not give score and they do not count as hidden cheese.
+  return;
+}
+
 
   if (tile === 'power') {
     const comboMultiplier = registerComboPickup();
@@ -1556,14 +1829,15 @@ function collectTile() {
     crumbsRemaining -= 1;
     maze[player.row][player.col] = 'empty';
     powerModeUntil = performance.now() + POWER_MODE_MS;
+powerCheeseEnemyRewardsUsed = 0;
 
-    enemies.forEach(enemy => {
-      enemy.isStunned = true;
-    });
+enemies.forEach(enemy => {
+  enemy.isStunned = true;
+});
 
-    addFloatingText(`POWER +${gainedScore} x${comboMultiplier.toFixed(1)}`, player.row, player.col, '#fb923c');
-    setStatus('Power Cheese active! Eat the enemies!');
-    playSound('power');
+addFloatingText(`POWER +${gainedScore} x${comboMultiplier.toFixed(1)}`, player.row, player.col, '#fb923c');
+setStatus(`Power Cheese active! Eat up to ${POWER_CHEESE_ENEMY_REWARD_CAP} enemies outside the nest.`);
+playSound('power');
   }
 }
 
@@ -1600,6 +1874,8 @@ function collectTile() {
 
     enemyMoveCounter = 0;
 
+    beginCheeseMindCoordinationTick();
+
     enemies.forEach(enemy => {
   enemy.previousRow = enemy.row;
   enemy.previousCol = enemy.col;
@@ -1621,37 +1897,431 @@ function collectTile() {
       }
 
       enemy.direction = chooseEnemyDirection(enemy, possibleDirections);
-      enemy.row += enemy.direction.row;
-      enemy.col = normalizeColumn(enemy.col + enemy.direction.col);
+pulseCheeseMindObservatory(enemy);
+enemy.row += enemy.direction.row;
+enemy.col = normalizeColumn(enemy.col + enemy.direction.col);
     });
   }
 
-  function chooseEnemyDirection(enemy, possibleDirections) {
-    const targetDirection = possibleDirections
-      .map(direction => {
-        const nextRow = enemy.row + direction.row;
-        const nextCol = normalizeColumn(enemy.col + direction.col);
-        const distance = getDistance(nextRow, nextCol, player.row, player.col);
+  /**
+ * Starts a fresh CheeseMind team assignment cycle for this enemy movement tick.
+ * Plain language for DEVS:
+ * Enemies move one after another. This clears old decisions so each tick can
+ * coordinate fresh pressure, cutoff, and guard roles.
+ */
+function beginCheeseMindCoordinationTick() {
+  if (!cheeseMind) {
+    return;
+  }
 
-        return {
-          direction,
-          distance
-        };
-      })
-      .sort((left, right) => {
-        return isPowerModeActive()
-          ? right.distance - left.distance
-          : left.distance - right.distance;
-      })[0];
+  cheeseMind.coordinationTick += 1;
+  cheeseMind.enemyAssignments = {};
+}
 
-    const shouldUseSmartMove = Math.random() < getEnemySmartMoveChance();
+/**
+ * Returns true when team coordination is unlocked for the current level.
+ */
+function isCheeseMindCoordinationUnlocked() {
+  return level >= CHEESEMIND_COORDINATION_MIN_LEVEL;
+}
 
-    if (shouldUseSmartMove && targetDirection) {
-      return targetDirection.direction;
+/**
+ * Returns true when route cutoff behavior is unlocked for the current level.
+ */
+function isCheeseMindCutoffUnlocked() {
+  return level >= CHEESEMIND_CUTOFF_MIN_LEVEL;
+}
+
+/**
+ * Saves the current enemy tactical assignment for debug and team coordination.
+ */
+function recordCheeseMindEnemyAssignment(enemy, target) {
+  if (!enemy || !target || !cheeseMind) {
+    return;
+  }
+
+  cheeseMind.enemyAssignments[enemy.name] = {
+    name: enemy.name,
+    role: enemy.strategyRole,
+    label: enemy.strategyLabel,
+    row: target.row,
+    col: target.col,
+    reason: target.reason,
+    tick: cheeseMind.coordinationTick
+  };
+}
+
+/**
+ * Returns true when another enemy already has the same target reason this tick.
+ */
+function hasCheeseMindReasonAlreadyAssigned(reason, currentEnemyName) {
+  if (!cheeseMind?.enemyAssignments || !reason) {
+    return false;
+  }
+
+  return Object.values(cheeseMind.enemyAssignments).some(assignment => {
+    return assignment.name !== currentEnemyName && assignment.reason === reason;
+  });
+}
+
+/**
+ * Builds a cutoff target for the Emperor.
+ * Plain language for DEVS:
+ * Instead of only chasing the mouse, the Emperor aims at the predicted route
+ * and marks it as a cutoff assignment so testers can see team behavior.
+ */
+function findCheeseMindCutoffTarget(enemy) {
+  if (!isCheeseMindCutoffUnlocked()) {
+    return null;
+  }
+
+  const predictedTile = predictPlayerTile();
+
+  if (!predictedTile) {
+    return null;
+  }
+
+  return {
+    row: predictedTile.row,
+    col: predictedTile.col,
+    reason: 'cutoff-route',
+    sourceReason: predictedTile.reason,
+    distance: getDistance(enemy.row, enemy.col, predictedTile.row, predictedTile.col)
+  };
+}
+
+/**
+ * Builds a coordinated controller target for the Invader.
+ * Plain language for DEVS:
+ * If the team already has pressure and cutoff roles active,
+ * the Invader should prefer controlling resources or escape lanes.
+ */
+function findCoordinatedControllerTarget(enemy) {
+  if (!isCheeseMindControlUnlocked()) {
+    return null;
+  }
+
+  const controllerTarget = findControllerCheeseTarget(enemy);
+
+  if (controllerTarget) {
+    return controllerTarget;
+  }
+
+  return {
+    row: player.row,
+    col: player.col,
+    reason: 'controller-fallback-player'
+  };
+}
+
+  /**
+ * Returns whether CheeseMind prediction behavior is unlocked for the current level.
+ */
+function isCheeseMindPredictionUnlocked() {
+  return level >= CHEESEMIND_PREDICTION_MIN_LEVEL;
+}
+
+/**
+ * Returns whether CheeseMind controller behavior is unlocked for the current level.
+ */
+function isCheeseMindControlUnlocked() {
+  return level >= CHEESEMIND_CONTROL_MIN_LEVEL;
+}
+
+/**
+ * Returns whether CheeseMind tunnel counter behavior is unlocked for the current level.
+ */
+function isCheeseMindTunnelCounterUnlocked() {
+  return level >= CHEESEMIND_TUNNEL_COUNTER_MIN_LEVEL;
+}
+
+/**
+ * Clamps a row into the maze bounds.
+ */
+function clampMazeRow(row) {
+  return Math.max(0, Math.min(GRID_ROWS - 1, row));
+}
+
+/**
+ * Predicts where the player may be soon based on current movement direction.
+ * Plain language for DEVS:
+ * The Emperor does not only chase the mouse. It aims ahead of the route.
+ */
+function predictPlayerTile() {
+  const predictionTiles = Math.min(
+    CHEESEMIND_MAX_PREDICTION_TILES,
+    Math.max(2, Math.floor(level / 2) + 1)
+  );
+
+  let predictedRow = player.row;
+  let predictedCol = player.col;
+
+  for (let step = 0; step < predictionTiles; step += 1) {
+    const nextRow = clampMazeRow(predictedRow + currentDirection.row);
+    const nextCol = normalizeColumn(predictedCol + currentDirection.col);
+
+    if (!canMove(nextRow, nextCol)) {
+      break;
     }
 
-    return possibleDirections[Math.floor(Math.random() * possibleDirections.length)];
+    predictedRow = nextRow;
+    predictedCol = nextCol;
   }
+
+  return {
+    row: predictedRow,
+    col: predictedCol,
+    reason: 'prediction'
+  };
+}
+
+/**
+ * Finds the nearest board tile matching a target type.
+ */
+function findNearestTileByType(fromRow, fromCol, targetTileType) {
+  let bestTile = null;
+
+  maze.forEach((rowTiles, rowIndex) => {
+    rowTiles.forEach((tile, colIndex) => {
+      if (tile !== targetTileType) {
+        return;
+      }
+
+      const distance = getDistance(fromRow, fromCol, rowIndex, colIndex);
+
+      if (!bestTile || distance < bestTile.distance) {
+        bestTile = {
+          row: rowIndex,
+          col: colIndex,
+          distance,
+          reason: `nearest-${targetTileType}`
+        };
+      }
+    });
+  });
+
+  return bestTile;
+}
+
+/**
+ * Finds a high-value tunnel tile to counter repeated portal usage.
+ */
+function findMostUsedTunnelTile() {
+  if (!isCheeseMindTunnelCounterUnlocked()) {
+    return null;
+  }
+
+  const tunnelEntries = getTopCheeseMindCounterEntries(cheeseMind.tunnelUsage, 1);
+
+  if (!tunnelEntries.length) {
+    return null;
+  }
+
+  const [rowText, colText] = tunnelEntries[0].key.split(',');
+  const row = Number(rowText);
+  const col = Number(colText);
+
+  if (!Number.isFinite(row) || !Number.isFinite(col)) {
+    return null;
+  }
+
+  if (maze[row]?.[col] !== TILE_TUNNEL) {
+    return null;
+  }
+
+  return {
+    row,
+    col,
+    reason: 'counter-used-tunnel'
+  };
+}
+
+/**
+ * Finds a remaining crumb that is useful for controller enemies to guard.
+ */
+function findControllerCheeseTarget(enemy) {
+  const powerTarget = findNearestTileByType(enemy.row, enemy.col, 'power');
+
+  if (powerTarget) {
+    return {
+      ...powerTarget,
+      reason: 'guard-power-cheese'
+    };
+  }
+
+  const tunnelTarget = findMostUsedTunnelTile();
+
+  if (tunnelTarget) {
+    return tunnelTarget;
+  }
+
+  const crumbTarget = findNearestTileByType(enemy.row, enemy.col, 'crumb');
+
+  if (crumbTarget) {
+    return {
+      ...crumbTarget,
+      reason: 'guard-remaining-cheese'
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Converts a CheeseMind target reason into readable player/testing text.
+ * Plain language for DEVS:
+ * This is observability only. It does not change AI decisions or rewards.
+ */
+function describeCheeseMindTargetReason(reason) {
+  const descriptions = {
+  'hunt-player': 'hunting the mouse',
+  'pressure-player': 'pressuring the mouse',
+  'prediction': 'predicting the mouse route',
+  'cutoff-route': 'cutting off the predicted route',
+  'guard-power-cheese': 'guarding Power Cheese',
+  'counter-used-tunnel': 'countering repeated portal use',
+  'guard-remaining-cheese': 'guarding remaining cheese',
+  'controller-fallback-player': 'falling back to a chase',
+  'flee-from-player': 'fleeing during Power Cheese'
+};
+
+  return descriptions[reason] || reason || 'thinking';
+}
+
+/**
+ * Shows a limited CheeseMind status pulse for special AI decisions.
+ * Plain language for DEVS:
+ * This helps testers prove the AI is active without spamming the UI every tick.
+ */
+function pulseCheeseMindObservatory(enemy) {
+  if (!enemy?.lastCheeseMindTarget) {
+    return;
+  }
+
+  const reason = enemy.lastCheeseMindTarget.reason;
+
+  if (!reason || reason === 'hunt-player') {
+    return;
+  }
+
+  const now = performance.now();
+
+  if (now - cheeseMindLastObservatoryStatusAt < CHEESEMIND_OBSERVATORY_STATUS_COOLDOWN_MS) {
+    return;
+  }
+
+  cheeseMindLastObservatoryStatusAt = now;
+  setStatus(`🧠 CheeseMind: ${enemy.name} is ${describeCheeseMindTargetReason(reason)}.`);
+}
+
+/**
+ * Resolves the current tactical target for one enemy role.
+ * Plain language for DEVS:
+ * Patch 3 adds team coordination:
+ * Destroyer pressures, Emperor cuts off, Invader controls resources/escape lanes.
+ */
+function resolveCheeseMindEnemyTarget(enemy) {
+  if (isPowerModeActive()) {
+    return {
+      row: player.row,
+      col: player.col,
+      reason: 'flee-from-player'
+    };
+  }
+
+  if (enemy.strategyRole === 'hunter') {
+    return {
+      row: player.row,
+      col: player.col,
+      reason: 'pressure-player'
+    };
+  }
+
+  if (enemy.strategyRole === 'predictor' && isCheeseMindPredictionUnlocked()) {
+    const cutoffTarget = isCheeseMindCoordinationUnlocked()
+      ? findCheeseMindCutoffTarget(enemy)
+      : null;
+
+    return cutoffTarget || predictPlayerTile();
+  }
+
+  if (enemy.strategyRole === 'controller' && isCheeseMindControlUnlocked()) {
+    return findCoordinatedControllerTarget(enemy);
+  }
+
+  return {
+    row: player.row,
+    col: player.col,
+    reason: 'hunt-player'
+  };
+}
+
+/**
+ * Scores a possible direction against the tactical target.
+ * Lower score means the move is better unless enemies are fleeing in Power Mode.
+ */
+function scoreCheeseMindDirection(enemy, direction, target) {
+  const nextRow = enemy.row + direction.row;
+  const nextCol = normalizeColumn(enemy.col + direction.col);
+  const distance = getDistance(nextRow, nextCol, target.row, target.col);
+
+  let scoreValue = distance;
+
+  if (enemy.direction && direction.row === -enemy.direction.row && direction.col === -enemy.direction.col) {
+    scoreValue += 0.35;
+  }
+
+  if (
+  isCheeseMindCoordinationUnlocked() &&
+  hasCheeseMindReasonAlreadyAssigned(target.reason, enemy.name)
+) {
+  scoreValue += CHEESEMIND_ASSIGNMENT_OVERLAP_PENALTY;
+}
+
+  return {
+    direction,
+    distance,
+    scoreValue,
+    targetReason: target.reason
+  };
+}
+
+  /**
+ * Chooses an enemy direction using CheeseMind tactical targeting.
+ * Plain language for DEVS:
+ * The old logic chased only the current mouse tile.
+ * CheeseMind lets each enemy role target different tactical goals.
+ */
+function chooseEnemyDirection(enemy, possibleDirections) {
+  const target = resolveCheeseMindEnemyTarget(enemy);
+  const scoredDirections = possibleDirections
+    .map(direction => scoreCheeseMindDirection(enemy, direction, target))
+    .sort((left, right) => {
+      return isPowerModeActive()
+        ? right.scoreValue - left.scoreValue
+        : left.scoreValue - right.scoreValue;
+    });
+
+  const bestDirection = scoredDirections[0];
+  const shouldUseSmartMove = Math.random() < getEnemySmartMoveChance();
+  const shouldUseRandomFallback = Math.random() < CHEESEMIND_RANDOM_FALLBACK_CHANCE;
+
+  enemy.lastCheeseMindTarget = target;
+recordCheeseMindEnemyAssignment(enemy, target);
+
+enemy.lastCheeseMindDecision = {
+  targetReason: bestDirection?.targetReason || 'none',
+  usedSmartMove: Boolean(shouldUseSmartMove && !shouldUseRandomFallback),
+  usedRandomFallback: shouldUseRandomFallback,
+  coordinationTick: cheeseMind.coordinationTick
+};
+
+  if (shouldUseSmartMove && !shouldUseRandomFallback && bestDirection) {
+    return bestDirection.direction;
+  }
+
+  return possibleDirections[Math.floor(Math.random() * possibleDirections.length)];
+}
 
     /**
    * Adds a short explosion animation at the player tile when the mouse is caught.
@@ -1750,7 +2420,8 @@ function collectTile() {
       currentDirection = DIRECTIONS.left;
       nextDirection = DIRECTIONS.left;
       powerModeUntil = 0;
-      enemyMoveCounter = 0;
+powerCheeseEnemyRewardsUsed = 0;
+enemyMoveCounter = 0;
 
       isRunning = true;
       isPaused = false;
@@ -1767,6 +2438,16 @@ function collectTile() {
  */
 function isSameTileCollision(enemy) {
   return enemy.row === player.row && enemy.col === player.col;
+}
+
+/**
+ * Returns true when an enemy is still inside the protected nest/spawn area.
+ * Plain language for DEVS:
+ * Power Cheese rewards should come from risky chase gameplay,
+ * not from standing inside the enemy spawn and farming respawns.
+ */
+function isEnemyInsideNestArea(enemy) {
+  return maze[enemy.row]?.[enemy.col] === 'nest';
 }
 
 /**
@@ -1792,23 +2473,39 @@ function resolveEnemyCollision(enemy) {
   }
 
   if (isPowerModeActive()) {
-    score += SCORE_ENEMY;
-
-    addHitExplosion(enemy.row, enemy.col);
-    addFloatingText(`EATEN +${SCORE_ENEMY}`, enemy.row, enemy.col, '#22c55e');
-
-    enemy.row = enemy.startRow;
-    enemy.col = enemy.startCol;
-    enemy.previousRow = enemy.startRow;
-    enemy.previousCol = enemy.startCol;
-    enemy.direction = DIRECTIONS.up;
-    enemy.isStunned = false;
-    enemy.respawnLockTicks = ENEMY_RESPAWN_LOCK_TICKS;
-
-    setStatus(`${enemy.name} eaten! It respawns in the nest.`);
-    playSound('enemy');
+  if (isEnemyInsideNestArea(enemy)) {
+    setStatus('Power Cheese active, but nest enemies cannot be farmed.');
     return false;
   }
+
+  if (powerCheeseEnemyRewardsUsed >= POWER_CHEESE_ENEMY_REWARD_CAP) {
+    setStatus(`Power Cheese reward cap reached (${POWER_CHEESE_ENEMY_REWARD_CAP}/${POWER_CHEESE_ENEMY_REWARD_CAP}). Stay alive and clear cheese!`);
+    return false;
+  }
+
+  powerCheeseEnemyRewardsUsed += 1;
+  score += SCORE_ENEMY;
+
+  addHitExplosion(enemy.row, enemy.col);
+  addFloatingText(
+    `EATEN +${SCORE_ENEMY} ${powerCheeseEnemyRewardsUsed}/${POWER_CHEESE_ENEMY_REWARD_CAP}`,
+    enemy.row,
+    enemy.col,
+    '#22c55e'
+  );
+
+  enemy.row = enemy.startRow;
+  enemy.col = enemy.startCol;
+  enemy.previousRow = enemy.startRow;
+  enemy.previousCol = enemy.startCol;
+  enemy.direction = DIRECTIONS.up;
+  enemy.isStunned = false;
+  enemy.respawnLockTicks = ENEMY_RESPAWN_LOCK_TICKS;
+
+  setStatus(`${enemy.name} eaten! Power reward ${powerCheeseEnemyRewardsUsed}/${POWER_CHEESE_ENEMY_REWARD_CAP}.`);
+  playSound('enemy');
+  return false;
+}
 
 if (isGlyphBoostActive() && lives > 0) {
   setStatus('🖤 Glyph Boost protected you!');
@@ -1996,7 +2693,7 @@ lastComboCollectAt = 0;
     showLevelTransitionCountdown(level, () => {
       isRunning = true;
       isPaused = false;
-      setStatus(`Level ${level}! Run through the cheese maze.`);
+      setStatus(`Level ${level}! Eat the visible cheese. Portals are travel lanes only.`);
       startGameTimer();
     });
   }
@@ -2233,10 +2930,11 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   drawMaze();
-  drawGlyphBoostItem();
-  drawConfusionMushroomItem();
-  drawEnemies();
-  drawPlayer();
+drawGlyphBoostItem();
+drawConfusionMushroomItem();
+drawCheeseMindTargetSignals();
+drawEnemies();
+drawPlayer();
   drawHitExplosions();
   drawFloatingTexts();
 
@@ -2284,18 +2982,27 @@ function render() {
   continue;
 }
 
-        if (tile === 'nest') {
-          ctx.fillStyle = 'rgba(124, 58, 237, 0.22)';
-          ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        if (tile === TILE_TUNNEL) {
+  // Portal tiles are visible movement lanes, not hidden cheese.
+  ctx.fillStyle = 'rgba(14, 165, 233, 0.18)';
+  ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
 
-          ctx.strokeStyle = 'rgba(250, 204, 21, 0.55)';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(x + 5, y + 5, TILE_SIZE - 10, TILE_SIZE - 10);
+  ctx.strokeStyle = 'rgba(103, 232, 249, 0.9)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x + TILE_SIZE / 2, y + TILE_SIZE / 2, 9, 0, Math.PI * 2);
+  ctx.stroke();
 
-          continue;
-        }
+  ctx.fillStyle = '#67e8f9';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('↔', x + TILE_SIZE / 2, y + TILE_SIZE / 2);
 
-        if (tile === 'crumb') {
+  continue;
+}
+
+if (tile === 'crumb') {
           ctx.fillStyle = '#facc15';
           ctx.beginPath();
           ctx.arc(x + TILE_SIZE / 2, y + TILE_SIZE / 2, 3, 0, Math.PI * 2);
@@ -2458,6 +3165,239 @@ function drawGlyphBoostAura() {
   ctx.restore();
 }
 
+/**
+ * Returns true when the current host may use local CheeseMind visual debugging.
+ * Plain language for DEVS:
+ * Full intent lines are a test tool. Do not expose exact AI targets on production.
+ */
+function isCheeseMindLocalVisualDebugHost() {
+  const host = String(window.location.hostname || '');
+  return host === 'localhost' || host === '127.0.0.1';
+}
+
+/**
+ * Returns true when full CheeseMind visuals are explicitly enabled.
+ * Plain language for DEVS:
+ * Normal players should feel hunted, not see the exact algorithm.
+ */
+function isCheeseMindFullVisualDebugEnabled() {
+  if (CHEESEMIND_PRODUCTION_FULL_VISUALS_ENABLED) {
+    return true;
+  }
+
+  if (!isCheeseMindLocalVisualDebugHost()) {
+    return false;
+  }
+
+  return localStorage.getItem(CHEESEMIND_LOCAL_VISUAL_DEBUG_STORAGE_KEY) === 'true';
+}
+
+/**
+ * Returns true when CheeseMind visual hints should be drawn.
+ * Plain language for DEVS:
+ * This now requires local debug opt-in, so production does not reveal exact AI targets.
+ */
+function shouldDrawCheeseMindVisualSignals() {
+  return (
+    level >= CHEESEMIND_VISUAL_SIGNAL_MIN_LEVEL &&
+    Array.isArray(enemies) &&
+    isCheeseMindFullVisualDebugEnabled()
+  );
+}
+
+/**
+ * Returns the visual style for each CheeseMind tactical reason.
+ * Plain language for DEVS:
+ * Keep these icons readable on small canvas tiles. Do not use long text here.
+ */
+function getCheeseMindSignalStyle(reason) {
+  const styles = {
+    'pressure-player': {
+      color: '#ef4444',
+      glow: 'rgba(239, 68, 68, 0.55)',
+      icon: '!'
+    },
+    'cutoff-route': {
+      color: '#a855f7',
+      glow: 'rgba(168, 85, 247, 0.58)',
+      icon: '✕'
+    },
+    'prediction': {
+      color: '#c084fc',
+      glow: 'rgba(192, 132, 252, 0.55)',
+      icon: '?'
+    },
+    'guard-power-cheese': {
+      color: '#22c55e',
+      glow: 'rgba(34, 197, 94, 0.55)',
+      icon: '🛡'
+    },
+    'guard-remaining-cheese': {
+      color: '#facc15',
+      glow: 'rgba(250, 204, 21, 0.52)',
+      icon: '•'
+    },
+    'counter-used-tunnel': {
+      color: '#22d3ee',
+      glow: 'rgba(34, 211, 238, 0.58)',
+      icon: '↔'
+    },
+    'controller-fallback-player': {
+      color: '#94a3b8',
+      glow: 'rgba(148, 163, 184, 0.45)',
+      icon: '→'
+    },
+    'flee-from-player': {
+      color: '#38bdf8',
+      glow: 'rgba(56, 189, 248, 0.50)',
+      icon: '↯'
+    }
+  };
+
+  return styles[reason] || null;
+}
+
+/**
+ * Draws a soft line from an enemy to its CheeseMind target tile.
+ * Plain language for DEVS:
+ * This lets players see where the AI is focusing without changing movement.
+ */
+function drawCheeseMindIntentLine(enemy, target, style) {
+  const enemyX = enemy.col * TILE_SIZE + TILE_SIZE / 2;
+  const enemyY = enemy.row * TILE_SIZE + TILE_SIZE / 2;
+  const targetX = target.col * TILE_SIZE + TILE_SIZE / 2;
+  const targetY = target.row * TILE_SIZE + TILE_SIZE / 2;
+
+  ctx.save();
+  ctx.globalAlpha = 0.32;
+  ctx.strokeStyle = style.color;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]);
+  ctx.shadowColor = style.color;
+  ctx.shadowBlur = 8;
+  ctx.beginPath();
+  ctx.moveTo(enemyX, enemyY);
+  ctx.lineTo(targetX, targetY);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/**
+ * Draws the target marker for one CheeseMind enemy decision.
+ * Plain language for DEVS:
+ * This marks the tile the enemy brain is thinking about.
+ */
+function drawCheeseMindTargetMarker(enemy) {
+  if (!isCheeseMindFullVisualDebugEnabled()) {
+  return;
+}
+
+if (!enemy?.lastCheeseMindTarget) {
+  return;
+}
+
+  const target = enemy.lastCheeseMindTarget;
+  const style = getCheeseMindSignalStyle(target.reason);
+
+  if (!style || target.reason === 'hunt-player') {
+    return;
+  }
+
+  if (target.row < 0 || target.row >= GRID_ROWS || target.col < 0 || target.col >= GRID_COLS) {
+    return;
+  }
+
+  const centerX = target.col * TILE_SIZE + TILE_SIZE / 2;
+  const centerY = target.row * TILE_SIZE + TILE_SIZE / 2;
+  const pulse = 1 + Math.sin(performance.now() / 130) * 0.15;
+
+  drawCheeseMindIntentLine(enemy, target, style);
+
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.strokeStyle = style.color;
+  ctx.fillStyle = 'rgba(2, 6, 23, 0.72)';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = style.color;
+  ctx.shadowBlur = 14;
+
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, CHEESEMIND_TARGET_MARKER_RADIUS * pulse, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = style.color;
+  ctx.font = 'bold 10px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(style.icon, centerX, centerY + 0.5);
+
+  ctx.restore();
+}
+
+/**
+ * Draws all CheeseMind target markers under enemies.
+ * Plain language for DEVS:
+ * This is called before drawEnemies() so enemy sprites stay readable on top.
+ */
+function drawCheeseMindTargetSignals() {
+  if (!shouldDrawCheeseMindVisualSignals()) {
+    return;
+  }
+
+  enemies.forEach(enemy => {
+    drawCheeseMindTargetMarker(enemy);
+  });
+}
+
+/**
+ * Draws a small role/intention badge above one enemy.
+ * Plain language for DEVS:
+ * This gives players a quick read of the enemy's current job.
+ */
+function drawCheeseMindEnemySignalBadge(enemy, x, y) {
+  if (!shouldDrawCheeseMindVisualSignals() || !enemy?.lastCheeseMindTarget) {
+    return;
+  }
+
+  const reason = enemy.lastCheeseMindTarget.reason;
+
+  if (!reason || reason === 'hunt-player') {
+    return;
+  }
+
+  const style = getCheeseMindSignalStyle(reason);
+
+  if (!style) {
+    return;
+  }
+
+  const badgeX = x + TILE_SIZE - 4;
+  const badgeY = y + 4;
+
+  ctx.save();
+  ctx.globalAlpha = 0.96;
+  ctx.fillStyle = 'rgba(2, 6, 23, 0.88)';
+  ctx.strokeStyle = style.color;
+  ctx.lineWidth = 2;
+  ctx.shadowColor = style.color;
+  ctx.shadowBlur = 10;
+
+  ctx.beginPath();
+  ctx.arc(badgeX, badgeY, CHEESEMIND_ENEMY_BADGE_RADIUS, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = style.color;
+  ctx.font = 'bold 9px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(style.icon, badgeX, badgeY + 0.5);
+
+  ctx.restore();
+}
+
 function drawPlayer() {
   const x = player.col * TILE_SIZE;
   const y = player.row * TILE_SIZE;
@@ -2536,18 +3476,20 @@ function drawPlayer() {
       const activeImg = getEnemyImage(enemy);
 
       if (activeImg && activeImg.complete && activeImg.naturalWidth > 0) {
-        ctx.drawImage(activeImg, x - 3, y - 4, TILE_SIZE + 6, TILE_SIZE + 6);
-      } else {
-        ctx.fillStyle = enemy.color;
-        ctx.beginPath();
-        ctx.arc(x + TILE_SIZE / 2, y + TILE_SIZE / 2, TILE_SIZE / 2 - 3, Math.PI, 0);
-        ctx.lineTo(x + TILE_SIZE - 3, y + TILE_SIZE - 3);
-        ctx.lineTo(x + 3, y + TILE_SIZE - 3);
-        ctx.closePath();
-        ctx.fill();
-      }
+  ctx.drawImage(activeImg, x - 3, y - 4, TILE_SIZE + 6, TILE_SIZE + 6);
+} else {
+  ctx.fillStyle = enemy.color;
+  ctx.beginPath();
+  ctx.arc(x + TILE_SIZE / 2, y + TILE_SIZE / 2, TILE_SIZE / 2 - 3, Math.PI, 0);
+  ctx.lineTo(x + TILE_SIZE - 3, y + TILE_SIZE - 3);
+  ctx.lineTo(x + 3, y + TILE_SIZE - 3);
+  ctx.closePath();
+  ctx.fill();
+}
 
-      ctx.restore();
+drawCheeseMindEnemySignalBadge(enemy, x, y);
+
+ctx.restore();
     });
   }
 
@@ -2725,19 +3667,90 @@ playAgainBtn?.addEventListener('touchend', event => {
     console.log('Canvas classes:', canvas.className);
   };
 
-  window.cheesemanDebugState = function cheesemanDebugState() {
-    return {
-      game: GAME_KEY,
-      score,
-      dspoinc: calculateDspoincReward(),
-      level,
-      lives,
-      crumbsRemaining,
-      roleMultiplier: getCheesemanRoleScoreMultiplier(),
-      primaryRole: getCheesemanPrimaryRoleName(),
-      identity: resolveDiscordIdentity()
-    };
-  };
+  /**
+ * Local-only CheeseMind test helper.
+ * Plain language for DEVS:
+ * This helps test higher AI levels without playing through every level.
+ * It is blocked outside localhost-style development hosts.
+ */
+window.cheesemanSetDebugLevel = function cheesemanSetDebugLevel(nextLevel) {
+  const host = String(window.location.hostname || '');
 
+  if (host !== 'localhost' && host !== '127.0.0.1') {
+    console.warn('CheeseMind debug level helper is localhost-only.');
+    return false;
+  }
+
+  const safeLevel = Math.max(1, Math.min(MAX_LEVEL_TEMPLATE_COUNT, Number(nextLevel || 1)));
+
+  if (!Number.isFinite(safeLevel)) {
+    console.warn('Invalid CheeseMind debug level.');
+    return false;
+  }
+
+  level = safeLevel;
+  buildMaze();
+  player = createPlayer();
+  resetCheeseMind();
+  enemies = createEnemies();
+  enemyMoveCounter = 0;
+  powerModeUntil = 0;
+  powerCheeseEnemyRewardsUsed = 0;
+  glyphBoostUntil = 0;
+  confusionMushroomUntil = 0;
+  spawnGlyphBoostItem();
+  spawnConfusionMushroomItem();
+  updateScoreDisplay();
+  render();
+  setStatus(`🧠 CheeseMind debug test level ${level}. Watch enemy decisions.`);
+  return true;
+};
+
+/**
+ * Local-only CheeseMind visual debug toggle.
+ * Plain language for DEVS:
+ * This lets testers enable/disable full CheeseMind target lines and badges locally.
+ * Production players should not see exact AI target logic.
+ */
+window.cheesemanSetCheeseMindVisualDebug = function cheesemanSetCheeseMindVisualDebug(isEnabled) {
+  if (!isCheeseMindLocalVisualDebugHost()) {
+    console.warn('CheeseMind visual debug is localhost-only.');
+    return false;
+  }
+
+  const enabled = Boolean(isEnabled);
+  localStorage.setItem(CHEESEMIND_LOCAL_VISUAL_DEBUG_STORAGE_KEY, enabled ? 'true' : 'false');
+  render();
+
+  setStatus(
+    enabled
+      ? '🧠 CheeseMind visual debug enabled locally.'
+      : '🧠 CheeseMind full visuals hidden. AI still active.'
+  );
+
+  return true;
+};
+
+ window.cheesemanDebugState = function cheesemanDebugState() {
+  const visibleCollectibles = countRemainingVisibleCollectibles();
+
+  return {
+    game: GAME_KEY,
+    score,
+    dspoinc: calculateDspoincReward(),
+    level,
+    lives,
+    crumbsRemaining,
+    powerCheeseEnemyRewardsUsed,
+    powerCheeseEnemyRewardCap: POWER_CHEESE_ENEMY_REWARD_CAP,
+    visibleCollectibles,
+    portalTilesAreCollectibles: false,
+    cheeseMind: getCheeseMindDebugState(),
+cheeseMindFullVisualDebugEnabled: isCheeseMindFullVisualDebugEnabled(),
+    roleMultiplier: getCheesemanRoleScoreMultiplier(),
+    primaryRole: getCheesemanPrimaryRoleName(),
+    identity: resolveDiscordIdentity()
+  };
+};
   initCheeseman();
 })();

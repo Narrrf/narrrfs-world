@@ -201,19 +201,41 @@ function get_reward_boxes_database_connection(): PDO {
     throw new Exception('Database connection helper not available and SQLite file not found');
 }
 
-/**
- * Return canonical available DSPOINC = total ledger score - active frozen stakes.
- */
 function get_user_available_dspoinc(PDO $pdo, string $userId): int {
     if ($userId === '') {
         return 0;
     }
 
-    $stmt = $pdo->prepare("\n        SELECT COALESCE(SUM(score), 0)\n        FROM tbl_user_scores\n        WHERE user_id = ?\n    ");
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(score), 0)
+        FROM tbl_user_scores
+        WHERE user_id = ?
+    ");
     $stmt->execute([$userId]);
     $total = (int)$stmt->fetchColumn();
 
-    $stmt = $pdo->prepare("\n        SELECT COALESCE(SUM(amount), 0)\n        FROM tbl_dspoinc_stakes\n        WHERE user_id = ?\n          AND status = 'active'\n    ");
+    // Plain language for DEVS:
+    // Some local/dev database snapshots may not contain tbl_dspoinc_stakes yet.
+    // Production uses it to calculate available DSPOINC, but local Reward Chamber
+    // preview must not 500 when the table is missing.
+    $stakeTableExistsStmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM sqlite_master
+        WHERE type = 'table'
+          AND name = 'tbl_dspoinc_stakes'
+    ");
+    $stakeTableExists = (int)$stakeTableExistsStmt->fetchColumn() > 0;
+
+    if (!$stakeTableExists) {
+        return max(0, $total);
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(amount), 0)
+        FROM tbl_dspoinc_stakes
+        WHERE user_id = ?
+          AND status = 'active'
+    ");
     $stmt->execute([$userId]);
     $frozen = (int)$stmt->fetchColumn();
 
@@ -265,9 +287,69 @@ function fetch_reward_pool_summary(PDO $pdo, int $boxId): array {
 }
 
 /**
+ * Return the current opening window start for a reward box.
+ *
+ * Plain language for DEVS:
+ * max_opens_per_user must never use lifetime cached open_count as the final
+ * blocker. It must count only the current reward window so players unlock again
+ * after the configured daily/24h period.
+ */
+function get_reward_box_open_window_start(array $box, string $nowUtc, ?array $userState = null): ?string {
+    $cooldownType = strtolower(trim((string)($box['cooldown_type'] ?? 'none')));
+    $cooldownEnabled = (int)($box['cooldown_enabled'] ?? 0) === 1;
+    $cooldownHours = (float)($box['cooldown_hours'] ?? 0);
+
+    if ($cooldownType === 'daily') {
+        return gmdate('Y-m-d 00:00:00', strtotime($nowUtc . ' UTC'));
+    }
+
+    if ($cooldownEnabled && $cooldownHours > 0) {
+        $nowTimestamp = strtotime($nowUtc . ' UTC');
+        if ($nowTimestamp === false) {
+            return null;
+        }
+
+        return gmdate('Y-m-d H:i:s', $nowTimestamp - (int)round($cooldownHours * 3600));
+    }
+
+    $lastOpenedAt = trim((string)($userState['last_opened_at'] ?? ''));
+    if ($lastOpenedAt !== '') {
+        $lastTimestamp = strtotime($lastOpenedAt . ' UTC');
+        $nowTimestamp = strtotime($nowUtc . ' UTC');
+
+        if ($lastTimestamp !== false && $nowTimestamp !== false && ($nowTimestamp - $lastTimestamp) < 86400) {
+            return gmdate('Y-m-d H:i:s', $nowTimestamp - 86400);
+        }
+    }
+
+    return gmdate('Y-m-d 00:00:00', strtotime($nowUtc . ' UTC'));
+}
+
+/**
+ * Count user opens in the current reward window from immutable history.
+ */
+function count_user_reward_box_opens_in_window(PDO $pdo, int $boxId, string $userId, ?string $windowStart): int {
+    if ($boxId < 1 || $userId === '' || $windowStart === null || $windowStart === '') {
+        return 0;
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM tbl_reward_box_open_history
+        WHERE box_id = ?
+          AND user_id = ?
+          AND opened_at >= ?
+          AND COALESCE(open_status, 'completed') IN ('completed', 'pending')
+    ");
+    $stmt->execute([$boxId, $userId, $windowStart]);
+
+    return (int)$stmt->fetchColumn();
+}
+
+/**
  * Compute frontend-safe disabled state using backend truth only.
  */
-function calculate_disabled_state(array $box, ?array $userState, string $userId, int $availableDspoinc, string $nowUtc): array {
+function calculate_disabled_state(PDO $pdo, array $box, ?array $userState, string $userId, int $availableDspoinc, string $nowUtc): array {
     $isLoggedIn = trim($userId) !== '';
     $isDisabled = false;
     $reasons = [];
@@ -308,8 +390,13 @@ function calculate_disabled_state(array $box, ?array $userState, string $userId,
         }
     }
 
+        $boxId = (int)($box['box_id'] ?? 0);
+    $openWindowStart = get_reward_box_open_window_start($box, $nowUtc, $userState);
+    $userOpenCount = $isLoggedIn
+        ? count_user_reward_box_opens_in_window($pdo, $boxId, $userId, $openWindowStart)
+        : 0;
+
     $maxOpensPerUser = $box['max_opens_per_user'] ?? null;
-    $userOpenCount = (int)($userState['open_count'] ?? 0);
     if ($maxOpensPerUser !== null && $maxOpensPerUser !== '' && $isLoggedIn) {
         if ($userOpenCount >= (int)$maxOpensPerUser) {
             $isDisabled = true;
@@ -1227,7 +1314,7 @@ function build_box_payload(PDO $pdo, array $box, string $userId, int $availableD
     $boxId = (int)($box['box_id'] ?? 0);
     $userState = fetch_user_box_state($pdo, $boxId, $userId);
     $poolSummary = fetch_reward_pool_summary($pdo, $boxId);
-    $disabledState = calculate_disabled_state($box, $userState, $userId, $availableDspoinc, $nowUtc);
+    $disabledState = calculate_disabled_state($pdo, $box, $userState, $userId, $availableDspoinc, $nowUtc);
 
     return [
         'box_id' => $boxId,
@@ -1335,7 +1422,7 @@ try {
 
     $availableDspoinc = get_user_available_dspoinc($pdo, $userId);
     $userState = fetch_user_box_state($pdo, $boxId, $userId);
-    $disabledState = calculate_disabled_state($box, $userState, $userId, $availableDspoinc, $nowUtc);
+    $disabledState = calculate_disabled_state($pdo, $box, $userState, $userId, $availableDspoinc, $nowUtc);
 
     if ((bool)$disabledState['is_disabled']) {
         json_response([
@@ -1362,7 +1449,7 @@ try {
     $openedAtUtc = gmdate('Y-m-d H:i:s');
     $availableDspoinc = get_user_available_dspoinc($pdo, $userId);
     $userState = fetch_user_box_state($pdo, $boxId, $userId);
-    $disabledState = calculate_disabled_state($box, $userState, $userId, $availableDspoinc, $openedAtUtc);
+    $disabledState = calculate_disabled_state($pdo, $box, $userState, $userId, $availableDspoinc, $openedAtUtc);
 
     if ((bool)($disabledState['is_disabled'] ?? false)) {
         $pdo->rollBack();
@@ -1767,11 +1854,14 @@ if (!$usedFallback && !in_array($resolved['reward_type'], ['duplicate_genetic_tr
     );
     attach_reward_box_open_history_pool_reward($pdo, $openId, $poolRewardId);
 
+        $openWindowStart = get_reward_box_open_window_start($box, $openedAtUtc, $userState);
+    $currentWindowOpenCount = count_user_reward_box_opens_in_window($pdo, $boxId, $userId, $openWindowStart);
+
     upsert_reward_box_user_state(
         $pdo,
         $boxId,
         $userId,
-        ((int)($userState['open_count'] ?? 0)) + 1,
+        $currentWindowOpenCount,
         $openedAtUtc,
         $nextOpenAt,
         $rewardType,

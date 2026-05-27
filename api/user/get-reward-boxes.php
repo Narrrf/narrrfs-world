@@ -175,6 +175,22 @@ function get_user_available_dspoinc(PDO $pdo, string $userId): int {
     $stmt->execute([$userId]);
     $total = (int)$stmt->fetchColumn();
 
+    // Plain language for DEVS:
+    // Some local/dev database snapshots may not contain tbl_dspoinc_stakes yet.
+    // Production uses it to calculate available DSPOINC, but local Reward Chamber
+    // preview must not 500 when the table is missing.
+    $stakeTableExistsStmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM sqlite_master
+        WHERE type = 'table'
+          AND name = 'tbl_dspoinc_stakes'
+    ");
+    $stakeTableExists = (int)$stakeTableExistsStmt->fetchColumn() > 0;
+
+    if (!$stakeTableExists) {
+        return max(0, $total);
+    }
+
     $stmt = $pdo->prepare("
         SELECT COALESCE(SUM(amount), 0)
         FROM tbl_dspoinc_stakes
@@ -246,6 +262,155 @@ function fetch_reward_pool_summary_map(PDO $pdo): array {
     return $map;
 }
 
+/**
+ * Count all-time Reward Chamber opens per box for the active user.
+ *
+ * Plain language for DEVS:
+ * This is lifetime display only. Do not use this count for cooldowns or max-open
+ * blocking. Cooldowns must keep using current-window history counts.
+ */
+function fetch_user_reward_box_lifetime_open_count_map(PDO $pdo, string $userId): array {
+    if ($userId === '') {
+        return [];
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT
+            box_id,
+            COUNT(*) AS lifetime_open_count
+        FROM tbl_reward_box_open_history
+        WHERE user_id = ?
+          AND COALESCE(open_status, 'completed') IN ('completed', 'pending')
+        GROUP BY box_id
+    ");
+    $stmt->execute([$userId]);
+
+    $map = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $map[(int)$row['box_id']] = (int)($row['lifetime_open_count'] ?? 0);
+    }
+
+    return $map;
+}
+
+/**
+ * Count all-time Reward Chamber opens per box globally.
+ *
+ * Plain language for DEVS:
+ * This advertises chamber activity to members. It is display-only and must never
+ * control cooldowns, reward delivery, inventory, or DSPOINC.
+ */
+function fetch_reward_box_global_lifetime_open_count_map(PDO $pdo): array {
+    $stmt = $pdo->query("
+        SELECT
+            box_id,
+            COUNT(*) AS lifetime_open_count
+        FROM tbl_reward_box_open_history
+        WHERE COALESCE(open_status, 'completed') IN ('completed', 'pending')
+        GROUP BY box_id
+    ");
+
+    $map = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $map[(int)$row['box_id']] = (int)($row['lifetime_open_count'] ?? 0);
+    }
+
+    return $map;
+}
+
+/**
+ * Build a public prize preview for each reward box.
+ *
+ * Plain language for DEVS:
+ * This is advertising copy only. It intentionally does not expose weights,
+ * rates, percentages, or internal economy math. Keep this schema-safe: the
+ * live reward pool table does not have premium_claim_label.
+ */
+function fetch_reward_box_public_prize_preview_map(PDO $pdo): array {
+    $stmt = $pdo->query("
+        SELECT
+            box_id,
+            reward_type,
+            reward_title,
+            fixed_dspoinc_amount,
+            dspoinc_min,
+            dspoinc_max,
+            store_item_id,
+            genetic_catalog_id,
+            weight
+        FROM tbl_reward_box_reward_pool
+        WHERE COALESCE(is_active, 1) = 1
+        ORDER BY
+            box_id ASC,
+            CASE reward_type
+                WHEN 'premium_claim' THEN 1
+                WHEN 'store_item' THEN 2
+                WHEN 'genetic_trait' THEN 3
+                WHEN 'dspoinc' THEN 4
+                ELSE 5
+            END ASC,
+            COALESCE(weight, 0) DESC,
+            reward_title ASC
+    ");
+
+    $map = [];
+
+    foreach ($stmt->fetchAll() as $row) {
+        $boxId = (int)($row['box_id'] ?? 0);
+        if ($boxId < 1) {
+            continue;
+        }
+
+                if (!isset($map[$boxId])) {
+            $map[$boxId] = [
+                'headline' => 'Possible rewards',
+                'items' => [],
+                'item_count' => 0
+            ];
+        }
+
+        $rewardType = strtolower(trim((string)($row['reward_type'] ?? '')));
+        $title = trim((string)($row['reward_title'] ?? ''));
+
+        if ($rewardType === 'dspoinc') {
+            $fixedAmount = (int)($row['fixed_dspoinc_amount'] ?? 0);
+            $minAmount = (int)($row['dspoinc_min'] ?? 0);
+            $maxAmount = (int)($row['dspoinc_max'] ?? 0);
+
+            if ($fixedAmount > 0) {
+                $title = number_format($fixedAmount) . ' DSPOINC';
+            } elseif ($minAmount > 0 && $maxAmount > 0) {
+                $title = number_format($minAmount) . '–' . number_format($maxAmount) . ' DSPOINC';
+            } elseif ($title === '') {
+                $title = 'DSPOINC reward';
+            }
+        }
+
+        if ($rewardType === 'premium_claim' && $title === '') {
+            $title = 'Premium claim reward';
+        }
+
+        if ($title === '') {
+            continue;
+        }
+
+        if (!in_array($title, $map[$boxId]['items'], true)) {
+            $map[$boxId]['items'][] = $title;
+        }
+    }
+
+        foreach ($map as $boxId => $preview) {
+        // Plain language for DEVS:
+        // Show all active public reward labels in the profile preview.
+        // This is advertising only. Do not expose weights, rates, or internal
+        // economy math here. Backend reward rolls remain authoritative.
+        $map[$boxId]['items'] = array_values($preview['items']);
+        $map[$boxId]['item_count'] = count($map[$boxId]['items']);
+    }
+
+    return $map;
+}
+
 function fetch_visible_reward_boxes(PDO $pdo): array {
     $stmt = $pdo->query("
         SELECT
@@ -286,7 +451,67 @@ function fetch_visible_reward_boxes(PDO $pdo): array {
     return $stmt->fetchAll();
 }
 
-function calculate_disabled_state(array $box, ?array $userState, string $userId, int $availableDspoinc, string $nowUtc): array {
+/**
+ * Return the current opening window start for a reward box.
+ *
+ * Plain language for DEVS:
+ * max_opens_per_user must never use lifetime cached open_count as the final
+ * blocker. It must count only the current reward window so players unlock again
+ * after the configured daily/24h period.
+ */
+function get_reward_box_open_window_start(array $box, string $nowUtc, ?array $userState = null): ?string {
+    $cooldownType = strtolower(trim((string)($box['cooldown_type'] ?? 'none')));
+    $cooldownEnabled = (int)($box['cooldown_enabled'] ?? 0) === 1;
+    $cooldownHours = (float)($box['cooldown_hours'] ?? 0);
+
+    if ($cooldownType === 'daily') {
+        return gmdate('Y-m-d 00:00:00', strtotime($nowUtc . ' UTC'));
+    }
+
+    if ($cooldownEnabled && $cooldownHours > 0) {
+        $nowTimestamp = strtotime($nowUtc . ' UTC');
+        if ($nowTimestamp === false) {
+            return null;
+        }
+
+        return gmdate('Y-m-d H:i:s', $nowTimestamp - (int)round($cooldownHours * 3600));
+    }
+
+    $lastOpenedAt = trim((string)($userState['last_opened_at'] ?? ''));
+    if ($lastOpenedAt !== '') {
+        $lastTimestamp = strtotime($lastOpenedAt . ' UTC');
+        $nowTimestamp = strtotime($nowUtc . ' UTC');
+
+        if ($lastTimestamp !== false && $nowTimestamp !== false && ($nowTimestamp - $lastTimestamp) < 86400) {
+            return gmdate('Y-m-d H:i:s', $nowTimestamp - 86400);
+        }
+    }
+
+    return gmdate('Y-m-d 00:00:00', strtotime($nowUtc . ' UTC'));
+}
+
+/**
+ * Count user opens in the current reward window from immutable history.
+ */
+function count_user_reward_box_opens_in_window(PDO $pdo, int $boxId, string $userId, ?string $windowStart): int {
+    if ($boxId < 1 || $userId === '' || $windowStart === null || $windowStart === '') {
+        return 0;
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM tbl_reward_box_open_history
+        WHERE box_id = ?
+          AND user_id = ?
+          AND opened_at >= ?
+          AND COALESCE(open_status, 'completed') IN ('completed', 'pending')
+    ");
+    $stmt->execute([$boxId, $userId, $windowStart]);
+
+    return (int)$stmt->fetchColumn();
+}
+
+function calculate_disabled_state(PDO $pdo, array $box, ?array $userState, string $userId, int $availableDspoinc, string $nowUtc): array {
     $isLoggedIn = trim($userId) !== '';
     $isDisabled = false;
     $reasons = [];
@@ -322,8 +547,13 @@ function calculate_disabled_state(array $box, ?array $userState, string $userId,
         }
     }
 
+        $boxId = (int)($box['box_id'] ?? 0);
+    $openWindowStart = get_reward_box_open_window_start($box, $nowUtc, $userState);
+    $userOpenCount = $isLoggedIn
+        ? count_user_reward_box_opens_in_window($pdo, $boxId, $userId, $openWindowStart)
+        : 0;
+
     $maxOpensPerUser = $box['max_opens_per_user'];
-    $userOpenCount = (int)($userState['open_count'] ?? 0);
     if ($maxOpensPerUser !== null && $maxOpensPerUser !== '' && $isLoggedIn) {
         if ($userOpenCount >= (int)$maxOpensPerUser) {
             $isDisabled = true;
@@ -371,6 +601,9 @@ try {
     $boxes = fetch_visible_reward_boxes($pdo);
     $userStateMap = fetch_user_box_state_map($pdo, $userId);
     $poolSummaryMap = fetch_reward_pool_summary_map($pdo);
+$userLifetimeOpenCountMap = fetch_user_reward_box_lifetime_open_count_map($pdo, $userId);
+$globalLifetimeOpenCountMap = fetch_reward_box_global_lifetime_open_count_map($pdo);
+$prizePreviewMap = fetch_reward_box_public_prize_preview_map($pdo);
 
     $payloadBoxes = [];
 
@@ -385,7 +618,14 @@ try {
             'dspoinc_rewards' => 0
         ];
 
-        $disabledState = calculate_disabled_state($box, $userState, $userId, $availableDspoinc, $nowUtc);
+        $userLifetimeOpenCount = $userLifetimeOpenCountMap[$boxId] ?? 0;
+$globalLifetimeOpenCount = $globalLifetimeOpenCountMap[$boxId] ?? 0;
+$prizePreview = $prizePreviewMap[$boxId] ?? [
+    'headline' => 'Possible rewards',
+    'items' => []
+];
+
+        $disabledState = calculate_disabled_state($pdo, $box, $userState, $userId, $availableDspoinc, $nowUtc);
 
         $payloadBoxes[] = [
             'box_id' => $boxId,
@@ -418,6 +658,7 @@ try {
                 : null,
             'user_state' => [
                 'open_count' => (int)$disabledState['user_open_count'],
+                'lifetime_open_count' => (int)$userLifetimeOpenCount,
                 'last_opened_at' => !empty($userState['last_opened_at']) ? (string)$userState['last_opened_at'] : null,
                 'next_open_at' => $disabledState['next_open_at'],
                 'last_reward_type' => !empty($userState['last_reward_type']) ? (string)$userState['last_reward_type'] : null,
@@ -429,6 +670,8 @@ try {
                     ? (int)$userState['last_reward_dspoinc_amount']
                     : null
             ],
+            'box_lifetime_open_count' => (int)$globalLifetimeOpenCount,
+            'prize_preview' => $prizePreview,
             'reward_summary' => $poolSummary,
             'legacy_fallback_enabled' => (int)($box['legacy_fallback_enabled'] ?? 0) === 1
         ];
@@ -448,7 +691,7 @@ try {
     error_log('🎁 Get Reward Boxes failed: ' . $e->getMessage());
 
     json_response([
-        'success' => false,
-        'error' => 'Failed to load reward boxes'
-    ], 500);
+    'success' => false,
+    'error' => 'Failed to load reward boxes'
+], 500);
 }

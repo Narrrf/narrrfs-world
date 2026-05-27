@@ -2069,6 +2069,61 @@ else {
   display: block;
 }
 
+/* Reward Chamber public prize preview.
+   Plain language for DEVS:
+   This is display-only advertising. It must never expose drop rates or control
+   cooldowns, inventory, DSPOINC, rewards, or backend economy decisions. */
+.profile-reward-prize-preview {
+  margin-top: 0.9rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(251, 191, 36, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.10), transparent 36%),
+    rgba(15, 23, 42, 0.46);
+  padding: 0.85rem;
+}
+
+.profile-reward-prize-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #fff8db;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profile-reward-prize-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+  max-height: 10rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.profile-reward-prize-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  color: #f8fafc;
+  padding: 0.34rem 0.62rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.profile-reward-box-stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .profile-reward-box-last,
 .profile-reward-box-disabled,
 .profile-reward-box-cooldown,
@@ -12654,6 +12709,67 @@ function getRewardBoxBadgeMarkup(box) {
     }
   }
 
+  function getRewardBoxPrizeIcon(label) {
+  const value = String(label || '').toLowerCase();
+
+  if (value.includes('dspoinc')) return '🧀';
+  if (value.includes('elixir')) return '🧪';
+  if (value.includes('nft') || value.includes('gensuki') || value.includes('genesis')) return '🖼️';
+  if (value.includes('empire') || value.includes('trq') || value.includes('ghc') || value.includes('token')) return '🪙';
+  if (value.includes('claim')) return '👑';
+
+  return '🧬';
+}
+
+/**
+ * Render public Reward Chamber prize preview.
+ * Plain language for DEVS:
+ * This advertises main possible rewards without exposing chances/rates.
+ * Backend still controls actual reward rolls and delivery.
+ */
+function getRewardBoxPrizePreviewMarkup(box) {
+  const preview = box?.prize_preview || {};
+  const items = Array.isArray(preview.items) ? preview.items : [];
+
+  if (!items.length) {
+    return '';
+  }
+
+    const headline = String(preview.headline || 'Possible rewards');
+  const itemCount = Number(preview.item_count || items.length || 0);
+  const headlineText = itemCount > 0
+    ? `${headline} · ${formatRewardChamberNumber(itemCount)} prizes`
+    : headline;
+
+  return `
+    <div class="profile-reward-prize-preview">
+      <div class="profile-reward-prize-title">🎁 ${escapeRewardHtml(headlineText)}</div>
+      <div class="profile-reward-prize-list">
+        ${items.map((item) => `
+          <span class="profile-reward-prize-chip">
+            <span>${getRewardBoxPrizeIcon(item)}</span>
+            <span>${escapeRewardHtml(item)}</span>
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function getRewardBoxLifetimeStatsMarkup(box) {
+  const currentWindowOpens = Number(box?.user_state?.open_count || 0);
+  const userLifetimeOpens = Number(box?.user_state?.lifetime_open_count || 0);
+  const boxLifetimeOpens = Number(box?.box_lifetime_open_count || box?.global_open_count || 0);
+
+  return `
+    <div class="profile-reward-box-stat-row">
+      <div class="profile-reward-box-pill">Today ${formatRewardChamberNumber(currentWindowOpens)}x</div>
+      <div class="profile-reward-box-pill">You all-time ${formatRewardChamberNumber(userLifetimeOpens)}x</div>
+      <div class="profile-reward-box-pill">Global all-time ${formatRewardChamberNumber(boxLifetimeOpens)}x</div>
+    </div>
+  `;
+}
+
   async function playRewardBoxAnimation(boxId, openResult = null) {
     const boxArticle = document.querySelector(`[data-reward-box-id="${Number(boxId) || 0}"]`);
     if (!boxArticle) {
@@ -12732,14 +12848,15 @@ function getRewardBoxBadgeMarkup(box) {
             </div>
           </div>
 
-          ${getRewardBoxSummaryMarkup(box)}
+                    ${getRewardBoxSummaryMarkup(box)}
+          ${getRewardBoxPrizePreviewMarkup(box)}
           ${lastRewardText}
           <div id="profileRewardCooldown-${boxId}" class="profile-reward-box-cooldown" data-next-open-at="${escapeRewardHtml(cooldownValue)}"></div>
           ${disabledText}
         </div>
 
-        <div class="profile-reward-box-footer">
-          <div class="profile-reward-box-pill">Opened ${formatRewardChamberNumber(box?.user_state?.open_count || 0)} time(s)</div>
+                <div class="profile-reward-box-footer">
+          ${getRewardBoxLifetimeStatsMarkup(box)}
           <button
             type="button"
             class="profile-reward-box-button ${buttonClass}"
