@@ -362,6 +362,7 @@ require_once 'discord-invite.php';
 
 <script>
 let tickets = []; // ✅ Declare only once
+const openBingoEditForms = new Set();
 let calledNumbers = [];
 
 let activeTicketEventFilter = 'all';
@@ -904,16 +905,23 @@ if (currentMode === 'arrowMode') {
 
 function editTicket(tIndex) {
   const ticketObj = tickets[tIndex];
-  if (!ticketObj) return;
+  if (!ticketObj || !ticketObj.id) return;
 
-  // Remove the ticket from the list (so Save will replace, not add duplicate)
-  tickets.splice(tIndex, 1);
+  if (openBingoEditForms.has(ticketObj.id)) {
+    const existingForm = document.querySelector(`[data-edit-ticket-id="${ticketObj.id}"]`);
+    if (existingForm) {
+      existingForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return;
+  }
+
+  openBingoEditForms.add(ticketObj.id);
 
   // Build a grid pre-filled with existing ticket data
   const gridDiv = document.createElement('div');
   gridDiv.className =
     'bg-black/90 backdrop-blur-md border border-yellow-400/30 p-3 md:p-4 rounded-2xl shadow-2xl relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300';
-
+  gridDiv.dataset.editTicketId = ticketObj.id;
   // Ticket name input
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
@@ -966,7 +974,10 @@ gridDiv.appendChild(eventSelect);
   saveBtn.textContent = 'Save Changes';
   saveBtn.className =
     'mt-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold px-4 py-2 rounded-full shadow border-2 border-yellow-700 transition';
-  saveBtn.onclick = () => saveTicket(gridDiv, nameInput.value, ticketObj.id, eventSelect.value); // Pass the same ID
+  saveBtn.onclick = () => {
+  openBingoEditForms.delete(ticketObj.id);
+  saveTicket(gridDiv, nameInput.value, ticketObj.id, eventSelect.value);
+}; // Pass the same ID
   gridDiv.appendChild(table);
   gridDiv.appendChild(saveBtn);
 

@@ -248,15 +248,271 @@
       </aside>
     </section>
 
-          </aside>
-    </section>
 
-    <!-- 📖 Cheese Runner Guide Toggle Button -->
+  </div>    <!-- 📖 Cheese Runner Guide Toggle Button -->
     <div class="text-center mt-6">
-      <button id="toggle-cheeseman-guide-btn" onclick="toggleCheesemanGuide()" class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+      <button
+        id="toggle-cheeseman-guide-btn"
+        onclick="toggleCheesemanGuide()"
+        class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 hover:from-yellow-400 hover:via-orange-400 hover:to-yellow-400 text-black font-black py-3 px-7 rounded-2xl shadow-lg shadow-yellow-500/20 transition-all duration-300 transform hover:scale-105 border border-yellow-200/60"
+      >
         📖 Cheese Runner Game Guide
       </button>
     </div>
+
+    <!-- 🧀 Cheese Runner Game Guide -->
+    <section id="cheesemanGameGuide" class="hidden mt-6 max-w-6xl mx-auto">
+      <div class="rounded-3xl border border-yellow-400/30 bg-slate-950/90 shadow-2xl shadow-yellow-500/10 overflow-hidden">
+
+        <!-- Guide Header -->
+        <div class="relative p-6 md:p-8 border-b border-yellow-400/20 bg-gradient-to-r from-yellow-950/70 via-slate-950 to-purple-950/70">
+          <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 20% 30%, rgba(250,204,21,0.35), transparent 28%), radial-gradient(circle at 80% 20%, rgba(168,85,247,0.28), transparent 32%);"></div>
+
+          <div class="relative z-10">
+            <p class="text-xs uppercase tracking-[0.28em] text-yellow-200 font-black mb-2">Narrrfs World Game Manual</p>
+            <h2 class="text-3xl md:text-4xl font-black text-yellow-300 leading-tight">
+              🧀 Cheese Runner Guide
+            </h2>
+            <p class="mt-3 text-sm md:text-base text-slate-300 leading-relaxed max-w-4xl">
+              Collect visible cheese, survive the enemy squad, use blue portals wisely, and outplay the CheeseMind AI.
+              Higher levels become smarter, faster, and more tactical — but rewards still follow the normal score system.
+            </p>
+          </div>
+        </div>
+
+        <!-- Main Quick Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 p-5 md:p-6">
+
+          <article class="rounded-2xl border border-yellow-400/25 bg-black/35 p-4">
+            <div class="text-2xl mb-2">🎯</div>
+            <h3 class="text-lg font-black text-yellow-200 mb-2">Main Goal</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Clear each level by collecting all visible cheese crumbs and Power Cheese.
+              Blue portals are travel lanes only and are not hidden cheese.
+            </p>
+          </article>
+
+          <article class="rounded-2xl border border-cyan-400/25 bg-black/35 p-4">
+            <div class="text-2xl mb-2">🌀</div>
+            <h3 class="text-lg font-black text-cyan-200 mb-2">Portals</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Use blue portal lanes to escape across the maze. They give no score and are not required for level clear.
+              On higher levels, CheeseMind may punish repeated portal habits.
+            </p>
+          </article>
+
+          <article class="rounded-2xl border border-purple-400/25 bg-black/35 p-4">
+            <div class="text-2xl mb-2">🧠</div>
+            <h3 class="text-lg font-black text-purple-200 mb-2">CheeseMind AI</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Enemies learn only during the current run. They can pressure, predict, cut off routes, and guard key resources.
+              No AI memory is saved after the run.
+            </p>
+          </article>
+
+          <article class="rounded-2xl border border-green-400/25 bg-black/35 p-4">
+            <div class="text-2xl mb-2">💰</div>
+            <h3 class="text-lg font-black text-green-200 mb-2">DSPOINC</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Final score converts to DSPOINC with your best active role multiplier.
+              The backend remains authoritative when saving rewards.
+            </p>
+          </article>
+
+        </div>
+
+        <!-- Detailed Guide -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 px-5 md:px-6 pb-6">
+
+          <!-- Left Column -->
+          <article class="rounded-2xl border border-yellow-400/20 bg-slate-900/70 p-5">
+            <h3 class="text-xl font-black text-yellow-300 mb-4">🧀 How to Score</h3>
+
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-3 rounded-xl bg-black/35 border border-yellow-400/10 p-3">
+                <div>
+                  <div class="font-black text-yellow-100">Visible Cheese Crumb</div>
+                  <div class="text-xs text-slate-400">Main level-clear collectible</div>
+                </div>
+                <div class="font-black text-yellow-300 whitespace-nowrap">+10</div>
+              </div>
+
+              <div class="flex items-start justify-between gap-3 rounded-xl bg-black/35 border border-orange-400/10 p-3">
+                <div>
+                  <div class="font-black text-orange-100">Power Cheese</div>
+                  <div class="text-xs text-slate-400">Makes enemies vulnerable</div>
+                </div>
+                <div class="font-black text-orange-300 whitespace-nowrap">+50</div>
+              </div>
+
+              <div class="flex items-start justify-between gap-3 rounded-xl bg-black/35 border border-green-400/10 p-3">
+                <div>
+                  <div class="font-black text-green-100">Vulnerable Enemy</div>
+                  <div class="text-xs text-slate-400">Only during Power Cheese</div>
+                </div>
+                <div class="font-black text-green-300 whitespace-nowrap">+200</div>
+              </div>
+
+              <div class="flex items-start justify-between gap-3 rounded-xl bg-black/35 border border-blue-400/10 p-3">
+                <div>
+                  <div class="font-black text-blue-100">Level Clear</div>
+                  <div class="text-xs text-slate-400">When all visible collectibles are gone</div>
+                </div>
+                <div class="font-black text-blue-300 whitespace-nowrap">+500</div>
+              </div>
+
+              <div class="flex items-start justify-between gap-3 rounded-xl bg-black/35 border border-fuchsia-400/10 p-3">
+                <div>
+                  <div class="font-black text-fuchsia-100">F Glyph Boost</div>
+                  <div class="text-xs text-slate-400">Speed + protection boost</div>
+                </div>
+                <div class="font-black text-fuchsia-300 whitespace-nowrap">+100</div>
+              </div>
+            </div>
+
+            <div class="mt-4 rounded-xl border border-cyan-400/20 bg-cyan-950/20 p-3">
+              <p class="text-sm text-cyan-100 leading-relaxed">
+                🌀 <strong>Portals give no score.</strong> They are movement tools, not collectibles.
+              </p>
+            </div>
+          </article>
+
+          <!-- Middle Column -->
+          <article class="rounded-2xl border border-blue-400/20 bg-slate-900/70 p-5">
+            <h3 class="text-xl font-black text-blue-300 mb-4">🎮 Controls & Powerups</h3>
+
+            <div class="space-y-4 text-sm text-slate-300">
+              <div class="rounded-xl bg-black/35 border border-blue-400/10 p-3">
+                <h4 class="font-black text-blue-200 mb-2">Movement</h4>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <span class="rounded-lg bg-slate-950/70 px-2 py-2">⬅️⬆️⬇️➡️ Arrow Keys</span>
+                  <span class="rounded-lg bg-slate-950/70 px-2 py-2">WASD Keys</span>
+                  <span class="rounded-lg bg-slate-950/70 px-2 py-2">Mobile Swipe</span>
+                  <span class="rounded-lg bg-slate-950/70 px-2 py-2">Touch D-pad</span>
+                </div>
+              </div>
+
+              <div class="rounded-xl bg-black/35 border border-indigo-400/10 p-3">
+                <h4 class="font-black text-indigo-200 mb-2">Game Controls</h4>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <span class="rounded-lg bg-slate-950/70 px-2 py-2">▶️ Start</span>
+                  <span class="rounded-lg bg-slate-950/70 px-2 py-2">⏸️ Pause</span>
+                  <span class="rounded-lg bg-slate-950/70 px-2 py-2">P = Pause</span>
+                  <span class="rounded-lg bg-slate-950/70 px-2 py-2">↩️ Enter = Start</span>
+                </div>
+              </div>
+
+              <div class="rounded-xl bg-black/35 border border-yellow-400/10 p-3">
+                <h4 class="font-black text-yellow-200 mb-2">🧀 Power Cheese</h4>
+                <p class="leading-relaxed">
+                  Enemies flee and become vulnerable. You can earn enemy rewards multiple times,
+                  capped at <strong>3 rewarded enemy eats per Power Cheese</strong>. Nest enemies cannot be farmed.
+                </p>
+              </div>
+
+              <div class="rounded-xl bg-black/35 border border-fuchsia-400/10 p-3">
+                <h4 class="font-black text-fuchsia-200 mb-2">🅕 Glyph Boost</h4>
+                <p class="leading-relaxed">
+                  Gives +100 score, temporary speed, and brief protection. It does not let you eat enemies.
+                </p>
+              </div>
+
+              <div class="rounded-xl bg-black/35 border border-red-400/10 p-3">
+                <h4 class="font-black text-red-200 mb-2">🍄 Confusion Mushroom</h4>
+                <p class="leading-relaxed">
+                  Risk item. Temporarily reverses controls and gives no direct score reward.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <!-- Right Column -->
+          <article class="rounded-2xl border border-green-400/20 bg-slate-900/70 p-5">
+            <h3 class="text-xl font-black text-green-300 mb-4">🏆 Role Bonus / DSPOINC</h3>
+
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Cheese Runner uses the same role multiplier style as the other Narrrfs World games.
+              Your best matching role is used automatically when your final run is saved.
+            </p>
+
+            <div class="rounded-xl border border-green-400/20 bg-black/45 p-4 mb-4">
+              <div class="text-xs uppercase tracking-[0.18em] text-green-300 font-black mb-2">Reward Formula</div>
+              <div class="font-mono text-sm text-green-100 break-words">
+                floor((score × best role multiplier) / 25)
+              </div>
+            </div>
+
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between gap-3 rounded-xl bg-yellow-400/10 border border-yellow-400/20 p-3">
+                <span class="font-black text-yellow-200">🎴 VIP Holder</span>
+                <span class="font-black text-yellow-100">2.0x</span>
+              </div>
+
+              <div class="flex justify-between gap-3 rounded-xl bg-slate-300/10 border border-slate-300/20 p-3">
+                <span class="font-black text-slate-100">🏆 Holder</span>
+                <span class="font-black text-slate-100">1.5x</span>
+              </div>
+
+              <div class="flex justify-between gap-3 rounded-xl bg-red-400/10 border border-red-400/20 p-3">
+                <span class="font-black text-red-200">Champion</span>
+                <span class="font-black text-red-100">1.4x</span>
+              </div>
+
+              <div class="flex justify-between gap-3 rounded-xl bg-blue-400/10 border border-blue-400/20 p-3">
+                <span class="font-black text-blue-200">WL / Season Tester</span>
+                <span class="font-black text-blue-100">1.3x</span>
+              </div>
+
+              <div class="flex justify-between gap-3 rounded-xl bg-cyan-400/10 border border-cyan-400/20 p-3">
+                <span class="font-black text-cyan-200">Early Bird</span>
+                <span class="font-black text-cyan-100">1.2x</span>
+              </div>
+
+              <div class="flex justify-between gap-3 rounded-xl bg-orange-400/10 border border-orange-400/20 p-3">
+                <span class="font-black text-orange-200">🧀 Cheese Hunter</span>
+                <span class="font-black text-orange-100">1.1x</span>
+              </div>
+            </div>
+
+            <p class="mt-4 text-xs text-slate-400 leading-relaxed">
+              Role names with or without emoji are supported. The highest eligible multiplier wins.
+            </p>
+          </article>
+        </div>
+
+        <!-- CheeseMind Fairness Footer -->
+        <div class="mx-5 md:mx-6 mb-6 rounded-2xl border border-purple-400/25 bg-gradient-to-r from-purple-950/40 via-black/30 to-blue-950/40 p-5">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+            <div>
+              <h3 class="text-xl font-black text-purple-300 mb-2">🧠 CheeseMind Fairness</h3>
+              <p class="text-sm text-slate-300 leading-relaxed">
+                CheeseMind is active only during your current run. It watches routes, pressure moments,
+                repeated portal use, and remaining cheese, then changes enemy tactics by level.
+              </p>
+            </div>
+
+            <div class="rounded-xl bg-black/35 border border-purple-400/15 p-4">
+              <h4 class="font-black text-purple-200 mb-2">Enemy Squad Roles</h4>
+              <ul class="text-sm text-slate-300 space-y-1">
+                <li>🔴 Destroyer pressures the mouse.</li>
+                <li>🟣 Emperor predicts and cuts off routes.</li>
+                <li>🟢 Invader guards resources and escape lanes.</li>
+              </ul>
+            </div>
+
+            <div class="rounded-xl bg-black/35 border border-green-400/15 p-4">
+              <h4 class="font-black text-green-200 mb-2">Privacy / Economy Safe</h4>
+              <ul class="text-sm text-slate-300 space-y-1">
+                <li>No AI memory is stored after the run.</li>
+                <li>No AI data is written to the database.</li>
+                <li>No extra DSPOINC source is created.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
 
     <!-- 💰 Cheese Runner DSPOINC Scores Toggle Button -->
     <div class="text-center mt-4">
@@ -265,167 +521,61 @@
       </button>
     </div>
 
-    <!-- 🧀 CHEESE RUNNER CONTROLS & HELP -->
-    <div id="cheeseman-controls-help-section" style="background: linear-gradient(135deg, #78350f 0%, #92400e 45%, #111827 100%); border: 2px solid #fbbf24; border-radius: 15px; padding: 25px; margin: 20px 0; color: white; box-shadow: 0 8px 32px rgba(250, 204, 21, 0.35);">
-      <h3 id="cheeseman-controls-help-title" style="color: #fbbf24; font-size: 1.4em; font-weight: bold; margin-bottom: 20px; text-align: center; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">🧀 CHEESE RUNNER CONTROLS & HELP</h3>
+    <!-- 💰 Cheese Runner DSPOINC Scores -->
+    <section id="cheesemanDSPOINCScores" class="hidden mt-6 max-w-6xl mx-auto rounded-2xl border border-green-400/25 bg-slate-950/80 p-5 shadow-xl">
+      <h2 class="text-2xl font-black text-green-300 mb-3">💰 DSPOINC Scores / Rewards</h2>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; text-align: left;">
-        <!-- MOVEMENT CONTROLS -->
-        <div>
-          <h4 style="color: #60a5fa; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #60a5fa; padding-bottom: 5px;">🎯 MOVEMENT CONTROLS</h4>
-          <div style="font-size: 0.9em; line-height: 1.6;">
-            <p><strong>Arrow Keys:</strong> ↑=Up, ↓=Down, ←=Left, →=Right</p>
-            <p><strong>WASD Keys:</strong> W=Up, S=Down, A=Left, D=Right</p>
-            <p><strong>Mobile:</strong> Swipe in the direction you want to move</p>
-            <p><strong>Touch:</strong> Use the on-screen D-pad below the maze</p>
+      <p class="text-sm text-slate-300 leading-relaxed mb-4">
+        Your raw Cheese Runner score is converted into DSPOINC using your best active role bonus.
+        The backend remains authoritative when saving your final run.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
+        <div class="rounded-xl bg-black/40 border border-green-400/20 p-4">
+          <h3 class="font-black text-green-200 mb-2">🧮 Reward Formula</h3>
+          <div class="font-mono text-xs text-green-200">
+            floor((score × role multiplier) / 25)
           </div>
         </div>
 
-        <!-- GAME CONTROLS -->
-        <div>
-          <h4 style="color: #10b981; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">🎮 GAME CONTROLS</h4>
-          <div style="font-size: 0.9em; line-height: 1.6;">
-            <p><strong>▶️ Start:</strong> Begin the current Cheese Runner run</p>
-            <p><strong>⏸️ Pause Button:</strong> Pause or resume the maze</p>
-            <p><strong>P Key:</strong> Quick keyboard pause/resume</p>
-            <p><strong>🔄 Restart:</strong> Reset score, level, lives, and powerups</p>
-          </div>
+        <div class="rounded-xl bg-black/40 border border-yellow-400/20 p-4">
+          <h3 class="font-black text-yellow-200 mb-2">⭐ Score Sources</h3>
+          <ul class="list-disc list-inside space-y-1">
+            <li>Visible cheese crumb: +10 base score</li>
+            <li>Power Cheese: +50 base score</li>
+            <li>Vulnerable enemy eaten: +200 base score</li>
+            <li>Level clear bonus: +500 base score</li>
+            <li>F Glyph Boost pickup: +100 score</li>
+            <li>Confusion Mushroom: no direct score reward</li>
+            <li>Portals / tunnel lanes: no score</li>
+          </ul>
         </div>
 
-        <!-- SCORING -->
-        <div>
-          <h4 style="color: #a78bfa; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #a78bfa; padding-bottom: 5px;">💰 SCORING BASICS</h4>
-          <div style="font-size: 0.9em; line-height: 1.6;">
-            <p><strong>Small crumbs:</strong> +10 score</p>
-            <p><strong>Power cheese:</strong> +50 score</p>
-            <p><strong>Stunned enemy:</strong> +200 score</p>
-            <p><strong>Level clear:</strong> +500 score</p>
-          </div>
+        <div class="rounded-xl bg-black/40 border border-orange-400/20 p-4">
+          <h3 class="font-black text-orange-200 mb-2">⚡ Power Cheese Cap</h3>
+          <ul class="list-disc list-inside space-y-1">
+            <li>Power Cheese lets players eat enemies for a short time.</li>
+            <li>Enemy rewards are capped at 3 rewarded enemy eats per Power Cheese.</li>
+            <li>Enemies inside the nest/spawn area cannot be farmed.</li>
+          </ul>
         </div>
 
-        <!-- ROLE BONUSES -->
-        <div>
-          <h4 style="color: #fbbf24; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #fbbf24; padding-bottom: 5px;">🏆 ROLE BONUSES</h4>
-          <div style="font-size: 0.9em; line-height: 1.6;">
-            <p><span style="color: #FFD700;">🟡 VIP Holder:</span> 2.0x DSPOINC reward</p>
-            <p><span style="color: #C0C0C0;">⚪ Holder:</span> 1.5x DSPOINC reward</p>
-            <p><span style="color: #FF4500;">🔴 Champion:</span> 1.4x DSPOINC reward</p>
-            <p><span style="color: #00BFFF;">🔵 WL / Season Tester:</span> 1.3x DSPOINC reward</p>
-            <p><span style="color: #38bdf8;">🔵 Early Bird:</span> 1.2x DSPOINC reward</p>
-            <p><span style="color: #FFA500;">🟠 Cheese Hunter:</span> 1.1x DSPOINC reward</p>
-          </div>
-        </div>
+        <div class="rounded-xl bg-black/40 border border-cyan-400/20 p-4">
+  <h3 class="font-black text-cyan-200 mb-2">🏆 Role Multipliers</h3>
+  <p class="text-xs text-slate-400 mb-3">
+    The best matching role is used automatically. Role names with or without emoji are supported.
+  </p>
+  <ul class="list-disc list-inside space-y-1">
+    <li><span class="text-yellow-300 font-bold">🎴 VIP Holder / VIP Holder:</span> 2.0x</li>
+    <li><span class="text-slate-200 font-bold">🏆 Holder / Holder:</span> 1.5x</li>
+    <li><span class="text-red-300 font-bold">Champion:</span> 1.4x</li>
+    <li><span class="text-blue-300 font-bold">WL / Season Tester:</span> 1.3x</li>
+    <li><span class="text-cyan-300 font-bold">Early Bird:</span> 1.2x</li>
+    <li><span class="text-orange-300 font-bold">🧀 Cheese Hunter / Cheese Hunter:</span> 1.1x</li>
+  </ul>
+</div>
       </div>
-    </div>
-
-    <!-- 📖 CHEESE RUNNER GAME GUIDE -->
-    <div id="cheesemanGameGuide" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 via-yellow-950 to-orange-950 rounded-xl border-2 border-yellow-400 shadow-2xl">
-      <div class="flex justify-between items-center mb-4 gap-4">
-        <h3 class="text-2xl font-bold text-yellow-300">📖 Cheese Runner Game Guide</h3>
-        <button onclick="toggleCheesemanGuide()" class="text-yellow-300 hover:text-yellow-100 font-black text-xl">✕</button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm text-gray-200 leading-relaxed">
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
-          <h4 class="text-yellow-300 font-black mb-2">🧀 Goal</h4>
-          <p>Collect crumbs, power cheese, tunnel crumbs, and rare items while surviving enemy chases. Clear each level by collecting all active collectibles on the maze.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
-          <h4 class="text-cyan-300 font-black mb-2">⚡ Power Cheese</h4>
-          <p>Power cheese makes enemies vulnerable for a short time. During this window, touching enemies eats them for bonus score instead of costing a life.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
-          <h4 class="text-purple-300 font-black mb-2">🖤 Glyph Boost</h4>
-          <p>The rare F glyph item can appear on safe maze tiles. Collecting it gives the mouse a short speed boost and protection from enemy damage. It protects you, but Power Cheese remains the enemy-eating tool.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
-          <h4 class="text-red-300 font-black mb-2">🍄 Confusion Mushroom</h4>
-          <p>The Mushroom is a poison pickup. If you collect it, your controls are reversed for a short time. Eating it at the wrong moment can send the mouse straight into danger.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
-          <h4 class="text-blue-300 font-black mb-2">🚪 Tunnel Lanes</h4>
-          <p>Some levels now have open tunnel lanes marked by side exits. Move through the left edge to reappear on the right, or through the right edge to reappear on the left.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
-          <h4 class="text-red-300 font-black mb-2">👾 Enemies</h4>
-          <p>Enemies become smarter as levels rise. Freshly respawned enemies have a short nest protection lock to prevent score farming inside the nest.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
-          <h4 class="text-orange-300 font-black mb-2">🔥 Combo Bar</h4>
-          <p>Collecting cheese quickly builds combo levels. Higher combo levels improve score pace and reward fast, clean routes through the maze.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20">
-          <h4 class="text-green-300 font-black mb-2">🧭 Level Progression</h4>
-          <p>Cheese Runner now has an expanded level pool with more open lanes, tunnel rows, trickier mid-map routes, and rising enemy pressure as the run continues.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-yellow-400/20 md:col-span-2">
-          <h4 class="text-green-300 font-black mb-2">✅ Fair Play</h4>
-          <p>Scores are saved through the Cheese Runner backend. Raw score feeds the seasonal leaderboard, while DSPOINC rewards are calculated from score, role multiplier, and the current conversion rules. Backend save remains authoritative.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 💰 CHEESE RUNNER DSPOINC SCORES -->
-    <div id="cheesemanDSPOINCScores" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 via-emerald-950 to-green-950 rounded-xl border-2 border-emerald-400 shadow-2xl">
-      <div class="flex justify-between items-center mb-4 gap-4">
-        <h3 class="text-2xl font-bold text-emerald-300">💰 DSPOINC Scores - Cheese Runner Rewards</h3>
-        <button onclick="toggleCheesemanDSPOINCScores()" class="text-emerald-300 hover:text-emerald-100 font-black text-xl">✕</button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm text-gray-200 leading-relaxed">
-        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
-          <h4 class="text-yellow-300 font-black mb-2">🧮 Reward Formula</h4>
-          <p><strong>DSPOINC reward:</strong> floor((score × role multiplier) / 25)</p>
-          <p class="text-gray-400 mt-2">The frontend display uses the current Cheese Runner conversion rate. Backend save remains the authority for the final ledger write.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
-          <h4 class="text-green-300 font-black mb-2">📌 Example Rewards</h4>
-          <p><strong>1,000 score:</strong> 40 DSPOINC base</p>
-          <p><strong>5,000 score:</strong> 200 DSPOINC base</p>
-          <p><strong>10,000 score:</strong> 400 DSPOINC base</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
-          <h4 class="text-purple-300 font-black mb-2">🏆 VIP Example</h4>
-          <p><strong>10,000 score × 2.0 VIP:</strong> 800 DSPOINC</p>
-          <p class="text-gray-400 mt-2">Role bonuses increase DSPOINC rewards, not the raw maze score.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
-          <h4 class="text-red-300 font-black mb-2">🛡️ Economy Safety</h4>
-          <p>Cheese Runner uses a safer conversion rate of 25 to keep runs rewarding while reducing farming risk. Glyph Boost protects movement, but it does not automatically farm enemy points.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
-          <h4 class="text-cyan-300 font-black mb-2">🧀 Score Sources</h4>
-          <p><strong>Crumbs / tunnel crumbs:</strong> +10 score</p>
-          <p><strong>Power cheese:</strong> +50 score</p>
-          <p><strong>Vulnerable enemy:</strong> +200 score</p>
-          <p><strong>Level clear:</strong> +500 score</p>
-          <p><strong>F Glyph Boost:</strong> +100 score and temporary protection/speed</p>
-          <p><strong>Confusion Mushroom:</strong> reverses controls temporarily, no direct reward</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20">
-          <h4 class="text-orange-300 font-black mb-2">🔥 Combo Impact</h4>
-          <p>Fast cheese collection can increase score through the combo system. Higher score means higher DSPOINC output after role multiplier and conversion rate are applied.</p>
-        </div>
-
-        <div class="bg-black/35 rounded-xl p-4 border border-emerald-400/20 md:col-span-2">
-          <h4 class="text-cyan-300 font-black mb-2">📊 Leaderboard Source</h4>
-          <p>Raw Cheese Runner scores go to the seasonal leaderboard. DSPOINC rewards go to the player ledger and winners systems when the backend save succeeds. Season 11 uses the active season backend flow.</p>
-        </div>
-      </div>
-    </div>
+    </section>
   
     <!-- 🎯 CHEESE RUNNER USER STATS SECTION -->
     <section id="cheeseman-user-stats-section" class="mt-10 mb-10">
@@ -775,6 +925,6 @@
     scores.classList.add('hidden');
   }
 </script>
-<script src="scripts/cheeseman.js?v=1.1.9"></script>
+<script src="scripts/cheeseman.js?v=1.2.0"></script>
 </body>
 </html>

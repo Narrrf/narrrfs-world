@@ -1,4 +1,18 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
+
+---
+
+## ✅ UPDATE — MAY 27, 2026 — DISCORD BOT PUBLIC COMMANDS / ONBOARDING / ECONOMY PASS
+
+### Status
+
+Bot Specialist 2.0 public Discord command pass completed for today.
+
+New public utility commands were prepared for the local Windows Discord bot workflow:
+
+```text
+C:\xampp-server\htdocs\narrrfs-world\discord
+npm start
 ---
 
 ## ✅ UPDATE — MAY 27, 2026 — REWARD CHAMBER COOLDOWN / OPEN COUNT API PATCH READY

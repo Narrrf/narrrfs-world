@@ -89,13 +89,13 @@ const CHEESEMIND_LOCAL_VISUAL_DEBUG_STORAGE_KEY = 'narrrfs_cheesemind_visual_deb
 
 const GLYPH_BOOST_IMAGE_SRC = 'img/cheeseman/F.png';
 const GLYPH_BOOST_DURATION_MS = 6000;
-const GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START = 1; //0.18; normal 
+const GLYPH_BOOST_DROP_CHANCE_ON_LEVEL_START = 0.18;
 const GLYPH_BOOST_SCORE_BONUS = 100;
 const GLYPH_BOOST_TICK_SPEED_MULTIPLIER = 0.65;
 
 const CONFUSION_MUSHROOM_IMAGE_SRC = 'img/cheeseman/mushroom.png';
 const CONFUSION_MUSHROOM_DURATION_MS = 5000;
-const CONFUSION_MUSHROOM_DROP_CHANCE_ON_LEVEL_START = 1; // 0.12 production
+const CONFUSION_MUSHROOM_DROP_CHANCE_ON_LEVEL_START = 0.44;
 const CONFUSION_MUSHROOM_SCORE_PENALTY = 0;
 
 const TILE_TUNNEL = 'tunnel';
@@ -2469,57 +2469,64 @@ function isCrossTileCollision(enemy) {
  */
 function resolveEnemyCollision(enemy) {
   if (enemy.respawnLockTicks > 0) {
+    if (isPowerModeActive()) {
+      addFloatingText('RESPAWNING', enemy.row, enemy.col, '#94a3b8');
+      setStatus(`${enemy.name} is respawning and cannot be eaten yet.`);
+    }
+
     return false;
   }
 
   if (isPowerModeActive()) {
-  if (isEnemyInsideNestArea(enemy)) {
-    setStatus('Power Cheese active, but nest enemies cannot be farmed.');
+    if (isEnemyInsideNestArea(enemy)) {
+      addFloatingText('NEST SAFE', enemy.row, enemy.col, '#d8b4fe');
+      setStatus('Protected spawn zone: lure enemies out of the nest before eating them.');
+      return false;
+    }
+
+    if (powerCheeseEnemyRewardsUsed >= POWER_CHEESE_ENEMY_REWARD_CAP) {
+      addFloatingText('CAP 3/3', enemy.row, enemy.col, '#facc15');
+      setStatus(`Power Cheese reward cap reached (${POWER_CHEESE_ENEMY_REWARD_CAP}/${POWER_CHEESE_ENEMY_REWARD_CAP}). Clear cheese or grab another Power Cheese.`);
+      return false;
+    }
+
+    powerCheeseEnemyRewardsUsed += 1;
+    score += SCORE_ENEMY;
+
+    addHitExplosion(enemy.row, enemy.col);
+    addFloatingText(
+      `EATEN +${SCORE_ENEMY} ${powerCheeseEnemyRewardsUsed}/${POWER_CHEESE_ENEMY_REWARD_CAP}`,
+      enemy.row,
+      enemy.col,
+      '#22c55e'
+    );
+
+    enemy.row = enemy.startRow;
+    enemy.col = enemy.startCol;
+    enemy.previousRow = enemy.startRow;
+    enemy.previousCol = enemy.startCol;
+    enemy.direction = DIRECTIONS.up;
+    enemy.isStunned = false;
+    enemy.respawnLockTicks = ENEMY_RESPAWN_LOCK_TICKS;
+
+    setStatus(`${enemy.name} eaten! Power reward ${powerCheeseEnemyRewardsUsed}/${POWER_CHEESE_ENEMY_REWARD_CAP}.`);
+    playSound('enemy');
     return false;
   }
 
-  if (powerCheeseEnemyRewardsUsed >= POWER_CHEESE_ENEMY_REWARD_CAP) {
-    setStatus(`Power Cheese reward cap reached (${POWER_CHEESE_ENEMY_REWARD_CAP}/${POWER_CHEESE_ENEMY_REWARD_CAP}). Stay alive and clear cheese!`);
+  if (isGlyphBoostActive() && lives > 0) {
+    setStatus('🖤 Glyph Boost protected you!');
+    playSound('power');
     return false;
   }
 
-  powerCheeseEnemyRewardsUsed += 1;
-  score += SCORE_ENEMY;
+  if (lives <= 0) {
+    clearGameTimer();
+    endGame();
+    return true;
+  }
 
-  addHitExplosion(enemy.row, enemy.col);
-  addFloatingText(
-    `EATEN +${SCORE_ENEMY} ${powerCheeseEnemyRewardsUsed}/${POWER_CHEESE_ENEMY_REWARD_CAP}`,
-    enemy.row,
-    enemy.col,
-    '#22c55e'
-  );
-
-  enemy.row = enemy.startRow;
-  enemy.col = enemy.startCol;
-  enemy.previousRow = enemy.startRow;
-  enemy.previousCol = enemy.startCol;
-  enemy.direction = DIRECTIONS.up;
-  enemy.isStunned = false;
-  enemy.respawnLockTicks = ENEMY_RESPAWN_LOCK_TICKS;
-
-  setStatus(`${enemy.name} eaten! Power reward ${powerCheeseEnemyRewardsUsed}/${POWER_CHEESE_ENEMY_REWARD_CAP}.`);
-  playSound('enemy');
-  return false;
-}
-
-if (isGlyphBoostActive() && lives > 0) {
-  setStatus('🖤 Glyph Boost protected you!');
-  playSound('power');
-  return false;
-}
-
-if (lives <= 0) {
-  clearGameTimer();
-  endGame();
-  return true;
-}
-
-lives -= 1;
+  lives -= 1;
   playSound('hit');
   addHitExplosion(player.row, player.col);
 
@@ -2981,6 +2988,35 @@ drawPlayer();
 
   continue;
 }
+
+        if (tile === 'nest') {
+          // Protected enemy spawn zone.
+          // Plain language for DEVS:
+          // This is the anti-farm area. Power Cheese rewards should happen in the maze,
+          // not by camping enemies inside their respawn nest.
+          const centerX = x + TILE_SIZE / 2;
+          const centerY = y + TILE_SIZE / 2;
+          const pulse = 0.75 + Math.sin(performance.now() / 180) * 0.12;
+
+          ctx.fillStyle = 'rgba(88, 28, 135, 0.42)';
+          ctx.fillRect(x + 1, y + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+
+          ctx.strokeStyle = 'rgba(216, 180, 254, 0.75)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+
+          ctx.fillStyle = `rgba(250, 204, 21, ${pulse})`;
+          ctx.font = 'bold 9px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('SAFE', centerX, centerY - 3);
+
+          ctx.fillStyle = 'rgba(248, 250, 252, 0.78)';
+          ctx.font = 'bold 8px Arial';
+          ctx.fillText('NEST', centerX, centerY + 7);
+
+          continue;
+        }
 
         if (tile === TILE_TUNNEL) {
   // Portal tiles are visible movement lanes, not hidden cheese.
