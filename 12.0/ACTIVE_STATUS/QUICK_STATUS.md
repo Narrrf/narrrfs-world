@@ -1,5 +1,637 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## ✅ UPDATE — MAY 29, 2026 — LABYRINTH BLAST PHASE 1 LOCAL PLAYABLE VERIFIED
+
+### Status
+
+Labyrinth Blast Phase 1 static game integration is now locally verified and playable inside Narrrfs World.
+
+The game was originally imported from the local source folder:
+
+```text
+FOX/
+```
+
+but the public-facing Narrrfs game name and route are now:
+
+```text
+Display name: Labyrinth Blast
+Public page: public/labyrinth-blast.html
+Public build folder: public/labyrinth-blast/
+Database game key planned for backend: labyrinth_blast
+Source folder for rebuilds: FOX/
+```
+
+Important naming rule:
+
+```text
+Do not call the public game FOX.
+FOX is only the local/source folder name.
+Player-facing name is Labyrinth Blast.
+```
+
+### Phase 1 local integration confirmed
+
+Confirmed working locally at:
+
+```text
+http://localhost/public/labyrinth-blast.html
+```
+
+Current working structure:
+
+```text
+public/labyrinth-blast.html
+public/labyrinth-blast/index.html
+public/labyrinth-blast/assets/
+FOX/src/
+```
+
+The wrapper page loads the static Vite build through an iframe and keeps a Narrrfs Games back button visible.
+
+Confirmed local play test:
+
+```text
+✅ Start screen loads
+✅ ENTER THE MAZE works
+✅ HOW TO PLAY works
+✅ Character select works
+✅ Nightfox playable
+✅ Bear playable
+✅ Bull playable
+✅ Game canvas renders
+✅ Maze/level generation works
+✅ Player renders
+✅ Enemies render
+✅ WASD movement works
+✅ Bomb placement works
+✅ Wall breaking works
+✅ Score increases during play
+✅ Level 1 can be cleared
+✅ Level cleared overlay appears
+✅ Score is shown on end screen
+✅ Next Level button appears
+✅ Main Menu button appears
+```
+
+Test screenshots showed successful gameplay with score values around:
+
+```text
+Level 1 active run score: 1870
+Level cleared score: 2780
+```
+
+### Build and route fixes completed
+
+The first local load showed only the Narrrfs Games back button because the iframe loaded but the Vite asset path/router setup was not correct yet.
+
+Fixes completed:
+
+```text
+1. Vite build asset path corrected for static Narrrfs embedding.
+2. React BrowserRouter problem removed.
+3. App.tsx now renders Index directly.
+4. public/labyrinth-blast.html iframe route works.
+```
+
+Current `App.tsx` model:
+
+```text
+App.tsx imports ./pages/Index
+App renders <Index />
+No BrowserRouter is used for Labyrinth Blast.
+```
+
+Reason:
+
+```text
+Labyrinth Blast is a single static game screen.
+BrowserRouter caused 404 route handling when opened from /public/labyrinth-blast/index.html.
+Do not re-add BrowserRouter unless a future router basename is explicitly planned and tested.
+```
+
+### Game engine bug fixed
+
+A critical canvas crash was found during movement testing:
+
+```text
+Uncaught TypeError:
+Failed to execute 'createRadialGradient' on 'CanvasRenderingContext2D':
+The provided double value is non-finite.
+```
+
+Cause:
+
+```text
+Enemy movement could create NaN coordinates when distance to target cell was 0.
+The renderer then passed NaN into canvas radial gradient drawing.
+```
+
+Fix direction used:
+
+```text
+engine.ts enemy movement now guards zero-distance / non-finite movement.
+renderer.ts also guards enemy/player drawing against non-finite x/y values.
+```
+
+Result:
+
+```text
+✅ No more createRadialGradient crash
+✅ Player and enemies render correctly
+✅ Movement and bomb gameplay continue normally
+```
+
+### Files touched / involved in Phase 1
+
+Source/build files:
+
+```text
+FOX/vite.config.ts
+FOX/src/App.tsx
+FOX/src/components/GameCanvas.tsx
+FOX/src/game/engine.ts
+FOX/src/game/renderer.ts
+```
+
+Public files/folders:
+
+```text
+public/labyrinth-blast.html
+public/labyrinth-blast/
+```
+
+Do not manually edit hashed build files:
+
+```text
+public/labyrinth-blast/assets/*.js
+public/labyrinth-blast/assets/*.css
+```
+
+Always edit source in:
+
+```text
+FOX/src/
+```
+
+then rebuild and copy:
+
+```powershell
+cd C:\xampp-server\htdocs\narrrfs-world\FOX
+npm run build
+
+cd C:\xampp-server\htdocs\narrrfs-world
+
+if (Test-Path public\labyrinth-blast) {
+  Remove-Item public\labyrinth-blast -Recurse -Force
+}
+
+New-Item -ItemType Directory -Path public\labyrinth-blast | Out-Null
+
+Copy-Item FOX\dist\* public\labyrinth-blast\ -Recurse -Force
+```
+
+### Important current scope
+
+Labyrinth Blast is currently:
+
+```text
+Playable locally
+Static public page integrated
+Not yet score-save integrated
+Not yet leaderboard integrated
+Not yet profile integrated
+Not yet admin integrated
+Not yet production pushed
+```
+
+Do not claim full game sync yet.
+
+Do not claim 9/9 synced games yet.
+
+### Next planned phase
+
+Next phase is backend score saving.
+
+Recommended new API file:
+
+```text
+api/dev/save-labyrinth-blast-score.php
+```
+
+Recommended canonical game key:
+
+```text
+labyrinth_blast
+```
+
+Recommended frontend hook:
+
+```text
+FOX/src/components/GameCanvas.tsx
+```
+
+Save should trigger only once per run when the game changes from:
+
+```text
+playing
+```
+
+to either:
+
+```text
+won
+lost
+```
+
+Useful source fields already exist in GameState:
+
+```text
+score
+time
+level
+status
+character
+```
+
+Use `api/dev/save-cheeseman-score.php` as the main backend reference because it already follows the Narrrfs pattern:
+
+```text
+session-first auth
+localhost fallback
+active season lookup
+adaptive table inserts
+tbl_tetris_scores leaderboard source
+tbl_user_scores DSPOINC ledger source
+tbl_score_adjustments audit/source trail
+```
+
+### Do not touch yet until score save works
+
+Keep these files unchanged until Labyrinth Blast score saving is working locally:
+
+```text
+api/dev/get-leaderboard.php
+public/leaderboard.html
+public/profile.html
+public/admin-interface.html
+```
+
+After score saving is confirmed, integration order should be:
+
+```text
+1. api/dev/save-labyrinth-blast-score.php
+2. GameCanvas.tsx one-save-per-run frontend hook
+3. api/dev/get-leaderboard.php add labyrinth_blast leaderboard
+4. public/leaderboard.html add Labyrinth Blast card
+5. public/profile.html add Labyrinth Blast game card/play button
+6. public/admin-interface.html add Labyrinth Blast game management section
+7. QUICK_STATUS.md update after verified tests
+```
+
+### Guardrails for next agent
+
+```text
+Do not edit generated public/labyrinth-blast/assets files.
+Do not rename the public game back to FOX.
+Do not add leaderboard/profile/admin changes before score save works.
+Do not make frontend authoritative for rewards/economy.
+Do not invent DB tables unless existing score tables cannot support the game.
+Do not remove existing comments unless explicitly asked.
+Keep Labyrinth Blast changes isolated to the task files.
+```
+
+Current standby state:
+
+```text
+Labyrinth Blast Phase 1 is locally playable and ready for Phase 2 score save integration.
+```
+
+---
+
+
+---
+
+## ✅ UPDATE — MAY 28, 2026 — LAB 9.92 STANDBY + PROFILE REWARD CHAMBER + CHEESE RUNNER PUSH SYNC
+
+### Status
+
+Lab System 9.92 is now going standby after the latest push package.
+
+This update covers the latest local → render-deploy push work around:
+
+```text
+public/lab.html
+public/profile.html
+public/cheeseman.html
+api/user/get-reward-boxes.php
+api/user/open-reward-box.php
+api/user/save-nft-custom-name.php
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+```
+
+Git commit used for deployment review:
+
+```text
+2ef127c profile and bugs + cheesman 1
+```
+
+### Reward Chamber backend logic fixed
+
+Reward Chamber cooldown / max-open logic was patched so `tbl_reward_box_user_state.open_count` is no longer treated as a lifetime blocker.
+
+Correct model going forward:
+
+```text
+tbl_reward_box_open_history = immutable lifetime source of truth
+tbl_reward_box_user_state.open_count = current-window cached display count only
+```
+
+Current-window counting rules:
+
+```text
+cooldown_type = daily:
+  count opens from current UTC day start
+
+cooldown_enabled = 1 and cooldown_hours > 0:
+  count opens from now - cooldown_hours
+
+cooldown_enabled = 0:
+  no next_open_at blocker
+  current day/window count is still used for max_opens_per_user safety
+```
+
+Do not restore lifetime counts into `tbl_reward_box_user_state.open_count`.
+
+Lifetime counts must use separate API fields.
+
+### Reward Chamber state rebuild completed
+
+Live DB state was rebuilt safely from:
+
+```text
+tbl_reward_box_open_history
+```
+
+using a current-window rebuild script.
+
+Confirmed:
+
+```text
+PRAGMA integrity_check = ok
+STATE_VS_HISTORY_TODAY = ok
+MISSING_STATE_ROWS_ALL_TIME = empty
+```
+
+This fixed stale cached counts where some users had only 1 open today but cached open_count values like 15 / 18 / 27 / 32.
+
+Important:
+
+```text
+No reward history was deleted.
+No DSPOINC balances were changed.
+No items were re-granted.
+No reward rows were recreated from backups.
+```
+
+### Reward Chamber Profile display improved
+
+`profile.html` Reward Chamber cards now show more useful member-facing information:
+
+```text
+Today/current-window opens
+User all-time opens per box
+Global all-time opens per box
+Possible active rewards per box
+Prize count headline
+```
+
+The profile preview is now database-driven from active reward pool rows:
+
+```text
+tbl_reward_box_reward_pool
+WHERE COALESCE(is_active, 1) = 1
+```
+
+If an admin activates/deactivates reward rows or changes reward titles / DSPOINC min-max values, the profile preview updates automatically on reload/API refresh.
+
+Guardrail:
+
+```text
+The profile preview must not show weights, rates, percentages, or internal economy math.
+It is advertising/display only.
+Backend remains authoritative for rolls, inventory, DSPOINC, cooldowns, and reward delivery.
+```
+
+Schema note:
+
+```text
+tbl_reward_box_reward_pool does NOT have premium_claim_label.
+Do not select premium_claim_label in get-reward-boxes.php.
+Use reward_title or fallback text instead.
+```
+
+### Reward Chamber API debug reminder
+
+During local debug, `get-reward-boxes.php` temporarily exposed:
+
+```text
+debug_message
+debug_file
+debug_line
+```
+
+Before production push/live upload, ensure API error handling is back to safe mode:
+
+```php
+error_reporting(0);
+ini_set('display_errors', 0);
+```
+
+and catch response should only expose:
+
+```php
+json_response([
+    'success' => false,
+    'error' => 'Failed to load reward boxes'
+], 500);
+```
+
+### Box #2 economy guardrails remain active
+
+Box #2 / Lucky Cheese Loot was previously rebalanced after DSPOINC-positive behavior.
+
+Current intended safe model:
+
+```text
+price_dspoinc = 149999
+max_opens_per_user = 15
+cooldown_enabled = 0 temporary live model
+cooldown_type = none
+cooldown_hours = 0
+```
+
+Final known balance direction:
+
+```text
+genetic_trait lane = main/common lane
+store_item/NFT lane = reduced rare lane
+dspoinc lane = rare and capped
+```
+
+Important weight guardrails:
+
+```text
+2k EMPIRE weight > 5k EMPIRE weight
+Genesis NFT weight = 1
+Narrrf Genesis NFT weight = 1
+Hidden Grail rows must stay ultra-rare
+Do not reintroduce the old farmable DSPOINC-positive config
+```
+
+### Lab 9.92 bugfix state
+
+Recent Lab frontend bugs were fixed and tested locally:
+
+```text
+Genetic Inventory List mode Instant Finish click listener fixed
+Genesis Elixir buttons become usable after starting timer without page reload
+Research Queue List mode horizontal scroll fixed for mobile
+Research Queue List mode desktop layout corrected
+Genetic Shop list mode works
+Genetic Inventory list mode works
+Research Queue list mode works
+Marketplace list mode works
+NFT custom name save API patched and working locally
+```
+
+Important Lab rule reminders:
+
+```text
+Frontend is display/preview only.
+Backend decides costs, ownership, inventory, reward delivery, and cooldowns.
+Do not mutate economy logic in lab.html.
+Do not re-add UNIQUE(user_id, trait_type, trait_value).
+Genetic exact trait max remains 2 copies per user.
+Elixirs remain active items but lootbox-only for direct store purchase behavior.
+```
+
+### Cheese Runner / Cheeseman update state
+
+Cheese Runner / Cheeseman push package includes the CheeseMind AI concealment/production pass.
+
+Current CheeseMind behavior:
+
+```text
+CheeseMind AI is active for normal gameplay
+Enemies can hunt, predict, guard, cut off paths, and react to Power Cheese
+Full AI debug target lines / markers / badges are hidden from normal players
+Local testers can enable visual AI debug only on localhost
+Power Cheese enemy rewards remain capped
+Portal/tunnel tiles remain travel lanes only
+No backend DSPOINC source was added by this AI pass
+```
+
+Important:
+
+```text
+CheeseMind learns only during the current run.
+No private player behavior is persisted.
+No DB schema change is required for this frontend AI pass.
+```
+
+### Discord project update posted/prepared
+
+Community update message covered:
+
+```text
+Server back online
+Cheese Runner / Cheeseman smart AI ready to test
+Reward Chamber profile display improved
+All-time box counts and active prize previews
+Final leaderboard push for Tetris / Snake / Cheese Invaders / Cheese Racer
+Top 3 leaderboard reward reminder with SOL
+Season 12 next steps: Launchpad APIs, 3D Riddle Game API, RPG ability integration, Discord battles
+```
+
+### Deployment validation checklist
+
+Before leaving system active, verify:
+
+```text
+git status = clean
+origin/render-deploy includes latest commit
+Render deploy uses latest commit
+php -l api/user/get-reward-boxes.php
+php -l api/user/open-reward-box.php
+php -l api/user/save-nft-custom-name.php
+sqlite3 /var/www/html/db/narrrf_world.sqlite "PRAGMA integrity_check;"
+```
+
+Browser checks:
+
+```text
+profile.html loads
+Reward Chamber boxes load
+Reward Chamber prize preview shows active rewards
+Reward Chamber all-time counters show
+Box #2 opens and blocks correctly at configured max
+Lab loads
+Genetic Inventory List mode buttons work
+Research Queue List mode works on mobile and desktop
+Cheese Runner loads and plays
+Leaderboard pages load
+```
+
+### Standby note for next agent
+
+Lab System 9.92 is stable enough to go standby.
+
+Next agent should begin from this state and must check this QUICK_STATUS.md before touching:
+
+```text
+Reward Chamber APIs
+Profile Reward Chamber display
+Lab list modes / booster logic
+Cheese Runner CheeseMind AI
+Genesis / Genetic progression
+DB cooldown or open-count state
+```
+
+Never run broad DB rebuilds or reward resets unless audit output proves the exact issue.
+
+---
+
+
+---
+
+## ✅ UPDATE — MAY 28, 2026 — BINGO LAB EDIT SAFETY + EVENT FILTER LOGIC PATCH
+
+### Status
+
+Bingo Lab received another safety and UX patch after user feedback from bug tracker item #989.
+
+Scope:
+
+```text
+public/Bingo.html
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+
+---
+
+## ✅ UPDATE — MAY 28, 2026 — CHEESE RUNNER GUIDE + SPAWN CLARITY PUSH READY
+
+### Status
+
+Cheese Runner / Cheeseman push package is ready after local verification.
+
+Scope for this push:
+
+```text
+public/cheeseman.html
+public/scripts/cheeseman.js
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+
 ---
 
 ## ✅ UPDATE — MAY 27, 2026 — DISCORD BOT PUBLIC COMMANDS / ONBOARDING / ECONOMY PASS

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Labyrinth Blast - Narrrf's World</title>
+  <meta name="description" content="Enter Labyrinth Blast in Narrrf's World. Place glyph charges, dodge rivals, shatter walls, and reach the portal." />
+
+  <link rel="icon" href="favicon-phantom.png" type="image/png" />
+
+  <style>
+    /*
+      Labyrinth Blast public entry wrapper.
+      Plain language for DEVS:
+      This file keeps the game visible as a Narrrfs World page while the
+      React/Vite build remains isolated in /labyrinth-blast/.
+      Do not edit hashed files in /labyrinth-blast/assets/.
+      Rebuild from the FOX source folder instead.
+    */
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #0a0805;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .labyrinth-blast-frame {
+      width: 100vw;
+      height: 100vh;
+      border: 0;
+      display: block;
+      background: #0a0805;
+    }
+
+    .labyrinth-blast-back {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 164, 53, 0.45);
+      background: rgba(10, 8, 5, 0.82);
+      color: #f4c769;
+      font-family: Georgia, serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      box-shadow: 0 0 18px rgba(212, 164, 53, 0.18);
+      backdrop-filter: blur(8px);
+    }
+
+    .labyrinth-blast-back:hover {
+      color: #ffffff;
+      border-color: rgba(43, 201, 201, 0.7);
+      box-shadow: 0 0 22px rgba(43, 201, 201, 0.22);
+    }
+
+    @media (max-width: 640px) {
+      .labyrinth-blast-back {
+        top: 8px;
+        left: 8px;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.72rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="labyrinth-blast-back" href="profile.html#game-section">
+    ← Narrrfs Games
+  </a>
+
+  <iframe
+    class="labyrinth-blast-frame"
+    src="labyrinth-blast/index.html"
+    title="Labyrinth Blast"
+    allow="autoplay; fullscreen"
+  ></iframe>
+</body>
+</html>
