@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samuzi NFT — Phase 3 Coming Soon</title>
-    <meta name="description" content="Samuzi NFT Phase 3 is coming soon. The journey continues with new utility, community value, and launch updates.">
+    <title>Samuzi NFT — Phase 3 Mint Live on Gensuki</title>
+    <meta name="description" content="Samuzi NFT Phase 3 mint is live on Gensuki Launchpad. Join the next evolution of the Samuzian universe.">
     <meta name="keywords" content="Samuzi NFT, SMZ, Web3, Solana, NFT, Phase 3, Coming Soon">
-    <meta property="og:title" content="Samuzi NFT — Phase 3 Coming Soon">
-    <meta property="og:description" content="The journey continues. Phase 3 is loading.">
+    <meta property="og:title" content="Samuzi NFT — Phase 3 Mint Live on Gensuki">
+    <meta property="og:description" content="Phase 3 mint is live now on Gensuki Launchpad.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#07070b">
 
@@ -660,6 +660,81 @@
                 font-size: 0.72rem;
             }
         }
+        /* =========================================================
+   SAMUZI MINT LIVE CTA — final Gensuki launch styling
+   ========================================================= */
+
+.mint-live-glow {
+    position: relative;
+    overflow: hidden;
+    color: #111827 !important;
+    background: linear-gradient(135deg, #facc15 0%, #f97316 48%, #e11d48 100%) !important;
+    border: 1px solid rgba(250, 204, 21, 0.72) !important;
+    box-shadow:
+        0 0 22px rgba(250, 204, 21, 0.42),
+        0 0 46px rgba(249, 115, 22, 0.28),
+        0 12px 34px rgba(225, 29, 72, 0.30) !important;
+    animation: samuziMintButtonPulse 1.65s ease-in-out infinite alternate;
+}
+
+.mint-live-glow::after {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    transform: translateX(-120%) rotate(18deg);
+    animation: samuziMintButtonSweep 2.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.mint-live-glow:hover {
+    transform: translateY(-3px) scale(1.018) !important;
+    color: #111827 !important;
+    box-shadow:
+        0 0 30px rgba(250, 204, 21, 0.62),
+        0 0 62px rgba(249, 115, 22, 0.42),
+        0 18px 44px rgba(225, 29, 72, 0.38) !important;
+}
+
+.mint-live-outline {
+    border-color: rgba(250, 204, 21, 0.48) !important;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(250,204,21,0.16), transparent 34%),
+        rgba(255,255,255,0.08) !important;
+    box-shadow: 0 0 28px rgba(250,204,21,0.14) !important;
+}
+
+.mint-live-note {
+    color: #fef3c7 !important;
+    border-color: rgba(250, 204, 21, 0.36) !important;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(250,204,21,0.14), transparent 32%),
+        rgba(120, 53, 15, 0.26) !important;
+}
+
+@keyframes samuziMintButtonPulse {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter: brightness(1.14);
+    }
+}
+
+@keyframes samuziMintButtonSweep {
+    0% {
+        transform: translateX(-120%) rotate(18deg);
+    }
+
+    48% {
+        transform: translateX(120%) rotate(18deg);
+    }
+
+    100% {
+        transform: translateX(120%) rotate(18deg);
+    }
+}
     </style>
 </head>
 
@@ -696,7 +771,9 @@
 
         <div class="mint-alert-actions">
             <a href="#mint-schedule" class="mint-mini-btn primary">View Mint Details</a>
-            <a href="#" class="mint-mini-btn locked" aria-disabled="true">Mint Link Drops Soon</a>
+            <a href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer" class="mint-mini-btn primary mint-live-glow">
+    Mint on Gensuki Now
+</a>
         </div>
     </div>
 </section>
@@ -727,9 +804,9 @@
                 </div>
 
                 <div class="launch-actions">
-                    <a class="button-primary mint-locked" href="#" aria-disabled="true">
-                        Mint on Gensuki · Link Soon
-                    </a>
+                    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
+    🚨 Mint on Gensuki Now
+</a>
                     <a class="button-secondary" href="#mint-schedule">
                         View Mint Details
                     </a>
@@ -738,9 +815,9 @@
                     </a>
                 </div>
 
-                <div class="preview-lock-note">
-                    Official Gensuki mint link will be added here as soon as it is confirmed.
-                </div>
+                <div class="preview-lock-note mint-live-note">
+    🚨 Official mint is live now on Gensuki Launchpad. Use only the official link from this website or Samuzi channels.
+</div>
             </div>
 
             <div class="front-hero-panel mint-live-panel">
@@ -793,7 +870,9 @@
 
                 <div class="launch-actions">
                     <a class="button-primary" href="#mint-schedule">View Mint Schedule</a>
-                    <a class="button-secondary mint-locked" href="#" aria-disabled="true">Mint Link Soon</a>
+                    <a class="button-secondary mint-live-outline" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
+    Open Gensuki Mint
+</a>
                 </div>
             </div>
         </div>
@@ -944,9 +1023,9 @@
                 </p>
 
                 <div class="mint-cta-row">
-                    <a class="button-primary mint-locked" href="#" aria-disabled="true">
-                        Mint on Gensuki · Link Soon
-                    </a>
+                    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
+    🚨 Mint on Gensuki Now
+</a>
                     <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
                         Join Discord
                     </a>
@@ -1141,9 +1220,13 @@
                 </p>
 
                 <div class="launch-actions">
-                    <a class="button-primary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
-                        Join Discord
-                    </a>
+    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
+        🚨 Mint on Gensuki Now
+    </a>
+
+    <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
+        Join Discord
+    </a>
                     <a class="button-secondary" href="whitepaper.html">
                         Read Whitepaper
                     </a>
@@ -1181,7 +1264,8 @@
 
     <script>
         const PAGE_KEY = 'index';
-        const PHASE3_HERO_BACKGROUND = './assets/background/phase3-coming-soon.jpg';
+const PHASE3_HERO_BACKGROUND = './assets/background/phase3-coming-soon.jpg';
+const SAMUZI_MINT_LINK = 'https://app.gensuki.xyz/Solana/SamuziNft3';
 
         function resolveBackgroundPath(filename) {
             if (!filename || typeof filename !== 'string') {
