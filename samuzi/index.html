@@ -702,7 +702,7 @@
 </section>
 
  <main>
-    <<section class="samuzi-front-hero mint-day-hero">
+    <section class="samuzi-front-hero mint-day-hero">
     <div class="container">
         <div class="front-hero-grid">
             <div class="front-hero-copy">
@@ -1099,7 +1099,7 @@
         aria-label="Unlock hidden Phase 3 motion signal"
     >
         <span class="phase3-secret-core"></span>
-        <span class="phase3-secret-text">Phase 3 signal</span>
+        <span class="phase3-secret-text">Classic art archive</span>
     </button>
 </div>
 
@@ -1115,16 +1115,16 @@
 
         <div class="phase3-secret-mark">⚔️</div>
 
-        <h2 id="phase3SecretTitle">Secret Phase 3 Signal</h2>
+        <h2 id="phase3SecretTitle">Secret Samuzi Art Archive</h2>
 
-        <p>
-            The blade has cut through the theme. Motion Art protocol is ready.
-            Activate the hidden preview to reveal the moving Samuzi collection signal.
-        </p>
+<p>
+    The blade has cut through the motion layer. A hidden still-art archive is ready.
+    Activate the classic preview to reveal the earlier Samuzi artwork slider.
+</p>
 
-        <button id="activateMotionPreview" class="button-primary" type="button">
-            Activate Motion Preview
-        </button>
+<button id="activateMotionPreview" class="button-primary" type="button">
+    Reveal Classic Art Preview
+</button>
     </div>
 </div>
             </div>
@@ -1250,8 +1250,8 @@
         let phase3SliderPhotos = [];
 let phase3SliderIndex = 0;
 let phase3SliderTimer = null;
-let phase3MotionMode = false;
-let phase3MotionSoundEnabled = false;
+let phase3MotionMode = true;
+let phase3MotionSoundEnabled = true;
 
 /*
     Put your uploaded MP4 filenames here.
@@ -1327,6 +1327,11 @@ let phase3MotionSlides = [
         filename: 'samuzi-motion-14.mp4',
         title: 'Mint signal loading.',
         caption: 'The hidden preview is ready for the next Samuzi chapter.'
+    },
+    {
+        filename: 'samuzi-motion-14.mp4',
+        title: 'Mint signal loading.',
+        caption: 'The hidden preview is ready for the next Samuzi chapter.'
     }
 ];
 
@@ -1334,8 +1339,12 @@ function getPhase3ActiveSlides() {
     return phase3MotionMode ? phase3MotionSlides : phase3SliderPhotos;
 }
 
+
 function renderPhase3Slider() {
     const container = document.getElementById('sliderShowcase');
+
+    document.body.classList.toggle('phase3-motion-preview-active', phase3MotionMode);
+
     if (!container) return;
 
     const activeSlides = getPhase3ActiveSlides();
@@ -1357,17 +1366,18 @@ function renderPhase3Slider() {
             const videoPath = `./slider-motion/${filename}`;
 
             return `
-                <div class="phase3-slide motion-active ${activeClass}" style="background-image: url('./assets/background/phase3-coming-soon.jpg')">
-                    <video
+    <div class="phase3-slide motion-active ${activeClass}" style="background-image: url('./assets/background/phase3-coming-soon.jpg')">
+        <video
     class="phase3-video"
     src="${videoPath}"
-    muted
     playsinline
-    preload="${index === 0 ? 'auto' : 'metadata'}"
+    webkit-playsinline
+    preload="auto"
+    disablepictureinpicture
     ${index === phase3SliderIndex ? 'autoplay' : ''}
 ></video>
-                </div>
-            `;
+    </div>
+`;
         }
 
         return `
@@ -1383,36 +1393,47 @@ function renderPhase3Slider() {
     }).join('');
 
     const captionTitle = phase3MotionMode
-        ? (activeSlides[phase3SliderIndex]?.title || 'Motion Art protocol unlocked.')
-        : 'Phase 3 visuals are loading.';
+    ? (activeSlides[phase3SliderIndex]?.title || 'Phase 3 motion art is live.')
+    : 'Classic Samuzi artwork unlocked.';
 
     const captionText = phase3MotionMode
-        ? (activeSlides[phase3SliderIndex]?.caption || 'The hidden Samuzi motion preview is now active.')
-        : 'New artwork, launch signals, and community updates rotate here from the admin-managed slider folder.';
+    ? (activeSlides[phase3SliderIndex]?.caption || 'The Female Samuzian motion collection takes over the mint-day showcase.')
+    : 'Earlier Samuzi still artwork and launch visuals rotate here from the classic slider folder.';
 
-    const captionPill = phase3MotionMode ? 'Secret Motion Preview' : 'Samuzi Art Preview';
+    const captionPill = phase3MotionMode ? 'Phase 3 Motion Art' : 'Classic Samuzi Art Archive';
 
 const modeSwitchHtml = phase3MotionMode
     ? `
-        <button
-            class="phase3-return-btn"
-            type="button"
-            onclick="togglePhase3MotionSound()"
-            aria-label="Toggle motion art sound"
-        >
-            ${phase3MotionSoundEnabled ? 'Mute Motion Sound' : 'Enable Motion Sound'}
-        </button>
+    <button
+    id="phase3MotionSoundBtn"
+    class="phase3-return-btn"
+    type="button"
+    onclick="togglePhase3MotionSound(event)"
+    data-motion-sound-toggle
+    aria-label="Enable or mute motion art sound"
+>
+    Enable Motion Sound
+</button>
 
         <button
             class="phase3-return-btn"
             type="button"
-            onclick="returnToPhase3ArtPreview()"
-            aria-label="Return to normal Samuzi art preview"
+            onclick="activatePhase3StillArtPreview()"
+            aria-label="Reveal classic Samuzi still art slider"
         >
-            Return to Art Preview
+            View Classic Art
         </button>
     `
-    : '';
+    : `
+        <button
+            class="phase3-return-btn"
+            type="button"
+            onclick="activatePhase3MotionPreview()"
+            aria-label="Return to motion art slider"
+        >
+            Back to Motion Art
+        </button>
+    `;
 
 container.innerHTML = `
         <div class="phase3-slider-main">
@@ -1424,19 +1445,49 @@ container.innerHTML = `
                 <p>${captionText}</p>
             </div>
 
-            <div class="phase3-slider-controls">
-    ${modeSwitchHtml}
+            <div class="phase3-slider-arrows">
     <button class="phase3-slider-btn" type="button" onclick="changePhase3Slide(-1)" aria-label="Previous slide">‹</button>
     <button class="phase3-slider-btn" type="button" onclick="changePhase3Slide(1)" aria-label="Next slide">›</button>
 </div>
         </div>
 
-        <div class="phase3-slider-dots">
-            ${dotsHtml}
-        </div>
+        <div class="phase3-slider-action-row">
+    ${modeSwitchHtml}
+</div>
+
+<div class="phase3-slider-dots">
+    ${dotsHtml}
+</div>
     `;
 
     playActivePhase3Video();
+}
+
+let phase3MotionAudioUnlocked = false;
+
+function getActivePhase3Video() {
+    return document.querySelector('.phase3-slide.active .phase3-video');
+}
+
+function syncPhase3MotionSoundButton() {
+    const soundButton = document.querySelector('[data-motion-sound-toggle]');
+    const activeVideo = getActivePhase3Video();
+
+    if (!soundButton) {
+        return;
+    }
+
+    const soundIsActuallyOn = Boolean(
+        activeVideo &&
+        !activeVideo.muted &&
+        activeVideo.volume > 0
+    );
+
+    soundButton.textContent = soundIsActuallyOn ? 'Mute Motion Sound' : 'Enable Motion Sound';
+    soundButton.setAttribute(
+        'aria-label',
+        soundIsActuallyOn ? 'Mute motion art sound' : 'Enable motion art sound'
+    );
 }
 
 function playActivePhase3Video() {
@@ -1444,26 +1495,33 @@ function playActivePhase3Video() {
 
     videos.forEach((video) => {
         const parentSlide = video.closest('.phase3-slide');
+        const isActive = parentSlide && parentSlide.classList.contains('active');
 
         video.onended = null;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.setAttribute('preload', 'auto');
 
-        if (parentSlide && parentSlide.classList.contains('active')) {
-            video.currentTime = video.currentTime || 0;
-            video.muted = !phase3MotionSoundEnabled;
-            video.volume = phase3MotionSoundEnabled ? 0.55 : 0;
+        if (isActive) {
+            if (phase3MotionAudioUnlocked && phase3MotionSoundEnabled) {
+                video.muted = false;
+                video.volume = 0.75;
+            } else {
+                video.muted = true;
+                video.volume = 0;
+            }
+
+            video.play().catch(() => {
+                video.muted = true;
+                video.volume = 0;
+                video.play().catch(() => {});
+            });
 
             video.onended = () => {
                 if (phase3MotionMode) {
                     changePhase3Slide(1);
                 }
             };
-
-            video.play().catch(() => {
-                // Browser blocked sound autoplay. Fall back to muted mode.
-                video.muted = true;
-                video.volume = 0;
-                phase3MotionSoundEnabled = false;
-            });
         } else {
             video.pause();
             video.currentTime = 0;
@@ -1471,18 +1529,88 @@ function playActivePhase3Video() {
             video.volume = 0;
         }
     });
+
+    setTimeout(syncPhase3MotionSoundButton, 120);
 }
 
-function togglePhase3MotionSound() {
-    phase3MotionSoundEnabled = !phase3MotionSoundEnabled;
+function setPhase3MotionSound(enabled) {
+    const activeVideo = getActivePhase3Video();
+
+    phase3MotionSoundEnabled = Boolean(enabled);
 
     document.querySelectorAll('.phase3-video').forEach((video) => {
-        video.muted = !phase3MotionSoundEnabled;
-        video.volume = phase3MotionSoundEnabled ? 0.55 : 0;
+        if (video !== activeVideo) {
+            video.muted = true;
+            video.volume = 0;
+        }
     });
 
-    playActivePhase3Video();
-    renderPhase3Slider();
+    if (!activeVideo) {
+        syncPhase3MotionSoundButton();
+        return;
+    }
+
+    if (phase3MotionSoundEnabled) {
+        phase3MotionAudioUnlocked = true;
+
+        activeVideo.muted = false;
+        activeVideo.volume = 0.75;
+
+        activeVideo.play().then(() => {
+            syncPhase3MotionSoundButton();
+        }).catch(() => {
+            phase3MotionAudioUnlocked = false;
+            phase3MotionSoundEnabled = false;
+
+            activeVideo.muted = true;
+            activeVideo.volume = 0;
+            activeVideo.play().catch(() => {});
+
+            syncPhase3MotionSoundButton();
+        });
+
+        syncPhase3MotionSoundButton();
+        return;
+    }
+
+    phase3MotionAudioUnlocked = false;
+    activeVideo.muted = true;
+    activeVideo.volume = 0;
+
+    syncPhase3MotionSoundButton();
+}
+
+function togglePhase3MotionSound(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const activeVideo = getActivePhase3Video();
+    const soundIsActuallyOn = Boolean(
+        activeVideo &&
+        !activeVideo.muted &&
+        activeVideo.volume > 0
+    );
+
+    setPhase3MotionSound(!soundIsActuallyOn);
+}
+
+function unlockPhase3MotionSoundFromGesture(event) {
+    if (
+        event &&
+        event.target &&
+        event.target.closest &&
+        event.target.closest('[data-motion-sound-toggle]')
+    ) {
+        return;
+    }
+
+    if (!phase3MotionMode || !phase3MotionSoundEnabled || phase3MotionAudioUnlocked) {
+        return;
+    }
+
+    setPhase3MotionSound(true);
 }
 
 function changePhase3Slide(direction = 1) {
@@ -1660,8 +1788,32 @@ function closePhase3SecretModal() {
 
 function activatePhase3MotionPreview() {
     phase3MotionMode = true;
+    phase3MotionSoundEnabled = true;
     phase3SliderIndex = 0;
     document.body.classList.add('phase3-motion-preview-active');
+
+    closePhase3SecretModal();
+    renderPhase3Slider();
+    restartPhase3SliderTimer();
+
+    const slider = document.getElementById('sliderShowcase');
+    if (slider) {
+        slider.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function activatePhase3StillArtPreview() {
+    phase3MotionSoundEnabled = false;
+
+    document.querySelectorAll('.phase3-video').forEach((video) => {
+        video.pause();
+        video.currentTime = 0;
+        video.muted = true;
+        video.volume = 0;
+    });
+
+    phase3MotionMode = false;
+    phase3SliderIndex = 0;
 
     closePhase3SecretModal();
     renderPhase3Slider();
@@ -1742,7 +1894,6 @@ function startSamuziMintCountdown() {
     updateCountdown();
     setInterval(updateCountdown, 1000);
 }
-
 function bindPhase3SecretUnlock() {
     const slash = document.getElementById('phase3SecretSlash');
     const activateButton = document.getElementById('activateMotionPreview');
@@ -1753,7 +1904,7 @@ function bindPhase3SecretUnlock() {
     }
 
     if (activateButton) {
-        activateButton.addEventListener('click', activatePhase3MotionPreview);
+        activateButton.addEventListener('click', activatePhase3StillArtPreview);
     }
 
     closeButtons.forEach((button) => {
@@ -1765,12 +1916,26 @@ function bindPhase3SecretUnlock() {
             closePhase3SecretModal();
         }
     });
+
+    /*
+        Professional one-click sound unlock.
+        This listener helps mobile/desktop browsers unlock audio after a real user gesture,
+        but it does NOT run when the user presses the sound button itself.
+    */
+    ['pointerdown', 'touchstart', 'click'].forEach((eventName) => {
+        document.addEventListener(eventName, unlockPhase3MotionSoundFromGesture, {
+            passive: true
+        });
+    });
 }
+
 document.addEventListener('DOMContentLoaded', async () => {
     applyPageBackground();
     startSamuziMintCountdown();
+
     await loadPhase3MotionSlides();
     loadPhase3SliderPhotos();
+
     bindPhase3SecretUnlock();
 });
     </script>
