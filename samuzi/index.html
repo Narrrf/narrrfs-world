@@ -735,6 +735,111 @@
         transform: translateX(120%) rotate(18deg);
     }
 }
+/* =========================================================
+   SAMUZI HERO MINT STATUS PANEL FIX
+   Cleans the right hero card after live mint status update
+   ========================================================= */
+
+.mint-status-card {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at 18% 0%, rgba(250,204,21,0.14), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.025));
+    border: 1px solid rgba(250,204,21,0.20);
+}
+
+.mint-status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.mint-status-item {
+    min-height: 118px;
+    padding: 0.95rem;
+    border-radius: 18px;
+    background: rgba(0,0,0,0.28);
+    border: 1px solid rgba(255,255,255,0.09);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.mint-status-item span {
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 950;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+}
+
+.mint-status-item strong {
+    color: #ffffff;
+    font-size: 1.08rem;
+    line-height: 1.1;
+    margin: 0.45rem 0;
+}
+
+.mint-status-item small {
+    color: #cbd5e1;
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.mint-status-item.sold {
+    border-color: rgba(34,197,94,0.38);
+    background:
+        radial-gradient(circle at 15% 0%, rgba(34,197,94,0.16), transparent 34%),
+        rgba(0,0,0,0.28);
+}
+
+.mint-status-item.hot {
+    border-color: rgba(250,204,21,0.46);
+    background:
+        radial-gradient(circle at 15% 0%, rgba(250,204,21,0.18), transparent 34%),
+        rgba(0,0,0,0.28);
+    box-shadow: 0 0 22px rgba(250,204,21,0.12);
+}
+
+.mint-status-item.next {
+    border-color: rgba(34,211,238,0.32);
+    background:
+        radial-gradient(circle at 15% 0%, rgba(34,211,238,0.14), transparent 34%),
+        rgba(0,0,0,0.28);
+}
+
+.mint-panel-actions {
+    margin-top: 1.15rem;
+}
+
+.mint-panel-actions a {
+    flex: 1 1 170px;
+}
+
+.front-hero-panel.mint-live-panel {
+    max-width: 440px;
+    justify-self: end;
+}
+
+@media (max-width: 980px) {
+    .front-hero-panel.mint-live-panel {
+        max-width: none;
+        justify-self: stretch;
+    }
+}
+
+@media (max-width: 520px) {
+    .mint-status-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mint-status-item {
+        min-height: auto;
+        gap: 0.35rem;
+    }
+}
     </style>
 </head>
 
@@ -763,10 +868,10 @@
 <section class="mint-alert-bar mint-live-alert" aria-label="Samuzi Phase 3 mint announcement">
     <div class="mint-alert-inner">
         <div class="mint-alert-copy">
-            <span class="mint-alert-kicker">🚨 Phase 3 Mint Live Today on Gensuki Launchpad</span>
-            <div class="mint-alert-title">
-                Mint time: <strong>Today · 5:00 PM UTC</strong>
-            </div>
+            <span class="mint-alert-kicker">🚨 Phase 3 Mint is Live on Gensuki Launchpad</span>
+<div class="mint-alert-title">
+    Holder Phase <strong>Sold Out</strong> · OG Phase <strong>Almost Gone</strong> · WL + Partner phases opening soon
+</div>
         </div>
 
         <div class="mint-alert-actions">
@@ -783,18 +888,17 @@
     <div class="container">
         <div class="front-hero-grid">
             <div class="front-hero-copy">
-                <div class="brand-mark">🚨 PHASE 3 MINT · LIVE TODAY</div>
+                <div class="brand-mark">🚨 PHASE 3 MINT · LIVE NOW</div>
 
                 <h1 class="launch-title">
-                    Phase 3 Mint.
-                    <span>Live Today.</span>
-                </h1>
+    Phase 3 Mint.
+    <span>Moving Fast.</span>
+</h1>
 
                 <p class="launch-copy">
-                    The next evolution of the Samuzian universe begins today.
-                    Brand new Female Samuzian artwork, cinematic motion designs, and samurai-inspired collectibles
-                    are preparing to launch on Gensuki Launchpad at 5:00 PM UTC.
-                </p>
+    The Phase 3 mint is live on Gensuki Launchpad and the first wave moved fast.
+    Holder Phase is already sold out, OG access is close to minting out, and the WL plus partner allocation phases are preparing to open next.
+</p>
 
                 <div class="front-badges">
                     <span>👘 Female Samuzian Collection</span>
@@ -821,59 +925,51 @@
             </div>
 
             <div class="front-hero-panel mint-live-panel">
-                <span class="panel-kicker">🧪 Mint Signal Live</span>
-                <h2>Today · 5:00 PM UTC</h2>
-                <p>
-                    Get ready for one of the most powerful Samuzi drops of the season.
-                    Phase 3 opens with holder and OG access first — all phases are FCFS.
-                </p>
+                <span class="panel-kicker">🧪 Mint Status Live</span>
+<h2>Holder phase sold out.</h2>
+<p>
+    Phase 3 is moving through the access windows. Holder mint is complete,
+    OG spots are nearly gone, and WL plus partner allocation phases are next in line.
+    All phases remain FCFS.
+</p>
 
-                <div class="mint-signal-card">
-                    <div class="mint-signal-grid">
-                        <div class="mint-signal-item">
-                            <span>Mint Day</span>
-                            <strong>Today</strong>
-                        </div>
-                        <div class="mint-signal-item">
-                            <span>Mint Time</span>
-                            <strong>5:00 PM UTC</strong>
-                        </div>
-                        <div class="mint-signal-item">
-                            <span>Launchpad</span>
-                            <strong>Gensuki</strong>
-                        </div>
-                        <div class="mint-signal-item">
-                            <span>Mint Style</span>
-                            <strong>FCFS</strong>
-                        </div>
-                    </div>
+<div class="mint-signal-card mint-status-card">
+    <div class="mint-status-grid">
+        <div class="mint-status-item sold">
+            <span>Holder Phase</span>
+            <strong>Sold Out</strong>
+            <small>15 / 15 minted</small>
+        </div>
 
-                    <div class="mint-countdown" id="samuziMintCountdown" aria-label="Countdown to Samuzi mint">
-                        <div class="mint-countdown-box">
-                            <strong id="mintDays">--</strong>
-                            <span>Days</span>
-                        </div>
-                        <div class="mint-countdown-box">
-                            <strong id="mintHours">--</strong>
-                            <span>Hours</span>
-                        </div>
-                        <div class="mint-countdown-box">
-                            <strong id="mintMinutes">--</strong>
-                            <span>Minutes</span>
-                        </div>
-                        <div class="mint-countdown-box">
-                            <strong id="mintSeconds">--</strong>
-                            <span>Seconds</span>
-                        </div>
-                    </div>
-                </div>
+        <div class="mint-status-item hot">
+            <span>OG Phase</span>
+            <strong>91 / 100</strong>
+            <small>Almost gone</small>
+        </div>
 
-                <div class="launch-actions">
-                    <a class="button-primary" href="#mint-schedule">View Mint Schedule</a>
-                    <a class="button-secondary mint-live-outline" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-    Open Gensuki Mint
-</a>
-                </div>
+        <div class="mint-status-item next">
+            <span>Next Window</span>
+            <strong>WL + Partners</strong>
+            <small>0.062 SOL phases</small>
+        </div>
+
+        <div class="mint-status-item">
+            <span>Mint Style</span>
+            <strong>FCFS</strong>
+            <small>First come, first served</small>
+        </div>
+    </div>
+</div>
+
+                <div class="launch-actions mint-panel-actions">
+    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
+        🚨 Mint Now
+    </a>
+
+    <a class="button-secondary mint-live-outline" href="#mint-schedule">
+        View Phases
+    </a>
+</div>
             </div>
         </div>
     </div>
@@ -927,12 +1023,12 @@
             <div class="mint-heading-row">
                 <div>
                     <span class="mint-pill">🧪 Mint Command Center</span>
-                    <h2>Phase 3 mint schedule.</h2>
-                    <p>
-                        Samuzi Phase 3 mint is structured across three weekly windows.
-                        All phases are FCFS — once the available spots are gone, they are gone.
-                        Make sure your wallet is ready and connected before your phase opens.
-                    </p>
+                    <h2>Phase 3 mint status.</h2>
+<p>
+    Samuzi Phase 3 is live and moving through the access windows.
+    Holder Phase minted out fast, OG access is almost complete, and WL plus partner allocations are preparing to open.
+    All phases are FCFS — once the available spots are gone, they are gone.
+</p>
                 </div>
 
                 <div class="mint-main-date">
@@ -946,20 +1042,20 @@
                     <div class="mint-week-top">
                         <span>Week 1 · May 29 → June 5</span>
                         <h3>Holder + OG Access</h3>
-                        <p>First access window for Samuzi holders and OG role holders.</p>
+<p>Holder access sold out fast. OG access is now close to minting out.</p>
                     </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>1️⃣ Holder Phase</strong>
-                            <p><span class="price">FREE</span> · 15 spots · limit 1 per wallet</p>
-                            <p>For existing Samuzi NFT holders only.</p>
+                            <strong>1️⃣ Holder Phase · Sold Out</strong>
+<p><span class="price">FREE</span> · 15 / 15 minted · limit 1 per wallet</p>
+<p>Existing Samuzi holders moved fast and claimed the full holder allocation.</p>
                         </div>
 
                         <div class="mint-phase">
-                            <strong>2️⃣ OG Phase</strong>
-                            <p><span class="price">$3.5</span> · 100 spots · limit 10 per wallet</p>
-                            <p>For OG role holders.</p>
+                            <strong>2️⃣ OG Phase · Almost Gone</strong>
+<p><span class="price">0.043 SOL</span> · 91 / 100 minted · limit 10 per wallet</p>
+<p>OG access is nearly minted out. Remaining spots are FCFS.</p>
                         </div>
                     </div>
                 </article>
@@ -967,20 +1063,20 @@
                 <article class="mint-week-card">
                     <div class="mint-week-top">
                         <span>Week 2 · June 5 → June 12</span>
-                        <h3>Whitelist + Partners</h3>
-                        <p>Whitelist access and partner community allocations.</p>
+                        <h3>Whitelist + Partners Next</h3>
+<p>WL and partner allocations are the next major windows opening after the early access wave.</p>
                     </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
                             <strong>3️⃣ WL Phase</strong>
-                            <p><span class="price">$5</span> · 100 spots · limit 7 per wallet</p>
+                            <p><span class="price">0.062 SOL</span> · 100 spots · limit 7 per wallet</p>
                             <p>For whitelisted members.</p>
                         </div>
 
                         <div class="mint-phase">
                             <strong>4️⃣ Partner Allocations</strong>
-                            <p><span class="price">$5 each</span> · limit 5 per wallet</p>
+                            <p><span class="price">0.062 SOL each</span> · limit 5 per wallet</p>
                             <div class="partner-list">
                                 <span>🔹 Narrrf Allocation: 50 spots</span>
                                 <span>🔹 Coralix Allocation: 50 spots</span>
@@ -1018,8 +1114,8 @@
 
             <div class="mint-notes">
                 <p>
-                    📌 <strong>Important:</strong> FCFS for all phases. Wallets should be prepared before the opening time.
-                    The next chapter of Samuzi begins here — let’s make this the biggest mint Samuzi has seen yet.
+                    📌 <strong>Live Mint Update:</strong> Holder Phase is sold out and OG access is nearly complete.
+WL and partner phases are next. All remaining phases are FCFS, so keep your wallet ready and use only the official Gensuki link.
                 </p>
 
                 <div class="mint-cta-row">
@@ -1214,10 +1310,11 @@
         <div class="container">
             <div class="final-cta-panel">
                 <span class="status-pill">Welcome to Samuzi</span>
-                <h2>The next signal is coming.</h2>
-                <p>
-                    Join the official community, read the whitepaper, and stay close for Phase 3 announcements.
-                </p>
+                <h2>The mint is live. The next phase is loading.</h2>
+<p>
+    Holder Phase is complete, OG is nearly minted out, and WL plus partner allocations are preparing to open.
+    Join the official community and mint only through the verified Gensuki Launchpad link.
+</p>
 
                 <div class="launch-actions">
     <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
