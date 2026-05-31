@@ -840,6 +840,80 @@
         gap: 0.35rem;
     }
 }
+/* =========================================================
+   SAMUZI MINT SCHEDULE STATUS MARKERS
+   Sold-out / next-phase visual clarity
+   ========================================================= */
+
+.mint-main-status-live small {
+    display: block;
+    margin-top: 0.4rem;
+    color: #fde68a;
+    font-size: 0.84rem;
+    font-weight: 850;
+}
+
+.mint-week-sold-out {
+    border-color: rgba(34,197,94,0.36) !important;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(34,197,94,0.13), transparent 36%),
+        rgba(255,255,255,0.045) !important;
+}
+
+.mint-week-next {
+    border-color: rgba(250,204,21,0.42) !important;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(250,204,21,0.16), transparent 38%),
+        rgba(255,255,255,0.055) !important;
+    box-shadow:
+        0 18px 58px rgba(0,0,0,0.42),
+        0 0 34px rgba(250,204,21,0.10);
+}
+
+.mint-week-later {
+    opacity: 0.88;
+}
+
+.mint-status-tag {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.45rem;
+    padding: 0.22rem 0.52rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-style: normal;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.mint-status-tag.sold {
+    color: #dcfce7;
+    background: rgba(34,197,94,0.18);
+    border: 1px solid rgba(34,197,94,0.38);
+}
+
+.mint-status-tag.next {
+    color: #111827;
+    background: linear-gradient(135deg, #facc15, #f97316);
+    border: 1px solid rgba(250,204,21,0.58);
+    box-shadow: 0 0 18px rgba(250,204,21,0.22);
+}
+
+.mint-status-tag.later {
+    color: #cbd5e1;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+.mint-week-sold-out .mint-phase {
+    border-color: rgba(34,197,94,0.18);
+}
+
+.mint-week-next .mint-phase {
+    border-color: rgba(250,204,21,0.20);
+}
     </style>
 </head>
 
@@ -868,9 +942,9 @@
 <section class="mint-alert-bar mint-live-alert" aria-label="Samuzi Phase 3 mint announcement">
     <div class="mint-alert-inner">
         <div class="mint-alert-copy">
-            <span class="mint-alert-kicker">🚨 Phase 3 Mint is Live on Gensuki Launchpad</span>
+            <span class="mint-alert-kicker">🚨 Phase 3 Mint Update · Early Access Sold Out</span>
 <div class="mint-alert-title">
-    Holder Phase <strong>Sold Out</strong> · OG Phase <strong>Almost Gone</strong> · WL + Partner phases opening soon
+    Holder Phase <strong>Sold Out</strong> · OG Phase <strong>Sold Out</strong> · WL + Partner phases loading next
 </div>
         </div>
 
@@ -890,14 +964,14 @@
             <div class="front-hero-copy">
                 <div class="brand-mark">🚨 PHASE 3 MINT · LIVE NOW</div>
 
-                <h1 class="launch-title">
-    Phase 3 Mint.
-    <span>Moving Fast.</span>
+               <h1 class="launch-title">
+    Early Access.
+    <span>Sold Out.</span>
 </h1>
 
                 <p class="launch-copy">
-    The Phase 3 mint is live on Gensuki Launchpad and the first wave moved fast.
-    Holder Phase is already sold out, OG access is close to minting out, and the WL plus partner allocation phases are preparing to open next.
+    Holder Phase and OG Phase minted out faster than expected. The Samuzi team is now preparing the next access window for WL and partner allocations.
+    Timing may move forward, so keep your wallet ready and follow official Samuzi updates closely.
 </p>
 
                 <div class="front-badges">
@@ -926,11 +1000,11 @@
 
             <div class="front-hero-panel mint-live-panel">
                 <span class="panel-kicker">🧪 Mint Status Live</span>
-<h2>Holder phase sold out.</h2>
+<h2>Holder + OG sold out.</h2>
 <p>
-    Phase 3 is moving through the access windows. Holder mint is complete,
-    OG spots are nearly gone, and WL plus partner allocation phases are next in line.
-    All phases remain FCFS.
+    Early access moved faster than expected. Holder and OG allocations are complete.
+    WL and partner phases are next, and the team may open the next window sooner than originally planned.
+    All remaining phases stay FCFS.
 </p>
 
 <div class="mint-signal-card mint-status-card">
@@ -941,17 +1015,17 @@
             <small>15 / 15 minted</small>
         </div>
 
-        <div class="mint-status-item hot">
-            <span>OG Phase</span>
-            <strong>91 / 100</strong>
-            <small>Almost gone</small>
-        </div>
+        <div class="mint-status-item sold">
+    <span>OG Phase</span>
+    <strong>Sold Out</strong>
+    <small>100 / 100 minted</small>
+</div>
 
-        <div class="mint-status-item next">
-            <span>Next Window</span>
-            <strong>WL + Partners</strong>
-            <small>0.062 SOL phases</small>
-        </div>
+        <div class="mint-status-item next hot">
+    <span>Next Window</span>
+    <strong>WL + Partners</strong>
+    <small>Opening soon · timing may move forward</small>
+</div>
 
         <div class="mint-status-item">
             <span>Mint Style</span>
@@ -1025,57 +1099,58 @@
                     <span class="mint-pill">🧪 Mint Command Center</span>
                     <h2>Phase 3 mint status.</h2>
 <p>
-    Samuzi Phase 3 is live and moving through the access windows.
-    Holder Phase minted out fast, OG access is almost complete, and WL plus partner allocations are preparing to open.
-    All phases are FCFS — once the available spots are gone, they are gone.
+    Samuzi Phase 3 is live and early access has sold out. Holder Phase and OG Phase are complete.
+    WL and partner allocations are next, and the team may open the next window sooner than originally planned.
+    All remaining phases are FCFS — once spots are gone, they are gone.
 </p>
                 </div>
 
-                <div class="mint-main-date">
-                    <span>Mint Starts</span>
-                    <strong>Friday, May 29 · 5:00 PM UTC</strong>
-                </div>
+                <div class="mint-main-date mint-main-status-live">
+    <span>Current Status</span>
+    <strong>Early Access Sold Out</strong>
+    <small>WL + Partner phases loading next</small>
+</div>
             </div>
 
             <div class="mint-week-grid">
-                <article class="mint-week-card featured">
+                <article class="mint-week-card featured mint-week-sold-out">
                     <div class="mint-week-top">
-                        <span>Week 1 · May 29 → June 5</span>
-                        <h3>Holder + OG Access</h3>
-<p>Holder access sold out fast. OG access is now close to minting out.</p>
+                        <span>Week 1 · Completed</span>
+                        <h3>Holder + OG Access · Sold Out</h3>
+<p>Holder and OG access both sold out faster than expected.</p>
                     </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>1️⃣ Holder Phase · Sold Out</strong>
+                            <strong>1️⃣ Holder Phase <em class="mint-status-tag sold">Sold Out</em></strong>
 <p><span class="price">FREE</span> · 15 / 15 minted · limit 1 per wallet</p>
 <p>Existing Samuzi holders moved fast and claimed the full holder allocation.</p>
                         </div>
 
                         <div class="mint-phase">
-                            <strong>2️⃣ OG Phase · Almost Gone</strong>
-<p><span class="price">0.043 SOL</span> · 91 / 100 minted · limit 10 per wallet</p>
-<p>OG access is nearly minted out. Remaining spots are FCFS.</p>
+                            <strong>2️⃣ OG Phase <em class="mint-status-tag sold">Sold Out</em></strong>
+<p><span class="price">0.043 SOL</span> · 100 / 100 minted · limit 10 per wallet</p>
+<p>OG access is complete. The next access wave is WL and partner allocations.</p>
                         </div>
                     </div>
                 </article>
 
-                <article class="mint-week-card">
-                    <div class="mint-week-top">
-                        <span>Week 2 · June 5 → June 12</span>
-                        <h3>Whitelist + Partners Next</h3>
-<p>WL and partner allocations are the next major windows opening after the early access wave.</p>
+                <article class="mint-week-card mint-week-next">
+    <div class="mint-week-top">
+        <span>Next Window · Timing May Move Forward</span>
+        <h3>WL + Partner Phases Loading</h3>
+<p>WL and partner allocations are next. The team may open this window sooner, so keep your wallet ready.</p>
                     </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>3️⃣ WL Phase</strong>
+                            <strong>3️⃣ WL Phase <em class="mint-status-tag next">Opening Soon</em></strong>
                             <p><span class="price">0.062 SOL</span> · 100 spots · limit 7 per wallet</p>
                             <p>For whitelisted members.</p>
                         </div>
 
                         <div class="mint-phase">
-                            <strong>4️⃣ Partner Allocations</strong>
+                            <strong>4️⃣ Partner Allocations <em class="mint-status-tag next">Opening Soon</em></strong>
                             <p><span class="price">0.062 SOL each</span> · limit 5 per wallet</p>
                             <div class="partner-list">
                                 <span>🔹 Narrrf Allocation: 50 spots</span>
@@ -1087,17 +1162,17 @@
                     </div>
                 </article>
 
-                <article class="mint-week-card">
-                    <div class="mint-week-top">
-                        <span>Week 3 · June 12 → Sold Out</span>
+                <article class="mint-week-card mint-week-later">
+    <div class="mint-week-top">
+        <span>Later Window · After WL + Partners</span>
                         <h3>Public Mint</h3>
                         <p>Open access for everyone once the public phase begins.</p>
                     </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>5️⃣ Public Mint</strong>
-                            <p><span class="price">$7</span> · 100 spots · unlimited per wallet</p>
+                            <strong>5️⃣ Public Mint <em class="mint-status-tag later">Later</em></strong>
+                            <p><span class="price">0.087 SOL</span> · public allocation · unlimited per wallet</p>
                             <p>Open to everyone — no role required.</p>
                         </div>
 
@@ -1114,8 +1189,8 @@
 
             <div class="mint-notes">
                 <p>
-                    📌 <strong>Live Mint Update:</strong> Holder Phase is sold out and OG access is nearly complete.
-WL and partner phases are next. All remaining phases are FCFS, so keep your wallet ready and use only the official Gensuki link.
+                    📌 <strong>Live Mint Update:</strong> Holder Phase and OG Phase are sold out.
+WL and partner phases are next and may open sooner than originally scheduled. All remaining phases are FCFS, so keep your wallet ready and use only the official Gensuki link.
                 </p>
 
                 <div class="mint-cta-row">
@@ -1310,9 +1385,9 @@ WL and partner phases are next. All remaining phases are FCFS, so keep your wall
         <div class="container">
             <div class="final-cta-panel">
                 <span class="status-pill">Welcome to Samuzi</span>
-                <h2>The mint is live. The next phase is loading.</h2>
+                <h2>Early access sold out. WL + partners are next.</h2>
 <p>
-    Holder Phase is complete, OG is nearly minted out, and WL plus partner allocations are preparing to open.
+    Holder and OG phases are complete. WL and partner allocations are preparing to open next and may move sooner than expected.
     Join the official community and mint only through the verified Gensuki Launchpad link.
 </p>
 
