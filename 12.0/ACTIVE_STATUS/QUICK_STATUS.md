@@ -1,5 +1,1012 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## ✅ UPDATE — MAY 31, 2026 — LABYRINTH BLAST FINAL LOCAL TESTER BUILD READY
+
+### Status
+
+Labyrinth Blast is now in final local tester-build state for Season 12 preparation.
+
+The game has moved beyond basic integration and now includes the final gameplay tuning needed before the one-day tester push.
+
+Current state:
+
+```text
+✅ Local full ecosystem integration prepared
+✅ Gameplay upgrade implemented
+✅ Mouseverse Cheeseman enemy implemented
+✅ Dynamic maze sizing implemented
+✅ Mobile control selector implemented
+✅ Role multiplier preview + backend reward multiplier implemented
+✅ Production balance constants switched for tester build
+✅ Ready for final build/copy/local smoke test before Git push
+```
+
+### Canonical naming / paths
+
+```text
+Player-facing name: Labyrinth Blast
+Source folder: FOX/
+Public wrapper: public/labyrinth-blast.html
+Public Vite build folder: public/labyrinth-blast/
+Database game key: labyrinth_blast
+Score API: api/dev/save-labyrinth-blast-score.php
+```
+
+Important naming rule:
+
+```text
+Do not call the public game FOX.
+FOX is only the ignored local source/build folder.
+The public Narrrfs game name is Labyrinth Blast.
+```
+
+### Final gameplay upgrade implemented
+
+Labyrinth Blast now includes:
+
+```text
+✅ Dynamic board size by level
+✅ Cheeseman Mouseverse enemy
+✅ Cheeseman enemy image from FOX/src/assets/cheeseman-enemy.png
+✅ Cheeseman cheese trap drops
+✅ Cheeseman cheese shots toward player position
+✅ Cheese traps reverse controls
+✅ Mouseverse reinforcement message
+✅ Confusion Mushroom
+✅ Bigger maps for endless progression
+✅ Enemy scaling balanced against map size
+✅ Mobile controls with Arrow mode or Swipe mode
+✅ P / Escape pause support
+✅ Updated How To Play guide
+```
+
+### Dynamic level size model
+
+Current board size progression:
+
+```text
+Levels 1–3   = 13 x 11
+Levels 4–6   = 15 x 13
+Levels 7–9   = 17 x 15
+Levels 10–12 = 19 x 17
+Levels 13+   = 21 x 19 max
+```
+
+Implementation notes:
+
+```text
+engine.ts uses getLevelDimensions(level)
+GameState now carries cols and rows
+renderer.ts uses getBoardPixelSize(g)
+renderer loops over g.cols / g.rows
+GameCanvas sizes the canvas from getBoardPixelSize(g)
+```
+
+This means future agents must not reintroduce fixed-only COLS/ROWS logic into rendering, movement, collision, spawning, or canvas sizing.
+
+### Cheeseman Mouseverse enemy
+
+New enemy type:
+
+```text
+EnemyKind includes cheeseman
+```
+
+Asset:
+
+```text
+FOX/src/assets/cheeseman-enemy.png
+```
+
+Production unlock:
+
+```text
+CHEESEMAN_PRODUCTION_UNLOCK_LEVEL = 4
+CHEESEMAN_UNLOCK_LEVEL = CHEESEMAN_PRODUCTION_UNLOCK_LEVEL
+```
+
+Local test mode exists but is not active for tester push:
+
+```text
+CHEESEMAN_TEST_UNLOCK_LEVEL = 1
+```
+
+Current intended behavior:
+
+```text
+Levels 1–3: no Cheeseman mouse
+Level 4+: Cheeseman can spawn
+Higher levels: Cheeseman becomes more active
+```
+
+Cheeseman special skill:
+
+```text
+Drops cheese traps near itself
+Sometimes shoots cheese toward the player's current/nearby position
+Flying cheese lands first, then becomes armed
+Player touching armed cheese gets short control reversal
+Bomb explosions can clear cheese traps
+```
+
+Balance values:
+
+```text
+CHEESE_TRAP_CONFUSION_DURATION_MS = 3200
+CHEESE_TRAP_LIFETIME_MS = 8000
+CHEESEMAN_MAX_TRAPS = 9
+CHEESEMAN_BASE_PRANK_COOLDOWN_MS = 3200
+CHEESEMAN_MIN_PRANK_COOLDOWN_MS = 1150
+CHEESEMAN_SHOT_FLIGHT_MS = 520
+CHEESEMAN_SHOT_TARGET_RADIUS = 3
+```
+
+Enemy reward values:
+
+```text
+Rat kill: 100
+Gremlin kill: 125
+Cheeseman kill: 175
+```
+
+Flavor message:
+
+```text
+🐭 Mouseverse Reinforcements!
+The Fox enemy squad called for Verstärkung...
+Cheeseman entered the Labyrinth.
+```
+
+### Confusion Mushroom production state
+
+Mushroom production balance is active:
+
+```text
+CONFUSION_MUSHROOM_PRODUCTION_DROP_CHANCE = 0.12
+CONFUSION_MUSHROOM_DROP_CHANCE = CONFUSION_MUSHROOM_PRODUCTION_DROP_CHANCE
+```
+
+Do not switch this back to forced/test mode before public tester push unless intentionally running a special event/test.
+
+### Mobile controls
+
+Mobile now supports two control styles:
+
+```text
+ARROWS mode = touch D-pad + BOMB button
+SWIPE mode = swipe on maze + BOMB button
+```
+
+Implementation notes:
+
+```text
+Mobile mode type: "arrows" | "swipe"
+Stored in localStorage key: labyrinth_blast_mobile_controls
+Swipe uses pointer events on the canvas wrapper
+BOMB button remains separate in both modes
+```
+
+Important:
+
+```text
+Swipe movement does not remove the BOMB button.
+Players can choose the control style they prefer.
+```
+
+### Pause controls
+
+Pause support:
+
+```text
+P = pause / unpause
+Escape = pause / unpause
+HUD Pause button = pause / unpause
+```
+
+The keydown preventDefault list includes P and Escape so gameplay controls do not accidentally affect page behavior.
+
+### Role multiplier
+
+Labyrinth Blast now follows the Narrrfs role multiplier idea used by Snake and the other games.
+
+Frontend:
+
+```text
+GameCanvas.tsx displays role multiplier preview in the HUD
+Localhost preview uses Narrrf test roles
+Production fetches /api/user/roles.php
+HUD shows ROLE xN.N and role badge
+```
+
+Backend:
+
+```text
+save-labyrinth-blast-score.php calculates the multiplier server-side
+Frontend never decides final DSPOINC reward
+Roles are read from tbl_user_roles
+```
+
+Role multiplier ladder:
+
+```text
+VIP Holder = 2.0
+Holder = 1.5
+Champion = 1.4
+Season Tester = 1.3
+WL = 1.3
+Early Bird = 1.2
+Cheese Hunter = 1.1
+Base = 1.0
+```
+
+Reward formula:
+
+```text
+dspoinc_score = floor((raw_score * role_multiplier) / 10)
+max DSPOINC reward = 5000
+minimum save = 1 DSPOINC if raw_score > 0
+```
+
+Score API response now includes:
+
+```text
+role_multiplier
+role_bonus_role
+```
+
+Save overlay should show:
+
+```text
+✅ Saved XXX DSPOINC (xN.N ROLE)
+```
+
+### Score-save safety
+
+For tester build, payout should be run-end based:
+
+```text
+Level clear should NOT save DSPOINC.
+Losing the run should save once if score > 0.
+```
+
+Important reason:
+
+```text
+Score carries forward between levels.
+Saving on every level clear would repeatedly pay cumulative score.
+```
+
+Expected save condition:
+
+```text
+!hasSavedScoreRef.current && g.status === "lost" && g.score > 0
+```
+
+Keep this guard unless a future agent implements a true incremental delta payout system.
+
+### How To Play update
+
+How To Play now uses a Narrrfs-style guide layout and includes:
+
+```text
+Controls
+Goal
+Power-ups
+Mouseverse warning
+Scoring
+Survival notes
+```
+
+Updated guide facts:
+
+```text
+Mobile: choose Arrow D-pad or Swipe + BOMB button
+Pause: P or Escape
+Reward formula: floor((raw score × role multiplier) / 10)
+Mouseverse warning explains Cheeseman cheese traps/shots
+```
+
+### Files touched in final gameplay pass
+
+FOX source:
+
+```text
+FOX/src/game/engine.ts
+FOX/src/game/renderer.ts
+FOX/src/components/GameCanvas.tsx
+FOX/src/pages/Index.tsx
+FOX/src/assets/cheeseman-enemy.png
+FOX/src/assets/mushroom.png
+```
+
+Backend:
+
+```text
+api/dev/save-labyrinth-blast-score.php
+```
+
+Public build output after rebuild:
+
+```text
+public/labyrinth-blast/
+public/labyrinth-blast.html
+```
+
+### Build workflow reminder
+
+FOX source is ignored by Git. Render receives the built static public files.
+
+After every FOX source edit:
+
+```powershell
+cd C:\xampp-server\htdocs\narrrfs-world\FOX
+npm run build
+
+cd C:\xampp-server\htdocs\narrrfs-world
+
+if (Test-Path public\labyrinth-blast) {
+  Remove-Item public\labyrinth-blast -Recurse -Force
+}
+
+New-Item -ItemType Directory -Path public\labyrinth-blast | Out-Null
+
+Copy-Item FOX\dist\* public\labyrinth-blast\ -Recurse -Force
+```
+
+Never manually edit:
+
+```text
+public/labyrinth-blast/assets/*.js
+public/labyrinth-blast/assets/*.css
+```
+
+Always edit source files in:
+
+```text
+FOX/src/
+```
+
+then rebuild and copy.
+
+### Final local smoke test before push
+
+Run after build/copy:
+
+```text
+http://localhost/public/labyrinth-blast.html
+```
+
+Required checks:
+
+```text
+✅ Game loads
+✅ How To Play displays updated guide
+✅ P pauses / unpauses
+✅ Escape pauses / unpauses
+✅ HUD shows role multiplier
+✅ Localhost shows VIP Holder x2.0 preview
+✅ Level 1 uses 13 x 11 board
+✅ Level 1 has no Cheeseman mouse in production mode
+✅ Level 2 and 3 remain 13 x 11
+✅ Level 4 grows to 15 x 13
+✅ Cheeseman appears from level 4
+✅ Mouseverse message appears
+✅ Cheeseman drops cheese traps
+✅ Cheeseman shoots cheese toward player position
+✅ Armed cheese reverses controls
+✅ Bomb explosions can clear cheese traps
+✅ Mushroom is no longer forced every run
+✅ ARROWS mobile mode works
+✅ SWIPE mobile mode works
+✅ BOMB works in both mobile modes
+✅ Level clear does not save DSPOINC
+✅ Losing saves once with role multiplier
+✅ Save overlay shows multiplier/role
+```
+
+### Ecosystem integration status
+
+Already prepared locally:
+
+```text
+✅ save-labyrinth-blast-score.php
+✅ get-leaderboard.php returns labyrinth_blast
+✅ leaderboard.html Labyrinth Blast section
+✅ profile.html Quick Access
+✅ profile mini leaderboard
+✅ profile current-season stats
+✅ profile all-time stats
+✅ admin get-all-games-stats.php support
+✅ admin-interface.html Labyrinth Blast Game Management tab
+```
+
+Still required before full live claim:
+
+```text
+1. Final local smoke test
+2. npm run build in FOX
+3. Copy FOX/dist into public/labyrinth-blast
+4. git status review
+5. Commit changed API/public files
+6. Push render-deploy
+7. Restart / deploy Render
+8. Live verification
+9. One-day tester run before Season 12 promotion
+```
+
+### Do not claim yet
+
+Do not yet claim:
+
+```text
+9/9 synced games live
+```
+
+until live Render verification confirms:
+
+```text
+/labyrinth-blast.html works
+/leaderboard.html Labyrinth Blast works
+/profile.html Labyrinth Blast works
+/admin-interface.html Labyrinth Blast tab works
+Live score-save writes under the active season
+```
+
+### Current standby state
+
+```text
+Labyrinth Blast is final local tester-build ready.
+Next action: build/copy, smoke test, commit, push, live verification, then one-day tester session.
+```
+
+---
+
+
+## ✅ UPDATE — MAY 31, 2026 — LABYRINTH BLAST LOCAL FULL SYNC PREP COMPLETE
+
+### Status
+
+Labyrinth Blast has made a major local integration step and is now prepared across the Narrrfs World game ecosystem.
+
+Player-facing name:
+
+```text
+Labyrinth Blast
+```
+
+Canonical keys and routes:
+
+```text
+Source folder: FOX/
+Public page: public/labyrinth-blast.html
+Public build folder: public/labyrinth-blast/
+Database game key: labyrinth_blast
+Score API: api/dev/save-labyrinth-blast-score.php
+```
+
+Important naming rule:
+
+```text
+Do not call the public game FOX.
+FOX is only the ignored local source/build folder.
+The player-facing game name is Labyrinth Blast.
+```
+
+### Confirmed locally working
+
+```text
+✅ Static game runs locally
+✅ Static game runs live from labyrinth-blast.html
+✅ Character select works
+✅ Nightfox / Bear / Bull work
+✅ Maze/canvas renders
+✅ Movement works
+✅ Bomb placement works
+✅ Wall breaking works
+✅ Enemies work
+✅ Level clear screen works
+✅ Confusion Mushroom works
+✅ Mushroom reverses controls for timed effect
+✅ Bombs still work during confusion
+✅ Score-save frontend hook works
+✅ Backend score-save API works
+✅ tbl_tetris_scores receives labyrinth_blast rows
+✅ tbl_user_scores receives labyrinth_blast game_reward rows
+✅ tbl_score_adjustments receives audit row
+✅ get-leaderboard.php returns labyrinth_blast
+✅ leaderboard.html shows Labyrinth Blast section
+✅ leaderboard page shows avatar/role/player enrichment
+✅ profile.html Quick Access card works
+✅ profile mini leaderboard card works
+✅ profile current-season statistics card works
+✅ profile all-time statistics card works
+✅ admin stats API prepared for labyrinth_blast
+✅ admin-interface.html local Labyrinth Blast Game Management tab prepared
+```
+
+### Confirmed local DB test
+
+Local score-save test produced:
+
+```text
+Game: labyrinth_blast
+Discord ID: 328601656659017732
+Discord name: narrrf
+Raw game score test: 70
+Saved DSPOINC score: 7
+Season: Season 11
+```
+
+Confirmed database writes:
+
+```text
+tbl_tetris_scores:
+labyrinth_blast | 328601656659017732 | narrrf | 7 | Season 11
+
+tbl_user_scores:
+328601656659017732 | 7 | labyrinth_blast | game_reward
+
+tbl_score_adjustments:
+328601656659017732 | system | 7 | add | Labyrinth Blast game score: 7 DSPOINC from raw score 70
+```
+
+Important:
+
+```text
+Local DB schemas are older/simple in some tables.
+The Labyrinth Blast save API uses adaptive inserts and safely skips optional missing columns.
+Do not add schema migrations for raw_score/source/game/season unless explicitly planned.
+```
+
+### Files integrated / changed locally
+
+Backend APIs:
+
+```text
+api/dev/save-labyrinth-blast-score.php
+api/dev/get-leaderboard.php
+api/user/all-time-stats.php
+api/user/user-game-missions.php
+api/admin/get-all-games-stats.php
+```
+
+Frontend/public pages:
+
+```text
+public/labyrinth-blast.html
+public/labyrinth-blast/
+public/leaderboard.html
+public/profile.html
+public/admin-interface.html
+```
+
+FOX source files:
+
+```text
+FOX/src/App.tsx
+FOX/src/components/GameCanvas.tsx
+FOX/src/game/engine.ts
+FOX/src/game/renderer.ts
+FOX/src/pages/Index.tsx
+FOX/src/assets/mushroom.png
+FOX/vite.config.ts
+FOX/README.md
+```
+
+### Score-save rules
+
+Labyrinth Blast score save uses backend-authoritative DSPOINC conversion:
+
+```text
+raw_score = frontend gameplay score
+dspoinc_score = floor(raw_score / 10)
+max DSPOINC reward = 5000
+minimum save = 1 DSPOINC if raw_score > 0
+```
+
+Score-save trigger:
+
+```text
+GameCanvas.tsx saves only once when status changes from playing to won/lost.
+```
+
+Payload fields:
+
+```text
+score
+level
+status
+character
+duration_seconds
+discord_id / user_id local fallback
+discord_name local fallback
+```
+
+Backend writes:
+
+```text
+tbl_tetris_scores = leaderboard source
+tbl_user_scores = DSPOINC ledger source
+tbl_score_adjustments = audit/source trail
+```
+
+Season behavior:
+
+```text
+The save API reads the active season from tbl_seasons.
+When Season 12 becomes active, new Labyrinth Blast scores should automatically save under Season 12.
+```
+
+### Leaderboard integration
+
+`api/dev/get-leaderboard.php` now returns:
+
+```text
+labyrinth_blast
+labyrinth_blast_meta
+```
+
+Confirmed response shape includes:
+
+```text
+discord_id
+discord_name
+score
+timestamp
+avatar_url
+roles
+highest_role
+```
+
+`public/leaderboard.html` now includes:
+
+```text
+Labyrinth Blast Leaderboard section
+Play Labyrinth Blast button
+labyrinth-blast-leaderboard container
+displayLeaderboard('labyrinth-blast', data.labyrinth_blast || [], ...)
+```
+
+### Profile integration
+
+`public/profile.html` now includes:
+
+```text
+Labyrinth Blast Quick Access card
+Labyrinth Blast profile mini leaderboard card
+Labyrinth Blast current-season statistics card
+Labyrinth Blast all-time statistics card
+Play button links to labyrinth-blast.html
+```
+
+APIs patched for profile statistics:
+
+```text
+api/user/all-time-stats.php adds all_time_stats.games.labyrinth_blast
+api/user/user-game-missions.php adds current-season games.labyrinth_blast
+```
+
+All-time stats read from:
+
+```text
+tbl_tetris_scores WHERE game = 'labyrinth_blast'
+```
+
+Current-season stats read from:
+
+```text
+tbl_tetris_scores WHERE game = 'labyrinth_blast'
+tbl_user_scores WHERE game = 'labyrinth_blast' AND source = 'game_reward'
+```
+
+### Admin integration prepared locally
+
+`api/admin/get-all-games-stats.php` now needs/has Labyrinth Blast support using:
+
+```text
+game key: labyrinth_blast
+source table: tbl_tetris_scores
+current season: active tbl_seasons season
+```
+
+Expected admin API path:
+
+```text
+data.games.labyrinth_blast
+```
+
+`public/admin-interface.html` prepared locally with:
+
+```text
+Labyrinth Blast tab button
+labyrinthBlastTab content section
+GAME_MANAGEMENT_REGISTRY entry for labyrinth-blast
+loadLabyrinthBlastData()
+displayLabyrinthBlastData()
+Open Game button to labyrinth-blast.html
+Top 10 leaderboard display
+Total runs / unique players / best score / total DSPOINC / recent activity cards
+```
+
+### Confusion Mushroom status
+
+Labyrinth Blast includes the Cheese Runner-style Confusion Mushroom.
+
+Behavior:
+
+```text
+Mushroom spawns under breakable/tough walls
+Player reveals it by bombing walls
+Player collects it by walking over it
+Controls reverse for 5 seconds
+Bomb placement stays normal
+HUD warning/timer appears
+```
+
+Important production balance guard:
+
+```text
+Before live production push, ensure:
+CONFUSION_MUSHROOM_DROP_CHANCE = CONFUSION_MUSHROOM_PRODUCTION_DROP_CHANCE
+```
+
+Do not leave forced test spawn live unless intentionally running an event/test day.
+
+### Build / deploy workflow reminder
+
+FOX source is ignored by Git right now.
+
+Render receives:
+
+```text
+public/labyrinth-blast.html
+public/labyrinth-blast/
+```
+
+After every FOX source edit:
+
+```powershell
+cd C:\xampp-server\htdocs\narrrfs-world\FOX
+npm run build
+
+cd C:\xampp-server\htdocs\narrrfs-world
+
+if (Test-Path public\labyrinth-blast) {
+  Remove-Item public\labyrinth-blast -Recurse -Force
+}
+
+New-Item -ItemType Directory -Path public\labyrinth-blast | Out-Null
+
+Copy-Item FOX\dist\* public\labyrinth-blast\ -Recurse -Force
+```
+
+Never manually edit:
+
+```text
+public/labyrinth-blast/assets/*.js
+public/labyrinth-blast/assets/*.css
+```
+
+Always edit:
+
+```text
+FOX/src/
+```
+
+then rebuild and copy.
+
+### Remaining before final push / full sync claim
+
+Before claiming full live sync:
+
+```text
+1. Confirm mushroom drop chance is production mode.
+2. Test api/admin/get-all-games-stats.php returns data.games.labyrinth_blast.
+3. Test admin-interface.html Game Management → Labyrinth Blast tab locally.
+4. Rebuild FOX and copy dist if FOX source changed after last build.
+5. git status review.
+6. Commit changed API/public/admin/profile/leaderboard/labyrinth files.
+7. Push render-deploy.
+8. Test live:
+   - /labyrinth-blast.html
+   - /leaderboard.html Labyrinth Blast section
+   - /profile.html Quick Access + Leaderboard + Statistics
+   - /admin-interface.html Game Management Labyrinth Blast tab
+9. Only after live verification update sync claim.
+```
+
+### Current sync claim
+
+Current local status:
+
+```text
+Labyrinth Blast is locally prepared across score-save, leaderboard, profile, and admin.
+```
+
+Do not yet claim:
+
+```text
+9/9 synced games live
+```
+
+until admin local test and Render live verification are complete.
+
+### Next immediate action
+
+Next agent should continue with:
+
+```text
+1. Local admin final test
+2. Production mushroom chance check
+3. Build/copy FOX dist
+4. Git status review
+5. Commit + push to render-deploy
+6. Live verification
+```
+
+Current standby state:
+
+```text
+Labyrinth Blast is ready for final local admin verification and then Render push.
+```
+
+---
+
+
+## ✅ UPDATE — MAY 29, 2026 — LABYRINTH BLAST CONFUSION MUSHROOM GAMEPLAY PATCH VERIFIED
+
+### Status
+
+Labyrinth Blast Phase 1.1 gameplay patch is locally verified.
+
+The Cheese Runner / Cheeseman Confusion Mushroom mechanic was successfully added into Labyrinth Blast using the same gameplay idea:
+
+```text
+Mushroom item = risk pickup
+Effect = reverses movement controls for a short time
+Purpose = confuse the player and create funny pressure moments
+```
+
+### Confirmed working
+
+```text
+✅ Mushroom image copied into FOX/src/assets/mushroom.png
+✅ Mushroom added as Labyrinth Blast power-up type
+✅ Mushroom spawns under breakable/tough wall cells
+✅ Mushroom becomes visible after the wall is destroyed
+✅ Mushroom renders correctly in the canvas
+✅ Player can collect mushroom
+✅ Movement controls reverse while effect is active
+✅ Bomb placement still works normally during confusion
+✅ HUD warning/timer appears during reversed controls
+✅ Controls return to normal after timer expires
+✅ Game remains playable after mushroom collection
+```
+
+### Important source files changed
+
+```text
+FOX/src/game/engine.ts
+FOX/src/game/renderer.ts
+FOX/src/components/GameCanvas.tsx
+FOX/src/pages/Index.tsx
+FOX/src/assets/mushroom.png
+```
+
+### Important implementation notes
+
+The Labyrinth Blast engine now includes:
+
+```text
+PowerType includes mushroom
+GameState includes confusionTimer
+CONFUSION_MUSHROOM_DURATION_MS = 5000
+Mushroom uses existing hidden-under-wall power-up system
+```
+
+Control reversal is handled in:
+
+```text
+FOX/src/components/GameCanvas.tsx
+```
+
+The helper reverses movement input only:
+
+```text
+up ↔ down
+left ↔ right
+bomb stays normal
+```
+
+This is intentional so players can still defend themselves while confused.
+
+Rendering is handled in:
+
+```text
+FOX/src/game/renderer.ts
+```
+
+The mushroom image is imported from:
+
+```text
+FOX/src/assets/mushroom.png
+```
+
+and bundled by Vite into:
+
+```text
+public/labyrinth-blast/assets/
+```
+
+### Local testing note
+
+During local testing the mushroom drop chance can stay high/forced so it appears reliably.
+
+Before pushing public gameplay balance live, use production drop mode:
+
+```text
+CONFUSION_MUSHROOM_PRODUCTION_DROP_CHANCE = 0.12
+CONFUSION_MUSHROOM_DROP_CHANCE = CONFUSION_MUSHROOM_PRODUCTION_DROP_CHANCE
+```
+
+Do not leave forced 100% mushroom spawn live unless explicitly intended for an event/test day.
+
+### Build reminder
+
+FOX source is ignored by Git right now. Render only receives the rebuilt static public files.
+
+After editing FOX source, always rebuild and copy:
+
+```powershell
+cd C:\xampp-server\htdocs\narrrfs-world\FOX
+npm run build
+
+cd C:\xampp-server\htdocs\narrrfs-world
+
+if (Test-Path public\labyrinth-blast) {
+  Remove-Item public\labyrinth-blast -Recurse -Force
+}
+
+New-Item -ItemType Directory -Path public\labyrinth-blast | Out-Null
+
+Copy-Item FOX\dist\* public\labyrinth-blast\ -Recurse -Force
+```
+
+Do not manually edit generated files:
+
+```text
+public/labyrinth-blast/assets/*.js
+public/labyrinth-blast/assets/*.css
+```
+
+### Current scope
+
+Labyrinth Blast is now:
+
+```text
+✅ Live playable as static public game
+✅ Confusion Mushroom gameplay patch locally verified
+❌ Not yet backend score-save integrated
+❌ Not yet leaderboard integrated
+❌ Not yet profile card integrated
+❌ Not yet admin game management integrated
+```
+
+Next planned phase remains:
+
+```text
+Phase 2: backend score-save integration for game key labyrinth_blast
+```
+
+Guardrail:
+
+```text
+Do not claim full game sync or 9/9 synced games until score-save, leaderboard, profile, and admin are all verified.
+```
+
+---
+
+
 ## ✅ UPDATE — MAY 29, 2026 — LABYRINTH BLAST PHASE 1 LOCAL PLAYABLE VERIFIED
 
 ### Status

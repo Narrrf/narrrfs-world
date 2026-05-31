@@ -198,7 +198,14 @@ try {
             'last_played' => null,
             'dspoinc_earned' => 0
         ],
-                'cheeseman' => [
+        'cheeseman' => [
+            'total_games' => 0,
+            'best_score' => 0,
+            'total_score' => 0,
+            'last_played' => null,
+            'dspoinc_earned' => 0
+        ],
+        'labyrinth_blast' => [
             'total_games' => 0,
             'best_score' => 0,
             'total_score' => 0,
@@ -485,8 +492,99 @@ try {
             $response['overall']['games_played'] += (int)$cheesemanData['total_games'];
             $response['overall']['total_dspoinc'] += $cheesemanDspoincEarned;
         }
-    } catch (Exception $e) {
+        } catch (Exception $e) {
         error_log("Cheeseman stats query error: " . $e->getMessage());
+    }
+
+    // 4B. LABYRINTH BLAST STATS
+    // Plain language for DEVS:
+    // Labyrinth Blast stores backend-calculated DSPOINC reward scores in tbl_tetris_scores.
+    // The actual economy ledger amount is read from tbl_user_scores so profile stats stay
+    // aligned with the backend-authoritative reward API.
+    try {
+        error_log("🔍 LABYRINTH BLAST DEBUG: Querying for user $discordId");
+
+        $labyrinthBlastData = null;
+        $labyrinthBlastSeasonFilters = [
+            ['condition' => 'season = ?', 'label' => 'exact'],
+            ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
+        ];
+
+        foreach ($labyrinthBlastSeasonFilters as $filter) {
+            $stmt = $db->prepare("
+                SELECT
+                    COUNT(*) as total_games,
+                    MAX(score) as best_score,
+                    SUM(score) as total_score,
+                    MAX(timestamp) as last_played
+                FROM tbl_tetris_scores
+                WHERE discord_id = ?
+                AND game = 'labyrinth_blast'
+                AND (
+                    " . $filter['condition'] . "
+                    OR (timestamp >= ? AND (? IS NULL OR timestamp < ?))
+                )
+            ");
+
+            $stmt->execute([
+                $discordId,
+                $currentSeason,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+
+            $labyrinthBlastData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($labyrinthBlastData && (int)$labyrinthBlastData['total_games'] > 0) {
+                error_log("✅ LABYRINTH BLAST: season match (" . $filter['label'] . ") for $discordId");
+                break;
+            }
+        }
+
+        $labyrinthBlastDspoincEarned = 0;
+
+        try {
+            $dspoincStmt = $db->prepare("
+                SELECT COALESCE(SUM(score), 0) as dspoinc_earned
+                FROM tbl_user_scores
+                WHERE user_id = ?
+                AND game = 'labyrinth_blast'
+                AND source = 'game_reward'
+                AND timestamp >= ?
+                AND (? IS NULL OR timestamp < ?)
+            ");
+
+            $dspoincStmt->execute([
+                $discordId,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+
+            $labyrinthBlastDspoincEarned = (int)$dspoincStmt->fetchColumn();
+        } catch (Exception $ledgerError) {
+            error_log("Labyrinth Blast DSPOINC ledger query error: " . $ledgerError->getMessage());
+        }
+
+        if (!$labyrinthBlastData || (int)$labyrinthBlastData['total_games'] === 0) {
+            error_log("⚠️ LABYRINTH BLAST: No Season $currentSeason data for $discordId, showing 0 (current season only)");
+            $labyrinthBlastData = null;
+        }
+
+        if ($labyrinthBlastData && (int)$labyrinthBlastData['total_games'] > 0) {
+            $response['labyrinth_blast'] = [
+                'total_games' => (int)$labyrinthBlastData['total_games'],
+                'best_score' => (int)$labyrinthBlastData['best_score'],
+                'total_score' => (int)$labyrinthBlastData['total_score'],
+                'last_played' => $labyrinthBlastData['last_played'],
+                'dspoinc_earned' => $labyrinthBlastDspoincEarned
+            ];
+
+            error_log("✅ Labyrinth Blast stats found for user $discordId: " . $labyrinthBlastData['total_games'] . " runs, " . $labyrinthBlastDspoincEarned . " DSPOINC");
+        }
+    } catch (Exception $e) {
+        error_log("Labyrinth Blast stats query error: " . $e->getMessage());
     }
 
         // 🔧 CRITICAL FIX: Direct Discord ID to cheese clicks mapping
@@ -784,10 +882,12 @@ try {
     }
 
     // Calculate total DSPOINC from all games (including Cheese Rumble)
-    $response['overall']['total_dspoinc'] = 
+        $response['overall']['total_dspoinc'] = 
         $response['tetris']['dspoinc_earned'] + 
         $response['snake']['dspoinc_earned'] + 
         $response['space_invaders']['dspoinc_earned'] + 
+        $response['cheeseman']['dspoinc_earned'] +
+        $response['labyrinth_blast']['dspoinc_earned'] +
         $response['cheese_hunt']['dspoinc_earned'] + 
         $response['discord_race']['dspoinc_earned'] +
         $response['cheese_rumble']['dspoinc_earned'] +
@@ -798,6 +898,8 @@ try {
     if ($response['tetris']['total_games'] > 0) $gamesPlayed++;
     if ($response['snake']['total_games'] > 0) $gamesPlayed++;
     if ($response['space_invaders']['total_games'] > 0) $gamesPlayed++;
+    if ($response['cheeseman']['total_games'] > 0) $gamesPlayed++;
+    if ($response['labyrinth_blast']['total_games'] > 0) $gamesPlayed++;
     if ($response['cheese_hunt']['total_clicks'] > 0) $gamesPlayed++;
     if ($response['discord_race']['total_races'] > 0) $gamesPlayed++;
     if ($response['cheese_rumble']['total_rumbles'] > 0) $gamesPlayed++; // 6th game
@@ -824,6 +926,8 @@ try {
     error_log("  Tetris: " . $response['tetris']['total_games'] . " games, " . $response['tetris']['dspoinc_earned'] . " DSPOINC");
     error_log("  Snake: " . $response['snake']['total_games'] . " games, " . $response['snake']['dspoinc_earned'] . " DSPOINC");
     error_log("  Space Invaders: " . $response['space_invaders']['total_games'] . " games, " . $response['space_invaders']['dspoinc_earned'] . " DSPOINC");
+    error_log("  Cheese Runner: " . $response['cheeseman']['total_games'] . " games, " . $response['cheeseman']['dspoinc_earned'] . " DSPOINC");
+    error_log("  Labyrinth Blast: " . $response['labyrinth_blast']['total_games'] . " games, " . $response['labyrinth_blast']['dspoinc_earned'] . " DSPOINC");
     error_log("  Cheese Hunt: " . $response['cheese_hunt']['total_clicks'] . " clicks, " . $response['cheese_hunt']['dspoinc_earned'] . " DSPOINC");
     error_log("  Discord Race: " . $response['discord_race']['total_races'] . " races, " . $response['discord_race']['dspoinc_earned'] . " DSPOINC");
     error_log("  Total Games Played: " . $response['overall']['games_played'] . "/8");
@@ -1075,6 +1179,24 @@ echo json_encode([
         'completion_percentage' => 0
     ]
 ],
+            'labyrinth_blast' => [
+                'name' => 'Labyrinth Blast',
+                'icon' => '💥',
+                'url' => '/labyrinth-blast.html',
+                'status' => $response['labyrinth_blast']['total_games'] > 0 ? 'active' : 'not_played',
+                'stats' => [
+                    'total_games' => $response['labyrinth_blast']['total_games'],
+                    'best_score' => $response['labyrinth_blast']['best_score'],
+                    'total_score' => $response['labyrinth_blast']['total_score'],
+                    'dspoinc_earned' => $response['labyrinth_blast']['dspoinc_earned'],
+                    'last_played' => $response['labyrinth_blast']['last_played']
+                ],
+                'achievements' => [
+                    'total_available' => 0,
+                    'unlocked' => 0,
+                    'completion_percentage' => 0
+                ]
+            ],
             'cheese_hunt' => [
                 'name' => 'Cheese Hunt',
                 'icon' => '🧀',

@@ -326,6 +326,30 @@
   </div>
 </div>
 
+      <!-- Labyrinth Blast Leaderboard -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div>
+            <h2 class="text-2xl font-bold text-cyan-300 flex items-center gap-2">
+              <span>💥</span>
+              <span>Labyrinth Blast Leaderboard</span>
+            </h2>
+            <p class="text-sm text-cyan-100/80 mt-2">
+              Top maze survivors by DSPOINC reward score • Bomb walls, dodge rivals, and reach the portal.
+            </p>
+          </div>
+
+          <a href="labyrinth-blast.html"
+             class="bg-gradient-to-r from-cyan-500 to-amber-500 hover:from-cyan-600 hover:to-amber-600 text-slate-950 font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-cyan-300 hover:border-amber-200 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
+            🎮 Play Labyrinth Blast
+          </a>
+        </div>
+
+        <div id="labyrinth-blast-leaderboard" class="space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
       <!-- Cheese Hunt Leaderboard -->
       <div class="leaderboard-card rounded-xl p-6 mb-6">
         <h2 class="text-2xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
@@ -614,6 +638,7 @@ displayLeaderboard('cheeseman', data.cheeseman || [], data.is_frozen);
 displayLeaderboard('cheese-hunt', data.cheese_hunt || [], data.is_frozen);
 displayLeaderboard('discord-race', data.discord_race || [], data.is_frozen);
 displayLeaderboard('cheese-rumble', data.cheese_rumble || [], data.is_frozen);
+displayLeaderboard('labyrinth-blast', data.labyrinth_blast || [], data.is_frozen, 'DSPOINC');
 
 // 🧬 Top Genetic leaderboard
 displayMouseLeaderboard(data.mouse_leaderboard || [], data.is_frozen);

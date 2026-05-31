@@ -122,7 +122,7 @@ try {
         'success' => true,
         'data' => [
             'overview' => [
-                'games_configured' => 8,
+                'games_configured' => 9,
                 'games_with_activity' => 0,
                 'current_season' => $fullSeasonName,
                 'last_updated' => date('Y-m-d H:i:s'),
@@ -681,7 +681,115 @@ $totalEntriesAcrossGames += safeInt($cheesemanSeasonData['total_scores'] ?? 0);
 addPlayerIdsToRegistry($allPlayerRegistry, $cheesemanTopPlayers);
 
 /**
- * 8. GLYPH MEMORY
+ * 8. LABYRINTH BLAST
+ *
+ * Plain language for DEVS:
+ * Labyrinth Blast saves backend-calculated DSPOINC reward scores into
+ * tbl_tetris_scores with game key labyrinth_blast. This admin block mirrors
+ * Cheese Runner's simple score-game structure and shows current season stats,
+ * recent activity, and top players. No destructive admin actions are added.
+ */
+try {
+    $labyrinthBlastSeasonStmt = $db->prepare("
+        SELECT
+            COUNT(*) AS total_scores,
+            COUNT(DISTINCT discord_id) AS unique_players,
+            MAX(score) AS max_score,
+            SUM(score) AS total_score,
+            COUNT(CASE WHEN timestamp >= datetime('now', '-24 hours') THEN 1 END) AS recent_24h,
+            COUNT(CASE WHEN timestamp >= datetime('now', '-7 days') THEN 1 END) AS recent_7d
+        FROM tbl_tetris_scores
+        WHERE game = 'labyrinth_blast'
+        AND season = ?
+    ");
+    $labyrinthBlastSeasonStmt->execute([$currentSeason]);
+    $labyrinthBlastSeasonData = $labyrinthBlastSeasonStmt->fetch(PDO::FETCH_ASSOC);
+
+    $labyrinthBlastTopStmt = $db->prepare("
+        SELECT
+            s.discord_id,
+            COALESCE(u.username, s.discord_name, s.discord_id) AS discord_name,
+            MAX(s.score) AS score,
+            MAX(s.timestamp) AS timestamp
+        FROM tbl_tetris_scores s
+        LEFT JOIN tbl_users u ON u.discord_id = s.discord_id
+        WHERE s.game = 'labyrinth_blast'
+        AND s.season = ?
+        GROUP BY s.discord_id
+        ORDER BY score DESC
+        LIMIT 10
+    ");
+    $labyrinthBlastTopStmt->execute([$currentSeason]);
+    $labyrinthBlastTopPlayers = $labyrinthBlastTopStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $response['data']['games']['labyrinth_blast'] = [
+        'name' => 'Labyrinth Blast',
+        'icon' => '💥',
+        'game_key' => 'labyrinth_blast',
+        'status' => safeInt($labyrinthBlastSeasonData['total_scores'] ?? 0) > 0 ? 'active' : 'not_played',
+        'season_data' => [
+            'current_season' => $fullSeasonName,
+            'total_scores' => safeInt($labyrinthBlastSeasonData['total_scores'] ?? 0),
+            'total_games' => safeInt($labyrinthBlastSeasonData['total_scores'] ?? 0),
+            'unique_players' => safeInt($labyrinthBlastSeasonData['unique_players'] ?? 0),
+            'max_score' => safeInt($labyrinthBlastSeasonData['max_score'] ?? 0),
+            'best_score' => safeInt($labyrinthBlastSeasonData['max_score'] ?? 0),
+            'total_score' => safeInt($labyrinthBlastSeasonData['total_score'] ?? 0),
+            'total_dspoinc' => safeInt($labyrinthBlastSeasonData['total_score'] ?? 0),
+            'recent_24h' => safeInt($labyrinthBlastSeasonData['recent_24h'] ?? 0),
+            'recent_7d' => safeInt($labyrinthBlastSeasonData['recent_7d'] ?? 0)
+        ],
+        'top_players' => $labyrinthBlastTopPlayers,
+        'leaderboard' => $labyrinthBlastTopPlayers,
+        'diagnostics' => [
+            'query_ok' => true,
+            'source_table' => 'tbl_tetris_scores',
+            'season_mode' => 'current_season',
+            'row_count' => safeInt($labyrinthBlastSeasonData['total_scores'] ?? 0)
+        ]
+    ];
+
+    if (safeInt($labyrinthBlastSeasonData['total_scores'] ?? 0) > 0) {
+        $gamesWithActivity++;
+    }
+
+    $summedUniquePlayerEntries += safeInt($labyrinthBlastSeasonData['unique_players'] ?? 0);
+    $totalEntriesAcrossGames += safeInt($labyrinthBlastSeasonData['total_scores'] ?? 0);
+    addPlayerIdsToRegistry($allPlayerRegistry, $labyrinthBlastTopPlayers);
+} catch (Exception $e) {
+    error_log("Labyrinth Blast admin stats error: " . $e->getMessage());
+
+    $response['data']['games']['labyrinth_blast'] = [
+        'name' => 'Labyrinth Blast',
+        'icon' => '💥',
+        'game_key' => 'labyrinth_blast',
+        'status' => 'error',
+        'season_data' => [
+            'current_season' => $fullSeasonName,
+            'total_scores' => 0,
+            'total_games' => 0,
+            'unique_players' => 0,
+            'max_score' => 0,
+            'best_score' => 0,
+            'total_score' => 0,
+            'total_dspoinc' => 0,
+            'recent_24h' => 0,
+            'recent_7d' => 0
+        ],
+        'top_players' => [],
+        'leaderboard' => [],
+        'diagnostics' => [
+            'query_ok' => false,
+            'source_table' => 'tbl_tetris_scores',
+            'season_mode' => 'current_season',
+            'row_count' => 0,
+            'warning' => $e->getMessage()
+        ]
+    ];
+}
+
+/**
+ * 9. GLYPH MEMORY
  */
     try {
         $tableCheckStmt = $db->prepare("
@@ -918,7 +1026,7 @@ addPlayerIdsToRegistry($allPlayerRegistry, $cheesemanTopPlayers);
         $recentActivityStmt = $db->prepare("
             SELECT game, discord_name, timestamp, score
             FROM tbl_tetris_scores
-            WHERE game IN ('tetris', 'snake', 'space_invaders', 'cheeseman')
+            WHERE game IN ('tetris', 'snake', 'space_invaders', 'cheeseman', 'labyrinth_blast')
             AND season = ?
             ORDER BY timestamp DESC
             LIMIT 10

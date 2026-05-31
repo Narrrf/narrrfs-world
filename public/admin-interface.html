@@ -2747,6 +2747,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake" onclick="forceLoadTabOnClick('snake')">🐍 Snake</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="space-invaders" onclick="forceLoadTabOnClick('space-invaders')">👾 Space Invaders</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheeseman" onclick="forceLoadTabOnClick('cheeseman')">🧀 Cheese Runner</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="labyrinth-blast" onclick="forceLoadTabOnClick('labyrinth-blast')">💥 Labyrinth Blast</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="forceLoadTabOnClick('cheese-hunt')">🧀 Cheese Hunt</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="forceLoadTabOnClick('discord-race')">🏁 Discord Race</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-rumble" onclick="forceLoadTabOnClick('cheese-rumble')">💥 Cheese Rumble</button>
@@ -3098,6 +3099,57 @@
     <div class="flex flex-wrap gap-3">
       <button onclick="loadCheesemanData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
       <a href="cheeseman.html" target="_blank" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded admin-button">🎮 Open Game</a>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Labyrinth Blast Tab -->
+<div id="labyrinthBlastTab" class="game-tab-content" style="display: none;">
+  <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+    <h3 class="text-lg font-semibold mb-3 text-cyan-300">💥 Labyrinth Blast Management</h3>
+
+    <div class="game-stats-grid">
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>🎮</span><span>Total Runs</span></div>
+        <div class="game-stat-value" id="labyrinthBlastTotalScores">-</div>
+        <div class="game-stat-label">Saved Labyrinth Blast runs this season</div>
+        <div class="game-stat-subvalue">Players: <span id="labyrinthBlastUniquePlayers" class="text-blue-400">-</span></div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>🏆</span><span>Best Score</span></div>
+        <div class="game-stat-value" id="labyrinthBlastMaxScore">-</div>
+        <div class="game-stat-label">Highest Labyrinth Blast DSPOINC score</div>
+        <div class="game-stat-subvalue">Season source: tbl_tetris_scores</div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>💰</span><span>Total DSPOINC</span></div>
+        <div class="game-stat-value" id="labyrinthBlastTotalDspoinc">-</div>
+        <div class="game-stat-label">Awarded through Labyrinth Blast</div>
+        <div class="game-stat-subvalue">Backend reward source: save-labyrinth-blast-score.php</div>
+      </div>
+
+      <div class="game-stat-card">
+        <div class="game-stat-header"><span>📈</span><span>Recent Activity</span></div>
+        <div class="game-stat-value" id="labyrinthBlastRecent24h">-</div>
+        <div class="game-stat-label">Last 24 hours</div>
+        <div class="game-stat-subvalue">7 days: <span id="labyrinthBlastRecent7d" class="text-green-400">-</span></div>
+      </div>
+    </div>
+
+    <div class="bg-gray-700 p-4 rounded mb-4">
+      <h4 class="font-semibold text-cyan-400 mb-3">🏆 Top 10 Labyrinth Blast Players</h4>
+      <div id="labyrinthBlastLeaderboard" class="space-y-2">
+        <div class="text-gray-400 text-center">Loading Labyrinth Blast leaderboard...</div>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <button onclick="loadLabyrinthBlastData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+      <a href="labyrinth-blast.html" target="_blank" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded admin-button">🎮 Open Game</a>
     </div>
   </div>
 </div>
@@ -18598,7 +18650,7 @@ function updateGameTabContent(gameType, gameData) {
           await forceRefreshTabDisplay('space-invaders');
         }
       },
-            cheeseman: {
+                  cheeseman: {
         key: 'cheeseman',
         label: '🧀 Cheese Runner',
         buttonLabel: '🧀 Cheese Runner',
@@ -18609,6 +18661,19 @@ function updateGameTabContent(gameType, gameData) {
         },
         refresh: async () => {
           await loadCheesemanData();
+        }
+      },
+      'labyrinth-blast': {
+        key: 'labyrinth-blast',
+        label: '💥 Labyrinth Blast',
+        buttonLabel: '💥 Labyrinth Blast',
+        tabId: 'labyrinthBlastTab',
+        tabButtonSelector: '[data-game-tab="labyrinth-blast"]',
+        load: async () => {
+          await loadLabyrinthBlastData();
+        },
+        refresh: async () => {
+          await loadLabyrinthBlastData();
         }
       },
       'cheese-hunt': {
@@ -19815,6 +19880,143 @@ function displayCheesemanData(cheesemanData) {
         <div class="leaderboard-score">
           <div class="leaderboard-score-main">${formatNumber(score)} DSPOINC</div>
           <div class="leaderboard-score-sub">${player.timestamp || player.last_played || ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * Load Labyrinth Blast admin stats from the shared game stats API.
+ *
+ * Plain language for DEVS:
+ * Labyrinth Blast uses game key "labyrinth_blast" in tbl_tetris_scores and
+ * tbl_user_scores. Admin reads the shared get-all-games-stats.php API so the
+ * interface stays consistent with the overview and existing game tabs.
+ */
+async function loadLabyrinthBlastData() {
+  if (!currentAdmin) {
+    addLog('❌ Please authenticate first');
+    return;
+  }
+
+  addLog('🔄 Loading Labyrinth Blast data...');
+
+  const labyrinthBlastTab = document.getElementById('labyrinthBlastTab');
+  labyrinthBlastTab?.classList.add('loading');
+
+  try {
+    const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php', {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await response.json();
+    const labyrinthBlastData = data?.data?.games?.labyrinth_blast || data?.games?.labyrinth_blast || null;
+
+    if (!data.success || !labyrinthBlastData) {
+      throw new Error(data.error || 'Labyrinth Blast data missing from get-all-games-stats.php');
+    }
+
+    displayLabyrinthBlastData(labyrinthBlastData);
+    addLog('✅ Labyrinth Blast data loaded successfully');
+  } catch (error) {
+    addLog(`❌ Labyrinth Blast data loading error: ${error.message}`);
+    console.error('❌ Labyrinth Blast admin load failed:', error);
+  } finally {
+    labyrinthBlastTab?.classList.remove('loading');
+  }
+}
+
+/**
+ * Render Labyrinth Blast admin stats into the Game Management tab.
+ *
+ * Plain language for DEVS:
+ * The API may expose season_data, current_data, all_time, top_players, or
+ * leaderboard depending on API generation. This renderer reads all known safe
+ * shapes and does not assume optional fields exist.
+ */
+function displayLabyrinthBlastData(labyrinthBlastData) {
+  const formatNumber = (value) => Number(value || 0).toLocaleString();
+
+  const seasonData = labyrinthBlastData.season_data || labyrinthBlastData.current_data || labyrinthBlastData || {};
+  const allTimeData = labyrinthBlastData.all_time || {};
+  const topPlayers = labyrinthBlastData.top_players || labyrinthBlastData.leaderboard || [];
+
+  const totalScores =
+    seasonData.total_scores ??
+    seasonData.total_games ??
+    allTimeData.total_scores ??
+    allTimeData.total_games ??
+    0;
+
+  const uniquePlayers =
+    seasonData.unique_players ??
+    allTimeData.unique_players ??
+    0;
+
+  const maxScore =
+    seasonData.max_score ??
+    seasonData.best_score ??
+    allTimeData.max_score ??
+    allTimeData.best_score ??
+    0;
+
+  const totalDspoinc =
+    seasonData.total_score ??
+    seasonData.total_dspoinc ??
+    allTimeData.total_score ??
+    allTimeData.total_dspoinc ??
+    0;
+
+  const recent24h = seasonData.recent_24h ?? 0;
+  const recent7d = seasonData.recent_7d ?? 0;
+
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  setText('labyrinthBlastTotalScores', formatNumber(totalScores));
+  setText('labyrinthBlastUniquePlayers', formatNumber(uniquePlayers));
+  setText('labyrinthBlastMaxScore', formatNumber(maxScore));
+  setText('labyrinthBlastTotalDspoinc', formatNumber(totalDspoinc));
+  setText('labyrinthBlastRecent24h', formatNumber(recent24h));
+  setText('labyrinthBlastRecent7d', formatNumber(recent7d));
+
+  const leaderboardEl = document.getElementById('labyrinthBlastLeaderboard');
+  if (!leaderboardEl) {
+    return;
+  }
+
+  if (!Array.isArray(topPlayers) || topPlayers.length === 0) {
+    leaderboardEl.innerHTML = `
+      <div class="empty-state text-center p-6">
+        <div class="text-cyan-300 text-lg mb-2">💥 No Labyrinth Blast scores yet</div>
+        <div class="text-gray-400 text-sm">Scores appear here after players finish a run.</div>
+      </div>
+    `;
+    return;
+  }
+
+  leaderboardEl.innerHTML = topPlayers.map((player, index) => {
+    const rank = index + 1;
+    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    const playerName = player.discord_name || player.username || player.discord_id || 'Unknown Player';
+    const score = player.score ?? player.best_score ?? player.max_score ?? 0;
+    const timestamp = player.timestamp || player.last_game || player.last_played || '';
+
+    return `
+      <div class="leaderboard-item">
+        <div class="leaderboard-rank ${rankClass}">#${rank}</div>
+        <div class="leaderboard-player">
+          <div class="leaderboard-name">${playerName}</div>
+          <div class="leaderboard-score-sub">${timestamp ? new Date(timestamp).toLocaleString() : 'No timestamp'}</div>
+        </div>
+        <div class="leaderboard-score">
+          <div class="leaderboard-score-main">${formatNumber(score)}</div>
+          <div class="leaderboard-score-sub">DSPOINC</div>
         </div>
       </div>
     `;

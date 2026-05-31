@@ -201,10 +201,10 @@ LIMIT 10
 
     // 🐛 BUG FIX: Check total scores across ALL 3 games combined (not per game)
     $totalScoresStmt = $db->prepare("
-        SELECT COUNT(*) as total_scores
-        FROM tbl_tetris_scores
-        WHERE season = ? AND game IN ('tetris', 'snake', 'space_invaders', 'cheeseman')
-    ");
+    SELECT COUNT(*) as total_scores
+    FROM tbl_tetris_scores
+    WHERE season = ? AND game IN ('tetris', 'snake', 'space_invaders', 'cheeseman', 'labyrinth_blast')
+");
     $totalScoresStmt->execute([$currentSeason]);
     $totalScoresAcrossAllGames = $totalScoresStmt->fetchColumn() ?: 0;
 
@@ -213,10 +213,11 @@ LIMIT 10
     $useFrozenLeaderboard = ($totalScoresAcrossAllGames < 3);
 
     // Core arcade leaderboards
-    $tetrisResult = getLeaderboard($db, 'tetris', $currentSeason, $previousSeason, $useFrozenLeaderboard);
-    $snakeResult = getLeaderboard($db, 'snake', $currentSeason, $previousSeason, $useFrozenLeaderboard);
-    $spaceInvadersResult = getLeaderboard($db, 'space_invaders', $currentSeason, $previousSeason, $useFrozenLeaderboard);
-    $cheesemanResult = getLeaderboard($db, 'cheeseman', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+$tetrisResult = getLeaderboard($db, 'tetris', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+$snakeResult = getLeaderboard($db, 'snake', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+$spaceInvadersResult = getLeaderboard($db, 'space_invaders', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+$cheesemanResult = getLeaderboard($db, 'cheeseman', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+$labyrinthBlastResult = getLeaderboard($db, 'labyrinth_blast', $currentSeason, $previousSeason, $useFrozenLeaderboard);
 
 
 
@@ -623,11 +624,16 @@ echo json_encode([
     'snake' => $snakeResult['leaderboard'],
     'space_invaders' => $spaceInvadersResult['leaderboard'],
     'cheeseman' => $cheesemanResult['leaderboard'],
-    'cheeseman_meta' => [
-        'is_frozen' => $cheesemanResult['is_frozen'] ?? false,
-        'season_shown' => $cheesemanResult['season_shown'] ?? $currentSeason
-    ],
-    'cheese_hunt' => $cheeseHuntResult['leaderboard'],
+'cheeseman_meta' => [
+    'is_frozen' => $cheesemanResult['is_frozen'] ?? false,
+    'season_shown' => $cheesemanResult['season_shown'] ?? $currentSeason
+],
+'labyrinth_blast' => $labyrinthBlastResult['leaderboard'],
+'labyrinth_blast_meta' => [
+    'is_frozen' => $labyrinthBlastResult['is_frozen'] ?? false,
+    'season_shown' => $labyrinthBlastResult['season_shown'] ?? $currentSeason
+],
+'cheese_hunt' => $cheeseHuntResult['leaderboard'],
     'discord_race' => $discordRaceResult['leaderboard'],
     'cheese_rumble' => $cheeseRumbleResult['leaderboard'],
     'glyph_memory' => $glyphMemoryLeaderboard,

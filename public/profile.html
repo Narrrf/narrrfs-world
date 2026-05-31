@@ -3379,6 +3379,13 @@ else {
   <p class="quick-access-card-copy">Maze run!</p>
 </a>
 
+<!-- 💥 Labyrinth Blast -->
+<a href="labyrinth-blast.html" class="quick-access-card quick-access-card--labyrinth-blast group">
+  <div class="quick-access-card-icon group-hover:animate-bounce">💥</div>
+  <h3 class="quick-access-card-title">Labyrinth Blast</h3>
+  <p class="quick-access-card-copy">Bomb maze!</p>
+</a>
+
       <!-- 🎁 Lootbox -->
       <button type="button" onclick="scrollToChestSection()" class="quick-access-card quick-access-card--lootbox group">
         <img src="img/chests/chest-closed.png" alt="Lootbox" class="group-hover:scale-110 transition-transform duration-300">
@@ -5797,12 +5804,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 <!-- <script src="scripts/snake-scroll.js?v=5.4.0&season5_boss_system=1730649600"></script> -->
 <!-- Space Invaders script removed from profile page - it has its own dedicated page -->
 <script>
-  console.log('✅ Profile page - Game scripts removed (all games on standalone pages)');
   console.log('🎮 Tetris: /tetris.html');
-  console.log('🐍 Snake: /snake.html');
-  console.log('👾 Space Invaders: /space-cheese-invaders.html');
-  console.log('🧀 Cheese Runner: /cheeseman.html');
-  console.log('🔮 Glyph Memory: profile / leaderboard integration');
+console.log('🐍 Snake: /snake.html');
+console.log('👾 Space Invaders: /space-cheese-invaders.html');
+console.log('🧀 Cheese Runner: /cheeseman.html');
+console.log('💥 Labyrinth Blast: /labyrinth-blast.html');
+console.log('🔮 Glyph Memory: profile / leaderboard integration');
 </script>
 
 <!-- 🏆 Restored Leaderboard Section -->
@@ -5829,10 +5836,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       </div>
       <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
         <span class="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-cyan-200">🧩 Tetris</span>
-        <span class="rounded-full border border-green-400/30 bg-green-400/10 px-3 py-1 text-green-200">🐍 Snake</span>
-        <span class="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1 text-purple-200">👾 Space Invaders</span>
-        <span class="rounded-full border border-yellow-400/30 bg-yellow-400/10 px-3 py-1 text-yellow-200">🧀 Cheese Runner</span>
-        <span class="rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-1 text-fuchsia-200">🔮 Glyph Memory</span>
+<span class="rounded-full border border-green-400/30 bg-green-400/10 px-3 py-1 text-green-200">🐍 Snake</span>
+<span class="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1 text-purple-200">👾 Space Invaders</span>
+<span class="rounded-full border border-yellow-400/30 bg-yellow-400/10 px-3 py-1 text-yellow-200">🧀 Cheese Runner</span>
+<span class="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-cyan-200">💥 Labyrinth Blast</span>
+<span class="rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-1 text-fuchsia-200">🔮 Glyph Memory</span>
       </div>
     </div>
 
@@ -5883,6 +5891,18 @@ document.addEventListener("DOMContentLoaded", async function () {
           <a href="cheeseman.html" class="rounded-full bg-yellow-400 px-3 py-1 text-xs font-black text-slate-950 hover:bg-yellow-300">Play</a>
         </div>
         <ol id="leaderboard-cheeseman-list" class="space-y-2 text-slate-200"></ol>
+      </article>
+
+            <!-- 💥 Labyrinth Blast -->
+      <article class="rounded-2xl border border-cyan-400/25 bg-gradient-to-br from-cyan-950/50 via-slate-900/80 to-amber-950/40 p-4 shadow-xl">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h4 class="text-lg font-black text-cyan-300">💥 Labyrinth Blast</h4>
+            <p class="text-xs text-slate-400 mt-1">Bomb walls, dodge rivals, collect mushrooms, and reach the portal.</p>
+          </div>
+          <a href="labyrinth-blast.html" class="rounded-full bg-cyan-400 px-3 py-1 text-xs font-black text-slate-950 hover:bg-cyan-300">Play</a>
+        </div>
+        <ol id="leaderboard-labyrinth-blast-list" class="space-y-2 text-slate-200"></ol>
       </article>
 
       <!-- 🔮 Glyph Memory -->
@@ -6018,9 +6038,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   /**
-   * Loads the combined 5-game leaderboard cards for the profile page.
-   * The backend leaderboard API already supports cheeseman as the Cheese Runner key.
-   */
+ * Loads the combined profile leaderboard cards.
+ *
+ * Plain language for DEVS:
+ * Score games use renderScoreLeaderboard().
+ * Glyph Memory has separate difficulty lists because it is time-based.
+ */
   async function loadCombinedLeaderboards() {
     try {
       const isProduction =
@@ -6070,11 +6093,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         if (leaderboardSubtitle) {
-          leaderboardSubtitle.innerHTML = '🎮 Five active game boards • Compete for the top spots across the Narrrfs arcade.';
+          leaderboardSubtitle.innerHTML = '🎮 Six active game boards • Compete for the top spots across the Narrrfs arcade.';
         }
 
         if (mainSeasonSubtitle) {
-          mainSeasonSubtitle.innerHTML = `✅ ${shownSeason} active • Tetris, Snake, Space Invaders, Cheese Runner, and Glyph Memory are live.`;
+          mainSeasonSubtitle.innerHTML = `✅ ${shownSeason} active • Tetris, Snake, Space Invaders, Cheese Runner, Labyrinth Blast, and Glyph Memory are live.`;
         }
       }
 
@@ -6096,10 +6119,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         'No Space Invaders scores yet'
       );
 
-      renderScoreLeaderboard(
+            renderScoreLeaderboard(
         document.getElementById('leaderboard-cheeseman-list'),
         result.cheeseman,
         'No Cheese Runner scores yet'
+      );
+
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-labyrinth-blast-list'),
+        result.labyrinth_blast,
+        'No Labyrinth Blast scores yet'
       );
 
       const glyphMemory = result.glyph_memory || {};
@@ -6143,10 +6172,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         'Failed to load Space Invaders scores'
       );
 
-      renderScoreLeaderboard(
+            renderScoreLeaderboard(
         document.getElementById('leaderboard-cheeseman-list'),
         [],
         'Failed to load Cheese Runner scores'
+      );
+
+      renderScoreLeaderboard(
+        document.getElementById('leaderboard-labyrinth-blast-list'),
+        [],
+        'Failed to load Labyrinth Blast scores'
       );
 
       renderGlyphDifficulty(
@@ -10136,7 +10171,7 @@ function getGameStats(gameKey, game) {
         `;
         break;
 
-         case 'cheese_rumble':
+                  case 'cheese_rumble':
   statsHTML = `
     <div class="text-blue-300">Total Rumbles: ${Number(stats.total_rumbles || 0).toLocaleString()}</div>
     <div class="text-green-300">Wins: ${Number(stats.total_wins || 0).toLocaleString()}</div>
@@ -10145,6 +10180,18 @@ function getGameStats(gameKey, game) {
     <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? Number(stats.dspoinc_earned).toLocaleString() : '0'}</div>
   `;
   break;
+
+      // 💥 Labyrinth Blast current/all-time card
+      case 'labyrinth_blast':
+      case 'labyrinth-blast':
+        statsHTML = `
+          <div class="text-blue-300">Games Played: ${Number(stats.total_games || stats.games_played || 0).toLocaleString()}</div>
+          <div class="text-yellow-300">Best Score: ${Number(stats.best_score || 0).toLocaleString()}</div>
+          <div class="text-green-300">Avg Score: ${Number(stats.avg_score || 0).toLocaleString()}</div>
+          <div class="text-purple-300">DSPOINC Earned: ${stats.dspoinc_earned ? Number(stats.dspoinc_earned).toLocaleString() : '0'}</div>
+          <a href="labyrinth-blast.html" class="inline-block mt-2 rounded bg-cyan-500 px-3 py-1 text-xs font-bold text-slate-950 hover:bg-cyan-400">Play again</a>
+        `;
+        break;
 
       // 🔮 Glyph Memory current-season card
       case 'glyph_memory':
@@ -10564,7 +10611,7 @@ function displayAllTimeStats(stats) {
  * game ecosystem total. Keep this display-only. It does not decide rewards,
  * missions, scores, achievements, or leaderboard eligibility.
  */
-const PROFILE_SYNCED_GAME_TOTAL = 8;
+const PROFILE_SYNCED_GAME_TOTAL = 9;
 
 const gamesPlayed = Object.values(stats.games || {}).filter(game => {
   if (game.total_games) return game.total_games > 0;
@@ -10656,6 +10703,38 @@ const gamesPlayed = Object.values(stats.games || {}).filter(game => {
                     ? Math.round((cheesemanStats.total_score || 0) / cheesemanStats.total_games)
                     : 0
                 ).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+            // Labyrinth Blast
+      // Plain language for DEVS:
+      // The all-time stats API returns Labyrinth Blast as stats.games.labyrinth_blast.
+      // This renderer is hardcoded per game, so we must manually add the card here.
+      const labyrinthBlast = stats.games.labyrinth_blast;
+      const labyrinthBlastStats = labyrinthBlast?.stats || labyrinthBlast || {};
+
+      if (labyrinthBlast) {
+        cardsHTML += `
+          <div class="bg-gradient-to-br from-cyan-900/20 to-amber-900/20 rounded-lg p-3 border border-cyan-500/30">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl">${labyrinthBlast.icon || '💥'}</span>
+              <span class="text-white font-semibold">${labyrinthBlast.name || 'Labyrinth Blast'}</span>
+            </div>
+            <div class="text-xs space-y-1">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Games Played:</span>
+                <span class="text-white font-semibold">${Number(labyrinthBlastStats.total_games || 0).toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Best Score:</span>
+                <span class="text-cyan-300">${Number(labyrinthBlastStats.best_score || 0).toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Avg Score:</span>
+                <span class="text-amber-300">${Number(labyrinthBlastStats.avg_score || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>

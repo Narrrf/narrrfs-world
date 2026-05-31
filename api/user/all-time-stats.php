@@ -339,13 +339,47 @@ $response['all_time_stats']['games']['cheeseman'] = [
     'last_played' => $cheesemanData['last_played'] ?? null
 ];
 
+// 9. LABYRINTH BLAST - All-time stats
+// Plain language for DEVS:
+// Labyrinth Blast stores backend-calculated DSPOINC reward scores in tbl_tetris_scores.
+// Raw maze points are not used here. This keeps the profile Statistics tab aligned
+// with the public leaderboard and the DSPOINC economy display.
+$labyrinthBlastStmt = $db->prepare("
+    SELECT
+        COUNT(*) as total_games,
+        MAX(score) as best_score,
+        SUM(score) as total_score,
+        AVG(score) as avg_score,
+        MAX(timestamp) as last_played
+    FROM tbl_tetris_scores
+    WHERE discord_id = :user_id
+    AND game = 'labyrinth_blast'
+");
+$labyrinthBlastStmt->execute([':user_id' => $user_id]);
+$labyrinthBlastData = $labyrinthBlastStmt->fetch(PDO::FETCH_ASSOC);
+
+$totalGames = (int)($labyrinthBlastData['total_games'] ?? 0);
+$totalScore = (int)($labyrinthBlastData['total_score'] ?? 0);
+$avgScore = $totalGames > 0 ? round($totalScore / $totalGames, 2) : 0;
+
+$response['all_time_stats']['games']['labyrinth_blast'] = [
+    'name' => 'Labyrinth Blast',
+    'icon' => '💥',
+    'total_games' => $totalGames,
+    'best_score' => (int)($labyrinthBlastData['best_score'] ?? 0),
+    'total_score' => $totalScore,
+    'avg_score' => $avgScore,
+    'last_played' => $labyrinthBlastData['last_played'] ?? null
+];
+
     
-    // Calculate total games played across all games (including Cheese Rumble - 6th game)
+    // Calculate total games played across all games
 $response['all_time_stats']['total_games_played'] =
     $response['all_time_stats']['games']['tetris']['total_games'] +
     $response['all_time_stats']['games']['snake']['total_games'] +
     $response['all_time_stats']['games']['space_invaders']['total_games'] +
     $response['all_time_stats']['games']['cheeseman']['total_games'] +
+    $response['all_time_stats']['games']['labyrinth_blast']['total_games'] +
     $response['all_time_stats']['games']['cheese_hunt']['total_clicks'] +
     $response['all_time_stats']['games']['discord_race']['total_races'] +
     $response['all_time_stats']['games']['cheese_rumble']['total_rumbles'] +
@@ -357,7 +391,8 @@ $response['all_time_stats']['total_games_played'] =
     $response['all_time_stats']['games']['tetris']['total_score'] +
     $response['all_time_stats']['games']['snake']['total_score'] +
     $response['all_time_stats']['games']['space_invaders']['total_score'] +
-    $response['all_time_stats']['games']['cheeseman']['total_score'];
+    $response['all_time_stats']['games']['cheeseman']['total_score'] +
+    $response['all_time_stats']['games']['labyrinth_blast']['total_score'];
     
     // Achievement counts
     $achievementsStmt = $db->prepare("
