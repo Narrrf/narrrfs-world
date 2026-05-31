@@ -5,310 +5,266 @@
 require_once 'discord-invite.php';
 ?>
 <head>
-  <!-- 🧠 META ESSENTIALS -->
+  <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Mint your GEN1 Narrrf NFT and enter the chaos lab." />
-  <meta name="author" content="Narrrf Team" />
+
+  <title>☀️ Mint — Narrrf's World GEN1 • Season 12 Access • Genesis Mice</title>
+
+  <!-- 🧀 Favicon & App Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-phantom.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-phantom.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon-phantom.png" />
+  <link rel="shortcut icon" href="favicon-phantom.png" type="image/png" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="preload" as="image" href="favicon-phantom.png" />
+
+  <!-- 📱 App / Browser Metadata -->
+  <meta name="theme-color" content="#f97316" />
+  <meta name="msapplication-TileColor" content="#f97316" />
+  <meta name="msapplication-TileImage" content="favicon-phantom.png" />
+  <meta name="application-name" content="Narrrf's World" />
+  <meta name="apple-mobile-web-app-title" content="Narrrf's World" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="msapplication-config" content="none" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="robots" content="index, follow" />
-  <title>Mint Your Narrrf's World GEN1 NFT</title>
+  <meta name="author" content="Narrrf Team" />
 
-    <!-- 🧀 Favicon & App Icons -->
-    <!-- Primary Favicon -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="favicon-phantom.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="favicon-phantom.png"
-    />
+  <!-- 🔍 SEO -->
+  <meta name="title" content="Narrrf's World GEN1 Mint — Season 12 Genesis Access" />
+  <meta
+    name="description"
+    content="Mint or learn about Narrrf's World GEN1 Genesis Mice. Season 12 connects holder access, Genesis Lab progression, role power, DSPOINC utility, Reward Chamber history, and long-term ecosystem identity."
+  />
+  <meta
+    name="keywords"
+    content="Narrrf, Narrrf's World, GEN1 Mint, Genesis Mouse, Season 12, Genesis Lab, NFT Identity, DSPOINC, Reward Chamber, Solana Gaming, Web3 Gaming"
+  />
 
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon-phantom.png" />
+  <!-- 🧵 OpenGraph / Discord Preview -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="☀️ Narrrf's World GEN1 Mint — Season 12 Genesis Access" />
+  <meta
+    property="og:description"
+    content="Genesis Mice are the holder identity layer of Narrrf's World. Mint, verify access, enter the Genesis Lab, build permanent progression, and join the Season 12 ecosystem."
+  />
+  <meta property="og:image" content="https://narrrfs.world/img/narrrf-logo-professional.png" />
+  <meta property="og:url" content="https://narrrfs.world/mint.html" />
 
-    <!-- Shortcut Icon -->
-    <link rel="shortcut icon" href="favicon-phantom.png" type="image/png" />
+  <!-- 🐦 Twitter Preview -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="☀️ Narrrf's World GEN1 Mint — Season 12" />
+  <meta
+    name="twitter:description"
+    content="Mint or explore GEN1 Genesis Mice: holder access, Genesis Lab progression, role power, DSPOINC utility, and Season 12 ecosystem identity."
+  />
+  <meta name="twitter:image" content="https://narrrfs.world/img/narrrf-logo-professional.png" />
 
-    <!-- Standard favicon.ico fallback -->
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <!-- 🔐 Project Metadata
+       DEVS FOR DECADES:
+       These metadata values are informational only.
+       They must not be used as authoritative mint, wallet, role, reward,
+       eligibility, Lab, or economy logic. Backend and verified APIs remain source of truth. -->
+  <meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4" />
+  <meta name="egg-count" content="3" />
+  <meta name="egg-tracking" content="enabled" />
+  <meta name="mint-eligibility-source" content="Gensuki / verified mint platform" />
+  <meta name="wallet-auth-system" content="PhantomConnect" />
+  <meta name="mint-tier-model" content="holder-access" />
+  <meta name="dsponic-conversion-rate" content="10000:1" />
+  <meta name="gen" content="1" />
+  <meta
+    name="realms"
+    content="Genesis Lab, Reward Chamber, Season 12 Games, Future 3D Riddle Direction"
+  />
 
-    <!-- Windows Tile -->
-    <meta name="msapplication-TileImage" content="favicon-phantom.png" />
+  <!-- 🎨 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Microsoft tile -->
-    <meta name="theme-color" content="#facc15" />
-    <meta name="msapplication-TileColor" content="#facc15" />
+  <!-- 🔗 Discord Token of Render System -->
+  <script src="discord-config.js"></script>
 
-    <!-- Additional meta tags for wallet connections -->
-    <meta name="application-name" content="Narrrf's World" />
-    <meta name="apple-mobile-web-app-title" content="Narrrf's World" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-
-    <!-- Open Graph and Twitter images -->
-    <meta
-      property="og:image"
-      content="https://narrrfs.world/img/narrrf-logo-professional.png"
-    />
-    <meta
-      name="twitter:image"
-      content="https://narrrfs.world/img/narrrf-logo-professional.png"
-    />
-
-    <!-- Additional wallet-specific meta tags -->
-    <meta name="msapplication-config" content="none" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta name="mobile-web-app-capable" content="yes" />
-
-    <!-- 🧀 FAVICON PRELOAD -->
-    <link rel="preload" as="image" href="favicon-phantom.png" />
-
-    <!-- 🔍 SEO & SOCIAL SHARING -->
-    <meta name="title" content="Narrrf's World" />
-    <meta
-      name="description"
-      content="Mint your GEN1 Narrrf NFT and enter the chaos lab."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Narrrf's World GEN1 Mint" />
-    <meta
-      property="og:description
-      content="Professional NFT minting platform for Narrrf's World Genesis Collection. Season 11 STARTED, 3D Riddle Game alpha testing January 2026, role-based multipliers active!"
-    />
-    <meta
-      property="og:image"
-      content="https://narrrfs.world/img/narrrf-logo-professional.png"
-    />
-    <meta property="og:url" content="https://narrrfs.world/mint.html" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Narrrf's World GEN1 Mint" />
-    <meta
-      name="twitter:description"
-      content="Professional NFT minting platform for Narrrf's World Genesis Collection. Secure blockchain integration with Phantom wallet support."
-    />
-    <meta
-      name="twitter:image"
-      content="https://narrrfs.world/img/narrrf-logo-professional.png"
-    />
-
-    <!-- 🔐 PROJECT METADATA (FOR DEV TOOLS / SYSTEMS) -->
-    <meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4" />
-    <meta name="egg-count" content="3" />
-    <meta name="egg-tracking" content="enabled" />
-    <meta name="mint-eligibility-source" content="Sheety API v2" />
-    <meta name="wallet-auth-system" content="PhantomConnect" />
-    <meta name="mint-tier-model" content="5-tier access" />
-    <meta name="dsponic-conversion-rate" content="10000:1" />
-    <meta name="gen" content="1" />
-    <meta
-      name="realms"
-      content="3D Riddle Game (The Cheese Temple), The Pink Pool, Brain Vats"
-    />
-
-    <!-- 🎨 TAILWIND CSS DEV (CDN for staging only) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- 🔗 Discord Token of Render System -->
-    <script src="discord-config.js"></script>
-
-    <!-- 💫 Enhanced Mint Portal Styles -->
-    <style>
-      @keyframes trophyGlow {
-        0%,
-        100% {
-          box-shadow:
-            0 0 20px rgba(251, 191, 36, 0.3),
-            0 0 40px rgba(251, 191, 36, 0.2);
-          transform: scale(1);
-        }
-        50% {
-          box-shadow:
-            0 0 30px rgba(251, 191, 36, 0.5),
-            0 0 60px rgba(251, 191, 36, 0.3);
-          transform: scale(1.05);
-        }
+  <!-- 💫 Mint Portal Styles -->
+  <style>
+    /* ☀️ Season 12 Mint Page Shell.
+       DEVS FOR DECADES:
+       Visual-only page styling. This does not control mint eligibility,
+       wallet connection, role verification, Lab access, rewards, scores,
+       staking, DSPOINC, or backend permission checks. */
+    @keyframes trophyGlow {
+      0%, 100% {
+        box-shadow:
+          0 0 20px rgba(251, 191, 36, 0.30),
+          0 0 40px rgba(251, 191, 36, 0.18);
+        transform: scale(1);
       }
 
-      @keyframes rolePulse {
-        0%,
-        100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-        50% {
-          opacity: 0.8;
-          transform: scale(1.02);
-        }
+      50% {
+        box-shadow:
+          0 0 30px rgba(251, 191, 36, 0.48),
+          0 0 60px rgba(249, 115, 22, 0.24);
+        transform: scale(1.04);
       }
+    }
 
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
-      }
-
-      @keyframes bubble-burst {
-        0% {
-          transform: translateY(0) scale(1);
-          opacity: 0.7;
-        }
-        50% {
-          transform: translateY(-20px) scale(1.3);
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(-40px) scale(1);
-          opacity: 0;
-        }
-      }
-
-      .trophy-glow {
-        animation: trophyGlow 3s ease-in-out infinite;
-      }
-
-      .role-pulse {
-        animation: rolePulse 4s ease-in-out infinite;
-      }
-
-      .float-animation {
-        animation: float 6s ease-in-out infinite;
-      }
-
-      .animate-bubble-burst {
-        animation: bubble-burst 4s ease-in-out infinite;
-      }
-
-      .delay-1000 {
-        animation-delay: 1s;
-      }
-      .delay-2000 {
-        animation-delay: 2s;
-      }
-      .delay-300 {
-        animation-delay: 0.3s;
-      }
-
-      .mint-card {
-        transition: all 0.3s ease;
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.1),
-          rgba(255, 255, 255, 0.05)
-        );
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .mint-card:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        border-color: rgba(251, 191, 36, 0.5);
-      }
-
-      .mint-shelf {
-        background: linear-gradient(
-          135deg,
-          rgba(30, 41, 59, 0.9),
-          rgba(15, 23, 42, 0.9)
-        );
-        backdrop-filter: blur(20px);
-        border: 2px solid rgba(251, 191, 36, 0.3);
-      }
-
-      /* ============================= */
-      /* 🎨 Trait Showcase (Mint Page)  */
-      /* ============================= */
-      .trait-tab {
-        opacity: 0.7;
-        border: 2px solid transparent;
-      }
-      .trait-tab.active {
+    @keyframes rolePulse {
+      0%, 100% {
         opacity: 1;
-        border-color: rgba(251, 191, 36, 0.5);
-        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        transform: scale(1);
       }
 
-      .trait-card {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.1),
-          rgba(15, 23, 42, 0.9)
-        );
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
+      50% {
+        opacity: 0.86;
+        transform: scale(1.02);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
       }
 
-      .trait-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(251, 191, 36, 0.5);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes bubble-burst {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 0.7;
       }
 
-      .rarity-bar {
-        height: 8px;
-        background: rgba(15, 23, 42, 0.9);
-        border-radius: 999px;
-        overflow: hidden;
+      50% {
+        transform: translateY(-20px) scale(1.3);
+        opacity: 1;
       }
 
-      .rarity-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #fbbf24, #f97316);
-        transition: width 0.4s ease;
+      100% {
+        transform: translateY(-40px) scale(1);
+        opacity: 0;
       }
+    }
 
-      .rarity-legendary {
-        background: linear-gradient(135deg, #facc15, #eab308);
-        color: #fef9c3;
-        box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
-        animation: rarityPulse 2s ease-in-out infinite;
-      }
+    html {
+      scroll-behavior: smooth;
+    }
 
-      .rarity-ultra-rare {
-        background: linear-gradient(135deg, #a855f7, #7c3aed);
-        color: #ede9fe;
-      }
+    .trophy-glow {
+      animation: trophyGlow 3s ease-in-out infinite;
+    }
 
-      .rarity-rare {
-        background: linear-gradient(135deg, #3b82f6, #06b6d4);
-        color: #e0f2fe;
-      }
+    .role-pulse {
+      animation: rolePulse 4s ease-in-out infinite;
+    }
 
-      .rarity-uncommon {
-        background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: #dcfce7;
-      }
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
 
-      .rarity-common {
-        background: linear-gradient(135deg, #6b7280, #4b5563);
-        color: #e5e7eb;
-      }
+    .animate-bubble-burst {
+      animation: bubble-burst 4s ease-in-out infinite;
+    }
 
-      @keyframes rarityPulse {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-      }
-    </style>
+    .delay-1000 {
+      animation-delay: 1s;
+    }
 
-    <!-- 📜 DEV NOTES -->
-    <!-- This file is 100-year ready. Designed for clarity, scale, and Masterchief SQL integration. -->
-    <!-- If you're a new dev joining Narrrf's World, please see README.md and lore-portal.html -->
-  </head>
+    .delay-2000 {
+      animation-delay: 2s;
+    }
+
+    .delay-300 {
+      animation-delay: 0.3s;
+    }
+
+    .mint-card {
+      transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+      background: linear-gradient(
+        180deg,
+        rgba(15, 23, 42, 0.92),
+        rgba(15, 23, 42, 0.72)
+      );
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+    }
+
+    .mint-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(250, 204, 21, 0.36);
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.38),
+        0 0 28px rgba(250, 204, 21, 0.08);
+    }
+
+    .mint-shelf {
+      background: linear-gradient(
+        135deg,
+        rgba(30, 41, 59, 0.90),
+        rgba(15, 23, 42, 0.90)
+      );
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(251, 191, 36, 0.30);
+    }
+
+    .trait-tab {
+      opacity: 0.74;
+      border: 2px solid transparent;
+      transition:
+        opacity 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .trait-tab:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+
+    .trait-tab.active {
+      opacity: 1;
+      border-color: rgba(251, 191, 36, 0.50);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.28);
+    }
+
+    .trait-card {
+      background: linear-gradient(
+        180deg,
+        rgba(15, 23, 42, 0.90),
+        rgba(15, 23, 42, 0.72)
+      );
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+    }
+
+    .trait-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(251, 191, 36, 0.44);
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.32),
+        0 0 24px rgba(251, 191, 36, 0.08);
+    }
+
+    .rarity-bar {
+      height: 8px;
+      background: rgba(15, 23, 42, 0.92);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+  </style>
+</head>
 
   <body
     class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden"
@@ -337,7 +293,7 @@ require_once 'discord-invite.php';
     <div
       class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400"
     >
-      🎮 Season 11 STARTED • Alpha Testing Q3 2026
+      ☀️ Season 12 Genesis Access • Lab + Holder Progression
     </div>
 
     <!-- 🧭 Navigation Bar (Sticky Top) -->
@@ -412,245 +368,269 @@ require_once 'discord-invite.php';
       </div>
     </header>
 
-    <!-- 🧪 Mint Hero -->
+<!-- ☀️ MINT HERO + OFFICIAL GENSUKI MINT INFO
+     DEVS FOR DECADES:
+     This page is an information and routing page only.
+     Actual minting happens on the official Gensuki launchpad.
+     Do not add local mint transactions, wallet mint execution, or custom payment logic here. -->
 <section
-  class="relative z-10 bg-gradient-to-r from-pink-900/50 to-purple-900/50 text-white text-center py-20 px-6 border border-pink-500/30"
+  id="mint-hero"
+  class="relative z-10 py-20 px-6 text-center overflow-hidden bg-gradient-to-b from-slate-950 via-orange-950/35 to-slate-950 border-b border-orange-300/20"
 >
-  <h1
-    class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-yellow-400 bg-clip-text text-transparent"
-  >
-    🧪 Expand Your Genesis Power
-  </h1>
-
-  <!-- 🎮 Live Ecosystem Status -->
-  <div class="flex flex-wrap justify-center gap-4 mb-6">
-    <div
-      class="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-2 border-green-400/50 rounded-xl px-6 py-3"
-    >
-      <div class="text-sm text-green-300 mb-1">🎮 Live Now</div>
-      <div class="text-lg font-bold text-green-400">Season 11 RUNNING</div>
-      <div class="text-xs text-green-200">Play • Earn • Compete</div>
-    </div>
-
-    <div
-      class="bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border-2 border-cyan-400/50 rounded-xl px-6 py-3"
-    >
-      <div class="text-sm text-cyan-300 mb-1">🧬 Core System</div>
-      <div class="text-lg font-bold text-cyan-400">Genesis Lab LIVE</div>
-      <div class="text-xs text-cyan-200">NFT Trait Upgrades</div>
-    </div>
-
-    <div
-      class="bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-2 border-purple-400/50 rounded-xl px-6 py-3"
-    >
-      <div class="text-sm text-purple-300 mb-1">🔮 Next Phase</div>
-      <div class="text-lg font-bold text-purple-400">3D Alpha Q3 2026</div>
-      <div class="text-xs text-purple-200">@holders & @vip</div>
-    </div>
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-10 left-10 h-80 w-80 rounded-full bg-orange-400/15 blur-3xl"></div>
+    <div class="absolute top-24 right-10 h-80 w-80 rounded-full bg-pink-500/12 blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl"></div>
   </div>
 
-  <p
-    class="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto mb-8 leading-relaxed"
-  >
-    Genesis mice are no longer just collectibles — they are your
-    <strong>persistent identity and progression units</strong> inside Narrrf’s World.
-    Upgrade traits in the Lab, earn DSPOINC in games, and prepare your mice for
-    future adventures, riddles, and gameplay systems across the Mouseverse.
-  </p>
+  <div class="relative z-10 max-w-6xl mx-auto">
+    <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/35 bg-yellow-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-200 mb-6">
+      ☀️ Season 12 • Genesis Mouse Mint
+    </div>
 
-  <p class="text-lg text-yellow-300 font-semibold max-w-3xl mx-auto">
-    🧀 More Genesis mice = more traits = more upgrades = more future power
-  </p>
+    <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6">
+      Mint Your <span class="bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-400 bg-clip-text text-transparent">Genesis Mouse</span>.<br>
+      Enter the Holder Lane.
+    </h1>
+
+    <p class="text-lg md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed mb-6">
+      Genesis Mice are the second lane of Narrrfs World: holder identity, Lab access, trait progression,
+      role power, Reward Chamber access, DSPOINC utility, and future ecosystem depth.
+    </p>
+
+    <p class="text-base md:text-lg text-yellow-100/90 max-w-3xl mx-auto mb-9 font-semibold">
+      The mint does not happen on this website. Use this page to understand the collection, then mint safely through our official Gensuki launchpad.
+    </p>
+
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+      <a
+        href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex justify-center rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 px-8 py-4 font-black text-slate-950 shadow-xl transition-all duration-200 hover:scale-105 hover:from-yellow-200 hover:to-orange-400"
+      >
+        🧬 Mint on Gensuki
+      </a>
+
+      <a
+        href="#mint-prices"
+        class="inline-flex justify-center rounded-2xl bg-white/10 border border-yellow-300/25 px-8 py-4 font-black text-yellow-100 shadow-xl transition-all duration-200 hover:scale-105 hover:bg-white/15"
+      >
+        💰 View Prices
+      </a>
+
+      <a
+        href="#traits"
+        class="inline-flex justify-center rounded-2xl bg-purple-600 px-8 py-4 font-black text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-purple-500"
+      >
+        🎨 Explore Traits
+      </a>
+    </div>
+  </div>
 </section>
 
-<!-- 📦 Mint Details -->
-<section class="relative z-10 py-16 px-4 md:px-6">
-  <div class="max-w-6xl mx-auto text-center">
-    <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-12">
-      📦 Mint Details
-    </h2>
+<!-- 💰 OFFICIAL MINT ACCESS / PRICES -->
+<section
+  id="mint-prices"
+  class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-purple-950/25 to-slate-950 text-white border-t border-white/5"
+>
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center max-w-4xl mx-auto mb-12">
+      <div class="inline-flex items-center gap-2 rounded-full border border-orange-300/35 bg-orange-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-orange-200 mb-5">
+        🔐 Official Mint Access
+      </div>
 
-    <div class="grid md:grid-cols-2 gap-8 text-left">
-      <!-- 🧬 LEFT: Benefits + Quick Access -->
-      <div
-        class="mint-card rounded-2xl shadow-lg p-8 border-l-4 border-yellow-500 flex flex-col bg-gradient-to-br from-yellow-900/20 via-purple-900/20 to-slate-900/30"
-      >
-        <h3 class="text-2xl font-bold mb-4 text-yellow-400">
-          🧬 Mint Benefits & Ecosystem Power
+      <h2 class="text-4xl md:text-5xl font-black mb-4">
+        Mint through Gensuki.<br>
+        <span class="text-yellow-300">Use the right access lane.</span>
+      </h2>
+
+      <p class="text-slate-300 text-lg leading-relaxed">
+        Gensuki handles the mint. Narrrfs World explains the access lanes, holder benefits,
+        and what your Genesis Mouse unlocks after mint.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-6 items-stretch">
+      <!-- Mint CTA card -->
+      <article class="rounded-[2rem] border border-yellow-300/25 bg-slate-900/85 p-6 md:p-8 shadow-2xl">
+        <div class="text-5xl mb-5">🧬</div>
+
+        <div class="text-xs uppercase tracking-[0.18em] text-yellow-200 font-black mb-2">
+          Official Launchpad
+        </div>
+
+        <h3 class="text-3xl font-black mb-4">
+          Gensuki Mint Portal
         </h3>
 
-        <p class="text-sm text-gray-300 mb-6 leading-relaxed">
-          Genesis mice are now part of a live connected ecosystem. Minting gives you
-          access to holder utility, the Genesis Lab, future gameplay systems, and
-          more upgradeable power across Narrrf’s World.
+        <p class="text-slate-300 leading-relaxed mb-6">
+          Click the mint button, open Gensuki in a new tab, connect your wallet there,
+          and complete the mint on the launchpad. Come back after mint to verify holder access
+          and enter the Narrrfs World ecosystem.
         </p>
 
-        <ul class="space-y-3 text-base md:text-lg text-gray-300 flex-1">
-          <li>🎯 1–4 NFTs = Entry into Genesis Lab & holder ecosystem</li>
-          <li>🧬 More NFTs = More upgradeable traits in the Lab</li>
-          <li>⚙️ Trait upgrades = permanent NFT progression tied to the NFT</li>
-          <li>🎮 All NFTs = Role multipliers (1.1x - 2.0x) across all games</li>
-          <li>🧩 Access to Glyph, Lab systems, and future gameplay features</li>
-          <li>🏛️ Future 3D Riddle Game plots and interactions (Q3 2026)</li>
-          <li>⚡ Stronger mice = more utility across games, riddles, and events</li>
-        </ul>
-
-        <!-- ⚡ Quick Links -->
-        <div
-          class="mt-8 p-5 bg-gradient-to-r from-emerald-900/40 to-teal-900/40 rounded-2xl border border-emerald-500/40 shadow-lg"
-        >
-          <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
-            <p class="text-xs font-bold text-emerald-300 uppercase tracking-wider">
-              ⚡ Quick Links • Season 11
-            </p>
-            <span class="text-[11px] text-emerald-200/80">
-              Play • Verify • Upgrade • Explore
-            </span>
-          </div>
-
-          <div class="flex flex-wrap gap-2">
-            <a
-              href="tetris.html"
-              class="inline-flex items-center gap-1 bg-purple-600/90 hover:bg-purple-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
-              title="Tetris"
-            >🧩 Tetris</a>
-
-            <a
-              href="snake.html"
-              class="inline-flex items-center gap-1 bg-green-600/90 hover:bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
-              title="Snake"
-            >🐍 Snake</a>
-
-            <a
-              href="space-cheese-invaders.html"
-              class="inline-flex items-center gap-1 bg-pink-600/90 hover:bg-pink-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
-              title="Space Invaders"
-            >👾 Invaders</a>
-
-            <a
-              href="profile.html#cheese-hunt"
-              class="inline-flex items-center gap-1 bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
-              title="Cheese Hunt"
-            >🧀 Hunt</a>
-
-            <a
-              href="glyph.html"
-              class="inline-flex items-center gap-1 bg-violet-600/90 hover:bg-violet-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
-              title="Glyph"
-            >🌀 Glyph</a>
-
-            <a
-              href="lab.html"
-              class="inline-flex items-center gap-1 bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 border border-emerald-400/50 shadow"
-              title="Genesis Lab"
-            >🧬 Lab</a>
-
-            <a
-              href="3d-riddle.html"
-              class="inline-flex items-center gap-1 bg-indigo-600/90 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 border border-indigo-400/50 shadow"
-              title="3D Riddle Game"
-            >🏛️ 3D Riddle</a>
-
-            <a
-              href="stake-lab.html"
-              class="inline-flex items-center gap-1 bg-cyan-600/90 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all hover:scale-105 shadow"
-              title="Stake DSPOINC"
-            >🧊 Stake</a>
-          </div>
-        </div>
-
-        <!-- 🎮 Primary CTA row -->
-        <div class="mt-8 pt-6 border-t border-yellow-500/40">
-          <p class="text-sm text-yellow-200/90 mb-3 font-semibold">
-            Use your Genesis mice across the live ecosystem now.
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-5 mb-6">
+          <h4 class="text-lg font-black text-yellow-100 mb-2">Important</h4>
+          <p class="text-sm text-slate-200 leading-relaxed">
+            The official mint action happens only on Gensuki. Do not trust random mint links.
+            Use the button from this page or the verified Discord announcement.
           </p>
-
-          <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
-            <a
-              href="profile.html"
-              class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-500 hover:via-emerald-500 hover:to-teal-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-emerald-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-emerald-400/50"
-            >
-              🎮 Enter Game Zone
-            </a>
-
-            <a
-              href="profile.html#holder-verification"
-              class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-500 hover:via-violet-500 hover:to-indigo-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-purple-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-purple-400/50"
-            >
-              🎴 Holder Verify
-            </a>
-
-            <a
-              href="leaderboard.html"
-              class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-400 hover:via-yellow-400 hover:to-orange-400 text-gray-900 font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-yellow-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400/70"
-            >
-              🏆 View Leaderboard
-            </a>
-          </div>
         </div>
-      </div>
 
-      <!-- 💰 RIGHT: Pricing + Supply -->
-      <div
-        class="mint-card rounded-2xl shadow-lg p-8 border-l-4 border-purple-500 bg-gradient-to-br from-purple-900/20 via-slate-900/20 to-pink-900/20"
-      >
-        <h3 class="text-2xl font-bold mb-6 text-purple-400">
-          💰 Pricing & Supply
+        <a
+          href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex w-full justify-center rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 px-8 py-4 font-black text-slate-950 shadow-xl transition-all duration-200 hover:scale-105 hover:from-yellow-200 hover:to-orange-400"
+        >
+          🧬 Open Official Gensuki Mint
+        </a>
+
+        <div class="mt-4 flex flex-col sm:flex-row gap-3">
+          <a
+            href="get-roles.html"
+            class="inline-flex flex-1 justify-center rounded-2xl bg-cyan-500 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-cyan-400"
+          >
+            🏆 Get Roles
+          </a>
+
+          <a
+            href="profile.html#nft-verification"
+            class="inline-flex flex-1 justify-center rounded-2xl bg-purple-600 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-purple-500"
+          >
+            🔍 Verify Holder
+          </a>
+        </div>
+      </article>
+
+      <!-- Price cards -->
+      <article class="rounded-[2rem] border border-orange-300/25 bg-slate-900/85 p-6 md:p-8 shadow-2xl">
+        <div class="text-xs uppercase tracking-[0.18em] text-orange-200 font-black mb-2">
+          Current Mint Lanes
+        </div>
+
+        <h3 class="text-3xl font-black mb-5">
+          Prices & Partner Discounts
         </h3>
 
-        <div class="space-y-3 text-lg text-gray-300 mb-6">
-          <div class="bg-purple-800/40 rounded-xl p-4 border border-purple-500/50">
-            <div class="font-bold text-purple-200 mb-1">🏆 Holders</div>
-            <div class="text-xl text-yellow-400 font-bold">0.15 SOL</div>
-            <div class="text-xs text-purple-300">Follows per Sheet</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-5">
+            <div class="text-2xl mb-2">🏆</div>
+            <div class="text-lg font-black text-yellow-200">Holders</div>
+            <div class="text-3xl font-black text-white my-2">0.15 SOL</div>
+            <p class="text-xs text-slate-300">Holder lane price shown on the mint sheet / launchpad.</p>
           </div>
 
-          <div class="bg-purple-800/40 rounded-xl p-4 border border-purple-500/50">
-            <div class="font-bold text-purple-200 mb-1">🐦 Early Bird</div>
-            <div class="text-xl text-yellow-400 font-bold">0.175 SOL</div>
-            <div class="text-xs text-purple-300">Follows per Sheet</div>
+          <div class="rounded-2xl border border-cyan-300/25 bg-cyan-500/10 p-5">
+            <div class="text-2xl mb-2">🐦</div>
+            <div class="text-lg font-black text-cyan-200">Early Bird</div>
+            <div class="text-3xl font-black text-white my-2">0.175 SOL</div>
+            <p class="text-xs text-slate-300">Early supporter lane shown on the mint sheet / launchpad.</p>
           </div>
 
-          <div class="bg-purple-800/40 rounded-xl p-4 border border-purple-500/50">
-            <div class="font-bold text-purple-200 mb-1">🤝 Partners</div>
-            <div class="text-xl text-yellow-400 font-bold">0.20 SOL</div>
+          <div class="rounded-2xl border border-purple-300/25 bg-purple-500/10 p-5">
+            <div class="text-2xl mb-2">🤝</div>
+            <div class="text-lg font-black text-purple-200">Partners</div>
+            <div class="text-3xl font-black text-white my-2">0.20 SOL</div>
+            <p class="text-xs text-slate-300">Partner access lane for approved community collaborations.</p>
           </div>
 
-          <div class="bg-yellow-900/40 rounded-xl p-4 border-2 border-yellow-500/70">
-            <div class="font-bold text-yellow-200 mb-1">🎁 Redemption Mint</div>
-            <div class="text-xl text-yellow-300 font-bold">0.3999 SOL</div>
-            <div class="text-xs text-yellow-200/90">
-              Endless running • Always available
-            </div>
+          <div class="rounded-2xl border border-orange-300/35 bg-orange-500/10 p-5">
+            <div class="text-2xl mb-2">🎁</div>
+            <div class="text-lg font-black text-orange-200">Redemption</div>
+            <div class="text-3xl font-black text-white my-2">0.3999 SOL</div>
+            <p class="text-xs text-slate-300">Always check the live Gensuki mint page before confirming.</p>
           </div>
         </div>
 
-        <div class="rounded-2xl border border-purple-500/30 bg-black/20 p-5">
-          <h4 class="text-lg font-bold text-purple-300 mb-4">
-            📊 Current Genesis Value Layer
-          </h4>
-
-          <ul class="space-y-3 text-base md:text-lg text-gray-300">
-            <li>🧠 Supply: 3,333 Genesis NFTs</li>
-            <li>🧬 Each NFT = upgradeable identity in the Genesis Lab</li>
-            <li>💥 10,000 $DSPOINC = 1 $SPOINC (future system)</li>
-            <li>🎮 <strong>Season 11 LIVE</strong> — earn DSPOINC across all games</li>
-            <li>🧬 <strong>Genesis Lab LIVE</strong> — upgrade traits & build power</li>
-            <li>🧩 <strong>Glyph ACTIVE</strong> — part of the 3D lore direction</li>
-            <li>🏛️ <strong>3D Riddle Game</strong> alpha planned for Q3 2026</li>
-            <li>⚡ Role multipliers + holder perks already active</li>
-          </ul>
+        <div class="mt-5 rounded-2xl border border-amber-300/25 bg-amber-400/10 p-5">
+          <div class="text-lg font-black text-amber-100 mb-2">
+            🟡 Golden Rascals / Gensuki Partner Bonus
+          </div>
+          <p class="text-sm text-slate-200 leading-relaxed">
+            Partner-holder discounts are verified through the Gensuki mint hub. Open Gensuki, connect the correct wallet,
+            verify your eligible holder status there, and mint with the active launchpad rate.
+          </p>
         </div>
-      </div>
+      </article>
     </div>
   </div>
 </section>
 
+<!-- 🧭 AFTER MINT PATH -->
+<section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-cyan-950/20 to-slate-950 text-white border-t border-white/5">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center max-w-4xl mx-auto mb-12">
+      <div class="inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-200 mb-5">
+        🧭 After Mint
+      </div>
+
+      <h2 class="text-4xl md:text-5xl font-black mb-4">
+        What happens after you mint?
+      </h2>
+
+      <p class="text-slate-300 text-lg leading-relaxed">
+        Your Genesis Mouse becomes your holder identity inside Narrrfs World. Verify it, name it,
+        enter the Lab, and start building permanent progress.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+      <div class="rounded-3xl border border-yellow-300/25 bg-yellow-500/10 p-6 shadow-xl">
+        <div class="text-4xl mb-4">1️⃣</div>
+        <h3 class="text-xl font-black text-yellow-200 mb-2">Mint on Gensuki</h3>
+        <p class="text-sm text-slate-300">Complete the actual mint on the official Gensuki launchpad.</p>
+      </div>
+
+      <div class="rounded-3xl border border-cyan-300/25 bg-cyan-500/10 p-6 shadow-xl">
+        <div class="text-4xl mb-4">2️⃣</div>
+        <h3 class="text-xl font-black text-cyan-200 mb-2">Verify Holder</h3>
+        <p class="text-sm text-slate-300">Connect wallet on Narrrfs World and unlock holder role access.</p>
+      </div>
+
+      <div class="rounded-3xl border border-purple-300/25 bg-purple-500/10 p-6 shadow-xl">
+        <div class="text-4xl mb-4">3️⃣</div>
+        <h3 class="text-xl font-black text-purple-200 mb-2">Name Your Mouse</h3>
+        <p class="text-sm text-slate-300">Make your Genesis Mouse personal inside your profile and Lab lane.</p>
+      </div>
+
+      <div class="rounded-3xl border border-orange-300/25 bg-orange-500/10 p-6 shadow-xl">
+        <div class="text-4xl mb-4">4️⃣</div>
+        <h3 class="text-xl font-black text-orange-200 mb-2">Enter the Lab</h3>
+        <p class="text-sm text-slate-300">Upgrade traits, use Genetic items, and build progress that stays beyond seasons.</p>
+      </div>
+    </div>
+
+    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+      <a
+        href="profile.html#nft-verification"
+        class="inline-flex justify-center rounded-2xl bg-cyan-500 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-cyan-400"
+      >
+        🔍 Verify My NFTs
+      </a>
+
+      <a
+        href="lab.html"
+        class="inline-flex justify-center rounded-2xl bg-purple-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-purple-500"
+      >
+        🧬 Enter Genesis Lab
+      </a>
+
+      <a
+        href="profile.html"
+        class="inline-flex justify-center rounded-2xl bg-yellow-400 px-7 py-4 font-black text-slate-950 shadow-xl transition hover:scale-105 hover:bg-yellow-300"
+      >
+        👤 Open Profile
+      </a>
+    </div>
+  </div>
+</section>
     <!-- 🎨 TRAIT SHOWCASE SECTION -->
     <section
-      id="traits"
-      class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-indigo-900/30 to-purple-900/30"
-    >
+  id="traits"
+  class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-purple-950/30 to-slate-950 border-t border-white/5"
+>
       <div class="max-w-7xl mx-auto">
         <!-- Section Header -->
         <div class="text-center mb-12">
@@ -662,9 +642,8 @@ require_once 'discord-invite.php';
             </span>
           </h2>
 <p class="text-xl text-gray-300 max-w-4xl mx-auto mb-6">
-  Every trait is now part of your Genesis Lab progression.
-  Traits are upgraded individually and become permanent power layers
-  for your NFT across future gameplay systems.
+  Every Genesis Mouse is built from unique visual traits. In Narrrfs World, those traits are more than art:
+they become the foundation for Lab upgrades, Mouse identity, rarity, and future gameplay direction.
 </p>
           <div class="flex flex-wrap justify-center gap-4 text-sm">
             <span
@@ -813,309 +792,348 @@ require_once 'discord-invite.php';
           ></div>
         </div>
 
-        <!-- Mint Content -->
-        <h2
-          class="text-3xl md:text-4xl font-bold mb-6 text-yellow-400 z-10 relative"
-        >
-          🔐 VIP Mint Access
-        </h2>
-        <p class="mb-8 max-w-2xl mx-auto text-lg text-gray-300 z-10 relative">
-          Verify with Phantom Wallet or Discord role for VIP access, or go
-          directly to Gensuki to mint. All users will be redirected to our
-          official launchpad partner Gensuki.
-        </p>
+        
 
-        <button
-          id="mint-connect-wallet-btn"
-          onclick="connectWallet()"
-          class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative"
-        >
-          🔍 Verify Wallet & Discord Access
-        </button>
+    <!-- 🎮 Current Benefits & Features -->
+<section
+  id="current-benefits"
+  class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-emerald-950/20 to-slate-950 border-t border-white/5"
+>
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="inline-flex items-center gap-2 rounded-full border border-emerald-300/35 bg-emerald-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-200 mb-5">
+        🎮 Current Benefits & Features
+      </div>
 
-        <button
-          id="check-discord-role-btn"
-          onclick="checkDiscordRoleAccess()"
-          class="mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative"
-        >
-          🎯 Check Discord Role Access
-        </button>
+      <h2 class="text-4xl md:text-5xl font-black text-white mb-4">
+        What your Genesis Mouse unlocks now
+      </h2>
 
-        <button
-          onclick="clearCacheAndReload()"
-          class="mt-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 z-10 relative text-sm"
-        >
-          🔄 Clear Cache & Reload (for favicon)
-        </button>
+      <p class="text-xl text-slate-300 max-w-3xl mx-auto">
+        Minting is the beginning. Holder access connects your Mouse to games, roles, Lab progression,
+        Reward Chamber paths, and long-term Narrrfs World identity.
+      </p>
+    </div>
 
-        <p
-          id="vip-message"
-          class="mt-8 text-xl font-semibold z-10 relative"
-        ></p>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Season 12 Gaming -->
+      <div class="mint-card rounded-3xl p-6 border border-green-300/30 bg-slate-900/80">
+        <div class="text-4xl mb-4 text-center">🎮</div>
+        <h3 class="text-xl font-black text-green-300 mb-3 text-center">
+          Season 12 Game Ecosystem
+        </h3>
+        <ul class="text-slate-300 space-y-2 text-sm">
+          <li>• <strong>9-game ecosystem:</strong> Tetris, Snake, Invaders, Cheese Runner, Labyrinth Blast, Glyph Memory, Cheese Hunt, Cheese Race, Cheese Rumble</li>
+          <li>• <strong>Fresh leaderboards:</strong> Season 12 summer competition</li>
+          <li>• <strong>Role multipliers:</strong> earn stronger DSPOINC rewards with holder roles</li>
+          <li>• <strong>Profile tracking:</strong> scores, missions, roles, rewards, and activity history</li>
+        </ul>
+      </div>
 
-        <div class="mt-8 z-10 relative">
-          <p class="text-lg text-gray-400 mb-4">
-            Or login with Discord to verify:
-          </p>
+      <!-- Genesis Lab -->
+      <div class="mint-card rounded-3xl p-6 border border-cyan-300/30 bg-slate-900/80">
+        <div class="text-4xl mb-4 text-center">🧬</div>
+        <h3 class="text-xl font-black text-cyan-300 mb-3 text-center">
+          Genesis Lab Access
+        </h3>
+        <ul class="text-slate-300 space-y-2 text-sm">
+          <li>• <strong>Mouse identity:</strong> your Genesis Mouse becomes your holder lane</li>
+          <li>• <strong>Custom names:</strong> personalize your Mouse</li>
+          <li>• <strong>Trait upgrades:</strong> build permanent Lab progression</li>
+          <li>• <strong>Genetic items:</strong> use inventory, upgrade pieces, and Lab systems</li>
+        </ul>
+      </div>
+
+      <!-- Reward Chamber -->
+      <div class="mint-card rounded-3xl p-6 border border-yellow-300/30 bg-slate-900/80">
+        <div class="text-4xl mb-4 text-center">🎁</div>
+        <h3 class="text-xl font-black text-yellow-300 mb-3 text-center">
+          Reward Chamber
+        </h3>
+        <ul class="text-slate-300 space-y-2 text-sm">
+          <li>• <strong>Daily rewards:</strong> open free reward loops when available</li>
+          <li>• <strong>Lootboxes:</strong> discover DSPOINC, items, and special reward paths</li>
+          <li>• <strong>Premium claims:</strong> bigger rewards can route through admin/Discord follow-up</li>
+          <li>• <strong>Permanent history:</strong> reward progress is not wiped by season resets</li>
+        </ul>
+      </div>
+
+      <!-- Role Benefits -->
+      <div class="mint-card rounded-3xl p-6 border border-pink-300/30 bg-slate-900/80">
+        <div class="text-4xl mb-4 text-center">⚡</div>
+        <h3 class="text-xl font-black text-pink-300 mb-3 text-center">
+          Role Power
+        </h3>
+        <ul class="text-slate-300 space-y-2 text-sm">
+          <li>• <strong>VIP Holder:</strong> top holder identity lane</li>
+          <li>• <strong>Holder:</strong> verified Genesis access</li>
+          <li>• <strong>Champion / Tester / Hunter:</strong> activity and event roles</li>
+          <li>• <strong>Multipliers:</strong> roles can boost game reward flow</li>
+        </ul>
+      </div>
+
+      <!-- Community Access -->
+      <div class="mint-card rounded-3xl p-6 border border-orange-300/30 bg-slate-900/80">
+        <div class="text-4xl mb-4 text-center">🤝</div>
+        <h3 class="text-xl font-black text-orange-300 mb-3 text-center">
+          Community Access
+        </h3>
+        <ul class="text-slate-300 space-y-2 text-sm">
+          <li>• <strong>Discord roles:</strong> visible holder identity in the community</li>
+          <li>• <strong>Weekly events:</strong> Friday chaos, bingo, poker, spaces, and battles</li>
+          <li>• <strong>Partner paths:</strong> special access and collaborations</li>
+          <li>• <strong>Early feedback:</strong> help shape future Lab and game features</li>
+        </ul>
+      </div>
+
+      <!-- Future Layer -->
+      <div class="mint-card rounded-3xl p-6 border border-purple-300/30 bg-slate-900/80">
+        <div class="text-4xl mb-4 text-center">🚀</div>
+        <h3 class="text-xl font-black text-purple-300 mb-3 text-center">
+          Future World Layer
+        </h3>
+        <ul class="text-slate-300 space-y-2 text-sm">
+          <li>• <strong>3D direction:</strong> future adventure and riddle gameplay remains part of the roadmap</li>
+          <li>• <strong>Mouse identity:</strong> stronger long-term use for named and upgraded Genesis mice</li>
+          <li>• <strong>Economy expansion:</strong> more DSPOINC utility across games, rewards, and Lab</li>
+          <li>• <strong>World building:</strong> holders help shape the next phases</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+      <a
+        href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex justify-center rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 px-8 py-4 font-black text-slate-950 shadow-xl transition-all duration-200 hover:scale-105"
+      >
+        🧬 Mint on Gensuki
+      </a>
+
+      <a
+        href="get-roles.html"
+        class="inline-flex justify-center rounded-2xl bg-cyan-500 px-8 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-cyan-400"
+      >
+        🏆 Understand Roles
+      </a>
+
+      <a
+        href="lab.html"
+        class="inline-flex justify-center rounded-2xl bg-purple-600 px-8 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-purple-500"
+      >
+        🧬 Enter Lab
+      </a>
+    </div>
+  </div>
+</section>
+
+       <!-- 🧪 Season 12 Lab Philosophy / Final Mint Reminder
+         DEVS FOR DECADES:
+         This is public-facing closing copy only.
+         Actual minting remains on the official Gensuki launchpad.
+         Do not add local mint transaction logic here. -->
+    <section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-orange-950/20 to-slate-950 border-t border-white/5">
+      <div class="max-w-6xl mx-auto">
+        <div class="rounded-[2rem] border border-orange-300/25 bg-slate-900/85 p-6 md:p-8 shadow-2xl overflow-hidden relative">
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute -top-20 left-10 h-56 w-56 rounded-full bg-yellow-300/10 blur-3xl"></div>
+            <div class="absolute bottom-0 right-10 h-56 w-56 rounded-full bg-pink-500/10 blur-3xl"></div>
+          </div>
+
+          <div class="relative z-10 grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 items-center">
+            <div class="text-center lg:text-left">
+              <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/35 bg-yellow-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-200 mb-5">
+                🧪 Quote from the Lab
+              </div>
+
+              <h2 class="text-3xl md:text-5xl font-black text-white leading-tight mb-5">
+                You do not mint a masterpiece.<br>
+                <span class="text-yellow-300">You begin one.</span>
+              </h2>
+
+              <p class="text-lg md:text-xl italic text-orange-100 font-semibold mb-3">
+                “You don’t mint a masterpiece — you mutate one.”
+              </p>
+
+              <p class="text-sm text-slate-400">
+                – Narrrf's Lab Philosophy, Vol. 1
+              </p>
+            </div>
+
+            <div class="rounded-3xl border border-cyan-300/25 bg-cyan-500/10 p-5 md:p-6">
+              <h3 class="text-2xl font-black text-cyan-100 mb-3">
+                After mint, your Mouse enters the ecosystem.
+              </h3>
+
+              <p class="text-slate-300 text-sm md:text-base leading-relaxed mb-5">
+                Mint safely on Gensuki, then return to Narrrfs World to verify holder access,
+                name your Genesis Mouse, enter the Lab, explore rewards, and build long-term progression.
+              </p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a
+                  href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex justify-center rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 px-5 py-3 font-black text-slate-950 shadow-xl transition-all duration-200 hover:scale-105"
+                >
+                  🧬 Mint on Gensuki
+                </a>
+
+                <a
+                  href="profile.html#nft-verification"
+                  class="inline-flex justify-center rounded-2xl bg-cyan-500 px-5 py-3 font-black text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-cyan-400"
+                >
+                  🔍 Verify Holder
+                </a>
+
+                <a
+                  href="lab.html"
+                  class="inline-flex justify-center rounded-2xl bg-purple-600 px-5 py-3 font-black text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-purple-500"
+                >
+                  🧬 Enter Lab
+                </a>
+
+                <a
+                  href="get-roles.html"
+                  class="inline-flex justify-center rounded-2xl bg-white/10 border border-yellow-300/25 px-5 py-3 font-black text-yellow-100 transition-all duration-200 hover:scale-105 hover:bg-white/15"
+                >
+                  🏆 Understand Roles
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ☀️ Footer Season 12 - Mint Info Footer -->
+    <footer class="relative z-10 bg-slate-950 text-center px-6 py-12 border-t border-yellow-300/20 overflow-hidden">
+      <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-10 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl"></div>
+        <div class="absolute bottom-0 right-10 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl"></div>
+      </div>
+
+      <div class="relative z-10 max-w-6xl mx-auto">
+        <div class="mb-8">
           <a
-            href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
-            class="inline-flex items-center bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+            href="#top"
+            class="inline-flex items-center justify-center rounded-full border border-yellow-300/25 bg-yellow-400/10 px-5 py-2 text-sm font-black text-yellow-100 transition-all duration-200 hover:scale-105 hover:bg-yellow-400 hover:text-slate-950"
           >
-            <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"
-              />
-            </svg>
-            Login with Discord, come back to verify
+            🔝 Back to Top
           </a>
         </div>
 
-        <div class="mt-8 pt-8 border-t border-gray-600/30 z-10 relative">
-          <p class="text-lg text-gray-400 mb-4">Or go directly to mint:</p>
+        <div class="mb-8">
+          <div class="inline-flex items-center justify-center rounded-full border border-orange-300/30 bg-orange-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-orange-200 mb-4">
+            ☀️ Season 12 Genesis Mint Info
+          </div>
+
+          <h2 class="text-3xl md:text-4xl font-black text-white mb-3">
+            🧬 Narrrf's World Genesis Mouse
+          </h2>
+
+          <p class="max-w-2xl mx-auto text-sm md:text-base text-slate-300 leading-relaxed">
+            This page explains the Genesis Mouse collection, traits, benefits, prices, and holder path.
+            The actual mint happens only on the official Gensuki launchpad.
+          </p>
+        </div>
+
+        <div class="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <a
+            href="/index.html"
+            class="inline-flex items-center justify-center rounded-2xl border border-yellow-300/20 bg-yellow-400/10 px-4 py-3 font-black text-yellow-100 transition hover:scale-105 hover:bg-yellow-400 hover:text-slate-950"
+          >
+            🏠 Home
+          </a>
+
+          <a
+            href="/profile.html"
+            class="inline-flex items-center justify-center rounded-2xl border border-orange-300/20 bg-orange-400/10 px-4 py-3 font-black text-orange-100 transition hover:scale-105 hover:bg-orange-400 hover:text-slate-950"
+          >
+            👤 Profile
+          </a>
+
+          <a
+            href="/get-roles.html"
+            class="inline-flex items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-3 font-black text-cyan-100 transition hover:scale-105 hover:bg-cyan-400 hover:text-slate-950"
+          >
+            🏆 Roles
+          </a>
+
+          <a
+            href="/lab.html"
+            class="inline-flex items-center justify-center rounded-2xl border border-purple-300/20 bg-purple-500/10 px-4 py-3 font-black text-purple-100 transition hover:scale-105 hover:bg-purple-500 hover:text-white"
+          >
+            🧬 Lab
+          </a>
+
+          <a
+            href="/leaderboard.html"
+            class="inline-flex items-center justify-center rounded-2xl border border-pink-300/20 bg-pink-500/10 px-4 py-3 font-black text-pink-100 transition hover:scale-105 hover:bg-pink-500 hover:text-white"
+          >
+            🏆 Boards
+          </a>
+
+          <a
+            href="/nerd-lab.html"
+            class="inline-flex items-center justify-center rounded-2xl border border-blue-300/20 bg-blue-500/10 px-4 py-3 font-black text-blue-100 transition hover:scale-105 hover:bg-blue-500 hover:text-white"
+          >
+            🧠 Nerd Lab
+          </a>
+
+          <a
+            href="/faq.html"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-300/20 bg-white/5 px-4 py-3 font-black text-slate-200 transition hover:scale-105 hover:bg-white/10 hover:text-white"
+          >
+            ❓ FAQ
+          </a>
+
+          <a
+            href="/privacy-policy.html"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-300/20 bg-white/5 px-4 py-3 font-black text-slate-200 transition hover:scale-105 hover:bg-white/10 hover:text-white"
+          >
+            🍪 Privacy
+          </a>
+        </div>
+
+        <div class="mb-8 flex flex-col sm:flex-row justify-center gap-3">
           <a
             href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
             target="_blank"
-            class="inline-block bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-8 py-4 rounded-xl text-xl shadow-lg transition-all duration-300 transform hover:scale-105"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 px-6 py-3 font-black text-slate-950 shadow-xl transition-all duration-200 hover:scale-105"
           >
-            🚀 Go to Gensuki
+            🧬 Official Gensuki Mint
           </a>
-        </div>
 
-        <div
-          id="mint-info"
-          class="hidden mt-8 p-6 bg-blue-900/30 border border-blue-500/30 rounded-xl z-10 relative"
-        >
-          <h3 class="text-xl font-bold text-blue-400 mb-3">
-            🎯 Mint Access Verified!
-          </h3>
-          <p class="text-blue-300 mb-4">
-            You have been verified for minting access. You will be redirected to
-            our official launchpad partner Gensuki to complete your mint.
-          </p>
-          <div
-            class="flex items-center justify-center space-x-2 text-lg text-blue-400"
-          >
-            <span>🔗</span>
-            <span>Gensuki Launchpad</span>
-            <span>→</span>
-          </div>
-        </div>
-
-        <a
-          href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
-          target="_blank"
-          id="mint-now-btn"
-          class="hidden mt-8 inline-block bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-xl shadow-lg transition-all duration-300 transform hover:scale-105 z-10 relative"
-        >
-          🧠 Mint on Gensuki Launchpad
-        </a>
-      </div>
-    </section>
-
-    <!-- 🎮 Current Benefits & Features -->
-    <section
-      class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-emerald-900/30 to-teal-900/30"
-    >
-      <div class="max-w-6xl mx-auto">
-        <div class="text-center mb-12">
-          <h2 class="text-4xl md:text-5xl font-bold text-emerald-400 mb-4">
-            🎮 Current Benefits & Features
-          </h2>
-          <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-            What you get right now when you mint a GEN1 NFT
-          </p>
-        </div>
-
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- Season 11 Gaming -->
-          <div class="mint-card rounded-2xl p-6 border-2 border-green-500/50">
-            <div class="text-4xl mb-4 text-center">🎮</div>
-            <h3 class="text-xl font-bold text-green-400 mb-3 text-center">
-              Season 11 Gaming
-            </h3>
-            <ul class="text-gray-300 space-y-2 text-sm">
-              <li>
-                • <strong>8 Active Games:</strong> Tetris, Snake, Space
-                Invaders, Cheese Hunt, Discord Race, Glyph
-              </li>
-              <li>
-                • <strong>Role Multipliers:</strong> Earn up to 2.0x DSPOINC
-                (VIP Holder)
-              </li>
-              <li>
-                • <strong>73+ Achievements:</strong> Unlock across 3 games
-              </li>
-              <li>• <strong>Leaderboards:</strong> Compete for top spots</li>
-              <li>
-                • <strong>Profile Tracking:</strong> Complete gaming history
-              </li>
-            </ul>
-          </div>
-
-          <!-- 3D Riddle Game Access -->
-          <div class="mint-card rounded-2xl p-6 border-2 border-purple-500/50">
-            <div class="text-4xl mb-4 text-center">🧀</div>
-            <h3 class="text-xl font-bold text-purple-400 mb-3 text-center">
-              3D Riddle Game
-            </h3>
-            <ul class="text-gray-300 space-y-2 text-sm">
-              <li>
-                • <strong>Alpha Testing:</strong> January 2026 (@holders & @vip)
-              </li>
-              <li>
-                • <strong>6 Complete Levels:</strong> Level 1: The Cheese Temple
-              </li>
-              <li>• <strong>Phoenix Boss:</strong> 15 behavior patterns</li>
-              <li>
-                • <strong>Riddles & Rewards:</strong> DSPOINC rewards with
-                multipliers
-              </li>
-              <li>
-                • <strong>Plot Ownership:</strong> Based on NFT tier (coming
-                2026)
-              </li>
-            </ul>
-          </div>
-
-          <!-- Community Access -->
-          <div class="mint-card rounded-2xl p-6 border-2 border-yellow-500/50">
-            <div class="text-4xl mb-4 text-center">🤝</div>
-            <h3 class="text-xl font-bold text-yellow-400 mb-3 text-center">
-              Community Access
-            </h3>
-            <ul class="text-gray-300 space-y-2 text-sm">
-              <li>
-                • <strong>Discord Roles:</strong> Automatic role assignment
-              </li>
-              <li>
-                • <strong>Giveaways:</strong> Epic cheese giveaways & raffles
-              </li>
-              <li>
-                • <strong>Events:</strong> Friday games, poker tournaments
-              </li>
-              <li>
-                • <strong>Partner Access:</strong> Exclusive partner channels
-              </li>
-              <li>
-                • <strong>Alpha Labs:</strong> Early access to new features
-              </li>
-            </ul>
-          </div>
-
-          <!-- Future Benefits -->
-          <div class="mint-card rounded-2xl p-6 border-2 border-blue-500/50">
-            <div class="text-4xl mb-4 text-center">🚀</div>
-            <h3 class="text-xl font-bold text-blue-400 mb-3 text-center">
-              Coming 2026
-            </h3>
-            <ul class="text-gray-300 space-y-2 text-sm">
-              <li>• <strong>Staking:</strong> Earn 1 $SPOINC daily per NFT</li>
-              <li>• <strong>3D Game Plots:</strong> Land ownership system</li>
-              <li>
-                • <strong>Utility Expansion:</strong> More games & features
-              </li>
-              <li>• <strong>DAO Integration:</strong> Community governance</li>
-              <li>
-                • <strong>Real-World Utility:</strong> Partner integrations
-              </li>
-            </ul>
-          </div>
-
-          <!-- Role Benefits -->
-          <div class="mint-card rounded-2xl p-6 border-2 border-pink-500/50">
-            <div class="text-4xl mb-4 text-center">⚡</div>
-            <h3 class="text-xl font-bold text-pink-400 mb-3 text-center">
-              Role Multipliers
-            </h3>
-            <ul class="text-gray-300 space-y-2 text-sm">
-              <li>• <strong>VIP Holder:</strong> 2.0x multiplier</li>
-              <li>• <strong>Holder:</strong> 1.5x multiplier</li>
-              <li>• <strong>Champion:</strong> 1.4x multiplier</li>
-              <li>• <strong>Season Tester:</strong> 1.3x multiplier</li>
-              <li>• <strong>Early Bird:</strong> 1.2x multiplier</li>
-              <li>• <strong>Cheese Hunter:</strong> 1.1x multiplier</li>
-            </ul>
-          </div>
-
-          <!-- Store & Rewards -->
-          <div class="mint-card rounded-2xl p-6 border-2 border-orange-500/50">
-            <div class="text-4xl mb-4 text-center">💰</div>
-            <h3 class="text-xl font-bold text-orange-400 mb-3 text-center">
-              Store & Rewards
-            </h3>
-            <ul class="text-gray-300 space-y-2 text-sm">
-              <li>
-                • <strong>Narrrf Shop:</strong> Redeem DSPOINC for rewards
-              </li>
-              <li>
-                • <strong>NFT Purchases:</strong> Buy items with earned currency
-              </li>
-              <li>
-                • <strong>Raffle Entries:</strong> Use DSPOINC for giveaways
-              </li>
-              <li>• <strong>VIP Upgrades:</strong> Unlock premium features</li>
-              <li>• <strong>Conversion:</strong> 10,000 DSPOINC = 1 SPOINC</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 🧪 Quote from the Lab -->
-    <section class="relative z-10 py-16 px-4 md:px-6">
-      <div class="max-w-4xl mx-auto text-center">
-        <div class="mint-card rounded-2xl p-8 border-l-4 border-pink-500">
-          <h2 class="text-3xl md:text-4xl font-bold mb-6 text-pink-400">
-            🧪 Quote from the Lab
-          </h2>
-          <p class="italic text-xl text-purple-300 font-semibold mb-2">
-            "You don't mint a masterpiece — you mutate one."
-          </p>
-          <span class="text-lg text-gray-400 font-normal"
-            >– Narrrf's Lab Philosophy, Vol. 1</span
-          >
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer
-      class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20"
-    >
-      <div class="max-w-4xl mx-auto px-6">
-        <p class="mb-4">
-          Made with 🧪 & strategy in Narrrf's Lab |
           <a
             href="https://discord.gg/zgjAwzuDqV"
-            class="text-yellow-400 hover:text-yellow-300 underline transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 font-black text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-indigo-500"
           >
-            Join us on Discord
+            💬 Join Discord
           </a>
-        </p>
-        <p class="text-sm">
-          © 2025 Narrrf's World. Built with brain & cheese 🧠🧀 |
-          <a
-            href="privacy-policy.html"
-            class="text-gray-500 hover:text-gray-300 underline"
-            >Privacy Policy</a
-          >
-          |
-          <a href="faq.html" class="text-gray-500 hover:text-gray-300 underline"
-            >FAQ</a
-          >
-          |
-          <a
-            href="3d-riddle.html"
-            class="text-gray-500 hover:text-gray-300 underline"
-            >3D Riddle Game</a
-          >
-        </p>
+        </div>
+
+        <div class="pt-6 border-t border-yellow-300/20 text-xs text-slate-400">
+          <div class="mb-2 font-semibold text-yellow-100/80">
+            © 2026 Narrrf's World. Built with brain, cheese, and community chaos 🧠🧀
+          </div>
+          <div class="text-slate-500">
+            ☀️ Season 12 • Official Gensuki mint info • Genesis Mouse • Holder access • Lab progression
+          </div>
+        </div>
       </div>
     </footer>
 
     <!-- Remove old wallet script and add new one -->
 
     <script>
+
       // =============================================
       // 🎨 Mint Page Trait Showcase (Client-side UI)
       // =============================================

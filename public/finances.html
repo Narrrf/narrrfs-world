@@ -8,422 +8,547 @@ require_once 'discord-invite.php';
   <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Finances | Narrrf's World</title>
+
+  <title>☀️ Finances — Narrrf's World Season 12 • DSPOINC Economy</title>
 
   <!-- 🧀 Favicon & Metadata -->
   <link rel="icon" type="image/png" href="favicon-phantom.png" />
   <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
-  <meta name="theme-color" content="#facc15" />
-  <meta name="msapplication-TileColor" content="#facc15" />
+
+  <meta name="theme-color" content="#f97316" />
+  <meta name="msapplication-TileColor" content="#f97316" />
   <meta name="msapplication-TileImage" content="favicon-phantom.png" />
-  <meta name="title" content="Narrrf's World" />
-  <meta name="description" content="Web3 transparency meets utility — explore Narrrf's financial engine." />
+  <meta name="title" content="Narrrf's World — Season 12 Finance & Economy Overview" />
+  <meta
+    name="description"
+    content="Explore the Narrrf's World Season 12 economy overview: DSPOINC utility, rewards, staking, community funds, ecosystem sinks, and long-term transparent finance planning."
+  />
+  <meta name="robots" content="index, follow" />
 
   <!-- 🧵 OpenGraph & Twitter Preview -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Narrrf Finances" />
-  <meta property="og:description" content="Track SPOINC. Unlock cheese metrics. Control the economy." />
-  <meta property="og:image" content="img/cheese-finance.png" />
+  <meta property="og:title" content="☀️ Narrrf's World Finances — Season 12 Economy" />
+  <meta
+    property="og:description"
+    content="A transparent public overview of Narrrf's World Season 12 economy layers: DSPOINC utility, rewards, staking, community funds, and future planning."
+  />
+  <meta property="og:image" content="https://narrrfs.world/img/cheese-finance.png" />
   <meta property="og:url" content="https://narrrfs.world/finances.html" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Narrrf Finances" />
-  <meta name="twitter:description" content="Track SPOINC. Unlock cheese metrics. Control the economy." />
-  <meta name="twitter:image" content="img/cheese-finance.png" />
 
-  <!-- 📊 Chart.js (for visualizing SPOINC) -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="☀️ Narrrf's World Finances — Season 12" />
+  <meta
+    name="twitter:description"
+    content="Understand Narrrf's World economy structure: DSPOINC, rewards, staking, community funds, and responsible long-term ecosystem planning."
+  />
+  <meta name="twitter:image" content="https://narrrfs.world/img/cheese-finance.png" />
+
+  <!-- 📊 Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- 🎨 Tailwind CSS (Dev CDN Mode) -->
+  <!-- 🎨 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 🔗 Discord Token of Render System -->
+  <!-- 🔗 Discord Token of Render System -->
   <script src="discord-config.js"></script>
 
-  <!-- 💫 Bubble Animation for charts or easter effects -->
+  <!-- 💫 Season 12 Finance Styles -->
   <style>
-    @keyframes labBubble {
-      0% { transform: translateY(0) scale(1); opacity: 0.7; }
-      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
-    }
-    .animate-lab-bubble {
-      animation: labBubble 5s ease-in-out infinite;
+    /* ☀️ Season 12 Finance Page Shell.
+       DEVS FOR DECADES:
+       This page is a public transparency and education page.
+       It is not an accounting ledger, token contract, treasury API,
+       reward calculator, staking engine, or investment promise.
+       Backend systems remain source of truth for balances, rewards,
+       staking, claims, wallets, and DSPOINC history. */
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
-    /* New Role System Style Animations */
-    @keyframes trophyGlow {
-      0%, 100% { 
-        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
-        transform: scale(1);
+    @keyframes softGlow {
+      0%, 100% {
+        box-shadow:
+          0 0 22px rgba(250, 204, 21, 0.14),
+          0 0 44px rgba(249, 115, 22, 0.08);
       }
-      50% { 
-        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
-        transform: scale(1.05);
+
+      50% {
+        box-shadow:
+          0 0 34px rgba(250, 204, 21, 0.26),
+          0 0 70px rgba(249, 115, 22, 0.14);
       }
     }
-    
-    @keyframes rolePulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.02); }
+
+    html {
+      scroll-behavior: smooth;
     }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-    }
-    
-    .trophy-glow {
-      animation: trophyGlow 3s ease-in-out infinite;
-    }
-    
-    .role-pulse {
-      animation: rolePulse 4s ease-in-out infinite;
-    }
-    
+
     .float-animation {
       animation: float 6s ease-in-out infinite;
     }
-    
-    .finance-card {
-      transition: all 0.3s ease;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
+
+    .summer-glow {
+      animation: softGlow 4s ease-in-out infinite;
     }
-    
+
+    .finance-card {
+      transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+      background: linear-gradient(
+        180deg,
+        rgba(15, 23, 42, 0.92),
+        rgba(15, 23, 42, 0.74)
+      );
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+    }
+
     .finance-card:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      border-color: rgba(251, 191, 36, 0.5);
+      transform: translateY(-3px);
+      border-color: rgba(250, 204, 21, 0.34);
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.38),
+        0 0 28px rgba(250, 204, 21, 0.08);
+    }
+
+    .finance-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      padding: 0.5rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .finance-list li {
+      margin-top: 0.65rem;
+    }
+
+    .chart-shell {
+      position: relative;
+      min-height: 320px;
+    }
+
+    @media (max-width: 768px) {
+      .chart-shell {
+        min-height: 260px;
+      }
     }
   </style>
-
-  <!-- 📜 Dev Notes: Finance portal for charting SPOINC + riddle-based unlockables. Future API ready. -->
-  <!-- 🗂️ PATH NOTE: All assets must be loaded via /img/ and /sounds/ folders. -->
 </head>
 
-<!-- 
-🧪 LAB NOTE: FINANCES.HTML
-------------------------------------------------------------
-📊 Narrrf's World Treasury Dashboard & Secret Economic Layer
+<body id="top" class="relative bg-slate-950 text-white font-sans min-h-screen overflow-x-hidden">
 
-📌 Purpose:
-- Visualizes $SPOINC flow, mint revenue, treasury balances
-- Shows financial data via Chart.js (static or dynamic in future)
-- May serve as economic API dashboard or staking view
-
-💾 Backend Touchpoints:
-- Future API: `/api/treasury.json`, `/sql/spoinc-ledger`, or `/rpc/staking-data`
-- Chart.js should eventually receive live data (via JS fetch or PHP echo)
-- Optional: Track page view per wallet for stat-logging
-
-🧠 SQL Dev Ideas:
-- Table: `cheese_finance_log` (wallet, page, timestamp, chartViewed)
-- Table: `spoinc_mint_events` (wallet, txHash, amount, method)
-- Future backend role-based chart visibility (e.g., only "Investor Mice" can see Pie #2)
-
-🎮 Lore Integration:
-- Unlock hidden cheese charts via roles or riddles
-- Link to get-roles.html for deeper financial view permissions
-
-🗂️ Uses /img/ and /sounds/ path standard
-
-⚠️ Chart graphics must not use hardcoded external assets
-🐭🧠 5-YEAR-OLD DEV JEDI REMINDER:
-"If I see a file like cheese.png, I ask: is it in img/? If no, I go fix it now. If yes, I eat a snack and keep coding."
-
-🔥 Jedi Tip from Brain 3.1:
-If you're too stoned to think about SQL, just leave a comment that says:
-
-<!-- TODO: Ask SQL Master for how this connects
-and move on like a cheese ninja. ASk our Brain 3.1. SQL expert for this spot ;-)
-
--->
-
-
-<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans overflow-x-hidden min-h-screen">
-
-  <!-- 🌟 Floating Background Elements -->
+  <!-- ☀️ Global Season 12 finance background.
+       DEVS FOR DECADES:
+       Visual-only atmosphere. Does not control wallet, rewards, staking,
+       DSPOINC, treasury, balances, claims, or backend economy state. -->
   <div class="fixed inset-0 pointer-events-none z-0">
-    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
-    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
-    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
-    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-950 via-orange-950/20 to-slate-950"></div>
+    <div class="absolute top-20 left-10 h-96 w-96 rounded-full bg-orange-400/10 blur-3xl float-animation"></div>
+    <div class="absolute top-1/3 right-10 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl float-animation" style="animation-delay: 2s;"></div>
+    <div class="absolute bottom-20 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl float-animation" style="animation-delay: 4s;"></div>
   </div>
 
-  <!-- 🧬 Lab Status Badge -->
-  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
-    🧬 Finance Portal v2.0 Active
+  <!-- ☀️ Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-orange-500 to-pink-600 text-white text-xs font-black px-4 py-2 rounded-full shadow-lg border border-orange-300/50">
+    ☀️ Season 12 Economy
   </div>
 
-<!-- 
-🧪 CRITICAL LAB NOTES: THE CHEESE WORLD SYSTEM OVERVIEW
-------------------------------------------------------------
-This section covers **NFTs**, **staking rewards**, **plots in 3D Riddle Game**, **DAO shares**, and **Web3-to-Web2 bridging** for financial tracking in the game world.
+  <!-- 🧭 Navigation -->
+  <header class="relative z-40 bg-black/90 backdrop-blur-md text-white py-3 px-6 shadow-xl sticky top-0 border-b border-yellow-400/30">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center">
+      <a href="index.html" class="text-xl font-black tracking-tight text-yellow-300">🧠 Narrrf's World</a>
 
-💡 **SQL Schema for Plots**:
-- Users will be able to **own plots** in the **3D Riddle Game (The Cheese Temple)**, each linked to their **NFT**.
-- Plot status (under construction, completed) will be tracked dynamically.
-- User's financial rewards (e.g., $SPOINC) are tied to plot ownership, enabling **real-time game mechanics**.
-
-🧠 **The SQL Flow**:
-- **User Data**: `user_wallet`, `nft_count`, `plot_id`, `plot_coordinates`, `plot_status`
-- **Dynamic Rendering**: Fetch **NFT ownership**, **plot data**, and **staking rewards** dynamically for each user.
-- **DAO Shares**: Integrate **DAO rewards** based on plot size and NFT rarity.
-
-🧩 **Core Features**:
-- **Users with NFT roles** will unlock **plot sizes** and **game mechanics** like access to **premium areas**.
-- Financial dashboard inside 3D Riddle Game will display **$SPOINC** rewards dynamically based on **plot size** and **NFT type**.
-- **DAO shares** and **staking rewards** for users are **displayed in the virtual world** in real-time.
-
-🧪 **Future SQL/Back-End Expansion**:
-- Implement **roles** and **NFT traits** affecting **plot enhancements**.
-- **API Sync with Discord**: Track **NFT ownership** and use it to **map plots** and **reward progression**.
-- Data driven by **SQL** will power the **user experience**.
-
-⚡ **Final Goal**:  
-To create a **self-sustaining virtual world** powered by **Web3 principles**, **DAO-driven economy**, and **NFT-powered gamification**.
-
--->
-
-
-<!-- 🔥 Finance Flask + Glow & Bubbles -->
-<div class="absolute bottom-8 right-8 z-[1] pointer-events-none">
-  <div class="w-40 h-40 bg-yellow-300 opacity-30 rounded-full blur-2xl absolute animate-pulse"></div>
-  <div class="relative">
-    <svg width="80" height="120" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-[0_0_12px_#facc15]">
-      <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z" 
-            fill="#facc15" stroke="#000" stroke-width="2"/>
-    </svg>
-    <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-      <div class="w-3 h-3 bg-yellow-400 rounded-full blur-sm animate-lab-bubble absolute" style="left:-10px"></div>
-      <div class="w-4 h-4 bg-yellow-500 rounded-full blur-md animate-lab-bubble absolute delay-1000" style="left:10px"></div>
-      <div class="w-2.5 h-2.5 bg-orange-300 rounded-full blur-sm animate-lab-bubble absolute delay-2000" style="left:0px"></div>
+      <nav aria-label="Main Navigation" class="flex flex-wrap justify-center md:justify-end gap-3 text-sm md:text-base items-center">
+        <a href="index.html" class="hover:text-yellow-300 transition-colors">Home</a>
+        <a href="mint.html" class="hover:text-yellow-300 transition-colors">Mint</a>
+        <a href="whitepaper.html" class="hover:text-yellow-300 transition-colors">Whitepaper</a>
+        <a href="get-roles.html" class="hover:text-yellow-300 transition-colors">Get Roles</a>
+        <a href="partners.html" class="hover:text-yellow-300 transition-colors">Partners</a>
+        <a href="project-updates.html" class="hover:text-yellow-300 transition-colors">Updates</a>
+        <a href="faq.html" class="hover:text-yellow-300 transition-colors">FAQ</a>
+        <a href="profile.html" class="bg-yellow-300 text-slate-950 font-black px-4 py-2 rounded-full hover:bg-yellow-200 transition-colors">Profile</a>
+      </nav>
     </div>
-  </div>
-</div>
+  </header>
 
+  <main class="relative z-10">
 
+    <!-- Hero -->
+    <section class="max-w-7xl mx-auto px-6 pt-24 pb-16 text-center">
+      <div class="finance-pill mx-auto mb-6 bg-orange-500/15 border border-orange-300/30 text-orange-100">
+        ☀️ Season 12 Finance Overview
+      </div>
 
-<!-- Navigation Bar -->
-<header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
-  <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
-    <nav class="space-x-4 text-sm md:text-base flex items-center">
-      <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
-      <a href="mint.html" class="hover:text-yellow-400 transition-colors">Mint</a>
-      <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
-      <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
-      <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
-      <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
-      <button id="connect-wallet-btn" onclick="connectWallet()" 
-        class="ml-2 mt-2 md:mt-0 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-        🔌 Connect
-      </button>
-      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-2 shadow-lg" />
-      <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
-        ❌
-      </button>
-    </nav>
-  </div>
-</header>
+      <h1 class="text-4xl md:text-7xl font-black leading-tight">
+        DSPOINC, rewards, staking,
+        <span class="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-400">
+          and ecosystem value flow.
+        </span>
+      </h1>
 
-<!-- Finance Intro -->
-<section class="text-center py-12 px-6 relative z-10">
-  <h1 class="text-4xl font-extrabold mb-2 text-yellow-400">💸 Narrrf's Financial Transparency</h1>
-  <p class="text-md max-w-2xl mx-auto text-gray-300">We're building a fair and fun ecosystem — where capital flows back to those who drive it. Here's how it works.</p>
-</section>
+      <p class="mt-6 max-w-4xl mx-auto text-lg md:text-xl text-slate-200 leading-8 font-semibold">
+        This page explains the Narrrf's World economy in public-friendly language:
+        how Season 12 connects games, rewards, staking, community funds, Genesis holders,
+        and long-term utility planning.
+      </p>
 
-<!-- Revenue Phases Grid -->
-<section class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-6 relative z-10">
-  <div class="finance-card rounded-2xl p-6 border-l-4 border-pink-500">
-    <h2 class="text-xl font-bold mb-2 text-pink-400">🧪 Phase 1 – Genesis Revenue</h2>
-    <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
-      <li>GEN1 NFT Mint – Primary source of launch funds</li>
-      <li>Trait Redemption Mint – Special NFTs or upgrades ("Alien," etc.)</li>
-      <li>GEN1 Public Mint – Long-term holder strategy</li>
-      <li>GEN1 VIP NFT Airdrop – Long-term holder strategy</li>
-    </ul>
-  </div>
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left">
+        <div class="finance-card rounded-3xl p-5">
+          <div class="text-3xl mb-3">💰</div>
+          <h2 class="text-xl font-black text-yellow-200">DSPOINC Utility</h2>
+          <p class="mt-2 text-sm text-slate-300 leading-6">
+            DSPOINC is the live in-ecosystem utility balance used across games, rewards,
+            staking, missions, and internal progression systems.
+          </p>
+        </div>
 
-  <div class="finance-card rounded-2xl p-6 border-l-4 border-yellow-500">
-    <h2 class="text-xl font-bold mb-2 text-yellow-400">💸 Phase 2 – Ecosystem Growth</h2>
-    <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
-      <li>Secondary Market Royalties – 5% SOL standard</li>
-      <li>$DSPOINC Utility Fees – Rake, staking, raffles, etc.</li>
-      <li>In-Game Purchases – Store items, power-ups, cosmetics from all online games</li>
-      <li>Benefit Seasons – Gamified NFT utility cycles</li>
-      <li>GEN2 Mint – 2027 collection drop</li>
-    </ul>
-  </div>
+        <div class="finance-card rounded-3xl p-5">
+          <div class="text-3xl mb-3">🎁</div>
+          <h2 class="text-xl font-black text-yellow-200">Reward Flow</h2>
+          <p class="mt-2 text-sm text-slate-300 leading-6">
+            Reward Chamber, event rewards, quests, and gameplay systems create utility loops
+            without changing permanent balances during season resets.
+          </p>
+        </div>
 
-  <div class="finance-card rounded-2xl p-6 border-l-4 border-green-500">
-    <h2 class="text-xl font-bold mb-2 text-green-400">🌍 Phase 3 – 3D Riddle Game Revenue (2026–2030)</h2>
-    <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
-      <li>Real-World Partner Tabs – Merch & services in Discord</li>
-      <li>Land NFTs – Digital ownership, shop features</li>
-      <li>Retail Collabs – % of tokenized product sales</li>
-      <li>API Access – Paid dashboards for Web3 retail</li>
-    </ul>
-  </div>
-</section>
+        <div class="finance-card rounded-3xl p-5">
+          <div class="text-3xl mb-3">🧬</div>
+          <h2 class="text-xl font-black text-yellow-200">Holder Progression</h2>
+          <p class="mt-2 text-sm text-slate-300 leading-6">
+            Genesis holder value is connected to verified access, Lab progression, role power,
+            identity, and future gameplay utility.
+          </p>
+        </div>
+      </div>
+    </section>
 
-<!-- Allocation Pie Chart Section -->
-<section class="max-w-4xl mx-auto py-12 px-6 text-center relative z-10">
-  <h2 class="text-3xl font-bold mb-4 text-yellow-400">📊 Updated Funding Distribution</h2>
-  <p class="mb-6 text-sm max-w-xl mx-auto text-gray-300">Our mission is to redistribute value to those who contribute most to the ecosystem. Here's how every dollar flows:</p>
-  <div class="finance-card rounded-2xl p-6">
-    <canvas id="financeChart" class="mx-auto max-w-md"></canvas>
-  </div>
-</section>
+    <!-- Disclaimer -->
+    <section class="max-w-6xl mx-auto px-6 pb-12">
+      <div class="rounded-3xl border border-yellow-300/30 bg-yellow-300/10 p-6 md:p-8 summer-glow">
+        <h2 class="text-2xl font-black text-yellow-200">⚠️ Transparency note</h2>
+        <p class="mt-3 text-sm md:text-base text-slate-200 leading-7">
+          This page is an educational ecosystem overview. It does not promise returns,
+          exchange listings, token outcomes, investment value, fixed rewards, or future revenue.
+          Backend databases, verified APIs, wallet records, and official project decisions remain
+          the source of truth.
+        </p>
+      </div>
+    </section>
 
-<!-- Chart Script -->
-<script>
-  const ctx = document.getElementById('financeChart');
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: [
-        '💰 Benefit Seasons & Rewards (70%)',
-        '📈 Marketing & PR (15%)',
-        '🏗️ 3D Riddle Game Development (7%)',
-        '💼 Web3 Tools & Ops (5%)',
-        '👥 Core Team (3%)'
-      ],
-      datasets: [{
-        data: [70, 15, 7, 5, 3],
-        backgroundColor: [
-          '#3b82f6', // Blue for Benefits
-          '#ec4899', // Pink for Marketing
-          '#10b981', // Green for Development
-          '#f59e0b', // Orange for Tools
-          '#ef4444'  // Red for Team
-        ],
-        borderColor: [
-          '#1d4ed8', // Darker blue
-          '#be185d', // Darker pink
-          '#047857', // Darker green
-          '#d97706', // Darker orange
-          '#dc2626'  // Darker red
-        ],
-        borderWidth: 2,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: '#e5e7eb', // Light gray text for dark theme
-            font: {
-              size: 12,
-              weight: '500'
-            },
-            padding: 20,
-            usePointStyle: true,
-            pointStyle: 'circle'
-          }
+    <!-- Economy Layers -->
+    <section class="max-w-7xl mx-auto px-6 py-12">
+      <div class="text-center mb-10">
+        <div class="finance-pill mx-auto mb-4 bg-pink-500/15 border border-pink-300/30 text-pink-100">
+          🧀 Economy Layers
+        </div>
+        <h2 class="text-3xl md:text-5xl font-black">How the Season 12 economy is structured</h2>
+        <p class="mt-4 max-w-3xl mx-auto text-slate-300 leading-7">
+          Narrrf's World uses multiple utility layers. Seasonal competition can reset,
+          while permanent systems keep their history and progression.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <article class="finance-card rounded-3xl p-6">
+          <h3 class="text-2xl font-black text-yellow-200">🎮 Game activity layer</h3>
+          <ul class="finance-list mt-4 text-slate-300 leading-7">
+            <li>Players compete across the Season 12 game ecosystem.</li>
+            <li>Seasonal leaderboards can reset for fair monthly competition.</li>
+            <li>Game score APIs and backend validation decide final score records.</li>
+            <li>Labyrinth Blast uses server-side validation and backend reward logic.</li>
+          </ul>
+        </article>
+
+        <article class="finance-card rounded-3xl p-6">
+          <h3 class="text-2xl font-black text-yellow-200">💰 DSPOINC utility layer</h3>
+          <ul class="finance-list mt-4 text-slate-300 leading-7">
+            <li>DSPOINC is used as live in-ecosystem utility balance.</li>
+            <li>Balances, ledgers, staking, and reward history must survive season resets.</li>
+            <li>Frontend pages display utility context; backend remains authoritative.</li>
+            <li>Economy history is permanent project infrastructure, not seasonal score data.</li>
+          </ul>
+        </article>
+
+        <article class="finance-card rounded-3xl p-6">
+          <h3 class="text-2xl font-black text-yellow-200">🎁 Rewards layer</h3>
+          <ul class="finance-list mt-4 text-slate-300 leading-7">
+            <li>Reward Chamber, boxes, claims, quests, and events create gameplay loops.</li>
+            <li>Reward history is preserved across season resets.</li>
+            <li>Admins can manage reward systems without touching seasonal score resets.</li>
+            <li>Public copy must never make frontend reward logic authoritative.</li>
+          </ul>
+        </article>
+
+        <article class="finance-card rounded-3xl p-6">
+          <h3 class="text-2xl font-black text-yellow-200">🧬 Genesis holder layer</h3>
+          <ul class="finance-list mt-4 text-slate-300 leading-7">
+            <li>Genesis Mice provide identity, access, and holder progression context.</li>
+            <li>Lab upgrades, custom names, trait progress, and inventory are permanent systems.</li>
+            <li>Marketplace items must not be described as mutating Genesis NFTs directly.</li>
+            <li>NFT-bound progression stays controlled through verified Lab upgrade paths.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="max-w-7xl mx-auto px-6 py-12">
+      <div class="text-center mb-10">
+        <div class="finance-pill mx-auto mb-4 bg-cyan-500/15 border border-cyan-300/30 text-cyan-100">
+          📊 Public Model
+        </div>
+        <h2 class="text-3xl md:text-5xl font-black">Illustrative economy model</h2>
+        <p class="mt-4 max-w-3xl mx-auto text-slate-300 leading-7">
+          These charts are public-facing planning visuals, not live treasury data.
+          They explain the intended balance between rewards, operations, growth, and future development.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="finance-card rounded-3xl p-6">
+          <h3 class="text-xl font-black text-yellow-200 mb-4">🍕 Ecosystem focus split</h3>
+          <div class="chart-shell">
+            <canvas id="financeAllocationChart"></canvas>
+          </div>
+        </div>
+
+        <div class="finance-card rounded-3xl p-6">
+          <h3 class="text-xl font-black text-yellow-200 mb-4">🔁 Utility loop overview</h3>
+          <div class="chart-shell">
+            <canvas id="financeUtilityChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Season Reset Safety -->
+    <section class="max-w-7xl mx-auto px-6 py-12">
+      <div class="finance-card rounded-3xl p-6 md:p-8 border-yellow-300/30">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <div>
+            <div class="finance-pill mb-4 bg-yellow-300/15 border border-yellow-300/30 text-yellow-100">
+              🔒 Reset Safety
+            </div>
+            <h2 class="text-3xl md:text-5xl font-black">Seasonal scores reset. Economy history stays safe.</h2>
+            <p class="mt-4 text-slate-300 leading-7">
+              Season 12 can start with fresh competitive leaderboards without deleting permanent
+              economy systems. This separation is one of the most important technical rules
+              in Narrrf's World.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            <div class="rounded-2xl bg-black/30 border border-white/10 p-5">
+              <h3 class="font-black text-green-300">✅ Preserved systems</h3>
+              <p class="mt-2 text-sm text-slate-300 leading-6">
+                DSPOINC balances, staking, ledger history, Reward Chamber, Lab progress,
+                inventory, wallet links, holder identity, marketplace state, and role access.
+              </p>
+            </div>
+
+            <div class="rounded-2xl bg-black/30 border border-white/10 p-5">
+              <h3 class="font-black text-orange-300">🔄 Seasonal systems</h3>
+              <p class="mt-2 text-sm text-slate-300 leading-6">
+                Competitive leaderboards for supported games can reset after archive,
+                verification, and Season 12 activation.
+              </p>
+            </div>
+
+            <div class="rounded-2xl bg-black/30 border border-white/10 p-5">
+              <h3 class="font-black text-cyan-300">🧪 Backend source of truth</h3>
+              <p class="mt-2 text-sm text-slate-300 leading-6">
+                Frontend pages explain the system. Database tables, backend APIs,
+                and admin tools decide real values and historical records.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Future Direction -->
+    <section class="max-w-7xl mx-auto px-6 py-12">
+      <div class="text-center mb-10">
+        <div class="finance-pill mx-auto mb-4 bg-purple-500/15 border border-purple-300/30 text-purple-100">
+          🚀 Long-Term Direction
+        </div>
+        <h2 class="text-3xl md:text-5xl font-black">Where the economy can grow</h2>
+        <p class="mt-4 max-w-3xl mx-auto text-slate-300 leading-7">
+          Narrrf's World is built as a utility ecosystem first. Future finance layers should
+          stay transparent, player-friendly, and clearly separated from investment promises.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <article class="finance-card rounded-3xl p-6">
+          <h3 class="text-xl font-black text-yellow-200">🤝 Partner utility</h3>
+          <p class="mt-3 text-sm text-slate-300 leading-6">
+            Partner campaigns, community events, VR spaces, poker events, and project collaborations
+            can create more reasons to use Narrrf's World systems.
+          </p>
+        </article>
+
+        <article class="finance-card rounded-3xl p-6">
+          <h3 class="text-xl font-black text-yellow-200">🧠 Cheese Engine expansion</h3>
+          <p class="mt-3 text-sm text-slate-300 leading-6">
+            Games, profiles, Lab upgrades, roles, rewards, and DSPOINC can continue connecting
+            into one readable progression engine.
+          </p>
+        </article>
+
+        <article class="finance-card rounded-3xl p-6">
+          <h3 class="text-xl font-black text-yellow-200">🌍 Future 3D direction</h3>
+          <p class="mt-3 text-sm text-slate-300 leading-6">
+            The 3D Riddle Game remains a later future pillar. Public copy should use planned,
+            targeted, or future-direction wording until systems are live.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="max-w-6xl mx-auto px-6 py-16 text-center">
+      <div class="finance-card rounded-3xl p-8 md:p-10">
+        <div class="text-5xl mb-5">🧀</div>
+        <h2 class="text-3xl md:text-5xl font-black">Follow the money through the ecosystem.</h2>
+        <p class="mt-4 max-w-3xl mx-auto text-slate-300 leading-7">
+          Start with games, build your profile, verify roles, enter the Lab, and use the Reward Chamber.
+          The finance layer becomes stronger when the whole ecosystem is easy to understand.
+        </p>
+
+        <div class="mt-8 flex flex-wrap justify-center gap-4">
+          <a href="profile.html" class="rounded-full bg-yellow-300 text-slate-950 font-black px-6 py-3 hover:bg-yellow-200 transition">
+            👤 Open Profile
+          </a>
+          <a href="leaderboard.html" class="rounded-full bg-orange-500 text-white font-black px-6 py-3 hover:bg-orange-400 transition">
+            🏆 Leaderboards
+          </a>
+          <a href="whitepaper.html" class="rounded-full bg-cyan-400 text-slate-950 font-black px-6 py-3 hover:bg-cyan-300 transition">
+            📖 Whitepaper
+          </a>
+          <a href="faq.html" class="rounded-full bg-pink-500 text-white font-black px-6 py-3 hover:bg-pink-400 transition">
+            ❓ FAQ
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="relative z-10 border-t border-yellow-300/20 bg-black/80 px-6 py-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 justify-between items-center text-center md:text-left">
+      <div>
+        <p class="font-black text-yellow-300">☀️ Narrrf's World — Season 12 Economy</p>
+        <p class="mt-2 text-sm text-slate-400">
+          DSPOINC utility, rewards, staking, holder progression, and transparent ecosystem planning.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-3 text-sm">
+        <a href="#top" class="text-slate-300 hover:text-yellow-300 transition">Back to Top</a>
+        <a href="index.html" class="text-slate-300 hover:text-yellow-300 transition">Home</a>
+        <a href="project-updates.html" class="text-slate-300 hover:text-yellow-300 transition">Updates</a>
+        <a href="partners.html" class="text-slate-300 hover:text-yellow-300 transition">Partners</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 📊 Finance chart scripts.
+       DEVS FOR DECADES:
+       These charts are illustrative public models.
+       Do not use them for live treasury balances, player balances,
+       reward calculations, staking math, or admin accounting. -->
+  <script>
+    function createDoughnutChart(canvasId, labels, data, colors) {
+      const canvas = document.getElementById(canvasId);
+
+      if (!canvas || typeof Chart === 'undefined') {
+        return;
+      }
+
+      return new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: colors,
+            borderColor: '#020617',
+            borderWidth: 3,
+            hoverOffset: 8
+          }]
         },
-        tooltip: {
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          titleColor: '#fbbf24', // Yellow title
-          bodyColor: '#e5e7eb', // Light gray body
-          borderColor: '#fbbf24',
-          borderWidth: 1,
-          cornerRadius: 8
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#e5e7eb',
+                padding: 18,
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  return `${label}: ${value}%`;
+                }
+              }
+            }
+          },
+          cutout: '62%'
         }
-      },
-      animation: {
-        animateRotate: true,
-        animateScale: true
-      }
+      });
     }
-  });
-</script>
 
-<!-- Call to Action -->
-<section class="text-center py-12 relative z-10">
-  <a href="mint.html" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black text-lg font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-    🚀 Go to Mint Lab
-  </a>
-</section>
+    document.addEventListener('DOMContentLoaded', () => {
+      createDoughnutChart(
+        'financeAllocationChart',
+        [
+          'Rewards + Player Utility',
+          'Development + Infrastructure',
+          'Community + Events',
+          'Partner Growth',
+          'Operations Reserve'
+        ],
+        [40, 24, 16, 12, 8],
+        ['#facc15', '#22d3ee', '#f97316', '#db2777', '#8b5cf6']
+      );
 
-<!-- Final Thoughts Section -->
-<section class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 py-16 px-6 mt-20 relative z-10 rounded-2xl border border-purple-500/30">
-  <div class="max-w-4xl mx-auto text-center">
-    <h2 class="text-3xl font-bold mb-4 text-purple-400">🧠 Final Thoughts</h2>
-    <p class="text-md mb-6 max-w-2xl mx-auto text-gray-300">
-      Narrrf's World isn't just another NFT drop. It's a social experiment, a chaotic cartoon economy, and a mission to put value back in the hands of the community. Our finances are structured to reward holders, empower builders, and push the boundaries of Web3 storytelling.
-    </p>
-    <blockquote class="italic text-lg text-purple-300 font-semibold">
-      "In a world run by cheese and chaos, only those who dare to play win big." 🚀
-    </blockquote>
-  </div>
-</section>
-
-<!-- Global Wallet Connect + PFP Script -->
-<script>
-  async function connectWallet() {
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
-
-    if ('solana' in window) {
-      const provider = window.solana;
-      if (provider.isPhantom) {
-        try {
-          const response = await provider.connect();
-          const walletAddress = response.publicKey.toString();
-          localStorage.setItem('walletAddress', walletAddress);
-          connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-          connectButton.disabled = true;
-          avatar?.classList.remove('hidden');
-        } catch (err) {
-          console.error("❌ Wallet connect error:", err);
-        }
-      }
-    }
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const storedWallet = localStorage.getItem('walletAddress');
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
-
-    if (storedWallet && connectButton) {
-      connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
-      connectButton.disabled = true;
-      avatar?.classList.remove('hidden');
-    }
-  });
-
-  function disconnectWallet() {
-    localStorage.removeItem('walletAddress');
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
-
-    if (avatar) avatar.classList.add('hidden');
-    if (connectButton) {
-      connectButton.innerText = '🔌 Connect';
-      connectButton.disabled = false;
-    }
-  }
-</script>
-
-<!-- 🐭 Investor Mouse Mascot -->
-<div class="fixed bottom-8 left-8 z-40">
-  <img src="img/investor-mouse1.png" alt="Investor Mouse"
-       class="w-28 md:w-36 floaty drop-shadow-xl investor-glow hover:scale-105 transition-transform duration-300"
-       title="Tracking every cheese... I mean coin!"
-                       onclick="window.location.href='<?php echo $discord_url; ?>'"
-       style="cursor: pointer;" />
-</div>
-
-<!-- Add wallet.js before the closing body tag -->
-<script src="js/wallet.js"></script>
-<script src="js/cheese-auth-indicator.js"></script>
+      createDoughnutChart(
+        'financeUtilityChart',
+        [
+          'Games',
+          'Reward Chamber',
+          'Genesis Lab',
+          'Staking',
+          'Events + Missions'
+        ],
+        [28, 22, 20, 15, 15],
+        ['#fb923c', '#facc15', '#22d3ee', '#a855f7', '#10b981']
+      );
+    });
+  </script>
 </body>
 </html>
-
-

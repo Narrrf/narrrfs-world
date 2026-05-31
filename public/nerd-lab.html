@@ -3,550 +3,1492 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🧬 Nerd Portal - Public Technical Documentation | Narrrf's World</title>
+
+  <title>☀️ Nerd Lab — Narrrf's World Cheese Engine • Season 12 Systems</title>
+
   <link rel="icon" type="image/png" href="favicon-phantom.png" />
   <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
-  <meta name="theme-color" content="#facc15" />
-  <meta name="description" content="Public technical portal for Narrrf's World live systems, Reward Chamber architecture, Lab progression, admin runtime, frontend surfaces, and ecosystem documentation." />
+
+  <meta name="theme-color" content="#f97316" />
+  <meta
+    name="description"
+    content="Customer-friendly Nerd Lab for Narrrf's World Season 12: understand the Cheese Engine, 2-lane player system, games, Genesis Lab, Reward Chamber, DSPOINC economy, database logic, and future gameplay direction."
+  />
   <meta name="robots" content="index, follow" />
+
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="🧬 Nerd Portal - Public Technical Documentation - Narrrf's World" />
-  <meta property="og:description" content="Public technical portal for Narrrf's World live systems, Reward Chamber, Lab progression, admin runtime, and ecosystem architecture." />
+  <meta property="og:title" content="☀️ Nerd Lab — Narrrf's World Cheese Engine" />
+  <meta
+    property="og:description"
+    content="Dive into the Narrrfs World systems in simple language: player lane, Genesis holder lane, Cheese Engine, games, Lab, rewards, DSPOINC, and Season 12 architecture."
+  />
   <meta property="og:image" content="img/narrrf-logo-professional.png" />
+
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="☀️ Nerd Lab — Narrrf's World Cheese Engine" />
+  <meta
+    name="twitter:description"
+    content="A simple public guide to Narrrfs World systems: games, Lab, rewards, economy, profile identity, and Cheese Engine logic."
+  />
+  <meta name="twitter:image" content="img/narrrf-logo-professional.png" />
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="discord-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="js/nerd-lab-overviews.js"></script>
+
   <style>
     @keyframes float {
-      0%,100% { transform: translateY(0px); }
+      0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
     }
-    .float-animation { animation: float 6s ease-in-out infinite; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .season-shell-card,
     .doc-card {
-      transition: all .3s ease;
-      background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,.2);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      background: linear-gradient(180deg, rgba(15,23,42,0.92), rgba(15,23,42,0.74));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.28);
     }
+
+    .season-shell-card:hover,
     .doc-card:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0,0,0,.3);
-      border-color: rgba(251,191,36,.5);
+      transform: translateY(-3px);
+      border-color: rgba(250,204,21,0.34);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.38), 0 0 28px rgba(250,204,21,0.08);
     }
+
+    .nerd-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      padding: 0.5rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
     .tab-btn {
-      transition: all .3s ease;
+      transition: all .25s ease;
       cursor: pointer;
-      opacity: .78;
+      opacity: .82;
     }
-    .tab-btn:hover { opacity: 1; transform: translateY(-2px); }
+
+    .tab-btn:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+      border-color: rgba(250,204,21,.55);
+      background: rgba(250,204,21,.08);
+    }
+
     .tab-btn.active {
       opacity: 1;
-      background: linear-gradient(135deg, rgba(251,191,36,.2), rgba(251,191,36,.1));
-      border-color: rgba(251,191,36,.55);
+      background: linear-gradient(135deg, rgba(250,204,21,.22), rgba(249,115,22,.12));
+      border-color: rgba(250,204,21,.65);
+      color: #fef3c7;
+      box-shadow: 0 0 24px rgba(250,204,21,.10);
     }
-    .tab-content { display:none; animation: fadeIn .3s ease; }
-    .tab-content.active { display:block; }
-    @keyframes fadeIn {
-      from { opacity:0; transform: translateY(10px); }
-      to { opacity:1; transform: translateY(0); }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn .3s ease;
     }
-    .markdown-content { line-height:1.8; }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .tab-group-label {
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #fcd34d;
+      opacity: 0.9;
+      padding: 0.25rem 0.4rem;
+    }
+
+    .markdown-content {
+      line-height: 1.8;
+    }
+
     .markdown-content h1 {
-      font-size:2.5rem; font-weight:900; margin:2rem 0 1rem; color:#fbbf24;
-      border-bottom:2px solid rgba(251,191,36,.3); padding-bottom:.5rem;
+      font-size: 2.25rem;
+      font-weight: 900;
+      margin: 2rem 0 1rem;
+      color: #fbbf24;
+      border-bottom: 2px solid rgba(251,191,36,.3);
+      padding-bottom: .5rem;
     }
-    .markdown-content h2 { font-size:2rem; font-weight:700; margin:1.5rem 0 .75rem; color:#fcd34d; }
-    .markdown-content h3 { font-size:1.5rem; font-weight:600; margin:1.25rem 0 .5rem; color:#fde68a; }
+
+    .markdown-content h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin: 1.5rem 0 .75rem;
+      color: #fcd34d;
+    }
+
+    .markdown-content h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 1.25rem 0 .5rem;
+      color: #fde68a;
+    }
+
+    .markdown-content p,
+    .markdown-content li {
+      color: #cbd5e1;
+    }
+
+    .markdown-content ul {
+      margin: 1rem 0;
+      padding-left: 1.5rem;
+      list-style: disc;
+    }
+
     .markdown-content code {
-      background: rgba(0,0,0,.4); padding:.2rem .4rem; border-radius:.25rem;
-      font-family: 'Courier New', monospace; color:#fbbf24;
+      background: rgba(0,0,0,.45);
+      padding: .2rem .4rem;
+      border-radius: .25rem;
+      font-family: "Courier New", monospace;
+      color: #fbbf24;
     }
+
     .markdown-content pre {
-      background: rgba(0,0,0,.6); padding:1rem; border-radius:.5rem; overflow-x:auto;
-      border:1px solid rgba(255,255,255,.1); margin:1rem 0;
+      background: rgba(0,0,0,.65);
+      padding: 1rem;
+      border-radius: .75rem;
+      overflow-x: auto;
+      border: 1px solid rgba(255,255,255,.1);
+      margin: 1rem 0;
     }
-    .markdown-content pre code { background:none; padding:0; color:#e5e7eb; }
-    .markdown-content a { color:#fbbf24; text-decoration:underline; }
-    .markdown-content a:hover { color:#fcd34d; }
+
+    .markdown-content pre code {
+      background: none;
+      padding: 0;
+      color: #e5e7eb;
+    }
+
+    .markdown-content a {
+      color: #fbbf24;
+      text-decoration: underline;
+    }
+
+    .markdown-content a:hover {
+      color: #fcd34d;
+    }
   </style>
 </head>
-<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+
+<body id="top" class="relative bg-slate-950 text-white font-sans min-h-screen overflow-x-hidden">
+
+  <!-- ☀️ Global Season 12 Nerd Lab background.
+       DEVS FOR DECADES:
+       Visual-only atmosphere. This does not control tabs, markdown loading,
+       rewards, Lab, wallet, Discord login, seasons, score saving, or database state. -->
   <div class="fixed inset-0 pointer-events-none z-0">
-    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay:0s;"></div>
-    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay:2s;"></div>
-    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay:4s;"></div>
-    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay:1s;"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-950 via-orange-950/20 to-slate-950"></div>
+    <div class="absolute top-20 left-10 h-96 w-96 rounded-full bg-orange-400/10 blur-3xl float-animation"></div>
+    <div class="absolute top-1/3 right-10 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl float-animation" style="animation-delay:2s;"></div>
+    <div class="absolute bottom-20 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl float-animation" style="animation-delay:4s;"></div>
   </div>
 
-  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
-    🧬 Nerd Portal v2.0 - Public System Sync
+  <!-- ☀️ Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-orange-500 to-pink-600 text-white text-xs font-black px-4 py-2 rounded-full shadow-lg border border-orange-300/50">
+    ☀️ Nerd Lab • Season 12 Sync
   </div>
 
-  <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
-      <nav aria-label="Main Navigation" class="space-x-4 text-sm md:text-base flex items-center">
-        <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
-        <a href="profile.html" class="hover:text-yellow-400 transition-colors">Profile</a>
-        <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
-        <a href="partners.html" class="hover:text-yellow-400 transition-colors">Partners</a>
-        <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
-        <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
+  <!-- 🧭 Sticky Navigation Bar - matched with the public Season 12 menu labels -->
+  <header class="bg-black/90 backdrop-blur-md text-white py-3 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center">
+      <a href="index.html" class="text-xl font-black tracking-tight text-yellow-300">🧠 Narrrf's World</a>
+
+      <nav aria-label="Main Navigation" class="flex flex-wrap justify-center md:justify-end gap-3 text-sm md:text-base items-center">
+        <a href="index.html" class="hover:text-yellow-300 transition-colors">Home</a>
+        <a href="mint.html" class="hover:text-yellow-300 transition-colors">Mint</a>
+        <a href="whitepaper.html" class="hover:text-yellow-300 transition-colors">Whitepaper</a>
+        <a href="get-roles.html" class="hover:text-yellow-300 transition-colors">Get Roles</a>
+        <a href="partners.html" class="hover:text-yellow-300 transition-colors">Partners</a>
+        <a href="project-updates.html" class="hover:text-yellow-300 transition-colors">Updates</a>
+        <a href="nerd-lab.html" class="text-yellow-300 font-black border-b-2 border-yellow-300">🧠 Nerd Lab</a>
+        <a href="profile.html#profile-chest-section" class="hover:text-yellow-300 transition-colors">🎁 Chamber</a>
+
+        <a href="leaderboard.html"
+           class="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-black font-black py-1.5 px-3 md:px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400 hover:border-yellow-300 text-xs md:text-sm whitespace-nowrap">
+          🏆 Leaderboard
+        </a>
+
+        <a href="stake-lab.html" class="hover:text-yellow-300 transition-colors">🧊 Stake Lab</a>
+        <a href="faq.html" class="hover:text-yellow-300 transition-colors">FAQ</a>
       </nav>
     </div>
   </header>
 
-  <div id="main-content">
-    <section class="relative z-10 py-20 px-4 md:px-6 text-center">
+  <main id="main-content" class="relative z-10">
+    <!-- ☀️ Customer-facing Nerd Lab hero -->
+    <section class="relative py-20 px-4 md:px-6 text-center overflow-hidden">
       <div class="max-w-6xl mx-auto">
-        <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">🧬 Nerd Portal</h1>
-        <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
-          Public technical documentation for Narrrf's World live systems, Reward Chamber architecture, Cheese Engine runtime, admin surfaces, staking, frontend loops, and the full live Lab ecosystem: Genesis progression, boosters, Genetic inventory, marketplace flow, and Discord-linked system design.
+        <div class="nerd-pill border border-yellow-300/35 bg-yellow-400/10 text-yellow-200 mb-6">
+          ☀️ Season 12 • Cheese Engine • Public System Guide
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
+          🧠 Nerd Lab<br>
+          <span class="bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-400 bg-clip-text text-transparent">
+            The system behind the cheese.
+          </span>
+        </h1>
+
+        <p class="text-lg md:text-2xl text-slate-300 mb-6 max-w-4xl mx-auto leading-relaxed">
+          This page explains how Narrrf’s World works behind the scenes — games, profiles,
+          roles, Genesis Lab, Reward Chamber, DSPOINC, database logic, and the Cheese Engine —
+          in a way normal players, holders, partners, and investors can follow.
         </p>
-        <div class="bg-green-900/30 border border-green-500/50 rounded-xl p-4 mb-8 max-w-4xl mx-auto">
-          <p class="text-green-100 text-sm">
-            <strong>2026 Public Technical Portal:</strong> Season 11 live systems + Reward Chamber (3-box economy) + full Lab ecosystem (Genesis + Boosters + Genetic + Marketplace) + Admin Interface + Discord Bot + Database + Frontend + Cheese Engine 13.0 Agent System + DSPOINC Staking System
+
+        <p class="text-base text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+          You do not need to be a developer to understand this page. The Nerd Lab starts simple,
+          then lets curious readers go deeper into the technical layers.
+        </p>
+
+        <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
+          <a href="#nerd-lab-lanes"
+             class="inline-flex justify-center rounded-2xl bg-yellow-400 px-7 py-4 font-black text-slate-950 shadow-xl transition hover:scale-105 hover:bg-yellow-300">
+            🧭 Understand the 2 Lanes
+          </a>
+
+          <a href="#nerd-lab-engine"
+             class="inline-flex justify-center rounded-2xl bg-orange-500 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-orange-400">
+            🧀 Cheese Engine
+          </a>
+
+          <a href="#nerd-lab-games"
+             class="inline-flex justify-center rounded-2xl bg-pink-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-pink-500">
+            🎮 Game Systems
+          </a>
+
+          <a href="#nerd-lab-tabs"
+             class="inline-flex justify-center rounded-2xl bg-purple-700 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-purple-600">
+            📚 Open Deep Docs
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🧭 Customer-first 2-lane explanation -->
+    <section id="nerd-lab-lanes" class="py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-orange-950/25 to-slate-950 border-t border-white/5">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-4xl mx-auto mb-12">
+          <div class="nerd-pill border border-orange-300/35 bg-orange-400/10 text-orange-200 mb-5">
+            Start Here
+          </div>
+
+          <h2 class="text-4xl md:text-5xl font-black mb-4">
+            Narrrf’s World has two simple lanes.
+          </h2>
+
+          <p class="text-slate-300 text-lg leading-relaxed">
+            The whole system becomes easier when you understand the two main paths:
+            the open player lane and the deeper Genesis holder lane.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <article class="season-shell-card rounded-[2rem] p-6 md:p-8 border-yellow-300/25">
+            <div class="text-5xl mb-5">🎮</div>
+            <div class="text-xs uppercase tracking-[0.18em] text-yellow-200 font-black mb-2">Lane 1</div>
+            <h3 class="text-3xl font-black mb-4">Discord Player Lane</h3>
+
+            <p class="text-slate-300 leading-relaxed mb-5">
+              This is the easy entry lane. A player logs in with Discord, plays games,
+              joins weekly events, earns DSPOINC, completes missions, opens rewards, and builds a visible profile.
+            </p>
+
+            <ul class="space-y-3 text-sm text-slate-300">
+              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Play seasonal games and climb leaderboards</li>
+              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Join Cheese Rumble, bingo, poker, spaces, VR, and partner activities</li>
+              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Build profile history, roles, rewards, and DSPOINC activity</li>
+            </ul>
+
+            <p class="mt-5 text-xs text-yellow-100/80">
+              In simple words: players can start building Narrrfs identity before owning a Genesis Mouse.
+            </p>
+          </article>
+
+          <article class="season-shell-card rounded-[2rem] p-6 md:p-8 border-cyan-300/25">
+            <div class="text-5xl mb-5">🧬</div>
+            <div class="text-xs uppercase tracking-[0.18em] text-cyan-200 font-black mb-2">Lane 2</div>
+            <h3 class="text-3xl font-black mb-4">Genesis Holder Lane</h3>
+
+            <p class="text-slate-300 leading-relaxed mb-5">
+              This is the deeper Lab lane. A holder verifies a Genesis Mouse, names it,
+              enters the Lab, upgrades traits, manages progression, and prepares for future ability-based gameplay.
+            </p>
+
+            <ul class="space-y-3 text-sm text-slate-300">
+              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Verified Genesis Mouse identity unlocks deeper holder access</li>
+              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Custom names, trait upgrades, timed research, and Lab history become long-term progression</li>
+              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Future ability direction starts from this holder identity layer</li>
+            </ul>
+
+            <p class="mt-5 text-xs text-cyan-100/80">
+              Important: marketplace items should not be described as mutating the Genesis Mouse. NFT-bound progression stays controlled through verified Lab upgrade paths.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🧀 Cheese Engine customer explanation -->
+    <section id="nerd-lab-engine" class="py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-purple-950/25 to-slate-950 border-t border-white/5">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-4xl mx-auto mb-12">
+          <div class="nerd-pill border border-yellow-300/35 bg-yellow-400/10 text-yellow-200 mb-5">
+            Cheese Engine
+          </div>
+
+          <h2 class="text-4xl md:text-5xl font-black mb-4">
+            The Cheese Engine connects the world.
+          </h2>
+
+          <p class="text-slate-300 text-lg leading-relaxed">
+            The Cheese Engine is the symbolic name for the connected system behind Narrrf’s World.
+            It helps games, profiles, roles, rewards, DSPOINC, Lab upgrades, admin tools, and future gameplay
+            speak the same language.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="season-shell-card rounded-3xl p-6 border-orange-300/25">
+            <div class="text-4xl mb-4">1️⃣</div>
+            <h3 class="text-xl font-black text-orange-200 mb-2">Player acts</h3>
+            <p class="text-sm text-slate-300">
+              A player logs in, plays a game, opens a reward, joins an event, upgrades a trait, or checks profile progress.
+            </p>
+          </div>
+
+          <div class="season-shell-card rounded-3xl p-6 border-cyan-300/25">
+            <div class="text-4xl mb-4">2️⃣</div>
+            <h3 class="text-xl font-black text-cyan-200 mb-2">Backend validates</h3>
+            <p class="text-sm text-slate-300">
+              The backend checks season state, user identity, score rules, reward logic, wallet/holder state, and Lab conditions.
+            </p>
+          </div>
+
+          <div class="season-shell-card rounded-3xl p-6 border-yellow-300/25">
+            <div class="text-4xl mb-4">3️⃣</div>
+            <h3 class="text-xl font-black text-yellow-200 mb-2">World updates</h3>
+            <p class="text-sm text-slate-300">
+              Scores, rewards, DSPOINC, profiles, Lab progress, admin visibility, and future utility can stay connected.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 rounded-3xl border border-yellow-300/25 bg-yellow-400/10 p-5 text-center">
+          <h3 class="text-xl font-black text-yellow-100 mb-2">Why this matters</h3>
+          <p class="text-sm md:text-base text-slate-200 leading-relaxed max-w-4xl mx-auto">
+            Narrrf’s World is not only a list of pages. The long-term goal is cross-system recognition:
+            roles, Genesis traits, Mouse names, ability direction, rewards, and profile history can later matter
+            across multiple games without confusing seasonal resets with permanent progression.
           </p>
         </div>
       </div>
     </section>
 
-    <section class="relative z-10 px-4 md:px-6 pb-8">
+    <!-- 🎮 Season 12 game systems intro -->
+    <section id="nerd-lab-games" class="py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-pink-950/20 to-slate-950 border-t border-white/5">
       <div class="max-w-7xl mx-auto">
-        <div class="bg-black/50 backdrop-blur-md rounded-xl p-4 border border-yellow-400/30">
-          <div class="flex flex-wrap gap-2 overflow-x-auto pb-2">
-            <button class="tab-btn active px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="masterIndex">📚 Master Index</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="tetris">🎮 Tetris</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="snake">🐍 Snake</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="spaceInvaders">👾 Space Invaders</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseHunt">🧀 Cheese Hunt</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="discordRace">🏁 Discord Race</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseRumble">⚔️ Cheese Rumble</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="hytopia3d">🧩 3D Riddle Game</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="glyphMemory">🧩 Glyph Memory</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="adminInterface">🖥️ Admin Interface</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="discordBot">🤖 Discord Bot</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="database">🗄️ Database</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="frontend">🌐 Frontend</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseEngine">🧠 Cheese Engine</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="staking">🧊 Stake Lab</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-cyan-400/40 font-semibold text-sm whitespace-nowrap" data-tab="rewardChamber">🎁 Reward Chamber</button>
-            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="lab">🧬 Genesis Lab</button>
+        <div class="text-center max-w-4xl mx-auto mb-12">
+          <div class="nerd-pill border border-pink-300/35 bg-pink-400/10 text-pink-200 mb-5">
+            Game Systems
           </div>
+
+          <h2 class="text-4xl md:text-5xl font-black mb-4">
+            Season 12 is the 9-game ecosystem pass.
+          </h2>
+
+          <p class="text-slate-300 text-lg leading-relaxed">
+            Games are the action layer of Narrrf’s World. They create competition, activity, missions,
+            DSPOINC flow, role value, and profile history.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="season-shell-card rounded-3xl p-6 border-yellow-300/25">
+            <h3 class="text-xl font-black text-yellow-200 mb-3">Classic Arcade Stack</h3>
+            <p class="text-sm text-slate-300">
+              Tetris, Snake, Space Cheese Invaders, and Cheese Runner are the proven arcade score surfaces.
+            </p>
+          </div>
+
+          <div class="season-shell-card rounded-3xl p-6 border-pink-300/25">
+            <h3 class="text-xl font-black text-pink-200 mb-3">💥 Labyrinth Blast</h3>
+            <p class="text-sm text-slate-300">
+              Labyrinth Blast is the newest highlighted game surface. It uses the <strong>labyrinth_blast</strong>
+              game key and connects into the score, DSPOINC, profile, and admin ecosystem direction.
+            </p>
+          </div>
+
+          <div class="season-shell-card rounded-3xl p-6 border-cyan-300/25">
+            <h3 class="text-xl font-black text-cyan-200 mb-3">Memory + Discord Events</h3>
+            <p class="text-sm text-slate-300">
+              Glyph Memory, Cheese Hunt, Discord Cheese Race, and Cheese Rumble add lore, events,
+              community activity, and special competition paths.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 rounded-3xl border border-orange-300/25 bg-orange-500/10 p-5">
+          <h3 class="text-lg font-black text-orange-200 mb-2">Reset explanation in plain language</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Seasonal leaderboards can reset so competition feels fresh. Permanent systems stay safe:
+            Genesis Lab progression, Mouse names, Reward Chamber history, DSPOINC balances, staking,
+            inventory, marketplace state, wallets, roles, and holder identity are not treated like monthly scoreboards.
+          </p>
         </div>
       </div>
     </section>
 
-    <section class="relative z-10 px-4 md:px-6 pb-16">
+    <!-- 📚 Deep Documentation Tabs -->
+    <section id="nerd-lab-tabs" class="px-4 md:px-6 py-16 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-t border-white/5">
       <div class="max-w-7xl mx-auto">
-        <div id="tab-masterIndex" class="tab-content active"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="masterIndexContent" class="markdown-content"></div></div></div>
-        <div id="tab-tetris" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="tetrisContent" class="markdown-content"></div></div></div>
-        <div id="tab-snake" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="snakeContent" class="markdown-content"></div></div></div>
-        <div id="tab-spaceInvaders" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="spaceInvadersContent" class="markdown-content"></div></div></div>
-        <div id="tab-cheeseHunt" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="cheeseHuntContent" class="markdown-content"></div></div></div>
-        <div id="tab-discordRace" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="discordRaceContent" class="markdown-content"></div></div></div>
-        <div id="tab-cheeseRumble" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="cheeseRumbleContent" class="markdown-content"></div></div></div>
-        <div id="tab-hytopia3d" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="hytopia3dContent" class="markdown-content"></div></div></div>
-        <div id="tab-glyphMemory" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="glyphMemoryContent" class="markdown-content"></div></div></div>
-        <div id="tab-adminInterface" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="adminInterfaceContent" class="markdown-content"></div></div></div>
-        <div id="tab-discordBot" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="discordBotContent" class="markdown-content"></div></div></div>
-        <div id="tab-database" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="databaseContent" class="markdown-content"></div></div></div>
-        <div id="tab-frontend" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="frontendContent" class="markdown-content"></div></div></div>
-        <div id="tab-cheeseEngine" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="cheeseEngineContent" class="markdown-content"></div></div></div>
-        <div id="tab-staking" class="tab-content"><div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30"><div id="stakingContent" class="markdown-content"></div></div></div>
-        <div id="tab-rewardChamber" class="tab-content">
-          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
-            <div id="rewardChamberContent" class="markdown-content">
-              <div class="space-y-8">
-                <div class="doc-card rounded-2xl p-6 border border-yellow-400/30 bg-gradient-to-br from-yellow-900/20 via-slate-900/40 to-pink-900/10">
-                  <div class="flex flex-wrap items-center gap-3 mb-4">
-                    <span class="inline-flex items-center rounded-full border border-yellow-400/40 bg-yellow-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-yellow-200">Reward Chamber Live</span>
-                    <span class="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Backend Authoritative</span>
-                    <span class="inline-flex items-center rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">Public Architecture View</span>
-                  </div>
-                  <h2 class="text-3xl font-black text-white mb-3">🎁 Reward Chamber – Core Economy System</h2>
-                  <p class="text-slate-200 text-lg leading-relaxed">The Reward Chamber has moved beyond legacy chest behavior. It is now a backend-authoritative, admin-controlled, player-facing economy system that runs across profile UI, reward APIs, admin configuration, and Discord-connected premium claim flow.</p>
-                  <div class="grid md:grid-cols-3 gap-4 mt-6">
-                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <h3 class="text-yellow-300 font-bold mb-2">Backend = Authority</h3>
-                      <p class="text-sm text-slate-300">Cooldowns, pricing, availability, weighted rewards, fallback logic, and claim creation are computed server-side.</p>
-                    </div>
-                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <h3 class="text-cyan-300 font-bold mb-2">Frontend = Display Only</h3>
-                      <p class="text-sm text-slate-300">Profile surfaces live box state, costs, cooldowns, and results, but it does not decide outcomes.</p>
-                    </div>
-                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <h3 class="text-emerald-300 font-bold mb-2">Admin = Config Layer</h3>
-                      <p class="text-sm text-slate-300">Operators manage box activation, pricing, reward pools, fallback behavior, and delivery readiness from the admin interface.</p>
-                    </div>
-                  </div>
-                </div>
+        <div class="text-center max-w-4xl mx-auto mb-10">
+          <div class="nerd-pill border border-cyan-300/35 bg-cyan-400/10 text-cyan-200 mb-5">
+            Deep Docs
+          </div>
 
-                <div class="grid xl:grid-cols-3 gap-6">
-                  <div class="doc-card rounded-2xl p-6 border border-emerald-400/20 bg-black/25">
-                    <div class="text-xs font-black uppercase tracking-[0.2em] text-emerald-300 mb-3">Box 1</div>
-                    <h3 class="text-2xl font-black text-white mb-3">🧀 Free DSPOINC Box</h3>
-                    <ul class="list-disc pl-5 space-y-2 text-slate-200 text-sm">
-                      <li>Free daily reward loop</li>
-                      <li>Cooldown-based availability</li>
-                      <li>Migrates legacy chest behavior into the new chamber</li>
-                      <li>Stable entry point for the live reward economy</li>
-                    </ul>
-                  </div>
-                  <div class="doc-card rounded-2xl p-6 border border-yellow-400/20 bg-black/25">
-                    <div class="text-xs font-black uppercase tracking-[0.2em] text-yellow-300 mb-3">Box 2</div>
-                    <h3 class="text-2xl font-black text-white mb-3">🧀 Lucky Cheese Loot</h3>
-                    <ul class="list-disc pl-5 space-y-2 text-slate-200 text-sm">
-                      <li>Paid DSPOINC box with weighted reward pool logic</li>
-                      <li>Can deliver store items, genetic items, or fallback DSPOINC</li>
-                      <li>Live admin controls: weights, active rows, pricing, fallback roll behavior</li>
-                      <li>Main production balancing surface for the chamber economy</li>
-                    </ul>
-                  </div>
-                  <div class="doc-card rounded-2xl p-6 border border-pink-400/20 bg-black/25">
-                    <div class="text-xs font-black uppercase tracking-[0.2em] text-pink-300 mb-3">Box 3</div>
-                    <h3 class="text-2xl font-black text-white mb-3">👑 Royal Cheese Mystery</h3>
-                    <ul class="list-disc pl-5 space-y-2 text-slate-200 text-sm">
-                      <li>Premium reward box</li>
-                      <li>Creates pending admin claim requests instead of direct item delivery</li>
-                      <li>Designed for moderator review and manual fulfillment</li>
-                      <li>Connected to Discord notification and claim-status flow</li>
-                    </ul>
-                  </div>
-                </div>
+          <h2 class="text-4xl md:text-5xl font-black mb-4">
+            Open a system layer.
+          </h2>
 
-                <div class="grid lg:grid-cols-2 gap-6">
-                  <div class="bg-black/30 rounded-2xl border border-yellow-400/20 p-6">
-                    <h3 class="text-2xl font-bold text-yellow-300 mb-4">System flow</h3>
-                    <ol class="list-decimal pl-5 space-y-3 text-slate-200 text-sm">
-                      <li>Profile loads visible boxes from <code>/api/user/get-reward-boxes.php</code>.</li>
-                      <li>Player opens a box through <code>/api/user/open-reward-box.php</code>.</li>
-                      <li>Backend validates session, cooldowns, pricing, and available DSPOINC.</li>
-                      <li>Backend resolves reward delivery, fallback, or premium claim creation.</li>
-                      <li>Profile refreshes live chamber state and result messaging.</li>
-                    </ol>
-                  </div>
-                  <div class="bg-black/30 rounded-2xl border border-cyan-400/20 p-6">
-                    <h3 class="text-2xl font-bold text-cyan-300 mb-4">Connected files and APIs</h3>
-                    <div class="grid md:grid-cols-2 gap-4 text-slate-200 text-sm">
-                      <div>
-                        <div class="font-bold text-yellow-300 mb-2">Frontend</div>
-                        <ul class="list-disc pl-5 space-y-1">
-                          <li>public/profile.html</li>
-                          <li>public/admin-interface.html</li>
-                        <li>public/nerd-lab.html</li>
-                          <li>public/nerd-lab.html</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <div class="font-bold text-cyan-300 mb-2">Reward APIs</div>
-                        <ul class="list-disc pl-5 space-y-1">
-                          <li>/api/user/get-reward-boxes.php</li>
-                          <li>/api/user/open-reward-box.php</li>
-                          <li>/api/admin/reward-chamber-config.php</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <div class="font-bold text-emerald-300 mb-2">Runtime + Bot</div>
-                        <ul class="list-disc pl-5 space-y-1">
-                          <li>Discord bot / claim notifications</li>
-                          <li>Admin moderation flow for premium claims</li>
-                          <li>Profile-driven cooldown refresh loop</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <div class="font-bold text-pink-300 mb-2">Core tables</div>
-                        <ul class="list-disc pl-5 space-y-1">
-                          <li>tbl_reward_boxes</li>
-                          <li>tbl_reward_box_reward_pool</li>
-                          <li>tbl_reward_box_open_history</li>
-                          <li>tbl_reward_claim_requests</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <p class="text-slate-300 text-lg leading-relaxed">
+            These tabs start with easy explanations. Some tabs also load deeper technical summaries from the existing Nerd Lab documentation system.
+          </p>
+        </div>
 
-                <div class="bg-black/30 rounded-2xl border border-purple-400/20 p-6">
-                  <h3 class="text-2xl font-bold text-purple-300 mb-4">Current production truth</h3>
-                  <div class="grid lg:grid-cols-2 gap-6 text-slate-200 text-sm">
-                    <div>
-                      <div class="font-bold text-white mb-3">What is live now</div>
-                      <ul class="list-disc pl-5 space-y-2">
-                        <li>Reward Chamber is fully integrated across backend, profile, and admin surfaces.</li>
-                        <li>Profile presents the chamber as a top-level player feature.</li>
-                        <li>Admin now has a dedicated Reward Chamber tab and config fetch support.</li>
-                        <li>The chamber is a core economy system, not just a visual chest widget.</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <div class="font-bold text-white mb-3">Known open work</div>
-                      <ul class="list-disc pl-5 space-y-2">
-                        <li>Box 3 claim management still needs deeper admin workflow completion.</li>
-                        <li>Economy balancing remains active work: pricing, weights, and drop-rate tuning.</li>
-                        <li>Operator safety improves when backend validation and admin warnings stay aligned.</li>
-                        <li>Public docs can describe the architecture, but execution remains protected server-side.</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+        <div class="bg-black/55 backdrop-blur-md rounded-[2rem] p-4 md:p-6 border border-yellow-400/20 shadow-2xl">
+          <div class="space-y-4">
+            <div>
+              <div class="tab-group-label">Start Here</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="tab-btn active px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="masterIndex">📚 Overview</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="twoLanes">🧭 2 Lanes</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseEngine">🧀 Cheese Engine</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="tab-group-label">Games</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="gameOverview">🎮 Game Overview</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="tetris">🧩 Tetris</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="snake">🐍 Snake</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="spaceInvaders">👾 Space Invaders</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseRunner">🧀 Cheese Runner</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="labyrinthBlast">💥 Labyrinth Blast</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="glyphMemory">🔮 Glyph Memory</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseHunt">🧀 Cheese Hunt</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="discordRace">🏁 Discord Race</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseRumble">💣 Cheese Rumble</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="tab-group-label">Player + Holder Systems</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="profileSystem">👤 Profile</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="rolesSystem">🏆 Roles</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="lab">🧬 Genesis Lab</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="rewardChamber">🎁 Reward Chamber</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="staking">🧊 DSPOINC Staking</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="tab-group-label">System Layer</div>
+              <div class="flex flex-wrap gap-2">
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="database">🗄️ Database</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="seasonReset">🔄 Season Reset</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="frontend">🌐 Frontend</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="adminInterface">⚙️ Admin Interface</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="discordBot">🤖 Discord Bot</button>
               </div>
             </div>
           </div>
         </div>
 
-        <div id="tab-lab" class="tab-content">
-          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-cyan-400/30">
-            <div id="labContent" class="markdown-content">
-              <div class="space-y-8">
-                <div class="doc-card rounded-2xl p-6 border border-cyan-400/30 bg-gradient-to-br from-cyan-900/20 via-slate-900/40 to-yellow-900/10">
-                  <div class="flex flex-wrap items-center gap-3 mb-4">
-                    <span class="inline-flex items-center rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">Live Lab Ecosystem</span>
-                    <span class="inline-flex items-center rounded-full border border-yellow-400/40 bg-yellow-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-yellow-200">Season 11 Live</span>
-                    <span class="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Stable-First</span>
-                  </div>
-                  <h2 class="text-3xl font-black text-white mb-3">🧬 Narrrf’s Lab – Full Ecosystem Command Chamber</h2>
-                  <p class="text-slate-200 text-lg leading-relaxed">
-                    The Lab is now the official progression command center. It merges player identity, verified Genesis NFT scans, DSPOINC economy context, staking summary, NFT-bound Genesis progression, Discord-bound Genetic progression, booster runtime, and marketplace visibility into one holder-facing system.
-                  </p>
-                  <div class="grid md:grid-cols-3 gap-4 mt-6">
-                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <h3 class="text-cyan-300 font-bold mb-2">Identity Layer</h3>
-                      <p class="text-sm text-slate-300">Reads saved verified Genesis scans only. The Lab never live-rescans wallets for progression actions.</p>
-                    </div>
-                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <h3 class="text-yellow-300 font-bold mb-2">Progression Layer</h3>
-                      <p class="text-sm text-slate-300">Genesis trait upgrades are stored separately and bound to token_id + trait_type + trait_value, while Genetic items remain user-bound runtime inventory.</p>
-                    </div>
-                    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <h3 class="text-emerald-300 font-bold mb-2">Live UX Loop</h3>
-                      <p class="text-sm text-slate-300">Track Genesis and Genetic timers, use boosters safely, claim levels, use DSPOINC where allowed, monitor marketplace state, and receive ready-to-claim Discord/runtime notifications.</p>
-                    </div>
-                  </div>
-                </div>
+<div class="mt-8">
+  <!-- Start Here Tabs -->
+  <div id="tab-masterIndex" class="tab-content active">
+    <div id="masterIndexContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>☀️ Nerd Lab Overview</h1>
+      <p>
+        Nerd Lab is the public deep-dive into Narrrf’s World. It explains the system in normal language first,
+        then gives the technical facts for players, holders, partners, investors, and curious community members.
+      </p>
 
-                <div class="grid lg:grid-cols-2 gap-6">
-                  <div class="bg-black/30 rounded-2xl border border-yellow-400/20 p-6">
-                    <h3 class="text-2xl font-bold text-yellow-300 mb-4">What the live Lab now includes</h3>
-                    <ul class="list-disc pl-6 space-y-2 text-slate-200">
-                      <li>Overview, My Genesis Lab, Research Queue, Genetic Shop, My Genetic Inventory, Marketplace, and Knowledge tabs</li>
-                      <li>Featured Genesis viewer + verified collection slider</li>
-                      <li>Trait Research Chamber with start / claim / instant finish actions for Genesis plus a separate Discord-bound Genetic lane</li>
-                      <li>Holder-aware mint CTA for adding more Genesis mice plus identity/profile/stake utility routing</li>
-                      <li>Research Queue navigation toward actionable mice</li>
-                      <li>Cheese-gold / mint-cyan themed chamber styling plus active booster and marketplace command-center direction</li>
-                    </ul>
-                  </div>
-                  <div class="bg-black/30 rounded-2xl border border-cyan-400/20 p-6">
-                    <h3 class="text-2xl font-bold text-cyan-300 mb-4">Critical rules that must not break</h3>
-                    <ul class="list-disc pl-6 space-y-2 text-slate-200">
-                      <li>Verified NFT scan = immutable identity layer</li>
-                      <li>Trait upgrades = separate mutable progression layer</li>
-                      <li>Only verified Genesis NFTs may upgrade in the Genesis lane</li>
-                      <li>Genesis upgrades stay with the NFT if ownership changes</li>
-                      <li>Genetic items are user-bound, tradable, and never mutate NFT identity</li>
-                      <li>Marketplace transfers full Genetic runtime state only</li>
-                      <li>Only one active upgrade per NFT</li>
-                      <li>Backend remains authority for ownership, timing, and DSPOINC spend</li>
-                    </ul>
-                  </div>
-                </div>
+      <h2>What Narrrf’s World is today</h2>
+      <p>
+        Narrrf’s World is no longer only a mint page or a few arcade games. It is becoming a connected Web3 game ecosystem:
+        seasonal competition, player profiles, Discord roles, Genesis Lab progression, Reward Chamber, DSPOINC economy,
+        staking, admin visibility, and future ability-based gameplay.
+      </p>
 
-                <div class="bg-black/30 rounded-2xl border border-emerald-400/30 p-6">
-                  <h3 class="text-2xl font-bold text-emerald-300 mb-4">April 8 update — Genesis Ability Matrix (new live feature)</h3>
-                  <p class="text-slate-200 mb-4">
-                    Genesis Ability Matrix is now a working backend feature in the Lab flow (read + start + timer live). This is a Genesis lane feature and stays NFT-bound.
-                  </p>
-                  <div class="grid lg:grid-cols-2 gap-6">
-                    <div>
-                      <div class="font-bold text-cyan-300 mb-3">3 ability categories (9 total abilities)</div>
-                      <ul class="list-disc pl-6 space-y-2 text-slate-200">
-                        <li><strong>Fitness:</strong> HP / SPEED / AIR</li>
-                        <li><strong>Weapons:</strong> ATK / DEF / SPECIAL</li>
-                        <li><strong>Education:</strong> SPELLS / CRAFTING / EXPANSION</li>
-                        <li>Unlock source = highest single Genesis trait level on that NFT</li>
-                        <li>One active ability upgrade per NFT</li>
-                        <li>Level cap remains 100</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <div class="font-bold text-yellow-300 mb-3">Player steps available now</div>
-                      <ol class="list-decimal pl-6 space-y-2 text-slate-200">
-                        <li>Open <strong>My Genesis Lab</strong> and select a verified Genesis mouse</li>
-                        <li>Read matrix state via backend (current levels + unlock map + DSPOINC)</li>
-                        <li>Choose an unlocked ability and start upgrade</li>
-                        <li>System validates ownership, unlock rules, and DSPOINC</li>
-                        <li>Upgrade enters active timer state (<code>upgrading</code>)</li>
-                        <li>Read loop reflects progress until completion window is reached</li>
-                      </ol>
-                    </div>
-                  </div>
-                  <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-                    <strong class="text-yellow-300">Current phase:</strong> backend loop is confirmed live; full Lab UI/queue/admin/profile visibility polish is still in progress.
-                  </div>
-                </div>
+      <h2>The simple map</h2>
+      <ul>
+        <li><strong>Lane 1 — Discord Player Lane:</strong> log in, play games, join events, earn DSPOINC, open rewards, and build a profile.</li>
+        <li><strong>Lane 2 — Genesis Holder Lane:</strong> verify a Genesis Mouse, name it, upgrade traits, use the Lab, and prepare for future abilities.</li>
+        <li><strong>Cheese Engine:</strong> the connected system layer that lets games, profiles, roles, rewards, Lab, DSPOINC, and admin tools work together.</li>
+      </ul>
 
-                
+      <h2>Current Season 12 focus</h2>
+      <ul>
+        <li>Fresh summer leaderboard competition.</li>
+        <li>9-game ecosystem direction.</li>
+        <li>Labyrinth Blast as the newest highlighted game surface.</li>
+        <li>Genesis Lab as the holder progression layer.</li>
+        <li>Reward Chamber and DSPOINC economy as permanent progression systems.</li>
+        <li>Clear reset rule: leaderboards can reset, permanent player progress stays safe.</li>
+      </ul>
 
-                <div class="bg-black/30 rounded-2xl border border-cyan-400/20 p-6">
-                  <h3 class="text-2xl font-bold text-cyan-300 mb-4">March 29 live Lab ecosystem sync</h3>
-                  <div class="grid lg:grid-cols-2 gap-6">
-                    <div>
-                      <div class="font-bold text-yellow-300 mb-3">What is now live</div>
-                      <ul class="list-disc pl-6 space-y-2 text-slate-200">
-                        <li>Genesis NFT trait progression remains the immutable identity-bound lane</li>
-                        <li>Lab boosters are live and reduce remaining time only</li>
-                        <li>Genetic trait catalog purchase flow is active for holders</li>
-                        <li>Genetic inventory progression is live as a Discord user-bound lane</li>
-                        <li>Marketplace listing, cancel, render, and buy flow are connected into the Lab</li>
-                        <li>Discord runtime already supports ready-claim and marketplace sale notifications</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <div class="font-bold text-emerald-300 mb-3">Current architecture rules</div>
-                      <ul class="list-disc pl-6 space-y-2 text-slate-200">
-                        <li>Genesis traits = NFT-bound identity and progression</li>
-                        <li>Genetic items = Discord user-bound progression and tradable state</li>
-                        <li>Marketplace transfers never mutate Genesis mice</li>
-                        <li>Available DSPOINC must always subtract active frozen stakes</li>
-                        <li>Backend stays authoritative for timers, balances, ownership, and transfer state</li>
-                        <li>Discord should mirror status first, then later expose safe actions</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-<div class="bg-black/30 rounded-2xl border border-purple-400/20 p-6">
-                  <h3 class="text-2xl font-bold text-purple-300 mb-4">Connected files and APIs</h3>
-                  <div class="grid md:grid-cols-2 gap-4 text-slate-200 text-sm">
-                    <div>
-                      <div class="font-bold text-yellow-300 mb-2">Frontend</div>
-                      <ul class="list-disc pl-5 space-y-1">
-                        <li>public/lab.html</li>
-                        <li>public/stake-lab.html</li>
-                        <li>public/profile.html</li>
-                        <li>public/admin-interface.html</li>
-                        <li>public/nerd-lab.html</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <div class="font-bold text-cyan-300 mb-2">Lab APIs</div>
-                      <ul class="list-disc pl-5 space-y-1">
-                        <li>/api/user/get-nft-ability-upgrades.php</li>
-                        <li>/api/user/start-nft-ability-upgrade.php</li>
-                        <li>/api/user/get-nft-trait-upgrades.php</li>
-                        <li>/api/user/start-nft-trait-upgrade.php</li>
-                        <li>/api/user/complete-nft-trait-upgrade.php</li>
-                        <li>/api/user/instant-finish-nft-trait-upgrade.php</li>
-                        <li>/api/user/get-verified-nft-scan.php</li>
-                        <li>/api/user/get-player-lab.php</li>
-                        <li>/api/user/get-reward-boxes.php</li>
-                        <li>/api/user/open-reward-box.php</li>
-                        <li>/api/user/get-player-lab.php</li>
-                        <li>/api/user/get-user-genetic-items.php</li>
-                        <li>/api/user/get-lab-booster-inventory.php</li>
-                        <li>/api/store/purchase.php</li>
-                        <li>/api/user/buy-genetic-marketplace-listing.php</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-    </section>
-
-    <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20">
-      <div class="max-w-4xl mx-auto px-6">
-        <p class="mb-4">Made with 🧪 & strategy in Narrrf's Lab | <a href="https://discord.gg/narrrfsworld" class="text-yellow-400 hover:text-yellow-300 underline transition-colors">Join us on Discord</a></p>
-        <p class="text-sm">© 2026 Narrrf's World. Built with brain & cheese 🧠🧀</p>
-      </div>
-    </footer>
+      <h2>Important reset rule</h2>
+      <p>
+        Seasonal leaderboards can reset. Permanent systems should stay safe:
+        Genesis Lab progression, Mouse names, Reward Chamber history, DSPOINC balances, staking,
+        inventory, marketplace state, wallet links, roles, and holder identity.
+      </p>
+    </div>
   </div>
 
-  <script>
-    const isProduction = window.location.hostname === 'narrrfs.world';
-    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+  <div id="tab-twoLanes" class="tab-content">
+    <div id="twoLanesContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🧭 The 2-Lane System</h1>
+      <p>
+        Narrrf’s World is built so people can join before they understand every technical detail.
+        The ecosystem has two clear lanes: one for players and one for Genesis holders.
+      </p>
 
-    const DOCUMENT_FILES = {
-      masterIndex: 'TECHNICAL_COMPLETE_2025_MASTER_INDEX.md',
-      tetris: 'GAME_01_TETRIS_COMPLETE_TECHNICAL.md',
-      snake: 'GAME_02_SNAKE_COMPLETE_TECHNICAL.md',
-      spaceInvaders: 'GAME_03_SPACE_INVADERS_COMPLETE_TECHNICAL.md',
-      cheeseHunt: 'GAME_04_CHEESE_HUNT_COMPLETE_TECHNICAL.md',
-      discordRace: 'GAME_05_DISCORD_RACE_COMPLETE_TECHNICAL.md',
-      cheeseRumble: 'GAME_06_CHEESE_RUMBLE_COMPLETE_TECHNICAL.md',
-      hytopia3d: 'GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md',
-      glyphMemory: 'GAME_08_GLYPH_MEMORY_COMPLETE_TECHNICAL.md',
-      adminInterface: 'ADMIN_INTERFACE_COMPLETE_TECHNICAL.md',
-      discordBot: 'DISCORD_BOT_COMPLETE_TECHNICAL.md',
-      database: 'DATABASE_COMPLETE_TECHNICAL.md',
-      frontend: 'FRONTEND_WEBSITE_COMPLETE_TECHNICAL.md',
-      cheeseEngine: 'CHEESE_ENGINE_13.0_AGENT_SYSTEM_COMPLETE_TECHNICAL.md',
-      staking: 'SYSTEM_13_DSPOINC_STAKING_COMPLETE_TECHNICAL.md',
-      rewardChamber: 'SYSTEM_15_REWARD_CHAMBER_COMPLETE_TECHNICAL.md',
-      lab: 'SYSTEM_14_GENESIS_LAB_COMPLETE_TECHNICAL.md'
-    };
+      <h2>Lane 1 — Discord Player Lane</h2>
+      <p>
+        This is the open entry lane. A player can start with Discord login, games, weekly events, missions,
+        rewards, and DSPOINC activity. This lane builds community identity before NFT ownership is required.
+      </p>
 
-    const contentCache = {};
+      <ul>
+        <li>Discord login creates the daily player identity.</li>
+        <li>Games create scores, leaderboard history, and activity.</li>
+        <li>Events like Cheese Rumble, Cheese Race, bingo, poker, spaces, and VR moments create community loops.</li>
+        <li>DSPOINC connects rewards, activity, staking, and future utility.</li>
+        <li>The profile becomes the player passport for scores, roles, rewards, missions, and future RPG direction.</li>
+      </ul>
 
-    function showTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      const selectedTab = document.getElementById(`tab-${tabName}`);
-      if (selectedTab) selectedTab.classList.add('active');
-      const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
-      if (selectedBtn) selectedBtn.classList.add('active');
-      loadTabContent(tabName);
+      <h2>Lane 2 — Genesis Holder Lane</h2>
+      <p>
+        This is the deeper Lab lane. It starts when a player owns or mints a Genesis Mouse and verifies holder access.
+        The Mouse becomes a long-term identity object inside Narrrf’s World.
+      </p>
+
+      <ul>
+        <li>Genesis Mouse ownership opens deeper holder access.</li>
+        <li>Mouse names personalize the holder identity.</li>
+        <li>Trait upgrades create NFT-bound progression direction.</li>
+        <li>Timed Lab research turns progression into a system, not only a static image.</li>
+        <li>Future ability direction starts from verified Genesis identity.</li>
+      </ul>
+
+      <h2>Why this matters</h2>
+      <p>
+        Players can build activity and community identity in Lane 1. Holders can go deeper in Lane 2.
+        This structure makes onboarding easier and protects Genesis value because the Genesis Mouse remains the core holder identity.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-cheeseEngine" class="tab-content">
+    <div id="cheeseEngineContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🧀 The Cheese Engine</h1>
+      <p>
+        The Cheese Engine is the symbolic name for the connected system behind Narrrf’s World.
+        It is not one single button or file. It is the way games, profiles, roles, rewards, DSPOINC,
+        Lab upgrades, admin tools, and future gameplay are designed to work together.
+      </p>
+
+      <h2>Simple flow</h2>
+      <ul>
+        <li><strong>Player acts:</strong> plays a game, opens a reward, joins an event, upgrades a trait, or checks profile progress.</li>
+        <li><strong>Backend validates:</strong> checks session, season, user identity, score rules, reward logic, wallet/holder state, and Lab conditions.</li>
+        <li><strong>World updates:</strong> scores, DSPOINC, rewards, profile history, Lab progress, and admin visibility stay connected.</li>
+      </ul>
+
+      <h2>What it connects</h2>
+      <ul>
+        <li>Discord identity and player sessions.</li>
+        <li>Game scores and active season logic.</li>
+        <li>Leaderboards, missions, and rewards.</li>
+        <li>DSPOINC ledger and staking direction.</li>
+        <li>Genesis Lab trait progression and Mouse identity.</li>
+        <li>Reward Chamber boxes and claim routing.</li>
+        <li>Admin tools and audit visibility.</li>
+      </ul>
+
+      <h2>Long-term direction</h2>
+      <p>
+        The goal is symbolic cross-game recognition. Over time, roles, Genesis traits, Mouse names,
+        ability direction, rewards, and profile history can matter across multiple experiences without confusing
+        seasonal leaderboards with permanent progression.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-gameOverview" class="tab-content">
+    <div id="gameOverviewContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🎮 Season 12 Game Overview</h1>
+      <p>
+        Games are the action layer of Narrrf’s World. They create activity, competition, DSPOINC flow,
+        profile history, missions, role value, and future RPG signals.
+      </p>
+
+      <h2>Season 12 ecosystem surfaces</h2>
+      <ul>
+        <li><strong>Tetris</strong> — classic score ladder, game key <code>tetris</code>.</li>
+        <li><strong>Snake</strong> — classic score ladder, game key <code>snake</code>.</li>
+        <li><strong>Space Cheese Invaders</strong> — arcade shooter score ladder, game key <code>space_invaders</code>.</li>
+        <li><strong>Cheese Runner</strong> — player-facing runner game, backend game key <code>cheeseman</code>.</li>
+        <li><strong>Labyrinth Blast</strong> — newest highlighted action game, backend game key <code>labyrinth_blast</code>.</li>
+        <li><strong>Glyph Memory</strong> — memory/time-trial system using its own Glyph table path.</li>
+        <li><strong>Cheese Hunt</strong> — hidden cheese / click activity layer.</li>
+        <li><strong>Discord Cheese Race</strong> — Discord event game lane.</li>
+        <li><strong>Cheese Rumble</strong> — Discord battle / community chaos lane.</li>
+      </ul>
+
+      <h2>Important technical split</h2>
+      <p>
+        Not every game uses the same database table. Classic score-ladder games use the seasonal score system.
+        Glyph Memory uses a separate time-trial path. Discord event games can be persistent/event systems unless a future reset explicitly changes that.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-tetris" class="tab-content">
+    <div id="tetrisContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🧩 Tetris</h1>
+      <p>
+        Tetris is one of the core arcade score games inside Narrrf’s World. It is part of the seasonal competition layer.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Players play Tetris, save a score, and climb the seasonal leaderboard. The score contributes to the competitive arcade identity.
+      </p>
+
+      <h2>Technical facts</h2>
+      <ul>
+        <li><strong>Game key:</strong> <code>tetris</code></li>
+        <li><strong>Season source:</strong> active season from <code>tbl_seasons</code></li>
+        <li><strong>Score table:</strong> <code>tbl_tetris_scores</code></li>
+        <li><strong>Leaderboard API:</strong> <code>api/dev/get-leaderboard.php</code></li>
+        <li><strong>General score API:</strong> <code>api/dev/save-score.php</code></li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Tetris is seasonal. Its leaderboard rows can be archived/reset during a season reset after backup and archive verification.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-snake" class="tab-content">
+    <div id="snakeContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🐍 Snake</h1>
+      <p>
+        Snake is a core arcade score game and part of the seasonal leaderboard race.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Players collect cheese, grow the snake, and try to place high on the seasonal board.
+        It is simple to understand, fast to play, and easy for new members to join.
+      </p>
+
+      <h2>Technical facts</h2>
+      <ul>
+        <li><strong>Game key:</strong> <code>snake</code></li>
+        <li><strong>Season source:</strong> active season from <code>tbl_seasons</code></li>
+        <li><strong>Score table:</strong> <code>tbl_tetris_scores</code></li>
+        <li><strong>Leaderboard API:</strong> <code>api/dev/get-leaderboard.php</code></li>
+        <li><strong>General score API:</strong> <code>api/dev/save-score.php</code></li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Snake is a seasonal score-ladder game. Its leaderboard can reset after the season is safely archived.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-spaceInvaders" class="tab-content">
+    <div id="spaceInvadersContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>👾 Space Cheese Invaders</h1>
+      <p>
+        Space Cheese Invaders is the arcade shooter layer of Narrrf’s World.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Players defend the cheese, defeat invaders, and compete for the highest seasonal score.
+      </p>
+
+      <h2>Technical facts</h2>
+      <ul>
+        <li><strong>Game key:</strong> <code>space_invaders</code></li>
+        <li><strong>Season source:</strong> active season from <code>tbl_seasons</code></li>
+        <li><strong>Score table:</strong> <code>tbl_tetris_scores</code></li>
+        <li><strong>Leaderboard API:</strong> <code>api/dev/get-leaderboard.php</code></li>
+        <li><strong>General score API:</strong> <code>api/dev/save-score.php</code></li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Space Cheese Invaders is part of the seasonal archive/reset scope together with the classic score games.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-cheeseRunner" class="tab-content">
+    <div id="cheeseRunnerContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🧀 Cheese Runner</h1>
+      <p>
+        Cheese Runner is the player-facing name for the game that the backend tracks with the key <code>cheeseman</code>.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Players run through the cheese chaos, collect points, and create seasonal activity.
+        The public game name can stay fun, while the backend key must stay stable for APIs and leaderboards.
+      </p>
+
+      <h2>Technical facts</h2>
+      <ul>
+        <li><strong>Player-facing name:</strong> Cheese Runner</li>
+        <li><strong>Backend game key:</strong> <code>cheeseman</code></li>
+        <li><strong>Score API:</strong> <code>api/dev/save-cheeseman-score.php</code></li>
+        <li><strong>Score table:</strong> <code>tbl_tetris_scores</code></li>
+        <li><strong>DSPOINC ledger:</strong> <code>tbl_user_scores</code></li>
+        <li><strong>Season source:</strong> active season from <code>tbl_seasons</code></li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Cheese Runner / Cheeseman is now part of the seasonal score archive scope.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-labyrinthBlast" class="tab-content">
+    <div id="labyrinthBlastContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>💥 Labyrinth Blast</h1>
+      <p>
+        Labyrinth Blast is the newest highlighted Season 12 game surface. It adds maze action, enemies,
+        traps, mobile controls, and backend-tracked DSPOINC reward flow.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Players enter a maze, survive hazards, face Mouseverse pressure, collect score, and create leaderboard activity.
+        It is designed as a more modern action surface compared with the classic arcade stack.
+      </p>
+
+      <h2>Confirmed system details</h2>
+      <ul>
+        <li><strong>Player-facing name:</strong> Labyrinth Blast</li>
+        <li><strong>Do not call it publicly:</strong> FOX. FOX is only the local source/build folder name.</li>
+        <li><strong>Game key:</strong> <code>labyrinth_blast</code></li>
+        <li><strong>Public wrapper:</strong> <code>public/labyrinth-blast.html</code></li>
+        <li><strong>Public build folder:</strong> <code>public/labyrinth-blast/</code></li>
+        <li><strong>Score API:</strong> <code>api/dev/save-labyrinth-blast-score.php</code></li>
+      </ul>
+
+      <h2>Backend writes</h2>
+      <ul>
+        <li><code>tbl_tetris_scores</code> — seasonal leaderboard source.</li>
+        <li><code>tbl_user_scores</code> — DSPOINC ledger source.</li>
+        <li><code>tbl_score_adjustments</code> — audit/source trail.</li>
+      </ul>
+
+      <h2>Reward rules</h2>
+      <ul>
+        <li>Frontend sends raw gameplay data.</li>
+        <li>Backend validates the request and user identity.</li>
+        <li>Backend calculates DSPOINC.</li>
+        <li>Frontend does not decide the final DSPOINC reward.</li>
+      </ul>
+
+      <h2>Current gameplay direction</h2>
+      <ul>
+        <li>Dynamic board scaling by level.</li>
+        <li>Cheeseman Mouseverse enemy.</li>
+        <li>Cheese traps and control reversal.</li>
+        <li>Mobile controls.</li>
+        <li>Pause system.</li>
+        <li>Role multiplier reward direction.</li>
+      </ul>
+
+      <h2>Status wording</h2>
+      <p>
+        Labyrinth Blast is the new Season 12 highlighted game surface. Final public claims should still be validated on live Render before saying the complete 9/9 ecosystem is fully verified live.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-glyphMemory" class="tab-content">
+    <div id="glyphMemoryContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🔮 Glyph Memory</h1>
+      <p>
+        Glyph Memory is the memory and symbol layer of Narrrf’s World. It supports lore, focus, pattern recognition,
+        and future riddle-direction thinking.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Players match glyphs and compete through memory/time-trial style runs. It is different from raw score arcade games.
+      </p>
+
+      <h2>Technical facts</h2>
+      <ul>
+        <li><strong>Game key / mode:</strong> <code>glyph_memory</code></li>
+        <li><strong>Main score table:</strong> <code>tbl_glyph_memory_scores</code></li>
+        <li><strong>Historical archive table:</strong> <code>tbl_historical_glyph_stats</code></li>
+        <li><strong>Admin data mode:</strong> all-time time-trial style, not the same as classic arcade scoring.</li>
+      </ul>
+
+      <h2>Important reset rule</h2>
+      <p>
+        Glyph Memory must not be assumed to behave like Tetris, Snake, Space Invaders, Cheese Runner, or Labyrinth Blast.
+        It needs its own archive/reset verification because it uses its own Glyph table path.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-cheeseHunt" class="tab-content">
+    <div id="cheeseHuntContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🧀 Cheese Hunt</h1>
+      <p>
+        Cheese Hunt is the hidden-cheese / discovery activity layer of Narrrf’s World.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Players hunt for hidden cheese moments and interact with the world outside normal arcade leaderboards.
+        It supports exploration, events, community activity, and fun seasonal moments.
+      </p>
+
+      <h2>Technical direction</h2>
+      <ul>
+        <li>Cheese Hunt can have snapshot/archive behavior where applicable.</li>
+        <li>It should not automatically be treated the same as classic score-ladder games.</li>
+        <li>Reset behavior should be explicit before each season reset.</li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Cheese Hunt should be preserved as an event/activity system unless a season plan explicitly says to archive or reset a defined snapshot.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-discordRace" class="tab-content">
+    <div id="discordRaceContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🏁 Discord Cheese Race</h1>
+      <p>
+        Discord Cheese Race is an event lane. It lives closer to community activity than classic browser arcade scoreboards.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Members join Discord race events, compete together, and create weekly community energy.
+        This is part of the living Narrrfs community, not only the website.
+      </p>
+
+      <h2>Technical direction</h2>
+      <ul>
+        <li>Discord event systems can use different persistence rules than browser games.</li>
+        <li>Race participants and event history should not be blindly wiped during normal arcade leaderboard resets.</li>
+        <li>Future ability systems can use Discord fights/events as safer test lanes before deeper game-engine integration.</li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Preserve Discord Cheese Race as an event/community system unless a future reset plan explicitly changes the rule.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-cheeseRumble" class="tab-content">
+    <div id="cheeseRumbleContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>💣 Cheese Rumble</h1>
+      <p>
+        Cheese Rumble is the Discord battle / community chaos lane of Narrrf’s World.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Cheese Rumble brings the community together through text-based battle energy, Friday chaos,
+        events, and reward moments. It is one of the best places to test future role and ability ideas.
+      </p>
+
+      <h2>Technical direction</h2>
+      <ul>
+        <li>Rumble data is event-style activity, not a classic browser score ladder.</li>
+        <li>Rumble participants/history should not be blindly reset with monthly arcade leaderboards.</li>
+        <li>Future Genesis traits and abilities can first be tested in Discord fight/event systems.</li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Preserve Cheese Rumble as a community/event system unless a future season plan explicitly changes its reset rules.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-profileSystem" class="tab-content">
+    <div id="profileSystemContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>👤 Player Profile System</h1>
+      <p>
+        The profile is the player passport of Narrrf’s World. It should become the readable RPG dashboard
+        for normal players and Genesis holders.
+      </p>
+
+      <h2>What profile connects</h2>
+      <ul>
+        <li>Discord session identity.</li>
+        <li>Scores and seasonal competition.</li>
+        <li>Mini leaderboards and current-season stats.</li>
+        <li>All-time activity.</li>
+        <li>Roles and holder access.</li>
+        <li>Reward Chamber actions.</li>
+        <li>DSPOINC activity and economy direction.</li>
+        <li>Genesis Lab visibility and future Mouse progression.</li>
+      </ul>
+
+      <h2>Important technical behavior</h2>
+      <p>
+        Profile session hydration syncs Discord identity into page/local storage for page usage.
+        That makes Discord the daily player identity layer while wallet/NFT verification adds deeper holder identity.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Profile is where the player should understand: who am I, what did I play, what did I earn,
+        what roles do I have, what rewards can I open, and how deep am I inside the ecosystem?
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-rolesSystem" class="tab-content">
+    <div id="rolesSystemContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🏆 Role System</h1>
+      <p>
+        Roles show identity, status, access, and activity inside the Narrrfs community.
+        They connect Discord, games, rewards, profile visibility, and future ability direction.
+      </p>
+
+      <h2>Main role meaning</h2>
+      <ul>
+        <li><strong>Holder / VIP Holder:</strong> Genesis ownership and deeper ecosystem access.</li>
+        <li><strong>Champion / Tester / Hunter:</strong> activity, testing, contribution, and community identity.</li>
+        <li><strong>Monthly legends:</strong> seasonal competition recognition.</li>
+        <li><strong>Event roles:</strong> participation in special campaigns, events, or partner activities.</li>
+      </ul>
+
+      <h2>Why roles matter</h2>
+      <p>
+        Roles make the community readable. They can support multipliers, rewards, access, events,
+        and future RPG profile direction.
+      </p>
+
+      <h2>Safety rule</h2>
+      <p>
+        Role power should be communicated as ecosystem access and reward direction, not as guaranteed financial return.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-lab" class="tab-content">
+    <div id="labContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🧬 Genesis Lab</h1>
+      <p>
+        Genesis Lab is the holder progression layer of Narrrf’s World. It turns a verified Genesis Mouse
+        into a long-term identity object instead of leaving it as static art only.
+      </p>
+
+      <h2>What the Lab does</h2>
+      <ul>
+        <li>Loads verified Genesis Mouse ownership.</li>
+        <li>Displays Mouse identity and traits.</li>
+        <li>Supports custom Mouse names as player-facing labels.</li>
+        <li>Tracks trait upgrade state.</li>
+        <li>Uses timed research cycles and manual claim flow.</li>
+        <li>Supports DSPOINC-powered Lab actions.</li>
+        <li>Prepares the foundation for future ability-based gameplay.</li>
+      </ul>
+
+      <h2>NFT-bound upgrade direction</h2>
+      <p>
+        The unique idea is that a Genesis Mouse becomes a long-term game identity.
+        Names, traits, Lab history, and upgrade state become part of the holder lane.
+      </p>
+
+      <h2>Important safety rule</h2>
+      <p>
+        Custom names are display-only player labels. They must not replace token ID, metadata name,
+        upgrade identity, marketplace identity, or ownership checks. Marketplace actions should not be described
+        as mutating the Genesis Mouse. NFT-bound progression stays controlled through verified Lab paths.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-rewardChamber" class="tab-content">
+    <div id="rewardChamberContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🎁 Reward Chamber</h1>
+      <p>
+        Reward Chamber is the public reward layer inside the profile flow. It gives players clear reward actions
+        while the backend keeps reward rules controlled.
+      </p>
+
+      <h2>The 3-box structure</h2>
+      <ul>
+        <li><strong>Box 1 — Free DSPOINC Box:</strong> daily/free reward loop with cooldown logic.</li>
+        <li><strong>Box 2 — Lucky Cheese Loot:</strong> paid DSPOINC box with weighted reward pools.</li>
+        <li><strong>Box 3 — Royal Cheese Mystery:</strong> premium claim route that can require admin/mod follow-up.</li>
+      </ul>
+
+      <h2>What it connects</h2>
+      <ul>
+        <li>Profile actions.</li>
+        <li>DSPOINC usage.</li>
+        <li>Lootbox rewards.</li>
+        <li>Store and inventory direction.</li>
+        <li>Premium claim routing.</li>
+        <li>Admin configuration and support visibility.</li>
+      </ul>
+
+      <h2>Technical surfaces</h2>
+      <ul>
+        <li><code>/api/user/get-reward-boxes.php</code></li>
+        <li><code>/api/user/open-reward-box.php</code></li>
+        <li><code>/api/user/get-player-lab.php</code></li>
+        <li><code>/api/user/get-user-genetic-items.php</code></li>
+        <li><code>/api/user/get-lab-booster-inventory.php</code></li>
+        <li><code>/api/store/purchase.php</code></li>
+        <li><code>/api/user/buy-genetic-marketplace-listing.php</code></li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Reward Chamber is permanent progression/economy state. It must not be wiped by normal seasonal leaderboard resets.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-staking" class="tab-content">
+    <div id="stakingContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🧊 DSPOINC Staking</h1>
+      <p>
+        DSPOINC staking lets players freeze DSPOINC for a selected duration and earn a reward based on the staking system rules.
+      </p>
+
+      <h2>Customer explanation</h2>
+      <p>
+        Staking turns DSPOINC from a simple game reward into a longer-term ecosystem resource.
+        Players choose to freeze DSPOINC, wait through the selected period, and claim according to the live rules.
+      </p>
+
+      <h2>System meaning</h2>
+      <ul>
+        <li>Staking supports long-term economy loops.</li>
+        <li>Frozen DSPOINC should not be treated as spendable until unstaked or completed.</li>
+        <li>Staking connects profile, economy, and permanent progression direction.</li>
+      </ul>
+
+      <h2>Reset behavior</h2>
+      <p>
+        Staking is permanent economy state. It must not reset with seasonal leaderboards.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-database" class="tab-content">
+    <div id="databaseContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🗄️ Database Layer</h1>
+      <p>
+        The database is the memory of Narrrf’s World. It stores seasons, scores, users, roles,
+        DSPOINC movement, Lab progress, reward history, and admin/audit trails.
+      </p>
+
+      <h2>Season control</h2>
+      <p>
+        The active season is controlled by <code>tbl_seasons</code>, where one season should be marked active.
+        APIs should read the active season dynamically and use <code>Season 12</code> as the fallback where updated.
+      </p>
+
+      <h2>Seasonal data</h2>
+      <ul>
+        <li>Leaderboard score records.</li>
+        <li>Current season competition state.</li>
+        <li>Game rows tied to season names.</li>
+        <li>Historical archive rows after a season reset.</li>
+      </ul>
+
+      <h2>Permanent data</h2>
+      <ul>
+        <li>DSPOINC balances and ledger history.</li>
+        <li>Staking balances and staking state.</li>
+        <li>Genesis Lab progression.</li>
+        <li>Genetic inventory.</li>
+        <li>Marketplace state.</li>
+        <li>Reward Chamber persistent/economy state.</li>
+        <li>Wallet, user, role, and NFT identity.</li>
+      </ul>
+
+      <h2>Plain explanation</h2>
+      <p>
+        Scoreboards can reset for fresh competition. Player identity, Lab progress, DSPOINC economy,
+        staking, inventory, and holder access should not reset like monthly scoreboards.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-seasonReset" class="tab-content">
+    <div id="seasonResetContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🔄 Season Reset / Archive Logic</h1>
+      <p>
+        Season resets are designed to create fresh competition while preserving the permanent Narrrfs ecosystem.
+      </p>
+
+      <h2>Reset process in plain language</h2>
+      <ul>
+        <li>Backup the database first.</li>
+        <li>Archive the current season before deleting or resetting score rows.</li>
+        <li>Activate the new season in <code>tbl_seasons</code>.</li>
+        <li>Reset only the planned seasonal leaderboard data.</li>
+        <li>Verify every game saves under the new active season.</li>
+        <li>Verify profile, leaderboard, admin, Lab, Reward Chamber, and economy systems still work.</li>
+      </ul>
+
+      <h2>Season-based archive scope</h2>
+      <ul>
+        <li><code>tetris</code></li>
+        <li><code>snake</code></li>
+        <li><code>space_invaders</code></li>
+        <li><code>cheeseman</code></li>
+        <li><code>labyrinth_blast</code></li>
+        <li>Cheese Hunt snapshot where applicable.</li>
+        <li>Glyph Memory through its separate archive path.</li>
+      </ul>
+
+      <h2>Never reset in normal leaderboard reset</h2>
+      <ul>
+        <li>DSPOINC balances.</li>
+        <li>Staking.</li>
+        <li>Genesis Lab progression.</li>
+        <li>Genetic inventory.</li>
+        <li>Marketplace.</li>
+        <li>Reward Chamber persistent/economy state.</li>
+        <li>User, wallet, role, and NFT identity.</li>
+      </ul>
+
+      <h2>Customer explanation</h2>
+      <p>
+        A new season means a fresh race on the boards. It does not mean players lose Lab progress,
+        DSPOINC, staking, inventory, Mouse names, or Genesis identity.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-frontend" class="tab-content">
+    <div id="frontendContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🌐 Frontend Layer</h1>
+      <p>
+        The frontend is what players see: home page, profile, leaderboard, Lab, mint info, roles, Reward Chamber,
+        project updates, whitepapers, and game pages.
+      </p>
+
+      <h2>Customer purpose</h2>
+      <p>
+        The frontend should explain the ecosystem clearly and guide users to the right action:
+        play, verify, mint, enter Lab, open rewards, stake DSPOINC, or read deeper docs.
+      </p>
+
+      <h2>Important frontend rules</h2>
+      <ul>
+        <li>Do not hardcode outdated active-season text.</li>
+        <li>Use Season 12 as current public context.</li>
+        <li>Keep Season 11 only as frozen / previous / historical when mentioned.</li>
+        <li>Preserve existing IDs, scripts, API paths, and onclick handlers during theme changes.</li>
+        <li>Frontend displays data; backend should remain authoritative for rewards, score saves, and season state.</li>
+      </ul>
+
+      <h2>Pages in the Season 12 sync wave</h2>
+      <ul>
+        <li><code>index.html</code></li>
+        <li><code>get-roles.html</code></li>
+        <li><code>mint.html</code></li>
+        <li><code>whitepaper.html</code></li>
+        <li><code>whitepaper-pro.html</code></li>
+        <li><code>project-updates.html</code></li>
+        <li><code>nerd-lab.html</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="tab-adminInterface" class="tab-content">
+    <div id="adminInterfaceContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>⚙️ Admin Interface</h1>
+      <p>
+        The Admin Interface is the control and visibility layer for trusted operators.
+        It helps monitor users, scores, roles, missions, games, Lab systems, Reward Chamber, claims, bugs, partners, and support workflows.
+      </p>
+
+      <h2>Customer-friendly explanation</h2>
+      <p>
+        Players see games and rewards. Admins need tools to verify, support, correct, and monitor the ecosystem.
+        The admin interface is how the team keeps the live system understandable and supportable.
+      </p>
+
+      <h2>Current Season 12 admin direction</h2>
+      <ul>
+        <li>Admin game stats should use the active season.</li>
+        <li>Labyrinth Blast is prepared as a Game Management surface through shared game stats.</li>
+        <li>Reward Chamber has dedicated configuration/visibility direction.</li>
+        <li>Player Profiles and Lab / Trait System tabs support deeper user support.</li>
+        <li>Mission, points, store, quest, Twitter, bug, and partner tools remain operational areas.</li>
+      </ul>
+
+      <h2>Important safety rule</h2>
+      <p>
+        Admin pages are function-heavy. Theme changes should be careful and should not remove IDs,
+        tabs, fetch paths, auth logic, or existing operational tools unless explicitly planned.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-discordBot" class="tab-content">
+    <div id="discordBotContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <h1>🤖 Discord Bot Layer</h1>
+      <p>
+        Discord is not only a chat room for Narrrf’s World. It is a major player identity, event, role,
+        onboarding, and community-game layer.
+      </p>
+
+      <h2>What Discord connects</h2>
+      <ul>
+        <li>Login identity for player sessions.</li>
+        <li>Roles and holder recognition.</li>
+        <li>Community events and partner activity.</li>
+        <li>Cheese Race and Cheese Rumble style gameplay.</li>
+        <li>Onboarding for new players and new Genesis holders.</li>
+        <li>Moderator/admin follow-up for premium claims and support workflows.</li>
+      </ul>
+
+      <h2>Why it matters</h2>
+      <p>
+        Narrrf’s World is community-first. Discord keeps the world alive between website visits,
+        game sessions, Lab upgrades, and partner events.
+      </p>
+
+      <h2>Future ability direction</h2>
+      <p>
+        Discord fights and role-based events are a safe first lane for testing Genesis ability concepts before deeper game-engine integration.
+      </p>
+    </div>
+  </div>
+</div>
+```
+
+
+    <!-- Final CTA -->
+    <section class="py-16 px-6 bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-400 text-slate-950 overflow-hidden border-t border-yellow-200/40">
+      <div class="max-w-6xl mx-auto text-center">
+        <h2 class="text-4xl md:text-5xl font-black mb-4">
+          Want to use the system, not only read it?
+        </h2>
+
+        <p class="max-w-3xl mx-auto text-base md:text-lg font-bold mb-8">
+          Open your profile, enter the Lab, check leaderboards, or read the whitepaper for the bigger strategy.
+        </p>
+
+        <div class="flex flex-col md:flex-row justify-center gap-4">
+          <a href="profile.html" class="inline-flex justify-center rounded-2xl bg-slate-950 px-7 py-4 font-black text-yellow-200 shadow-xl transition hover:scale-105">
+            👤 Open Profile
+          </a>
+
+          <a href="lab.html" class="inline-flex justify-center rounded-2xl bg-purple-700 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105">
+            🧬 Enter Lab
+          </a>
+
+          <a href="leaderboard.html" class="inline-flex justify-center rounded-2xl bg-pink-700 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105">
+            🏆 Leaderboards
+          </a>
+
+          <a href="whitepaper-pro.html" class="inline-flex justify-center rounded-2xl bg-cyan-700 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105">
+            🧠 Pro Paper
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ☀️ Footer Season 12 - Nerd Lab Footer -->
+  <footer class="relative z-10 bg-slate-950 text-center px-6 py-12 border-t border-yellow-300/20 overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl"></div>
+      <div class="absolute bottom-0 left-10 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl"></div>
+      <div class="absolute bottom-0 right-10 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl"></div>
+    </div>
+
+    <div class="relative z-10 max-w-6xl mx-auto">
+      <div class="mb-8">
+        <a
+          href="#top"
+          class="inline-flex items-center justify-center rounded-full border border-yellow-300/25 bg-yellow-400/10 px-5 py-2 text-sm font-black text-yellow-100 transition-all duration-200 hover:scale-105 hover:bg-yellow-400 hover:text-slate-950"
+        >
+          🔝 Back to Top
+        </a>
+      </div>
+
+      <div class="mb-8">
+        <div class="inline-flex items-center justify-center rounded-full border border-orange-300/30 bg-orange-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-orange-200 mb-4">
+          ☀️ Season 12 Nerd Lab
+        </div>
+
+        <h2 class="text-3xl md:text-4xl font-black text-white mb-3">
+          🧠 Narrrf's World Cheese Engine Guide
+        </h2>
+
+        <p class="max-w-2xl mx-auto text-sm md:text-base text-slate-300 leading-relaxed">
+          A customer-friendly technical guide to the Narrrfs ecosystem:
+          2 lanes, games, Lab, rewards, DSPOINC, database logic, and future gameplay direction.
+        </p>
+      </div>
+
+      <div class="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+        <a href="/index.html" class="inline-flex items-center justify-center rounded-2xl border border-yellow-300/20 bg-yellow-400/10 px-4 py-3 font-black text-yellow-100 transition hover:scale-105 hover:bg-yellow-400 hover:text-slate-950">🏠 Home</a>
+        <a href="/profile.html" class="inline-flex items-center justify-center rounded-2xl border border-orange-300/20 bg-orange-400/10 px-4 py-3 font-black text-orange-100 transition hover:scale-105 hover:bg-orange-400 hover:text-slate-950">👤 Profile</a>
+        <a href="/leaderboard.html" class="inline-flex items-center justify-center rounded-2xl border border-pink-300/20 bg-pink-500/10 px-4 py-3 font-black text-pink-100 transition hover:scale-105 hover:bg-pink-500 hover:text-white">🏆 Boards</a>
+        <a href="/lab.html" class="inline-flex items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-3 font-black text-cyan-100 transition hover:scale-105 hover:bg-cyan-400 hover:text-slate-950">🧬 Lab</a>
+        <a href="/mint.html" class="inline-flex items-center justify-center rounded-2xl border border-purple-300/20 bg-purple-500/10 px-4 py-3 font-black text-purple-100 transition hover:scale-105 hover:bg-purple-500 hover:text-white">🎴 Mint</a>
+        <a href="/whitepaper.html" class="inline-flex items-center justify-center rounded-2xl border border-blue-300/20 bg-blue-500/10 px-4 py-3 font-black text-blue-100 transition hover:scale-105 hover:bg-blue-500 hover:text-white">📜 Lite Paper</a>
+        <a href="/whitepaper-pro.html" class="inline-flex items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 font-black text-emerald-100 transition hover:scale-105 hover:bg-emerald-500 hover:text-white">🧠 Pro Paper</a>
+        <a href="/faq.html" class="inline-flex items-center justify-center rounded-2xl border border-slate-300/20 bg-white/5 px-4 py-3 font-black text-slate-200 transition hover:scale-105 hover:bg-white/10 hover:text-white">❓ FAQ</a>
+      </div>
+
+      <div class="mb-8 flex flex-col sm:flex-row justify-center gap-3">
+        <a href="https://discord.gg/zgjAwzuDqV" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 font-black text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-indigo-500">
+          💬 Join Discord
+        </a>
+
+        <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 px-6 py-3 font-black text-slate-950 shadow-xl transition-all duration-200 hover:scale-105">
+          🧬 Official Gensuki Mint
+        </a>
+      </div>
+
+      <div class="pt-6 border-t border-yellow-300/20 text-xs text-slate-400">
+        <div class="mb-2 font-semibold text-yellow-100/80">
+          © 2026 Narrrf's World. Built with brain, cheese, and community chaos 🧠🧀
+        </div>
+        <div class="text-slate-500">
+          ☀️ Season 12 • Nerd Lab • Cheese Engine • 2-lane system • Labyrinth Blast • Genesis Lab • Reward Chamber
+        </div>
+      </div>
+    </div>
+  </footer>
+<script>
+  const isProduction = window.location.hostname === 'narrrfs.world';
+  const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+
+  const STATIC_TABS = new Set([
+    'masterIndex',
+    'twoLanes',
+    'cheeseEngine',
+    'gameOverview',
+    'tetris',
+    'snake',
+    'spaceInvaders',
+    'cheeseRunner',
+    'labyrinthBlast',
+    'glyphMemory',
+    'cheeseHunt',
+    'discordRace',
+    'cheeseRumble',
+    'profileSystem',
+    'rolesSystem',
+    'lab',
+    'rewardChamber',
+    'staking',
+    'database',
+    'seasonReset',
+    'frontend',
+    'adminInterface',
+    'discordBot'
+  ]);
+
+  /**
+   * Shows one Nerd Lab tab.
+   *
+   * Plain language for DEVS:
+   * Every public Nerd Lab tab is now static Season 12 content.
+   * This prevents old 2025 markdown documentation from overwriting the customer-facing tab copy.
+   * Keep data-tab values and tab-content IDs aligned when adding future tabs.
+   */
+  function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    const selectedTab = document.getElementById(`tab-${tabName}`);
+    if (selectedTab) {
+      selectedTab.classList.add('active');
     }
 
-    async function loadTabContent(tabName) {
-      const contentElement = document.getElementById(`${tabName}Content`);
-      if (!contentElement) return;
-      if (contentCache[tabName]) {
-        contentElement.innerHTML = contentCache[tabName];
-        return;
-      }
-      if (tabName === 'lab' || tabName === 'rewardChamber') {
-        contentCache[tabName] = contentElement.innerHTML;
-        return;
-      }
-
-      let overviewHTML = '';
-      if (typeof generateOverviewHTML === 'function') {
-        overviewHTML = generateOverviewHTML(tabName);
-      }
-
-      const fileName = DOCUMENT_FILES[tabName];
-      if (!fileName) {
-        contentElement.innerHTML = overviewHTML + '<p class="text-red-400 mt-4">Document not found.</p>';
-        return;
-      }
-
-      contentElement.innerHTML = overviewHTML + `
-        <div class="mt-8 pt-8 border-t border-yellow-400/30">
-          <div class="bg-yellow-900/20 border border-yellow-500/50 rounded-xl p-6">
-            <p class="text-yellow-200">
-              <strong>📚 Full Technical Documentation:</strong> The complete technical documentation will be loaded here once the API endpoint is configured.
-              The overview above provides a summary of this system's current synced state. Public-facing tabs now include the Reward Chamber architecture and the latest ecosystem sync, while some older game tabs still rely on legacy summary sources and should be refreshed with dedicated 2026 documentation files next.
-            </p>
-            <p class="text-sm text-yellow-300/70 mt-4">File: <code>${fileName}</code></p>
-          </div>
-        </div>`;
-      contentCache[tabName] = contentElement.innerHTML;
+    const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('active');
     }
+  }
 
-    async function initPage() {
-      const mainContent = document.getElementById('main-content');
-      if (mainContent) {
-        mainContent.style.display = 'block';
-      }
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => showTab(btn.getAttribute('data-tab')));
+  /**
+   * Registers tab button clicks after the page loads.
+   *
+   * Plain language for DEVS:
+   * This keeps the UI behavior simple and avoids loading old markdown files.
+   */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        if (!STATIC_TABS.has(tabName)) {
+          console.warn(`Nerd Lab tab is not registered as static: ${tabName}`);
+        }
+
+        showTab(tabName);
       });
-      loadTabContent('masterIndex');
-    }
+    });
 
-    document.addEventListener('DOMContentLoaded', initPage);
-  </script>
-  <script src="js/cheese-auth-indicator.js"></script>
+    showTab('masterIndex');
+  });
+</script>
 </body>
 </html>

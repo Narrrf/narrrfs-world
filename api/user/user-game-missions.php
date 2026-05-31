@@ -146,7 +146,7 @@ try {
     }
 
     // Get current active season from database
-    $currentSeason = 'Season 11'; // Default fallback
+    $currentSeason = 'Season 12'; // Default fallback
     $currentSeasonStart = null;
     $currentSeasonEnd = null;
     try {

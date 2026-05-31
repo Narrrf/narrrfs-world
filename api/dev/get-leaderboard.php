@@ -18,7 +18,7 @@ try {
         LIMIT 1
     ");
     $seasonStmt->execute();
-    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 11';
+    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 12';
 
     // 🔍 Get the previous season (for frozen leaderboard fallback)
     $prevSeasonStmt = $db->prepare("
@@ -29,7 +29,7 @@ try {
         LIMIT 1
     ");
     $prevSeasonStmt->execute();
-    $previousSeason = $prevSeasonStmt->fetchColumn() ?: 'Season 10';
+    $previousSeason = $prevSeasonStmt->fetchColumn() ?: 'Season 11';
 
     error_log("Current season: $currentSeason, Previous season: $previousSeason");
 

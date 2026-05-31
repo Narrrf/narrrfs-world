@@ -7,8 +7,13 @@
  *
  * Season-based archive scope:
  * - Tetris / Snake / Space Invaders
+ * - Cheeseman / Cheese Runner
+ * - Labyrinth Blast
  * - Cheese Hunt snapshot
  * - Glyph Memory
+ *
+ * TODO: Cheese Hunt, Discord Cheese Race, and Cheese Rumble are preserved as
+ * persistent/event systems unless a future season explicitly changes their reset rules.
  *
  * Persistent systems intentionally NOT archived/reset here:
  * - DSPOINC balances
@@ -73,7 +78,7 @@ function getExpectedSecret() {
 }
 
 /**
- * Read 2 the caller authorization token from headers.
+ * Read the caller authorization token from headers.
  */
 function getProvidedSecret() {
     $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
@@ -171,8 +176,8 @@ try {
             AVG(score) as avg_score,
             :season_start as season_start_date,
             :season_end as season_end_date
-        FROM tbl_tetris_scores
-        WHERE game IN ('tetris', 'snake', 'space_invaders')
+                FROM tbl_tetris_scores
+        WHERE game IN ('tetris', 'snake', 'space_invaders', 'cheeseman', 'labyrinth_blast')
           AND COALESCE(season, :season) = :season
         GROUP BY discord_id, game
     ");

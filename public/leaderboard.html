@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🏆 Leaderboard - Narrrf's World</title>
+  <title>☀️ Season 12 Leaderboards — Narrrf's World</title>
+<meta name="theme-color" content="#f97316" />
+<meta
+  name="description"
+  content="Narrrf's World Season 12 leaderboards: fresh summer competition, frozen Season 11 history, DSPOINC earners, arcade scores, and 9-game ecosystem rankings."
+/>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" href="favicon-phantom.png" type="image/png">
   
@@ -144,16 +149,157 @@
         display: none !important;
       }
     }
-    
+    /* ☀️ Season 12 Leaderboard Summer Shell.
+   DEVS FOR DECADES:
+   Visual-only leaderboard atmosphere. This does not control API calls,
+   season detection, frozen leaderboard logic, score sorting, player rows,
+   DSPOINC totals, or game leaderboard data. */
+:root {
+  --season12-orange: #f97316;
+  --season12-amber: #f59e0b;
+  --season12-yellow: #facc15;
+  --season12-pink: #db2777;
+  --season12-cyan: #22d3ee;
+  --season12-slate: #020617;
+}
+
+body.season12-leaderboard-shell {
+  background:
+    radial-gradient(circle at 8% 10%, rgba(249, 115, 22, 0.18), transparent 30%),
+    radial-gradient(circle at 92% 16%, rgba(219, 39, 119, 0.16), transparent 32%),
+    radial-gradient(circle at 50% 100%, rgba(34, 211, 238, 0.10), transparent 34%),
+    linear-gradient(135deg, #020617 0%, #111827 46%, #431407 100%);
+  min-height: 100vh;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+.leaderboard-summer-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.leaderboard-summer-bg::before,
+.leaderboard-summer-bg::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(64px);
+  opacity: 0.24;
+}
+
+.leaderboard-summer-bg::before {
+  width: 24rem;
+  height: 24rem;
+  left: -8rem;
+  top: 7rem;
+  background: rgba(249, 115, 22, 0.70);
+}
+
+.leaderboard-summer-bg::after {
+  width: 26rem;
+  height: 26rem;
+  right: -9rem;
+  top: 18rem;
+  background: rgba(219, 39, 119, 0.46);
+}
+
+.leaderboard-season12-header {
+  background: rgba(0, 0, 0, 0.88);
+  border-bottom: 1px solid rgba(250, 204, 21, 0.32);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.36);
+}
+
+.leaderboard-season12-banner {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(250, 204, 21, 0.34);
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(219, 39, 119, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(124, 45, 18, 0.98), rgba(234, 88, 12, 0.94), rgba(88, 28, 135, 0.94));
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.38),
+    0 0 42px rgba(249, 115, 22, 0.12);
+}
+
+.leaderboard-season12-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  background-image:
+    radial-gradient(circle at 18% 50%, rgba(250, 204, 21, 0.9) 2px, transparent 2px),
+    radial-gradient(circle at 78% 40%, rgba(251, 113, 133, 0.8) 2px, transparent 2px),
+    radial-gradient(circle at 50% 20%, rgba(34, 211, 238, 0.7) 2px, transparent 2px);
+  background-size: 110px 110px, 150px 150px, 130px 130px;
+}
+
+.leaderboard-season12-banner > * {
+  position: relative;
+  z-index: 2;
+}
+
+.leaderboard-card {
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.76));
+  border-color: rgba(250, 204, 21, 0.30);
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.32),
+    0 0 32px rgba(249, 115, 22, 0.08);
+}
+
+.leaderboard-card:hover {
+  border-color: rgba(250, 204, 21, 0.50);
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.40),
+    0 0 38px rgba(249, 115, 22, 0.12);
+}
+
+.season12-mini-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid rgba(253, 186, 116, 0.36);
+  background: rgba(249, 115, 22, 0.16);
+  color: #ffedd5;
+}
+
+.leaderboard-season12-link {
+  background: linear-gradient(135deg, #facc15, #fb923c);
+  color: #111827;
+  border: 2px solid rgba(254, 240, 138, 0.82);
+  box-shadow: 0 14px 34px rgba(249, 115, 22, 0.28);
+}
+
+.leaderboard-season12-link:hover {
+  background: linear-gradient(135deg, #fde047, #fdba74);
+  transform: translateY(-1px) scale(1.03);
+}
   </style>
 </head>
-<body>
+<body id="top" class="season12-leaderboard-shell">
+  <!-- ☀️ Season 12 leaderboard background.
+       DEVS FOR DECADES:
+       Visual-only atmosphere. Does not change leaderboard API fetches,
+       season state, frozen display logic, score rows, or DSPOINC totals. -->
+  <div class="leaderboard-summer-bg"></div>
   <!-- Header -->
-  <header class="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 border-b-2 border-yellow-400/30 sticky top-0 z-50 shadow-lg">
+  <header class="leaderboard-season12-header sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
       <div>
-        <h1 class="text-xl font-bold tracking-wide text-green-400">🏆 Narrrf's World Leaderboard</h1>
-        <div id="season-status" class="text-xs text-blue-300 animate-pulse mt-1">
+        <h1 class="text-xl font-black tracking-wide text-yellow-300">☀️ Narrrf's World — Season 12 Leaderboards 🔥</h1>
+        <div id="season-status" class="text-xs text-orange-200 animate-pulse mt-1">
           Loading season status...
         </div>
       </div>
@@ -166,15 +312,16 @@
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-8">
+  <main class="relative z-10 max-w-7xl mx-auto px-4 py-8">
     <!-- Season Status Banner -->
-    <div id="season-banner" class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 rounded-xl mb-8 shadow-lg">
-      <div class="text-lg font-bold" id="season-title">🏆 Leaderboard</div>
-      <div class="text-sm mt-2" id="season-subtitle">Loading...</div>
+    <div id="season-banner" class="leaderboard-season12-banner text-white text-center py-6 rounded-3xl mb-8 shadow-lg">
+      <div class="season12-mini-pill mx-auto mb-3 w-fit">☀️ Season 12 Summer Reset</div>
+      <div class="text-2xl md:text-4xl font-black" id="season-title">🏆 Summer Leaderboards</div>
+      <div class="text-sm md:text-base mt-3 text-orange-50 font-semibold" id="season-subtitle">Loading...</div>
       <!-- 🎮 Game Section Link -->
       <div class="mt-4">
         <a href="profile.html#game-section" 
-           class="inline-block bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-gray-900 font-bold px-5 md:px-7 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400 hover:border-yellow-300 text-sm md:text-base whitespace-nowrap">
+           class="leaderboard-season12-link inline-block font-black px-5 md:px-7 py-2 md:py-3 rounded-full transition-all duration-300 text-sm md:text-base whitespace-nowrap">
           🎮 Play Games Now
         </a>
       </div>
@@ -200,7 +347,9 @@
           <span>💰</span>
           <span id="season-leaderboard-title">Current Season Leaderboard</span>
         </h2>
-        <p class="text-sm text-yellow-200 mb-4 opacity-80">Top 10 DSPOINC Earners - All Games & Platform Actions</p>
+        <p class="text-sm text-yellow-100 mb-4 opacity-90">
+  Top 10 DSPOINC earners across games, missions, rewards, and platform actions.
+</p>
         <div id="dspoinc-earnings-leaderboard" class="space-y-2">
           <!-- Populated by JavaScript -->
         </div>

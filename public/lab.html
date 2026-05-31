@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🧬 Narrrf's Lab | Genesis Trait Upgrade Chamber</title>
-  <meta name="theme-color" content="#06b6d4" />
-  <meta name="description" content="Narrrf's Lab - player identity, verified Genesis NFT management, and trait upgrade research." />
+  <title>☀️ Narrrf's Lab — Season 12 Genesis Summer Chamber</title>
+<meta name="theme-color" content="#f97316" />
+<meta name="description" content="Narrrf's Lab Season 12 chamber for verified Genesis NFT management, trait upgrades, Genetic items, mouse names, marketplace history, and permanent holder progression." />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
 
@@ -7215,11 +7215,77 @@ body::after {
     grid-column: 1 / -1 !important;
   }
 }
+/* ☀️ Season 12 Lab Summer Shell.
+   DEVS FOR DECADES:
+   Visual-only atmosphere for the Lab page.
+   This does not control session hydration, Discord login, NFT ownership,
+   trait upgrades, ability upgrades, custom names, Genetic inventory,
+   marketplace actions, DSPOINC costs, instant finish, or API behavior. */
+:root {
+  --season12-orange: #f97316;
+  --season12-amber: #f59e0b;
+  --season12-yellow: #facc15;
+  --season12-pink: #db2777;
+  --season12-cyan: #22d3ee;
+}
 
+body.lab-season12-shell {
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.15), transparent 30%),
+    radial-gradient(circle at top right, rgba(219, 39, 119, 0.12), transparent 32%),
+    radial-gradient(circle at 50% 100%, rgba(34, 211, 238, 0.12), transparent 34%),
+    linear-gradient(135deg, #020617 0%, #0f172a 44%, #431407 100%);
+}
+
+.lab-season12-badge {
+  background: linear-gradient(135deg, #f97316, #db2777);
+  border: 1px solid rgba(253, 186, 116, 0.55);
+  box-shadow:
+    0 0 24px rgba(249, 115, 22, 0.22),
+    0 14px 34px rgba(0, 0, 0, 0.30);
+}
+
+.lab-season12-hero {
+  border: 1px solid rgba(250, 204, 21, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.12), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(67, 20, 7, 0.88));
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.36),
+    0 0 40px rgba(249, 115, 22, 0.10);
+}
+
+.lab-season12-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid rgba(253, 186, 116, 0.36);
+  background: rgba(249, 115, 22, 0.16);
+  color: #ffedd5;
+}
+
+.lab-season12-link {
+  background: linear-gradient(135deg, #facc15, #fb923c);
+  color: #111827;
+  border: 2px solid rgba(254, 240, 138, 0.82);
+  box-shadow: 0 14px 34px rgba(249, 115, 22, 0.22);
+}
+
+.lab-season12-link:hover {
+  background: linear-gradient(135deg, #fde047, #fdba74);
+  transform: translateY(-1px) scale(1.02);
+}
 
 </style>
 </head>
-<body>
+<body id="top" class="lab-season12-shell">
   <div class="bg-grid"></div>
   <div class="orb one"></div>
   <div class="orb two"></div>
@@ -7233,11 +7299,15 @@ body::after {
           <div class="flex flex-wrap items-center gap-2">
             <span class="chip">🧬 Genesis Trait Research</span>
             <span class="chip">🧊 Identity + Progression</span>
-            <span class="chip">⚙️ Season 10 Lab Page</span>
+            <span class="chip">☀️ Season 12 Genesis Lab</span>
           </div>
           <div>
             <h1 class="text-3xl md:text-5xl font-black tracking-tight">Narrrf’s Lab</h1>
-            <p class="mt-2 max-w-4xl text-sm md:text-base text-slate-300">A player-facing laboratory built for verified Genesis NFT identity, trait progression, and future game power systems. This version is intentionally stable first: it works as a full profile lab now and degrades safely until the dedicated upgrade APIs are deployed.</p>
+            <p class="mt-2 max-w-4xl text-sm md:text-base text-slate-300">
+  A player-facing laboratory for verified Genesis NFT identity, trait progression,
+  Genetic items, custom names, marketplace history, and permanent holder progress.
+  Seasonal leaderboards can reset — Lab progression stays safe.
+</p>
           </div>
         </div>
         <nav class="flex flex-wrap items-center gap-4 text-sm">

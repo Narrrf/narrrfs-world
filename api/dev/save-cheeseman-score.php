@@ -130,10 +130,10 @@ function get_current_season(PDO $pdo): string {
         $stmt->execute();
         $season = trim((string)$stmt->fetchColumn());
 
-        return $season !== '' ? $season : 'Season 11';
+        return $season !== '' ? $season : 'Season 12';
     } catch (Exception $e) {
         error_log('Cheeseman season lookup failed: ' . $e->getMessage());
-        return 'Season 11';
+        return 'Season 12';
     }
 }
 

@@ -8,19 +8,25 @@ require_once 'discord-invite.php';
   <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🤝 Partners & Friends | Narrrf's World</title>
+  <title>☀️ Partners — Narrrf's World Season 12 Community Network</title>
 
   <!-- 🧀 Favicon & Metadata -->
   <link rel="icon" type="image/png" href="favicon-phantom.png" />
   <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
-  <meta name="theme-color" content="#facc15" />
-  <meta name="title" content="Narrrf's World - Partners & Friends" />
-  <meta name="description" content="Meet our amazing partner communities and collaborative projects. Together we build the cheese-verse!" />
+ <meta name="theme-color" content="#f97316" />
+<meta name="title" content="Narrrf's World — Season 12 Partner Network" />
+<meta
+  name="description"
+  content="Meet the Narrrf's World Season 12 partner network: community projects, Web3 collaborators, event allies, artists, builders, and friends of the Lab."
+/>
 
   <!-- 🧵 OpenGraph for Discord & Socials -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="🤝 Partners & Friends - Narrrf's World" />
-  <meta property="og:description" content="Discover our partner communities and collaborative projects. Join the network!" />
+ <meta property="og:title" content="☀️ Partners — Narrrf's World Season 12 Network" />
+<meta
+  property="og:description"
+  content="Discover Narrrf's World partner communities, event allies, Web3 collaborators, builders, and friends of the Lab."
+/>
   <meta property="og:url" content="https://narrrfs.world/partners.html" />
 
   <!-- 🎨 Tailwind (Dev CDN) -->
@@ -136,10 +142,111 @@ require_once 'discord-invite.php';
     #more-details-section.hidden {
       display: none;
     }
+    /* ☀️ Season 12 Partner Page Shell.
+   DEVS FOR DECADES:
+   Visual-only page shell. Does not change partner loading, API calls,
+   modal behavior, lightbox behavior, gallery parsing, or admin-managed partner data. */
+@keyframes softGlow {
+  0%, 100% {
+    box-shadow: 0 0 22px rgba(250, 204, 21, 0.14), 0 0 44px rgba(249, 115, 22, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 34px rgba(250, 204, 21, 0.26), 0 0 70px rgba(249, 115, 22, 0.14);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.partner-shell-card {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  background: linear-gradient(180deg, rgba(15,23,42,0.92), rgba(15,23,42,0.74));
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 18px 45px rgba(0,0,0,0.28);
+}
+
+.partner-shell-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(250,204,21,0.34);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.38), 0 0 28px rgba(250,204,21,0.08);
+}
+
+.partner-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.summer-glow {
+  animation: softGlow 4s ease-in-out infinite;
+}
+
+/* Retheme existing dynamic partner cards without changing createPartnerCard(). */
+.partner-card {
+  background: linear-gradient(180deg, rgba(15,23,42,0.92), rgba(15,23,42,0.74)) !important;
+  border: 1px solid rgba(250,204,21,0.18) !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 18px 45px rgba(0,0,0,0.28);
+}
+
+.partner-card:hover {
+  transform: translateY(-6px) scale(1.015);
+  border-color: rgba(250,204,21,0.5) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.38), 0 0 28px rgba(250,204,21,0.12);
+}
   </style>
 </head>
 
-<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+<body id="top" class="relative bg-slate-950 text-white font-sans min-h-screen overflow-x-hidden">
+
+<!-- ☀️ Global Season 12 Partner background.
+     DEVS FOR DECADES:
+     Visual-only atmosphere. This does not control partner API loading,
+     admin partner data, partner modals, lightbox galleries, or Discord invite config. -->
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute inset-0 bg-gradient-to-b from-slate-950 via-orange-950/20 to-slate-950"></div>
+  <div class="absolute top-20 left-10 h-96 w-96 rounded-full bg-orange-400/10 blur-3xl float-animation"></div>
+  <div class="absolute top-1/3 right-10 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl float-animation" style="animation-delay: 2s;"></div>
+  <div class="absolute bottom-20 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl float-animation" style="animation-delay: 4s;"></div>
+</div>
+
+<!-- ☀️ Status Badge -->
+<div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-orange-500 to-pink-600 text-white text-xs font-black px-4 py-2 rounded-full shadow-lg border border-orange-300/50">
+  ☀️ Partner Network • Season 12
+</div>
+
+<!-- 🧭 Sticky Navigation Bar - matched with index.html public menu labels -->
+<header class="bg-black/90 backdrop-blur-md text-white py-3 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center">
+    <a href="index.html" class="text-xl font-black tracking-tight text-yellow-300">🧠 Narrrf's World</a>
+
+    <nav aria-label="Main Navigation" class="flex flex-wrap justify-center md:justify-end gap-3 text-sm md:text-base items-center">
+      <a href="index.html" class="hover:text-yellow-300 transition-colors">Home</a>
+      <a href="mint.html" class="hover:text-yellow-300 transition-colors">Mint</a>
+      <a href="whitepaper.html" class="hover:text-yellow-300 transition-colors">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-yellow-300 transition-colors">Get Roles</a>
+      <a href="partners.html" class="text-yellow-300 font-black border-b-2 border-yellow-300">Partners</a>
+      <a href="project-updates.html" class="hover:text-yellow-300 transition-colors">Updates</a>
+      <a href="nerd-lab.html" class="hover:text-yellow-300 transition-colors">🧠 Nerd Lab</a>
+      <a href="profile.html#profile-chest-section" class="hover:text-yellow-300 transition-colors">🎁 Chamber</a>
+
+      <a href="leaderboard.html"
+         class="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-black font-black py-1.5 px-3 md:px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400 hover:border-yellow-300 text-xs md:text-sm whitespace-nowrap">
+        🏆 Leaderboard
+      </a>
+
+      <a href="stake-lab.html" class="hover:text-yellow-300 transition-colors">🧊 Stake Lab</a>
+      <a href="faq.html" class="hover:text-yellow-300 transition-colors">FAQ</a>
+    </nav>
+  </div>
+</header>
 
 <!-- 🌟 Floating Background Elements -->
 <div class="fixed inset-0 pointer-events-none z-0">
@@ -171,26 +278,61 @@ require_once 'discord-invite.php';
 </nav>
 
 <!-- 🎯 Main Content -->
-<main class="relative z-10 max-w-7xl mx-auto px-4 py-12">
+<main class="relative z-10 max-w-7xl mx-auto px-4 py-16">
   
-  <!-- 🤝 Header Section -->
-  <div class="text-center mb-12">
-    <h1 class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
-      🤝 Partners & Friends
+  <!-- 🤝 Season 12 Partner Hero -->
+  <section class="text-center mb-14">
+    <div class="partner-pill border border-yellow-300/35 bg-yellow-400/10 text-yellow-200 mb-6">
+      ☀️ Season 12 • Community Network • Friends of the Lab
+    </div>
+
+    <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6">
+      🤝 Partners<br>
+      <span class="bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-400 bg-clip-text text-transparent">
+        The network behind the cheese.
+      </span>
     </h1>
-    <p class="text-xl text-yellow-200 mb-2">
-      Narrrf's Lab Extended Network
+
+    <p class="text-lg md:text-2xl text-slate-300 mb-5 max-w-4xl mx-auto leading-relaxed">
+      Narrrf’s World grows through community-first collaborations:
+      events, spaces, games, art, VR experiences, holder culture, Web3 education,
+      and cross-community activity.
     </p>
-    <p class="text-gray-300 max-w-2xl mx-auto mb-4">
-      Community partners, business collaborators, and friends of the lab. From NFT projects and gaming communities to real-world companies — together we're experimenting, building, and creating the future! 🧪🧀
+
+    <p class="text-base text-slate-400 max-w-3xl mx-auto mb-9">
+      Partners help bring new players into Lane 1 while creating stronger paths for Genesis holders in Lane 2.
     </p>
-  </div>
+
+    <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
+      <a href="#featured-partners-section"
+         class="inline-flex justify-center rounded-2xl bg-yellow-400 px-7 py-4 font-black text-slate-950 shadow-xl transition hover:scale-105 hover:bg-yellow-300">
+        ⭐ Featured Partners
+      </a>
+
+      <a href="#all-partners-section"
+         class="inline-flex justify-center rounded-2xl bg-orange-500 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-orange-400">
+        🌐 Full Network
+      </a>
+
+      <a href="<?php echo $discord_url; ?>"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="inline-flex justify-center rounded-2xl bg-indigo-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-indigo-500">
+        💬 Join Discord
+      </a>
+    </div>
+  </section>
 
   <!-- 🌟 Featured Partners Section -->
   <div id="featured-partners-section" class="mb-16">
-    <h2 class="text-3xl font-bold text-yellow-400 mb-6 text-center">
+  <div class="text-center mb-8">
+    <div class="partner-pill border border-yellow-300/35 bg-yellow-400/10 text-yellow-200 mb-4">
+      Featured Network
+    </div>
+    <h2 class="text-3xl md:text-4xl font-black text-white">
       ⭐ Featured Partners
     </h2>
+  </div>
     <div id="featured-partners" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <p class="text-gray-400 text-center col-span-full">Loading featured partners...</p>
     </div>
@@ -198,48 +340,124 @@ require_once 'discord-invite.php';
 
   <!-- 🎯 All Partners Section -->
   <div id="all-partners-section">
-    <h2 class="text-3xl font-bold text-yellow-400 mb-6 text-center">
+  <div class="text-center mb-8">
+    <div class="partner-pill border border-orange-300/35 bg-orange-400/10 text-orange-200 mb-4">
+      Full Network
+    </div>
+    <h2 class="text-3xl md:text-4xl font-black text-white">
       🌐 All Partners
     </h2>
+  </div>
     <div id="partners-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <p class="text-gray-400 text-center col-span-full">Loading partners...</p>
     </div>
   </div>
 
   <!-- 📧 Partnership Inquiry Section -->
-  <div class="mt-16 bg-gradient-to-br from-purple-900/40 to-purple-800/40 rounded-2xl p-8 border border-yellow-400/30 text-center">
-    <h3 class="text-2xl font-bold text-yellow-400 mb-4">
-      💼 Interested in Partnering?
-    </h3>
-    <p class="text-gray-300 mb-6 max-w-2xl mx-auto">
-      We're always looking for amazing communities and projects to collaborate with. 
-      Join our network and let's build something great together!
-    </p>
-    <a href="<?php echo $discord_url; ?>" target="_blank" class="inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg">
+  <!-- 📧 Partnership Inquiry Section -->
+<div class="partner-shell-card mt-16 rounded-[2rem] p-8 md:p-10 text-center border-yellow-300/20 summer-glow">
+  <div class="partner-pill border border-emerald-300/35 bg-emerald-400/10 text-emerald-200 mb-5">
+    Build With Us
+  </div>
+
+  <h3 class="text-3xl md:text-4xl font-black text-white mb-4">
+    💼 Interested in Partnering?
+  </h3>
+
+  <p class="text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+    We collaborate with communities, builders, artists, event hosts, Web3 projects,
+    gaming groups, poker crews, VR spaces, and friends of the Lab.
+    The best partnerships create real activity for players and real value for both communities.
+  </p>
+
+  <div class="flex flex-col sm:flex-row justify-center gap-4">
+    <a href="<?php echo $discord_url; ?>"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="inline-flex justify-center rounded-2xl bg-indigo-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-indigo-500">
       📩 Contact Us on Discord
     </a>
+
+    <a href="project-updates.html"
+       class="inline-flex justify-center rounded-2xl bg-yellow-400 px-7 py-4 font-black text-slate-950 shadow-xl transition hover:scale-105 hover:bg-yellow-300">
+      📰 See Project Updates
+    </a>
   </div>
+</div>
 
 </main>
 
 <!-- 🎨 Partner Detail Modal -->
 <div id="partner-modal" class="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-  <div class="modal-content bg-gradient-to-br from-purple-900 to-purple-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-yellow-400/50 shadow-2xl">
+  <div class="modal-content bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-yellow-400/40 shadow-2xl">
     <!-- Modal content loaded dynamically -->
   </div>
 </div>
 
 <!-- 🍩 Footer -->
-<footer class="relative z-10 text-center mt-16 py-8 text-xs text-yellow-600 border-t border-yellow-400/20">
-  <p class="mb-2">
-    Powered by 🧀 Cheese Architect <b>12.0</b> · Partner Portal System · Narrrf's Lab Network 🧪
-  </p>
-  <p class="opacity-70">
-    Building Together | 2025 | 
-    <a href="<?php echo $discord_url; ?>" class="underline text-pink-500 hover:text-pink-600">Join Discord</a> · 
-    <a href="index.html" class="underline hover:text-yellow-500">Home</a> · 
-    <a href="get-roles.html" class="underline hover:text-yellow-500">Get Roles</a>
-  </p>
+<!-- ☀️ Footer Season 12 - Partner Network Footer -->
+<footer class="relative z-10 bg-slate-950 text-center px-6 py-12 border-t border-yellow-300/20 overflow-hidden">
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl"></div>
+    <div class="absolute bottom-0 left-10 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl"></div>
+    <div class="absolute bottom-0 right-10 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl"></div>
+  </div>
+
+  <div class="relative z-10 max-w-6xl mx-auto">
+    <div class="mb-8">
+      <a
+        href="#top"
+        class="inline-flex items-center justify-center rounded-full border border-yellow-300/25 bg-yellow-400/10 px-5 py-2 text-sm font-black text-yellow-100 transition-all duration-200 hover:scale-105 hover:bg-yellow-400 hover:text-slate-950"
+      >
+        🔝 Back to Top
+      </a>
+    </div>
+
+    <div class="mb-8">
+      <div class="inline-flex items-center justify-center rounded-full border border-orange-300/30 bg-orange-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-orange-200 mb-4">
+        ☀️ Season 12 Partner Network
+      </div>
+
+      <h2 class="text-3xl md:text-4xl font-black text-white mb-3">
+        🤝 Narrrf's World Partners
+      </h2>
+
+      <p class="max-w-2xl mx-auto text-sm md:text-base text-slate-300 leading-relaxed">
+        Community projects, event allies, Web3 collaborators, artists, builders,
+        VR spaces, poker crews, and friends of the Lab helping grow the Narrrfs ecosystem.
+      </p>
+    </div>
+
+    <div class="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+      <a href="/index.html" class="inline-flex items-center justify-center rounded-2xl border border-yellow-300/20 bg-yellow-400/10 px-4 py-3 font-black text-yellow-100 transition hover:scale-105 hover:bg-yellow-400 hover:text-slate-950">🏠 Home</a>
+      <a href="/profile.html" class="inline-flex items-center justify-center rounded-2xl border border-orange-300/20 bg-orange-400/10 px-4 py-3 font-black text-orange-100 transition hover:scale-105 hover:bg-orange-400 hover:text-slate-950">👤 Profile</a>
+      <a href="/leaderboard.html" class="inline-flex items-center justify-center rounded-2xl border border-pink-300/20 bg-pink-500/10 px-4 py-3 font-black text-pink-100 transition hover:scale-105 hover:bg-pink-500 hover:text-white">🏆 Boards</a>
+      <a href="/lab.html" class="inline-flex items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-3 font-black text-cyan-100 transition hover:scale-105 hover:bg-cyan-400 hover:text-slate-950">🧬 Lab</a>
+      <a href="/mint.html" class="inline-flex items-center justify-center rounded-2xl border border-purple-300/20 bg-purple-500/10 px-4 py-3 font-black text-purple-100 transition hover:scale-105 hover:bg-purple-500 hover:text-white">🎴 Mint</a>
+      <a href="/whitepaper.html" class="inline-flex items-center justify-center rounded-2xl border border-blue-300/20 bg-blue-500/10 px-4 py-3 font-black text-blue-100 transition hover:scale-105 hover:bg-blue-500 hover:text-white">📜 Lite Paper</a>
+      <a href="/whitepaper-pro.html" class="inline-flex items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 font-black text-emerald-100 transition hover:scale-105 hover:bg-emerald-500 hover:text-white">🧠 Pro Paper</a>
+      <a href="/faq.html" class="inline-flex items-center justify-center rounded-2xl border border-slate-300/20 bg-white/5 px-4 py-3 font-black text-slate-200 transition hover:scale-105 hover:bg-white/10 hover:text-white">❓ FAQ</a>
+    </div>
+
+    <div class="mb-8 flex flex-col sm:flex-row justify-center gap-3">
+      <a href="<?php echo $discord_url; ?>" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 font-black text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-indigo-500">
+        💬 Join Discord
+      </a>
+
+      <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 px-6 py-3 font-black text-slate-950 shadow-xl transition-all duration-200 hover:scale-105">
+        🧬 Official Gensuki Mint
+      </a>
+    </div>
+
+    <div class="pt-6 border-t border-yellow-300/20 text-xs text-slate-400">
+      <div class="mb-2 font-semibold text-yellow-100/80">
+        © 2026 Narrrf's World. Built with brain, cheese, and community chaos 🧠🧀
+      </div>
+      <div class="text-slate-500">
+        ☀️ Season 12 • Partner Network • Community Events • Web3 Collaborations • Friends of the Lab
+      </div>
+    </div>
+  </div>
 </footer>
 
 <!-- 🎮 Partner Loading & Display Script -->

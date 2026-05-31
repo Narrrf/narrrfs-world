@@ -1,5 +1,732 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+````md
+## ✅ UPDATE — MAY 31, 2026 — SEASON 12 PUBLIC PAGE SYNC EXPANDED
+
+### Status
+
+Season 12 public frontend sync has expanded beyond the first landing pages.
+
+This wave focused on making the public Narrrfs World website feel like one professional Season 12 ecosystem instead of many older isolated pages.
+
+Main rule followed:
+
+```text
+Do not break working functions, IDs, scripts, API paths, wallet logic, Discord login, Lab logic, partner loading, admin systems, reward systems, score APIs, or existing page-specific behavior.
+````
+
+### Pages updated / merged in this expanded wave
+
+```text
+public/index.html
+public/get-roles.html
+public/mint.html
+public/whitepaper.html
+public/whitepaper-pro.html
+public/project-updates.html
+public/nerd-lab.html
+public/faq.html
+public/partners.html
+```
+
+### Main public theme direction
+
+All updated public pages now move toward the same Season 12 visual and copy direction:
+
+```text
+☀️ Season 12 Summer Reset
+🎮 9-game ecosystem
+💥 Labyrinth Blast highlighted as newest game surface
+🧬 Genesis Lab as holder progression lane
+🎁 Reward Chamber as permanent reward layer
+💰 DSPOINC economy + staking
+🧠 Cheese Engine / Nerd Lab explanation
+🤝 Partner Network as growth layer
+🏆 Fresh leaderboards with permanent-system protection
+```
+
+### Important ecosystem wording now standardized
+
+Use this language across agents and pages:
+
+```text
+Seasonal leaderboards can reset.
+Permanent systems stay safe.
+```
+
+Permanent systems include:
+
+```text
+Genesis Lab progression
+Mouse custom names
+NFT-bound trait / upgrade state
+Reward Chamber history
+DSPOINC balances
+Staking
+Inventory
+Marketplace state
+Wallet links
+Holder identity
+Profile identity
+Roles / access state
+```
+
+### 2-lane system now documented publicly
+
+The public copy now explains Narrrfs World through two customer-friendly lanes:
+
+```text
+Lane 1 — Discord Player Lane
+- Login with Discord
+- Play games
+- Join events
+- Earn DSPOINC
+- Open rewards
+- Build profile history
+- Join community battles, bingo, poker, VR, spaces, and partner events
+
+Lane 2 — Genesis Holder Lane
+- Mint / own a Genesis Mouse
+- Verify holder access
+- Name the Mouse
+- Enter Genesis Lab
+- Upgrade traits
+- Build NFT-bound progression
+- Prepare for future ability-based gameplay
+```
+
+Important rule:
+
+```text
+Marketplace items must not be described as mutating Genesis Mouse NFTs.
+NFT-bound progression stays controlled through verified Lab upgrade paths.
+Custom Mouse names are display-only labels and must not replace token ID, metadata identity, ownership checks, upgrade identity, or marketplace identity.
+```
+
+### Nerd Lab update
+
+`public/nerd-lab.html` has been transformed into a customer-facing deep-dive page.
+
+New public purpose:
+
+```text
+Nerd Lab explains the Cheese Engine and the system behind Narrrfs World in normal language first, technical details second.
+```
+
+Nerd Lab now covers:
+
+```text
+2-lane system
+Cheese Engine
+Season 12 game overview
+Tetris
+Snake
+Space Invaders
+Cheese Runner / cheeseman
+Labyrinth Blast / labyrinth_blast
+Glyph Memory
+Cheese Hunt
+Discord Cheese Race
+Cheese Rumble
+Profile system
+Roles
+Genesis Lab
+Reward Chamber
+DSPOINC Staking
+Database layer
+Season Reset / Archive logic
+Frontend layer
+Admin Interface
+Discord Bot layer
+```
+
+Important Nerd Lab decision:
+
+```text
+Old 2025 markdown-loaded tab content must not overwrite the public Season 12 tab copy.
+Nerd Lab tabs are now treated as static customer-facing Season 12 content unless the markdown docs are fully rewritten and verified.
+```
+
+### FAQ update
+
+`public/faq.html` has been fully merged into a Season 12 help center.
+
+New FAQ purpose:
+
+```text
+A simple customer support page for new players, Genesis holders, partners, and returning community members.
+```
+
+FAQ now explains:
+
+```text
+What Narrrfs World is
+What Season 12 means
+The 2-lane system
+Discord login
+Genesis Mouse access
+9-game ecosystem
+Labyrinth Blast
+Leaderboards
+Glyph Memory
+Cheese Race / Cheese Rumble
+Genesis Lab
+NFT-bound upgrades
+Mouse names
+Holder roles
+Gensuki mint path
+DSPOINC
+Reward Chamber
+Staking
+Marketplace boundaries
+Reset safety
+3D Riddle Game future direction
+Nerd Lab / whitepaper / partner paths
+Support through Discord
+```
+
+Important FAQ wording:
+
+```text
+The 3D Riddle Game remains a future pillar.
+Current public/investor direction treats 3D alpha as a later 2027 target path.
+Do not use old January 2026 or Q3 2026 alpha wording.
+```
+
+### Partners page update
+
+`public/partners.html` has been rethemed to match the Season 12 public site.
+
+Important implementation rule:
+
+```text
+Only the shell/theme/footer/main presentation were targeted.
+Do not break the dynamic partner API system.
+```
+
+Preserved dynamic IDs/functions:
+
+```text
+featured-partners-section
+featured-partners
+all-partners-section
+partners-grid
+partner-modal
+lightbox-modal
+loadPartners()
+displayFeaturedPartners()
+displayAllPartners()
+createPartnerCard()
+showPartnerModal()
+displayModal()
+closePartnerModal()
+closeLightbox()
+```
+
+New partner page direction:
+
+```text
+☀️ Season 12 Partner Network
+Community projects
+Event allies
+Web3 collaborators
+Artists
+Builders
+VR spaces
+Poker crews
+Friends of the Lab
+```
+
+Partner copy now supports the 2-lane ecosystem message:
+
+```text
+Partners help bring new players into Lane 1 while creating stronger paths for Genesis holders in Lane 2.
+```
+
+### Project Updates page update
+
+`public/project-updates.html` has been changed from a long dev-log wall into a readable public update hub.
+
+New structure:
+
+```text
+Season 12 hero
+Current ecosystem snapshot
+Latest major updates
+Weekly community pulse
+Milestone timeline
+Historical archive
+Final CTA
+Season 12 footer
+```
+
+Historical archive keeps old context without making old seasons look current.
+
+### Whitepaper / Pro Whitepaper update
+
+Whitepaper pages were cleaned for current and investor-safe Season 12 messaging.
+
+Current approved direction:
+
+```text
+Season 12 is current public context.
+Season 11 is previous / frozen / historical only.
+2025 is foundation year.
+2026 is active utility / public ecosystem sync.
+2026 → 2027 bridge explains RPG profile, Genesis holder progression, NFT-bound upgrade direction, and Cheese Engine.
+2027 is the later 3D alpha direction.
+2028–2030 remain long-term vision / roadmap direction.
+```
+
+Important investor safety rules:
+
+```text
+Do not promise ROI.
+Do not promise exchange listings.
+Do not promise fixed token outcomes.
+Do not claim unfinished systems as live.
+Use planned / targeted / future direction for non-live systems.
+Keep DSPOINC as live in-ecosystem utility currency.
+Keep SPOINC as long-term token vision / bridge direction only.
+```
+
+### Labyrinth Blast public status
+
+Canonical naming remains:
+
+```text
+Player-facing name: Labyrinth Blast
+Local source folder: FOX/
+Public wrapper: public/labyrinth-blast.html
+Public build folder: public/labyrinth-blast/
+Database game key: labyrinth_blast
+Score API: api/dev/save-labyrinth-blast-score.php
+```
+
+Important naming rule:
+
+```text
+Do not call the public game FOX.
+FOX is only the local source/build folder.
+The public Narrrfs game name is Labyrinth Blast.
+```
+
+Confirmed backend direction:
+
+```text
+Labyrinth Blast frontend sends raw gameplay data.
+Backend validates user/session and gameplay data.
+Backend calculates DSPOINC.
+Frontend does not decide final DSPOINC reward.
+Writes into:
+- tbl_tetris_scores
+- tbl_user_scores
+- tbl_score_adjustments
+```
+
+### Remaining frontend review targets
+
+Known remaining major public/system pages still needing careful Season 12 review:
+
+```text
+public/profile.html
+public/leaderboard.html
+public/lab.html
+public/admin-interface.html final visual / wording pass
+```
+
+Recommended next order:
+
+```text
+1. leaderboard.html
+2. profile.html
+3. lab.html
+4. admin-interface.html final pass
+5. full public grep
+6. local browser smoke test
+7. Git commit / push
+8. Render live verification
+```
+
+### Critical validation before push
+
+Run this grep before final frontend push:
+
+```powershell
+Select-String -Path public\*.html -Pattern "Season 11 LIVE","Season 11 RUNNING","Season 11 STARTED","Current Season 11","Season 11 live systems","Season 10 LIVE","Season 9 Active","Alpha Testing January 2026","Q3 2026","Spring 2026"
+```
+
+Expected final result:
+
+```text
+No stale active-season wording remains.
+Season 11 appears only as frozen / previous / historical.
+Season 12 appears as current / live / summer reset.
+3D alpha uses later 2027 target direction, not old 2026 wording.
+```
+
+### Critical function-safety reminder
+
+When editing remaining files:
+
+```text
+Never delete or rename existing IDs used by JavaScript.
+Never change API paths unless explicitly planned.
+Never remove Discord login/session logic.
+Never remove wallet logic.
+Never remove Lab upgrade/name/inventory logic.
+Never remove admin tab IDs or fetch paths.
+Never remove partner dynamic IDs/functions.
+Never remove game score-save logic.
+Never make frontend reward logic authoritative.
+Backend remains source of truth.
+```
+
+### Current public sync summary
+
+The public site now has a much stronger and more consistent Season 12 story:
+
+```text
+Homepage = fast ecosystem starter
+Get Roles = access / holder / role explanation
+Mint = info page leading to official Gensuki mint
+Whitepaper = simple strategic overview
+Pro Whitepaper = investor/deep roadmap
+Project Updates = readable changelog / ecosystem pulse
+Nerd Lab = customer-friendly technical deep dive
+FAQ = help center for new users and holders
+Partners = Season 12 community network
+```
+
+```
+```
+
+
+
+## ✅ UPDATE — MAY 31, 2026 — SEASON 12 FRONTEND + WHITEPAPER SYNC PASS
+
+### Status
+
+Major Season 12 public-page and investor-page sync pass completed.
+
+This pass focused on keeping the ecosystem message clean, current, and future-proof without breaking working scripts, APIs, IDs, wallet logic, Discord login, Lab logic, admin logic, or existing game score systems.
+
+### Pages updated / reviewed in this wave
+
+```text
+public/index.html
+public/get-roles.html
+public/mint.html
+public/whitepaper.html
+public/whitepaper-pro.html
+
+## ✅ UPDATE — MAY 31, 2026 — SEASON 12 FRONTEND PREP STARTED
+
+### Status
+
+Season 12 frontend preparation has started after the reset/API safety pass.
+
+Pages touched in this first frontend wave:
+
+```text
+public/index.html
+public/get-roles.html
+public/mint.html
+```
+
+### Completed / prepared
+
+`public/index.html` received the main Season 12 summer reset refresh.
+
+Confirmed direction:
+
+```text
+☀️ Season 12 Summer Reset
+🎮 9-game ecosystem
+🧬 Genesis Lab
+🎁 Reward Chamber
+💰 DSPOINC economy
+💥 Labyrinth Blast highlight
+🏆 Season 11 frozen / Season 12 fresh leaderboard messaging
+```
+
+The homepage now better explains the key reset rule:
+
+```text
+Seasonal leaderboards reset.
+Permanent systems stay safe.
+Lab, Genesis upgrades, Reward Chamber, DSPOINC, staking, inventory, wallets, and holder identity are preserved.
+```
+
+`public/get-roles.html` has been moved toward Season 12 role-system messaging.
+
+Main direction:
+
+```text
+Season 12 role access
+Holder verification
+Role multipliers
+Genesis Lab access
+Permanent ecosystem progress
+```
+
+`public/mint.html` has entered the Season 12 cleanup pass.
+
+Main direction:
+
+```text
+GEN1 mint stays as permanent access/history page
+Season 11 active wording must be removed
+Season 12 ecosystem context should replace old alpha/mint-era copy
+```
+
+### Important notes
+
+This is a preparation pass only.
+
+Do not claim the full frontend is Season 12 final until the remaining pages are checked and the global grep is clean.
+
+Known remaining frontend review targets:
+
+```text
+public/profile.html
+public/leaderboard.html
+public/lab.html
+public/nerd-lab.html
+public/faq.html
+public/admin-interface.html
+```
+
+Known cleanup focus:
+
+```text
+Remove stale active Season 11 wording.
+Keep Season 11 only as frozen / previous / historical.
+Keep Season 12 as current / live / summer reset.
+Avoid breaking existing scripts, IDs, API calls, Discord login, wallet logic, Lab logic, or admin logic.
+```
+
+### Next recommended frontend order
+
+```text
+1. profile.html
+2. leaderboard.html
+3. lab.html
+4. nerd-lab.html
+5. faq.html
+6. admin-interface.html final check
+```
+
+### Validation command before push
+
+Run:
+
+```powershell
+Select-String -Path public\*.html -Pattern "Season 11 LIVE","Season 11 RUNNING","Season 11 STARTED","Current Season 11","Season 11 live systems","Spring 2026","Alpha Testing January 2026"
+```
+
+Expected final result:
+
+```text
+No stale active Season 11 copy remains.
+Season 11 appears only as frozen / previous / historical.
+Season 12 appears as current / live / summer reset.
+```
+
+
+## ✅ UPDATE — MAY 31, 2026 — INDEX.HTML SEASON 12 SUMMER REFRESH REVIEW
+
+### Status
+
+`public/index.html` has been updated and reviewed for the Season 12 summer reset landing-page refresh.
+
+Main goal achieved:
+
+* homepage no longer feels like a long old Season 11 archive page
+* top metadata now speaks Season 12 / summer reset
+* homepage now focuses faster on the active ecosystem:
+
+  * 9 games
+  * Genesis Lab
+  * Reward Chamber
+  * DSPOINC economy
+  * Labyrinth Blast
+  * Season 11 frozen / Season 12 fresh leaderboards
+
+### Confirmed index updates
+
+Updated / verified:
+
+* single Season 12 page title
+* Season 12 SEO description
+* Season 12 OpenGraph / Twitter preview copy
+* summer orange theme color
+* hot Season 12 top banner
+* clear CTAs:
+
+  * Play Season 12
+  * Enter the Lab
+  * View Leaderboards
+  * Reward Chamber
+* Season 12 ecosystem section added
+* Labyrinth Blast highlighted as new gameplay surface
+* permanent-progress reset messaging included
+* footer refreshed around Season 12 summer ecosystem
+
+### Important reset messaging now visible
+
+The homepage now clearly explains:
+
+* Season 11 freezes into history
+* Season 12 starts fresh
+* Lab progress stays safe
+* Genesis upgrades stay safe
+* Reward Chamber rewards stay safe
+* DSPOINC balances stay safe
+* staking, inventory, and holder identity stay safe
+
+### Small index cleanup still recommended
+
+Before final push, check these small items:
+
+1. Add `id="top"` to the `<body>` tag so the footer Back to Top link works reliably.
+
+Recommended:
+
+```html
+<body id="top" class="bg-gradient-to-br from-purple-50 via-pink-100 to-yellow-50 text-gray-900 font-sans min-h-screen opacity-0 animate-fade-in-body">
+```
+
+2. Remove duplicate `twitter:image` meta tag from the lower social-preview comment area.
+
+3. Optional later comment cleanup:
+   old internal Cheese Egg comment still references older season wording. Not user-facing and not urgent.
+
+### Important frontend follow-up
+
+`index.html` is now mostly Season 12 ready, but full frontend sync still needs review on other public pages.
+
+Known stale Season 11 copy still found in:
+
+* `public/get-roles.html`
+* `public/nerd-lab.html`
+
+Next frontend pass should update these pages to Season 12 summer ecosystem wording without breaking existing role, documentation, or navigation logic.
+
+### Current frontend order
+
+Recommended next order:
+
+1. finish tiny `index.html` cleanup
+2. update `get-roles.html`
+3. update `nerd-lab.html`
+4. check `faq.html`
+5. check `mint.html`
+6. then re-grep all public HTML files for stale active-season text
+
+### Validation command
+
+Run before push:
+
+```powershell
+Select-String -Path public\*.html -Pattern "Season 11 LIVE","Season 11 RUNNING","Season 11 STARTED","Current Season 11","Season 11 live systems","Spring 2026"
+```
+
+Expected after full frontend pass:
+
+* no active/live Season 11 copy remains
+* Season 11 appears only as frozen / previous / historical
+* Season 12 appears as current / live / summer reset
+
+
+## ✅ UPDATE — MAY 31, 2026 — SEASON RESET PREP / 9-GAME ECOSYSTEM CHECK
+
+### Status
+Preparing tonight’s end-of-month season reset with the new 9-game ecosystem.
+
+Season reset must now account for:
+
+1. Tetris — `tetris`
+2. Snake — `snake`
+3. Space Cheese Invaders — `space_invaders`
+4. Cheese Runner — `cheeseman`
+5. Labyrinth Blast — `labyrinth_blast`
+6. Glyph Memory — `glyph_memory`
+7. Cheese Hunt — `cheese_hunt`
+8. Discord Cheese Race — `discord_race`
+9. Cheese Rumble — `cheese_rumble`
+
+### New important changes since last reset
+
+Labyrinth Blast is now integrated locally across score-save, leaderboard, profile, and admin prep.
+
+Confirmed Labyrinth Blast systems:
+- public page: `public/labyrinth-blast.html`
+- build folder: `public/labyrinth-blast/`
+- DB game key: `labyrinth_blast`
+- score API: `api/dev/save-labyrinth-blast-score.php`
+- score source: `tbl_tetris_scores`
+- DSPOINC ledger: `tbl_user_scores`
+- audit trail: `tbl_score_adjustments`
+- admin path expected: `data.games.labyrinth_blast`
+
+Important: do not claim full 9/9 live until Render live verification confirms:
+- `/labyrinth-blast.html`
+- `/leaderboard.html`
+- `/profile.html`
+- `/admin-interface.html` Labyrinth Blast tab
+- API returns `data.games.labyrinth_blast`
+
+### Reset preparation rule
+
+Tonight’s reset must archive the current active season first, then reset only the season-based competitive score data.
+
+Season-based reset candidates:
+- `tbl_tetris_scores` rows for:
+  - `tetris`
+  - `snake`
+  - `space_invaders`
+  - `cheeseman`
+  - `labyrinth_blast`
+  - possibly `glyph_memory` if stored in a season table and intended to reset
+
+Preserve all-time/event systems unless explicitly planned:
+- `tbl_cheese_clicks`
+- `tbl_race_participants`
+- `tbl_cheese_rumbles`
+- `tbl_rumble_participants`
+- achievement definition/history tables
+- lab tables
+- reward chamber/chest tables
+- user/wallet/role/NFT tables
+- score adjustment audit history unless only current-season leaderboard filtering requires otherwise
+
+### Immediate pre-reset actions
+
+1. Verify active season:
+   `SELECT * FROM tbl_seasons WHERE is_active = 1;`
+
+2. Verify game rows by season/game:
+   `SELECT season, game, COUNT(*) FROM tbl_tetris_scores GROUP BY season, game ORDER BY season, game;`
+
+3. Verify Labyrinth Blast live/admin readiness before reset:
+   - `api/admin/get-all-games-stats.php` returns `data.games.labyrinth_blast`
+   - `api/dev/get-leaderboard.php` returns `labyrinth_blast`
+   - `profile.html` shows Labyrinth Blast quick access/stat cards
+   - `admin-interface.html` has Labyrinth Blast management tab
+
+4. Backup DB before any reset:
+   copy `/var/www/html/db/narrrf_world.sqlite` to `/data/narrrf_world_backup_YYYYMMDD_HHMMSS.sqlite`
+
+5. Archive current season using:
+   `curl https://narrrfs.world/api/admin/archive-season-stats.php`
+
+6. Only after archival verification, execute reset transaction.
+
+### Current note
+
+Labyrinth Blast save APIs read active season from `tbl_seasons`, so after the next season is activated, new Labyrinth Blast scores should automatically save under the new season.
+
 ## ✅ UPDATE — MAY 31, 2026 — LABYRINTH BLAST FINAL LOCAL TESTER BUILD READY
 
 ### Status

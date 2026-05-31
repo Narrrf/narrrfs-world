@@ -89,7 +89,7 @@ try {
         ORDER BY season_id DESC
         LIMIT 1
     ");
-    $fullSeasonName = $seasonStmt->fetchColumn() ?: 'Season 11';
+    $fullSeasonName = $seasonStmt->fetchColumn() ?: 'Season 12';
     $currentSeason = $fullSeasonName;
 
     // Get current season start date for date-window systems

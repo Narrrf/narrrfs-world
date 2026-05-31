@@ -106,7 +106,7 @@ try {
     // 🔍 Automatically detect current season from tbl_seasons table (where is_active = 1)
     $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY start_date DESC LIMIT 1");
     $seasonDetectStmt->execute();
-    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 11'; // Fallback to Season 11
+    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 12'; // Fallback to Season 12
     
     error_log("🔍 Current season detected: $currentSeason");
 
@@ -173,7 +173,7 @@ try {
         $unit = 'dspoinc';
         $dspoinc_score = $raw_score; // Use score directly (already DSPOINC with role bonus)
     } elseif ($game === 'space_invaders') {
-        // 🔧 SEASON 5 FIX: Space Invaders 10:1 conversion for balanced scoring
+        // 🔧 Arcade balance: Space Invaders uses 10:1 conversion for balanced scoring.
         // Frontend sends full DSPOINC (with role bonus), backend divides by 10
         $pointsPerUnit = 0.1; // 10:1 conversion ratio
         $unit = 'invaders';

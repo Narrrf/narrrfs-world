@@ -8,456 +8,879 @@ require_once 'discord-invite.php';
   <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FAQ | Narrrf's World</title>
+
+  <title>☀️ FAQ — Narrrf's World Season 12 • Games • Lab • DSPOINC</title>
 
   <!-- 🧀 Favicon & Metadata -->
   <link rel="icon" type="image/png" href="favicon-phantom.png" />
   <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
-  <meta name="theme-color" content="#facc15" />
-  <meta name="msapplication-TileColor" content="#facc15" />
+
+  <meta name="theme-color" content="#f97316" />
+  <meta name="msapplication-TileColor" content="#f97316" />
   <meta name="msapplication-TileImage" content="favicon-phantom.png" />
-  <meta name="title" content="Narrrf's World" />
-  <meta name="description" content="FAQ - Season 11 RUNNING, Alpha Testing January 2026, 5 Games Active, Role Multipliers, 3D Riddle Game Coming Soon!" />
+  <meta name="title" content="Narrrf's World FAQ" />
+  <meta
+    name="description"
+    content="Narrrf's World Season 12 FAQ: understand the 2-lane ecosystem, 9 games, Genesis Lab, Reward Chamber, DSPOINC, staking, minting, roles, leaderboards, and future 3D direction."
+  />
+  <meta name="robots" content="index, follow" />
 
   <!-- 🧵 OpenGraph & Twitter Meta -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="FAQ – Narrrf's World" />
-  <meta property="og:description" content="Find answers about Season 11, alpha testing, 3D Riddle Game, role multipliers, minting, staking (2026), and game features." />
+  <meta property="og:title" content="☀️ FAQ — Narrrf's World Season 12" />
+  <meta
+    property="og:description"
+    content="Answers for players, holders, partners, and newcomers: games, Lab, Reward Chamber, DSPOINC, roles, minting, staking, and Season 12 reset rules."
+  />
   <meta property="og:image" content="img/faq-mouse1.png" />
   <meta property="og:url" content="https://narrrfs.world/faq.html" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="FAQ – Narrrf's World" />
-  <meta name="twitter:description" content="Learn how to mint, unlock cheese powers, and decode the Narrrf lab." />
+  <meta name="twitter:title" content="☀️ FAQ — Narrrf's World Season 12" />
+  <meta
+    name="twitter:description"
+    content="Learn how Narrrf's World works in Season 12: games, Genesis Lab, Reward Chamber, DSPOINC, roles, minting, staking, and permanent progress."
+  />
   <meta name="twitter:image" content="img/faq-mouse1.png" />
 
-  <!-- 🎨 Tailwind CSS (Dev CDN Mode) -->
+  <!-- 🎨 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- 🔗 Discord Token of Render System -->
   <script src="discord-config.js"></script>
 
-  <!-- 💫 Enhanced FAQ Styles -->
+  <!-- 💫 FAQ Season 12 Styles -->
   <style>
-    @keyframes trophyGlow {
-      0%, 100% { 
-        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
-        transform: scale(1);
-      }
-      50% { 
-        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
-        transform: scale(1.05);
-      }
-    }
-    
-    @keyframes rolePulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.02); }
-    }
-    
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
     }
-    
-    .trophy-glow {
-      animation: trophyGlow 3s ease-in-out infinite;
+
+    @keyframes softGlow {
+      0%, 100% {
+        box-shadow: 0 0 22px rgba(250, 204, 21, 0.14), 0 0 44px rgba(249, 115, 22, 0.08);
+      }
+      50% {
+        box-shadow: 0 0 34px rgba(250, 204, 21, 0.26), 0 0 70px rgba(249, 115, 22, 0.14);
+      }
     }
-    
-    .role-pulse {
-      animation: rolePulse 4s ease-in-out infinite;
+
+    html {
+      scroll-behavior: smooth;
     }
-    
+
     .float-animation {
       animation: float 6s ease-in-out infinite;
     }
-    
+
     .faq-card {
-      transition: all 0.3s ease;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      background: linear-gradient(180deg, rgba(15,23,42,0.92), rgba(15,23,42,0.74));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.28);
     }
-    
+
     .faq-card:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      border-color: rgba(251, 191, 36, 0.5);
+      transform: translateY(-3px);
+      border-color: rgba(250,204,21,0.34);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.38), 0 0 28px rgba(250,204,21,0.08);
     }
-    
-    .lab-bubble {
-      animation: labBubble 5s ease-in-out infinite;
+
+    .faq-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 999px;
+      padding: 0.5rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
     }
-    
-    @keyframes labBubble {
-      0% { transform: translateY(0) scale(1); opacity: 0.7; }
-      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+
+    .faq-details {
+      overflow: hidden;
+    }
+
+    .faq-details summary {
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .faq-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-details[open] {
+      border-color: rgba(250,204,21,0.34);
+    }
+
+    .faq-details[open] .faq-chevron {
+      transform: rotate(180deg);
+    }
+
+    .faq-chevron {
+      transition: transform 0.2s ease;
+    }
+
+    .summer-glow {
+      animation: softGlow 4s ease-in-out infinite;
+    }
+
+    .answer-copy a {
+      color: #fcd34d;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .answer-copy strong {
+      color: #fde68a;
+    }
+
+    .answer-copy code {
+      background: rgba(0,0,0,0.45);
+      color: #fbbf24;
+      padding: 0.12rem 0.35rem;
+      border-radius: 0.35rem;
+      font-size: 0.88em;
     }
   </style>
-
-  <!-- 📜 Dev Note: Static FAQ page — may convert to dynamic answer/role system in v2. -->
-  <!-- 🗂️ PATH NOTE: All images must use /img/, all sounds in /sounds/. -->
 </head>
 
-<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+<body id="top" class="relative bg-slate-950 text-white font-sans min-h-screen overflow-x-hidden">
 
-  <!-- 🌟 Floating Background Elements -->
+  <!-- ☀️ Global Season 12 FAQ background.
+       DEVS FOR DECADES:
+       Visual-only atmosphere. It does not control wallet, roles, rewards, Lab, staking, scores, or economy logic. -->
   <div class="fixed inset-0 pointer-events-none z-0">
-    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
-    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
-    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
-    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-950 via-orange-950/20 to-slate-950"></div>
+    <div class="absolute top-20 left-10 h-96 w-96 rounded-full bg-orange-400/10 blur-3xl float-animation"></div>
+    <div class="absolute top-1/3 right-10 h-96 w-96 rounded-full bg-fuchsia-500/10 blur-3xl float-animation" style="animation-delay: 2s;"></div>
+    <div class="absolute bottom-20 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl float-animation" style="animation-delay: 4s;"></div>
   </div>
 
-  <!-- 🧬 Lab Status Badge -->
-  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
-    🎮 Season 11 RUNNING • FAQ Updated 2026
+  <!-- ☀️ Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-orange-500 to-pink-600 text-white text-xs font-black px-4 py-2 rounded-full shadow-lg border border-orange-300/50">
+    ☀️ FAQ • Season 12 Sync
   </div>
 
-  <!-- 🧭 Navigation Bar (Sticky Top) -->
-  <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
+  <!-- 🧭 Sticky Navigation Bar - matched with index.html public menu labels
+       DEVS FOR DECADES:
+       This is navigation-only.
+       Keep wallet IDs and onclick handlers unchanged because shared wallet.js expects them. -->
+  <header class="bg-black/90 backdrop-blur-md text-white py-3 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-3 md:gap-0 justify-between items-center">
+      <a href="index.html" class="text-xl font-black tracking-tight text-yellow-300">🧠 Narrrf's World</a>
 
-      <!-- 🧠 Main Navigation -->
-      <nav aria-label="Main Navigation" class="space-x-4 text-sm md:text-base flex items-center">
-        <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
-        <a href="mint.html" class="hover:text-yellow-400 transition-colors">Mint</a>
-        <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
-        <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
-        <a href="partners.html" class="hover:text-yellow-400 transition-colors">Partners</a>
-        <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
-        <a href="faq.html" class="text-yellow-400 font-semibold border-b-2 border-yellow-400">FAQ</a>
+      <nav aria-label="Main Navigation" class="flex flex-wrap justify-center md:justify-end gap-3 text-sm md:text-base items-center">
+        <a href="index.html" class="hover:text-yellow-300 transition-colors">Home</a>
+        <a href="mint.html" class="hover:text-yellow-300 transition-colors">Mint</a>
+        <a href="whitepaper.html" class="hover:text-yellow-300 transition-colors">Whitepaper</a>
+        <a href="get-roles.html" class="hover:text-yellow-300 transition-colors">Get Roles</a>
+        <a href="partners.html" class="hover:text-yellow-300 transition-colors">Partners</a>
+        <a href="project-updates.html" class="hover:text-yellow-300 transition-colors">Updates</a>
+        <a href="nerd-lab.html" class="hover:text-yellow-300 transition-colors">🧠 Nerd Lab</a>
+        <a href="profile.html#profile-chest-section" class="hover:text-yellow-300 transition-colors">🎁 Chamber</a>
 
-        <!-- 🧠 Wallet Connect Button -->
+        <a href="leaderboard.html"
+           class="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-black font-black py-1.5 px-3 md:px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400 hover:border-yellow-300 text-xs md:text-sm whitespace-nowrap">
+          🏆 Leaderboard
+        </a>
+
+        <a href="stake-lab.html" class="hover:text-yellow-300 transition-colors">🧊 Stake Lab</a>
+        <a href="faq.html" class="text-yellow-300 font-black border-b-2 border-yellow-300">FAQ</a>
+
         <button id="connect-wallet-btn"
           onclick="connectWallet()"
-          class="ml-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-          🔌 Connect Wallet
+          class="ml-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1.5 px-3 md:px-4 rounded-xl shadow text-xs transition-all duration-300 transform hover:scale-105">
+          🔌 Connect
         </button>
 
-        <!-- 🧀 Avatar Placeholder -->
         <img id="user-avatar" src="img/cheese.png" alt="PFP"
-          class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-4 shadow-lg" />
+          class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 shadow-lg" />
 
-        <!-- 🧀 Wallet Disconnect Button -->
         <button id="wallet-disconnect"
           onclick="disconnectWallet()"
-          class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow transition-colors">
+          class="hidden text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow transition-colors">
           ❌
         </button>
       </nav>
     </div>
   </header>
 
-<!-- FAQ Section -->
-<section class="relative z-10 max-w-4xl mx-auto py-16 px-6">
-  <div class="text-center mb-12">
-    <h1 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">❓ Frequently Asked Questions</h1>
-    <p class="text-xl text-gray-300 max-w-2xl mx-auto">
-      Learn how Narrrf’s World works — from Genesis NFTs and the Lab to games, staking, and progression systems
-    </p>
-  </div>
+  <main class="relative z-10">
 
-  <div class="space-y-8">
+    <!-- ☀️ FAQ Hero -->
+    <section class="relative py-20 px-6 text-center overflow-hidden">
+      <div class="max-w-6xl mx-auto">
+        <div class="faq-pill border border-yellow-300/35 bg-yellow-400/10 text-yellow-200 mb-6">
+          ☀️ Season 12 • Help Center • Player Guide
+        </div>
 
-    <!-- 🌍 CORE -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-blue-500">
-      <h2 class="text-xl font-semibold text-blue-400 mb-3">💎 What is Narrrf’s World?</h2>
-      <p class="text-gray-300">
-        Narrrf’s World is a <strong>Web3 gaming ecosystem</strong> where your identity, NFTs, games, and rewards are all connected.
-        Players earn <strong>DSPOINC</strong>, verify NFTs, upgrade traits in the <a href="lab.html" class="text-blue-400 underline">Genesis Lab</a>,
-        and prepare for future gameplay systems like the 3D Riddle Adventure.
-      </p>
-    </div>
+        <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6">
+          Frequently Asked<br>
+          <span class="bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-400 bg-clip-text text-transparent">
+            Cheese Questions
+          </span>
+        </h1>
 
-    <!-- 🧬 NFT -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-green-500">
-      <h2 class="text-xl font-semibold text-green-400 mb-3">🎴 What do I get when I mint a Genesis NFT?</h2>
-      <p class="text-gray-300">
-        Genesis NFTs are your <strong>core identity and progression units</strong>.
-        You unlock:
-        <br>• access to the <strong>Genesis Lab</strong>
-        <br>• 4k HDR version of your NFT with full copyright 
-        <br>• trait upgrades (permanent NFT progression)
-        <br>• role-based multipliers in games
-        <br>• access to events, riddles, special giveaways and future gameplay
-        <br>• eligibility for future 3D game features
-      </p>
-    </div>
+        <p class="text-lg md:text-2xl text-slate-300 mb-5 max-w-4xl mx-auto leading-relaxed">
+          Simple answers for new players, Genesis holders, partners, and returning community members.
+          Learn how Season 12, games, roles, the Genesis Lab, Reward Chamber, DSPOINC, and permanent progress work.
+        </p>
 
-    <!-- 🧬 LAB -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-purple-500">
-      <h2 class="text-xl font-semibold text-purple-400 mb-3">🧬 What is the Genesis Lab?</h2>
-      <p class="text-gray-300">
-        The <a href="lab.html" class="text-purple-400 underline">Genesis Lab</a> is your upgrade system.
-        <br><br>
-        You can:
-        <br>• upgrade traits of your NFTs
-        <br>• increase permanent NFT power
-        <br>• claim upgrades after timers finish
-        <br><br>
-        Important: upgrades belong to the <strong>NFT itself</strong>, not the wallet.
-        If the NFT is sold, the upgrade stays with it.
-      </p>
-    </div>
+        <p class="text-base text-slate-400 max-w-3xl mx-auto mb-9">
+          Start here when you are new. Go to Nerd Lab or the Whitepaper when you want the deeper system view.
+        </p>
 
-    <!-- 🔐 VERIFY -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-cyan-500">
-      <h2 class="text-xl font-semibold text-cyan-400 mb-3">🔐 How does NFT verification work?</h2>
-      <p class="text-gray-300">
-        You verify your wallet in the <a href="stake-lab.html" class="text-cyan-400 underline">Stake Lab</a>.
-        The system scans your NFTs and saves them to your profile.
-        <br><br>
-        This supports:
-        <br>• Phantom, Solflare, Backpack
-        <br>• Ledger wallets (secure signing)
-        <br><br>
-        The Lab always reads from your <strong>verified saved NFTs</strong>, not live wallet scans.
-      </p>
-    </div>
+        <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
+          <a href="#faq-start"
+             class="inline-flex justify-center rounded-2xl bg-yellow-400 px-7 py-4 font-black text-slate-950 shadow-xl transition hover:scale-105 hover:bg-yellow-300">
+            🧭 Start Here
+          </a>
 
-    <!-- 🎮 GAMES -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-pink-500">
-      <h2 class="text-xl font-semibold text-pink-400 mb-3">🎮 What games are available?</h2>
-      <p class="text-gray-300">
-        Season 11 is live with multiple connected games:
-        <br>• Tetris
-        <br>• Snake
-        <br>• Space Invaders
-        <br>• Cheese Hunt
-        <br>• Discord Race
-        <br>• Cheese Rumble
-        <br>• Cheese Runner
-        <br>• Glyph
-        <br>• The lab
-        <br><br>
-        All games reward <strong>DSPOINC</strong> and use role-based multipliers.
-      </p>
-    </div>
+          <a href="#faq-games"
+             class="inline-flex justify-center rounded-2xl bg-pink-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-pink-500">
+            🎮 Games
+          </a>
 
-    <!-- 🌀 GLYPH -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-indigo-500">
-      <h2 class="text-xl font-semibold text-indigo-400 mb-3">🌀 What is Glyph?</h2>
-      <p class="text-gray-300">
-        <a href="glyph.html" class="text-indigo-400 underline">Glyph</a> is a memory puzzle game that introduces the symbols and logic of the upcoming 3D world.
-        It’s part of the evolving lore and gameplay foundation of Narrrf’s World.
-      </p>
-    </div>
+          <a href="#faq-lab"
+             class="inline-flex justify-center rounded-2xl bg-cyan-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-cyan-500">
+            🧬 Lab + Holders
+          </a>
 
-    <!-- 🧀 DSPOINC -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-yellow-500">
-      <h2 class="text-xl font-semibold text-yellow-400 mb-3">🪙 What is DSPOINC?</h2>
-      <p class="text-gray-300">
-        DSPOINC is the in-game currency of Narrrf’s World.
-        You earn it by:
-        <br>• playing games
-        <br>• completing missions
-        <br>• participating in events
-        <br><br>
-        It is used for:
-        <br>• Lab instant upgrades
-        <br>• future gameplay features
-        <br>• ecosystem rewards
-      </p>
-    </div>
-
-    <!-- 🧊 STAKING -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-teal-500">
-      <h2 class="text-xl font-semibold text-teal-400 mb-3">🧊 What is DSPOINC staking?</h2>
-      <p class="text-gray-300">
-        You can freeze DSPOINC in the <a href="stake-lab.html" class="text-teal-400 underline">Stake Lab</a>
-        for 1–36 months and earn rewards up to 50%.
-        <br><br>
-        Rewards are fixed and based on duration.
-      </p>
-    </div>
-
-    <!-- ⚡ MULTIPLIERS -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-blue-500">
-      <h2 class="text-xl font-semibold text-blue-400 mb-3">🏆 What are role multipliers?</h2>
-      <p class="text-gray-300">
-        Your Discord role boosts your DSPOINC earnings:
-        <br>• VIP: 2.0x
-        <br>• Holder: 1.5x
-        <br>• others scale down
-        <br><br>
-        Multipliers apply across all games.
-      </p>
-    </div>
-
-    <!-- 🏛️ 3D GAME -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-red-500">
-      <h2 class="text-xl font-semibold text-red-400 mb-3">🧀 What is the 3D Riddle Game?</h2>
-      <p class="text-gray-300">
-        The Cheese Temple is our upcoming 3D adventure game.
-        <br><br>
-        Features:
-        <br>• exploration + riddles
-        <br>• boss fights
-        <br>• DSPOINC rewards
-        <br>• NFT-based gameplay interactions
-        <br><br>
-        🧪 Alpha planned for <strong>Q3 2026</strong>.
-      </p>
-    </div>
-
-    <!-- 🧬 PROGRESSION -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-emerald-500">
-      <h2 class="text-xl font-semibold text-emerald-400 mb-3">📈 Why should I own multiple Genesis NFTs?</h2>
-      <p class="text-gray-300">
-        More NFTs = more upgradeable traits.
-        <br><br>
-        This means:
-        <br>• more Lab upgrades
-        <br>• more future gameplay paths
-        <br>• stronger ecosystem presence
-        <br><br>
-        Each NFT becomes its own progression unit.
-      </p>
-    </div>
-
-    <!-- 🔮 FUTURE -->
-    <div class="faq-card rounded-2xl p-6 border-l-4 border-purple-500">
-      <h2 class="text-xl font-semibold text-purple-400 mb-3">🔮 What’s coming next?</h2>
-      <p class="text-gray-300">
-        Upcoming systems include:
-        <br>• deeper Lab mechanics
-        <br>• trait-based gameplay bonuses
-        <br>• 3D game integration
-        <br>• DSPOINC → SPOINC systems
-        <br>• more events and partner integrations
-      </p>
-    </div>
-
-  </div>
-</section>
-
-  <!-- 🔥 Lab Flask + Bubbles (Bottom Right Corner) -->
-  <div class="absolute bottom-8 right-4 z-[1] pointer-events-none">
-    <div class="w-40 h-40 bg-lime-300 opacity-20 rounded-full blur-2xl absolute bottom-0 right-0"></div>
-    <div class="relative bottom-2">
-      <svg width="80" height="120" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z" 
-              fill="#84cc16" stroke="#000" stroke-width="2"/>
-      </svg>
-      <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div class="w-3 h-3 bg-lime-400 rounded-full blur-sm lab-bubble absolute" style="left:-10px"></div>
-        <div class="w-4 h-4 bg-green-400 rounded-full blur-md lab-bubble absolute delay-1000" style="left:10px"></div>
-        <div class="w-2.5 h-2.5 bg-lime-500 rounded-full blur-sm lab-bubble absolute delay-2000" style="left:0px"></div>
+          <a href="#faq-economy"
+             class="inline-flex justify-center rounded-2xl bg-emerald-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-emerald-500">
+            💰 DSPOINC
+          </a>
+        </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- Footer -->
-  <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20">
-    <div class="max-w-4xl mx-auto px-6">
-      <!-- Quick Links -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <a href="index.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">🏠 Home</a>
-        <a href="whitepaper-pro.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">📜 Whitepaper</a>
-        <a href="mint.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">🎨 Mint</a>
-        <a href="get-roles.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">🏆 Get Roles</a>
-        <a href="partners.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">🤝 Partners</a>
+    <!-- Quick Answer Cards -->
+    <section class="relative py-12 px-6 bg-gradient-to-b from-slate-950 via-orange-950/25 to-slate-950 border-y border-white/5">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <a href="profile.html" class="faq-card rounded-3xl p-6 border-yellow-300/25 block">
+            <div class="text-4xl mb-4">👤</div>
+            <h3 class="text-xl font-black text-yellow-200 mb-2">I am new</h3>
+            <p class="text-sm text-slate-300">Log in with Discord, open Profile, play games, and build your Narrrfs identity.</p>
+          </a>
+
+          <a href="mint.html" class="faq-card rounded-3xl p-6 border-purple-300/25 block">
+            <div class="text-4xl mb-4">🎴</div>
+            <h3 class="text-xl font-black text-purple-200 mb-2">I want a Mouse</h3>
+            <p class="text-sm text-slate-300">The mint info page leads to the official Gensuki mint portal.</p>
+          </a>
+
+          <a href="lab.html" class="faq-card rounded-3xl p-6 border-cyan-300/25 block">
+            <div class="text-4xl mb-4">🧬</div>
+            <h3 class="text-xl font-black text-cyan-200 mb-2">I am a holder</h3>
+            <p class="text-sm text-slate-300">Verify, name your Mouse, enter the Lab, and build NFT-bound progression.</p>
+          </a>
+
+          <a href="nerd-lab.html" class="faq-card rounded-3xl p-6 border-orange-300/25 block">
+            <div class="text-4xl mb-4">🧠</div>
+            <h3 class="text-xl font-black text-orange-200 mb-2">I want details</h3>
+            <p class="text-sm text-slate-300">Nerd Lab explains the Cheese Engine, database, games, Lab, and reset logic.</p>
+          </a>
+        </div>
       </div>
-      
-      <!-- Social Links -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 transition-colors">🐦 Twitter / X</a>
-                        <a href="https://discord.gg/zgjAwzuDqV" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 transition-colors">🎮 Discord</a>
-        <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300 transition-colors">🃏 ClubGG</a>
-                  <a href="https://discord.gg/zgjAwzuDqV" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300 transition-colors">📧 Support</a>
+    </section>
+
+    <!-- FAQ Content -->
+    <section class="relative px-6 py-16 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <div class="max-w-5xl mx-auto space-y-12">
+
+        <!-- START HERE -->
+        <section id="faq-start">
+          <div class="mb-6">
+            <div class="faq-pill border border-yellow-300/35 bg-yellow-400/10 text-yellow-200 mb-4">
+              Start Here
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black text-white">The basics</h2>
+          </div>
+
+          <div class="space-y-4">
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-yellow-500" open>
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-yellow-200">💎 What is Narrrf’s World?</h3>
+                <span class="faq-chevron text-yellow-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Narrrf’s World is a Web3 gaming ecosystem built around community, games, Discord identity,
+                  Genesis Mouse NFTs, DSPOINC rewards, the Genesis Lab, Reward Chamber, staking, partners, and future gameplay direction.
+                </p>
+                <p class="mt-3">
+                  The easiest way to understand it: <strong>play first, go deeper later</strong>. New users can start with Discord,
+                  games, and events. Genesis holders can enter the deeper Lab progression lane.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-orange-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-orange-200">☀️ What is Season 12?</h3>
+                <span class="faq-chevron text-orange-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Season 12 is the current summer reset direction. It brings fresh leaderboards, a cleaner public page story,
+                  the 9-game ecosystem direction, Labyrinth Blast highlight, Genesis Lab, Reward Chamber, DSPOINC economy,
+                  staking, and clearer reset messaging.
+                </p>
+                <p class="mt-3">
+                  Season 11 becomes previous/frozen history. Season 12 is the current public context.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-cyan-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-cyan-200">🧭 What are the 2 lanes?</h3>
+                <span class="faq-chevron text-cyan-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Narrrf’s World has two simple lanes:
+                </p>
+                <ul class="list-disc list-inside mt-3 space-y-2">
+                  <li><strong>Lane 1 — Discord Player Lane:</strong> log in, play games, join events, earn DSPOINC, open rewards, and build your profile.</li>
+                  <li><strong>Lane 2 — Genesis Holder Lane:</strong> own/verify a Genesis Mouse, name it, enter the Lab, upgrade traits, and prepare for future ability direction.</li>
+                </ul>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-pink-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-pink-200">🔐 Do I need Discord?</h3>
+                <span class="faq-chevron text-pink-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Yes, Discord is the main player identity layer. It connects profile activity, roles, games, community events,
+                  Reward Chamber actions, support, and holder onboarding.
+                </p>
+                <p class="mt-3">
+                  Join here:
+                  <a href="<?php echo $discord_url; ?>" target="_blank" rel="noopener noreferrer">Narrrf’s World Discord</a>.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-emerald-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-emerald-200">🎴 Do I need a Genesis Mouse to play?</h3>
+                <span class="faq-chevron text-emerald-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  No. You can start as a normal player through Discord, games, rewards, events, and the profile system.
+                  A Genesis Mouse unlocks the deeper holder lane: verification, Lab access, custom Mouse names,
+                  trait progression, and future ability direction.
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- GAMES -->
+        <section id="faq-games">
+          <div class="mb-6">
+            <div class="faq-pill border border-pink-300/35 bg-pink-400/10 text-pink-200 mb-4">
+              Games + Leaderboards
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black text-white">Playing Season 12</h2>
+          </div>
+
+          <div class="space-y-4">
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-pink-500" open>
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-pink-200">🎮 Which games are part of the Season 12 ecosystem?</h3>
+                <span class="faq-chevron text-pink-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>The Season 12 ecosystem direction tracks 9 game/activity surfaces:</p>
+                <ol class="list-decimal list-inside mt-3 space-y-2">
+                  <li>Tetris — <code>tetris</code></li>
+                  <li>Snake — <code>snake</code></li>
+                  <li>Space Cheese Invaders — <code>space_invaders</code></li>
+                  <li>Cheese Runner — <code>cheeseman</code></li>
+                  <li>Labyrinth Blast — <code>labyrinth_blast</code></li>
+                  <li>Glyph Memory — <code>glyph_memory</code></li>
+                  <li>Cheese Hunt — <code>cheese_hunt</code></li>
+                  <li>Discord Cheese Race — <code>discord_race</code></li>
+                  <li>Cheese Rumble — <code>cheese_rumble</code></li>
+                </ol>
+                <p class="mt-3">
+                  Some are classic score games, some are event/community systems, and Glyph Memory has its own technical path.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-red-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-red-200">💥 What is Labyrinth Blast?</h3>
+                <span class="faq-chevron text-red-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Labyrinth Blast is the newest highlighted Season 12 game surface. It is a maze/action game with enemies,
+                  traps, mobile controls, pause support, role multiplier direction, and backend-controlled DSPOINC reward logic.
+                </p>
+                <p class="mt-3">
+                  Technical truth: public game name is <strong>Labyrinth Blast</strong>, game key is <code>labyrinth_blast</code>,
+                  and FOX is only the local source/build folder name.
+                </p>
+                <p class="mt-3">
+                  <a href="labyrinth-blast.html">Play Labyrinth Blast</a>
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-yellow-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-yellow-200">🏆 How do leaderboards work?</h3>
+                <span class="faq-chevron text-yellow-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Seasonal score games save scores under the active season. The backend reads the active season from
+                  <code>tbl_seasons</code> and uses Season 12 fallback where updated.
+                </p>
+                <p class="mt-3">
+                  If a brand-new season has too few scores, some leaderboard views can show a previous frozen leaderboard
+                  until enough new-season activity exists.
+                </p>
+                <p class="mt-3">
+                  <a href="leaderboard.html">Open Leaderboard</a>
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-purple-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-purple-200">🔮 Why is Glyph Memory special?</h3>
+                <span class="faq-chevron text-purple-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Glyph Memory is not just another arcade score row. It uses its own memory/time-trial path and needs
+                  separate reset/archive handling. That is why we do not blindly treat it like Tetris, Snake, Invaders,
+                  Cheese Runner, or Labyrinth Blast.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-green-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-green-200">💣 What are Cheese Race and Cheese Rumble?</h3>
+                <span class="faq-chevron text-green-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Cheese Race and Cheese Rumble are Discord/community event lanes. They help keep the world active outside
+                  normal browser games and are important testing grounds for future role and ability ideas.
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- LAB + HOLDERS -->
+        <section id="faq-lab">
+          <div class="mb-6">
+            <div class="faq-pill border border-cyan-300/35 bg-cyan-400/10 text-cyan-200 mb-4">
+              Genesis Lab + Holders
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black text-white">Going deeper with a Genesis Mouse</h2>
+          </div>
+
+          <div class="space-y-4">
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-cyan-500" open>
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-cyan-200">🧬 What is the Genesis Lab?</h3>
+                <span class="faq-chevron text-cyan-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Genesis Lab is the holder progression layer. It loads verified Genesis Mouse identity, displays traits,
+                  supports custom Mouse names, tracks trait upgrade state, uses timed research cycles, and prepares the
+                  foundation for future ability-based gameplay.
+                </p>
+                <p class="mt-3">
+                  <a href="lab.html">Enter Genesis Lab</a>
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-blue-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-blue-200">🧬 What are NFT-bound upgrades?</h3>
+                <span class="faq-chevron text-blue-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  NFT-bound upgrade direction means your verified Genesis Mouse can become a progression identity inside Narrrf’s World.
+                  Names, traits, Lab history, and upgrade state can become part of the holder lane.
+                </p>
+                <p class="mt-3">
+                  Important: marketplace actions should not be described as mutating the Genesis Mouse. NFT-bound progression stays controlled through verified Lab upgrade paths.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-pink-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-pink-200">✍️ Can I name my Mouse?</h3>
+                <span class="faq-chevron text-pink-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Yes. Custom Mouse names are part of the player-facing Lab identity. They help holders personalize their Mouse.
+                </p>
+                <p class="mt-3">
+                  Safety rule: custom names are display labels only. They do not replace token ID, metadata name,
+                  upgrade identity, marketplace identity, or ownership checks.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-purple-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-purple-200">🏆 How do I get holder roles?</h3>
+                <span class="faq-chevron text-purple-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Go to the Get Roles page, connect/verify as required, and follow the holder verification flow.
+                  Roles help connect Discord identity, holder access, profile display, rewards, and future utility direction.
+                </p>
+                <p class="mt-3">
+                  <a href="get-roles.html">Open Get Roles</a>
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-orange-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-orange-200">🎴 Where do I mint?</h3>
+                <span class="faq-chevron text-orange-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Narrrf’s World uses the official Gensuki mint page for minting. The Narrrfs mint page is now mainly an info
+                  and guidance page that leads users to Gensuki.
+                </p>
+                <p class="mt-3">
+                  <a href="mint.html">Open Mint Info</a>
+                  or
+                  <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer">go directly to Gensuki</a>.
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- ECONOMY -->
+        <section id="faq-economy">
+          <div class="mb-6">
+            <div class="faq-pill border border-emerald-300/35 bg-emerald-400/10 text-emerald-200 mb-4">
+              DSPOINC + Rewards
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black text-white">Economy, rewards, and permanent progress</h2>
+          </div>
+
+          <div class="space-y-4">
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-emerald-500" open>
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-emerald-200">💰 What is DSPOINC?</h3>
+                <span class="faq-chevron text-emerald-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  DSPOINC is the live in-ecosystem utility currency. It connects gameplay rewards, Lab actions,
+                  Reward Chamber, staking, marketplace direction, and player activity.
+                </p>
+                <p class="mt-3">
+                  It is not a guaranteed return promise. It is the current ecosystem utility layer.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-yellow-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-yellow-200">🎁 What is Reward Chamber?</h3>
+                <span class="faq-chevron text-yellow-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Reward Chamber is the profile reward layer. It contains the 3-box reward structure:
+                </p>
+                <ul class="list-disc list-inside mt-3 space-y-2">
+                  <li><strong>Box 1:</strong> free daily DSPOINC reward loop.</li>
+                  <li><strong>Box 2:</strong> paid DSPOINC lootbox with weighted reward pools.</li>
+                  <li><strong>Box 3:</strong> premium claim path that can require admin/mod follow-up.</li>
+                </ul>
+                <p class="mt-3">
+                  <a href="profile.html#profile-chest-section">Open Reward Chamber</a>
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-blue-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-blue-200">🧊 What is DSPOINC staking?</h3>
+                <span class="faq-chevron text-blue-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Staking lets players freeze DSPOINC for a selected period and claim according to the live staking rules.
+                  Frozen DSPOINC should not be treated as spendable until it is completed or unstaked.
+                </p>
+                <p class="mt-3">
+                  <a href="stake-lab.html">Open Stake Lab</a>
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-purple-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-purple-200">🛒 What can I trade in the marketplace?</h3>
+                <span class="faq-chevron text-purple-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Marketplace direction is for Genetic items and eligible player inventory pieces, not for mutating the Genesis Mouse itself.
+                  Boosters are earned through lootboxes/reward systems and should not be described as tradeable unless the live marketplace supports it.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-red-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-red-200">🔄 What resets and what stays safe?</h3>
+                <span class="faq-chevron text-red-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Seasonal leaderboards can reset so competition feels fresh. Permanent systems stay safe:
+                </p>
+                <ul class="list-disc list-inside mt-3 space-y-2">
+                  <li>Genesis Lab progression</li>
+                  <li>Mouse custom names</li>
+                  <li>NFT-bound trait / upgrade state</li>
+                  <li>Reward Chamber history</li>
+                  <li>DSPOINC balances</li>
+                  <li>staking</li>
+                  <li>inventory</li>
+                  <li>marketplace state</li>
+                  <li>wallet links</li>
+                  <li>holder identity</li>
+                  <li>profile identity</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- FUTURE + SUPPORT -->
+        <section id="faq-future">
+          <div class="mb-6">
+            <div class="faq-pill border border-indigo-300/35 bg-indigo-400/10 text-indigo-200 mb-4">
+              Future + Support
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black text-white">Roadmap and help</h2>
+          </div>
+
+          <div class="space-y-4">
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-indigo-500" open>
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-indigo-200">🏛️ What about the 3D Riddle Game?</h3>
+                <span class="faq-chevron text-indigo-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  The 3D Riddle Game remains a major future pillar. The current public/investor direction treats the 3D alpha
+                  as a later 2027 target path, depending on readiness, testing, system stability, and development resources.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-cyan-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-cyan-200">🧠 Where can I read the technical system explanation?</h3>
+                <span class="faq-chevron text-cyan-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Use Nerd Lab for a customer-friendly technical guide to the Cheese Engine, two lanes, games, database logic,
+                  Lab, Reward Chamber, DSPOINC, and season reset behavior.
+                </p>
+                <p class="mt-3">
+                  <a href="nerd-lab.html">Open Nerd Lab</a>
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-yellow-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-yellow-200">📜 Which page should investors read?</h3>
+                <span class="faq-chevron text-yellow-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  The public Whitepaper gives the clean overview. The Pro Whitepaper gives the deeper investor-facing roadmap,
+                  including 2025 history, 2026 utility, the 2026 → 2027 bridge, 2027 alpha expansion, and 2028–2030 direction.
+                </p>
+                <p class="mt-3">
+                  <a href="whitepaper.html">Read Whitepaper</a>
+                  or
+                  <a href="whitepaper-pro.html">Read Pro Whitepaper</a>.
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-green-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-green-200">🤝 How do partners fit into Narrrf’s World?</h3>
+                <span class="faq-chevron text-green-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Partners support events, spaces, mint awareness, games, art, holder culture, Web3 education,
+                  cross-community activity, and onboarding. Partner events help bring new players into Lane 1 and create
+                  stronger paths for Genesis holders in Lane 2.
+                </p>
+                <p class="mt-3">
+                  <a href="partners.html">View Partner Network</a>
+                </p>
+              </div>
+            </details>
+
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-orange-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-orange-200">🆘 Where do I get help?</h3>
+                <span class="faq-chevron text-orange-300">⌄</span>
+              </summary>
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  The fastest help path is Discord. Open a ticket or ask in the correct community channel.
+                  For public info, use FAQ, Nerd Lab, Project Updates, and the Whitepaper pages.
+                </p>
+                <p class="mt-3">
+                  <a href="<?php echo $discord_url; ?>" target="_blank" rel="noopener noreferrer">Join Discord / Open Ticket</a>
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
+
       </div>
-      
-      <!-- Legal Links -->
-      <div class="flex flex-wrap justify-center gap-6 mb-8">
-        <a href="privacy-policy.html" class="text-gray-400 hover:text-gray-300 transition-colors">🍪 Privacy Policy</a>
-        <a href="faq.html" class="text-gray-400 hover:text-gray-300 transition-colors">❓ FAQ</a>
-        <a href="profile.html" class="text-gray-400 hover:text-gray-300 transition-colors">👤 Profile</a>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="relative py-16 px-6 bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-400 text-slate-950 overflow-hidden border-t border-yellow-200/40">
+      <div class="max-w-6xl mx-auto text-center">
+        <h2 class="text-4xl md:text-5xl font-black mb-4">
+          Still confused?
+        </h2>
+
+        <p class="max-w-3xl mx-auto text-base md:text-lg font-bold mb-8">
+          Start with the profile, then join Discord. The ecosystem becomes easier when you play one game, open one reward, and see your progress.
+        </p>
+
+        <div class="flex flex-col md:flex-row justify-center gap-4">
+          <a href="profile.html" class="inline-flex justify-center rounded-2xl bg-slate-950 px-7 py-4 font-black text-yellow-200 shadow-xl transition hover:scale-105">
+            👤 Open Profile
+          </a>
+
+          <a href="lab.html" class="inline-flex justify-center rounded-2xl bg-purple-700 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105">
+            🧬 Enter Lab
+          </a>
+
+          <a href="leaderboard.html" class="inline-flex justify-center rounded-2xl bg-pink-700 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105">
+            🏆 Leaderboards
+          </a>
+
+          <a href="<?php echo $discord_url; ?>" target="_blank" rel="noopener noreferrer" class="inline-flex justify-center rounded-2xl bg-indigo-700 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105">
+            💬 Join Discord
+          </a>
+        </div>
       </div>
-      
-      <!-- Copyright -->
-      <p class="mb-4">
-        Made with 🧪 & strategy in Narrrf's Lab | 
-        <a href="<?php echo $discord_url; ?>" class="text-yellow-400 hover:text-yellow-300 underline transition-colors">
-          Join us on Discord
+    </section>
+  </main>
+
+  <!-- ☀️ Footer Season 12 - FAQ Footer -->
+  <footer class="relative z-10 bg-slate-950 text-center px-6 py-12 border-t border-yellow-300/20 overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl"></div>
+      <div class="absolute bottom-0 left-10 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl"></div>
+      <div class="absolute bottom-0 right-10 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl"></div>
+    </div>
+
+    <div class="relative z-10 max-w-6xl mx-auto">
+      <div class="mb-8">
+        <a
+          href="#top"
+          class="inline-flex items-center justify-center rounded-full border border-yellow-300/25 bg-yellow-400/10 px-5 py-2 text-sm font-black text-yellow-100 transition-all duration-200 hover:scale-105 hover:bg-yellow-400 hover:text-slate-950"
+        >
+          🔝 Back to Top
         </a>
-      </p>
-      <p class="text-sm">
-        © 2025 Narrrf's World. Built with brain & cheese 🧠🧀 | 
-        <a href="privacy-policy.html" class="text-gray-500 hover:text-gray-300 underline">Privacy Policy</a> | 
-        <a href="faq.html" class="text-gray-500 hover:text-gray-300 underline">FAQ</a> | 
-        <a href="3d-riddle.html" class="text-gray-500 hover:text-gray-300 underline">3D Riddle Game</a>
-      </p>
+      </div>
+
+      <div class="mb-8">
+        <div class="inline-flex items-center justify-center rounded-full border border-orange-300/30 bg-orange-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-orange-200 mb-4">
+          ☀️ Season 12 Help Center
+        </div>
+
+        <h2 class="text-3xl md:text-4xl font-black text-white mb-3">
+          ❓ Narrrf's World FAQ
+        </h2>
+
+        <p class="max-w-2xl mx-auto text-sm md:text-base text-slate-300 leading-relaxed">
+          Fast answers for players, holders, partners, and new community members:
+          2 lanes, games, Lab, Reward Chamber, DSPOINC, staking, roles, minting, and future direction.
+        </p>
+      </div>
+
+      <div class="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+        <a href="/index.html" class="inline-flex items-center justify-center rounded-2xl border border-yellow-300/20 bg-yellow-400/10 px-4 py-3 font-black text-yellow-100 transition hover:scale-105 hover:bg-yellow-400 hover:text-slate-950">🏠 Home</a>
+        <a href="/profile.html" class="inline-flex items-center justify-center rounded-2xl border border-orange-300/20 bg-orange-400/10 px-4 py-3 font-black text-orange-100 transition hover:scale-105 hover:bg-orange-400 hover:text-slate-950">👤 Profile</a>
+        <a href="/leaderboard.html" class="inline-flex items-center justify-center rounded-2xl border border-pink-300/20 bg-pink-500/10 px-4 py-3 font-black text-pink-100 transition hover:scale-105 hover:bg-pink-500 hover:text-white">🏆 Boards</a>
+        <a href="/lab.html" class="inline-flex items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-3 font-black text-cyan-100 transition hover:scale-105 hover:bg-cyan-400 hover:text-slate-950">🧬 Lab</a>
+        <a href="/mint.html" class="inline-flex items-center justify-center rounded-2xl border border-purple-300/20 bg-purple-500/10 px-4 py-3 font-black text-purple-100 transition hover:scale-105 hover:bg-purple-500 hover:text-white">🎴 Mint</a>
+        <a href="/whitepaper.html" class="inline-flex items-center justify-center rounded-2xl border border-blue-300/20 bg-blue-500/10 px-4 py-3 font-black text-blue-100 transition hover:scale-105 hover:bg-blue-500 hover:text-white">📜 Lite Paper</a>
+        <a href="/whitepaper-pro.html" class="inline-flex items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 font-black text-emerald-100 transition hover:scale-105 hover:bg-emerald-500 hover:text-white">🧠 Pro Paper</a>
+        <a href="/nerd-lab.html" class="inline-flex items-center justify-center rounded-2xl border border-slate-300/20 bg-white/5 px-4 py-3 font-black text-slate-200 transition hover:scale-105 hover:bg-white/10 hover:text-white">🧠 Nerd Lab</a>
+      </div>
+
+      <div class="mb-8 flex flex-col sm:flex-row justify-center gap-3">
+        <a href="<?php echo $discord_url; ?>" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 font-black text-white shadow-xl transition-all duration-200 hover:scale-105 hover:bg-indigo-500">
+          💬 Join Discord
+        </a>
+
+        <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 px-6 py-3 font-black text-slate-950 shadow-xl transition-all duration-200 hover:scale-105">
+          🧬 Official Gensuki Mint
+        </a>
+      </div>
+
+      <div class="pt-6 border-t border-yellow-300/20 text-xs text-slate-400">
+        <div class="mb-2 font-semibold text-yellow-100/80">
+          © 2026 Narrrf's World. Built with brain, cheese, and community chaos 🧠🧀
+        </div>
+        <div class="text-slate-500">
+          ☀️ Season 12 • FAQ • 9-game ecosystem • Genesis Lab • Reward Chamber • DSPOINC economy
+        </div>
+      </div>
     </div>
   </footer>
 
-  <!-- Global Wallet Connect + PFP Script -->
-  <script>
-    async function connectWallet() {
-      const avatar = document.getElementById('user-avatar');
-      const connectButton = document.getElementById('connect-wallet-btn');
-
-      if ('solana' in window) {
-        const provider = window.solana;
-
-        if (provider.isPhantom) {
-          try {
-            const response = await provider.connect();
-            const walletAddress = response.publicKey.toString();
-
-            // Store wallet
-            localStorage.setItem('walletAddress', walletAddress);
-
-            // Update UI
-            connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-            connectButton.disabled = true;
-            avatar.classList.remove('hidden');
-          } catch (err) {
-            console.error("❌ Wallet connect error:", err);
-          }
-        }
-      }
-    }
-
-    // Auto-show avatar if logged in
-    window.addEventListener('DOMContentLoaded', () => {
-      const storedWallet = localStorage.getItem('walletAddress');
-      const avatar = document.getElementById('user-avatar');
-      const connectButton = document.getElementById('connect-wallet-btn');
-
-      if (storedWallet && avatar && connectButton) {
-        avatar.classList.remove('hidden');
-        connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${walletAddress.slice(-4)}`;
-        connectButton.disabled = true;
-      }
-    });
-
-    function disconnectWallet() {
-      localStorage.removeItem('walletAddress');
-      const avatar = document.getElementById('user-avatar');
-      const connectButton = document.getElementById('connect-wallet-btn');
-      if (avatar) avatar.classList.add('hidden');
-      if (connectButton) {
-        connectButton.innerText = '🔌 Connect Wallet';
-        connectButton.disabled = false;
-      }
-    }
-  </script>
-
-  <!-- 🐭 FAQ Mouse Mascot -->
-  <div class="fixed bottom-8 left-8 z-40">
-    <img 
-      src="img/faq-mouse1.png" 
-      alt="FAQ Mouse Mascot"
-      class="w-32 md:w-40 hover:scale-105 transition-transform duration-300 drop-shadow-xl"
-      title="Need help? I'm the FAQ Mouse! Click me to join our Discord."
-      onclick="window.open('<?php echo $discord_url; ?>', '_blank')"
-      style="cursor: pointer;" />
-  </div>
-
-  <!-- Add wallet.js before the closing body tag -->
+  <!-- ✅ Wallet Connect & Avatar
+       DEVS FOR DECADES:
+       Keep this script include. The buttons above preserve the expected IDs:
+       connect-wallet-btn, user-avatar, wallet-disconnect. -->
   <script src="js/wallet.js"></script>
 </body>
-<script src="js/cheese-auth-indicator.js"></script>
 </html>
-
+```
