@@ -1944,7 +1944,7 @@ const requestData = {
       <h4 class="font-bold text-sm mb-1">NFT Holder?</h4>
       <p class="text-xs text-purple-100 mb-3 leading-relaxed">Verify your NFTs to unlock exclusive Discord roles and features!</p>
       <div class="flex gap-2">
-        <a href="/profile.html#nft-verification" 
+        <a href="profile.html?verify=1#holder-verification" 
            class="bg-white text-purple-600 hover:bg-purple-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
           🔍 Verify Now
         </a>
@@ -2506,10 +2506,12 @@ const requestData = {
                   and fresh Season 12 moments hosted by the Narrrf’s Lab team.
                 </p>
               </div>
-              <a href="profile.html#game-section"
-                 class="inline-flex justify-center rounded-2xl bg-lime-400 px-5 py-3 font-black text-slate-950 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-lime-300">
-                Join the Battle →
-              </a>
+             <a href="https://discord.gg/zgjAwzuDqV"
+   target="_blank"
+   rel="noopener noreferrer"
+   class="inline-flex justify-center rounded-2xl bg-lime-400 px-5 py-3 font-black text-slate-950 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-lime-300">
+  Join the Battle →
+</a>
             </div>
           </article>
 
@@ -2702,7 +2704,7 @@ const requestData = {
       </p>
       <div class="flex flex-col gap-3">
         <a href="stake-lab.html" class="inline-flex justify-center rounded-2xl bg-cyan-500 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-cyan-400">🧊 Enter Stake Lab</a>
-        <a href="profile.html#staking" class="inline-flex justify-center rounded-2xl bg-white/10 px-5 py-3 font-black text-cyan-100 border border-cyan-300/25 transition hover:bg-white/15">💰 View Staking</a>
+        <a href="stake-lab.html" class="inline-flex justify-center rounded-2xl bg-white/10 px-5 py-3 font-black text-cyan-100 border border-cyan-300/25 transition hover:bg-white/15">💰 View Staking</a>
       </div>
     </article>
 
@@ -2714,7 +2716,7 @@ const requestData = {
         Own or mint a Genesis Mouse, connect your wallet, verify holder access, name your Mouse, and enter the deeper Lab lane.
       </p>
       <div class="flex flex-col gap-3">
-        <a href="/profile.html#nft-verification" class="inline-flex justify-center rounded-2xl bg-yellow-400 px-5 py-3 font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-yellow-300">🔍 Verify NFTs</a>
+        <a href="profile.html?verify=1#holder-verification" class="inline-flex justify-center rounded-2xl bg-yellow-400 px-5 py-3 font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-yellow-300">🔍 Verify NFTs</a>
         <a href="mint.html" class="inline-flex justify-center rounded-2xl bg-purple-600 px-5 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-purple-500">🧬 Mint Genesis</a>
       </div>
     </article>
@@ -2749,7 +2751,7 @@ const requestData = {
   <!-- 🎛️ Slider Toggle Controls -->
   <div class="flex justify-center gap-6 mb-10">
     <button onclick="toggleSliderMode('exp')" class="bg-gradient-to-r from-yellow-300 to-orange-400 hover:from-yellow-200 hover:to-orange-300 text-slate-950 font-black px-6 py-3 rounded-2xl shadow-xl transition-all duration-300 border border-yellow-200 transform hover:scale-105">
-  🧪 Experiment Mode
+  🧪 Genesis Genetic Mode
 </button>
     <button onclick="toggleSliderMode('art')" class="bg-gradient-to-r from-fuchsia-500 to-purple-700 hover:from-fuchsia-400 hover:to-purple-600 text-white font-black px-6 py-3 rounded-2xl shadow-xl transition-all duration-300 border border-fuchsia-300 transform hover:scale-105">
   🧀 HDR Cheese Gallery
@@ -4097,7 +4099,7 @@ function handleHDRDragEnd() {
             <p class="text-green-100 text-sm">Ready to verify your NFTs and unlock exclusive roles?</p>
           </div>
         </div>
-        <a href="/profile.html#nft-verification" 
+        <a href="profile.html?verify=1#holder-verification" 
            class="bg-white text-green-600 hover:bg-green-50 font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105">
           🔍 Go Verify
         </a>
@@ -4111,7 +4113,7 @@ function handleHDRDragEnd() {
     }
 
     // Update the main CTA button to be more personalized
-    const mainCTA = nftSection.querySelector('a[href="/profile.html#nft-verification"]');
+    const mainCTA = nftSection.querySelector('a[href="profile.html?verify=1#holder-verification"]');
     if (mainCTA) {
       mainCTA.innerHTML = `
         <span class="text-xl">🚀</span>

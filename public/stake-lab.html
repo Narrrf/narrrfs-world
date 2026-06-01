@@ -8,14 +8,14 @@ require_once 'discord-invite.php';
   <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🧊 DSPOINC Staking Lab | Narrrf's World</title>
+  <title>☀️ DSPOINC Staking Lab — Season 12 | Narrrf's World</title>
 
   <!-- 🧀 Favicon & Metadata insert -->
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
   <link rel="shortcut icon" href="favicon-phantom.png" type="image/png" />
   <link rel="apple-touch-icon" href="favicon-phantom.png" />
-  <meta name="theme-color" content="#0ea5e9" />
-  <meta name="description" content="Freeze your DSPOINC and earn rewards - DSPOINC Staking System for Narrrf's World" />
+  <meta name="theme-color" content="#f97316" />
+<meta name="description" content="Season 12 DSPOINC Staking Lab for Narrrf's World: freeze DSPOINC, track rewards, and use the connected holder verification lane safely." />
   <meta name="robots" content="noindex, nofollow" />
 
   <!-- 🧵 OpenGraph for Discord & Socials -->
@@ -144,13 +144,111 @@ require_once 'discord-invite.php';
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
+   html {
+  scroll-behavior: smooth;
+}
+
+/* ☀️ Season 12 Stake Lab shell.
+   DEVS FOR DECADES:
+   These classes are visual-only. They do not control staking balances,
+   freeze periods, rewards, wallet verification, Discord access, API calls,
+   DSPOINC ledger writes, or claim logic. Backend staking logic stays authoritative. */
+.stake-season12-shell {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(250, 204, 21, 0.18), transparent 30%),
+    radial-gradient(circle at 84% 18%, rgba(236, 72, 153, 0.16), transparent 30%),
+    radial-gradient(circle at 50% 82%, rgba(34, 211, 238, 0.16), transparent 34%),
+    linear-gradient(135deg, #020617 0%, #1e1b4b 42%, #431407 100%);
+}
+
+.stake-season12-header {
+  background: rgba(0, 0, 0, 0.86);
+  border-bottom: 1px solid rgba(250, 204, 21, 0.28);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.34);
+}
+
+.stake-season12-badge {
+  background: linear-gradient(135deg, #f97316, #db2777);
+  border: 1px solid rgba(253, 186, 116, 0.55);
+  box-shadow: 0 0 24px rgba(249, 115, 22, 0.22);
+}
+
+.stake-season12-hero {
+  border: 1px solid rgba(250, 204, 21, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.16), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.13), transparent 34%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(67, 20, 7, 0.88));
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.36),
+    0 0 40px rgba(249, 115, 22, 0.10);
+}
+
+.stake-season12-card {
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74));
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+}
+
+.stake-season12-card:hover {
+  border-color: rgba(250, 204, 21, 0.28);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.36), 0 0 30px rgba(249, 115, 22, 0.08);
+}
+
+.stake-season12-orb {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 9999px;
+  filter: blur(18px);
+  opacity: 0.45;
+  animation: float 8s ease-in-out infinite;
+}
+
+.stake-season12-orb.orange {
+  width: 14rem;
+  height: 14rem;
+  top: 8%;
+  left: -5rem;
+  background: rgba(249, 115, 22, 0.22);
+}
+
+.stake-season12-orb.pink {
+  width: 16rem;
+  height: 16rem;
+  top: 28%;
+  right: -6rem;
+  background: rgba(236, 72, 153, 0.18);
+  animation-delay: 1.5s;
+}
+
+.stake-season12-orb.cyan {
+  width: 15rem;
+  height: 15rem;
+  bottom: 8%;
+  left: 30%;
+  background: rgba(34, 211, 238, 0.16);
+  animation-delay: 3s;
+}
+
+@media (max-width: 768px) {
+  .stake-season12-badge {
+    top: 0.75rem;
+    left: 0.75rem;
+    font-size: 0.68rem;
+    padding: 0.45rem 0.7rem;
+  }
+
+  .stake-season12-header nav {
+    display: none;
+  }
+}
   </style>
 </head>
 
-<body class="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+<body class="stake-season12-shell relative text-white font-sans min-h-screen overflow-x-hidden">
 
   <!-- 🌟 Floating Background Elements -->
   <div class="fixed inset-0 pointer-events-none z-0">
@@ -160,15 +258,23 @@ require_once 'discord-invite.php';
     <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
   </div>
 
+  <!-- ☀️ Season 12 visual atmosphere.
+     DEVS FOR DECADES:
+     These orbs are visual-only and must never affect staking, rewards,
+     wallet checks, Discord login, verification, or backend economy logic. -->
+<div class="stake-season12-orb orange"></div>
+<div class="stake-season12-orb pink"></div>
+<div class="stake-season12-orb cyan"></div>
+
   <!-- 🧊 Lab Status Badge -->
-  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-blue-400">
-    🧊 Staking Lab v1.0
-  </div>
+ <div class="stake-season12-badge fixed top-4 left-4 z-50 text-white text-xs font-black px-4 py-2 rounded-full shadow-lg">
+  ☀️ Season 12 Stake Lab
+</div>
 
   <!-- 🧭 Navigation Bar (Sticky Top) -->
-  <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-blue-400/30">
+  <header class="stake-season12-header backdrop-blur-md text-white py-4 px-6 sticky top-0 z-40">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <a href="index.html" class="text-xl font-bold tracking-tight text-blue-400">🧠 Narrrf's World</a>
+      <a href="index.html" class="text-xl font-black tracking-tight text-yellow-300">☀️ Narrrf's World — Stake Lab</a>
 
       <!-- 🧠 Main Navigation -->
       <nav aria-label="Main Navigation" class="space-x-4 text-sm md:text-base flex items-center">
@@ -213,15 +319,18 @@ require_once 'discord-invite.php';
   <div id="main-content" style="display: none;">
 
     <!-- 🏆 Hero Section -->
-    <section class="relative z-10 py-20 px-4 md:px-6 text-center">
-      <div class="max-w-6xl mx-auto">
-        <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-blue-400 via-cyan-400 to-sky-400 bg-clip-text text-transparent">
-          🧊 DSPOINC Staking Lab
-        </h1>
+    <section class="relative z-10 py-16 md:py-20 px-4 md:px-6 text-center">
+  <div class="stake-season12-hero max-w-6xl mx-auto rounded-[2rem] px-5 py-10 md:px-10 md:py-14">
+        <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.28em] text-yellow-200 mb-5">
+  ☀️ Season 12 Permanent Economy Layer
+</div>
+<h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-200 via-orange-300 to-pink-300 bg-clip-text text-transparent">
+  🧊 DSPOINC Staking Lab
+</h1>
         <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
           Freeze your DSPOINC for selected durations and earn rewards. You can also verify and save your Narrrfs World NFTs directly on this page.
         </p>
-        <div class="bg-blue-900/30 border border-blue-500/50 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
+        <div class="stake-season12-card rounded-2xl p-5 mb-6 max-w-2xl mx-auto">
           <p class="text-blue-100 text-sm">
             <strong>How It Works:</strong> Freeze your DSPOINC for 1, 3, 6, 12, 24, or 36 months. After the freeze period, receive your original DSPOINC plus a reward bonus. All transactions are tracked in your DSPOINC Journey.
           </p>
@@ -698,20 +807,30 @@ require_once 'discord-invite.php';
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-blue-500/20">
-      <div class="max-w-4xl mx-auto px-6">
-        <p class="mb-4">
-          Made with 🧊 & strategy in Narrrf's Lab | 
-          <a href="<?php echo $discord_url; ?>" class="text-blue-400 hover:text-blue-300 underline transition-colors">
-            Join us on Discord
-          </a>
-        </p>
-        <p class="text-sm">
-          © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
-        </p>
-      </div>
-    </footer>
+    <!-- ☀️ Season 12 Footer.
+     DEVS FOR DECADES:
+     Footer links are navigation only. They do not change staking status,
+     DSPOINC balance, reward claims, wallet verification, or Discord identity. -->
+<footer class="relative z-10 border-t border-yellow-300/15 bg-black/35 py-12 text-center text-slate-300">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="mb-5 text-xs uppercase tracking-[0.28em] text-yellow-200/80">
+      ☀️ Season 12 • Permanent systems stay safe
+    </div>
+    <p class="mb-4 text-sm md:text-base">
+      DSPOINC Staking Lab connects the player economy with profile history, Reward Chamber direction,
+      and the long-term Narrrfs World utility layer.
+    </p>
+    <div class="flex flex-wrap justify-center gap-3 text-sm font-bold">
+      <a href="index.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-yellow-100 hover:bg-white/10">Home</a>
+      <a href="profile.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-cyan-100 hover:bg-white/10">Profile</a>
+      <a href="lab.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-pink-100 hover:bg-white/10">Genesis Lab</a>
+      <a href="<?php echo $discord_url; ?>" target="_blank" rel="noopener noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-purple-100 hover:bg-white/10">Discord</a>
+    </div>
+    <p class="mt-6 text-xs text-slate-500">
+      © 2026 Narrrf's World. Built with brain, cheese, and summer lab energy 🧠🧀
+    </p>
+  </div>
+</footer>
 
   </div>
 

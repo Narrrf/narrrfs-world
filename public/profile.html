@@ -4565,8 +4565,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 </section>
 
 <!-- 🎴 Web3 Wallet Verification Section -->
-<section id="holder-verification" class="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl p-6 shadow-2xl my-20 relative z-10 border border-purple-500/30">
-  <div class="text-center">
+<section id="holder-verification" class="scroll-mt-32 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl p-6 shadow-2xl my-20 relative z-10 border border-purple-500/30">  <div class="text-center">
     <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2 animate-neon-glow">
       🎴 NFT Holder Verification
     </h2>
@@ -14972,6 +14971,86 @@ function scrollToProfileHub() {
     console.error('❌ Failed to jump to Profile Hub:', error);
   }
 }
+</script>
+<script>
+  /**
+   * Deep-link users directly to NFT Holder Verification.
+   * Plain language for DEVS:
+   * The Season 12 profile uses a tabbed Profile Hub.
+   * Holder Verification is moved into the "Holder Verify" / nfts tab after page boot.
+   * A normal #holder-verification hash can land at the top because the target is hidden
+   * until the correct tab is active. This helper opens the nfts tab first, then scrolls.
+   */
+  (function handleHolderVerificationDeepLink() {
+    const params = new URLSearchParams(window.location.search);
+    const shouldOpenVerification =
+      window.location.hash === '#holder-verification' ||
+      params.get('verify') === '1';
+
+    if (!shouldOpenVerification) {
+      return;
+    }
+
+    function openHolderVerificationTab() {
+      if (typeof window.activateProfileHubTab === 'function') {
+        window.activateProfileHubTab('nfts');
+        return true;
+      }
+
+      const holderVerifyButton = document.querySelector('[data-tab="nfts"]');
+      if (holderVerifyButton) {
+        holderVerifyButton.click();
+        return true;
+      }
+
+      return false;
+    }
+
+    function scrollToHolderVerification() {
+      openHolderVerificationTab();
+
+      const verificationSection = document.getElementById('holder-verification');
+      const profileHub = document.getElementById('profile-hub');
+
+      if (!verificationSection) {
+        if (profileHub) {
+          profileHub.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+
+        return;
+      }
+
+      verificationSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+
+      verificationSection.classList.add('ring-4', 'ring-yellow-300/60');
+
+      window.setTimeout(() => {
+        verificationSection.classList.remove('ring-4', 'ring-yellow-300/60');
+      }, 2600);
+    }
+
+    function runHolderVerificationDeepLink() {
+      scrollToHolderVerification();
+      window.setTimeout(scrollToHolderVerification, 250);
+      window.setTimeout(scrollToHolderVerification, 700);
+      window.setTimeout(scrollToHolderVerification, 1300);
+      window.setTimeout(scrollToHolderVerification, 2200);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runHolderVerificationDeepLink);
+    } else {
+      runHolderVerificationDeepLink();
+    }
+
+    window.addEventListener('load', runHolderVerificationDeepLink);
+  })();
 </script>
 </body>
 </html>

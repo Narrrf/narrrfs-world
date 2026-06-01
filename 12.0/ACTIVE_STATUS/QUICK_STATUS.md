@@ -1,5 +1,332 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## ✅ UPDATE — MAY 31, 2026 — SEASON 12 RESET COMPLETE / LIVE SMOKE TEST PASSED
+
+### Status
+
+Season 12 reset is complete and live.
+
+Render restart/deploy finished successfully.
+
+Post-deploy smoke testing was completed across the full game ecosystem.
+
+### Confirmed live after deploy
+
+Season 12 is active on production.
+
+The website, profile system, leaderboards, and game score sync are working.
+
+Test scores were made successfully in all relevant games and confirmed to sync into:
+
+```text
+profile.html
+leaderboard.html
+Season 12 score tables / active leaderboard views
+```
+
+### Game smoke test status
+
+Confirmed working after Season 12 activation:
+
+```text
+Tetris
+Snake
+Space Cheese Invaders
+Cheeseman
+Labyrinth Blast
+Glyph Memory
+```
+
+Scores are saving into Season 12 and displaying correctly on profile and leaderboards.
+
+### Reset / archive status
+
+Season 11 was archived before Season 12 activation.
+
+Confirmed archive results:
+
+```text
+games_archived: 67
+cheese_users_archived: 96
+glyph_rows_archived: 52
+```
+
+Verified archive tables:
+
+```text
+tbl_historical_stats
+tbl_historical_glyph_stats
+tbl_historical_cheese_stats
+```
+
+Season 11 source rows remain preserved in `tbl_tetris_scores`.
+
+Important: do not delete Season 11 source rows. They are historical fallback safety.
+
+### Database safety status
+
+Pre-reset snapshot was created and verified:
+
+```text
+/data/narrrf_world_season11_cutoff_20260531_215420.sqlite
+Integrity check: ok
+```
+
+Season 12 activation verified:
+
+```text
+Season 12 active
+exactly one active season
+```
+
+Real Season 12 score writes were confirmed immediately after activation and must not be deleted.
+
+### Protected systems
+
+The reset did not touch permanent systems:
+
+```text
+DSPOINC balances
+staking
+Reward Chamber
+Genesis Lab progression
+custom names
+NFT-bound upgrades
+Genetic inventory
+marketplace state
+wallet links
+holder identity
+roles / access state
+profile identity
+```
+
+### Frontend status
+
+Season 12 public/frontend sync was deployed.
+
+Main pages were refreshed into the Season 12 summer theme:
+
+```text
+index.html
+profile.html
+leaderboard.html
+lab.html
+get-roles.html
+mint.html
+faq.html
+finances.html
+whitepaper.html
+whitepaper-pro.html
+project-updates.html
+nerd-lab.html
+partners.html
+admin-interface.html
+game entry pages
+```
+
+Labyrinth Blast build assets were updated and deployed.
+
+### Current known status
+
+No active blocker at shutdown.
+
+Season 12 is live, scores are saving, profile sync works, and leaderboards update correctly.
+
+### Next recommended check tomorrow
+
+Do a calm morning review:
+
+```text
+1. Verify overnight Season 12 rows by game.
+2. Check profile page for multiple users.
+3. Check leaderboard sorting and frozen Season 11 display.
+4. Check Labyrinth Blast browser console once.
+5. Check admin-interface Season 12 stats.
+6. Copy live DB to /data again after more overnight scores if needed.
+7. Clean QUICK_STATUS duplicate older sections later for agent readability.
+```
+
+### Shutdown note
+
+Season Reset 2.0 work can stop for today.
+
+Do not run more destructive SQL tonight.
+
+Do not delete Season 11 or Season 12 rows.
+
+Season filtering is doing the reset work.
+
+
+
+## ✅ UPDATE — MAY 31, 2026 — SEASON 12 RESET EXECUTED / RENDER DEPLOY RUNNING
+
+### Status
+
+Season 12 reset core has been executed on Render.
+
+Render is currently restarting and the Season 12 frontend/API deploy is running.
+
+### Confirmed completed
+
+Database snapshot created before reset:
+
+```text
+/data/narrrf_world_season11_cutoff_20260531_215420.sqlite
+Size: 41M
+Integrity check: ok
+```
+
+Season 11 archive API completed successfully:
+
+```json
+{
+  "success": true,
+  "message": "Season stats archived successfully",
+  "season_archived": "Season 11",
+  "archived_at": "2026-05-31 22:02:31 UTC",
+  "stats": {
+    "games_archived": 67,
+    "cheese_users_archived": 96,
+    "glyph_rows_archived": 52
+  }
+}
+```
+
+Season 12 activation confirmed:
+
+```text
+14|Season 12|2026-05-31 22:00:00|2026-06-30 22:00:00|1
+13|Season 11|2026-04-30 22:00:00|2026-05-30 22:00:00|0
+```
+
+Active season count confirmed:
+
+```text
+1
+```
+
+### Archive verification
+
+Classic historical stats verified:
+
+```text
+Season 11|snake|23
+Season 11|space_invaders|24
+Season 11|tetris|20
+```
+
+Glyph Memory archive verified:
+
+```text
+tbl_historical_glyph_stats Season 11 rows: 52
+```
+
+Cheese archive verified:
+
+```text
+tbl_historical_cheese_stats Season 11 rows: 96
+```
+
+Season 11 source rows are still preserved in `tbl_tetris_scores`:
+
+```text
+cheeseman|172
+labyrinth_blast|46
+snake|270
+space_invaders|271
+tetris|230
+```
+
+### Season 12 live writes already confirmed
+
+Season 12 scores are already being written after activation:
+
+```text
+11935|coins4vince|snake|195|Season 12|2026-05-31 22:03:37
+11936|malinusya|cheeseman|732|Season 12|2026-05-31 22:04:16
+```
+
+These are real post-reset player rows and must not be deleted.
+
+### Critical safety status
+
+Do not delete Season 11 rows.
+
+Do not delete Season 12 rows.
+
+Season filtering is now doing the reset work.
+
+Permanent systems remain protected:
+
+```text
+DSPOINC balances
+staking
+Reward Chamber
+Genesis Lab progression
+custom names
+NFT-bound upgrades
+Genetic inventory
+marketplace state
+wallet links
+holder identity
+roles / access state
+profile identity
+```
+
+### Current deployment state
+
+Render restart / deploy is running.
+
+After deploy completes, verify:
+
+```text
+/api/admin/get-current-season-settings.php
+/index.html
+/profile.html
+/leaderboard.html
+/lab.html
+/labyrinth-blast/
+/admin-interface.html
+```
+
+Expected:
+
+```text
+Season 12 active/current
+Season 11 only previous/frozen/historical
+leaderboards load
+profile loads
+Lab loads
+Labyrinth Blast loads
+admin season selector includes Season 12
+```
+
+### Post-deploy smoke tests
+
+After Render is live, test one controlled save for:
+
+```text
+Tetris
+Snake
+Space Cheese Invaders
+Cheeseman
+Labyrinth Blast
+Glyph Memory separately
+```
+
+Then verify:
+
+```sql
+SELECT season, game, COUNT(*)
+FROM tbl_tetris_scores
+WHERE season = 'Season 12'
+GROUP BY season, game
+ORDER BY game;
+```
+
+Glyph Memory must be verified separately because it uses its own tables.
+
+
 ````md
 ## ✅ UPDATE — MAY 31, 2026 — SEASON 12 PUBLIC PAGE SYNC EXPANDED
 
