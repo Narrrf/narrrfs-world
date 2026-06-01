@@ -938,6 +938,144 @@
     color: #ffffff;
     text-shadow: 0 0 18px rgba(250,204,21,0.24);
 }
+/* =========================================================
+   SAMUZI WL + PARTNER LIVE STRIP
+   Replaces countdown after the WL/partner phase opens
+   ========================================================= */
+
+.mint-live-strip {
+    margin-top: 1rem;
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 18% 0%, rgba(34,197,94,0.16), transparent 34%),
+        radial-gradient(circle at 90% 20%, rgba(250,204,21,0.14), transparent 34%),
+        rgba(0,0,0,0.30);
+    border: 1px solid rgba(34,197,94,0.30);
+    box-shadow:
+        0 0 28px rgba(34,197,94,0.10),
+        0 12px 32px rgba(0,0,0,0.24);
+}
+
+.mint-live-strip strong {
+    display: block;
+    color: #bbf7d0;
+    font-size: 0.95rem;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+}
+
+.mint-live-strip span {
+    display: block;
+    color: #fef3c7;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+/* =========================================================
+   SAMUZI WL + PARTNERS LIVE POSTER
+   Official live phase announcement image section
+   ========================================================= */
+
+.live-poster-section {
+    position: relative;
+    z-index: 4;
+    padding: 2.4rem 0;
+}
+
+.live-poster-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 0.72fr) minmax(360px, 1.28fr);
+    gap: clamp(1.2rem, 3vw, 2rem);
+    align-items: center;
+    padding: clamp(1rem, 2.5vw, 1.6rem);
+    border-radius: 30px;
+    background:
+        radial-gradient(circle at 15% 0%, rgba(250,204,21,0.16), transparent 34%),
+        radial-gradient(circle at 90% 30%, rgba(225,29,72,0.18), transparent 36%),
+        linear-gradient(180deg, rgba(18,18,28,0.94), rgba(7,7,11,0.88));
+    border: 1px solid rgba(250,204,21,0.28);
+    box-shadow:
+        0 26px 90px rgba(0,0,0,0.58),
+        0 0 54px rgba(250,204,21,0.10);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+}
+
+.live-poster-copy {
+    padding: clamp(0.6rem, 2vw, 1.2rem);
+}
+
+.live-poster-copy h2 {
+    color: #ffffff;
+    font-size: clamp(2rem, 4.8vw, 4.4rem);
+    line-height: 0.95;
+    letter-spacing: -0.055em;
+    margin: 1rem 0 0.85rem;
+    text-shadow:
+        0 8px 26px rgba(0,0,0,0.65),
+        0 0 34px rgba(250,204,21,0.18);
+}
+
+.live-poster-copy p {
+    color: #dbe4f0;
+    line-height: 1.8;
+    font-size: 1.02rem;
+    max-width: 620px;
+}
+
+.live-poster-image-wrap {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(250,204,21,0.32);
+    background: rgba(0,0,0,0.36);
+    box-shadow:
+        0 18px 58px rgba(0,0,0,0.48),
+        0 0 42px rgba(225,29,72,0.16);
+}
+
+.live-poster-image-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, rgba(255,255,255,0.08), transparent 18%, transparent 82%, rgba(255,255,255,0.06)),
+        radial-gradient(circle at 50% 0%, rgba(250,204,21,0.14), transparent 38%);
+}
+
+.live-poster-image {
+    width: 100%;
+    display: block;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+@media (max-width: 980px) {
+    .live-poster-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .live-poster-image {
+        aspect-ratio: 1 / 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .live-poster-section {
+        padding: 1.4rem 0;
+    }
+
+    .live-poster-panel {
+        border-radius: 24px;
+    }
+
+    .live-poster-copy .launch-actions a {
+        width: 100%;
+    }
+}
     </style>
 </head>
 
@@ -966,9 +1104,9 @@
 <section class="mint-alert-bar mint-live-alert" aria-label="Samuzi Phase 3 mint announcement">
     <div class="mint-alert-inner">
         <div class="mint-alert-copy">
-            <span class="mint-alert-kicker">🚨 WL + Partner Mint Opens Tomorrow</span>
+           <span class="mint-alert-kicker">🚨 WL + Partner Mint is Live Now</span>
 <div class="mint-alert-title">
-    Holder + OG <strong>Sold Out</strong> · WL + Partner phases open <strong>June 1 · 5 PM UTC</strong>
+    Holder + OG <strong>Sold Out</strong> · WL + Partner phases are <strong>LIVE NOW</strong> on Gensuki
 </div>
         </div>
 
@@ -986,16 +1124,16 @@
     <div class="container">
         <div class="front-hero-grid">
             <div class="front-hero-copy">
-                <div class="brand-mark">🚨 WL + PARTNER MINT · JUNE 1 · 5 PM UTC</div>
+                <div class="brand-mark">🚨 WL + PARTNER MINT · LIVE NOW</div>
 
 <h1 class="launch-title">
     WL + Partners.
-    <span>Open Tomorrow.</span>
+    <span>Live Now.</span>
 </h1>
 
 <p class="launch-copy">
-    Holder Phase and OG Phase sold out faster than expected. The next Samuzi access wave opens June 1 at 5:00 PM UTC for WL and partner allocations.
-    Keep your wallet ready — all remaining phases are FCFS.
+    Holder Phase and OG Phase sold out faster than expected. The WL and partner access wave is now live on Gensuki Launchpad.
+    Remaining spots are FCFS — mint only through the official Gensuki link.
 </p>
 
                 <div class="front-badges">
@@ -1023,11 +1161,11 @@
             </div>
 
             <div class="front-hero-panel mint-live-panel">
-                <span class="panel-kicker">🧪 Next Mint Window</span>
-<h2>WL + Partners open June 1.</h2>
+                <span class="panel-kicker">🧪 Mint Status Live</span>
+<h2>WL + Partner mint is live.</h2>
 <p>
-    Early access is complete. The WL and partner allocation mint opens June 1 at 5:00 PM UTC.
-    Remaining spots are FCFS, so keep your wallet ready and use only the official Gensuki Launchpad link.
+    Early access is complete and the next access wave is now open.
+    WL and partner allocation phases are live on Gensuki Launchpad. Remaining spots are FCFS.
 </p>
 
 <div class="mint-signal-card mint-status-card">
@@ -1045,10 +1183,10 @@
         </div>
 
         <div class="mint-status-item next hot">
-            <span>Next Window</span>
-            <strong>June 1 · 5 PM UTC</strong>
-            <small>WL + Partner mint</small>
-        </div>
+    <span>Current Window</span>
+    <strong>Live Now</strong>
+    <small>WL + Partner mint</small>
+</div>
 
         <div class="mint-status-item">
             <span>Mint Style</span>
@@ -1057,24 +1195,10 @@
         </div>
     </div>
 
-    <div class="mint-countdown wl-countdown" id="samuziWlCountdown" aria-label="Countdown to WL and partner mint">
-        <div class="mint-countdown-box">
-            <strong id="wlDays">--</strong>
-            <span>Days</span>
-        </div>
-        <div class="mint-countdown-box">
-            <strong id="wlHours">--</strong>
-            <span>Hours</span>
-        </div>
-        <div class="mint-countdown-box">
-            <strong id="wlMinutes">--</strong>
-            <span>Minutes</span>
-        </div>
-        <div class="mint-countdown-box">
-            <strong id="wlSeconds">--</strong>
-            <span>Seconds</span>
-        </div>
-    </div>
+    <div class="mint-live-strip" aria-label="WL and partner mint live status">
+    <strong>🚨 WL + Partner Mint Live Now</strong>
+    <span>0.062 SOL · FCFS · Use official Gensuki Launchpad link only</span>
+</div>
 </div>
 
                 <div class="launch-actions mint-panel-actions">
@@ -1133,24 +1257,57 @@
     </div>
 </section>
 
+<section class="live-poster-section" aria-label="Samuzi WL and partner phase live announcement">
+    <div class="container">
+        <div class="live-poster-panel">
+            <div class="live-poster-copy">
+                <span class="mint-pill">🚨 WL + Partner Phase Live</span>
+                <h2>WL & Partners phase is live now.</h2>
+                <p>
+                    Holder and OG phases sold out fast. The next access wave is now open on Gensuki Launchpad.
+                    Remaining spots are FCFS — use only the official mint link.
+                </p>
+
+                <div class="launch-actions">
+                    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
+                        🚨 Mint on Gensuki Now
+                    </a>
+                    <a class="button-secondary" href="#mint-schedule">
+                        View Mint Phases
+                    </a>
+                </div>
+            </div>
+
+            <div class="live-poster-image-wrap">
+                <img
+                    src="./assets/samuzi-wl-partners-live.jpg"
+                    alt="Samuzi NFT WL and Partners phase is live now"
+                    class="live-poster-image"
+                    loading="eager"
+                >
+            </div>
+        </div>
+    </div>
+</section>
+
     <section id="mint-schedule" class="mint-section">
     <div class="container">
         <div class="mint-command-panel">
             <div class="mint-heading-row">
                 <div>
                     <span class="mint-pill">🧪 Mint Command Center</span>
-                    <h2>WL + Partner mint opens next.</h2>
+                    <h2>WL + Partner mint is live now.</h2>
 <p>
     Samuzi Phase 3 is live and early access sold out faster than expected. Holder Phase and OG Phase are complete.
-    The next access wave opens June 1 at 5:00 PM UTC for WL and partner allocations.
+    The WL and partner access wave is now open on Gensuki Launchpad.
     All remaining phases are FCFS — once spots are gone, they are gone.
 </p>
                 </div>
 
                 <div class="mint-main-date mint-main-status-live">
-    <span>Next Opening</span>
-    <strong>June 1 · 5 PM UTC</strong>
-    <small>WL + Partner mint · FCFS</small>
+    <span>Current Window</span>
+    <strong>WL + Partners Live</strong>
+    <small>0.062 SOL · FCFS</small>
 </div>
             </div>
 
@@ -1179,21 +1336,20 @@
 
                 <article class="mint-week-card mint-week-next">
     <div class="mint-week-top">
-        <span>Next Window · Opens June 1 · 5 PM UTC</span>
-        <h3>WL + Partner Mint</h3>
-        <p>WL and partner allocations open tomorrow. Keep your wallet ready — remaining phases are FCFS.</p>
-                    </div>
+        <span>Current Window · Live Now</span>
+<h3>WL + Partner Mint Live</h3>
+<p>WL and partner allocations are now open. Remaining spots are FCFS, so mint only through the verified Gensuki link.</p>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>3️⃣ WL Phase <em class="mint-status-tag next">Opens June 1</em></strong>
+                            <strong>3️⃣ WL Phase <em class="mint-status-tag next">Live Now</em></strong>
                             <p><span class="price">0.062 SOL</span> · 100 spots · limit 7 per wallet</p>
-                            <p>For whitelisted members. Opens June 1 at 5:00 PM UTC.</p>
+                            <p>For whitelisted members. Live now on Gensuki Launchpad.</p>
                         </div>
 
                         <div class="mint-phase">
-                            <strong>4️⃣ Partner Allocations <em class="mint-status-tag next">Opens June 1</em></strong>
-                            <p><span class="price">0.062 SOL each</span> · limit 5 per wallet · opens June 1 at 5:00 PM UTC</p>
+                            <strong>4️⃣ Partner Allocations <em class="mint-status-tag next">Live Now</em></strong>
+                            <p><span class="price">0.062 SOL each</span> · limit 5 per wallet · live now</p>
                             <div class="partner-list">
                                 <span>🔹 Narrrf Allocation: 50 spots</span>
                                 <span>🔹 Coralix Allocation: 50 spots</span>
@@ -1231,8 +1387,8 @@
 
             <div class="mint-notes">
                 <p>
-                    📌 <strong>Next Mint Window:</strong> Holder Phase and OG Phase are sold out.
-WL and partner phases open June 1 at 5:00 PM UTC. All remaining phases are FCFS, so keep your wallet ready and use only the official Gensuki link.
+                    📌 <strong>Live Mint Update:</strong> Holder Phase and OG Phase are sold out.
+WL and partner phases are live now on Gensuki Launchpad. All remaining phases are FCFS, so use only the official Gensuki link.
                 </p>
 
                 <div class="mint-cta-row">
@@ -1428,8 +1584,9 @@ WL and partner phases open June 1 at 5:00 PM UTC. All remaining phases are FCFS,
             <div class="final-cta-panel">
                 <span class="status-pill">Welcome to Samuzi</span>
                 <h2>WL + Partner mint opens June 1.</h2>
+<p><h2>WL + Partner mint is live now.</h2>
 <p>
-    Holder and OG phases are complete. WL and partner allocations open June 1 at 5:00 PM UTC.
+    Holder and OG phases are complete. WL and partner allocations are now open on Gensuki Launchpad.
     Join the official community and mint only through the verified Gensuki Launchpad link.
 </p>
 
@@ -2275,7 +2432,6 @@ function bindPhase3SecretUnlock() {
 document.addEventListener('DOMContentLoaded', async () => {
     applyPageBackground();
     startSamuziMintCountdown();
-    startSamuziWlPartnerCountdown();
 
     await loadPhase3MotionSlides();
     loadPhase3SliderPhotos();
