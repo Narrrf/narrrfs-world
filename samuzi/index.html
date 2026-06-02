@@ -1076,6 +1076,38 @@
         width: 100%;
     }
 }
+/* =========================================================
+   SAMUZI PARTNER PRICE HIGHLIGHT
+   Shows lower partner mint price clearly
+   ========================================================= */
+
+.partner-price {
+    color: #bbf7d0 !important;
+    text-shadow:
+        0 0 18px rgba(34,197,94,0.28),
+        0 0 34px rgba(250,204,21,0.16);
+}
+
+.mint-phase:has(.partner-price) {
+    border-color: rgba(34,197,94,0.30) !important;
+    background:
+        radial-gradient(circle at 12% 0%, rgba(34,197,94,0.12), transparent 34%),
+        rgba(255,255,255,0.045) !important;
+}
+
+.mint-phase:has(.partner-price)::before {
+    content: "Partner community price";
+    display: inline-flex;
+    margin-bottom: 0.55rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    color: #052e16;
+    background: linear-gradient(135deg, #bbf7d0, #facc15);
+    font-size: 0.66rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
     </style>
 </head>
 
@@ -1300,6 +1332,7 @@
 <p>
     Samuzi Phase 3 is live and early access sold out faster than expected. Holder Phase and OG Phase are complete.
     The WL and partner access wave is now open on Gensuki Launchpad.
+    WL mint is set at 0.062 SOL, while partner allocations receive a special 0.053 SOL community price.
     All remaining phases are FCFS — once spots are gone, they are gone.
 </p>
                 </div>
@@ -1307,7 +1340,7 @@
                 <div class="mint-main-date mint-main-status-live">
     <span>Current Window</span>
     <strong>WL + Partners Live</strong>
-    <small>0.062 SOL · FCFS</small>
+    <small>WL 0.062 SOL · Partners 0.053 SOL · FCFS</small>
 </div>
             </div>
 
@@ -1344,18 +1377,19 @@
                         <div class="mint-phase">
                             <strong>3️⃣ WL Phase <em class="mint-status-tag next">Live Now</em></strong>
                             <p><span class="price">0.062 SOL</span> · 100 spots · limit 7 per wallet</p>
-                            <p>For whitelisted members. Live now on Gensuki Launchpad.</p>
+                            <p>For whitelisted members. Live now on Gensuki Launchpad at the WL price.</p>
                         </div>
 
-                        <div class="mint-phase">
-                            <strong>4️⃣ Partner Allocations <em class="mint-status-tag next">Live Now</em></strong>
-                            <p><span class="price">0.062 SOL each</span> · limit 5 per wallet · live now</p>
+                        <div class="mint-phase partner-mint-phase">
+    <span class="partner-mint-badge">Partner community price</span>
+    <strong>4️⃣ Partner Allocations <em class="mint-status-tag next">Live Now</em></strong>
+                            <p><span class="price partner-price">0.053 SOL each</span> · special partner price · limit 5 per wallet · live now</p>
                             <div class="partner-list">
-                                <span>🔹 Narrrf Allocation: 50 spots</span>
-                                <span>🔹 Coralix Allocation: 50 spots</span>
-                                <span>🔹 Mad Skulz Allocation: 50 spots</span>
-                                <span>🔹 Turtle Toddlers Allocation: 50 spots</span>
-                            </div>
+    <span>🔹 Narrrf Allocation: 50 spots · 0.053 SOL</span>
+    <span>🔹 Coralix Allocation: 50 spots · 0.053 SOL</span>
+    <span>🔹 Mad Skulz Allocation: 50 spots · 0.053 SOL</span>
+    <span>🔹 Turtle Toddlers Allocation: 50 spots · 0.053 SOL</span>
+</div>
                         </div>
                     </div>
                 </article>
@@ -1388,7 +1422,8 @@
             <div class="mint-notes">
                 <p>
                     📌 <strong>Live Mint Update:</strong> Holder Phase and OG Phase are sold out.
-WL and partner phases are live now on Gensuki Launchpad. All remaining phases are FCFS, so use only the official Gensuki link.
+WL and partner phases are live now on Gensuki Launchpad. WL mint is 0.062 SOL, while partner allocations receive a special 0.053 SOL price.
+All remaining phases are FCFS, so use only the official Gensuki link.
                 </p>
 
                 <div class="mint-cta-row">
