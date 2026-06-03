@@ -1973,6 +1973,7 @@ const requestData = {
         🏆 Leaderboard
       </a>
       <a href="stake-lab.html" class="hover:text-pink-400">🧊 Stake Lab</a>
+      <a href="strongest-genesis-mice.html" class="hover:text-pink-400">🐭 Strongest Mice</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
       <button id="connect-wallet-btn" onclick="connectWallet()" class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-3 md:px-4 rounded-xl shadow text-xs">
         🔌 Connect
@@ -2570,6 +2571,231 @@ const requestData = {
       </div>
     </div>
   </section>
+
+  <!-- 🐭 Strongest Genesis Mouse Homepage Showcase
+     DEVS FOR DECADES:
+     This homepage block is display-only. It fetches the public read-only
+     Strongest Genesis Mice endpoint and showcases the current #1 mouse.
+     It must never calculate final power, mutate traits, abilities, inventory,
+     custom names, ownership, DSPOINC, or reward data. -->
+<section id="strongest-genesis-mouse-showcase" class="relative z-20 py-16 px-6 bg-gradient-to-b from-slate-950 via-orange-950/30 to-slate-950 text-white overflow-hidden border-t border-yellow-300/20">
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute -top-24 left-8 h-64 w-64 rounded-full bg-yellow-400/10 blur-3xl"></div>
+    <div class="absolute top-20 right-8 h-72 w-72 rounded-full bg-pink-500/10 blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl"></div>
+  </div>
+
+  <div class="relative max-w-7xl mx-auto">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.28em] text-yellow-200 mb-4">
+        🏆 Live Mouseverse Champion
+      </div>
+
+      <h2 class="text-4xl md:text-6xl font-black bg-gradient-to-r from-yellow-200 via-orange-300 to-pink-300 bg-clip-text text-transparent leading-tight">
+        Strongest Genesis Mouse
+      </h2>
+
+      <p class="mt-4 max-w-3xl mx-auto text-sm md:text-lg text-orange-50/85">
+        The current top named Genesis warrior, ranked by Genesis trait power,
+        ability power, and owner Genetic support inventory.
+      </p>
+    </div>
+
+    <div id="indexStrongestMouseLoading" class="rounded-[2rem] border border-yellow-300/20 bg-slate-900/80 p-8 text-center shadow-2xl">
+      <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-300"></div>
+      <p class="mt-4 text-slate-300">Summoning the strongest mouse...</p>
+    </div>
+
+    <div id="indexStrongestMouseCard" class="hidden"></div>
+
+    <div id="indexStrongestMouseError" class="hidden rounded-[2rem] border border-red-400/30 bg-red-950/30 p-6 text-center text-red-100">
+      Strongest Genesis Mouse showcase could not load right now.
+    </div>
+  </div>
+</section>
+
+<script>
+  /**
+   * Homepage Strongest Genesis Mouse showcase.
+   * Plain language for DEVS:
+   * This script only renders the current #1 mouse returned by the backend.
+   * The backend endpoint calculates the ranking. The homepage must stay
+   * read-only and must never write to Lab, inventory, ownership, or DSPOINC.
+   */
+  (function loadIndexStrongestGenesisMouse() {
+    const loading = document.getElementById('indexStrongestMouseLoading');
+    const card = document.getElementById('indexStrongestMouseCard');
+    const error = document.getElementById('indexStrongestMouseError');
+
+    if (!loading || !card || !error) {
+      return;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString();
+    }
+
+    function getSafeImageUrl(url) {
+      const raw = String(url || '').trim();
+
+      if (!raw) {
+        return 'img/cheese.png';
+      }
+
+      if (raw.startsWith('ipfs://')) {
+        return `https://ipfs.io/ipfs/${raw.replace('ipfs://', '')}`;
+      }
+
+      return raw;
+    }
+
+    function renderSupportChips(items) {
+      const visibleItems = Array.isArray(items) ? items.slice(0, 6) : [];
+
+      if (!visibleItems.length) {
+        return `
+          <div class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-slate-400">
+            No Genetic support items visible yet.
+          </div>
+        `;
+      }
+
+      return visibleItems.map((item) => `
+        <div class="rounded-2xl border border-pink-300/20 bg-pink-300/10 px-3 py-2">
+          <div class="text-xs uppercase tracking-wider text-pink-100/70 font-black">${escapeHtml(item.rarity_tier || 'Support')}</div>
+          <div class="font-black text-pink-100 truncate">${escapeHtml(item.trait_value || 'Genetic Item')}</div>
+          <div class="text-xs text-pink-50">Lv ${formatNumber(item.current_level)} • +${formatNumber(item.support_power)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTopMouse(mouse) {
+      const imageUrl = getSafeImageUrl(mouse.image_url);
+
+      card.innerHTML = `
+        <article class="rounded-[2rem] border-2 border-yellow-300/45 bg-gradient-to-br from-slate-900/95 via-orange-950/70 to-slate-950/95 p-4 md:p-6 shadow-2xl">
+          <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-stretch">
+            <div class="rounded-[1.7rem] border border-yellow-200/30 bg-black/30 p-4">
+              <div class="mb-3 text-center">
+                <span class="inline-flex rounded-full bg-yellow-300 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-slate-950">
+                  🥇 Strongest Mouse
+                </span>
+              </div>
+
+              <img
+                src="${escapeHtml(imageUrl)}"
+                alt="${escapeHtml(mouse.custom_name || 'Strongest Genesis Mouse')}"
+                class="w-full aspect-square rounded-[1.3rem] object-cover border border-yellow-200/30 bg-black/40"
+                loading="lazy"
+                onerror="this.src='img/cheese.png';"
+              />
+            </div>
+
+            <div class="rounded-[1.7rem] border border-white/10 bg-black/25 p-5 md:p-6">
+              <div class="flex flex-wrap justify-between gap-4 mb-5">
+                <div class="min-w-0">
+                  <div class="text-xs uppercase tracking-[0.22em] text-yellow-200 font-black">Mouseverse Champion</div>
+                  <h3 class="text-3xl md:text-5xl font-black text-white truncate">${escapeHtml(mouse.custom_name)}</h3>
+                  <p class="mt-2 text-sm text-orange-100">
+                    ${escapeHtml(mouse.nft_name || mouse.token_short || 'Genesis Mouse')}
+                    • Owner:
+                    <span class="font-black text-cyan-100">${escapeHtml(mouse.owner_username || 'Unknown')}</span>
+                  </p>
+                </div>
+
+                <div class="text-left md:text-right">
+                  <div class="text-xs uppercase tracking-[0.22em] text-slate-400 font-black">Warrior Power</div>
+                  <div class="text-4xl md:text-5xl font-black text-yellow-200">${formatNumber(mouse.mouse_power)}</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                <div class="rounded-2xl border border-yellow-300/20 bg-yellow-300/10 px-4 py-3">
+                  <div class="text-[11px] uppercase tracking-wider text-yellow-100/70 font-black">Trait Power</div>
+                  <div class="text-xl font-black text-yellow-100">${formatNumber(mouse.trait_power)}</div>
+                </div>
+
+                <div class="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3">
+                  <div class="text-[11px] uppercase tracking-wider text-cyan-100/70 font-black">Ability Power</div>
+                  <div class="text-xl font-black text-cyan-100">${formatNumber(mouse.ability_power)}</div>
+                </div>
+
+                <div class="rounded-2xl border border-pink-300/20 bg-pink-300/10 px-4 py-3">
+                  <div class="text-[11px] uppercase tracking-wider text-pink-100/70 font-black">Genetic Support</div>
+                  <div class="text-xl font-black text-pink-100">${formatNumber(mouse.genetic_support_power)}</div>
+                </div>
+
+                <div class="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 px-4 py-3">
+                  <div class="text-[11px] uppercase tracking-wider text-emerald-100/70 font-black">Fitness</div>
+                  <div class="text-xl font-black text-emerald-100">Unlocked</div>
+                </div>
+              </div>
+
+              <div class="mb-5">
+                <div class="flex flex-wrap justify-between gap-3 mb-3">
+                  <div class="text-xs uppercase tracking-[0.2em] text-pink-200 font-black">Genetic Support Orbit</div>
+                  <div class="text-xs text-slate-400">${formatNumber(mouse.genetic_items_total)} owner items tracked</div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                  ${renderSupportChips(mouse.genetic_items)}
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-3">
+                <a href="strongest-genesis-mice.html"
+                   class="inline-flex justify-center rounded-2xl bg-yellow-300 px-5 py-3 font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-yellow-200">
+                  🐭 View Full Ranking
+                </a>
+                <a href="lab.html"
+                   class="inline-flex justify-center rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-5 py-3 font-black text-cyan-100 transition hover:bg-cyan-300/20">
+                  🔬 Train Your Mouse
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+
+      loading.classList.add('hidden');
+      error.classList.add('hidden');
+      card.classList.remove('hidden');
+    }
+
+    fetch('/api/leaderboard/get-strongest-genesis-mice.php?limit=1', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    })
+      .then((response) => response.json().then((data) => ({ response, data })))
+      .then(({ response, data }) => {
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || `Request failed with ${response.status}`);
+        }
+
+        const mouse = data.top_mouse || (Array.isArray(data.mice) ? data.mice[0] : null);
+
+        if (!mouse) {
+          throw new Error('No strongest mouse returned yet.');
+        }
+
+        renderTopMouse(mouse);
+      })
+      .catch((err) => {
+        console.warn('Strongest Genesis Mouse homepage showcase failed:', err);
+        loading.classList.add('hidden');
+        card.classList.add('hidden');
+        error.classList.remove('hidden');
+      });
+  })();
+</script>
 
 <!-- ☀️ SEASON 12 STARTER HUB
      DEVS FOR DECADES:

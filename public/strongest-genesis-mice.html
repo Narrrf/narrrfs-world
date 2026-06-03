@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>🐭 Strongest Genesis Mice — Narrrf's World</title>
+  <meta name="theme-color" content="#f97316" />
+  <meta
+    name="description"
+    content="Strongest Genesis Mice leaderboard for Narrrf's World: named Genesis mice ranked by trait levels, ability levels, and owner Genetic support inventory."
+  />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="favicon-phantom.png" type="image/png" />
+
+  <style>
+    :root {
+      --season12-orange: #f97316;
+      --season12-amber: #f59e0b;
+      --season12-yellow: #facc15;
+      --season12-pink: #db2777;
+      --season12-cyan: #22d3ee;
+      --season12-slate: #020617;
+    }
+
+    /**
+     * Strongest Genesis Mice visual shell.
+     * Plain language for DEVS:
+     * This page is read-only. It displays a public leaderboard from the backend.
+     * It does not mutate NFT ownership, custom names, Genesis traits, abilities,
+     * Genetic Items, inventory, DSPOINC, or leaderboard scores.
+     */
+    body.strongest-mice-shell {
+      background:
+        radial-gradient(circle at 8% 10%, rgba(249, 115, 22, 0.20), transparent 30%),
+        radial-gradient(circle at 92% 16%, rgba(219, 39, 119, 0.18), transparent 32%),
+        radial-gradient(circle at 48% 100%, rgba(34, 211, 238, 0.12), transparent 35%),
+        linear-gradient(135deg, #020617 0%, #111827 45%, #431407 100%);
+      min-height: 100vh;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .strongest-mice-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.65;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(250, 204, 21, 0.12) 0 2px, transparent 3px),
+        radial-gradient(circle at 80% 22%, rgba(34, 211, 238, 0.12) 0 2px, transparent 3px),
+        radial-gradient(circle at 60% 72%, rgba(236, 72, 153, 0.12) 0 2px, transparent 3px);
+      background-size: 120px 120px, 160px 160px, 140px 140px;
+      animation: mouseverseSparkle 12s linear infinite;
+    }
+
+    @keyframes mouseverseSparkle {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(-80px, 80px, 0); }
+    }
+
+    .strongest-header {
+      background: rgba(0, 0, 0, 0.78);
+      border-bottom: 1px solid rgba(250, 204, 21, 0.24);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(16px);
+    }
+
+    .mouseverse-card {
+      background:
+        radial-gradient(circle at top left, rgba(250, 204, 21, 0.10), transparent 36%),
+        linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72));
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      box-shadow:
+        0 22px 60px rgba(0, 0, 0, 0.34),
+        0 0 34px rgba(249, 115, 22, 0.08);
+      backdrop-filter: blur(16px);
+    }
+
+    .mouseverse-card:hover {
+      border-color: rgba(250, 204, 21, 0.32);
+      box-shadow:
+        0 26px 72px rgba(0, 0, 0, 0.42),
+        0 0 42px rgba(249, 115, 22, 0.14);
+    }
+
+    .strongest-hero {
+      background:
+        radial-gradient(circle at 18% 20%, rgba(250, 204, 21, 0.20), transparent 32%),
+        radial-gradient(circle at 88% 24%, rgba(219, 39, 119, 0.18), transparent 30%),
+        radial-gradient(circle at 55% 92%, rgba(34, 211, 238, 0.13), transparent 36%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(67, 20, 7, 0.88));
+      border: 1px solid rgba(250, 204, 21, 0.22);
+      box-shadow:
+        0 28px 85px rgba(0, 0, 0, 0.42),
+        0 0 55px rgba(249, 115, 22, 0.12);
+    }
+
+    .champion-frame {
+      background:
+        linear-gradient(135deg, rgba(250, 204, 21, 0.32), rgba(249, 115, 22, 0.18), rgba(219, 39, 119, 0.20));
+      border: 2px solid rgba(250, 204, 21, 0.72);
+      box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.48),
+        0 0 55px rgba(250, 204, 21, 0.18);
+    }
+
+    .champion-image-wrap {
+      background:
+        radial-gradient(circle at center, rgba(250, 204, 21, 0.26), transparent 58%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(0, 0, 0, 0.72));
+      border: 2px solid rgba(250, 204, 21, 0.48);
+      box-shadow: inset 0 0 40px rgba(250, 204, 21, 0.08);
+    }
+
+    .support-orbit {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem;
+    }
+
+    @media (min-width: 1024px) {
+      .support-orbit {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .support-chip {
+      background: rgba(0, 0, 0, 0.32);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+    }
+
+    .power-pill {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(250, 204, 21, 0.22);
+    }
+
+    .rank-1 {
+      background: linear-gradient(135deg, #fbbf24, #f97316);
+      color: #111827;
+      font-weight: 900;
+    }
+
+    .rank-2 {
+      background: linear-gradient(135deg, #cbd5e1, #64748b);
+      color: #ffffff;
+      font-weight: 900;
+    }
+
+    .rank-3 {
+      background: linear-gradient(135deg, #b45309, #92400e);
+      color: #ffffff;
+      font-weight: 900;
+    }
+
+    .rank-default {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fde68a;
+      border: 1px solid rgba(250, 204, 21, 0.16);
+      font-weight: 900;
+    }
+
+    /**
+     * Mobile leaderboard readability.
+     * Plain language for DEVS:
+     * Keep rank, mouse image, name, owner, and power readable on phones.
+     * Do not use word-break:anywhere because it can split names letter-by-letter.
+     */
+    .narrrf-leaderboard-row {
+      min-width: 0;
+    }
+
+    .narrrf-leaderboard-player {
+      min-width: 0;
+    }
+
+    .narrrf-leaderboard-name {
+      min-width: 0;
+      line-height: 1.15;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .narrrf-leaderboard-role {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .narrrf-leaderboard-score {
+      white-space: nowrap;
+    }
+
+    .season12-link {
+      background: linear-gradient(135deg, #facc15, #fb923c);
+      color: #111827;
+      border: 2px solid rgba(254, 240, 138, 0.82);
+      box-shadow: 0 14px 34px rgba(249, 115, 22, 0.26);
+    }
+
+    .season12-link:hover {
+      background: linear-gradient(135deg, #fde047, #fdba74);
+      transform: translateY(-1px) scale(1.03);
+    }
+
+    @media (max-width: 768px) {
+      .champion-frame {
+        padding: 1rem !important;
+      }
+
+      .narrrf-leaderboard-row {
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 0.65rem !important;
+        padding: 0.85rem !important;
+      }
+
+      .narrrf-leaderboard-player {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        gap: 0.65rem !important;
+      }
+
+      .narrrf-leaderboard-rank {
+        width: 2.2rem !important;
+        min-width: 2.2rem !important;
+        font-size: 0.95rem !important;
+      }
+
+      .narrrf-leaderboard-avatar {
+        width: 2.55rem !important;
+        height: 2.55rem !important;
+      }
+
+      .narrrf-leaderboard-score {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        max-width: 6.3rem !important;
+        margin-left: 0.25rem !important;
+        text-align: right !important;
+      }
+
+      .narrrf-leaderboard-score-main {
+        justify-content: flex-end !important;
+        font-size: 0.92rem !important;
+      }
+
+      .narrrf-leaderboard-score-sub {
+        font-size: 0.65rem !important;
+        white-space: normal !important;
+        line-height: 1.1 !important;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .narrrf-leaderboard-score {
+        max-width: 5rem !important;
+      }
+
+      .narrrf-leaderboard-score-sub {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body id="top" class="strongest-mice-shell">
+  <div class="strongest-mice-bg"></div>
+
+  <header class="strongest-header sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-3 justify-between items-center">
+      <div>
+        <h1 class="text-xl md:text-2xl font-black tracking-wide text-yellow-300">
+          🐭 Strongest Genesis Mice
+        </h1>
+        <div class="text-xs text-orange-200 mt-1">
+          Named mice • Fitness unlocked • Genesis warrior power
+        </div>
+      </div>
+
+      <nav class="flex flex-wrap gap-3 text-sm md:text-base items-center">
+        <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
+        <a href="leaderboard.html" class="hover:text-yellow-400 transition-colors">Leaderboards</a>
+        <a href="lab.html" class="hover:text-yellow-400 transition-colors">Genesis Lab</a>
+        <a href="profile.html?verify=1#holder-verification" class="hover:text-yellow-400 transition-colors">Verify</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="relative z-10 max-w-7xl mx-auto px-4 py-8">
+    <section class="strongest-hero rounded-[2rem] px-5 py-10 md:px-10 md:py-14 mb-8 text-center">
+      <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.28em] text-yellow-200 mb-5">
+        ☀️ Season 12 Mouseverse Ranking
+      </div>
+
+      <h2 class="text-4xl md:text-7xl font-black bg-gradient-to-r from-yellow-200 via-orange-300 to-pink-300 bg-clip-text text-transparent leading-tight">
+        Strongest Genesis Mice
+      </h2>
+
+      <p class="mt-5 max-w-3xl mx-auto text-base md:text-lg text-orange-50/90">
+        The Mouseverse warrior board ranks named Genesis mice that unlocked Fitness.
+        Power combines NFT-bound Genesis trait levels, NFT-bound ability levels,
+        and the current owner’s Genetic support inventory.
+      </p>
+
+      <div class="mt-6 flex flex-wrap justify-center gap-3">
+        <a href="lab.html" class="season12-link inline-flex items-center justify-center rounded-full px-5 py-3 font-black transition-all">
+          🔬 Train in Genesis Lab
+        </a>
+        <a href="profile.html?verify=1#holder-verification" class="inline-flex items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 px-5 py-3 font-black text-cyan-100 hover:bg-cyan-300/20 transition">
+          🎴 Verify Genesis
+        </a>
+      </div>
+    </section>
+
+    <section id="loading" class="text-center py-14">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+      <p class="mt-4 text-slate-300">Loading the strongest mice in the Mouseverse...</p>
+    </section>
+
+    <section id="error" class="hidden mouseverse-card rounded-3xl p-6 mb-8 border border-red-400/40">
+      <div class="text-red-300 font-black text-xl mb-2">❌ Could not load Strongest Genesis Mice</div>
+      <div id="errorMessage" class="text-sm text-red-100/90"></div>
+    </section>
+
+    <section id="content" class="hidden">
+      <section id="topMouseSection" class="mb-8"></section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 mb-8">
+        <article class="mouseverse-card rounded-3xl p-5 md:p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div>
+              <div class="text-xs uppercase tracking-[0.22em] text-orange-200 font-black">
+                🔥 Mouseverse Ranking
+              </div>
+              <h3 class="text-2xl md:text-3xl font-black text-yellow-200">
+                Named Genesis Warrior Leaderboard
+              </h3>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label for="mouseSearch" class="sr-only">Search mice</label>
+              <input
+                id="mouseSearch"
+                type="search"
+                placeholder="Search mouse or owner..."
+                class="w-full md:w-64 rounded-2xl border border-white/10 bg-black/35 px-4 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-yellow-300/50"
+              />
+            </div>
+          </div>
+
+          <div id="miceLeaderboard" class="space-y-3"></div>
+        </article>
+
+        <aside class="space-y-5">
+          <article class="mouseverse-card rounded-3xl p-5">
+            <div class="text-xs uppercase tracking-[0.22em] text-yellow-200 font-black mb-2">
+              🧮 Scoring
+            </div>
+            <h4 class="text-xl font-black text-white mb-3">Mouse Warrior Power</h4>
+            <div class="space-y-3 text-sm text-slate-300">
+              <div class="flex justify-between gap-3 border-b border-white/5 pb-2">
+                <span>Trait Power</span>
+                <span class="font-black text-yellow-200">sum trait levels</span>
+              </div>
+              <div class="flex justify-between gap-3 border-b border-white/5 pb-2">
+                <span>Ability Power</span>
+                <span class="font-black text-cyan-200">ability levels × 2</span>
+              </div>
+              <div class="flex justify-between gap-3 border-b border-white/5 pb-2">
+                <span>Genetic Support</span>
+                <span class="font-black text-pink-200">owner items, capped</span>
+              </div>
+              <div class="flex justify-between gap-3 border-b border-white/5 pb-2">
+                <span>Named Mouse</span>
+                <span class="font-black text-emerald-200">+25</span>
+              </div>
+              <div class="flex justify-between gap-3">
+                <span>Fitness Unlock</span>
+                <span class="font-black text-orange-200">+50</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="mouseverse-card rounded-3xl p-5">
+            <div class="text-xs uppercase tracking-[0.22em] text-cyan-200 font-black mb-2">
+              🎴 Entry Rules
+            </div>
+            <ul class="space-y-2 text-sm text-slate-300">
+              <li>✅ Genesis mouse must have a custom name.</li>
+              <li>✅ At least one Genesis trait must be level 5 or higher.</li>
+              <li>✅ Fitness unlock is required.</li>
+              <li>✅ Ranking is read-only and backend-calculated.</li>
+            </ul>
+          </article>
+
+          <article class="mouseverse-card rounded-3xl p-5">
+            <div class="text-xs uppercase tracking-[0.22em] text-pink-200 font-black mb-2">
+              🧬 Genetic Support V1
+            </div>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Genetic Support Items show the current owner’s Genetic Item inventory power.
+              They are displayed around the mouse as support gear, but they are not yet
+              permanently equipped to one Genesis mouse in V1.
+            </p>
+          </article>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <footer class="relative z-10 border-t border-yellow-300/15 bg-black/35 py-10 text-center text-slate-300">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="mb-4 text-xs uppercase tracking-[0.28em] text-yellow-200/80">
+        🐭 Strongest Genesis Mice • Season 12
+      </div>
+      <p class="text-sm">
+        A public read-only Mouseverse ranking powered by Genesis Lab progression.
+      </p>
+      <div class="mt-5 flex flex-wrap justify-center gap-3 text-sm font-bold">
+        <a href="index.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-yellow-100 hover:bg-white/10">Home</a>
+        <a href="leaderboard.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-orange-100 hover:bg-white/10">Leaderboards</a>
+        <a href="lab.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-cyan-100 hover:bg-white/10">Genesis Lab</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /**
+     * Strongest Genesis Mice frontend.
+     * Plain language for DEVS:
+     * This script only fetches and renders the public read-only leaderboard.
+     * It must never write custom names, traits, abilities, inventory, DSPOINC,
+     * rewards, marketplace listings, or ownership data.
+     */
+    const API_URL = '/api/leaderboard/get-strongest-genesis-mice.php?limit=100';
+
+    const state = {
+      mice: [],
+      filteredMice: [],
+    };
+
+    const el = {
+      loading: document.getElementById('loading'),
+      error: document.getElementById('error'),
+      errorMessage: document.getElementById('errorMessage'),
+      content: document.getElementById('content'),
+      topMouseSection: document.getElementById('topMouseSection'),
+      miceLeaderboard: document.getElementById('miceLeaderboard'),
+      mouseSearch: document.getElementById('mouseSearch'),
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString();
+    }
+
+    function getSafeImageUrl(url) {
+      const raw = String(url || '').trim();
+
+      if (!raw) {
+        return 'img/cheese.png';
+      }
+
+      if (raw.startsWith('ipfs://')) {
+        return `https://ipfs.io/ipfs/${raw.replace('ipfs://', '')}`;
+      }
+
+      return raw;
+    }
+
+    function getRankClass(rank) {
+      if (rank === 1) return 'rank-1';
+      if (rank === 2) return 'rank-2';
+      if (rank === 3) return 'rank-3';
+      return 'rank-default';
+    }
+
+    function getRankLabel(rank) {
+      if (rank === 1) return '🥇';
+      if (rank === 2) return '🥈';
+      if (rank === 3) return '🥉';
+      return `#${rank}`;
+    }
+
+    function getMouseRole(mouse) {
+      if (mouse.rank === 1) {
+        return 'Strongest Mouse in the Mouseverse';
+      }
+
+      if (Number(mouse.highest_trait_level || 0) >= 20) {
+        return 'Weapons-Class Genesis Fighter';
+      }
+
+      if (Number(mouse.highest_trait_level || 0) >= 30) {
+        return 'Education-Class Mouse Legend';
+      }
+
+      return 'Fitness-Unlocked Genesis Warrior';
+    }
+
+    function getRarityClass(rarity) {
+      const key = String(rarity || '').toLowerCase();
+
+      if (key === 'legendary' || key === 'mythic') {
+        return 'text-yellow-200 border-yellow-300/30 bg-yellow-300/10';
+      }
+
+      if (key === 'epic') {
+        return 'text-pink-200 border-pink-300/30 bg-pink-300/10';
+      }
+
+      if (key === 'rare') {
+        return 'text-cyan-200 border-cyan-300/30 bg-cyan-300/10';
+      }
+
+      return 'text-slate-200 border-white/10 bg-white/5';
+    }
+
+    function renderStatPill(label, value, accentClass) {
+      return `
+        <div class="power-pill rounded-2xl px-4 py-3">
+          <div class="text-[11px] uppercase tracking-wider text-slate-400 font-black">${escapeHtml(label)}</div>
+          <div class="text-xl font-black ${accentClass || 'text-white'}">${escapeHtml(value)}</div>
+        </div>
+      `;
+    }
+
+    function renderTraitChips(traits) {
+      const rows = Array.isArray(traits) ? traits.slice(0, 8) : [];
+
+      if (!rows.length) {
+        return `<div class="text-sm text-slate-500">No trait rows returned.</div>`;
+      }
+
+      return rows.map((trait) => `
+        <div class="rounded-2xl border border-yellow-300/15 bg-yellow-300/10 px-3 py-2">
+          <div class="text-[11px] uppercase tracking-wider text-yellow-100/70 font-black">${escapeHtml(trait.trait_type || 'Trait')}</div>
+          <div class="font-black text-yellow-100 truncate">${escapeHtml(trait.trait_value || 'Unknown')}</div>
+          <div class="text-xs text-orange-100">Level ${formatNumber(trait.current_level)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderAbilityChips(abilities) {
+      const rows = Array.isArray(abilities) ? abilities.slice(0, 9) : [];
+
+      if (!rows.length) {
+        return `<div class="text-sm text-slate-500">No abilities started yet.</div>`;
+      }
+
+      return rows.map((ability) => `
+        <div class="rounded-2xl border border-cyan-300/15 bg-cyan-300/10 px-3 py-2">
+          <div class="text-[11px] uppercase tracking-wider text-cyan-100/70 font-black">${escapeHtml(ability.category || 'Ability')}</div>
+          <div class="font-black text-cyan-100 truncate">${escapeHtml(ability.ability_label || ability.ability_key || 'Unknown')}</div>
+          <div class="text-xs text-cyan-50">Level ${formatNumber(ability.current_level)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderSupportItems(items) {
+      const rows = Array.isArray(items) ? items.slice(0, 9) : [];
+
+      if (!rows.length) {
+        return `<div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-400">No Genetic support items visible yet.</div>`;
+      }
+
+      return rows.map((item) => {
+        const rarity = item.rarity_tier || 'common';
+
+        return `
+          <div class="support-chip rounded-2xl p-3 ${getRarityClass(rarity)}">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-black/30 border border-white/10 flex items-center justify-center text-lg">🧬</div>
+              <div class="min-w-0">
+                <div class="font-black truncate">${escapeHtml(item.trait_value || 'Genetic Item')}</div>
+                <div class="text-[11px] uppercase tracking-wider opacity-80">${escapeHtml(item.trait_type || 'Trait')} • ${escapeHtml(rarity)}</div>
+                <div class="text-xs opacity-90">Lv ${formatNumber(item.current_level)} • +${formatNumber(item.support_power)} support</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTopMouse(mouse) {
+      if (!mouse) {
+        el.topMouseSection.innerHTML = `
+          <div class="mouseverse-card rounded-3xl p-6 text-center text-slate-300">
+            No named Fitness-unlocked Genesis mouse found yet.
+          </div>
+        `;
+        return;
+      }
+
+      const imageUrl = getSafeImageUrl(mouse.image_url);
+
+      el.topMouseSection.innerHTML = `
+        <article class="champion-frame rounded-[2rem] p-4 md:p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6 items-stretch">
+            <div class="champion-image-wrap rounded-[1.75rem] p-4 flex flex-col justify-between">
+              <div class="text-center mb-4">
+                <div class="inline-flex rounded-full bg-yellow-300 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-slate-950">
+                  🏆 Strongest Mouse in the Mouseverse
+                </div>
+              </div>
+
+              <img
+                src="${escapeHtml(imageUrl)}"
+                alt="${escapeHtml(mouse.custom_name || 'Strongest Genesis Mouse')}"
+                class="w-full aspect-square object-cover rounded-[1.4rem] border border-yellow-200/30 bg-black/30"
+                loading="lazy"
+                onerror="this.src='img/cheese.png';"
+              />
+
+              <div class="mt-4 grid grid-cols-2 gap-3">
+                ${renderStatPill('Power', formatNumber(mouse.mouse_power), 'text-yellow-200')}
+                ${renderStatPill('Highest Trait', `Lv ${formatNumber(mouse.highest_trait_level)}`, 'text-orange-200')}
+              </div>
+            </div>
+
+            <div class="mouseverse-card rounded-[1.75rem] p-5 md:p-6">
+              <div class="flex flex-wrap justify-between gap-4 mb-5">
+                <div class="min-w-0">
+                  <div class="text-xs uppercase tracking-[0.24em] text-yellow-200 font-black">Champion Mouse</div>
+                  <h3 class="text-3xl md:text-5xl font-black text-white truncate">${escapeHtml(mouse.custom_name)}</h3>
+                  <p class="mt-2 text-sm text-orange-100">
+                    ${escapeHtml(mouse.nft_name || mouse.token_short)} • Owner: <span class="font-black text-cyan-100">${escapeHtml(mouse.owner_username)}</span>
+                  </p>
+                  <p class="mt-1 text-xs text-slate-400">${escapeHtml(getMouseRole(mouse))}</p>
+                </div>
+
+                <div class="text-right">
+                  <div class="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">Rank</div>
+                  <div class="text-5xl font-black text-yellow-200">#1</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                ${renderStatPill('Trait Power', formatNumber(mouse.trait_power), 'text-yellow-200')}
+                ${renderStatPill('Ability Power', formatNumber(mouse.ability_power), 'text-cyan-200')}
+                ${renderStatPill('Genetic Support', formatNumber(mouse.genetic_support_power), 'text-pink-200')}
+                ${renderStatPill('Fitness', 'Unlocked', 'text-emerald-200')}
+              </div>
+
+              <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                <div>
+                  <div class="text-xs uppercase tracking-[0.2em] text-yellow-200 font-black mb-3">Genesis Traits</div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    ${renderTraitChips(mouse.traits)}
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-xs uppercase tracking-[0.2em] text-cyan-200 font-black mb-3">Genesis Abilities</div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    ${renderAbilityChips(mouse.abilities)}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-5">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                  <div class="text-xs uppercase tracking-[0.2em] text-pink-200 font-black">Owner Genetic Support Orbit</div>
+                  <div class="text-xs text-slate-400">${formatNumber(mouse.genetic_items_total)} owner items tracked</div>
+                </div>
+                <div class="support-orbit">
+                  ${renderSupportItems(mouse.genetic_items)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderLeaderboardRow(mouse) {
+      const rank = Number(mouse.rank || 0);
+      const imageUrl = getSafeImageUrl(mouse.image_url);
+      const role = getMouseRole(mouse);
+
+      return `
+        <article class="narrrf-leaderboard-row mouseverse-card rounded-2xl p-4 flex items-center justify-between gap-4 transition">
+          <div class="narrrf-leaderboard-player flex items-center gap-3 min-w-0">
+            <div class="narrrf-leaderboard-rank ${getRankClass(rank)} w-11 h-11 min-w-11 rounded-2xl flex items-center justify-center text-sm shadow-lg">
+              ${escapeHtml(getRankLabel(rank))}
+            </div>
+
+            <img
+              src="${escapeHtml(imageUrl)}"
+              alt="${escapeHtml(mouse.custom_name || 'Genesis Mouse')}"
+              class="narrrf-leaderboard-avatar w-14 h-14 rounded-2xl object-cover border border-yellow-300/25 bg-black/30"
+              loading="lazy"
+              onerror="this.src='img/cheese.png';"
+            />
+
+            <div class="min-w-0">
+              <div class="narrrf-leaderboard-name text-base md:text-lg font-black text-white">
+                ${escapeHtml(mouse.custom_name || 'Unnamed Mouse')}
+              </div>
+              <div class="narrrf-leaderboard-role text-xs text-orange-100">
+                ${escapeHtml(role)} • ${escapeHtml(mouse.owner_username || 'Unknown')}
+              </div>
+              <div class="hidden md:flex flex-wrap gap-2 mt-2 text-[11px]">
+                <span class="rounded-full bg-yellow-300/10 border border-yellow-300/20 px-2 py-1 text-yellow-100">Trait ${formatNumber(mouse.trait_power)}</span>
+                <span class="rounded-full bg-cyan-300/10 border border-cyan-300/20 px-2 py-1 text-cyan-100">Ability ${formatNumber(mouse.ability_power)}</span>
+                <span class="rounded-full bg-pink-300/10 border border-pink-300/20 px-2 py-1 text-pink-100">Genetic ${formatNumber(mouse.genetic_support_power)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="narrrf-leaderboard-score text-right">
+            <div class="narrrf-leaderboard-score-main flex items-center justify-end gap-1 text-xl font-black text-yellow-200">
+              ${formatNumber(mouse.mouse_power)}
+            </div>
+            <div class="narrrf-leaderboard-score-sub text-xs text-slate-400">
+              Lv ${formatNumber(mouse.highest_trait_level)} high trait
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderLeaderboard() {
+      const rows = state.filteredMice;
+
+      if (!rows.length) {
+        el.miceLeaderboard.innerHTML = `
+          <div class="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-slate-300">
+            No mice match this search.
+          </div>
+        `;
+        return;
+      }
+
+      el.miceLeaderboard.innerHTML = rows.map(renderLeaderboardRow).join('');
+    }
+
+    function applySearch() {
+      const query = String(el.mouseSearch.value || '').trim().toLowerCase();
+
+      if (!query) {
+        state.filteredMice = [...state.mice];
+        renderLeaderboard();
+        return;
+      }
+
+      state.filteredMice = state.mice.filter((mouse) => {
+        const haystack = [
+          mouse.custom_name,
+          mouse.nft_name,
+          mouse.owner_username,
+          mouse.token_short,
+          mouse.owner_user_id,
+        ].map((part) => String(part || '').toLowerCase()).join(' ');
+
+        return haystack.includes(query);
+      });
+
+      renderLeaderboard();
+    }
+
+    async function loadStrongestMice() {
+      try {
+        const response = await fetch(API_URL, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || `Request failed with ${response.status}`);
+        }
+
+        state.mice = Array.isArray(data.mice) ? data.mice : [];
+        state.filteredMice = [...state.mice];
+
+        renderTopMouse(data.top_mouse || state.mice[0] || null);
+        renderLeaderboard();
+
+        el.loading.classList.add('hidden');
+        el.error.classList.add('hidden');
+        el.content.classList.remove('hidden');
+      } catch (error) {
+        el.loading.classList.add('hidden');
+        el.error.classList.remove('hidden');
+        el.errorMessage.textContent = error.message || 'Unknown error';
+      }
+    }
+
+    el.mouseSearch.addEventListener('input', applySearch);
+    loadStrongestMice();
+  </script>
+</body>
+</html>
