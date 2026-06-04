@@ -1,5 +1,982 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+# 🧠 Narrrfs World 13.0 — Lab System 9.93 NEWEST / Final Pre-Push Polish Sync
+
+**Date:** 2026-06-02
+**Status:** Final local polish completed / ready for push after checks
+**Scope:** Labyrinth Blast credits, music, gameplay polish, Cheese Hunt anti-cheat, Strongest Genesis Mice, profile sound cleanup.
+
+---
+
+## ✅ Final Polish Added
+
+Labyrinth Blast now includes visible collab/music credits on the start / info screen.
+
+Credits added in FOX source:
+
+```text
+FOX/src/pages/Index.tsx
+```
+
+Links:
+
+```text
+Music by Retrospect:
+https://www.youtube.com/@Retrospect82
+
+Bear or Bull Music by Nightfox:
+https://www.youtube.com/@bearorbullmusic
+```
+
+Important:
+
+```text
+These are attribution/navigation links only.
+They do not affect gameplay, score saving, DSPOINC, music playback logic, rewards, or backend state.
+```
+
+After editing FOX source, Labyrinth Blast must be rebuilt and copied into:
+
+```text
+public/labyrinth-blast/
+```
+
+Do not edit generated Labyrinth Blast asset files directly.
+
+---
+
+## ✅ Current Final Feature Bundle
+
+This push includes:
+
+```text
+Strongest Genesis Mice leaderboard + API
+Strongest Genesis Mouse homepage showcase
+Labyrinth Blast background music + ON/OFF toggle
+Labyrinth Blast Retrospect / Bear or Bull music credits
+Labyrinth Blast tough block visual cleanup
+Labyrinth Blast bomb fuse tuning toward 2.4s
+Labyrinth Blast AVAILABLE DSPOINC display
+Labyrinth Blast start screen profile/leaderboard link fixes
+Profile Reward Chamber sound cleanup for global sound toggle / iPhone issue
+Cheese Hunt anti-cheat backend + frontend warning
+Cheese Hunt warning redirect fix
+Admin Cheese Hunt modes: scatter_zone + fair_shuffle
+```
+
+---
+
+## ✅ Final Pre-Push Checks
+
+Before push:
+
+```text
+php -l api/track-egg-click.php
+php -l api/leaderboard/get-strongest-genesis-mice.php
+```
+
+Test locally:
+
+```text
+Homepage loads.
+Strongest mouse showcase loads.
+strongest-genesis-mice.html loads.
+Labyrinth Blast loads.
+Music toggle works.
+Retrospect link opens YouTube.
+Bear or Bull Music link opens YouTube.
+OPEN PROFILE opens profile page.
+FULL opens leaderboard page.
+AVAILABLE DSPOINC does not show frozen staking as spendable.
+Cheese Hunt rapid click shows Cheese Police warning and does not redirect away instantly.
+Profile reward sound respects global sound OFF.
+```
+
+---
+
+## 🚫 Guardrails
+
+Do not:
+
+```text
+Edit generated Labyrinth Blast assets directly.
+Remove music collaborator credits.
+Hardcode production-only URLs for Labyrinth internal links.
+Show frozen DSPOINC as available.
+Claim Genetic Items are equipped to mice in Strongest Genesis Mice V1.
+Remove Cheese Hunt backend anti-cheat.
+Let anti-cheat warning redirect away immediately.
+Reintroduce raw ability_label DB column selection.
+```
+
+Agent can now stand by after final push/test.
+
+
+# 🧠 Narrrfs World 13.0 — Lab System 9.93 NEWEST / Pre-Push Sync
+
+**Date:** 2026-06-02
+**Status:** Near push / local testing successful
+**Scope:** Strongest Genesis Mice, Labyrinth Blast polish, Cheese Hunt anti-cheat, profile sound cleanup.
+
+---
+
+## ✅ Current Pre-Push Summary
+
+We are near a push after several Season 12 polish and feature updates.
+
+Main completed local work:
+
+```text
+1. Strongest Genesis Mice leaderboard added.
+2. Strongest Genesis Mouse homepage showcase added.
+3. Labyrinth Blast music toggle added and tested.
+4. Labyrinth Blast tough/bombable block render cleaned up.
+5. Labyrinth Blast start screen links fixed.
+6. Labyrinth Blast AVAILABLE DSPOINC display corrected.
+7. Labyrinth Blast bomb fuse reviewed/tuned toward 2.4s.
+8. Profile Reward Chamber sound cleanup added for global sound toggle / iPhone-AirPods issue.
+9. Cheese Hunt anti-cheat hardened on frontend and backend.
+10. Cheese Hunt warning redirect bug fixed so Cheese Police warning is visible.
+11. Admin Cheese Hunt movement modes extended.
+```
+
+---
+
+## 🐭 Strongest Genesis Mice
+
+New files:
+
+```text
+api/leaderboard/get-strongest-genesis-mice.php
+public/strongest-genesis-mice.html
+```
+
+Updated:
+
+```text
+public/index.html
+public/leaderboard.html
+```
+
+Feature:
+
+```text
+Public read-only leaderboard for strongest named Genesis mice.
+Entry requires custom name + Fitness unlocked.
+Fitness unlock means at least one Genesis trait level >= 5.
+```
+
+Scoring V1:
+
+```text
+Mouse Warrior Power =
+Genesis Trait Power
++ Genesis Ability Power
++ Owner Genetic Support Power
++ Named Mouse Bonus
++ Fitness Unlock Bonus
+```
+
+Important architecture:
+
+```text
+Genesis traits are NFT-bound.
+Genesis abilities are NFT-bound.
+Genetic Items are Discord-user-bound support inventory in V1.
+Genetic Items are NOT equipped to one mouse yet.
+```
+
+Do not add writes to this endpoint.
+
+---
+
+## 🎮 Labyrinth Blast Updates
+
+FOX source changed and public build must be rebuilt/copied before push.
+
+Important source files:
+
+```text
+FOX/src/game/audio.ts
+FOX/src/components/GameCanvas.tsx
+FOX/src/pages/Index.tsx
+FOX/src/game/renderer.ts
+FOX/src/game/engine.ts
+```
+
+Public build output expected in:
+
+```text
+public/labyrinth-blast/
+```
+
+Music:
+
+```text
+public/sounds/music/labyrinth.mp3
+```
+
+Correct music path in FOX audio source:
+
+```text
+../sounds/music/labyrinth.mp3
+```
+
+Reason:
+
+```text
+Works from /labyrinth-blast/ live and /public/labyrinth-blast/ local.
+```
+
+Start screen link fixes:
+
+```text
+OPEN PROFILE -> ../profile.html
+FULL leaderboard -> ../leaderboard.html
+```
+
+Available DSPOINC rule:
+
+```text
+Labyrinth start screen should show AVAILABLE DSPOINC, not total including frozen staking.
+Prefer available/spendable fields from backend.
+Fallback: total - frozen.
+```
+
+Bomb fuse tuning:
+
+```text
+Old: 2000ms
+Recommended/tested: 2400ms
+Reason: gives players more fair time around corners, especially with 2+ bombs.
+```
+
+---
+
+## 🔊 Profile Sound Toggle Cleanup
+
+Updated:
+
+```text
+public/profile.html
+```
+
+Fix:
+
+```text
+Profile Reward Chamber/chest sounds now respect global Narrrfs sound toggle.
+Active MP3 audio is paused/unloaded when sound is turned off.
+Active WebAudio AudioContext is closed after playback / sound-off.
+```
+
+Reason:
+
+```text
+iPhone/AirPods could replay the reward sound as active media after the profile lootbox sound.
+```
+
+Expected test:
+
+```text
+Sound OFF -> Reward Chamber box should not play reward/chest sound.
+Sound ON -> sound plays once.
+After sound ends, AirPods play should resume previous music, not replay reward sound.
+```
+
+---
+
+## 🧀 Cheese Hunt Anti-Cheat / Quest Fix
+
+Updated:
+
+```text
+public/index.html
+api/track-egg-click.php
+public/admin-interface.html
+```
+
+Problem fixed:
+
+```text
+Players could reload/wait at one position and click cheese very fast 3 times.
+System could count rapid repeated clicks before redirect/move.
+```
+
+Backend fix:
+
+```text
+track-egg-click.php blocks duplicate same egg/user/quest clicks.
+track-egg-click.php blocks rapid quest clicks with cooldown.
+Backend returns anti_cheat / duplicate_click / cooldown_active with 429.
+```
+
+Frontend fix:
+
+```text
+index.html adds client lockout.
+index.html shows funny Cheese Police warning.
+index.html cancels pending navigation when anti-cheat warning appears.
+index.html parses JSON even on 429 responses.
+Anti-cheat responses do not navigate away anymore.
+```
+
+Admin Cheese Hunt additions:
+
+```text
+scatter_zone
+fair_shuffle
+```
+
+Cheese count UI corrected to max 3 because index currently supports 3 active egg IDs.
+
+Important:
+
+```text
+Frontend warning is UX only.
+Backend remains authoritative for real anti-cheat counting.
+```
+
+---
+
+## ✅ Pre-Push Test Checklist
+
+Before pushing, test locally:
+
+```text
+Homepage loads.
+Strongest mouse homepage showcase loads.
+strongest-genesis-mice.html loads.
+get-strongest-genesis-mice.php returns success true.
+Labyrinth Blast loads.
+Labyrinth music ON/OFF works.
+Labyrinth OPEN PROFILE works.
+Labyrinth FULL leaderboard works.
+Labyrinth AVAILABLE DSPOINC displays.
+Labyrinth tough blocks look cleaner.
+Labyrinth bomb timing feels better at 2.4s if applied.
+Profile reward sound respects global sound OFF.
+Cheese Hunt rapid double/triple click shows Cheese Police warning.
+Cheese Hunt anti-cheat warning does not instantly disappear due to redirect.
+Admin Cheese Hunt modes show scatter_zone and fair_shuffle.
+php -l api/track-egg-click.php passes.
+php -l api/leaderboard/get-strongest-genesis-mice.php passes.
+```
+
+---
+
+## 🚫 Guardrails
+
+Do not:
+
+```text
+Edit generated Labyrinth Blast assets directly.
+Show frozen staking DSPOINC as available.
+Claim Genetic Items are equipped to mice in V1.
+Remove backend anti-cheat from track-egg-click.php.
+Let Cheese Hunt anti-cheat responses redirect away.
+Remove Profile sound cleanup helpers.
+Use hardcoded narrrfs.world URLs for local Labyrinth navigation.
+Reintroduce raw ability_label DB column selection.
+```
+
+---
+
+## Suggested Commit Message
+
+```text
+Add Season 12 Strongest Mice and Labyrinth polish
+```
+
+
+# 🧠 Narrrfs World 13.0 — Lab System 9.93 NEWEST / Season 12 Feature Sync
+
+**Date:** 2026-06-02
+**Status:** Active development sync after Season 12 homepage/game/leaderboard updates
+**Agent Scope:** Lab System 9.93 NEWEST, Strongest Genesis Mice, Labyrinth Blast polish, homepage showcase, public leaderboard routing, FOX source rebuild workflow.
+
+---
+
+## ✅ Current Work Summary
+
+Today’s work focused on Season 12 public feature polish and Labyrinth Blast gameplay/UX improvements.
+
+Main completed/active items:
+
+```text
+1. Strongest Genesis Mice leaderboard created.
+2. Strongest Genesis Mouse homepage showcase added.
+3. Strongest Genesis Mice API endpoint created.
+4. Leaderboard page linked to new Strongest Genesis Mice page.
+5. Labyrinth Blast background music system added.
+6. Labyrinth Blast music ON/OFF HUD toggle added.
+7. Labyrinth Blast tough/bombable stone rendering cleaned up.
+8. Labyrinth Blast start-screen profile/leaderboard links fixed.
+9. Labyrinth Blast start-screen DSPOINC display changed toward available/spendable balance logic.
+10. Bomb fuse timing feedback reviewed for possible 2.4s balance tuning.
+```
+
+---
+
+## 🐭 Strongest Genesis Mice Feature
+
+New public page:
+
+```text
+public/strongest-genesis-mice.html
+```
+
+New public read-only endpoint:
+
+```text
+api/leaderboard/get-strongest-genesis-mice.php
+```
+
+Purpose:
+
+```text
+Rank the strongest named Genesis mice in the Mouseverse.
+```
+
+Entry criteria:
+
+```text
+1. Mouse must be a Genesis NFT.
+2. Mouse must have a custom name.
+3. Mouse must have Fitness unlocked.
+4. Fitness unlock means at least one Genesis trait level >= 5.
+```
+
+Scoring model V1:
+
+```text
+Mouse Warrior Power =
+Trait Power
++ Ability Power
++ Genetic Support Power
++ Named Mouse Bonus
++ Fitness Unlock Bonus
+```
+
+Current formula:
+
+```text
+Trait Power = SUM Genesis trait levels on that NFT.
+Ability Power = SUM Genesis ability levels on that NFT × 2.
+Genetic Support Power = current owner Genetic Item levels with rarity multiplier, capped at 250.
+Named Mouse Bonus = +25.
+Fitness Unlock Bonus = +50.
+```
+
+Important architecture note:
+
+```text
+Genesis traits are NFT-bound.
+Genesis abilities are NFT-bound.
+Genetic Items are Discord-user-bound in V1.
+```
+
+Therefore the page wording must stay clear:
+
+```text
+Genetic Support Items show the current owner’s Genetic Item inventory power.
+They are displayed around the mouse as support gear, but they are not yet permanently equipped to one Genesis mouse in V1.
+```
+
+Do **not** claim Genetic Items are equipped to a specific NFT until a future equipment system exists.
+
+---
+
+## 🧠 Strongest Genesis Mice API Notes
+
+Endpoint:
+
+```text
+api/leaderboard/get-strongest-genesis-mice.php
+```
+
+Endpoint behavior:
+
+```text
+Read-only only.
+No DB writes.
+No DSPOINC changes.
+No inventory changes.
+No trait/ability/custom-name changes.
+No ownership mutation.
+```
+
+Important DB logic:
+
+`tbl_nft_ownership` can contain duplicate/historical rows per token, so endpoint uses a current ownership CTE with:
+
+```text
+ROW_NUMBER() OVER (
+  PARTITION BY token_id, collection
+  ORDER BY
+    is_verified DESC,
+    verified_at DESC,
+    acquired_at DESC,
+    ownership_id DESC
+)
+```
+
+This avoids duplicate leaderboard entries for the same named mouse.
+
+Known fixed API issue:
+
+```text
+tbl_nft_ability_upgrades does not have ability_label.
+Endpoint must use:
+ability_key AS ability_label
+```
+
+Do not reintroduce:
+
+```text
+ability_label
+```
+
+as a raw selected DB column unless the schema is later migrated.
+
+---
+
+## 🏆 Homepage Strongest Mouse Showcase
+
+Homepage file:
+
+```text
+public/index.html
+```
+
+A new showcase block was added for the current strongest named Genesis mouse.
+
+It fetches:
+
+```text
+/api/leaderboard/get-strongest-genesis-mice.php?limit=1
+```
+
+Purpose:
+
+```text
+Show the current #1 mouse on the homepage as a Season 12 prestige hook.
+```
+
+Important:
+
+```text
+Homepage display is read-only.
+Homepage must not calculate final score.
+Homepage must not mutate traits, abilities, inventory, custom names, ownership, DSPOINC, or rewards.
+Backend endpoint remains authoritative for the ranking.
+```
+
+Also added/confirmed navigation links:
+
+```text
+public/index.html -> strongest-genesis-mice.html
+public/leaderboard.html -> strongest-genesis-mice.html
+```
+
+---
+
+## 🎮 Labyrinth Blast Music Update
+
+MP3 added:
+
+```text
+public/sounds/music/labyrinth.mp3
+```
+
+FOX source files involved:
+
+```text
+FOX/src/game/audio.ts
+FOX/src/components/GameCanvas.tsx
+```
+
+Music functions added/expected in `audio.ts`:
+
+```text
+isMusicEnabled()
+toggleMusic()
+onMusicChange()
+startLabyrinthMusic()
+stopLabyrinthMusic()
+```
+
+Important path correction:
+
+```text
+const LABYRINTH_MUSIC_SRC = "../sounds/music/labyrinth.mp3";
+```
+
+Reason:
+
+The Labyrinth Blast game is served from:
+
+```text
+public/labyrinth-blast/
+```
+
+So the relative path must go one folder up to reach:
+
+```text
+public/sounds/music/labyrinth.mp3
+```
+
+Do **not** use this for local:
+
+```text
+/sounds/music/labyrinth.mp3
+```
+
+because local XAMPP may resolve it as:
+
+```text
+http://localhost/sounds/music/labyrinth.mp3
+```
+
+instead of:
+
+```text
+http://localhost/narrrfs-world/public/sounds/music/labyrinth.mp3
+```
+
+Music behavior:
+
+```text
+Music starts after gameplay/user interaction.
+Music can be toggled ON/OFF from HUD.
+Music preference is stored in localStorage.
+Music is separate from SFX.
+Music must not affect score, DSPOINC, enemies, timers, rewards, backend calls, or gameplay state.
+```
+
+---
+
+## 🧱 Labyrinth Blast Tough Wall Rendering Polish
+
+FOX source file:
+
+```text
+FOX/src/game/renderer.ts
+```
+
+The lighter bombable/tough block render was cleaned up.
+
+Issue:
+
+```text
+Old tough block looked too bright and too much like a portal/hourglass special tile.
+```
+
+Updated direction:
+
+```text
+Darker reinforced stone style.
+Muted gold frame.
+Cleaner center.
+Still readable as stronger bombable block.
+Still distinct from normal wall and normal breakable block.
+```
+
+Gameplay rule unchanged:
+
+```text
+Tile type 2 = breakable.
+Tile type 3 = tough / reinforced bombable block.
+```
+
+Do not change gameplay behavior from renderer-only polish unless explicitly requested.
+
+---
+
+## 🔗 Labyrinth Blast Start Screen Link Fixes
+
+FOX source file:
+
+```text
+FOX/src/pages/Index.tsx
+```
+
+Broken links fixed:
+
+```text
+OPEN PROFILE
+FULL leaderboard button
+```
+
+Because Labyrinth Blast is served from:
+
+```text
+/labyrinth-blast/
+```
+
+the start screen links must go one folder up:
+
+```text
+../profile.html
+../leaderboard.html
+```
+
+This resolves correctly both locally and live:
+
+```text
+Local:
+http://localhost/narrrfs-world/public/labyrinth-blast/
+../profile.html
+= http://localhost/narrrfs-world/public/profile.html
+
+Live:
+https://narrrfs.world/labyrinth-blast/
+../leaderboard.html
+= https://narrrfs.world/leaderboard.html
+```
+
+Do not use hardcoded `https://narrrfs.world/...` because local testing would break.
+
+Do not use `/public/profile.html` because live would break.
+
+---
+
+## 💰 Labyrinth Blast DSPOINC Display Correction
+
+FOX source file:
+
+```text
+FOX/src/pages/Index.tsx
+```
+
+Issue:
+
+Start screen DSPOINC card showed total DSPOINC, including frozen staking balance.
+
+Correct player-facing behavior:
+
+```text
+Show available/spendable DSPOINC.
+Do not show frozen staking balance as spendable.
+```
+
+Label should be:
+
+```text
+AVAILABLE DSPOINC
+```
+
+Balance loader should prefer:
+
+```text
+available_dspoinc
+availableDspoinc
+spendable_dspoinc
+spendableDspoinc
+```
+
+Fallback only if needed:
+
+```text
+total_dspoinc - frozen_dspoinc
+```
+
+Guardrail:
+
+```text
+Frontend only displays the best backend-provided available/spendable value.
+Backend remains authoritative for DSPOINC ledger, frozen stakes, rewards, and score saving.
+```
+
+---
+
+## 💣 Labyrinth Blast Bomb Fuse Feedback
+
+Player feedback:
+
+```text
+Bomb timer feels slightly too fast.
+Players have difficulty moving around corners, especially with 2+ bombs.
+```
+
+Current likely balance point:
+
+```text
+Old fuse: 2000ms
+Recommended test fuse: 2400ms
+```
+
+FOX source file:
+
+```text
+FOX/src/game/engine.ts
+```
+
+Recommended constant:
+
+```text
+PLAYER_BOMB_FUSE_MS = 2400
+```
+
+Renderer visual pulse may also need sync:
+
+```text
+FOX/src/game/renderer.ts
+```
+
+Recommended test plan:
+
+```text
+Place one bomb and escape around a corner.
+Place two bombs and escape around a corner.
+Test Bear with extra bombs.
+Test chain reactions.
+Test bomb slot freeing after explosion.
+Do not make fuse too long or the game becomes too easy.
+```
+
+Do not exceed `2800ms` without explicit gameplay decision.
+
+---
+
+## 🦊 FOX / Labyrinth Blast Build Workflow
+
+Do **not** edit generated files directly:
+
+```text
+public/labyrinth-blast/assets/*.js
+public/labyrinth-blast/assets/*.css
+```
+
+Correct workflow:
+
+```powershell
+cd C:\xampp-server\htdocs\narrrfs-world\FOX
+npm run build
+
+cd C:\xampp-server\htdocs\narrrfs-world
+
+if (Test-Path public\labyrinth-blast) {
+  Remove-Item public\labyrinth-blast -Recurse -Force
+}
+
+New-Item -ItemType Directory -Path public\labyrinth-blast | Out-Null
+Copy-Item FOX\dist\* public\labyrinth-blast\ -Recurse -Force
+```
+
+Then stage rebuilt public files:
+
+```powershell
+git add public/labyrinth-blast/index.html public/labyrinth-blast/assets/*
+```
+
+Also stage music file:
+
+```powershell
+git add public/sounds/music/labyrinth.mp3
+```
+
+If FOX source files are tracked, stage them too:
+
+```powershell
+git add FOX/src/game/audio.ts
+git add FOX/src/components/GameCanvas.tsx
+git add FOX/src/pages/Index.tsx
+git add FOX/src/game/renderer.ts
+git add FOX/src/game/engine.ts
+```
+
+If Git says FOX source is ignored, that is expected for some workflows. Render still needs the rebuilt `public/labyrinth-blast/` output.
+
+---
+
+## ✅ Live/Local Test Checklist
+
+After rebuild and push, test:
+
+```text
+https://narrrfs.world/strongest-genesis-mice.html
+https://narrrfs.world/api/leaderboard/get-strongest-genesis-mice.php?limit=5
+https://narrrfs.world/
+https://narrrfs.world/leaderboard.html
+https://narrrfs.world/labyrinth-blast/
+```
+
+Strongest Genesis Mice:
+
+```text
+Page loads.
+Top mouse renders.
+NFT image displays.
+Traits display.
+Abilities display.
+Genetic support inventory displays.
+Leaderboard list renders.
+Homepage showcase renders #1 mouse.
+Leaderboard page links to new page.
+```
+
+Labyrinth Blast:
+
+```text
+Music loads from /sounds/music/labyrinth.mp3.
+Music button toggles ON/OFF.
+SFX button still works separately.
+Open Profile button opens profile.html.
+FULL leaderboard button opens leaderboard.html.
+AVAILABLE DSPOINC card does not show frozen stake as spendable.
+Tough blocks look cleaner.
+Bomb timing feels fair around corners after any fuse change.
+No console red errors.
+No missing asset 404s.
+```
+
+---
+
+## 🚫 Do Not Undo / Guardrails
+
+Do not:
+
+```text
+Edit generated Labyrinth Blast asset JS/CSS directly.
+Hardcode production-only URLs inside FOX start screen links.
+Use /sounds/music/labyrinth.mp3 if local path breaks.
+Show frozen DSPOINC as spendable balance.
+Claim Genetic Items are equipped to a mouse in V1.
+Add DB writes to Strongest Genesis Mice endpoint.
+Mutate NFT traits, abilities, inventory, ownership, or custom names from the new page.
+Reintroduce raw ability_label DB selection.
+Remove current ownership CTE from Strongest Genesis Mice endpoint.
+```
+
+---
+
+## Suggested Commit Labels
+
+For Strongest Genesis Mice:
+
+```text
+Add Strongest Genesis Mice leaderboard
+```
+
+For homepage showcase:
+
+```text
+Showcase strongest Genesis mouse on homepage
+```
+
+For Labyrinth Blast music/polish:
+
+```text
+Add Labyrinth Blast music and gameplay polish
+```
+
+For DSPOINC display/link fixes:
+
+```text
+Fix Labyrinth Blast start screen links and available balance
+```
+
+
 # 🧠 Narrrfs World 13.0 — Season 12 Push / Lab System 9.93 NEWEST Sync
 
 **Date:** 2026-06-02  

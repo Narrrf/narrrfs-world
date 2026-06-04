@@ -767,7 +767,7 @@ require_once 'discord-invite.php';
       .toLowerCase()
       .trim();
 
-    const allowedPatterns = ['random', 'edge_hunter', 'sneaky', 'corner_lurker'];
+    const allowedPatterns = ['random', 'edge_hunter', 'sneaky', 'corner_lurker', 'scatter_zone', 'fair_shuffle'];
     return allowedPatterns.includes(configuredPattern) ? configuredPattern : 'random';
   }
 
@@ -950,6 +950,70 @@ require_once 'discord-invite.php';
             top = getRandomInRange(sneakyTopMin, Math.max(sneakyTopMin, sneakyTopMax));
           }
         }
+        break;
+      }
+
+            case 'scatter_zone': {
+        /**
+         * Scatter Zone Anti-Stack mode.
+         *
+         * Plain language for DEVS:
+         * This mode spreads the three possible cheese eggs into different
+         * screen/page zones so they do not spawn on the same reload-friendly spot.
+         * It makes Cheese Hunt quests feel fairer and less abusable.
+         */
+        const activeEggIds = getActiveCheeseEggIds();
+        const eggIndex = Math.max(0, activeEggIds.indexOf(eggId));
+        const zoneIndex = eggIndex % 3;
+
+        const leftZones = [
+          {
+            min: hiddenAreasEnabled ? safeLeftMin : fairLeftMin,
+            max: hiddenAreasEnabled
+              ? Math.min(safeLeftMax, viewportWidth * 0.34)
+              : Math.min(fairLeftMax, fairLeftMin + (fairLeftMax - fairLeftMin) * 0.34)
+          },
+          {
+            min: hiddenAreasEnabled ? Math.max(safeLeftMin, viewportWidth * 0.34) : fairLeftMin + (fairLeftMax - fairLeftMin) * 0.34,
+            max: hiddenAreasEnabled ? Math.min(safeLeftMax, viewportWidth * 0.66) : fairLeftMin + (fairLeftMax - fairLeftMin) * 0.66
+          },
+          {
+            min: hiddenAreasEnabled ? Math.max(safeLeftMin, viewportWidth * 0.66) : fairLeftMin + (fairLeftMax - fairLeftMin) * 0.66,
+            max: hiddenAreasEnabled ? safeLeftMax : fairLeftMax
+          }
+        ];
+
+        const pageTopZones = hiddenAreasEnabled
+          ? [
+              { min: safeTopPageMin, max: Math.min(safeTopPageMax, documentHeight * 0.30) },
+              { min: Math.max(safeTopPageMin, documentHeight * 0.35), max: Math.min(safeTopPageMax, documentHeight * 0.65) },
+              { min: Math.max(safeTopPageMin, documentHeight * 0.70), max: safeTopPageMax }
+            ]
+          : [
+              { min: fairTopMin, max: Math.min(fairTopMax, fairTopMin + (fairTopMax - fairTopMin) * 0.34) },
+              { min: fairTopMin + (fairTopMax - fairTopMin) * 0.34, max: fairTopMin + (fairTopMax - fairTopMin) * 0.66 },
+              { min: fairTopMin + (fairTopMax - fairTopMin) * 0.66, max: fairTopMax }
+            ];
+
+        const leftZone = leftZones[zoneIndex] || leftZones[0];
+        const topZone = pageTopZones[(zoneIndex + Math.floor(Math.random() * 3)) % 3] || pageTopZones[0];
+
+        left = getRandomInRange(leftZone.min, Math.max(leftZone.min, leftZone.max));
+        top = getRandomInRange(topZone.min, Math.max(topZone.min, topZone.max));
+        break;
+      }
+
+      case 'fair_shuffle': {
+        /**
+         * Fair Shuffle Viewport mode.
+         *
+         * Plain language for DEVS:
+         * Keeps cheese inside the visible viewport but away from predictable
+         * extreme edges. This is good for fun public quests where hidden areas
+         * should not decide the winner.
+         */
+        left = getRandomInRange(fairLeftMin, Math.max(fairLeftMin, fairLeftMax));
+        top = getRandomInRange(fairTopMin, Math.max(fairTopMin, fairTopMax));
         break;
       }
 
@@ -1466,153 +1530,275 @@ require_once 'discord-invite.php';
     }, 8000);
   }
 
-  // 🔧 CRITICAL FIX: Global cheese interaction handler function
+    /**
+   * Cheese Hunt client anti-spam guard.
+   *
+   * Plain language for DEVS:
+   * Backend is authoritative, but we also block rapid repeated clicks in the UI
+   * so players get immediate feedback and cannot spam three requests before the
+   * cheese moves/navigates. This prevents the reload-position cheese exploit
+   * from feeling like a usable trick.
+   */
+  const CHEESE_HUNT_CLIENT_GLOBAL_COOLDOWN_MS = 1600;
+  const CHEESE_HUNT_CLIENT_SAME_EGG_LOCK_MS = 8000;
+
+  let cheeseHuntGlobalLockedUntil = 0;
+let cheeseHuntPendingNavigationTimer = null;
+const cheeseHuntEggLocks = new Map();
+
+  function showCheeseHuntAntiCheatWarning(message) {
+    if (cheeseHuntPendingNavigationTimer) {
+      clearTimeout(cheeseHuntPendingNavigationTimer);
+      cheeseHuntPendingNavigationTimer = null;
+    }
+
+    const oldWarning = document.getElementById('cheese-hunt-anti-cheat-warning');
+    if (oldWarning) {
+      oldWarning.remove();
+    }
+
+    const warning = document.createElement('div');
+    warning.id = 'cheese-hunt-anti-cheat-warning';
+    warning.style.cssText = `
+      position: fixed;
+      top: 150px;
+      right: 20px;
+      background: linear-gradient(135deg, #7c2d12, #dc2626);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      z-index: 10005;
+      max-width: 320px;
+      font-size: 13px;
+      line-height: 1.45;
+      border: 2px solid #f97316;
+    `;
+
+    if (window.innerWidth < 768) {
+      warning.style.top = '120px';
+      warning.style.right = '10px';
+      warning.style.left = '10px';
+      warning.style.maxWidth = 'none';
+    }
+
+    warning.innerHTML = `
+      <div style="display:flex;align-items:center;margin-bottom:6px;">
+        <span style="font-size:20px;margin-right:8px;">🧀</span>
+        <strong>Cheese Police Alert</strong>
+      </div>
+      <div style="opacity:0.92;">
+        ${message || 'Nice try, cheese ninja. One cheese bite at a time! 🐭'}
+      </div>
+      <button onclick="this.parentElement.remove()" style="
+        position:absolute;
+        top:4px;
+        right:8px;
+        background:none;
+        border:none;
+        color:white;
+        font-size:16px;
+        cursor:pointer;
+        opacity:0.75;
+      ">×</button>
+    `;
+
+    document.body.appendChild(warning);
+
+    setTimeout(() => {
+      if (warning.parentElement) {
+        warning.remove();
+      }
+    }, 5500);
+  }
+
+  function isCheeseHuntClientLocked(eggId) {
+    const now = Date.now();
+    const eggLockedUntil = cheeseHuntEggLocks.get(eggId) || 0;
+    return now < cheeseHuntGlobalLockedUntil || now < eggLockedUntil;
+  }
+
+  function lockCheeseHuntClientClick(eggId) {
+    const now = Date.now();
+    cheeseHuntGlobalLockedUntil = now + CHEESE_HUNT_CLIENT_GLOBAL_COOLDOWN_MS;
+    cheeseHuntEggLocks.set(eggId, now + CHEESE_HUNT_CLIENT_SAME_EGG_LOCK_MS);
+  }
+
+    /**
+   * Schedules normal cheese navigation after valid tracking.
+   *
+   * Plain language for DEVS:
+   * The anti-cheat warning must be able to cancel pending navigation.
+   * Otherwise players can trigger a warning but the first successful click still
+   * redirects the page before they can read the Cheese Police message.
+   */
+  function scheduleCheeseHuntNavigation(targetUrl, reason) {
+    if (!targetUrl) {
+      return;
+    }
+
+    if (cheeseHuntPendingNavigationTimer) {
+      clearTimeout(cheeseHuntPendingNavigationTimer);
+    }
+
+    cheeseHuntPendingNavigationTimer = setTimeout(() => {
+      console.log('🧀 Navigating to:', targetUrl, reason || '');
+      window.location.href = targetUrl;
+    }, 1000);
+  }
+
   async function handleCheeseInteraction(event, eggId) {
     console.log(`🧀 handleCheeseInteraction called for ${eggId}`);
-    
-    // Prevent default link behavior to allow tracking to complete
+
+    // Prevent default link behavior to allow tracking to complete.
     event.preventDefault();
     event.stopPropagation();
-    
+
     console.log('🧀 Cheese egg interaction detected:', eggId);
     console.log('🧀 Event type:', event.type);
     console.log('🧀 Touch points:', event.touches ? event.touches.length : 'No touch');
-    
+
     const egg = document.getElementById(eggId);
     if (!egg) {
       console.warn('Egg element not found:', eggId);
       return;
     }
-    
-    // Visual feedback for successful hunt
+
+    if (isCheeseHuntClientLocked(eggId)) {
+      console.warn('🧀 Cheese Hunt rapid click blocked on client:', eggId);
+      showCheeseHuntAntiCheatWarning('Nice try, cheese ninja. This cheese already heard you clicking. Find the next one! 🐭');
+      return;
+    }
+
+    lockCheeseHuntClientClick(eggId);
+    egg.style.pointerEvents = 'none';
+    egg.style.opacity = '0.45';
+
+    setTimeout(() => {
+      if (egg && egg.getAttribute('data-cheese-active') !== 'false') {
+        egg.style.pointerEvents = '';
+        egg.style.opacity = '';
+      }
+    }, CHEESE_HUNT_CLIENT_GLOBAL_COOLDOWN_MS);
+
+    // Visual feedback for successful hunt.
     egg.style.transform = 'scale(1.3) rotate(360deg)';
     egg.style.filter = 'brightness(1.5) drop-shadow(0 0 10px #facc15)';
-    
-    // Reset visual effects after animation
+
+    // Reset visual effects after animation.
     setTimeout(() => {
       if (egg) {
         egg.style.transform = 'scale(1) rotate(0deg)';
         egg.style.filter = 'brightness(1) drop-shadow(0 0 5px #facc15)';
       }
     }, 300);
-    
-// Play sound with global Narrrfs sound control.
-if (
-  cheeseClickSound &&
-  (!window.NarrrfsSound || window.NarrrfsSound.isEnabled())
-) {
-  try {
-    cheeseClickSound.currentTime = 0;
-    await cheeseClickSound.play();
-  } catch (e) {
-    console.log('Audio play failed:', e);
-  }
-}
-    
-    // Get user wallet or Discord ID with better validation
+
+    // Play sound with global Narrrfs sound control.
+    if (
+      cheeseClickSound &&
+      (!window.NarrrfsSound || window.NarrrfsSound.isEnabled())
+    ) {
+      try {
+        cheeseClickSound.currentTime = 0;
+        await cheeseClickSound.play();
+      } catch (e) {
+        console.log('Audio play failed:', e);
+      }
+    }
+
+    // Get user wallet or Discord ID with better validation.
     let currentUserWallet = localStorage.getItem('discord_id');
-    
-    // Validate Discord ID is not empty/null
+
     if (!currentUserWallet || currentUserWallet === 'null' || currentUserWallet === 'undefined' || currentUserWallet.trim() === '') {
-      // Try wallet address as fallback
       currentUserWallet = localStorage.getItem('walletAddress');
-      
+
       if (!currentUserWallet || currentUserWallet === 'null' || currentUserWallet === 'undefined' || currentUserWallet.trim() === '') {
-        // No valid user identification - show warning and skip tracking
         console.warn('⚠️ No valid user identification found for cheese click tracking');
         console.warn('Discord ID:', localStorage.getItem('discord_id'));
         console.warn('Wallet Address:', localStorage.getItem('walletAddress'));
-        
-        // Show user notification
+
         showUserNotLoggedInWarning();
         return;
       }
     }
-    
+
     console.log('🧀 Tracking cheese click for user:', currentUserWallet, 'egg:', eggId);
     console.log('🎯 Active quest:', activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : 'None');
-    
-    // Track the click with enhanced error handling
+
     try {
       console.log('🚀 Sending API request to /api/track-egg-click.php...');
-      
+
       const currentTimestamp = Date.now();
-const requestData = {
-  user_wallet: currentUserWallet,
-  egg_id: eggId,
-  timestamp: currentTimestamp,
-  quest_id: activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : null,
-  hunt_context: 'enhanced_tracking_v2'
-};
-      
+      const requestData = {
+        user_wallet: currentUserWallet,
+        egg_id: eggId,
+        timestamp: currentTimestamp,
+        quest_id: activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : null,
+        hunt_context: 'enhanced_tracking_v2'
+      };
+
       console.log('📤 Request data:', requestData);
       console.log('🕒 Timestamp debug - JS timestamp:', currentTimestamp, 'Date:', new Date(currentTimestamp).toISOString());
-      
+
       const response = await fetch('/api/track-egg-click.php', {
         method: 'POST',
         body: JSON.stringify(requestData),
         headers: { 'Content-Type': 'application/json' }
       });
-      
+
       console.log('📡 API response status:', response.status);
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('✅ Cheese click tracked successfully:', result);
-        
-        // Validate response structure
-        if (result.success) {
-          console.log('✅ Server confirmed tracking success');
-          
-          // Update persistent display with new data
-          updateCheeseHuntPersistentDisplay(result);
-          
-          // Show quest progress if this was part of a cheese hunt
-          if (activeCheeseHuntQuest && (result.progress || result.quest_completed !== undefined)) {
-            console.log('🎯 Quest progress update available:', result);
-            showCheeseHuntProgress(result);
-          }
-        } else {
-          console.warn('⚠️ Server reported tracking failure:', result.error || 'Unknown error');
-        }
-        
-        // Add a longer delay to see the success message
-        setTimeout(() => {
-          // Navigate to the target page after tracking is complete
-          const targetUrl = egg ? egg.getAttribute('href') : null;
-          if (targetUrl) {
-            console.log('🧀 Navigating to:', targetUrl);
-            window.location.href = targetUrl;
-          }
-        }, 1000); // Increased delay to 1 second
-      } else {
-        console.warn('❌ Failed to track cheese click - response not ok');
-        const errorText = await response.text();
-        console.warn('❌ Error response:', errorText);
-        
-        // Still navigate even if tracking fails
-        const targetUrl = egg ? egg.getAttribute('href') : null;
-        if (targetUrl) {
-          setTimeout(() => {
-            console.log('🧀 Navigating to:', targetUrl, '(after error)');
-            window.location.href = targetUrl;
-          }, 1000);
-        }
+
+      const responseText = await response.text();
+      let result = null;
+
+      try {
+        result = responseText ? JSON.parse(responseText) : null;
+      } catch (parseError) {
+        console.warn('⚠️ Cheese tracking response was not JSON:', responseText);
       }
+
+      if (result && (result.anti_cheat || result.duplicate_click || result.cooldown_active)) {
+        console.warn('🧀 Cheese Hunt anti-cheat response:', result);
+
+        showCheeseHuntAntiCheatWarning(
+          result.warning ||
+          result.message ||
+          'Nice try, cheese ninja. The backend cheese police blocked that click. 🐭'
+        );
+
+        return;
+      }
+
+      if (response.ok && result && result.success) {
+        console.log('✅ Cheese click tracked successfully:', result);
+        console.log('✅ Server confirmed tracking success');
+
+        updateCheeseHuntPersistentDisplay(result);
+
+        if (activeCheeseHuntQuest && (result.progress || result.quest_completed !== undefined)) {
+          console.log('🎯 Quest progress update available:', result);
+          showCheeseHuntProgress(result);
+        }
+
+        const targetUrl = egg ? egg.getAttribute('href') : null;
+        scheduleCheeseHuntNavigation(targetUrl, '(after valid cheese tracking)');
+        return;
+      }
+
+      console.warn('⚠️ Server reported tracking failure:', result?.error || responseText || 'Unknown error');
+
+      // Non-anti-cheat tracking failures keep the old fallback behavior.
+      const targetUrl = egg ? egg.getAttribute('href') : null;
+      scheduleCheeseHuntNavigation(targetUrl, '(after non-anti-cheat tracking failure)');
     } catch (error) {
       console.warn('❌ Error tracking cheese click:', error);
-      // Still navigate even if tracking fails
+
+      // Network/script errors keep the old fallback behavior, but use the
+      // shared navigation helper so Cheese Police warnings can cancel it.
       const targetUrl = egg ? egg.getAttribute('href') : null;
-      if (targetUrl) {
-        setTimeout(() => {
-          console.log('🧀 Navigating to:', targetUrl, '(after catch)');
-          window.location.href = targetUrl;
-        }, 1000);
-      }
+      scheduleCheeseHuntNavigation(targetUrl, '(after catch)');
     }
   }
-
-  // Initialize cheese eggs across the whole page
   window.addEventListener('DOMContentLoaded', async () => {
     console.log('🧀 DOM Content Loaded - Initializing cheese eggs...');
     

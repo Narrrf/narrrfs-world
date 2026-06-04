@@ -82,6 +82,17 @@ $eggId = trim($input['egg_id']);
 $timestamp = isset($input['timestamp']) ? ($input['timestamp'] / 1000) : time(); // Convert JS milliseconds to seconds
 $quest_id = isset($input['quest_id']) ? intval($input['quest_id']) : null;
 
+/**
+ * Cheese Hunt anti-spam settings.
+ *
+ * Plain language for DEVS:
+ * Players found a reload/position exploit where they can click the same cheese
+ * very fast and send multiple requests before the page moves away.
+ * Frontend lockouts help UX, but backend must be authoritative.
+ */
+const CHEESE_HUNT_CLICK_COOLDOWN_SECONDS = 2;
+const CHEESE_HUNT_MAX_SAME_EGG_PER_QUEST = 1;
+
 // Enhanced logging for debugging
 error_log("Processing click - User: $userWallet, Egg: $eggId, Quest: " . ($quest_id ?: 'none'));
 error_log("Timestamp conversion - Original: " . ($input['timestamp'] ?? 'not set') . ", Converted: $timestamp, Formatted: " . date('Y-m-d H:i:s', $timestamp));
@@ -116,6 +127,84 @@ try {
             error_log("Click tracking for verified user: " . $user['username'] . " (" . $user['discord_id'] . ")");
         } else {
             error_log("Warning: Discord user $userWallet not found in tbl_users - click will be tracked but user may need to /sync");
+        }
+    }
+
+        /**
+     * Backend Cheese Hunt anti-spam guard.
+     *
+     * Plain language for DEVS:
+     * This blocks the known reload/rapid-click exploit before inserting a DB row.
+     * - Same user cannot count the same egg twice for the same quest.
+     * - Same user cannot send quest clicks faster than the cooldown.
+     * This keeps quest completion and click stats fair even if someone bypasses
+     * frontend JavaScript with repeated requests.
+     */
+    if ($quest_id) {
+        // Block repeated same egg for the same quest/user.
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM tbl_cheese_clicks
+            WHERE user_wallet = ?
+              AND quest_id = ?
+              AND egg_id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$userWallet, $quest_id, $eggId]);
+
+        if ($stmt->fetchColumn()) {
+            error_log("🧀 Anti-cheat duplicate egg blocked - User: $userWallet, Quest: $quest_id, Egg: $eggId");
+
+            http_response_code(429);
+            echo json_encode([
+                'success' => false,
+                'anti_cheat' => true,
+                'duplicate_click' => true,
+                'error' => 'Duplicate cheese blocked',
+                'message' => '🧀 Sneaky mouse detected! This cheese was already counted for your quest.',
+                'warning' => 'Nice try, cheese ninja — one cheese only counts once. Find the next one! 🐭'
+            ]);
+            exit;
+        }
+
+        // Block rapid quest clicks across any egg.
+        $stmt = $pdo->prepare("
+            SELECT
+                egg_id,
+                timestamp,
+                (strftime('%s', 'now') - strftime('%s', timestamp)) AS seconds_since
+            FROM tbl_cheese_clicks
+            WHERE user_wallet = ?
+              AND quest_id = ?
+            ORDER BY timestamp DESC
+            LIMIT 1
+        ");
+        $stmt->execute([$userWallet, $quest_id]);
+        $lastQuestClick = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($lastQuestClick) {
+            $secondsSince = isset($lastQuestClick['seconds_since'])
+                ? (int)$lastQuestClick['seconds_since']
+                : CHEESE_HUNT_CLICK_COOLDOWN_SECONDS;
+
+            if ($secondsSince < CHEESE_HUNT_CLICK_COOLDOWN_SECONDS) {
+                $waitSeconds = CHEESE_HUNT_CLICK_COOLDOWN_SECONDS - $secondsSince;
+
+                error_log("🧀 Anti-cheat rapid click blocked - User: $userWallet, Quest: $quest_id, Wait: $waitSeconds");
+
+                http_response_code(429);
+                echo json_encode([
+                    'success' => false,
+                    'anti_cheat' => true,
+                    'cooldown_active' => true,
+                    'error' => 'Cheese click cooldown active',
+                    'cooldown_seconds' => CHEESE_HUNT_CLICK_COOLDOWN_SECONDS,
+                    'wait_seconds' => max(1, $waitSeconds),
+                    'message' => '🧀 The cheese is still running away!',
+                    'warning' => 'Slow down, Speedy Gonzales. Give the cheese a moment before the next bite. 🐭'
+                ]);
+                exit;
+            }
         }
     }
 

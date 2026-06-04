@@ -12593,22 +12593,95 @@ document.addEventListener('DOMContentLoaded', function() {
     countdownIntervalId: null
   };
 
-  /**
- * 🔊 Plays the reward open sound (coin / cling)
- * Safe: will not throw if audio is blocked
+/**
+ * Profile page sound helpers.
+ *
+ * Plain language for DEVS:
+ * iOS/Safari can keep short MP3 files as the active media source after playback.
+ * That can make AirPods/headset controls replay the reward sound later.
+ * These helpers make profile sounds respect the global Narrrfs sound toggle and
+ * fully pause/unload profile audio when sound is turned off or playback ends.
  */
+let activeProfileChestAudio = null;
+let activeProfileRewardAudio = null;
+let activeProfileAudioContext = null;
+
+function isProfileSoundEnabled() {
+  return !window.NarrrfsSound || window.NarrrfsSound.isEnabled();
+}
+
+function unloadProfileAudio(audio) {
+  if (!audio) {
+    return;
+  }
+
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.removeAttribute('src');
+    audio.load();
+  } catch (error) {
+    console.warn('⚠️ [PROFILE SOUND] Failed to unload audio:', error);
+  }
+}
+
+function stopAllProfileSounds() {
+  unloadProfileAudio(activeProfileChestAudio);
+  unloadProfileAudio(activeProfileRewardAudio);
+
+  activeProfileChestAudio = null;
+  activeProfileRewardAudio = null;
+
+  if (activeProfileAudioContext && activeProfileAudioContext.state !== 'closed') {
+    activeProfileAudioContext.close().catch(() => {});
+  }
+
+  activeProfileAudioContext = null;
+}
+
+window.addEventListener('narrrfs:sound-toggle', (event) => {
+  const enabled = Boolean(event?.detail?.enabled);
+
+  if (enabled) {
+    return;
+  }
+
+  stopAllProfileSounds();
+});
+
+
 function playRewardOpenSound() {
-  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+  if (!isProfileSoundEnabled()) {
+    stopAllProfileSounds();
     return;
   }
 
   const audio = document.getElementById('reward-open-sound');
-  if (!audio) return;
+  if (!audio) {
+    return;
+  }
 
   try {
+    activeProfileRewardAudio = audio;
+    audio.pause();
     audio.currentTime = 0;
-    audio.play().catch(() => {});
-  } catch (error) {}
+
+    const cleanupRewardAudio = () => {
+      unloadProfileAudio(audio);
+      if (activeProfileRewardAudio === audio) {
+        activeProfileRewardAudio = null;
+      }
+    };
+
+    audio.addEventListener('ended', cleanupRewardAudio, { once: true });
+    audio.addEventListener('error', cleanupRewardAudio, { once: true });
+
+    audio.play().catch(() => {
+      cleanupRewardAudio();
+    });
+  } catch (error) {
+    unloadProfileAudio(audio);
+  }
 }
 
 /**
@@ -13536,9 +13609,26 @@ function closeRewardPurchaseConfirmModal() {
   return;
 }
         try {
+                    if (!isProfileSoundEnabled()) {
+            return;
+          }
+
+          if (activeProfileAudioContext && activeProfileAudioContext.state !== 'closed') {
+            activeProfileAudioContext.close().catch(() => {});
+          }
+
           const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          activeProfileAudioContext = audioContext;
+
           const gainNode = audioContext.createGain();
           gainNode.connect(audioContext.destination);
+
+          window.setTimeout(() => {
+            if (activeProfileAudioContext === audioContext && audioContext.state !== 'closed') {
+              audioContext.close().catch(() => {});
+              activeProfileAudioContext = null;
+            }
+          }, 1400);
 
           const playTone = (frequency, startTime, duration, waveType = 'sine', volume = 0.22) => {
             const oscillator = audioContext.createOscillator();
@@ -13576,33 +13666,65 @@ function closeRewardPurchaseConfirmModal() {
         }
       };
 
-      const playChestOpeningSound = () => {
-        if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
-    return;
-  }
+            const playChestOpeningSound = () => {
+        if (!isProfileSoundEnabled()) {
+          stopAllProfileSounds();
+          return;
+        }
+
         try {
           const audioPath = 'sounds/SFX/chest.mp3';
           console.log(`🔊 [PROFILE CHEST] Attempting to play chest sound from: ${audioPath}`);
 
+          stopAllProfileSounds();
+
           const audio = new Audio(audioPath);
+          activeProfileChestAudio = audio;
           audio.volume = 0.5;
+          audio.preload = 'auto';
+
+          const cleanupChestAudio = () => {
+            unloadProfileAudio(audio);
+
+            if (activeProfileChestAudio === audio) {
+              activeProfileChestAudio = null;
+            }
+          };
+
+          audio.addEventListener('ended', cleanupChestAudio, { once: true });
 
           audio.addEventListener('canplaythrough', () => {
+            if (!isProfileSoundEnabled()) {
+              cleanupChestAudio();
+              return;
+            }
+
             audio.play().catch(playErr => {
-              console.warn('⚠️ [PROFILE CHEST] Chest sound failed, using common synth sound:', playErr);
-              playSynthRewardSound('common');
+              cleanupChestAudio();
+
+              if (isProfileSoundEnabled()) {
+                console.warn('⚠️ [PROFILE CHEST] Chest sound failed, using common synth sound:', playErr);
+                playSynthRewardSound('common');
+              }
             });
           }, { once: true });
 
           audio.addEventListener('error', (e) => {
-            console.warn(`⚠️ [PROFILE CHEST] Chest sound file failed: ${audioPath}`, e);
-            playSynthRewardSound('common');
+            cleanupChestAudio();
+
+            if (isProfileSoundEnabled()) {
+              console.warn(`⚠️ [PROFILE CHEST] Chest sound file failed: ${audioPath}`, e);
+              playSynthRewardSound('common');
+            }
           }, { once: true });
 
           audio.load();
         } catch (error) {
           console.warn('⚠️ [PROFILE CHEST] Failed to create chest Audio object:', error);
-          playSynthRewardSound('common');
+
+          if (isProfileSoundEnabled()) {
+            playSynthRewardSound('common');
+          }
         }
       };
 
