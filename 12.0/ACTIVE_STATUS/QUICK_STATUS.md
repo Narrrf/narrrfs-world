@@ -1,5 +1,495 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+# 🧠 Narrrfs World 13.0 — Lab System 9.93 NEWEST / Season 12 Strongest Mice Sync
+
+**Date:** 2026-06-06
+**Status:** Ready for push / final pre-deploy checks
+**Agent:** Lab System 9.93 NEWEST
+**Scope:** Strongest Genesis Mice leaderboard, homepage showcase, leaderboard/profile link bug fixes, Season 12 public page polish.
+
+---
+
+## ✅ New Feature: Strongest Genesis Mice
+
+A new public prestige leaderboard was added:
+
+```text
+public/strongest-genesis-mice.html
+```
+
+Backend endpoint added:
+
+```text
+api/leaderboard/get-strongest-genesis-mice.php
+```
+
+This feature ranks the strongest named Genesis mice in the Mouseverse.
+
+### Entry Rules
+
+A Genesis mouse appears only if:
+
+```text
+1. It has a custom name.
+2. It belongs to collection = genesis.
+3. It has current verified/current ownership data.
+4. It has Fitness unlocked.
+5. Fitness unlocked means at least one Genesis NFT trait has current_level >= 5.
+```
+
+Unnamed mice are excluded.
+
+### Scoring Model V1
+
+Mouse Warrior Power is backend-calculated:
+
+```text
+Mouse Warrior Power =
+Trait Power
++ Ability Power
++ Genetic Support Power
++ Named Mouse Bonus
++ Fitness Unlock Bonus
+```
+
+Current scoring:
+
+```text
+Trait Power = SUM Genesis trait levels on this NFT
+Ability Power = SUM Genesis ability levels on this NFT × 2
+Genetic Support Power = owner Genetic Item support with rarity multipliers, capped at 250
+Named Mouse Bonus = +25
+Fitness Unlock Bonus = +50
+```
+
+Rarity multipliers used for Genetic Support:
+
+```text
+common      1.0
+uncommon    1.25
+rare        1.5
+epic        2.0
+legendary   3.0
+mythic      5.0
+unknown     1.0
+```
+
+### Architecture Notes
+
+This feature is read-only.
+
+It must not mutate:
+
+```text
+NFT ownership
+custom names
+Genesis traits
+Genesis abilities
+Genetic Items
+inventory
+DSPOINC
+reward state
+marketplace state
+leaderboard score tables
+```
+
+Genesis Traits and Genesis Abilities are NFT-bound by:
+
+```text
+token_id + collection
+```
+
+Genetic Items are still Discord-user-bound in V1.
+
+Important user-facing wording:
+
+```text
+Genetic Support Items show the current owner’s Genetic Item inventory power.
+They are displayed around the mouse as support gear, but they are not yet permanently equipped to one Genesis mouse in V1.
+```
+
+Do not imply Genetic Items are permanently equipped to a mouse until a future equipment/loadout system exists.
+
+---
+
+## ✅ Backend Endpoint Details
+
+New endpoint:
+
+```text
+api/leaderboard/get-strongest-genesis-mice.php
+```
+
+Test URL:
+
+```text
+/api/leaderboard/get-strongest-genesis-mice.php?limit=5
+```
+
+Expected result:
+
+```json
+{"success":true,...}
+```
+
+Important fix already applied:
+
+The local/live DB does not have:
+
+```text
+ability_label
+```
+
+So the endpoint must use:
+
+```sql
+ability_key AS ability_label
+```
+
+Do not revert to selecting `ability_label` directly unless the DB schema is migrated later.
+
+### Current Ownership Selection
+
+The endpoint uses a `current_ownership` CTE with:
+
+```text
+ROW_NUMBER() OVER (
+  PARTITION BY token_id, collection
+  ORDER BY
+    is_verified DESC,
+    verified_at DESC,
+    acquired_at DESC,
+    ownership_id DESC
+)
+```
+
+This is required because `tbl_nft_ownership` may contain multiple rows per token after transfers/recovery.
+Do not replace it with a blind join or duplicate mice will appear.
+
+---
+
+## ✅ New Page: Strongest Genesis Mice
+
+New page:
+
+```text
+public/strongest-genesis-mice.html
+```
+
+Page includes:
+
+```text
+Huge champion showcase at the top
+NFT picture
+Custom mouse name
+Owner name
+Mouse Warrior Power
+Trait Power
+Ability Power
+Genetic Support Power
+Fitness unlock status
+Genesis traits with levels
+Genesis abilities with levels
+Owner Genetic Support orbit/items
+Ranked mouse leaderboard list below
+Search by mouse/owner/token
+Scoring explanation
+Entry rules
+V1 Genetic Support explanation
+```
+
+The page fetches:
+
+```text
+/api/leaderboard/get-strongest-genesis-mice.php?limit=100
+```
+
+This page is frontend display-only.
+
+---
+
+## ✅ Homepage Showcase Added
+
+Homepage now showcases the current #1 strongest mouse.
+
+Updated file:
+
+```text
+public/index.html
+```
+
+Homepage section:
+
+```text
+Strongest Genesis Mouse Homepage Showcase
+```
+
+It fetches:
+
+```text
+/api/leaderboard/get-strongest-genesis-mice.php?limit=1
+```
+
+The homepage card shows:
+
+```text
+Current #1 mouse
+NFT image
+Owner
+Warrior Power
+Trait Power
+Ability Power
+Genetic Support
+Fitness unlocked
+Top Genetic Support items
+Buttons to full ranking and Genesis Lab
+```
+
+Important:
+
+The homepage must stay display-only.
+The backend endpoint calculates the ranking.
+Do not calculate final power on the homepage.
+
+---
+
+## ✅ Leaderboard Page Link Added
+
+Updated file:
+
+```text
+public/leaderboard.html
+```
+
+Added navigation/button link to:
+
+```text
+strongest-genesis-mice.html
+```
+
+This lets players access the new prestige leaderboard from the main leaderboard system.
+
+---
+
+## ✅ Bug #1062 Fixed — Leaderboard Games Menu Link
+
+Bug report:
+
+```text
+#1062
+On the right side at the top of the leaderboard site menu bar, the link "Games" leads directly to snake/tetris and not to the game site.
+Reporter: lukeskypestalker
+```
+
+Fix:
+
+The top navbar `Games` link in:
+
+```text
+public/leaderboard.html
+```
+
+must not point directly to a single game page like:
+
+```text
+tetris.html
+snake.html
+```
+
+It should point to the main games section/site, for example:
+
+```text
+index.html#games
+```
+
+or if the homepage real ID is different:
+
+```text
+index.html#game-section
+```
+
+Specific game cards/buttons may still link to individual game pages.
+Only the top navbar `Games` link was the bug.
+
+---
+
+## ✅ Bug #1061 Fixed — Profile Glyph Memory Play Link
+
+Bug report:
+
+```text
+#1061
+At the bottom of the Profile page the Link "Play" to glyph memory is no good.
+Reporter: lukeskypestalker
+Category: Game Integration
+Priority: High
+```
+
+Updated file:
+
+```text
+public/profile.html
+```
+
+Wrong old link:
+
+```text
+glyph-memory.html
+```
+
+Correct active Glyph Memory route:
+
+```text
+/glyph/glyph.html
+```
+
+Fix:
+
+The Profile page bottom Glyph Memory `Play` button now points to:
+
+```text
+/glyph/glyph.html
+```
+
+This was a frontend-only link fix.
+No score logic, game API, or leaderboard logic was changed.
+
+---
+
+## ✅ Current Expected Git Scope
+
+Expected changed/staged files for this push may include:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+public/index.html
+public/leaderboard.html
+public/profile.html
+public/strongest-genesis-mice.html
+api/leaderboard/get-strongest-genesis-mice.php
+```
+
+If Season 12/Labyrinth/Stake Lab changes are still in the same push, expected additional files may include:
+
+```text
+public/mint.html
+public/get-roles.html
+public/stake-lab.html
+public/labyrinth-blast/index.html
+public/labyrinth-blast/assets/index-DnGd5VWR.js
+public/labyrinth-blast/assets/index-zKmXiTeq.css
+```
+
+Old Labyrinth Blast hashed assets may be intentionally deleted if the rebuilt index references the new names:
+
+```text
+public/labyrinth-blast/assets/index-CIW8XT6A.js
+public/labyrinth-blast/assets/index-CNKIMEra.css
+```
+
+Do not commit local backup files such as:
+
+```text
+public/index.before-season12-link-fixes.html
+```
+
+---
+
+## 🧪 Required Pre-Push Checks
+
+Run locally:
+
+```powershell
+php -l api\leaderboard\get-strongest-genesis-mice.php
+```
+
+API test:
+
+```powershell
+Invoke-WebRequest "http://localhost/narrrfs-world/api/leaderboard/get-strongest-genesis-mice.php?limit=5" | Select-Object -ExpandProperty Content
+```
+
+Expected:
+
+```json
+{"success":true,...}
+```
+
+Check new page references:
+
+```powershell
+Select-String -Path public\strongest-genesis-mice.html -Pattern "get-strongest-genesis-mice.php","Strongest Mouse in the Mouseverse","Genetic Support"
+Select-String -Path public\index.html -Pattern "strongest-genesis-mice.html","get-strongest-genesis-mice.php","Strongest Genesis Mouse"
+Select-String -Path public\leaderboard.html -Pattern "strongest-genesis-mice.html","Games</a>"
+Select-String -Path public\profile.html -Pattern "glyph-memory.html","/glyph/glyph.html","Glyph Memory"
+```
+
+Expected:
+
+```text
+API returns success true
+strongest-genesis-mice.html references the endpoint
+index.html references the homepage showcase endpoint
+leaderboard.html links to strongest-genesis-mice.html
+leaderboard navbar Games does not point to tetris.html/snake.html
+profile.html no longer uses glyph-memory.html for Glyph Memory Play
+profile.html uses /glyph/glyph.html
+```
+
+---
+
+## 🧪 Required Live Tests After Render Deploy
+
+Test:
+
+```text
+https://narrrfs.world/api/leaderboard/get-strongest-genesis-mice.php?limit=5
+https://narrrfs.world/strongest-genesis-mice.html
+https://narrrfs.world/
+https://narrrfs.world/leaderboard.html
+https://narrrfs.world/profile.html
+```
+
+Checklist:
+
+```text
+Strongest Genesis Mice API returns success true.
+Strongest Genesis Mice page loads.
+Top champion mouse displays image/name/owner/power.
+Traits, abilities, and Genetic Support render.
+Leaderboard list renders below champion.
+Search works.
+Homepage strongest mouse showcase loads.
+Homepage showcase links to full ranking.
+Leaderboard page links to Strongest Genesis Mice.
+Leaderboard top nav Games link goes to the games section, not one single game.
+Profile Glyph Memory Play button opens /glyph/glyph.html.
+No console red errors.
+No 500 from get-strongest-genesis-mice.php.
+```
+
+---
+
+## 🚫 Guardrails For Next Agents
+
+Do not:
+
+```text
+change the DSPOINC ledger
+change inventory ownership
+change Genesis ownership model
+make Genetic Items mouse-bound without a real equipment system
+write to traits/abilities/custom names from this leaderboard
+change existing get-leaderboard.php behavior for this V1
+remove the current_ownership CTE
+reselect missing ability_label column
+restore glyph-memory.html for Glyph Memory Play
+restore leaderboard Games nav to tetris.html or snake.html
+```
+
+Strongest Genesis Mice V1 is a read-only public prestige layer.
+
+
 # 🧠 Narrrfs World 13.0 — Lab System 9.93 NEWEST / Final Pre-Push Polish Sync
 
 **Date:** 2026-06-02
