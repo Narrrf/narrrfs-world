@@ -1757,6 +1757,22 @@ const cheeseHuntEggLocks = new Map();
         console.warn('⚠️ Cheese tracking response was not JSON:', responseText);
       }
 
+            if (result && result.quest_already_completed) {
+        console.log('✅ Cheese Hunt already accomplished, valid extra click tracked:', result);
+
+        updateCheeseHuntPersistentDisplay(result);
+
+        showCheeseHuntProgress({
+          ...result,
+          quest_completed: true,
+          message:
+            result.message ||
+            '✅ Quest already accomplished — this cheese click was still tracked for future mouse magic! 🧀'
+        });
+
+        return;
+      }
+
       if (result && (result.anti_cheat || result.duplicate_click || result.cooldown_active)) {
         console.warn('🧀 Cheese Hunt anti-cheat response:', result);
 

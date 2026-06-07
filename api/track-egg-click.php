@@ -131,6 +131,37 @@ try {
     }
 
         /**
+     * Detect whether this player already completed or claimed this Cheese Hunt.
+     *
+     * Plain language for DEVS:
+     * Completed players may still click cheese because click stats can be useful
+     * later for bonus systems, games, analytics, or community rewards.
+     * Once a claim exists, extra clicks should still be tracked, but they should
+     * not trigger quest duplicate/cooldown anti-cheat and should not create a
+     * second quest claim.
+     */
+    $questAlreadyCompleted = false;
+    $existingQuestClaim = null;
+
+    if ($quest_id) {
+        $claimCheckStmt = $pdo->prepare("
+            SELECT claim_id, status, claimed_at
+            FROM tbl_quest_claims
+            WHERE quest_id = ?
+              AND user_id = ?
+            ORDER BY claimed_at DESC
+            LIMIT 1
+        ");
+        $claimCheckStmt->execute([$quest_id, $userWallet]);
+        $existingQuestClaim = $claimCheckStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingQuestClaim) {
+            $questAlreadyCompleted = true;
+            error_log("🧀 Cheese Hunt extra click after completion will be tracked - User: $userWallet, Quest: $quest_id, Claim: " . ($existingQuestClaim['claim_id'] ?? 'unknown'));
+        }
+    }
+
+        /**
      * Backend Cheese Hunt anti-spam guard.
      *
      * Plain language for DEVS:
@@ -141,30 +172,41 @@ try {
      * frontend JavaScript with repeated requests.
      */
     if ($quest_id) {
-        // Block repeated same egg for the same quest/user.
-        $stmt = $pdo->prepare("
-            SELECT 1
-            FROM tbl_cheese_clicks
-            WHERE user_wallet = ?
-              AND quest_id = ?
-              AND egg_id = ?
-            LIMIT 1
-        ");
-        $stmt->execute([$userWallet, $quest_id, $eggId]);
+                /**
+         * Block repeated same egg only while the quest is still unfinished.
+         *
+         * Plain language for DEVS:
+         * Before completion, one egg can only count once for quest progress.
+         * After completion, extra cheese clicks may still be tracked for future
+         * bonus systems, stats, or hidden mouse magic. Finished players should
+         * not get Cheese Police for one normal extra click on an already-used egg.
+         * Rapid spam is still blocked by the cooldown check below.
+         */
+        if (!$questAlreadyCompleted) {
+            $stmt = $pdo->prepare("
+                SELECT 1
+                FROM tbl_cheese_clicks
+                WHERE user_wallet = ?
+                  AND quest_id = ?
+                  AND egg_id = ?
+                LIMIT 1
+            ");
+            $stmt->execute([$userWallet, $quest_id, $eggId]);
 
-        if ($stmt->fetchColumn()) {
-            error_log("🧀 Anti-cheat duplicate egg blocked - User: $userWallet, Quest: $quest_id, Egg: $eggId");
+            if ($stmt->fetchColumn()) {
+                error_log("🧀 Anti-cheat duplicate egg blocked - User: $userWallet, Quest: $quest_id, Egg: $eggId");
 
-            http_response_code(429);
-            echo json_encode([
-                'success' => false,
-                'anti_cheat' => true,
-                'duplicate_click' => true,
-                'error' => 'Duplicate cheese blocked',
-                'message' => '🧀 Sneaky mouse detected! This cheese was already counted for your quest.',
-                'warning' => 'Nice try, cheese ninja — one cheese only counts once. Find the next one! 🐭'
-            ]);
-            exit;
+                http_response_code(429);
+                echo json_encode([
+                    'success' => false,
+                    'anti_cheat' => true,
+                    'duplicate_click' => true,
+                    'error' => 'Duplicate cheese blocked',
+                    'message' => '🧀 Sneaky mouse detected! This cheese was already counted for your quest.',
+                    'warning' => 'Nice try, cheese ninja — one cheese only counts once. Find the next one! 🐭'
+                ]);
+                exit;
+            }
         }
 
         // Block rapid quest clicks across any egg.
@@ -274,10 +316,29 @@ try {
             $stmt->execute([$quest_id, $userWallet]);
             $existing_claim = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            if ($existing_claim) {
-                // Quest already completed by this user
-                $response['quest_completed'] = false;
-                $response['message'] = "You've already completed this cheese hunt quest!";
+                        if ($existing_claim) {
+                /**
+                 * Already-accomplished Cheese Hunt response.
+                 *
+                 * Plain language for DEVS:
+                 * The click has already passed backend Cheese Police checks and
+                 * was inserted into tbl_cheese_clicks before this branch.
+                 * That means this is a valid extra click after quest completion.
+                 * Keep it tracked for future bonuses/stats, but never create a
+                 * second quest claim for the same user and quest.
+                 */
+                $required_eggs = (int)($cheese_config['cheese_count'] ?? 3);
+                $required_eggs = max(1, min(3, $required_eggs));
+
+                $response['quest_completed'] = true;
+                $response['quest_already_completed'] = true;
+                $response['extra_click_tracked'] = true;
+                $response['claim_status'] = $existing_claim['status'] ?? 'pending';
+                $response['claim_id'] = isset($existing_claim['claim_id']) ? (int)$existing_claim['claim_id'] : null;
+                $response['message'] = "✅ Quest already accomplished — this cheese click was still tracked for future mouse magic!";
+                $response['winner_message'] = $cheese_config['winner_message'] ?? "✅ Cheese Hunt already accomplished. Extra cheese click tracked!";
+                $response['progress'] = "$required_eggs/$required_eggs eggs found!";
+                $response['required_eggs'] = $required_eggs;
             } else {
                 // Count how many different cheese eggs this user has clicked for this quest
                 $stmt = $pdo->prepare("SELECT COUNT(DISTINCT egg_id) as unique_eggs 
