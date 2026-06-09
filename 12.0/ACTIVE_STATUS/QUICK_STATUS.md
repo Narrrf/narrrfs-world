@@ -1,5 +1,1537 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+# 🧠 Narrrfs World 13.0 — Lab System 9.95 LIVE / Fitness Journey Reward Chests Ready To Push
+
+**Date:** 2026-06-09
+**Status:** Local backend + GUI tests passed / live DB schema prepared / ready for push review
+**Agent:** Lab System 9.95 LIVE
+**Scope:** Genesis Fitness Journey reward chests, Weapon milestone reward chests, Lab UI rendering, backend claim/read endpoints, DB migration safety.
+
+---
+
+## ✅ Final Local Status
+
+Fitness Journey Reward Chests are now implemented and tested locally.
+
+Confirmed local DB state after clean live DB refresh:
+
+```text
+✅ tbl_lab_milestone_rewards exists locally
+✅ PRAGMA integrity_check = ok
+✅ local fake test data removed by fresh live DB download
+```
+
+Confirmed live DB schema state:
+
+```text
+✅ /var/www/html/db/narrrf_world.sqlite has tbl_lab_milestone_rewards
+✅ /data/narrrf_world.sqlite has tbl_lab_milestone_rewards
+✅ required indexes exist
+✅ live PRAGMA integrity_check = ok
+```
+
+Important DB clarification:
+
+```text
+The original confusion came from using Windows-style db\narrrf_world.sqlite on Linux.
+That created /var/www/html/dbnarrrf_world.sqlite as a zero-byte wrong file.
+The correct Linux path is /var/www/html/db/narrrf_world.sqlite.
+```
+
+---
+
+## ✅ Backend Files Ready
+
+New backend files:
+
+```text
+api/user/get-ability-milestone-rewards.php
+api/user/claim-ability-milestone-reward.php
+```
+
+Backend supports:
+
+```text
+✅ Read endpoint for Weapon milestone reward state
+✅ Read endpoint for Fitness Journey milestone reward state
+✅ Claim endpoint for Weapon DSPOINC rewards
+✅ Claim endpoint for Fitness Store Item rewards
+✅ Claim endpoint for Fitness Genetic Item rewards
+✅ Claim endpoint for Fitness DSPOINC fallback rewards
+✅ One-time claim lock via tbl_lab_milestone_rewards
+✅ Duplicate claim protection
+✅ Verified Genesis ownership checks
+✅ Localhost user_id testing support
+```
+
+Fitness Journey milestones:
+
+```text
+fitness_trait_level_10 = 500 EMPIRE TOKEN / item_id 51
+fitness_trait_level_15 = Gun Special Genetic Item / catalog_id 69
+fitness_trait_level_15 fallback = 100,000 DSPOINC if Gun Special already owned
+fitness_trait_level_20 = 1000 EMPIRE Token / item_id 41
+```
+
+Weapon milestone V1 remains:
+
+```text
+weapon_ATK_level_1 = 25,000 DSPOINC
+weapon_DEF_level_1 = 25,000 DSPOINC
+weapon_SPECIAL_level_1 = 25,000 DSPOINC
+Weapon Lv5+ remains locked unless ability level requirement is met
+```
+
+---
+
+## ✅ Lab UI File Ready
+
+Updated file:
+
+```text
+public/lab.html
+```
+
+Final hook check passed:
+
+```text
+✅ fitnessJourneyMilestoneChestSlot
+✅ fitnessMilestoneRewards
+✅ renderFitnessJourneyMilestoneChests()
+✅ data-fitness-milestone-key
+✅ Fitness Journey Milestone modal text
+✅ Opened Lab Reward Chest modal alt text
+```
+
+Local GUI tests passed:
+
+```text
+✅ Lv7 clean state showed no fake reward chests
+✅ Lv10 GUI state showed Lv10 Fitness chest openable
+✅ Lv15 GUI state showed Lv10 + Lv15 Fitness chests openable
+✅ Lv20 GUI state showed Lv10 + Lv15 + Lv20 Fitness chests openable
+✅ Lv20 Weapon lane showed ATK/DEF/SPECIAL Lv1 chests openable
+✅ Visual claimed-state test showed all six milestone rows as claimed
+✅ No browser console errors during local Lab test
+```
+
+---
+
+## ✅ Architecture Guardrails
+
+```text
+Frontend only displays reward state and sends claim requests.
+Backend remains authoritative for:
+- Discord/session user
+- Genesis ownership
+- trait level checks
+- Weapon ability level checks
+- duplicate protection
+- Store Item delivery
+- Genetic Item delivery
+- DSPOINC ledger writes
+```
+
+Do not run fake level tests or claim reward tests on live.
+
+---
+
+## ➡️ Push Notes
+
+Expected feature files for this push:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+public/lab.html
+api/user/get-ability-milestone-rewards.php
+api/user/claim-ability-milestone-reward.php
+```
+
+Attention:
+
+```text
+public/strongest-genesis-mice.html is currently modified locally.
+Do not include it in this push unless the change is intentional and reviewed.
+```
+
+After deploy, verify live read-only first:
+
+```text
+1. Open live Lab
+2. Confirm no console errors
+3. Confirm normal Genesis Lab loading
+4. Do not claim live reward chests unless intentionally testing with a real holder/mouse
+```
+
+
+# 🧠 Narrrfs World 13.0 — Lab System 9.95 LIVE / Fitness Journey Reward Chest UI Sync
+
+**Date:** 2026-06-09
+**Status:** Backend fully tested locally / Lab UI wiring added
+**Agent:** Lab System 9.95 LIVE
+**Scope:** Genesis Fitness Journey reward chests, Weapon milestone chests, Lab UI rendering, claim modal, local backend verification.
+
+---
+
+## ✅ Backend Test Status Completed
+
+The full local backend milestone reward chain has now passed.
+
+Fitness Journey reward tests:
+
+```text
+✅ Lv10 Fitness Journey Chest passed
+Reward: 500 EMPIRE TOKEN
+Store item_id: 51
+
+✅ Lv15 Fitness Journey Chest passed
+Reward: Gun Special Genetic Item
+Genetic catalog_id: 69
+
+✅ Lv15 fallback path passed
+Condition: user already owns Gun Special
+Fallback reward: 100,000 DSPOINC
+Fallback ledger + audit rows written
+Gun Special count stayed 1
+
+✅ Lv20 Fitness Journey Chest passed
+Reward: 1000 EMPIRE Token
+Store item_id: 41
+```
+
+Weapon milestone tests:
+
+```text
+✅ Weapon ATK Lv1 passed
+Reward: 25,000 DSPOINC
+
+✅ Weapon DEF Lv1 passed
+Reward: 25,000 DSPOINC
+
+✅ Weapon SPECIAL Lv1 passed
+Reward: 25,000 DSPOINC
+
+✅ Weapon ATK Lv5 correctly blocked
+Reason: current Weapon ATK level is still 1
+```
+
+Protection tests:
+
+```text
+✅ Duplicate Fitness claims blocked
+✅ Duplicate Weapon claims blocked
+✅ One-time claim lock works via tbl_lab_milestone_rewards
+✅ Store item delivery works
+✅ Genetic item delivery works
+✅ DSPOINC fallback delivery works
+✅ DSPOINC ledger rows written
+✅ Audit rows written for fallback
+✅ PRAGMA integrity_check = ok
+```
+
+---
+
+## ✅ Lab UI Wiring Added
+
+Updated file:
+
+```text
+public/lab.html
+```
+
+Added Fitness Journey reward UI beside the existing Weapon reward chest UI.
+
+Confirmed hooks:
+
+```text
+fitnessJourneyMilestoneChestSlot
+fitnessMilestoneRewards
+renderFitnessJourneyMilestoneChests()
+data-fitness-milestone-key
+Fitness Journey Milestone modal text
+Opened Lab Reward Chest modal alt text
+```
+
+UI now supports:
+
+```text
+✅ Fitness Journey chest section
+✅ Lv10 / Lv15 / Lv20 reward cards
+✅ claimed / eligible / hidden locked states
+✅ Fitness claim buttons
+✅ Shared claim endpoint
+✅ Shared Lab reward modal
+✅ Store Item reward display
+✅ Genetic Item reward display
+✅ DSPOINC fallback display
+✅ Existing Weapon reward chest behavior preserved
+```
+
+Important architecture note:
+
+```text
+Frontend only displays reward state and sends claim requests.
+Backend remains authoritative for ownership, trait level, Weapon ability level, duplicate protection, inventory delivery, Genetic Item delivery, and DSPOINC ledger writes.
+```
+
+---
+
+## ✅ Current Local Status
+
+```text
+Backend is complete enough for UI testing.
+Lab UI patch is in place.
+Next step is local browser testing on lab.html.
+```
+
+---
+
+## ➡️ Next Test Phase
+
+Open local Lab and check:
+
+```text
+1. No browser console syntax errors
+2. Fitness Journey chests appear above Weapon chests
+3. Claimed Fitness chests show correctly
+4. Weapon chests still appear only after Weapon lane unlock
+5. Claim button behavior does not break existing Weapon claims
+6. Reward modal displays Store Item / Genetic Item / DSPOINC fallback correctly
+```
+
+Guardrail:
+
+```text
+Do not push live until local browser UI test passes.
+Do not run fake level reward tests on live.
+Do not delete live milestone reward rows.
+Do not modify unrelated Lab, marketplace, Reward Chamber, staking, or leaderboard systems.
+```
+
+
+# 🧠 Narrrfs World 13.0 — Lab System 9.95 LIVE / Fitness Journey Reward Chest Local Test Sync
+
+**Date:** 2026-06-09
+**Status:** Backend local tests in progress / Lv10 + Lv15 Fitness Journey rewards passed
+**Agent:** Lab System 9.95 LIVE
+**Scope:** Genesis Trait milestone reward chests, Store Item delivery, Genetic Item delivery, one-time claim lock, local DB/live DB preparation.
+
+---
+
+## ✅ Live DB Preparation Completed
+
+Live database was safely prepared before code push.
+
+Completed live steps:
+
+```text
+✅ Live DB backup created before migration
+✅ Live PRAGMA integrity_check returned ok
+✅ tbl_lab_milestone_rewards created live
+✅ Required indexes created live
+✅ Final live PRAGMA integrity_check returned ok
+```
+
+Live table now exists:
+
+```text
+tbl_lab_milestone_rewards
+```
+
+Important unique protection:
+
+```text
+UNIQUE(user_id, token_id, collection, milestone_key)
+```
+
+This protects Fitness Journey and Weapon milestone rewards from duplicate claims.
+
+---
+
+## ✅ Local DB Preparation Completed
+
+Local DB had an index issue after downloading live DB:
+
+```text
+rowid 1045 missing from idx_nft_ability_upgrades_updated_at
+rowid 1045 missing from idx_nft_ability_upgrades_token_status
+rowid 1045 missing from idx_nft_ability_upgrades_status
+```
+
+Safe repair completed with:
+
+```text
+REINDEX idx_nft_ability_upgrades_updated_at
+REINDEX idx_nft_ability_upgrades_token_status
+REINDEX idx_nft_ability_upgrades_status
+```
+
+Final local result:
+
+```text
+PRAGMA integrity_check = ok
+```
+
+Backups were created before and after repair.
+
+---
+
+## ✅ Fitness Journey Reward IDs Confirmed
+
+Exact reward IDs verified from local DB / Reward Chamber tables:
+
+```text
+Lv10 Fitness Journey Chest:
+500 EMPIRE TOKEN
+tbl_store_items.item_id = 51
+
+Lv15 Fitness Journey Chest:
+Gun Special Genetic Item
+tbl_genetic_trait_catalog.catalog_id = 69
+
+Fallback if user already owns Gun Special:
+100,000 DSPOINC
+
+Lv20 Fitness Journey Chest:
+1000 EMPIRE Token
+tbl_store_items.item_id = 41
+```
+
+---
+
+## ✅ Backend Code Integration Status
+
+Updated backend files:
+
+```text
+api/user/get-ability-milestone-rewards.php
+api/user/claim-ability-milestone-reward.php
+```
+
+New config added:
+
+```text
+FITNESS_TRAIT_MILESTONE_REWARDS
+```
+
+New milestone keys:
+
+```text
+fitness_trait_level_10
+fitness_trait_level_15
+fitness_trait_level_20
+```
+
+Read endpoint now returns:
+
+```text
+fitness_trait_rewards
+```
+
+beside existing Weapon milestone rewards.
+
+Claim endpoint now supports:
+
+```text
+store_item reward delivery
+genetic_trait reward delivery
+DSPOINC fallback delivery for Gun Special duplicate ownership
+one-time claim row insert
+inventory / Genetic Item write
+duplicate claim blocking
+```
+
+Localhost user_id testing was added to the read endpoint to match claim endpoint testing behavior.
+
+---
+
+## ✅ Local Test Mouse
+
+Test mouse:
+
+```text
+NarrrfsWorldGenesis1486
+user_id: 328601656659017732
+token_id: 13ao5BhPVon2bPhjq1t6XzASNS3xR4dXcxkB6gP4WoDd
+collection: genesis
+```
+
+Original highest Genesis trait level:
+
+```text
+7
+```
+
+Local-only fake test trait row:
+
+```text
+upgrade_id: 409
+trait_type: Accessories
+trait_value: Mushroom Spell
+```
+
+---
+
+## ✅ Lv10 Fitness Journey Chest Test Passed
+
+Local fake:
+
+```text
+upgrade_id 409 moved from Lv7 to Lv10
+```
+
+Read endpoint confirmed:
+
+```text
+highest_genesis_trait_level = 10
+fitness_trait_level_10 eligible = true
+fitness_trait_level_10 claimed = false
+fitness_trait_level_15 eligible = false
+fitness_trait_level_20 eligible = false
+weapons_unlocked = false
+```
+
+Claim result:
+
+```text
+success = true
+milestone_key = fitness_trait_level_10
+reward_type = store_item
+reward_reference_id = 51
+reward_title = 500 EMPIRE TOKEN
+fallback_used = false
+```
+
+DB writes confirmed:
+
+```text
+tbl_lab_milestone_rewards reward_id = 1
+tbl_user_inventory inventory_id = 3067
+item_id = 51
+quantity = 1
+No DSPOINC fallback ledger row
+PRAGMA integrity_check = ok
+```
+
+Duplicate claim test:
+
+```text
+success = false
+already_claimed = true
+error = This Fitness Journey reward chest was already claimed
+```
+
+---
+
+## ✅ Lv15 Fitness Journey Chest Test Passed
+
+Local fake:
+
+```text
+upgrade_id 409 moved from Lv10 to Lv15
+```
+
+Read endpoint confirmed:
+
+```text
+highest_genesis_trait_level = 15
+fitness_trait_level_10 claimed = true
+fitness_trait_level_15 eligible = true
+fitness_trait_level_15 claimed = false
+fitness_trait_level_20 eligible = false
+weapons_unlocked = false
+```
+
+Claim result:
+
+```text
+success = true
+milestone_key = fitness_trait_level_15
+reward_type = genetic_trait
+reward_reference_id = 69
+reward_title = Gun Special
+reward_currency = GENETIC_ITEM
+fallback_used = false
+```
+
+DB writes confirmed:
+
+```text
+tbl_lab_milestone_rewards reward_id = 2
+tbl_user_genetic_items genetic_item_id = 367
+catalog_id = 69
+trait_type = Accessories
+trait_value = Gun Special
+current_level = 1
+upgrade_status = idle
+acquired_method = fitness_milestone
+last_owner_user_id = 328601656659017732
+```
+
+Genetic history confirmed:
+
+```text
+tbl_genetic_item_history history_id = 1145
+action_type = fitness_milestone_grant
+admin_user_id = lab_milestone_system
+```
+
+Fallback behavior for first Gun Special:
+
+```text
+No fallback DSPOINC ledger row created
+```
+
+Duplicate claim test:
+
+```text
+success = false
+already_claimed = true
+error = This Fitness Journey reward chest was already claimed
+```
+
+Final local DB state:
+
+```text
+PRAGMA integrity_check = ok
+```
+
+---
+
+## ✅ Current Status
+
+```text
+Fitness Journey backend reward system is working locally for Lv10 and Lv15.
+Store Item delivery works.
+Genetic Item delivery works.
+One-time claim lock works.
+Duplicate protection works.
+Local and live DB schemas are prepared.
+```
+
+---
+
+## ➡️ Next Phase
+
+Continue with:
+
+```text
+1. Local Lv20 Fitness Journey Chest test
+2. Verify 1000 EMPIRE item_id 41 delivery
+3. Verify Weapon lane unlock state changes at highest trait Lv20
+4. Confirm Weapon milestone claims still require Weapon ability levels
+5. Test Gun Special fallback path separately if needed
+6. Add / polish Lab UI rendering for Fitness Journey reward chests
+7. Final local rollback / cleanup of fake test state if needed
+8. Push only after full backend + UI test passes
+```
+
+Guardrail:
+
+```text
+Do not run fake level tests or reward claim tests on live.
+Do not delete live milestone reward rows.
+Do not enable Ability Instant Finish.
+Do not modify unrelated Lab, marketplace, Reward Chamber, staking, or leaderboard systems.
+```
+
+
+# 🧠 Narrrfs World 13.0 — Lab System 9.95 LIVE / Fitness Journey Reward Chest Planning Sync
+
+**Date:** 2026-06-09
+**Status:** Planning confirmed / ready for Phase 1 verification
+**Agent:** Lab System 9.95 LIVE
+**Scope:** Genesis Trait milestone rewards, Fitness Journey loot chests, Store Item + Genetic Item reward pools, Lab UI celebration events, backend-safe one-time claims.
+
+---
+
+## ✅ New Planned Feature: Fitness Journey Reward Chests
+
+We will extend the new Lab Milestone Reward Chest system beyond Weapon Ability DSPOINC rewards.
+
+New feature direction:
+
+```text
+💪 Fitness Journey Reward Chests
+```
+
+Purpose:
+
+```text
+Reward Genesis holders during the long Genesis trait training path toward Weapon Ability unlocks.
+```
+
+This system is NOT based on seeded Fitness/Weapon ability rows alone.
+
+Confirmed V1 trigger model:
+
+```text
+Option A — Genesis Trait Level
+```
+
+Meaning:
+
+```text
+When a selected Genesis mouse reaches highest single Genesis trait level 10, 15, and 20,
+the player can claim a one-time Fitness Journey loot chest.
+```
+
+---
+
+## ✅ Confirmed Fitness Milestone Design
+
+Milestones:
+
+```text
+Lv10 trait reached = halfway to Weapon unlock
+Lv15 trait reached = deep training milestone
+Lv20 trait reached = Weapon lane unlocked / final Fitness Journey chest
+```
+
+Suggested milestone keys:
+
+```text
+fitness_trait_level_10
+fitness_trait_level_15
+fitness_trait_level_20
+```
+
+Suggested player-facing event texts:
+
+```text
+Lv10:
+YEAHHH! Your Genesis mouse reached Trait Level 10.
+Halfway to the Weapon Journey.
+
+Lv15:
+Deep Training Milestone unlocked.
+Only 5 more trait levels until the Weapon Lane opens.
+
+Lv20:
+Weapon Lane unlocked.
+Your Genesis mouse reached Trait Level 20 and is ready for Weapon Abilities.
+```
+
+Important:
+
+```text
+These are Genesis trait milestones, not permanent Genetic Item equipment events.
+```
+
+---
+
+## ✅ Reward Pool Direction Confirmed
+
+Fitness Journey chests should use both reward pool types:
+
+```text
+Pool A: Store Items
+Pool B: Genetic Items
+```
+
+The goal is to make Fitness milestones feel like opening a reward box, similar to the Reward Chamber.
+
+Examples of reward direction:
+
+```text
+Lv10 Fitness Chest:
+Store item or basic/common Genetic Item
+
+Lv15 Fitness Chest:
+Better store item or stronger Genetic Item
+
+Lv20 Fitness Chest:
+Premium store item or stronger/rarer Genetic Item
+```
+
+Exact item IDs / Genetic Item definitions must be verified before implementation.
+
+---
+
+## ✅ Architecture Decision Confirmed
+
+Use the current milestone claim system safely.
+
+Preferred safety model:
+
+```text
+tbl_lab_milestone_rewards = one-time claim lock / audit history
+existing inventory tables = real item ownership
+```
+
+This means:
+
+```text
+Do NOT store real item ownership only inside tbl_lab_milestone_rewards.
+Do NOT invent new inventory logic if existing Reward Chamber / Store / Genetic Item logic can be reused.
+Do NOT mix reward claim history with item ownership.
+```
+
+The milestone row proves the Fitness chest was claimed once.
+
+The existing item / Genetic inventory tables must receive the actual granted reward.
+
+---
+
+## ✅ API Direction Confirmed
+
+For V1, reuse the current milestone APIs instead of renaming everything now:
+
+```text
+api/user/get-ability-milestone-rewards.php
+api/user/claim-ability-milestone-reward.php
+```
+
+Reason:
+
+```text
+Weapon milestone reward integration already exists in these APIs.
+Fitness Journey rewards can be added carefully beside Weapon rewards.
+Renaming can wait until a future generic Lab milestone endpoint refactor.
+```
+
+Internal structure should stay clean with separate configs/functions, for example:
+
+```text
+WEAPON_MILESTONE_REWARDS
+FITNESS_TRAIT_MILESTONE_REWARDS
+```
+
+---
+
+## ✅ Backend Eligibility Rules For Fitness Journey Chests
+
+For each selected Genesis mouse, backend must verify:
+
+```text
+Discord session / controlled localhost test user_id
+verified Genesis ownership
+collection = genesis
+highest single Genesis trait level >= required milestone level
+milestone not already claimed for user + token + collection + milestone_key
+reward item can be safely granted
+```
+
+The backend must NOT trust frontend display state.
+
+The frontend may only:
+
+```text
+show chest state
+show loading state
+show celebration modal
+send claim request
+render returned reward payload
+```
+
+Backend remains authoritative for:
+
+```text
+ownership
+trait level
+milestone eligibility
+duplicate claim protection
+loot selection
+item / Genetic Item grant
+claim history
+```
+
+---
+
+## ✅ Guardrails For Fitness Journey Rewards
+
+Do not:
+
+```text
+Reward Fitness milestone chests before required Genesis trait level is reached.
+Use seeded ability rows as proof of milestone eligibility.
+Trust frontend for eligibility.
+Create duplicate milestone claims.
+Store actual item ownership only in tbl_lab_milestone_rewards.
+Claim Genetic Items are permanently equipped to a mouse in V1.
+Break Genetic Item max-copy rules.
+Break one-per-user store item restrictions.
+Modify Reward Chamber pools while adding Fitness Journey rewards unless explicitly requested.
+Enable Ability Instant Finish.
+Modify unrelated Lab, marketplace, Reward Chamber, staking, or leaderboard systems.
+```
+
+Genetic Item wording must stay honest:
+
+```text
+Added to your Lab / Genetic support inventory.
+```
+
+Do not say:
+
+```text
+Equipped to this mouse.
+```
+
+---
+
+## ✅ Phase 1 — Next Required Verification
+
+Before coding, inspect existing DB schemas and reward grant patterns.
+
+Required local checks:
+
+```bash
+sqlite3 db\narrrf_world.sqlite ".schema tbl_lab_milestone_rewards"
+sqlite3 db\narrrf_world.sqlite ".tables"
+```
+
+Then identify exact existing tables for:
+
+```text
+Store items
+User inventory / store item ownership
+Genetic item definitions
+User Genetic Item inventory
+Reward Chamber item grants
+```
+
+Search code for grant logic:
+
+```powershell
+Select-String -Path api\**\*.php -Pattern "REWARD_BOX_ONE_PER_USER_ARCADE_ITEM_IDS","tbl_user_inventory","tbl_user_items","tbl_genetic","genetic_inventory","INSERT INTO tbl_user"
+Select-String -Path api\user\open-reward-box.php -Pattern "store_item","genetic","inventory","item_id","trait_type","trait_value","rarity","quantity"
+```
+
+Phase 1 goal:
+
+```text
+Find the exact safe insert patterns for Store Item rewards and Genetic Item rewards.
+Do not code Fitness grants until the existing table names and insert logic are verified.
+```
+
+---
+
+## ✅ Current Status
+
+```text
+Fitness Journey Reward Chest concept is confirmed.
+Milestone model is Genesis Trait Level 10 / 15 / 20.
+Reward pools will include Store Items and Genetic Items.
+Existing milestone APIs will be reused for V1.
+Next step is Phase 1 schema/reward-pattern verification.
+```
+
+
+# 🧠 Narrrfs World 13.0 — Lab System 9.94 NEWEST / Weapon Milestone Reward Chest Sync
+
+**Date:** 2026-06-08
+**Status:** Backend + Lab UI foundation implemented and locally tested
+**Agent:** Lab System 9.94 NEWEST
+**Scope:** Genesis Ability Matrix, Weapon Ability milestone reward chests, DSPOINC reward safety, Lab UI reward slot, local false-claim cleanup.
+
+---
+
+## ✅ New Feature Foundation: Weapon Ability Milestone Reward Chests
+
+New reward system started for Genesis Ability progression.
+
+Feature name:
+
+```text
+⚔️ Weapon Ability Reward Chests
+```
+
+Purpose:
+
+```text
+Motivate Genesis holders to push mice toward deeper RPG progression by granting backend-authoritative DSPOINC reward chests when Weapon abilities reach milestone levels.
+```
+
+Current V1 category:
+
+```text
+Weapons
+```
+
+Weapon ability keys confirmed from helper/schema:
+
+```text
+ATK
+DEF
+SPECIAL
+```
+
+Real Weapon lane unlock rule:
+
+```text
+Weapons unlock only when the selected Genesis mouse has highest single Genesis trait level >= 20.
+```
+
+Important correction:
+
+```text
+Seeded ATK / DEF / SPECIAL rows can exist at level 1 before Weapons are truly unlocked.
+Those rows must NOT make Weapon reward chests claimable.
+```
+
+---
+
+## ✅ New DB Table
+
+Local table created and tested:
+
+```text
+tbl_lab_milestone_rewards
+```
+
+Purpose:
+
+```text
+Stores one-time Lab milestone reward claims.
+Prevents duplicate DSPOINC payouts.
+Keeps reward history auditable.
+```
+
+Important unique rule:
+
+```text
+UNIQUE(user_id, token_id, collection, milestone_key)
+```
+
+This means one Genesis mouse can only claim each exact milestone once.
+
+Architecture:
+
+```text
+Milestone rewards are per user + token + collection + milestone.
+Genesis abilities remain NFT-bound.
+Reward claims do not mutate abilities, traits, ownership, names, marketplace, inventory, or Reward Chamber boxes.
+```
+
+---
+
+## ✅ New Backend APIs
+
+New read endpoint:
+
+```text
+api/user/get-ability-milestone-rewards.php
+```
+
+Purpose:
+
+```text
+Read-only check for milestone reward availability.
+Returns reward rows with eligible / claimed state.
+Does not award DSPOINC.
+Does not write DB rows.
+```
+
+New claim endpoint:
+
+```text
+api/user/claim-ability-milestone-reward.php
+```
+
+Purpose:
+
+```text
+Backend-authoritative claim flow for Weapon Ability milestone reward chests.
+```
+
+Claim endpoint verifies:
+
+```text
+Discord session / localhost controlled test user_id
+verified Genesis ownership
+collection = genesis
+milestone key is known
+ability key belongs to Weapons
+selected mouse highest Genesis trait level >= 20
+ability current_level >= milestone required level
+milestone not already claimed
+```
+
+Then it writes:
+
+```text
+tbl_lab_milestone_rewards
+tbl_user_scores
+tbl_score_adjustments
+```
+
+DSPOINC reward write pattern follows Reward Chamber style:
+
+```text
+Insert one positive ledger row into tbl_user_scores.
+Insert one audit row into tbl_score_adjustments.
+Do not rebuild/delete user score history for normal reward claims.
+```
+
+---
+
+## ✅ Configured Weapon Milestones
+
+Current milestone config in both read and claim endpoints:
+
+```text
+weapon_ATK_level_1 / weapon_DEF_level_1 / weapon_SPECIAL_level_1
+Reward: 25,000 DSPOINC
+Title: Weapon Unlock Chest
+
+Level 5
+Reward: 10,000 DSPOINC
+Title: Weapon Training Chest
+
+Level 10
+Reward: 25,000 DSPOINC
+Title: Weapon Specialist Chest
+
+Level 25
+Reward: 75,000 DSPOINC
+Title: Weapon Master Chest
+
+Level 50
+Reward: 150,000 DSPOINC
+Title: Legendary Weapon Chest
+```
+
+Important:
+
+```text
+Even level 1 Weapon chests require the real Weapon lane unlock first:
+highest Genesis trait level >= 20.
+```
+
+---
+
+## ✅ Local Backend Tests Completed
+
+Local test mouse:
+
+```text
+NarrrfsWorldGenesis1486
+token_id: 13ao5BhPVon2bPhjq1t6XzASNS3xR4dXcxkB6gP4WoDd
+user_id: 328601656659017732
+collection: genesis
+highest Genesis trait level: 7
+```
+
+Initial test proved:
+
+```text
+Level 1 claim endpoint could write one reward.
+Duplicate claim was blocked.
+Level 5 claim was blocked while ability level was only 1.
+DB rows wrote correctly to milestone table, user score ledger, and score adjustment audit.
+```
+
+Then logic issue found:
+
+```text
+Weapon chests appeared because ATK / DEF / SPECIAL rows existed at level 1, even though the mouse only had highest trait level 7 and Weapons should be locked.
+```
+
+Fix applied:
+
+```text
+Read endpoint now returns category_unlocked based on highest Genesis trait level >= 20.
+Claim endpoint blocks payout before highest Genesis trait level 20.
+Lab frontend hides all Weapon milestone UI until category_unlocked is true.
+```
+
+Final local expected behavior:
+
+```text
+Mice below highest trait Lv20 show no Weapon milestone reward chests.
+Claim endpoint returns “Weapons are not unlocked for this Genesis mouse yet.”
+No DSPOINC payout happens before real Weapon unlock.
+```
+
+---
+
+## ✅ Local False Test Cleanup Completed
+
+The temporary local false payout rows were cleaned.
+
+Cleanup result:
+
+```text
+remaining_milestone_rows = 0
+remaining_ledger_rows = 0
+remaining_audit_rows = 0
+```
+
+This cleanup was local-only test data for NarrrfsWorldGenesis1486.
+
+Do not run this cleanup on live unless explicitly planned and backed up.
+
+---
+
+## ✅ Lab UI Integration Status
+
+Updated file:
+
+```text
+public/lab.html
+```
+
+New Ability Matrix reward slot:
+
+```text
+weaponAbilityMilestoneChestSlot
+```
+
+Current Lab UI behavior:
+
+```text
+Weapon milestone reward area renders inside Genesis Ability Matrix.
+It appears above ability cards.
+It only shows when backend reward data says Weapons are actually unlocked.
+It supports claim buttons for eligible unclaimed rewards.
+It shows a reward reveal modal after backend success.
+It hides claimable and claimed Weapon milestone state while Weapons are locked.
+```
+
+New Lab functions added:
+
+```text
+loadAbilityMilestoneRewards()
+renderWeaponAbilityMilestoneChests()
+claimWeaponAbilityMilestoneReward()
+showWeaponAbilityRewardChestModal()
+```
+
+State added:
+
+```text
+genesisAbilityState.milestoneRewards
+genesisAbilityState.milestoneRewardsLoading
+genesisAbilityState.milestoneClaimingKey
+```
+
+Reset behavior:
+
+```text
+resetGenesisAbilityMatrixUi() clears milestone reward state and the reward slot.
+```
+
+Important frontend guardrail:
+
+```text
+Frontend only displays and animates.
+Backend decides eligibility, duplicate protection, and DSPOINC delivery.
+```
+
+---
+
+## ✅ Local Shell Testing Method Confirmed
+
+When PowerShell `Invoke-WebRequest` is not available or when using Git Bash shell, use this style:
+
+```bash
+curl -s -X POST "http://localhost/api/user/claim-ability-milestone-reward.php" -H "Content-Type: application/json" --data-binary "{\"user_id\":\"328601656659017732\",\"token_id\":\"TOKEN_ID_HERE\",\"collection\":\"genesis\",\"milestone_key\":\"weapon_ATK_level_1\"}"
+```
+
+Important:
+
+```text
+The single-line escaped JSON curl works in the current local shell.
+Do not split the curl with PowerShell backticks in Git Bash.
+```
+
+---
+
+## 🧪 Required Checks Before Push
+
+Run:
+
+```bash
+php -l api/user/get-ability-milestone-rewards.php
+php -l api/user/claim-ability-milestone-reward.php
+```
+
+Recommended Lab checks:
+
+```text
+Open lab.html.
+Select a mouse with highest trait below 20.
+Expected: no Weapon reward chest UI.
+
+Try local curl claim for a below-Lv20 mouse.
+Expected: Weapons are not unlocked for this Genesis mouse yet.
+
+Later, fake local-only a test mouse to highest trait level 20+.
+Expected: Weapon chest UI appears and claim works once.
+```
+
+---
+
+## 🚫 Guardrails
+
+Do not:
+
+```text
+Award Weapon milestone DSPOINC before highest Genesis trait level >= 20.
+Show claimed Weapon milestone strips while Weapons are locked.
+Trust frontend for eligibility.
+Create duplicate milestone claims.
+Delete live reward rows without backup and explicit plan.
+Change Genesis ability unlock thresholds without checking genesis-ability-helpers.php.
+Make Genesis abilities Discord-user-bound.
+Mix Genesis Ability reward state into Genetic Item inventory.
+Modify Reward Chamber box pools or cooldowns for this feature.
+Enable Ability Instant Finish.
+```
+
+Backend remains authoritative for:
+
+```text
+ownership
+session
+trait level unlock
+ability level
+duplicate claims
+DSPOINC reward amount
+ledger writes
+audit writes
+```
+
+---
+
+## ✅ Current Status
+
+```text
+Weapon Ability Milestone Reward Chest foundation is implemented.
+Local false claim data is cleaned.
+Weapon reward UI now stays hidden for mice below Lv20.
+Ready for next step: local fake Lv20 test and final polish before push.
+```
+
+
+# 🧠 Narrrfs World 13.0 — Lab System 9.94 NEWEST / Today Bug Fix Sync
+
+**Date:** 2026-06-06
+**Status:** Bugs resolved / ready for next feature implementation
+**Agent:** Lab System 9.94 NEWEST
+**Scope:** Strongest Genesis Mice showcase UX, Cheese Hunt completed-click behavior, Labyrinth Blast Discord login, leaderboard/profile link regressions.
+
+---
+
+## ✅ Today’s Resolved Bugs / Improvements
+
+### ✅ Strongest Genesis Mice — Click-To-Showcase Feature
+
+Updated file:
+
+```text
+public/strongest-genesis-mice.html
+```
+
+Feature added:
+
+```text
+Click any ranked Genesis mouse in the leaderboard list to display that mouse in the huge top showcase.
+```
+
+Behavior now confirmed working:
+
+```text
+#1 mouse still loads by default.
+Clicking any ranked mouse updates the big showcase.
+The top showcase now displays the selected mouse image, rank, name, owner, Warrior Power, Trait Power, Ability Power, Genetic Support Power, traits, abilities, and support items.
+Selected row gets a visible “Viewing” state.
+Search still works.
+Keyboard support added for Enter / Space on rows.
+No backend changes required.
+```
+
+Important architecture:
+
+```text
+This is frontend display-only.
+It does not mutate NFT ownership, custom names, Genesis traits, abilities, Genetic Items, inventory, DSPOINC, rewards, or leaderboard score tables.
+```
+
+Guardrail remains:
+
+```text
+Genetic Items are owner support inventory in V1, not permanently equipped to one mouse.
+```
+
+---
+
+### ✅ Cheese Hunt — Completed Mission Click Behavior Fixed
+
+Updated files:
+
+```text
+api/track-egg-click.php
+public/index.html
+```
+
+Resolved issue:
+
+```text
+Players who had already completed the Cheese Hunt could click one cheese once and immediately receive the Cheese Police warning.
+```
+
+Correct behavior now:
+
+```text
+Before mission completion:
+- same egg repeat abuse = Cheese Police
+- rapid spam = Cheese Police
+- valid different egg = progress counts
+
+After mission completion:
+- one normal valid extra click can still be tracked
+- message shows the quest is already accomplished / extra click tracked
+- rapid spam still triggers Cheese Police
+- no second quest claim is created
+```
+
+Reason:
+
+```text
+Cheese clicks are useful for future stats, bonus systems, hidden mechanics, and admin analytics.
+But Cheese Police must still block spam/multi-click abuse.
+```
+
+Important:
+
+```text
+Do not disable Cheese Police globally after completion.
+Only prevent normal completed-player clicks from being wrongly treated as duplicate quest cheating.
+```
+
+---
+
+### ✅ Labyrinth Blast — Discord Login Link Fixed
+
+Updated source area:
+
+```text
+FOX/src/pages/Index.tsx
+```
+
+Expected generated output after rebuild:
+
+```text
+public/labyrinth-blast/
+```
+
+Resolved issue:
+
+```text
+The Discord login button on the Labyrinth Blast start screen was not using the same reliable login flow as Profile / Index pages.
+```
+
+Correct behavior:
+
+```text
+Login with Discord opens the normal Narrrfs Discord OAuth flow.
+The callback uses /api/auth/callback.php.
+After successful login, session hydration works through /api/user/get-session.php.
+```
+
+Important:
+
+```text
+Do not edit generated Labyrinth Blast JS/CSS assets directly.
+Edit FOX source, rebuild, then copy dist into public/labyrinth-blast/.
+```
+
+---
+
+### ✅ Link Regression Checks Confirmed
+
+Recently fixed bugs remain resolved:
+
+```text
+Leaderboard top nav “Games” link no longer points directly to one single game like Snake/Tetris.
+Profile Glyph Memory “Play” button points to the active Glyph Memory route.
+Strongest Genesis Mice link is available from the leaderboard ecosystem.
+```
+
+Relevant files:
+
+```text
+public/leaderboard.html
+public/profile.html
+public/strongest-genesis-mice.html
+```
+
+Guardrails:
+
+```text
+Do not restore glyph-memory.html for Glyph Memory Play.
+Do not restore leaderboard Games nav to tetris.html or snake.html.
+Do not remove strongest-genesis-mice.html links from public navigation areas.
+```
+
+---
+
+## ✅ Current Clean State
+
+Today’s resolved work:
+
+```text
+Strongest Genesis Mice click-to-showcase UX complete.
+Cheese Hunt completed-click behavior corrected.
+Cheese Police still protects against abuse.
+Labyrinth Blast Discord login flow aligned with Narrrfs pages.
+Leaderboard/profile link regressions checked.
+```
+
+Ready to continue with new feature implementation.
+
+---
+
+## 🧪 Recommended Checks Before Next Push
+
+Run locally:
+
+```powershell
+cd C:\xampp-server\htdocs\narrrfs-world
+git status
+php -l api\track-egg-click.php
+php -l api\leaderboard\get-strongest-genesis-mice.php
+```
+
+Check references:
+
+```powershell
+Select-String -Path public\strongest-genesis-mice.html -Pattern "selectedMouseKey","getMouseKey","selectMouseByKey","data-mouse-key","Selected Mouse Spotlight"
+Select-String -Path public\leaderboard.html -Pattern "strongest-genesis-mice.html","Games</a>"
+Select-String -Path public\profile.html -Pattern "glyph-memory.html","/glyph/glyph.html","Glyph Memory"
+```
+
+Expected:
+
+```text
+No PHP syntax errors.
+Strongest Mice selected showcase patterns exist.
+Leaderboard still links to Strongest Genesis Mice.
+Leaderboard Games top nav does not point to Snake/Tetris.
+Profile Glyph Memory Play uses /glyph/glyph.html.
+```
+
+---
+
+## 🚫 Guardrails For Next Work
+
+Do not:
+
+```text
+Modify unrelated systems.
+Edit generated Labyrinth Blast assets directly.
+Remove Cheese Hunt backend anti-cheat.
+Disable Cheese Police after completion.
+Create second Cheese Hunt quest claims for completed users.
+Claim Genetic Items are permanently equipped to mice in V1.
+Change Strongest Genesis Mice backend scoring without explicit request.
+Change DSPOINC ledger, inventory, ownership, traits, abilities, or marketplace state.
+Reintroduce missing ability_label DB column usage.
+```
+
+
 # 🧠 Narrrfs World 13.0 — Lab System 9.93 NEWEST / Season 12 Strongest Mice Sync
 
 **Date:** 2026-06-06

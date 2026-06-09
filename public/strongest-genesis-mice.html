@@ -441,9 +441,10 @@
      */
     const API_URL = '/api/leaderboard/get-strongest-genesis-mice.php?limit=100';
 
-    const state = {
+        const state = {
       mice: [],
       filteredMice: [],
+      selectedMouseKey: '',
     };
 
     const el = {
@@ -495,6 +496,35 @@
       if (rank === 2) return '🥈';
       if (rank === 3) return '🥉';
       return `#${rank}`;
+    }
+
+        /**
+     * Creates a stable frontend-only key for selecting a mouse.
+     *
+     * Plain language for DEVS:
+     * This key is only used on this read-only page to switch the big showcase
+     * when a user clicks a leaderboard row. It does not write ownership,
+     * names, traits, abilities, Genetic Items, DSPOINC, or leaderboard data.
+     */
+    function getMouseKey(mouse) {
+      return [
+        String(mouse?.collection || 'genesis').trim(),
+        String(mouse?.token_id || mouse?.token_short || '').trim(),
+        String(mouse?.owner_user_id || '').trim(),
+        String(mouse?.rank || '').trim()
+      ].join('|');
+    }
+
+    function getSelectedMouse() {
+      if (!state.selectedMouseKey) {
+        return null;
+      }
+
+      return state.mice.find((mouse) => getMouseKey(mouse) === state.selectedMouseKey) || null;
+    }
+
+    function isMouseSelected(mouse) {
+      return getMouseKey(mouse) === state.selectedMouseKey;
     }
 
     function getMouseRole(mouse) {
@@ -609,13 +639,19 @@
 
       const imageUrl = getSafeImageUrl(mouse.image_url);
 
+            const rank = Number(mouse.rank || 0);
+      const isChampion = rank === 1;
+      const heroBadge = isChampion ? '🏆 Strongest Mouse in the Mouseverse' : '🐭 Selected Mouse Spotlight';
+      const heroKicker = isChampion ? 'Champion Mouse' : 'Mouseverse Rank Showcase';
+      const rankLabel = rank > 0 ? `#${rank}` : '—';
+
       el.topMouseSection.innerHTML = `
         <article class="champion-frame rounded-[2rem] p-4 md:p-6">
           <div class="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6 items-stretch">
             <div class="champion-image-wrap rounded-[1.75rem] p-4 flex flex-col justify-between">
               <div class="text-center mb-4">
                 <div class="inline-flex rounded-full bg-yellow-300 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-slate-950">
-                  🏆 Strongest Mouse in the Mouseverse
+                  ${escapeHtml(heroBadge)}
                 </div>
               </div>
 
@@ -636,7 +672,7 @@
             <div class="mouseverse-card rounded-[1.75rem] p-5 md:p-6">
               <div class="flex flex-wrap justify-between gap-4 mb-5">
                 <div class="min-w-0">
-                  <div class="text-xs uppercase tracking-[0.24em] text-yellow-200 font-black">Champion Mouse</div>
+                  <div class="text-xs uppercase tracking-[0.24em] text-yellow-200 font-black">${escapeHtml(heroKicker)}</div>
                   <h3 class="text-3xl md:text-5xl font-black text-white truncate">${escapeHtml(mouse.custom_name)}</h3>
                   <p class="mt-2 text-sm text-orange-100">
                     ${escapeHtml(mouse.nft_name || mouse.token_short)} • Owner: <span class="font-black text-cyan-100">${escapeHtml(mouse.owner_username)}</span>
@@ -646,7 +682,7 @@
 
                 <div class="text-right">
                   <div class="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">Rank</div>
-                  <div class="text-5xl font-black text-yellow-200">#1</div>
+                  <div class="text-5xl font-black text-yellow-200">${escapeHtml(rankLabel)}</div>
                 </div>
               </div>
 
@@ -688,13 +724,21 @@
       `;
     }
 
-    function renderLeaderboardRow(mouse) {
+        function renderLeaderboardRow(mouse) {
       const rank = Number(mouse.rank || 0);
       const imageUrl = getSafeImageUrl(mouse.image_url);
       const role = getMouseRole(mouse);
+      const mouseKey = getMouseKey(mouse);
+      const selected = isMouseSelected(mouse);
 
       return `
-        <article class="narrrf-leaderboard-row mouseverse-card rounded-2xl p-4 flex items-center justify-between gap-4 transition">
+        <article
+          class="narrrf-leaderboard-row mouseverse-card rounded-2xl p-4 flex items-center justify-between gap-4 transition cursor-pointer ${selected ? 'ring-2 ring-yellow-300/70 border-yellow-300/60 bg-yellow-300/10' : ''}"
+          role="button"
+          tabindex="0"
+          data-mouse-key="${escapeHtml(mouseKey)}"
+          aria-label="Show ${escapeHtml(mouse.custom_name || 'Genesis Mouse')} in the big showcase"
+        >
           <div class="narrrf-leaderboard-player flex items-center gap-3 min-w-0">
             <div class="narrrf-leaderboard-rank ${getRankClass(rank)} w-11 h-11 min-w-11 rounded-2xl flex items-center justify-center text-sm shadow-lg">
               ${escapeHtml(getRankLabel(rank))}
@@ -719,6 +763,7 @@
                 <span class="rounded-full bg-yellow-300/10 border border-yellow-300/20 px-2 py-1 text-yellow-100">Trait ${formatNumber(mouse.trait_power)}</span>
                 <span class="rounded-full bg-cyan-300/10 border border-cyan-300/20 px-2 py-1 text-cyan-100">Ability ${formatNumber(mouse.ability_power)}</span>
                 <span class="rounded-full bg-pink-300/10 border border-pink-300/20 px-2 py-1 text-pink-100">Genetic ${formatNumber(mouse.genetic_support_power)}</span>
+                ${selected ? '<span class="rounded-full bg-yellow-300 px-2 py-1 text-slate-950 font-black">Viewing</span>' : '<span class="rounded-full bg-white/5 border border-white/10 px-2 py-1 text-slate-300">Click to view</span>'}
               </div>
             </div>
           </div>
@@ -735,6 +780,35 @@
       `;
     }
 
+        /**
+     * Shows a clicked ranked mouse in the big top showcase.
+     *
+     * Plain language for DEVS:
+     * This only changes frontend display state. It lets users inspect any ranked
+     * mouse in the large showcase without changing ranking, ownership, Lab data,
+     * custom names, DSPOINC, traits, abilities, or Genetic Items.
+     */
+    function selectMouseByKey(mouseKey, shouldScroll = true) {
+      const nextMouse = state.mice.find((mouse) => getMouseKey(mouse) === mouseKey);
+
+      if (!nextMouse) {
+        console.warn('🐭 Strongest Mice: selected mouse not found:', mouseKey);
+        return;
+      }
+
+      state.selectedMouseKey = mouseKey;
+
+      renderTopMouse(nextMouse);
+      renderLeaderboard();
+
+      if (shouldScroll && el.topMouseSection) {
+        el.topMouseSection.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    }
+
     function renderLeaderboard() {
       const rows = state.filteredMice;
 
@@ -748,6 +822,21 @@
       }
 
       el.miceLeaderboard.innerHTML = rows.map(renderLeaderboardRow).join('');
+
+      el.miceLeaderboard.querySelectorAll('[data-mouse-key]').forEach((row) => {
+        row.addEventListener('click', () => {
+          selectMouseByKey(row.dataset.mouseKey);
+        });
+
+        row.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+          }
+
+          event.preventDefault();
+          selectMouseByKey(row.dataset.mouseKey);
+        });
+      });
     }
 
     function applySearch() {
@@ -787,10 +876,13 @@
           throw new Error(data.error || `Request failed with ${response.status}`);
         }
 
-        state.mice = Array.isArray(data.mice) ? data.mice : [];
+                state.mice = Array.isArray(data.mice) ? data.mice : [];
         state.filteredMice = [...state.mice];
 
-        renderTopMouse(data.top_mouse || state.mice[0] || null);
+        const initialMouse = data.top_mouse || state.mice[0] || null;
+        state.selectedMouseKey = initialMouse ? getMouseKey(initialMouse) : '';
+
+        renderTopMouse(initialMouse);
         renderLeaderboard();
 
         el.loading.classList.add('hidden');
