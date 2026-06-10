@@ -1,5 +1,24 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+# 🧠 Narrrfs World 13.0 — Lab System 9.96 NEW / Reward Chests + Cheese Hunt Sync
+
+**Date:** 2026-06-10  
+**Status:** Restarted from Lab System 9.95 LIVE summaries / ready for final local review and split push  
+**Agent:** Lab System 9.96 NEW  
+**Scope:** Genesis Fitness Journey reward chests, Weapon milestone chests, Cheese Hunt admin/backend/homepage improvements, Hunter Mode local test, clean git staging.
+
+---
+
+## ✅ 9.96 Restart Summary
+
+Lab System 9.96 NEW is synced from the previous 9.95 LIVE agents.
+
+Current active feature tracks:
+
+```text
+A) Genesis Lab Fitness Journey / Weapon Reward Chest system
+B) Cheese Hunt quest improvements from Admin Interface to homepage gameplay
+
 # 🧠 Narrrfs World 13.0 — Lab System 9.95 LIVE / Fitness Journey Reward Chests Ready To Push
 
 **Date:** 2026-06-09

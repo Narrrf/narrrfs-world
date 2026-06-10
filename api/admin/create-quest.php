@@ -111,7 +111,23 @@ switch ($action) {
             $discord_ticket = normalizeBoolean($input['discord_ticket'] ?? true, true);
             $winner_message = trim((string)($input['winner_message'] ?? '🎯 Congratulations! You found the cheese!'));
 
-            $allowed_patterns = ['random', 'edge_hunter', 'sneaky', 'corner_lurker'];
+            /**
+ * Supported Cheese Hunt movement patterns.
+ *
+ * Plain language for DEVS:
+ * These values must stay synced with the Admin Interface selector and the
+ * homepage Cheese Hunt movement engine. If the frontend can send a pattern
+ * but this backend list does not allow it, quest creation fails before the
+ * funny moving cheese game can start.
+ */
+$allowed_patterns = [
+    'random',
+    'edge_hunter',
+    'sneaky',
+    'corner_lurker',
+    'scatter_zone',
+    'fair_shuffle'
+];
             $allowed_speeds = ['slow', 'normal', 'fast'];
 
             if (!in_array($movement_pattern, $allowed_patterns, true)) {
@@ -130,16 +146,22 @@ switch ($action) {
                 break;
             }
 
-            // IMPORTANT:
-            // The current frontend runtime supports only 3 real cheese eggs.
-            // Keep this capped to 1-3 until dynamic egg generation is implemented.
-            if ($cheese_count < 1 || $cheese_count > 3) {
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Cheese Hunt currently supports 1 to 3 cheeses only'
-                ]);
-                break;
-            }
+/**
+ * Cheese Hunt required-click limit.
+ *
+ * Plain language for DEVS:
+ * cheese_count now means how many valid cheese clicks are required to complete
+ * the quest. The homepage still displays the existing 3 synced moving cheeses,
+ * but players may continue clicking valid cheeses over time until this total
+ * is reached. Backend click tracking remains authoritative.
+ */
+if ($cheese_count < 1 || $cheese_count > 100) {
+    echo json_encode([
+        'success' => false,
+        'error' => 'Cheese Hunt currently supports 1 to 100 required cheese clicks'
+    ]);
+    break;
+}
 
             if ($winner_message === '') {
                 $winner_message = '🎯 Congratulations! You found the cheese!';

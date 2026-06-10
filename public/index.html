@@ -522,8 +522,22 @@ require_once 'discord-invite.php';
 <!-- 🧠 Cheese Egg Logic -->
 <script>
   const MOVE_INTERVAL = 12000; // Base interval (not used directly anymore)
-  const CHEESE_SIZE = 40; // Back to original size (w-10 h-10 = 40px)
-  const cheeseClickSound = document.getElementById('cheese-click-audio');
+const CHEESE_SIZE = 40; // Back to original size (w-10 h-10 = 40px)
+
+/**
+ * Cheese Hunt Hunter Mode settings.
+ *
+ * Plain language for DEVS:
+ * The homepage currently has 3 real cheese egg elements. Long hunts can require
+ * up to 100 valid clicks, so the difficulty must come from movement, hiding,
+ * and click escape behavior instead of spawning 100 separate DOM elements.
+ */
+const CHEESE_HUNT_HARD_PATTERNS = new Set(['scatter_zone', 'fair_shuffle']);
+const CHEESE_HUNT_ESCAPE_HIDE_MIN_MS = 900;
+const CHEESE_HUNT_ESCAPE_HIDE_MAX_MS = 2200;
+const CHEESE_HUNT_ESCAPE_SCATTER_DELAY_MS = 180;
+
+const cheeseClickSound = document.getElementById('cheese-click-audio');
   if (cheeseClickSound) cheeseClickSound.volume = 0.8;
 
   if (!window.fetch) {
@@ -581,14 +595,17 @@ require_once 'discord-invite.php';
     egg.style.top = `${top}px`;
     egg.style.zIndex = '9999'; // Ensure cheese is always on top
     
-    // 🎨 Visual effects - always visible with glow
-    egg.style.filter = 'drop-shadow(0 0 8px #facc15) brightness(1.1)';
-    
-    // Smooth transition when moving
-    egg.style.transition = 'all 0.8s ease-in-out';
-    setTimeout(() => {
-      egg.style.transition = 'none';
-    }, 800);
+   // 🎨 Visual effects.
+// Plain language for DEVS:
+// Classic modes stay bright and easy. Hunter Mode patterns get smaller,
+// less predictable, and slightly faded so the game feels like a real hunt.
+applyCheeseHuntMovementVisuals(egg, nextPosition.pattern);
+
+// Smooth transition when moving
+egg.style.transition = 'all 0.8s ease-in-out';
+setTimeout(() => {
+  egg.style.transition = 'none';
+}, 800);
     } catch (moveEggError) {
       console.error(`🧀 Error in moveEgg function for ${id}:`, moveEggError);
     }
@@ -770,6 +787,61 @@ require_once 'discord-invite.php';
     const allowedPatterns = ['random', 'edge_hunter', 'sneaky', 'corner_lurker', 'scatter_zone', 'fair_shuffle'];
     return allowedPatterns.includes(configuredPattern) ? configuredPattern : 'random';
   }
+
+  function getCheeseMovementPattern() {
+  const configuredPattern = String(activeCheeseHuntQuest?.cheese_config?.movement_pattern || 'random')
+    .toLowerCase()
+    .trim();
+
+  const allowedPatterns = ['random', 'edge_hunter', 'sneaky', 'corner_lurker', 'scatter_zone', 'fair_shuffle'];
+  return allowedPatterns.includes(configuredPattern) ? configuredPattern : 'random';
+}
+
+/**
+ * Return true when the active Cheese Hunt pattern should feel harder.
+ *
+ * Plain language for DEVS:
+ * We keep the classic cheese hunt easy for older patterns, but the new
+ * scatter_zone and fair_shuffle modes should feel like a real hunt.
+ */
+function isCheeseHuntHardPattern(pattern = getCheeseMovementPattern()) {
+  return CHEESE_HUNT_HARD_PATTERNS.has(pattern);
+}
+
+/**
+ * Return a small random hide time after a successful catch.
+ */
+function getCheeseHuntEscapeHideMs() {
+  return Math.round(getRandomInRange(CHEESE_HUNT_ESCAPE_HIDE_MIN_MS, CHEESE_HUNT_ESCAPE_HIDE_MAX_MS));
+}
+
+/**
+ * Apply harder visual behavior to cheese eggs in Hunter Mode.
+ *
+ * Plain language for DEVS:
+ * This only changes how the cheese looks on the page. Backend click tracking,
+ * quest completion, rewards, and anti-cheat remain authoritative.
+ */
+function applyCheeseHuntMovementVisuals(egg, pattern) {
+  if (!egg) {
+    return;
+  }
+
+  if (!isCheeseHuntHardPattern(pattern)) {
+    egg.style.opacity = '1';
+    egg.style.transform = '';
+    egg.style.filter = 'drop-shadow(0 0 8px #facc15) brightness(1.1)';
+    return;
+  }
+
+  const opacity = getRandomInRange(0.58, 0.88).toFixed(2);
+  const scale = getRandomInRange(0.72, 0.9).toFixed(2);
+  const rotation = Math.round(getRandomInRange(-16, 16));
+
+  egg.style.opacity = opacity;
+  egg.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+  egg.style.filter = 'drop-shadow(0 0 5px #facc15) brightness(0.96) saturate(1.2)';
+}
 
     /**
    * Read the configured hidden_areas flag and return a safe boolean.
@@ -1624,6 +1696,52 @@ const cheeseHuntEggLocks = new Map();
     cheeseHuntEggLocks.set(eggId, now + CHEESE_HUNT_CLIENT_SAME_EGG_LOCK_MS);
   }
 
+  /**
+ * Make the Cheese Hunt feel like a real hunt after a valid click.
+ *
+ * Plain language for DEVS:
+ * On long quests we keep players on the homepage and make the cheese escape.
+ * The clicked cheese hides briefly, then all active cheeses scatter to new
+ * positions. This keeps backend rewards/anti-cheat unchanged while improving
+ * the game feeling.
+ */
+function triggerCheeseHuntEscapeAfterCatch(clickedEggId) {
+  const activeEggIds = getActiveCheeseEggIds();
+  const clickedEgg = document.getElementById(clickedEggId);
+  const pattern = getCheeseMovementPattern();
+  const isHardPattern = isCheeseHuntHardPattern(pattern);
+
+  activeEggIds.forEach((eggId, index) => {
+    window.setTimeout(() => {
+      moveEgg(eggId);
+    }, CHEESE_HUNT_ESCAPE_SCATTER_DELAY_MS + (index * 120));
+  });
+
+  if (!clickedEgg || !isHardPattern) {
+    return;
+  }
+
+  const hideMs = getCheeseHuntEscapeHideMs();
+
+  clickedEgg.style.pointerEvents = 'none';
+  clickedEgg.style.opacity = '0.08';
+  clickedEgg.style.transform = 'scale(0.45) rotate(25deg)';
+  clickedEgg.style.filter = 'blur(1px) drop-shadow(0 0 4px #facc15)';
+
+  window.setTimeout(() => {
+    if (!clickedEgg) {
+      return;
+    }
+
+    clickedEgg.style.pointerEvents = '';
+    clickedEgg.style.opacity = '';
+    clickedEgg.style.transform = '';
+    clickedEgg.style.filter = '';
+
+    moveEgg(clickedEggId);
+  }, hideMs);
+}
+
     /**
    * Schedules normal cheese navigation after valid tracking.
    *
@@ -1786,20 +1904,33 @@ const cheeseHuntEggLocks = new Map();
       }
 
       if (response.ok && result && result.success) {
-        console.log('✅ Cheese click tracked successfully:', result);
-        console.log('✅ Server confirmed tracking success');
+  console.log('✅ Cheese click tracked successfully:', result);
+  console.log('✅ Server confirmed tracking success');
 
-        updateCheeseHuntPersistentDisplay(result);
+  updateCheeseHuntPersistentDisplay(result);
 
-        if (activeCheeseHuntQuest && (result.progress || result.quest_completed !== undefined)) {
-          console.log('🎯 Quest progress update available:', result);
-          showCheeseHuntProgress(result);
-        }
+  if (activeCheeseHuntQuest && (result.progress || result.quest_completed !== undefined)) {
+    console.log('🎯 Quest progress update available:', result);
+    showCheeseHuntProgress(result);
+  }
 
-        const targetUrl = egg ? egg.getAttribute('href') : null;
-        scheduleCheeseHuntNavigation(targetUrl, '(after valid cheese tracking)');
-        return;
-      }
+  /**
+   * Stay on the homepage during active Cheese Hunt quests.
+   *
+   * Plain language for DEVS:
+   * The old cheese eggs are links to other pages. That is fine for classic
+   * easter-egg behavior, but a configured Cheese Hunt should feel like a game.
+   * While the quest is not completed, the cheese escapes instead of navigating.
+   */
+  if (activeCheeseHuntQuest && !result.quest_completed) {
+    triggerCheeseHuntEscapeAfterCatch(eggId);
+    return;
+  }
+
+  const targetUrl = egg ? egg.getAttribute('href') : null;
+  scheduleCheeseHuntNavigation(targetUrl, '(after valid cheese tracking)');
+  return;
+}
 
       console.warn('⚠️ Server reported tracking failure:', result?.error || responseText || 'Unknown error');
 

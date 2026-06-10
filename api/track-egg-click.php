@@ -91,7 +91,7 @@ $quest_id = isset($input['quest_id']) ? intval($input['quest_id']) : null;
  * Frontend lockouts help UX, but backend must be authoritative.
  */
 const CHEESE_HUNT_CLICK_COOLDOWN_SECONDS = 2;
-const CHEESE_HUNT_MAX_SAME_EGG_PER_QUEST = 1;
+const CHEESE_HUNT_MAX_REQUIRED_CLICKS = 100;
 
 // Enhanced logging for debugging
 error_log("Processing click - User: $userWallet, Egg: $eggId, Quest: " . ($quest_id ?: 'none'));
@@ -172,42 +172,15 @@ try {
      * frontend JavaScript with repeated requests.
      */
     if ($quest_id) {
-                /**
-         * Block repeated same egg only while the quest is still unfinished.
-         *
-         * Plain language for DEVS:
-         * Before completion, one egg can only count once for quest progress.
-         * After completion, extra cheese clicks may still be tracked for future
-         * bonus systems, stats, or hidden mouse magic. Finished players should
-         * not get Cheese Police for one normal extra click on an already-used egg.
-         * Rapid spam is still blocked by the cooldown check below.
-         */
-        if (!$questAlreadyCompleted) {
-            $stmt = $pdo->prepare("
-                SELECT 1
-                FROM tbl_cheese_clicks
-                WHERE user_wallet = ?
-                  AND quest_id = ?
-                  AND egg_id = ?
-                LIMIT 1
-            ");
-            $stmt->execute([$userWallet, $quest_id, $eggId]);
-
-            if ($stmt->fetchColumn()) {
-                error_log("🧀 Anti-cheat duplicate egg blocked - User: $userWallet, Quest: $quest_id, Egg: $eggId");
-
-                http_response_code(429);
-                echo json_encode([
-                    'success' => false,
-                    'anti_cheat' => true,
-                    'duplicate_click' => true,
-                    'error' => 'Duplicate cheese blocked',
-                    'message' => '🧀 Sneaky mouse detected! This cheese was already counted for your quest.',
-                    'warning' => 'Nice try, cheese ninja — one cheese only counts once. Find the next one! 🐭'
-                ]);
-                exit;
-            }
-        }
+         /**
+ * Repeated egg IDs are allowed for long Cheese Hunt quests.
+ *
+ * Plain language for DEVS:
+ * The homepage currently has 3 synced moving cheese eggs. Long hunts can require
+ * up to 100 valid clicks, so the same egg_id must be allowed again over time.
+ * Rapid spam is still blocked below by CHEESE_HUNT_CLICK_COOLDOWN_SECONDS before
+ * the click is inserted into tbl_cheese_clicks.
+ */
 
         // Block rapid quest clicks across any egg.
         $stmt = $pdo->prepare("
@@ -340,14 +313,18 @@ try {
                 $response['progress'] = "$required_eggs/$required_eggs eggs found!";
                 $response['required_eggs'] = $required_eggs;
             } else {
-                // Count how many different cheese eggs this user has clicked for this quest
-                $stmt = $pdo->prepare("SELECT COUNT(DISTINCT egg_id) as unique_eggs 
-                                       FROM tbl_cheese_clicks 
-                                       WHERE quest_id = ? AND user_wallet = ?");
-                $stmt->execute([$quest_id, $userWallet]);
-                $egg_count = $stmt->fetch(PDO::FETCH_ASSOC)['unique_eggs'];
-                
-                $required_eggs = $cheese_config['cheese_count'] ?? 3;
+                // Count total valid cheese clicks for this user and quest.
+// Plain language for DEVS:
+// Long Cheese Hunts use repeated clicks over time, not unique egg IDs,
+// because the homepage currently has 3 synced moving cheese eggs.
+$stmt = $pdo->prepare("SELECT COUNT(*) as total_clicks
+                       FROM tbl_cheese_clicks
+                       WHERE quest_id = ? AND user_wallet = ?");
+$stmt->execute([$quest_id, $userWallet]);
+$egg_count = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_clicks'];
+
+$required_eggs = (int)($cheese_config['cheese_count'] ?? 3);
+$required_eggs = max(1, min(CHEESE_HUNT_MAX_REQUIRED_CLICKS, $required_eggs));
                 
                 if ($egg_count >= $required_eggs) {
                     // All cheese eggs clicked! Complete the quest

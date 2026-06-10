@@ -2372,7 +2372,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Cheese Count:</label>
-                <input type="number" id="cheeseCount" value="3" min="1" max="3" class="w-full px-3 py-2 rounded text-gray-800">
+                <input type="number" id="cheeseCount" value="3" min="1" max="100" class="w-full px-3 py-2 rounded text-gray-800">
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1">Hidden Areas:</label>
@@ -23052,10 +23052,18 @@ function updateSeasonStatus(activeSeason) {
             return;
           }
 
-          if (!Number.isInteger(cheeseCountRaw) || cheeseCountRaw < 1 || cheeseCountRaw > 3) {
-            addLog('❌ Cheese Hunt currently supports 1 to 3 cheeses only');
-            return;
-          }
+          /**
+ * Cheese Hunt required-click limit.
+ *
+ * Plain language for DEVS:
+ * cheese_count now means how many valid cheese clicks are required to finish
+ * the hunt. The homepage still shows the existing 3 moving cheeses, but players
+ * can keep hunting them over time until the configured total is reached.
+ */
+if (!Number.isInteger(cheeseCountRaw) || cheeseCountRaw < 1 || cheeseCountRaw > 100) {
+  addLog('❌ Cheese Hunt currently supports 1 to 100 required cheese clicks');
+  return;
+}
 
           questData.movement_pattern = movementPattern;
           questData.movement_speed = movementSpeed;

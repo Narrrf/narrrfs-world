@@ -1829,6 +1829,109 @@ hydrateSession();
 }
 
 
+/* Verified Collection Slider training overview badges.
+   DEVS FOR DECADES:
+   Visual-only mouse overview layer for the slider cards.
+   This reads already-loaded frontend Lab state from getNftUpgradeSummary(),
+   trait upgrade display rows, and verified Genesis NFT traits.
+   It does not decide rewards, ownership, timers, DSPOINC, ability unlocks,
+   inventory, marketplace state, or backend permissions. */
+.slider-training-overview {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), transparent 38%),
+    rgba(15, 23, 42, 0.48);
+}
+
+.slider-training-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.slider-training-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 5px 9px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.72);
+  color: #dbeafe;
+  font-size: 0.66rem;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.slider-training-badge--ready {
+  border-color: rgba(16, 185, 129, 0.42);
+  background: rgba(6, 78, 59, 0.44);
+  color: #bbf7d0;
+}
+
+.slider-training-badge--active {
+  border-color: rgba(34, 211, 238, 0.42);
+  background: rgba(8, 47, 73, 0.50);
+  color: #a5f3fc;
+}
+
+.slider-training-badge--idle {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(30, 41, 59, 0.54);
+  color: #cbd5e1;
+}
+
+.slider-training-badge--power {
+  border-color: rgba(250, 204, 21, 0.34);
+  background: rgba(113, 63, 18, 0.38);
+  color: #fde68a;
+}
+
+.slider-training-badge--unlock {
+  border-color: rgba(168, 85, 247, 0.34);
+  background: rgba(76, 29, 149, 0.36);
+  color: #ddd6fe;
+}
+
+.slider-training-badge--locked {
+  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(127, 29, 29, 0.26);
+  color: #fecaca;
+}
+
+.slider-training-detail {
+  color: #cbd5e1;
+  font-size: 0.74rem;
+  line-height: 1.38;
+}
+
+.slider-training-detail strong {
+  color: #f8fafc;
+  font-weight: 900;
+}
+
+@media (max-width: 768px) {
+  .slider-training-overview {
+    padding: 10px;
+  }
+
+  .slider-training-badge {
+    font-size: 0.62rem;
+  }
+
+  .slider-training-detail {
+    font-size: 0.7rem;
+  }
+}
+
 /* =========================================================
    MERGE 2B + 3 — GLOBAL HEADER COMPRESSION + FAVORITE TRAITS
    ========================================================= */
@@ -2239,6 +2342,388 @@ hydrateSession();
       background: radial-gradient(circle, rgba(34,211,238,0.16), transparent 68%);
       pointer-events: none;
     }
+    /* Lab top quick-start cards.
+   DEVS FOR DECADES:
+   Visual-only helper area above the real Lab Control Panel.
+   These cards only call existing tab navigation and do not decide rewards,
+   ownership, timers, DSPOINC, marketplace state, or backend permissions. */
+.lab-quickstart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.lab-quickstart-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 112px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.10), transparent 42%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.56));
+  color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lab-quickstart-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34, 211, 238, 0.42);
+  box-shadow: 0 16px 34px rgba(2, 132, 199, 0.14);
+}
+
+.lab-quickstart-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 14px;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.20);
+  font-size: 1.15rem;
+}
+
+.lab-quickstart-content {
+  display: grid;
+  gap: 6px;
+}
+
+.lab-quickstart-content strong {
+  font-size: 0.95rem;
+  line-height: 1.2;
+  color: #f8fafc;
+}
+
+.lab-quickstart-content small {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #cbd5e1;
+}
+
+.lab-verification-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  background:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.14), transparent 40%),
+    rgba(15, 23, 42, 0.62);
+}
+
+.lab-verification-strip strong,
+.lab-verification-strip span {
+  display: block;
+}
+
+.lab-verification-strip strong {
+  color: #f8fafc;
+  font-size: 0.95rem;
+}
+
+.lab-verification-strip span {
+  margin-top: 4px;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.lab-verification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Lab member helper panel.
+   DEVS FOR DECADES:
+   Visual/navigation-only helper beside the Lab Quick Start.
+   These links do not decide login state, ownership, rewards, DSPOINC,
+   inventory, timers, marketplace state, or verification results.
+   Discord login uses getDiscordLoginUrl(), matching the common auth flow. */
+.lab-member-helper-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 100%;
+}
+
+.lab-member-helper-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 18px;
+  border: 1px solid rgba(250, 204, 21, 0.20);
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.16), transparent 42%),
+    radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.14), transparent 38%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.78));
+  box-shadow: var(--shadow);
+}
+
+.lab-member-helper-hero::after {
+  content: "🐭";
+  position: absolute;
+  right: 18px;
+  bottom: -10px;
+  font-size: 5rem;
+  opacity: 0.10;
+  pointer-events: none;
+}
+
+.lab-member-helper-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 7px 11px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  background: rgba(8, 47, 73, 0.46);
+  color: #67e8f9;
+  font-size: 0.66rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lab-member-helper-title {
+  margin-top: 14px;
+  font-size: 1.25rem;
+  line-height: 1.15;
+  font-weight: 950;
+  color: #f8fafc;
+}
+
+.lab-member-helper-copy {
+  margin-top: 8px;
+  max-width: 34rem;
+  color: #cbd5e1;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.lab-member-action-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.lab-member-action {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.58);
+  color: #f8fafc;
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lab-member-action:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, 0.38);
+  background: rgba(8, 47, 73, 0.52);
+  box-shadow: 0 12px 26px rgba(14, 165, 233, 0.10);
+}
+
+.lab-member-action.primary {
+  border-color: rgba(250, 204, 21, 0.38);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.92));
+  color: #0f172a;
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.18);
+}
+
+.lab-member-action.primary:hover {
+  border-color: rgba(254, 240, 138, 0.72);
+  background: linear-gradient(135deg, rgba(250, 204, 21, 1), rgba(249, 115, 22, 0.96));
+}
+
+.lab-member-action-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.lab-member-action-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.lab-member-action-text strong {
+  font-size: 0.86rem;
+  line-height: 1.15;
+}
+
+.lab-member-action-text small {
+  color: inherit;
+  opacity: 0.78;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.lab-member-helper-tip {
+  border-radius: 18px;
+  padding: 14px;
+  border: 1px solid rgba(16, 185, 129, 0.20);
+  background:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 42%),
+    rgba(15, 23, 42, 0.58);
+}
+
+.lab-member-helper-tip strong {
+  display: block;
+  color: #bbf7d0;
+  font-size: 0.86rem;
+}
+
+.lab-member-helper-tip span {
+  display: block;
+  margin-top: 5px;
+  color: #cbd5e1;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+/* Lab Quick Start typography polish.
+   DEVS FOR DECADES:
+   Visual-only readability fix for the top Lab helper area.
+   This does not control tab switching, Discord login, rewards, ownership,
+   DSPOINC, verification, inventory, marketplace state, or backend permissions. */
+.lab-command-panel,
+.lab-member-helper-panel,
+.lab-quickstart-card,
+.lab-member-action,
+.lab-verification-strip {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.lab-command-panel h2,
+.lab-member-helper-title {
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.lab-command-panel h2 {
+  margin: 10px 0 6px;
+  font-size: clamp(1.05rem, 1.45vw, 1.38rem);
+  line-height: 1.16;
+  font-weight: 900;
+  color: #f8fafc;
+  letter-spacing: -0.015em;
+}
+
+.lab-command-panel > p,
+.lab-member-helper-copy {
+  max-width: 58rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.lab-login-note {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  font-weight: 750;
+}
+
+.lab-quickstart-card {
+  min-height: 120px;
+}
+
+.lab-quickstart-content strong,
+.lab-member-action-text strong,
+.lab-verification-strip strong,
+.lab-member-helper-tip strong {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+}
+
+.lab-quickstart-content strong {
+  font-size: 0.98rem;
+  line-height: 1.18;
+}
+
+.lab-quickstart-content small {
+  font-size: 0.79rem;
+  line-height: 1.48;
+  color: #d7e3f4;
+}
+
+.lab-member-helper-title {
+  font-size: clamp(1.1rem, 1.55vw, 1.42rem);
+  line-height: 1.12;
+  font-weight: 950;
+  color: #f8fafc;
+}
+
+.lab-member-action-text strong {
+  font-size: 0.92rem;
+  line-height: 1.15;
+}
+
+.lab-member-action-text small {
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.lab-member-action.primary .lab-member-action-text strong,
+.lab-member-action.primary .lab-member-action-text small {
+  color: #111827;
+  text-shadow: none;
+}
+
+.lab-verification-strip span,
+.lab-member-helper-tip span {
+  font-size: 0.79rem;
+  line-height: 1.45;
+  color: #d7e3f4;
+}
+
+.lab-member-helper-kicker,
+.hero-kicker,
+.chip {
+  line-height: 1.1;
+}
+
+
+
+@media (max-width: 900px) {
+  .lab-quickstart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-verification-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .lab-verification-actions {
+    justify-content: flex-start;
+  }
+}
     .lab-command-summary {
       display: flex;
       flex-wrap: wrap;
@@ -7455,9 +7940,7 @@ body.lab-season12-shell {
           <div>
             <h1 class="text-3xl md:text-5xl font-black tracking-tight">Narrrf’s Lab</h1>
             <p class="mt-2 max-w-4xl text-sm md:text-base text-slate-300">
-  A player-facing laboratory for verified Genesis NFT identity, trait progression,
-  Genetic items, custom names, marketplace history, and permanent holder progress.
-  Seasonal leaderboards can reset — Lab progression stays safe.
+  Upgrade your verified Genesis mice, claim Lab rewards, manage Genetic Items, and keep your holder progress safe across every season.
 </p>
           </div>
         </div>
@@ -7469,63 +7952,124 @@ body.lab-season12-shell {
       </div>
     </header>
 
-    <div class="lab-command-header">
+        <div class="lab-command-header">
       <section class="lab-command-panel">
         <div class="hero-badge-row">
-          <span class="hero-kicker">🧬 Lab Command Center</span>
-          <span class="chip">🎯 Action-first navigation</span>
-          <span class="chip">🛡️ Stable backend flow</span>
+          <span class="hero-kicker">🧬 Genesis Lab Quick Start</span>
+          <span class="chip">🎯 Choose one action</span>
+          <span class="chip">🛡️ Backend-safe progress</span>
         </div>
-        <div class="mt-4 max-w-4xl">
-          <h2 class="text-3xl md:text-4xl font-black tracking-tight">Start fast, understand fast, and keep every Lab lane clean.</h2>
-          <p class="mt-3 text-sm md:text-base text-slate-200 max-w-3xl">Narrrf’s Lab now opens as a command center: verify access, jump into My Genesis Lab, monitor research, and manage the Discord-bound Genetic lane without mixing systems or burying the real tools under giant intro walls.</p>
+
+        <h2>What do you want to do today?</h2>
+<p>
+  Choose the path you need now. Upgrade a mouse, check timers, buy Genetic Items, or open the guide when something is unclear.
+</p>
+
+        <div id="sessionNotice" class="lab-login-note">
+  Checking your Discord Lab session…
+</div>
+
+        <div class="lab-quickstart-grid">
+          <button type="button" class="lab-quickstart-card" onclick="switchLabTab('my-genesis')">
+            <span class="lab-quickstart-icon">🧬</span>
+            <span class="lab-quickstart-content">
+              <strong>Upgrade my Genesis mouse</strong>
+              <small>Select a verified mouse, research real traits, unlock Fitness progress, and open milestone chests.</small>
+            </span>
+          </button>
+
+          <button type="button" class="lab-quickstart-card" onclick="switchLabTab('research-queue')">
+            <span class="lab-quickstart-icon">⏱️</span>
+            <span class="lab-quickstart-content">
+              <strong>Check active research</strong>
+              <small>See running timers, claim-ready upgrades, boosted research, and the fastest next action.</small>
+            </span>
+          </button>
+
+          <button type="button" class="lab-quickstart-card" onclick="switchLabTab('genetic-shop')">
+            <span class="lab-quickstart-icon">🛒</span>
+            <span class="lab-quickstart-content">
+              <strong>Buy Genetic Items</strong>
+              <small>Open the Genetic Shop to buy missing Discord-bound Outfit and Accessories trait items.</small>
+            </span>
+          </button>
+
+          <button type="button" class="lab-quickstart-card" onclick="switchLabTab('knowledge')">
+            <span class="lab-quickstart-icon">📚</span>
+            <span class="lab-quickstart-content">
+              <strong>Learn how the Lab works</strong>
+              <small>Understand Genesis traits, Fitness rewards, Weapon rewards, Genetic Items, and marketplace rules.</small>
+            </span>
+          </button>
         </div>
-        <div id="sessionNotice" class="info text-sm mt-4">Resolving player session...</div>
-        <div id="labEntryActions" class="mt-4"></div>
-        <div class="lab-command-summary">
-          <span class="chip">🧬 Genesis = NFT-bound</span>
-          <span class="chip">🎒 Genetic = user-bound</span>
-          <span class="chip">⏱️ Queue = action hub</span>
-          <span class="chip">📚 Knowledge = help layer</span>
-        </div>
-        <div class="lab-command-actions">
-          <a class="btn primary inline-flex items-center justify-center" href="#lab-tab-my-genesis">🧪 Open My Genesis Lab</a>
-          <a class="btn inline-flex items-center justify-center" href="#lab-tab-research-queue">⏱️ Open Research Queue</a>
-          <a class="btn success inline-flex items-center justify-center" href="stake-lab.html">✅ Open Stake Lab</a>
-          <a class="btn inline-flex items-center justify-center" href="profile.html">👤 Open Profile</a>
-        </div>
+
+        <div class="lab-verification-strip">
+          <div>
+            <strong>Need to verify or refresh your Genesis collection?</strong>
+            <span>Open your Profile verification section, connect your wallet, save your verified Genesis scan, then return here.</span>
+          </div>
+          <div class="lab-verification-actions">
+            <a class="btn primary" href="profile.html?verify=1#holder-verification">✅ Verify / Refresh Genesis</a>
+            <a class="btn ghost" href="profile.html">👤 Open Profile</a>
+          </div>
+               </div>
       </section>
 
-      <aside class="lab-command-panel">
-        <div class="section-title text-xl md:text-2xl"><span>🗺️</span><span>Choose a workspace</span></div>
-        <div class="space-y-3 mt-4">
-          <details class="overview-help-toggle" open>
-            <summary>Start in My Genesis Lab</summary>
-            <div class="overview-help-grid">
-              <div class="feature-item"><strong class="text-cyan-300">Best when</strong><div class="mt-2 text-sm text-slate-200">You want to reach your verified collection fast, switch mice quickly, and upgrade without scrolling through helper blocks first.</div></div>
-              <div class="feature-item"><strong class="text-amber-300">Fast path</strong><div class="mt-2 text-sm text-slate-200">Slider → Selected mouse → Trait chamber. Boosters and chamber expansion stay lower so the core workflow stays near the top.</div></div>
-              <div class="feature-item"><strong class="text-emerald-300">Main action</strong><div class="mt-2 text-sm text-slate-200"><a class="btn primary inline-flex items-center justify-center mt-2" href="#lab-tab-my-genesis">🧪 Open My Genesis Lab</a></div></div>
-              <div class="feature-item"><strong class="text-violet-300">Good for</strong><div class="mt-2 text-sm text-slate-200">Verified holders who want the shortest route from selection to upgrade.</div></div>
-            </div>
-          </details>
-          <details class="overview-help-toggle">
-            <summary>Then use Research Queue</summary>
-            <div class="overview-help-grid">
-              <div class="feature-item"><strong class="text-cyan-300">Best when</strong><div class="mt-2 text-sm text-slate-200">You are returning to claim, check timers, or find which mouse needs attention next.</div></div>
-              <div class="feature-item"><strong class="text-amber-300">Fast path</strong><div class="mt-2 text-sm text-slate-200">Claim ready upgrades first, then jump back into My Genesis when you want to start the next trait or ability action.</div></div>
-              <div class="feature-item"><strong class="text-emerald-300">Main action</strong><div class="mt-2 text-sm text-slate-200"><a class="btn inline-flex items-center justify-center mt-2" href="#lab-tab-research-queue">⏱️ Open Research Queue</a></div></div>
-              <div class="feature-item"><strong class="text-violet-300">Good for</strong><div class="mt-2 text-sm text-slate-200">Repeat visits where you do not need the whole Genesis viewer first.</div></div>
-            </div>
-          </details>
-          <details class="overview-help-toggle">
-            <summary>How Lab works for new players</summary>
-            <div class="overview-help-grid">
-              <div class="feature-item"><strong class="text-cyan-300">1. Verify</strong><div class="mt-2 text-sm text-slate-200">Connect holder identity and keep your saved Genesis scan current.</div></div>
-              <div class="feature-item"><strong class="text-amber-300">2. Choose a mouse</strong><div class="mt-2 text-sm text-slate-200">Use the verified collection slider and quick select to open one mouse at a time.</div></div>
-              <div class="feature-item"><strong class="text-emerald-300">3. Start research</strong><div class="mt-2 text-sm text-slate-200">Use exact scanned traits or the ability matrix without mixing NFT and user-bound systems.</div></div>
-              <div class="feature-item"><strong class="text-violet-300">4. Claim power</strong><div class="mt-2 text-sm text-slate-200">Return to queue or the selected chamber when timers are ready to claim.</div></div>
-            </div>
-          </details>
+      <aside class="lab-member-helper-panel" aria-label="Lab member helper">
+        <div class="lab-member-helper-hero">
+          <div class="lab-member-helper-kicker">🧀 Member Helper</div>
+
+          <div class="lab-member-helper-title">Make your Lab session easier.</div>
+          <p class="lab-member-helper-copy">
+            Login with Discord, open your profile, compare the strongest Genesis mice,
+            or jump into the Season 12 leaderboards without searching through the whole site.
+          </p>
+
+          <div class="lab-member-action-grid">
+            <a
+              class="lab-member-action primary"
+              href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
+              onclick="event.preventDefault(); window.location.href = getDiscordLoginUrl();"
+            >
+              <span class="lab-member-action-icon">🔐</span>
+              <span class="lab-member-action-text">
+                <strong>Login with Discord</strong>
+                <small>Sync your player profile, rewards, and Lab access.</small>
+              </span>
+            </a>
+
+            <a class="lab-member-action" href="profile.html">
+              <span class="lab-member-action-icon">👤</span>
+              <span class="lab-member-action-text">
+                <strong>Open Profile</strong>
+                <small>Check rewards, inventory, stats, and holder tools.</small>
+              </span>
+            </a>
+
+            <a class="lab-member-action" href="strongest-genesis-mice.html">
+              <span class="lab-member-action-icon">🏆</span>
+              <span class="lab-member-action-text">
+                <strong>Strongest Genesis Mice</strong>
+                <small>See named mice ranked by Lab power and progression.</small>
+              </span>
+            </a>
+
+            <a class="lab-member-action" href="leaderboard.html">
+              <span class="lab-member-action-icon">📊</span>
+              <span class="lab-member-action-text">
+                <strong>Season 12 Leaderboards</strong>
+                <small>Compare game scores, DSPOINC earners, and ecosystem ranks.</small>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <div class="lab-member-helper-tip">
+          <strong>Happy mouse tip</strong>
+          <span>
+            New holders usually start with My Genesis Lab, then check Research Queue.
+            Reward hunters should look for Fitness and Weapon chests after upgrades.
+          </span>
         </div>
       </aside>
     </div>
@@ -8080,9 +8624,9 @@ body.lab-season12-shell {
           <div class="glass p-5 md:p-6">
             <div class="section-title text-xl"><span>📦</span><span>Inventory rules</span></div>
             <div class="genetic-helper-list">
-              <div class="genetic-helper-item"><div class="genetic-helper-item">One Discord user can own up to <strong>2 copies of the same exact trait</strong> per type/value combination, so one copy can be upgraded while another can be listed for sale.</div></div>
+              <div class="genetic-helper-item">One Discord user can own up to <strong>2 copies of the same exact trait</strong> per type/value combination, so one copy can be upgraded while another can be listed for sale.</div>
               <div class="genetic-helper-item">Bought traits stay separate from NFT-bound Genesis progression and never overwrite on-chain identity.</div>
-              <div class="genetic-helper-item"><div class="genetic-helper-item">Listed items stay visible here with a <strong>Listed for Sale</strong> badge, but cannot be upgraded, claimed, boosted, or instant-finished while listed.</div></div>
+              <div class="genetic-helper-item">Listed items stay visible here with a <strong>Listed for Sale</strong> badge, but cannot be upgraded, claimed, boosted, or instant-finished while listed.</div>
             </div>
           </div>
 
@@ -8090,7 +8634,7 @@ body.lab-season12-shell {
             <div class="section-title text-xl"><span>⏭️</span><span>Upgrade station roadmap</span></div>
             <div class="genetic-helper-list">
               <div class="genetic-helper-item">Sprint 3A now activates start and claim actions directly inside Genetic Inventory.</div>
-              <div class="genetic-helper-item"><div class="genetic-helper-item">Instant Finish, booster usage, and marketplace listing are active tools, but each action stays backend-authoritative and scoped to the selected Genetic Item.</div></div>
+              <div class="genetic-helper-item">Instant Finish, booster usage, and marketplace listing are active tools, but each action stays backend-authoritative and scoped to the selected Genetic Item.</div>
               <div class="genetic-helper-item">This keeps the live Genesis chamber stable while the new user-bound progression loop grows beside it.</div>
             </div>
           </div>
@@ -8215,93 +8759,7 @@ body.lab-season12-shell {
 <div id="geneticMarketplaceSidePanel" class="space-y-5"></div>
 </section>
 
-<section id="lab-panel-knowledge" class="lab-tab-panel" hidden>
-  <div class="knowledge-grid">
-    <div class="glass p-5 md:p-6">
-      <div class="section-title text-xl md:text-2xl"><span>📚</span><span>Lab Knowledge</span></div>
-      <p class="mt-2 text-sm md:text-base text-slate-300">
-        Narrrf’s Lab now runs two clean progression lanes: Genesis NFT-bound research and Discord-bound Genetic Items. Both stay additive, stable, and backend-authoritative.
-      </p>
-    </div>
 
-    <div class="glass p-5 md:p-6">
-      <div class="section-title text-xl"><span>🧬</span><span>Genetic System Basics</span></div>
-      <div class="genetic-helper-list">
-        <div class="genetic-helper-item">Genetic Shop lets Discord-logged-in players buy missing Outfit and Accessories traits directly into Discord-bound inventory.</div>
-        <div class="genetic-helper-item">Genetic Inventory supports start, claim, instant finish, and shared Lab booster actions without mutating on-chain NFT identity.</div>
-        <div class="genetic-helper-item"><div class="genetic-helper-item">Marketplace listings transfer the full owned item state between players while respecting the 2-copy exact-trait ownership limit.</div></div>
-      </div>
-    </div>
-
-    <div class="glass p-5 md:p-6">
-  <div class="section-title text-xl"><span>⚡</span><span>Genesis Ability Matrix</span></div>
-  <div class="genetic-helper-list">
-    <div class="genetic-helper-item">
-      Each verified Genesis mouse now owns a <strong>9-stat ability matrix</strong> split into Fitness, Weapons, and Education categories.
-    </div>
-    <div class="genetic-helper-item">
-      Ability progression is <strong>NFT-bound</strong> and never mixed with Discord-bound Genetic items.
-    </div>
-    <div class="genetic-helper-item">
-      Only <strong>one active ability upgrade per Genesis mouse</strong> can run at a time.
-    </div>
-    <div class="genetic-helper-item">
-  Unlocks depend on the <strong>highest single Genesis trait level</strong> on that specific mouse: Fitness at Lv5+, Weapons at Lv20+, and Education at Lv30+.
-</div>
-    <div class="genetic-helper-item">
-      Ability upgrades consume <strong>DSPOINC</strong> and run on timed research cycles similar to Lab traits.
-    </div>
-  </div>
-
-  <!-- 🚧 FUTURE UI MOUNT POINT -->
-  <div id="genesisAbilityPanel" class="mt-5">
-    <!-- 
-      Genesis Ability UI will be rendered here.
-
-      Expected structure:
-      - Tabs: Fitness / Weapons / Education
-      - 9 ability cards
-      - Upgrade buttons
-      - Lock states
-      - Active upgrade state
-
-      IMPORTANT:
-      - This must connect to:
-        GET  /api/user/get-nft-ability-upgrades.php
-        POST /api/user/start-nft-ability-upgrade.php
-    -->
-  </div>
-</div>
-
-    <div class="glass p-5 md:p-6">
-      <div class="section-title text-xl"><span>🏛️</span><span>Design Rules</span></div>
-      <div class="genetic-helper-list">
-        <div class="genetic-helper-item">Genesis progression is NFT-bound and remains the source of truth for on-chain mice upgrades.</div>
-        <div class="genetic-helper-item">Genetic progression is user-bound and always separate from NFT traits.</div>
-        <div class="genetic-helper-item">Catalog rows define item identity and media. Owned rows define level, runtime, and listing state.</div>
-      </div>
-    </div>
-
-    <div class="glass p-5 md:p-6">
-      <div class="section-title text-xl"><span>🏪</span><span>Marketplace Knowledge</span></div>
-      <div class="genetic-helper-list">
-        <div class="genetic-helper-item">Listings are for idle items only.</div>
-        <div class="genetic-helper-item">Buyers cannot receive a duplicate exact trait_type + trait_value.</div>
-        <div class="genetic-helper-item">DSPOINC economy stays isolated from NFT verification and staking logic.</div>
-      </div>
-    </div>
-
-    <div class="glass p-5 md:p-6">
-      <div class="section-title text-xl"><span>❓</span><span>Common Lab questions</span></div>
-      <div class="knowledge-faq-grid mt-4">
-        <div class="knowledge-faq-card"><strong>Why can’t I see my Genesis mouse?</strong><div class="text-sm text-slate-300">Use Stake Lab to verify or refresh saved Genesis scans, then return to My Genesis Lab.</div></div>
-        <div class="knowledge-faq-card"><strong>Why can’t two Genesis upgrades run at once?</strong><div class="text-sm text-slate-300">Genesis progression is NFT-bound and one active upgrade per mouse keeps progression clean and authoritative.</div></div>
-        <div class="knowledge-faq-card"><strong>Why is a Genetic item blocked from sale?</strong><div class="text-sm text-slate-300">Only idle Discord-bound items can be listed. Upgrading and claim-ready states stay blocked.</div></div>
-        <div class="knowledge-faq-card"><strong>What is NFT-bound vs user-bound?</strong><div class="text-sm text-slate-300">Genesis mice store progression on the NFT lane. Genetic items belong to the Discord profile lane.</div></div>
-      </div>
-    </div>
-  </div>
-</section>
 
     <section id="lab-panel-research-queue" class="lab-tab-panel" hidden>
       <div class="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-5">
@@ -8377,81 +8835,121 @@ body.lab-season12-shell {
       </div>
     </section>
 
-    <section id="lab-panel-knowledge" class="lab-tab-panel" hidden>
+        <section id="lab-panel-knowledge" class="lab-tab-panel" hidden>
       <div class="knowledge-grid">
         <div class="glass p-5 md:p-6">
-          <div class="section-title text-xl md:text-2xl"><span>📘</span><span>How the Lab works</span></div>
+          <div class="section-title text-xl md:text-2xl"><span>📘</span><span>Start Here: How the Lab works</span></div>
           <div class="feature-list">
-            <div class="feature-item">Your Lab reads from your saved verified Genesis scan, so your upgrades always start from your real verified mice.</div>
-            <div class="feature-item">Traits are upgraded one by one, using the exact trait values the selected Genesis mouse really has.</div>
-            <div class="feature-item">When a timer finishes, the upgrade becomes claimable and your new level is applied when you claim it.</div>
-            <div class="feature-item">The progression belongs to the NFT path itself, helping preserve long-term Genesis identity.</div>
-          </div>
-        </div>
-
-        <div class="glass p-5 md:p-6">
-          <div class="section-title text-xl md:text-2xl"><span>📈</span><span>Genesis Timing Guide</span></div>
-          <div class="feature-list">
-            <div class="feature-item"><strong>Level 1 → 2:</strong> 24 hours</div>
-            <div class="feature-item"><strong>Level 2 → 3:</strong> 48 hours</div>
-            <div class="feature-item"><strong>Level 3 → 4:</strong> 96 hours</div>
-            <div class="feature-item"><strong>Level 4 → 5:</strong> 192 hours (8 days)</div>
-            <div class="feature-item"><strong>Level 5 → 16:</strong> after 8 days, each next level adds 24 more hours</div>
-            <div class="feature-item"><strong>Level 16+:</strong> each next level adds only 1 more hour</div>
-            <div class="feature-item"><strong>Claim rule:</strong> finished research must always be claimed manually before the next cycle can begin</div>
-            <div class="feature-item"><strong>Instant Finish:</strong> spends DSPOINC to finish the active timer immediately. It is the direct convenience path and the backend always recalculates the final price.</div>
-<div class="feature-item"><strong>Elixir rule:</strong> Green, Blue, and Red Elixirs reduce active research time by fixed hours and consume 1 inventory item.</div>
-<div class="feature-item"><strong>Lootbox-only boosters:</strong> Elixirs are not sold directly in the store. They come from Reward Chamber lootboxes and special Lab reward drops.</div>
-<div class="feature-item"><strong>Economy rule:</strong> DSPOINC is used for direct Instant Finish, while Elixirs stay rare reward utility for long-term fairness.</div>
-          </div>
-        </div>
-
-        <div class="glass p-5 md:p-6">
-          <div class="section-title text-xl md:text-2xl"><span>🧬</span><span>Genetic System Quickstart</span></div>
-          <div class="feature-list">
-            <div class="feature-item">Genetic Shop lets players preview every seeded Outfit and Accessories trait and buy missing ones into a Discord-bound inventory.</div>
-            <div class="feature-item">Genetic Items do <strong>not</strong> mutate NFTs. They are owned by the verified Discord player profile and progress in a parallel system.</div>
-            <div class="feature-item">Genetic upgrades use the same progression philosophy as Genesis research, but they run at roughly double speed and currently cap at level 100.</div>
-            <div class="feature-item">The same Lab booster pool can now accelerate Genetic Items too, so the time-control layer stays unified across both systems.</div>
+            <div class="feature-item">Your Lab starts with your verified Genesis mice. Use the Holder Verify / Stake Lab flow first, then return here to manage the mice that are saved to your profile.</div>
+            <div class="feature-item">Select one Genesis mouse to inspect its real traits, current research level, ability progress, custom name, and available milestone reward chests.</div>
+            <div class="feature-item">Genesis trait upgrades are researched one by one. When a timer finishes, you must manually claim the finished research before starting the next upgrade.</div>
+            <div class="feature-item">The frontend explains and displays your progress, but the backend remains the authority for ownership, timers, reward eligibility, costs, claims, inventory, and DSPOINC ledger writes.</div>
           </div>
         </div>
 
         <div class="glass p-5 md:p-6">
           <div class="section-title text-xl md:text-2xl"><span>🧭</span><span>Two progression lanes</span></div>
           <div class="feature-list">
-            <div class="feature-item">
-            <strong>Genesis Lab:</strong> NFT-bound progression including both trait upgrades and the new Ability Matrix system, forming the long-term identity path of each mouse.
-           </div>
-            <div class="feature-item"><div class="feature-item"><strong>Genetic Inventory:</strong> Discord-bound, buyable trait items, faster user progression, and live marketplace transfer support.</div></div>
-            <div class="feature-item"><strong>Golden rule:</strong> the backend remains authoritative for ownership, timers, claim state, instant finish cost, and booster usage.</div>
-            <div class="feature-item"><strong>Safety rule:</strong> these two systems stay separated so live Genesis progression is never corrupted by the newer Genetic layer.</div>
+            <div class="feature-item"><strong>Genesis NFT Lane:</strong> Genesis trait levels, Genesis ability levels, custom mouse names, Fitness unlocks, Weapon unlocks, and future Education progression belong to the selected Genesis mouse path.</div>
+            <div class="feature-item"><strong>Discord Lab Inventory Lane:</strong> Genetic Items, Store Items, Elixirs, boosters, Reward Chamber drops, and marketplace-owned item state belong to the verified Discord player profile.</div>
+            <div class="feature-item"><strong>Important V1 rule:</strong> Genetic Items can support your Lab inventory, but they are not permanently equipped to one specific Genesis mouse yet.</div>
+            <div class="feature-item"><strong>Safety rule:</strong> The two lanes stay separated so newer Discord inventory systems cannot corrupt long-term Genesis NFT progression.</div>
           </div>
         </div>
 
         <div class="glass p-5 md:p-6">
-          <div class="section-title text-xl md:text-2xl"><span>🛠️</span><span>Action guide</span></div>
+          <div class="section-title text-xl md:text-2xl"><span>📈</span><span>Genesis unlock map</span></div>
           <div class="feature-list">
-            <div class="feature-item"><strong>Idle item:</strong> start the next upgrade cycle.</div>
-            <div class="feature-item"><strong>Upgrading item:</strong> watch the timer, use instant finish, or spend one of your shared Lab boosters.</div>
-            <div class="feature-item"><strong>Ready item:</strong> claim the completed level and send the row back to idle.</div>
-            <div class="feature-item"><strong>Next phase:</strong> marketplace listing, admin catalog tuning, and profile identity integration.</div>
+            <div class="feature-item"><strong>Trait Lv5+:</strong> Fitness lane becomes visible and your mouse starts entering the real long-term progression path.</div>
+            <div class="feature-item"><strong>Trait Lv10:</strong> Fitness Journey Chest unlocks with the 500 EMPIRE TOKEN reward.</div>
+            <div class="feature-item"><strong>Trait Lv15:</strong> Deep Training Fitness Chest unlocks with the Gun Special Genetic Item, or a DSPOINC fallback if the item cannot be granted again.</div>
+            <div class="feature-item"><strong>Trait Lv20:</strong> Final Fitness Journey Chest unlocks with the 1000 EMPIRE Token reward, and the Weapon Journey opens.</div>
+            <div class="feature-item"><strong>Trait Lv30 direction:</strong> Education is the future high-level knowledge lane and should stay treated as future expansion unless the backend/UI is explicitly activated.</div>
           </div>
         </div>
 
         <div class="glass p-5 md:p-6">
-          <div class="section-title text-xl md:text-2xl"><span>🧀</span><span>Holder benefits and future hints</span></div>
+          <div class="section-title text-xl md:text-2xl"><span>🎁</span><span>Fitness Journey reward chests</span></div>
           <div class="feature-list">
-            <div class="feature-item">Verified Genesis holdership opens the door to exclusive lab systems and future holder-first releases.</div>
-            <div class="feature-item">Research levels are being prepared for future ecosystem value in games, riddle journeys, and magical mouse events.</div>
-            <div class="feature-item">DSPOINC gives you optional speed when you want to finish research faster.</div>
-            <div class="feature-item">The Lab is becoming a core home for your long-term Genesis mouse progression, not just a one-time utility page.</div>
+            <div class="feature-item"><strong>Lv10 Fitness Chest:</strong> 500 EMPIRE TOKEN.</div>
+            <div class="feature-item"><strong>Lv15 Fitness Chest:</strong> Gun Special Genetic Item.</div>
+            <div class="feature-item"><strong>Lv15 fallback:</strong> 100,000 DSPOINC if the Gun Special Genetic Item is already owned or cannot be granted again.</div>
+            <div class="feature-item"><strong>Lv20 Fitness Chest:</strong> 1000 EMPIRE Token and the transition into the Weapon Journey.</div>
+            <div class="feature-item"><strong>Claim rule:</strong> Fitness Journey chests are one-time milestone rewards and the backend checks your verified Genesis ownership, required trait level, and previous claim history.</div>
           </div>
         </div>
-      </div>
 
-      <div class="glass p-5 md:p-6 mt-5 console-wrap">
-        <div class="section-title text-xl"><span>🛰️</span><span>Lab Runtime Log</span></div>
-        <div id="labConsole" class="console mt-4"></div>
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl md:text-2xl"><span>⚔️</span><span>Weapon Journey reward chests</span></div>
+          <div class="feature-list">
+            <div class="feature-item"><strong>Unlock rule:</strong> Weapon rewards require your selected Genesis mouse path to reach highest Genesis trait level Lv20 first.</div>
+            <div class="feature-item"><strong>Weapon lanes:</strong> ATK, DEF, and SPECIAL each have their own ability level progress and milestone reward checks.</div>
+            <div class="feature-item"><strong>Lv1 Weapon chests:</strong> ATK Lv1, DEF Lv1, and SPECIAL Lv1 currently reward 25,000 DSPOINC each.</div>
+            <div class="feature-item"><strong>Higher milestones:</strong> Weapon Lv5, Lv10, Lv25, and Lv50 milestone tiers exist, but they stay locked until the matching ability reaches the required level.</div>
+            <div class="feature-item"><strong>Backend rule:</strong> A visible chest does not mean the frontend can grant it. The claim endpoint verifies ability category, ability level, ownership, duplicate claim state, and DSPOINC delivery.</div>
+          </div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl md:text-2xl"><span>⏱️</span><span>Research timing and speed-ups</span></div>
+          <div class="feature-list">
+            <div class="feature-item"><strong>Level 1 → 2:</strong> 24 hours.</div>
+            <div class="feature-item"><strong>Level 2 → 3:</strong> 48 hours.</div>
+            <div class="feature-item"><strong>Level 3 → 4:</strong> 96 hours.</div>
+            <div class="feature-item"><strong>Level 4 → 5:</strong> 192 hours / 8 days.</div>
+            <div class="feature-item"><strong>Level 5 → 16:</strong> after 8 days, each next level adds 24 more hours.</div>
+            <div class="feature-item"><strong>Level 16+:</strong> each next level adds only 1 more hour.</div>
+            <div class="feature-item"><strong>Instant Finish:</strong> spends DSPOINC to finish an active timer immediately. The backend always recalculates the final price.</div>
+            <div class="feature-item"><strong>Elixirs:</strong> Green, Blue, and Red Elixirs reduce active research time by fixed hours and consume 1 inventory item.</div>
+            <div class="feature-item"><strong>Lootbox-only utility:</strong> Elixirs are not sold directly in the store. They come from Reward Chamber lootboxes and special Lab reward drops.</div>
+          </div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl md:text-2xl"><span>🧬</span><span>Genetic Items and Marketplace rules</span></div>
+          <div class="feature-list">
+            <div class="feature-item">Genetic Shop lets Discord-logged-in players buy missing Outfit and Accessories trait items into their Discord-bound Lab inventory.</div>
+            <div class="feature-item">Genetic Items do <strong>not</strong> mutate on-chain Genesis NFTs. They progress in the parallel Discord inventory lane.</div>
+            <div class="feature-item">Genetic Item upgrades are timed research. Normal start upgrades are free timed research, while Instant Finish is the paid DSPOINC shortcut.</div>
+            <div class="feature-item">Marketplace listings transfer the full owned item state between players while respecting the 2-copy exact-trait ownership limit.</div>
+            <div class="feature-item">Listed Genetic Items cannot be upgraded, claimed, boosted, or instant-finished until they are no longer listed.</div>
+          </div>
+        </div>
+
+        <div class="glass p-5 md:p-6">
+          <div class="section-title text-xl md:text-2xl"><span>❓</span><span>Common Lab questions</span></div>
+          <div class="knowledge-faq-grid mt-4">
+            <div class="knowledge-faq-card">
+              <strong>Why can’t I see my Genesis mouse?</strong>
+              <div class="text-sm text-slate-300">Verify or refresh your Genesis scan first, then return to My Genesis Lab. The Lab only works from verified saved ownership data.</div>
+            </div>
+
+            <div class="knowledge-faq-card">
+              <strong>Why can’t I start another Genesis upgrade?</strong>
+              <div class="text-sm text-slate-300">Genesis progression allows one active research cycle per mouse path. Claim finished research first, then start the next cycle.</div>
+            </div>
+
+            <div class="knowledge-faq-card">
+              <strong>Why can’t I claim a Fitness chest?</strong>
+              <div class="text-sm text-slate-300">Your selected Genesis mouse has not reached the required trait level yet, or that one-time milestone chest was already claimed.</div>
+            </div>
+
+            <div class="knowledge-faq-card">
+              <strong>Why can’t I claim a Weapon chest?</strong>
+              <div class="text-sm text-slate-300">Weapon chests require Trait Lv20 first, then the matching ATK, DEF, or SPECIAL ability level for that milestone.</div>
+            </div>
+
+            <div class="knowledge-faq-card">
+              <strong>Why did I get DSPOINC instead of an item?</strong>
+              <div class="text-sm text-slate-300">Some rewards use a fallback when an item is already owned or cannot be granted again. The backend decides the safe delivery path.</div>
+            </div>
+
+            <div class="knowledge-faq-card">
+              <strong>What is NFT-bound vs Discord-bound?</strong>
+              <div class="text-sm text-slate-300">Genesis traits and abilities belong to the Genesis mouse path. Genetic Items and reward inventory belong to the Discord profile lane.</div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -9912,6 +10410,150 @@ function getNftActiveUpgradeRow(nft) {
   return normalizeNftTraits(nft)
     .map((trait) => getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait))
     .find((row) => row && mapUpgradeStatus(row.upgrade_status, row.upgrade_ends_at) === 'upgrading') || null;
+}
+
+/**
+ * Build a compact training overview for one Genesis mouse slider card.
+ *
+ * Plain language for DEVS:
+ * This is display-only. It uses already-loaded Lab state so members can see
+ * training status directly inside the Verified Collection Slider.
+ * Backend APIs remain authoritative for ownership, timers, claim state,
+ * rewards, DSPOINC, inventory, ability unlocks, and all final actions.
+ */
+function getNftSliderTrainingOverview(nft, summary = null) {
+  const traits = normalizeNftTraits(nft);
+  const rows = traits
+    .map((trait) => getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait))
+    .filter(Boolean);
+
+  const activeRows = rows.filter((row) =>
+    mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at) === 'upgrading'
+  );
+
+  const readyRows = rows.filter((row) =>
+    mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at) === 'ready'
+  );
+
+  const highestRow = rows.reduce((best, row) => {
+    const rowLevel = Math.max(1, safeNumber(row?.current_level, 1));
+    const bestLevel = best ? Math.max(1, safeNumber(best?.current_level, 1)) : 0;
+    return rowLevel > bestLevel ? row : best;
+  }, null);
+
+  const highestLevel = highestRow
+    ? Math.max(1, safeNumber(highestRow?.current_level, 1))
+    : 1;
+
+  const activeRow = activeRows[0] || null;
+  const readyRow = readyRows[0] || null;
+  const totalLevels = Number(summary?.totalLevels || 0);
+  const traitCount = Number(summary?.traitCount || traits.length || 0);
+
+  let unlockBadge = {
+    tone: 'locked',
+    icon: '🔒',
+    label: 'Fitness locked'
+  };
+
+  if (highestLevel >= 30) {
+    unlockBadge = {
+      tone: 'unlock',
+      icon: '📚',
+      label: 'Education path'
+    };
+  } else if (highestLevel >= 20) {
+    unlockBadge = {
+      tone: 'unlock',
+      icon: '⚔️',
+      label: 'Weapons open'
+    };
+  } else if (highestLevel >= 10) {
+    unlockBadge = {
+      tone: 'unlock',
+      icon: '🎁',
+      label: 'Fitness chests'
+    };
+  } else if (highestLevel >= 5) {
+    unlockBadge = {
+      tone: 'unlock',
+      icon: '💪',
+      label: 'Fitness open'
+    };
+  }
+
+  const primaryBadge = readyRows.length
+    ? {
+        tone: 'ready',
+        icon: '🎁',
+        label: `Claim ready ${formatNumber(readyRows.length)}`
+      }
+    : activeRows.length
+      ? {
+          tone: 'active',
+          icon: '⏳',
+          label: `Training ${formatNumber(activeRows.length)}`
+        }
+      : {
+          tone: 'idle',
+          icon: '😴',
+          label: 'Idle'
+        };
+
+  const badges = [
+    primaryBadge,
+    {
+      tone: 'power',
+      icon: '📈',
+      label: `Top Lv ${formatNumber(highestLevel)}`
+    },
+    unlockBadge
+  ];
+
+  let detail = 'No active training. Pick this mouse to start or review research.';
+
+  if (readyRow) {
+    detail = `${readyRow.trait_type || 'Trait'} is ready to claim at Lv ${formatNumber(safeNumber(readyRow.current_level, 1))}.`;
+  } else if (activeRow) {
+    detail = `${activeRow.trait_type || 'Trait'} training is active toward the next Lab level.`;
+  } else if (highestRow) {
+    detail = `Best trait: ${highestRow.trait_type || 'Trait'} Lv ${formatNumber(highestLevel)}.`;
+  }
+
+  return {
+    badges,
+    detail,
+    totalLevels,
+    traitCount
+  };
+}
+
+/**
+ * Render the compact training overview inside one slider card.
+ */
+function getNftSliderTrainingOverviewMarkup(nft, summary = null) {
+  const overview = getNftSliderTrainingOverview(nft, summary);
+
+  const badgeMarkup = overview.badges.map((badge) => `
+    <span class="slider-training-badge slider-training-badge--${escapeHtml(badge.tone)}">
+      <span>${escapeHtml(badge.icon)}</span>
+      <span>${escapeHtml(badge.label)}</span>
+    </span>
+  `).join('');
+
+  return `
+    <div class="slider-training-overview">
+      <div class="slider-training-badge-row">
+        ${badgeMarkup}
+      </div>
+      <div class="slider-training-detail">
+        <strong>Slider overview:</strong> ${escapeHtml(overview.detail)}
+      </div>
+      <div class="slider-training-detail">
+        Lab power ${escapeHtml(formatNumber(overview.totalLevels))} across ${escapeHtml(formatNumber(overview.traitCount))} scanned trait${overview.traitCount === 1 ? '' : 's'}.
+      </div>
+    </div>
+  `;
 }
 
     function renderLabEntryActions() {
@@ -11550,6 +12192,8 @@ ${getNftOriginalNameMarkup(nft)}
   </span>
 </div>
 </div>
+
+${getNftSliderTrainingOverviewMarkup(nft, summary)}
 
         <div class="nft-card-action-row">
           <button
