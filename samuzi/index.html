@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samuzi NFT — Phase 3 Mint Live on Gensuki</title>
-    <meta name="description" content="Samuzi NFT Phase 3 mint is live on Gensuki Launchpad. Join the next evolution of the Samuzian universe.">
-    <meta name="keywords" content="Samuzi NFT, SMZ, Web3, Solana, NFT, Phase 3, Coming Soon">
-    <meta property="og:title" content="Samuzi NFT — Phase 3 Mint Live on Gensuki">
-    <meta property="og:description" content="Phase 3 mint is live now on Gensuki Launchpad.">
+    <title>Samuzi NFT — Phase 3 Sold Out</title>
+<meta name="description" content="Samuzi NFT Phase 3 is officially sold out. Thank you to every holder, OG, WL member, partner, public minter, and supporter.">
+<meta property="og:title" content="Samuzi NFT — Phase 3 Sold Out">
+<meta property="og:description" content="Phase 3 is officially sold out. The next Samuzi chapter begins now.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#07070b">
 
@@ -592,6 +591,79 @@
     line-height: 1.7;
 }
 
+/* =========================================================
+   SAMUZI ROADMAP — Post Phase 3 growth extension
+   ========================================================= */
+
+.roadmap-growth-heading {
+    max-width: 980px;
+}
+
+.roadmap-growth-copy {
+    margin-top: 0.85rem;
+    margin-bottom: 0;
+    max-width: 940px;
+}
+
+.roadmap-growth-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.roadmap-phase4-card {
+    position: relative;
+    border-color: rgba(250, 204, 21, 0.34);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(250,204,21,0.16), transparent 36%),
+        linear-gradient(180deg, rgba(18,18,28,0.94), rgba(9,9,15,0.86));
+    box-shadow:
+        0 18px 58px rgba(0,0,0,0.42),
+        0 0 34px rgba(250,204,21,0.12);
+}
+
+.roadmap-phase4-card span {
+    color: #fde68a;
+}
+
+.roadmap-phase4-card h3 {
+    text-shadow:
+        0 0 18px rgba(250,204,21,0.16),
+        0 8px 24px rgba(0,0,0,0.54);
+}
+
+.roadmap-phase4-card::after {
+    content: "Next";
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    padding: 0.24rem 0.58rem;
+    border-radius: 999px;
+    color: #111827;
+    background: linear-gradient(135deg, #facc15, #f97316);
+    border: 1px solid rgba(250,204,21,0.62);
+    font-size: 0.68rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: 0 0 18px rgba(250,204,21,0.24);
+}
+
+@media (max-width: 1100px) {
+    .roadmap-growth-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .roadmap-growth-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .roadmap-phase4-card::after {
+        right: 0.85rem;
+        top: 0.85rem;
+    }
+}
+
 .final-cta-section {
     padding-bottom: 5rem;
 }
@@ -1108,6 +1180,95 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
+/* =========================================================
+   SAMUZI PHASE 3 SOLD OUT POSTER
+   Final sold-out announcement section
+   ========================================================= */
+
+.soldout-poster-section {
+    position: relative;
+    z-index: 4;
+    padding: 2.6rem 0;
+}
+
+.soldout-poster-panel {
+    display: grid;
+    grid-template-columns: minmax(360px, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(1.3rem, 3vw, 2.2rem);
+    align-items: center;
+    padding: clamp(1rem, 2.5vw, 1.7rem);
+    border-radius: 32px;
+    background:
+        radial-gradient(circle at 18% 0%, rgba(250,204,21,0.18), transparent 34%),
+        radial-gradient(circle at 90% 30%, rgba(225,29,72,0.20), transparent 36%),
+        linear-gradient(180deg, rgba(18,18,28,0.96), rgba(7,7,11,0.90));
+    border: 1px solid rgba(250,204,21,0.32);
+    box-shadow:
+        0 28px 96px rgba(0,0,0,0.62),
+        0 0 64px rgba(250,204,21,0.12);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+}
+
+.soldout-poster-image-wrap {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(250,204,21,0.36);
+    background: rgba(0,0,0,0.36);
+    box-shadow:
+        0 20px 62px rgba(0,0,0,0.52),
+        0 0 46px rgba(250,204,21,0.16);
+}
+
+.soldout-poster-image {
+    width: 100%;
+    display: block;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+.soldout-poster-copy {
+    padding: clamp(0.6rem, 2vw, 1.4rem);
+}
+
+.soldout-poster-copy h2 {
+    color: #ffffff;
+    font-size: clamp(2rem, 4.8vw, 4.6rem);
+    line-height: 0.95;
+    letter-spacing: -0.055em;
+    margin: 1rem 0 0.85rem;
+    text-shadow:
+        0 8px 26px rgba(0,0,0,0.68),
+        0 0 38px rgba(250,204,21,0.20);
+}
+
+.soldout-poster-copy p {
+    color: #dbe4f0;
+    line-height: 1.85;
+    font-size: 1.03rem;
+    max-width: 660px;
+}
+
+@media (max-width: 980px) {
+    .soldout-poster-panel {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .soldout-poster-section {
+        padding: 1.5rem 0;
+    }
+
+    .soldout-poster-panel {
+        border-radius: 24px;
+    }
+
+    .soldout-poster-copy .launch-actions a {
+        width: 100%;
+    }
+}
     </style>
 </head>
 
@@ -1136,16 +1297,16 @@
 <section class="mint-alert-bar mint-live-alert" aria-label="Samuzi Phase 3 mint announcement">
     <div class="mint-alert-inner">
         <div class="mint-alert-copy">
-           <span class="mint-alert-kicker">🚨 Final Mint Windows Are Live Now</span>
+           <span class="mint-alert-kicker">🚨 Samuzi NFT Phase 3 Sold Out</span>
 <div class="mint-alert-title">
-    Holder + OG <strong>Sold Out</strong> · WL, Partner + Public phases are <strong>LIVE NOW</strong> on Gensuki
+    Phase 3 is <strong>OFFICIALLY SOLD OUT</strong> · Thank you to every holder, OG, WL member, partner, and supporter
 </div>
         </div>
 
         <div class="mint-alert-actions">
-            <a href="#mint-schedule" class="mint-mini-btn primary">View Mint Details</a>
+            <a href="#mint-schedule" class="mint-mini-btn primary">View Sold Out Recap</a>
             <a href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer" class="mint-mini-btn primary mint-live-glow">
-    Mint on Gensuki Now
+    View on Gensuki
 </a>
         </div>
     </div>
@@ -1156,16 +1317,16 @@
     <div class="container">
         <div class="front-hero-grid">
             <div class="front-hero-copy">
-                <div class="brand-mark">🚨 FINAL MINT WINDOWS · LIVE NOW</div>
+                <div class="brand-mark">🚨 SAMUZI NFT PHASE 3 · SOLD OUT</div>
 
 <h1 class="launch-title">
-    Public Mint.
-    <span>Live Now.</span>
+    Phase 3.
+    <span>Sold Out.</span>
 </h1>
 
 <p class="launch-copy">
-    Holder Phase and OG Phase sold out fast. WL, partner, and public mint windows are now live on Gensuki Launchpad.
-    Remaining spots are FCFS — mint only through the official Gensuki link.
+    Samuzi NFT Phase 3 is officially sold out. Holder, OG, WL, partner, and public mint windows are complete.
+    Thank you to every holder, minter, partner community, supporter, and the full Samuzi family for making this milestone real.
 </p>
 
                 <div class="front-badges">
@@ -1177,69 +1338,69 @@
 
                 <div class="launch-actions">
                     <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-    🚨 Mint on Gensuki Now
+    🔥 View Sold Out Collection
 </a>
                     <a class="button-secondary" href="#mint-schedule">
-                        View Mint Details
-                    </a>
+    View Sold Out Recap
+</a>
                     <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
                         Join Discord
                     </a>
                 </div>
 
                 <div class="preview-lock-note mint-live-note">
-    🚨 Official mint is live now on Gensuki Launchpad. Use only the official link from this website or Samuzi channels.
+    🔥 Phase 3 is officially sold out. Thank you for using only official Samuzi and Gensuki links.
 </div>
             </div>
 
             <div class="front-hero-panel mint-live-panel">
-                <span class="panel-kicker">🧪 Mint Status Live</span>
-<h2>Public mint is live now.</h2>
+               <span class="panel-kicker">🏆 Mint Status</span>
+<h2>Phase 3 sold out.</h2>
 <p>
-    Holder and OG phases are sold out. WL, partner, and public mint windows are now open on Gensuki Launchpad.
-    Remaining spots are FCFS.
+    Holder, OG, WL, partner, and public windows have completed.
+    The Samuzi community delivered another full sellout and the next chapter now begins.
 </p>
 
 <div class="mint-signal-card mint-status-card">
     <div class="mint-status-grid">
-        <div class="mint-status-item sold">
-            <span>Holder Phase</span>
-            <strong>Sold Out</strong>
-            <small>15 / 15 minted</small>
-        </div>
-
-        <div class="mint-status-item sold">
-            <span>OG Phase</span>
-            <strong>Sold Out</strong>
-            <small>100 / 100 minted</small>
-        </div>
-
-        <div class="mint-status-item next hot">
-    <span>Current Windows</span>
-    <strong>Live Now</strong>
-    <small>WL · Partners · Public</small>
-</div>
-
-        <div class="mint-status-item">
-            <span>Mint Style</span>
-            <strong>FCFS</strong>
-            <small>First come, first served</small>
-        </div>
+    <div class="mint-status-item sold">
+        <span>Holder Phase</span>
+        <strong>Sold Out</strong>
+        <small>15 / 15 minted</small>
     </div>
 
-    <div class="mint-live-strip" aria-label="Samuzi final mint windows live status">
-    <strong>🚨 WL · Partner · Public Mint Live Now</strong>
-    <span>WL 0.062 SOL · Partners 0.053 SOL · Public 0.087 SOL · FCFS</span>
+    <div class="mint-status-item sold">
+        <span>OG Phase</span>
+        <strong>Sold Out</strong>
+        <small>100 / 100 minted</small>
+    </div>
+
+    <div class="mint-status-item sold">
+        <span>Phase 3</span>
+        <strong>Sold Out</strong>
+        <small>All mint windows completed</small>
+    </div>
+
+    <div class="mint-status-item">
+        <span>Next Chapter</span>
+        <strong>Loading</strong>
+        <small>Utility, rewards, and community growth</small>
+    </div>
+</div>
+
+<div class="mint-live-strip" aria-label="Samuzi Phase 3 sold out status">
+    <strong>🔥 Phase 3 Sold Out</strong>
+    <span>Every mint window is complete. Thank you holders, OGs, WL, partners, public minters, and the full Samuzi community.</span>
 </div>
 </div>
 
                 <div class="launch-actions mint-panel-actions">
     <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-        🚨 Mint Now
+        🔥 View on Gensuki
     </a>
 
     <a class="button-secondary mint-live-outline" href="#mint-schedule">
-        View Phases
+        View Sold Out Recap
     </a>
 </div>
             </div>
@@ -1252,7 +1413,7 @@
         <div class="mint-special-panel">
             <div class="mint-special-heading">
                 <span class="mint-pill">✨ What makes Phase 3 special?</span>
-                <h2>The next evolution of the Samuzian universe begins now.</h2>
+                <h2>The next evolution of the Samuzian universe has begun.</h2>
                 <p>
                     Get ready for one of the most powerful NFT drops of the season.
                     Phase 3 brings fresh character energy, cinematic artwork, and limited supply for true Samuzian holders.
@@ -1289,34 +1450,37 @@
     </div>
 </section>
 
-<section class="live-poster-section" aria-label="Samuzi WL and partner phase live announcement">
+
+
+<section class="soldout-poster-section" aria-label="Samuzi Phase 3 sold out announcement">
     <div class="container">
-        <div class="live-poster-panel">
-            <div class="live-poster-copy">
-                <span class="mint-pill">🚨 WL + Partner Phase Live</span>
-                <h2>WL & Partners phase is live now.</h2>
+        <div class="soldout-poster-panel">
+            <div class="soldout-poster-image-wrap">
+                <img
+                    src="./assets/soldout.gif"
+                    alt="Samuzi NFT Phase Three sold out"
+                    class="soldout-poster-image"
+                    loading="eager"
+                >
+            </div>
+
+            <div class="soldout-poster-copy">
+                <span class="mint-pill">🔥 Phase 3 Sold Out</span>
+                <h2>This is not the end. This is only the beginning.</h2>
                 <p>
-                    Holder and OG phases sold out fast. The next access wave is now open on Gensuki Launchpad.
-                    Remaining spots are FCFS — use only the official mint link.
+                    Phase 3 has officially sold out. Thank you to our holders, OGs, WL members,
+                    partner communities, public minters, Gensuki Launchpad, and every supporter who helped
+                    make this milestone possible.
                 </p>
 
                 <div class="launch-actions">
                     <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-                        🚨 Mint on Gensuki Now
+                        🔥 View on Gensuki
                     </a>
-                    <a class="button-secondary" href="#mint-schedule">
-                        View Mint Phases
+                    <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
+                        Join Discord
                     </a>
                 </div>
-            </div>
-
-            <div class="live-poster-image-wrap">
-                <img
-                    src="./assets/samuzi-wl-partners-live.jpg"
-                    alt="Samuzi NFT WL and Partners phase is live now"
-                    class="live-poster-image"
-                    loading="eager"
-                >
             </div>
         </div>
     </div>
@@ -1328,19 +1492,17 @@
             <div class="mint-heading-row">
                 <div>
                     <span class="mint-pill">🧪 Mint Command Center</span>
-                    <h2>WL, partner, and public mint are live now.</h2>
+                   <h2>Phase 3 mint completed.</h2>
 <p>
-    Samuzi Phase 3 is live and early access sold out faster than expected. Holder Phase and OG Phase are complete.
-    WL, partner, and public mint windows are now open on Gensuki Launchpad.
-    WL mint is 0.062 SOL, partner allocations receive a special 0.053 SOL community price, and public mint is 0.087 SOL.
-    All remaining phases are FCFS — once spots are gone, they are gone.
+    Samuzi NFT Phase 3 is officially sold out. Holder, OG, WL, partner, and public phases have completed.
+    Thank you to every community member, supporter, partner, and minter who helped make this another historic Samuzi milestone.
 </p>
                 </div>
 
                <div class="mint-main-date mint-main-status-live">
-    <span>Current Windows</span>
-    <strong>WL · Partners · Public Live</strong>
-    <small>WL 0.062 · Partners 0.053 · Public 0.087 SOL</small>
+    <span>Current Status</span>
+    <strong>Phase 3 Sold Out</strong>
+    <small>All mint windows completed</small>
 </div>
             </div>
 
@@ -1369,21 +1531,21 @@
 
                 <article class="mint-week-card mint-week-next">
     <div class="mint-week-top">
-        <span>Current Window · Live Now</span>
-<h3>WL + Partner Mint Live</h3>
-<p>WL and partner allocations are now open. Remaining spots are FCFS, so mint only through the verified Gensuki link.</p>
+        <span>Final Window · Completed</span>
+<h3>Public Mint Sold Out</h3>
+<p>Public mint is complete. Phase 3 is officially sold out.</p>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>3️⃣ WL Phase <em class="mint-status-tag next">Live Now</em></strong>
+                            <strong>3️⃣ WL Phase <em class="mint-status-tag sold">Sold Out</em></strong>
 <p><span class="price">0.062 SOL</span> · 100 spots · limit 15 per wallet</p>
 <p>For whitelisted members. Live now on Gensuki Launchpad.</p>
                         </div>
 
                         <div class="mint-phase partner-mint-phase">
     <span class="partner-mint-badge">Partner community price</span>
-    <strong>4️⃣ Partner Allocations <em class="mint-status-tag next">Live Now</em></strong>
-    <p><span class="price partner-price">0.053 SOL each</span> · special partner price · limit 15 per wallet · live now</p>
+    <strong>4️⃣ Partner Allocations <em class="mint-status-tag sold">Sold Out</em></strong>
+    <p><span class="price partner-price">0.053 SOL each</span> · special partner price · limit 15 per wallet · Sold Out</p>
     <div class="partner-list">
         <span>🔹 Narrrf Allocation: 50 spots · 0.053 SOL</span>
         <span>🔹 Coralix Allocation: 50 spots · 0.053 SOL</span>
@@ -1396,14 +1558,14 @@
 
                 <article class="mint-week-card mint-week-next">
     <div class="mint-week-top">
-        <span>Current Window · Live Now</span>
-<h3>Public Mint Live</h3>
-<p>Public mint is now open for everyone on Gensuki Launchpad.</p>
+       <span>Completed Window · Sold Out</span>
+<h3>WL + Partner Mint Sold Out</h3>
+<p>WL and partner allocations are complete. Phase 3 has officially sold out.</p>
                     </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>5️⃣ Public Mint <em class="mint-status-tag next">Live Now</em></strong>
+                            <strong>5️⃣ Public Mint <em class="mint-status-tag sold">Sold Out</em></strong>
 <p><span class="price">0.087 SOL</span> · open public mint · unlimited per wallet</p>
 <p>Open to everyone — no role required.</p>
                         </div>
@@ -1421,15 +1583,14 @@
 
             <div class="mint-notes">
                 <p>
-                    📌 <strong>Live Mint Update:</strong> Holder Phase and OG Phase are sold out.
-WL, partner, and public mint windows are live now on Gensuki Launchpad.
-WL mint is 0.062 SOL, partner allocations receive a special 0.053 SOL price, and public mint is 0.087 SOL.
-All remaining phases are FCFS, so use only the official Gensuki link.
+                    📌 <strong>Sold Out Update:</strong> Samuzi NFT Phase 3 is officially sold out.
+Holder, OG, WL, partner, and public mint windows are complete.
+Thank you to every holder, minter, partner community, supporter, and the full Samuzi family.
                 </p>
 
                 <div class="mint-cta-row">
                     <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-    🚨 Mint on Gensuki Now
+    🔥 View Sold Out Collection
 </a>
                     <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
                         Join Discord
@@ -1441,46 +1602,44 @@ All remaining phases are FCFS, so use only the official Gensuki link.
 </section>
 
     <section class="front-section">
-        <div class="container">
-            <div class="front-section-heading">
-                <span class="status-pill">About Samuzi NFT</span>
-                <h2 class="site-section-title">A lifestyle brand powered by digital assets.</h2>
-                <p class="site-section-copy">
-                    Samuzi is more than a collection. It is a Web3 movement built around creativity,
-                    rebellion, identity, and community-powered innovation.
-                </p>
+    <div class="container">
+        <div class="front-section-heading roadmap-growth-heading">
+            <span class="status-pill">Roadmap Highlights</span>
+            <h2 class="site-section-title">From sold-out phases to the next expansion.</h2>
+            <p class="site-section-copy roadmap-growth-copy">
+                Phase 3 sold out and opened the door for the next Samuzi chapter.
+                The team is now preparing more growth, more holder value, new partnerships,
+                and future expansion opportunities for the community.
+            </p>
+        </div>
+
+        <div class="roadmap-mini-grid roadmap-growth-grid">
+            <div class="roadmap-mini-card">
+                <span>Phase 1</span>
+                <h3>Genesis Launch</h3>
+                <p>Website release, first collection mint, community setup, and early supporter onboarding.</p>
             </div>
 
-            <div class="site-grid">
-                <div class="site-card">
-                    <span class="eyebrow">01 · Identity</span>
-                    <h3>Futuristic Samurai Culture</h3>
-                    <p>
-                        The Samuzi visual universe blends mythic warrior energy, cyberpunk atmosphere,
-                        and fashion-inspired collectible design.
-                    </p>
-                </div>
+            <div class="roadmap-mini-card">
+                <span>Phase 2</span>
+                <h3>Sold Out Growth</h3>
+                <p>Phase 1 and Phase 2 sold out, holder features expanded, and partner momentum increased.</p>
+            </div>
 
-                <div class="site-card">
-                    <span class="eyebrow">02 · Solana</span>
-                    <h3>Fast & Scalable</h3>
-                    <p>
-                        Samuzi is built around Solana for fast transactions, low fees, and smooth access
-                        for collectors and community members.
-                    </p>
-                </div>
+            <div class="roadmap-mini-card">
+                <span>Phase 3</span>
+                <h3>Sold Out Expansion</h3>
+                <p>Phase 3 sold out with strong community energy, cinematic artwork, and new collector momentum.</p>
+            </div>
 
-                <div class="site-card">
-                    <span class="eyebrow">03 · Utility</span>
-                    <h3>Holder-Focused Access</h3>
-                    <p>
-                        Holder areas, exclusive drops, partner opportunities, raffles, and future community
-                        features are part of the long-term direction.
-                    </p>
-                </div>
+            <div class="roadmap-mini-card roadmap-phase4-card">
+                <span>Phase 4</span>
+                <h3>Community Growth</h3>
+                <p>More partnerships, holder-focused opportunities, community activations, and the next expansion path are now being prepared.</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <section class="front-section">
         <div class="container">
@@ -1618,19 +1777,20 @@ All remaining phases are FCFS, so use only the official Gensuki link.
     <section class="front-section final-cta-section">
     <div class="container">
         <div class="final-cta-panel">
-            <span class="status-pill">Final mint windows live</span>
+            <span class="status-pill">Phase 3 sold out</span>
 
-            <h2>Public mint is live now.</h2>
+            <h2>Samuzi NFT continues to rise.</h2>
 
             <p>
-                Holder and OG phases are complete. WL, partner, and public mint windows are now open on Gensuki Launchpad.
-                WL mint is 0.062 SOL, partners mint at 0.053 SOL, and public mint is open at 0.087 SOL.
-                Join the official community and mint only through the verified Gensuki Launchpad link.
+                Phase 3 is sold out, but this is not the end. More utilities, more experiences,
+                more rewards, and more history are coming for the Samuzi community.
+                Thank you to every holder, OG, WL member, partner, public minter, Gensuki Launchpad,
+                and the full Samuzi team.
             </p>
 
             <div class="launch-actions">
                 <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-                    🚨 Mint on Gensuki Now
+                    🔥 View on Gensuki
                 </a>
 
                 <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
