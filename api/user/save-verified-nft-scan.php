@@ -10,6 +10,195 @@
 
 header('Content-Type: application/json');
 
+/**
+ * Genesis tier role IDs.
+ *
+ * Plain language for DEVS:
+ * These are Discord recognition roles for verified Genesis ownership.
+ * This file must only manage these six Genesis tier roles.
+ * It must never touch Holder, VIP Holder, Moderator, Admin, Bot Master,
+ * Champion, PokerOG, or any unrelated Discord role.
+ */
+const GENESIS_TIER_ROLE_LADDER = [
+    [
+        'key' => 'genesis_tier_1',
+        'label' => 'Genesis Tier 1',
+        'min_genesis' => 1,
+        'role_id' => '1515508462333726902'
+    ],
+    [
+        'key' => 'genesis_tier_2',
+        'label' => 'Genesis Tier 2',
+        'min_genesis' => 2,
+        'role_id' => '1515508865976762400'
+    ],
+    [
+        'key' => 'genesis_collector',
+        'label' => 'Genesis Collector',
+        'min_genesis' => 3,
+        'role_id' => '1515509210228457632'
+    ],
+    [
+        'key' => 'genesis_expert',
+        'label' => 'Genesis Expert',
+        'min_genesis' => 6,
+        'role_id' => '1515508984054808757'
+    ],
+    [
+        'key' => 'genesis_elite_holder',
+        'label' => 'Genesis Elite Holder',
+        'min_genesis' => 16,
+        'role_id' => '1515509447500369990'
+    ],
+    [
+        'key' => 'genesis_legend',
+        'label' => 'Genesis Legend',
+        'min_genesis' => 30,
+        'role_id' => '1515509774760804352'
+    ]
+];
+
+/**
+ * Find the highest Genesis tier for a verified Genesis count.
+ */
+function resolveGenesisTierRole(int $genesisCount): ?array
+{
+    $matchedTier = null;
+
+    foreach (GENESIS_TIER_ROLE_LADDER as $tier) {
+        if ($genesisCount >= (int)$tier['min_genesis']) {
+            $matchedTier = $tier;
+        }
+    }
+
+    return $matchedTier;
+}
+
+/**
+ * Call the existing Discord role API for add/remove actions.
+ *
+ * Plain language for DEVS:
+ * This reuses api/discord/grant-role.php, which already supports add_role and
+ * remove_role. The NFT scan must not fail if Discord is temporarily unavailable,
+ * so callers catch exceptions and return a best-effort sync result.
+ */
+function callGenesisTierDiscordRoleApi(string $action, string $userId, string $roleId): array
+{
+    $payload = json_encode([
+        'action' => $action,
+        'user_id' => $userId,
+        'role_id' => $roleId
+    ]);
+
+    $ch = curl_init('https://narrrfs.world/api/discord/grant-role.php');
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Authorization: Bearer admin_quest_system'
+    ]);
+
+    $rawResponse = curl_exec($ch);
+    $curlError = curl_error($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    curl_close($ch);
+
+    if ($rawResponse === false) {
+        throw new RuntimeException("Discord role API curl failed: {$curlError}");
+    }
+
+    $decoded = json_decode($rawResponse, true);
+    if (!is_array($decoded)) {
+        throw new RuntimeException("Discord role API returned non-JSON response. HTTP {$httpCode}: " . substr($rawResponse, 0, 200));
+    }
+
+    if (empty($decoded['success'])) {
+        $error = $decoded['error'] ?? 'Unknown Discord role API error';
+        throw new RuntimeException("Discord role API failed for {$action} {$roleId}. HTTP {$httpCode}: {$error}");
+    }
+
+    return [
+        'success' => true,
+        'http_code' => $httpCode,
+        'response' => $decoded
+    ];
+}
+
+/**
+ * Sync one user's Genesis tier roles after verified NFT ownership was committed.
+ *
+ * Plain language for DEVS:
+ * This is a best-effort post-commit role sync.
+ * The verified NFT scan has already been saved before this runs.
+ * If Discord role sync fails, the NFT verification response still succeeds.
+ *
+ * Rules:
+ * - Genesis count comes from the saved scan result.
+ * - VIP NFTs do not count.
+ * - The user receives only the highest matching Genesis tier role.
+ * - The other five Genesis tier roles are removed.
+ */
+function syncGenesisTierRolesAfterVerifiedScan(string $userId, int $genesisCount): array
+{
+    $result = [
+        'attempted' => false,
+        'success' => false,
+        'user_id' => $userId,
+        'genesis_count' => $genesisCount,
+        'target_tier' => null,
+        'target_role_id' => null,
+        'added_role' => null,
+        'removed_roles' => [],
+        'errors' => []
+    ];
+
+    if ($userId === '') {
+        $result['errors'][] = 'Missing user id.';
+        return $result;
+    }
+
+    $targetTier = resolveGenesisTierRole($genesisCount);
+
+    if ($targetTier === null) {
+        $result['attempted'] = false;
+        $result['success'] = true;
+        $result['target_tier'] = 'none';
+        return $result;
+    }
+
+    $result['attempted'] = true;
+    $result['target_tier'] = $targetTier['label'];
+    $result['target_role_id'] = $targetTier['role_id'];
+
+    try {
+        callGenesisTierDiscordRoleApi('add_role', $userId, $targetTier['role_id']);
+        $result['added_role'] = $targetTier['role_id'];
+    } catch (Throwable $error) {
+        $result['errors'][] = $error->getMessage();
+    }
+
+    foreach (GENESIS_TIER_ROLE_LADDER as $tier) {
+        if ($tier['role_id'] === $targetTier['role_id']) {
+            continue;
+        }
+
+        try {
+            callGenesisTierDiscordRoleApi('remove_role', $userId, $tier['role_id']);
+            $result['removed_roles'][] = $tier['role_id'];
+        } catch (Throwable $error) {
+            $result['errors'][] = $error->getMessage();
+        }
+    }
+
+    $result['success'] = empty($result['errors']);
+
+    return $result;
+}
+
 try {
     $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 
@@ -396,7 +585,21 @@ try {
         $insertVerification->execute();
     }
 
-    $db->exec('COMMIT');
+        $db->exec('COMMIT');
+
+    /**
+     * Best-effort Genesis tier role sync.
+     *
+     * Plain language for DEVS:
+     * The SQL ownership scan is already committed above.
+     * This role sync must never roll back or break holder verification.
+     * Profile and Stake Lab both call this endpoint, so this single hook keeps
+     * Genesis Discord tier roles fresh from both verification lanes.
+     */
+    $genesisTierRoleSync = syncGenesisTierRolesAfterVerifiedScan(
+        $userId,
+        (int)($collectionCounts['genesis'] ?? 0)
+    );
 
     echo json_encode([
         'success' => true,
@@ -408,7 +611,8 @@ try {
         'counts' => $collectionCounts,
         'saved_nft_count' => array_sum($collectionCounts),
         'has_signature' => $signature !== '',
-        'has_message' => $message !== ''
+        'has_message' => $message !== '',
+        'genesis_tier_role_sync' => $genesisTierRoleSync
     ]);
 } catch (Throwable $error) {
     if (isset($db) && $db instanceof SQLite3) {

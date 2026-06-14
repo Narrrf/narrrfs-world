@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/staking-contract-helpers.php';
 
 function json_response($payload, $code = 200) {
     http_response_code($code);
@@ -30,27 +31,46 @@ function json_response($payload, $code = 200) {
     exit;
 }
 
+/**
+ * Read create-stake request data once.
+ *
+ * Plain language for DEVS:
+ * php://input can become unreliable when a file reads it in multiple places.
+ * This helper normalizes JSON, form POST, and GET values into one request array
+ * so localhost curl tests and browser Stake Lab calls use the same data path.
+ */
+function get_create_stake_request_data(): array {
+    $rawInput = file_get_contents('php://input');
+    $jsonInput = json_decode($rawInput, true);
+
+    $requestData = [];
+
+    if (is_array($jsonInput)) {
+        $requestData = $jsonInput;
+    }
+
+    if (!empty($_POST)) {
+        $requestData = array_merge($requestData, $_POST);
+    }
+
+    if (!empty($_GET)) {
+        $requestData = array_merge($requestData, $_GET);
+    }
+
+    return $requestData;
+}
+
+$createStakeRequestData = get_create_stake_request_data();
+
 // Get user from session
 session_start();
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
 
 $session_user_id = $_SESSION['discord_id'] ?? '';
 
-// Check if user_id is provided in POST/GET (for localhost testing only)
-// Also check JSON body for POST requests
-$request_user_id = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Try POST data first
-    $request_user_id = $_POST['user_id'] ?? '';
-    // If not in POST, try JSON body
-    if (!$request_user_id) {
-        $json_input = json_decode(file_get_contents('php://input'), true);
-        $request_user_id = $json_input['user_id'] ?? '';
-    }
-} else {
-    // GET request
-    $request_user_id = $_GET['user_id'] ?? '';
-}
+// Check if user_id is provided in request data.
+// Production still requires this to match the active Discord session.
+$request_user_id = trim((string)($createStakeRequestData['user_id'] ?? ''));
 
 // SECURITY: Determine if we're on localhost
 $isLocalhost = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || 
@@ -116,7 +136,24 @@ $pdo->exec("
         transaction_id TEXT,
         metadata TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        cancelled_at DATETIME,
+        penalty_amount INTEGER DEFAULT 0,
+        returned_amount INTEGER DEFAULT 0,
+        unstake_reason TEXT,
+        staking_contract_version TEXT NOT NULL DEFAULT 'legacy_v1',
+        lock_duration_days INTEGER,
+        base_reward_rate REAL,
+        base_expected_reward INTEGER DEFAULT 0,
+        genesis_count_at_stake INTEGER DEFAULT 0,
+        genesis_tier_at_stake TEXT,
+        genesis_multiplier_at_stake REAL DEFAULT 1.0,
+        genesis_count_at_exit INTEGER,
+        genesis_tier_at_exit TEXT,
+        genesis_multiplier_at_exit REAL,
+        genesis_terms_status TEXT DEFAULT 'unchecked',
+        genesis_terms_penalty_amount INTEGER DEFAULT 0,
+        final_reward_amount INTEGER
     )
 ");
 
@@ -124,14 +161,16 @@ $pdo->exec("
 $pdo->exec("CREATE INDEX IF NOT EXISTS idx_stakes_user_status ON tbl_dspoinc_stakes(user_id, status)");
 $pdo->exec("CREATE INDEX IF NOT EXISTS idx_stakes_unfreeze_at ON tbl_dspoinc_stakes(unfreeze_at, status)");
 $pdo->exec("CREATE INDEX IF NOT EXISTS idx_stakes_user_active ON tbl_dspoinc_stakes(user_id, status, unfreeze_at)");
+// Season 13 V2 readiness indexes.
+// Plain language for DEVS:
+// These indexes are safe for legacy_v1 rows and prepare filtering/reporting
+// by contract version and Genesis holder-term status later.
+$pdo->exec("CREATE INDEX IF NOT EXISTS idx_stakes_contract_version ON tbl_dspoinc_stakes(staking_contract_version)");
+$pdo->exec("CREATE INDEX IF NOT EXISTS idx_stakes_genesis_terms ON tbl_dspoinc_stakes(genesis_terms_status)");
 
-// Get request data
-$rawInput = file_get_contents('php://input');
-$data = json_decode($rawInput, true);
-
-if (!is_array($data)) {
-    $data = $_POST;
-}
+// Get request data from the shared parser.
+// This supports JSON, form POST, and GET consistently.
+$data = $createStakeRequestData;
 
 $amount = isset($data['amount']) ? (int)$data['amount'] : 0;
 $freeze_duration_months = isset($data['freeze_duration_months']) ? (int)$data['freeze_duration_months'] : 0;
@@ -164,6 +203,26 @@ $reward_rates = [
 
 $reward_rate = $reward_rates[$freeze_duration_months];
 $expected_reward = (int)round($amount * $reward_rate);
+// Phase A safety:
+// New stake creation still uses legacy_v1 until Season 13 V2 is intentionally activated.
+$staking_contract_version = ACTIVE_STAKING_CONTRACT_VERSION;
+$lock_duration_days = null;
+$base_reward_rate = $reward_rate * 100;
+$base_expected_reward = $expected_reward;
+$genesis_count_at_stake = 0;
+$genesis_tier_at_stake = 'no_genesis';
+$genesis_multiplier_at_stake = 1.0;
+$genesis_terms_status = 'legacy_not_required';
+
+if (staking_is_v2_active()) {
+    // TODO: Season 13 activation path.
+    // This branch must validate lock_duration_days, calculate V2 pool reward,
+    // count verified Genesis NFTs, and store holder multiplier data.
+    json_response([
+        'success' => false,
+        'error' => 'Season 13 V2 staking is not activated in this Phase A build.'
+    ], 503);
+}
 
 // Get current season
 $seasonStmt = $pdo->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 LIMIT 1");
@@ -208,44 +267,71 @@ try {
     // Create stake record
     try {
         $stakeStmt = $pdo->prepare("
-            INSERT INTO tbl_dspoinc_stakes (
-                user_id,
-                amount,
-                freeze_duration_months,
-                reward_rate,
-                expected_reward,
-                frozen_at,
-                unfreeze_at,
-                status,
-                metadata
-            ) VALUES (
-                :user_id,
-                :amount,
-                :freeze_duration_months,
-                :reward_rate,
-                :expected_reward,
-                :frozen_at,
-                :unfreeze_at,
-                'active',
-                :metadata
-            )
-        ");
+    INSERT INTO tbl_dspoinc_stakes (
+        user_id,
+        amount,
+        freeze_duration_months,
+        reward_rate,
+        expected_reward,
+        frozen_at,
+        unfreeze_at,
+        status,
+        metadata,
+        staking_contract_version,
+        lock_duration_days,
+        base_reward_rate,
+        base_expected_reward,
+        genesis_count_at_stake,
+        genesis_tier_at_stake,
+        genesis_multiplier_at_stake,
+        genesis_terms_status
+    ) VALUES (
+        :user_id,
+        :amount,
+        :freeze_duration_months,
+        :reward_rate,
+        :expected_reward,
+        :frozen_at,
+        :unfreeze_at,
+        'active',
+        :metadata,
+        :staking_contract_version,
+        :lock_duration_days,
+        :base_reward_rate,
+        :base_expected_reward,
+        :genesis_count_at_stake,
+        :genesis_tier_at_stake,
+        :genesis_multiplier_at_stake,
+        :genesis_terms_status
+    )
+");
 
-        $metadata = json_encode([
-            'created_via' => 'stake-lab',
-            'season' => $currentSeason
-        ]);
+$metadata = json_encode([
+    'created_via' => 'stake-lab',
+    'season' => $currentSeason,
+    'contract_version' => $staking_contract_version,
+    'legacy_duration_months' => $freeze_duration_months,
+    'created_from' => 'stake_lab_phase_a'
+]);
 
-        $stakeStmt->execute([
-            ':user_id' => $user_id,
-            ':amount' => $amount,
-            ':freeze_duration_months' => $freeze_duration_months,
-            ':reward_rate' => $reward_rate,
-            ':expected_reward' => $expected_reward,
-            ':frozen_at' => $frozen_at,
-            ':unfreeze_at' => $unfreeze_at,
-            ':metadata' => $metadata
-        ]);
+$stakeStmt->execute([
+    ':user_id' => $user_id,
+    ':amount' => $amount,
+    ':freeze_duration_months' => $freeze_duration_months,
+    ':reward_rate' => $reward_rate,
+    ':expected_reward' => $expected_reward,
+    ':frozen_at' => $frozen_at,
+    ':unfreeze_at' => $unfreeze_at,
+    ':metadata' => $metadata,
+    ':staking_contract_version' => $staking_contract_version,
+    ':lock_duration_days' => $lock_duration_days,
+    ':base_reward_rate' => $base_reward_rate,
+    ':base_expected_reward' => $base_expected_reward,
+    ':genesis_count_at_stake' => $genesis_count_at_stake,
+    ':genesis_tier_at_stake' => $genesis_tier_at_stake,
+    ':genesis_multiplier_at_stake' => $genesis_multiplier_at_stake,
+    ':genesis_terms_status' => $genesis_terms_status
+]);
 
         $stake_id = $pdo->lastInsertId();
         error_log("✅ Stake record created: ID = $stake_id");

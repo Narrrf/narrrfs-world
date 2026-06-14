@@ -413,9 +413,57 @@ require_once 'discord-invite.php';
               View full DSPOINC Journey on Profile →
             </a>
           </div>
+                    <!-- 🧬 Season 13 V2 Genesis staking preview.
+             DEVS FOR DECADES:
+             This panel is read-only hype + education. It displays backend-provided
+             V2 preview data from get-stakes.php. It must not activate V2, change
+             stake durations, change create-stake payloads, or calculate rewards. -->
+          <div id="season13-v2-preview-panel" class="mt-6 hidden"></div>
         </div>
       </div>
     </section>
+
+    <!-- ⚠️ Legacy DSPOINC Staking Closing Soon Notice
+     DEVS FOR DECADES:
+     This is an information-only transition notice.
+     It does not change staking balances, reward math, stake creation,
+     claim logic, unstake penalties, or DSPOINC ledger behavior.
+     Existing and newly created stakes still use the current legacy_v1 rules
+     until the backend contract version switch is intentionally implemented. -->
+<section class="relative z-10 px-4 md:px-6 pb-8">
+  <div class="max-w-4xl mx-auto">
+    <div class="rounded-2xl border border-yellow-300/30 bg-gradient-to-br from-yellow-500/15 via-orange-500/10 to-red-500/10 p-6 shadow-xl shadow-orange-950/20">
+      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <div class="mb-2 inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-yellow-100">
+            ⚠️ Legacy Staking Notice
+          </div>
+          <h2 class="text-2xl font-black text-white mb-3">
+            DSPOINC Legacy Staking is closing soon.
+          </h2>
+          <p class="text-slate-200 leading-relaxed">
+            The current DSPOINC freeze contract is still active during Season 12, but it will be replaced by a new staking economy for the Season 13 transition in July.
+            Stakes created under the current system will remain honored under the legacy rules until they finish, can be claimed, or are unstaked by the owner.
+          </p>
+          <p class="mt-3 text-sm font-semibold text-yellow-100">
+            Current contract version: <span class="text-white">legacy_v1</span> · Future contract version: <span class="text-white">season12_v2</span>
+          </p>
+        </div>
+        <div class="rounded-xl border border-cyan-300/25 bg-cyan-300/10 p-4 text-sm text-cyan-50 md:max-w-xs">
+          <div class="font-black uppercase tracking-[0.14em] text-cyan-200 mb-2">
+            SPOINC Economy
+          </div>
+          <p class="leading-relaxed">
+            Real SPOINC / DEX coin actions will live inside the SPOINC Economy Portal. This page remains the off-chain DSPOINC freeze lab for now.
+          </p>
+          <a href="swap-lab.html" class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-cyan-400 px-4 py-3 font-black text-slate-950 hover:bg-cyan-300">
+            🌉 Open SPOINC Portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
     <!-- 🧊 Create Stake Section -->
     <section class="relative z-10 px-4 md:px-6 pb-8">
@@ -545,6 +593,47 @@ require_once 'discord-invite.php';
         </div>
       </div>
     </section>
+
+    <!-- 🧊 Confirm Stake Modal
+     DEVS FOR DECADES:
+     This modal is a frontend safety step only. It prevents accidental one-click
+     freezing by asking the player to review amount, duration, reward preview,
+     and available balance before createStake() sends the backend request.
+     Backend create-stake.php remains authoritative for validation and writes. -->
+<div id="confirm-stake-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-gray-900 border-4 border-cyan-500 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+    <div class="text-6xl mb-4 text-center">🧊</div>
+
+    <h3 class="text-2xl font-bold text-cyan-300 mb-4 text-center">
+      Confirm DSPOINC Stake
+    </h3>
+
+    <div class="bg-cyan-900/30 border border-cyan-500/50 rounded-lg p-4 mb-6">
+      <p class="text-cyan-100 text-sm mb-3">
+        Please review this stake before freezing your DSPOINC.
+      </p>
+
+      <div id="confirm-stake-details" class="text-cyan-100 text-sm space-y-2">
+        <!-- Details will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <p class="text-gray-300 mb-6 text-center text-sm leading-relaxed">
+      Your DSPOINC will become frozen for the selected duration. Early unstake is possible,
+      but it applies the existing penalty rules.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <button id="confirm-stake-confirm-btn" class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-xl transition">
+        Confirm Stake
+      </button>
+
+      <button id="confirm-stake-cancel-btn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
 
     <!-- ⚠️ Unstake Warning Modal -->
     <div id="unstake-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -852,8 +941,11 @@ require_once 'discord-invite.php';
 
     // State
     let selectedDuration = 6;
+    let pendingStakeConfirmation = null;
     let selectedRate = 0.10;
     let currentBalance = null;
+    let stakingContracts = null;
+    let season13V2Preview = null;
     let activeStakes = [];
     let completedStakes = [];
     let cancelledStakes = [];
@@ -985,10 +1077,19 @@ require_once 'discord-invite.php';
 
         const result = await response.json();
         if (result.success && result.data) {
-          activeStakes = result.data.active_stakes || [];
+                    activeStakes = result.data.active_stakes || [];
           completedStakes = result.data.completed_stakes || [];
           cancelledStakes = result.data.cancelled_stakes || [];
           claimableRewards = result.data.claimable_rewards || [];
+
+          // Season 13 V2 preview state.
+          // Plain language for DEVS:
+          // This is display-only. Backend remains authoritative and V2 stays inactive
+          // while ACTIVE_STAKING_CONTRACT_VERSION is still legacy_v1.
+          stakingContracts = result.data.staking_contracts || null;
+          season13V2Preview = result.data.season13_v2_preview || null;
+          renderSeason13V2Preview();
+
           displayActiveStakes();
           displayCompletedStakes();
           displayCancelledStakes();
@@ -1001,6 +1102,244 @@ require_once 'discord-invite.php';
         document.getElementById('cancelled-stakes-list').innerHTML = '<p class="text-red-400">Error loading stakes. Please refresh.</p>';
         document.getElementById('claimable-rewards-list').innerHTML = '<p class="text-red-400">Error loading rewards. Please refresh.</p>';
       }
+    }
+
+        /**
+     * Render the read-only Season 13 V2 Genesis staking preview.
+     *
+     * Plain language for DEVS:
+     * This panel is a public-facing education and hype panel for Season 13.
+     * It encourages members to understand the future Genesis multiplier ladder,
+     * but it does not activate V2 staking, change legacy staking, or calculate
+     * final rewards on the frontend.
+     */
+    function renderSeason13V2Preview() {
+      const panel = document.getElementById('season13-v2-preview-panel');
+
+      if (!panel) {
+        return;
+      }
+
+      if (!stakingContracts || !season13V2Preview) {
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
+        return;
+      }
+
+      const activeContract = String(stakingContracts.active_contract_version || 'legacy_v1');
+      const isV2Active = Boolean(stakingContracts.season13_v2_active);
+      const currentTier = season13V2Preview.current_genesis_tier || {};
+      const currentGenesisCount = Number(season13V2Preview.current_genesis_count || 0);
+      const currentMultiplier = Number(currentTier.multiplier || 1);
+      const pools = Object.entries(season13V2Preview.pools || {});
+      const tiers = Array.isArray(season13V2Preview.genesis_tiers)
+        ? season13V2Preview.genesis_tiers
+        : [];
+
+      const statusBadgeClass = isV2Active
+        ? 'bg-emerald-500/20 border-emerald-300/50 text-emerald-100'
+        : 'bg-amber-500/20 border-amber-300/50 text-amber-100';
+
+      const statusText = isV2Active
+  ? 'V2 Active'
+  : 'Preview Only — Mint Genesis Before Season 13';
+
+      const poolCards = pools.map(([days, pool]) => {
+        const label = String(pool?.label || `${days} Days`);
+        const rewardRate = Number(pool?.reward_rate || 0);
+
+        return `
+          <div class="rounded-2xl border border-cyan-300/20 bg-cyan-950/30 p-4 shadow-lg">
+            <div class="text-xs uppercase tracking-[0.18em] text-cyan-300/80">${label}</div>
+            <div class="mt-2 text-2xl font-black text-cyan-100">${rewardRate}%</div>
+            <div class="text-xs text-cyan-300/70">future base reward</div>
+          </div>
+        `;
+      }).join('');
+
+     /**
+ * Season 13 V2 role ladder display.
+ *
+ * Plain language for DEVS:
+ * The backend still sends Genesis tier ranges and multipliers.
+ * This frontend map only changes how the read-only Stake Lab preview is shown
+ * so it matches the live Discord Genesis tier role system.
+ * It does not activate V2, change staking math, or decide rewards.
+ */
+const GENESIS_STAKING_ROLE_LABELS = {
+  no_genesis: {
+    role: 'No Genesis Tier',
+    range: '0 Genesis',
+    note: 'No Discord Genesis tier yet'
+  },
+  genesis_1: {
+    role: 'Genesis Tier 1',
+    range: '1 Genesis',
+    note: 'Holder lane opened'
+  },
+  genesis_2: {
+    role: 'Genesis Tier 2',
+    range: '2 Genesis',
+    note: 'Second Genesis spark'
+  },
+  genesis_3_5: {
+    role: 'Genesis Collector',
+    range: '3–5 Genesis',
+    note: 'Collector boost'
+  },
+  genesis_6_15: {
+    role: 'Genesis Expert',
+    range: '6–15 Genesis',
+    note: 'Strong holder boost'
+  },
+  genesis_16_29: {
+    role: 'Genesis Elite Holder',
+    range: '16–29 Genesis',
+    note: 'Elite holder boost'
+  },
+  genesis_30_plus: {
+    role: 'Genesis Legend',
+    range: '30+ Genesis',
+    note: 'Max conviction boost'
+  }
+};
+
+function resolveGenesisStakingRoleDisplay(tier) {
+  const tierKey = String(tier?.key || '');
+  const fallbackLabel = String(tier?.label || tierKey || 'Genesis Tier');
+
+  if (GENESIS_STAKING_ROLE_LABELS[tierKey]) {
+    return GENESIS_STAKING_ROLE_LABELS[tierKey];
+  }
+
+  return {
+    role: fallbackLabel,
+    range: fallbackLabel,
+    note: 'Future V2 staking tier'
+  };
+}
+
+const tierRows = tiers.map((tier) => {
+  const tierKey = String(tier?.key || '');
+  const isCurrentTier = tierKey === String(currentTier.key || '');
+  const multiplier = Number(tier?.multiplier || 1);
+  const display = resolveGenesisStakingRoleDisplay(tier);
+  const multiplierLabel = `x${multiplier.toFixed(3).replace(/0$/, '').replace(/0$/, '')}`;
+  const rowClass = isCurrentTier
+    ? 'border-yellow-300/60 bg-yellow-300/15 text-yellow-100 shadow-lg shadow-yellow-500/10'
+    : 'border-white/10 bg-white/5 text-slate-200';
+
+  return `
+    <div class="rounded-xl border ${rowClass} px-4 py-3 text-sm">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <div class="font-black">${display.role}</div>
+          <div class="mt-1 text-xs opacity-75">${display.range} • ${display.note}</div>
+        </div>
+        <span class="font-black">${multiplierLabel}</span>
+      </div>
+    </div>
+  `;
+}).join('');
+
+      panel.classList.remove('hidden');
+      panel.innerHTML = `
+        <div class="relative overflow-hidden rounded-3xl border border-yellow-300/30 bg-gradient-to-br from-slate-950/95 via-blue-950/70 to-amber-950/55 p-5 md:p-6 shadow-2xl">
+          <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-yellow-300/10 blur-3xl"></div>
+          <div class="absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-cyan-300/10 blur-3xl"></div>
+
+          <div class="relative z-10">
+            <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-5 mb-6">
+              <div>
+                <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-100 mb-4">
+                  🧬 Season 13 V2 Staking Preview
+                </div>
+                <h3 class="text-3xl md:text-4xl font-black text-white leading-tight">
+                  Genesis Mice Become Staking Boosters
+                </h3>
+                <p class="mt-3 text-sm md:text-base text-blue-100/90 max-w-4xl">
+                  V2 staking is not active yet. This preview shows the future Genesis multiplier ladder so holders can prepare before Season 13, the DEX era, and the new DSPOINC economy open.
+                </p>
+              </div>
+
+              <div class="rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.14em] ${statusBadgeClass}">
+                ${statusText}
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+              <div class="rounded-2xl border border-yellow-300/30 bg-yellow-300/10 p-4">
+                <div class="text-xs uppercase tracking-[0.16em] text-yellow-200/80">Your Genesis Stack</div>
+                <div class="mt-2 text-3xl font-black text-yellow-100">${currentGenesisCount.toLocaleString()}</div>
+                <div class="mt-1 text-sm text-yellow-200/80">verified Genesis counted</div>
+              </div>
+
+              <div class="rounded-2xl border border-emerald-300/30 bg-emerald-300/10 p-4">
+               <div class="text-xs uppercase tracking-[0.16em] text-emerald-200/80">Your Future Role Tier</div>
+               <div class="mt-2 text-2xl font-black text-emerald-100">${resolveGenesisStakingRoleDisplay(currentTier).role}</div>
+               <div class="mt-1 text-sm text-emerald-200/80">${resolveGenesisStakingRoleDisplay(currentTier).range} • verified ownership</div>
+              </div>
+
+              <div class="rounded-2xl border border-cyan-300/30 bg-cyan-300/10 p-4">
+                <div class="text-xs uppercase tracking-[0.16em] text-cyan-200/80">Future Multiplier</div>
+                <div class="mt-2 text-3xl font-black text-cyan-100">x${currentMultiplier.toFixed(3).replace(/0$/, '').replace(/0$/, '')}</div>
+                <div class="mt-1 text-sm text-cyan-200/80">when V2 is active</div>
+              </div>
+
+              <div class="rounded-2xl border border-blue-300/30 bg-blue-300/10 p-4">
+                <div class="text-xs uppercase tracking-[0.16em] text-blue-200/80">Active Now</div>
+                <div class="mt-2 text-2xl font-black text-blue-100">${activeContract}</div>
+                <div class="mt-1 text-sm text-blue-200/80">legacy staking still live</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+              <div class="rounded-2xl border border-cyan-300/15 bg-black/20 p-4">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                  <div>
+                    <div class="text-lg font-black text-cyan-100">Future V2 Lock Pools</div>
+                    <div class="text-xs text-cyan-200/70">day-based Season 13 reward paths</div>
+                  </div>
+                  <div class="text-2xl">🧊</div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  ${poolCards}
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-yellow-300/15 bg-black/20 p-4">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                  <div>
+                    <div class="text-lg font-black text-yellow-100">Genesis Role Boost Ladder</div>
+                    <div class="text-xs text-yellow-200/70">Discord tier roles mapped to future V2 staking multipliers</div>
+                    <div class="text-xs text-yellow-200/70">the second Genesis starts the boost journey</div>
+                  </div>
+                  <div class="text-2xl">🐭</div>
+                </div>
+                <div class="space-y-2">
+                  ${tierRows}
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div class="lg:col-span-2 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">
+                <strong>Same-tier rule:</strong> V2 Genesis boost requires the holder to stay in the same or higher Genesis tier until claim time.
+                Selling below your starting tier keeps the base reward, but removes the Genesis boost.
+              </div>
+
+              <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer" class="rounded-2xl border border-yellow-300/40 bg-gradient-to-r from-yellow-400 to-orange-500 px-5 py-4 text-center font-black text-slate-950 shadow-lg transition hover:scale-[1.02] hover:shadow-yellow-500/20">
+                🛒 Mint Genesis on Gensuki
+                <div class="text-xs font-bold opacity-80 mt-1">Prepare for Season 13 utility</div>
+              </a>
+            </div>
+
+            <div class="mt-4 text-xs text-slate-300/80">
+              V2 preview is informational only. Final staking rewards, Genesis ownership checks, and claim validation remain backend-authoritative.
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     // Update balance display
@@ -1276,9 +1615,100 @@ if (activeStakes.length === 0) {
       }).join('');
     }
 
-    // Create stake
-    async function createStake() {
-      const amount = parseInt(document.getElementById('stake-amount').value);
+    /**
+ * Open the confirm-stake modal after frontend validation.
+ *
+ * Plain language for DEVS:
+ * This function does not create a stake. It only prepares a readable review
+ * for the player so Stake Lab is not one-click final. The real stake is still
+ * created by performCreateStake(), and the backend remains authoritative.
+ */
+function showConfirmStakeModal() {
+  const amount = parseInt(document.getElementById('stake-amount').value);
+  const statusDiv = document.getElementById('stake-status');
+
+  if (!amount || amount < 100) {
+    statusDiv.className = 'mt-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200';
+    statusDiv.textContent = '❌ Minimum stake amount is 100 DSPOINC';
+    statusDiv.classList.remove('hidden');
+    return;
+  }
+
+  if (!currentBalance || amount > currentBalance.available_balance) {
+    statusDiv.className = 'mt-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200';
+    statusDiv.textContent = `❌ Insufficient balance. Available: ${(currentBalance?.available_balance || 0).toLocaleString()} DSPOINC`;
+    statusDiv.classList.remove('hidden');
+    return;
+  }
+
+  const rewardRate = Number(selectedRate || 0);
+  const expectedReward = Math.floor(amount * rewardRate);
+  const totalReturn = amount + expectedReward;
+  const remainingAvailable = currentBalance.available_balance - amount;
+
+  pendingStakeConfirmation = {
+    amount,
+    freezeDurationMonths: selectedDuration,
+    rewardRate,
+    expectedReward,
+    totalReturn
+  };
+
+  const detailsDiv = document.getElementById('confirm-stake-details');
+  detailsDiv.innerHTML = `
+    <div class="flex justify-between">
+      <span>Stake Amount:</span>
+      <span class="font-bold">${amount.toLocaleString()} DSPOINC</span>
+    </div>
+    <div class="flex justify-between">
+      <span>Duration:</span>
+      <span class="font-bold">${selectedDuration} month${selectedDuration === 1 ? '' : 's'}</span>
+    </div>
+    <div class="flex justify-between">
+      <span>Reward Rate:</span>
+      <span class="font-bold">${(rewardRate * 100).toFixed(2)}%</span>
+    </div>
+    <div class="flex justify-between text-green-300">
+      <span>Expected Reward:</span>
+      <span class="font-bold">+${expectedReward.toLocaleString()} DSPOINC</span>
+    </div>
+    <div class="flex justify-between pt-2 border-t border-cyan-400/30 text-cyan-200">
+      <span>Total at Completion:</span>
+      <span class="font-bold">${totalReturn.toLocaleString()} DSPOINC</span>
+    </div>
+    <div class="flex justify-between text-yellow-200">
+      <span>Available After Stake:</span>
+      <span class="font-bold">${remainingAvailable.toLocaleString()} DSPOINC</span>
+    </div>
+  `;
+
+  statusDiv.classList.add('hidden');
+  document.getElementById('confirm-stake-modal').classList.remove('hidden');
+}
+
+/**
+ * Hide the confirm-stake modal and clear pending stake review data.
+ */
+function hideConfirmStakeModal() {
+  document.getElementById('confirm-stake-modal').classList.add('hidden');
+  pendingStakeConfirmation = null;
+}
+
+/**
+ * Confirm the reviewed stake and call the existing backend create flow.
+ */
+async function confirmStakeFromModal() {
+  if (!pendingStakeConfirmation) {
+    hideConfirmStakeModal();
+    return;
+  }
+
+  await performCreateStake();
+}
+
+   // Create stake after confirmation
+async function performCreateStake() {
+      const amount = pendingStakeConfirmation?.amount || parseInt(document.getElementById('stake-amount').value);
       const freezeBtn = document.getElementById('freeze-btn');
       const statusDiv = document.getElementById('stake-status');
 
@@ -1318,6 +1748,7 @@ if (activeStakes.length === 0) {
         const result = await response.json();
 
         if (result.success) {
+          hideConfirmStakeModal();
           statusDiv.className = 'mt-4 p-4 bg-green-900/30 border border-green-500/50 rounded-lg text-green-200';
           statusDiv.textContent = `✅ Successfully frozen ${amount.toLocaleString()} DSPOINC for ${selectedDuration} months! Expected reward: ${result.data.expected_reward.toLocaleString()} DSPOINC`;
           statusDiv.classList.remove('hidden');
@@ -1604,7 +2035,16 @@ if (activeStakes.length === 0) {
       document.getElementById('stake-amount').addEventListener('input', updateRewardPreview);
 
       // Set up freeze button
-      document.getElementById('freeze-btn').addEventListener('click', createStake);
+      document.getElementById('freeze-btn').addEventListener('click', showConfirmStakeModal);
+
+      document.getElementById('confirm-stake-confirm-btn').addEventListener('click', confirmStakeFromModal);
+document.getElementById('confirm-stake-cancel-btn').addEventListener('click', hideConfirmStakeModal);
+
+document.getElementById('confirm-stake-modal').addEventListener('click', (event) => {
+  if (event.target.id === 'confirm-stake-modal') {
+    hideConfirmStakeModal();
+  }
+});
 
       // Set up tab navigation
       document.querySelectorAll('.tab-nav-btn').forEach(btn => {
@@ -2889,15 +3329,31 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
     });
 
     if (grantedCollections.length > 0) {
-      successMessage += `\nDiscord roles granted:\n`;
-      grantedCollections.forEach((col, i) => {
-        successMessage += `${i + 1}. ${col.role}\n`;
-      });
-    } else {
-      successMessage += `\n⚠️ NFT ownership was saved to your player profile, but no Discord role was granted yet.\n`;
-    }
+  successMessage += `\nDiscord roles granted:\n`;
+  grantedCollections.forEach((col, i) => {
+    successMessage += `${i + 1}. ${col.role}\n`;
+  });
+} else {
+  successMessage += `\n⚠️ NFT ownership was saved to your player profile, but no Discord role was granted yet.\n`;
+}
 
-    alert(successMessage);
+const genesisTierRoleSync = saveResult.genesis_tier_role_sync || null;
+
+if (genesisTierRoleSync && genesisTierRoleSync.attempted) {
+  const genesisTierLabel = String(genesisTierRoleSync.target_tier || '').trim();
+  const genesisCount = Number(genesisTierRoleSync.genesis_count || 0);
+  const genesisNftLabel = genesisCount === 1 ? 'Genesis NFT' : 'Genesis NFTs';
+
+  successMessage += `\nGenesis tier role synced:\n`;
+
+  if (genesisTierRoleSync.success && genesisTierLabel && genesisTierLabel !== 'none') {
+    successMessage += `1. 🧬 ${genesisTierLabel} (${genesisCount} verified ${genesisNftLabel})\n`;
+  } else {
+    successMessage += `1. ⚠️ Genesis tier sync was attempted but needs review.\n`;
+  }
+}
+
+alert(successMessage);
   } catch (error) {
     console.error("Verification error:", error);
     alert("Verification failed: " + error.message);

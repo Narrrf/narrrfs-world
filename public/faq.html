@@ -634,14 +634,128 @@ require_once 'discord-invite.php';
                 <span class="faq-chevron text-blue-300">⌄</span>
               </summary>
               <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
-                <p>
-                  Staking lets players freeze DSPOINC for a selected period and claim according to the live staking rules.
-                  Frozen DSPOINC should not be treated as spendable until it is completed or unstaked.
-                </p>
-                <p class="mt-3">
-                  <a href="stake-lab.html">Open Stake Lab</a>
-                </p>
-              </div>
+  <p>
+    Staking lets players freeze DSPOINC for a selected period and claim according to the live staking rules.
+    Frozen DSPOINC should not be treated as spendable until it is completed or unstaked.
+  </p>
+
+  <p class="mt-3">
+    Current staking is still running on the legacy contract. Season 13 V2 is already visible as a preview in the Stake Lab,
+    but it is not active yet.
+  </p>
+
+ <p class="mt-3">
+  The future V2 system introduces day-based lock pools and Genesis holder staking boosts. The same verified Genesis
+  count ladder is now also used for live Discord Genesis tier roles, while staking boosts remain preview-only until
+  Season 13 V2 is officially activated.
+</p>
+
+  <p class="mt-3">
+    <a href="stake-lab.html">Open Stake Lab</a>
+  </p>
+</div>
+
+<details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-cyan-500">
+  <summary class="flex items-center justify-between gap-4">
+    <h3 class="text-xl font-black text-cyan-200">🧬 How will Genesis staking boosts work in Season 13 V2?</h3>
+    <span class="faq-chevron text-cyan-300">⌄</span>
+  </summary>
+  <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+    <p>
+      Season 13 V2 is planned to turn Genesis mice into staking boosters. One Genesis opens the holder lane,
+      but the first real staking boost starts at two Genesis mice.
+    </p>
+
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-3"><strong>0 Genesis:</strong> x1.00</div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-3"><strong>1 Genesis:</strong> x1.00</div>
+      <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-3"><strong>2 Genesis:</strong> x1.025</div>
+      <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-3"><strong>3–5 Genesis:</strong> x1.05</div>
+      <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-3"><strong>6–15 Genesis:</strong> x1.10</div>
+      <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-3"><strong>16–29 Genesis:</strong> x1.20</div>
+      <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-3 sm:col-span-2"><strong>30+ Genesis:</strong> x1.35</div>
+    </div>
+
+    <p class="mt-4">
+      Same-tier rule: to keep the Genesis boost, a V2 staker must stay in the same or higher Genesis tier until claim time.
+      Selling below the starting tier keeps the base reward, but removes the Genesis boost.
+    </p>
+
+    <p class="mt-3">
+      This preview is informational until V2 is activated. Final staking rewards and Genesis ownership checks stay backend-authoritative.
+    </p>
+
+    <p class="mt-3">
+      <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer">Mint Genesis on Gensuki</a>
+      or
+      <a href="stake-lab.html">open the Stake Lab preview</a>.
+    </p>
+  </div>
+</details>
+
+<!-- 🧬 Live Genesis Discord Tier Roles FAQ
+     DEVS FOR DECADES:
+     This FAQ card explains the live Discord role utility layer.
+     It does not grant roles, verify ownership, call the bot, calculate staking
+     rewards, mutate DSPOINC, or activate Season 13 V2. The Discord bot and
+     backend ownership checks remain authoritative. -->
+<details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-green-500">
+  <summary class="flex items-center justify-between gap-4">
+    <h3 class="text-xl font-black text-green-200">🧬 What are Genesis Discord tier roles?</h3>
+    <span class="faq-chevron text-green-300">⌄</span>
+  </summary>
+
+  <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+    <p>
+      Genesis Discord tier roles are live recognition and utility roles for verified Genesis holders.
+      The Discord bot checks verified Genesis ownership, assigns the highest matching tier role,
+      and removes older Genesis tier roles so every holder keeps one clean tier identity.
+    </p>
+
+    <p class="mt-3">
+      The role ladder is based on verified <strong>Narrrfs World Genesis</strong> mice only.
+      VIP NFTs are not counted for this specific Genesis tier ladder.
+    </p>
+
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+      <div class="rounded-2xl border border-stone-300/25 bg-stone-400/10 p-3">
+        <strong>Genesis Tier 1:</strong> 1 Genesis
+      </div>
+
+      <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-3">
+        <strong>Genesis Tier 2:</strong> 2 Genesis
+      </div>
+
+      <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-3">
+        <strong>Genesis Collector:</strong> 3–5 Genesis
+      </div>
+
+      <div class="rounded-2xl border border-pink-300/25 bg-pink-400/10 p-3">
+        <strong>Genesis Expert:</strong> 6–15 Genesis
+      </div>
+
+      <div class="rounded-2xl border border-indigo-300/25 bg-indigo-400/10 p-3">
+        <strong>Genesis Elite Holder:</strong> 16–29 Genesis
+      </div>
+
+      <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-3">
+        <strong>Genesis Legend:</strong> 30+ Genesis
+      </div>
+    </div>
+
+    <p class="mt-4">
+      These Discord roles are live now. The connected Season 13 V2 staking boost system is still a preview
+      until the backend staking contract is officially activated.
+    </p>
+
+    <p class="mt-3">
+      <a href="get-roles.html#season13-v2-genesis-boost">Open the Genesis role guide</a>
+      or
+      <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer">mint Genesis on Gensuki</a>.
+    </p>
+  </div>
+</details>
+
             </details>
 
             <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-purple-500">

@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/staking-contract-helpers.php';
 
 function json_response($payload, $code = 200) {
     http_response_code($code);
@@ -138,6 +139,31 @@ if ($stake['status'] !== 'active') {
     ], 400);
 }
 
+$genesisExitData = null;
+
+/**
+ * Season 13 V2 unstake exit record.
+ *
+ * Plain language for DEVS:
+ * Early unstake already has its own DSPOINC penalty system.
+ * For future V2 stakes, we also record the user's Genesis holder tier at exit
+ * so support/devs can see whether the Genesis boost terms were still valid.
+ */
+if (staking_is_v2_stake($stake)) {
+    $currentGenesisCount = staking_count_verified_genesis_for_user($pdo, $user_id);
+    $currentGenesisTier = staking_get_genesis_tier($currentGenesisCount);
+    $finalRewardData = staking_calculate_v2_final_reward($stake, $currentGenesisTier);
+
+    $genesisExitData = [
+        'genesis_count_at_exit' => $currentGenesisCount,
+        'genesis_tier_at_exit' => $currentGenesisTier['key'],
+        'genesis_multiplier_at_exit' => $currentGenesisTier['multiplier'],
+        'genesis_terms_status' => $finalRewardData['terms_status'],
+        'genesis_terms_penalty_amount' => $finalRewardData['genesis_terms_penalty_amount'],
+        'final_reward_amount' => 0,
+    ];
+}
+
 // Calculate penalty (15% of original amount)
 $original_amount = (int)$stake['amount'];
 $penalty_amount = (int)floor($original_amount * 0.15); // 15% penalty, rounded down
@@ -149,27 +175,65 @@ try {
 
     $now = date('Y-m-d H:i:s');
 
-    // Update stake status to cancelled
-$updateStmt = $pdo->prepare("
-    UPDATE tbl_dspoinc_stakes 
-    SET status = 'cancelled',
-        cancelled_at = ?,
-        penalty_amount = ?,
-        returned_amount = ?,
-        unstake_reason = ?,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-      AND user_id = ?
-      AND status = 'active'
-");
-$updateStmt->execute([
-    $now,
-    $penalty_amount,
-    $returned_amount,
-    $unstake_reason,
-    $stake_id,
-    $user_id
-]);
+    // Update stake status to cancelled.
+// Phase A safety:
+// Legacy stakes keep the old unstake update shape.
+// Future V2 stakes additionally store the Genesis holder-tier exit record.
+if ($genesisExitData !== null) {
+    $updateStmt = $pdo->prepare("
+        UPDATE tbl_dspoinc_stakes 
+        SET status = 'cancelled',
+            cancelled_at = ?,
+            penalty_amount = ?,
+            returned_amount = ?,
+            unstake_reason = ?,
+            genesis_count_at_exit = ?,
+            genesis_tier_at_exit = ?,
+            genesis_multiplier_at_exit = ?,
+            genesis_terms_status = ?,
+            genesis_terms_penalty_amount = ?,
+            final_reward_amount = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+          AND user_id = ?
+          AND status = 'active'
+    ");
+    $updateStmt->execute([
+        $now,
+        $penalty_amount,
+        $returned_amount,
+        $unstake_reason,
+        $genesisExitData['genesis_count_at_exit'],
+        $genesisExitData['genesis_tier_at_exit'],
+        $genesisExitData['genesis_multiplier_at_exit'],
+        $genesisExitData['genesis_terms_status'],
+        $genesisExitData['genesis_terms_penalty_amount'],
+        $genesisExitData['final_reward_amount'],
+        $stake_id,
+        $user_id
+    ]);
+} else {
+    $updateStmt = $pdo->prepare("
+        UPDATE tbl_dspoinc_stakes 
+        SET status = 'cancelled',
+            cancelled_at = ?,
+            penalty_amount = ?,
+            returned_amount = ?,
+            unstake_reason = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+          AND user_id = ?
+          AND status = 'active'
+    ");
+    $updateStmt->execute([
+        $now,
+        $penalty_amount,
+        $returned_amount,
+        $unstake_reason,
+        $stake_id,
+        $user_id
+    ]);
+}
 
 if ($updateStmt->rowCount() !== 1) {
     $pdo->rollBack();

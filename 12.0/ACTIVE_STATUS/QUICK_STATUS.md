@@ -1,5 +1,1243 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+---
+
+## 🔎 FOLLOW-UP — SPOINC POOL BALANCE DISPLAY VIA HELIUS
+
+Zeno mentioned Narrrfs can use the Helius API to read the on-chain pool address balance and display live SOL + SPOINC pool values.
+
+Pool address:
+
+```text
+4dNcc6yRTdBjAxyDEjWCFRejNW4zJ2mT5AeAJG5VJVRh
+
+---
+
+## ✅ FOLLOW-UP — SPOINC POOL PURPOSE CLARIFIED WITH ZENO
+
+Zeno clarified the purpose of the 100,000 SPOINC pool.
+
+Important correction:
+
+The 100,000 SPOINC pool is not only a DSPOINC bridge coverage pool.
+
+It is the Gensuki swap / raise liquidity pool used so users can buy or swap into SPOINC through:
+
+```text
+SOL
+EMPIRE
+FOOK
+USDT
+USDC
+
+---
+
+## ✅ FOLLOW-UP — SPOINC ON-CHAIN BALANCES VERIFIED
+
+Narrrf manually checked both provided on-chain addresses and confirmed the expected SPOINC values are visible.
+
+Verified:
+
+```text
+Admin / authority wallet:
+A633zMm3rp7Jhi3K4Ks85K4sgkMR4SyYdk2hK8RW5mYU
+
+On-chain SPOINC pool address:
+4dNcc6yRTdBjAxyDEjWCFRejNW4zJ2mT5AeAJG5VJVRh
+
+Expected / shown:
+100,000 SPOINC
+
+Expected / shown:
+499,900,000 SPOINC
+
+# 🧬 Genesis Tier Discord Roles + V2 Staking Verification Bridge — Ready for Tomorrow Push
+
+**Date:** 2026-06-14
+**Status:** Local implementation completed / Profile + Stake Lab verification confirmed
+**Scope:** Discord bot command, holder verification save API, Profile popup, Stake Lab popup, Season 13 V2 communication prep
+
+---
+
+## ✅ Genesis Tier Role System Completed Locally
+
+The new Genesis tier Discord role system is now working locally and through the Discord bot command.
+
+Confirmed role ladder:
+
+```text
+Genesis Tier 1        = 1 Genesis
+Genesis Tier 2        = 2 Genesis
+Genesis Collector     = 3–5 Genesis
+Genesis Expert        = 6–15 Genesis
+Genesis Elite Holder  = 16–29 Genesis
+Genesis Legend        = 30+ Genesis
+```
+
+Confirmed role IDs:
+
+```text
+Genesis Tier 1        -> 1515508462333726902
+Genesis Tier 2        -> 1515508865976762400
+Genesis Collector     -> 1515509210228457632
+Genesis Expert        -> 1515508984054808757
+Genesis Elite Holder  -> 1515509447500369990
+Genesis Legend        -> 1515509774760804352
+```
+
+Important logic:
+
+```text
+Only verified Genesis NFTs count.
+VIP NFTs do not count for the Genesis tier ladder.
+Only one Genesis tier role should be active per member.
+The system never touches Holder, VIP Holder, Moderator, Admin, Bot Master, Champion, PokerOG, or unrelated Discord roles.
+```
+
+---
+
+## ✅ Discord Command Updated and Tested
+
+Command file:
+
+```text
+discord/commands/sync-holder-nft-roles.js
+```
+
+Slash command:
+
+```text
+/sync-genesis-tier-roles
+```
+
+New single-user option added:
+
+```text
+user_id
+```
+
+This allows safe one-user tier refresh without running the full holder sync.
+
+Confirmed test:
+
+```text
+/sync-genesis-tier-roles dry_run:true remove_old_tiers:true cleanup_zero_holders:false user_id:328601656659017732
+```
+
+Result:
+
+```text
+Single Genesis Tier Preview Complete
+User ID: 328601656659017732
+Verified Genesis Count: 102
+Target Tier: Genesis Legend
+Already Had: 1
+Success: YES
+```
+
+Confirmed live test:
+
+```text
+/sync-genesis-tier-roles dry_run:false remove_old_tiers:true cleanup_zero_holders:false user_id:328601656659017732
+```
+
+Result:
+
+```text
+Single Genesis Tier Sync Complete
+Verified Genesis Count: 102
+Target Tier: Genesis Legend
+Already Had: 1
+Success: YES
+```
+
+This confirms the single-user Genesis tier sync lane works.
+
+---
+
+## ✅ Slash Command Deployment Issue Solved
+
+Issue seen:
+
+```text
+user_id option did not appear in Discord
+```
+
+Cause:
+
+```text
+Command file was not saved / slash command schema had not been redeployed yet.
+```
+
+Deploy confirmed through:
+
+```text
+discord/package.json
+npm run deploy -> node deploy-commands.js
+```
+
+After redeploy and bot restart, the `user_id` field appeared in Discord and worked.
+
+---
+
+## ✅ Verification API Bridge Added
+
+Patched file:
+
+```text
+api/user/save-verified-nft-scan.php
+```
+
+Purpose:
+
+```text
+After verified NFT ownership is saved and COMMIT is complete,
+the API now performs a best-effort Genesis tier Discord role sync.
+```
+
+Important safety rule:
+
+```text
+NFT verification must still succeed even if Discord tier sync fails.
+```
+
+Architecture decision:
+
+```text
+verify-nft-holder.php remains responsible for base Holder / VIP Holder role verification.
+save-verified-nft-scan.php now handles the additional Genesis tier sync after verified ownership is committed.
+Profile and Stake Lab already call save-verified-nft-scan.php, so one backend hook covers both pages.
+```
+
+No changes were made to the existing Holder / VIP Holder base gate.
+
+---
+
+## ✅ Existing Role API Verified
+
+Checked file:
+
+```text
+api/discord/grant-role.php
+```
+
+Confirmed support:
+
+```text
+add_role    -> Discord PUT
+remove_role -> Discord DELETE
+```
+
+Therefore no grant-role.php changes were required.
+
+The new Genesis tier sync reuses the existing Discord role API safely.
+
+---
+
+## ✅ Profile + Stake Lab Verification Confirmed
+
+Verified locally on both:
+
+```text
+public/profile.html
+public/stake-lab.html
+```
+
+Result:
+
+```text
+NFT verification works on both pages.
+Base Discord roles still show:
+- Holder
+- VIP Holder
+```
+
+Frontend popup was extended to also show the Genesis tier role sync result from:
+
+```text
+genesis_tier_role_sync
+```
+
+Expected popup now includes:
+
+```text
+Genesis tier role synced:
+🧬 Genesis Collector / Genesis Expert / Genesis Elite Holder / Genesis Legend
+```
+
+depending on verified Genesis count.
+
+---
+
+## ✅ Local Verification Result Confirmed
+
+Example local verification popup showed:
+
+```text
+NFT Verification Successful
+
+Verified collections:
+Narrrfs World: Genesis Genetic
+Narrrf Genesis VIP Drop
+
+Discord roles granted:
+Holder
+VIP Holder
+```
+
+After popup patch, this now also shows the synced Genesis tier role.
+
+---
+
+## ✅ Season 13 V2 Staking Communication Prep
+
+This update supports tomorrow’s community announcement around:
+
+```text
+Season 13 V2 staking preview
+Genesis holder tier recognition
+Discord Genesis tier roles
+Future staking multiplier direction
+```
+
+Important communication guardrail:
+
+```text
+V2 staking is prepared / previewed, but not activated yet unless the active contract constant is intentionally changed.
+Current staking remains legacy_v1.
+No profit promises.
+No guaranteed returns.
+No “price will double” language.
+```
+
+Current safe wording:
+
+```text
+Genesis holders now receive clearer Discord recognition.
+Genesis tier roles are live recognition roles based on verified Genesis ownership.
+Season 13 V2 staking is being prepared to use Genesis tier logic for future holder utility.
+Current DSPOINC staking remains safe on legacy_v1 until activation.
+```
+
+---
+
+## 🚨 Tomorrow Push Guardrails
+
+Before pushing live:
+
+```text
+1. Run syntax checks:
+   php -l api/user/save-verified-nft-scan.php
+   php -l api/user/verify-nft-holder.php
+   node -c discord/commands/sync-holder-nft-roles.js
+
+2. Confirm slash command file is deployed:
+   cd discord
+   npm run deploy
+
+3. Restart bot after deploy.
+
+4. Verify Profile holder verification live.
+
+5. Verify Stake Lab holder verification live.
+
+6. Test one Discord user:
+   /sync-genesis-tier-roles dry_run:true user_id:328601656659017732
+
+7. Confirm popup shows Genesis tier role sync result.
+
+8. Keep current staking contract on legacy_v1 unless V2 activation is explicitly planned.
+```
+
+---
+
+## ➡️ Next Step
+
+Tomorrow:
+
+```text
+Push the full update.
+Verify live APIs.
+Verify Discord role sync.
+Then publish community announcement about:
+- Genesis tier roles
+- Season 13 V2 staking preview
+- verified holder recognition
+- no need for users to panic; verify flow remains the same
+```
+
+
+# 🧬 Genesis Tier Roles + Season 13 V2 Staking Prep — Status Sync
+
+**Date:** 2026-06-14
+**Status:** Genesis tier roles live-tested / FAQ + Get Roles updated / holder verification integration planned for tomorrow
+**Scope:** Discord bot role sync, Genesis ownership tiers, `get-roles.html`, `faq.html`, Stake Lab/Profile holder verification planning.
+
+---
+
+## ✅ Genesis Discord Tier Roles Created + Synced
+
+A new Discord Genesis tier role ladder was created and tested successfully.
+
+Confirmed role ladder:
+
+```text
+Genesis Tier 1        → 1 Genesis      → 1515508462333726902
+Genesis Tier 2        → 2 Genesis      → 1515508865976762400
+Genesis Collector     → 3–5 Genesis    → 1515509210228457632
+Genesis Expert        → 6–15 Genesis   → 1515508984054808757
+Genesis Elite Holder  → 16–29 Genesis  → 1515509447500369990
+Genesis Legend        → 30+ Genesis    → 1515509774760804352
+```
+
+The bot sync command now reads verified Genesis ownership and assigns the correct tier role.
+
+Important rule:
+
+```text
+Only verified Genesis ownership counts.
+VIP NFTs do not count for this Genesis tier ladder.
+Each holder should have only one Genesis tier role.
+The bot removes old/lower Genesis tier roles when remove_old_tiers:true is used.
+```
+
+---
+
+## ✅ Discord Bot Dry Run Passed
+
+Command tested:
+
+```text
+/sync-genesis-tier-roles dry_run:true remove_old_tiers:true cleanup_zero_holders:false batch_size:10 batch_delay_ms:1200
+```
+
+Confirmed result:
+
+```text
+Verified Genesis holders loaded: 89
+Qualifying holders: 89
+Elapsed: 11s
+Granted: 89
+Already Had: 0
+Removed Old Tier Roles: 0
+Missing Members: 0
+Failed: 0
+```
+
+Console dry run confirmed correct tier mapping:
+
+```text
+30+ Genesis  → Genesis Legend
+6–15 Genesis → Genesis Expert
+3–5 Genesis  → Genesis Collector
+2 Genesis    → Genesis Tier 2
+1 Genesis    → Genesis Tier 1
+```
+
+---
+
+## ✅ DB API Query Fix Applied
+
+The first bot dry run failed because the DB API blocks queries starting with `WITH`.
+
+Error was:
+
+```text
+Query not allowed: Only SELECT, INSERT, UPDATE, DELETE permitted.
+```
+
+Fix applied:
+
+```text
+Rewrote the verified Genesis ownership query to start with SELECT and use a nested SELECT instead of a WITH CTE.
+```
+
+The logic still keeps the same safety rule:
+
+```text
+one current/best verified ownership row per Genesis token
+dedupe by token_id + collection
+prefer verified/current/latest ownership rows
+```
+
+---
+
+## ✅ Get Roles Page Updated
+
+`public/get-roles.html` was updated to show the Genesis tier system as live Discord utility.
+
+New page messaging:
+
+```text
+Live Genesis Discord Roles
+More Genesis. Higher Holder Tier.
+Genesis tier roles sync from verified Genesis ownership.
+VIP NFTs are not counted for this ladder.
+Season 13 V2 staking boosts remain preview/planned until activation.
+```
+
+The top CTA should now point users toward:
+
+```text
+🧬 Genesis Tier Roles
+```
+
+instead of only:
+
+```text
+🧬 Season 13 V2 Boosts
+```
+
+---
+
+## ✅ FAQ Updated
+
+`public/faq.html` was updated with a new Genesis Discord tier role FAQ.
+
+The FAQ now explains:
+
+```text
+Genesis Discord tier roles are live recognition/utility roles.
+Bot assigns the highest matching tier from verified Genesis ownership.
+VIP NFTs do not count for this specific ladder.
+The same Genesis count ladder connects to planned Season 13 V2 staking boosts.
+V2 staking boosts are still preview-only until backend activation.
+```
+
+---
+
+## ✅ Season 13 V2 Staking Context Remains Safe
+
+Staking V2 is still prepared but not active.
+
+Current correct status:
+
+```text
+V2 staking infrastructure is ready.
+Live DB migration is done.
+Stake Lab preview exists.
+Genesis tier system is implemented.
+Current staking remains legacy_v1.
+Season 13 V2 is not activated yet.
+```
+
+Important guardrail:
+
+```text
+ACTIVE_STAKING_CONTRACT_VERSION must remain legacy_v1 until intentional Season 13 launch.
+```
+
+---
+
+## ⏳ Tomorrow’s Planned Work: Holder Verification Integration
+
+Next task is to carefully integrate the new Genesis tier role refresh into the existing holder verification flow.
+
+Current holder verification flow grants base roles only:
+
+```text
+Genesis holder → Holder / Genesis holder access
+VIP holder     → VIP Holder
+```
+
+Planned improvement:
+
+```text
+After Profile or Stake Lab holder verification saves verified Genesis ownership,
+trigger a single-user Genesis tier role refresh.
+```
+
+Target pages/flows:
+
+```text
+profile.html holder verification
+stake-lab.html holder verification
+api/user/verify-nft-holder.php
+api/user/save-verified-nft-scan.php
+Discord bot Genesis tier sync command/helper
+```
+
+Safety requirements for tomorrow:
+
+```text
+Do not let frontend decide tier roles from foundNFTs length.
+Do not count VIP NFTs toward Genesis tier roles.
+Do not break existing Holder / VIP Holder grant flow.
+Do not run full 1k-member sync on every verification.
+Add or reuse a single-user tier refresh path.
+If Discord tier refresh fails, holder verification should still complete.
+Log tier role errors separately.
+```
+
+Expected final behavior after tomorrow’s integration:
+
+```text
+User verifies Genesis on Profile or Stake Lab.
+Existing holder verification still works.
+Verified Genesis ownership is saved.
+Bot/backend refreshes that one user’s Genesis tier role.
+Only one Genesis tier role remains active.
+VIP Holder logic remains untouched.
+```
+
+---
+
+## ➡️ Next Step
+
+Tomorrow, inspect these files before editing:
+
+```text
+api/user/verify-nft-holder.php
+api/user/save-verified-nft-scan.php
+discord/commands/sync-holder-nft-roles.js or sync-genesis-tier-roles.js
+profile.html holder verification functions
+stake-lab.html holder verification functions
+```
+
+Then implement the smallest safe bridge between verified ownership save and single-user Genesis tier role refresh.
+
+
+# 🧀 Weekly Friday Event Ops — Community Event Templates Prepared
+
+**Date:** 2026-06-12  
+**Status:** Social/event ops prepared  
+**Scope:** Discord community-events, Twitter/X morning hype, Friday poker/race/rumble promotion
+
+---
+
+## ✅ Friday Community Events Post Prepared
+
+Prepared updated Discord community-events announcement for today’s Friday event cycle.
+
+Included confirmed timeline:
+
+```text
+Artanova Holder Super Poker Event = 5 PM UTC
+Narrrfs Warm-Up Battle Zone = 5:30 PM UTC
+Narrrfs Main Arena / Poker = <t:1781287200:f>
+Club ID = 821719
+
+# 🌉 SPOINC Bridge Lab Theme + Waiting Mode Updated
+
+**Date:** 2026-06-12
+**Status:** Local frontend update completed / visual check pending
+**Scope:** `public/swap-lab.html`
+
+---
+
+## ✅ Swap Lab Theme Updated
+
+`public/swap-lab.html` was updated to better match the current Season 12 / Stake Lab visual direction.
+
+Added Season 12-style orange / pink / cyan background atmosphere:
+
+```text
+swap-season12-orb orange
+swap-season12-orb pink
+swap-season12-orb cyan
+```
+
+Updated visual shell:
+
+```text
+dark Season 12 gradient background
+orange / pink / cyan glow feeling
+stronger glass cards
+hoverable stat cards
+Stake Lab-style visual direction
+```
+
+This is visual-only and does not change bridge execution logic.
+
+---
+
+## ✅ Bridge Waiting Mode Clarified
+
+The page now clearly communicates:
+
+```text
+SPOINC Bridge Lab • Waiting for Gensuki Payload
+Safe Waiting Mode
+Bridge execution waits for the final Gensuki API contract
+SPOINC ↔ DSPOINC only
+Waiting for API payload
+```
+
+Important bridge guardrail remains:
+
+```text
+No automatic DSPOINC credit
+No automatic DSPOINC deduction
+No guessed Gensuki payload
+No partner API assumptions
+No backend swap execution changes
+```
+
+Bridge activation still waits for Zeno / Gensuki final payload, endpoint shape, confirmation fields, and replay-safety requirements.
+
+---
+
+## ✅ Economy Routing Added
+
+Swap Lab now gives users clear routing while bridge is paused:
+
+```text
+Stake DSPOINC -> stake-lab.html
+Mint Genesis / view V2 benefits -> mint.html#season13-v2-genesis-utility
+Bridge Later -> waits for API payload
+```
+
+Added CTA checks confirmed locally:
+
+```text
+Open Stake Lab
+View Genesis Benefits
+Waiting for API payload
+Stake Lab remains separate from bridge execution
+```
+
+---
+
+## ✅ Safety Rules Expanded
+
+Bridge Safety Rules now include:
+
+```text
+Frontend never stores partner API keys.
+Backend creates swap intent before any movement.
+Confirmed partner transaction required before DSPOINC changes.
+No DSPOINC credit before confirmed Gensuki callback.
+No DSPOINC deduction before recorded replay-safe request.
+Stake Lab remains separate from bridge execution.
+```
+
+---
+
+## ✅ Local Hook Check Passed
+
+Local `Select-String` check confirmed the new hooks exist:
+
+```text
+swap-season12-orb
+Waiting for Gensuki Payload
+Safe Waiting Mode
+SPOINC ↔ DSPOINC only
+Open Stake Lab
+View Genesis Benefits
+Waiting for API payload
+Stake Lab remains separate
+```
+
+---
+
+## ➡️ Next Step
+
+Open and visually review:
+
+```text
+http://localhost/swap-lab.html
+```
+
+Expected result:
+
+```text
+✅ page matches Season 12 / Stake Lab color direction better
+✅ bridge clearly shows waiting mode
+✅ users understand DSPOINC staking is in Stake Lab
+✅ users understand Genesis mint/V2 benefits route to mint page
+✅ no swap/API/backend logic changed
+```
+
+---
+
+## 🚨 Deployment Guardrail
+
+Swap Lab frontend theme can be pushed with the current website update, but the real SPOINC bridge must remain paused until Gensuki provides the final API/payload contract.
+
+Do not activate automatic swap balance changes yet.
+
+
+# 🧬 DSPOINC Staking V2 — Genesis Tier Ladder Updated
+
+**Date:** 2026-06-12
+**Status:** Local helper updated / API preview confirmed
+**Scope:** `api/user/staking-contract-helpers.php`
+
+---
+
+## ✅ Updated Genesis Multiplier Plan
+
+The Season 13 V2 Genesis staking multiplier ladder was updated before frontend preview work.
+
+New confirmed ladder:
+
+```text
+0 Genesis      = x1.00  / no Genesis boost
+1 Genesis      = x1.00  / holder lane opened, no boost yet
+2 Genesis      = x1.025 / second Genesis spark
+3–5 Genesis    = x1.05  / collector boost
+6–15 Genesis   = x1.10  / strong holder boost
+16–29 Genesis  = x1.20  / elite holder boost
+30+ Genesis    = x1.35  / max conviction boost
+```
+
+Reason for change:
+
+```text
+The previous 1–4 Genesis = x1.00 tier did not create enough incentive for holders to accumulate a second, third, or fourth Genesis.
+The new ladder makes the second Genesis meaningful without making early tiers too generous.
+```
+
+---
+
+## ✅ Local API Preview Confirmed
+
+`get-stakes.php` now returns the updated ladder.
+
+Confirmed Narrrf preview:
+
+```text
+current_genesis_count = 102
+current_genesis_tier.key = genesis_30_plus
+current_genesis_tier.label = 30+ Genesis
+current_genesis_tier.multiplier = 1.35
+active_contract_version = legacy_v1
+season13_v2_active = false
+```
+
+Frontend preview should now use this updated backend ladder.
+
+
+# 🧊 DSPOINC Staking V2 Phase A — Backend Test Cleanup + JSON Parser Confirmed
+
+**Date:** 2026-06-12
+**Status:** Local backend Phase A tests passed / temporary local test stakes cleaned
+**Scope:** `create-stake.php`, `get-stakes.php`, V2 preview payload, local DB cleanup.
+
+---
+
+## ✅ Final Local Test Status
+
+The `create-stake.php` shared request parser is now installed and syntax checked.
+
+Confirmed behavior:
+
+```text
+✅ JSON POST works
+✅ form POST works
+✅ user_id, amount, and freeze_duration_months use the same shared request data
+✅ legacy_v1 stake creation still works
+✅ new V2-ready DB columns are written on new legacy stakes
+```
+
+Successful JSON test used:
+
+```text
+user_id = 328601656659017732
+amount = 400
+freeze_duration_months = 1
+stake_id = 131
+staking_contract_version = legacy_v1
+base_reward_rate = 2.0
+base_expected_reward = 8
+genesis_terms_status = legacy_not_required
+metadata includes created_from = stake_lab_phase_a
+```
+
+---
+
+## ✅ Local Test Stakes Cleaned
+
+Temporary local Phase A test stakes were removed:
+
+```text
+stake_id 130
+stake_id 131
+```
+
+Cleanup verification:
+
+```text
+SELECT id,user_id,amount,status,metadata
+FROM tbl_dspoinc_stakes
+WHERE id IN (130,131);
+
+Result: no rows
+```
+
+Remaining active frozen DSPOINC for Narrrf after cleanup:
+
+```text
+active_frozen = 1001000
+```
+
+This matches the real remaining active stakes and no longer includes the temporary test stakes.
+
+---
+
+## ✅ V2 Preview Payload Confirmed
+
+`get-stakes.php` locally returns:
+
+```text
+staking_contracts
+season13_v2_preview
+pools
+genesis_tiers
+current_genesis_count
+current_genesis_tier
+same_tier_rule
+non_genesis_allowed
+```
+
+Confirmed Narrrf local preview:
+
+```text
+current_genesis_count = 102
+current_genesis_tier = genesis_50_plus
+current_genesis_multiplier = x1.35
+active_contract_version = legacy_v1
+season13_v2_active = false
+```
+
+---
+
+## ➡️ Next Step
+
+Add a read-only Season 13 V2 preview panel to `public/stake-lab.html`.
+
+Important frontend guardrail:
+
+```text
+Do not activate V2 staking yet.
+Do not change create-stake payload yet.
+Do not change legacy duration buttons yet.
+Only display the V2 preview data returned by get-stakes.php.
+```
+
+
+# 🧊 Narrrfs World 13.0 — DSPOINC Staking V2 Phase A Backend Safety Ready
+
+**Date:** 2026-06-12
+**Agent:** Lab System 9.96 NEW
+**Scope:** DSPOINC staking backend preparation for future Season 13 V2 staking contracts with Genesis holder multipliers.
+
+---
+
+## ✅ Phase A Backend Status
+
+DSPOINC staking is now prepared for versioned staking contracts while keeping current live behavior on `legacy_v1`.
+
+Confirmed contract versions:
+
+```text
+legacy_v1 = current active staking behavior
+season13_v2 = future staking contract version, not active yet
+```
+
+Current active constant remains safe:
+
+```text
+ACTIVE_STAKING_CONTRACT_VERSION = legacy_v1
+```
+
+This means all new stakes still use the existing legacy behavior until the team intentionally flips the constant after live DB migration and frontend readiness.
+
+---
+
+## ✅ Local DB Migration Completed
+
+Local `tbl_dspoinc_stakes` was migrated with new V2-ready fields:
+
+```text
+staking_contract_version
+lock_duration_days
+base_reward_rate
+base_expected_reward
+genesis_count_at_stake
+genesis_tier_at_stake
+genesis_multiplier_at_stake
+genesis_count_at_exit
+genesis_tier_at_exit
+genesis_multiplier_at_exit
+genesis_terms_status
+genesis_terms_penalty_amount
+final_reward_amount
+```
+
+Confirmed local DB state:
+
+```text
+PRAGMA integrity_check = ok
+existing stakes remain legacy_v1
+```
+
+Existing local stakes were preserved and marked by default as:
+
+```text
+staking_contract_version = legacy_v1
+```
+
+---
+
+## ✅ New Helper Added
+
+New backend helper file:
+
+```text
+api/user/staking-contract-helpers.php
+```
+
+Helper provides:
+
+```text
+staking contract constants
+Season 13 V2 lock pools
+Genesis multiplier tiers
+Genesis ownership counting
+same-or-higher tier validation
+V2 reward calculation
+V2 final reward / penalty calculation
+V2 stake detection
+active contract detection
+```
+
+Confirmed Genesis tier rules:
+
+```text
+0 Genesis = x1.00 / no boost
+1–4 Genesis = x1.00
+5–14 Genesis = x1.05
+15–29 Genesis = x1.10
+30–49 Genesis = x1.20
+50+ Genesis = x1.35
+```
+
+Confirmed Season 13 V2 base pools:
+
+```text
+14 days = 0.5%
+30 days = 1.25%
+90 days = 5%
+180 days = 12%
+365 days = 30%
+730 days = 75%
+```
+
+---
+
+## ✅ Backend Files Patched
+
+Patched staking backend files:
+
+```text
+api/user/create-stake.php
+api/user/complete-stake.php
+api/user/claim-stake-reward.php
+api/user/unstake-stake.php
+api/user/get-stakes.php
+api/user/get-staking-stats.php
+```
+
+Backend safety behavior:
+
+```text
+create-stake.php:
+- still creates legacy_v1 stakes
+- writes new V2-ready columns
+- metadata includes contract_version and stake_lab_phase_a
+
+complete-stake.php:
+- legacy_v1 stakes keep current auto-complete payout behavior
+- future season13_v2 stakes are marked completed only
+- future season13_v2 stakes do not auto-pay here, so claim-time Genesis validation cannot be bypassed
+
+claim-stake-reward.php:
+- legacy_v1 claims keep current reward behavior
+- future season13_v2 claims re-check Genesis tier at claim time
+- future season13_v2 claims store exit count, exit tier, multiplier, terms status, penalty amount, and final reward
+
+unstake-stake.php:
+- legacy_v1 early unstake behavior remains unchanged
+- future season13_v2 early unstake stores Genesis exit state for support/dev review
+- early unstake final_reward_amount is stored as 0
+
+get-stakes.php:
+- returns staking_contracts
+- returns season13_v2_preview with pools, Genesis tiers, current Genesis count/tier, same-tier rule, and non_genesis_allowed
+
+get-staking-stats.php:
+- returns staking_contracts and season13_v2_preview in both staking_stats and data response shapes
+```
+
+---
+
+## ✅ Local Tests Passed
+
+Local Phase A legacy stake creation test passed using form POST.
+
+Test stake:
+
+```text
+stake_id = 129
+user_id = 328601656659017732
+amount = 7000
+freeze_duration_months = 1
+reward_rate = 0.02
+expected_reward = 140
+staking_contract_version = legacy_v1
+lock_duration_days = NULL
+base_reward_rate = 2.0
+base_expected_reward = 140
+genesis_count_at_stake = 0
+genesis_tier_at_stake = no_genesis
+genesis_multiplier_at_stake = 1.0
+genesis_terms_status = legacy_not_required
+metadata includes created_from = stake_lab_phase_a
+```
+
+This confirms Phase A legacy creation writes the new schema correctly while preserving legacy behavior.
+
+---
+
+## ✅ Genesis Ownership Check
+
+Local Genesis ownership for Narrrf was verified separately.
+
+Result:
+
+```text
+user_id 328601656659017732 has Genesis ownership rows
+collection breakdown:
+genesis = 131
+vip = 9
+```
+
+Important clarification:
+
+```text
+active_frozen = 0 only means no active frozen DSPOINC stakes.
+It does not mean the user has 0 NFTs.
+```
+
+---
+
+## ⚠️ Known Local Issue Found
+
+JSON POST to `create-stake.php` is inconsistent because the file reads `php://input` in more than one place.
+
+Observed behavior:
+
+```text
+form POST works
+JSON POST can parse user_id but later lose amount/duration and fall back to amount = 0
+```
+
+Next planned fix:
+
+```text
+Patch create-stake.php with one shared request parser:
+- read php://input once
+- decode JSON once
+- merge JSON, POST, and GET
+- reuse the same request data for user_id, amount, and freeze_duration_months
+```
+
+---
+
+## ⚠️ Local Cleanup Needed
+
+If test stake `129` still exists, remove it from local DB before further testing:
+
+```text
+DELETE FROM tbl_dspoinc_stakes
+WHERE id = 129
+  AND user_id = '328601656659017732'
+  AND metadata LIKE '%stake_lab_phase_a%';
+```
+
+Then verify:
+
+```text
+SELECT COUNT(*) FROM tbl_dspoinc_stakes WHERE id = 129;
+```
+
+Expected result:
+
+```text
+0
+```
+
+---
+
+## 🚨 Live Deployment Guardrail
+
+Do not push this staking backend live until the live DB has the same V2 columns.
+
+Before deploy:
+
+```text
+1. Backup live DB
+2. Run PRAGMA integrity_check
+3. Apply staking V2 column migration live
+4. Run PRAGMA integrity_check again
+5. Persist /var/www/html/db/narrrf_world.sqlite to /data/narrrf_world.sqlite
+6. Only then deploy PHP files referencing the new columns
+```
+
+Season 13 V2 must not be activated until frontend preview, live DB, and final tests are complete.
+
+
+# 🧊 Narrrfs World 13.0 — DSPOINC Staking V2 Genesis Holder Multiplier Plan
+
+**Date:** 2026-06-12  
+**Agent:** Lab System 9.96 NEW  
+**Scope:** Season 13 DSPOINC staking redesign with versioned contracts, fairer lock rates, and Genesis holder multipliers.
+
+---
+
+## ✅ Confirmed V2 Direction
+
+The DSPOINC staking system will become versioned:
+
+```text
+staking_contract_version = legacy_v1
+staking_contract_version = season13_v2
+
+---
+
+# 🌉 SPOINC ↔ DSPOINC BRIDGE — GENSUKI WAIT STATUS
+
+**Date:** 2026-06-12  
+**Agent:** SPOINC ↔ DSPOINC API Agent 2.0  
+**Status:** Waiting for Gensuki final API/payload update  
+**Scope:** SPOINC token info, bridge pricing safety, treasury coverage, Gensuki routes, CORS, and next API payload requirements.
+
+---
+
+## ✅ Current Bridge Scope Confirmed
+
+Narrrfs side must stay focused on:
+
+```text
+DSPOINC ↔ SPOINC only
+
+# 🧊 Narrrfs World 13.0 — DSPOINC Staking Contract Transition Plan
+
+**Date:** 2026-06-12  
+**Agent:** Lab System 9.96 NEW  
+**Scope:** Stake Lab transition from legacy DSPOINC staking toward versioned Season 13 staking economy.
+
+---
+
+## ✅ Confirmed Direction
+
+DSPOINC staking will move to a versioned contract model:
+
+```text
+staking_contract_version = legacy_v1
+staking_contract_version = season12_v2
+
 # 🧠 Narrrfs World 13.0 — Lab System 9.96 NEW / Reward Chests + Cheese Hunt Sync
 
 **Date:** 2026-06-10  

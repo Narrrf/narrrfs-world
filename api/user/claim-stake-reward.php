@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/staking-contract-helpers.php';
 
 function json_response($payload, $code = 200) {
     http_response_code($code);
@@ -179,6 +180,33 @@ $already_processed = ((int)$completeCheck['count'] > 0);
 // Calculate total return (original amount + reward)
 $original_amount = (int)$stake['amount'];
 $reward_amount = (int)$stake['expected_reward'];
+$genesisExitData = null;
+
+/**
+ * Season 13 V2 final reward check.
+ *
+ * Plain language for DEVS:
+ * Legacy stakes keep their stored expected_reward.
+ * V2 stakes must re-check the user's verified Genesis holder tier at claim time.
+ * If the user dropped below the starting tier, they keep the base reward but
+ * lose the Genesis multiplier bonus.
+ */
+if (staking_is_v2_stake($stake)) {
+    $currentGenesisCount = staking_count_verified_genesis_for_user($pdo, $user_id);
+    $currentGenesisTier = staking_get_genesis_tier($currentGenesisCount);
+    $finalRewardData = staking_calculate_v2_final_reward($stake, $currentGenesisTier);
+
+    $reward_amount = (int)$finalRewardData['final_reward_amount'];
+    $genesisExitData = [
+        'genesis_count_at_exit' => $currentGenesisCount,
+        'genesis_tier_at_exit' => $currentGenesisTier['key'],
+        'genesis_multiplier_at_exit' => $currentGenesisTier['multiplier'],
+        'genesis_terms_status' => $finalRewardData['terms_status'],
+        'genesis_terms_penalty_amount' => $finalRewardData['genesis_terms_penalty_amount'],
+        'final_reward_amount' => $finalRewardData['final_reward_amount'],
+    ];
+}
+
 $total_returned = $original_amount + $reward_amount;
 
 // Begin transaction
@@ -259,13 +287,39 @@ try {
     ]);
 
     // Update stake reward_paid to store the actual reward amount (matches complete-stake.php pattern)
+    if ($genesisExitData !== null) {
     $updateStmt = $pdo->prepare("
-        UPDATE tbl_dspoinc_stakes 
+        UPDATE tbl_dspoinc_stakes
+        SET reward_paid = ?,
+            genesis_count_at_exit = ?,
+            genesis_tier_at_exit = ?,
+            genesis_multiplier_at_exit = ?,
+            genesis_terms_status = ?,
+            genesis_terms_penalty_amount = ?,
+            final_reward_amount = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND user_id = ?
+    ");
+    $updateStmt->execute([
+        $reward_amount,
+        $genesisExitData['genesis_count_at_exit'],
+        $genesisExitData['genesis_tier_at_exit'],
+        $genesisExitData['genesis_multiplier_at_exit'],
+        $genesisExitData['genesis_terms_status'],
+        $genesisExitData['genesis_terms_penalty_amount'],
+        $genesisExitData['final_reward_amount'],
+        $stake_id,
+        $user_id
+    ]);
+} else {
+    $updateStmt = $pdo->prepare("
+        UPDATE tbl_dspoinc_stakes
         SET reward_paid = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ? AND user_id = ?
     ");
     $updateStmt->execute([$reward_amount, $stake_id, $user_id]);
+}
 
     // Create audit trail entry
     $adjustStmt = $pdo->prepare("

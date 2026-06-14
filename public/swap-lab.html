@@ -20,31 +20,88 @@
 
     * { box-sizing: border-box; }
 
-    body {
+        body {
       min-height: 100vh;
       margin: 0;
       color: #fff;
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 14% 16%, rgba(250, 204, 21, 0.16), transparent 28%),
-        radial-gradient(circle at 86% 10%, rgba(34, 211, 238, 0.14), transparent 30%),
-        radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.10), transparent 34%),
-        linear-gradient(135deg, #020617, #0f172a 48%, #111827);
+        radial-gradient(circle at 12% 8%, rgba(250, 204, 21, 0.18), transparent 30%),
+        radial-gradient(circle at 84% 18%, rgba(236, 72, 153, 0.16), transparent 30%),
+        radial-gradient(circle at 50% 82%, rgba(34, 211, 238, 0.16), transparent 34%),
+        linear-gradient(135deg, #020617 0%, #1e1b4b 42%, #431407 100%);
+      overflow-x: hidden;
     }
 
-    .glass {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.68));
+    .swap-season12-orb {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 9999px;
+      filter: blur(18px);
+      opacity: 0.42;
+      animation: swapFloatOrb 8s ease-in-out infinite;
+    }
+
+    .swap-season12-orb.orange {
+      width: 14rem;
+      height: 14rem;
+      top: 8%;
+      left: -5rem;
+      background: rgba(249, 115, 22, 0.22);
+    }
+
+    .swap-season12-orb.pink {
+      width: 16rem;
+      height: 16rem;
+      top: 24%;
+      right: -6rem;
+      background: rgba(236, 72, 153, 0.18);
+      animation-delay: -2s;
+    }
+
+    .swap-season12-orb.cyan {
+      width: 15rem;
+      height: 15rem;
+      bottom: 8%;
+      left: 30%;
+      background: rgba(34, 211, 238, 0.16);
+      animation-delay: -4s;
+    }
+
+    @keyframes swapFloatOrb {
+      0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+      50% { transform: translateY(-18px) translateX(8px) scale(1.04); }
+    }
+
+        .glass {
+      background:
+        radial-gradient(circle at top left, rgba(250, 204, 21, 0.08), transparent 38%),
+        linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74));
       border: 1px solid rgba(255, 255, 255, 0.10);
       border-radius: 24px;
-      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.35),
+        0 0 34px rgba(249, 115, 22, 0.08);
       backdrop-filter: blur(18px);
     }
 
-    .stat-card {
+        .stat-card {
       border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.10);
-      background: rgba(255, 255, 255, 0.055);
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent 38%),
+        rgba(255, 255, 255, 0.055);
       padding: 16px;
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(250, 204, 21, 0.28);
+      box-shadow:
+        0 18px 42px rgba(0, 0, 0, 0.28),
+        0 0 26px rgba(249, 115, 22, 0.08);
     }
 
     .label {
@@ -108,14 +165,24 @@
   </style>
 </head>
 <body>
+  <!-- ☀️ Season 12 bridge shell orbs.
+     DEVS FOR DECADES:
+     Visual-only background atmosphere. These do not control bridge state,
+     balances, DSPOINC, SPOINC, partner bridge status, or staking logic. -->
+  <div class="swap-season12-orb orange"></div>
+  <div class="swap-season12-orb pink"></div>
+  <div class="swap-season12-orb cyan"></div>
+
   <header class="sticky top-0 z-40 border-b border-yellow-400/20 bg-black/70 backdrop-blur-md">
     <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
       <a href="index.html" class="text-lg font-black text-yellow-300 md:text-xl">🧀 Narrrf's World</a>
       <nav class="flex flex-wrap items-center gap-4 text-sm text-slate-200">
         <a class="hover:text-yellow-300" href="index.html">Home</a>
-        <a class="hover:text-yellow-300" href="profile.html">Profile</a>
-        <a class="hover:text-yellow-300" href="lab.html">Lab</a>
-        <a class="hover:text-yellow-300" href="leaderboard.html">Leaderboard</a>
+<a class="hover:text-yellow-300" href="profile.html">Profile</a>
+<a class="hover:text-yellow-300" href="lab.html">Lab</a>
+<a class="hover:text-yellow-300" href="stake-lab.html">Stake Lab</a>
+<a class="hover:text-yellow-300" href="mint.html">Mint</a>
+<a class="hover:text-yellow-300" href="leaderboard.html">Leaderboard</a>
       </nav>
     </div>
   </header>
@@ -124,11 +191,31 @@
     <section class="glass overflow-hidden p-5 md:p-8">
       <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div class="max-w-3xl">
-          <div class="pill mb-4">🌉 SPOINC Bridge Lab</div>
-          <h1 class="text-3xl font-black tracking-tight text-white md:text-5xl">Swap DSPOINC ↔ SPOINC safely through partner bridge intents.</h1>
-          <p class="mt-4 max-w-2xl text-slate-300">
-            This page is a frontend shell for user swap requests. Final DSPOINC credits or deductions must be processed only after the backend records the swap intent and verifies the confirmed partner transaction.
-          </p>
+          <div class="pill mb-4">🌉 SPOINC Economy Portal • Coming Soon</div>
+<h1 class="text-3xl font-black tracking-tight text-white md:text-5xl">
+  Prepare for the DSPOINC ↔ SPOINC Economy.
+</h1>
+<p class="mt-4 max-w-2xl text-slate-300">
+  This portal introduces the future bridge between Narrrfs World DSPOINC and the planned SPOINC token layer.
+  For now, you can preview the conversion rate, check your DSPOINC position, stake DSPOINC in the Stake Lab,
+  and prepare your Genesis utility before the bridge opens publicly.
+</p>
+
+<div class="mt-5 grid gap-3 sm:grid-cols-2">
+  <a
+    href="stake-lab.html"
+    class="inline-flex justify-center rounded-2xl bg-cyan-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-cyan-400"
+  >
+    🧊 Stake DSPOINC in Stake Lab
+  </a>
+
+  <a
+    href="mint.html#season13-v2-genesis-utility"
+    class="inline-flex justify-center rounded-2xl bg-yellow-400 px-6 py-3 font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-yellow-300"
+  >
+    🧬 View Genesis V2 Benefits
+  </a>
+</div>
         </div>
 
         <div class="stat-card min-w-full lg:min-w-[340px]">
@@ -151,17 +238,72 @@
         <div id="frozenDspoinc" class="mt-2 text-3xl font-black text-cyan-300">—</div>
         <p class="mt-2 text-sm text-slate-400">Locked in active DSPOINC stakes.</p>
       </article>
-      <article class="stat-card">
+            <article class="stat-card">
         <div class="label">Bridge Rate</div>
         <div class="mt-2 text-3xl font-black text-yellow-300">10,000:1</div>
         <p class="mt-2 text-sm text-slate-400">10,000 DSPOINC equals 1 SPOINC.</p>
       </article>
     </section>
 
+    <!-- 🌉 SPOINC Economy launch preview.
+     DEVS FOR DECADES:
+     Public copy must stay user-friendly. Keep internal partner integration
+     details out of visible text. The bridge remains inactive until the
+     partner launch flow is finalized. -->
+<section class="glass mt-6 overflow-hidden p-5 md:p-6">
+  <div class="grid gap-6 lg:grid-cols-[1fr_0.85fr]">
+    <div>
+      <div class="pill mb-4">🚀 Launch Preparation</div>
+      <h2 class="text-2xl md:text-3xl font-black text-white">
+        The SPOINC economy layer is being prepared.
+      </h2>
+      <p class="mt-3 text-slate-300 leading-relaxed">
+        Narrrfs World is preparing the next economy step: connecting off-chain DSPOINC activity
+        with the future SPOINC token layer. The public bridge is not open yet, but the portal
+        already shows the core direction, conversion rate, and ecosystem paths.
+      </p>
+
+      <div class="mt-5 grid gap-3 md:grid-cols-2">
+        <div class="stat-card">
+          <div class="label">Current phase</div>
+          <div class="mt-2 text-xl font-black text-yellow-200">Economy Preview</div>
+          <p class="mt-2 text-sm text-slate-400">Bridge access will open after the final partner launch steps are complete.</p>
+        </div>
+
+        <div class="stat-card">
+          <div class="label">Bridge focus</div>
+          <div class="mt-2 text-xl font-black text-cyan-200">DSPOINC ↔ SPOINC</div>
+          <p class="mt-2 text-sm text-slate-400">The planned bridge connects Narrrfs World activity with the SPOINC token economy.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-3xl border border-yellow-300/25 bg-yellow-400/10 p-5">
+      <h3 class="text-xl font-black text-yellow-100 mb-3">What can you do now?</h3>
+      <div class="space-y-3 text-sm text-yellow-50/90">
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <strong>1.</strong> Earn and manage DSPOINC inside Narrrfs World.
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <strong>2.</strong> Stake DSPOINC in the Stake Lab while legacy staking is live.
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <strong>3.</strong> Mint Genesis on Gensuki and prepare for Season 13 V2 utility.
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <strong>4.</strong> Watch for the official bridge launch announcement.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
     <section class="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
       <form id="swapForm" class="glass p-5 md:p-6">
-        <h2 class="text-2xl font-black text-yellow-200">Create Swap Intent</h2>
-        <p class="mt-2 text-sm text-slate-400">This creates a pending backend intent. It does not credit, deduct, or send tokens by itself.</p>
+        <h2 class="text-2xl font-black text-yellow-200">Preview Bridge Conversion</h2>
+<p class="mt-2 text-sm text-slate-400">
+  Use this preview to understand the DSPOINC ↔ SPOINC rate before the public bridge opens.
+</p>
 
         <div class="mt-6 grid gap-4 md:grid-cols-2">
           <label class="block">
@@ -192,7 +334,7 @@
 
         <div class="mt-6 flex flex-wrap gap-3">
           <button id="previewBtn" class="btn secondary" type="button">Preview Conversion</button>
-          <button id="submitBtn" class="btn primary" type="submit">Create Pending Swap Intent</button>
+          <button id="submitBtn" class="btn primary" type="submit">Preview Bridge Request</button>
         </div>
       </form>
 
@@ -215,12 +357,57 @@
       </aside>
     </section>
 
+        <!-- 🧊 DSPOINC economy routing.
+         DEVS FOR DECADES:
+         This section only explains where users should go.
+         Stake Lab handles DSPOINC staking. This page remains the SPOINC bridge shell.
+         Do not merge staking and swap execution logic. -->
     <section class="glass mt-6 p-5 md:p-6">
-      <h2 class="text-2xl font-black text-emerald-200">Bridge Safety Rules</h2>
-      <div class="mt-4 grid gap-3 md:grid-cols-3">
-        <div class="stat-card text-sm text-slate-300">✅ Frontend never stores partner API keys.</div>
-        <div class="stat-card text-sm text-slate-300">✅ Backend creates swap intent before any movement.</div>
-        <div class="stat-card text-sm text-slate-300">✅ Confirmed partner transaction required before DSPOINC changes.</div>
+      <div class="grid gap-5 lg:grid-cols-3">
+        <article class="stat-card">
+          <div class="text-3xl mb-3">🧊</div>
+          <h3 class="text-xl font-black text-cyan-100">Stake DSPOINC</h3>
+          <p class="mt-2 text-sm text-slate-300">
+            Freeze DSPOINC in the Stake Lab. Legacy staking is active now, and Season 13 V2 preview is visible there.
+          </p>
+          <a href="stake-lab.html" class="btn primary mt-4 inline-flex w-full justify-center">
+            Open Stake Lab
+          </a>
+        </article>
+
+        <article class="stat-card">
+          <div class="text-3xl mb-3">🧬</div>
+          <h3 class="text-xl font-black text-yellow-100">Mint Genesis</h3>
+          <p class="mt-2 text-sm text-slate-300">
+            Mint Genesis on Gensuki and prepare for the future V2 Genesis multiplier ladder.
+          </p>
+          <a href="mint.html#season13-v2-genesis-utility" class="btn primary mt-4 inline-flex w-full justify-center">
+            View Genesis Benefits
+          </a>
+        </article>
+
+        <article class="stat-card">
+  <div class="text-3xl mb-3">🌉</div>
+  <h3 class="text-xl font-black text-emerald-100">Bridge Coming Soon</h3>
+  <p class="mt-2 text-sm text-slate-300">
+    The DSPOINC ↔ SPOINC bridge will open after the official partner launch flow is ready.
+  </p>
+  <div class="mt-4 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-center text-sm font-black text-emerald-100">
+    Launch preparation active
+  </div>
+</article>
+      </div>
+    </section>
+
+    <section class="glass mt-6 p-5 md:p-6">
+      <h2 class="text-2xl font-black text-emerald-200">Bridge Principles</h2>
+            <div class="mt-4 grid gap-3 md:grid-cols-3">
+        <div class="stat-card text-sm text-slate-300">✅ Your DSPOINC balance is always checked from Narrrfs World records.</div>
+<div class="stat-card text-sm text-slate-300">✅ Frozen DSPOINC stays separated from available DSPOINC.</div>
+<div class="stat-card text-sm text-slate-300">✅ Stake Lab remains the home for DSPOINC staking.</div>
+<div class="stat-card text-sm text-slate-300">✅ SPOINC bridge actions will only open through official launch paths.</div>
+<div class="stat-card text-sm text-slate-300">✅ The conversion preview uses the planned 10,000 DSPOINC = 1 SPOINC rate.</div>
+<div class="stat-card text-sm text-slate-300">✅ Public launch details will be announced through Narrrfs World channels.</div>
       </div>
     </section>
   </main>
@@ -376,10 +563,10 @@
         elements.availableDspoinc.textContent = `${formatNumber(state.availableDspoinc)} DSPOINC`;
         elements.frozenDspoinc.textContent = `${formatNumber(state.frozenDspoinc)} DSPOINC`;
       } catch (error) {
-        // TODO: Replace this fallback after /api/user/spoinc/get-swap-profile.php exists.
-        elements.availableDspoinc.textContent = 'Endpoint needed';
-        elements.frozenDspoinc.textContent = 'Endpoint needed';
-        elements.previewStatus.textContent = 'Backend user swap profile endpoint must be created before live use.';
+        // TODO: Replace this fallback after the public bridge profile endpoint is ready.
+        elements.availableDspoinc.textContent = 'Coming soon';
+elements.frozenDspoinc.textContent = 'Coming soon';
+elements.previewStatus.textContent = 'Bridge profile preview will open with the public launch.';
       }
     }
 
@@ -433,7 +620,7 @@
       }
 
       elements.submitBtn.disabled = true;
-      elements.previewStatus.textContent = 'Creating pending swap intent...';
+      elements.previewStatus.textContent = 'Preparing bridge preview...';
 
       try {
         const response = await fetch('/api/user/spoinc/create-swap-intent.php', {
@@ -453,11 +640,11 @@
           throw new Error(data.error || 'Swap intent rejected');
         }
 
-        elements.previewStatus.textContent = `Pending swap intent created: ${data.swap_request_id || data.partner_request_id || 'recorded'}. Continue with Gensuki confirmation flow.`;
+        elements.previewStatus.textContent = 'Bridge preview recorded. Follow the official launch instructions when the bridge opens.';
         await loadBridgeProfile();
       } catch (error) {
-        setWarning(`${error.message}. Backend swap intent endpoint must exist before live use.`);
-        elements.previewStatus.textContent = 'Swap intent not created.';
+        setWarning('Bridge requests are not open yet. Please use this page as a conversion preview for now.');
+elements.previewStatus.textContent = 'Bridge preview only.';
       } finally {
         elements.submitBtn.disabled = false;
       }

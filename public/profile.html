@@ -9137,8 +9137,10 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
     }
 
     // Save verified NFT scan to SQL even if Discord roles were not granted,
-    // as long as verified ownership was confirmed.
-    if (allVerifiedCollections.length > 0 && normalizedNfts.length > 0) {
+// as long as verified ownership was confirmed.
+let genesisTierRoleSync = null;
+
+if (allVerifiedCollections.length > 0 && normalizedNfts.length > 0) {
       try {
         const saveResponse = await fetch('/api/user/save-verified-nft-scan.php', {
           method: 'POST',
@@ -9167,6 +9169,16 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
         }
 
         console.log('✅ [NFT SCAN SAVE] Verified NFT scan saved successfully:', saveData);
+
+/**
+ * Genesis tier role popup bridge.
+ *
+ * Plain language for DEVS:
+ * verify-nft-holder.php grants the base Holder / VIP Holder roles.
+ * save-verified-nft-scan.php now also syncs the highest Genesis tier role
+ * after verified ownership is committed. Keep this display-only.
+ */
+genesisTierRoleSync = saveData.genesis_tier_role_sync || null;
       } catch (saveError) {
         console.error('❌ [NFT SCAN SAVE] Failed to save verified NFT scan:', saveError);
       }
@@ -9191,11 +9203,25 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
       });
 
       if (allGrantedRoles.length > 0) {
-        successMessage += `\nDiscord Roles Granted:\n`;
-        allGrantedRoles.forEach((granted, index) => {
-          successMessage += `${index + 1}. ${granted.role} (${granted.count} NFT${granted.count !== 1 ? 's' : ''} from ${granted.collection})\n`;
-        });
-      }
+  successMessage += `\nDiscord Roles Granted:\n`;
+  allGrantedRoles.forEach((granted, index) => {
+    successMessage += `${index + 1}. ${granted.role} (${granted.count} NFT${granted.count !== 1 ? 's' : ''} from ${granted.collection})\n`;
+  });
+}
+
+if (genesisTierRoleSync && genesisTierRoleSync.attempted) {
+  const genesisTierLabel = String(genesisTierRoleSync.target_tier || '').trim();
+  const genesisCount = Number(genesisTierRoleSync.genesis_count || 0);
+  const genesisNftLabel = genesisCount === 1 ? 'Genesis NFT' : 'Genesis NFTs';
+
+  successMessage += `\nGenesis Tier Role Synced:\n`;
+
+  if (genesisTierRoleSync.success && genesisTierLabel && genesisTierLabel !== 'none') {
+    successMessage += `1. 🧬 ${genesisTierLabel} (${genesisCount} verified ${genesisNftLabel})\n`;
+  } else {
+    successMessage += `1. ⚠️ Genesis tier sync was attempted but needs review.\n`;
+  }
+}
 
       if (allFailedCollections.length > 0) {
         successMessage += `\nNotes:\n`;

@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/staking-contract-helpers.php';
 
 function json_response($payload, $code = 200) {
     http_response_code($code);
@@ -116,6 +117,11 @@ $frozenRow = $frozenStmt->fetch(PDO::FETCH_ASSOC);
 $frozen_balance = (int)($frozenRow['frozen_balance'] ?? 0);
 
 $available_balance = $total_balance - $frozen_balance;
+// Season 13 V2 readiness:
+// This is display-only data for the Stake Lab frontend.
+// Backend reward calculation remains authoritative in create/claim/unstake endpoints.
+$currentGenesisCount = staking_count_verified_genesis_for_user($pdo, $user_id);
+$currentGenesisTier = staking_get_genesis_tier($currentGenesisCount);
 
 // Get stakes based on filter
 if ($status_filter === 'active') {
@@ -316,7 +322,27 @@ json_response([
         'active_stakes_count' => count($active_stakes),
         'completed_stakes_count' => count($completed_stakes),
         'cancelled_stakes_count' => count($cancelled_stakes),
-        'claimable_rewards_count' => count($claimable_rewards)
+        'claimable_rewards_count' => count($claimable_rewards),
+
+        // Season 13 V2 readiness:
+        // Frontend may display this contract state, but backend remains authoritative.
+        'staking_contracts' => [
+            'active_contract_version' => ACTIVE_STAKING_CONTRACT_VERSION,
+            'legacy_version' => STAKING_CONTRACT_LEGACY_V1,
+            'season13_v2_version' => STAKING_CONTRACT_SEASON13_V2,
+            'season13_v2_active' => staking_is_v2_active(),
+        ],
+
+        // Season 13 V2 preview:
+        // This lets stake-lab.html render pool/tier previews before V2 activation.
+        'season13_v2_preview' => [
+            'pools' => staking_get_v2_pools(),
+            'genesis_tiers' => STAKING_GENESIS_MULTIPLIER_TIERS,
+            'current_genesis_count' => $currentGenesisCount,
+            'current_genesis_tier' => $currentGenesisTier,
+            'same_tier_rule' => 'same_or_higher_tier_required_at_claim',
+            'non_genesis_allowed' => true,
+        ]
     ]
 ]);
 

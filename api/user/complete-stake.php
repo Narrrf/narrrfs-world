@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/staking-contract-helpers.php';
 
 function json_response($payload, $code = 200) {
     http_response_code($code);
@@ -107,6 +108,29 @@ foreach ($due_stakes as $stake) {
         $stake_user_id = $stake['user_id'];
         $stake_amount = (int)$stake['amount'];
         $expected_reward = (int)$stake['expected_reward'];
+
+        /**
+ * Season 13 V2 safety:
+ * V2 stakes must not be auto-paid here because final Genesis holder-tier
+ * validation must happen at the exact user claim moment.
+ *
+ * Legacy stakes keep the existing auto-complete payout behavior.
+ */
+if (staking_is_v2_stake($stake)) {
+    $updateV2Stmt = $pdo->prepare("
+        UPDATE tbl_dspoinc_stakes
+        SET status = 'completed',
+            completed_at = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    ");
+    $updateV2Stmt->execute([$now, $stake_id]);
+
+    $pdo->commit();
+
+    $processed_stakes[] = $stake_id;
+    continue;
+}
         
         // Use expected_reward as actual reward (can be adjusted if rates changed)
         $actual_reward = $expected_reward;

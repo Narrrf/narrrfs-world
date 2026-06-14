@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/staking-contract-helpers.php';
 
 // Load local Discord secret config if it exists (for local development)
 $localDiscordSecretPath = __DIR__ . '/../config/discord-secret.php';
@@ -292,6 +293,12 @@ $frozen_balance = (int)($frozenRow['frozen_balance'] ?? 0);
 
 $available_balance = $total_balance - $frozen_balance;
 
+// Season 13 V2 readiness:
+// This is summary/display data only. Reward calculation stays inside
+// create-stake.php, claim-stake-reward.php, and unstake-stake.php.
+$currentGenesisCount = staking_count_verified_genesis_for_user($pdo, $user_id);
+$currentGenesisTier = staking_get_genesis_tier($currentGenesisCount);
+
 // Get active stakes count
 $activeCountStmt = $pdo->prepare("
     SELECT COUNT(*) AS active_count
@@ -346,7 +353,22 @@ json_response([
         'active_stakes' => $active_stakes_count,
         'ready_to_claim' => $ready_to_claim,
         'total_rewards' => $earned_rewards,
-        'pending_rewards' => $pending_rewards
+        'pending_rewards' => $pending_rewards,
+
+        // Season 13 V2 readiness:
+        // Summary-only contract data for Discord bot / older consumers.
+        'staking_contracts' => [
+            'active_contract_version' => ACTIVE_STAKING_CONTRACT_VERSION,
+            'legacy_version' => STAKING_CONTRACT_LEGACY_V1,
+            'season13_v2_version' => STAKING_CONTRACT_SEASON13_V2,
+            'season13_v2_active' => staking_is_v2_active(),
+        ],
+        'season13_v2_preview' => [
+            'current_genesis_count' => $currentGenesisCount,
+            'current_genesis_tier' => $currentGenesisTier,
+            'same_tier_rule' => 'same_or_higher_tier_required_at_claim',
+            'non_genesis_allowed' => true,
+        ]
     ],
     'data' => [
         'total_balance' => $total_balance,
@@ -355,6 +377,24 @@ json_response([
         'active_stakes_count' => $active_stakes_count,
         'pending_rewards' => $pending_rewards,
         'earned_rewards' => $earned_rewards,
-        'ready_to_claim' => $ready_to_claim
+        'ready_to_claim' => $ready_to_claim,
+
+        // Season 13 V2 readiness:
+        // Frontend may display this contract state, but backend remains authoritative.
+        'staking_contracts' => [
+            'active_contract_version' => ACTIVE_STAKING_CONTRACT_VERSION,
+            'legacy_version' => STAKING_CONTRACT_LEGACY_V1,
+            'season13_v2_version' => STAKING_CONTRACT_SEASON13_V2,
+            'season13_v2_active' => staking_is_v2_active(),
+        ],
+
+        // Season 13 V2 preview:
+        // This lets profile/stake summary panels show current Genesis boost status.
+        'season13_v2_preview' => [
+            'current_genesis_count' => $currentGenesisCount,
+            'current_genesis_tier' => $currentGenesisTier,
+            'same_tier_rule' => 'same_or_higher_tier_required_at_claim',
+            'non_genesis_allowed' => true,
+        ]
     ]
 ]);
