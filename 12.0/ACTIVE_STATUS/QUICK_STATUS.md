@@ -1,5 +1,531 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+# 🧬 Genesis Mouse Freezer + Role Page Frontend Preview Added
+
+**Date:** 2026-06-16
+**Status:** Frontend preview added locally / API foundation staged / Not public-activated as live staking yet
+**Scope:** Stake Lab preview + Get Roles explanation update
+
+---
+
+## ✅ Completed
+
+The Genesis Mouse Freezer preview was added to `public/stake-lab.html`.
+
+The Stake Lab now shows a customer-facing preview for:
+
+```text
+Verified Genesis count
+Current Genesis freezer tier
+Available freezer slots
+Frozen Genesis mice
+Available Genesis mice
+Daily DSPOINC preview
+Claimable full-day preview
+VIP bonus preview
+Freezer play planner
+Tier and slot guide
+VIP Holder bonus explanation
+```
+
+The preview uses the read-only API:
+
+```text
+api/user/get-genesis-nft-stakes.php
+```
+
+Important:
+
+```text
+The frontend preview is display-only.
+Freeze / Claim / Unfreeze buttons are still locked as preview buttons.
+Frontend does not decide final rewards.
+Backend remains authoritative.
+```
+
+---
+
+## ✅ Get Roles Page Tuned
+
+`public/get-roles.html` was updated to explain the connected Season 13 holder systems in customer-friendly language:
+
+```text
+Genesis Discord tier roles are live.
+V2 DSPOINC staking is a future staking preview.
+Genesis Mouse Freezer is the NFT staking / freezer preview.
+VIP Holder is a separate role lane and does not count toward Genesis tier roles.
+VIP Holder adds future freezer utility:
++1 freezer slot
++10% bonus on the first 10 frozen Genesis mice
+```
+
+The section now links users toward:
+
+```text
+Stake Lab Freezer Preview
+Holder / VIP Verification
+Genesis mint page on Gensuki
+```
+
+---
+
+## ✅ Current Safety Status
+
+Still not production-active as live staking:
+
+```text
+Production freeze activation is blocked
+Production unfreeze activation is blocked
+Solana Memo verification helper extraction is still required
+Admin monitoring is still pending
+Ownership-loss regression test is still pending
+```
+
+No public live claim/freeze/unfreeze controls should be enabled until those items are complete.
+
+---
+
+## ✅ Ready to Push
+
+This push includes:
+
+```text
+Genesis Mouse Freezer local API files
+Quick Status notes
+Stake Lab frontend preview
+Get Roles explanation update
+```
+
+This is safe to push as a preview/foundation update because production activation for write actions remains blocked by backend safeguards.
+
+# 🧬 Genesis Mouse Freezer — Local Full API Cycle Completed
+
+**Date:** 2026-06-16
+**Status:** Local Freeze → Claim → Unfreeze lifecycle tested successfully
+**Scope:** Local API validation only / Not production-activated yet
+
+---
+
+## ✅ Completed Locally
+
+Created and tested the Genesis Mouse Freezer API flow:
+
+```text
+api/user/genesis-nft-staking-helpers.php
+api/user/get-genesis-nft-stakes.php
+api/user/create-genesis-nft-freeze-challenge.php
+api/user/create-genesis-nft-stake.php
+api/user/claim-genesis-nft-stake.php
+api/user/create-genesis-nft-unfreeze-challenge.php
+api/user/unstake-genesis-nft.php
+```
+
+The full local cycle passed:
+
+```text
+Freeze challenge created
+Active freezer row created
+Read-only API detected frozen NFT
+Too-early claim was blocked
+Full-day claim succeeded after local time-travel test
+Claim wrote DSPOINC to tbl_user_scores
+Claim wrote matching audit row to tbl_score_adjustments
+Claim wrote audit row to tbl_genesis_nft_stake_claims
+Unfreeze challenge created
+Local unfreeze closed active freezer row
+Read-only API showed NFT available again
+Same NFT could be re-frozen after unstake
+Duplicate active freeze was blocked
+```
+
+---
+
+## ✅ Verified Local Test Results
+
+Final local freezer state:
+
+```text
+tbl_genesis_nft_stake_challenges = 4
+tbl_genesis_nft_stakes = 2
+tbl_genesis_nft_stake_claims = 1
+```
+
+Stake lifecycle proof:
+
+```text
+Stake 1:
+status = unstaked
+total_claimed = 1540
+freeze_challenge_id = 2
+unfreeze_challenge_id = 3
+
+Stake 2:
+status = active
+total_claimed = 0
+freeze_challenge_id = 4
+```
+
+Claim proof:
+
+```text
+claim_id = 1
+stake_id = 1
+full_days = 1
+daily_reward = 1400
+vip_bonus_amount = 140
+final_reward_amount = 1540
+ledger_adjustment_id = 26875
+ownership_check_status = verified
+```
+
+Ledger proof:
+
+```text
+tbl_score_adjustments:
+id = 26875
+user_id = 328601656659017732
+admin_id = system
+amount = 1540
+action = add
+reason = Genesis Mouse Freezer claim: 1540 DSPOINC for 1 full day(s)
+
+tbl_user_scores:
+game = genesis_nft_staking
+score = 1540
+source = Genesis Mouse Freezer
+season = Season 12
+```
+
+---
+
+## ✅ Safety Confirmed
+
+The local APIs confirmed:
+
+```text
+No DSPOINC payout on freeze
+No DSPOINC payout on unfreeze
+No claim rows created by freeze/unfreeze
+No tbl_dspoinc_stakes changes
+No frontend reward authority
+Full-day-only claim enforcement
+Mandatory ownership check before claim
+Mandatory ownership check before unfreeze
+Duplicate active freeze blocked
+Re-freeze after unstake allowed
+```
+
+Important status:
+
+```text
+Freeze and Unfreeze activation are still LOCAL-SAFE ONLY.
+Production activation is intentionally blocked until Solana Memo TX verification is extracted into a reusable helper and wired into create-genesis-nft-stake.php and unstake-genesis-nft.php.
+```
+
+---
+
+## 🚫 Not Production Active Yet
+
+Still not live-ready:
+
+```text
+Solana Memo verification helper extraction
+Production freeze activation
+Production unfreeze activation
+Stake Lab frontend Genesis Mouse Freezer UI
+Admin monitoring panel
+Ownership-loss regression test
+Live DB backup + staged deploy test
+```
+
+Do not activate public buttons until these are completed.
+
+---
+
+## ➡️ Next Step
+
+Recommended next phase:
+
+```text
+1. Run git status --short.
+2. Review all changed/untracked files.
+3. Stage only Genesis Mouse Freezer API files and QUICK_STATUS.md.
+4. Then prepare Solana Memo verification extraction from verify-nft-holder.php.
+5. After memo verification is reusable, wire production-safe freeze/unfreeze activation.
+```
+
+
+# 🧬 Genesis Mouse Freezer — Phase 1 API Foundation Completed
+
+**Date:** 2026-06-16
+**Status:** Helper + read-only API created and tested locally
+**Scope:** Local API foundation only / No live NFT staking activation yet
+
+---
+
+## ✅ Completed
+
+Created:
+
+```text
+api/user/genesis-nft-staking-helpers.php
+api/user/get-genesis-nft-stakes.php
+```
+
+Local syntax checks passed:
+
+```text
+No syntax errors detected in api/user/genesis-nft-staking-helpers.php
+No syntax errors detected in api/user/get-genesis-nft-stakes.php
+```
+
+Local read-only API test passed for Narrrf test user:
+
+```text
+success = true
+phase = phase_1_read_only
+writes_enabled = false
+verified_genesis_count = 102
+verified_vip_count = 7
+tier = Genesis Overlord
+slots = 16
+frozen_count = 0
+available_to_freeze_count = 102
+```
+
+The read-only endpoint correctly returns:
+
+```text
+current verified Genesis count
+current VIP count
+current internal NFT staking tier
+freezer slot count
+available verified Genesis NFTs
+frozen NFTs
+claim preview fields
+safety rules
+```
+
+---
+
+## ✅ Safety Confirmed
+
+The endpoint currently reports:
+
+```text
+is_active = false
+writes_enabled = false
+```
+
+No Freeze / Claim / Unfreeze endpoint is active yet.
+
+No DSPOINC reward payout exists yet.
+
+No `tbl_genesis_nft_stakes` write occurs from the read-only endpoint.
+
+No `tbl_dspoinc_stakes` logic was modified.
+
+---
+
+## ⚠️ Important Observation
+
+The available NFT list can include verified Genesis NFTs from more than one wallet under the same Discord user.
+
+Future freeze logic must therefore validate and store the exact wallet of the selected NFT:
+
+```text
+user_id + token_id + collection + wallet
+```
+
+Do not allow future freeze / claim / unfreeze logic to rely on `user_id` alone.
+
+---
+
+## ➡️ Next Step
+
+Create the freeze challenge endpoint only:
+
+```text
+api/user/create-genesis-nft-freeze-challenge.php
+```
+
+This endpoint may create a pending challenge row in:
+
+```text
+tbl_genesis_nft_stake_challenges
+```
+
+But it must not create an active NFT stake yet.
+
+Still not active:
+
+```text
+create-genesis-nft-stake.php
+claim-genesis-nft-stake.php
+unstake-genesis-nft.php
+Stake Lab live Freeze / Claim / Unfreeze buttons
+DSPOINC reward payout
+```
+
+
+# 🧬 Genesis Mouse Freezer — Phase 1 DB Foundation Completed
+
+**Date:** 2026-06-16
+**Status:** Phase 1 live DB foundation completed / Local DB downloaded / Ready for helper + read-only API phase
+**Scope:** Season 13 Genesis NFT staking foundation, separate from DSPOINC Staking V2
+
+---
+
+## ✅ What Was Completed
+
+Phase 1 of the Genesis Mouse Freezer / NFT staking system has started.
+
+The live SQLite schema was inspected before implementation.
+
+Confirmed existing live ownership schema:
+
+```text
+tbl_nft_ownership:
+ownership_id
+wallet
+token_id
+collection
+traits
+rarity
+mint_date
+acquired_at
+user_id
+username
+nft_name
+image_url
+metadata_json
+is_verified
+verified_at
+last_seen_at
+```
+
+Confirmed live collection counts at time of inspection:
+
+```text
+genesis = 540
+vip     = 31
+```
+
+Confirmed existing DSPOINC staking table already contains the Season 13 V2 preparation columns, but the new NFT staking system must stay separate from `tbl_dspoinc_stakes`.
+
+---
+
+## ✅ New Phase 1 Tables Created
+
+The following new tables were created on the live runtime DB:
+
+```text
+tbl_genesis_nft_stakes
+tbl_genesis_nft_stake_claims
+tbl_genesis_nft_stake_challenges
+```
+
+Purpose:
+
+```text
+tbl_genesis_nft_stakes:
+Tracks active/frozen Genesis NFT staking state.
+
+tbl_genesis_nft_stake_claims:
+Audit log for every future NFT staking DSPOINC claim.
+
+tbl_genesis_nft_stake_challenges:
+Stores freeze/unfreeze memo challenge records for future Solana intent proof.
+```
+
+Important architecture separation remains:
+
+```text
+DSPOINC Staking V2 = tbl_dspoinc_stakes
+Genesis Mouse Freezer = tbl_genesis_nft_stakes + claim/challenge tables
+```
+
+Do not mix these systems.
+
+---
+
+## ✅ Safety Verification
+
+After the migration, live DB verification showed the new tables exist:
+
+```text
+tbl_genesis_nft_stake_challenges
+tbl_genesis_nft_stake_claims
+tbl_genesis_nft_stakes
+```
+
+Final live integrity check passed:
+
+```text
+PRAGMA integrity_check;
+ok
+```
+
+A temporary `database is locked` happened during one retry, but the final `.read` completed cleanly and the final table check plus integrity check passed.
+
+---
+
+## ✅ Local Sync Status
+
+The updated live DB was downloaded to local.
+
+Next development steps can now continue locally against the updated DB schema.
+
+---
+
+## 🚫 Not Implemented Yet
+
+No live NFT staking behavior has been activated yet.
+
+Not implemented yet:
+
+```text
+Freeze Genesis NFT endpoint
+Claim Genesis NFT stake endpoint
+Unfreeze Genesis NFT endpoint
+Stake Lab live NFT freezer buttons
+DSPOINC reward payout from NFT staking
+Solana memo verification for NFT staking
+Admin monitoring for NFT staking
+```
+
+The current system is only the database foundation.
+
+---
+
+## ➡️ Next Step
+
+Continue with Phase 1 local code foundation:
+
+```text
+api/user/genesis-nft-staking-helpers.php
+```
+
+Then build a read-only API before any write endpoint:
+
+```text
+api/user/get-genesis-nft-stakes.php
+```
+
+Rules for next agent / next phase:
+
+```text
+Do not activate Freeze / Claim / Unfreeze yet.
+Do not write DSPOINC rewards yet.
+Do not modify tbl_dspoinc_stakes for NFT staking.
+Do not let frontend calculate final rewards.
+Do not fake live NFT staking behavior.
+Backend ownership checks must be mandatory before any future payout.
+```
+
+Frontend buttons must stay disabled or preview-only until backend endpoints are tested locally.
+
+
 # 🧬 Genesis Mouse Freezer — Final Proof Model + Frontend/Backend Build Plan
 
 **Date:** 2026-06-15

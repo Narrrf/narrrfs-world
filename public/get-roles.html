@@ -266,7 +266,7 @@ require_once 'discord-invite.php';
 
         <a href="#season13-v2-genesis-boost"
    class="inline-flex justify-center rounded-2xl bg-orange-500 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-orange-400">
-  🧬 Season 13 V2 Boosts
+  🧬 Genesis Tiers + Freezer
 </a>
 
         <a href="<?php echo $discord_url; ?>"
@@ -460,21 +460,41 @@ require_once 'discord-invite.php';
           </h2>
 
           <p class="text-slate-300 text-lg leading-relaxed mb-5">
-            Verified Genesis holders now receive automatic Discord tier roles based on how many
-            Narrrfs World Genesis mice they own. The same Genesis count ladder also connects to
-            the planned Season 13 V2 staking boost concept.
-          </p>
+  Your verified Genesis count now powers more than one system: live Discord tier roles,
+  future DSPOINC staking boosts, and the Genesis Mouse Freezer preview in Stake Lab.
+  More verified Genesis mice means a stronger holder tier, more freezer slots, and more future utility options.
+</p>
 
-          <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4 text-sm text-green-100 mb-4">
-            Discord tier roles are live now. The bot checks verified Genesis ownership, assigns the
-            highest matching tier role, and removes older Genesis tier roles so every holder has one
-            clean tier identity.
-          </div>
+          <div class="grid grid-cols-1 gap-4 mb-6">
+  <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4 text-sm text-green-100">
+    <div class="font-black text-green-100 mb-2">✅ 1. Genesis tier roles are live</div>
+    <p class="leading-relaxed">
+      After holder verification, the bot checks how many Genesis mice you own and gives you the highest matching Genesis tier role.
+      These roles are public recognition for your holder level and help connect Discord, Profile, Lab, and future utility.
+    </p>
+  </div>
 
-          <div class="rounded-2xl border border-amber-300/25 bg-amber-400/10 p-4 text-sm text-amber-100 mb-6">
-            Season 13 V2 staking boosts are still a preview. Current DSPOINC staking remains on the
-            safe legacy contract until V2 is officially activated.
-          </div>
+  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4 text-sm text-yellow-100">
+    <div class="font-black text-yellow-100 mb-2">🧊 2. V2 DSPOINC staking is previewed</div>
+    <p class="leading-relaxed">
+      Current DSPOINC staking still runs on the safe legacy system. The Season 13 V2 preview shows how Genesis tiers may boost future DSPOINC staking rewards after V2 is officially activated.
+    </p>
+  </div>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4 text-sm text-cyan-100">
+    <div class="font-black text-cyan-100 mb-2">🧬 3. Genesis Mouse Freezer is the NFT staking preview</div>
+    <p class="leading-relaxed">
+      The Freezer is different from DSPOINC staking: it is planned for Genesis mice themselves. Your Genesis tier decides how many mice can use freezer slots, and each slot can hold one Genesis mouse when the system goes live.
+    </p>
+  </div>
+
+  <div class="rounded-2xl border border-pink-300/25 bg-pink-400/10 p-4 text-sm text-pink-100">
+    <div class="font-black text-pink-100 mb-2">🎴 VIP Holder role adds extra freezer power</div>
+    <p class="leading-relaxed">
+      VIP Holder is a separate VIP collection role. VIP NFTs do not count toward the Genesis tier ladder, but VIP Holder adds future freezer utility: +10% bonus on the first 10 frozen Genesis mice and +1 extra freezer slot.
+    </p>
+  </div>
+</div>
 
           <div class="flex flex-col sm:flex-row gap-3">
             <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
@@ -484,10 +504,14 @@ require_once 'discord-invite.php';
               🧬 Mint Genesis on Gensuki
             </a>
 
-            <a href="stake-lab.html#season13-v2-preview-panel"
+            <a href="stake-lab.html#genesis-mouse-freezer-preview-panel"
                class="inline-flex justify-center rounded-2xl bg-cyan-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-cyan-400">
-              🧊 View Stake Lab Preview
+              🧊 Open Freezer Preview
             </a>
+            <a href="profile.html?verify=1#holder-verification"
+     class="inline-flex justify-center rounded-2xl bg-pink-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-pink-400">
+    🎴 Verify VIP / Holder
+  </a>
           </div>
         </div>
 
@@ -537,21 +561,92 @@ require_once 'discord-invite.php';
           </div>
 
           <div class="mt-4 rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4 text-sm text-cyan-100">
-            Role sync rule: Genesis tier roles are based on verified Genesis ownership only. VIP NFTs
-            are not counted for this ladder.
-          </div>
+  <div class="font-black text-cyan-100 mb-2">How the ladder works</div>
+  <p class="leading-relaxed">
+    Genesis tier roles use verified Genesis ownership only. The bot gives one clean Genesis tier role based on your highest matching tier.
+    VIP NFTs are verified separately and unlock the VIP Holder role instead of counting toward the Genesis tier ladder.
+  </p>
+</div>
 
-          <div class="mt-4 rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4 text-sm text-yellow-100">
-            V2 same-tier rule: when Season 13 V2 staking goes live, holders must stay in the same
-            or higher Genesis tier until claim time to keep the Genesis boost.
-          </div>
+<div class="mt-4 rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4 text-sm text-yellow-100">
+  <div class="font-black text-yellow-100 mb-2">V2 DSPOINC staking preview</div>
+  <p class="leading-relaxed">
+    V2 staking is about locking DSPOINC. Your Genesis tier can become a future staking boost, but the final reward checks stay handled safely by the backend when V2 is officially activated.
+  </p>
+</div>
+
+<div class="mt-4 rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+  <div class="flex items-start justify-between gap-3">
+    <div>
+      <div class="text-lg font-black text-purple-100">NFT staking / Freezer slots</div>
+      <div class="text-xs text-purple-200/75 mt-1">
+        The Genesis Mouse Freezer is the NFT-side preview. Slots decide how many Genesis mice can be active at the same time.
+      </div>
+    </div>
+    <div class="rounded-full border border-purple-300/30 bg-purple-300/10 px-3 py-1 text-[11px] font-black text-purple-100">
+      PREVIEW
+    </div>
+  </div>
+
+  <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+      <div class="font-black text-white">1–2 Genesis</div>
+      <div class="mt-1 text-slate-300">Starter freezer lane</div>
+      <div class="mt-2 text-purple-100 font-black">3 slots</div>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+      <div class="font-black text-white">3–29 Genesis</div>
+      <div class="mt-1 text-slate-300">Collector to Elite growth</div>
+      <div class="mt-2 text-purple-100 font-black">4–6 slots</div>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+      <div class="font-black text-white">30+ Genesis</div>
+      <div class="mt-1 text-slate-300">Legend and higher freezer lane</div>
+      <div class="mt-2 text-purple-100 font-black">8+ slots</div>
+    </div>
+
+    <div class="rounded-xl border border-pink-300/20 bg-pink-300/10 p-3">
+      <div class="font-black text-pink-100">🎴 VIP Holder</div>
+      <div class="mt-1 text-pink-100/75">Separate VIP role and bonus utility</div>
+      <div class="mt-2 text-pink-100 font-black">+1 slot + 10% bonus</div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+
+<div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+  <a
+    href="stake-lab.html#genesis-mouse-freezer-preview-panel"
+    class="inline-flex justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/10 px-4 py-3 font-black text-cyan-100 transition hover:scale-105 hover:bg-cyan-300/20"
+  >
+    Open Freezer Preview
+  </a>
+
+  <a
+    href="profile.html?verify=1#holder-verification"
+    class="inline-flex justify-center rounded-2xl border border-pink-300/25 bg-pink-300/10 px-4 py-3 font-black text-pink-100 transition hover:scale-105 hover:bg-pink-300/20"
+  >
+    Verify VIP / Holder
+  </a>
+
+  <a
+    href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="inline-flex justify-center rounded-2xl border border-yellow-300/25 bg-yellow-300/10 px-4 py-3 font-black text-yellow-100 transition hover:scale-105 hover:bg-yellow-300/20"
+  >
+    Mint Genesis
+  </a>
+</div>
         </div>
       </div>
 
       <p class="mt-7 text-xs leading-relaxed text-slate-500">
-        Genesis Discord tier roles are recognition and utility roles. Season 13 V2 staking boosts are
-        previewed for transparency and remain backend-authoritative at activation. This page does not
-        promise financial returns, price movement, or guaranteed rewards.
+        Genesis Discord tier roles and VIP Holder roles are access, recognition, and utility roles. Season 13 V2 staking boosts and Genesis Mouse Freezer slots are previews for transparency and remain system-checked at activation. This page does not promise financial returns, price movement, or guaranteed rewards.
       </p>
     </div>
   </div>
