@@ -1295,17 +1295,91 @@ const tierRows = tiers.map((tier) => {
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
               <div class="rounded-2xl border border-cyan-300/15 bg-black/20 p-4">
-                <div class="flex items-center justify-between gap-3 mb-4">
-                  <div>
-                    <div class="text-lg font-black text-cyan-100">Future V2 Lock Pools</div>
-                    <div class="text-xs text-cyan-200/70">day-based Season 13 reward paths</div>
-                  </div>
-                  <div class="text-2xl">🧊</div>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  ${poolCards}
-                </div>
-              </div>
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <div>
+      <div class="text-lg font-black text-cyan-100">Future V2 Lock Pools</div>
+      <div class="text-xs text-cyan-200/70">day-based Season 13 reward paths</div>
+    </div>
+    <div class="text-2xl">🧊</div>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+    ${poolCards}
+  </div>
+
+  <!-- 🧮 Season 13 V2 staking calculator.
+       DEVS FOR DECADES:
+       This calculator is frontend-only and preview-only.
+       It helps holders understand possible V2 staking paths before Season 13.
+       It must never create stakes, activate V2, write DSPOINC, or replace backend
+       reward validation. Backend APIs remain authoritative. -->
+  <div class="mt-5 rounded-2xl border border-cyan-300/20 bg-cyan-950/20 p-4">
+    <div class="flex items-center justify-between gap-3 mb-4">
+      <div>
+        <div class="text-base font-black text-cyan-100">🧮 V2 Staking Calculator</div>
+        <div class="text-xs text-cyan-200/70">Preview your future base reward + Genesis tier boost</div>
+      </div>
+      <div class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-100">
+        Preview
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <label class="block">
+        <span class="text-xs uppercase tracking-[0.14em] text-cyan-200/80 font-black">DSPOINC Amount</span>
+        <input
+          id="v2-calculator-amount"
+          type="number"
+          min="100"
+          step="100"
+          value="10000"
+          class="mt-2 w-full rounded-xl border border-cyan-300/20 bg-slate-950/70 px-3 py-3 text-cyan-50 font-black outline-none focus:border-cyan-300/60"
+          oninput="updateSeason13V2Calculator()"
+        />
+      </label>
+
+      <label class="block">
+        <span class="text-xs uppercase tracking-[0.14em] text-cyan-200/80 font-black">Future Lock Pool</span>
+        <select
+          id="v2-calculator-days"
+          class="mt-2 w-full rounded-xl border border-cyan-300/20 bg-slate-950/70 px-3 py-3 text-cyan-50 font-black outline-none focus:border-cyan-300/60"
+          onchange="updateSeason13V2Calculator()"
+        >
+          ${pools.map(([days, pool]) => {
+            const label = String(pool?.label || `${days} Days`);
+            const rewardRate = Number(pool?.reward_rate || 0);
+            return `<option value="${days}" data-rate="${rewardRate}">${label} • ${rewardRate}% base</option>`;
+          }).join('')}
+        </select>
+      </label>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="rounded-xl border border-blue-300/20 bg-blue-300/10 p-3">
+        <div class="text-xs text-blue-200/80">Base Reward</div>
+        <div id="v2-calculator-base-reward" class="mt-1 text-xl font-black text-blue-100">0</div>
+      </div>
+
+      <div class="rounded-xl border border-yellow-300/20 bg-yellow-300/10 p-3">
+        <div class="text-xs text-yellow-200/80">Genesis Boost</div>
+        <div id="v2-calculator-genesis-boost" class="mt-1 text-xl font-black text-yellow-100">0</div>
+      </div>
+
+      <div class="rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3">
+        <div class="text-xs text-emerald-200/80">Future Total Return</div>
+        <div id="v2-calculator-total-return" class="mt-1 text-xl font-black text-emerald-100">0</div>
+      </div>
+    </div>
+
+    <div class="mt-3 text-xs text-slate-300/80">
+      Uses your current preview tier:
+      <strong class="text-cyan-100">${resolveGenesisStakingRoleDisplay(currentTier).role}</strong>
+      · multiplier
+      <strong class="text-yellow-100">x${currentMultiplier.toFixed(3).replace(/0$/, '').replace(/0$/, '')}</strong>.
+      Final Season 13 rewards remain backend-authoritative.
+    </div>
+  </div>
+</div>
 
               <div class="rounded-2xl border border-yellow-300/15 bg-black/20 p-4">
                 <div class="flex items-center justify-between gap-3 mb-4">
@@ -1340,7 +1414,47 @@ const tierRows = tiers.map((tier) => {
           </div>
         </div>
       `;
+      window.setTimeout(updateSeason13V2Calculator, 0);
     }
+
+    /**
+ * Update the read-only Season 13 V2 staking calculator.
+ *
+ * Plain language for DEVS:
+ * This calculator is only an educational preview inside the Stake Lab.
+ * It reads the currently loaded V2 preview payload and estimates:
+ * - base reward from the selected future lock pool
+ * - extra Genesis boost from the current preview multiplier
+ * - total possible return
+ *
+ * It does not create stakes, activate V2, mutate balances, or decide final rewards.
+ */
+function updateSeason13V2Calculator() {
+  const amountInput = document.getElementById('v2-calculator-amount');
+  const daysSelect = document.getElementById('v2-calculator-days');
+  const baseRewardEl = document.getElementById('v2-calculator-base-reward');
+  const genesisBoostEl = document.getElementById('v2-calculator-genesis-boost');
+  const totalReturnEl = document.getElementById('v2-calculator-total-return');
+
+  if (!amountInput || !daysSelect || !baseRewardEl || !genesisBoostEl || !totalReturnEl) {
+    return;
+  }
+
+  const amount = Math.max(0, Number(amountInput.value || 0));
+  const selectedOption = daysSelect.options[daysSelect.selectedIndex];
+  const baseRatePercent = Number(selectedOption?.dataset?.rate || 0);
+  const currentTier = season13V2Preview?.current_genesis_tier || {};
+  const multiplier = Number(currentTier.multiplier || 1);
+
+  const baseReward = Math.floor(amount * (baseRatePercent / 100));
+  const boostedReward = Math.floor(baseReward * multiplier);
+  const genesisBoost = Math.max(0, boostedReward - baseReward);
+  const totalReturn = amount + boostedReward;
+
+  baseRewardEl.textContent = `${baseReward.toLocaleString()} DSPOINC`;
+  genesisBoostEl.textContent = `${genesisBoost.toLocaleString()} DSPOINC`;
+  totalReturnEl.textContent = `${totalReturn.toLocaleString()} DSPOINC`;
+}
 
     // Update balance display
     function updateBalanceDisplay() {

@@ -1,5 +1,789 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+# 🧬 Genesis Mouse Freezer — Final Proof Model + Frontend/Backend Build Plan
+
+**Date:** 2026-06-15
+**Status:** Planning approved / Final proof model clarified / No code implemented yet
+**Scope:** Season 13 Genesis NFT staking layer on top of DSPOINC Staking V2
+
+---
+
+## ✅ Final Proof Model Confirmed
+
+The planned Season 13 NFT staking system is:
+
+```text
+Genesis Mouse Freezer
+```
+
+Core separation remains:
+
+```text
+DSPOINC Staking V2 = freeze DSPOINC balance
+Genesis Mouse Freezer = freeze specific verified Genesis NFTs
+```
+
+These systems must stay separate:
+
+```text
+Separate DB tables
+Separate APIs
+Separate frontend state
+Separate claim ledgers
+No mixing with tbl_dspoinc_stakes
+```
+
+---
+
+## ✅ Correct Security Model
+
+Final model:
+
+```text
+Freeze:
+- User selects verified Genesis NFT
+- Backend checks wallet/session + NFT ownership
+- Optional/recommended Solana Memo TX confirms freeze intent
+- Backend creates active NFT stake row
+
+Claim:
+- User clicks Claim
+- Backend checks active stake belongs to user
+- Backend checks NFT is still owned by the same verified wallet/user
+- Backend recalculates current Genesis tier + VIP bonus
+- Backend pays only full claimable days
+- No Memo TX required for claim
+- Ownership check is mandatory on every claim
+
+Unfreeze:
+- User clicks Unfreeze
+- Optional/recommended Solana Memo TX confirms unfreeze intent
+- Backend checks stake belongs to user
+- Backend closes active NFT stake row
+```
+
+Important correction:
+
+```text
+Memo TX = proof of user action / intent
+Ownership check = proof the user still owns the NFT
+```
+
+Ownership checks are mandatory on:
+
+```text
+Freeze
+Claim
+Unfreeze
+```
+
+Memo TX is recommended on:
+
+```text
+Freeze
+Unfreeze
+```
+
+Memo TX is not recommended for every daily claim because it would create too much friction.
+
+---
+
+## ✅ Anti-Abuse Rule
+
+Critical rule:
+
+```text
+Rewards only accrue while the NFT is still verified as owned by the staking wallet.
+```
+
+If ownership check fails during claim:
+
+```text
+Do not pay DSPOINC
+Mark stake as ownership_lost or needs_reverify
+Pause claim ability
+Show frontend warning
+```
+
+Recommended frontend warning:
+
+```text
+Ownership changed. Rewards are paused. Reverify wallet ownership or unfreeze this slot.
+```
+
+For MVP:
+
+```text
+If ownership check fails at claim time, pay 0 and pause the stake.
+```
+
+Do not attempt exact historical transfer-date reward splitting in V1.
+
+---
+
+## ✅ Recommended Solana TX Strategy
+
+Season 13 MVP should use:
+
+```text
+Real Solana Memo TX for Freeze
+Real Solana Memo TX for Unfreeze
+No Solana TX for Claim
+Mandatory backend ownership check for every Claim
+```
+
+Reason:
+
+```text
+This gives a professional Web3 staking feel without custody risk.
+NFTs remain in the holder wallet.
+Narrrfs World only freezes the NFT inside the internal ecosystem state.
+DSPOINC rewards remain backend-controlled and audit-logged.
+```
+
+Safe public wording:
+
+```text
+Sign a Solana freeze transaction to activate your Genesis Mouse Freezer slot. Your NFT stays in your wallet, while Narrrfs World freezes its ecosystem utility state and checks ownership before DSPOINC claims.
+```
+
+Avoid public wording:
+
+```text
+passive income
+guaranteed income
+profit
+APY promise
+fully locked on-chain
+trustless staking
+```
+
+---
+
+## ✅ Build Order
+
+Implementation must happen in phases:
+
+```text
+Phase 1 — Schema + helpers
+Phase 2 — Read-only API
+Phase 3 — Freeze challenge + freeze endpoint
+Phase 4 — Claim endpoint with mandatory ownership proof
+Phase 5 — Unfreeze challenge + unfreeze endpoint
+Phase 6 — Stake Lab frontend grid
+Phase 7 — Admin monitoring
+Phase 8 — Local testing + live backup + staged activation
+```
+
+Important:
+
+```text
+Do not implement from assumptions.
+Before coding, verify exact tbl_nft_ownership columns and current Stake Lab NFT grid logic locally.
+```
+
+---
+
+## ✅ Planned API Files
+
+Future files likely under:
+
+```text
+api/user/
+```
+
+Planned endpoints:
+
+```text
+get-genesis-nft-stakes.php
+create-genesis-nft-freeze-challenge.php
+create-genesis-nft-stake.php
+claim-genesis-nft-stake.php
+create-genesis-nft-unfreeze-challenge.php
+unstake-genesis-nft.php
+```
+
+Optional shared helper:
+
+```text
+api/user/genesis-nft-staking-helpers.php
+```
+
+Purpose:
+
+```text
+Tier calculation
+VIP bonus calculation
+Freezer slot calculation
+Ownership check helper
+Memo transaction verification helper
+Claimable full-day calculation
+Stake status helper
+```
+
+---
+
+## ✅ Planned DB Tables
+
+Do not reuse:
+
+```text
+tbl_dspoinc_stakes
+```
+
+Planned tables:
+
+```text
+tbl_genesis_nft_stakes
+tbl_genesis_nft_stake_claims
+tbl_genesis_nft_stake_challenges
+```
+
+Purpose:
+
+```text
+tbl_genesis_nft_stakes:
+- Active/frozen NFT stake state
+- One active stake per Genesis token
+- User, wallet, token, collection, status, frozen_at, last_claimed_at, total_claimed
+
+tbl_genesis_nft_stake_claims:
+- Audit log for every claim
+- Claim window, full days, daily reward, VIP bonus, tier at claim, ownership check result
+
+tbl_genesis_nft_stake_challenges:
+- One-time freeze/unfreeze memo challenge nonces
+- Prevent replay attacks
+- Store action, user_id, wallet, token_id, nonce, message, signature, used_at, expires_at
+```
+
+---
+
+## ✅ Stake Lab Frontend Direction
+
+Frontend target:
+
+```text
+public/stake-lab.html
+```
+
+Planned UI section under / near DSPOINC Staking V2:
+
+```text
+🧬 Genesis Mouse Freezer
+Freeze verified Genesis mice for daily DSPOINC rewards.
+```
+
+Layout style:
+
+```text
+Top stats bar:
+- Total Frozen
+- Earning / day
+- Claimable
+- Current Genesis Tier
+- VIP Mouse Pass
+- Freezer Slots
+
+Tabs:
+- Frozen Mice
+- Available to Freeze
+
+NFT card grid:
+- NFT image
+- Token/name
+- Tier rate
+- VIP bonus status
+- Time frozen
+- Claimable DSPOINC
+- Freeze / Claim / Unfreeze buttons
+```
+
+Important UI rule:
+
+```text
+Buttons must stay disabled or preview-only until backend endpoints are tested.
+Do not fake live freezing or claiming behavior.
+```
+
+---
+
+## ✅ Claim Safety Rules
+
+Claims must follow:
+
+```text
+Minimum claim window: 24h
+Full days only
+No partial minute/second farming
+No frontend reward authority
+No claim if ownership check fails
+No claim if stake is not active
+No claim if token is not Genesis
+No claim if user/session does not match stake owner
+No claim without ledger row
+```
+
+DSPOINC reward source label candidate:
+
+```text
+genesis_nft_staking
+```
+
+---
+
+## ✅ Economy Model Still Planned
+
+Current planned reward / slot direction remains:
+
+```text
+Genesis Tier 1        1 Genesis       250/day    3 slots
+Genesis Tier 2        2 Genesis       300/day    3 slots
+Genesis Collector     3–5 Genesis     400/day    4 slots
+Genesis Expert        6–15 Genesis    550/day    5 slots
+Genesis Elite Holder  16–29 Genesis   750/day    6 slots
+Genesis Legend        30–49 Genesis   1,000/day  8 slots
+Genesis Mythic        50–74 Genesis   1,150/day  10 slots
+Genesis Ancient       75–99 Genesis   1,275/day  12 slots
+Genesis Overlord      100+ Genesis    1,400/day  15 slots
+VIP Holder            verified VIP    +10% capped bonus on first 10 frozen NFTs +1 slot
+```
+
+Genesis Mythic / Ancient / Overlord are planned staking subtiers only unless new Discord roles are explicitly created later.
+
+---
+
+## ➡️ Next Agent Instructions
+
+Before implementation:
+
+```text
+1. Inspect current stake-lab.html NFT verification/grid logic.
+2. Inspect save-verified-nft-scan.php ownership persistence.
+3. Inspect verify-nft-holder.php memo transaction verification helpers.
+4. Inspect current Solana memo transaction code in Stake Lab/Profile.
+5. Verify exact tbl_nft_ownership columns locally.
+6. Create DB migration SQL with backup-first instructions.
+7. Build read-only API before any write endpoint.
+8. Build frontend preview shell before activating buttons.
+9. Test freeze/claim/unfreeze locally with Narrrf test user.
+10. Update QUICK_STATUS.md after every phase.
+```
+
+Do not activate Season 13 NFT staking without:
+
+```text
+DB backup
+Local API tests
+Ownership-loss test
+Duplicate stake test
+Claim ledger test
+Frontend disabled-state test
+Live rollback plan
+```
+
+
+# 🧬 Genesis Mouse Freezer / NFT Staking — Season 13 Planning Sync
+
+**Date:** 2026-06-15
+**Status:** Planning approved / No code implemented yet
+**Scope:** Season 13 NFT staking layer on top of DSPOINC Staking V2, Stake Lab UI planning, Genesis tier rewards, VIP holder bonus concept
+
+---
+
+## ✅ New System Direction Approved
+
+We discussed and approved the next planned Season 13 staking layer:
+
+```text
+Genesis Mouse Freezer
+```
+
+or system name candidate:
+
+```text
+Genesis NFT Staking Chamber
+```
+
+Core idea:
+
+```text
+DSPOINC Staking V2 = freeze DSPOINC balance
+Genesis Mouse Freezer = freeze specific verified Genesis NFTs
+```
+
+These must remain separate systems with separate database tables, separate APIs, and separate frontend state.
+
+Important:
+
+```text
+No code has been implemented yet.
+This is a planning sync only.
+Do not modify live staking logic until the DB/API plan is confirmed.
+```
+
+---
+
+## ✅ Intended User Experience
+
+The user wants the system to follow the common NFT staking style used by partner examples such as Empire Bonds and Rusty Rigs.
+
+Observed UX pattern:
+
+```text
+Top stats bar
+Tabs for staked NFTs and available NFTs
+NFT card grid
+Per-NFT earning/day
+Time staked/frozen
+Claim button
+Unstake / unfreeze button
+Optional search / filter / claim all controls
+```
+
+Recommended Narrrfs implementation location:
+
+```text
+public/stake-lab.html
+```
+
+Reason:
+
+```text
+Stake Lab is already the staking hub.
+It already contains DSPOINC staking, holder verification, and Season 13 V2 preview.
+The Genesis Mouse Freezer should become a second staking lane under / beside the V2 DSPOINC staking preview.
+```
+
+---
+
+## ✅ Planned Stake Lab Layout
+
+Recommended frontend structure:
+
+```text
+🧊 DSPOINC STAKING V2
+Freeze DSPOINC balance for Season 13 staking rewards
+
+━━━━━━━━━━━━━━━━━━━
+
+🧬 GENESIS MOUSE FREEZER
+Freeze verified Genesis mice for daily DSPOINC rewards
+
+Top stats:
+- Total Frozen
+- Earning / day
+- Claimable
+- Current Genesis Tier
+- Freezer Slots
+
+Tabs:
+- Your Frozen Mice
+- Available to Freeze
+
+NFT card grid:
+- NFT image
+- Token/name
+- Current tier
+- Earning/day
+- VIP bonus status
+- Time frozen
+- Claimable DSPOINC
+- Claim button
+- Unfreeze button
+```
+
+Important UX note:
+
+```text
+The frontend can be built first as a Season 13 preview shell.
+Freeze / Claim / Unfreeze buttons should stay disabled until backend endpoints exist.
+Do not fake live staking behavior.
+```
+
+---
+
+## ✅ Economy-Safe Genesis NFT Staking Model
+
+The planned NFT staking system should reward higher Genesis ownership tiers but avoid unlimited emissions.
+
+Approved direction:
+
+```text
+Higher Genesis tier = higher daily DSPOINC rate
+Higher Genesis tier = more freezer slots
+VIP holder = capped special bonus lane
+```
+
+Recommended initial daily NFT reward ladder:
+
+```text
+Genesis Tier 1        1 Genesis       250 DSPOINC / day per frozen Genesis NFT
+Genesis Tier 2        2 Genesis       300 DSPOINC / day per frozen Genesis NFT
+Genesis Collector     3–5 Genesis     400 DSPOINC / day per frozen Genesis NFT
+Genesis Expert        6–15 Genesis    550 DSPOINC / day per frozen Genesis NFT
+Genesis Elite Holder  16–29 Genesis   750 DSPOINC / day per frozen Genesis NFT
+Genesis Legend        30–49 Genesis   1,000 DSPOINC / day per frozen Genesis NFT
+Genesis Mythic        50–74 Genesis   1,150 DSPOINC / day per frozen Genesis NFT
+Genesis Ancient       75–99 Genesis   1,275 DSPOINC / day per frozen Genesis NFT
+Genesis Overlord      100+ Genesis    1,400 DSPOINC / day per frozen Genesis NFT
+```
+
+Note:
+
+```text
+Genesis Mythic / Ancient / Overlord are planned staking subtiers.
+They do not need to become Discord roles immediately unless explicitly requested later.
+Current Discord Genesis tier role system still ends at Genesis Legend for 30+.
+```
+
+---
+
+## ✅ Recommended Freezer Slot Caps
+
+To protect the DSPOINC economy, do not allow unlimited NFT freezing on day one.
+
+Recommended slot model:
+
+```text
+Genesis Tier 1        1 Genesis       3 freezer slots
+Genesis Tier 2        2 Genesis       3 freezer slots
+Genesis Collector     3–5 Genesis     4 freezer slots
+Genesis Expert        6–15 Genesis    5 freezer slots
+Genesis Elite Holder  16–29 Genesis   6 freezer slots
+Genesis Legend        30–49 Genesis   8 freezer slots
+Genesis Mythic        50–74 Genesis   10 freezer slots
+Genesis Ancient       75–99 Genesis   12 freezer slots
+Genesis Overlord      100+ Genesis    15 freezer slots
+VIP Holder            verified VIP    +1 bonus freezer slot
+```
+
+Reason:
+
+```text
+This makes 50 / 75 / 100 Genesis levels attractive,
+but prevents uncontrolled DSPOINC emissions from freezing every owned NFT.
+```
+
+---
+
+## ✅ VIP Holder Integration Plan
+
+VIP collection holders should receive special utility without creating unlimited emissions.
+
+Recommended VIP mechanic:
+
+```text
+VIP Mouse Pass
+```
+
+Planned VIP benefit:
+
+```text
++10% bonus on Genesis Mouse Freezer claims
+VIP bonus applies only to the first 10 frozen Genesis NFTs
+VIP holder unlocks +1 freezer slot
+VIP NFT must be verified at claim time
+```
+
+Important rules:
+
+```text
+VIP NFTs do not count toward Genesis tier levels.
+VIP NFTs do not create a separate unlimited reward printer.
+VIP is a capped bonus / access layer on top of Genesis NFT staking.
+```
+
+---
+
+## ✅ Core Safety Rules
+
+Any future implementation must follow these rules:
+
+```text
+Do not let frontend decide staking rewards.
+Do not count VIP NFTs toward Genesis tier levels.
+Do not pay if ownership is no longer verified at claim time.
+Do not pay partial seconds/minutes.
+Use full-day claim windows only.
+Minimum claim window should be 24h.
+Do not allow duplicate active stakes for the same token.
+Do not mix NFT staking rows into tbl_dspoinc_stakes.
+Do not auto-pay without a claim ledger.
+Do not activate without DB backup and local test.
+```
+
+Important ownership rule:
+
+```text
+The NFT stays in the holder wallet.
+Narrrfs World only freezes the NFT's internal ecosystem utility state.
+Ownership must be re-checked before claims.
+```
+
+Safe public wording:
+
+```text
+Freeze your verified Genesis mouse inside the Narrrfs World system and claim daily DSPOINC rewards based on your current Genesis tier.
+```
+
+Avoid wording:
+
+```text
+passive income
+guaranteed returns
+profit
+APY promises
+price will double
+```
+
+---
+
+## ✅ Planned Database Direction
+
+Do not reuse:
+
+```text
+tbl_dspoinc_stakes
+```
+
+That table is for DSPOINC balance staking only.
+
+Planned new table:
+
+```text
+tbl_genesis_nft_stakes
+```
+
+Purpose:
+
+```text
+Tracks active/frozen Genesis NFT stakes.
+One active stake per token.
+Stores user_id, token_id, collection, status, frozen_at, last_claimed_at, unstaked_at, start tier snapshot, total claimed.
+```
+
+Planned claim ledger:
+
+```text
+tbl_genesis_nft_stake_claims
+```
+
+Purpose:
+
+```text
+Tracks every NFT staking claim for audit.
+Stores stake_id, user_id, token_id, claim window, full claim days, daily reward, total reward, tier at claim, Genesis count at claim.
+```
+
+DSPOINC reward source/game label candidate:
+
+```text
+genesis_nft_staking
+```
+
+---
+
+## ✅ Planned API Direction
+
+Future API files should likely live in:
+
+```text
+api/user/
+```
+
+Planned endpoints:
+
+```text
+get-genesis-nft-stakes.php
+create-genesis-nft-stake.php
+claim-genesis-nft-stake.php
+unstake-genesis-nft.php
+```
+
+Endpoint responsibilities:
+
+```text
+get-genesis-nft-stakes.php
+- Load verified Genesis NFTs
+- Load active frozen NFTs
+- Load current Genesis count/tier
+- Load VIP status
+- Calculate preview claimable values
+- Return freezer slots and daily rates
+
+create-genesis-nft-stake.php
+- Verify logged-in user
+- Verify token belongs to user
+- Verify collection is genesis
+- Verify token is not already frozen
+- Snapshot tier/rate at start
+- Insert active NFT stake
+
+claim-genesis-nft-stake.php
+- Verify stake belongs to user
+- Verify user still owns NFT
+- Verify minimum 24h/full-day claim window
+- Recalculate current tier and VIP bonus at claim time
+- Insert claim ledger row
+- Insert DSPOINC reward into user score ledger
+- Update stake totals
+
+unstake-genesis-nft.php
+- Verify active stake belongs to user
+- Optionally claim available full days first
+- Set stake_status to unstaked
+- Set unstaked_at
+```
+
+---
+
+## ✅ Recommended MVP Scope
+
+For Season 13 MVP, keep it simple:
+
+```text
+One active stake per Genesis token.
+No minimum lock period.
+No penalty in V1.
+Rewards accrue by full days only.
+Minimum claim window: 24h.
+User can unfreeze anytime.
+Daily rate depends on current verified Genesis tier at claim time.
+VIP bonus is capped.
+```
+
+Do not add yet:
+
+```text
+penalties
+dynamic lock durations
+complicated APY wording
+NFT trait-based reward multipliers
+cross-collection reward stacking
+```
+
+Those can be future versions after the base system is stable.
+
+---
+
+## ➡️ Next Agent Task
+
+When implementation begins:
+
+```text
+1. Inspect current stake-lab.html NFT verification/grid logic.
+2. Inspect tbl_nft_ownership usage from save-verified-nft-scan.php and strongest Genesis endpoints.
+3. Create DB migration SQL first.
+4. Build read-only get-genesis-nft-stakes.php before write endpoints.
+5. Build Stake Lab preview shell with disabled buttons if backend is not ready.
+6. Only activate Freeze / Claim / Unfreeze after backend test passes locally.
+7. Update QUICK_STATUS.md after each completed phase.
+```
+
+Do not implement from assumptions. Verify exact column names locally before writing SQL or PHP.
+
+
 ---
 
 ## 🔎 FOLLOW-UP — SPOINC POOL BALANCE DISPLAY VIA HELIUS
