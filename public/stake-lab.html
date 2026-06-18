@@ -2858,21 +2858,21 @@ if (!connection || !latestBlockhash) {
   throw new Error(`Unable to reach a Solana RPC for freezer Memo transaction. Last error: ${lastRpcError?.message || lastRpcError || 'Unknown RPC error'}`);
 }
 
-  const walletPublicKey = new web3.PublicKey(walletAddress);
-  const memoProgramId = new web3.PublicKey(GENESIS_FREEZER_MEMO_PROGRAM_ID);
-  const encodedMemo = new TextEncoder().encode(safeMessage);
-  transaction.recentBlockhash = latestBlockhash.blockhash;
+const walletPublicKey = new web3.PublicKey(walletAddress);
+const memoProgramId = new web3.PublicKey(GENESIS_FREEZER_MEMO_PROGRAM_ID);
+const encodedMemo = new TextEncoder().encode(safeMessage);
+const transaction = new web3.Transaction();
+
+transaction.recentBlockhash = latestBlockhash.blockhash;
 transaction.feePayer = walletPublicKey;
-  const transaction = new web3.Transaction();
- 
-  
-  transaction.add(
-    new web3.TransactionInstruction({
-      keys: [],
-      programId: memoProgramId,
-      data: encodedMemo
-    })
-  );
+
+transaction.add(
+  new web3.TransactionInstruction({
+    keys: [],
+    programId: memoProgramId,
+    data: encodedMemo
+  })
+);
 
   let signature = '';
 
