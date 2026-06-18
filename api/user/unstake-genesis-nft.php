@@ -8,8 +8,11 @@
  *
  * Safety status:
  * - Localhost can use local_dev_confirm for API testing.
- * - Production intentionally refuses activation until Solana Memo TX verification
- *   is extracted into a reusable helper and wired here.
+ * - Production requires a real Solana Memo transaction signature.
+ * - The Memo transaction must be signed by the challenge wallet and must
+ *   contain the exact unfreeze challenge message.
+ * - Frontend production buttons may still stay locked until wallet Memo UX
+ *   is wired and fully tested.
  *
  * This endpoint does NOT pay DSPOINC.
  * This endpoint does NOT create claim rows.
@@ -28,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/genesis-nft-staking-helpers.php';
+require_once __DIR__ . '/solana-memo-verification-helper.php';
 
 const GENESIS_NFT_LOCAL_DEV_UNFREEZE_CONFIRM_TEXT = 'I_UNDERSTAND_THIS_IS_LOCAL_ONLY';
 
@@ -198,15 +202,16 @@ function verify_unstake_genesis_nft_ownership(PDO $pdo, array $stake): ?array
 
     return $row ?: null;
 }
-
 /**
- * Validate local-only unfreeze activation.
+ * Validate Genesis Mouse Freezer unfreeze activation proof.
  *
- * TODO:
- * Extract real Solana Memo TX verification from verify-nft-holder.php into a
- * reusable helper before enabling production freezer unfreeze activation.
+ * Plain language for DEVS:
+ * Localhost may still use local_dev_confirm for safe API testing.
+ * Production must provide a real Solana Memo transaction signature.
+ * The Memo transaction must be signed by the exact challenge wallet and must
+ * contain the exact unfreeze challenge message.
  */
-function validate_unfreeze_activation_proof(array $requestData): string
+function validate_unfreeze_activation_proof(array $requestData, array $challenge): string
 {
     $memoSignature = trim((string)($requestData['memo_signature'] ?? ''));
     $localDevConfirm = trim((string)($requestData['local_dev_confirm'] ?? ''));
@@ -215,11 +220,32 @@ function validate_unfreeze_activation_proof(array $requestData): string
         return $memoSignature !== '' ? $memoSignature : 'LOCAL_DEV_UNFREEZE_CONFIRM';
     }
 
-    json_response([
-        'success' => false,
-        'error' => 'Production unfreeze activation is not enabled yet. Solana Memo TX verification must be extracted and wired before live use.',
-        'required_next_step' => 'Extract reusable verifySolanaMemoTransaction helper before production activation.'
-    ], 403);
+    $wallet = trim((string)($challenge['wallet'] ?? ''));
+    $message = trim((string)($challenge['message'] ?? ''));
+
+    if ($memoSignature === '') {
+        json_response([
+            'success' => false,
+            'error' => 'Solana Memo transaction signature is required for production unfreeze activation.',
+            'required_field' => 'memo_signature'
+        ], 400);
+    }
+
+    $verification = narrrfs_verify_solana_memo_transaction(
+        $wallet,
+        $message,
+        $memoSignature
+    );
+
+    if (empty($verification['success'])) {
+        json_response([
+            'success' => false,
+            'error' => $verification['error'] ?? 'Solana Memo transaction verification failed.',
+            'memo_verification' => $verification
+        ], 403);
+    }
+
+    return $memoSignature;
 }
 
 /**
@@ -343,7 +369,7 @@ try {
         ], 409);
     }
 
-    $memoSignature = validate_unfreeze_activation_proof($requestData);
+    $memoSignature = validate_unfreeze_activation_proof($requestData, $challenge);
     $metadata = build_genesis_nft_unstake_metadata($stake, $challenge, $ownership);
 
     $pdo->beginTransaction();

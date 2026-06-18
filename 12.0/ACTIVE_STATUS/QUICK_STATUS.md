@@ -1,5 +1,1892 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## FOLLOW-UP — GENESIS MOUSE FREEZER WALLET MEMO UX WIRED FOR CONTROLLED LIVE TEST
+
+**Date:** 2026-06-18
+**Status:** Frontend wallet Memo UX wired / Backend Memo verification prepared / Ready for controlled Narrrf + justme live test after push
+**Scope:** `public/stake-lab.html`, Genesis Mouse Freezer APIs, Solana Memo helper
+
+---
+
+## ✅ Completed Today
+
+The Genesis Mouse Freezer is now prepared beyond local-only testing.
+
+The production-style wallet Memo flow was added to:
+
+```text
+public/stake-lab.html
+```
+
+The Stake Lab now supports two separate execution paths:
+
+```text
+Localhost:
+Freeze Selected Local Test → local_dev_confirm
+Unfreeze Local Test → local_dev_confirm
+
+Production / live:
+Freeze Selected with Wallet Memo → Solana Memo TX → memo_signature backend verification
+Unfreeze with Wallet Memo → Solana Memo TX → memo_signature backend verification
+```
+
+This keeps local testing fast while preparing the real wallet-proof path for controlled live testing.
+
+---
+
+## ✅ Frontend Wallet Memo Functions Added
+
+New frontend helpers were added for the Genesis Mouse Freezer wallet Memo flow:
+
+```text
+GENESIS_FREEZER_MEMO_PROGRAM_ID
+GENESIS_FREEZER_PUBLIC_RPC_URL
+getGenesisFreezerWalletProvider()
+getGenesisFreezerSolanaWeb3()
+connectGenesisFreezerWallet()
+sendGenesisFreezerMemoTransaction()
+freezeSelectedGenesisMice()
+unfreezeGenesisMouseFreezer()
+freezeSelectedGenesisMiceWithWalletMemo()
+unfreezeGenesisMouseFreezerWithWalletMemo()
+```
+
+Plain-language behavior:
+
+```text
+The browser wallet connects through the Solana provider.
+The frontend creates one real Solana Memo transaction per selected Genesis mouse.
+The Memo text is the exact backend challenge message.
+The wallet signs and sends the Memo transaction.
+The frontend sends only memo_signature back to the backend.
+The backend verifies the Memo transaction before changing freezer state.
+```
+
+---
+
+## ✅ Button Routing Updated
+
+The main freeze button now routes through:
+
+```text
+freezeSelectedGenesisMice()
+```
+
+The unfreeze buttons now route through:
+
+```text
+unfreezeGenesisMouseFreezer(stakeId)
+```
+
+Routing rules:
+
+```text
+isGenesisFreezerLocalhost() === true:
+use the local_dev_confirm test path.
+
+isGenesisFreezerLocalhost() === false:
+use the production wallet Memo path.
+```
+
+---
+
+## ✅ Production Lock Copy Removed From Active UI
+
+Final frontend checks passed:
+
+```text
+findstr "Selected with Wallet Memo" = found
+findstr "Sign Solana Memo transaction(s)" = found
+findstr "Freeze locked" = no output
+findstr "Unfreeze locked" = no output
+findstr "Production freeze requires wallet-proof Memo confirmation before activation" = no output
+```
+
+Current active UI wording:
+
+```text
+Freeze X Selected with Wallet Memo
+Unfreeze with Wallet Memo
+Sign Solana Memo transaction(s) to freeze selected Genesis mice.
+```
+
+This means the visible live UI is now ready for controlled test users instead of being hard-locked.
+
+---
+
+## ✅ Backend Memo Verification State
+
+The backend safety path is already wired.
+
+Updated / relevant files:
+
+```text
+api/user/solana-memo-verification-helper.php
+api/user/create-genesis-nft-stake.php
+api/user/unstake-genesis-nft.php
+api/user/create-genesis-nft-freeze-challenge.php
+api/user/create-genesis-nft-unfreeze-challenge.php
+api/user/get-genesis-nft-stakes.php
+api/user/claim-genesis-nft-stake.php
+api/user/genesis-nft-staking-helpers.php
+```
+
+Confirmed backend rules:
+
+```text
+Freeze production path requires memo_signature.
+Unfreeze production path requires memo_signature.
+Memo must be signed by the exact challenge wallet.
+Memo text must match the exact backend challenge message.
+Localhost local_dev_confirm remains local-only.
+```
+
+Important safety guarantees:
+
+```text
+Freeze/unfreeze do not pay DSPOINC.
+Freeze/unfreeze do not create claim rows.
+Freeze/unfreeze do not touch tbl_dspoinc_stakes.
+Frontend does not send reward amounts.
+Frontend does not decide rewards.
+Backend remains authority for slots, ownership, challenges, claims, and ledger writes.
+```
+
+---
+
+## ✅ Claim API Safety Confirmed
+
+The Genesis Mouse Freezer claim API remains separate from DSPOINC Staking V2.
+
+Claim rules remain:
+
+```text
+Stake must belong to the logged-in Discord user.
+Stake must be active.
+NFT ownership must still match the same user + wallet + token.
+Rewards use full days only.
+Backend recalculates current Genesis tier and VIP bonus at claim time.
+One claim row and one DSPOINC ledger/audit pair are written in one DB transaction.
+claim-genesis-nft-stake.php must never touch tbl_dspoinc_stakes.
+```
+
+No claim reward authority was moved to frontend.
+
+---
+
+## ✅ Local Regression Already Passed
+
+Previous local regression passed:
+
+```text
+Freeze challenge created.
+Freeze challenge consumed with local_dev_confirm.
+Active freezer row created.
+Frozen count increased.
+Available count decreased.
+Unfreeze challenge created.
+Unfreeze consumed with local_dev_confirm.
+Freezer row closed.
+Frozen count returned to previous value.
+Available NFT returned to available_nfts.
+No DSPOINC reward written during freeze/unfreeze.
+tbl_dspoinc_stakes was not touched.
+```
+
+Test NFT used:
+
+```text
+NFT: NarrrfsWorldGenesis1192
+Token ID: GrQerPu2CAg1Guu5SaQBptmNNs1ptWQEbeqAWPqwPBrg
+Wallet: 62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+User ID: 328601656659017732
+```
+
+---
+
+## ⚠️ Current Activation Status
+
+This is **not a public launch announcement yet**.
+
+Correct status wording:
+
+```text
+Genesis Mouse Freezer wallet Memo UX is wired.
+Backend Memo verification is prepared.
+System is ready for controlled live testing with Narrrf first, then justme.
+Public activation depends on successful live wallet Memo tests and post-deploy verification.
+```
+
+Do not say:
+
+```text
+NFT staking is fully live for everyone.
+Season 13 staking is live.
+DSPOINC Staking V2 is active.
+Genesis Mouse Freezer is publicly launched.
+```
+
+Safe wording:
+
+```text
+Genesis Mouse Freezer is entering controlled wallet-proof live testing.
+NFT staking backend and wallet Memo UX are prepared for limited test users.
+Production activation is staged and being verified.
+```
+
+---
+
+## 🚫 Do Not Do Yet
+
+```text
+Do not activate DSPOINC Staking V2.
+Do not change ACTIVE_STAKING_CONTRACT_VERSION from legacy_v1.
+Do not announce public NFT staking launch.
+Do not remove localhost local_dev_confirm guard.
+Do not move reward authority to frontend.
+Do not touch tbl_dspoinc_stakes from Genesis Mouse Freezer APIs.
+Do not include unrelated music files in this staking commit unless intentionally doing an audio commit.
+Do not broadly rename public pages from Season 12 to Season 13 yet.
+```
+
+---
+
+## ✅ Files Expected In This NFT Staking Commit
+
+Relevant expected changes:
+
+```text
+modified: 12.0/ACTIVE_STATUS/QUICK_STATUS.md
+modified: api/user/create-genesis-nft-stake.php
+modified: api/user/unstake-genesis-nft.php
+modified: public/stake-lab.html
+untracked/new: api/user/solana-memo-verification-helper.php
+```
+
+Possible existing file involved in validation but not necessarily changed in this patch:
+
+```text
+api/user/claim-genesis-nft-stake.php
+```
+
+Unrelated untracked music files should normally stay out of this commit unless intentionally bundled:
+
+```text
+public/sounds/music/glyph.mp3
+public/sounds/music/snake.mp3
+public/sounds/music/tetris.mp3
+public/sounds/music/cheese-runner.mp3
+public/sounds/music/invaders.mp3
+```
+
+---
+
+## ➡️ Next Verification Before Push
+
+Run final local checks:
+
+```powershell
+C:\xampp-server\php\php.exe -l api\user\solana-memo-verification-helper.php
+C:\xampp-server\php\php.exe -l api\user\create-genesis-nft-stake.php
+C:\xampp-server\php\php.exe -l api\user\unstake-genesis-nft.php
+C:\xampp-server\php\php.exe -l api\user\claim-genesis-nft-stake.php
+```
+
+Expected:
+
+```text
+No syntax errors detected
+```
+
+Run frontend text checks:
+
+```powershell
+findstr /n /c:"Selected with Wallet Memo" public\stake-lab.html
+findstr /n /c:"Sign Solana Memo transaction(s)" public\stake-lab.html
+findstr /n /c:"Freeze locked" public\stake-lab.html
+findstr /n /c:"Unfreeze locked" public\stake-lab.html
+findstr /n /c:"Production freeze requires wallet-proof Memo confirmation before activation" public\stake-lab.html
+```
+
+Expected:
+
+```text
+Selected with Wallet Memo = found
+Sign Solana Memo transaction(s) = found
+Freeze locked = no output
+Unfreeze locked = no output
+Production freeze blocker text = no output
+```
+
+Run local browser test:
+
+```text
+Open http://localhost/public/stake-lab.html
+Confirm Genesis Mouse Freezer loads.
+Confirm available mice load.
+Select one available mouse.
+Confirm localhost still shows Local Test wording.
+Freeze one mouse locally.
+Unfreeze same mouse locally.
+Confirm counts return correctly.
+```
+
+---
+
+## ➡️ Controlled Live Test Plan After Push
+
+1. Push only the NFT staking files.
+2. Let Render deploy/restart.
+3. Warn community about a short server restart / staking lab maintenance window.
+4. Confirm the site is back online.
+5. Test live first with Narrrf user only.
+6. Freeze one Genesis mouse only.
+7. Confirm Phantom/Solana Memo transaction opens.
+8. Confirm backend verifies memo_signature and creates active freezer row.
+9. Confirm frozen count increases and available count decreases.
+10. Unfreeze same mouse.
+11. Confirm backend verifies unfreeze Memo and closes active freezer row.
+12. Confirm NFT returns to available list.
+13. Repeat with justme only after Narrrf test passes.
+14. Update Quick Status again with live test result.
+
+---
+
+## Current Summary
+
+```text
+Genesis Mouse Freezer backend is prepared.
+Reusable Solana Memo helper exists.
+Freeze API is wired to Memo proof.
+Unfreeze API is wired to Memo proof.
+Claim API stays backend-authoritative and separate from DSPOINC V2.
+Stake Lab frontend wallet Memo UX is now wired.
+Production lock copy is removed from active UI.
+System is ready for controlled live wallet Memo testing after final lint, push, deploy, and live DB safety check.
+```
+
+
+## FOLLOW-UP — GENESIS MOUSE FREEZER MEMO HELPER + LOCAL FREEZE/UNFREEZE BACKEND REGRESSION
+
+**Date:** 2026-06-18
+**Status:** Backend Memo verification helper created / Freeze + Unfreeze APIs wired / Local API regression passed
+**Scope:** Genesis Mouse Freezer backend safety pass
+
+---
+
+## ✅ Completed Today
+
+Created the new reusable Solana Memo verification helper:
+
+```text
+api/user/solana-memo-verification-helper.php
+```
+
+Purpose:
+
+```text
+Verifies a real Solana Memo transaction.
+Checks expected wallet shape.
+Checks transaction signature shape.
+Fetches transaction through Solana RPC fallback.
+Checks transaction success.
+Checks expected wallet signed the transaction.
+Extracts Memo instruction text.
+Compares Memo text against the exact backend challenge message.
+```
+
+Important safety rules preserved:
+
+```text
+The helper does not write database rows.
+The helper does not freeze NFTs.
+The helper does not unfreeze NFTs.
+The helper does not grant roles.
+The helper does not pay DSPOINC.
+The helper does not touch tbl_dspoinc_stakes.
+```
+
+---
+
+## ✅ Freeze API Wired To Memo Helper
+
+Updated:
+
+```text
+api/user/create-genesis-nft-stake.php
+```
+
+Confirmed:
+
+```text
+Requires solana-memo-verification-helper.php.
+Calls narrrfs_verify_solana_memo_transaction().
+Old production hard-block text removed.
+Localhost local_dev_confirm path still works.
+Production path now requires a real memo_signature.
+Memo must be signed by the challenge wallet.
+Memo text must match the exact freeze challenge message.
+```
+
+Verification output:
+
+```text
+findstr solana-memo-verification-helper.php = found
+findstr narrrfs_verify_solana_memo_transaction = found
+findstr "Production freeze activation is not enabled yet" = no output
+```
+
+---
+
+## ✅ Unfreeze API Wired To Memo Helper
+
+Updated:
+
+```text
+api/user/unstake-genesis-nft.php
+```
+
+Confirmed:
+
+```text
+Requires solana-memo-verification-helper.php.
+Calls narrrfs_verify_solana_memo_transaction().
+Old production hard-block text removed.
+Localhost local_dev_confirm path still works.
+Production path now requires a real memo_signature.
+Memo must be signed by the challenge wallet.
+Memo text must match the exact unfreeze challenge message.
+```
+
+Verification output:
+
+```text
+findstr solana-memo-verification-helper.php = found
+findstr narrrfs_verify_solana_memo_transaction = found
+findstr "Production unfreeze activation is not enabled yet" = no output
+```
+
+---
+
+## ✅ Local Freeze API Regression Passed
+
+Tested with:
+
+```text
+User ID: 328601656659017732
+Wallet: 62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+NFT: NarrrfsWorldGenesis1192
+Token ID: GrQerPu2CAg1Guu5SaQBptmNNs1ptWQEbeqAWPqwPBrg
+```
+
+Flow:
+
+```text
+create-genesis-nft-freeze-challenge.php returned challenge_id 12.
+create-genesis-nft-stake.php consumed challenge_id 12 with local_dev_confirm.
+API created active freezer stake_id 10.
+Frozen count increased from 7 to 8.
+Available count decreased from 95 to 94.
+No rewards were written during freeze.
+tbl_dspoinc_stakes was not touched.
+```
+
+Confirmed API safety flags:
+
+```text
+writes_rewards: false
+touches_dspoinc_stakes: false
+```
+
+---
+
+## ✅ Local Unfreeze API Regression Passed
+
+Flow:
+
+```text
+create-genesis-nft-unfreeze-challenge.php returned challenge_id 13 for stake_id 10.
+unstake-genesis-nft.php consumed stake_id 10 + challenge_id 13 with local_dev_confirm.
+API closed the active freezer row.
+Final status returned: unstaked.
+Frozen count returned from 8 to 7.
+Available count returned from 94 to 95.
+NarrrfsWorldGenesis1192 returned to available_nfts.
+```
+
+Confirmed API safety flags:
+
+```text
+writes_rewards: false
+creates_claim_rows: false
+touches_dspoinc_stakes: false
+```
+
+---
+
+## ✅ Current Backend Safety State
+
+The backend now has the correct production verification path ready:
+
+```text
+Freeze production path requires memo_signature.
+Unfreeze production path requires memo_signature.
+Memo signature must verify against exact wallet + exact backend challenge message.
+Localhost test path still uses local_dev_confirm only for local development.
+```
+
+Frontend production activation is still not public-ready until wallet Memo UX is wired and tested.
+
+Do not enable public production buttons yet.
+
+---
+
+## ✅ Git Status After Work
+
+Expected relevant changes:
+
+```text
+modified: api/user/create-genesis-nft-stake.php
+modified: api/user/unstake-genesis-nft.php
+untracked: api/user/solana-memo-verification-helper.php
+modified: public/stake-lab.html
+modified: 12.0/ACTIVE_STATUS/QUICK_STATUS.md
+```
+
+Unrelated untracked music files remain separate:
+
+```text
+public/sounds/music/cheese-runner.mp3
+public/sounds/music/snake.mp3
+public/sounds/music/tetris.mp3
+```
+
+Do not include those music files in the staking backend commit unless intentionally bundling a separate audio task.
+
+---
+
+## 🚫 Do Not Do Yet
+
+```text
+Do not enable production Freeze button.
+Do not enable production Unfreeze button.
+Do not claim public NFT staking is live.
+Do not remove localhost-only local_dev_confirm guard.
+Do not activate DSPOINC Staking V2.
+Do not change ACTIVE_STAKING_CONTRACT_VERSION from legacy_v1 yet.
+Do not move reward authority to frontend.
+Do not touch tbl_dspoinc_stakes from Genesis Mouse Freezer APIs.
+```
+
+---
+
+## ➡️ Next Recommended Work
+
+```text
+1. Run final PHP lint on touched backend files.
+2. Patch verify-nft-holder.php later to reuse the new Memo helper and remove duplicate Memo logic.
+3. Add frontend wallet Memo transaction UX for production Freeze/Unfreeze.
+4. Run production-style negative tests without memo_signature.
+5. Run ownership-loss regression.
+6. Add admin monitoring for freezer stakes, challenges, claims, and ownership issues.
+7. Prepare staged deploy checklist and live DB backup before activation.
+```
+
+Current summary:
+
+```text
+Genesis Mouse Freezer backend Phase A/B/C is complete locally.
+Reusable Solana Memo helper exists.
+Freeze API is wired.
+Unfreeze API is wired.
+Local freeze/unfreeze API regression passed.
+Production backend verification path is prepared, but public frontend activation remains locked until wallet Memo UX is completed.
+```
+
+
+## FOLLOW-UP — GENESIS MOUSE FREEZER UI SELECTOR + MULTI-FREEZE LOCAL TEST
+
+**Date:** 2026-06-17
+**Status:** Local UI loop working / production freeze safety still locked
+**Scope:** `public/stake-lab.html`
+
+---
+
+## ✅ Completed Today
+
+The Stake Lab Genesis Mouse Freezer frontend was upgraded from a read-only preview into a much more usable local test workflow.
+
+Completed UI work:
+
+```text
+Genesis Mouse Freezer card mode redesigned as a premium showcase view.
+Genesis Mouse Freezer list mode redesigned as compact dark operational view.
+Card/List mode switch kept working.
+Live blinking freezer reward meter kept working.
+Full-day progress bar kept working.
+Claim one mouse kept working.
+Claim All Ready Mice kept working.
+Themed Genesis Freezer toast kept working.
+Browser-native unfreeze confirm was replaced with themed Narrrf popup.
+```
+
+---
+
+## ✅ Available To Freeze Selector Added
+
+The right-side `Available to Freeze` panel now has a mode switch:
+
+```text
+Plan Slots
+Freeze Mice
+```
+
+Behavior:
+
+```text
+Plan Slots = old strategy calculator / preview planner.
+Freeze Mice = real available Genesis mouse selector.
+```
+
+This keeps the user experience clean:
+
+```text
+Planner mode explains "what would happen if I freeze X mice."
+Freeze mode lets the user choose exact verified Genesis NFTs.
+```
+
+---
+
+## ✅ Multi-Select Freezer UI Added
+
+The Freeze Mice mode now supports:
+
+```text
+Show all available verified Genesis mice.
+Search by name, token, or wallet.
+Multi-select available mice.
+Clear selected mice.
+Select visible mice.
+Selected mice preview.
+Freeze multiple selected mice in one local test action.
+```
+
+Important UI fix:
+
+```text
+Search no longer jumps the page to the top.
+Search keeps focus while typing.
+The available list is no longer limited to only 12 mice.
+```
+
+---
+
+## ✅ Local Freeze Loop Confirmed Working
+
+Localhost flow now works:
+
+```text
+Select one or more available Genesis mice.
+Click Freeze Selected Local Test.
+Confirm in themed modal.
+Frontend creates freeze challenge.
+Frontend creates Genesis NFT stake with local_dev_confirm.
+Frozen count increases.
+Available count decreases.
+Frozen mice appear in Frozen Mice Preview.
+```
+
+Local test endpoints used:
+
+```text
+api/user/create-genesis-nft-freeze-challenge.php
+api/user/create-genesis-nft-stake.php
+```
+
+Local test guard:
+
+```text
+local_dev_confirm: I_UNDERSTAND_THIS_IS_LOCAL_ONLY
+```
+
+---
+
+## ✅ Local Unfreeze Loop Still Working
+
+Local unfreeze remains available only on localhost.
+
+Localhost flow:
+
+```text
+Click Unfreeze Local Test.
+Confirm in themed modal.
+Frontend creates unfreeze challenge.
+Frontend calls unstake Genesis NFT endpoint with local_dev_confirm.
+Frozen count decreases.
+Available count increases.
+```
+
+Production still shows locked behavior.
+
+---
+
+## ✅ Production Safety Status
+
+Production Freeze/Unfreeze remains intentionally blocked.
+
+Do not remove this guard yet:
+
+```text
+Production freeze requires wallet-proof Memo confirmation.
+Production unfreeze requires wallet-proof Memo confirmation.
+```
+
+Reason:
+
+```text
+Solana Memo verification helper still needs to be extracted from verify-nft-holder.php.
+Memo verification still needs to be wired into create-genesis-nft-stake.php.
+Memo verification still needs to be wired into unstake-genesis-nft.php.
+Ownership-loss regression test still needs to be completed.
+```
+
+---
+
+## ✅ Backend Authority Still Preserved
+
+No reward math was moved to frontend.
+
+Frontend remains display/control only:
+
+```text
+Frontend does not decide rewards.
+Frontend does not send reward amounts.
+Frontend does not write DSPOINC directly.
+Frontend does not bypass backend slot checks.
+Frontend does not activate production freeze/unfreeze.
+```
+
+Backend remains authority for:
+
+```text
+Verified Genesis ownership.
+Available Genesis NFTs.
+Active frozen NFT rows.
+Freezer slots.
+Claimable full-day reward calculation.
+Freeze challenge creation.
+Stake row creation.
+Claim payout.
+Unfreeze safety.
+```
+
+---
+
+## ✅ Current Local Test Status
+
+Confirmed working locally:
+
+```text
+6 frozen Genesis mice test state.
+Card mode.
+List mode.
+Claim one.
+Claim all.
+Themed claim toast.
+Themed unfreeze confirm.
+Local unfreeze.
+Available-to-freeze selector.
+Search without page jump.
+Show all matching available mice.
+Multi-select.
+Freeze selected local test.
+```
+
+---
+
+## 🚫 Do Not Do Yet
+
+Do not do these before the next backend safety pass:
+
+```text
+Do not enable production Freeze button.
+Do not enable production Unfreeze button.
+Do not remove local_dev_confirm guard.
+Do not claim Genesis Mouse Freezer is publicly active.
+Do not update homepage/profile/lab to Season 13 identity yet.
+Do not change global Season 12 page titles before official reset.
+```
+
+---
+
+## ➡️ Next Recommended Work
+
+Next best backend priorities:
+
+```text
+1. Extract reusable Solana Memo verification helper from verify-nft-holder.php.
+2. Wire Memo verification into create-genesis-nft-stake.php.
+3. Wire Memo verification into unstake-genesis-nft.php.
+4. Run ownership-loss regression test.
+5. Add admin monitoring panel for Genesis Mouse Freezer rows/challenges/claims.
+6. Create staged production test checklist.
+7. Backup live DB before any public activation.
+```
+
+Current status summary:
+
+```text
+Genesis Mouse Freezer local UX is now strong and usable.
+The full local test loop exists: plan → select → freeze → claim → unfreeze.
+Production remains correctly locked until wallet-proof Memo verification is completed.
+```
+
+
+## FOLLOW-UP — SEASON 12 FRONTEND PREVIEW AUDIT FOR V2 STAKING + GENESIS MOUSE FREEZER
+
+**Date:** 2026-06-17
+**Status:** Season 12 public identity kept / Season 13 preview copy confirmed only where needed
+**Scope:** Stake Lab, FAQ, Get Roles, Swap Lab, Index, Lab, Profile
+
+---
+
+## ✅ Important Season Timing Decision
+
+Narrrfs World is still in **Season 12 for around 14 more days**.
+
+Decision:
+
+```text
+Do not rename public pages to Season 13 yet.
+Do not re-theme Season 12 pages early.
+Do not spread full Season 13 copy across the whole frontend yet.
+Season 13 theme/title/meta updates will be handled by the official Season Reset Protocol.
+```
+
+Current strategy:
+
+```text
+Keep Season 12 public identity live.
+Use selected pages only for Season 13 preview education.
+Prepare users for DSPOINC Staking V2 and Genesis Mouse Freezer without claiming the systems are fully public-active.
+```
+
+---
+
+## ✅ Frontend Preview Audit Result
+
+The frontend review confirmed that the Season 13 staking preview is already present in the correct core pages:
+
+```text
+public/stake-lab.html
+public/faq.html
+public/get-roles.html
+public/swap-lab.html
+```
+
+Pages intentionally left unchanged until the Season 13 reset:
+
+```text
+public/index.html
+public/lab.html
+public/profile.html
+```
+
+Reason:
+
+```text
+These pages can stay focused on Season 12 until the official reset.
+Season 13 preview spreading to homepage/profile/lab will be cleaner during the reset protocol.
+```
+
+---
+
+## ✅ Stake Lab Status
+
+`public/stake-lab.html` keeps the Season 12 shell and already contains the Season 13 preview systems.
+
+Confirmed present:
+
+```text
+Season 13 V2 Staking Preview panel
+Genesis Mouse Freezer Preview panel
+Genesis Mouse Freezer toast layer
+showGenesisFreezerToast()
+hideGenesisFreezerToast()
+claimGenesisMouseFreezerReward()
+Backend-authority comments
+Read-only preview comments
+```
+
+The Genesis Mouse Freezer claim flow no longer relies on browser-native `alert()` for freezer claim success/error.
+
+Confirmed behavior:
+
+```text
+Success uses themed Genesis Freezer toast.
+Error uses themed Genesis Freezer toast.
+Claim sends only stake_id.
+Frontend does not send reward amount.
+Backend remains payout authority.
+```
+
+Legacy alerts still exist in older unrelated flows such as:
+
+```text
+Legacy DSPOINC unstake
+Legacy DSPOINC claim reward
+Wallet connect / NFT loading
+Holder verification
+Manual NFT verification
+```
+
+Those are separate future UI-polish tasks and were not touched.
+
+---
+
+## ✅ Typo / Encoding Cleanup
+
+Small typo cleanup was completed and verified.
+
+Fixed:
+
+```text
+Genesis Mouse F reezer Preview unavailable
+```
+
+to:
+
+```text
+Genesis Mouse Freezer Preview unavailable
+```
+
+Fixed:
+
+```text
+Genesis staking b oosts
+```
+
+to:
+
+```text
+Genesis staking boosts
+```
+
+Verification command returned no typo matches:
+
+```powershell
+Select-String -Path public\stake-lab.html,public\faq.html -Pattern "F reezer","b oosts" -Context 0,2
+```
+
+No output = clean.
+
+Important note:
+
+```text
+PowerShell Set-Content caused temporary encoding/mojibake risk on FAQ during testing.
+Files were restored safely with git restore.
+Future small HTML edits with emojis/special characters should be done in VS Code/Notepad, not broad PowerShell Set-Content, unless encoding is carefully controlled.
+```
+
+---
+
+## ✅ FAQ Status
+
+`public/faq.html` keeps the Season 12 FAQ shell and already includes Season 13 preview education.
+
+Confirmed content direction:
+
+```text
+Current staking is still legacy.
+Season 13 V2 is visible as a preview in Stake Lab.
+V2 staking boosts are informational until official activation.
+Genesis ownership checks and rewards stay backend-authoritative.
+Genesis Discord tier roles are live now.
+Connected staking boosts remain preview-only until V2 activation.
+```
+
+No Season 13 theme/meta reset was done.
+
+---
+
+## ✅ Get Roles Status
+
+`public/get-roles.html` already explains the connected holder systems clearly.
+
+Confirmed content direction:
+
+```text
+Genesis Discord tier roles are live.
+V2 DSPOINC staking is previewed.
+Genesis Mouse Freezer is the NFT staking/freezer preview.
+VIP Holder is separate from Genesis tiers.
+VIP NFTs do not count toward Genesis tier ladder.
+VIP Holder adds future Freezer utility.
+No financial returns are promised.
+```
+
+No changes needed right now.
+
+---
+
+## ✅ Swap Lab Status
+
+`public/swap-lab.html` remains safe.
+
+Current state:
+
+```text
+Noindex page.
+Coming-soon bridge shell.
+Conversion preview only.
+No live DSPOINC deduction.
+No live DSPOINC credit.
+No live SPOINC transaction execution.
+Backend confirmation still required.
+Waiting for final Gensuki docs.
+```
+
+This page can stay as-is until Gensuki provides the final route / unsigned transaction / confirmation lifecycle.
+
+---
+
+## ✅ Index / Lab / Profile Decision
+
+The following pages were checked with a narrow search:
+
+```powershell
+Select-String -Path public\index.html,public\lab.html,public\profile.html -Pattern "Genesis Mouse Freezer","DSPOINC Staking V2","Season 13 staking","V2 staking preview" -Context 0,3
+```
+
+Result:
+
+```text
+No matches.
+```
+
+Decision:
+
+```text
+Leave index.html unchanged until Season 13 reset protocol.
+Leave lab.html unchanged until Season 13 reset protocol.
+Leave profile.html unchanged until Season 13 reset protocol.
+```
+
+Reason:
+
+```text
+Season 12 still has around 14 days left.
+Homepage, Lab, and Profile should not receive early Season 13 identity/copy changes.
+Season 13 preview already exists where needed: Stake Lab, FAQ, Get Roles, Swap Lab.
+```
+
+---
+
+## 🚫 Do Not Do Yet
+
+Do not do the following before the Season 13 reset protocol:
+
+```text
+Do not change global page titles from Season 12 to Season 13.
+Do not re-theme Season 12 pages.
+Do not add broad Season 13 homepage copy.
+Do not modify profile/lab/index for Season 13 preview yet.
+Do not activate public Genesis Mouse Freezer freeze/unfreeze.
+Do not remove production guards.
+Do not implement live SPOINC bridge movement.
+```
+
+---
+
+## ➡️ Next Recommended Work
+
+Recommended next priorities:
+
+```text
+1. Update Quick Status with this note.
+2. Keep current frontend preview state stable.
+3. Continue backend safety work before public Freezer activation.
+4. Extract reusable Solana Memo verification helper from verify-nft-holder.php.
+5. Wire Memo verification into create-genesis-nft-stake.php.
+6. Wire Memo verification into unstake-genesis-nft.php.
+7. Run ownership-loss regression test.
+8. Add admin monitoring panel.
+9. Prepare live DB backup + staged deploy test.
+```
+
+Current project status summary:
+
+```text
+Season 12 stays live.
+Season 13 V2 staking preview is prepared.
+Genesis Mouse Freezer preview is prepared.
+Core public education pages are aligned.
+Index/Lab/Profile Season 13 changes are postponed to reset protocol.
+Freeze/Unfreeze remain blocked in production until Memo verification safety is complete.
+```
+
+
+## FOLLOW-UP — GENSUKI PRICE QUOTE ROUTE + UNSIGNED TRANSACTION FLOW
+
+**Date:** 2026-06-17
+**Status:** Waiting for Gensuki route docs / quote route confirmed as planned
+**Scope:** SPOINC DSPOINC Agent 3.0 / swap-lab UI / bridge backend planning
+
+---
+
+## ✅ Latest Zeno Updates
+
+Zeno clarified that Gensuki will provide unsigned transactions in the response to a query.
+
+Relevant partner note:
+
+```text
+We simply give you unsigned transactions in response of query then sending it to user wallet is your work.
+During this any error we can fix, but outside it's up to the wallets where it send out.
+```
+
+Meaning for Narrrfs:
+
+```text
+Gensuki builds / returns the unsigned transaction.
+Narrrfs frontend must pass the unsigned transaction to the user's wallet.
+The user wallet signs / executes the transaction.
+Narrrfs must still wait for final route docs before coding this live.
+```
+
+Zeno also confirmed that Gensuki will create a realtime price route for the requested quote tokens.
+
+Relevant partner note:
+
+```text
+Okay I will make the route to get this prices as well you can show it realtime prices on UI
+```
+
+---
+
+## ✅ Quote Tokens Confirmed
+
+Narrrfs confirmed the external quote pairs needed for UI pricing:
+
+```text
+SPOINC ↔ SOL
+SPOINC ↔ EMPIRE
+SPOINC ↔ FOOK
+SPOINC ↔ USDT
+SPOINC ↔ USDC
+```
+
+Narrrfs internal bridge pair remains:
+
+```text
+DSPOINC ↔ SPOINC
+```
+
+Important distinction:
+
+```text
+External realtime prices = Gensuki quote route / UI display data.
+Internal DSPOINC conversion = fixed Narrrfs bridge ratio.
+```
+
+Current internal bridge ratio:
+
+```text
+10,000 DSPOINC = 1 SPOINC
+```
+
+---
+
+## ✅ Available DSPOINC Clarification
+
+Zeno asked whether available DSPOINC is already cut out of frozen DSPOINC.
+
+Confirmed answer:
+
+```text
+Yes.
+Available DSPOINC already excludes frozen / active staked DSPOINC.
+```
+
+Current Narrrfs backend accounting model:
+
+```text
+Total DSPOINC = SUM(tbl_user_scores.score)
+Frozen DSPOINC = SUM(tbl_dspoinc_stakes.amount WHERE status = 'active')
+Available DSPOINC = Total DSPOINC - Frozen DSPOINC
+```
+
+Bridge safety rule:
+
+```text
+Only available DSPOINC may be used for DSPOINC → SPOINC limits.
+Frozen / active staked DSPOINC must not be convertible.
+```
+
+---
+
+## ⚠️ Phantom / Wallet Warning Context
+
+Zeno warned that Phantom / Blowfish warnings can appear during real transaction execution, even if normal message signing works without warnings.
+
+Current Narrrfs holder verification uses message signing, not token transactions.
+
+Important:
+
+```text
+Message signing success does not guarantee swap transaction warning-free execution.
+The future SPOINC swap transaction path must be reviewed once Gensuki sends the final unsigned transaction payload.
+```
+
+Narrrfs already submitted the domain / Blowfish contact form and messaged Blowfish / Phantom with project links.
+
+Still needed after Gensuki sends docs:
+
+```text
+Exact unsigned transaction format
+How transaction is serialized / encoded
+How frontend should deserialize it
+Which wallet adapter / Phantom method should be used
+Whether transaction can be simulated before signing
+Expected signer count
+Expected token accounts / instructions
+Success and failure examples
+Final confirmation / callback payload
+Idempotency key
+Replay protection field
+```
+
+---
+
+## 🚫 Do Not Implement Yet
+
+Do not implement live swap execution or DSPOINC movement until Gensuki provides the final docs.
+
+Do not enable:
+
+```text
+automatic DSPOINC credit
+automatic DSPOINC deduction
+confirm-swap.php live processing
+frontend-controlled ledger movement
+transaction signing from incomplete payloads
+private key handling in PHP
+private key handling in frontend
+private key handling in Discord bot
+quote-only based balance movement
+```
+
+Quote prices are display-only until the confirmed swap flow is complete.
+
+Unsigned transaction responses are not enough by themselves for DSPOINC ledger movement. Narrrfs still needs:
+
+```text
+final status lifecycle
+confirmed transaction proof
+idempotency field
+replay-safe callback / polling flow
+amount verification
+wallet verification
+failure / expiry handling
+```
+
+---
+
+## ➡️ Planned Safe Implementation Order After Docs Arrive
+
+1. Review Gensuki docs and payloads first.
+2. Confirm Phantom-safe transaction handling.
+3. Confirm idempotency and confirmation proof.
+4. Build read-only quote price display in `public/swap-lab.html`.
+5. Build `api/user/spoinc/get-swap-profile.php`.
+6. Build `api/user/spoinc/create-swap-intent.php`.
+7. Only after confirmation flow is clear, build `api/partner/spoinc/confirm-swap.php`.
+8. Keep DSPOINC ledger movement disabled until local and staged tests pass.
+
+Current page state:
+
+```text
+public/swap-lab.html remains a safe noindex lab shell.
+No live DSPOINC credit/deduction is active.
+No live swap transaction execution is active.
+```
+
+
+## FOLLOW-UP — PHANTOM / BLOWFISH DOMAIN + TRANSACTION WARNING REVIEW
+
+**Date:** 2026-06-17
+**Status:** Current holder verification flow reviewed / SPOINC swap transaction flow still waiting for Gensuki payload
+**Scope:** SPOINC DSPOINC Agent 3.0 / Phantom wallet safety / Blowfish domain review
+
+---
+
+## ✅ Zeno Warning Context
+
+Zeno asked whether `narrrfs.world` has been verified / registered for Phantom wallet transaction safety.
+
+Reason:
+
+```text
+Normal wallet connection and message signing may show no warning.
+Real swap transactions can still trigger Phantom / Blowfish transaction warnings if the domain or transaction cannot be safely reviewed/simulated.
+```
+
+Zeno shared Blowfish contact form and recommended also messaging Blowfish on X.
+
+Narrrf confirmed:
+
+```text
+The Blowfish/domain registration form was filled out.
+Narrrf will also message Blowfish/X.
+```
+
+---
+
+## ✅ Current Narrrfs Wallet Flow Review
+
+Current Narrrfs holder verification uses message signing, not live token transfer transactions.
+
+Relevant current behavior:
+
+```text
+User connects Solana wallet.
+Frontend creates a verification message.
+Wallet signs the message.
+Backend verifies wallet ownership / NFT ownership.
+System saves verified NFT snapshot and role eligibility.
+```
+
+This is aligned with Phantom’s documented message-signing pattern for wallet ownership verification.
+
+Important:
+
+```text
+This explains why the current holder verification flow does not show the same warning users sometimes see on transaction-heavy dApps.
+Message signing is not the same as sending a swap transaction.
+```
+
+---
+
+## ⚠️ SPOINC Swap Transaction Status
+
+The SPOINC swap flow is not live yet.
+
+Current `public/swap-lab.html` remains a safe preview / lab shell.
+
+Current status:
+
+```text
+No live swap transaction is sent from Narrrfs frontend.
+No SPOINC transaction signing is implemented yet.
+No DSPOINC credit is implemented yet.
+No DSPOINC deduction is implemented yet.
+No confirm-swap processing is implemented yet.
+```
+
+Therefore:
+
+```text
+We cannot fully verify Phantom transaction alignment until Gensuki sends the final route / payload / built transaction flow.
+```
+
+---
+
+## ✅ Phantom / Blowfish Safety Requirements For Future SPOINC Swap
+
+When Gensuki sends final docs, review for:
+
+```text
+1. Does Narrrfs receive a built Solana transaction?
+2. Does the user sign through Phantom directly?
+3. Does Gensuki send the transaction to Phantom?
+4. Is there one signer or multiple signers?
+5. Is Narrrfs ever expected to co-sign?
+6. Can the transaction be simulated before signing?
+7. Does the payload include a transaction signature?
+8. Does the confirmation flow include idempotency and replay protection?
+9. Does Phantom show exact token movement clearly?
+10. Does the flow avoid hidden/unclear instructions?
+```
+
+Phantom transaction warning prevention checklist:
+
+```text
+Use one signer where possible.
+Avoid oversized transactions.
+Simulate transaction before signing when possible.
+If multi-signer is required, review Phantom guidance carefully.
+Never hold private keys in frontend.
+Never hold private keys in PHP.
+Never hold private keys in Discord bot.
+Never let frontend decide DSPOINC credit/deduction.
+```
+
+---
+
+## ✅ Message For Zeno
+
+Suggested reply:
+
+```text
+For our current Narrrfs holder verification, we use Phantom-compatible message signing, not token transactions. This flow works without warnings.
+
+For SPOINC swap transactions, we are waiting for your final route and payload docs before implementing. Once we receive the transaction payload, we will align it with Phantom’s transaction guidance: safe simulation, clear signing flow, no frontend/private keys, and no DSPOINC ledger movement until confirmed.
+
+We already submitted the domain/contact form and will also message Blowfish/Phantom with narrrfs.world, GitHub/project links, X, Discord, and the final transaction flow once your docs are complete.
+```
+
+---
+
+## 🚫 Do Not Implement Yet
+
+Do not implement live SPOINC swap transaction signing until Gensuki provides:
+
+```text
+Final API routes
+Built transaction format
+Status lifecycle
+Confirmation proof
+Idempotency field
+Replay protection
+Callback security
+Success/failure examples
+Fee handling
+```
+
+Narrrfs must not credit or deduct DSPOINC until the confirmation flow is final, replay-safe, and idempotent.
+
+
+# 🧬 Stake Lab System 2.0 NEW — Restart Handoff Status
+
+**Date:** 2026-06-17
+**Status:** Stable foundation live / next agent starts from UI polish + safety hardening
+**Scope:** Stake Lab, Genesis Mouse Freezer, Get Roles, SPOINC bridge coordination
+
+---
+
+## ✅ Stable Version Live
+
+The stable Genesis Mouse Freezer foundation is now live on `render-deploy`.
+
+This live push included:
+
+```text
+api/user/genesis-nft-staking-helpers.php
+api/user/get-genesis-nft-stakes.php
+api/user/create-genesis-nft-freeze-challenge.php
+api/user/create-genesis-nft-stake.php
+api/user/claim-genesis-nft-stake.php
+api/user/create-genesis-nft-unfreeze-challenge.php
+api/user/unstake-genesis-nft.php
+public/stake-lab.html
+public/get-roles.html
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+```
+
+---
+
+## ✅ Genesis Mouse Freezer API Status
+
+The Genesis Mouse Freezer is separate from DSPOINC Staking V2.
+
+```text
+DSPOINC Staking V2 = tbl_dspoinc_stakes
+Genesis Mouse Freezer = tbl_genesis_nft_stakes + tbl_genesis_nft_stake_claims + tbl_genesis_nft_stake_challenges
+```
+
+The local full cycle was successfully tested:
+
+```text
+Freeze challenge created
+Active freezer row created
+Read-only API detected frozen NFT
+Too-early claim blocked
+Full-day claim paid correctly
+Claim wrote tbl_genesis_nft_stake_claims
+Claim wrote tbl_score_adjustments
+Claim wrote tbl_user_scores
+Unfreeze challenge created
+Unfreeze closed active freezer row
+Read-only API made NFT available again
+Same NFT could be re-frozen after unstake
+Duplicate active freeze was blocked
+Frontend claim button successfully called backend claim endpoint
+```
+
+Important safety state:
+
+```text
+Production Freeze is still blocked.
+Production Unfreeze is still blocked.
+Solana Memo verification helper extraction is still required.
+Claim endpoint is backend-authoritative and sends/accepts only stake_id from frontend.
+Frontend must never send reward amount.
+```
+
+---
+
+## ✅ Stake Lab Frontend Status
+
+`public/stake-lab.html` now includes the Genesis Mouse Freezer preview.
+
+The panel shows:
+
+```text
+verified Genesis count
+current freezer tier
+frozen Genesis mice
+available Genesis mice
+slot usage
+daily DSPOINC preview
+claimable full-day preview
+VIP bonus state
+freezer play planner
+tier and slot guide
+VIP Holder bonus explanation
+live freezer reward meter
+claim button for full-day claimable frozen mice
+```
+
+A live pulsing meter was added for frozen NFTs, modeled after legacy DSPOINC staking live reward display.
+
+Important UX rule:
+
+```text
+Live meter = visual progress only.
+Backend claim endpoint = real payout authority.
+```
+
+The frontend claim button worked locally. After claim, the backend response confirmed:
+
+```text
+claimable_preview = 0
+last_claimed_at updated
+frozen NFT still active
+total_claimed updated
+```
+
+---
+
+## ⚠️ Immediate Next Task For New Agent
+
+The claim flow works, but the claim success/error popup still needs final theming.
+
+Next task:
+
+```text
+Replace browser-native alert() in claimGenesisMouseFreezerReward() with a themed Stake Lab / Genesis Mouse Freezer toast.
+```
+
+Planned functions:
+
+```text
+showGenesisFreezerToast(type, title, message)
+hideGenesisFreezerToast()
+```
+
+Planned HTML IDs:
+
+```text
+genesis-freezer-toast
+genesis-freezer-toast-shell
+genesis-freezer-toast-icon
+genesis-freezer-toast-title
+genesis-freezer-toast-message
+```
+
+After implementation, check:
+
+```text
+No native alert() remains for freezer claim success/error.
+Success toast shows claimed DSPOINC amount.
+Error toast shows backend error message.
+Panel refreshes after claim.
+No console red errors.
+```
+
+---
+
+## ✅ Get Roles Page Status
+
+`public/get-roles.html` was tuned to explain the connected holder systems in simpler customer-facing language.
+
+It now explains:
+
+```text
+Genesis Discord tier roles are live.
+V2 DSPOINC staking is the future DSPOINC lock/boost preview.
+Genesis Mouse Freezer is the NFT staking/freezer preview.
+VIP Holder is a separate role lane.
+VIP NFTs do not count toward Genesis tier ladder.
+VIP Holder adds +1 future freezer slot and +10% bonus on first 10 frozen Genesis mice.
+```
+
+The user decided to keep the current copy/layout from the project folder.
+
+---
+
+## ⚠️ Remaining Safety Work Before Full Public Activation
+
+Still required before public Freeze / Unfreeze activation:
+
+```text
+Extract reusable Solana Memo verification helper from verify-nft-holder.php
+Wire Memo verification into create-genesis-nft-stake.php
+Wire Memo verification into unstake-genesis-nft.php
+Run ownership-loss regression test
+Add admin monitoring panel
+Prepare live DB backup + staged deploy test
+```
+
+Do not remove production guards in freeze/unfreeze endpoints until those are done.
+
+---
+
+## 🔁 SPOINC / Gensuki Context For Stake Lab System 2.0
+
+Zeno / Gensuki status:
+
+```text
+Gensuki tested first points-to-token swap on devnet.
+Final API docs are still pending.
+Narrrfs must not implement live SPOINC / DSPOINC movement until docs arrive.
+```
+
+Pool address reminder:
+
+```text
+4dNcc6yRTdBjAxyDEjWCFRejNW4zJ2mT5AeAJG5VJVRh
+```
+
+Important warning:
+
+```text
+Only SPOINC should be sent to this pool.
+Do not send SOL, FOOK, EMPIRE, USDT, USDC, NFTs, or unrelated assets.
+```
+
+Bridge ratio:
+
+```text
+10,000 DSPOINC = 1 SPOINC
+```
+
+Correct architecture:
+
+```text
+Gensuki handles external assets ↔ SPOINC.
+Narrrfs handles DSPOINC ↔ SPOINC internal accounting.
+```
+
+Do not implement live bridge movement until final route, payload, status lifecycle, idempotency, replay protection, and callback security are confirmed.
+
+---
+
+## ➡️ Recommended Start For Stake Lab System 2.0 NEW
+
+Start with:
+
+```text
+1. Re-open public/stake-lab.html.
+2. Finish themed Genesis Freezer claim toast.
+3. Retest local claim UX.
+4. Update Quick Status.
+5. Push the small UI polish.
+6. Then move to ownership-loss regression.
+7. Then extract Solana Memo verification helper.
+```
+
+
+## FOLLOW-UP — SPOINC POOL ADDRESS + GENSUKI DEVNET SWAP TEST UPDATE
+
+**Date:** 2026-06-17
+**Status:** Partner-side devnet swap test successful / Narrrfs still waiting for final API docs
+**Scope:** SPOINC ↔ DSPOINC Bridge Agent 3.0
+
+---
+
+## ✅ Pool Address Reminder
+
+Zeno shared / reconfirmed the on-chain SPOINC pool address:
+
+```text
+4dNcc6yRTdBjAxyDEjWCFRejNW4zJ2mT5AeAJG5VJVRh
+```
+
+Solscan:
+
+```text
+https://solscan.io/account/4dNcc6yRTdBjAxyDEjWCFRejNW4zJ2mT5AeAJG5VJVRh
+```
+
+Important operation warning from Zeno:
+
+```text
+Do not send other tokens than SPOINC to this pool address.
+```
+
+This means:
+
+```text
+Do not send SOL.
+Do not send FOOK.
+Do not send EMPIRE.
+Do not send USDT.
+Do not send USDC.
+Do not send NFTs.
+Do not send unrelated assets.
+```
+
+Only SPOINC should be sent to this pool unless Gensuki explicitly confirms otherwise.
+
+---
+
+## ✅ Gensuki API Documentation Status
+
+Zeno confirmed that API documentation will be sent on Wednesday.
+
+Current partner status:
+
+```text
+Routes and payload information are still being written / finalized by Gensuki.
+Narrrfs is all set on the current read-only balance side.
+Final answers to Narrrfs payload questions are still pending.
+```
+
+Relevant Zeno update:
+
+```text
+Zeno — 14:38
+On it almost it's get completed
+
+Zeno — 14:55
+Tested out first swap from points to tokens on devnet its went smoothly.
+```
+
+Meaning:
+
+```text
+Gensuki successfully tested the first devnet swap from points to tokens.
+This is partner-side progress only.
+Narrrfs must still wait for final API docs before implementing live DSPOINC movement.
+```
+
+---
+
+## ✅ Current Narrrfs Safety Position
+
+No live bridge movement is enabled yet.
+
+Still blocked until Gensuki provides final docs for:
+
+```text
+Final API route URLs
+Request payloads
+Response payloads
+All status values
+Unique idempotency field
+Transaction signature / proof field
+Confirmation timestamp
+Wallet format
+SPOINC amount format with 9 decimals
+DSPOINC amount format
+Fee handling
+Replay protection
+Callback signature / HMAC / auth model
+Success and failure examples
+```
+
+Narrrfs must not implement:
+
+```text
+automatic DSPOINC credit
+automatic DSPOINC deduction
+confirm-swap.php live processing
+partner transaction callback processing
+SPOINC send logic
+SPOINC receive verification
+swap intent execution
+blockchain/private key handling
+frontend-controlled balance movement
+```
+
+until the confirmation flow is final, replay-safe, and idempotent.
+
+---
+
+## ✅ Current Architecture Reminder
+
+Correct split remains:
+
+```text
+Gensuki handles:
+SOL / EMPIRE / FOOK / USDT / USDC ↔ SPOINC
+
+Narrrfs handles:
+DSPOINC ↔ SPOINC internal accounting
+```
+
+Bridge ratio remains:
+
+```text
+10,000 DSPOINC = 1 SPOINC
+```
+
+SPOINC mint remains:
+
+```text
+FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg
+```
+
+SPOINC decimals:
+
+```text
+9
+```
+
+Pool address:
+
+```text
+4dNcc6yRTdBjAxyDEjWCFRejNW4zJ2mT5AeAJG5VJVRh
+```
+
+Admin wallet:
+
+```text
+A633zMm3rp7Jhi3K4Ks85K4sgkMR4SyYdk2hK8RW5mYU
+```
+
+---
+
+## ➡️ Next Best Step
+
+Wait for Gensuki API documentation.
+
+When docs arrive, do not code live movement immediately. First review:
+
+```text
+1. route list
+2. payload examples
+3. status lifecycle
+4. idempotency field
+5. confirmation proof
+6. replay protection
+7. callback security
+8. failed / expired / cancelled examples
+```
+
+Then design the Narrrfs endpoints in this order:
+
+```text
+api/user/spoinc/get-swap-profile.php
+api/user/spoinc/create-swap-intent.php
+api/partner/spoinc/confirm-swap.php
+public/swap-lab.html integration
+```
+
+The current `public/swap-lab.html` must remain a safe lab shell / noindex page until the final confirmation flow is implemented and tested.
+
+
 # 🧬 Genesis Mouse Freezer + Role Page Frontend Preview Added
 
 **Date:** 2026-06-16

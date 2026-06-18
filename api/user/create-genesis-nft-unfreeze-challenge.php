@@ -31,6 +31,20 @@ require_once __DIR__ . '/genesis-nft-staking-helpers.php';
 const GENESIS_NFT_UNFREEZE_CHALLENGE_TTL_MINUTES = 15;
 
 /**
+ * Controlled live tester allowlist for Genesis Mouse Freezer.
+ *
+ * Plain language for DEVS:
+ * The wallet Memo production path is ready for controlled testing, but this is
+ * not the public Season 13 NFT staking launch yet. Localhost remains open for
+ * development. Production challenge creation is limited to Narrrf and justme
+ * until the live test is proven safe.
+ */
+const GENESIS_FREEZER_CONTROLLED_LIVE_TEST_USER_IDS = [
+    '328601656659017732', // Narrrf
+    '1224428436928594015', // justme
+];
+
+/**
  * Return a JSON response and stop execution.
  */
 function json_response($payload, int $code = 200): void
@@ -108,6 +122,35 @@ function resolve_unfreeze_challenge_user_id(array $requestData): string
     }
 
     return '';
+}
+
+/**
+ * Block non-allowlisted production users during the controlled live test.
+ *
+ * Plain language for DEVS:
+ * This gate only affects production. It does not block localhost curl/browser
+ * testing. It prevents accidental public NFT staking access while we verify
+ * real wallet Memo transactions with approved testers.
+ */
+function enforce_genesis_freezer_controlled_live_test_gate(string $userId): void
+{
+    if (is_localhost_request()) {
+        return;
+    }
+
+    if (in_array($userId, GENESIS_FREEZER_CONTROLLED_LIVE_TEST_USER_IDS, true)) {
+        return;
+    }
+
+    json_response([
+        'success' => false,
+        'error' => 'Genesis Mouse Freezer is in controlled live testing. Public access opens with the Season 13 staking rollout.',
+        'system_status' => [
+            'phase' => 'controlled_live_test_only',
+            'allowed_testers' => ['Narrrf', 'justme'],
+            'public_activation' => false
+        ]
+    ], 403);
 }
 
 /**
@@ -227,6 +270,8 @@ if ($userId === '') {
         'error' => 'Not logged in'
     ], 401);
 }
+
+enforce_genesis_freezer_controlled_live_test_gate($userId);
 
 $stakeId = isset($requestData['stake_id']) ? (int)$requestData['stake_id'] : 0;
 

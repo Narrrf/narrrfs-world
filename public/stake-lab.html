@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <?php
 // Include Discord invite configuration
@@ -60,20 +60,22 @@ require_once 'discord-invite.php';
         transform: scale(1);
       }
     }
-    @keyframes liveRewardPulse {
-  0% {
-    transform: scale(1);
-    text-shadow: 0 0 0 rgba(34, 211, 238, 0);
-  }
-  50% {
-    transform: scale(1.06);
-    text-shadow: 0 0 12px rgba(34, 211, 238, 0.45);
-  }
-  100% {
-    transform: scale(1);
-    text-shadow: 0 0 0 rgba(34, 211, 238, 0);
-  }
-}
+        @keyframes liveRewardPulse {
+      0% {
+        transform: scale(1);
+        text-shadow: 0 0 0 rgba(34, 211, 238, 0);
+      }
+
+      50% {
+        transform: scale(1.06);
+        text-shadow: 0 0 12px rgba(34, 211, 238, 0.45);
+      }
+
+      100% {
+        transform: scale(1);
+        text-shadow: 0 0 0 rgba(34, 211, 238, 0);
+      }
+    }
     
     .float-animation {
       animation: float 6s ease-in-out infinite;
@@ -105,6 +107,19 @@ require_once 'discord-invite.php';
       transform: translateY(-5px) scale(1.02);
       box-shadow: 0 20px 40px rgba(0,0,0,0.3);
       border-color: rgba(14, 165, 233, 0.5);
+    }
+
+        .genesis-freezer-live-reward {
+      transition: all 0.3s ease;
+    }
+
+    .genesis-freezer-live-reward-pulse {
+      display: inline-block;
+      animation: liveRewardPulse 0.45s ease;
+    }
+
+    .genesis-freezer-progress-fill {
+      transition: width 0.5s ease;
     }
 
     .progress-bar {
@@ -250,7 +265,99 @@ require_once 'discord-invite.php';
 
 <body class="stake-season12-shell relative text-white font-sans min-h-screen overflow-x-hidden">
 
-  <!-- 🌟 Floating Background Elements -->
+  <!-- 🧬 Genesis Mouse Freezer toast.
+     DEVS FOR DECADES:
+     Visual-only message layer for Genesis freezer claim results.
+     It does not decide rewards, ownership, or ledger writes. -->
+<div
+  id="genesis-freezer-toast"
+  class="fixed inset-x-0 top-6 z-[9999] mx-auto hidden w-[min(92vw,520px)]"
+>
+  <div
+    id="genesis-freezer-toast-shell"
+    class="rounded-3xl border border-cyan-300/30 bg-slate-950/95 p-5 text-white shadow-2xl backdrop-blur-xl"
+  >
+    <div class="flex items-start gap-4">
+      <div
+        id="genesis-freezer-toast-icon"
+        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/30 bg-cyan-300/10 text-2xl"
+      >
+        🧬
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <div
+          id="genesis-freezer-toast-title"
+          class="text-lg font-black text-cyan-100"
+        >
+          Genesis Mouse Freezer
+        </div>
+
+        <div
+          id="genesis-freezer-toast-message"
+          class="mt-1 text-sm leading-relaxed text-slate-300"
+        >
+          Message loading...
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onclick="hideGenesisFreezerToast()"
+        class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-black text-slate-300 transition hover:bg-white/10 hover:text-white"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 🧬 Genesis Mouse Freezer themed confirm modal.
+   DEVS FOR DECADES:
+   Visual-only confirmation layer for local freezer test actions.
+   It replaces browser-native confirm() so Stake Lab actions stay themed.
+   It does not decide rewards, ownership, wallet proof, or backend authority. -->
+<div
+  id="genesis-freezer-confirm-modal"
+  class="fixed inset-0 z-[80] hidden items-center justify-center bg-slate-950/75 px-4 backdrop-blur-sm"
+>
+  <div class="w-full max-w-lg rounded-3xl border border-orange-300/25 bg-slate-950/95 p-5 shadow-2xl shadow-black/50">
+    <div class="flex items-start gap-4">
+      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-orange-300/30 bg-orange-500/15 text-2xl">
+        🧬
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <div id="genesis-freezer-confirm-title" class="text-lg font-black text-orange-100">
+          Confirm action
+        </div>
+        <div id="genesis-freezer-confirm-message" class="mt-2 text-sm leading-relaxed text-slate-300">
+          Are you sure?
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
+      <button
+        type="button"
+        id="genesis-freezer-confirm-cancel"
+        class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-black text-slate-200 transition hover:bg-white/10"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        id="genesis-freezer-confirm-ok"
+        class="rounded-2xl border border-orange-300/40 bg-orange-500/20 px-4 py-3 text-sm font-black text-orange-100 transition hover:bg-orange-500/30"
+      >
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 🌟 Floating Background Elements -->
   <div class="fixed inset-0 pointer-events-none z-0">
     <div class="absolute w-4 h-4 bg-blue-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
     <div class="absolute w-6 h-6 bg-cyan-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
@@ -957,7 +1064,13 @@ require_once 'discord-invite.php';
     let stakingContracts = null;
     let season13V2Preview = null;
     let activeStakes = [];
-    let genesisMouseFreezerPreview = null;
+    let genesisFreezerRewardInterval = null;
+let genesisMouseFreezerPreview = null;
+let genesisFreezerViewMode = 'card';
+let genesisFreezerRightPanelMode = 'planner';
+let selectedGenesisFreezerTokenKeys = new Set();
+let genesisFreezerAvailableSearch = '';
+let genesisFreezerConfirmResolver = null;
     const GENESIS_NFT_VIP_BONUS_CAP_FROZEN_NFTS = 10;
     let completedStakes = [];
     let cancelledStakes = [];
@@ -1478,21 +1591,22 @@ async function loadGenesisMouseFreezerPreview() {
     `;
   }
 }
-
 /**
- * Build one compact Genesis Mouse Freezer NFT card.
+ * Build one premium Genesis Mouse Freezer NFT card.
  *
  * Plain language for DEVS:
- * These cards are display-only in this preview phase.
- * Buttons are intentionally disabled until production memo verification is wired.
+ * Card mode is the showcase view. It is intentionally more visual than list mode.
+ * It keeps the live blinking freezer meter, claim wiring, and local unfreeze wiring.
+ * Backend APIs remain the authority for rewards, ownership, claims, and unfreeze safety.
  */
 function getGenesisMouseFreezerCardMarkup(nft, mode) {
   const isFrozen = mode === 'frozen';
   const name = nft.nft_name || nft.name || 'Genesis Mouse';
   const tokenId = String(nft.token_id || '');
-  const shortToken = tokenId.length > 12
-    ? `${tokenId.slice(0, 4)}...${tokenId.slice(-4)}`
+  const shortToken = tokenId.length > 14
+    ? `${tokenId.slice(0, 5)}...${tokenId.slice(-5)}`
     : tokenId;
+
   const imageUrl = nft.image_url || '';
   const wallet = nft.wallet || '';
   const shortWallet = wallet.length > 12
@@ -1503,60 +1617,1769 @@ function getGenesisMouseFreezerCardMarkup(nft, mode) {
   const claimable = Number(claimPreview.final_reward_amount || nft.claimable_amount || 0);
   const fullDays = Number(claimPreview.full_days || 0);
   const dailyReward = Number(claimPreview.daily_reward || nft.daily_reward || 0);
+  const stakeId = nft.stake_id || '';
+  const canLocalUnfreeze = isGenesisFreezerLocalhost();
 
-  const actionLabel = isFrozen
-    ? 'Preview: Claim / Unfreeze locked'
-    : 'Preview: Freeze locked';
+  const cardFrameClass = isFrozen
+    ? 'border-cyan-300/30 from-slate-950/95 via-cyan-950/30 to-indigo-950/55 shadow-cyan-950/20'
+    : 'border-yellow-300/25 from-slate-950/95 via-yellow-950/20 to-orange-950/35 shadow-yellow-950/10';
 
-  const statusLine = isFrozen
-    ? `${fullDays.toLocaleString()} full day(s) claimable`
-    : 'Ready for future freezer slot';
+  const statusBadgeClass = isFrozen
+    ? 'border-cyan-300/30 bg-cyan-300/12 text-cyan-100'
+    : 'border-yellow-300/30 bg-yellow-300/12 text-yellow-100';
 
   return `
-    <div class="nft-card rounded-2xl border ${isFrozen ? 'border-cyan-300/30 bg-cyan-950/20' : 'border-yellow-300/25 bg-yellow-950/10'} p-4 overflow-hidden">
-      <div class="flex gap-4">
-        <div class="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 bg-slate-950/70 flex items-center justify-center shrink-0">
+    <div class="nft-card group relative overflow-hidden rounded-[1.75rem] border ${cardFrameClass} bg-gradient-to-br p-4 shadow-xl transition hover:-translate-y-1 hover:border-yellow-300/35 hover:shadow-2xl">
+      ${imageUrl ? `
+        <div class="pointer-events-none absolute inset-0 opacity-[0.055]">
+          <img src="${imageUrl}" alt="" class="h-full w-full scale-125 object-cover blur-sm" loading="lazy">
+        </div>
+      ` : ''}
+
+      <div class="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-cyan-300/10 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-12 -left-12 h-36 w-36 rounded-full bg-yellow-300/10 blur-3xl"></div>
+
+      <div class="relative z-10">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div class="relative mx-auto h-32 w-32 shrink-0 overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-950/80 shadow-2xl shadow-black/35 sm:mx-0">
+            ${imageUrl
+              ? `<img src="${imageUrl}" alt="${name}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">`
+              : '<div class="grid h-full w-full place-items-center text-5xl">🐭</div>'
+            }
+
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent px-3 pb-2 pt-8">
+              <div class="truncate text-[0.65rem] font-black uppercase tracking-[0.12em] text-cyan-100">
+                ${isFrozen ? 'Frozen Genesis' : 'Ready Genesis'}
+              </div>
+            </div>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="truncate text-xl font-black text-white" title="${name}">
+                  ${name}
+                </div>
+                <div class="mt-1 truncate text-xs text-slate-400" title="${tokenId}">
+                  ${shortToken || 'Genesis'}
+                </div>
+              </div>
+
+              <div class="rounded-full border ${statusBadgeClass} px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.10em]">
+                ${isFrozen ? 'Frozen' : 'Available'}
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-wrap gap-2">
+              <div class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.7rem] font-bold text-slate-200">
+                Wallet ${shortWallet || 'verified'}
+              </div>
+
+              <div class="rounded-full border border-purple-300/20 bg-purple-300/10 px-3 py-1 text-[0.7rem] font-black text-purple-100">
+                ${isFrozen ? `${fullDays.toLocaleString()} day(s) ready` : 'Slot preview'}
+              </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 gap-2">
+              <div class="rounded-2xl border border-cyan-300/15 bg-cyan-300/10 p-3">
+                <div class="text-[0.65rem] font-black uppercase tracking-[0.12em] text-cyan-200/70">Daily Rate</div>
+                <div class="mt-1 text-lg font-black text-cyan-100">${dailyReward.toLocaleString()}</div>
+                <div class="text-[0.68rem] text-cyan-200/60">DSPOINC</div>
+              </div>
+
+              <div class="rounded-2xl border border-yellow-300/15 bg-yellow-300/10 p-3">
+                <div class="text-[0.65rem] font-black uppercase tracking-[0.12em] text-yellow-200/70">Claimable</div>
+                <div class="mt-1 text-lg font-black text-yellow-100">${claimable.toLocaleString()}</div>
+                <div class="text-[0.68rem] text-yellow-200/60">DSPOINC</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${isFrozen ? `
+          <div class="mt-4 rounded-2xl border border-cyan-300/15 bg-slate-950/55 p-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div class="text-[0.68rem] font-black uppercase tracking-[0.16em] text-cyan-200/70">
+                  Live Freezer Meter
+                </div>
+
+                <div class="mt-1 text-2xl font-black text-cyan-100">
+                  <span
+                    class="genesis-freezer-live-reward"
+                    data-genesis-live-stake-id="${stakeId}"
+                    data-genesis-live-last-claimed-at="${nft.last_claimed_at || nft.frozen_at || ''}"
+                    data-genesis-live-daily-reward="${dailyReward || 0}"
+                    data-genesis-live-vip-bonus-percent="${claimPreview.vip_bonus_percent || 0}"
+                  >0.00000</span>
+                </div>
+
+                <div class="text-xs font-bold text-cyan-200/70">DSPOINC building</div>
+              </div>
+
+              <div class="rounded-2xl border border-emerald-300/15 bg-emerald-300/10 p-3 text-left sm:text-right">
+                <div class="text-[0.68rem] font-black uppercase tracking-[0.12em] text-emerald-200/70">
+                  Full-day claim
+                </div>
+                <div class="mt-1 text-xl font-black ${fullDays > 0 ? 'text-emerald-100' : 'text-slate-300'}">
+                  ${fullDays.toLocaleString()} day(s)
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 h-2.5 overflow-hidden rounded-full border border-cyan-300/20 bg-slate-950/80">
+              <div
+                class="genesis-freezer-progress-fill h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-300 to-yellow-300"
+                data-genesis-progress-stake-id="${stakeId}"
+                style="width: 0%;"
+              ></div>
+            </div>
+
+            <div
+              class="mt-2 text-xs text-slate-400"
+              data-genesis-next-claim-stake-id="${stakeId}"
+            >
+              Calculating next full-day unlock...
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              ${fullDays > 0 ? '' : 'disabled'}
+              data-genesis-claim-stake-id="${stakeId}"
+              class="rounded-2xl border px-4 py-3 text-sm font-black transition ${
+                fullDays > 0
+                  ? 'border-emerald-300/45 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30 hover:scale-[1.01]'
+                  : 'cursor-not-allowed border-slate-500/40 bg-slate-700/40 text-slate-300 opacity-80'
+              }"
+              title="${fullDays > 0 ? 'Claim backend-verified full-day freezer rewards.' : 'A full freezer day must complete before claiming.'}"
+            >
+              ${fullDays > 0 ? `Claim ${claimable.toLocaleString()} DSPOINC` : 'Claim unlocks after 1 full day'}
+            </button>
+
+                        <button
+              type="button"
+              data-genesis-unfreeze-stake-id="${stakeId}"
+              class="rounded-2xl border px-4 py-3 text-sm font-black transition ${
+                canLocalUnfreeze
+                  ? 'border-orange-300/45 bg-orange-500/20 text-orange-100 hover:bg-orange-500/30 hover:scale-[1.01]'
+                  : 'border-orange-300/45 bg-orange-500/20 text-orange-100 hover:bg-orange-500/30 hover:scale-[1.01]'
+              }"
+              title="${canLocalUnfreeze ? 'Local test only: unfreeze this Genesis mouse.' : 'Sign a Solana Memo transaction to confirm freezer exit intent.'}"
+            >
+              ${canLocalUnfreeze ? 'Unfreeze Local Test' : 'Unfreeze with Wallet Memo'}
+            </button>
+          </div>
+        ` : `
+          <div class="mt-4 rounded-2xl border border-yellow-300/15 bg-yellow-300/10 p-4">
+            <div class="text-[0.68rem] font-black uppercase tracking-[0.14em] text-yellow-200/70">
+              Future freezer slot
+            </div>
+            <div class="mt-1 text-sm leading-relaxed text-slate-300">
+              This verified Genesis mouse is available for the freezer preview. Public freeze activation stays locked until wallet-proof confirmation is wired.
+            </div>
+
+            <button
+              type="button"
+              disabled
+              class="mt-4 w-full cursor-not-allowed rounded-2xl border border-slate-500/40 bg-slate-700/40 px-4 py-3 text-sm font-black text-slate-300 opacity-80"
+              title="Production buttons stay locked until Solana Memo verification is wired."
+            >
+              Preview: Select mice to freeze
+            </button>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+/**
+ * Build one compact Genesis Mouse Freezer list row.
+ *
+ * Plain language for DEVS:
+ * This list mode is designed for the two-column Stake Lab layout.
+ * It avoids wide table rows because the freezer panel only owns the left column
+ * on desktop. Reward math, claim state, and ownership checks remain backend-owned.
+ */
+function getGenesisMouseFreezerListRowMarkup(nft) {
+  const name = nft.nft_name || nft.name || 'Genesis Mouse';
+  const tokenId = String(nft.token_id || '');
+  const shortToken = tokenId.length > 14
+    ? `${tokenId.slice(0, 5)}...${tokenId.slice(-5)}`
+    : tokenId;
+
+  const imageUrl = nft.image_url || '';
+  const wallet = nft.wallet || '';
+  const shortWallet = wallet.length > 12
+    ? `${wallet.slice(0, 4)}...${wallet.slice(-4)}`
+    : wallet;
+
+  const claimPreview = nft.claim_preview || {};
+  const claimable = Number(claimPreview.final_reward_amount || nft.claimable_amount || 0);
+  const fullDays = Number(claimPreview.full_days || 0);
+  const dailyReward = Number(claimPreview.daily_reward || nft.daily_reward || 0);
+  const stakeId = nft.stake_id || '';
+  const canLocalUnfreeze = isGenesisFreezerLocalhost();
+
+  return `
+    <div class="rounded-2xl border border-cyan-300/18 bg-slate-950/70 p-3 shadow-md shadow-black/20 transition hover:border-cyan-300/35">
+      <div class="grid grid-cols-[56px_minmax(0,1fr)] gap-3">
+        <div class="h-14 w-14 overflow-hidden rounded-2xl border border-cyan-300/20 bg-slate-950/80">
           ${imageUrl
-            ? `<img src="${imageUrl}" alt="${name}" class="w-full h-full object-cover" loading="lazy">`
-            : '<span class="text-3xl">🐭</span>'
+            ? `<img src="${imageUrl}" alt="${name}" class="h-full w-full object-cover" loading="lazy">`
+            : '<div class="grid h-full w-full place-items-center text-2xl">🐭</div>'
           }
         </div>
 
-        <div class="min-w-0 flex-1">
-          <div class="text-base font-black text-white truncate">${name}</div>
-          <div class="mt-1 text-xs text-slate-400 break-all">${shortToken}</div>
-          <div class="mt-2 inline-flex rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[0.7rem] font-bold text-slate-200">
+        <div class="min-w-0">
+          <div class="flex min-w-0 items-start justify-between gap-2">
+            <div class="min-w-0">
+              <div class="truncate text-sm font-black text-white sm:text-base" title="${name}">
+                ${name}
+              </div>
+              <div class="mt-0.5 truncate text-[0.7rem] text-slate-400" title="${tokenId}">
+                ${shortToken || 'Genesis'}
+              </div>
+            </div>
+
+            <div class="shrink-0 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.08em] text-cyan-100">
+              Frozen
+            </div>
+          </div>
+
+          <div class="mt-2 inline-flex max-w-full rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[0.65rem] font-bold text-slate-200">
             Wallet ${shortWallet || 'verified'}
           </div>
         </div>
       </div>
 
-      <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-        <div class="rounded-xl border border-cyan-300/15 bg-cyan-300/10 p-3">
-          <div class="text-xs text-cyan-200/70">Daily Rate</div>
-          <div class="mt-1 font-black text-cyan-100">${dailyReward.toLocaleString()} DSPOINC</div>
+      <div class="mt-3 grid grid-cols-2 gap-2">
+        <div class="rounded-xl border border-cyan-300/15 bg-cyan-300/10 p-2.5">
+          <div class="text-[0.62rem] font-black uppercase tracking-[0.12em] text-cyan-200/70">Daily</div>
+          <div class="mt-1 text-sm font-black text-cyan-100">${dailyReward.toLocaleString()}</div>
+          <div class="text-[0.65rem] text-cyan-200/60">DSPOINC</div>
         </div>
 
-        <div class="rounded-xl border border-yellow-300/15 bg-yellow-300/10 p-3">
-          <div class="text-xs text-yellow-200/70">Claimable</div>
-          <div class="mt-1 font-black text-yellow-100">${claimable.toLocaleString()} DSPOINC</div>
+        <div class="rounded-xl border border-yellow-300/15 bg-yellow-300/10 p-2.5">
+          <div class="text-[0.62rem] font-black uppercase tracking-[0.12em] text-yellow-200/70">Claimable</div>
+          <div class="mt-1 text-sm font-black text-yellow-100">${claimable.toLocaleString()}</div>
+          <div class="text-[0.65rem] text-yellow-200/60">DSPOINC</div>
+        </div>
+
+        <div class="rounded-xl border border-emerald-300/15 bg-emerald-300/10 p-2.5">
+          <div class="text-[0.62rem] font-black uppercase tracking-[0.12em] text-emerald-200/70">Full Days</div>
+          <div class="mt-1 text-sm font-black text-emerald-100">${fullDays.toLocaleString()}</div>
+          <div class="text-[0.65rem] text-emerald-200/60">ready</div>
+        </div>
+
+        <div class="rounded-xl border border-sky-300/15 bg-sky-950/35 p-2.5">
+          <div class="text-[0.62rem] font-black uppercase tracking-[0.12em] text-sky-200/70">Building</div>
+          <div class="mt-1 text-sm font-black text-cyan-100">
+            <span
+              class="genesis-freezer-live-reward"
+              data-genesis-live-stake-id="${stakeId}"
+              data-genesis-live-last-claimed-at="${nft.last_claimed_at || nft.frozen_at || ''}"
+              data-genesis-live-daily-reward="${dailyReward || 0}"
+              data-genesis-live-vip-bonus-percent="${claimPreview.vip_bonus_percent || 0}"
+            >0.00000</span>
+          </div>
+          <div class="text-[0.65rem] text-sky-200/60">live</div>
         </div>
       </div>
 
-      <div class="mt-3 text-xs text-slate-300/80">
-        ${statusLine}
+      <div class="mt-3 h-2 overflow-hidden rounded-full border border-cyan-300/20 bg-slate-950/70">
+        <div
+          class="genesis-freezer-progress-fill h-full rounded-full bg-gradient-to-r from-cyan-400 to-yellow-300"
+          data-genesis-progress-stake-id="${stakeId}"
+          style="width: 0%;"
+        ></div>
       </div>
 
-      <button
-        type="button"
-        disabled
-        class="mt-4 w-full cursor-not-allowed rounded-xl border border-slate-500/40 bg-slate-700/40 px-4 py-3 text-sm font-black text-slate-300 opacity-80"
-        title="Production buttons stay locked until Solana Memo verification is wired."
-      >
-        ${actionLabel}
-      </button>
+      <div class="mt-2 flex flex-col gap-1 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div data-genesis-next-claim-stake-id="${stakeId}">
+          Calculating next full-day unlock...
+        </div>
+
+        <div class="font-black ${fullDays > 0 ? 'text-emerald-100' : 'text-slate-300'}">
+          ${fullDays.toLocaleString()} day(s)
+        </div>
+      </div>
+
+      <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <button
+          type="button"
+          ${fullDays > 0 ? '' : 'disabled'}
+          data-genesis-claim-stake-id="${stakeId}"
+          class="rounded-xl border px-3 py-2.5 text-xs font-black transition ${
+            fullDays > 0
+              ? 'border-emerald-300/40 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30'
+              : 'cursor-not-allowed border-slate-500/40 bg-slate-700/40 text-slate-300 opacity-80'
+          }"
+        >
+          ${fullDays > 0 ? `Claim ${claimable.toLocaleString()}` : 'Claim locked'}
+        </button>
+
+        <button
+  type="button"
+  data-genesis-unfreeze-stake-id="${stakeId}"
+  class="rounded-2xl border px-4 py-3 text-sm font-black transition ${
+    canLocalUnfreeze
+      ? 'border-orange-300/45 bg-orange-500/20 text-orange-100 hover:bg-orange-500/30 hover:scale-[1.01]'
+      : 'border-orange-300/45 bg-orange-500/20 text-orange-100 hover:bg-orange-500/30 hover:scale-[1.01]'
+  }"
+  title="${canLocalUnfreeze ? 'Local test only: unfreeze this Genesis mouse.' : 'Sign a Solana Memo transaction to confirm freezer exit intent.'}"
+>
+  ${canLocalUnfreeze ? 'Unfreeze Local Test' : 'Unfreeze with Wallet Memo'}
+</button>
+      </div>
     </div>
   `;
+}
+/**
+ * Build one selectable available Genesis mouse row.
+ *
+ * Plain language for DEVS:
+ * This row supports multi-select. Clicking it only toggles frontend selection.
+ * It does not freeze the NFT or write backend data.
+ */
+function getGenesisFreezerAvailableMouseRowMarkup(nft) {
+  const tokenKey = getGenesisFreezerNftKey(nft);
+  const isSelected = selectedGenesisFreezerTokenKeys.has(tokenKey);
+
+  const name = escapeGenesisFreezerHtml(nft.nft_name || nft.name || 'Genesis Mouse');
+  const tokenId = String(nft.token_id || '');
+  const shortToken = escapeGenesisFreezerHtml(
+    tokenId.length > 14 ? `${tokenId.slice(0, 5)}...${tokenId.slice(-5)}` : tokenId
+  );
+
+  const wallet = String(nft.wallet || '');
+  const shortWallet = escapeGenesisFreezerHtml(
+    wallet.length > 12 ? `${wallet.slice(0, 4)}...${wallet.slice(-4)}` : wallet
+  );
+
+  const imageUrl = escapeGenesisFreezerHtml(nft.image_url || '');
+
+  return `
+    <button
+      type="button"
+      data-genesis-freezer-select-token-key="${escapeGenesisFreezerHtml(tokenKey)}"
+      class="w-full rounded-2xl border p-3 text-left transition ${
+        isSelected
+          ? 'border-yellow-300/55 bg-yellow-300/15 shadow-lg shadow-yellow-950/20'
+          : 'border-white/10 bg-white/5 hover:border-cyan-300/35 hover:bg-cyan-300/10'
+      }"
+    >
+      <div class="flex items-center gap-3">
+        <div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80">
+          ${imageUrl
+            ? `<img src="${imageUrl}" alt="${name}" class="h-full w-full object-cover" loading="lazy">`
+            : '<div class="grid h-full w-full place-items-center text-2xl">🐭</div>'
+          }
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <div class="truncate text-sm font-black text-white" title="${name}">
+            ${name}
+          </div>
+
+          <div class="mt-1 truncate text-[0.7rem] text-slate-400" title="${escapeGenesisFreezerHtml(tokenId)}">
+            ${shortToken || 'Genesis'}
+          </div>
+
+          <div class="mt-2 inline-flex max-w-full rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[0.65rem] font-bold text-slate-200">
+            Wallet ${shortWallet || 'verified'}
+          </div>
+        </div>
+
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-sm font-black ${
+          isSelected
+            ? 'border-yellow-300/50 bg-yellow-300/20 text-yellow-100'
+            : 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100'
+        }">
+          ${isSelected ? '✓' : '+'}
+        </div>
+      </div>
+    </button>
+  `;
+}
+
+/**
+ * Calculate a visual live Genesis Mouse Freezer reward.
+ *
+ * Plain language for DEVS:
+ * This is display-only progress. Backend claim-genesis-nft-stake.php remains
+ * the only authority for real DSPOINC payouts and ownership checks.
+ */
+function calculateLiveGenesisFreezerReward(lastClaimedAt, dailyReward, vipBonusPercent) {
+  const startTime = new Date(lastClaimedAt).getTime();
+  const nowTime = Date.now();
+  const safeDailyReward = Math.max(0, Number(dailyReward || 0));
+  const safeVipPercent = Math.max(0, Number(vipBonusPercent || 0));
+
+  if (!Number.isFinite(startTime) || safeDailyReward <= 0 || nowTime <= startTime) {
+    return {
+      liveAmount: 0,
+      progressPercent: 0,
+      secondsUntilNextFullDay: 86400
+    };
+  }
+
+  const elapsedSeconds = Math.max(0, Math.floor((nowTime - startTime) / 1000));
+  const secondsInDay = 86400;
+  const secondsIntoCurrentDay = elapsedSeconds % secondsInDay;
+  const progressPercent = Math.min(100, (secondsIntoCurrentDay / secondsInDay) * 100);
+
+  const baseLiveAmount = safeDailyReward * (secondsIntoCurrentDay / secondsInDay);
+  const vipLiveBonus = Math.floor(baseLiveAmount * (safeVipPercent / 100));
+  const secondsUntilNextFullDay = secondsInDay - secondsIntoCurrentDay;
+
+  return {
+    liveAmount: baseLiveAmount + vipLiveBonus,
+    progressPercent,
+    secondsUntilNextFullDay
+  };
+}
+
+/**
+ * Format the visual Genesis freezer live reward counter.
+ */
+function formatLiveGenesisFreezerReward(value) {
+  return Number(value || 0).toLocaleString(undefined, {
+    minimumFractionDigits: 5,
+    maximumFractionDigits: 5
+  });
+}
+
+/**
+ * Format seconds until the next full freezer claim day.
+ */
+function formatGenesisFreezerTimeRemaining(totalSeconds) {
+  const safeSeconds = Math.max(0, Number(totalSeconds || 0));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = Math.floor(safeSeconds % 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+
+  return `${seconds}s`;
+}
+
+/**
+ * Refresh all live Genesis Mouse Freezer counters.
+ */
+function updateGenesisFreezerRewardCounters() {
+  document.querySelectorAll('.genesis-freezer-live-reward').forEach(rewardElement => {
+    const stakeId = rewardElement.dataset.genesisLiveStakeId || '';
+    const lastClaimedAt = rewardElement.dataset.genesisLiveLastClaimedAt || '';
+    const dailyReward = Number(rewardElement.dataset.genesisLiveDailyReward || 0);
+    const vipBonusPercent = Number(rewardElement.dataset.genesisLiveVipBonusPercent || 0);
+
+    const liveState = calculateLiveGenesisFreezerReward(lastClaimedAt, dailyReward, vipBonusPercent);
+
+    rewardElement.textContent = formatLiveGenesisFreezerReward(liveState.liveAmount);
+    rewardElement.classList.remove('genesis-freezer-live-reward-pulse');
+    void rewardElement.offsetWidth;
+    rewardElement.classList.add('genesis-freezer-live-reward-pulse');
+
+    const progressElement = document.querySelector(`.genesis-freezer-progress-fill[data-genesis-progress-stake-id="${stakeId}"]`);
+    if (progressElement) {
+      progressElement.style.width = `${liveState.progressPercent.toFixed(2)}%`;
+    }
+
+    const nextClaimElement = document.querySelector(`[data-genesis-next-claim-stake-id="${stakeId}"]`);
+    if (nextClaimElement) {
+      nextClaimElement.textContent = `Next full-day claim unlocks in ${formatGenesisFreezerTimeRemaining(liveState.secondsUntilNextFullDay)}.`;
+    }
+  });
+}
+
+/**
+ * Start or stop the Genesis Mouse Freezer live meter interval.
+ */
+function syncGenesisFreezerRewardInterval() {
+  if (genesisFreezerRewardInterval) {
+    clearInterval(genesisFreezerRewardInterval);
+    genesisFreezerRewardInterval = null;
+  }
+
+  const hasLiveCounters = document.querySelectorAll('.genesis-freezer-live-reward').length > 0;
+
+  if (!hasLiveCounters) {
+    return;
+  }
+
+  updateGenesisFreezerRewardCounters();
+  genesisFreezerRewardInterval = window.setInterval(updateGenesisFreezerRewardCounters, 1000);
+}
+
+
+
+let genesisFreezerToastTimeout = null;
+
+/**
+ * Show a themed Genesis Mouse Freezer toast.
+ *
+ * Plain language for DEVS:
+ * This replaces browser alert() for freezer claim messages.
+ * It is visual-only. Backend APIs remain the authority for rewards and ownership.
+ */
+function showGenesisFreezerToast(type, title, message) {
+  const toast = document.getElementById('genesis-freezer-toast');
+  const shell = document.getElementById('genesis-freezer-toast-shell');
+  const icon = document.getElementById('genesis-freezer-toast-icon');
+  const titleEl = document.getElementById('genesis-freezer-toast-title');
+  const messageEl = document.getElementById('genesis-freezer-toast-message');
+
+  if (!toast || !shell || !icon || !titleEl || !messageEl) {
+    return;
+  }
+
+  const isSuccess = type === 'success';
+
+  shell.className = isSuccess
+    ? 'rounded-3xl border border-emerald-300/35 bg-slate-950/95 p-5 text-white shadow-2xl shadow-emerald-950/30 backdrop-blur-xl'
+    : 'rounded-3xl border border-red-300/35 bg-slate-950/95 p-5 text-white shadow-2xl shadow-red-950/30 backdrop-blur-xl';
+
+  icon.className = isSuccess
+    ? 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/30 bg-emerald-300/10 text-2xl'
+    : 'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-300/30 bg-red-300/10 text-2xl';
+
+  titleEl.className = isSuccess
+    ? 'text-lg font-black text-emerald-100'
+    : 'text-lg font-black text-red-100';
+
+  icon.textContent = isSuccess ? '✅' : '⚠️';
+  titleEl.textContent = title;
+  messageEl.textContent = message;
+
+  toast.classList.remove('hidden');
+
+  if (genesisFreezerToastTimeout) {
+    window.clearTimeout(genesisFreezerToastTimeout);
+  }
+
+  genesisFreezerToastTimeout = window.setTimeout(() => {
+    hideGenesisFreezerToast();
+  }, 5200);
+}
+
+/**
+ * Hide the themed Genesis Mouse Freezer toast.
+ */
+function hideGenesisFreezerToast() {
+  const toast = document.getElementById('genesis-freezer-toast');
+
+  if (!toast) {
+    return;
+  }
+
+  toast.classList.add('hidden');
+
+  if (genesisFreezerToastTimeout) {
+    window.clearTimeout(genesisFreezerToastTimeout);
+    genesisFreezerToastTimeout = null;
+  }
+}
+
+/**
+ * Close the themed Genesis Mouse Freezer confirm modal.
+ */
+function closeGenesisFreezerConfirmModal(result = false) {
+  const modal = document.getElementById('genesis-freezer-confirm-modal');
+
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  if (typeof genesisFreezerConfirmResolver === 'function') {
+    const resolver = genesisFreezerConfirmResolver;
+    genesisFreezerConfirmResolver = null;
+    resolver(Boolean(result));
+  }
+}
+
+/**
+ * Show a themed Genesis Mouse Freezer confirm modal.
+ *
+ * Plain language for DEVS:
+ * This replaces browser-native confirm() for freezer actions so the UX stays
+ * visually consistent with the Stake Lab.
+ */
+function showGenesisFreezerConfirmModal(title, message, confirmLabel = 'Confirm') {
+  const modal = document.getElementById('genesis-freezer-confirm-modal');
+  const titleEl = document.getElementById('genesis-freezer-confirm-title');
+  const messageEl = document.getElementById('genesis-freezer-confirm-message');
+  const confirmButton = document.getElementById('genesis-freezer-confirm-ok');
+  const cancelButton = document.getElementById('genesis-freezer-confirm-cancel');
+
+  if (!modal || !titleEl || !messageEl || !confirmButton || !cancelButton) {
+    return Promise.resolve(window.confirm(message));
+  }
+
+  titleEl.textContent = title || 'Confirm action';
+  messageEl.textContent = message || 'Are you sure?';
+  confirmButton.textContent = confirmLabel || 'Confirm';
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+
+  return new Promise(resolve => {
+    genesisFreezerConfirmResolver = resolve;
+  });
+}
+
+/**
+ * Bind themed Genesis Mouse Freezer confirm modal buttons.
+ */
+function bindGenesisFreezerConfirmModal() {
+  const confirmButton = document.getElementById('genesis-freezer-confirm-ok');
+  const cancelButton = document.getElementById('genesis-freezer-confirm-cancel');
+  const modal = document.getElementById('genesis-freezer-confirm-modal');
+
+  if (confirmButton && confirmButton.dataset.bound !== '1') {
+    confirmButton.dataset.bound = '1';
+    confirmButton.addEventListener('click', () => closeGenesisFreezerConfirmModal(true));
+  }
+
+  if (cancelButton && cancelButton.dataset.bound !== '1') {
+    cancelButton.dataset.bound = '1';
+    cancelButton.addEventListener('click', () => closeGenesisFreezerConfirmModal(false));
+  }
+
+  if (modal && modal.dataset.bound !== '1') {
+    modal.dataset.bound = '1';
+
+    modal.addEventListener('click', event => {
+      if (event.target === modal) {
+        closeGenesisFreezerConfirmModal(false);
+      }
+    });
+  }
+}
+
+/**
+ * Claim one Genesis Mouse Freezer reward from the backend.
+ *
+ * Plain language for DEVS:
+ * The frontend sends only the stake id. It never sends a reward amount.
+ * Backend claim-genesis-nft-stake.php recalculates the reward, verifies ownership,
+ * writes the DSPOINC ledger, and returns the final result.
+ */
+async function claimGenesisMouseFreezerReward(stakeId) {
+  const safeStakeId = Number(stakeId || 0);
+
+  if (safeStakeId <= 0) {
+    return;
+  }
+
+  const button = document.querySelector(`[data-genesis-claim-stake-id="${safeStakeId}"]`);
+  const originalText = button ? button.textContent : '';
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Claiming...';
+  }
+
+  try {
+    const user_id = getUserId();
+    const response = await fetch(`${API_BASE_URL}/api/user/claim-genesis-nft-stake.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: user_id || undefined,
+        stake_id: safeStakeId
+      })
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Claim failed');
+    }
+
+    showGenesisFreezerToast(
+  'success',
+  'Genesis Mouse Freezer claim complete',
+  `Claimed ${Number(result.data?.final_reward_amount || 0).toLocaleString()} DSPOINC. Your freezer meter has restarted for the next full-day cycle.`
+);
+
+    await loadGenesisMouseFreezerPreview();
+    await loadStakingStats();
+    await loadStakes();
+  } catch (error) {
+    console.error('Genesis Mouse Freezer claim failed:', error);
+    showGenesisFreezerToast(
+  'error',
+  'Genesis Mouse Freezer claim failed',
+  error.message || 'The claim could not be completed. Please refresh and try again.'
+);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText || 'Claim DSPOINC';
+    }
+  }
+}
+
+/**
+ * Bind Genesis Mouse Freezer claim buttons after render.
+ */
+function bindGenesisFreezerClaimButtons() {
+  document.querySelectorAll('[data-genesis-claim-stake-id]').forEach(button => {
+    const stakeId = Number(button.dataset.genesisClaimStakeId || 0);
+
+    if (!stakeId || button.dataset.claimBound === '1') {
+      return;
+    }
+
+    button.dataset.claimBound = '1';
+
+    button.addEventListener('click', () => {
+      if (button.disabled) {
+        return;
+      }
+
+      claimGenesisMouseFreezerReward(stakeId);
+    });
+  });
+}
+
+/**
+ * Switch the Genesis Mouse Freezer between card and list view.
+ *
+ * Plain language for DEVS:
+ * This is display-only. It does not change frozen NFTs, rewards, slots,
+ * ownership, or backend state.
+ */
+function setGenesisFreezerViewMode(mode) {
+  genesisFreezerViewMode = mode === 'list' ? 'list' : 'card';
+  renderGenesisMouseFreezerPreview();
+}
+
+/**
+ * Escape text before inserting it into Genesis Mouse Freezer HTML.
+ *
+ * Plain language for DEVS:
+ * NFT names, token ids, and wallet labels can come from stored metadata.
+ * This helper keeps the freezer selector safe when building HTML strings.
+ */
+function escapeGenesisFreezerHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+/**
+ * Build a stable frontend key for one Genesis Mouse Freezer NFT.
+ *
+ * Plain language for DEVS:
+ * A user can verify Genesis NFTs from multiple wallets, so wallet + token_id
+ * is safer than token_id alone for frontend selection state.
+ */
+function getGenesisFreezerNftKey(nft) {
+  return `${String(nft?.wallet || '')}::${String(nft?.token_id || '')}`;
+}
+
+/**
+ * Switch the right-side Genesis Freezer panel between planner and real freeze selector.
+ */
+function setGenesisFreezerRightPanelMode(mode) {
+  genesisFreezerRightPanelMode = mode === 'freeze' ? 'freeze' : 'planner';
+  renderGenesisMouseFreezerPreview();
+}
+/**
+ * Safely rerender the Genesis Mouse Freezer panel without throwing the user
+ * back to the top of the page.
+ *
+ * Plain language for DEVS:
+ * Search and multi-select update the freezer UI often. This helper keeps the
+ * user's scroll position and search focus stable while rebuilding the panel.
+ */
+function rerenderGenesisMouseFreezerPreviewSafely(options = {}) {
+  const scrollY = window.scrollY || window.pageYOffset || 0;
+  const searchInput = document.getElementById('genesis-freezer-available-search');
+  const shouldFocusSearch = Boolean(options.focusSearch || document.activeElement === searchInput);
+  const searchCursor = searchInput ? searchInput.selectionStart : null;
+
+  renderGenesisMouseFreezerPreview();
+
+  window.requestAnimationFrame(() => {
+    window.scrollTo(0, scrollY);
+
+    if (!shouldFocusSearch) {
+      return;
+    }
+
+    const restoredSearchInput = document.getElementById('genesis-freezer-available-search');
+
+    if (!restoredSearchInput) {
+      return;
+    }
+
+    restoredSearchInput.focus({ preventScroll: true });
+
+    if (typeof restoredSearchInput.setSelectionRange === 'function' && searchCursor !== null) {
+      const safeCursor = Math.min(searchCursor, restoredSearchInput.value.length);
+      restoredSearchInput.setSelectionRange(safeCursor, safeCursor);
+    }
+  });
+}
+
+/**
+ * Toggle one available Genesis mouse in the freezer selector.
+ *
+ * Plain language for DEVS:
+ * Selecting a mouse only updates frontend state. It does not freeze anything.
+ * Backend freeze starts only when the user presses Freeze Selected.
+ */
+function toggleGenesisFreezerAvailableMouse(tokenKey) {
+  const safeTokenKey = String(tokenKey || '');
+
+  if (!safeTokenKey) {
+    return;
+  }
+
+  if (selectedGenesisFreezerTokenKeys.has(safeTokenKey)) {
+    selectedGenesisFreezerTokenKeys.delete(safeTokenKey);
+  } else {
+    selectedGenesisFreezerTokenKeys.add(safeTokenKey);
+  }
+
+  rerenderGenesisMouseFreezerPreviewSafely();
+}
+
+/**
+ * Clear all selected available Genesis mice.
+ */
+function clearGenesisFreezerAvailableSelection() {
+  selectedGenesisFreezerTokenKeys.clear();
+  rerenderGenesisMouseFreezerPreviewSafely();
+}
+
+/**
+ * Select all currently filtered available Genesis mice, capped by open freezer slots.
+ *
+ * Plain language for DEVS:
+ * This is still frontend selection only. The real freeze calls happen later
+ * and remain backend-authoritative.
+ */
+function selectAllVisibleGenesisFreezerAvailableMice() {
+  const data = genesisMouseFreezerPreview || {};
+  const availableNfts = Array.isArray(data.available_nfts) ? data.available_nfts : [];
+  const slots = data.slots || {};
+  const availableSlots = Math.max(0, Number(slots.available || 0));
+  const searchQuery = String(genesisFreezerAvailableSearch || '').trim().toLowerCase();
+
+  const filteredAvailableNfts = availableNfts.filter(nft => {
+    if (!searchQuery) {
+      return true;
+    }
+
+    return [
+      nft.nft_name,
+      nft.name,
+      nft.token_id,
+      nft.wallet
+    ].some(value => String(value || '').toLowerCase().includes(searchQuery));
+  });
+
+  selectedGenesisFreezerTokenKeys.clear();
+
+  filteredAvailableNfts.slice(0, availableSlots).forEach(nft => {
+    selectedGenesisFreezerTokenKeys.add(getGenesisFreezerNftKey(nft));
+  });
+
+  rerenderGenesisMouseFreezerPreviewSafely();
+}
+
+/**
+ * Return all currently selected available Genesis mice.
+ */
+function getSelectedGenesisFreezerAvailableMice() {
+  const data = genesisMouseFreezerPreview || {};
+  const availableNfts = Array.isArray(data.available_nfts) ? data.available_nfts : [];
+
+  return availableNfts.filter(nft => selectedGenesisFreezerTokenKeys.has(getGenesisFreezerNftKey(nft)));
+}
+
+/**
+ * Claim all currently claimable Genesis Mouse Freezer rewards.
+ *
+ * Plain language for DEVS:
+ * This loops claimable stake ids only. The frontend never sends reward amounts.
+ * The backend recalculates every claim and remains the DSPOINC authority.
+ */
+async function claimAllGenesisMouseFreezerRewards() {
+  const data = genesisMouseFreezerPreview || {};
+  const frozenNfts = Array.isArray(data.frozen_nfts) ? data.frozen_nfts : [];
+  const claimableNfts = frozenNfts.filter(nft => Number(nft.claim_preview?.full_days || 0) > 0 && Number(nft.stake_id || 0) > 0);
+  const button = document.getElementById('genesis-freezer-claim-all-btn');
+  const originalText = button ? button.textContent : '';
+
+  if (claimableNfts.length === 0) {
+    showGenesisFreezerToast(
+      'error',
+      'No freezer claims ready',
+      'No frozen Genesis mice have completed a full freezer day yet.'
+    );
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = `Claiming ${claimableNfts.length} mice...`;
+  }
+
+  let successCount = 0;
+  let failedCount = 0;
+  let totalClaimed = 0;
+
+  try {
+    const user_id = getUserId();
+
+    for (const nft of claimableNfts) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/user/claim-genesis-nft-stake.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            user_id: user_id || undefined,
+            stake_id: Number(nft.stake_id)
+          })
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || 'Claim failed');
+        }
+
+        successCount += 1;
+        totalClaimed += Number(result.data?.final_reward_amount || 0);
+      } catch (error) {
+        failedCount += 1;
+        console.error('Genesis Mouse Freezer claim-all item failed:', error);
+      }
+    }
+
+    await loadGenesisMouseFreezerPreview();
+    await loadStakingStats();
+    await loadStakes();
+
+    showGenesisFreezerToast(
+      failedCount > 0 ? 'error' : 'success',
+      failedCount > 0 ? 'Genesis Freezer claim all partly complete' : 'Genesis Freezer claim all complete',
+      `Claimed ${totalClaimed.toLocaleString()} DSPOINC from ${successCount} frozen mouse/mice.${failedCount > 0 ? ` ${failedCount} claim(s) failed and can be retried.` : ''}`
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText || 'Claim All Ready Mice';
+    }
+  }
+}
+
+/**
+ * Unfreeze one Genesis Mouse Freezer NFT in localhost testing.
+ *
+ * Plain language for DEVS:
+ * Production unfreeze must stay blocked until Solana Memo verification is wired.
+ * This function only enables local test unfreeze through the existing local_dev_confirm guard.
+ */
+async function unfreezeGenesisMouseFreezerLocal(stakeId) {
+  const safeStakeId = Number(stakeId || 0);
+
+  if (!safeStakeId) {
+    showGenesisFreezerToast(
+      'error',
+      'Unfreeze failed',
+      'Missing Genesis freezer stake id.'
+    );
+    return;
+  }
+
+  if (!isGenesisFreezerLocalhost()) {
+    showGenesisFreezerToast(
+      'error',
+      'Wallet Memo required',
+'Production unfreeze uses wallet Memo confirmation. Use the normal Unfreeze with Wallet Memo button on live.'    );
+    return;
+  }
+
+    const confirmed = await showGenesisFreezerConfirmModal(
+    'Unfreeze Genesis Mouse?',
+    'Local test only: unfreeze this Genesis Mouse Freezer NFT? This closes the local freezer row and makes the mouse available again.',
+    'Unfreeze Local Test'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const user_id = getUserId();
+
+    const challengeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-unfreeze-challenge.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: user_id || undefined,
+        stake_id: safeStakeId
+      })
+    });
+
+    const challengeResult = await challengeResponse.json();
+
+    if (!challengeResult.success) {
+      throw new Error(challengeResult.error || 'Could not create unfreeze challenge.');
+    }
+
+    const challengeId = Number(
+      challengeResult.data?.challenge_id ||
+      challengeResult.challenge_id ||
+      0
+    );
+
+    if (!challengeId) {
+      throw new Error('Unfreeze challenge id missing from backend response.');
+    }
+
+    const unfreezeResponse = await fetch(`${API_BASE_URL}/api/user/unstake-genesis-nft.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: user_id || undefined,
+        stake_id: safeStakeId,
+        challenge_id: challengeId,
+        local_dev_confirm: 'I_UNDERSTAND_THIS_IS_LOCAL_ONLY'
+      })
+    });
+
+    const unfreezeResult = await unfreezeResponse.json();
+
+    if (!unfreezeResult.success) {
+      throw new Error(unfreezeResult.error || 'Unfreeze failed.');
+    }
+
+    await loadGenesisMouseFreezerPreview();
+    await loadStakingStats();
+    await loadStakes();
+
+    showGenesisFreezerToast(
+      'success',
+      'Genesis Mouse unfrozen',
+      'Local test unfreeze completed. The mouse is available to freeze again.'
+    );
+  } catch (error) {
+    console.error('Genesis Mouse Freezer local unfreeze failed:', error);
+
+    showGenesisFreezerToast(
+      'error',
+      'Genesis Mouse unfreeze failed',
+      error.message || 'The local unfreeze could not be completed.'
+    );
+  }
+}
+
+
+const GENESIS_FREEZER_MEMO_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+const GENESIS_FREEZER_PUBLIC_RPC_URL = 'https://api.mainnet-beta.solana.com';
+
+/**
+ * Return the Solana browser wallet provider used by Phantom-style wallets.
+ *
+ * Plain language for DEVS:
+ * This mirrors the holder verification wallet lane by using the browser wallet
+ * provider. It does not decide ownership, rewards, or freezer state. Backend
+ * APIs still verify the exact Memo transaction before changing freezer rows.
+ */
+function getGenesisFreezerWalletProvider() {
+  const provider = window.solana;
+
+  if (!provider || typeof provider.connect !== 'function') {
+    throw new Error('Solana wallet not found. Please install or unlock Phantom, then refresh Stake Lab.');
+  }
+
+  return provider;
+}
+
+/**
+ * Return the Solana web3 library loaded by stake-lab.html.
+ *
+ * Plain language for DEVS:
+ * The page already loads @solana/web3.js. This helper only checks that the
+ * global object exists before we try to build a Memo transaction.
+ */
+function getGenesisFreezerSolanaWeb3() {
+  const web3 = window.solanaWeb3;
+
+  if (!web3 || !web3.Transaction || !web3.TransactionInstruction || !web3.PublicKey) {
+    throw new Error('Solana web3 library is not ready. Please refresh Stake Lab and try again.');
+  }
+
+  return web3;
+}
+
+/**
+ * Connect the user's Solana wallet and return the connected wallet address.
+ *
+ * Plain language for DEVS:
+ * This proves only which wallet is connected in the browser. The backend still
+ * validates that the same wallet signed the exact Memo transaction.
+ */
+async function connectGenesisFreezerWallet() {
+  const provider = getGenesisFreezerWalletProvider();
+
+  if (!provider.publicKey) {
+    await provider.connect({ onlyIfTrusted: false });
+  }
+
+  if (!provider.publicKey) {
+    throw new Error('Wallet connection failed. Please approve the wallet connection.');
+  }
+
+  return {
+    provider,
+    walletAddress: provider.publicKey.toString()
+  };
+}
+
+/**
+ * Send a real Solana Memo transaction with the exact backend challenge message.
+ *
+ * Plain language for DEVS:
+ * The Memo transaction is the wallet-proof confirmation for production
+ * Freeze/Unfreeze. The NFT stays in the holder wallet. The backend verifies:
+ * - the transaction exists
+ * - the challenge wallet signed it
+ * - the Memo text matches the exact backend challenge message
+ */
+async function sendGenesisFreezerMemoTransaction(message, expectedWalletAddress) {
+  const safeMessage = String(message || '').trim();
+  const safeExpectedWallet = String(expectedWalletAddress || '').trim();
+
+  if (!safeMessage) {
+    throw new Error('Missing Genesis freezer challenge message.');
+  }
+
+  const web3 = getGenesisFreezerSolanaWeb3();
+  const { provider, walletAddress } = await connectGenesisFreezerWallet();
+
+  if (safeExpectedWallet && walletAddress !== safeExpectedWallet) {
+    throw new Error(`Connected wallet mismatch. Please connect ${safeExpectedWallet} to sign this freezer Memo.`);
+  }
+
+  const connection = new web3.Connection(
+    window.NARRRFS_SOLANA_RPC_URL || GENESIS_FREEZER_PUBLIC_RPC_URL,
+    'confirmed'
+  );
+
+  const walletPublicKey = new web3.PublicKey(walletAddress);
+  const memoProgramId = new web3.PublicKey(GENESIS_FREEZER_MEMO_PROGRAM_ID);
+  const encodedMemo = new TextEncoder().encode(safeMessage);
+  const latestBlockhash = await connection.getLatestBlockhash('confirmed');
+
+  const transaction = new web3.Transaction();
+  transaction.feePayer = walletPublicKey;
+  transaction.recentBlockhash = latestBlockhash.blockhash;
+  transaction.add(
+    new web3.TransactionInstruction({
+      keys: [],
+      programId: memoProgramId,
+      data: encodedMemo
+    })
+  );
+
+  let signature = '';
+
+  if (typeof provider.signAndSendTransaction === 'function') {
+    const result = await provider.signAndSendTransaction(transaction);
+    signature = typeof result === 'string' ? result : String(result?.signature || '');
+  } else if (typeof provider.signTransaction === 'function') {
+    const signedTransaction = await provider.signTransaction(transaction);
+    signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+      skipPreflight: false
+    });
+  } else {
+    throw new Error('Connected wallet does not support transaction signing.');
+  }
+
+  if (!signature) {
+    throw new Error('Wallet did not return a Memo transaction signature.');
+  }
+
+  await connection.confirmTransaction(
+    {
+      signature,
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+    },
+    'confirmed'
+  );
+
+  return {
+    signature,
+    walletAddress
+  };
+}
+
+/**
+ * Choose the correct freeze path for the current environment.
+ *
+ * Plain language for DEVS:
+ * Localhost keeps the safe local_dev_confirm test path. Production uses a real
+ * Solana Memo transaction and sends only memo_signature to the backend.
+ */
+async function freezeSelectedGenesisMice() {
+  if (isGenesisFreezerLocalhost()) {
+    await freezeSelectedGenesisMiceLocal();
+    return;
+  }
+
+  await freezeSelectedGenesisMiceWithWalletMemo();
+}
+
+/**
+ * Choose the correct unfreeze path for the current environment.
+ *
+ * Plain language for DEVS:
+ * Localhost keeps the safe local_dev_confirm test path. Production uses a real
+ * Solana Memo transaction and sends only memo_signature to the backend.
+ */
+async function unfreezeGenesisMouseFreezer(stakeId) {
+  if (isGenesisFreezerLocalhost()) {
+    await unfreezeGenesisMouseFreezerLocal(stakeId);
+    return;
+  }
+
+  await unfreezeGenesisMouseFreezerWithWalletMemo(stakeId);
+}
+
+/**
+ * Freeze selected Genesis mice in production with wallet Memo confirmation.
+ *
+ * Plain language for DEVS:
+ * This does not calculate rewards and does not bypass backend checks. It creates
+ * a backend challenge, asks the connected wallet to send the exact Memo, then
+ * sends the transaction signature back to the backend for verification.
+ */
+async function freezeSelectedGenesisMiceWithWalletMemo() {
+  const selectedMice = getSelectedGenesisFreezerAvailableMice();
+  const data = genesisMouseFreezerPreview || {};
+  const slots = data.slots || {};
+  const availableSlots = Number(slots.available || 0);
+  const button = document.getElementById('genesis-freezer-freeze-selected-btn');
+  const originalText = button ? button.textContent : '';
+
+  if (selectedMice.length === 0) {
+    showGenesisFreezerToast(
+      'error',
+      'No Genesis mice selected',
+      'Choose one or more available Genesis mice before starting the freezer flow.'
+    );
+    return;
+  }
+
+  if (availableSlots <= 0) {
+    showGenesisFreezerToast(
+      'error',
+      'No freezer slots available',
+      'Unfreeze a mouse or increase your tier before freezing more Genesis mice.'
+    );
+    return;
+  }
+
+  if (selectedMice.length > availableSlots) {
+    showGenesisFreezerToast(
+      'error',
+      'Too many mice selected',
+      `You selected ${selectedMice.length} mice, but only ${availableSlots} freezer slot(s) are open.`
+    );
+    return;
+  }
+
+  const selectedWallets = Array.from(new Set(selectedMice.map(mouse => String(mouse.wallet || '').trim()).filter(Boolean)));
+
+  if (selectedWallets.length !== 1) {
+    showGenesisFreezerToast(
+      'error',
+      'One wallet at a time',
+      'Please freeze Genesis mice from one verified wallet at a time so the correct wallet can sign the Memo transaction.'
+    );
+    return;
+  }
+
+  const confirmed = await showGenesisFreezerConfirmModal(
+    'Freeze selected Genesis mice?',
+    `Production wallet confirmation: your wallet will send one Solana Memo transaction per selected Genesis mouse. Your NFTs stay in your wallet.`,
+    'Sign Freeze Memo'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = `Preparing ${selectedMice.length} Memo...`;
+  }
+
+  let successCount = 0;
+  let failedCount = 0;
+
+  try {
+    const user_id = getUserId();
+
+    for (const selectedMouse of selectedMice) {
+      try {
+        const challengeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-freeze-challenge.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            user_id: user_id || undefined,
+            wallet: selectedMouse.wallet || '',
+            token_id: selectedMouse.token_id || '',
+            collection: 'genesis'
+          })
+        });
+
+        const challengeResult = await challengeResponse.json();
+
+        if (!challengeResult.success) {
+          throw new Error(challengeResult.error || 'Could not create freeze challenge.');
+        }
+
+        const challengeData = challengeResult.data || challengeResult;
+        const challengeId = Number(challengeData.challenge_id || challengeResult.challenge_id || challengeResult.id || 0);
+        const challengeMessage = String(challengeData.message || challengeResult.message || '').trim();
+        const challengeWallet = String(challengeData.ownership?.wallet || selectedMouse.wallet || '').trim();
+
+        if (!challengeId) {
+          throw new Error('Freeze challenge id missing from backend response.');
+        }
+
+        if (!challengeMessage) {
+          throw new Error('Freeze challenge message missing from backend response.');
+        }
+
+        if (button) {
+          button.textContent = `Sign Memo ${successCount + failedCount + 1}/${selectedMice.length}`;
+        }
+
+        const memoProof = await sendGenesisFreezerMemoTransaction(challengeMessage, challengeWallet);
+
+        if (button) {
+          button.textContent = `Verifying ${successCount + failedCount + 1}/${selectedMice.length}`;
+        }
+
+        const stakeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-stake.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            user_id: user_id || undefined,
+            challenge_id: challengeId,
+            memo_signature: memoProof.signature
+          })
+        });
+
+        const stakeResult = await stakeResponse.json();
+
+        if (!stakeResult.success) {
+          throw new Error(stakeResult.error || 'Could not freeze Genesis mouse.');
+        }
+
+        successCount += 1;
+      } catch (error) {
+        failedCount += 1;
+        console.error('Genesis Mouse Freezer production freeze item failed:', error);
+      }
+    }
+
+    if (successCount > 0) {
+      selectedGenesisFreezerTokenKeys.clear();
+    }
+
+    await loadGenesisMouseFreezerPreview();
+    await loadStakingStats();
+    await loadStakes();
+
+    showGenesisFreezerToast(
+      failedCount > 0 ? 'error' : 'success',
+      failedCount > 0 ? 'Genesis freezer partly complete' : 'Genesis mice frozen',
+      `Frozen ${successCount} Genesis mouse/mice with wallet Memo proof.${failedCount > 0 ? ` ${failedCount} failed and can be retried.` : ''}`
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText || 'Freeze Selected';
+    }
+  }
+}
+
+/**
+ * Unfreeze one Genesis mouse in production with wallet Memo confirmation.
+ *
+ * Plain language for DEVS:
+ * This closes only the internal freezer row after backend verification. It does
+ * not pay DSPOINC, does not create claim rows, and does not touch DSPOINC staking.
+ */
+async function unfreezeGenesisMouseFreezerWithWalletMemo(stakeId) {
+  const safeStakeId = Number(stakeId || 0);
+
+  if (!safeStakeId) {
+    showGenesisFreezerToast(
+      'error',
+      'Unfreeze failed',
+      'Missing Genesis freezer stake id.'
+    );
+    return;
+  }
+
+  const confirmed = await showGenesisFreezerConfirmModal(
+    'Unfreeze Genesis Mouse?',
+    'Production wallet confirmation: your wallet will send a Solana Memo transaction to confirm freezer exit intent.',
+    'Sign Unfreeze Memo'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const user_id = getUserId();
+
+    const challengeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-unfreeze-challenge.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: user_id || undefined,
+        stake_id: safeStakeId
+      })
+    });
+
+    const challengeResult = await challengeResponse.json();
+
+    if (!challengeResult.success) {
+      throw new Error(challengeResult.error || 'Could not create unfreeze challenge.');
+    }
+
+    const challengeData = challengeResult.data || challengeResult;
+    const challengeId = Number(challengeData.challenge_id || challengeResult.challenge_id || 0);
+    const challengeMessage = String(challengeData.message || challengeResult.message || '').trim();
+    const challengeWallet = String(challengeData.ownership?.wallet || '').trim();
+
+    if (!challengeId) {
+      throw new Error('Unfreeze challenge id missing from backend response.');
+    }
+
+    if (!challengeMessage) {
+      throw new Error('Unfreeze challenge message missing from backend response.');
+    }
+
+    const memoProof = await sendGenesisFreezerMemoTransaction(challengeMessage, challengeWallet);
+
+    const unfreezeResponse = await fetch(`${API_BASE_URL}/api/user/unstake-genesis-nft.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: user_id || undefined,
+        stake_id: safeStakeId,
+        challenge_id: challengeId,
+        memo_signature: memoProof.signature
+      })
+    });
+
+    const unfreezeResult = await unfreezeResponse.json();
+
+    if (!unfreezeResult.success) {
+      throw new Error(unfreezeResult.error || 'Unfreeze failed.');
+    }
+
+    await loadGenesisMouseFreezerPreview();
+    await loadStakingStats();
+    await loadStakes();
+
+    showGenesisFreezerToast(
+      'success',
+      'Genesis Mouse unfrozen',
+      'Wallet Memo proof verified. The mouse is available to freeze again.'
+    );
+  } catch (error) {
+    console.error('Genesis Mouse Freezer production unfreeze failed:', error);
+
+    showGenesisFreezerToast(
+      'error',
+      'Genesis Mouse unfreeze failed',
+      error.message || 'The production unfreeze could not be completed.'
+    );
+  }
+}
+
+
+/**
+ * Freeze selected Genesis mice in localhost testing.
+ *
+ * Plain language for DEVS:
+ * Production freeze must stay blocked until Solana Memo verification is wired.
+ * This local path loops selected mice through the existing challenge -> create
+ * stake flow with the backend local_dev_confirm guard.
+ */
+async function freezeSelectedGenesisMiceLocal() {
+  const selectedMice = getSelectedGenesisFreezerAvailableMice();
+  const data = genesisMouseFreezerPreview || {};
+  const slots = data.slots || {};
+  const availableSlots = Number(slots.available || 0);
+  const button = document.getElementById('genesis-freezer-freeze-selected-btn');
+  const originalText = button ? button.textContent : '';
+
+  if (selectedMice.length === 0) {
+    showGenesisFreezerToast(
+      'error',
+      'No Genesis mice selected',
+      'Choose one or more available Genesis mice before starting a freezer test.'
+    );
+    return;
+  }
+
+  if (availableSlots <= 0) {
+    showGenesisFreezerToast(
+      'error',
+      'No freezer slots available',
+      'Unfreeze a mouse or increase your tier before freezing more Genesis mice.'
+    );
+    return;
+  }
+
+  if (selectedMice.length > availableSlots) {
+    showGenesisFreezerToast(
+      'error',
+      'Too many mice selected',
+      `You selected ${selectedMice.length} mice, but only ${availableSlots} freezer slot(s) are open.`
+    );
+    return;
+  }
+
+  if (!isGenesisFreezerLocalhost()) {
+    await freezeSelectedGenesisMiceWithWalletMemo();
+    return;
+  }
+
+  const confirmed = await showGenesisFreezerConfirmModal(
+    'Freeze selected Genesis mice?',
+    `Local test only: freeze ${selectedMice.length} selected Genesis mouse/mice into the Genesis Mouse Freezer.`,
+    'Freeze Selected'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = `Freezing ${selectedMice.length}...`;
+  }
+
+  let successCount = 0;
+  let failedCount = 0;
+
+  try {
+    const user_id = getUserId();
+
+    for (const selectedMouse of selectedMice) {
+      try {
+        const challengeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-freeze-challenge.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            user_id: user_id || undefined,
+            wallet: selectedMouse.wallet || '',
+            token_id: selectedMouse.token_id || '',
+            collection: 'genesis'
+          })
+        });
+
+        const challengeResult = await challengeResponse.json();
+
+        if (!challengeResult.success) {
+          throw new Error(challengeResult.error || 'Could not create freeze challenge.');
+        }
+
+        const challengeId = Number(
+          challengeResult.data?.challenge_id ||
+          challengeResult.challenge_id ||
+          challengeResult.id ||
+          0
+        );
+
+        if (!challengeId) {
+          throw new Error('Freeze challenge id missing from backend response.');
+        }
+
+        const stakeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-stake.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            user_id: user_id || undefined,
+            challenge_id: challengeId,
+            local_dev_confirm: 'I_UNDERSTAND_THIS_IS_LOCAL_ONLY'
+          })
+        });
+
+        const stakeResult = await stakeResponse.json();
+
+        if (!stakeResult.success) {
+          throw new Error(stakeResult.error || 'Could not freeze Genesis mouse.');
+        }
+
+        successCount += 1;
+      } catch (error) {
+        failedCount += 1;
+        console.error('Genesis Mouse Freezer local multi-freeze item failed:', error);
+      }
+    }
+
+    selectedGenesisFreezerTokenKeys.clear();
+
+    await loadGenesisMouseFreezerPreview();
+    await loadStakingStats();
+    await loadStakes();
+
+    showGenesisFreezerToast(
+      failedCount > 0 ? 'error' : 'success',
+      failedCount > 0 ? 'Genesis freezer partly complete' : 'Genesis mice frozen',
+      `Frozen ${successCount} Genesis mouse/mice.${failedCount > 0 ? ` ${failedCount} failed and can be retried.` : ''}`
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText || 'Freeze Selected Local Test';
+    }
+  }
+}
+
+/**
+ * Bind Genesis Mouse Freezer list/card controls after render.
+ *
+ * Plain language for DEVS:
+ * This function only connects frontend buttons after the freezer preview is rendered.
+ * It does not calculate rewards, freeze NFTs, unfreeze NFTs, or mutate backend state by itself.
+ */
+function bindGenesisFreezerViewControls() {
+  document.querySelectorAll('[data-genesis-freezer-view-mode]').forEach(button => {
+    if (button.dataset.viewBound === '1') {
+      return;
+    }
+
+    button.dataset.viewBound = '1';
+
+    button.addEventListener('click', () => {
+      setGenesisFreezerViewMode(button.dataset.genesisFreezerViewMode || 'card');
+    });
+  });
+
+  const claimAllButton = document.getElementById('genesis-freezer-claim-all-btn');
+
+  if (claimAllButton && claimAllButton.dataset.claimAllBound !== '1') {
+    claimAllButton.dataset.claimAllBound = '1';
+    claimAllButton.addEventListener('click', claimAllGenesisMouseFreezerRewards);
+  }
+
+  document.querySelectorAll('[data-genesis-unfreeze-stake-id]').forEach(button => {
+    if (button.dataset.unfreezeBound === '1') {
+      return;
+    }
+
+    button.dataset.unfreezeBound = '1';
+
+       button.addEventListener('click', () => {
+      unfreezeGenesisMouseFreezer(button.dataset.genesisUnfreezeStakeId || 0);
+    });
+  });
+}
+/**
+ * Bind Genesis Mouse Freezer right-panel planner/freezer controls.
+ *
+ * Plain language for DEVS:
+ * This binds the preview mode switch, available NFT search, multi-select,
+ * selection shortcuts, and local-only freeze action after each render.
+ */
+function bindGenesisFreezerAvailableControls() {
+  document.querySelectorAll('[data-genesis-freezer-right-mode]').forEach(button => {
+    if (button.dataset.rightModeBound === '1') {
+      return;
+    }
+
+    button.dataset.rightModeBound = '1';
+
+    button.addEventListener('click', () => {
+      setGenesisFreezerRightPanelMode(button.dataset.genesisFreezerRightMode || 'planner');
+    });
+  });
+
+  document.querySelectorAll('[data-genesis-freezer-select-token-key]').forEach(button => {
+    if (button.dataset.selectBound === '1') {
+      return;
+    }
+
+    button.dataset.selectBound = '1';
+
+    button.addEventListener('click', () => {
+      toggleGenesisFreezerAvailableMouse(button.dataset.genesisFreezerSelectTokenKey || '');
+    });
+  });
+
+  const searchInput = document.getElementById('genesis-freezer-available-search');
+
+  if (searchInput && searchInput.dataset.searchBound !== '1') {
+    searchInput.dataset.searchBound = '1';
+
+    searchInput.addEventListener('input', () => {
+      genesisFreezerAvailableSearch = searchInput.value || '';
+      rerenderGenesisMouseFreezerPreviewSafely({ focusSearch: true });
+    });
+  }
+
+  const selectVisibleButton = document.getElementById('genesis-freezer-select-visible-btn');
+
+  if (selectVisibleButton && selectVisibleButton.dataset.selectVisibleBound !== '1') {
+    selectVisibleButton.dataset.selectVisibleBound = '1';
+    selectVisibleButton.addEventListener('click', selectAllVisibleGenesisFreezerAvailableMice);
+  }
+
+  const clearSelectionButton = document.getElementById('genesis-freezer-clear-selection-btn');
+
+  if (clearSelectionButton && clearSelectionButton.dataset.clearSelectionBound !== '1') {
+    clearSelectionButton.dataset.clearSelectionBound = '1';
+    clearSelectionButton.addEventListener('click', clearGenesisFreezerAvailableSelection);
+  }
+
+  const freezeButton = document.getElementById('genesis-freezer-freeze-selected-btn');
+
+  if (freezeButton && freezeButton.dataset.freezeBound !== '1') {
+    freezeButton.dataset.freezeBound = '1';
+    freezeButton.addEventListener('click', freezeSelectedGenesisMice);
+  }
 }
 
 /**
@@ -1635,7 +3458,68 @@ const tierExplanationMarkup = tierExplanationRows.map(([range, label, slotText, 
   </div>
 `).join('');
 
-  const previewFrozenCards = frozenNfts.slice(0, 3).map(nft => getGenesisMouseFreezerCardMarkup(nft, 'frozen')).join('');
+  const previewFrozenCards = frozenNfts.map(nft => getGenesisMouseFreezerCardMarkup(nft, 'frozen')).join('');
+const previewFrozenListRows = frozenNfts.map(nft => getGenesisMouseFreezerListRowMarkup(nft)).join('');
+const claimableFrozenCount = frozenNfts.filter(nft => Number(nft.claim_preview?.full_days || 0) > 0).length;
+const isGenesisCardMode = genesisFreezerViewMode !== 'list';
+const isGenesisFreezerPlannerMode = genesisFreezerRightPanelMode !== 'freeze';
+const isLocalFreezeEnabled = isGenesisFreezerLocalhost();
+
+const availableSearchQuery = String(genesisFreezerAvailableSearch || '').trim().toLowerCase();
+const filteredAvailableNfts = availableNfts.filter(nft => {
+  if (!availableSearchQuery) {
+    return true;
+  }
+
+  return [
+    nft.nft_name,
+    nft.name,
+    nft.token_id,
+    nft.wallet
+  ].some(value => String(value || '').toLowerCase().includes(availableSearchQuery));
+});
+
+const validAvailableKeys = new Set(availableNfts.map(nft => getGenesisFreezerNftKey(nft)));
+
+selectedGenesisFreezerTokenKeys = new Set(
+  Array.from(selectedGenesisFreezerTokenKeys).filter(tokenKey => validAvailableKeys.has(tokenKey))
+);
+
+const selectedAvailableNfts = availableNfts.filter(nft => selectedGenesisFreezerTokenKeys.has(getGenesisFreezerNftKey(nft)));
+const selectedAvailableCount = selectedAvailableNfts.length;
+const selectedCanFitOpenSlots = selectedAvailableCount <= availableSlots;
+
+const availableMouseRows = filteredAvailableNfts
+  .map(nft => getGenesisFreezerAvailableMouseRowMarkup(nft))
+  .join('');
+
+const hiddenAvailableCount = 0;
+const selectedPreviewRows = selectedAvailableNfts
+  .slice(0, 6)
+  .map(nft => {
+    const name = escapeGenesisFreezerHtml(nft.nft_name || nft.name || 'Genesis Mouse');
+    const imageUrl = escapeGenesisFreezerHtml(nft.image_url || '');
+    const tokenId = String(nft.token_id || '');
+    const shortToken = escapeGenesisFreezerHtml(tokenId.length > 14 ? `${tokenId.slice(0, 5)}...${tokenId.slice(-5)}` : tokenId);
+
+    return `
+      <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2">
+        <div class="h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-slate-950/80">
+          ${imageUrl
+            ? `<img src="${imageUrl}" alt="${name}" class="h-full w-full object-cover" loading="lazy">`
+            : '<div class="grid h-full w-full place-items-center text-lg">🐭</div>'
+          }
+        </div>
+        <div class="min-w-0">
+          <div class="truncate text-xs font-black text-white">${name}</div>
+          <div class="truncate text-[0.65rem] text-slate-400">${shortToken}</div>
+        </div>
+      </div>
+    `;
+  })
+  .join('');
+
+const hiddenSelectedPreviewCount = Math.max(0, selectedAvailableNfts.length - 6);
   const previewAvailableCards = availableNfts.slice(0, 2).map(nft => getGenesisMouseFreezerCardMarkup(nft, 'available')).join('');
 
   panel.classList.remove('hidden');
@@ -1704,21 +3588,72 @@ One freezer slot can hold one Genesis mouse. The NFT stays in your wallet while 
       </div>
 
       <div class="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
-        <div class="rounded-2xl border border-cyan-300/15 bg-black/20 p-4">
-          <div class="flex items-center justify-between gap-3 mb-4">
-            <div>
-              <div class="text-lg font-black text-cyan-100">Frozen Mice Preview</div>
-              <div class="text-xs text-cyan-200/70">active freezer rows returned by backend</div>
-            </div>
-            <div class="text-2xl">❄️</div>
-          </div>
+        <div class="mb-4 flex flex-col gap-3">
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0">
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="text-lg font-black text-cyan-100">Frozen Mice Preview</div>
+        <div class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[0.7rem] font-black text-cyan-100">
+          ${frozenCount.toLocaleString()} active
+        </div>
+      </div>
 
-          <div class="grid grid-cols-1 gap-3">
-            ${previewFrozenCards || `
-              <div class="rounded-2xl border border-dashed border-cyan-300/20 bg-cyan-950/20 p-5 text-sm text-cyan-100/80">
-                No Genesis mice frozen right now.
-              </div>
-            `}
+      <div class="mt-1 max-w-md text-xs leading-relaxed text-cyan-200/70">
+        Active freezer rows returned by backend · compact list mode is optimized for 6–16 frozen mice
+      </div>
+    </div>
+
+    <div class="flex shrink-0 rounded-2xl border border-white/10 bg-white/5 p-1">
+      <button
+        type="button"
+        data-genesis-freezer-view-mode="card"
+        class="rounded-xl px-3 py-2 text-xs font-black transition ${
+          isGenesisCardMode
+            ? 'border border-cyan-300/40 bg-cyan-300/20 text-cyan-100'
+            : 'text-slate-300 hover:bg-white/10'
+        }"
+      >
+        Cards
+      </button>
+
+      <button
+        type="button"
+        data-genesis-freezer-view-mode="list"
+        class="rounded-xl px-3 py-2 text-xs font-black transition ${
+          !isGenesisCardMode
+            ? 'border border-cyan-300/40 bg-cyan-300/20 text-cyan-100'
+            : 'text-slate-300 hover:bg-white/10'
+        }"
+      >
+        List
+      </button>
+    </div>
+  </div>
+
+  <button
+    type="button"
+    id="genesis-freezer-claim-all-btn"
+    ${claimableFrozenCount > 0 ? '' : 'disabled'}
+    class="w-full rounded-2xl border px-4 py-2.5 text-xs font-black transition sm:w-auto sm:self-end ${
+      claimableFrozenCount > 0
+        ? 'border-emerald-300/40 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30'
+        : 'cursor-not-allowed border-slate-500/40 bg-slate-700/40 text-slate-300 opacity-80'
+    }"
+  >
+    Claim All Ready Mice
+  </button>
+</div>
+</div>
+
+<div class="${isGenesisCardMode ? 'grid grid-cols-1 gap-4' : 'space-y-2.5'}">
+  ${frozenNfts.length > 0
+    ? (isGenesisCardMode ? previewFrozenCards : previewFrozenListRows)
+    : `
+      <div class="rounded-2xl border border-dashed border-cyan-300/20 bg-cyan-950/20 p-5 text-sm text-cyan-100/80">
+        No Genesis mice frozen right now.
+      </div>
+    `
+  }
             <div class="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-950/20 p-4">
   <div class="flex items-start justify-between gap-3">
     <div>
@@ -1872,24 +3807,236 @@ One freezer slot can hold one Genesis mouse. The NFT stays in your wallet while 
         </div>
 
         <div class="rounded-2xl border border-yellow-300/15 bg-black/20 p-4">
-          <div class="flex items-center justify-between gap-3 mb-4">
-            <div>
-              <div class="text-lg font-black text-yellow-100">Available to Freeze</div>
-              <div class="text-xs text-yellow-200/70">${availableCount.toLocaleString()} verified Genesis mice detected</div>
-            </div>
-            <div class="text-2xl">🐭</div>
-          </div>
-
-          <div class="mt-4 rounded-2xl border border-yellow-300/20 bg-yellow-950/20 p-4">
-  <div class="flex items-start justify-between gap-3">
+  <div class="flex items-center justify-between gap-3 mb-4">
     <div>
-      <div class="text-lg font-black text-yellow-100">Freezer Play Planner</div>
-      <div class="text-xs text-yellow-200/70">Try different freeze plans before the buttons go live</div>
+      <div class="text-lg font-black text-yellow-100">Available to Freeze</div>
+      <div class="text-xs text-yellow-200/70">${availableCount.toLocaleString()} verified Genesis mice detected</div>
     </div>
-    <div class="rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1 text-xs font-black text-yellow-100">
-      Preview
+    <div class="text-2xl">🐭</div>
+  </div>
+
+  <div class="mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/5 p-1">
+    <button
+      type="button"
+      data-genesis-freezer-right-mode="planner"
+      class="rounded-xl px-3 py-2 text-xs font-black transition ${
+        isGenesisFreezerPlannerMode
+          ? 'border border-yellow-300/40 bg-yellow-300/20 text-yellow-100'
+          : 'text-slate-300 hover:bg-white/10'
+      }"
+    >
+      Plan Slots
+    </button>
+
+    <button
+      type="button"
+      data-genesis-freezer-right-mode="freeze"
+      class="rounded-xl px-3 py-2 text-xs font-black transition ${
+        !isGenesisFreezerPlannerMode
+          ? 'border border-cyan-300/40 bg-cyan-300/20 text-cyan-100'
+          : 'text-slate-300 hover:bg-white/10'
+      }"
+    >
+      Freeze Mice
+    </button>
+  </div>
+
+  ${isGenesisFreezerPlannerMode ? `
+    <div class="mt-4 rounded-2xl border border-yellow-300/20 bg-yellow-950/20 p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-lg font-black text-yellow-100">Freezer Play Planner</div>
+          <div class="text-xs text-yellow-200/70">Try different freeze plans before choosing real mice</div>
+        </div>
+        <div class="rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1 text-xs font-black text-yellow-100">
+          Preview
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
+        <label for="genesis-freezer-planner-mice" class="block text-xs font-black uppercase tracking-[0.14em] text-yellow-100">
+          Mice to freeze
+        </label>
+
+        <input
+          id="genesis-freezer-planner-mice"
+          type="range"
+          min="1"
+          max="${maxPlannerMice}"
+          value="${defaultPlannerMice}"
+          class="mt-3 w-full"
+        >
+
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-300">
+          <span>1 mouse</span>
+          <span>${maxPlannerMice.toLocaleString()} max slots</span>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-2 gap-3">
+        <div class="rounded-xl border border-cyan-300/15 bg-cyan-300/10 p-3">
+          <div class="text-xs text-cyan-200/70">Selected Mice</div>
+          <div id="genesis-freezer-planner-selected" class="mt-1 text-xl font-black text-cyan-100">${defaultPlannerMice.toLocaleString()}</div>
+        </div>
+
+        <div class="rounded-xl border border-orange-300/15 bg-orange-300/10 p-3">
+          <div class="text-xs text-orange-200/70">Slots Used</div>
+          <div id="genesis-freezer-planner-slots" class="mt-1 text-xl font-black text-orange-100">${defaultPlannerMice.toLocaleString()}/${totalSlots.toLocaleString()}</div>
+        </div>
+
+        <div class="rounded-xl border border-emerald-300/15 bg-emerald-300/10 p-3">
+          <div class="text-xs text-emerald-200/70">Daily Plan</div>
+          <div id="genesis-freezer-planner-daily" class="mt-1 text-xl font-black text-emerald-100">0</div>
+          <div class="text-xs text-emerald-200/70">DSPOINC / day</div>
+        </div>
+
+        <div class="rounded-xl border border-purple-300/15 bg-purple-300/10 p-3">
+          <div class="text-xs text-purple-200/70">VIP Boost</div>
+          <div id="genesis-freezer-planner-vip" class="mt-1 text-xl font-black text-purple-100">0</div>
+          <div class="text-xs text-purple-200/70">bonus / day</div>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-2 gap-3">
+        <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+          <div class="text-xs text-slate-400">7 Day Plan</div>
+          <div id="genesis-freezer-planner-seven" class="mt-1 text-lg font-black text-white">0</div>
+          <div class="text-xs text-slate-400">DSPOINC</div>
+        </div>
+
+        <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+          <div class="text-xs text-slate-400">30 Day Plan</div>
+          <div id="genesis-freezer-planner-thirty" class="mt-1 text-lg font-black text-white">0</div>
+          <div class="text-xs text-slate-400">DSPOINC</div>
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-xl border border-yellow-300/20 bg-yellow-300/10 p-3 text-xs text-yellow-100/90">
+        Plan idea: use this calculator for strategy. Switch to Freeze Mice when you want to choose the exact Genesis NFT.
+      </div>
+    </div>
+  ` : `
+    <div class="rounded-2xl border border-cyan-300/20 bg-cyan-950/20 p-4">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div class="text-lg font-black text-cyan-100">Freeze Mice</div>
+      <div class="text-xs text-cyan-200/70">
+        Multi-select available verified Genesis mice and freeze them into open slots.
+      </div>
+    </div>
+
+    <div class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-100">
+      ${availableSlots.toLocaleString()} slot(s) open
     </div>
   </div>
+
+  <input
+    id="genesis-freezer-available-search"
+    type="search"
+    value="${escapeGenesisFreezerHtml(genesisFreezerAvailableSearch)}"
+    placeholder="Search all available mice by name, token, or wallet..."
+    class="mt-4 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-300/50"
+  >
+
+  <div class="mt-3 grid grid-cols-2 gap-2">
+    <button
+      type="button"
+      id="genesis-freezer-select-visible-btn"
+      ${filteredAvailableNfts.length > 0 && availableSlots > 0 ? '' : 'disabled'}
+      class="rounded-xl border px-3 py-2 text-xs font-black transition ${
+        filteredAvailableNfts.length > 0 && availableSlots > 0
+          ? 'border-yellow-300/35 bg-yellow-300/15 text-yellow-100 hover:bg-yellow-300/25'
+          : 'cursor-not-allowed border-slate-500/40 bg-slate-700/40 text-slate-300 opacity-80'
+      }"
+    >
+      Select visible
+    </button>
+
+    <button
+      type="button"
+      id="genesis-freezer-clear-selection-btn"
+      ${selectedAvailableCount > 0 ? '' : 'disabled'}
+      class="rounded-xl border px-3 py-2 text-xs font-black transition ${
+        selectedAvailableCount > 0
+          ? 'border-white/15 bg-white/10 text-slate-100 hover:bg-white/15'
+          : 'cursor-not-allowed border-slate-500/40 bg-slate-700/40 text-slate-300 opacity-80'
+      }"
+    >
+      Clear selected
+    </button>
+  </div>
+
+  <div class="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-slate-300">
+    Showing ${filteredAvailableNfts.length.toLocaleString()} matching mouse/mice · Selected ${selectedAvailableCount.toLocaleString()} / ${availableSlots.toLocaleString()} open slot(s)
+  </div>
+
+  <div class="mt-4 max-h-[520px] space-y-2 overflow-y-auto pr-1">
+    ${availableMouseRows || `
+      <div class="rounded-2xl border border-dashed border-cyan-300/20 bg-cyan-950/20 p-5 text-sm text-cyan-100/80">
+        No available Genesis mice match this search.
+      </div>
+    `}
+  </div>
+
+  <div class="mt-4 rounded-2xl border border-yellow-300/20 bg-yellow-950/20 p-4">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <div class="text-xs font-black uppercase tracking-[0.14em] text-yellow-200/70">
+          Selected Mice
+        </div>
+        <div class="mt-1 text-lg font-black ${selectedCanFitOpenSlots ? 'text-yellow-100' : 'text-red-100'}">
+          ${selectedAvailableCount.toLocaleString()} selected
+        </div>
+      </div>
+
+      <div class="rounded-full border ${selectedCanFitOpenSlots ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-red-300/30 bg-red-500/10 text-red-100'} px-3 py-1 text-xs font-black">
+        ${selectedCanFitOpenSlots ? 'Fits slots' : 'Too many'}
+      </div>
+    </div>
+
+    <div class="mt-3 grid grid-cols-1 gap-2">
+      ${selectedPreviewRows || `
+        <div class="rounded-xl border border-dashed border-white/10 bg-white/5 p-3 text-sm text-slate-300">
+          No mice selected yet.
+        </div>
+      `}
+    </div>
+
+    ${hiddenSelectedPreviewCount > 0 ? `
+      <div class="mt-2 text-xs text-slate-400">
+        +${hiddenSelectedPreviewCount.toLocaleString()} more selected mouse/mice.
+      </div>
+    ` : ''}
+
+  <button
+      type="button"
+      id="genesis-freezer-freeze-selected-btn"
+      ${selectedAvailableCount > 0 && selectedCanFitOpenSlots ? '' : 'disabled'}
+      class="mt-4 w-full rounded-2xl border px-4 py-3 text-sm font-black transition ${
+        selectedAvailableCount > 0 && selectedCanFitOpenSlots
+          ? 'border-cyan-300/45 bg-cyan-500/20 text-cyan-100 hover:bg-cyan-500/30 hover:scale-[1.01]'
+          : 'cursor-not-allowed border-slate-500/40 bg-slate-700/40 text-slate-300 opacity-80'
+      }"
+      title="${
+        isLocalFreezeEnabled
+          ? 'Local test only: freeze selected Genesis mice.'
+          : 'Sign Solana Memo transaction(s) to freeze selected Genesis mice.'
+      }"
+    >
+      ${
+        isLocalFreezeEnabled
+          ? (selectedAvailableCount > 0 ? `Freeze ${selectedAvailableCount.toLocaleString()} Selected Local Test` : 'Select mice to freeze')
+          : (selectedAvailableCount > 0 ? `Freeze ${selectedAvailableCount.toLocaleString()} Selected with Wallet Memo` : 'Select mice to freeze')
+      }
+    </button>
+
+    <div class="mt-3 rounded-xl border border-cyan-300/15 bg-cyan-300/10 p-3 text-xs leading-relaxed text-cyan-100/80">
+      Local test can freeze selected mice now. Production freeze stays locked until wallet-proof Memo confirmation is wired.
+    </div>
+  </div>
+</div>
+  `}
+</div>
 
   <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
     <label for="genesis-freezer-planner-mice" class="block text-xs font-black uppercase tracking-[0.14em] text-yellow-100">
@@ -2023,7 +4170,12 @@ Final claims will always be checked safely by the system before DSPOINC is paid.
     </div>
     `;
 
-  bindGenesisFreezerPlayPlanner();
+bindGenesisFreezerPlayPlanner();
+bindGenesisFreezerClaimButtons();
+bindGenesisFreezerViewControls();
+bindGenesisFreezerAvailableControls();
+syncGenesisFreezerRewardInterval();
+bindGenesisFreezerConfirmModal();
 }
 
 /**
@@ -2054,6 +4206,18 @@ function calculateGenesisFreezerPlayPlan(mouseCount, dailyReward, hasVipBonus) {
     sevenDayTotal: dailyTotal * 7,
     thirtyDayTotal: dailyTotal * 30
   };
+}
+
+/**
+ * Determine whether Genesis Mouse Freezer local-only test actions may run.
+ *
+ * Plain language for DEVS:
+ * Production freeze/unfreeze still requires Solana Memo verification.
+ * Localhost can use local_dev_confirm only for development testing.
+ */
+function isGenesisFreezerLocalhost() {
+  const host = String(window.location.hostname || '');
+  return host === 'localhost' || host === '127.0.0.1';
 }
 
 /**
