@@ -1,5 +1,139 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## PUSH NOTE — GENESIS MOUSE FREEZER CONTROLLED LIVE TEST + GAME MUSIC FILES
+
+**Date:** 2026-06-18
+**Status:** Ready for push / controlled live testing after deploy
+**Scope:** NFT staking safety gate, wallet Memo UX, Stake Lab, game music assets
+
+---
+
+## ✅ Final Status Before Push
+
+The Genesis Mouse Freezer update is ready for deployment as a **controlled live test**, not a public launch.
+
+Confirmed:
+
+```text
+Stake Lab wallet Memo UX is wired.
+Freeze uses wallet Memo on production.
+Unfreeze uses wallet Memo on production.
+Localhost still uses local_dev_confirm test buttons.
+Backend Memo verification helper exists.
+Freeze activation API is wired to Memo verification.
+Unfreeze API is wired to Memo verification.
+Claim API stays backend-authoritative.
+DSPOINC Staking V2 is still not active.
+```
+
+---
+
+## ✅ Controlled Live Tester Gate Added
+
+Production freeze/unfreeze challenge creation is now allowlisted.
+
+Allowed live testers:
+
+```text
+Narrrf: 328601656659017732
+justme: 1224428436928594015
+```
+
+Confirmed gate calls:
+
+```text
+create-genesis-nft-freeze-challenge.php
+- gate function exists
+- gate is called after user resolution
+
+create-genesis-nft-unfreeze-challenge.php
+- gate function exists
+- gate is called after user resolution
+```
+
+All other production users should receive:
+
+```text
+Genesis Mouse Freezer is in controlled live testing.
+Public access opens with the Season 13 staking rollout.
+```
+
+Localhost remains open for development/testing.
+
+---
+
+## ✅ Local Test Still Works
+
+Local curl freeze challenge test passed after the gate patch.
+
+Confirmed:
+
+```text
+success: true
+challenge_id returned
+phase: phase_2_freeze_challenge_only
+creates_active_stake: false
+writes_rewards: false
+```
+
+This confirms the local test path was not broken by the production allowlist.
+
+---
+
+## ✅ Game Music Files Included Intentionally
+
+The upcoming push may also include game music files because they are needed on the server for game audio.
+
+Intentional audio assets:
+
+```text
+public/sounds/music/glyph.mp3
+public/sounds/music/snake.mp3
+public/sounds/music/tetris.mp3
+```
+
+If present locally and intentionally added, these are not accidental files in this push.
+
+---
+
+## 🚫 Still Not Public Yet
+
+Do not announce this as public NFT staking launch.
+
+Correct wording:
+
+```text
+Genesis Mouse Freezer is entering controlled live wallet-proof testing.
+Narrrf and justme are the first allowed live testers.
+Public Genesis NFT staking opens later with the Season 13 rollout after verification.
+```
+
+Do not say:
+
+```text
+NFT staking is live for everyone.
+Season 13 staking is live.
+DSPOINC Staking V2 is active.
+All Genesis holders can stake now.
+```
+
+---
+
+## ➡️ After Push / Deploy
+
+1. Wait for Render deploy/restart.
+2. Confirm site is back online.
+3. Test live with Narrrf first.
+4. Freeze one Genesis mouse only.
+5. Confirm wallet Memo transaction opens.
+6. Confirm backend verifies memo_signature and creates active freezer row.
+7. Unfreeze the same mouse.
+8. Confirm wallet Memo transaction opens again.
+9. Confirm row closes and NFT returns available.
+10. Test justme only after Narrrf live test passes.
+11. Update Quick Status with live test result.
+
+
 ## FOLLOW-UP — GENESIS MOUSE FREEZER WALLET MEMO UX WIRED FOR CONTROLLED LIVE TEST
 
 **Date:** 2026-06-18

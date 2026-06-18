@@ -2698,24 +2698,62 @@ async function unfreezeGenesisMouseFreezerLocal(stakeId) {
 
 
 const GENESIS_FREEZER_MEMO_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
-const GENESIS_FREEZER_PUBLIC_RPC_URL = 'https://api.mainnet-beta.solana.com';
+const GENESIS_FREEZER_PUBLIC_RPC_URL = 'https://solana-rpc.publicnode.com';
+const GENESIS_FREEZER_PUBLIC_RPC_FALLBACK_URLS = [
+  'https://solana-rpc.publicnode.com',
+  'https://rpc.ankr.com/solana',
+  'https://api.mainnet-beta.solana.com'
+];
 
 /**
- * Return the Solana browser wallet provider used by Phantom-style wallets.
+ * Return the best available Solana wallet provider for Genesis Mouse Freezer.
  *
  * Plain language for DEVS:
- * This mirrors the holder verification wallet lane by using the browser wallet
- * provider. It does not decide ownership, rewards, or freezer state. Backend
- * APIs still verify the exact Memo transaction before changing freezer rows.
+ * The freezer Memo flow should support Phantom, Solflare, Backpack, xNFT,
+ * and Ledger-backed accounts exposed through those wallets. This mirrors the
+ * holder verification wallet lane. Backend APIs still verify the exact Memo
+ * transaction before changing freezer rows.
  */
 function getGenesisFreezerWalletProvider() {
-  const provider = window.solana;
+  if (typeof getSolanaProvider === 'function') {
+    const sharedProvider = getSolanaProvider();
 
-  if (!provider || typeof provider.connect !== 'function') {
-    throw new Error('Solana wallet not found. Please install or unlock Phantom, then refresh Stake Lab.');
+    if (sharedProvider && typeof sharedProvider.connect === 'function') {
+      return sharedProvider;
+    }
   }
 
-  return provider;
+  const directCandidates = [
+    window.phantom?.solana,
+    window.solflare,
+    window.solflare?.solana,
+    window.backpack,
+    window.backpack?.solana,
+    window.xnft?.solana,
+    window.solana
+  ].filter(Boolean);
+
+  for (const provider of directCandidates) {
+    if (provider && typeof provider.connect === 'function') {
+      return provider;
+    }
+  }
+
+  const multiProviders = Array.isArray(window.solana?.providers)
+    ? window.solana.providers
+    : [];
+
+  const preferredProvider =
+    multiProviders.find(provider => provider?.isPhantom) ||
+    multiProviders.find(provider => provider?.isSolflare) ||
+    multiProviders.find(provider => provider?.isBackpack) ||
+    multiProviders.find(provider => typeof provider?.connect === 'function');
+
+  if (preferredProvider) {
+    return preferredProvider;
+  }
+
+  throw new Error('Solana wallet not found. Please install or unlock Phantom, Solflare, or Backpack, then refresh Stake Lab.');
 }
 
 /**
@@ -2784,19 +2822,50 @@ async function sendGenesisFreezerMemoTransaction(message, expectedWalletAddress)
     throw new Error(`Connected wallet mismatch. Please connect ${safeExpectedWallet} to sign this freezer Memo.`);
   }
 
-  const connection = new web3.Connection(
-    window.NARRRFS_SOLANA_RPC_URL || GENESIS_FREEZER_PUBLIC_RPC_URL,
-    'confirmed'
-  );
+ const configuredRpcUrl = String(window.NARRRFS_SOLANA_RPC_URL || '').trim();
+const rpcUrls = [
+  configuredRpcUrl,
+  ...GENESIS_FREEZER_PUBLIC_RPC_FALLBACK_URLS
+].filter((rpcUrl, index, allRpcUrls) => {
+  return rpcUrl && allRpcUrls.indexOf(rpcUrl) === index;
+});
+
+let connection = null;
+let latestBlockhash = null;
+let lastRpcError = null;
+
+/**
+ * DEVS FOR DECADES:
+ * Browser-side public Solana RPC endpoints can rate-limit or reject requests.
+ * Try configured/project RPC first, then safe public fallbacks before failing
+ * the wallet Memo flow. The backend still verifies the final Memo transaction.
+ */
+for (const rpcUrl of rpcUrls) {
+  try {
+    const candidateConnection = new web3.Connection(rpcUrl, 'confirmed');
+    const candidateBlockhash = await candidateConnection.getLatestBlockhash('confirmed');
+
+    connection = candidateConnection;
+    latestBlockhash = candidateBlockhash;
+    break;
+  } catch (rpcError) {
+    lastRpcError = rpcError;
+    console.warn('Genesis Mouse Freezer RPC failed, trying fallback:', rpcUrl, rpcError);
+  }
+}
+
+if (!connection || !latestBlockhash) {
+  throw new Error(`Unable to reach a Solana RPC for freezer Memo transaction. Last error: ${lastRpcError?.message || lastRpcError || 'Unknown RPC error'}`);
+}
 
   const walletPublicKey = new web3.PublicKey(walletAddress);
   const memoProgramId = new web3.PublicKey(GENESIS_FREEZER_MEMO_PROGRAM_ID);
   const encodedMemo = new TextEncoder().encode(safeMessage);
-  const latestBlockhash = await connection.getLatestBlockhash('confirmed');
-
-  const transaction = new web3.Transaction();
-  transaction.feePayer = walletPublicKey;
   transaction.recentBlockhash = latestBlockhash.blockhash;
+transaction.feePayer = walletPublicKey;
+  const transaction = new web3.Transaction();
+ 
+  
   transaction.add(
     new web3.TransactionInstruction({
       keys: [],
