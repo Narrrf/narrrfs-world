@@ -260,6 +260,87 @@ require_once 'discord-invite.php';
     display: none;
   }
 }
+.stake-v2-card {
+    position: relative;
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    background:
+      radial-gradient(circle at top right, rgba(251, 191, 36, 0.18), transparent 35%),
+      linear-gradient(180deg, rgba(120, 53, 15, 0.30), rgba(15, 23, 42, 0.94));
+    box-shadow:
+      0 0 0 1px rgba(251, 191, 36, 0.10),
+      0 18px 45px rgba(0, 0, 0, 0.35);
+  }
+
+  .stake-v2-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 1.5rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent 30%);
+  }
+
+  .stake-v2-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    background: rgba(251, 191, 36, 0.18);
+    color: #fde68a;
+  }
+
+  .stake-v2-boost-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 900;
+    border: 1px solid rgba(253, 224, 71, 0.35);
+    background: rgba(253, 224, 71, 0.12);
+    color: #fef08a;
+  }
+
+  .stake-v2-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .stake-v2-meta-box {
+    border-radius: 18px;
+    border: 1px solid rgba(251, 191, 36, 0.18);
+    background: rgba(15, 23, 42, 0.45);
+    padding: 10px 12px;
+  }
+
+  .stake-v2-meta-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(253, 230, 138, 0.78);
+  }
+
+  .stake-v2-meta-value {
+    margin-top: 4px;
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff7d6;
+  }
+
+  .stake-v2-highlight {
+    color: #fde68a;
+    font-weight: 900;
+  }
   </style>
 </head>
 
@@ -425,44 +506,92 @@ require_once 'discord-invite.php';
   <!-- 🧊 Main Content (Hidden until access verified) -->
   <div id="main-content" style="display: none;">
 
-    <!-- 🏆 Hero Section -->
-    <section class="relative z-10 py-16 md:py-20 px-4 md:px-6 text-center">
+   <!-- 🏆 Hero Section -->
+<section class="relative z-10 py-16 md:py-20 px-4 md:px-6 text-center">
   <div class="stake-season12-hero max-w-6xl mx-auto rounded-[2rem] px-5 py-10 md:px-10 md:py-14">
-        <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.28em] text-yellow-200 mb-5">
-  ☀️ Season 12 Permanent Economy Layer
-</div>
-<h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-200 via-orange-300 to-pink-300 bg-clip-text text-transparent">
-  🧊 DSPOINC Staking Lab
-</h1>
-        <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-          Freeze your DSPOINC for selected durations and earn rewards. You can also verify and save your Narrrfs World NFTs directly on this page.
+    <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.28em] text-yellow-200 mb-5">
+      ☀️ Season 12 Permanent Economy Layer
+    </div>
+
+    <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-200 via-orange-300 to-pink-300 bg-clip-text text-transparent">
+      🧊 Stake Lab
+    </h1>
+
+    <p class="text-xl md:text-2xl text-gray-200 mb-8 max-w-4xl mx-auto leading-relaxed">
+      Your Narrrfs economy control room: stake DSPOINC in the pool, freeze Genesis mice for daily rewards, and verify your NFTs in one place.
+    </p>
+
+    <!-- DEVS FOR DECADES:
+       These top cards are education/navigation only.
+       They do not activate staking, calculate rewards, verify ownership,
+       freeze NFTs, write DSPOINC, or bypass backend API authority. -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8 text-left">
+      <div class="stake-season12-card rounded-2xl p-5 border border-cyan-300/20">
+        <div class="mb-3 inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-cyan-100">
+          ❄️ DSPOINC Pool
+        </div>
+        <h2 class="text-2xl font-black text-white mb-3">Stake your DSPOINC</h2>
+        <p class="text-sm leading-relaxed text-cyan-100/90">
+          Freeze DSPOINC from your Discord account for selected durations and earn a reward bonus when the stake completes.
         </p>
-        <div class="stake-season12-card rounded-2xl p-5 mb-6 max-w-2xl mx-auto">
-          <p class="text-blue-100 text-sm">
-            <strong>How It Works:</strong> Freeze your DSPOINC for 1, 3, 6, 12, 24, or 36 months. After the freeze period, receive your original DSPOINC plus a reward bonus. All transactions are tracked in your DSPOINC Journey.
+        <button type="button" onclick="openDspoincFreezeSection()" class="mt-4 w-full rounded-xl bg-cyan-500/20 px-4 py-3 text-sm font-black text-cyan-100 border border-cyan-300/30 transition hover:bg-cyan-500/30">
+  ❄️ Open DSPOINC Staking
+</button>
+      </div>
+
+      <div class="stake-season12-card rounded-2xl p-5 border border-yellow-300/25 bg-yellow-500/10">
+        <div class="mb-3 inline-flex rounded-full border border-yellow-300/40 bg-yellow-300/15 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-yellow-100">
+          🧬 Genesis Mouse Freezer
+        </div>
+        <h2 class="text-2xl font-black text-white mb-3">Freeze NFTs for daily rewards</h2>
+        <p class="text-sm leading-relaxed text-yellow-100/90">
+          Verified Genesis mice can enter the Mouse Freezer. Your NFT stays in your wallet while the backend tracks daily DSPOINC rewards.
+        </p>
+        <button type="button" onclick="openGenesisFreezerFreezeArea()" class="mt-4 w-full rounded-xl bg-yellow-400/20 px-4 py-3 text-sm font-black text-yellow-100 border border-yellow-300/40 transition hover:bg-yellow-400/30">
+  🧬 Open Mouse Freezer
+</button>
+      </div>
+
+      <div class="stake-season12-card rounded-2xl p-5 border border-emerald-300/20">
+        <div class="mb-3 inline-flex rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-emerald-100">
+          ✅ NFT Verification
+        </div>
+        <h2 class="text-2xl font-black text-white mb-3">Verify & save NFTs</h2>
+        <p class="text-sm leading-relaxed text-emerald-100/90">
+          Connect your wallet, load your Narrrfs NFTs, and save verified ownership for roles, freezer slots, and holder systems.
+        </p>
+        <button type="button" onclick="scrollToSection('stake-lab-verify-section')" class="mt-4 w-full rounded-xl bg-emerald-500/20 px-4 py-3 text-sm font-black text-emerald-100 border border-emerald-300/30 transition hover:bg-emerald-500/30">
+          ✅ Open NFT Verification
+        </button>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-slate-950/45 p-5 text-left">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <div class="font-black text-cyan-200 mb-1">DSPOINC staking</div>
+          <p class="text-slate-300 leading-relaxed">
+            Works with Discord login. No Solana wallet is needed for legacy DSPOINC staking.
           </p>
         </div>
-        <div class="bg-gradient-to-r from-emerald-900/40 via-cyan-900/40 to-blue-900/40 border border-emerald-400/40 rounded-2xl p-5 mb-8 max-w-4xl mx-auto shadow-lg">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 text-left">
-            <div>
-              <div class="text-xs uppercase tracking-[0.28em] text-emerald-300/80 mb-2">Dual purpose page</div>
-              <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">✅ NFT verification happens here too</h2>
-              <p class="text-sm md:text-base text-cyan-100/90 max-w-2xl">
-                This page is not only for staking. You can jump straight to the verification area below to connect your wallet, load your Narrrfs NFTs, and verify &amp; save them here.
-              </p>
-            </div>
-            <div class="flex flex-col sm:flex-row gap-3 lg:justify-end">
-              <button type="button" onclick="scrollToSection('stake-lab-verify-section')" class="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                ✅ Jump to NFT Verification
-              </button>
-              <button type="button" onclick="scrollToSection('staking-controls-section')" class="bg-white/10 hover:bg-white/20 border border-cyan-300/30 text-cyan-100 font-semibold py-3 px-6 rounded-xl transition-all duration-300">
-                ❄️ Jump to Staking
-              </button>
-            </div>
-          </div>
+
+        <div>
+          <div class="font-black text-yellow-200 mb-1">Genesis Mouse Freezer</div>
+          <p class="text-slate-300 leading-relaxed">
+            Uses verified Genesis NFTs and wallet-proof actions during controlled live testing.
+          </p>
+        </div>
+
+        <div>
+          <div class="font-black text-emerald-200 mb-1">Backend authority</div>
+          <p class="text-slate-300 leading-relaxed">
+            Rewards, ownership checks, slots, and ledger writes stay verified by backend APIs.
+          </p>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
+</section>
 
     <!-- ℹ️ Important Information Banner -->
     <section class="relative z-10 px-4 md:px-6 pb-6">
@@ -477,16 +606,26 @@ require_once 'discord-invite.php';
             <div class="flex-1">
               <h3 class="text-lg font-bold text-cyan-300 mb-2">📌 Important Information</h3>
               <div class="space-y-2 text-cyan-100 text-sm md:text-base">
-                <p>
-                  <strong class="text-cyan-200">✅ No Wallet Connection Required for Staking:</strong> DSPOINC staking works directly with your Discord account. Simply log in with Discord to start staking your DSPOINC - no Solana wallet connection needed!
-                </p>
-                <p>
-                  <strong class="text-cyan-200">🎴 NFT Verification Feature:</strong> The section below is an optional verification area where holders can connect a wallet, load Narrrfs World NFTs, and use <strong>Verify &amp; Save My NFTs</strong> directly on this page. This feature does <strong>not affect staking</strong> and exists to make holder verification easier.
-                </p>
-                <p class="text-cyan-200/80 italic">
-                  💡 <strong>Future Development:</strong> NFT-based staking features are planned for future updates. For now, DSPOINC staking is independent of NFT ownership.
-                </p>
-              </div>
+  <p>
+    <strong class="text-cyan-200">✅ DSPOINC Staking:</strong>
+    Stake Lab can freeze your off-chain DSPOINC through your Discord account. This legacy staking lane does not require a Solana wallet.
+  </p>
+
+  <p>
+    <strong class="text-yellow-200">🧬 Genesis Mouse Freezer:</strong>
+    Verified Genesis NFTs can be frozen in the Mouse Freezer for daily DSPOINC reward tracking. Your NFT stays in your wallet. Freeze and unfreeze actions are protected by backend ownership checks and wallet-proof Memo testing.
+  </p>
+
+  <p>
+    <strong class="text-emerald-200">🎴 NFT Verification:</strong>
+    The verification area below lets holders connect a wallet, load Narrrfs NFTs, and use <strong>Verify &amp; Save My NFTs</strong>. This verified ownership powers holder roles, freezer slots, and future staking boosts.
+  </p>
+
+  <p class="text-cyan-200/80 italic">
+    💡 <strong>Rollout status:</strong>
+    DSPOINC legacy staking remains active. DSPOINC V2 is still preview-only. Genesis Mouse Freezer is in controlled wallet-proof testing before public Season 13 rollout.
+  </p>
+</div>
             </div>
           </div>
         </div>
@@ -582,8 +721,8 @@ require_once 'discord-invite.php';
   </div>
 </section>
 
-    <!-- 🧊 Create Stake Section -->
-    <section class="relative z-10 px-4 md:px-6 pb-8">
+   <!-- 🧊 Create Stake Section -->
+<section id="dspoinc-freeze-section" class="relative z-10 px-4 md:px-6 pb-8 scroll-mt-28">
       <div class="max-w-4xl mx-auto">
         <div class="bg-black/50 backdrop-blur-md rounded-xl p-6 border border-blue-400/30 mb-8">
           <h2 class="text-2xl font-bold text-blue-400 mb-6">❄️ Freeze DSPOINC</h2>
@@ -2876,35 +3015,37 @@ transaction.add(
 
   let signature = '';
 
-  if (typeof provider.signAndSendTransaction === 'function') {
-    const result = await provider.signAndSendTransaction(transaction);
-    signature = typeof result === 'string' ? result : String(result?.signature || '');
-  } else if (typeof provider.signTransaction === 'function') {
-    const signedTransaction = await provider.signTransaction(transaction);
-    signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
-      skipPreflight: false
-    });
-  } else {
-    throw new Error('Connected wallet does not support transaction signing.');
-  }
+/**
+ * DEVS FOR DECADES:
+ * Prefer wallet signing + our selected RPC broadcast when possible.
+ * Browser-side public RPC confirmation can expire or disagree with wallet RPCs.
+ * The backend remains the authority and verifies the final Memo transaction
+ * through the server-side Helius/Alchemy RPC lane before freezing anything.
+ */
+if (typeof provider.signTransaction === 'function') {
+  const signedTransaction = await provider.signTransaction(transaction);
+  const rawTransaction = signedTransaction.serialize();
 
-  if (!signature) {
-    throw new Error('Wallet did not return a Memo transaction signature.');
-  }
+  signature = await connection.sendRawTransaction(rawTransaction, {
+    skipPreflight: false,
+    preflightCommitment: 'confirmed',
+    maxRetries: 5
+  });
+} else if (typeof provider.signAndSendTransaction === 'function') {
+  const result = await provider.signAndSendTransaction(transaction);
+  signature = typeof result === 'string' ? result : String(result?.signature || '');
+} else {
+  throw new Error('Connected wallet does not support Solana transaction signing.');
+}
 
-  await connection.confirmTransaction(
-    {
-      signature,
-      blockhash: latestBlockhash.blockhash,
-      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
-    },
-    'confirmed'
-  );
+if (!signature) {
+  throw new Error('Wallet did not return a Memo transaction signature.');
+}
 
-  return {
-    signature,
-    walletAddress
-  };
+return {
+  signature,
+  walletAddress
+};
 }
 
 /**
@@ -4189,69 +4330,6 @@ One freezer slot can hold one Genesis mouse. The NFT stays in your wallet while 
   `}
 </div>
 
-  <div class="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
-    <label for="genesis-freezer-planner-mice" class="block text-xs font-black uppercase tracking-[0.14em] text-yellow-100">
-      Mice to freeze
-    </label>
-
-    <input
-      id="genesis-freezer-planner-mice"
-      type="range"
-      min="1"
-      max="${maxPlannerMice}"
-      value="${defaultPlannerMice}"
-      class="mt-3 w-full"
-    >
-
-    <div class="mt-3 flex items-center justify-between text-xs text-slate-300">
-      <span>1 mouse</span>
-      <span>${maxPlannerMice.toLocaleString()} max slots</span>
-    </div>
-  </div>
-
-  <div class="mt-4 grid grid-cols-2 gap-3">
-    <div class="rounded-xl border border-cyan-300/15 bg-cyan-300/10 p-3">
-      <div class="text-xs text-cyan-200/70">Selected Mice</div>
-      <div id="genesis-freezer-planner-selected" class="mt-1 text-xl font-black text-cyan-100">${defaultPlannerMice.toLocaleString()}</div>
-    </div>
-
-    <div class="rounded-xl border border-orange-300/15 bg-orange-300/10 p-3">
-      <div class="text-xs text-orange-200/70">Slots Used</div>
-      <div id="genesis-freezer-planner-slots" class="mt-1 text-xl font-black text-orange-100">${defaultPlannerMice.toLocaleString()}/${totalSlots.toLocaleString()}</div>
-    </div>
-
-    <div class="rounded-xl border border-emerald-300/15 bg-emerald-300/10 p-3">
-      <div class="text-xs text-emerald-200/70">Daily Plan</div>
-      <div id="genesis-freezer-planner-daily" class="mt-1 text-xl font-black text-emerald-100">0</div>
-      <div class="text-xs text-emerald-200/70">DSPOINC / day</div>
-    </div>
-
-    <div class="rounded-xl border border-purple-300/15 bg-purple-300/10 p-3">
-      <div class="text-xs text-purple-200/70">VIP Boost</div>
-      <div id="genesis-freezer-planner-vip" class="mt-1 text-xl font-black text-purple-100">0</div>
-      <div class="text-xs text-purple-200/70">bonus / day</div>
-    </div>
-  </div>
-
-  <div class="mt-4 grid grid-cols-2 gap-3">
-    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-      <div class="text-xs text-slate-400">7 Day Plan</div>
-      <div id="genesis-freezer-planner-seven" class="mt-1 text-lg font-black text-white">0</div>
-      <div class="text-xs text-slate-400">DSPOINC</div>
-    </div>
-
-    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-      <div class="text-xs text-slate-400">30 Day Plan</div>
-      <div id="genesis-freezer-planner-thirty" class="mt-1 text-lg font-black text-white">0</div>
-      <div class="text-xs text-slate-400">DSPOINC</div>
-    </div>
-  </div>
-
-  <div class="mt-4 rounded-xl border border-yellow-300/20 bg-yellow-300/10 p-3 text-xs text-yellow-100/90">
-    Plan idea: fill only a few slots for a light daily routine, or fill more slots if you want the strongest freezer output.
-    Final claims still require ownership checks before DSPOINC is paid.
-  </div>
-</div>
 
 <div class="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-950/20 p-4">
   <div class="flex items-start justify-between gap-3">
@@ -4654,57 +4732,127 @@ if (activeStakes.length === 0) {
 }
 
       container.innerHTML = activeStakes.map(stake => {
-        const stakeId = stake.stake_id || stake.id || 'N/A';
-        const frozenDate = new Date(stake.frozen_at);
-        const unfreezeDate = new Date(stake.unfreeze_at);
-        const now = new Date();
-        const totalDays = Math.ceil((unfreezeDate - frozenDate) / (1000 * 60 * 60 * 24));
-        const daysRemaining = Math.max(0, Math.ceil((unfreezeDate - now) / (1000 * 60 * 60 * 24)));
-        const progress = Math.max(0, Math.min(100, ((totalDays - daysRemaining) / totalDays) * 100));
-        const penaltyAmount = Math.floor(stake.amount * 0.15);
-        const returnedAmount = stake.amount - penaltyAmount;
+  const stakeId = stake.stake_id || stake.id || 'N/A';
+  const frozenDate = new Date(stake.frozen_at);
+  const unfreezeDate = new Date(stake.unfreeze_at);
+  const now = new Date();
+  const totalDays = Math.ceil((unfreezeDate - frozenDate) / (1000 * 60 * 60 * 24));
+  const daysRemaining = Math.max(0, Math.ceil((unfreezeDate - now) / (1000 * 60 * 60 * 24)));
+  const progress = Math.max(0, Math.min(100, ((totalDays - daysRemaining) / totalDays) * 100));
+  const penaltyAmount = Math.floor(stake.amount * 0.15);
+  const returnedAmount = stake.amount - penaltyAmount;
 
-        return `
-          <div class="stake-card rounded-xl p-4 border border-blue-400/30">
-            <div class="flex justify-between items-start mb-3">
-              <div>
-                <div class="text-lg font-bold text-blue-100">Stake #${stakeId}</div>
-                <div class="text-sm text-blue-300">Frozen: ${frozenDate.toLocaleDateString()}</div>
-              </div>
-              <div class="text-right">
-                <div class="text-2xl font-bold text-cyan-100">${stake.amount.toLocaleString()}</div>
-                <div class="text-xs text-cyan-400">DSPOINC</div>
-              </div>
+  const isV2Stake = String(stake.staking_contract_version || '').trim() === 'season13_v2';
+  const genesisMultiplier = Number(stake.genesis_multiplier_at_stake || 1);
+  const baseExpectedReward = Number(stake.base_expected_reward || 0);
+  const finalRewardAmount = Number(stake.final_reward_amount || stake.expected_reward || 0);
+  const genesisTierAtStake = String(stake.genesis_tier_at_stake || 'none');
+  const lockDurationDays = Number(stake.lock_duration_days || 0);
+  const displayDuration = isV2Stake && lockDurationDays > 0
+    ? `${lockDurationDays} days`
+    : `${stake.freeze_duration_months} months`;
+  const displayReward = isV2Stake ? finalRewardAmount : Number(stake.expected_reward || 0);
+  const cardClass = isV2Stake
+    ? 'stake-card stake-v2-card rounded-xl p-4 border'
+    : 'stake-card rounded-xl p-4 border border-blue-400/30';
+  const progressClass = isV2Stake
+    ? 'progress-bar bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-200 h-2 rounded-full'
+    : 'progress-bar bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full';
+  const rewardPanelClass = isV2Stake
+    ? 'mt-3 rounded-lg bg-yellow-500/10 border border-yellow-300/20 px-3 py-2'
+    : 'mt-3 rounded-lg bg-cyan-500/10 border border-cyan-400/20 px-3 py-2';
+  const rewardLabelClass = isV2Stake ? 'text-xs text-yellow-200' : 'text-xs text-cyan-300';
+  const rewardValueClass = isV2Stake ? 'text-lg font-bold text-yellow-100' : 'text-lg font-bold text-cyan-100';
+
+  return `
+    <div class="${cardClass}">
+      ${isV2Stake ? `
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <span class="stake-v2-badge">🧬 Season 13 V2</span>
+          <span class="stake-v2-boost-badge">⚡ ${genesisMultiplier.toFixed(2)}x Boost</span>
+        </div>
+      ` : ''}
+
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <div class="${isV2Stake ? 'text-lg font-bold text-yellow-100' : 'text-lg font-bold text-blue-100'}">
+            Stake #${stakeId}${isV2Stake ? ' ✨' : ''}
+          </div>
+          <div class="${isV2Stake ? 'text-sm text-yellow-200/80' : 'text-sm text-blue-300'}">
+            Frozen: ${frozenDate.toLocaleDateString()}
+          </div>
+        </div>
+
+        <div class="text-right">
+          <div class="${isV2Stake ? 'text-2xl font-bold text-yellow-100' : 'text-2xl font-bold text-cyan-100'}">
+            ${stake.amount.toLocaleString()}
+          </div>
+          <div class="${isV2Stake ? 'text-xs text-yellow-300' : 'text-xs text-cyan-400'}">DSPOINC</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="flex justify-between text-sm mb-1">
+          <span class="${isV2Stake ? 'text-yellow-200' : 'text-blue-300'}">Duration: ${displayDuration}</span>
+          <span class="${isV2Stake ? 'text-yellow-200' : 'text-blue-300'}">Reward: ${displayReward.toLocaleString()} DSPOINC</span>
+        </div>
+
+        <div class="w-full bg-gray-700 rounded-full h-2">
+          <div class="${progressClass}" style="width: ${progress}%"></div>
+        </div>
+
+        <div class="flex justify-between text-xs text-gray-400 mt-1">
+          <span>Unfreeze: ${unfreezeDate.toLocaleDateString()}</span>
+          <span>${daysRemaining} days remaining</span>
+        </div>
+
+        <div class="${rewardPanelClass}">
+          <div class="${rewardLabelClass}">Live earned so far</div>
+          <div class="${rewardValueClass}">
+            <span class="live-stake-reward" data-stake-id="${stakeId}">${formatLiveRewardAmount(calculateLiveStakeReward(stake))}</span>
+            <span class="${isV2Stake ? 'text-xs text-yellow-300' : 'text-xs text-cyan-400'}">DSPOINC</span>
+          </div>
+        </div>
+
+        ${isV2Stake ? `
+          <div class="stake-v2-meta-grid">
+            <div class="stake-v2-meta-box">
+              <div class="stake-v2-meta-label">Genesis Tier</div>
+              <div class="stake-v2-meta-value">${genesisTierAtStake}</div>
             </div>
-            <div class="mb-3">
-  <div class="flex justify-between text-sm mb-1">
-    <span class="text-blue-300">Duration: ${stake.freeze_duration_months} months</span>
-    <span class="text-blue-300">Reward: ${Number(stake.expected_reward || 0).toLocaleString()} DSPOINC</span>
-  </div>
-  <div class="w-full bg-gray-700 rounded-full h-2">
-    <div class="progress-bar bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: ${progress}%"></div>
-  </div>
-  <div class="flex justify-between text-xs text-gray-400 mt-1">
-    <span>Unfreeze: ${unfreezeDate.toLocaleDateString()}</span>
-    <span>${daysRemaining} days remaining</span>
-  </div>
-  <div class="mt-3 rounded-lg bg-cyan-500/10 border border-cyan-400/20 px-3 py-2">
-    <div class="text-xs text-cyan-300">Live earned so far</div>
-    <div class="text-lg font-bold text-cyan-100">
-      <span class="live-stake-reward" data-stake-id="${stakeId}">${formatLiveRewardAmount(calculateLiveStakeReward(stake))}</span>
-      <span class="text-xs text-cyan-400">DSPOINC</span>
-    </div>
-  </div>
-</div>
-            <div class="mt-4 pt-4 border-t border-blue-400/20">
-              <button onclick="showUnstakeModal(${stakeId}, ${stake.amount}, ${penaltyAmount}, ${returnedAmount}, ${stake.expected_reward})" 
-                      class="w-full bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-300 px-4 py-2 rounded-lg transition-all font-semibold text-sm">
-                ⚠️ Unstake Early (15% Penalty)
-              </button>
+
+            <div class="stake-v2-meta-box">
+              <div class="stake-v2-meta-label">Lock Duration</div>
+              <div class="stake-v2-meta-value">${lockDurationDays} days</div>
+            </div>
+
+            <div class="stake-v2-meta-box">
+              <div class="stake-v2-meta-label">Base Reward</div>
+              <div class="stake-v2-meta-value">${baseExpectedReward.toLocaleString()} DSPOINC</div>
+            </div>
+
+            <div class="stake-v2-meta-box">
+              <div class="stake-v2-meta-label">Final Reward</div>
+              <div class="stake-v2-meta-value stake-v2-highlight">${finalRewardAmount.toLocaleString()} DSPOINC</div>
             </div>
           </div>
-        `;
-      }).join('');
+
+          <div class="mt-3 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-100">
+            <span class="font-black">V2 Preview:</span>
+            This stake uses the stored Genesis multiplier and Season 13 V2 reward structure.
+          </div>
+        ` : ''}
+      </div>
+
+      <div class="${isV2Stake ? 'mt-4 pt-4 border-t border-yellow-300/20' : 'mt-4 pt-4 border-t border-blue-400/20'}">
+        <button onclick="showUnstakeModal(${stakeId}, ${stake.amount}, ${penaltyAmount}, ${returnedAmount}, ${displayReward})" 
+                class="w-full bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-300 px-4 py-2 rounded-lg transition-all font-semibold text-sm">
+          ⚠️ Unstake Early (15% Penalty)
+        </button>
+      </div>
+    </div>
+  `;
+}).join('');
 
       if (activeStakeRewardInterval) {
         clearInterval(activeStakeRewardInterval);
@@ -5905,11 +6053,71 @@ function renderStakeLabSavedSnapshot() {
   `;
 }
 
+/**
+ * Scroll to a page section with a small top offset for the sticky Stake Lab header.
+ *
+ * Plain language for DEVS:
+ * Stake Lab has a sticky header. Native scrollIntoView can place the target
+ * too close to the top, so this helper keeps the section title visible.
+ */
 function scrollToSection(sectionId) {
   const target = document.getElementById(sectionId);
-  if (!target) return;
 
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!target) {
+    return;
+  }
+
+  const headerOffset = 110;
+  const targetTop = target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+
+  window.scrollTo({
+    top: Math.max(0, targetTop),
+    behavior: 'smooth'
+  });
+}
+
+/**
+ * Open the DSPOINC freeze form from the top hero.
+ *
+ * Plain language for DEVS:
+ * This is navigation only. It does not create a stake, calculate rewards,
+ * mutate balances, or call staking APIs.
+ */
+function openDspoincFreezeSection() {
+  scrollToSection('dspoinc-freeze-section');
+}
+
+/**
+ * Open the Genesis Mouse Freezer directly in Available to Freeze mode.
+ *
+ * Plain language for DEVS:
+ * The freezer panel is rendered dynamically. To land users at the correct
+ * working area, switch the right-side panel to Freeze Mice first, then scroll
+ * to the available selector/search area when it exists.
+ */
+function openGenesisFreezerFreezeArea() {
+  if (typeof setGenesisFreezerRightPanelMode === 'function') {
+    setGenesisFreezerRightPanelMode('freeze');
+  }
+
+  setTimeout(() => {
+    const target =
+      document.getElementById('genesis-freezer-available-search') ||
+      document.getElementById('genesis-freezer-available-list') ||
+      document.getElementById('genesis-mouse-freezer-preview-panel');
+
+    if (!target) {
+      return;
+    }
+
+    const headerOffset = 110;
+    const targetTop = target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+
+    window.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: 'smooth'
+    });
+  }, 150);
 }
 
 function restoreSavedStakeLabNfts() {

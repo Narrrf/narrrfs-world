@@ -238,21 +238,39 @@ $completedStatusUpdated = false;
 
 foreach ($all_stakes as &$stake) {
     $stake_data = [
-        'stake_id' => (int)$stake['id'],
-        'amount' => (int)$stake['amount'],
-        'freeze_duration_months' => (int)$stake['freeze_duration_months'],
-        'reward_rate' => (float)$stake['reward_rate'],
-        'expected_reward' => (int)$stake['expected_reward'],
-        'frozen_at' => $stake['frozen_at'],
-        'unfreeze_at' => $stake['unfreeze_at'],
-        'status' => $stake['status'],
-        'reward_paid' => (int)($stake['reward_paid'] ?? 0),
-        'completed_at' => $stake['completed_at'] ?? null,
-        'cancelled_at' => $stake['cancelled_at'] ?? null,
-        'penalty_amount' => isset($stake['penalty_amount']) ? (int)$stake['penalty_amount'] : null,
-        'returned_amount' => isset($stake['returned_amount']) ? (int)$stake['returned_amount'] : null,
-        'unstake_reason' => $stake['unstake_reason'] ?? null
-    ];
+    'stake_id' => (int)$stake['id'],
+    'amount' => (int)$stake['amount'],
+    'freeze_duration_months' => (int)$stake['freeze_duration_months'],
+    'reward_rate' => (float)$stake['reward_rate'],
+    'expected_reward' => (int)$stake['expected_reward'],
+    'frozen_at' => $stake['frozen_at'],
+    'unfreeze_at' => $stake['unfreeze_at'],
+    'status' => $stake['status'],
+    'reward_paid' => (int)($stake['reward_paid'] ?? 0),
+    'completed_at' => $stake['completed_at'] ?? null,
+    'cancelled_at' => $stake['cancelled_at'] ?? null,
+    'penalty_amount' => isset($stake['penalty_amount']) ? (int)$stake['penalty_amount'] : null,
+    'returned_amount' => isset($stake['returned_amount']) ? (int)$stake['returned_amount'] : null,
+    'unstake_reason' => $stake['unstake_reason'] ?? null,
+
+    // Season 13 V2 display fields.
+    // Plain language for DEVS:
+    // These values let Stake Lab visually separate future V2 stakes from legacy V1 stakes.
+    // They are display/audit values only. Backend claim/unstake endpoints still decide final rewards.
+    'staking_contract_version' => $stake['staking_contract_version'] ?? 'legacy_v1',
+    'lock_duration_days' => isset($stake['lock_duration_days']) ? (int)$stake['lock_duration_days'] : null,
+    'base_reward_rate' => isset($stake['base_reward_rate']) ? (float)$stake['base_reward_rate'] : null,
+    'base_expected_reward' => isset($stake['base_expected_reward']) ? (int)$stake['base_expected_reward'] : 0,
+    'genesis_count_at_stake' => isset($stake['genesis_count_at_stake']) ? (int)$stake['genesis_count_at_stake'] : 0,
+    'genesis_tier_at_stake' => $stake['genesis_tier_at_stake'] ?? null,
+    'genesis_multiplier_at_stake' => isset($stake['genesis_multiplier_at_stake']) ? (float)$stake['genesis_multiplier_at_stake'] : 1.0,
+    'genesis_count_at_exit' => isset($stake['genesis_count_at_exit']) ? (int)$stake['genesis_count_at_exit'] : null,
+    'genesis_tier_at_exit' => $stake['genesis_tier_at_exit'] ?? null,
+    'genesis_multiplier_at_exit' => isset($stake['genesis_multiplier_at_exit']) ? (float)$stake['genesis_multiplier_at_exit'] : null,
+    'genesis_terms_status' => $stake['genesis_terms_status'] ?? 'unchecked',
+    'genesis_terms_penalty_amount' => isset($stake['genesis_terms_penalty_amount']) ? (int)$stake['genesis_terms_penalty_amount'] : 0,
+    'final_reward_amount' => isset($stake['final_reward_amount']) ? (int)$stake['final_reward_amount'] : null
+];
 
     $unfreeze_timestamp = strtotime($stake['unfreeze_at']);
     $frozen_timestamp = strtotime($stake['frozen_at']);
