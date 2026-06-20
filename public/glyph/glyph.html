@@ -8,7 +8,180 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Glyph Memory - Narrrf's World</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    /* 🎵 Glyph page sound toggle override.
+       DEVS FOR DECADES:
+       The shared cheese-auth-indicator.js creates #narrrfs-sound-toggle with
+       inline styles. We theme that existing shared button here with !important
+       so other pages are not affected. This is visual-only and does not touch
+       scoring, login, leaderboard, rewards, or database writes. */
+    #narrrfs-sound-toggle {
+      right: 18px !important;
+      bottom: 86px !important;
+      z-index: 9999 !important;
+      border: 1px solid rgba(250, 204, 21, 0.72) !important;
+      border-radius: 999px !important;
+      padding: 10px 16px !important;
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.22), transparent 42%),
+        linear-gradient(135deg, rgba(9, 13, 22, 0.96), rgba(35, 24, 8, 0.94)) !important;
+      color: #facc15 !important;
+      font-weight: 900 !important;
+      font-size: 0.82rem !important;
+      letter-spacing: 0.04em !important;
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.42),
+        0 0 20px rgba(250, 204, 21, 0.22),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+      backdrop-filter: blur(10px) !important;
+      cursor: pointer !important;
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease !important;
+    }
+
+    #narrrfs-sound-toggle:hover {
+      transform: translateY(-2px) scale(1.04) !important;
+      border-color: rgba(34, 211, 238, 0.78) !important;
+      color: #67e8f9 !important;
+      box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.48),
+        0 0 24px rgba(34, 211, 238, 0.24) !important;
+    }
+
+   /* 🔐 Glyph page auth indicator override.
+   DEVS FOR DECADES:
+   cheese-auth-indicator.js creates a Tailwind-classed link, but Glyph Memory
+   does not load Tailwind. These selectors theme the generated auth indicator
+   only on this page and do not change login/session/backend logic. */
+#cheese-auth-indicator {
+  position: fixed !important;
+  right: 18px !important;
+  bottom: 18px !important;
+  z-index: 9999 !important;
+  max-width: min(260px, calc(100vw - 36px)) !important;
+}
+
+#cheese-auth-indicator a {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(250, 204, 21, 0.68) !important;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.20), transparent 42%),
+    linear-gradient(135deg, rgba(9, 13, 22, 0.96), rgba(35, 24, 8, 0.94)) !important;
+  color: #facc15 !important;
+  text-decoration: none !important;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.42),
+    0 0 20px rgba(250, 204, 21, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease !important;
+}
+
+#cheese-auth-indicator a:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+  border-color: rgba(34, 211, 238, 0.78) !important;
+  color: #67e8f9 !important;
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.48),
+    0 0 24px rgba(34, 211, 238, 0.24) !important;
+}
+
+#cheese-auth-indicator span {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+#cheese-auth-indicator span[aria-hidden="true"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  flex: 0 0 auto !important;
+  border-radius: 12px !important;
+  background: rgba(250, 204, 21, 0.14) !important;
+  border: 1px solid rgba(250, 204, 21, 0.28) !important;
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.20)) !important;
+}
+
+#cheese-auth-indicator a > span:last-child {
+  display: flex !important;
+  min-width: 0 !important;
+  flex-direction: column !important;
+  line-height: 1.05 !important;
+}
+
+#cheese-auth-indicator a > span:last-child span:first-child {
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.02em !important;
+  color: #facc15 !important;
+}
+
+#cheese-auth-indicator a > span:last-child span:last-child {
+  max-width: 132px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  color: rgba(226, 232, 240, 0.88) !important;
+  opacity: 1 !important;
+}
+
+#cheese-auth-indicator[data-auth-state="logged_in"] a {
+  border-color: rgba(34, 211, 238, 0.58) !important;
+}
+
+#cheese-auth-indicator[data-auth-state="logged_in"] a > span:last-child span:first-child::before {
+  content: "✅ ";
+}
+
+    @media (max-width: 640px) {
+      #narrrfs-sound-toggle {
+        right: 12px !important;
+        bottom: 88px !important;
+        padding: 9px 13px !important;
+        font-size: 0.72rem !important;
+      }
+
+      #cheese-auth-indicator {
+  right: 12px !important;
+  bottom: 16px !important;
+  max-width: calc(100vw - 24px) !important;
+}
+
+#cheese-auth-indicator a {
+  padding: 9px 12px !important;
+}
+
+#cheese-auth-indicator a > span:last-child span:first-child {
+  font-size: 0.72rem !important;
+}
+
+#cheese-auth-indicator a > span:last-child span:last-child {
+  max-width: 105px !important;
+  font-size: 0.62rem !important;
+}
+    }
+  </style>
 </head>
+
 <body>
   <div id="app" class="app">
     <!-- Background layer (optional image) -->
@@ -20,6 +193,7 @@
         <div class="panel__header">
           <h1 class="title">Glyph Memory</h1>
           <p class="subtitle">Match the hidden glyph pairs.</p>
+
           <div id="userDisplay" class="user-display" style="display: none;">
             <div class="user-display__avatar-container">
               <img id="userAvatar" src="" alt="User Avatar" class="user-display__avatar" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
@@ -31,7 +205,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Login Message (shown when not logged in) -->
           <div id="loginMessage" class="login-message" style="display: none;">
             <a href="../profile.html" class="login-message__link">
@@ -39,7 +213,7 @@
               <span class="login-message__text">Login with Discord to play</span>
             </a>
           </div>
-          
+
           <!-- Navigation Buttons -->
           <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
             <!-- 🧠 Back to Lab Button -->
@@ -128,9 +302,11 @@
       </div>
     </div>
   </div>
-  
-  <script src="game.js"></script>
-  <script src="js/cheese-auth-indicator.js"></script>
+
+  <!-- 🔐 Shared auth and global sound toggle. Must load before game.js. -->
+  <script src="../js/cheese-auth-indicator.js?v=glyph-audio-2"></script>
+
+  <!-- 🎮 Glyph Memory logic. Bump this whenever public/glyph/game.js changes. -->
+  <script src="game.js?v=glyph-audio-6"></script>
 </body>
 </html>
-

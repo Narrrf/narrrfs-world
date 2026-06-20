@@ -126,6 +126,228 @@ function getOptimizedGlyphPath(originalPath) {
     flip:  "assets/audio/flip.mp3", // Sound when card is flipped up
   };
 
+  /**
+ * Creates a safe looping background music controller for Narrrfs games.
+ *
+ * Plain language for DEVS:
+ * Browser audio cannot autoplay before a user action. This controller starts
+ * only after game start / player interaction, follows the global Narrrfs sound
+ * toggle, pauses when requested, and stops when the run ends or returns to menu.
+ */
+window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function createNarrrfsGameMusicController(config) {
+  let audio = null;
+  let wantsPlayback = false;
+
+  function isSoundAllowed() {
+    if (window.NarrrfsSound && typeof window.NarrrfsSound.isEnabled === 'function') {
+      return window.NarrrfsSound.isEnabled();
+    }
+
+    return localStorage.getItem('narrrfs_sound_enabled') !== 'false';
+  }
+
+  function getAudio() {
+    if (audio) {
+      return audio;
+    }
+
+    audio = new Audio(config.src);
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.volume = typeof config.volume === 'number' ? config.volume : 0.22;
+
+
+    return audio;
+  }
+
+  async function start() {
+    wantsPlayback = true;
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    try {
+      const music = getAudio();
+      await music.play();
+    } catch (error) {
+      console.warn(`🎵 ${config.label} music could not start yet:`, error);
+    }
+  }
+
+  function pause() {
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+  }
+
+  function stop() {
+    wantsPlayback = false;
+
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+  }
+
+  function sync() {
+    if (!wantsPlayback) {
+      return;
+    }
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    start();
+  }
+
+  window.addEventListener('storage', sync);
+  window.addEventListener('narrrfs:sound-toggle', sync);
+  document.addEventListener('visibilitychange', sync);
+
+  return {
+    start,
+    pause,
+    stop,
+    sync
+  };
+};
+
+/**
+ * Returns the correct Glyph Memory music path for local and production.
+ *
+ * Plain language for DEVS:
+ * Local XAMPP often serves this game from /public/glyph/.
+ * Production serves it from /glyph/.
+ * The music file itself lives in public/sounds/music locally and /sounds/music live.
+ */
+function getGlyphMemoryMusicSrc() {
+  if (window.location.pathname.startsWith('/public/')) {
+    return '/public/sounds/music/glyph.mp3';
+  }
+
+  return '/sounds/music/glyph.mp3';
+}
+
+const glyphMemoryMusicController = window.NarrrfsGameMusicFactory({
+  label: 'Glyph Memory',
+  src: getGlyphMemoryMusicSrc(),
+  volume: 0.18
+});
+
+/**
+ * Return whether Glyph music is allowed by the global Narrrfs sound setting.
+ *
+ * Plain language for DEVS:
+ * Glyph Memory has its own background music object because browser audio
+ * permission works best when music starts directly from the Start button click.
+ * This helper keeps that direct music object aligned with the global sound toggle.
+ */
+function isGlyphMusicAllowed() {
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isMusicEnabled === 'function') {
+    return window.NarrrfsAudio.isMusicEnabled();
+  }
+
+  if (window.NarrrfsSound && typeof window.NarrrfsSound.isEnabled === 'function') {
+    return window.NarrrfsSound.isEnabled();
+  }
+
+  return localStorage.getItem('narrrfs_music_enabled') !== 'false';
+}
+
+/**
+ * Stop the direct Glyph background music safely.
+ */
+function stopGlyphDirectMusic(resetPosition = false) {
+  if (!window.glyphMemoryDirectMusic) {
+    return;
+  }
+
+  window.glyphMemoryDirectMusic.pause();
+
+  if (resetPosition) {
+    window.glyphMemoryDirectMusic.currentTime = 0;
+  }
+}
+
+/**
+ * Resume Glyph background music only when a run is active and sound is enabled.
+ */
+function resumeGlyphDirectMusic() {
+  if (!window.glyphMemoryDirectMusic || !isGlyphMusicAllowed() || document.hidden) {
+    return;
+  }
+
+  window.glyphMemoryDirectMusic.play().catch((error) => {
+    console.warn('🎵 [GLYPH] Background music resume blocked:', error);
+  });
+}
+
+/**
+ * Update the Glyph-native music button label and state.
+ */
+function updateGlyphMusicButtonState() {
+  const button = document.getElementById('glyph-music-toggle');
+
+  if (!button) {
+    return;
+  }
+
+  const soundEnabled = isGlyphMusicAllowed();
+  button.textContent = soundEnabled ? '🔊 Music ON' : '🔇 Music OFF';
+  button.classList.toggle('glyph-music-toggle--off', !soundEnabled);
+  button.setAttribute('aria-pressed', soundEnabled ? 'true' : 'false');
+}
+
+/**
+ * Toggle global sound from the Glyph-native button and sync direct music.
+ *
+ * Plain language for DEVS:
+ * The auth overlay sound button is generic. This button is for Glyph Memory and
+ * controls both the global Narrrfs sound setting and the direct Glyph MP3 music.
+ */
+function toggleGlyphMusic() {
+  const nextEnabled = !isGlyphMusicAllowed();
+
+  localStorage.setItem('narrrfs_sound_enabled', nextEnabled ? 'true' : 'false');
+  window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
+    detail: { enabled: nextEnabled }
+  }));
+
+  if (nextEnabled) {
+    resumeGlyphDirectMusic();
+  } else {
+    stopGlyphDirectMusic(false);
+  }
+
+  updateGlyphMusicButtonState();
+}
+
+/**
+ * Keep Glyph direct music aligned when another global sound widget is clicked.
+ */
+function syncGlyphMusicFromGlobalToggle() {
+  if (isGlyphMusicAllowed()) {
+    resumeGlyphDirectMusic();
+  } else {
+    stopGlyphDirectMusic(false);
+  }
+
+  updateGlyphMusicButtonState();
+}
+
+window.addEventListener('storage', syncGlyphMusicFromGlobalToggle);
+window.addEventListener('narrrfs:sound-toggle', syncGlyphMusicFromGlobalToggle);
+window.addEventListener('narrrfs:music-toggle', syncGlyphMusicFromGlobalToggle);
+document.addEventListener('visibilitychange', syncGlyphMusicFromGlobalToggle);
+
   // ------- DOM -------
   const bg = document.getElementById('bg');
 
@@ -205,6 +427,8 @@ function getOptimizedGlyphPath(originalPath) {
     if (overlayBestTimeEl) overlayBestTimeEl.textContent = label;
   }
 
+
+
   // Audio (graceful)
   const audio = {
     match: SOUNDS.match ? new Audio(SOUNDS.match) : null,
@@ -212,9 +436,25 @@ function getOptimizedGlyphPath(originalPath) {
     flip:  SOUNDS.flip ? new Audio(SOUNDS.flip) : null,
   };
 
-  function playSound(key) {
+    function playSound(key) {
     const a = audio[key];
-    if (!a) return;
+
+    if (!a) {
+      return;
+    }
+
+    // Respect the shared Narrrfs SFX toggle.
+    // DEVS FOR DECADES:
+    // Glyph card flip/match/fail sounds are short SFX and must not depend on
+    // the background music preference.
+    if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isSfxEnabled === 'function' && !window.NarrrfsAudio.isSfxEnabled()) {
+      return;
+    }
+
+    if (!window.NarrrfsAudio && window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+      return;
+    }
+
     try {
       a.currentTime = 0;
       void a.play();
@@ -325,6 +565,104 @@ function preloadGlyphImages(sources) {
     })
   );
 }
+
+/**
+ * Creates a safe looping background music controller for Narrrfs games.
+ *
+ * Plain language for DEVS:
+ * Browser audio cannot autoplay before a user action. This controller starts
+ * only after game start / player interaction, follows the global Narrrfs sound
+ * toggle, pauses on game pause, and stops when the run ends.
+ */
+window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function createNarrrfsGameMusicController(config) {
+  let audio = null;
+  let wantsPlayback = false;
+
+  function isMusicAllowed() {
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isMusicEnabled === 'function') {
+    return window.NarrrfsAudio.isMusicEnabled();
+  }
+
+  if (window.NarrrfsSound && typeof window.NarrrfsSound.isEnabled === 'function') {
+    return window.NarrrfsSound.isEnabled();
+  }
+
+  return localStorage.getItem('narrrfs_music_enabled') !== 'false';
+}
+
+  function getAudio() {
+    if (audio) {
+      return audio;
+    }
+
+    audio = new Audio(config.src);
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.volume = typeof config.volume === 'number' ? config.volume : 0.22;
+
+    return audio;
+  }
+
+  async function start() {
+    wantsPlayback = true;
+
+    if (!isMusicAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    try {
+      const music = getAudio();
+      await music.play();
+    } catch (error) {
+      console.warn(`🎵 ${config.label} music could not start yet:`, error);
+    }
+  }
+
+  function pause() {
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+  }
+
+  function stop() {
+    wantsPlayback = false;
+
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+  }
+
+  function sync() {
+    if (!wantsPlayback) {
+      return;
+    }
+
+    if (!isMusicAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    start();
+  }
+
+  window.addEventListener('storage', sync);
+window.addEventListener('narrrfs:music-toggle', sync);
+window.addEventListener('narrrfs:sound-toggle', sync);
+document.addEventListener('visibilitychange', sync);
+
+  return {
+    start,
+    pause,
+    stop,
+    sync
+  };
+};
 
 // ------- HELPERS -------
   function setBackground(kind) {
@@ -818,6 +1156,8 @@ function preloadGlyphImages(sources) {
       }
       
       stopTimer();
+      stopGlyphDirectMusic(true);
+glyphMemoryMusicController.stop();
 
       const elapsed = Date.now() - timerStart;
       finalTimeEl.textContent = formatTime(elapsed);
@@ -953,12 +1293,11 @@ function preloadGlyphImages(sources) {
   }
 
   // ------- FLOW CONTROLS -------
-  // ------- FLOW CONTROLS -------
-  async function startGame() {
-    activeDifficulty = difficultySelect.value;
+async function startGame() {
+  activeDifficulty = difficultySelect.value;
 
-    winOverlay.hidden = true;
-    resetTurnPicks();
+  winOverlay.hidden = true;
+  resetTurnPicks();
 
     deck = buildDeck(activeDifficulty);
 
@@ -1001,8 +1340,8 @@ function preloadGlyphImages(sources) {
     updateBestTimeUI(activeDifficulty);
     if (newBestBadgeEl) newBestBadgeEl.hidden = true;
 
-    showView('game');
-    startTimer();
+showView('game');
+startTimer();
   }
 
   function restartGame() {
@@ -1033,25 +1372,69 @@ function preloadGlyphImages(sources) {
     updateBestTimeUI(activeDifficulty);
     if (newBestBadgeEl) newBestBadgeEl.hidden = true;
 
-    startTimer();
+glyphMemoryMusicController.start();
+startTimer();
   }
 
-  function goToMenu() {
-    stopTimer();
-    winOverlay.hidden = true;
-    resetTurnPicks();
-    if (newBestBadgeEl) newBestBadgeEl.hidden = true;
-    showView('menu');
+function goToMenu() {
+  stopTimer();
+
+  stopGlyphDirectMusic(true);
+glyphMemoryMusicController.stop();
+  winOverlay.hidden = true;
+  resetTurnPicks();
+
+  if (newBestBadgeEl) {
+    newBestBadgeEl.hidden = true;
   }
 
-  // Recompute card sizing on resize (keeps bigger cards responsive)
-  window.addEventListener('resize', () => {
-    const gameIsActive = document.getElementById('gameView').classList.contains('view--active');
-    if (gameIsActive && activeDifficulty) setBoardGrid(activeDifficulty);
-  });
+  showView('menu');
+}
+
 
 // ------- EVENTS -------
-  startBtn.addEventListener('click', startGame);
+
+/**
+ * Starts Glyph Memory from the real Start button click.
+ *
+ * Plain language for DEVS:
+ * Browsers only allow music when play() is directly connected to a user action.
+ * This creates/reuses one direct looping MP3 object and lets the shared Narrrfs
+ * sound button decide whether it should play.
+ */
+function startGlyphMemoryRunFromButton(event) {
+  if (event) {
+    event.preventDefault();
+  }
+
+  console.log('🎵 [GLYPH] Start button clicked. Music src:', getGlyphMemoryMusicSrc());
+
+  if (!window.glyphMemoryDirectMusic) {
+    const music = new Audio(getGlyphMemoryMusicSrc());
+    music.loop = true;
+    music.preload = 'auto';
+    music.volume = 0.18;
+
+    window.glyphMemoryDirectMusic = music;
+  }
+
+  if (isGlyphMusicAllowed()) {
+    window.glyphMemoryDirectMusic.play()
+      .then(() => {
+        console.log('✅ [GLYPH] Background music started.');
+      })
+      .catch((error) => {
+        console.warn('🎵 [GLYPH] Background music could not start:', error);
+      });
+  } else {
+    console.log('🔇 [GLYPH] Music is disabled by shared Narrrfs sound toggle.');
+    stopGlyphDirectMusic(false);
+  }
+
+  startGame();
+}
+
+startBtn.addEventListener('click', startGlyphMemoryRunFromButton);
   difficultySelect.addEventListener('change', () => {
     // Update the menu best-time preview for the currently selected difficulty
     updateBestTimeUI(difficultySelect.value);
@@ -1068,6 +1451,48 @@ function preloadGlyphImages(sources) {
       ev.preventDefault();
     }
   });
+
+/**
+ * Injects a Glyph-themed music button and hides the generic auth sound widget.
+ *
+ * Plain language for DEVS:
+ * cheese-auth-indicator.js is still used for login display, but its small
+ * generic sound button does not fit Glyph Memory. This adds a local themed
+ * music button without changing the shared auth script for other pages.
+ */
+function setupGlyphMusicControls() {
+  const existingButton = document.getElementById('glyph-music-toggle');
+
+  if (existingButton) {
+    updateGlyphMusicButtonState();
+    return;
+  }
+
+  const button = document.createElement('button');
+  button.id = 'glyph-music-toggle';
+  button.type = 'button';
+  button.className = 'glyph-music-toggle';
+  button.addEventListener('click', toggleGlyphMusic);
+
+  document.body.appendChild(button);
+  updateGlyphMusicButtonState();
+
+  const hideGenericSoundButton = () => {
+    document.querySelectorAll('button, a, div').forEach((element) => {
+      const text = (element.textContent || '').trim();
+
+      if (text === '🔊 Sound ON' || text === '🔇 Sound OFF' || text === 'Sound ON' || text === 'Sound OFF') {
+        element.classList.add('glyph-hide-generic-sound-control');
+      }
+    });
+  };
+
+  hideGenericSoundButton();
+  setTimeout(hideGenericSoundButton, 500);
+  setTimeout(hideGenericSoundButton, 1500);
+}
+
+setupGlyphMusicControls();
 
   // ------- USER DISPLAY -------
   // Environment detection for API calls

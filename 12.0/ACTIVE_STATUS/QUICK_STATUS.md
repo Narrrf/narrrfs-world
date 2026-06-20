@@ -1,5 +1,363 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## PUSH NOTE — ALL GAME AUDIO SPLIT COMPLETE + STAKING / LIQUIDITY API WORK READY
+
+**Date:** 2026-06-20
+**Status:** Ready for push after final local check
+**Scope:** Global Music/SFX controls, all game audio wiring, Stake Lab / DSPOINC staking API updates, liquidity DSPOINC support work
+
+---
+
+## ✅ Completed — Global Game Audio Upgrade
+
+The Narrrfs global audio system has been upgraded from one shared Sound ON/OFF switch into two separate player controls:
+
+```text
+🎵 Music ON / OFF
+🔊 SFX ON / OFF
+```
+
+The shared controller now lives in:
+
+```text
+public/js/cheese-auth-indicator.js
+```
+
+Confirmed behavior:
+
+```text
+Music OFF + SFX ON  = background MP3 music stops, game sound effects still work.
+Music ON + SFX OFF  = background MP3 music plays, game sound effects are silent.
+Music OFF + SFX OFF = full silence.
+Music ON + SFX ON   = full audio.
+```
+
+---
+
+## ✅ Games Updated And Tested
+
+The separated Music/SFX setup is now working across the game stack:
+
+```text
+Cheese Runner / Cheeseman
+Tetris
+Snake
+Space Cheese Invaders
+Glyph Memory
+Labyrinth Blast
+```
+
+Confirmed global audio behavior:
+
+```text
+All games respect the shared Music toggle for background MP3 tracks.
+All games respect the shared SFX toggle for short game effects.
+Pause/resume behavior remains stable.
+Game over / reset / end-game paths stop music correctly.
+Browser autoplay rules are respected by starting music only after player interaction.
+```
+
+---
+
+## ✅ Files Updated For Game Audio
+
+Expected changed frontend/audio files:
+
+```text
+public/js/cheese-auth-indicator.js
+public/scripts/cheeseman.js
+public/scripts/tetris-scroll.js
+public/scripts/snake-scroll.js
+public/scripts/space-cheese-invaders.js
+public/glyph/game.js
+public/glyph/glyph.html
+public/sounds/music/glyph.mp3
+```
+
+Labyrinth Blast was also verified to support the two separate audio options.
+
+---
+
+## ✅ Safety Notes — Game Audio
+
+```text
+No game scoring logic was intentionally changed for the audio pass.
+No leaderboard logic was intentionally changed for the audio pass.
+No DSPOINC reward logic was intentionally changed for the audio pass.
+No game mechanics were intentionally changed for the audio pass.
+The audio pass is frontend-only except for existing file/asset delivery.
+```
+
+---
+
+## ✅ Stake Lab / Staking / Liquidity API Work Included
+
+This push also includes additional backend and frontend work around Stake Lab, DSPOINC staking, liquidity DSPOINC support, and Genesis Mouse Freezer readiness.
+
+Expected touched staking / lab areas:
+
+```text
+public/stake-lab.html
+api/user/create-stake.php
+api/user/get-stakes.php
+api/user/complete-stake.php
+api/user/claim-stake-reward.php
+api/user/unstake-stake.php
+api/user/staking-contract-helpers.php
+api/user/genesis-nft-staking-helpers.php
+api/user/get-genesis-nft-stakes.php
+api/user/create-genesis-nft-freeze-challenge.php
+api/user/create-genesis-nft-unfreeze-challenge.php
+api/user/create-genesis-nft-stake.php
+api/user/unstake-genesis-nft.php
+api/user/claim-genesis-nft-stake.php
+api/user/solana-memo-verification-helper.php
+```
+
+Important staking state remains unchanged:
+
+```text
+DSPOINC Staking V2 is still not publicly active.
+ACTIVE_STAKING_CONTRACT_VERSION must remain legacy_v1 until Season 13 activation.
+Genesis Mouse Freezer remains controlled live test / staged rollout only.
+Reward authority remains backend-side.
+Frontend previews do not decide final rewards.
+```
+
+---
+
+## ⚠️ Push Safety Notes
+
+Before staging, review whether this file should be included:
+
+```text
+api/dev/log.txt
+```
+
+Usually this should not be committed unless the log change is intentional.
+
+Recommended staging group:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+public/js/cheese-auth-indicator.js
+public/scripts/cheeseman.js
+public/scripts/tetris-scroll.js
+public/scripts/snake-scroll.js
+public/scripts/space-cheese-invaders.js
+public/glyph/game.js
+public/glyph/glyph.html
+public/sounds/music/glyph.mp3
+public/stake-lab.html
+```
+
+Also stage the staking/API files only if the current local tests passed and they are intended in this same push.
+
+---
+
+## ✅ Final Local Smoke Test Before Push
+
+Run quick browser checks:
+
+```text
+Profile game area loads.
+Cheese Runner audio split works.
+Tetris audio split works.
+Snake audio split works.
+Space Cheese Invaders audio split works.
+Glyph Memory audio split works.
+Labyrinth Blast audio split works.
+Stake Lab loads.
+Stake Lab does not show public Season 13 activation wording.
+No console red errors on game start/pause/game over.
+```
+
+Run quick command checks:
+
+```powershell
+git status
+```
+
+Confirm only intended files are staged before commit.
+
+---
+
+## Suggested Commit Message
+
+```text
+audio split controls and stake lab api updates
+```
+
+---
+
+## Current Push Summary
+
+```text
+All Narrrfs games now support separated Music and SFX controls.
+Shared cheese-auth-indicator.js owns the new global player audio preferences.
+Game MP3 music and SFX behavior were verified across the core games.
+Stake Lab / staking / liquidity DSPOINC API work is included for the next version.
+Ready to push after final staging review and local smoke test.
+```
+
+
+## FOLLOW-UP — CORE GAME MUSIC PASS 1/2 COMPLETE
+
+**Date:** 2026-06-18
+**Status:** Cheese Runner + Glyph Memory music working / 3 games left
+**Scope:** Game background music, global sound toggle, Glyph auth overlay theming
+
+---
+
+## ✅ Completed
+
+The first two games in the game music pass are now working.
+
+Confirmed:
+
+```text
+Cheese Runner / Cheeseman background music works.
+Cheese Runner pause now keeps music paused.
+Cheese Runner resume starts music again.
+Cheese Runner game over / reset stops music correctly.
+
+Glyph Memory background music works.
+Glyph Memory starts music from the real Start Game click.
+Glyph Memory shared Sound ON/OFF toggle now controls the music.
+Glyph Memory auth indicator now loads from public/js/cheese-auth-indicator.js.
+Glyph Memory auth overlay is now themed through glyph.html CSS overrides.
+Glyph Memory no longer needs the MP3 copied into the glyph assets folder.
+```
+
+---
+
+## ✅ Music Assets Confirmed
+
+Current music files involved:
+
+```text
+public/sounds/music/cheese-runner.mp3
+public/sounds/music/glyph.mp3
+public/sounds/music/tetris.mp3
+```
+
+Upcoming music files still to wire/test:
+
+```text
+public/sounds/music/snake.mp3
+public/sounds/music/invaders.mp3
+```
+
+If the invader file is still named differently, normalize it before wiring:
+
+```text
+public/sounds/music/invaders.mp3
+```
+
+---
+
+## ✅ Important Glyph Fixes
+
+Glyph Memory required special handling because the page runs from:
+
+```text
+public/glyph/glyph.html
+```
+
+and the MP3 is served from:
+
+```text
+public/sounds/music/glyph.mp3
+```
+
+Final working approach:
+
+```text
+Use /public/sounds/music/glyph.mp3 locally.
+Use /sounds/music/glyph.mp3 live.
+Start music directly from the Start Game button click.
+Use the shared cheese-auth-indicator.js sound toggle.
+Bridge the shared narrrfs:sound-toggle event to Glyph's direct music object.
+Theme #narrrfs-sound-toggle and #cheese-auth-indicator in glyph.html.
+```
+
+Do not move `glyph.mp3` into `public/glyph/assets/`.
+
+---
+
+## ✅ Important Cheese Runner Fixes
+
+Cheese Runner music needed a controller pause fix.
+
+Reason:
+
+```text
+The original pause() kept wantsPlayback = true.
+That allowed sync listeners to restart music while the game was paused.
+```
+
+Final behavior:
+
+```text
+Game pause uses suspend() / pause(false).
+Game resume uses start().
+Game over and reset use stop().
+```
+
+---
+
+## 🚧 Remaining Game Music Work
+
+Still left to tune:
+
+```text
+Snake
+Space Cheese Invaders
+One remaining game/music target after Snake + Invaders are verified
+```
+
+Recommended next order:
+
+```text
+1. Snake
+2. Space Cheese Invaders
+3. Final remaining game target
+```
+
+---
+
+## ✅ Current Safety Notes
+
+```text
+No DB changes were made for game music.
+No score-save logic should be touched during music tuning.
+No reward logic should be touched during music tuning.
+No leaderboard logic should be touched during music tuning.
+All music must respect global Narrrfs sound ON/OFF where possible.
+Music should start only after player interaction.
+Music should pause on game pause.
+Music should stop on game over / reset / return to menu.
+```
+
+---
+
+## Next Test Checklist
+
+For each remaining game:
+
+```text
+Start game → music starts.
+Pause → music pauses and stays paused.
+Resume → music resumes.
+Sound OFF → music stops immediately.
+Sound ON → music resumes only during active run.
+Game Over → music stops.
+Restart / Play Again → music starts on new run.
+Console has no red errors.
+Network confirms MP3 loads with status 200.
+```
+
+
 ## PUSH NOTE — GENESIS MOUSE FREEZER CONTROLLED LIVE TEST + GAME MUSIC FILES
 
 **Date:** 2026-06-18

@@ -69,9 +69,15 @@ class SnakeSoundManager {
 
   // Generate professional sound effects using Web Audio API
  playSound(type) {
-  // Respect the global Narrrfs sound toggle from cheese-auth-indicator.js.
-  // When players turn sound off, Snake must not create Web Audio sounds that can pause music apps.
-  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    // Respect the shared Narrrfs SFX toggle from cheese-auth-indicator.js.
+  // DEVS FOR DECADES:
+  // Snake Web Audio effects are short SFX, not background music.
+  // They must follow SFX ON/OFF only.
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isSfxEnabled === 'function' && !window.NarrrfsAudio.isSfxEnabled()) {
+    return;
+  }
+
+  if (!window.NarrrfsAudio && window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
     return;
   }
 
@@ -255,6 +261,130 @@ async function fetchSnakeUserRoles() {
     return [];
   }
 }
+
+/**
+ * Creates a safe looping background music controller for Narrrfs games.
+ *
+ * Plain language for DEVS:
+ * Browser audio cannot autoplay before a user action. This controller starts
+ * only after game start / player interaction, follows the global Narrrfs sound
+ * toggle, pauses on game pause, and stops when the run ends.
+ */
+window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function createNarrrfsGameMusicController(config) {
+  let audio = null;
+  let wantsPlayback = false;
+
+function isSoundAllowed() {
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isMusicEnabled === 'function') {
+    return window.NarrrfsAudio.isMusicEnabled();
+  }
+
+  if (window.NarrrfsSound && typeof window.NarrrfsSound.isEnabled === 'function') {
+    return window.NarrrfsSound.isEnabled();
+  }
+
+  return localStorage.getItem('narrrfs_music_enabled') !== 'false';
+}
+
+  function getAudio() {
+    if (audio) {
+      return audio;
+    }
+
+    audio = new Audio(config.src);
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.volume = typeof config.volume === 'number' ? config.volume : 0.22;
+
+    return audio;
+  }
+
+  async function start() {
+    wantsPlayback = true;
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    try {
+      const music = getAudio();
+      await music.play();
+    } catch (error) {
+      console.warn(`🎵 ${config.label} music could not start yet:`, error);
+    }
+  }
+
+  /**
+ * Pauses background music.
+ *
+ * Plain language for DEVS:
+ * keepWanted=true is for temporary browser/global-sound pauses.
+ * keepWanted=false is for real Snake game pause, so sync listeners cannot
+ * restart music while Snake is still paused.
+ */
+function pause(keepWanted = true) {
+  if (!keepWanted) {
+    wantsPlayback = false;
+  }
+
+  if (!audio) {
+    return;
+  }
+
+  audio.pause();
+}
+
+/**
+ * Suspends music because the game itself is paused.
+ */
+function suspend() {
+  pause(false);
+}
+
+  function stop() {
+    wantsPlayback = false;
+
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+  }
+
+  function sync() {
+    if (!wantsPlayback) {
+      return;
+    }
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    start();
+  }
+
+  window.addEventListener('storage', sync);
+window.addEventListener('narrrfs:music-toggle', sync);
+window.addEventListener('narrrfs:sound-toggle', sync);
+document.addEventListener('visibilitychange', sync);
+
+  return {
+  start,
+  pause,
+  suspend,
+  stop,
+  sync
+};
+};
+
+window.snakeMusicController = window.NarrrfsGameMusicFactory({
+  label: 'Snake',
+  src: 'sounds/music/snake.mp3',
+  volume: 0.18
+});
 
 // 🎨 Apply role-based visual theme to Snake canvas (Global)
 function applySnakeRoleTheme() {
@@ -2272,6 +2402,7 @@ function initSnake() {
   function onGameOver() {
     // 🎵 Play game over sound
     snakeSounds.playSound('gameOver');
+    window.snakeMusicController?.stop();
     
     clearInterval(gameInterval);
     gameInterval = null;
@@ -2916,9 +3047,11 @@ function saveScore(finalScore) {
       newPauseBtn.textContent = isSnakePaused ? "▶️ Resume" : "⏸️ Pause";
       
       if (isSnakePaused) {
-        clearInterval(gameInterval);
-        // 🎯 Unlock scrolling when paused (like Tetris)
-        unlockSnakeScroll();
+  clearInterval(gameInterval);
+  window.snakeMusicController?.suspend();
+
+  // 🎯 Unlock scrolling when paused (like Tetris)
+  unlockSnakeScroll();
         
         // 🚨 BUG #263 FIX: Re-enable all page links/buttons when paused
         document.querySelectorAll('a, button').forEach(el => {
@@ -2931,8 +3064,10 @@ function saveScore(finalScore) {
         if (gameInterval) {
           clearInterval(gameInterval);
           gameInterval = setInterval(moveSnake, 400);
-          // 🎯 Lock scrolling when resumed (like Tetris)
-          lockSnakeScroll();
+window.snakeMusicController?.start();
+
+// 🎯 Lock scrolling when resumed (like Tetris)
+lockSnakeScroll();
           
           // 🚨 BUG #263 FIX: Disable page links/buttons again when resumed
           document.querySelectorAll('a, button').forEach(el => {
@@ -2962,7 +3097,8 @@ function saveScore(finalScore) {
   const startBtn = document.getElementById("start-snake-btn");
   if (startBtn) {
     startBtn.addEventListener("click", () => {
-      startGameWithCountdown();
+      window.snakeMusicController?.start();
+startGameWithCountdown();
     });
     
     // 🚀 Check for auto-start flag (from Play Again button)
@@ -2970,6 +3106,7 @@ function saveScore(finalScore) {
       console.log('🚀 Auto-start flag detected - starting game automatically');
       localStorage.removeItem('snake_auto_start'); // Clear flag
       setTimeout(() => {
+        window.snakeMusicController?.start();
         startGameWithCountdown();
       }, 500); // Small delay to ensure page is fully loaded
     }
@@ -2993,6 +3130,8 @@ function saveScore(finalScore) {
 
     // 🚀 Set flag to auto-start game after reload
     localStorage.setItem('snake_auto_start', 'true');
+
+    window.snakeMusicController?.stop();
     
     // Reload page to get fresh game state (simplest and most reliable)
     window.location.reload();
@@ -3001,6 +3140,8 @@ function saveScore(finalScore) {
   // 🏁 End game function (called by OK button) - Like Space Invaders
   function endSnakeGame() {
     console.log('🏁 OK button clicked - ending Snake game');
+
+    window.snakeMusicController?.stop();
     
     // 🚨 CRITICAL: Clear any existing game interval
     if (gameInterval) {

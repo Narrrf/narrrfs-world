@@ -15,6 +15,7 @@
   const VERIFY_THROTTLE_MS = 1500;
   const FOCUS_VERIFY_MIN_INTERVAL_MS = 3000;
 
+
   const authState = {
     checked: false,
     loggedIn: false,
@@ -174,19 +175,150 @@
     }
   }
 
-  const SOUND_STORAGE_KEY = 'narrrfs_sound_enabled';
+    const SOUND_STORAGE_KEY = 'narrrfs_sound_enabled';
+  const MUSIC_STORAGE_KEY = 'narrrfs_music_enabled';
+  const SFX_STORAGE_KEY = 'narrrfs_sfx_enabled';
 
 /**
- * Global Narrrfs sound controller.
- * This lets every page and game respect one shared sound preference.
+ * Reads a Narrrfs audio preference with safe default ON behavior.
+ *
+ * Plain language for DEVS:
+ * Missing localStorage keys should mean ON so returning players and new players
+ * keep the same game behavior they had before this split Music/SFX upgrade.
+ */
+function readNarrrfsAudioPreference(key) {
+  return localStorage.getItem(key) !== 'false';
+}
+
+/**
+ * Writes one Narrrfs audio preference as a stable string value.
+ */
+function writeNarrrfsAudioPreference(key, enabled) {
+  localStorage.setItem(key, enabled ? 'true' : 'false');
+}
+
+/**
+ * Global Narrrfs audio controller.
+ *
+ * Plain language for DEVS:
+ * Music and SFX are now separate player preferences.
+ * - Music controls looping MP3 background tracks.
+ * - SFX controls Web Audio / short audio effects.
+ *
+ * The old window.NarrrfsSound object stays below as a compatibility bridge for
+ * older pages that still expect one shared sound setting.
+ */
+window.NarrrfsAudio = window.NarrrfsAudio || {
+  isMusicEnabled() {
+    return readNarrrfsAudioPreference(MUSIC_STORAGE_KEY);
+  },
+
+  setMusicEnabled(enabled) {
+    writeNarrrfsAudioPreference(MUSIC_STORAGE_KEY, enabled);
+
+    window.dispatchEvent(new CustomEvent('narrrfs:music-toggle', {
+      detail: { enabled }
+    }));
+
+    window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
+      detail: {
+        enabled: this.isMusicEnabled() && this.isSfxEnabled(),
+        musicEnabled: this.isMusicEnabled(),
+        sfxEnabled: this.isSfxEnabled()
+      }
+    }));
+  },
+
+  toggleMusic() {
+    const nextEnabled = !this.isMusicEnabled();
+    this.setMusicEnabled(nextEnabled);
+    return nextEnabled;
+  },
+
+  isSfxEnabled() {
+    return readNarrrfsAudioPreference(SFX_STORAGE_KEY);
+  },
+
+  setSfxEnabled(enabled) {
+    writeNarrrfsAudioPreference(SFX_STORAGE_KEY, enabled);
+
+    window.dispatchEvent(new CustomEvent('narrrfs:sfx-toggle', {
+      detail: { enabled }
+    }));
+
+    window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
+      detail: {
+        enabled: this.isMusicEnabled() && this.isSfxEnabled(),
+        musicEnabled: this.isMusicEnabled(),
+        sfxEnabled: this.isSfxEnabled()
+      }
+    }));
+  },
+
+  toggleSfx() {
+    const nextEnabled = !this.isSfxEnabled();
+    this.setSfxEnabled(nextEnabled);
+    return nextEnabled;
+  },
+
+  areAllAudioChannelsEnabled() {
+    return this.isMusicEnabled() && this.isSfxEnabled();
+  },
+
+  setAllEnabled(enabled) {
+    writeNarrrfsAudioPreference(MUSIC_STORAGE_KEY, enabled);
+    writeNarrrfsAudioPreference(SFX_STORAGE_KEY, enabled);
+    writeNarrrfsAudioPreference(SOUND_STORAGE_KEY, enabled);
+
+    window.dispatchEvent(new CustomEvent('narrrfs:music-toggle', {
+      detail: { enabled }
+    }));
+
+    window.dispatchEvent(new CustomEvent('narrrfs:sfx-toggle', {
+      detail: { enabled }
+    }));
+
+    window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
+      detail: {
+        enabled,
+        musicEnabled: enabled,
+        sfxEnabled: enabled
+      }
+    }));
+  }
+};
+
+/**
+ * Compatibility bridge for old pages.
+ *
+ * Plain language for DEVS:
+ * Old code can still call window.NarrrfsSound.isEnabled().
+ * New code should use:
+ * - window.NarrrfsAudio.isMusicEnabled()
+ * - window.NarrrfsAudio.isSfxEnabled()
  */
 window.NarrrfsSound = window.NarrrfsSound || {
   isEnabled() {
-    return localStorage.getItem(SOUND_STORAGE_KEY) !== 'false';
-  },
+  // Compatibility bridge for older game SFX checks.
+  //
+  // DEVS FOR DECADES:
+  // After the Music/SFX split, old NarrrfsSound.isEnabled() calls should behave
+  // like SFX permission. New MP3 music controllers must use
+  // window.NarrrfsAudio.isMusicEnabled() directly.
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isSfxEnabled === 'function') {
+    return window.NarrrfsAudio.isSfxEnabled();
+  }
+
+  return readNarrrfsAudioPreference(SOUND_STORAGE_KEY);
+},
 
   setEnabled(enabled) {
-    localStorage.setItem(SOUND_STORAGE_KEY, enabled ? 'true' : 'false');
+    writeNarrrfsAudioPreference(SOUND_STORAGE_KEY, enabled);
+
+    if (window.NarrrfsAudio && typeof window.NarrrfsAudio.setAllEnabled === 'function') {
+      window.NarrrfsAudio.setAllEnabled(enabled);
+      return;
+    }
 
     window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
       detail: { enabled }
@@ -203,11 +335,16 @@ window.NarrrfsSound = window.NarrrfsSound || {
   function renderIndicator() {
     removeExistingIndicator();
 
-    // Remove existing sound toggle (prevent duplicates)
-const existingSoundBtn = document.getElementById('narrrfs-sound-toggle');
-if (existingSoundBtn) {
-  existingSoundBtn.remove();
-}
+        // Remove existing audio controls (prevent duplicates)
+    const existingSoundBtn = document.getElementById('narrrfs-sound-toggle');
+    if (existingSoundBtn) {
+      existingSoundBtn.remove();
+    }
+
+    const existingAudioControls = document.getElementById('narrrfs-audio-controls');
+    if (existingAudioControls) {
+      existingAudioControls.remove();
+    }
 
     const loggedIn = authState.loggedIn;
     const discordName = authState.discordName || '';
@@ -277,35 +414,105 @@ if (existingSoundBtn) {
     wrapper.appendChild(link);
     document.body.appendChild(wrapper);
 
-    // 🔊 Create Sound Toggle Button
-const soundButton = document.createElement('button');
-soundButton.id = 'narrrfs-sound-toggle';
-soundButton.type = 'button';
-soundButton.style.position = 'fixed';
-soundButton.style.right = '16px';
-soundButton.style.bottom = '80px'; // above auth button
-soundButton.style.zIndex = '9999';
-soundButton.style.padding = '6px 10px';
-soundButton.style.borderRadius = '999px';
-soundButton.style.fontSize = '12px';
-soundButton.style.border = '1px solid rgba(250, 204, 21, 0.5)';
-soundButton.style.background = 'rgba(15, 23, 42, 0.85)';
-soundButton.style.color = '#fde68a';
-soundButton.style.cursor = 'pointer';
-soundButton.style.backdropFilter = 'blur(6px)';
+        // 🎚️ Create separated Music / SFX controls.
+    // DEVS FOR DECADES:
+    // This visual control is shared across Narrrfs pages. It only stores local
+    // player audio preferences and dispatches browser events. It does not touch
+    // login, roles, scores, rewards, APIs, or database writes.
+    const audioControls = document.createElement('div');
+    audioControls.id = 'narrrfs-audio-controls';
+    audioControls.style.position = 'fixed';
+    audioControls.style.right = '16px';
+    audioControls.style.bottom = '82px';
+    audioControls.style.zIndex = '9999';
+    audioControls.style.display = 'flex';
+    audioControls.style.flexDirection = 'column';
+    audioControls.style.gap = '6px';
+    audioControls.style.alignItems = 'flex-end';
 
-// Initial state
-const enabled = window.NarrrfsSound?.isEnabled();
-soundButton.textContent = enabled ? '🔊 Sound ON' : '🔇 Sound OFF';
+    function styleAudioButton(button) {
+      button.type = 'button';
+      button.style.minWidth = '112px';
+      button.style.padding = '7px 11px';
+      button.style.borderRadius = '999px';
+      button.style.fontSize = '12px';
+      button.style.fontWeight = '800';
+      button.style.border = '1px solid rgba(250, 204, 21, 0.55)';
+      button.style.background = 'rgba(15, 23, 42, 0.88)';
+      button.style.color = '#fde68a';
+      button.style.cursor = 'pointer';
+      button.style.backdropFilter = 'blur(10px)';
+      button.style.boxShadow = '0 10px 24px rgba(0, 0, 0, 0.28)';
+      button.style.transition = 'transform 0.18s ease, border-color 0.18s ease, color 0.18s ease';
+    }
 
-// Toggle behavior
-soundButton.onclick = () => {
-  const next = window.NarrrfsSound.toggle();
-  soundButton.textContent = next ? '🔊 Sound ON' : '🔇 Sound OFF';
-};
+    function updateAudioButtonVisual(button, enabled, enabledText, disabledText) {
+      button.textContent = enabled ? enabledText : disabledText;
+      button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+      button.style.opacity = enabled ? '1' : '0.72';
+      button.style.borderColor = enabled
+        ? 'rgba(250, 204, 21, 0.62)'
+        : 'rgba(148, 163, 184, 0.42)';
+      button.style.color = enabled ? '#fde68a' : '#cbd5e1';
+    }
 
-// Add to page
-document.body.appendChild(soundButton);
+    const musicButton = document.createElement('button');
+    musicButton.id = 'narrrfs-music-toggle';
+    musicButton.title = 'Toggle background music';
+    styleAudioButton(musicButton);
+
+    const sfxButton = document.createElement('button');
+    sfxButton.id = 'narrrfs-sfx-toggle';
+    sfxButton.title = 'Toggle sound effects';
+    styleAudioButton(sfxButton);
+
+    function refreshAudioButtons() {
+      updateAudioButtonVisual(
+        musicButton,
+        window.NarrrfsAudio.isMusicEnabled(),
+        '🎵 Music ON',
+        '🔇 Music OFF'
+      );
+
+      updateAudioButtonVisual(
+        sfxButton,
+        window.NarrrfsAudio.isSfxEnabled(),
+        '🔊 SFX ON',
+        '🔕 SFX OFF'
+      );
+    }
+
+    musicButton.addEventListener('mouseenter', () => {
+      musicButton.style.transform = 'translateY(-1px) scale(1.03)';
+    });
+
+    musicButton.addEventListener('mouseleave', () => {
+      musicButton.style.transform = 'none';
+    });
+
+    sfxButton.addEventListener('mouseenter', () => {
+      sfxButton.style.transform = 'translateY(-1px) scale(1.03)';
+    });
+
+    sfxButton.addEventListener('mouseleave', () => {
+      sfxButton.style.transform = 'none';
+    });
+
+    musicButton.onclick = () => {
+      window.NarrrfsAudio.toggleMusic();
+      refreshAudioButtons();
+    };
+
+    sfxButton.onclick = () => {
+      window.NarrrfsAudio.toggleSfx();
+      refreshAudioButtons();
+    };
+
+    refreshAudioButtons();
+
+    audioControls.appendChild(musicButton);
+    audioControls.appendChild(sfxButton);
+    document.body.appendChild(audioControls);
 
   }
 

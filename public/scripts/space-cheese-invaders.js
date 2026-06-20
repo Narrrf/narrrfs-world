@@ -331,6 +331,130 @@ function getSpaceInvadersPrimaryRoleName() {
   return null; // No premium role found
 }
 
+/**
+ * Creates a safe looping background music controller for Narrrfs games.
+ *
+ * Plain language for DEVS:
+ * Browser audio cannot autoplay before a user action. This controller starts
+ * only after game start / player interaction, follows the global Narrrfs sound
+ * toggle, pauses on game pause, and stops when the run ends.
+ */
+window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function createNarrrfsGameMusicController(config) {
+  let audio = null;
+  let wantsPlayback = false;
+
+function isSoundAllowed() {
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isMusicEnabled === 'function') {
+    return window.NarrrfsAudio.isMusicEnabled();
+  }
+
+  if (window.NarrrfsSound && typeof window.NarrrfsSound.isEnabled === 'function') {
+    return window.NarrrfsSound.isEnabled();
+  }
+
+  return localStorage.getItem('narrrfs_music_enabled') !== 'false';
+}
+
+  function getAudio() {
+    if (audio) {
+      return audio;
+    }
+
+    audio = new Audio(config.src);
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.volume = typeof config.volume === 'number' ? config.volume : 0.22;
+
+    return audio;
+  }
+
+  async function start() {
+    wantsPlayback = true;
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    try {
+      const music = getAudio();
+      await music.play();
+    } catch (error) {
+      console.warn(`🎵 ${config.label} music could not start yet:`, error);
+    }
+  }
+
+ /**
+ * Pauses background music.
+ *
+ * Plain language for DEVS:
+ * keepWanted=true is for temporary browser/global-sound pauses.
+ * keepWanted=false is for real Space Cheese Invaders pause, so sync listeners
+ * cannot restart music while the game is still paused.
+ */
+function pause(keepWanted = true) {
+  if (!keepWanted) {
+    wantsPlayback = false;
+  }
+
+  if (!audio) {
+    return;
+  }
+
+  audio.pause();
+}
+
+/**
+ * Suspends music because the game itself is paused.
+ */
+function suspend() {
+  pause(false);
+}
+
+  function stop() {
+    wantsPlayback = false;
+
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+  }
+
+  function sync() {
+    if (!wantsPlayback) {
+      return;
+    }
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    start();
+  }
+
+  window.addEventListener('storage', sync);
+window.addEventListener('narrrfs:music-toggle', sync);
+window.addEventListener('narrrfs:sound-toggle', sync);
+document.addEventListener('visibilitychange', sync);
+
+  return {
+  start,
+  pause,
+  suspend,
+  stop,
+  sync
+};
+};
+
+window.spaceInvadersMusicController = window.NarrrfsGameMusicFactory({
+  label: 'Space Cheese Invaders',
+  src: 'sounds/music/invaders.mp3',
+  volume: 0.18
+});
+
 // ⚡ Calculate role-based score multiplier using role names (Phase 2 security)
 function getSpaceInvadersRoleScoreMultiplier() {
   const primaryRoleName = getSpaceInvadersPrimaryRoleName();
@@ -2319,8 +2443,15 @@ class CheeseSoundManager {
 
   // 🎵 NEW: Play weapon-specific sounds
 playWeaponSound(weaponType) {
-  // Respect the global Narrrfs sound toggle from cheese-auth-indicator.js.
-  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    // Respect the shared Narrrfs SFX toggle from cheese-auth-indicator.js.
+  // DEVS FOR DECADES:
+  // Weapon, explosion, boss, pickup, and warning sounds are short SFX.
+  // They must follow SFX ON/OFF only and must not depend on Music ON/OFF.
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isSfxEnabled === 'function' && !window.NarrrfsAudio.isSfxEnabled()) {
+    return;
+  }
+
+  if (!window.NarrrfsAudio && window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
     return;
   }
 
@@ -2362,8 +2493,15 @@ playWeaponSound(weaponType) {
 
   // 🎵 FALLBACK: Generate weapon sounds programmatically
 playProgrammaticWeaponSound(weaponType) {
-  // Respect the global Narrrfs sound toggle from cheese-auth-indicator.js.
-  if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+    // Respect the shared Narrrfs SFX toggle from cheese-auth-indicator.js.
+  // DEVS FOR DECADES:
+  // Weapon, explosion, boss, pickup, and warning sounds are short SFX.
+  // They must follow SFX ON/OFF only and must not depend on Music ON/OFF.
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isSfxEnabled === 'function' && !window.NarrrfsAudio.isSfxEnabled()) {
+    return;
+  }
+
+  if (!window.NarrrfsAudio && window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
     return;
   }
 
@@ -5822,6 +5960,8 @@ let reloadButtonInterval = null;
   // 🎮 Restart game function (called by Play Again button)
   function restartGame() {
     console.log('🔄 Restart button clicked - restarting game');
+
+    window.spaceInvadersMusicController?.stop();
     
     // 🚨 CRITICAL FIX: Clear all entities immediately when restart is clicked
     invaders = []; // Clear regular invaders
@@ -5859,13 +5999,16 @@ let reloadButtonInterval = null;
       winModal.classList.add("hidden");
     }
     
-    // Start new game with countdown
-    startGameWithCountdown();
+    // Start new game with countdown and restart the MP3 music from the new run.
+window.spaceInvadersMusicController?.start();
+startGameWithCountdown();
   }
 
   // 🏁 End game function (called by End Game button)
   function endSpaceInvadersGame() {
-    console.log('🏁 End Game button clicked - ending Space Invaders');
+  console.log('🏁 End Game button clicked - ending Space Invaders');
+
+  window.spaceInvadersMusicController?.stop();
     
     // 🚨 CRITICAL: Force stop all game loops and timers
     if (spaceInvadersGameInterval) {
@@ -10756,6 +10899,12 @@ let reloadButtonInterval = null;
   }
 
   function onGameOver() {
+    // 🎵 Stop MP3 background music immediately on real game over.
+    // DEVS FOR DECADES:
+    // This is the actual crash/death game-over path, separate from the manual
+    // End Game button. Keep this here so music always stops when the player loses.
+    window.spaceInvadersMusicController?.stop();
+
     // 🚨 CRITICAL: Stop all game loops and timers
     clearInterval(spaceInvadersGameInterval);
     spaceInvadersGameInterval = null;
@@ -10786,6 +10935,7 @@ let reloadButtonInterval = null;
     
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
+    window.spaceInvadersMusicController?.stop();
     
     // 🏆 SEASON 5: Apply 10:1 conversion for balanced scoring
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
@@ -13928,7 +14078,8 @@ window.emergencyCollisionCheck = function() {
     
     // Unlock scroll when paused, lock when resumed
     if (isSpaceInvadersPaused) {
-      unlockSpaceInvadersScroll();
+  window.spaceInvadersMusicController?.suspend();
+  unlockSpaceInvadersScroll();
       
       // 🚨 BUG #263 FIX: Re-enable all page links/buttons when paused
       document.querySelectorAll('a, button').forEach(el => {
@@ -13937,7 +14088,8 @@ window.emergencyCollisionCheck = function() {
       });
       console.log('🔓 Page links/buttons re-enabled during Space Invaders pause');
     } else {
-      lockSpaceInvadersScroll();
+  window.spaceInvadersMusicController?.start();
+  lockSpaceInvadersScroll();
       // 🆘 NEW: Ensure mobile controls are visible when resuming game
       setTimeout(() => {
         ensureMobileControlsVisible();
@@ -13993,9 +14145,12 @@ window.emergencyCollisionCheck = function() {
   const startBtn = document.getElementById("start-space-invaders-btn");
   const pauseBtn = document.getElementById("pause-space-invaders-btn");
 
-  if (startBtn) {
-    startBtn.addEventListener("click", startGameWithCountdown);
-  }
+ if (startBtn) {
+  startBtn.addEventListener("click", () => {
+    window.spaceInvadersMusicController?.start();
+    startGameWithCountdown();
+  });
+}
 
   if (pauseBtn) {
     pauseBtn.addEventListener("click", togglePause);

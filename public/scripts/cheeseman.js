@@ -1,6 +1,6 @@
 // 🧀 Cheese Runner / Cheeseman v1.0.1
 // Pac-Man-style Narrrfs World game.
-// API/table write is intentionally placeholder until backend is created.
+// API/table write is intentionally placeholder until backend is created. 
 
 (function () {
   'use strict';
@@ -858,6 +858,130 @@ function getWrappedPosition(row, col) {
   return { row, col };
 }
 
+/**
+ * Creates a safe looping background music controller for Narrrfs games.
+ *
+ * Plain language for DEVS:
+ * Browser audio cannot autoplay before a user action. This controller starts
+ * only after game start / player interaction, follows the global Narrrfs sound
+ * toggle, pauses on game pause, and stops when the run ends.
+ */
+window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function createNarrrfsGameMusicController(config) {
+  let audio = null;
+  let wantsPlayback = false;
+
+  function isSoundAllowed() {
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isMusicEnabled === 'function') {
+    return window.NarrrfsAudio.isMusicEnabled();
+  }
+
+  if (window.NarrrfsSound && typeof window.NarrrfsSound.isEnabled === 'function') {
+    return window.NarrrfsSound.isEnabled();
+  }
+
+  return localStorage.getItem('narrrfs_music_enabled') !== 'false';
+}
+
+  function getAudio() {
+    if (audio) {
+      return audio;
+    }
+
+    audio = new Audio(config.src);
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.volume = typeof config.volume === 'number' ? config.volume : 0.22;
+
+    return audio;
+  }
+
+  async function start() {
+    wantsPlayback = true;
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    try {
+      const music = getAudio();
+      await music.play();
+    } catch (error) {
+      console.warn(`🎵 ${config.label} music could not start yet:`, error);
+    }
+  }
+
+  /**
+ * Pauses background music.
+ *
+ * Plain language for DEVS:
+ * keepWanted=true is used when sound is temporarily blocked by tab visibility
+ * or global sound toggle. keepWanted=false is used by actual game pause so the
+ * sync listener cannot accidentally restart music while the game is paused.
+ */
+function pause(keepWanted = true) {
+  if (!keepWanted) {
+    wantsPlayback = false;
+  }
+
+  if (!audio) {
+    return;
+  }
+
+  audio.pause();
+}
+
+/**
+ * Suspends music because the game itself is paused.
+ */
+function suspend() {
+  pause(false);
+}
+
+  function stop() {
+    wantsPlayback = false;
+
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+  }
+
+  function sync() {
+    if (!wantsPlayback) {
+      return;
+    }
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    start();
+  }
+
+  window.addEventListener('storage', sync);
+window.addEventListener('narrrfs:music-toggle', sync);
+window.addEventListener('narrrfs:sound-toggle', sync);
+document.addEventListener('visibilitychange', sync);
+
+  return {
+  start,
+  pause,
+  suspend,
+  stop,
+  sync
+};
+};
+
+const cheeseRunnerMusicController = window.NarrrfsGameMusicFactory({
+  label: 'Cheese Runner',
+  src: 'sounds/music/cheese-runner.mp3',
+  volume: 0.2
+});
+
 
   function collectConfusionMushroomItem() {
   if (!confusionMushroomItem) {
@@ -1554,6 +1678,7 @@ function buildMaze() {
 
 function resetGame() {
   clearGameTimer();
+  cheeseRunnerMusicController.stop();
 
   score = 0;
   level = 1;
@@ -1611,8 +1736,12 @@ if (modal) {
     }
 
     isRunning = true;
-    isPaused = false;
-setStatus('Eat the visible cheese. Blue portals are travel lanes only.');    startGameTimer();
+isPaused = false;
+
+cheeseRunnerMusicController.start();
+
+setStatus('Eat the visible cheese. Blue portals are travel lanes only.');
+startGameTimer();
   }
 
   function togglePause() {
@@ -1623,13 +1752,17 @@ setStatus('Eat the visible cheese. Blue portals are travel lanes only.');    sta
     isPaused = !isPaused;
 
     if (isPaused) {
-      clearGameTimer();
-      setStatus('Paused.');
-      render();
-      return;
-    }
+  clearGameTimer();
+  cheeseRunnerMusicController.suspend();
+  setStatus('Paused.');
+  render();
+  return;
+}
 
-setStatus('Eat the visible cheese. Blue portals are travel lanes only.');    startGameTimer();
+cheeseRunnerMusicController.start();
+
+setStatus('Eat the visible cheese. Blue portals are travel lanes only.');
+startGameTimer();
   }
 
 /**
@@ -2746,6 +2879,7 @@ function ensureGameOverNavigationLinks() {
  */
 async function endGame() {
   clearGameTimer();
+  cheeseRunnerMusicController.stop();
   isRunning = false;
   isPaused = false;
   glyphBoostUntil = 0;

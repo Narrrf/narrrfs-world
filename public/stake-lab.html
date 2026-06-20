@@ -2939,63 +2939,151 @@ async function unfreezeGenesisMouseFreezer(stakeId) {
   await unfreezeGenesisMouseFreezerWithWalletMemo(stakeId);
 }
 
+
+/**
+ * Shorten a Solana wallet for user-facing freezer messages.
+ *
+ * Plain language for DEVS:
+ * Full wallet addresses are shown when the user must switch wallets.
+ * Short format is only used in headings or summaries.
+ */
+function formatGenesisFreezerWalletShort(walletAddress) {
+  const safeWallet = String(walletAddress || '').trim();
+
+  if (safeWallet.length <= 12) {
+    return safeWallet || 'unknown wallet';
+  }
+
+  return `${safeWallet.slice(0, 4)}...${safeWallet.slice(-4)}`;
+}
+
+/**
+ * Return the unique wallet addresses used by selected Genesis freezer mice.
+ *
+ * Plain language for DEVS:
+ * A Discord account can verify Genesis mice across multiple Solana wallets.
+ * Production Memo signing can only happen from one wallet at a time.
+ */
+function getGenesisFreezerSelectedWallets(selectedMice) {
+  return Array.from(
+    new Set(
+      selectedMice
+        .map(mouse => String(mouse?.wallet || '').trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+/**
+ * Explain production freezer errors in holder-friendly language.
+ *
+ * Plain language for DEVS:
+ * Wallet extensions often return technical errors. Convert the common ones
+ * into clear actions so users know whether to switch wallet, retry, or stop.
+ */
+function getGenesisFreezerFriendlyErrorMessage(error, selectedWallet) {
+  const rawMessage = String(error?.message || error || '').trim();
+  const safeSelectedWallet = String(selectedWallet || '').trim();
+
+  if (rawMessage.includes('Connected wallet mismatch')) {
+    return safeSelectedWallet
+      ? `This Genesis mouse is linked to Solana wallet ${safeSelectedWallet}. Please switch your wallet to ${safeSelectedWallet}, refresh the Stake Lab, select only this mouse, and try again.`
+      : 'This Genesis mouse is linked to another Solana wallet. Please switch to the wallet that owns this NFT, refresh the Stake Lab, and try again.';
+  }
+
+  if (rawMessage.includes('TransactionExpiredBlockheightExceededError') || rawMessage.includes('block height exceeded')) {
+    return 'The wallet Memo transaction expired before it could be confirmed. Please try again with only one selected mouse and confirm the wallet request quickly.';
+  }
+
+  if (rawMessage.includes('Unexpected error')) {
+    return 'The wallet blocked or rejected the Memo request. Please close the wallet popup, refresh the page, and try again with only one selected mouse. If Phantom shows a security warning, do not continue unless you are sure you are on narrrfs.world.';
+  }
+
+  if (rawMessage.includes('Unable to reach a Solana RPC')) {
+    return 'The Solana RPC connection failed before the Memo could be prepared. Please wait a moment, refresh, and try again.';
+  }
+
+  return rawMessage || 'The Genesis Mouse Freezer action could not be completed. Please refresh and try again.';
+}
+
 /**
  * Freeze selected Genesis mice in production with wallet Memo confirmation.
  *
  * Plain language for DEVS:
- * This does not calculate rewards and does not bypass backend checks. It creates
- * a backend challenge, asks the connected wallet to send the exact Memo, then
- * sends the transaction signature back to the backend for verification.
+ * Controlled live test mode intentionally freezes only one Genesis mouse per
+ * action. This avoids repeated wallet popups, avoids Phantom/Blowfish risk
+ * signals from multi-Memo loops, and gives holders a clear wallet-switch
+ * message when a verified NFT belongs to another Solana address.
  */
 async function freezeSelectedGenesisMiceWithWalletMemo() {
   const selectedMice = getSelectedGenesisFreezerAvailableMice();
-  const data = genesisMouseFreezerPreview || {};
-  const slots = data.slots || {};
-  const availableSlots = Number(slots.available || 0);
   const button = document.getElementById('genesis-freezer-freeze-selected-btn');
   const originalText = button ? button.textContent : '';
 
   if (selectedMice.length === 0) {
     showGenesisFreezerToast(
       'error',
-      'No Genesis mice selected',
-      'Choose one or more available Genesis mice before starting the freezer flow.'
+      'No Genesis mouse selected',
+      'Choose one available Genesis mouse before starting the wallet Memo freezer test.'
     );
     return;
   }
 
-  if (availableSlots <= 0) {
+  if (selectedMice.length > 1) {
     showGenesisFreezerToast(
       'error',
-      'No freezer slots available',
-      'Unfreeze a mouse or increase your tier before freezing more Genesis mice.'
+      'One mouse at a time on live',
+      'Controlled live testing only supports one Genesis mouse per wallet Memo. Please select one mouse, freeze it, then repeat for the next mouse.'
     );
     return;
   }
 
-  if (selectedMice.length > availableSlots) {
+  const selectedMouse = selectedMice[0];
+  const selectedWallet = String(selectedMouse?.wallet || '').trim();
+
+  if (!selectedWallet) {
     showGenesisFreezerToast(
       'error',
-      'Too many mice selected',
-      `You selected ${selectedMice.length} mice, but only ${availableSlots} freezer slot(s) are open.`
+      'Missing NFT wallet',
+      'This selected Genesis mouse has no verified wallet address. Please refresh your NFT verification and try again.'
     );
     return;
   }
 
-  const selectedWallets = Array.from(new Set(selectedMice.map(mouse => String(mouse.wallet || '').trim()).filter(Boolean)));
+  const selectedWallets = getGenesisFreezerSelectedWallets(selectedMice);
 
   if (selectedWallets.length !== 1) {
     showGenesisFreezerToast(
       'error',
-      'One wallet at a time',
-      'Please freeze Genesis mice from one verified wallet at a time so the correct wallet can sign the Memo transaction.'
+      'Multiple wallets selected',
+      'Please select only Genesis mice from one Solana wallet at a time.'
+    );
+    return;
+  }
+
+  try {
+    const { walletAddress } = await connectGenesisFreezerWallet();
+
+    if (walletAddress !== selectedWallet) {
+      showGenesisFreezerToast(
+        'error',
+        'Switch Solana wallet',
+        `This Genesis mouse is linked to Solana wallet ${selectedWallet}. Your connected wallet is ${walletAddress}. Please switch to ${selectedWallet}, refresh the Stake Lab, select only this mouse, and try again.`
+      );
+      return;
+    }
+  } catch (error) {
+    showGenesisFreezerToast(
+      'error',
+      'Wallet connection failed',
+      error.message || 'Please connect the wallet that owns the selected Genesis mouse.'
     );
     return;
   }
 
   const confirmed = await showGenesisFreezerConfirmModal(
-    'Freeze selected Genesis mice?',
-    `Production wallet confirmation: your wallet will send one Solana Memo transaction per selected Genesis mouse. Your NFTs stay in your wallet.`,
+    'Freeze Genesis Mouse with Wallet Memo?',
+    `This will send one Solana Memo transaction from ${formatGenesisFreezerWalletShort(selectedWallet)}. Your NFT stays in your wallet. This only confirms freezer intent for the selected Genesis mouse.`,
     'Sign Freeze Memo'
   );
 
@@ -3005,94 +3093,88 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
 
   if (button) {
     button.disabled = true;
-    button.textContent = `Preparing ${selectedMice.length} Memo...`;
+    button.textContent = 'Creating challenge...';
   }
-
-  let successCount = 0;
-  let failedCount = 0;
 
   try {
     const user_id = getUserId();
 
-    for (const selectedMouse of selectedMice) {
-      try {
-        const challengeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-freeze-challenge.php`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({
-            user_id: user_id || undefined,
-            wallet: selectedMouse.wallet || '',
-            token_id: selectedMouse.token_id || '',
-            collection: 'genesis'
-          })
-        });
+    const challengeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-freeze-challenge.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: user_id || undefined,
+        wallet: selectedMouse.wallet || '',
+        token_id: selectedMouse.token_id || '',
+        collection: 'genesis'
+      })
+    });
 
-        const challengeResult = await challengeResponse.json();
+    const challengeResult = await challengeResponse.json();
 
-        if (!challengeResult.success) {
-          throw new Error(challengeResult.error || 'Could not create freeze challenge.');
-        }
-
-        const challengeData = challengeResult.data || challengeResult;
-        const challengeId = Number(challengeData.challenge_id || challengeResult.challenge_id || challengeResult.id || 0);
-        const challengeMessage = String(challengeData.message || challengeResult.message || '').trim();
-        const challengeWallet = String(challengeData.ownership?.wallet || selectedMouse.wallet || '').trim();
-
-        if (!challengeId) {
-          throw new Error('Freeze challenge id missing from backend response.');
-        }
-
-        if (!challengeMessage) {
-          throw new Error('Freeze challenge message missing from backend response.');
-        }
-
-        if (button) {
-          button.textContent = `Sign Memo ${successCount + failedCount + 1}/${selectedMice.length}`;
-        }
-
-        const memoProof = await sendGenesisFreezerMemoTransaction(challengeMessage, challengeWallet);
-
-        if (button) {
-          button.textContent = `Verifying ${successCount + failedCount + 1}/${selectedMice.length}`;
-        }
-
-        const stakeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-stake.php`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({
-            user_id: user_id || undefined,
-            challenge_id: challengeId,
-            memo_signature: memoProof.signature
-          })
-        });
-
-        const stakeResult = await stakeResponse.json();
-
-        if (!stakeResult.success) {
-          throw new Error(stakeResult.error || 'Could not freeze Genesis mouse.');
-        }
-
-        successCount += 1;
-      } catch (error) {
-        failedCount += 1;
-        console.error('Genesis Mouse Freezer production freeze item failed:', error);
-      }
+    if (!challengeResult.success) {
+      throw new Error(challengeResult.error || 'Could not create freeze challenge.');
     }
 
-    if (successCount > 0) {
-      selectedGenesisFreezerTokenKeys.clear();
+    const challengeData = challengeResult.data || challengeResult;
+    const challengeId = Number(challengeData.challenge_id || challengeResult.challenge_id || challengeResult.id || 0);
+    const challengeMessage = String(challengeData.message || challengeResult.message || '').trim();
+    const challengeWallet = String(challengeData.ownership?.wallet || selectedMouse.wallet || '').trim();
+
+    if (!challengeId) {
+      throw new Error('Freeze challenge id missing from backend response.');
     }
+
+    if (!challengeMessage) {
+      throw new Error('Freeze challenge message missing from backend response.');
+    }
+
+    if (button) {
+      button.textContent = 'Sign wallet Memo...';
+    }
+
+    const memoProof = await sendGenesisFreezerMemoTransaction(challengeMessage, challengeWallet);
+
+    if (button) {
+      button.textContent = 'Verifying Memo...';
+    }
+
+    const stakeResponse = await fetch(`${API_BASE_URL}/api/user/create-genesis-nft-stake.php`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        user_id: user_id || undefined,
+        challenge_id: challengeId,
+        memo_signature: memoProof.signature
+      })
+    });
+
+    const stakeResult = await stakeResponse.json();
+
+    if (!stakeResult.success) {
+      throw new Error(stakeResult.error || 'Could not freeze Genesis mouse.');
+    }
+
+    selectedGenesisFreezerTokenKeys.clear();
 
     await loadGenesisMouseFreezerPreview();
     await loadStakingStats();
     await loadStakes();
 
     showGenesisFreezerToast(
-      failedCount > 0 ? 'error' : 'success',
-      failedCount > 0 ? 'Genesis freezer partly complete' : 'Genesis mice frozen',
-      `Frozen ${successCount} Genesis mouse/mice with wallet Memo proof.${failedCount > 0 ? ` ${failedCount} failed and can be retried.` : ''}`
+      'success',
+      'Genesis mouse frozen',
+      'Wallet Memo proof verified. This Genesis mouse is now active in the Mouse Freezer.'
+    );
+  } catch (error) {
+    console.error('Genesis Mouse Freezer production freeze failed:', error);
+
+    showGenesisFreezerToast(
+      'error',
+      'Genesis mouse freeze failed',
+      getGenesisFreezerFriendlyErrorMessage(error, selectedWallet)
     );
   } finally {
     if (button) {

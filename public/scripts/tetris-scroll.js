@@ -182,6 +182,124 @@ function applyRoleTheme() {
   }
 }
 
+/**
+ * Creates a safe looping background music controller for Narrrfs games.
+ *
+ * Plain language for DEVS:
+ * Browser audio cannot autoplay before a user action. This controller starts
+ * only after game start / player interaction, follows the global Narrrfs sound
+ * toggle, pauses on game pause, and stops when the run ends.
+ */
+window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function createNarrrfsGameMusicController(config) {
+  let audio = null;
+  let wantsPlayback = false;
+
+function isSoundAllowed() {
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isMusicEnabled === 'function') {
+    return window.NarrrfsAudio.isMusicEnabled();
+  }
+
+  if (window.NarrrfsSound && typeof window.NarrrfsSound.isEnabled === 'function') {
+    return window.NarrrfsSound.isEnabled();
+  }
+
+  return localStorage.getItem('narrrfs_music_enabled') !== 'false';
+}
+
+  function getAudio() {
+    if (audio) {
+      return audio;
+    }
+
+    audio = new Audio(config.src);
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.volume = typeof config.volume === 'number' ? config.volume : 0.22;
+
+    return audio;
+  }
+
+  async function start() {
+    wantsPlayback = true;
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    try {
+      const music = getAudio();
+      await music.play();
+    } catch (error) {
+      console.warn(`🎵 ${config.label} music could not start yet:`, error);
+    }
+  }
+
+  /**
+ * Pauses background music.
+ *
+ * Plain language for DEVS:
+ * keepWanted=true is for temporary browser/global-sound pauses.
+ * keepWanted=false is for real game pause, so sync listeners cannot restart
+ * music while Tetris is still paused.
+ */
+function pause(keepWanted = true) {
+  if (!keepWanted) {
+    wantsPlayback = false;
+  }
+
+  if (!audio) {
+    return;
+  }
+
+  audio.pause();
+}
+
+/**
+ * Suspends music because the game itself is paused.
+ */
+function suspend() {
+  pause(false);
+}
+
+  function stop() {
+    wantsPlayback = false;
+
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+  }
+
+  function sync() {
+    if (!wantsPlayback) {
+      return;
+    }
+
+    if (!isSoundAllowed() || document.hidden) {
+      pause();
+      return;
+    }
+
+    start();
+  }
+
+  window.addEventListener('storage', sync);
+window.addEventListener('narrrfs:music-toggle', sync);
+window.addEventListener('narrrfs:sound-toggle', sync);
+document.addEventListener('visibilitychange', sync);
+
+  return {
+  start,
+  pause,
+  suspend,
+  stop,
+  sync
+};
+};
+
 function getUserPrimaryRole() {
   const normalizedRoles = getNormalizedRoles();
   for (const role of rolePriority) {
@@ -286,9 +404,17 @@ class TetrisSoundManager {
       return;
     }
 
-    if (window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
-      return;
-    }
+    // Respect the shared Narrrfs SFX toggle.
+// DEVS FOR DECADES:
+// Generated Web Audio effects are short SFX, not background music.
+// They must follow SFX ON/OFF only.
+if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isSfxEnabled === 'function' && !window.NarrrfsAudio.isSfxEnabled()) {
+  return;
+}
+
+if (!window.NarrrfsAudio && window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
+  return;
+}
 
     try {
       const audioContext = this.getAudioContext();
@@ -338,6 +464,12 @@ class TetrisSoundManager {
 
 // Initialize Tetris sound manager
 const tetrisSounds = new TetrisSoundManager();
+
+window.tetrisMusicController = window.NarrrfsGameMusicFactory({
+  label: 'Tetris',
+  src: 'sounds/music/tetris.mp3',
+  volume: 0.18
+});
 
 // --- PNG Block Support simple only one template for all can be defined with new img/tetris ---
 let allImagesLoaded = false;
@@ -1089,6 +1221,8 @@ async function startTetris() {
   const canvas = document.getElementById("tetris-canvas");
   const context = canvas.getContext("2d");
   tetrisScoreDisplay = document.getElementById("tetris-score");
+window.tetrisMusicController?.start();
+
 
   // 🔄 HARD RESET INPUT STATE
   isTetrisPaused = false;
@@ -2047,6 +2181,7 @@ function toggleTetrisPause() {
     document.body.style.overflow = "";
     console.log('📱 Game PAUSED - Screen swipe ENABLED (user can scroll)');
     clearInterval(gameInterval);
+window.tetrisMusicController?.suspend();
 
     // 🚨 BUG #263 FIX: Re-enable all page links/buttons when paused
     document.querySelectorAll('a, button').forEach(el => {
@@ -2060,6 +2195,7 @@ function toggleTetrisPause() {
     console.log('📱 Game RESUMED - Screen swipe LOCKED (no scrolling)');
     clearInterval(gameInterval); // always reset interval
     gameInterval = setInterval(drop, dropInterval);
+    window.tetrisMusicController?.start();
     drop(); // redraw immediately
 
     // 🚨 BUG #263 FIX: Disable all page links/buttons during active gameplay (except modal buttons)
@@ -2370,6 +2506,7 @@ if (collide(current.shape, current.row, current.col)) {
         
         // 🎵 Play game over sound
         tetrisSounds.playSound('gameOver');
+        window.tetrisMusicController?.stop();
         
         // 🧀 Clear cheese particles on game over
         cheeseParticles.clear();
@@ -2944,6 +3081,7 @@ window.endTetrisGame = function() {
   // Reload the page to ensure a clean reset (no auto-start)
   cleanupTouchControls();
   localStorage.removeItem('tetris_auto_start');
+  window.tetrisMusicController?.stop();
   window.location.reload();
 };
 
@@ -2958,6 +3096,7 @@ window.restartTetrisGame = function() {
   }
   cleanupTouchControls();
   localStorage.setItem('tetris_auto_start', 'true');
+  window.tetrisMusicController?.stop();
   window.location.reload();
 };
 
