@@ -508,15 +508,16 @@
             </div>
 
             <div>
-              <div class="tab-group-label">Player + Holder Systems</div>
-              <div class="flex flex-wrap gap-2">
-                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="profileSystem">👤 Profile</button>
-                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="rolesSystem">🏆 Roles</button>
-                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="lab">🧬 Genesis Lab</button>
-                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="rewardChamber">🎁 Reward Chamber</button>
-                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="staking">🧊 DSPOINC Staking</button>
-              </div>
-            </div>
+  <div class="tab-group-label">Player + Holder Systems</div>
+  <div class="flex flex-wrap gap-2">
+    <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="profileSystem">👤 Profile</button>
+    <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="rolesSystem">🏆 Roles</button>
+    <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="lab">🧬 Genesis Lab</button>
+    <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="rewardChamber">🎁 Reward Chamber</button>
+    <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="staking">🧊 DSPOINC Staking</button>
+    <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="genesisMouseFreezer">🧬 NFT Freezer</button>
+  </div>
+</div>
 
             <div>
               <div class="tab-group-label">System Layer</div>
@@ -533,530 +534,2328 @@
 
 <div class="mt-8">
   <!-- Start Here Tabs -->
-  <div id="tab-masterIndex" class="tab-content active">
+    <div id="tab-masterIndex" class="tab-content active">
     <div id="masterIndexContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It gives members, holders, partners, and investors a customer-friendly
+         overview of Narrrfs World Season 12.
+         It does not activate systems, pay rewards, verify wallets, grant roles,
+         mutate NFTs, write DSPOINC, reset seasons, or bypass backend authority. -->
       <h1>☀️ Nerd Lab Overview</h1>
+
+```
+  <p>
+    Welcome to the Nerd Lab — the public system guide for Narrrf’s World.
+    This page explains how the project works in simple language:
+    games, profiles, Discord, DSPOINC, rewards, Genesis holders, Lab progress,
+    staking, marketplace systems, and the backend Cheese Engine that connects everything.
+  </p>
+
+  <p>
+    Season 12 is the current public world state of Narrrfs.
+    It is focused on live gameplay, monthly competition, stronger profile identity,
+    Genesis holder utility, DSPOINC economy systems, and preparing the next deeper staking and progression layers.
+  </p>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Simple customer explanation:</strong><br>
+    Narrrf’s World is a community GameFi ecosystem where players can play games,
+    earn DSPOINC, compete in monthly seasons, join Discord events, verify NFTs,
+    grow Genesis mice, use rewards, and build long-term profile identity.
+  </div>
+
+  <h2>What Narrrf’s World is today</h2>
+  <p>
+    Narrrf’s World is no longer only a mint page or a small arcade.
+    It is becoming a connected Web3 game world with a real backend structure behind it.
+  </p>
+
+  <ul>
+    <li><strong>Games:</strong> arcade games, Discord games, events, races, rumbles, and seasonal leaderboard competition.</li>
+    <li><strong>Profiles:</strong> a player hub that shows identity, scores, DSPOINC, rewards, roles, and holder direction.</li>
+    <li><strong>Discord:</strong> the live community engine for roles, missions, events, token rewards, digital items, and onboarding.</li>
+    <li><strong>DSPOINC:</strong> the internal Narrrfs reward and economy layer used across games, rewards, staking, and Lab systems.</li>
+    <li><strong>Genesis holders:</strong> verified Genesis Mouse owners can access deeper holder systems and long-term progression.</li>
+    <li><strong>Genesis Lab:</strong> the place where Genesis mice become long-term identity objects with names, traits, abilities, and history.</li>
+    <li><strong>Reward Chamber:</strong> the reward layer for boxes, claims, special prizes, and permanent reward history.</li>
+    <li><strong>Cheese Engine:</strong> the connected backend system that keeps scores, seasons, roles, rewards, DSPOINC, inventory, staking, and profiles synchronized.</li>
+  </ul>
+
+  <h2>The simple map</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>Lane 1 — Player Lane</h3>
       <p>
-        Nerd Lab is the public deep-dive into Narrrf’s World. It explains the system in normal language first,
-        then gives the technical facts for players, holders, partners, investors, and curious community members.
+        Join Discord, log in, play games, compete on leaderboards, earn DSPOINC,
+        open rewards, join events, complete missions, and build your profile.
       </p>
+    </div>
 
-      <h2>What Narrrf’s World is today</h2>
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>Lane 2 — Genesis Holder Lane</h3>
       <p>
-        Narrrf’s World is no longer only a mint page or a few arcade games. It is becoming a connected Web3 game ecosystem:
-        seasonal competition, player profiles, Discord roles, Genesis Lab progression, Reward Chamber, DSPOINC economy,
-        staking, admin visibility, and future ability-based gameplay.
+        Verify a Genesis Mouse, unlock holder roles, use Genesis Lab,
+        grow Mouse identity, prepare for ability systems, and access deeper holder utility.
       </p>
+    </div>
 
-      <h2>The simple map</h2>
-      <ul>
-        <li><strong>Lane 1 — Discord Player Lane:</strong> log in, play games, join events, earn DSPOINC, open rewards, and build a profile.</li>
-        <li><strong>Lane 2 — Genesis Holder Lane:</strong> verify a Genesis Mouse, name it, upgrade traits, use the Lab, and prepare for future abilities.</li>
-        <li><strong>Cheese Engine:</strong> the connected system layer that lets games, profiles, roles, rewards, Lab, DSPOINC, and admin tools work together.</li>
-      </ul>
-
-      <h2>Current Season 12 focus</h2>
-      <ul>
-        <li>Fresh summer leaderboard competition.</li>
-        <li>9-game ecosystem direction.</li>
-        <li>Labyrinth Blast as the newest highlighted game surface.</li>
-        <li>Genesis Lab as the holder progression layer.</li>
-        <li>Reward Chamber and DSPOINC economy as permanent progression systems.</li>
-        <li>Clear reset rule: leaderboards can reset, permanent player progress stays safe.</li>
-      </ul>
-
-      <h2>Important reset rule</h2>
+    <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+      <h3>Cheese Engine</h3>
       <p>
-        Seasonal leaderboards can reset. Permanent systems should stay safe:
-        Genesis Lab progression, Mouse names, Reward Chamber history, DSPOINC balances, staking,
-        inventory, marketplace state, wallet links, roles, and holder identity.
+        The backend memory layer that connects website pages, games, profiles,
+        Discord bot systems, DSPOINC, roles, rewards, NFTs, staking, and admin tools.
       </p>
     </div>
   </div>
 
-  <div id="tab-twoLanes" class="tab-content">
+  <h2>Current Season 12 focus</h2>
+  <p>
+    Season 12 is about making the live ecosystem easier to understand and stronger to use.
+    The project is connecting more systems together instead of leaving each feature isolated.
+  </p>
+
+  <ul>
+    <li><strong>Monthly leaderboard competition:</strong> fresh seasonal races across the games.</li>
+    <li><strong>Monthly reward direction:</strong> top players can be reviewed for rewards based on current event and season rules.</li>
+    <li><strong>9-game ecosystem direction:</strong> Narrrfs keeps expanding the playable world across website and Discord games.</li>
+    <li><strong>Labyrinth Blast:</strong> one of the newest highlighted game surfaces in the ecosystem.</li>
+    <li><strong>Profile hub:</strong> the player passport for scores, DSPOINC, roles, rewards, and holder direction.</li>
+    <li><strong>Genesis Lab:</strong> the holder progression layer for names, traits, abilities, and NFT-bound Mouse identity.</li>
+    <li><strong>Genetic Inventory and Marketplace:</strong> player-bound item systems that add a second progression and trading lane.</li>
+    <li><strong>Stake Lab:</strong> DSPOINC staking, NFT verification, Genesis Mouse Freezer, and Season 13 V2 preparation.</li>
+    <li><strong>Discord Bot:</strong> live community games, missions, X tasks, rewards, token airdrops, digital items, and onboarding support.</li>
+  </ul>
+
+  <h2>Why the Nerd Lab exists</h2>
+  <p>
+    Narrrf’s World has many connected systems.
+    Nerd Lab makes those systems easier to understand without needing to read code,
+    database rows, Discord bot files, or admin notes.
+  </p>
+
+  <p>
+    It is useful for:
+  </p>
+
+  <ul>
+    <li><strong>New members:</strong> understand where to start and what the world offers.</li>
+    <li><strong>Players:</strong> understand games, profiles, DSPOINC, leaderboards, and rewards.</li>
+    <li><strong>Genesis holders:</strong> understand holder roles, Genesis Lab, NFT-bound progress, staking direction, and Mouse utility.</li>
+    <li><strong>Partners:</strong> understand how events, campaigns, rewards, missions, and community activations can connect.</li>
+    <li><strong>Investors and builders:</strong> understand that Narrrfs is building a live system with backend data, APIs, Discord automation, and economy tools.</li>
+  </ul>
+
+  <h2>What makes the system different</h2>
+  <p>
+    Many NFT projects only have a collection, a Discord, and announcements.
+    Narrrf’s World is building a connected game and community data system.
+  </p>
+
+  <ul>
+    <li>The website connects to player profiles, leaderboards, rewards, staking, Lab, and documentation.</li>
+    <li>The Discord bot connects to events, roles, rumbles, races, missions, airdrops, token rewards, and onboarding.</li>
+    <li>The SQL database stores player history, seasons, DSPOINC movement, NFT verification, marketplace state, reward claims, and Lab progression.</li>
+    <li>The Cheese Engine keeps seasonal competition separate from permanent economy and holder progress.</li>
+    <li>AI-assisted agent workflows help the team document, review, and safely plan updates without replacing backend truth.</li>
+  </ul>
+
+  <h2>Season model in one sentence</h2>
+  <p>
+    Every season creates a fresh leaderboard race, but Narrrfs saves the old season story and protects permanent player progress.
+  </p>
+
+  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+    <strong>Important reset rule:</strong><br>
+    Leaderboards can reset for fresh monthly competition.<br>
+    DSPOINC balances, staking, Genesis Lab progress, Mouse names, ability levels,
+    Genetic Inventory, marketplace state, Reward Chamber history, roles, wallet verification,
+    and holder identity should not reset like monthly scores.
+  </div>
+
+  <h2>Current public safety status</h2>
+  <p>
+    Season 12 is the public context.
+    Some deeper systems are being prepared or tested carefully before wider activation.
+  </p>
+
+  <ul>
+    <li><strong>Genesis Mouse Freezer:</strong> wallet-proof testing has progressed, but public rollout should follow official team status.</li>
+    <li><strong>DSPOINC Staking V2:</strong> prepared as a future staking layer, but not described as publicly active until intentionally activated.</li>
+    <li><strong>Frontend previews:</strong> pages may show information and previews, but backend APIs decide final rewards, ownership, claims, roles, and balances.</li>
+  </ul>
+
+  <h2>Short version</h2>
+  <p>
+    Narrrf’s World Season 12 is a live GameFi ecosystem with games, monthly seasons,
+    DSPOINC rewards, player profiles, Discord events, Genesis holder utility,
+    Lab progression, staking preparation, marketplace systems, and a backend Cheese Engine
+    that keeps everything connected.
+  </p>
+
+  <h2>Where members should go first</h2>
+  <p>
+    <a href="index.html">Open Home</a><br>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="stake-lab.html?open=verify-nfts">Verify NFTs</a><br>
+    <a href="lab.html">Open Genesis Lab</a><br>
+    <a href="get-roles.html">Read Get Roles</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-twoLanes" class="tab-content">
     <div id="twoLanesContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Narrrfs two-lane onboarding model in simple customer language.
+         It does not verify wallets, grant roles, pay rewards, write DSPOINC,
+         mutate NFTs, or bypass backend authority. -->
       <h1>🧭 The 2-Lane System</h1>
-      <p>
-        Narrrf’s World is built so people can join before they understand every technical detail.
-        The ecosystem has two clear lanes: one for players and one for Genesis holders.
-      </p>
 
-      <h2>Lane 1 — Discord Player Lane</h2>
-      <p>
-        This is the open entry lane. A player can start with Discord login, games, weekly events, missions,
-        rewards, and DSPOINC activity. This lane builds community identity before NFT ownership is required.
-      </p>
+```
+  <p>
+    Narrrf’s World is built so anyone can start without needing to understand every Web3 detail on day one.
+    You can join as a normal player first, play games, join events, earn rewards, and build your profile.
+    If you later own or mint a Genesis Mouse, you can unlock the deeper holder lane.
+  </p>
 
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Simple explanation:</strong><br>
+    Lane 1 is for every player.<br>
+    Lane 2 is for verified Genesis holders.<br>
+    Both lanes connect through your profile, Discord identity, DSPOINC activity, rewards, and the Cheese Engine.
+  </div>
+
+  <h2>Lane 1 — Player Lane</h2>
+  <p>
+    The Player Lane is the open entry point into Narrrf’s World.
+    You do not need to own a Genesis Mouse to start having fun.
+  </p>
+
+  <p>
+    A player can join Discord, log in on the website, play games, enter seasonal leaderboard races,
+    join community events, complete missions, earn DSPOINC, open rewards, and grow a public profile.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>What players can do</h3>
       <ul>
-        <li>Discord login creates the daily player identity.</li>
-        <li>Games create scores, leaderboard history, and activity.</li>
-        <li>Events like Cheese Rumble, Cheese Race, bingo, poker, spaces, and VR moments create community loops.</li>
-        <li>DSPOINC connects rewards, activity, staking, and future utility.</li>
-        <li>The profile becomes the player passport for scores, roles, rewards, missions, and future RPG direction.</li>
+        <li>Play Narrrfs website games.</li>
+        <li>Join Discord races, rumbles, events, and missions.</li>
+        <li>Compete in monthly leaderboard seasons.</li>
+        <li>Earn DSPOINC and reward moments.</li>
+        <li>Build a profile with scores, activity, roles, and history.</li>
       </ul>
+    </div>
 
-      <h2>Lane 2 — Genesis Holder Lane</h2>
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>Why it matters</h3>
       <p>
-        This is the deeper Lab lane. It starts when a player owns or mints a Genesis Mouse and verifies holder access.
-        The Mouse becomes a long-term identity object inside Narrrf’s World.
-      </p>
-
-      <ul>
-        <li>Genesis Mouse ownership opens deeper holder access.</li>
-        <li>Mouse names personalize the holder identity.</li>
-        <li>Trait upgrades create NFT-bound progression direction.</li>
-        <li>Timed Lab research turns progression into a system, not only a static image.</li>
-        <li>Future ability direction starts from verified Genesis identity.</li>
-      </ul>
-
-      <h2>Why this matters</h2>
-      <p>
-        Players can build activity and community identity in Lane 1. Holders can go deeper in Lane 2.
-        This structure makes onboarding easier and protects Genesis value because the Genesis Mouse remains the core holder identity.
+        The Player Lane makes Narrrf’s World easy to enter.
+        It lets people become part of the community before they decide to become deeper holders.
       </p>
     </div>
+  </div>
+
+  <h2>Lane 2 — Genesis Holder Lane</h2>
+  <p>
+    The Genesis Holder Lane starts when a member owns or mints a Genesis Mouse and verifies ownership.
+    This lane goes deeper than normal gameplay because the Genesis Mouse becomes a long-term identity object inside Narrrf’s World.
+  </p>
+
+  <p>
+    Genesis holders can use systems such as holder roles, Genesis Lab, Mouse naming, trait progression,
+    ability direction, Genesis Mouse Freezer, future staking boosts, and deeper profile visibility.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+      <h3>What Genesis holders can do</h3>
+      <ul>
+        <li>Verify Genesis Mouse ownership.</li>
+        <li>Unlock holder and Genesis tier roles.</li>
+        <li>Name and grow a Genesis Mouse identity.</li>
+        <li>Use Genesis Lab progression systems.</li>
+        <li>Prepare for Fitness, Weapons, and Education ability direction.</li>
+        <li>Use Genesis Mouse Freezer when eligible and officially available.</li>
+      </ul>
+    </div>
+
+    <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+      <h3>Why it matters</h3>
+      <p>
+        The Holder Lane gives Genesis mice a reason to matter beyond the image.
+        A Genesis Mouse can build history, progress, utility, and identity inside the Narrrfs ecosystem.
+      </p>
+    </div>
+  </div>
+
+  <h2>Player progress vs Genesis progress</h2>
+  <p>
+    The two lanes are connected, but they are not the same thing.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>Player progress</h3>
+      <p>
+        Discord identity, game scores, seasonal activity, DSPOINC balance, Reward Chamber history,
+        missions, event participation, and normal community roles.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>Genesis progress</h3>
+      <p>
+        Genesis Mouse name, trait levels, Lab history, ability levels, freezer history,
+        holder tier direction, and future NFT-bound progression.
+      </p>
+    </div>
+  </div>
+
+  <h2>Why Narrrfs uses two lanes</h2>
+  <p>
+    The two-lane model keeps the world open while still protecting Genesis value.
+    New people can enter as players, learn the ecosystem, join events, and become active without pressure.
+    Genesis holders can go deeper with ownership-based utility and long-term Mouse progression.
+  </p>
+
+  <ul>
+    <li><strong>Better onboarding:</strong> new members can start with games and Discord.</li>
+    <li><strong>More activity:</strong> players can join seasonal races, events, missions, and rewards.</li>
+    <li><strong>Stronger holder value:</strong> Genesis mice remain the core identity objects for deeper systems.</li>
+    <li><strong>Cleaner economy:</strong> player rewards, DSPOINC, Genesis progression, and staking can be explained separately.</li>
+    <li><strong>Future RPG direction:</strong> both normal activity and Genesis ownership can matter over time.</li>
+  </ul>
+
+  <h2>Short version</h2>
+  <p>
+    Lane 1 lets everyone play and build a Narrrfs profile.
+    Lane 2 lets Genesis holders build deeper Mouse identity and progression.
+    Together, they make Narrrf’s World open for players and valuable for holders.
+  </p>
+
+  <h2>Where members should go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="stake-lab.html?open=verify-nfts">Verify NFTs</a><br>
+    <a href="lab.html">Open Genesis Lab</a><br>
+    <a href="get-roles.html">Read Get Roles</a>
+  </p>
+</div>
+```
+
   </div>
 
   <div id="tab-cheeseEngine" class="tab-content">
     <div id="cheeseEngineContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Cheese Engine as the connected Narrrfs system layer.
+         It does not expose private APIs, credentials, admin tools, database secrets,
+         reward logic, or protected backend operations. -->
       <h1>🧀 The Cheese Engine</h1>
+
+```
+  <p>
+    The Cheese Engine is the name for the connected system behind Narrrf’s World.
+    It is not one single button. It is the way the website, Discord bot, games,
+    profiles, leaderboards, DSPOINC, rewards, roles, Lab systems, marketplace,
+    staking, and admin tools work together.
+  </p>
+
+  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+    <strong>Simple customer explanation:</strong><br>
+    The Cheese Engine is the invisible engine that remembers what players do,
+    checks important actions, updates profiles, connects rewards, and keeps Narrrf’s World synchronized.
+  </div>
+
+  <h2>What the Cheese Engine connects</h2>
+  <p>
+    Narrrf’s World has many moving parts. The Cheese Engine is the idea that all of those parts should speak to each other
+    instead of acting like separate disconnected pages.
+  </p>
+
+  <ul>
+    <li><strong>Website games:</strong> scores, activity, leaderboards, and seasonal competition.</li>
+    <li><strong>Discord bot:</strong> races, rumbles, missions, roles, events, token rewards, and digital items.</li>
+    <li><strong>Profile:</strong> player identity, scores, DSPOINC, roles, rewards, and holder direction.</li>
+    <li><strong>DSPOINC economy:</strong> earned rewards, staking state, frozen balances, claims, and ledger history.</li>
+    <li><strong>Reward Chamber:</strong> boxes, prizes, reward claims, and reward history.</li>
+    <li><strong>Genesis Lab:</strong> Mouse names, trait levels, ability direction, and NFT-bound progress.</li>
+    <li><strong>Genetic systems:</strong> Genetic Shop, Inventory, boosters, and Marketplace item movement.</li>
+    <li><strong>Stake Lab:</strong> NFT verification, DSPOINC staking, Genesis Mouse Freezer, and V2 preparation.</li>
+    <li><strong>Admin tools:</strong> support, review, audit visibility, events, bugs, and operations.</li>
+  </ul>
+
+  <h2>How it feels for a player</h2>
+  <p>
+    A player should not need to think about APIs, databases, or backend checks.
+    They should feel a simple flow:
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>1. Do something</h3>
       <p>
-        The Cheese Engine is the symbolic name for the connected system behind Narrrf’s World.
-        It is not one single button or file. It is the way games, profiles, roles, rewards, DSPOINC,
-        Lab upgrades, admin tools, and future gameplay are designed to work together.
+        Play a game, join a race, claim a reward, verify NFTs, upgrade a Mouse, buy an item, or complete a mission.
       </p>
+    </div>
 
-      <h2>Simple flow</h2>
-      <ul>
-        <li><strong>Player acts:</strong> plays a game, opens a reward, joins an event, upgrades a trait, or checks profile progress.</li>
-        <li><strong>Backend validates:</strong> checks session, season, user identity, score rules, reward logic, wallet/holder state, and Lab conditions.</li>
-        <li><strong>World updates:</strong> scores, DSPOINC, rewards, profile history, Lab progress, and admin visibility stay connected.</li>
-      </ul>
-
-      <h2>What it connects</h2>
-      <ul>
-        <li>Discord identity and player sessions.</li>
-        <li>Game scores and active season logic.</li>
-        <li>Leaderboards, missions, and rewards.</li>
-        <li>DSPOINC ledger and staking direction.</li>
-        <li>Genesis Lab trait progression and Mouse identity.</li>
-        <li>Reward Chamber boxes and claim routing.</li>
-        <li>Admin tools and audit visibility.</li>
-      </ul>
-
-      <h2>Long-term direction</h2>
+    <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+      <h3>2. System checks it</h3>
       <p>
-        The goal is symbolic cross-game recognition. Over time, roles, Genesis traits, Mouse names,
-        ability direction, rewards, and profile history can matter across multiple experiences without confusing
-        seasonal leaderboards with permanent progression.
+        The backend checks the user, season, score, wallet, role, reward, balance, ownership, or claim state.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>3. World updates</h3>
+      <p>
+        Profile, leaderboard, DSPOINC history, rewards, Lab progress, inventory, roles, or admin visibility update safely.
       </p>
     </div>
   </div>
 
-  <div id="tab-gameOverview" class="tab-content">
+  <h2>Why the Cheese Engine matters</h2>
+  <p>
+    Without the Cheese Engine, Narrrf’s World would be a group of separate things:
+    one game here, one Discord event there, one reward page somewhere else.
+  </p>
+
+  <p>
+    With the Cheese Engine, actions can become part of the bigger world.
+    A game score can affect profile history. A Discord event can connect to rewards.
+    NFT verification can unlock holder systems. Lab progress can make a Genesis Mouse more meaningful.
+    DSPOINC activity can become part of the player’s long-term economy story.
+  </p>
+
+  <h2>Season scores vs permanent progress</h2>
+  <p>
+    One of the most important Cheese Engine rules is the difference between seasonal competition and permanent progress.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+      <h3>Season scores</h3>
+      <p>
+        Monthly leaderboard scores can reset so every season feels fresh and competitive.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+      <h3>Permanent progress</h3>
+      <p>
+        DSPOINC, roles, rewards, Genesis Lab progress, inventory, marketplace state,
+        staking, wallet verification, and Mouse identity should stay protected.
+      </p>
+    </div>
+  </div>
+
+  <h2>Cheese Engine examples</h2>
+  <ul>
+    <li>A player plays Tetris and the score appears in the seasonal leaderboard and profile direction.</li>
+    <li>A member joins a Discord Cheese Race and the bot can connect the event to reward flows.</li>
+    <li>A holder verifies NFTs and unlocks holder roles, Genesis visibility, and staking/freezer options.</li>
+    <li>A Genesis Mouse gains Lab progress and becomes a stronger long-term identity object.</li>
+    <li>A player earns or spends DSPOINC and the economy history stays visible and reviewable.</li>
+    <li>A Genetic Item is listed or bought in the Marketplace and item ownership updates through backend rules.</li>
+  </ul>
+
+  <h2>Why this is useful for partners and investors</h2>
+  <p>
+    The Cheese Engine shows that Narrrf’s World is building a connected platform, not only a collection page.
+    Games, Discord, profiles, rewards, roles, inventory, staking, and NFT utility can all support each other.
+  </p>
+
+  <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+    <strong>Platform summary:</strong><br>
+    Narrrfs can plug gameplay, Discord events, reward campaigns, partner activations,
+    Genesis holder utility, and economy systems into one connected backend structure.
+  </div>
+
+  <h2>Long-term direction</h2>
+  <p>
+    The long-term goal is cross-system recognition.
+    Over time, a player’s roles, Genesis Mouse, ability levels, DSPOINC activity,
+    game history, mission activity, rewards, and profile identity can matter across more Narrrfs experiences.
+  </p>
+
+  <p>
+    This is why Narrrfs separates temporary monthly leaderboards from permanent ecosystem progress.
+    Fresh competitions stay fun, while long-term identity and economy history remain meaningful.
+  </p>
+
+  <h2>Safety rule</h2>
+  <p>
+    The Cheese Engine should always be explained as a connected game and community system.
+    It should not be described as guaranteed profit, guaranteed token value, or automatic financial return.
+    It is about utility, activity, identity, rewards, progression, and backend trust.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    The Cheese Engine is the connected memory and action layer of Narrrf’s World.
+    It helps games, Discord, profiles, DSPOINC, rewards, roles, Lab progress,
+    staking, marketplace systems, and admin support work together as one ecosystem.
+  </p>
+
+  <h2>Where members should go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="stake-lab.html?open=verify-nfts">Verify NFTs</a><br>
+    <a href="lab.html">Open Genesis Lab</a><br>
+    <a href="project-updates.html">Read Project Updates</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-gameOverview" class="tab-content">
     <div id="gameOverviewContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Season 12 game ecosystem in customer-friendly language.
+         It does not save scores, pay DSPOINC, reset seasons, modify leaderboards,
+         run Discord games, grant roles, or bypass backend authority. -->
       <h1>🎮 Season 12 Game Overview</h1>
+
+```
+  <p>
+    Games are the action layer of Narrrf’s World.
+    They are where players compete, earn activity, build profile history,
+    join seasonal races, unlock reward moments, and keep the community alive.
+  </p>
+
+  <p>
+    Season 12 connects the Narrrfs game world across website games, Discord games,
+    hidden activity systems, profile stats, leaderboards, DSPOINC rewards, roles,
+    events, and monthly competition.
+  </p>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Simple customer explanation:</strong><br>
+    Narrrf’s World is not only one game.
+    It is a growing 9-game ecosystem where website games, Discord games,
+    seasonal leaderboards, DSPOINC rewards, events, and profile history work together.
+  </div>
+
+  <h2>The 9 synced game surfaces</h2>
+  <p>
+    Narrrfs Season 12 is built around nine connected game and activity surfaces.
+    Some are classic website arcade games, some are Discord event games,
+    and some are activity systems that support missions, rewards, and community interaction.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+      <h3>🧱 Tetris</h3>
       <p>
-        Games are the action layer of Narrrf’s World. They create activity, competition, DSPOINC flow,
-        profile history, missions, role value, and future RPG signals.
+        Classic arcade score game. Players compete for seasonal scores,
+        profile activity, and leaderboard position.
       </p>
+    </div>
 
-      <h2>Season 12 ecosystem surfaces</h2>
-      <ul>
-        <li><strong>Tetris</strong> — classic score ladder, game key <code>tetris</code>.</li>
-        <li><strong>Snake</strong> — classic score ladder, game key <code>snake</code>.</li>
-        <li><strong>Space Cheese Invaders</strong> — arcade shooter score ladder, game key <code>space_invaders</code>.</li>
-        <li><strong>Cheese Runner</strong> — player-facing runner game, backend game key <code>cheeseman</code>.</li>
-        <li><strong>Labyrinth Blast</strong> — newest highlighted action game, backend game key <code>labyrinth_blast</code>.</li>
-        <li><strong>Glyph Memory</strong> — memory/time-trial system using its own Glyph table path.</li>
-        <li><strong>Cheese Hunt</strong> — hidden cheese / click activity layer.</li>
-        <li><strong>Discord Cheese Race</strong> — Discord event game lane.</li>
-        <li><strong>Cheese Rumble</strong> — Discord battle / community chaos lane.</li>
-      </ul>
-
-      <h2>Important technical split</h2>
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>🐍 Snake</h3>
       <p>
-        Not every game uses the same database table. Classic score-ladder games use the seasonal score system.
-        Glyph Memory uses a separate time-trial path. Discord event games can be persistent/event systems unless a future reset explicitly changes that.
+        Classic score ladder game. Simple to enter, hard to master,
+        and perfect for monthly competition.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-pink-300/25 bg-pink-400/10 p-4">
+      <h3>🚀 Space Cheese Invaders</h3>
+      <p>
+        Arcade shooter lane. Players fight through waves and push for better seasonal scores.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>🧀 Cheese Runner</h3>
+      <p>
+        Runner-style website game with Narrrfs flavor.
+        It adds fast action and player activity to the seasonal game stack.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+      <h3>💣 Labyrinth Blast</h3>
+      <p>
+        One of the newest highlighted action games.
+        It brings maze movement, bombs, enemies, and stronger arcade energy into the ecosystem.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+      <h3>🔮 Glyph Memory</h3>
+      <p>
+        Memory and time-trial game lane.
+        It tests focus, pattern memory, and speed instead of only classic arcade reflexes.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-lime-300/25 bg-lime-400/10 p-4">
+      <h3>🧀 Cheese Hunt</h3>
+      <p>
+        Hidden cheese activity layer on the website.
+        It turns page visits into small discovery moments, quests, and reward-style engagement.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-red-300/25 bg-red-400/10 p-4">
+      <h3>🏁 Discord Cheese Race</h3>
+      <p>
+        Discord event game where members join races, compete live,
+        and create community reward moments directly in the server.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-indigo-300/25 bg-indigo-400/10 p-4">
+      <h3>🥊 Cheese Rumble</h3>
+      <p>
+        Discord battle and community chaos lane.
+        It supports fast event energy, holder battles, partner nights, and reward activations.
       </p>
     </div>
   </div>
 
-  <div id="tab-tetris" class="tab-content">
-    <div id="tetrisContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
-      <h1>🧩 Tetris</h1>
-      <p>
-        Tetris is one of the core arcade score games inside Narrrf’s World. It is part of the seasonal competition layer.
-      </p>
+  <h2>Website games vs Discord games</h2>
+  <p>
+    Narrrfs uses both website games and Discord games because members interact in different ways.
+    Some players like arcade score runs on the website. Others join live community events in Discord.
+    Both are important.
+  </p>
 
-      <h2>Customer explanation</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+      <h3>Website game lane</h3>
       <p>
-        Players play Tetris, save a score, and climb the seasonal leaderboard. The score contributes to the competitive arcade identity.
-      </p>
-
-      <h2>Technical facts</h2>
-      <ul>
-        <li><strong>Game key:</strong> <code>tetris</code></li>
-        <li><strong>Season source:</strong> active season from <code>tbl_seasons</code></li>
-        <li><strong>Score table:</strong> <code>tbl_tetris_scores</code></li>
-        <li><strong>Leaderboard API:</strong> <code>api/dev/get-leaderboard.php</code></li>
-        <li><strong>General score API:</strong> <code>api/dev/save-score.php</code></li>
-      </ul>
-
-      <h2>Reset behavior</h2>
-      <p>
-        Tetris is seasonal. Its leaderboard rows can be archived/reset during a season reset after backup and archive verification.
+        Tetris, Snake, Space Cheese Invaders, Cheese Runner, Labyrinth Blast,
+        Glyph Memory, and Cheese Hunt create score, profile, and activity signals on the website.
       </p>
     </div>
+
+    <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+      <h3>Discord game lane</h3>
+      <p>
+        Cheese Race and Cheese Rumble keep the community active inside Discord
+        with live events, quick joins, rewards, and social competition.
+      </p>
+    </div>
+  </div>
+
+  <h2>How games connect to seasons</h2>
+  <p>
+    The main website score games can connect to the active season.
+    This lets Narrrfs run monthly leaderboard races where everyone gets a fresh chance to compete.
+  </p>
+
+  <ul>
+    <li>Players play games during the active season.</li>
+    <li>Scores can appear in seasonal leaderboards.</li>
+    <li>Profile pages can show current-season activity and game history.</li>
+    <li>At the end of a season, top players can be reviewed for monthly rewards.</li>
+    <li>The next season starts fresh while old season history can stay archived in the Cheese Engine.</li>
+  </ul>
+
+  <h2>How games connect to DSPOINC</h2>
+  <p>
+    Games help create DSPOINC activity and reward direction.
+    DSPOINC can come from gameplay, events, reward systems, claims, admin-approved rewards,
+    or special campaigns depending on the active rules.
+  </p>
+
+  <p>
+    The important rule is that the frontend game screen does not become the final economy authority.
+    Scores, rewards, DSPOINC movement, and claim state must stay connected to backend checks and audit history.
+  </p>
+
+  <h2>How games connect to Profile</h2>
+  <p>
+    The Profile page is where game activity becomes readable for the player.
+    Members should be able to understand what they played, how active they are,
+    what scores they made, what rewards they touched, and how deep they are inside the ecosystem.
+  </p>
+
+  <ul>
+    <li>Game scores help build player history.</li>
+    <li>Seasonal stats help show current competition progress.</li>
+    <li>All-time activity helps show long-term participation.</li>
+    <li>Roles and rewards can make game participation more meaningful.</li>
+  </ul>
+
+  <h2>How games connect to roles and events</h2>
+  <p>
+    Games are also a community signal.
+    A strong player, active tester, event winner, race champion, or rumble participant can become more visible through roles,
+    Discord recognition, project updates, and reward moments.
+  </p>
+
+  <ul>
+    <li>Leaderboard players can become monthly legends or competition highlights.</li>
+    <li>Event winners can receive community recognition.</li>
+    <li>Discord games can support holder nights, partner events, and sponsored rewards.</li>
+    <li>Game activity can help future RPG direction because player behavior becomes readable.</li>
+  </ul>
+
+  <h2>Why 9 games matter</h2>
+  <p>
+    A 9-game ecosystem gives Narrrfs more than one way to keep members active.
+    Not every player likes the same kind of game, so the ecosystem gives different entry points:
+    classic arcade, shooter, runner, memory, maze action, hidden quests, Discord races, and Discord battles.
+  </p>
+
+  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+    <strong>Short version:</strong><br>
+    The games are the heartbeat of Narrrf’s World.
+    They create activity, competition, DSPOINC movement, event energy,
+    profile history, and reasons for members to come back every season.
+  </div>
+
+  <h2>Important system boundary</h2>
+  <p>
+    Not every game uses the exact same technical path.
+    Classic score games can use seasonal score systems.
+    Glyph Memory can use its own memory/time-trial path.
+    Discord games can work as live event systems.
+    Cheese Hunt can work as a hidden activity and quest layer.
+  </p>
+
+  <p>
+    Members do not need to understand the database details.
+    They only need to know that Narrrfs connects the games into one ecosystem,
+    while the backend keeps score saving, reward logic, and season history protected.
+  </p>
+
+  <h2>Where members should go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="index.html#games">Find Website Games</a><br>
+    <a href="project-updates.html">Read Project Updates</a><br>
+    <a href="nerd-lab.html">Open Nerd Lab</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-tetris" class="tab-content">
+    <div id="tetrisContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Tetris in player-friendly language.
+         It does not save scores, calculate rewards, reset seasons,
+         change leaderboards, or bypass backend authority. -->
+      <h1>🧩 Tetris</h1>
+
+```
+  <p>
+    Tetris is one of the core arcade games inside Narrrf’s World.
+    It is simple to understand, fast to start, and perfect for players who like clean score competition.
+  </p>
+
+  <p>
+    The goal is easy: stack blocks, clear lines, survive longer, and push your score higher.
+    Every run gives players another chance to improve, climb the seasonal leaderboard, and build their arcade identity.
+  </p>
+
+  <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Play Tetris, clear lines, save your score, and fight for a stronger position in the current Narrrfs season.
+  </div>
+
+  <h2>Why players like it</h2>
+  <ul>
+    <li>Easy to learn and quick to play.</li>
+    <li>Great for short score runs and leaderboard pushes.</li>
+    <li>Rewards focus, timing, planning, and clean movement.</li>
+    <li>Every new season gives players a fresh chance to climb.</li>
+    <li>It fits perfectly into the classic arcade side of Narrrf’s World.</li>
+  </ul>
+
+  <h2>How it connects to Narrrf’s World</h2>
+  <p>
+    Tetris is part of the Season 12 game stack.
+    It supports the arcade competition lane, profile activity direction, leaderboard races,
+    and the wider Cheese Engine that connects games, scores, DSPOINC direction, and player history.
+  </p>
+
+  <h2>Season competition</h2>
+  <p>
+    Tetris belongs to the monthly leaderboard model.
+    Players can compete during the active season, and when a new season begins,
+    the leaderboard race can start fresh while the old season story can stay saved in the Narrrfs history.
+  </p>
+
+  <h2>Player feeling</h2>
+  <p>
+    Tetris is the calm but dangerous game.
+    It starts simple, then slowly becomes pressure, speed, and survival.
+    A good run feels clean, focused, and earned.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Tetris is the classic block-stacking score game of Narrrf’s World:
+    clear lines, survive pressure, climb the board, and come back every season for a fresh race.
+  </p>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="index.html#games">Find Website Games</a>
+  </p>
+</div>
+```
+
   </div>
 
   <div id="tab-snake" class="tab-content">
     <div id="snakeContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Snake in player-friendly language.
+         It does not save scores, calculate rewards, reset seasons,
+         change leaderboards, or bypass backend authority. -->
       <h1>🐍 Snake</h1>
-      <p>
-        Snake is a core arcade score game and part of the seasonal leaderboard race.
-      </p>
 
-      <h2>Customer explanation</h2>
-      <p>
-        Players collect cheese, grow the snake, and try to place high on the seasonal board.
-        It is simple to understand, fast to play, and easy for new members to join.
-      </p>
+```
+  <p>
+    Snake is one of the easiest Narrrfs games to understand and one of the hardest to master.
+    Players move, collect cheese, grow longer, avoid crashing, and try to build the best score possible.
+  </p>
 
-      <h2>Technical facts</h2>
-      <ul>
-        <li><strong>Game key:</strong> <code>snake</code></li>
-        <li><strong>Season source:</strong> active season from <code>tbl_seasons</code></li>
-        <li><strong>Score table:</strong> <code>tbl_tetris_scores</code></li>
-        <li><strong>Leaderboard API:</strong> <code>api/dev/get-leaderboard.php</code></li>
-        <li><strong>General score API:</strong> <code>api/dev/save-score.php</code></li>
-      </ul>
+  <p>
+    It is a perfect entry game for new members because the rules are simple.
+    But every strong player knows the real challenge starts when the snake gets long and the board gets tight.
+  </p>
 
-      <h2>Reset behavior</h2>
-      <p>
-        Snake is a seasonal score-ladder game. Its leaderboard can reset after the season is safely archived.
-      </p>
-    </div>
+  <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Collect cheese, grow your snake, avoid crashing, and push your score higher on the seasonal leaderboard.
+  </div>
+
+  <h2>Why players like it</h2>
+  <ul>
+    <li>Very easy to start.</li>
+    <li>Fast rounds make it great for quick competition.</li>
+    <li>Perfect for new players who want a simple first game.</li>
+    <li>Still challenging for experienced players chasing top scores.</li>
+    <li>Every move matters more as the snake grows.</li>
+  </ul>
+
+  <h2>How it connects to Narrrf’s World</h2>
+  <p>
+    Snake is part of the Season 12 arcade and leaderboard lane.
+    It helps create player activity, profile history, seasonal competition,
+    and repeat gameplay inside the Narrrfs ecosystem.
+  </p>
+
+  <h2>Season competition</h2>
+  <p>
+    Snake works well with monthly seasons because anyone can jump in and try again.
+    A new season means a fresh board, a fresh chance, and a new reason to chase the top.
+  </p>
+
+  <h2>Player feeling</h2>
+  <p>
+    Snake feels friendly at first, then becomes a nervous cheese maze.
+    The more you collect, the more dangerous every turn becomes.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Snake is the fast cheese-collecting survival game of Narrrf’s World:
+    simple rules, quick runs, dangerous turns, and a fresh leaderboard chase every season.
+  </p>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="index.html#games">Find Website Games</a>
+  </p>
+</div>
+```
+
   </div>
 
   <div id="tab-spaceInvaders" class="tab-content">
     <div id="spaceInvadersContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Space Cheese Invaders in player-friendly language.
+         It does not save scores, calculate rewards, reset seasons,
+         change leaderboards, or bypass backend authority. -->
       <h1>👾 Space Cheese Invaders</h1>
-      <p>
-        Space Cheese Invaders is the arcade shooter layer of Narrrf’s World.
-      </p>
 
-      <h2>Customer explanation</h2>
-      <p>
-        Players defend the cheese, defeat invaders, and compete for the highest seasonal score.
-      </p>
+```
+  <p>
+    Space Cheese Invaders is the arcade shooter lane of Narrrf’s World.
+    Players defend the cheese, dodge danger, blast invaders, and try to survive long enough to build a strong score.
+  </p>
 
-      <h2>Technical facts</h2>
-      <ul>
-        <li><strong>Game key:</strong> <code>space_invaders</code></li>
-        <li><strong>Season source:</strong> active season from <code>tbl_seasons</code></li>
-        <li><strong>Score table:</strong> <code>tbl_tetris_scores</code></li>
-        <li><strong>Leaderboard API:</strong> <code>api/dev/get-leaderboard.php</code></li>
-        <li><strong>General score API:</strong> <code>api/dev/save-score.php</code></li>
-      </ul>
+  <p>
+    This game adds classic shooter energy to the Narrrfs arcade.
+    It is made for players who like movement, reaction speed, pressure, and wave-based action.
+  </p>
 
-      <h2>Reset behavior</h2>
-      <p>
-        Space Cheese Invaders is part of the seasonal archive/reset scope together with the classic score games.
-      </p>
-    </div>
+  <div class="rounded-2xl border border-pink-300/25 bg-pink-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Defend the cheese, shoot the invaders, survive the pressure, and climb the seasonal leaderboard.
   </div>
 
-  <div id="tab-cheeseRunner" class="tab-content">
+  <h2>Why players like it</h2>
+  <ul>
+    <li>Classic arcade shooter feeling.</li>
+    <li>More action-heavy than the slower score games.</li>
+    <li>Good for players who like dodging and reacting fast.</li>
+    <li>Every wave creates pressure and score opportunity.</li>
+    <li>It gives the Season 12 game stack a strong battle-style arcade lane.</li>
+  </ul>
+
+  <h2>How it connects to Narrrf’s World</h2>
+  <p>
+    Space Cheese Invaders is part of the Season 12 game ecosystem.
+    It connects arcade action with profile activity, seasonal leaderboard competition,
+    DSPOINC direction, and the wider Cheese Engine.
+  </p>
+
+  <h2>Season competition</h2>
+  <p>
+    Space Cheese Invaders gives players another monthly score race.
+    The leaderboard can reset with the season, but the old season can still remain part of Narrrfs history.
+  </p>
+
+  <h2>Player feeling</h2>
+  <p>
+    Space Cheese Invaders is the loud action lane:
+    move fast, shoot clean, dodge danger, and protect the cheese from chaos.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Space Cheese Invaders is the Narrrfs arcade shooter:
+    defend the cheese, destroy invaders, survive waves, and fight for leaderboard position.
+  </p>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="index.html#games">Find Website Games</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-cheeseRunner" class="tab-content">
     <div id="cheeseRunnerContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Cheese Runner in player-friendly language.
+         It does not save scores, calculate DSPOINC, reset seasons,
+         change leaderboards, or bypass backend authority. -->
       <h1>🧀 Cheese Runner</h1>
-      <p>
-        Cheese Runner is the player-facing name for the game that the backend tracks with the key <code>cheeseman</code>.
-      </p>
 
-      <h2>Customer explanation</h2>
-      <p>
-        Players run through the cheese chaos, collect points, and create seasonal activity.
-        The public game name can stay fun, while the backend key must stay stable for APIs and leaderboards.
-      </p>
+```
+  <p>
+    Cheese Runner is one of the newer action games inside Narrrf’s World.
+    It brings fast movement, cheese chaos, arcade pressure, and replay energy into the Season 12 game stack.
+  </p>
 
-      <h2>Technical facts</h2>
-      <ul>
-        <li><strong>Player-facing name:</strong> Cheese Runner</li>
-        <li><strong>Backend game key:</strong> <code>cheeseman</code></li>
-        <li><strong>Score API:</strong> <code>api/dev/save-cheeseman-score.php</code></li>
-        <li><strong>Score table:</strong> <code>tbl_tetris_scores</code></li>
-        <li><strong>DSPOINC ledger:</strong> <code>tbl_user_scores</code></li>
-        <li><strong>Season source:</strong> active season from <code>tbl_seasons</code></li>
-      </ul>
+  <p>
+    Players run, react, survive, collect points, and try to push better scores.
+    It is made for members who enjoy quick action, funny Narrrfs energy, and the feeling of “one more run.”
+  </p>
 
-      <h2>Reset behavior</h2>
-      <p>
-        Cheese Runner / Cheeseman is now part of the seasonal score archive scope.
-      </p>
-    </div>
+  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Run through the cheese chaos, collect points, survive longer, and try to climb the Narrrfs seasonal competition.
   </div>
 
-  <div id="tab-labyrinthBlast" class="tab-content">
+  <h2>Why players like it</h2>
+  <ul>
+    <li>Fast and easy to jump into.</li>
+    <li>Feels more chaotic and playful than the classic arcade games.</li>
+    <li>Good for short runs when players want quick action.</li>
+    <li>Creates strong repeat-play energy because every run can be better.</li>
+    <li>Adds a Narrrfs-style runner lane beside Tetris, Snake, and Space Cheese Invaders.</li>
+  </ul>
+
+  <h2>How it connects to Narrrf’s World</h2>
+  <p>
+    Cheese Runner helps turn the Narrrfs website into a living arcade.
+    It supports seasonal activity, profile direction, leaderboard competition,
+    DSPOINC reward direction, and the bigger Cheese Engine that connects games with player history.
+  </p>
+
+  <h2>Season competition</h2>
+  <p>
+    Cheese Runner belongs to the monthly season model.
+    Players can compete during the active season, try to improve their score,
+    and return when the next season starts fresh.
+  </p>
+
+  <p>
+    Like the other seasonal games, the leaderboard race can reset for a new monthly competition,
+    while permanent player progress, DSPOINC history, rewards, roles, and holder systems stay protected.
+  </p>
+
+  <h2>Game feeling</h2>
+  <p>
+    Cheese Runner is the wild cheese chase.
+    It should feel quick, funny, a little chaotic, and full of Narrrfs personality.
+    It gives players a break from slower score games and adds more action to the arcade lineup.
+  </p>
+
+  <h2>Music and game atmosphere</h2>
+  <p>
+    Cheese Runner also belongs to the improved Season 12 game audio direction.
+    Music and sound effects help make the run feel more alive, while shared player controls let members manage the experience.
+  </p>
+
+  <h2>Why it matters</h2>
+  <p>
+    Cheese Runner shows that Narrrf’s World is expanding beyond classic arcade remixes.
+    It gives the ecosystem another playable surface, another reason to return,
+    and another way for members to build activity inside the Season 12 game world.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Cheese Runner is the fast Narrrfs action runner:
+    run through cheese chaos, collect points, survive pressure, chase better scores,
+    and help power the Season 12 arcade competition.
+  </p>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="index.html#games">Find Website Games</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-labyrinthBlast" class="tab-content">
     <div id="labyrinthBlastContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Labyrinth Blast in player-friendly language.
+         It does not save scores, calculate rewards, reset seasons,
+         change leaderboards, or bypass backend authority. -->
       <h1>💥 Labyrinth Blast</h1>
-      <p>
-        Labyrinth Blast is the newest highlighted Season 12 game surface. It adds maze action, enemies,
-        traps, mobile controls, and backend-tracked DSPOINC reward flow.
-      </p>
 
-      <h2>Customer explanation</h2>
-      <p>
-        Players enter a maze, survive hazards, face Mouseverse pressure, collect score, and create leaderboard activity.
-        It is designed as a more modern action surface compared with the classic arcade stack.
-      </p>
+```
+  <p>
+    Labyrinth Blast is one of the newest action games inside Narrrf’s World.
+    It brings a different kind of gameplay into the Season 12 game stack:
+    maze movement, pressure, enemies, bombs, survival, and fast decision-making.
+  </p>
 
-      <h2>Confirmed system details</h2>
-      <ul>
-        <li><strong>Player-facing name:</strong> Labyrinth Blast</li>
-        <li><strong>Do not call it publicly:</strong> FOX. FOX is only the local source/build folder name.</li>
-        <li><strong>Game key:</strong> <code>labyrinth_blast</code></li>
-        <li><strong>Public wrapper:</strong> <code>public/labyrinth-blast.html</code></li>
-        <li><strong>Public build folder:</strong> <code>public/labyrinth-blast/</code></li>
-        <li><strong>Score API:</strong> <code>api/dev/save-labyrinth-blast-score.php</code></li>
-      </ul>
+  <p>
+    This game is also special because it comes from collaboration energy with our partner community
+    <strong>Bear or Bull</strong> and its founder <strong>Nightfox</strong>.
+    It adds another style, another skill set, and another creative flavor to the Narrrfs arcade.
+  </p>
 
-      <h2>Backend writes</h2>
-      <ul>
-        <li><code>tbl_tetris_scores</code> — seasonal leaderboard source.</li>
-        <li><code>tbl_user_scores</code> — DSPOINC ledger source.</li>
-        <li><code>tbl_score_adjustments</code> — audit/source trail.</li>
-      </ul>
+  <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Enter the labyrinth, survive the chaos, use bombs, avoid danger, defeat enemies,
+    and fight for a stronger Season 12 score.
+  </div>
 
-      <h2>Reward rules</h2>
-      <ul>
-        <li>Frontend sends raw gameplay data.</li>
-        <li>Backend validates the request and user identity.</li>
-        <li>Backend calculates DSPOINC.</li>
-        <li>Frontend does not decide the final DSPOINC reward.</li>
-      </ul>
+  <h2>Why Labyrinth Blast feels different</h2>
+  <p>
+    Labyrinth Blast is not just another classic score game.
+    It feels more like an action maze challenge.
+    Players need timing, movement control, awareness, and courage to survive the board.
+  </p>
 
-      <h2>Current gameplay direction</h2>
-      <ul>
-        <li>Dynamic board scaling by level.</li>
-        <li>Cheeseman Mouseverse enemy.</li>
-        <li>Cheese traps and control reversal.</li>
-        <li>Mobile controls.</li>
-        <li>Pause system.</li>
-        <li>Role multiplier reward direction.</li>
-      </ul>
+  <ul>
+    <li>Maze-style movement instead of only open arcade movement.</li>
+    <li>Bomb action and survival pressure.</li>
+    <li>Enemies and hazards that force players to react.</li>
+    <li>A stronger action-game feeling compared with the classic arcade stack.</li>
+    <li>A fresh partner-collab flavor from Bear or Bull and Nightfox.</li>
+  </ul>
 
-      <h2>Status wording</h2>
-      <p>
-        Labyrinth Blast is the new Season 12 highlighted game surface. Final public claims should still be validated on live Render before saying the complete 9/9 ecosystem is fully verified live.
-      </p>
-    </div>
+  <h2>Partner collaboration</h2>
+  <p>
+    Labyrinth Blast shows how Narrrf’s World can grow through partner creativity.
+    Bear or Bull and Nightfox bring their own game style into the Mouseverse,
+    while Narrrfs connects the experience into the wider Season 12 game ecosystem.
+  </p>
+
+  <p>
+    This is important because Narrrfs is not only building isolated games.
+    The goal is a connected world where community partners, builders, artists,
+    players, and holders can help expand the playground over time.
+  </p>
+
+  <h2>How it connects to Narrrf’s World</h2>
+  <p>
+    Labyrinth Blast adds a modern action surface to the Narrrfs game lane.
+    It supports seasonal activity, player profile direction, leaderboard competition,
+    and the larger Cheese Engine idea where games become part of the same ecosystem.
+  </p>
+
+  <h2>Season competition</h2>
+  <p>
+    Labyrinth Blast belongs to the Season 12 competition direction.
+    Players can use it as another path to show skill, activity, and competitive energy.
+  </p>
+
+  <p>
+    Like other seasonal game surfaces, the leaderboard race can stay fresh from season to season,
+    while permanent player progress, DSPOINC history, rewards, roles, and holder systems stay protected.
+  </p>
+
+  <h2>Player feeling</h2>
+  <p>
+    Labyrinth Blast should feel like entering a dangerous cheese maze.
+    You move, think, react, bomb, dodge, and try to survive the next moment.
+    It is more tactical, more chaotic, and more action-heavy than the simple classic games.
+  </p>
+
+  <h2>Why it matters</h2>
+  <p>
+    Labyrinth Blast proves that Narrrf’s World can welcome new game styles from trusted partners.
+    It adds variety to the 9-game ecosystem and gives players who like action and survival another reason to play.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Labyrinth Blast is the Bear or Bull / Nightfox action-collab game inside Narrrf’s World:
+    enter the maze, survive enemies, use bombs, master the chaos, and bring another style of skill to Season 12.
+  </p>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="index.html#games">Find Website Games</a><br>
+    <a href="project-updates.html">Read Project Updates</a>
+  </p>
+</div>
+```
+
   </div>
 
   <div id="tab-glyphMemory" class="tab-content">
     <div id="glyphMemoryContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Glyph Memory in player-friendly language.
+         It does not save scores, calculate rewards, reset seasons,
+         change leaderboards, or bypass backend authority. -->
       <h1>🔮 Glyph Memory</h1>
-      <p>
-        Glyph Memory is the memory and symbol layer of Narrrf’s World. It supports lore, focus, pattern recognition,
-        and future riddle-direction thinking.
-      </p>
 
-      <h2>Customer explanation</h2>
-      <p>
-        Players match glyphs and compete through memory/time-trial style runs. It is different from raw score arcade games.
-      </p>
+```
+  <p>
+    Glyph Memory is the memory, symbol, and focus game inside Narrrf’s World.
+    It is different from the classic arcade games because it is not only about reflexes or survival.
+    It is about remembering patterns, reading symbols, staying calm, and improving your time.
+  </p>
 
-      <h2>Technical facts</h2>
-      <ul>
-        <li><strong>Game key / mode:</strong> <code>glyph_memory</code></li>
-        <li><strong>Main score table:</strong> <code>tbl_glyph_memory_scores</code></li>
-        <li><strong>Historical archive table:</strong> <code>tbl_historical_glyph_stats</code></li>
-        <li><strong>Admin data mode:</strong> all-time time-trial style, not the same as classic arcade scoring.</li>
-      </ul>
+  <p>
+    Like Labyrinth Blast, Glyph Memory is part of the collaboration energy with
+    <strong>Bear or Bull</strong> and founder <strong>Nightfox</strong>.
+    It brings another style of gameplay into the Narrrfs world: slower, smarter, more mysterious,
+    and more focused on memory skill.
+  </p>
 
-      <h2>Important reset rule</h2>
-      <p>
-        Glyph Memory must not be assumed to behave like Tetris, Snake, Space Invaders, Cheese Runner, or Labyrinth Blast.
-        It needs its own archive/reset verification because it uses its own Glyph table path.
-      </p>
-    </div>
+  <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Match the glyphs, remember the symbols, stay focused, improve your run,
+    and test a different kind of Narrrfs skill.
   </div>
 
-  <div id="tab-cheeseHunt" class="tab-content">
+  <h2>Why Glyph Memory feels different</h2>
+  <p>
+    Glyph Memory is not a normal arcade chase.
+    It feels closer to a riddle, pattern, and time-trial challenge.
+    Players need attention, patience, and clean memory instead of only fast movement.
+  </p>
+
+  <ul>
+    <li>Memory-based gameplay instead of pure action.</li>
+    <li>Symbol and glyph matching with a mysterious Narrrfs feeling.</li>
+    <li>Good for players who like focus, patterns, and time improvement.</li>
+    <li>A softer but smarter game lane inside the 9-game ecosystem.</li>
+    <li>A partner-collab flavor from Bear or Bull and Nightfox.</li>
+  </ul>
+
+  <h2>Partner collaboration</h2>
+  <p>
+    Glyph Memory helps show that Narrrf’s World can support different creative voices.
+    Bear or Bull and Nightfox add a more symbolic and thoughtful style to the game stack,
+    while Narrrfs connects the experience to the wider player ecosystem.
+  </p>
+
+  <p>
+    This makes the game lineup more interesting.
+    Not every player wants the same kind of challenge, so Glyph Memory gives the community
+    a calm, focused, pattern-based lane beside the faster action games.
+  </p>
+
+  <h2>How it connects to Narrrf’s World</h2>
+  <p>
+    Glyph Memory supports the lore and mystery side of Narrrf’s World.
+    It fits naturally with future riddle direction, symbol thinking, hidden knowledge,
+    and Mouseverse discovery.
+  </p>
+
+  <p>
+    It also helps the profile and game ecosystem feel wider because players can show skill
+    in more than one way: action, survival, score pressure, memory, speed, and focus.
+  </p>
+
+  <h2>Season and history direction</h2>
+  <p>
+    Glyph Memory has its own feeling and should be understood as a memory/time-trial style game.
+    It does not need to feel exactly like Tetris, Snake, Space Cheese Invaders,
+    Cheese Runner, or Labyrinth Blast.
+  </p>
+
+  <p>
+    For players, the simple idea is enough:
+    play the memory challenge, improve your run, and let Glyph Memory become part of your Narrrfs game identity.
+  </p>
+
+  <h2>Player feeling</h2>
+  <p>
+    Glyph Memory should feel quiet, focused, and magical.
+    You look, remember, match, and try again.
+    It rewards concentration instead of chaos.
+  </p>
+
+  <h2>Why it matters</h2>
+  <p>
+    Glyph Memory gives Narrrf’s World a different kind of game energy.
+    It adds variety to the 9-game stack and shows that the Mouseverse can support action games,
+    arcade classics, Discord battles, hidden hunts, and more thoughtful memory challenges.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Glyph Memory is the Bear or Bull / Nightfox memory-collab game inside Narrrf’s World:
+    match symbols, improve your focus, beat your time, and explore a more mysterious side of the Cheese Engine.
+  </p>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="index.html#games">Find Website Games</a><br>
+    <a href="project-updates.html">Read Project Updates</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-cheeseHunt" class="tab-content">
     <div id="cheeseHuntContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Cheese Hunt in player-friendly language.
+         It does not create quests, pay rewards, reset snapshots,
+         change anti-cheat rules, or bypass backend authority. -->
       <h1>🧀 Cheese Hunt</h1>
+
+```
+  <p>
+    Cheese Hunt is one of the easiest quest games inside Narrrf’s World.
+    Players hunt hidden cheese moments across the website, click when they find them,
+    and let the Cheese Engine check the action and handle the reward direction.
+  </p>
+
+  <p>
+    It is simple, playful, and perfect for onboarding.
+    A new member does not need to understand staking, Lab upgrades, Genesis roles,
+    or advanced game systems to start. They can just look around, find cheese, click, and learn the world step by step.
+  </p>
+
+  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Explore Narrrf’s World, hunt the hidden cheese, click it when you find it,
+    and complete Cheese Hunt quests for reward moments powered by the Cheese Engine.
+  </div>
+
+  <h2>Why Cheese Hunt is special</h2>
+  <p>
+    Cheese Hunt is not a normal leaderboard game.
+    It is a discovery quest system. Instead of only chasing high scores,
+    players interact with the website itself and discover small hidden moments.
+  </p>
+
+  <ul>
+    <li>Easy for new members to understand.</li>
+    <li>Turns website exploration into a game.</li>
+    <li>Creates simple quest moments without needing a full arcade run.</li>
+    <li>Can support seasonal events, monthly patterns, and special campaigns.</li>
+    <li>Helps players learn the ecosystem while having fun.</li>
+  </ul>
+
+  <h2>One of the early Cheese Engine games</h2>
+  <p>
+    Cheese Hunt is one of the early running API-based activity systems in Narrrf’s World.
+    It helped show how the website, player identity, quests, rewards, and backend checks can work together.
+  </p>
+
+  <p>
+    This makes Cheese Hunt important beyond the simple click mechanic.
+    It is a small but powerful example of the Cheese Engine idea:
+    a player does something on the website, the backend checks it, and the world can update safely.
+  </p>
+
+  <h2>Monthly patterns and quests</h2>
+  <p>
+    Cheese Hunt can change over time.
+    The team can create new patterns, new hiding behavior, new quests, and new event ideas
+    so the hunt feels fresh from month to month.
+  </p>
+
+  <ul>
+    <li>Some months can have easier hunt patterns for onboarding.</li>
+    <li>Some quests can be tied to special events or community pushes.</li>
+    <li>Some patterns can make the cheese move, hide, or appear in different ways.</li>
+    <li>Some hunts can support themed seasonal activity.</li>
+    <li>The system can grow without needing every player to learn a new full game.</li>
+  </ul>
+
+  <h2>How rewards work for players</h2>
+  <p>
+    Cheese Hunt can create reward moments when the active quest rules allow it.
+    Players hunt, click, and the Cheese Engine checks whether the action should count.
+  </p>
+
+  <p>
+    The important part is safety:
+    the website shows the cheese and the quest moment, but the backend must confirm the result.
+    This protects rewards, prevents duplicate abuse, and keeps the game fair.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>1. Hunt</h3>
       <p>
-        Cheese Hunt is the hidden-cheese / discovery activity layer of Narrrf’s World.
+        The player explores the website and looks for the active cheese target.
       </p>
+    </div>
 
-      <h2>Customer explanation</h2>
+    <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+      <h3>2. Click</h3>
       <p>
-        Players hunt for hidden cheese moments and interact with the world outside normal arcade leaderboards.
-        It supports exploration, events, community activity, and fun seasonal moments.
+        The player clicks the cheese and sends the quest action to the backend.
       </p>
+    </div>
 
-      <h2>Technical direction</h2>
-      <ul>
-        <li>Cheese Hunt can have snapshot/archive behavior where applicable.</li>
-        <li>It should not automatically be treated the same as classic score-ladder games.</li>
-        <li>Reset behavior should be explicit before each season reset.</li>
-      </ul>
-
-      <h2>Reset behavior</h2>
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>3. Cheese Engine checks</h3>
       <p>
-        Cheese Hunt should be preserved as an event/activity system unless a season plan explicitly says to archive or reset a defined snapshot.
+        The backend checks the quest rules, player state, timing, and reward direction.
       </p>
     </div>
   </div>
 
-  <div id="tab-discordRace" class="tab-content">
+  <h2>Why it helps onboarding</h2>
+  <p>
+    Cheese Hunt is a great first Narrrfs experience because it teaches players that the website is alive.
+    They do not only read pages. They can interact, discover, complete small quests, and see that actions matter.
+  </p>
+
+  <ul>
+    <li>New players learn to explore the website.</li>
+    <li>Members get a simple reason to come back.</li>
+    <li>Quests make the world feel active.</li>
+    <li>Rewards introduce the DSPOINC and Cheese Engine idea in an easy way.</li>
+    <li>Monthly changes keep the hunt from feeling static.</li>
+  </ul>
+
+  <h2>Season and event direction</h2>
+  <p>
+    Cheese Hunt can support monthly season energy without needing to behave exactly like Tetris,
+    Snake, Space Cheese Invaders, Cheese Runner, or Labyrinth Blast.
+  </p>
+
+  <p>
+    It is better understood as a quest and activity system.
+    Some hunt data can be useful for season snapshots or event history,
+    but Cheese Hunt should stay flexible for new patterns, quests, campaigns, and onboarding moments.
+  </p>
+
+  <h2>Player feeling</h2>
+  <p>
+    Cheese Hunt should feel light, funny, and rewarding.
+    It is the “look closer” game of Narrrf’s World:
+    hidden cheese, quick clicks, surprise quests, and small moments that make the website feel alive.
+  </p>
+
+  <h2>Why it matters</h2>
+  <p>
+    Cheese Hunt proves that Narrrf’s World can create gameplay outside normal arcade screens.
+    The website itself becomes part of the game, and the Cheese Engine can turn discovery into trackable activity.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Cheese Hunt is the easy onboarding quest game of Narrrf’s World:
+    hunt hidden cheese, complete monthly quests, discover the website,
+    and let the Cheese Engine check and reward valid activity.
+  </p>
+
+  <h2>Safety rules</h2>
+  <ul>
+    <li>Cheese Hunt rewards should follow active quest rules.</li>
+    <li>The frontend should not be the final reward authority.</li>
+    <li>The backend should check timing, quest state, duplicate clicks, and player identity.</li>
+    <li>Monthly patterns should be intentional and tested before public events.</li>
+    <li>Cheese Hunt should be explained as a quest/activity layer, not as a guaranteed reward machine.</li>
+  </ul>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="index.html">Start Hunting on Home</a><br>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="project-updates.html">Read Project Updates</a><br>
+    <a href="nerd-lab.html">Open Nerd Lab</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-discordRace" class="tab-content">
     <div id="discordRaceContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Discord Cheese Race in player-friendly language.
+         It does not start races, pay rewards, send tokens, create items,
+         reset event history, or bypass Discord bot/backend authority. -->
       <h1>🏁 Discord Cheese Race</h1>
-      <p>
-        Discord Cheese Race is an event lane. It lives closer to community activity than classic browser arcade scoreboards.
-      </p>
 
-      <h2>Customer explanation</h2>
-      <p>
-        Members join Discord race events, compete together, and create weekly community energy.
-        This is part of the living Narrrfs community, not only the website.
-      </p>
+```
+  <p>
+    Discord Cheese Race is one of the live community games of Narrrf’s World.
+    It does not feel like a normal browser leaderboard game because it happens directly inside Discord,
+    where members join together, race together, and create real-time event energy.
+  </p>
 
-      <h2>Technical direction</h2>
-      <ul>
-        <li>Discord event systems can use different persistence rules than browser games.</li>
-        <li>Race participants and event history should not be blindly wiped during normal arcade leaderboard resets.</li>
-        <li>Future ability systems can use Discord fights/events as safer test lanes before deeper game-engine integration.</li>
-      </ul>
+  <p>
+    Cheese Race is a fixed part of the Narrrfs community rhythm.
+    It can be used during weekly Friday events, daily Discord activity, partner moments,
+    holder races, and quick reward rounds that bring the server to life.
+  </p>
 
-      <h2>Reset behavior</h2>
+  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Join a Discord race, cheer for your mouse, compete with the community,
+    and fight for reward moments powered by the Narrrfs Discord Bot and Cheese Engine.
+  </div>
+
+  <h2>Why Cheese Race is special</h2>
+  <p>
+    Cheese Race is fast, social, and easy to join.
+    Members do not need to open a full game screen or learn complex controls.
+    They join the race in Discord and become part of the action immediately.
+  </p>
+
+  <ul>
+    <li>Easy Discord-based community gameplay.</li>
+    <li>Great for Friday events and daily server battles.</li>
+    <li>Good for quick reward moments and holder activities.</li>
+    <li>Creates chat energy because everyone watches the race together.</li>
+    <li>Connects Discord activity with the wider Narrrfs economy and event system.</li>
+  </ul>
+
+  <h2>Reward direction</h2>
+  <p>
+    Cheese Race can support different reward moments depending on the event rules.
+    Rewards can include DSPOINC, digital Genetic Items, Solana token rewards, partner rewards,
+    special event prizes, or other announced campaign prizes.
+  </p>
+
+  <p>
+    The important rule is that rewards should always follow the official event setup.
+    The race creates the fun and the result, while the Discord Bot, backend systems,
+    and trusted operator workflows help keep reward actions controlled and reviewable.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>1. Join</h3>
       <p>
-        Preserve Discord Cheese Race as an event/community system unless a future reset plan explicitly changes the rule.
+        Members enter the race directly in Discord when the event is active.
       </p>
     </div>
+
+    <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+      <h3>2. Race</h3>
+      <p>
+        The Discord Bot runs the event and the community follows the chaos together.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>3. Reward</h3>
+      <p>
+        Winners or participants can receive approved event rewards based on the announced rules.
+      </p>
+    </div>
+  </div>
+
+  <h2>Friday event energy</h2>
+  <p>
+    Cheese Race is especially powerful during weekly Friday events.
+    It gives the community a simple way to gather, compete, laugh, and win something together.
+  </p>
+
+  <p>
+    Because it runs inside Discord, it works well with announcements, pings, partner events,
+    holder nights, poker nights, rumbles, giveaways, and other live community moments.
+  </p>
+
+  <h2>How it connects to Narrrf’s World</h2>
+  <p>
+    Cheese Race connects the Discord Bot, player identity, rewards, event rules,
+    DSPOINC direction, digital items, and community history.
+    It is part of the living Cheese Engine because Discord activity can become part of the wider ecosystem.
+  </p>
+
+  <h2>Player feeling</h2>
+  <p>
+    Cheese Race should feel light, funny, fast, and social.
+    It is not about perfect controls. It is about joining the chaos,
+    watching the race unfold, and sharing the moment with the community.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Discord Cheese Race is the live race game of Narrrf’s World:
+    join in Discord, race with the community, power Friday events and daily battles,
+    and compete for approved DSPOINC, item, token, or special reward moments.
+  </p>
+
+  <h2>Safety rules</h2>
+  <ul>
+    <li>Race rewards should follow the announced event rules.</li>
+    <li>The bot and backend should remain the authority for reward actions.</li>
+    <li>Token or digital item rewards should only use trusted operator or approved backend flows.</li>
+    <li>Race history should not be blindly treated like a normal monthly browser leaderboard reset.</li>
+    <li>Public wording should focus on gameplay, utility, and community rewards, not guaranteed financial return.</li>
+  </ul>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="project-updates.html">Read Project Updates</a><br>
+    <a href="nerd-lab.html">Open Nerd Lab</a>
+  </p>
+</div>
+```
+
   </div>
 
   <div id="tab-cheeseRumble" class="tab-content">
     <div id="cheeseRumbleContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Cheese Rumble in player-friendly language.
+         It does not start battles, pay rewards, send tokens, create items,
+         activate Genesis Mouse fighting, reset event history, or bypass Discord bot/backend authority. -->
       <h1>💣 Cheese Rumble</h1>
-      <p>
-        Cheese Rumble is the Discord battle / community chaos lane of Narrrf’s World.
-      </p>
 
-      <h2>Customer explanation</h2>
-      <p>
-        Cheese Rumble brings the community together through text-based battle energy, Friday chaos,
-        events, and reward moments. It is one of the best places to test future role and ability ideas.
-      </p>
+```
+  <p>
+    Cheese Rumble is the Discord battle and community chaos game of Narrrf’s World.
+    It is built for live server energy: members join, fight, watch the action unfold,
+    and create the kind of chaos that makes Discord feel alive.
+  </p>
 
-      <h2>Technical direction</h2>
-      <ul>
-        <li>Rumble data is event-style activity, not a classic browser score ladder.</li>
-        <li>Rumble participants/history should not be blindly reset with monthly arcade leaderboards.</li>
-        <li>Future Genesis traits and abilities can first be tested in Discord fight/event systems.</li>
-      </ul>
+  <p>
+    Like Cheese Race, Cheese Rumble is one of the special synced Discord games.
+    It can support daily Discord battles, weekly Friday events, holder activities,
+    partner nights, and instant reward moments.
+  </p>
 
-      <h2>Reset behavior</h2>
-      <p>
-        Preserve Cheese Rumble as a community/event system unless a future season plan explicitly changes its reset rules.
-      </p>
-    </div>
+  <div class="rounded-2xl border border-red-300/25 bg-red-400/10 p-4">
+    <strong>Simple player explanation:</strong><br>
+    Join the rumble in Discord, battle the community, survive the chaos,
+    and compete for approved Narrrfs reward moments.
   </div>
 
-  <div id="tab-profileSystem" class="tab-content">
+  <h2>Why Cheese Rumble is special</h2>
+  <p>
+    Cheese Rumble is not a quiet score game.
+    It is a live community battle lane.
+    The fun comes from everyone joining the same chaotic moment and watching who survives.
+  </p>
+
+  <ul>
+    <li>Discord-native battle gameplay.</li>
+    <li>Strong fit for Friday chaos and daily community battles.</li>
+    <li>Good for holder events, partner events, and special reward rounds.</li>
+    <li>Creates fast social energy because the whole server can follow the fight.</li>
+    <li>Works as a safe testing lane for future role and ability ideas.</li>
+  </ul>
+
+  <h2>Reward direction</h2>
+  <p>
+    Cheese Rumble can support instant reward moments when an event is active and rules are clear.
+    Rewards can include DSPOINC, digital Genetic Items, Solana token rewards,
+    partner prizes, special event rewards, or other announced campaign rewards.
+  </p>
+
+  <p>
+    The battle itself creates the fun.
+    The reward side should stay connected to approved event rules, Discord Bot logic,
+    backend records, and trusted operator review where needed.
+  </p>
+
+  <h2>Future Genesis Mouse battle direction</h2>
+  <p>
+    Cheese Rumble is also important for the future RPG direction of Narrrf’s World.
+    The Discord Rumble is planned to expand toward battles where members can fight with their own Genesis Mouse.
+  </p>
+
+  <p>
+    That direction can make Genesis identity more meaningful because a player’s Mouse could become part of the battle experience.
+    For now, Cheese Rumble already works as a live Discord battle game and community reward lane.
+  </p>
+
+  <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+    <strong>Future direction:</strong><br>
+    The current Rumble creates Discord battle energy today.
+    The next deeper step is using verified Genesis mice as part of future battle identity and ability testing.
+  </div>
+
+  <h2>Friday event energy</h2>
+  <p>
+    Cheese Rumble is one of the best formats for Friday events because it creates instant action.
+    Members can jump in, battle, laugh, win, lose, and come back for the next round.
+  </p>
+
+  <p>
+    It works well beside Cheese Race, poker, partner nights, giveaways, spaces,
+    and other Narrrfs community activations.
+  </p>
+
+  <h2>How it connects to Narrrf’s World</h2>
+  <p>
+    Cheese Rumble connects Discord, player identity, roles, event rewards,
+    DSPOINC, digital items, future ability direction, and the wider Cheese Engine.
+    It turns community activity into something playable and memorable.
+  </p>
+
+  <h2>Player feeling</h2>
+  <p>
+    Cheese Rumble should feel like controlled chaos.
+    It is fast, loud, funny, and social.
+    Members are not only watching announcements — they are part of the battle.
+  </p>
+
+  <h2>Short version</h2>
+  <p>
+    Cheese Rumble is the Discord battle game of Narrrf’s World:
+    join the chaos, fight with the community, power Friday events and daily battles,
+    win approved rewards, and prepare for future Genesis Mouse battle direction.
+  </p>
+
+  <h2>Safety rules</h2>
+  <ul>
+    <li>Rumble rewards should follow the announced event rules.</li>
+    <li>The bot and backend should remain the authority for reward actions.</li>
+    <li>Token rewards and digital item rewards should use trusted operator or approved backend flows.</li>
+    <li>Genesis Mouse fighting should not be described as active until the feature is officially released.</li>
+    <li>Rumble history should not be blindly wiped like a normal browser leaderboard reset.</li>
+    <li>Public wording should focus on gameplay, utility, community rewards, and future direction, not guaranteed financial return.</li>
+  </ul>
+
+  <h2>Where to go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="get-roles.html">Read Get Roles</a><br>
+    <a href="project-updates.html">Read Project Updates</a><br>
+    <a href="nerd-lab.html">Open Nerd Lab</a>
+  </p>
+</div>
+```
+
+  </div>
+
+    <div id="tab-profileSystem" class="tab-content">
     <div id="profileSystemContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Profile page as the player hub and overview layer.
+         It does not hydrate sessions, verify wallets, grant roles, calculate scores,
+         claim rewards, write DSPOINC, mutate NFTs, or bypass backend authority. -->
       <h1>👤 Player Profile System</h1>
+
+```
+  <p>
+    The Profile is the main player passport of Narrrf’s World.
+    It is the place where a member can understand their identity, activity, rewards,
+    DSPOINC economy state, roles, games, and holder progress in one readable hub.
+  </p>
+
+  <p>
+    For normal players, the Profile shows game progress, seasonal competition, DSPOINC activity,
+    Reward Chamber access, and community status. For Genesis holders, it also becomes the gateway
+    into wallet verification, Genesis Lab visibility, staking systems, and future Mouse progression.
+  </p>
+
+  <h2>Simple customer explanation</h2>
+  <p>
+    The Profile answers the most important player questions:
+  </p>
+
+  <ul>
+    <li>Who am I inside Narrrf’s World?</li>
+    <li>What games did I play?</li>
+    <li>What did I earn?</li>
+    <li>How much DSPOINC do I have?</li>
+    <li>Which roles and holder lanes did I unlock?</li>
+    <li>Which rewards can I open or claim?</li>
+    <li>Which Genesis systems can I use next?</li>
+  </ul>
+
+  <h2>Profile identity layer</h2>
+  <p>
+    Discord is the daily player identity layer.
+    The Profile uses the active Discord session to show the correct player account,
+    username, activity, rewards, and DSPOINC history.
+  </p>
+
+  <p>
+    Wallet and NFT verification add the deeper holder identity layer.
+    This means a player can have normal Discord progress and, if they verify NFTs,
+    also unlock holder-specific Genesis visibility and utility.
+  </p>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Simple rule:</strong><br>
+    Discord account = player identity.<br>
+    Verified wallet/NFT ownership = holder identity.
+  </div>
+
+  <h2>What the Profile connects</h2>
+  <ul>
+    <li><strong>Discord session:</strong> the logged-in player identity used across the website.</li>
+    <li><strong>Current season stats:</strong> scores, game activity, and seasonal competition state.</li>
+    <li><strong>All-time activity:</strong> long-term player history beyond one season.</li>
+    <li><strong>Leaderboards:</strong> visibility into game rankings and competitive progress.</li>
+    <li><strong>Roles:</strong> community identity, holder access, VIP access, tester status, champion status, and future utility direction.</li>
+    <li><strong>DSPOINC balance:</strong> earned DSPOINC, available DSPOINC, frozen DSPOINC, and history display.</li>
+    <li><strong>Reward Chamber:</strong> loot boxes, reward claims, and special reward visibility.</li>
+    <li><strong>Genesis verification:</strong> wallet/NFT verification path for Genesis holder features.</li>
+    <li><strong>Genesis Lab:</strong> entry point into NFT-bound Mouse progression.</li>
+    <li><strong>Stake Lab:</strong> DSPOINC staking, Genesis Mouse Freezer, and NFT verification links.</li>
+  </ul>
+
+  <h2>Game overview</h2>
+  <p>
+    The Profile helps players understand their game progress across the Narrrfs arcade.
+    It connects current-season scores, game access, leaderboard direction, and player activity.
+  </p>
+
+  <ul>
+    <li>Tetris, Snake, Space Cheese Invaders, Cheese Runner, Glyph Memory, Labyrinth Blast, and other synced games can feed the profile direction.</li>
+    <li>Seasonal scores can reset with the season leaderboard cycle.</li>
+    <li>Permanent economy state, DSPOINC history, roles, and holder progress should not be treated as seasonal leaderboard data.</li>
+  </ul>
+
+  <h2>DSPOINC economy overview</h2>
+  <p>
+    The Profile should make DSPOINC understandable at a glance.
+    Members should be able to see what they earned, what is available, what is frozen,
+    and where DSPOINC activity came from.
+  </p>
+
+  <ul>
+    <li><strong>Earned DSPOINC:</strong> rewards from games, claims, events, staking, or admin-approved systems.</li>
+    <li><strong>Available DSPOINC:</strong> balance that is not currently frozen in staking systems.</li>
+    <li><strong>Frozen DSPOINC:</strong> DSPOINC locked in active DSPOINC staking.</li>
+    <li><strong>DSPOINC history:</strong> readable transaction/activity rows so members can understand what changed.</li>
+  </ul>
+
+  <p>
+    The frontend displays DSPOINC state, but it must not invent balances or decide rewards.
+    Backend ledger rows and audit history remain the source of truth.
+  </p>
+
+  <h2>Reward Chamber overview</h2>
+  <p>
+    The Profile connects members to reward actions such as chests, boxes, and claimable reward moments.
+    It should help players understand which rewards are available and where to go next.
+  </p>
+
+  <ul>
+    <li>Reward Chamber activity should be visible and easy to reach.</li>
+    <li>Claimable rewards should stay backend-authoritative.</li>
+    <li>Reward history should help members understand what they received and when.</li>
+  </ul>
+
+  <h2>Holder and Genesis overview</h2>
+  <p>
+    For Genesis holders, the Profile is the bridge between normal player progress and deeper holder utility.
+    It should point clearly toward NFT verification, Genesis Lab, Genesis Mouse Freezer, and future V2 staking boosts.
+  </p>
+
+  <ul>
+    <li><strong>Verify NFTs:</strong> load verified wallet ownership and holder status.</li>
+    <li><strong>Genesis Lab:</strong> upgrade and progress verified Genesis mice through official Lab systems.</li>
+    <li><strong>Genesis Mouse Freezer:</strong> freeze verified Genesis NFT slots for daily DSPOINC reward tracking.</li>
+    <li><strong>DSPOINC V2 staking preview:</strong> Genesis ownership can become a future staking multiplier when V2 is activated.</li>
+    <li><strong>Genesis roles:</strong> holder and Genesis tier roles help show the holder lane inside Discord and profile systems.</li>
+  </ul>
+
+  <h2>Player progress vs Genesis progress</h2>
+  <p>
+    Profile must help members understand the difference between account progress and NFT-bound progress.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>Player account progress</h3>
       <p>
-        The profile is the player passport of Narrrf’s World. It should become the readable RPG dashboard
-        for normal players and Genesis holders.
+        Discord identity, game history, seasonal scores, DSPOINC balance, Reward Chamber history,
+        event activity, and normal community roles.
       </p>
+    </div>
 
-      <h2>What profile connects</h2>
-      <ul>
-        <li>Discord session identity.</li>
-        <li>Scores and seasonal competition.</li>
-        <li>Mini leaderboards and current-season stats.</li>
-        <li>All-time activity.</li>
-        <li>Roles and holder access.</li>
-        <li>Reward Chamber actions.</li>
-        <li>DSPOINC activity and economy direction.</li>
-        <li>Genesis Lab visibility and future Mouse progression.</li>
-      </ul>
-
-      <h2>Important technical behavior</h2>
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>Genesis Mouse progress</h3>
       <p>
-        Profile session hydration syncs Discord identity into page/local storage for page usage.
-        That makes Discord the daily player identity layer while wallet/NFT verification adds deeper holder identity.
-      </p>
-
-      <h2>Customer explanation</h2>
-      <p>
-        Profile is where the player should understand: who am I, what did I play, what did I earn,
-        what roles do I have, what rewards can I open, and how deep am I inside the ecosystem?
+        NFT-bound custom name, trait levels, Lab history, ability levels, freezer history,
+        and future Genesis holder-lane progression.
       </p>
     </div>
   </div>
 
-  <div id="tab-rolesSystem" class="tab-content">
+  <h2>Why the Profile matters</h2>
+  <p>
+    The Profile is the readable control room for the whole Narrrfs ecosystem.
+    A member should not need to guess where they stand.
+    The page should show their current state, explain what they unlocked, and point them toward the next useful action.
+  </p>
+
+  <ul>
+    <li>New players can see games, scores, rewards, and DSPOINC activity.</li>
+    <li>Active players can track seasonal competition and all-time history.</li>
+    <li>Holders can verify NFTs and find Genesis utility.</li>
+    <li>VIP and Genesis holders can understand their stronger ecosystem lanes.</li>
+    <li>Future RPG systems can use the Profile as the main player dashboard.</li>
+  </ul>
+
+  <h2>Important technical behavior</h2>
+  <p>
+    Profile session hydration syncs Discord identity into page storage for page usage.
+    This helps connected pages know who the active user is, but it does not replace backend authentication.
+  </p>
+
+  <ul>
+    <li>Discord session remains the trusted player login layer.</li>
+    <li>Wallet verification remains the trusted holder ownership layer.</li>
+    <li>Frontend display must not override backend rewards, roles, balances, or ownership checks.</li>
+    <li>Profile links should guide users into the correct systems instead of duplicating backend logic.</li>
+  </ul>
+
+  <h2>Safety rules</h2>
+  <ul>
+    <li>The Profile displays economy state but does not create DSPOINC by itself.</li>
+    <li>The Profile displays roles but does not grant Discord roles by itself.</li>
+    <li>The Profile displays NFT/holder direction but does not prove ownership by itself.</li>
+    <li>The Profile can link to staking, freezer, Lab, and Reward Chamber actions, but backend APIs must decide final results.</li>
+    <li>Seasonal leaderboard data can reset, but permanent economy and holder progression should not be treated as seasonal reset data.</li>
+  </ul>
+
+  <h2>Where members should go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="stake-lab.html?open=verify-nfts">Verify NFTs</a><br>
+    <a href="stake-lab.html?open=dspoinc-staking">Open DSPOINC Staking</a><br>
+    <a href="stake-lab.html?open=mouse-freezer">Open Genesis Mouse Freezer</a><br>
+    <a href="lab.html">Open Genesis Lab</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-rolesSystem" class="tab-content">
     <div id="rolesSystemContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Discord role meaning, Genesis tier roles, and reward/access direction.
+         It does not grant roles, sync Discord, verify NFTs, calculate rewards,
+         mutate profiles, or bypass backend/bot authority. -->
       <h1>🏆 Role System</h1>
+
       <p>
-        Roles show identity, status, access, and activity inside the Narrrfs community.
-        They connect Discord, games, rewards, profile visibility, and future ability direction.
+        Roles are the readable identity layer of Narrrf’s World.
+        They show who is playing, who is holding, who is contributing, who is competing,
+        and how deep someone is inside the ecosystem.
       </p>
 
-      <h2>Main role meaning</h2>
+      <p>
+        Roles connect Discord, games, profile identity, reward visibility, holder access,
+        Genesis Lab direction, and future Season 13 utility.
+      </p>
+
+      <h2>Two role lanes</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+          <h3>Normal community roles</h3>
+          <p>
+            These roles show player activity, community status, event participation,
+            testing, leaderboard recognition, and special contribution.
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+          <h3>Holder / Genesis roles</h3>
+          <p>
+            These roles come from verified NFT ownership and connect to deeper holder access,
+            Genesis Lab visibility, staking previews, and future Mouse progression.
+          </p>
+        </div>
+      </div>
+
+      <h2>Active reward role direction</h2>
+      <p>
+        Some roles can support reward multipliers, visibility, access, or event priority.
+        These values explain the current public role direction and should always remain backend/bot-authoritative.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+          <h3>🎴 VIP Holder</h3>
+          <p>2.0x game reward direction • Premium holder identity • VIP utility lane</p>
+        </div>
+
+        <div class="rounded-2xl border border-amber-300/25 bg-amber-400/10 p-4">
+          <h3>🏆 Holder</h3>
+          <p>1.5x game reward direction • Verified Genesis holder access • Genesis Lab visibility</p>
+        </div>
+
+        <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+          <h3>🥇 Champion</h3>
+          <p>1.4x game reward direction • Competition winner identity • Seasonal recognition</p>
+        </div>
+
+        <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+          <h3>🎮 Season Tester / WL</h3>
+          <p>1.3x game reward direction • Testing, whitelist, and early system participation</p>
+        </div>
+
+        <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+          <h3>🐦 Early Bird</h3>
+          <p>1.2x game reward direction • Early community participation and recognition</p>
+        </div>
+
+        <div class="rounded-2xl border border-lime-300/25 bg-lime-400/10 p-4">
+          <h3>🧀 Cheese Hunter</h3>
+          <p>1.1x game reward direction • Cheese Hunt activity and ecosystem participation</p>
+        </div>
+      </div>
+
+      <h2>Live Genesis Discord tier roles</h2>
+      <p>
+        Genesis tier roles are now a separate live Discord recognition ladder.
+        They are based on verified Genesis NFT ownership.
+      </p>
+
+      <p>
+        This ladder does not replace the normal Holder role.
+        A verified Genesis holder can have the base Holder role and one matching Genesis tier role.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-2xl border border-stone-300/25 bg-stone-400/10 p-4">
+          <h3>Genesis Tier 1</h3>
+          <p>1 verified Genesis</p>
+        </div>
+
+        <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+          <h3>Genesis Tier 2</h3>
+          <p>2 verified Genesis mice</p>
+        </div>
+
+        <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+          <h3>Genesis Collector</h3>
+          <p>3–5 verified Genesis mice</p>
+        </div>
+
+        <div class="rounded-2xl border border-pink-300/25 bg-pink-400/10 p-4">
+          <h3>Genesis Expert</h3>
+          <p>6–15 verified Genesis mice</p>
+        </div>
+
+        <div class="rounded-2xl border border-indigo-300/25 bg-indigo-400/10 p-4">
+          <h3>Genesis Elite Holder</h3>
+          <p>16–29 verified Genesis mice</p>
+        </div>
+
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+          <h3>Genesis Legend</h3>
+          <p>30+ verified Genesis mice</p>
+        </div>
+      </div>
+
+      <h2>Important Genesis tier rules</h2>
       <ul>
-        <li><strong>Holder / VIP Holder:</strong> Genesis ownership and deeper ecosystem access.</li>
-        <li><strong>Champion / Tester / Hunter:</strong> activity, testing, contribution, and community identity.</li>
-        <li><strong>Monthly legends:</strong> seasonal competition recognition.</li>
-        <li><strong>Event roles:</strong> participation in special campaigns, events, or partner activities.</li>
+        <li>Only verified Genesis NFTs count for the Genesis tier ladder.</li>
+        <li>VIP NFTs do not count toward Genesis tier roles.</li>
+        <li>Only one Genesis tier role should be active at a time.</li>
+        <li>If a holder moves up, the bot should remove the old lower Genesis tier role when cleanup is enabled.</li>
+        <li>If ownership changes, the tier should follow verified current ownership, not old screenshots or old wallet state.</li>
+      </ul>
+
+      <h2>Base holder roles</h2>
+      <ul>
+        <li><strong>Holder:</strong> granted from verified Genesis collection ownership.</li>
+        <li><strong>VIP Holder:</strong> granted from verified VIP collection ownership.</li>
+        <li><strong>Genesis tier role:</strong> added on top of Holder based on verified Genesis count.</li>
+      </ul>
+
+      <h2>How roles connect to staking and freezer systems</h2>
+      <p>
+        Roles are not only labels. They help members understand what lane they belong to.
+        Holder and Genesis tier roles connect to Genesis Lab, future DSPOINC V2 staking boost previews,
+        and Genesis Mouse Freezer education.
+      </p>
+
+      <ul>
+        <li><strong>DSPOINC V2 staking preview:</strong> Genesis count can become a future staking multiplier when V2 is officially activated.</li>
+        <li><strong>Genesis Mouse Freezer:</strong> Genesis ownership decides NFT freezer tier, daily reward lane, and freezer slot direction.</li>
+        <li><strong>VIP Holder:</strong> VIP is a separate utility lane and can support special freezer utility such as +1 slot and +10% bonus on the first 10 frozen Genesis mice.</li>
+      </ul>
+
+      <h2>Normal community and event roles</h2>
+      <p>
+        Normal roles still matter because Narrrf’s World is not only holder-based.
+        Players can earn recognition through events, games, testing, support, seasonal activity, Discord participation,
+        and partner/community campaigns.
+      </p>
+
+      <ul>
+        <li><strong>Champion roles:</strong> competition winners and high-skill recognition.</li>
+        <li><strong>Tester / WL roles:</strong> early testers, whitelist members, and controlled rollout participants.</li>
+        <li><strong>Cheese Hunter style roles:</strong> activity, Cheese Hunt, and community participation signals.</li>
+        <li><strong>Event roles:</strong> special events, races, rumbles, poker nights, VR Bingo, partner events, and campaign participation.</li>
+        <li><strong>Monthly legend roles:</strong> seasonal or monthly leaderboard/community recognition.</li>
       </ul>
 
       <h2>Why roles matter</h2>
       <p>
-        Roles make the community readable. They can support multipliers, rewards, access, events,
-        and future RPG profile direction.
+        Roles make the community readable. They tell members where they stand, what they unlocked,
+        what systems they can access, and how their Narrrfs identity is growing.
+      </p>
+
+      <p>
+        For future RPG direction, roles can also become a clean bridge between Discord identity,
+        profile display, Genesis progression, reward logic, and event systems.
       </p>
 
       <h2>Safety rule</h2>
       <p>
-        Role power should be communicated as ecosystem access and reward direction, not as guaranteed financial return.
+        Role power should always be explained as access, recognition, utility, reward direction,
+        and community identity. It should not be described as guaranteed financial return,
+        guaranteed profit, or guaranteed token value.
+      </p>
+
+      <h2>Where members should go</h2>
+      <p>
+        <a href="get-roles.html#season13-v2-genesis-boost">Open the Genesis role guide</a><br>
+        <a href="stake-lab.html?open=verify-nfts">Verify NFTs for holder roles</a><br>
+        <a href="stake-lab.html?open=mouse-freezer">Open Genesis Mouse Freezer</a>
       </p>
     </div>
   </div>
 
-  <div id="tab-lab" class="tab-content">
+    <div id="tab-lab" class="tab-content">
     <div id="labContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Genesis Lab, Genetic Inventory, Genetic Marketplace,
+         Genesis trait progression, and Genesis Ability Matrix in simple language.
+         It does not verify NFTs, mutate ownership, start upgrades, claim rewards,
+         buy marketplace items, write DSPOINC, or bypass backend authority. -->
       <h1>🧬 Genesis Lab</h1>
+
       <p>
-        Genesis Lab is the holder progression layer of Narrrf’s World. It turns a verified Genesis Mouse
-        into a long-term identity object instead of leaving it as static art only.
+        Genesis Lab is the holder progression layer of Narrrf’s World.
+        It turns a verified Genesis Mouse into a long-term identity object instead of leaving it as static art only.
       </p>
 
-      <h2>What the Lab does</h2>
+      <p>
+        The Lab now has two clean progression lanes:
+      </p>
+
       <ul>
-        <li>Loads verified Genesis Mouse ownership.</li>
-        <li>Displays Mouse identity and traits.</li>
-        <li>Supports custom Mouse names as player-facing labels.</li>
-        <li>Tracks trait upgrade state.</li>
-        <li>Uses timed research cycles and manual claim flow.</li>
-        <li>Supports DSPOINC-powered Lab actions.</li>
-        <li>Prepares the foundation for future ability-based gameplay.</li>
+        <li><strong>Genesis lane:</strong> NFT-bound progression that belongs to the verified Genesis Mouse.</li>
+        <li><strong>Genetic lane:</strong> Discord-user-bound items that belong to the player inventory.</li>
       </ul>
 
-      <h2>NFT-bound upgrade direction</h2>
+      <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+        <strong>Simple rule:</strong><br>
+        Genesis progression stays with the Genesis Mouse NFT.<br>
+        Genetic Inventory progression stays with the Discord user.
+      </div>
+
+      <h2>What the Genesis Lab does</h2>
+      <ul>
+        <li>Loads verified Genesis Mouse ownership.</li>
+        <li>Displays the selected Genesis Mouse identity, image, name, and scanned traits.</li>
+        <li>Supports custom Genesis Mouse names as display labels.</li>
+        <li>Tracks Genesis trait upgrade levels.</li>
+        <li>Runs timed Genesis research cycles.</li>
+        <li>Uses DSPOINC-powered Lab actions.</li>
+        <li>Connects NFT-bound progression to future gameplay utility.</li>
+        <li>Prepares Genesis Mouse identity for stronger profile, staking, and ability systems.</li>
+      </ul>
+
+      <h2>NFT-bound Genesis progression</h2>
       <p>
-        The unique idea is that a Genesis Mouse becomes a long-term game identity.
-        Names, traits, Lab history, and upgrade state become part of the holder lane.
+        Genesis progression is attached to the specific Genesis Mouse, not only to the current holder’s Discord account.
+        This is what makes each Genesis Mouse a long-term game identity.
       </p>
 
-      <h2>Important safety rule</h2>
       <p>
-        Custom names are display-only player labels. They must not replace token ID, metadata name,
-        upgrade identity, marketplace identity, or ownership checks. Marketplace actions should not be described
-        as mutating the Genesis Mouse. NFT-bound progression stays controlled through verified Lab paths.
+        If a Genesis Mouse gains a custom name, Lab history, trait levels, ability levels, or freezer history through official systems,
+        that progression belongs to the Genesis lane identity of that mouse.
+      </p>
+
+      <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+        <strong>Example:</strong><br>
+        If a Genesis Mouse levels up Fitness or upgrades a trait in the Lab, that progress is part of that mouse’s verified history.
+        A future owner must still verify the NFT, but the mouse does not become a blank identity again.
+      </div>
+
+      <h2>Custom Genesis Mouse names</h2>
+      <p>
+        Custom names let holders give their Genesis Mouse a player-facing identity inside Narrrf’s World.
+        They are useful for profiles, Lab display, strongest mouse showcases, and future identity systems.
+      </p>
+
+      <p>
+        Custom names are display labels only. They must never replace the token ID, metadata name, wallet ownership,
+        marketplace identity, or backend ownership checks.
+      </p>
+
+      <h2>Genesis trait upgrades</h2>
+      <p>
+        Trait upgrades are the original Genesis Lab progression path.
+        They let a verified holder improve the research level of traits on a selected Genesis Mouse.
+      </p>
+
+      <ul>
+        <li>Trait upgrades are NFT-bound.</li>
+        <li>Trait upgrade timers are tracked by the backend.</li>
+        <li>Claiming a finished trait upgrade must go through the official Lab flow.</li>
+        <li>Trait levels can help unlock deeper Genesis systems such as the Ability Matrix.</li>
+      </ul>
+
+      <h2>Genesis Ability Matrix</h2>
+      <p>
+        The Genesis Ability Matrix is the future gameplay-stat layer for Genesis mice.
+        Every verified Genesis Mouse can own its own separate 9-stat matrix.
+      </p>
+
+      <p>
+        Ability progression is NFT-bound and must not be mixed with Discord-bound Genetic Items.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+          <h3>Fitness</h3>
+          <p>HP • SPEED • AIR</p>
+          <p>Production unlock target: highest single Genesis trait level 10+</p>
+        </div>
+
+        <div class="rounded-2xl border border-red-300/25 bg-red-400/10 p-4">
+          <h3>Weapons</h3>
+          <p>ATK • DEF • SPECIAL</p>
+          <p>Production unlock target: highest single Genesis trait level 20+</p>
+        </div>
+
+        <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+          <h3>Education</h3>
+          <p>SPELLS • CRAFTING • EXPANSION</p>
+          <p>Production unlock target: highest single Genesis trait level 30+</p>
+        </div>
+      </div>
+
+      <h2>Ability upgrade rules</h2>
+      <ul>
+        <li>Each Genesis Mouse has its own ability levels.</li>
+        <li>Ability levels are NFT-bound by token ID and collection.</li>
+        <li>Ability levels should not be stored inside Discord-user Genetic Inventory.</li>
+        <li>Only one active ability upgrade should run per Genesis Mouse at a time.</li>
+        <li>Ability upgrades consume DSPOINC and run on timed research cycles.</li>
+        <li>Ability cap direction is level 100.</li>
+        <li>Ability Instant Finish is not active in V1.</li>
+        <li>Ability rows should stay separate from normal Genesis trait upgrade rows.</li>
+      </ul>
+
+      <h2>Fitness Journey and Weapon milestone rewards</h2>
+      <p>
+        Some ability and trait milestones can unlock Lab reward chests.
+        These rewards stay backend-authoritative and should only be claimed through the official Lab reward flow.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+          <h3>Fitness Journey examples</h3>
+          <ul>
+            <li>Fitness trait level 10 can unlock a Fitness Journey reward chest.</li>
+            <li>Fitness trait level 15 can unlock a stronger Fitness Journey reward chest.</li>
+            <li>Fitness trait level 20 can unlock the next Fitness Journey reward chest.</li>
+          </ul>
+        </div>
+
+        <div class="rounded-2xl border border-red-300/25 bg-red-400/10 p-4">
+          <h3>Weapon milestone examples</h3>
+          <ul>
+            <li>Weapon ATK level 1 can unlock a DSPOINC reward milestone.</li>
+            <li>Weapon DEF level 1 can unlock a DSPOINC reward milestone.</li>
+            <li>Weapon SPECIAL level 1 can unlock a DSPOINC reward milestone.</li>
+          </ul>
+        </div>
+      </div>
+
+      <p>
+        The frontend only displays reward state and sends claim requests.
+        The backend checks Discord session, Genesis ownership, trait level, ability level, duplicate claim state,
+        Store Item delivery, Genetic Item delivery, and DSPOINC ledger writes.
+      </p>
+
+      <h2>Genetic Shop</h2>
+      <p>
+        Genetic Shop is part of the Discord-user-bound Genetic lane.
+        It lets Discord-logged-in players buy missing Outfit and Accessories traits directly into their Genetic Inventory.
+      </p>
+
+      <p>
+        These bought Genetic Items are not on-chain Genesis traits and do not mutate the Genesis NFT.
+        They are player inventory items used for the second progression lane beside Genesis Lab.
+      </p>
+
+      <h2>Genetic Inventory</h2>
+      <p>
+        Genetic Inventory stores the player’s owned Genetic Items.
+        These items can have their own level, runtime state, booster state, listing state, and activity history.
+      </p>
+
+      <ul>
+        <li>Genetic Items are Discord-user-bound.</li>
+        <li>They stay separate from NFT-bound Genesis progression.</li>
+        <li>Inventory supports start, claim, instant finish, and shared Lab booster actions.</li>
+        <li>One Discord user can own up to 2 copies of the same exact trait per type/value combination.</li>
+        <li>One copy can be upgraded while another copy can be listed for sale.</li>
+        <li>Listed items cannot be upgraded, claimed, boosted, or instant-finished while listed.</li>
+      </ul>
+
+      <h2>Lab boosters</h2>
+      <p>
+        Lab boosters are time-control tools for progression systems.
+        They help speed up or modify research behavior without letting the frontend decide final ownership or reward results.
+      </p>
+
+      <ul>
+        <li>Booster actions must stay backend-authoritative.</li>
+        <li>Boosters should be clearly shown when active on a running upgrade.</li>
+        <li>Boosters must not overwrite Genesis identity, Genetic ownership, or marketplace state.</li>
+      </ul>
+
+      <h2>Genetic Marketplace</h2>
+      <p>
+        The Genetic Marketplace lets players trade Discord-bound Genetic Items with each other.
+        Listings preserve the full owned item state, including level state, while staying separate from NFT-bound Genesis identity.
+      </p>
+
+      <ul>
+        <li>Marketplace listings transfer owned Genetic Item state between players.</li>
+        <li>Marketplace logic must respect the 2-copy exact-trait ownership limit.</li>
+        <li>Buying, cancelling, creating listings, and ownership transfer stay backend-authoritative.</li>
+        <li>Marketplace actions do not mutate the Genesis NFT.</li>
+        <li>Marketplace history helps players review bought, sold, listed, and cancelled activity.</li>
+      </ul>
+
+      <h2>Marketplace vs Genesis ownership</h2>
+      <p>
+        Marketplace trading of Genetic Items is not the same as selling a Genesis NFT.
+        Genetic Marketplace items are user-bound inventory objects.
+        Genesis NFTs are wallet-owned assets that require holder verification before Genesis utility can be used.
+      </p>
+
+      <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+        <strong>Do not mix these systems:</strong><br>
+        Genetic Marketplace item ownership belongs to the Discord-user inventory lane.<br>
+        Genesis Mouse ownership belongs to wallet verification and the Genesis NFT lane.
+      </div>
+
+      <h2>Why the Lab matters</h2>
+      <p>
+        The Lab is where Narrrf’s World becomes more than a mint and more than arcade games.
+        It connects Genesis identity, DSPOINC economy, upgrade timing, inventory, marketplace trading,
+        and future gameplay power into one long-term progression hub.
+      </p>
+
+      <ul>
+        <li>Genesis Lab builds NFT-bound identity.</li>
+        <li>Genetic Inventory gives every Discord player a second progression lane.</li>
+        <li>Genetic Marketplace creates player-to-player item flow.</li>
+        <li>Ability Matrix prepares Genesis mice for deeper future gameplay.</li>
+        <li>Milestone rewards connect progression to visible reward moments.</li>
+      </ul>
+
+      <h2>Important safety rules</h2>
+      <ul>
+        <li>Custom names are display-only labels.</li>
+        <li>Token ID remains the real Genesis upgrade identity.</li>
+        <li>Marketplace actions must not be described as mutating Genesis NFTs.</li>
+        <li>Genesis progression must stay NFT-bound.</li>
+        <li>Genetic Items must stay Discord-user-bound.</li>
+        <li>Ability upgrades must not be merged into normal Genetic Inventory.</li>
+        <li>Frontend previews must not decide final DSPOINC costs, reward delivery, or ownership transfer.</li>
+        <li>Backend checks remain the source of truth for ownership, timers, costs, claims, rewards, and marketplace state.</li>
+      </ul>
+
+      <h2>Where members should go</h2>
+      <p>
+        <a href="lab.html">Open Genesis Lab</a><br>
+        <a href="stake-lab.html?open=verify-nfts">Verify Genesis NFTs</a><br>
+        <a href="stake-lab.html?open=mouse-freezer">Open Genesis Mouse Freezer</a><br>
+        <a href="get-roles.html#season13-v2-genesis-boost">Read the Genesis role and staking guide</a>
       </p>
     </div>
   </div>
@@ -1104,220 +2903,1373 @@
     </div>
   </div>
 
-  <div id="tab-staking" class="tab-content">
+    <div id="tab-staking" class="tab-content">
     <div id="stakingContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains DSPOINC staking and Season 13 V2 preview rules in simple language.
+         It does not activate V2 staking, create stakes, claim rewards, unstake DSPOINC,
+         calculate live balances, write ledger rows, or bypass backend authority. -->
       <h1>🧊 DSPOINC Staking</h1>
+
       <p>
-        DSPOINC staking lets players freeze DSPOINC for a selected duration and earn a reward based on the staking system rules.
+        DSPOINC Staking is the balance-staking lane of Narrrf’s World.
+        It is different from Genesis Mouse Freezer NFT staking.
       </p>
 
-      <h2>Customer explanation</h2>
       <p>
-        Staking turns DSPOINC from a simple game reward into a longer-term ecosystem resource.
-        Players choose to freeze DSPOINC, wait through the selected period, and claim according to the live rules.
+        In DSPOINC Staking, a member locks DSPOINC for a selected duration.
+        The system tracks the frozen amount, unlock timing, reward rules, claim state,
+        and possible early unstake penalty through the staking backend.
       </p>
 
-      <h2>System meaning</h2>
+      <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+        <strong>Simple difference:</strong><br>
+        DSPOINC Staking = lock DSPOINC balance.<br>
+        Genesis Mouse Freezer = freeze verified Genesis NFT slots for daily DSPOINC rewards.
+      </div>
+
+      <h2>Current live status</h2>
+      <p>
+        The current active DSPOINC staking contract is still the legacy staking lane.
+        Season 13 V2 staking is prepared as a future contract version, but it is not publicly active until the team intentionally activates it.
+      </p>
+
       <ul>
-        <li>Staking supports long-term economy loops.</li>
-        <li>Frozen DSPOINC should not be treated as spendable until unstaked or completed.</li>
-        <li>Staking connects profile, economy, and permanent progression direction.</li>
+        <li><strong>legacy_v1:</strong> current active DSPOINC staking behavior.</li>
+        <li><strong>season13_v2:</strong> future DSPOINC staking version with lock-day pools and Genesis multipliers.</li>
+        <li><strong>Backend authority:</strong> final rewards, claim state, balances, and Genesis tier checks stay controlled by PHP and the database.</li>
       </ul>
 
-      <h2>Reset behavior</h2>
+      <h2>Legacy DSPOINC staking</h2>
       <p>
-        Staking is permanent economy state. It must not reset with seasonal leaderboards.
+        Legacy staking lets members freeze DSPOINC for a selected period and receive the stored reward when the stake completes.
+        Frozen DSPOINC should not be treated as spendable while the stake is active.
+      </p>
+
+      <p>
+        Legacy staking is permanent economy state. It does not reset with seasonal game leaderboards.
+      </p>
+
+      <h2>Season 13 V2 pool preview</h2>
+      <p>
+        Season 13 V2 is planned as a clearer lock-duration system. Members choose how long to lock DSPOINC,
+        and the base reward rate depends on the selected pool.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-2xl border border-sky-300/25 bg-sky-400/10 p-4">
+          <h3>14 Days</h3>
+          <p>0.5% base reward</p>
+        </div>
+
+        <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+          <h3>30 Days</h3>
+          <p>1.25% base reward</p>
+        </div>
+
+        <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+          <h3>90 Days</h3>
+          <p>5% base reward</p>
+        </div>
+
+        <div class="rounded-2xl border border-indigo-300/25 bg-indigo-400/10 p-4">
+          <h3>180 Days</h3>
+          <p>12% base reward</p>
+        </div>
+
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+          <h3>365 Days</h3>
+          <p>30% base reward</p>
+        </div>
+
+        <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+          <h3>730 Days</h3>
+          <p>75% base reward</p>
+        </div>
+      </div>
+
+      <h2>Genesis boost tiers for DSPOINC V2</h2>
+      <p>
+        In Season 13 V2, verified Genesis ownership can boost the DSPOINC staking reward.
+        One Genesis opens the holder lane, but the first real boost starts at two Genesis mice.
+        Non-Genesis members can still stake with x1.00.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <h3>0 Genesis</h3>
+          <p>x1.00 • no Genesis boost</p>
+        </div>
+
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <h3>1 Genesis</h3>
+          <p>x1.00 • holder lane, no reward boost yet</p>
+        </div>
+
+        <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+          <h3>2 Genesis</h3>
+          <p>x1.025 reward multiplier</p>
+        </div>
+
+        <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+          <h3>3–5 Genesis</h3>
+          <p>x1.05 reward multiplier</p>
+        </div>
+
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+          <h3>6–15 Genesis</h3>
+          <p>x1.10 reward multiplier</p>
+        </div>
+
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+          <h3>16–29 Genesis</h3>
+          <p>x1.20 reward multiplier</p>
+        </div>
+
+        <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4 md:col-span-2">
+          <h3>30+ Genesis</h3>
+          <p>x1.35 reward multiplier</p>
+        </div>
+      </div>
+
+      <h2>Same-tier rule</h2>
+      <p>
+        DSPOINC V2 stores the user’s Genesis tier when the stake starts.
+        At claim time, the backend checks the user’s verified Genesis tier again.
+      </p>
+
+      <ul>
+        <li>If the user stayed in the same or a higher Genesis tier, the Genesis boost stays valid.</li>
+        <li>If the user dropped below the starting Genesis tier, the user keeps the base reward but loses the Genesis multiplier bonus.</li>
+        <li>This prevents someone from staking with a high Genesis boost, selling Genesis mice, and still claiming the full boosted reward later.</li>
+      </ul>
+
+      <h2>Claim behavior</h2>
+      <p>
+        Legacy stakes keep their stored expected reward.
+        Future V2 stakes re-check the user’s Genesis holder tier at claim time before final reward payout.
+      </p>
+
+      <p>
+        The frontend may show a preview, but it does not decide the final reward.
+        The backend calculates and writes the final claim result.
+      </p>
+
+      <h2>Early unstake behavior</h2>
+      <p>
+        Early unstaking has a penalty system. The current backend applies a 15% penalty to the original staked amount,
+        returns the remaining value logically through stake state, and writes the penalty as a negative DSPOINC balance movement.
+      </p>
+
+      <p>
+        For future V2 stakes, the backend also records the user’s Genesis tier at exit so support and devs can see whether the Genesis boost terms were still valid.
+      </p>
+
+      <h2>Why DSPOINC staking matters</h2>
+      <ul>
+        <li>It turns DSPOINC from a short-term game reward into a longer-term economy resource.</li>
+        <li>It gives members a reason to plan, lock, wait, and claim instead of spending everything immediately.</li>
+        <li>It connects profile balance, Stake Lab, rewards, audit history, and future Genesis holder utility.</li>
+        <li>It stays separate from NFT freezer rewards so DSPOINC balance staking and Genesis NFT staking can be tested safely.</li>
+      </ul>
+
+      <h2>Where members should go</h2>
+      <p>
+        <a href="stake-lab.html?open=dspoinc-staking">Open DSPOINC Staking</a><br>
+        <a href="stake-lab.html?open=verify-nfts">Verify Genesis NFTs for future V2 boosts</a><br>
+        <a href="get-roles.html#season13-v2-genesis-boost">Read the public role and staking guide</a>
+      </p>
+
+      <p>
+        Rollout status should always follow the latest team announcement.
+        Season 13 V2 staking should not be described as publicly active until the contract version is intentionally switched from legacy to V2.
       </p>
     </div>
   </div>
 
-  <div id="tab-database" class="tab-content">
+    <div id="tab-genesisMouseFreezer" class="tab-content">
+    <div id="genesisMouseFreezerContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains Genesis Mouse Freezer NFT staking in simple system language.
+         It does not activate staking, verify wallets, freeze NFTs, claim rewards,
+         write DSPOINC, mutate NFT metadata, or change backend authority. -->
+      <h1>🧬 Genesis Mouse Freezer</h1>
+
+      <p>
+        Genesis Mouse Freezer is the NFT staking lane inside Narrrf’s World.
+        It is separate from DSPOINC staking.
+      </p>
+
+      <h2>Simple difference</h2>
+      <ul>
+        <li><strong>DSPOINC Staking:</strong> a player locks DSPOINC balance for a pool or duration.</li>
+        <li><strong>Genesis Mouse Freezer:</strong> a verified Genesis holder freezes a Genesis NFT slot for daily DSPOINC reward tracking.</li>
+      </ul>
+
+      <p>
+        In the Mouse Freezer, the NFT stays in the holder’s wallet. The backend stores an internal freezer row,
+        checks ownership, tracks claim timing, calculates full-day rewards, applies VIP rules, and writes DSPOINC history.
+      </p>
+
+      <h2>Why it matters for the Genesis lane</h2>
+      <p>
+        The Genesis lane is not only about the current player account. It is also about building history around each verified Genesis Mouse.
+        That means official Genesis progression can stay connected to the NFT identity over time.
+      </p>
+
+      <p>
+        Player progress and NFT-bound progression are different:
+      </p>
+
+      <ul>
+        <li><strong>Player progress:</strong> Discord profile, DSPOINC balance, game history, rewards, and account actions.</li>
+        <li><strong>Genesis Mouse progress:</strong> custom name, Lab history, trait progress, ability direction, freezer history, and future verified holder-lane upgrades.</li>
+      </ul>
+
+      <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+        <strong>Simple example:</strong><br>
+        If a Genesis Mouse gains official Lab progress or freezer history, that progression belongs to the Genesis lane identity of that mouse.
+        A future holder can see that the mouse has real Narrrfs World history instead of being treated like a blank NFT again.
+      </div>
+
+      <h2>How the freeze flow works</h2>
+      <ul>
+        <li>The holder verifies Genesis ownership in Stake Lab.</li>
+        <li>The holder chooses an available Genesis mouse.</li>
+        <li>Stake Lab creates a short freeze challenge.</li>
+        <li>The connected wallet signs a Solana Memo proof.</li>
+        <li>The backend verifies the Memo came from the correct wallet and matches the exact challenge message.</li>
+        <li>Only then does the backend create the active freezer row.</li>
+      </ul>
+
+      <h2>How claiming works</h2>
+      <ul>
+        <li>Claims use full server days only.</li>
+        <li>Partial days do not pay.</li>
+        <li>The backend re-checks NFT ownership at claim time.</li>
+        <li>The backend recalculates the current Genesis tier and VIP bonus at claim time.</li>
+        <li>The frontend never sends the reward amount.</li>
+        <li>The backend writes the claim row, DSPOINC ledger row, and audit row together.</li>
+      </ul>
+
+      <h2>Genesis Mouse Freezer tiers</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-2xl border border-stone-300/25 bg-stone-400/10 p-4">
+          <h3>Genesis Tier 1</h3>
+          <p>1 Genesis • 250 DSPOINC/day • 3 freezer slots</p>
+        </div>
+
+        <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+          <h3>Genesis Tier 2</h3>
+          <p>2 Genesis • 300 DSPOINC/day • 3 freezer slots</p>
+        </div>
+
+        <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+          <h3>Genesis Collector</h3>
+          <p>3–5 Genesis • 400 DSPOINC/day • 4 freezer slots</p>
+        </div>
+
+        <div class="rounded-2xl border border-pink-300/25 bg-pink-400/10 p-4">
+          <h3>Genesis Expert</h3>
+          <p>6–15 Genesis • 550 DSPOINC/day • 5 freezer slots</p>
+        </div>
+
+        <div class="rounded-2xl border border-indigo-300/25 bg-indigo-400/10 p-4">
+          <h3>Genesis Elite Holder</h3>
+          <p>16–29 Genesis • 750 DSPOINC/day • 6 freezer slots</p>
+        </div>
+
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+          <h3>Genesis Legend</h3>
+          <p>30–49 Genesis • 1000 DSPOINC/day • 8 freezer slots</p>
+        </div>
+
+        <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+          <h3>Genesis Mythic</h3>
+          <p>50–74 Genesis • 1150 DSPOINC/day • 10 freezer slots</p>
+        </div>
+
+        <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+          <h3>Genesis Ancient</h3>
+          <p>75–99 Genesis • 1275 DSPOINC/day • 12 freezer slots</p>
+        </div>
+
+        <div class="rounded-2xl border border-red-300/25 bg-red-400/10 p-4 md:col-span-2">
+          <h3>Genesis Overlord</h3>
+          <p>100+ Genesis • 1400 DSPOINC/day • 15 freezer slots</p>
+        </div>
+      </div>
+
+      <h2>VIP Holder bonus</h2>
+      <p>
+        VIP Holder is a separate utility lane. VIP does not count as Genesis and does not replace Genesis tier requirements.
+        For the Mouse Freezer, VIP adds <strong>+1 extra freezer slot</strong> and a <strong>+10% DSPOINC bonus</strong>
+        on the first 10 active frozen Genesis mice.
+      </p>
+
+      <h2>Ownership safety</h2>
+      <p>
+        If a holder sells a frozen Genesis NFT, the claim path fails safely when ownership no longer matches.
+        Rewards pause instead of paying to the old owner. This protects the economy and keeps the backend authoritative.
+      </p>
+
+      <h2>Important boundary</h2>
+      <p>
+        Marketplace actions alone do not upgrade or mutate a Genesis Mouse. Progression should only come from official Narrrfs World systems
+        such as verified Lab upgrades, approved training paths, staking/freezer history, and backend-confirmed holder actions.
+      </p>
+
+      <h2>Where members should go</h2>
+      <p>
+        <a href="stake-lab.html?open=mouse-freezer">Open Genesis Mouse Freezer</a><br>
+        <a href="stake-lab.html?open=verify-nfts">Verify NFTs first</a><br>
+        <a href="get-roles.html#season13-v2-genesis-boost">Read the public role and staking guide</a>
+      </p>
+
+      <p>
+        Rollout status should always follow the latest team announcement. The system has passed controlled live testing,
+        but public activation should not be overstated before the official rollout.
+      </p>
+    </div>
+  </div>
+
+    <div id="tab-database" class="tab-content">
     <div id="databaseContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
-      <h1>🗄️ Database Layer</h1>
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Narrrfs SQL database, API layer, Discord bot sync,
+         wallet/NFT verification, profile data, and backend service direction.
+         It does not expose secrets, API keys, database credentials, admin routes,
+         private tables, write permissions, or internal security details. -->
+      <h1>🗄️ Narrrfs Data Engine</h1>
+
+```
+  <p>
+    The Narrrfs World database is the memory layer of the ecosystem.
+    It is where player identity, game scores, DSPOINC movement, roles, rewards,
+    NFT verification, staking state, Lab progress, inventory, marketplace activity,
+    and audit history are connected into one readable system.
+  </p>
+
+  <p>
+    In simple words: Narrrf’s World is not just a collection website.
+    It is a live web game and community platform with a SQL database, many API endpoints,
+    Discord bot services, wallet verification, profile dashboards, and backend sync systems working together.
+  </p>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Simple customer explanation:</strong><br>
+    The website, Discord bot, games, Stake Lab, Genesis Lab, Reward Chamber, marketplace,
+    and profile page all read from or write to the same protected backend data layer.
+  </div>
+
+  <h2>What kind of database system we use</h2>
+  <p>
+    Narrrf’s World uses a SQL database structure. SQL lets the project store connected records in tables,
+    search them quickly, compare them safely, and build reports for players, holders, admins, and backend tools.
+  </p>
+
+  <p>
+    A SQL database is useful because Narrrfs has many connected systems:
+    one player can have Discord identity, game scores, DSPOINC history, NFT ownership,
+    Genesis roles, Lab progress, marketplace listings, staking rows, and reward claims.
+  </p>
+
+  <h2>More than 100 APIs</h2>
+  <p>
+    Narrrf’s World uses a large API layer between the frontend pages and the database.
+    These APIs are the controlled gates that decide what the website, Discord bot, games,
+    and backend services are allowed to read or write.
+  </p>
+
+  <ul>
+    <li><strong>Game APIs:</strong> save scores, load leaderboards, and connect game activity to profiles.</li>
+    <li><strong>Profile APIs:</strong> load player identity, DSPOINC state, rewards, stats, and history.</li>
+    <li><strong>Reward APIs:</strong> open boxes, claim rewards, and write audit-safe reward history.</li>
+    <li><strong>Lab APIs:</strong> manage Genesis upgrades, trait progress, Genetic Inventory, boosters, and claims.</li>
+    <li><strong>Marketplace APIs:</strong> create listings, cancel listings, buy items, and transfer Genetic Item state.</li>
+    <li><strong>Staking APIs:</strong> freeze DSPOINC, complete stakes, claim rewards, unstake, and track V2 readiness.</li>
+    <li><strong>Genesis Mouse Freezer APIs:</strong> create wallet-proof challenges, freeze NFTs, unfreeze NFTs, and claim daily rewards.</li>
+    <li><strong>Admin APIs:</strong> support safe operations, reports, checks, fixes, audits, and controlled maintenance.</li>
+    <li><strong>Partner / bridge APIs:</strong> prepare controlled integrations such as SPOINC/DSPOINC balance checks and future partner routes.</li>
+  </ul>
+
+  <p>
+    This API structure keeps the frontend from becoming the authority.
+    The frontend can show buttons, previews, and dashboards, but the backend APIs decide final results.
+  </p>
+
+  <h2>Website, Discord bot, and backend sync</h2>
+  <p>
+    Narrrfs data does not live in only one page.
+    The ecosystem syncs across the website, Discord, games, and backend services.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-indigo-300/25 bg-indigo-400/10 p-4">
+      <h3>Website sync</h3>
       <p>
-        The database is the memory of Narrrf’s World. It stores seasons, scores, users, roles,
-        DSPOINC movement, Lab progress, reward history, and admin/audit trails.
+        Pages like Profile, Leaderboard, Stake Lab, Genesis Lab, Reward Chamber,
+        Get Roles, and Nerd Lab all explain or display different parts of the same ecosystem data.
       </p>
+    </div>
 
-      <h2>Season control</h2>
+    <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+      <h3>Discord bot sync</h3>
       <p>
-        The active season is controlled by <code>tbl_seasons</code>, where one season should be marked active.
-        APIs should read the active season dynamically and use <code>Season 12</code> as the fallback where updated.
+        Discord bot systems can connect roles, events, races, rumbles, reward actions,
+        holder identity, and community activity back into the Narrrfs backend.
       </p>
+    </div>
 
-      <h2>Seasonal data</h2>
-      <ul>
-        <li>Leaderboard score records.</li>
-        <li>Current season competition state.</li>
-        <li>Game rows tied to season names.</li>
-        <li>Historical archive rows after a season reset.</li>
-      </ul>
-
-      <h2>Permanent data</h2>
-      <ul>
-        <li>DSPOINC balances and ledger history.</li>
-        <li>Staking balances and staking state.</li>
-        <li>Genesis Lab progression.</li>
-        <li>Genetic inventory.</li>
-        <li>Marketplace state.</li>
-        <li>Reward Chamber persistent/economy state.</li>
-        <li>Wallet, user, role, and NFT identity.</li>
-      </ul>
-
-      <h2>Plain explanation</h2>
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>Player profile sync</h3>
       <p>
-        Scoreboards can reset for fresh competition. Player identity, Lab progress, DSPOINC economy,
-        staking, inventory, and holder access should not reset like monthly scoreboards.
+        The Profile page acts as the player hub. It shows scores, DSPOINC activity,
+        reward history, roles, holder state, and next actions based on backend data.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+      <h3>Backend service sync</h3>
+      <p>
+        Backend services, admin tools, and AI-assisted agent workflows help the team review state,
+        plan updates, inspect issues, write documentation, and keep systems synchronized.
       </p>
     </div>
   </div>
 
-  <div id="tab-seasonReset" class="tab-content">
+  <h2>Wallet and NFT verification</h2>
+  <p>
+    Narrrfs uses wallet and NFT verification to connect Discord players with holder utility.
+    This is important because player identity and NFT ownership are two different layers.
+  </p>
+
+  <ul>
+    <li><strong>Discord identity:</strong> who the player is inside Narrrfs World and Discord.</li>
+    <li><strong>Wallet identity:</strong> which Solana wallet the player controls.</li>
+    <li><strong>NFT ownership:</strong> which verified Genesis or VIP NFTs belong to that wallet/user connection.</li>
+    <li><strong>Holder utility:</strong> roles, Genesis Lab access, staking boost previews, and Genesis Mouse Freezer access.</li>
+  </ul>
+
+  <p>
+    For Solana/NFT checks, the backend can use trusted blockchain data routes such as Helius and Solana RPC providers.
+    These services help verify wallet and transaction information instead of trusting screenshots or frontend-only claims.
+  </p>
+
+  <h2>Helius, Solana RPC, and wallet-proof actions</h2>
+  <p>
+    Some advanced systems need proof from the Solana network.
+    For example, Genesis Mouse Freezer uses wallet-proof Memo transactions during freeze and unfreeze flows.
+  </p>
+
+  <p>
+    In that flow, the website helps the user sign a Solana Memo transaction.
+    The backend then verifies that the correct wallet signed the correct message before changing freezer state.
+  </p>
+
+  <ul>
+    <li>The frontend does not decide that a wallet proof is valid.</li>
+    <li>The backend checks the Memo transaction through Solana RPC routes.</li>
+    <li>Helius or other RPC services can help the backend read Solana transaction data.</li>
+    <li>Only after backend verification can freezer state change.</li>
+  </ul>
+
+  <h2>Season control</h2>
+  <p>
+    Seasons are controlled by the database so the website and APIs know which competition cycle is active.
+    The active season decides where current scores should go and what the current leaderboard cycle means.
+  </p>
+
+  <ul>
+    <li>Current-season game scores belong to the active season.</li>
+    <li>Leaderboards can reset for fresh competition.</li>
+    <li>Historical rows preserve old season performance.</li>
+    <li>Permanent economy and holder data do not reset like monthly scoreboards.</li>
+  </ul>
+
+  <h2>Seasonal data</h2>
+  <p>
+    Seasonal data is the part of the ecosystem that can reset or archive when a season changes.
+    This keeps competitions fresh without deleting long-term identity.
+  </p>
+
+  <ul>
+    <li>Current season leaderboard scores.</li>
+    <li>Game rows tied to season names.</li>
+    <li>Competition stats for games like Tetris, Snake, Space Invaders, Cheese Runner, Glyph Memory, Labyrinth Blast, and other synced games.</li>
+    <li>Season archive rows after a reset.</li>
+    <li>Monthly or seasonal recognition data.</li>
+  </ul>
+
+  <h2>Permanent economy data</h2>
+  <p>
+    Permanent economy data should not disappear when a leaderboard season resets.
+    This protects long-term player history, holder state, and economy trust.
+  </p>
+
+  <ul>
+    <li><strong>DSPOINC ledger:</strong> earned, added, deducted, claimed, frozen, and audited DSPOINC movement.</li>
+    <li><strong>Staking state:</strong> active stakes, completed stakes, penalties, claim state, and future V2 data.</li>
+    <li><strong>Reward history:</strong> Reward Chamber actions, claim rows, prize logs, and audit trails.</li>
+    <li><strong>Genesis Lab progress:</strong> NFT-bound trait and ability progression.</li>
+    <li><strong>Genetic Inventory:</strong> Discord-user-bound Genetic Items and their item state.</li>
+    <li><strong>Genetic Marketplace:</strong> listings, purchases, cancellations, transfers, and ownership state.</li>
+    <li><strong>Wallet and NFT verification:</strong> holder access, Genesis roles, VIP roles, and ownership checks.</li>
+  </ul>
+
+  <h2>Profile data hub</h2>
+  <p>
+    The Profile page is the customer-facing view of the database.
+    It should help members understand who they are, what they played, what they earned,
+    what they own, what is frozen, what rewards are available, and where they should go next.
+  </p>
+
+  <ul>
+    <li>Game scores and seasonal stats come from backend records.</li>
+    <li>DSPOINC balance and history come from ledger rows.</li>
+    <li>Roles come from Discord and verification systems.</li>
+    <li>Genesis holder visibility comes from wallet/NFT verification.</li>
+    <li>Reward, staking, freezer, and Lab state come from their own backend tables and APIs.</li>
+  </ul>
+
+  <h2>Audit trails and safety</h2>
+  <p>
+    A strong database system is not only about storing data.
+    It is also about proving what happened.
+    Narrrfs uses audit-style records so the team can review reward movement, balance changes,
+    claims, admin actions, and system history.
+  </p>
+
+  <ul>
+    <li>Reward claims should have a readable reason and history.</li>
+    <li>DSPOINC movements should be traceable.</li>
+    <li>Admin or system actions should leave reviewable records.</li>
+    <li>Marketplace and staking actions should be explainable after they happen.</li>
+    <li>Backend checks should protect against duplicate claims, wrong ownership, and frontend manipulation.</li>
+  </ul>
+
+  <h2>AI-assisted backend and support workflow</h2>
+  <p>
+    The Narrrfs team also uses AI-assisted agent workflows to help document systems,
+    review status, plan safe changes, summarize complex updates, and keep development notes synchronized.
+  </p>
+
+  <p>
+    These agents do not replace the database as the source of truth.
+    They help the team understand, document, and safely operate the system.
+    Final ownership, reward, balance, role, and claim decisions still come from the backend, database, Discord bot logic, and verified APIs.
+  </p>
+
+  <h2>Why this makes Narrrfs unique</h2>
+  <p>
+    Many NFT projects only have a mint page and a Discord.
+    Narrrf’s World is building a connected data world: games, profiles, DSPOINC, Discord roles,
+    Genesis progression, inventory, marketplace, staking, reward systems, and partner routes all connected through one backend structure.
+  </p>
+
+  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+    <strong>Short version:</strong><br>
+    Scoreboards can reset for fresh fun.<br>
+    Player identity, holder status, Lab progress, DSPOINC history, staking, inventory,
+    marketplace state, and audit records stay as long-term ecosystem memory.
+  </div>
+
+  <h2>Safety rules</h2>
+  <ul>
+    <li>The frontend displays data but should not be the final authority.</li>
+    <li>APIs control what can be written to the database.</li>
+    <li>Discord bot actions must stay synchronized with backend state.</li>
+    <li>Wallet/NFT ownership must be verified through approved flows.</li>
+    <li>AI-assisted agents can help the team document and review, but they do not override backend truth.</li>
+    <li>No public page should expose secrets, private keys, database credentials, or protected admin logic.</li>
+  </ul>
+
+  <h2>Where members should go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="stake-lab.html?open=verify-nfts">Verify NFTs</a><br>
+    <a href="stake-lab.html?open=dspoinc-staking">Open DSPOINC Staking</a><br>
+    <a href="stake-lab.html?open=mouse-freezer">Open Genesis Mouse Freezer</a><br>
+    <a href="lab.html">Open Genesis Lab</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+   <div id="tab-seasonReset" class="tab-content">
     <div id="seasonResetContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
-      <h1>🔄 Season Reset / Archive Logic</h1>
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Narrrfs season model in customer-friendly language.
+         It does not reset seasons, archive rows, pay rewards, delete scores,
+         change active seasons, or bypass backend/database authority. -->
+      <h1>🔄 Monthly Seasons & Leaderboard Resets</h1>
+
+```
+  <p>
+    Narrrf’s World uses a season-based scoring model.
+    This means players get a fresh competition cycle every month while the ecosystem still remembers what happened before.
+  </p>
+
+  <p>
+    A new season is not a wipe of the whole game.
+    It is a fresh leaderboard race where everyone gets a new chance to climb, compete, and fight for monthly recognition and rewards.
+  </p>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Simple customer explanation:</strong><br>
+    Every season starts a fresh race on the leaderboards.<br>
+    Old season scores are saved in the Cheese Engine and database.<br>
+    Permanent player progress, DSPOINC, Genesis progress, inventory, and staking do not disappear.
+  </div>
+
+  <h2>Why we reset leaderboards</h2>
+  <p>
+    Monthly leaderboard resets keep the games fair, active, and exciting.
+    Without resets, old high scores could stay at the top forever and new players would have less reason to compete.
+  </p>
+
+  <ul>
+    <li>New players get a real chance every month.</li>
+    <li>Active players get a fresh reason to play again.</li>
+    <li>Competitive players can fight for monthly leaderboard spots.</li>
+    <li>The team can reward current activity instead of only old records.</li>
+    <li>Each season becomes its own chapter inside Narrrf’s World history.</li>
+  </ul>
+
+  <h2>Monthly reward direction</h2>
+  <p>
+    The season model supports monthly payout and recognition events.
+    When a season ends, the team can review the final leaderboards and reward top players based on the active reward rules for that month.
+  </p>
+
+  <p>
+    Reward details can change by season, event, game, sponsor, partner, or special campaign.
+    The important idea is simple: players compete during the season, the season ends, winners are reviewed, and the next season starts fresh.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>1. Play</h3>
+      <p>Players compete across the Narrrfs games during the active season.</p>
+    </div>
+
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>2. Rank</h3>
+      <p>Leaderboards track current-season scores and show who is leading.</p>
+    </div>
+
+    <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+      <h3>3. Reward</h3>
+      <p>At season end, top players can receive monthly recognition, DSPOINC, SOL, NFTs, partner prizes, or other announced rewards.</p>
+    </div>
+  </div>
+
+  <h2>What gets reset</h2>
+  <p>
+    Only planned seasonal competition data should reset.
+    This is mostly the active leaderboard race for the games.
+  </p>
+
+  <ul>
+    <li>Current-season game leaderboard positions.</li>
+    <li>Current-season competition score rows.</li>
+    <li>Current-season ranking display.</li>
+    <li>Current monthly race visibility.</li>
+  </ul>
+
+  <p>
+    This keeps the next season clean and gives every player a fair new start on the boards.
+  </p>
+
+  <h2>Games connected to the season model</h2>
+  <p>
+    Narrrfs games can save scores into the active season so each monthly competition has its own leaderboard state.
+  </p>
+
+  <ul>
+    <li><strong>Tetris:</strong> seasonal arcade scoring and leaderboard competition.</li>
+    <li><strong>Snake:</strong> seasonal score race and profile sync.</li>
+    <li><strong>Space Cheese Invaders:</strong> seasonal score race and leaderboard tracking.</li>
+    <li><strong>Cheese Runner:</strong> seasonal score and activity competition.</li>
+    <li><strong>Labyrinth Blast:</strong> seasonal score sync for the newer game lane.</li>
+    <li><strong>Glyph Memory:</strong> memory-game scoring through its own connected archive path.</li>
+    <li><strong>Cheese Hunt:</strong> seasonal activity snapshots where applicable.</li>
+    <li><strong>Discord games:</strong> races, rumbles, poker nights, and events can support seasonal/community recognition separately.</li>
+  </ul>
+
+  <h2>What gets saved</h2>
+  <p>
+    When a season ends, the old season is not forgotten.
+    The Cheese Engine and database can preserve historical season data so the project keeps a memory of past competition.
+  </p>
+
+  <ul>
+    <li>Old season performance can be archived.</li>
+    <li>Historical score rows can stay reviewable.</li>
+    <li>Past winners and strong players can remain part of Narrrfs history.</li>
+    <li>Season summaries can help the team review activity and plan rewards.</li>
+    <li>The project can look back and compare how the community grew over time.</li>
+  </ul>
+
+  <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+    <strong>Cheese Engine memory:</strong><br>
+    The leaderboard race resets, but the season story can stay saved.
+    This lets Narrrfs build a long-term history instead of losing every month’s data.
+  </div>
+
+  <h2>What never resets in a normal season reset</h2>
+  <p>
+    A season reset is not a player wipe.
+    Permanent economy, holder progress, and identity systems stay protected.
+  </p>
+
+  <ul>
+    <li><strong>DSPOINC balances:</strong> player economy history should not reset with leaderboards.</li>
+    <li><strong>DSPOINC staking:</strong> active and completed staking rows are permanent economy state.</li>
+    <li><strong>Genesis Mouse Freezer:</strong> frozen NFT state, claim history, and freezer records are not monthly score rows.</li>
+    <li><strong>Genesis Lab progression:</strong> trait levels, ability levels, custom names, and Lab history stay with the Genesis lane.</li>
+    <li><strong>Genetic Inventory:</strong> player-owned Genetic Items should remain in the player inventory.</li>
+    <li><strong>Genetic Marketplace:</strong> listings, purchases, cancellations, and item ownership should not reset like scores.</li>
+    <li><strong>Reward Chamber state:</strong> reward history, claim records, and persistent economy state stay protected.</li>
+    <li><strong>Wallet verification:</strong> verified holder identity and NFT ownership records are not seasonal score rows.</li>
+    <li><strong>Discord roles:</strong> roles and holder tiers should follow role/verification logic, not monthly leaderboard reset logic.</li>
+    <li><strong>User identity:</strong> Discord account, profile identity, and long-term activity history stay part of the player record.</li>
+  </ul>
+
+  <h2>Player progress vs season scores</h2>
+  <p>
+    The easiest way to understand the model is to separate temporary competition from permanent progress.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+      <h3>Season scores</h3>
       <p>
-        Season resets are designed to create fresh competition while preserving the permanent Narrrfs ecosystem.
+        Monthly competition scores, current leaderboard positions, and active season race data.
+        These can reset to keep competition fresh.
       </p>
+    </div>
 
-      <h2>Reset process in plain language</h2>
-      <ul>
-        <li>Backup the database first.</li>
-        <li>Archive the current season before deleting or resetting score rows.</li>
-        <li>Activate the new season in <code>tbl_seasons</code>.</li>
-        <li>Reset only the planned seasonal leaderboard data.</li>
-        <li>Verify every game saves under the new active season.</li>
-        <li>Verify profile, leaderboard, admin, Lab, Reward Chamber, and economy systems still work.</li>
-      </ul>
-
-      <h2>Season-based archive scope</h2>
-      <ul>
-        <li><code>tetris</code></li>
-        <li><code>snake</code></li>
-        <li><code>space_invaders</code></li>
-        <li><code>cheeseman</code></li>
-        <li><code>labyrinth_blast</code></li>
-        <li>Cheese Hunt snapshot where applicable.</li>
-        <li>Glyph Memory through its separate archive path.</li>
-      </ul>
-
-      <h2>Never reset in normal leaderboard reset</h2>
-      <ul>
-        <li>DSPOINC balances.</li>
-        <li>Staking.</li>
-        <li>Genesis Lab progression.</li>
-        <li>Genetic inventory.</li>
-        <li>Marketplace.</li>
-        <li>Reward Chamber persistent/economy state.</li>
-        <li>User, wallet, role, and NFT identity.</li>
-      </ul>
-
-      <h2>Customer explanation</h2>
+    <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+      <h3>Permanent progress</h3>
       <p>
-        A new season means a fresh race on the boards. It does not mean players lose Lab progress,
-        DSPOINC, staking, inventory, Mouse names, or Genesis identity.
+        DSPOINC, Genesis progress, inventory, staking, marketplace state, roles, wallet verification,
+        rewards, and player identity. These should stay protected.
       </p>
     </div>
   </div>
 
-  <div id="tab-frontend" class="tab-content">
+  <h2>How a new season starts</h2>
+  <p>
+    When the team starts a new season, the system should move into a fresh leaderboard cycle.
+    The website, games, Profile page, Leaderboard page, and admin tools should all read the new active season.
+  </p>
+
+  <ul>
+    <li>The new active season becomes the current scoring target.</li>
+    <li>Games should save new scores under the new season.</li>
+    <li>Leaderboards should show the new season race.</li>
+    <li>Profile stats should display the correct current-season activity.</li>
+    <li>Old season history should remain available for archive/review logic.</li>
+  </ul>
+
+  <h2>Why this matters for the community</h2>
+  <p>
+    The season model keeps Narrrf’s World alive.
+    It gives players a reason to return, holders a reason to watch the ecosystem,
+    and the team a clean way to reward active monthly participation.
+  </p>
+
+  <ul>
+    <li>Players can always make a comeback next month.</li>
+    <li>Strong players can prove themselves again and again.</li>
+    <li>New games can join the scoring system over time.</li>
+    <li>Partners can sponsor monthly or event-based rewards.</li>
+    <li>Past seasons become part of the Narrrfs story instead of disappearing.</li>
+  </ul>
+
+  <h2>Customer-friendly short version</h2>
+  <p>
+    A Narrrfs season is like a monthly tournament cycle.
+    Everyone competes, the top players can be rewarded, the leaderboard resets,
+    and the old season is saved into the Cheese Engine history.
+  </p>
+
+  <p>
+    You do not lose your DSPOINC, Genesis Lab progress, staking, inventory, marketplace items,
+    wallet verification, roles, or Genesis Mouse identity just because a new season starts.
+  </p>
+
+  <h2>Safety rules</h2>
+  <ul>
+    <li>Never describe a season reset as deleting the whole player account.</li>
+    <li>Never mix leaderboard reset data with permanent economy data.</li>
+    <li>Never reset DSPOINC, staking, Genesis Lab, inventory, marketplace, or holder identity during a normal leaderboard reset.</li>
+    <li>Always archive or preserve season history before treating a season as finished.</li>
+    <li>Always verify games save into the new active season after a reset.</li>
+    <li>Always make reward announcements clear before players compete for a monthly payout.</li>
+  </ul>
+
+  <h2>Where members should go</h2>
+  <p>
+    <a href="leaderboard.html">Open current Leaderboards</a><br>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="project-updates.html">Read Project Updates</a><br>
+    <a href="stake-lab.html?open=dspoinc-staking">Open DSPOINC Staking</a><br>
+    <a href="lab.html">Open Genesis Lab</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-frontend" class="tab-content">
     <div id="frontendContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Narrrfs frontend in customer-friendly language.
+         It does not control rewards, balances, score saving, wallet verification,
+         role grants, season state, staking, Lab upgrades, or backend authority. -->
       <h1>🌐 Frontend Layer</h1>
+
+```
+  <p>
+    The frontend is the visible world of Narrrf’s World.
+    It is everything members see, click, read, play, and use on the website.
+  </p>
+
+  <p>
+    It connects the community to the full ecosystem: games, profile, leaderboards,
+    Genesis Lab, Stake Lab, Reward Chamber, roles, mint pages, project updates,
+    partner information, and deeper documentation like the Nerd Lab.
+  </p>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Simple customer explanation:</strong><br>
+    The frontend is the map and control room for players.
+    It shows what exists, explains what to do next, and guides members into the right system.
+  </div>
+
+  <h2>What members use the frontend for</h2>
+  <ul>
+    <li><strong>Play games:</strong> enter the Narrrfs arcade and compete for seasonal scores.</li>
+    <li><strong>Check Profile:</strong> see identity, scores, roles, rewards, DSPOINC, and holder progress.</li>
+    <li><strong>View Leaderboards:</strong> follow the current monthly competition.</li>
+    <li><strong>Verify NFTs:</strong> connect wallet ownership to holder access.</li>
+    <li><strong>Enter Genesis Lab:</strong> progress verified Genesis mice through official Lab systems.</li>
+    <li><strong>Use Stake Lab:</strong> access DSPOINC staking, NFT verification, and Genesis Mouse Freezer information.</li>
+    <li><strong>Open rewards:</strong> find Reward Chamber actions and claimable reward moments.</li>
+    <li><strong>Learn the ecosystem:</strong> read FAQ, Get Roles, Whitepaper, Project Updates, and Nerd Lab.</li>
+  </ul>
+
+  <h2>How the frontend helps new members</h2>
+  <p>
+    A good frontend should make Narrrf’s World easy to understand.
+    New members should quickly see where to play, how to verify, what DSPOINC is,
+    how Genesis holders get deeper utility, and where the current season competition happens.
+  </p>
+
+  <h2>How the frontend helps holders</h2>
+  <p>
+    For holders, the frontend becomes the gateway into Genesis utility.
+    It points them toward wallet verification, role access, Genesis Lab,
+    DSPOINC staking previews, Genesis Mouse Freezer, and future Mouse progression.
+  </p>
+
+  <h2>Frontend vs backend</h2>
+  <p>
+    The frontend shows data and gives members buttons to use.
+    The backend is still the authority that checks ownership, saves scores,
+    writes DSPOINC movements, verifies rewards, confirms staking, and protects the database.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>Frontend</h3>
       <p>
-        The frontend is what players see: home page, profile, leaderboard, Lab, mint info, roles, Reward Chamber,
-        project updates, whitepapers, and game pages.
+        Shows pages, buttons, cards, dashboards, games, instructions, previews, and navigation.
       </p>
+    </div>
 
-      <h2>Customer purpose</h2>
+    <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+      <h3>Backend</h3>
       <p>
-        The frontend should explain the ecosystem clearly and guide users to the right action:
-        play, verify, mint, enter Lab, open rewards, stake DSPOINC, or read deeper docs.
+        Verifies users, checks wallets, saves records, calculates rewards, writes ledgers, and protects the economy.
       </p>
-
-      <h2>Important frontend rules</h2>
-      <ul>
-        <li>Do not hardcode outdated active-season text.</li>
-        <li>Use Season 12 as current public context.</li>
-        <li>Keep Season 11 only as frozen / previous / historical when mentioned.</li>
-        <li>Preserve existing IDs, scripts, API paths, and onclick handlers during theme changes.</li>
-        <li>Frontend displays data; backend should remain authoritative for rewards, score saves, and season state.</li>
-      </ul>
-
-      <h2>Pages in the Season 12 sync wave</h2>
-      <ul>
-        <li><code>index.html</code></li>
-        <li><code>get-roles.html</code></li>
-        <li><code>mint.html</code></li>
-        <li><code>whitepaper.html</code></li>
-        <li><code>whitepaper-pro.html</code></li>
-        <li><code>project-updates.html</code></li>
-        <li><code>nerd-lab.html</code></li>
-      </ul>
     </div>
   </div>
 
-  <div id="tab-adminInterface" class="tab-content">
+  <h2>Main frontend pages</h2>
+  <ul>
+    <li><strong>Home:</strong> the main entry point into the Narrrfs world.</li>
+    <li><strong>Profile:</strong> the player passport and ecosystem overview.</li>
+    <li><strong>Leaderboard:</strong> the current season competition board.</li>
+    <li><strong>Genesis Lab:</strong> the holder progression and Mouse upgrade area.</li>
+    <li><strong>Stake Lab:</strong> the staking, verification, and freezer control room.</li>
+    <li><strong>Get Roles:</strong> the role and holder access guide.</li>
+    <li><strong>Mint:</strong> the Genesis mint gateway and collection information.</li>
+    <li><strong>FAQ:</strong> quick answers for new and returning members.</li>
+    <li><strong>Nerd Lab:</strong> the deeper system guide for people who want to understand how everything connects.</li>
+    <li><strong>Project Updates:</strong> the public progress and announcement archive.</li>
+  </ul>
+
+  <h2>Why the frontend matters</h2>
+  <p>
+    The frontend is where the ecosystem becomes understandable.
+    Without it, the database, APIs, Discord bot, games, Lab, staking, and rewards would be hidden technical systems.
+  </p>
+
+  <p>
+    A strong frontend turns those systems into a clear journey:
+    play games, earn DSPOINC, check profile, verify NFTs, unlock holder access,
+    progress Genesis mice, use staking systems, and follow each season.
+  </p>
+
+  <h2>Safety rule</h2>
+  <p>
+    The frontend should explain and display the Narrrfs world clearly,
+    but it should never be described as the final authority for rewards, balances,
+    ownership, roles, staking, marketplace actions, or season state.
+  </p>
+
+  <p>
+    If something changes a player’s economy, role, NFT utility, reward state, or database record,
+    the backend must confirm it.
+  </p>
+
+  <h2>Where members should go</h2>
+  <p>
+    <a href="index.html">Open Home</a><br>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="stake-lab.html?open=verify-nfts">Verify NFTs</a><br>
+    <a href="lab.html">Open Genesis Lab</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-adminInterface" class="tab-content">
     <div id="adminInterfaceContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Admin Interface in customer/investor-friendly language.
+         It does not expose private admin routes, secrets, permissions, staff tools,
+         database credentials, moderation powers, or protected operational details. -->
       <h1>⚙️ Admin Interface</h1>
+
+```
+  <p>
+    The Admin Interface is the control room behind Narrrf’s World.
+    Players see games, rewards, profiles, roles, staking, Lab systems, and events.
+    The team needs a trusted place to monitor those systems, support members, review activity,
+    and keep the ecosystem running safely.
+  </p>
+
+  <p>
+    In simple words: the Admin Interface helps the team operate Narrrf’s World like a real live platform,
+    not just a static website.
+  </p>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Customer-friendly explanation:</strong><br>
+    The public website is what members use.<br>
+    The Admin Interface is what trusted operators use to support, verify, review, and maintain the live ecosystem.
+  </div>
+
+  <h2>Why an admin system is needed</h2>
+  <p>
+    Narrrf’s World connects games, Discord, DSPOINC, NFT verification, rewards, staking,
+    Genesis Lab, Genetic Inventory, marketplace activity, and community events.
+    A project with that many moving parts needs clear internal tools.
+  </p>
+
+  <ul>
+    <li>Players need support when something does not look right.</li>
+    <li>Rewards need visibility so claims and payouts can be reviewed.</li>
+    <li>Games need monitoring so score systems stay fair.</li>
+    <li>Roles and holder access need verification support.</li>
+    <li>Events, bugs, partner campaigns, and community tools need organized management.</li>
+  </ul>
+
+  <h2>What the team can monitor</h2>
+  <p>
+    The Admin Interface gives trusted team members a better overview of what is happening inside the ecosystem.
+    It helps the team understand activity, not guess.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>Players and profiles</h3>
       <p>
-        The Admin Interface is the control and visibility layer for trusted operators.
-        It helps monitor users, scores, roles, missions, games, Lab systems, Reward Chamber, claims, bugs, partners, and support workflows.
+        Review user activity, profile state, Discord identity, scores, rewards, and support situations.
       </p>
+    </div>
 
-      <h2>Customer-friendly explanation</h2>
+    <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+      <h3>Games and leaderboards</h3>
       <p>
-        Players see games and rewards. Admins need tools to verify, support, correct, and monitor the ecosystem.
-        The admin interface is how the team keeps the live system understandable and supportable.
+        Monitor seasonal game activity, leaderboard health, score saving, and current competition state.
       </p>
+    </div>
 
-      <h2>Current Season 12 admin direction</h2>
-      <ul>
-        <li>Admin game stats should use the active season.</li>
-        <li>Labyrinth Blast is prepared as a Game Management surface through shared game stats.</li>
-        <li>Reward Chamber has dedicated configuration/visibility direction.</li>
-        <li>Player Profiles and Lab / Trait System tabs support deeper user support.</li>
-        <li>Mission, points, store, quest, Twitter, bug, and partner tools remain operational areas.</li>
-      </ul>
-
-      <h2>Important safety rule</h2>
+    <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+      <h3>Roles and holder access</h3>
       <p>
-        Admin pages are function-heavy. Theme changes should be careful and should not remove IDs,
-        tabs, fetch paths, auth logic, or existing operational tools unless explicitly planned.
+        Support NFT verification, holder role direction, VIP access, Genesis tiers, and community identity.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+      <h3>Rewards and economy</h3>
+      <p>
+        Review Reward Chamber activity, DSPOINC movement, claims, audit history, and economy-related actions.
       </p>
     </div>
   </div>
 
-  <div id="tab-discordBot" class="tab-content">
-    <div id="discordBotContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
-      <h1>🤖 Discord Bot Layer</h1>
-      <p>
-        Discord is not only a chat room for Narrrf’s World. It is a major player identity, event, role,
-        onboarding, and community-game layer.
-      </p>
+  <h2>Operations behind the scenes</h2>
+  <p>
+    The Admin Interface helps the team manage the parts of Narrrf’s World that members should not have to worry about.
+    This includes support workflows, configuration checks, event visibility, bug tracking, and system review.
+  </p>
 
-      <h2>What Discord connects</h2>
-      <ul>
-        <li>Login identity for player sessions.</li>
-        <li>Roles and holder recognition.</li>
-        <li>Community events and partner activity.</li>
-        <li>Cheese Race and Cheese Rumble style gameplay.</li>
-        <li>Onboarding for new players and new Genesis holders.</li>
-        <li>Moderator/admin follow-up for premium claims and support workflows.</li>
-      </ul>
+  <ul>
+    <li><strong>Reward Chamber:</strong> visibility for boxes, claims, rewards, and reward history.</li>
+    <li><strong>Genesis Lab:</strong> support view for trait progress, ability systems, Genetic Inventory, and Lab activity.</li>
+    <li><strong>Stake Lab:</strong> support direction for DSPOINC staking, NFT verification, and Genesis Mouse Freezer status.</li>
+    <li><strong>Marketplace:</strong> visibility for listings, purchases, cancellations, and item movement.</li>
+    <li><strong>Bug tracking:</strong> helps the team understand issues reported by members.</li>
+    <li><strong>Partner and event tools:</strong> helps coordinate campaigns, events, rewards, and community activations.</li>
+  </ul>
 
-      <h2>Why it matters</h2>
-      <p>
-        Narrrf’s World is community-first. Discord keeps the world alive between website visits,
-        game sessions, Lab upgrades, and partner events.
-      </p>
+  <h2>Why this matters for members</h2>
+  <p>
+    A strong admin layer makes the player experience safer and easier.
+    Members should not need to understand database rows, API calls, or backend logs.
+    They should simply know that the team has tools to review, support, and protect the systems they use.
+  </p>
 
-      <h2>Future ability direction</h2>
+  <ul>
+    <li>If a reward needs review, the team has a place to check it.</li>
+    <li>If a game score looks wrong, the team has a place to investigate.</li>
+    <li>If a holder verification needs support, the team can review the connected systems.</li>
+    <li>If a bug is reported, the team can track it instead of losing it in chat.</li>
+    <li>If an event or partner campaign is active, the team can coordinate it more cleanly.</li>
+  </ul>
+
+  <h2>Why this matters for partners and investors</h2>
+  <p>
+    The Admin Interface shows that Narrrf’s World is being built as an operated ecosystem.
+    It is not only a mint page or a single game page. It has internal structure for support,
+    rewards, moderation, economy visibility, game operations, and long-term platform growth.
+  </p>
+
+  <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+    <strong>Investor-friendly summary:</strong><br>
+    A live GameFi/community platform needs more than public pages.
+    It needs operations tools, audit visibility, reward control, support workflows,
+    and clear internal systems so the project can scale without losing control.
+  </div>
+
+  <h2>Admin Interface vs public pages</h2>
+  <p>
+    Public pages are designed for members.
+    Admin pages are designed for trusted operators.
+    Both are part of the same ecosystem, but they have different purposes.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+      <h3>Public pages</h3>
       <p>
-        Discord fights and role-based events are a safe first lane for testing Genesis ability concepts before deeper game-engine integration.
+        Help members play, learn, verify, stake, claim, check profiles, view leaderboards, and understand the ecosystem.
       </p>
     </div>
+
+    <div class="rounded-2xl border border-red-300/25 bg-red-400/10 p-4">
+      <h3>Admin pages</h3>
+      <p>
+        Help trusted team members review, support, configure, monitor, investigate, and operate the ecosystem safely.
+      </p>
+    </div>
+  </div>
+
+  <h2>Safety and trust</h2>
+  <p>
+    Admin tools must stay protected because they can affect important systems.
+    Members do not need access to these tools, but they benefit from the team having them.
+  </p>
+
+  <ul>
+    <li>Admin tools should only be used by trusted operators.</li>
+    <li>Important economy and reward actions should stay reviewable.</li>
+    <li>Admin systems should support transparency through records and audit history.</li>
+    <li>Public pages should never expose private admin controls or sensitive backend details.</li>
+    <li>Operational tools should protect the ecosystem instead of replacing normal user flows.</li>
+  </ul>
+
+  <h2>Short version</h2>
+  <p>
+    The Admin Interface is the backstage control room of Narrrf’s World.
+    It helps the team keep games fair, rewards reviewable, roles supportable,
+    events organized, bugs tracked, and the whole ecosystem easier to operate.
+  </p>
+
+  <h2>Where members should go</h2>
+  <p>
+    Members do not need the Admin Interface for normal use.
+    Use the public pages instead:
+  </p>
+
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="stake-lab.html?open=verify-nfts">Verify NFTs</a><br>
+    <a href="lab.html">Open Genesis Lab</a><br>
+    <a href="project-updates.html">Read Project Updates</a>
+  </p>
+</div>
+```
+
+  </div>
+
+
+    <div id="tab-discordBot" class="tab-content">
+    <div id="discordBotContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+      <!-- DEVS FOR DECADES:
+         This Nerd Lab tab is public documentation only.
+         It explains the Discord Bot as a customer-friendly ecosystem bridge.
+         It does not expose bot tokens, private commands, admin-only tools,
+         reward credentials, airdrop secrets, API keys, or protected operational details. -->
+      <h1>🤖 Discord Bot Layer</h1>
+
+```
+  <p>
+    The Narrrfs Discord Bot is much more than a chat helper.
+    It is one of the main bridges between the website, Discord community, games,
+    player identity, roles, missions, rewards, events, and economy systems.
+  </p>
+
+  <p>
+    Discord is where many members spend the most time.
+    The bot helps turn that Discord activity into real Narrrfs World interaction:
+    races, rumbles, missions, rewards, roles, support, onboarding, and community events.
+  </p>
+
+  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+    <strong>Simple customer explanation:</strong><br>
+    The website is where members play, verify, stake, check profiles, and use Lab systems.<br>
+    The Discord Bot is the live community engine that connects players, events, games, roles, missions, rewards, and economy actions inside Discord.
+  </div>
+
+  <h2>What the Discord Bot connects</h2>
+  <ul>
+    <li><strong>Website players:</strong> Discord identity connects to website login, profile usage, and player records.</li>
+    <li><strong>Roles:</strong> holder roles, VIP roles, Genesis tier roles, event roles, tester roles, and community identity.</li>
+    <li><strong>Games:</strong> Discord-based games such as Cheese Race and Cheese Rumble.</li>
+    <li><strong>Events:</strong> community nights, partner events, races, rumbles, poker, VR Bingo, and special campaigns.</li>
+    <li><strong>Economy:</strong> DSPOINC rewards, token rewards, item rewards, and reward history direction.</li>
+    <li><strong>Missions:</strong> X missions, social tasks, campaign tracking, and community activation.</li>
+    <li><strong>Support:</strong> onboarding, holder education, ticket support, claim review, and community guidance.</li>
+  </ul>
+
+  <h2>Community games inside Discord</h2>
+  <p>
+    The Discord Bot powers community-first gameplay that happens directly inside the server.
+    This keeps Narrrf’s World alive even when members are not on the website.
+  </p>
+
+  <ul>
+    <li><strong>Cheese Race:</strong> members join races, compete, and win rewards through Discord gameplay.</li>
+    <li><strong>Cheese Rumble:</strong> members battle in Discord-based rumble events.</li>
+    <li><strong>Holder races:</strong> special races can reward holders or VIP members.</li>
+    <li><strong>Event battles:</strong> partner nights and special campaigns can use bot-powered game formats.</li>
+  </ul>
+
+  <h2>Rewards and airdrops</h2>
+  <p>
+    The bot helps the team deliver fast reward moments during community activity.
+    This can include DSPOINC, token rewards, digital items, event prizes, and special campaign rewards.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+      <h3>Instant reward moments</h3>
+      <p>
+        Races, rumbles, events, giveaways, and special missions can trigger quick reward distribution
+        when the rules are clear and the action is approved.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+      <h3>Digital item support</h3>
+      <p>
+        The bot can support the flow of digital rewards, Genetic Items, campaign items,
+        and other ecosystem assets when connected to the backend reward systems.
+      </p>
+    </div>
+  </div>
+
+  <p>
+    The important rule is that the bot should not be random magic.
+    Reward actions should connect back to approved rules, backend APIs, audit history,
+    admin visibility, or trusted operator workflows.
+  </p>
+
+  <h2>X missions and social campaigns</h2>
+  <p>
+    The Discord Bot also supports the community growth layer.
+    X missions and social campaigns can help organize raids, posts, replies,
+    partner pushes, giveaways, and engagement tasks.
+  </p>
+
+  <ul>
+    <li>Members can receive clear mission instructions.</li>
+    <li>Campaign activity can be organized through Discord.</li>
+    <li>Partner activations can be easier to coordinate.</li>
+    <li>Reward moments can be connected to approved social missions.</li>
+    <li>The team can guide the community without manually repeating every instruction.</li>
+  </ul>
+
+  <h2>Roles and holder recognition</h2>
+  <p>
+    The bot helps make roles visible and useful.
+    Roles are not only labels. They show who is a holder, who is VIP, who is active,
+    who tested systems, who won events, and who belongs to special community lanes.
+  </p>
+
+  <ul>
+    <li><strong>Holder / VIP Holder:</strong> verified NFT access and deeper ecosystem identity.</li>
+    <li><strong>Genesis tier roles:</strong> recognition based on verified Genesis count.</li>
+    <li><strong>Champion roles:</strong> competition and winner identity.</li>
+    <li><strong>Tester / WL roles:</strong> early access, controlled tests, and whitelist participation.</li>
+    <li><strong>Event roles:</strong> temporary or campaign-based participation recognition.</li>
+  </ul>
+
+  <h2>Onboarding new members</h2>
+  <p>
+    The Discord Bot also helps explain Narrrf’s World to new members.
+    A newcomer needs to understand games, DSPOINC, roles, profile, wallet verification,
+    Genesis holders, staking, Lab systems, and events. The bot can make that easier.
+  </p>
+
+  <ul>
+    <li>New players can learn where to start.</li>
+    <li>New holders can learn how to verify NFTs.</li>
+    <li>Genesis minters can learn how the holder lane works.</li>
+    <li>Members can be guided to Profile, Stake Lab, Genesis Lab, FAQ, and Nerd Lab.</li>
+    <li>Support messages can be standardized so the team gives clear answers faster.</li>
+  </ul>
+
+  <h2>Website and Discord together</h2>
+  <p>
+    The bot and website are strongest when they work together.
+    The website gives members the full dashboard and system pages.
+    Discord gives members live activity, quick commands, social energy, and event interaction.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+      <h3>Website side</h3>
+      <p>
+        Profile, games, leaderboards, Stake Lab, Genesis Lab, Reward Chamber,
+        FAQ, Nerd Lab, mint pages, and project updates.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+      <h3>Discord side</h3>
+      <p>
+        Community chat, commands, roles, races, rumbles, missions, airdrops,
+        support workflows, events, and partner activations.
+      </p>
+    </div>
+  </div>
+
+  <h2>Economy and backend connection</h2>
+  <p>
+    Because the bot can touch rewards, roles, games, events, and missions,
+    it must stay connected to the backend data model.
+    That makes rewards more trackable and helps the team support members when something needs review.
+  </p>
+
+  <ul>
+    <li>Reward actions should be traceable.</li>
+    <li>Role changes should follow verified logic.</li>
+    <li>Game rewards should follow approved event rules.</li>
+    <li>Token and item rewards should be connected to trusted operator or backend flows.</li>
+    <li>Admin visibility should help the team review what happened.</li>
+  </ul>
+
+  <h2>Future ability direction</h2>
+  <p>
+    Discord battles, races, and role-based events are a safe first lane for testing future Genesis ability concepts.
+    Before deeper game-engine integration, the team can use Discord events to explore how stats, roles,
+    holder lanes, and community competition might feel.
+  </p>
+
+  <p>
+    This makes Discord a practical testing ground for future RPG direction without forcing every idea directly into the website games too early.
+  </p>
+
+  <h2>Why the Discord Bot matters</h2>
+  <p>
+    Narrrf’s World is community-first.
+    The Discord Bot keeps the world alive between website sessions, game runs, Lab upgrades,
+    staking actions, reward claims, and partner events.
+  </p>
+
+  <ul>
+    <li>It keeps members active inside Discord.</li>
+    <li>It connects live community energy to website systems.</li>
+    <li>It supports instant reward moments and digital item flows.</li>
+    <li>It helps run games and events without rebuilding everything as a website page.</li>
+    <li>It gives the team a flexible tool for onboarding, missions, support, and campaigns.</li>
+  </ul>
+
+  <h2>Safety rules</h2>
+  <ul>
+    <li>The bot should not expose private tokens, admin secrets, or protected backend access.</li>
+    <li>Reward commands should follow approved rules and remain reviewable.</li>
+    <li>Role commands should follow verification logic and not rely on screenshots alone.</li>
+    <li>Token rewards and digital item rewards should be handled through trusted flows.</li>
+    <li>The bot should support the economy, not bypass backend authority.</li>
+    <li>Public explanations should focus on community utility, not guaranteed financial return.</li>
+  </ul>
+
+  <h2>Short version</h2>
+  <p>
+    The Discord Bot is the live community engine of Narrrf’s World.
+    It connects members, roles, games, rumbles, missions, rewards, airdrops,
+    digital items, website profiles, events, and backend economy systems into one active Discord experience.
+  </p>
+
+  <h2>Where members should go</h2>
+  <p>
+    <a href="profile.html">Open Profile</a><br>
+    <a href="leaderboard.html">Open Leaderboards</a><br>
+    <a href="project-updates.html">Read Project Updates</a><br>
+    <a href="nerd-lab.html">Open Nerd Lab</a>
+  </p>
+</div>
+```
+
   </div>
 </div>
 ```
+
 
 
     <!-- Final CTA -->
@@ -1437,9 +4389,10 @@
     'profileSystem',
     'rolesSystem',
     'lab',
-    'rewardChamber',
-    'staking',
-    'database',
+      'rewardChamber',
+  'staking',
+  'genesisMouseFreezer',
+  'database',
     'seasonReset',
     'frontend',
     'adminInterface',

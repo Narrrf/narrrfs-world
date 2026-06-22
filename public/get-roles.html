@@ -437,217 +437,264 @@ require_once 'discord-invite.php';
     </div>
   </section>
 
-<!-- 🧬 Live Genesis Tier Roles + Season 13 V2 Utility Preview
+<!-- 🧬 Genesis Roles + DSPOINC V2 Pools + Genesis Mouse Freezer Guide
      DEVS FOR DECADES:
-     This section is public-facing education for verified Genesis holders.
-     Discord Genesis tier roles are live community utility and are assigned by
-     the Discord bot from verified Genesis ownership count.
-     Season 13 V2 staking boosts remain preview/planned until the backend
-     contract is intentionally activated. This section does not grant roles,
-     verify NFTs, calculate staking rewards, mutate staking data, or mint NFTs. -->
+     This section is public-facing education only.
+     It explains live Genesis roles, DSPOINC V2 staking preview pools,
+     Genesis Mouse Freezer NFT staking tiers, and VIP Holder bonus rules.
+     It does not grant roles, verify NFTs, calculate rewards, freeze NFTs,
+     mutate DSPOINC, activate V2 staking, or bypass backend authority. -->
 <section id="season13-v2-genesis-boost" class="relative z-10 py-16 px-6 bg-gradient-to-b from-slate-950 via-yellow-950/25 to-slate-950 border-t border-white/5">
   <div class="max-w-7xl mx-auto">
     <div class="rounded-[2rem] border border-yellow-300/25 bg-slate-900/85 p-6 md:p-8 shadow-2xl overflow-hidden">
-      <div class="grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-8 items-start">
-        <div>
-          <div class="inline-flex items-center gap-2 rounded-full border border-green-300/35 bg-green-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-green-200 mb-5">
-            ✅ Live Genesis Discord Roles
-          </div>
-
-          <h2 class="text-3xl md:text-5xl font-black leading-tight mb-4">
-            More Genesis.<br>
-            Higher Holder Tier.
-          </h2>
-
-          <p class="text-slate-300 text-lg leading-relaxed mb-5">
-  Your verified Genesis count now powers more than one system: live Discord tier roles,
-  future DSPOINC staking boosts, and the Genesis Mouse Freezer preview in Stake Lab.
-  More verified Genesis mice means a stronger holder tier, more freezer slots, and more future utility options.
-</p>
-
-          <div class="grid grid-cols-1 gap-4 mb-6">
-  <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4 text-sm text-green-100">
-    <div class="font-black text-green-100 mb-2">✅ 1. Genesis tier roles are live</div>
-    <p class="leading-relaxed">
-      After holder verification, the bot checks how many Genesis mice you own and gives you the highest matching Genesis tier role.
-      These roles are public recognition for your holder level and help connect Discord, Profile, Lab, and future utility.
-    </p>
-  </div>
-
-  <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4 text-sm text-yellow-100">
-    <div class="font-black text-yellow-100 mb-2">🧊 2. V2 DSPOINC staking is previewed</div>
-    <p class="leading-relaxed">
-      Current DSPOINC staking still runs on the safe legacy system. The Season 13 V2 preview shows how Genesis tiers may boost future DSPOINC staking rewards after V2 is officially activated.
-    </p>
-  </div>
-
-  <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4 text-sm text-cyan-100">
-    <div class="font-black text-cyan-100 mb-2">🧬 3. Genesis Mouse Freezer is the NFT staking preview</div>
-    <p class="leading-relaxed">
-      The Freezer is different from DSPOINC staking: it is planned for Genesis mice themselves. Your Genesis tier decides how many mice can use freezer slots, and each slot can hold one Genesis mouse when the system goes live.
-    </p>
-  </div>
-
-  <div class="rounded-2xl border border-pink-300/25 bg-pink-400/10 p-4 text-sm text-pink-100">
-    <div class="font-black text-pink-100 mb-2">🎴 VIP Holder role adds extra freezer power</div>
-    <p class="leading-relaxed">
-      VIP Holder is a separate VIP collection role. VIP NFTs do not count toward the Genesis tier ladder, but VIP Holder adds future freezer utility: +10% bonus on the first 10 frozen Genesis mice and +1 extra freezer slot.
-    </p>
-  </div>
-</div>
-
-          <div class="flex flex-col sm:flex-row gap-3">
-            <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
-               target="_blank"
-               rel="noopener noreferrer"
-               class="inline-flex justify-center rounded-2xl bg-yellow-400 px-6 py-3 font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-yellow-300">
-              🧬 Mint Genesis on Gensuki
-            </a>
-
-            <a href="stake-lab.html#genesis-mouse-freezer-preview-panel"
-               class="inline-flex justify-center rounded-2xl bg-cyan-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-cyan-400">
-              🧊 Open Freezer Preview
-            </a>
-            <a href="profile.html?verify=1#holder-verification"
-     class="inline-flex justify-center rounded-2xl bg-pink-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-pink-400">
-    🎴 Verify VIP / Holder
-  </a>
-          </div>
+      <div class="mb-8">
+        <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/35 bg-yellow-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-200 mb-5">
+          🧬 Genesis Utility Guide
         </div>
 
-        <div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <h2 class="text-3xl md:text-5xl font-black leading-tight mb-4">
+          Roles, DSPOINC Pools<br>
+          and Genesis Mouse Freezer
+        </h2>
+
+        <p class="text-slate-300 text-lg leading-relaxed max-w-5xl">
+          Your verified Genesis mice now connect several systems: live Discord Genesis tier roles, future DSPOINC V2 staking boosts, and the Genesis Mouse Freezer. DSPOINC staking and NFT freezing are different lanes, but both use backend-verified ownership and clear holder tiers.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <div class="rounded-3xl border border-cyan-300/25 bg-cyan-400/10 p-5">
+          <div class="text-xs uppercase tracking-[0.18em] text-cyan-200 font-black mb-3">❄️ DSPOINC Pool</div>
+          <h3 class="text-2xl font-black text-white mb-3">Stake DSPOINC</h3>
+          <p class="text-sm leading-relaxed text-cyan-100/90">
+            DSPOINC staking means locking your off-chain DSPOINC balance for a selected pool duration. Legacy staking is active now. Season 13 V2 pools are prepared as preview until activation.
+          </p>
+          <a href="stake-lab.html?open=dspoinc-staking"
+             class="mt-4 inline-flex w-full justify-center rounded-2xl border border-cyan-300/30 bg-cyan-500/20 px-4 py-3 text-sm font-black text-cyan-100 transition hover:scale-105 hover:bg-cyan-500/30">
+            ❄️ Open DSPOINC Staking
+          </a>
+        </div>
+
+        <div class="rounded-3xl border border-yellow-300/30 bg-yellow-400/10 p-5 shadow-lg shadow-yellow-950/20">
+          <div class="text-xs uppercase tracking-[0.18em] text-yellow-200 font-black mb-3">🧬 NFT Freezer</div>
+          <h3 class="text-2xl font-black text-white mb-3">Freeze Genesis Mice</h3>
+          <p class="text-sm leading-relaxed text-yellow-100/90">
+            Genesis Mouse Freezer is the NFT staking lane. Verified Genesis mice can be frozen for daily DSPOINC rewards. The NFT stays in your wallet while backend rows track freezer state and claims.
+          </p>
+          <a href="stake-lab.html?open=mouse-freezer"
+             class="mt-4 inline-flex w-full justify-center rounded-2xl border border-yellow-300/40 bg-yellow-400/20 px-4 py-3 text-sm font-black text-yellow-100 transition hover:scale-105 hover:bg-yellow-400/30">
+            🧬 Open Mouse Freezer
+          </a>
+        </div>
+
+        <div class="rounded-3xl border border-pink-300/25 bg-pink-400/10 p-5">
+          <div class="text-xs uppercase tracking-[0.18em] text-pink-200 font-black mb-3">🎴 VIP Bonus</div>
+          <h3 class="text-2xl font-black text-white mb-3">VIP Holder Power</h3>
+          <p class="text-sm leading-relaxed text-pink-100/90">
+            VIP Holder is a separate role lane. VIP NFTs do not count toward Genesis tier roles, but VIP adds +1 freezer slot and +10% bonus on the first 10 frozen Genesis mice.
+          </p>
+          <a href="stake-lab.html?open=verify-nfts"
+             class="mt-4 inline-flex w-full justify-center rounded-2xl border border-pink-300/30 bg-pink-500/20 px-4 py-3 text-sm font-black text-pink-100 transition hover:scale-105 hover:bg-pink-500/30">
+            🎴 Verify NFTs / VIP
+          </a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="rounded-3xl border border-cyan-300/20 bg-slate-950/50 p-5">
+          <div class="mb-5">
+            <div class="text-xs uppercase tracking-[0.18em] text-cyan-200 font-black mb-2">DSPOINC V2 Pool Preview</div>
+            <h3 class="text-2xl font-black text-white">Lock DSPOINC, earn pool rewards</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-300">
+              V2 staking is about DSPOINC lock pools. Genesis mice do not get frozen in this lane. Instead, verified Genesis ownership may boost the final DSPOINC staking reward after V2 is officially activated.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="font-black text-white">14 Days</div>
+              <div class="text-cyan-200 mt-1">Base reward: 0.5%</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="font-black text-white">30 Days</div>
+              <div class="text-cyan-200 mt-1">Base reward: 1.25%</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="font-black text-white">90 Days</div>
+              <div class="text-cyan-200 mt-1">Base reward: 5%</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="font-black text-white">180 Days</div>
+              <div class="text-cyan-200 mt-1">Base reward: 12%</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="font-black text-white">365 Days</div>
+              <div class="text-cyan-200 mt-1">Base reward: 30%</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="font-black text-white">730 Days</div>
+              <div class="text-cyan-200 mt-1">Base reward: 75%</div>
+            </div>
+          </div>
+
+          <div class="mt-5 rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+            <div class="font-black text-yellow-100 mb-2">Genesis boost ladder for DSPOINC V2</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-yellow-50">
+              <div>No Genesis: x1.00</div>
+              <div>1 Genesis: x1.00</div>
+              <div>2 Genesis: x1.025</div>
+              <div>3–5 Genesis: x1.05</div>
+              <div>6–15 Genesis: x1.10</div>
+              <div>16–29 Genesis: x1.20</div>
+              <div class="sm:col-span-2 font-black text-yellow-200">30+ Genesis: x1.35</div>
+            </div>
+          </div>
+
+          <p class="mt-4 text-xs leading-relaxed text-slate-400">
+            V2 status: preview-only until backend activation. Final V2 claims stay backend-authoritative and re-check Genesis ownership/tier at claim time.
+          </p>
+        </div>
+
+        <div class="rounded-3xl border border-yellow-300/20 bg-slate-950/50 p-5">
+          <div class="mb-5">
+            <div class="text-xs uppercase tracking-[0.18em] text-yellow-200 font-black mb-2">Genesis Mouse Freezer Tiers</div>
+            <h3 class="text-2xl font-black text-white">Freeze Genesis NFTs for daily DSPOINC</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-300">
+              The Mouse Freezer uses verified Genesis count to decide your daily reward per frozen mouse and how many Genesis mice can be active in freezer slots at the same time.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div class="rounded-2xl border border-stone-300/25 bg-stone-400/10 p-4">
-              <div class="text-xs uppercase tracking-[0.16em] text-stone-200 mb-2">Live Discord Role</div>
-              <div class="text-xl font-black text-white">Genesis Tier 1</div>
-              <div class="text-sm text-slate-300 mt-1">1 Genesis</div>
-              <div class="text-xs text-stone-200 mt-2">Starts the Genesis holder ladder.</div>
+              <div class="font-black text-white">Genesis Tier 1</div>
+              <div class="text-slate-300 mt-1">1 Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">250 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">3 freezer slots</div>
             </div>
 
             <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
-              <div class="text-xs uppercase tracking-[0.16em] text-purple-200 mb-2">Live Discord Role</div>
-              <div class="text-xl font-black text-white">Genesis Tier 2</div>
-              <div class="text-sm text-slate-300 mt-1">2 Genesis</div>
-              <div class="text-xs text-purple-200 mt-2">First planned V2 boost tier: x1.025.</div>
+              <div class="font-black text-white">Genesis Tier 2</div>
+              <div class="text-slate-300 mt-1">2 Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">300 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">3 freezer slots</div>
             </div>
 
             <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
-              <div class="text-xs uppercase tracking-[0.16em] text-orange-200 mb-2">Live Discord Role</div>
-              <div class="text-xl font-black text-white">Genesis Collector</div>
-              <div class="text-sm text-slate-300 mt-1">3–5 Genesis</div>
-              <div class="text-xs text-orange-200 mt-2">Planned V2 multiplier: x1.05.</div>
+              <div class="font-black text-white">Genesis Collector</div>
+              <div class="text-slate-300 mt-1">3–5 Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">400 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">4 freezer slots</div>
             </div>
 
             <div class="rounded-2xl border border-pink-300/25 bg-pink-400/10 p-4">
-              <div class="text-xs uppercase tracking-[0.16em] text-pink-200 mb-2">Live Discord Role</div>
-              <div class="text-xl font-black text-white">Genesis Expert</div>
-              <div class="text-sm text-slate-300 mt-1">6–15 Genesis</div>
-              <div class="text-xs text-pink-200 mt-2">Planned V2 multiplier: x1.10.</div>
+              <div class="font-black text-white">Genesis Expert</div>
+              <div class="text-slate-300 mt-1">6–15 Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">550 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">5 freezer slots</div>
             </div>
 
             <div class="rounded-2xl border border-indigo-300/25 bg-indigo-400/10 p-4">
-              <div class="text-xs uppercase tracking-[0.16em] text-indigo-200 mb-2">Live Discord Role</div>
-              <div class="text-xl font-black text-white">Genesis Elite Holder</div>
-              <div class="text-sm text-slate-300 mt-1">16–29 Genesis</div>
-              <div class="text-xs text-indigo-200 mt-2">Planned V2 multiplier: x1.20.</div>
+              <div class="font-black text-white">Genesis Elite Holder</div>
+              <div class="text-slate-300 mt-1">16–29 Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">750 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">6 freezer slots</div>
             </div>
 
-            <div class="rounded-2xl border border-yellow-300/35 bg-yellow-400/10 p-4 shadow-lg shadow-yellow-950/20">
-              <div class="text-xs uppercase tracking-[0.16em] text-yellow-200 mb-2">Highest Live Tier</div>
-              <div class="text-xl font-black text-white">Genesis Legend</div>
-              <div class="text-sm text-slate-300 mt-1">30+ Genesis</div>
-              <div class="text-xs text-yellow-200 mt-2">Highest planned V2 multiplier: x1.35.</div>
+            <div class="rounded-2xl border border-yellow-300/30 bg-yellow-400/10 p-4">
+              <div class="font-black text-white">Genesis Legend</div>
+              <div class="text-slate-300 mt-1">30–49 Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">1000 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">8 freezer slots</div>
+            </div>
+
+            <div class="rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+              <div class="font-black text-white">Genesis Mythic</div>
+              <div class="text-slate-300 mt-1">50–74 Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">1150 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">10 freezer slots</div>
+            </div>
+
+            <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-4">
+              <div class="font-black text-white">Genesis Ancient</div>
+              <div class="text-slate-300 mt-1">75–99 Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">1275 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">12 freezer slots</div>
+            </div>
+
+            <div class="rounded-2xl border border-red-300/25 bg-red-400/10 p-4 sm:col-span-2">
+              <div class="font-black text-white">Genesis Overlord</div>
+              <div class="text-slate-300 mt-1">100+ Genesis</div>
+              <div class="text-yellow-100 font-black mt-2">1400 DSPOINC/day</div>
+              <div class="text-cyan-100 font-black">15 freezer slots</div>
             </div>
           </div>
 
-          <div class="mt-4 rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4 text-sm text-cyan-100">
-  <div class="font-black text-cyan-100 mb-2">How the ladder works</div>
-  <p class="leading-relaxed">
-    Genesis tier roles use verified Genesis ownership only. The bot gives one clean Genesis tier role based on your highest matching tier.
-    VIP NFTs are verified separately and unlock the VIP Holder role instead of counting toward the Genesis tier ladder.
-  </p>
-</div>
+          <div class="mt-5 rounded-2xl border border-pink-300/25 bg-pink-400/10 p-4 text-sm text-pink-100">
+            <div class="font-black text-pink-100 mb-2">VIP Holder bonus</div>
+            <p class="leading-relaxed">
+              VIP Holder adds <strong>+1 extra freezer slot</strong> and a <strong>+10% DSPOINC bonus</strong> on the first 10 active frozen Genesis mice. VIP does not increase your Genesis count and does not replace Genesis tier requirements.
+            </p>
+          </div>
 
-<div class="mt-4 rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4 text-sm text-yellow-100">
-  <div class="font-black text-yellow-100 mb-2">V2 DSPOINC staking preview</div>
-  <p class="leading-relaxed">
-    V2 staking is about locking DSPOINC. Your Genesis tier can become a future staking boost, but the final reward checks stay handled safely by the backend when V2 is officially activated.
-  </p>
-</div>
-
-<div class="mt-4 rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
-  <div class="flex items-start justify-between gap-3">
-    <div>
-      <div class="text-lg font-black text-purple-100">NFT staking / Freezer slots</div>
-      <div class="text-xs text-purple-200/75 mt-1">
-        The Genesis Mouse Freezer is the NFT-side preview. Slots decide how many Genesis mice can be active at the same time.
-      </div>
-    </div>
-    <div class="rounded-full border border-purple-300/30 bg-purple-300/10 px-3 py-1 text-[11px] font-black text-purple-100">
-      PREVIEW
-    </div>
-  </div>
-
-  <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-      <div class="font-black text-white">1–2 Genesis</div>
-      <div class="mt-1 text-slate-300">Starter freezer lane</div>
-      <div class="mt-2 text-purple-100 font-black">3 slots</div>
-    </div>
-
-    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-      <div class="font-black text-white">3–29 Genesis</div>
-      <div class="mt-1 text-slate-300">Collector to Elite growth</div>
-      <div class="mt-2 text-purple-100 font-black">4–6 slots</div>
-    </div>
-
-    <div class="rounded-xl border border-white/10 bg-white/5 p-3">
-      <div class="font-black text-white">30+ Genesis</div>
-      <div class="mt-1 text-slate-300">Legend and higher freezer lane</div>
-      <div class="mt-2 text-purple-100 font-black">8+ slots</div>
-    </div>
-
-    <div class="rounded-xl border border-pink-300/20 bg-pink-300/10 p-3">
-      <div class="font-black text-pink-100">🎴 VIP Holder</div>
-      <div class="mt-1 text-pink-100/75">Separate VIP role and bonus utility</div>
-      <div class="mt-2 text-pink-100 font-black">+1 slot + 10% bonus</div>
-    </div>
-  </div>
-</div>
-
-
-</div>
-
-<div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-  <a
-    href="stake-lab.html#genesis-mouse-freezer-preview-panel"
-    class="inline-flex justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/10 px-4 py-3 font-black text-cyan-100 transition hover:scale-105 hover:bg-cyan-300/20"
-  >
-    Open Freezer Preview
-  </a>
-
-  <a
-    href="profile.html?verify=1#holder-verification"
-    class="inline-flex justify-center rounded-2xl border border-pink-300/25 bg-pink-300/10 px-4 py-3 font-black text-pink-100 transition hover:scale-105 hover:bg-pink-300/20"
-  >
-    Verify VIP / Holder
-  </a>
-
-  <a
-    href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="inline-flex justify-center rounded-2xl border border-yellow-300/25 bg-yellow-300/10 px-4 py-3 font-black text-yellow-100 transition hover:scale-105 hover:bg-yellow-300/20"
-  >
-    Mint Genesis
-  </a>
-</div>
+          <p class="mt-4 text-xs leading-relaxed text-slate-400">
+            Freezer status: controlled wallet-proof live testing. Public rollout comes later. Freeze, unfreeze, ownership checks, and claims stay backend-authoritative.
+          </p>
         </div>
       </div>
 
-      <p class="mt-7 text-xs leading-relaxed text-slate-500">
-        Genesis Discord tier roles and VIP Holder roles are access, recognition, and utility roles. Season 13 V2 staking boosts and Genesis Mouse Freezer slots are previews for transparency and remain system-checked at activation. This page does not promise financial returns, price movement, or guaranteed rewards.
-      </p>
+      <div class="mt-8 rounded-3xl border border-white/10 bg-white/5 p-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <div class="font-black text-cyan-200 mb-1">DSPOINC staking</div>
+            <p class="text-slate-300 leading-relaxed">
+              Uses your Discord DSPOINC balance. This is the pool lane.
+            </p>
+          </div>
+
+          <div>
+            <div class="font-black text-yellow-200 mb-1">Genesis Mouse Freezer</div>
+            <p class="text-slate-300 leading-relaxed">
+              Uses verified Genesis NFTs. This is the NFT freezer lane.
+            </p>
+          </div>
+
+          <div>
+            <div class="font-black text-pink-200 mb-1">VIP Holder</div>
+            <p class="text-slate-300 leading-relaxed">
+              Separate VIP utility: bonus rewards and one extra freezer slot.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 flex flex-col sm:flex-row gap-3">
+        <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="inline-flex justify-center rounded-2xl bg-yellow-400 px-6 py-3 font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-yellow-300">
+          🧬 Mint Genesis on Gensuki
+        </a>
+
+        <a href="stake-lab.html?open=dspoinc-staking"
+           class="inline-flex justify-center rounded-2xl bg-cyan-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-cyan-400">
+          ❄️ Open DSPOINC Staking
+        </a>
+
+        <a href="stake-lab.html?open=mouse-freezer"
+           class="inline-flex justify-center rounded-2xl bg-orange-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-orange-400">
+          🧬 Open Mouse Freezer
+        </a>
+
+        <a href="stake-lab.html?open=verify-nfts"
+           class="inline-flex justify-center rounded-2xl bg-pink-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-pink-400">
+          🎴 Verify NFTs / VIP
+        </a>
+      </div>
+
+      <div class="mt-6 rounded-2xl border border-red-300/20 bg-red-400/10 p-4 text-xs leading-relaxed text-red-100">
+        <strong>Safety note:</strong>
+        DSPOINC V2 staking is still preview-only until activation. Genesis Mouse Freezer is in controlled wallet-proof testing. This guide explains tiers and utility; it does not promise token price movement, guaranteed earnings, or public activation timing.
+      </div>
     </div>
   </div>
 </section>

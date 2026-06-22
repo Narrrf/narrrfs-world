@@ -1,5 +1,444 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## FOLLOW-UP — EMPIRE ROUTE FEE / SLIPPAGE NOTE FROM ZENO
+
+**Date:** 2026-06-22
+**Status:** Waiting for Gensuki final route docs / EMPIRE route fee behavior noted
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki quote route / swap-lab planning
+
+---
+
+## ✅ Latest Zeno Update
+
+Zeno confirmed he is still checking the new quote routes for the supported tokens.
+
+Latest note:
+
+```text
+Its on plan checking new quotes of tokens.
+```
+
+Zeno also found that the EMPIRE swap route appears to have an additional effective fee / route impact.
+
+Partner note:
+
+```text
+Looks like there is fee on Empire swap as well.
+The output which we get has 2 to 3% in SOL lower than normal swap.
+So for this we keep slippage on 1%.
+You can adjust it as well if you see any need of adjusting during swap.
+```
+
+Narrrf acknowledged:
+
+```text
+ok noted
+```
+
+---
+
+## ✅ Current Price Reference Remains Unchanged
+
+Keep the current first SPOINC reference price:
+
+```text
+1 SPOINC = $0.035 USD
+```
+
+Internal Narrrfs bridge ratio remains:
+
+```text
+10,000 DSPOINC = 1 SPOINC
+```
+
+Current quote logic remains:
+
+```text
+External token prices = realtime Gensuki quote route.
+Internal DSPOINC/SPOINC conversion = fixed Narrrfs ratio.
+```
+
+Confirmed external quote pairs remain:
+
+```text
+SPOINC ↔ SOL
+SPOINC ↔ EMPIRE
+SPOINC ↔ FOOK
+SPOINC ↔ USDT
+SPOINC ↔ USDC
+```
+
+---
+
+## ⚠️ New Slippage / Fee Planning Note
+
+For EMPIRE, do not assume displayed USD price equals final swap output exactly.
+
+The UI/backend should distinguish:
+
+```text
+1. reference price
+2. live token USD price
+3. quoted expected output
+4. minimum output after slippage
+5. final transaction output after execution
+```
+
+Initial slippage setting from Zeno:
+
+```text
+1%
+```
+
+Observed EMPIRE route impact from Zeno:
+
+```text
+2–3% lower output in SOL compared with normal swap
+```
+
+Implementation implication:
+
+```text
+Do not hard-code EMPIRE output from simple USD math only.
+Use Gensuki quote response as source for executable quote output.
+Show estimated price and expected output clearly in the UI.
+Show route/fee/slippage warning if Gensuki returns this data.
+```
+
+---
+
+## 🚫 Safety Rule
+
+The quote route and slippage data are still display/planning data only.
+
+Do not use quote data alone to:
+
+```text
+credit DSPOINC
+deduct DSPOINC
+mark a swap as complete
+confirm a transaction
+unlock bridge redemption
+```
+
+DSPOINC movement still requires:
+
+```text
+final unsigned transaction payload
+wallet signing flow
+confirmed transaction proof
+idempotency field
+status lifecycle
+replay protection
+amount verification
+wallet verification
+failure/expiry handling
+```
+
+---
+
+## ➡️ Next Review When Zeno Sends Docs
+
+When Gensuki docs arrive, review specifically:
+
+```text
+Does the quote response include slippage?
+Does the quote response include minimum output?
+Does the quote response include fee breakdown?
+Does EMPIRE have special fee/route behavior?
+Does FOOK have special fee/route behavior?
+Can the frontend choose slippage?
+What default slippage should Narrrfs use?
+Can the user adjust slippage or should it be fixed?
+How is failed slippage handled?
+How is expired quote handled?
+How long is a quote valid?
+```
+
+Current decision:
+
+```text
+Keep SPOINC reference at $0.035.
+Keep default slippage note at 1% until docs/tests prove otherwise.
+Do not implement live movement yet.
+```
+
+
+## FOLLOW-UP — SPOINC PRICE REFERENCE CONFIRMED WITH EMPIRE / FOOK CALCULATION
+
+**Date:** 2026-06-21
+**Status:** Zeno confirmed realtime token calculation direction / first genesis purchase pending
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki price route / swap-lab planning
+
+---
+
+## ✅ Price Reference
+
+Narrrfs and Zeno aligned around the first SPOINC reference price:
+
+```text
+1 SPOINC = $0.035 USD
+```
+
+This price matches the current private sale logic better than `$0.03`.
+
+Current private sale reference:
+
+```text
+1,000,000 DSPOINC = 10,000 EMPIRE
+10,000 DSPOINC = 1 SPOINC
+1,000,000 DSPOINC = 100 SPOINC
+```
+
+With EMPIRE around `$0.000350`:
+
+```text
+10,000 EMPIRE ≈ $3.50
+100 SPOINC ≈ $3.50
+1 SPOINC ≈ $0.035
+```
+
+---
+
+## ✅ Zeno Realtime Quote Examples
+
+Zeno tested / described the following calculations:
+
+```text
+1 SPOINC = $0.035
+EMPIRE ≈ $0.000350
+=> 1 SPOINC ≈ 100 EMPIRE
+```
+
+FOOK example:
+
+```text
+1 SPOINC = $0.035
+FOOK ≈ $0.000017
+=> 1 SPOINC ≈ 2,059 FOOK
+```
+
+Zeno confirmed the token prices are realtime and linked Gensuki token pages for EMPIRE and FOOK.
+
+---
+
+## ✅ Confirmed Quote Logic
+
+External quote tokens remain:
+
+```text
+SPOINC ↔ SOL
+SPOINC ↔ EMPIRE
+SPOINC ↔ FOOK
+SPOINC ↔ USDT
+SPOINC ↔ USDC
+```
+
+Narrrfs internal bridge remains fixed:
+
+```text
+DSPOINC ↔ SPOINC
+10,000 DSPOINC = 1 SPOINC
+```
+
+Important distinction:
+
+```text
+External token prices are realtime Gensuki quote data.
+Internal DSPOINC/SPOINC conversion stays fixed at 10,000:1.
+```
+
+---
+
+## ✅ Genesis Purchase / Smart Contract Note
+
+Zeno said the first purchase will be recorded as a genesis purchase and SOL will go directly to the smart contract.
+
+Important safety decision:
+
+```text
+Do not send SOL or run the first purchase test while tired/drunk/unclear.
+Review details sober before any test transaction.
+```
+
+Before Narrrfs sends SOL or signs a test transaction, confirm:
+
+```text
+1. exact route/API call
+2. exact SOL amount required
+3. expected SPOINC amount received
+4. smart contract address / destination
+5. unsigned transaction payload format
+6. fee handling
+7. confirmation response payload
+8. status lifecycle
+9. idempotency field
+10. replay protection field
+11. whether this is devnet or mainnet
+12. whether the first purchase affects public pool state
+```
+
+---
+
+## 🚫 Do Not Implement Yet
+
+Do not enable:
+
+```text
+automatic DSPOINC credit
+automatic DSPOINC deduction
+confirm-swap.php live processing
+frontend-controlled ledger movement
+smart contract purchase from incomplete docs
+quote-only based ledger movement
+```
+
+`public/swap-lab.html` remains a safe noindex lab shell until route docs, transaction payloads, and confirmation flow are reviewed and tested.
+
+---
+
+## ➡️ Next Step
+
+Wait for Zeno’s full details tomorrow.
+
+When received:
+
+```text
+Review docs first.
+Check pricing route separately from swap transaction route.
+Check unsigned transaction payload.
+Check Phantom-safe signing path.
+Check smart contract destination.
+Check confirmation/idempotency.
+Only then prepare local implementation plan.
+```
+
+
+## LIVE TEST CONFIRMED — GENESIS MOUSE FREEZER WALLET MEMO FREEZE WORKING
+
+**Date:** 2026-06-20
+**Status:** Controlled live test success confirmed
+**Scope:** `public/stake-lab.html`, Genesis Mouse Freezer wallet Memo UX, backend Memo verification, Phantom wallet flow
+
+---
+
+## ✅ Live Genesis Mouse Freezer Freeze Test Passed
+
+The live Genesis Mouse Freezer wallet-proof freeze flow has now been tested successfully with the Narrrf user.
+
+Confirmed live behavior:
+
+```text
+Selected one verified Genesis mouse.
+Connected the correct Solana wallet for that NFT.
+Stake Lab created the freeze challenge.
+Phantom wallet opened without warning.
+Wallet Memo transaction completed successfully.
+Frontend sent memo_signature to the backend.
+Backend verified the Memo transaction.
+Backend created the active Genesis Mouse Freezer row.
+Frozen NFT appeared correctly in the Stake Lab.
+No browser-side transaction expiration error occurred.
+No Phantom warning appeared.
+No wallet mismatch error appeared.
+```
+
+This confirms that the production wallet Memo freeze path is now working for controlled live testing.
+
+---
+
+## ✅ Important Fixes Proven By This Test
+
+The following blockers are now resolved:
+
+```text
+Browser-side confirmTransaction timeout removed from the freeze flow.
+Frontend now returns the Memo signature to PHP instead of failing on browser confirmation.
+Backend remains the authority for Memo verification.
+Phantom warning no longer appears during the controlled one-NFT freeze test.
+The “partly completed” production multi-freeze UX was removed.
+Production freeze now supports one Genesis mouse at a time during controlled live testing.
+Wrong-wallet cases now show clearer wallet-switch guidance before the Memo flow.
+```
+
+---
+
+## ✅ Safety State Still Preserved
+
+This was a controlled live test, not a public NFT staking launch.
+
+Current controlled tester gate remains:
+
+```text
+Narrrf: 328601656659017732
+justme: 1224428436928594015
+```
+
+All other production users remain blocked at freeze/unfreeze challenge creation.
+
+Important safety state remains unchanged:
+
+```text
+Genesis Mouse Freezer is still controlled live testing only.
+Public Genesis NFT staking is not announced as live yet.
+DSPOINC Staking V2 is still not publicly active.
+ACTIVE_STAKING_CONTRACT_VERSION must remain legacy_v1.
+Frontend does not decide rewards.
+Frontend does not send reward amounts.
+Backend remains authority for slots, ownership, challenges, Memo proof, claims, and ledger writes.
+Genesis Mouse Freezer APIs must not touch tbl_dspoinc_stakes.
+```
+
+---
+
+## ✅ Current Live Result
+
+Current status summary:
+
+```text
+Genesis Mouse Freezer freeze with wallet Memo is working live.
+Phantom wallet flow is clean.
+Backend Memo verification accepted the live signature.
+Active freezer row was created successfully.
+Stake Lab displays the frozen NFT correctly.
+```
+
+---
+
+## ➡️ Next Recommended Controlled Test
+
+Before expanding public access, run these next controlled steps:
+
+```text
+1. Test live unfreeze of the same Genesis mouse with wallet Memo.
+2. Confirm backend closes the active freezer row.
+3. Confirm NFT returns to Available to Freeze.
+4. Test one claim after a full eligible reward period.
+5. Test justme as the second allowlisted user.
+6. Keep all other users blocked until both freeze and unfreeze are confirmed.
+```
+
+---
+
+## 🚫 Do Not Announce Yet
+
+Do not say:
+
+```text
+NFT staking is live for everyone.
+Season 13 staking is live.
+DSPOINC V2 staking is active.
+All Genesis holders can freeze NFTs now.
+```
+
+Safe wording:
+
+```text
+Genesis Mouse Freezer wallet-proof live testing passed its first successful Narrrf freeze test.
+The system remains in controlled testing before public rollout.
+```
+
+
 ## PUSH NOTE — ALL GAME AUDIO SPLIT COMPLETE + STAKING / LIQUIDITY API WORK READY
 
 **Date:** 2026-06-20

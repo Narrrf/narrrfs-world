@@ -6120,6 +6120,83 @@ function openGenesisFreezerFreezeArea() {
   }, 150);
 }
 
+/**
+ * Read Stake Lab deep-link intent from pages like get-roles.html.
+ *
+ * Plain language for DEVS:
+ * URL hash anchors can only scroll to existing static IDs.
+ * The Mouse Freezer "Available to Freeze" area is dynamic and must be opened
+ * through the same helper used by the Stake Lab hero button.
+ *
+ * This function is navigation only. It does not create stakes, freeze NFTs,
+ * verify ownership, calculate rewards, mutate DSPOINC, or call economy APIs.
+ */
+function getStakeLabDeepLinkTarget() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get('open') || '').trim();
+}
+
+/**
+ * Run a deep-link action when the required target exists.
+ *
+ * Plain language for DEVS:
+ * Stake Lab hides main content until access/session checks finish, and the
+ * Genesis Mouse Freezer is rendered after backend data loads. This retry loop
+ * prevents cross-page links from firing too early.
+ */
+function runStakeLabDeepLinkWhenReady() {
+  const openTarget = getStakeLabDeepLinkTarget();
+
+  if (!openTarget) {
+    return;
+  }
+
+  let attempts = 0;
+  const maxAttempts = 40;
+
+  const timer = window.setInterval(() => {
+    attempts += 1;
+
+    if (openTarget === 'dspoinc-staking') {
+      const target = document.getElementById('dspoinc-freeze-section');
+
+      if (target) {
+        window.clearInterval(timer);
+        openDspoincFreezeSection();
+        return;
+      }
+    }
+
+    if (openTarget === 'mouse-freezer') {
+      const freezerPanel = document.getElementById('genesis-mouse-freezer-preview-panel');
+
+      if (freezerPanel) {
+        window.clearInterval(timer);
+        openGenesisFreezerFreezeArea();
+        return;
+      }
+    }
+
+        if (openTarget === 'verify-nfts') {
+      const verifyTarget =
+        document.getElementById('wallet-connection-section') ||
+        document.getElementById('stake-lab-verify-section');
+
+      if (verifyTarget) {
+        window.clearInterval(timer);
+        scrollToSection(verifyTarget.id);
+        return;
+      }
+    }
+
+    if (attempts >= maxAttempts) {
+      window.clearInterval(timer);
+    }
+  }, 250);
+}
+
+document.addEventListener('DOMContentLoaded', runStakeLabDeepLinkWhenReady);
+
 function restoreSavedStakeLabNfts() {
   const snapshot = loadStakeLabSnapshot(STAKE_LAB_VERIFIED_NFTS_KEY) || loadStakeLabSnapshot(STAKE_LAB_LOADED_NFTS_KEY);
   if (!snapshot || !Array.isArray(snapshot.nfts) || snapshot.nfts.length === 0) {
