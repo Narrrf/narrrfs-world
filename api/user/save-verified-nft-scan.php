@@ -199,6 +199,246 @@ function syncGenesisTierRolesAfterVerifiedScan(string $userId, int $genesisCount
     return $result;
 }
 
+/**
+ * Check if a trait array has at least one usable trait.
+ *
+ * Plain language for DEVS:
+ * A Genesis NFT needs real trait_type/value pairs before the Lab can show
+ * scanned traits, Lab power, and trait training options.
+ */
+function hasUsableNftTraits(array $traits): bool
+{
+    foreach ($traits as $trait) {
+        if (!is_array($trait)) {
+            continue;
+        }
+
+        $traitType = trim((string)($trait['trait_type'] ?? $trait['type'] ?? ''));
+        $traitValue = trim((string)($trait['value'] ?? ''));
+
+        if ($traitType !== '' && $traitValue !== '') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Extract a canonical metadata URI from the incoming NFT metadata.
+ *
+ * Plain language for DEVS:
+ * Wallet scans can return shallow NFT data, but still include metadataUri.
+ * That URI is the canonical JSON source for image and attributes.
+ */
+function extractNftMetadataUri(array $metadata): string
+{
+    $candidateKeys = [
+        'metadataUri',
+        'metadata_uri',
+        'json_uri',
+        'uri',
+        'external_url'
+    ];
+
+    foreach ($candidateKeys as $key) {
+        $value = trim((string)($metadata[$key] ?? ''));
+
+        if ($value !== '') {
+            return $value;
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Validate that a metadata URI is safe enough for backend fetch.
+ *
+ * Plain language for DEVS:
+ * This prevents the verifier from fetching random local/internal URLs.
+ * For now we only allow HTTPS metadata URLs, which covers Gensuki/4everland.
+ */
+function isSafeNftMetadataUri(string $metadataUri): bool
+{
+    if ($metadataUri === '') {
+        return false;
+    }
+
+    if (!preg_match('/^https:\/\/[^\s]+$/i', $metadataUri)) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Fetch and decode canonical NFT metadata JSON.
+ *
+ * Plain language for DEVS:
+ * This small curl wrapper lets the save endpoint repair shallow Genesis scan
+ * data before it writes ownership, traits, and Lab metadata to SQLite.
+ */
+function fetchCanonicalNftMetadata(string $metadataUri): ?array
+{
+    if (!isSafeNftMetadataUri($metadataUri)) {
+        return null;
+    }
+
+    $ch = curl_init($metadataUri);
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 12);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Accept: application/json',
+        'User-Agent: Narrrfs-World-Verified-NFT-Metadata-Fallback/1.0'
+    ]);
+
+    $responseBody = curl_exec($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+
+    curl_close($ch);
+
+    if ($responseBody === false || $curlError || $httpCode < 200 || $httpCode >= 300) {
+        error_log("⚠️ [save-verified-nft-scan] Metadata URI fetch failed. HTTP {$httpCode}. Error: {$curlError}. URI: {$metadataUri}");
+        return null;
+    }
+
+    $decoded = json_decode((string)$responseBody, true);
+
+    if (!is_array($decoded)) {
+        error_log("⚠️ [save-verified-nft-scan] Metadata URI returned invalid JSON: {$metadataUri}");
+        return null;
+    }
+
+    return $decoded;
+}
+
+/**
+ * Normalize canonical metadata attributes into the Lab trait shape.
+ *
+ * Plain language for DEVS:
+ * The Lab expects traits as trait_type/value pairs. This function accepts
+ * standard NFT attributes and removes empty/broken entries.
+ */
+function normalizeCanonicalNftTraits(array $attributes): array
+{
+    $normalizedTraits = [];
+
+    foreach ($attributes as $attribute) {
+        if (!is_array($attribute)) {
+            continue;
+        }
+
+        $traitType = trim((string)($attribute['trait_type'] ?? $attribute['type'] ?? ''));
+        $traitValue = trim((string)($attribute['value'] ?? ''));
+
+        if ($traitType === '' || $traitValue === '') {
+            continue;
+        }
+
+        $normalizedTraits[] = [
+            'trait_type' => $traitType,
+            'value' => $traitValue
+        ];
+    }
+
+    return $normalizedTraits;
+}
+
+/**
+ * Enrich shallow Genesis NFT metadata from metadataUri before saving.
+ *
+ * Plain language for DEVS:
+ * Newly minted Genesis NFTs can arrive from Helius/wallet scan with:
+ * image = ""
+ * attributes = []
+ * metadataUri = valid canonical Gensuki JSON
+ *
+ * This function fetches metadataUri only for Genesis and only when image or
+ * traits are missing. It never invents traits and it does not change ownership.
+ */
+function enrichGenesisNftMetadataFromUri(
+    string $collection,
+    string $imageUrl,
+    array $metadata,
+    array $traits
+): array {
+    if ($collection !== 'genesis') {
+        return [
+            'image_url' => $imageUrl,
+            'metadata' => $metadata,
+            'traits' => $traits
+        ];
+    }
+
+    $hasImage = trim($imageUrl) !== '';
+    $hasTraits = hasUsableNftTraits($traits);
+
+    if ($hasImage && $hasTraits) {
+        return [
+            'image_url' => $imageUrl,
+            'metadata' => $metadata,
+            'traits' => $traits
+        ];
+    }
+
+    $metadataUri = extractNftMetadataUri($metadata);
+
+    if (!isSafeNftMetadataUri($metadataUri)) {
+        return [
+            'image_url' => $imageUrl,
+            'metadata' => $metadata,
+            'traits' => $traits
+        ];
+    }
+
+    $canonicalMetadata = fetchCanonicalNftMetadata($metadataUri);
+
+    if (!is_array($canonicalMetadata)) {
+        return [
+            'image_url' => $imageUrl,
+            'metadata' => $metadata,
+            'traits' => $traits
+        ];
+    }
+
+    $canonicalImageUrl = trim((string)($canonicalMetadata['image'] ?? ''));
+    $canonicalAttributes = is_array($canonicalMetadata['attributes'] ?? null)
+        ? $canonicalMetadata['attributes']
+        : [];
+
+    $canonicalTraits = normalizeCanonicalNftTraits($canonicalAttributes);
+
+    if ($imageUrl === '' && $canonicalImageUrl !== '') {
+        $imageUrl = $canonicalImageUrl;
+    }
+
+    if (!$hasTraits && !empty($canonicalTraits)) {
+        $traits = $canonicalTraits;
+    }
+
+    $metadata = array_merge($metadata, [
+        'name' => $canonicalMetadata['name'] ?? ($metadata['name'] ?? ''),
+        'description' => $canonicalMetadata['description'] ?? ($metadata['description'] ?? ''),
+        'image' => $imageUrl,
+        'attributes' => $traits,
+        'properties' => $canonicalMetadata['properties'] ?? ($metadata['properties'] ?? null),
+        'metadataUri' => $metadataUri
+    ]);
+
+    return [
+        'image_url' => $imageUrl,
+        'metadata' => $metadata,
+        'traits' => $traits
+    ];
+}
+
 try {
     $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 
@@ -439,32 +679,56 @@ try {
             ?? ''
         );
 
-        $collectionRaw = trim($nft['collection'] ?? '');
-        $collection = strtolower($collectionRaw);
+$collectionRaw = trim($nft['collection'] ?? '');
+$collection = strtolower($collectionRaw);
 
-        $nftName = trim($nft['nft_name'] ?? $nft['name'] ?? 'Unnamed NFT');
-        $imageUrl = trim($nft['image_url'] ?? $nft['image'] ?? '');
-        $metadata = $nft['metadata_json'] ?? $nft['metadata'] ?? $nft;
-        $traits = $nft['traits'] ?? $nft['attributes'] ?? [];
+$nftName = trim($nft['nft_name'] ?? $nft['name'] ?? 'Unnamed NFT');
+$imageUrl = trim($nft['image_url'] ?? $nft['image'] ?? '');
+$metadata = $nft['metadata_json'] ?? $nft['metadata'] ?? $nft;
+$traits = $nft['traits'] ?? $nft['attributes'] ?? [];
 
-        if ($tokenId === '' || $collection === '') {
-            continue;
-        }
+if ($tokenId === '' || $collection === '') {
+    continue;
+}
 
-        if (!in_array($collection, ['genesis', 'vip'], true)) {
-            continue;
-        }
+if (!in_array($collection, ['genesis', 'vip'], true)) {
+    continue;
+}
 
-        if (!is_array($traits)) {
-            $traits = [];
-        }
+if (is_string($metadata)) {
+    $decodedMetadata = json_decode($metadata, true);
+    $metadata = is_array($decodedMetadata) ? $decodedMetadata : [];
+}
 
-        $traitsJson = json_encode($traits, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $metadataJson = json_encode($metadata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $rarity = null;
+if (!is_array($metadata)) {
+    $metadata = [];
+}
 
-        $collectionCounts[$collection]++;
-        $verifiedCollections[$collection] = true;
+if (!is_array($traits)) {
+    $traits = [];
+}
+
+/**
+ * Genesis metadata safety fallback.
+ *
+ * Plain language for DEVS:
+ * Newly minted Genesis NFTs can arrive from the wallet scan with empty image
+ * and empty attributes while still containing a valid metadataUri. Before we
+ * save ownership, we fetch that canonical metadata and use it to prevent Lab
+ * cards from being saved with placeholder art or zero scanned traits.
+ */
+$metadataFallback = enrichGenesisNftMetadataFromUri($collection, $imageUrl, $metadata, $traits);
+
+$imageUrl = $metadataFallback['image_url'];
+$metadata = $metadataFallback['metadata'];
+$traits = $metadataFallback['traits'];
+
+$traitsJson = json_encode($traits, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+$metadataJson = json_encode($metadata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+$rarity = null;
+
+$collectionCounts[$collection]++;
+$verifiedCollections[$collection] = true;
 
         /**
          * Upsert NFT ownership row.

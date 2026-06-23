@@ -1,5 +1,617 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## ✅ FIX READY — Genesis Verified NFT Metadata Fallback / New Minter Reverify
+
+**Date:** 2026-06-23
+**Status:** Local patch tested / ready for deploy + server restart
+**Scope:** `api/user/save-verified-nft-scan.php`, Genesis holder verification, Lab slider, Stake Lab Genesis Mouse Freezer readiness
+
+---
+
+### ✅ Root Cause Confirmed
+
+A verification metadata gap was found in the verified NFT scan save flow.
+
+The affected path is:
+
+```text
+Profile / Stake Lab verified NFT scan
+→ api/user/save-verified-nft-scan.php
+→ tbl_nft_ownership
+→ tbl_nft_traits
+→ Lab slider / Genesis Mouse Freezer display
+```
+
+The issue happened when newly minted Genesis NFTs were returned by wallet / Helius scan with shallow metadata:
+
+```text
+image = ""
+attributes = []
+traits = []
+metadataUri = valid canonical Gensuki metadata JSON URL
+```
+
+The old save path trusted the shallow frontend payload and could save verified Genesis ownership rows with:
+
+```text
+empty image_url
+empty traits
+weak metadata_json
+no tbl_nft_traits rows
+no Lab trait data
+```
+
+This caused some newly minted Genesis mice to show in the Lab with:
+
+```text
+placeholder image
+0 scanned traits
+Lab power 0
+Fitness locked
+```
+
+---
+
+### ✅ Durable Fix Added
+
+`api/user/save-verified-nft-scan.php` now includes a Genesis-only metadata fallback helper chain.
+
+New helper behavior:
+
+```text
+If collection = genesis
+AND image_url is empty OR traits are empty
+AND metadataUri exists
+THEN backend fetches metadataUri server-side
+THEN backend normalizes canonical image + attributes
+THEN backend writes complete metadata into ownership + trait rows
+```
+
+New helper functions added:
+
+```text
+hasUsableNftTraits()
+extractNftMetadataUri()
+isSafeNftMetadataUri()
+fetchCanonicalNftMetadata()
+normalizeCanonicalNftTraits()
+enrichGenesisNftMetadataFromUri()
+```
+
+The fallback call now runs before:
+
+```text
+traits_json encoding
+metadata_json encoding
+tbl_nft_ownership insert/update
+tbl_nft_traits insert
+```
+
+This means newly verified Genesis NFTs should no longer save with placeholder art or zero scanned traits when canonical metadataUri is available.
+
+---
+
+### ✅ Local Test Result
+
+A local shallow-metadata API test was prepared using:
+
+```text
+image_url = ""
+image = ""
+attributes = []
+traits = []
+metadataUri = canonical Gensuki Genesis metadata URL
+collection = genesis
+```
+
+Local endpoint tested:
+
+```text
+http://localhost/api/user/save-verified-nft-scan.php
+```
+
+Expected successful test result:
+
+```text
+success = true
+image_len > 0
+traits_len > 2
+trait_rows = 6
+metadata_len > 500
+```
+
+If these values were confirmed locally, the metadata fallback is working.
+
+---
+
+### ✅ Safety Preserved
+
+No staking reward logic was changed.
+
+No DSPOINC ledger logic was changed.
+
+No `tbl_dspoinc_stakes` logic was changed.
+
+No freezer reward logic was changed.
+
+No ownership proof logic was weakened.
+
+No traits are invented manually.
+
+Only canonical metadataUri data is used when frontend payload is incomplete.
+
+---
+
+### ⚠️ Required After Deploy
+
+After deploy / server restart, ask all new Genesis minters from the affected window to verify again from the Profile holder verification area.
+
+Recommended public instruction:
+
+```text
+New Genesis minters: please reverify your wallet once after the server update so your Genesis mouse image, traits, Lab data, and future staking/freezer data are fully synced.
+```
+
+---
+
+### ✅ Post-Deploy Checks
+
+After Render deploy / server restart, check:
+
+```text
+1. Profile loads normally.
+2. Holder verification opens normally.
+3. A newly minted Genesis can be reverified.
+4. The Genesis mouse image appears correctly.
+5. Lab slider shows scanned traits.
+6. tbl_nft_ownership has image_url and metadata_json filled.
+7. tbl_nft_traits creates expected trait rows.
+8. Stake Lab Genesis Mouse Freezer still loads available verified Genesis NFTs.
+```
+
+Live audit recommendation:
+
+```sql
+SELECT
+  COUNT(*) AS bad_verified_genesis_rows
+FROM tbl_nft_ownership
+WHERE collection = 'genesis'
+  AND COALESCE(is_verified, 0) = 1
+  AND (
+    COALESCE(image_url, '') = ''
+    OR COALESCE(traits, '') = ''
+    OR COALESCE(traits, '') = '[]'
+    OR COALESCE(metadata_json, '') LIKE '%"image":""%'
+    OR COALESCE(metadata_json, '') LIKE '%"attributes":[]%'
+  );
+```
+
+Expected after affected users reverify:
+
+```text
+bad_verified_genesis_rows = 0
+```
+
+---
+
+### ➡️ Next Step
+
+Deploy the patch, restart the server, then ask new minters to reverify their Genesis NFTs once.
+
+After reverify, continue controlled Genesis Mouse Freezer / NFT staking tests with Narrrf and justme only.
+
+
+### 🔎 Investigation Update — Current Root Cause Direction
+
+**Date:** 2026-06-23
+**Status:** Root-cause target narrowed
+**Primary suspect:** `api/user/save-verified-nft-scan.php` metadata trust gap
+
+Live audit after Justme repair confirmed:
+
+```text
+bad verified Genesis metadata rows: 0
+affected users: 0
+```
+
+So no other current verified Genesis holder rows are affected after the live repair.
+
+Current investigation result:
+
+```text
+verify-nft-holder.php is not the metadata write path.
+save-verified-nft-scan.php is the metadata write path.
+Profile and Stake Lab both call save-verified-nft-scan.php after backend ownership verification.
+```
+
+Likely root cause:
+
+```text
+The frontend scan can return a shallow NFT object for newly minted Genesis NFTs:
+image = ""
+attributes = []
+metadataUri = valid canonical Gensuki metadata JSON URL
+
+save-verified-nft-scan.php currently trusts and saves that incomplete frontend payload.
+It does not fetch metadataUri server-side when image/attributes are empty.
+```
+
+Durable fix target:
+
+```text
+api/user/save-verified-nft-scan.php
+```
+
+Required behavior:
+
+```text
+If collection is genesis
+AND image_url is empty OR traits are empty
+AND metadataUri exists
+THEN fetch metadataUri server-side
+THEN normalize image + attributes
+THEN write tbl_nft_ownership + tbl_nft_traits with complete canonical metadata.
+```
+
+Open question before final patch:
+
+```text
+Does another Lab endpoint already initialize tbl_nft_trait_upgrades?
+If not, save-verified-nft-scan.php may also need to create missing Genesis trait upgrade rows at Lv1 / idle.
+```
+
+Next files to inspect:
+
+```text
+api/wallet/get-nfts.php
+api/wallet/get-nft-metadata.php
+api/user/save-verified-nft-scan.php
+public/profile.html
+public/stake-lab.html
+```
+
+Safety:
+
+```text
+Do not change staking reward logic.
+Do not touch tbl_dspoinc_stakes.
+Do not bulk repair blindly.
+Do not invent traits.
+Only use canonical metadataUri metadata.
+```
+
+
+## CRITICAL INVESTIGATION — Genesis Verification Metadata Gap / Lab Slider Missing Traits
+
+**Date:** 2026-06-23
+**Status:** Live Justme repair completed / root-cause investigation open
+**Scope:** `tbl_nft_ownership`, Genesis verification flow, Profile holder verification, Lab slider, trait initialization
+
+---
+
+### ✅ What happened
+
+User **justme / lukeskypestalker** verified newly minted Genesis NFTs successfully, but the Lab slider showed some of the new mice with:
+
+```text
+placeholder mouse image
+Lab power 0
+0 scanned traits
+Top Lv 1
+Fitness locked
+```
+
+Live SQL confirmed the affected NFTs were verified ownership rows, but the initial saved metadata was incomplete:
+
+```text
+image_url empty
+traits = []
+metadata_json contained image:"" and attributes:[]
+no tbl_nft_traits rows
+no tbl_nft_trait_upgrades rows
+```
+
+Affected Justme NFTs repaired live:
+
+```text
+NarrrfsWorldGenesis1667
+NarrrfsWorldGenesis407
+NarrrfsWorldGenesis2870
+NarrrfsWorldGenesis261
+NarrrfsWorldGenesis174
+```
+
+---
+
+### ✅ Live repair completed
+
+Canonical metadata was fetched from the Gensuki metadata URI:
+
+```text
+https://gensuki.4everland.link/ipfs/bafybeicesjxhm4474icdi23ktpk6ivtsxivh5ovmghxxae2lhid7famc54/<token>.json
+```
+
+The following live DB data was repaired:
+
+```text
+tbl_nft_ownership.image_url
+tbl_nft_ownership.traits
+tbl_nft_ownership.metadata_json
+tbl_nft_traits
+tbl_nft_trait_upgrades
+```
+
+Final verification confirmed:
+
+```text
+each affected NFT has 6 trait rows
+each affected NFT has 6 trait upgrade rows
+all upgrade rows are Lv1 / idle
+ownership rows stayed verified
+images are now valid
+```
+
+---
+
+### ⚠️ Root cause not fully fixed yet
+
+This was not primarily a Lab slider frontend bug.
+
+The Lab slider correctly displayed `0 scanned traits` because the DB had no trait metadata for those newly verified NFTs.
+
+Likely root cause:
+
+```text
+The Profile / wallet verification flow accepted a scan response that contained metadataUri,
+but saved the row before fetching canonical metadata from metadataUri when image and attributes were empty.
+```
+
+Durable fix needed:
+
+```text
+If a verified Genesis NFT scan returns image empty or attributes empty,
+but metadataUri exists, fetch metadataUri and normalize image + attributes before writing tbl_nft_ownership.
+Then ensure tbl_nft_traits and tbl_nft_trait_upgrades are initialized for verified Genesis NFTs.
+```
+
+---
+
+### 🔎 Next investigation steps
+
+Inspect these files:
+
+```text
+public/profile.html
+api/user/verify-nft-holder.php
+api/user/get-verified-nfts.php
+api/user/details.php
+api/config/database.php
+api/config/session.php
+public/lab.html
+```
+
+Find exact verification endpoint from profile:
+
+```powershell
+Select-String -Path public\profile.html -Pattern "verify-nft-holder","metadataUri","metadata_json","attributes","traits","image_url","tbl_nft_ownership","fetch(" -Context 1,3
+```
+
+Search API ownership writes:
+
+```powershell
+Get-ChildItem api\user -File | Select-String -Pattern "tbl_nft_ownership","metadataUri","attributes","image_url","traits","verify" -Context 1,3
+```
+
+Run live audit for other affected holders before any bulk repair:
+
+```text
+Audit all verified genesis rows where image_url is empty, traits is empty/[], metadata_json is empty, or metadata_json contains image:"" / attributes:[].
+```
+
+---
+
+### 🚫 Safety rules
+
+Do not bulk repair blindly.
+
+Do not invent traits manually.
+
+Do not change ownership verification status unless explicitly proven.
+
+Do not touch staking, DSPOINC, rewards, claim rows, or freezer rows during this investigation.
+
+Backend must remain authoritative for verification, ownership, trait rows, upgrade rows, and future Lab state.
+
+
+## PUSH NOTE — NERD LAB SEASON 12 PUBLIC DOCS REWRITE READY
+
+**Date:** 2026-06-22
+**Status:** Ready to push / public docs polish completed
+**Scope:** `public/nerd-lab.html` customer-friendly Season 12 rewrite
+
+---
+
+## ✅ Completed — Nerd Lab Customer-Friendly Rewrite
+
+The Nerd Lab page was heavily rewritten from dev-heavy/internal wording into a clearer public Season 12 system guide for:
+
+```text
+players
+new members
+Genesis holders
+partners
+investors
+curious community members
+```
+
+Main goal:
+
+```text
+Explain Narrrfs World as a connected Season 12 GameFi ecosystem without exposing unnecessary backend/API/table details.
+```
+
+---
+
+## ✅ Major Sections Updated
+
+Updated `public/nerd-lab.html` tabs:
+
+```text
+☀️ Nerd Lab Overview
+🧭 The 2-Lane System
+🧀 The Cheese Engine
+🎮 Season 12 Game Overview
+🧩 Tetris
+🐍 Snake
+👾 Space Cheese Invaders
+🧀 Cheese Runner
+💥 Labyrinth Blast
+🔮 Glyph Memory
+🧀 Cheese Hunt
+🏁 Discord Cheese Race
+💣 Cheese Rumble
+⚙️ Admin Interface
+🤖 Discord Bot Layer
+```
+
+The page now explains:
+
+```text
+Narrrfs World Season 12 public state
+2-lane onboarding model
+Player lane vs Genesis holder lane
+Cheese Engine as the connected backend/system layer
+9 synced games as one ecosystem
+Website games vs Discord games
+Profile, DSPOINC, rewards, roles, events, Lab, marketplace, and staking direction
+```
+
+---
+
+## ✅ 9 Synced Games Rewritten In Player Language
+
+All game descriptions were rewritten to be more player/customer friendly.
+
+Game tabs now explain:
+
+```text
+Tetris — classic block-stacking leaderboard game
+Snake — simple cheese-collecting survival game
+Space Cheese Invaders — arcade shooter lane
+Cheese Runner — newer fast Narrrfs action runner
+Labyrinth Blast — Bear or Bull / Nightfox partner action-collab game
+Glyph Memory — Bear or Bull / Nightfox memory and symbol-collab game
+Cheese Hunt — easy onboarding quest game powered by the Cheese Engine
+Discord Cheese Race — live Discord race/event game
+Cheese Rumble — live Discord battle/community chaos game
+```
+
+Special notes included safely:
+
+```text
+Labyrinth Blast and Glyph Memory are collaboration works with Bear or Bull and founder Nightfox.
+Cheese Hunt is one of the early API-powered quest/onboarding systems.
+Cheese Race and Cheese Rumble can support DSPOINC, digital Genetic Items, Solana token rewards, and event prizes when event rules allow it.
+Cheese Rumble future direction includes fighting with verified Genesis mice, but this is not described as active yet.
+```
+
+---
+
+## ✅ Public Safety Wording Preserved
+
+The rewrite avoids unsafe public claims.
+
+Do not say:
+
+```text
+NFT staking is live for everyone.
+Season 13 staking is live.
+DSPOINC Staking V2 is active.
+All Genesis holders can freeze NFTs now.
+Genesis Mouse fighting is already live.
+```
+
+Safe status preserved:
+
+```text
+Season 12 remains the public page context.
+Genesis Mouse Freezer remains controlled/staged where mentioned.
+DSPOINC Staking V2 remains preparation/future direction, not public active.
+Backend remains authority for rewards, balances, ownership, staking, roles, and claims.
+```
+
+---
+
+## ✅ Files Expected In This Push
+
+Primary intended file:
+
+```text
+public/nerd-lab.html
+```
+
+Do not stage unrelated files unless intentionally included.
+
+Before commit:
+
+```powershell
+git status --short
+```
+
+Expected intended change:
+
+```text
+modified: public/nerd-lab.html
+```
+
+Recommended commit:
+
+```powershell
+git add public/nerd-lab.html
+git commit -m "update nerd lab season 12 public docs"
+git push origin render-deploy
+```
+
+---
+
+## ✅ Live Check After Deploy
+
+After Render deploy, check:
+
+```text
+https://narrrfs.world/nerd-lab.html
+```
+
+Expected:
+
+```text
+Nerd Lab loads normally.
+Tabs switch normally.
+Overview reads customer-friendly.
+2 Lanes and Cheese Engine are easy to understand.
+Game Overview explains the 9 synced games.
+All 9 game tabs are player-facing, not dev/API docs.
+No public wording announces NFT staking as fully live.
+No public wording announces DSPOINC Staking V2 as active.
+```
+
+---
+
+## ➡️ Next Session Focus
+
+Next technical focus after this docs push:
+
+```text
+Controlled Genesis Mouse Freezer / NFT staking API tests.
+Review the 2 active test stakes from Narrrf and justme.
+Test claim path after full eligible reward day.
+Verify claim rows + DSPOINC ledger + audit rows.
+Confirm tbl_dspoinc_stakes is untouched by Genesis Mouse Freezer APIs.
+Test unfreeze with wallet Memo.
+Only expand public access after controlled live claim + unfreeze tests pass.
+```
+
+
 ## FOLLOW-UP — EMPIRE ROUTE FEE / SLIPPAGE NOTE FROM ZENO
 
 **Date:** 2026-06-22
