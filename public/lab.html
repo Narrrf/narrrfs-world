@@ -1918,6 +1918,115 @@ hydrateSession();
   font-weight: 900;
 }
 
+/* Interactive Genesis slider mouse status lanes.
+   DEVS FOR DECADES:
+   Visual-only display layer. Ability, training, and power reuse the real
+   frontend upgrade row summary. Chest state only uses backend-loaded milestone
+   rewards for the selected mouse. */
+.slider-training-overview--status {
+  gap: 12px;
+}
+
+.slider-training-status-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #e0f2fe;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.slider-training-status-title small {
+  color: #94a3b8;
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.slider-training-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.slider-training-status-lane {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(2, 6, 23, 0.42);
+  padding: 0.55rem 0.65rem;
+  color: #dbeafe;
+}
+
+.slider-training-status-lane--ready {
+  border-color: rgba(16, 185, 129, 0.24);
+  background: rgba(6, 78, 59, 0.22);
+}
+
+.slider-training-status-lane--active,
+.slider-training-status-lane--unlock {
+  border-color: rgba(34, 211, 238, 0.24);
+  background: rgba(8, 47, 73, 0.28);
+}
+
+.slider-training-status-lane--locked {
+  border-color: rgba(239, 68, 68, 0.18);
+  background: rgba(69, 10, 10, 0.18);
+}
+
+.slider-training-status-icon {
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+}
+
+.slider-training-status-copy {
+  min-width: 0;
+  flex: 1 1 0;
+  font-size: 0.68rem;
+  line-height: 1.25;
+  color: #cbd5e1;
+  overflow-wrap: anywhere;
+}
+
+.slider-training-status-copy strong {
+  color: #ffffff;
+}
+
+.slider-training-check-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 0.4rem;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.12);
+  color: #fde68a;
+  padding: 0.34rem 0.55rem;
+  font-size: 0.62rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.slider-training-check-btn:hover {
+  border-color: rgba(250, 204, 21, 0.7);
+  background: rgba(250, 204, 21, 0.2);
+  color: #fef3c7;
+  transform: translateY(-1px);
+}
+
 @media (max-width: 768px) {
   .slider-training-overview {
     padding: 10px;
@@ -1929,6 +2038,13 @@ hydrateSession();
 
   .slider-training-detail {
     font-size: 0.7rem;
+  }
+    .slider-training-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .slider-training-status-lane {
+    align-items: flex-start;
   }
 }
 
@@ -10520,37 +10636,511 @@ function getNftSliderTrainingOverview(nft, summary = null) {
     detail = `Best trait: ${highestRow.trait_type || 'Trait'} Lv ${formatNumber(highestLevel)}.`;
   }
 
-  return {
+    return {
     badges,
     detail,
+    highestLevel,
+    highestRow,
+    activeRows,
+    readyRows,
     totalLevels,
     traitCount
   };
 }
 
 /**
- * Render the compact training overview inside one slider card.
+ * Resolve the selected Genesis mouse token for slider-only status rendering.
+ *
+ * Plain language for DEVS:
+ * This is frontend navigation/display only. It does not decide ownership,
+ * rewards, ability unlocks, DSPOINC, inventory, or upgrade eligibility.
+ */
+function isNftSliderSelectedMouse(nft) {
+  const cardTokenId = String(getSafeTokenId(nft) || '').trim();
+  const selectedTokenId = String(
+    genesisAbilityState?.tokenId ||
+    getSafeTokenId(state.selectedNft) ||
+    ''
+  ).trim();
+
+  return cardTokenId !== '' && cardTokenId === selectedTokenId;
+}
+
+/**
+ * Convert the existing slider overview badges into the clearer Ability lane.
+ *
+ * Plain language for DEVS:
+ * The old slider already calculates highest real Genesis trait level.
+ * This helper only translates the existing badge language into a cleaner
+ * user-facing status label.
+ */
+function getNftSliderAbilityLane(overview) {
+  const badgeLabels = Array.isArray(overview?.badges)
+    ? overview.badges.map((badge) => String(badge?.label || '').toLowerCase())
+    : [];
+
+  const hasEducation = badgeLabels.some((label) => label.includes('education'));
+  const hasWeapon = badgeLabels.some((label) => label.includes('weapon'));
+  const hasFitnessChest = badgeLabels.some((label) => label.includes('fitness chest'));
+  const hasFitnessOpen = badgeLabels.some((label) => label.includes('fitness open'));
+
+  if (hasEducation) {
+    return {
+      icon: '📚',
+      label: 'Education Path',
+      tone: 'unlock',
+      title: 'This mouse reached the high-level Education path threshold.'
+    };
+  }
+
+  if (hasWeapon) {
+    return {
+      icon: '⚔️',
+      label: 'Weapon Path',
+      tone: 'unlock',
+      title: 'This mouse reached the Weapon path threshold.'
+    };
+  }
+
+  if (hasFitnessChest || hasFitnessOpen) {
+    return {
+      icon: '💪',
+      label: 'Fitness Path',
+      tone: 'unlock',
+      title: 'This mouse reached the Fitness path threshold.'
+    };
+  }
+
+  return {
+    icon: '🧬',
+    label: 'Base Scan',
+    tone: 'idle',
+    title: 'This mouse is verified and scanned, but no advanced ability path is open yet.'
+  };
+}
+
+/**
+ * Return the user-facing Ability Matrix category label for one ability stat.
+ *
+ * Plain language for DEVS:
+ * This maps HP/SPEED/AIR to Fitness, ATK/DEF/SPECIAL to Weapons,
+ * and future Education stats to Education. It only reads the local tab config.
+ */
+function getGenesisAbilityCategoryLabelForStat(statName, fallbackLabel = 'Ability') {
+  const safeStatName = String(statName || '').trim().toUpperCase();
+
+  if (!safeStatName || typeof GENESIS_ABILITY_TABS !== 'object') {
+    return fallbackLabel;
+  }
+
+  for (const tab of Object.values(GENESIS_ABILITY_TABS)) {
+    const stats = Array.isArray(tab?.stats) ? tab.stats : [];
+    const hasStat = stats.some((stat) => String(stat || '').trim().toUpperCase() === safeStatName);
+
+    if (hasStat && tab?.label) {
+      return String(tab.label).trim();
+    }
+  }
+
+  return fallbackLabel;
+}
+
+/**
+ * Return the real Ability Matrix lane for the selected slider mouse.
+ *
+ * Plain language for DEVS:
+ * The old Ability lane only said which path is unlocked from trait level.
+ * This helper also reads the real selected mouse ability rows.
+ *
+ * Safety:
+ * - Selected mouse: reads real genesisAbilityState.data.rows.
+ * - Non-selected mouse: shows Select to check, because ability rows are loaded per selected NFT.
+ * - It does not start upgrades, claim rewards, spend DSPOINC, or change backend state.
+ */
+function getSelectedNftSliderAbilityLane(nft, overview) {
+  const pathLane = getNftSliderAbilityLane(overview);
+
+  if (!isNftSliderSelectedMouse(nft)) {
+    return {
+      ...pathLane,
+      label: 'Select to check',
+      tone: 'active',
+      title: 'Select this mouse to load its real Ability Matrix state.',
+      needsSelection: true
+    };
+  }
+
+  if (genesisAbilityState?.loading) {
+    return {
+      ...pathLane,
+      label: `${pathLane.label} • Checking...`,
+      tone: 'active',
+      title: 'Loading real Ability Matrix state for this selected mouse.',
+      needsSelection: false
+    };
+  }
+
+  const rows = Array.isArray(genesisAbilityState?.data?.rows)
+    ? genesisAbilityState.data.rows
+    : [];
+
+  const activeRow = typeof getActiveAbilityRow === 'function'
+    ? getActiveAbilityRow(rows)
+    : null;
+
+  if (activeRow) {
+    const statName = String(activeRow.stat_name || activeRow.ability_key || 'Ability').trim().toUpperCase();
+        const categoryLabel = getGenesisAbilityCategoryLabelForStat(statName, pathLane.label);
+
+    const secondsRemaining = Math.max(0, Number(activeRow.seconds_remaining || 0));
+    const durationText = typeof formatAbilityDuration === 'function'
+      ? formatAbilityDuration(secondsRemaining)
+      : '';
+
+    return {
+      icon: '⚡',
+      label: `${categoryLabel} ${statName} Active`,
+      tone: 'active',
+      title: durationText
+        ? `${categoryLabel} ${statName} ability upgrade is active. Remaining: ${durationText}.`
+        : `${categoryLabel} ${statName} ability upgrade is active.`,
+      needsSelection: false
+    };
+  }
+
+  return {
+    ...pathLane,
+    label: `${pathLane.label} • Idle`,
+    title: `${pathLane.label} is unlocked or visible for this mouse, but no active Ability Matrix upgrade is running right now.`,
+    needsSelection: false
+  };
+}
+
+/**
+ * Convert the existing slider overview badges into the clearer Genesis Trait Upgrade lane.
+ *
+ * Plain language for DEVS:
+ * This does not read Genesis Ability Matrix HP/SPEED/AIR or ATK/DEF/SPECIAL upgrades.
+ * It reads the NFT-bound Genesis trait upgrade rows shown in the main trait research system:
+ * ready trait upgrades, active trait upgrades, or idle fallback.
+ */
+function getNftSliderTrainingLane(overview) {
+  const badgeLabels = Array.isArray(overview?.badges)
+    ? overview.badges.map((badge) => String(badge?.label || '').toLowerCase())
+    : [];
+
+  const hasReady = badgeLabels.some((label) => label.includes('claim ready'));
+  const hasTraining = badgeLabels.some((label) => label.includes('training'));
+
+  if (hasReady) {
+    return {
+      icon: '✅',
+      label: 'Ready to Claim',
+      tone: 'ready',
+      title: 'At least one NFT-bound Genesis trait upgrade is finished and ready to claim.'
+    };
+  }
+
+  if (hasTraining) {
+    return {
+      icon: '⏳',
+      label: 'Active',
+      tone: 'active',
+      title: 'At least one NFT-bound Genesis trait upgrade is currently active.'
+    };
+  }
+
+  return {
+    icon: '🏋️',
+    label: 'Idle',
+    tone: 'idle',
+    title: 'No active or claim-ready NFT-bound Genesis trait upgrade is shown for this mouse right now.'
+  };
+}
+
+/**
+ * Convert Fitness Journey milestone rewards into Chest 1 / Chest 2 / Chest 3.
+ *
+ * Plain language for DEVS:
+ * This reads real backend-loaded reward state for the selected mouse only.
+ * Non-selected mice do not have guaranteed milestone data loaded yet, so they
+ * must show "Select to check" instead of fake locked/claimed labels.
+ */
+function getSelectedNftSliderFitnessChestLane(nft, overview) {
+  if (!isNftSliderSelectedMouse(nft)) {
+    return {
+      label: 'Select to check',
+      title: 'Select this mouse to load real Fitness chest state from the backend.',
+      needsSelection: true,
+      items: []
+    };
+  }
+
+  if (genesisAbilityState?.milestoneRewardsLoading) {
+    return {
+      label: 'Checking...',
+      title: 'Loading real Fitness Journey chest state for this selected mouse.',
+      needsSelection: false,
+      items: []
+    };
+  }
+
+  const rewards = Array.isArray(genesisAbilityState?.fitnessMilestoneRewards)
+    ? genesisAbilityState.fitnessMilestoneRewards
+    : [];
+
+  const milestones = [
+    { number: 1, level: 10 },
+    { number: 2, level: 15 },
+    { number: 3, level: 20 }
+  ];
+
+  const highestLevel = Number(overview?.highestLevel || 0);
+
+  const items = milestones.map((milestone) => {
+    const reward = rewards.find((candidate) => {
+      const requiredLevel = Number(candidate?.required_trait_level || candidate?.required_level || 0);
+      return requiredLevel === milestone.level;
+    });
+
+    if (reward?.claimed === true) {
+      return {
+        number: milestone.number,
+        level: milestone.level,
+        label: 'Claimed',
+        tone: 'ready'
+      };
+    }
+
+    if (reward?.eligible === true) {
+      return {
+        number: milestone.number,
+        level: milestone.level,
+        label: 'Ready',
+        tone: 'ready'
+      };
+    }
+
+    if (highestLevel >= milestone.level) {
+      return {
+        number: milestone.number,
+        level: milestone.level,
+        label: 'Check',
+        tone: 'active'
+      };
+    }
+
+    return {
+      number: milestone.number,
+      level: milestone.level,
+      label: 'Locked',
+      tone: 'locked'
+    };
+  });
+
+  return {
+    label: items.map((item) => `${item.number} ${item.label}`).join(' • '),
+    title: 'Fitness Journey chests: Chest 1 = Lv10, Chest 2 = Lv15, Chest 3 = Lv20.',
+    needsSelection: false,
+    items
+  };
+}
+
+/**
+ * Return a clean Power lane from the existing slider overview.
+ *
+ * Plain language for DEVS:
+ * Power here means the selected mouse's highest NFT-bound Genesis trait level.
+ * It does not show Genesis Ability Matrix HP/SPEED/AIR or Weapon ability levels.
+ */
+function getNftSliderPowerLane(overview) {
+  const highestLevel = Math.max(1, Number(overview?.highestLevel || 1));
+  const traitCount = Math.max(0, Number(overview?.traitCount || 0));
+
+  return {
+  icon: '📈',
+  label: `Best Trait Lv ${highestLevel} • ${traitCount} trait${traitCount === 1 ? '' : 's'}`,
+  tone: highestLevel >= 5 ? 'unlock' : 'idle',
+  title: 'Best upgraded NFT-bound Genesis trait level and scanned trait count for this mouse.'
+};
+}
+
+/**
+ * Select a mouse from the slider without jumping down the page.
+ *
+ * Plain language for DEVS:
+ * This is used by the Ability lane in the slider card.
+ * It selects the NFT and loads the real Ability Matrix data in the background,
+ * but keeps the user's focus inside the horizontal mouse slider.
+ */
+function selectNftSliderMouseOnly(tokenId) {
+  const safeTokenId = String(tokenId || '').trim();
+
+  if (!safeTokenId) {
+    logLab('Cannot select slider mouse: missing Genesis token id.', 'warn');
+    return;
+  }
+
+  selectNftByTokenId(safeTokenId, { scrollToResearch: false });
+
+  window.setTimeout(() => {
+    const selectedCard = document.querySelector(`[data-select-nft="${CSS.escape(safeTokenId)}"]`);
+
+    if (!selectedCard) {
+      return;
+    }
+
+    selectedCard.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+
+    selectedCard.classList.remove('chamber-pulse');
+    void selectedCard.offsetWidth;
+    selectedCard.classList.add('chamber-pulse');
+  }, 180);
+}
+
+/**
+ * Select a mouse from the slider and jump into the Ability Matrix.
+ *
+ * Plain language for DEVS:
+ * This is the interactive answer for "Select to check".
+ * It selects the card's NFT, loads the real Ability Matrix / milestone state,
+ * then scrolls down to the selected mouse's ability section.
+ */
+function selectNftSliderMouseAndOpenAbility(tokenId) {
+  const safeTokenId = String(tokenId || '').trim();
+
+  if (!safeTokenId) {
+    logLab('Cannot open Ability Matrix: missing Genesis token id.', 'warn');
+    return;
+  }
+
+  selectNftByTokenId(safeTokenId, { scrollToResearch: true });
+
+  window.setTimeout(() => {
+    const abilitySection = document.getElementById('genesisAbilityMatrixSection');
+
+    if (!abilitySection) {
+      return;
+    }
+
+    abilitySection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+    abilitySection.classList.remove('chamber-pulse');
+    void abilitySection.offsetWidth;
+    abilitySection.classList.add('chamber-pulse');
+  }, 260);
+}
+
+/**
+ * Render one clear mouse status lane.
+ */
+function renderNftSliderStatusLane(lane) {
+  return `
+    <div
+      class="slider-training-status-lane slider-training-status-lane--${escapeHtml(lane.tone || 'idle')}"
+      title="${escapeHtml(lane.title || '')}"
+    >
+      <span class="slider-training-status-icon">${escapeHtml(lane.icon || '•')}</span>
+      <span class="slider-training-status-copy">
+        <strong>${escapeHtml(lane.name || 'Status')}:</strong>
+        ${escapeHtml(lane.label || 'Unknown')}
+      </span>
+      ${lane.actionHtml || ''}
+    </div>
+  `;
+}
+
+/**
+ * Render the interactive real-data mouse status overview inside one slider card.
+ *
+ * Plain language for DEVS:
+ * Ability, Training, and Power are derived from the same real upgrade rows the
+ * old slider already used. Fitness Chests are real only for the currently
+ * selected mouse because milestone reward state is loaded per selected token.
  */
 function getNftSliderTrainingOverviewMarkup(nft, summary = null) {
   const overview = getNftSliderTrainingOverview(nft, summary);
+  const tokenId = String(getSafeTokenId(nft) || '').trim();
 
-  const badgeMarkup = overview.badges.map((badge) => `
-    <span class="slider-training-badge slider-training-badge--${escapeHtml(badge.tone)}">
-      <span>${escapeHtml(badge.icon)}</span>
-      <span>${escapeHtml(badge.label)}</span>
-    </span>
-  `).join('');
+    const abilityLane = {
+    ...getSelectedNftSliderAbilityLane(nft, overview),
+    name: 'Ability'
+  };
+
+    const trainingLane = {
+    ...getNftSliderTrainingLane(overview),
+    name: 'Genesis Trait Upgrade'
+  };
+
+  const chestLane = getSelectedNftSliderFitnessChestLane(nft, overview);
+  const powerLane = {
+    ...getNftSliderPowerLane(overview),
+    name: 'Power'
+  };
+
+    const abilityActionHtml = abilityLane.needsSelection && tokenId
+    ? `
+      <button
+        type="button"
+        class="slider-training-check-btn"
+        data-open-research="1"
+        onclick="event.preventDefault(); event.stopPropagation(); selectNftSliderMouseOnly('${escapeHtml(tokenId)}');"
+      >
+        Select to show
+      </button>
+    `
+    : '';
+
+  abilityLane.actionHtml = abilityActionHtml;
+
+  const chestActionHtml = chestLane.needsSelection && tokenId
+    ? `
+      <button
+        type="button"
+        class="slider-training-check-btn"
+        data-open-research="1"
+        onclick="event.preventDefault(); event.stopPropagation(); selectNftSliderMouseAndOpenAbility('${escapeHtml(tokenId)}');"
+      >
+        Select to check
+      </button>
+    `
+    : '';
 
   return `
-    <div class="slider-training-overview">
-      <div class="slider-training-badge-row">
-        ${badgeMarkup}
+    <div class="slider-training-overview slider-training-overview--status">
+      <div class="slider-training-status-title">
+        <span>🧭 Mouse Status</span>
+        <small>real Lab data</small>
       </div>
-      <div class="slider-training-detail">
-        <strong>Slider overview:</strong> ${escapeHtml(overview.detail)}
+
+      <div class="slider-training-status-grid">
+        ${renderNftSliderStatusLane(abilityLane)}
+        ${renderNftSliderStatusLane(trainingLane)}
+
+        <div
+          class="slider-training-status-lane slider-training-status-lane--${chestLane.needsSelection ? 'active' : 'ready'}"
+          title="${escapeHtml(chestLane.title || '')}"
+        >
+          <span class="slider-training-status-icon">🎁</span>
+          <span class="slider-training-status-copy">
+            <strong>Chests:</strong>
+            ${escapeHtml(chestLane.label || 'Select to check')}
+          </span>
+          ${chestActionHtml}
+        </div>
+
+        ${renderNftSliderStatusLane(powerLane)}
       </div>
+
       <div class="slider-training-detail">
-        Lab power ${escapeHtml(formatNumber(overview.totalLevels))} across ${escapeHtml(formatNumber(overview.traitCount))} scanned trait${overview.traitCount === 1 ? '' : 's'}.
+        <strong>Live summary:</strong> ${escapeHtml(overview.detail)}
       </div>
     </div>
   `;
@@ -12952,9 +13542,13 @@ async function loadAbilityMilestoneRewards(tokenId, options = {}) {
       return;
     }
 
-    genesisAbilityState.milestoneRewardsLoading = false;
+        genesisAbilityState.milestoneRewardsLoading = false;
     renderFitnessJourneyMilestoneChests();
     renderWeaponAbilityMilestoneChests();
+
+    if (typeof renderNftGrid === 'function') {
+      renderNftGrid(state.selectedNft);
+    }
   }
 }
 
@@ -13579,7 +14173,7 @@ async function loadGenesisAbilityMatrix(tokenId, options = {}) {
       highest_trait_level: Number(payload.highest_trait_level ?? 0)
     };
 
-    await loadAbilityMilestoneRewards(requestTokenId, { silent: true });
+           await loadAbilityMilestoneRewards(requestTokenId, { silent: true });
 
     startGenesisAbilityPollingIfNeeded();
 
@@ -13588,7 +14182,7 @@ async function loadGenesisAbilityMatrix(tokenId, options = {}) {
     if (cardsEl) {
       cardsEl.innerHTML = `<div class="ability-note">${escapeHtml(err.message || 'Failed to load Genesis Ability Matrix.')}</div>`;
     }
-  } finally {
+    } finally {
     if (String(genesisAbilityState.tokenId || '') !== requestTokenId) {
       return;
     }
@@ -13597,6 +14191,10 @@ async function loadGenesisAbilityMatrix(tokenId, options = {}) {
 
     if (genesisAbilityState.data) {
       renderGenesisAbilityMatrix();
+
+      if (typeof renderNftGrid === 'function') {
+        renderNftGrid(state.selectedNft);
+      }
     }
   }
 }

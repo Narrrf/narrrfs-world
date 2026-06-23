@@ -1756,8 +1756,11 @@ function getGenesisMouseFreezerCardMarkup(nft, mode) {
   const claimable = Number(claimPreview.final_reward_amount || nft.claimable_amount || 0);
   const fullDays = Number(claimPreview.full_days || 0);
   const dailyReward = Number(claimPreview.daily_reward || nft.daily_reward || 0);
-  const stakeId = nft.stake_id || '';
+    const stakeId = nft.stake_id || '';
   const canLocalUnfreeze = isGenesisFreezerLocalhost();
+  const mouseStatusBlock = renderGenesisMouseStatusBlock(nft, mode, {
+    fullDays
+  });
 
   const cardFrameClass = isFrozen
     ? 'border-cyan-300/30 from-slate-950/95 via-cyan-950/30 to-indigo-950/55 shadow-cyan-950/20'
@@ -1770,10 +1773,14 @@ function getGenesisMouseFreezerCardMarkup(nft, mode) {
   return `
     <div class="nft-card group relative overflow-hidden rounded-[1.75rem] border ${cardFrameClass} bg-gradient-to-br p-4 shadow-xl transition hover:-translate-y-1 hover:border-yellow-300/35 hover:shadow-2xl">
       ${imageUrl ? `
-        <div class="pointer-events-none absolute inset-0 opacity-[0.055]">
-          <img src="${imageUrl}" alt="" class="h-full w-full scale-125 object-cover blur-sm" loading="lazy">
-        </div>
-      ` : ''}
+  <div class="pointer-events-none absolute inset-0 opacity-[0.055]">
+    ${renderGenesisFreezerImage(
+      imageUrl,
+      name,
+      'h-full w-full scale-125 object-cover blur-sm'
+    )}
+  </div>
+` : ''}
 
       <div class="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-cyan-300/10 blur-3xl"></div>
       <div class="pointer-events-none absolute -bottom-12 -left-12 h-36 w-36 rounded-full bg-yellow-300/10 blur-3xl"></div>
@@ -1781,10 +1788,11 @@ function getGenesisMouseFreezerCardMarkup(nft, mode) {
       <div class="relative z-10">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
           <div class="relative mx-auto h-32 w-32 shrink-0 overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-950/80 shadow-2xl shadow-black/35 sm:mx-0">
-            ${imageUrl
-              ? `<img src="${imageUrl}" alt="${name}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">`
-              : '<div class="grid h-full w-full place-items-center text-5xl">🐭</div>'
-            }
+            ${renderGenesisFreezerImage(
+  imageUrl,
+  name,
+  'h-full w-full object-cover transition duration-300 group-hover:scale-105'
+)}
 
             <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent px-3 pb-2 pt-8">
               <div class="truncate text-[0.65rem] font-black uppercase tracking-[0.12em] text-cyan-100">
@@ -1818,6 +1826,8 @@ function getGenesisMouseFreezerCardMarkup(nft, mode) {
                 ${isFrozen ? `${fullDays.toLocaleString()} day(s) ready` : 'Slot preview'}
               </div>
             </div>
+
+                        ${mouseStatusBlock}
 
             <div class="mt-4 grid grid-cols-2 gap-2">
               <div class="rounded-2xl border border-cyan-300/15 bg-cyan-300/10 p-3">
@@ -1958,17 +1968,22 @@ function getGenesisMouseFreezerListRowMarkup(nft) {
   const claimable = Number(claimPreview.final_reward_amount || nft.claimable_amount || 0);
   const fullDays = Number(claimPreview.full_days || 0);
   const dailyReward = Number(claimPreview.daily_reward || nft.daily_reward || 0);
-  const stakeId = nft.stake_id || '';
+    const stakeId = nft.stake_id || '';
   const canLocalUnfreeze = isGenesisFreezerLocalhost();
+  const mouseStatusBlock = renderGenesisMouseStatusBlock(nft, 'frozen', {
+    fullDays,
+    compact: true
+  });
 
   return `
     <div class="rounded-2xl border border-cyan-300/18 bg-slate-950/70 p-3 shadow-md shadow-black/20 transition hover:border-cyan-300/35">
       <div class="grid grid-cols-[56px_minmax(0,1fr)] gap-3">
         <div class="h-14 w-14 overflow-hidden rounded-2xl border border-cyan-300/20 bg-slate-950/80">
-          ${imageUrl
-            ? `<img src="${imageUrl}" alt="${name}" class="h-full w-full object-cover" loading="lazy">`
-            : '<div class="grid h-full w-full place-items-center text-2xl">🐭</div>'
-          }
+          ${renderGenesisFreezerImage(
+  imageUrl,
+  name,
+  'h-full w-full object-cover'
+)}
         </div>
 
         <div class="min-w-0">
@@ -1991,7 +2006,9 @@ function getGenesisMouseFreezerListRowMarkup(nft) {
             Wallet ${shortWallet || 'verified'}
           </div>
         </div>
-      </div>
+           </div>
+
+      ${mouseStatusBlock}
 
       <div class="mt-3 grid grid-cols-2 gap-2">
         <div class="rounded-xl border border-cyan-300/15 bg-cyan-300/10 p-2.5">
@@ -2097,7 +2114,10 @@ function getGenesisFreezerAvailableMouseRowMarkup(nft) {
     wallet.length > 12 ? `${wallet.slice(0, 4)}...${wallet.slice(-4)}` : wallet
   );
 
-  const imageUrl = escapeGenesisFreezerHtml(nft.image_url || '');
+    const imageUrl = escapeGenesisFreezerHtml(nft.image_url || '');
+  const mouseStatusBlock = renderGenesisMouseStatusBlock(nft, 'available', {
+    compact: true
+  });
 
   return `
     <button
@@ -2111,10 +2131,11 @@ function getGenesisFreezerAvailableMouseRowMarkup(nft) {
     >
       <div class="flex items-center gap-3">
         <div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80">
-          ${imageUrl
-            ? `<img src="${imageUrl}" alt="${name}" class="h-full w-full object-cover" loading="lazy">`
-            : '<div class="grid h-full w-full place-items-center text-2xl">🐭</div>'
-          }
+          ${renderGenesisFreezerImage(
+  imageUrl,
+  name,
+  'h-full w-full object-cover'
+)}
         </div>
 
         <div class="min-w-0 flex-1">
@@ -2138,7 +2159,9 @@ function getGenesisFreezerAvailableMouseRowMarkup(nft) {
         }">
           ${isSelected ? '✓' : '+'}
         </div>
-      </div>
+            </div>
+
+      ${mouseStatusBlock}
     </button>
   `;
 }
@@ -2504,6 +2527,8 @@ function setGenesisFreezerViewMode(mode) {
   renderGenesisMouseFreezerPreview();
 }
 
+
+
 /**
  * Escape text before inserting it into Genesis Mouse Freezer HTML.
  *
@@ -2518,6 +2543,319 @@ function escapeGenesisFreezerHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+}
+
+/**
+ * Return a safe display number for Genesis Mouse progression values.
+ *
+ * Plain language for DEVS:
+ * Different API generations may name the same display value differently.
+ * This helper reads only existing frontend data and never invents backend state.
+ */
+function resolveGenesisMouseNumericField(nft, fieldNames, fallbackValue = 0) {
+  for (const fieldName of fieldNames) {
+    const value = Number(nft?.[fieldName]);
+
+    if (Number.isFinite(value) && value > 0) {
+      return value;
+    }
+  }
+
+  return fallbackValue;
+}
+
+/**
+ * Return a clean Ability display label for one Genesis Mouse.
+ *
+ * Plain language for DEVS:
+ * Stake Lab does not currently receive full Lab ability upgrade data.
+ * Until the Freezer API is extended with real Lab status fields, this must
+ * point users to the Lab instead of pretending to know exact ability state.
+ */
+function getGenesisMouseAbilityStatus(nft) {
+  return {
+    label: 'Open Lab',
+    title: 'Open the Genesis Lab to see the real ability level, trait path, and upgrade state for this mouse.'
+  };
+}
+
+/**
+ * Return a clean Training display label for one Genesis Mouse.
+ *
+ * Plain language for DEVS:
+ * Real training state lives in the Lab upgrade rows.
+ * Stake Lab currently does not receive those rows from the Freezer API.
+ * Show a safe cross-link style label instead of a fake idle/active state.
+ */
+function getGenesisMouseTrainingStatus(nft) {
+  return {
+    label: 'Check Lab',
+    title: 'Training status is managed in the Genesis Lab. Open the Lab to see active, idle, or ready upgrades.'
+  };
+}
+
+/**
+ * Return one numbered chest status.
+ *
+ * Plain language for DEVS:
+ * We show Chest 1 / Chest 2 / Chest 3 because Fitness and future Lab rewards
+ * can grow into multiple chests. This function only displays known data.
+ * If backend does not send a chest state yet, the safe fallback is Locked.
+ */
+function resolveGenesisMouseChestStatus(nft, chestNumber) {
+  const chestCollections = [
+    nft?.fitness_chests,
+    nft?.fitnessChests,
+    nft?.chests,
+    nft?.chest_statuses,
+    nft?.chestStatuses
+  ];
+
+  for (const chestCollection of chestCollections) {
+    if (!chestCollection) {
+      continue;
+    }
+
+    if (Array.isArray(chestCollection)) {
+      const arrayEntry = chestCollection[chestNumber - 1];
+
+      if (typeof arrayEntry === 'string' && arrayEntry.trim()) {
+        return arrayEntry.trim();
+      }
+
+      if (arrayEntry && typeof arrayEntry === 'object') {
+        return String(arrayEntry.status || arrayEntry.state || arrayEntry.label || 'Locked').trim();
+      }
+    }
+
+    if (typeof chestCollection === 'object') {
+      const keyedEntry =
+        chestCollection[`chest_${chestNumber}`] ||
+        chestCollection[`chest${chestNumber}`] ||
+        chestCollection[chestNumber];
+
+      if (typeof keyedEntry === 'string' && keyedEntry.trim()) {
+        return keyedEntry.trim();
+      }
+
+      if (keyedEntry && typeof keyedEntry === 'object') {
+        return String(keyedEntry.status || keyedEntry.state || keyedEntry.label || 'Locked').trim();
+      }
+    }
+  }
+
+  return 'Locked';
+}
+
+/**
+ * Return all numbered chest statuses for the Genesis Mouse status block.
+ *
+ * Plain language for DEVS:
+ * The first live design shows three Fitness chests.
+ * This can later be extended to Chest 4, Chest 5, Chest 6+ without changing
+ * the whole NFT card layout again.
+ */
+function getGenesisMouseChestStatuses(nft) {
+  const chestCount = 3;
+
+  return Array.from({ length: chestCount }, (_, index) => {
+    const chestNumber = index + 1;
+    const rawStatus = resolveGenesisMouseChestStatus(nft, chestNumber);
+    const normalizedStatus = String(rawStatus || 'Locked').trim();
+
+    return {
+      number: chestNumber,
+      label: normalizedStatus || 'Locked'
+    };
+  });
+}
+
+/**
+ * Render the numbered chest status line.
+ *
+ * Plain language for DEVS:
+ * Real Fitness and Weapon chest states live in the Lab milestone reward system.
+ * Stake Lab does not yet receive those per-mouse milestone states.
+ * Until the API is connected, show safe navigation wording instead of fake locks.
+ */
+function renderGenesisMouseChestStatusLine(nft) {
+  return 'Check Lab';
+}
+
+/**
+ * Return a clean Freezer display label for one Genesis Mouse.
+ */
+function getGenesisMouseFreezerStatus(mode, fullDays) {
+  if (mode === 'frozen') {
+    if (Number(fullDays || 0) > 0) {
+      return {
+        label: 'Frozen • Claim Ready',
+        title: 'This mouse is frozen and has at least one full-day reward available to claim.'
+      };
+    }
+
+    return {
+      label: 'Frozen • Claim Locked',
+      title: 'This mouse is frozen and building DSPOINC. A full day must complete before claiming.'
+    };
+  }
+
+  return {
+    label: 'Available',
+    title: 'This verified Genesis mouse is available for freezer selection when slots and rollout rules allow it.'
+  };
+}
+
+/**
+ * Render one clear Genesis Mouse status block.
+ *
+ * Plain language for DEVS:
+ * This block separates Ability, Training, Chests, and Freezer so users do not
+ * confuse Top Lv, Fitness Open/Locked, upgrade status, and chest rewards.
+ * It is display-only and uses safe fallback labels when backend data is missing.
+ */
+function renderGenesisMouseStatusBlock(nft, mode = 'available', options = {}) {
+  const abilityStatus = getGenesisMouseAbilityStatus(nft);
+  const trainingStatus = getGenesisMouseTrainingStatus(nft);
+  const freezerStatus = getGenesisMouseFreezerStatus(mode, options.fullDays || 0);
+  const chestLine = renderGenesisMouseChestStatusLine(nft);
+
+  const compactClass = options.compact
+    ? 'grid grid-cols-1 gap-1 text-[0.65rem]'
+    : 'grid grid-cols-1 gap-2 text-[0.7rem] sm:grid-cols-2';
+
+  const chipClass = options.compact
+    ? 'rounded-xl border border-white/10 bg-slate-950/45 px-2.5 py-1.5 font-bold text-slate-200'
+    : 'rounded-2xl border border-white/10 bg-slate-950/45 px-3 py-2 font-bold text-slate-200';
+
+  return `
+    <div class="mt-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+      <div class="mb-2 text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-400">
+        Mouse Status
+      </div>
+
+      <div class="${compactClass}">
+        <div class="${chipClass}" title="${escapeGenesisFreezerHtml(abilityStatus.title)}">
+          🧬 <span class="text-purple-100">Ability:</span> ${escapeGenesisFreezerHtml(abilityStatus.label)}
+        </div>
+
+        <div class="${chipClass}" title="${escapeGenesisFreezerHtml(trainingStatus.title)}">
+          🏋️ <span class="text-orange-100">Training:</span> ${escapeGenesisFreezerHtml(trainingStatus.label)}
+        </div>
+
+        <div class="${chipClass}" title="Fitness and future Lab reward chests. Locked is used when backend has not reported Ready or Claimed.">
+          🎁 <span class="text-yellow-100">Chests:</span> ${chestLine}
+        </div>
+
+        <div class="${chipClass}" title="${escapeGenesisFreezerHtml(freezerStatus.title)}">
+          🧊 <span class="text-cyan-100">Freezer:</span> ${escapeGenesisFreezerHtml(freezerStatus.label)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Build a safe Genesis image fallback chain.
+ *
+ * Plain language for DEVS:
+ * Verified Genesis mice can use different valid IPFS gateways.
+ * Some mobile browsers, especially in-app Discord browsers, may fail one gateway
+ * even when the image exists. We keep the saved DB image first, then try safe
+ * alternate gateways for the same CID/file before showing the placeholder.
+ */
+function getGenesisFreezerImageFallbackUrls(imageUrl) {
+  const safeImageUrl = String(imageUrl || '').trim();
+
+  if (!safeImageUrl) {
+    return [];
+  }
+
+  const urls = [safeImageUrl];
+
+  const gensukiMatch = safeImageUrl.match(
+    /^https:\/\/gensuki\.4everland\.link\/ipfs\/([^/]+)\/([^/?#]+)([?#].*)?$/i
+  );
+
+  if (gensukiMatch) {
+    const cid = gensukiMatch[1];
+    const fileName = gensukiMatch[2];
+
+    urls.push(`https://${cid}.ipfs.w3s.link/${fileName}`);
+    urls.push(`https://ipfs.io/ipfs/${cid}/${fileName}`);
+  }
+
+  const w3sMatch = safeImageUrl.match(
+    /^https:\/\/([^/]+)\.ipfs\.w3s\.link\/([^/?#]+)([?#].*)?$/i
+  );
+
+  if (w3sMatch) {
+    const cid = w3sMatch[1];
+    const fileName = w3sMatch[2];
+
+    urls.push(`https://gensuki.4everland.link/ipfs/${cid}/${fileName}`);
+    urls.push(`https://ipfs.io/ipfs/${cid}/${fileName}`);
+  }
+
+  return [...new Set(urls)];
+}
+
+/**
+ * Render a Genesis image with gateway retry support.
+ *
+ * Plain language for DEVS:
+ * This returns image markup that first uses the saved DB URL.
+ * If the browser fails to load it, it tries alternate IPFS gateways.
+ * Only after all URLs fail does it show the local placeholder.
+ */
+function renderGenesisFreezerImage(imageUrl, altText, className) {
+  const urls = getGenesisFreezerImageFallbackUrls(imageUrl);
+  const safeAlt = escapeGenesisFreezerHtml(altText || 'Genesis Mouse');
+  const safeClass = escapeGenesisFreezerHtml(className || 'h-full w-full object-cover');
+
+  if (urls.length === 0) {
+    return '<div class="grid h-full w-full place-items-center text-2xl">🐭</div>';
+  }
+
+  const escapedUrls = urls.map(url => escapeGenesisFreezerHtml(url));
+  const primaryUrl = escapedUrls[0];
+  const fallbackJson = escapeGenesisFreezerHtml(JSON.stringify(escapedUrls.slice(1)));
+
+  return `<img
+    src="${primaryUrl}"
+    alt="${safeAlt}"
+    class="${safeClass}"
+    loading="lazy"
+    data-genesis-image-fallbacks="${fallbackJson}"
+    onerror="handleGenesisFreezerImageError(this)"
+  >`;
+}
+
+/**
+ * Retry Genesis image gateways before falling back to the local placeholder.
+ */
+function handleGenesisFreezerImageError(imageElement) {
+  if (!imageElement) {
+    return;
+  }
+
+  let fallbacks = [];
+
+  try {
+    fallbacks = JSON.parse(imageElement.dataset.genesisImageFallbacks || '[]');
+  } catch (error) {
+    fallbacks = [];
+  }
+
+  if (fallbacks.length > 0) {
+    const nextUrl = fallbacks.shift();
+    imageElement.dataset.genesisImageFallbacks = JSON.stringify(fallbacks);
+    imageElement.src = nextUrl;
+    return;
+  }
+
+  imageElement.onerror = null;
+  imageElement.src = '/img/nft-placeholder.png';
 }
 
 /**
@@ -3797,10 +4135,11 @@ const selectedPreviewRows = selectedAvailableNfts
     return `
       <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2">
         <div class="h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-slate-950/80">
-          ${imageUrl
-            ? `<img src="${imageUrl}" alt="${name}" class="h-full w-full object-cover" loading="lazy">`
-            : '<div class="grid h-full w-full place-items-center text-lg">🐭</div>'
-          }
+          ${renderGenesisFreezerImage(
+  imageUrl,
+  name,
+  'h-full w-full object-cover'
+)}
         </div>
         <div class="min-w-0">
           <div class="truncate text-xs font-black text-white">${name}</div>

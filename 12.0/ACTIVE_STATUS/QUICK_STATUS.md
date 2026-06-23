@@ -1,5 +1,312 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## ✅ LOCAL FIX COMPLETE — Lab Genesis Slider Real Status Display / Interactive Mouse Cards
+
+**Date:** 2026-06-23
+**Status:** Local tested / working
+**Scope:** `public/lab.html`, Genesis Lab slider cards, Mouse Status display, Ability / Trait Upgrade / Chest / Power lanes
+
+---
+
+### ✅ Completed
+
+The Genesis mouse slider in `public/lab.html` was upgraded from older/static status labels into an interactive real-status overview per mouse card.
+
+The new card status block now separates the mouse state into clear player-facing lanes:
+
+```text
+🧬 Ability
+🏋️ Genesis Trait Upgrade
+🎁 Chests
+📈 Power
+```
+
+This replaces confusing wording like:
+
+```text
+Training
+Top Lv
+Fitness locked/open
+```
+
+with clearer long-term ecosystem wording:
+
+```text
+Ability: Fitness Path / Weapons Path / Select to show / Active
+Genesis Trait Upgrade: Idle / Active / Ready
+Chests: Chest 1 / Chest 2 / Chest 3 state
+Power: Best Trait Lv X • scanned trait count
+```
+
+---
+
+### ✅ Interactive Behavior Confirmed
+
+The slider cards are now interactive and status-aware.
+
+Confirmed working behavior:
+
+```text
+Non-selected mice show “Select to show” or “Select to check” where backend-loaded per-mouse data is needed.
+Ability “Select to show” selects and centers the mouse card without jumping down the page.
+Chest “Select to check” selects the mouse and scrolls to the Ability / Fitness chest section.
+Selected mouse loads real Ability Matrix state.
+Selected mouse loads real Fitness Journey chest state.
+Selected mouse updates after backend/API data finishes loading.
+```
+
+---
+
+### ✅ Ability Lane Improved
+
+The Ability lane now checks the selected mouse’s real Ability Matrix state instead of only showing the unlocked path.
+
+It can now display states like:
+
+```text
+Ability: Fitness Path • Idle
+Ability: Fitness HP Active
+Ability: Fitness AIR Active
+Ability: Weapons ATK Active
+Ability: Select to show
+```
+
+Important logic rule:
+
+```text
+Ability Matrix data is loaded per selected NFT.
+Non-selected cards must not fake ability state.
+They safely show Select to show until selected.
+```
+
+---
+
+### ✅ Genesis Trait Upgrade Lane Improved
+
+The old “Training” label was renamed because it confused users with Ability Matrix training.
+
+New label:
+
+```text
+Genesis Trait Upgrade
+```
+
+Meaning:
+
+```text
+This lane reads NFT-bound Genesis trait research/upgrade rows.
+It does not refer to Ability Matrix HP/SPEED/AIR or ATK/DEF/SPECIAL upgrades.
+```
+
+Confirmed examples:
+
+```text
+Genesis Trait Upgrade: Idle
+Genesis Trait Upgrade: Active
+Genesis Trait Upgrade: Ready
+```
+
+---
+
+### ✅ Chest Lane Improved
+
+The chest lane now uses the Fitness Journey milestone reward data for the selected mouse.
+
+It supports the planned multi-chest language:
+
+```text
+Chest 1
+Chest 2
+Chest 3
+```
+
+Current meaning:
+
+```text
+Chest 1 = Fitness Journey milestone chest 1
+Chest 2 = Fitness Journey milestone chest 2
+Chest 3 = Fitness Journey milestone chest 3
+```
+
+Status examples:
+
+```text
+Chests: Select to check
+Chests: 1 Claimed • 2 Locked • 3 Locked
+Chests: 1 Ready • 2 Locked • 3 Locked
+```
+
+Important rule:
+
+```text
+Non-selected mice show Select to check instead of fake locked/claimed labels.
+Selected mouse reads real Fitness Journey reward state.
+```
+
+---
+
+### ✅ Power Lane Fixed
+
+Power no longer falls back to `Top Lv 1` for every mouse.
+
+The slider overview now returns the real calculated values needed by the Power lane:
+
+```text
+highestLevel
+highestRow
+activeRows
+readyRows
+totalLevels
+traitCount
+```
+
+Visible wording changed to:
+
+```text
+Power: Best Trait Lv X • 6 traits
+Power: Best Trait Lv X • 7 traits
+```
+
+This means:
+
+```text
+The strongest upgraded NFT-bound Genesis trait level on that mouse,
+plus the scanned trait count.
+```
+
+It does not mean Ability Matrix total power.
+
+---
+
+### ✅ UI / Layout Fixes
+
+The new status block was cleaned up for narrow slider cards.
+
+Fixed:
+
+```text
+Select buttons no longer cover the middle of the card.
+Status lanes wrap cleanly.
+Status text uses safer wrapping.
+Ability and Chest buttons have different actions.
+```
+
+Button behavior:
+
+```text
+Ability button = Select to show = select/center only
+Chest button = Select to check = select + scroll to chest/ability section
+```
+
+---
+
+### ✅ Safety Preserved
+
+This was a frontend/UI data display improvement.
+
+No backend reward logic changed.
+
+No DSPOINC ledger logic changed.
+
+No staking reward math changed.
+
+No wallet verification logic changed.
+
+No ownership logic changed.
+
+No `tbl_dspoinc_stakes` logic changed.
+
+No Genesis Mouse Freezer reward logic changed.
+
+Backend remains authoritative for:
+
+```text
+ownership
+trait rows
+trait upgrade rows
+ability matrix rows
+milestone rewards
+claims
+DSPOINC
+staking
+wallet checks
+```
+
+---
+
+### ✅ Local Test Result
+
+Local browser testing confirmed:
+
+```text
+Slider cards render the new Mouse Status block.
+All status lanes are interactive.
+Ability state updates correctly after selection/loading.
+Genesis Trait Upgrade state reads real active/idle/ready status.
+Chest state reads real selected mouse Fitness chest state.
+Power reads real best trait level and scanned trait count.
+Select buttons behave correctly.
+GUI layout is clean and no longer overlaps.
+```
+
+---
+
+### Files Involved
+
+Primary file:
+
+```text
+public/lab.html
+```
+
+Related status documentation:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+```
+
+---
+
+### Recommended Next Step
+
+Before pushing, run:
+
+```powershell
+git status --short
+```
+
+Expected intended file for this Lab slider fix:
+
+```text
+modified: public/lab.html
+```
+
+If also updating system sync:
+
+```text
+modified: 12.0/ACTIVE_STATUS/QUICK_STATUS.md
+```
+
+Recommended local smoke test before push:
+
+```text
+Open public/lab.html
+Verify Genesis slider loads
+Click Ability Select to show
+Click Chest Select to check
+Start/check an active Ability Matrix upgrade
+Check Fitness chest state
+Confirm card updates after loading
+Confirm no console red errors
+```
+
+Suggested commit message:
+
+```text
+improve genesis lab slider status display
+```
+
+
 ## ✅ FIX READY — Genesis Verified NFT Metadata Fallback / New Minter Reverify
 
 **Date:** 2026-06-23
