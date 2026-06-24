@@ -1,5 +1,56 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## FOLLOW-UP — GENSUKI SPOINC TEST WALLET SEEDED
+
+**Date:** 2026-06-24
+**Status:** Live DB test wallet seeded successfully
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki bridge transaction testing
+
+Zeno requested a controlled Narrrfs test account with DSPOINC for this wallet:
+
+```text
+GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+```
+
+Live DB backup was created before changes.
+
+Schema checked:
+
+```text
+tbl_holder_verifications
+tbl_user_scores
+tbl_score_adjustments
+```
+
+Seed result:
+
+```text
+wallet: GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+user_id: gensuki_spoinc_test_001
+username: Gensuki SPOINC Test
+collection: spoinc_test
+total_dspoinc: 1,000,000
+frozen_dspoinc: 0
+available_dspoinc: 1,000,000
+max_spoinc_at_10000_to_1: 100 SPOINC
+```
+
+Purpose:
+
+```text
+Allow Gensuki/Zeno to test generated transaction and wallet processing against a valid Narrrfs wallet → user → available DSPOINC mapping.
+```
+
+Safety reminder:
+
+```text
+This is a controlled bridge test account only.
+Do not enable live public DSPOINC deduction/credit yet.
+Do not use quote-only data as ledger confirmation.
+Wait for final route docs, unsigned transaction payload, transaction proof, idempotency, status lifecycle, and replay protection.
+```
+
+
 ## ✅ LOCAL FIX COMPLETE — Lab Genesis Slider Real Status Display / Interactive Mouse Cards
 
 **Date:** 2026-06-23

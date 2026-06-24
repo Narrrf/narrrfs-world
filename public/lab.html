@@ -12023,6 +12023,122 @@ function getSafeNftImageUrl(nft) {
 }
 
 /**
+ * Build browser-safe fallback image URLs for Genesis NFT media.
+ *
+ * Plain language for DEVS:
+ * Some mobile browsers, especially Discord's in-app browser, may fail one
+ * valid IPFS gateway even when the image exists. This builds alternate gateway
+ * URLs from the same CID/path and only affects image display. It never changes
+ * token identity, ownership, traits, staking, rewards, or Lab progression.
+ */
+function getGenesisLabImageFallbackUrls(imageUrl) {
+  const safeImageUrl = normalizeNftMediaUrl(imageUrl);
+
+  if (!safeImageUrl) {
+    return [];
+  }
+
+  const urls = [safeImageUrl];
+
+  const gensukiMatch = safeImageUrl.match(
+    /^https:\/\/gensuki\.4everland\.link\/ipfs\/([^/]+)\/([^/?#]+)([?#].*)?$/i
+  );
+
+  if (gensukiMatch) {
+    const cid = gensukiMatch[1];
+    const fileName = gensukiMatch[2];
+
+    urls.push(`https://${cid}.ipfs.w3s.link/${fileName}`);
+    urls.push(`https://${cid}.ipfs.dweb.link/${fileName}`);
+    urls.push(`https://ipfs.io/ipfs/${cid}/${fileName}`);
+  }
+
+  const w3sMatch = safeImageUrl.match(
+    /^https:\/\/([^/]+)\.ipfs\.w3s\.link\/([^/?#]+)([?#].*)?$/i
+  );
+
+  if (w3sMatch) {
+    const cid = w3sMatch[1];
+    const fileName = w3sMatch[2];
+
+    urls.push(`https://gensuki.4everland.link/ipfs/${cid}/${fileName}`);
+    urls.push(`https://${cid}.ipfs.dweb.link/${fileName}`);
+    urls.push(`https://ipfs.io/ipfs/${cid}/${fileName}`);
+  }
+
+  return [...new Set(urls.filter(Boolean))];
+}
+
+/**
+ * Retry Genesis Lab image gateways before showing the mouse placeholder.
+ *
+ * Plain language for DEVS:
+ * This prevents Lab cards from losing a valid NFT image just because one
+ * gateway failed, timed out, or was blocked by an in-app browser.
+ */
+function handleGenesisLabImageError(imageElement) {
+  if (!imageElement) {
+    return;
+  }
+
+  let fallbacks = [];
+
+  try {
+    fallbacks = JSON.parse(imageElement.dataset.genesisLabImageFallbacks || '[]');
+  } catch (error) {
+    fallbacks = [];
+  }
+
+  if (fallbacks.length > 0) {
+    const nextUrl = fallbacks.shift();
+    imageElement.dataset.genesisLabImageFallbacks = JSON.stringify(fallbacks);
+    imageElement.src = nextUrl;
+    return;
+  }
+
+  imageElement.onerror = null;
+  imageElement.style.display = 'none';
+
+  if (imageElement.nextElementSibling) {
+    imageElement.nextElementSibling.style.display = 'flex';
+  }
+}
+
+/**
+ * Render a Genesis Lab image with gateway retry support.
+ *
+ * Plain language for DEVS:
+ * This is display-only. It does not change the selected NFT, token ID, traits,
+ * ownership, research rows, DSPOINC, staking, or rewards.
+ */
+function renderGenesisLabImage(nft, altText, className = 'nft-image') {
+  const imageUrl = getSafeNftImageUrl(nft);
+  const urls = getGenesisLabImageFallbackUrls(imageUrl);
+
+  if (!urls.length) {
+    return `<div class="empty-art">🐭</div>`;
+  }
+
+  const escapedUrls = urls.map((url) => escapeHtml(url));
+  const primaryUrl = escapedUrls[0];
+  const fallbackJson = escapeHtml(JSON.stringify(escapedUrls.slice(1)));
+
+  return `
+    <img
+      src="${primaryUrl}"
+      alt="${escapeHtml(altText || 'Genesis Mouse')}"
+      class="${escapeHtml(className)}"
+      loading="eager"
+      decoding="async"
+      referrerpolicy="no-referrer"
+      data-genesis-lab-image-fallbacks="${fallbackJson}"
+      onerror="handleGenesisLabImageError(this)"
+    >
+    <div class="empty-art" style="display:none;">🐭</div>
+  `;
+}
+
+/**
  * Render one row in Research Queue List mode.
  *
  * Plain language for DEVS:
@@ -12758,10 +12874,7 @@ const actionLabel = hasReady
         tabindex="0"
         aria-label="Select ${escapeHtml(getSafeNftName(nft, 'Genesis Mouse'))}">
 
-       ${getSafeNftImageUrl(nft)
-  ? `<img src="${escapeHtml(getSafeNftImageUrl(nft))}" alt="${escapeHtml(getSafeNftName(nft, 'Genesis NFT'))}" class="nft-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
-  : `<div class="empty-art">🐭</div>`}
-
+       ${renderGenesisLabImage(nft, getSafeNftName(nft, 'Genesis NFT'))}
 <div class="mt-4 viewer-card-heading-row">
   <div class="viewer-card-title-wrap">
     <div class="text-sm uppercase tracking-[0.18em] text-cyan-300 font-bold">
@@ -14223,9 +14336,7 @@ function renderSelectedNftPanel(nft = null) {
     <div class="space-y-4">
       <div class="selected-nft-layout">
         <div class="selected-nft-media">
-  ${getSafeNftImageUrl(resolvedNft)
-  ? `<img src="${escapeHtml(getSafeNftImageUrl(resolvedNft))}" alt="${escapeHtml(getSafeNftName(resolvedNft, 'Genesis NFT'))}" class="nft-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="empty-art" style="display:none;">🐭</div>`
-  : `<div class="empty-art">🐭</div>`}
+  ${renderGenesisLabImage(resolvedNft, getSafeNftName(resolvedNft, 'Genesis NFT'))}
 </div>
 
         <div class="space-y-4">
