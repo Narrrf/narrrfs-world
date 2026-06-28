@@ -31,6 +31,8 @@ public/img/partners/
 public/scripts/tetris-scroll-backup*.js
 public/scripts/tetris-scroll (1).js
 
+api/config/gensuki-outbound-local.php
+
 # Local LLM sync archive folders - do not deploy
 12.0/ACTIVE_STATUS/ARCHIVE/
 
@@ -149,3 +151,5 @@ public/glyph/glyph3d/
 # 🎮 Narrrf 3D Assets (Upload Directly to Render /data/)
 # These are uploaded to /data/public/three.js/public/textures/3d models/narrrf3d/ via API (DO NOT COMMIT)
 public/three.js/public/textures/3d models/narrrf3d/
+
+zeno_* 

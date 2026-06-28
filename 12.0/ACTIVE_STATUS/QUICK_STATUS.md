@@ -1,5 +1,4591 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## FOLLOW-UP — SPOINC BACKEND GENSUKI PROXY WORKING LOCALLY / ENV SPLIT CONFIRMED
+
+**Date:** 2026-06-28
+**Status:** Backend-only Gensuki presale details proxy tested successfully on local XAMPP
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki bridge / Render env variables / local secret config / Swap Lab prep
+
+---
+
+## ✅ Environment Variable Naming Fixed
+
+Important env naming decision:
+
+```text
+GENSUKI_API_KEY
+```
+
+already exists on Render and is used as the shared/inbound partner key for:
+
+```text
+Gensuki -> Narrrfs
+```
+
+To avoid mixing inbound and outbound partner secrets, the new backend key for Narrrfs calling Gensuki uses:
+
+```text
+GENSUKI_OUTBOUND_API_KEY
+```
+
+New Render env vars added:
+
+```text
+GENSUKI_OUTBOUND_API_KEY=<real Zeno key, backend-only>
+GENSUKI_SPOINC_PROJECT_ID=7e04b38a-7bd4-4fab-acc4-dfa53a99b639
+GENSUKI_API_BASE_URL=https://app.gensuki.xyz
+```
+
+Security rule:
+
+```text
+Do not use GENSUKI_API_KEY for outbound Gensuki calls.
+Do not expose GENSUKI_OUTBOUND_API_KEY in frontend JavaScript.
+Do not commit any real API key.
+Do not log the key.
+```
+
+---
+
+## ✅ Local XAMPP Secret Handling Added
+
+Git Bash `export` variables were not visible to XAMPP Apache/PHP.
+
+Local-only config file was created:
+
+```text
+api/config/gensuki-outbound-local.php
+```
+
+Purpose:
+
+```text
+Local XAMPP testing only.
+Allows Apache/PHP to read the Gensuki outbound key and project config.
+Render production still uses real environment variables.
+```
+
+File must remain ignored by Git:
+
+```text
+api/config/gensuki-outbound-local.php
+```
+
+---
+
+## ✅ New Backend Proxy File Created
+
+New endpoint:
+
+```text
+api/partner/spoinc/get-gensuki-presale-details.php
+```
+
+Purpose:
+
+```text
+Backend-only proxy for Gensuki getPresaleDetails.
+Reads GENSUKI_OUTBOUND_API_KEY from env / local config.
+Calls Gensuki with x-api-key.
+Returns only public-safe SPOINC project fields.
+Never exposes API key.
+Never creates transactions.
+Never deducts DSPOINC.
+Never credits DSPOINC.
+Never settles bridge intents.
+```
+
+---
+
+## ✅ Local Proxy Test Passed
+
+Test command:
+
+```text
+curl -s "http://localhost/api/partner/spoinc/get-gensuki-presale-details.php" | python -m json.tool
+```
+
+Result:
+
+```text
+success: true
+api_key_exposed: false
+transaction_created: false
+ledger_movement_enabled: false
+```
+
+Returned verified project data:
+
+```text
+project_id: 7e04b38a-7bd4-4fab-acc4-dfa53a99b639
+project_name: Spoinc
+status: active
+chain: solana
+token_price_usd: 0.035
+token_price_native: 0.0004873072066498331
+token_sold: 0
+total_raised: 0.011825646
+total_usd_raise: 10000
+target_raised_amount: 4400
+min_buy_usd_amount: 1
+project_fee: 1
+platform_fee: 0.5
+disable_sell: true
+```
+
+Returned token config:
+
+```text
+token_address: FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg
+token_b_address: 11111111111111111111111111111111
+pool_address: EnFUW68fKQeZv6vf82ZWmeJaQ1DWzg82843QWuSi5GmY
+admin_wallet: A633zMm3rp7Jhi3K4Ks85K4sgkMR4SyYdk2hK8RW5mYU
+funding_receiver: A633zMm3rp7Jhi3K4Ks85K4sgkMR4SyYdk2hK8RW5mYU
+token_type_2022: false
+```
+
+Allowed payment tokens from Gensuki:
+
+```text
+EmpirdtfUMfBQXEjnNmTngeimjfizfuSBD3TN9zqzydj
+11111111111111111111111111111111
+G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump
+```
+
+Tokenomics returned:
+
+```text
+Presale: 0.02
+Locked: 99.98
+```
+
+---
+
+## ✅ Safety State Still Correct
+
+Current bridge safety remains:
+
+```text
+No public swap execution.
+No backend execution enabled.
+No settlement enabled.
+No DSPOINC deduction.
+No DSPOINC credit.
+No external sell route.
+No frontend API key.
+```
+
+Important route interpretation:
+
+```text
+SPOINC -> DSPOINC is wanted as an internal Narrrfs bridge route.
+It remains disabled only until protected settlement is built and tested.
+```
+
+External sell routes remain disabled because:
+
+```text
+Gensuki returned disableSell=true.
+```
+
+Affected external sell routes:
+
+```text
+SPOINC -> SOL
+SPOINC -> EMPIRE
+SPOINC -> FOOK
+```
+
+---
+
+## ➡️ Next Work
+
+Next safe work:
+
+```text
+1. Tune swap-lab.html for public wording.
+2. Remove visible DEV notes and raw backend route details from normal public view.
+3. Add public-friendly bridge sections:
+   - DSPOINC -> SPOINC
+   - SPOINC -> DSPOINC
+   - Buy SPOINC with SOL / EMPIRE / FOOK
+   - Protected V1 sell routes
+4. Add tester-only UI area for Narrrf + justme.
+5. Add backend tester allowlist enforcement.
+6. Add private bridge intent preview endpoint.
+7. Test intent creation locally before any transaction/settlement logic.
+```
+
+Do not build final settlement yet.
+
+---
+
+## ✅ Current Summary
+
+```text
+Gensuki outbound backend proxy is working locally.
+Render env variable naming is clean and direction-safe.
+Local XAMPP secret handling works without exposing keys.
+Swap Lab can now be tuned for public-friendly display.
+Next backend step is private tester allowlist + intent preview, not ledger settlement.
+```
+
+
+## FOLLOW-UP — SWAP LAB FRONTEND PREVIEW MERGED / LOCAL TEST OK / WAITING FOR ZENO
+
+**Date:** 2026-06-28
+**Status:** Swap Lab frontend safely merged and tested locally
+**Scope:** swap-lab.html / SPOINC Bridge Preview UI / Gensuki waiting mode
+
+---
+
+## ✅ Swap Lab Frontend Merge Completed
+
+`swap-lab.html` was fully merged into a professional preview-only SPOINC bridge page.
+
+The page now uses the new safe backend preview APIs:
+
+```text
+/api/partner/spoinc/get-bridge-config.php
+/api/partner/spoinc/get-bridge-routes.php
+/api/partner/spoinc/get-user-bridge-preview.php
+```
+
+Old placeholder / inactive frontend endpoints were removed from the page flow:
+
+```text
+/api/user/spoinc/get-swap-profile.php
+/api/user/spoinc/create-swap-intent.php
+```
+
+---
+
+## ✅ Local Browser Test Passed
+
+Narrrf tested the page locally.
+
+Confirmed:
+
+```text
+Page loads correctly.
+Route map renders correctly.
+Route cards are fetched from backend route toggles.
+No browser console errors seen.
+No API execution errors seen.
+Preview-only state displays correctly.
+```
+
+Screenshot state:
+
+```text
+Route Map section shows all planned/protected routes:
+DSPOINC -> SPOINC
+SPOINC -> DSPOINC
+SOL -> SPOINC
+EMPIRE -> SPOINC
+FOOK -> SPOINC
+SPOINC -> EMPIRE
+SPOINC -> FOOK
+SPOINC -> SOL
+```
+
+All action buttons correctly show:
+
+```text
+Waiting for Gensuki live payloads
+```
+
+---
+
+## ✅ Security State Still Correct
+
+The merged Swap Lab page remains display/preview-only.
+
+Still confirmed:
+
+```text
+No Gensuki API key in frontend.
+No direct Gensuki frontend API calls.
+No public swap execution.
+No wallet signing wired.
+No transaction generation.
+No /claim call.
+No /confirm call.
+No /status polling.
+No DSPOINC deduction.
+No DSPOINC credit.
+No settlement logic.
+```
+
+The page only displays backend-authoritative preview data and route status.
+
+---
+
+## ✅ Current Frontend Purpose
+
+The current page is now a future-facing bridge dashboard, not a live bridge.
+
+It safely shows:
+
+```text
+SPOINC price
+DSPOINC -> SPOINC conversion rate
+user DSPOINC total / frozen / available
+max convertible SPOINC
+bridge safety state
+projectId waiting state
+route cards
+V1 listed routes
+V1 protected routes
+```
+
+Protected V1 sell routes remain visible as disabled/protected:
+
+```text
+SPOINC -> SOL
+SPOINC -> EMPIRE
+SPOINC -> FOOK
+```
+
+Reason remains:
+
+```text
+Liquidity protection for V1.
+No external SPOINC sell route until Zeno payloads, projectId, liquidity, and settlement flow are fully confirmed.
+```
+
+---
+
+## ⏸ Waiting For Zeno Tomorrow
+
+Next work waits for Zeno’s final values:
+
+```text
+Real SPOINC mainnet projectId
+Real API key confirmation / backend x-api-key only
+Real getPresaleDetails response
+Exact fee field names
+Exact DSPOINC -> SPOINC /claim request + response
+Exact SPOINC -> DSPOINC /claim request + response
+Confirm if /claim returns unsigned transaction or final signature
+Confirm exact DSPOINC debit timing
+Confirm exact DSPOINC credit timing
+Confirm idempotencyId behavior
+Confirm signature / transactionHash relation
+Confirm status lifecycle and failed/cancelled/expired examples
+Lookup table field name if returned
+```
+
+Critical blocker stays:
+
+```text
+Do not guess the ledger moment.
+
+DSPOINC -> SPOINC:
+Narrrfs must know exactly when to deduct DSPOINC.
+
+SPOINC -> DSPOINC:
+Narrrfs must know exactly when to credit DSPOINC.
+```
+
+---
+
+## ✅ End-of-Day Summary
+
+```text
+SPOINC bridge DB foundation is live.
+SQLite live/local schema compatibility is fixed.
+Safe preview APIs are working.
+Swap Lab frontend is merged and locally tested.
+Route map renders successfully.
+No errors seen.
+All execution remains disabled.
+Waiting for Zeno before any settlement or live swap coding.
+```
+
+
+## FOLLOW-UP — SPOINC BRIDGE PREVIEW APIs LIVE / SQLITE INDEX CLEANUP DONE / SAFE FRONTEND WIRING READY
+
+**Date:** 2026-06-28
+**Status:** Safe SPOINC bridge preview API layer working locally and ready for Swap Lab frontend wiring
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki bridge / swap-lab.html / SQLite compatibility cleanup
+
+---
+
+## ✅ New SPOINC Bridge API Files Created
+
+New safe preview APIs were created next to the existing partner balance endpoint:
+
+```text
+api/partner/spoinc/bridge-helpers.php
+api/partner/spoinc/get-bridge-config.php
+api/partner/spoinc/get-bridge-routes.php
+api/partner/spoinc/get-user-bridge-preview.php
+api/partner/spoinc/get-user-bridge-history.php
+```
+
+Existing partner balance endpoint remains:
+
+```text
+api/partner/spoinc/get-dspoinc-balance.php
+```
+
+Purpose:
+
+```text
+bridge-helpers.php:
+Shared DB/session/JSON/config/route/balance helper layer.
+
+get-bridge-config.php:
+Returns public-safe SPOINC bridge config and route state.
+
+get-bridge-routes.php:
+Returns all planned/disabled route toggles.
+
+get-user-bridge-preview.php:
+Returns logged-in user's backend-authoritative DSPOINC balance preview.
+
+get-user-bridge-history.php:
+Returns read-only user bridge history from intent/transaction tables.
+```
+
+Important:
+
+```text
+These APIs do not execute swaps.
+These APIs do not call live Gensuki execution routes.
+These APIs do not deduct DSPOINC.
+These APIs do not credit DSPOINC.
+These APIs do not expose any API key.
+These APIs are preview/read-only only.
+```
+
+---
+
+## ✅ Local API Tests Passed
+
+Local tests after fresh live DB download are working.
+
+Tested:
+
+```text
+curl -s "http://localhost/api/partner/spoinc/get-bridge-config.php" | python -m json.tool
+curl -s "http://localhost/api/partner/spoinc/get-bridge-routes.php" | python -m json.tool
+curl -s -X POST "http://localhost/api/partner/spoinc/get-user-bridge-preview.php" -H "Content-Type: application/json" --data-binary "{\"user_id\":\"328601656659017732\"}" | python -m json.tool
+```
+
+Confirmed output state:
+
+```text
+success: true
+project_id_ready: false
+public_enabled: 0
+settlement_enabled: 0
+external_sell_enabled: 0
+preview_only: true
+can_execute_bridge: false
+ledger_movement_enabled: false
+api_key_exposed: false
+```
+
+Narrrf local preview balance test:
+
+```text
+total_dspoinc: 1,168,171
+frozen_dspoinc: 1,010,000
+available_dspoinc: 158,171
+conversion: 10,000 DSPOINC = 1 SPOINC
+max_spoinc_convertible: 15.8171 SPOINC
+```
+
+This confirms the preview endpoint uses the correct backend-authoritative formula:
+
+```text
+Available DSPOINC = SUM(tbl_user_scores.score) - active tbl_dspoinc_stakes.amount
+```
+
+Frozen DSPOINC remains excluded from conversion.
+
+---
+
+## ✅ Live / Local SQLite Compatibility Cleanup Completed
+
+Issue found:
+
+```text
+Local SQLite could not parse partial index WHERE syntax from the live DB download.
+```
+
+Broken / incompatible indexes seen during local testing:
+
+```text
+idx_genesis_nft_stakes_one_active_token
+idx_spoinc_bridge_transactions_hash_unique
+idx_spoinc_bridge_transactions_signature_unique
+```
+
+Live cleanup completed:
+
+```text
+idx_genesis_nft_stakes_one_active_token was dropped from live.
+idx_spoinc_bridge_transactions_hash_unique was dropped and recreated without WHERE.
+idx_spoinc_bridge_transactions_signature_unique was dropped and recreated without WHERE.
+```
+
+Final live-compatible SPOINC indexes now are:
+
+```text
+CREATE UNIQUE INDEX idx_spoinc_bridge_transactions_hash_unique
+ON tbl_spoinc_bridge_transactions(transaction_hash)
+
+CREATE UNIQUE INDEX idx_spoinc_bridge_transactions_signature_unique
+ON tbl_spoinc_bridge_transactions(signature)
+```
+
+Important:
+
+```text
+No WHERE clause remains on these SPOINC indexes.
+Fresh live DB download now works locally.
+Local VACUUM and PRAGMA integrity_check work again.
+```
+
+Safety note:
+
+```text
+SQLite unique indexes allow multiple NULL values.
+Future bridge transaction rows should store missing transaction_hash/signature as NULL, not empty string.
+```
+
+Genesis note:
+
+```text
+idx_genesis_nft_stakes_one_active_token was only an index.
+No Genesis Mouse Freezer tables or rows were deleted.
+Before public Genesis Freezer launch, rebuild this safety rule carefully or keep enforcing one-active-token logic in PHP.
+Do not recreate it locally as a normal unique index without reviewing active/history row behavior.
+```
+
+---
+
+## ✅ Current SPOINC Bridge Route State
+
+V1 planned / frontend-visible but disabled:
+
+```text
+DSPOINC_TO_SPOINC
+SPOINC_TO_DSPOINC
+SOL_TO_SPOINC
+EMPIRE_TO_SPOINC
+FOOK_TO_SPOINC
+```
+
+These remain:
+
+```text
+public_enabled: 0
+backend_enabled: 0
+```
+
+V1 public disabled sell routes:
+
+```text
+SPOINC_TO_SOL
+SPOINC_TO_EMPIRE
+SPOINC_TO_FOOK
+```
+
+These remain:
+
+```text
+v1_public_allowed: 0
+status: v1_disabled_liquidity_protection
+```
+
+Reason:
+
+```text
+Protect early liquidity.
+Prevent DSPOINC -> SPOINC -> external sell drain.
+External sell routes wait for later V2 / stronger liquidity.
+```
+
+---
+
+## ✅ Current Config State
+
+Current bridge config:
+
+```text
+config_key: gensuki_spoinc_mainnet
+partner_name: gensuki
+api_base_url: https://app.gensuki.xyz
+project_id: null / waiting for Zeno
+project_id_ready: false
+token_symbol: SPOINC
+token_mint: FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg
+token_decimals: 9
+conversion_rate_dspoinc_per_spoinc: 10000
+spoinc_price_usd: 0.035
+pool_wallet: 4dNcc6yRTdBjAxyDEjWCFRejNW4zJ2mT5AeAJG5VJVRh
+admin_wallet: A633zMm3rp7Jhi3K4Ks85K4sgkMR4SyYdk2hK8RW5mYU
+funding_receiver: null
+public_enabled: 0
+settlement_enabled: 0
+external_sell_enabled: 0
+status: waiting_for_zeno_mainnet_project_id_and_payloads
+```
+
+Security rule:
+
+```text
+No Gensuki API key is stored in DB.
+No Gensuki API key is exposed in frontend.
+API key must only be used from backend environment variables after Zeno confirms it.
+```
+
+Recommended env names later:
+
+```text
+GENSUKI_API_BASE_URL=https://app.gensuki.xyz
+GENSUKI_API_KEY=real_key_here
+GENSUKI_SPOINC_PROJECT_ID=real_project_id_here
+```
+
+---
+
+## ✅ Message Sent / Prepared For Zeno
+
+Narrrfs prepared a follow-up message for Zeno explaining:
+
+```text
+Bridge DB tables are created.
+Route toggle tables are created.
+Preview APIs are working.
+Swap Lab can now read config/routes/user DSPOINC balance.
+Public execution is still OFF.
+Settlement is still OFF.
+No API key is exposed in frontend.
+No DSPOINC deduction/credit is coded yet.
+```
+
+Still requested from Zeno:
+
+```text
+1. Real SPOINC mainnet projectId
+2. Real API key / confirmation Narrrfs should use backend x-api-key only
+3. Real SPOINC getPresaleDetails response from mainnet
+4. Exact platform fee and Narrrfs fee field names in getPresaleDetails
+5. Exact DSPOINC -> SPOINC /claim request + response example
+6. Exact SPOINC -> DSPOINC /claim request + response example
+7. Confirm if /claim returns unsigned transaction or if Gensuki broadcasts and returns final signature
+8. Confirm when Narrrfs should deduct DSPOINC
+9. Confirm when Narrrfs should credit DSPOINC
+10. Confirm if /claim always returns idempotencyId
+11. Confirm if signature from /claim is the same as transactionHash used in /confirm and /status
+12. Confirm exact status lifecycle: pending / complete / failed / cancelled / expired
+13. Failed / cancelled / expired example responses
+14. Lookup table address field name, if returned
+```
+
+Critical blocker remains:
+
+```text
+DSPOINC -> SPOINC:
+When exactly does Narrrfs deduct DSPOINC?
+
+SPOINC -> DSPOINC:
+When exactly does Narrrfs credit DSPOINC?
+```
+
+Narrrfs must not guess this.
+
+---
+
+## 🚫 Still Do Not Code
+
+Do not implement yet:
+
+```text
+automatic DSPOINC deduction
+automatic DSPOINC credit
+public swap execution
+transaction generation endpoint
+claim endpoint
+confirm endpoint
+settlement endpoint
+frontend direct Gensuki API-key calls
+hardcoded projectId
+hardcoded fee values
+external SPOINC sell routes
+lookup table modification
+```
+
+Do not enable:
+
+```text
+public_enabled
+backend_enabled
+settlement_enabled
+external_sell_enabled
+```
+
+until Zeno confirms final production values and flow.
+
+---
+
+## ➡️ Next Recommended Work
+
+Next safe work:
+
+```text
+1. Update swap-lab.html to consume the new safe preview APIs.
+2. Show SPOINC price card: $0.035.
+3. Show fixed rate: 10,000 DSPOINC = 1 SPOINC.
+4. Show user DSPOINC total/frozen/available when logged in.
+5. Show max convertible SPOINC.
+6. Show route cards from get-bridge-routes.php.
+7. Show bridge status: Waiting for Zeno projectId / live payloads.
+8. Keep all execution buttons disabled.
+9. Add safety panel:
+   - No public execution enabled
+   - No settlement enabled
+   - No API key in frontend
+   - No ledger movement enabled
+10. Do not wire wallet signing yet.
+```
+
+Recommended frontend button text:
+
+```text
+Waiting for Gensuki live payloads
+```
+
+Current safe summary:
+
+```text
+SPOINC bridge preview infrastructure is ready.
+Live/local DB schema is clean.
+APIs are read-only and working.
+Swap Lab frontend can now be upgraded safely for display-only mode.
+Final settlement still waits for Zeno.
+```
+
+
+## FOLLOW-UP — SPOINC BRIDGE PREP TABLES CREATED ON LIVE DB
+
+**Date:** 2026-06-28
+**Status:** Live bridge preparation tables created successfully / settlement still disabled
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki bridge DB foundation / live SQLite prep
+
+---
+
+## ✅ Backup / Integrity Before Work
+
+Narrrf created a live DB backup before applying the bridge table migration:
+
+```text
+sqlite3 /var/www/html/db/narrrf_world.sqlite ".backup '/data/narrrf_world.sqlite'"
+```
+
+Backup integrity check:
+
+```text
+sqlite3 /data/narrrf_world.sqlite "PRAGMA integrity_check;"
+ok
+```
+
+---
+
+## ✅ Live DB Migration Result
+
+The SPOINC bridge preparation SQL was applied successfully on live DB.
+
+Post-migration integrity check:
+
+```text
+PRAGMA integrity_check;
+ok
+```
+
+---
+
+## ✅ Existing Partner Tables Still Present
+
+Previously existing partner API tables remain present:
+
+```text
+tbl_spoinc_bridge_api_keys
+tbl_spoinc_bridge_balance_queries
+```
+
+These are related to the existing read-only Gensuki partner balance API.
+
+---
+
+## ✅ New Bridge Prep Tables Created
+
+New tables now present:
+
+```text
+tbl_spoinc_bridge_config
+tbl_spoinc_bridge_routes
+tbl_spoinc_bridge_intents
+tbl_spoinc_bridge_transactions
+tbl_spoinc_bridge_ledger_audit
+tbl_spoinc_bridge_api_calls
+```
+
+Purpose:
+
+```text
+config: base project/token/route config, no secrets
+routes: route toggles and V1/V2 route state
+intents: user bridge attempts / idempotency tracking
+transactions: transactionHash/signature/status tracking
+ledger_audit: future DSPOINC debit/credit audit, not active yet
+api_calls: Gensuki API request/response debug history
+```
+
+---
+
+## ✅ Seed Config Created
+
+Config row:
+
+```text
+config_key: gensuki_spoinc_mainnet
+api_base_url: https://app.gensuki.xyz
+project_id: empty / waiting for Zeno
+token_symbol: SPOINC
+token_mint: FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg
+conversion_rate_dspoinc_per_spoinc: 10000
+public_enabled: 0
+settlement_enabled: 0
+status: waiting_for_zeno_mainnet_project_id_and_payloads
+```
+
+Important:
+
+```text
+No API key is stored in the database.
+API key must stay in backend environment variables only.
+```
+
+---
+
+## ✅ Route Toggles Seeded
+
+V1 planned / allowed routes, but still disabled:
+
+```text
+DSPOINC_TO_SPOINC
+SPOINC_TO_DSPOINC
+SOL_TO_SPOINC
+EMPIRE_TO_SPOINC
+FOOK_TO_SPOINC
+```
+
+All currently:
+
+```text
+public_enabled: 0
+backend_enabled: 0
+```
+
+External sell routes seeded but V1 disabled:
+
+```text
+SPOINC_TO_SOL
+SPOINC_TO_EMPIRE
+SPOINC_TO_FOOK
+```
+
+These have:
+
+```text
+v1_public_allowed: 0
+status: v1_disabled_liquidity_protection
+```
+
+---
+
+## ✅ Critical Safety State
+
+Current live DB bridge status:
+
+```text
+No public bridge enabled.
+No backend bridge execution enabled.
+No settlement enabled.
+No DSPOINC deduction enabled.
+No DSPOINC credit enabled.
+No external SPOINC sell route enabled.
+No API secret stored in DB.
+```
+
+This is only a safe preparation layer.
+
+---
+
+## ⏸ Still Waiting For Zeno
+
+Before coding settlement logic:
+
+```text
+1. Confirm old API key is valid or rotate it
+2. Real SPOINC mainnet projectId
+3. Real getPresaleDetails response
+4. Exact fee field names
+5. Exact DSPOINC → SPOINC /claim response
+6. Exact SPOINC → DSPOINC /claim response
+7. Confirm when Narrrfs deducts DSPOINC
+8. Confirm when Narrrfs credits DSPOINC
+9. Confirm if /claim returns idempotencyId
+10. Confirm if signature = transactionHash
+11. Failed / cancelled / expired examples
+```
+
+---
+
+## ✅ Current Summary
+
+```text
+SPOINC bridge DB foundation is now live and healthy.
+All route toggles are off.
+Settlement is off.
+Project ID is intentionally empty.
+Next safe step is backend helper/proxy planning only, not public execution.
+```
+
+
+## FOLLOW-UP — GENSUKI API KEY FOUND / WAITING FOR ZENO CONFIRMATION / SAFE TABLE WORK CAN START
+
+**Date:** 2026-06-28
+**Status:** API key found in older Zeno Discord message / waiting for confirmation before use
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki API auth / bridge DB planning / safe implementation prep
+
+---
+
+## ✅ New Finding
+
+Narrrf found an older API key message from Zeno in Discord.
+
+Zeno had written that:
+
+```text
+API key was provided.
+Rotation of this key will be available on website.
+```
+
+Narrrf has now asked Zeno if this is the correct key to use for the SPOINC / DSPOINC bridge.
+
+---
+
+## ⚠️ Security Rule
+
+Do not paste the API key into:
+
+```text
+code files
+frontend JavaScript
+Git commits
+Quick Status
+Discord public channels
+screenshots
+logs
+```
+
+Use only backend environment variables.
+
+Recommended env naming later:
+
+```text
+GENSUKI_API_BASE_URL=https://app.gensuki.xyz
+GENSUKI_API_KEY=real_key_here
+GENSUKI_SPOINC_PROJECT_ID=real_project_id_here
+```
+
+Do not set these until Zeno confirms the real key and project ID.
+
+---
+
+## ✅ Current Gensuki Base URL
+
+Zeno confirmed:
+
+```text
+https://app.gensuki.xyz/
+```
+
+---
+
+## ✅ What We Can Safely Do Today
+
+We can create safe local/live DB preparation tables that do **not** move DSPOINC yet.
+
+Allowed today:
+
+```text
+bridge config table
+bridge route toggle table
+bridge request / intent table
+bridge audit table
+idempotency tracking
+transaction hash tracking
+raw payload storage
+nullable fee fields
+status fields
+created / updated / confirmed / settled timestamps
+```
+
+These tables can be created without knowing the final payload details as long as:
+
+```text
+all uncertain fields are nullable
+raw request/response JSON is stored
+no automatic ledger movement is added
+no public execution endpoint is enabled
+```
+
+---
+
+## ⏸ What Still Waits For Zeno
+
+Before coding settlement logic, we still need:
+
+```text
+1. Confirmation if the old API key is still valid or should be rotated
+2. Real SPOINC mainnet projectId
+3. Real getPresaleDetails response from mainnet
+4. Exact platform fee and Narrrfs fee field names
+5. Exact DSPOINC → SPOINC /claim request + response
+6. Exact SPOINC → DSPOINC /claim request + response
+7. Confirmation when Narrrfs deducts DSPOINC
+8. Confirmation when Narrrfs credits DSPOINC
+9. Confirmation if /claim returns idempotencyId
+10. Confirmation if signature = transactionHash
+11. Failed / cancelled / expired response examples
+```
+
+---
+
+## 🚫 Do Not Code Yet
+
+Do not implement:
+
+```text
+automatic DSPOINC deduction
+automatic DSPOINC credit
+public swap button
+public bridge execution
+frontend API-key calls
+hardcoded API key
+hardcoded projectId
+external SPOINC sell routes
+```
+
+---
+
+## ✅ Current Safe Summary
+
+```text
+Gensuki API docs are received.
+Base URL is confirmed.
+Possible API key found, waiting for Zeno confirmation.
+Safe DB table planning can start today.
+Final settlement logic must wait for exact live payloads and ledger trigger confirmation.
+```
+
+
+## FOLLOW-UP — GENSUKI CUSTOM TOKEN PRESALE API DOCS RECEIVED / BRIDGE IMPLEMENTATION PLANNING CAN START
+
+**Date:** 2026-06-28
+**Status:** Zeno API documentation received / field review started / still waiting for live project values
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki Custom Token Presale API / Narrrfs bridge table planning / frontend integration planning
+
+---
+
+## ✅ New Document Received From Zeno
+
+Zeno provided detailed API documentation for the Gensuki Custom Token Presale system.
+
+Document title:
+
+```text
+Custom Token Presale API Documentation
+```
+
+Main scope:
+
+```text
+API endpoints
+parameters
+return types
+authentication
+required environment variables
+custom token presale routes
+SPOINC / DSPOINC bridge helper routes
+```
+
+Important note:
+
+```text
+The document gives API structure and example payloads.
+It still uses example project IDs, placeholder addresses, and sample values.
+Do not hardcode example UUIDs, addresses, or sample prices.
+Wait for Zeno’s real Narrrfs/SPOINC project values before coding production calls.
+```
+
+---
+
+## ✅ Authentication Confirmed
+
+Gensuki API keys can be supplied in two ways:
+
+```text
+Recommended:
+x-api-key: YOUR_API_KEY
+
+Alternative:
+?apiKey=YOUR_API_KEY
+```
+
+Important security note from docs:
+
+```text
+Some endpoints enforce Project Isolation.
+They validate that the provided API key belongs to the requested projectId.
+```
+
+Narrrfs rule:
+
+```text
+Use x-api-key header where possible.
+Do not expose API key in frontend.
+Do not put API key in browser JS.
+Backend proxy/API layer should call Gensuki when key is required.
+Never commit real API keys.
+```
+
+---
+
+## ✅ Endpoint 1 — Presale Details
+
+Endpoint:
+
+```text
+GET /api/custom-token-presale/getPresaleDetails
+```
+
+Purpose:
+
+```text
+Retrieve detailed configuration and status for one or more custom presale projects.
+```
+
+Required query:
+
+```text
+ids or id
+```
+
+Returns project data including:
+
+```text
+projectId
+projectName
+imageUrl
+supplyDeposit
+totalRaiseSupply
+totalUsdRaise
+tokenPrice
+tokenSold
+totalRaised
+chain
+startTime
+endTime
+status
+tokenPriceUsd
+tokenPriceNative
+tokenomics
+faqs
+socials
+tokens.tokenAddress
+tokens.tokenBAddress
+tokens.poolAddress
+tokens.adminWallet
+tokens.fundingReceiver
+tokens.tokenType2022
+```
+
+Narrrfs usage:
+
+```text
+Use this route to hydrate Swap Lab / Bridge UI.
+Use it to show token price, project status, token addresses, pool address, funding receiver, and fee data if included.
+Do not hardcode fee values if this route returns them.
+```
+
+Still needed from Zeno:
+
+```text
+Real Narrrfs/SPOINC projectId
+Real base URL
+Exact fee field names in this route
+Real mainnet tokenPriceUsd = 0.035 confirmation
+```
+
+---
+
+## ✅ Endpoint 2 — Buy Route
+
+Endpoint:
+
+```text
+POST /api/custom-token-presale/buy
+```
+
+Purpose:
+
+```text
+Generate a transaction payload to deposit payment tokens and purchase presale tokens.
+```
+
+Body fields:
+
+```text
+buyerAddress
+projectId
+paymentAmount
+paymentTokenAddress
+latestBlockhash
+idempotencyId
+```
+
+Notes:
+
+```text
+paymentTokenAddress is optional.
+Native SOL default can be empty string or 11111111111111111111111111111111.
+latestBlockhash is required.
+idempotencyId is optional but must be used by Narrrfs.
+```
+
+Response fields:
+
+```text
+success
+transaction
+idempotencyId
+```
+
+Narrrfs usage:
+
+```text
+Use for SOL / EMPIRE / FOOK → SPOINC buy routes if confirmed by Zeno.
+Frontend should receive unsigned/generated transaction only through safe flow.
+Narrrfs must store idempotencyId before/around transaction generation.
+```
+
+Safety:
+
+```text
+Do not treat generated transaction as completed swap.
+Do not deduct or credit DSPOINC from this response alone.
+Wait for wallet signature + confirmed transaction + confirm/status result.
+```
+
+---
+
+## ✅ Endpoint 3 — Sell Route
+
+Endpoint:
+
+```text
+POST /api/custom-token-presale/sell
+```
+
+Purpose:
+
+```text
+Generate a transaction payload to sell back acquired presale tokens in exchange for native SOL.
+```
+
+Body fields:
+
+```text
+sellerAddress
+projectId
+tokenAmount
+latestBlockhash
+idempotencyId
+```
+
+Response fields:
+
+```text
+success
+transaction
+idempotencyId
+```
+
+Narrrfs V1 rule:
+
+```text
+Do not expose external sell route in public V1.
+SPOINC → SOL / EMPIRE / FOOK stays OFF until liquidity is stronger and V2 is approved.
+```
+
+Planning note:
+
+```text
+Backend may be designed future-ready for route toggles.
+Frontend must keep sell hidden/off for V1.
+```
+
+---
+
+## ✅ Endpoint 4 — Claim Route
+
+Endpoint:
+
+```text
+POST /api/custom-token-presale/claim
+```
+
+Purpose:
+
+```text
+Executes token swaps or claims.
+Docs say claims are currently configured for the Spoinc project.
+```
+
+Body fields:
+
+```text
+userAddress
+projectId
+latestBlockhash
+dspoincAmount
+spoincAmount
+idempotencyId
+```
+
+Important rule:
+
+```text
+Must provide either dspoincAmount or spoincAmount.
+```
+
+Interpretation:
+
+```text
+dspoincAmount likely represents DSPOINC → SPOINC.
+spoincAmount likely represents SPOINC → DSPOINC.
+```
+
+Example response:
+
+```text
+success
+signature
+amountClaimed
+```
+
+Critical Narrrfs rule:
+
+```text
+Do not assume this route alone safely updates Narrrfs DB.
+Need to confirm exact lifecycle with Zeno:
+- Does Gensuki broadcast the transaction?
+- Does it return final signature only after on-chain confirmation?
+- Or does it return a transaction to be signed?
+- When exactly should Narrrfs deduct / credit DSPOINC?
+```
+
+Must clarify before coding:
+
+```text
+For DSPOINC → SPOINC:
+When does Narrrfs deduct DSPOINC?
+
+For SPOINC → DSPOINC:
+When does Narrrfs credit DSPOINC?
+
+Does claim call Narrrfs directly or only Gensuki DB?
+Does claim require a later confirm call?
+Does claim return idempotencyId every time?
+```
+
+---
+
+## ✅ Endpoint 5 — Confirm Route
+
+Endpoint:
+
+```text
+POST /api/custom-token-presale/confirm
+```
+
+Purpose:
+
+```text
+Confirms the status of a broadcasted presale transaction with the backend database.
+```
+
+Body fields:
+
+```text
+projectId
+transactionHash
+status
+```
+
+Allowed status values:
+
+```text
+complete
+failed
+```
+
+Response:
+
+```text
+success
+message
+```
+
+Narrrfs interpretation:
+
+```text
+This appears to confirm transaction status inside Gensuki backend.
+It is not automatically Narrrfs ledger settlement.
+Narrrfs still needs its own safe settlement/audit logic for DSPOINC debit/credit.
+```
+
+Required Narrrfs rule:
+
+```text
+Only update Narrrfs DSPOINC ledger after:
+- transactionHash exists
+- status is complete
+- transaction proof is verified or trusted callback rules are agreed
+- idempotencyId / transactionHash is not already processed
+```
+
+---
+
+## ✅ Endpoint 6 — Status Route
+
+Endpoint:
+
+```text
+GET / POST /api/custom-token-presale/status
+```
+
+Purpose:
+
+```text
+Query the status of a specific transaction by blockchain hash.
+```
+
+Fields:
+
+```text
+projectId
+transactionHash
+```
+
+Response transaction object may include:
+
+```text
+id
+projectId
+transactionHash
+status
+amount
+timestamp
+```
+
+Narrrfs usage:
+
+```text
+Use after wallet broadcast to check Gensuki-side transaction status.
+Useful for polling UI and backend audit confirmation.
+```
+
+Safety:
+
+```text
+Do not credit/debit on pending/unknown/failed.
+Only complete can be considered for settlement.
+```
+
+---
+
+## ✅ Endpoint 7 — Get Transaction
+
+Endpoint:
+
+```text
+GET /api/custom-token-presale/getTransaction
+```
+
+Purpose:
+
+```text
+Retrieve one unique transaction record using transactionHash, id, or idempotencyId.
+```
+
+Required:
+
+```text
+projectId
+```
+
+At least one of:
+
+```text
+transactionHash
+id
+idempotencyId
+```
+
+Response data may include:
+
+```text
+id
+projectId
+transactionHash
+recipientAddress
+amount
+status
+idempotencyId
+timestamp
+```
+
+Narrrfs usage:
+
+```text
+Very important for idempotency recovery.
+Use idempotencyId to recover user flow if page reloads or callback retries.
+```
+
+---
+
+## ✅ Endpoint 8 — User Transactions
+
+Endpoint:
+
+```text
+GET /api/custom-token-presale/getUserTransactions
+```
+
+Purpose:
+
+```text
+List paginated transactions for one user wallet and one project.
+```
+
+Fields:
+
+```text
+projectId
+userAddress or wallet
+page
+```
+
+Narrrfs usage:
+
+```text
+Can power bridge history UI for one wallet.
+Good for profile/stake-lab bridge history later.
+```
+
+---
+
+## ✅ Endpoint 9 — All Transactions
+
+Endpoint:
+
+```text
+GET /api/custom-token-presale/getAllTransactions
+```
+
+Purpose:
+
+```text
+Retrieve global paginated list of all contributions across a presale project.
+```
+
+Fields:
+
+```text
+projectId
+page
+```
+
+Narrrfs usage:
+
+```text
+Admin/audit dashboard only.
+Do not expose sensitive full transaction list publicly unless intended.
+```
+
+---
+
+## ✅ Endpoint 10 — Solana Price
+
+Endpoint:
+
+```text
+GET /api/custom-token-presale/getSolanaPrice
+```
+
+Purpose:
+
+```text
+Query live SOL price from Relay pricing service.
+```
+
+Fields:
+
+```text
+usd
+sol
+```
+
+Response examples:
+
+```text
+priceUsd
+inputUsd
+solWorth
+```
+
+Narrrfs usage:
+
+```text
+Show SOL/USD conversion in bridge UI.
+Useful for fee display if fees are USD-based but paid in SOL.
+```
+
+---
+
+## ✅ Endpoint 11 — Token Price
+
+Endpoint:
+
+```text
+GET /api/custom-token-presale/getTokenPrice
+```
+
+Purpose:
+
+```text
+Query live supported token price from Relay using mint address and chain ID.
+```
+
+Fields:
+
+```text
+address
+chainId
+amount or token or sol
+usd
+```
+
+Default chainId:
+
+```text
+792703809
+```
+
+Interpretation:
+
+```text
+792703809 is treated by Gensuki docs as Solana Relay chain ID.
+```
+
+Response examples:
+
+```text
+success
+address
+chainId
+priceUsd
+inputUsd
+tokenWorth
+```
+
+Narrrfs usage:
+
+```text
+Price display for SOL / EMPIRE / FOOK / USDT / USDC if supported.
+Do not use price route for ledger settlement.
+Quote/price data is display-only.
+```
+
+---
+
+## ✅ Endpoint 12 — DSPOINC To SPOINC Calculation
+
+Endpoint:
+
+```text
+GET / POST /api/custom-token-presale/getdspoinctospoinc
+```
+
+Purpose:
+
+```text
+Calculate and return conversion details for swapping DSPOINC to SPOINC.
+```
+
+Fields:
+
+```text
+userAddress or wallet
+projectId
+amount
+```
+
+Response data includes:
+
+```text
+discord_id
+wallet
+available_dspoinc
+total_dspoinc
+frozen_dspoinc
+conversion.dspoinc_per_spoinc
+fundingReceiver
+tokenAddress
+poolAddress
+tokenBAddress
+claimable_spoinc
+dspoinc_deducted
+remaining_dspoinc
+```
+
+Important:
+
+```text
+This appears to be calculation/quote style data.
+Do not deduct DSPOINC from this response alone.
+```
+
+Narrrfs rule:
+
+```text
+DSPOINC conversion must only use available DSPOINC.
+Frozen DSPOINC must stay locked.
+Conversion stays fixed:
+10,000 DSPOINC = 1 SPOINC
+```
+
+Settlement rule:
+
+```text
+Narrrfs deducts DSPOINC only after confirmed transaction proof and idempotency check.
+```
+
+---
+
+## ✅ Endpoint 13 — Narrrfs Balance Get
+
+Endpoint:
+
+```text
+GET / POST /api/custom-token-presale/narrrfBalanceGet
+```
+
+Purpose:
+
+```text
+Queries Narrrfs external partner API to fetch user DSPOINC balance.
+```
+
+Fields:
+
+```text
+wallet
+```
+
+Response data includes:
+
+```text
+discord_id
+wallet
+available_dspoinc
+total_dspoinc
+frozen_dspoinc
+conversion.dspoinc_per_spoinc
+```
+
+Interpretation:
+
+```text
+This wraps/uses Narrrfs partner balance API from Gensuki side.
+It confirms Gensuki expects wallet-based DSPOINC balance lookup.
+```
+
+Narrrfs rule:
+
+```text
+Balance remains read-only.
+No ledger changes from balance lookup.
+```
+
+---
+
+## ✅ Important Existing Narrrfs Endpoint Already Related
+
+Narrrfs already has:
+
+```text
+/api/partner/spoinc/get-dspoinc-balance.php
+```
+
+Purpose:
+
+```text
+Read-only partner balance lookup.
+Returns total / frozen / available DSPOINC and conversion.
+```
+
+Gensuki route `narrrfBalanceGet` likely calls this or equivalent partner API.
+
+Do not weaken Narrrfs partner auth.
+
+---
+
+## ✅ Required Narrrfs Data Model Planning
+
+Bridge table planning should now support these concepts:
+
+```text
+id
+partner_name
+project_id
+idempotency_id
+transaction_hash
+wallet
+discord_id
+route
+direction
+input_token
+output_token
+input_amount
+output_amount
+dspoinc_amount
+spoinc_amount
+status
+gensuki_status
+narrrfs_status
+platform_fee_usd
+narrrfs_fee_usd
+platform_fee_paid_amount
+platform_fee_paid_token
+narrrfs_fee_paid_amount
+narrrfs_fee_paid_token
+latest_blockhash
+lookup_table_account
+transaction_payload_hash
+raw_request_json
+raw_response_json
+created_at
+updated_at
+confirmed_at
+settled_at
+failed_at
+```
+
+Do not finalize column names yet.
+
+Use exact Zeno payload names when real examples arrive.
+
+---
+
+## ✅ Required Idempotency Rules
+
+Every bridge flow must use:
+
+```text
+idempotencyId
+transactionHash
+```
+
+Narrrfs must enforce:
+
+```text
+idempotencyId unique per partner/project route
+transactionHash unique once known
+```
+
+Expected behavior:
+
+```text
+Same idempotencyId retry:
+return existing state, do not create duplicate ledger movement.
+
+Same transactionHash retry:
+return already_processed, do not credit/deduct twice.
+```
+
+---
+
+## ✅ Required Status Model
+
+Based on docs, Gensuki statuses include at minimum:
+
+```text
+complete
+failed
+```
+
+Narrrfs should also internally track local states such as:
+
+```text
+created
+transaction_generated
+wallet_pending
+submitted
+complete
+failed
+settled
+already_processed
+expired
+cancelled
+```
+
+Do not expose routes publicly until exact Gensuki status lifecycle is confirmed.
+
+---
+
+## ✅ Fee Model Confirmed From Zeno + Docs Context
+
+Zeno confirmed separately:
+
+```text
+Platform fee and Narrrfs fee are charged separately.
+Fees are returned in presale details API route.
+Fees are USD values.
+1 means $1.
+0.5 means $0.50.
+```
+
+Narrrfs rule:
+
+```text
+Read fees from getPresaleDetails.
+Show platform fee and Narrrfs fee separately.
+Do not hardcode $0.01, $0.50, or $1.
+```
+
+---
+
+## ✅ Lookup Table Account Rule
+
+Zeno confirmed separately:
+
+```text
+Token transactions need lookup table account when transaction size is too large.
+Gensuki auto-creates it.
+Narrrfs must not change it.
+```
+
+Narrrfs rule:
+
+```text
+Treat lookup table as Gensuki-managed transaction infrastructure.
+If payload includes lookup table address, store it for audit/debug only.
+Do not edit, recreate, or modify lookup table from Narrrfs side.
+```
+
+---
+
+## ✅ Frontend Integration Planning
+
+Reusable Narrrfs Bridge Module should be created later.
+
+Same module should be usable from:
+
+```text
+swap-lab.html
+profile.html
+stake-lab.html
+lab.html
+reward chamber
+games
+leaderboards
+VIP pages
+future Season 13 systems
+```
+
+Frontend should not contain ledger logic.
+
+Frontend flow should be:
+
+```text
+Load session / wallet
+Fetch presale details
+Fetch Narrrfs DSPOINC balance
+User chooses route
+Generate idempotencyId
+Fetch latest blockhash
+Call Gensuki transaction route through safe backend if auth required
+User signs wallet transaction
+Submit / confirm transaction
+Poll status / get transaction
+Narrrfs backend settles DSPOINC only after proof and idempotency
+Refresh user balance
+```
+
+---
+
+## ✅ Current V1 Route Decision
+
+V1 allowed / planned:
+
+```text
+DSPOINC → SPOINC
+SPOINC → DSPOINC if payload and proof flow are confirmed
+SOL → SPOINC
+EMPIRE → SPOINC
+FOOK → SPOINC
+```
+
+V1 disabled publicly:
+
+```text
+SPOINC → SOL
+SPOINC → EMPIRE
+SPOINC → FOOK
+```
+
+Reason:
+
+```text
+Protect early liquidity.
+Prevent instant DSPOINC → SPOINC → external sell drain.
+External sell routes wait for V2 / stronger liquidity.
+```
+
+---
+
+## ✅ Critical Open Items Before Coding Settlement
+
+Still need from Zeno:
+
+```text
+Real base URL
+Real Narrrfs/SPOINC projectId
+Real API key handling requirements
+Exact getPresaleDetails response with fee fields
+Exact buy payload for SOL → SPOINC
+Exact buy payload for EMPIRE → SPOINC
+Exact buy payload for FOOK → SPOINC
+Exact claim payload for DSPOINC → SPOINC
+Exact claim payload for SPOINC → DSPOINC
+Whether claim returns signed tx, unsigned tx, or final signature
+Whether confirm is required after claim
+Exact status lifecycle
+Exact lookup table field if returned
+Failed / cancelled / expired examples
+Final mainnet tokenPriceUsd = 0.035 confirmation in live response
+```
+
+---
+
+## ✅ Do Not Code Yet
+
+Do not implement:
+
+```text
+automatic DSPOINC deduction
+automatic DSPOINC credit
+public bridge execution
+frontend direct API-key calls
+hardcoded fees
+hardcoded projectId
+hardcoded Gensuki base URL
+external SPOINC sell routes
+lookup table modification
+```
+
+Allowed now:
+
+```text
+table planning
+status model planning
+frontend module planning
+safe backend proxy planning
+idempotency design
+audit design
+payload checklist preparation
+```
+
+---
+
+## ✅ Summary For Next Agent
+
+Zeno’s API docs are now available and reviewed.
+
+The API system includes:
+
+```text
+getPresaleDetails
+buy
+sell
+claim
+confirm
+status
+getTransaction
+getUserTransactions
+getAllTransactions
+getSolanaPrice
+getTokenPrice
+getdspoinctospoinc
+narrrfBalanceGet
+```
+
+Bridge implementation must be centralized.
+
+Most important safety rules remain:
+
+```text
+No quote-only ledger movement.
+No frontend-controlled ledger movement.
+No duplicate DSPOINC credit/deduction.
+No external SPOINC sell route in V1.
+No hardcoded fee values.
+No API key in frontend.
+No coding final settlement until real payloads are reviewed.
+```
+
+
+### ✅ Follow-Up — Genesis Mouse Freezer Unfreeze Test Passed
+
+**Date:** 2026-06-27
+**Status:** Controlled live unfreeze test successful
+**Scope:** Genesis Mouse Freezer / NFT freezer controlled test / Narrrf test frozen mouse
+
+---
+
+### ✅ New Controlled Test Result
+
+Narrrf tested unfreezing the controlled live frozen Genesis mouse.
+
+Result:
+
+```text
+Unfreeze worked successfully.
+```
+
+This means the controlled Genesis Mouse Freezer core lifecycle is now proven in live testing:
+
+```text
+1. Create freeze challenge
+2. Sign / submit Solana Memo proof
+3. Consume freeze challenge
+4. Create active tbl_genesis_nft_stakes freezer row
+5. Claim full-day DSPOINC freezer rewards
+6. Create unfreeze challenge
+7. Sign / submit Solana Memo proof
+8. Consume unfreeze challenge
+9. Close active freezer row
+```
+
+---
+
+### ✅ Important Safety Confirmation
+
+The unfreeze flow is separate from DSPOINC Staking V2.
+
+The unfreeze flow must remain limited to:
+
+```text
+tbl_genesis_nft_stake_challenges
+tbl_genesis_nft_stakes
+Solana Memo verification
+verified ownership checks
+```
+
+The unfreeze flow must not:
+
+```text
+pay DSPOINC
+create claim rows
+touch tbl_dspoinc_stakes
+change DSPOINC V2 staking rows
+change legacy DSPOINC stake rows
+bypass ownership checks
+bypass Memo proof on production
+```
+
+---
+
+### ✅ Current Genesis Mouse Freezer Status
+
+Core controlled live test state:
+
+```text
+Freeze:  working
+Claim:   working
+Unfreeze: working
+```
+
+Known confirmed production behavior:
+
+```text
+NFT stays in the user's wallet.
+Memo only confirms freezer intent.
+Claims use full days only.
+Backend recalculates ownership, Genesis tier, and VIP bonus at claim time.
+Production challenge creation is still allowlisted to Narrrf and justme.
+Public activation is still not enabled.
+```
+
+---
+
+### ✅ Next Frontend Focus
+
+Now that the backend lifecycle is proven, the next work should focus on `stake-lab.html` and `profile.html`.
+
+Frontend should make the freezer state clear for users:
+
+```text
+Active frozen mice
+Available verified Genesis mice
+Current Genesis tier
+Freezer slots
+Daily reward
+VIP bonus state
+Claimable full-day reward
+Last claimed time
+Total claimed
+Freeze / unfreeze status
+Memo proof explanation
+```
+
+Profile should show a clean overview:
+
+```text
+Genesis verified count
+Current Genesis tier
+Frozen Genesis count
+Freezer total claimed
+Freezer daily reward preview
+Clear Stake Lab link
+```
+
+---
+
+### 🚫 Do Not Change Yet
+
+Do not open Genesis Mouse Freezer publicly yet.
+
+Do not change:
+
+```text
+Genesis Freezer controlled live tester allowlist
+ACTIVE_STAKING_CONTRACT_VERSION
+DSPOINC Staking V2 activation
+reward math
+Memo verification helper
+ownership check logic
+tbl_dspoinc_stakes from Genesis Freezer code
+```
+
+Safe status wording:
+
+```text
+Genesis Mouse Freezer full controlled lifecycle is working.
+Freeze, claim, and unfreeze have been tested successfully.
+Public activation remains gated until final Season 13 frontend polish and activation decision.
+```
+
+## ✅ LIVE STATUS — Stake Lab V2 + Genesis Mouse Freezer Controlled Test
+
+**Date:** 2026-06-27
+**Status:** Live DB checked / V2 still gated / Genesis Mouse Freezer controlled tests working
+**Scope:** `stake-lab.html`, `profile.html`, DSPOINC Staking V2 readiness, Genesis Mouse Freezer, controlled testers Narrrf + justme
+
+---
+
+### ✅ Live DB Health
+
+Live DB backup and integrity check completed successfully.
+
+Confirmed:
+
+```text
+/data/narrrf_world.sqlite backup integrity_check = ok
+/var/www/html/db/narrrf_world.sqlite integrity_check = ok
+```
+
+Important live tables confirmed present:
+
+```text
+tbl_dspoinc_stakes
+tbl_genesis_nft_stakes
+tbl_genesis_nft_stake_challenges
+tbl_genesis_nft_stake_claims
+tbl_nft_ownership
+tbl_nft_traits
+tbl_nft_trait_upgrades
+tbl_user_scores
+tbl_score_adjustments
+tbl_seasons
+```
+
+Current active season:
+
+```text
+Season 12
+start_date: 2026-05-31 22:00:00
+end_date:   2026-06-30 22:00:00
+```
+
+---
+
+### ✅ DSPOINC Staking V2 Safety State
+
+DSPOINC staking is still live only as legacy V1.
+
+Live DB summary:
+
+```text
+legacy_v1 active:    90 rows
+legacy_v1 cancelled: 5 rows
+legacy_v1 completed: 33 rows
+season13_v2 rows:    0
+```
+
+Important code state:
+
+```text
+ACTIVE_STAKING_CONTRACT_VERSION = legacy_v1
+```
+
+Season 13 V2 pools and Genesis multiplier fields are prepared in code and schema, but V2 is **not publicly active yet**.
+
+Do not announce:
+
+```text
+DSPOINC Staking V2 is live
+Season 13 staking is live
+Genesis multiplier staking is active for everyone
+```
+
+Safe wording:
+
+```text
+DSPOINC Staking V2 is prepared and waiting for Season 13 activation/testing.
+```
+
+---
+
+### ✅ Controlled Tester DSPOINC Stake State
+
+Controlled testers checked:
+
+```text
+Narrrf user_id: 328601656659017732
+justme user_id: 1224428436928594015
+```
+
+Current DSPOINC stake rows are legacy V1 only.
+
+Narrrf active legacy stake examples:
+
+```text
+id 133 — 10,000 DSPOINC — active — unfreeze_at 2026-07-20
+id 62  — 1,000 DSPOINC — active — unfreeze_at 2026-06-27
+id 2   — 1,000,000 DSPOINC — active — unfreeze_at 2028-12-29
+```
+
+justme active legacy stake examples:
+
+```text
+id 53 — 200,000 DSPOINC — active — unfreeze_at 2029-03-20
+id 38 — 500,000 DSPOINC — active — unfreeze_at 2029-02-22
+```
+
+Current balance snapshot from live DB:
+
+```text
+justme:
+total_dspoinc:     739,135
+frozen_dspoinc:    700,000
+available_dspoinc: 39,135
+
+Narrrf:
+total_dspoinc:     1,157,481
+frozen_dspoinc:    1,011,000
+available_dspoinc: 146,481
+```
+
+---
+
+### ✅ Verified Genesis Metadata State
+
+The Genesis metadata fallback fix is holding correctly for the controlled testers.
+
+Live verified Genesis data quality:
+
+```text
+Narrrf:
+verified_genesis: 102
+with_image:       102
+with_traits:      102
+with_metadata:    102
+
+justme:
+verified_genesis: 101
+with_image:       101
+with_traits:      101
+with_metadata:    101
+```
+
+This means Profile, Lab, Stake Lab, and Genesis Mouse Freezer have complete image / trait / metadata data available for display.
+
+---
+
+### ✅ Genesis Trait / Upgrade State
+
+Trait and upgrade data exists for both controlled testers.
+
+Live summary:
+
+```text
+Narrrf:
+verified_genesis: 102
+trait_rows:       3906
+upgrade_rows:     3906
+min_trait_level:  1
+max_trait_level:  12
+statuses:         idle, upgrading
+
+justme:
+verified_genesis: 101
+trait_rows:       3870
+upgrade_rows:     3870
+min_trait_level:  1
+max_trait_level:  11
+statuses:         idle, upgrading
+```
+
+Note for future agents:
+
+```text
+Do not assume trait_rows = Genesis count × 6 anymore.
+Because the Lab now also has ability/upgrade progression rows and historical/generated rows, always inspect schema and row joins before making repair assumptions.
+```
+
+---
+
+### ✅ Genesis Mouse Freezer Controlled Test State
+
+Genesis Mouse Freezer has two active controlled live stakes.
+
+Active freezer rows:
+
+```text
+Stake ID 1
+user: Narrrf
+user_id: 328601656659017732
+NFT: NarrrfsWorldGenesis1858
+status: active
+frozen_at: 2026-06-20 18:29:01
+last_claimed_at: 2026-06-21 19:10:03
+total_claimed: 1540
+
+Stake ID 2
+user: lukeskypestalker / justme
+user_id: 1224428436928594015
+NFT: NarrrfsWorldGenesis3032
+status: active
+frozen_at: 2026-06-20 19:05:54
+last_claimed_at: 2026-06-26 14:19:36
+total_claimed: 7562
+```
+
+---
+
+### ✅ Genesis Freezer Challenge Table Schema
+
+Live table:
+
+```text
+tbl_genesis_nft_stake_challenges
+```
+
+Important columns:
+
+```text
+id
+user_id
+wallet
+token_id
+collection
+action
+nonce
+message
+memo_signature
+status
+expires_at
+used_at
+created_at
+```
+
+Important correction:
+
+```text
+Use used_at, not consumed_at.
+```
+
+Confirmed challenge behavior:
+
+```text
+freeze challenges can be pending, expired, or used.
+used rows contain memo_signature.
+used_at records the successful challenge consumption time.
+```
+
+Controlled successful freeze challenge examples:
+
+```text
+id 25 — Narrrf — action freeze — status used
+id 26 — justme — action freeze — status used
+```
+
+---
+
+### ✅ Genesis Freezer Claim Table Schema
+
+Live table:
+
+```text
+tbl_genesis_nft_stake_claims
+```
+
+Important columns:
+
+```text
+id
+stake_id
+user_id
+wallet
+token_id
+collection
+claim_from
+claim_to
+full_days
+daily_reward
+base_reward_amount
+genesis_count_at_claim
+genesis_tier_at_claim
+vip_verified_at_claim
+vip_bonus_percent_at_claim
+vip_bonus_amount
+final_reward_amount
+ownership_check_status
+ownership_checked_at
+ledger_adjustment_id
+metadata
+claimed_at
+```
+
+Important correction:
+
+```text
+Use full_days, not claim_days.
+Use daily_reward, base_reward_amount, final_reward_amount.
+```
+
+---
+
+### ✅ Genesis Freezer Claims Confirmed
+
+Live claim rows exist and are working.
+
+Confirmed claim rows:
+
+```text
+Claim ID 1
+stake_id: 1
+user: Narrrf
+full_days: 1
+daily_reward: 1400
+genesis_count_at_claim: 102
+tier: Genesis Overlord
+VIP: yes
+VIP bonus: 10%
+final_reward_amount: 1540
+ownership_check_status: verified
+
+Claim ID 2
+stake_id: 2
+user: justme
+full_days: 1
+daily_reward: 1275
+genesis_count_at_claim: 96
+tier: Genesis Ancient
+VIP: yes
+VIP bonus: 10%
+final_reward_amount: 1402
+ownership_check_status: verified
+
+Claim ID 3
+stake_id: 2
+user: justme
+full_days: 3
+daily_reward: 1400
+genesis_count_at_claim: 101
+tier: Genesis Overlord
+VIP: yes
+VIP bonus: 10%
+final_reward_amount: 4620
+ownership_check_status: verified
+
+Claim ID 4
+stake_id: 2
+user: justme
+full_days: 1
+daily_reward: 1400
+genesis_count_at_claim: 101
+tier: Genesis Overlord
+VIP: yes
+VIP bonus: 10%
+final_reward_amount: 1540
+ownership_check_status: verified
+```
+
+---
+
+### ✅ Genesis Freezer Ledger Rows Confirmed
+
+Genesis Mouse Freezer claims wrote clean DSPOINC ledger rows into:
+
+```text
+tbl_user_scores
+```
+
+Confirmed rows:
+
+```text
+30956 — justme — +1540 — genesis_nft_staking — Genesis Mouse Freezer — Season 12
+30521 — justme — +4620 — genesis_nft_staking — Genesis Mouse Freezer — Season 12
+29381 — justme — +1402 — genesis_nft_staking — Genesis Mouse Freezer — Season 12
+29367 — Narrrf — +1540 — genesis_nft_staking — Genesis Mouse Freezer — Season 12
+```
+
+Important rule:
+
+```text
+Genesis Mouse Freezer rewards write to tbl_user_scores and audit/claim tables.
+They must not touch tbl_dspoinc_stakes.
+```
+
+Confirmed safety check:
+
+```text
+No tbl_dspoinc_stakes metadata rows contain genesis/freezer/nft.
+```
+
+This confirms Genesis Mouse Freezer did not pollute DSPOINC staking rows.
+
+---
+
+### ✅ Important Backend APIs
+
+DSPOINC staking:
+
+```text
+api/user/get-stakes.php
+api/user/create-stake.php
+api/user/complete-stake.php
+api/user/claim-stake-reward.php
+api/user/unstake-stake.php
+api/user/staking-contract-helpers.php
+```
+
+Genesis Mouse Freezer:
+
+```text
+api/user/genesis-nft-staking-helpers.php
+api/user/get-genesis-nft-stakes.php
+api/user/create-genesis-nft-freeze-challenge.php
+api/user/create-genesis-nft-stake.php
+api/user/create-genesis-nft-unfreeze-challenge.php
+api/user/unstake-genesis-nft.php
+api/user/claim-genesis-nft-stake.php
+api/user/solana-memo-verification-helper.php
+```
+
+Verified NFT metadata / holder data:
+
+```text
+api/user/save-verified-nft-scan.php
+api/user/verify-nft-holder.php
+api/wallet/get-nfts.php
+api/wallet/get-nft-metadata.php
+public/profile.html
+public/stake-lab.html
+public/lab.html
+```
+
+---
+
+### ⚠️ Live API Testing Note
+
+Do not test production APIs from shell with only:
+
+```text
+?user_id=...
+```
+
+Production correctly blocks this with:
+
+```text
+Unauthorized: user_id mismatch
+```
+
+Reason:
+
+```text
+Production requires the real Discord session.
+Localhost can use user_id overrides, production cannot.
+```
+
+Correct testing methods:
+
+```text
+1. Test in browser while logged in as Narrrf / justme.
+2. Test locally with localhost user_id override.
+3. Use live DB SQL only for read-only audits.
+```
+
+Do not weaken this security behavior.
+
+---
+
+### ✅ Frontend Work Next
+
+Next frontend focus:
+
+```text
+public/stake-lab.html
+public/profile.html
+```
+
+Goal:
+
+```text
+Show DSPOINC staking and Genesis Mouse Freezer status clearly for users before Season 13 activation.
+```
+
+Stake Lab should clearly show:
+
+```text
+Legacy DSPOINC staking still active.
+Season 13 V2 is prepared but not public yet.
+Genesis Mouse Freezer is separate from DSPOINC staking.
+Frozen Genesis mouse count.
+Available verified Genesis mice.
+Current Genesis tier.
+Daily freezer reward.
+VIP bonus state.
+Claimable full-day reward only.
+Last claimed time.
+Total claimed.
+Wallet Memo proof status.
+```
+
+Profile should clearly show:
+
+```text
+Total DSPOINC
+Frozen DSPOINC
+Available DSPOINC
+Active legacy stakes
+Genesis verified count
+Genesis tier
+Frozen Genesis mice
+Freezer claimed total
+Freezer daily reward preview
+Clear link to Stake Lab
+```
+
+Important UX wording:
+
+```text
+Your Genesis NFT stays in your wallet.
+The wallet Memo only confirms freezer intent.
+Genesis Mouse Freezer rewards use full days only.
+Backend recalculates ownership, tier, and VIP bonus at claim time.
+```
+
+---
+
+### 🚫 Do Not Change Yet
+
+Do not activate public V2 staking yet.
+
+Do not change:
+
+```text
+ACTIVE_STAKING_CONTRACT_VERSION
+public Season 13 activation wording
+Genesis Freezer public access gate
+DSPOINC reward math
+NFT freezer reward math
+tbl_dspoinc_stakes from Genesis Freezer code
+ownership proof logic
+wallet Memo verification logic
+```
+
+Do not announce:
+
+```text
+NFT staking live for everyone
+DSPOINC Staking V2 live
+Season 13 staking live
+```
+
+Safe status:
+
+```text
+Genesis Mouse Freezer controlled test is working.
+DSPOINC Staking V2 is prepared but still gated.
+Frontend polish is next so stakers/freezers understand their status clearly.
+```
+
+
+## FOLLOW-UP — FEES RETURNED IN PRESALE DETAILS API / USD-BASED FEE MODEL CONFIRMED
+
+**Date:** 2026-06-26
+**Status:** Waiting for final payload/API docs from Zeno
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki fees / presale details API / bridge UI and audit planning
+
+---
+
+## ✅ Latest Zeno Fee Update
+
+Zeno confirmed:
+
+```text id="y42k7f"
+Platform fee and narrrfs fee separately charging
+It's return in presale details API route
+Fee are in USD so 1 or 0.5 means 1$ and 0.5$
+```
+
+Meaning:
+
+```text id="bhdxdu"
+Platform fee and Narrrfs fee are separate values.
+Both are returned by the presale details API route.
+Fees are represented as USD values.
+A value of 1 means $1.
+A value of 0.5 means $0.50.
+```
+
+---
+
+## ✅ Fee Structure
+
+Confirmed fee categories:
+
+```text id="niqocj"
+Platform fee = Gensuki fee
+Narrrfs fee = project fee
+```
+
+Both must be displayed separately.
+
+Do not merge them into one generic fee field.
+
+---
+
+## ✅ Coding Rule For Fees
+
+Narrrfs must not hardcode:
+
+```text id="q1h0xs"
+$0.01
+$0.50
+$1.00
+any fixed fee amount
+```
+
+Instead, Narrrfs should read fees from:
+
+```text id="od7v3z"
+Gensuki presale details API route
+```
+
+after Zeno provides the exact endpoint and field names.
+
+---
+
+## ✅ UI Requirement
+
+Before wallet confirmation, Narrrfs frontend should show:
+
+```text id="p2eajl"
+Platform fee / Gensuki fee
+Narrrfs project fee
+Token route fee if any
+Input amount
+Expected SPOINC / DSPOINC output
+Minimum output after slippage if applicable
+```
+
+Fees should be shown in USD terms and, when needed, also show the token/SOL equivalent used inside the transaction.
+
+---
+
+## ✅ Audit Requirement
+
+Bridge audit should store fee information separately.
+
+Plan for separate tracking of:
+
+```text id="gef34l"
+platform_fee_usd
+narrrfs_fee_usd
+platform_fee_paid_amount
+platform_fee_paid_token
+narrrfs_fee_paid_amount
+narrrfs_fee_paid_token
+```
+
+Do not finalize column names until real payload field names are reviewed.
+
+---
+
+## ✅ Current Wait State
+
+Still waiting for Zeno to provide:
+
+```text id="j2evrc"
+presale details API route
+exact fee field names
+buy route payload
+sell route payload
+DSPOINC → SPOINC flow payload
+SPOINC → DSPOINC flow payload if supported
+request ID field
+transaction signature field
+status lifecycle
+lookup table account field if returned
+```
+
+---
+
+## ✅ Current Safety Rule
+
+No settlement code yet.
+
+Do not implement:
+
+```text id="d07gvb"
+automatic DSPOINC deduction
+automatic DSPOINC credit
+public swap execution
+frontend transaction signing flow
+bridge confirmation callback
+hardcoded fees
+external SPOINC sell routes
+```
+
+until payload/API docs are reviewed.
+
+
+## FOLLOW-UP — GENSUKI SOL BUY / SELL TEST PASSED / MAINNET PRICE TO BE SET TO $0.035
+
+**Date:** 2026-06-26
+**Status:** Waiting for full Gensuki payload/API details tomorrow
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki route tests / token price / bridge payload preparation
+
+---
+
+## ✅ Latest Zeno Test Update
+
+Zeno confirmed that he tested the system again after configuration checks.
+
+He reported:
+
+```text
+with sol both buy and sell pass
+```
+
+Provided test transaction links:
+
+```text
+SOL sell test:
+https://solscan.io/tx/4ck3Rsc7NKTuUoeikJCvChBQXdHynfdCnjv38Xg3UZ5NX3WbVnHWoREt26cYYpRXexdi4DfkrgvdfZoSZfw7DKzV
+
+SOL buy test:
+https://solscan.io/tx/3483jCRKVb5SWVYZfyftYnMrbKEvHjswMojJB4FNzYQTtKjHhVhW46nQbZU2tXrS8cgnMemgmb5ZWfzXAJYK3NoR
+```
+
+Interpretation:
+
+```text
+Gensuki test system can process SOL → SPOINC buy.
+Gensuki test system can process SPOINC → SOL sell.
+```
+
+Important Narrrfs product rule remains unchanged:
+
+```text
+Even if sell works on Gensuki backend, Narrrfs V1 public UI keeps sell OFF.
+Sell routes are prepared for V2 / later liquidity phase only.
+```
+
+---
+
+## ✅ Token Price Correction
+
+Narrrfs noticed the test page displayed:
+
+```text
+Token price: $0.03 USD
+```
+
+Narrrfs reminded Zeno that the agreed price is:
+
+```text
+1 SPOINC = $0.035 USD
+```
+
+Zeno confirmed:
+
+```text
+yes as you said 0.035 is enough
+its testing on test database
+i will add 0.035$ in mainnet
+```
+
+Required final mainnet config:
+
+```text
+SPOINC token price = $0.035 USD
+```
+
+Do not code hard assumptions from the temporary `$0.03` test database display.
+
+---
+
+## ✅ Manual Fee / Pool Routing Test Completed
+
+Earlier in the same test sequence:
+
+```text
+Zeno confirmed exact fee amount: 0.01388 SOL
+Narrrf sent 0.01388 SOL to the pool address
+Pool address: 4dNcc6yRTdBjAxyDEjWCFRejNW4zJ2mT5AeAJG5VJVRh
+Narrrf send TX:
+https://solscan.io/tx/4dMwANmYEk6rYryde1sojX6yLXCnDs2E8Yc7GSrQF5NeWEnMgrfzmzXJ7caXqLbNNDEPucHJE4fwikfKwLmqgsfE
+```
+
+Interpretation:
+
+```text
+This was a manual controlled fee / pool forwarding test.
+It is not automated Narrrfs bridge settlement.
+Do not treat this as public bridge logic.
+```
+
+---
+
+## ✅ Details Expected From Zeno Tomorrow
+
+Zeno wrote:
+
+```text
+no problem i will send you probably tomorrow all detail its deep night here
+```
+
+Narrrfs needs these before coding bridge tables / endpoints:
+
+```text
+route URLs
+HTTP methods
+auth method
+request payload examples
+response payload examples
+request ID field name
+transaction signature field name
+wallet field name
+status lifecycle values
+fee fields
+minimum output / slippage fields
+buy route examples
+sell route examples
+DSPOINC → SPOINC flow
+SPOINC → DSPOINC flow if supported
+failed / expired / cancelled examples
+```
+
+---
+
+## ✅ Current V1 Product Decision Still Active
+
+Allowed / planned for V1 soft start:
+
+```text
+DSPOINC → SPOINC
+SOL → SPOINC
+EMPIRE → SPOINC
+FOOK → SPOINC
+```
+
+Sell OFF for public V1:
+
+```text
+SPOINC → SOL
+SPOINC → EMPIRE
+SPOINC → FOOK
+```
+
+Reason:
+
+```text
+Protect early liquidity.
+Prevent users from converting DSPOINC → SPOINC and immediately selling into shallow liquidity.
+Keep first public phase controlled.
+```
+
+V2 / later:
+
+```text
+SPOINC → SOL
+SPOINC → EMPIRE
+SPOINC → FOOK
+```
+
+can be enabled after liquidity is stronger and routes are approved.
+
+---
+
+## ✅ Current Coding Rule
+
+Do not code settlement yet.
+
+Do not implement until payloads are reviewed:
+
+```text
+public swap execution
+automatic DSPOINC deduction
+automatic DSPOINC credit
+frontend wallet transaction flow
+confirm-swap.php
+external SPOINC sell routes
+Raydium sell routing
+```
+
+Allowed planning only:
+
+```text
+bridge table design
+route toggle planning
+frontend modal planning
+idempotency model
+audit history model
+payload field review
+```
+
+---
+
+## ✅ Current Summary
+
+Current confirmed state:
+
+```text
+Gensuki SOL buy test passed.
+Gensuki SOL sell test passed.
+Mainnet price should be set to $0.035.
+Manual fee/pool test transfer was completed.
+Full payload/API details expected tomorrow.
+Narrrfs V1 still keeps sell OFF publicly.
+Backend can be planned future-ready for V2 sell enable.
+```
+
+Critical wait item:
+
+```text
+Zeno payload / API details.
+```
+
+
+## FOLLOW-UP — $1 TX FEE CONFIRMED / SPOINC SELL STAYS OFF UNTIL LIQUIDITY IS STRONGER
+
+**Date:** 2026-06-25
+**Status:** Waiting for Gensuki payloads / V1 direction clarified further
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki bridge / liquidity protection / fee handling
+
+---
+
+## ✅ Zeno Fee Confirmation
+
+Zeno confirmed:
+
+```text
+yeah 1 usd is common here fee + gensuki fee will be applied
+the transaction comes in build in fee
+```
+
+Meaning:
+
+```text
+A common $1 transaction fee is expected.
+Gensuki fee also applies.
+The fee is built into the transaction flow.
+```
+
+Important UI requirement:
+
+```text
+Narrrfs frontend must show fees clearly before wallet confirmation.
+Do not hide $1 fee, Gensuki fee, EMPIRE custom fee, slippage, or minimum output.
+```
+
+---
+
+## ✅ Sell Direction Recommendation From Zeno
+
+Zeno confirmed that technically Gensuki can allow SPOINC selling into SOL and other allowed tokens, but he recommends keeping sell OFF for now.
+
+Zeno’s reason:
+
+```text
+if sell is allowed user so dspoinc-spoinc and directly sell it
+so this will be making liquidity shortage
+```
+
+Interpretation:
+
+```text
+If users can convert DSPOINC → SPOINC and immediately sell SPOINC to SOL / EMPIRE / FOOK, it can drain or stress early liquidity.
+```
+
+Zeno suggested waiting until stronger liquidity:
+
+```text
+until enough liquidity like 60 SOL we keep sell option off
+```
+
+---
+
+## ✅ Updated V1 Direction Decision
+
+Narrrfs V1 should stay conservative.
+
+Allowed / planned for first step:
+
+```text
+DSPOINC → SPOINC
+SOL → SPOINC
+EMPIRE → SPOINC
+FOOK → SPOINC
+```
+
+Disabled for first public version:
+
+```text
+SPOINC → SOL
+SPOINC → EMPIRE
+SPOINC → FOOK
+```
+
+Still needs exact payload confirmation:
+
+```text
+SPOINC → DSPOINC
+```
+
+Important distinction:
+
+```text
+SPOINC → DSPOINC is internal Narrrfs bridge-back credit logic.
+SPOINC → SOL / EMPIRE / FOOK is external sell liquidity logic.
+External sell routes stay OFF until V2 / stronger liquidity.
+```
+
+---
+
+## ✅ Liquidity Protection Rule
+
+New operational rule:
+
+```text
+Do not enable SPOINC external sell routes until liquidity is strong enough.
+Use ~60 SOL liquidity as current partner guidance.
+```
+
+Reason:
+
+```text
+Prevent users from converting internal DSPOINC into SPOINC and instantly selling into shallow liquidity.
+Protect the SPOINC pool during early V1.
+Avoid liquidity shortage and unstable first launch behavior.
+```
+
+---
+
+## ✅ Fee Handling Requirements
+
+When payloads arrive from Zeno, verify these fields or ask for exact equivalents:
+
+```text
+common_tx_fee_usd
+gensuki_fee
+fee_token
+fee_amount
+fee_percent
+empire_custom_fee
+minimum_output_after_fee
+minimum_output_after_slippage
+```
+
+Do not invent field names.
+
+Frontend rule:
+
+```text
+All fees must be visible before wallet confirmation.
+```
+
+Backend rule:
+
+```text
+Fees do not replace transaction proof.
+Narrrfs ledger movement still requires request ID + confirmed tx signature + idempotency.
+```
+
+---
+
+## ✅ Current V1 / V2 Plan
+
+V1 launch goal:
+
+```text
+One controlled SPOINC entry phase.
+No public external sell pressure.
+Request ID tracking.
+Transaction proof.
+No double processing.
+Clear fee display.
+```
+
+V2 future goal:
+
+```text
+Enable SPOINC → SOL / EMPIRE / FOOK only after V1 is stable and liquidity is stronger.
+Dashboard sell toggle can support this later.
+```
+
+---
+
+## ✅ Current Wait State
+
+Current action:
+
+```text
+Wait for Zeno’s deployed payloads.
+Wait for exact examples for all planned routes.
+Wait for confirmation of SPOINC → DSPOINC payload.
+Wait for fee fields in payload.
+Wait for status / tx signature / request ID fields.
+```
+
+Do not code yet:
+
+```text
+public swap execution
+automatic DSPOINC deduction
+automatic DSPOINC credit
+SPOINC external sell routes
+frontend wallet transaction flow
+settlement callback
+confirm-swap.php
+```
+
+---
+
+## ✅ Next Agent Checklist
+
+When payloads arrive:
+
+```text
+1. Confirm route directions.
+2. Confirm request ID field.
+3. Confirm transaction signature field.
+4. Confirm status lifecycle.
+5. Confirm $1 fee field.
+6. Confirm Gensuki fee field.
+7. Confirm EMPIRE custom fee field.
+8. Confirm minimum output / slippage fields.
+9. Confirm whether SPOINC → DSPOINC is included.
+10. Confirm sell toggle stays OFF for SPOINC → SOL / EMPIRE / FOOK.
+11. Confirm liquidity protection guidance around ~60 SOL.
+12. Only after field review, design Narrrfs request/audit/settlement storage.
+```
+
+---
+
+## ✅ Summary
+
+Current partner guidance:
+
+```text
+Fees are built into the transaction.
+$1 common fee confirmed.
+Gensuki fee applies.
+Sell direction should remain OFF until stronger liquidity, roughly 60 SOL.
+```
+
+Current Narrrfs decision:
+
+```text
+V1 stays safe and controlled.
+No public SPOINC external sell route.
+Focus first on DSPOINC / SPOINC bridge and buy-to-SPOINC routes.
+V2 can add external sell routes after V1 stability and liquidity growth.
+```
+
+
+## FOLLOW-UP — SPOINC TO DSPOINC ROUTE CLARIFICATION REQUESTED FROM ZENO
+
+**Date:** 2026-06-25
+**Status:** Waiting for Zeno confirmation / payload examples pending
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki bridge payloads / V1 vs V2 direction planning
+
+---
+
+## ✅ Current Situation
+
+Zeno confirmed:
+
+```text
+Payloads are ready.
+Gensuki update is in deployment.
+Deployment ETA was 2–3 hours from Zeno’s message.
+Dashboard has on/off option for SPOINC sell direction.
+Swap tests are successful.
+EMPIRE swap has custom fee impact.
+```
+
+Narrrfs confirmed to Zeno:
+
+```text
+V1 should stay simple and safe.
+Users can buy / receive SPOINC with SOL, EMPIRE, and FOOK.
+Selling SPOINC back to SOL / EMPIRE / FOOK stays disabled on Narrrfs side until V2.
+```
+
+---
+
+## ✅ V1 Public Direction Still Decided
+
+Narrrfs V1 public bridge direction remains:
+
+```text
+SOL → SPOINC
+EMPIRE → SPOINC
+FOOK → SPOINC
+```
+
+Disabled on Narrrfs V1 frontend:
+
+```text
+SPOINC → SOL
+SPOINC → EMPIRE
+SPOINC → FOOK
+```
+
+Reason:
+
+```text
+First public phase should be controlled.
+Users should be able to enter SPOINC first.
+Exit/sell-to-token routes should wait until V2 after V1 is stable.
+```
+
+---
+
+## ✅ Important Missing Clarification — SPOINC → DSPOINC
+
+A new clarification was sent to Zeno because **SPOINC → DSPOINC** is not the same as selling SPOINC to SOL / EMPIRE / FOOK.
+
+This route is internal Narrrfs bridge-back logic:
+
+```text
+SPOINC → DSPOINC
+```
+
+Meaning:
+
+```text
+User sends SPOINC on-chain.
+Gensuki confirms transaction.
+Gensuki sends Narrrfs request ID + wallet + SPOINC amount + transaction signature.
+Narrrfs credits internal DSPOINC at the fixed rate.
+```
+
+Fixed internal conversion:
+
+```text
+1 SPOINC = 10,000 DSPOINC
+```
+
+This is different from:
+
+```text
+SPOINC → SOL
+SPOINC → EMPIRE
+SPOINC → FOOK
+```
+
+because SPOINC → DSPOINC does not require external token swap output. It requires verified SPOINC receipt and then a Narrrfs internal DSPOINC credit.
+
+---
+
+## ✅ Message Sent To Zeno
+
+Narrrfs sent the following clarification:
+
+```text
+For V1 we said users can buy SPOINC with:
+
+SOL → SPOINC
+EMPIRE → SPOINC
+FOOK → SPOINC
+
+And we keep selling SPOINC back to SOL / EMPIRE / FOOK disabled on my side until V2.
+
+But what about the internal Narrrfs route:
+
+SPOINC → DSPOINC
+
+Is this already included in your payloads too, or do we need to add it separately?
+
+For this route the logic should be:
+
+User sends SPOINC on-chain
+Gensuki confirms transaction
+Payload sends Narrrfs request ID + wallet + SPOINC amount + transaction signature
+Narrrfs credits DSPOINC at fixed rate: 1 SPOINC = 10,000 DSPOINC
+Narrrfs stores request ID so the same transaction can never credit twice
+
+This is different from SPOINC → EMPIRE / FOOK / SOL selling.
+
+Please confirm if SPOINC → DSPOINC is included in the deployment payloads, and if yes, send one example payload for it too.
+
+I want to open it on your side but not on my end if this is clear for you now.
+But it should be easy to enable when the first step works.
+```
+
+---
+
+## ✅ Interpretation For Next Agent
+
+Do **not** assume SPOINC → DSPOINC is already included.
+
+Wait for Zeno to confirm one of these states:
+
+```text
+A) SPOINC → DSPOINC is already included in the deployment payloads.
+B) SPOINC → DSPOINC needs to be added separately.
+C) Gensuki supports it technically, but Narrrfs should keep it hidden until later.
+```
+
+If Zeno confirms it is included, request/inspect one exact example payload for:
+
+```text
+SPOINC → DSPOINC
+```
+
+Required fields for this route:
+
+```text
+request ID
+wallet
+input token = SPOINC
+input SPOINC amount
+DSPOINC output amount
+fixed conversion rate
+fee amount / fee percent if any
+transaction signature
+final status
+timestamp
+```
+
+---
+
+## ✅ Required SPOINC → DSPOINC Safety Rules
+
+SPOINC → DSPOINC must be treated as a credit route.
+
+Narrrfs must only credit DSPOINC when:
+
+```text
+Gensuki request ID exists.
+Transaction signature exists.
+Transaction is confirmed.
+Wallet matches expected user mapping.
+SPOINC amount is verified.
+Conversion math matches 1 SPOINC = 10,000 DSPOINC.
+Request ID was not already processed.
+Transaction signature was not already processed.
+```
+
+Do not credit DSPOINC from:
+
+```text
+quote-only payload
+pricing API payload
+pending transaction
+failed transaction
+expired transaction
+cancelled wallet signature
+frontend-only amount
+duplicate request ID
+duplicate transaction signature
+```
+
+---
+
+## ✅ Required Idempotency For SPOINC → DSPOINC
+
+This route needs the same idempotency rule as DSPOINC → SPOINC.
+
+Required unique fields:
+
+```text
+partner_request_id TEXT UNIQUE
+tx_signature TEXT UNIQUE
+```
+
+Expected behavior:
+
+```text
+If request ID is new and transaction proof is valid:
+    credit DSPOINC once.
+
+If request ID already exists:
+    return already_processed and do not credit again.
+
+If transaction signature already exists:
+    return already_processed and do not credit again.
+```
+
+This prevents a duplicate callback from creating duplicate DSPOINC.
+
+---
+
+## ✅ V1 / V2 Product Decision
+
+Current product plan:
+
+```text
+V1 public:
+SOL → SPOINC
+EMPIRE → SPOINC
+FOOK → SPOINC
+```
+
+Possible controlled/internal route if payload is ready:
+
+```text
+SPOINC → DSPOINC
+```
+
+Still disabled until V2:
+
+```text
+SPOINC → SOL
+SPOINC → EMPIRE
+SPOINC → FOOK
+```
+
+Important distinction:
+
+```text
+SPOINC → DSPOINC may be an internal Narrrfs bridge-back feature.
+SPOINC → external tokens is a sell/swap feature and stays disabled on Narrrfs V1.
+```
+
+---
+
+## ✅ $1 Fee Question Still Open
+
+Narrrfs also asked Zeno to confirm:
+
+```text
+1 USD is fee in the TX we fixed right?
+```
+
+Purpose:
+
+```text
+Prevent very small daily micro-swaps from small mouse stakers.
+Keep bridge usage serious enough to avoid spam.
+```
+
+Still waiting for Zeno to confirm:
+
+```text
+Is the $1 fee fixed?
+Which routes does it apply to?
+Is it separate from EMPIRE custom fee?
+Which token pays it?
+Is it included in payload as fee_amount / fee_percent / fee_token?
+```
+
+---
+
+## ✅ Current Action State
+
+Current immediate action:
+
+```text
+Wait for Zeno’s deployment to finish.
+Wait for payload examples.
+Wait for confirmation whether SPOINC → DSPOINC is included.
+Wait for $1 transaction fee confirmation.
+```
+
+Do not code yet:
+
+```text
+public swap button
+automatic deduction endpoint
+automatic credit endpoint
+SPOINC → DSPOINC credit endpoint
+SPOINC sell routes
+frontend transaction execution
+confirm-swap.php
+```
+
+---
+
+## ✅ Next Agent Checklist When Payloads Arrive
+
+When Zeno sends payloads, inspect first.
+
+Do not implement until all fields are clear.
+
+Checklist:
+
+```text
+1. Identify route direction field.
+2. Identify request ID field.
+3. Identify wallet field.
+4. Identify input token and output token fields.
+5. Identify input amount and output amount fields.
+6. Identify fee fields.
+7. Identify slippage / minimum output fields.
+8. Identify transaction signature field.
+9. Identify status lifecycle.
+10. Confirm failed / expired / cancelled response examples.
+11. Confirm SPOINC → DSPOINC is included or not.
+12. Confirm $1 fee behavior.
+13. Confirm EMPIRE custom fee behavior.
+14. Confirm request ID and transaction signature can be unique on Narrrfs side.
+```
+
+---
+
+## ✅ Current Summary
+
+Bridge state:
+
+```text
+Gensuki testing is successful.
+Deployment with payloads is pending.
+Narrrfs V1 route direction is buy-to-SPOINC only.
+SPOINC sell-to-token routes stay disabled until V2.
+SPOINC → DSPOINC has been asked as a separate internal bridge-back route.
+No public bridge movement is enabled.
+No Narrrfs settlement code should be written until payloads are reviewed.
+```
+
+Safety priority:
+
+```text
+Request ID storage.
+Transaction proof.
+No duplicate processing.
+No quote-only ledger movement.
+No frontend-controlled credits/deductions.
+```
+
+
+Perfect fam, that is exactly what we need.
+
+Yes, we will store every request ID on Narrrfs side as well.
+
+For the controlled test, this helps us track:
+
+* which request created the quote / transaction
+* which wallet started it
+* how much DSPOINC was used
+* how much SPOINC should be received
+* the current status
+* and later the transaction signature / confirmation result
+
+For public bridge later, this request ID will also be important for idempotency, so the same request can never deduct DSPOINC twice.
+
+So the safe flow becomes:
+
+1. Gensuki creates request ID
+2. Narrrfs stores request ID with wallet, Discord ID, DSPOINC amount, SPOINC amount, and status
+3. User signs / confirms transaction
+4. Final result comes back with the same request ID
+5. Narrrfs checks if this request ID was already processed
+6. If not processed, Narrrfs deducts once
+7. If already processed, Narrrfs does not deduct again
+
+So yes — please include the request ID in every quote / transaction / confirmation response and we will store it on our side.
+
+
+## ASYNC UPDATE — SPOINC / DSPOINC BRIDGE CONTROLLED TEST PROGRESS WITH GENSUKI
+
+**Date:** 2026-06-24
+**Status:** Controlled bridge test progressing / pricing and calculation routes working / live deduction still gated
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki integration / swap-lab planning / bridge settlement safety
+
+---
+
+## ✅ High-Level Status
+
+Today we made major progress on the SPOINC ↔ DSPOINC bridge work with Zeno / Gensuki.
+
+Current confirmed state:
+
+```text
+✅ Narrrfs live DB test wallet exists
+✅ Test wallet is mapped to Zeno’s numeric Discord ID
+✅ Gensuki can read Narrrfs DSPOINC balance response
+✅ Gensuki can calculate claimable SPOINC from DSPOINC
+✅ Gensuki can calculate DSPOINC to deduct
+✅ Gensuki can calculate remaining DSPOINC
+✅ Gensuki pricing API is working
+✅ Narrrfs live DB was checked after Gensuki success response
+✅ No live DSPOINC deduction happened yet
+```
+
+Important current rule:
+
+```text
+The bridge is still in controlled test / preview state.
+No public bridge movement is enabled.
+No automatic DSPOINC deduction endpoint is live yet.
+```
+
+---
+
+## ✅ Test Wallet Final State
+
+Zeno requested a controlled test wallet with DSPOINC in Narrrfs DB:
+
+```text
+GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+```
+
+Initial seed used a non-numeric test user:
+
+```text
+gensuki_spoinc_test_001
+```
+
+Zeno’s local route failed with `400 Bad Request` on that non-numeric test user, while a normal existing wallet worked.
+
+Root cause identified:
+
+```text
+Gensuki route validation expects / works with numeric Discord IDs.
+The non-numeric test user id caused the local route issue.
+```
+
+Fix applied:
+
+```text
+The test wallet was remapped to Zeno’s numeric Discord ID.
+```
+
+Final live DB mapping:
+
+```text
+wallet: GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+user_id / discord_id: 795176211512426527
+username: Zeno SPOINC Test
+collection: spoinc_test
+total_dspoinc: 1,000,000
+frozen_dspoinc: 0
+available_dspoinc: 1,000,000
+max_spoinc: 100
+```
+
+Old non-numeric test user check:
+
+```text
+old_test_user_should_be_empty = no rows
+```
+
+---
+
+## ✅ Gensuki Balance / Calculation Route Success
+
+After remapping the test wallet to Zeno’s numeric Discord ID, Zeno tested the Gensuki route again and received a successful response.
+
+Successful response summary:
+
+```text
+success: true
+discord_id: 795176211512426527
+wallet: GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+available_dspoinc: 1,000,000
+total_dspoinc: 1,000,000
+frozen_dspoinc: 0
+dspoinc_per_spoinc: 10,000
+max_spoinc_convertible: 100
+claimable_spoinc: 1
+dspoinc_deducted: -10,000
+remaining_dspoinc: 990,000
+```
+
+Meaning:
+
+```text
+10,000 DSPOINC = 1 SPOINC
+1,000,000 available DSPOINC = 100 max SPOINC
+A 10,000 DSPOINC test amount previews 1 claimable SPOINC
+```
+
+Zeno confirmed:
+
+```text
+with this in internal system we now know how much SPOINC is giving and you can deduct it
+```
+
+Interpretation:
+
+```text
+Gensuki’s internal calculation / quote side is working.
+Narrrfs can see how much DSPOINC should be deducted for a successful swap.
+Narrrfs can see how much SPOINC should be given.
+```
+
+---
+
+## ✅ Live DB Check After Gensuki Success Response
+
+After Zeno’s successful route response, Narrrfs live DB was checked to confirm whether anything was deducted.
+
+Live DB check confirmed:
+
+```text
+total_dspoinc: 1,000,000
+recent score rows: only original +1,000,000 spoinc_bridge_test_seed row
+recent adjustments: only original +1,000,000 seed audit row
+no -10,000 deduction row exists
+```
+
+Conclusion:
+
+```text
+Gensuki’s current route is calculation / preview only.
+It does not currently deduct DSPOINC from Narrrfs live DB.
+```
+
+This is the correct safe state for now.
+
+---
+
+## ✅ Current Narrrfs Balance Rule
+
+The bridge must continue to use the same available DSPOINC rule used by Narrrfs staking:
+
+```text
+total_dspoinc = SUM(tbl_user_scores.score)
+frozen_dspoinc = SUM(tbl_dspoinc_stakes.amount WHERE status = 'active')
+available_dspoinc = total_dspoinc - frozen_dspoinc
+```
+
+Important:
+
+```text
+Only available DSPOINC can be converted.
+Frozen / active staked DSPOINC must not be convertible.
+```
+
+For the Zeno test wallet:
+
+```text
+total_dspoinc: 1,000,000
+frozen_dspoinc: 0
+available_dspoinc: 1,000,000
+max_spoinc: 100
+```
+
+---
+
+## ✅ Zeno Clarification — No Deduction Request Needed Yet
+
+After Narrrfs explained the final confirmation route concept, Zeno clarified:
+
+```text
+not yet request to change
+just for testing we get the response
+when you test it on mainnet then deduct it
+pricing api works okay
+```
+
+Interpretation:
+
+```text
+Zeno is not asking Narrrfs to build the live deduction endpoint yet.
+Current focus is controlled testing.
+Current Gensuki route returns calculation / preview data.
+When Narrrfs tests on mainnet and confirms the transaction succeeded, then Narrrfs can deduct the matching DSPOINC.
+```
+
+Important operational decision:
+
+```text
+Manual / controlled deduction is acceptable for the first internal mainnet test only.
+Public bridge must still use final transaction proof + idempotency before automatic deduction.
+```
+
+---
+
+## ✅ Pricing API Progress
+
+Zeno also showed the pricing API working.
+
+Example response:
+
+```text
+success: true
+address: 11111111111111111111111111111111
+chainId: 792703809
+priceUsd: 65.494613
+inputAmount: 10
+usdWorth: 654.94613
+```
+
+Meaning:
+
+```text
+The pricing API can return token USD price and USD worth for a given amount.
+```
+
+Example math:
+
+```text
+10 × 65.494613 = 654.94613 USD
+```
+
+Current interpretation:
+
+```text
+Pricing API works for quote / UI display.
+This is not a ledger movement route.
+This is not a transaction confirmation route.
+This must not trigger DSPOINC deduction.
+```
+
+Need from Gensuki later for pricing UI:
+
+```text
+Real token examples for:
+- SPOINC
+- SOL
+- EMPIRE
+- FOOK
+- USDT
+- USDC
+
+And confirmation of:
+- token address format
+- chainId meaning
+- amount format
+- priceUsd meaning
+- usdWorth formula
+- error response when liquidity/price is unavailable
+```
+
+---
+
+## ✅ Current SPOINC Price Reference
+
+Current agreed first reference:
+
+```text
+1 SPOINC = $0.035 USD
+```
+
+Internal Narrrfs bridge ratio remains fixed:
+
+```text
+10,000 DSPOINC = 1 SPOINC
+```
+
+Current quote logic:
+
+```text
+External token prices = realtime Gensuki quote / pricing data
+Internal DSPOINC/SPOINC conversion = fixed Narrrfs ratio
+```
+
+Confirmed external quote tokens:
+
+```text
+SPOINC ↔ SOL
+SPOINC ↔ EMPIRE
+SPOINC ↔ FOOK
+SPOINC ↔ USDT
+SPOINC ↔ USDC
+```
+
+FOOK special handling:
+
+```text
+FOOK liquidity is thin.
+Zeno reported routing through SOL creates too much fee/loss.
+Zeno planned direct Pump.fun route for FOOK after confirming it is graduated.
+```
+
+EMPIRE special handling:
+
+```text
+Zeno reported EMPIRE route output can be 2–3% lower because of route/fee impact.
+Initial slippage note from Zeno: 1%.
+Adjust only after controlled tests prove the need.
+```
+
+---
+
+## ✅ Current Safe Test Flow
+
+For the first controlled mainnet test, current understood flow is:
+
+```text
+1. Gensuki returns balance / calculation response.
+2. Gensuki generates transaction / response for mainnet test.
+3. Narrrfs tests with controlled wallet.
+4. Transaction result is confirmed.
+5. Narrrfs deducts matching DSPOINC only after successful confirmation.
+```
+
+For this first controlled test, manual / controlled backend deduction can be acceptable after confirmation.
+
+For public bridge, manual deduction is not enough.
+
+Public bridge still requires:
+
+```text
+transaction proof
+idempotency key
+replay protection
+status lifecycle
+amount verification
+wallet verification
+one-time ledger write
+audit / bridge history row
+```
+
+---
+
+## 🚫 Safety Rules Still Active
+
+Do not enable public bridge movement yet.
+
+Do not enable:
+
+```text
+automatic DSPOINC credit
+automatic DSPOINC deduction
+confirm-swap.php public live processing
+frontend-controlled ledger movement
+quote-only ledger movement
+pricing-api-based deduction
+transaction execution from incomplete docs
+repeated callback deduction
+```
+
+Do not deduct DSPOINC from:
+
+```text
+quote response only
+pricing API only
+frontend amount only
+unconfirmed transaction
+failed transaction
+expired transaction
+cancelled wallet signature
+```
+
+---
+
+## ✅ Required Final Public Bridge Flow
+
+For the final live public bridge, Narrrfs still needs this architecture:
+
+```text
+1. Balance / quote preview
+2. Swap intent created
+3. Unique partner_request_id / idempotency key stored
+4. Unsigned transaction generated
+5. User signs transaction in wallet
+6. On-chain transaction confirms
+7. Gensuki sends final confirmation payload
+8. Narrrfs verifies transaction proof
+9. Narrrfs verifies idempotency / replay protection
+10. Narrrfs verifies wallet + amount + direction
+11. Narrrfs writes one DSPOINC deduction or credit row
+12. Narrrfs writes matching audit / bridge history row
+13. Retried confirmation does not deduct twice
+```
+
+---
+
+## ✅ What We Need From Zeno / Gensuki Next
+
+Before Narrrfs builds public bridge settlement, request these from Zeno:
+
+```text
+1. Exact final route URLs and methods
+2. Example request + response for quote / balance
+3. Example request + response for unsigned transaction generation
+4. Unsigned transaction format: base64, base58, JSON, legacy or versioned Solana transaction
+5. Which Phantom / wallet method frontend should use
+6. Final confirmation payload after user signs and transaction confirms
+7. Unique idempotency field
+8. Transaction signature / proof field
+9. Status values: pending, confirmed, failed, expired, cancelled
+10. Auth method for final confirmation route
+11. Fee / slippage / minimum output fields
+12. FOOK direct Pump.fun route details
+13. One complete test example from quote → unsigned tx → wallet sign → confirmation
+```
+
+For pricing API specifically:
+
+```text
+1. Real token examples for SPOINC / SOL / EMPIRE / FOOK / USDT / USDC
+2. Whether amount is human token amount or base units
+3. Whether priceUsd is per one token
+4. Whether usdWorth is always amount × priceUsd
+5. Error response when token has no price or insufficient liquidity
+6. Cache / expiry behavior
+```
+
+---
+
+## ✅ Current Recommended Message To Zeno
+
+Use short confirmation, not full checklist, while he is actively testing:
+
+```text
+Perfect fam, understood.
+
+So current state is good:
+
+- DSPOINC balance / SPOINC calculation works
+- pricing API works
+- Narrrfs live DB is not changed yet
+- no deduction request needed right now
+
+For the first controlled mainnet test we can do it like this:
+
+1. Your system generates the response / transaction
+2. I test it on mainnet with the test wallet
+3. We confirm the transaction result
+4. After the successful confirmed test, Narrrfs deducts the matching DSPOINC
+
+For public/live bridge later, we still build the final safe deduction flow with transaction proof and idempotency so no failed or double deduction can happen.
+
+But for now, yes — pricing API and calculation preview are working, and we wait for your mainnet test details.
+```
+
+---
+
+## ✅ Current Local/Live Action State
+
+Current immediate action:
+
+```text
+Wait for Zeno’s mainnet test details / generated transaction flow.
+```
+
+Do not code:
+
+```text
+confirm-swap.php
+deduction endpoint
+frontend swap execution
+automatic ledger writes
+public swap button
+```
+
+until Zeno provides the transaction flow details or the first controlled mainnet test is ready.
+
+---
+
+## ✅ Summary For Next Agent
+
+The SPOINC/DSPOINC bridge has moved from pure planning into controlled integration testing.
+
+Narrrfs side has:
+
+```text
+verified live DB mapping
+verified available DSPOINC accounting
+verified Gensuki can read/calculate from the test wallet
+verified no live deduction happened from Gensuki preview route
+```
+
+Gensuki side has:
+
+```text
+working balance/calculation response
+working pricing API response
+next mainnet test planned
+```
+
+Main risk still open:
+
+```text
+Do not deduct DSPOINC before confirmed transaction proof.
+Do not allow double deduction.
+Do not let quote/pricing routes become settlement routes.
+```
+
+Final bridge settlement must be proof-based, idempotent, and replay-safe.
+
+
+## FOLLOW-UP — GENSUKI SUCCESS RESPONSE VERIFIED AS CALCULATION ONLY
+
+**Date:** 2026-06-24
+**Status:** Live DB checked after Gensuki success response / no deduction happened
+**Scope:** SPOINC DSPOINC Agent 3.0 / controlled bridge testing
+
+After Zeno’s Gensuki local route returned success for the controlled test wallet, the Narrrfs live DB was checked.
+
+Test wallet:
+
+```text
+GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+```
+
+Mapped user:
+
+```text
+795176211512426527
+```
+
+Gensuki success response previewed:
+
+```text
+available_dspoinc: 1,000,000
+claimable_spoinc: 1
+dspoinc_deducted: -10,000
+remaining_dspoinc: 990,000
+```
+
+Live DB check after that response confirmed:
+
+```text
+total_dspoinc: 1,000,000
+recent score rows: only the original +1,000,000 spoinc_bridge_test_seed row
+recent adjustments: only the original +1,000,000 seed audit row
+no -10,000 deduction row exists
+```
+
+Conclusion:
+
+```text
+The current Gensuki route is calculation / preview only.
+It does not currently deduct DSPOINC from Narrrfs live DB.
+```
+
+Safe next architecture step:
+
+```text
+Gensuki can calculate claimable SPOINC and DSPOINC deduction preview.
+Narrrfs must only perform the actual DSPOINC deduction after final transaction confirmation.
+```
+
+Required final flow remains:
+
+```text
+1. Balance / quote preview
+2. Unsigned transaction generated
+3. User signs in wallet
+4. On-chain transaction confirms
+5. Gensuki sends final confirmation payload
+6. Narrrfs verifies transaction proof + idempotency + replay protection
+7. Narrrfs writes one DSPOINC deduction ledger row
+8. Narrrfs writes matching audit / bridge history row
+```
+
+Safety rule unchanged:
+
+```text
+Do not deduct DSPOINC from quote-only data.
+Do not deduct before confirmed transaction proof.
+Do not allow frontend-controlled deduction.
+Do not allow repeated callbacks to deduct twice.
+```
+
+
+## FOLLOW-UP — GENSUKI ROUTE SUCCESS AFTER ZENO DISCORD ID REMAP
+
+**Date:** 2026-06-24
+**Status:** Gensuki local route returned success
+**Scope:** SPOINC DSPOINC Agent 3.0 / controlled bridge testing
+
+After remapping the controlled test wallet from the non-numeric test user id to Zeno’s numeric Discord ID, the Gensuki local route returned success.
+
+Working test wallet:
+
+```text
+GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+```
+
+Working Discord/user ID:
+
+```text
+795176211512426527
+```
+
+Successful Gensuki route response showed:
+
+```text
+success: true
+available_dspoinc: 1,000,000
+total_dspoinc: 1,000,000
+frozen_dspoinc: 0
+dspoinc_per_spoinc: 10,000
+max_spoinc_convertible: 100
+claimable_spoinc: 1
+dspoinc_deducted: -10,000
+remaining_dspoinc: 990,000
+```
+
+Conclusion:
+
+```text
+The previous 400 Bad Request was caused by the non-numeric controlled test user id.
+Gensuki route validation expects / works with numeric Discord IDs.
+```
+
+Important open question:
+
+```text
+Confirm whether dspoinc_deducted is only a local Gensuki calculation/preview
+or whether Gensuki is already calling a Narrrfs live deduction endpoint.
+```
+
+Safety rule remains:
+
+```text
+Do not enable public bridge movement yet.
+Do not allow live DSPOINC deduction from quote-only data.
+Do not finalize ledger writes until transaction proof, idempotency, status lifecycle, replay protection, and final docs are confirmed.
+```
+
+
+## FOLLOW-UP — SPOINC TEST WALLET REMAPPED TO ZENO DISCORD ID
+
+**Date:** 2026-06-24
+**Status:** Live DB updated / test wallet now uses numeric Discord ID
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki bridge testing
+
+Zeno’s local route worked with normal numeric Discord IDs but failed on the controlled test wallet when it used:
+
+```text
+gensuki_spoinc_test_001
+```
+
+The test wallet was remapped to Zeno’s numeric Discord ID:
+
+```text
+795176211512426527
+```
+
+Current confirmed live DB state:
+
+```text
+wallet: GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+user_id: 795176211512426527
+username: Zeno SPOINC Test
+collection: spoinc_test
+total_dspoinc: 1,000,000
+frozen_dspoinc: 0
+available_dspoinc: 1,000,000
+max_spoinc: 100
+```
+
+Old non-numeric test user check:
+
+```text
+old_test_user_should_be_empty = no rows
+```
+
+Conclusion:
+
+```text
+If Gensuki route validation requires numeric Discord IDs, this remap should solve the 400 issue for the controlled bridge test wallet.
+```
+
+Safety still unchanged:
+
+```text
+Do not enable public bridge movement yet.
+Do not credit/deduct DSPOINC from quote-only data.
+Wait for final transaction proof, idempotency, status lifecycle, replay protection, and confirmed docs before live movement.
+```
+
+
+## FOLLOW-UP — SPOINC TEST WALLET RECHECK AFTER PUSH
+
+**Date:** 2026-06-24
+**Status:** Live DB rechecked after push / test wallet still valid
+**Scope:** SPOINC DSPOINC Agent 3.0 / Gensuki bridge testing
+
+After a push, the controlled Gensuki SPOINC test wallet was checked again on live DB.
+
+Confirmed still in place:
+
+```text
+wallet: GssqWw2nsc5jEk15itHpY9Ncdamk7YZ9GMZz9QNq5Ayn
+user_id: gensuki_spoinc_test_001
+username: Gensuki SPOINC Test
+collection: spoinc_test
+total_dspoinc: 1,000,000
+frozen_dspoinc: 0
+available_dspoinc: 1,000,000
+max_spoinc: 100
+score_adjustment_audit: spoinc_bridge_gensuki_test_wallet_seed
+```
+
+Conclusion:
+
+```text
+Zeno’s 400 Bad Request is not caused by missing Narrrfs live DB wallet mapping or missing DSPOINC balance.
+Likely cause is on the Gensuki local route side: request method, route params, apiKey/project config, validation, or internal partner API call handling.
+```
+
+
 ## FOLLOW-UP — GENSUKI SPOINC TEST WALLET SEEDED
 
 **Date:** 2026-06-24

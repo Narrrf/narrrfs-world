@@ -3,24 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌉 SPOINC Stake Lab | Narrrf's World</title>
-  <meta name="description" content="Narrrfs World SPOINC bridge lab for DSPOINC and SPOINC swap intents." />
+  <title>🌉 SPOINC Swap Lab — Narrrf's World Mouseverse Bridge</title>
+  <meta name="description" content="Narrrfs World SPOINC Swap Lab: buy SPOINC, preview SPOINC to DSPOINC conversion, prepare V2 staking, and understand the Mouseverse economy safely." />
   <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#f97316" />
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="discord-config.js"></script>
   <style>
     :root {
       --cheese: #facc15;
+      --orange: #f97316;
+      --amber: #f59e0b;
+      --pink: #ec4899;
       --cyan: #22d3ee;
+      --blue: #3b82f6;
       --emerald: #10b981;
-      --danger: #ef4444;
+      --red: #ef4444;
+      --slate: #0f172a;
+      --dark: #020617;
       --panel: rgba(15, 23, 42, 0.82);
       --border: rgba(250, 204, 21, 0.22);
+      --soft-border: rgba(255,255,255,0.10);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
     }
 
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
-        body {
+    body {
       min-height: 100vh;
       margin: 0;
       color: #fff;
@@ -33,7 +44,15 @@
       overflow-x: hidden;
     }
 
-    .swap-season12-orb {
+    .page-shell {
+      position: relative;
+      z-index: 10;
+      width: min(1520px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .swap-orb {
       position: fixed;
       pointer-events: none;
       z-index: 0;
@@ -43,7 +62,7 @@
       animation: swapFloatOrb 8s ease-in-out infinite;
     }
 
-    .swap-season12-orb.orange {
+    .swap-orb.orange {
       width: 14rem;
       height: 14rem;
       top: 8%;
@@ -51,7 +70,7 @@
       background: rgba(249, 115, 22, 0.22);
     }
 
-    .swap-season12-orb.pink {
+    .swap-orb.pink {
       width: 16rem;
       height: 16rem;
       top: 24%;
@@ -60,7 +79,7 @@
       animation-delay: -2s;
     }
 
-    .swap-season12-orb.cyan {
+    .swap-orb.cyan {
       width: 15rem;
       height: 15rem;
       bottom: 8%;
@@ -74,590 +93,1049 @@
       50% { transform: translateY(-18px) translateX(8px) scale(1.04); }
     }
 
-        .glass {
+    .glass,
+    .hero-card,
+    .section-card,
+    .stat-card,
+    .route-card,
+    .step-card,
+    .explain-card,
+    .profile-card,
+    .token-card,
+    .warning-card,
+    .tester-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--soft-border);
       background:
         radial-gradient(circle at top left, rgba(250, 204, 21, 0.08), transparent 38%),
         linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74));
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 24px;
-      box-shadow:
-        0 24px 70px rgba(0, 0, 0, 0.35),
-        0 0 34px rgba(249, 115, 22, 0.08);
+      box-shadow: var(--shadow), 0 0 34px rgba(249, 115, 22, 0.08);
       backdrop-filter: blur(18px);
     }
 
-        .stat-card {
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.10);
+    .glass,
+    .hero-card,
+    .section-card { border-radius: 28px; }
+    .stat-card,
+    .route-card,
+    .step-card,
+    .explain-card,
+    .profile-card,
+    .token-card,
+    .warning-card,
+    .tester-card { border-radius: 22px; }
+
+    .hero-card {
       background:
-        radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent 38%),
-        rgba(255, 255, 255, 0.055);
-      padding: 16px;
+        radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 36%),
+        radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.14), transparent 34%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(67, 20, 7, 0.90));
+      border-color: rgba(250, 204, 21, 0.22);
+    }
+
+    .section-card::after,
+    .hero-card::after,
+    .glass::after,
+    .stat-card::after,
+    .route-card::after,
+    .step-card::after,
+    .explain-card::after,
+    .profile-card::after,
+    .token-card::after,
+    .warning-card::after,
+    .tester-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.055), transparent 34%);
+    }
+
+    .section-card > *,
+    .hero-card > *,
+    .glass > *,
+    .stat-card > *,
+    .route-card > *,
+    .step-card > *,
+    .explain-card > *,
+    .profile-card > *,
+    .token-card > *,
+    .warning-card > *,
+    .tester-card > * { position: relative; z-index: 1; }
+
+    .stat-card,
+    .route-card,
+    .step-card,
+    .explain-card,
+    .profile-card,
+    .token-card,
+    .warning-card,
+    .tester-card {
+      padding: 18px;
       transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
     }
 
-    .stat-card:hover {
+    .stat-card:hover,
+    .route-card:hover,
+    .step-card:hover,
+    .explain-card:hover,
+    .profile-card:hover,
+    .token-card:hover,
+    .warning-card:hover,
+    .tester-card:hover {
       transform: translateY(-2px);
-      border-color: rgba(250, 204, 21, 0.28);
-      box-shadow:
-        0 18px 42px rgba(0, 0, 0, 0.28),
-        0 0 26px rgba(249, 115, 22, 0.08);
+      border-color: rgba(250, 204, 21, 0.30);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28), 0 0 26px rgba(249, 115, 22, 0.08);
     }
 
     .label {
       color: #cbd5e1;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+      font-weight: 950;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
-    .input {
-      width: 100%;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(2, 6, 23, 0.68);
+    .metric-value {
+      margin-top: 8px;
+      font-size: clamp(1.45rem, 3vw, 2.15rem);
+      font-weight: 950;
+      line-height: 1.05;
       color: #fff;
-      padding: 13px 14px;
-      outline: none;
     }
 
-    .input:focus {
-      border-color: rgba(250, 204, 21, 0.65);
-      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.10);
-    }
-
-    .btn {
-      border-radius: 16px;
-      padding: 12px 16px;
-      font-weight: 900;
-      transition: transform 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
-    }
-
-    .btn:hover:not(:disabled) { transform: translateY(-1px); }
-    .btn:disabled { opacity: 0.48; cursor: not-allowed; }
-
-    .primary {
-      background: linear-gradient(135deg, #facc15, #f59e0b);
-      color: #111827;
-    }
-
-    .secondary {
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #fff;
+    .metric-hint {
+      margin-top: 8px;
+      color: #cbd5e1;
+      font-size: 0.86rem;
+      line-height: 1.45;
     }
 
     .pill {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       border-radius: 999px;
-      border: 1px solid rgba(250, 204, 21, 0.24);
-      background: rgba(250, 204, 21, 0.10);
-      color: #fde68a;
-      padding: 7px 11px;
-      font-size: 0.78rem;
-      font-weight: 900;
-      letter-spacing: 0.04em;
+      border: 1px solid rgba(250, 204, 21, 0.35);
+      background: rgba(250, 204, 21, 0.12);
+      color: #fef3c7;
+      padding: 7px 12px;
+      font-size: 0.72rem;
+      font-weight: 950;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .pill.cyan { border-color: rgba(34,211,238,.35); background: rgba(34,211,238,.10); color: #cffafe; }
+    .pill.green { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.10); color: #d1fae5; }
+    .pill.red { border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); color: #fecaca; }
+    .pill.pink { border-color: rgba(236,72,153,.35); background: rgba(236,72,153,.10); color: #fce7f3; }
+    .pill.blue { border-color: rgba(59,130,246,.35); background: rgba(59,130,246,.10); color: #dbeafe; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 12px 16px;
+      color: #fff;
+      font-weight: 950;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .18s ease, opacity .18s ease, border-color .18s ease, box-shadow .18s ease;
+      min-height: 46px;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(250,204,21,.36);
+      box-shadow: 0 12px 28px rgba(0,0,0,.24);
+    }
+
+    .btn:disabled { opacity: .52; cursor: not-allowed; transform: none; }
+    .btn.primary { color: #111827; background: linear-gradient(135deg,#facc15,#f59e0b); border-color: rgba(250,204,21,.50); }
+    .btn.cyan { background: linear-gradient(135deg,rgba(8,145,178,.95),rgba(37,99,235,.95)); }
+    .btn.green { background: linear-gradient(135deg,rgba(16,185,129,.92),rgba(5,150,105,.92)); }
+    .btn.pink { background: linear-gradient(135deg,rgba(236,72,153,.92),rgba(190,24,93,.92)); }
+    .btn.ghost { background: rgba(255,255,255,.07); }
+
+    .input,
+    .select {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(2,6,23,.68);
+      color: #fff;
+      padding: 13px 14px;
+      outline: none;
+      min-height: 48px;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: rgba(250,204,21,.65);
+      box-shadow: 0 0 0 3px rgba(250,204,21,.10);
+    }
+
+    .select option { background: #0f172a; color: #fff; }
+
+    .status-dot {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      min-width: 13px;
+      border-radius: 999px;
+      background: #f59e0b;
+      box-shadow: 0 0 18px rgba(245,158,11,.48);
+    }
+
+    .status-dot.safe { background: #10b981; box-shadow: 0 0 18px rgba(16,185,129,.48); }
+    .status-dot.off { background: #ef4444; box-shadow: 0 0 18px rgba(239,68,68,.48); }
+
+    .copy-address {
+      word-break: break-all;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.78rem;
+      color: #e2e8f0;
+    }
+
+    .flow-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border-radius: 999px;
+      border: 1px solid rgba(250,204,21,.24);
+      background: rgba(250,204,21,.10);
+      color: #fde68a;
+      font-weight: 950;
+    }
+
+    .roadmap-line {
+      position: absolute;
+      left: 24px;
+      top: 56px;
+      bottom: 24px;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(250,204,21,.5), rgba(34,211,238,.22));
+    }
+
+    .roadmap-dot {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      border-radius: 999px;
+      border: 1px solid rgba(250,204,21,.32);
+      background: rgba(15,23,42,.92);
+      color: #fde68a;
+      font-size: 1.35rem;
+      box-shadow: 0 0 22px rgba(250,204,21,.10);
+    }
+
+    .hidden-soft { display: none !important; }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+
+    .mini-table td {
+      padding: 10px 12px;
+      background: rgba(255,255,255,.05);
+      border-top: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      color: #cbd5e1;
+      font-size: .88rem;
+    }
+
+    .mini-table td:first-child { border-left: 1px solid rgba(255,255,255,.08); border-radius: 14px 0 0 14px; color: #fef3c7; font-weight: 850; }
+    .mini-table td:last-child { border-right: 1px solid rgba(255,255,255,.08); border-radius: 0 14px 14px 0; text-align: right; font-weight: 900; color: #fff; }
+
+    @media (max-width: 768px) {
+      .desktop-nav { display: none; }
+      .page-shell { padding-top: 24px; }
+      .flow-arrow { transform: rotate(90deg); }
+      .roadmap-line { display: none; }
+      .mini-table td { display: block; border-radius: 14px !important; text-align: left !important; margin-bottom: 4px; }
     }
   </style>
 </head>
 <body>
-  <!-- ☀️ Season 12 bridge shell orbs.
-     DEVS FOR DECADES:
-     Visual-only background atmosphere. These do not control bridge state,
-     balances, DSPOINC, SPOINC, partner bridge status, or staking logic. -->
-  <div class="swap-season12-orb orange"></div>
-  <div class="swap-season12-orb pink"></div>
-  <div class="swap-season12-orb cyan"></div>
+  <div class="swap-orb orange"></div>
+  <div class="swap-orb pink"></div>
+  <div class="swap-orb cyan"></div>
 
-  <header class="sticky top-0 z-40 border-b border-yellow-400/20 bg-black/70 backdrop-blur-md">
-    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
-      <a href="index.html" class="text-lg font-black text-yellow-300 md:text-xl">🧀 Narrrf's World</a>
-      <nav class="flex flex-wrap items-center gap-4 text-sm text-slate-200">
-        <a class="hover:text-yellow-300" href="index.html">Home</a>
-<a class="hover:text-yellow-300" href="profile.html">Profile</a>
-<a class="hover:text-yellow-300" href="lab.html">Lab</a>
-<a class="hover:text-yellow-300" href="stake-lab.html">Stake Lab</a>
-<a class="hover:text-yellow-300" href="mint.html">Mint</a>
-<a class="hover:text-yellow-300" href="leaderboard.html">Leaderboard</a>
+  <div class="fixed left-4 top-4 z-50 rounded-full border border-orange-300/50 bg-gradient-to-r from-orange-500 to-pink-600 px-4 py-2 text-xs font-black text-white shadow-lg">
+    🌉 SPOINC Swap Lab • Safe Preview
+  </div>
+
+  <header class="sticky top-0 z-40 border-b border-yellow-400/30 bg-black/90 px-5 py-3 text-white shadow-xl backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 md:flex-row">
+      <a href="index.html" class="text-xl font-black tracking-tight text-yellow-300">🧀 Narrrf's World</a>
+      <nav class="desktop-nav flex flex-wrap items-center justify-center gap-3 text-sm md:justify-end">
+        <a href="index.html" class="transition hover:text-yellow-300">Home</a>
+        <a href="profile.html" class="transition hover:text-yellow-300">Profile</a>
+        <a href="stake-lab.html" class="font-black text-cyan-200 transition hover:text-yellow-300">🧊 V2 Stake Lab</a>
+        <a href="lab.html" class="transition hover:text-yellow-300">Genesis Lab</a>
+        <a href="leaderboard.html" class="transition hover:text-yellow-300">Leaderboard</a>
+        <a href="nerd-lab.html" class="transition hover:text-yellow-300">Nerd Lab</a>
       </nav>
     </div>
   </header>
 
-  <main class="mx-auto max-w-7xl px-4 py-8 md:py-12">
-    <section class="glass overflow-hidden p-5 md:p-8">
-      <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div class="max-w-3xl">
-          <div class="pill mb-4">🌉 SPOINC Economy Portal • Coming Soon</div>
-<h1 class="text-3xl font-black tracking-tight text-white md:text-5xl">
-  Prepare for the DSPOINC ↔ SPOINC Economy.
-</h1>
-<p class="mt-4 max-w-2xl text-slate-300">
-  This portal introduces the future bridge between Narrrfs World DSPOINC and the planned SPOINC token layer.
-  For now, you can preview the conversion rate, check your DSPOINC position, stake DSPOINC in the Stake Lab,
-  and prepare your Genesis utility before the bridge opens publicly.
-</p>
-
-<div class="mt-5 grid gap-3 sm:grid-cols-2">
-  <a
-    href="stake-lab.html"
-    class="inline-flex justify-center rounded-2xl bg-cyan-500 px-6 py-3 font-black text-white shadow-lg transition hover:scale-105 hover:bg-cyan-400"
-  >
-    🧊 Stake DSPOINC in Stake Lab
-  </a>
-
-  <a
-    href="mint.html#season13-v2-genesis-utility"
-    class="inline-flex justify-center rounded-2xl bg-yellow-400 px-6 py-3 font-black text-slate-950 shadow-lg transition hover:scale-105 hover:bg-yellow-300"
-  >
-    🧬 View Genesis V2 Benefits
-  </a>
-</div>
+  <main class="page-shell">
+    <section class="hero-card p-6 md:p-9">
+      <div class="grid gap-8 lg:grid-cols-[1.35fr_0.85fr] lg:items-center">
+        <div>
+          <div class="flex flex-wrap gap-2">
+            <span class="pill">Official SPOINC Lab</span>
+            <span class="pill cyan">DSPOINC Economy Bridge</span>
+            <span class="pill green">Safe Preview</span>
+          </div>
+          <h1 class="mt-6 text-4xl font-black leading-tight md:text-6xl">
+            Buy SPOINC, bring it into the <span class="bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-400 bg-clip-text text-transparent">Mouseverse</span>, and prepare V2 staking.
+          </h1>
+          <p class="mt-5 max-w-4xl text-lg leading-relaxed text-slate-300 md:text-xl">
+            The SPOINC Swap Lab is the bridge between the Solana token SPOINC and the Narrrfs in-game currency DSPOINC. Members will use it to understand buying SPOINC, swapping into DSPOINC, staking in V2, and spending value across the Narrrfs World ecosystem.
+          </p>
+          <p class="mt-4 max-w-4xl text-base leading-relaxed text-slate-400">
+            Public conversion is still locked during safety testing. Narrrf and justme can create private test intent rows, but this page never changes a user balance until the final protected settlement flow is proven.
+          </p>
+          <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <a href="stake-lab.html" class="btn primary">🧊 Go to V2 Stake Lab</a>
+            <a href="profile.html" class="btn cyan">👤 Load / Check Profile</a>
+            <a href="#member-flow" class="btn green">🧭 What can I do here?</a>
+            <a href="#conversion-panel" class="btn ghost">🔢 Preview Conversion</a>
+          </div>
         </div>
 
-        <div class="stat-card min-w-full lg:min-w-[340px]">
-          <div class="label">Session</div>
-          <div id="sessionStatus" class="mt-2 text-lg font-bold text-yellow-200">Checking Discord session...</div>
-          <div id="sessionMeta" class="mt-2 text-sm text-slate-400">Connect with Discord before using the bridge.</div>
-          <button id="refreshSessionBtn" class="btn secondary mt-4 w-full" type="button">Refresh Session</button>
-        </div>
+        <aside class="rounded-3xl border border-yellow-300/20 bg-black/25 p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <div class="label">Bridge Status</div>
+              <div id="bridgeStatusText" class="mt-2 text-xl font-black text-yellow-100">Loading safe mode...</div>
+            </div>
+            <span id="bridgeStatusDot" class="status-dot"></span>
+          </div>
+
+          <div class="mt-5 grid gap-3">
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="label">Public Conversion</div>
+              <div id="publicExecutionState" class="mt-2 font-black text-red-200">Locked</div>
+              <div class="mt-1 text-xs text-slate-400">Public members can preview only while private testing runs.</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="label">Balance Changes</div>
+              <div id="ledgerState" class="mt-2 font-black text-red-200">OFF</div>
+              <div class="mt-1 text-xs text-slate-400">No DSPOINC is deducted or credited from this preview.</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div class="label">API Key</div>
+              <div class="mt-2 font-black text-emerald-200">Backend only</div>
+              <div class="mt-1 text-xs text-slate-400">No Gensuki key is visible in browser code.</div>
+            </div>
+          </div>
+
+          <p id="safetyMessage" class="mt-4 text-sm leading-relaxed text-slate-300">
+            Safety mode is active. No automatic balance changes happen from this page.
+          </p>
+        </aside>
       </div>
     </section>
 
-    <section class="mt-6 grid gap-6 lg:grid-cols-3">
+    <section class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="SPOINC key metrics">
+      <article class="stat-card">
+        <div class="label">SPOINC Price</div>
+        <div id="spoincPrice" class="metric-value">$0.035</div>
+        <div class="metric-hint">Loaded through the Narrrfs backend from the verified Gensuki project.</div>
+      </article>
+      <article class="stat-card">
+        <div class="label">Bridge Rate</div>
+        <div id="bridgeRate" class="metric-value">10,000 : 1</div>
+        <div class="metric-hint">10,000 DSPOINC equals 1 SPOINC for preview math.</div>
+      </article>
       <article class="stat-card">
         <div class="label">Available DSPOINC</div>
-        <div id="availableDspoinc" class="mt-2 text-3xl font-black text-emerald-300">—</div>
-        <p class="mt-2 text-sm text-slate-400">Backend-authoritative amount after active stakes are frozen.</p>
+        <div id="availableDspoinc" class="metric-value">Login needed</div>
+        <div class="metric-hint">Available balance excludes frozen DSPOINC in staking.</div>
       </article>
       <article class="stat-card">
-        <div class="label">Frozen DSPOINC</div>
-        <div id="frozenDspoinc" class="mt-2 text-3xl font-black text-cyan-300">—</div>
-        <p class="mt-2 text-sm text-slate-400">Locked in active DSPOINC stakes.</p>
-      </article>
-            <article class="stat-card">
-        <div class="label">Bridge Rate</div>
-        <div class="mt-2 text-3xl font-black text-yellow-300">10,000:1</div>
-        <p class="mt-2 text-sm text-slate-400">10,000 DSPOINC equals 1 SPOINC.</p>
+        <div class="label">Max Preview</div>
+        <div id="maxConvertibleSpoinc" class="metric-value">—</div>
+        <div class="metric-hint">Your current available DSPOINC shown as SPOINC preview value.</div>
       </article>
     </section>
 
-    <!-- 🌉 SPOINC Economy launch preview.
-     DEVS FOR DECADES:
-     Public copy must stay user-friendly. Keep internal partner integration
-     details out of visible text. The bridge remains inactive until the
-     partner launch flow is finalized. -->
-<section class="glass mt-6 overflow-hidden p-5 md:p-6">
-  <div class="grid gap-6 lg:grid-cols-[1fr_0.85fr]">
-    <div>
-      <div class="pill mb-4">🚀 Launch Preparation</div>
-      <h2 class="text-2xl md:text-3xl font-black text-white">
-        The SPOINC economy layer is being prepared.
-      </h2>
-      <p class="mt-3 text-slate-300 leading-relaxed">
-        Narrrfs World is preparing the next economy step: connecting off-chain DSPOINC activity
-        with the future SPOINC token layer. The public bridge is not open yet, but the portal
-        already shows the core direction, conversion rate, and ecosystem paths.
-      </p>
-
-      <div class="mt-5 grid gap-3 md:grid-cols-2">
-        <div class="stat-card">
-          <div class="label">Current phase</div>
-          <div class="mt-2 text-xl font-black text-yellow-200">Economy Preview</div>
-          <p class="mt-2 text-sm text-slate-400">Bridge access will open after the final partner launch steps are complete.</p>
+    <section id="member-flow" class="section-card mt-8 p-5 md:p-7">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div class="pill mb-4">🧭 Member Flow</div>
+          <h2 class="text-3xl font-black md:text-4xl">What can members do here?</h2>
+          <p class="mt-3 max-w-4xl text-slate-300">
+            This page is built to guide normal members step by step: buy SPOINC on Gensuki, bring value into Narrrfs World as DSPOINC, stake in V2, and use the Mouseverse systems.
+          </p>
         </div>
-
-        <div class="stat-card">
-          <div class="label">Bridge focus</div>
-          <div class="mt-2 text-xl font-black text-cyan-200">DSPOINC ↔ SPOINC</div>
-          <p class="mt-2 text-sm text-slate-400">The planned bridge connects Narrrfs World activity with the SPOINC token economy.</p>
-        </div>
+        <a href="stake-lab.html" class="btn primary shrink-0">🧊 Attend V2 Staking</a>
       </div>
-    </div>
 
-    <div class="rounded-3xl border border-yellow-300/25 bg-yellow-400/10 p-5">
-      <h3 class="text-xl font-black text-yellow-100 mb-3">What can you do now?</h3>
-      <div class="space-y-3 text-sm text-yellow-50/90">
-        <div class="rounded-2xl border border-white/10 bg-black/20 p-3">
-          <strong>1.</strong> Earn and manage DSPOINC inside Narrrfs World.
-        </div>
-        <div class="rounded-2xl border border-white/10 bg-black/20 p-3">
-          <strong>2.</strong> Stake DSPOINC in the Stake Lab while legacy staking is live.
-        </div>
-        <div class="rounded-2xl border border-white/10 bg-black/20 p-3">
-          <strong>3.</strong> Mint Genesis on Gensuki and prepare for Season 13 V2 utility.
-        </div>
-        <div class="rounded-2xl border border-white/10 bg-black/20 p-3">
-          <strong>4.</strong> Watch for the official bridge launch announcement.
-        </div>
+      <div class="mt-6 grid gap-4 lg:grid-cols-4">
+        <article class="step-card">
+          <div class="text-3xl">1️⃣</div>
+          <h3 class="mt-3 text-xl font-black text-yellow-100">Buy SPOINC</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">Use the verified Gensuki SPOINC project to buy SPOINC with supported tokens. The token is the Solana-side value layer of Narrrfs World.</p>
+        </article>
+        <article class="step-card">
+          <div class="text-3xl">2️⃣</div>
+          <h3 class="mt-3 text-xl font-black text-cyan-100">Swap to DSPOINC</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">After public safety testing, SPOINC can be bridged into DSPOINC so it can be used inside games, labs, staking, raffles, rewards, and community utilities.</p>
+        </article>
+        <article class="step-card">
+          <div class="text-3xl">3️⃣</div>
+          <h3 class="mt-3 text-xl font-black text-emerald-100">Stake in V2</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">Use DSPOINC in the V2 Stake Lab to freeze value, track rewards, and connect with Genesis holder boosts when Season 13 systems open.</p>
+        </article>
+        <article class="step-card">
+          <div class="text-3xl">4️⃣</div>
+          <h3 class="mt-3 text-xl font-black text-pink-100">Use the Mouseverse</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">DSPOINC powers Narrrfs World actions: games, reward systems, Genesis Lab activity, future raffles, events, boosts, and ecosystem access.</p>
+        </article>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-    <section class="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-      <form id="swapForm" class="glass p-5 md:p-6">
-        <h2 class="text-2xl font-black text-yellow-200">Preview Bridge Conversion</h2>
-<p class="mt-2 text-sm text-slate-400">
-  Use this preview to understand the DSPOINC ↔ SPOINC rate before the public bridge opens.
-</p>
+    <section class="mt-8 grid gap-6 xl:grid-cols-[1fr_0.9fr]">
+      <div id="conversion-panel" class="section-card p-5 md:p-7">
+        <div class="pill mb-4">🔢 Conversion Preview</div>
+        <h2 class="text-3xl font-black md:text-4xl">Preview the bridge rate</h2>
+        <p class="mt-3 text-slate-300">This calculator is educational and safe. It shows the bridge math, but it does not send a transaction and does not change your DSPOINC balance.</p>
 
-        <div class="mt-6 grid gap-4 md:grid-cols-2">
-          <label class="block">
-            <span class="label">Direction</span>
-            <select id="direction" class="input mt-2">
-              <option value="dspoinc_to_spoinc">DSPOINC → SPOINC</option>
-              <option value="spoinc_to_dspoinc">SPOINC → DSPOINC</option>
+        <form id="previewForm" class="mt-6 grid gap-4">
+          <div>
+            <label for="directionSelect" class="label">Bridge Direction</label>
+            <select id="directionSelect" class="select mt-2">
+              <option value="SPOINC_TO_DSPOINC">SPOINC → DSPOINC</option>
+              <option value="DSPOINC_TO_SPOINC">DSPOINC → SPOINC</option>
             </select>
-          </label>
+            <p id="directionExplain" class="mt-2 text-sm text-slate-400">Bring SPOINC into the Narrrfs in-game economy as DSPOINC.</p>
+          </div>
 
-          <label class="block">
-            <span class="label">Solana Wallet</span>
-            <input id="wallet" class="input mt-2" type="text" autocomplete="off" placeholder="Paste Solana wallet" />
-          </label>
+          <div class="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-end">
+            <div>
+              <label id="amountLabel" for="amountInput" class="label">SPOINC Amount</label>
+              <input id="amountInput" class="input mt-2" type="number" min="0" step="0.000001" placeholder="Example: 1.5" value="1" />
+            </div>
+            <div class="flow-arrow mb-1">→</div>
+            <div>
+              <div class="label">Preview Output</div>
+              <div id="previewOutput" class="mt-2 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4 text-2xl font-black text-yellow-100">10,000 DSPOINC</div>
+            </div>
+          </div>
 
-          <label class="block">
-            <span class="label">DSPOINC Amount</span>
-            <input id="dspoincAmount" class="input mt-2" type="number" min="0" step="10000" placeholder="100000" />
-          </label>
+          <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-relaxed text-slate-300">
+            <div id="previewHint">1 SPOINC previews as 10,000 DSPOINC.</div>
+            <div class="mt-2 text-xs text-slate-500">Final public conversion will only open after private settlement testing is complete.</div>
+          </div>
 
-          <label class="block">
-            <span class="label">SPOINC Amount</span>
-            <input id="spoincAmount" class="input mt-2" type="number" min="0" step="0.0001" placeholder="10" />
-          </label>
+          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <button id="previewButton" type="submit" class="btn primary">Preview Only — No Balance Change</button>
+            <a href="stake-lab.html" class="btn green">🧊 Use DSPOINC in V2 Stake Lab</a>
+          </div>
+        </form>
+      </div>
+
+      <aside class="profile-card p-5 md:p-7">
+        <div class="pill cyan mb-4">👤 Your Profile Preview</div>
+        <h2 class="text-2xl font-black md:text-3xl">Loaded member data</h2>
+        <p class="mt-3 text-sm leading-relaxed text-slate-300">When you are logged in, this card shows your DSPOINC state from the backend-authoritative balance preview.</p>
+
+        <div class="mt-5 grid gap-3">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="label">Discord</div>
+            <div id="profileIdentity" class="mt-2 font-black text-white">Not loaded yet</div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="label">Available DSPOINC</div>
+            <div id="profileAvailable" class="mt-2 text-xl font-black text-yellow-100">Login needed</div>
+            <p class="mt-1 text-xs text-slate-400">Available means total DSPOINC minus active frozen DSPOINC.</p>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="label">Frozen DSPOINC</div>
+            <div id="profileFrozen" class="mt-2 text-xl font-black text-cyan-100">—</div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="label">Max SPOINC Preview</div>
+            <div id="profileMaxSpoinc" class="mt-2 text-xl font-black text-emerald-100">—</div>
+          </div>
         </div>
 
-        <div id="formWarning" class="mt-5 hidden rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-200"></div>
-
-        <div class="mt-6 flex flex-wrap gap-3">
-          <button id="previewBtn" class="btn secondary" type="button">Preview Conversion</button>
-          <button id="submitBtn" class="btn primary" type="submit">Preview Bridge Request</button>
-        </div>
-      </form>
-
-      <aside class="glass p-5 md:p-6">
-        <h2 class="text-2xl font-black text-cyan-200">Preview</h2>
-        <div class="mt-5 space-y-4">
-          <div class="stat-card">
-            <div class="label">You send</div>
-            <div id="previewSend" class="mt-2 text-xl font-black">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">You receive</div>
-            <div id="previewReceive" class="mt-2 text-xl font-black">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Status</div>
-            <div id="previewStatus" class="mt-2 text-sm text-slate-300">Ready for input.</div>
-          </div>
+        <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <button id="refreshProfileButton" class="btn cyan" type="button">🔄 Refresh Profile</button>
+          <a href="profile.html" class="btn ghost">Open Profile</a>
         </div>
       </aside>
     </section>
 
-        <!-- 🧊 DSPOINC economy routing.
-         DEVS FOR DECADES:
-         This section only explains where users should go.
-         Stake Lab handles DSPOINC staking. This page remains the SPOINC bridge shell.
-         Do not merge staking and swap execution logic. -->
-    <section class="glass mt-6 p-5 md:p-6">
-      <div class="grid gap-5 lg:grid-cols-3">
-        <article class="stat-card">
-          <div class="text-3xl mb-3">🧊</div>
-          <h3 class="text-xl font-black text-cyan-100">Stake DSPOINC</h3>
-          <p class="mt-2 text-sm text-slate-300">
-            Freeze DSPOINC in the Stake Lab. Legacy staking is active now, and Season 13 V2 preview is visible there.
-          </p>
-          <a href="stake-lab.html" class="btn primary mt-4 inline-flex w-full justify-center">
-            Open Stake Lab
-          </a>
-        </article>
+    <section id="buy-guide" class="section-card mt-8 p-5 md:p-7">
+      <div class="pill pink mb-4">💳 Buy SPOINC Guide</div>
+      <h2 class="text-3xl font-black md:text-4xl">How buying and using SPOINC fits Narrrfs World</h2>
+      <p class="mt-3 max-w-5xl text-slate-300">SPOINC is the Solana token side. DSPOINC is the in-game Narrrfs value side. The bridge connects both worlds so members can choose whether they want token exposure, in-game utility, or staking utility.</p>
 
-        <article class="stat-card">
-          <div class="text-3xl mb-3">🧬</div>
-          <h3 class="text-xl font-black text-yellow-100">Mint Genesis</h3>
-          <p class="mt-2 text-sm text-slate-300">
-            Mint Genesis on Gensuki and prepare for the future V2 Genesis multiplier ladder.
-          </p>
-          <a href="mint.html#season13-v2-genesis-utility" class="btn primary mt-4 inline-flex w-full justify-center">
-            View Genesis Benefits
-          </a>
+      <div class="mt-6 grid gap-4 lg:grid-cols-3">
+        <article class="explain-card">
+          <div class="pill cyan">Buy</div>
+          <h3 class="mt-4 text-xl font-black text-white">Buy SPOINC on Gensuki</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">The verified SPOINC project data loads through our backend. Supported buy tokens are shown by the route map when Gensuki makes the public flow ready.</p>
         </article>
-
-        <article class="stat-card">
-  <div class="text-3xl mb-3">🌉</div>
-  <h3 class="text-xl font-black text-emerald-100">Bridge Coming Soon</h3>
-  <p class="mt-2 text-sm text-slate-300">
-    The DSPOINC ↔ SPOINC bridge will open after the official partner launch flow is ready.
-  </p>
-  <div class="mt-4 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-center text-sm font-black text-emerald-100">
-    Launch preparation active
-  </div>
-</article>
+        <article class="explain-card">
+          <div class="pill">Swap</div>
+          <h3 class="mt-4 text-xl font-black text-white">Swap SPOINC to DSPOINC</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">This is the core game bridge. Members who buy SPOINC can later bring value into the Narrrfs game economy as DSPOINC after the protected settlement flow is live.</p>
+        </article>
+        <article class="explain-card">
+          <div class="pill green">Use</div>
+          <h3 class="mt-4 text-xl font-black text-white">Stake, play, reward, build</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">DSPOINC is useful across the Mouseverse: V2 staking, Genesis utility, games, events, raffles, reward systems, and future ecosystem features.</p>
+        </article>
       </div>
     </section>
 
-    <section class="glass mt-6 p-5 md:p-6">
-      <h2 class="text-2xl font-black text-emerald-200">Bridge Principles</h2>
-            <div class="mt-4 grid gap-3 md:grid-cols-3">
-        <div class="stat-card text-sm text-slate-300">✅ Your DSPOINC balance is always checked from Narrrfs World records.</div>
-<div class="stat-card text-sm text-slate-300">✅ Frozen DSPOINC stays separated from available DSPOINC.</div>
-<div class="stat-card text-sm text-slate-300">✅ Stake Lab remains the home for DSPOINC staking.</div>
-<div class="stat-card text-sm text-slate-300">✅ SPOINC bridge actions will only open through official launch paths.</div>
-<div class="stat-card text-sm text-slate-300">✅ The conversion preview uses the planned 10,000 DSPOINC = 1 SPOINC rate.</div>
-<div class="stat-card text-sm text-slate-300">✅ Public launch details will be announced through Narrrfs World channels.</div>
+    <section class="mt-8 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <div class="token-card p-5 md:p-7">
+        <div class="pill green mb-4">🪙 Verified SPOINC Details</div>
+        <h2 class="text-2xl font-black md:text-3xl">Project data loaded from backend</h2>
+        <p id="projectSummary" class="mt-3 text-sm leading-relaxed text-slate-300">Loading public-safe SPOINC project details...</p>
+
+        <table class="mini-table mt-5">
+          <tr><td>Token Mint</td><td id="tokenMint">Loading...</td></tr>
+          <tr><td>Pool Wallet</td><td id="poolWallet">Loading...</td></tr>
+          <tr><td>Project Status</td><td id="projectStatus">Loading...</td></tr>
+          <tr><td>Sell Back</td><td id="projectSellBack">Loading...</td></tr>
+        </table>
+      </div>
+
+      <div class="section-card p-5 md:p-7">
+        <div class="pill mb-4">🧊 V2 Staking Attention</div>
+        <h2 class="text-2xl font-black md:text-3xl">After you have DSPOINC, the next stop is V2 staking</h2>
+        <p class="mt-3 text-sm leading-relaxed text-slate-300">The SPOINC Swap Lab should help members understand the path. Buying SPOINC is not the end; the Mouseverse utility begins when DSPOINC connects to Narrrfs systems.</p>
+
+        <div class="mt-5 grid gap-3 md:grid-cols-2">
+          <a href="stake-lab.html" class="btn primary w-full">🧊 Open V2 Stake Lab</a>
+          <a href="nerd-lab.html" class="btn ghost w-full">🧠 Read Nerd Lab</a>
+          <a href="lab.html" class="btn cyan w-full">🧬 Genesis Lab</a>
+          <a href="profile.html#profile-chest-section" class="btn green w-full">🎁 Reward Chamber</a>
+        </div>
+
+        <div class="mt-5 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4 text-sm leading-relaxed text-yellow-50">
+          <strong>Simple member explanation:</strong> Buy SPOINC if you want the Solana token. Swap SPOINC to DSPOINC if you want to use value inside Narrrfs World. Stake or spend DSPOINC when the connected Season 13 systems open.
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card mt-8 p-5 md:p-7">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div class="pill cyan mb-4">🗺️ Route Map</div>
+          <h2 class="text-3xl font-black md:text-4xl">Bridge routes explained for members</h2>
+          <p class="mt-3 max-w-4xl text-slate-300">These cards translate backend route states into simple public language. They do not reveal raw DEV notes or route internals.</p>
+        </div>
+        <button id="refreshRoutesButton" class="btn ghost shrink-0" type="button">Refresh Routes</button>
+      </div>
+      <div id="routesGrid" class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="stat-card text-sm text-slate-300">Loading route map...</div>
+      </div>
+    </section>
+
+    <section id="privateTesterPanel" class="tester-card mt-8 hidden-soft border-emerald-300/30 p-5 md:p-7">
+      <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+        <div>
+          <div class="pill green mb-4">🧪 Private Tester Mode</div>
+          <h2 class="text-3xl font-black text-emerald-100 md:text-4xl">Narrrf + justme intent testing</h2>
+          <p class="mt-3 text-sm leading-relaxed text-slate-300">This panel is only visible after backend tester allowlist confirmation. It creates private intent preview rows for audit testing. It does not call Gensuki transaction endpoints, does not create a Solana transaction, and does not change DSPOINC balances.</p>
+          <div id="testerIdentity" class="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-sm font-black text-emerald-100">Tester loading...</div>
+        </div>
+        <div class="grid gap-4">
+                    <div>
+            <label for="testerWallet" class="label">Test Wallet</label>
+            <input id="testerWallet" class="input mt-2" type="text" placeholder="Solana wallet for private test intent" />
+            <p class="mt-2 text-xs text-slate-400">Use the wallet that should be connected to the test intent.</p>
+          </div>
+
+          <div>
+            <label for="testerAmount" class="label">Test Amount</label>
+            <input id="testerAmount" class="input mt-2" type="number" min="0" step="0.000001" placeholder="Example: 1 or 10000" />
+            <p class="mt-2 text-xs text-slate-400">
+              For DSPOINC → SPOINC, enter DSPOINC. For SPOINC → DSPOINC, enter SPOINC.
+            </p>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <button id="testerDspoincToSpoinc" class="btn primary" type="button">Intent: DSPOINC → SPOINC</button>
+            <button id="testerSpoincToDspoinc" class="btn cyan" type="button">Intent: SPOINC → DSPOINC</button>
+          </div>
+        </div>
+      </div>
+      <div id="testerResult" class="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">Ready for private intent preview.</div>
+    </section>
+
+    <section class="warning-card mt-8 border-yellow-300/30 p-5 md:p-7">
+      <div class="pill red mb-4">🛡️ Safety Rules</div>
+      <h2 class="text-2xl font-black md:text-3xl">What this page does not do yet</h2>
+      <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No public swap</div><p class="mt-1 text-sm text-slate-400">Members can preview, not execute.</p></div>
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No DSPOINC debit</div><p class="mt-1 text-sm text-slate-400">No DSPOINC is removed here.</p></div>
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No DSPOINC credit</div><p class="mt-1 text-sm text-slate-400">No DSPOINC is added here.</p></div>
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No frontend key</div><p class="mt-1 text-sm text-slate-400">Gensuki key stays backend-only.</p></div>
       </div>
     </section>
   </main>
 
   <script>
     const DSPOINC_PER_SPOINC = 10000;
+    const BRIDGE_CONFIG_ENDPOINT = '/api/partner/spoinc/get-bridge-config.php';
+    const BRIDGE_ROUTES_ENDPOINT = '/api/partner/spoinc/get-bridge-routes.php';
+    const BRIDGE_PREVIEW_ENDPOINT = '/api/partner/spoinc/get-user-bridge-preview.php';
+    const GENSUKI_DETAILS_ENDPOINT = '/api/partner/spoinc/get-gensuki-presale-details.php';
+    const BRIDGE_TESTER_ACCESS_ENDPOINT = '/api/partner/spoinc/check-bridge-tester-access.php';
+    const BRIDGE_INTENT_PREVIEW_ENDPOINT = '/api/partner/spoinc/create-bridge-intent-preview.php';
+
     const state = {
       discordId: '',
-      discordUsername: '',
-      availableDspoinc: 0,
-      frozenDspoinc: 0,
-      totalDspoinc: 0
+      discordName: '',
+      config: null,
+      routes: [],
+      testerEnabled: false,
+      userPreview: null
     };
 
     const elements = {
-      sessionStatus: document.getElementById('sessionStatus'),
-      sessionMeta: document.getElementById('sessionMeta'),
-      refreshSessionBtn: document.getElementById('refreshSessionBtn'),
+      bridgeStatusText: document.getElementById('bridgeStatusText'),
+      bridgeStatusDot: document.getElementById('bridgeStatusDot'),
+      publicExecutionState: document.getElementById('publicExecutionState'),
+      ledgerState: document.getElementById('ledgerState'),
+      safetyMessage: document.getElementById('safetyMessage'),
+      spoincPrice: document.getElementById('spoincPrice'),
+      bridgeRate: document.getElementById('bridgeRate'),
       availableDspoinc: document.getElementById('availableDspoinc'),
-      frozenDspoinc: document.getElementById('frozenDspoinc'),
-      direction: document.getElementById('direction'),
-      wallet: document.getElementById('wallet'),
-      dspoincAmount: document.getElementById('dspoincAmount'),
-      spoincAmount: document.getElementById('spoincAmount'),
-      formWarning: document.getElementById('formWarning'),
-      previewBtn: document.getElementById('previewBtn'),
-      submitBtn: document.getElementById('submitBtn'),
-      swapForm: document.getElementById('swapForm'),
-      previewSend: document.getElementById('previewSend'),
-      previewReceive: document.getElementById('previewReceive'),
-      previewStatus: document.getElementById('previewStatus')
+      maxConvertibleSpoinc: document.getElementById('maxConvertibleSpoinc'),
+      profileIdentity: document.getElementById('profileIdentity'),
+      profileAvailable: document.getElementById('profileAvailable'),
+      profileFrozen: document.getElementById('profileFrozen'),
+      profileMaxSpoinc: document.getElementById('profileMaxSpoinc'),
+      refreshProfileButton: document.getElementById('refreshProfileButton'),
+      directionSelect: document.getElementById('directionSelect'),
+      directionExplain: document.getElementById('directionExplain'),
+      amountInput: document.getElementById('amountInput'),
+      amountLabel: document.getElementById('amountLabel'),
+      previewOutput: document.getElementById('previewOutput'),
+      previewHint: document.getElementById('previewHint'),
+      previewForm: document.getElementById('previewForm'),
+      projectSummary: document.getElementById('projectSummary'),
+      tokenMint: document.getElementById('tokenMint'),
+      poolWallet: document.getElementById('poolWallet'),
+      projectStatus: document.getElementById('projectStatus'),
+      projectSellBack: document.getElementById('projectSellBack'),
+      routesGrid: document.getElementById('routesGrid'),
+      refreshRoutesButton: document.getElementById('refreshRoutesButton'),
+      privateTesterPanel: document.getElementById('privateTesterPanel'),
+      testerIdentity: document.getElementById('testerIdentity'),
+      testerWallet: document.getElementById('testerWallet'),
+      testerAmount: document.getElementById('testerAmount'),
+      testerDspoincToSpoinc: document.getElementById('testerDspoincToSpoinc'),
+      testerSpoincToDspoinc: document.getElementById('testerSpoincToDspoinc'),
+      testerResult: document.getElementById('testerResult')
     };
 
-    function formatNumber(value) {
-      return Number(value || 0).toLocaleString();
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
 
-    function setWarning(message) {
-      elements.formWarning.textContent = message || '';
-      elements.formWarning.classList.toggle('hidden', !message);
+    function formatNumber(value, decimals = 0) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return decimals > 0 ? '0.' + '0'.repeat(decimals) : '0';
+      return number.toLocaleString(undefined, { maximumFractionDigits: decimals, minimumFractionDigits: decimals });
     }
 
-    function getDirectionLabel(direction) {
-      return direction === 'spoinc_to_dspoinc' ? 'SPOINC → DSPOINC' : 'DSPOINC → SPOINC';
+    function formatFlexible(value, decimals = 6) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return '0';
+      return number.toLocaleString(undefined, { maximumFractionDigits: decimals });
     }
 
-    function syncAmountsFromDspoinc() {
-      const dspoinc = Number(elements.dspoincAmount.value || 0);
-      elements.spoincAmount.value = dspoinc > 0 ? (dspoinc / DSPOINC_PER_SPOINC).toFixed(4).replace(/\.0000$/, '') : '';
-      updatePreview();
+    function getStoredDiscordId() {
+      return String(
+        window.sessionDiscordId ||
+        localStorage.getItem('discord_id') ||
+        localStorage.getItem('narrrfs_last_discord_id') ||
+        ''
+      ).trim();
     }
 
-    function syncAmountsFromSpoinc() {
-      const spoinc = Number(elements.spoincAmount.value || 0);
-      elements.dspoincAmount.value = spoinc > 0 ? Math.round(spoinc * DSPOINC_PER_SPOINC) : '';
-      updatePreview();
-    }
-
-    function updatePreview() {
-      const direction = elements.direction.value;
-      const dspoinc = Number(elements.dspoincAmount.value || 0);
-      const spoinc = Number(elements.spoincAmount.value || 0);
-
-      if (!dspoinc || !spoinc) {
-        elements.previewSend.textContent = '—';
-        elements.previewReceive.textContent = '—';
-        elements.previewStatus.textContent = 'Enter an amount to preview the bridge conversion.';
-        return;
-      }
-
-      if (direction === 'dspoinc_to_spoinc') {
-        elements.previewSend.textContent = `${formatNumber(dspoinc)} DSPOINC`;
-        elements.previewReceive.textContent = `${formatNumber(spoinc)} SPOINC`;
-      } else {
-        elements.previewSend.textContent = `${formatNumber(spoinc)} SPOINC`;
-        elements.previewReceive.textContent = `${formatNumber(dspoinc)} DSPOINC`;
-      }
-
-      elements.previewStatus.textContent = `${getDirectionLabel(direction)} pending intent preview. Backend confirmation still required.`;
+    function getStoredDiscordName() {
+      return String(
+        window.sessionDiscordUsername ||
+        localStorage.getItem('discord_name') ||
+        localStorage.getItem('narrrfs_last_discord_name') ||
+        localStorage.getItem('DISCORD_NAME') ||
+        ''
+      ).trim();
     }
 
     async function hydrateSession() {
-      setWarning('');
-      elements.sessionStatus.textContent = 'Checking Discord session...';
+      state.discordId = getStoredDiscordId();
+      state.discordName = getStoredDiscordName();
 
       try {
-        const response = await fetch('/api/user/get-session.php', {
-          credentials: 'include',
-          cache: 'no-store'
-        });
+        const response = await fetch('/api/user/get-session.php', { credentials: 'include', cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        const discordId = String(payload?.discord_id || '').trim();
+        const discordName = String(payload?.discord_username || payload?.username || '').trim();
 
-        if (!response.ok) {
-          throw new Error(`Session HTTP ${response.status}`);
+        if (discordId) {
+          state.discordId = discordId;
+          localStorage.setItem('discord_id', discordId);
+          localStorage.setItem('narrrfs_last_discord_id', discordId);
         }
 
-        const data = await response.json();
-        state.discordId = String(data.discord_id || '').trim();
-        state.discordUsername = String(data.discord_username || '').trim();
-
-        if (!state.discordId) {
-          elements.sessionStatus.textContent = 'Discord login required';
-          elements.sessionMeta.textContent = 'Open profile/login first, then return to Stake Lab.';
-          return;
+        if (discordName) {
+          state.discordName = discordName;
+          localStorage.setItem('discord_name', discordName);
+          localStorage.setItem('narrrfs_last_discord_name', discordName);
+          localStorage.setItem('DISCORD_NAME', discordName);
         }
-
-        localStorage.setItem('discord_id', state.discordId);
-        if (state.discordUsername) {
-          localStorage.setItem('discord_name', state.discordUsername);
-        }
-
-        elements.sessionStatus.textContent = state.discordUsername || state.discordId;
-        elements.sessionMeta.textContent = `Discord ID: ${state.discordId}`;
-        await loadBridgeProfile();
       } catch (error) {
-        state.discordId = String(localStorage.getItem('discord_id') || '').trim();
-        state.discordUsername = String(localStorage.getItem('discord_name') || '').trim();
+        console.warn('Swap Lab session hydration fallback active:', error);
+      }
 
-        if (state.discordId) {
-          elements.sessionStatus.textContent = state.discordUsername || state.discordId;
-          elements.sessionMeta.textContent = `Using stored Discord ID: ${state.discordId}`;
-          await loadBridgeProfile();
-          return;
-        }
+      elements.profileIdentity.textContent = state.discordId
+        ? `${state.discordName || 'Discord member'} (${state.discordId})`
+        : 'Not logged in yet';
+    }
 
-        elements.sessionStatus.textContent = 'Session unavailable';
-        elements.sessionMeta.textContent = error.message || 'Could not load session.';
+    async function loadBridgeConfig() {
+      try {
+        const response = await fetch(BRIDGE_CONFIG_ENDPOINT, { credentials: 'include', cache: 'no-store' });
+        const payload = await response.json();
+        if (!payload.success) throw new Error(payload.error || 'Bridge config load failed.');
+
+        state.config = payload.data?.config || {};
+        renderBridgeConfig(state.config, payload.data?.safety || {});
+      } catch (error) {
+        elements.bridgeStatusText.textContent = 'Config unavailable';
+        elements.bridgeStatusDot.className = 'status-dot off';
+        console.error(error);
       }
     }
 
-    async function loadBridgeProfile() {
+    function renderBridgeConfig(config, safety) {
+      const projectReady = Boolean(config?.project_id_ready || config?.project_id);
+      const publicExecution = Boolean(safety?.public_execution_enabled || Number(config?.public_enabled) === 1);
+      const ledgerMovement = Boolean(safety?.ledger_movement_enabled || Number(config?.settlement_enabled) === 1);
+
+      elements.bridgeStatusText.textContent = projectReady
+        ? 'Mainnet project verified — private testing'
+        : 'Bridge preparation active';
+      elements.bridgeStatusDot.className = projectReady ? 'status-dot safe' : 'status-dot';
+      elements.publicExecutionState.textContent = publicExecution ? 'Open' : 'Locked';
+      elements.publicExecutionState.className = publicExecution ? 'mt-2 font-black text-emerald-200' : 'mt-2 font-black text-red-200';
+      elements.ledgerState.textContent = ledgerMovement ? 'ON' : 'OFF';
+      elements.ledgerState.className = ledgerMovement ? 'mt-2 font-black text-emerald-200' : 'mt-2 font-black text-red-200';
+      elements.safetyMessage.textContent = safety?.message || 'Safety mode is active. No automatic balance changes happen from this page.';
+
+      if (config?.spoinc_price_usd) elements.spoincPrice.textContent = `$${config.spoinc_price_usd}`;
+      if (config?.conversion_rate_dspoinc_per_spoinc) {
+        elements.bridgeRate.textContent = `${formatNumber(config.conversion_rate_dspoinc_per_spoinc, 0)} : 1`;
+      }
+      if (config?.token_mint) elements.tokenMint.textContent = config.token_mint;
+      if (config?.pool_wallet) elements.poolWallet.textContent = config.pool_wallet;
+      if (config?.admin_wallet && !elements.testerWallet.value) elements.testerWallet.value = config.admin_wallet;
+    }
+
+    async function loadGensukiProjectDetails() {
       try {
-        const response = await fetch('/api/user/spoinc/get-swap-profile.php', {
-          method: 'POST',
-          credentials: 'include',
-          cache: 'no-store',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: state.discordId })
-        });
+        const response = await fetch(GENSUKI_DETAILS_ENDPOINT, { credentials: 'include', cache: 'no-store' });
+        const payload = await response.json();
+        if (!payload.success) throw new Error(payload.error || 'Gensuki project load failed.');
 
-        if (!response.ok) {
-          throw new Error(`Profile HTTP ${response.status}`);
-        }
+        const project = payload.data?.project || {};
+        const tokenAddress = project.tokens?.token_address || '';
+        const poolAddress = project.tokens?.pool_address || '';
 
-        const data = await response.json();
-        if (!data.success) {
-          throw new Error(data.error || 'Swap profile unavailable');
-        }
+        elements.projectSummary.innerHTML = `
+          <div class="font-black text-white">${escapeHtml(project.project_name || 'Spoinc')}</div>
+          <div class="mt-2">${escapeHtml(project.description || 'SPOINC is the official Solana token of Narrrfs World.')}</div>
+          <div class="mt-3 text-xs text-slate-400">Price: ${escapeHtml(project.token_price_usd ? '$' + project.token_price_usd : '$0.035')} • Chain: ${escapeHtml(project.chain || 'solana')} • Sell-back protected: ${project.disable_sell ? 'Yes' : 'No'}</div>
+        `;
 
-        state.availableDspoinc = Number(data.available_dspoinc || 0);
-        state.frozenDspoinc = Number(data.frozen_dspoinc || 0);
-        state.totalDspoinc = Number(data.total_dspoinc || 0);
-
-        elements.availableDspoinc.textContent = `${formatNumber(state.availableDspoinc)} DSPOINC`;
-        elements.frozenDspoinc.textContent = `${formatNumber(state.frozenDspoinc)} DSPOINC`;
+        if (project.token_price_usd) elements.spoincPrice.textContent = `$${project.token_price_usd}`;
+        if (tokenAddress) elements.tokenMint.textContent = tokenAddress;
+        if (poolAddress) elements.poolWallet.textContent = poolAddress;
+        elements.projectStatus.textContent = project.status || 'active';
+        elements.projectSellBack.textContent = project.disable_sell ? 'Protected in V1' : 'Available';
       } catch (error) {
-        // TODO: Replace this fallback after the public bridge profile endpoint is ready.
-        elements.availableDspoinc.textContent = 'Coming soon';
-elements.frozenDspoinc.textContent = 'Coming soon';
-elements.previewStatus.textContent = 'Bridge profile preview will open with the public launch.';
+        elements.projectSummary.textContent = 'Public-safe Gensuki project details are not available yet.';
+        console.warn(error);
       }
     }
 
-    function validateSwapPayload() {
-      const wallet = elements.wallet.value.trim();
-      const direction = elements.direction.value;
-      const dspoincAmount = Math.round(Number(elements.dspoincAmount.value || 0));
-      const spoincAmount = Number(elements.spoincAmount.value || 0);
-
+    async function loadUserPreview() {
       if (!state.discordId) {
-        return { ok: false, error: 'Discord login required.' };
-      }
-
-      if (!wallet) {
-        return { ok: false, error: 'Solana wallet is required.' };
-      }
-
-      if (!dspoincAmount || dspoincAmount <= 0 || !spoincAmount || spoincAmount <= 0) {
-        return { ok: false, error: 'Enter a valid DSPOINC or SPOINC amount.' };
-      }
-
-      if (dspoincAmount % DSPOINC_PER_SPOINC !== 0) {
-        return { ok: false, error: 'DSPOINC amount should be divisible by 10,000 for clean SPOINC conversion.' };
-      }
-
-      if (direction === 'dspoinc_to_spoinc' && state.availableDspoinc > 0 && dspoincAmount > state.availableDspoinc) {
-        return { ok: false, error: 'Amount exceeds available DSPOINC.' };
-      }
-
-      return {
-        ok: true,
-        payload: {
-          wallet,
-          direction,
-          dspoinc_amount: dspoincAmount,
-          spoinc_amount: spoincAmount,
-          conversion_rate_dspoinc_per_spoinc: DSPOINC_PER_SPOINC
-        }
-      };
-    }
-
-    async function createSwapIntent(event) {
-      event.preventDefault();
-      setWarning('');
-      updatePreview();
-
-      const validation = validateSwapPayload();
-      if (!validation.ok) {
-        setWarning(validation.error);
+        elements.availableDspoinc.textContent = 'Login needed';
+        elements.maxConvertibleSpoinc.textContent = '—';
+        elements.profileAvailable.textContent = 'Login needed';
+        elements.profileFrozen.textContent = '—';
+        elements.profileMaxSpoinc.textContent = '—';
         return;
       }
 
-      elements.submitBtn.disabled = true;
-      elements.previewStatus.textContent = 'Preparing bridge preview...';
-
       try {
-        const response = await fetch('/api/user/spoinc/create-swap-intent.php', {
+        const response = await fetch(BRIDGE_PREVIEW_ENDPOINT, {
           method: 'POST',
-          credentials: 'include',
-          cache: 'no-store',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(validation.payload)
+          credentials: 'include',
+          body: JSON.stringify({ user_id: state.discordId })
         });
+        const payload = await response.json();
+        if (!payload.success) throw new Error(payload.error || 'Preview load failed.');
 
-        if (!response.ok) {
-          throw new Error(`Swap intent HTTP ${response.status}`);
+        const data = payload.data || {};
+        const balance = data.balance || data.dspoinc_balance || data;
+        const available = Number(balance.available_dspoinc ?? balance.available ?? balance.available_balance ?? 0);
+        const frozen = Number(balance.frozen_dspoinc ?? balance.frozen ?? balance.frozen_balance ?? 0);
+        const total = Number(balance.total_dspoinc ?? balance.total ?? balance.total_balance ?? 0);
+        const maxSpoinc = available / DSPOINC_PER_SPOINC;
+
+        state.userPreview = data;
+        elements.availableDspoinc.textContent = `${formatNumber(available, 0)} DSPOINC`;
+        elements.maxConvertibleSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
+        elements.profileAvailable.textContent = `${formatNumber(available, 0)} DSPOINC`;
+        elements.profileFrozen.textContent = `${formatNumber(frozen, 0)} DSPOINC`;
+        elements.profileMaxSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
+
+        if (total > 0) {
+          elements.profileIdentity.textContent = `${state.discordName || 'Discord member'} (${state.discordId})`;
         }
-
-        const data = await response.json();
-        if (!data.success) {
-          throw new Error(data.error || 'Swap intent rejected');
-        }
-
-        elements.previewStatus.textContent = 'Bridge preview recorded. Follow the official launch instructions when the bridge opens.';
-        await loadBridgeProfile();
       } catch (error) {
-        setWarning('Bridge requests are not open yet. Please use this page as a conversion preview for now.');
-elements.previewStatus.textContent = 'Bridge preview only.';
-      } finally {
-        elements.submitBtn.disabled = false;
+        elements.availableDspoinc.textContent = 'Preview unavailable';
+        elements.maxConvertibleSpoinc.textContent = '—';
+        elements.profileAvailable.textContent = 'Preview unavailable';
+        elements.profileFrozen.textContent = '—';
+        elements.profileMaxSpoinc.textContent = '—';
+        console.warn(error);
       }
     }
 
-    elements.refreshSessionBtn.addEventListener('click', hydrateSession);
-    elements.previewBtn.addEventListener('click', updatePreview);
-    elements.swapForm.addEventListener('submit', createSwapIntent);
-    elements.dspoincAmount.addEventListener('input', syncAmountsFromDspoinc);
-    elements.spoincAmount.addEventListener('input', syncAmountsFromSpoinc);
-    elements.direction.addEventListener('change', updatePreview);
+    function getRouteDirectionLabel(route) {
+      return `${route?.input_token || 'Input'} → ${route?.output_token || 'Output'}`;
+    }
 
-    hydrateSession();
+    function getPublicRouteInfo(route) {
+      const routeKey = String(route?.route_key || '');
+      const direction = String(route?.direction || '');
+      const publicEnabled = Number(route?.public_enabled) === 1;
+      const backendEnabled = Number(route?.backend_enabled) === 1;
+      const v1Allowed = Number(route?.v1_public_allowed) === 1;
+      const canExecute = publicEnabled && backendEnabled && v1Allowed;
+
+      if (canExecute) {
+        return { pill: 'Live', pillClass: 'green', status: 'Execution enabled', summary: 'This route is enabled through the official Narrrfs bridge system.' };
+      }
+      if (routeKey === 'DSPOINC_TO_SPOINC') {
+        return { pill: 'Private Test', pillClass: '', status: 'Private testing next', summary: 'Convert available Narrrfs DSPOINC into SPOINC after the protected test flow is complete.' };
+      }
+      if (routeKey === 'SPOINC_TO_DSPOINC') {
+        return { pill: 'Private Test', pillClass: '', status: 'Private testing next', summary: 'Bring SPOINC into the Narrrfs game economy as DSPOINC after settlement safety is fully tested.' };
+      }
+      if (direction === 'sol_to_spoinc' || direction === 'empire_to_spoinc' || direction === 'fook_to_spoinc') {
+        return { pill: 'Buy Route', pillClass: 'cyan', status: 'Coming soon', summary: 'Buy SPOINC through a Gensuki-powered route after public launch testing is complete.' };
+      }
+      if (direction === 'spoinc_to_sol' || direction === 'spoinc_to_empire' || direction === 'spoinc_to_fook') {
+        return { pill: 'Protected V1', pillClass: 'red', status: 'Protected for V1', summary: 'External sell-back routes stay locked in V1 while liquidity and safety rules are finalized.' };
+      }
+      return { pill: 'Planned', pillClass: 'blue', status: 'Coming soon', summary: 'This route is planned for the SPOINC bridge roadmap.' };
+    }
+
+    async function loadBridgeRoutes() {
+      elements.routesGrid.innerHTML = '<div class="stat-card text-sm text-slate-300">Loading route map...</div>';
+      try {
+        const response = await fetch(BRIDGE_ROUTES_ENDPOINT, { credentials: 'include', cache: 'no-store' });
+        const payload = await response.json();
+        if (!payload.success) throw new Error(payload.error || 'Routes load failed.');
+        state.routes = payload.data?.routes || [];
+        renderBridgeRoutes(state.routes);
+      } catch (error) {
+        elements.routesGrid.innerHTML = '<div class="stat-card text-sm text-red-200">Route map unavailable. Please try again later.</div>';
+        console.error(error);
+      }
+    }
+
+    function renderBridgeRoutes(routes) {
+      if (!Array.isArray(routes) || routes.length === 0) {
+        elements.routesGrid.innerHTML = '<div class="stat-card text-sm text-slate-300">No bridge routes returned yet.</div>';
+        return;
+      }
+
+      elements.routesGrid.innerHTML = routes.map((route) => {
+        const info = getPublicRouteInfo(route);
+        return `
+          <article class="route-card">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="label">Bridge Route</div>
+                <h3 class="mt-2 text-lg font-black text-white">${escapeHtml(getRouteDirectionLabel(route))}</h3>
+              </div>
+              <span class="pill ${escapeHtml(info.pillClass)}">${escapeHtml(info.pill)}</span>
+            </div>
+            <p class="mt-4 min-h-[66px] text-sm leading-relaxed text-slate-300">${escapeHtml(info.summary)}</p>
+            <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center text-sm font-black text-yellow-100">${escapeHtml(info.status)}</div>
+          </article>`;
+      }).join('');
+    }
+
+    function updateCalculator() {
+      const direction = elements.directionSelect.value;
+      const amount = Number(elements.amountInput.value || 0);
+
+      if (direction === 'SPOINC_TO_DSPOINC') {
+        elements.amountLabel.textContent = 'SPOINC Amount';
+        elements.amountInput.placeholder = 'Example: 1.5';
+        elements.directionExplain.textContent = 'Bring SPOINC into the Narrrfs in-game economy as DSPOINC.';
+        const dspoinc = Math.floor(amount * DSPOINC_PER_SPOINC);
+        elements.previewOutput.textContent = `${formatNumber(dspoinc, 0)} DSPOINC`;
+        elements.previewHint.textContent = amount > 0
+          ? `${formatFlexible(amount, 6)} SPOINC previews as ${formatNumber(dspoinc, 0)} DSPOINC.`
+          : 'Enter a SPOINC amount to preview DSPOINC.';
+        return;
+      }
+
+      elements.amountLabel.textContent = 'DSPOINC Amount';
+      elements.amountInput.placeholder = 'Example: 10000';
+      elements.directionExplain.textContent = 'Convert game-earned DSPOINC into SPOINC after the protected flow opens.';
+      const spoinc = amount / DSPOINC_PER_SPOINC;
+      elements.previewOutput.textContent = `${formatFlexible(spoinc, 6)} SPOINC`;
+      elements.previewHint.textContent = amount > 0
+        ? `${formatNumber(amount, 0)} DSPOINC previews as ${formatFlexible(spoinc, 6)} SPOINC.`
+        : 'Enter a DSPOINC amount to preview SPOINC.';
+    }
+
+    async function loadPrivateTesterAccess() {
+      if (!state.discordId) return;
+
+      try {
+        const response = await fetch(BRIDGE_TESTER_ACCESS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ user_id: state.discordId })
+        });
+        const payload = await response.json();
+        if (!payload.success || !payload.data?.tester_enabled) return;
+
+        state.testerEnabled = true;
+        elements.privateTesterPanel.classList.remove('hidden-soft');
+        elements.testerIdentity.textContent = `Private tester confirmed: ${state.discordName || state.discordId}`;
+      } catch (error) {
+        console.warn('Private tester access not enabled.', error);
+      }
+    }
+
+    async function createPrivateIntent(routeKey) {
+      if (!state.testerEnabled) {
+        elements.testerResult.textContent = 'Private tester access is not active.';
+        return;
+      }
+
+      const wallet = elements.testerWallet.value.trim();
+      const amount = elements.testerAmount.value.trim();
+
+      if (!wallet) {
+        elements.testerResult.textContent = 'Paste a Solana wallet first.';
+        return;
+      }
+
+      if (!amount || Number(amount) <= 0) {
+        elements.testerResult.textContent = 'Enter a positive private test amount first.';
+        return;
+      }
+
+      elements.testerResult.textContent = 'Creating private bridge intent preview...';
+
+      try {
+        const response = await fetch(BRIDGE_INTENT_PREVIEW_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            user_id: state.discordId,
+            wallet,
+            route_key: routeKey,
+            amount
+          })
+        });
+        const payload = await response.json();
+        if (!payload.success) throw new Error(payload.error || 'Private intent preview failed.');
+
+        const data = payload.data || {};
+        const preview = data.preview || {};
+        elements.testerResult.innerHTML = `
+          <div class="font-black text-emerald-200">✅ Private intent preview created</div>
+          <div class="mt-2 grid gap-2 md:grid-cols-2">
+            <div>Intent ID: <strong>${escapeHtml(data.intent_id)}</strong></div>
+            <div>Route: <strong>${escapeHtml(data.route?.route_key || routeKey)}</strong></div>
+            <div>Input: <strong>${escapeHtml(preview.input_amount || '—')}</strong></div>
+            <div>Expected Output: <strong>${escapeHtml(preview.expected_output_amount || '—')}</strong></div>
+          </div>
+          <div class="mt-3 break-all text-xs text-slate-400">${escapeHtml(data.idempotency_id || '')}</div>
+          <div class="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">No transaction created. No Gensuki execution call. No DSPOINC balance change.</div>
+        `;
+      } catch (error) {
+        elements.testerResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(error.message || 'Private intent preview failed.')}</span>`;
+      }
+    }
+
+    elements.directionSelect.addEventListener('change', updateCalculator);
+    elements.amountInput.addEventListener('input', updateCalculator);
+    elements.previewForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      updateCalculator();
+      elements.previewHint.textContent = 'Public bridge conversion is still locked. No transaction or balance change happened.';
+    });
+    elements.refreshRoutesButton.addEventListener('click', loadBridgeRoutes);
+    elements.refreshProfileButton.addEventListener('click', async () => {
+      await hydrateSession();
+      await loadUserPreview();
+      await loadPrivateTesterAccess();
+    });
+    elements.testerDspoincToSpoinc.addEventListener('click', () => createPrivateIntent('DSPOINC_TO_SPOINC'));
+    elements.testerSpoincToDspoinc.addEventListener('click', () => createPrivateIntent('SPOINC_TO_DSPOINC'));
+
+    async function init() {
+      updateCalculator();
+      await hydrateSession();
+      await Promise.all([
+        loadBridgeConfig(),
+        loadGensukiProjectDetails(),
+        loadBridgeRoutes(),
+        loadUserPreview(),
+        loadPrivateTesterAccess()
+      ]);
+    }
+
+    init();
   </script>
 </body>
 </html>
