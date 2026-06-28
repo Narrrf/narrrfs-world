@@ -426,11 +426,27 @@ html {
 </div>
 
   <section class="bingo-main-panel backdrop-blur-md p-4 rounded-2xl shadow-2xl mb-8">
+<div class="flex flex-col lg:flex-row lg:items-end gap-3">
+  <div class="flex-1">
     <label class="block mb-2 text-yellow-300 font-semibold">Enter Called Numbers (one at a time):</label>
     <div class="flex gap-2">
       <input id="calledNumberInput" type="number" class="w-full p-2 border border-yellow-400/50 rounded bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:border-transparent" placeholder="Type a number">
       <button id="addCalledNumberBtn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg">Add</button>
     </div>
+  </div>
+
+  <!-- 🧀 Called Number Counter.
+       Plain-language: shows how many numbers the Bingo host already entered. -->
+  <div class="rounded-2xl border border-yellow-300/40 bg-slate-950/80 px-4 py-3 text-center shadow-[0_0_22px_rgba(250,204,21,0.14)] min-w-[150px]">
+    <div class="text-[11px] uppercase tracking-[0.14em] text-yellow-200 font-black">
+      🧀 Numbers Called
+    </div>
+    <div class="mt-1">
+      <span id="called-number-count" class="text-3xl font-black text-yellow-300 cheese-title-glow">0</span>
+      <span class="text-slate-400 font-bold">/ 75</span>
+    </div>
+  </div>
+</div>
     <div id="calledNumbersList" class="flex flex-wrap gap-2 mt-2"></div>
     <div class="flex gap-2 mt-2">
       <button onclick="markNumbers()" class="bg-green-500 hover:bg-green-400 text-white font-bold px-4 py-2 rounded transition-all duration-200 transform hover:scale-105 shadow-lg">Mark Numbers</button>
@@ -1451,7 +1467,24 @@ if (addCalledNumberBtn) {
   addCalledNumberBtn.addEventListener('click', addCalledNumber);
 }
 
+/**
+ * Updates the visible called-number counter.
+ * Plain-language:
+ * This only shows how many numbers are currently entered.
+ * It does not change Bingo logic, sorting, cards, saved tickets, or DB data.
+ */
+function updateCalledNumberCounter() {
+  const countElement = document.getElementById('called-number-count');
+
+  if (!countElement) {
+    return;
+  }
+
+  countElement.textContent = calledNumbers.length;
+}
+
 function renderCalledNumbers() {
+  updateCalledNumberCounter();
   calledNumbersList.innerHTML = '';
   calledNumbers.forEach((num, idx) => {
     const chip = document.createElement('span');
