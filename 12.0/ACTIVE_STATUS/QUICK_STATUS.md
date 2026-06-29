@@ -1,5 +1,2054 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## FOLLOW-UP — SPOINC BRIDGE PRIVATE LIVE TEST PUSH READY
+
+**Date:** 2026-06-29
+**Scope:** SPOINC Bridge / Swap Lab / Gensuki buy + claim routes
+**Status:** Local end-to-end tests succeeded, ready to push for private live testing
+
+---
+
+## ✅ Local XAMPP Test Milestone
+
+Local private bridge testing succeeded end-to-end.
+
+Confirmed local flows:
+
+```text
+SOL_TO_SPOINC buy:
+Narrrfs backend called Gensuki /buy.
+Gensuki returned transaction payload.
+Phantom signed / broadcasted.
+Narrrfs backend called Gensuki /confirm.
+SPOINC arrived in tester wallet.
+No DSPOINC ledger movement happened.
+
+SPOINC_TO_DSPOINC claim:
+Narrrfs backend called Gensuki /claim.
+Gensuki returned transaction payload.
+Phantom signed / broadcasted.
+Narrrfs backend called Gensuki /confirm.
+Narrrfs credited DSPOINC only after confirm success.
+Profile and score adjustment showed the DSPOINC credit.
+```
+
+---
+
+## ✅ Confirmed Local Test Data
+
+SOL_TO_SPOINC buy:
+
+```text
+Intent ID: 30
+Route: SOL_TO_SPOINC
+Wallet: 62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+Input: 0.02 SOL
+Status: confirmed
+Gensuki status: buy_confirmed_complete
+Narrrfs status: buy_confirmed_no_ledger_movement
+Transaction ID: 2
+TX:
+4RgvjinCNwvMxzm1ccSZ8URjVgA9KDXfyMeDfs2uCQuQXhPudKWWqCx7tp2S91uLJi9CuxaaGgZnZGx8JJv8gcy4
+```
+
+SPOINC_TO_DSPOINC claim:
+
+```text
+Intent ID: 31
+Route: SPOINC_TO_DSPOINC
+Wallet: 62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+Input: 10 SPOINC
+Expected output: 100,000 DSPOINC
+Status: settled
+Gensuki status: complete
+Narrrfs status: settled
+Transaction ID: 3
+TX:
+29xDeg9ZnsnJpu66BR6FoZQdQZqrG8DnrRv9WfhCeSzbB2qdP34fxgZRjcqCE9Z7w3cv5M58bKxEuMDJn86JD9Rd
+```
+
+Profile confirmed score adjustment:
+
+```text
+2026-06-29 16:05:17 : +100,000
+Gensuki SPOINC bridge claim confirmed:
+10 SPOINC -> 100000 DSPOINC
+intent_id: 31
+```
+
+---
+
+## ✅ Live DB Pre-Push Check
+
+Live DB already contains required bridge tables:
+
+```text
+tbl_spoinc_bridge_config
+tbl_spoinc_bridge_routes
+tbl_spoinc_bridge_intents
+tbl_spoinc_bridge_transactions
+tbl_spoinc_bridge_ledger_audit
+```
+
+Live flags checked before push:
+
+```text
+tbl_spoinc_bridge_config:
+public_enabled = 0
+settlement_enabled = 0
+external_sell_enabled = 0
+
+tbl_spoinc_bridge_routes:
+backend_enabled = 0
+public_enabled = 0
+```
+
+Sell routes remain disabled:
+
+```text
+SPOINC_TO_SOL = v1_disabled_gensuki_disable_sell_true
+SPOINC_TO_EMPIRE = v1_disabled_gensuki_disable_sell_true
+SPOINC_TO_FOOK = v1_disabled_gensuki_disable_sell_true
+```
+
+Important:
+
+```text
+This push is for private live testing only.
+Public bridge execution remains closed.
+Narrrf + justme only for live tests.
+Do not announce public bridge availability yet.
+```
+
+---
+
+## ✅ Files Included In Push
+
+Expected files in commit:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+api/partner/spoinc/bridge-helpers.php
+api/partner/spoinc/bridge-tester-helpers.php
+api/partner/spoinc/create-gensuki-buy-intent.php
+api/partner/spoinc/confirm-gensuki-buy-intent.php
+api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php
+api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php
+api/user/get-ledger-blockhash.php
+public/swap-lab.html
+```
+
+Do not commit:
+
+```text
+api/config/gensuki-outbound-local.php
+```
+
+That file is local-only and contains private Gensuki secrets.
+
+---
+
+## ✅ Known Fixes Applied
+
+```text
+1. Option B architecture implemented:
+   Narrrfs backend wraps Gensuki /buy, /claim, /confirm.
+   Frontend never sees Gensuki API key.
+
+2. Claim route now uses Gensuki transaction lifecycle:
+   /claim returns transaction payload.
+   Phantom signs.
+   /confirm completes.
+   DSPOINC credited only after confirmation.
+
+3. Buy route now supports SOL_TO_SPOINC:
+   Buy flow records transaction but never credits/deducts DSPOINC.
+
+4. Signature validation fixed:
+   Solana transaction signatures are not wallet addresses.
+   Confirm endpoint must validate transaction signature length/shape separately.
+
+5. Market Pulse added:
+   Read-only Gensuki project details display.
+   Shows SPOINC price, SOL ratio, bridge ratio, allowed buy tokens, sell-disabled status.
+
+6. Gensuki minimum buy discovered:
+   0.001 SOL failed because minimum purchase is $1 USD.
+   0.02 SOL worked locally.
+```
+
+---
+
+## ✅ Zeno / Gensuki Status
+
+Zeno confirmed:
+
+```text
+/claim returns a full transaction to send to user wallet, not only a signature.
+```
+
+Zeno opened / was opening the claim gate after the earlier error:
+
+```text
+Claims are only available after the target sale is completed.
+```
+
+Still waiting for LUT details before larger token-route/public testing:
+
+```text
+1. Exact LUT response field name
+2. Which route returns the LUT
+3. Whether Gensuki returns a full prepared VersionedTransaction
+4. Whether Narrrfs frontend must fetch/use the LUT account
+5. Whether LUT applies to buy only or also claim/sell
+6. Whether LUT can be stored as permanent project config
+7. Exact status lifecycle and idempotency rules
+8. Exact transactionHash vs signature behavior
+9. Exact moment Narrrfs may credit/deduct DSPOINC
+```
+
+---
+
+## ➡️ Next Live Test Order After Push
+
+After Render deploy/restart:
+
+```text
+1. Verify /swap-lab.html loads live.
+2. Verify Market Pulse loads live.
+3. Narrrf live SOL_TO_SPOINC buy with small valid amount above $1, e.g. 0.02 SOL.
+4. Narrrf live SPOINC_TO_DSPOINC claim with small amount.
+5. Check profile score adjustment.
+6. Check DB intent, transaction, and ledger audit rows.
+7. Test replay protection on same signature.
+8. justme repeats buy + claim.
+```
+
+Do not test EMPIRE / FOOK large token routes until LUT config is confirmed.
+
+
+## FOLLOW-UP — FIRST LOCAL SPOINC_TO_DSPOINC CLAIM SUCCESS
+
+**Date:** 2026-06-29  
+**Scope:** SPOINC Bridge / Swap Lab / Gensuki claim route / local XAMPP  
+**Status:** First full SPOINC → DSPOINC claim succeeded locally
+
+Huge milestone: the local private SPOINC → DSPOINC bridge flow succeeded end-to-end.
+
+Completed flow:
+
+```text
+User bought SPOINC through Gensuki SOL_TO_SPOINC buy route.
+SPOINC arrived in tester wallet.
+Swap Lab created SPOINC_TO_DSPOINC claim intent.
+Narrrfs backend called Gensuki /api/custom-token-presale/claim.
+Gensuki returned transaction payload.
+Phantom signed / broadcasted the transaction.
+Narrrfs backend called Gensuki /api/custom-token-presale/confirm.
+Gensuki confirm returned success.
+Narrrfs credited DSPOINC only after confirmation.
+Profile showed the DSPOINC score adjustment.
+
+## FOLLOW-UP — LOCAL SOL_TO_SPOINC BUY DB VERIFIED
+
+**Date:** 2026-06-29  
+**Scope:** SPOINC Bridge / Gensuki buy route / local XAMPP  
+**Status:** Local buy flow confirmed in DB
+
+Local DB verification confirmed:
+
+```text
+Intent ID: 30
+Route: SOL_TO_SPOINC
+Wallet: 62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+Input: 0.02 SOL
+Status: confirmed
+Gensuki status: buy_confirmed_complete
+Narrrfs status: buy_confirmed_no_ledger_movement
+Transaction ID: 2
+
+## FOLLOW-UP — LOCAL SOL_TO_SPOINC BUY TEST SUCCESS
+
+**Date:** 2026-06-29  
+**Scope:** SPOINC Bridge / Swap Lab / Gensuki buy route  
+**Status:** Local private SOL → SPOINC buy test successful
+
+Local-only test succeeded on XAMPP. Nothing is live on Render yet.
+
+Flow completed:
+
+```text
+Narrrfs Swap Lab created SOL_TO_SPOINC buy intent.
+Narrrfs backend called Gensuki /api/custom-token-presale/buy.
+Gensuki returned transaction payload.
+Phantom opened and signed the transaction.
+Narrrfs backend called Gensuki /api/custom-token-presale/confirm.
+SPOINC arrived in the tester wallet.
+No DSPOINC was credited.
+No DSPOINC was deducted.
+
+## FOLLOW-UP — ZENO CONFIRMED CLAIM RETURNS TRANSACTION / BUY API NEXT
+
+**Date:** 2026-06-29  
+**Scope:** SPOINC Bridge / Swap Lab / Gensuki buy + claim lifecycle  
+**Status:** Claim gate pending, buy route can be prepared for private testing
+
+Zeno confirmed:
+
+```text
+/claim returns a full transaction to send to the user wallet, not only a signature.
+
+## FOLLOW-UP — OPTION B CLAIM ROUTE TEST BLOCKED BY GENSUKI SALE STATE
+
+**Date:** 2026-06-29  
+**Scope:** SPOINC_TO_DSPOINC / Swap Lab / Gensuki claim lifecycle  
+**Status:** Narrrfs Option B wrapper works but Gensuki /claim rejects before sale completion
+
+Narrrfs updated the private SPOINC_TO_DSPOINC test flow to Option B:
+
+```text
+Narrrfs backend creates intent
+Narrrfs backend calls Gensuki /api/custom-token-presale/claim
+Frontend will sign returned Gensuki transaction if returned
+Narrrfs backend calls Gensuki /confirm
+Narrrfs credits DSPOINC only after complete confirmation
+
+## FOLLOW-UP — OPTION B CONFIRMED / ALWAYS CHECK ZENO DOCS FIRST
+
+**Date:** 2026-06-29
+**Status:** Option B selected for SPOINC ↔ DSPOINC bridge implementation
+**Scope:** SPOINC DSPOINC Agent 4.0 / Gensuki claim lifecycle / Quick Status rule
+
+---
+
+## ✅ New Agent Rule
+
+For all SPOINC ↔ DSPOINC bridge work:
+
+```text
+Always check the latest Zeno API docs first before answering API-contract questions or changing bridge code.
+```
+
+Primary Zeno docs currently uploaded:
+
+```text
+Zeno_docs.md
+Zeno_docs2.md
+```
+
+Future docs from Zeno must override older assumptions only after review.
+
+Required verification order:
+
+```text
+1. Read Zeno_docs.md / Zeno_docs2.md or latest Zeno API docs.
+2. Read 12.0/ACTIVE_STATUS/QUICK_STATUS.md.
+3. Verify actual project files locally.
+4. Only then plan code changes.
+```
+
+Do not rely on memory or guessed API behavior.
+
+---
+
+## ✅ Option B Selected
+
+Narrrfs will **replace the current manual direct SPOINC deposit logic** with Gensuki `/claim` lifecycle wrappers.
+
+Current private direct-transfer files:
+
+```text
+api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php
+api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php
+```
+
+must not become the final public production bridge path.
+
+They should be treated as:
+
+```text
+private/manual proof-of-concept only
+deprecated for final production settlement
+not public bridge settlement
+```
+
+Final bridge direction should be:
+
+```text
+Narrrfs backend → Gensuki /api/custom-token-presale/claim
+User signs/broadcasts Gensuki-prepared transaction or uses returned signature flow
+Narrrfs backend → Gensuki /api/custom-token-presale/confirm
+Narrrfs ledger updates only after confirmed complete
+```
+
+---
+
+## ✅ Claim Route Contract From Zeno Docs
+
+Endpoint:
+
+```text
+POST /api/custom-token-presale/claim
+```
+
+Required fields:
+
+```text
+userAddress
+projectId
+latestBlockhash
+```
+
+Exactly one of:
+
+```text
+dspoincAmount
+spoincAmount
+```
+
+Optional but required by Narrrfs safety design:
+
+```text
+idempotencyId
+```
+
+Direction mapping:
+
+```text
+dspoincAmount = DSPOINC → SPOINC
+spoincAmount = SPOINC → DSPOINC
+```
+
+Narrrfs rule:
+
+```text
+Always create and store idempotencyId before calling Gensuki /claim.
+```
+
+---
+
+## ✅ Confirm Route Contract From Zeno Docs
+
+Endpoint:
+
+```text
+POST /api/custom-token-presale/confirm
+```
+
+Required fields:
+
+```text
+projectId
+transactionHash
+status
+```
+
+Allowed status values:
+
+```text
+complete
+failed
+```
+
+Narrrfs settlement rule:
+
+```text
+Only status = complete may trigger DSPOINC ledger credit/deduction.
+status = failed must never credit or deduct DSPOINC.
+```
+
+---
+
+## ✅ Recovery Routes From Zeno Docs
+
+Status route:
+
+```text
+GET / POST /api/custom-token-presale/status
+```
+
+Lookup fields:
+
+```text
+projectId
+transactionHash
+```
+
+Get transaction route:
+
+```text
+GET /api/custom-token-presale/getTransaction
+```
+
+Lookup fields:
+
+```text
+projectId
+transactionHash OR id OR idempotencyId
+```
+
+Narrrfs usage:
+
+```text
+Use idempotencyId for retry/recovery if the page reloads.
+Use transactionHash/status for final settlement verification.
+```
+
+---
+
+## ⚠️ Still Needs Zeno Confirmation
+
+The docs are inconsistent for `/claim`.
+
+Buy/sell routes clearly return:
+
+```text
+transaction
+idempotencyId
+```
+
+But claim example returns:
+
+```text
+signature
+amountClaimed
+```
+
+while the lifecycle says the user signs and broadcasts a transaction.
+
+Before final frontend signing code, ask Zeno:
+
+```text
+For /api/custom-token-presale/claim, does the response return a signable transaction payload or an already-broadcast transaction signature?
+```
+
+Also ask:
+
+```text
+1. Is /claim response.transaction possible?
+2. Is /claim response.signature the transactionHash?
+3. Does /claim return idempotencyId?
+4. Is returned transaction legacy or VersionedTransaction?
+5. Is LUT already included in the returned transaction?
+6. What exact field contains LUT address if separate?
+```
+
+---
+
+## ✅ Final Architecture Direction
+
+New Narrrfs wrapper endpoints should be planned as:
+
+```text
+api/user/spoinc/create-claim-intent.php
+api/user/spoinc/confirm-claim-intent.php
+```
+
+Do not expose Gensuki API key in frontend.
+
+Frontend should only:
+
+```text
+request Narrrfs intent
+sign/send returned transaction if provided
+send transactionHash/signature back to Narrrfs confirm endpoint
+show result
+```
+
+Backend should:
+
+```text
+verify session
+verify wallet ownership
+enforce private tester mode first
+check DSPOINC balance for DSPOINC → SPOINC
+create pending intent
+call Gensuki /claim
+store raw response safely
+call Gensuki /confirm after signature
+verify status/getTransaction if needed
+credit or deduct DSPOINC exactly once
+write audit rows
+```
+
+---
+
+## 🚫 Still Not Allowed
+
+Do not enable:
+
+```text
+public bridge execution
+automatic public DSPOINC credit
+automatic public DSPOINC deduction
+frontend Gensuki API calls
+frontend API keys
+manual community-wallet SPOINC receiver as final production path
+external SPOINC sell route
+DSPOINC settlement without complete confirmation
+```
+
+---
+
+## ✅ Current Decision
+
+Option B is the official direction:
+
+```text
+Replace manual SPOINC_TO_DSPOINC direct-deposit logic with Gensuki /claim lifecycle wrappers.
+```
+
+But final code must wait for the exact `/claim` response shape or be written defensively to support both:
+
+```text
+transaction payload flow
+signature response flow
+```
+
+
+## FOLLOW-UP — ZENO LUT ADDRESS PLAN / TOKEN ROUTE SIZE FIX
+
+**Date:** 2026-06-29  
+**Status:** Waiting for Gensuki LUT address response field / no Narrrfs settlement changes yet  
+**Scope:** SPOINC bridge / Gensuki token routes / Swap Lab safety
+
+Zeno confirmed that SOL buys are okay, but token routes can hit transaction-size issues when swaps involve more accounts.
+
+Known issue seen during testing:
+
+```text
+encoding overruns Uint8Array
+
+## FOLLOW-UP — SPOINC / DSPOINC AGENT 4.0 HANDOVER READY — SWAP LAB LOCAL TESTER FLOW WORKING
+
+**Date:** 2026-06-29
+**Status:** Ready to restart as SPOINC / DSPOINC Agent 4.0
+**Scope:** Gensuki API service / SPOINC bridge / Swap Lab / private Narrrf + justme real deposit testing
+
+---
+
+## ✅ Current End State
+
+The SPOINC / DSPOINC bridge implementation is now ready for the next agent to continue without losing major context.
+
+Confirmed by Narrrf locally:
+
+```text
+swap-lab.html is working locally again.
+Local Narrrf identity loads.
+DSPOINC balance preview loads.
+Private Narrrf + justme tester panel is visible.
+Private real SPOINC → DSPOINC test area is visible.
+```
+
+Important local test issue solved:
+
+```text
+swap-lab.html is pure frontend HTML and cannot share live narrrfs.world Discord session cookies on localhost.
+A localhost Narrrf identity fallback was added for XAMPP testing.
+```
+
+Local fallback user:
+
+```text
+328601656659017732
+Narrrf Local Test / narrrf
+```
+
+The backend helpers already supported localhost user_id override, and the frontend now sends the correct local tester ID into the bridge APIs.
+
+---
+
+## ✅ Files Confirmed Locally Present
+
+Narrrf confirmed the new private real deposit endpoint files are locally present:
+
+```text
+api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php
+api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php
+```
+
+Next agent must still run:
+
+```bash
+git status --short
+```
+
+and confirm these files are tracked before pushing.
+
+---
+
+## ✅ Core SPOINC / DSPOINC Files Involved
+
+Main frontend:
+
+```text
+public/swap-lab.html
+```
+
+Shared bridge helpers:
+
+```text
+api/partner/spoinc/bridge-helpers.php
+api/partner/spoinc/bridge-tester-helpers.php
+```
+
+Safe preview / config APIs:
+
+```text
+api/partner/spoinc/get-bridge-config.php
+api/partner/spoinc/get-bridge-routes.php
+api/partner/spoinc/get-user-bridge-preview.php
+api/partner/spoinc/get-user-bridge-history.php
+```
+
+Tester APIs:
+
+```text
+api/partner/spoinc/check-bridge-tester-access.php
+api/partner/spoinc/create-bridge-intent-preview.php
+```
+
+Private real SPOINC → DSPOINC APIs:
+
+```text
+api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php
+api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php
+```
+
+Gensuki proxy API:
+
+```text
+api/partner/spoinc/get-gensuki-presale-details.php
+```
+
+Existing Gensuki partner balance API:
+
+```text
+api/partner/spoinc/get-dspoinc-balance.php
+```
+
+Solana helper / blockhash APIs:
+
+```text
+api/user/solana-memo-verification-helper.php
+api/user/get-ledger-blockhash.php
+```
+
+---
+
+## ✅ Token / Partner Config
+
+SPOINC mint:
+
+```text
+FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg
+```
+
+SPOINC decimals:
+
+```text
+9
+```
+
+SPOINC type:
+
+```text
+Normal SPL Token
+Not Token-2022
+```
+
+Gensuki project ID:
+
+```text
+7e04b38a-7bd4-4fab-acc4-dfa53a99b639
+```
+
+Gensuki base URL:
+
+```text
+https://app.gensuki.xyz
+```
+
+Current Swap Lab public buy link:
+
+```text
+https://app.gensuki.xyz/gunfun/custom-presale/7e04b38a-7bd4-4fab-acc4-dfa53a99b639
+```
+
+Fixed internal conversion:
+
+```text
+10,000 DSPOINC = 1 SPOINC
+0.0001 SPOINC = 1 DSPOINC
+```
+
+SPOINC price:
+
+```text
+$0.035
+```
+
+Gensuki returned:
+
+```text
+disableSell: true
+```
+
+Therefore external sell routes remain disabled:
+
+```text
+SPOINC_TO_SOL
+SPOINC_TO_EMPIRE
+SPOINC_TO_FOOK
+```
+
+---
+
+## ✅ Wallets
+
+Narrrfs community receiver wallet for private SPOINC → DSPOINC deposits:
+
+```text
+62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+```
+
+This wallet is used as:
+
+```text
+pool_wallet
+funding_receiver
+```
+
+Gensuki proxy returned older/project wallet references:
+
+```text
+pool_address:
+EnFUW68fKQeZv6vf82ZWmeJaQ1DWzg82843QWuSi5GmY
+
+admin_wallet / funding_receiver:
+A633zMm3rp7Jhi3K4Ks85K4sgkMR4SyYdk2hK8RW5mYU
+```
+
+For Narrrfs private real SPOINC deposit tests, use only:
+
+```text
+62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+```
+
+---
+
+## ✅ Private Testers
+
+Allowed private bridge testers:
+
+```text
+Narrrf: 328601656659017732
+justme: 1224428436928594015
+```
+
+Tester helper:
+
+```text
+api/partner/spoinc/bridge-tester-helpers.php
+```
+
+Rules:
+
+```text
+Production must rely on Discord session.
+Localhost may pass user_id for curl/browser testing.
+Only Narrrf and justme may access private tester endpoints.
+```
+
+---
+
+## ✅ Gensuki Environment / Secret Handling
+
+Important env split:
+
+```text
+GENSUKI_API_KEY
+```
+
+already existed and is treated as inbound/shared key for:
+
+```text
+Gensuki → Narrrfs
+```
+
+New outbound key for:
+
+```text
+Narrrfs → Gensuki
+```
+
+uses:
+
+```text
+GENSUKI_OUTBOUND_API_KEY
+```
+
+Render env vars added:
+
+```text
+GENSUKI_OUTBOUND_API_KEY=<real Zeno key>
+GENSUKI_SPOINC_PROJECT_ID=7e04b38a-7bd4-4fab-acc4-dfa53a99b639
+GENSUKI_API_BASE_URL=https://app.gensuki.xyz
+```
+
+Local-only config file:
+
+```text
+api/config/gensuki-outbound-local.php
+```
+
+Rules:
+
+```text
+Do not commit local secret file.
+Do not expose API keys in frontend.
+Do not log API keys.
+Do not paste API keys into Quick Status or Discord.
+```
+
+---
+
+## ✅ Gensuki Presale Proxy Status
+
+Backend-only Gensuki proxy endpoint:
+
+```text
+api/partner/spoinc/get-gensuki-presale-details.php
+```
+
+Purpose:
+
+```text
+Reads GENSUKI_OUTBOUND_API_KEY.
+Calls Gensuki with x-api-key.
+Returns public-safe project fields.
+Never exposes key.
+Never creates transactions.
+Never touches DSPOINC ledger.
+```
+
+Local proxy test passed earlier:
+
+```bash
+curl -s "http://localhost/api/partner/spoinc/get-gensuki-presale-details.php" | python -m json.tool
+```
+
+Known returned values:
+
+```text
+project_name: Spoinc
+status: active
+chain: solana
+token_price_usd: 0.035
+token_price_native: 0.0004873072066498331
+token_sold: 0
+total_raised: 0.011825646
+total_usd_raise: 10000
+target_raised_amount: 4400
+min_buy_usd_amount: 1
+project_fee: 1
+platform_fee: 0.5
+disable_sell: true
+token_address: FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg
+token_b_address: 11111111111111111111111111111111
+token_type_2022: false
+api_key_exposed: false
+transaction_created: false
+ledger_movement_enabled: false
+```
+
+---
+
+## ✅ Gensuki Buy Route Status From Zeno Testing
+
+External Gensuki buy route state:
+
+```text
+SOL → SPOINC: working
+EMPIRE → SPOINC: working after Zeno fix
+FOOK → SPOINC: works with smaller amount, larger amount still needs LUT
+```
+
+Zeno notes:
+
+```text
+SOL is okay.
+Token routes need LUT accounts.
+Larger token swaps involve more accounts.
+Zeno planned to add LUT address in API response.
+The 0.2 mentioned by Zeno was +0.2% platform fee, not 0.2 SOL.
+```
+
+---
+
+## ✅ Bridge DB Foundation
+
+Existing partner tables:
+
+```text
+tbl_spoinc_bridge_api_keys
+tbl_spoinc_bridge_balance_queries
+```
+
+Bridge prep tables:
+
+```text
+tbl_spoinc_bridge_config
+tbl_spoinc_bridge_routes
+tbl_spoinc_bridge_intents
+tbl_spoinc_bridge_transactions
+tbl_spoinc_bridge_ledger_audit
+tbl_spoinc_bridge_api_calls
+```
+
+Important tables for private real deposit proof:
+
+```text
+tbl_spoinc_bridge_intents
+tbl_spoinc_bridge_transactions
+tbl_spoinc_bridge_ledger_audit
+tbl_user_scores
+tbl_score_adjustments
+```
+
+SQLite cleanup already completed:
+
+```text
+idx_spoinc_bridge_transactions_hash_unique recreated without WHERE.
+idx_spoinc_bridge_transactions_signature_unique recreated without WHERE.
+SQLite allows multiple NULL values in unique indexes.
+Future missing signatures / hashes should be NULL, not empty string.
+```
+
+Genesis index note:
+
+```text
+idx_genesis_nft_stakes_one_active_token was dropped during SQLite compatibility cleanup.
+Do not recreate it as a normal unique index without reviewing active/history stake behavior.
+Keep one-active-token safety enforced in PHP until a safe index strategy is designed.
+```
+
+---
+
+## ✅ Private Preview Flow Already Tested On Live
+
+Narrrf and justme already tested the live private Swap Lab intent preview panel.
+
+Routes tested:
+
+```text
+SPOINC_TO_DSPOINC
+DSPOINC_TO_SPOINC
+```
+
+Correct safe states:
+
+```text
+status: private_test_preview
+gensuki_status: not_submitted
+narrrfs_status: not_settled
+```
+
+Safety confirmed:
+
+```text
+No DSPOINC debit.
+No DSPOINC credit.
+No Gensuki transaction.
+No bridge settlement.
+Only private preview intent rows were written.
+```
+
+Live safety checks at that stage:
+
+```text
+tbl_spoinc_bridge_ledger_audit rows: 0
+tbl_spoinc_bridge_transactions rows: 0
+```
+
+---
+
+## ✅ Private Real SPOINC → DSPOINC Flow Built
+
+Real private direction being built first:
+
+```text
+SPOINC_TO_DSPOINC
+```
+
+Reason:
+
+```text
+Narrrfs can verify a real on-chain SPOINC SPL transfer into the community wallet and then credit DSPOINC internally.
+This does not require Gensuki to send SPOINC out.
+```
+
+Do not start real automated:
+
+```text
+DSPOINC_TO_SPOINC
+```
+
+Reason:
+
+```text
+That requires Narrrfs or Gensuki to send real SPOINC out.
+This should come later as manual admin payout or protected payout signer flow.
+```
+
+---
+
+## ✅ Private Real Deposit Flow
+
+Current designed flow:
+
+```text
+1. Narrrf / justme creates a real SPOINC_TO_DSPOINC deposit intent.
+2. Backend returns receiver wallet:
+   62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+3. Frontend builds SPOINC SPL transfer with Phantom.
+4. User signs in Phantom.
+5. Phantom returns transaction signature.
+6. Frontend sends signature + intent_id to backend confirm endpoint.
+7. Backend fetches the Solana transaction.
+8. Backend verifies:
+   - tx exists
+   - tx did not fail
+   - sender signed
+   - sender wallet matches intent wallet
+   - SPOINC mint matches expected mint
+   - receiver wallet is Narrrfs community wallet
+   - token delta equals or exceeds expected SPOINC amount
+   - signature was not used before
+9. Backend inserts bridge transaction row.
+10. Backend inserts DSPOINC credit into tbl_user_scores.
+11. Backend inserts tbl_score_adjustments row.
+12. Backend inserts tbl_spoinc_bridge_ledger_audit row.
+13. Backend marks intent settled.
+14. Frontend reloads user balance preview.
+```
+
+Critical rule:
+
+```text
+Frontend never decides DSPOINC credit.
+Backend verification is the authority.
+```
+
+---
+
+## ✅ Real Local Test Already Passed Once
+
+A real SPOINC mainnet transfer was used to test the backend confirm endpoint against local DB.
+
+Sender wallet:
+
+```text
+3xALCAWami4H4LpMVjxnbqKcaEZ8jqqUm7aG8jUtC9Wq
+```
+
+Receiver wallet:
+
+```text
+62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+```
+
+Amount:
+
+```text
+1 SPOINC
+```
+
+Signature:
+
+```text
+3yegrAY9HDXRAc5hTm2cCiRwcTZHYzHcdFFaVgkQMd9mYMtL2VVLYtUgk5Cu6YyLraqYbfDzK74ea7vuzLR1MhPK
+```
+
+Local DB result:
+
+```text
+intent_id: 13
+status: settled
+transaction_id: 1
+credited_dspoinc_amount: 10000
+tbl_user_scores_id: 31761
+tbl_score_adjustment_id: 30923
+```
+
+Important:
+
+```text
+This was local DB only.
+The SPOINC moved on Solana mainnet, but DSPOINC credit happened only in local downloaded DB.
+Do not reuse this signature on live.
+For live test, create a fresh intent and send a fresh tiny transaction.
+```
+
+---
+
+## ✅ Swap Lab Frontend Current State
+
+Main file:
+
+```text
+public/swap-lab.html
+```
+
+Current frontend includes:
+
+```text
+Solana Web3 script
+Gensuki buy link
+Bridge preview APIs
+Gensuki project details proxy
+Private tester access endpoint
+Private preview intent endpoint
+Private real deposit intent endpoint
+Private real deposit confirm endpoint
+Solana blockhash endpoint
+Phantom SPOINC transfer helper functions
+Local Narrrf identity fallback for XAMPP
+```
+
+Important frontend functions added/fixed:
+
+```text
+isLocalSwapLabHost()
+applyLocalNarrrfTestIdentity()
+forceLocalNarrrfSwapLabIdentity()
+getActiveBridgeUserId()
+loadUserPreview()
+loadPrivateTesterAccess()
+createRealSpoincDepositIntent()
+confirmRealSpoincDeposit()
+createPublicKey()
+encodeU64LittleEndian()
+spoincAmountToRawUnits()
+deriveAssociatedTokenAccount()
+createAssociatedTokenAccountInstruction()
+createSpoincTransferCheckedInstruction()
+solanaAccountExists()
+sendSpoincDepositWithPhantom()
+```
+
+Important frontend state:
+
+```text
+latestRealDepositIntent: null
+```
+
+This stores the freshly created deposit intent so the Phantom send button uses the correct intent without relying on history reload.
+
+Important UX text:
+
+```text
+2️⃣ Send with Phantom + Auto Credit
+```
+
+Signature field is fallback-only:
+
+```text
+Auto-filled after Phantom sends. Manual paste only if needed.
+```
+
+---
+
+## ✅ Local Browser Test State
+
+Narrrf confirmed final local result:
+
+```text
+swap-lab.html works.
+Discord/local identity appears.
+Balance preview works.
+Private Narrrf + justme tester panel works.
+```
+
+Recommended local browser URL:
+
+```text
+http://localhost/swap-lab.html?v=agent4
+```
+
+Hard refresh:
+
+```text
+CTRL + F5
+```
+
+Expected:
+
+```text
+Profile preview loads Narrrf.
+Available DSPOINC loads.
+Frozen DSPOINC loads.
+Max SPOINC Preview loads.
+Private tester area visible.
+Real SPOINC → DSPOINC test panel visible.
+```
+
+---
+
+## ✅ Recommended Next Tests For Agent 4.0
+
+Before push, run:
+
+```bash
+git status --short
+```
+
+Verify new files are tracked:
+
+```bash
+ls -la api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php
+ls -la api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php
+```
+
+Run API tests:
+
+```bash
+curl -s -X POST "http://localhost/api/partner/spoinc/get-user-bridge-preview.php" \
+  -H "Content-Type: application/json" \
+  --data-binary "{\"user_id\":\"328601656659017732\"}" \
+  | python -m json.tool
+```
+
+```bash
+curl -s -X POST "http://localhost/api/partner/spoinc/check-bridge-tester-access.php" \
+  -H "Content-Type: application/json" \
+  --data-binary "{\"user_id\":\"328601656659017732\"}" \
+  | python -m json.tool
+```
+
+Run frontend marker check:
+
+```bash
+grep -n "latestRealDepositIntent\|sendSpoincDepositWithPhantom\|createSpoincTransferCheckedInstruction\|spoincAmountToRawUnits\|SOLANA_BLOCKHASH_ENDPOINT\|Send with Phantom" public/swap-lab.html
+```
+
+Run local identity marker check:
+
+```bash
+grep -n "forceLocalNarrrfSwapLabIdentity\|getActiveBridgeUserId\|Swap Lab local Narrrf identity active" public/swap-lab.html
+```
+
+---
+
+## ✅ First Next Phantom Test
+
+Use tiny amount first:
+
+```text
+0.0001 SPOINC
+```
+
+Expected DSPOINC credit:
+
+```text
+1 DSPOINC
+```
+
+Test flow:
+
+```text
+1. Open local swap-lab.html.
+2. Sender wallet = connected Phantom wallet that owns SPOINC.
+3. Amount = 0.0001.
+4. Click Create Real Deposit Intent.
+5. Click Send with Phantom + Auto Credit.
+6. Confirm in Phantom.
+7. Backend scans Solana.
+8. Backend credits DSPOINC only after verification.
+9. Balance preview refreshes.
+```
+
+If wallet mismatch happens:
+
+```text
+The sender wallet field must exactly match the connected Phantom public key.
+```
+
+If tx fails:
+
+```text
+Check sender has SPOINC.
+Check sender has SOL for tx fees.
+Check receiver ATA handling.
+Check get-ledger-blockhash.php.
+Check browser console.
+Check PHP error logs.
+```
+
+---
+
+## ✅ DB Checks After Tiny Test
+
+Latest intents:
+
+```bash
+sqlite3 db/narrrf_world.sqlite "
+SELECT
+  intent_id,
+  discord_id,
+  wallet,
+  input_amount,
+  expected_output_amount,
+  status,
+  gensuki_status,
+  narrrfs_status,
+  settled_at
+FROM tbl_spoinc_bridge_intents
+ORDER BY intent_id DESC
+LIMIT 5;
+"
+```
+
+Latest transactions:
+
+```bash
+sqlite3 db/narrrf_world.sqlite "
+SELECT
+  transaction_id,
+  intent_id,
+  transaction_hash,
+  signature,
+  wallet,
+  route_key,
+  narrrfs_status,
+  confirmed_at
+FROM tbl_spoinc_bridge_transactions
+ORDER BY transaction_id DESC
+LIMIT 5;
+"
+```
+
+Latest audit:
+
+```bash
+sqlite3 db/narrrf_world.sqlite "
+SELECT
+  audit_id,
+  intent_id,
+  discord_id,
+  wallet,
+  ledger_action,
+  dspoinc_delta,
+  spoinc_amount,
+  status,
+  processed_at
+FROM tbl_spoinc_bridge_ledger_audit
+ORDER BY audit_id DESC
+LIMIT 5;
+"
+```
+
+Expected for 0.0001 SPOINC:
+
+```text
+spoinc_amount = 0.0001
+dspoinc_delta = 1
+intent status = settled
+audit status = processed
+```
+
+Duplicate signature must be blocked.
+
+---
+
+## 🚫 Still Disabled / Do Not Enable Yet
+
+Keep disabled:
+
+```text
+public bridge execution
+public settlement
+DSPOINC_TO_SPOINC real payout
+external SPOINC sell routes
+large amount testing
+automatic SPOINC payout signer
+frontend direct Gensuki API calls
+public claim / confirm / status execution
+```
+
+Do not enable DB flags:
+
+```text
+public_enabled
+settlement_enabled
+external_sell_enabled
+```
+
+Do not build automatic:
+
+```text
+DSPOINC_TO_SPOINC payout
+SPOINC_TO_SOL sell
+SPOINC_TO_EMPIRE sell
+SPOINC_TO_FOOK sell
+```
+
+until Zeno confirms final production flow and liquidity safety.
+
+---
+
+## ⏳ Still Needed From Zeno / Gensuki
+
+Still needed:
+
+```text
+Exact final getPresaleDetails field names.
+Exact /buy request and response examples.
+Exact /claim request and response examples.
+Exact /confirm or /status lifecycle if used.
+Whether /claim returns unsigned transaction or final broadcast signature.
+transactionHash vs signature relationship.
+idempotencyId behavior.
+failed / cancelled / expired response examples.
+lookup table account field name for token routes.
+Exact moment Narrrfs should deduct DSPOINC in DSPOINC_TO_SPOINC.
+Exact moment Narrrfs should credit DSPOINC if using any Gensuki-managed SPOINC_TO_DSPOINC flow.
+```
+
+Critical rule:
+
+```text
+Do not guess the ledger moment.
+```
+
+---
+
+## ✅ Recommended Push Plan After Local Tiny Test
+
+Only after local tiny Phantom test passes:
+
+```bash
+git add \
+  public/swap-lab.html \
+  api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php \
+  api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php \
+  api/partner/spoinc/bridge-helpers.php \
+  api/partner/spoinc/bridge-tester-helpers.php \
+  12.0/ACTIVE_STATUS/QUICK_STATUS.md
+
+git status
+git commit -m "Add private SPOINC to DSPOINC deposit bridge"
+git push origin render-deploy
+```
+
+Before adding helper files, check if they really changed.
+
+Do not add:
+
+```text
+api/config/gensuki-outbound-local.php
+```
+
+---
+
+## ✅ Final Agent 3.0 End State
+
+Current status for restart:
+
+```text
+SPOINC / DSPOINC bridge foundation is ready.
+Gensuki API proxy works.
+Swap Lab works locally again.
+Narrrf local login fallback works.
+Private tester panel works.
+Private real SPOINC → DSPOINC UI is present.
+Backend local real deposit proof passed once with 1 SPOINC.
+Next agent should run final tiny 0.0001 SPOINC local Phantom test, verify DB audit rows, then prepare push/live private test.
+```
+
+Next agent name:
+
+```text
+SPOINC / DSPOINC Agent 4.0
+```
+
+
+## FOLLOW-UP — SPOINC → DSPOINC PRIVATE REAL BRIDGE PREP / HELPER API LAYER CONFIRMED
+
+**Date:** 2026-06-28
+**Status:** Ready to begin private real SPOINC → DSPOINC bridge build for Narrrf + justme
+**Scope:** SPOINC / DSPOINC bridge / private deposit proof / partner API helper layer
+
+---
+
+## ✅ Partner SPOINC API Folder Confirmed
+
+The project already has a full SPOINC partner API helper layer in:
+
+```text
+api/partner/spoinc/
+```
+
+Confirmed files:
+
+```text
+bridge-helpers.php
+bridge-tester-helpers.php
+check-bridge-tester-access.php
+create-bridge-intent-preview.php
+get-bridge-config.php
+get-bridge-routes.php
+get-dspoinc-balance.php
+get-gensuki-presale-details.php
+get-user-bridge-history.php
+get-user-bridge-preview.php
+```
+
+Important development rule:
+
+```text
+Do not duplicate DB/session/config/tester helper logic.
+Reuse bridge-helpers.php and bridge-tester-helpers.php where possible.
+Inspect existing helper function names before writing new endpoints.
+```
+
+---
+
+## ✅ Live Private Preview Tests Passed
+
+Narrrf and justme both tested the live Swap Lab private tester panel.
+
+Testers:
+
+```text
+Narrrf: 328601656659017732
+justme: 1224428436928594015
+```
+
+Both routes were tested:
+
+```text
+SPOINC_TO_DSPOINC
+DSPOINC_TO_SPOINC
+```
+
+All rows stayed in the correct safe preview state:
+
+```text
+status: private_test_preview
+gensuki_status: not_submitted
+narrrfs_status: not_settled
+```
+
+Live DB safety checks:
+
+```text
+tbl_spoinc_bridge_ledger_audit rows: 0
+tbl_spoinc_bridge_transactions rows: 0
+```
+
+Bad status check returned no rows.
+
+This confirms:
+
+```text
+No DSPOINC debit
+No DSPOINC credit
+No Gensuki transaction submitted by Narrrfs
+No settlement
+Only private preview intent rows were written
+```
+
+---
+
+## ✅ Community Wallet Chosen For SPOINC Deposits
+
+Receiver wallet for real private SPOINC → DSPOINC deposit tests:
+
+```text
+62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+```
+
+Planned config update:
+
+```text
+pool_wallet = 62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+funding_receiver = 62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+```
+
+Public flags must remain disabled:
+
+```text
+public_enabled = 0
+settlement_enabled = 0
+external_sell_enabled = 0
+```
+
+---
+
+## ✅ Live DB Schema Verified For Real Deposit Proof
+
+Verified tables:
+
+```text
+tbl_spoinc_bridge_intents
+tbl_spoinc_bridge_transactions
+tbl_spoinc_bridge_ledger_audit
+tbl_user_scores
+tbl_score_adjustments
+tbl_spoinc_bridge_config
+```
+
+The schema has the needed columns for real private SPOINC deposit proof:
+
+```text
+tbl_spoinc_bridge_intents:
+intent_id
+idempotency_id
+discord_id
+wallet
+route_key
+direction
+input_amount
+expected_output_amount
+dspoinc_amount
+spoinc_amount
+status
+gensuki_status
+narrrfs_status
+submitted_at
+confirmed_at
+settled_at
+failed_at
+raw_request_json
+raw_response_json
+error_message
+
+tbl_spoinc_bridge_transactions:
+transaction_id
+intent_id
+idempotency_id
+transaction_hash
+signature
+wallet
+route_key
+direction
+narrrfs_status
+raw_get_transaction_response_json
+confirmed_at
+failed_at
+
+tbl_spoinc_bridge_ledger_audit:
+audit_id
+intent_id
+transaction_id
+idempotency_id
+transaction_hash
+discord_id
+wallet
+route_key
+direction
+ledger_action
+dspoinc_delta
+spoinc_amount
+tbl_user_scores_id
+tbl_score_adjustment_id
+status
+metadata_json
+processed_at
+```
+
+Conclusion:
+
+```text
+The current schema is sufficient for verified SPOINC deposit → DSPOINC credit testing.
+```
+
+---
+
+## ✅ Direction To Build First
+
+Start with:
+
+```text
+SPOINC_TO_DSPOINC
+```
+
+Reason:
+
+```text
+This can be built without Zeno because Narrrfs can verify a real on-chain SPOINC SPL transfer into the community wallet, then credit DSPOINC internally.
+```
+
+Do not start with:
+
+```text
+DSPOINC_TO_SPOINC
+```
+
+Reason:
+
+```text
+That requires Narrrfs or Gensuki to send real SPOINC out.
+This should come later as manual admin payout or protected payout signer flow.
+```
+
+---
+
+## ✅ Planned Private Real SPOINC → DSPOINC Flow
+
+Private test flow:
+
+```text
+1. Narrrf / justme creates real SPOINC_TO_DSPOINC deposit intent.
+2. Backend returns receiver wallet:
+   62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325
+3. User sends SPOINC from Phantom to the community wallet.
+4. User pastes Solana transaction signature.
+5. Backend fetches and verifies the Solana transaction.
+6. Backend confirms:
+   - tx signature is valid
+   - SPOINC mint matches FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg
+   - receiver wallet is the community wallet
+   - sender wallet matches the intent wallet
+   - amount is at least the expected SPOINC amount
+   - signature was not used before
+7. Backend inserts transaction row.
+8. Backend inserts DSPOINC credit into tbl_user_scores.
+9. Backend inserts bridge ledger audit row.
+10. Backend marks intent settled.
+```
+
+---
+
+## ⚠️ First Real Test Cap
+
+For the first private real bridge test:
+
+```text
+Max SPOINC_TO_DSPOINC amount: 1 SPOINC
+Expected DSPOINC credit: 10,000 DSPOINC
+Tester-only: Narrrf + justme
+```
+
+No large real test amounts.
+
+---
+
+## ⏭ Next Coding Step
+
+Before writing the new endpoints, inspect existing helpers:
+
+```bash
+sed -n '1,260p' api/partner/spoinc/bridge-tester-helpers.php
+sed -n '1,260p' api/partner/spoinc/bridge-helpers.php
+```
+
+Then build using existing helper names.
+
+Planned new endpoints:
+
+```text
+api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php
+api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php
+```
+
+Do not invent duplicate helper functions until existing helpers are reviewed.
+
+---
+
+## 🚫 Still Disabled
+
+Keep disabled:
+
+```text
+public bridge execution
+public settlement
+DSPOINC_TO_SPOINC real payout
+external SPOINC sell routes
+large amount testing
+automatic SPOINC payout wallet signer
+```
+
+Current allowed scope:
+
+```text
+Private Narrrf + justme only.
+SPOINC_TO_DSPOINC only.
+Verified deposit proof only.
+Tiny test cap only.
+```
+
+
+## FOLLOW-UP — NARRRF + JUSTME LIVE SWAP LAB PRIVATE INTENT TESTS PASSED
+
+**Date:** 2026-06-28
+**Status:** Live private Swap Lab tester intent flow confirmed for Narrrf + justme
+**Scope:** SPOINC / DSPOINC bridge preview / live DB audit / private tester mode
+
+---
+
+## ✅ Live Private Tester Flow Confirmed
+
+Narrrf and justme both tested the live Swap Lab private tester panel.
+
+Testers:
+
+```text
+Narrrf: 328601656659017732
+justme: 1224428436928594015
+```
+
+Both routes were tested:
+
+```text
+SPOINC_TO_DSPOINC
+DSPOINC_TO_SPOINC
+```
+
+Live DB confirmed intent rows were created in:
+
+```text
+tbl_spoinc_bridge_intents
+```
+
+Correct safe state for all tester rows:
+
+```text
+status: private_test_preview
+gensuki_status: not_submitted
+narrrfs_status: not_settled
+```
+
+---
+
+## ✅ justme Live DB Results
+
+justme created multiple live private preview intents.
+
+Latest confirmed examples:
+
+```text
+SPOINC_TO_DSPOINC | 80 SPOINC → 800,000 DSPOINC
+DSPOINC_TO_SPOINC | 800,000 DSPOINC → 80 SPOINC
+DSPOINC_TO_SPOINC | 80 DSPOINC → 0.008 SPOINC
+```
+
+All rows stayed:
+
+```text
+private_test_preview / not_submitted / not_settled
+```
+
+---
+
+## ✅ Tester Summary Counts
+
+Live DB route counts:
+
+```text
+justme DSPOINC_TO_SPOINC: 4
+justme SPOINC_TO_DSPOINC: 4
+Narrrf DSPOINC_TO_SPOINC: 1
+Narrrf SPOINC_TO_DSPOINC: 1
+```
+
+---
+
+## ✅ Safety Checks Passed
+
+Live DB safety checks:
+
+```text
+tbl_spoinc_bridge_ledger_audit rows: 0
+tbl_spoinc_bridge_transactions rows: 0
+```
+
+Bad status check returned no rows.
+
+This confirms:
+
+```text
+No DSPOINC debit
+No DSPOINC credit
+No Gensuki transaction submitted by Narrrfs
+No bridge settlement
+No transaction record created
+Only private preview intent rows were written
+```
+
+---
+
+## ✅ Gensuki Route Test Status
+
+Current external Gensuki buy route status:
+
+```text
+SOL → SPOINC: working
+EMPIRE → SPOINC: working after Zeno fix
+FOOK → SPOINC: works with smaller amount, larger token route still needs LUT
+```
+
+Zeno confirmed:
+
+```text
+SOL is okay.
+Token routes need LUT accounts.
+Larger token swaps involve more accounts.
+```
+
+Zeno plans to add LUT support and return the LUT address in the API response.
+
+---
+
+## ⚠️ Important Note For Next Phase
+
+Some preview tests used very large values, which is okay in preview-only mode.
+
+For real private swap testing, use strict tiny test caps only:
+
+```text
+SPOINC_TO_DSPOINC: max 1 SPOINC first
+DSPOINC_TO_SPOINC: max 10,000 DSPOINC first
+```
+
+Do not allow large real settlement tests until transaction, confirmation, idempotency, and rollback rules are fully proven.
+
+---
+
+## ⏭ Next Work — Private Real Swap Phase
+
+Next goal:
+
+```text
+Make real swap possible only for Narrrf + justme.
+```
+
+Do this in phases:
+
+```text
+1. Keep public bridge disabled.
+2. Keep tester allowlist required.
+3. Build private real execution endpoint only for Narrrf + justme.
+4. Start with one direction only, preferably SPOINC_TO_DSPOINC or DSPOINC_TO_SPOINC after Zeno confirms exact flow.
+5. Store Gensuki response, tx/signature, lookup_table_account, and raw payload.
+6. Do not settle DSPOINC until confirmation rules are final.
+7. Add settlement only after transaction proof and status confirmation are tested.
+```
+
+Still disabled for public users:
+
+```text
+public bridge execution
+DSPOINC debit
+DSPOINC credit
+settlement
+external sell routes
+large amount testing
+```
+
+
 ## FOLLOW-UP — SPOINC BACKEND GENSUKI PROXY WORKING LOCALLY / ENV SPLIT CONFIRMED
 
 **Date:** 2026-06-28

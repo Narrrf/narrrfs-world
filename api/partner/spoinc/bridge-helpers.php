@@ -162,7 +162,8 @@ function spoinc_bridge_is_valid_solana_address(string $value): bool
  * - use Discord session only
  *
  * Localhost:
- * - allow user_id override for curl testing
+ * - allow user_id override for local browser and curl testing
+ * - this mirrors Genesis Freezer local resolver behavior
  */
 function spoinc_bridge_resolve_session_user_id(array $requestData): string
 {

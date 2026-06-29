@@ -10,6 +10,7 @@
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="discord-config.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
   <style>
     :root {
       --cheese: #facc15;
@@ -476,6 +477,70 @@
       </article>
     </section>
 
+    <section class="section-card mt-8 p-5 md:p-7" aria-label="Live SPOINC market pulse">
+  <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div>
+      <div class="pill cyan mb-4">📡 Live Gensuki Market Pulse</div>
+      <h2 class="text-3xl font-black md:text-4xl">Current SPOINC buy ratios</h2>
+      <p class="mt-3 max-w-5xl text-sm leading-relaxed text-slate-300">
+        Loaded through the Narrrfs backend from Gensuki. This display is read-only:
+        no transaction is created, no Gensuki key is exposed, and no DSPOINC ledger movement happens here.
+      </p>
+    </div>
+    <button id="refreshMarketPulseButton" class="btn cyan shrink-0" type="button">🔄 Refresh ratios</button>
+  </div>
+
+  <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
+      <div class="label">USD Price</div>
+      <div id="marketPulseUsdPrice" class="mt-2 text-2xl font-black text-yellow-100">Loading...</div>
+      <p class="mt-1 text-xs text-slate-400">Gensuki tokenPriceUsd / tokenPrice.</p>
+    </article>
+
+    <article class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
+      <div class="label">SOL Ratio</div>
+      <div id="marketPulseSolRatio" class="mt-2 text-2xl font-black text-cyan-100">Loading...</div>
+      <p class="mt-1 text-xs text-slate-400">Gensuki tokenPriceNative if returned.</p>
+    </article>
+
+    <article class="rounded-2xl border border-purple-300/20 bg-purple-400/10 p-4">
+      <div class="label">EMPIRE Route</div>
+      <div id="marketPulseEmpireRoute" class="mt-2 text-2xl font-black text-purple-100">Checking...</div>
+      <p class="mt-1 text-xs text-slate-400">Buy route availability only. Exact quote comes from buy API.</p>
+    </article>
+
+    <article class="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-4">
+      <div class="label">FOOK Route</div>
+      <div id="marketPulseFookRoute" class="mt-2 text-2xl font-black text-emerald-100">Checking...</div>
+      <p class="mt-1 text-xs text-slate-400">Tiny tests only until LUT token routes are clean.</p>
+    </article>
+  </div>
+
+  <div class="mt-5 grid gap-4 md:grid-cols-3">
+    <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div class="label">DSPOINC Bridge Ratio</div>
+      <div id="marketPulseBridgeRatio" class="mt-2 font-black text-white">10,000 DSPOINC = 1 SPOINC</div>
+      <p class="mt-1 text-xs text-slate-400">Narrrfs internal bridge math. This is not a Gensuki buy quote.</p>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div class="label">Sell Back</div>
+      <div id="marketPulseSellState" class="mt-2 font-black text-red-200">Loading...</div>
+      <p class="mt-1 text-xs text-slate-400">If disableSell is true, Swap Lab must not call Gensuki /sell.</p>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div class="label">Allowed Buy Tokens</div>
+      <div id="marketPulseAllowedTokens" class="mt-2 break-words text-sm font-black text-slate-100">Loading...</div>
+      <p class="mt-1 text-xs text-slate-400">Shown from Gensuki presale project details.</p>
+    </div>
+  </div>
+
+  <div id="marketPulseStatus" class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+    Loading Gensuki market pulse...
+  </div>
+</section>
+
     <section id="member-flow" class="section-card mt-8 p-5 md:p-7">
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
@@ -594,6 +659,21 @@
           <div class="pill cyan">Buy</div>
           <h3 class="mt-4 text-xl font-black text-white">Buy SPOINC on Gensuki</h3>
           <p class="mt-2 text-sm leading-relaxed text-slate-300">The verified SPOINC project data loads through our backend. Supported buy tokens are shown by the route map when Gensuki makes the public flow ready.</p>
+        <div class="mt-4 grid gap-3">
+  <a id="buySpoincSolButton" href="#" target="_blank" rel="noopener noreferrer" class="btn primary w-full">
+    ☀️ Buy SPOINC with SOL on Gensuki
+  </a>
+  <a id="buySpoincEmpireButton" href="#" target="_blank" rel="noopener noreferrer" class="btn cyan w-full">
+    🟣 Buy SPOINC with EMPIRE on Gensuki
+  </a>
+  <a id="buySpoincFookButton" href="#" target="_blank" rel="noopener noreferrer" class="btn ghost w-full">
+    🐸 Buy SPOINC with FOOK on Gensuki
+  </a>
+</div>
+
+<p class="mt-3 text-xs leading-relaxed text-slate-400">
+  These buttons open Gensuki. Narrrfs does not execute buy transactions in the browser and no Gensuki API key is exposed here.
+</p>
         </article>
         <article class="explain-card">
           <div class="pill">Swap</div>
@@ -659,7 +739,11 @@
         <div>
           <div class="pill green mb-4">🧪 Private Tester Mode</div>
           <h2 class="text-3xl font-black text-emerald-100 md:text-4xl">Narrrf + justme intent testing</h2>
-          <p class="mt-3 text-sm leading-relaxed text-slate-300">This panel is only visible after backend tester allowlist confirmation. It creates private intent preview rows for audit testing. It does not call Gensuki transaction endpoints, does not create a Solana transaction, and does not change DSPOINC balances.</p>
+          <p class="mt-3 text-sm leading-relaxed text-slate-300">This panel is only visible after backend tester allowlist confirmation. It creates private intent preview rows for audit testing. It does not call Gensuki transaction endpoints, does not create a Solana transaction, and does not change DSPOINC balances.</p><h2 class="text-3xl font-black text-emerald-100 md:text-4xl">Narrrf + justme private bridge testing</h2>
+<p class="mt-3 text-sm leading-relaxed text-slate-300">
+  This panel is only visible after backend tester allowlist confirmation. Preview intent buttons still create audit-only rows.
+  The real SPOINC → DSPOINC box below can credit DSPOINC only after a verified SPOINC transfer to the Narrrfs community wallet.
+</p>
           <div id="testerIdentity" class="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-sm font-black text-emerald-100">Tester loading...</div>
         </div>
         <div class="grid gap-4">
@@ -684,16 +768,99 @@
         </div>
       </div>
       <div id="testerResult" class="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">Ready for private intent preview.</div>
+    <div class="mt-6 rounded-3xl border border-cyan-300/25 bg-cyan-400/10 p-5">
+  <div class="pill cyan mb-4">🌉 Real Test • SPOINC → DSPOINC</div>
+  <h3 class="text-2xl font-black text-cyan-100">Verified SPOINC deposit test</h3>
+  <p class="mt-2 text-sm leading-relaxed text-slate-300">
+    Private tester flow only. Create a deposit intent, send SPOINC from the sender wallet to the Narrrfs community wallet,
+    then paste the Solana transaction signature to confirm and credit DSPOINC.
+  </p>
+
+  <div class="mt-5 grid gap-4 lg:grid-cols-2">
+    <div>
+      <label for="realDepositWallet" class="label">Sender Wallet</label>
+      <input id="realDepositWallet" class="input mt-2" type="text" placeholder="Wallet that sends SPOINC" />
+      <p class="mt-2 text-xs text-slate-400">Use your Phantom sender wallet, not the community receiver wallet.</p>
+    </div>
+
+    <div>
+      <label for="realDepositAmount" class="label">SPOINC Amount</label>
+      <input id="realDepositAmount" class="input mt-2" type="number" min="0" max="50" step="0.0001" placeholder="Example: 1" value="1" />
+      <p class="mt-2 text-xs text-slate-400">Private cap: 50 SPOINC. 1 SPOINC credits 10,000 DSPOINC after verification.</p>
+    </div>
+
+    <div class="lg:col-span-2">
+     <label for="realDepositSignature" class="label">Gensuki Transaction Hash / Signature fallback</label>
+<input id="realDepositSignature" class="input mt-2" type="text" placeholder="Auto-filled after Gensuki claim transaction. Manual paste only if needed." />
+    </div>
+  </div>
+
+  <div class="mt-4 grid gap-3 sm:grid-cols-2">
+    <button id="createRealDepositIntentButton" class="btn cyan" type="button">
+      1️⃣ Create Real Deposit Intent
+    </button>
+    <button id="confirmRealDepositButton" class="btn green" type="button">
+  2️⃣ Send with Phantom + Auto Credit
+</button>
+  </div>
+
+  <div id="realDepositResult" class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
+    Ready for private real SPOINC → DSPOINC test.
+  </div>
+</div>
     </section>
+
+    <div class="mt-6 rounded-3xl border border-yellow-300/20 bg-yellow-400/10 p-5">
+  <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+    <div>
+      <div class="pill yellow mb-3">🧪 Private Buy Test</div>
+      <h3 class="text-2xl font-black text-yellow-100">SOL → SPOINC Gensuki Buy</h3>
+      <p class="mt-2 text-sm leading-relaxed text-slate-300">
+        Private Narrrf / justme test only. This calls Narrrfs backend, Narrrfs backend calls Gensuki /buy,
+        Phantom signs the returned transaction, then Narrrfs calls Gensuki /confirm.
+        No DSPOINC credit or debit happens in this buy test.
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-4 grid gap-4 md:grid-cols-2">
+    <label class="block">
+      <span class="label">Buyer Wallet</span>
+      <input id="gensukiBuyWallet" class="input mt-2 w-full" type="text" placeholder="Your Phantom wallet" />
+    </label>
+
+    <label class="block">
+      <span class="label">SOL Amount</span>
+<input id="gensukiBuyAmount" class="input mt-2" type="number" min="0.015" max="0.05" step="0.001" value="0.015" />    </label>
+  </div>
+
+  <div class="mt-4 flex flex-col gap-3 md:flex-row">
+    <button id="createGensukiBuyIntentButton" class="btn yellow" type="button">
+      1️⃣ Create SOL Buy Intent
+    </button>
+    <button id="confirmGensukiBuyButton" class="btn cyan" type="button">
+      2️⃣ Sign with Phantom + Confirm Buy
+    </button>
+  </div>
+
+  <label class="mt-4 block">
+    <span class="label">Gensuki Buy Transaction Hash / Signature fallback</span>
+    <input id="gensukiBuySignature" class="input mt-2 w-full" type="text" placeholder="Auto-filled after Phantom sends. Manual paste only if needed." />
+  </label>
+
+  <div id="gensukiBuyResult" class="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-slate-300">
+    First test: 0.015 SOL because Gensuki requires a minimum $1 buy. No DSPOINC movement.
+  </div>
+</div>
 
     <section class="warning-card mt-8 border-yellow-300/30 p-5 md:p-7">
       <div class="pill red mb-4">🛡️ Safety Rules</div>
-      <h2 class="text-2xl font-black md:text-3xl">What this page does not do yet</h2>
+      <h2 class="text-2xl font-black md:text-3xl">What remains protected</h2>
       <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No public swap</div><p class="mt-1 text-sm text-slate-400">Members can preview, not execute.</p></div>
-        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No DSPOINC debit</div><p class="mt-1 text-sm text-slate-400">No DSPOINC is removed here.</p></div>
-        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No DSPOINC credit</div><p class="mt-1 text-sm text-slate-400">No DSPOINC is added here.</p></div>
-        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No frontend key</div><p class="mt-1 text-sm text-slate-400">Gensuki key stays backend-only.</p></div>
+        <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No public swap</div><p class="mt-1 text-sm text-slate-400">Members can preview only while private testing runs.</p></div>
+<div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No DSPOINC debit</div><p class="mt-1 text-sm text-slate-400">DSPOINC → SPOINC payout is still disabled.</p></div>
+<div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-yellow-100">Private credit test only</div><p class="mt-1 text-sm text-slate-400">Narrrf + justme can test SPOINC → DSPOINC after verified transfer.</p></div>
+<div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No frontend key</div><p class="mt-1 text-sm text-slate-400">Gensuki key stays backend-only.</p></div>
       </div>
     </section>
   </main>
@@ -706,15 +873,125 @@
     const GENSUKI_DETAILS_ENDPOINT = '/api/partner/spoinc/get-gensuki-presale-details.php';
     const BRIDGE_TESTER_ACCESS_ENDPOINT = '/api/partner/spoinc/check-bridge-tester-access.php';
     const BRIDGE_INTENT_PREVIEW_ENDPOINT = '/api/partner/spoinc/create-bridge-intent-preview.php';
+    const SPOINC_DEPOSIT_INTENT_ENDPOINT = '/api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php';
+const SPOINC_DEPOSIT_CONFIRM_ENDPOINT = '/api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php';
+const SPOINC_DECIMALS = 9;
+const SPL_TOKEN_PROGRAM_ID = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+const SPL_ASSOCIATED_TOKEN_PROGRAM_ID = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
+const SOLANA_SYSTEM_PROGRAM_ID = '11111111111111111111111111111111';
+const LOCAL_TEST_DISCORD_ID = '328601656659017732';
+const LOCAL_TEST_DISCORD_NAME = 'Narrrf Local Test';
+
+const SPOINC_BUY_INTENT_ENDPOINT = '/api/partner/spoinc/create-gensuki-buy-intent.php';
+const SPOINC_BUY_CONFIRM_ENDPOINT = '/api/partner/spoinc/confirm-gensuki-buy-intent.php';
+
+/**
+ * Return true when Swap Lab is running on local development.
+ *
+ * DEVS FOR DECADES:
+ * Local XAMPP cannot share the live narrrfs.world Discord session cookie.
+ * This helper allows Narrrf-only local bridge testing without changing
+ * production login behavior.
+ */
+function isLocalSwapLabHost() {
+  return ['localhost', '127.0.0.1'].includes(window.location.hostname);
+}
+
+/**
+ * Apply the Narrrf local test identity only on localhost.
+ *
+ * DEVS FOR DECADES:
+ * This is frontend convenience only. Backend tester endpoints still enforce
+ * their own localhost + allowlist rules. Do not use this to grant public access.
+ */
+function applyLocalNarrrfTestIdentity() {
+  if (!isLocalSwapLabHost()) {
+    return false;
+  }
+
+  state.discordId = LOCAL_TEST_DISCORD_ID;
+  state.discordName = LOCAL_TEST_DISCORD_NAME;
+  window.sessionDiscordId = LOCAL_TEST_DISCORD_ID;
+  window.sessionDiscordUsername = LOCAL_TEST_DISCORD_NAME;
+
+  localStorage.setItem('discord_id', LOCAL_TEST_DISCORD_ID);
+  localStorage.setItem('narrrfs_last_discord_id', LOCAL_TEST_DISCORD_ID);
+  localStorage.setItem('discord_name', LOCAL_TEST_DISCORD_NAME);
+  localStorage.setItem('narrrfs_last_discord_name', LOCAL_TEST_DISCORD_NAME);
+  localStorage.setItem('DISCORD_NAME', LOCAL_TEST_DISCORD_NAME);
+
+  return true;
+}
+const GENSUKI_SPOINC_BUY_URL = 'https://app.gensuki.xyz/gunfun/custom-presale/7e04b38a-7bd4-4fab-acc4-dfa53a99b639';
 
     const state = {
-      discordId: '',
-      discordName: '',
-      config: null,
-      routes: [],
-      testerEnabled: false,
-      userPreview: null
-    };
+  discordId: '',
+  discordName: '',
+  config: null,
+  routes: [],
+  testerEnabled: false,
+  userPreview: null,
+  latestGensukiBuyIntent: null,
+  latestRealDepositIntent: null
+};
+
+/**
+ * Force Narrrf local identity for XAMPP-only Swap Lab testing.
+ *
+ * DEVS FOR DECADES:
+ * Live Discord OAuth cookies belong to narrrfs.world and cannot be shared with
+ * localhost. This mirrors the local-dev behavior used on profile-style pages.
+ * Production never uses this because it only runs on localhost / 127.0.0.1.
+ */
+function forceLocalNarrrfSwapLabIdentity() {
+  if (!isLocalSwapLabHost()) {
+    return false;
+  }
+
+  state.discordId = LOCAL_TEST_DISCORD_ID;
+  state.discordName = LOCAL_TEST_DISCORD_NAME;
+
+  window.sessionDiscordId = LOCAL_TEST_DISCORD_ID;
+  window.sessionDiscordUsername = LOCAL_TEST_DISCORD_NAME;
+
+  localStorage.setItem('discord_id', LOCAL_TEST_DISCORD_ID);
+  localStorage.setItem('narrrfs_last_discord_id', LOCAL_TEST_DISCORD_ID);
+  localStorage.setItem('discord_name', LOCAL_TEST_DISCORD_NAME);
+  localStorage.setItem('narrrfs_last_discord_name', LOCAL_TEST_DISCORD_NAME);
+  localStorage.setItem('DISCORD_NAME', LOCAL_TEST_DISCORD_NAME);
+
+  sessionStorage.setItem('discord_id', LOCAL_TEST_DISCORD_ID);
+  sessionStorage.setItem('discord_name', LOCAL_TEST_DISCORD_NAME);
+
+  if (elements?.profileIdentity) {
+    elements.profileIdentity.textContent = `${LOCAL_TEST_DISCORD_NAME} (${LOCAL_TEST_DISCORD_ID})`;
+  }
+
+  console.info('🏠 Swap Lab local Narrrf identity active:', LOCAL_TEST_DISCORD_ID);
+  return true;
+}
+
+/**
+ * Return the active Discord ID for Swap Lab API calls.
+ *
+ * DEVS FOR DECADES:
+ * This prevents local test calls from accidentally using stale browser storage
+ * or an old local PHP session identity.
+ */
+function getActiveBridgeUserId() {
+  if (isLocalSwapLabHost()) {
+    forceLocalNarrrfSwapLabIdentity();
+    return LOCAL_TEST_DISCORD_ID;
+  }
+
+  return String(
+    state.discordId ||
+    window.sessionDiscordId ||
+    localStorage.getItem('discord_id') ||
+    localStorage.getItem('narrrfs_last_discord_id') ||
+    ''
+  ).trim();
+}
 
     const elements = {
       bridgeStatusText: document.getElementById('bridgeStatusText'),
@@ -743,7 +1020,16 @@
       poolWallet: document.getElementById('poolWallet'),
       projectStatus: document.getElementById('projectStatus'),
       projectSellBack: document.getElementById('projectSellBack'),
-      routesGrid: document.getElementById('routesGrid'),
+refreshMarketPulseButton: document.getElementById('refreshMarketPulseButton'),
+marketPulseUsdPrice: document.getElementById('marketPulseUsdPrice'),
+marketPulseSolRatio: document.getElementById('marketPulseSolRatio'),
+marketPulseEmpireRoute: document.getElementById('marketPulseEmpireRoute'),
+marketPulseFookRoute: document.getElementById('marketPulseFookRoute'),
+marketPulseBridgeRatio: document.getElementById('marketPulseBridgeRatio'),
+marketPulseSellState: document.getElementById('marketPulseSellState'),
+marketPulseAllowedTokens: document.getElementById('marketPulseAllowedTokens'),
+marketPulseStatus: document.getElementById('marketPulseStatus'),
+routesGrid: document.getElementById('routesGrid'),
       refreshRoutesButton: document.getElementById('refreshRoutesButton'),
       privateTesterPanel: document.getElementById('privateTesterPanel'),
       testerIdentity: document.getElementById('testerIdentity'),
@@ -751,7 +1037,22 @@
       testerAmount: document.getElementById('testerAmount'),
       testerDspoincToSpoinc: document.getElementById('testerDspoincToSpoinc'),
       testerSpoincToDspoinc: document.getElementById('testerSpoincToDspoinc'),
-      testerResult: document.getElementById('testerResult')
+      testerResult: document.getElementById('testerResult'),
+buySpoincSolButton: document.getElementById('buySpoincSolButton'),
+buySpoincEmpireButton: document.getElementById('buySpoincEmpireButton'),
+buySpoincFookButton: document.getElementById('buySpoincFookButton'),
+realDepositWallet: document.getElementById('realDepositWallet'),
+realDepositAmount: document.getElementById('realDepositAmount'),
+realDepositSignature: document.getElementById('realDepositSignature'),
+gensukiBuyWallet: document.getElementById('gensukiBuyWallet'),
+gensukiBuyAmount: document.getElementById('gensukiBuyAmount'),
+gensukiBuySignature: document.getElementById('gensukiBuySignature'),
+gensukiBuyResult: document.getElementById('gensukiBuyResult'),
+createGensukiBuyIntentButton: document.getElementById('createGensukiBuyIntentButton'),
+confirmGensukiBuyButton: document.getElementById('confirmGensukiBuyButton'),
+createRealDepositIntentButton: document.getElementById('createRealDepositIntentButton'),
+confirmRealDepositButton: document.getElementById('confirmRealDepositButton'),
+realDepositResult: document.getElementById('realDepositResult')
     };
 
     function escapeHtml(value) {
@@ -794,37 +1095,42 @@
       ).trim();
     }
 
-    async function hydrateSession() {
-      state.discordId = getStoredDiscordId();
-      state.discordName = getStoredDiscordName();
+async function hydrateSession() {
+  const localIdentityApplied = forceLocalNarrrfSwapLabIdentity();
 
-      try {
-        const response = await fetch('/api/user/get-session.php', { credentials: 'include', cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
-        const discordId = String(payload?.discord_id || '').trim();
-        const discordName = String(payload?.discord_username || payload?.username || '').trim();
+  if (!localIdentityApplied) {
+    state.discordId = getStoredDiscordId();
+    state.discordName = getStoredDiscordName();
 
-        if (discordId) {
-          state.discordId = discordId;
-          localStorage.setItem('discord_id', discordId);
-          localStorage.setItem('narrrfs_last_discord_id', discordId);
-        }
+    try {
+      const response = await fetch('/api/user/get-session.php', { credentials: 'include', cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        if (discordName) {
-          state.discordName = discordName;
-          localStorage.setItem('discord_name', discordName);
-          localStorage.setItem('narrrfs_last_discord_name', discordName);
-          localStorage.setItem('DISCORD_NAME', discordName);
-        }
-      } catch (error) {
-        console.warn('Swap Lab session hydration fallback active:', error);
+      const payload = await response.json();
+      const discordId = String(payload?.discord_id || '').trim();
+      const discordName = String(payload?.discord_username || payload?.username || '').trim();
+
+      if (discordId) {
+        state.discordId = discordId;
+        localStorage.setItem('discord_id', discordId);
+        localStorage.setItem('narrrfs_last_discord_id', discordId);
       }
 
-      elements.profileIdentity.textContent = state.discordId
-        ? `${state.discordName || 'Discord member'} (${state.discordId})`
-        : 'Not logged in yet';
+      if (discordName) {
+        state.discordName = discordName;
+        localStorage.setItem('discord_name', discordName);
+        localStorage.setItem('narrrfs_last_discord_name', discordName);
+        localStorage.setItem('DISCORD_NAME', discordName);
+      }
+    } catch (error) {
+      console.warn('Swap Lab session hydration fallback active:', error);
     }
+  }
+
+  elements.profileIdentity.textContent = state.discordId
+    ? `${state.discordName || 'Discord member'} (${state.discordId})`
+    : 'Not logged in yet';
+}
 
     async function loadBridgeConfig() {
       try {
@@ -865,6 +1171,158 @@
       if (config?.admin_wallet && !elements.testerWallet.value) elements.testerWallet.value = config.admin_wallet;
     }
 
+
+const GENSUKI_KNOWN_BUY_TOKEN_LABELS = {
+  '11111111111111111111111111111111': 'SOL',
+  'empirdtfumfbqxejnnmtngeimjfizfusbd3tn9zqzydj': 'EMPIRE',
+  'g63a43wp5pkxbpo6vemjubfduvjrrskvwqezfwwrpump': 'FOOK'
+};
+/**
+ * Return a readable token label from a Gensuki allowed token entry.
+ *
+ * DEVS FOR DECADES:
+ * Gensuki currently returns allowed buy tokens mostly as mint addresses.
+ * This local display map only labels known payment tokens. It does not create
+ * quotes, does not execute buys, and does not decide whether a route is safe.
+ */
+function getAllowedTokenLabel(tokenEntry) {
+  if (typeof tokenEntry === 'string') {
+    const normalizedTokenAddress = tokenEntry.trim().toLowerCase();
+    return GENSUKI_KNOWN_BUY_TOKEN_LABELS[normalizedTokenAddress] || tokenEntry;
+  }
+
+  if (!tokenEntry || typeof tokenEntry !== 'object') {
+    return '';
+  }
+
+  const rawAddress = String(
+    tokenEntry.mint ||
+    tokenEntry.address ||
+    tokenEntry.tokenAddress ||
+    tokenEntry.token_address ||
+    ''
+  ).trim();
+
+  const normalizedAddress = rawAddress.toLowerCase();
+
+  if (GENSUKI_KNOWN_BUY_TOKEN_LABELS[normalizedAddress]) {
+    return GENSUKI_KNOWN_BUY_TOKEN_LABELS[normalizedAddress];
+  }
+
+  return String(
+    tokenEntry.symbol ||
+    tokenEntry.tokenSymbol ||
+    tokenEntry.name ||
+    tokenEntry.label ||
+    rawAddress
+  ).trim();
+}
+
+/**
+ * Check whether a token symbol appears in Gensuki allowed token details.
+ *
+ * Plain language for DEVS:
+ * This supports both readable symbols and known mint addresses. It is only for
+ * the read-only market pulse. Real route safety is still proven by Gensuki /buy.
+ */
+function isBuyTokenVisible(allowedTokens, symbol) {
+  const target = String(symbol || '').toLowerCase();
+
+  return allowedTokens.some((tokenEntry) => {
+    const label = getAllowedTokenLabel(tokenEntry).toLowerCase();
+    const rawJson = JSON.stringify(tokenEntry || {}).toLowerCase();
+
+    if (label === target) {
+      return true;
+    }
+
+    if (target === 'sol' && rawJson.includes('11111111111111111111111111111111')) {
+      return true;
+    }
+
+    if (target === 'empire' && rawJson.includes('empirdtfumfbqxejnnmtngeimjfizfusbd3tn9zqzydj')) {
+      return true;
+    }
+
+    if (target === 'fook' && rawJson.includes('g63a43wp5pkxbpo6vemjubfduvjrrskvwqezfwwrpump')) {
+      return true;
+    }
+
+    return rawJson.includes(target);
+  });
+}
+
+/**
+ * Render the read-only SPOINC market pulse from public-safe Gensuki details.
+ *
+ * DEVS FOR DECADES:
+ * This function only displays ratios and route hints. It must never call buy,
+ * sell, claim, confirm, or any ledger movement endpoint.
+ */
+function renderGensukiMarketPulse(project) {
+  const allowedTokens = Array.isArray(project.allowed_tokens) ? project.allowed_tokens : [];
+  const tokenPriceUsd = String(project.token_price_usd || '').trim();
+  const tokenPriceNative = String(project.token_price_native || '').trim();
+
+  if (elements.marketPulseUsdPrice) {
+    elements.marketPulseUsdPrice.textContent = tokenPriceUsd ? `$${tokenPriceUsd}` : 'Pending';
+  }
+
+  if (elements.marketPulseSolRatio) {
+    elements.marketPulseSolRatio.textContent = tokenPriceNative
+      ? `1 SPOINC ≈ ${tokenPriceNative} SOL`
+      : 'SOL quote pending';
+  }
+
+  if (elements.marketPulseBridgeRatio) {
+    elements.marketPulseBridgeRatio.textContent = '10,000 DSPOINC = 1 SPOINC';
+  }
+
+  const empireVisible = isBuyTokenVisible(allowedTokens, 'EMPIRE');
+  const fookVisible = isBuyTokenVisible(allowedTokens, 'FOOK');
+  const solVisible = isBuyTokenVisible(allowedTokens, 'SOL') || isBuyTokenVisible(allowedTokens, '11111111111111111111111111111111');
+
+  if (elements.marketPulseEmpireRoute) {
+    elements.marketPulseEmpireRoute.textContent = empireVisible ? 'Visible' : 'Pending';
+  }
+
+  if (elements.marketPulseFookRoute) {
+    elements.marketPulseFookRoute.textContent = fookVisible ? 'Visible' : 'Pending';
+  }
+
+  if (elements.marketPulseSellState) {
+    elements.marketPulseSellState.textContent = project.disable_sell ? 'Disabled / protected' : 'Enabled';
+    elements.marketPulseSellState.className = project.disable_sell
+      ? 'mt-2 font-black text-red-200'
+      : 'mt-2 font-black text-emerald-200';
+  }
+
+  if (elements.marketPulseAllowedTokens) {
+    const readableTokens = allowedTokens
+      .map(getAllowedTokenLabel)
+      .filter(Boolean);
+
+    elements.marketPulseAllowedTokens.textContent = readableTokens.length
+      ? readableTokens.join(' • ')
+      : 'No token list returned';
+  }
+
+  if (elements.marketPulseStatus) {
+    elements.marketPulseStatus.innerHTML = `
+      <div class="font-black text-white">✅ Gensuki project details loaded through Narrrfs backend</div>
+      <div class="mt-2 grid gap-2 md:grid-cols-2">
+        <div>Project: <strong>${escapeHtml(project.project_name || 'SPOINC')}</strong></div>
+        <div>Status: <strong>${escapeHtml(project.status || 'unknown')}</strong></div>
+        <div>SOL buy route: <strong>${solVisible ? 'visible' : 'pending'}</strong></div>
+        <div>Sell route: <strong>${project.disable_sell ? 'disabled' : 'enabled'}</strong></div>
+      </div>
+      <div class="mt-3 text-xs text-slate-400">
+        EMPIRE / FOOK exact ratios should come from Gensuki buy quote/transaction testing, not frontend guessing.
+      </div>
+    `;
+  }
+}
+
     async function loadGensukiProjectDetails() {
       try {
         const response = await fetch(GENSUKI_DETAILS_ENDPOINT, { credentials: 'include', cache: 'no-store' });
@@ -886,58 +1344,84 @@
         if (poolAddress) elements.poolWallet.textContent = poolAddress;
         elements.projectStatus.textContent = project.status || 'active';
         elements.projectSellBack.textContent = project.disable_sell ? 'Protected in V1' : 'Available';
+        renderGensukiMarketPulse(project);
       } catch (error) {
         elements.projectSummary.textContent = 'Public-safe Gensuki project details are not available yet.';
-        console.warn(error);
+
+if (elements.marketPulseStatus) {
+  elements.marketPulseStatus.innerHTML = `
+    <div class="font-black text-red-100">❌ Gensuki market pulse unavailable</div>
+    <div class="mt-2 text-xs text-slate-400">
+      The read-only presale details proxy did not return public-safe project data.
+      No transaction was created and no DSPOINC ledger movement happened.
+    </div>
+  `;
+}
+
+console.warn(error);
       }
     }
 
-    async function loadUserPreview() {
-      if (!state.discordId) {
-        elements.availableDspoinc.textContent = 'Login needed';
-        elements.maxConvertibleSpoinc.textContent = '—';
-        elements.profileAvailable.textContent = 'Login needed';
-        elements.profileFrozen.textContent = '—';
-        elements.profileMaxSpoinc.textContent = '—';
-        return;
-      }
+ /**
+ * Load the active user's DSPOINC bridge preview.
+ *
+ * DEVS FOR DECADES:
+ * This function is read-only. It only displays backend-authoritative DSPOINC
+ * balance math. It must not create bridge intents, clear transaction signatures,
+ * or prepare settlement state.
+ */
+async function loadUserPreview() {
+  const activeDiscordId = getActiveBridgeUserId();
 
-      try {
-        const response = await fetch(BRIDGE_PREVIEW_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ user_id: state.discordId })
-        });
-        const payload = await response.json();
-        if (!payload.success) throw new Error(payload.error || 'Preview load failed.');
+  if (!activeDiscordId) {
+    elements.availableDspoinc.textContent = 'Login needed';
+    elements.maxConvertibleSpoinc.textContent = '—';
+    elements.profileAvailable.textContent = 'Login needed';
+    elements.profileFrozen.textContent = '—';
+    elements.profileMaxSpoinc.textContent = '—';
+    return;
+  }
 
-        const data = payload.data || {};
-        const balance = data.balance || data.dspoinc_balance || data;
-        const available = Number(balance.available_dspoinc ?? balance.available ?? balance.available_balance ?? 0);
-        const frozen = Number(balance.frozen_dspoinc ?? balance.frozen ?? balance.frozen_balance ?? 0);
-        const total = Number(balance.total_dspoinc ?? balance.total ?? balance.total_balance ?? 0);
-        const maxSpoinc = available / DSPOINC_PER_SPOINC;
+  try {
+    const response = await fetch(BRIDGE_PREVIEW_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ user_id: activeDiscordId })
+    });
 
-        state.userPreview = data;
-        elements.availableDspoinc.textContent = `${formatNumber(available, 0)} DSPOINC`;
-        elements.maxConvertibleSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
-        elements.profileAvailable.textContent = `${formatNumber(available, 0)} DSPOINC`;
-        elements.profileFrozen.textContent = `${formatNumber(frozen, 0)} DSPOINC`;
-        elements.profileMaxSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
+    const payload = await response.json();
 
-        if (total > 0) {
-          elements.profileIdentity.textContent = `${state.discordName || 'Discord member'} (${state.discordId})`;
-        }
-      } catch (error) {
-        elements.availableDspoinc.textContent = 'Preview unavailable';
-        elements.maxConvertibleSpoinc.textContent = '—';
-        elements.profileAvailable.textContent = 'Preview unavailable';
-        elements.profileFrozen.textContent = '—';
-        elements.profileMaxSpoinc.textContent = '—';
-        console.warn(error);
-      }
+    if (!payload.success) {
+      throw new Error(payload.error || 'Preview load failed.');
     }
+
+    const data = payload.data || {};
+    const balance = data.balance || data.dspoinc_balance || {};
+    const conversion = balance.conversion || {};
+
+    const available = Number(balance.available_dspoinc ?? balance.available ?? balance.available_balance ?? 0);
+    const frozen = Number(balance.frozen_dspoinc ?? balance.frozen ?? balance.frozen_balance ?? 0);
+    const total = Number(balance.total_dspoinc ?? balance.total ?? balance.total_balance ?? 0);
+    const maxSpoinc = Number(conversion.max_spoinc_convertible ?? (available / DSPOINC_PER_SPOINC));
+
+    state.userPreview = data;
+
+    elements.availableDspoinc.textContent = `${formatNumber(available, 0)} DSPOINC`;
+    elements.maxConvertibleSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
+    elements.profileAvailable.textContent = `${formatNumber(available, 0)} DSPOINC`;
+    elements.profileFrozen.textContent = `${formatNumber(frozen, 0)} DSPOINC`;
+    elements.profileMaxSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
+    elements.profileIdentity.textContent = `${state.discordName || 'Discord member'} (${activeDiscordId})`;
+  } catch (error) {
+    elements.availableDspoinc.textContent = 'Preview unavailable';
+    elements.maxConvertibleSpoinc.textContent = '—';
+    elements.profileAvailable.textContent = 'Preview unavailable';
+    elements.profileFrozen.textContent = '—';
+    elements.profileMaxSpoinc.textContent = '—';
+    console.warn('Swap Lab preview load failed:', error);
+  }
+}
 
     function getRouteDirectionLabel(route) {
       return `${route?.input_token || 'Input'} → ${route?.output_token || 'Output'}`;
@@ -1032,26 +1516,47 @@
         : 'Enter a DSPOINC amount to preview SPOINC.';
     }
 
-    async function loadPrivateTesterAccess() {
-      if (!state.discordId) return;
+/**
+ * Load private bridge tester access.
+ *
+ * DEVS FOR DECADES:
+ * The backend remains authoritative. This frontend only reveals the tester UI
+ * after the backend confirms Narrrf / justme allowlist access.
+ */
+async function loadPrivateTesterAccess() {
+  const activeDiscordId = getActiveBridgeUserId();
 
-      try {
-        const response = await fetch(BRIDGE_TESTER_ACCESS_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ user_id: state.discordId })
-        });
-        const payload = await response.json();
-        if (!payload.success || !payload.data?.tester_enabled) return;
+  if (!activeDiscordId) {
+    return;
+  }
 
-        state.testerEnabled = true;
-        elements.privateTesterPanel.classList.remove('hidden-soft');
-        elements.testerIdentity.textContent = `Private tester confirmed: ${state.discordName || state.discordId}`;
-      } catch (error) {
-        console.warn('Private tester access not enabled.', error);
-      }
+  try {
+    const response = await fetch(BRIDGE_TESTER_ACCESS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ user_id: activeDiscordId })
+    });
+
+    const payload = await response.json();
+    const testerEnabled = Boolean(
+      payload?.tester_enabled ||
+      payload?.data?.tester_enabled ||
+      payload?.data?.allowed
+    );
+
+    if (!payload.success || !testerEnabled) {
+      console.warn('Private tester access denied or disabled:', payload);
+      return;
     }
+
+    state.testerEnabled = true;
+    elements.privateTesterPanel.classList.remove('hidden-soft');
+    elements.testerIdentity.textContent = `Private tester confirmed: ${state.discordName || activeDiscordId}`;
+  } catch (error) {
+    console.warn('Private tester access not enabled.', error);
+  }
+}
 
     async function createPrivateIntent(routeKey) {
       if (!state.testerEnabled) {
@@ -1080,7 +1585,7 @@
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            user_id: state.discordId,
+            user_id: getActiveBridgeUserId(),
             wallet,
             route_key: routeKey,
             amount
@@ -1107,6 +1612,613 @@
       }
     }
 
+    function configureBuyButtons() {
+  const url = GENSUKI_SPOINC_BUY_URL;
+
+  [
+    elements.buySpoincSolButton,
+    elements.buySpoincEmpireButton,
+    elements.buySpoincFookButton
+  ].forEach((button) => {
+    if (!button) return;
+    button.href = url;
+  });
+}
+
+/**
+ * Return a Solana PublicKey instance.
+ *
+ * DEVS FOR DECADES:
+ * This keeps wallet / token-account conversion explicit and avoids relying on
+ * undocumented wallet adapter behavior.
+ */
+function createPublicKey(value) {
+  return new solanaWeb3.PublicKey(value);
+}
+
+/**
+ * Encode a JavaScript bigint into little-endian u64 bytes.
+ *
+ * DEVS FOR DECADES:
+ * SPL Token transferChecked expects the raw token amount as u64 little-endian.
+ */
+function encodeU64LittleEndian(value) {
+  const bytes = new Uint8Array(8);
+  let workingValue = BigInt(value);
+
+  for (let index = 0; index < 8; index += 1) {
+    bytes[index] = Number(workingValue & 255n);
+    workingValue >>= 8n;
+  }
+
+  return bytes;
+}
+
+/**
+ * Convert a SPOINC amount string into raw token units.
+ *
+ * DEVS FOR DECADES:
+ * SPOINC uses 9 decimals. This avoids floating point math for the actual token
+ * transfer amount sent to Phantom.
+ */
+function spoincAmountToRawUnits(amountText) {
+  const cleanedAmount = String(amountText || '').trim();
+
+  if (!/^\d+(\.\d{1,9})?$/.test(cleanedAmount)) {
+    throw new Error('SPOINC amount must be a positive number with max 9 decimals.');
+  }
+
+  const [wholePart, fractionPart = ''] = cleanedAmount.split('.');
+  const paddedFraction = `${fractionPart}000000000`.slice(0, SPOINC_DECIMALS);
+
+  return (BigInt(wholePart || '0') * 1000000000n) + BigInt(paddedFraction || '0');
+}
+
+/**
+ * Return the associated token account for one owner + mint.
+ *
+ * DEVS FOR DECADES:
+ * This derives the normal ATA. It does not prove the account exists yet.
+ */
+async function deriveAssociatedTokenAccount(ownerPublicKey, mintPublicKey) {
+  const [associatedTokenAddress] = await solanaWeb3.PublicKey.findProgramAddress(
+    [
+      ownerPublicKey.toBuffer(),
+      createPublicKey(SPL_TOKEN_PROGRAM_ID).toBuffer(),
+      mintPublicKey.toBuffer()
+    ],
+    createPublicKey(SPL_ASSOCIATED_TOKEN_PROGRAM_ID)
+  );
+
+  return associatedTokenAddress;
+}
+
+/**
+ * Build a create-associated-token-account instruction.
+ *
+ * DEVS FOR DECADES:
+ * This lets the receiver wallet accept SPOINC even if its ATA is not created.
+ * The sender pays the tiny rent/init cost only if the instruction is needed.
+ */
+function createAssociatedTokenAccountInstruction(payer, associatedToken, owner, mint) {
+  return new solanaWeb3.TransactionInstruction({
+    programId: createPublicKey(SPL_ASSOCIATED_TOKEN_PROGRAM_ID),
+    keys: [
+      { pubkey: payer, isSigner: true, isWritable: true },
+      { pubkey: associatedToken, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: false, isWritable: false },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: createPublicKey(SOLANA_SYSTEM_PROGRAM_ID), isSigner: false, isWritable: false },
+      { pubkey: createPublicKey(SPL_TOKEN_PROGRAM_ID), isSigner: false, isWritable: false }
+    ],
+    data: new Uint8Array([])
+  });
+}
+
+/**
+ * Build an SPL Token transferChecked instruction.
+ *
+ * DEVS FOR DECADES:
+ * transferChecked verifies the mint decimals at runtime, which is safer than
+ * a blind token transfer.
+ */
+function createSpoincTransferCheckedInstruction(sourceAta, mint, destinationAta, owner, rawAmount) {
+  const data = new Uint8Array(10);
+  data[0] = 12;
+  data.set(encodeU64LittleEndian(rawAmount), 1);
+  data[9] = SPOINC_DECIMALS;
+
+  return new solanaWeb3.TransactionInstruction({
+    programId: createPublicKey(SPL_TOKEN_PROGRAM_ID),
+    keys: [
+      { pubkey: sourceAta, isSigner: false, isWritable: true },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: destinationAta, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false }
+    ],
+    data
+  });
+}
+
+/**
+ * Return true when an on-chain account exists.
+ */
+async function solanaAccountExists(connection, publicKey) {
+  const accountInfo = await connection.getAccountInfo(publicKey, 'confirmed');
+  return accountInfo !== null;
+}
+
+/**
+ * Decode a base64 transaction payload returned by Gensuki.
+ *
+ * DEVS FOR DECADES:
+ * Gensuki may return either a legacy Solana Transaction or a VersionedTransaction.
+ * We support both so the bridge can test before the final docs clarify the exact
+ * claim response format. Frontend only signs; frontend never credits DSPOINC.
+ */
+function decodeGensukiTransactionPayload(transactionPayload) {
+  if (!window.solanaWeb3) {
+    throw new Error('Solana Web3 failed to load.');
+  }
+
+  if (!transactionPayload || typeof transactionPayload !== 'string') {
+    throw new Error('Gensuki did not return a transaction payload.');
+  }
+
+  const rawTransactionBytes = Uint8Array.from(atob(transactionPayload), (character) => character.charCodeAt(0));
+
+  if (window.solanaWeb3.VersionedTransaction) {
+    try {
+      return window.solanaWeb3.VersionedTransaction.deserialize(rawTransactionBytes);
+    } catch (versionedError) {
+      // The payload may be a legacy transaction. Try legacy parsing next.
+    }
+  }
+
+  if (!window.solanaWeb3.Transaction || !window.solanaWeb3.Transaction.from) {
+    throw new Error('Solana Web3 legacy transaction parser is unavailable.');
+  }
+
+  return window.solanaWeb3.Transaction.from(rawTransactionBytes);
+}
+
+/**
+ * Sign and send the Gensuki-prepared claim transaction through Phantom.
+ *
+ * DEVS FOR DECADES:
+ * Option B means Narrrfs does not manually build the SPOINC transfer anymore.
+ * Gensuki prepares the /claim transaction. Phantom signs it. Narrrfs only settles
+ * DSPOINC after backend confirmation succeeds.
+ */
+async function sendGensukiClaimTransactionWithPhantom(intentData) {
+  if (!window.solana || !window.solana.isPhantom) {
+    throw new Error('Phantom wallet is required for this test.');
+  }
+
+  const transactionPayload = intentData.transaction || intentData.gensuki_transaction || '';
+  if (!transactionPayload) {
+    throw new Error('Gensuki did not return a signable transaction payload.');
+  }
+
+  const connectResponse = await window.solana.connect();
+  const connectedWallet = connectResponse.publicKey ? connectResponse.publicKey.toBase58() : '';
+  const expectedWallet = String(intentData.wallet || '').trim();
+
+  if (expectedWallet && connectedWallet !== expectedWallet) {
+    throw new Error(`Connected Phantom wallet does not match intent wallet. Expected ${expectedWallet}`);
+  }
+
+  const transaction = decodeGensukiTransactionPayload(transactionPayload);
+
+  if (window.solana.signAndSendTransaction) {
+    const result = await window.solana.signAndSendTransaction(transaction);
+    const signature = result && result.signature ? result.signature : '';
+
+    if (!signature) {
+      throw new Error('Phantom did not return a transaction signature.');
+    }
+
+    return signature;
+  }
+
+  if (!window.solana.signTransaction) {
+    throw new Error('Phantom signTransaction is unavailable.');
+  }
+
+  const signedTransaction = await window.solana.signTransaction(transaction);
+
+  if (!window.solanaWeb3.Connection) {
+    throw new Error('Solana Web3 connection is unavailable.');
+  }
+
+  const connection = new window.solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+  return await connection.sendRawTransaction(signedTransaction.serialize());
+}
+
+/**
+ * Resolve the transaction hash/signature from the Gensuki claim response.
+ *
+ * DEVS FOR DECADES:
+ * Zeno docs currently show "signature" in /claim response, but lifecycle text says
+ * the user signs and broadcasts a returned transaction. This helper supports both
+ * while we wait for the final confirmed response shape.
+ */
+async function resolveGensukiClaimTransactionHash(intentData) {
+  const existingSignature = intentData.signature || intentData.transactionHash || intentData.transaction_hash || '';
+
+  if (existingSignature) {
+    return existingSignature;
+  }
+
+  return await sendGensukiClaimTransactionWithPhantom(intentData);
+}
+
+/**
+ * Create a private real SPOINC_TO_DSPOINC claim intent through Narrrfs backend.
+ *
+ * DEVS FOR DECADES:
+ * This calls the Narrrfs backend, and the backend calls Gensuki /claim with
+ * spoincAmount. This does not credit DSPOINC. Credit only happens after the
+ * confirm endpoint verifies the completed Gensuki lifecycle.
+ */
+async function createRealSpoincDepositIntent() {
+  if (!state.testerEnabled) {
+    elements.realDepositResult.textContent = 'Private tester access is not active.';
+    return;
+  }
+
+  const wallet = elements.realDepositWallet.value.trim();
+  const amount = elements.realDepositAmount.value.trim();
+
+  if (!wallet) {
+    elements.realDepositResult.textContent = 'Paste the sender wallet first.';
+    return;
+  }
+
+  if (!amount || Number(amount) <= 0) {
+    elements.realDepositResult.textContent = 'Enter a positive SPOINC amount first.';
+    return;
+  }
+
+  elements.realDepositResult.textContent = 'Creating Gensuki SPOINC → DSPOINC claim intent...';
+
+  try {
+    const response = await fetch(SPOINC_DEPOSIT_INTENT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        user_id: getActiveBridgeUserId(),
+        wallet,
+        amount
+      })
+    });
+
+    const payload = await response.json();
+    if (!payload.success) {
+      throw new Error(payload.error || 'Claim intent failed.');
+    }
+
+    const data = payload.data || {};
+
+    state.latestRealDepositIntent = data;
+    elements.realDepositSignature.value = '';
+
+    const responseMode = data.transaction
+      ? 'transaction payload — Phantom should open next'
+      : (data.signature || data.transactionHash || data.transaction_hash)
+        ? 'signature returned — confirm can run directly'
+        : 'unknown — stop and ask Zeno';
+
+    const warningBlock = data.transaction || data.signature || data.transactionHash || data.transaction_hash
+      ? `
+        <div class="mt-3 rounded-xl border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
+          Click “Send with Phantom + Auto Credit” next. Swap Lab will use the Gensuki /claim response,
+          then call Narrrfs backend confirmation. DSPOINC credit only happens after backend confirmation.
+        </div>
+      `
+      : `
+        <div class="mt-3 rounded-xl border border-red-300/20 bg-red-400/10 p-3 text-xs text-red-100">
+          Gensuki did not return a transaction or signature. Do not continue this test until Zeno confirms the /claim response shape.
+        </div>
+      `;
+
+    elements.realDepositResult.innerHTML = `
+      <div class="font-black text-cyan-100">✅ Gensuki claim intent created</div>
+      <div class="mt-2 grid gap-2 md:grid-cols-2">
+        <div>Intent ID: <strong id="latestRealDepositIntentId">${escapeHtml(data.intent_id)}</strong></div>
+        <div>Route: <strong>${escapeHtml(data.route_key || 'SPOINC_TO_DSPOINC')}</strong></div>
+        <div>SPOINC Input: <strong>${escapeHtml(data.spoinc_amount)} SPOINC</strong></div>
+        <div>Expected Credit: <strong>${escapeHtml(data.expected_dspoinc_amount)} DSPOINC</strong></div>
+        <div>Gensuki Mode: <strong>${escapeHtml(responseMode)}</strong></div>
+        <div>Idempotency: <strong>${escapeHtml(data.idempotency_id || '')}</strong></div>
+      </div>
+      ${warningBlock}
+    `;
+  } catch (error) {
+    elements.realDepositResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(error.message || 'Claim intent failed.')}</span>`;
+  }
+}
+
+/**
+ * Confirm a private real SPOINC_TO_DSPOINC claim.
+ *
+ * DEVS FOR DECADES:
+ * This function does not verify value or credit DSPOINC itself. It only obtains
+ * a transaction hash/signature and sends it to Narrrfs backend. Backend calls
+ * Gensuki /confirm, blocks replay, and credits the DSPOINC ledger exactly once.
+ */
+async function confirmRealSpoincDeposit() {
+  if (!state.testerEnabled) {
+    elements.realDepositResult.textContent = 'Private tester access is not active.';
+    return;
+  }
+
+  const intentNode = document.getElementById('latestRealDepositIntentId');
+  const intentId = intentNode ? intentNode.textContent.trim() : '';
+
+  if (!intentId) {
+    elements.realDepositResult.textContent = 'Create a real claim intent first.';
+    return;
+  }
+
+  const intentData = state.latestRealDepositIntent;
+
+  if (!intentData || String(intentData.intent_id) !== String(intentId)) {
+    elements.realDepositResult.textContent = 'Create a fresh claim intent before confirming.';
+    return;
+  }
+
+  elements.realDepositResult.textContent = 'Preparing Gensuki claim transaction...';
+
+  try {
+    const transactionHash = await resolveGensukiClaimTransactionHash(intentData);
+
+    if (!transactionHash) {
+      throw new Error('No transaction hash/signature was returned.');
+    }
+
+    elements.realDepositSignature.value = transactionHash;
+    elements.realDepositResult.textContent = 'Transaction ready. Backend is confirming with Gensuki and settling DSPOINC...';
+
+    const response = await fetch(SPOINC_DEPOSIT_CONFIRM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        user_id: getActiveBridgeUserId(),
+        intent_id: intentId,
+        signature: transactionHash,
+        transactionHash
+      })
+    });
+
+    const payload = await response.json();
+    if (!payload.success) {
+      throw new Error(payload.error || 'Claim confirmation failed.');
+    }
+
+    const data = payload.data || {};
+
+    elements.realDepositResult.innerHTML = `
+      <div class="font-black text-emerald-200">✅ Gensuki claim confirmed — DSPOINC credited</div>
+      <div class="mt-2 grid gap-2 md:grid-cols-2">
+        <div>Intent ID: <strong>${escapeHtml(data.intent_id)}</strong></div>
+        <div>Transaction ID: <strong>${escapeHtml(data.transaction_id || '')}</strong></div>
+        <div>SPOINC: <strong>${escapeHtml(data.spoinc_amount)}</strong></div>
+        <div>Credited: <strong>${escapeHtml(data.credited_dspoinc_amount)} DSPOINC</strong></div>
+      </div>
+      <div class="mt-3 break-all text-xs text-slate-400">${escapeHtml(data.signature || data.transactionHash || transactionHash)}</div>
+      <div class="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">
+        Backend called Gensuki confirmation, blocked replay, credited DSPOINC once, and refreshed the Swap Lab balance preview.
+      </div>
+    `;
+
+    state.latestRealDepositIntent = null;
+    await loadUserPreview();
+  } catch (error) {
+    elements.realDepositResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(error.message || 'Claim confirmation failed.')}</span>`;
+  }
+}
+
+/**
+ * Create a private SOL_TO_SPOINC buy intent through Narrrfs backend.
+ *
+ * DEVS FOR DECADES:
+ * This is a Gensuki /buy wrapper. It only prepares a transaction for Phantom.
+ * It must never credit or debit DSPOINC.
+ */
+async function createGensukiBuyIntent() {
+  if (!state.testerEnabled) {
+    elements.gensukiBuyResult.textContent = 'Private tester access is not active.';
+    return;
+  }
+
+  const wallet = elements.gensukiBuyWallet.value.trim();
+  const amount = elements.gensukiBuyAmount.value.trim();
+
+  if (!wallet) {
+    elements.gensukiBuyResult.textContent = 'Paste the buyer wallet first.';
+    return;
+  }
+
+  if (!amount || Number(amount) <= 0) {
+    elements.gensukiBuyResult.textContent = 'Enter a positive SOL amount first.';
+    return;
+  }
+
+  elements.gensukiBuyResult.textContent = 'Creating Gensuki SOL → SPOINC buy intent...';
+
+  try {
+    const response = await fetch(SPOINC_BUY_INTENT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        user_id: getActiveBridgeUserId(),
+        route_key: 'SOL_TO_SPOINC',
+        wallet,
+        payment_amount: amount,
+        payment_token: 'SOL',
+        payment_token_address: '11111111111111111111111111111111'
+      })
+    });
+
+    const payload = await response.json();
+
+    if (!payload.success) {
+      throw new Error(payload.error || 'Gensuki buy intent failed.');
+    }
+
+    const data = payload.data || {};
+    state.latestGensukiBuyIntent = data;
+    elements.gensukiBuySignature.value = '';
+
+    const hasTransaction = Boolean(data.transaction || data.gensuki_transaction);
+
+    elements.gensukiBuyResult.innerHTML = `
+      <div class="font-black text-yellow-100">✅ Gensuki SOL buy intent created</div>
+      <div class="mt-2 grid gap-2 md:grid-cols-2">
+        <div>Intent ID: <strong id="latestGensukiBuyIntentId">${escapeHtml(data.intent_id)}</strong></div>
+        <div>Route: <strong>${escapeHtml(data.route_key || 'SOL_TO_SPOINC')}</strong></div>
+        <div>SOL Input: <strong>${escapeHtml(data.payment_amount || amount)} SOL</strong></div>
+        <div>Mode: <strong>${hasTransaction ? 'transaction payload — Phantom should open next' : 'unknown — stop and inspect response'}</strong></div>
+        <div>Idempotency: <strong>${escapeHtml(data.idempotency_id || '')}</strong></div>
+        <div>Gensuki Idempotency: <strong>${escapeHtml(data.gensuki_idempotency_id || '')}</strong></div>
+      </div>
+      <div class="mt-3 rounded-xl border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
+        Next step: click “Sign with Phantom + Confirm Buy”. This buy test does not move DSPOINC.
+      </div>
+    `;
+  } catch (error) {
+    elements.gensukiBuyResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(error.message || 'Gensuki buy intent failed.')}</span>`;
+  }
+}
+
+/**
+ * Sign/send a prepared Gensuki buy transaction with Phantom.
+ *
+ * DEVS FOR DECADES:
+ * Gensuki builds the transaction. Phantom signs. Narrrfs confirms after the
+ * wallet returns a signature. No DSPOINC ledger action is allowed here.
+ */
+async function sendGensukiBuyTransactionWithPhantom(intentData) {
+  if (!window.solana || !window.solana.isPhantom) {
+    throw new Error('Phantom wallet is required for this buy test.');
+  }
+
+  const transactionPayload = intentData.transaction || intentData.gensuki_transaction || '';
+  if (!transactionPayload) {
+    throw new Error('Gensuki did not return a signable buy transaction payload.');
+  }
+
+  const connectResponse = await window.solana.connect();
+  const connectedWallet = connectResponse.publicKey ? connectResponse.publicKey.toBase58() : '';
+  const expectedWallet = String(intentData.wallet || intentData.buyer_wallet || '').trim();
+
+  if (expectedWallet && connectedWallet !== expectedWallet) {
+    throw new Error(`Connected Phantom wallet does not match buy intent wallet. Expected ${expectedWallet}`);
+  }
+
+  const transaction = decodeGensukiTransactionPayload(transactionPayload);
+
+  if (window.solana.signAndSendTransaction) {
+    const result = await window.solana.signAndSendTransaction(transaction);
+    const signature = result && result.signature ? result.signature : '';
+
+    if (!signature) {
+      throw new Error('Phantom did not return a buy transaction signature.');
+    }
+
+    return signature;
+  }
+
+  if (!window.solana.signTransaction) {
+    throw new Error('Phantom signTransaction is unavailable.');
+  }
+
+  const signedTransaction = await window.solana.signTransaction(transaction);
+
+  if (!window.solanaWeb3.Connection) {
+    throw new Error('Solana Web3 connection is unavailable.');
+  }
+
+  const connection = new window.solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+  return await connection.sendRawTransaction(signedTransaction.serialize());
+}
+
+/**
+ * Confirm a private SOL_TO_SPOINC buy transaction with Narrrfs backend.
+ *
+ * Plain language:
+ * This records that the Gensuki buy transaction was completed. It does not
+ * change DSPOINC balances.
+ */
+async function confirmGensukiBuyIntent() {
+  if (!state.testerEnabled) {
+    elements.gensukiBuyResult.textContent = 'Private tester access is not active.';
+    return;
+  }
+
+  const intentNode = document.getElementById('latestGensukiBuyIntentId');
+  const intentId = intentNode ? intentNode.textContent.trim() : '';
+  const intentData = state.latestGensukiBuyIntent;
+
+  if (!intentId || !intentData || String(intentData.intent_id) !== String(intentId)) {
+    elements.gensukiBuyResult.textContent = 'Create a fresh Gensuki buy intent before confirming.';
+    return;
+  }
+
+  elements.gensukiBuyResult.textContent = 'Opening Phantom for Gensuki SOL → SPOINC buy...';
+
+  try {
+    const manualSignature = elements.gensukiBuySignature.value.trim();
+const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPhantom(intentData);
+
+    elements.gensukiBuySignature.value = transactionHash;
+    elements.gensukiBuyResult.textContent = 'Buy transaction sent. Confirming with Gensuki through Narrrfs backend...';
+
+    const response = await fetch(SPOINC_BUY_CONFIRM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        user_id: getActiveBridgeUserId(),
+        intent_id: intentId,
+        signature: transactionHash,
+        transactionHash
+      })
+    });
+
+    const payload = await response.json();
+
+    if (!payload.success) {
+      throw new Error(payload.error || 'Gensuki buy confirmation failed.');
+    }
+
+    const data = payload.data || {};
+
+    elements.gensukiBuyResult.innerHTML = `
+      <div class="font-black text-emerald-200">✅ Gensuki SOL buy confirmed</div>
+      <div class="mt-2 grid gap-2 md:grid-cols-2">
+        <div>Intent ID: <strong>${escapeHtml(data.intent_id || intentId)}</strong></div>
+        <div>Transaction ID: <strong>${escapeHtml(data.transaction_id || '')}</strong></div>
+        <div>Route: <strong>${escapeHtml(data.route_key || 'SOL_TO_SPOINC')}</strong></div>
+        <div>DSPOINC Movement: <strong>none</strong></div>
+      </div>
+      <div class="mt-3 break-all text-xs text-slate-400">${escapeHtml(data.signature || data.transactionHash || transactionHash)}</div>
+      <div class="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">
+        Buy confirmation finished. This only buys SPOINC on-chain and records the Gensuki confirmation. No DSPOINC was credited or deducted.
+      </div>
+    `;
+
+    state.latestGensukiBuyIntent = null;
+    await loadGensukiProjectDetails();
+  } catch (error) {
+    elements.gensukiBuyResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(error.message || 'Gensuki buy confirmation failed.')}</span>`;
+  }
+}
+
     elements.directionSelect.addEventListener('change', updateCalculator);
     elements.amountInput.addEventListener('input', updateCalculator);
     elements.previewForm.addEventListener('submit', (event) => {
@@ -1114,28 +2226,48 @@
       updateCalculator();
       elements.previewHint.textContent = 'Public bridge conversion is still locked. No transaction or balance change happened.';
     });
-    elements.refreshRoutesButton.addEventListener('click', loadBridgeRoutes);
-    elements.refreshProfileButton.addEventListener('click', async () => {
-      await hydrateSession();
-      await loadUserPreview();
-      await loadPrivateTesterAccess();
-    });
+    if (elements.refreshRoutesButton) {
+  elements.refreshRoutesButton.addEventListener('click', loadBridgeRoutes);
+}
+
+if (elements.refreshMarketPulseButton) {
+  elements.refreshMarketPulseButton.addEventListener('click', loadGensukiProjectDetails);
+}
+elements.refreshProfileButton.addEventListener('click', async () => {
+  forceLocalNarrrfSwapLabIdentity();
+  await loadUserPreview();
+  await loadPrivateTesterAccess();
+});
     elements.testerDspoincToSpoinc.addEventListener('click', () => createPrivateIntent('DSPOINC_TO_SPOINC'));
     elements.testerSpoincToDspoinc.addEventListener('click', () => createPrivateIntent('SPOINC_TO_DSPOINC'));
 
-    async function init() {
-      updateCalculator();
-      await hydrateSession();
-      await Promise.all([
-        loadBridgeConfig(),
-        loadGensukiProjectDetails(),
-        loadBridgeRoutes(),
-        loadUserPreview(),
-        loadPrivateTesterAccess()
-      ]);
-    }
+    elements.createRealDepositIntentButton.addEventListener('click', createRealSpoincDepositIntent);
+elements.confirmRealDepositButton.addEventListener('click', confirmRealSpoincDeposit);
 
-    init();
+if (elements.createGensukiBuyIntentButton) {
+  elements.createGensukiBuyIntentButton.addEventListener('click', createGensukiBuyIntent);
+}
+
+if (elements.confirmGensukiBuyButton) {
+  elements.confirmGensukiBuyButton.addEventListener('click', confirmGensukiBuyIntent);
+}
+
+  async function init() {
+  configureBuyButtons();
+  forceLocalNarrrfSwapLabIdentity();
+  updateCalculator();
+
+  await Promise.all([
+    loadBridgeConfig(),
+    loadGensukiProjectDetails(),
+    loadBridgeRoutes()
+  ]);
+
+  await loadUserPreview();
+  await loadPrivateTesterAccess();
+}
+
+init();
   </script>
 </body>
 </html>

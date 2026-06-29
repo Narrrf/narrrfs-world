@@ -74,7 +74,7 @@ function spoinc_bridge_tester_get_request_data(): array
  *
  * Plain language for DEVS:
  * In production, the session is the authority.
- * On localhost, user_id may be passed for curl tests.
+ * On localhost, user_id may be passed for curl/browser tests.
  */
 function spoinc_bridge_tester_resolve_user_id(array $requestData): string
 {
@@ -98,7 +98,6 @@ function spoinc_bridge_tester_resolve_user_id(array $requestData): string
 
     return $sessionUserId;
 }
-
 /**
  * Return true when the resolved user is allowed to access private bridge tests.
  */
