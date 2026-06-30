@@ -1,5 +1,107 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-06-30 — Genesis Mouse Freezer Public Challenge Gates Ready / Season 13 Reset Prep
+
+**Scope:** Stake Lab System 20.0 / Genesis Mouse Freezer / Season 13 public activation  
+**Status:** Ready to push after final git-status cleanup and deploy restart
+
+---
+
+## ✅ Genesis Mouse Freezer Public Gate Patch Completed
+
+The Genesis Mouse Freezer public activation gate was prepared for Season 13.
+
+Updated files:
+
+```text
+api/user/create-genesis-nft-freeze-challenge.php
+api/user/create-genesis-nft-unfreeze-challenge.php
+
+## 2026-06-30 — SPOINC Swap Lab V1 Buy Gates Ready For Push / Enable By SQL
+
+Status: Local implementation is ready for the SPOINC public gateway push. Backend and frontend are prepared for the V1 buy routes. After deploy, only DB route flags decide what is publicly open.
+
+Completed backend work:
+- `api/partner/spoinc/get-gensuki-presale-details.php`
+  - Exposes Gensuki project price fields and LUT fields:
+    - `lutAddress`
+    - `lut_address`
+    - `lut_available`
+  - Read-only only. No bridge execution and no ledger movement.
+
+- `api/partner/spoinc/get-gensuki-token-price.php`
+  - New safe Narrrfs backend proxy for Gensuki:
+    - `/api/custom-token-presale/getTokenPrice`
+  - Allows only known Narrrfs payment tokens:
+    - SOL: `11111111111111111111111111111111`
+    - EMPIRE: `EmpirdtfUMfBQXEjnNmTngeimjfizfuSBD3TN9zqzydj`
+    - FOOK: `G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump`
+  - Keeps Gensuki outbound API key backend-only.
+  - Never creates transactions.
+  - Never credits or debits DSPOINC.
+  - Local tests returned valid quotes:
+    - 1 EMPIRE = `0.0003068232579` USD
+    - 1 FOOK = `0.00001593596039` USD
+
+- `api/partner/spoinc/create-gensuki-buy-intent.php`
+  - Route-aware buy intent creation now supports:
+    - `SOL_TO_SPOINC`
+    - `EMPIRE_TO_SPOINC`
+    - `FOOK_TO_SPOINC`
+  - Unknown payment tokens are blocked.
+  - SOL can be public when SQL route flags are enabled.
+  - EMPIRE / FOOK stay private tester routes until final public activation.
+  - No DSPOINC movement in buy flow.
+
+- `api/partner/spoinc/confirm-gensuki-buy-intent.php`
+  - Route-aware buy confirmation now supports:
+    - `SOL_TO_SPOINC`
+    - `EMPIRE_TO_SPOINC`
+    - `FOOK_TO_SPOINC`
+  - Confirms Gensuki buy transaction only.
+  - Records transaction lifecycle.
+  - No DSPOINC movement in buy flow.
+
+Completed frontend work:
+- `public/swap-lab.html`
+  - Existing “Buy SPOINC” panel now has a simple payment-token switch:
+    - SOL
+    - EMPIRE
+    - FOOK
+  - Same buy panel updates labels, min/max, notes, route, and payment token address based on selected token.
+  - SOL preview uses Gensuki SPOINC native SOL price.
+  - EMPIRE / FOOK preview uses:
+    - Gensuki token USD value from Narrrfs proxy
+    - divided by SPOINC USD price from presale details
+  - Final wallet transaction remains source of truth.
+  - Fixed missing `confirmGensukiBuyButton` listener so “Sign with Wallet + Confirm” opens Phantom after buy intent creation.
+  - Confirm listener must exist only once to avoid duplicate wallet confirmation calls.
+
+Current route policy for launch:
+- `SPOINC_TO_DSPOINC` can remain open if already tested.
+- `SOL_TO_SPOINC` can be reopened after this frontend/backend push.
+- `EMPIRE_TO_SPOINC` should remain closed publicly for first deploy and used by internal testers only.
+- `FOOK_TO_SPOINC` should remain closed publicly for first deploy and used by internal testers only.
+- `DSPOINC_TO_SPOINC` remains closed for V1.
+- Sell routes remain closed for V1:
+  - `SPOINC_TO_SOL`
+  - `SPOINC_TO_EMPIRE`
+  - `SPOINC_TO_FOOK`
+
+Recommended SQL after push:
+```sql
+UPDATE tbl_spoinc_bridge_routes
+SET public_enabled = 1,
+    backend_enabled = 1,
+    status = 'public_enabled_mainnet'
+WHERE route_key = 'SOL_TO_SPOINC';
+
+UPDATE tbl_spoinc_bridge_routes
+SET public_enabled = 0,
+    backend_enabled = 0,
+    status = 'v1_private_tester_ready_waiting_final_public_open'
+WHERE route_key IN ('EMPIRE_TO_SPOINC', 'FOOK_TO_SPOINC');
+
 ## FOLLOW-UP — SPOINC BRIDGE LOCAL ARCHIVE IMPORT + DISCORD ARCHIVE COMMAND
 
 **Date:** 2026-06-30  

@@ -22,12 +22,35 @@ spoinc_bridge_boot_json_api(['POST', 'OPTIONS']);
 
 const SPOINC_GENSUKI_BUY_PATH = '/api/custom-token-presale/buy';
 const SPOINC_BUY_ROUTE_KEY_SOL = 'SOL_TO_SPOINC';
+const SPOINC_BUY_ROUTE_KEY_EMPIRE = 'EMPIRE_TO_SPOINC';
+const SPOINC_BUY_ROUTE_KEY_FOOK = 'FOOK_TO_SPOINC';
+
 const SPOINC_BUY_DIRECTION_SOL = 'sol_to_spoinc';
+const SPOINC_BUY_DIRECTION_EMPIRE = 'empire_to_spoinc';
+const SPOINC_BUY_DIRECTION_FOOK = 'fook_to_spoinc';
+
 const SPOINC_BUY_INPUT_TOKEN_SOL = 'SOL';
+const SPOINC_BUY_INPUT_TOKEN_EMPIRE = 'EMPIRE';
+const SPOINC_BUY_INPUT_TOKEN_FOOK = 'FOOK';
 const SPOINC_BUY_OUTPUT_TOKEN = 'SPOINC';
+
 const SPOINC_BUY_NATIVE_SOL_ADDRESS = '11111111111111111111111111111111';
+const SPOINC_BUY_EMPIRE_TOKEN_ADDRESS = 'EmpirdtfUMfBQXEjnNmTngeimjfizfuSBD3TN9zqzydj';
+const SPOINC_BUY_FOOK_TOKEN_ADDRESS = 'G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump';
+
 const SPOINC_BUY_MIN_SOL_LAUNCH = 0.025;
 const SPOINC_BUY_MAX_SOL_LAUNCH = 10.0;
+
+/**
+ * Private tester token-route limits.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * These limits are intentionally separate from SOL. They are only for Narrrf /
+ * justme private testing until EMPIRE and FOOK routes are approved for public.
+ */
+const SPOINC_BUY_MIN_TOKEN_TEST = 0.000001;
+const SPOINC_BUY_MAX_TOKEN_TEST = 1000000000.0;
+
 const SPOINC_BUY_EXPIRES_HOURS = 2;
 
 /**
@@ -200,44 +223,115 @@ function spoinc_bridge_fetch_latest_blockhash(): array
 }
 
 /**
- * Normalize a SOL amount for private buy tests.
+ * Normalize a payment amount for a Gensuki buy route.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * SOL, EMPIRE, and FOOK are all payment tokens into the same Gensuki /buy
+ * lifecycle. SOL is public-launch capped. EMPIRE/FOOK are private-test capped
+ * until we open those routes by SQL and UI decision later.
  */
-function normalize_launch_sol_payment_amount(string $amount): string{
+function normalize_spoinc_buy_payment_amount(string $amount, array $routeInfo): string
+{
     $amount = trim($amount);
+    $tokenSymbol = (string)($routeInfo['input_token'] ?? 'token');
 
     if ($amount === '') {
         spoinc_bridge_json_response([
             'success' => false,
-            'error' => 'SOL payment amount is required.'
+            'error' => $tokenSymbol . ' payment amount is required.'
         ], 400);
     }
 
     if (!preg_match('/^\d+(\.\d{1,9})?$/', $amount)) {
         spoinc_bridge_json_response([
             'success' => false,
-            'error' => 'SOL payment amount must be a positive number with max 9 decimals.'
+            'error' => $tokenSymbol . ' payment amount must be a positive number with max 9 decimals.'
         ], 400);
     }
 
     $floatAmount = (float)$amount;
-    if ($floatAmount < SPOINC_BUY_MIN_SOL_LAUNCH || $floatAmount > SPOINC_BUY_MAX_SOL_LAUNCH) {
+    $minAmount = (float)($routeInfo['min_amount'] ?? SPOINC_BUY_MIN_TOKEN_TEST);
+    $maxAmount = (float)($routeInfo['max_amount'] ?? SPOINC_BUY_MAX_TOKEN_TEST);
+
+    if ($floatAmount < $minAmount || $floatAmount > $maxAmount) {
         spoinc_bridge_json_response([
-    'success' => false,
-    'error' => 'SOL_TO_SPOINC buy amount must be between ' . SPOINC_BUY_MIN_SOL_LAUNCH . ' and ' . SPOINC_BUY_MAX_SOL_LAUNCH . ' SOL.',
-    'min_sol' => SPOINC_BUY_MIN_SOL_LAUNCH,
-    'max_sol' => SPOINC_BUY_MAX_SOL_LAUNCH
-], 400);
+            'success' => false,
+            'error' => $routeInfo['route_key'] . ' amount must be between ' . $minAmount . ' and ' . $maxAmount . ' ' . $tokenSymbol . '.',
+            'min_amount' => $minAmount,
+            'max_amount' => $maxAmount,
+            'token' => $tokenSymbol
+        ], 400);
     }
 
     return rtrim(rtrim(number_format($floatAmount, 9, '.', ''), '0'), '.');
 }
 
 /**
+ * Resolve a Gensuki buy route from the payment token address.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Gensuki /buy uses paymentTokenAddress to decide what the user pays with.
+ * We must map that exact address to one known Narrrfs route. Unknown tokens are
+ * blocked so no random token can be routed through the SPOINC gateway.
+ */
+function resolve_spoinc_buy_route_from_payment_token(string $paymentTokenAddress): array
+{
+    $normalizedAddress = strtolower(trim($paymentTokenAddress));
+
+    if ($normalizedAddress === strtolower(SPOINC_BUY_NATIVE_SOL_ADDRESS) || $normalizedAddress === '') {
+        return [
+            'route_key' => SPOINC_BUY_ROUTE_KEY_SOL,
+            'direction' => SPOINC_BUY_DIRECTION_SOL,
+            'input_token' => SPOINC_BUY_INPUT_TOKEN_SOL,
+            'payment_token_address' => SPOINC_BUY_NATIVE_SOL_ADDRESS,
+            'min_amount' => SPOINC_BUY_MIN_SOL_LAUNCH,
+            'max_amount' => SPOINC_BUY_MAX_SOL_LAUNCH,
+            'public_route_allowed' => true
+        ];
+    }
+
+    if ($normalizedAddress === strtolower(SPOINC_BUY_EMPIRE_TOKEN_ADDRESS)) {
+        return [
+            'route_key' => SPOINC_BUY_ROUTE_KEY_EMPIRE,
+            'direction' => SPOINC_BUY_DIRECTION_EMPIRE,
+            'input_token' => SPOINC_BUY_INPUT_TOKEN_EMPIRE,
+            'payment_token_address' => SPOINC_BUY_EMPIRE_TOKEN_ADDRESS,
+            'min_amount' => SPOINC_BUY_MIN_TOKEN_TEST,
+            'max_amount' => SPOINC_BUY_MAX_TOKEN_TEST,
+            'public_route_allowed' => false
+        ];
+    }
+
+    if ($normalizedAddress === strtolower(SPOINC_BUY_FOOK_TOKEN_ADDRESS)) {
+        return [
+            'route_key' => SPOINC_BUY_ROUTE_KEY_FOOK,
+            'direction' => SPOINC_BUY_DIRECTION_FOOK,
+            'input_token' => SPOINC_BUY_INPUT_TOKEN_FOOK,
+            'payment_token_address' => SPOINC_BUY_FOOK_TOKEN_ADDRESS,
+            'min_amount' => SPOINC_BUY_MIN_TOKEN_TEST,
+            'max_amount' => SPOINC_BUY_MAX_TOKEN_TEST,
+            'public_route_allowed' => false
+        ];
+    }
+
+    spoinc_bridge_json_response([
+        'success' => false,
+        'error' => 'Unsupported SPOINC buy payment token.',
+        'payment_token_address' => $paymentTokenAddress,
+        'allowed_tokens' => [
+            SPOINC_BUY_INPUT_TOKEN_SOL => SPOINC_BUY_NATIVE_SOL_ADDRESS,
+            SPOINC_BUY_INPUT_TOKEN_EMPIRE => SPOINC_BUY_EMPIRE_TOKEN_ADDRESS,
+            SPOINC_BUY_INPUT_TOKEN_FOOK => SPOINC_BUY_FOOK_TOKEN_ADDRESS
+        ]
+    ], 400);
+}
+
+/**
  * Create a replay-safe local idempotency id for the Gensuki buy route.
  */
-function create_spoinc_buy_idempotency_id(string $userId, string $wallet, string $paymentAmount): string
+function create_spoinc_buy_idempotency_id(string $userId, string $wallet, string $paymentAmount, string $routeKey): string
 {
-    return 'spoinc-buy-sol-' . $userId . '-' . substr(hash('sha256', $wallet), 0, 10) . '-' . str_replace('.', '_', $paymentAmount) . '-' . bin2hex(random_bytes(8));
+    return 'spoinc-buy-' . strtolower($routeKey) . '-' . $userId . '-' . substr(hash('sha256', $wallet), 0, 10) . '-' . str_replace('.', '_', $paymentAmount) . '-' . bin2hex(random_bytes(8));
 }
 
 /**
@@ -262,29 +356,33 @@ function read_gensuki_buy_value(array $payload, string $field): string
 }
 
 try {
-        $requestData = spoinc_bridge_get_request_data();
+    $requestData = spoinc_bridge_get_request_data();
     $pdo = spoinc_bridge_open_database();
+
+    $requestedPaymentTokenAddress = trim((string)($requestData['payment_token_address'] ?? SPOINC_BUY_NATIVE_SOL_ADDRESS));
+    $routeInfo = resolve_spoinc_buy_route_from_payment_token($requestedPaymentTokenAddress);
+    $routeKey = (string)$routeInfo['route_key'];
+
     $userId = spoinc_bridge_require_public_route_access(
         $pdo,
         $requestData,
-        SPOINC_BUY_ROUTE_KEY_SOL,
+        $routeKey,
         false
     );
 
-    $wallet = trim((string)($requestData['wallet'] ?? ''));
-    $paymentAmount = normalize_launch_sol_payment_amount(trim((string)($requestData['payment_amount'] ?? ($requestData['amount'] ?? ''))));
-    $paymentTokenAddress = trim((string)($requestData['payment_token_address'] ?? SPOINC_BUY_NATIVE_SOL_ADDRESS));
-
-    if ($paymentTokenAddress === '') {
-        $paymentTokenAddress = SPOINC_BUY_NATIVE_SOL_ADDRESS;
-    }
-
-    if ($paymentTokenAddress !== SPOINC_BUY_NATIVE_SOL_ADDRESS) {
+    if (!$routeInfo['public_route_allowed'] && !spoinc_bridge_is_internal_tester_user($userId)) {
         spoinc_bridge_json_response([
             'success' => false,
-            'error' => 'Step 2 only supports SOL_TO_SPOINC private testing. EMPIRE / FOOK come later.'
-        ], 400);
+            'error' => $routeKey . ' is private tester only until final public activation.'
+        ], 403);
     }
+
+    $wallet = trim((string)($requestData['wallet'] ?? ''));
+    $paymentAmount = normalize_spoinc_buy_payment_amount(
+        trim((string)($requestData['payment_amount'] ?? ($requestData['amount'] ?? ''))),
+        $routeInfo
+    );
+    $paymentTokenAddress = (string)$routeInfo['payment_token_address'];
 
     if (!spoinc_bridge_is_valid_solana_address($wallet)) {
         spoinc_bridge_json_response([
@@ -323,7 +421,7 @@ try {
         spoinc_bridge_json_response($blockhashResult, 502);
     }
 
-    $idempotencyId = create_spoinc_buy_idempotency_id($userId, $wallet, $paymentAmount);
+    $idempotencyId = create_spoinc_buy_idempotency_id($userId, $wallet, $paymentAmount, $routeKey);
     $expiresAt = gmdate('Y-m-d H:i:s', time() + (SPOINC_BUY_EXPIRES_HOURS * 3600));
     $gensukiEndpoint = spoinc_bridge_build_gensuki_endpoint($config, SPOINC_GENSUKI_BUY_PATH);
 
@@ -337,7 +435,8 @@ try {
     ];
 
     $rawRequestJson = json_encode([
-        'request_type' => 'public_sol_to_spoinc_gensuki_buy_intent',
+        'request_type' => 'spoinc_gensuki_buy_intent',
+'route_key' => $routeKey,
         'user_id' => $userId,
         'wallet' => $wallet,
         'payment_amount' => $paymentAmount,
@@ -357,9 +456,9 @@ try {
         ':project_id' => $projectId,
         ':discord_id' => $userId,
         ':wallet' => $wallet,
-        ':route_key' => SPOINC_BUY_ROUTE_KEY_SOL,
-        ':direction' => SPOINC_BUY_DIRECTION_SOL,
-        ':input_token' => SPOINC_BUY_INPUT_TOKEN_SOL,
+        ':route_key' => $routeKey,
+':direction' => $routeInfo['direction'],
+':input_token' => $routeInfo['input_token'],
         ':output_token' => SPOINC_BUY_OUTPUT_TOKEN,
         ':input_amount' => $paymentAmount,
         ':expected_output_amount' => '0',
@@ -395,10 +494,10 @@ try {
         'idempotency_id' => $idempotencyId,
         'gensuki_idempotency_id' => $returnedIdempotencyId,
         'discord_id' => $userId,
-        'route_key' => SPOINC_BUY_ROUTE_KEY_SOL,
-        'wallet' => $wallet,
-        'payment_token' => SPOINC_BUY_INPUT_TOKEN_SOL,
-        'payment_token_address' => $paymentTokenAddress,
+        'route_key' => $routeKey,
+'wallet' => $wallet,
+'payment_token' => $routeInfo['input_token'],
+'payment_token_address' => $paymentTokenAddress,
         'payment_amount' => $paymentAmount,
         'output_token' => SPOINC_BUY_OUTPUT_TOKEN,
         'status' => $status,
@@ -411,13 +510,15 @@ try {
                 'safety' => [
             'private_tester_only' => false,
             'public_route_gate_checked' => true,
-            'route_key' => SPOINC_BUY_ROUTE_KEY_SOL,
+            'route_key' => $routeKey,
+'tester_only_token_route' => !$routeInfo['public_route_allowed'],
             'dspoinc_credited' => false,
             'dspoinc_debited' => false,
             'ledger_movement' => false,
             'gensuki_key_exposed' => false,
-            'min_sol' => SPOINC_BUY_MIN_SOL_LAUNCH,
-            'max_sol' => SPOINC_BUY_MAX_SOL_LAUNCH
+            'min_amount' => $routeInfo['min_amount'],
+'max_amount' => $routeInfo['max_amount'],
+'payment_token' => $routeInfo['input_token']
         ]
     ];
 
@@ -461,11 +562,11 @@ try {
         $pdo->rollBack();
     }
 
-    error_log('❌ SOL_TO_SPOINC Gensuki buy intent error: ' . $error->getMessage());
+    error_log('❌ SPOINC Gensuki buy intent error: ' . $error->getMessage());
 
     spoinc_bridge_json_response([
         'success' => false,
-        'error' => 'Failed to create SOL_TO_SPOINC Gensuki buy intent.',
+        'error' => 'Failed to create SPOINC Gensuki buy intent.',
         'details' => $error->getMessage()
     ], 500);
 }

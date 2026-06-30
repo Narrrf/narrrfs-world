@@ -27,6 +27,16 @@ require_once __DIR__ . '/genesis-nft-staking-helpers.php';
 const GENESIS_NFT_FREEZE_CHALLENGE_TTL_MINUTES = 15;
 
 /**
+ * Public activation switch for Genesis Mouse Freezer challenge creation.
+ *
+ * Plain language for DEVS:
+ * When true, verified logged-in users may create freeze challenges in production.
+ * This only opens challenge creation. It does not bypass Solana Memo proof,
+ * verified ownership checks, slot limits, claim rules, or backend reward math.
+ */
+const GENESIS_FREEZER_PUBLIC_ACTIVATION_ENABLED = true;
+
+/**
  * Controlled live tester allowlist for Genesis Mouse Freezer.
  *
  * Plain language for DEVS:
@@ -130,6 +140,10 @@ function resolve_freeze_challenge_user_id(array $requestData): string
  */
 function enforce_genesis_freezer_controlled_live_test_gate(string $userId): void
 {
+    if (GENESIS_FREEZER_PUBLIC_ACTIVATION_ENABLED) {
+        return;
+    }
+
     if (is_localhost_request()) {
         return;
     }

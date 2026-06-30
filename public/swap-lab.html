@@ -609,10 +609,22 @@
       <div class="mt-6 grid gap-6 xl:grid-cols-2">
         <article id="buy-spoinc-card" class="rounded-3xl border border-yellow-300/25 bg-yellow-400/10 p-5">
           <div class="pill mb-4">☀️ Step 1 • Buy SPOINC</div>
-          <h3 class="text-2xl font-black text-yellow-100">Buy SPOINC with SOL through Narrrfs</h3>
-          <p class="mt-2 text-sm leading-relaxed text-slate-300">
-            Narrrfs prepares the Gensuki /buy transaction. Phantom signs the returned transaction, then Narrrfs records Gensuki confirmation. No DSPOINC is credited or deducted in this buy step.
-          </p>
+<h3 class="text-2xl font-black text-yellow-100">Buy SPOINC through Narrrfs</h3>
+<p class="mt-2 text-sm leading-relaxed text-slate-300">
+  Choose SOL, EMPIRE, or FOOK as payment token. Narrrfs prepares the Gensuki /buy transaction, Phantom signs it, and Narrrfs records Gensuki confirmation. No DSPOINC is credited or deducted in this buy step.
+</p>
+
+<div class="mt-4">
+  <span class="label">Select Payment Token</span>
+  <div class="mt-2 flex flex-wrap gap-3">
+    <button id="gensukiBuyTokenSolButton" class="btn primary" type="button" data-buy-token="SOL">SOL</button>
+    <button id="gensukiBuyTokenEmpireButton" class="btn ghost" type="button" data-buy-token="EMPIRE">EMPIRE</button>
+    <button id="gensukiBuyTokenFookButton" class="btn ghost" type="button" data-buy-token="FOOK">FOOK</button>
+  </div>
+  <p id="gensukiBuyTokenHint" class="mt-2 text-xs text-slate-400">
+    SOL is the public buy route. EMPIRE and FOOK are private tester routes until final activation.
+  </p>
+</div>
 
           <div class="mt-4 grid gap-4 md:grid-cols-2">
             <label class="block">
@@ -621,9 +633,10 @@
             </label>
 
            <label class="block">
-  <span class="label">SOL Amount</span>
+ <label class="block">
+  <span id="gensukiBuyAmountLabel" class="label">SOL Amount</span>
   <input id="gensukiBuyAmount" class="input mt-2" type="number" min="0.025" max="10" step="0.001" value="0.025" />
-  <p class="mt-2 text-xs text-slate-400">Gensuki minimum is around $1. Launch range: 0.025 SOL minimum, 10 SOL maximum per buy.</p>
+  <p id="gensukiBuyAmountNote" class="mt-2 text-xs text-slate-400">Gensuki minimum is around $1. Launch range: 0.025 SOL minimum, 10 SOL maximum per buy.</p>
 
   <div class="mt-3 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
     <div class="label">Estimated SPOINC</div>
@@ -960,6 +973,49 @@ const DSPOINC_ECONOMY_OVERVIEW_ENDPOINT = '/api/admin/get-dspoinc-overview.php';
 
 const SPOINC_BUY_INTENT_ENDPOINT = '/api/partner/spoinc/create-gensuki-buy-intent.php';
 const SPOINC_BUY_CONFIRM_ENDPOINT = '/api/partner/spoinc/confirm-gensuki-buy-intent.php';
+const GENSUKI_TOKEN_PRICE_ENDPOINT = '/api/partner/spoinc/get-gensuki-token-price.php';
+
+const SPOINC_BUY_PAYMENT_TOKENS = {
+  SOL: {
+    key: 'SOL',
+    routeKey: 'SOL_TO_SPOINC',
+    label: 'SOL',
+    buttonLabel: 'SOL',
+    paymentTokenAddress: '11111111111111111111111111111111',
+    min: 0.025,
+    max: 10,
+    step: 0.001,
+    defaultAmount: 0.025,
+    note: 'Gensuki minimum is around $1. Launch range: 0.025 SOL minimum, 10 SOL maximum per buy.',
+    publicHint: 'Public route when SOL_TO_SPOINC is enabled.'
+  },
+  EMPIRE: {
+    key: 'EMPIRE',
+    routeKey: 'EMPIRE_TO_SPOINC',
+    label: 'EMPIRE',
+    buttonLabel: 'EMPIRE',
+    paymentTokenAddress: 'EmpirdtfUMfBQXEjnNmTngeimjfizfuSBD3TN9zqzydj',
+    min: 0.000001,
+    max: 1000000000,
+    step: 0.000001,
+    defaultAmount: 1,
+    note: 'Private tester token route. LUT is handled automatically by Gensuki.',
+    publicHint: 'Private tester route until final public activation.'
+  },
+  FOOK: {
+    key: 'FOOK',
+    routeKey: 'FOOK_TO_SPOINC',
+    label: 'FOOK',
+    buttonLabel: 'FOOK',
+    paymentTokenAddress: 'G63a43wp5PKXBPo6VeMJUBfdUVjRRskVwqEZfwWRpump',
+    min: 0.000001,
+    max: 1000000000,
+    step: 0.000001,
+    defaultAmount: 1,
+    note: 'Private tester token route. LUT is handled automatically by Gensuki.',
+    publicHint: 'Private tester route until final public activation.'
+  }
+};
 
 /**
  * Return true when Swap Lab is running on local development.
@@ -1009,7 +1065,8 @@ const GENSUKI_SPOINC_BUY_URL = 'https://app.gensuki.xyz/gunfun/custom-presale/7e
   userPreview: null,
   latestGensukiBuyIntent: null,
 latestRealDepositIntent: null,
-latestGensukiProject: null
+latestGensukiProject: null,
+gensukiTokenPreviewRequestId: 0
 };
 
 /**
@@ -1130,6 +1187,12 @@ realDepositAmount: document.getElementById('realDepositAmount'),
 realDepositSignature: document.getElementById('realDepositSignature'),
 gensukiBuyWallet: document.getElementById('gensukiBuyWallet'),
 gensukiBuyAmount: document.getElementById('gensukiBuyAmount'),
+gensukiBuyAmountLabel: document.getElementById('gensukiBuyAmountLabel'),
+gensukiBuyAmountNote: document.getElementById('gensukiBuyAmountNote'),
+gensukiBuyTokenHint: document.getElementById('gensukiBuyTokenHint'),
+gensukiBuyTokenSolButton: document.getElementById('gensukiBuyTokenSolButton'),
+gensukiBuyTokenEmpireButton: document.getElementById('gensukiBuyTokenEmpireButton'),
+gensukiBuyTokenFookButton: document.getElementById('gensukiBuyTokenFookButton'),
 gensukiBuySignature: document.getElementById('gensukiBuySignature'),
 gensukiBuyResult: document.getElementById('gensukiBuyResult'),
 gensukiBuyEstimatedSpoinc: document.getElementById('gensukiBuyEstimatedSpoinc'),
@@ -1529,31 +1592,184 @@ function renderPaymentRouteCard({ element, hintElement, symbol, tokenEntry, fall
 }
 
 /**
- * Update the buy-card live expected SPOINC preview.
+ * Return the selected payment token for the SPOINC buy panel.
+ *
+ * Plain language for DEVS:
+ * The buy panel uses one shared Gensuki /buy flow for SOL, EMPIRE, and FOOK.
+ * This helper keeps the selected token safe and falls back to SOL.
  */
-function updateGensukiBuyPreview() {
+function getSelectedGensukiBuyToken() {
+  const selectedKey = String(state.selectedGensukiBuyToken || 'SOL').toUpperCase();
+  return SPOINC_BUY_PAYMENT_TOKENS[selectedKey] || SPOINC_BUY_PAYMENT_TOKENS.SOL;
+}
+
+/**
+ * Mark one payment token as selected in the SPOINC buy panel.
+ *
+ * Plain language for DEVS:
+ * This only changes frontend labels and the payment token sent to our backend.
+ * Backend route gates still decide if a user can actually execute the route.
+ */
+function selectGensukiBuyToken(tokenKey) {
+  const nextToken = SPOINC_BUY_PAYMENT_TOKENS[String(tokenKey || 'SOL').toUpperCase()] || SPOINC_BUY_PAYMENT_TOKENS.SOL;
+  state.selectedGensukiBuyToken = nextToken.key;
+
+  const buttons = [
+    elements.gensukiBuyTokenSolButton,
+    elements.gensukiBuyTokenEmpireButton,
+    elements.gensukiBuyTokenFookButton
+  ];
+
+  buttons.forEach((button) => {
+    if (!button) {
+      return;
+    }
+
+    const isSelected = button.dataset.buyToken === nextToken.key;
+    button.classList.toggle('primary', isSelected);
+    button.classList.toggle('ghost', !isSelected);
+  });
+
+  if (elements.gensukiBuyAmountLabel) {
+    elements.gensukiBuyAmountLabel.textContent = `${nextToken.label} Amount`;
+  }
+
+  if (elements.gensukiBuyAmount) {
+    elements.gensukiBuyAmount.min = String(nextToken.min);
+    elements.gensukiBuyAmount.max = String(nextToken.max);
+    elements.gensukiBuyAmount.step = String(nextToken.step);
+
+    if (!elements.gensukiBuyAmount.value || Number(elements.gensukiBuyAmount.value) < Number(nextToken.min)) {
+      elements.gensukiBuyAmount.value = String(nextToken.defaultAmount);
+    }
+  }
+
+  if (elements.gensukiBuyAmountNote) {
+    elements.gensukiBuyAmountNote.textContent = nextToken.note;
+  }
+
+  if (elements.gensukiBuyTokenHint) {
+    elements.gensukiBuyTokenHint.textContent = nextToken.publicHint;
+  }
+
+  if (elements.gensukiBuyResult) {
+    elements.gensukiBuyResult.textContent = `Ready to buy SPOINC with ${nextToken.label}. Public execution depends on backend route flags.`;
+  }
+
+  updateGensukiBuyPreview();
+}
+
+/**
+ * Load a Gensuki USD preview for one payment token amount.
+ *
+ * Plain language for DEVS:
+ * This calls our backend proxy, not Gensuki directly, so the outbound API key
+ * never reaches browser JavaScript.
+ */
+async function loadGensukiPaymentTokenUsdPreview(selectedToken, amount) {
+  const url = `${GENSUKI_TOKEN_PRICE_ENDPOINT}?address=${encodeURIComponent(selectedToken.paymentTokenAddress)}&amount=${encodeURIComponent(amount)}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include'
+  });
+
+  const payload = await response.json();
+
+  if (!payload.success) {
+    throw new Error(payload.error || 'Gensuki token price preview failed.');
+  }
+
+  return payload.data || {};
+}
+
+/**
+ * Update the buy-card live expected SPOINC preview.
+ *
+ * Plain language for DEVS:
+ * SOL can use the SPOINC native price directly. EMPIRE and FOOK ask the
+ * Narrrfs backend token-price proxy for USD value, then divide by SPOINC USD.
+ */
+async function updateGensukiBuyPreview() {
   if (!elements.gensukiBuyEstimatedSpoinc) {
     return;
   }
 
+  const selectedToken = getSelectedGensukiBuyToken();
   const project = state.latestGensukiProject || {};
-  const estimatedSpoinc = calculateEstimatedSpoincFromSol(
-    elements.gensukiBuyAmount?.value || '',
-    project.token_price_native
-  );
+  const spoincUsdPrice = parsePositiveNumber(project.token_price_usd);
+  const amount = elements.gensukiBuyAmount?.value || '';
 
-  if (estimatedSpoinc === null) {
-    elements.gensukiBuyEstimatedSpoinc.textContent = 'Waiting for live ratio';
-    if (elements.gensukiBuyEstimateNote) {
-      elements.gensukiBuyEstimateNote.textContent = 'Preview loads after Gensuki market details are available.';
+  if (selectedToken.key === 'SOL') {
+    const estimatedSpoinc = calculateEstimatedSpoincFromSol(
+      amount,
+      project.token_price_native
+    );
+
+    if (estimatedSpoinc === null) {
+      elements.gensukiBuyEstimatedSpoinc.textContent = 'Waiting for live ratio';
+      if (elements.gensukiBuyEstimateNote) {
+        elements.gensukiBuyEstimateNote.textContent = 'Preview loads after Gensuki market details are available.';
+      }
+      return;
     }
+
+    elements.gensukiBuyEstimatedSpoinc.textContent = `≈ ${formatMarketAmount(estimatedSpoinc, 4)} SPOINC`;
+
+    if (elements.gensukiBuyEstimateNote) {
+      elements.gensukiBuyEstimateNote.textContent = 'Preview only. Final SPOINC amount is confirmed by Gensuki and your wallet transaction.';
+    }
+
     return;
   }
 
-  elements.gensukiBuyEstimatedSpoinc.textContent = `≈ ${formatMarketAmount(estimatedSpoinc, 4)} SPOINC`;
+  const paymentAmount = parsePositiveNumber(amount);
 
-  if (elements.gensukiBuyEstimateNote) {
-    elements.gensukiBuyEstimateNote.textContent = 'Preview only. Final SPOINC amount is confirmed by Gensuki and your wallet transaction.';
+  if (paymentAmount === null || spoincUsdPrice === null) {
+    elements.gensukiBuyEstimatedSpoinc.textContent = 'Wallet confirms final amount';
+
+    if (elements.gensukiBuyEstimateNote) {
+      elements.gensukiBuyEstimateNote.textContent = `${selectedToken.label} preview needs a valid amount and live SPOINC USD price.`;
+    }
+
+    return;
+  }
+
+  const requestId = state.gensukiTokenPreviewRequestId + 1;
+  state.gensukiTokenPreviewRequestId = requestId;
+
+  elements.gensukiBuyEstimatedSpoinc.textContent = 'Loading token quote...';
+
+  try {
+    const quote = await loadGensukiPaymentTokenUsdPreview(selectedToken, amount);
+
+    if (requestId !== state.gensukiTokenPreviewRequestId) {
+      return;
+    }
+
+    const inputUsd = parsePositiveNumber(quote.input_usd);
+
+    if (inputUsd === null) {
+      elements.gensukiBuyEstimatedSpoinc.textContent = 'Wallet confirms final amount';
+
+      if (elements.gensukiBuyEstimateNote) {
+        elements.gensukiBuyEstimateNote.textContent = `${selectedToken.label} price loaded, but no USD-worth field was returned. Final amount is confirmed in Phantom.`;
+      }
+
+      return;
+    }
+
+    const estimatedSpoinc = inputUsd / spoincUsdPrice;
+    elements.gensukiBuyEstimatedSpoinc.textContent = `≈ ${formatMarketAmount(estimatedSpoinc, 4)} SPOINC`;
+
+    if (elements.gensukiBuyEstimateNote) {
+      elements.gensukiBuyEstimateNote.textContent = `${selectedToken.label} preview uses Gensuki token USD value ÷ SPOINC USD price. Final amount is confirmed by wallet transaction.`;
+    }
+  } catch (error) {
+    elements.gensukiBuyEstimatedSpoinc.textContent = 'Wallet confirms final amount';
+
+    if (elements.gensukiBuyEstimateNote) {
+      elements.gensukiBuyEstimateNote.textContent = `${selectedToken.label} preview quote failed. ${error.message || 'Final amount is confirmed in Phantom.'}`;
+    }
   }
 }
 
@@ -2565,15 +2781,17 @@ async function confirmRealSpoincDeposit() {
 }
 
 /**
- * Create a SOL_TO_SPOINC buy intent through Narrrfs backend.
+ * Create a Gensuki buy intent through Narrrfs backend.
  *
  * DEVS FOR DECADES:
- * This is a Gensuki /buy wrapper. It only prepares a transaction for Phantom.
- * It must never credit or debit DSPOINC.
+ * This is a Gensuki /buy wrapper for SOL, EMPIRE, and FOOK. It only prepares
+ * a transaction for Phantom. It must never credit or debit DSPOINC.
  */
 async function createGensukiBuyIntent() {
-  if (!canUseBridgeExecution('SOL_TO_SPOINC')) {
-    elements.gensukiBuyResult.textContent = getBridgeExecutionClosedMessage('SOL_TO_SPOINC');
+  const selectedToken = getSelectedGensukiBuyToken();
+
+  if (!canUseBridgeExecution(selectedToken.routeKey)) {
+    elements.gensukiBuyResult.textContent = getBridgeExecutionClosedMessage(selectedToken.routeKey);
     return;
   }
 
@@ -2586,11 +2804,11 @@ async function createGensukiBuyIntent() {
   }
 
   if (!amount || Number(amount) <= 0) {
-    elements.gensukiBuyResult.textContent = 'Enter a positive SOL amount first.';
+    elements.gensukiBuyResult.textContent = `Enter a positive ${selectedToken.label} amount first.`;
     return;
   }
 
-  elements.gensukiBuyResult.textContent = 'Creating Gensuki SOL → SPOINC buy intent...';
+  elements.gensukiBuyResult.textContent = `Creating Gensuki ${selectedToken.label} → SPOINC buy intent...`;
 
   try {
     const response = await fetch(SPOINC_BUY_INTENT_ENDPOINT, {
@@ -2599,11 +2817,11 @@ async function createGensukiBuyIntent() {
       credentials: 'include',
       body: JSON.stringify({
         user_id: getActiveBridgeUserId(),
-        route_key: 'SOL_TO_SPOINC',
+        route_key: selectedToken.routeKey,
         wallet,
         payment_amount: amount,
-        payment_token: 'SOL',
-        payment_token_address: '11111111111111111111111111111111'
+        payment_token: selectedToken.label,
+        payment_token_address: selectedToken.paymentTokenAddress
       })
     });
 
@@ -2614,23 +2832,28 @@ async function createGensukiBuyIntent() {
     }
 
     const data = payload.data || {};
-    state.latestGensukiBuyIntent = data;
+    state.latestGensukiBuyIntent = {
+      ...data,
+      selected_payment_token: selectedToken.key,
+      selected_route_key: selectedToken.routeKey
+    };
+
     elements.gensukiBuySignature.value = '';
 
     const hasTransaction = Boolean(data.transaction || data.gensuki_transaction);
 
     elements.gensukiBuyResult.innerHTML = `
-      <div class="font-black text-yellow-100">✅ Gensuki SOL buy intent created</div>
+      <div class="font-black text-yellow-100">✅ Gensuki ${escapeHtml(selectedToken.label)} buy intent created</div>
       <div class="mt-2 grid gap-2 md:grid-cols-2">
         <div>Intent ID: <strong id="latestGensukiBuyIntentId">${escapeHtml(data.intent_id)}</strong></div>
-        <div>Route: <strong>${escapeHtml(data.route_key || 'SOL_TO_SPOINC')}</strong></div>
-        <div>SOL Input: <strong>${escapeHtml(data.payment_amount || amount)} SOL</strong></div>
+        <div>Route: <strong>${escapeHtml(data.route_key || selectedToken.routeKey)}</strong></div>
+        <div>${escapeHtml(selectedToken.label)} Input: <strong>${escapeHtml(data.payment_amount || amount)} ${escapeHtml(selectedToken.label)}</strong></div>
         <div>Mode: <strong>${hasTransaction ? 'transaction payload — Phantom should open next' : 'unknown — stop and inspect response'}</strong></div>
         <div>Idempotency: <strong>${escapeHtml(data.idempotency_id || '')}</strong></div>
         <div>Gensuki Idempotency: <strong>${escapeHtml(data.gensuki_idempotency_id || '')}</strong></div>
       </div>
       <div class="mt-3 rounded-xl border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
-        Next step: click “Sign with Wallet + Confirm”. This buy step does not move DSPOINC.
+        Next step: click “Sign with Wallet + Confirm”. This buy step does not move DSPOINC. LUT is handled by Gensuki automatically.
       </div>
     `;
   } catch (error) {
@@ -2698,10 +2921,13 @@ async function sendGensukiBuyTransactionWithPhantom(intentData) {
  * never credits or deducts DSPOINC.
  */
 async function confirmGensukiBuyIntent() {
-  if (!canUseBridgeExecution('SOL_TO_SPOINC')) {
-    elements.gensukiBuyResult.textContent = getBridgeExecutionClosedMessage('SOL_TO_SPOINC');
-    return;
-  }
+  const selectedToken = getSelectedGensukiBuyToken();
+const selectedRouteKey = String(state.latestGensukiBuyIntent?.route_key || state.latestGensukiBuyIntent?.selected_route_key || selectedToken.routeKey);
+
+if (!canUseBridgeExecution(selectedRouteKey)) {
+  elements.gensukiBuyResult.textContent = getBridgeExecutionClosedMessage(selectedRouteKey);
+  return;
+}
 
   const intentNode = document.getElementById('latestGensukiBuyIntentId');
   const intentId = intentNode ? intentNode.textContent.trim() : '';
@@ -2712,7 +2938,7 @@ async function confirmGensukiBuyIntent() {
     return;
   }
 
-  elements.gensukiBuyResult.textContent = 'Opening wallet for Gensuki SOL → SPOINC buy...';
+  elements.gensukiBuyResult.textContent = `Opening wallet for Gensuki ${selectedToken.label} → SPOINC buy...`;
 
   try {
     const manualSignature = elements.gensukiBuySignature.value.trim();
@@ -2742,11 +2968,11 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
     const data = payload.data || {};
 
     elements.gensukiBuyResult.innerHTML = `
-      <div class="font-black text-emerald-200">✅ Gensuki SOL buy confirmed</div>
+      <div class="font-black text-emerald-200">✅ Gensuki ${escapeHtml(selectedToken.label)} buy confirmed</div>
       <div class="mt-2 grid gap-2 md:grid-cols-2">
         <div>Intent ID: <strong>${escapeHtml(data.intent_id || intentId)}</strong></div>
         <div>Transaction ID: <strong>${escapeHtml(data.transaction_id || '')}</strong></div>
-        <div>Route: <strong>${escapeHtml(data.route_key || 'SOL_TO_SPOINC')}</strong></div>
+        <div>Route: <strong>${escapeHtml(data.route_key || selectedRouteKey)}</strong></div>
         <div>DSPOINC Movement: <strong>none</strong></div>
       </div>
       <div class="mt-3 break-all text-xs text-slate-400">${escapeHtml(data.signature || data.transactionHash || transactionHash)}</div>
@@ -2799,6 +3025,22 @@ if (elements.createGensukiBuyIntentButton) {
   elements.createGensukiBuyIntentButton.addEventListener('click', createGensukiBuyIntent);
 }
 
+if (elements.confirmGensukiBuyButton) {
+  elements.confirmGensukiBuyButton.addEventListener('click', confirmGensukiBuyIntent);
+}
+
+if (elements.gensukiBuyTokenSolButton) {
+  elements.gensukiBuyTokenSolButton.addEventListener('click', () => selectGensukiBuyToken('SOL'));
+}
+
+if (elements.gensukiBuyTokenEmpireButton) {
+  elements.gensukiBuyTokenEmpireButton.addEventListener('click', () => selectGensukiBuyToken('EMPIRE'));
+}
+
+if (elements.gensukiBuyTokenFookButton) {
+  elements.gensukiBuyTokenFookButton.addEventListener('click', () => selectGensukiBuyToken('FOOK'));
+}
+
 if (elements.gensukiBuyAmount) {
   elements.gensukiBuyAmount.addEventListener('input', updateGensukiBuyPreview);
   elements.gensukiBuyAmount.addEventListener('change', updateGensukiBuyPreview);
@@ -2806,8 +3048,9 @@ if (elements.gensukiBuyAmount) {
 
 async function init() {
   configureBuyButtons();
-  forceLocalNarrrfSwapLabIdentity();
-  updateCalculator();
+forceLocalNarrrfSwapLabIdentity();
+selectGensukiBuyToken('SOL');
+updateCalculator();
 
   try {
     await Promise.all([

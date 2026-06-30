@@ -21,8 +21,18 @@ require_once __DIR__ . '/bridge-tester-helpers.php';
 spoinc_bridge_boot_json_api(['POST', 'OPTIONS']);
 
 const SPOINC_GENSUKI_CONFIRM_PATH = '/api/custom-token-presale/confirm';
+
 const SPOINC_BUY_ROUTE_KEY_SOL = 'SOL_TO_SPOINC';
+const SPOINC_BUY_ROUTE_KEY_EMPIRE = 'EMPIRE_TO_SPOINC';
+const SPOINC_BUY_ROUTE_KEY_FOOK = 'FOOK_TO_SPOINC';
+
 const SPOINC_BUY_DIRECTION_SOL = 'sol_to_spoinc';
+const SPOINC_BUY_DIRECTION_EMPIRE = 'empire_to_spoinc';
+const SPOINC_BUY_DIRECTION_FOOK = 'fook_to_spoinc';
+
+const SPOINC_BUY_INPUT_TOKEN_SOL = 'SOL';
+const SPOINC_BUY_INPUT_TOKEN_EMPIRE = 'EMPIRE';
+const SPOINC_BUY_INPUT_TOKEN_FOOK = 'FOOK';
 
 function spoinc_bridge_get_gensuki_outbound_api_key(): string
 {
@@ -146,15 +156,89 @@ function spoinc_bridge_transaction_hash_was_used(PDO $pdo, string $transactionHa
     return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-try {
-        $requestData = spoinc_bridge_get_request_data();
-    $pdo = spoinc_bridge_open_database();
-    $userId = spoinc_bridge_require_public_route_access(
-        $pdo,
-        $requestData,
+/**
+ * Return route metadata for one Gensuki buy route.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Buy confirmations never move DSPOINC. This helper only maps a known intent
+ * route to labels used for logging, transaction rows, and user feedback.
+ */
+function get_spoinc_buy_confirm_route_info(string $routeKey): array
+{
+    if ($routeKey === SPOINC_BUY_ROUTE_KEY_SOL) {
+        return [
+            'route_key' => SPOINC_BUY_ROUTE_KEY_SOL,
+            'direction' => SPOINC_BUY_DIRECTION_SOL,
+            'input_token' => SPOINC_BUY_INPUT_TOKEN_SOL,
+            'public_route_allowed' => true
+        ];
+    }
+
+    if ($routeKey === SPOINC_BUY_ROUTE_KEY_EMPIRE) {
+        return [
+            'route_key' => SPOINC_BUY_ROUTE_KEY_EMPIRE,
+            'direction' => SPOINC_BUY_DIRECTION_EMPIRE,
+            'input_token' => SPOINC_BUY_INPUT_TOKEN_EMPIRE,
+            'public_route_allowed' => false
+        ];
+    }
+
+    if ($routeKey === SPOINC_BUY_ROUTE_KEY_FOOK) {
+        return [
+            'route_key' => SPOINC_BUY_ROUTE_KEY_FOOK,
+            'direction' => SPOINC_BUY_DIRECTION_FOOK,
+            'input_token' => SPOINC_BUY_INPUT_TOKEN_FOOK,
+            'public_route_allowed' => false
+        ];
+    }
+
+    spoinc_bridge_json_response([
+        'success' => false,
+        'error' => 'Unsupported SPOINC buy confirmation route.',
+        'route_key' => $routeKey
+    ], 400);
+}
+
+/**
+ * Load one Gensuki buy intent for the current user.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This intentionally loads only buy routes. SPOINC_TO_DSPOINC claim intents use
+ * their own confirm endpoint because that path can credit DSPOINC.
+ */
+function load_spoinc_buy_confirm_intent(PDO $pdo, int $intentId, string $userId): array
+{
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM tbl_spoinc_bridge_intents
+        WHERE intent_id = ?
+          AND discord_id = ?
+          AND route_key IN (?, ?, ?)
+        LIMIT 1
+    ");
+    $stmt->execute([
+        $intentId,
+        $userId,
         SPOINC_BUY_ROUTE_KEY_SOL,
-        false
-    );
+        SPOINC_BUY_ROUTE_KEY_EMPIRE,
+        SPOINC_BUY_ROUTE_KEY_FOOK
+    ]);
+
+    $intent = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$intent) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'SPOINC buy intent not found for this user.'
+        ], 404);
+    }
+
+    return $intent;
+}
+
+try {
+            $requestData = spoinc_bridge_get_request_data();
+    $pdo = spoinc_bridge_open_database();
 
     $intentId = (int)($requestData['intent_id'] ?? 0);
     $transactionHash = trim((string)($requestData['transactionHash'] ?? ($requestData['transaction_hash'] ?? ($requestData['signature'] ?? ''))));
@@ -190,7 +274,7 @@ try {
         ], 500);
     }
 
-    $projectId = trim((string)($config['project_id'] ?? ''));
+        $projectId = trim((string)($config['project_id'] ?? ''));
     if ($projectId === '') {
         spoinc_bridge_json_response([
             'success' => false,
@@ -198,15 +282,37 @@ try {
         ], 500);
     }
 
-    $stmt = $pdo->prepare("\n        SELECT *\n        FROM tbl_spoinc_bridge_intents\n        WHERE intent_id = ?\n          AND discord_id = ?\n          AND route_key = ?\n        LIMIT 1\n    ");
-    $stmt->execute([$intentId, $userId, SPOINC_BUY_ROUTE_KEY_SOL]);
-    $intent = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$intent) {
+    $sessionUserId = spoinc_bridge_resolve_session_user_id($requestData);
+    if ($sessionUserId === '') {
         spoinc_bridge_json_response([
             'success' => false,
-            'error' => 'SOL_TO_SPOINC buy intent not found for this user.'
-        ], 404);
+            'error' => 'Not logged in'
+        ], 401);
+    }
+
+    $intent = load_spoinc_buy_confirm_intent($pdo, $intentId, $sessionUserId);
+    $routeInfo = get_spoinc_buy_confirm_route_info((string)$intent['route_key']);
+    $routeKey = (string)$routeInfo['route_key'];
+
+    $userId = spoinc_bridge_require_public_route_access(
+        $pdo,
+        $requestData,
+        $routeKey,
+        false
+    );
+
+    if ($userId !== $sessionUserId) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Session user mismatch for this buy intent.'
+        ], 403);
+    }
+
+    if (!$routeInfo['public_route_allowed'] && !spoinc_bridge_is_internal_tester_user($userId)) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => $routeKey . ' is private tester only until final public activation.'
+        ], 403);
     }
 
     if (in_array((string)($intent['status'] ?? ''), ['confirmed', 'settled', 'failed'], true)) {
@@ -313,8 +419,8 @@ try {
         ':transaction_hash' => $transactionHash,
         ':signature' => $transactionHash,
         ':wallet' => (string)$intent['wallet'],
-        ':route_key' => SPOINC_BUY_ROUTE_KEY_SOL,
-        ':direction' => SPOINC_BUY_DIRECTION_SOL,
+                ':route_key' => $routeKey,
+        ':direction' => $routeInfo['direction'],
         ':gensuki_status' => 'buy_confirmed_complete',
         ':narrrfs_status' => 'buy_confirmed_no_ledger_movement',
         ':raw_confirm_request_json' => json_encode($confirmRequest),
@@ -339,11 +445,11 @@ try {
             'intent_id' => $intentId,
             'transaction_id' => $transactionId,
             'transaction_hash' => $transactionHash,
-            'route_key' => SPOINC_BUY_ROUTE_KEY_SOL,
+                        'route_key' => $routeKey,
             'payment_amount' => (string)$intent['input_amount'],
-            'payment_token' => 'SOL',
+            'payment_token' => $routeInfo['input_token'],
             'ledger_movement' => false,
-            'message' => 'Gensuki SOL_TO_SPOINC buy confirmed. No DSPOINC movement happened.'
+            'message' => 'Gensuki ' . $routeKey . ' buy confirmed. No DSPOINC movement happened.'
         ]
     ]);
 } catch (Throwable $error) {
@@ -351,11 +457,11 @@ try {
         $pdo->rollBack();
     }
 
-    error_log('❌ SOL_TO_SPOINC Gensuki buy confirm error: ' . $error->getMessage());
+        error_log('❌ SPOINC Gensuki buy confirm error: ' . $error->getMessage());
 
     spoinc_bridge_json_response([
         'success' => false,
-        'error' => 'Failed to confirm SOL_TO_SPOINC Gensuki buy intent.',
+        'error' => 'Failed to confirm SPOINC Gensuki buy intent.',
         'details' => $error->getMessage()
     ], 500);
 }

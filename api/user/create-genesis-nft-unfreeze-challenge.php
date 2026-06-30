@@ -31,6 +31,16 @@ require_once __DIR__ . '/genesis-nft-staking-helpers.php';
 const GENESIS_NFT_UNFREEZE_CHALLENGE_TTL_MINUTES = 15;
 
 /**
+ * Public activation switch for Genesis Mouse Freezer challenge creation.
+ *
+ * Plain language for DEVS:
+ * When true, verified logged-in users may create unfreeze challenges in production.
+ * This only opens challenge creation. It does not bypass Solana Memo proof,
+ * verified ownership checks, claim rules, or backend reward math.
+ */
+const GENESIS_FREEZER_PUBLIC_ACTIVATION_ENABLED = true;
+
+/**
  * Controlled live tester allowlist for Genesis Mouse Freezer.
  *
  * Plain language for DEVS:
@@ -124,16 +134,13 @@ function resolve_unfreeze_challenge_user_id(array $requestData): string
     return '';
 }
 
-/**
- * Block non-allowlisted production users during the controlled live test.
- *
- * Plain language for DEVS:
- * This gate only affects production. It does not block localhost curl/browser
- * testing. It prevents accidental public NFT staking access while we verify
- * real wallet Memo transactions with approved testers.
- */
+
 function enforce_genesis_freezer_controlled_live_test_gate(string $userId): void
 {
+    if (GENESIS_FREEZER_PUBLIC_ACTIVATION_ENABLED) {
+        return;
+    }
+
     if (is_localhost_request()) {
         return;
     }

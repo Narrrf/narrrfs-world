@@ -193,6 +193,7 @@ function build_public_presale_payload(array $gensukiProject): array
 {
     $tokens = is_array($gensukiProject['tokens'] ?? null) ? $gensukiProject['tokens'] : [];
     $socials = is_array($gensukiProject['socials'] ?? null) ? $gensukiProject['socials'] : [];
+    $lutAddress = trim((string)($gensukiProject['lutAddress'] ?? $gensukiProject['lut_address'] ?? ''));
 
     return [
         'project_id' => (string)($gensukiProject['projectId'] ?? ''),
@@ -215,6 +216,10 @@ function build_public_presale_payload(array $gensukiProject): array
         'project_fee' => (string)($gensukiProject['projectFee'] ?? ''),
         'platform_fee' => (string)($gensukiProject['platformFee'] ?? ''),
         'disable_sell' => !empty($gensukiProject['disableSell']),
+
+                'lutAddress' => $lutAddress,
+        'lut_address' => $lutAddress,
+        'lut_available' => $lutAddress !== '',
 
         'allowed_tokens' => is_array($gensukiProject['allowedTokens'] ?? null)
             ? array_values($gensukiProject['allowedTokens'])
