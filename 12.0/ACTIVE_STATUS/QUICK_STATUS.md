@@ -1,5 +1,474 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## FOLLOW-UP — SPOINC BRIDGE LOCAL ARCHIVE IMPORT + DISCORD ARCHIVE COMMAND
+
+**Date:** 2026-06-30  
+**Scope:** SPOINC Bridge / local test archive / Discord admin command / waiting for Zeno LUT info  
+**Status:** Local XAMPP bridge history safely archived on live DB without polluting live production bridge metrics
+
+---
+
+## ✅ Local SPOINC Bridge History Archived On Live
+
+We compared local and live bridge tables.
+
+Local XAMPP bridge data:
+
+```text
+local_intents|39
+local_transactions|5
+local_ledger_audit|3
+
+## FOLLOW-UP — SWAP LAB SEASON 13 GATEWAY POLISH + MARKET PULSE CLEANUP
+
+**Date:** 2026-06-30
+**Scope:** Swap Lab / SPOINC Bridge / Season 13 frontend gateway
+**Status:** Public-facing Swap Lab gateway is now much cleaner and closer to Season 13 launch readiness
+
+---
+
+## ✅ Swap Lab Public Gateway Progress
+
+`public/swap-lab.html` was updated from a private tester-style page into a clearer **Season 13 Economy Gateway**.
+
+The page now focuses normal users on the main flow:
+
+```text
+1. Buy SPOINC with SOL through Narrrfs
+2. Or buy SPOINC directly on Gensuki
+3. Convert SPOINC into DSPOINC
+4. Use DSPOINC for Season 13 systems like V2 staking, NFT freezing, Reward Chamber, and future Mouseverse utilities
+```
+
+Current gateway section includes:
+
+```text
+Path A — Buy through Narrrfs
+Path B — Buy directly on Gensuki
+Path C — Already hold SPOINC? Convert to DSPOINC
+```
+
+Gensuki direct pool link currently points to:
+
+```text
+https://app.gensuki.xyz/gunfun/custom-presale/7e04b38a-7bd4-4fab-acc4-dfa53a99b639
+```
+
+---
+
+## ✅ Live Gensuki Market Pulse Cleanup
+
+The old duplicated lower **Live Gensuki Market Pulse** section was removed/merged.
+
+The top market area now acts as the single main market pulse section.
+
+User-facing main cards were reduced to the important values:
+
+```text
+SPOINC USD Price
+DSPOINC Total Supply
+Available DSPOINC
+SPOINC Value Preview
+```
+
+Advanced data was moved into a collapsed details area:
+
+```text
+SOL → SPOINC ratio
+Bridge rate
+Average holder balance
+Total raised
+Pool / presale progress
+Sell-back status
+EMPIRE → SPOINC route info
+FOOK → SPOINC route info
+Gensuki project status details
+```
+
+Reason:
+
+```text
+Normal users should not be overloaded.
+Advanced / admin / curious users can still open “View more market details”.
+No data or functionality was intentionally removed.
+```
+
+---
+
+## ✅ DSPOINC Economy Data Added
+
+Swap Lab now loads public DSPOINC economy stats from:
+
+```text
+/api/admin/get-dspoinc-overview.php
+```
+
+Displayed in the market pulse:
+
+```text
+💎 DSPOINC Total Supply
+📊 Average Holder Balance
+```
+
+Important fix:
+
+```text
+The economy pulse must remain non-critical.
+If the economy endpoint fails, it must not block Gensuki market data, route map, local login preview, or private tester access.
+```
+
+Known boot safety fix:
+
+```text
+DSPOINC_ECONOMY_OVERVIEW_ENDPOINT must use a relative path:
+'/api/admin/get-dspoinc-overview.php'
+
+Do not use API_BASE_URL in swap-lab.html because API_BASE_URL is not defined there.
+```
+
+---
+
+## ✅ SPOINC Value Preview Upgrade
+
+The old card:
+
+```text
+Max Preview
+```
+
+is being converted into:
+
+```text
+SPOINC Value Preview
+```
+
+Goal:
+
+```text
+Show the user's available DSPOINC as SPOINC equivalent and estimated SOL value.
+```
+
+Logic:
+
+```text
+available DSPOINC / 10,000 = SPOINC equivalent
+SPOINC equivalent * Gensuki token_price_native = estimated SOL value
+```
+
+Example display:
+
+```text
+52.8171 SPOINC
+≈ 0.0249 SOL
+```
+
+Important:
+
+```text
+This is display-only.
+It never creates a transaction.
+It never credits or deducts DSPOINC.
+Gensuki + wallet transaction remains final for real buys/conversions.
+```
+
+---
+
+## ✅ Buy / Convert Launch Caps Updated
+
+SOL_TO_SPOINC buy range was changed for launch testing:
+
+```text
+Minimum: 0.025 SOL
+Maximum: 10 SOL
+```
+
+SPOINC_TO_DSPOINC conversion cap was changed:
+
+```text
+Maximum: 500 SPOINC per conversion
+```
+
+Confirmed working test:
+
+```text
+0.25 SOL buy worked through the new Swap Lab gateway.
+Intent ID: 38
+Transaction ID: 4
+DSPOINC movement: none
+```
+
+Confirmed TX from screenshot:
+
+```text
+2ErHUzL792te1PVxGN5f5nkqWQc4gHd4eVk9iXWEmZcZajCiD2WP219GHaxxYR7r5ueuvetuf9kbmDyvcbkQ9wuM
+```
+
+---
+
+## ✅ EMPIRE / FOOK Route Display
+
+EMPIRE and FOOK routes can appear as:
+
+```text
+Route visible
+```
+
+This means:
+
+```text
+Gensuki returns the payment route as allowed/listed.
+Gensuki does not yet return a usable per-token conversion quote field.
+The frontend must not invent EMPIRE/FOOK conversion prices.
+```
+
+Current wording:
+
+```text
+EMPIRE is listed by Gensuki, but no conversion quote is returned yet. Waiting for LUT / quote support.
+FOOK is listed by Gensuki, but no conversion quote is returned yet. Waiting for LUT / quote support.
+```
+
+Do not open or promote EMPIRE / FOOK routes publicly until Zeno confirms LUT behavior and quote support.
+
+---
+
+## ✅ Current Frontend Safety State
+
+Swap Lab should keep this separation:
+
+```text
+Public user flow:
+- Buy SPOINC with SOL through Narrrfs
+- Buy SPOINC directly on Gensuki
+- Convert SPOINC to DSPOINC
+
+Advanced / protected:
+- DSPOINC_TO_SPOINC remains protected
+- EMPIRE / FOOK routes wait for LUT
+- Sell routes remain disabled while Gensuki disableSell is true
+- Admin/private tester tools stay controlled
+```
+
+Backend authority remains unchanged:
+
+```text
+Frontend shows previews and opens wallet transactions.
+Backend prepares Gensuki requests.
+Backend confirms with Gensuki.
+Backend credits DSPOINC only after confirmed SPOINC_TO_DSPOINC claim.
+SOL_TO_SPOINC buy never credits or deducts DSPOINC.
+```
+
+---
+
+## ✅ Current Known Good State
+
+After latest fixes, Swap Lab should load:
+
+```text
+✅ Gensuki market pulse data
+✅ DSPOINC economy cards
+✅ local Narrrf identity / user preview
+✅ available DSPOINC
+✅ SPOINC value preview
+✅ route map
+✅ buy card
+✅ convert card
+✅ private tester controls
+```
+
+If the whole page stops loading again, first check for JavaScript boot blockers such as:
+
+```text
+undefined constants
+duplicate init()
+bad Promise.all blocker
+missing element IDs
+missing helper function
+```
+
+Important recent blocker fixed:
+
+```text
+API_BASE_URL was not defined in swap-lab.html.
+Using it in DSPOINC_ECONOMY_OVERVIEW_ENDPOINT stopped the full page boot.
+```
+
+---
+
+## Waiting On Zeno
+
+Still waiting for LUT / route upgrade details before opening larger token route features:
+
+```text
+1. Exact LUT response field name
+2. Which route returns the LUT
+3. Whether Gensuki returns a full prepared VersionedTransaction
+4. Whether Narrrfs frontend must fetch/use the LUT account
+5. Whether LUT applies to buy only or also claim/sell
+6. Whether LUT can be stored as permanent project config
+7. Exact status lifecycle and idempotency rules
+8. Exact transactionHash vs signature behavior
+9. Exact moment Narrrfs may credit/deduct DSPOINC
+```
+
+Public launch should still avoid EMPIRE / FOOK and DSPOINC_TO_SPOINC until LUT and safety recovery flows are confirmed.
+
+
+## FOLLOW-UP — SPOINC BRIDGE ADMIN INTERFACE TAB WORKING
+
+**Date:** 2026-06-29
+**Scope:** Admin Interface / SPOINC Bridge overview / private bridge monitoring
+**Status:** New admin-interface SPOINC Bridge tab working locally/live
+
+---
+
+## ✅ Admin Interface Bridge Tab Added
+
+A new read-only **SPOINC Bridge Admin** tab was added to `public/admin-interface.html`.
+
+The tab is connected to:
+
+```text
+api/admin/get-spoinc-bridge-admin.php
+```
+
+Confirmed working in the admin interface screenshot.
+
+Visible features:
+
+```text
+✅ Bridge overview status box
+✅ Confirmed buys metric
+✅ Settled claims metric
+✅ Total DSPOINC credited metric
+✅ Pending payload metric
+✅ Failed rows metric
+✅ Discord ID search
+✅ Wallet search
+✅ Transaction signature search
+✅ Intent ID search
+✅ Recent rows filter
+✅ Ledger audit loader
+✅ Replay / duplicate check button
+✅ Route safety panel
+✅ Bridge results table
+✅ Open Swap Lab shortcut
+```
+
+---
+
+## ✅ Confirmed Display Data
+
+Admin tab currently shows:
+
+```text
+Confirmed Buys: 1
+Settled Claims: 2
+DSPOINC Credited: 110,000
+Pending: 10
+Failed: 8
+```
+
+The recent claims table correctly displays bridge rows such as:
+
+```text
+Intent #31 — SPOINC_TO_DSPOINC — settled / complete / settled
+Intent #26 — SPOINC_TO_DSPOINC — claim_failed / claim_request_failed / claim_failed_no_ledger_movement
+Intent #25 — SPOINC_TO_DSPOINC — claim_failed / claim_request_failed / claim_failed_no_ledger_movement
+```
+
+---
+
+## ✅ Safety Status
+
+This admin tab is **read-only only**.
+
+It must not:
+
+```text
+❌ call Gensuki
+❌ retry confirmations
+❌ settle intents
+❌ credit DSPOINC
+❌ debit DSPOINC
+❌ move SPOINC
+❌ expose API keys
+```
+
+It only reads:
+
+```text
+tbl_spoinc_bridge_config
+tbl_spoinc_bridge_routes
+tbl_spoinc_bridge_intents
+tbl_spoinc_bridge_transactions
+tbl_spoinc_bridge_ledger_audit
+```
+
+This matches the Discord `/spoincbridge` admin command purpose:
+
+```text
+Discord command = fast admin lookup
+Admin Interface tab = deep table + long-term bridge monitoring
+Swap Lab = execution/testing surface
+Gensuki = transaction/confirm authority
+```
+
+---
+
+## Current Bridge Status
+
+```text
+Private live testing succeeded.
+Narrrf + justme tested live successfully.
+Normal Phantom wallet worked.
+Ledger wallet worked.
+SOL_TO_SPOINC buy worked.
+SPOINC_TO_DSPOINC claim worked.
+Profile DSPOINC score adjustment worked.
+Admin-interface monitoring now works.
+Discord admin bridge command works.
+```
+
+---
+
+## Waiting On Zeno
+
+Next bridge expansion waits for Zeno’s LUT update.
+
+Still pending:
+
+```text
+1. Exact LUT response field name
+2. Which route returns the LUT
+3. Whether Gensuki returns a full prepared VersionedTransaction
+4. Whether Narrrfs frontend must fetch/use the LUT account
+5. Whether LUT applies to buy only or also claim/sell
+6. Whether LUT can be stored as permanent project config
+7. Exact status lifecycle and idempotency rules
+8. Exact transactionHash vs signature behavior
+9. Exact moment Narrrfs may credit/deduct DSPOINC
+```
+
+Do not open EMPIRE / FOOK / larger token routes until LUT details are confirmed and tested.
+
+---
+
+## Next Planned Step After LUT
+
+After Zeno confirms LUT behavior:
+
+```text
+1. Update Swap Lab transaction handling if LUT account must be fetched client-side.
+2. Add Gensuki /status and /getTransaction recovery wrappers.
+3. Add pending-intent recovery tools.
+4. Then prepare Reward Chamber / Lab “Buy DSPOINC” entry buttons that route users into Swap Lab guided mode.
+```
+
+Public bridge remains closed until final safety checks, Phantom warning/domain status, and LUT behavior are confirmed.
+
+
 ## FOLLOW-UP — SPOINC BRIDGE PRIVATE LIVE TEST PUSH READY
 
 **Date:** 2026-06-29

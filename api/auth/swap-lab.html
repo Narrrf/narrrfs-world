@@ -454,103 +454,96 @@
       </div>
     </section>
 
-   <section class="section-card mt-8 p-5 md:p-7" aria-label="Live Gensuki market pulse">
+    <section class="section-card mt-8 p-5 md:p-7" aria-label="Live Gensuki market pulse">
   <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
     <div>
       <div class="pill cyan mb-4">📡 Live Gensuki Market Pulse</div>
-<h2 class="text-3xl font-black md:text-4xl">Season 13 Economy Gateway</h2>     <p class="mt-3 max-w-5xl text-sm leading-relaxed text-slate-300">
-  Check the key SPOINC and DSPOINC numbers before buying, converting, or preparing for V2 staking and NFT freezing.
-</p>
+      <h2 class="text-3xl font-black md:text-4xl">Current SPOINC buy ratios</h2>
+      <p class="mt-3 max-w-5xl text-sm leading-relaxed text-slate-300">
+        Loaded through the Narrrfs backend from Gensuki. This display is read-only:
+        no transaction is created, no Gensuki key is exposed, and no DSPOINC ledger movement happens here.
+      </p>
     </div>
-    <button id="refreshMarketPulseButton" class="btn cyan shrink-0" type="button">🔄 Refresh</button>
+    <button id="refreshMarketPulseButton" class="btn cyan shrink-0" type="button">🔄 Refresh ratios</button>
   </div>
 
   <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-    <article class="stat-card border-2 border-yellow-300/40 bg-yellow-400/10">
-      <div class="label">SPOINC USD Price</div>
-      <div id="spoincPrice" class="metric-value text-yellow-100">$0.035</div>
-      <div class="metric-hint">Live Gensuki project price loaded through Narrrfs.</div>
-    </article>
+  <article class="stat-card">
+    <div class="label">SPOINC USD Price</div>
+    <div id="spoincPrice" class="metric-value">$0.035</div>
+    <div class="metric-hint">Loaded through the Narrrfs backend from the verified Gensuki project.</div>
+  </article>
 
-    <article class="stat-card border-2 border-cyan-300/40 bg-cyan-400/10">
-      <div class="label">💎 DSPOINC Total Supply</div>
-      <div id="economyTotalSupplyPublic" class="metric-value text-cyan-100">Loading...</div>
-      <div class="metric-hint">Live public DSPOINC economy supply.</div>
-    </article>
+  <article class="stat-card">
+    <div class="label">SOL → SPOINC</div>
+    <div id="marketOneSolSpoinc" class="metric-value">Loading...</div>
+    <div id="marketSolSpoincHint" class="metric-hint">Live Gensuki SOL ratio.</div>
+  </article>
 
-    <article class="stat-card border-2 border-emerald-300/40 bg-emerald-400/10">
-      <div class="label">Available DSPOINC</div>
-      <div id="availableDspoinc" class="metric-value text-emerald-100">Login needed</div>
-      <div class="metric-hint">Your spendable DSPOINC after frozen staking balance.</div>
-    </article>
+  <article class="stat-card">
+    <div class="label">EMPIRE → SPOINC</div>
+    <div id="marketEmpireSpoinc" class="metric-value">Checking...</div>
+    <div id="marketEmpireSpoincHint" class="metric-hint">Displayed only if Gensuki returns a usable route quote.</div>
+  </article>
 
-    <article class="stat-card border-2 border-purple-300/40 bg-purple-400/10">
-  <div class="label">SPOINC Value Preview</div>
-  <div id="maxConvertibleSpoinc" class="metric-value text-purple-100">—</div>
-  <div id="availableSolValuePreview" class="mt-2 text-xl font-black text-purple-200">≈ — SOL</div>
-  <div class="metric-hint">Your available DSPOINC shown as SPOINC and estimated SOL value.</div>
+  <article class="stat-card">
+    <div class="label">FOOK → SPOINC</div>
+    <div id="marketFookSpoinc" class="metric-value">Checking...</div>
+    <div id="marketFookSpoincHint" class="metric-hint">Displayed only if Gensuki returns a usable route quote.</div>
+  </article>
+
+  <article class="stat-card">
+    <div class="label">Bridge Rate</div>
+    <div id="bridgeRate" class="metric-value">10,000 : 1</div>
+    <div class="metric-hint">10,000 DSPOINC equals 1 SPOINC.</div>
+  </article>
+
+  <article class="stat-card">
+    <div class="label">Total Raised</div>
+    <div id="marketTotalRaised" class="metric-value">Loading...</div>
+    <div id="marketTotalRaisedHint" class="metric-hint">Public-safe Gensuki raise data.</div>
+  </article>
+
+  <article class="stat-card">
+    <div class="label">Pool / Presale Progress</div>
+    <div id="marketPoolProgress" class="metric-value">Loading...</div>
+    <div id="marketPoolProgressHint" class="metric-hint">Based on token sold / raise supply when available.</div>
+  </article>
+
+  <article class="stat-card">
+    <div class="label">Sell Back</div>
+    <div id="marketTopSellState" class="metric-value">Loading...</div>
+    <div class="metric-hint">Sell-back remains protected while Gensuki disables sell routes.</div>
+  </article>
+
+  <article class="stat-card">
+  <div class="label">💎 DSPOINC Total Supply</div>
+  <div id="economyTotalSupplyPublic" class="metric-value">Loading...</div>
+  <div class="metric-hint">Live public DSPOINC economy supply.</div>
 </article>
+
+<article class="stat-card">
+  <div class="label">📊 Average Holder Balance</div>
+  <div id="economyAverageHolderPublic" class="metric-value">Loading...</div>
+  <div class="metric-hint">Average funded holder DSPOINC balance.</div>
+</article>
+
+  <article class="stat-card">
+    <div class="label">Available DSPOINC</div>
+    <div id="availableDspoinc" class="metric-value">Login needed</div>
+    <div class="metric-hint">Available balance excludes frozen DSPOINC in staking.</div>
+  </article>
+
+      <article class="stat-card">
+      <div class="label">Max Preview</div>
+      <div id="maxConvertibleSpoinc" class="metric-value">—</div>
+      <div class="metric-hint">Your current available DSPOINC shown as SPOINC preview value.</div>
+    </article>
   </div>
 
-  <details class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-    <summary class="cursor-pointer select-none text-sm font-black text-cyan-100">
-      🔎 View more market details, pool data, and protected routes
-    </summary>
-
-    <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <article class="stat-card">
-        <div class="label">SOL → SPOINC</div>
-        <div id="marketOneSolSpoinc" class="metric-value">Loading...</div>
-        <div id="marketSolSpoincHint" class="metric-hint">Live Gensuki SOL ratio.</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="label">Bridge Rate</div>
-        <div id="bridgeRate" class="metric-value">10,000 : 1</div>
-        <div class="metric-hint">10,000 DSPOINC equals 1 SPOINC.</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="label">📊 Average Holder Balance</div>
-        <div id="economyAverageHolderPublic" class="metric-value">Loading...</div>
-        <div class="metric-hint">Average funded holder DSPOINC balance.</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="label">Total Raised</div>
-        <div id="marketTotalRaised" class="metric-value">Loading...</div>
-        <div id="marketTotalRaisedHint" class="metric-hint">Public-safe Gensuki raise data.</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="label">Pool / Presale Progress</div>
-        <div id="marketPoolProgress" class="metric-value">Loading...</div>
-        <div id="marketPoolProgressHint" class="metric-hint">Based on token sold / raise supply when available.</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="label">Sell Back</div>
-        <div id="marketTopSellState" class="metric-value">Loading...</div>
-        <div class="metric-hint">Sell-back remains protected while Gensuki disables sell routes.</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="label">EMPIRE → SPOINC</div>
-        <div id="marketEmpireSpoinc" class="metric-value">Checking...</div>
-        <div id="marketEmpireSpoincHint" class="metric-hint">Shown when Gensuki returns a usable route quote.</div>
-      </article>
-
-      <article class="stat-card">
-        <div class="label">FOOK → SPOINC</div>
-        <div id="marketFookSpoinc" class="metric-value">Checking...</div>
-        <div id="marketFookSpoincHint" class="metric-hint">Shown when Gensuki returns a usable route quote.</div>
-      </article>
-    </div>
-
-    <div id="marketPulseStatus" class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-      Loading Gensuki market pulse...
-    </div>
-  </details>
+  <div id="marketPulseStatus" class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+    Loading Gensuki market pulse...
+  </div>
 </section>
 
     <section id="season13-gateway" class="section-card mt-8 p-5 md:p-7" aria-label="Season 13 SPOINC gateway">
@@ -956,7 +949,7 @@ const SOLANA_SYSTEM_PROGRAM_ID = '11111111111111111111111111111111';
 const LOCAL_TEST_DISCORD_ID = '328601656659017732';
 const LOCAL_TEST_DISCORD_NAME = 'Narrrf Local Test';
 
-const DSPOINC_ECONOMY_OVERVIEW_ENDPOINT = '/api/admin/get-dspoinc-overview.php';
+const DSPOINC_ECONOMY_OVERVIEW_ENDPOINT = API_BASE_URL + '/api/admin/get-dspoinc-overview.php';
 
 const SPOINC_BUY_INTENT_ENDPOINT = '/api/partner/spoinc/create-gensuki-buy-intent.php';
 const SPOINC_BUY_CONFIRM_ENDPOINT = '/api/partner/spoinc/confirm-gensuki-buy-intent.php';
@@ -1080,9 +1073,8 @@ function getActiveBridgeUserId() {
       bridgeRate: document.getElementById('bridgeRate'),
       availableDspoinc: document.getElementById('availableDspoinc'),
       maxConvertibleSpoinc: document.getElementById('maxConvertibleSpoinc'),
-      availableSolValuePreview: document.getElementById('availableSolValuePreview'),
       economyTotalSupplyPublic: document.getElementById('economyTotalSupplyPublic'),
-      economyAverageHolderPublic: document.getElementById('economyAverageHolderPublic'),
+economyAverageHolderPublic: document.getElementById('economyAverageHolderPublic'),
       profileIdentity: document.getElementById('profileIdentity'),
       profileAvailable: document.getElementById('profileAvailable'),
       profileFrozen: document.getElementById('profileFrozen'),
@@ -1380,36 +1372,6 @@ function formatMarketAmount(value, maximumFractionDigits = 4) {
 }
 
 /**
- * Update the top value preview for the user's available DSPOINC.
- *
- * Plain language for DEVS:
- * Available DSPOINC is an in-game balance. This preview converts it to the
- * internal SPOINC bridge equivalent and then estimates the SOL value using
- * Gensuki's live token_price_native. It is display-only and never moves funds.
- */
-function updateAvailableSolanaValuePreview() {
-  if (!elements.availableSolValuePreview) {
-    return;
-  }
-
-  const project = state.latestGensukiProject || {};
-  const tokenPriceNative = parsePositiveNumber(project.token_price_native);
-  const availableDspoinc = parsePositiveNumber(state.userPreview?.balance?.available_dspoinc);
-
-  if (tokenPriceNative === null || availableDspoinc === null) {
-    elements.availableSolValuePreview.textContent = '≈ — SOL';
-    return;
-  }
-
-  const equivalentSpoinc = availableDspoinc / DSPOINC_PER_SPOINC;
-  const estimatedSolValue = equivalentSpoinc * tokenPriceNative;
-
-  elements.availableSolValuePreview.textContent = `≈ ${estimatedSolValue.toLocaleString('en-US', {
-    maximumFractionDigits: 6
-  })} SOL`;
-}
-
-/**
  * Estimate SPOINC received for a SOL amount using Gensuki token_price_native.
  *
  * Plain language for DEVS:
@@ -1703,7 +1665,6 @@ function renderGensukiMarketPulse(project) {
   }
 
   updateGensukiBuyPreview();
-updateAvailableSolanaValuePreview();
 }
 
 /**
@@ -1804,19 +1765,14 @@ console.warn(error);
 async function loadUserPreview() {
   const activeDiscordId = getActiveBridgeUserId();
 
- if (!activeDiscordId) {
-  elements.availableDspoinc.textContent = 'Login needed';
-  elements.maxConvertibleSpoinc.textContent = '—';
-
-  if (elements.availableSolValuePreview) {
-    elements.availableSolValuePreview.textContent = '≈ — SOL';
+  if (!activeDiscordId) {
+    elements.availableDspoinc.textContent = 'Login needed';
+    elements.maxConvertibleSpoinc.textContent = '—';
+    elements.profileAvailable.textContent = 'Login needed';
+    elements.profileFrozen.textContent = '—';
+    elements.profileMaxSpoinc.textContent = '—';
+    return;
   }
-
-  elements.profileAvailable.textContent = 'Login needed';
-  elements.profileFrozen.textContent = '—';
-  elements.profileMaxSpoinc.textContent = '—';
-  return;
-}
 
   try {
     const response = await fetch(BRIDGE_PREVIEW_ENDPOINT, {
@@ -1841,127 +1797,53 @@ async function loadUserPreview() {
     const total = Number(balance.total_dspoinc ?? balance.total ?? balance.total_balance ?? 0);
     const maxSpoinc = Number(conversion.max_spoinc_convertible ?? (available / DSPOINC_PER_SPOINC));
 
-    state.userPreview = {
-  ...data,
-  balance: {
-    ...balance,
-    available_dspoinc: available,
-    frozen_dspoinc: frozen,
-    total_dspoinc: total
-  }
-};
+    state.userPreview = data;
 
-elements.availableDspoinc.textContent = `${formatNumber(available, 0)} DSPOINC`;
-elements.maxConvertibleSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
-elements.profileAvailable.textContent = `${formatNumber(available, 0)} DSPOINC`;
-elements.profileFrozen.textContent = `${formatNumber(frozen, 0)} DSPOINC`;
-elements.profileMaxSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
-elements.profileIdentity.textContent = `${state.discordName || 'Discord member'} (${activeDiscordId})`;
-
-updateAvailableSolanaValuePreview();
+    elements.availableDspoinc.textContent = `${formatNumber(available, 0)} DSPOINC`;
+    elements.maxConvertibleSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
+    elements.profileAvailable.textContent = `${formatNumber(available, 0)} DSPOINC`;
+    elements.profileFrozen.textContent = `${formatNumber(frozen, 0)} DSPOINC`;
+    elements.profileMaxSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
+    elements.profileIdentity.textContent = `${state.discordName || 'Discord member'} (${activeDiscordId})`;
   } catch (error) {
-  elements.availableDspoinc.textContent = 'Preview unavailable';
-  elements.maxConvertibleSpoinc.textContent = '—';
-
-  if (elements.availableSolValuePreview) {
-    elements.availableSolValuePreview.textContent = '≈ — SOL';
+    elements.availableDspoinc.textContent = 'Preview unavailable';
+    elements.maxConvertibleSpoinc.textContent = '—';
+    elements.profileAvailable.textContent = 'Preview unavailable';
+    elements.profileFrozen.textContent = '—';
+    elements.profileMaxSpoinc.textContent = '—';
+    console.warn('Swap Lab preview load failed:', error);
   }
-
-  elements.profileAvailable.textContent = 'Preview unavailable';
-  elements.profileFrozen.textContent = '—';
-  elements.profileMaxSpoinc.textContent = '—';
-  console.warn('Swap Lab preview load failed:', error);
-}
 }
 
     function getRouteDirectionLabel(route) {
       return `${route?.input_token || 'Input'} → ${route?.output_token || 'Output'}`;
     }
 
-   /**
- * Build the public Route Map status for one bridge route.
- *
- * Plain language for DEVS FOR DECADES:
- * The Route Map is user-facing. It must not show old private tester wording
- * once we prepare public launch. The backend flags still decide if a route can
- * execute. This function only explains the current public status clearly.
- */
-function getPublicRouteInfo(route) {
-  const routeKey = String(route?.route_key || '');
-  const direction = String(route?.direction || '');
-  const publicEnabled = Number(route?.public_enabled) === 1;
-  const backendEnabled = Number(route?.backend_enabled) === 1;
-  const v1Allowed = Number(route?.v1_public_allowed) === 1;
-  const canExecute = publicEnabled && backendEnabled && v1Allowed;
+    function getPublicRouteInfo(route) {
+      const routeKey = String(route?.route_key || '');
+      const direction = String(route?.direction || '');
+      const publicEnabled = Number(route?.public_enabled) === 1;
+      const backendEnabled = Number(route?.backend_enabled) === 1;
+      const v1Allowed = Number(route?.v1_public_allowed) === 1;
+      const canExecute = publicEnabled && backendEnabled && v1Allowed;
 
-  if (canExecute) {
-    return {
-      pill: 'Live',
-      pillClass: 'green',
-      status: 'Public execution enabled',
-      summary: 'This route is open through the official Narrrfs Swap Lab.'
-    };
-  }
-
-  if (routeKey === 'SOL_TO_SPOINC') {
-    return {
-      pill: 'Ready',
-      pillClass: 'cyan',
-      status: 'Ready for public activation',
-      summary: 'Buy SPOINC with SOL through Narrrfs once the final live route flags are opened.'
-    };
-  }
-
-  if (routeKey === 'SPOINC_TO_DSPOINC') {
-    return {
-      pill: 'Ready',
-      pillClass: 'cyan',
-      status: 'Ready for public activation',
-      summary: 'Convert SPOINC into DSPOINC after wallet signing and Gensuki confirmation. DSPOINC is credited only after backend settlement succeeds.'
-    };
-  }
-
-  if (routeKey === 'DSPOINC_TO_SPOINC') {
-    return {
-      pill: 'Protected',
-      pillClass: 'red',
-      status: 'Closed for V1 public launch',
-      summary: 'DSPOINC → SPOINC stays protected for now. It will open only after the next safety and recovery phase is complete.'
-    };
-  }
-
-  if (routeKey === 'EMPIRE_TO_SPOINC' || routeKey === 'FOOK_TO_SPOINC') {
-    return {
-      pill: 'Waiting for LUT',
-      pillClass: 'blue',
-      status: 'Partner route pending',
-      summary: 'This token route stays closed until Zeno/Gensuki confirms LUT behavior and usable quote support.'
-    };
-  }
-
-  if (
-    routeKey === 'SPOINC_TO_SOL'
-    || routeKey === 'SPOINC_TO_EMPIRE'
-    || routeKey === 'SPOINC_TO_FOOK'
-    || direction === 'spoinc_to_sol'
-    || direction === 'spoinc_to_empire'
-    || direction === 'spoinc_to_fook'
-  ) {
-    return {
-      pill: 'Disabled V1',
-      pillClass: 'red',
-      status: 'Sell route disabled',
-      summary: 'Sell-back routes stay closed in V1 while Gensuki sell support and liquidity safety rules are finalized.'
-    };
-  }
-
-  return {
-    pill: 'Planned',
-    pillClass: 'blue',
-    status: 'Roadmap route',
-    summary: 'This route is planned for the SPOINC bridge roadmap and is not open yet.'
-  };
-}
+      if (canExecute) {
+        return { pill: 'Live', pillClass: 'green', status: 'Execution enabled', summary: 'This route is enabled through the official Narrrfs bridge system.' };
+      }
+      if (routeKey === 'DSPOINC_TO_SPOINC') {
+        return { pill: 'Private Test', pillClass: '', status: 'Private testing next', summary: 'Convert available Narrrfs DSPOINC into SPOINC after the protected test flow is complete.' };
+      }
+      if (routeKey === 'SPOINC_TO_DSPOINC') {
+        return { pill: 'Private Test', pillClass: '', status: 'Private testing next', summary: 'Bring SPOINC into the Narrrfs game economy as DSPOINC after settlement safety is fully tested.' };
+      }
+      if (direction === 'sol_to_spoinc' || direction === 'empire_to_spoinc' || direction === 'fook_to_spoinc') {
+        return { pill: 'Buy Route', pillClass: 'cyan', status: 'Coming soon', summary: 'Buy SPOINC through a Gensuki-powered route after public launch testing is complete.' };
+      }
+      if (direction === 'spoinc_to_sol' || direction === 'spoinc_to_empire' || direction === 'spoinc_to_fook') {
+        return { pill: 'Protected V1', pillClass: 'red', status: 'Protected for V1', summary: 'External sell-back routes stay locked in V1 while liquidity and safety rules are finalized.' };
+      }
+      return { pill: 'Planned', pillClass: 'blue', status: 'Coming soon', summary: 'This route is planned for the SPOINC bridge roadmap.' };
+    }
 
     async function loadBridgeRoutes() {
       elements.routesGrid.innerHTML = '<div class="stat-card text-sm text-slate-300">Loading route map...</div>';
@@ -2485,11 +2367,12 @@ async function createRealSpoincDepositIntent() {
 }
 
 /**
- * Confirm a SPOINC_TO_DSPOINC claim through Narrrfs backend.
+ * Confirm a private real SPOINC_TO_DSPOINC claim.
  *
- * Plain language for DEVS:
- * DSPOINC is credited only after the backend verifies the signed transaction
- * with Gensuki and settles the intent.
+ * DEVS FOR DECADES:
+ * This function does not verify value or credit DSPOINC itself. It only obtains
+ * a transaction hash/signature and sends it to Narrrfs backend. Backend calls
+ * Gensuki /confirm, blocks replay, and credits the DSPOINC ledger exactly once.
  */
 async function confirmRealSpoincDeposit() {
   if (!canUseBridgeExecution('SPOINC_TO_DSPOINC')) {
@@ -2691,11 +2574,11 @@ async function sendGensukiBuyTransactionWithPhantom(intentData) {
 }
 
 /**
- * Confirm a SOL_TO_SPOINC buy transaction with Narrrfs backend.
+ * Confirm a private SOL_TO_SPOINC buy transaction with Narrrfs backend.
  *
- * Plain language for DEVS:
- * Buying SPOINC is on-chain only. This confirmation records the lifecycle but
- * never credits or deducts DSPOINC.
+ * Plain language:
+ * This records that the Gensuki buy transaction was completed. It does not
+ * change DSPOINC balances.
  */
 async function confirmGensukiBuyIntent() {
   if (!canUseBridgeExecution('SOL_TO_SPOINC')) {
@@ -2775,13 +2658,8 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
 
 if (elements.refreshMarketPulseButton) {
   elements.refreshMarketPulseButton.addEventListener('click', () => {
-    loadGensukiProjectDetails().catch((error) => {
-      console.warn('[SPOINC SWAP LAB] Gensuki market pulse refresh failed:', error);
-    });
-
-    loadDspoincEconomyPulse().catch((error) => {
-      console.warn('[SPOINC SWAP LAB] DSPOINC economy pulse refresh failed:', error);
-    });
+    loadGensukiProjectDetails();
+    loadDspoincEconomyPulse();
   });
 }
 elements.refreshProfileButton.addEventListener('click', async () => {
@@ -2809,31 +2687,15 @@ async function init() {
   forceLocalNarrrfSwapLabIdentity();
   updateCalculator();
 
-  try {
-    await Promise.all([
-      loadBridgeConfig(),
-      loadGensukiProjectDetails(),
-      loadBridgeRoutes()
-    ]);
-  } catch (error) {
-    console.warn('[SPOINC SWAP LAB] Critical bridge boot load failed:', error);
-  }
+  await Promise.all([
+    loadBridgeConfig(),
+    loadGensukiProjectDetails(),
+    loadBridgeRoutes(),
+    loadDspoincEconomyPulse()
+  ]);
 
-  loadDspoincEconomyPulse().catch((error) => {
-    console.warn('[SPOINC SWAP LAB] Non-critical DSPOINC economy pulse failed:', error);
-  });
-
-  try {
-    await loadUserPreview();
-  } catch (error) {
-    console.warn('[SPOINC SWAP LAB] User preview load failed:', error);
-  }
-
-  try {
-    await loadPrivateTesterAccess();
-  } catch (error) {
-    console.warn('[SPOINC SWAP LAB] Private tester access load failed:', error);
-  }
+  await loadUserPreview();
+  await loadPrivateTesterAccess();
 }
 
 init();

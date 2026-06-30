@@ -1,11 +1,18 @@
 <?php
 /**
- * SPOINC Bridge API — Confirm private Gensuki buy intent.
+ * SPOINC Bridge API — Confirm Gensuki SOL_TO_SPOINC buy intent.
  *
  * Plain language for DEVS FOR DECADES:
- * This endpoint confirms a Gensuki /buy transaction after Phantom returns a
- * Solana signature. Buying SPOINC must never credit or deduct DSPOINC. It only
- * records the transaction lifecycle for Narrrf + justme private testing.
+ * This endpoint confirms a Gensuki /buy transaction after Phantom or Ledger
+ * returns a Solana signature.
+ *
+ * Buying SPOINC is on-chain only.
+ * This endpoint must never credit DSPOINC.
+ * This endpoint must never deduct DSPOINC.
+ *
+ * Public users are allowed only when the global bridge config and the exact
+ * SOL_TO_SPOINC route are opened in the database. Internal testers can still
+ * use this endpoint before public activation.
  */
 
 require_once __DIR__ . '/bridge-helpers.php';
@@ -140,8 +147,14 @@ function spoinc_bridge_transaction_hash_was_used(PDO $pdo, string $transactionHa
 }
 
 try {
-    $requestData = spoinc_bridge_get_request_data();
-    $userId = spoinc_bridge_tester_require_access();
+        $requestData = spoinc_bridge_get_request_data();
+    $pdo = spoinc_bridge_open_database();
+    $userId = spoinc_bridge_require_public_route_access(
+        $pdo,
+        $requestData,
+        SPOINC_BUY_ROUTE_KEY_SOL,
+        false
+    );
 
     $intentId = (int)($requestData['intent_id'] ?? 0);
     $transactionHash = trim((string)($requestData['transactionHash'] ?? ($requestData['transaction_hash'] ?? ($requestData['signature'] ?? ''))));
@@ -168,8 +181,7 @@ try {
         ], 400);
     }
 
-    $pdo = spoinc_bridge_open_database();
-    $config = spoinc_bridge_load_config($pdo);
+        $config = spoinc_bridge_load_config($pdo);
 
     if (!$config) {
         spoinc_bridge_json_response([
@@ -193,7 +205,7 @@ try {
     if (!$intent) {
         spoinc_bridge_json_response([
             'success' => false,
-            'error' => 'SOL_TO_SPOINC buy intent not found for this tester.'
+            'error' => 'SOL_TO_SPOINC buy intent not found for this user.'
         ], 404);
     }
 

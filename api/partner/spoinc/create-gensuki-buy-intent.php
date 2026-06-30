@@ -1,11 +1,18 @@
 <?php
 /**
- * SPOINC Bridge API — Create private Gensuki buy intent.
+ * SPOINC Bridge API — Create Gensuki SOL_TO_SPOINC buy intent.
  *
  * Plain language for DEVS FOR DECADES:
- * This endpoint is for Narrrf + justme private testing only. It asks Gensuki
- * for a prepared /buy transaction so a tester can buy SPOINC with SOL first.
- * Buying SPOINC is on-chain only; it must never credit or deduct DSPOINC.
+ * This endpoint asks Gensuki for a prepared /buy transaction so a logged-in
+ * user can buy SPOINC with SOL through the Narrrfs Swap Lab.
+ *
+ * Buying SPOINC is on-chain only.
+ * This endpoint must never credit DSPOINC.
+ * This endpoint must never deduct DSPOINC.
+ *
+ * Public users are allowed only when the global bridge config and the exact
+ * SOL_TO_SPOINC route are opened in the database. Internal testers can still
+ * use this endpoint before public activation.
  */
 
 require_once __DIR__ . '/bridge-helpers.php';
@@ -19,7 +26,8 @@ const SPOINC_BUY_DIRECTION_SOL = 'sol_to_spoinc';
 const SPOINC_BUY_INPUT_TOKEN_SOL = 'SOL';
 const SPOINC_BUY_OUTPUT_TOKEN = 'SPOINC';
 const SPOINC_BUY_NATIVE_SOL_ADDRESS = '11111111111111111111111111111111';
-const SPOINC_BUY_MAX_SOL_PRIVATE_TEST = 0.05;
+const SPOINC_BUY_MIN_SOL_LAUNCH = 0.025;
+const SPOINC_BUY_MAX_SOL_LAUNCH = 10.0;
 const SPOINC_BUY_EXPIRES_HOURS = 2;
 
 /**
@@ -194,8 +202,7 @@ function spoinc_bridge_fetch_latest_blockhash(): array
 /**
  * Normalize a SOL amount for private buy tests.
  */
-function normalize_private_sol_payment_amount(string $amount): string
-{
+function normalize_launch_sol_payment_amount(string $amount): string{
     $amount = trim($amount);
 
     if ($amount === '') {
@@ -213,12 +220,13 @@ function normalize_private_sol_payment_amount(string $amount): string
     }
 
     $floatAmount = (float)$amount;
-    if ($floatAmount <= 0 || $floatAmount > SPOINC_BUY_MAX_SOL_PRIVATE_TEST) {
+    if ($floatAmount < SPOINC_BUY_MIN_SOL_LAUNCH || $floatAmount > SPOINC_BUY_MAX_SOL_LAUNCH) {
         spoinc_bridge_json_response([
-            'success' => false,
-            'error' => 'Private SOL_TO_SPOINC test amount must be greater than 0 and max ' . SPOINC_BUY_MAX_SOL_PRIVATE_TEST . ' SOL.',
-            'max_sol' => SPOINC_BUY_MAX_SOL_PRIVATE_TEST
-        ], 400);
+    'success' => false,
+    'error' => 'SOL_TO_SPOINC buy amount must be between ' . SPOINC_BUY_MIN_SOL_LAUNCH . ' and ' . SPOINC_BUY_MAX_SOL_LAUNCH . ' SOL.',
+    'min_sol' => SPOINC_BUY_MIN_SOL_LAUNCH,
+    'max_sol' => SPOINC_BUY_MAX_SOL_LAUNCH
+], 400);
     }
 
     return rtrim(rtrim(number_format($floatAmount, 9, '.', ''), '0'), '.');
@@ -254,11 +262,17 @@ function read_gensuki_buy_value(array $payload, string $field): string
 }
 
 try {
-    $requestData = spoinc_bridge_get_request_data();
-    $userId = spoinc_bridge_tester_require_access();
+        $requestData = spoinc_bridge_get_request_data();
+    $pdo = spoinc_bridge_open_database();
+    $userId = spoinc_bridge_require_public_route_access(
+        $pdo,
+        $requestData,
+        SPOINC_BUY_ROUTE_KEY_SOL,
+        false
+    );
 
     $wallet = trim((string)($requestData['wallet'] ?? ''));
-    $paymentAmount = normalize_private_sol_payment_amount(trim((string)($requestData['payment_amount'] ?? ($requestData['amount'] ?? ''))));
+    $paymentAmount = normalize_launch_sol_payment_amount(trim((string)($requestData['payment_amount'] ?? ($requestData['amount'] ?? ''))));
     $paymentTokenAddress = trim((string)($requestData['payment_token_address'] ?? SPOINC_BUY_NATIVE_SOL_ADDRESS));
 
     if ($paymentTokenAddress === '') {
@@ -279,7 +293,6 @@ try {
         ], 400);
     }
 
-    $pdo = spoinc_bridge_open_database();
     $config = spoinc_bridge_load_config($pdo);
 
     if (!$config) {
@@ -324,7 +337,7 @@ try {
     ];
 
     $rawRequestJson = json_encode([
-        'request_type' => 'private_sol_to_spoinc_gensuki_buy_intent',
+        'request_type' => 'public_sol_to_spoinc_gensuki_buy_intent',
         'user_id' => $userId,
         'wallet' => $wallet,
         'payment_amount' => $paymentAmount,
@@ -395,14 +408,16 @@ try {
         'lookup_table_address' => $lookupTableAddress,
         'requires_phantom_signature' => $transactionPayload !== '',
         'expires_at' => $expiresAt,
-        'safety' => [
-            'private_tester_only' => true,
-            'public_execution_enabled' => false,
+                'safety' => [
+            'private_tester_only' => false,
+            'public_route_gate_checked' => true,
+            'route_key' => SPOINC_BUY_ROUTE_KEY_SOL,
             'dspoinc_credited' => false,
             'dspoinc_debited' => false,
             'ledger_movement' => false,
             'gensuki_key_exposed' => false,
-            'max_sol' => SPOINC_BUY_MAX_SOL_PRIVATE_TEST
+            'min_sol' => SPOINC_BUY_MIN_SOL_LAUNCH,
+            'max_sol' => SPOINC_BUY_MAX_SOL_LAUNCH
         ]
     ];
 

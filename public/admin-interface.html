@@ -147,6 +147,7 @@
         '/api/admin/get-discord-role-members-live.php',
         '/api/admin/get-discord-role-members.php',
         '/api/admin/reward-chamber-config.php',
+        '/api/admin/get-spoinc-bridge-admin.php',
         '/api/user/user-game-missions.php'
       ];
 
@@ -1012,6 +1013,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="twelveZeroManagement">📁 12.0 Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="partners">🤝 Partners</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="profileChest">🎁 Reward Chamber</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="spoincBridge">🧀 SPOINC Bridge</button>
       </div>
       
       <!-- Quick Actions Section -->
@@ -2282,6 +2284,170 @@
         </div>
       </div>
     </div>
+
+    <!-- SPOINC Bridge Admin Tab -->
+<div class="admin-card mb-6" id="spoincBridgeTab" style="display: none;">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-3xl font-bold text-yellow-300 mb-2">🧀 SPOINC Bridge Admin</h2>
+      <p class="text-blue-100">
+        Read-only admin overview for SOL → SPOINC buys, SPOINC → DSPOINC claims, wallet lookup, TX lookup, intents, and ledger audit rows.
+      </p>
+      <p class="text-xs text-yellow-200 mt-2">
+        Safety rule: this tab never confirms, retries, settles, credits, debits, or calls Gensuki.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button onclick="loadSpoincBridgeOverview()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold">
+        🔄 Refresh Overview
+      </button>
+      <a href="/swap-lab.html" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold">
+        🚀 Open Swap Lab
+      </a>
+    </div>
+  </div>
+
+  <div id="spoincBridgeStatus" class="bg-slate-900 bg-opacity-60 border border-blue-500 rounded-lg p-4 mb-6 text-blue-100">
+    Loading SPOINC bridge admin data...
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+    <div class="stats-card">
+      <div class="text-sm text-emerald-100">Confirmed Buys</div>
+      <div id="spoincBridgeBuysMetric" class="text-3xl font-bold">0</div>
+      <div class="text-xs text-emerald-100 mt-1">SOL → SPOINC</div>
+    </div>
+
+    <div class="stats-card">
+      <div class="text-sm text-emerald-100">Settled Claims</div>
+      <div id="spoincBridgeClaimsMetric" class="text-3xl font-bold">0</div>
+      <div class="text-xs text-emerald-100 mt-1">SPOINC → DSPOINC</div>
+    </div>
+
+    <div class="stats-card">
+      <div class="text-sm text-emerald-100">DSPOINC Credited</div>
+      <div id="spoincBridgeCreditedMetric" class="text-3xl font-bold">0</div>
+      <div class="text-xs text-emerald-100 mt-1">Confirmed only</div>
+    </div>
+
+    <div class="stats-card">
+      <div class="text-sm text-emerald-100">Pending</div>
+      <div id="spoincBridgePendingMetric" class="text-3xl font-bold">0</div>
+      <div class="text-xs text-emerald-100 mt-1">Payload / awaiting signature</div>
+    </div>
+
+    <div class="stats-card">
+      <div class="text-sm text-emerald-100">Failed</div>
+      <div id="spoincBridgeFailedMetric" class="text-3xl font-bold">0</div>
+      <div class="text-xs text-emerald-100 mt-1">Needs review</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+    <div class="bg-slate-900 bg-opacity-60 rounded-lg border border-slate-600 p-4">
+      <h3 class="text-xl font-bold text-yellow-300 mb-4">🔍 Search</h3>
+
+      <label class="block text-sm text-blue-100 mb-1">Discord ID</label>
+      <div class="flex gap-2 mb-3">
+        <input id="spoincBridgeDiscordSearchInput" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" placeholder="1224428436928594015">
+        <button onclick="searchSpoincBridgeUser()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">User</button>
+      </div>
+
+      <label class="block text-sm text-blue-100 mb-1">Wallet</label>
+      <div class="flex gap-2 mb-3">
+        <input id="spoincBridgeWalletSearchInput" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" placeholder="88KbQMdq...">
+        <button onclick="searchSpoincBridgeWallet()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">Wallet</button>
+      </div>
+
+      <label class="block text-sm text-blue-100 mb-1">Transaction Signature</label>
+      <div class="flex gap-2 mb-3">
+        <input id="spoincBridgeTxSearchInput" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" placeholder="3wbYBRec...">
+        <button onclick="searchSpoincBridgeTx()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">TX</button>
+      </div>
+
+      <label class="block text-sm text-blue-100 mb-1">Intent ID</label>
+      <div class="flex gap-2">
+        <input id="spoincBridgeIntentSearchInput" type="number" min="1" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" placeholder="16">
+        <button onclick="searchSpoincBridgeIntent()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">Intent</button>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 bg-opacity-60 rounded-lg border border-slate-600 p-4">
+      <h3 class="text-xl font-bold text-yellow-300 mb-4">📋 Recent Rows</h3>
+
+      <label class="block text-sm text-blue-100 mb-1">Type</label>
+      <select id="spoincBridgeRecentType" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 mb-3">
+        <option value="all">All</option>
+        <option value="buys">SOL → SPOINC Buys</option>
+        <option value="claims">SPOINC → DSPOINC Claims</option>
+        <option value="pending">Pending</option>
+        <option value="failed">Failed</option>
+        <option value="settled">Settled / Confirmed</option>
+      </select>
+
+      <label class="block text-sm text-blue-100 mb-1">Limit</label>
+      <select id="spoincBridgeRecentLimit" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 mb-4">
+        <option value="10">10</option>
+        <option value="25" selected>25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+
+      <button onclick="loadSpoincBridgeRecent()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold">
+        Load Recent
+      </button>
+
+      <button onclick="loadSpoincBridgeAudit()" class="w-full mt-3 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-semibold">
+        Load Ledger Audit
+      </button>
+
+      <button onclick="loadSpoincBridgeDuplicates()" class="w-full mt-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold">
+        Replay / Duplicate Check
+      </button>
+    </div>
+
+    <div class="bg-slate-900 bg-opacity-60 rounded-lg border border-slate-600 p-4">
+      <h3 class="text-xl font-bold text-yellow-300 mb-4">🔐 Route Safety</h3>
+      <div id="spoincBridgeRouteSafetyPanel" class="space-y-2 text-sm text-blue-100">
+        Loading route safety...
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-900 bg-opacity-60 rounded-lg border border-slate-600 p-4 mb-6">
+    <h3 class="text-xl font-bold text-yellow-300 mb-4">📊 Bridge Results</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-600 text-blue-200">
+            <th class="text-left p-2">Intent</th>
+            <th class="text-left p-2">Discord</th>
+            <th class="text-left p-2">Route</th>
+            <th class="text-left p-2">Wallet</th>
+            <th class="text-left p-2">Amount</th>
+            <th class="text-left p-2">Status</th>
+            <th class="text-left p-2">TX</th>
+            <th class="text-left p-2">Created</th>
+            <th class="text-left p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="spoincBridgeRowsTable">
+          <tr>
+            <td colspan="9" class="p-4 text-center text-gray-300">No bridge rows loaded yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-slate-900 bg-opacity-60 rounded-lg border border-slate-600 p-4">
+    <h3 class="text-xl font-bold text-yellow-300 mb-4">🧾 Detail / Audit Panel</h3>
+    <div id="spoincBridgeDetailPanel" class="text-blue-100">
+      Select a row, search a TX, search an intent, or load audit rows.
+    </div>
+  </div>
+</div>
 
     <!-- Quest System Tab -->
     <div class="admin-card mb-6" id="questsTab" style="display: none;">
@@ -6195,6 +6361,455 @@ async function loadSecurityCrawlerData() {
   }
 }
 
+const SPOINC_BRIDGE_ADMIN_ENDPOINT = API_BASE_URL + '/api/admin/get-spoinc-bridge-admin.php';
+const SPOINC_BRIDGE_SOLSCAN_TX_URL = 'https://solscan.io/tx/';
+
+/**
+ * Fetch read-only SPOINC bridge admin data from the backend.
+ * This never calls Gensuki and never moves DSPOINC.
+ */
+async function fetchSpoincBridgeAdmin(action, params = {}) {
+  const url = new URL(SPOINC_BRIDGE_ADMIN_ENDPOINT, window.location.origin);
+  url.searchParams.set('action', action);
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && String(value).trim() !== '') {
+      url.searchParams.set(key, String(value).trim());
+    }
+  });
+
+  const response = await fetch(url.toString(), {
+    credentials: 'include',
+    cache: 'no-store',
+    headers: { Accept: 'application/json' }
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || data.details || `SPOINC bridge API failed with HTTP ${response.status}`);
+  }
+
+  return data.data || {};
+}
+
+/**
+ * Format numbers for admin readability.
+ */
+function formatSpoincBridgeNumber(value) {
+  const numberValue = Number(value);
+
+  if (!Number.isFinite(numberValue)) {
+    return value || '0';
+  }
+
+  return numberValue.toLocaleString('en-US');
+}
+
+/**
+ * Shorten Solana wallets and transaction signatures for table layout.
+ */
+function shortenSpoincBridgeHash(value, left = 6, right = 6) {
+  const text = String(value || '').trim();
+
+  if (!text) {
+    return '—';
+  }
+
+  if (text.length <= left + right + 3) {
+    return text;
+  }
+
+  return `${text.slice(0, left)}...${text.slice(-right)}`;
+}
+
+/**
+ * Build a Solscan transaction URL.
+ */
+function buildSpoincBridgeSolscanUrl(signature) {
+  const cleanSignature = String(signature || '').trim();
+
+  if (!cleanSignature) {
+    return '';
+  }
+
+  return SPOINC_BRIDGE_SOLSCAN_TX_URL + encodeURIComponent(cleanSignature);
+}
+
+/**
+ * Escape text before injecting bridge data into HTML.
+ */
+function escapeSpoincBridgeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+/**
+ * Format bridge amount in plain admin language.
+ */
+function formatSpoincBridgeAmount(row) {
+  const routeKey = String(row.route_key || '');
+  const inputAmount = String(row.input_amount || '0');
+  const expectedOutput = String(row.expected_output_amount || '0');
+
+  if (routeKey === 'SOL_TO_SPOINC') {
+    return `${inputAmount} SOL → SPOINC`;
+  }
+
+  if (routeKey === 'SPOINC_TO_DSPOINC') {
+    return `${inputAmount} SPOINC → ${formatSpoincBridgeNumber(expectedOutput)} DSPOINC`;
+  }
+
+  if (routeKey === 'DSPOINC_TO_SPOINC') {
+    return `${formatSpoincBridgeNumber(inputAmount)} DSPOINC → ${expectedOutput} SPOINC`;
+  }
+
+  return `${inputAmount} → ${expectedOutput}`;
+}
+
+/**
+ * Format the three bridge lifecycle statuses into one compact string.
+ */
+function formatSpoincBridgeLifecycle(row) {
+  return [
+    row.status || '—',
+    row.gensuki_status || '—',
+    row.narrrfs_status || '—'
+  ].join(' / ');
+}
+
+/**
+ * Render the route safety panel from bridge config/routes.
+ */
+function renderSpoincBridgeRouteSafety(data) {
+  const panel = document.getElementById('spoincBridgeRouteSafetyPanel');
+  if (!panel) {
+    return;
+  }
+
+  const config = data.config || {};
+  const routes = Array.isArray(data.routes) ? data.routes : [];
+
+  const configHtml = `
+    <div class="p-3 rounded bg-gray-800 border border-gray-700">
+      <div><strong>Config:</strong> ${escapeSpoincBridgeHtml(config.config_key || '—')}</div>
+      <div>Public: <code>${escapeSpoincBridgeHtml(config.public_enabled ?? '—')}</code></div>
+      <div>Settlement: <code>${escapeSpoincBridgeHtml(config.settlement_enabled ?? '—')}</code></div>
+      <div>External Sell: <code>${escapeSpoincBridgeHtml(config.external_sell_enabled ?? '—')}</code></div>
+      <div>Status: <code>${escapeSpoincBridgeHtml(config.status || '—')}</code></div>
+    </div>
+  `;
+
+  const routeHtml = routes.map(route => `
+    <div class="flex justify-between gap-3 border-b border-gray-700 py-1">
+      <span>${escapeSpoincBridgeHtml(route.route_key)}</span>
+      <span class="text-xs">
+        public ${escapeSpoincBridgeHtml(route.public_enabled)}
+        · backend ${escapeSpoincBridgeHtml(route.backend_enabled)}
+      </span>
+    </div>
+  `).join('');
+
+  panel.innerHTML = configHtml + `<div class="mt-3">${routeHtml || 'No routes found.'}</div>`;
+}
+
+/**
+ * Render bridge rows into the admin table.
+ */
+function renderSpoincBridgeRows(rows) {
+  const table = document.getElementById('spoincBridgeRowsTable');
+  if (!table) {
+    return;
+  }
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="9" class="p-4 text-center text-gray-300">No bridge rows found.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  table.innerHTML = rows.map(row => {
+    const tx = row.transaction_hash || row.signature || '';
+    const txLink = tx
+      ? `<a href="${buildSpoincBridgeSolscanUrl(tx)}" target="_blank" class="text-cyan-300 hover:text-cyan-100 underline">${shortenSpoincBridgeHash(tx)}</a>`
+      : '—';
+
+    return `
+      <tr class="border-b border-gray-700 hover:bg-blue-900 hover:bg-opacity-30">
+        <td class="p-2 font-bold text-yellow-300">#${escapeSpoincBridgeHtml(row.intent_id)}</td>
+        <td class="p-2">${escapeSpoincBridgeHtml(row.discord_id || '—')}</td>
+        <td class="p-2"><code>${escapeSpoincBridgeHtml(row.route_key || '—')}</code></td>
+        <td class="p-2"><code title="${escapeSpoincBridgeHtml(row.wallet || '')}">${escapeSpoincBridgeHtml(shortenSpoincBridgeHash(row.wallet))}</code></td>
+        <td class="p-2">${escapeSpoincBridgeHtml(formatSpoincBridgeAmount(row))}</td>
+        <td class="p-2"><code>${escapeSpoincBridgeHtml(formatSpoincBridgeLifecycle(row))}</code></td>
+        <td class="p-2">${txLink}</td>
+        <td class="p-2 text-xs">${escapeSpoincBridgeHtml(row.created_at || '—')}</td>
+        <td class="p-2">
+          <button onclick="loadSpoincBridgeIntentById(${Number(row.intent_id)})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded text-xs">
+            Details
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/**
+ * Render a detail object or audit rows into the lower panel.
+ */
+function renderSpoincBridgeDetail(title, contentHtml) {
+  const panel = document.getElementById('spoincBridgeDetailPanel');
+  if (!panel) {
+    return;
+  }
+
+  panel.innerHTML = `
+    <div class="mb-3 text-yellow-300 font-bold text-lg">${escapeSpoincBridgeHtml(title)}</div>
+    ${contentHtml}
+  `;
+}
+
+/**
+ * Render one detailed bridge row.
+ */
+function renderSpoincBridgeSingleRow(row) {
+  if (!row) {
+    renderSpoincBridgeDetail('No result', '<div class="text-gray-300">No bridge row found.</div>');
+    return;
+  }
+
+  const tx = row.transaction_hash || row.signature || '';
+  const txHtml = tx
+    ? `<a href="${buildSpoincBridgeSolscanUrl(tx)}" target="_blank" class="text-cyan-300 underline">${escapeSpoincBridgeHtml(tx)}</a>`
+    : '—';
+
+  renderSpoincBridgeDetail(`Intent #${row.intent_id || row.intent_id === 0 ? row.intent_id : '—'}`, `
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="bg-gray-800 rounded p-4 border border-gray-700">
+        <h4 class="font-bold text-blue-300 mb-2">Lifecycle</h4>
+        <div>Discord ID: <code>${escapeSpoincBridgeHtml(row.discord_id || '—')}</code></div>
+        <div>Route: <code>${escapeSpoincBridgeHtml(row.route_key || '—')}</code></div>
+        <div>Wallet: <code>${escapeSpoincBridgeHtml(row.wallet || '—')}</code></div>
+        <div>Amount: <strong>${escapeSpoincBridgeHtml(formatSpoincBridgeAmount(row))}</strong></div>
+        <div>Status: <code>${escapeSpoincBridgeHtml(row.status || row.intent_status || '—')}</code></div>
+        <div>Gensuki: <code>${escapeSpoincBridgeHtml(row.gensuki_status || row.intent_gensuki_status || '—')}</code></div>
+        <div>Narrrfs: <code>${escapeSpoincBridgeHtml(row.narrrfs_status || row.intent_narrrfs_status || '—')}</code></div>
+      </div>
+
+      <div class="bg-gray-800 rounded p-4 border border-gray-700">
+        <h4 class="font-bold text-blue-300 mb-2">Transaction / Audit</h4>
+        <div>Transaction ID: <code>${escapeSpoincBridgeHtml(row.transaction_id || '—')}</code></div>
+        <div>TX: ${txHtml}</div>
+        <div>Audit ID: <code>${escapeSpoincBridgeHtml(row.audit_id || '—')}</code></div>
+        <div>Ledger action: <code>${escapeSpoincBridgeHtml(row.ledger_action || '—')}</code></div>
+        <div>DSPOINC delta: <strong>${formatSpoincBridgeNumber(row.dspoinc_delta || 0)}</strong></div>
+        <div>Audit status: <code>${escapeSpoincBridgeHtml(row.audit_status || '—')}</code></div>
+        <div>Score row: <code>${escapeSpoincBridgeHtml(row.tbl_user_scores_id || '—')}</code></div>
+        <div>Adjustment row: <code>${escapeSpoincBridgeHtml(row.tbl_score_adjustment_id || '—')}</code></div>
+      </div>
+    </div>
+
+    ${row.error_message ? `
+      <div class="mt-4 bg-red-900 bg-opacity-40 border border-red-500 rounded p-3">
+        <strong>Error:</strong> ${escapeSpoincBridgeHtml(row.error_message)}
+      </div>
+    ` : ''}
+  `);
+}
+
+/**
+ * Load overview cards and latest settled rows.
+ */
+async function loadSpoincBridgeOverview() {
+  const status = document.getElementById('spoincBridgeStatus');
+
+  try {
+    if (status) {
+      status.textContent = 'Loading SPOINC bridge overview...';
+    }
+
+    const data = await fetchSpoincBridgeAdmin('overview');
+    const metrics = data.metrics || {};
+
+    document.getElementById('spoincBridgeBuysMetric').textContent = formatSpoincBridgeNumber(metrics.confirmed_buys || 0);
+    document.getElementById('spoincBridgeClaimsMetric').textContent = formatSpoincBridgeNumber(metrics.settled_claims || 0);
+    document.getElementById('spoincBridgeCreditedMetric').textContent = formatSpoincBridgeNumber(metrics.total_dspoinc_credited || 0);
+    document.getElementById('spoincBridgePendingMetric').textContent = formatSpoincBridgeNumber(metrics.pending_rows || 0);
+    document.getElementById('spoincBridgeFailedMetric').textContent = formatSpoincBridgeNumber(metrics.failed_rows || 0);
+
+    renderSpoincBridgeRouteSafety(data);
+    renderSpoincBridgeRows(data.recent || []);
+
+    if (status) {
+      status.innerHTML = '✅ SPOINC Bridge overview loaded. Read-only admin mode active.';
+    }
+
+    addLog('✅ SPOINC Bridge overview loaded');
+  } catch (error) {
+    if (status) {
+      status.innerHTML = `❌ SPOINC Bridge overview failed: ${escapeSpoincBridgeHtml(error.message)}`;
+    }
+
+    addLog(`❌ SPOINC Bridge overview failed: ${error.message}`);
+  }
+}
+
+/**
+ * Load recent bridge rows by selected filter.
+ */
+async function loadSpoincBridgeRecent() {
+  try {
+    const type = document.getElementById('spoincBridgeRecentType')?.value || 'all';
+    const limit = document.getElementById('spoincBridgeRecentLimit')?.value || '25';
+    const data = await fetchSpoincBridgeAdmin('recent', { type, limit });
+
+    renderSpoincBridgeRows(data.rows || []);
+    addLog(`✅ Loaded SPOINC Bridge recent rows: ${type}`);
+  } catch (error) {
+    renderSpoincBridgeDetail('Recent rows failed', `<div class="text-red-300">${escapeSpoincBridgeHtml(error.message)}</div>`);
+    addLog(`❌ SPOINC Bridge recent rows failed: ${error.message}`);
+  }
+}
+
+/**
+ * Search bridge history by Discord ID.
+ */
+async function searchSpoincBridgeUser() {
+  try {
+    const discordId = document.getElementById('spoincBridgeDiscordSearchInput')?.value || '';
+    const limit = document.getElementById('spoincBridgeRecentLimit')?.value || '25';
+    const data = await fetchSpoincBridgeAdmin('user', { discord_id: discordId, limit });
+
+    renderSpoincBridgeRows(data.rows || []);
+    renderSpoincBridgeDetail('User search', `<div>Searched Discord ID: <code>${escapeSpoincBridgeHtml(discordId)}</code></div>`);
+  } catch (error) {
+    renderSpoincBridgeDetail('User search failed', `<div class="text-red-300">${escapeSpoincBridgeHtml(error.message)}</div>`);
+  }
+}
+
+/**
+ * Search bridge history by wallet.
+ */
+async function searchSpoincBridgeWallet() {
+  try {
+    const wallet = document.getElementById('spoincBridgeWalletSearchInput')?.value || '';
+    const limit = document.getElementById('spoincBridgeRecentLimit')?.value || '25';
+    const data = await fetchSpoincBridgeAdmin('wallet', { wallet, limit });
+
+    renderSpoincBridgeRows(data.rows || []);
+    renderSpoincBridgeDetail('Wallet search', `<div>Searched wallet: <code>${escapeSpoincBridgeHtml(wallet)}</code></div>`);
+  } catch (error) {
+    renderSpoincBridgeDetail('Wallet search failed', `<div class="text-red-300">${escapeSpoincBridgeHtml(error.message)}</div>`);
+  }
+}
+
+/**
+ * Search one bridge transaction by signature.
+ */
+async function searchSpoincBridgeTx() {
+  try {
+    const signature = document.getElementById('spoincBridgeTxSearchInput')?.value || '';
+    const data = await fetchSpoincBridgeAdmin('tx', { signature });
+
+    renderSpoincBridgeSingleRow(data.row);
+  } catch (error) {
+    renderSpoincBridgeDetail('TX search failed', `<div class="text-red-300">${escapeSpoincBridgeHtml(error.message)}</div>`);
+  }
+}
+
+/**
+ * Search one bridge intent by input field.
+ */
+async function searchSpoincBridgeIntent() {
+  const intentId = Number(document.getElementById('spoincBridgeIntentSearchInput')?.value || 0);
+  await loadSpoincBridgeIntentById(intentId);
+}
+
+/**
+ * Load one bridge intent by ID.
+ */
+async function loadSpoincBridgeIntentById(intentId) {
+  try {
+    if (!intentId || intentId <= 0) {
+      throw new Error('Valid intent ID is required.');
+    }
+
+    const data = await fetchSpoincBridgeAdmin('intent', { intent_id: intentId });
+    renderSpoincBridgeSingleRow(data.row);
+  } catch (error) {
+    renderSpoincBridgeDetail('Intent search failed', `<div class="text-red-300">${escapeSpoincBridgeHtml(error.message)}</div>`);
+  }
+}
+
+/**
+ * Load latest bridge ledger audit rows.
+ */
+async function loadSpoincBridgeAudit() {
+  try {
+    const limit = document.getElementById('spoincBridgeRecentLimit')?.value || '25';
+    const data = await fetchSpoincBridgeAdmin('audit', { limit });
+    const rows = data.rows || [];
+
+    if (!rows.length) {
+      renderSpoincBridgeDetail('Ledger Audit', '<div class="text-gray-300">No audit rows found.</div>');
+      return;
+    }
+
+    const html = rows.map(row => `
+      <div class="bg-gray-800 rounded p-3 border border-gray-700 mb-3">
+        <div><strong>Audit #${escapeSpoincBridgeHtml(row.audit_id)}</strong> · Intent #${escapeSpoincBridgeHtml(row.intent_id)} · TX #${escapeSpoincBridgeHtml(row.transaction_id)}</div>
+        <div>Discord: <code>${escapeSpoincBridgeHtml(row.discord_id)}</code></div>
+        <div>Route: <code>${escapeSpoincBridgeHtml(row.route_key)}</code> · Action: <code>${escapeSpoincBridgeHtml(row.ledger_action)}</code></div>
+        <div>DSPOINC delta: <strong>${formatSpoincBridgeNumber(row.dspoinc_delta || 0)}</strong> · SPOINC: <strong>${escapeSpoincBridgeHtml(row.spoinc_amount || '—')}</strong></div>
+        <div>Status: <code>${escapeSpoincBridgeHtml(row.status)}</code> · Processed: <code>${escapeSpoincBridgeHtml(row.processed_at || '—')}</code></div>
+        <div>Score row: <code>${escapeSpoincBridgeHtml(row.tbl_user_scores_id || '—')}</code> · Adjustment row: <code>${escapeSpoincBridgeHtml(row.tbl_score_adjustment_id || '—')}</code></div>
+      </div>
+    `).join('');
+
+    renderSpoincBridgeDetail('Ledger Audit', html);
+  } catch (error) {
+    renderSpoincBridgeDetail('Ledger audit failed', `<div class="text-red-300">${escapeSpoincBridgeHtml(error.message)}</div>`);
+  }
+}
+
+/**
+ * Check whether any processed ledger row reused the same transaction hash.
+ */
+async function loadSpoincBridgeDuplicates() {
+  try {
+    const data = await fetchSpoincBridgeAdmin('duplicates');
+    const rows = data.rows || [];
+
+    if (!rows.length) {
+      renderSpoincBridgeDetail('Replay / Duplicate Check', `
+        <div class="bg-emerald-900 bg-opacity-40 border border-emerald-500 rounded p-4">
+          ✅ No duplicate processed transaction hashes found.
+        </div>
+      `);
+      return;
+    }
+
+    const html = rows.map(row => `
+      <div class="bg-red-900 bg-opacity-40 border border-red-500 rounded p-3 mb-3">
+        <div>TX: <code>${escapeSpoincBridgeHtml(row.transaction_hash)}</code></div>
+        <div>Duplicate count: <strong>${escapeSpoincBridgeHtml(row.duplicate_count)}</strong></div>
+        <div>Total DSPOINC delta: <strong>${formatSpoincBridgeNumber(row.total_dspoinc_delta || 0)}</strong></div>
+      </div>
+    `).join('');
+
+    renderSpoincBridgeDetail('Replay / Duplicate Check', html);
+  } catch (error) {
+    renderSpoincBridgeDetail('Duplicate check failed', `<div class="text-red-300">${escapeSpoincBridgeHtml(error.message)}</div>`);
+  }
+}
+
 function showTab(tabName) {
   console.log(`🚀 SUPER TAB SYSTEM: Switching to ${tabName}`);
   addLog(`📋 Switching to ${tabName} tab...`);
@@ -6238,7 +6853,8 @@ function showTab(tabName) {
     'securityCrawlerTab',
     'twelveZeroManagementTab',
     'partnersTab',
-    'profileChestTab'
+    'profileChestTab',
+'spoincBridgeTab'
   ];
 
   mainTabIds.forEach(tabId => {
@@ -6331,6 +6947,12 @@ function showTab(tabName) {
       addLog('🎁 Reward Chamber admin tab loaded');
       return;
     }
+
+    if (tabName === 'spoincBridge') {
+  loadSpoincBridgeOverview();
+  addLog('🧀 SPOINC Bridge admin tab loaded');
+  return;
+}
 
     if (tabName === 'quests') {
       loadQuests();

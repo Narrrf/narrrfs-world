@@ -3,8 +3,12 @@
  * SPOINC Bridge API — Create SPOINC → DSPOINC Gensuki Claim Intent.
  *
  * Plain language for DEVS FOR DECADES:
- * This private tester endpoint replaces the old direct community-wallet deposit
- * proof with the Gensuki /claim lifecycle.
+ * This endpoint creates the Gensuki /claim transaction payload for users who
+ * want to convert SPOINC into DSPOINC through the Narrrfs Swap Lab.
+ *
+ * Public users are allowed only when the global bridge config, settlement flag,
+ * and the exact SPOINC_TO_DSPOINC route are opened in the database. Internal
+ * testers can still use this endpoint before public activation.
  *
  * SPOINC → DSPOINC now means:
  * - Narrrfs creates a local pending intent.
@@ -14,9 +18,10 @@
  *   the Gensuki /confirm route accepts status = complete.
  *
  * Safety:
- * - Narrrf + justme private testers only.
+ * - Public route gate required for normal users.
+ * - Narrrf + justme internal testers still allowed before activation.
  * - SPOINC_TO_DSPOINC only.
- * - Max 50 SPOINC per private test intent.
+ * - Max 500 SPOINC per launch conversion intent.
  * - No Gensuki key is exposed to the frontend.
  * - No DSPOINC credit here.
  * - No DSPOINC debit here.
@@ -31,7 +36,7 @@ const SPOINC_TO_DSPOINC_DEPOSIT_ROUTE_KEY = 'SPOINC_TO_DSPOINC';
 const SPOINC_TO_DSPOINC_DEPOSIT_DIRECTION = 'spoinc_to_dspoinc';
 const SPOINC_TO_DSPOINC_DEPOSIT_INPUT_TOKEN = 'SPOINC';
 const SPOINC_TO_DSPOINC_DEPOSIT_OUTPUT_TOKEN = 'DSPOINC';
-const SPOINC_TO_DSPOINC_DEPOSIT_MAX_SPOINC = 50;
+const SPOINC_TO_DSPOINC_DEPOSIT_MAX_SPOINC = 500;
 const SPOINC_TO_DSPOINC_DEPOSIT_EXPIRES_HOURS = 2;
 const SPOINC_GENSUKI_CLAIM_PATH = '/api/custom-token-presale/claim';
 
@@ -288,7 +293,7 @@ function load_spoinc_to_dspoinc_route(PDO $pdo): ?array
 }
 
 /**
- * Create a unique idempotency id for one private Gensuki claim intent.
+ * Create a unique idempotency id for one Gensuki claim intent.
  */
 function create_spoinc_claim_idempotency_id(string $userId, string $wallet, string $amount): string
 {
@@ -341,8 +346,14 @@ function read_gensuki_claim_value(array $gensukiJson, string $key): string
 }
 
 try {
-    $requestData = spoinc_bridge_get_request_data();
-    $userId = spoinc_bridge_tester_require_access();
+       $requestData = spoinc_bridge_get_request_data();
+    $pdo = spoinc_bridge_open_database();
+    $userId = spoinc_bridge_require_public_route_access(
+        $pdo,
+        $requestData,
+        SPOINC_TO_DSPOINC_DEPOSIT_ROUTE_KEY,
+        true
+    );
 
     $wallet = trim((string)($requestData['wallet'] ?? ''));
     $rawAmount = trim((string)($requestData['amount'] ?? ($requestData['spoinc_amount'] ?? '')));
@@ -359,13 +370,12 @@ try {
     if (!is_spoinc_deposit_amount_within_private_cap($spoincAmount)) {
         spoinc_bridge_json_response([
             'success' => false,
-            'error' => 'Private SPOINC_TO_DSPOINC test amount must be greater than 0 and max 50 SPOINC.',
+            'error' => 'SPOINC_TO_DSPOINC amount must be greater than 0 and max 500 SPOINC.',
             'max_spoinc' => SPOINC_TO_DSPOINC_DEPOSIT_MAX_SPOINC
         ], 400);
     }
 
-    $dspoincAmount = calculate_dspoinc_from_spoinc_amount($spoincAmount);
-    $pdo = spoinc_bridge_open_database();
+        $dspoincAmount = calculate_dspoinc_from_spoinc_amount($spoincAmount);
     $config = spoinc_bridge_load_config($pdo);
 
     if (!$config) {
@@ -426,7 +436,7 @@ try {
     ];
 
     $rawRequestJson = json_encode([
-        'request_type' => 'private_spoinc_to_dspoinc_gensuki_claim_intent',
+        'request_type' => 'public_spoinc_to_dspoinc_gensuki_claim_intent',
         'user_id' => $userId,
         'wallet' => $wallet,
         'spoinc_amount' => $spoincAmount,
@@ -507,9 +517,11 @@ try {
             'step_3' => 'Send the returned transaction hash/signature to the confirm endpoint.',
             'step_4' => 'DSPOINC is credited only after Gensuki /confirm accepts status complete.'
         ],
-        'safety' => [
-            'private_tester_only' => true,
-            'public_execution_enabled' => false,
+                'safety' => [
+            'private_tester_only' => false,
+            'public_route_gate_checked' => true,
+            'route_key' => SPOINC_TO_DSPOINC_DEPOSIT_ROUTE_KEY,
+            'requires_settlement_enabled' => true,
             'dspoinc_credited' => false,
             'dspoinc_debited' => false,
             'settled' => false,

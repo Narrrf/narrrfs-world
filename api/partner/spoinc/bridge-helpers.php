@@ -363,6 +363,163 @@ function spoinc_bridge_calculate_dspoinc_balance(PDO $pdo, string $discordId): a
 }
 
 /**
+ * Return true when a bridge database flag is enabled.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * SQLite can return flags as strings or integers depending on the query path.
+ * This helper keeps public bridge gate checks consistent and readable.
+ */
+function spoinc_bridge_flag_enabled(array $row, string $fieldName): bool
+{
+    return (int)($row[$fieldName] ?? 0) === 1;
+}
+
+/**
+ * Find one route row by route_key from a loaded route list.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Routes are safety switches for each bridge path. We intentionally look them
+ * up by exact route_key so SOL_TO_SPOINC, SPOINC_TO_DSPOINC, EMPIRE, FOOK,
+ * and sell routes cannot accidentally share one public gate.
+ */
+function spoinc_bridge_find_route_by_key(array $routes, string $routeKey): ?array
+{
+    foreach ($routes as $route) {
+        if ((string)($route['route_key'] ?? '') === $routeKey) {
+            return $route;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Return true when the current Discord user is an internal SPOINC bridge tester.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * The private tester helper owns the allowlist. This wrapper only checks it
+ * when that helper is loaded. It keeps public route access separate from the
+ * Narrrf/justme emergency testing path.
+ */
+function spoinc_bridge_is_internal_tester_user(string $userId): bool
+{
+    if ($userId === '') {
+        return false;
+    }
+
+    if (!function_exists('spoinc_bridge_tester_is_allowed')) {
+        return false;
+    }
+
+    return spoinc_bridge_tester_is_allowed($userId);
+}
+
+/**
+ * Require access to a public-safe SPOINC bridge execution route.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This is the public launch gate for backend execution endpoints.
+ *
+ * It does not create transactions.
+ * It does not call Gensuki.
+ * It does not credit DSPOINC.
+ * It does not deduct DSPOINC.
+ *
+ * It only answers one question:
+ * "Is this logged-in user allowed to use this exact route right now?"
+ *
+ * Safety model:
+ * - Localhost can still pass user_id for local curl/browser tests.
+ * - Production requires Discord session login.
+ * - Narrrf/justme internal testers can still test even while route flags are closed.
+ * - Public users require global public_enabled = 1.
+ * - Public users require route public_enabled = 1 and backend_enabled = 1.
+ * - Public users require v1_public_allowed = 1.
+ * - Settlement routes also require global settlement_enabled = 1.
+ */
+function spoinc_bridge_require_public_route_access(
+    PDO $pdo,
+    array $requestData,
+    string $routeKey,
+    bool $requiresNarrrfsSettlement = false
+): string {
+    $userId = spoinc_bridge_resolve_session_user_id($requestData);
+
+    if ($userId === '') {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Not logged in'
+        ], 401);
+    }
+
+    if (spoinc_bridge_is_internal_tester_user($userId)) {
+        return $userId;
+    }
+
+    $config = spoinc_bridge_load_config($pdo);
+    if (!$config) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'SPOINC bridge config not found.'
+        ], 500);
+    }
+
+    if (!spoinc_bridge_flag_enabled($config, 'public_enabled')) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'SPOINC Swap Lab public execution is not enabled yet.'
+        ], 403);
+    }
+
+    if ($requiresNarrrfsSettlement && !spoinc_bridge_flag_enabled($config, 'settlement_enabled')) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'SPOINC to DSPOINC settlement is not enabled yet.'
+        ], 403);
+    }
+
+    $routes = spoinc_bridge_load_routes($pdo);
+    $route = spoinc_bridge_find_route_by_key($routes, $routeKey);
+
+    if (!$route) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'SPOINC bridge route not found.'
+        ], 404);
+    }
+
+    if (!spoinc_bridge_flag_enabled($route, 'v1_public_allowed')) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'This SPOINC bridge route is not allowed for public V1 launch.'
+        ], 403);
+    }
+
+    if (!spoinc_bridge_flag_enabled($route, 'public_enabled')) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'This SPOINC bridge route is not public yet.'
+        ], 403);
+    }
+
+    if (!spoinc_bridge_flag_enabled($route, 'backend_enabled')) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'This SPOINC bridge backend route is not enabled yet.'
+        ], 403);
+    }
+
+    if ($requiresNarrrfsSettlement && !spoinc_bridge_flag_enabled($route, 'requires_narrrfs_ledger_settlement')) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'This route is not configured for Narrrfs DSPOINC settlement.'
+        ], 403);
+    }
+
+    return $userId;
+}
+
+/**
  * Open a PDO database connection.
  */
 function spoinc_bridge_open_database(): PDO

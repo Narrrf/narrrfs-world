@@ -3,8 +3,13 @@
  * SPOINC Bridge API — Confirm SPOINC → DSPOINC Gensuki Claim.
  *
  * Plain language for DEVS FOR DECADES:
- * This private tester endpoint confirms the Gensuki /claim transaction for
- * SPOINC → DSPOINC. It replaces the old direct community-wallet scan path.
+ * This endpoint confirms the Gensuki /claim transaction for SPOINC → DSPOINC
+ * after Phantom or Ledger returns a Solana transaction signature.
+ *
+ * This is the DSPOINC credit endpoint.
+ * Public users are allowed only when the global bridge config, settlement flag,
+ * and the exact SPOINC_TO_DSPOINC route are opened in the database. Internal
+ * testers can still use this endpoint before public activation.
  *
  * It only credits DSPOINC after:
  * - an existing local claim intent exists,
@@ -13,7 +18,8 @@
  * - the DSPOINC ledger write succeeds inside one DB transaction.
  *
  * Safety:
- * - Narrrf + justme only.
+ * - Public route gate required for normal users.
+ * - Narrrf + justme internal testers still allowed before activation.
  * - SPOINC_TO_DSPOINC only.
  * - Failed status never credits DSPOINC.
  * - Replay signatures are blocked.
@@ -167,7 +173,7 @@ function spoinc_bridge_is_valid_transaction_hash(string $signature): bool
 }
 
 /**
- * Load a private SPOINC_TO_DSPOINC Gensuki claim intent.
+ * Load a pending SPOINC_TO_DSPOINC Gensuki claim intent for this user.
  */
 function load_spoinc_to_dspoinc_claim_intent(PDO $pdo, int $intentId, string $userId): ?array
 {
@@ -208,8 +214,14 @@ function mark_spoinc_claim_intent_failed(PDO $pdo, int $intentId, string $reason
 }
 
 try {
-    $requestData = spoinc_bridge_get_request_data();
-    $userId = spoinc_bridge_tester_require_access();
+        $requestData = spoinc_bridge_get_request_data();
+    $pdo = spoinc_bridge_open_database();
+    $userId = spoinc_bridge_require_public_route_access(
+        $pdo,
+        $requestData,
+        SPOINC_TO_DSPOINC_CONFIRM_ROUTE_KEY,
+        true
+    );
 
     $intentId = (int)($requestData['intent_id'] ?? 0);
     $transactionHash = trim((string)($requestData['transactionHash'] ?? ($requestData['transaction_hash'] ?? ($requestData['signature'] ?? ($requestData['tx_signature'] ?? '')))));
@@ -236,8 +248,7 @@ try {
         ], 400);
     }
 
-    $pdo = spoinc_bridge_open_database();
-    $intent = load_spoinc_to_dspoinc_claim_intent($pdo, $intentId, $userId);
+        $intent = load_spoinc_to_dspoinc_claim_intent($pdo, $intentId, $userId);
 
     if (!$intent) {
         spoinc_bridge_json_response([
@@ -494,9 +505,11 @@ try {
         'gensuki_status' => 'complete',
         'narrrfs_status' => 'settled',
         'settled_at' => $now,
-        'safety' => [
-            'private_tester_only' => true,
-            'public_execution_enabled' => false,
+                'safety' => [
+            'private_tester_only' => false,
+            'public_route_gate_checked' => true,
+            'route_key' => SPOINC_TO_DSPOINC_CONFIRM_ROUTE_KEY,
+            'requires_settlement_enabled' => true,
             'dspoinc_credited' => true,
             'dspoinc_debited' => false,
             'signature_reuse_blocked' => true,
