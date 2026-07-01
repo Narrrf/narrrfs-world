@@ -3355,7 +3355,6 @@ if (!connection || !latestBlockhash) {
 
 const walletPublicKey = new web3.PublicKey(walletAddress);
 const memoProgramId = new web3.PublicKey(GENESIS_FREEZER_MEMO_PROGRAM_ID);
-const encodedMemo = new TextEncoder().encode(safeMessage);
 const transaction = new web3.Transaction();
 
 transaction.recentBlockhash = latestBlockhash.blockhash;
@@ -3530,7 +3529,8 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
     return;
   }
 
-  const freezerSlots = genesisFreezerState?.slots || {};
+  const freezerData = genesisMouseFreezerPreview || {};
+  const freezerSlots = freezerData.slots || {};
   const availableSlots = Number(freezerSlots.available || 0);
 
   if (selectedMice.length > availableSlots) {
