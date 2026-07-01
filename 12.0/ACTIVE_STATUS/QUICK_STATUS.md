@@ -1,5 +1,459 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-01 — Genesis Mouse Freezer Same-Wallet Batch Freeze Ready For Push
+
+**Scope:** Stake Lab / Genesis Mouse Freezer / Season 13 public freezer UX  
+**Status:** Local test passed, backend syntax passed, ready for deploy/restart smoke test
+
+---
+
+## ✅ Genesis Mouse Freezer Batch Freeze Patch Completed
+
+`public/stake-lab.html` was updated so verified Genesis holders are no longer limited to freezing only one mouse per action.
+
+New public Season 13 freezer behavior:
+
+```text
+✅ Users may select multiple available Genesis mice
+✅ All selected mice must belong to the same verified Solana wallet
+✅ One Solana wallet Memo transaction contains all selected freezer challenge messages
+✅ The same transaction signature is sent back once per backend challenge
+✅ Backend verifies each challenge separately before creating freezer rows
+✅ Mixed-wallet selections are blocked with a clear user message
+
+## 2026-07-01 — Season 13 Frontend/API Review Nearly Ready For Push
+
+**Scope:** Season 13 public frontend refresh / Leaderboard API cleanup / Profile quick access / final Stake Lab + Genesis Mouse Freezer review  
+**Status:** Very close to push — only final freezer and staking review remains before deploy/restart
+
+---
+
+## ✅ Current Push Readiness
+
+Season 13 reset is active and the main frontend refresh is nearly ready for the next public push.
+
+Completed review areas:
+
+```text
+public/index.html
+public/profile.html
+public/leaderboard.html
+api/dev/get-leaderboard.php
+
+## 2026-06-30 — Season 12 → Season 13 Reset Final Standby / 10-Minute Window
+
+**Scope:** Season Reset Agent 3.0 / Season 12 archive / Season 13 activation / frontend reset prep
+**Status:** Final reset standby — DB snapshot is safe, archive API patch verified, frontend Season 13 refresh planned after DB reset
+
+---
+
+## ✅ Current Confirmed Live State
+
+Live DB path:
+
+```text
+/var/www/html/db/narrrf_world.sqlite
+```
+
+Production DB active season check confirmed:
+
+```text
+Season 12 is still active.
+Exactly 1 active season exists.
+```
+
+Confirmed active season row:
+
+```text
+14|Season 12|2026-05-31 22:00:00|2026-06-30 22:00:00|1
+```
+
+Confirmed active season count:
+
+```text
+1
+```
+
+---
+
+## ✅ Archive API Patch Verified Live
+
+Live production archive file:
+
+```text
+/var/www/html/api/admin/archive-season-stats.php
+```
+
+Syntax check passed:
+
+```text
+No syntax errors detected in /var/www/html/api/admin/archive-season-stats.php
+```
+
+Live grep confirmed Race/Rumble archive support exists:
+
+```text
+261: * Archive Discord Cheese Race current-season stats.
+314: * Archive Cheese Rumble current-season stats.
+380:    'discord_race_users_archived' => $raceArchived,
+381:    'cheese_rumble_users_archived' => $rumbleArchived
+```
+
+Archive scope now covers the full Season 12 competitive set:
+
+```text
+Tetris
+Snake
+Space Invaders
+Cheeseman / Cheese Runner
+Labyrinth Blast
+Cheese Hunt snapshot
+Glyph Memory
+Discord Cheese Race
+Cheese Rumble
+```
+
+---
+
+## ✅ Season 12 Cutoff Snapshot Created
+
+Snapshot created before final archive/activation:
+
+```text
+/data/narrrf_world_season12_cutoff_20260630_232823.sqlite
+```
+
+Snapshot size:
+
+```text
+67M
+```
+
+Integrity check:
+
+```text
+ok
+```
+
+This means the Season 12 DB state is protected before reset actions continue.
+
+---
+
+## ⚠️ Current Blocker / Reminder
+
+Archive API authorization failed when using the placeholder token:
+
+```text
+TOKEN="YOUR_SECRET_HERE"
+```
+
+Returned:
+
+```json
+{"success":false,"error":"Unauthorized"}
+```
+
+Important:
+
+```text
+This is an authorization/token issue only.
+It is not a DB integrity issue.
+It is not an archive API syntax issue.
+```
+
+The archive endpoint requires the real internal secret in the `Authorization` header.
+
+Use one of the real Render env secrets:
+
+```text
+API_SECRET
+INTERNAL_API_SECRET
+DISCORD_SECRET
+```
+
+Do not print the secret into chat or Quick Status.
+
+---
+
+## 🚨 Final Reset Rule
+
+Do not activate Season 13 until the final archive API run succeeds while Season 12 is still active.
+
+Correct order:
+
+```text
+1. Season 12 active verified.
+2. Snapshot created and integrity ok.
+3. Final archive API succeeds with season_archived = Season 12.
+4. Historical archive tables verified.
+5. Only then deactivate Season 12 and activate Season 13.
+6. Verify exactly 1 active season.
+7. Copy DB to /data/narrrf_world.sqlite.
+8. Smoke test current-season endpoints.
+```
+
+Never switch to Season 13 before the successful Season 12 archive, because the archive API reads the currently active season.
+
+---
+
+## ⏱️ Final 10-Minute Reset Command Focus
+
+At cutoff, use the real secret and run:
+
+```bash
+TOKEN="$(php -r 'echo trim(getenv("DISCORD_SECRET"));')"
+
+curl -s -X POST \
+  -H "Authorization: $TOKEN" \
+  https://narrrfs.world/api/admin/archive-season-stats.php
+```
+
+If `DISCORD_SECRET` is empty, use the first available real secret from:
+
+```bash
+php -r 'foreach(["API_SECRET","INTERNAL_API_SECRET","DISCORD_SECRET"] as $k){$v=getenv($k); echo $k . "=" . (is_string($v)&&trim($v)!=="" ? "SET len=".strlen(trim($v)) : "EMPTY") . PHP_EOL;}'
+```
+
+Expected archive response must include:
+
+```text
+success = true
+season_archived = Season 12
+games_archived
+cheese_users_archived
+glyph_rows_archived
+discord_race_users_archived
+cheese_rumble_users_archived
+```
+
+If the response is unauthorized, wrong season, missing glyph archive, or missing Race/Rumble counters:
+
+```text
+STOP.
+Do not activate Season 13.
+Investigate first.
+```
+
+---
+
+## 🧊 Frontend Season 13 Reset Plan Prepared
+
+Frontend reset should start after DB reset is confirmed.
+
+Main Season 13 direction:
+
+```text
+Season 13 is live.
+Fresh leaderboards are open.
+Season 12 legends are archived.
+SPOINC gateway is visible through Gensuki.
+Genesis Mouse Freezer gets a clear Season 13 feature mark.
+DSPOINC staking, Genesis Lab, Reward Chamber, inventory, names, and permanent progression stay safe.
+```
+
+Fresh color direction:
+
+```text
+Base: deep midnight / dark lab
+Fresh accent: electric mint / cyan
+Season warmth: orange / cheese gold
+SPOINC economy accent: green / Solana purple
+Freezer accent: ice blue / crystal white
+```
+
+Working theme name:
+
+```text
+Season 13 — Neon Freezer Economy
+```
+
+Frontend files to update after DB reset:
+
+```text
+public/index.html
+public/profile.html
+public/leaderboard.html
+public/stake-lab.html
+public/swap-lab.html
+public/lab.html
+public/get-roles.html
+public/mint.html
+public/faq.html
+public/project-updates.html
+public/nerd-lab.html
+public/strongest-genesis-mice.html
+```
+
+---
+
+## 🟢 SPOINC / Gensuki Season 13 Note
+
+SPOINC buy visibility should be added carefully after reset.
+
+Safe wording:
+
+```text
+SPOINC is available through Gensuki.
+Buy SPOINC with SOL through the Narrrfs Swap Lab or directly on Gensuki.
+SPOINC connects into the Season 13 DSPOINC economy routes where enabled.
+```
+
+Important safety:
+
+```text
+SOL_TO_SPOINC buy must never credit or deduct DSPOINC.
+DSPOINC ledger movement only belongs to confirmed SPOINC_TO_DSPOINC settlement.
+DSPOINC_TO_SPOINC remains closed unless explicitly opened.
+Sell routes remain closed while Gensuki sell-back is disabled.
+EMPIRE / FOOK public promotion should stay cautious unless Zeno LUT / quote support is final.
+```
+
+---
+
+## 🧊 Genesis Mouse Freezer Season 13 Note
+
+Add a clear Season 13 Freezer mark, but do not overclaim public status unless backend gates are intentionally open.
+
+Safe frontend mark:
+
+```text
+🧊 Genesis Mouse Freezer
+Season 13 Genesis Utility
+```
+
+Controlled wording if still gated:
+
+```text
+Genesis Mouse Freezer is entering Season 13 controlled activation.
+Verified Genesis holders can preview freezer slots, tiers, and reward math.
+Freeze / claim / unfreeze actions open only when the live gate is enabled.
+```
+
+Public wording only if intentionally enabled:
+
+```text
+Genesis Mouse Freezer is live for verified Genesis holders.
+Freeze eligible Genesis mice, earn DSPOINC over time, and manage claims from Stake Lab.
+```
+
+---
+
+## 🔒 Protected Systems During Reset
+
+Do not reset or delete:
+
+```text
+DSPOINC balances
+DSPOINC ledger history
+DSPOINC staking records
+Genesis NFT freezer records
+Reward Chamber history
+Reward claims
+Genesis Lab progression
+NFT-bound trait upgrades
+Ability upgrades
+Genetic inventory
+Marketplace state
+Custom Genesis mouse names
+Wallet links
+Discord identity
+Holder verification
+Role/access state
+Profile identity
+Admin users
+Partner data
+Bingo data unless explicitly requested
+```
+
+Season reset is handled by season filtering, archive tables, and active season switch — not by deleting permanent data.
+
+---
+
+## ✅ Next Agent Immediate Priority
+
+The next agent must continue in this exact order:
+
+```text
+1. Get real archive authorization secret from Render env safely.
+2. Run final archive API while Season 12 is active.
+3. Confirm archive response = success true + Season 12.
+4. Verify historical tables.
+5. Activate Season 13.
+6. Verify exactly one active season.
+7. Copy DB to /data/narrrf_world.sqlite.
+8. Run smoke tests.
+9. Then begin frontend Season 13 color/copy refresh.
+```
+
+Do not let frontend polish distract from the final DB reset order.
+
+
+## 2026-06-30 — SPOINC Swap Lab Gates Live / Season 13 Reset Standby
+
+Status: SPOINC Swap Lab V1 gateway gates are now live on production after backend/frontend push and live SQL activation.
+
+Live route flags verified on `/var/www/html/db/narrrf_world.sqlite`:
+
+Open public routes:
+- `SOL_TO_SPOINC` → `public_enabled=1`, `backend_enabled=1`, `v1_public_allowed=1`, `requires_narrrfs_ledger_settlement=0`, status `public_enabled_mainnet`
+- `EMPIRE_TO_SPOINC` → `public_enabled=1`, `backend_enabled=1`, `v1_public_allowed=1`, `requires_narrrfs_ledger_settlement=0`, status `public_enabled_mainnet`
+- `FOOK_TO_SPOINC` → `public_enabled=1`, `backend_enabled=1`, `v1_public_allowed=1`, `requires_narrrfs_ledger_settlement=0`, status `public_enabled_mainnet`
+- `SPOINC_TO_DSPOINC` → `public_enabled=1`, `backend_enabled=1`, `v1_public_allowed=1`, `requires_narrrfs_ledger_settlement=1`, status `public_enabled_mainnet`
+
+Closed V1 routes:
+- `DSPOINC_TO_SPOINC` → closed, status `v1_disabled_waiting_final_dspoinc_to_spoinc_open`
+- `SPOINC_TO_SOL` → closed sell route, status `v1_disabled_gensuki_disable_sell_true`
+- `SPOINC_TO_EMPIRE` → closed sell route, status `v1_disabled_gensuki_disable_sell_true`
+- `SPOINC_TO_FOOK` → closed sell route, status `v1_disabled_gensuki_disable_sell_true`
+
+Config verified:
+- `gensuki_spoinc_mainnet|1|1|0|mainnet_public_buy_gates_enabled`
+- `public_enabled=1`
+- `settlement_enabled=1`
+- `external_sell_enabled=0`
+
+Implemented and pushed before activation:
+- `public/swap-lab.html`
+  - Buy panel now supports SOL / EMPIRE / FOOK switch buttons inside the same user-friendly buy area.
+  - SOL preview uses Gensuki SPOINC native SOL price.
+  - EMPIRE / FOOK preview uses Narrrfs backend proxy to Gensuki `getTokenPrice`, then divides token USD value by SPOINC USD price.
+  - “Sign with Wallet + Confirm” listener fixed and should exist only once.
+- `api/partner/spoinc/get-gensuki-token-price.php`
+  - New safe backend proxy for Gensuki token price preview.
+  - API key remains backend-only.
+  - No transaction creation.
+  - No DSPOINC ledger movement.
+- `api/partner/spoinc/create-gensuki-buy-intent.php`
+  - Route-aware buy intent creation for SOL / EMPIRE / FOOK.
+  - Unknown payment tokens blocked.
+  - No DSPOINC movement.
+- `api/partner/spoinc/confirm-gensuki-buy-intent.php`
+  - Route-aware buy confirmation for SOL / EMPIRE / FOOK.
+  - Records Gensuki transaction confirmation.
+  - No DSPOINC movement.
+- `api/partner/spoinc/get-gensuki-presale-details.php`
+  - Exposes LUT fields if Gensuki provides them.
+
+Important live test order after activation:
+1. Hard refresh `https://narrrfs.world/swap-lab.html?v=spoinc-gates-live1`
+2. Check SOL / EMPIRE / FOOK previews.
+3. Test tiny SOL buy.
+4. Test tiny EMPIRE buy.
+5. Test tiny FOOK buy.
+6. Test SPOINC → DSPOINC.
+7. Confirm no DSPOINC movement happens on buy routes.
+8. Confirm DSPOINC credit only happens on `SPOINC_TO_DSPOINC`.
+
+Emergency close command for one buy route if needed:
+```sql
+UPDATE tbl_spoinc_bridge_routes
+SET public_enabled = 0,
+    backend_enabled = 0,
+    v1_public_allowed = 0,
+    status = 'temporarily_disabled_after_live_test_issue',
+    updated_at = CURRENT_TIMESTAMP
+WHERE route_key = 'EMPIRE_TO_SPOINC';
+
 ## 2026-06-30 — Genesis Mouse Freezer Public Challenge Gates Ready / Season 13 Reset Prep
 
 **Scope:** Stake Lab System 20.0 / Genesis Mouse Freezer / Season 13 public activation  

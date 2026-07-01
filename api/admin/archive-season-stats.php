@@ -11,9 +11,11 @@
  * - Labyrinth Blast
  * - Cheese Hunt snapshot
  * - Glyph Memory
+ * - Discord Cheese Race
+ * - Cheese Rumble
  *
- * TODO: Cheese Hunt, Discord Cheese Race, and Cheese Rumble are preserved as
- * persistent/event systems unless a future season explicitly changes their reset rules.
+ * Discord Cheese Race and Cheese Rumble are archived as compact per-user
+ * historical summaries because profile.html displays them as current-season games.
  *
  * Persistent systems intentionally NOT archived/reset here:
  * - DSPOINC balances
@@ -249,13 +251,122 @@ try {
         GROUP BY discord_id, difficulty
     ");
     $archiveGlyphStmt->execute([
-        ':season' => $seasonName,
-        ':season_start' => $seasonStart,
-        ':season_end' => $seasonEnd
-    ]);
-    $glyphArchived = $archiveGlyphStmt->rowCount();
+    ':season' => $seasonName,
+    ':season_start' => $seasonStart,
+    ':season_end' => $seasonEnd
+]);
+$glyphArchived = $archiveGlyphStmt->rowCount();
 
-    $db->commit();
+/**
+ * Archive Discord Cheese Race current-season stats.
+ *
+ * Plain language for DEVS:
+ * Discord Cheese Race is shown on the profile as a current-season game.
+ * The profile reads tbl_race_participants by season first, then by finished_at
+ * inside the active season window. This archive stores a compact Season summary
+ * in tbl_historical_stats using game = 'discord_race'.
+ */
+$archiveRaceStmt = $db->prepare("
+    INSERT OR REPLACE INTO tbl_historical_stats
+        (
+            discord_id,
+            game,
+            season,
+            total_games,
+            best_score,
+            total_score,
+            avg_score,
+            season_start_date,
+            season_end_date
+        )
+    SELECT
+        user_id as discord_id,
+        'discord_race' as game,
+        :season as season,
+        COUNT(*) as total_games,
+        COALESCE(MIN(CASE WHEN position IS NOT NULL AND position > 0 THEN position END), 0) as best_score,
+        COALESCE(SUM(dspoinc_earned), 0) as total_score,
+        COALESCE(AVG(dspoinc_earned), 0) as avg_score,
+        :season_start as season_start_date,
+        :season_end as season_end_date
+    FROM tbl_race_participants
+    WHERE
+        (
+            season = :season
+            OR season LIKE :season_prefix
+            OR (
+                finished_at IS NOT NULL
+                AND datetime(finished_at) >= datetime(:season_start)
+                AND datetime(finished_at) < datetime(:season_end)
+            )
+        )
+    GROUP BY user_id
+");
+$archiveRaceStmt->execute([
+    ':season' => $seasonName,
+    ':season_prefix' => $seasonName . '%',
+    ':season_start' => $seasonStart,
+    ':season_end' => $seasonEnd
+]);
+$raceArchived = $archiveRaceStmt->rowCount();
+
+/**
+ * Archive Cheese Rumble current-season stats.
+ *
+ * Plain language for DEVS:
+ * Cheese Rumble is shown on the profile as a current-season game.
+ * The profile reads tbl_rumble_participants by season or season window.
+ * This archive stores a compact Season summary in tbl_historical_stats
+ * using game = 'cheese_rumble'.
+ */
+$archiveRumbleStmt = $db->prepare("
+    INSERT OR REPLACE INTO tbl_historical_stats
+        (
+            discord_id,
+            game,
+            season,
+            total_games,
+            best_score,
+            total_score,
+            avg_score,
+            season_start_date,
+            season_end_date
+        )
+    SELECT
+        user_id as discord_id,
+        'cheese_rumble' as game,
+        :season as season,
+        COUNT(*) as total_games,
+        COALESCE(MIN(CASE WHEN final_position IS NOT NULL AND final_position > 0 THEN final_position END), 0) as best_score,
+        COALESCE(SUM(dspoinc_earned), 0) as total_score,
+        COALESCE(AVG(dspoinc_earned), 0) as avg_score,
+        :season_start as season_start_date,
+        :season_end as season_end_date
+    FROM tbl_rumble_participants
+    WHERE
+        (
+            season = :season
+            OR season LIKE :season_prefix
+            OR (
+                datetime(updated_at) >= datetime(:season_start)
+                AND datetime(updated_at) < datetime(:season_end)
+            )
+            OR (
+                datetime(joined_at) >= datetime(:season_start)
+                AND datetime(joined_at) < datetime(:season_end)
+            )
+        )
+    GROUP BY user_id
+");
+$archiveRumbleStmt->execute([
+    ':season' => $seasonName,
+    ':season_prefix' => $seasonName . '%',
+    ':season_start' => $seasonStart,
+    ':season_end' => $seasonEnd
+]);
+$rumbleArchived = $archiveRumbleStmt->rowCount();
+
+$db->commit();
 
     echo json_encode([
         'success' => true,
@@ -263,10 +374,12 @@ try {
         'season_archived' => $seasonName,
         'archived_at' => gmdate('Y-m-d H:i:s') . ' UTC',
         'stats' => [
-            'games_archived' => $gamesArchived,
-            'cheese_users_archived' => $cheeseArchived,
-            'glyph_rows_archived' => $glyphArchived
-        ]
+    'games_archived' => $gamesArchived,
+    'cheese_users_archived' => $cheeseArchived,
+    'glyph_rows_archived' => $glyphArchived,
+    'discord_race_users_archived' => $raceArchived,
+    'cheese_rumble_users_archived' => $rumbleArchived
+]
     ], JSON_PRETTY_PRINT);
 
 } catch (Exception $e) {

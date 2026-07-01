@@ -185,19 +185,22 @@ LIMIT 10
     $seasonDatesStmt->execute();
     $seasonDates = $seasonDatesStmt->fetch(PDO::FETCH_ASSOC);
     $currentSeasonStart = $seasonDates['start_date'] ?? null;
-    $currentSeasonEnd = $seasonDates['end_date'] ?? null;
+$currentSeasonEnd = $seasonDates['end_date'] ?? null;
 
-    if ($currentSeasonStart && strpos($currentSeasonStart, ' ') !== false) {
-        $datePart = explode(' ', $currentSeasonStart)[0];
-        $currentSeasonStart = $datePart . ' 00:00:00';
-    }
+// Keep the real active season window for timestamp-based leaderboards.
+// DEVS FOR DECADES:
+// Some legacy tables such as tbl_cheese_clicks do not have reliable Season 13
+// labels yet. They must use the exact active season start/end timestamps.
+// Do not normalize this value to midnight for shared leaderboard filtering.
+$currentSeasonStartExact = $currentSeasonStart;
+$currentSeasonEndExact = $currentSeasonEnd;
 
     // For Cheese Rumble: exclude data from season start date (only count from next day onwards)
     $seasonStartNextDay = null;
-    if ($currentSeasonStart) {
-        $seasonStartDate = explode(' ', $currentSeasonStart)[0];
-        $seasonStartNextDay = date('Y-m-d 00:00:00', strtotime($seasonStartDate . ' +1 day'));
-    }
+    if ($currentSeasonStartExact) {
+    $seasonStartDate = explode(' ', $currentSeasonStartExact)[0];
+    $seasonStartNextDay = date('Y-m-d 00:00:00', strtotime($seasonStartDate . ' +1 day'));
+}
 
     // 🐛 BUG FIX: Check total scores across ALL 3 games combined (not per game)
     $totalScoresStmt = $db->prepare("
@@ -285,73 +288,59 @@ function getMouseLeaderboard($db) {
 }
 
     // Helper function to get Cheese Hunt leaderboard
-    function getCheeseHuntLeaderboard($db, $currentSeason, $previousSeason, $currentSeasonStart, $currentSeasonEnd, $useFrozenLeaderboard = false) {
-        if ($useFrozenLeaderboard) {
-            return [
-                'leaderboard' => [],
-                'is_frozen' => true,
-                'season_shown' => $previousSeason
-            ];
-        }
-
-        $seasonFilters = [
-            ['condition' => 'season = ?', 'label' => 'exact'],
-            ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
-        ];
-
-        $leaderboard = [];
-
-        foreach ($seasonFilters as $filter) {
-            $stmt = $db->prepare("
-                SELECT
-                    user_wallet as discord_id,
-                    COUNT(*) as score,
-                    MIN(timestamp) as timestamp
-                FROM tbl_cheese_clicks
-                WHERE " . $filter['condition'] . "
-                GROUP BY user_wallet
-                ORDER BY score DESC, timestamp ASC
-                LIMIT 10
-            ");
-            $stmt->execute([$currentSeason]);
-            $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            if (!empty($leaderboard)) {
-                break;
-            }
-        }
-
-        if (empty($leaderboard) && $currentSeasonStart && $currentSeasonEnd) {
-            $stmt = $db->prepare("
-                SELECT
-                    user_wallet as discord_id,
-                    COUNT(*) as score,
-                    MIN(timestamp) as timestamp
-                FROM tbl_cheese_clicks
-                WHERE timestamp >= ?
-                  AND timestamp <= ?
-                GROUP BY user_wallet
-                ORDER BY score DESC, timestamp ASC
-                LIMIT 10
-            ");
-            $stmt->execute([
-                $currentSeasonStart,
-                $currentSeasonEnd
-            ]);
-            $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        }
-
-        foreach ($leaderboard as &$entry) {
-            $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
-        }
-        unset($entry);
-
+   function getCheeseHuntLeaderboard($db, $currentSeason, $previousSeason, $currentSeasonStart, $currentSeasonEnd, $useFrozenLeaderboard = false) {
+    if ($useFrozenLeaderboard) {
         return [
-            'leaderboard' => $leaderboard,
+            'leaderboard' => [],
+            'is_frozen' => true,
+            'season_shown' => $previousSeason
+        ];
+    }
+
+    if (!$currentSeasonStart || !$currentSeasonEnd) {
+        return [
+            'leaderboard' => [],
             'is_frozen' => false,
             'season_shown' => $currentSeason
         ];
     }
+
+    // Cheese Hunt uses a legacy click table where the season label is not reliable.
+    // DEVS FOR DECADES:
+    // tbl_cheese_clicks still contains old/default season labels such as season_2.
+    // The active leaderboard must therefore use the exact active season time window.
+    // This is display-only and does not mutate Cheese Hunt captures, rewards, or quests.
+    $stmt = $db->prepare("
+        SELECT
+            user_wallet as discord_id,
+            COUNT(*) as score,
+            MIN(timestamp) as timestamp
+        FROM tbl_cheese_clicks
+        WHERE timestamp >= ?
+          AND timestamp <= ?
+          AND COALESCE(user_wallet, '') != ''
+        GROUP BY user_wallet
+        ORDER BY score DESC, timestamp ASC
+        LIMIT 10
+    ");
+    $stmt->execute([
+        $currentSeasonStart,
+        $currentSeasonEnd
+    ]);
+
+    $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($leaderboard as &$entry) {
+        $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
+    }
+    unset($entry);
+
+    return [
+        'leaderboard' => $leaderboard,
+        'is_frozen' => false,
+        'season_shown' => $currentSeason
+    ];
+}
 
     // Helper function to get Discord Race leaderboard
     function getDiscordRaceLeaderboard($db, $currentSeason, $previousSeason, $currentSeasonStart, $currentSeasonEnd, $useFrozenLeaderboard = false) {
@@ -489,26 +478,37 @@ function getDspoincEarningsLeaderboard($db, $currentSeason, $currentSeasonStart,
     }
 
     $stmt = $db->prepare("
-        SELECT
-            user_id as discord_id,
-            SUM(score) as net_dspoinc,
-            SUM(CASE WHEN score > 0 THEN score ELSE 0 END) as earned_dspoinc,
-            SUM(CASE WHEN score < 0 THEN score ELSE 0 END) as spent_dspoinc,
-            MIN(timestamp) as first_earned,
-            MAX(timestamp) as last_earned
-        FROM tbl_user_scores
-        WHERE timestamp >= ?
-          AND timestamp <= ?
-          AND COALESCE(source, '') NOT IN ('staking_return', 'admin_adjustment')
-        GROUP BY user_id
-        HAVING net_dspoinc > 0
-        ORDER BY net_dspoinc DESC, first_earned ASC
-        LIMIT 10
-    ");
-    $stmt->execute([
-        $currentSeasonStart,
-        $currentSeasonEnd
-    ]);
+    SELECT
+        user_id as discord_id,
+        SUM(score) as net_dspoinc,
+        SUM(CASE WHEN score > 0 THEN score ELSE 0 END) as earned_dspoinc,
+        SUM(CASE WHEN score < 0 THEN score ELSE 0 END) as spent_dspoinc,
+        MIN(timestamp) as first_earned,
+        MAX(timestamp) as last_earned
+    FROM tbl_user_scores
+    WHERE timestamp >= ?
+      AND timestamp <= ?
+      AND source = 'game_reward'
+      AND game IN (
+          'tetris',
+          'snake',
+          'space_invaders',
+          'cheeseman',
+          'labyrinth_blast',
+          'cheese_hunt',
+          'discord_race',
+          'cheese_rumble',
+          'glyph_memory'
+      )
+    GROUP BY user_id
+    HAVING net_dspoinc > 0
+    ORDER BY net_dspoinc DESC, first_earned ASC
+    LIMIT 10
+");
+$stmt->execute([
+    $currentSeasonStart,
+    $currentSeasonEnd
+]);
 
     $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -575,13 +575,13 @@ function getGlyphMemoryLeaderboard($db, $seasonName) {
     );
 
     $cheeseHuntResult = getCheeseHuntLeaderboard(
-        $db,
-        $currentSeason,
-        $previousSeason,
-        $currentSeasonStart,
-        $currentSeasonEnd,
-        $useFrozenLeaderboard
-    );
+    $db,
+    $currentSeason,
+    $previousSeason,
+    $currentSeasonStartExact,
+    $currentSeasonEndExact,
+    $useFrozenLeaderboard
+);
 
     $discordRaceResult = getDiscordRaceLeaderboard(
         $db,
