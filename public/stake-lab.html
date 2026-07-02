@@ -2923,11 +2923,13 @@ function rerenderGenesisMouseFreezerPreviewSafely(options = {}) {
 }
 
 /**
- * Toggle one available Genesis mouse in the freezer selector.
+ * Select or deselect one available Genesis mouse in the freezer selector.
  *
  * Plain language for DEVS:
- * Selecting a mouse only updates frontend state. It does not freeze anything.
- * Backend freeze starts only when the user presses Freeze Selected.
+ * The public Genesis Mouse Freezer now freezes exactly one mouse per action.
+ * Clicking a new mouse replaces the previous selection instead of building a
+ * batch. This avoids confusing users with multi-select errors before the
+ * backend wallet Memo flow starts.
  */
 function toggleGenesisFreezerAvailableMouse(tokenKey) {
   const safeTokenKey = String(tokenKey || '');
@@ -2937,10 +2939,13 @@ function toggleGenesisFreezerAvailableMouse(tokenKey) {
   }
 
   if (selectedGenesisFreezerTokenKeys.has(safeTokenKey)) {
-    selectedGenesisFreezerTokenKeys.delete(safeTokenKey);
-  } else {
-    selectedGenesisFreezerTokenKeys.add(safeTokenKey);
+    selectedGenesisFreezerTokenKeys.clear();
+    rerenderGenesisMouseFreezerPreviewSafely();
+    return;
   }
+
+  selectedGenesisFreezerTokenKeys.clear();
+  selectedGenesisFreezerTokenKeys.add(safeTokenKey);
 
   rerenderGenesisMouseFreezerPreviewSafely();
 }
@@ -2954,20 +2959,19 @@ function clearGenesisFreezerAvailableSelection() {
 }
 
 /**
- * Select all currently filtered available Genesis mice, capped by open freezer slots.
+ * Select the first currently filtered available Genesis mouse.
  *
  * Plain language for DEVS:
- * This is still frontend selection only. The real freeze calls happen later
- * and remain backend-authoritative.
+ * The public freezer UX intentionally supports one selected mouse at a time.
+ * This helper keeps the old button hook safe while preventing hidden batch
+ * selection from the frontend.
  */
 function selectAllVisibleGenesisFreezerAvailableMice() {
   const data = genesisMouseFreezerPreview || {};
   const availableNfts = Array.isArray(data.available_nfts) ? data.available_nfts : [];
-  const slots = data.slots || {};
-  const availableSlots = Math.max(0, Number(slots.available || 0));
   const searchQuery = String(genesisFreezerAvailableSearch || '').trim().toLowerCase();
 
-  const filteredAvailableNfts = availableNfts.filter(nft => {
+  const firstVisibleNft = availableNfts.find(nft => {
     if (!searchQuery) {
       return true;
     }
@@ -2982,9 +2986,9 @@ function selectAllVisibleGenesisFreezerAvailableMice() {
 
   selectedGenesisFreezerTokenKeys.clear();
 
-  filteredAvailableNfts.slice(0, availableSlots).forEach(nft => {
-    selectedGenesisFreezerTokenKeys.add(getGenesisFreezerNftKey(nft));
-  });
+  if (firstVisibleNft) {
+    selectedGenesisFreezerTokenKeys.add(getGenesisFreezerNftKey(firstVisibleNft));
+  }
 
   rerenderGenesisMouseFreezerPreviewSafely();
 }
@@ -3293,116 +3297,70 @@ async function connectGenesisFreezerWallet() {
  * - the Memo text matches the exact backend challenge message
  */
 async function sendGenesisFreezerMemoTransaction(messageOrMessages, expectedWalletAddress) {
-  /**
- * Build one Solana Memo transaction for one or more backend challenge messages.
- *
- * Plain language for DEVS:
- * A same-wallet freezer batch can include multiple Memo instructions in one
- * Solana transaction. The backend still verifies every challenge separately by
- * checking that the same transaction contains the exact expected Memo text.
- */
-const safeMessages = (Array.isArray(messageOrMessages) ? messageOrMessages : [messageOrMessages])
-  .map(message => String(message || '').trim())
-  .filter(Boolean);
-  const safeExpectedWallet = String(expectedWalletAddress || '').trim();
-
-  if (safeMessages.length === 0) {
-    throw new Error('Missing Genesis freezer challenge message.');
-  }
-
   const web3 = getGenesisFreezerSolanaWeb3();
-  const { provider, walletAddress } = await connectGenesisFreezerWallet();
+  const provider = getGenesisFreezerWalletProvider();
 
-  if (safeExpectedWallet && walletAddress !== safeExpectedWallet) {
-    throw new Error(`Connected wallet mismatch. Please connect ${safeExpectedWallet} to sign this freezer Memo.`);
+  const safeMessage = String(Array.isArray(messageOrMessages) ? messageOrMessages[0] : messageOrMessages || '').trim();
+  const walletAddress = String(expectedWalletAddress || provider?.publicKey?.toString?.() || '').trim();
+
+  if (!web3) {
+    throw new Error('Solana web3.js is not loaded yet. Please refresh and try again.');
   }
 
- const configuredRpcUrl = String(window.NARRRFS_SOLANA_RPC_URL || '').trim();
-const rpcUrls = [
-  configuredRpcUrl,
-  ...GENESIS_FREEZER_PUBLIC_RPC_FALLBACK_URLS
-].filter((rpcUrl, index, allRpcUrls) => {
-  return rpcUrl && allRpcUrls.indexOf(rpcUrl) === index;
-});
-
-let connection = null;
-let latestBlockhash = null;
-let lastRpcError = null;
-
-/**
- * DEVS FOR DECADES:
- * Browser-side public Solana RPC endpoints can rate-limit or reject requests.
- * Try configured/project RPC first, then safe public fallbacks before failing
- * the wallet Memo flow. The backend still verifies the final Memo transaction.
- */
-for (const rpcUrl of rpcUrls) {
-  try {
-    const candidateConnection = new web3.Connection(rpcUrl, 'confirmed');
-    const candidateBlockhash = await candidateConnection.getLatestBlockhash('confirmed');
-
-    connection = candidateConnection;
-    latestBlockhash = candidateBlockhash;
-    break;
-  } catch (rpcError) {
-    lastRpcError = rpcError;
-    console.warn('Genesis Mouse Freezer RPC failed, trying fallback:', rpcUrl, rpcError);
+  if (!provider) {
+    throw new Error('No Solana wallet provider found. Please open this page in Phantom or install Phantom.');
   }
-}
 
-if (!connection || !latestBlockhash) {
-  throw new Error(`Unable to reach a Solana RPC for freezer Memo transaction. Last error: ${lastRpcError?.message || lastRpcError || 'Unknown RPC error'}`);
-}
+  if (!safeMessage) {
+    throw new Error('Genesis Mouse Freezer Memo message is missing. Please refresh and try again.');
+  }
 
-const walletPublicKey = new web3.PublicKey(walletAddress);
-const memoProgramId = new web3.PublicKey(GENESIS_FREEZER_MEMO_PROGRAM_ID);
-const transaction = new web3.Transaction();
+  if (!walletAddress) {
+    throw new Error('Genesis Mouse Freezer wallet is missing. Please refresh and reconnect your wallet.');
+  }
 
-transaction.recentBlockhash = latestBlockhash.blockhash;
-transaction.feePayer = walletPublicKey;
+  const connection = new web3.Connection(GENESIS_FREEZER_PUBLIC_RPC_URL, 'confirmed');
+  const latestBlockhash = await connection.getLatestBlockhash('confirmed');
 
-safeMessages.forEach((safeMessage) => {
-  transaction.add(
-    new web3.TransactionInstruction({
-      keys: [],
-      programId: memoProgramId,
-      data: new TextEncoder().encode(safeMessage)
-    })
-  );
-});
+  if (!connection || !latestBlockhash) {
+    throw new Error('Unable to reach a Solana RPC for the freezer Memo. Please try again.');
+  }
 
-  let signature = '';
+  const walletPublicKey = new web3.PublicKey(walletAddress);
+  const memoProgramId = new web3.PublicKey(GENESIS_FREEZER_MEMO_PROGRAM_ID);
+  const transaction = new web3.Transaction();
 
-/**
- * DEVS FOR DECADES:
- * Prefer wallet signing + our selected RPC broadcast when possible.
- * Browser-side public RPC confirmation can expire or disagree with wallet RPCs.
- * The backend remains the authority and verifies the final Memo transaction
- * through the server-side Helius/Alchemy RPC lane before freezing anything.
- */
-if (typeof provider.signTransaction === 'function') {
+  transaction.recentBlockhash = latestBlockhash.blockhash;
+  transaction.feePayer = walletPublicKey;
+
+  transaction.add(new web3.TransactionInstruction({
+    keys: [{ pubkey: walletPublicKey, isSigner: true, isWritable: false }],
+    programId: memoProgramId,
+    data: new TextEncoder().encode(safeMessage)
+  }));
+
+  if (typeof provider.signAndSendTransaction === 'function') {
+    const sendResult = await provider.signAndSendTransaction(transaction);
+    const signature = String(sendResult?.signature || sendResult || '').trim();
+
+    if (!signature) {
+      throw new Error('Wallet did not return a Memo transaction signature.');
+    }
+
+    return { signature, signed_by: walletAddress };
+  }
+
+  if (typeof provider.signTransaction !== 'function') {
+    throw new Error('Wallet does not support Solana Memo signing. Please update Phantom and try again.');
+  }
+
   const signedTransaction = await provider.signTransaction(transaction);
-  const rawTransaction = signedTransaction.serialize();
-
-  signature = await connection.sendRawTransaction(rawTransaction, {
+  const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
     skipPreflight: false,
-    preflightCommitment: 'confirmed',
-    maxRetries: 5
+    preflightCommitment: 'confirmed'
   });
-} else if (typeof provider.signAndSendTransaction === 'function') {
-  const result = await provider.signAndSendTransaction(transaction);
-  signature = typeof result === 'string' ? result : String(result?.signature || '');
-} else {
-  throw new Error('Connected wallet does not support Solana transaction signing.');
-}
 
-if (!signature) {
-  throw new Error('Wallet did not return a Memo transaction signature.');
-}
-
-return {
-  signature,
-  walletAddress
-};
+  return { signature, signed_by: walletAddress };
 }
 
 /**
@@ -3524,7 +3482,15 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
     showGenesisFreezerToast(
       'error',
       'No Genesis mouse selected',
-      'Choose one or more available Genesis mice before starting the wallet Memo freezer flow.'
+      'Choose one available Genesis mouse before starting the wallet Memo freezer flow.'
+    );
+    return;
+  }
+    if (selectedMice.length > 1) {
+    showGenesisFreezerToast(
+      'error',
+      'Freeze one mouse at a time',
+      'Freeze one Genesis mouse at a time. After this mouse is frozen, return here and select the next mouse.'
     );
     return;
   }
@@ -3552,7 +3518,7 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
     showGenesisFreezerToast(
       'error',
       'One wallet per freeze batch',
-      'Please select Genesis mice from one wallet only. If your mice are split across wallets, freeze each wallet group separately.'
+      'Please select one Genesis mouse from the wallet you have connected. Freeze additional mice one by one.'
     );
     return;
   }
@@ -3575,7 +3541,7 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
       showGenesisFreezerToast(
         'error',
         'Switch Solana wallet',
-        `This freezer batch is linked to Solana wallet ${selectedWallet}. Your connected wallet is ${walletAddress}. Please switch to ${selectedWallet}, refresh the Stake Lab, and try again.`
+        `This Genesis mouse is linked to Solana wallet ${selectedWallet}. Your connected wallet is ${walletAddress}. Please switch to ${selectedWallet}, refresh the Stake Lab, and try again.`
       );
       return;
     }
@@ -3589,8 +3555,8 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
   }
 
   const confirmed = await showGenesisFreezerConfirmModal(
-    'Freeze Genesis Mice with Wallet Memo?',
-    `This will send one Solana Memo transaction from ${formatGenesisFreezerWalletShort(selectedWallet)} for ${selectedMice.length} selected Genesis mouse${selectedMice.length === 1 ? '' : ' mice'}. Your NFTs stay in your wallet.`,
+    'Freeze Genesis Mouse with Wallet Memo?',
+    `This will send one Solana Memo transaction from ${formatGenesisFreezerWalletShort(selectedWallet)} for one selected Genesis mouse. Your NFT stays in your wallet.`,
     'Sign Freeze Memo'
   );
 
@@ -3608,8 +3574,8 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
 
     showGenesisFreezerToast(
       'info',
-      'Preparing freezer batch',
-      `Creating ${selectedMice.length} freezer challenge${selectedMice.length === 1 ? '' : 's'} for one wallet Memo transaction...`
+      'Preparing freezer freeze',
+      `Creating one freezer challenge for one wallet Memo transaction...`
     );
 
     const preparedChallenges = [];
@@ -3666,7 +3632,7 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
     const memoProof = await sendGenesisFreezerMemoTransaction(memoMessages, selectedWallet);
 
     if (button) {
-      button.textContent = 'Verifying batch...';
+      button.textContent = 'Verifying freeze...';
     }
 
     let successCount = 0;
@@ -3709,8 +3675,8 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
     if (successCount === preparedChallenges.length) {
       showGenesisFreezerToast(
         'success',
-        'Freezer batch complete',
-        `${successCount} Genesis mouse${successCount === 1 ? '' : ' mice'} frozen with one wallet Memo transaction.`
+        'Genesis mouse frozen',
+        `Your Genesis mouse was frozen with one wallet Memo transaction.`
       );
       return;
     }
@@ -3726,11 +3692,11 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
 
     showGenesisFreezerToast(
       'error',
-      'Freezer batch failed',
-      'No mice were frozen. Please refresh the Stake Lab and try again with a smaller same-wallet batch.'
+      'Genesis mouse freeze failed',
+      'No mouse was frozen. Please refresh the Stake Lab and try again.'
     );
   } catch (error) {
-    console.error('Genesis Mouse Freezer production batch freeze failed:', error);
+    console.error('Genesis Mouse Freezer production freeze failed:', error);
 
     showGenesisFreezerToast(
       'error',
@@ -3740,7 +3706,7 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
   } finally {
     if (button) {
       button.disabled = false;
-      button.textContent = originalText || 'Freeze Selected';
+      button.textContent = originalText || 'Freeze Selected Mouse';
     }
   }
 }
@@ -3869,7 +3835,7 @@ async function freezeSelectedGenesisMiceLocal() {
     showGenesisFreezerToast(
       'error',
       'No Genesis mice selected',
-      'Choose one or more available Genesis mice before starting a freezer test.'
+      'Choose one available Genesis mouse before starting a freezer test.'
     );
     return;
   }
@@ -3898,9 +3864,9 @@ async function freezeSelectedGenesisMiceLocal() {
   }
 
   const confirmed = await showGenesisFreezerConfirmModal(
-    'Freeze selected Genesis mice?',
-    `Local test only: freeze ${selectedMice.length} selected Genesis mouse/mice into the Genesis Mouse Freezer.`,
-    'Freeze Selected'
+    'Freeze selected Genesis mouse?',
+    `Local test only: freeze one selected Genesis mouse into the Genesis Mouse Freezer.`,
+    'Freeze Selected Mouse'
   );
 
   if (!confirmed) {
@@ -3987,7 +3953,7 @@ async function freezeSelectedGenesisMiceLocal() {
   } finally {
     if (button) {
       button.disabled = false;
-      button.textContent = originalText || 'Freeze Selected Local Test';
+      button.textContent = originalText || 'Freeze Selected Mouse Local Test';
     }
   }
 }
@@ -4590,7 +4556,7 @@ One freezer slot can hold one Genesis mouse. The NFT stays in your wallet while 
 
       <div class="mt-4 grid grid-cols-2 gap-3">
         <div class="rounded-xl border border-cyan-300/15 bg-cyan-300/10 p-3">
-          <div class="text-xs text-cyan-200/70">Selected Mice</div>
+          <div class="text-xs text-cyan-200/70">Selected Mouse</div>
           <div id="genesis-freezer-planner-selected" class="mt-1 text-xl font-black text-cyan-100">${defaultPlannerMice.toLocaleString()}</div>
         </div>
 
@@ -4664,7 +4630,7 @@ One freezer slot can hold one Genesis mouse. The NFT stays in your wallet while 
           : 'cursor-not-allowed border-slate-500/40 bg-slate-700/40 text-slate-300 opacity-80'
       }"
     >
-      Select visible
+      Select first visible
     </button>
 
     <button
@@ -4697,56 +4663,56 @@ One freezer slot can hold one Genesis mouse. The NFT stays in your wallet while 
     <div class="flex items-center justify-between gap-3">
       <div>
         <div class="text-xs font-black uppercase tracking-[0.14em] text-yellow-200/70">
-          Selected Mice
+          Selected Mouse
         </div>
         <div class="mt-1 text-lg font-black ${selectedCanFitOpenSlots ? 'text-yellow-100' : 'text-red-100'}">
-          ${selectedAvailableCount.toLocaleString()} selected
+          ${selectedAvailableCount === 1 ? '1 selected' : selectedAvailableCount > 1 ? selectedAvailableCount.toLocaleString() + ' selected — choose only one' : '0 selected'}
         </div>
       </div>
 
       <div class="rounded-full border ${selectedCanFitOpenSlots ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-red-300/30 bg-red-500/10 text-red-100'} px-3 py-1 text-xs font-black">
-        ${selectedCanFitOpenSlots ? 'Fits slots' : 'Too many'}
+        ${selectedAvailableCount === 1 ? 'Ready to freeze' : selectedAvailableCount > 1 ? 'Choose only one' : 'Select one'}
       </div>
     </div>
 
     <div class="mt-3 grid grid-cols-1 gap-2">
       ${selectedPreviewRows || `
         <div class="rounded-xl border border-dashed border-white/10 bg-white/5 p-3 text-sm text-slate-300">
-          No mice selected yet.
+          No mouse selected yet. Choose exactly one Genesis mouse to freeze.
         </div>
       `}
     </div>
 
     ${hiddenSelectedPreviewCount > 0 ? `
       <div class="mt-2 text-xs text-slate-400">
-        +${hiddenSelectedPreviewCount.toLocaleString()} more selected mouse/mice.
+        +${hiddenSelectedPreviewCount.toLocaleString()} more selected. Freeze only one mouse at a time.
       </div>
     ` : ''}
 
   <button
       type="button"
       id="genesis-freezer-freeze-selected-btn"
-      ${selectedAvailableCount > 0 && selectedCanFitOpenSlots ? '' : 'disabled'}
+      ${selectedAvailableCount === 1 && selectedCanFitOpenSlots ? '' : 'disabled'}
       class="mt-4 w-full rounded-2xl border px-4 py-3 text-sm font-black transition ${
-        selectedAvailableCount > 0 && selectedCanFitOpenSlots
+        selectedAvailableCount === 1 && selectedCanFitOpenSlots
           ? 'border-cyan-300/45 bg-cyan-500/20 text-cyan-100 hover:bg-cyan-500/30 hover:scale-[1.01]'
           : 'cursor-not-allowed border-slate-500/40 bg-slate-700/40 text-slate-300 opacity-80'
       }"
       title="${
         isLocalFreezeEnabled
           ? 'Local test only: freeze selected Genesis mice.'
-          : 'Sign Solana Memo transaction(s) to freeze selected Genesis mice.'
+          : 'Sign one Solana Memo transaction to freeze one selected Genesis mouse.'
       }"
     >
       ${
         isLocalFreezeEnabled
-          ? (selectedAvailableCount > 0 ? `Freeze ${selectedAvailableCount.toLocaleString()} Selected Local Test` : 'Select mice to freeze')
-          : (selectedAvailableCount > 0 ? `Freeze ${selectedAvailableCount.toLocaleString()} Selected with Wallet Memo` : 'Select mice to freeze')
+          ? (selectedAvailableCount === 1 ? 'Freeze 1 Selected Local Test' : selectedAvailableCount > 1 ? 'Choose only 1 mouse' : 'Select 1 mouse to freeze')
+          : (selectedAvailableCount === 1 ? 'Freeze 1 Mouse with Wallet Memo' : selectedAvailableCount > 1 ? 'Choose only 1 mouse' : 'Select 1 mouse to freeze')
       }
     </button>
 
-    <div class="mt-3 rounded-xl border border-cyan-300/15 bg-cyan-300/10 p-3 text-xs leading-relaxed text-cyan-100/80">
-      Local test can freeze selected mice now. Production freeze stays locked until wallet-proof Memo confirmation is wired.
+    <div class="mt-3 rounded-xl border border-yellow-300/25 bg-yellow-300/10 p-3 text-xs leading-relaxed text-yellow-100/90">
+      <strong>Freezer rule:</strong> Freeze exactly <strong>1 Genesis mouse per action</strong>. If you want to freeze more, finish this wallet Memo flow first, then select the next mouse and repeat.
     </div>
   </div>
 </div>

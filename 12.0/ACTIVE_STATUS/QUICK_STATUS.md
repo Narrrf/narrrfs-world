@@ -1,5 +1,45 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-01 — Render Deploy Preferred / Upload Hotfix Method Documented
+
+**Scope:** Deployment workflow / Stake Lab emergency hotfix handling  
+**Status:** Normal Render deploy remains the preferred production path
+
+Today’s production update should go through the normal git push + Render deploy flow.
+
+The direct upload endpoint method was confirmed as a possible emergency hotfix path only:
+
+```text
+Local file
+→ upload-assets.php temp target under /data/...
+→ verify uploaded file markers on Render
+→ backup live file
+→ copy temp file over /var/www/html/<target-file>
+→ verify live markers
+
+## 2026-07-01 — Genesis Mouse Freezer Phantom UX Hotfix Live
+
+**Scope:** Stake Lab / Genesis Mouse Freezer / live Phantom wallet Memo flow  
+**Status:** Live hotfix confirmed working — freeze and unfreeze now work without the ugly Phantom warning message
+
+---
+
+## ✅ Confirmed Live Result
+
+Genesis Mouse Freezer live production flow was hotfixed and tested.
+
+Confirmed working:
+
+```text
+✅ Freeze works live
+✅ Unfreeze works live
+✅ Phantom warning message is gone
+✅ No double-confirm / ugly wallet trust warning observed after the fix
+✅ One selected Genesis mouse flow works as expected
+✅ Backend Memo verification still remains active
+✅ NFT stays in holder wallet
+✅ Freezer row is still created/closed only after backend verifies the Memo transaction
+
 ## 2026-07-01 — Genesis Mouse Freezer Same-Wallet Batch Freeze Ready For Push
 
 **Scope:** Stake Lab / Genesis Mouse Freezer / Season 13 public freezer UX  
