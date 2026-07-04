@@ -695,70 +695,69 @@ require_once 'discord-invite.php';
   </p>
 </div>
 
-<details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-cyan-500">
+<details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-cyan-500" open>
   <summary class="flex items-center justify-between gap-4">
-    <h3 class="text-xl font-black text-cyan-200">🧊 How will DSPOINC staking work in Season 13 V2?</h3>
+    <h3 class="text-xl font-black text-cyan-200">🧊 Is DSPOINC Staking V2 live in Season 13?</h3>
     <span class="faq-chevron text-cyan-300">⌄</span>
   </summary>
 
   <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
     <!-- DEVS FOR DECADES:
-       This FAQ card is education-only.
-       It explains DSPOINC V2 staking in public language.
-       It does not activate V2 staking, calculate live rewards, freeze DSPOINC,
-       write ledger rows, or bypass backend authority. -->
+       This FAQ card is public education only.
+       It explains Season 13 DSPOINC Staking V2 in user language.
+       It does not create stakes, calculate rewards, claim rewards, unstake DSPOINC,
+       verify Genesis ownership, or write ledger rows. Backend staking APIs remain authoritative. -->
     <p>
-      Season 13 V2 staking is the DSPOINC pool lane. In this system, members lock DSPOINC for a selected time period.
-      The longer the lock duration, the higher the planned base reward rate.
+      Yes. DSPOINC Staking V2 is the Season 13 staking lane for locking available DSPOINC.
+      Members can choose a day-based lock pool, track the stake in Stake Lab, and claim when the stake has completed.
     </p>
 
     <p class="mt-3">
-      Genesis mice do not get frozen in this lane. Instead, verified Genesis ownership can act as a reward multiplier
-      for DSPOINC V2 staking when V2 is officially activated.
+      Existing older stakes remain safe under their original legacy rules.
+      New Season 13 stakes use the V2 reward system.
     </p>
 
-    <div class="mt-4 rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
-      <strong>Simple difference:</strong><br>
-      DSPOINC V2 staking = lock DSPOINC in a pool.<br>
-      Genesis Mouse Freezer = freeze verified Genesis NFTs for daily DSPOINC rewards.
-    </div>
+    <h4 class="mt-5 text-lg font-black text-cyan-100">V2 lock pools</h4>
 
-    <h4 class="mt-5 text-lg font-black text-cyan-100">DSPOINC V2 pool preview</h4>
-
-    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+      <div class="rounded-2xl border border-sky-300/25 bg-sky-400/10 p-3">
         <strong>14 Days:</strong> 0.5% base reward
       </div>
 
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-3">
         <strong>30 Days:</strong> 1.25% base reward
       </div>
 
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div class="rounded-2xl border border-blue-300/25 bg-blue-400/10 p-3">
         <strong>90 Days:</strong> 5% base reward
       </div>
 
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div class="rounded-2xl border border-indigo-300/25 bg-indigo-400/10 p-3">
         <strong>180 Days:</strong> 12% base reward
       </div>
 
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-3">
         <strong>365 Days:</strong> 30% base reward
       </div>
 
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-3">
         <strong>730 Days:</strong> 75% base reward
       </div>
     </div>
 
-    <h4 class="mt-5 text-lg font-black text-yellow-100">Genesis multiplier preview for DSPOINC V2</h4>
+    <h4 class="mt-5 text-lg font-black text-cyan-100">Genesis staking boosts</h4>
 
-    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+    <p class="mt-3">
+      Verified Genesis ownership can boost V2 staking rewards. The backend checks the Genesis tier when the stake is created
+      and again when the reward is claimed.
+    </p>
+
+    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+      <div class="rounded-2xl border border-slate-300/25 bg-slate-400/10 p-3">
         <strong>0 Genesis:</strong> x1.00
       </div>
 
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div class="rounded-2xl border border-slate-300/25 bg-slate-400/10 p-3">
         <strong>1 Genesis:</strong> x1.00
       </div>
 
@@ -778,7 +777,7 @@ require_once 'discord-invite.php';
         <strong>16–29 Genesis:</strong> x1.20
       </div>
 
-      <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-3 sm:col-span-2">
+      <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-3 sm:col-span-2 lg:col-span-3">
         <strong>30+ Genesis:</strong> x1.35
       </div>
     </div>
@@ -789,13 +788,14 @@ require_once 'discord-invite.php';
     </p>
 
     <p class="mt-3">
-      This V2 preview is informational until V2 is activated. Final staking rewards and Genesis ownership checks stay backend-authoritative.
+      Final staking rewards, completion status, Genesis ownership checks, boost eligibility, and claim results stay backend-authoritative.
+      Stake Lab displays the user interface, but the backend decides the final state.
     </p>
 
     <p class="mt-3">
       <a href="stake-lab.html?open=dspoinc-staking">Open DSPOINC Staking</a>
       or
-      <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer">mint Genesis on Gensuki</a>.
+      <a href="swap-lab.html">get more DSPOINC through the SPOINC Gateway</a>.
     </p>
   </div>
 </details>

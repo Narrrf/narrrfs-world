@@ -185,6 +185,18 @@ foreach ($all_stakes as $stake) {
         AND amount = ?
         AND reason LIKE ?
     ");
+
+    /**
+ * Skip legacy audit repair for Season 13 V2 stakes.
+ *
+ * Plain language for DEVS:
+ * V2 stakes use lock_duration_days and create their own V2 audit row inside
+ * create-stake.php. This old repair block is legacy-only and would create
+ * confusing "0 months" audit rows for V2 stakes.
+ */
+if (staking_is_v2_stake($stake)) {
+    continue;
+}
     $reasonPattern = '%DSPOINC frozen for staking: ' . (int)$stake['amount'] . ' DSPOINC for ' . (int)$stake['freeze_duration_months'] . ' months%';
     $checkStmt->execute([$user_id, -(int)$stake['amount'], $reasonPattern]);
     $checkResult = $checkStmt->fetch(PDO::FETCH_ASSOC);

@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+require_once __DIR__ . '/staking-contract-helpers.php';
+
 // 🚨 CRITICAL FIX: Handle OPTIONS preflight requests FIRST (before any other headers)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     // CORS preflight request - return allowed methods and headers
@@ -203,14 +205,32 @@ try {
     // This ensures staking transactions appear in Recent Score Changes.
     try {
         $stakesCheck = $db->prepare("
-            SELECT id, amount, freeze_duration_months, expected_reward, frozen_at
-            FROM tbl_dspoinc_stakes
-            WHERE user_id = ? AND status = 'active'
-        ");
+    SELECT
+        id,
+        amount,
+        freeze_duration_months,
+        expected_reward,
+        staking_contract_version,
+        lock_duration_days
+    FROM tbl_dspoinc_stakes
+    WHERE user_id = ? AND status = 'active'
+");
         $stakesCheck->execute([$user_id]);
         $activeStakes = $stakesCheck->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($activeStakes as $stake) {
+
+        /**
+ * Skip legacy audit repair for Season 13 V2 stakes.
+ *
+ * Plain language for DEVS:
+ * V2 stakes use lock_duration_days and create their own V2 audit row inside
+ * create-stake.php. This old repair block is legacy-only and would create
+ * confusing "0 months" audit rows for V2 stakes.
+ */
+if (staking_is_v2_stake($stake)) {
+    continue;
+}
             // Check if entry exists - match by amount AND reason pattern
             // to handle multiple stakes with same amount.
             $reasonPattern = '%DSPOINC frozen for staking: ' . (int)$stake['amount'] . ' DSPOINC for ' . (int)$stake['freeze_duration_months'] . ' months%';

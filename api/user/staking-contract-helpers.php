@@ -18,7 +18,7 @@ const STAKING_CONTRACT_SEASON13_V2 = 'season13_v2';
  * Keep legacy active now. In Season 13, this constant can be changed to
  * STAKING_CONTRACT_SEASON13_V2 after live DB migration and final testing.
  */
-const ACTIVE_STAKING_CONTRACT_VERSION = STAKING_CONTRACT_LEGACY_V1;
+const ACTIVE_STAKING_CONTRACT_VERSION = STAKING_CONTRACT_SEASON13_V2;
 
 /**
  * Season 13 V2 base lock pools.

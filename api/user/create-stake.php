@@ -184,12 +184,6 @@ if ($amount < 100) {
 }
 
 $allowed_durations = [1, 3, 6, 12, 24, 36];
-if (!in_array($freeze_duration_months, $allowed_durations)) {
-    json_response([
-        'success' => false,
-        'error' => 'Invalid duration. Allowed: 1, 3, 6, 12, 24, 36 months'
-    ], 400);
-}
 
 // Reward rates (must match frontend REWARD_RATES)
 $reward_rates = [
@@ -201,8 +195,28 @@ $reward_rates = [
     36 => 0.50   // 50% (matches frontend)
 ];
 
-$reward_rate = $reward_rates[$freeze_duration_months];
-$expected_reward = (int)round($amount * $reward_rate);
+/**
+ * Legacy duration validation.
+ *
+ * Plain language for DEVS:
+ * Legacy V1 uses month buttons from the old Stake Lab UI.
+ * Season 13 V2 uses lock_duration_days and validates the day pool inside the
+ * V2 branch below. Do not force V2 requests through month validation.
+ */
+if (!staking_is_v2_active()) {
+    if (!in_array($freeze_duration_months, $allowed_durations, true)) {
+        json_response([
+            'success' => false,
+            'error' => 'Invalid duration. Allowed: 1, 3, 6, 12, 24, 36 months'
+        ], 400);
+    }
+
+    $reward_rate = $reward_rates[$freeze_duration_months];
+    $expected_reward = (int)round($amount * $reward_rate);
+} else {
+    $reward_rate = 0.0;
+    $expected_reward = 0;
+}
 // Phase A safety:
 // New stake creation still uses legacy_v1 until Season 13 V2 is intentionally activated.
 $staking_contract_version = ACTIVE_STAKING_CONTRACT_VERSION;
@@ -215,13 +229,51 @@ $genesis_multiplier_at_stake = 1.0;
 $genesis_terms_status = 'legacy_not_required';
 
 if (staking_is_v2_active()) {
-    // TODO: Season 13 activation path.
-    // This branch must validate lock_duration_days, calculate V2 pool reward,
-    // count verified Genesis NFTs, and store holder multiplier data.
-    json_response([
-        'success' => false,
-        'error' => 'Season 13 V2 staking is not activated in this Phase A build.'
-    ], 503);
+    /**
+     * Season 13 V2 stake creation.
+     *
+     * Plain language for DEVS:
+     * V2 uses day-based lock pools instead of legacy month buttons.
+     * The backend stores the user's Genesis tier at stake time, but the final
+     * reward still gets checked again at claim time by claim-stake-reward.php.
+     */
+    $lock_duration_days = isset($data['lock_duration_days']) ? (int)$data['lock_duration_days'] : 0;
+    $v2Pool = staking_get_v2_pool_by_days($lock_duration_days);
+
+    if (!$v2Pool) {
+        json_response([
+            'success' => false,
+            'error' => 'Invalid V2 lock duration. Allowed: 14, 30, 90, 180, 365, 730 days'
+        ], 400);
+    }
+
+    $staking_contract_version = STAKING_CONTRACT_SEASON13_V2;
+
+    /**
+     * Plain language for DEVS:
+     * freeze_duration_months is legacy-only, but the column is NOT nullable.
+     * For V2 rows we store 0 here and use lock_duration_days as the source of truth.
+     */
+    $freeze_duration_months = 0;
+
+    $base_reward_rate = (float)$v2Pool['reward_rate'];
+    $reward_rate = $base_reward_rate;
+
+    $genesis_count_at_stake = staking_count_verified_genesis_for_user($pdo, $user_id);
+    $genesisTier = staking_get_genesis_tier($genesis_count_at_stake);
+
+    $genesis_tier_at_stake = (string)$genesisTier['key'];
+    $genesis_multiplier_at_stake = (float)$genesisTier['multiplier'];
+
+    $v2Rewards = staking_calculate_v2_rewards(
+        $amount,
+        $base_reward_rate,
+        $genesis_multiplier_at_stake
+    );
+
+    $base_expected_reward = (int)$v2Rewards['base_expected_reward'];
+    $expected_reward = (int)$v2Rewards['expected_reward'];
+    $genesis_terms_status = 'same_or_higher_tier_required_at_claim';
 }
 
 // Get current season
@@ -259,7 +311,11 @@ if ($amount > $available_balance) {
 
 // Calculate unfreeze date
 $frozen_at = date('Y-m-d H:i:s');
-$unfreeze_at = date('Y-m-d H:i:s', strtotime("+{$freeze_duration_months} months"));
+if (staking_is_v2_active()) {
+    $unfreeze_at = date('Y-m-d H:i:s', strtotime("+{$lock_duration_days} days"));
+} else {
+    $unfreeze_at = date('Y-m-d H:i:s', strtotime("+{$freeze_duration_months} months"));
+}
 
 try {
     $pdo->beginTransaction();
@@ -311,7 +367,8 @@ $metadata = json_encode([
     'season' => $currentSeason,
     'contract_version' => $staking_contract_version,
     'legacy_duration_months' => $freeze_duration_months,
-    'created_from' => 'stake_lab_phase_a'
+    'lock_duration_days' => $lock_duration_days,
+    'created_from' => staking_is_v2_active() ? 'stake_lab_v2_local_sim' : 'stake_lab_phase_a'
 ]);
 
 $stakeStmt->execute([
@@ -361,12 +418,22 @@ $stakeStmt->execute([
         $timestampField = $hasTimestamp ? 'timestamp' : ($hasCreatedAt ? 'created_at' : 'timestamp');
         $timestampValue = $hasTimestamp || $hasCreatedAt ? "datetime('now')" : "datetime('now')";
         
-        $reason = sprintf(
-            'DSPOINC frozen for staking: %d DSPOINC for %d months (expected reward: %d DSPOINC)',
-            $amount,
-            $freeze_duration_months,
-            $expected_reward
-        );
+        if (staking_is_v2_active()) {
+    $reason = sprintf(
+        'DSPOINC frozen for Season 13 V2 staking: %d DSPOINC for %d days (base reward: %d DSPOINC, expected reward with Genesis terms: %d DSPOINC)',
+        $amount,
+        $lock_duration_days,
+        $base_expected_reward,
+        $expected_reward
+    );
+} else {
+    $reason = sprintf(
+        'DSPOINC frozen for staking: %d DSPOINC for %d months (expected reward: %d DSPOINC)',
+        $amount,
+        $freeze_duration_months,
+        $expected_reward
+    );
+}
         
         // Try with timestamp field first
         $adjustStmt = $pdo->prepare("
@@ -443,6 +510,14 @@ json_response([
         'user_id' => $user_id,
         'amount' => $amount,
         'freeze_duration_months' => $freeze_duration_months,
+        'staking_contract_version' => $staking_contract_version,
+'lock_duration_days' => $lock_duration_days,
+'base_reward_rate' => $base_reward_rate,
+'base_expected_reward' => $base_expected_reward,
+'genesis_count_at_stake' => $genesis_count_at_stake,
+'genesis_tier_at_stake' => $genesis_tier_at_stake,
+'genesis_multiplier_at_stake' => $genesis_multiplier_at_stake,
+'genesis_terms_status' => $genesis_terms_status,
         'reward_rate' => $reward_rate,
         'expected_reward' => $expected_reward,
         'frozen_at' => $frozen_at,
