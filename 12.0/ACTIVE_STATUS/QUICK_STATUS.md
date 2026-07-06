@@ -1,5 +1,160 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-07 — Lab Claim + Renew Feature #854 Local Test Passed
+
+**Scope:** `public/lab.html` / Research Queue / Genesis trait upgrade claims  
+**Status:** Local browser test passed
+
+---
+
+## ✅ User Feedback #854 Implemented
+
+Bug / suggestion reference:
+
+```text
+#854
+Suggestion for claiming process:
+Optional button: "claim and renew" and "claim and renew all"
+Requested by: lukeskypestalker
+Priority: High
+
+## 2026-07-05 — Stake Lab / Lab Visual Polish Follow-Up
+
+**Scope:** Stake Lab / Lab UI / shared auth overlay / freezer list mode / queue NFT visibility / V2 activation copy  
+**Status:** Visual polish fixes tested and working as expected
+
+---
+
+## ✅ Visual Fixes Confirmed Working
+
+The latest small UI/UX bugfix round worked as expected.
+
+Completed fixes:
+
+```text
+✅ #1142 — Shared bottom-right auth/audio overlay adjusted
+✅ #1134 — Lab Research Queue NFT ghost image made more visible
+✅ #1135 — Stake Lab Genesis Mouse Freezer list mode now shows live Building value
+✅ Stake Lab V2 stale legacy copy cleaned
+
+Users reported overlapping buttons in the bottom-right area.
+Music / SFX controls and Discord login/profile pill looked doubled or stacked badly on Lab / Stake Lab and possibly other main pages.
+
+
+
+## 2026-07-07 — SPOINC → DSPOINC 10,000 Cap Live Test Passed
+
+Status: SPOINC → DSPOINC conversion cap increase is working as expected.
+
+Completed:
+- Raised SPOINC → DSPOINC conversion cap from `500 SPOINC` to `10,000 SPOINC`.
+- Updated backend cap in:
+  - `api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php`
+- Updated frontend cap/text in:
+  - `public/swap-lab.html`
+
+Validation:
+- Local curl tests confirmed:
+  - `501 SPOINC` now passes Narrrfs cap validation.
+  - `10,000 SPOINC` now passes Narrrfs cap validation.
+  - `10,000.0001 SPOINC` is correctly blocked.
+  - More than 4 decimals are still correctly blocked.
+  - Failed Gensuki balance checks do not create DSPOINC ledger movement.
+
+Live result:
+- Live testing worked as expected after deploy.
+- Higher SPOINC → DSPOINC conversion limit is now active.
+- DSPOINC settlement remains protected by the existing confirm flow.
+- No additional changes needed unless users report a route-specific issue.
+
+Important:
+- Conversion rate remains unchanged:
+  - `1 SPOINC = 10,000 DSPOINC`
+- New max conversion:
+  - `10,000 SPOINC = 100,000,000 DSPOINC`
+- Buy routes and sell routes were not changed by this cap update.
+
+## 2026-07-03 — Phantom Domain Review Escalation / Trusted Community Verification
+
+Status: Phantom support confirmed that the remaining Swap Lab warning requires an additional trusted-community/domain verification path.
+
+Phantom request:
+- Request number: `#229386`
+- Phantom support advised that someone known and trusted in the Solana developer/community space should vouch for Narrrfs World by contacting Phantom via X DM to `@PhantomPrasanth`.
+- This is now being treated as a domain / dApp review trust path, not as a failed transaction issue.
+
+Current technical state:
+- SPOINC Swap Lab transactions are working on-chain.
+- Gensuki confirmed transaction payload handling and signing flow from their side.
+- Phantom warning still appears on production domain `narrrfs.world`.
+- Pocket Universe reads/covers the transaction flow.
+- Other wallet flows do not show the same severe warning.
+- The issue remains with Phantom production-domain warning state.
+
+Trusted parties preparing to contact Phantom:
+- Gensuki — infrastructure / launchpad partner for SPOINC and Swap Lab routes.
+- Sentinel Security founder — trusted Web3/security/community reputation.
+- Baffles — friend developer.
+- ChiefDopeFox — founder of Solana Sky Pilots and developer.
+
+What they should mention:
+- Phantom request number: `#229386`
+- Official domain: `https://narrrfs.world`
+- Affected page: `https://narrrfs.world/swap-lab.html`
+- SPOINC mint: `FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg`
+- Confirm Narrrfs World is a legitimate long-term Solana NFT / Web3 / GameFi project.
+- Confirm the SPOINC Swap Lab is an official Narrrfs World integration.
+- Confirm Gensuki is the official infrastructure / launchpad partner for the SPOINC route.
+
+Current action:
+- Waiting for trusted-community confirmations to be sent to Phantom.
+- Waiting for Phantom response after those confirmations.
+- Keep monitoring Swap Lab user reports and transaction examples.
+- Do not change signing flow again unless Phantom or Gensuki provides a confirmed technical requirement.
+
+## 2026-07-04 — Stake Lab Season 13 Full Activation Live
+
+**Scope:** Stake Lab / DSPOINC Staking V2 / Genesis Mouse Freezer / SPOINC Gateway Bridge  
+**Status:** Main Season 13 economy systems are now fully active and working correctly on live
+
+---
+
+## ✅ Current Live Activation State
+
+Stake Lab is now fully activated for Season 13.
+
+Main live systems confirmed working:
+
+```text
+✅ Genesis Mouse Freezer is live
+✅ DSPOINC Staking V2 is live
+✅ SPOINC Gateway / SPOINC bridge is live
+✅ Core Stake Lab economy functions are working correctly
+✅ Public activation copy is live on Stake Lab / FAQ / Project Updates
+✅ First real live V2 DSPOINC stake was created successfully
+
+## 2026-07-03 — DSPOINC Staking V2 Activation Push Standby
+
+**Scope:** DSPOINC Staking V2 / Genesis Mouse Freezer / Stake Lab frontend / FAQ / Project Updates / final pre-push sync  
+**Status:** Very close to V2 staking push — final checks and commit pending
+
+---
+
+## ✅ Current Git Status Before Commit
+
+Current local working tree has the expected V2 activation files modified:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+api/user/create-stake.php
+api/user/get-stakes.php
+api/user/get-user-genetic-items.php
+api/user/recent-adjustments.php
+api/user/staking-contract-helpers.php
+public/faq.html
+public/project-updates.html
+public/stake-lab.html
+
 ## 2026-07-03 — Stake Lab V2 Local Simulation Passed / Not Pushed
 
 **Scope:** DSPOINC Staking V2 / Stake Lab frontend / local XAMPP  

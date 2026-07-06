@@ -352,10 +352,19 @@ window.NarrrfsSound = window.NarrrfsSound || {
     const wrapper = document.createElement('div');
     wrapper.id = 'cheese-auth-indicator';
     wrapper.setAttribute('data-auth-state', loggedIn ? 'logged_in' : 'logged_out');
+        // Keep the shared auth pill out of page/game controls.
+    //
+    // DEVS FOR DECADES:
+    // This indicator is shared across normal pages, Lab pages, and game pages.
+    // It must never cover native video controls, game controls, wallet buttons,
+    // Stake Lab action buttons, or Lab floating actions. This is visual-only and
+    // does not change login state, Discord session checks, roles, rewards, scores,
+    // audio preferences, or backend APIs.
     wrapper.style.position = 'fixed';
     wrapper.style.right = '16px';
-    wrapper.style.bottom = '16px';
-    wrapper.style.zIndex = '9999';
+    wrapper.style.bottom = '22px';
+    wrapper.style.zIndex = '9400';
+    wrapper.style.maxWidth = 'min(320px, calc(100vw - 32px))';
 
     const link = document.createElement('a');
     link.href = loggedIn ? 'profile.html' : DISCORD_AUTH_URL;
@@ -421,21 +430,28 @@ window.NarrrfsSound = window.NarrrfsSound || {
     // login, roles, scores, rewards, APIs, or database writes.
     const audioControls = document.createElement('div');
     audioControls.id = 'narrrfs-audio-controls';
+        // Stack audio controls above the auth pill without covering page actions.
+    //
+    // DEVS FOR DECADES:
+    // The Music/SFX controls are shared player preferences only.
+    // They must sit above the login/profile pill and stay compact on pages like
+    // lab.html and stake-lab.html where users already have bottom/right controls.
     audioControls.style.position = 'fixed';
     audioControls.style.right = '16px';
-    audioControls.style.bottom = '82px';
-    audioControls.style.zIndex = '9999';
+    audioControls.style.bottom = '92px';
+    audioControls.style.zIndex = '9400';
     audioControls.style.display = 'flex';
     audioControls.style.flexDirection = 'column';
     audioControls.style.gap = '6px';
     audioControls.style.alignItems = 'flex-end';
+    audioControls.style.maxWidth = 'min(190px, calc(100vw - 32px))';
 
     function styleAudioButton(button) {
       button.type = 'button';
-      button.style.minWidth = '112px';
-      button.style.padding = '7px 11px';
+            button.style.minWidth = '92px';
+      button.style.padding = '6px 10px';
       button.style.borderRadius = '999px';
-      button.style.fontSize = '12px';
+      button.style.fontSize = '11px';
       button.style.fontWeight = '800';
       button.style.border = '1px solid rgba(250, 204, 21, 0.55)';
       button.style.background = 'rgba(15, 23, 42, 0.88)';
@@ -513,6 +529,23 @@ window.NarrrfsSound = window.NarrrfsSound || {
     audioControls.appendChild(musicButton);
     audioControls.appendChild(sfxButton);
     document.body.appendChild(audioControls);
+        // Mobile and embedded-view anti-overlap guard.
+    //
+    // DEVS FOR DECADES:
+    // Discord previews, narrow screens, and browser video overlays can make the
+    // bottom-right corner crowded. Move the shared controls slightly up and make
+    // the auth pill compact without touching the actual auth/session logic.
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      wrapper.style.right = '10px';
+      wrapper.style.bottom = '72px';
+      wrapper.style.transform = 'scale(0.88)';
+      wrapper.style.transformOrigin = 'bottom right';
+
+      audioControls.style.right = '10px';
+      audioControls.style.bottom = '142px';
+      audioControls.style.transform = 'scale(0.88)';
+      audioControls.style.transformOrigin = 'bottom right';
+    }
 
   }
 

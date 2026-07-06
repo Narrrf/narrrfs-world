@@ -21,7 +21,7 @@
  * - Public route gate required for normal users.
  * - Narrrf + justme internal testers still allowed before activation.
  * - SPOINC_TO_DSPOINC only.
- * - Max 500 SPOINC per launch conversion intent.
+ * - Max 10,000 SPOINC per launch conversion intent.
  * - No Gensuki key is exposed to the frontend.
  * - No DSPOINC credit here.
  * - No DSPOINC debit here.
@@ -36,7 +36,7 @@ const SPOINC_TO_DSPOINC_DEPOSIT_ROUTE_KEY = 'SPOINC_TO_DSPOINC';
 const SPOINC_TO_DSPOINC_DEPOSIT_DIRECTION = 'spoinc_to_dspoinc';
 const SPOINC_TO_DSPOINC_DEPOSIT_INPUT_TOKEN = 'SPOINC';
 const SPOINC_TO_DSPOINC_DEPOSIT_OUTPUT_TOKEN = 'DSPOINC';
-const SPOINC_TO_DSPOINC_DEPOSIT_MAX_SPOINC = 500;
+const SPOINC_TO_DSPOINC_DEPOSIT_MAX_SPOINC = 10000;
 const SPOINC_TO_DSPOINC_DEPOSIT_EXPIRES_HOURS = 2;
 const SPOINC_GENSUKI_CLAIM_PATH = '/api/custom-token-presale/claim';
 
@@ -370,7 +370,7 @@ try {
     if (!is_spoinc_deposit_amount_within_private_cap($spoincAmount)) {
         spoinc_bridge_json_response([
             'success' => false,
-            'error' => 'SPOINC_TO_DSPOINC amount must be greater than 0 and max 500 SPOINC.',
+            'error' => 'SPOINC_TO_DSPOINC amount must be greater than 0 and max 10,000 SPOINC.',
             'max_spoinc' => SPOINC_TO_DSPOINC_DEPOSIT_MAX_SPOINC
         ], 400);
     }

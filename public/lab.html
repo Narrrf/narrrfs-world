@@ -235,7 +235,7 @@ hydrateSession();
   max-width: 180px;
   object-fit: contain;
   object-position: bottom right;
-  opacity: 0.085;
+  opacity: 0.16;
   filter:
     drop-shadow(0 0 18px rgba(255,255,255,0.06))
     saturate(0.9);
@@ -244,7 +244,7 @@ hydrateSession();
 }
 
 .queue-card.boosted-card .queue-nft-ghost {
-  opacity: 0.11;
+  opacity: 0.19;
 }
 
 .queue-card.boosted-card.green {
@@ -368,12 +368,12 @@ hydrateSession();
   .queue-nft-ghost {
     width: 38%;
     max-width: 130px;
-    opacity: 0.07;
+    opacity: 0.13;
     transform: translate(8px, 10px);
   }
 
   .queue-card.boosted-card .queue-nft-ghost {
-    opacity: 0.09;
+    opacity: 0.16;
   }
 }
 
@@ -8917,6 +8917,14 @@ body.lab-season12-shell {
   >
     ✅ Claim All Ready
   </button>
+  <button
+  id="claimAndRenewAllReadyButton"
+  type="button"
+  class="btn primary compact"
+  disabled
+>
+  🔁 Claim + Renew All
+</button>
 </div>
           </div>
           <div class="workspace-helper-strip mt-5">
@@ -9228,6 +9236,7 @@ const el = {
   refreshUpgradeButton: document.getElementById('refreshUpgradeButton'),
   activeResearchQueue: document.getElementById('activeResearchQueue'),
   claimAllReadyButton: document.getElementById('claimAllReadyButton'),
+  claimAndRenewAllReadyButton: document.getElementById('claimAndRenewAllReadyButton'),
   activeQueueBadge: document.getElementById('activeQueueBadge'),
   researchQueueCardViewButton: document.getElementById('researchQueueCardViewButton'),
 researchQueueListViewButton: document.getElementById('researchQueueListViewButton'),
@@ -11724,6 +11733,56 @@ async function claimReadyForSelectedNft(tokenId) {
   );
 }
 
+/**
+ * Return the first ready claim row for one Genesis mouse token.
+ *
+ * Plain language for DEVS:
+ * Queue cards are mouse-level actions. A mouse can have more than one ready
+ * trait, so this helper picks the first backend-ready trait for a single
+ * mouse action. Bulk actions still use getAllReadyClaimRows().
+ */
+function getFirstReadyClaimRowForToken(tokenId) {
+  const safeTokenId = String(tokenId || '').trim();
+
+  if (!safeTokenId) {
+    return null;
+  }
+
+  const nft = getVerifiedGenesisNfts().find((candidateNft) => {
+    return getSafeTokenId(candidateNft) === safeTokenId;
+  });
+
+  if (!isValidGenesisNft(nft)) {
+    return null;
+  }
+
+  const traits = normalizeNftTraits(nft);
+
+  for (const trait of traits) {
+    const row = getTraitUpgradeDisplayRow(nft, trait);
+    const status = mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at);
+
+    if (status !== 'ready') {
+      continue;
+    }
+
+    const traitType = String(row?.trait_type || '').trim();
+    const traitValue = String(row?.trait_value || '').trim();
+
+    if (!traitType || !traitValue) {
+      continue;
+    }
+
+    return {
+      token_id: safeTokenId,
+      trait_type: traitType,
+      trait_value: traitValue
+    };
+  }
+
+  return null;
+}
+
 function getAllReadyClaimRows() {
   const verifiedNfts = getVerifiedGenesisNfts();
   const readyRows = [];
@@ -11774,6 +11833,248 @@ function getAllReadyClaimRows() {
   });
 
   return readyRows;
+}
+
+/**
+ * Claim one completed Genesis trait upgrade and immediately start the next cycle.
+ *
+ * Plain language for DEVS:
+ * This is a user convenience wrapper around two existing backend-authoritative
+ * actions. It never grants levels directly and never decides DSPOINC cost.
+ * If claim succeeds but renew fails, the claim stays valid and the player can
+ * start the next cycle manually.
+ */
+async function handleClaimAndRenewUpgrade(tokenId, traitType, traitValue) {
+  if (!state.userId) {
+    await showLabMessageModal({
+      eyebrow: 'Session Required',
+      title: 'No Player Session Found',
+      icon: '🧬',
+      message: 'No player session was found for this claim + renew action.',
+      note: 'Please log in with Discord before claiming research.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  if (state.actionInFlight) {
+    logLab('A lab action is already running. Please wait for the current request to finish.', 'warn');
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Claim + Renew',
+    title: `Claim and renew ${traitType}: ${traitValue}?`,
+    icon: '🔁',
+    message:
+      `This will claim the completed level first, then immediately try to start the next research cycle for the same trait.\n\n` +
+      `Trait: ${traitType}: ${traitValue}`,
+    note:
+      'The renew step spends DSPOINC. Backend authority still verifies ownership, balance, exact trait, cost, timer rules, and one-active-upgrade-per-NFT before anything is renewed.',
+    confirmText: 'Claim + Renew',
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  setActionInFlight(true);
+
+  try {
+    await claimUpgradeRequest(tokenId, traitType, traitValue);
+    logLab(`Claimed upgrade for ${traitType}: ${traitValue}`, 'success');
+
+    const renewResult = await startUpgradeRenewRequest(tokenId, traitType, traitValue);
+    const renewData = renewResult?.data || {};
+    const spentDspoinc = Number(renewData.spent_dspoinc || 0);
+
+    logLab(
+      `Renewed research for ${traitType}: ${traitValue}${spentDspoinc > 0 ? ` (-${formatNumber(spentDspoinc)} DSPOINC)` : ''}`,
+      'success'
+    );
+
+    await loadTraitUpgrades();
+    renderAll();
+
+    await showLabMessageModal({
+      eyebrow: 'Claim + Renew Complete',
+      title: `${traitType}: ${traitValue} renewed`,
+      icon: '🔁',
+      message:
+        `The completed level was claimed and the next research cycle was started.`,
+      note: spentDspoinc > 0
+        ? `Backend confirmed the renewal spend: ${formatNumber(spentDspoinc)} DSPOINC.`
+        : 'The backend accepted the renewal and refreshed the queue state.',
+      confirmText: 'Nice'
+    });
+  } catch (error) {
+    logLab(`Claim + Renew failed for ${traitType}: ${traitValue} (${error.message})`, 'error');
+
+    await loadTraitUpgrades();
+    renderAll();
+
+    await showLabMessageModal({
+      eyebrow: 'Claim + Renew',
+      title: 'Action Finished With An Error',
+      icon: '⚠️',
+      message: `Claim + Renew failed or partly completed: ${error.message}`,
+      note: 'If the claim succeeded but renew failed, the level is still claimed. You can start the next research manually from My Genesis Lab.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    setActionInFlight(false);
+    renderAll();
+  }
+}
+
+/**
+ * Claim all ready Genesis trait upgrades and try to renew each one.
+ *
+ * Plain language for DEVS:
+ * This intentionally processes rows one by one. Each claim and each renew is
+ * checked by the backend. If a renew fails because of balance, ownership, or
+ * active-upgrade rules, the claimed level is kept and the failed renewal is
+ * reported instead of rolling back unrelated successful rows.
+ */
+async function handleClaimAndRenewAllReadyUpgrades() {
+  if (!state.userId) {
+    await showLabMessageModal({
+      eyebrow: 'Session Required',
+      title: 'No Player Session Found',
+      icon: '🧬',
+      message: 'No player session was found for this bulk claim + renew action.',
+      note: 'Please log in with Discord before claiming research.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+    return;
+  }
+
+  if (state.actionInFlight) {
+    logLab('A lab action is already running. Please wait for the current request to finish.', 'warn');
+    return;
+  }
+
+  const readyRows = getAllReadyClaimRows();
+
+  if (!readyRows.length) {
+    await showLabMessageModal({
+      eyebrow: 'Research Queue',
+      title: 'No Ready Claims Found',
+      icon: '🧪',
+      message: 'There are no completed Genesis trait upgrades ready to claim and renew right now.',
+      note: 'Start or finish more research runs and return here when the queue is ready.',
+      confirmText: 'Close',
+      confirmVariant: 'primary'
+    });
+    return;
+  }
+
+  const confirmed = await showLabConfirmModal({
+    eyebrow: 'Bulk Claim + Renew',
+    title: `Claim + Renew All Ready Upgrades?`,
+    icon: '🔁',
+    message:
+      `This will process ${readyRows.length} completed Genesis trait upgrade${readyRows.length === 1 ? '' : 's'} one by one.\n\n` +
+      `Each row will be claimed first, then the same trait will try to start the next research cycle.`,
+    note:
+      'Renewals spend DSPOINC. Backend authority recalculates every cost and can reject rows if balance, ownership, or one-active-upgrade rules do not pass.',
+    confirmText: `Claim + Renew All (${readyRows.length})`,
+    cancelText: 'Cancel',
+    confirmVariant: 'primary'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  setActionInFlight(true);
+
+  const originalButtonText = el.claimAndRenewAllReadyButton
+    ? el.claimAndRenewAllReadyButton.textContent
+    : '';
+
+  let claimedCount = 0;
+  let renewedCount = 0;
+  const failedClaims = [];
+  const failedRenews = [];
+
+  try {
+    if (el.claimAndRenewAllReadyButton) {
+      el.claimAndRenewAllReadyButton.disabled = true;
+    }
+
+    for (let index = 0; index < readyRows.length; index += 1) {
+      const row = readyRows[index];
+
+      if (el.claimAndRenewAllReadyButton) {
+        el.claimAndRenewAllReadyButton.textContent = `⏳ Renewing ${index + 1} / ${readyRows.length}`;
+      }
+
+      try {
+        await claimUpgradeRequest(row.token_id, row.trait_type, row.trait_value);
+        claimedCount += 1;
+        logLab(`Claimed ${index + 1}/${readyRows.length}: ${row.trait_type}: ${row.trait_value}`, 'success');
+      } catch (error) {
+        failedClaims.push({ ...row, error: error.message });
+        logLab(`Claim failed for ${row.trait_type}: ${row.trait_value} (${error.message})`, 'error');
+        continue;
+      }
+
+      try {
+        await startUpgradeRenewRequest(row.token_id, row.trait_type, row.trait_value);
+        renewedCount += 1;
+        logLab(`Renewed ${index + 1}/${readyRows.length}: ${row.trait_type}: ${row.trait_value}`, 'success');
+      } catch (error) {
+        failedRenews.push({ ...row, error: error.message });
+        logLab(`Renew failed for ${row.trait_type}: ${row.trait_value} (${error.message})`, 'error');
+      }
+    }
+
+    await loadTraitUpgrades();
+    renderAll();
+
+    await showLabMessageModal({
+      eyebrow: 'Bulk Claim + Renew Complete',
+      title: failedClaims.length || failedRenews.length
+        ? 'Finished With Partial Errors'
+        : 'All Ready Upgrades Claimed + Renewed',
+      icon: failedClaims.length || failedRenews.length ? '⚠️' : '🏆',
+      message:
+        `Claimed: ${formatNumber(claimedCount)}\n` +
+        `Renewed: ${formatNumber(renewedCount)}\n` +
+        `Claim failures: ${formatNumber(failedClaims.length)}\n` +
+        `Renew failures: ${formatNumber(failedRenews.length)}`,
+      note: failedClaims.length || failedRenews.length
+        ? 'The queue has been refreshed. Claimed rows stay claimed. Failed renewals can be started manually if needed.'
+        : 'All completed queue entries were claimed and restarted cleanly.',
+      confirmText: 'Close',
+      confirmVariant: failedClaims.length || failedRenews.length ? 'danger' : 'primary'
+    });
+  } catch (error) {
+    logLab(`Bulk Claim + Renew failed: ${error.message}`, 'error');
+
+    await showLabMessageModal({
+      eyebrow: 'Bulk Claim + Renew',
+      title: 'Bulk Action Failed',
+      icon: '⚠️',
+      message: `Claim + Renew All failed: ${error.message}`,
+      note: 'The queue was refreshed. Check the runtime log for exact row status.',
+      confirmText: 'Close',
+      confirmVariant: 'danger'
+    });
+  } finally {
+    if (el.claimAndRenewAllReadyButton) {
+      el.claimAndRenewAllReadyButton.textContent = originalButtonText || '🔁 Claim + Renew All';
+    }
+
+    setActionInFlight(false);
+    renderAll();
+  }
 }
 
 async function handleClaimAllReadyUpgrades() {
@@ -12208,8 +12509,8 @@ function renderResearchQueueTableRow(queueItem) {
       <td class="text-right">${formatNumber(summary.readyCount || 0)}</td>
       <td class="text-right">${formatNumber(summary.activeCount || 0)}</td>
                   <td class="research-current-cell">${escapeHtml(activeTraitLabel)}</td>
-      <td class="table-action-cell">
-        <div class="lab-list-actions">
+                  <td class="table-action-cell">
+                <div class="lab-list-actions">
           <button
             type="button"
             class="btn ${escapeHtml(actionClass)} compact"
@@ -12217,6 +12518,16 @@ function renderResearchQueueTableRow(queueItem) {
           >
             ${escapeHtml(actionLabel)}
           </button>
+
+          ${hasReady ? `
+            <button
+              type="button"
+              class="btn primary compact"
+              data-queue-renew-token="${escapeHtml(tokenId)}"
+            >
+              🔁 Claim + Renew
+            </button>
+          ` : ''}
         </div>
       </td>
     </tr>
@@ -12235,11 +12546,18 @@ function renderActiveResearchQueue() {
 
   el.activeQueueBadge.textContent = `${items.length} actionable mice · ${viewMode === 'list' ? 'List view' : 'Card view'}`;
 
-  if (el.claimAllReadyButton) {
+   if (el.claimAllReadyButton) {
     el.claimAllReadyButton.disabled = readyCount < 1 || state.actionInFlight;
     el.claimAllReadyButton.textContent = readyCount > 0
       ? `✅ Claim All Ready (${formatNumber(readyCount)})`
       : '✅ Claim All Ready';
+  }
+
+  if (el.claimAndRenewAllReadyButton) {
+    el.claimAndRenewAllReadyButton.disabled = readyCount < 1 || state.actionInFlight;
+    el.claimAndRenewAllReadyButton.textContent = readyCount > 0
+      ? `🔁 Claim + Renew All (${formatNumber(readyCount)})`
+      : '🔁 Claim + Renew All';
   }
 
     if (el.researchQueueCardViewButton && el.researchQueueListViewButton) {
@@ -12415,13 +12733,24 @@ function renderActiveResearchQueue() {
             ${statusPill}
           </div>
 
-          <div class="queue-action-row">
+                    <div class="queue-action-row">
             <button
               type="button"
               class="btn ${actionClass}"
-              onclick="openGenesisLabFromQueue('${escapeHtml(tokenId)}')">
+              data-queue-token="${escapeHtml(tokenId)}"
+            >
               ${actionLabel}
             </button>
+
+            ${hasReady ? `
+              <button
+                type="button"
+                class="btn primary"
+                data-queue-renew-token="${escapeHtml(tokenId)}"
+              >
+                🔁 Claim + Renew
+              </button>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -15822,6 +16151,45 @@ async function claimUpgradeRequest(tokenId, traitType, traitValue) {
 
   if (!res.ok || !res.payload?.success) {
     const message = res.payload?.error || `Claim upgrade failed (${res.status})`;
+    throw new Error(message);
+  }
+
+  return res.payload;
+}
+
+/**
+ * Start the next Genesis trait research cycle without opening the normal start modal.
+ *
+ * Plain language for DEVS:
+ * Claim + Renew is a two-step convenience flow. The claim step applies the
+ * completed level, then this helper asks the existing backend start endpoint
+ * to begin the next timed cycle for the same NFT trait. The backend still
+ * verifies ownership, exact trait match, DSPOINC balance, cost, duration, and
+ * one-active-upgrade-per-NFT rules. The frontend never decides cost or level.
+ */
+async function startUpgradeRenewRequest(tokenId, traitType, traitValue) {
+  const res = await fetchJson(
+    getApiUrl(LAB_CONFIG.startUpgradeEndpoint),
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        user_id: state.userId,
+        token_id: tokenId,
+        collection: 'genesis',
+        trait_type: traitType,
+        trait_value: traitValue
+      })
+    },
+    true
+  );
+
+  if (!res.ok || !res.payload?.success) {
+    const message = res.payload?.error || `Renew start failed (${res.status})`;
     throw new Error(message);
   }
 
@@ -20443,8 +20811,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+    if (el.claimAndRenewAllReadyButton) {
+    el.claimAndRenewAllReadyButton.addEventListener('click', () => {
+      handleClaimAndRenewAllReadyUpgrades();
+    });
+  }
+
 if (el.activeResearchQueue && el.activeResearchQueue.dataset.queueActionsBound !== '1') {
-  el.activeResearchQueue.addEventListener('click', async event => {
+  el.activeResearchQueue.addEventListener('click', async (event) => {
+    const renewQueueButton = event.target.closest('[data-queue-renew-token]');
+    if (renewQueueButton) {
+      event.preventDefault();
+
+      const tokenId = String(renewQueueButton.getAttribute('data-queue-renew-token') || '').trim();
+      if (!tokenId || renewQueueButton.disabled || state.actionInFlight) {
+        return;
+      }
+
+      const readyRow = getFirstReadyClaimRowForToken(tokenId);
+      if (!readyRow) {
+        openGenesisLabFromQueue(tokenId);
+        return;
+      }
+
+      await handleClaimAndRenewUpgrade(
+        readyRow.token_id,
+        readyRow.trait_type,
+        readyRow.trait_value
+      );
+      return;
+    }
+
     const queueButton = event.target.closest('[data-queue-token]');
     if (!queueButton) {
       return;
@@ -20453,14 +20850,14 @@ if (el.activeResearchQueue && el.activeResearchQueue.dataset.queueActionsBound !
     event.preventDefault();
 
     const tokenId = String(queueButton.getAttribute('data-queue-token') || '').trim();
-    if (!tokenId || state.actionInFlight) {
+    if (!tokenId || queueButton.disabled || state.actionInFlight) {
       return;
     }
 
     // Plain language for DEVS:
-    // Research Queue List mode uses the existing queue claim helper.
-    // claimReadyForSelectedNft() already selects the NFT, finds the first ready
-    // Genesis trait, and calls the backend-authoritative claim flow.
+    // Research Queue uses the existing queue claim helper for normal claims.
+    // Claim + Renew has its own branch above because it must claim first and
+    // then ask the backend to start the next paid research cycle.
     await claimReadyForSelectedNft(tokenId);
   });
 
