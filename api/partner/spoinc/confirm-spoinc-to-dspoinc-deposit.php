@@ -173,6 +173,107 @@ function spoinc_bridge_is_valid_transaction_hash(string $signature): bool
 }
 
 /**
+ * Check the Solana signature status before Narrrfs tells Gensuki complete/failed.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * The frontend may report a transaction hash, but the server must check Solana
+ * before it sends a final status to Gensuki. This prevents DSPOINC credit when
+ * a wallet transaction is missing, still pending, or failed on-chain.
+ */
+function spoinc_bridge_get_solana_signature_status(string $signature): array
+{
+    if (!function_exists('curl_init')) {
+        return [
+            'rpc_success' => false,
+            'found' => false,
+            'confirmed_success' => false,
+            'confirmed_failed' => false,
+            'error' => 'PHP cURL extension is not available.'
+        ];
+    }
+
+    $rpcUrl = trim((string)getenv('SOLANA_RPC_URL'));
+    if ($rpcUrl === '') {
+        $rpcUrl = trim((string)getenv('HELIUS_RPC_URL'));
+    }
+    if ($rpcUrl === '') {
+        $rpcUrl = 'https://api.mainnet-beta.solana.com';
+    }
+
+    $payload = [
+        'jsonrpc' => '2.0',
+        'id' => 'spoinc-bridge-signature-status',
+        'method' => 'getSignatureStatuses',
+        'params' => [
+            [$signature],
+            ['searchTransactionHistory' => true]
+        ]
+    ];
+
+    $ch = curl_init($rpcUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload)
+    ]);
+
+    $rawBody = (string)curl_exec($ch);
+    $curlError = curl_error($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $json = json_decode($rawBody, true);
+
+    if ($curlError !== '' || $httpCode < 200 || $httpCode >= 300 || !is_array($json)) {
+        return [
+            'rpc_success' => false,
+            'found' => false,
+            'confirmed_success' => false,
+            'confirmed_failed' => false,
+            'http_code' => $httpCode,
+            'raw_body' => $rawBody,
+            'error' => $curlError !== '' ? $curlError : 'Invalid Solana RPC response.'
+        ];
+    }
+
+    $status = $json['result']['value'][0] ?? null;
+    if (!is_array($status)) {
+        return [
+            'rpc_success' => true,
+            'found' => false,
+            'confirmed_success' => false,
+            'confirmed_failed' => false,
+            'http_code' => $httpCode,
+            'raw_body' => $rawBody,
+            'error' => 'Solana signature not found yet.'
+        ];
+    }
+
+    $confirmationStatus = strtolower(trim((string)($status['confirmationStatus'] ?? '')));
+    $hasError = array_key_exists('err', $status) && $status['err'] !== null;
+    $isConfirmedEnough = in_array($confirmationStatus, ['confirmed', 'finalized'], true);
+
+    return [
+        'rpc_success' => true,
+        'found' => true,
+        'confirmed_success' => !$hasError && $isConfirmedEnough,
+        'confirmed_failed' => $hasError,
+        'confirmation_status' => $confirmationStatus,
+        'slot' => $status['slot'] ?? null,
+        'err' => $status['err'] ?? null,
+        'http_code' => $httpCode,
+        'raw_body' => $rawBody,
+        'error' => ''
+    ];
+}
+
+/**
  * Load a pending SPOINC_TO_DSPOINC Gensuki claim intent for this user.
  */
 function load_spoinc_to_dspoinc_claim_intent(PDO $pdo, int $intentId, string $userId): ?array
@@ -225,7 +326,7 @@ try {
 
     $intentId = (int)($requestData['intent_id'] ?? 0);
     $transactionHash = trim((string)($requestData['transactionHash'] ?? ($requestData['transaction_hash'] ?? ($requestData['signature'] ?? ($requestData['tx_signature'] ?? '')))));
-    $requestedStatus = strtolower(trim((string)($requestData['status'] ?? 'complete')));
+    $requestedStatus = strtolower(trim((string)($requestData['status'] ?? '')));
 
     if ($intentId <= 0) {
         spoinc_bridge_json_response([
@@ -315,6 +416,51 @@ try {
         ], 500);
     }
 
+        $solanaSignatureStatus = spoinc_bridge_get_solana_signature_status($transactionHash);
+
+    if (empty($solanaSignatureStatus['rpc_success'])) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Solana RPC status check failed. No Gensuki confirm was sent and no DSPOINC was credited.',
+            'safety' => [
+                'dspoinc_credited' => false,
+                'gensuki_confirm_sent' => false,
+                'onchain_status_required' => true
+            ],
+            'solana_status' => $solanaSignatureStatus
+        ], 502);
+    }
+
+    if (empty($solanaSignatureStatus['found'])) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Solana transaction signature is not confirmed yet. Try confirm again in a few seconds. No DSPOINC was credited.',
+            'safety' => [
+                'dspoinc_credited' => false,
+                'gensuki_confirm_sent' => false,
+                'onchain_status_required' => true
+            ],
+            'solana_status' => $solanaSignatureStatus
+        ], 425);
+    }
+
+    if (!empty($solanaSignatureStatus['confirmed_failed'])) {
+        $requestedStatus = 'failed';
+    } elseif (!empty($solanaSignatureStatus['confirmed_success'])) {
+        $requestedStatus = 'complete';
+    } else {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Solana transaction is not confirmed/finalized yet. Try confirm again in a few seconds. No DSPOINC was credited.',
+            'safety' => [
+                'dspoinc_credited' => false,
+                'gensuki_confirm_sent' => false,
+                'onchain_status_required' => true
+            ],
+            'solana_status' => $solanaSignatureStatus
+        ], 425);
+    }
+
     $confirmEndpoint = spoinc_bridge_build_gensuki_endpoint($config, SPOINC_GENSUKI_CONFIRM_PATH);
     $confirmRequest = [
         'projectId' => $projectId,
@@ -378,7 +524,8 @@ try {
         'gensuki_confirm_http_code' => $gensukiConfirmResult['http_code'] ?? null,
         'gensuki_confirm_response' => $gensukiConfirmJson,
         'gensuki_confirm_raw_body' => $gensukiConfirmResult['raw_body'] ?? '',
-        'confirmed_by_endpoint' => basename(__FILE__)
+        'confirmed_by_endpoint' => basename(__FILE__),
+        'solana_signature_status' => $solanaSignatureStatus
     ]);
 
     $pdo->beginTransaction();
@@ -463,8 +610,9 @@ try {
         'gensuki_confirm_response' => $gensukiConfirmJson,
         'sender_wallet' => $senderWallet,
         'season' => $season,
-        'confirmed_by_endpoint' => basename(__FILE__),
-        'settlement_rule' => 'DSPOINC credited only after Gensuki /confirm status complete.'
+                'confirmed_by_endpoint' => basename(__FILE__),
+        'solana_signature_status' => $solanaSignatureStatus,
+        'settlement_rule' => 'DSPOINC credited only after Solana signature status success and Gensuki /confirm status complete.'
     ]);
 
     $auditStmt = $pdo->prepare("\n        INSERT INTO tbl_spoinc_bridge_ledger_audit (\n            intent_id,\n            transaction_id,\n            idempotency_id,\n            transaction_hash,\n            discord_id,\n            wallet,\n            route_key,\n            direction,\n            ledger_action,\n            dspoinc_delta,\n            spoinc_amount,\n            conversion_rate_dspoinc_per_spoinc,\n            tbl_user_scores_id,\n            tbl_score_adjustment_id,\n            status,\n            metadata_json,\n            processed_at\n        ) VALUES (\n            :intent_id,\n            :transaction_id,\n            :idempotency_id,\n            :transaction_hash,\n            :discord_id,\n            :wallet,\n            :route_key,\n            :direction,\n            :ledger_action,\n            :dspoinc_delta,\n            :spoinc_amount,\n            :conversion_rate,\n            :tbl_user_scores_id,\n            :tbl_score_adjustment_id,\n            :status,\n            :metadata_json,\n            :processed_at\n        )\n    ");

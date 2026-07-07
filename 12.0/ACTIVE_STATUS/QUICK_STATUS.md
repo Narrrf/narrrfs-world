@@ -1,5 +1,37 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-07 — Emergency SPOINC → DSPOINC False Settlement Investigation
+
+Status: Critical issue found in SPOINC → DSPOINC settlement flow.
+
+Incident:
+- Intent `#71` for user Nightfox showed `5000 SPOINC → 50,000,000 DSPOINC`.
+- Narrrfs marked the row as `settled / complete / settled`.
+- TX: `62LC5RaBZaszCaGvwpefW3xRGd7vLC9yVV2RZEpnzipyxzwrNFmQEtiLsxffeEvKY8pMAPkzonhyYRG7yaWMfvTS`
+- Raw confirm response shows Gensuki `/confirm` returned HTTP 200 and `{"success":true}`.
+- User was credited 50M DSPOINC while the SPOINC transfer apparently did not complete as expected.
+
+Immediate action:
+- `SPOINC_TO_DSPOINC` route was emergency-disabled.
+- Global settlement was paused.
+- The false 50M DSPOINC credit was manually removed.
+- User later completed another swap successfully.
+
+Root cause direction:
+- Narrrfs confirm endpoint trusted Gensuki `/confirm` success too much.
+- Need additional on-chain transaction verification before DSPOINC credit.
+
+Required patch before reopening:
+- In `api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php`, after Gensuki confirm success and before crediting DSPOINC:
+  - fetch on-chain transaction by signature,
+  - confirm transaction is successful,
+  - verify expected SPOINC SPL transfer occurred,
+  - verify mint equals `FfDhn52UBwut2ghKSGF4rjie1Xtcr4nHAZs67Tt4NXHg`,
+  - verify sender wallet and expected amount,
+  - only then insert DSPOINC ledger credit.
+
+Do not reopen `SPOINC_TO_DSPOINC` until this on-chain verification guard is implemented and tested.
+
 ## 2026-07-07 — Lab Claim + Renew Feature #854 Local Test Passed
 
 **Scope:** `public/lab.html` / Research Queue / Genesis trait upgrade claims  

@@ -242,7 +242,7 @@ try {
 
     $intentId = (int)($requestData['intent_id'] ?? 0);
     $transactionHash = trim((string)($requestData['transactionHash'] ?? ($requestData['transaction_hash'] ?? ($requestData['signature'] ?? ''))));
-    $requestedStatus = trim((string)($requestData['status'] ?? 'complete'));
+    $requestedStatus = strtolower(trim((string)($requestData['status'] ?? '')));
 
     if ($intentId <= 0) {
         spoinc_bridge_json_response([
@@ -337,6 +337,48 @@ try {
         ], 500);
     }
 
+        $solanaSignatureStatus = spoinc_bridge_get_solana_signature_status($transactionHash);
+
+    if (empty($solanaSignatureStatus['rpc_success'])) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Solana RPC status check failed. No Gensuki confirm was sent.',
+            'safety' => [
+                'gensuki_confirm_sent' => false,
+                'onchain_status_required' => true
+            ],
+            'solana_status' => $solanaSignatureStatus
+        ], 502);
+    }
+
+    if (empty($solanaSignatureStatus['found'])) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Solana transaction signature is not confirmed yet. Try confirm again in a few seconds. No Gensuki confirm was sent.',
+            'safety' => [
+                'gensuki_confirm_sent' => false,
+                'onchain_status_required' => true
+            ],
+            'solana_status' => $solanaSignatureStatus
+        ], 425);
+    }
+
+    if (!empty($solanaSignatureStatus['confirmed_failed'])) {
+        $requestedStatus = 'failed';
+    } elseif (!empty($solanaSignatureStatus['confirmed_success'])) {
+        $requestedStatus = 'complete';
+    } else {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Solana transaction is not confirmed/finalized yet. Try confirm again in a few seconds. No Gensuki confirm was sent.',
+            'safety' => [
+                'gensuki_confirm_sent' => false,
+                'onchain_status_required' => true
+            ],
+            'solana_status' => $solanaSignatureStatus
+        ], 425);
+    }
+
     $confirmEndpoint = spoinc_bridge_build_gensuki_endpoint($config, SPOINC_GENSUKI_CONFIRM_PATH);
     $confirmRequest = [
         'projectId' => $projectId,
@@ -357,6 +399,7 @@ try {
         'gensuki_confirm_raw_body' => $gensukiConfirmResult['raw_body'] ?? '',
         'gensuki_confirm_error' => $gensukiConfirmResult['error'] ?? '',
         'confirmed_by_endpoint' => basename(__FILE__),
+        'solana_signature_status' => $solanaSignatureStatus,
         'ledger_movement' => false
     ]);
 
@@ -464,4 +507,103 @@ try {
         'error' => 'Failed to confirm SPOINC Gensuki buy intent.',
         'details' => $error->getMessage()
     ], 500);
+}
+/**
+ * Check Solana before Narrrfs sends complete/failed to Gensuki.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Gensuki accepts the status Narrrfs sends. That means Narrrfs must first check
+ * if the wallet transaction was actually accepted, failed, or is still pending.
+ */
+function spoinc_bridge_get_solana_signature_status(string $signature): array
+{
+    if (!function_exists('curl_init')) {
+        return [
+            'rpc_success' => false,
+            'found' => false,
+            'confirmed_success' => false,
+            'confirmed_failed' => false,
+            'error' => 'PHP cURL extension is not available.'
+        ];
+    }
+
+    $rpcUrl = trim((string)getenv('SOLANA_RPC_URL'));
+    if ($rpcUrl === '') {
+        $rpcUrl = trim((string)getenv('HELIUS_RPC_URL'));
+    }
+    if ($rpcUrl === '') {
+        $rpcUrl = 'https://api.mainnet-beta.solana.com';
+    }
+
+    $payload = [
+        'jsonrpc' => '2.0',
+        'id' => 'spoinc-buy-signature-status',
+        'method' => 'getSignatureStatuses',
+        'params' => [
+            [$signature],
+            ['searchTransactionHistory' => true]
+        ]
+    ];
+
+    $ch = curl_init($rpcUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload)
+    ]);
+
+    $rawBody = (string)curl_exec($ch);
+    $curlError = curl_error($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $json = json_decode($rawBody, true);
+
+    if ($curlError !== '' || $httpCode < 200 || $httpCode >= 300 || !is_array($json)) {
+        return [
+            'rpc_success' => false,
+            'found' => false,
+            'confirmed_success' => false,
+            'confirmed_failed' => false,
+            'http_code' => $httpCode,
+            'raw_body' => $rawBody,
+            'error' => $curlError !== '' ? $curlError : 'Invalid Solana RPC response.'
+        ];
+    }
+
+    $status = $json['result']['value'][0] ?? null;
+    if (!is_array($status)) {
+        return [
+            'rpc_success' => true,
+            'found' => false,
+            'confirmed_success' => false,
+            'confirmed_failed' => false,
+            'http_code' => $httpCode,
+            'raw_body' => $rawBody,
+            'error' => 'Solana signature not found yet.'
+        ];
+    }
+
+    $confirmationStatus = strtolower(trim((string)($status['confirmationStatus'] ?? '')));
+    $hasError = array_key_exists('err', $status) && $status['err'] !== null;
+    $isConfirmedEnough = in_array($confirmationStatus, ['confirmed', 'finalized'], true);
+
+    return [
+        'rpc_success' => true,
+        'found' => true,
+        'confirmed_success' => !$hasError && $isConfirmedEnough,
+        'confirmed_failed' => $hasError,
+        'confirmation_status' => $confirmationStatus,
+        'slot' => $status['slot'] ?? null,
+        'err' => $status['err'] ?? null,
+        'http_code' => $httpCode,
+        'raw_body' => $rawBody,
+        'error' => ''
+    ];
 }
