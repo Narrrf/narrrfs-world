@@ -64,6 +64,8 @@ logs/
 .htaccess
 
 # .gitignore (at root of project)
+discord/package-lock.json
+discord/package.json
 discord/commands/createitem.js
 discord/commands/listitems.js
 discord/discord-Quests-Working-Store-not.7z
@@ -153,3 +155,4 @@ public/glyph/glyph3d/
 public/three.js/public/textures/3d models/narrrf3d/
 
 zeno_* 
+

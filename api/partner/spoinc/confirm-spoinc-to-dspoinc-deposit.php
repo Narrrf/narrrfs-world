@@ -274,6 +274,44 @@ function spoinc_bridge_get_solana_signature_status(string $signature): array
 }
 
 /**
+ * Wait briefly for Solana RPC to see the wallet transaction.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Phantom can return a signature before every RPC node has indexed it.
+ * We retry a few times so a valid wallet transaction is not rejected too early.
+ */
+function spoinc_bridge_wait_for_solana_signature_status(string $signature): array
+{
+    $lastStatus = [
+        'rpc_success' => false,
+        'found' => false,
+        'confirmed_success' => false,
+        'confirmed_failed' => false,
+        'error' => 'Solana status check did not run.'
+    ];
+
+    for ($attempt = 1; $attempt <= 8; $attempt++) {
+        $lastStatus = spoinc_bridge_get_solana_signature_status($signature);
+        $lastStatus['wait_attempt'] = $attempt;
+        $lastStatus['max_wait_attempts'] = 8;
+
+        if (empty($lastStatus['rpc_success'])) {
+            return $lastStatus;
+        }
+
+        if (!empty($lastStatus['confirmed_success']) || !empty($lastStatus['confirmed_failed'])) {
+            return $lastStatus;
+        }
+
+        if ($attempt < 8) {
+            sleep(2);
+        }
+    }
+
+    return $lastStatus;
+}
+
+/**
  * Load a pending SPOINC_TO_DSPOINC Gensuki claim intent for this user.
  */
 function load_spoinc_to_dspoinc_claim_intent(PDO $pdo, int $intentId, string $userId): ?array
@@ -416,8 +454,7 @@ try {
         ], 500);
     }
 
-        $solanaSignatureStatus = spoinc_bridge_get_solana_signature_status($transactionHash);
-
+$solanaSignatureStatus = spoinc_bridge_wait_for_solana_signature_status($transactionHash);
     if (empty($solanaSignatureStatus['rpc_success'])) {
         spoinc_bridge_json_response([
             'success' => false,

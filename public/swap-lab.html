@@ -2748,11 +2748,12 @@ async function confirmRealSpoincDeposit() {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        user_id: getActiveBridgeUserId(),
-        intent_id: intentId,
-        signature: transactionHash,
-        transactionHash
-      })
+  user_id: getActiveBridgeUserId(),
+  intent_id: intentId,
+  signature: transactionHash,
+  transactionHash,
+  status: 'complete'
+})
     });
 
     const payload = await response.json();
@@ -2955,11 +2956,12 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        user_id: getActiveBridgeUserId(),
-        intent_id: intentId,
-        signature: transactionHash,
-        transactionHash
-      })
+  user_id: getActiveBridgeUserId(),
+  intent_id: intentId,
+  signature: transactionHash,
+  transactionHash,
+  status: 'complete'
+})
     });
 
     const payload = await response.json();

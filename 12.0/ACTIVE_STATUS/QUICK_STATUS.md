@@ -1,5 +1,321 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-10 — MouseFight V1 Core Validated / fight_id Autocomplete Working
+
+**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight DB tables  
+**Status:** V1 core flow validated — ready for next visual + persistence phases
+
+---
+
+## ✅ MouseFight V1 Confirmed Working
+
+MouseFight V1 is now working across the core game modes.
+
+Confirmed working:
+- `/mousefight list` shows eligible named Genesis mice.
+- Mouse autocomplete works for mouse selection.
+- `fight_id` autocomplete now works for challenge/event actions.
+- PVP challenge flow works.
+- PVP accept/decline flow works.
+- Admin bracket event creation works.
+- Admin bracket event join/start/cancel flow works.
+- Runtime game resolution works.
+- Generated fight rounds store real rolls, powers, winner IDs, and event text.
+- DB persistence writes:
+  - `tbl_mousefights`
+  - `tbl_mousefight_participants`
+  - `tbl_mousefight_rounds`
+- New final-state persistence works:
+  - winner gets `status = winner`
+  - winner gets `final_rank = 1`
+  - loser gets `status = eliminated`
+  - loser gets `final_rank = 2`
+  - loser gets `eliminated_at`
+- Cancelled events are stored without fake round rows.
+
+Validated DB state from live/server checks:
+```text
+tbl_mousefights              13
+tbl_mousefight_participants  22
+tbl_mousefight_rounds        25
+
+## 2026-07-10 — Cheese Rumble Visual Upgrade Live Event Polish
+
+**Scope:** Discord bot / `discord/commands/cheese-rumble.js` / `discord/commands/cheese-rumble-test.js`  
+**Status:** Core rumble visual upgrade working — final event polish in progress
+
+---
+
+## ✅ Current Working State
+
+Cheese Rumble is now working much better for live community use.
+
+Confirmed working:
+- Live VS / PFP battle board is showing during normal rumbles.
+- Real Discord profile pictures can appear in the VS battle card.
+- Creator/admin PFP fallback issue was addressed by storing display data for the creator too.
+- Themed start embed is active.
+- Themed final champion dashboard is active.
+- Themed final arena snapshot replaced the old raw final recap text.
+- Themed public winner post is active.
+- Token payout prepared message is themed.
+- Token payout paid/completed message can update after `/airdrop execute`.
+- `/cheese-rumble-test` uses the real rumble engine and no longer depends on the old static starter card.
+- Auto-start on full rumble was adjusted so a full arena can start without relying only on the optional timed autostart flag.
+
+Important installed dependency:
+- `@napi-rs/canvas` was installed locally in the Discord bot folder for generated VS/PFP battle-card images.
+
+---
+
+## 🧀 Current Event-Ready Flow
+
+Expected live flow:
+
+```text
+Themed start embed
+↓
+Live VS/PFP battle card
+↓
+Round recap below the VS card
+↓
+Final champion dashboard
+↓
+Final arena snapshot
+↓
+Public winner announcement
+↓
+Token payout prepared / paid flow if token payout is enabled
+
+```
+
+## 2026-07-09 — Cheese Rumble Visual Upgrade Phase 2C Started
+
+**Scope:** Discord bot / `discord/commands/cheese-rumble-test.js`  
+**Status:** Test command visual compatibility cleanup
+
+Goal:
+- Make `/cheese-rumble-test` fake fighters compatible with the new rumble display system.
+- Add fake `displayName` and `avatarUrl` values to test fighters.
+- Keep the command using the real live rumble engine exports:
+  - `activeRumbles`
+  - `processRound`
+  - `updateRumbleMessage`
+
+Guardrails:
+- No combat logic changes.
+- No reward logic changes.
+- No DB schema changes.
+- No slash command option changes.
+- No npm dependency changes.
+- Fake DB mode remains active for test command runs.
+
+Validation:
+```bash
+cd /c/xampp-server/htdocs/narrrfs-world/discord
+node --check commands/cheese-rumble-test.js
+node --check commands/cheese-rumble.js
+node --check index.js
+
+```
+
+## 2026-07-09 — Phantom / Blowfish Domain Whitelist Confirmed
+
+**Scope:** Swap Lab / SPOINC Gateway / Phantom + Blowfish domain trust review  
+**Status:** Domain trust issue resolved — public confidence milestone confirmed
+
+---
+
+## ✅ Phantom / Blowfish Warning Cleared
+
+Narrrfs World received the final whitelist / verification result for the production domain:
+
+```text
+narrrfs.world ✅
+
+## 2026-07-09 — Cheese Rumble Visual Upgrade Phase 1 Planned
+
+**Scope:** Discord bot / `discord/commands/cheese-rumble.js`  
+**Status:** Planned before code edit — keep combat engine untouched
+
+Goal:
+- Improve the live Cheese Rumble round embed readability.
+- Make fights feel more personal by storing Discord display names and avatar URLs on rumble player objects.
+- Use player profile pictures first as embed thumbnail / MVP / latest action avatar support.
+- Prepare the file for a later Phase 2 visual battle-board image if an image/canvas dependency is verified.
+
+Important guardrails:
+- Do not change kill logic.
+- Do not change ghost / zombie / undead rules.
+- Do not change winner resolution.
+- Do not change DSPOINC payouts.
+- Do not change token airdrop approval flow.
+- Do not change slash command options in Phase 1.
+- Do not add new npm dependencies in Phase 1.
+- Preserve required test exports used by `cheese-rumble-test.js`:
+  - `activeRumbles`
+  - `processRound`
+  - `updateRumbleMessage`
+
+Phase 1 intended changes:
+1. Add safe display helpers in `cheese-rumble.js`.
+2. Add `displayName` and `avatarUrl` to player objects when users join.
+3. Add fallback display data to restored DB rumbles without assuming new DB columns.
+4. Use the latest meaningful player avatar as the active embed thumbnail.
+5. Rework only the active round embed text into cleaner sections:
+   - Arena Status
+   - Round Result
+   - Main Fight / Chaos Log
+   - Current Fighters
+6. Keep the existing game matrix and round processor authoritative.
+
+Validation after edit:
+```bash
+cd /c/xampp-server/htdocs/narrrfs-world/discord
+node --check commands/cheese-rumble.js
+node --check commands/cheese-rumble-test.js
+node --check index.js
+```
+
+
+
+SPOINC / Gensuki pending cleanup completed.
+
+Final state:
+- Gensuki getAllTransactions pending audit: PENDING_COUNT=0
+- Intent 84 settled complete:
+  - 3950 SPOINC → 39,500,000 DSPOINC
+  - User: lukeskypestalker
+  - Transaction ID: 44
+  - Score ID: 34618
+  - Adjustment ID: 33794
+- Intents 85–87 settled complete:
+  - 85: 100 SPOINC → 1,000,000 DSPOINC
+  - 86: 10 SPOINC → 100,000 DSPOINC
+  - 87: 10 SPOINC → 100,000 DSPOINC
+  - Transaction IDs: 45, 46, 47
+  - Score IDs: 34650, 34651, 34652
+  - Adjustment IDs: 33826, 33827, 33828
+- All complete rows were checked on Solana and token deltas matched before settlement.
+- All value:null / not-found rows were marked failed with Gensuki confirm `failed`.
+- Failed rows created no Narrrfs DSPOINC credit.
+- Final audit confirmed no Gensuki pending rows remain.
+
+Security follow-up:
+- Ask Zeno to rotate/regenerate the Gensuki API key because it was exposed during emergency cleanup.
+
+## 2026-07-07 — SPOINC Gateway Confirm Guard Deployed / Valid Routes Reopened
+
+Status: Nightly SPOINC Gateway API maintenance completed.
+
+Completed:
+- Pushed and deployed the confirm-flow security hotfix for the SPOINC / Gensuki bridge.
+- Patched:
+  - `api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php`
+  - `api/partner/spoinc/confirm-gensuki-buy-intent.php`
+- Confirm endpoints no longer default missing status to `complete`.
+- Confirm endpoints now only accept lowercase:
+  - `complete`
+  - `failed`
+- Backend now checks Solana `getSignatureStatuses` before calling Gensuki `/confirm`.
+- Pending / not found signatures:
+  - do not call Gensuki `/confirm`
+  - do not credit DSPOINC
+  - return retry-later response
+- Failed Solana signatures:
+  - send `status = failed` to Gensuki
+  - do not credit DSPOINC
+- Confirmed/finalized Solana signatures with `err = null`:
+  - send `status = complete` to Gensuki
+  - continue the normal settlement flow
+- `solana_signature_status` is stored in confirm metadata/audit JSON.
+
+Validation:
+- Local PHP syntax checks passed for both patched confirm files.
+- Local curl tests confirmed the buy confirm endpoint blocks fake/unconfirmed signatures before Gensuki confirm.
+- Missing status is correctly rejected.
+- Manual Solana RPC check confirmed Zeno’s posted transaction was finalized with `err = null`.
+- Live gateway routes were reactivated after maintenance.
+
+Open routes:
+- `SOL_TO_SPOINC`
+- `EMPIRE_TO_SPOINC`
+- `FOOK_TO_SPOINC`
+- `SPOINC_TO_DSPOINC`
+
+Still closed:
+- `DSPOINC_TO_SPOINC`
+- `SPOINC_TO_SOL`
+- `SPOINC_TO_EMPIRE`
+- `SPOINC_TO_FOOK`
+
+Incident note:
+- The earlier false/unsafe settlement risk was caused by Narrrfs sending/accepting `complete` before verifying the user wallet transaction status.
+- The new flow follows Zeno/Gensuki guidance: Narrrfs checks whether the transaction is accepted, failed, or pending first, then sends only lowercase `complete` or `failed` to Gensuki.
+
+## 2026-07-07 — SPOINC / Gensuki Confirm Guard Hotfix Ready For Push
+
+Status: Critical bridge settlement fix prepared and locally validated. Ready for push to `render-deploy`.
+
+Incident context:
+- A SPOINC → DSPOINC conversion exposed a dangerous confirm-flow weakness.
+- Narrrfs was trusting the frontend/Gensuki confirm lifecycle too early.
+- Gensuki confirmed that their `/confirm` route depends on the status Narrrfs sends:
+  - only lowercase `complete`
+  - only lowercase `failed`
+- Narrrfs must check whether the user wallet transaction was accepted, failed, or still pending before calling Gensuki `/confirm`.
+
+Patched files:
+- `api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php`
+- `api/partner/spoinc/confirm-gensuki-buy-intent.php`
+
+Confirmed changes:
+- Removed risky default `status = complete`.
+- Backend now accepts only explicit lowercase `complete` / `failed`.
+- Backend checks Solana `getSignatureStatuses` before calling Gensuki `/confirm`.
+- Pending / not found Solana signatures:
+  - do not call Gensuki `/confirm`
+  - do not credit DSPOINC
+  - tell the user to retry confirm later
+- Failed Solana signatures:
+  - send `status = failed` to Gensuki
+  - do not credit DSPOINC
+- Confirmed/finalized Solana signatures with `err = null`:
+  - send `status = complete` to Gensuki
+  - continue normal settlement flow
+- `solana_signature_status` is now stored in confirm metadata/audit JSON.
+
+Local validation:
+- PHP syntax check passed for both patched confirm files.
+- Grep confirmed:
+  - Solana signature status helper exists.
+  - Solana RPC status check exists.
+  - `gensuki_confirm_sent` safety responses exist.
+  - `solana_signature_status` metadata exists.
+  - old emergency hard-stop text is removed.
+  - old default `status ?? 'complete'` is removed.
+- Manual Solana RPC test confirmed Zeno’s posted transaction was `finalized` with `err: null`.
+
+Operational status:
+- Bridge/gateway reopening should only happen after Render deploy and live syntax/grep check.
+- Keep disabled until deployed:
+  - `SPOINC_TO_DSPOINC`
+- Reopen after deploy/test:
+  - `SOL_TO_SPOINC`
+  - `EMPIRE_TO_SPOINC`
+  - `FOOK_TO_SPOINC`
+  - `SPOINC_TO_DSPOINC`
+- Keep closed:
+  - `DSPOINC_TO_SPOINC`
+  - `SPOINC_TO_SOL`
+  - `SPOINC_TO_EMPIRE`
+  - `SPOINC_TO_FOOK`
+
+Next step:
+- Commit and push the two confirm endpoint patches plus this quick status note.
+- After Render deploy, run live PHP syntax checks and grep validation.
+- Then do one small controlled live transaction before reopening normal user traffic.
+
 ## 2026-07-07 — Emergency SPOINC → DSPOINC False Settlement Investigation
 
 Status: Critical issue found in SPOINC → DSPOINC settlement flow.
