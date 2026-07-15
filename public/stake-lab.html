@@ -3569,7 +3569,6 @@ async function connectGenesisFreezerWallet() {
     walletAddress: provider.publicKey.toString()
   };
 }
-
 /**
  * Send a real Solana Memo transaction with the exact backend challenge message.
  *
@@ -3579,6 +3578,11 @@ async function connectGenesisFreezerWallet() {
  * - the transaction exists
  * - the challenge wallet signed it
  * - the Memo text matches the exact backend challenge message
+ *
+ * Android / Phantom note:
+ * Some mobile wallet webviews can fail browser-side RPC fetches on one public
+ * endpoint. This function tries the configured fallback RPC list before giving
+ * the user a clear retry message.
  */
 async function sendGenesisFreezerMemoTransaction(messageOrMessages, expectedWalletAddress) {
   const web3 = getGenesisFreezerSolanaWeb3();
@@ -3603,11 +3607,41 @@ async function sendGenesisFreezerMemoTransaction(messageOrMessages, expectedWall
     throw new Error('Genesis Mouse Freezer wallet is missing. Please refresh and reconnect your wallet.');
   }
 
-  const connection = new web3.Connection(GENESIS_FREEZER_PUBLIC_RPC_URL, 'confirmed');
-  const latestBlockhash = await connection.getLatestBlockhash('confirmed');
+  const rpcUrls = Array.from(new Set([
+    ...(Array.isArray(GENESIS_FREEZER_PUBLIC_RPC_FALLBACK_URLS) ? GENESIS_FREEZER_PUBLIC_RPC_FALLBACK_URLS : []),
+    GENESIS_FREEZER_PUBLIC_RPC_URL,
+    'https://api.mainnet-beta.solana.com'
+  ].filter(Boolean)));
 
-  if (!connection || !latestBlockhash) {
-    throw new Error('Unable to reach a Solana RPC for the freezer Memo. Please try again.');
+  let connection = null;
+  let latestBlockhash = null;
+  const rpcErrors = [];
+
+  for (const rpcUrl of rpcUrls) {
+    try {
+      const candidateConnection = new web3.Connection(rpcUrl, 'confirmed');
+      const candidateBlockhash = await candidateConnection.getLatestBlockhash('confirmed');
+
+      if (candidateBlockhash?.blockhash) {
+        connection = candidateConnection;
+        latestBlockhash = candidateBlockhash;
+        console.info('✅ Genesis Freezer Memo RPC ready:', rpcUrl);
+        break;
+      }
+
+      rpcErrors.push(`${rpcUrl}: missing blockhash`);
+    } catch (error) {
+      rpcErrors.push(`${rpcUrl}: ${error?.message || error}`);
+      console.warn('⚠️ Genesis Freezer Memo RPC failed:', rpcUrl, error);
+    }
+  }
+
+  if (!connection || !latestBlockhash?.blockhash) {
+    console.error('Genesis Freezer Memo RPC fallback failed:', rpcErrors);
+
+    throw new Error(
+      'Could not reach Solana RPC from this wallet browser. Please update Phantom, switch WiFi/mobile data, disable VPN/private DNS, or try desktop Phantom.'
+    );
   }
 
   const walletPublicKey = new web3.PublicKey(walletAddress);
