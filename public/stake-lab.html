@@ -3607,42 +3607,49 @@ async function sendGenesisFreezerMemoTransaction(messageOrMessages, expectedWall
     throw new Error('Genesis Mouse Freezer wallet is missing. Please refresh and reconnect your wallet.');
   }
 
-  const rpcUrls = Array.from(new Set([
-    ...(Array.isArray(GENESIS_FREEZER_PUBLIC_RPC_FALLBACK_URLS) ? GENESIS_FREEZER_PUBLIC_RPC_FALLBACK_URLS : []),
-    GENESIS_FREEZER_PUBLIC_RPC_URL,
-    'https://api.mainnet-beta.solana.com'
-  ].filter(Boolean)));
-
-  let connection = null;
   let latestBlockhash = null;
-  const rpcErrors = [];
+  let backendRpcUrl = GENESIS_FREEZER_PUBLIC_RPC_URL;
 
-  for (const rpcUrl of rpcUrls) {
-    try {
-      const candidateConnection = new web3.Connection(rpcUrl, 'confirmed');
-      const candidateBlockhash = await candidateConnection.getLatestBlockhash('confirmed');
+  try {
+    const blockhashResponse = await fetch('/api/wallet/get-ledger-blockhash.php', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' }
+    });
 
-      if (candidateBlockhash?.blockhash) {
-        connection = candidateConnection;
-        latestBlockhash = candidateBlockhash;
-        console.info('✅ Genesis Freezer Memo RPC ready:', rpcUrl);
-        break;
-      }
+    const contentType = blockhashResponse.headers.get('content-type') || '';
 
-      rpcErrors.push(`${rpcUrl}: missing blockhash`);
-    } catch (error) {
-      rpcErrors.push(`${rpcUrl}: ${error?.message || error}`);
-      console.warn('⚠️ Genesis Freezer Memo RPC failed:', rpcUrl, error);
+    if (!contentType.includes('application/json')) {
+      const text = await blockhashResponse.text();
+      throw new Error(`Blockhash API returned non-JSON response: ${text.substring(0, 300)}`);
     }
-  }
 
-  if (!connection || !latestBlockhash?.blockhash) {
-    console.error('Genesis Freezer Memo RPC fallback failed:', rpcErrors);
+    const blockhashResult = await blockhashResponse.json();
+
+    if (!blockhashResponse.ok || !blockhashResult.success || !blockhashResult.blockhash) {
+      throw new Error(blockhashResult.error || 'Failed to fetch recent blockhash from backend.');
+    }
+
+    latestBlockhash = {
+      blockhash: String(blockhashResult.blockhash)
+    };
+
+    backendRpcUrl = String(blockhashResult.rpc || GENESIS_FREEZER_PUBLIC_RPC_URL || 'https://api.mainnet-beta.solana.com');
+
+    console.info('✅ Genesis Freezer Memo backend blockhash ready:', {
+      lastValidBlockHeight: blockhashResult.lastValidBlockHeight || null,
+      rpc: backendRpcUrl
+    });
+  } catch (error) {
+    console.error('Genesis Freezer Memo backend blockhash failed:', error);
 
     throw new Error(
-      'Could not reach Solana RPC from this wallet browser. Please update Phantom, switch WiFi/mobile data, disable VPN/private DNS, or try desktop Phantom.'
+      'Could not prepare the Solana Memo transaction from the backend. Please refresh and try again.'
     );
   }
+
+  const connection = new web3.Connection(backendRpcUrl, 'confirmed');
 
   const walletPublicKey = new web3.PublicKey(walletAddress);
   const memoProgramId = new web3.PublicKey(GENESIS_FREEZER_MEMO_PROGRAM_ID);

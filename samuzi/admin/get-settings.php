@@ -67,7 +67,7 @@ try {
         'bubble_opacity' => 'medium',
         'bubble_speed' => 'medium',
 
-        'hero_background' => 'background1.png',
+        'hero_background' => 'akamai-samurai-phase-bg.webp',
         'background_transparency' => 'full',
 
         'bubble_pages' => [
@@ -79,11 +79,11 @@ try {
         ],
 
         'page_backgrounds' => [
-            'index' => 'background1.png',
-            'projects' => 'background1.png',
-            'about' => 'background1.png',
-            'contact' => 'background1.png',
-            'legal' => 'background1.png'
+            'index' => 'akamai-samurai-phase-bg.webpg',
+            'projects' => 'akamai-samurai-phase-bg.webp,
+            'about' => 'akamai-samurai-phase-bg.webp',
+            'contact' => 'akamai-samurai-phase-bg.webp',
+            'legal' => 'akamai-samurai-phase-bg.webp'
         ]
     ];
 

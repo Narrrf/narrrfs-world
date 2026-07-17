@@ -7068,9 +7068,41 @@ const recentAdjustmentsState = {
   loading: false
 };
 
+/**
+ * Return the signed value of one score adjustment.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * tbl_score_adjustments stores a positive magnitude in amount.
+ * The action column decides whether that amount was added or removed.
+ * This helper changes display only and never changes the DSPOINC ledger.
+ */
+function getSignedRecentAdjustmentAmount(adjustment) {
+  const amount = Math.abs(Number(adjustment?.amount || 0));
+  const action = String(adjustment?.action || '').trim().toLowerCase();
+
+  if (
+    action === 'remove' ||
+    action === 'subtract' ||
+    action === 'deduct' ||
+    action === 'debit'
+  ) {
+    return -amount;
+  }
+
+  return amount;
+}
+
+/**
+ * Format one already-signed score adjustment amount.
+ */
 function formatRecentAdjustmentAmount(amount) {
   const value = Number(amount || 0);
-  return `${value > 0 ? '+' : ''}${value.toLocaleString()}`;
+
+  if (value > 0) {
+    return `+${value.toLocaleString()}`;
+  }
+
+  return value.toLocaleString();
 }
 
 function formatRecentAdjustmentTimestamp(timestamp) {
@@ -7117,13 +7149,13 @@ function renderRecentAdjustments(response) {
     .slice()
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .map((adjustment) => {
-      const amount = Number(adjustment.amount || 0);
-      const reason = adjustment.reason || adjustment.action || 'Score adjustment';
-      const timestamp = formatRecentAdjustmentTimestamp(adjustment.timestamp);
+const amount = getSignedRecentAdjustmentAmount(adjustment);
+const reason = adjustment.reason || adjustment.action || 'Score adjustment';
+const timestamp = formatRecentAdjustmentTimestamp(adjustment.timestamp);
 
       return `<li>
         <span class="font-mono">${timestamp}</span>
-        : <b class="${amount > 0 ? 'text-green-400' : 'text-red-400'}">${formatRecentAdjustmentAmount(amount)}</b>
+        : <b class="${amount >= 0 ? 'text-green-400' : 'text-red-400'}">${formatRecentAdjustmentAmount(amount)}</b>
         <span class="italic">(${reason})</span>
       </li>`;
     })

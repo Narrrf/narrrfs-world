@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samuzi NFT — Phase 3 Sold Out</title>
-<meta name="description" content="Samuzi NFT Phase 3 is officially sold out. Thank you to every holder, OG, WL member, partner, public minter, and supporter.">
-<meta property="og:title" content="Samuzi NFT — Phase 3 Sold Out">
-<meta property="og:description" content="Phase 3 is officially sold out. The next Samuzi chapter begins now.">
+<title>Samuzi NFT — Akamai Land Coming Soon</title>
+<meta name="description" content="Akamai Land is the next Samuzi NFT expansion: 10,000 digital land plots, Samuzi Token earning mechanics, daily raffle rewards, token buybacks, and long-term holder utility.">
+<meta property="og:title" content="Samuzi NFT — Akamai Land Coming Soon">
+<meta property="og:description" content="Akamai Land is the next Samuzi NFT expansion: 10,000 land NFTs, daily participation, Samuzi Token rewards, raffles, buybacks, and Narrrfs World digital item access.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#07070b">
 
@@ -1269,6 +1269,391 @@
         width: 100%;
     }
 }
+/* =========================================================
+   AKAMAI LAND PHASE 4 — section polish
+   ========================================================= */
+
+.akamai-section {
+    position: relative;
+    z-index: 4;
+    padding: 2.8rem 0;
+}
+
+.akamai-main-card,
+.akamai-special-panel {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(34, 211, 238, 0.26) !important;
+    background:
+        radial-gradient(circle at 12% 0%, rgba(34,211,238,0.14), transparent 34%),
+        radial-gradient(circle at 88% 10%, rgba(250,204,21,0.12), transparent 34%),
+        radial-gradient(circle at 50% 100%, rgba(34,197,94,0.10), transparent 36%),
+        linear-gradient(180deg, rgba(14,18,28,0.96), rgba(5,8,12,0.90)) !important;
+    box-shadow:
+        0 26px 90px rgba(0,0,0,0.58),
+        0 0 48px rgba(34,211,238,0.10),
+        0 0 58px rgba(250,204,21,0.08) !important;
+}
+
+.akamai-main-card::before,
+.akamai-special-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(115deg, transparent, rgba(255,255,255,0.055), transparent 38%),
+        radial-gradient(circle at 50% 0%, rgba(34,211,238,0.10), transparent 36%);
+}
+
+.akamai-main-card > *,
+.akamai-special-panel > * {
+    position: relative;
+    z-index: 2;
+}
+
+.akamai-section .mint-pill,
+.akamai-special-section .mint-pill {
+    border-color: rgba(34,211,238,0.38);
+    background:
+        radial-gradient(circle at 15% 0%, rgba(34,211,238,0.20), transparent 34%),
+        rgba(255,255,255,0.07);
+    box-shadow: 0 0 28px rgba(34,211,238,0.12);
+}
+
+.akamai-section .mint-main-date {
+    border-color: rgba(250,204,21,0.34);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(250,204,21,0.16), transparent 38%),
+        rgba(0,0,0,0.30);
+}
+
+.akamai-section .mint-week-card {
+    border-color: rgba(34,211,238,0.18);
+}
+
+.akamai-section .mint-phase,
+.akamai-special-section .mint-special-card {
+    border-color: rgba(255,255,255,0.10);
+    background:
+        radial-gradient(circle at 12% 0%, rgba(34,211,238,0.08), transparent 34%),
+        rgba(255,255,255,0.045);
+}
+
+.akamai-notes {
+    border-color: rgba(34,197,94,0.30) !important;
+    background:
+        radial-gradient(circle at 15% 0%, rgba(34,197,94,0.14), transparent 34%),
+        rgba(0,0,0,0.24) !important;
+}
+
+.akamai-special-section {
+    position: relative;
+    z-index: 4;
+    padding: 2.4rem 0;
+}
+
+@media (max-width: 760px) {
+    .akamai-section,
+    .akamai-special-section {
+        padding: 1.6rem 0;
+    }
+}/* =========================================================
+   AKAMAILAND PHASE 4 — FINAL HOMEPAGE SECTION
+   ========================================================= */
+
+.akamai-phase4-section {
+    position: relative;
+    z-index: 5;
+    padding: clamp(2rem, 5vw, 4rem) 0;
+}
+
+.akamai-phase4-shell {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    border-radius: 32px;
+    background:
+        radial-gradient(circle at 12% 0%, rgba(250,204,21,0.16), transparent 34%),
+        radial-gradient(circle at 88% 4%, rgba(225,29,72,0.18), transparent 36%),
+        radial-gradient(circle at 50% 100%, rgba(34,211,238,0.10), transparent 36%),
+        linear-gradient(180deg, rgba(10,10,18,0.90), rgba(4,5,10,0.86));
+    border: 1px solid rgba(250,204,21,0.22);
+    box-shadow:
+        0 30px 100px rgba(0,0,0,0.62),
+        0 0 55px rgba(250,204,21,0.10),
+        0 0 65px rgba(225,29,72,0.08);
+    backdrop-filter: blur(18px);
+}
+
+.akamai-phase4-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.055) 34%, transparent 62%),
+        radial-gradient(circle at 50% 0%, rgba(250,204,21,0.10), transparent 38%);
+}
+
+.akamai-phase4-shell > * {
+    position: relative;
+    z-index: 2;
+}
+
+.akamai-phase4-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+    gap: clamp(1rem, 3vw, 2rem);
+    align-items: stretch;
+    margin-bottom: 1.3rem;
+}
+
+.akamai-phase4-copy {
+    padding: clamp(1rem, 3vw, 1.7rem);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(250,204,21,0.10), transparent 34%),
+        rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.akamai-pill {
+    color: #111827 !important;
+    background: linear-gradient(135deg, #facc15, #f97316) !important;
+    border-color: rgba(250,204,21,0.65) !important;
+    box-shadow: 0 0 26px rgba(250,204,21,0.24) !important;
+}
+
+.akamai-phase4-copy h2 {
+    color: #ffffff;
+    margin: 1rem 0 0.85rem;
+    font-size: clamp(2.1rem, 5vw, 4.2rem);
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+    text-shadow:
+        0 10px 28px rgba(0,0,0,0.72),
+        0 0 34px rgba(250,204,21,0.16);
+}
+
+.akamai-phase4-copy p {
+    color: #e5edf7;
+    max-width: 860px;
+    line-height: 1.72;
+    font-size: clamp(0.98rem, 1.35vw, 1.08rem);
+}
+
+.akamai-phase4-copy p + p {
+    margin-top: 0.75rem;
+}
+
+.akamai-phase4-main-date {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    border-radius: 26px;
+    text-align: center;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(250,204,21,0.25), transparent 38%),
+        radial-gradient(circle at 80% 80%, rgba(225,29,72,0.16), transparent 38%),
+        linear-gradient(180deg, rgba(120,53,15,0.34), rgba(0,0,0,0.38));
+    border: 1px solid rgba(250,204,21,0.48);
+    box-shadow:
+        0 0 34px rgba(250,204,21,0.16),
+        0 18px 45px rgba(0,0,0,0.32);
+}
+
+.akamai-phase4-main-date span {
+    color: #fde68a;
+    font-size: 0.78rem;
+    font-weight: 950;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+
+.akamai-phase4-main-date strong {
+    color: #ffffff;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1;
+    margin-bottom: 0.65rem;
+    text-shadow: 0 0 22px rgba(250,204,21,0.22);
+}
+
+.akamai-phase4-main-date p {
+    color: #ffffff;
+    font-weight: 900;
+    margin-bottom: 0.45rem;
+}
+
+.akamai-phase4-main-date small {
+    color: #fde68a;
+    line-height: 1.45;
+}
+
+.akamai-schedule-panel {
+    padding: clamp(1.1rem, 3vw, 1.7rem);
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(250,204,21,0.12), transparent 34%),
+        radial-gradient(circle at 94% 8%, rgba(225,29,72,0.13), transparent 36%),
+        rgba(0,0,0,0.30);
+    border: 1px solid rgba(250,204,21,0.20);
+}
+
+.akamai-schedule-heading h3 {
+    color: #ffffff;
+    margin: 1rem 0 0.6rem;
+    font-size: clamp(1.85rem, 4vw, 3.2rem);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    text-shadow:
+        0 8px 24px rgba(0,0,0,0.58),
+        0 0 26px rgba(250,204,21,0.14);
+}
+
+.akamai-schedule-heading p {
+    color: #dbe4f0;
+    max-width: 920px;
+    line-height: 1.72;
+}
+
+.akamai-mint-timeline {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+.akamai-mint-card {
+    min-height: 165px;
+    padding: 1.15rem;
+    border-radius: 22px;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.028));
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 16px 42px rgba(0,0,0,0.34);
+}
+
+.akamai-mint-card span {
+    display: inline-flex;
+    color: #fde68a;
+    font-size: 0.78rem;
+    font-weight: 950;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    margin-bottom: 0.85rem;
+}
+
+.akamai-mint-card strong {
+    display: block;
+    color: #ffffff;
+    font-size: 1.38rem;
+    margin-bottom: 0.45rem;
+}
+
+.akamai-mint-card p {
+    color: #fef3c7;
+    margin-bottom: 0.45rem;
+    font-weight: 850;
+}
+
+.akamai-mint-card small {
+    color: #cbd5e1;
+    line-height: 1.45;
+}
+
+.akamai-mint-card.og {
+    border-color: rgba(250,204,21,0.44);
+    background:
+        radial-gradient(circle at 18% 0%, rgba(250,204,21,0.18), transparent 34%),
+        rgba(255,255,255,0.045);
+}
+
+.akamai-mint-card.wl {
+    border-color: rgba(34,211,238,0.36);
+    background:
+        radial-gradient(circle at 18% 0%, rgba(34,211,238,0.15), transparent 34%),
+        rgba(255,255,255,0.045);
+}
+
+.akamai-mint-card.public {
+    border-color: rgba(225,29,72,0.42);
+    background:
+        radial-gradient(circle at 18% 0%, rgba(225,29,72,0.16), transparent 34%),
+        rgba(255,255,255,0.045);
+}
+
+.akamai-utility-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1rem;
+}
+
+.akamai-utility-grid div {
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    color: #f8fafc;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.035));
+    border: 1px solid rgba(255,255,255,0.10);
+    line-height: 1.5;
+    font-weight: 850;
+}
+
+.akamai-launch-strip {
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 14% 0%, rgba(34,197,94,0.16), transparent 34%),
+        rgba(0,0,0,0.32);
+    border: 1px solid rgba(34,197,94,0.28);
+}
+
+.akamai-launch-strip strong {
+    display: block;
+    color: #bbf7d0;
+    font-size: 0.95rem;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+}
+
+.akamai-launch-strip span {
+    display: block;
+    color: #fef3c7;
+    line-height: 1.55;
+}
+
+.akamai-info-grid {
+    margin-top: 1.3rem;
+}
+
+.akamai-info-grid .mint-week-card {
+    background:
+        radial-gradient(circle at 14% 0%, rgba(250,204,21,0.08), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.025));
+}
+
+.akamai-notes {
+    margin-top: 1.2rem;
+    border-color: rgba(34,197,94,0.30) !important;
+    background:
+        radial-gradient(circle at 15% 0%, rgba(34,197,94,0.14), transparent 34%),
+        rgba(0,0,0,0.24) !important;
+}
+
+@media (max-width: 980px) {
+    .akamai-phase4-hero,
+    .akamai-mint-timeline,
+    .akamai-utility-grid {
+        grid-template-columns: 1fr;
+    }
+}
     </style>
 </head>
 
@@ -1294,20 +1679,20 @@
         </div>
     </header>
 
-<section class="mint-alert-bar mint-live-alert" aria-label="Samuzi Phase 3 mint announcement">
+<section class="mint-alert-bar mint-live-alert" aria-label="Akamai Land announcement">
     <div class="mint-alert-inner">
         <div class="mint-alert-copy">
-           <span class="mint-alert-kicker">🚨 Samuzi NFT Phase 3 Sold Out</span>
-<div class="mint-alert-title">
-    Phase 3 is <strong>OFFICIALLY SOLD OUT</strong> · Thank you to every holder, OG, WL member, partner, and supporter
-</div>
+            <span class="mint-alert-kicker">🌍 Akamai Land · Phase 4 Signal</span>
+            <div class="mint-alert-title">
+                The next Samuzi expansion is forming · <strong>10,000 land NFTs</strong> · Mint date announcement coming soon
+            </div>
         </div>
 
         <div class="mint-alert-actions">
-            <a href="#mint-schedule" class="mint-mini-btn primary">View Sold Out Recap</a>
-            <a href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer" class="mint-mini-btn primary mint-live-glow">
-    View on Gensuki
-</a>
+            <a href="#akamai-land" class="mint-mini-btn primary">Explore Akamai Land</a>
+            <a href="#sliderShowcase" class="mint-mini-btn primary mint-live-glow">
+                View Akamai Preview
+            </a>
         </div>
     </div>
 </section>
@@ -1317,325 +1702,453 @@
     <div class="container">
         <div class="front-hero-grid">
             <div class="front-hero-copy">
-                <div class="brand-mark">🚨 SAMUZI NFT PHASE 3 · SOLD OUT</div>
+<div class="brand-mark">🌍 AKAMAI LAND · NEXT SAMUZI EXPANSION</div>
 
 <h1 class="launch-title">
-    Phase 3.
-    <span>Sold Out.</span>
+    Akamai Land.
+    <span>Coming Soon.</span>
 </h1>
 
 <p class="launch-copy">
-    Samuzi NFT Phase 3 is officially sold out. Holder, OG, WL, partner, and public mint windows are complete.
-    Thank you to every holder, minter, partner community, supporter, and the full Samuzi family for making this milestone real.
+    Akamai Land is the next major expansion from Samuzi NFTs — a land-based NFT game where every NFT represents a unique 10×10 digital land plot inside a 10,000 land collection.
+    Land owners gain a permanent digital presence in the Akamai ecosystem and can earn Samuzi Tokens over time through participation, daily streaks, and future land-based tasks.
 </p>
 
-                <div class="front-badges">
-                    <span>👘 Female Samuzian Collection</span>
-                    <span>🎨 Motion Designs</span>
-                    <span>⚔️ Samurai Inspired NFTs</span>
-                    <span>💎 Limited Supply</span>
-                </div>
+<div class="front-badges">
+    <span>🌍 10,000 Land NFTs</span>
+    <span>🧱 10×10 Digital Plots</span>
+    <span>💰 Earn Samuzi Tokens</span>
+    <span>🔥 Daily Streak Boosts</span>
+    <span>🎁 Daily Raffle Pool</span>
+</div>
 
                 <div class="launch-actions">
-                    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-    🔥 View Sold Out Collection
-</a>
-                    <a class="button-secondary" href="#mint-schedule">
-    View Sold Out Recap
-</a>
-                    <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
-                        Join Discord
-                    </a>
-                </div>
+    <a class="button-primary mint-live-glow" href="#akamai-land">
+        🌍 Explore Akamai Land
+    </a>
 
-                <div class="preview-lock-note mint-live-note">
-    🔥 Phase 3 is officially sold out. Thank you for using only official Samuzi and Gensuki links.
+    <a class="button-secondary" href="#sliderShowcase">
+        View Akamai Previews
+    </a>
+
+    <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
+        Join Discord
+    </a>
+</div>
+
+<div class="preview-lock-note mint-live-note">
+    ⏳ OG Mint starts 20 July 2026 · 04:00 PM UTC
 </div>
             </div>
 
-            <div class="front-hero-panel mint-live-panel">
-               <span class="panel-kicker">🏆 Mint Status</span>
-<h2>Phase 3 sold out.</h2>
-<p>
-    Holder, OG, WL, partner, and public windows have completed.
-    The Samuzi community delivered another full sellout and the next chapter now begins.
-</p>
+<div class="front-hero-panel mint-live-panel">
+    <span class="panel-kicker">🌍 Akamai Land Signal</span>
 
-<div class="mint-signal-card mint-status-card">
-    <div class="mint-status-grid">
-    <div class="mint-status-item sold">
-        <span>Holder Phase</span>
-        <strong>Sold Out</strong>
-        <small>15 / 15 minted</small>
-    </div>
+    <h2>The next Samuzi world is forming.</h2>
 
-    <div class="mint-status-item sold">
-        <span>OG Phase</span>
-        <strong>Sold Out</strong>
-        <small>100 / 100 minted</small>
-    </div>
+    <p>
+        Akamai Land introduces a 10,000 NFT land collection built around digital ownership,
+        daily participation, Samuzi Token rewards, raffle mechanics, and long-term ecosystem growth.
+    </p>
 
-    <div class="mint-status-item sold">
-        <span>Phase 3</span>
-        <strong>Sold Out</strong>
-        <small>All mint windows completed</small>
-    </div>
-
-    <div class="mint-status-item">
-        <span>Next Chapter</span>
-        <strong>Loading</strong>
-        <small>Utility, rewards, and community growth</small>
-    </div>
-</div>
-
-<div class="mint-live-strip" aria-label="Samuzi Phase 3 sold out status">
-    <strong>🔥 Phase 3 Sold Out</strong>
-    <span>Every mint window is complete. Thank you holders, OGs, WL, partners, public minters, and the full Samuzi community.</span>
-</div>
-</div>
-
-                <div class="launch-actions mint-panel-actions">
-    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-        🔥 View on Gensuki
-    </a>
-
-    <a class="button-secondary mint-live-outline" href="#mint-schedule">
-        View Sold Out Recap
-    </a>
-</div>
+    <div class="mint-signal-card mint-status-card">
+        <div class="mint-status-grid">
+            <div class="mint-status-item hot">
+                <span>Collection</span>
+                <strong>10,000 Lands</strong>
+                <small>Unique Akamai land NFTs</small>
             </div>
+
+            <div class="mint-status-item next">
+                <span>Land Plot</span>
+                <strong>10×10</strong>
+                <small>Digital plot ownership</small>
+            </div>
+
+            <div class="mint-status-item">
+                <span>Rewards</span>
+                <strong>SMZ Tokens</strong>
+                <small>Earn through participation</small>
+            </div>
+
+            <div class="mint-status-item">
+                <span>Mint Date</span>
+                <strong>TBA</strong>
+                <small>Official announcement soon</small>
+            </div>
+        </div>
+
+        <div class="mint-live-strip" aria-label="Akamai Land coming soon status">
+            <strong>🌍 Akamai Land Coming Soon</strong>
+            <span>Daily streaks, land tasks, raffle rewards, token buybacks, and Narrrfs World item access are being prepared.</span>
+        </div>
+    </div>
+
+    <div class="launch-actions mint-panel-actions">
+        <a class="button-primary mint-live-glow" href="#akamai-land">
+            Explore Utility
+        </a>
+
+        <a class="button-secondary mint-live-outline" href="#sliderShowcase">
+            View Previews
+        </a>
+    </div>
+</div>
         </div>
     </div>
 </section>
 
-<section class="mint-special-section">
+
+<section class="mint-special-section akamai-special-section">
     <div class="container">
-        <div class="mint-special-panel">
+        <div class="mint-special-panel akamai-special-panel">
             <div class="mint-special-heading">
-                <span class="mint-pill">✨ What makes Phase 3 special?</span>
-                <h2>The next evolution of the Samuzian universe has begun.</h2>
+                <span class="mint-pill">🌍 What makes Akamai Land special?</span>
+                <h2>A land-based Samuzi ecosystem is coming.</h2>
                 <p>
-                    Get ready for one of the most powerful NFT drops of the season.
-                    Phase 3 brings fresh character energy, cinematic artwork, and limited supply for true Samuzian holders.
+                    Akamai Land moves Samuzi into its next phase: digital land ownership, daily participation,
+                    Samuzi Token earning mechanics, raffle rewards, buybacks, and partner ecosystem utility.
                 </p>
             </div>
 
             <div class="mint-special-grid">
                 <div class="mint-special-card">
-                    <strong>👘 Brand New Female Samuzian Collection</strong>
-                    <span>A fresh evolution of the Samuzi identity and visual universe.</span>
+                    <strong>🧱 10×10 Digital Land Plots</strong>
+                    <span>Every Akamai Land NFT represents a unique digital plot inside a 10,000 land collection.</span>
                 </div>
 
                 <div class="mint-special-card">
-                    <strong>🎨 Motion Designs & Cinematic Artwork</strong>
-                    <span>Premium motion art and powerful visual presentation for Phase 3.</span>
+                    <strong>💰 Samuzi Token Earning</strong>
+                    <span>Land owners can earn Samuzi Tokens over time through participation and land-based activity.</span>
                 </div>
 
                 <div class="mint-special-card">
-                    <strong>⚔️ Samurai Inspired NFTs</strong>
-                    <span>Unique collectibles built around Samuzi’s warrior-inspired style.</span>
+                    <strong>🔥 Daily Streak Boosts</strong>
+                    <span>Players can improve land performance by maintaining daily earning streaks and completing land tasks.</span>
                 </div>
 
                 <div class="mint-special-card">
-                    <strong>💎 Exclusive Art & Limited Supply</strong>
-                    <span>Limited spots across holders, OGs, whitelist, partners, and public mint.</span>
+                    <strong>🎁 Raffle + Buyback Economy</strong>
+                    <span>Mint and royalty distributions support daily raffles, project growth, and Samuzi Token buybacks.</span>
                 </div>
 
                 <div class="mint-special-card wide">
-                    <strong>🔥 Built for True Samuzian Holders</strong>
-                    <span>Phase 3 rewards the community that has been with Samuzi from the beginning.</span>
+                    <strong>🎮 Season 4 Digital Item Utility</strong>
+                    <span>50 special traits in the new phase will grant access to claim redeemable digital items inside narrrfs.world.</span>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-
-
-<section class="soldout-poster-section" aria-label="Samuzi Phase 3 sold out announcement">
+<section id="akamai-land" class="mint-section akamai-section akamai-phase4-section">
     <div class="container">
-        <div class="soldout-poster-panel">
-            <div class="soldout-poster-image-wrap">
-                <img
-                    src="./assets/soldout.gif"
-                    alt="Samuzi NFT Phase Three sold out"
-                    class="soldout-poster-image"
-                    loading="eager"
-                >
-            </div>
+        <div class="akamai-phase4-shell">
 
-            <div class="soldout-poster-copy">
-                <span class="mint-pill">🔥 Phase 3 Sold Out</span>
-                <h2>This is not the end. This is only the beginning.</h2>
-                <p>
-                    Phase 3 has officially sold out. Thank you to our holders, OGs, WL members,
-                    partner communities, public minters, Gensuki Launchpad, and every supporter who helped
-                    make this milestone possible.
-                </p>
+            <div class="akamai-phase4-hero">
+                <div class="akamai-phase4-copy">
+                    <span class="mint-pill akamai-pill">🚨 AKAMAILAND PHASE 4 IS HERE</span>
 
-                <div class="launch-actions">
-                    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-                        🔥 View on Gensuki
-                    </a>
-                    <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
-                        Join Discord
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+                    <h2>Enter the next Samuzi gaming universe.</h2>
 
-    <section id="mint-schedule" class="mint-section">
-    <div class="container">
-        <div class="mint-command-panel">
-            <div class="mint-heading-row">
-                <div>
-                    <span class="mint-pill">🧪 Mint Command Center</span>
-                   <h2>Phase 3 mint completed.</h2>
-<p>
-    Samuzi NFT Phase 3 is officially sold out. Holder, OG, WL, partner, and public phases have completed.
-    Thank you to every community member, supporter, partner, and minter who helped make this another historic Samuzi milestone.
-</p>
+                    <p>
+                        Welcome to <strong>AKAMAILAND Phase 4</strong>, the next evolution of the SamuziNFT ecosystem.
+                        This new land-based NFT phase introduces <strong>10,000 digital land NFTs</strong> as gateways
+                        into the expanding AKAMAILAND gaming universe.
+                    </p>
+
+                    <p>
+                        Holders can unlock exclusive utilities, future gameplay benefits, community rewards,
+                        ecosystem perks, and early supporter advantages as AKAMAILAND grows.
+                    </p>
                 </div>
 
-               <div class="mint-main-date mint-main-status-live">
-    <span>Current Status</span>
-    <strong>Phase 3 Sold Out</strong>
-    <small>All mint windows completed</small>
-</div>
+                <div class="akamai-phase4-main-date">
+                    <span>First Mint Window</span>
+                    <strong>OG Mint</strong>
+                    <p>20 July 2026 · 04:00 PM UTC</p>
+                    <small>0.05 SOL · Unlimited per wallet</small>
+                </div>
             </div>
 
-            <div class="mint-week-grid">
-                <article class="mint-week-card featured mint-week-sold-out">
+            <div class="akamai-schedule-panel">
+                <div class="akamai-schedule-heading">
+                    <span class="mint-pill akamai-pill">🎮 Official Mint Schedule</span>
+                    <h3>Choose your entry into AKAMAILAND.</h3>
+                    <p>
+                        OG, WL, and Public mint windows are now announced. Mark your calendar,
+                        prepare your wallet, and secure your place in the AKAMAILAND universe.
+                    </p>
+                </div>
+
+                <div class="akamai-mint-timeline">
+                    <article class="akamai-mint-card og">
+                        <span>🏆 OG Mint</span>
+                        <strong>20 July 2026</strong>
+                        <p>04:00 PM UTC</p>
+                        <small>0.05 SOL · Unlimited per wallet</small>
+                    </article>
+
+                    <article class="akamai-mint-card wl">
+                        <span>🌟 WL Mint</span>
+                        <strong>27 July 2026</strong>
+                        <p>04:00 PM UTC</p>
+                        <small>0.07 SOL · Unlimited per wallet</small>
+                    </article>
+
+                    <article class="akamai-mint-card public">
+                        <span>🚀 Public Mint</span>
+                        <strong>03 August 2026</strong>
+                        <p>04:00 PM UTC</p>
+                        <small>0.10 SOL · Unlimited per wallet</small>
+                    </article>
+                </div>
+            </div>
+
+            <div class="akamai-utility-grid">
+                <div>✨ Access to the expanding AKAMAILAND game ecosystem</div>
+                <div>🎮 Exclusive in-game utilities and future gameplay benefits</div>
+                <div>🎁 Community-driven rewards and ecosystem perks</div>
+                <div>⚔️ Early supporter advantages for future updates and expansions</div>
+            </div>
+
+            <div class="akamai-launch-strip">
+                <strong>⏰ The adventure begins on 20 July 2026.</strong>
+                <span>Prepare your wallet and secure your place in AKAMAILAND Phase 4.</span>
+            </div>
+
+            <div class="mint-week-grid akamai-info-grid">
+                <article class="mint-week-card mint-week-next">
                     <div class="mint-week-top">
-                        <span>Week 1 · Completed</span>
-                        <h3>Holder + OG Access · Sold Out</h3>
-<p>Holder and OG access both sold out faster than expected.</p>
+                        <span>Core Gameplay</span>
+                        <h3>Own Land. Participate Daily. Grow Over Time.</h3>
+                        <p>
+                            AKAMAILAND land owners become part of the gaming ecosystem. Land NFTs are designed to unlock
+                            future gameplay utilities, participation benefits, and long-term reward mechanics.
+                        </p>
                     </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>1️⃣ Holder Phase <em class="mint-status-tag sold">Sold Out</em></strong>
-<p><span class="price">FREE</span> · 15 / 15 minted · limit 1 per wallet</p>
-<p>Existing Samuzi holders moved fast and claimed the full holder allocation.</p>
+                            <strong>🧱 10×10 Digital Land Plot</strong>
+                            <p>Each AKAMAILAND NFT represents a unique digital land plot inside the 10,000 land collection.</p>
                         </div>
 
                         <div class="mint-phase">
-                            <strong>2️⃣ OG Phase <em class="mint-status-tag sold">Sold Out</em></strong>
-<p><span class="price">0.043 SOL</span> · 100 / 100 minted · limit 10 per wallet</p>
-<p>OG access is complete. The next access wave is WL and partner allocations.</p>
+                            <strong>🔥 Daily Activity + Streak Potential</strong>
+                            <p>Future land tasks and activity systems can reward consistent participation inside the ecosystem.</p>
+                        </div>
+
+                        <div class="mint-phase">
+                            <strong>🎮 Game Ecosystem Access</strong>
+                            <p>Land ownership acts as a gateway into AKAMAILAND utilities, gameplay benefits, and future expansions.</p>
                         </div>
                     </div>
                 </article>
 
-                <article class="mint-week-card mint-week-next">
-    <div class="mint-week-top">
-        <span>Final Window · Completed</span>
-<h3>Public Mint Sold Out</h3>
-<p>Public mint is complete. Phase 3 is officially sold out.</p>
+                <article class="mint-week-card">
+                    <div class="mint-week-top">
+                        <span>Mint Fund Distribution</span>
+                        <h3>A sustainable ecosystem model.</h3>
+                        <p>
+                            Every land mint supports project growth, daily raffle rewards, and Samuzi Token ecosystem strength.
+                        </p>
+                    </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>3️⃣ WL Phase <em class="mint-status-tag sold">Sold Out</em></strong>
-<p><span class="price">0.062 SOL</span> · 100 spots · limit 15 per wallet</p>
-<p>For whitelisted members. Live now on Gensuki Launchpad.</p>
+                            <strong>70% · Development + Ecosystem Growth</strong>
+                            <p>Supports AKAMAILAND, gameplay systems, utilities, and future Samuzi features.</p>
                         </div>
 
-                        <div class="mint-phase partner-mint-phase">
-    <span class="partner-mint-badge">Partner community price</span>
-    <strong>4️⃣ Partner Allocations <em class="mint-status-tag sold">Sold Out</em></strong>
-    <p><span class="price partner-price">0.053 SOL each</span> · special partner price · limit 15 per wallet · Sold Out</p>
-    <div class="partner-list">
-        <span>🔹 Narrrf Allocation: 50 spots · 0.053 SOL</span>
-        <span>🔹 Coralix Allocation: 50 spots · 0.053 SOL</span>
-        <span>🔹 Mad Skulz Allocation: 50 spots · 0.053 SOL</span>
-        <span>🔹 Turtle Toddlers Allocation: 50 spots · 0.053 SOL</span>
-    </div>
-</div>
+                        <div class="mint-phase">
+                            <strong>20% · Daily Raffle Pool</strong>
+                            <p>Every 24 hours, a land owner can be randomly selected to receive accumulated raffle rewards.</p>
+                        </div>
+
+                        <div class="mint-phase">
+                            <strong>10% · Samuzi Token Buyback</strong>
+                            <p>Supports the Samuzi Token ecosystem through planned buyback mechanics.</p>
+                        </div>
                     </div>
                 </article>
 
-                <article class="mint-week-card mint-week-next">
-    <div class="mint-week-top">
-       <span>Completed Window · Sold Out</span>
-<h3>WL + Partner Mint Sold Out</h3>
-<p>WL and partner allocations are complete. Phase 3 has officially sold out.</p>
+                <article class="mint-week-card">
+                    <div class="mint-week-top">
+                        <span>Royalty Distribution</span>
+                        <h3>Secondary sales feed the ecosystem.</h3>
+                        <p>
+                            Royalties from secondary sales are planned to be reinvested into development, raffle rewards,
+                            and Samuzi Token buyback support.
+                        </p>
                     </div>
 
                     <div class="mint-phase-list">
                         <div class="mint-phase">
-                            <strong>5️⃣ Public Mint <em class="mint-status-tag sold">Sold Out</em></strong>
-<p><span class="price">0.087 SOL</span> · open public mint · unlimited per wallet</p>
-<p>Open to everyone — no role required.</p>
+                            <strong>3% · Project Development</strong>
+                            <p>Funds continued AKAMAILAND expansion, technical development, and future ecosystem features.</p>
                         </div>
 
                         <div class="mint-phase">
-                            <strong>Reminder</strong>
-                            <p>
-                                Set a reminder in Discord Events and follow official Samuzi channels
-                                before connecting your wallet.
-                            </p>
+                            <strong>1% · Daily Raffle Pool</strong>
+                            <p>Feeds recurring raffle rewards for AKAMAILAND land owners.</p>
+                        </div>
+
+                        <div class="mint-phase">
+                            <strong>1% · Samuzi Token Buyback</strong>
+                            <p>Supports the long-term Samuzi Token economy.</p>
                         </div>
                     </div>
                 </article>
             </div>
 
-            <div class="mint-notes">
+            <div class="mint-notes akamai-notes">
                 <p>
-                    📌 <strong>Sold Out Update:</strong> Samuzi NFT Phase 3 is officially sold out.
-Holder, OG, WL, partner, and public mint windows are complete.
-Thank you to every holder, minter, partner community, supporter, and the full Samuzi family.
+                    🎮 <strong>Narrrfs World Utility:</strong> 50 special traits in the new AKAMAILAND phase will grant access
+                    to claim a digital item inside <strong>narrrfs.world</strong>. This connects the Samuzi Phase 4 land launch
+                    with partner ecosystem utility.
                 </p>
 
                 <div class="mint-cta-row">
-                    <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-    🔥 View Sold Out Collection
-</a>
-                    <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
-                        Join Discord
+                    <a class="button-primary mint-live-glow" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
+                        Join Discord for Mint Updates
+                    </a>
+
+                    <a class="button-secondary" href="#sliderShowcase">
+                        View Akamai Preview
                     </a>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
-
-    <section class="front-section">
+<section class="front-section">
     <div class="container">
         <div class="front-section-heading roadmap-growth-heading">
             <span class="status-pill">Roadmap Highlights</span>
-            <h2 class="site-section-title">From sold-out phases to the next expansion.</h2>
+            <h2 class="site-section-title">From sold-out collections to Akamai Land.</h2>
             <p class="site-section-copy roadmap-growth-copy">
-                Phase 3 sold out and opened the door for the next Samuzi chapter.
-                The team is now preparing more growth, more holder value, new partnerships,
-                and future expansion opportunities for the community.
+                Samuzi is moving into its next ecosystem layer. Akamai Land brings digital land ownership,
+                token rewards, daily participation, raffles, buybacks, partner utility, and long-term holder value.
             </p>
         </div>
 
         <div class="roadmap-mini-grid roadmap-growth-grid">
             <div class="roadmap-mini-card">
-                <span>Phase 1</span>
-                <h3>Genesis Launch</h3>
-                <p>Website release, first collection mint, community setup, and early supporter onboarding.</p>
+                <span>Foundation</span>
+                <h3>Samuzi NFT</h3>
+                <p>Community identity, samurai-inspired art, collector growth, and brand momentum built the foundation.</p>
             </div>
 
             <div class="roadmap-mini-card">
-                <span>Phase 2</span>
-                <h3>Sold Out Growth</h3>
-                <p>Phase 1 and Phase 2 sold out, holder features expanded, and partner momentum increased.</p>
+                <span>Growth</span>
+                <h3>Sold-Out Momentum</h3>
+                <p>Previous Samuzi collections created proof of demand, community strength, and partner visibility.</p>
             </div>
 
             <div class="roadmap-mini-card">
-                <span>Phase 3</span>
-                <h3>Sold Out Expansion</h3>
-                <p>Phase 3 sold out with strong community energy, cinematic artwork, and new collector momentum.</p>
+                <span>Utility</span>
+                <h3>Token + Rewards</h3>
+                <p>Akamai Land introduces Samuzi Token earning mechanics, daily streaks, raffle rewards, and buybacks.</p>
             </div>
 
             <div class="roadmap-mini-card roadmap-phase4-card">
+                <span>Next</span>
+                <h3>Akamai Land</h3>
+                <p>10,000 land NFTs, 10×10 digital plots, ecosystem participation, and special traits connected to narrrfs.world item access.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="front-section">
+    <div class="container">
+        <div class="launch-panel akamai-special-panel">
+            <span class="status-pill">Akamai Core Features</span>
+            <h2 class="site-section-title" style="margin-top:1rem;">Built around land, streaks, rewards, and redeemable utility.</h2>
+
+            <div class="feature-grid">
+                <div class="feature-row">
+                    <div class="feature-icon">🧱</div>
+                    <div>
+                        <h3>Digital Land Ownership</h3>
+                        <p>
+                            Every Akamai Land NFT represents a unique 10×10 digital land plot and gives the holder
+                            a permanent presence inside the Akamai ecosystem.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="feature-row">
+                    <div class="feature-icon">🔥</div>
+                    <div>
+                        <h3>Daily Streak Gameplay</h3>
+                        <p>
+                            Land owners can build earning streaks by performing tasks on their land.
+                            Consistent participation can boost land performance over time.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="feature-row">
+                    <div class="feature-icon">💰</div>
+                    <div>
+                        <h3>Samuzi Token Economy</h3>
+                        <p>
+                            Akamai Land introduces earning mechanics connected to Samuzi Tokens, with rewards
+                            designed to gradually decrease for a healthier long-term economy.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="feature-row">
+                    <div class="feature-icon">🎮</div>
+                    <div>
+                        <h3>Season 4 Redeemable Items</h3>
+                        <p>
+                            50 special traits in the new phase will unlock access to claim digital redeemable
+                            items inside narrrfs.world, connecting Akamai Land with partner utility.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+    <section class="front-section">
+    <div class="container">
+        <div class="front-section-heading roadmap-growth-heading">
+            <span class="status-pill">Roadmap Highlights</span>
+            <h2 class="site-section-title">From sold-out collections to Akamai Land.</h2>
+            <p class="site-section-copy roadmap-growth-copy">
+                Phase 3 is complete. The next Samuzi chapter is focused on land ownership,
+                token rewards, daily participation, redeemable digital items, and stronger ecosystem growth.
+            </p>
+        </div>
+
+        <div class="roadmap-mini-grid roadmap-growth-grid">
+            <div class="roadmap-mini-card">
+                <span>Foundation</span>
+                <h3>Samuzi NFT</h3>
+                <p>Samurai-inspired art, community identity, collector momentum, and strong brand recognition built the foundation.</p>
+            </div>
+
+            <div class="roadmap-mini-card">
+                <span>Momentum</span>
+                <h3>Sold-Out Phases</h3>
+                <p>Previous Samuzi phases sold out and proved community demand, partner strength, and long-term supporter belief.</p>
+            </div>
+
+            <div class="roadmap-mini-card">
                 <span>Phase 4</span>
-                <h3>Community Growth</h3>
-                <p>More partnerships, holder-focused opportunities, community activations, and the next expansion path are now being prepared.</p>
+                <h3>Akamai Land</h3>
+                <p>10,000 land NFTs, 10×10 digital plots, daily streaks, Samuzi Token earning mechanics, raffles, and buybacks.</p>
+            </div>
+
+            <div class="roadmap-mini-card roadmap-phase4-card">
+                <span>Utility</span>
+                <h3>Digital Item Access</h3>
+                <p>50 special traits in the new Akamai phase will connect holders to redeemable digital items inside narrrfs.world.</p>
             </div>
         </div>
     </div>
@@ -1644,94 +2157,10 @@ Thank you to every holder, minter, partner community, supporter, and the full Sa
     <section class="front-section">
         <div class="container">
             <div class="launch-panel">
-                <span class="status-pill">Core Features</span>
-                <h2 class="site-section-title" style="margin-top:1rem;">Built around art, lore, access, and community.</h2>
-
-                <div class="feature-grid">
-                    <div class="feature-row">
-                        <div class="feature-icon">🎨</div>
-                        <div>
-                            <h3>Art & Lore</h3>
-                            <p>
-                                Every Samuzi character is part of a cyberpunk universe where digital warriors
-                                stand for freedom, individuality, and decentralization.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="feature-row">
-                        <div class="feature-icon">🔐</div>
-                        <div>
-                            <h3>Holder-Only Access</h3>
-                            <p>
-                                Samuzi holders can receive access to private Discord spaces, exclusive updates,
-                                raffles, collaborations, and future digital experiences.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="feature-row">
-                        <div class="feature-icon">🧩</div>
-                        <div>
-                            <h3>Future Utility</h3>
-                            <p>
-                                The long-term vision includes creative drops, digital content, community voting,
-                                partner access, and possible game-related integrations.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="feature-row">
-                        <div class="feature-icon">🌍</div>
-                        <div>
-                            <h3>Community First</h3>
-                            <p>
-                                Regular community updates, contests, AMAs, transparent communication,
-                                and recognition of loyal holders are central to Samuzi.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="front-section">
-        <div class="container">
-            <div class="front-section-heading">
-                <span class="status-pill">Roadmap Highlights</span>
-                <h2 class="site-section-title">From sold-out phases to the next expansion.</h2>
-            </div>
-
-            <div class="roadmap-mini-grid">
-                <div class="roadmap-mini-card">
-                    <span>Phase 1</span>
-                    <h3>Genesis Launch</h3>
-                    <p>Website release, first collection mint, community setup, and early supporter onboarding.</p>
-                </div>
-
-                <div class="roadmap-mini-card">
-                    <span>Phase 2</span>
-                    <h3>Sold Out Growth</h3>
-                    <p>Phase 1 and Phase 2 sold out, holder features expanded, and partner momentum increased.</p>
-                </div>
-
-                <div class="roadmap-mini-card">
-                    <span>Phase 3</span>
-                    <h3>Expansion</h3>
-                    <p>New collection planning, lore expansion, community proposals, and digital partnership opportunities.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="front-section">
-        <div class="container">
-            <div class="launch-panel">
-                <span class="status-pill">Samuzi Art Preview</span>
-                <h2 class="site-section-title" style="margin-top:1rem;">Phase 3 visuals are loading.</h2>
-               <p class="site-section-copy">
-    New artwork, launch signals, and community updates rotate here from the admin-managed slider folder.
+<span class="status-pill">Akamai Land Preview</span>
+<h2 class="site-section-title" style="margin-top:1rem;">The next Samuzi world is forming.</h2>
+<p class="site-section-copy">
+    Akamai Land visuals, ecosystem previews, samurai artwork, and future reveal signals rotate here from the admin-managed slider folder.
 </p>
 
 <div class="phase3-secret-row">
@@ -1739,7 +2168,7 @@ Thank you to every holder, minter, partner community, supporter, and the full Sa
         id="phase3SecretSlash"
         class="phase3-secret-slash"
         type="button"
-        aria-label="Unlock hidden Phase 3 motion signal"
+        aria-label="Unlock hidden Akamai Land motion signal"
     >
         <span class="phase3-secret-core"></span>
         <span class="phase3-secret-text">Classic art archive</span>
@@ -1761,8 +2190,8 @@ Thank you to every holder, minter, partner community, supporter, and the full Sa
         <h2 id="phase3SecretTitle">Secret Samuzi Art Archive</h2>
 
 <p>
-    The blade has cut through the motion layer. A hidden still-art archive is ready.
-    Activate the classic preview to reveal the earlier Samuzi artwork slider.
+The blade has cut through the old world. Akamai Land protocol is ready.
+Activate the hidden preview to reveal the next Samuzi expansion signal.
 </p>
 
 <button id="activateMotionPreview" class="button-primary" type="button">
@@ -1774,27 +2203,26 @@ Thank you to every holder, minter, partner community, supporter, and the full Sa
         </div>
     </section>
 
-    <section class="front-section final-cta-section">
+<section class="front-section final-cta-section">
     <div class="container">
         <div class="final-cta-panel">
-            <span class="status-pill">Phase 3 sold out</span>
+            <span class="status-pill">Akamai Land Coming Soon</span>
 
-            <h2>Samuzi NFT continues to rise.</h2>
+            <h2>The next Samuzi chapter is land-based.</h2>
 
             <p>
-                Phase 3 is sold out, but this is not the end. More utilities, more experiences,
-                more rewards, and more history are coming for the Samuzi community.
-                Thank you to every holder, OG, WL member, partner, public minter, Gensuki Launchpad,
-                and the full Samuzi team.
+                Akamai Land is designed to reward long-term holders, encourage daily participation,
+                and create a sustainable NFT economy where every land owner can earn, participate,
+                and grow alongside the Samuzi ecosystem.
             </p>
 
             <div class="launch-actions">
-                <a class="button-primary mint-live-glow" href="https://app.gensuki.xyz/Solana/SamuziNft3" target="_blank" rel="noopener noreferrer">
-                    🔥 View on Gensuki
+                <a class="button-primary mint-live-glow" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
+                    Join Discord for Mint Updates
                 </a>
 
-                <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
-                    Join Discord
+                <a class="button-secondary" href="#akamai-land">
+                    Explore Akamai Land
                 </a>
 
                 <a class="button-secondary" href="whitepaper.html">
@@ -1821,8 +2249,8 @@ Thank you to every holder, minter, partner community, supporter, and the full Sa
 
                 <div class="footer-section">
                     <h4>Status</h4>
-                    <p>Website relaunch in progress</p>
-                    <p>Phase 3 updates coming soon</p>
+<p>Akamai Land reveal in progress</p>
+<p>Mint date announcement coming soon</p>
                 </div>
 
                 <div class="footer-section">
@@ -1835,8 +2263,8 @@ Thank you to every holder, minter, partner community, supporter, and the full Sa
 
     <script>
         const PAGE_KEY = 'index';
-const PHASE3_HERO_BACKGROUND = './assets/background/phase3-coming-soon.jpg';
-const SAMUZI_MINT_LINK = 'https://app.gensuki.xyz/Solana/SamuziNft3';
+const AKAMAI_HERO_BACKGROUND = './assets/background/akamai-samurai-phase-bg.webp';
+const SAMUZI_DISCORD_LINK = 'https://discord.gg/D55VGqsQWH';
 
         function resolveBackgroundPath(filename) {
             if (!filename || typeof filename !== 'string') {
@@ -1887,8 +2315,8 @@ const SAMUZI_MINT_LINK = 'https://app.gensuki.xyz/Solana/SamuziNft3';
                 console.warn('[SAMUZI] Background settings could not be loaded. Using fallback.', error);
             }
 
-            const hasPhase3Background = await testImage(PHASE3_HERO_BACKGROUND);
-            const activeBackground = hasPhase3Background ? PHASE3_HERO_BACKGROUND : fallbackBackground;
+const hasAkamaiBackground = await testImage(AKAMAI_HERO_BACKGROUND);
+const activeBackground = hasAkamaiBackground ? AKAMAI_HERO_BACKGROUND : fallbackBackground;
 
             document.body.style.setProperty('--samuzi-page-bg', `url("${activeBackground}")`);
 
@@ -1914,79 +2342,9 @@ let phase3MotionSoundEnabled = true;
 */
 let phase3MotionSlides = [
     {
-        filename: 'samuzi-motion-1.mp4',
-        title: 'Motion Art protocol unlocked.',
-        caption: 'The Phase 3 collection begins to move.'
-    },
-    {
-        filename: 'samuzi-motion-2.mp4',
-        title: 'The blade signal is active.',
-        caption: 'Hidden motion previews are now live inside the Samuzi page.'
-    },
-    {
-        filename: 'samuzi-motion-3.mp4',
-        title: 'Phase 3 is approaching.',
-        caption: 'A new layer of Samuzi art is preparing for mint.'
-    },
-    {
-        filename: 'samuzi-motion-4.mp4',
-        title: 'Samuzi motion signal detected.',
-        caption: 'The collection begins to reveal its moving form.'
-    },
-    {
-        filename: 'samuzi-motion-5.mp4',
-        title: 'Cyber samurai energy online.',
-        caption: 'Phase 3 motion artwork is now active inside the hidden preview.'
-    },
-    {
-        filename: 'samuzi-motion-6.mp4',
-        title: 'The secret cut opened.',
-        caption: 'A hidden layer of the Samuzi collection has been unlocked.'
-    },
-    {
-        filename: 'samuzi-motion-7.mp4',
-        title: 'Phase 3 is moving.',
-        caption: 'The next chapter of Samuzi prepares for launch.'
-    },
-    {
-        filename: 'samuzi-motion-8.mp4',
-        title: 'The blade leaves a signal.',
-        caption: 'Motion art previews are live for those who find the hidden cut.'
-    },
-    {
-        filename: 'samuzi-motion-9.mp4',
-        title: 'Digital warriors awakened.',
-        caption: 'The Samuzi Phase 3 motion layer is now visible.'
-    },
-    {
-        filename: 'samuzi-motion-10.mp4',
-        title: 'The journey continues.',
-        caption: 'Phase 3 carries the Samuzi story into motion.'
-    },
-    {
-        filename: 'samuzi-motion-11.mp4',
-        title: 'Mint signal loading.',
-        caption: 'The hidden preview is ready for the next Samuzi chapter.'
-    },
-    {
-        filename: 'samuzi-motion-12.mp4',
-        title: 'Digital warriors awakened.',
-        caption: 'The Samuzi Phase 3 motion layer is now visible.'
-    },
-    {
-        filename: 'samuzi-motion-13.mp4',
-        title: 'The journey continues.',
-        caption: 'Phase 3 carries the Samuzi story into motion.'
-    },
-    {
-        filename: 'samuzi-motion-14.mp4',
-        title: 'Mint signal loading.',
-        caption: 'The hidden preview is ready for the next Samuzi chapter.'
-    },
-    {
-        filename: 'samuzi-motion-14.mp4',
-        title: 'Mint signal loading.',
-        caption: 'The hidden preview is ready for the next Samuzi chapter.'
+        filename: 'phase4.mp4',
+        title: 'Akamai Land signal awakened.',
+        caption: 'The next Samuzi expansion begins to move.'
     }
 ];
 
@@ -2021,7 +2379,7 @@ function renderPhase3Slider() {
             const videoPath = `./slider-motion/${filename}`;
 
             return `
-    <div class="phase3-slide motion-active ${activeClass}" style="background-image: url('./assets/background/phase3-coming-soon.jpg')">
+    <div class="phase3-slide motion-active ${activeClass}" style="background-image: url('./assets/background/akamai-samurai-phase-bg.webp')">
         <video
     class="phase3-video"
     src="${videoPath}"
@@ -2037,7 +2395,7 @@ function renderPhase3Slider() {
 
         return `
             <div class="phase3-slide ${activeClass}" style="background-image: url('./slider-photos/${filename}')">
-                <img src="./slider-photos/${filename}" alt="Samuzi Phase 3 artwork" loading="${index === 0 ? 'eager' : 'lazy'}">
+                <img src="./slider-photos/${filename}" alt="Akamai Land preview artwork" loading="${index === 0 ? 'eager' : 'lazy'}">
             </div>
         `;
     }).join('');
@@ -2048,12 +2406,12 @@ function renderPhase3Slider() {
     }).join('');
 
     const captionTitle = phase3MotionMode
-    ? (activeSlides[phase3SliderIndex]?.title || 'Phase 3 motion art is live.')
-    : 'Classic Samuzi artwork unlocked.';
+? (activeSlides[phase3SliderIndex]?.title || 'Akamai Land motion signal is live.')
+: 'Akamai Land preview unlocked.';
 
     const captionText = phase3MotionMode
-    ? (activeSlides[phase3SliderIndex]?.caption || 'The Female Samuzian motion collection takes over the mint-day showcase.')
-    : 'Earlier Samuzi still artwork and launch visuals rotate here from the classic slider folder.';
+? (activeSlides[phase3SliderIndex]?.caption || 'The next Samuzi land expansion moves inside the hidden preview.')
+: 'Akamai Land artwork, samurai visuals, and ecosystem previews rotate here from the slider folder.';
 
     const captionPill = phase3MotionMode ? 'Phase 3 Motion Art' : 'Classic Samuzi Art Archive';
 

@@ -1,5 +1,329 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-16 — MouseFight Transactional PVP DSPOINC Economy Fully Validated
+
+**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / production MouseFight database / equal-stake PVP challenge economy  
+**Status:** Challenger escrow, opponent equal stake, automatic 2X winner payout, and waiting-challenge cancellation refund validated successfully in production
+
+---
+
+## ✅ Transactional PVP Economy Production Validation Complete
+
+MouseFight PVP challenges now use the dedicated transactional economy API for the complete wager lifecycle.
+
+Validated actions:
+
+```text
+pvp_create
+pvp_accept_settle
+pvp_cancel
+```
+
+Confirmed production rules:
+
+- Challenger stake is removed and escrowed when the challenge is created.
+- Opponent must stake the exact same amount when accepting.
+- The winner receives the complete two-player pot automatically.
+- No platform fee is deducted.
+- Cancelling a waiting challenge refunds the challenger stake completely.
+- Zero-wager challenges remain supported without creating stake or settlement rows.
+- Runtime state is opened only after the authoritative API confirms creation.
+- Failed API creation leaves no confirmed runtime challenge.
+- Genesis traits, abilities, ownership, Lab data, and Genetic Items remain unchanged.
+
+---
+
+## ✅ Real Equal-Stake PVP Fight Validated
+
+Validated fight:
+
+```text
+Fight ID: mfpvp_1784168917323_f9bvr5l
+Challenger: Narrrf / Mr Orange
+Opponent: DEECZO / DeeFlash
+Match Format: Best of 5
+Stake per player: 1,500 DSPOINC
+Total pot: 3,000 DSPOINC
+Final result: Mr Orange won 3–0
+Settlement: 3,000 DSPOINC paid automatically to the winner
+```
+
+Confirmed flow:
+
+```text
+challenge creation
+→ challenger 1,500 DSPOINC escrow
+→ opponent acceptance
+→ opponent 1,500 DSPOINC stake
+→ live Best-of-5 combat
+→ winner resolution
+→ automatic 3,000 DSPOINC payout
+→ both stake rows settled
+→ PVP settlement audit created
+```
+
+---
+
+## ✅ Waiting-Challenge Cancellation Refund Validated
+
+A separate production PVP challenge was cancelled while still waiting.
+
+Visible score-history audit confirmed:
+
+```text
+MouseFight PVP stake escrowed: -1,234 DSPOINC
+MouseFight cancelled PVP stake refund: +1,234 DSPOINC
+Net movement: 0 DSPOINC
+Role: challenger
+```
+
+The cancellation branch therefore confirms:
+
+- waiting fight cancellation succeeds;
+- the active challenger stake changes from `staked` to `refunded`;
+- the refund receives its own score and adjustment audit;
+- the challenger receives the complete escrow back;
+- no PVP settlement row or winner payout is created for a cancelled challenge.
+
+---
+
+## ✅ Existing Event Economy Regression Check Passed
+
+The existing admin bracket event economy remained operational after the PVP API deployment.
+
+Validated event:
+
+```text
+Fight ID: mfevent_1784165165405_6kbd8v2
+Players: 2
+Buy-in per player: 1,000 DSPOINC
+Total burned: 2,000 DSPOINC
+Configured champion prize: 10,000 DSPOINC
+Winner: Narrrf / Mr Orange
+Reward score ID: 37124
+Reward adjustment ID: 36304
+```
+
+This confirms that the new PVP actions did not break:
+
+- transactional event joins;
+- event entry burns;
+- participant registration;
+- event combat;
+- automatic configured event champion rewards.
+
+---
+
+## ⚠️ Known Persistence Hardening Item
+
+During the event regression test, generic post-fight DB mirror writes encountered `database is locked` after the current retry window. The Discord fight completed and the champion reward paid, but the event header remained `waiting` until repaired.
+
+This does not invalidate the transactional PVP economy validation. The PVP economy API completed its creation, settlement, and cancellation transactions successfully.
+
+The next MouseFight phase should therefore be:
+
+## 🔜 Next Phase — Authoritative Finalization + Restart Recovery Hardening
+
+Planned scope:
+
+1. Make completed event/PVP final-state persistence authoritative and retryable.
+2. Prevent reward settlement before required final fight-state persistence succeeds.
+3. Strengthen SQLite lock handling with a longer bounded retry/backoff strategy.
+4. Restore waiting MouseFight events and PVP challenges after a local bot restart.
+5. Rebuild runtime timers/buttons safely from DB state without duplicating stakes, burns, payouts, participants, or rounds.
+6. Keep combat, ability balance, Genesis data, Lab data, ownership, Genetic Items, event prizes, and token payout rules unchanged.
+
+**Next starting point:** MouseFight Bot — Authoritative Finalization and Restart Recovery Phase
+
+---
+
+## 2026-07-16 — MouseFight Event Buy-In Burn + Cancellation Refund Validated
+
+**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / production MouseFight database / admin bracket event economy  
+**Status:** Free entry, paid buy-in burn, transactional participant registration, and full waiting-event cancellation refund validated against production
+
+---
+
+## ✅ Production Event Economy Validation Complete
+
+MouseFight admin bracket events now use the dedicated transactional economy endpoint for event joins and whole-event cancellations.
+
+Validated endpoint:
+
+```text
+/api/discord/mousefight-economy.php
+
+## 2026-07-15 — MouseFight Event Buy-In Burn Foundation Installed
+
+**Scope:** `discord/commands/mousefight.js` / production MouseFight DB / admin bracket events / DSPOINC economy  
+**Status:** Database migration + event buy-in configuration complete — real balance deduction and burn settlement not active yet
+
+---
+
+## ✅ Production Database Migration Complete
+
+The live production database was updated successfully:
+
+```text
+Live DB:
+ /var/www/html/db/narrrf_world.sqlite
+
+Pre-migration backup:
+ /data/narrrf_world.before-mousefight-buyin-20260715_195433.sqlite
+
+## 2026-07-14 — First Real Nine-Ability PVP Fight Validated
+
+**Scope:** Real production Genesis profiles / PVP challenge / Best of 5 / no item loadout  
+**Status:** Real-profile ability combat completed successfully — metadata inspection and wider balance tests pending
+
+---
+
+## ✅ Real PVP Fight Completed
+
+Validated fight:
+
+```text
+Fight ID: mfpvp_1784048124290_vjxry38
+Wizard vs Furiosa
+Best of 5
+Final result: Wizard 3–0 Furiosa
+
+## 2026-07-14 — MouseFight Nine-Ability Engine Test Modes Validated
+
+**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js`  
+**Status:** Ability engine executes successfully in Best of 1, Best of 3, and Best of 5 test modes — real-profile production balance validation pending
+
+---
+
+## ✅ Fake Engine Tests Completed
+
+The first MouseFight nine-ability combat engine successfully completed all supported test formats:
+
+```text
+Best of 1
+Best of 3
+Best of 5
+
+## 2026-07-13 — MouseFight Phase 8D-6C Production API + Eligibility Hardening Complete
+
+
+
+**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight autocomplete / production MouseFight profile APIs  
+**Status:** Phase 8D-6C complete — live API deployment verified, autocomplete gate aligned, moderator eligibility confirmed
+
+
+---
+
+## ✅ Phase 8D-6C Completed
+
+MouseFight now uses a consistent eligibility path for named Genesis mice, including events that intentionally allow mice below the normal Fitness unlock level.
+
+Completed work:
+
+- Updated MouseFight mouse autocomplete so it no longer hardcodes:
+  - `fitnessRequired: true`
+- Autocomplete now resolves eligibility from the selected runtime fight.
+- Existing event settings now remain authoritative:
+  - `inventoryEnabled`
+  - `maxInventoryItems`
+  - `minHighestTraitLevel`
+- Fitness is now required only when:
+  - `minHighestTraitLevel > 0`
+- Level-0 MouseFight events can correctly display named, verified mice that have not yet unlocked Fitness.
+- The existing Join Arena button and slash autocomplete now follow the same eligibility rule.
+- No changes were made to:
+  - combat rolls,
+  - mouse power formulas,
+  - trait or ability calculations,
+  - Genetic Item calculations,
+  - DSPOINC settlement,
+  - token payouts,
+  - DB schema,
+  - ownership,
+  - Lab data.
+
+Validation passed:
+
+```bash
+node --check commands/mousefight.js
+node --check commands/mousefight-test.js
+node --check index.js
+
+## 2026-07-12 — MouseFight Final Wording + Frozen Loser Visual Prepared
+
+**Scope:** `discord/commands/mousefight.js` / PVP / bracket events / generated Canvas result cards
+**Status:** Local implementation completed — final Discord tests pending next session
+
+---
+
+## ✅ Completed
+
+* Renamed user-facing loadout wording to **Owner Genetic Item Loadout**.
+* Added clear safety wording: selected items are fight-only snapshots and are not consumed, locked, or permanently equipped.
+* Corrected event permission messages from `admins` to `moderators`.
+* Event creation remains restricted through `MOD_ROLE_ID`.
+* Removed an accidental challenge block that referenced undefined `action` and `loadoutPayload` variables.
+* Added a display-only frozen-loser effect to the existing `@napi-rs/canvas` MouseFight card:
+
+  * winner receives a green frame and `WINNER` badge;
+  * loser receives a cyan frame, `FROZEN` badge, ice tint, cracks, and frost particles.
+* Connected the resolved winner/loser state to both:
+
+  * PVP result cards;
+  * completed bracket-event match cards.
+* Bracket byes remain unchanged and do not generate a fake frozen opponent.
+* Restored the Canvas safety fallback so fights still finish with embed-only output if image generation fails.
+
+No combat, winner resolution, DB persistence, Genesis data, Genetic Items, DSPOINC, rewards, or payouts were changed.
+
+---
+
+## 🧪 Pending Next Session
+
+1. Run Node syntax checks.
+2. Restart the local Discord bot.
+3. Test `/mousefight-test` with Best of 1 and public output.
+4. Run one real PVP challenge.
+5. Run one two-player moderator event.
+6. Confirm the correct loser is frozen in both modes and byes remain normal.
+
+**Next starting point:** MouseFight Bot 2.0 LIVE — Frozen Loser Final Test
+
+
+## 2026-07-12 — MouseFight Idle Loadout PVP Flow Validated
+
+**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight PVP challenges / idle Genetic Item loadouts  
+**Status:** PVP challenge + opponent accept flow validated with manual idle Genetic Item selection
+
+---
+
+## ✅ MouseFight PVP Idle Loadout Flow Working
+
+MouseFight PVP challenges now support manual idle Genetic Item loadouts on **both sides**.
+
+Validated live flow:
+
+```text
+/mousefight challenge
+↓
+challenger selects named Genesis mouse
+↓
+challenger selects idle Genetic Items
+↓
+public PVP challenge message is created
+↓
+opponent accepts challenge
+↓
+opponent selects named Genesis mouse
+↓
+opponent selects idle Genetic Items
+↓
+fight starts only after opponent item selection / Skip Items
+↓
+result embed posts normally
+↓
+DB rows persist fight, participants, rounds, powers, rolls, winner, and metadata
+
 ## 2026-07-10 — MouseFight V1 Core Validated / fight_id Autocomplete Working
 
 **Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight DB tables  
