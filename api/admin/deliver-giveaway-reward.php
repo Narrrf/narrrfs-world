@@ -236,14 +236,33 @@ function fetch_genetic_catalog_row(PDO $pdo, int $catalogId): ?array {
     return fetch_first_row_by_candidate_id($pdo, 'tbl_genetic_trait_catalog', ['catalog_id', 'trait_catalog_id', 'id'], $catalogId);
 }
 
-function user_owns_genetic_trait(PDO $pdo, string $userId, string $traitType, string $traitValue): bool {
+const GENETIC_MAX_OWNED_PER_EXACT_TRAIT = 2;
+
+/**
+ * Count how many copies of one exact Genetic trait a user owns.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Giveaway rewards must follow the same Genetic Inventory rule as the Lab:
+ * 0 copies allowed, 1 copy allowed as the second copy, 2 copies blocked.
+ * This is only a duplicate-limit check. It does not choose winners, reroll
+ * rewards, spend DSPOINC, upgrade items, list marketplace items, or mutate
+ * NFT-bound Genesis progression.
+ */
+function count_owned_genetic_trait(PDO $pdo, string $userId, string $traitType, string $traitValue): int {
     if ($userId === '' || $traitType === '' || $traitValue === '' || !sqlite_table_exists($pdo, 'tbl_user_genetic_items')) {
-        return false;
+        return 0;
     }
 
-    $stmt = $pdo->prepare("SELECT genetic_item_id FROM tbl_user_genetic_items WHERE user_id = ? AND trait_type = ? AND trait_value = ? LIMIT 1");
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM tbl_user_genetic_items
+        WHERE user_id = ?
+          AND trait_type = ?
+          AND trait_value = ?
+    ");
     $stmt->execute([$userId, $traitType, $traitValue]);
-    return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+
+    return (int)$stmt->fetchColumn();
 }
 function roll_fallback_dspoinc_amount(int $min, int $max): int {
     if ($max < $min) {
@@ -443,9 +462,11 @@ function grant_genetic_trait_to_user(PDO $pdo, string $userId, array $catalogRow
         throw new Exception('Genetic reward catalog row is malformed');
     }
 
-    if (user_owns_genetic_trait($pdo, $userId, $traitType, $traitValue)) {
-        throw new Exception('User already owns this genetic trait');
-    }
+$ownedCopies = count_owned_genetic_trait($pdo, $userId, $traitType, $traitValue);
+
+if ($ownedCopies >= GENETIC_MAX_OWNED_PER_EXACT_TRAIT) {
+    throw new Exception('User already owns the maximum 2 copies of this genetic trait');
+}
 
     $stmt = $pdo->prepare("\n        INSERT INTO tbl_user_genetic_items (\n            user_id,\n            catalog_id,\n            trait_type,\n            trait_value,\n            current_level,\n            upgrade_status,\n            acquired_method,\n            is_listed_for_sale,\n            created_at,\n            updated_at\n        ) VALUES (?, ?, ?, ?, 1, 'idle', ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)\n    ");
     $stmt->execute([$userId, $catalogId, $traitType, $traitValue, $sourceTag]);
@@ -580,7 +601,9 @@ if (!$isTestGiveaway) {
             $deliveryPayload = grant_genetic_trait_to_user($pdo, $winnerUserId, $catalogRow, $sourceTag);
         } catch (Throwable $geneticError) {
             $message = trim((string)$geneticError->getMessage());
-            $isDuplicateOwnership = stripos($message, 'already owns this genetic trait') !== false;
+            $isDuplicateOwnership =
+    stripos($message, 'already owns this genetic trait') !== false ||
+    stripos($message, 'already owns the maximum 2 copies of this genetic trait') !== false;
 
             if (!$isDuplicateOwnership || !$fallbackDspoincEnabled) {
                 throw $geneticError;

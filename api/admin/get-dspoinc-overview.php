@@ -190,6 +190,46 @@ foreach (array_slice($holderRows, 0, 10) as $row) {
     );
     $negativeFlow24h = abs($negativeFlow24hRaw);
 
+    /**
+     * Read all negative DSPOINC ledger movement across the full DB history.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * This includes spending, purchases, upgrades, staking deductions, game
+     * entries, and permanent burns. It is an all-time ledger outflow metric,
+     * not proof that every removed amount was permanently burned.
+     */
+    $negativeFlowAllTimeRaw = (int) fetchSingleValue(
+        $pdo,
+        "SELECT COALESCE(SUM(score), 0)
+         FROM tbl_user_scores
+         WHERE score < 0"
+    );
+    $negativeFlowAllTime = abs($negativeFlowAllTimeRaw);
+
+    /**
+     * Read permanent MouseFight burns during the latest 24-hour window.
+     *
+     * Refunded MouseFight entries remain in the audit table but are excluded
+     * because their status changes from burned to refunded.
+     */
+    $mouseFightBurned24h = (int) fetchSingleValue(
+        $pdo,
+        "SELECT COALESCE(SUM(amount), 0)
+         FROM tbl_mousefight_dspoinc_burns
+         WHERE status = 'burned'
+           AND burned_at >= datetime('now', '-24 hours')"
+    );
+
+    /**
+     * Read the permanent all-time MouseFight DSPOINC burn.
+     */
+    $mouseFightBurnedAllTime = (int) fetchSingleValue(
+        $pdo,
+        "SELECT COALESCE(SUM(amount), 0)
+         FROM tbl_mousefight_dspoinc_burns
+         WHERE status = 'burned'"
+    );
+
     // 7) Current active season
     $currentSeason = fetchSingleValue(
         $pdo,
@@ -227,6 +267,9 @@ foreach (array_slice($holderRows, 0, 10) as $row) {
             'entries_7d' => $entries7d,
             'positive_flow_24h' => $positiveFlow24h,
             'negative_flow_24h' => $negativeFlow24h,
+            'negative_flow_all_time' => $negativeFlowAllTime,
+            'mousefight_burned_24h' => $mouseFightBurned24h,
+            'mousefight_burned_all_time' => $mouseFightBurnedAllTime,
             'staked_ratio' => $stakedRatio,
             'current_season' => $currentSeason,
             'top_holders' => $topHolders

@@ -1266,23 +1266,94 @@
     </div>
   </div>
 
-  <!-- Ledger Activity Stats -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+  <!-- Ledger activity and verified permanent MouseFight burns.
+       DEVS FOR DECADES:
+       Ledger outflow includes every negative DSPOINC movement. It must not be
+       described as entirely permanent burn. MouseFight burn values come from
+       the dedicated event burn/refund audit table. -->
+  <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4 mb-4">
     <div class="text-center">
-      <div class="text-lg font-bold text-orange-400" id="economyEntries24h">-</div>
-      <div class="text-sm text-gray-300">Ledger Entries (24h)</div>
+      <div
+        class="text-lg font-bold text-orange-400"
+        id="economyEntries24h"
+      >
+        -
+      </div>
+      <div class="text-sm text-gray-300">
+        Ledger Entries (24h)
+      </div>
     </div>
+
     <div class="text-center">
-      <div class="text-lg font-bold text-orange-300" id="economyEntries7d">-</div>
-      <div class="text-sm text-gray-300">Ledger Entries (7d)</div>
+      <div
+        class="text-lg font-bold text-orange-300"
+        id="economyEntries7d"
+      >
+        -
+      </div>
+      <div class="text-sm text-gray-300">
+        Ledger Entries (7d)
+      </div>
     </div>
+
     <div class="text-center">
-      <div class="text-lg font-bold text-lime-400" id="economyPositiveFlow24h">-</div>
-      <div class="text-sm text-gray-300">Positive Flow (24h)</div>
+      <div
+        class="text-lg font-bold text-lime-400"
+        id="economyPositiveFlow24h"
+      >
+        -
+      </div>
+      <div class="text-sm text-gray-300">
+        Positive Flow (24h)
+      </div>
     </div>
+
     <div class="text-center">
-      <div class="text-lg font-bold text-red-400" id="economyNegativeFlow24h">-</div>
-      <div class="text-sm text-gray-300">Spend / Burn (24h)</div>
+      <div
+        class="text-lg font-bold text-red-400"
+        id="economyNegativeFlow24h"
+      >
+        -
+      </div>
+      <div class="text-sm text-gray-300">
+        Spend / Outflow (24h)
+      </div>
+    </div>
+
+    <div class="text-center">
+      <div
+        class="text-lg font-bold text-red-300"
+        id="economyNegativeFlowAllTime"
+      >
+        -
+      </div>
+      <div class="text-sm text-gray-300">
+        All-Time Ledger Outflow
+      </div>
+    </div>
+
+    <div class="text-center">
+      <div
+        class="text-lg font-bold text-orange-300"
+        id="economyMouseFightBurned24h"
+      >
+        -
+      </div>
+      <div class="text-sm text-gray-300">
+        MouseFight Burned (24h)
+      </div>
+    </div>
+
+    <div class="text-center">
+      <div
+        class="text-lg font-bold text-yellow-300"
+        id="economyMouseFightBurnedAllTime"
+      >
+        -
+      </div>
+      <div class="text-sm text-gray-300">
+        MouseFight Burned (All Time)
+      </div>
     </div>
   </div>
 
@@ -7715,8 +7786,30 @@ async function loadDspoincOverview() {
 
     updateEconomyElement('economyEntries24h', formatAdminNumber(data.entries_24h));
     updateEconomyElement('economyEntries7d', formatAdminNumber(data.entries_7d));
-    updateEconomyElement('economyPositiveFlow24h', formatAdminNumber(data.positive_flow_24h));
-    updateEconomyElement('economyNegativeFlow24h', formatAdminNumber(data.negative_flow_24h));
+    updateEconomyElement(
+      'economyPositiveFlow24h',
+      formatAdminNumber(data.positive_flow_24h)
+    );
+
+    updateEconomyElement(
+      'economyNegativeFlow24h',
+      formatAdminNumber(data.negative_flow_24h)
+    );
+
+    updateEconomyElement(
+      'economyNegativeFlowAllTime',
+      formatAdminNumber(data.negative_flow_all_time)
+    );
+
+    updateEconomyElement(
+      'economyMouseFightBurned24h',
+      formatAdminNumber(data.mousefight_burned_24h)
+    );
+
+    updateEconomyElement(
+      'economyMouseFightBurnedAllTime',
+      formatAdminNumber(data.mousefight_burned_all_time)
+    );
 
     updateEconomyElement('economyStakedRatio', data.staked_ratio, '%');
     updateEconomyElement('economyCurrentSeason', data.current_season || 'unknown');
@@ -7742,6 +7835,9 @@ async function loadDspoincOverview() {
       'economyEntries7d',
       'economyPositiveFlow24h',
       'economyNegativeFlow24h',
+      'economyNegativeFlowAllTime',
+      'economyMouseFightBurned24h',
+      'economyMouseFightBurnedAllTime',
       'economyStakedRatio',
       'economyCurrentSeason'
     ].forEach(id => updateEconomyElement(id, 'Error'));

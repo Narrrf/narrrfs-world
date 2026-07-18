@@ -11,7 +11,7 @@
 // - Genetic items are USER-bound, never NFT-bound
 // - Catalog source of truth = tbl_genetic_trait_catalog
 // - Owned item source of truth = tbl_user_genetic_items
-// - One user may own only one exact trait_type + trait_value combination
+// - One user may own up to two exact trait_type + trait_value combinations
 // - Admin gifts create owned rows at level 1 / idle state
 // - Admin gifts are logged in tbl_genetic_item_history
 // - This file is additive and does not modify store item gifting
@@ -171,18 +171,28 @@ function fetch_catalog_for_admin(PDO $pdo): array {
     return is_array($rows) ? $rows : [];
 }
 
-function user_owns_exact_genetic_trait(PDO $pdo, string $userId, string $traitType, string $traitValue): bool {
+const GENETIC_MAX_OWNED_PER_EXACT_TRAIT = 2;
+
+/**
+ * Count how many copies of one exact Genetic trait a user owns.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Genetic Items are Discord-user-bound inventory rows. The Lab rule allows
+ * up to 2 copies of the same exact trait_type + trait_value for one user.
+ * This function only counts rows. It does not grant, remove, upgrade, list,
+ * sell, spend DSPOINC, or touch NFT-bound Genesis progression.
+ */
+function count_owned_exact_genetic_trait(PDO $pdo, string $userId, string $traitType, string $traitValue): int {
     $stmt = $pdo->prepare("
-        SELECT genetic_item_id
+        SELECT COUNT(*)
         FROM tbl_user_genetic_items
         WHERE user_id = ?
           AND trait_type = ?
           AND trait_value = ?
-        LIMIT 1
     ");
     $stmt->execute([$userId, $traitType, $traitValue]);
 
-    return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+    return (int)$stmt->fetchColumn();
 }
 
 function insert_genetic_item_history(
@@ -229,20 +239,24 @@ function create_admin_gifted_genetic_item(PDO $pdo, string $userId, array $catal
         throw new RuntimeException('Catalog row is malformed');
     }
 
-    if (user_owns_exact_genetic_trait($pdo, $userId, $traitType, $traitValue)) {
-        return [
-            'success' => false,
-            'skipped_duplicate' => true,
-            'error' => 'User already owns this genetic trait',
-            'data' => [
-                'user_id' => $userId,
-                'catalog_id' => $catalogId,
-                'trait_type' => $traitType,
-                'trait_value' => $traitValue,
-                'display_title' => $displayTitle
-            ]
-        ];
-    }
+$ownedCopies = count_owned_exact_genetic_trait($pdo, $userId, $traitType, $traitValue);
+
+if ($ownedCopies >= GENETIC_MAX_OWNED_PER_EXACT_TRAIT) {
+    return [
+        'success' => false,
+        'skipped_duplicate' => true,
+        'error' => 'User already owns the maximum 2 copies of this genetic trait',
+        'data' => [
+            'user_id' => $userId,
+            'catalog_id' => $catalogId,
+            'trait_type' => $traitType,
+            'trait_value' => $traitValue,
+            'display_title' => $displayTitle,
+            'owned_copies' => $ownedCopies,
+            'max_owned_copies' => GENETIC_MAX_OWNED_PER_EXACT_TRAIT
+        ]
+    ];
+}
 
     $insertStmt = $pdo->prepare("
         INSERT INTO tbl_user_genetic_items (

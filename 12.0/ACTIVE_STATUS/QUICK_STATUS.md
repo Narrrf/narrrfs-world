@@ -1,5 +1,102 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-18 — Genetic Item 2-Copy Rule + Admin Economy/Profile Patch Ready for Live Push
+
+**Scope:** `api/admin/genetic-management.php` / `api/admin/deliver-giveaway-reward.php` / `api/admin/get-dspoinc-overview.php` / `api/admin/get-stats.php` / `public/admin-interface.html` / `public/profile.html`  
+**Status:** Local validation complete — ready for Render deploy and post-restart live verification
+
+---
+
+## ✅ Genetic Item Duplicate Rule Fixed
+
+The Genetic Item duplicate rule was aligned across admin gifting and giveaway reward delivery.
+
+Correct rule:
+
+```text
+0 copies owned → allow grant
+1 copy owned  → allow second copy
+2 copies owned → block third copy
+
+## 2026-07-18 — DSPOINC Burn + Outflow Reporting Expanded
+
+**Scope:** `discord/commands/winners.js` / `api/admin/get-dspoinc-overview.php` / `public/admin-interface.html` / MouseFight burn audit table  
+**Status:** Local implementation and validation complete — Render deployment intentionally postponed until the next grouped push
+
+---
+
+## ✅ Winners Command Burn Overview Expanded
+
+The Discord `/winners` command now reports a clearer DSPOINC economy overview alongside eligible reward totals.
+
+The new reporting includes:
+
+```text
+MouseFight burned — selected report period
+MouseFight burned — all time
+All-time ledger outflow
+
+## 2026-07-18 — MouseFight World Cup Bracket + Friday Event Major Test Complete
+
+**Scope:** `discord/commands/mousefight.js` / live four-player MouseFight event / World Cup-style Canvas bracket / winner-first score display / FOOK champion payout  
+**Status:** Major Friday event test completed successfully — tournament combat, visual bracket, result summary, persistence, and token payout all validated
+
+---
+
+## ✅ MouseFight World Cup Bracket Live
+
+MouseFight bracket events now finish with a complete World Cup-style tournament graph.
+
+The final visual successfully displayed:
+
+- every participating Genesis mouse;
+- real Genesis NFT mouse images;
+- semifinal and final match cards;
+- mouse custom names;
+- Discord owner names;
+- Mouse Warrior Power;
+- winner-first match scores;
+- greyed-out eliminated mice;
+- glowing advancement connectors;
+- a large champion panel;
+- final score and configured prize information.
+
+The visual is generated from the already-resolved `tournamentResult.matches` data.
+
+It is presentation-only and does not:
+
+- rerun combat;
+- recalculate winners;
+- change bracket advancement;
+- modify DB results;
+- move rewards;
+- mutate Genesis metadata;
+- mutate Lab progression;
+- consume or permanently equip Genetic Items.
+
+---
+
+## ✅ Validated Friday Event
+
+```text
+Fight ID:
+mfevent_1784325878106_32te81i
+
+Event:
+One last 1K
+
+Players:
+4
+
+Bracket:
+Random Bracket
+
+Match Format:
+Best of 3
+
+Resolved Matches:
+3
+
 ## 2026-07-16 — MouseFight Transactional PVP DSPOINC Economy Fully Validated
 
 **Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / production MouseFight database / equal-stake PVP challenge economy  

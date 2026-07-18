@@ -275,6 +275,22 @@ else {
       background: linear-gradient(135deg, var(--dark-bg) 0%, #1e1b4b 50%, #312e81 100%);
       color: #ffffff;
     }
+
+    /* 📱 Profile scroll reload guard.
+   DEVS FOR DECADES:
+   Some mobile browsers and Brave builds can trigger browser-level pull refresh
+   or scroll chaining when users scroll fast at the top/bottom of long pages.
+   This is visual/navigation safety only. It does not change profile data,
+   rewards, wallet verification, DSPOINC, staking, games, or API behavior. */
+html,
+body {
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+}
+
+body {
+  touch-action: pan-y;
+}
     
     /* 🎨 Style Card Elements */
     .card {

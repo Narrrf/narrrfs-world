@@ -98,16 +98,44 @@ try {
     $totalItems = $result->fetchArray(SQLITE3_ASSOC)['count'];
 
     // Get active quests
-    $stmt = $db->prepare('SELECT COUNT(*) as count FROM tbl_quests WHERE is_active = 1');
+    // Get active quests
+    $stmt = $db->prepare(
+        'SELECT COUNT(*) as count
+         FROM tbl_quests
+         WHERE is_active = 1'
+    );
     $result = $stmt->execute();
     $activeQuests = $result->fetchArray(SQLITE3_ASSOC)['count'];
+
+    /**
+     * Read the permanent all-time MouseFight DSPOINC burn.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * Cancelled MouseFight events keep their audit rows but change status to
+     * "refunded". Only rows still marked "burned" represent DSPOINC that was
+     * permanently removed from circulation.
+     */
+    $stmt = $db->prepare(
+        "SELECT COALESCE(SUM(amount), 0) AS total_burned
+         FROM tbl_mousefight_dspoinc_burns
+         WHERE status = 'burned'"
+    );
+    $result = $stmt->execute();
+    $mouseFightBurnedAllTimeRow = $result->fetchArray(SQLITE3_ASSOC);
+
+    $mouseFightBurnedAllTime = isset(
+        $mouseFightBurnedAllTimeRow['total_burned']
+    )
+        ? (int)$mouseFightBurnedAllTimeRow['total_burned']
+        : 0;
 
     echo json_encode([
         'success' => true,
         'totalUsers' => $totalUsers,
         'totalScores' => $totalScores,
         'totalItems' => $totalItems,
-        'activeQuests' => $activeQuests
+        'activeQuests' => $activeQuests,
+        'mouseFightBurnedAllTime' => $mouseFightBurnedAllTime
     ]);
 
 } catch (Exception $e) {
