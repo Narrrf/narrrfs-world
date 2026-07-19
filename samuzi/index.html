@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Samuzi NFT — AKAMAILAND Phase 4 Mint</title>
 <meta property="og:title" content="Samuzi NFT — AKAMAILAND Phase 4 Mint">
-<meta property="og:title" content="Samuzi NFT — AKAMAILAND Phase 4 Mint">
 <meta property="og:description" content="Akamai Land is the next Samuzi NFT expansion: 10,000 land NFTs, daily participation, Samuzi Token rewards, raffles, buybacks, and Narrrfs World digital item access.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#07070b">
@@ -1654,6 +1653,69 @@
         grid-template-columns: 1fr;
     }
 }
+/* =========================================================
+   AKAMAILAND CTA BUTTON FINAL POLISH
+   Fixes mint button padding/wrapping in hero + side panel
+   ========================================================= */
+
+.launch-actions a,
+.mint-panel-actions a,
+.mint-live-strip .mint-cta-row a {
+    min-height: 52px;
+    padding: 0.86rem 1.35rem !important;
+    border-radius: 999px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    line-height: 1.15 !important;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.mint-panel-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+    margin-top: 1.1rem;
+}
+
+.mint-panel-actions a {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.95rem;
+}
+
+.mint-live-strip .mint-cta-row {
+    display: flex;
+    justify-content: center;
+}
+
+.mint-live-strip .mint-cta-row a {
+    min-width: 210px;
+    padding: 0.82rem 1.25rem !important;
+    font-size: 0.95rem;
+}
+
+.preview-lock-note a {
+    color: #fde68a;
+    font-weight: 900;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+    .launch-actions a,
+    .mint-panel-actions a,
+    .mint-live-strip .mint-cta-row a {
+        width: 100%;
+        white-space: normal;
+    }
+
+    .mint-panel-actions {
+        grid-template-columns: 1fr;
+    }
+}
     </style>
 </head>
 
@@ -1688,12 +1750,18 @@
             </div>
         </div>
 
-        <div class="mint-alert-actions">
-            <a href="#akamai-land" class="mint-mini-btn primary">Explore Akamai Land</a>
-            <a href="#sliderShowcase" class="mint-mini-btn primary mint-live-glow">
-                View Akamai Preview
-            </a>
-        </div>
+<div class="mint-alert-actions">
+    <a href="https://akamailand.gensuki.xyz/"
+       class="mint-mini-btn primary mint-live-glow"
+       target="_blank"
+       rel="noopener noreferrer">
+        🚀 Mint Details
+    </a>
+
+    <a href="#akamai-land" class="mint-mini-btn primary">
+        Explore Akamai Land
+    </a>
+</div>
     </div>
 </section>
 
@@ -1722,32 +1790,40 @@
     <span>🎁 Daily Raffle Pool</span>
 </div>
 
-                <div class="launch-actions">
-    <a class="button-primary mint-live-glow" href="#akamai-land">
-        🌍 Explore Akamai Land
+<div class="launch-actions">
+    <a class="button-primary mint-live-glow"
+       href="https://akamailand.gensuki.xyz/"
+       target="_blank"
+       rel="noopener noreferrer">
+        🚀 Mint on Gensuki
+    </a>
+
+    <a class="button-secondary" href="#akamai-land">
+        Explore Akamai Land
     </a>
 
     <a class="button-secondary" href="#sliderShowcase">
         View Akamai Previews
     </a>
-
-    <a class="button-secondary" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
-        Join Discord
-    </a>
 </div>
 
 <div class="preview-lock-note mint-live-note">
-    ⏳ OG Mint starts 20 July 2026 · 04:00 PM UTC
+    ⏳ OG Mint starts 20 July 2026 · 04:00 PM UTC ·
+    <a href="https://akamailand.gensuki.xyz/"
+       target="_blank"
+       rel="noopener noreferrer">
+        Open AKAMAILAND
+    </a>
 </div>
             </div>
 
 <div class="front-hero-panel mint-live-panel">
-    <span class="panel-kicker">🌍 Akamai Land Signal</span>
+    <span class="panel-kicker">🚨 AKAMAILAND Phase 4 Mint</span>
 
-    <h2>The next Samuzi world is forming.</h2>
+    <h2>The next Samuzi world is live.</h2>
 
     <p>
-        Akamai Land introduces a 10,000 NFT land collection built around digital ownership,
+        AKAMAILAND introduces a 10,000 NFT land collection built around digital ownership,
         daily participation, Samuzi Token rewards, raffle mechanics, and long-term ecosystem growth.
     </p>
 
@@ -1756,7 +1832,7 @@
             <div class="mint-status-item hot">
                 <span>Collection</span>
                 <strong>10,000 Lands</strong>
-                <small>Unique Akamai land NFTs</small>
+                <small>Unique AKAMAILAND NFTs</small>
             </div>
 
             <div class="mint-status-item next">
@@ -1771,25 +1847,38 @@
                 <small>Earn through participation</small>
             </div>
 
-            <div class="mint-status-item">
-                <span>Mint Date</span>
-                <strong>TBA</strong>
-                <small>Official announcement soon</small>
+            <div class="mint-status-item hot">
+                <span>OG Mint</span>
+                <strong>20 July 2026</strong>
+                <small>04:00 PM UTC · 0.05 SOL · Unlimited per wallet</small>
             </div>
         </div>
 
-<div class="mint-live-strip" aria-label="AKAMAILAND Phase 4 mint status">
-    <strong>🌍 AKAMAILAND Phase 4 Mint Live</strong>
-<span>OG Mint starts 20 July 2026 at 04:00 PM UTC · WL Mint opens 27 July · Public Mint opens 03 August.</span>        </div>
+        <div class="mint-live-strip" aria-label="AKAMAILAND Phase 4 mint status">
+            <strong>🌍 AKAMAILAND Phase 4 Mint Live</strong>
+            <span>OG Mint starts 20 July 2026 · WL Mint opens 27 July · Public Mint opens 03 August.</span>
+
+            <div class="mint-cta-row" style="margin-top: 1rem;">
+                <a class="button-primary mint-live-glow"
+                   href="https://akamailand.gensuki.xyz/"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    🚀 Mint on Gensuki
+                </a>
+            </div>
+        </div>
     </div>
 
     <div class="launch-actions mint-panel-actions">
-        <a class="button-primary mint-live-glow" href="#akamai-land">
-            Explore Utility
+        <a class="button-primary mint-live-glow"
+           href="https://akamailand.gensuki.xyz/"
+           target="_blank"
+           rel="noopener noreferrer">
+            🚀 AKAMAILAND 
         </a>
 
-        <a class="button-secondary mint-live-outline" href="#sliderShowcase">
-            View Previews
+        <a class="button-secondary mint-live-outline" href="#akamai-land">
+            Explore Utility
         </a>
     </div>
 </div>
@@ -2216,13 +2305,19 @@ Activate the hidden preview to reveal the next Samuzi expansion signal.
             </p>
 
             <div class="launch-actions">
-                <a class="button-primary mint-live-glow" href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer">
-                    Join Discord for Mint Updates
-                </a>
+<a class="button-primary mint-live-glow"
+   href="https://akamailand.gensuki.xyz/"
+   target="_blank"
+   rel="noopener noreferrer">
+    🚀 Open AKAMAILAND Mint Details
+</a>
 
-                <a class="button-secondary" href="#akamai-land">
-                    Explore Akamai Land
-                </a>
+<a class="button-secondary"
+   href="https://discord.gg/D55VGqsQWH"
+   target="_blank"
+   rel="noopener noreferrer">
+    Join Samuzi Discord
+</a>
 
                 <a class="button-secondary" href="whitepaper.html">
                     Read Whitepaper
@@ -2247,8 +2342,8 @@ Activate the hidden preview to reveal the next Samuzi expansion signal.
                 </div>
 
                 <div class="footer-section">
-                    <h4>Status</h4>
-<p>Akamai Land reveal in progress</p>
+<h4>Status</h4>
+<p>AKAMAILAND Phase 4 mint live</p>
 <p>OG Mint starts 20 July 2026 · 04:00 PM UTC</p>
                 </div>
 
