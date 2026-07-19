@@ -312,6 +312,342 @@ function mousefight_economy_fetch_all(
 }
 
 /**
+ * Return the configured default MouseFight recovery duration.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * The duration is stored in tbl_mousefight_settings so administrators can
+ * change it without editing PHP or Discord bot source code.
+ *
+ * New fights snapshot this value into tbl_mousefights.recovery_minutes.
+ * Existing open fights can therefore keep the duration they were created with.
+ */
+function mousefight_economy_get_default_recovery_minutes(
+    SQLite3 $db
+): int {
+    $setting = mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT setting_value
+        FROM tbl_mousefight_settings
+        WHERE setting_key = 'default_recovery_minutes'
+        LIMIT 1
+        "
+    );
+
+    return mousefight_economy_integer(
+        $setting['setting_value'] ?? 30,
+        0,
+        1440
+    );
+}
+
+/**
+ * Return the recovery duration configured for one persisted fight.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * A non-null per-fight value is authoritative. NULL means the fight was
+ * created before recovery configuration existed, so the current database
+ * default is used as a safe compatibility fallback.
+ */
+function mousefight_economy_resolve_fight_recovery_minutes(
+    SQLite3 $db,
+    array $fight
+): int {
+    if (
+        array_key_exists('recovery_minutes', $fight) &&
+        $fight['recovery_minutes'] !== null &&
+        $fight['recovery_minutes'] !== ''
+    ) {
+        return mousefight_economy_integer(
+            $fight['recovery_minutes'],
+            0,
+            1440
+        );
+    }
+
+    return mousefight_economy_get_default_recovery_minutes($db);
+}
+
+/**
+ * Return an active recovery row for one Genesis mouse.
+ *
+ * Expired rows remain preserved as audit history but do not block the mouse.
+ */
+function mousefight_economy_get_active_mouse_recovery(
+    SQLite3 $db,
+    string $tokenId,
+    string $collection
+): ?array {
+    return mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT
+            cooldown_id,
+            token_id,
+            collection,
+            user_id,
+            fight_id,
+            cooldown_minutes,
+            cooldown_reason,
+            started_at,
+            expires_at,
+            status
+        FROM tbl_mousefight_mouse_cooldowns
+        WHERE token_id = ?
+          AND collection = ?
+          AND status = 'active'
+          AND datetime(expires_at) > datetime('now')
+        ORDER BY datetime(expires_at) DESC, cooldown_id DESC
+        LIMIT 1
+        ",
+        [
+            $tokenId,
+            $collection
+        ]
+    );
+}
+
+/**
+ * Return a waiting or active fight that already reserves one Genesis mouse.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Reserved and recovering are separate states. A mouse is reserved when its
+ * participant row belongs to another waiting or active fight.
+ *
+ * The optional excluded Fight ID allows a mouse already registered in the
+ * current fight to pass checks performed during that same fight transaction.
+ */
+function mousefight_economy_get_mouse_reservation(
+    SQLite3 $db,
+    string $tokenId,
+    string $collection,
+    string $excludedFightId = ''
+): ?array {
+    $sql = "
+        SELECT
+            p.fight_id,
+            p.user_id,
+            p.token_id,
+            p.collection,
+            f.status,
+            f.mode,
+            f.title
+        FROM tbl_mousefight_participants p
+        INNER JOIN tbl_mousefights f
+            ON f.fight_id = p.fight_id
+        WHERE p.token_id = ?
+          AND p.collection = ?
+          AND f.status IN ('waiting', 'active')
+    ";
+
+    $values = [
+        $tokenId,
+        $collection
+    ];
+
+    if ($excludedFightId !== '') {
+        $sql .= "
+          AND p.fight_id <> ?
+        ";
+
+        $values[] = $excludedFightId;
+    }
+
+    $sql .= "
+        ORDER BY p.joined_at DESC
+        LIMIT 1
+    ";
+
+    return mousefight_economy_fetch_one(
+        $db,
+        $sql,
+        $values
+    );
+}
+
+/**
+ * Reject a Genesis mouse that is recovering or reserved elsewhere.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This helper must run inside the same BEGIN IMMEDIATE transaction as any
+ * participant, burn, or escrow write. That prevents fast duplicate actions
+ * from bypassing recovery or entering one mouse into two fights.
+ */
+function mousefight_economy_assert_mouse_available(
+    SQLite3 $db,
+    array $participant,
+    string $excludedFightId = ''
+): void {
+    $tokenId = (string)$participant['token_id'];
+    $collection = (string)$participant['collection'];
+
+    $activeRecovery =
+        mousefight_economy_get_active_mouse_recovery(
+            $db,
+            $tokenId,
+            $collection
+        );
+
+    if ($activeRecovery) {
+        $expiresAt = (string)(
+            $activeRecovery['expires_at'] ?? ''
+        );
+
+        throw new RuntimeException(
+            'This Genesis mouse is recovering from its last MouseFight' .
+            ($expiresAt !== ''
+                ? " until {$expiresAt} UTC."
+                : '.')
+        );
+    }
+
+    $reservation =
+        mousefight_economy_get_mouse_reservation(
+            $db,
+            $tokenId,
+            $collection,
+            $excludedFightId
+        );
+
+    if ($reservation) {
+        throw new RuntimeException(
+            'This Genesis mouse is already reserved in another waiting or active MouseFight.'
+        );
+    }
+}
+
+/**
+ * Create one persistent recovery row for a mouse that completed a real fight.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Recovery belongs to token_id + collection, not permanently to one Discord
+ * owner. The user_id stored here records who controlled the mouse during this
+ * completed fight and remains part of the historical audit.
+ *
+ * The database UNIQUE constraint on fight_id + token_id + collection makes
+ * this operation idempotent. Retrying the same completed fight cannot create
+ * a second recovery period for the same mouse.
+ *
+ * A configured duration of zero disables recovery for that fight and creates
+ * no cooldown row.
+ */
+function mousefight_economy_create_mouse_recovery(
+    SQLite3 $db,
+    array $fight,
+    array $participant,
+    string $cooldownReason = 'completed_match'
+): ?array {
+    $fightId = trim((string)($fight['fight_id'] ?? ''));
+    $tokenId = trim((string)($participant['token_id'] ?? ''));
+    $collection = trim(
+        (string)($participant['collection'] ?? 'genesis')
+    );
+    $userId = trim((string)($participant['user_id'] ?? ''));
+
+    if ($fightId === '') {
+        throw new RuntimeException(
+            'Cannot create MouseFight recovery without a Fight ID.'
+        );
+    }
+
+    if ($tokenId === '' || $collection === '') {
+        throw new RuntimeException(
+            'Cannot create MouseFight recovery without mouse identity.'
+        );
+    }
+
+    if ($userId === '') {
+        throw new RuntimeException(
+            'Cannot create MouseFight recovery without participant identity.'
+        );
+    }
+
+    $recoveryMinutes =
+        mousefight_economy_resolve_fight_recovery_minutes(
+            $db,
+            $fight
+        );
+
+    if ($recoveryMinutes <= 0) {
+        return null;
+    }
+
+    mousefight_economy_write(
+        $db,
+        "
+        INSERT OR IGNORE INTO tbl_mousefight_mouse_cooldowns (
+            token_id,
+            collection,
+            user_id,
+            fight_id,
+            cooldown_minutes,
+            cooldown_reason,
+            started_at,
+            expires_at,
+            status,
+            created_at
+        ) VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            datetime('now'),
+            datetime('now', '+' || ? || ' minutes'),
+            'active',
+            datetime('now')
+        )
+        ",
+        [
+            $tokenId,
+            $collection,
+            $userId,
+            $fightId,
+            $recoveryMinutes,
+            $cooldownReason,
+            $recoveryMinutes
+        ]
+    );
+
+    $recovery = mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT
+            cooldown_id,
+            token_id,
+            collection,
+            user_id,
+            fight_id,
+            cooldown_minutes,
+            cooldown_reason,
+            started_at,
+            expires_at,
+            status,
+            created_at
+        FROM tbl_mousefight_mouse_cooldowns
+        WHERE fight_id = ?
+          AND token_id = ?
+          AND collection = ?
+        LIMIT 1
+        ",
+        [
+            $fightId,
+            $tokenId,
+            $collection
+        ]
+    );
+
+    if (!$recovery) {
+        throw new RuntimeException(
+            'MouseFight recovery row could not be confirmed.'
+        );
+    }
+
+    return $recovery;
+}
+
+/**
  * Execute one write statement and return the inserted row ID when available.
  */
 function mousefight_economy_write(
@@ -657,6 +993,23 @@ function mousefight_economy_event_join(
             'This Genesis mouse is already in the event.'
         );
     }
+
+        /**
+     * Authoritatively verify that this Genesis mouse is available.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * The same-event duplicate checks above provide the clearest message for
+     * users already registered here. This shared check then blocks recovery
+     * and reservations in every other waiting or active MouseFight.
+     *
+     * It runs before capacity, balance, burn, and participant writes so a
+     * rejected mouse can never lose DSPOINC.
+     */
+    mousefight_economy_assert_mouse_available(
+        $db,
+        $participant,
+        $fightId
+    );
 
     $participantCountRow = mousefight_economy_fetch_one(
         $db,
@@ -1090,7 +1443,8 @@ function mousefight_economy_get_pvp_fight(
             challenged_user_id,
             status,
             mode,
-            wager_dspoinc
+            wager_dspoinc,
+            recovery_minutes
         FROM tbl_mousefights
         WHERE fight_id = ?
         LIMIT 1
@@ -1384,6 +1738,16 @@ function mousefight_economy_pvp_create(
         1000000
     );
 
+    /**
+     * Snapshot the current database-configured recovery duration.
+     * Plain language for DEVS FOR DECADES:
+     * PVP recovery is configurable through tbl_mousefight_settings.
+     * The value is copied into this fight when the challenge is created so a
+     * later settings change cannot alter the terms of an already-open fight.
+     */
+    $recoveryMinutes =
+        mousefight_economy_get_default_recovery_minutes($db);
+
     $challenger = mousefight_economy_build_participant(
         $participantInput
     );
@@ -1411,6 +1775,19 @@ function mousefight_economy_pvp_create(
             'This MouseFight PVP challenge already exists.'
         );
     }
+
+    /**
+     * Authoritatively verify that the challenger mouse can enter a new PVP.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * No fight row exists yet for this new challenge, so there is no Fight ID
+     * to exclude. This blocks both active recovery and any reservation in an
+     * existing waiting or active MouseFight before escrow can be created.
+     */
+    mousefight_economy_assert_mouse_available(
+        $db,
+        $challenger
+    );
 
     mousefight_economy_write(
         $db,
@@ -1441,14 +1818,15 @@ function mousefight_economy_pvp_create(
             require_verified_wallet,
             created_at,
             metadata_json,
-            buy_in_dspoinc
+            buy_in_dspoinc,
+            recovery_minutes
         ) VALUES (
             ?, ?, ?, ?, ?,
             ?, ?, NULL, NULL, ?,
             ?, 0, NULL, 0,
             ?, ?, ?, ?, ?,
             2, ?, NULL, ?,
-            datetime('now'), ?, 0
+            datetime('now'), ?, 0, ?
         )
         ",
         [
@@ -1468,7 +1846,8 @@ function mousefight_economy_pvp_create(
             $maximumInventoryItems,
             $durationSeconds,
             $requireVerifiedWallet,
-            $metadataJson !== '' ? $metadataJson : null
+            $metadataJson !== '' ? $metadataJson : null,
+            $recoveryMinutes
         ]
     );
 
@@ -1546,7 +1925,17 @@ function mousefight_economy_pvp_accept_settle(
 
     $challengerParticipant = mousefight_economy_fetch_one(
         $db,
-        "SELECT id, token_id FROM tbl_mousefight_participants WHERE fight_id = ? AND user_id = ? LIMIT 1",
+        "
+        SELECT
+            id,
+            user_id,
+            token_id,
+            collection
+        FROM tbl_mousefight_participants
+        WHERE fight_id = ?
+          AND user_id = ?
+        LIMIT 1
+        ",
         [$fightId, $challengerUserId]
     );
 
@@ -1573,6 +1962,26 @@ function mousefight_economy_pvp_accept_settle(
     if ($existingToken) {
         throw new RuntimeException('This Genesis mouse is already in the PVP fight.');
     }
+
+        /**
+     * Authoritatively verify that the opponent mouse can enter this PVP.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * Same-fight duplicate checks above keep their specific player messages.
+     * This shared check then blocks active recovery and reservations in every
+     * other waiting or active MouseFight.
+     *
+     * The current Fight ID is excluded because the challenger participant
+     * legitimately reserves a different mouse inside this same PVP challenge.
+     *
+     * This check runs before the opponent stake, participant insertion,
+     * settlement, payout, or final fight-state write.
+     */
+    mousefight_economy_assert_mouse_available(
+        $db,
+        $opponent,
+        $fightId
+    );
 
     $existingSettlement = mousefight_economy_fetch_one(
         $db,
@@ -1719,6 +2128,35 @@ function mousefight_economy_pvp_accept_settle(
         ]
     );
 
+        /**
+     * Start recovery for both mice after the real PVP fight is finalized.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * Both the winner and loser completed a real MouseFight, so both mice enter
+     * recovery. The cooldown belongs to token_id + collection and uses the
+     * duration snapshotted when this PVP challenge was created.
+     *
+     * These writes remain inside the same SQLite transaction as the opponent
+     * stake, payout, settlement, and finished fight state. Any failure rolls
+     * back the complete acceptance instead of leaving partial economy results.
+     */
+    $challengerRecovery =
+        mousefight_economy_create_mouse_recovery(
+            $db,
+            $fight,
+            $challengerParticipant,
+            'completed_pvp'
+        );
+
+    $opponentRecovery =
+        mousefight_economy_create_mouse_recovery(
+            $db,
+            $fight,
+            $opponent,
+            'completed_pvp'
+        );
+
+
     return [
         'fight_id' => $fightId,
         'status' => MOUSEFIGHT_FINISHED_STATUS,
@@ -1729,7 +2167,9 @@ function mousefight_economy_pvp_accept_settle(
         'opponent_stake' => $opponentStake,
         'settlement_id' => $settlementId,
         'payout_score_id' => $payoutScoreId,
-        'payout_adjustment_id' => $payoutAdjustmentId
+        'payout_adjustment_id' => $payoutAdjustmentId,
+        'challenger_recovery' => $challengerRecovery,
+        'opponent_recovery' => $opponentRecovery
     ];
 }
 

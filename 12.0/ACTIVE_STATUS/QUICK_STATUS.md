@@ -1,5 +1,96 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-20 — MouseFight Fight Recovery V1 PVP Backend Ready for Live Test
+
+**Scope:** `api/discord/mousefight-economy.php` / MouseFight PVP availability / persistent per-Genesis-mouse recovery  
+**Status:** Local implementation and syntax validation complete — ready for Render push, restart, and controlled live PVP test
+
+---
+
+## ✅ Phase A PVP Recovery Backend Completed Locally
+
+The first persistent **❄️ Fight Recovery** path is now connected for real two-player PVP fights.
+
+Implemented database architecture:
+
+```text
+tbl_mousefight_settings
+tbl_mousefights.recovery_minutes
+tbl_mousefight_mouse_cooldowns
+
+## 2026-07-19 — MouseFight Phase A Approved: Per-Mouse Fight Recovery
+
+**Scope:** `discord/commands/mousefight.js` / MouseFight participant history / transactional event and PVP entry flow / Genesis mouse availability  
+**Status:** Architecture approved — implementation not started yet
+
+---
+
+## ✅ Community Testing Foundation Confirmed
+
+MouseFight has now completed more than 100 real fights across:
+
+- two-player PVP challenges;
+- equal-stake DSPOINC challenges;
+- two-player events;
+- four-player events;
+- eight-player events;
+- larger public bracket testing;
+- Best of 1, Best of 3, and Best of 5 formats;
+- random and seeded brackets;
+- Owner Genetic Item loadouts;
+- DSPOINC entry burns;
+- automatic DSPOINC winner settlement;
+- moderator-approved SPL token payouts;
+- restart recovery of waiting fights and participants;
+- World Cup-style final bracket visualization.
+
+The previously recovered public event remained stable after repair, and the earlier unexpected event-finalization issue did not return during the latest event and PVP testing.
+
+---
+
+## 🧠 Community Balance Discussion Reviewed
+
+Community feedback identified two separate balance topics:
+
+1. **Fighter rotation and availability**
+2. **Optional battle modes that influence temporary combat calculations**
+
+Important conclusion:
+
+- Random chaos is not the same as a handicap.
+- Stronger mice must retain meaningful advantages earned through Genesis traits, abilities, Lab progression, and selected Genetic Items.
+- Weaker mice may later receive bounded support in a dedicated optional mode.
+- Competitive modes must never remove the value of upgrading a Genesis mouse.
+- Extreme power differences should later also be managed through leagues and event eligibility.
+- Historical fight snapshots should be simulated repeatedly before final underdog values are selected.
+
+---
+
+# 🔜 NEXT PHASE — PHASE A: FIGHT RECOVERY V1
+
+The first approved gameplay expansion is a persistent cooldown for each Genesis mouse after completing a real MouseFight.
+
+Public system name:
+
+```text
+❄️ Fight Recovery
+
+## 2026-07-19 — SPOINC Bridge Gensuki Pending Queue Cleaned
+
+**Scope:** Gensuki custom-token-presale pending transactions / SPOINC Bridge admin audit  
+**Status:** Live pending queue cleaned successfully without server restart
+
+Two old pending Gensuki rows were confirmed as `failed` after live Solana recheck showed `not_found`.
+
+Final admin cockpit state:
+
+```text
+Pending: 0
+Complete Candidates: 0
+Failed Candidates: 0
+Manual / RPC: 0
+No pending Gensuki rows returned
+
 ## 2026-07-19 — SPOINC Bridge Admin Operations Cockpit Phase 1B Local Test Passed
 
 **Scope:** `public/admin-interface.html` / `api/admin/spoinc-bridge-ops.php` / SPOINC Bridge admin support workflow  

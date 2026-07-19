@@ -39,7 +39,9 @@ const SPOINC_BRIDGE_OPS_SOLANA_RPC_FALLBACK = 'https://api.mainnet-beta.solana.c
 const SPOINC_BRIDGE_OPS_PROJECT_ID = '7e04b38a-7bd4-4fab-acc4-dfa53a99b639';
 const SPOINC_BRIDGE_OPS_GENSUKI_BASE_URL = 'https://app.gensuki.xyz';
 const SPOINC_BRIDGE_OPS_GET_ALL_TRANSACTIONS_PATH = '/api/custom-token-presale/getAllTransactions';
+const SPOINC_BRIDGE_OPS_CONFIRM_PATH = '/api/custom-token-presale/confirm';
 const SPOINC_BRIDGE_OPS_MAX_GENSUKI_PAGES = 50;
+const SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE = 'CONFIRM GENSUKI FAILED';
 
 /**
  * Return JSON and stop execution.
@@ -372,6 +374,7 @@ function spoinc_bridge_ops_get_health(array $admin): void
     'dry_run_fail_gensuki_only',
     'dry_run_complete_gensuki_only',
     'dry_run_settle_spoinc_claim',
+    'apply_fail_local_not_found',
     'get_operation_log'
 ]
         ]
@@ -629,12 +632,79 @@ function spoinc_bridge_ops_gensuki_get_json(string $path, array $query): array
 
     $json = json_decode($rawBody, true);
 
-    return [
+        return [
         'success' => $curlError === '' && $httpCode >= 200 && $httpCode < 300 && is_array($json),
         'http_code' => $httpCode,
         'json' => is_array($json) ? $json : null,
         'raw_body' => $rawBody,
         'error' => $curlError
+    ];
+}
+
+/**
+ * Call one Gensuki JSON POST endpoint.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This keeps the Gensuki API key server-side. It is used only after all safety
+ * checks pass. Browser/admin HTML must never receive the key.
+ */
+function spoinc_bridge_ops_gensuki_post_json(string $path, array $payload): array
+{
+    $apiKey = spoinc_bridge_ops_get_gensuki_api_key();
+
+    if ($apiKey === '') {
+        return [
+            'success' => false,
+            'http_code' => 0,
+            'json' => null,
+            'raw_body' => '',
+            'error' => 'Gensuki API key is not configured on the server.'
+        ];
+    }
+
+    if (!function_exists('curl_init')) {
+        return [
+            'success' => false,
+            'http_code' => 0,
+            'json' => null,
+            'raw_body' => '',
+            'error' => 'PHP cURL extension is not available.'
+        ];
+    }
+
+    $url = spoinc_bridge_ops_get_gensuki_base_url() . $path;
+    $encodedPayload = json_encode($payload);
+
+    $ch = curl_init($url);
+
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 12,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTPHEADER => [
+            'Accept: application/json',
+            'Content-Type: application/json',
+            'x-api-key: ' . $apiKey
+        ],
+        CURLOPT_POSTFIELDS => $encodedPayload
+    ]);
+
+    $rawBody = (string)curl_exec($ch);
+    $curlError = curl_error($ch);
+    $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    curl_close($ch);
+
+    $json = json_decode($rawBody, true);
+
+    return [
+        'success' => $curlError === '' && $httpCode >= 200 && $httpCode < 300 && is_array($json),
+        'http_code' => $httpCode,
+        'json' => is_array($json) ? $json : null,
+        'raw_body' => $rawBody,
+        'error' => $curlError,
+        'sent_payload' => $payload
     ];
 }
 
@@ -1215,6 +1285,255 @@ function spoinc_bridge_ops_get_gensuki_pending_audit(array $data): void
 }
 
 /**
+ * Find one already-classified pending audit row by signature and optional intent id.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This reuses the same pending audit path that powers the admin screen. The
+ * apply action must never trust only the browser form. It must re-read Gensuki,
+ * recheck Solana, and confirm the local Narrrfs intent match on the server.
+ */
+function spoinc_bridge_ops_find_pending_audit_row_for_apply(
+    string $signature,
+    string $intentId
+): array {
+    $pendingRows = [];
+    $totalPages = 1;
+    $gensukiErrors = [];
+
+    for ($page = 1; $page <= min($totalPages, SPOINC_BRIDGE_OPS_MAX_GENSUKI_PAGES); $page++) {
+        $response = spoinc_bridge_ops_gensuki_get_json(
+            SPOINC_BRIDGE_OPS_GET_ALL_TRANSACTIONS_PATH,
+            [
+                'projectId' => SPOINC_BRIDGE_OPS_PROJECT_ID,
+                'page' => $page
+            ]
+        );
+
+        if (!$response['success']) {
+            $gensukiErrors[] = [
+                'page' => $page,
+                'http_code' => $response['http_code'],
+                'error' => $response['error'] ?: 'Gensuki request failed.',
+                'raw_preview' => substr((string)$response['raw_body'], 0, 500)
+            ];
+            break;
+        }
+
+        $json = $response['json'] ?: [];
+        $totalPages = max(1, spoinc_bridge_ops_extract_total_pages($json));
+        $rows = spoinc_bridge_ops_extract_gensuki_rows($json);
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $status = spoinc_bridge_ops_extract_status_from_row($row);
+
+            if (!spoinc_bridge_ops_is_pending_status($status)) {
+                continue;
+            }
+
+            $classifiedRow = spoinc_bridge_ops_classify_gensuki_pending_row($row, true);
+            $rowSignature = (string)($classifiedRow['signature'] ?? '');
+            $localIntentId = (string)($classifiedRow['local_match']['row']['intent_id'] ?? '');
+
+            if ($rowSignature !== $signature) {
+                continue;
+            }
+
+            if ($intentId !== '' && $localIntentId !== $intentId) {
+                continue;
+            }
+
+            return [
+                'found' => true,
+                'row' => $classifiedRow,
+                'gensuki_errors' => $gensukiErrors
+            ];
+        }
+    }
+
+    return [
+        'found' => false,
+        'row' => null,
+        'gensuki_errors' => $gensukiErrors
+    ];
+}
+
+/**
+ * Apply fail-only cleanup for a local pending intent whose Solana transaction
+ * is not found.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This is the first real protected apply action. It is intentionally narrow:
+ * - Only failed_candidate_local is allowed.
+ * - Only local table tbl_spoinc_bridge_intents is allowed.
+ * - Only Gensuki pending statuses are allowed.
+ * - Only Solana not_found is allowed.
+ * - The admin must type CONFIRM GENSUKI FAILED exactly.
+ *
+ * This action calls Gensuki /confirm with status failed.
+ * It does not credit DSPOINC, debit DSPOINC, settle local rows, or create score
+ * rows. rpc_error must never be treated as failed.
+ */
+function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin): void
+{
+    $signature = spoinc_bridge_ops_request_string($data, 'signature', 140);
+    $intentId = spoinc_bridge_ops_request_string($data, 'intent_id', 80);
+    $reason = spoinc_bridge_ops_request_string($data, 'reason', 500);
+    $confirmationPhrase = spoinc_bridge_ops_request_string($data, 'confirmation_phrase', 80);
+
+    if ($confirmationPhrase !== SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Confirmation phrase mismatch. Type exactly: ' . SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE
+        ], 400);
+    }
+
+    if (!spoinc_bridge_ops_is_valid_solana_signature($signature)) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Invalid Solana signature format.'
+        ], 400);
+    }
+
+    if ($intentId === '') {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Intent ID is required for protected fail apply.'
+        ], 400);
+    }
+
+    if ($reason === '') {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Admin note is required for protected fail apply.'
+        ], 400);
+    }
+
+    $auditMatch = spoinc_bridge_ops_find_pending_audit_row_for_apply($signature, $intentId);
+
+    if (!$auditMatch['found']) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'No matching pending Gensuki/local intent row found during server recheck.',
+            'gensuki_errors' => $auditMatch['gensuki_errors'] ?? []
+        ], 409);
+    }
+
+    $row = $auditMatch['row'];
+    $bucket = (string)($row['bucket'] ?? '');
+    $gensukiStatus = (string)($row['status'] ?? '');
+    $gensukiId = (string)($row['gensuki_id'] ?? '');
+    $localTable = (string)($row['local_match']['table'] ?? '');
+    $localIntentId = (string)($row['local_match']['row']['intent_id'] ?? '');
+    $solanaState = (string)($row['solana']['state'] ?? '');
+
+    $failedChecks = [];
+
+    if ($bucket !== 'failed_candidate_local') {
+        $failedChecks[] = 'Expected bucket failed_candidate_local, got ' . $bucket;
+    }
+
+    if (!spoinc_bridge_ops_is_pending_status($gensukiStatus)) {
+        $failedChecks[] = 'Expected Gensuki pending status, got ' . $gensukiStatus;
+    }
+
+    if ($localTable !== 'tbl_spoinc_bridge_intents') {
+        $failedChecks[] = 'Expected local table tbl_spoinc_bridge_intents, got ' . $localTable;
+    }
+
+    if ($localIntentId !== $intentId) {
+        $failedChecks[] = 'Expected intent id ' . $intentId . ', got ' . $localIntentId;
+    }
+
+    if ($solanaState !== 'not_found') {
+        $failedChecks[] = 'Expected Solana state not_found, got ' . $solanaState;
+    }
+
+    if ($gensukiId === '') {
+        $failedChecks[] = 'Missing Gensuki transaction id.';
+    }
+
+    if (!empty($failedChecks)) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Protected fail apply checks did not pass.',
+            'failed_checks' => $failedChecks,
+            'row' => $row,
+            'safety' => [
+                'gensuki_confirm_called' => false,
+                'db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false
+            ]
+        ], 409);
+    }
+
+    $confirmPayload = [
+        'projectId' => SPOINC_BRIDGE_OPS_PROJECT_ID,
+        'transactionHash' => $signature,
+        'status' => 'failed'
+    ];
+
+    $confirmResponse = spoinc_bridge_ops_gensuki_post_json(
+        SPOINC_BRIDGE_OPS_CONFIRM_PATH,
+        $confirmPayload
+    );
+
+    if (!$confirmResponse['success']) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Gensuki failed-confirm request failed.',
+            'http_code' => $confirmResponse['http_code'],
+            'response_error' => $confirmResponse['error'],
+            'raw_preview' => substr((string)$confirmResponse['raw_body'], 0, 700),
+            'sent_payload' => $confirmPayload,
+            'safety' => [
+                'gensuki_confirm_called' => true,
+                'gensuki_status_sent' => 'failed',
+                'db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false
+            ]
+        ], 502);
+    }
+
+    spoinc_bridge_ops_json([
+        'success' => true,
+        'data' => [
+            'action' => 'apply_fail_local_not_found',
+            'phase' => 'phase_1c_fail_only_apply',
+            'mode' => 'protected_apply',
+            'admin_id' => $admin['admin_id'] ?? 'unknown',
+            'intent_id' => $intentId,
+            'gensuki_id' => $gensukiId,
+            'signature' => $signature,
+            'reason' => $reason,
+            'confirmed_status' => 'failed',
+            'gensuki_response' => $confirmResponse['json'],
+            'server_recheck' => [
+                'bucket' => $bucket,
+                'gensuki_status_before' => $gensukiStatus,
+                'local_table' => $localTable,
+                'local_intent_id' => $localIntentId,
+                'solana_state' => $solanaState
+            ],
+            'safety' => [
+                'gensuki_confirm_called' => true,
+                'gensuki_status_sent' => 'failed',
+                'db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false,
+                'local_bridge_settlement_performed' => false,
+                'rpc_error_auto_failed' => false
+            ]
+        ]
+    ]);
+}
+
+/**
  * Return a dry-run-only protected operation scaffold.
  *
  * Plain language for DEVS FOR DECADES:
@@ -1323,6 +1642,10 @@ try {
 
 if ($action === 'dry_run_fail_local_not_found') {
     spoinc_bridge_ops_dry_run_scaffold($data, 'dry_run_fail_local_not_found');
+}
+
+if ($action === 'apply_fail_local_not_found') {
+    spoinc_bridge_ops_apply_fail_local_not_found($data, $admin);
 }
 
 if ($action === 'dry_run_fail_gensuki_only') {
