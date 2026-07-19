@@ -35,15 +35,15 @@ try {
         'bubble_color' => 'gold',
         'bubble_opacity' => 'low',
         'bubble_speed' => 'slow',
-        'hero_background' => 'phase3-coming-soon.jpg',
+'hero_background' => 'akamai-samurai-phase-bg.webp',
         'background_transparency' => 'full',
-        'page_backgrounds' => [
-            'index' => 'phase3-coming-soon.jpg',
-            'projects' => 'phase3-coming-soon.jpg',
-            'about' => 'phase3-coming-soon.jpg',
-            'contact' => 'phase3-coming-soon.jpg',
-            'legal' => 'phase3-coming-soon.jpg'
-        ],
+'page_backgrounds' => [
+    'index' => 'akamai-samurai-phase-bg.webp',
+    'projects' => 'akamai-samurai-phase-bg.webp',
+    'about' => 'akamai-samurai-phase-bg.webp',
+    'contact' => 'akamai-samurai-phase-bg.webp',
+    'legal' => 'akamai-samurai-phase-bg.webp'
+],
         'bubble_pages' => [
             'index' => false,
             'projects' => false,

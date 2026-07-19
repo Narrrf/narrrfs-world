@@ -211,7 +211,7 @@ function updatePageBackground($background) {
         $content = file_get_contents($index_file);
         
         // Determine the correct path for the background
-        if (in_array($background, ['background1.png', 'background2.png', 'background3.png', 'background4.png'])) {
+        if (in_array($background, ['background1.png', 'background2.png', 'background3.png', 'background4.png', 'akamai-samurai-phase-bg.webp'])) {
             $background_path = './assets/background/' . $background;
         } else {
             // Default to slider-photos for other images

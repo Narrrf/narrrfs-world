@@ -78,14 +78,13 @@ try {
             'legal' => true
         ],
 
-        'page_backgrounds' => [
-            'index' => 'akamai-samurai-phase-bg.webpg',
-            'projects' => 'akamai-samurai-phase-bg.webp,
-            'about' => 'akamai-samurai-phase-bg.webp',
-            'contact' => 'akamai-samurai-phase-bg.webp',
-            'legal' => 'akamai-samurai-phase-bg.webp'
-        ]
-    ];
+'page_backgrounds' => [
+    'index' => 'akamai-samurai-phase-bg.webp',
+    'projects' => 'akamai-samurai-phase-bg.webp',
+    'about' => 'akamai-samurai-phase-bg.webp',
+    'contact' => 'akamai-samurai-phase-bg.webp',
+    'legal' => 'akamai-samurai-phase-bg.webp'
+],
 
     $settings = array_replace_recursive($default_settings, $settings);
 

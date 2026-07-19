@@ -137,19 +137,20 @@
     (function () {
       const originalFetch = window.fetch.bind(window);
       const NAR_ADMIN_TIMEOUT_MS = 15000;
-      const NAR_TARGET_PATHS = [
-        '/api/admin/point-management.php',
-        '/api/admin/get-user-adjustments.php',
-        '/api/admin/get-player-profile.php',
-        '/api/admin/get-player-lab.php',
-        '/api/admin/get-holder-verifications.php',
-        '/api/admin/get-holder-verification-stats.php',
-        '/api/admin/get-discord-role-members-live.php',
-        '/api/admin/get-discord-role-members.php',
-        '/api/admin/reward-chamber-config.php',
-        '/api/admin/get-spoinc-bridge-admin.php',
-        '/api/user/user-game-missions.php'
-      ];
+const NAR_TARGET_PATHS = [
+  '/api/admin/point-management.php',
+  '/api/admin/get-user-adjustments.php',
+  '/api/admin/get-player-profile.php',
+  '/api/admin/get-player-lab.php',
+  '/api/admin/get-holder-verifications.php',
+  '/api/admin/get-holder-verification-stats.php',
+  '/api/admin/get-discord-role-members-live.php',
+  '/api/admin/get-discord-role-members.php',
+  '/api/admin/reward-chamber-config.php',
+  '/api/admin/get-spoinc-bridge-admin.php',
+  '/api/admin/spoinc-bridge-ops.php',
+  '/api/user/user-game-missions.php'
+];
 
       function narShouldPatchRequest(url) {
         try {
@@ -2382,6 +2383,169 @@
   <div id="spoincBridgeStatus" class="bg-slate-900 bg-opacity-60 border border-blue-500 rounded-lg p-4 mb-6 text-blue-100">
     Loading SPOINC bridge admin data...
   </div>
+<!-- SPOINC Bridge Operations Cockpit.
+     DEVS FOR DECADES:
+     This section extends the existing read-only SPOINC Bridge tab with a simple
+     employee checklist. Phase 1B is read-only / dry-run only. It must not call
+     Gensuki /confirm, settle rows, credit DSPOINC, debit DSPOINC, mutate route
+     flags, or expose server-side API keys. -->
+<div id="spoincBridgeOpsCockpit" class="bg-slate-950 bg-opacity-80 border border-yellow-500 rounded-xl p-5 mb-6">
+  <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-5">
+    <div>
+      <h3 class="text-2xl font-bold text-yellow-300 mb-2">🧀 SPOINC Bridge Operations Checklist</h3>
+      <p class="text-blue-100 text-sm leading-relaxed">
+        Employee-friendly support flow for Gensuki pending rows, Solana checks, manual review buckets, and dry-run-only bridge recovery planning.
+      </p>
+      <p class="text-xs text-red-200 mt-2">
+        Phase 1B safety: read-only / dry-run only — no Gensuki confirm, no DSPOINC movement, no DB mutation.
+      </p>
+    </div>
+
+    <div class="bg-black bg-opacity-30 border border-red-500 rounded-lg p-3 min-w-[220px]">
+      <div class="text-xs text-red-200 font-semibold uppercase tracking-wide">Dangerous Actions</div>
+      <div class="text-xl font-bold text-white">Disabled</div>
+      <div class="text-xs text-red-100 mt-1">Apply buttons come only after dry-run checks are proven.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-5 gap-4 mb-5">
+    <div class="bg-black bg-opacity-30 border border-emerald-500 rounded-lg p-4">
+      <div class="text-xs text-emerald-200 font-semibold uppercase tracking-wide">API Mode</div>
+      <div id="spoincBridgeOpsMode" class="text-2xl font-bold text-white">Not checked</div>
+      <div id="spoincBridgeOpsAuth" class="text-xs text-emerald-100 mt-1">Step 1 checks this.</div>
+    </div>
+
+    <div class="bg-black bg-opacity-30 border border-yellow-500 rounded-lg p-4">
+      <div class="text-xs text-yellow-200 font-semibold uppercase tracking-wide">Pending</div>
+      <div id="spoincBridgeOpsPendingCount" class="text-2xl font-bold text-white">0</div>
+      <div class="text-xs text-yellow-100 mt-1">Gensuki unresolved rows.</div>
+    </div>
+
+    <div class="bg-black bg-opacity-30 border border-blue-500 rounded-lg p-4">
+      <div class="text-xs text-blue-200 font-semibold uppercase tracking-wide">Complete Candidates</div>
+      <div id="spoincBridgeOpsCompleteCount" class="text-2xl font-bold text-white">0</div>
+      <div class="text-xs text-blue-100 mt-1">Solana finalized / err:null.</div>
+    </div>
+
+    <div class="bg-black bg-opacity-30 border border-orange-500 rounded-lg p-4">
+      <div class="text-xs text-orange-200 font-semibold uppercase tracking-wide">Failed Candidates</div>
+      <div id="spoincBridgeOpsFailedCount" class="text-2xl font-bold text-white">0</div>
+      <div class="text-xs text-orange-100 mt-1">Not found or failed on-chain.</div>
+    </div>
+
+    <div class="bg-black bg-opacity-30 border border-red-500 rounded-lg p-4">
+      <div class="text-xs text-red-200 font-semibold uppercase tracking-wide">Manual / RPC</div>
+      <div id="spoincBridgeOpsManualCount" class="text-2xl font-bold text-white">0</div>
+      <div class="text-xs text-red-100 mt-1"><span id="spoincBridgeOpsRpcCount">0</span> RPC review rows.</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
+    <div class="bg-slate-900 bg-opacity-70 border border-emerald-500/40 rounded-lg p-4">
+      <h4 class="text-lg font-bold text-emerald-300 mb-2">Step 1 — Check System</h4>
+      <p class="text-xs text-slate-300 mb-3">Start here. This verifies that the protected ops endpoint is online and still in read-only mode.</p>
+      <button onclick="loadSpoincBridgeOpsHealth()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold">
+        🟢 1. Endpoint Health
+      </button>
+    </div>
+
+    <div class="bg-slate-900 bg-opacity-70 border border-yellow-500/40 rounded-lg p-4">
+      <h4 class="text-lg font-bold text-yellow-300 mb-2">Step 2 — Load Pending Queue</h4>
+      <p class="text-xs text-slate-300 mb-3">First load Gensuki pending rows. Then recheck the queue with Solana to classify rows safely.</p>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="loadSpoincBridgePendingAudit(false)" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-semibold">
+          📥 2A. Load Pending
+        </button>
+        <button onclick="loadSpoincBridgePendingAudit(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
+          🔁 2B. Recheck With Solana
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-900 bg-opacity-70 border border-white/10 rounded-lg p-4 mb-5">
+    <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 mb-3">
+      <div>
+        <h4 class="text-lg font-bold text-cyan-300">Step 3 — Review Buckets</h4>
+        <p class="text-xs text-slate-300">Rows appear here after Step 2. RPC errors are manual review only and must never be auto-failed.</p>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div class="bg-black bg-opacity-30 border border-slate-600 rounded p-2">Local: <span id="spoincBridgeOpsLocalCount" class="font-bold text-white">0</span></div>
+        <div class="bg-black bg-opacity-30 border border-slate-600 rounded p-2">Gensuki Only: <span id="spoincBridgeOpsGensukiOnlyCount" class="font-bold text-white">0</span></div>
+        <div class="bg-black bg-opacity-30 border border-slate-600 rounded p-2">Pages: <span id="spoincBridgeOpsPagesCount" class="font-bold text-white">0</span></div>
+        <div class="bg-black bg-opacity-30 border border-slate-600 rounded p-2">Solana: <span id="spoincBridgeOpsSolanaMode" class="font-bold text-white">No</span></div>
+      </div>
+    </div>
+    <div id="spoincBridgeOpsQueue" class="space-y-3">
+      <div class="bg-black bg-opacity-30 border border-dashed border-slate-600 rounded-lg p-4 text-sm text-slate-300">
+        No pending queue loaded yet. Use Step 2.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
+    <div class="bg-slate-900 bg-opacity-70 border border-cyan-500/40 rounded-lg p-4">
+      <h4 class="text-lg font-bold text-cyan-300 mb-3">Step 4 — Manual Signature Check</h4>
+      <p class="text-xs text-slate-300 mb-3">Use this when support has one transaction signature from a user or from Gensuki.</p>
+
+      <label class="block text-sm font-semibold text-blue-100 mb-2" for="spoincBridgeOpsSignatureInput">Transaction Signature</label>
+      <input id="spoincBridgeOpsSignatureInput" type="text" class="w-full px-3 py-2 rounded text-gray-900 mb-3" placeholder="Paste Solana transaction signature...">
+
+      <div class="flex flex-wrap gap-2">
+        <button onclick="checkSpoincBridgeOpsSignature()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold">
+          🔎 4A. Check Solana
+        </button>
+        <button onclick="fillSpoincBridgeOpsKnownGoodSignature()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-semibold">
+          🧪 Use Known Good Test TX
+        </button>
+      </div>
+      <div id="spoincBridgeOpsSolanaState" class="text-xs text-cyan-100 mt-3">Solana checker ready.</div>
+    </div>
+
+    <div class="bg-slate-900 bg-opacity-70 border border-purple-500/40 rounded-lg p-4">
+      <h4 class="text-lg font-bold text-purple-300 mb-3">Step 5 — Dry Run Only</h4>
+      <p class="text-xs text-slate-300 mb-3">These buttons explain what a future protected apply action would require. They do not settle or confirm anything.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-sm font-semibold text-blue-100 mb-2" for="spoincBridgeOpsIntentInput">Intent ID</label>
+          <input id="spoincBridgeOpsIntentInput" type="text" class="w-full px-3 py-2 rounded text-gray-900" placeholder="Example: 84">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-blue-100 mb-2" for="spoincBridgeOpsVerifySignatureInput">TX Signature</label>
+          <input id="spoincBridgeOpsVerifySignatureInput" type="text" class="w-full px-3 py-2 rounded text-gray-900" placeholder="Optional signature...">
+        </div>
+      </div>
+
+      <label class="block text-sm font-semibold text-blue-100 mb-2" for="spoincBridgeOpsReasonInput">Admin Note</label>
+      <input id="spoincBridgeOpsReasonInput" type="text" class="w-full px-3 py-2 rounded text-gray-900 mb-3" placeholder="Short support note for the dry-run...">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <button onclick="runSpoincBridgeDryRun('dry_run_fail_local_not_found')" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg font-semibold text-sm">Fail Local Not Found</button>
+        <button onclick="runSpoincBridgeDryRun('dry_run_fail_gensuki_only')" class="bg-orange-700 hover:bg-orange-800 text-white px-3 py-2 rounded-lg font-semibold text-sm">Fail Gensuki Only</button>
+        <button onclick="runSpoincBridgeDryRun('dry_run_complete_gensuki_only')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg font-semibold text-sm">Complete Gensuki Only</button>
+        <button onclick="runSpoincBridgeDryRun('dry_run_settle_spoinc_claim')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg font-semibold text-sm">Settle SPOINC Claim</button>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mt-3">
+        <button onclick="verifySpoincBridgeFailedCleanup()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg font-semibold text-sm">Verify Failed Cleanup</button>
+        <button onclick="verifySpoincBridgeCompleteSettlement()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg font-semibold text-sm">Verify Complete Settlement</button>
+        <button onclick="loadSpoincBridgeOpsLog()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg font-semibold text-sm">Ops Log</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-black bg-opacity-40 border border-yellow-500/40 rounded-lg p-4">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-3">
+      <div>
+        <h4 class="text-lg font-bold text-yellow-200">🧾 Operations Result</h4>
+        <p class="text-xs text-yellow-100">All API responses are displayed here for admin investigation and support notes.</p>
+      </div>
+      <button onclick="clearSpoincBridgeOpsResult()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-sm font-semibold">Clear Result</button>
+    </div>
+    <pre id="spoincBridgeOpsResult" class="whitespace-pre-wrap text-xs text-slate-100 bg-slate-950 bg-opacity-80 border border-white/10 rounded-lg p-4 overflow-x-auto">Operations checklist ready.</pre>
+  </div>
+</div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
     <div class="stats-card">
@@ -6433,6 +6597,7 @@ async function loadSecurityCrawlerData() {
 }
 
 const SPOINC_BRIDGE_ADMIN_ENDPOINT = API_BASE_URL + '/api/admin/get-spoinc-bridge-admin.php';
+const SPOINC_BRIDGE_OPS_ENDPOINT = API_BASE_URL + '/api/admin/spoinc-bridge-ops.php';
 const SPOINC_BRIDGE_SOLSCAN_TX_URL = 'https://solscan.io/tx/';
 
 /**
@@ -6518,10 +6683,356 @@ function escapeSpoincBridgeHtml(value) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 }
+/**
+ * Fetch safe SPOINC Bridge Operations API data.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This talks to the bridge operations endpoint. In Phase 1B the backend is
+ * read-only / dry-run only. These helpers must not pretend that a dry-run,
+ * checker, or queue result has actually settled, failed, credited, debited,
+ * mutated, or confirmed anything.
+ */
+async function fetchSpoincBridgeOps(action, params = {}) {
+  const url = new URL(SPOINC_BRIDGE_OPS_ENDPOINT, window.location.origin);
+  url.searchParams.set('action', action);
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && String(value).trim() !== '') {
+      url.searchParams.set(key, String(value).trim());
+    }
+  });
+
+  const response = await fetch(url.toString(), {
+    credentials: 'include',
+    cache: 'no-store',
+    headers: { Accept: 'application/json' }
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || data.details || `SPOINC bridge ops API failed with HTTP ${response.status}`);
+  }
+
+  return data.data || {};
+}
 
 /**
- * Format bridge amount in plain admin language.
+ * Render one bridge operations result into the cockpit result panel.
  */
+function renderSpoincBridgeOpsResult(title, data) {
+  const result = document.getElementById('spoincBridgeOpsResult');
+
+  if (!result) {
+    return;
+  }
+
+  result.textContent = JSON.stringify({
+    title,
+    checked_at: new Date().toISOString(),
+    data
+  }, null, 2);
+}
+
+/**
+ * Clear the bridge operations result panel.
+ */
+function clearSpoincBridgeOpsResult() {
+  const result = document.getElementById('spoincBridgeOpsResult');
+
+  if (result) {
+    result.textContent = 'Operations checklist ready.';
+  }
+}
+
+/**
+ * Set simple text safely for one cockpit element.
+ */
+function setSpoincBridgeOpsText(id, value) {
+  const element = document.getElementById(id);
+
+  if (element) {
+    element.textContent = String(value ?? '0');
+  }
+}
+
+/**
+ * Read the shared operation input fields.
+ */
+function readSpoincBridgeOpsInputs() {
+  return {
+    intent_id: String(document.getElementById('spoincBridgeOpsIntentInput')?.value || '').trim(),
+    signature: String(document.getElementById('spoincBridgeOpsVerifySignatureInput')?.value || '').trim(),
+    reason: String(document.getElementById('spoincBridgeOpsReasonInput')?.value || '').trim()
+  };
+}
+
+/**
+ * Render summary counters for the employee checklist.
+ */
+function renderSpoincBridgeOpsSummary(summary = {}) {
+  setSpoincBridgeOpsText('spoincBridgeOpsPagesCount', summary.total_pages || 0);
+  setSpoincBridgeOpsText('spoincBridgeOpsPendingCount', summary.pending_count || 0);
+  setSpoincBridgeOpsText('spoincBridgeOpsLocalCount', summary.local_matched_count || 0);
+  setSpoincBridgeOpsText('spoincBridgeOpsGensukiOnlyCount', summary.gensuki_only_count || 0);
+  setSpoincBridgeOpsText('spoincBridgeOpsCompleteCount', summary.complete_candidate_count || 0);
+  setSpoincBridgeOpsText('spoincBridgeOpsFailedCount', summary.failed_candidate_count || 0);
+  setSpoincBridgeOpsText('spoincBridgeOpsManualCount', summary.manual_review_count || 0);
+  setSpoincBridgeOpsText('spoincBridgeOpsRpcCount', summary.rpc_error_count || 0);
+  setSpoincBridgeOpsText('spoincBridgeOpsSolanaMode', summary.include_solana ? 'Yes' : 'No');
+}
+
+/**
+ * Convert a queue bucket into simple employee wording.
+ */
+function formatSpoincBridgeOpsBucket(bucket) {
+  const labels = {
+    local_intent_matched: 'Local intent matched',
+    gensuki_only_no_local_intent: 'Gensuki only / no local intent',
+    complete_candidate_local: 'Complete candidate / local',
+    complete_candidate_gensuki_only: 'Complete candidate / Gensuki only',
+    failed_candidate_local: 'Failed candidate / local',
+    failed_candidate_gensuki_only: 'Failed candidate / Gensuki only',
+    pending_on_chain: 'Pending on-chain',
+    rpc_error_manual_review: 'RPC error / manual review',
+    manual_review: 'Manual review'
+  };
+
+  return labels[bucket] || bucket || 'Unknown bucket';
+}
+
+/**
+ * Render one pending queue row.
+ */
+function renderSpoincBridgeOpsQueueRow(row, index) {
+  const bucket = escapeSpoincBridgeHtml(formatSpoincBridgeOpsBucket(row.bucket));
+  const signature = escapeSpoincBridgeHtml(row.signature || 'No signature');
+  const status = escapeSpoincBridgeHtml(row.status || 'unknown');
+  const wallet = escapeSpoincBridgeHtml(row.wallet || 'unknown wallet');
+  const amount = escapeSpoincBridgeHtml(row.amount || 'unknown amount');
+  const routeHint = escapeSpoincBridgeHtml(row.route_hint || 'unknown route');
+  const solanaState = escapeSpoincBridgeHtml(row.solana?.state || 'not_checked');
+  const localState = row.local_match?.found
+    ? `Local: ${escapeSpoincBridgeHtml(row.local_match.table || 'matched')}`
+    : `Local: ${escapeSpoincBridgeHtml(row.local_match?.reason || 'no match')}`;
+
+  return `
+    <div class="bg-black bg-opacity-30 border border-slate-700 rounded-lg p-4">
+      <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3">
+        <div>
+          <div class="text-sm font-bold text-yellow-200">#${index + 1} — ${bucket}</div>
+          <div class="text-xs text-slate-300 mt-1">Status: ${status} · Solana: ${solanaState}</div>
+          <div class="text-xs text-slate-300 mt-1">${escapeSpoincBridgeHtml(localState)}</div>
+        </div>
+        <div class="text-xs text-slate-300 xl:text-right">
+          <div>Amount: <span class="text-white font-semibold">${amount}</span></div>
+          <div>Route: <span class="text-white font-semibold">${routeHint}</span></div>
+          <div>Wallet: <span class="text-white font-semibold">${wallet}</span></div>
+        </div>
+      </div>
+      <div class="mt-3 text-xs text-slate-400 break-all">TX: ${signature}</div>
+    </div>`;
+}
+
+/**
+ * Render the pending queue list.
+ */
+function renderSpoincBridgeOpsQueue(rows = [], errors = []) {
+  const queue = document.getElementById('spoincBridgeOpsQueue');
+
+  if (!queue) {
+    return;
+  }
+
+  if (errors.length > 0) {
+    queue.innerHTML = errors.map((error) => `
+      <div class="bg-red-950 bg-opacity-50 border border-red-500 rounded-lg p-4 text-sm text-red-100">
+        <div class="font-bold">Gensuki API note / local config issue</div>
+        <div class="text-xs mt-1">Page ${escapeSpoincBridgeHtml(error.page || '?')} · HTTP ${escapeSpoincBridgeHtml(error.http_code || 0)}</div>
+        <div class="text-xs mt-1">${escapeSpoincBridgeHtml(error.error || 'Unknown error')}</div>
+      </div>
+    `).join('');
+    return;
+  }
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    queue.innerHTML = `
+      <div class="bg-emerald-950 bg-opacity-40 border border-emerald-500 rounded-lg p-4 text-sm text-emerald-100">
+        ✅ No pending Gensuki rows returned for this check.
+      </div>`;
+    return;
+  }
+
+  queue.innerHTML = rows.map(renderSpoincBridgeOpsQueueRow).join('');
+}
+
+/**
+ * Load the bridge ops endpoint health state.
+ */
+async function loadSpoincBridgeOpsHealth() {
+  try {
+    const data = await fetchSpoincBridgeOps('get_health');
+
+    setSpoincBridgeOpsText('spoincBridgeOpsMode', data.mode || data.phase || 'Online');
+    setSpoincBridgeOpsText('spoincBridgeOpsAuth', `Auth: ${data.auth_mode || 'unknown'} · Admin: ${data.admin_id || 'unknown'}`);
+
+    renderSpoincBridgeOpsResult('Step 1 — Endpoint Health', data);
+    addLog('✅ SPOINC Bridge Ops health loaded');
+  } catch (error) {
+    renderSpoincBridgeOpsResult('Step 1 — Endpoint Health Failed', {
+      error: error.message
+    });
+    addLog(`❌ SPOINC Bridge Ops health failed: ${error.message}`);
+  }
+}
+
+/**
+ * Load pending Gensuki rows and optionally recheck them with Solana.
+ */
+async function loadSpoincBridgePendingAudit(includeSolana = false) {
+  try {
+    const data = await fetchSpoincBridgeOps('get_gensuki_pending_audit', {
+      include_solana: includeSolana ? '1' : '0'
+    });
+
+    renderSpoincBridgeOpsSummary(data.summary || {});
+    renderSpoincBridgeOpsQueue(data.rows || [], data.gensuki_errors || []);
+    renderSpoincBridgeOpsResult(includeSolana ? 'Step 2B — Recheck With Solana' : 'Step 2A — Load Pending', data);
+    addLog(includeSolana ? '✅ SPOINC Bridge pending queue rechecked with Solana' : '✅ SPOINC Bridge pending queue loaded');
+  } catch (error) {
+    renderSpoincBridgeOpsResult('Step 2 — Pending Audit Failed', {
+      include_solana: includeSolana,
+      error: error.message
+    });
+    addLog(`❌ SPOINC Bridge pending audit failed: ${error.message}`);
+  }
+}
+
+/**
+ * Fill the Solana checker with a known good finalized bridge test signature.
+ */
+function fillSpoincBridgeOpsKnownGoodSignature() {
+  const input = document.getElementById('spoincBridgeOpsSignatureInput');
+
+  if (!input) {
+    return;
+  }
+
+  input.value = '57D5MEi1ptXAQQpyoRLsiBhEVTaCqpqyc9w2BzDajqJQVz4abkoBkg1fWpe8aBKm7bimTSFkEXKft4UKGVxQhipK';
+}
+
+/**
+ * Check one Solana transaction signature through the safe backend ops endpoint.
+ */
+async function checkSpoincBridgeOpsSignature() {
+  const input = document.getElementById('spoincBridgeOpsSignatureInput');
+  const signature = String(input?.value || '').trim();
+
+  if (!signature) {
+    renderSpoincBridgeOpsResult('Step 4 — Solana Signature Check', {
+      error: 'Please paste a Solana transaction signature first.'
+    });
+    return;
+  }
+
+  try {
+    setSpoincBridgeOpsText('spoincBridgeOpsSolanaState', 'Checking...');
+
+    const data = await fetchSpoincBridgeOps('check_solana_signature', {
+      signature
+    });
+
+    setSpoincBridgeOpsText('spoincBridgeOpsSolanaState', data.safe_label || data.state || 'checked');
+    renderSpoincBridgeOpsResult('Step 4 — Solana Signature Check', data);
+    addLog(`✅ SPOINC Bridge Ops Solana check: ${data.state || signature}`);
+  } catch (error) {
+    setSpoincBridgeOpsText('spoincBridgeOpsSolanaState', 'Failed');
+    renderSpoincBridgeOpsResult('Step 4 — Solana Signature Check Failed', {
+      signature,
+      error: error.message
+    });
+    addLog(`❌ SPOINC Bridge Ops Solana check failed: ${error.message}`);
+  }
+}
+
+/**
+ * Run one future operation as dry-run only.
+ */
+async function runSpoincBridgeDryRun(action) {
+  const inputs = readSpoincBridgeOpsInputs();
+
+  try {
+    const data = await fetchSpoincBridgeOps(action, inputs);
+
+    renderSpoincBridgeOpsResult(`Step 5 — ${action}`, data);
+    addLog(`✅ SPOINC Bridge dry-run loaded: ${action}`);
+  } catch (error) {
+    renderSpoincBridgeOpsResult(`Step 5 — ${action} Failed`, {
+      ...inputs,
+      error: error.message
+    });
+    addLog(`❌ SPOINC Bridge dry-run failed: ${error.message}`);
+  }
+}
+
+/**
+ * Verify a failed bridge cleanup using the read-only scaffold endpoint.
+ */
+async function verifySpoincBridgeFailedCleanup() {
+  const inputs = readSpoincBridgeOpsInputs();
+
+  try {
+    const data = await fetchSpoincBridgeOps('verify_failed_cleanup', inputs);
+
+    renderSpoincBridgeOpsResult('Verify Failed Cleanup', data);
+    addLog('✅ SPOINC Bridge Ops failed-cleanup verification scaffold loaded');
+  } catch (error) {
+    renderSpoincBridgeOpsResult('Verify Failed Cleanup Failed', {
+      ...inputs,
+      error: error.message
+    });
+    addLog(`❌ SPOINC Bridge Ops failed-cleanup verification failed: ${error.message}`);
+  }
+}
+
+/**
+ * Verify a complete SPOINC to DSPOINC settlement using the read-only scaffold endpoint.
+ */
+async function verifySpoincBridgeCompleteSettlement() {
+  const inputs = readSpoincBridgeOpsInputs();
+
+  try {
+    const data = await fetchSpoincBridgeOps('verify_complete_settlement', inputs);
+
+    renderSpoincBridgeOpsResult('Verify Complete Settlement', data);
+    addLog('✅ SPOINC Bridge Ops complete-settlement verification scaffold loaded');
+  } catch (error) {
+    renderSpoincBridgeOpsResult('Verify Complete Settlement Failed', {
+      ...inputs,
+      error: error.message
+    });
+    addLog(`❌ SPOINC Bridge Ops complete-settlement verification failed: ${error.message}`);
+  }
+}
+
+/**
+ * Load the bridge admin operations log scaffold.
+ */
+async function loadSpoincBridgeOpsLog() {
+  try {
+    const data = await fetchSpoincBridgeOps('get_operation_log');
+
+    renderSpoincBridgeOpsResult('Operation Log', data);
+    addLog('✅ SPOINC Bridge Ops log scaffold loaded');
+  } catch (error) {
+    renderSpoincBridgeOpsResult('Operation Log Failed', {
+      error: error.message
+    });
+    addLog(`❌ SPOINC Bridge Ops log failed: ${error.message}`);
+  }
+}
+
+
 function formatSpoincBridgeAmount(row) {
   const routeKey = String(row.route_key || '');
   const inputAmount = String(row.input_amount || '0');
