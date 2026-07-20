@@ -64,6 +64,15 @@ const MOUSEFIGHT_EVENT_REFUND_REASON_PREFIX =
 const MOUSEFIGHT_PVP_MODE = 'pvp_challenge';
 const MOUSEFIGHT_FINISHED_STATUS = 'finished';
 
+/**
+ * Maximum moderator-configured recovery duration for bracket events.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * PVP challenges remain restricted separately to 15, 30, or 60 minutes.
+ * Moderator events may configure zero through one year. Zero disables recovery.
+ */
+const MOUSEFIGHT_MAX_EVENT_RECOVERY_MINUTES = 525600;
+
 const MOUSEFIGHT_PVP_STAKE_SOURCE_PREFIX =
     'mousefight_pvp_stake';
 
@@ -361,7 +370,7 @@ function mousefight_economy_resolve_fight_recovery_minutes(
         return mousefight_economy_integer(
             $fight['recovery_minutes'],
             0,
-            1440
+            MOUSEFIGHT_MAX_EVENT_RECOVERY_MINUTES
         );
     }
 
@@ -1739,14 +1748,27 @@ function mousefight_economy_pvp_create(
     );
 
     /**
-     * Snapshot the current database-configured recovery duration.
+     * Validate and snapshot the challenger-selected PVP recovery duration.
+     *
      * Plain language for DEVS FOR DECADES:
-     * PVP recovery is configurable through tbl_mousefight_settings.
-     * The value is copied into this fight when the challenge is created so a
-     * later settings change cannot alter the terms of an already-open fight.
+     * Discord allows only the published 15, 30, or 60 minute PVP choices.
+     * This backend validates the value again because browser, bot, or network
+     * input must never be trusted as authoritative without server validation.
+     *
+     * The accepted value is copied into tbl_mousefights so later configuration
+     * changes cannot alter the recovery terms of an already-open challenge.
      */
-    $recoveryMinutes =
-        mousefight_economy_get_default_recovery_minutes($db);
+    $recoveryMinutes = mousefight_economy_integer(
+        $fightInput['recovery_minutes'] ?? 0,
+        0,
+        60
+    );
+
+    if (!in_array($recoveryMinutes, [15, 30, 60], true)) {
+        throw new RuntimeException(
+            'Invalid MouseFight PVP recovery duration. Choose 15, 30, or 60 minutes.'
+        );
+    }
 
     $challenger = mousefight_economy_build_participant(
         $participantInput
@@ -2312,6 +2334,161 @@ function mousefight_economy_pvp_cancel(
     ];
 }
 
+/**
+ * Start recovery for every Genesis mouse that completed a real event match.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * The authoritative source is tbl_mousefight_rounds, not a Discord-supplied
+ * fighter list. Real matches persist attacker and defender identities.
+ * Pure bracket byes persist no combat rounds and therefore receive no recovery.
+ *
+ * The recovery helper is idempotent through the unique
+ * fight_id + token_id + collection identity. Retrying this action cannot create
+ * duplicate recovery rows for the same completed event and Genesis mouse.
+ */
+function mousefight_economy_event_complete_recovery(
+    SQLite3 $db,
+    array $data
+): array {
+    $fightId = mousefight_economy_required_string(
+        $data,
+        'fight_id',
+        100
+    );
+
+    $fight = mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT
+            fight_id,
+            status,
+            mode,
+            recovery_minutes
+        FROM tbl_mousefights
+        WHERE fight_id = ?
+        LIMIT 1
+        ",
+        [$fightId]
+    );
+
+    if (!$fight) {
+        throw new RuntimeException(
+            'MouseFight event was not found.'
+        );
+    }
+
+    if (
+        (string)$fight['mode'] !==
+        MOUSEFIGHT_EVENT_MODE
+    ) {
+        throw new RuntimeException(
+            'This MouseFight is not an event.'
+        );
+    }
+
+    if (
+        (string)$fight['status'] !==
+        MOUSEFIGHT_FINISHED_STATUS
+    ) {
+        throw new RuntimeException(
+            'MouseFight event recovery requires a finished event.'
+        );
+    }
+
+    $recoveryMinutes =
+        mousefight_economy_resolve_fight_recovery_minutes(
+            $db,
+            $fight
+        );
+
+    if ($recoveryMinutes <= 0) {
+        return [
+            'fight_id' => $fightId,
+            'status' => MOUSEFIGHT_FINISHED_STATUS,
+            'recovery_minutes' => 0,
+            'fighter_count' => 0,
+            'recovery_count' => 0,
+            'recoveries' => []
+        ];
+    }
+
+    /**
+     * Load unique participants that appear as either attacker or defender in
+     * at least one persisted combat round.
+     *
+     * Plain language:
+     * A bye has no attacker/defender round row, so a mouse that received only
+     * a bye is naturally excluded without adding special bracket assumptions.
+     */
+    $fighters = mousefight_economy_fetch_all(
+        $db,
+        "
+        SELECT DISTINCT
+            participant.user_id,
+            participant.token_id,
+            participant.collection
+        FROM tbl_mousefight_participants participant
+        INNER JOIN (
+            SELECT
+                attacker_user_id AS user_id,
+                attacker_token_id AS token_id
+            FROM tbl_mousefight_rounds
+            WHERE fight_id = ?
+
+            UNION
+
+            SELECT
+                defender_user_id AS user_id,
+                defender_token_id AS token_id
+            FROM tbl_mousefight_rounds
+            WHERE fight_id = ?
+        ) completed_fighter
+            ON completed_fighter.user_id = participant.user_id
+           AND completed_fighter.token_id = participant.token_id
+        WHERE participant.fight_id = ?
+          AND participant.token_id IS NOT NULL
+          AND TRIM(participant.token_id) <> ''
+        ORDER BY participant.id ASC
+        ",
+        [
+            $fightId,
+            $fightId,
+            $fightId
+        ]
+    );
+
+    if (count($fighters) === 0) {
+        throw new RuntimeException(
+            'No persisted real MouseFight event rounds were found for recovery.'
+        );
+    }
+
+    $recoveries = [];
+
+    foreach ($fighters as $fighter) {
+        $recovery =
+            mousefight_economy_create_mouse_recovery(
+                $db,
+                $fight,
+                $fighter,
+                'completed_event_match'
+            );
+
+        if ($recovery !== null) {
+            $recoveries[] = $recovery;
+        }
+    }
+
+    return [
+        'fight_id' => $fightId,
+        'status' => MOUSEFIGHT_FINISHED_STATUS,
+        'recovery_minutes' => $recoveryMinutes,
+        'fighter_count' => count($fighters),
+        'recovery_count' => count($recoveries),
+        'recoveries' => $recoveries
+    ];
+}
+
 $authToken = mousefight_economy_get_auth_token();
 
 $validTokens = array_values(
@@ -2383,6 +2560,7 @@ if (
         [
             'event_join',
             'event_cancel',
+            'event_complete_recovery',
             'pvp_create',
             'pvp_accept_settle',
             'pvp_cancel'
@@ -2436,6 +2614,13 @@ try {
 
         case 'event_cancel':
             $result = mousefight_economy_event_cancel($db, $data);
+            break;
+
+        case 'event_complete_recovery':
+            $result = mousefight_economy_event_complete_recovery(
+                $db,
+                $data
+            );
             break;
 
         case 'pvp_create':
