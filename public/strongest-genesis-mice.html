@@ -375,7 +375,7 @@
               </div>
               <div class="flex justify-between gap-3 border-b border-white/5 pb-2">
                 <span>Genetic Support</span>
-                <span class="font-black text-pink-200">owner items, capped</span>
+                <span class="font-black text-pink-200">owner items, max +250 counted</span>
               </div>
               <div class="flex justify-between gap-3 border-b border-white/5 pb-2">
                 <span>Named Mouse</span>
@@ -405,9 +405,12 @@
               🧬 Genetic Support V1
             </div>
             <p class="text-sm text-slate-300 leading-relaxed">
-              Genetic Support Items show the current owner’s Genetic Item inventory power.
-              They are displayed around the mouse as support gear, but they are not yet
-              permanently equipped to one Genesis mouse in V1.
+Genetic Support Items show the current owner’s Genetic Item inventory power.
+For scoring and MouseFight balance, only up to +250 Genetic Support is counted.
+If the owner’s raw support is higher, the extra value is still shown as raw support,
+but it does not increase Mouse Warrior Power beyond the cap.
+They are displayed around the mouse as support gear, but they are not yet
+permanently equipped to one Genesis mouse in V1.
             </p>
           </article>
         </aside>
@@ -470,6 +473,42 @@
       return Number(value || 0).toLocaleString();
     }
 
+    const STRONGEST_GENETIC_SUPPORT_CAP = 250;
+
+/**
+ * Build the public Genetic Support display label.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Genetic Support has two values. Raw support is the owner's real Genetic Item
+ * support inventory power. Used support is the capped value that counts into
+ * Mouse Warrior Power and MouseFight balance. This is display-only and does not
+ * mutate traits, abilities, Genetic Items, ownership, DSPOINC, or scoring.
+ */
+function buildGeneticSupportLabel(mouse) {
+  const usedSupport = Number(mouse?.genetic_support_power || 0);
+  const rawSupport = Number(mouse?.genetic_support_raw || usedSupport);
+
+  if (rawSupport > usedSupport) {
+    return `${formatNumber(usedSupport)} / ${formatNumber(STRONGEST_GENETIC_SUPPORT_CAP)} used · ${formatNumber(rawSupport)} raw`;
+  }
+
+  return `${formatNumber(usedSupport)} / ${formatNumber(STRONGEST_GENETIC_SUPPORT_CAP)} cap`;
+}
+
+/**
+ * Build the compact Genetic Support badge text for smaller card areas.
+ */
+function buildCompactGeneticSupportLabel(mouse) {
+  const usedSupport = Number(mouse?.genetic_support_power || 0);
+  const rawSupport = Number(mouse?.genetic_support_raw || usedSupport);
+
+  if (rawSupport > usedSupport) {
+    return `${formatNumber(usedSupport)}/${formatNumber(STRONGEST_GENETIC_SUPPORT_CAP)} used · ${formatNumber(rawSupport)} raw`;
+  }
+
+  return `${formatNumber(usedSupport)}/${formatNumber(STRONGEST_GENETIC_SUPPORT_CAP)}`;
+}
+
     function getSafeImageUrl(url) {
       const raw = String(url || '').trim();
 
@@ -483,6 +522,8 @@
 
       return raw;
     }
+
+
 
     function getRankClass(rank) {
       if (rank === 1) return 'rank-1';
@@ -689,7 +730,7 @@
               <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                 ${renderStatPill('Trait Power', formatNumber(mouse.trait_power), 'text-yellow-200')}
                 ${renderStatPill('Ability Power', formatNumber(mouse.ability_power), 'text-cyan-200')}
-                ${renderStatPill('Genetic Support', formatNumber(mouse.genetic_support_power), 'text-pink-200')}
+                ${renderStatPill('Genetic Support', buildGeneticSupportLabel(mouse), 'text-pink-200')}
                 ${renderStatPill('Fitness', 'Unlocked', 'text-emerald-200')}
               </div>
 
@@ -762,7 +803,7 @@
               <div class="hidden md:flex flex-wrap gap-2 mt-2 text-[11px]">
                 <span class="rounded-full bg-yellow-300/10 border border-yellow-300/20 px-2 py-1 text-yellow-100">Trait ${formatNumber(mouse.trait_power)}</span>
                 <span class="rounded-full bg-cyan-300/10 border border-cyan-300/20 px-2 py-1 text-cyan-100">Ability ${formatNumber(mouse.ability_power)}</span>
-                <span class="rounded-full bg-pink-300/10 border border-pink-300/20 px-2 py-1 text-pink-100">Genetic ${formatNumber(mouse.genetic_support_power)}</span>
+                <span class="rounded-full bg-pink-300/10 border border-pink-300/20 px-2 py-1 text-pink-100">Genetic ${escapeHtml(buildCompactGeneticSupportLabel(mouse))}</span>
                 ${selected ? '<span class="rounded-full bg-yellow-300 px-2 py-1 text-slate-950 font-black">Viewing</span>' : '<span class="rounded-full bg-white/5 border border-white/10 px-2 py-1 text-slate-300">Click to view</span>'}
               </div>
             </div>

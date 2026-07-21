@@ -1,5 +1,88 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-21 — Fitness Chest Reward Patch + Genetic Support Display Prepared
+
+**Scope:** `api/user/claim-ability-milestone-reward.php` / `public/lab.html` / `public/strongest-genesis-mice.html`  
+**Status:** Local changes prepared — not pushed yet because additional pre-push checks/tasks are still pending
+
+---
+
+## ✅ Fitness Chest Reward Updates Prepared
+
+## 2026-07-21 — MouseFight Duplicate Genetic Item Loadout Protection Added
+
+**Scope:** `discord/commands/mousefight.js`  
+**Status:** Code complete and syntax verified locally — live Discord selector test still pending
+
+---
+
+## ✅ One Exact Genetic Item Type Per Fight Loadout
+
+MouseFight loadouts now prevent players from selecting two copies of the same exact Owner Genetic Item for one fight.
+
+Players may still own multiple physical copies of the same item in the Genesis Lab.
+
+This update changes only temporary MouseFight loadout selection.
+
+It does not:
+
+- delete duplicate owned items;
+- merge inventory rows;
+- consume items;
+- permanently equip items;
+- lock items;
+- change Genetic Item upgrades;
+- change marketplace behavior;
+- mutate Genesis metadata;
+- change DSPOINC or SPL balances.
+
+---
+
+## ✅ Exact Genetic Item Identity
+
+MouseFight now identifies one exact Genetic Item type primarily by:
+
+```text
+catalog_id
+
+The Genesis Fitness milestone chest rewards were updated locally.
+
+Current prepared reward setup:
+
+```text
+Trait Lv10 → Fitness Journey Chest
+Reward: 500 EMPIRE TOKEN
+Store Item ID: 51
+
+Trait Lv15 → Deep Training Fitness Chest
+Reward: Gun Special Genetic Item
+Genetic Catalog ID: 69
+
+Trait Lv15 fallback
+Reward: 1,000,000 DSPOINC
+Trigger: Gun Special Genetic Item is already owned or cannot be granted again
+
+Trait Lv20 → Final Fitness Journey Chest
+Reward: 500 EMPIRE TOKEN
+Store Item ID: 51
+Weapon Journey opens
+
+## 2026-07-21 — MouseFight Fight Recovery V1 Fully Live Validated
+
+**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / persistent Genesis mouse availability / PVP and bracket-event completion  
+**Status:** Phase A complete — configurable Fight Recovery is deployed, persistent, restart-safe, and validated in production
+
+---
+
+## ✅ Fight Recovery V1 Complete
+
+The first persistent **❄️ Fight Recovery** system is now live for real Genesis MouseFight combat.
+
+Recovery belongs to the exact Genesis mouse identity:
+
+```text
+token_id + collection
+
 ## 2026-07-20 — MouseFight Fight Recovery V1 PVP Backend Ready for Live Test
 
 **Scope:** `api/discord/mousefight-economy.php` / MouseFight PVP availability / persistent per-Genesis-mouse recovery  

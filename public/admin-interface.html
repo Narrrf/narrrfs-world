@@ -35541,12 +35541,29 @@ populateFilters() {
               bannerPreview.classList.remove('hidden');
             }
             
-            // 📸 Show existing gallery images
-            if (partner.gallery_images) {
-              const galleryPreview = document.getElementById('gallery-previews');
-              const galleryImages = JSON.parse(partner.gallery_images || '[]');
-              
-              if (galleryImages.length > 0) {
+// 📸 Show existing gallery images
+// DEVS FOR DECADES:
+// Gallery previews are frontend-only display state. Always clear them before
+// loading one partner, because deleted DB gallery rows can otherwise leave
+// stale preview DOM behind and falsely trigger the 7-file upload limit.
+// This does not delete files, update partners, touch DSPOINC, NFTs, staking,
+// MouseFight, Lab data, or player records.
+const galleryPreview = document.getElementById('gallery-previews');
+const galleryUploadInput = document.getElementById('partner-gallery-upload');
+
+if (galleryPreview) {
+  galleryPreview.innerHTML = '';
+  galleryPreview.classList.add('hidden');
+}
+
+if (galleryUploadInput) {
+  galleryUploadInput.value = '';
+}
+
+if (partner.gallery_images) {
+  const galleryImages = JSON.parse(partner.gallery_images || '[]');
+  
+  if (galleryImages.length > 0 && galleryPreview) {
                 console.log('📸 Loading', galleryImages.length, 'gallery images');
                 galleryPreview.innerHTML = '';
                 galleryPreview.classList.remove('hidden');
@@ -35665,6 +35682,16 @@ populateFilters() {
       document.getElementById('banner-preview')?.classList.add('hidden');
       document.getElementById('partner-logo-upload').value = '';
       document.getElementById('partner-banner-upload').value = '';
+      const galleryPreview = document.getElementById('gallery-previews');
+if (galleryPreview) {
+  galleryPreview.innerHTML = '';
+  galleryPreview.classList.add('hidden');
+}
+
+const galleryUploadInput = document.getElementById('partner-gallery-upload');
+if (galleryUploadInput) {
+  galleryUploadInput.value = '';
+}
       
       const submitBtn = form.querySelector('[type="submit"]');
       submitBtn.textContent = '➕ Add Partner';
@@ -36019,7 +36046,10 @@ populateFilters() {
         });
       }
       
-      if (existingFileCount + files.length > 7) {
+      // TODO: This live hotfix prevents newly selected preview boxes from being
+// counted twice as existing gallery files. Permanent source fix must be pushed
+// to public/admin-interface.html so Render redeploys keep this behavior.
+if (existingFileCount > 0 && existingFileCount + files.length > 7) {
         alert(`❌ Maximum 7 file uploads allowed (you have ${existingFileCount}, trying to add ${files.length}). YouTube videos are unlimited.`);
         return;
       }

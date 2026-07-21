@@ -153,7 +153,7 @@ try {
     $stmt->execute([$userId]);
     $rows = $stmt->fetchAll();
 
-    // 🧠 Normalize output (frontend-friendly)
+    // 🧠 Normalize output (frontend-friendlyy)
     $favorites = [];
     foreach ($rows as $row) {
         $favorites[] = [
