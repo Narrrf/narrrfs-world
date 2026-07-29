@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐭 MouseFight Arena — Game #10 | Narrrf's World</title>
+  <meta name="theme-color" content="#f97316" />
+  <meta name="description" content="Explore Narrrf's World MouseFight Arena: player rankings, Genesis fighter records, battle modes, the nine-ability matrix, and official season statistics." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="favicon-phantom.png" type="image/png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --cheese: #facc15;
+      --orange: #f97316;
+      --pink: #ec4899;
+      --cyan: #22d3ee;
+      --green: #22c55e;
+      --purple: #a855f7;
+      --slate: #020617;
+      --panel: rgba(15, 23, 42, 0.86);
+      --line: rgba(255, 255, 255, 0.11);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: #fff;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(249, 115, 22, 0.22), transparent 29%),
+        radial-gradient(circle at 92% 18%, rgba(236, 72, 153, 0.18), transparent 31%),
+        radial-gradient(circle at 52% 100%, rgba(34, 211, 238, 0.14), transparent 36%),
+        linear-gradient(135deg, #020617 0%, #111827 45%, #431407 100%);
+      overflow-x: hidden;
+    }
+
+    .arena-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.38;
+      background-image:
+        linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+      background-size: 30px 30px;
+      mask-image: radial-gradient(circle at center, black 38%, transparent 92%);
+    }
+
+    .arena-orb {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: 9999px;
+      filter: blur(24px);
+      opacity: .42;
+      animation: arenaFloat 9s ease-in-out infinite;
+    }
+    .arena-orb.orange { width: 15rem; height: 15rem; top: 8%; left: -6rem; background: rgba(249,115,22,.26); }
+    .arena-orb.pink { width: 18rem; height: 18rem; top: 28%; right: -7rem; background: rgba(236,72,153,.20); animation-delay: -3s; }
+    .arena-orb.cyan { width: 17rem; height: 17rem; bottom: 3%; left: 30%; background: rgba(34,211,238,.17); animation-delay: -6s; }
+    @keyframes arenaFloat { 50% { transform: translateY(-18px) translateX(10px) scale(1.05); } }
+
+    .arena-header {
+      background: rgba(0,0,0,.76);
+      border-bottom: 1px solid rgba(250,204,21,.23);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 18px 44px rgba(0,0,0,.34);
+    }
+
+    .arena-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top left, rgba(250,204,21,.08), transparent 38%),
+        linear-gradient(180deg, rgba(15,23,42,.94), rgba(15,23,42,.73));
+      box-shadow: 0 22px 65px rgba(0,0,0,.35), 0 0 34px rgba(249,115,22,.08);
+      backdrop-filter: blur(16px);
+    }
+    .arena-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,.055), transparent 32%);
+    }
+    .arena-card > * { position: relative; z-index: 1; }
+    .arena-card:hover { border-color: rgba(250,204,21,.3); }
+
+    .arena-hero {
+      background:
+        radial-gradient(circle at 14% 18%, rgba(250,204,21,.23), transparent 32%),
+        radial-gradient(circle at 88% 22%, rgba(236,72,153,.19), transparent 30%),
+        radial-gradient(circle at 52% 100%, rgba(34,211,238,.15), transparent 36%),
+        linear-gradient(135deg, rgba(15,23,42,.97), rgba(67,20,7,.90));
+      border-color: rgba(250,204,21,.24);
+    }
+
+    .metric-card { transition: transform .22s ease, border-color .22s ease; }
+    .metric-card:hover { transform: translateY(-3px); border-color: rgba(34,211,238,.35); }
+
+    .rank-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(2,6,23,.48);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .rank-row:hover { transform: translateX(4px); border-color: rgba(250,204,21,.38); background: rgba(30,41,59,.62); }
+    .rank-badge { width: 40px; min-width: 40px; height: 40px; display: grid; place-items: center; border-radius: 14px; font-weight: 950; }
+    .rank-badge.gold { color: #111827; background: linear-gradient(135deg,#fde047,#f59e0b); box-shadow: 0 0 22px rgba(245,158,11,.25); }
+    .rank-badge.silver { background: linear-gradient(135deg,#cbd5e1,#64748b); }
+    .rank-badge.bronze { background: linear-gradient(135deg,#d97706,#78350f); }
+    .rank-badge.standard { background: rgba(255,255,255,.08); color: #cbd5e1; }
+    .pfp { width: 48px; height: 48px; min-width: 48px; border-radius: 9999px; object-fit: cover; border: 2px solid rgba(250,204,21,.48); background: #111827; }
+    .player-copy { min-width: 0; flex: 1 1 auto; }
+    .player-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .score-copy { flex: 0 0 auto; text-align: right; white-space: nowrap; }
+
+    .board-tab {
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.055);
+      color: #cbd5e1;
+      transition: all .2s ease;
+    }
+    .board-tab:hover, .board-tab.active {
+      color: #fff;
+      border-color: rgba(250,204,21,.48);
+      background: linear-gradient(135deg, rgba(249,115,22,.28), rgba(219,39,119,.18));
+      box-shadow: 0 0 22px rgba(249,115,22,.12);
+    }
+
+    .fighter-card { transition: transform .22s ease, border-color .22s ease; }
+    .fighter-card:hover { transform: translateY(-4px); border-color: rgba(34,211,238,.36); }
+    .fighter-image { width: 92px; height: 92px; object-fit: cover; border-radius: 22px; border: 2px solid rgba(250,204,21,.42); background: #111827; }
+
+    .mode-card[data-theme="gold"] { border-color: rgba(250,204,21,.30); }
+    .mode-card[data-theme="green"] { border-color: rgba(34,197,94,.30); }
+    .mode-card[data-theme="cyan"] { border-color: rgba(34,211,238,.30); }
+    .mode-card[data-theme="purple"] { border-color: rgba(168,85,247,.32); }
+
+    .ability-card { transition: transform .2s ease, border-color .2s ease; }
+    .ability-card:hover { transform: translateY(-3px); border-color: rgba(34,211,238,.36); }
+    .ability-icon { text-shadow: 0 0 18px currentColor; }
+
+    .skeleton { position: relative; overflow: hidden; background: rgba(255,255,255,.06); }
+    .skeleton::after { content:""; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent); animation: shimmer 1.35s infinite; }
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 18px; background: rgba(2,6,23,.82); backdrop-filter: blur(12px); }
+    .modal-backdrop[hidden] { display: none !important; }
+
+    @media (max-width: 640px) {
+      .rank-row { gap: 10px; padding: 12px; }
+      .rank-badge { width: 34px; min-width: 34px; height: 34px; border-radius: 11px; font-size: .85rem; }
+      .pfp { width: 40px; min-width: 40px; height: 40px; }
+      .score-copy { max-width: 88px; }
+      .score-secondary { display: none; }
+      .fighter-image { width: 72px; height: 72px; border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="arena-grid"></div>
+  <div class="arena-orb orange"></div>
+  <div class="arena-orb pink"></div>
+  <div class="arena-orb cyan"></div>
+
+  <header class="arena-header sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <a href="index.html" class="flex items-center gap-3 min-w-0">
+        <span class="text-3xl">🐭</span>
+        <span class="min-w-0">
+          <span class="block text-xs uppercase tracking-[.24em] text-orange-200 font-black">Narrrf's World</span>
+          <span class="block font-black text-yellow-100 truncate">MouseFight Arena</span>
+        </span>
+      </a>
+      <nav class="flex flex-wrap justify-end gap-2 text-sm font-bold">
+        <a href="#rankings" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Rankings</a>
+        <a href="#fighters" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Genesis Fighters</a>
+        <a href="#history" class="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-cyan-100 hover:bg-cyan-300/15">Fight Archive</a>
+        <a href="#modes" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Battle Modes</a>
+        <a href="leaderboard.html" class="rounded-full border border-yellow-300/25 bg-yellow-300/10 px-4 py-2 text-yellow-100 hover:bg-yellow-300/15">All Leaderboards</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12">
+    <section class="arena-card arena-hero rounded-[32px] p-6 md:p-10 mb-8">
+      <div class="grid lg:grid-cols-[1.35fr_.65fr] gap-8 items-center">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/25 bg-yellow-300/10 px-4 py-2 text-xs font-black uppercase tracking-[.22em] text-yellow-100 mb-5">
+            🎮 Game #10 • Official Season Archive
+          </div>
+          <h1 class="text-4xl md:text-6xl font-black leading-[.98] text-white mb-5">
+            Enter the <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400">MouseFight Arena</span>
+          </h1>
+          <p class="text-lg md:text-xl text-slate-300 leading-relaxed max-w-3xl">
+            Explore official finished MouseFights, player records, Genesis fighter history, four temporary battle modes, and the nine-ability combat matrix behind the Mouseverse arena.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="#rankings" class="rounded-2xl bg-gradient-to-r from-orange-500 to-pink-600 px-5 py-3 font-black shadow-lg shadow-orange-950/30 hover:scale-[1.02] transition">🏆 Explore Rankings</a>
+            <a href="#history" class="rounded-2xl border border-yellow-300/25 bg-yellow-300/10 px-5 py-3 font-black text-yellow-100 hover:bg-yellow-300/15">📚 Open Fight Archive</a>
+            <a href="#modes" class="rounded-2xl border border-cyan-300/25 bg-cyan-300/10 px-5 py-3 font-black text-cyan-100 hover:bg-cyan-300/15">🧬 Learn the Matrix</a>
+            <a href="strongest-genesis-mice.html" class="rounded-2xl border border-yellow-300/25 bg-black/25 px-5 py-3 font-black text-yellow-100 hover:bg-black/40">🐭 Strongest Genesis Mice</a>
+          </div>
+        </div>
+        <div class="arena-card rounded-3xl p-5">
+          <div class="text-xs uppercase tracking-[.22em] text-cyan-200 font-black">Current data contract</div>
+          <div id="seasonName" class="text-3xl font-black text-white mt-2">Loading season…</div>
+          <p class="text-sm text-slate-400 mt-2">Finished fights only. Stored historical results. No combat recalculation.</p>
+          <div class="grid grid-cols-2 gap-3 mt-5">
+            <div class="rounded-2xl border border-white/10 bg-black/25 p-3"><div class="text-xs text-slate-400">Win-rate qualification</div><div id="winRateQualification" class="text-xl font-black text-yellow-200">5 fights</div></div>
+            <div class="rounded-2xl border border-white/10 bg-black/25 p-3"><div class="text-xs text-slate-400">Mode specialist</div><div id="modeQualification" class="text-xl font-black text-cyan-200">3 fights</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="loading" class="space-y-5">
+      <div class="grid grid-cols-2 lg:grid-cols-6 gap-3">
+        <div class="skeleton rounded-2xl h-28"></div>
+        <div class="skeleton rounded-2xl h-28"></div>
+        <div class="skeleton rounded-2xl h-28"></div>
+        <div class="skeleton rounded-2xl h-28"></div>
+        <div class="skeleton rounded-2xl h-28"></div>
+        <div class="skeleton rounded-2xl h-28"></div>
+      </div>
+      <div class="grid lg:grid-cols-3 gap-5">
+        <div class="skeleton rounded-3xl h-64"></div>
+        <div class="skeleton rounded-3xl h-64"></div>
+        <div class="skeleton rounded-3xl h-64"></div>
+      </div>
+    </section>
+
+    <section id="errorState" class="hidden arena-card rounded-3xl p-8 text-center border-red-400/25">
+      <div class="text-5xl mb-4">⚠️</div>
+      <h2 class="text-2xl font-black text-red-200">MouseFight data could not be loaded</h2>
+      <p id="errorMessage" class="text-slate-300 mt-3">Unknown API error.</p>
+      <button id="retryButton" class="mt-5 rounded-2xl bg-red-500/20 border border-red-300/25 px-5 py-3 font-black text-red-100">Retry</button>
+    </section>
+
+    <section id="content" class="hidden">
+      <section id="overview" class="mb-10">
+        <div class="flex flex-wrap items-end justify-between gap-3 mb-5">
+          <div>
+            <div class="text-xs uppercase tracking-[.24em] text-cyan-200 font-black">Arena telemetry</div>
+            <h2 class="text-3xl md:text-4xl font-black">Season Overview</h2>
+          </div>
+          <div id="generatedAt" class="text-xs text-slate-500"></div>
+        </div>
+        <div id="metricsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"></div>
+      </section>
+
+      <section class="mb-10">
+        <div class="mb-5">
+          <div class="text-xs uppercase tracking-[.24em] text-yellow-200 font-black">Featured records</div>
+          <h2 class="text-3xl md:text-4xl font-black">Arena Leaders</h2>
+        </div>
+        <div id="featuredGrid" class="grid md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+      </section>
+
+      <section id="rankings" class="arena-card rounded-[30px] p-5 md:p-7 mb-10">
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+          <div>
+            <div class="text-xs uppercase tracking-[.24em] text-orange-200 font-black">Player PFP boards</div>
+            <h2 class="text-3xl md:text-4xl font-black">MouseFight Rankings</h2>
+            <p id="boardDescription" class="text-sm text-slate-400 mt-2">Official finished-fight results.</p>
+          </div>
+          <div id="boardTabs" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="grid lg:grid-cols-[1fr_300px] gap-5">
+          <div id="playerBoard" class="space-y-3"></div>
+          <aside class="space-y-4">
+            <article class="rounded-3xl border border-white/10 bg-black/25 p-5">
+              <div class="text-xs uppercase tracking-[.2em] text-yellow-200 font-black">Board criteria</div>
+              <div id="criteriaText" class="text-sm text-slate-300 mt-3 leading-relaxed"></div>
+            </article>
+            <article class="rounded-3xl border border-white/10 bg-black/25 p-5">
+              <div class="text-xs uppercase tracking-[.2em] text-cyan-200 font-black">Open player details</div>
+              <p class="text-sm text-slate-300 mt-3">Select a row to inspect PVP, event, round, mode, and Genesis mouse statistics.</p>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <section id="fighters" class="mb-10">
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+          <div>
+            <div class="text-xs uppercase tracking-[.24em] text-pink-200 font-black">Historical Genesis performance</div>
+            <h2 class="text-3xl md:text-4xl font-black">Genesis Fighter Showcase</h2>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button class="fighter-tab board-tab active rounded-full px-4 py-2 text-sm font-black" data-fighter-board="most_used_mice">Most Used</button>
+            <button class="fighter-tab board-tab rounded-full px-4 py-2 text-sm font-black" data-fighter-board="most_successful_mice">Most Successful</button>
+            <button class="fighter-tab board-tab rounded-full px-4 py-2 text-sm font-black" data-fighter-board="most_mouse_round_wins">Round Masters</button>
+          </div>
+        </div>
+        <div id="fighterGrid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+      </section>
+
+
+      <section id="history" class="arena-card rounded-[30px] p-5 md:p-7 mb-10">
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+          <div>
+            <div class="text-xs uppercase tracking-[.24em] text-cyan-200 font-black">Official finished records</div>
+            <h2 class="text-3xl md:text-4xl font-black">MouseFight Archive</h2>
+            <p class="text-sm text-slate-400 mt-2 max-w-3xl">Browse stored PVP challenges and moderator events. This archive is read-only and never recalculates combat or changes fight results.</p>
+          </div>
+          <button id="historyRefresh" class="rounded-2xl border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-sm font-black text-cyan-100 hover:bg-cyan-300/15">↻ Refresh Archive</button>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
+          <label class="text-xs font-black uppercase tracking-[.14em] text-slate-400">Fight type
+            <select id="historyMode" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
+              <option value="">All fights</option>
+              <option value="pvp_challenge">PVP challenges</option>
+              <option value="admin_bracket_event">Arena events</option>
+            </select>
+          </label>
+          <label class="text-xs font-black uppercase tracking-[.14em] text-slate-400">Battle mode
+            <select id="historyBattleMode" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
+              <option value="">All modes</option>
+              <option value="champion">Champion</option>
+              <option value="underdog">Underdog</option>
+              <option value="equalized">Equalized</option>
+              <option value="chaos">Chaos</option>
+            </select>
+          </label>
+          <label class="text-xs font-black uppercase tracking-[.14em] text-slate-400">Player ID
+            <input id="historyUserId" type="text" inputmode="numeric" placeholder="Discord user ID" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" />
+          </label>
+          <label class="text-xs font-black uppercase tracking-[.14em] text-slate-400">Genesis token
+            <input id="historyTokenId" type="text" placeholder="Token ID" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white" />
+          </label>
+          <div class="flex items-end">
+            <button id="historyApply" class="w-full rounded-xl bg-gradient-to-r from-orange-500 to-pink-600 px-4 py-2 font-black">Apply Filters</button>
+          </div>
+        </div>
+
+        <div id="historyStatus" class="text-sm text-slate-400 mb-4" aria-live="polite"></div>
+        <div id="historyGrid" class="grid lg:grid-cols-2 gap-4"></div>
+        <div class="flex justify-center mt-5">
+          <button id="historyMore" class="hidden rounded-2xl border border-yellow-300/25 bg-yellow-300/10 px-5 py-3 font-black text-yellow-100 hover:bg-yellow-300/15">Load More Fights</button>
+        </div>
+      </section>
+
+      <section id="modes" class="mb-10">
+        <div class="mb-5">
+          <div class="text-xs uppercase tracking-[.24em] text-green-200 font-black">Temporary combat formats</div>
+          <h2 class="text-3xl md:text-4xl font-black">Battle Mode Laboratory</h2>
+          <p class="text-slate-400 mt-2 max-w-3xl">Battle modes affect only temporary MouseFight calculations. They do not modify Genesis metadata, permanent traits, abilities, ownership, Lab progression, Genetic Items, DSPOINC, SPL tokens, or Fight Recovery.</p>
+        </div>
+        <div id="modeGrid" class="grid md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+      </section>
+
+      <section class="arena-card rounded-[30px] p-5 md:p-7 mb-10">
+        <div class="grid lg:grid-cols-[1fr_310px] gap-6">
+          <div>
+            <div class="text-xs uppercase tracking-[.24em] text-cyan-200 font-black">Combat engine</div>
+            <h2 class="text-3xl md:text-4xl font-black">Nine-Ability Matrix</h2>
+            <p class="text-slate-400 mt-2">Every card explains one verified fight-time ability role. The frontend displays stored rules only and never resolves combat.</p>
+            <div id="abilityGrid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-6"></div>
+          </div>
+          <aside class="space-y-4">
+            <article class="rounded-3xl border border-white/10 bg-black/25 p-5">
+              <div class="text-xs uppercase tracking-[.2em] text-pink-200 font-black">Recorded triggers</div>
+              <div id="triggerStats" class="space-y-3 mt-4"></div>
+            </article>
+            <article class="rounded-3xl border border-white/10 bg-black/25 p-5">
+              <div class="text-xs uppercase tracking-[.2em] text-orange-200 font-black">Round records</div>
+              <div id="roundRecords" class="space-y-3 mt-4 text-sm"></div>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <section class="grid lg:grid-cols-2 gap-5 mb-10">
+        <article class="arena-card rounded-3xl p-6">
+          <div class="text-xs uppercase tracking-[.24em] text-yellow-200 font-black">How it works</div>
+          <h2 class="text-2xl font-black mt-2">From Genesis Mouse to Arena Result</h2>
+          <ol class="mt-5 space-y-4 text-sm text-slate-300">
+            <li class="flex gap-3"><span class="font-black text-yellow-200">01</span><span>Choose an eligible named Genesis mouse and its verified fight-time profile.</span></li>
+            <li class="flex gap-3"><span class="font-black text-yellow-200">02</span><span>Enter a PVP challenge or moderator-hosted bracket event.</span></li>
+            <li class="flex gap-3"><span class="font-black text-yellow-200">03</span><span>Resolve temporary combat using stored snapshots, the selected mode, rolls, abilities, and allowed support items.</span></li>
+            <li class="flex gap-3"><span class="font-black text-yellow-200">04</span><span>Store official winners, rounds, participants, and historical display data.</span></li>
+          </ol>
+        </article>
+        <article class="arena-card rounded-3xl p-6 border-green-300/20">
+          <div class="text-xs uppercase tracking-[.24em] text-green-200 font-black">Permanent safety boundary</div>
+          <h2 class="text-2xl font-black mt-2">MouseFight Calculations Are Temporary</h2>
+          <div class="grid grid-cols-2 gap-3 mt-5 text-sm">
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-3">✅ Genesis metadata unchanged</div>
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-3">✅ Permanent traits unchanged</div>
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-3">✅ Permanent abilities unchanged</div>
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-3">✅ Ownership unchanged</div>
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-3">✅ Lab progression unchanged</div>
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-3">✅ Genetic Items unchanged</div>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <footer class="relative z-10 border-t border-yellow-300/15 bg-black/35 py-10 text-center text-slate-300">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-xs uppercase tracking-[.28em] text-yellow-200/80">🐭 MouseFight Arena • Game #10</div>
+      <p class="text-sm mt-3">A public read-only archive of official Mouseverse combat results.</p>
+      <div class="mt-5 flex flex-wrap justify-center gap-3 text-sm font-bold">
+        <a href="index.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Home</a>
+        <a href="profile.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Profile</a>
+        <a href="leaderboard.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Leaderboards</a>
+        <a href="strongest-genesis-mice.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Strongest Mice</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <div id="fightModal" class="modal-backdrop" hidden>
+    <div class="arena-card rounded-[30px] w-full max-w-6xl max-h-[90vh] overflow-y-auto p-5 md:p-7">
+      <div class="flex items-start justify-between gap-4">
+        <div id="fightModalHeader"></div>
+        <button id="closeFightModal" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 font-black hover:bg-white/10" aria-label="Close fight details">✕</button>
+      </div>
+      <div id="fightModalBody" class="mt-6"></div>
+    </div>
+  </div>
+
+  <div id="playerModal" class="modal-backdrop" hidden>
+    <div class="arena-card rounded-[30px] w-full max-w-3xl max-h-[88vh] overflow-y-auto p-5 md:p-7">
+      <div class="flex items-start justify-between gap-4">
+        <div id="modalHeader"></div>
+        <button id="closeModal" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 font-black hover:bg-white/10" aria-label="Close player details">✕</button>
+      </div>
+      <div id="modalBody" class="mt-6"></div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * MouseFight Arena frontend.
+     * Plain language for DEVS FOR DECADES:
+     * This page only reads official public MouseFight endpoints and renders them.
+     * It does not recalculate combat, write DB rows, settle economy, alter Fight Recovery,
+     * or mutate Genesis ownership, names, traits, abilities, Lab data, or Genetic Items.
+     */
+    const LEADERBOARD_API = '/api/leaderboard/get-mousefight-leaderboards.php?limit=20';
+    const PLAYER_STATS_API = '/api/leaderboard/get-mousefight-player-stats.php';
+    const HISTORY_API = '/api/leaderboard/get-recent-mousefights.php';
+    const FIGHT_DETAILS_API = '/api/leaderboard/get-mousefight-details.php';
+    const DEFAULT_AVATAR = 'https://cdn.discordapp.com/embed/avatars/0.png';
+    const DEFAULT_MOUSE_IMAGE = 'img/rumble/cheese_rumble.png';
+
+    const state = {
+      data: null,
+      activeBoard: 'most_wins',
+      activeFighterBoard: 'most_used_mice',
+      playerCache: new Map(),
+      historyOffset: 0,
+      historyLimit: 12,
+      historyHasMore: false,
+      historyRows: [],
+      fightCache: new Map(),
+    };
+
+    const boardConfig = {
+      most_wins: { label: 'Most Wins', icon: '🏆', primary: 'wins', primaryLabel: 'wins', secondary: row => `${number(row.total_fights)} fights • ${percent(row.win_rate)}` },
+      best_win_rate: { label: 'Win Rate', icon: '📈', primary: 'win_rate', primaryLabel: '%', secondary: row => `${number(row.wins)} wins • ${number(row.total_fights)} fights` },
+      most_active: { label: 'Activity', icon: '🔥', primary: 'total_fights', primaryLabel: 'fights', secondary: row => `${number(row.wins)} wins • ${number(row.rounds_played)} rounds` },
+      most_pvp_wins: { label: 'PVP', icon: '⚔️', primary: 'pvp_wins', primaryLabel: 'PVP wins', secondary: row => `${number(row.pvp_fights)} PVP • ${percent(row.pvp_win_rate)}` },
+      event_champions: { label: 'Events', icon: '👑', primary: 'event_championships', primaryLabel: 'titles', secondary: row => `${number(row.event_fights)} events • ${number(row.wins)} total wins` },
+      most_round_wins: { label: 'Rounds', icon: '🎯', primary: 'rounds_won', primaryLabel: 'round wins', secondary: row => `${number(row.rounds_played)} rounds • ${percent(row.round_win_rate)}` },
+      most_versatile_players: { label: 'Versatile', icon: '🧬', primary: 'distinct_mice_used', primaryLabel: 'mice', secondary: row => `${number(row.total_fights)} fights • ${number(row.wins)} wins` },
+      veteran_fighters: { label: 'Veterans', icon: '🕰️', primary: 'total_fights', primaryLabel: 'fights', secondary: row => `First fight ${dateLabel(row.first_fight_at)}` },
+    };
+
+    const el = {
+      loading: document.getElementById('loading'),
+      errorState: document.getElementById('errorState'),
+      errorMessage: document.getElementById('errorMessage'),
+      retryButton: document.getElementById('retryButton'),
+      content: document.getElementById('content'),
+      seasonName: document.getElementById('seasonName'),
+      winRateQualification: document.getElementById('winRateQualification'),
+      modeQualification: document.getElementById('modeQualification'),
+      generatedAt: document.getElementById('generatedAt'),
+      metricsGrid: document.getElementById('metricsGrid'),
+      featuredGrid: document.getElementById('featuredGrid'),
+      boardTabs: document.getElementById('boardTabs'),
+      boardDescription: document.getElementById('boardDescription'),
+      criteriaText: document.getElementById('criteriaText'),
+      playerBoard: document.getElementById('playerBoard'),
+      fighterGrid: document.getElementById('fighterGrid'),
+      modeGrid: document.getElementById('modeGrid'),
+      abilityGrid: document.getElementById('abilityGrid'),
+      triggerStats: document.getElementById('triggerStats'),
+      roundRecords: document.getElementById('roundRecords'),
+      playerModal: document.getElementById('playerModal'),
+      fightModal: document.getElementById('fightModal'),
+      fightModalHeader: document.getElementById('fightModalHeader'),
+      fightModalBody: document.getElementById('fightModalBody'),
+      closeFightModal: document.getElementById('closeFightModal'),
+      historyGrid: document.getElementById('historyGrid'),
+      historyStatus: document.getElementById('historyStatus'),
+      historyMode: document.getElementById('historyMode'),
+      historyBattleMode: document.getElementById('historyBattleMode'),
+      historyUserId: document.getElementById('historyUserId'),
+      historyTokenId: document.getElementById('historyTokenId'),
+      historyApply: document.getElementById('historyApply'),
+      historyRefresh: document.getElementById('historyRefresh'),
+      historyMore: document.getElementById('historyMore'),
+      modalHeader: document.getElementById('modalHeader'),
+      modalBody: document.getElementById('modalBody'),
+      closeModal: document.getElementById('closeModal'),
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+    function number(value) { return new Intl.NumberFormat('en-US').format(Number(value || 0)); }
+    function percent(value) { return `${Number(value || 0).toFixed(2).replace(/\.00$/, '')}%`; }
+    function dateLabel(value) {
+      if (!value) return 'unknown';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 'unknown';
+      return new Intl.DateTimeFormat('en-GB', { day:'2-digit', month:'short', year:'numeric' }).format(date);
+    }
+    function safeUrl(value, fallback) {
+      const url = String(value || '').trim();
+      return /^(https?:\/\/|\/|\.\/|\.\.\/|[a-zA-Z0-9_-]+\/)/.test(url) ? url : fallback;
+    }
+    function rankClass(rank) { return rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : 'standard'; }
+    function rankLabel(rank) { return rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`; }
+    function displayName(row) { return String(row?.username || row?.historical_username || 'Unknown Mousefighter').trim(); }
+    function mouseName(mouse) { return String(mouse?.custom_name || mouse?.metadata_name || 'Unknown Genesis Mouse').trim(); }
+
+    function renderMetrics() {
+      const s = state.data.summary || {};
+      const metrics = [
+        ['⚔️', 'Finished Fights', s.finished_fights, 'Official season results'],
+        ['🤝', 'PVP Battles', s.pvp_fights, 'Two-player challenges'],
+        ['🏟️', 'Arena Events', s.event_fights, 'Moderator brackets'],
+        ['🐭', 'Unique Fighters', s.unique_players, 'Discord competitors'],
+        ['🎯', 'Rounds Fought', s.rounds_fought, 'Stored round results'],
+        ['🧬', 'Largest Event', s.largest_completed_event_participants, 'Fighters in one event'],
+      ];
+      el.metricsGrid.innerHTML = metrics.map(([icon,label,value,sub]) => `
+        <article class="arena-card metric-card rounded-2xl p-4">
+          <div class="text-2xl">${icon}</div>
+          <div class="text-2xl md:text-3xl font-black mt-2">${number(value)}</div>
+          <div class="text-sm font-bold text-yellow-100">${escapeHtml(label)}</div>
+          <div class="text-xs text-slate-500 mt-1">${escapeHtml(sub)}</div>
+        </article>`).join('');
+    }
+
+    function featureCard(title, icon, entry, valueHtml, subtitle, isMouse = false) {
+      if (!entry) return '';
+      const name = isMouse ? mouseName(entry) : displayName(entry);
+      const image = isMouse ? safeUrl(entry.image_url, DEFAULT_MOUSE_IMAGE) : safeUrl(entry.avatar_url, DEFAULT_AVATAR);
+      const imageClass = isMouse ? 'fighter-image' : 'pfp !w-16 !h-16 !min-w-16';
+      return `<button class="arena-card rounded-3xl p-5 text-left hover:-translate-y-1 transition" ${!isMouse ? `data-player-id="${escapeHtml(entry.user_id)}"` : ''}>
+        <div class="flex items-center justify-between gap-3"><span class="text-xs uppercase tracking-[.2em] text-slate-400 font-black">${icon} ${escapeHtml(title)}</span><span class="text-xs text-slate-600">#1</span></div>
+        <div class="flex items-center gap-4 mt-4 min-w-0">
+          <img src="${escapeHtml(image)}" alt="" class="${imageClass}" onerror="this.src='${isMouse ? DEFAULT_MOUSE_IMAGE : DEFAULT_AVATAR}'" />
+          <div class="min-w-0"><div class="font-black text-lg player-name">${escapeHtml(name)}</div><div class="text-2xl font-black text-yellow-200 mt-1">${valueHtml}</div><div class="text-xs text-slate-400 mt-1">${escapeHtml(subtitle)}</div></div>
+        </div>
+      </button>`;
+    }
+
+    function renderFeatured() {
+      const f = state.data.featured || {};
+      el.featuredGrid.innerHTML = [
+        featureCard('Most Wins','🏆',f.most_wins,number(f.most_wins?.wins),'overall fight wins'),
+        featureCard('Best Win Rate','📈',f.best_qualified_win_rate,percent(f.best_qualified_win_rate?.win_rate),`minimum ${state.data.filters.win_rate_min_fights} fights`),
+        featureCard('Event Champion','👑',f.most_event_championships,number(f.most_event_championships?.event_championships),'event championships'),
+        featureCard('Round Master','🎯',f.most_round_wins,number(f.most_round_wins?.rounds_won),'round wins'),
+        featureCard('PVP Leader','⚔️',f.most_pvp_wins,number(f.most_pvp_wins?.pvp_wins),'PVP wins'),
+        featureCard('Most Used Mouse','🐭',f.most_used_mouse,number(f.most_used_mouse?.fights_used),'historical fight uses',true),
+        featureCard('Most Successful Mouse','🧀',f.most_successful_mouse,number(f.most_successful_mouse?.wins),'fight wins',true),
+      ].join('');
+      el.featuredGrid.querySelectorAll('[data-player-id]').forEach(button => button.addEventListener('click', () => openPlayer(button.dataset.playerId)));
+    }
+
+    function renderBoardTabs() {
+      el.boardTabs.innerHTML = Object.entries(boardConfig).map(([key, cfg]) => `<button class="board-tab rounded-full px-4 py-2 text-sm font-black ${state.activeBoard === key ? 'active' : ''}" data-board="${key}">${cfg.icon} ${escapeHtml(cfg.label)}</button>`).join('');
+      el.boardTabs.querySelectorAll('[data-board]').forEach(button => button.addEventListener('click', () => { state.activeBoard = button.dataset.board; renderBoardTabs(); renderPlayerBoard(); }));
+    }
+
+    function renderPlayerBoard() {
+      const cfg = boardConfig[state.activeBoard];
+      const rows = state.data.leaderboards?.[state.activeBoard] || [];
+      const criteriaMap = {
+        most_wins:'most_wins', best_win_rate:'best_win_rate', most_active:'most_active', most_pvp_wins:'pvp', event_champions:'events', most_round_wins:'rounds', most_versatile_players:'most_active', veteran_fighters:'most_active'
+      };
+      el.boardDescription.textContent = `${cfg.icon} ${cfg.label} — official ${state.data.season.season_name} results.`;
+      el.criteriaText.textContent = state.data.criteria?.[criteriaMap[state.activeBoard]] || 'Stored finished-fight statistics.';
+      if (!rows.length) { el.playerBoard.innerHTML = '<div class="rounded-2xl border border-dashed border-white/15 p-8 text-center text-slate-400">No qualified fighters for this board yet.</div>'; return; }
+      el.playerBoard.innerHTML = rows.map(row => {
+        const primaryValue = cfg.primary === 'win_rate' ? percent(row[cfg.primary]) : number(row[cfg.primary]);
+        return `<button class="rank-row w-full text-left" data-player-id="${escapeHtml(row.user_id)}">
+          <span class="rank-badge ${rankClass(row.rank)}">${rankLabel(row.rank)}</span>
+          <img class="pfp" src="${escapeHtml(safeUrl(row.avatar_url, DEFAULT_AVATAR))}" alt="${escapeHtml(displayName(row))}" onerror="this.src='${DEFAULT_AVATAR}'" />
+          <span class="player-copy"><span class="player-name block font-black text-white">${escapeHtml(displayName(row))}</span><span class="block text-xs text-slate-400 mt-1">${escapeHtml(mouseName(row.most_used_mouse))} • ${number(row.total_fights)} fights</span></span>
+          <span class="score-copy"><span class="block text-lg font-black text-yellow-200">${primaryValue}</span><span class="score-secondary block text-xs text-slate-400">${escapeHtml(cfg.primaryLabel)} • ${escapeHtml(cfg.secondary(row))}</span></span>
+        </button>`;
+      }).join('');
+      el.playerBoard.querySelectorAll('[data-player-id]').forEach(button => button.addEventListener('click', () => openPlayer(button.dataset.playerId)));
+    }
+
+    function renderFighters() {
+      const rows = state.data.leaderboards?.[state.activeFighterBoard] || [];
+      el.fighterGrid.innerHTML = rows.slice(0, 9).map(mouse => `<article class="arena-card fighter-card rounded-3xl p-5">
+        <div class="flex gap-4 min-w-0">
+          <div class="relative"><img src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}" alt="${escapeHtml(mouseName(mouse))}" class="fighter-image" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><span class="absolute -top-2 -left-2 rank-badge ${rankClass(mouse.rank)} !w-9 !h-9 !min-w-9 text-xs">${rankLabel(mouse.rank)}</span></div>
+          <div class="min-w-0 flex-1"><div class="player-name font-black text-lg">${escapeHtml(mouseName(mouse))}</div><div class="text-xs text-slate-400 mt-1">${escapeHtml(mouse.metadata_name || 'Genesis fighter')}</div><div class="flex items-center gap-2 mt-3"><img class="pfp !w-7 !h-7 !min-w-7" src="${escapeHtml(safeUrl(mouse.owner?.avatar_url, DEFAULT_AVATAR))}" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><span class="text-sm font-bold player-name">${escapeHtml(mouse.owner?.username || 'Unknown owner')}</span></div></div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-4 text-center"><div class="rounded-xl bg-black/25 p-2"><div class="font-black text-yellow-200">${number(mouse.fights_used)}</div><div class="text-[11px] text-slate-500">Fights</div></div><div class="rounded-xl bg-black/25 p-2"><div class="font-black text-green-200">${number(mouse.wins)}</div><div class="text-[11px] text-slate-500">Wins</div></div><div class="rounded-xl bg-black/25 p-2"><div class="font-black text-cyan-200">${number(mouse.rounds_won)}</div><div class="text-[11px] text-slate-500">Rounds</div></div></div>
+      </article>`).join('');
+    }
+
+    function renderModes() {
+      const modes = state.data.battle_modes || {};
+      el.modeGrid.innerHTML = Object.values(modes).map(mode => {
+        const top = mode.top_specialist;
+        const constants = Object.entries(mode.public_constants || {}).map(([key,value]) => `<span class="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs"><strong>${escapeHtml(key.replaceAll('_',' '))}:</strong> ${typeof value === 'number' && value > 0 && value < 1 ? percent(value * 100) : escapeHtml(value)}</span>`).join('');
+        return `<article class="arena-card mode-card rounded-3xl p-5" data-theme="${escapeHtml(mode.theme || 'gold')}">
+          <div class="flex items-center justify-between gap-3"><div class="text-4xl">${escapeHtml(mode.emoji)}</div><div class="text-right"><div class="text-2xl font-black">${number(mode.finished_fights)}</div><div class="text-xs text-slate-500">finished fights</div></div></div>
+          <h3 class="text-xl font-black mt-4">${escapeHtml(mode.label)}</h3><p class="text-sm text-slate-300 leading-relaxed mt-2">${escapeHtml(mode.description)}</p>
+          ${constants ? `<div class="flex flex-wrap gap-2 mt-4">${constants}</div>` : ''}
+          <div class="rounded-2xl border border-white/10 bg-black/25 p-3 mt-4"><div class="text-xs text-slate-500">Top qualified specialist</div><div class="font-black mt-1">${top ? escapeHtml(displayName(top)) : 'No qualified specialist yet'}</div>${top ? `<div class="text-xs text-slate-400">${number(top.mode_wins)} wins • ${percent(top.mode_win_rate)}</div>` : ''}</div>
+          <div class="text-xs text-green-200 mt-4">✓ Fight-only calculations</div>
+        </article>`;
+      }).join('');
+    }
+
+    function renderAbilities() {
+      const matrix = state.data.combat_matrix || {};
+      el.abilityGrid.innerHTML = (matrix.abilities || []).map((ability,index) => `<article class="ability-card rounded-2xl border border-white/10 bg-black/25 p-4"><div class="ability-icon text-3xl ${index % 3 === 0 ? 'text-yellow-200' : index % 3 === 1 ? 'text-cyan-200' : 'text-pink-200'}">${escapeHtml(ability.icon)}</div><div class="font-black text-lg mt-2">${escapeHtml(ability.label)}</div><div class="text-xs uppercase tracking-[.18em] text-slate-500">${escapeHtml(ability.key)}</div><p class="text-sm text-slate-300 mt-2 leading-relaxed">${escapeHtml(ability.description)}</p></article>`).join('');
+      const triggers = matrix.recorded_trigger_counts || {};
+      el.triggerStats.innerHTML = [['★ Special',triggers.special],['✦ Spell',triggers.spell],['◎ Dodge',triggers.dodge],['📚 Detailed rounds',triggers.rounds_with_combat_details],['🕰️ Legacy rounds',triggers.rounds_without_combat_details]].map(([label,value]) => `<div class="flex justify-between gap-3 border-b border-white/5 pb-2"><span class="text-slate-300">${escapeHtml(label)}</span><span class="font-black text-cyan-200">${number(value)}</span></div>`).join('');
+      const summary = state.data.summary || {};
+      el.roundRecords.innerHTML = `<div class="flex justify-between border-b border-white/5 pb-2"><span class="text-slate-400">Highest winning score</span><strong class="text-yellow-200">${number(summary.highest_recorded_winning_score)}</strong></div><div class="flex justify-between border-b border-white/5 pb-2"><span class="text-slate-400">Largest score margin</span><strong class="text-pink-200">${number(summary.largest_recorded_score_margin)}</strong></div><div class="flex justify-between"><span class="text-slate-400">Average rounds/fight</span><strong class="text-cyan-200">${Number(summary.average_rounds_per_fight || 0).toFixed(2)}</strong></div>`;
+    }
+
+
+
+    function fightTypeLabel(mode) {
+      return mode === 'admin_bracket_event' ? '🏟️ Arena Event' : '🤝 PVP Challenge';
+    }
+
+    function battleModeLabel(mode) {
+      const labels = { champion:'🏆 Champion', underdog:'🐭 Underdog', equalized:'⚖️ Equalized', chaos:'🎲 Chaos' };
+      return labels[mode] || '🏆 Champion';
+    }
+
+    function formatMatchFormat(value) {
+      return String(value || 'best_of_1').replaceAll('_', ' ').replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+    function historyQuery(reset = false) {
+      if (reset) state.historyOffset = 0;
+      const params = new URLSearchParams({ limit: String(state.historyLimit), offset: String(state.historyOffset) });
+      const displayedSeasonId = Number(state.data?.season?.season_id || 0);
+      if (displayedSeasonId > 0) params.set('season_id', String(displayedSeasonId));
+      const values = {
+        mode: el.historyMode.value.trim(),
+        battle_mode: el.historyBattleMode.value.trim(),
+        user_id: el.historyUserId.value.trim(),
+        token_id: el.historyTokenId.value.trim(),
+      };
+      Object.entries(values).forEach(([key,value]) => { if (value) params.set(key,value); });
+      return `${HISTORY_API}?${params.toString()}`;
+    }
+
+    function renderHistory() {
+      if (!state.historyRows.length) {
+        el.historyGrid.innerHTML = '<div class="lg:col-span-2 rounded-3xl border border-dashed border-white/15 bg-black/20 p-8 text-center text-slate-300">No finished MouseFights match these filters.</div>';
+        return;
+      }
+      el.historyGrid.innerHTML = state.historyRows.map(fight => {
+        const winner = fight.winner || {};
+        const winnerMouse = mouseName(winner);
+        const economy = fight.configured_economy || {};
+        const economyParts = [];
+        if (number(economy.wager_dspoinc_per_player) > 0) economyParts.push(`${number(economy.wager_dspoinc_per_player)} DSPOINC wager`);
+        if (number(economy.entry_cost_dspoinc) > 0) economyParts.push(`${number(economy.entry_cost_dspoinc)} DSPOINC entry`);
+        if (number(economy.prize_dspoinc) > 0) economyParts.push(`${number(economy.prize_dspoinc)} DSPOINC configured prize`);
+        return `<article class="rounded-3xl border border-white/10 bg-black/25 p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2"><div class="flex flex-wrap gap-2"><span class="rounded-full border border-orange-300/20 bg-orange-300/10 px-3 py-1 text-xs font-black text-orange-100">${escapeHtml(fightTypeLabel(fight.mode))}</span><span class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-100">${escapeHtml(battleModeLabel(fight.battle_mode))}</span></div><span class="text-xs text-slate-500">${escapeHtml(dateLabel(fight.ended_at || fight.created_at))}</span></div>
+          <h3 class="text-xl font-black mt-4">${escapeHtml(fight.title || `MouseFight ${fight.fight_id}`)}</h3>
+          <div class="flex items-center gap-4 mt-4"><img src="${escapeHtml(safeUrl(winner.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-14 !h-14 !min-w-14" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><img src="${escapeHtml(safeUrl(winner.image_url, DEFAULT_MOUSE_IMAGE))}" class="fighter-image !w-14 !h-14" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div class="min-w-0"><div class="text-xs uppercase tracking-[.16em] text-green-200 font-black">Winner</div><div class="font-black player-name">${escapeHtml(winner.username || 'Unknown fighter')}</div><div class="text-xs text-slate-400 player-name">${escapeHtml(winnerMouse)}</div></div></div>
+          <div class="grid grid-cols-3 gap-2 mt-4 text-center"><div class="rounded-xl bg-black/25 p-2"><strong>${number(fight.participant_count)}</strong><div class="text-[11px] text-slate-500">Fighters</div></div><div class="rounded-xl bg-black/25 p-2"><strong>${number(fight.round_count)}</strong><div class="text-[11px] text-slate-500">Rounds</div></div><div class="rounded-xl bg-black/25 p-2"><strong>${escapeHtml(formatMatchFormat(fight.match_format))}</strong><div class="text-[11px] text-slate-500">Format</div></div></div>
+          ${economyParts.length ? `<p class="text-xs text-slate-500 mt-3">Configured terms: ${escapeHtml(economyParts.join(' • '))}</p>` : ''}
+          <button class="fight-detail-button mt-4 w-full rounded-2xl border border-yellow-300/25 bg-yellow-300/10 px-4 py-3 font-black text-yellow-100 hover:bg-yellow-300/15" data-fight-id="${escapeHtml(fight.fight_id)}">View Full Fight</button>
+        </article>`;
+      }).join('');
+    }
+
+    async function loadHistory({ reset = false } = {}) {
+      if (reset) state.historyRows = [];
+      el.historyStatus.textContent = 'Loading official finished fights…';
+      el.historyMore.classList.add('hidden');
+      try {
+        const response = await fetch(historyQuery(reset), { credentials:'same-origin', cache:'no-store' });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.error || `Request failed with ${response.status}`);
+        const rows = Array.isArray(data.fights) ? data.fights : [];
+        state.historyRows = reset ? rows : state.historyRows.concat(rows);
+        state.historyHasMore = Boolean(data.pagination?.has_more);
+        state.historyOffset = state.historyRows.length;
+        renderHistory();
+        el.historyStatus.textContent = `${number(data.pagination?.total_matching)} finished fights match • showing ${number(state.historyRows.length)}`;
+        el.historyMore.classList.toggle('hidden', !state.historyHasMore);
+      } catch (error) {
+        el.historyStatus.textContent = error.message || 'Unable to load fight archive.';
+        if (!state.historyRows.length) el.historyGrid.innerHTML = '<div class="lg:col-span-2 rounded-3xl border border-red-300/20 bg-red-500/10 p-5 text-red-100">Fight archive could not be loaded.</div>';
+      }
+    }
+
+    function fighterSummary(fighter) {
+      if (!fighter) return '<span class="text-slate-500">Unknown fighter</span>';
+      return `<span class="font-black">${escapeHtml(fighter.username || 'Unknown')}</span><span class="text-slate-500"> • ${escapeHtml(mouseName(fighter))}</span>`;
+    }
+
+    async function openFight(fightId) {
+      if (!fightId) return;
+      el.fightModal.hidden = false;
+      document.body.style.overflow = 'hidden';
+      el.fightModalHeader.innerHTML = '<div class="text-xs uppercase tracking-[.2em] text-cyan-200 font-black">Official fight archive</div><h2 class="text-2xl font-black mt-2">Loading full fight…</h2>';
+      el.fightModalBody.innerHTML = '<div class="skeleton rounded-3xl h-72"></div>';
+      try {
+        let data = state.fightCache.get(fightId);
+        if (!data) {
+          const response = await fetch(`${FIGHT_DETAILS_API}?fight_id=${encodeURIComponent(fightId)}`, { credentials:'same-origin', cache:'no-store' });
+          data = await response.json();
+          if (!response.ok || !data.success) throw new Error(data.error || `Request failed with ${response.status}`);
+          state.fightCache.set(fightId, data);
+        }
+        const fight = data.fight || {};
+        const winner = fight.winner || {};
+        el.fightModalHeader.innerHTML = `<div class="text-xs uppercase tracking-[.2em] text-cyan-200 font-black">${escapeHtml(fightTypeLabel(fight.mode))} • ${escapeHtml(battleModeLabel(fight.battle_mode))}</div><h2 class="text-2xl md:text-3xl font-black mt-2">${escapeHtml(fight.title || fight.fight_id || 'MouseFight')}</h2><p class="text-sm text-slate-400 mt-2">${number(fight.participant_count)} fighters • ${number(fight.match_count)} matches • ${number(fight.round_count)} rounds</p>`;
+        const participants = (data.participants || []).map(person => `<div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"><img src="${escapeHtml(safeUrl(person.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-11 !h-11 !min-w-11" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><img src="${escapeHtml(safeUrl(person.image_url, DEFAULT_MOUSE_IMAGE))}" class="fighter-image !w-11 !h-11" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div class="min-w-0"><div class="font-black player-name">${escapeHtml(person.username || 'Unknown')}</div><div class="text-xs text-slate-400 player-name">${escapeHtml(mouseName(person))}${person.is_winner ? ' • 🏆 Champion' : ''}</div></div></div>`).join('');
+        const matches = (data.matches || []).map(match => `<article class="rounded-3xl border border-white/10 bg-black/20 p-4"><div class="flex flex-wrap justify-between gap-2"><div class="font-black text-yellow-100">Bracket ${number(match.bracket_round)} • Match ${number(match.match_number)}</div><div class="text-sm text-slate-400">${number(match.fighter_one_round_wins)}–${number(match.fighter_two_round_wins)}</div></div><div class="text-sm mt-2">${fighterSummary(match.fighter_one)} <span class="text-slate-600">vs</span> ${fighterSummary(match.fighter_two)}</div><div class="text-xs text-green-200 mt-2">Winner: ${fighterSummary(match.winner)}</div><div class="space-y-2 mt-3">${(match.rounds || []).map(round => { const events=round.events||{}; const tags=[]; if(events.combat_details_available===false) tags.push('Legacy detail unavailable'); else { if(events.attacker_special||events.defender_special) tags.push('★ Special'); if(events.attacker_spell||events.defender_spell) tags.push('✦ Spell'); if(events.attacker_dodge||events.defender_dodge) tags.push('◎ Dodge'); } return `<div class="rounded-xl border border-white/5 bg-black/25 p-3 text-xs"><div class="flex justify-between gap-3"><span>Round ${number(round.round_number)}</span><strong>${number(round.attacker_score)}–${number(round.defender_score)}</strong></div><div class="text-slate-400 mt-1">${escapeHtml(round.event_text || round.result || 'Stored round result')}</div>${tags.length ? `<div class="text-cyan-200 mt-1">${escapeHtml(tags.join(' • '))}</div>` : ''}</div>`; }).join('')}</div></article>`).join('');
+        const legacyNotice = (data.matches || []).some(match => (match.rounds || []).some(round => round.events?.combat_details_available === false)) ? '<div class="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">Some legacy Champion rounds predate detailed Special, Spell, and Dodge metadata. Scores and winners remain available.</div>' : '';
+        el.fightModalBody.innerHTML = `<div class="grid md:grid-cols-[1fr_2fr] gap-5"><aside class="space-y-4"><div class="rounded-3xl border border-green-300/20 bg-green-500/10 p-5"><div class="text-xs uppercase tracking-[.18em] text-green-200 font-black">Overall winner</div><div class="flex items-center gap-3 mt-3"><img src="${escapeHtml(safeUrl(winner.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-14 !h-14 !min-w-14" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><div><div class="font-black">${escapeHtml(winner.username || 'Unknown')}</div><div class="text-xs text-slate-300">${escapeHtml(mouseName(winner))}</div></div></div></div>${legacyNotice}<div><h3 class="font-black mb-3">Participants</h3><div class="space-y-2">${participants}</div></div></aside><section><h3 class="font-black text-xl mb-3">Bracket and rounds</h3><div class="space-y-4">${matches || '<div class="text-slate-400">No match rows recorded.</div>'}</div></section></div>`;
+      } catch (error) {
+        el.fightModalBody.innerHTML = `<div class="rounded-2xl border border-red-300/20 bg-red-500/10 p-5 text-red-100">${escapeHtml(error.message || 'Unable to load fight details.')}</div>`;
+      }
+    }
+
+    function closeFightModal() { el.fightModal.hidden = true; document.body.style.overflow = ''; }
+
+    async function openPlayer(userId) {
+      if (!userId) return;
+      el.playerModal.hidden = false;
+      document.body.style.overflow = 'hidden';
+      el.modalHeader.innerHTML = '<div class="text-xs uppercase tracking-[.2em] text-cyan-200 font-black">Player profile</div><h2 class="text-2xl font-black mt-2">Loading MouseFight statistics…</h2>';
+      el.modalBody.innerHTML = '<div class="skeleton rounded-3xl h-64"></div>';
+      try {
+        let data = state.playerCache.get(userId);
+        if (!data) {
+          const params = new URLSearchParams({ user_id: String(userId) });
+          const displayedSeasonId = Number(state.data?.season?.season_id || 0);
+          if (displayedSeasonId > 0) params.set('season_id', String(displayedSeasonId));
+          const response = await fetch(`${PLAYER_STATS_API}?${params.toString()}`, { credentials:'same-origin', cache:'no-store' });
+          data = await response.json();
+          if (!response.ok || !data.success) throw new Error(data.error || `Request failed with ${response.status}`);
+          state.playerCache.set(userId, data);
+        }
+        const player = data.player || {};
+        const stats = data.stats || {};
+        const mouse = data.most_used_mouse || {};
+        el.modalHeader.innerHTML = `<div class="flex items-center gap-4"><img src="${escapeHtml(safeUrl(player.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-16 !h-16 !min-w-16" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><div class="min-w-0"><div class="text-xs uppercase tracking-[.2em] text-cyan-200 font-black">MouseFight player</div><h2 class="text-2xl md:text-3xl font-black player-name">${escapeHtml(player.username || 'Unknown fighter')}</h2></div></div>`;
+        const statCards = [['Fights',stats.total_fights],['Wins',stats.wins],['Win Rate',percent(stats.win_rate)],['PVP Wins',stats.pvp_wins],['Event Titles',stats.event_championships],['Round Wins',stats.rounds_won]];
+        el.modalBody.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-3 gap-3">${statCards.map(([label,value]) => `<div class="rounded-2xl border border-white/10 bg-black/25 p-4"><div class="text-2xl font-black text-yellow-200">${typeof value === 'string' ? escapeHtml(value) : number(value)}</div><div class="text-xs text-slate-400">${escapeHtml(label)}</div></div>`).join('')}</div>
+          <div class="arena-card rounded-3xl p-5 mt-5"><div class="flex items-center gap-4"><img src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}" class="fighter-image" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div><div class="text-xs uppercase tracking-[.18em] text-pink-200 font-black">Most-used Genesis mouse</div><div class="text-xl font-black mt-1">${escapeHtml(mouseName(mouse))}</div><div class="text-sm text-slate-400">${number(mouse.fights_used)} fights • ${number(mouse.wins)} wins • ${number(mouse.rounds_won)} round wins</div></div></div></div>
+          <div class="grid md:grid-cols-2 gap-4 mt-5"><div class="rounded-3xl border border-white/10 bg-black/25 p-5"><div class="font-black text-cyan-200">PVP Record</div><div class="text-sm text-slate-300 mt-2">${number(stats.pvp_wins)} wins from ${number(stats.pvp_fights)} fights</div></div><div class="rounded-3xl border border-white/10 bg-black/25 p-5"><div class="font-black text-pink-200">Event Record</div><div class="text-sm text-slate-300 mt-2">${number(stats.event_championships)} championships from ${number(stats.event_fights)} events</div></div></div>`;
+      } catch (error) {
+        el.modalBody.innerHTML = `<div class="rounded-2xl border border-red-300/20 bg-red-500/10 p-5 text-red-100">${escapeHtml(error.message || 'Unable to load player statistics.')}</div>`;
+      }
+    }
+
+    function closePlayerModal() { el.playerModal.hidden = true; document.body.style.overflow = ''; }
+
+    function renderAll() {
+      const data = state.data;
+      el.seasonName.textContent = data.season?.season_name || 'MouseFight Season';
+      el.winRateQualification.textContent = `${number(data.filters?.win_rate_min_fights)} fights`;
+      el.modeQualification.textContent = `${number(data.filters?.mode_min_fights)} fights`;
+      el.generatedAt.textContent = `Generated ${dateLabel(data.generated_at)}`;
+      renderMetrics(); renderFeatured(); renderBoardTabs(); renderPlayerBoard(); renderFighters(); renderModes(); renderAbilities();
+      loadHistory({ reset: true });
+      el.loading.classList.add('hidden'); el.errorState.classList.add('hidden'); el.content.classList.remove('hidden');
+    }
+
+    async function loadArena() {
+      el.loading.classList.remove('hidden'); el.errorState.classList.add('hidden'); el.content.classList.add('hidden');
+      try {
+        const response = await fetch(LEADERBOARD_API, { credentials:'same-origin', cache:'no-store' });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.error || `Request failed with ${response.status}`);
+        state.data = data;
+        renderAll();
+      } catch (error) {
+        el.loading.classList.add('hidden'); el.errorState.classList.remove('hidden'); el.errorMessage.textContent = error.message || 'Unknown API error.';
+      }
+    }
+
+    document.querySelectorAll('.fighter-tab').forEach(button => button.addEventListener('click', () => {
+      state.activeFighterBoard = button.dataset.fighterBoard;
+      document.querySelectorAll('.fighter-tab').forEach(tab => tab.classList.toggle('active', tab === button));
+      renderFighters();
+    }));
+
+    el.historyApply.addEventListener('click', () => loadHistory({ reset: true }));
+    el.historyRefresh.addEventListener('click', () => loadHistory({ reset: true }));
+    el.historyMore.addEventListener('click', () => loadHistory({ reset: false }));
+    el.historyGrid.addEventListener('click', event => {
+      const button = event.target.closest('.fight-detail-button');
+      if (button) openFight(button.dataset.fightId);
+    });
+    el.closeFightModal.addEventListener('click', closeFightModal);
+    el.fightModal.addEventListener('click', event => { if (event.target === el.fightModal) closeFightModal(); });
+    el.retryButton.addEventListener('click', loadArena);
+    el.closeModal.addEventListener('click', closePlayerModal);
+    el.playerModal.addEventListener('click', event => { if (event.target === el.playerModal) closePlayerModal(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') { if (!el.playerModal.hidden) closePlayerModal(); if (!el.fightModal.hidden) closeFightModal(); } });
+    loadArena();
+  </script>
+</body>
+</html>

@@ -1,5 +1,946 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-29 — MouseFight Game #10 Website Integration Complete Locally / Standby Before Season 14 Leagues
+
+**Scope:** `public/mousefights.html` / `public/profile.html` / `public/leaderboard.html` / MouseFight read-only APIs / Season 14 preparation  
+**Status:** The complete first MouseFight Game #10 website integration is locally working. Development now pauses until the verified Season 13 → Season 14 reset is complete. The previously discussed MouseFight league system belongs to the Season 14 follow-up phase and must not be added before the reset.
+
+---
+
+# ✅ MouseFight Game #10 Website Integration Complete Locally
+
+The following website areas are now integrated and locally validated:
+
+```text
+public/mousefights.html
+public/profile.html
+public/leaderboard.html
+
+## 2026-07-29 — MouseFight Game #10 Profile Integration Complete Locally / Season Reset Agent Notice
+
+**Scope:** `public/profile.html` / `api/leaderboard/get-mousefight-player-stats.php` / `public/mousefights.html` / Season 14 reset coordination  
+**Status:** MouseFight is now integrated locally into the profile as official Game #10. Current-season and all-time statistics use separate verified read paths and must be preserved during the Season 13 → Season 14 reset.
+
+---
+
+# ✅ MouseFight Is Now Official Game #10 on the Profile
+
+The local profile now displays MouseFight in both:
+
+```text
+Current Season Statistics
+All-Time Statistics Overview
+
+## 2026-07-29 — MouseFight Game #10 Website Foundation Locally Working / Season 14 Final 48-Hour Push
+
+**Scope:** MouseFight historical audit / public read-only APIs / player statistics / MouseFight leaderboards / new `mousefights.html` frontend
+**Status:** Core website foundation is working locally — approximately 48 hours remain before Season 14, so the next work must prioritize required integrations, focused validation, and deployment readiness
+
+---
+
+# ⏰ Season 14 Deadline
+
+Approximately **48 hours remain before Season 14**.
+
+The Discord MouseFight game itself is already extensively live-tested. The current priority is completing its official website integration as **Game #10** without changing the working combat, recovery, economy, escrow, burn, reward, or settlement systems.
+
+Priority order for the remaining time:
+
+```text
+1. Finish mousefights.html historical fight section
+2. Add full fight and bracket detail display
+3. Add MouseFight to profile.html as Game #10
+4. Add MouseFight preview boards to leaderboard.html
+5. Confirm Season 14 season selection and archive behavior
+6. Run focused local regression checks
+7. Prepare grouped deployment
+8. Perform live read-only verification after deployment
+```
+
+Do not use the remaining time for unrelated refactors or optional backend changes.
+
+---
+
+# ✅ Phase 9A–9E — MouseFight Historical APIs Complete Locally
+
+The historical MouseFight data was audited before frontend development.
+
+Validated local Season 13 state during the latest API tests:
+
+```text
+Finished fights: 186
+PVP fights: 120
+Moderator events: 66
+Unique players: 46
+Player/fight participations: 570
+Recorded rounds: 971
+Supported battle modes: 4
+Genesis abilities in matrix: 9
+```
+
+The totals increased from an earlier audit of 185 fights and 965 rounds because one additional event completed during development.
+
+All public website APIs remain read-only.
+
+Created and locally validated:
+
+```text
+api/leaderboard/get-recent-mousefights.php
+api/leaderboard/get-mousefight-details.php
+api/leaderboard/get-mousefight-player-stats.php
+api/leaderboard/get-mousefight-leaderboards.php
+```
+
+These endpoints must not:
+
+```text
+write database rows
+recalculate combat
+change stored winners
+settle DSPOINC
+change PVP escrow
+change event burns
+claim configured token rewards were delivered
+change Fight Recovery
+change Genesis ownership
+change permanent traits or abilities
+change Lab progression
+change Genetic Item ownership
+```
+
+---
+
+# ✅ Recent MouseFight History API
+
+File:
+
+```text
+api/leaderboard/get-recent-mousefights.php
+```
+
+Purpose:
+
+```text
+Shared official finished-fight history
+Season-scoped filtering
+PVP and moderator-event filtering
+Battle-mode filtering
+Player and Genesis token filtering
+Pagination
+Frontend-safe fighter snapshots
+Current Discord PFP with historical fallback
+```
+
+Historical authority:
+
+```text
+Fight headers:
+tbl_mousefights
+
+Fight-time Genesis identity, mouse image, name and power:
+tbl_mousefight_participants
+
+Current Discord PFP:
+tbl_users.avatar_url
+
+Historical Discord PFP fallback:
+stored participant snapshot
+```
+
+Only `finished` fights are public.
+
+Cancelled and waiting fights remain excluded.
+
+Legacy fights without an explicit battle mode are displayed as Champion Mode because they used the original pre-mode MouseFight engine.
+
+---
+
+# ✅ Full MouseFight Detail API
+
+File:
+
+```text
+api/leaderboard/get-mousefight-details.php
+```
+
+Locally validated with modern and legacy events.
+
+Modern Chaos event test:
+
+```text
+Fight:
+mfevent_1785248735415_bp60aap
+
+Participants:
+16
+
+Reconstructed matches:
+15
+
+Rounds:
+33
+
+Winner:
+King of M-Pop
+```
+
+The 16-player bracket reconstructed correctly:
+
+```text
+Round 1: 8 matches
+Round 2: 4 matches
+Round 3: 2 matches
+Round 4: 1 final
+Total: 15 matches
+```
+
+Legacy compatibility test:
+
+```text
+Fight:
+mfevent_1783914703427_7ogbquw
+
+Mode:
+Champion
+
+Matches:
+3
+
+Rounds:
+3
+
+Legacy combat details:
+Unavailable as expected
+```
+
+Round coverage audit:
+
+```text
+Finished round rows: 965 at audit time
+Rows with attacker and defender scores: 965
+Rows with nested combat objects: 819
+Legacy rows without nested combat objects: 146
+```
+
+All 146 rows without nested combat objects belong to legacy Champion fights.
+
+API behavior:
+
+```text
+Modern rounds:
+combat_details_available = true
+
+Legacy compact rounds:
+combat_details_available = false
+special/spell/dodge fields = null
+```
+
+Do not return `false` for unrecorded legacy events because that would incorrectly state that the event did not happen.
+
+HTTP validation passed:
+
+```text
+Missing fight_id:
+HTTP 400
+
+Unknown or non-finished fight_id:
+HTTP 404
+```
+
+---
+
+# ✅ MouseFight Player Statistics API
+
+File:
+
+```text
+api/leaderboard/get-mousefight-player-stats.php
+```
+
+Supported scopes:
+
+```text
+user_id
+token_id
+optional season_id
+```
+
+Validated Narrrf Season 13 result:
+
+```text
+Fights: 131
+Wins: 42
+Losses: 89
+Win rate: 32.06%
+PVP fights: 74
+PVP wins: 32
+Events: 57
+Event championships: 10
+Rounds: 377
+Round wins: 148
+Most-used mouse: Wizard
+```
+
+Validated leading player:
+
+```text
+Player:
+lukeskypestalker
+
+Fights:
+73
+
+Wins:
+48
+
+Losses:
+25
+
+Win rate:
+65.75%
+
+Rounds:
+259
+
+Round wins:
+185
+
+Most-used mouse:
+By the power of Cheeseskull!
+```
+
+Validated exact Genesis token scope:
+
+```text
+Mouse:
+Wizard
+
+Fights:
+46
+
+Fight wins:
+7
+
+Rounds:
+131
+```
+
+Important definitions:
+
+```text
+Fight win:
+User matches tbl_mousefights.winner_user_id
+
+Event championship:
+User is the header winner of one finished moderator event
+
+Fight loss:
+User participated in the finished fight but is not its header winner
+
+Round win:
+Round winner identity matches user_id + token_id
+```
+
+An event participant receives one event fight result, not one fight loss for every bracket match.
+
+---
+
+# ✅ Shared MouseFight Leaderboards API
+
+File:
+
+```text
+api/leaderboard/get-mousefight-leaderboards.php
+```
+
+The endpoint returns one page-ready payload containing:
+
+```text
+Season summary
+Featured leaders
+Player rankings
+Genesis mouse rankings
+Battle-mode specialist rankings
+Battle-mode descriptions
+Nine-Ability Matrix descriptions
+Recorded combat trigger totals
+Stored score records
+Current Discord PFPs
+Historical PFP fallback
+Genesis mouse images
+```
+
+Player boards:
+
+```text
+Most Fight Wins
+Best Qualified Win Rate
+Most Active Fighters
+Most PVP Wins
+Event Champions
+Most Round Wins
+Most Versatile Players
+Veteran Fighters
+```
+
+Genesis mouse boards:
+
+```text
+Most Used Genesis Mice
+Most Successful Genesis Mice
+Most Genesis Mouse Round Wins
+```
+
+Battle-mode specialist boards:
+
+```text
+Champion
+Underdog
+Equalized
+Chaos
+```
+
+Approved qualifications:
+
+```text
+Best player win rate:
+Minimum 5 finished fights
+
+Most successful Genesis mouse:
+Minimum 5 fight uses
+
+Battle-mode specialist:
+Minimum 3 fights in that exact mode
+```
+
+Validated featured leaders:
+
+```text
+Most wins:
+lukeskypestalker — 48
+
+Best qualified win rate:
+lukeskypestalker — 65.75%
+
+Most PVP wins:
+lukeskypestalker — 33
+
+Most event championships:
+lukeskypestalker — 15
+
+Most round wins:
+lukeskypestalker — 185
+
+Most-used Genesis mouse:
+Wizard — 46 fights
+
+Most successful Genesis mouse:
+By the power of Cheeseskull! — 20 wins
+```
+
+Validated Genesis rankings include:
+
+```text
+Most Used:
+Wizard — 46 fights
+
+Most Successful:
+By the power of Cheeseskull! — 20 wins from 24 fight uses
+
+Round Masters:
+By the power of Cheeseskull! — 76 round wins
+Carrot King — 76 round wins
+```
+
+These are historical MouseFight-result rankings.
+
+They must remain separate from `strongest-genesis-mice.html`, which ranks current Genesis Lab progression and support power rather than historical fight success.
+
+---
+
+# ✅ Battle Modes and Nine-Ability Matrix Available to Frontend
+
+The leaderboard API provides descriptions for all four temporary fight modes:
+
+```text
+🏆 Champion Mode
+Full Genesis progression and selected Owner Genetic Items matter normally.
+
+🐭 Underdog Mode
+The authentic weaker fighter receives bounded temporary support while real progression remains meaningful.
+
+⚖️ Equalized Mode
+Both temporary fighter snapshots move toward the matchup midpoint and reduce the original numeric gap.
+
+🎲 Chaos Mode
+Both fighters receive randomized fight-only values inside approved shared ranges.
+```
+
+Current verified public constants:
+
+```text
+Underdog:
+Base support ceiling: 8
+Power-gap multiplier: 0.50
+Maximum round support: 40
+
+Equalized:
+Midpoint compression rate: 0.60
+Approximately 40% of the original component difference remains
+```
+
+The nine MouseFight Genesis abilities are:
+
+```text
+♥ HP
+» SPEED
+◎ AIR
+⚔ ATK
+◆ DEF
+★ SPECIAL
+✦ SPELLS
+⚒ CRAFTING
+⬡ EXPANSION
+```
+
+These descriptions are informational only.
+
+The website must never run the combat engine or recalculate winners.
+
+---
+
+# ✅ Phase 9F — `mousefights.html` First Frontend Version Working Locally
+
+File:
+
+```text
+mousefights.html
+```
+
+The user uploaded the latest locally tested copy back into the ChatGPT project folder.
+
+Current result:
+
+```text
+Page loads successfully
+All current tabs display data
+Season totals display
+Featured leaders display
+Discord PFPs display
+Player leaderboard rows display
+Genesis mouse images display
+Genesis ranking tabs display
+Battle-mode cards display
+Nine-Ability Matrix displays
+Player-stat modal is connected
+```
+
+Visual direction follows:
+
+```text
+strongest-genesis-mice.html
+leaderboard.html
+```
+
+Current page sections:
+
+```text
+MouseFight Arena hero
+Game #10 presentation
+Season metrics
+Featured leaders
+Player-ranking tabs
+Discord PFP leaderboard rows
+Genesis fighter showcase
+Battle-mode laboratory
+Nine-Ability Matrix
+Recorded combat-stat cards
+How MouseFight works
+Permanent-data safety notice
+Player statistics modal
+```
+
+Connected APIs:
+
+```text
+/api/leaderboard/get-mousefight-leaderboards.php
+/api/leaderboard/get-mousefight-player-stats.php
+```
+
+Current frontend status:
+
+```text
+Good first working version
+Not final
+Not deployed
+```
+
+---
+
+# 🔜 Next Required Frontend Phase
+
+The next work must extend the existing working `mousefights.html`; do not rebuild it from scratch.
+
+Required additions:
+
+```text
+Recent finished MouseFight history
+PVP/event filter
+Battle-mode filter
+Player filter
+Genesis token filter
+Season selector
+Fight cards with PFP and Genesis images
+View Full Fight button
+Full fight detail modal
+Participants
+Matches
+Round scores
+Bracket path
+Special/spell/dodge indicators where recorded
+Legacy combat-details notice
+```
+
+Use:
+
+```text
+/api/leaderboard/get-recent-mousefights.php
+/api/leaderboard/get-mousefight-details.php
+```
+
+Do not dump raw JSON into the page.
+
+---
+
+# 🔜 Required Game #10 Website Integrations
+
+After the full MouseFight page is complete, add the smallest verified integrations to:
+
+```text
+profile.html
+leaderboard.html
+```
+
+## `profile.html`
+
+Add MouseFight as official **Game #10**.
+
+Required first version:
+
+```text
+Personal fight totals
+Wins and losses
+Win rate
+PVP record
+Event championships
+Round record
+Most-used Genesis mouse
+Recent fights
+Button to open mousefights.html
+```
+
+Use the existing authenticated Discord user ID and:
+
+```text
+/api/leaderboard/get-mousefight-player-stats.php
+```
+
+Do not change profile authentication, wallet logic, DSPOINC, staking, missions, or unrelated games.
+
+## `leaderboard.html`
+
+Add a compact Game #10 preview, not the entire MouseFight page.
+
+Required boards:
+
+```text
+Top Fight Winners
+Top Event Champions
+Top PVP Fighters
+```
+
+Required buttons:
+
+```text
+Open MouseFight Arena
+View Fight History
+```
+
+Use:
+
+```text
+/api/leaderboard/get-mousefight-leaderboards.php
+```
+
+Preserve all existing nine-game leaderboard behavior.
+
+---
+
+# 🔜 Season 14 Critical Integration
+
+Before Season 14 starts, verify that all MouseFight APIs:
+
+```text
+default to the active season
+accept an explicit season_id
+exclude waiting and cancelled fights
+preserve Season 13 as historical data
+return empty valid boards for a new season before fights exist
+do not silently fall back to Season 13 when Season 14 is active
+```
+
+Do not alter season reset or archive logic based on assumptions.
+
+Inspect the current authoritative season implementation before any season-related patch.
+
+Season 13 must remain available through explicit season selection after Season 14 starts.
+
+---
+
+# ⚠️ Deployment Status
+
+Current work is local only.
+
+```text
+Local XAMPP:
+Working
+
+Uploaded ChatGPT project copies:
+Available for inspection
+
+Render production:
+Not deployed
+
+Live APIs:
+Not verified
+
+Live mousefights.html:
+Not available
+```
+
+Do not claim these files are live until deployment and direct production checks succeed.
+
+---
+
+# 🚫 Protected Systems — Do Not Touch
+
+Unless explicitly approved, do not modify:
+
+```text
+Fight Recovery
+DSPOINC/SPOINC economy
+PVP escrow
+PVP settlement
+Event entry burns
+Champion rewards
+Token airdrop approval
+Genesis ownership
+Permanent Genesis traits
+Permanent Genesis abilities
+Lab progression
+Genetic Item ownership
+Authentication
+Database migrations
+Deployment configuration
+Unrelated games
+```
+
+The new website work must remain read-only.
+
+---
+
+# 🧪 Required Validation Before Deployment
+
+Run focused local checks:
+
+```text
+PHP lint for all four new APIs
+Default active-season API tests
+Explicit Season 13 API tests
+Unknown season error tests
+Unknown fight error tests
+User-scope player-stat tests
+Token-scope player-stat tests
+Leaderboard qualification tests
+Desktop browser test
+Mobile browser test
+PFP fallback test
+Genesis image fallback test
+Empty-season display test
+History-filter test
+Fight-detail modal test
+Profile Game #10 regression test
+Leaderboard Game #10 regression test
+Nearest unchanged game leaderboard test
+```
+
+Syntax checks alone do not prove frontend or live production behavior.
+
+---
+
+# 📌 Compact Handover
+
+```text
+Scope:
+MouseFight Game #10 website integration for Season 14
+
+Files created:
+api/leaderboard/get-recent-mousefights.php
+api/leaderboard/get-mousefight-details.php
+api/leaderboard/get-mousefight-player-stats.php
+api/leaderboard/get-mousefight-leaderboards.php
+mousefights.html
+
+Locally validated:
+Four read-only APIs
+Season 13 history
+Player statistics
+Player leaderboards
+Genesis mouse leaderboards
+Battle-mode specialist boards
+First MouseFight frontend version
+Discord PFP display
+Genesis image display
+Player-stat modal
+
+Still required:
+Fight history frontend
+Full fight/bracket modal
+Profile Game #10 integration
+Leaderboard Game #10 integration
+Season 14 active/archived season checks
+Final responsive regression
+Grouped deployment
+Live read-only verification
+
+Live status:
+Not deployed
+
+Known timing:
+Approximately 48 hours remain before Season 14
+
+Do-not-touch:
+Fight Recovery
+DSPOINC/SPOINC economy
+PVP escrow/settlement
+Event burns
+Champion rewards
+Token payout approval
+Genesis/Lab permanent data
+Authentication
+Database migrations
+
+Exact next step:
+Extend the current mousefights.html with recent history filters and the full fight-detail modal using the two already validated read-only history APIs
+```
+
+
+## 2026-07-27 — MouseFight Bot 5.0 Complete / Season 14 Frontend Handover Ready
+
+**Scope:** `discord/commands/mousefight.js` / MouseFight PVP and moderator events / four battle modes / live database validation / Season 14 Game #10 planning  
+**Status:** MouseFight Discord core is extensively live-tested — next agent starts as MouseFight Bot 6.0 with Historical Data Audit + Read-Only API Contract
+
+---
+
+## ✅ MouseFight Core Phase Complete
+
+MouseFight is now operational across real Discord PVP challenges and moderator-hosted bracket events.
+
+Validated systems include:
+
+```text
+PVP challenges
+Free and DSPOINC-staked PVP
+Automatic equal-stake winner settlement
+Waiting challenge cancellation refunds
+Moderator bracket events
+Free and paid event entry
+Permanent event entry burns
+Waiting-event cancellation refunds
+Automatic DSPOINC champion prizes
+SPL token approval and airdrop flow
+Best of 1 / Best of 3 / Best of 5
+Seeded and random brackets
+2–32 event fighters
+Named Genesis mouse eligibility
+Nine-Ability combat engine
+Owner Genetic Item loadouts
+Duplicate item-type loadout protection
+Persistent Fight Recovery
+Restart-safe waiting fight restoration
+World Cup-style tournament result boards
+
+## 2026-07-22 — MouseFight Four Battle Modes Champion Baseline Complete
+
+**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js` / safe in-memory combat simulations  
+**Status:** Champion Mode baseline and controlled power-gap simulation phases complete — Underdog formula simulation is the next phase
+
+---
+
+## ✅ Phase 1 — Four Battle Modes Registered and Validated
+
+The four approved temporary MouseFight battle modes are now available in the safe admin test command:
+
+```text
+🏆 Champion Mode
+🐭 Underdog Mode
+⚖️ Equalized Mode
+🎲 Chaos Mode
+
+## 2026-07-22 — MouseFight Entry Cost Wording Clarified
+
+**Scope:** `discord/commands/mousefight.js`  
+**Status:** Local wording update complete — Node syntax validation passed
+
+---
+
+## ✅ Public Cost and Prize Terminology Separated
+
+MouseFight public wording was clarified so players can clearly distinguish between:
+
+```text
+Cost = DSPOINC paid by a fighter to enter
+Prize = reward received by the champion
+
+## 2026-07-22 — MouseFight Four Battle Modes Phase Approved
+
+**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js` / MouseFight combat engine / PVP challenges / moderator bracket events / Discord embeds  
+**Status:** Four-mode architecture and Chaos Mode concept approved — implementation will begin with specifications and simulation tools before live PVP/event integration
+
+---
+
+## ✅ Fight Recovery V1 Remains Complete
+
+The persistent **❄️ Fight Recovery** system is already complete and live validated.
+
+Fight Recovery remains separate from the new combat-mode work.
+
+Existing recovery rules must remain unchanged:
+
+- recovery belongs to the exact Genesis identity:
+  - `token_id + collection`;
+- recovery begins only after a mouse completes a real match;
+- waiting cancellations, declined challenges, unused event joins, and bracket byes do not create recovery;
+- recovery remains persistent and restart-safe;
+- PVP recovery choices remain:
+  - 15 minutes;
+  - 30 minutes;
+  - 60 minutes;
+- moderator events may configure their approved recovery duration;
+- unavailable mice remain blocked before event burns or PVP escrow/stake writes.
+
+---
+
+# 🎮 NEW PHASE — FOUR MOUSEFIGHT BATTLE MODES
+
+The next major MouseFight expansion will introduce four selectable temporary combat modes:
+
+```text
+Champion Mode
+Underdog Mode
+Equalized Mode
+Chaos Mode
+
 ## 2026-07-21 — Fitness Chest Reward Patch + Genetic Support Display Prepared
 
 **Scope:** `api/user/claim-ability-milestone-reward.php` / `public/lab.html` / `public/strongest-genesis-mice.html`  
