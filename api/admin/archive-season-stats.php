@@ -13,8 +13,9 @@
  * - Glyph Memory
  * - Discord Cheese Race
  * - Cheese Rumble
+ * - MouseFight
  *
- * Discord Cheese Race and Cheese Rumble are archived as compact per-user
+ * Discord Cheese Race, Cheese Rumble, and MouseFight are archived as compact per-user
  * historical summaries because profile.html displays them as current-season games.
  *
  * Persistent systems intentionally NOT archived/reset here:
@@ -191,6 +192,11 @@ try {
     $gamesArchived = $archiveGamesStmt->rowCount();
 
     // Archive Cheese Hunt snapshot.
+    //
+    // Plain language for DEVS:
+    // Cheese Hunt has legacy season labels such as season_2 in tbl_cheese_clicks.
+    // For Season 13+ resets, the active season timestamp window is the safest
+    // archive boundary. This does not delete or mutate click rows.
     $archiveCheeseStmt = $db->prepare("
         INSERT OR REPLACE INTO tbl_historical_cheese_stats
             (
@@ -211,6 +217,9 @@ try {
             :season_start as season_start_date,
             :season_end as season_end_date
         FROM tbl_cheese_clicks
+        WHERE datetime(timestamp) >= datetime(:season_start)
+          AND datetime(timestamp) < datetime(:season_end)
+          AND COALESCE(user_wallet, '') <> ''
         GROUP BY user_wallet
     ");
     $archiveCheeseStmt->execute([
@@ -366,6 +375,77 @@ $archiveRumbleStmt->execute([
 ]);
 $rumbleArchived = $archiveRumbleStmt->rowCount();
 
+/**
+ * Archive MouseFight current-season stats.
+ *
+ * Plain language for DEVS:
+ * MouseFight is official Game #10 on the profile and leaderboards.
+ * tbl_mousefights does not currently have a season_id column, so the archive
+ * uses the exact active season timestamp window from tbl_seasons.
+ *
+ * This stores one compact historical row per player using game = 'mousefight'.
+ * It reads only finished fights and excludes waiting/cancelled fights.
+ *
+ * This does not:
+ * - recalculate combat;
+ * - change winners;
+ * - settle DSPOINC;
+ * - change PVP escrow;
+ * - change event burns;
+ * - change Fight Recovery;
+ * - change Genesis ownership, traits, abilities, names, Lab progression, or Genetic Items.
+ */
+$archiveMouseFightStmt = $db->prepare("
+    INSERT OR REPLACE INTO tbl_historical_stats
+        (
+            discord_id,
+            game,
+            season,
+            total_games,
+            best_score,
+            total_score,
+            avg_score,
+            season_start_date,
+            season_end_date
+        )
+    WITH mousefight_user_stats AS (
+        SELECT
+            p.user_id AS discord_id,
+            COUNT(DISTINCT f.fight_id) AS total_games,
+            SUM(CASE WHEN f.winner_user_id = p.user_id THEN 1 ELSE 0 END) AS fight_wins,
+            SUM(COALESCE(p.wins, 0)) AS round_wins
+        FROM tbl_mousefights f
+        JOIN tbl_mousefight_participants p
+            ON p.fight_id = f.fight_id
+        WHERE f.status = 'finished'
+          AND datetime(COALESCE(NULLIF(f.ended_at, ''), f.created_at)) >= datetime(:season_start)
+          AND datetime(COALESCE(NULLIF(f.ended_at, ''), f.created_at)) < datetime(:season_end)
+          AND COALESCE(p.user_id, '') <> ''
+        GROUP BY p.user_id
+    )
+    SELECT
+        discord_id,
+        'mousefight' AS game,
+        :season AS season,
+        total_games,
+        COALESCE(fight_wins, 0) AS best_score,
+        COALESCE(round_wins, 0) AS total_score,
+        CASE
+            WHEN total_games > 0
+            THEN ROUND((COALESCE(fight_wins, 0) * 100.0) / total_games, 2)
+            ELSE 0
+        END AS avg_score,
+        :season_start AS season_start_date,
+        :season_end AS season_end_date
+    FROM mousefight_user_stats
+");
+$archiveMouseFightStmt->execute([
+    ':season' => $seasonName,
+    ':season_start' => $seasonStart,
+    ':season_end' => $seasonEnd
+]);
+$mouseFightArchived = $archiveMouseFightStmt->rowCount();
+
 $db->commit();
 
     echo json_encode([
@@ -378,7 +458,8 @@ $db->commit();
     'cheese_users_archived' => $cheeseArchived,
     'glyph_rows_archived' => $glyphArchived,
     'discord_race_users_archived' => $raceArchived,
-    'cheese_rumble_users_archived' => $rumbleArchived
+    'cheese_rumble_users_archived' => $rumbleArchived,
+    'mousefight_users_archived' => $mouseFightArchived
 ]
     ], JSON_PRETTY_PRINT);
 

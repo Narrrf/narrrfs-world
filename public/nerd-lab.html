@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>🧊 Nerd Lab — Narrrf's World Cheese Engine • Season 13 Systems</title>
+  <title>☀️ Nerd Lab — Narrrf's World Season 14 • 10 Games • MouseFight Guide</title>
 
   <link rel="icon" type="image/png" href="favicon-phantom.png" />
   <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#f97316" />
   <meta
     name="description"
-    content="Customer-friendly Nerd Lab for Narrrf's World Season 13: understand the Cheese Engine, 2-lane player system, games, Genesis Lab, Reward Chamber, DSPOINC economy, SPOINC gateway paths, Genesis Mouse Freezer utility, database logic, and future gameplay direction."
+    content="A simple guide to Narrrf's World Season 14: understand the two player lanes, ten games, MouseFight Game #10, Genesis Lab, rewards, DSPOINC, SPOINC gateway paths, staking, and permanent progress."
   />
   <meta name="robots" content="index, follow" />
 
@@ -20,7 +20,7 @@
   <meta property="og:title" content="🧊 Nerd Lab — Narrrf's World Cheese Engine" />
   <meta
     property="og:description"
-    content="Dive into the Narrrfs World systems in simple language: player lane, Genesis holder lane, Cheese Engine, games, Lab, rewards, DSPOINC, SPOINC gateway paths, Genesis Mouse Freezer utility, and Season 13 architecture."
+    content="Explore Narrrf's World Season 14 in simple language: two player lanes, ten games, MouseFight, Genesis Lab, rewards, DSPOINC, SPOINC gateway paths, and permanent progress."
   />
   <meta property="og:image" content="img/narrrf-logo-professional.png" />
 
@@ -28,7 +28,7 @@
   <meta name="twitter:title" content="🧊 Nerd Lab — Narrrf's World Cheese Engine" />
   <meta
     name="twitter:description"
-    content="A simple public guide to Narrrfs World Season 13 systems: games, Lab, rewards, DSPOINC economy, SPOINC gateway paths, Genesis Mouse Freezer utility, profile identity, and Cheese Engine logic."
+    content="A simple public guide to Narrrf's World Season 14: ten games, MouseFight Game #10, Genesis Lab, rewards, DSPOINC, SPOINC gateway paths, staking, and profile identity."
   />
   <meta name="twitter:image" content="img/narrrf-logo-professional.png" />
 
@@ -210,7 +210,7 @@
 
   <!-- ☀️ Status Badge -->
   <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-orange-500 to-pink-600 text-white text-xs font-black px-4 py-2 rounded-full shadow-lg border border-orange-300/50">
-    🧊 Nerd Lab • Season 13 Sync
+    ☀️ Nerd Lab • Season 14 Guide
   </div>
 
   <!-- 🧭 Sticky Navigation Bar - matched with the public Season 12 menu labels -->
@@ -225,6 +225,7 @@
         <a href="get-roles.html" class="hover:text-yellow-300 transition-colors">Get Roles</a>
         <a href="partners.html" class="hover:text-yellow-300 transition-colors">Partners</a>
         <a href="project-updates.html" class="hover:text-yellow-300 transition-colors">Updates</a>
+        <a href="mousefights.html" class="hover:text-orange-300 transition-colors">⚔️ MouseFight</a>
         <a href="nerd-lab.html" class="text-yellow-300 font-black border-b-2 border-yellow-300">🧠 Nerd Lab</a>
         <a href="profile.html#profile-chest-section" class="hover:text-yellow-300 transition-colors">🎁 Chamber</a>
 
@@ -244,7 +245,7 @@
     <section class="relative py-20 px-4 md:px-6 text-center overflow-hidden">
       <div class="max-w-6xl mx-auto">
         <div class="nerd-pill border border-yellow-300/35 bg-yellow-400/10 text-yellow-200 mb-6">
-          🧊 Season 13 • Cheese Engine • Public System Guide
+          ☀️ Season 14 • 10 Games • Simple System Guide
         </div>
 
         <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
@@ -255,14 +256,14 @@
         </h1>
 
         <p class="text-lg md:text-2xl text-slate-300 mb-6 max-w-4xl mx-auto leading-relaxed">
-          This page explains how Narrrf’s World works behind the scenes — games, profiles,
-          roles, Genesis Lab, Reward Chamber, DSPOINC, SPOINC gateway paths, Genesis Mouse Freezer utility, database logic, and the Cheese Engine —
-          in a way normal players, holders, partners, and investors can follow.
+          This page explains Narrrf’s World in simple language — ten games,
+          MouseFight, profiles, roles, Genesis Lab, rewards, DSPOINC, SPOINC,
+          staking, and the Cheese Engine that connects everything.
         </p>
 
         <p class="text-base text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-          You do not need to be a developer to understand this page. The Nerd Lab starts simple,
-          then lets curious readers go deeper into the technical layers.
+          You do not need technical knowledge. Start with the easy sections,
+          then open the deeper tabs only when you want more detail.
         </p>
 
         <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
@@ -278,7 +279,12 @@
 
           <a href="#nerd-lab-games"
              class="inline-flex justify-center rounded-2xl bg-pink-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-pink-500">
-            🎮 Game Systems
+            🎮 10 Game Systems
+          </a>
+
+          <a href="#nerd-lab-mousefight"
+             class="inline-flex justify-center rounded-2xl bg-orange-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105 hover:bg-orange-500">
+            ⚔️ Understand MouseFight
           </a>
 
           <a href="#nerd-lab-tabs"
@@ -315,12 +321,12 @@
 
             <p class="text-slate-300 leading-relaxed mb-5">
               This is the easy entry lane. A player logs in with Discord, plays games,
-              joins weekly events, earns DSPOINC, completes missions, opens rewards, and builds a visible profile.
+              joins weekly events, follows MouseFight battles, earns DSPOINC, completes missions, opens rewards, and builds a visible profile.
             </p>
 
             <ul class="space-y-3 text-sm text-slate-300">
               <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Play seasonal games and climb leaderboards</li>
-              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Join Cheese Rumble, bingo, poker, spaces, VR, and partner activities</li>
+              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Join MouseFight events, Cheese Rumble, bingo, poker, spaces, VR, and partner activities</li>
               <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Build profile history, roles, rewards, and DSPOINC activity</li>
             </ul>
 
@@ -336,17 +342,17 @@
 
             <p class="text-slate-300 leading-relaxed mb-5">
               This is the deeper Lab lane. A holder verifies a Genesis Mouse, names it,
-              enters the Lab, upgrades traits, manages progression, and prepares for future ability-based gameplay.
+              improves traits and abilities, manages Genetic Items, and can use that progress in MouseFight.
             </p>
 
             <ul class="space-y-3 text-sm text-slate-300">
               <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Verified Genesis Mouse identity unlocks deeper holder access</li>
               <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Custom names, trait upgrades, timed research, and Lab history become long-term progression</li>
-              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ Future ability direction starts from this holder identity layer</li>
+              <li class="rounded-2xl bg-white/5 border border-white/10 p-4">✅ MouseFight turns your named Genesis Mouse into a temporary fighter without changing the NFT</li>
             </ul>
 
             <p class="mt-5 text-xs text-cyan-100/80">
-              Important: marketplace items should not be described as mutating the Genesis Mouse. NFT-bound progression stays controlled through verified Lab upgrade paths.
+              Simple rule: MouseFight uses a temporary battle copy. Your real Genesis Mouse, ownership, name, traits, abilities, and items stay safe.
             </p>
           </article>
         </div>
@@ -409,7 +415,7 @@
       </div>
     </section>
 
-    <!-- 🎮 Season 12 game systems intro -->
+    <!-- 🎮 Season 14 game systems intro -->
     <section id="nerd-lab-games" class="py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-pink-950/20 to-slate-950 border-t border-white/5">
       <div class="max-w-7xl mx-auto">
         <div class="text-center max-w-4xl mx-auto mb-12">
@@ -418,12 +424,12 @@
           </div>
 
           <h2 class="text-4xl md:text-5xl font-black mb-4">
-            Season 13 is the Neon Freezer 9-game ecosystem pass.
+            Season 14 brings ten connected games.
           </h2>
 
           <p class="text-slate-300 text-lg leading-relaxed">
-            Games are the action layer of Narrrf’s World. They create competition, activity, missions,
-            DSPOINC flow, role value, and profile history.
+            Games are where the community plays, competes, earns approved rewards,
+            builds profile history, and brings Genesis progress into action.
           </p>
         </div>
 
@@ -438,16 +444,14 @@
           <div class="season-shell-card rounded-3xl p-6 border-pink-300/25">
             <h3 class="text-xl font-black text-pink-200 mb-3">💥 Labyrinth Blast</h3>
             <p class="text-sm text-slate-300">
-              Labyrinth Blast is a highlighted Season 13 game surface. It uses the <strong>labyrinth_blast</strong>
-              game key and connects into the score, DSPOINC, profile, and admin ecosystem direction.
+              Labyrinth Blast adds maze action, bombs, enemies, scores, and another style of competition to the ten-game world.
             </p>
           </div>
 
           <div class="season-shell-card rounded-3xl p-6 border-cyan-300/25">
             <h3 class="text-xl font-black text-cyan-200 mb-3">Memory + Discord Events</h3>
             <p class="text-sm text-slate-300">
-              Glyph Memory, Cheese Hunt, Discord Cheese Race, and Cheese Rumble add lore, events,
-              community activity, and special competition paths.
+              Glyph Memory, Cheese Hunt, Discord Cheese Race, Cheese Rumble, and MouseFight add puzzles, events, community battles, and different ways to compete.
             </p>
           </div>
         </div>
@@ -459,6 +463,80 @@
             Genesis Lab progression, Mouse names, Reward Chamber history, DSPOINC balances, staking,
             inventory, marketplace state, wallets, roles, and holder identity are not treated like monthly scoreboards.
           </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🐭 MouseFight explained for everyone -->
+    <section id="nerd-lab-mousefight" class="py-16 px-4 md:px-6 bg-gradient-to-b from-slate-950 via-orange-950/30 to-slate-950 border-t border-white/5">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-4xl mx-auto mb-10">
+          <div class="nerd-pill border border-orange-300/35 bg-orange-400/10 text-orange-200 mb-5">
+            🐭 Game #10
+          </div>
+          <h2 class="text-4xl md:text-5xl font-black mb-4">MouseFight, explained simply.</h2>
+          <p class="text-slate-300 text-lg leading-relaxed">
+            Two Genesis mice enter a Discord battle. Their names, Lab progress,
+            abilities, and chosen Genetic Items help create the fighters. The battle
+            plays out automatically, and the result becomes part of MouseFight history.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <article class="season-shell-card rounded-3xl p-6 border-yellow-300/25">
+            <div class="text-4xl mb-3">1️⃣</div>
+            <h3 class="text-xl font-black text-yellow-100 mb-2">Choose your mouse</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Use a verified Genesis Mouse with a custom name. Your Lab progress helps shape its battle strength.
+            </p>
+          </article>
+          <article class="season-shell-card rounded-3xl p-6 border-orange-300/25">
+            <div class="text-4xl mb-3">2️⃣</div>
+            <h3 class="text-xl font-black text-orange-100 mb-2">Enter a battle</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Fight one player in PVP or join a community event. Different battle modes can make matches feel different.
+            </p>
+          </article>
+          <article class="season-shell-card rounded-3xl p-6 border-cyan-300/25">
+            <div class="text-4xl mb-3">3️⃣</div>
+            <h3 class="text-xl font-black text-cyan-100 mb-2">Build your history</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Finished fights can appear on the MouseFight page with wins, championships, rounds, and fighter records.
+            </p>
+          </article>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="rounded-3xl border border-pink-300/25 bg-pink-400/10 p-6">
+            <h3 class="text-2xl font-black text-pink-100 mb-3">Four easy battle choices</h3>
+            <ul class="space-y-2 text-sm text-slate-300">
+              <li>🏆 <strong>Champion:</strong> your full mouse progress matters.</li>
+              <li>🐭 <strong>Underdog:</strong> the weaker mouse gets a little help.</li>
+              <li>⚖️ <strong>Equalized:</strong> the two fighters move closer together.</li>
+              <li>🎲 <strong>Chaos:</strong> both fighters receive random battle-only values.</li>
+            </ul>
+          </div>
+          <div class="rounded-3xl border border-emerald-300/25 bg-emerald-400/10 p-6">
+            <h3 class="text-2xl font-black text-emerald-100 mb-3">What stays safe</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              MouseFight does not rewrite your NFT. Your ownership, custom name,
+              permanent traits, permanent abilities, Lab progress, and Genetic Items stay unchanged.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-3xl border border-cyan-300/25 bg-cyan-400/10 p-6 text-center">
+          <h3 class="text-2xl font-black text-cyan-100 mb-3">Power and battle history are different</h3>
+          <p class="text-sm md:text-base text-slate-300 leading-relaxed max-w-4xl mx-auto">
+            Strongest Genesis Mice shows how powerful a mouse is today. MouseFight shows what happened in past battles.
+            A strong mouse can have little battle history, and an experienced fighter can build a great record over time.
+          </p>
+        </div>
+
+        <div class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-3">
+          <a href="mousefights.html" class="inline-flex justify-center rounded-2xl bg-gradient-to-r from-orange-500 to-pink-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105">⚔️ Open MouseFight Arena</a>
+          <a href="strongest-genesis-mice.html" class="inline-flex justify-center rounded-2xl bg-cyan-600 px-7 py-4 font-black text-white shadow-xl transition hover:scale-105">🐭 View Current Mouse Power</a>
+          <a href="lab.html" class="inline-flex justify-center rounded-2xl bg-yellow-400 px-7 py-4 font-black text-slate-950 shadow-xl transition hover:scale-105">🧬 Enter Genesis Lab</a>
         </div>
       </div>
     </section>
@@ -504,6 +582,7 @@
                 <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseHunt">🧀 Cheese Hunt</button>
                 <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="discordRace">🏁 Discord Race</button>
                 <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseRumble">💣 Cheese Rumble</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-orange-400/40 font-semibold text-sm whitespace-nowrap" data-tab="mouseFight">⚔️ MouseFight</button>
               </div>
             </div>
 
@@ -539,7 +618,7 @@
       <!-- DEVS FOR DECADES:
          This Nerd Lab tab is public documentation only.
          It gives members, holders, partners, and investors a customer-friendly
-         overview of Narrrfs World Season 13.
+         overview of Narrrfs World Season 14.
          It does not activate systems, pay rewards, verify wallets, grant roles,
          mutate NFTs, write DSPOINC, reset seasons, or bypass backend authority. -->
       <h1>🧊 Nerd Lab Overview</h1>
@@ -553,7 +632,7 @@
   </p>
 
   <p>
-    Season 13 is the current public world state of Narrrfs.
+    Season 14 is the current public world state of Narrrfs.
     It is focused on live gameplay, monthly competition, stronger profile identity,
     Genesis holder utility, DSPOINC economy systems, SPOINC gateway paths, Genesis Mouse Freezer utility, and preparing the next deeper staking and progression layers.
   </p>
@@ -610,17 +689,17 @@
     </div>
   </div>
 
-  <h2>Current Season 13 focus</h2>
+  <h2>Current Season 14 focus</h2>
   <p>
-    Season 13 is about making the live ecosystem easier to understand, stronger to use, and better connected through the Neon Freezer Economy direction.
+    Season 14 connects the ten-game world, MouseFight, Genesis Lab progress, rewards, staking, and player identity in a clearer way.
     The project is connecting more systems together instead of leaving each feature isolated.
   </p>
 
   <ul>
     <li><strong>Monthly leaderboard competition:</strong> fresh seasonal races across the games.</li>
     <li><strong>Monthly reward direction:</strong> top players can be reviewed for rewards based on current event and season rules.</li>
-    <li><strong>9-game ecosystem direction:</strong> Narrrfs keeps expanding the playable world across website and Discord games.</li>
-    <li><strong>Labyrinth Blast:</strong> a highlighted action game surface inside the Season 13 ecosystem.</li>
+    <li><strong>10-game ecosystem:</strong> MouseFight joins the existing website and Discord games as official Game #10.</li>
+    <li><strong>MouseFight:</strong> verified Genesis mice can enter Discord PVP and community events using temporary battle fighters.</li>
     <li><strong>Profile hub:</strong> the player passport for scores, DSPOINC, roles, rewards, and holder direction.</li>
     <li><strong>Genesis Lab:</strong> the holder progression layer for names, traits, abilities, and NFT-bound Mouse identity.</li>
     <li><strong>Genetic Inventory and Marketplace:</strong> player-bound item systems that add a second progression and trading lane.</li>
@@ -676,7 +755,7 @@
 
   <h2>Current public safety status</h2>
   <p>
-    Season 13 is the public context.
+    Season 14 is the public context.
     Some deeper systems are being prepared or tested carefully before wider activation.
   </p>
 
@@ -688,7 +767,7 @@
 
   <h2>Short version</h2>
   <p>
-    Narrrf’s World Season 13 is a live GameFi ecosystem with games, monthly seasons,
+    Narrrf’s World Season 14 is a live game and community ecosystem with ten games, seasonal competition,
     DSPOINC rewards, SPOINC gateway paths, player profiles, Discord events, Genesis holder utility,
     Lab progression, Genesis Mouse Freezer utility, staking preparation, marketplace systems, and a backend Cheese Engine
     that keeps everything connected.
@@ -1029,7 +1108,7 @@
          It explains the Season 13 game ecosystem in customer-friendly language.
          It does not save scores, pay DSPOINC, reset seasons, modify leaderboards,
          run Discord games, grant roles, or bypass backend authority. -->
-      <h1>🎮 Season 13 Game Overview</h1>
+      <h1>🎮 Season 14 Game Overview</h1>
 
 ```
   <p>
@@ -1039,7 +1118,7 @@
   </p>
 
   <p>
-    Season 13 connects the Narrrfs game world across website games, Discord games,
+    Season 14 connects the Narrrfs game world across ten website and Discord games,
     hidden activity systems, profile stats, leaderboards, DSPOINC rewards, roles,
     events, and monthly competition.
   </p>
@@ -1047,13 +1126,13 @@
   <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
     <strong>Simple customer explanation:</strong><br>
     Narrrf’s World is not only one game.
-    It is a growing 9-game ecosystem where website games, Discord games,
+    It is a ten-game ecosystem where website games, Discord games,
     seasonal leaderboards, DSPOINC rewards, events, and profile history work together.
   </div>
 
   <h2>The 9 synced game surfaces</h2>
   <p>
-    Narrrfs Season 13 is built around nine connected game and activity surfaces.
+    Narrrfs Season 14 is built around ten connected game and activity surfaces.
     Some are classic website arcade games, some are Discord event games,
     and some are activity systems that support missions, rewards, and community interaction.
   </p>
@@ -1210,9 +1289,9 @@
     <li>Game activity can help future RPG direction because player behavior becomes readable.</li>
   </ul>
 
-  <h2>Why 9 games matter</h2>
+  <h2>Why 10 games matter</h2>
   <p>
-    A 9-game ecosystem gives Narrrfs more than one way to keep members active.
+    A 10-game ecosystem gives Narrrfs many different ways to keep members active.
     Not every player likes the same kind of game, so the ecosystem gives different entry points:
     classic arcade, shooter, runner, memory, maze action, hidden quests, Discord races, and Discord battles.
   </p>
@@ -1642,7 +1721,7 @@
   <h2>Why it matters</h2>
   <p>
     Labyrinth Blast proves that Narrrf’s World can welcome new game styles from trusted partners.
-    It adds variety to the 9-game ecosystem and gives players who like action and survival another reason to play.
+    It adds variety to the ten-game ecosystem and gives players who like action and survival another reason to play.
   </p>
 
   <h2>Short version</h2>
@@ -1703,7 +1782,7 @@
     <li>Memory-based gameplay instead of pure action.</li>
     <li>Symbol and glyph matching with a mysterious Narrrfs feeling.</li>
     <li>Good for players who like focus, patterns, and time improvement.</li>
-    <li>A softer but smarter game lane inside the 9-game ecosystem.</li>
+    <li>A softer but smarter game lane inside the ten-game ecosystem.</li>
     <li>A partner-collab flavor from Bear or Bull and Nightfox.</li>
   </ul>
 
@@ -1754,7 +1833,7 @@
   <h2>Why it matters</h2>
   <p>
     Glyph Memory gives Narrrf’s World a different kind of game energy.
-    It adds variety to the 9-game stack and shows that the Mouseverse can support action games,
+    It adds variety to the ten-game stack and shows that the Mouseverse can support action games,
     arcade classics, Discord battles, hidden hunts, and more thoughtful memory challenges.
   </p>
 
@@ -2207,6 +2286,36 @@
 ```
 
   </div>
+
+    <div id="tab-mouseFight" class="tab-content">
+      <div class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+        <h1>⚔️ MouseFight — Game #10</h1>
+        <p>
+          MouseFight lets verified Genesis mice battle in Discord. You choose your mouse,
+          enter PVP or a community event, and the game creates a temporary fighter from
+          your mouse name, Lab progress, abilities, and selected Genetic Items.
+        </p>
+        <h2>What players need to know</h2>
+        <ul>
+          <li>Your Genesis Mouse needs a custom name.</li>
+          <li>Your permanent Lab progress can help your fighter.</li>
+          <li>Battle modes can make the match fairer, closer, or more unpredictable.</li>
+          <li>Finished fights build public history, rankings, and fighter records.</li>
+          <li>Your NFT and permanent progress are not changed by a fight.</li>
+        </ul>
+        <h2>The four modes</h2>
+        <p><strong>Champion:</strong> full progress matters.</p>
+        <p><strong>Underdog:</strong> the weaker mouse gets some help.</p>
+        <p><strong>Equalized:</strong> the fighters move closer together.</p>
+        <p><strong>Chaos:</strong> both fighters get random battle-only values.</p>
+        <h2>Where to go</h2>
+        <p>
+          <a href="mousefights.html">Open MouseFight Arena</a><br>
+          <a href="strongest-genesis-mice.html">View Current Genesis Power</a><br>
+          <a href="lab.html">Enter Genesis Lab</a>
+        </p>
+      </div>
+    </div>
 
     <div id="tab-profileSystem" class="tab-content">
     <div id="profileSystemContent" class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
@@ -4304,7 +4413,7 @@
     </section>
   </main>
 
-  <!-- ☀️ Footer Season 12 - Nerd Lab Footer -->
+  <!-- ☀️ Footer Season 14 - Nerd Lab Footer -->
   <footer class="relative z-10 bg-slate-950 text-center px-6 py-12 border-t border-yellow-300/20 overflow-hidden">
     <div class="absolute inset-0 pointer-events-none">
       <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-yellow-300/10 blur-3xl"></div>
@@ -4324,7 +4433,7 @@
 
       <div class="mb-8">
         <div class="inline-flex items-center justify-center rounded-full border border-orange-300/30 bg-orange-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-orange-200 mb-4">
-          ☀️ Season 12 Nerd Lab
+          ☀️ Season 14 Nerd Lab
         </div>
 
         <h2 class="text-3xl md:text-4xl font-black text-white mb-3">
@@ -4333,7 +4442,7 @@
 
         <p class="max-w-2xl mx-auto text-sm md:text-base text-slate-300 leading-relaxed">
           A customer-friendly technical guide to the Narrrfs ecosystem:
-          2 lanes, games, Lab, rewards, DSPOINC, database logic, and future gameplay direction.
+          two lanes, ten games, MouseFight, Lab, rewards, DSPOINC, staking, and permanent progress.
         </p>
       </div>
 
@@ -4341,6 +4450,7 @@
         <a href="/index.html" class="inline-flex items-center justify-center rounded-2xl border border-yellow-300/20 bg-yellow-400/10 px-4 py-3 font-black text-yellow-100 transition hover:scale-105 hover:bg-yellow-400 hover:text-slate-950">🏠 Home</a>
         <a href="/profile.html" class="inline-flex items-center justify-center rounded-2xl border border-orange-300/20 bg-orange-400/10 px-4 py-3 font-black text-orange-100 transition hover:scale-105 hover:bg-orange-400 hover:text-slate-950">👤 Profile</a>
         <a href="/leaderboard.html" class="inline-flex items-center justify-center rounded-2xl border border-pink-300/20 bg-pink-500/10 px-4 py-3 font-black text-pink-100 transition hover:scale-105 hover:bg-pink-500 hover:text-white">🏆 Boards</a>
+        <a href="/mousefights.html" class="inline-flex items-center justify-center rounded-2xl border border-orange-300/20 bg-orange-400/10 px-4 py-3 font-black text-orange-100 transition hover:scale-105 hover:bg-orange-400 hover:text-slate-950">⚔️ MouseFight</a>
         <a href="/lab.html" class="inline-flex items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-3 font-black text-cyan-100 transition hover:scale-105 hover:bg-cyan-400 hover:text-slate-950">🧬 Lab</a>
         <a href="/mint.html" class="inline-flex items-center justify-center rounded-2xl border border-purple-300/20 bg-purple-500/10 px-4 py-3 font-black text-purple-100 transition hover:scale-105 hover:bg-purple-500 hover:text-white">🎴 Mint</a>
         <a href="/whitepaper.html" class="inline-flex items-center justify-center rounded-2xl border border-blue-300/20 bg-blue-500/10 px-4 py-3 font-black text-blue-100 transition hover:scale-105 hover:bg-blue-500 hover:text-white">📜 Lite Paper</a>
@@ -4363,7 +4473,7 @@
           © 2026 Narrrf's World. Built with brain, cheese, and community chaos 🧠🧀
         </div>
         <div class="text-slate-500">
-          ☀️ Season 12 • Nerd Lab • Cheese Engine • 2-lane system • Labyrinth Blast • Genesis Lab • Reward Chamber
+          ☀️ Season 14 • Nerd Lab • 10 games • MouseFight • 2-lane system • Genesis Lab • Reward Chamber
         </div>
       </div>
     </div>
@@ -4386,6 +4496,7 @@
     'cheeseHunt',
     'discordRace',
     'cheeseRumble',
+    'mouseFight',
     'profileSystem',
     'rolesSystem',
     'lab',
@@ -4403,7 +4514,7 @@
    * Shows one Nerd Lab tab.
    *
    * Plain language for DEVS:
-   * Every public Nerd Lab tab is now static Season 12 content.
+   * Every public Nerd Lab tab is static customer-facing content.
    * This prevents old 2025 markdown documentation from overwriting the customer-facing tab copy.
    * Keep data-tab values and tab-content IDs aligned when adding future tabs.
    */

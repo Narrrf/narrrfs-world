@@ -1,8 +1,407 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-07-31 — Season 14 Release Candidate Ready For Push / Evening Reset Standby
+
+**Scope:** Season 14 frontend release / ten-game ecosystem / MouseFight Game #10 / Discord holder portal / dSPOINC branding / Season 13 archive and Season 14 activation readiness  
+**Status:** The complete Season 14 release candidate has passed local syntax checks, focused content checks, and browser review. The approved version is ready for final Git staging, commit, push, and production verification. The database reset has not been executed. Season 13 remains active until the scheduled evening reset.
+
+---
+
+# ✅ Release Candidate Ready
+
+The Season 14 presentation is prepared across the main public website.
+
+Main updated pages include:
+
+```text
+public/index.html
+public/profile.html
+public/leaderboard.html
+public/mousefights.html
+public/lab.html
+public/swap-lab.html
+public/stake-lab.html
+public/strongest-genesis-mice.html
+public/partners.html
+public/project-updates.html
+public/whitepaper.html
+public/whitepaper-pro.html
+public/nerd-lab.html
+public/faq.html
+public/get-roles.html
+public/mint.html
+public/Bingo.html
+public/tetris.html
+public/snake.html
+public/space-cheese-invaders.html
+
+## 2026-07-31 — Season 14 Grouped Frontend Audit In Progress / Final Pre-Reset Review
+
+**Scope:** Season 13 → Season 14 grouped deployment preparation / ten-game frontend / MouseFight Game #10 / archive API / final local regression
+**Status:** The Season 14 presentation work is complete locally across the main public pages. MouseFight is integrated as official Game #10, the ten-game archive API is prepared, and individual syntax checks have passed. The project is now in the final grouped audit and browser-review phase before deployment and the Season 13 reset.
+
+---
+
+# ✅ Current Local State
+
+Branch:
+
+```text
+render-deploy
+```
+
+Season 14 presentation is prepared locally across:
+
+```text
+public/index.html
+public/profile.html
+public/leaderboard.html
+public/mousefights.html
+public/lab.html
+public/swap-lab.html
+public/stake-lab.html
+public/strongest-genesis-mice.html
+public/partners.html
+public/project-updates.html
+public/whitepaper.html
+public/whitepaper-pro.html
+public/nerd-lab.html
+public/faq.html
+public/get-roles.html
+public/mint.html
+```
+
+MouseFight Game #10 is now represented across:
+
+```text
+Homepage
+Profile current-season statistics
+Profile all-time statistics
+Main leaderboards
+Dedicated MouseFight Arena
+Strongest Genesis navigation
+FAQ
+Get Roles
+Mint
+Nerd Lab
+Project Updates
+Whitepapers
+```
+
+The MouseFight website layer remains read-only.
+
+It must not:
+
+```text
+recalculate combat
+change stored winners
+change Fight Recovery
+settle DSPOINC
+change PVP escrow
+change event burns
+change champion rewards
+approve token payouts
+change Genesis ownership
+change permanent traits or abilities
+change Lab progression
+change Genetic Item ownership
+```
+
+---
+
+# ✅ Ten-Game Archive Preparation
+
+`api/admin/archive-season-stats.php` is prepared locally for the complete Season 14 archive scope:
+
+```text
+Tetris
+Snake
+Space Invaders
+Cheeseman / Cheese Runner
+Labyrinth Blast
+Cheese Hunt
+Glyph Memory
+Discord Cheese Race
+Cheese Rumble
+MouseFight
+```
+
+MouseFight is archived as a compact per-user historical summary using only finished fights inside the exact active-season timestamp window.
+
+Waiting and cancelled fights remain excluded.
+
+Cheese Hunt uses the active season timestamp window because its legacy season labels are not reliable.
+
+The archive endpoint must run before the active season changes.
+
+---
+
+# ✅ Individual Validation Completed
+
+Completed locally:
+
+```text
+Python patch compilation
+PHP/HTML syntax checks
+Focused Season 14 content searches
+MouseFight link searches
+Ten-game wording searches
+Protected wallet/Discord anchor checks
+Protected tab/function checks
+Page-specific git diff checks
+```
+
+The main Season 14 pages contain the expected:
+
+```text
+Season 14 presentation
+10-game ecosystem wording
+MouseFight Game #10 links
+Current Genesis Power links
+Historical MouseFight ranking links
+```
+
+No active stale Season 13 claims remain on the already updated main pages.
+
+Historical Season 13 roadmap and changelog references remain intentionally preserved.
+
+---
+
+# ⚠️ Final Cleanup Identified
+
+The grouped audit found:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+```
+
+One trailing-whitespace line must be cleaned before commit.
+
+Two obsolete tracked development backups are intentionally no longer needed:
+
+```text
+public/leaderboard.before-mousefight-game10-20260729.html
+public/profile.before-mousefight-game10-20260729.html
+```
+
+Their deletion must be staged deliberately with `git rm`.
+
+Two remaining active Season 13 presentation labels were found outside the earlier main page group:
+
+```text
+public/Bingo.html
+public/partners.html footer
+```
+
+These require only minimal Season 14 presentation replacements.
+
+The Season 13 references inside `public/project-updates.html` describe historical Season 13 work and must remain unchanged.
+
+---
+
+# 🔍 Additional Modified Game Pages Require Review
+
+The grouped Git status also includes:
+
+```text
+public/tetris.html
+public/snake.html
+public/space-cheese-invaders.html
+```
+
+Their exact diffs must be reviewed before staging.
+
+Do not assume these changes belong to the Season 14 release merely because syntax passed.
+
+Confirm that they do not alter:
+
+```text
+gameplay logic
+score calculations
+reward calculations
+save APIs
+mission behavior
+season authority
+```
+
+---
+
+# 🧪 Current Phase — Browser Regression
+
+The project is now in Phase 2B browser review.
+
+Required local pages:
+
+```text
+http://localhost/index.html
+http://localhost/profile.html
+http://localhost/leaderboard.html
+http://localhost/mousefights.html
+http://localhost/lab.html
+http://localhost/stake-lab.html
+http://localhost/strongest-genesis-mice.html
+http://localhost/faq.html
+http://localhost/get-roles.html
+http://localhost/mint.html
+http://localhost/Bingo.html
+```
+
+Required checks:
+
+```text
+Season 14 presentation is visible
+MouseFight appears as Game #10
+All ten game links work
+Profile MouseFight statistics load
+Leaderboard MouseFight boards load
+MouseFight history and fight details load
+Existing arcade leaderboards still load
+Wallet and Discord paths still work
+Genesis Lab progression remains unchanged
+Strongest Genesis current-power ranking still works
+FAQ, Roles, Mint and Nerd Lab navigation works
+No browser console errors
+Mobile layout remains usable
+```
+
+The nearest unchanged game leaderboard must also be tested as a regression check.
+
+---
+
+# 🚫 Protected Systems
+
+Do not modify during the final reset preparation:
+
+```text
+Fight Recovery
+DSPOINC/SPOINC economy
+PVP escrow and settlement
+Event entry burns
+Champion rewards
+Token airdrop approval
+Genesis ownership
+Permanent Genesis traits
+Permanent Genesis abilities
+Lab progression
+Genetic Item ownership
+Authentication
+Database migrations
+Deployment configuration
+Unrelated game logic
+```
+
+---
+
+# ⏰ Season Reset Sequence
+
+After grouped browser validation and deployment:
+
+```text
+1. Verify production deployment
+2. Confirm the authoritative production DB path
+3. Create a pre-reset database backup
+4. Run PRAGMA integrity_check
+5. Confirm exactly one active Season 13 row
+6. Archive all ten Season 13 games
+7. Verify archive counts
+8. Deactivate Season 13
+9. Create and activate Season 14
+10. Verify Season 14 settings
+11. Reset only seasonal competition data
+12. Preserve all permanent and economy systems
+13. Run post-reset DB, API and browser checks
+14. Run controlled free game smoke tests
+```
+
+Do not reset Season 13 early.
+
+Do not rely on public GET endpoints to create missing Season 14 settings accidentally.
+
+Do not restart or deploy until local grouped validation passes and deployment is approved.
+
+---
+
+# 📌 Compact Handover
+
+```text
+Scope:
+Season 14 grouped frontend and reset readiness
+
+Completed:
+Season 14 presentation across main pages
+MouseFight official Game #10 integration
+Ten-game archive API
+Individual syntax checks
+Focused content validation
+Protected-system checks
+
+Current phase:
+Final grouped cleanup and browser regression
+
+Small cleanup remaining:
+QUICK_STATUS trailing whitespace
+Partners footer Season 14 label
+Bingo Season 14 labels
+Intentional removal of two obsolete tracked backups
+
+Review still required:
+tetris.html diff
+snake.html diff
+space-cheese-invaders.html diff
+Complete browser regression
+Final staged diff
+
+Live status:
+Not deployed
+
+Reset status:
+Not executed
+
+Do-not-touch:
+Economy
+Escrow
+Settlement
+Burns
+Rewards
+Fight Recovery
+Genesis ownership
+Permanent Lab data
+Authentication
+Database migrations
+
+Exact next step:
+Complete the four small cleanup actions, inspect the three modified game-page diffs, finish browser regression, then review the final staged file list before commit and deployment.
+```
+
+
+## 2026-07-29 — Season 14 Archive API Game #10 Ready / MouseFight Historical Snapshot Validated Locally
+
+**Scope:** `api/admin/archive-season-stats.php` / Season 13 → Season 14 reset preparation / MouseFight Game #10 archive support
+**Status:** Local Season 14 reset archive preparation passed for the 10-game ecosystem. MouseFight is now included in the season archive API as a compact per-user historical snapshot, and Cheese Hunt archive filtering was corrected to use the active season timestamp window.
+
+---
+
+# ✅ Archive API Updated For 10 Games
+
+`api/admin/archive-season-stats.php` now lists MouseFight in the season archive scope.
+
+Current archive scope:
+
+```text
+Tetris
+Snake
+Space Invaders
+Cheeseman / Cheese Runner
+Labyrinth Blast
+Cheese Hunt snapshot
+Glyph Memory
+Discord Cheese Race
+Cheese Rumble
+MouseFight
+
 ## 2026-07-29 — MouseFight Game #10 Website Integration Complete Locally / Standby Before Season 14 Leagues
 
-**Scope:** `public/mousefights.html` / `public/profile.html` / `public/leaderboard.html` / MouseFight read-only APIs / Season 14 preparation  
+**Scope:** `public/mousefights.html` / `public/profile.html` / `public/leaderboard.html` / MouseFight read-only APIs / Season 14 preparation
 **Status:** The complete first MouseFight Game #10 website integration is locally working. Development now pauses until the verified Season 13 → Season 14 reset is complete. The previously discussed MouseFight league system belongs to the Season 14 follow-up phase and must not be added before the reset.
 
 ---
@@ -18,7 +417,7 @@ public/leaderboard.html
 
 ## 2026-07-29 — MouseFight Game #10 Profile Integration Complete Locally / Season Reset Agent Notice
 
-**Scope:** `public/profile.html` / `api/leaderboard/get-mousefight-player-stats.php` / `public/mousefights.html` / Season 14 reset coordination  
+**Scope:** `public/profile.html` / `api/leaderboard/get-mousefight-player-stats.php` / `public/mousefights.html` / Season 14 reset coordination
 **Status:** MouseFight is now integrated locally into the profile as official Game #10. Current-season and all-time statistics use separate verified read paths and must be preserved during the Season 13 → Season 14 reset.
 
 ---
@@ -837,7 +1236,7 @@ Extend the current mousefights.html with recent history filters and the full fig
 
 ## 2026-07-27 — MouseFight Bot 5.0 Complete / Season 14 Frontend Handover Ready
 
-**Scope:** `discord/commands/mousefight.js` / MouseFight PVP and moderator events / four battle modes / live database validation / Season 14 Game #10 planning  
+**Scope:** `discord/commands/mousefight.js` / MouseFight PVP and moderator events / four battle modes / live database validation / Season 14 Game #10 planning
 **Status:** MouseFight Discord core is extensively live-tested — next agent starts as MouseFight Bot 6.0 with Historical Data Audit + Read-Only API Contract
 
 ---
@@ -872,7 +1271,7 @@ World Cup-style tournament result boards
 
 ## 2026-07-22 — MouseFight Four Battle Modes Champion Baseline Complete
 
-**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js` / safe in-memory combat simulations  
+**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js` / safe in-memory combat simulations
 **Status:** Champion Mode baseline and controlled power-gap simulation phases complete — Underdog formula simulation is the next phase
 
 ---
@@ -889,7 +1288,7 @@ The four approved temporary MouseFight battle modes are now available in the saf
 
 ## 2026-07-22 — MouseFight Entry Cost Wording Clarified
 
-**Scope:** `discord/commands/mousefight.js`  
+**Scope:** `discord/commands/mousefight.js`
 **Status:** Local wording update complete — Node syntax validation passed
 
 ---
@@ -904,7 +1303,7 @@ Prize = reward received by the champion
 
 ## 2026-07-22 — MouseFight Four Battle Modes Phase Approved
 
-**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js` / MouseFight combat engine / PVP challenges / moderator bracket events / Discord embeds  
+**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js` / MouseFight combat engine / PVP challenges / moderator bracket events / Discord embeds
 **Status:** Four-mode architecture and Chaos Mode concept approved — implementation will begin with specifications and simulation tools before live PVP/event integration
 
 ---
@@ -943,7 +1342,7 @@ Chaos Mode
 
 ## 2026-07-21 — Fitness Chest Reward Patch + Genetic Support Display Prepared
 
-**Scope:** `api/user/claim-ability-milestone-reward.php` / `public/lab.html` / `public/strongest-genesis-mice.html`  
+**Scope:** `api/user/claim-ability-milestone-reward.php` / `public/lab.html` / `public/strongest-genesis-mice.html`
 **Status:** Local changes prepared — not pushed yet because additional pre-push checks/tasks are still pending
 
 ---
@@ -952,7 +1351,7 @@ Chaos Mode
 
 ## 2026-07-21 — MouseFight Duplicate Genetic Item Loadout Protection Added
 
-**Scope:** `discord/commands/mousefight.js`  
+**Scope:** `discord/commands/mousefight.js`
 **Status:** Code complete and syntax verified locally — live Discord selector test still pending
 
 ---
@@ -1010,7 +1409,7 @@ Weapon Journey opens
 
 ## 2026-07-21 — MouseFight Fight Recovery V1 Fully Live Validated
 
-**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / persistent Genesis mouse availability / PVP and bracket-event completion  
+**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / persistent Genesis mouse availability / PVP and bracket-event completion
 **Status:** Phase A complete — configurable Fight Recovery is deployed, persistent, restart-safe, and validated in production
 
 ---
@@ -1026,7 +1425,7 @@ token_id + collection
 
 ## 2026-07-20 — MouseFight Fight Recovery V1 PVP Backend Ready for Live Test
 
-**Scope:** `api/discord/mousefight-economy.php` / MouseFight PVP availability / persistent per-Genesis-mouse recovery  
+**Scope:** `api/discord/mousefight-economy.php` / MouseFight PVP availability / persistent per-Genesis-mouse recovery
 **Status:** Local implementation and syntax validation complete — ready for Render push, restart, and controlled live PVP test
 
 ---
@@ -1044,7 +1443,7 @@ tbl_mousefight_mouse_cooldowns
 
 ## 2026-07-19 — MouseFight Phase A Approved: Per-Mouse Fight Recovery
 
-**Scope:** `discord/commands/mousefight.js` / MouseFight participant history / transactional event and PVP entry flow / Genesis mouse availability  
+**Scope:** `discord/commands/mousefight.js` / MouseFight participant history / transactional event and PVP entry flow / Genesis mouse availability
 **Status:** Architecture approved — implementation not started yet
 
 ---
@@ -1101,7 +1500,7 @@ Public system name:
 
 ## 2026-07-19 — SPOINC Bridge Gensuki Pending Queue Cleaned
 
-**Scope:** Gensuki custom-token-presale pending transactions / SPOINC Bridge admin audit  
+**Scope:** Gensuki custom-token-presale pending transactions / SPOINC Bridge admin audit
 **Status:** Live pending queue cleaned successfully without server restart
 
 Two old pending Gensuki rows were confirmed as `failed` after live Solana recheck showed `not_found`.
@@ -1117,7 +1516,7 @@ No pending Gensuki rows returned
 
 ## 2026-07-19 — SPOINC Bridge Admin Operations Cockpit Phase 1B Local Test Passed
 
-**Scope:** `public/admin-interface.html` / `api/admin/spoinc-bridge-ops.php` / SPOINC Bridge admin support workflow  
+**Scope:** `public/admin-interface.html` / `api/admin/spoinc-bridge-ops.php` / SPOINC Bridge admin support workflow
 **Status:** Phase 1B local browser validation passed — employee checklist cockpit working safely
 
 ---
@@ -1135,7 +1534,7 @@ Step 5 — Dry Run Only
 
 ## 2026-07-19 — SPOINC Bridge Admin Operations Cockpit Phase 1A Validated Locally
 
-**Scope:** `public/admin-interface.html` / `api/admin/spoinc-bridge-ops.php` / SPOINC Bridge admin investigation tools  
+**Scope:** `public/admin-interface.html` / `api/admin/spoinc-bridge-ops.php` / SPOINC Bridge admin investigation tools
 **Status:** Local Phase 1A validation complete — read-only operations cockpit works in admin interface
 
 ---
@@ -1158,7 +1557,7 @@ Operations result JSON panel
 
 ## 2026-07-18 — Genetic Item 2-Copy Rule + Admin Economy/Profile Patch Ready for Live Push
 
-**Scope:** `api/admin/genetic-management.php` / `api/admin/deliver-giveaway-reward.php` / `api/admin/get-dspoinc-overview.php` / `api/admin/get-stats.php` / `public/admin-interface.html` / `public/profile.html`  
+**Scope:** `api/admin/genetic-management.php` / `api/admin/deliver-giveaway-reward.php` / `api/admin/get-dspoinc-overview.php` / `api/admin/get-stats.php` / `public/admin-interface.html` / `public/profile.html`
 **Status:** Local validation complete — ready for Render deploy and post-restart live verification
 
 ---
@@ -1176,7 +1575,7 @@ Correct rule:
 
 ## 2026-07-18 — DSPOINC Burn + Outflow Reporting Expanded
 
-**Scope:** `discord/commands/winners.js` / `api/admin/get-dspoinc-overview.php` / `public/admin-interface.html` / MouseFight burn audit table  
+**Scope:** `discord/commands/winners.js` / `api/admin/get-dspoinc-overview.php` / `public/admin-interface.html` / MouseFight burn audit table
 **Status:** Local implementation and validation complete — Render deployment intentionally postponed until the next grouped push
 
 ---
@@ -1194,7 +1593,7 @@ All-time ledger outflow
 
 ## 2026-07-18 — MouseFight World Cup Bracket + Friday Event Major Test Complete
 
-**Scope:** `discord/commands/mousefight.js` / live four-player MouseFight event / World Cup-style Canvas bracket / winner-first score display / FOOK champion payout  
+**Scope:** `discord/commands/mousefight.js` / live four-player MouseFight event / World Cup-style Canvas bracket / winner-first score display / FOOK champion payout
 **Status:** Major Friday event test completed successfully — tournament combat, visual bracket, result summary, persistence, and token payout all validated
 
 ---
@@ -1255,7 +1654,7 @@ Resolved Matches:
 
 ## 2026-07-16 — MouseFight Transactional PVP DSPOINC Economy Fully Validated
 
-**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / production MouseFight database / equal-stake PVP challenge economy  
+**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / production MouseFight database / equal-stake PVP challenge economy
 **Status:** Challenger escrow, opponent equal stake, automatic 2X winner payout, and waiting-challenge cancellation refund validated successfully in production
 
 ---
@@ -1392,7 +1791,7 @@ Planned scope:
 
 ## 2026-07-16 — MouseFight Event Buy-In Burn + Cancellation Refund Validated
 
-**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / production MouseFight database / admin bracket event economy  
+**Scope:** `discord/commands/mousefight.js` / `api/discord/mousefight-economy.php` / production MouseFight database / admin bracket event economy
 **Status:** Free entry, paid buy-in burn, transactional participant registration, and full waiting-event cancellation refund validated against production
 
 ---
@@ -1408,7 +1807,7 @@ Validated endpoint:
 
 ## 2026-07-15 — MouseFight Event Buy-In Burn Foundation Installed
 
-**Scope:** `discord/commands/mousefight.js` / production MouseFight DB / admin bracket events / DSPOINC economy  
+**Scope:** `discord/commands/mousefight.js` / production MouseFight DB / admin bracket events / DSPOINC economy
 **Status:** Database migration + event buy-in configuration complete — real balance deduction and burn settlement not active yet
 
 ---
@@ -1426,7 +1825,7 @@ Pre-migration backup:
 
 ## 2026-07-14 — First Real Nine-Ability PVP Fight Validated
 
-**Scope:** Real production Genesis profiles / PVP challenge / Best of 5 / no item loadout  
+**Scope:** Real production Genesis profiles / PVP challenge / Best of 5 / no item loadout
 **Status:** Real-profile ability combat completed successfully — metadata inspection and wider balance tests pending
 
 ---
@@ -1443,7 +1842,7 @@ Final result: Wizard 3–0 Furiosa
 
 ## 2026-07-14 — MouseFight Nine-Ability Engine Test Modes Validated
 
-**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js`  
+**Scope:** `discord/commands/mousefight.js` / `discord/commands/mousefight-test.js`
 **Status:** Ability engine executes successfully in Best of 1, Best of 3, and Best of 5 test modes — real-profile production balance validation pending
 
 ---
@@ -1461,7 +1860,7 @@ Best of 5
 
 
 
-**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight autocomplete / production MouseFight profile APIs  
+**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight autocomplete / production MouseFight profile APIs
 **Status:** Phase 8D-6C complete — live API deployment verified, autocomplete gate aligned, moderator eligibility confirmed
 
 
@@ -1545,7 +1944,7 @@ No combat, winner resolution, DB persistence, Genesis data, Genetic Items, DSPOI
 
 ## 2026-07-12 — MouseFight Idle Loadout PVP Flow Validated
 
-**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight PVP challenges / idle Genetic Item loadouts  
+**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight PVP challenges / idle Genetic Item loadouts
 **Status:** PVP challenge + opponent accept flow validated with manual idle Genetic Item selection
 
 ---
@@ -1579,7 +1978,7 @@ DB rows persist fight, participants, rounds, powers, rolls, winner, and metadata
 
 ## 2026-07-10 — MouseFight V1 Core Validated / fight_id Autocomplete Working
 
-**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight DB tables  
+**Scope:** Discord bot / `discord/commands/mousefight.js` / MouseFight DB tables
 **Status:** V1 core flow validated — ready for next visual + persistence phases
 
 ---
@@ -1618,7 +2017,7 @@ tbl_mousefight_rounds        25
 
 ## 2026-07-10 — Cheese Rumble Visual Upgrade Live Event Polish
 
-**Scope:** Discord bot / `discord/commands/cheese-rumble.js` / `discord/commands/cheese-rumble-test.js`  
+**Scope:** Discord bot / `discord/commands/cheese-rumble.js` / `discord/commands/cheese-rumble-test.js`
 **Status:** Core rumble visual upgrade working — final event polish in progress
 
 ---
@@ -1668,7 +2067,7 @@ Token payout prepared / paid flow if token payout is enabled
 
 ## 2026-07-09 — Cheese Rumble Visual Upgrade Phase 2C Started
 
-**Scope:** Discord bot / `discord/commands/cheese-rumble-test.js`  
+**Scope:** Discord bot / `discord/commands/cheese-rumble-test.js`
 **Status:** Test command visual compatibility cleanup
 
 Goal:
@@ -1698,7 +2097,7 @@ node --check index.js
 
 ## 2026-07-09 — Phantom / Blowfish Domain Whitelist Confirmed
 
-**Scope:** Swap Lab / SPOINC Gateway / Phantom + Blowfish domain trust review  
+**Scope:** Swap Lab / SPOINC Gateway / Phantom + Blowfish domain trust review
 **Status:** Domain trust issue resolved — public confidence milestone confirmed
 
 ---
@@ -1712,7 +2111,7 @@ narrrfs.world ✅
 
 ## 2026-07-09 — Cheese Rumble Visual Upgrade Phase 1 Planned
 
-**Scope:** Discord bot / `discord/commands/cheese-rumble.js`  
+**Scope:** Discord bot / `discord/commands/cheese-rumble.js`
 **Status:** Planned before code edit — keep combat engine untouched
 
 Goal:
@@ -1927,7 +2326,7 @@ Do not reopen `SPOINC_TO_DSPOINC` until this on-chain verification guard is impl
 
 ## 2026-07-07 — Lab Claim + Renew Feature #854 Local Test Passed
 
-**Scope:** `public/lab.html` / Research Queue / Genesis trait upgrade claims  
+**Scope:** `public/lab.html` / Research Queue / Genesis trait upgrade claims
 **Status:** Local browser test passed
 
 ---
@@ -1945,7 +2344,7 @@ Priority: High
 
 ## 2026-07-05 — Stake Lab / Lab Visual Polish Follow-Up
 
-**Scope:** Stake Lab / Lab UI / shared auth overlay / freezer list mode / queue NFT visibility / V2 activation copy  
+**Scope:** Stake Lab / Lab UI / shared auth overlay / freezer list mode / queue NFT visibility / V2 activation copy
 **Status:** Visual polish fixes tested and working as expected
 
 ---
@@ -2039,7 +2438,7 @@ Current action:
 
 ## 2026-07-04 — Stake Lab Season 13 Full Activation Live
 
-**Scope:** Stake Lab / DSPOINC Staking V2 / Genesis Mouse Freezer / SPOINC Gateway Bridge  
+**Scope:** Stake Lab / DSPOINC Staking V2 / Genesis Mouse Freezer / SPOINC Gateway Bridge
 **Status:** Main Season 13 economy systems are now fully active and working correctly on live
 
 ---
@@ -2060,7 +2459,7 @@ Main live systems confirmed working:
 
 ## 2026-07-03 — DSPOINC Staking V2 Activation Push Standby
 
-**Scope:** DSPOINC Staking V2 / Genesis Mouse Freezer / Stake Lab frontend / FAQ / Project Updates / final pre-push sync  
+**Scope:** DSPOINC Staking V2 / Genesis Mouse Freezer / Stake Lab frontend / FAQ / Project Updates / final pre-push sync
 **Status:** Very close to V2 staking push — final checks and commit pending
 
 ---
@@ -2082,7 +2481,7 @@ public/stake-lab.html
 
 ## 2026-07-03 — Stake Lab V2 Local Simulation Passed / Not Pushed
 
-**Scope:** DSPOINC Staking V2 / Stake Lab frontend / local XAMPP  
+**Scope:** DSPOINC Staking V2 / Stake Lab frontend / local XAMPP
 **Status:** Local V2 testing passed, no production push today
 
 DSPOINC Staking V2 was tested locally with the active staking contract temporarily flipped to:
@@ -2092,7 +2491,7 @@ const ACTIVE_STAKING_CONTRACT_VERSION = STAKING_CONTRACT_SEASON13_V2;
 
 ## 2026-07-01 — Render Deploy Preferred / Upload Hotfix Method Documented
 
-**Scope:** Deployment workflow / Stake Lab emergency hotfix handling  
+**Scope:** Deployment workflow / Stake Lab emergency hotfix handling
 **Status:** Normal Render deploy remains the preferred production path
 
 Today’s production update should go through the normal git push + Render deploy flow.
@@ -2109,7 +2508,7 @@ Local file
 
 ## 2026-07-01 — Genesis Mouse Freezer Phantom UX Hotfix Live
 
-**Scope:** Stake Lab / Genesis Mouse Freezer / live Phantom wallet Memo flow  
+**Scope:** Stake Lab / Genesis Mouse Freezer / live Phantom wallet Memo flow
 **Status:** Live hotfix confirmed working — freeze and unfreeze now work without the ugly Phantom warning message
 
 ---
@@ -2132,7 +2531,7 @@ Confirmed working:
 
 ## 2026-07-01 — Genesis Mouse Freezer Same-Wallet Batch Freeze Ready For Push
 
-**Scope:** Stake Lab / Genesis Mouse Freezer / Season 13 public freezer UX  
+**Scope:** Stake Lab / Genesis Mouse Freezer / Season 13 public freezer UX
 **Status:** Local test passed, backend syntax passed, ready for deploy/restart smoke test
 
 ---
@@ -2153,7 +2552,7 @@ New public Season 13 freezer behavior:
 
 ## 2026-07-01 — Season 13 Frontend/API Review Nearly Ready For Push
 
-**Scope:** Season 13 public frontend refresh / Leaderboard API cleanup / Profile quick access / final Stake Lab + Genesis Mouse Freezer review  
+**Scope:** Season 13 public frontend refresh / Leaderboard API cleanup / Profile quick access / final Stake Lab + Genesis Mouse Freezer review
 **Status:** Very close to push — only final freezer and staking review remains before deploy/restart
 
 ---
@@ -2586,7 +2985,7 @@ WHERE route_key = 'EMPIRE_TO_SPOINC';
 
 ## 2026-06-30 — Genesis Mouse Freezer Public Challenge Gates Ready / Season 13 Reset Prep
 
-**Scope:** Stake Lab System 20.0 / Genesis Mouse Freezer / Season 13 public activation  
+**Scope:** Stake Lab System 20.0 / Genesis Mouse Freezer / Season 13 public activation
 **Status:** Ready to push after final git-status cleanup and deploy restart
 
 ---
@@ -2688,8 +3087,8 @@ WHERE route_key IN ('EMPIRE_TO_SPOINC', 'FOOK_TO_SPOINC');
 
 ## FOLLOW-UP — SPOINC BRIDGE LOCAL ARCHIVE IMPORT + DISCORD ARCHIVE COMMAND
 
-**Date:** 2026-06-30  
-**Scope:** SPOINC Bridge / local test archive / Discord admin command / waiting for Zeno LUT info  
+**Date:** 2026-06-30
+**Scope:** SPOINC Bridge / local test archive / Discord admin command / waiting for Zeno LUT info
 **Status:** Local XAMPP bridge history safely archived on live DB without polluting live production bridge metrics
 
 ---
@@ -3384,8 +3783,8 @@ Do not test EMPIRE / FOOK large token routes until LUT config is confirmed.
 
 ## FOLLOW-UP — FIRST LOCAL SPOINC_TO_DSPOINC CLAIM SUCCESS
 
-**Date:** 2026-06-29  
-**Scope:** SPOINC Bridge / Swap Lab / Gensuki claim route / local XAMPP  
+**Date:** 2026-06-29
+**Scope:** SPOINC Bridge / Swap Lab / Gensuki claim route / local XAMPP
 **Status:** First full SPOINC → DSPOINC claim succeeded locally
 
 Huge milestone: the local private SPOINC → DSPOINC bridge flow succeeded end-to-end.
@@ -3406,8 +3805,8 @@ Profile showed the DSPOINC score adjustment.
 
 ## FOLLOW-UP — LOCAL SOL_TO_SPOINC BUY DB VERIFIED
 
-**Date:** 2026-06-29  
-**Scope:** SPOINC Bridge / Gensuki buy route / local XAMPP  
+**Date:** 2026-06-29
+**Scope:** SPOINC Bridge / Gensuki buy route / local XAMPP
 **Status:** Local buy flow confirmed in DB
 
 Local DB verification confirmed:
@@ -3424,8 +3823,8 @@ Transaction ID: 2
 
 ## FOLLOW-UP — LOCAL SOL_TO_SPOINC BUY TEST SUCCESS
 
-**Date:** 2026-06-29  
-**Scope:** SPOINC Bridge / Swap Lab / Gensuki buy route  
+**Date:** 2026-06-29
+**Scope:** SPOINC Bridge / Swap Lab / Gensuki buy route
 **Status:** Local private SOL → SPOINC buy test successful
 
 Local-only test succeeded on XAMPP. Nothing is live on Render yet.
@@ -3444,8 +3843,8 @@ No DSPOINC was deducted.
 
 ## FOLLOW-UP — ZENO CONFIRMED CLAIM RETURNS TRANSACTION / BUY API NEXT
 
-**Date:** 2026-06-29  
-**Scope:** SPOINC Bridge / Swap Lab / Gensuki buy + claim lifecycle  
+**Date:** 2026-06-29
+**Scope:** SPOINC Bridge / Swap Lab / Gensuki buy + claim lifecycle
 **Status:** Claim gate pending, buy route can be prepared for private testing
 
 Zeno confirmed:
@@ -3455,8 +3854,8 @@ Zeno confirmed:
 
 ## FOLLOW-UP — OPTION B CLAIM ROUTE TEST BLOCKED BY GENSUKI SALE STATE
 
-**Date:** 2026-06-29  
-**Scope:** SPOINC_TO_DSPOINC / Swap Lab / Gensuki claim lifecycle  
+**Date:** 2026-06-29
+**Scope:** SPOINC_TO_DSPOINC / Swap Lab / Gensuki claim lifecycle
 **Status:** Narrrfs Option B wrapper works but Gensuki /claim rejects before sale completion
 
 Narrrfs updated the private SPOINC_TO_DSPOINC test flow to Option B:
@@ -3763,8 +4162,8 @@ signature response flow
 
 ## FOLLOW-UP — ZENO LUT ADDRESS PLAN / TOKEN ROUTE SIZE FIX
 
-**Date:** 2026-06-29  
-**Status:** Waiting for Gensuki LUT address response field / no Narrrfs settlement changes yet  
+**Date:** 2026-06-29
+**Status:** Waiting for Gensuki LUT address response field / no Narrrfs settlement changes yet
 **Scope:** SPOINC bridge / Gensuki token routes / Swap Lab safety
 
 Zeno confirmed that SOL buys are okay, but token routes can hit transaction-size issues when swaps involve more accounts.
@@ -15487,8 +15886,8 @@ Then implement the smallest safe bridge between verified ownership save and sing
 
 # 🧀 Weekly Friday Event Ops — Community Event Templates Prepared
 
-**Date:** 2026-06-12  
-**Status:** Social/event ops prepared  
+**Date:** 2026-06-12
+**Status:** Social/event ops prepared
 **Scope:** Discord community-events, Twitter/X morning hype, Friday poker/race/rumble promotion
 
 ---
@@ -16078,8 +16477,8 @@ Season 13 V2 must not be activated until frontend preview, live DB, and final te
 
 # 🧊 Narrrfs World 13.0 — DSPOINC Staking V2 Genesis Holder Multiplier Plan
 
-**Date:** 2026-06-12  
-**Agent:** Lab System 9.96 NEW  
+**Date:** 2026-06-12
+**Agent:** Lab System 9.96 NEW
 **Scope:** Season 13 DSPOINC staking redesign with versioned contracts, fairer lock rates, and Genesis holder multipliers.
 
 ---
@@ -16096,9 +16495,9 @@ staking_contract_version = season13_v2
 
 # 🌉 SPOINC ↔ DSPOINC BRIDGE — GENSUKI WAIT STATUS
 
-**Date:** 2026-06-12  
-**Agent:** SPOINC ↔ DSPOINC API Agent 2.0  
-**Status:** Waiting for Gensuki final API/payload update  
+**Date:** 2026-06-12
+**Agent:** SPOINC ↔ DSPOINC API Agent 2.0
+**Status:** Waiting for Gensuki final API/payload update
 **Scope:** SPOINC token info, bridge pricing safety, treasury coverage, Gensuki routes, CORS, and next API payload requirements.
 
 ---
@@ -16112,8 +16511,8 @@ DSPOINC ↔ SPOINC only
 
 # 🧊 Narrrfs World 13.0 — DSPOINC Staking Contract Transition Plan
 
-**Date:** 2026-06-12  
-**Agent:** Lab System 9.96 NEW  
+**Date:** 2026-06-12
+**Agent:** Lab System 9.96 NEW
 **Scope:** Stake Lab transition from legacy DSPOINC staking toward versioned Season 13 staking economy.
 
 ---
@@ -16128,9 +16527,9 @@ staking_contract_version = season12_v2
 
 # 🧠 Narrrfs World 13.0 — Lab System 9.96 NEW / Reward Chests + Cheese Hunt Sync
 
-**Date:** 2026-06-10  
-**Status:** Restarted from Lab System 9.95 LIVE summaries / ready for final local review and split push  
-**Agent:** Lab System 9.96 NEW  
+**Date:** 2026-06-10
+**Status:** Restarted from Lab System 9.95 LIVE summaries / ready for final local review and split push
+**Agent:** Lab System 9.96 NEW
 **Scope:** Genesis Fitness Journey reward chests, Weapon milestone chests, Cheese Hunt admin/backend/homepage improvements, Hunter Mode local test, clean git staging.
 
 ---
@@ -19146,9 +19545,9 @@ Fix Labyrinth Blast start screen links and available balance
 
 # 🧠 Narrrfs World 13.0 — Season 12 Push / Lab System 9.93 NEWEST Sync
 
-**Date:** 2026-06-02  
-**Status:** Render restarting after Season 12 frontend push  
-**Agent Sync:** Lab System 9.93 NEWEST  
+**Date:** 2026-06-02
+**Status:** Render restarting after Season 12 frontend push
+**Agent Sync:** Lab System 9.93 NEWEST
 **Scope:** Homepage links, holder verification routing, Stake Lab Season 12 theming, Labyrinth Blast rebuilt assets, mint/get-roles verification links.
 
 ---
@@ -23935,8 +24334,8 @@ Do not merge custom names into that authority model unless explicitly planned la
 
 ## 🏁 STATUS
 
-Status: ✅ STABLE LOCAL — GENESIS PERSONAL MOUSE NAMES READY FOR CONTROLLED PRODUCTION PUSH  
-Version: 2026-05-10  
+Status: ✅ STABLE LOCAL — GENESIS PERSONAL MOUSE NAMES READY FOR CONTROLLED PRODUCTION PUSH
+Version: 2026-05-10
 Milestone: Lab 9.6 personal Genesis mouse naming complete
 
 ---
@@ -25366,14 +25765,14 @@ Rule:
 
 ## 🏁 FINAL STATUS
 
-✅ Season 10 frozen  
-✅ Season 11 active  
-✅ Season 11 scores reset to 0 after correction  
-✅ Season 10 frozen leaderboard visible  
-✅ APIs aligned  
-✅ Frontends updated  
-✅ Admin season UI synced  
-✅ Persistent systems preserved  
+✅ Season 10 frozen
+✅ Season 11 active
+✅ Season 11 scores reset to 0 after correction
+✅ Season 10 frozen leaderboard visible
+✅ APIs aligned
+✅ Frontends updated
+✅ Admin season UI synced
+✅ Persistent systems preserved
 ✅ Push completed
 
 Status line:
@@ -26114,8 +26513,8 @@ FRONTEND SYNC: COMPLETE
 
 # 🧀 QUICK STATUS HANDOVER — CHEESE RUNNER + GLOBAL SOUND PATCH
 
-Date: April 30, 2026  
-System Area: Cheeseman / Cheese Runner, Global Sound Toggle  
+Date: April 30, 2026
+System Area: Cheeseman / Cheese Runner, Global Sound Toggle
 Status: ✅ Local testing successful — ready for production push / production restart
 
 ---
@@ -27093,18 +27492,18 @@ This update:
 
 ### 🏁 FINAL STATUS UPDATE (APRIL 20)
 
-Lab Rendering System       ✅ STABLE (Safe Access Layer Implemented)  
-NFT UI Crash Handling      ✅ RESOLVED  
-Profile Pipeline           ✅ STABLE  
-Verify → Profile → Access  ✅ SYNCED  
-Frontend Architecture      ✅ DEFENSIVE (Fallback-safe)  
+Lab Rendering System       ✅ STABLE (Safe Access Layer Implemented)
+NFT UI Crash Handling      ✅ RESOLVED
+Profile Pipeline           ✅ STABLE
+Verify → Profile → Access  ✅ SYNCED
+Frontend Architecture      ✅ DEFENSIVE (Fallback-safe)
 Backend Authority          ✅ INTACT
 
 ### 🧠 CONTEXT FOR NEXT AGENT
 
 This was not just a fix — it establishes a core architecture rule for all future UI systems:
 
-👉 Frontend must NEVER trust raw data  
+👉 Frontend must NEVER trust raw data
 👉 Frontend must ALWAYS be fallback-safe
 
 This is now part of Narrrfs World core architecture.
@@ -27209,9 +27608,9 @@ This unblocked a core identity dependency and stabilizes the foundation for:
 
 ### 🏁 FINAL STATUS (APRIL 18)
 
-NFT Verify System       ✅ STABLE  
-Profile Summary         ✅ STABLE  
-Access Traits Viewer    ✅ FIXED  
+NFT Verify System       ✅ STABLE
+Profile Summary         ✅ STABLE
+Access Traits Viewer    ✅ FIXED
 Rendering Pipeline      ✅ CLEAN
 
 ---
@@ -27417,9 +27816,9 @@ System is stable and ready for production validation.
 
 ## 📋 TODAY — APRIL 8, 2026
 
-✅ `public/lab.html` remains the progression hub  
-✅ Genesis and Genetic progression lanes remain separated by authority rules  
-✅ Backend authority remains the source of truth for ownership, timers, costs, unlocks, and state transitions  
+✅ `public/lab.html` remains the progression hub
+✅ Genesis and Genetic progression lanes remain separated by authority rules
+✅ Backend authority remains the source of truth for ownership, timers, costs, unlocks, and state transitions
 ✅ Admin Player Profile console now surfaces Genesis ability state per verified Genesis mouse
 
 ---
