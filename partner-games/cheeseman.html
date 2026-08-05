@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cheese Runner Partner Session Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --cheese: #facc15;
+      --orange: #f97316;
+      --bg: #020617;
+      --panel: rgba(15, 23, 42, 0.88);
+      --line: rgba(255, 255, 255, 0.14);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(250, 204, 21, 0.18), transparent 32%),
+        radial-gradient(circle at 80% 30%, rgba(249, 115, 22, 0.18), transparent 30%),
+        linear-gradient(135deg, #020617, #111827 55%, #431407);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    main {
+      width: min(920px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+      padding: 28px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      background: rgba(250, 204, 21, 0.1);
+      color: #fef3c7;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 8px;
+      font-size: clamp(32px, 6vw, 58px);
+      line-height: 0.95;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(2, 6, 23, 0.45);
+      padding: 16px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .value {
+      word-break: break-word;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.9);
+      color: #fff;
+      padding: 12px 14px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: rgba(250, 204, 21, 0.6);
+    }
+
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--orange), #db2777);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 14px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 16px 0 0;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 16px;
+      color: #dbeafe;
+      max-height: 360px;
+      overflow: auto;
+    }
+
+    .ok {
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .bad {
+      color: var(--red);
+      font-weight: 900;
+    }
+
+    .safety {
+      margin-top: 18px;
+      border-left: 4px solid var(--green);
+      background: rgba(34, 197, 94, 0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: #bbf7d0;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="badge">🧀 Partner Bridge V1 • Cheeseman Test</div>
+
+    <h1>Cheese Runner Partner Session</h1>
+
+    <p>
+      This is the first safe iframe test page for Samuzi / Zeno.
+      It uses a short-lived Narrrfs partner session token and submits a demo score
+      to <strong>close-session.php</strong>.
+    </p>
+
+    <div class="grid">
+      <section class="card">
+        <div class="label">Session token from URL</div>
+        <div class="value" id="sessionTokenValue">Loading…</div>
+      </section>
+
+      <section class="card">
+        <div class="label">Generated client_run_id</div>
+        <div class="value" id="clientRunIdValue">Loading…</div>
+      </section>
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <div class="label">Demo score</div>
+        <input id="scoreInput" type="number" min="0" max="10000000" value="12450" />
+        <button id="closeButton">Submit Demo Score / Close Session</button>
+      </section>
+
+      <section class="card">
+        <div class="label">Status</div>
+        <div id="statusValue" class="value">Waiting for submit…</div>
+      </section>
+    </div>
+
+    <pre id="responseOutput">Response will appear here.</pre>
+
+    <div class="safety">
+      Safety boundary: this demo writes only isolated partner session/result rows.
+      It does not write Narrrfs DSPOINC, SPOINC, public leaderboards, score ledgers,
+      Genesis ownership, Lab progression, Genetic Items, MouseFight, rewards, or staking.
+    </div>
+  </main>
+
+  <script>
+    /**
+     * Partner Cheese Runner iframe demo.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * This page proves the partner session lifecycle only.
+     * It submits a test score to the isolated partner bridge endpoint.
+     * It does not save a Narrrfs leaderboard score and does not credit DSPOINC.
+     */
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionToken = String(urlParams.get('session') || '').trim();
+    const clientRunId = `run-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+
+    const sessionTokenValue = document.getElementById('sessionTokenValue');
+    const clientRunIdValue = document.getElementById('clientRunIdValue');
+    const scoreInput = document.getElementById('scoreInput');
+    const closeButton = document.getElementById('closeButton');
+    const statusValue = document.getElementById('statusValue');
+    const responseOutput = document.getElementById('responseOutput');
+
+    sessionTokenValue.textContent = sessionToken || 'Missing session token';
+    clientRunIdValue.textContent = clientRunId;
+
+    if (!sessionToken) {
+      statusValue.innerHTML = '<span class="bad">Missing ?session= token in iframe URL.</span>';
+      closeButton.disabled = true;
+    }
+
+    async function closePartnerSession() {
+      const score = Number(scoreInput.value || 0);
+
+      closeButton.disabled = true;
+      statusValue.textContent = 'Submitting score…';
+      responseOutput.textContent = 'Waiting for close-session.php response…';
+
+      try {
+        const response = await fetch('/api/partner/games/close-session.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            session_token: sessionToken,
+            game: 'cheeseman',
+            score,
+            client_run_id: clientRunId
+          })
+        });
+
+        const text = await response.text();
+        let data = null;
+
+        try {
+          data = JSON.parse(text);
+        } catch (error) {
+          throw new Error(`Non-JSON response: ${text}`);
+        }
+
+        responseOutput.textContent = JSON.stringify(data, null, 2);
+
+        if (response.ok && data.success) {
+          statusValue.innerHTML = `<span class="ok">Session closed. Partner points: ${data.partner_points}</span>`;
+          return;
+        }
+
+        statusValue.innerHTML = `<span class="bad">${data.error || 'Session close failed'}</span>`;
+      } catch (error) {
+        statusValue.innerHTML = `<span class="bad">${error.message}</span>`;
+        responseOutput.textContent = String(error.stack || error.message || error);
+      } finally {
+        closeButton.disabled = false;
+      }
+    }
+
+    closeButton.addEventListener('click', closePartnerSession);
+  </script>
+</body>
+</html>

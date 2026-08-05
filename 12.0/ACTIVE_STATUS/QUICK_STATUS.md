@@ -1,5 +1,3868 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-08-05 — Samuzi / Narrrfs Partner Game Bridge V1 Local Demo Ready
+
+### Scope
+
+Created and locally validated the first safe V1 partner-game bridge package for Samuzi / Zeno using Cheese Runner / Cheeseman as the first test game.
+
+This milestone covers local XAMPP development only.
+
+No production deployment, Render live test, real Samuzi webhook call, real partner coin credit, Narrrfs DSPOINC credit, SPOINC movement, public leaderboard write, or real Cheese Runner game-end hook was performed yet.
+
+### Agent / Specialist
+
+**Agent name and version:** Samuzi / Narrrfs 9-Game Bridge Agent — Cheeseman 4.1 LIVE  
+**Specialist role:** Partner iframe/session API integration lead for Samuzi / Zeno, Cheese Runner / Cheeseman bridge, isolated partner result flow, webhook-preview contract, and protected economy boundary enforcement  
+**Status:** Synchronized — V1 local package ready for push and Zeno test preparation
+
+### Local Environment Verified
+
+```text
+Environment: Local XAMPP
+Application path: /c/xampp-server/htdocs/narrrfs-world
+Branch: render-deploy
+Database path: db/narrrf_world.sqlite
+Runtime tested: local Apache/PHP 8.1.25
+Read/write scope: isolated partner bridge tables only
+```
+
+## 2026-08-04 — MouseFight League Systems Expert 1.0 LIVE Restart / Season 14 League Development Begins
+
+## 2026-08-04 — MouseFight League Systems Expert 1.0 Sign-In / Season 14 League Development Begins
+
+### Agent Sign-In — MouseFight League Systems Expert 1.0
+
+**Agent name and version:** MouseFight League Systems Expert 1.0  
+**Specialist role:** Season 14 MouseFight league architecture, ranking tiers, qualification rules, promotion and relegation logic, league statistics, Discord presentation, website visibility, admin controls, season archive compatibility, and long-term competitive-system safety specialist  
+**Primary system/files:** `discord/commands/mousefight.js`, MouseFight read-only leaderboard and player-statistics APIs, `public/mousefights.html`, `public/leaderboard.html`, `public/profile.html`, `public/admin-interface.html`, `api/admin/archive-season-stats.php`, verified MouseFight database tables, and `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**Current responsibility:** Design and implement the approved Season 14 MouseFight league system on top of the existing finished-fight history without changing the proven combat engine. The league layer must clearly separate qualification, standings, promotion/relegation, presentation, persistence, season scope, economy, rewards, and archive behavior. All league formulas, thresholds, eligibility rules, reset behavior, and admin actions require explicit approval before implementation.  
+**Protected systems acknowledged:** MouseFight combat resolution; Champion, Underdog, Equalized, and Chaos modes; PVP escrow and settlement; event burns and refunds; champion rewards; token payouts; Fight Recovery; permanent Genesis ownership, traits, abilities, Lab progression, Genetic Items, staking, authentication, database migrations, deployment configuration, and unrelated games  
+**Last verified milestone:** MouseFight is live as Narrrfs World Game #10 across Discord and the website. The read-only public history, player statistics, leaderboard, profile, admin visibility, season archive support, and recovered-result presentation have been validated. The missing final Discord result for `mfevent_1785786250625_av8zbex` was safely reposted from persisted rows without replaying combat, recovery, settlement, or the paid 50,000 SMZ batch `381`.  
+**Known open issue:** The league system has not yet been defined in authoritative code or schema. League names, rating formula, minimum-fight qualification, PVP/event weighting, battle-mode treatment, season reset behavior, tie-breakers, promotion/relegation cadence, rewards, admin overrides, persistence tables, and public presentation remain unverified and must not be invented.  
+**Exact next step:** Perform a read-only source and database audit of existing MouseFight statistics, season boundaries, archive behavior, leaderboard APIs, and admin/frontend integration. Then document one proposed league contract for approval before adding schema, writes, rewards, or production behavior.
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active — Season 14 MouseFight League development ready
+
+### League Development Boundary
+
+The first league phase is documentation and read-only auditing only:
+
+```text
+Existing finished-fight history
+→ verified season scope
+→ approved qualification rules
+→ approved rating/points contract
+→ read-only simulated standings
+→ user approval
+→ schema/API proposal
+→ guarded implementation
+→ focused local validation
+→ live rollout only after approval
+```
+
+Until the league contract is approved, do not:
+
+```text
+create or migrate league tables
+award or remove DSPOINC/SPOINC/tokens
+change fight winners or historical rows
+change combat formulas or battle modes
+change escrow, burns, refunds, settlement, or Fight Recovery
+reset or overwrite existing MouseFight statistics
+assign players to permanent leagues
+publish unverified promotion or reward rules
+```
+
+**Protected systems unchanged:** Yes  
+**Database changed:** No  
+**Runtime changed:** No  
+**Deployment changed:** No  
+**Exact next step:** Audit the current Season 14 MouseFight population and existing statistics needed to design the first league contract.
+
+---
+
+## 2026-08-04 — Season 14 Global & 3D Development Agent Synch Milestone
+
+### Milestone Status
+
+Season 14 agent synchronization is complete.
+
+The Narrrfs World global specialist team and the standalone 3D Riddle development team have accepted the Narrrfs World Global Rules, synchronized their specialist responsibilities, acknowledged all protected-system boundaries, and entered active standby.
+
+This milestone records agent coordination only.
+
+No gameplay source, database row, authentication flow, economy transaction, ownership record, permanent progression, deployment configuration, or production runtime was modified by this synchronization.
+
+### Season 14 Global Specialist Agents
+
+1. **MouseFight Bot 6.0** — MouseFight combat, events, PVP, persistence, Discord presentation, economy safety, and Fight Recovery boundaries.
+2. **Ledger Expert 13.0** — DSPOINC/SPOINC ledger integrity, reconciliation, transaction auditing, and protected economy review.
+3. **Lab Shop Expert 13.0** — Lab Shop, Genetic Items, marketplace, purchasing, inventory, and upgrade workflows.
+4. **Riddle Brain 13.0** — puzzle logic, trait-gated sequences, Level 4/5 riddles, and reward-hook planning.
+5. **Narrrfs World HYTOPIA 3D Riddle Game Leader 1.0** — future HYTOPIA world architecture, multiplayer, riddles, and integration planning.
+6. **Nightfox / Bear or Bull Universe Bridge Agent 1.0** — Fox/Bear or Bull integration and Labyrinth Blast source/build workflow.
+7. **Glyph Memory Specialist 13.0** — Glyph gameplay, timing, leaderboards, archives, and historical statistics.
+8. **Discord Bot Specialist 13.0** — Discord runtime, Cheese Race, Cheese Rumble, Giveaway, and command routing.
+9. **Airdrop Service / Real Rewards Agent 1.0** — SPL-token airdrops, wallet verification, CSV preparation, dry runs, and audit records.
+10. **Gensuki Collab / Partner Campaign Agent 1.0** — Gensuki campaigns, announcements, Spaces, partnership communication, and visuals.
+11. **Stake Lab / Admin Interface API Ruler 13.0** — staking, Genesis Mouse Freezer, holder diagnostics, and admin API visibility.
+12. **Season Reset Agent 14.0** — season backups, archives, reset validation, leaderboard rollover, and new-season activation.
+13. **Narrrfs World Operations 2.0 NEW** — daily operations, Discord/Twitter communication, events, giveaways, and promotions.
+14. **Lab System 9.96 / Admin Interface Expert** — permanent Genesis Traits, Abilities, Lab progression, milestone rewards, and admin visibility.
+15. **Samuzi / Narrrfs 9-Game Bridge Agent — Cheeseman 4.1 LIVE** — partner session bridge, Cheese Runner integration, and signed partner workflows.
+16. **Narrrfs World General Ops Agent 13.0** — cross-system investigation, API/environment verification, protected boundaries, and continuity.
+17. **SPOINC / DSPOINC Agent 5.0** — SPOINC bridge operations, Solana verification, Gensuki audits, and DSPOINC conversion review.
+
+### Standalone 3D Riddle Development Agents
+
+18. **Narrrfs World 3D Riddle Development Leader 13.0** — Three.js architecture, Levels 1–6, gameplay, bosses, riddles, player systems, and VR/WebXR coordination.
+19. **Narrrfs World 3D Riddle Performance & Level Theme Specialist 13.0** — FPS profiling, render-loop safety, environments, mobile performance, and Meta Quest/WebXR optimization.
+20. **Narrrfs World 3D Riddle Mobile Controls & UI Specialist 13.0** — Android controls, HUD, mobile actions, ability/inventory controls, and desktop/VR regression safety.
+21. **Narrrfs World 3D Riddle Authentication & Session Bridge Specialist 13.0** — Discord authentication, verified sessions, secure bootstrap, and identity boundaries.
+22. **Narrrfs World 3D Riddle Genesis Identity Specialist 13.0** — verified ownership, named-mouse eligibility, token identity, custom names, images, and mouse selection.
+23. **Narrrfs World 3D Riddle NFT Ability RPG Specialist 13.0** — NFT-bound Traits and nine Abilities mapped into temporary RPG mechanics.
+24. **Narrrfs World 3D Riddle Genetic Inventory & Loadout Specialist 13.0** — Genetic Item availability, temporary loadouts, compatibility rules, and inventory safety.
+25. **Narrrfs World 3D Riddle Profile API Integration Specialist 13.0** — authenticated read-only profile/bootstrap contract for identity, mice, Traits, Abilities, and inventory.
+
+### Season 14 Coordination Boundaries
+
+All agents must preserve the separation between:
+
+- Discord presentation;
+- local bot runtime;
+- website and API behavior;
+- local SQLite databases;
+- downloaded live database snapshots;
+- live production databases;
+- MouseFight runtime and persistence;
+- PVP escrow and settlement;
+- event burns and refunds;
+- Fight Recovery;
+- Genesis ownership;
+- permanent Traits and Abilities;
+- Lab progression;
+- Genetic Items;
+- staking;
+- token payouts and airdrops;
+- season archives;
+- standalone Three.js gameplay;
+- future HYTOPIA development.
+
+One verified layer must never be treated as proof of another layer.
+
+### Protected Systems
+
+The following remain unchanged unless separately inspected and explicitly approved:
+
+- DSPOINC and SPOINC balances;
+- score ledgers and adjustments;
+- MouseFight PVP escrow;
+- MouseFight settlement;
+- event burns and refunds;
+- Fight Recovery;
+- champion rewards;
+- token payouts and airdrops;
+- Genesis ownership;
+- permanent Traits;
+- permanent Abilities;
+- Lab progression;
+- Genetic Items;
+- staking;
+- Reward Chamber state;
+- authentication and session authority;
+- production database schemas and rows;
+- deployment configuration;
+- production runtime.
+
+Temporary calculations, battle modes, RPG effects, simulations, UI state, and session snapshots must never mutate permanent protected state.
+
+### Season 14 Agent Status
+
+```text
+Global specialist agents: 17
+Standalone 3D development agents: 8
+Unique synchronized agents: 25
+Rules accepted: 25
+Status synchronized: 25
+Standby active: 25
+Outstanding confirmations: 0
+Season 14 agent synchronization: COMPLETE
+
+## 2026-08-04 — 3D Riddle Identity / RPG Integration Discovery Synch
+
+### Scope
+
+This milestone records verified discovery and the proposed architecture for connecting the standalone Narrrfs World 3D Riddle Game with authenticated Narrrfs World player identity, owned named Genesis mice, NFT-bound Traits and Abilities, and user-bound Genetic Item inventory.
+
+This is a discovery and documentation milestone only.
+
+No gameplay source, authentication flow, API, database, Genesis ownership record, permanent Trait or Ability level, Lab progression, Genetic Item state, reward path, economy record, deployment configuration, or production runtime was modified by this milestone.
+
+---
+
+### Accepted Standalone 3D Integration Specialists
+
+The following standalone 3D specialists are assigned to the integration effort:
+
+1. **Narrrfs World 3D Riddle Development Leader 13.0**
+   - Overall architecture, gameplay integration, player systems, Levels 1–6, bosses, riddles, VR/WebXR, and coordination with the wider Narrrfs World ecosystem.
+
+2. **Narrrfs World 3D Riddle Performance & Level Theme Specialist 13.0**
+   - FPS profiling, render-loop safety, Levels 1–6 environments, Meta Quest and mobile performance, and performance-safe visual integration.
+
+3. **Narrrfs World 3D Riddle Mobile Controls & UI Specialist 13.0**
+   - Android controls, HUD, inventory controls, ability controls, mobile overlays, pause/interact/shoot systems, and protection of desktop and VR input paths.
+
+4. **Narrrfs World 3D Riddle Authentication & Session Bridge Specialist 13.0**
+   - Discord authentication, verified session identity, secure bootstrap, session handling, authentication boundaries, and frontend/backend separation.
+
+5. **Narrrfs World 3D Riddle Genesis Identity Specialist 13.0**
+   - Verified Genesis ownership, named mouse eligibility, token identity, custom names, images, mouse selection, and prevention of frontend identity injection.
+
+6. **Narrrfs World 3D Riddle NFT Ability RPG Specialist 13.0**
+   - Integration of NFT-bound Traits and the nine canonical Abilities into temporary RPG mechanics, combat, movement, puzzles, bosses, cooldowns, and gameplay UI.
+
+7. **Narrrfs World 3D Riddle Genetic Inventory & Loadout Specialist 13.0**
+   - Verified Genetic Item inventory, availability rules, temporary loadouts, compatibility rules, gameplay snapshots, and protection against permanent inventory mutations.
+
+8. **Narrrfs World 3D Riddle Profile API Integration Specialist 13.0**
+   - Authenticated read-only profile contract for verified user identity, owned named mice, NFT Traits, NFT Abilities, Genetic Items, eligibility, and secure Three.js initialization.
+
+---
+
+### Required Global Review Specialists
+
+Protected boundaries must additionally be reviewed by the existing Narrrfs World specialists:
+
+- **Lab System 9.96 / Admin Interface Expert**
+  - Permanent NFT Traits, NFT Abilities, Lab progression, and authoritative Lab data.
+
+- **Lab Shop Expert 13.0**
+  - Genetic Items, inventory availability, marketplace state, upgrades, and user-bound item rules.
+
+- **Narrrfs World General Ops Agent 13.0**
+  - Authentication, API contracts, local/live separation, production paths, and session behavior.
+
+- **Ledger Expert 13.0**
+  - Required only if future proposals involve rewards, DSPOINC, SPOINC, purchases, consumption, or any economy write.
+
+---
+
+### Shared Integration Objective
+
+```text
+Discord login
+→ verified Narrrfs World session
+→ verified owned named Genesis mice
+→ player selects one eligible mouse
+→ load NFT-bound Traits and Abilities
+→ load user-bound Genetic Item inventory
+→ select an approved temporary loadout
+→ create an isolated gameplay session snapshot
+→ enter the standalone 3D Riddle Game
+```
+
+---
+
+### Nine Canonical Ability Keys
+
+The current integration proposal uses the following canonical Ability keys:
+
+```text
+HP
+SPEED
+AIR
+ATK
+DEF
+SPECIAL
+SPELLS
+CRAFTING
+EXPANSION
+```
+
+These keys remain subject to verification against the authoritative Lab data before implementation.
+
+---
+
+### Verified Permanent-State Boundaries
+
+The existing Narrrfs World architecture requires the following permanent boundaries:
+
+- Genesis Trait progression is NFT-bound.
+- Genesis Ability progression is NFT-bound.
+- Genetic Items are Discord-user-bound.
+- Genesis ownership must be verified by the backend.
+- Token ID remains the authoritative selected mouse identity.
+- Permanent mouse progression and user inventory remain separate.
+- Temporary gameplay calculations must never mutate permanent Genesis, Lab, ownership, staking, inventory, progression, or economy state.
+
+---
+
+### Proposed Read-Only Bootstrap Architecture (Proposed Only)
+
+The preferred architecture is a single authenticated backend-authoritative read-only bootstrap response rather than multiple unrelated browser requests.
+
+**Conceptual response shape (proposed only):**
+
+```json
+{
+  "success": true,
+  "session": {
+    "user_id": "verified Discord ID",
+    "username": "verified username"
+  },
+  "mice": [],
+  "inventory": [],
+  "rules": {}
+}
+```
+
+This structure is a proposal only.
+
+It is **not** evidence that the endpoint, field names, schemas, or authentication contracts already exist.
+
+Authoritative implementation must come from verified production APIs and schemas.
+
+---
+
+### Permitted Temporary Runtime State
+
+After backend verification and player selection, gameplay may use an isolated temporary runtime snapshot containing only temporary gameplay state such as:
+
+- current gameplay HP;
+- temporary maximum HP;
+- movement speed;
+- combat damage;
+- temporary shields;
+- cooldown timers;
+- aerial movement;
+- temporary buffs and debuffs;
+- spell effects;
+- puzzle modifiers;
+- temporary inventory effects;
+- level-specific gameplay modifiers.
+
+---
+
+### Forbidden Permanent Mutations
+
+The temporary runtime must never directly modify:
+
+- permanent Trait levels;
+- permanent Ability levels;
+- Genesis ownership;
+- Token ownership;
+- Genetic Item ownership;
+- Genetic Item upgrades;
+- inventory persistence;
+- marketplace listings;
+- staking;
+- Lab progression;
+- reward systems;
+- economy records;
+- authentication state;
+- permanent profile data.
+
+---
+
+### Approved Implementation Phases
+
+#### Phase 1 — Read-Only Discovery
+
+Inspect and document:
+
+- authoritative Discord authentication;
+- session handling;
+- named Genesis ownership;
+- Trait source;
+- Ability source;
+- Genetic Inventory source;
+- API contracts;
+- local/live behavior;
+- Three.js initialization path.
+
+No code, API, database, or gameplay changes.
+
+#### Phase 2 — Read-Only Profile Bridge
+
+Create or safely reuse one authenticated read-only profile contract returning:
+
+- verified user;
+- eligible named Genesis mice;
+- NFT Traits;
+- NFT Abilities;
+- Genetic Items;
+- eligibility rules.
+
+No writes.
+
+#### Phase 3 — Mouse & Loadout Selector
+
+Planned flow:
+
+```text
+Login required
+→ load verified owned named mice
+→ select one eligible mouse
+→ inspect Traits and Abilities
+→ select permitted temporary loadout
+→ enter the standalone world
+```
+
+#### Phase 4 — Temporary RPG Session Snapshot
+
+Create an isolated gameplay snapshot using verified backend data without modifying permanent Narrrfs World systems.
+
+#### Phase 5 — One Ability Vertical Slice
+
+Recommended first implementation:
+
+```text
+HP → temporary gameplay maximum health
+```
+
+Validate desktop, Android, and WebXR before expanding.
+
+#### Phase 6 — One Inventory Vertical Slice
+
+Begin with one temporary non-consumable gameplay effect.
+
+Do not begin with:
+
+- permanent equipment;
+- crafting writes;
+- consumption;
+- durability;
+- upgrades;
+- marketplace writes;
+- inventory transfers;
+- rewards;
+- economy writes.
+
+---
+
+### Still-Unverified Requirements
+
+The following remain unverified and require authoritative inspection before implementation:
+
+1. Discord session authority.
+2. Local authentication behavior.
+3. Session-expiry behavior.
+4. Owned Genesis endpoint.
+5. Frontend identity protection.
+6. Named mouse eligibility rules.
+7. Collection identifiers.
+8. Trait schema.
+9. Ability schema.
+10. Genetic Item schema.
+11. Inventory availability rules.
+12. Maximum loadout size.
+13. Duplicate-item rules.
+14. Existing combined profile endpoint.
+15. Cache-control strategy.
+16. Approved Three.js initialization point.
+17. Desktop/mobile/WebXR UI flow.
+18. Generic versus NFT-specific player model pipeline.
+
+---
+
+### Validation Status
+
+```text
+QUICK_STATUS documentation: prepared
+Standalone architecture: documented
+Integration architecture: documented
+Authentication contract: unverified
+Genesis ownership contract: unverified
+Named mouse contract: unverified
+Trait contract: unverified
+Ability contract: unverified
+Genetic Inventory contract: unverified
+Bootstrap endpoint: proposed only
+Gameplay integration: not started
+Database changes: none
+Protected systems changed: none
+Production deployment: not performed
+```
+
+---
+
+### Protected Systems Unchanged
+
+The following remain unchanged:
+
+- authentication;
+- production APIs;
+- database schema;
+- Genesis ownership;
+- NFT Traits;
+- NFT Abilities;
+- Lab progression;
+- Genetic Items;
+- inventory;
+- rewards;
+- DSPOINC;
+- SPOINC;
+- MouseFight;
+- deployment configuration;
+- production runtime.
+
+---
+
+### Exact Next Step
+
+Continue **integration discovery only**.
+
+Each assigned specialist should inspect and document:
+
+- exact files;
+- exact endpoints;
+- exact tables (where applicable);
+- authentication authority;
+- response contracts;
+- local versus production behavior;
+- protected boundaries;
+- unanswered questions;
+- smallest safe read-only integration path.
+
+No permanent Trait, Ability, ownership, Lab, Genetic Item, inventory, authentication, database, reward, economy, deployment, or production write should be connected until all discovery contracts have been documented and approved.
+
+## 2026-08-04 — 3D Riddle Identity / RPG Integration Discovery Synch
+
+### Scope
+
+This milestone records verified discovery and proposed architecture for connecting the standalone Narrrfs World 3D Riddle Game with authenticated Narrrfs World player identity, owned named Genesis mice, NFT-bound Traits and Abilities, and user-bound Genetic Item inventory.
+
+This is a discovery and synchronization milestone only.
+
+No gameplay source, authentication flow, API, database, Genesis ownership record, permanent Trait or Ability level, Lab progression, Genetic Item state, reward path, economy record, or deployment configuration was changed by this milestone.
+
+### Accepted 3D Integration Specialists
+
+The following standalone 3D specialists are assigned to the integration:
+
+1. **Narrrfs World 3D Riddle Development Leader 13.0**
+
+   * Overall architecture, gameplay integration, player systems, Levels 1–6, bosses, riddles, VR/WebXR, and coordination with the wider Narrrfs World ecosystem.
+
+2. **Narrrfs World 3D Riddle Performance & Level Theme Specialist 13.0**
+
+   * FPS profiling, render-loop safety, Levels 1–6 environments, mobile and MetaQuest performance, and performance-safe visual integration.
+
+3. **Narrrfs World 3D Riddle Mobile Controls & UI Specialist 13.0**
+
+   * Android controls, action overlays, ability controls, inventory controls, mobile HUD, Pause, Interact, Shoot, weapon selection, and protection of desktop and VR input paths.
+
+4. **Narrrfs World 3D Riddle Authentication & Session Bridge Specialist 13.0**
+
+   * Discord authentication, verified session identity, credential handling, secure game bootstrap, session expiry, and frontend/backend authentication boundaries.
+
+5. **Narrrfs World 3D Riddle Genesis Identity Specialist 13.0**
+
+   * Verified Genesis ownership, named-mouse eligibility, token identity, custom names, images, mouse selection, and prevention of frontend identity injection.
+
+6. **Narrrfs World 3D Riddle NFT Ability RPG Specialist 13.0**
+
+   * Integration of NFT-bound Traits and the nine canonical Abilities into temporary 3D RPG mechanics, cooldowns, combat, movement, puzzles, bosses, and gameplay UI.
+
+7. **Narrrfs World 3D Riddle Genetic Inventory & Loadout Specialist 13.0**
+
+   * Verified Genetic Item inventory, availability rules, loadout selection, compatibility rules, temporary gameplay snapshots, and protection against permanent inventory mutations.
+
+8. **Narrrfs World 3D Riddle Profile API Integration Specialist 13.0**
+
+   * Authenticated read-only profile contract for verified user identity, owned named mice, NFT Traits, NFT Abilities, Genetic Items, eligibility, and secure Three.js initialization.
+
+### Required Global Specialist Review
+
+Protected boundaries must also be reviewed by the existing Narrrfs World specialists:
+
+* **Lab System 9.96 / Admin Interface Expert**
+
+  * NFT Traits, NFT Abilities, permanent progression, and authoritative Lab data.
+
+* **Lab Shop Expert 13.0**
+
+  * Genetic Items, inventory availability, marketplace state, upgrades, and user-bound item rules.
+
+* **Narrrfs World General Ops Agent 13.0**
+
+  * Authentication, API contracts, local/live environment separation, production paths, and session behavior.
+
+* **Ledger Expert 13.0**
+
+  * Required only when rewards, DSPOINC, SPOINC, consumption, purchases, or any economy write is later proposed.
+
+### Shared Integration Objective
+
+```text
+Discord login
+→ verified Narrrfs World session
+→ verified owned named Genesis mice
+→ player selects one eligible mouse
+→ load NFT-bound Traits and Abilities
+→ load user-bound Genetic Item inventory
+→ select an approved temporary loadout
+→ create an isolated game-session snapshot
+→ use the selected mouse, abilities, and inventory in the 3D game
+```
+
+### Verified Standalone 3D Source Findings
+
+The current standalone Three.js project is modular and uses:
+
+```text
+main.js
+config-system.js
+player-model.js
+player-controls.js
+gui-system.js
+weapon-system.js
+chest-system.js
+grass-system.js
+sky-system.js
+audio-system.js
+mobile-optimizer.js
+phoenix2.js
+alien-spider.js
+vr-input-provider.js
+vr-ui-raycaster.js
+3d-riddle-game.html
+```
+
+Verified current architecture includes:
+
+* six playable level identifiers;
+* centralized level and API configuration;
+* generic Mouse and Animation Library player models;
+* desktop, mobile, and WebXR input paths;
+* weapon gameplay in Levels 4–6;
+* chest interaction and persistence;
+* Phoenix and Alien Spider boss systems;
+* modular GUI, Audio, Grass, Sky, and mobile optimization systems.
+
+The current player model system selects a configured generic model. It does not yet load a Genesis mouse from an authenticated ownership profile.
+
+The current standalone game contains legacy browser-side identity handling suitable for existing local testing and display behavior. Browser values such as localStorage, window variables, URL input, or frontend-selected Discord IDs must not become authoritative for ownership, Abilities, Traits, inventory, or loadout validation.
+
+### Verified Permanent-State Boundaries
+
+The existing Narrrfs World architecture requires these boundaries:
+
+* Genesis Trait and Ability progression is NFT-bound.
+* Genetic Items are Discord-user-bound.
+* Genesis ownership must be verified by the backend.
+* Token ID remains the authoritative selected-mouse identity.
+* Permanent mouse progression and user inventory must remain separate.
+* Temporary gameplay calculations must never mutate permanent Genesis, Lab, ownership, staking, inventory, or economy state.
+
+### Nine Canonical Ability Keys Under Review
+
+The current integration plan uses these nine canonical Ability keys:
+
+```text
+HP
+SPEED
+AIR
+ATK
+DEF
+SPECIAL
+SPELLS
+CRAFTING
+EXPANSION
+```
+
+Their exact stored field names, casing, defaults, tables, and API response shape must still be verified from the authoritative Lab and MouseFight sources before implementation.
+
+### Proposed Read-Only Bootstrap Architecture
+
+The preferred architecture is one authenticated backend-authoritative bootstrap response rather than many unrelated browser calls.
+
+Conceptual response shape:
+
+```json
+{
+  "success": true,
+  "session": {
+    "user_id": "verified Discord ID",
+    "username": "verified username"
+  },
+  "mice": [
+    {
+      "token_id": "authoritative token ID",
+      "collection": "genesis",
+      "custom_name": "Named Mouse",
+      "metadata_name": "Genesis Mouse #123",
+      "image_url": "...",
+      "traits": [],
+      "abilities": [],
+      "eligibility": {}
+    }
+  ],
+  "inventory": [],
+  "rules": {
+    "named_mouse_required": true,
+    "maximum_loadout_items": 0,
+    "profile_version": "..."
+  }
+}
+```
+
+This is a proposed contract shape only.
+
+It is not evidence that this endpoint or these exact fields already exist.
+
+Actual field names and authentication behavior must come from verified current APIs and schemas.
+
+### Proposed Temporary Runtime Snapshot
+
+After backend verification and player selection, the game should create an isolated temporary session snapshot:
+
+```js
+const rpgSessionSnapshot = {
+  userId: verifiedUserId,
+  mouse: structuredClone(selectedMouse),
+  abilities: structuredClone(selectedMouse.abilities),
+  selectedItems: structuredClone(selectedItems),
+  temporaryStats: {},
+  temporaryCooldowns: {},
+  temporaryEffects: []
+};
+```
+
+Permitted temporary state includes:
+
+* current and maximum gameplay HP;
+* temporary movement speed;
+* combat damage;
+* temporary shields;
+* spell cooldowns;
+* aerial movement;
+* temporary buffs and debuffs;
+* puzzle bonuses;
+* temporary item effects;
+* level-specific modifiers.
+
+Forbidden client-side or temporary-state mutations include:
+
+* permanent Ability level changes;
+* permanent Trait level changes;
+* ownership changes;
+* Genetic Item level changes;
+* item consumption or transfer;
+* inventory upgrades;
+* marketplace listing changes;
+* staking changes;
+* Lab progression writes;
+* direct reward or economy writes;
+* trusting frontend-selected identity, token ownership, item level, or Ability level.
+
+### First-Pass Ability Direction
+
+These are design directions only and are not approved formulas:
+
+| Ability   | Possible temporary 3D RPG role                 |
+| --------- | ---------------------------------------------- |
+| HP        | Maximum temporary health and endurance         |
+| SPEED     | Movement, sprint, and attack cadence           |
+| AIR       | Jump, aerial control, and dodge                |
+| ATK       | Weapon and melee damage                        |
+| DEF       | Damage reduction or shield strength            |
+| SPECIAL   | Character-specific active ability              |
+| SPELLS    | Spell power, mana, and cooldown behavior       |
+| CRAFTING  | Item efficiency or environmental interaction   |
+| EXPANSION | Carry capacity, utility slots, or area effects |
+
+Stored Ability levels remain authoritative.
+
+All derived gameplay formulas must be documented centrally and approved before implementation.
+
+### Approved Development Phases
+
+#### Phase 1 — Read-Only Discovery
+
+Inspect and document:
+
+* authoritative Discord authentication source;
+* authenticated session behavior;
+* named Genesis mouse ownership source;
+* naming and eligibility rules;
+* Trait source;
+* Ability source;
+* Genetic Inventory source;
+* exact response contracts;
+* local and production credential behavior;
+* Three.js entry and player initialization paths.
+
+No code, API, or database changes.
+
+#### Phase 2 — Read-Only Profile Bridge
+
+Build or safely reuse one authenticated read-only profile contract returning:
+
+* verified user;
+* eligible named Genesis mice;
+* NFT-bound Traits;
+* nine NFT-bound Abilities;
+* available Genetic Items;
+* eligibility and loadout rules.
+
+No permanent writes, rewards, consumption, or equipment persistence.
+
+#### Phase 3 — Mouse and Loadout Selector
+
+Planned flow:
+
+```text
+Login required
+→ load verified owned named mice
+→ select one eligible mouse
+→ inspect Traits and Abilities
+→ select permitted temporary loadout
+→ enter the standalone world
+```
+
+#### Phase 4 — Temporary RPG Snapshot
+
+Integrate selected data into isolated client gameplay state without changing permanent Narrrfs World systems.
+
+#### Phase 5 — One Ability Vertical Slice
+
+Recommended first low-risk mechanic:
+
+```text
+HP → temporary maximum gameplay health
+```
+
+Validate desktop, Android, and WebXR before adding another Ability.
+
+#### Phase 6 — One Inventory Vertical Slice
+
+Start with one non-consumable temporary effect.
+
+Do not begin with:
+
+* consumption;
+* crafting writes;
+* durability;
+* permanent equipment;
+* upgrades;
+* marketplace state;
+* inventory transfer;
+* reward or economy writes.
+
+### Still-Unverified Requirements
+
+The following must be verified before implementation:
+
+1. Exact authoritative Discord session middleware.
+2. Local development authentication behavior.
+3. Session-expiry and unauthorized-response behavior.
+4. Existing owned Genesis mouse endpoint.
+5. Whether another user’s data can be requested by supplying a frontend user ID.
+6. Exact named-mouse eligibility rule.
+7. Authoritative collection identifier.
+8. Trait tables, keys, defaults, and response fields.
+9. Ability tables, keys, casing, defaults, and missing-value behavior.
+10. Genetic Item inventory endpoint and schema.
+11. Availability rules for owned, upgrading, listed, inactive, consumed, locked, or otherwise unavailable items.
+12. Maximum loadout size.
+13. Duplicate-item and compatibility rules.
+14. Whether an authenticated combined profile endpoint already exists.
+15. Required cache-control and profile-version behavior.
+16. Approved Three.js initialization point for the selector and session snapshot.
+17. Required desktop, mobile, and WebXR UI behavior.
+18. Whether the selected mouse uses a generic 3D mouse model initially or an approved NFT-specific model pipeline.
+
+### Exact Next Step
+
+The next milestone remains **integration discovery only**.
+
+Each assigned specialist must inspect the authoritative current source and report:
+
+* exact files;
+* exact endpoints;
+* exact tables where applicable;
+* exact authentication authority;
+* exact response fields;
+* local and production differences;
+* protected boundaries;
+* unanswered questions;
+* smallest safe read-only integration path.
+
+No permanent Trait, Ability, ownership, Lab, Genetic Item, inventory, reward, economy, authentication, database, or deployment write may be connected until the discovery contracts are documented and approved.
+
+### Validation Status
+
+```text
+QUICK_STATUS synchronization: documented
+Standalone source architecture: inspected
+Proposed integration architecture: documented
+Authoritative authentication: unverified
+Genesis ownership endpoint: unverified
+Named-mouse eligibility contract: unverified
+Trait contract: unverified
+Ability contract: unverified
+Genetic Inventory contract: unverified
+Read-only bootstrap endpoint: not yet approved
+Gameplay integration: not started
+Database changes: none
+Protected systems changed: none
+Production deployment: not performed
+```
+
+### Protected Systems Unchanged
+
+The following remain unchanged:
+
+* authentication;
+* production APIs;
+* database schemas and rows;
+* Genesis ownership;
+* permanent Traits;
+* permanent Abilities;
+* Lab progression;
+* Genetic Items;
+* staking;
+* DSPOINC and SPOINC;
+* rewards;
+* MouseFight;
+* Fight Recovery;
+* deployment configuration;
+* production runtime.
+
+
+🧀 NARRRFS WORLD 3D RIDDLE DEVELOPMENT — QUICK STATUS
+
+## 2026-08-04 — Standalone 3D Riddle DEV Agent Synch Completed
+
+### Final Synchronization Status
+
+The Standalone 3D Riddle DEV Agent synchronization is complete.
+
+All listed development agents are accepted into the project and must remain aligned with:
+
+- the Narrrfs World Global Rules;
+- source-first verification;
+- exact scope control;
+- standalone-project separation;
+- protected-system boundaries;
+- local/live environment separation;
+- focused syntax, build, runtime, mobile, and WebXR validation;
+- QUICK_STATUS continuity.
+
+### Accepted 3D Riddle Development Agents
+
+1. **Narrrfs World 3D Riddle Development Leader 13.0**  
+   Overall architecture, Levels 1–6, gameplay systems, bosses, riddles, player systems, Three.js integration, VR/WebXR coordination, and team leadership.
+
+2. **Narrrfs World 3D Riddle Performance & Level Theme Specialist 13.0**  
+   FPS profiling, render-loop analysis, draw calls, grass, sky, lights, shadows, particles, level themes, mobile performance, and MetaQuest/WebXR performance.
+
+3. **Narrrfs World 3D Riddle Mobile Controls & UI Specialist 13.0**  
+   Android controls, movement and camera joysticks, Shoot, Interact, Jump, Pause, weapon selection, responsive HUD, and desktop/VR input regression safety.
+
+4. **Narrrfs World 3D Riddle Authentication & Session Bridge Specialist 13.0**  
+   Discord authentication, verified session identity, secure game bootstrap, credential handling, session expiry, and frontend/backend authentication boundaries.
+
+5. **Narrrfs World 3D Riddle Genesis Identity Specialist 13.0**  
+   Verified Genesis ownership, named-mouse eligibility, mouse selection, token identity, custom names, images, ownership validation, and prevention of frontend identity injection.
+
+6. **Narrrfs World 3D Riddle NFT Ability RPG Specialist 13.0**  
+   Integration of NFT-bound Traits and the nine canonical Abilities into temporary 3D RPG mechanics, cooldowns, combat effects, movement effects, puzzles, bosses, and gameplay UI.
+
+7. **Narrrfs World 3D Riddle Genetic Inventory & Loadout Specialist 13.0**  
+   Verified Genetic Item inventory, item availability, loadout selection, temporary gameplay snapshots, compatibility rules, and protection against consumption, transfer, upgrade, or permanent equipment mutations.
+
+8. **Narrrfs World 3D Riddle Profile API Integration Specialist 13.0**  
+   Authenticated read-only profile contract for verified user identity, owned named mice, NFT Traits, NFT Abilities, Genetic Items, eligibility, and secure Three.js game initialization.
+
+### Shared Integration Objective
+
+The accepted team will coordinate the following verified flow:
+
+```text
+Discord login
+→ verified Narrrfs World session
+→ verified owned named Genesis mice
+→ player selects one eligible mouse
+→ load NFT-bound Traits and Abilities
+→ load user-bound Genetic Item inventory
+→ select an approved temporary loadout
+→ create an isolated game-session snapshot
+→ use the selected mouse, abilities, and inventory in the 3D game
+
+## Agent Sign-In — Narrrfs World 3D Riddle Performance & Level Theme Specialist 13.0
+
+### 1. Agent name and version:
+
+Narrrfs World 3D Riddle Performance & Level Theme Specialist 13.0
+
+### 2. Specialist role:
+
+Performance-analysis and visual-environment specialist for the standalone Narrrfs World 3D Riddle Game.
+
+I own source-first investigation and narrowly approved improvements for:
+
+* FPS stability across Levels 1–6;
+* Level 3 performance investigation;
+* render-loop and physics-update hot paths;
+* scene complexity, draw calls, object counts, lighting, shadows, grass, sky, particles, and decorative geometry;
+* lightweight level profiling;
+* performance-safe visual theming for Levels 1–6;
+* desktop, mobile, and MetaQuest/WebXR rendering regression checks.
+
+I do not own economy, backend, database, authentication, Discord, MouseFight, permanent progression, or deployment systems.
+
+### 3. Primary project folder:
+
+Authoritative local project root:
+
+```text
+C:\xampp-server\htdocs\narrrfs-world\public\three.js
+```
+
+Uploaded inspection mirror available in this chat:
+
+```text
+/mnt/data/
+```
+
+The uploaded mirror is useful for source inspection but must not be assumed to match the active local Git working tree without verification.
+
+### 4. Primary system/files:
+
+My verified primary responsibility includes:
+
+```text
+main.js
+config-system.js
+grass-system.js
+sky-system.js
+mobile-optimizer.js
+player-controls.js
+player-model.js
+gui-system.js
+weapon-system.js
+chest-system.js
+phoenix2.js
+alien-spider.js
+vr-input-provider.js
+vr-ui-raycaster.js
+3d-riddle-game.html
+```
+
+Relevant responsibilities within those files include:
+
+* `main.js`: render loop, physics ticks, level construction, level transitions, collision updates, subsystem updates, profiling hooks, and Level 1–6 integration;
+* `config-system.js`: verified Level IDs, level map configuration, environment constants, and debug-start flags;
+* `grass-system.js`: procedural grass generation, blade count, chunking, wind animation, exclusion zones, regeneration, and per-level ground settings;
+* `sky-system.js`: clouds, stars, lens flare, day/night updates, lighting, and per-level environment configuration;
+* `mobile-optimizer.js`: DPR, shadow, texture, material, and light reductions for mobile devices;
+* `gui-system.js`: FPS display, debug helpers, profiling controls, level selector, and visual settings UI;
+* `player-model.js`: animation and model updates that run during gameplay;
+* `weapon-system.js`: per-frame weapon animation, heat, shooting, and projectile-related work in Levels 4–6;
+* `phoenix2.js` and `alien-spider.js`: Level 6 boss and minion update costs;
+* VR modules: preservation and performance validation of MetaQuest/WebXR input and UI paths.
+
+The HTML entry imports Three.js 0.181.1, `three-mesh-bvh` 0.9.2, nipplejs, the trophy shelf, and one cache-busted `main.js` module.
+
+The centralized configuration defines six level identifiers. Levels 1–4 and 6 currently use generated/default ground, while Level 5 references `klagenfurt.gltf`.
+
+### 5. Current responsibility:
+
+My current approved responsibility is to inspect and improve FPS behavior, beginning with Level 3 and then comparing Levels 1–6.
+
+Immediate focus:
+
+* identify functions executed every rendered frame or physics substep;
+* identify avoidable allocations, repeated traversals, raycasts, console logging, DOM work, and subsystem updates;
+* measure Level 3 scene complexity and determine whether FPS loss comes from grass, lights, shadows, geometry, particles, monsters, collision, riddles, UI, or update frequency;
+* distinguish CPU-bound, GPU-bound, memory, loading, and garbage-collection symptoms;
+* inspect whether inactive-level systems continue updating after level changes;
+* create lightweight profiling that is disabled by default;
+* propose low-cost theme improvements for each level without adding uncontrolled draw calls or per-frame work;
+* preserve the now-working dual-model chest system and chest reset behavior;
+* preserve desktop, mobile, and WebXR input behavior.
+
+Grass is a major performance-sensitive subsystem because it supports very high blade counts, wind shaders, optional chunking, grass regeneration, exclusion zones, and per-level saved settings.
+
+Sky processing is also performance-sensitive because it includes procedural clouds, stars, lens flare, lighting updates, and optional day/night behavior.
+
+### 6. Scope boundary:
+
+Outside my responsibility unless explicitly approved:
+
+* changing riddles, puzzle rules, completion criteria, story, progression, or rewards;
+* changing chest rewards, persistence, database state, or interaction authority;
+* changing weapon damage, combat balance, heat rules, boss health, or reward outcomes;
+* altering Phoenix or Alien Spider behavior patterns unless a verified performance defect requires a narrowly approved change;
+* mobile control redesign unrelated to measured FPS;
+* VR control remapping unrelated to measured FPS;
+* live website pages outside the standalone game;
+* backend PHP APIs;
+* production SQLite databases;
+* Discord bot code;
+* MouseFight;
+* Lab, staking, marketplace, Genesis, Genetic Items, permanent Traits, or permanent Abilities;
+* deployment configuration, Render services, symlinks, production restarts, or branch deployment;
+* the future HYTOPIA project.
+
+The uploaded `store.js` and root `index.html` belong to other Narrrfs World systems and are outside this standalone-game performance role.
+
+### 7. Protected systems acknowledged:
+
+The following systems must remain untouched without separate explicit approval and exact source verification:
+
+* DSPOINC and SPOINC balances;
+* score ledgers and score adjustments;
+* burns, refunds, payouts, bridge operations, token distributions, and airdrops;
+* Genesis ownership;
+* NFT-bound Traits and Abilities;
+* Lab progression;
+* Genetic Items;
+* staking;
+* Reward Chamber state;
+* MouseFight escrow, settlement, event burns, refunds, cooldowns, champion rewards, and Fight Recovery;
+* authentication, sessions, wallet verification, roles, and Discord identity;
+* production databases, schemas, migration files, and database paths;
+* deployment configuration and live Render state.
+
+The chest system contains reward and persistence integration. Performance work may inspect render/update behavior, but must not alter its DSPOINC, persistence, API, or opened-state authority without separate approval.
+
+### 8. Project separation acknowledged:
+
+Yes.
+
+I confirm that the standalone Three.js 3D Riddle Game is separate from:
+
+* the live Narrrfs World website and API;
+* the production SQLite database;
+* the Discord bot;
+* MouseFight;
+* the future HYTOPIA project.
+
+No relationship between these projects may be assumed.
+
+Any integration requires:
+
+1. exact source verification;
+2. documented API or persistence authority;
+3. explicit approved scope;
+4. protected-system review;
+5. isolated testing;
+6. confirmation that temporary gameplay or rendering state cannot mutate permanent Narrrfs World state.
+
+### 9. Current source authority:
+
+Before work begins, I must inspect:
+
+```text
+C:\xampp-server\htdocs\narrrfs-world\public\three.js
+```
+
+Required source checks:
+
+* active local `main.js`;
+* active local modules imported by `main.js`;
+* `3d-riddle-game.html`;
+* current asset paths used by the affected level;
+* all definitions and callers of any function proposed for modification;
+* the active Git branch;
+* focused Git status and diff;
+* relevant documentation under `12.0/LAB_NOTES/`;
+* relevant rules under `12.0/RULES/`;
+* newest entry in:
+
+```text
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+```
+
+The uploaded continuity source in this chat is:
+
+```text
+/mnt/data/QUICK_STATUS(2).md
+```
+
+It records the current six-level modular architecture, source-first rules, protected-system separation, previous performance work, mobile-specialist boundaries, and the active agent synchronization state.
+
+The documented deployment branch may be `render-deploy`, but the currently checked-out branch must be verified locally and never assumed.
+
+### 10. Last verified milestone:
+
+The latest source-supported milestone I can verify from the uploaded files and continuity documentation is:
+
+* six level identifiers are defined centrally;
+* `main.js` remains the integration and game-loop authority;
+* core systems are modularized into PlayerControls, PlayerModel, GUI, Audio, Grass, Sky, Weapons, Chests, bosses, mobile optimization, and WebXR modules;
+* WeaponSystem is active for Levels 4–6;
+* Phoenix and Alien Spider systems are integrated for Level 6;
+* the chest system supports dual-model closed/open chests, persistence, collision, exclusion zones, cleanup guards, and level recreation behavior;
+* MobileOptimizer is module-safe, idempotent, and capable of lowering DPR, shadows, material, texture, and lighting cost;
+* MetaQuest controller input and VR UI interaction are separated into dedicated modules;
+* the uploaded QUICK_STATUS identifies the standalone project root and current synchronization requirements.
+  I have not personally verified the current local runtime, browser FPS, MetaQuest performance, active Git branch, or production state in this sign-in.
+
+### 11. Current known issue:
+
+The exact unresolved development area assigned to this agent is:
+
+**Level 3 and cross-level FPS instability, followed by a performance-safe theme pass for Levels 1–6.**
+
+Potential areas requiring source verification include:
+
+* heavy work inside the main animation loop;
+* repeated work during physics substeps;
+* updates running for inactive levels;
+* repeated scene traversal;
+* excessive raycasting or collision scans;
+* per-frame object or vector allocation;
+* debug logging in hot paths;
+* procedural grass blade counts and regeneration;
+* grass chunk configuration;
+* sky, cloud, star, and lens-flare updates;
+* shadow resolution and number of shadow-casting objects;
+* excessive transparent or emissive materials;
+* particle-system lifetime and cleanup;
+* monster or riddle updates that remain active after completion;
+* duplicate meshes after level transitions;
+* weapon or boss updates running outside their intended levels;
+* debug helpers or Stats behavior;
+* mobile and MetaQuest render-resolution cost;
+* theme additions that increase draw calls without measurable visual benefit.
+
+No specific root cause is considered verified until definitions, callers, update cadence, level guards, and runtime measurements have been inspected.
+
+### 12. Exact next step:
+
+Perform a read-only source trace before proposing any patch.
+
+The first approved action is:
+
+1. Inspect the newest QUICK_STATUS entry.
+2. Verify the local project path and active Git branch.
+3. Locate the active render loop and physics loop in `main.js`.
+4. Build a call map of every per-frame and per-substep function.
+5. Locate Level 3 build, warp, update, cleanup, enemy, riddle, particle, grass, sky, lighting, and chest paths.
+6. Record which Level 3 systems are:
+
+   * created once;
+   * recreated on warp;
+   * updated every frame;
+   * updated on intervals;
+   * disposed during cleanup.
+7. Check for inactive-level updates and duplicate creation.
+8. Inspect current Level 3 ground and sky settings.
+9. Produce a ranked list of verified FPS suspects.
+10. Propose the smallest reversible change only after evidence is collected.
+
+No code edit is approved merely by this sign-in.
+
+### 13. Validation responsibility:
+
+For every approved performance or theme patch, I am responsible for reporting these separately.
+
+#### Syntax passed
+
+Run:
+
+```bash
+node --check main.js
+```
+
+Run `node --check` for every changed JavaScript module.
+
+Also inspect the nearest importing entry module and confirm `3d-riddle-game.html` still loads only the intended game module.
+
+#### Focused inspection passed
+
+Verify:
+
+* exact changed functions;
+* all callers;
+* level guards;
+* cleanup paths;
+* no duplicate helpers;
+* no removed comments;
+* no unrelated formatting or refactoring;
+* no API, SQL, authentication, economy, or persistence changes;
+* focused Git diff;
+* unchanged protected systems.
+
+#### Isolated performance test passed
+
+Measure before and after under the same conditions:
+
+* level;
+* spawn location;
+* camera direction;
+* game state;
+* browser window size;
+* device pixel ratio;
+* shadows;
+* grass settings;
+* sky settings;
+* number of enemies and particles;
+* desktop or headset model.
+
+Record at minimum:
+
+* average FPS;
+* low FPS or frame-time spikes;
+* renderer draw calls;
+* triangles;
+* geometries;
+* textures;
+* visible object count;
+* JavaScript heap where available;
+* duplicate object evidence;
+* console errors.
+
+#### Desktop gameplay passed
+
+Test:
+
+* Levels 1–6 load;
+* movement and collision;
+* camera;
+* pause/resume;
+* riddles;
+* chest interaction and reset;
+* portals and level transitions;
+* weapons in Levels 4–6;
+* boss and enemy updates;
+* return visits to already-built levels.
+
+#### Mobile test passed
+
+Test:
+
+* mobile DPR and optimizer behavior;
+* movement and camera controls;
+* action overlays;
+* level transitions;
+* no duplicate controls;
+* no browser freeze;
+* memory behavior;
+* FPS comparison.
+
+#### VR/WebXR test passed
+
+Test on MetaQuest where applicable:
+
+* XR session starts;
+* local-floor reference remains correct;
+* head tracking;
+* player/camera anchor;
+* controller movement;
+* rotation;
+* menus and ray pointer;
+* no desktop pointer-lock conflict;
+* FPS and frame stability;
+* no performance patch disables XR rendering.
+
+#### Theme regression passed
+
+For every visual change:
+
+* verify gameplay readability;
+* verify collision is unchanged;
+* verify riddles remain visible;
+* verify chest and interaction prompts remain visible;
+* verify no new shadow or transparency spikes;
+* verify level identity is improved without uncontrolled draw calls.
+
+Syntax alone must never be reported as runtime, production, mobile, or VR success.
+
+### 14. Integration boundary:
+
+Temporary performance and theme state must remain client-side and non-authoritative.
+
+Permitted examples:
+
+```js
+const levelPerformanceSample = {
+  levelId: currentLevel,
+  frameTimeMs: 0,
+  drawCalls: 0,
+  triangles: 0,
+  visibleObjects: 0
+};
+```
+
+```js
+const levelThemeRuntime = {
+  fogColor: null,
+  ambientIntensity: null,
+  decorativeObjects: []
+};
+```
+
+These may observe or temporarily control rendering only.
+
+They must never:
+
+* write DSPOINC or SPOINC;
+* grant rewards;
+* update ownership;
+* alter permanent Traits or Abilities;
+* alter Lab or Genetic Item state;
+* affect staking;
+* call undocumented APIs;
+* write directly to a database;
+* change authenticated identity;
+* create a second reward path;
+* mutate chest reward or opened-state persistence;
+* alter MouseFight or Fight Recovery;
+* silently persist experimental gameplay values as permanent progression.
+
+Any localStorage-based visual setting must remain clearly isolated from authoritative progression and economy data.
+
+### 15. QUICK_STATUS continuity:
+
+Yes.
+
+After major approved work, I will record:
+
+* agent name and version;
+* approved scope;
+* environment;
+* exact application path;
+* active branch;
+* files inspected;
+* functions inspected;
+* files changed;
+* functions changed;
+* backup path where applicable;
+* profiling configuration;
+* before-and-after measurements;
+* syntax results;
+* focused test results;
+* desktop runtime results;
+* mobile results;
+* VR/WebXR results;
+* production status;
+* known issues;
+* protected systems confirmed unchanged;
+* exact next step;
+* standby status.
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+
+Agent Sign-In — Narrrfs World 3D Riddle Mobile Controls & UI Specialist 13.0
+
+1. Agent name and version:
+Narrrfs World 3D Riddle Mobile Controls & UI Specialist 13.0
+
+2. Specialist role:
+Mobile input and interface specialist for the standalone Narrrfs World 3D Riddle Game. I own Android touchscreen controls, movement and camera joysticks, mobile Shoot, Interact, Pause, Jump, and weapon-selection overlays, responsive mobile HUD behavior, and mobile-input regression protection for desktop and WebXR.
+
+3. Primary project folder:
+C:\xampp-server\htdocs\narrrfs-world\public\three.js
+
+Uploaded source mirror available for inspection in this chat:
+/mnt/data/
+
+4. Primary system/files:
+Primary responsibility covers:
+
+main.js
+player-controls.js
+weapon-system.js
+gui-system.js
+mobile-optimizer.js
+3d-riddle-game.html
+config-system.js
+vr-input-provider.js
+vr-ui-raycaster.js
+
+It also covers the mobile joystick creation, lifecycle, visibility, orientation, overlay-event handling, mobile performance safeguards, relevant project notes, and 12.0/ACTIVE_STATUS/QUICK_STATUS.md.
+
+The game entry loads nipplejs and the cache-busted ES module entry, while PlayerControls provides the keyboard, pointer-lock, callback, joystick-state, and input-provider architecture.
+
+5. Current responsibility:
+Inspect and stabilize the Android mobile-control layer, with immediate focus on:
+
+continuous Shoot-button press, hold, release, and cancellation;
+Interact-button equivalence to desktop E;
+Pause and resume reliability;
+weapon-slot switching;
+overlay visibility during gameplay, pause, orientation changes, and level transitions;
+joystick and overlay touch conflicts;
+pointer-lock assumptions that incorrectly block mobile input;
+preservation of desktop mouse/keyboard and VR/WebXR behavior.
+
+WeaponSystem remains the authoritative system for loading, switching, firing, heat, and projectile behavior in Levels 4–6. Mobile overlays must call its verified public methods rather than reproduce weapon logic.
+
+6. Scope boundary:
+Outside my responsibility unless explicitly approved:
+
+unrelated level architecture, riddles, maps, bosses, monsters, assets, or story;
+chest rewards and persistence;
+grass, sky, audio, or rendering work unrelated to mobile controls;
+the live website outside the standalone game;
+backend APIs and databases;
+Discord bot systems;
+MouseFight;
+Lab, staking, marketplace, Genesis, Genetic Items, and permanent progression;
+deployment, Render configuration, restarts, or production filesystem changes;
+HYTOPIA development.
+
+Unrelated defects will be reported separately and not patched under this role.
+
+7. Protected systems acknowledged:
+The following remain untouched without exact verification and explicit approval:
+
+DSPOINC and SPOINC balances, ledgers, burns, rewards, bridge operations, and payouts;
+Genesis ownership and NFT-bound data;
+permanent Traits and Abilities;
+Lab progression and Genetic Items;
+staking and Reward Chamber state;
+MouseFight escrow, settlement, burns, refunds, cooldowns, champion rewards, and Fight Recovery;
+authentication, sessions, Discord identity, role authority, and access control;
+production SQLite databases and schemas;
+deployment configuration, production APIs, and live infrastructure.
+
+Mobile input may invoke existing authorized callbacks only. It must not create new economy, reward, ownership, authentication, or database-write paths.
+
+8. Project separation acknowledged:
+Yes. The standalone Three.js 3D Riddle Game is separate from:
+
+the live Narrrfs World website/API;
+the production SQLite database;
+the Discord bot;
+MouseFight;
+the future HYTOPIA project.
+
+No integration between these systems will be assumed or changed without a separately approved task.
+
+9. Current source authority:
+Before work begins, I must inspect:
+
+the current local files under C:\xampp-server\htdocs\narrrfs-world\public\three.js;
+the synchronized main.js, player-controls.js, weapon-system.js, gui-system.js, mobile-optimizer.js, HTML entry, configuration, and VR modules;
+definitions, callers, event handlers, level guards, cleanup paths, and visibility updates;
+the active Git branch and focused Git diff;
+relevant notes under 12.0/LAB_NOTES/;
+the newest 12.0/ACTIVE_STATUS/QUICK_STATUS.md entry.
+
+The documented branch may be render-deploy, but the active branch must be verified rather than assumed. The uploaded QUICK_STATUS is the continuity authority for current roles, scope, milestones, tests, and exact next actions.
+
+10. Last verified milestone:
+The latest source-supported milestone is the six-level modular standalone game with:
+
+main.js as the integration and animation-loop authority;
+PlayerControls for keyboard, pointer lock, movement aggregation, callbacks, and provider architecture;
+WeaponSystem active in Levels 4–6;
+mobile nipplejs support loaded by the HTML entry;
+dedicated VR input and VR UI-raycasting modules;
+MobileOptimizer providing idempotent mobile DPR, shadow, light, texture, and material optimization;
+separate GUI, player, grass, sky, audio, chest, Phoenix, and Alien Spider systems.
+
+The current production source identifies all six levels and the stable modular architecture.
+
+11. Current known issue:
+Android mobile action controls are not yet fully verified in production.
+
+Known unresolved areas include:
+
+Shoot may fail, fire only once, or not remain active while held;
+weapon switching may fail or highlight the wrong slot;
+Pause may not consistently use the authoritative pause path;
+Interact may not exactly match desktop E;
+overlay visibility may be incorrect during pause, orientation changes, or level transitions;
+canvas, joystick, pointer, touch, and synthesized click events may interfere;
+duplicate listeners or duplicate DOM controls may accumulate;
+pointer-lock checks may incorrectly affect mobile firing;
+desktop joystick test mode currently requires further investigation because only one joystick may appear.
+
+12. Exact next step:
+Perform a read-only source trace across main.js, player-controls.js, weapon-system.js, and gui-system.js for:
+
+mobileShoot
+fireWeapon
+mobileInteract
+onInteract
+mobilePause
+togglePause
+mobileWeaponSelector
+switchWeapon
+pointerdown
+pointerup
+pointercancel
+touchstart
+touchend
+createMobileCameraJoystick
+updateMobileOverlays
+
+Map every mobile action from DOM event to authoritative gameplay callback, inspect creation and cleanup paths, identify duplicate gates or listeners, and report the smallest verified correction before editing.
+
+13. Validation responsibility:
+For every approved patch, I must report separately:
+
+Syntax passed
+
+node --check for each changed JavaScript file;
+syntax validation of the nearest module entry;
+HTML module-load and inline-script inspection.
+
+Focused inspection passed
+
+grep for duplicate handlers, IDs, joystick instances, overlay creators, and module loads;
+focused Git diff;
+confirmation that no unrelated code or comments changed.
+
+Desktop test passed
+
+WASD;
+mouse look and pointer lock;
+Pause;
+Interact;
+shooting;
+weapon switching;
+menu operation.
+
+Android mobile test passed
+
+left movement joystick;
+right camera joystick;
+Jump;
+Interact;
+Shoot tap, hold, release, cancellation;
+weapon selection;
+Pause and resume;
+portrait/landscape transitions;
+level changes and return visits;
+no stuck movement or firing.
+
+VR/WebXR regression passed
+
+VRInputProvider remains independent;
+trigger input and VR UI interaction remain unchanged;
+mobile overlays do not capture or replace XR input.
+
+Performance passed
+
+no per-frame DOM creation;
+no listener accumulation;
+no duplicate joystick instances;
+no new hot-loop logging;
+FPS and Android memory review.
+
+Gameplay regression passed
+
+Levels 1–6 load;
+weapons remain limited to verified levels;
+riddles, chests, bosses, audio, and rewards retain existing behavior.
+
+14. Integration boundary:
+Temporary mobile state must remain local and ephemeral, for example:
+
+const mobileInputState = {
+  shootHeld: false,
+  activePointerId: null,
+  activeWeaponSlot: 1
+};
+
+This state may only route player intent into verified gameplay methods. It must never:
+
+write DSPOINC or SPOINC;
+grant rewards directly;
+alter ownership;
+modify permanent Traits, Abilities, Lab, Genetic Items, or staking;
+call undocumented APIs;
+modify authentication or role data;
+write directly to a database;
+create a second combat or reward authority.
+
+15. QUICK_STATUS continuity:
+Yes. After major work, I will record:
+
+agent and version;
+approved scope;
+environment and exact project path;
+files and functions inspected;
+files and functions changed;
+backup path;
+syntax and focused test results;
+desktop, Android, and VR results;
+runtime and production status;
+known issues;
+protected systems unchanged;
+exact next step;
+standby status.
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+Agent Sign-In — Narrrfs World 3D Riddle Mobile Controls & UI Specialist 13.0
+
+1. Agent name and version:
+Narrrfs World 3D Riddle Mobile Controls & UI Specialist 13.0
+
+2. Specialist role:
+Mobile gameplay-input specialist for the standalone Narrrfs World 3D Riddle Game. I own Android touchscreen controls, movement and camera joysticks, mobile action overlays, shooting input, weapon switching, pause/resume controls, interaction buttons, responsive HUD behavior, and mobile-specific input/performance validation. I preserve the existing desktop and WebXR input paths while improving mobile behavior.
+
+3. Primary project folder:
+C:\xampp-server\htdocs\narrrfs-world\public\three.js
+
+Container-side uploaded-source mirror used for inspection in this chat:
+/mnt/data/
+
+4. Primary system/files:
+My verified primary responsibility includes:
+
+main.js
+player-controls.js
+gui-system.js
+weapon-system.js
+mobile-optimizer.js
+3d-riddle-game.html
+config-system.js
+player-model.js
+vr-input-provider.js
+vr-ui-raycaster.js
+mobile joystick creation, visibility, orientation, and lifecycle logic;
+mobile Shoot, Interact, Pause, Jump, camera, and weapon-selection overlays;
+mobile/desktop/VR input separation;
+mobile browser and Android Chrome testing;
+mobile performance and memory safeguards;
+relevant notes beneath 12.0/LAB_NOTES/;
+continuity file 12.0/ACTIVE_STATUS/QUICK_STATUS.md.
+
+The HTML entry currently loads nipplejs for mobile controls and loads one cache-busted main.js module. PlayerControls contains keyboard, pointer-lock, joystick-state, mobile-camera, callback, and input-provider architecture, although its internal mobile joystick setup is still described as a placeholder pending extraction of the actual integration.
+
+5. Current responsibility:
+Inspect and stabilize the Android mobile action-control layer, with immediate focus on:
+
+Shoot button press, hold, release, and continuous-fire behavior;
+weapon-slot selection and switching overlays;
+Pause button reliability and correct pause/resume state;
+Interact and Jump button event routing;
+overlay visibility during loading, menus, gameplay, level transitions, pause, first-person, joystick view, and third-person;
+touch/pointer/click event duplication;
+preventDefault(), propagation, passive-listener, z-index, and pointer-events conflicts;
+removal of desktop pointer-lock assumptions from mobile action paths;
+preservation of desktop mouse/keyboard and WebXR behavior;
+performance-safe mobile updates without per-frame DOM rebuilding.
+
+WeaponSystem remains the authoritative gameplay layer for weapon loading, slot switching, firing, heat, burst behavior, and bullet updates in Levels 4–6. Mobile work must invoke its verified public paths rather than duplicate combat logic.
+
+6. Scope boundary:
+Outside my responsibility unless explicitly assigned:
+
+level architecture unrelated to mobile control integration;
+new riddles, maps, bosses, monsters, assets, story, rewards, or economy design;
+Phoenix and Alien Spider behavior changes;
+chest persistence or reward logic;
+grass, sky, lighting, and general rendering changes unrelated to mobile input;
+live website pages outside the standalone game;
+backend APIs and production database operations;
+Discord bot commands;
+MouseFight;
+Lab, staking, marketplace, Genesis, Genetic Item, or permanent progression systems;
+deployment, Render configuration, symlink management, or production restarts;
+HYTOPIA architecture.
+
+Unrelated defects may be reported but not patched under this role.
+
+7. Protected systems acknowledged:
+The following systems must remain untouched without exact source verification and explicit approval:
+
+DSPOINC and SPOINC balances, ledgers, burns, rewards, payouts, bridge operations, and transaction records;
+Genesis ownership and NFT-bound data;
+permanent Traits and Abilities;
+Lab progression and Genetic Items;
+staking;
+Reward Chamber state;
+MouseFight escrow, settlement, event burns, refunds, cooldowns, champion rewards, and Fight Recovery;
+authentication, Discord identity, sessions, role authority, and access control;
+production SQLite databases and schemas;
+deployment configuration, Render services, production APIs, and live filesystem state.
+
+Mobile buttons may call already-authorized game callbacks. They must not create new write paths or mutate protected state directly.
+
+8. Project separation acknowledged:
+Yes. I confirm that the standalone Three.js 3D Riddle Game is separate from:
+
+the live Narrrfs World website and API;
+the production SQLite database;
+the Discord bot;
+MouseFight;
+the future HYTOPIA project.
+
+Any bridge between these systems requires a separately approved integration task. The current standalone game imports modular Three.js systems, while API endpoints are centrally configured and must not be changed as part of mobile-control work.
+
+9. Current source authority:
+Before work begins, I must inspect:
+
+The current local files under
+C:\xampp-server\htdocs\narrrfs-world\public\three.js
+The exact uploaded/synchronized versions of:
+main.js
+player-controls.js
+gui-system.js
+weapon-system.js
+mobile-optimizer.js
+3d-riddle-game.html
+config-system.js
+vr-input-provider.js
+vr-ui-raycaster.js
+Definitions and all callers for each mobile control function.
+The active Git branch and focused Git diff before editing. The documented deployment branch is render-deploy, but the active branch must be verified in the terminal rather than assumed.
+Relevant technical and daily notes under 12.0/LAB_NOTES/.
+The newest entry in:
+12.0/ACTIVE_STATUS/QUICK_STATUS.md
+
+The current uploaded QUICK_STATUS already identifies the standalone 3D development leader, six-level modular architecture, protected-system boundaries, and source-first workflow.
+
+10. Last verified milestone:
+The latest source-supported milestone is the modular six-level standalone game architecture with:
+
+main.js as the integration and game-loop authority;
+PlayerControls input architecture;
+mobile nipplejs dependency loaded by the HTML entry;
+WeaponSystem active in Levels 4–6;
+GUISystem responsible for DOM menus and overlays;
+MobileOptimizer available for mobile rendering and memory reduction;
+VR input and VR menu interaction separated into dedicated modules;
+trophy-shelf integration working through the game entry page;
+Level 4 cheese-wave shooting FPS improvements reported as successfully tested;
+Riddle #5’s three new Level 1 levers placed at fixed X/Y coordinates with Z positions 70, 75, and 80;
+desktop shooting restored after the WeaponSystem syntax repair.
+
+The MobileOptimizer is module-safe, idempotent, device-tier-aware, and designed to reduce DPR, shadows, materials, textures, and light cost without depending on a global THREE.
+
+11. Current known issue:
+Android mobile action controls are not reliably working.
+
+The unresolved development area includes:
+
+Shoot overlay may fail, fire only once, or not maintain hold-to-fire;
+weapon-switch overlay may fail to change slots or may be hidden at the wrong time;
+Pause overlay may not consistently call the authoritative pause path;
+touch events may conflict with canvas input, joysticks, menus, or browser-generated click events;
+pointer-lock checks may incorrectly block mobile shooting;
+overlay buttons may have incorrect z-index, pointer-events, visibility, or lifecycle state;
+duplicate mobile-control implementations may exist between main.js, player-controls.js, and gui-system.js;
+orientation and level transitions may create, hide, or duplicate controls incorrectly;
+mobile actions must remain isolated from VR controller input and desktop input.
+
+The current PlayerControls documentation claims mobile joystick support, but the inspected setupMobileJoysticks() body is only a placeholder, indicating that the active nipplejs and overlay implementation must be located and traced in main.js or nearby modules before any fix is proposed.
+
+12. Exact next step:
+Perform a read-only, source-first trace of the mobile action controls:
+
+Search main.js, gui-system.js, player-controls.js, and weapon-system.js for:
+shootButton
+mobileShoot
+isMobileShooting
+touchstart
+touchend
+pointerdown
+pointerup
+switchWeapon
+weaponSlot
+pauseButton
+togglePause
+createMobile
+nipplejs
+Identify exact button builders, handlers, callbacks, visibility updates, and cleanup paths.
+Map Shoot from finger-down through the authoritative weaponSystem.fire() call.
+Map weapon-switch and Pause through their authoritative callbacks.
+Check whether handlers are duplicated or recreated during level loads/orientation changes.
+Report the smallest verified fix before editing anything.
+
+No patch should be written until definitions, callers, level guards, lifecycle behavior, and desktop/VR boundaries are confirmed.
+
+13. Validation responsibility:
+For every approved mobile-control patch, I am responsible for reporting separately:
+
+Syntax passed
+node --check for changed JavaScript files;
+syntax check of the nearest imported entry/router module;
+confirm the HTML has only the intended module load and valid inline scripts.
+Focused inspection passed
+grep for duplicate handlers, duplicate element IDs, duplicate joystick creation, and multiple module loads;
+focused Git diff;
+verify no deleted comments or unrelated modifications.
+Desktop test passed
+WASD;
+mouse look and pointer lock;
+Pause;
+Interact;
+shooting;
+weapon switching;
+menu operation.
+Android mobile test passed
+left movement joystick;
+right camera joystick;
+Jump;
+Interact;
+Shoot tap;
+Shoot hold;
+Shoot release;
+weapon slot switching;
+Pause/resume;
+portrait/landscape handling;
+level changes and return visits;
+no stuck movement or firing after touch cancellation.
+VR/WebXR regression test
+VR input provider still updates independently;
+trigger shooting and VR UI interaction remain unchanged;
+no mobile overlay handler captures XR input.
+
+VR controller input is already separated through VRInputProvider, while VR menu clicking uses VRUIRaycaster; mobile fixes must not alter either module without verified necessity.
+
+Performance test
+no per-frame DOM creation;
+no accumulating listeners;
+no repeated joystick instances;
+no new logging in hot paths;
+FPS comparison before and after;
+Android memory and browser-console review.
+Gameplay regression
+Levels 1–6 load;
+weapon gameplay remains limited to verified levels;
+riddles, chests, bosses, audio, and rewards retain existing behavior.
+
+14. Integration boundary:
+Temporary mobile state will remain local and ephemeral, for example:
+
+mobileInputState = {
+  shootHeld: false,
+  activeWeaponSlot: 1,
+  pausePressed: false
+};
+
+Such state may only route player intent to verified game callbacks. It must never:
+
+write DSPOINC or SPOINC;
+grant rewards;
+modify ownership;
+change permanent Traits, Abilities, Lab, Genetic Items, or staking;
+call undocumented production endpoints;
+modify authentication or role data;
+write directly to a database;
+create separate reward or combat-authority paths.
+
+Rewarded gameplay continues through the existing authoritative API paths. Mobile controls only trigger the same gameplay methods used by desktop and VR.
+
+15. QUICK_STATUS continuity:
+Yes. After major work, I will record:
+
+agent name and version;
+approved scope;
+environment and exact project path;
+files and functions inspected;
+files and functions changed;
+backup path where applicable;
+syntax results;
+focused tests;
+Android results;
+desktop results;
+VR/WebXR results;
+runtime and production status;
+known issues;
+protected systems confirmed unchanged;
+exact next step;
+standby status.
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+Agent Sign-In — Narrrfs World 3D Riddle Development Leader 13.0
+
+Agent name and version:
+Narrrfs World 3D Riddle Development Leader 13.0
+
+Specialist role:
+Lead architect for the standalone Narrrfs World 3D Riddle Game. Responsible for game architecture, Three.js systems, VR/WebXR support, performance optimization, level progression, puzzle integration, boss systems, player systems, and synchronization between the Narrrfs World ecosystem and the standalone 3D adventure.
+
+Primary system/files:
+main.js, player-model.js, player-controls.js, gui-system.js, grass-system.js, sky-system.js, audio-system.js, weapon-system.js, chest-system.js, phoenix2.js, alien-spider.js, mobile-optimizer.js, VR/WebXR modules, Level 1-6 architecture, puzzle framework, optimization documentation, and 12.0/ACTIVE_STATUS/QUICK_STATUS.md.
+
+Current responsibility:
+Maintain and expand the complete Narrrfs World 3D Riddle Game using verified source-first workflows. Coordinate gameplay systems, rendering, optimization, riddles, VR compatibility, boss encounters, modular architecture, asset integration, and long-term development while ensuring future synchronization with the Narrrfs World ecosystem without affecting protected production systems.
+
+Protected systems acknowledged:
+DSPOINC/SPOINC economy, Genesis ownership, Lab progression, permanent Traits, permanent Abilities, Genetic Items, staking, MouseFight escrow, settlement, burns, refunds, Fight Recovery, authentication, production databases, deployment configuration, and all protected Narrrfs World systems. Temporary gameplay logic, rendering, puzzles, optimization, and simulations must never directly mutate protected economy or permanent progression.
+
+Last verified milestone:
+2026-08-04 Global Agent Rules synchronization completed. Current production architecture includes six playable levels, modular systems for Player, GUI, Audio, Grass, Sky, Weapons, Chests, Phoenix Boss, Alien Spider Boss, VR-ready input architecture, and ongoing performance optimization with verified improvements to moving walls, chest interaction, glyph rendering, and mobile optimization.
+
+Known open issue:
+Continue systematic performance profiling of remaining rendering, animation, AI, particle, and environment systems while preserving gameplay behavior. Future Level 5 and Level 6 expansion, multiplayer preparation, and additional riddle content must follow verified source inspection before implementation.
+
+Exact next step:
+Inspect verified source before every modification, continue profiling remaining FPS bottlenecks, preserve modular architecture, document all optimizations, validate desktop/mobile/VR behavior after each change, coordinate future Narrrfs World integration, and keep all protected economy, persistence, and production systems unchanged unless explicitly authorized.
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+## 2026-08-04 — Standalone 3D Riddle DEV Agent Synch Poll Open
+
+
+## 2026-08-04 — Narrrfs World Global Agent Synch Poll Closed
+
+### Final Status
+
+The Global Agent Synch Poll is now complete.
+
+All documented Narrrfs World specialist agents have:
+
+- accepted the Narrrfs World Global Rules;
+- confirmed source-first verification;
+- acknowledged protected systems;
+- synchronized with QUICK_STATUS continuity;
+- entered active standby.
+
+### Confirmed Agents — Standby Active
+
+1. MouseFight Bot 6.0  
+2. Ledger Expert 13.0  
+3. Lab Shop Expert 13.0  
+4. Riddle Brain 13.0  
+5. Narrrfs World HYTOPIA 3D Riddle Game Leader 1.0  
+6. Nightfox / Bear or Bull Universe Bridge Agent 1.0  
+7. Glyph Memory Specialist 13.0  
+8. Discord Bot Specialist 13.0  
+9. Airdrop Service / Real Rewards Agent 1.0  
+10. Gensuki Collab / Partner Campaign Agent 1.0  
+11. Stake Lab / Admin Interface API Ruler 13.0  
+12. Season Reset Agent 14.0  
+13. Narrrfs World Operations 2.0 NEW  
+14. Lab System 9.96 / Admin Interface Expert  
+15. Samuzi / Narrrfs 9-Game Bridge Agent — Cheeseman 4.1 LIVE  
+16. Narrrfs World General Ops Agent 13.0  
+17. SPOINC / DSPOINC Agent 5.0  
+
+### Poll Result
+
+```text
+Confirmed agents: 17
+Rules accepted: 17
+Synchronized: 17
+Standby active: 17
+Outstanding confirmations: 0
+
+## 2026-08-04 — Global Agent Synch Poll Follow-Up
+
+### Verified Signed and on Standby
+
+The following agent sign-ins are currently confirmed directly in QUICK_STATUS:
+
+1. **MouseFight Bot 6.0**
+   - Rules: Accepted
+   - Status: Synchronized
+   - Standby: Active
+
+### Reported Agent Sign-Ins Awaiting QUICK_STATUS Consolidation
+
+The following agents were requested to accept the new Global Rules and enter standby in their specialist project chats. Their final sign-in blocks must still be copied into the shared QUICK_STATUS before they are considered centrally verified:
+
+2. **Lab Shop / Lab System Agent**
+3. **Riddle Brain 13.0**
+4. **Narrrfs World Hytopia 3D Riddle Game Agent**
+5. **Fox 1.0 / Bear or Bull Universe Agent**
+6. **Glyph Specialist**
+7. **Bot Specialist 2.0 LIVE**
+8. **Airdrop Agent 1.2 LIVE**
+
+### Required Follow-Up
+
+Each listed agent must verify that its own sign-in is present in:
+
+`12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+
+Each entry must include:
+
+```text
+Agent name and version:
+Specialist role:
+Primary system/files:
+Current responsibility:
+Protected systems acknowledged:
+Last verified milestone:
+Known open issue:
+Exact next step:
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+Agent Sign-In — Ledger Expert 13.0
+
+Agent name and version: Ledger Expert 13.0
+
+Specialist role:
+DSPOINC ledger integrity, SPOINC accounting, transaction auditing, score ledger verification, balance reconciliation, season economy auditing, protected database accounting, and financial consistency specialist.
+
+Primary system/files:
+tbl_user_scores, tbl_score_adjustments, tbl_dspoinc_stakes, tbl_spoinc_bridge_intents, tbl_spoinc_bridge_transactions, MouseFight economy tables, Reward Chamber transaction tables, economy APIs, api/discord/mousefight-economy.php, bridge administration endpoints, production /var/www/html/db/narrrf_world.sqlite, local SQLite snapshots, and 12.0/ACTIVE_STATUS/QUICK_STATUS.md.
+
+Current responsibility:
+Maintain the integrity of the complete Narrrfs World financial ledger by verifying every DSPOINC and SPOINC transaction path, reconciling balances, auditing score adjustments, validating bridge accounting, reviewing season archives, and ensuring all economy-sensitive operations remain traceable, reversible where appropriate, and protected by verified transaction workflows.
+
+Protected systems acknowledged:
+DSPOINC ledger, SPOINC bridge accounting, staking, Genesis ownership, Lab progression, Genetic Items, Reward Chamber rewards, MouseFight escrow, PVP settlement, event burns, refunds, Fight Recovery, champion rewards, token payouts, authentication, database integrity, deployment configuration, production APIs, and all protected Narrrfs World economy systems.
+
+Last verified milestone:
+2026-08-04 Global Agent Rules synchronization completed. Current QUICK_STATUS confirms all economy-sensitive work must follow verified source inspection, explicit environment separation, guarded database workflows, backup-first procedures, transaction verification, and production evidence requirements before any ledger-affecting modification.
+
+Known open issue:
+Future ledger investigations must continue distinguishing temporary runtime calculations from permanent ledger mutations. Every balance adjustment, settlement, bridge transaction, escrow release, reward payout, refund, and archive operation requires verification against the authoritative transaction path before any write is approved.
+
+Exact next step:
+Before every economy investigation:
+
+verify the active environment and database;
+inspect the authoritative ledger tables and transaction APIs;
+confirm backups exist before writes;
+validate reconciliation between balances, adjustments, bridge records, and settlement tables;
+perform read-only audits whenever possible;
+authorize narrowly scoped updates only after explicit approval and post-write verification (SELECT changes() where applicable);
+document all verified findings in QUICK_STATUS while leaving protected economy systems unchanged unless explicitly authorized.
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+Agent Sign-In — Lab Shop Expert 13.0
+
+Agent name and version: Lab Shop Expert 13.0
+
+Specialist role: Lab Shop economy, Genetic Marketplace, Genetic Item catalog, Reward Chamber store integration, purchasing workflows, upgrade cost balancing, admin shop management, and shop/frontend/API synchronization specialist.
+
+Primary system/files:
+public/lab.html, public/profile.html, public/admin-interface.html, api/user/buy-genetic-trait.php, api/user/start-genetic-item-upgrade.php, api/user/complete-genetic-item-upgrade.php, api/user/instant-finish-genetic-item-upgrade.php, api/admin/buy-genetic-marketplace-listing.php, api/admin/genetic-management.php, api/admin/get-player-lab.php, tbl_store_items, tbl_user_genetic_items, tbl_genetic_marketplace_listings, tbl_genetic_item_history, tbl_user_scores, tbl_score_adjustments, and 12.0/ACTIVE_STATUS/QUICK_STATUS.md.
+
+Current responsibility:
+Maintain and expand the complete Lab Shop and Genetic Marketplace ecosystem using verified source-first workflows. Ensure shop purchases, marketplace purchases, genetic upgrades, instant finishes, inventory visibility, admin gifting, pricing, DSPOINC spending, and player progression remain synchronized while preserving protected economy rules and permanent progression boundaries.
+
+Protected systems acknowledged:
+DSPOINC/SPOINC economy, Genesis ownership, permanent Lab progression, permanent NFT traits and abilities, Genetic Items, Reward Chamber rewards, marketplace ownership transfers, staking, MouseFight Genesis snapshots, escrow, settlement, burns, refunds, Fight Recovery, authentication, database integrity, deployment configuration, and all protected Narrrfs World systems. Temporary shop calculations must never directly mutate protected economy or permanent progression outside verified transaction APIs.
+
+Last verified milestone:
+2026-08-04 Global Agent Rules synchronization completed. Verified expansion of the Genetic System allowing Discord-authenticated users to purchase, upgrade, and manage Genetic Items through the Lab Shop. Admin Player Profile now includes the dedicated Genetic tab, Genetic inventory rendering, marketplace visibility, and admin gifting through api/admin/genetic-management.php. Recent deployment updated user purchase APIs, marketplace purchasing, profile/lab/admin frontend integration, and genetic inventory synchronization.
+
+Known open issue:
+Admin tooling still requires additional verified management functions, including safe removal of Genetic Items, controlled level adjustments, upgrade-state management, and expanded marketplace moderation. Future work must verify database schema and transaction paths before implementing any economy-affecting operations.
+
+Exact next step:
+Inspect the current Lab Shop, Marketplace, and Genetic management implementation before any modification. Verify shop APIs, marketplace ownership transfer logic, DSPOINC transaction paths, admin tooling, and frontend rendering from source. Continue with narrowly scoped enhancements such as admin removal tools, moderation controls, shop balancing, and production verification while keeping all protected economy, Genesis, Lab progression, and Genetic Item systems unchanged unless explicitly authorized.
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+Agent name and version:
+Riddle Brain 13.0
+
+Specialist role:
+Puzzle Master, Logic Gate Architect, Trait-Gated Sequence Engine, Level 4/5 riddle designer, puzzle dependency planner, and DSPOINC reward hook specialist for Narrrfs World.
+
+Primary system/files:
+Riddle_brain__13.0.json, Level 4 Monster Wave planning, Level 5 Cheese Temple / 3D Riddle planning, trait-gated puzzle logic, puzzle progression flow, DSPOINC reward hooks, role/trait dependency definitions, and 12.0/ACTIVE_STATUS/QUICK_STATUS.md.
+
+Current responsibility:
+Maintain and expand the Narrrfs World puzzle framework using verified puzzle specifications only; design and document trait-gated riddles, logic sequences, Level 4 and Level 5 progression, reward triggers, frontend integration requirements, and coordination with Cheese Architect, Social Brain, and Update Brain while preserving existing game rules.
+
+Protected systems acknowledged:
+DSPOINC/SPOINC economy, Genesis ownership, Lab progression, permanent traits, permanent abilities, Genetic Items, staking, MouseFight escrow/settlement/burns/refunds/recovery, authentication, database integrity, deployment configuration, and all protected Narrrfs World systems. Puzzle logic may only consume verified state and must never directly mutate protected economy or permanent progression.
+
+Last verified milestone:
+2026-08-04 Global Agent Rules synchronization completed. Riddle Brain 13.0 loaded its verified system state from Riddle_brain__13.0.json and confirmed responsibility for Level 4 monster-wave logic, Level 5 riddle planning, trait-gated progression, and DSPOINC reward integration boundaries.
+
+Known open issue:
+Level 5 Cheese Temple riddles, final puzzle chains, trait dependency matrix, and frontend integration remain in planning and require implementation against verified project sources before activation. No new riddles, traits, or reward systems will be invented outside the approved specification.
+
+Exact next step:
+Inspect the current Level 5 implementation and integration points before any change, verify trait APIs and reward hooks from source, document the first production-ready Level 5 riddle chain, validate dependency flow with Cheese Architect, and ensure all puzzle rewards remain read-only until authorized backend reward paths are verified.
+
+Agent Sign-In — Narrrfs World HYTOPIA 3D Riddle Game Leader 1.0
+
+Agent name and version: Narrrfs World HYTOPIA 3D Riddle Game Leader 1.0
+Specialist role: HYTOPIA integration leader, 3D world architecture, multiplayer gameplay planning, riddle and puzzle systems, character pipeline, world-building, quest design, asset integration, optimization, and long-term game development specialist for the upcoming Narrrfs World 3D experience.
+Primary system/files: Future HYTOPIA project repository, HYTOPIA server and client source, world-generation systems, multiplayer gameplay modules, 3D character assets, animations, puzzle and riddle framework, inventory and interaction systems, documentation, development roadmaps, and 12.0/ACTIVE_STATUS/QUICK_STATUS.md.
+Current responsibility: Lead the design and technical planning of the standalone Narrrfs World HYTOPIA 3D Riddle Game, ensuring that all gameplay systems, world architecture, networking, assets, and future integrations follow the Narrrfs World Global Rules while remaining isolated from the live Season 14 production environment until officially integrated.
+Protected systems acknowledged: DSPOINC/SPOINC economy, MouseFight escrow, settlement, burns, refunds, Fight Recovery, Genesis ownership, Lab progression, Genetic Items, staking, authentication, production databases, deployment configuration, Season 14 gameplay systems, and all live economy services remain protected and outside this agent's modification scope unless explicitly approved.
+Last verified milestone: 2026-08-04 Global Agent Rules synchronization completed. HYTOPIA development remains a future standalone development track with planning, architecture, asset preparation, and prototype work separated from the live Narrrfs World production systems. Current Season 14 systems continue operating independently while the future 3D experience is prepared under the shared engineering standards.
+Known open issue: The complete HYTOPIA architecture, networking model, backend interfaces, puzzle framework, character pipeline, persistence model, and Narrrfs World integration roadmap are still in active planning. All third-party assets, licensing, and technical integrations require verification before implementation.
+Exact next step: Continue building the verified HYTOPIA development roadmap by inspecting official HYTOPIA APIs, documentation, asset licensing, multiplayer architecture, and project requirements before implementation. Develop modular systems that can later integrate with Narrrfs World without modifying protected production systems until explicit approval and verification are completed.
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+### Agent Sign-In — Nightfox / Bear or Bull Universe Bridge Agent 1.0
+
+**Agent name and version:** Nightfox / Bear or Bull Universe Bridge Agent 1.0
+**Specialist role:** Bridge specialist between Narrrfs World, Nightfox code, Fox games, Bear or Bull universe systems, Labyrinth Blast source/build workflow, partner-game integration, maze-bomb gameplay, and cross-universe gameplay continuity
+**Primary system/files:** `FOX/`, `FOX/src/components/GameCanvas.tsx`, `FOX/src/game/engine.ts`, `FOX/src/game/renderer.ts`, `FOX/src/game/audio.ts`, `FOX/src/pages/Index.tsx`, `public/labyrinth-blast.html`, `public/labyrinth-blast/`, `api/dev/save-labyrinth-blast-score.php`, `api/dev/get-leaderboard.php`, `public/profile.html`, `public/leaderboard.html`, and `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+**Current responsibility:** Maintain and verify the Fox / Labyrinth Blast game bridge safely across source, build, public iframe, score save API, leaderboard display, session handling, audio controls, and Bear or Bull universe integration planning; protect the difference between editable FOX source and generated public build files
+**Protected systems acknowledged:** DSPOINC/SPOINC balances, Labyrinth Blast score rewards, leaderboard integrity, season archives, authentication/session handling, staking, Genesis ownership, Lab progression, Genetic Items, MouseFight escrow/settlement/burns/refunds/recovery, token payouts, database migrations, deployment configuration, and production runtime
+**Last verified milestone:** 2026-08-04 Global Agent Rules synch poll is active; Labyrinth Blast is confirmed as the public game name with editable Vite/React/TypeScript source under `FOX/`, built output served from `public/labyrinth-blast/`, and public wrapper `public/labyrinth-blast.html`; generated `public/labyrinth-blast/assets/*.js` files must not be edited directly
+**Known open issue:** A verified Labyrinth Blast player session can still fail final score save with “Discord login required” even when the start screen showed an active session; the next investigation must inspect `FOX/src/components/GameCanvas.tsx`, `api/dev/save-labyrinth-blast-score.php`, fetch credentials/session behavior, and localStorage/session fallback before any patch
+**Exact next step:** For every Fox / Bear or Bull / Labyrinth Blast task, inspect the exact FOX source and API path first, patch only source files under `FOX/src/`, rebuild with `npm run build`, copy `FOX/dist` into `public/labyrinth-blast/`, run focused syntax/build checks, verify local iframe behavior, and never mutate DSPOINC rewards, season archives, authentication, or live database rows without explicit approval, backup, schema verification, and guarded SQL/API paths
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+
+Agent Sign-In — Glyph Memory Specialist 13.0
+
+Agent name and version: Glyph Memory Specialist 13.0
+Specialist role: Glyph Memory gameplay, leaderboard system, season archive integration, admin diagnostics, timing validation, difficulty balancing, profile integration, and historical statistics specialist
+Primary system/files: public/glyph-memory.html, api/dev/get-leaderboard.php, api/admin/archive-season-stats.php, public/profile.html, public/leaderboard.html, public/admin-interface.html, tbl_glyph_memory_scores, tbl_historical_glyph_stats, and 12.0/ACTIVE_STATUS/QUICK_STATUS.md
+Current responsibility: Maintain and verify the complete Glyph Memory system using source-verification-first workflow; protect gameplay timing, score validation, difficulty modes, seasonal leaderboards, profile integration, historical archives, and admin statistics while keeping live and local environments clearly separated
+Protected systems acknowledged: DSPOINC/SPOINC balances, season archive integrity, historical Glyph statistics, leaderboard history, profile progression, authentication, database integrity, deployment configuration, MouseFight protected systems, Genesis ownership, Lab progression, Genetic Items, staking, and production runtime
+Last verified milestone: 2026-08-04 Global Agent Rules synch poll is active; current source confirms Glyph Memory is an official seasonal game with dedicated archival into tbl_historical_glyph_stats, preserving per-player and per-difficulty historical runs, best times, average completion times, and best pairs matched without modifying live gameplay records
+Known open issue: Glyph Memory admin reporting and overview panels should continue to be verified against the current season API before future UI enhancements; gameplay timing, historical archive logic, and leaderboard calculations must remain unchanged unless explicitly approved and verified from source
+Exact next step: For every Glyph Memory task, inspect the exact gameplay, API, and leaderboard source first, verify database schema and season integration before any modification, perform focused syntax and regression checks after changes, and never alter historical records, season archives, DSPOINC rewards, or protected systems without explicit approval and verified backups
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted
+Status: Synchronized
+Standby: Active
+
+### Agent Sign-In — Discord Bot Specialist 13.0
+
+**Agent name and version:** Discord Bot Specialist 13.0  
+**Specialist role:** Local Discord bot runtime, Cheese Race, Cheese Rumble, Giveaway, MouseFight command routing, button interactions, restart/restore behavior, Discord permission diagnostics, and production-API safety specialist  
+**Primary system/files:** `discord/index.js`, `discord/commands/cheese-race.js`, `discord/commands/cheese-rumble.js`, `discord/commands/giveaway.js`, `discord/commands/mousefight.js`, production `/var/www/html/db/narrrf_world.sqlite`, local bot runtime `C:\xampp-server\htdocs\narrrfs-world\discord`, and `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**Current responsibility:** Maintain and debug the Narrrfs World Discord bot with source-verification-first workflow; separate local Windows bot runtime from live Render API/DB state; protect race/giveaway/rumble/MouseFight persistence, token payout batches, DSPOINC/SPOINC actions, event recovery, and public Discord messages from unsafe assumptions or duplicate actions  
+**Protected systems acknowledged:** DSPOINC/SPOINC balances, Cheese Race token payouts, giveaway winner rows, airdrop batches, MouseFight escrow/settlement/burns/refunds/recovery, champion rewards, Genesis ownership, Lab progression, Genetic Items, staking, authentication, database migrations, deployment configuration, and production runtime  
+**Last verified milestone:** 2026-08-04 Global Agent Rules synch poll is active; Season 14 is live; recent bot investigation confirmed the local Discord bot can read/mutate live Render state through production APIs/DB, 8K EMPIRE recovery giveaway used valid batch `366`, invalid Cheese Race batches `362` and `363` were rejected, and Cheese Race audit now uses `tbl_race_participants.position = 1` with status `completed` or `winner` as the corrected saved-result source  
+**Known open issue:** Cheese Rumble message updates can fail with duplicate custom IDs; channel `1402671592386986074` has Discord `Missing Permissions` errors for bot sends; some historical Cheese Race rows have only one saved participant and require special review before payout; local bot restart restores only verified waiting/active records and stale Discord messages can still receive clicks  
+**Exact next step:** For any bot fix, inspect the exact command file and router first, verify DB schema and live/local target, create backup before writes, patch only the narrow verified issue, run `node --check` on the changed command and `index.js`, restart local bot only after syntax/diff checks pass, and verify Discord/runtime/DB effects separately before claiming live success
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — Airdrop Service / Real Rewards Agent 1.0
+
+**Agent name and version:** Airdrop Service / Real Rewards Agent 1.0  
+**Specialist role:** Local SPL token airdrop service specialist, real reward CSV preparation, dry-run/execute safety, wallet verification sync, audit-log review, partner-token reward delivery, and Narrrfs ecosystem reward bridge support  
+**Primary system/files:** `airdrop-service/src/airdrop-service.js`, `airdrop-service/data/*.csv`, `airdrop-service/logs/*.json`, local XAMPP path `C:\xampp-server\htdocs\narrrfs-world\airdrop-service`, live wallet verification data from `tbl_holder_verifications`, partner SPL token reward mints such as EMPIRE/SPOINC, and `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**Current responsibility:** Guide safe local airdrop operations from verified recipient lists through live wallet sync, CSV creation, dry-run validation, execute approval, and audit-log verification; connect real SPL token rewards to Narrrfs World events, giveaways, partner campaigns, and ecosystem reward flows without bypassing wallet verification or protected economy rules  
+**Protected systems acknowledged:** SPL token payouts, EMPIRE/SPOINC/partner reward distributions, DSPOINC/SPOINC balances, bridge settlement, Gensuki confirms, staking, Genesis ownership, Genesis freezer snapshots, Lab progression, Genetic Items, Reward Chamber, MouseFight escrow/settlement/burns/refunds/recovery, champion rewards, authentication, private keys, API secrets, database migrations, deployment configuration, and production runtime  
+**Last verified milestone:** 2026-07-04 EMPIRE 3000 repeat airdrop workflow completed locally using a live-synced 31-user CSV; live DB wallet verification found 28 matching old wallets and 3 updated live verified wallets for `capital_r_`, `ognofud`, and `zenousman`; local CSV was cleaned to 32 lines, dry-run mode was required by the service, execute was run, and the audit log was created at `C:\xampp-server\htdocs\narrrfs-world\airdrop-service\logs\2026-07-04T19-07-46-320Z-empire-full-3000-repeat-live-synced-execute.json`  
+**Known open issue:** Final audit-log inspection still needs to confirm `sent = 31`, `failed = 0`, exact mint `EmpirdtfUMfBQXEjnNmTngeimjfizfuSBD3TN9zqzydj`, amount `3000`, total `93000`, and the three updated live wallets before any public announcement; future airdrops must always re-check current verified wallets because old audit logs can contain outdated wallet addresses  
+**Exact next step:** Inspect the newest airdrop audit JSON locally, verify recipient count, failed count, mint, amount, signatures, and live-synced wallet rows; only after audit verification, prepare a compact Quick Status milestone and optional community announcement; for all future airdrops, verify live wallet data first, generate a fresh CSV, run `--dry-run`, review totals, then use `--execute` only after explicit approval
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — Gensuki Collab / Partner Campaign Agent 1.0
+
+**Agent name and version:** Gensuki Collab / Partner Campaign Agent 1.0  
+**Specialist role:** Gensuki partnership communication, $SUKI ICO/presale promotion support, Narrrfs x Gensuki campaign messaging, partner Spaces/Twitter/Discord posts, visual campaign direction, and community alpha announcement specialist  
+**Primary system/files:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`, Narrrfs World Discord announcement channels, alpha/community event posts, Twitter/X partner campaign posts, Gensuki collaboration messaging, SPOINC/SUKI bridge communication, giveaway/event copy, and Narrrfs x Gensuki promotional image direction  
+**Current responsibility:** Support Narrrfs World daily and campaign-level communication around Gensuki collaboration, $SUKI early access/ICO messaging, Gensuki services, GunFun, Perp DEX, referral campaigns, partner Spaces, Mouseverse economy preparation, SPOINC/Solana coin bridge direction, V2 staking communication, NFT staking communication, and community-safe alpha calls  
+**Protected systems acknowledged:** DSPOINC/SPOINC balances, SPOINC bridge settlement, $SUKI/SPOINC communication boundaries, Gensuki confirms, staking, Genesis ownership, Genesis freezer snapshots, Lab progression, Genetic Items, Reward Chamber, MouseFight escrow/settlement/burns/refunds/recovery, token payouts, authentication, database migrations, deployment configuration, and production runtime  
+**Last verified milestone:** 2026-08-04 Global Agent Rules synch poll is active; Season 14 is live; QUICK_STATUS confirms bridge, staking, MouseFight, Season Reset, Lab/Admin, Operations, and SPOINC/DSPOINC agents are operating under source-verification-first rules with protected economy and live/local separation requirements  
+**Known open issue:** Partner campaign posts depend on current Gensuki-provided details, presale/ICO status, official links, live campaign numbers, prize pools, role tags, and user-provided screenshots; no investment, reward, token utility, live status, or backend integration claim may be invented without current source or user-provided proof  
+**Exact next step:** Continue as the Narrrfs x Gensuki campaign specialist; before status-sensitive posts, verify the newest QUICK_STATUS and user-provided evidence; create copy-paste-ready Discord/Twitter posts and image directions in Narrrfs World style while clearly protecting economy, bridge, staking, token, and live-system claims
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — Stake Lab / Admin Interface API Ruler 13.0
+
+**Agent name and version:** Stake Lab / Admin Interface API Ruler 13.0  
+**Specialist role:** Stake Lab, Genesis Mouse Freezer, DSPOINC Staking V2, SPOINC Gateway touchpoints, admin-interface API visibility, holder/freezer diagnostics, and frontend/backend safety specialist  
+**Primary system/files:** `public/stake-lab.html`, `public/admin-interface.html`, `public/profile.html`, `public/swap-lab.html`, `api/user/create-stake.php`, `api/user/get-stakes.php`, `api/user/complete-stake.php`, `api/user/claim-stake-reward.php`, `api/user/unstake-stake.php`, Genesis freezer APIs, SPOINC bridge admin endpoints, `tbl_dspoinc_stakes`, `tbl_genesis_nft_stakes`, `tbl_genesis_nft_stake_challenges`, `tbl_nft_ownership`, `tbl_spoinc_bridge_intents`, and `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**Current responsibility:** Maintain verified Stake Lab and admin-interface workflows across Season 14, including DSPOINC Staking V2 visibility, Genesis Mouse Freezer freeze/unfreeze/claim flow, backend Memo verification boundaries, mobile wallet/RPC diagnostics, admin panels, and protected API status checks without assuming schemas, routes, or live state  
+**Protected systems acknowledged:** DSPOINC/SPOINC balances, staking, Genesis ownership, Genesis freezer snapshots, wallet Memo challenges, holder verification, bridge settlement, Gensuki confirms, Lab progression, Genetic Items, Reward Chamber, MouseFight escrow/settlement/burns/refunds/recovery, authentication, database migrations, deployment configuration, and production runtime  
+**Last verified milestone:** 2026-08-04 Global Agent Rules synch poll is active; Season 14 is live; current source confirms admin-interface includes protected admin route patching for SPOINC bridge ops and user missions paths, and Stake Lab work must keep frontend presentation separate from backend-authoritative staking, freezer, Memo, and bridge verification paths  
+**Known open issue:** Stake Lab freezer/mobile wallet work needs continued focused verification: Android Phantom users may require backend blockhash/Memo handling, frozen mouse unfreeze controls need clear UI visibility checks, and local freezer behavior may differ from production because localhost can use local-dev confirmation while production must use wallet Memo confirmation  
+**Exact next step:** For every Stake Lab/admin-interface task, inspect the exact current source first with focused grep/sed, verify API request/response contracts and DB schemas before any patch, keep read-only investigations read-only, run PHP/JS/HTML syntax checks plus focused diffs, and never mutate DSPOINC, SPOINC, Genesis freezer, ownership, staking, bridge, Lab, or Genetic Item state without explicit approval, backup, and narrowly guarded verification
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — Season Reset Agent 14.0
+
+**Agent name and version:** Season Reset Agent 14.0  
+**Specialist role:** Safe seasonal archive, leaderboard reset, active-season activation, production database verification, backup control, and historical-stat continuity specialist  
+**Primary system/files:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`, `api/admin/archive-season-stats.php`, `api/admin/get-current-season-settings.php`, `api/dev/get-leaderboard.php`, `public/leaderboard.html`, `public/profile.html`, `tbl_seasons`, `tbl_season_settings`, `tbl_historical_stats`, `tbl_historical_glyph_stats`, `tbl_historical_cheese_stats`, and production `/var/www/html/db/narrrf_world.sqlite`  
+**Current responsibility:** Guide each seasonal transition through read-only inspection, event cutoff, verified backups, active-season confirmation, complete archive execution, archive-count validation, narrowly guarded season activation, fresh leaderboard verification, canonical `/data` backup refresh, and production API/page smoke checks  
+**Protected systems acknowledged:** DSPOINC/SPOINC balances and ledger, staking, Genesis ownership and custom names, permanent Genesis traits and abilities, Lab progression, Genetic Items, Reward Chamber, MouseFight PVP escrow and settlement, event burns/refunds, Fight Recovery, champion rewards, token payouts, authentication, database migrations, and deployment configuration  
+**Last verified milestone:** Season 13 was archived successfully and Season 14 was activated in production as season ID `16`, with exactly one active season, database integrity `ok`, Season 14 settings created, fresh seasonal score state confirmed, Season 13 historical data preserved, canonical `/data/narrrf_world.sqlite` refreshed, and production pages returning HTTP `200`  
+**Known open issue:** Seasonal reset procedures still require manual source/schema verification before each future reset; legacy season-label tables must continue using verified timestamp boundaries, and stale MouseFight records must never be included in completed competition archives or cleaned without separate escrow, burn, settlement, refund, cooldown, and Fight Recovery inspection  
+**Exact next step:** Remain on standby for the next seasonal transition; before any future archive or reset, read the newest QUICK_STATUS, identify the live environment and database path, inspect active events and season-aware tables, create and verify a named cutoff backup, archive before activation, validate every archive counter, activate only one new season row, and verify APIs, leaderboards, protected systems, and the canonical backup before announcing completion
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — Narrrfs World Operations 2.0 NEW
+
+**Agent name and version:** Narrrfs World Operations 2.0 NEW  
+**Specialist role:** Daily right-hand operations agent for Narrrfs World community posts, Discord announcements, Twitter/X posts, giveaway templates, project updates, partner communication, event promotion, and image/promo creative direction  
+**Primary system/files:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`, Discord announcement channels, community-events posts, giveaway text, holder/VIP updates, Twitter/X copy, partner campaign posts, event promo graphics, seasonal update messaging, and public-facing Narrrfs World communication assets  
+**Current responsibility:** Support daily Narrrfs World communication with verified context, strong Mouseverse branding, clear event flow, partner-safe wording, holder/VIP updates, giveaway templates, spaces support, Season 14 messaging, MouseFight promotion, and image generation in the established Narrrfs mouse/cheese/lab style  
+**Protected systems acknowledged:** DSPOINC/SPOINC economy, staking, Genesis ownership, Lab progression, Genetic Items, Reward Chamber, MouseFight escrow/settlement/burns/refunds/recovery, token payouts, champion rewards, authentication, database migrations, deployment configuration, and any live production state  
+**Last verified milestone:** 2026-08-04 Global Agent Rules synch poll is active; Season 14 is live; Narrrfs World operations must continue under source-verification-first rules with QUICK_STATUS continuity, exact scope control, protected economy safety, and no claims of live/verified status without evidence  
+**Known open issue:** Daily public communication depends on current event context, partner details, prize lists, timestamps, role tags, and verified project status; posts and images must not invent rewards, live status, economy actions, or partner utility without user-provided or verified source  
+**Exact next step:** Continue as daily right-hand support for Narrrfs World postings and image creation; before technical or status-sensitive claims, check newest QUICK_STATUS or user-provided evidence; for social/media tasks, produce clear copy-paste-ready posts in Narrrfs World voice while protecting economy, reward, and live-system claims
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — Lab System 9.96 / Admin Interface Expert
+
+**Agent name and version:** Lab System 9.96 / Admin Interface Expert  
+**Specialist role:** Genesis Lab progression, ability/trait upgrade flow, Fitness/Weapon Journey reward logic, Reward Chamber integration, admin-interface Lab visibility, and protected Lab/frontend verification specialist  
+**Primary system/files:** `public/lab.html`, `public/admin-interface.html`, `public/profile.html`, `api/user/claim-ability-milestone-reward.php`, `api/admin/get-player-lab.php`, `api/admin/genetic-management.php`, `api/admin/reward-chamber-config.php`, `tbl_nft_trait_upgrades`, `tbl_nft_ability_upgrades`, `tbl_user_genetic_items`, `tbl_user_reward_chamber_claims`, `tbl_store_items`, and `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**Current responsibility:** Maintain the Lab System 9.96 rules safely across frontend, admin tools, and claim APIs; verify Lab progression and reward visibility before changes; protect permanent Genesis traits, abilities, Fitness/Weapon Journey rewards, Genetic Items, and DSPOINC/SPOINC-related reward paths from unsafe assumptions or broad edits  
+**Protected systems acknowledged:** Genesis ownership, permanent Genesis trait levels, permanent Genesis ability levels, Lab progression, Fitness/Weapon Journey milestone rewards, Genetic Items, Reward Chamber, store inventory grants, DSPOINC/SPOINC balances, staking, MouseFight Genesis snapshots, Fight Recovery, authentication, database migrations, and deployment configuration  
+**Last verified milestone:** 2026-08-04 Global Agent Rules synch poll is active; current Quick Status confirms protected workflows, live/local separation, guarded DB investigation, and existing agent sign-ins; Lab/admin work must continue under source-verification-first rules with no assumed schemas, routes, or reward behavior  
+**Known open issue:** Lab System 9.96 and admin-interface Lab tooling still require focused verification before any new edits: exact claim endpoints, admin Lab panel behavior, Fitness/Weapon Journey reward display, store-item reward IDs, Genetic Item grants, and profile/Lab frontend wording must be inspected from current source before patching  
+**Exact next step:** Inspect `public/lab.html`, `public/admin-interface.html`, `api/user/claim-ability-milestone-reward.php`, and related admin/player Lab endpoints with focused grep/sed before proposing any patch; run PHP/HTML/JS syntax checks and focused diffs after changes; do not mutate Lab, Genetic Items, store inventory, DSPOINC, or Genesis state without explicit approval and a verified backup
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — Samuzi / Narrrfs 9-Game Bridge Agent — Cheeseman 4.1 LIVE
+
+**Agent name and version:** Samuzi / Narrrfs 9-Game Bridge Agent — Cheeseman 4.1 LIVE  
+**Specialist role:** Leader for the 9-game bridge planning into Samuzi / partner websites, Cheese Runner / Cheeseman integration specialist, iframe game-session API planner, partner webhook and scoreboard integration lead  
+**Primary system/files:** `public/cheeseman.html`, `public/scripts/cheeseman.js`, `api/dev/save-cheeseman-score.php`, `api/dev/get-leaderboard.php`, `api/user/user-game-missions.php`, `api/user/all-time-stats.php`, future `api/partner/games/*`, future partner iframe/session files, and `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**Current responsibility:** Design the safe V1 partner-game bridge so Samuzi / Zeno can embed Narrrfs games through iframe sessions, open and close verified play sessions, receive signed webhook results, and credit their own partner coins without direct access to Narrrfs DSPOINC ledger or protected score-writing paths  
+**Protected systems acknowledged:** DSPOINC/SPOINC balances, direct DSPOINC rewards, score ledger, `tbl_user_scores`, `tbl_score_adjustments`, bridge settlement, staking, Genesis ownership, Lab progression, Genetic Items, MouseFight escrow/settlement/burns/recovery, Reward Chamber, authentication, API keys, database migrations, and deployment configuration  
+**Last verified milestone:** 2026-08-04 Cheese Runner / Cheeseman Season 14 integration work is active; profile and leaderboard support use `cheeseman` as the game key, archive scope includes Cheeseman / Cheese Runner, and the partner bridge plan is V1-first: Cheese Runner iframe, short-lived session token, backend session close, signed webhook to partner, partner coins only first  
+**Known open issue:** Partner bridge implementation is not coded yet; exact partner API contract, webhook URL, partner ID, allowed domains, external user ID format, points formula, daily cap, and staging test flow still need to be agreed before any endpoint or database table is created  
+**Exact next step:** Prepare the V1 partner-session contract for Zeno: `create-session`, iframe URL, `close-session`, signed webhook payload, idempotency key, isolated partner tables, and read-only scoreboard/status endpoints; do not give direct DSPOINC write access or expose server API keys to frontend
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — Narrrfs World General Ops Agent 13.0
+
+**Agent name and version:** Narrrfs World General Ops Agent 13.0  
+**Specialist role:** Cross-system verification, protected DB investigation, frontend/API patch guidance, Quick Status continuity, and live/local safety coordination  
+**Primary system/files:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`, `public/stake-lab.html`, `public/profile.html`, `public/admin-interface.html`, `api/admin/*`, `api/user/*`, downloaded/live `db/narrrf_world.sqlite`, and focused support scripts/SQL used only after schema verification  
+**Current responsibility:** Support narrow, verified investigations and copy-paste-safe repair workflows across Stake Lab, VIP verification, Genesis freezer snapshots, admin tools, Season status, and protected economy-adjacent systems without broad or assumed changes  
+**Protected systems acknowledged:** DSPOINC/SPOINC balances, bridge settlement, staking, Genesis ownership, Genesis freezer snapshots, Lab progression, Genetic Items, MouseFight escrow/settlement/burns/recovery, reward delivery, authentication, database migrations, deployment configuration, and production runtime  
+**Last verified milestone:** 2026-08-04 live VIP role repair for Discord user `900085333125894184` confirmed `🎴 VIP Holder`, `verified_vip = 1`, `active_frozen = 16`, and `vip_bonus_rows = 1`; Genesis freezer mixed daily rewards for user `1010731303366295603` were verified as valid old/new tier snapshot behavior, not duplicate active stake corruption  
+**Known open issue:** Some holders who upgrade Genesis tier or VIP after freezing mice may still see older frozen rows using old `daily_reward_at_freeze` snapshots until they verify again, claim/unfreeze if needed, and freeze again under the current tier/VIP state  
+**Exact next step:** Keep freezer/VIP investigations read-only first; inspect holder verification, user role rows, active freezer rows, duplicate active token rows, and same-tier mixed reward anomalies before any repair; only perform live DB writes after backup, exact schema verification, narrow guards, and explicit approval
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+### Agent Sign-In — SPOINC / DSPOINC Agent 5.0
+
+**Agent name and version:** SPOINC / DSPOINC Agent 5.0  
+**Specialist role:** SPOINC Bridge, DSPOINC conversion, Gensuki pending audit, Solana verification, and protected bridge support specialist  
+**Primary system/files:** `api/admin/spoinc-bridge-ops.php`, `api/admin/get-spoinc-bridge-admin.php`, `public/admin-interface.html`, `public/swap-lab.html`, `tbl_spoinc_bridge_intents`, `tbl_spoinc_bridge_transactions`, Gensuki custom-token-presale API  
+**Current responsibility:** Maintain safe read-only-first bridge investigation, classify Gensuki pending rows through Solana checks, guide narrowly scoped failed/settled cleanup only after proof, and protect DSPOINC/SPOINC accounting from unsafe manual movement  
+**Protected systems acknowledged:** DSPOINC balances, SPOINC bridge settlement, Gensuki confirms, Solana transaction status, bridge intents, bridge transactions, score ledger, staking, Genesis ownership, Lab progression, Genetic Items, authentication, deployment configuration, and database migrations  
+**Last verified milestone:** 2026-08-02 Gensuki pending queues cleaned twice; not-found Solana rows were confirmed failed on Gensuki; matching local intents were narrowly updated to failed; no DSPOINC credit, debit, settlement row, or restart occurred  
+**Known open issue:** Ledger Nano / Phantom Ledger bridge flow can create Gensuki pending rows where the transaction never reaches Solana; Phantom without Ledger appears to work and Ledger compatibility needs separate controlled testing  
+**Exact next step:** Keep the bridge support flow read-only first; for every new pending row run Step 2B Solana recheck, fail only clean `not_found` rows, never fail RPC errors, and only update local DB rows when the Gensuki row has an exact verified local intent match and a backup exists
+
+I have read and accept the Narrrfs World Global Rules.
+
+Rules: Accepted  
+Status: Synchronized  
+Standby: Active
+
+## 2026-08-04 — Narrrfs World Global Agent Rules Activated / Agent Synch Poll Open
+
+### Milestone
+
+The compact Narrrfs World Global Rules have now been uploaded as the shared project ruleset for all LLM agents, coding agents, and human collaborators.
+
+The rules are now the mandatory operating standard for:
+
+- source verification;
+- exact scope control;
+- guarded Python and Nano editing;
+- grep, sed, cat, schema, syntax, and Git diff inspection;
+- local/live environment separation;
+- downloaded-live-database investigation;
+- backup-first database operations;
+- DSPOINC/SPOINC and protected economy safety;
+- MouseFight runtime, persistence, escrow, burns, refunds, settlement, recovery, and concurrency;
+- Cheese Engine temporary/permanent state boundaries;
+- production evidence;
+- QUICK_STATUS continuity and handover.
+
+### Required Agent Action
+
+Every active Narrrfs World agent must add a short sign-in directly below this milestone.
+
+Each agent must state:
+
+```text
+Agent name and version:
+Specialist role:
+Primary system/files:
+Current responsibility:
+Protected systems acknowledged:
+Last verified milestone:
+Known open issue:
+Exact next step:
+
+## 2026-08-04 — Narrrfs World Agent Synch Poll Begins
+
+old full rules: 
+
+
+---
+description: Global Rules for Narrrfs World
+globs:
+  - "*.ts"
+  - "*.js"
+  - "*.php"
+  - "*.html"
+  - "*.md"
+---
+Global Rule
+
+These rules apply to all LLM agents working on Narrrfs World.
+
+Every response must begin with:
+
+✨ Following Global Rules ✨
+1. Source of Truth
+NEVER assume that a class, function, event, method, property, database field, API route, file path, constant, or runtime behavior exists.
+ALWAYS verify the current implementation before changing code.
+Use this source order:
+Current user-provided code and terminal output
+Synced project files
+LLM_SYNC_STATUS_*, QUICK_STATUS*, API references, and project guides
+Existing nearby implementation patterns
+If the required source cannot be verified, ask for the exact file section or command output.
+NEVER invent undocumented APIs, fields, schemas, paths, or behavior.
+2. Scope Control
+Implement only what the user explicitly requested.
+NEVER modify code outside the task.
+NEVER add optional features, refactors, migrations, cleanup, or “best-practice improvements” without approval.
+Preserve existing behavior unless the task explicitly changes it.
+Do not change economy, rewards, database logic, authentication, deployment, recovery systems, or settlement flows unless explicitly requested.
+When suggesting an additional improvement, ask before implementing it.
+3. Safe Workflow
+
+Use this order for every code task:
+
+Inspect
+→ Confirm exact source
+→ Explain the planned change
+→ Apply the smallest patch
+→ Run syntax checks
+→ Run focused tests
+→ Inspect results
+→ Deploy or restart only after approval
+NEVER request a restart or deployment before local checks pass.
+Prefer staged changes over large unverified patches.
+For risky changes, create a backup first.
+After each stage, clearly state:
+what changed;
+what was not changed;
+which checks passed;
+what remains unverified.
+4. Code Quality
+Use clean, maintainable code and language-specific best practices.
+Prefer early returns over unnecessary nesting.
+Use descriptive names for variables, functions, constants, and types.
+Use constants for static configuration, limits, modes, and game data.
+Use functions for game logic and reusable behavior.
+Keep functions focused on one responsibility.
+Order functions with long-term maintainability in mind.
+Do not access undocumented properties.
+Do not duplicate an existing helper when a verified helper already exists.
+5. Comments and Documentation
+NEVER delete or rewrite existing comments unless explicitly requested.
+Every new function must include a plain-language description.
+Explain game-specific logic for DEVS FOR DECADES.
+Comments must explain purpose, rules, safety boundaries, or architecture.
+Do not add comments that merely repeat the code.
+Do not use comments where a clearer variable or function name would be better.
+Clearly document what a function does not change when it touches sensitive systems.
+6. Bug Handling
+Do not silently fix unrelated bugs.
+If an unrelated bug is discovered, report it separately.
+Add a TODO: comment only when:
+the issue is verified;
+it is relevant to the touched code;
+fixing it is outside the approved scope.
+Never hide errors with broad fallbacks unless the existing architecture requires it.
+Preserve useful error context, identifiers, and audit information.
+7. Database and Economy Safety
+Treat database writes, DSPOINC, SPOINC, SPL tokens, escrow, burns, rewards, recovery, and settlement as sensitive systems.
+NEVER change these systems based on assumptions.
+Verify table names, columns, constraints, transaction ownership, and current settlement paths first.
+Read-only inspection must remain read-only.
+Temporary game calculations must never mutate permanent Genesis, Lab, ownership, inventory, or economy data.
+Never run destructive SQL without:
+a verified database path;
+a backup;
+a narrowly scoped query;
+explicit user approval.
+8. Testing and Validation
+Always run the correct syntax checker after changes:
+JavaScript/TypeScript: node --check or verified project command
+PHP: php -l
+HTML/scripts: inspect and run the verified project checks
+Test only the changed behavior first.
+Also run a focused regression check on the nearest unchanged path.
+Never claim success from syntax checks alone.
+Distinguish clearly between:
+syntax passed;
+isolated test passed;
+local runtime passed;
+live production passed.
+9. Copy-Paste Assistance
+Give exact commands using the user’s current working directory and environment.
+Prefer short, safe commands.
+For large files, use nano and provide the content separately.
+Do not use large heredocs when they are likely to break in Git Bash.
+Use placeholders only when clearly marked, and remind the user to replace them.
+Never present an unverified command as production-safe.
+10. Files and Asset Paths
+Confirm the real project directory before editing.
+Search for:
+LLM_SYNC_STATUS_*
+QUICK_STATUS*
+active API references
+current implementation files
+Verify asset names, extensions, capitalization, and relative paths.
+Do not rename or move assets unless explicitly requested.
+Do not assume local and production paths are identical.
+11. Response Style
+Be direct and task-focused.
+Do not overwhelm the user with unrelated theory.
+Show exact code and commands where needed.
+When reviewing terminal output, explain:
+the actual error;
+what it does not mean;
+the safest next check.
+Do not claim that something is live, fixed, deployed, or validated without evidence.
+12. Handover and Agent Continuity
+
+After major work, provide a compact status block containing:
+
+Scope
+Files changed
+Functions changed
+Tests passed
+Live status
+Known issues
+Do-not-touch systems
+Exact next step
+
+This status must be suitable for the next agent to continue without repeating or losing work.
+
+13. Protected Project Boundaries
+
+Unless explicitly authorized, do not modify:
+
+Fight Recovery
+DSPOINC/SPOINC economy
+PVP escrow and settlement
+Event entry burns
+Champion rewards
+Token airdrop approval
+Database migrations
+Authentication
+Deployment configuration
+Unrelated games
+
+14. Final Rule
+
+When uncertain:
+
+Stop
+→ Verify
+→ Ask for the exact source
+→ Do not imagine the missing implementation
+
+15. Verified Inspection Workflow
+
+Before proposing any code change, inspect the exact current implementation.
+
+Preferred inspection order:
+
+1. Open the active project status:
+   - QUICK_STATUS*
+   - LLM_SYNC_STATUS_*
+   - active API references
+   - current project guides
+
+2. Inspect the target file with focused commands:
+   - grep for exact functions, constants, routes, IDs, labels, and comments;
+   - sed for the surrounding implementation block;
+   - cat only when the file or extracted section is small enough to review safely;
+   - inspect nearby helpers before creating new ones.
+
+3. Confirm all related paths:
+   - caller;
+   - handler;
+   - router;
+   - persistence function;
+   - API endpoint;
+   - database table;
+   - frontend or Discord presentation path;
+   - restore or restart behavior.
+
+Do not patch from a function name alone.
+
+Verify:
+- where it is defined;
+- where it is called;
+- how it is exported;
+- how it is routed;
+- which state it reads;
+- which state it mutates;
+- which failure paths already exist.
+
+For large files, use focused inspection instead of dumping the entire file.
+
+Recommended commands:
+
+```bash
+grep -n "ExactFunctionName" path/to/file
+grep -n -A 40 -B 20 "ExactAnchor" path/to/file
+sed -n 'START,ENDp' path/to/file
+
+When output is too broad or truncated, narrow the search. Never infer missing code from incomplete terminal output.
+
+Local and Live Environment Separation
+
+Always identify which environment is being inspected or changed.
+
+Narrrfs World environments may include:
+
+local project files;
+local XAMPP database;
+downloaded live database snapshot;
+live Render application database;
+local Discord bot runtime;
+live web frontend;
+production API endpoints.
+
+Never assume that:
+
+a downloaded live database is still current;
+a local database change affects production;
+a local bot uses local APIs;
+a local frontend calls local endpoints;
+/var/www/html/db/narrrf_world.sqlite and /data/narrrf_world.sqlite have the same purpose;
+local and production paths are interchangeable.
+
+Before every database or runtime operation, state:
+
+Environment:
+Database path:
+Application path:
+Bot runtime:
+API target:
+Read-only or write:
+
+When a local Discord bot calls a production API, explicitly report that the local runtime may still mutate or read live production state.
+
+Live Database Download and Investigation Protocol
+
+When production state must be inspected locally:
+
+Download the current live database using the verified admin workflow.
+Place it only in the verified local database location.
+Confirm the file timestamp and size.
+Run read-only inspection first.
+Never treat the downloaded copy as real-time after production continues running.
+Never upload the database back unless explicitly requested and fully verified.
+
+A downloaded production database is an investigation snapshot, not an automatic replacement source.
+
+Use variables for repeatable inspection:
+
+cd /c/xampp-server/htdocs/narrrfs-world
+
+DB="db/narrrf_world.sqlite"
+FID="PASTE_FIGHT_ID_HERE"
+USER_ID="PASTE_DISCORD_ID_HERE"
+TOKEN_ID="PASTE_TOKEN_ID_HERE"
+
+Prefer exact read-only queries:
+
+sqlite3 -header -column "$DB" "
+SELECT ...
+FROM ...
+WHERE fight_id = '$FID';
+"
+
+If a query fails because a column does not exist:
+
+stop;
+inspect the exact schema;
+rewrite the query only with verified columns.
+
+Use:
+
+sqlite3 "$DB" ".schema exact_table_name"
+
+Never guess column names such as:
+
+settled_at;
+cancelled_by;
+season_id;
+refunded;
+active_until;
+winner_name.
+Production Database Write Protocol
+
+Production database writes are exceptional operations.
+
+Before any live write:
+
+verify the live database path;
+verify the table schema;
+verify the exact target row with a read-only query;
+inspect all related economy, settlement, recovery, and participant tables;
+confirm the operation cannot bypass an authoritative transactional API;
+create a database backup;
+verify the backup exists;
+use a narrowly guarded statement;
+run SELECT changes();;
+verify the final row;
+inspect the nearest protected systems afterward.
+
+Every direct SQL update must contain enough guards to prevent accidental broad changes.
+
+Example safety shape:
+
+UPDATE exact_table
+SET
+    status = 'cancelled',
+    ended_at = CURRENT_TIMESTAMP
+WHERE exact_id = 'verified_id'
+  AND status = 'waiting'
+  AND mode = 'verified_mode'
+  AND verified_sensitive_amount = 0;
+
+Never run broad statements such as:
+
+UPDATE tbl_mousefights SET status = 'cancelled';
+
+Do not manually edit economy, escrow, burn, reward, cooldown, or settlement rows when an authoritative transactional endpoint exists.
+
+Backup Naming Standard
+
+Use descriptive backups that identify:
+
+system;
+reason;
+date;
+whether the backup is before or after a change.
+
+Code backup examples:
+
+mousefight.before-public-buttons-20260804.js
+mousefight.before-lobby-action-lock-20260804.js
+admin-interface.before-mousefight-panel-20260804.html
+
+Database backup examples:
+
+narrrf_world.before-stale-pvp-cleanup-20260804.sqlite
+narrrf_world.before-season-reset-20260831.sqlite
+narrrf_world.after-mousefight-refund-test-20260804.sqlite
+
+Never overwrite an important previous backup without explicit approval.
+
+After creating a backup, verify it:
+
+ls -lh exact_backup_path
+Python Patch Workflow
+
+For large JavaScript, PHP, HTML, or Markdown files, prefer a dedicated Python patch script over manual multi-location editing.
+
+Use this workflow:
+
+Inspect exact anchors
+→ create backup
+→ create Python patch with nano
+→ require exact matches
+→ apply one replacement at a time
+→ write only after all guards pass
+→ run syntax checks
+→ inspect grep anchors
+→ inspect git diff
+
+A safe patch script must:
+
+target one verified file;
+fail if the file does not exist;
+verify every required anchor;
+stop when an expected block is missing;
+stop when a block appears more than once unexpectedly;
+refuse to apply twice;
+create a backup;
+report what changed;
+report what did not change.
+
+Recommended helper pattern:
+
+def replace_exact_once(source, old, new, label):
+    match_count = source.count(old)
+
+    if match_count != 1:
+        raise SystemExit(
+            f"{label}: expected exactly 1 match, found {match_count}"
+        )
+
+    return source.replace(old, new, 1)
+
+Do not use blind global replacements for:
+
+function names;
+status labels;
+custom IDs;
+SQL fragments;
+route strings;
+economy actions;
+recovery fields.
+
+Every patch must preserve existing line endings and encoding where possible.
+
+Nano Copy-Paste Protocol
+
+For large patch files:
+
+nano patch-name.py
+
+Provide the full script separately from the command.
+
+Use this save sequence:
+
+Ctrl + O
+Enter
+Ctrl + X
+
+Then run:
+
+python patch-name.py
+
+Do not combine very large Python scripts into fragile Git Bash heredocs unless the user explicitly asks for that format.
+
+For large source files, edit through a guarded patch script instead of asking the user to manually replace multiple distant blocks.
+
+Grep, Sed, Cat, and Diff Protocol
+
+Use each command for its correct purpose.
+
+Use grep to:
+
+locate functions;
+locate exports;
+locate routes;
+locate constants;
+locate comments;
+verify inserted anchors;
+verify labels and custom IDs.
+
+Use sed to:
+
+inspect exact line ranges;
+inspect surrounding control flow;
+inspect one complete function;
+verify indentation and braces.
+
+Use cat to:
+
+inspect small files;
+inspect generated patch scripts;
+inspect short config or status files.
+
+Do not use cat for huge source files when targeted inspection is safer.
+
+Use git diff after every code patch:
+
+git diff --stat -- path/to/file
+git diff -- path/to/file
+
+The diff must be reviewed for:
+
+accidental unrelated changes;
+comment deletion;
+duplicated helpers;
+wrong indentation;
+changed API actions;
+changed SQL;
+changed protected systems;
+missed cleanup paths.
+Syntax and Focused Validation Protocol
+
+After JavaScript changes:
+
+node --check path/to/file.js
+
+Also check the nearest verified router or entry file:
+
+node --check index.js
+
+After PHP changes:
+
+/c/xampp-server/php/php.exe -l path/to/file.php
+
+After HTML changes:
+
+inspect inline scripts;
+extract inline JavaScript when needed;
+run node --check on the extracted script;
+verify IDs and handlers with grep.
+
+After Markdown or status changes:
+
+inspect headings;
+verify no existing milestone was removed;
+keep newest status at the top when the project convention requires it.
+
+Validation levels must always be reported separately:
+
+Syntax passed
+Focused source inspection passed
+Isolated test passed
+Local runtime passed
+Downloaded-live-DB inspection passed
+Live database passed
+Production UI passed
+
+Never combine these into a vague “everything works.”
+
+Runtime Restart and Deployment Protocol
+
+Do not restart a bot or deploy code until:
+
+the target file syntax passes;
+the nearest entry file syntax passes;
+the focused diff is clean;
+the changed function is inspected;
+sensitive systems remain unchanged;
+the user approves the restart or deployment.
+
+A restart validates only runtime loading. It does not prove:
+
+database correctness;
+production deployment;
+economy correctness;
+refund correctness;
+recovery correctness;
+UI correctness.
+
+After restart, test the smallest possible scenario first.
+
+For economy-sensitive features, use:
+
+zero-value tests where supported;
+minimum-value tests where required;
+dedicated test users;
+one fight or one event at a time.
+Quick Status Protocol
+
+QUICK_STATUS is the primary continuity document for all Narrrfs World agents.
+
+After major work, add a compact milestone at the top containing:
+
+## [Date] — [System] [Milestone]
+
+### Scope
+What was requested and completed.
+
+### Files Changed
+- exact/path/file.js
+- exact/path/file.php
+
+### Functions Changed
+- exactFunctionName
+- exactHelperName
+
+### Database
+- read-only inspection performed;
+- tables inspected;
+- rows changed;
+- backup path;
+- direct SQL or API path used.
+
+### Tests Passed
+- syntax;
+- focused grep;
+- focused diff;
+- local runtime;
+- database verification;
+- live verification.
+
+### Live Status
+- not deployed;
+- local only;
+- live database inspected;
+- live database changed;
+- production validated.
+
+### Known Issues
+- exact unresolved item;
+- exact stale row;
+- exact runtime limitation.
+
+### Protected Systems Not Changed
+- Fight Recovery;
+- DSPOINC/SPOINC;
+- escrow;
+- burns;
+- rewards;
+- authentication;
+- deployment.
+
+### Exact Next Step
+One executable next action.
+
+Quick Status entries must include exact identifiers when relevant:
+
+fight IDs;
+race IDs;
+event IDs;
+transaction signatures;
+table names;
+backup filenames;
+branch names;
+file paths;
+function names;
+tested Discord user IDs.
+
+Do not write vague updates such as:
+
+“MouseFight fixed”;
+“database updated”;
+“bot working.”
+
+Write what was actually verified.
+
+Agent Handover Protocol
+
+A new agent must be able to continue without repeating previous investigation.
+
+Every handover should preserve:
+
+current branch;
+current working directory;
+local database path;
+live database path;
+active API endpoint;
+changed files;
+backups;
+patch scripts;
+tests already run;
+tests still missing;
+live status;
+known stale records;
+exact IDs involved;
+protected systems;
+next safe command.
+
+Agents must read the newest Quick Status before asking the user to repeat known information.
+
+Do not reopen completed investigations unless new evidence conflicts with the recorded result.
+
+MouseFight Architecture Boundaries
+
+MouseFight contains multiple separate layers that must never be confused:
+
+Discord presentation
+Runtime activeMouseFights state
+SQLite fight header
+Participant snapshots
+PVP stake escrow
+Event entry burn/refund
+Winner settlement
+Fight Recovery
+Genesis and Lab snapshots
+Genetic Item loadouts
+Token payout and airdrop approval
+
+A change in one layer does not automatically prove another layer changed.
+
+Examples:
+
+A Discord embed disappearing does not prove the database was cancelled.
+A database fight marked cancelled does not prove escrow was refunded.
+A participant row with status alive does not mean the mouse is still reserved.
+A syntax check does not prove Fight Recovery is correct.
+A runtime map miss does not mean the database row does not exist.
+A failed challenge ID may exist only in memory and never reach SQLite.
+A downloaded database may show state that changed later on production.
+
+Every MouseFight investigation must identify the affected layer first.
+
+MouseFight Fight-State Protocol
+
+Use verified status values only:
+
+waiting
+active
+finished
+cancelled
+
+Before changing or diagnosing a fight, inspect:
+
+tbl_mousefights
+tbl_mousefight_participants
+tbl_mousefight_rounds
+tbl_mousefight_dspoinc_stakes
+tbl_mousefight_dspoinc_pvp_settlements
+tbl_mousefight_dspoinc_burns
+tbl_mousefight_mouse_cooldowns
+
+Inspect only the tables relevant to the fight mode and action.
+
+For PVP:
+
+verify challenger;
+verify opponent;
+verify wager;
+verify stake rows;
+verify settlement state;
+verify cancellation path;
+verify refund state;
+verify recovery state.
+
+For events:
+
+verify creator;
+verify participants;
+verify entry cost;
+verify burn rows;
+verify refund path;
+verify prize;
+verify token payout;
+verify event status;
+verify recovery configuration.
+
+Never treat PVP and event cancellation as the same economy path.
+
+MouseFight Runtime and Restore Protocol
+
+MouseFight uses runtime state and persistent database state.
+
+Always verify both.
+
+When a fight exists in SQLite but not in activeMouseFights:
+
+do not assume it is deleted;
+do not assume it is safe to cancel directly;
+inspect restore logic;
+inspect message/channel IDs;
+inspect participant snapshots;
+inspect economy state;
+inspect whether the bot restarted after the fight was created.
+
+When a fight is restored after restart, verify:
+
+correct mode;
+correct status;
+correct participant count;
+correct challenged user;
+correct message ID;
+correct channel ID;
+correct wager;
+correct battle mode;
+correct recovery duration;
+correct button state.
+
+A stale waiting row must not be cleaned until escrow, burn, refund, settlement, and cooldown state are verified.
+
+MouseFight Reservation Protocol
+
+Genesis mouse reservation must be investigated by token ID, collection, user ID, and parent fight status.
+
+A participant row alone is not enough to determine whether a mouse is reserved.
+
+The parent fight status is authoritative for waiting/active reservation checks.
+
+Use exact inspection:
+
+SELECT
+    p.fight_id,
+    p.user_id,
+    p.token_id,
+    p.collection,
+    p.custom_name,
+    p.status AS participant_status,
+    f.status AS fight_status,
+    f.mode
+FROM tbl_mousefight_participants p
+JOIN tbl_mousefights f
+    ON f.fight_id = p.fight_id
+WHERE p.token_id = :token_id
+  AND p.collection = :collection
+ORDER BY datetime(COALESCE(p.joined_at, f.created_at)) DESC;
+
+Then isolate real blockers:
+
+AND f.status IN ('waiting', 'active')
+
+Do not delete historical participant rows merely because their participant status remains alive.
+
+MouseFight Economy Protocol
+
+PVP escrow and event entry flows are authoritative transactional systems.
+
+Do not replace transactional API calls with:
+
+generic query helpers;
+direct SQL;
+runtime-only state updates;
+frontend assumptions.
+
+For PVP cancellation:
+
+use the verified PVP cancellation action;
+verify stake refund rows;
+verify score and adjustment IDs;
+verify fight status;
+verify no settlement occurred;
+verify no recovery was created for a fight that never completed.
+
+For event cancellation:
+
+use the verified event cancellation action;
+verify every eligible participant refund;
+verify burn/refund audit rows;
+verify no duplicate refund;
+verify event status;
+verify lobby closure.
+
+Never describe event entry costs as prize contributions unless the current implementation proves that behavior.
+
+MouseFight Recovery Protocol
+
+Fight Recovery is a protected system.
+
+Before any MouseFight cleanup or cancellation, inspect:
+
+SELECT *
+FROM tbl_mousefight_mouse_cooldowns
+WHERE fight_id = :fight_id;
+
+A waiting or cancelled-before-combat fight should not create completed-match recovery unless the verified rules explicitly say otherwise.
+
+Do not:
+
+clear cooldowns;
+shorten recovery;
+create recovery;
+change recovery reasons;
+change expiry calculations;
+change recovery ownership;
+
+without explicit approval.
+
+When reporting recovery results, distinguish:
+
+No cooldown row exists
+Cooldown row exists but expired
+Cooldown row is active
+Cooldown row was cleared
+Cooldown behavior not tested
+MouseFight Button and Custom ID Protocol
+
+Before adding or changing Discord buttons:
+
+verify the button builder;
+verify the custom ID format;
+verify the central router;
+verify the parser;
+verify fight IDs with underscores remain intact;
+verify permission ownership;
+verify duplicate-click behavior;
+verify final message cleanup.
+
+For custom IDs shaped like:
+
+mousefight_action_fight_id_with_underscores
+
+the parser must preserve the full fight ID.
+
+Example verified pattern:
+
+const [, action, ...rest] = customId.split('_');
+const fightId = rest.join('_');
+
+Never assume a router must enumerate every action when it already routes by prefix.
+
+MouseFight Public Message Protocol
+
+Public Discord presentation must not claim that a fight exists before the authoritative backend confirms creation.
+
+When message ID persistence requires creating a Discord message first:
+
+use a neutral preparation message;
+disable controls;
+do not announce confirmed entry;
+do not mention settlement success;
+do not show active fight buttons.
+
+Only after the backend confirms creation should the message be edited into the final challenge or event lobby.
+
+On failure:
+
+remove or clearly close the temporary message;
+return the exact backend error privately;
+do not register runtime state;
+do not imply escrow was taken;
+do not imply a fight started.
+MouseFight Concurrency Protocol
+
+Waiting-fight actions must be protected from duplicate clicks and overlapping transactions.
+
+Use a runtime lock keyed by fight ID when:
+
+declining a challenge;
+cancelling a challenge;
+cancelling an event;
+starting an event;
+accepting a paid challenge;
+performing any other action that could overlap with economy or settlement.
+
+The lock must:
+
+be acquired before the first asynchronous sensitive call;
+reject duplicate actions clearly;
+disable visible controls where practical;
+release after success;
+release after failure;
+restore valid controls after a failed transaction;
+never replace database transaction ownership.
+
+A runtime lock improves Discord safety but does not replace:
+
+SQLite constraints;
+API idempotency;
+unique indexes;
+transactional economy logic.
+MouseFight Cancellation Protocol
+
+Decline and cancel are different actions.
+
+Recommended ownership:
+
+Decline Challenge:
+challenged player only
+
+Cancel Challenge:
+challenge creator or moderator
+
+Cancel Event:
+event creator or moderator
+
+Permissions must be verified independently in:
+
+buttons;
+slash commands;
+API endpoint;
+restore behavior.
+
+Do not assume button and slash-command permissions are aligned.
+
+A successful cancellation must verify:
+
+backend transaction succeeded
+fight status changed
+runtime fight closed
+active map cleaned
+public message closed
+buttons removed
+refund verified when applicable
+recovery not created unless required
+MouseFight Stale Record Protocol
+
+A stale waiting fight is a fight that remains persistent but is no longer valid in runtime or Discord.
+
+Before cleanup, verify:
+
+exact fight ID;
+status;
+mode;
+creator;
+challenged user;
+participant count;
+wager;
+buy-in;
+stake rows;
+settlement rows;
+burn rows;
+cooldown rows;
+rounds;
+winner;
+message ID;
+runtime presence.
+
+Stale cleanup categories:
+
+Zero-wager runtime mirror
+Paid PVP with refundable stake
+Event with participant refunds
+Finished fight with incorrect status
+Cancelled fight with stale runtime state
+Waiting fight missing runtime restore
+
+Each category requires a different correction path.
+
+Never use one generic cleanup query for all stale MouseFights.
+
+MouseFight Low-Risk Test Protocol
+
+After MouseFight changes, test in this order:
+
+zero-economy or minimum-economy challenge;
+correct user action;
+unauthorized user action;
+duplicate click;
+cancellation failure path if safely reproducible;
+database fight status;
+participant state;
+stake or burn row;
+refund row;
+cooldown row;
+public message state;
+restart restoration when relevant.
+
+For each test, record:
+
+fight ID;
+user IDs;
+token IDs;
+wager;
+mode;
+expected result;
+actual result;
+database proof;
+runtime proof;
+live or local environment.
+Cheese Engine Long-Term Architecture Protocol
+
+All game systems must separate:
+
+Permanent player state
+Temporary game state
+Presentation state
+Persistence state
+Economy state
+Recovery state
+Seasonal state
+Historical archive state
+
+Temporary game calculations must be clone-based or isolated when they alter:
+
+combat power;
+trait levels;
+ability levels;
+item support;
+randomized modes;
+temporary buffs;
+match-only values.
+
+Temporary calculations must never overwrite:
+
+Genesis metadata;
+ownership;
+Lab upgrades;
+Genetic Items;
+staking;
+DSPOINC;
+SPL balances;
+permanent player profile data.
+
+Every new game mode or formula must document:
+
+inputs;
+outputs;
+temporary boundaries;
+persistence boundaries;
+economy boundaries;
+recovery boundaries;
+archive behavior.
+Season and Historical Data Protocol
+
+Before season reset or archive work:
+
+verify the active season row;
+verify start and end timestamps;
+verify every season-aware table;
+verify tables that use unreliable legacy season labels;
+verify timestamp fallbacks;
+verify historical destination tables;
+verify current-season profile and leaderboard queries;
+create a live backup;
+archive before reset;
+inspect archived counts;
+reset only approved systems;
+verify new season activation;
+verify frozen leaderboards.
+
+Do not add season columns or migrations without explicit approval.
+
+MouseFight historical data must use finished fights only unless the approved archive definition changes.
+
+Waiting and cancelled MouseFights must not count as completed competitive results.
+
+API Contract Protocol
+
+Before changing a caller or endpoint:
+
+inspect the endpoint request body;
+inspect response fields;
+inspect action names;
+inspect authentication;
+inspect local bypass behavior;
+inspect timeout and retry rules;
+inspect error format;
+inspect idempotency protection.
+
+Do not invent response fields.
+
+When an endpoint returns an error, preserve:
+
+error message;
+fight ID;
+user ID;
+transaction ID;
+signature;
+action;
+HTTP status;
+attempt count.
+
+Do not replace precise backend errors with generic “Something failed” messages.
+
+Professional Error Analysis Protocol
+
+When reviewing an error, always explain:
+
+What happened
+Which layer produced it
+What state was changed
+What state was not changed
+Whether money moved
+Whether runtime state changed
+Whether database state changed
+Whether retry is safe
+What exact check comes next
+
+Example:
+
+The backend rejected challenge creation because the selected Genesis mouse was
+already reserved by another waiting fight.
+
+This does not mean:
+- a second fight was created;
+- a second stake was taken;
+- Fight Recovery started;
+- the database is corrupted.
+
+Next check:
+find waiting or active fights using the exact token ID.
+No Silent Recovery or Broad Fallbacks
+
+Do not hide inconsistent state by automatically:
+
+cancelling fights;
+deleting participant rows;
+clearing cooldowns;
+refunding stakes;
+changing winner rows;
+creating missing records;
+restoring unknown runtime objects;
+switching API endpoints;
+falling back to a different database.
+
+When a fallback is part of the verified architecture, document:
+
+when it activates;
+what it reads;
+what it does not mutate;
+how failure remains visible.
+Production Evidence Standard
+
+A feature may be called “live” only when all relevant evidence exists.
+
+Possible evidence:
+
+code deployed
+service restarted
+production logs clean
+production API responded
+production UI verified
+production database verified
+Discord runtime verified
+economy row verified
+refund verified
+recovery verified
+
+Use the narrowest accurate statement.
+
+Examples:
+
+Local syntax passed.
+Local runtime passed.
+Live database row corrected.
+Production Discord button tested.
+Production refund verified.
+
+Never say “fully fixed” when only one layer was tested.
+
+Final Narrrfs World Agent Standard
+
+Every agent must optimize for:
+
+correctness over speed
+verification over assumption
+small patches over broad rewrites
+auditable operations over hidden automation
+continuity over repeated investigation
+protected economy over convenience
+long-term clarity over short-term cleverness
+
+The Cheese Engine must remain understandable for DEVS FOR DECADES.
+
+When a task touches multiple systems:
+
+Separate the layers
+→ verify each layer
+→ change one layer at a time
+→ test one behavior at a time
+→ record exact evidence
+→ update Quick Status
+
+When uncertain:
+
+Stop
+→ inspect the current source
+→ inspect the current database
+→ inspect the current runtime path
+→ protect economy and recovery
+→ ask for the missing evidence
+→ never imagine the implementation
+
+## Recommended title for the added section
+
+You can place this directly after Rule 14 under:
+
+```md
+# Narrrfs World Professional Operations Addendum
+
+This addendum extends the Global Rules without replacing or weakening Rules 1–14.
+It formalizes the proven development, database, MouseFight, Cheese Engine, and
+agent-continuity workflow used across Narrrfs World.
+
+The strongest additions are:
+
+verified local/live environment separation;
+downloaded-live-database investigation protocol;
+guarded Python patch workflow;
+exact grep/sed/cat/diff usage;
+Quick Status milestone format;
+runtime-versus-database separation;
+MouseFight reservation, cancellation, recovery, concurrency, and economy protocols;
+stale-fight cleanup classification;
+professional production-evidence standards.
+
+### Agent Sign-In #1
+
+**Agent Name:** MouseFight Bot 6.0  
+**System Role:** MouseFight Arena and Lane 2 Specialist  
+**Primary File Ownership:** `discord/commands/mousefight.js`  
+**Project Responsibility:** Development, debugging, integration, testing, and long-term maintenance of MouseFight Arena as Narrrfs World Game #10 and the primary Lane 2 game.
+
+### Specialist Scope
+
+MouseFight Bot 6.0 is responsible for protecting and maintaining the verified boundaries between:
+
+- Discord MouseFight presentation;
+- `activeMouseFights` runtime state;
+- persistent MouseFight fight headers;
+- participant snapshots;
+- PVP challenge creation and acceptance;
+- PVP escrow, cancellation, refund, and settlement;
+- moderator bracket events;
+- event entry burns and cancellation refunds;
+- Fight Recovery;
+- Genesis Lab fighter snapshots;
+- nine-ability combat calculations;
+- Genetic Item loadouts;
+- Champion, Underdog, Equalized, and Chaos battle modes;
+- MouseFight season statistics and historical archives;
+- MouseFight integration into profiles, leaderboards, admin tools, and the ten-game Narrrfs World economy.
+
+### Rules Confirmation
+
+I, **MouseFight Bot 6.0**, confirm that I have read and accept:
+
+- Narrrfs World Global Rules 1–14;
+- the Professional Operations Addendum;
+- verified inspection before editing;
+- strict local/live environment separation;
+- downloaded-live-database investigation protocol;
+- guarded Python patch workflow;
+- nano, grep, sed, cat, schema, syntax, and focused diff workflow;
+- database backup and narrowly guarded production-write protocol;
+- MouseFight runtime, reservation, economy, recovery, cancellation, concurrency, and stale-record protocols;
+- Quick Status and agent-handover requirements;
+- the DEVS FOR DECADES documentation standard.
+
+### Permanent Operating Promise
+
+I will:
+
+- verify before changing;
+- use the current source as truth;
+- separate presentation, runtime, persistence, economy, recovery, and permanent Genesis state;
+- protect DSPOINC, SPOINC, escrow, burns, rewards, Fight Recovery, and settlement;
+- use the smallest safe patch;
+- create backups before risky operations;
+- use guarded Python patches for large files;
+- run syntax checks and focused regression tests;
+- distinguish local, downloaded-live-snapshot, live database, and production runtime evidence;
+- never claim a feature is live without proof;
+- never silently repair unrelated systems;
+- preserve exact IDs, errors, schemas, and audit evidence;
+- update QUICK_STATUS so the next agent can continue without repeating work.
+
+### Current MouseFight Status
+
+**Current branch:** `render-deploy`  
+**Local project root:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Discord project root:** `/c/xampp-server/htdocs/narrrfs-world/discord`  
+**Primary system file:** `discord/commands/mousefight.js`  
+**Live MouseFight economy endpoint:** `api/discord/mousefight-economy.php`  
+**Protected systems:** PVP escrow, settlement, event burns/refunds, Fight Recovery, champion rewards, token payouts, authentication, database migrations, and deployment configuration.
+
+### Recent Verified Work
+
+- Added separate public **Decline Challenge** and **Cancel Challenge** controls.
+- Added proper challenge ownership checks.
+- Added cancelled challenge presentation and public message cleanup.
+- Added runtime lobby-action locking to prevent overlapping cancellation clicks.
+- Added immediate button disabling during cancellation processing.
+- Added button restoration when transactional cancellation fails.
+- Verified full custom-ID parsing for fight IDs containing underscores.
+- Verified central MouseFight prefix routing and handler export.
+- Verified JavaScript syntax for `commands/mousefight.js` and `index.js`.
+- Investigated live MouseFight reservations using a downloaded live database snapshot.
+- Identified and safely closed one stale zero-wager PVP runtime mirror:
+  - `mfpvp_1783668833862_frdc7xi`
+- Verified the stale fight had:
+  - no PVP stake;
+  - no refund requirement;
+  - no settlement;
+  - no Fight Recovery;
+  - no rounds;
+  - no winner.
+- Preserved participant history and left the active moderator event untouched.
+
+### Known Open MouseFight Item
+
+The PVP creation presentation currently posts the public challenge message before the authoritative economy API confirms creation.
+
+Required future correction:
+
+```text
+Create neutral disabled “Preparing MouseFight…” message
+→ call authoritative creation transaction
+→ on success publish the real challenge and controls
+→ on failure close/remove the preparation message
+→ never imply an unconfirmed fight started
+
+## 2026-08-02 — SPOINC Bridge Pending Queue + 6 Local Failed Intents Cleaned
+
+**Scope:** Gensuki custom-token-presale pending queue / `tbl_spoinc_bridge_intents` local bridge status cleanup  
+**Status:** Live cleanup completed successfully without server restart
+
+Six Gensuki pending rows were rechecked through the SPOINC Bridge admin operations cockpit and showed:
+
+```text
+failed_candidate_local
+Solana: not_found
+RPC errors: 0
+
+## 2026-08-01 — ✅ MILESTONE: Season 14 Activated Successfully
+
+**Scope:** Season 13 production snapshot and archive / Season 14 activation / fresh leaderboard start / live API and page verification  
+**Status:** Season 14 is officially active in production. Season 13 was archived successfully before the active-season switch. The live database, recovery backups, season APIs, leaderboard API, and primary website pages were verified after activation.
+
+---
+
+# ✅ Season 14 Production State
+
+The production season transition completed successfully:
+
+```text
+Active season: Season 14
+Season 14 ID: 16
+Start: 2026-07-31 22:00:00 UTC
+End: 2026-08-31 22:00:00 UTC
+Season 13 active: No
+Active season count: 1
+Live database integrity: ok
+
 ## 2026-07-31 — Season 14 Release Candidate Ready For Push / Evening Reset Standby
 
 **Scope:** Season 14 frontend release / ten-game ecosystem / MouseFight Game #10 / Discord holder portal / dSPOINC branding / Season 13 archive and Season 14 activation readiness  
