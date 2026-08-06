@@ -1,5 +1,30 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-08-06 — Stake Lab V2 DSPOINC Preview Display Fix Local
+
+### Scope
+
+Fixed the local Stake Lab DSPOINC staking preview display for Season 13/14 V2 staking.
+
+This was a frontend preview/clarity fix only in:
+
+- `public/stake-lab.html`
+
+### Verified Issue
+
+User `1432482985935896577` reported that the preview display did not match the real created staking contract.
+
+Downloaded live DB inspection showed the stored DSPOINC staking rows were correct.
+
+Example verified contract math:
+
+```text
+21,000 DSPOINC
+14 days
+0.5% base reward = 105 DSPOINC
+Genesis multiplier 1.35x
+Final expected reward = 142 DSPOINC
+
 ## 2026-08-05 — Samuzi / Narrrfs Partner Game Bridge V1 Local Demo Ready
 
 ### Scope

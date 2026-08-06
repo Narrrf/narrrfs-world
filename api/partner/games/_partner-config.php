@@ -27,11 +27,12 @@ function partnerBridgeIsLocalhost(): bool
 function partnerBridgeGetSharedInternalSecret(): string
 {
     $candidates = [
+        getenv('PARTNER_SAMUZI_API_KEY'),
+        getenv('GENSUKI_OUTBOUND_API_KEY'),
+        getenv('SPOINC_BRIDGE_API_KEY'),
         getenv('API_SECRET'),
         getenv('INTERNAL_API_SECRET'),
-        getenv('DISCORD_SECRET'),
-        getenv('SPOINC_BRIDGE_API_KEY'),
-        getenv('PARTNER_SAMUZI_API_KEY')
+        getenv('DISCORD_SECRET')
     ];
 
     foreach ($candidates as $candidate) {

@@ -151,8 +151,12 @@ try {
         ':metadata_json' => json_encode($metadata, JSON_UNESCAPED_SLASHES)
     ]);
 
+    $iframePath = partnerBridgeIsLocalhost()
+        ? '/public/cheeseman.html?session='
+        : '/cheeseman.html?session=';
+
     $iframeUrl = partnerBridgeGetPublicBaseUrl()
-        . '/partner-games/cheeseman.html?session='
+        . $iframePath
         . rawurlencode($sessionToken);
 
     partnerBridgeRespond(200, [

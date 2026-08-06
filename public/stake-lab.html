@@ -1661,6 +1661,7 @@ function applyStakeDurationContractMode() {
   });
 
   selectedDuration = durationOptions[0].duration;
+  selectedRate = Number(durationOptions[0].rate || 0);
 
   durationButtons.forEach((button, index) => {
     button.classList.toggle('selected', index === 0);
@@ -5395,7 +5396,17 @@ function updateSeason13V2Calculator() {
     // Update reward preview
     function updateRewardPreview() {
       const amount = parseInt(document.getElementById('stake-amount').value) || 0;
-      const expectedReward = Math.floor(amount * selectedRate);
+      const rewardRate = Number(selectedRate || 0);
+      const isV2StakePreview = isSeason13V2StakingActive();
+      const genesisMultiplier = isV2StakePreview
+        ? Number(season13V2Preview?.current_genesis_tier?.multiplier || 1)
+        : 1;
+      const baseExpectedReward = isV2StakePreview
+        ? Math.round(amount * rewardRate)
+        : Math.floor(amount * rewardRate);
+      const expectedReward = isV2StakePreview
+        ? Math.round(baseExpectedReward * genesisMultiplier)
+        : baseExpectedReward;
       const totalReturn = amount + expectedReward;
 
       document.getElementById('expected-reward').textContent = expectedReward.toLocaleString();
@@ -5753,7 +5764,19 @@ function showConfirmStakeModal() {
   }
 
   const rewardRate = Number(selectedRate || 0);
-  const expectedReward = Math.floor(amount * rewardRate);
+  const isV2StakePreview = isSeason13V2StakingActive();
+  const genesisMultiplier = isV2StakePreview
+    ? Number(season13V2Preview?.current_genesis_tier?.multiplier || 1)
+    : 1;
+  const baseExpectedReward = isV2StakePreview
+    ? Math.round(amount * rewardRate)
+    : Math.floor(amount * rewardRate);
+  const expectedReward = isV2StakePreview
+    ? Math.round(baseExpectedReward * genesisMultiplier)
+    : baseExpectedReward;
+  const displayRewardRate = `${(rewardRate * 100).toFixed(2).replace(/\.00$/, '')}%`;
+  const displayGenesisMultiplier = `${genesisMultiplier.toFixed(2).replace(/\.00$/, '')}x`;
+  const genesisBoostAmount = Math.max(0, expectedReward - baseExpectedReward);
   const totalReturn = amount + expectedReward;
   const remainingAvailable = currentBalance.available_balance - amount;
 
@@ -5773,13 +5796,23 @@ function showConfirmStakeModal() {
     </div>
     <div class="flex justify-between">
       <span>Duration:</span>
-<span class="font-bold">${isSeason13V2StakingActive() ? `${selectedDuration} days` : `${selectedDuration} month${selectedDuration === 1 ? '' : 's'}`}</span>    </div>
+<span class="font-bold">${isV2StakePreview ? `${selectedDuration} days` : `${selectedDuration} month${selectedDuration === 1 ? '' : 's'}`}</span>    </div>
     <div class="flex justify-between">
-      <span>Reward Rate:</span>
-      <span class="font-bold">${(rewardRate * 100).toFixed(2)}%</span>
+      <span>Base Reward Rate:</span>
+      <span class="font-bold">${displayRewardRate}</span>
     </div>
-    <div class="flex justify-between text-green-300">
-      <span>Expected Reward:</span>
+    <div class="flex justify-between text-blue-100">
+      <span>Base Reward:</span>
+      <span class="font-bold">+${baseExpectedReward.toLocaleString()} DSPOINC</span>
+    </div>
+    ${isV2StakePreview ? `
+    <div class="flex justify-between text-yellow-200">
+      <span>Genesis Boost (${displayGenesisMultiplier}):</span>
+      <span class="font-bold">+${genesisBoostAmount.toLocaleString()} DSPOINC</span>
+    </div>
+    ` : ''}
+    <div class="flex justify-between text-green-300 pt-2 border-t border-green-400/20">
+      <span>Final Expected Reward:</span>
       <span class="font-bold">+${expectedReward.toLocaleString()} DSPOINC</span>
     </div>
     <div class="flex justify-between pt-2 border-t border-cyan-400/30 text-cyan-200">

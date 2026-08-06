@@ -677,6 +677,25 @@ const LEVEL_TEMPLATES = [
   const comboBarEl = document.getElementById('cheeseman-combo-bar');
   const comboTextEl = document.getElementById('cheeseman-combo-text');
 
+  /**
+   * Partner gameplay iframe mode.
+   *
+   * Plain language for DEVS FOR DECADES:
+   * When Cheese Runner is opened with a Narrrfs partner session token, the
+   * game submits only to the isolated Partner Bridge close-session API.
+   * It must not call the normal Cheese Runner DSPOINC / leaderboard save path.
+   */
+  const cheesemanPartnerSessionToken =
+    new URLSearchParams(window.location.search).get('session') || '';
+
+  const isCheesemanPartnerMode =
+    /^pgst_[a-f0-9]{48,80}$/i.test(String(cheesemanPartnerSessionToken || ''));
+
+  const cheesemanPartnerClientRunId =
+    isCheesemanPartnerMode
+      ? `run-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`
+      : '';
+
 const glyphBoostImage = new Image();
 glyphBoostImage.src = GLYPH_BOOST_IMAGE_SRC;
 
@@ -685,6 +704,41 @@ confusionMushroomImage.src = CONFUSION_MUSHROOM_IMAGE_SRC;
 
 const cheeseImg = new Image();
 cheeseImg.src = 'img/cheeseman/cheeseman1.png';
+
+if (isCheesemanPartnerMode) {
+  document.body.classList.add('cheeseman-partner-mode');
+
+  if (statusEl) {
+    statusEl.textContent = 'Partner iframe mode active. Play normally; final score closes the partner session only.';
+  }
+
+  if (roleEl) {
+    roleEl.textContent = 'Partner Mode: no Narrrfs DSPOINC / leaderboard write';
+  }
+
+  const playerNameEl = document.getElementById('cheeseman-player-name');
+  if (playerNameEl) {
+    playerNameEl.textContent = 'Samuzi Partner Session';
+  }
+
+  const loginPromptEl = document.getElementById('cheeseman-login-prompt');
+  if (loginPromptEl) {
+    loginPromptEl.classList.add('hidden');
+  }
+
+  const seasonBannerEl = document.getElementById('cheeseman-season-banner');
+  if (seasonBannerEl) {
+    const partnerNotice = document.createElement('div');
+    partnerNotice.className = 'mt-4 rounded-2xl border border-cyan-300/40 bg-cyan-950/50 p-3 text-sm text-cyan-100';
+    partnerNotice.textContent = 'Partner iframe mode: this run closes an isolated Samuzi partner session. It does not credit Narrrfs DSPOINC or write the public Narrrfs leaderboard.';
+    seasonBannerEl.appendChild(partnerNotice);
+  }
+
+  const modalSubtitleEl = document.getElementById('cheeseman-modal-subtitle');
+  if (modalSubtitleEl) {
+    modalSubtitleEl.textContent = 'Your Cheese Runner result closed the isolated Samuzi partner session only.';
+  }
+}
 
   const invaderImg = new Image();
   invaderImg.src = 'img/space/cheese-invader.png';
@@ -1424,12 +1478,22 @@ function getCurrentTickMs() {
     const roleMultiplier = getCheesemanRoleScoreMultiplier();
 
     if (scoreEl) scoreEl.textContent = score.toLocaleString();
-    if (dspoincEl) dspoincEl.textContent = `$${dspoincReward.toLocaleString()}`;
+    if (dspoincEl) {
+      dspoincEl.textContent = isCheesemanPartnerMode
+        ? 'Partner'
+        : `$${dspoincReward.toLocaleString()}`;
+    }
     if (levelEl) levelEl.textContent = String(level);
     if (livesEl) livesEl.textContent = '🧀'.repeat(Math.max(0, lives)) || '0';
         updateComboDisplay();
 
     if (roleEl) {
+      if (isCheesemanPartnerMode) {
+        roleEl.textContent = 'Partner Mode: no Narrrfs DSPOINC / leaderboard write';
+        roleEl.className = 'font-bold text-cyan-300';
+        return;
+      }
+
       roleEl.textContent = `Role Bonus: ${roleMultiplier.toFixed(1)}x`;
       roleEl.className = roleMultiplier > 1
         ? 'font-bold text-yellow-300 animate-pulse'
@@ -2896,11 +2960,15 @@ confusionMushroomItem = null;
   }
 
   if (finalDspoincEl) {
-    finalDspoincEl.textContent = `DSPOINC: ${calculateDspoincReward().toLocaleString()}`;
+    finalDspoincEl.textContent = isCheesemanPartnerMode
+      ? 'Partner Points: pending'
+      : `DSPOINC: ${calculateDspoincReward().toLocaleString()}`;
   }
 
   if (saveStatusEl) {
-    saveStatusEl.textContent = 'Saving score...';
+    saveStatusEl.textContent = isCheesemanPartnerMode
+      ? 'Closing partner session...'
+      : 'Saving score...';
   }
 
   if (modal) {
@@ -2923,6 +2991,11 @@ confusionMushroomItem = null;
     }
 
     hasScoreBeenSaved = true;
+
+    if (isCheesemanPartnerMode) {
+      await submitCheesemanPartnerSessionScore();
+      return;
+    }
 
     const { discordId, discordName } = resolveDiscordIdentity();
     const dspoincReward = calculateDspoincReward();
@@ -2985,6 +3058,67 @@ confusionMushroomItem = null;
 
       if (saveStatusEl) {
         saveStatusEl.textContent = `❌ Score save failed: ${error.message}`;
+      }
+    }
+  }
+
+  /**
+   * Close one Partner Bridge gameplay session with the real Cheese Runner score.
+   *
+   * Plain language for DEVS FOR DECADES:
+   * This is the partner iframe save path. It writes only to the isolated
+   * partner bridge tables through close-session.php. It does not credit
+   * Narrrfs DSPOINC, does not write tbl_tetris_scores, and does not touch the
+   * public leaderboard or normal Cheese Runner reward API.
+   */
+  async function submitCheesemanPartnerSessionScore() {
+    const apiBaseUrl = window.location.hostname === 'narrrfs.world'
+      ? 'https://narrrfs.world'
+      : '';
+
+    const payload = {
+      session_token: cheesemanPartnerSessionToken,
+      game: GAME_KEY,
+      score: Math.max(0, Math.round(Number(score || 0))),
+      client_run_id: cheesemanPartnerClientRunId
+    };
+
+    try {
+      if (saveStatusEl) {
+        saveStatusEl.textContent = 'Closing partner Cheese Runner session...';
+      }
+
+      const response = await fetch(`${apiBaseUrl}/api/partner/games/close-session.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store',
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || data.details || `HTTP ${response.status}`);
+      }
+
+      if (finalDspoincEl) {
+        finalDspoincEl.textContent = `Partner Points: ${Number(data.partner_points || 0).toLocaleString()}`;
+      }
+
+      if (saveStatusEl) {
+        saveStatusEl.textContent = `✅ Partner session closed. Partner points: ${Number(data.partner_points || 0).toLocaleString()}`;
+      }
+
+      console.log('✅ Partner Cheese Runner session closed:', data);
+    } catch (error) {
+      console.error('❌ Partner Cheese Runner close failed:', error);
+
+      hasScoreBeenSaved = false;
+
+      if (saveStatusEl) {
+        saveStatusEl.textContent = `❌ Partner session close failed: ${error.message}`;
       }
     }
   }
