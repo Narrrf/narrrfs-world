@@ -103,3 +103,94 @@ function partnerBridgeCalculatePartnerPoints(int $rawScore, array $partnerConfig
     $divisor = max(1, (int)($partnerConfig['points_divisor'] ?? 100));
     return max(0, (int)floor($rawScore / $divisor));
 }
+
+/**
+ * Decode partner session metadata safely.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Partner metadata is display/session context only. It must never become
+ * Narrrfs OAuth proof, DSPOINC authority, SPOINC authority, or ownership proof.
+ */
+function partnerBridgeDecodeMetadata(?string $metadataJson): array
+{
+    if (!$metadataJson) {
+        return [];
+    }
+
+    $decoded = json_decode($metadataJson, true);
+
+    return is_array($decoded) ? $decoded : [];
+}
+
+/**
+ * Build the safe partner identity payload for API responses and iframe display.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This identity is partner-asserted through the server-side API key. It is not
+ * a Narrrfs Discord OAuth login and must not auto-create users or grant rewards.
+ */
+function partnerBridgeBuildPartnerIdentity(array $session): array
+{
+    $metadata = partnerBridgeDecodeMetadata($session['metadata_json'] ?? null);
+    $metadataIdentity = $metadata['partner_identity'] ?? [];
+
+    if (!is_array($metadataIdentity)) {
+        $metadataIdentity = [];
+    }
+
+    $discordId =
+        $metadataIdentity['discord_id']
+        ?? $metadata['discord_id']
+        ?? null;
+
+    return [
+        'identity_source' => 'partner_asserted',
+        'external_user_id' => $session['external_user_id'] ?? null,
+        'wallet_address' => $session['wallet_address'] ?? null,
+        'discord_id' => $discordId,
+        'discord_name' => $session['discord_name'] ?? ($metadataIdentity['discord_name'] ?? null)
+    ];
+}
+
+/**
+ * Return partner-safe game stats for one partner user.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This reads only isolated partner bridge result rows. It does not read or
+ * write Narrrfs DSPOINC, public leaderboards, tbl_tetris_scores, SPOINC, or
+ * partner token payouts.
+ */
+function partnerBridgeGetPartnerStats(
+    PDO $db,
+    string $partnerId,
+    string $externalUserId,
+    string $game
+): array {
+    $stmt = $db->prepare("
+        SELECT
+            COUNT(*) AS sessions_played,
+            COALESCE(MAX(raw_score), 0) AS best_score,
+            COALESCE(SUM(raw_score), 0) AS total_score,
+            COALESCE(SUM(partner_points), 0) AS total_partner_points
+        FROM tbl_partner_game_results
+        WHERE partner_id = :partner_id
+          AND external_user_id = :external_user_id
+          AND game = :game
+          AND validation_status = 'accepted'
+    ");
+
+    $stmt->execute([
+        ':partner_id' => $partnerId,
+        ':external_user_id' => $externalUserId,
+        ':game' => $game
+    ]);
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    return [
+        'sessions_played' => (int)($row['sessions_played'] ?? 0),
+        'best_score' => (int)($row['best_score'] ?? 0),
+        'total_score' => (int)($row['total_score'] ?? 0),
+        'total_partner_points' => (int)($row['total_partner_points'] ?? 0)
+    ];
+}

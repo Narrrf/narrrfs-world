@@ -696,6 +696,88 @@ const LEVEL_TEMPLATES = [
       ? `run-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`
       : '';
 
+  let cheesemanPartnerSessionInfo = null;
+  let cheesemanPartnerIdentity = null;
+
+  function shortenCheesemanPartnerWallet(walletAddress) {
+    const wallet = String(walletAddress || '').trim();
+
+    if (wallet.length <= 12) {
+      return wallet || 'Wallet not supplied';
+    }
+
+    return `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
+  }
+
+  function renderCheesemanPartnerIdentity() {
+    if (!isCheesemanPartnerMode) {
+      return;
+    }
+
+    const playerNameEl = document.getElementById('cheeseman-player-name');
+    const identity = cheesemanPartnerIdentity || {};
+    const stats = cheesemanPartnerSessionInfo?.partner_stats || {};
+
+    const discordName = String(identity.discord_name || '').trim();
+    const discordId = String(identity.discord_id || '').trim();
+    const wallet = String(identity.wallet_address || '').trim();
+
+    if (playerNameEl) {
+      playerNameEl.textContent = discordName
+        ? `Logged in via Samuzi: ${discordName}${discordId ? ` (${discordId})` : ''}`
+        : 'Logged in via Samuzi Partner Session';
+    }
+
+    if (roleEl) {
+      const bestScore = Number(stats.best_score || 0).toLocaleString();
+      const runs = Number(stats.sessions_played || 0).toLocaleString();
+      roleEl.textContent = `Partner Mode: ${shortenCheesemanPartnerWallet(wallet)} · Best ${bestScore} · Runs ${runs}`;
+      roleEl.className = 'font-bold text-cyan-300';
+    }
+
+    if (statusEl && cheesemanPartnerSessionInfo) {
+      statusEl.textContent = 'Partner session active. Play normally; final score closes the Samuzi session only.';
+    }
+  }
+
+  async function loadCheesemanPartnerSessionInfo() {
+    if (!isCheesemanPartnerMode) {
+      return;
+    }
+
+    const apiBaseUrl = window.location.hostname === 'narrrfs.world'
+      ? 'https://narrrfs.world'
+      : '';
+
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/partner/games/session-info.php?session=${encodeURIComponent(cheesemanPartnerSessionToken)}`,
+        {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || data.details || `HTTP ${response.status}`);
+      }
+
+      cheesemanPartnerSessionInfo = data;
+      cheesemanPartnerIdentity = data.partner_identity || null;
+      renderCheesemanPartnerIdentity();
+
+      console.log('✅ Partner Cheese Runner session info loaded:', data);
+    } catch (error) {
+      console.warn('⚠️ Partner Cheese Runner session info unavailable:', error.message || error);
+      renderCheesemanPartnerIdentity();
+    }
+  }
+
 const glyphBoostImage = new Image();
 glyphBoostImage.src = GLYPH_BOOST_IMAGE_SRC;
 
@@ -716,10 +798,8 @@ if (isCheesemanPartnerMode) {
     roleEl.textContent = 'Partner Mode: no Narrrfs DSPOINC / leaderboard write';
   }
 
-  const playerNameEl = document.getElementById('cheeseman-player-name');
-  if (playerNameEl) {
-    playerNameEl.textContent = 'Samuzi Partner Session';
-  }
+  renderCheesemanPartnerIdentity();
+  loadCheesemanPartnerSessionInfo();
 
   const loginPromptEl = document.getElementById('cheeseman-login-prompt');
   if (loginPromptEl) {
@@ -1489,8 +1569,7 @@ function getCurrentTickMs() {
 
     if (roleEl) {
       if (isCheesemanPartnerMode) {
-        roleEl.textContent = 'Partner Mode: no Narrrfs DSPOINC / leaderboard write';
-        roleEl.className = 'font-bold text-cyan-300';
+        renderCheesemanPartnerIdentity();
         return;
       }
 
@@ -3108,7 +3187,14 @@ confusionMushroomItem = null;
       }
 
       if (saveStatusEl) {
-        saveStatusEl.textContent = `✅ Partner session closed. Partner points: ${Number(data.partner_points || 0).toLocaleString()}`;
+        const identity = data.partner_identity || cheesemanPartnerIdentity || {};
+        const displayName = identity.discord_name ? ` · ${identity.discord_name}` : '';
+        saveStatusEl.textContent = `✅ Partner session closed${displayName}. Partner points: ${Number(data.partner_points || 0).toLocaleString()}`;
+      }
+
+      if (data.partner_identity) {
+        cheesemanPartnerIdentity = data.partner_identity;
+        renderCheesemanPartnerIdentity();
       }
 
       console.log('✅ Partner Cheese Runner session closed:', data);

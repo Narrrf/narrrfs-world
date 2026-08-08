@@ -1,5 +1,99 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-08-08 — Samuzi Partner Identity V2 Local Full Cycle Verified
+
+### Agent / Scope
+
+**Agent name and version:** Samuzi / Narrrfs 9-Game Bridge Agent — Cheeseman 4.1 LIVE  
+**Scope:** Samuzi Partner Identity V2 for Cheese Runner / Cheeseman iframe sessions  
+**Environment:** Local XAMPP  
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Branch:** `render-deploy`  
+**Database path:** `db/narrrf_world.sqlite`  
+**Runtime tested:** local Apache/PHP + browser iframe  
+**Production deployment status:** Not deployed yet  
+**Live status:** Not verified yet  
+
+### Files Changed
+
+- `api/partner/games/_partner-helpers.php`
+- `api/partner/games/create-session.php`
+- `api/partner/games/close-session.php`
+- `api/partner/games/status.php`
+- `api/partner/games/session-info.php`
+- `public/scripts/cheeseman.js`
+- `public/cheeseman.html` remained part of the partner iframe guard/hide-normal-stats work already present locally
+
+### V2 Contract Verified
+
+Samuzi backend can now call `create-session.php` with:
+
+```json
+{
+  "partner_id": "samuzi",
+  "external_user_id": "samuzi_user_id",
+  "game": "cheeseman",
+  "wallet_address": "player_wallet",
+  "discord_id": "player_discord_id",
+  "discord_name": "player_discord_name"
+}
+
+## 2026-08-08 — Discord Bot Race/Rumble Stability Incident Closed / Runtime Guards Verified
+
+### Agent / Scope
+
+**Agent name and version:** Discord Bot Specialist 13.0 / Cheese Race + Cheese Rumble Stability Pass  
+**Scope:** Local Discord bot runtime stability, Cheese Race countdown/persistence, Cheese Rumble duplicate-finalization protection, Lucky Loser presentation alignment, and live DB verification  
+**Primary local path:** `C:\xampp-server\htdocs\narrrfs-world\discord`  
+**Primary files changed locally:**
+
+- `index.js`
+- `commands/cheese-race.js`
+- `commands/cheese-rumble.js`
+
+**Live DB inspected:** `/var/www/html/db/narrrf_world.sqlite`  
+**Production deployment status:** Not performed by agent  
+**Bot restart status:** Restarted/tested manually by Markus
+
+---
+
+### Incident Summary
+
+A Cheese Rumble incident exposed duplicate runtime/finalization risk when more than one Discord bot process was running locally.
+
+The visible symptom was duplicated Rumble flow and conflicting Discord winner/Lucky Loser presentation.
+
+The investigation separated the layers:
+
+```text
+Discord presentation
+local bot runtime
+activeRumbles / activeRaces memory
+live SQLite DB persistence
+DSPOINC score rows
+score adjustment ledger
+token payout flow
+MouseFight / Fight Recovery protected systems
+
+## 2026-08-06 — MouseFight Genesis League Population Audit Approved / Local Snapshot Ready
+
+### Agent / Scope
+
+**Agent name and version:** MouseFight League Systems Expert 1.0 LIVE  
+**Scope:** Documentation and read-only population discovery for the planned Genesis mouse power leagues  
+**Current phase:** Pre-implementation league balancing and local downloaded-database analysis  
+**Implementation status:** Not started  
+**Production status:** Not deployed
+
+### Approved League Direction
+
+The planned MouseFight league system is based on the selected Genesis mouse rather than the Discord player.
+
+Authoritative competitor identity:
+
+```text
+token_id + collection
+
 ## 2026-08-06 — Stake Lab V2 DSPOINC Preview Display Fix Local
 
 ### Scope

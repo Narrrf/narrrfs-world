@@ -707,6 +707,42 @@
   </script>
   <script>
     (function loadCheesemanStatsPanel() {
+      /**
+       * Partner iframe mode guard.
+       *
+       * Plain language for DEVS FOR DECADES:
+       * Samuzi partner sessions are authenticated by the short-lived
+       * ?session=pgst_... token. They do not require a Narrrfs Discord login
+       * cookie and must not show normal Narrrfs DSPOINC/profile statistics.
+       *
+       * This guard is frontend-only. It prevents normal-player stats panels
+       * from calling user/profile APIs inside third-party partner iframes.
+       * It does not change Cheese Runner gameplay, partner close-session,
+       * DSPOINC ledgers, leaderboards, SPOINC, rewards, or database rows.
+       */
+      const cheesemanPartnerSessionToken =
+        new URLSearchParams(window.location.search).get('session') || '';
+
+      const isCheesemanPartnerIframeMode =
+        /^pgst_[a-f0-9]{48,80}$/i.test(String(cheesemanPartnerSessionToken || ''));
+
+      if (isCheesemanPartnerIframeMode) {
+        const partnerHiddenElements = [
+          document.getElementById('toggle-cheeseman-dspoinc-scores-btn')?.closest('div'),
+          document.getElementById('cheesemanDSPOINCScores'),
+          document.getElementById('cheeseman-user-stats-section')
+        ];
+
+        for (const element of partnerHiddenElements) {
+          if (element) {
+            element.classList.add('hidden');
+            element.style.display = 'none';
+          }
+        }
+
+        return;
+      }
+
       const GAME_KEY = 'cheeseman';
       const LOCAL_TEST_DISCORD_ID = '328601656659017732';
 

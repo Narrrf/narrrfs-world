@@ -48,6 +48,7 @@ try {
     $game = strtolower(trim((string)($body['game'] ?? '')));
     $discordName = trim((string)($body['discord_name'] ?? ''));
     $walletAddress = trim((string)($body['wallet_address'] ?? ''));
+    $discordId = trim((string)($body['discord_id'] ?? ''));
 
     if ($partnerId === '') {
         partnerBridgeRespond(400, [
@@ -90,6 +91,27 @@ try {
         ]);
     }
 
+    if ($discordId !== '' && preg_match('/^[0-9]{5,32}$/', $discordId) !== 1) {
+        partnerBridgeRespond(400, [
+            'success' => false,
+            'error' => 'Invalid discord_id'
+        ]);
+    }
+
+    if (strlen($discordName) > 120) {
+        partnerBridgeRespond(400, [
+            'success' => false,
+            'error' => 'Invalid discord_name'
+        ]);
+    }
+
+    if (strlen($walletAddress) > 120) {
+        partnerBridgeRespond(400, [
+            'success' => false,
+            'error' => 'Invalid wallet_address'
+        ]);
+    }
+
     $db = partnerBridgeGetDb();
 
     $sessionId = partnerBridgeCreateToken('pgs_', 12);
@@ -100,11 +122,20 @@ try {
     $createdAt = gmdate('Y-m-d H:i:s');
     $expiresAt = gmdate('Y-m-d H:i:s', time() + $ttlSeconds);
 
+    $partnerIdentity = [
+        'identity_source' => 'partner_asserted',
+        'external_user_id' => $externalUserId,
+        'wallet_address' => $walletAddress !== '' ? $walletAddress : null,
+        'discord_id' => $discordId !== '' ? $discordId : null,
+        'discord_name' => $discordName !== '' ? $discordName : null
+    ];
+
     $metadata = [
         'source' => 'partner_bridge_v1',
         'partner_name' => $partnerConfig['partner_name'] ?? $partnerId,
         'created_ip' => $_SERVER['REMOTE_ADDR'] ?? null,
-        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+        'partner_identity' => $partnerIdentity
     ];
 
     $insertStmt = $db->prepare("
@@ -167,6 +198,7 @@ try {
         'session_token' => $sessionToken,
         'game' => $game,
         'external_user_id' => $externalUserId,
+        'partner_identity' => $partnerIdentity,
         'iframe_url' => $iframeUrl,
         'expires_at' => $expiresAt . ' UTC',
         'safety' => [

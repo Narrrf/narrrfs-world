@@ -88,6 +88,9 @@ try {
             partner_id,
             external_user_id,
             game,
+            discord_name,
+            wallet_address,
+            metadata_json,
             status,
             created_at,
             expires_at,
@@ -218,6 +221,7 @@ try {
     }
 
     $partnerPoints = partnerBridgeCalculatePartnerPoints($score, $partnerConfig);
+    $partnerIdentity = partnerBridgeBuildPartnerIdentity($session);
     $resultId = partnerBridgeCreateToken('pgr_', 12);
     $closedAt = gmdate('Y-m-d H:i:s');
 
@@ -227,6 +231,7 @@ try {
         'partner_id' => $session['partner_id'],
         'session_id' => $session['session_id'],
         'external_user_id' => $session['external_user_id'],
+        'partner_identity' => $partnerIdentity,
         'game' => $game,
         'score' => $score,
         'partner_points' => $partnerPoints,
@@ -310,6 +315,7 @@ try {
         'session_id' => $session['session_id'],
         'partner_id' => $session['partner_id'],
         'external_user_id' => $session['external_user_id'],
+        'partner_identity' => $partnerIdentity,
         'game' => $game,
         'score' => $score,
         'partner_points' => $partnerPoints,

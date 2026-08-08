@@ -149,6 +149,8 @@ try {
 
     $result = $resultStmt->fetch(PDO::FETCH_ASSOC);
 
+    $partnerIdentity = partnerBridgeBuildPartnerIdentity($session);
+
     $webhookPreview = null;
     if ($result && !empty($result['webhook_preview_json'])) {
         $decodedWebhookPreview = json_decode((string)$result['webhook_preview_json'], true);
@@ -168,6 +170,7 @@ try {
             'status' => $session['status'],
             'discord_name' => $session['discord_name'],
             'wallet_address' => $session['wallet_address'],
+            'partner_identity' => $partnerIdentity,
             'created_at' => $session['created_at'],
             'expires_at' => $session['expires_at'],
             'closed_at' => $session['closed_at']
@@ -180,6 +183,7 @@ try {
             'idempotency_key' => $result['idempotency_key'],
             'validation_status' => $result['validation_status'],
             'created_at' => $result['created_at'],
+            'partner_identity' => $partnerIdentity,
             'webhook_preview' => $webhookPreview
         ] : null,
         'safety' => [
