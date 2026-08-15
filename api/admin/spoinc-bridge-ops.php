@@ -6,13 +6,16 @@
  * This endpoint is the protected admin investigation cockpit for the
  * SPOINC / DSPOINC / Gensuki bridge.
  *
- * Phase 1A is intentionally read-only:
- * - It can report endpoint health.
+ * Phase 1C keeps bridge investigation read-only except for one narrow,
+ * protected fail-only Gensuki reconciliation action:
+ * - It can report endpoint health and pending reconciliation data.
  * - It can check Solana transaction signature status.
- * - It can return safe scaffolds for future cleanup/settlement verification.
- * - It must not call Gensuki /confirm.
+ * - It can run authoritative dry-run checks before the fail-only action.
+ * - It may call Gensuki /confirm only with status failed after all guards pass.
+ * - It must not call Gensuki complete.
  * - It must not credit or debit DSPOINC.
- * - It must not mutate bridge rows.
+ * - It must not settle or mutate Narrrfs bridge/economy rows.
+ * - Protected apply attempts write only the dedicated admin-operation audit table.
  * - It must not expose the Gensuki API key.
  */
 
@@ -33,7 +36,7 @@ ini_set('display_startup_errors', '0');
 error_reporting(0);
 
 const SPOINC_BRIDGE_OPS_ENDPOINT_NAME = 'spoinc-bridge-ops';
-const SPOINC_BRIDGE_OPS_PHASE = 'phase_1b_pending_audit_read_only';
+const SPOINC_BRIDGE_OPS_PHASE = 'phase_1c_fail_only_apply';
 const SPOINC_BRIDGE_OPS_LOCAL_ADMIN_ID = '328601656659017732';
 const SPOINC_BRIDGE_OPS_SOLANA_RPC_FALLBACK = 'https://api.mainnet-beta.solana.com';
 const SPOINC_BRIDGE_OPS_PROJECT_ID = '7e04b38a-7bd4-4fab-acc4-dfa53a99b639';
@@ -42,6 +45,8 @@ const SPOINC_BRIDGE_OPS_GET_ALL_TRANSACTIONS_PATH = '/api/custom-token-presale/g
 const SPOINC_BRIDGE_OPS_CONFIRM_PATH = '/api/custom-token-presale/confirm';
 const SPOINC_BRIDGE_OPS_MAX_GENSUKI_PAGES = 50;
 const SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE = 'CONFIRM GENSUKI FAILED';
+const SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE = 'tbl_spoinc_bridge_admin_operations';
+const SPOINC_BRIDGE_OPS_FAIL_OPERATION_TYPE = 'fail_local_not_found';
 
 /**
  * Return JSON and stop execution.
@@ -353,30 +358,37 @@ function spoinc_bridge_ops_get_health(array $admin): void
         'data' => [
             'endpoint' => SPOINC_BRIDGE_OPS_ENDPOINT_NAME,
             'phase' => SPOINC_BRIDGE_OPS_PHASE,
-            'mode' => 'read_only',
+            'mode' => 'read_only_plus_protected_fail_only_apply',
             'admin_id' => $admin['admin_id'],
             'auth_mode' => $admin['auth_mode'],
             'server_time_utc' => gmdate('Y-m-d H:i:s'),
             'safety' => [
-                'gensuki_confirm_enabled' => false,
+                'gensuki_confirm_enabled' => true,
+                'gensuki_confirm_scope' => 'failed_only',
+                'gensuki_complete_confirm_enabled' => false,
                 'dspoinc_credit_enabled' => false,
                 'dspoinc_debit_enabled' => false,
-                'db_write_enabled' => false,
-                'route_mutation_enabled' => false
+                'db_write_enabled' => true,
+                'db_write_scope' => SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE . '_only',
+                'admin_operation_log_write_enabled' => true,
+                'bridge_economy_db_write_enabled' => false,
+                'local_bridge_settlement_enabled' => false,
+                'route_mutation_enabled' => false,
+                'rpc_error_auto_fail_enabled' => false
             ],
-'available_actions' => [
-    'get_health',
-    'get_gensuki_pending_audit',
-    'check_solana_signature',
-    'verify_failed_cleanup',
-    'verify_complete_settlement',
-    'dry_run_fail_local_not_found',
-    'dry_run_fail_gensuki_only',
-    'dry_run_complete_gensuki_only',
-    'dry_run_settle_spoinc_claim',
-    'apply_fail_local_not_found',
-    'get_operation_log'
-]
+            'available_actions' => [
+                'get_health',
+                'get_gensuki_pending_audit',
+                'check_solana_signature',
+                'verify_failed_cleanup',
+                'verify_complete_settlement',
+                'dry_run_fail_local_not_found',
+                'dry_run_fail_gensuki_only',
+                'dry_run_complete_gensuki_only',
+                'dry_run_settle_spoinc_claim',
+                'apply_fail_local_not_found',
+                'get_operation_log'
+            ]
         ]
     ]);
 }
@@ -1362,64 +1374,408 @@ function spoinc_bridge_ops_find_pending_audit_row_for_apply(
 }
 
 /**
- * Apply fail-only cleanup for a local pending intent whose Solana transaction
- * is not found.
+ * Open the shared Narrrfs PDO connection for the dedicated admin-operation log.
  *
  * Plain language for DEVS FOR DECADES:
- * This is the first real protected apply action. It is intentionally narrow:
- * - Only failed_candidate_local is allowed.
- * - Only local table tbl_spoinc_bridge_intents is allowed.
- * - Only Gensuki pending statuses are allowed.
- * - Only Solana not_found is allowed.
- * - The admin must type CONFIRM GENSUKI FAILED exactly.
- *
- * This action calls Gensuki /confirm with status failed.
- * It does not credit DSPOINC, debit DSPOINC, settle local rows, or create score
- * rows. rpc_error must never be treated as failed.
+ * The existing reconciliation lookup remains SQLite READONLY. This writer uses
+ * the verified central api/config/database.php connection and may write only
+ * tbl_spoinc_bridge_admin_operations. It never creates schema automatically.
  */
-function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin): void
+function spoinc_bridge_ops_open_admin_log_database(): PDO
+{
+    $databaseConfigPath = __DIR__ . '/../config/database.php';
+
+    if (!is_file($databaseConfigPath)) {
+        throw new RuntimeException('Central database config is missing.');
+    }
+
+    require_once $databaseConfigPath;
+
+    if (!function_exists('getDatabaseConnection')) {
+        throw new RuntimeException('Central PDO database helper is unavailable.');
+    }
+
+    $pdo = getDatabaseConnection();
+    $pdo->exec('PRAGMA foreign_keys = ON');
+    $pdo->exec('PRAGMA busy_timeout = 5000');
+
+    $tableCheck = $pdo->prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = :table_name LIMIT 1"
+    );
+    $tableCheck->execute([
+        ':table_name' => SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE
+    ]);
+
+    if ((string)$tableCheck->fetchColumn() !== SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE) {
+        throw new RuntimeException('SPOINC bridge admin operation log table is missing.');
+    }
+
+    return $pdo;
+}
+
+/**
+ * Encode one admin-audit JSON value and fail closed if encoding fails.
+ */
+function spoinc_bridge_ops_encode_admin_log_json(array $value): string
+{
+    $encoded = json_encode(
+        $value,
+        JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+    );
+
+    if ($encoded === false) {
+        throw new RuntimeException('Failed to encode SPOINC bridge admin audit JSON.');
+    }
+
+    return $encoded;
+}
+
+/**
+ * Build the deterministic attempt key for one fail-only external mutation.
+ *
+ * The admin reason is intentionally excluded so editing a note cannot create a
+ * second logical attempt. The attempt number preserves every failed retry as a
+ * separate audit row instead of overwriting earlier evidence.
+ */
+function spoinc_bridge_ops_build_fail_operation_key(
+    array $validation,
+    int $attemptCount
+): string {
+    return hash('sha256', implode('|', [
+        SPOINC_BRIDGE_OPS_FAIL_OPERATION_TYPE,
+        SPOINC_BRIDGE_OPS_PROJECT_ID,
+        (string)($validation['intent_id'] ?? ''),
+        (string)($validation['signature'] ?? ''),
+        'attempt:' . $attemptCount
+    ]));
+}
+
+/**
+ * Prepare one new dedicated admin audit attempt before Gensuki.
+ *
+ * A completed operation is never reissued. Any prepared attempt is treated as
+ * unresolved and blocks another call. If all earlier attempts failed, a new
+ * attempt row may be created only after the caller has already repeated the
+ * authoritative Gensuki, Solana, and local-intent validation.
+ */
+function spoinc_bridge_ops_prepare_fail_admin_operation(
+    array $validation,
+    array $admin,
+    string $dryRunToken,
+    array $confirmPayload
+): array {
+    $pdo = spoinc_bridge_ops_open_admin_log_database();
+    $transactionOpen = false;
+    $now = gmdate('Y-m-d H:i:s');
+    $requestJson = spoinc_bridge_ops_encode_admin_log_json($confirmPayload);
+    $dryRunFingerprint = hash('sha256', $dryRunToken);
+
+    try {
+        // Serialize competing protected apply attempts before inspecting prior
+        // audit state. The remote Gensuki call occurs only after COMMIT.
+        $pdo->exec('BEGIN IMMEDIATE');
+        $transactionOpen = true;
+
+        $existingStmt = $pdo->prepare("
+            SELECT
+                operation_id,
+                operation_status,
+                attempt_count
+            FROM tbl_spoinc_bridge_admin_operations
+            WHERE operation_type = :operation_type
+              AND intent_id = :intent_id
+              AND transaction_hash = :transaction_hash
+            ORDER BY attempt_count DESC, operation_id DESC
+        ");
+        $existingStmt->execute([
+            ':operation_type' => SPOINC_BRIDGE_OPS_FAIL_OPERATION_TYPE,
+            ':intent_id' => (int)$validation['intent_id'],
+            ':transaction_hash' => (string)$validation['signature']
+        ]);
+        $existingRows = $existingStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $maxAttemptCount = 0;
+
+        foreach ($existingRows as $existing) {
+            $existingStatus = strtolower(trim((string)($existing['operation_status'] ?? '')));
+            $existingAttemptCount = (int)($existing['attempt_count'] ?? 0);
+            $maxAttemptCount = max($maxAttemptCount, $existingAttemptCount);
+
+            if ($existingStatus === 'completed') {
+                $pdo->exec('ROLLBACK');
+                $transactionOpen = false;
+
+                return [
+                    'allowed' => false,
+                    'block_reason' => 'completed',
+                    'operation_id' => (int)$existing['operation_id'],
+                    'operation_status' => $existingStatus,
+                    'attempt_count' => $existingAttemptCount
+                ];
+            }
+
+            if ($existingStatus === 'prepared') {
+                $pdo->exec('ROLLBACK');
+                $transactionOpen = false;
+
+                return [
+                    'allowed' => false,
+                    'block_reason' => 'prepared',
+                    'operation_id' => (int)$existing['operation_id'],
+                    'operation_status' => $existingStatus,
+                    'attempt_count' => $existingAttemptCount
+                ];
+            }
+
+            if ($existingStatus !== 'failed') {
+                $pdo->exec('ROLLBACK');
+                $transactionOpen = false;
+
+                return [
+                    'allowed' => false,
+                    'block_reason' => 'unexpected_status',
+                    'operation_id' => (int)$existing['operation_id'],
+                    'operation_status' => $existingStatus,
+                    'attempt_count' => $existingAttemptCount
+                ];
+            }
+        }
+
+        $attemptCount = $maxAttemptCount + 1;
+        $operationKey = spoinc_bridge_ops_build_fail_operation_key(
+            $validation,
+            $attemptCount
+        );
+
+        $insert = $pdo->prepare("
+            INSERT INTO tbl_spoinc_bridge_admin_operations (
+                operation_key,
+                operation_type,
+                admin_id,
+                intent_id,
+                transaction_id,
+                partner_name,
+                partner_transaction_id,
+                transaction_hash,
+                reason,
+                dry_run_fingerprint,
+                classification_before,
+                gensuki_status_before,
+                gensuki_status_after,
+                solana_state,
+                operation_status,
+                attempt_count,
+                http_status,
+                request_json,
+                response_json,
+                error_message,
+                created_at,
+                updated_at,
+                completed_at
+            ) VALUES (
+                :operation_key,
+                :operation_type,
+                :admin_id,
+                :intent_id,
+                NULL,
+                'gensuki',
+                :partner_transaction_id,
+                :transaction_hash,
+                :reason,
+                :dry_run_fingerprint,
+                'failed_candidate_local',
+                :gensuki_status_before,
+                NULL,
+                :solana_state,
+                'prepared',
+                :attempt_count,
+                NULL,
+                :request_json,
+                NULL,
+                NULL,
+                :created_at,
+                :updated_at,
+                NULL
+            )
+        ");
+        $insert->execute([
+            ':operation_key' => $operationKey,
+            ':operation_type' => SPOINC_BRIDGE_OPS_FAIL_OPERATION_TYPE,
+            ':admin_id' => (string)($admin['admin_id'] ?? 'unknown'),
+            ':intent_id' => (int)$validation['intent_id'],
+            ':partner_transaction_id' => (string)$validation['gensuki_id'],
+            ':transaction_hash' => (string)$validation['signature'],
+            ':reason' => (string)$validation['reason'],
+            ':dry_run_fingerprint' => $dryRunFingerprint,
+            ':gensuki_status_before' => (string)$validation['gensuki_status'],
+            ':solana_state' => (string)$validation['solana_state'],
+            ':attempt_count' => $attemptCount,
+            ':request_json' => $requestJson,
+            ':created_at' => $now,
+            ':updated_at' => $now
+        ]);
+
+        if ($insert->rowCount() !== 1) {
+            throw new RuntimeException('Prepared admin operation row was not inserted.');
+        }
+
+        $operationId = (int)$pdo->lastInsertId();
+        $pdo->exec('COMMIT');
+        $transactionOpen = false;
+
+        return [
+            'allowed' => true,
+            'operation_id' => $operationId,
+            'operation_key' => $operationKey,
+            'operation_status' => 'prepared',
+            'attempt_count' => $attemptCount
+        ];
+    } catch (Throwable $error) {
+        if ($transactionOpen) {
+            try {
+                $pdo->exec('ROLLBACK');
+            } catch (Throwable $rollbackError) {
+                error_log('[SPOINC BRIDGE OPS] Admin operation rollback failed: ' . $rollbackError->getMessage());
+            }
+        }
+
+        throw $error;
+    }
+}
+
+/**
+ * Finalize one prepared admin operation after the external Gensuki result.
+ */
+function spoinc_bridge_ops_finalize_fail_admin_operation(
+    int $operationId,
+    bool $success,
+    array $confirmResponse
+): void {
+    $pdo = spoinc_bridge_ops_open_admin_log_database();
+    $now = gmdate('Y-m-d H:i:s');
+    $responseJson = spoinc_bridge_ops_encode_admin_log_json([
+        'http_code' => $confirmResponse['http_code'] ?? null,
+        'json' => $confirmResponse['json'] ?? null,
+        'raw_body' => (string)($confirmResponse['raw_body'] ?? ''),
+        'error' => (string)($confirmResponse['error'] ?? '')
+    ]);
+
+    $httpStatus = (int)($confirmResponse['http_code'] ?? 0);
+    $errorMessage = $success
+        ? null
+        : trim((string)($confirmResponse['error'] ?? ''));
+
+    if (!$success && $errorMessage === '') {
+        $errorMessage = 'Gensuki failed-confirm request did not succeed.';
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        $update = $pdo->prepare("
+            UPDATE tbl_spoinc_bridge_admin_operations
+            SET operation_status = :operation_status,
+                gensuki_status_after = :gensuki_status_after,
+                http_status = :http_status,
+                response_json = :response_json,
+                error_message = :error_message,
+                updated_at = :updated_at,
+                completed_at = :completed_at
+            WHERE operation_id = :operation_id
+              AND operation_status = 'prepared'
+        ");
+        $update->execute([
+            ':operation_status' => $success ? 'completed' : 'failed',
+            ':gensuki_status_after' => $success ? 'failed' : null,
+            ':http_status' => $httpStatus > 0 ? $httpStatus : null,
+            ':response_json' => $responseJson,
+            ':error_message' => $errorMessage,
+            ':updated_at' => $now,
+            ':completed_at' => $success ? $now : null,
+            ':operation_id' => $operationId
+        ]);
+
+        if ($update->rowCount() !== 1) {
+            throw new RuntimeException('Prepared admin operation could not be finalized.');
+        }
+
+        $pdo->commit();
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $error;
+    }
+}
+
+/**
+ * Validate the one currently-supported fail-only reconciliation candidate.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Dry-run and apply must use the exact same authoritative server checks.
+ * This helper re-reads Gensuki, rechecks Solana, verifies the matching local
+ * bridge intent, and returns facts only. It never calls Gensuki /confirm and
+ * never writes Narrrfs, DSPOINC, SPOINC, score, settlement, or ledger state.
+ */
+function spoinc_bridge_ops_validate_fail_local_not_found_candidate(array $data): array
 {
     $signature = spoinc_bridge_ops_request_string($data, 'signature', 140);
     $intentId = spoinc_bridge_ops_request_string($data, 'intent_id', 80);
     $reason = spoinc_bridge_ops_request_string($data, 'reason', 500);
-    $confirmationPhrase = spoinc_bridge_ops_request_string($data, 'confirmation_phrase', 80);
-
-    if ($confirmationPhrase !== SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE) {
-        spoinc_bridge_ops_json([
-            'success' => false,
-            'error' => 'Confirmation phrase mismatch. Type exactly: ' . SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE
-        ], 400);
-    }
+    $failedChecks = [];
 
     if (!spoinc_bridge_ops_is_valid_solana_signature($signature)) {
-        spoinc_bridge_ops_json([
-            'success' => false,
-            'error' => 'Invalid Solana signature format.'
-        ], 400);
+        $failedChecks[] = 'A valid Solana transaction signature is required.';
     }
 
     if ($intentId === '') {
-        spoinc_bridge_ops_json([
-            'success' => false,
-            'error' => 'Intent ID is required for protected fail apply.'
-        ], 400);
+        $failedChecks[] = 'Intent ID is required for protected fail reconciliation.';
     }
 
     if ($reason === '') {
-        spoinc_bridge_ops_json([
-            'success' => false,
-            'error' => 'Admin note is required for protected fail apply.'
-        ], 400);
+        $failedChecks[] = 'Admin note is required for protected fail reconciliation.';
     }
 
-    $auditMatch = spoinc_bridge_ops_find_pending_audit_row_for_apply($signature, $intentId);
+    if (!empty($failedChecks)) {
+        return [
+            'can_apply' => false,
+            'signature' => $signature,
+            'intent_id' => $intentId,
+            'reason' => $reason,
+            'gensuki_id' => '',
+            'gensuki_status' => '',
+            'local_table' => '',
+            'local_intent_id' => '',
+            'solana_state' => '',
+            'failed_checks' => $failedChecks,
+            'gensuki_errors' => [],
+            'row' => null
+        ];
+    }
+
+    $auditMatch = spoinc_bridge_ops_find_pending_audit_row_for_apply(
+        $signature,
+        $intentId
+    );
 
     if (!$auditMatch['found']) {
-        spoinc_bridge_ops_json([
-            'success' => false,
-            'error' => 'No matching pending Gensuki/local intent row found during server recheck.',
-            'gensuki_errors' => $auditMatch['gensuki_errors'] ?? []
-        ], 409);
+        return [
+            'can_apply' => false,
+            'signature' => $signature,
+            'intent_id' => $intentId,
+            'reason' => $reason,
+            'gensuki_id' => '',
+            'gensuki_status' => '',
+            'local_table' => '',
+            'local_intent_id' => '',
+            'solana_state' => '',
+            'failed_checks' => [
+                'No matching pending Gensuki/local intent row was found during the fresh server recheck.'
+            ],
+            'gensuki_errors' => $auditMatch['gensuki_errors'] ?? [],
+            'row' => null
+        ];
     }
 
     $row = $auditMatch['row'];
@@ -1429,8 +1785,6 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
     $localTable = (string)($row['local_match']['table'] ?? '');
     $localIntentId = (string)($row['local_match']['row']['intent_id'] ?? '');
     $solanaState = (string)($row['solana']['state'] ?? '');
-
-    $failedChecks = [];
 
     if ($bucket !== 'failed_candidate_local') {
         $failedChecks[] = 'Expected bucket failed_candidate_local, got ' . $bucket;
@@ -1456,12 +1810,140 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
         $failedChecks[] = 'Missing Gensuki transaction id.';
     }
 
-    if (!empty($failedChecks)) {
+    return [
+        'can_apply' => empty($failedChecks),
+        'signature' => $signature,
+        'intent_id' => $intentId,
+        'reason' => $reason,
+        'gensuki_id' => $gensukiId,
+        'gensuki_status' => $gensukiStatus,
+        'local_table' => $localTable,
+        'local_intent_id' => $localIntentId,
+        'solana_state' => $solanaState,
+        'failed_checks' => $failedChecks,
+        'gensuki_errors' => $auditMatch['gensuki_errors'] ?? [],
+        'row' => $row
+    ];
+}
+
+/**
+ * Build deterministic dry-run workflow evidence for the current fail candidate.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This is workflow evidence, not authorization. Apply always repeats the
+ * authoritative Gensuki, Solana, and local-intent checks before mutation.
+ */
+function spoinc_bridge_ops_build_fail_dry_run_token(array $validation): string
+{
+    return hash('sha256', implode('|', [
+        SPOINC_BRIDGE_OPS_PROJECT_ID,
+        (string)($validation['intent_id'] ?? ''),
+        (string)($validation['signature'] ?? ''),
+        (string)($validation['reason'] ?? ''),
+        (string)($validation['gensuki_id'] ?? ''),
+        (string)($validation['gensuki_status'] ?? ''),
+        (string)($validation['local_table'] ?? ''),
+        (string)($validation['local_intent_id'] ?? ''),
+        (string)($validation['solana_state'] ?? '')
+    ]));
+}
+
+/**
+ * Execute the real fail-only dry-run without mutating external or local state.
+ */
+function spoinc_bridge_ops_dry_run_fail_local_not_found(array $data): void
+{
+    $validation = spoinc_bridge_ops_validate_fail_local_not_found_candidate($data);
+    $canApply = (bool)($validation['can_apply'] ?? false);
+
+    $dryRunToken = $canApply
+        ? spoinc_bridge_ops_build_fail_dry_run_token($validation)
+        : null;
+
+    spoinc_bridge_ops_json([
+        'success' => true,
+        'data' => [
+            'action' => 'dry_run_fail_local_not_found',
+            'phase' => SPOINC_BRIDGE_OPS_PHASE,
+            'mode' => 'authoritative_dry_run',
+            'can_apply' => $canApply,
+            'intent_id' => $validation['intent_id'],
+            'signature' => $validation['signature'],
+            'reason' => $validation['reason'],
+            'required_confirmation_phrase_for_apply' => SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE,
+            'dry_run_token' => $dryRunToken,
+            'blocked_reason' => $canApply
+                ? null
+                : 'One or more protected fail-only checks did not pass.',
+            'failed_checks' => $validation['failed_checks'],
+            'gensuki_errors' => $validation['gensuki_errors'],
+            'server_recheck' => [
+                'gensuki_id' => $validation['gensuki_id'],
+                'gensuki_status_before' => $validation['gensuki_status'],
+                'local_table' => $validation['local_table'],
+                'local_intent_id' => $validation['local_intent_id'],
+                'solana_state' => $validation['solana_state']
+            ],
+            'row' => $validation['row'],
+            'safety' => [
+                'gensuki_confirm_called' => false,
+                'db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false,
+                'local_bridge_settlement_performed' => false,
+                'rpc_error_auto_failed' => false
+            ]
+        ]
+    ]);
+}
+
+/**
+ * Apply fail-only cleanup for a local pending intent whose Solana transaction
+ * is not found.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This is the first real protected apply action. It is intentionally narrow:
+ * - Only failed_candidate_local is allowed.
+ * - Only local table tbl_spoinc_bridge_intents is allowed.
+ * - Only Gensuki pending statuses are allowed.
+ * - Only Solana not_found is allowed.
+ * - The admin must type CONFIRM GENSUKI FAILED exactly.
+ *
+ * This action writes only the dedicated admin-operation audit row and then calls
+ * Gensuki /confirm with status failed. It does not credit/debit DSPOINC, settle
+ * or mutate bridge/economy rows, or create score rows. rpc_error must never be
+ * treated as failed.
+ */
+function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin): void
+{
+    $confirmationPhrase = spoinc_bridge_ops_request_string(
+        $data,
+        'confirmation_phrase',
+        80
+    );
+
+    $submittedDryRunToken = spoinc_bridge_ops_request_string(
+        $data,
+        'dry_run_token',
+        128
+    );
+
+    if ($confirmationPhrase !== SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Confirmation phrase mismatch. Type exactly: ' . SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE
+        ], 400);
+    }
+
+    $validation = spoinc_bridge_ops_validate_fail_local_not_found_candidate($data);
+
+    if (!($validation['can_apply'] ?? false)) {
         spoinc_bridge_ops_json([
             'success' => false,
             'error' => 'Protected fail apply checks did not pass.',
-            'failed_checks' => $failedChecks,
-            'row' => $row,
+            'failed_checks' => $validation['failed_checks'],
+            'gensuki_errors' => $validation['gensuki_errors'],
+            'row' => $validation['row'],
             'safety' => [
                 'gensuki_confirm_called' => false,
                 'db_write_performed' => false,
@@ -1471,11 +1953,88 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
         ], 409);
     }
 
+    $expectedDryRunToken = spoinc_bridge_ops_build_fail_dry_run_token($validation);
+
+    if (
+        $submittedDryRunToken === ''
+        || !hash_equals($expectedDryRunToken, $submittedDryRunToken)
+    ) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Dry-run evidence is missing or stale. Run dry_run_fail_local_not_found again before apply.',
+            'safety' => [
+                'gensuki_confirm_called' => false,
+                'db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false
+            ]
+        ], 409);
+    }
+
+    $signature = (string)$validation['signature'];
+    $intentId = (string)$validation['intent_id'];
+    $reason = (string)$validation['reason'];
+    $gensukiId = (string)$validation['gensuki_id'];
+    $gensukiStatus = (string)$validation['gensuki_status'];
+    $localTable = (string)$validation['local_table'];
+    $localIntentId = (string)$validation['local_intent_id'];
+    $solanaState = (string)$validation['solana_state'];
+
     $confirmPayload = [
         'projectId' => SPOINC_BRIDGE_OPS_PROJECT_ID,
         'transactionHash' => $signature,
         'status' => 'failed'
     ];
+
+    try {
+        $adminOperation = spoinc_bridge_ops_prepare_fail_admin_operation(
+            $validation,
+            $admin,
+            $submittedDryRunToken,
+            $confirmPayload
+        );
+    } catch (Throwable $error) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Admin operation log preparation failed. Gensuki was not called.',
+            'details' => spoinc_bridge_ops_is_localhost() ? $error->getMessage() : null,
+            'safety' => [
+                'gensuki_confirm_called' => false,
+                'db_write_performed' => false,
+                'admin_operation_log_write_performed' => false,
+                'bridge_economy_db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false
+            ]
+        ], 500);
+    }
+
+    if (!($adminOperation['allowed'] ?? false)) {
+        $blockReason = (string)($adminOperation['block_reason'] ?? 'unknown');
+        $errorMessage = 'Protected fail apply is blocked by the admin operation log.';
+
+        if ($blockReason === 'completed') {
+            $errorMessage = 'This reconciliation operation was already completed. Gensuki was not called again.';
+        } elseif ($blockReason === 'prepared') {
+            $errorMessage = 'A prepared reconciliation operation already exists. Manual review is required before retry.';
+        }
+
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => $errorMessage,
+            'admin_operation' => $adminOperation,
+            'safety' => [
+                'gensuki_confirm_called' => false,
+                'db_write_performed' => false,
+                'admin_operation_log_write_performed' => false,
+                'bridge_economy_db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false
+            ]
+        ], 409);
+    }
+
+    $operationId = (int)$adminOperation['operation_id'];
 
     $confirmResponse = spoinc_bridge_ops_gensuki_post_json(
         SPOINC_BRIDGE_OPS_CONFIRM_PATH,
@@ -1483,6 +2042,19 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
     );
 
     if (!$confirmResponse['success']) {
+        $adminLogFinalizeError = null;
+
+        try {
+            spoinc_bridge_ops_finalize_fail_admin_operation(
+                $operationId,
+                false,
+                $confirmResponse
+            );
+        } catch (Throwable $error) {
+            $adminLogFinalizeError = $error->getMessage();
+            error_log('[SPOINC BRIDGE OPS] Admin log failure finalization error: ' . $adminLogFinalizeError);
+        }
+
         spoinc_bridge_ops_json([
             'success' => false,
             'error' => 'Gensuki failed-confirm request failed.',
@@ -1490,21 +2062,66 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
             'response_error' => $confirmResponse['error'],
             'raw_preview' => substr((string)$confirmResponse['raw_body'], 0, 700),
             'sent_payload' => $confirmPayload,
+            'admin_operation' => [
+                'operation_id' => $operationId,
+                'operation_key' => $adminOperation['operation_key'],
+                'attempt_count' => $adminOperation['attempt_count'],
+                'expected_status' => $adminLogFinalizeError === null ? 'failed' : 'prepared',
+                'finalize_error' => $adminLogFinalizeError
+            ],
             'safety' => [
                 'gensuki_confirm_called' => true,
                 'gensuki_status_sent' => 'failed',
-                'db_write_performed' => false,
+                'db_write_performed' => true,
+                'db_write_scope' => SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE . '_only',
+                'admin_operation_log_write_performed' => true,
+                'bridge_economy_db_write_performed' => false,
                 'dspoinc_credit_performed' => false,
-                'dspoinc_debit_performed' => false
+                'dspoinc_debit_performed' => false,
+                'manual_review_required' => $adminLogFinalizeError !== null
             ]
         ], 502);
+    }
+
+    try {
+        spoinc_bridge_ops_finalize_fail_admin_operation(
+            $operationId,
+            true,
+            $confirmResponse
+        );
+    } catch (Throwable $error) {
+        error_log('[SPOINC BRIDGE OPS] Gensuki succeeded but admin log finalization failed: ' . $error->getMessage());
+
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Gensuki failed-confirm succeeded, but the admin operation log could not be finalized. Manual review required; do not retry automatically.',
+            'gensuki_response' => $confirmResponse['json'],
+            'admin_operation' => [
+                'operation_id' => $operationId,
+                'operation_key' => $adminOperation['operation_key'],
+                'attempt_count' => $adminOperation['attempt_count'],
+                'expected_status' => 'prepared'
+            ],
+            'safety' => [
+                'gensuki_confirm_called' => true,
+                'gensuki_status_sent' => 'failed',
+                'db_write_performed' => true,
+                'db_write_scope' => SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE . '_only',
+                'admin_operation_log_write_performed' => true,
+                'bridge_economy_db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false,
+                'manual_review_required' => true,
+                'automatic_retry_safe' => false
+            ]
+        ], 500);
     }
 
     spoinc_bridge_ops_json([
         'success' => true,
         'data' => [
             'action' => 'apply_fail_local_not_found',
-            'phase' => 'phase_1c_fail_only_apply',
+            'phase' => SPOINC_BRIDGE_OPS_PHASE,
             'mode' => 'protected_apply',
             'admin_id' => $admin['admin_id'] ?? 'unknown',
             'intent_id' => $intentId,
@@ -1512,9 +2129,15 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
             'signature' => $signature,
             'reason' => $reason,
             'confirmed_status' => 'failed',
+            'admin_operation' => [
+                'operation_id' => $operationId,
+                'operation_key' => $adminOperation['operation_key'],
+                'operation_status' => 'completed',
+                'attempt_count' => $adminOperation['attempt_count']
+            ],
             'gensuki_response' => $confirmResponse['json'],
             'server_recheck' => [
-                'bucket' => $bucket,
+                'bucket' => 'failed_candidate_local',
                 'gensuki_status_before' => $gensukiStatus,
                 'local_table' => $localTable,
                 'local_intent_id' => $localIntentId,
@@ -1523,7 +2146,10 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
             'safety' => [
                 'gensuki_confirm_called' => true,
                 'gensuki_status_sent' => 'failed',
-                'db_write_performed' => false,
+                'db_write_performed' => true,
+                'db_write_scope' => SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE . '_only',
+                'admin_operation_log_write_performed' => true,
+                'bridge_economy_db_write_performed' => false,
                 'dspoinc_credit_performed' => false,
                 'dspoinc_debit_performed' => false,
                 'local_bridge_settlement_performed' => false,
@@ -1567,7 +2193,7 @@ function spoinc_bridge_ops_dry_run_scaffold(array $data, string $operationType):
             'signature' => $signature,
             'reason' => $reason,
             'required_confirmation_phrase_for_future_apply' => $requiredPhrase,
-            'blocked_reason' => 'Apply actions are intentionally disabled in Phase 1B.',
+            'blocked_reason' => 'This operation remains intentionally disabled in Phase 1C.',
             'checks_planned' => [
                 'Solana state must be rechecked',
                 'Gensuki row must be matched',
@@ -1586,25 +2212,97 @@ function spoinc_bridge_ops_dry_run_scaffold(array $data, string $operationType):
 }
 
 /**
- * Return a safe operation-log scaffold.
+ * Return the newest dedicated bridge admin-operation audit rows.
  *
- * TODO: After checking whether a suitable admin/audit table already exists,
- * either read that table or add tbl_spoinc_bridge_admin_operations in a later
- * migration. Phase 1A must not create tables automatically.
+ * This endpoint stays SQLite READONLY and does not expose the reusable dry-run
+ * token. The stored one-way dry-run fingerprint is intentionally not selected.
  */
 function spoinc_bridge_ops_get_operation_log(): void
 {
-    spoinc_bridge_ops_json([
-        'success' => true,
-        'data' => [
-            'action' => 'get_operation_log',
-            'phase' => SPOINC_BRIDGE_OPS_PHASE,
-            'implemented' => false,
-            'rows' => [],
-            'result_status' => 'operation_log_table_not_connected_yet',
-            'safety' => 'Read-only scaffold. No database writes are performed.'
-        ]
-    ]);
+    $dbPath = spoinc_bridge_ops_get_local_db_path();
+
+    if ($dbPath === '' || !class_exists('SQLite3')) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'SPOINC bridge admin operation log database is unavailable.'
+        ], 503);
+    }
+
+    try {
+        $db = new SQLite3($dbPath, SQLITE3_OPEN_READONLY);
+        $db->busyTimeout(5000);
+
+        if (!spoinc_bridge_ops_sqlite_table_exists($db, SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE)) {
+            spoinc_bridge_ops_json([
+                'success' => false,
+                'error' => 'SPOINC bridge admin operation log table is missing.'
+            ], 503);
+        }
+
+        $result = $db->query("
+            SELECT
+                operation_id,
+                operation_type,
+                admin_id,
+                intent_id,
+                transaction_id,
+                partner_name,
+                partner_transaction_id,
+                transaction_hash,
+                reason,
+                classification_before,
+                gensuki_status_before,
+                gensuki_status_after,
+                solana_state,
+                operation_status,
+                attempt_count,
+                http_status,
+                error_message,
+                created_at,
+                updated_at,
+                completed_at
+            FROM tbl_spoinc_bridge_admin_operations
+            ORDER BY operation_id DESC
+            LIMIT 50
+        ");
+
+        if (!$result) {
+            throw new RuntimeException('Admin operation log query failed.');
+        }
+
+        $rows = [];
+
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            $rows[] = $row;
+        }
+
+        $db->close();
+
+        spoinc_bridge_ops_json([
+            'success' => true,
+            'data' => [
+                'action' => 'get_operation_log',
+                'phase' => SPOINC_BRIDGE_OPS_PHASE,
+                'implemented' => true,
+                'result_status' => 'ok',
+                'row_count' => count($rows),
+                'rows' => $rows,
+                'safety' => [
+                    'read_only' => true,
+                    'db_open_mode' => 'SQLITE3_OPEN_READONLY',
+                    'dry_run_token_exposed' => false,
+                    'dry_run_fingerprint_exposed' => false,
+                    'bridge_economy_db_write_performed' => false
+                ]
+            ]
+        ]);
+    } catch (Throwable $error) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'SPOINC bridge admin operation log is unavailable.',
+            'details' => spoinc_bridge_ops_is_localhost() ? $error->getMessage() : null
+        ], 503);
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -1641,10 +2339,17 @@ try {
 }
 
 if ($action === 'dry_run_fail_local_not_found') {
-    spoinc_bridge_ops_dry_run_scaffold($data, 'dry_run_fail_local_not_found');
+    spoinc_bridge_ops_dry_run_fail_local_not_found($data);
 }
 
 if ($action === 'apply_fail_local_not_found') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Method not allowed. apply_fail_local_not_found requires POST.'
+        ], 405);
+    }
+
     spoinc_bridge_ops_apply_fail_local_not_found($data, $admin);
 }
 

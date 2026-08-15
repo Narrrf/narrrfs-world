@@ -2366,7 +2366,7 @@ const NAR_TARGET_PATHS = [
         Read-only admin overview for SOL → SPOINC buys, SPOINC → DSPOINC claims, wallet lookup, TX lookup, intents, and ledger audit rows.
       </p>
       <p class="text-xs text-yellow-200 mt-2">
-        Safety rule: this tab never confirms, retries, settles, credits, debits, or calls Gensuki.
+        Safety rule: the overview controls above stay read-only; the Operations Checklist below owns the single protected Gensuki failed-confirm action.
       </p>
     </div>
 
@@ -2385,26 +2385,28 @@ const NAR_TARGET_PATHS = [
   </div>
 <!-- SPOINC Bridge Operations Cockpit.
      DEVS FOR DECADES:
-     This section extends the existing read-only SPOINC Bridge tab with a simple
-     employee checklist. Phase 1B is read-only / dry-run only. It must not call
-     Gensuki /confirm, settle rows, credit DSPOINC, debit DSPOINC, mutate route
-     flags, or expose server-side API keys. -->
+     This section extends the read-only bridge investigation tools with one
+     protected Phase 1C fail-only reconciliation action. It may call Gensuki
+     /confirm only with status failed after authoritative dry-run evidence and
+     admin-operation audit preparation. It must not call Gensuki complete,
+     settle bridge/economy rows, move DSPOINC, mutate route flags, or expose
+     server-side API keys. -->
 <div id="spoincBridgeOpsCockpit" class="bg-slate-950 bg-opacity-80 border border-yellow-500 rounded-xl p-5 mb-6">
   <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-5">
     <div>
       <h3 class="text-2xl font-bold text-yellow-300 mb-2">🧀 SPOINC Bridge Operations Checklist</h3>
       <p class="text-blue-100 text-sm leading-relaxed">
-        Employee-friendly support flow for Gensuki pending rows, Solana checks, manual review buckets, and dry-run-only bridge recovery planning.
+        Employee-friendly support flow for Gensuki pending rows, Solana checks, authoritative fail-only dry-runs, protected failed confirmation, and admin audit review.
       </p>
       <p class="text-xs text-red-200 mt-2">
-        Phase 1B safety: read-only / dry-run only — no Gensuki confirm, no DSPOINC movement, no DB mutation.
+        Phase 1C safety: only the verified fail-local-not-found path may confirm Gensuki failed; Gensuki complete, DSPOINC movement, and bridge/economy mutation remain disabled.
       </p>
     </div>
 
     <div class="bg-black bg-opacity-30 border border-red-500 rounded-lg p-3 min-w-[220px]">
       <div class="text-xs text-red-200 font-semibold uppercase tracking-wide">Dangerous Actions</div>
-      <div class="text-xl font-bold text-white">Disabled</div>
-      <div class="text-xs text-red-100 mt-1">Apply buttons come only after dry-run checks are proven.</div>
+      <div class="text-xl font-bold text-white">Fail-only guarded</div>
+      <div class="text-xs text-red-100 mt-1">Failed confirmation requires authoritative dry-run evidence, exact phrase, and admin audit logging.</div>
     </div>
   </div>
 
@@ -6700,34 +6702,59 @@ function escapeSpoincBridgeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 /**
- * Fetch safe SPOINC Bridge Operations API data.
+ * Fetch SPOINC Bridge Operations API data using GET by default and JSON POST
+ * only when a protected operation explicitly requests it.
  *
  * Plain language for DEVS FOR DECADES:
- * This talks to the bridge operations endpoint. In Phase 1B the backend is
- * read-only / dry-run only. These helpers must not pretend that a dry-run,
- * checker, or queue result has actually settled, failed, credited, debited,
- * mutated, or confirmed anything.
+ * Existing read-only checks keep their GET behavior. Protected fail-only
+ * dry-run/apply requests use JSON POST so reason/confirmation data is not put
+ * into the URL. This helper never decides whether a mutation is safe; the
+ * backend remains authoritative.
  */
-async function fetchSpoincBridgeOps(action, params = {}) {
+async function fetchSpoincBridgeOps(action, params = {}, options = {}) {
+  const method = String(options.method || 'GET').toUpperCase();
   const url = new URL(SPOINC_BRIDGE_OPS_ENDPOINT, window.location.origin);
-  url.searchParams.set('action', action);
+  const cleanParams = {};
 
   Object.entries(params).forEach(([key, value]) => {
     if (value !== null && value !== undefined && String(value).trim() !== '') {
-      url.searchParams.set(key, String(value).trim());
+      cleanParams[key] = String(value).trim();
     }
   });
 
-  const response = await fetch(url.toString(), {
+  const requestOptions = {
+    method,
     credentials: 'include',
     cache: 'no-store',
     headers: { Accept: 'application/json' }
-  });
+  };
 
+  if (method === 'POST') {
+    requestOptions.headers['Content-Type'] = 'application/json';
+    requestOptions.body = JSON.stringify({
+      action,
+      ...cleanParams
+    });
+  } else {
+    url.searchParams.set('action', action);
+
+    Object.entries(cleanParams).forEach(([key, value]) => {
+      url.searchParams.set(key, value);
+    });
+  }
+
+  const response = await fetch(url.toString(), requestOptions);
   const data = await response.json();
 
   if (!response.ok || !data.success) {
-    throw new Error(data.error || data.details || `SPOINC bridge ops API failed with HTTP ${response.status}`);
+    const error = new Error(
+      data.error
+      || data.details
+      || `SPOINC bridge ops API failed with HTTP ${response.status}`
+    );
+
+    error.bridgeData = data;
+    throw error;
   }
 
   return data.data || {};
@@ -6972,21 +6999,44 @@ async function checkSpoincBridgeOpsSignature() {
   }
 }
 
+let spoincBridgeOpsLastFailDryRun = null;
+
 /**
- * Run one future operation as dry-run only.
+ * Run one bridge operation as dry-run only.
  */
 async function runSpoincBridgeDryRun(action) {
   const inputs = readSpoincBridgeOpsInputs();
 
   try {
-    const data = await fetchSpoincBridgeOps(action, inputs);
+    const useProtectedPost = action === 'dry_run_fail_local_not_found';
+
+    const data = await fetchSpoincBridgeOps(
+      action,
+      inputs,
+      useProtectedPost ? { method: 'POST' } : {}
+    );
+
+    if (useProtectedPost) {
+      spoincBridgeOpsLastFailDryRun = data.can_apply && data.dry_run_token
+        ? {
+            intent_id: String(data.intent_id || ''),
+            signature: String(data.signature || ''),
+            dry_run_token: String(data.dry_run_token || '')
+          }
+        : null;
+    }
 
     renderSpoincBridgeOpsResult(`Step 5 — ${action}`, data);
     addLog(`✅ SPOINC Bridge dry-run loaded: ${action}`);
   } catch (error) {
+    if (action === 'dry_run_fail_local_not_found') {
+      spoincBridgeOpsLastFailDryRun = null;
+    }
+
     renderSpoincBridgeOpsResult(`Step 5 — ${action} Failed`, {
       ...inputs,
-      error: error.message
+      error: error.message,
+      backend: error.bridgeData || null
     });
     addLog(`❌ SPOINC Bridge dry-run failed: ${error.message}`);
   }
@@ -7027,15 +7077,40 @@ async function applySpoincBridgeFailLocalNotFound() {
     return;
   }
 
+  const dryRun = spoincBridgeOpsLastFailDryRun;
+
+  const dryRunMatchesInputs = dryRun
+    && dryRun.intent_id === inputs.intent_id
+    && dryRun.signature === inputs.signature
+    && dryRun.dry_run_token;
+
+  if (!dryRunMatchesInputs) {
+    renderSpoincBridgeOpsResult('Apply Blocked — Dry Run Required', {
+      error: 'Run dry_run_fail_local_not_found for this exact intent/signature before apply.',
+      safety: 'No request was sent.'
+    });
+    return;
+  }
+
   try {
-    const data = await fetchSpoincBridgeOps('apply_fail_local_not_found', inputs);
+    const data = await fetchSpoincBridgeOps(
+      'apply_fail_local_not_found',
+      {
+        ...inputs,
+        dry_run_token: dryRun.dry_run_token
+      },
+      { method: 'POST' }
+    );
+
+    spoincBridgeOpsLastFailDryRun = null;
 
     renderSpoincBridgeOpsResult('Apply — Confirm Gensuki Failed', data);
     addLog(`✅ SPOINC Bridge apply fail completed for intent ${inputs.intent_id || 'unknown'}`);
   } catch (error) {
     renderSpoincBridgeOpsResult('Apply — Confirm Gensuki Failed Error', {
       ...inputs,
-      error: error.message
+      error: error.message,
+      backend: error.bridgeData || null
     });
     addLog(`❌ SPOINC Bridge apply fail failed: ${error.message}`);
   }
@@ -7082,14 +7157,14 @@ async function verifySpoincBridgeCompleteSettlement() {
 }
 
 /**
- * Load the bridge admin operations log scaffold.
+ * Load the bridge admin operations audit log.
  */
 async function loadSpoincBridgeOpsLog() {
   try {
     const data = await fetchSpoincBridgeOps('get_operation_log');
 
     renderSpoincBridgeOpsResult('Operation Log', data);
-    addLog('✅ SPOINC Bridge Ops log scaffold loaded');
+    addLog('✅ SPOINC Bridge Ops admin operation log loaded');
   } catch (error) {
     renderSpoincBridgeOpsResult('Operation Log Failed', {
       error: error.message

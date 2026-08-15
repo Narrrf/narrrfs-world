@@ -1,5 +1,1162 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-08-14 — SPOINC Bridge Local Stale Payload Cleanup / User 1224428436928594015
+
+**Scope:** SPOINC bridge local intent cleanup after Gensuki pending audit verified clean  
+**Status:** Live cleanup completed successfully
+
+Live bridge checks showed:
+
+```text
+spoinc-bridge-ops health: HTTP 200
+get-spoinc-bridge-admin overview: HTTP 200
+Gensuki pending audit without Solana: pending_count 0
+Gensuki pending audit with Solana: pending_count 0
+gensuki_errors: []
+rpc_error_count: 0
+
+
+## 2026-08-14 — MouseFight Genesis League V2-1 Snapshot + V2-2A Formula Simulator Milestone Verified
+
+### Agent / Scope
+
+**Agent name and version:** MouseFight League Systems Expert 1.0 LIVE  
+**Scope:** Genesis League V2 distribution discovery, percentile + natural-gap formula simulation, scale testing, tie safety, dynamic Power thresholds, long-term population scaling, and preparation for League fightability / hysteresis validation  
+**Environment:** Local Windows / XAMPP  
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Branch:** `render-deploy`  
+**Canonical QUICK_STATUS:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**Downloaded-live DB snapshot path:** `db/narrrf_world.sqlite`  
+**League API:** `api/leaderboard/get-mousefight-leagues.php`  
+**League API mode:** GET / read-only  
+**Production deployment:** NOT performed  
+**Discord bot restart for V2:** NOT required / NOT performed  
+**V2 database/schema changes:** NONE  
+**V2 economy writes:** NONE  
+**Current phase:** V2-2A complete — proceed to V2-2B hysteresis + League fightability simulation
+
+---
+
+### Downloaded-Live Snapshot Safety Verification
+
+A fresh live database snapshot was downloaded and inspected locally/read-only before League V2 analysis.
+
+Verified local DB:
+
+```text
+db/narrrf_world.sqlite
+
+## 2026-08-13 — MouseFight Genesis League Engine V2 Direction Approved / V1 Tier Expansion Frozen
+
+### Agent / Scope
+
+**Agent name and version:** MouseFight League Systems Expert 1.0 LIVE
+**Scope:** Genesis League V2 population balancing, percentile classification, natural Power-gap detection, daily published League thresholds, Discord League announcement planning, website synchronization, and long-term scalable League architecture
+**Environment:** Local Windows / XAMPP + local Discord bot
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`
+**Discord application path:** `/c/xampp-server/htdocs/narrrfs-world/discord`
+**Branch:** `render-deploy`
+**Canonical common synchronization file:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+**Current League API:** `api/leaderboard/get-mousefight-leagues.php`
+**Current public League page:** `public/mousefights.html`
+**Current Discord League source:** `discord/commands/mousefight.js`
+**Production deployment status for V2:** NOT started
+**V2 source implementation status:** NOT started
+**V2 database/schema changes:** NONE
+**V2 economy changes:** NONE
+**Current phase:** V2 discovery and read-only distribution analysis
+
+---
+
+### Why V2 Is Required
+
+Genesis League V1 successfully proved the full read-only League pipeline:
+
+```text
+permanent Genesis progression
+→ authoritative League Power API
+→ League classification
+→ public website
+→ Discord League commands
+→ /mousefight list
+→ /mousefight view
+→ PVP/event lobby presentation
+```
+
+However, V1 uses fixed absolute Power ranges and an unlimited final tier:
+
+```text
+Crumb                 0–59
+Cheese               60–130
+Bronze              131–171
+Silver              172–222
+Golden              223–247
+Diamond             248–294
+Genesis Master      295–350
+Mouseverse Champion 351+
+```
+
+Real current progression has exposed a scaling weakness.
+
+Some top Genesis mice now have roughly:
+
+```text
+600–800+ League / permanent progression Power
+```
+
+while much of the existing Mouseverse Champion population remains closer to:
+
+```text
+approximately 360–455
+```
+
+Therefore `351+` is too broad to represent the strongest developed Genesis mice fairly.
+
+Simply adding another fixed `500+` or `600+` tier would only move the same infinite-top-bucket problem upward.
+
+V2 will therefore replace fixed League boundaries with a population-aware classification model.
+
+---
+
+### Permanent League Power Contract Remains Unchanged During V2 Discovery
+
+V2 does NOT currently propose changing the underlying permanent League Power formula.
+
+Current approved permanent League Power remains:
+
+```text
+Trait Power
++ Ability Power
++ Named Mouse Bonus
++ Fitness Bonus
+```
+
+where:
+
+```text
+Ability Power = current permanent Genesis Ability levels × 2
+Named Mouse Bonus = +25
+Fitness Bonus = +50 when highest permanent Genesis Trait >= Lv5
+```
+
+Explicitly excluded:
+
+```text
+Owner Genetic Items
+temporary Battle Mode values
+Underdog temporary support
+Equalized temporary calculations
+Chaos temporary snapshots
+MouseFight wins/losses
+DSPOINC
+SPOINC
+token rewards
+```
+
+Genesis League identity remains:
+
+```text
+token_id + collection
+```
+
+The selected Genesis NFT remains the League competitor.
+
+The Discord owner controls current use of the NFT but is not the League identity.
+
+---
+
+### V2 Core Direction — Hybrid Percentage + Natural Power Gap Engine
+
+Approved conceptual direction:
+
+```text
+current qualifying Genesis League population
+→ calculate every current permanent League Power
+→ sort population by League Power
+→ calculate target percentile boundaries
+→ inspect real Power gaps near each target boundary
+→ move the boundary onto a meaningful natural gap when justified
+→ never split equal-Power mice
+→ publish one authoritative daily League threshold snapshot
+→ classify current mice against that published threshold contract
+```
+
+This is intentionally NOT:
+
+```text
+fixed Power ranges only
+```
+
+and NOT:
+
+```text
+percentile positions only
+```
+
+V2 combines:
+
+```text
+population balance
++
+actual permanent Power distance
+```
+
+so strong natural clusters can remain together while extreme outliers / apex groups can receive their own competitive division.
+
+---
+
+### Stable League Identities / Dynamic Boundaries
+
+The intended long-term model keeps understandable, stable League identities while allowing their Power thresholds to adapt to the real population.
+
+Current working V2 structure:
+
+```text
+1. Crumb
+2. Cheese
+3. Bronze
+4. Silver
+5. Golden
+6. Diamond
+7. Genesis Master
+8. Mouseverse Champion
+9. Ultra Champion / final apex name still open
+```
+
+`Ultra Champion` is currently a working name only.
+
+The number/name contract is not final until the V2 population simulation is reviewed.
+
+The important architecture rule is:
+
+```text
+League names remain understandable/stable
+Power boundaries become population-aware
+```
+
+---
+
+### Initial Percentage Model — PROPOSED, NOT YET FINAL
+
+First simulation candidate:
+
+```text
+Crumb                 bottom 10%
+Cheese                next   18%
+Bronze                next   18%
+Silver                next   17%
+Golden                next   14%
+Diamond               next   10%
+Genesis Master        next    7%
+Mouseverse Champion   next    4%
+Ultra Champion        top     2%
+```
+
+Total:
+
+```text
+100%
+```
+
+These percentages are simulation targets only.
+
+They are NOT approved production thresholds yet.
+
+Natural-gap detection may move an actual boundary away from the exact percentile position.
+
+---
+
+### Natural Power Gap Rule
+
+Example:
+
+```text
+441
+447
+451
+455
+462
+470
+728
+741
+803
+```
+
+A pure percentile split may place a boundary inside the tightly grouped `441–470` mice.
+
+V2 should instead recognize:
+
+```text
+470 → 728 = +258 Power
+```
+
+as a meaningful natural separation if it occurs within the permitted search window around the target percentile.
+
+Therefore the target percentile defines the approximate population split while the Power distribution determines the cleanest nearby competitive boundary.
+
+V2 must include safeguards against random small gaps.
+
+Exact gap scoring / normalization formula is NOT approved yet and must be derived from the real snapshot and simulations.
+
+---
+
+### Equal-Power Safety Rule
+
+V2 must never split identical permanent League Power values across different Leagues.
+
+Example:
+
+```text
+500 mice have League Power 245
+```
+
+They must remain in the same League even if the exact target percentile passes through that group.
+
+Therefore:
+
+```text
+target population percentage ≠ rigid head count
+```
+
+Small percentage deviations are acceptable to preserve deterministic and fair Power classification.
+
+---
+
+### Daily Published League Threshold Snapshot
+
+Approved conceptual cadence:
+
+```text
+02:00 UTC every day
+→ inspect current qualifying Genesis League population
+→ calculate permanent League Power distribution
+→ calculate target percentiles
+→ detect meaningful natural gaps
+→ resolve the day's League thresholds
+→ publish one authoritative League threshold snapshot
+```
+
+The global League boundaries should NOT be recalculated on every fight or every page request.
+
+During the published daily threshold period:
+
+```text
+a Genesis mouse may continue permanent Lab progression
+→ its current permanent League Power changes
+→ it is classified against the currently published daily thresholds
+```
+
+This allows permanent progression to matter without making the entire League structure move every few minutes.
+
+---
+
+### Threshold Stability / Hysteresis Requirement
+
+V2 must avoid meaningless daily League-boundary oscillation.
+
+Example:
+
+```text
+Day 1 Diamond threshold: 248
+Day 2 statistical candidate: 246
+Day 3 statistical candidate: 249
+```
+
+Small normal population noise should not automatically cause unnecessary boundary movement.
+
+V2 therefore requires a threshold-stability / hysteresis rule.
+
+Large genuine distribution changes or strong natural Power gaps may justify larger movement.
+
+Exact hysteresis numbers are NOT approved yet.
+
+They must be simulation-tested before production implementation.
+
+---
+
+### Daily Discord League Publication — REQUIRED FUTURE V2 FEATURE
+
+After the authoritative 02:00 UTC threshold snapshot is successfully published, the latest League structure should automatically be posted to the MouseFight events/community channel.
+
+Planned announcement content:
+
+```text
+Genesis League snapshot date
+current qualifying population
+League names
+current Power ranges
+population per League
+percentage per League
+promotion boundaries
+top/apex League population
+important threshold changes from previous snapshot
+website link
+```
+
+This Discord announcement is informational only.
+
+It must NOT:
+
+```text
+start fights
+move DSPOINC
+move SPOINC
+create rewards
+change Genesis progression
+change ownership
+change Genetic Items
+touch Fight Recovery
+```
+
+The exact Discord channel ID and durable scheduling mechanism still require source/runtime verification before implementation.
+
+The 02:00 UTC classifier must not depend on an unreliable Discord presentation path.
+
+Authoritative League calculation and Discord publication must remain separate layers.
+
+---
+
+### Website Synchronization — REQUIRED FUTURE V2 FEATURE
+
+`public/mousefights.html` must always display the currently published authoritative V2 League snapshot.
+
+The website must not independently calculate percentile boundaries or natural gaps.
+
+Required architecture:
+
+```text
+authoritative V2 League snapshot
+→ League API
+→ website League directory
+→ Discord League commands
+→ normal MouseFight League presentation
+```
+
+All consumers must use the same published contract.
+
+Website and Discord must not maintain separate threshold formulas.
+
+---
+
+### Scale Requirement
+
+The V2 architecture must be designed for very large Narrrfs World user populations.
+
+Important boundary:
+
+```text
+Narrrfs World users may eventually number in the hundreds of thousands or more.
+```
+
+However, the current Genesis League competitor is still the qualifying Genesis NFT:
+
+```text
+token_id + collection
+```
+
+Therefore current Genesis League population is bounded by the number of qualifying Genesis NFTs rather than the total Narrrfs account count.
+
+The classifier architecture must nevertheless remain capable of processing much larger future NFT / competitive populations without requiring a redesign.
+
+Target architectural direction:
+
+```text
+scheduled distribution calculation
+→ published threshold snapshot
+→ cheap read-only classification
+→ many website / Discord consumers
+```
+
+Do not recalculate the full population distribution for every Discord command, page visitor, fight join, or lobby refresh.
+
+---
+
+### Power League vs Competitive Standing
+
+V2 preserves two separate future competitive dimensions.
+
+#### Power League
+
+Determined by permanent Genesis progression:
+
+```text
+permanent Genesis progression
+→ League Power
+→ current Power League
+```
+
+This protects the value and advantage of strong / developed Genesis NFTs.
+
+#### Competitive Standing — FUTURE
+
+Later League fight performance may produce ranking inside the current Power League:
+
+```text
+wins
+losses
+opponent quality
+fight volume
+event placement
+possible future rating
+```
+
+Example:
+
+```text
+💎 Diamond League
+#7 ranked Diamond competitor
+```
+
+Fight results must NOT directly alter permanent League Power.
+
+Power determines the competitive division.
+
+League fight results may later determine standing inside that division.
+
+No rating formula has been approved yet.
+
+---
+
+### Strong NFT Value Remains Important
+
+V2 is not intended to normalize away permanent progression.
+
+Champion Mode should continue rewarding authentic developed Genesis mice.
+
+Example:
+
+```text
+800 Power
+vs
+760 Power
+```
+
+The stronger permanent Genesis progression should remain meaningful.
+
+The problem V2 is solving is repeated classification such as:
+
+```text
+800 Power
+vs
+360 Power
+```
+
+inside one unlimited top division.
+
+Leagues provide competitive structure.
+
+Battle Modes remain separate temporary combat rules:
+
+```text
+Champion
+Underdog
+Equalized
+Chaos
+```
+
+League classification and Battle Mode calculation must remain separate systems.
+
+---
+
+### Existing V1 Work Remains Valuable
+
+The following League work is already locally/runtime verified and remains the foundation:
+
+```text
+Phase 1A — read-only League API
+Phase 2  — public MouseFight League directory
+Phase 3A — /mousefight help
+Phase 3B — /mousefight leagues
+Phase 3C — /mousefight league-player
+Phase 3D — /mousefight league-tier
+Phase 3E-A — League presentation in list/view/PVP/event lobbies
+```
+
+Verified Phase 3E-A runtime paths:
+
+```text
+/mousefight list
+/mousefight view
+free moderator event
+free event join
+joined-fighter League symbol / label / League Power
+```
+
+The V1 pipeline therefore remains useful.
+
+V2 should replace the authoritative classification contract rather than rebuild the entire League presentation architecture.
+
+---
+
+### Known V1 Consumer Assumptions To Remove Later
+
+Current Discord/UI code still contains fixed V1 assumptions such as:
+
+```text
+exactly 8 Leagues
+hard-coded League choices
+hard-coded V1 Power ranges
+"current 8 Genesis Mouse Leagues"
+```
+
+V2 consumers must become contract-driven.
+
+Required future direction:
+
+```text
+API supplies:
+- number of Leagues
+- rank
+- key
+- label
+- symbol
+- current minimum Power
+- current maximum Power
+- target percentage
+- actual percentage
+- population
+- calculation metadata
+
+Discord displays it
+Website displays it
+```
+
+Consumers must not independently know whether there are 8, 9, or another approved number of divisions.
+
+---
+
+### Contract Versioning Requirement
+
+Do not silently change the semantics of:
+
+```text
+mousefight_genesis_leagues_v1
+```
+
+V1 represents the current fixed-range classifier.
+
+V2 should use a new explicit version, working proposal:
+
+```text
+mousefight_genesis_leagues_v2
+```
+
+V2 should identify the classification methodology, for example:
+
+```text
+hybrid_percentile_gap_v1
+```
+
+Exact naming remains subject to implementation review.
+
+---
+
+### V2 Audit Metadata Requirement
+
+The published V2 snapshot should eventually explain why each League boundary exists.
+
+Proposed diagnostic fields:
+
+```text
+contract version
+classifier method
+snapshot timestamp
+effective period
+qualifying population
+target percentile
+actual percentile
+lower boundary Power
+upper boundary Power
+adjacent Power gap
+gap score / significance
+target League percentage
+actual League percentage
+population per League
+previous threshold
+threshold movement
+```
+
+This metadata allows future agents to audit a boundary without reverse-engineering historical population data.
+
+---
+
+### Development Freeze Before V2 Contract Approval
+
+The following planned features are temporarily frozen until the V2 classifier is approved:
+
+```text
+Phase 3E-B round/fight-card League decoration
+League Mode OFF / Exact Tier / Minimum Tier implementation
+League fight counting
+League rating
+League rewards
+weekly League DMs
+promotion/relegation gameplay restrictions
+```
+
+Reason:
+
+```text
+all of these consume the League contract
+```
+
+The authoritative classifier should be stabilized before more gameplay or presentation is built on top of it.
+
+---
+
+### V2 Approved Development Sequence
+
+#### Phase V2-0 — Current Synchronization
+
+```text
+document V2 direction
+freeze V1 expansion
+protect current runtime
+```
+
+Status:
+
+```text
+APPROVED / documentation only
+```
+
+#### Phase V2-1 — Read-Only Distribution Audit
+
+Use the newest verified database snapshot.
+
+Produce:
+
+```text
+full current qualifying population count
+sorted permanent League Power distribution
+top end
+bottom end
+P50
+P75
+P90
+P95
+P97
+P98
+P99
+P99.5
+power buckets
+largest adjacent Power gaps
+counts above important Power thresholds
+equal-Power groups
+owner concentration diagnostics
+```
+
+Important top-end counts to inspect include:
+
+```text
+350+
+400+
+450+
+500+
+550+
+600+
+650+
+700+
+750+
+800+
+```
+
+No source edit.
+
+No DB write.
+
+No bot restart.
+
+#### Phase V2-2 — Offline / Read-Only League Simulator
+
+Create an isolated simulator that compares:
+
+```text
+V1 fixed ranges
+vs
+candidate percentile models
+vs
+hybrid percentile + natural-gap models
+```
+
+Test:
+
+```text
+current population
+small populations
+full Genesis-scale populations
+synthetic 10k+
+synthetic 100k+
+strong top-end outliers
+large equal-Power groups
+multiple natural clusters
+smooth distributions without major gaps
+```
+
+No production behavior.
+
+#### Phase V2-3 — Approve Mathematical Contract
+
+Explicit approval required for:
+
+```text
+League count
+League names
+target percentage per League
+natural-gap search window
+gap significance formula
+equal-Power handling
+minimum population rules
+daily threshold cadence
+hysteresis / maximum ordinary movement
+apex League behavior
+snapshot retention
+```
+
+#### Phase V2-4 — Authoritative V2 Classifier
+
+Only after V2-3 approval:
+
+```text
+implement mousefight_genesis_leagues_v2
+```
+
+Keep:
+
+```text
+League Power formula unchanged unless separately approved
+read-only public classification
+Genesis identity unchanged
+Genetic Items excluded
+Battle Modes excluded
+economy excluded
+Fight Recovery excluded
+```
+
+#### Phase V2-5 — Published Daily Snapshot
+
+Build the authoritative snapshot mechanism for:
+
+```text
+02:00 UTC daily
+```
+
+The scheduler / persistence architecture must be verified before implementation.
+
+No deployment-config assumption is allowed.
+
+Any new table/schema requires separate explicit migration approval.
+
+#### Phase V2-6 — Contract-Driven Website
+
+Update `public/mousefights.html` to use the V2 published contract.
+
+Remove fixed V1 League-count/range assumptions.
+
+#### Phase V2-7 — Contract-Driven Discord
+
+Update:
+
+```text
+/mousefight help
+/mousefight leagues
+/mousefight league-player
+/mousefight league-tier
+/mousefight list
+/mousefight view
+PVP/event League presentation
+```
+
+to use the V2 contract without local percentile calculations.
+
+#### Phase V2-8 — Daily Discord League Announcement
+
+After the daily snapshot is successfully published:
+
+```text
+post current League structure automatically
+to the verified MouseFight events/community channel
+```
+
+Must include retry/idempotency design so one daily snapshot cannot create repeated announcements.
+
+Exact channel ID and runtime scheduler are still unverified.
+
+#### Phase V2-9 — Phase 3E-B Resume
+
+Only after V2 classification is runtime verified:
+
+```text
+add League symbol / label to round and fight-card presentation
+```
+
+Display only.
+
+No combat influence.
+
+#### Phase V2-10 — League Mode Design
+
+Only after V2 is stable:
+
+```text
+League Mode OFF by default
+Exact Tier
+Minimum Tier
+```
+
+Requires separate protected review of:
+
+```text
+challenge creation
+accept
+event creation
+join
+runtime state
+persistence
+PVP escrow
+event buy-in
+settlement
+cancellation
+Fight Recovery
+restoration
+```
+
+#### Phase V2-11 — Competitive League Standing
+
+Future separate layer:
+
+```text
+Power League
++
+fight-performance standing inside League
+```
+
+No rating formula or rewards are approved yet.
+
+---
+
+### Still-Unverified Critical Questions
+
+Before V2 implementation, verify and approve:
+
+```text
+1. Exact V2 qualifying population definition:
+   - every named Genesis mouse?
+   - named + current verified owner?
+   - MouseFight-ready only?
+   - another explicit population?
+
+2. Final number/name of League divisions.
+
+3. Final target percentage distribution.
+
+4. Natural-gap scoring formula and allowed search window.
+
+5. Minimum population required before dynamic thresholds activate.
+
+6. Hysteresis / ordinary daily boundary movement limit.
+
+7. Exact storage/publication mechanism for daily threshold snapshots.
+
+8. Whether historical daily snapshots must be retained permanently.
+
+9. Exact Discord MouseFight events channel ID.
+
+10. Discord daily post behavior:
+    - post every day regardless of change?
+    - or post only when thresholds/populations change?
+
+11. Scheduler authority for 02:00 UTC:
+    - verified server scheduler
+    - bot scheduler
+    - another existing Narrrfs scheduler
+    - must be inspected before implementation.
+
+12. Failure behavior when the 02:00 calculation cannot complete.
+
+13. How newly named / newly upgraded mice behave between daily snapshots.
+
+14. Final apex League name.
+```
+
+---
+
+### Protected Systems Unchanged
+
+This V2 design decision changes documentation and development direction only.
+
+No change has been made to:
+
+```text
+MouseFight combat
+Champion Mode
+Underdog Mode
+Equalized Mode
+Chaos Mode
+PVP escrow
+PVP settlement
+event burns
+event refunds
+champion rewards
+token payouts / airdrops
+Fight Recovery
+cooldowns
+Genesis ownership
+permanent Genesis Traits
+permanent Genesis Abilities
+Lab progression
+Genetic Items
+staking
+authentication
+DSPOINC
+SPOINC
+database schema
+deployment configuration
+season archive
+unrelated games
+```
+
+---
+
+### Current Evidence Status
+
+```text
+V1 read-only API                VERIFIED locally
+V1 website directory           VERIFIED locally
+Discord 3A–3D                  VERIFIED local runtime
+Discord 3E-A                   VERIFIED local runtime
+free event League presentation VERIFIED local runtime
+V2 percentage engine           NOT implemented
+V2 natural-gap engine          NOT implemented
+02:00 UTC snapshot             NOT implemented
+daily Discord announcement     NOT implemented
+V2 website sync                NOT implemented
+V2 League Mode                 NOT implemented
+```
+
+---
+
+### Exact Next Step
+
+Perform **Phase V2-1 — read-only current population distribution audit** against the newest verified database snapshot.
+
+Required output:
+
+```text
+population basis
+Power distribution
+percentiles
+Power buckets
+largest adjacent gaps
+top-end clusters
+equal-Power groups
+owner concentration
+candidate apex separation evidence
+```
+
+Only after reviewing that real output should the V2 percentage targets, Ultra Champion boundary logic, and natural-gap parameters be approved.
+
+---
+
+### Agent Status
+
+**Rules:** Accepted
+**Status:** Synchronized
+**Standby:** Active
+**Current milestone:** Genesis League V2 hybrid percentage + natural-gap direction approved for discovery
+**Current code authority:** V1 remains authoritative until V2 is explicitly implemented and validated
+**Exact next step:** read-only V2 population snapshot / percentile / Power-gap audit
+
+
+## 2026-08-12 — MouseFight Genesis Leagues Discord 3A–3E-A Runtime Verified
+
+### Agent / Scope
+
+**Agent name and version:** MouseFight League Systems Expert 1.0 LIVE  
+**Scope:** Genesis League Discord presentation integration, read-only league commands, current league lookup, and display-only league metadata in MouseFight lobbies/events  
+**Environment:** Local Windows / XAMPP + local Discord bot  
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Discord application path:** `/c/xampp-server/htdocs/narrrfs-world/discord`  
+**Branch:** `render-deploy`  
+**Canonical QUICK_STATUS:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**League API:** `/api/leaderboard/get-mousefight-leagues.php`  
+**League API mode:** GET / read-only  
+**Local bot runtime:** restarted manually and runtime tested  
+**Production website/API deployment status:** NOT performed in this phase  
+**Database schema changes:** NONE  
+**League database writes:** NONE  
+
+---
+
+### Verified League Contract
+
+The selected **Genesis mouse** remains the league competitor.
+
+Authoritative league identity:
+
+```text
+token_id + collection
+
+## 2026-08-12 — MouseFight Genesis Leagues V1 Read-Only API + Public League Directory Locally Verified
+
+### Agent / Scope
+
+**Agent name and version:** MouseFight League Systems Expert 1.0 LIVE  
+**Scope:** Genesis Mouse League architecture, fixed power tiers, authoritative read-only league classification, public MouseFight league directory, and preparation for Discord league integration  
+**Environment:** Local XAMPP  
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Branch:** `render-deploy`  
+**Database path:** `db/narrrf_world.sqlite`  
+**Database source used for league population validation:** downloaded-live snapshot inspected locally/read-only  
+**Local Apache DocumentRoot:** `C:/xampp-server/htdocs/narrrfs-world`  
+**Local public page:** `http://localhost/public/mousefights.html`  
+**Local league API:** `http://localhost/api/leaderboard/get-mousefight-leagues.php`  
+**Production deployment status:** NOT deployed  
+**Discord league implementation status:** NOT started yet  
+**Database writes for league system:** NONE  
+
+---
+
+### Genesis League V1 Contract
+
+The league competitor is the selected **Genesis mouse**, not the Discord player.
+
+Authoritative league identity:
+
+```text
+token_id + collection
+
+## 2026-08-06 — MouseFight Genesis League Population Audit Approved / Local Snapshot Ready
+
+### Agent / Scope
+
+**Agent name and version:** MouseFight League Systems Expert 1.0 LIVE  
+**Scope:** Documentation and read-only population discovery for the planned Genesis mouse power leagues  
+**Current phase:** Pre-implementation league balancing and local downloaded-database analysis  
+**Implementation status:** Not started  
+**Production status:** Not deployed
+
+### Approved League Direction
+
+The planned MouseFight league system is based on the selected Genesis mouse rather than the Discord player.
+
+Authoritative competitor identity:
+
+```text
+token_id + collection
+
+## 2026-08-09 — Gensuki Presale API Multichain Flag Notice
+
+**Scope:** SPOINC Bridge / Gensuki custom-token-presale API awareness note  
+**Status:** Documentation reminder only — no code change required now
+
+Gensuki notified Narrrfs that they are adding a presale-mode change for future multichain swap support.
+
+Their note:
+
+```text
+I'm doing little change in presale mode for multichain swap this will not effect any current API infrastructure just it's enabled and add one more parameter in API multichain boolean which is false by default and only enabled by you through the dashboard.
+
 ## 2026-08-08 — Samuzi Partner Identity V2 Local Full Cycle Verified
 
 ### Agent / Scope
