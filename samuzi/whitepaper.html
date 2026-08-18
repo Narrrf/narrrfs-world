@@ -278,7 +278,76 @@
                 width: 100%;
             }
         }
-    </style>
+    
+/* =========================================================
+   WHITEPAPER SMZ DARK EMBED V1
+   Adds dark Gensuki SMZ chart embed to whitepaper token section.
+   ========================================================= */
+
+.whitepaper-smz-embed-wrap {
+    margin-top: 1.35rem;
+    padding: 12px;
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at 14% 0%, rgba(250,204,21,0.16), transparent 34%),
+        radial-gradient(circle at 88% 18%, rgba(34,211,238,0.12), transparent 36%),
+        rgba(0,0,0,0.46);
+    border: 1px solid rgba(250,204,21,0.30);
+    box-shadow:
+        0 22px 70px rgba(0,0,0,0.52),
+        0 0 38px rgba(250,204,21,0.10);
+}
+
+.whitepaper-smz-embed-wrap::before {
+    content: "Live SMZ chart · dark Gensuki embed";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    margin-bottom: 10px;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    color: #fef3c7;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(250,204,21,0.20), transparent 34%),
+        rgba(7,7,11,0.80);
+    border: 1px solid rgba(250,204,21,0.24);
+    font-size: 0.78rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.whitepaper-smz-embed-wrap iframe {
+    width: 100%;
+    height: 700px;
+    border: 0;
+    display: block;
+    border-radius: 20px;
+    background: #050507;
+    box-shadow: 0 16px 46px rgba(0,0,0,0.48);
+}
+
+@media (max-width: 700px) {
+    .whitepaper-smz-embed-wrap {
+        padding: 8px;
+        border-radius: 22px;
+    }
+
+    .whitepaper-smz-embed-wrap::before {
+        border-radius: 18px;
+        font-size: 0.68rem;
+        line-height: 1.35;
+        text-align: center;
+    }
+
+    .whitepaper-smz-embed-wrap iframe {
+        height: 620px;
+        border-radius: 16px;
+    }
+}
+
+</style>
 </head>
 
 <body>
@@ -338,7 +407,7 @@
 
     <div class="meta-card">
 <strong>Current Focus</strong>
-<span>AKAMAILAND Phase 4 mint has been rescheduled to Wednesday, 22 July 2026 at 04:00 PM UTC for a safer launch experience.</span>
+<span>AKAMAILAND Phase 4 is in WL mint phase. OG phase has expired. WL mint is live at 0.07 SOL and the public phase opens next at 0.10 SOL.</span>
     </div>
 
     <div class="meta-card">
@@ -443,7 +512,104 @@
     </div>
 </section>
 
-    <section class="whitepaper-section">
+    
+<section class="whitepaper-section" id="samuzi-token-chart-whitepaper">
+    <div class="container">
+        <article class="whitepaper-card">
+            <span class="section-eyebrow">00B · Samuzi Token</span>
+            <h2>Live SMZ token chart</h2>
+            <p>
+                Samuzi NFT is connected to a Solana-based ecosystem token. The live Samuzi (SMZ)
+                token page, chart, and token information are available through Gensuki.
+            </p>
+
+            <div class="whitepaper-actions">
+                <a href="https://app.gensuki.xyz/tokens/solana/C7CJizyZRgNornuF3bvkTMAidJon1HeTNENMhy1PVCRd" target="_blank" rel="noopener noreferrer" class="button-primary">
+                    Open SMZ Token Page
+                </a>
+                <a href="https://akamailand.gensuki.xyz/" target="_blank" rel="noopener noreferrer" class="button-secondary">
+                    Open AKAMAILAND Mint
+                </a>
+            </div>
+
+            <div class="whitepaper-smz-embed-wrap">
+                <iframe
+                    src="https://app.gensuki.xyz/tokens/solana/C7CJizyZRgNornuF3bvkTMAidJon1HeTNENMhy1PVCRd?embed=true&theme=dark"
+                    title="Samuzi SMZ Token Chart on Gensuki"
+                    loading="lazy"
+                    frameborder="0"
+                    allowtransparency="true"
+                    allow="clipboard-write; encrypted-media; fullscreen">
+                </iframe>
+            </div>
+
+
+            <div class="disclaimer-box">
+                <p>
+                    Token information, prices, swaps, and market data are provided by external platforms.
+                    Always verify official links, understand the risks, and do your own research before
+                    interacting with any digital asset.
+                </p>
+            </div>
+        </article>
+    </div>
+</section>
+
+
+<section class="whitepaper-section" id="akamailand-rewards-mining">
+    <div class="container">
+        <article class="whitepaper-card">
+            <span class="section-eyebrow">00C · AKAMAILAND Rewards</span>
+            <h2>Raffle, mining and reward mechanics</h2>
+
+            <p>
+                AKAMAILAND Phase 4 adds a land-based participation layer around raffles,
+                mining rewards, map highlights, and $SMZ earning opportunities.
+            </p>
+
+            <div class="whitepaper-grid">
+                <div class="mini-card">
+                    <strong>Raffle Winner Highlights</strong>
+                    <p>When a raffle winner is announced, the winning land can glow or highlight on the map.</p>
+                </div>
+
+                <div class="mini-card">
+                    <strong>Mining Claim Panel</strong>
+                    <p>The claim panel is planned to show unclaimed $SMZ, claimed $SMZ, mining pool status, and claim history.</p>
+                </div>
+
+                <div class="mini-card">
+                    <strong>Location-Based Rewards</strong>
+                    <p>Mining rewards can vary depending on land location and distance from important map zones.</p>
+                </div>
+
+                <div class="mini-card">
+                    <strong>Earning Plot Utility</strong>
+                    <p>AKAMAILAND plots are designed as active ecosystem plots, not only static collectibles.</p>
+                </div>
+            </div>
+
+            <h3>Reward zones</h3>
+            <ul>
+                <li><strong>Center Core</strong> → Highest Rewards.</li>
+                <li><strong>Inner Transition</strong> → High Rewards.</li>
+                <li><strong>Middle Valley</strong> → Lower Rewards.</li>
+                <li><strong>Outer Ring</strong> → Higher Rewards.</li>
+                <li><strong>Borders & Corners</strong> → High Rewards.</li>
+            </ul>
+
+            <div class="disclaimer-box">
+                <p>
+                    Rewards, mining rates, claim mechanics, map highlights, raffle behavior, dates,
+                    and token features may change as the ecosystem develops. Official details should
+                    always be verified through Samuzi channels.
+                </p>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section class="whitepaper-section">
         <div class="container">
             <article class="whitepaper-card">
                 <span class="section-eyebrow">02 · Vision & Mission</span>

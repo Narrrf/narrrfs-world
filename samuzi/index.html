@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
-    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-motion-secret-1">
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-motion-secret-smz-dark-embed-1">
 
     <style>
         body {
@@ -1722,7 +1722,617 @@
     font-size: 0.82rem !important;
     line-height: 1.45 !important;
 }
-    </style>
+    
+/* =========================================================
+   SAMUZI WL LIVE + SMZ CHART UPDATE
+   Adds active WL phase, SMZ token chart, mining/reward panels.
+   ========================================================= */
+
+.samuzi-live-update-section,
+.samuzi-token-chart-section {
+    position: relative;
+    z-index: 5;
+    padding: clamp(2rem, 5vw, 4rem) 0;
+}
+
+.samuzi-live-update-panel,
+.samuzi-token-chart-panel {
+    overflow: hidden;
+    border-radius: 32px;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    background:
+        radial-gradient(circle at 14% 0%, rgba(250,204,21,0.18), transparent 34%),
+        radial-gradient(circle at 88% 12%, rgba(34,211,238,0.16), transparent 36%),
+        linear-gradient(180deg, rgba(10,10,18,0.94), rgba(4,5,10,0.88));
+    border: 1px solid rgba(250,204,21,0.26);
+    box-shadow:
+        0 30px 100px rgba(0,0,0,0.62),
+        0 0 55px rgba(250,204,21,0.10);
+    backdrop-filter: blur(18px);
+}
+
+.samuzi-live-update-grid,
+.samuzi-token-chart-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+    gap: clamp(1.1rem, 3vw, 2rem);
+    align-items: stretch;
+}
+
+.samuzi-live-update-copy h2,
+.samuzi-token-chart-copy h2 {
+    color: #ffffff;
+    font-size: clamp(2rem, 5vw, 4.1rem);
+    line-height: 0.96;
+    letter-spacing: -0.055em;
+    margin: 1rem 0 0.85rem;
+}
+
+.samuzi-live-update-copy p,
+.samuzi-token-chart-copy p,
+.samuzi-reward-card p {
+    color: #dbe4f0;
+    line-height: 1.75;
+}
+
+.samuzi-phase-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1.15rem;
+}
+
+.samuzi-phase-chip,
+.samuzi-reward-card {
+    padding: 1rem;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.10);
+}
+
+.samuzi-phase-chip strong,
+.samuzi-reward-card strong {
+    display: block;
+    color: #ffffff;
+    margin-bottom: 0.35rem;
+}
+
+.samuzi-phase-chip span {
+    color: #cbd5e1;
+    line-height: 1.45;
+    font-size: 0.9rem;
+}
+
+.samuzi-phase-chip.live {
+    border-color: rgba(250,204,21,0.48);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(250,204,21,0.18), transparent 38%),
+        rgba(255,255,255,0.055);
+    box-shadow: 0 0 28px rgba(250,204,21,0.12);
+}
+
+.samuzi-reward-grid {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.samuzi-token-iframe-wrap {
+    min-height: 620px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.38);
+    border: 1px solid rgba(34,211,238,0.24);
+    box-shadow: 0 18px 58px rgba(0,0,0,0.48);
+}
+
+.samuzi-token-iframe-wrap iframe {
+    width: 100%;
+    height: 620px;
+    border: 0;
+    display: block;
+    background: #050507;
+}
+
+@media (max-width: 980px) {
+    .samuzi-live-update-grid,
+    .samuzi-token-chart-grid,
+    .samuzi-phase-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .samuzi-token-iframe-wrap,
+    .samuzi-token-iframe-wrap iframe {
+        min-height: 560px;
+        height: 560px;
+    }
+}
+
+
+/* =========================================================
+   SMZ CHART THEME POLISH V1
+   Makes external Gensuki iframe feel native to Samuzi theme.
+   ========================================================= */
+
+.samuzi-token-chart-section {
+    padding-top: clamp(2.5rem, 6vw, 5rem) !important;
+    padding-bottom: clamp(2.5rem, 6vw, 5rem) !important;
+}
+
+.samuzi-token-chart-panel {
+    position: relative;
+    border-color: rgba(250,204,21,0.32) !important;
+    background:
+        radial-gradient(circle at 12% 0%, rgba(250,204,21,0.16), transparent 34%),
+        radial-gradient(circle at 88% 20%, rgba(225,29,72,0.20), transparent 36%),
+        linear-gradient(135deg, rgba(12,10,16,0.96), rgba(4,5,10,0.92)) !important;
+}
+
+.samuzi-token-chart-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.055) 34%, transparent 62%),
+        radial-gradient(circle at 50% 0%, rgba(250,204,21,0.08), transparent 40%);
+    z-index: 0;
+}
+
+.samuzi-token-chart-panel > * {
+    position: relative;
+    z-index: 2;
+}
+
+.samuzi-token-chart-grid {
+    grid-template-columns: minmax(0, 0.82fr) minmax(420px, 1.18fr) !important;
+    align-items: center !important;
+}
+
+.samuzi-token-chart-copy {
+    padding: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.samuzi-token-chart-copy h2 {
+    max-width: 560px;
+    text-shadow:
+        0 8px 28px rgba(0,0,0,0.70),
+        0 0 34px rgba(250,204,21,0.14);
+}
+
+.samuzi-token-chart-copy p {
+    max-width: 560px;
+    color: #e5edf7 !important;
+}
+
+.samuzi-token-iframe-wrap {
+    position: relative;
+    min-height: 560px !important;
+    height: 560px !important;
+    padding: 12px;
+    border-radius: 30px !important;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.035)),
+        radial-gradient(circle at 50% 0%, rgba(34,211,238,0.16), transparent 36%),
+        rgba(0,0,0,0.62) !important;
+    border: 1px solid rgba(250,204,21,0.34) !important;
+    box-shadow:
+        0 24px 80px rgba(0,0,0,0.62),
+        0 0 38px rgba(250,204,21,0.13),
+        inset 0 0 0 1px rgba(255,255,255,0.06) !important;
+}
+
+.samuzi-token-iframe-wrap::before {
+    content: "Live SMZ chart · dark Gensuki embed";
+    display: flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 0.9rem;
+    margin-bottom: 10px;
+    border-radius: 999px;
+    color: #fef3c7;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(250,204,21,0.22), transparent 34%),
+        rgba(7,7,11,0.78);
+    border: 1px solid rgba(250,204,21,0.24);
+    font-size: 0.78rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.samuzi-token-iframe-wrap iframe {
+    height: calc(100% - 44px) !important;
+    min-height: 700px !important;
+    border-radius: 22px !important;
+    overflow: hidden;
+    filter: saturate(1.05) contrast(1.02);
+    box-shadow:
+        0 18px 48px rgba(0,0,0,0.50),
+        inset 0 0 0 1px rgba(0,0,0,0.25);
+}
+
+/* Soft dark edge overlay: does not block iframe clicks */
+.samuzi-token-iframe-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 46px 12px 12px;
+    border-radius: 22px;
+    pointer-events: none;
+    box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,0.28),
+        inset 0 0 42px rgba(0,0,0,0.18);
+}
+
+@media (max-width: 980px) {
+    .samuzi-token-chart-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .samuzi-token-iframe-wrap {
+        min-height: 620px !important;
+        height: 620px !important;
+    }
+
+    .samuzi-token-iframe-wrap iframe {
+        min-height: 560px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .samuzi-token-chart-panel {
+        padding: 1rem !important;
+        border-radius: 24px !important;
+    }
+
+    .samuzi-token-iframe-wrap {
+        padding: 8px;
+        min-height: 580px !important;
+        height: 580px !important;
+        border-radius: 22px !important;
+    }
+
+    .samuzi-token-iframe-wrap::before {
+        height: auto;
+        min-height: 34px;
+        font-size: 0.68rem;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .samuzi-token-iframe-wrap iframe {
+        min-height: 520px !important;
+        border-radius: 18px !important;
+    }
+
+    .samuzi-token-iframe-wrap::after {
+        inset: 48px 8px 8px;
+        border-radius: 18px;
+    }
+}
+
+
+/* =========================================================
+   SMZ CHART NATIVE CARD V2
+   Keeps the Gensuki chart available but makes Samuzi styling dominant.
+   ========================================================= */
+
+.samuzi-token-chart-panel {
+    max-width: 1180px;
+    margin-inline: auto;
+}
+
+.samuzi-token-chart-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.samuzi-token-chart-copy {
+    max-width: 900px;
+    text-align: center;
+    margin-inline: auto;
+}
+
+.samuzi-token-chart-copy .status-pill {
+    margin-inline: auto;
+}
+
+.samuzi-token-chart-copy h2 {
+    max-width: 820px;
+    margin-inline: auto;
+}
+
+.samuzi-token-chart-copy p {
+    max-width: 760px;
+    margin-inline: auto;
+}
+
+.samuzi-token-chart-copy .launch-actions {
+    justify-content: center;
+}
+
+.samuzi-token-chart-copy::after {
+    content: "Live price · Solana token · Swap route · Gensuki market data";
+    display: flex;
+    justify-content: center;
+    margin: 1.25rem auto 0;
+    max-width: 760px;
+    padding: 0.9rem 1rem;
+    border-radius: 999px;
+    color: #fef3c7;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(250,204,21,0.18), transparent 34%),
+        rgba(0,0,0,0.34);
+    border: 1px solid rgba(250,204,21,0.28);
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 0.03em;
+}
+
+.samuzi-token-iframe-wrap {
+    margin-top: 1.5rem;
+    max-width: 900px;
+    margin-inline: auto;
+    min-height: 760px !important;
+    height: 760px !important;
+    opacity: 0.92;
+}
+
+.samuzi-token-iframe-wrap iframe {
+    min-height: 700px !important;
+    height: calc(100% - 44px) !important;
+}
+
+.samuzi-token-iframe-wrap::before {
+    content: "Live SMZ chart · dark Gensuki embed";
+}
+
+@media (max-width: 640px) {
+    .samuzi-token-chart-copy::after {
+        border-radius: 18px;
+        line-height: 1.45;
+    }
+
+    .samuzi-token-iframe-wrap {
+        min-height: 700px !important;
+        height: 760px !important;
+    }
+
+    .samuzi-token-iframe-wrap iframe {
+        min-height: 440px !important;
+    }
+}
+
+
+/* =========================================================
+   SMZ CHART WIDE EMBED V3
+   Expands the dark Gensuki embed to match Samuzi panel width.
+   ========================================================= */
+
+.samuzi-token-chart-panel {
+    max-width: 1180px !important;
+    margin-inline: auto !important;
+}
+
+.samuzi-token-chart-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1.6rem !important;
+}
+
+.samuzi-token-chart-copy {
+    max-width: 980px !important;
+    margin-inline: auto !important;
+    text-align: center !important;
+}
+
+.samuzi-token-chart-copy h2 {
+    max-width: 920px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.samuzi-token-chart-copy p {
+    max-width: 820px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.samuzi-token-chart-copy .launch-actions {
+    justify-content: center !important;
+}
+
+.samuzi-token-chart-copy::after {
+    max-width: 860px !important;
+}
+
+.samuzi-token-iframe-wrap {
+    width: 100% !important;
+    max-width: 1040px !important;
+    min-height: 790px !important;
+    height: 790px !important;
+    margin: 1.6rem auto 0 !important;
+    padding: 12px !important;
+    border-radius: 30px !important;
+}
+
+.samuzi-token-iframe-wrap::before {
+    height: 38px !important;
+    margin-bottom: 10px !important;
+    justify-content: center !important;
+}
+
+.samuzi-token-iframe-wrap iframe {
+    width: 100% !important;
+    height: calc(100% - 48px) !important;
+    min-height: 720px !important;
+    border-radius: 22px !important;
+}
+
+.samuzi-token-iframe-wrap::after {
+    inset: 50px 12px 12px !important;
+}
+
+@media (max-width: 1100px) {
+    .samuzi-token-iframe-wrap {
+        max-width: 100% !important;
+        min-height: 760px !important;
+        height: 760px !important;
+    }
+
+    .samuzi-token-iframe-wrap iframe {
+        min-height: 690px !important;
+    }
+}
+
+@media (max-width: 700px) {
+    .samuzi-token-chart-copy h2 {
+        font-size: clamp(2rem, 12vw, 3.2rem) !important;
+    }
+
+    .samuzi-token-iframe-wrap {
+        min-height: 720px !important;
+        height: 720px !important;
+        padding: 8px !important;
+        border-radius: 22px !important;
+    }
+
+    .samuzi-token-iframe-wrap iframe {
+        min-height: 660px !important;
+        border-radius: 18px !important;
+    }
+
+    .samuzi-token-iframe-wrap::after {
+        inset: 52px 8px 8px !important;
+        border-radius: 18px !important;
+    }
+}
+
+
+/* =========================================================
+   SMZ FRONT EMBED MATCH WHITEPAPER V4
+   Makes homepage SMZ chart use the same wide layout as whitepaper.
+   ========================================================= */
+
+.samuzi-token-chart-panel {
+    max-width: 1180px !important;
+    margin-inline: auto !important;
+}
+
+.samuzi-token-chart-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1.35rem !important;
+}
+
+.samuzi-token-chart-copy {
+    max-width: 980px !important;
+    margin-inline: auto !important;
+    text-align: center !important;
+}
+
+.samuzi-token-chart-copy .status-pill {
+    margin-inline: auto !important;
+}
+
+.samuzi-token-chart-copy h2 {
+    max-width: 900px !important;
+    margin-inline: auto !important;
+}
+
+.samuzi-token-chart-copy p {
+    max-width: 820px !important;
+    margin-inline: auto !important;
+}
+
+.samuzi-token-chart-copy .launch-actions {
+    justify-content: center !important;
+}
+
+.samuzi-token-chart-copy::after {
+    max-width: 860px !important;
+    margin-inline: auto !important;
+}
+
+.samuzi-token-iframe-wrap {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 750px !important;
+    height: 750px !important;
+    margin: 1.35rem auto 0 !important;
+    padding: 12px !important;
+    border-radius: 28px !important;
+    background:
+        radial-gradient(circle at 14% 0%, rgba(250,204,21,0.16), transparent 34%),
+        radial-gradient(circle at 88% 18%, rgba(34,211,238,0.12), transparent 36%),
+        rgba(0,0,0,0.46) !important;
+    border: 1px solid rgba(250,204,21,0.30) !important;
+    box-shadow:
+        0 22px 70px rgba(0,0,0,0.52),
+        0 0 38px rgba(250,204,21,0.10) !important;
+}
+
+.samuzi-token-iframe-wrap::before {
+    content: "Live SMZ chart · dark Gensuki embed" !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 38px !important;
+    margin-bottom: 10px !important;
+    padding: 0.55rem 0.9rem !important;
+    border-radius: 999px !important;
+    color: #fef3c7 !important;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(250,204,21,0.20), transparent 34%),
+        rgba(7,7,11,0.80) !important;
+    border: 1px solid rgba(250,204,21,0.24) !important;
+    font-size: 0.78rem !important;
+    font-weight: 950 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+}
+
+.samuzi-token-iframe-wrap iframe {
+    width: 100% !important;
+    height: calc(100% - 48px) !important;
+    min-height: 690px !important;
+    border: 0 !important;
+    display: block !important;
+    border-radius: 20px !important;
+    background: #050507 !important;
+    box-shadow: 0 16px 46px rgba(0,0,0,0.48) !important;
+}
+
+.samuzi-token-iframe-wrap::after {
+    inset: 50px 12px 12px !important;
+    border-radius: 20px !important;
+}
+
+@media (max-width: 700px) {
+    .samuzi-token-iframe-wrap {
+        padding: 8px !important;
+        border-radius: 22px !important;
+        min-height: 660px !important;
+        height: 660px !important;
+    }
+
+    .samuzi-token-iframe-wrap::before {
+        border-radius: 18px !important;
+        font-size: 0.68rem !important;
+        line-height: 1.35 !important;
+        text-align: center !important;
+    }
+
+    .samuzi-token-iframe-wrap iframe {
+        min-height: 600px !important;
+        border-radius: 16px !important;
+    }
+
+    .samuzi-token-iframe-wrap::after {
+        inset: 52px 8px 8px !important;
+        border-radius: 16px !important;
+    }
+}
+
+</style>
 </head>
 
 <body class="phase3-page">
@@ -1752,7 +2362,7 @@
         <div class="mint-alert-copy">
             <span class="mint-alert-kicker">🌍 Akamai Land · Phase 4 Signal</span>
             <div class="mint-alert-title">
-                AKAMAILAND Phase 4 mint update · <strong>10,000 land NFTs</strong> · OG Mint rescheduled to Wednesday, 22 July 2026 at 04:00 PM UTC
+                AKAMAILAND Phase 4 mint update · <strong>WL phase is live</strong> · 0.07 SOL · Public mint opens next at 0.10 SOL
             </div>
         </div>
 
@@ -1814,7 +2424,7 @@
 </div>
 
 <div class="preview-lock-note mint-live-note">
-    ⏳ OG Mint: Wednesday, 22 July 2026 · 04:00 PM UTC ·
+    ✅ OG phase expired · 🟡 WL Mint live now · 0.07 SOL ·
     <a href="https://akamailand.gensuki.xyz/"
        target="_blank"
        rel="noopener noreferrer">
@@ -1855,14 +2465,14 @@
 
             <div class="mint-status-item hot">
                 <span>OG Mint</span>
-                <strong>Wednesday, 22 July 2026</strong>
-                <small>04:00 PM UTC · 0.05 SOL · Unlimited per wallet</small>
+                <strong>Expired</strong>
+                        <small>0.05 SOL · OG phase completed</small>
             </div>
         </div>
 
         <div class="mint-live-strip" aria-label="AKAMAILAND Phase 4 mint status">
             <strong>🌍 AKAMAILAND Phase 4 Mint Rescheduled</strong>
-            <span>OG Mint rescheduled to Wednesday, 22 July 2026 · WL Mint opens 29 July · Public Mint opens 05 August.</span>
+            <span>OG phase expired · WL Mint is live at 0.07 SOL · Public Mint opens after WL at 0.10 SOL.</span>
 <span class="mint-delay-note">
     Infrastructure update: the mint was moved to Wednesday at 04:00 PM UTC to avoid IPFS image visibility issues during a partial AWS outage.
 </span>
@@ -1937,6 +2547,107 @@
     </div>
 </section>
 
+
+<section id="samuzi-token-chart" class="samuzi-token-chart-section">
+    <div class="container">
+        <div class="samuzi-token-chart-panel">
+            <div class="samuzi-token-chart-grid">
+                <div class="samuzi-token-chart-copy">
+                    <span class="status-pill">💠 Samuzi Token · SMZ</span>
+                    <h2>Live $SMZ chart and token page.</h2>
+                    <p>
+                        Samuzi NFT is connected to a Solana-based ecosystem token. Track the live
+                        Samuzi (SMZ) price, chart, swap route, and token information through the
+                        official Gensuki token page.
+                    </p>
+
+                    <div class="launch-actions">
+                        <a href="https://app.gensuki.xyz/tokens/solana/C7CJizyZRgNornuF3bvkTMAidJon1HeTNENMhy1PVCRd?embed=true&theme=dark" target="_blank" rel="noopener noreferrer" class="button-primary mint-live-glow">
+                            Open SMZ on Gensuki
+                        </a>
+                        <a href="https://akamailand.gensuki.xyz/" target="_blank" rel="noopener noreferrer" class="button-secondary mint-live-outline">
+                            Mint AKAMAILAND
+                        </a>
+                    </div>
+                </div>
+
+                <div class="samuzi-token-iframe-wrap">
+                    <iframe allowtransparency="true" frameborder="0"
+                        src="https://app.gensuki.xyz/tokens/solana/C7CJizyZRgNornuF3bvkTMAidJon1HeTNENMhy1PVCRd?embed=true&theme=dark"
+                        title="Samuzi SMZ Token Chart on Gensuki"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allow="clipboard-write; encrypted-media; fullscreen">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section id="akamailand-live-update" class="samuzi-live-update-section">
+    <div class="container">
+        <div class="samuzi-live-update-panel">
+            <div class="samuzi-live-update-grid">
+                <div class="samuzi-live-update-copy">
+                    <span class="status-pill">🌍 AKAMAILAND Phase 4 · WL Live</span>
+                    <h2>Raffle, mining and rewards are here.</h2>
+                    <p>
+                        AKAMAILAND Phase 4 is now in WL mint phase. OG phase has expired.
+                        WL mint is live at <strong>0.07 SOL</strong>, ends in approximately
+                        <strong>7d 10h</strong>, and the public phase opens next at
+                        <strong>0.10 SOL</strong>.
+                    </p>
+
+                    <div class="samuzi-phase-strip">
+                        <div class="samuzi-phase-chip">
+                            <strong>OG Phase</strong>
+                            <span>Expired · 0.05 SOL phase completed.</span>
+                        </div>
+                        <div class="samuzi-phase-chip live">
+                            <strong>WL Phase Live</strong>
+                            <span>0.07 SOL · ends in 7d 10h.</span>
+                        </div>
+                        <div class="samuzi-phase-chip">
+                            <strong>Public Phase</strong>
+                            <span>0.10 SOL · begins after WL.</span>
+                        </div>
+                    </div>
+
+                    <div class="launch-actions">
+                        <a href="https://akamailand.gensuki.xyz/" target="_blank" rel="noopener noreferrer" class="button-primary mint-live-glow">
+                            Mint WL on Gensuki
+                        </a>
+                        <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="button-secondary mint-live-outline">
+                            Follow Updates on X
+                        </a>
+                    </div>
+                </div>
+
+                <div class="samuzi-reward-grid">
+                    <div class="samuzi-reward-card">
+                        <strong>🎟️ Raffle Winners</strong>
+                        <p>When a new raffle winner is announced, the winning land can glow and highlight on the AKAMAILAND map.</p>
+                    </div>
+                    <div class="samuzi-reward-card">
+                        <strong>⛏️ Mining Rewards Claim</strong>
+                        <p>The dedicated claim panel is planned to show unclaimed $SMZ, claimed $SMZ, mining pool status, and claim history.</p>
+                    </div>
+                    <div class="samuzi-reward-card">
+                        <strong>🧭 Land Power Zones</strong>
+                        <p>Mining rewards vary by plot location: Center Core, Inner Transition, Middle Valley, Outer Ring, Borders, and Corners.</p>
+                    </div>
+                    <div class="samuzi-reward-card">
+                        <strong>💎 Earning Plot</strong>
+                        <p>Your land is more than a collectible. It is designed as an earning plot with raffles, mining, and $SMZ opportunities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section id="akamai-land" class="mint-section akamai-section akamai-phase4-section">
     <div class="container">
         <div class="akamai-phase4-shell">
@@ -1962,7 +2673,7 @@
                 <div class="akamai-phase4-main-date">
                     <span>First Mint Window</span>
                     <strong>OG Mint</strong>
-                    <p>Wednesday, 22 July 2026 · 04:00 PM UTC</p>
+                    <p>WL phase live now · 0.07 SOL</p>
                     <small>0.05 SOL · Unlimited per wallet</small>
                 </div>
             </div>
@@ -1970,7 +2681,7 @@
             <div class="akamai-schedule-panel">
                 <div class="akamai-schedule-heading">
                     <span class="mint-pill akamai-pill">🎮 Official Mint Schedule</span>
-                    <h3>Choose your entry into AKAMAILAND.</h3>
+                    <h3>Choose your active AKAMAILAND mint window.</h3>
                     <p>
                         OG, WL, and Public mint windows are now announced. Mark your calendar,
                         prepare your wallet, and secure your place in the AKAMAILAND universe.
@@ -1980,7 +2691,7 @@
                 <div class="akamai-mint-timeline">
                     <article class="akamai-mint-card og">
                         <span>🏆 OG Mint</span>
-                        <strong>Wednesday, 22 July 2026</strong>
+                        <strong>WL Live Now</strong>
                         <p>04:00 PM UTC</p>
                         <small>0.05 SOL · Unlimited per wallet</small>
                     </article>
@@ -1994,7 +2705,7 @@
 
                     <article class="akamai-mint-card public">
                         <span>🚀 Public Mint</span>
-                        <strong>05 August 2026</strong>
+                        <strong>after WL 2026</strong>
                         <p>04:00 PM UTC</p>
                         <small>0.10 SOL · Unlimited per wallet</small>
                     </article>
@@ -2009,7 +2720,7 @@
             </div>
 
             <div class="akamai-launch-strip">
-                <strong>⏰ The mint has been rescheduled to Wednesday, 22 July 2026.</strong>
+                <strong>🟡 WL phase is live now. OG phase has expired. Public mint opens next.</strong>
                 <span>Prepare your wallet and secure your place in AKAMAILAND Phase 4.</span>
             </div>
 
@@ -2352,7 +3063,7 @@ Activate the hidden preview to reveal the next Samuzi expansion signal.
                 <div class="footer-section">
 <h4>Status</h4>
 <p>AKAMAILAND Phase 4 mint rescheduled</p>
-<p>OG Mint: Wednesday, 22 July 2026 · 04:00 PM UTC</p>
+<p>WL Mint live now · 0.07 SOL</p>
                 </div>
 
                 <div class="footer-section">
