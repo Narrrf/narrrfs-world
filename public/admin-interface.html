@@ -2485,6 +2485,41 @@ const NAR_TARGET_PATHS = [
     </div>
   </div>
 
+  <div id="spoincBridgeOpsSafeFailedPanel" class="bg-slate-900 bg-opacity-70 border border-orange-500/40 rounded-lg p-4 mb-5">
+    <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3 mb-3">
+      <div>
+        <h4 class="text-lg font-bold text-orange-300">Phase 1D — Safe Failed Local Cleanup</h4>
+        <p class="text-xs text-slate-300">
+          Assisted cleanup for rows already classified by Step 2B as failed_candidate_local with Solana not_found.
+          The backend rechecks every selected row before calling Gensuki failed.
+        </p>
+      </div>
+      <button onclick="selectAllSpoincBridgeSafeFailedRows()" class="bg-orange-700 hover:bg-orange-800 text-white px-3 py-2 rounded-lg font-semibold text-sm">
+        Select Safe Rows
+      </button>
+    </div>
+
+    <div id="spoincBridgeOpsSafeFailedRows" class="space-y-2 mb-3">
+      <div class="bg-black bg-opacity-30 border border-dashed border-slate-600 rounded-lg p-4 text-sm text-slate-300">
+        No safe failed local rows loaded yet. Run Step 2B first.
+      </div>
+    </div>
+
+    <label class="block text-sm font-semibold text-blue-100 mb-2" for="spoincBridgeOpsSafeFailedReasonInput">Batch Admin Note</label>
+    <input id="spoincBridgeOpsSafeFailedReasonInput" type="text" class="w-full px-3 py-2 rounded text-gray-900 mb-3" placeholder="Clean Solana not_found/value:null. Mark selected local SOL_TO_SPOINC rows failed only. No DSPOINC movement.">
+
+    <label class="block text-sm font-semibold text-red-100 mb-2" for="spoincBridgeOpsSafeFailedConfirmInput">Batch Confirmation Phrase</label>
+    <input id="spoincBridgeOpsSafeFailedConfirmInput" type="text" class="w-full px-3 py-2 rounded text-gray-900 mb-3" placeholder="CONFIRM GENSUKI FAILED">
+
+    <button onclick="applySpoincBridgeSafeFailedLocalBatch()" class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg font-semibold text-sm">
+      Apply Safe Failed Cleanup
+    </button>
+
+    <p class="text-xs text-red-100 mt-2">
+      This assisted button only sends Gensuki status failed for selected safe local rows. It does not move DSPOINC and does not settle Narrrfs ledger rows.
+    </p>
+  </div>
+
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
     <div class="bg-slate-900 bg-opacity-70 border border-cyan-500/40 rounded-lg p-4">
       <h4 class="text-lg font-bold text-cyan-300 mb-3">Step 4 — Manual Signature Check</h4>
@@ -6904,10 +6939,171 @@ function renderSpoincBridgeOpsQueue(rows = [], errors = []) {
       <div class="bg-emerald-950 bg-opacity-40 border border-emerald-500 rounded-lg p-4 text-sm text-emerald-100">
         ✅ No pending Gensuki rows returned for this check.
       </div>`;
+    renderSpoincBridgeOpsSafeFailedRows([]);
     return;
   }
 
   queue.innerHTML = rows.map(renderSpoincBridgeOpsQueueRow).join('');
+  renderSpoincBridgeOpsSafeFailedRows(rows);
+}
+
+/**
+ * Return true only for rows that the assisted Phase 1D UI may propose.
+ * Backend validation remains authoritative and repeats every check.
+ */
+function isSpoincBridgeOpsSafeFailedLocalRow(row) {
+  const localRoute = String(row?.local_match?.row?.route_key || '').trim();
+  const solanaState = String(row?.solana?.state || '').trim();
+
+  return row?.bucket === 'failed_candidate_local'
+    && row?.local_match?.found === true
+    && row?.local_match?.table === 'tbl_spoinc_bridge_intents'
+    && localRoute === 'SOL_TO_SPOINC'
+    && solanaState === 'not_found'
+    && row?.solana?.can_fail === true
+    && row?.solana?.can_complete !== true
+    && row?.solana?.needs_manual_review !== true;
+}
+
+/**
+ * Render assisted cleanup rows so admins do not copy intent IDs or signatures.
+ */
+function renderSpoincBridgeOpsSafeFailedRows(rows = []) {
+  spoincBridgeOpsLastPendingRows = Array.isArray(rows) ? rows : [];
+
+  const panel = document.getElementById('spoincBridgeOpsSafeFailedRows');
+
+  if (!panel) {
+    return;
+  }
+
+  const safeRows = spoincBridgeOpsLastPendingRows
+    .map((row, index) => ({ row, index }))
+    .filter(({ row }) => isSpoincBridgeOpsSafeFailedLocalRow(row));
+
+  if (safeRows.length === 0) {
+    panel.innerHTML = `
+      <div class="bg-black bg-opacity-30 border border-dashed border-slate-600 rounded-lg p-4 text-sm text-slate-300">
+        No eligible failed_candidate_local + Solana not_found rows found. Run Step 2B with Solana before using Phase 1D.
+      </div>`;
+    return;
+  }
+
+  panel.innerHTML = safeRows.map(({ row, index }) => {
+    const intentId = escapeSpoincBridgeHtml(row.local_match?.row?.intent_id || '');
+    const route = escapeSpoincBridgeHtml(row.local_match?.row?.route_key || '');
+    const wallet = escapeSpoincBridgeHtml(row.local_match?.row?.wallet || row.wallet || 'unknown wallet');
+    const amount = escapeSpoincBridgeHtml(row.amount || 'unknown amount');
+    const signature = escapeSpoincBridgeHtml(row.signature || '');
+    const solanaState = escapeSpoincBridgeHtml(row.solana?.state || '');
+
+    return `
+      <label class="block bg-black bg-opacity-30 border border-orange-500/30 rounded-lg p-3 text-sm text-orange-50">
+        <div class="flex items-start gap-3">
+          <input type="checkbox" class="spoincBridgeOpsSafeFailedCheckbox mt-1" data-row-index="${index}">
+          <div class="min-w-0">
+            <div class="font-bold text-orange-200">Intent #${intentId} · ${route} · Solana ${solanaState}</div>
+            <div class="text-xs text-slate-300 mt-1">Wallet: <code>${wallet}</code></div>
+            <div class="text-xs text-slate-300 mt-1">Amount: <span class="text-white font-semibold">${amount}</span></div>
+            <div class="text-xs text-slate-400 mt-1 break-all">TX: ${signature}</div>
+          </div>
+        </div>
+      </label>`;
+  }).join('');
+}
+
+/**
+ * Select every currently eligible assisted cleanup row.
+ */
+function selectAllSpoincBridgeSafeFailedRows() {
+  document.querySelectorAll('.spoincBridgeOpsSafeFailedCheckbox').forEach((checkbox) => {
+    checkbox.checked = true;
+  });
+}
+
+/**
+ * Apply assisted cleanup for selected safe failed local rows.
+ */
+async function applySpoincBridgeSafeFailedLocalBatch() {
+  const selected = Array.from(document.querySelectorAll('.spoincBridgeOpsSafeFailedCheckbox:checked'));
+  const reason = String(document.getElementById('spoincBridgeOpsSafeFailedReasonInput')?.value || '').trim();
+  const confirmationPhrase = String(document.getElementById('spoincBridgeOpsSafeFailedConfirmInput')?.value || '').trim();
+
+  if (confirmationPhrase !== 'CONFIRM GENSUKI FAILED') {
+    renderSpoincBridgeOpsResult('Phase 1D Apply Failed — Confirmation Missing', {
+      error: 'Type exactly: CONFIRM GENSUKI FAILED',
+      safety: 'No request was sent.'
+    });
+    return;
+  }
+
+  if (!reason) {
+    renderSpoincBridgeOpsResult('Phase 1D Apply Failed — Admin Note Missing', {
+      error: 'Add a batch admin note first.',
+      safety: 'No request was sent.'
+    });
+    return;
+  }
+
+  const rows = selected.map((checkbox) => {
+    const rowIndex = Number(checkbox.dataset.rowIndex);
+    const row = spoincBridgeOpsLastPendingRows[rowIndex] || {};
+
+    return {
+      intent_id: String(row?.local_match?.row?.intent_id || ''),
+      signature: String(row?.signature || '')
+    };
+  }).filter((row) => row.intent_id && row.signature);
+
+  if (rows.length === 0) {
+    renderSpoincBridgeOpsResult('Phase 1D Apply Failed — No Rows Selected', {
+      error: 'Select at least one safe failed local row.',
+      safety: 'No request was sent.'
+    });
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Final safety check:\n\n` +
+    `This will attempt protected Gensuki FAILED cleanup for ${rows.length} selected row(s).\n` +
+    `The backend will recheck every row before applying.\n\n` +
+    `It will NOT credit DSPOINC.\n` +
+    `It will NOT debit DSPOINC.\n` +
+    `It will NOT settle Narrrfs bridge rows.\n` +
+    `It will NOT confirm complete candidates.\n\n` +
+    `Continue only after Step 2B shows safe failed local rows.`
+  );
+
+  if (!confirmed) {
+    renderSpoincBridgeOpsResult('Phase 1D Apply Cancelled', {
+      safety: 'No request was sent.'
+    });
+    return;
+  }
+
+  try {
+    const data = await fetchSpoincBridgeOps(
+      'apply_safe_failed_local_batch',
+      {
+        rows,
+        reason,
+        confirmation_phrase: confirmationPhrase
+      },
+      { method: 'POST' }
+    );
+
+    renderSpoincBridgeOpsResult('Phase 1D — Safe Failed Cleanup Applied', data);
+    addLog(`✅ SPOINC Bridge Phase 1D applied ${data.applied_count || 0} safe failed cleanup row(s)`);
+    await loadSpoincBridgePendingAudit(true);
+  } catch (error) {
+    renderSpoincBridgeOpsResult('Phase 1D — Safe Failed Cleanup Error', {
+      rows,
+      reason,
+      error: error.message,
+      backend: error.bridgeData || null
+    });
+    addLog(`❌ SPOINC Bridge Phase 1D cleanup failed: ${error.message}`);
+  }
 }
 
 /**
@@ -7000,6 +7196,7 @@ async function checkSpoincBridgeOpsSignature() {
 }
 
 let spoincBridgeOpsLastFailDryRun = null;
+let spoincBridgeOpsLastPendingRows = [];
 
 /**
  * Run one bridge operation as dry-run only.

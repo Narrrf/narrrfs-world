@@ -1971,6 +1971,33 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
         ], 409);
     }
 
+    $result = spoinc_bridge_ops_apply_validated_fail_local_not_found(
+        $validation,
+        $admin,
+        $submittedDryRunToken
+    );
+
+    spoinc_bridge_ops_json([
+        'success' => true,
+        'data' => $result
+    ]);
+}
+
+/**
+ * Apply one already-validated local failed candidate.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Phase 1D reuses this helper for assisted cleanup. The caller must already
+ * have run the same authoritative validation used by the manual Phase 1C path.
+ * This helper still writes only the admin operation log and sends Gensuki
+ * status failed. It never credits DSPOINC, debits DSPOINC, settles Narrrfs
+ * bridge rows, or marks complete candidates.
+ */
+function spoinc_bridge_ops_apply_validated_fail_local_not_found(
+    array $validation,
+    array $admin,
+    string $submittedDryRunToken
+): array {
     $signature = (string)$validation['signature'];
     $intentId = (string)$validation['intent_id'];
     $reason = (string)$validation['reason'];
@@ -2117,38 +2144,207 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
         ], 500);
     }
 
-    spoinc_bridge_ops_json([
-        'success' => true,
-        'data' => [
-            'action' => 'apply_fail_local_not_found',
-            'phase' => SPOINC_BRIDGE_OPS_PHASE,
-            'mode' => 'protected_apply',
-            'admin_id' => $admin['admin_id'] ?? 'unknown',
-            'intent_id' => $intentId,
-            'gensuki_id' => $gensukiId,
-            'signature' => $signature,
-            'reason' => $reason,
-            'confirmed_status' => 'failed',
-            'admin_operation' => [
-                'operation_id' => $operationId,
-                'operation_key' => $adminOperation['operation_key'],
-                'operation_status' => 'completed',
-                'attempt_count' => $adminOperation['attempt_count']
-            ],
-            'gensuki_response' => $confirmResponse['json'],
-            'server_recheck' => [
-                'bucket' => 'failed_candidate_local',
-                'gensuki_status_before' => $gensukiStatus,
-                'local_table' => $localTable,
-                'local_intent_id' => $localIntentId,
-                'solana_state' => $solanaState
-            ],
+    return [
+        'action' => 'apply_fail_local_not_found',
+        'phase' => SPOINC_BRIDGE_OPS_PHASE,
+        'mode' => 'protected_apply',
+        'admin_id' => $admin['admin_id'] ?? 'unknown',
+        'intent_id' => $intentId,
+        'gensuki_id' => $gensukiId,
+        'signature' => $signature,
+        'reason' => $reason,
+        'confirmed_status' => 'failed',
+        'admin_operation' => [
+            'operation_id' => $operationId,
+            'operation_key' => $adminOperation['operation_key'],
+            'operation_status' => 'completed',
+            'attempt_count' => $adminOperation['attempt_count']
+        ],
+        'gensuki_response' => $confirmResponse['json'],
+        'server_recheck' => [
+            'bucket' => 'failed_candidate_local',
+            'gensuki_status_before' => $gensukiStatus,
+            'local_table' => $localTable,
+            'local_intent_id' => $localIntentId,
+            'solana_state' => $solanaState
+        ],
+        'safety' => [
+            'gensuki_confirm_called' => true,
+            'gensuki_status_sent' => 'failed',
+            'db_write_performed' => true,
+            'db_write_scope' => SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE . '_only',
+            'admin_operation_log_write_performed' => true,
+            'bridge_economy_db_write_performed' => false,
+            'dspoinc_credit_performed' => false,
+            'dspoinc_debit_performed' => false,
+            'local_bridge_settlement_performed' => false,
+            'rpc_error_auto_failed' => false
+        ]
+    ];
+}
+
+/**
+ * Apply all selected safe failed local rows from the current pending queue.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This is Phase 1D assisted cleanup. The browser may propose selected rows, but
+ * every row is re-read from Gensuki, rechecked on Solana, and revalidated
+ * against the local Narrrfs intent before Gensuki is called.
+ *
+ * Only failed_candidate_local + SOL_TO_SPOINC + Solana not_found rows are
+ * eligible. This action never moves DSPOINC, never settles a claim, and never
+ * confirms complete rows.
+ */
+function spoinc_bridge_ops_apply_safe_failed_local_batch(array $data, array $admin): void
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Method not allowed. apply_safe_failed_local_batch requires POST.'
+        ], 405);
+    }
+
+    $confirmationPhrase = spoinc_bridge_ops_request_string(
+        $data,
+        'confirmation_phrase',
+        80
+    );
+
+    $reason = spoinc_bridge_ops_request_string($data, 'reason', 500);
+
+    if ($confirmationPhrase !== SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Confirmation phrase mismatch. Type exactly: ' . SPOINC_BRIDGE_OPS_CONFIRM_FAILED_PHRASE,
             'safety' => [
-                'gensuki_confirm_called' => true,
-                'gensuki_status_sent' => 'failed',
-                'db_write_performed' => true,
-                'db_write_scope' => SPOINC_BRIDGE_OPS_ADMIN_LOG_TABLE . '_only',
-                'admin_operation_log_write_performed' => true,
+                'gensuki_confirm_called' => false,
+                'db_write_performed' => false,
+                'dspoinc_credit_performed' => false,
+                'dspoinc_debit_performed' => false
+            ]
+        ], 400);
+    }
+
+    if ($reason === '') {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Admin note is required for assisted failed cleanup.'
+        ], 400);
+    }
+
+    $selectedRows = $data['rows'] ?? [];
+
+    if (!is_array($selectedRows) || empty($selectedRows)) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Select at least one safe failed local row.'
+        ], 400);
+    }
+
+    if (count($selectedRows) > 20) {
+        spoinc_bridge_ops_json([
+            'success' => false,
+            'error' => 'Too many rows selected. Maximum assisted cleanup batch is 20 rows.'
+        ], 400);
+    }
+
+    $applied = [];
+    $blocked = [];
+    $skipped = [];
+
+    foreach ($selectedRows as $index => $selectedRow) {
+        if (!is_array($selectedRow)) {
+            $blocked[] = [
+                'index' => $index,
+                'error' => 'Selected row is malformed.'
+            ];
+            continue;
+        }
+
+        $candidateData = [
+            'intent_id' => trim((string)($selectedRow['intent_id'] ?? '')),
+            'signature' => trim((string)($selectedRow['signature'] ?? '')),
+            'reason' => $reason
+        ];
+
+        $validation = spoinc_bridge_ops_validate_fail_local_not_found_candidate(
+            $candidateData
+        );
+
+        $rowRouteKey = (string)($validation['row']['local_match']['row']['route_key'] ?? '');
+        $solanaCanFail = (bool)($validation['row']['solana']['can_fail'] ?? false);
+        $solanaCanComplete = (bool)($validation['row']['solana']['can_complete'] ?? true);
+        $needsManualReview = (bool)($validation['row']['solana']['needs_manual_review'] ?? true);
+
+        if ($rowRouteKey !== 'SOL_TO_SPOINC') {
+            $validation['failed_checks'][] = 'Expected local route SOL_TO_SPOINC, got ' . $rowRouteKey;
+            $validation['can_apply'] = false;
+        }
+
+        if (!$solanaCanFail) {
+            $validation['failed_checks'][] = 'Solana recheck did not allow fail cleanup.';
+            $validation['can_apply'] = false;
+        }
+
+        if ($solanaCanComplete) {
+            $validation['failed_checks'][] = 'Solana recheck still allows complete; fail cleanup blocked.';
+            $validation['can_apply'] = false;
+        }
+
+        if ($needsManualReview) {
+            $validation['failed_checks'][] = 'Solana recheck requires manual review.';
+            $validation['can_apply'] = false;
+        }
+
+        if (!($validation['can_apply'] ?? false)) {
+            $blocked[] = [
+                'index' => $index,
+                'intent_id' => $candidateData['intent_id'],
+                'signature' => $candidateData['signature'],
+                'failed_checks' => $validation['failed_checks'],
+                'gensuki_errors' => $validation['gensuki_errors']
+            ];
+            continue;
+        }
+
+        $dryRunToken = spoinc_bridge_ops_build_fail_dry_run_token($validation);
+
+        try {
+            $applied[] = spoinc_bridge_ops_apply_validated_fail_local_not_found(
+                $validation,
+                $admin,
+                $dryRunToken
+            );
+        } catch (Throwable $error) {
+            $skipped[] = [
+                'index' => $index,
+                'intent_id' => $candidateData['intent_id'],
+                'signature' => $candidateData['signature'],
+                'error' => $error->getMessage()
+            ];
+        }
+    }
+
+    spoinc_bridge_ops_json([
+        'success' => empty($blocked) && empty($skipped),
+        'data' => [
+            'action' => 'apply_safe_failed_local_batch',
+            'phase' => SPOINC_BRIDGE_OPS_PHASE,
+            'mode' => 'protected_assisted_batch_apply',
+            'admin_id' => $admin['admin_id'] ?? 'unknown',
+            'selected_count' => count($selectedRows),
+            'applied_count' => count($applied),
+            'blocked_count' => count($blocked),
+            'skipped_count' => count($skipped),
+            'applied' => $applied,
+            'blocked' => $blocked,
+            'skipped' => $skipped,
+            'safety' => [
+                'eligible_bucket_required' => 'failed_candidate_local',
+                'eligible_route_required' => 'SOL_TO_SPOINC',
+                'eligible_solana_state_required' => 'not_found',
+                'gensuki_confirm_status_allowed' => 'failed',
+                'gensuki_complete_called' => false,
                 'bridge_economy_db_write_performed' => false,
                 'dspoinc_credit_performed' => false,
                 'dspoinc_debit_performed' => false,
@@ -2156,7 +2352,7 @@ function spoinc_bridge_ops_apply_fail_local_not_found(array $data, array $admin)
                 'rpc_error_auto_failed' => false
             ]
         ]
-    ]);
+    ], empty($blocked) && empty($skipped) ? 200 : 207);
 }
 
 /**
@@ -2351,6 +2547,10 @@ if ($action === 'apply_fail_local_not_found') {
     }
 
     spoinc_bridge_ops_apply_fail_local_not_found($data, $admin);
+}
+
+if ($action === 'apply_safe_failed_local_batch') {
+    spoinc_bridge_ops_apply_safe_failed_local_batch($data, $admin);
 }
 
 if ($action === 'dry_run_fail_gensuki_only') {
