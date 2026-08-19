@@ -595,7 +595,65 @@
       </div>
     </section>
 
-    <section id="public-bridge-actions" class="section-card mt-8 p-5 md:p-7" aria-label="Public SPOINC buy and convert actions">
+
+  <!-- 🧀 Instant dSPOINC buy widget.
+       DEVS FOR DECADES:
+       This is a frontend-only reusable bridge widget shell.
+       The widget asks protected backend routes for quotes/intents and wallet signatures.
+       It does not expose Gensuki API keys, does not decide settlement,
+       does not credit DSPOINC by itself, and does not bypass SPOINC bridge safety checks. -->
+  <section id="swap-lab-dspoinc-buy-widget" class="mx-auto max-w-6xl px-4 md:px-6 mt-6">
+    <div class="rounded-[2rem] border border-yellow-300/35 bg-gradient-to-br from-yellow-300/15 via-amber-900/20 to-cyan-400/10 p-5 md:p-7 shadow-2xl shadow-yellow-500/10">
+      <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] items-stretch">
+        <div class="rounded-3xl border border-yellow-300/25 bg-black/25 p-5 md:p-6 flex flex-col justify-between">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/45 bg-yellow-300/15 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-100">
+              ⭐ Recommended Fast Path
+            </div>
+
+            <h2 class="mt-4 text-3xl md:text-4xl font-black leading-tight text-white">
+              Buy dSPOINC
+              <span class="block text-yellow-300">without doing the manual swap.</span>
+            </h2>
+
+            <p class="mt-3 text-sm md:text-base text-slate-200 leading-relaxed">
+              Enter how much dSPOINC you want. The widget prepares the safe wallet steps,
+              buys the needed SPOINC, then brings it into Narrrfs World for you.
+            </p>
+
+            <div class="mt-5 grid gap-3 text-sm">
+              <div class="rounded-2xl border border-yellow-300/20 bg-yellow-300/10 p-3 text-yellow-100">
+                <div class="font-black">1️⃣ Quote first</div>
+                <div class="mt-1 text-yellow-50/85">See the estimated SOL cost before signing anything.</div>
+              </div>
+
+              <div class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-3 text-cyan-100">
+                <div class="font-black">2️⃣ Two wallet approvals</div>
+                <div class="mt-1 text-cyan-50/85">First SOL → SPOINC, then SPOINC → dSPOINC.</div>
+              </div>
+
+              <div class="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-emerald-100">
+                <div class="font-black">3️⃣ Automatic dSPOINC credit</div>
+                <div class="mt-1 text-emerald-50/85">After confirmation, the backend credits your Profile balance.</div>
+              </div>
+            </div>
+          </div>
+
+          <p class="mt-5 text-xs leading-relaxed text-slate-400">
+            The manual cards below remain available for advanced bridge testing or users who already hold SPOINC.
+          </p>
+        </div>
+
+        <div class="rounded-3xl border border-yellow-300/20 bg-black/35 p-3 md:p-4 shadow-xl flex items-center">
+          <div class="w-full rounded-[1.5rem] border border-white/10 bg-slate-950/75 p-3 md:p-4">
+            <div class="narrrfs-dspoinc-buy-widget" data-default-dspoinc="1000000"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<section id="public-bridge-actions" class="section-card mt-8 p-5 md:p-7" aria-label="Public SPOINC buy and convert actions">
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <div class="pill cyan mb-4">⚡ Buy & Convert</div>
@@ -1841,7 +1899,7 @@ function renderGensukiMarketPulse(project) {
   const tokenPriceNative = String(project.token_price_native || '').trim();
   const tokenPriceNativeNumber = parsePositiveNumber(tokenPriceNative);
 
-  
+
 
   if (elements.spoincPrice) {
     elements.spoincPrice.textContent = tokenPriceUsd ? `$${tokenPriceUsd}` : '$0.035';
@@ -3086,5 +3144,6 @@ updateCalculator();
 
 init();
   </script>
+  <script src="js/dspoinc-buy-widget.js?v=dspoinc-buy-quote-v1-20260819-swap-lab"></script>
 </body>
 </html>

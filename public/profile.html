@@ -3715,6 +3715,20 @@ body {
           <span class="profile-reward-chamber-chip">Backend-authoritative pricing</span>
         </div>
         <div id="profileRewardChamberBalanceChip" class="profile-reward-chamber-chip">Loading DSPOINC…</div>
+
+        <!-- 🧀 dSPOINC Buy Widget.
+             DEVS FOR DECADES:
+             Frontend-only bridge utility for Reward Chamber funding.
+             It does not open boxes, spend DSPOINC, grant rewards, credit DSPOINC,
+             settle SPOINC, or write reward/economy rows. -->
+        <div id="profile-dspoinc-buy-widget" class="mt-5 mb-6 max-w-3xl mx-auto rounded-3xl border border-yellow-300/25 bg-slate-950/90 p-4 md:p-5 shadow-2xl shadow-yellow-500/10">
+          <div class="text-xs uppercase tracking-[0.18em] text-yellow-300 font-black">Bridge Utility</div>
+          <div class="mt-2 text-xl font-black text-white">Need dSPOINC for Reward Chamber?</div>
+          <p class="mt-2 text-sm text-slate-300">
+            Enter an amount and request a quote before signing anything with your wallet.
+          </p>
+          <div class="narrrfs-dspoinc-buy-widget mt-4" data-default-dspoinc="1000000"></div>
+        </div>
       </div>
 
       <h2 class="profile-reward-chamber-title">Crack open the Reward Chamber and send your mice on a cheesy treasure run</h2>
@@ -7166,6 +7180,45 @@ function formatRecentAdjustmentTimestamp(timestamp) {
   return String(timestamp).replace('T', ' ').slice(0, 19);
 }
 
+/**
+ * Return a clear display reason for one Recent Score Changes row.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Profile history is display-only. SPOINC bridge settlement remains
+ * authoritative in the protected bridge confirm endpoint and database rows.
+ * This helper only makes bridge credits visible and readable to users.
+ */
+function formatRecentAdjustmentReason(adjustment) {
+  const adminId = String(adjustment?.admin_id || '').trim();
+  const rawReason = String(adjustment?.reason || adjustment?.action || 'Score adjustment').trim();
+
+  if (
+    adminId === 'system-spoinc-bridge' ||
+    rawReason.includes('Gensuki SPOINC bridge')
+  ) {
+    const spoincMatch = rawReason.match(/confirmed:\s*([0-9.]+)\s*SPOINC/i);
+    const spoincText = spoincMatch ? ` · ${spoincMatch[1]} SPOINC settled` : '';
+
+    return `🧀 SPOINC Bridge Credit${spoincText}`;
+  }
+
+  return rawReason || 'Score adjustment';
+}
+
+function getRecentAdjustmentRowClass(adjustment, amount) {
+  const adminId = String(adjustment?.admin_id || '').trim();
+  const rawReason = String(adjustment?.reason || '').trim();
+
+  if (
+    adminId === 'system-spoinc-bridge' ||
+    rawReason.includes('Gensuki SPOINC bridge')
+  ) {
+    return 'rounded-xl border border-yellow-300/30 bg-yellow-300/10 px-3 py-2';
+  }
+
+  return '';
+}
+
 function renderRecentAdjustments(response) {
   const recentList = document.getElementById('recentAdjustments');
   const emptyMsg = document.getElementById('no-score-history');
@@ -7203,10 +7256,11 @@ function renderRecentAdjustments(response) {
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .map((adjustment) => {
 const amount = getSignedRecentAdjustmentAmount(adjustment);
-const reason = adjustment.reason || adjustment.action || 'Score adjustment';
+const reason = formatRecentAdjustmentReason(adjustment);
 const timestamp = formatRecentAdjustmentTimestamp(adjustment.timestamp);
+const rowClass = getRecentAdjustmentRowClass(adjustment, amount);
 
-      return `<li>
+      return `<li class="${rowClass}">
         <span class="font-mono">${timestamp}</span>
         : <b class="${amount >= 0 ? 'text-green-400' : 'text-red-400'}">${formatRecentAdjustmentAmount(amount)}</b>
         <span class="italic">(${reason})</span>
@@ -10076,7 +10130,6 @@ function renderProfileStore() {
     const boosterWrapper = document.createElement('div');
     boosterWrapper.innerHTML = renderBoosterStoreSection();
     itemsContainer.appendChild(boosterWrapper);
-    attachBoosterBuyListeners();
   }
 
   if (itemsRendered === 0) {
@@ -10086,34 +10139,30 @@ function renderProfileStore() {
 
 function renderBoosterStoreSection() {
   return `
-    <div class="mt-6">
-      <div class="text-lg font-bold text-cyan-300 mb-3">🧪 Lab Boosters</div>
+    <div class="mt-6 rounded-2xl border border-cyan-300/25 bg-cyan-950/30 p-5">
+      <div class="text-lg font-bold text-cyan-300 mb-3">🧪 Lab Boosters moved to Reward Chamber</div>
 
-      <div class="lab-boosters-grid">
-        ${getLabBoosterCatalog().map(booster => {
-          return `
-            <div class="lab-booster-card ${booster.tone}">
-              <div class="lab-booster-title">${booster.name}</div>
+      <p class="text-sm text-slate-300 leading-relaxed">
+        Green, Blue, and Red Elixirs are no longer sold directly from the Profile store.
+        Lab Boosters are now available only through the Reward Chamber so booster access
+        stays connected to the official Chamber reward flow.
+      </p>
 
-              <div class="lab-booster-effect">${booster.effect}</div>
-
-              <div class="lab-booster-sub">
-                ${getLabBoosterPriceLabel(booster.itemId)}
-              </div>
-
-              ${renderLabBoosterViewer(booster)}
-
-              <button
-                type="button"
-                class="lab-booster-buy btn-like-lab ${booster.tone}"
-                data-buy-booster="${booster.itemId}"
-              >
-                🛒 Buy 1
-              </button>
-            </div>
-          `;
-        }).join('')}
+      <div class="mt-4 rounded-xl border border-white/10 bg-black/25 p-4 text-sm text-slate-300">
+        <div class="font-black text-yellow-200 mb-2">What changed?</div>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Profile no longer creates Lab Booster purchases.</li>
+          <li>Your existing booster inventory display remains available.</li>
+          <li>Reward Chamber remains the official place to unlock booster access.</li>
+        </ul>
       </div>
+
+      <a
+        href="profile.html#profile-chest-section"
+        class="mt-4 inline-flex rounded-2xl bg-yellow-400 px-5 py-3 font-black text-black hover:bg-yellow-300 transition"
+      >
+        🎁 Open Reward Chamber
+      </a>
     </div>
   `;
 }
@@ -15803,7 +15852,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfileGeneticSummary();
 });
 </script>
-<script src="js/cheese-auth-indicator.js"></script>
+<script src="js/dspoinc-buy-widget.js?v=dspoinc-buy-quote-v1-20260818-2248"></script>
+  <script src="js/cheese-auth-indicator.js"></script>
 <audio id="reward-open-sound" preload="auto">
   <source src="sounds/SFX/chest.mp3" type="audio/mpeg">
 </audio>

@@ -1,5 +1,436 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-08-19 — Safe dSPOINC Buy Widget Local Validation / Swap Lab Placement Ready
+
+**Agent / Scope:** SPOINC / DSPOINC bridge frontend + Profile display + Swap Lab presentation  
+**Environment:** Local Windows/XAMPP · branch `render-deploy`  
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Production push:** NOT YET at time of this note  
+**Database/schema changes:** NONE  
+**Protected systems:** DSPOINC/SPOINC bridge treated as protected; no manual ledger mutation performed by this frontend work  
+
+### Scope Completed
+
+A reusable **Buy dSPOINC with SOL** widget was added and locally validated.
+
+The widget gives users a guided route:
+
+```text
+Quote requested dSPOINC
+→ create SOL_TO_SPOINC buy intent
+→ wallet signature #1: SOL → SPOINC
+→ confirm SOL_TO_SPOINC buy
+→ create SPOINC_TO_DSPOINC deposit/claim intent
+→ wallet signature #2: SPOINC → dSPOINC
+→ confirm SPOINC_TO_DSPOINC
+→ backend credits dSPOINC exactly once
+
+## 2026-08-19 — MouseFight Leagues 1.3 LIVE Sign-In / V2-2C Continuity Synced
+
+**Agent:** MouseFight Leagues 1.3 LIVE
+**Project:** Narrrfs World 13.0
+**Role:** Professional MouseFight Genesis League V2 specialist
+**Predecessor:** MouseFight League 1.2 LIVE
+**Current phase:** V2-2C — final hostile / scale architecture and hysteresis refinement
+**Authoritative production contract:** `mousefight_genesis_leagues_v1` remains unchanged
+**Environment:** Local Windows/XAMPP · branch `render-deploy`
+**Canonical QUICK_STATUS:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+**Production V2 implementation:** NOT started
+**Database / schema changes during restart:** NONE
+**Production / Discord runtime changes during restart:** NONE
+
+### Sign-In
+
+I accept the Narrrfs World Global Rules.
+
+The newest available QUICK_STATUS state and the complete MouseFight League 1.2 → MouseFight Leagues 1.3 LIVE handover have been reviewed and synchronized.
+
+No additional blocking questions remain for the outgoing agent.
+
+### Current Accepted Research State
+
+V2 development remains gated in this order:
+
+```text
+V2-0   Direction / freeze naive V1 expansion                  DONE
+V2-1   Fresh real population audit                            DONE
+V2-2A  Hybrid percentile + natural-gap classifier             DONE
+V2-2B  Hysteresis + fightability architecture                 DONE
+V2-2C  Hostile / scale validation + hysteresis refinement     ACTIVE
+V2-3   Final mathematical contract approval                   NOT STARTED
+V2-4+  Production implementation                              NOT STARTED
+```
+
+Current research evidence preserved from the predecessor includes:
+
+```text
+Fresh population:
+328 named Genesis mice
+309 default MouseFight-ready
+55 distinct owners
+League Power range 49–488
+
+Scale / robustness:
+3,333 population test passed
+100,000 future population stress test passed
+Power ×10 invariance passed
+equal-Power / tie safety passed
+
+Remaining hysteresis issue:
+H15 exposed threshold-only collateral demotion.
+H16 exposed repeated A → B → A → B reversal oscillation.
+
+I5 remains preserved as research evidence but is not sufficient.
+```
+
+### Immediate Research Direction
+
+The next isolated research hypothesis is:
+
+```text
+I6 — provenance-aware reversal hysteresis
+```
+
+I6 must investigate whether League movement can distinguish:
+
+```text
+1. genuine own-Power progression/regression;
+2. threshold-only movement caused by population/classifier changes;
+3. recent reversal attempts;
+4. genuine structural population changes that should be allowed to bypass protection.
+```
+
+The objective is to prevent unnecessary collateral League changes and repeated reversal flipbacks **without delaying genuine permanent Genesis progression**.
+
+### Architectural Boundaries Reconfirmed
+
+League identity remains:
+
+```text
+token_id + collection
+```
+
+League Power remains permanent Genesis progression only:
+
+```text
+Trait Power
++ Ability Power × 2
++ Named Mouse Bonus
++ Fitness Bonus
+```
+
+Explicitly excluded from permanent League classification:
+
+```text
+Genetic Items
+temporary MouseFight combat Power
+Battle Mode calculations
+fight results
+DSPOINC
+SPOINC
+rewards
+PVP escrow / settlement
+event burns / refunds
+Fight Recovery
+staking
+ownership economy
+```
+
+League Power remains separate from Fight Power.
+
+League membership remains separate from League fightability.
+
+Battle Modes remain separate from League Mode.
+
+Ownership controls current use of a Genesis mouse but does not redefine League identity.
+
+### Protected Systems
+
+No changes were made during restart to:
+
+```text
+Fight Recovery
+DSPOINC / SPOINC
+PVP escrow / settlement
+event burns / refunds
+MouseFight rewards
+token payout / airdrop
+Genesis ownership
+permanent Traits
+permanent Abilities
+Lab progression
+Genetic Items
+staking
+authentication
+database schema
+deployment configuration
+production League V1
+```
+
+### Verification Boundary
+
+The handover and QUICK_STATUS documentation are synchronized.
+
+The current local frozen V2 research-script hashes have **not yet been independently reverified by MouseFight Leagues 1.3 LIVE**.
+
+No claim is made that local source files match the predecessor's frozen hashes until that source gate is executed directly inside the project workspace.
+
+### Exact Next Step
+
+Before changing any V2 research code:
+
+```text
+1. Inspect the current V2 research files locally.
+2. Verify the frozen predecessor SHA-256 hashes.
+3. Verify git status / branch and relevant source boundaries.
+4. Preserve I5 unchanged.
+5. Only after the source gate passes, fork the approved I5 research source into:
+   mousefight-league-v2c-i6-hysteresis-refinement.py
+6. Implement I6 only inside the isolated research simulator.
+7. Re-run the hostile cases, especially H15 and H16.
+8. Do not enter V2-3 until V2-2C is explicitly accepted.
+```
+
+**Status:** ACTIVE
+**Handover:** COMPLETE
+**Protected systems:** UNCHANGED
+**Production V1:** AUTHORITATIVE
+**V2 production implementation:** NOT STARTED
+**Exact continuation point:** V2-2C / I6 provenance-aware reversal hysteresis
+
+**Accepted. Synchronized. Standby: Active.**
+
+
+### 2026-08-19 — Gensuki-Only Failed Pending Row Cleaned
+
+A single Gensuki-only pending row was cleaned after protected evidence review.
+
+**TX:**
+`3XDtnfGUY6w7WSVP7iK2jgrwAFuP3FDZbVXTBzf1bZ27G5YUTR7QvTscuLGHRK19ty7YBth1U59vZtTXLWEdgMzS`
+
+**Evidence before cleanup:**
+- Admin pending audit showed `Gensuki only / no local intent`.
+- Step 2B with Solana classified it as `failed_candidate / Gensuki only`.
+- Manual signature check returned clean Solana `value:null / not_found`.
+- `can_complete: false`
+- `can_fail: true`
+- `needs_manual_review: false`
+
+**Cleanup performed:**
+- Manual Gensuki `/api/custom-token-presale/confirm` call with `status:"failed"`.
+- Response: `{"success":true}`
+
+**Verification after cleanup:**
+- `pending_count: 0`
+- `local_matched_count: 0`
+- `gensuki_only_count: 0`
+- `complete_candidate_count: 0`
+- `failed_candidate_count: 0`
+- `manual_review_count: 0`
+- `rpc_error_count: 0`
+- `rows: []`
+
+**Protected systems unchanged:**
+- No DSPOINC credit.
+- No DSPOINC debit.
+- No Narrrfs local settlement.
+- No local bridge intent mutation.
+- No Reward, staking, MouseFight, Fight Recovery, Genesis, Lab, or token payout changes.
+
+**Follow-up recommendation:**
+Add a future protected Phase 1D admin path for `apply_fail_gensuki_only` so this rare cleanup case can be logged through Narrrfs ops instead of manual curl.
+
+## 2026-08-19 — SPOINC → dSPOINC Buy Widget / Holder Portal / Profile Booster Store Follow-Up
+
+**Agent / Scope:** SPOINC / DSPOINC bridge frontend + Discord presentation follow-up  
+**Environment:** Local Windows/XAMPP · branch `render-deploy`  
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Discord application path:** `/c/xampp-server/htdocs/narrrfs-world/discord`  
+**Production verification:** Render live DB inspected for completed SPOINC → dSPOINC settlement  
+**Protected systems:** DSPOINC/SPOINC bridge, staking, rewards, MouseFight economy, Fight Recovery, Genesis/Lab permanent progression handled as protected and unchanged unless explicitly verified below  
+
+### Scope Completed
+
+This session connected the new reusable **Buy dSPOINC with SOL** website widget to the existing protected SPOINC bridge lifecycle and prepared it for live tester validation.
+
+The intended full flow is:
+
+```text
+Quote dSPOINC
+→ create SOL_TO_SPOINC buy intent
+→ Phantom signature #1: SOL → SPOINC
+→ confirm SOL_TO_SPOINC buy
+→ create SPOINC_TO_DSPOINC claim/deposit intent
+→ Phantom signature #2: SPOINC → dSPOINC
+→ confirm SPOINC_TO_DSPOINC
+→ backend credits dSPOINC exactly once
+
+## 2026-08-18 — MouseFight League V2-2B Raw Hysteresis Baseline Verified
+
+**Agent:** MouseFight League 1.2 LIVE  
+**Scope:** Genesis League V2-2B classification stability, fightability, and raw sequential-day hysteresis research  
+**Environment:** Local Windows/XAMPP · branch `render-deploy`  
+**Production V1 contract:** `mousefight_genesis_leagues_v1` unchanged  
+**Database writes:** NONE  
+**Production / Discord changes:** NONE  
+
+### Verified V2-2B Evidence
+
+Fresh Day-0 League population remains:
+
+```text
+named Genesis mice: 328
+default MouseFight-ready: 309
+distinct owners: 55
+League Power range: 49–488
+
+## 2026-08-18 — MouseFight League 1.2 LIVE Sign-In
+
+**Agent:** MouseFight League 1.2 LIVE
+**Project:** Narrrfs World 13.0
+**Role:** MouseFight Genesis League V2 specialist
+**Handover:** MouseFight Leagues 1.1 LIVE accepted
+**Current phase:** V2-2B — hysteresis, fightability, and population-scale validation
+**Authoritative production contract:** `mousefight_genesis_leagues_v1` remains unchanged
+**Environment:** Local Windows/XAMPP · branch `render-deploy`
+**Canonical QUICK_STATUS:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+
+### Sign-In
+
+I accept the Narrrfs World Global Rules.
+
+The newest QUICK_STATUS and MouseFight League 1.2 handover have been reviewed and synchronized.
+
+No source, database, economy, Fight Recovery, Genesis/Lab, staking, authentication, or production behavior was changed during restart.
+
+**Exact next step:** verify the existing V2 audit/simulator files locally, then continue V2-2B read-only simulation work.
+
+**Accepted. Synchronized. Standby: Active.**
+
+
+## 2026-08-17 — MouseFight Leagues 1.1 LIVE Final Sign-Out / V2 Continuity Locked
+
+### Agent Sign-Out
+
+**Outgoing agent:** MouseFight Leagues 1.1 LIVE  
+**Project:** Narrrfs World 13.0  
+**Primary specialist scope:** MouseFight Genesis League architecture, V2 population balancing, percentile + natural-gap classification, long-term tier scaling, threshold hysteresis, League fightability, website/API/Discord synchronization, and safe preparation for future League Mode  
+**Sign-out date:** 2026-08-17  
+**Status:** HANDOVER COMPLETE  
+**Successor:** MouseFight League 1.2 LIVE  
+
+---
+
+### Final State At Sign-Out
+
+The outgoing agent leaves the MouseFight Genesis League project at a clean architectural breakpoint.
+
+Current authoritative production-facing League contract remains:
+
+```text
+mousefight_genesis_leagues_v1
+
+## 2026-08-16 — MouseFight Genesis League V2 Long-Term Architecture Review / V2-2B Acceptance Plan Locked
+
+### Agent / Scope
+
+**Agent name and version:** MouseFight Leagues 1.1 LIVE  
+**Specialist role:** Genesis League V2 architecture, population balancing, long-term tier scaling, natural Power-gap classification, threshold stability, League fightability, contract-driven website/Discord integration, and safe League Mode preparation  
+**Environment:** Local Windows / XAMPP  
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Discord application path:** `/c/xampp-server/htdocs/narrrfs-world/discord`  
+**Branch:** `render-deploy`  
+**Canonical QUICK_STATUS:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`  
+**Current authoritative League API:** `api/leaderboard/get-mousefight-leagues.php`  
+**Current authoritative League contract:** `mousefight_genesis_leagues_v1`  
+**Current V2 phase:** V2-2A complete — V2-2B begins next  
+**Date:** Sunday, 2026-08-16  
+**Next development session:** Monday, 2026-08-17  
+**V2 production implementation:** NOT started  
+**V2 database/schema changes:** NONE  
+**V2 economy changes:** NONE  
+**V2 Discord runtime changes from this planning milestone:** NONE  
+**V2 website changes from this planning milestone:** NONE  
+
+---
+
+### Purpose Of This Milestone
+
+A specialist review raised three important long-term questions before V2-2B:
+
+```text
+1. Does the proposed 9-tier architecture remain fit for purpose at:
+   - current ~326 Genesis competitors;
+   - ~1,000;
+   - ~2,000;
+   - ~5,000;
+   - ~10,000;
+   - and much larger future populations?
+
+2. Would it be safer to launch fewer Leagues now
+   and expand later, for example 6 tiers → 9 tiers?
+
+3. Can threshold/boundary locking prevent players
+   constantly changing League because of tiny population
+   or Power changes?
+
+## 2026-08-16 — MouseFight Event Roster Presentation V2 Local Discord Runtime Verified
+
+### Agent / Scope
+
+**Agent name and version:** MouseFight Leagues 1.0 OLD  
+**Scope:** MouseFight moderator-event Discord lobby presentation only — structured joined-fighter roster with all entered fighters visible  
+**Environment:** Local Windows / XAMPP + local Discord bot  
+**Application path:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Discord application path:** `/c/xampp-server/htdocs/narrrfs-world/discord`  
+**Branch:** `render-deploy`  
+**Primary source file:** `discord/commands/mousefight.js`  
+**Database changes:** NONE  
+**API changes:** NONE  
+**Deployment configuration changes:** NONE  
+**Slash-command definition changes:** NONE  
+**Production website changes:** NONE  
+**Discord bot restart:** COMPLETED after syntax + focused diff validation  
+**Runtime verification:** PASS on existing waiting MouseFight lobby with 15/16 fighters
+
+---
+
+### Problem Verified
+
+The moderator MouseFight event lobby previously rendered every joined fighter inside one Discord embed field.
+
+The previous presentation helper:
+
+```text
+buildMouseFightJoinedFightersText()
+
+## 2026-08-15 — SPOINC Bridge Phase 1C-B Production Verification Complete
+
+**Agent / Scope:** SPOINC / DSPOINC Agent 5.0 — protected fail-only admin apply and audit lifecycle  
+**Environment:** Production Render  
+**Application path:** `/var/www/html`  
+**Production DB:** `/var/www/html/db/narrrf_world.sqlite`  
+**Status:** Production deploy verified
+
+### Production Endpoint Verification
+
+Verified from Render localhost:
+
+```text
+spoinc-bridge-ops health: HTTP 200
+phase: phase_1c_fail_only_apply
+mode: read_only_plus_protected_fail_only_apply
+GET apply_fail_local_not_found: HTTP 405 blocked
+get_operation_log: HTTP 200
+get_gensuki_pending_audit&include_solana=1: HTTP 200
+pending_count: 0
+local_matched_count: 0
+gensuki_only_count: 0
+failed_candidate_count: 0
+manual_review_count: 0
+rpc_error_count: 0
+gensuki_errors: []
+
 ## 2026-08-14 — SPOINC Bridge Local Stale Payload Cleanup / User 1224428436928594015
 
 **Scope:** SPOINC bridge local intent cleanup after Gensuki pending audit verified clean  

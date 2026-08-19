@@ -868,7 +868,7 @@ require_once 'discord-invite.php';
     </section>
 
 
-<!-- 🧊 Season 13 DSPOINC Staking V2 Overview
+<!-- 🧊 Season 14 DSPOINC Staking V2 Overview
      DEVS FOR DECADES:
      This is user-facing copy only.
      It does not change staking balances, reward math, stake creation,
@@ -909,8 +909,12 @@ require_once 'discord-invite.php';
           <a href="swap-lab.html" class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-cyan-400 px-4 py-3 font-black text-slate-950 hover:bg-cyan-300">
             🌉 Get DSPOINC in the Gateway
           </a>
+
+
+
         </div>
       </div>
+
 
       <!-- 🧬 Season 13 V2 Genesis staking preview.
            DEVS FOR DECADES:
@@ -918,6 +922,33 @@ require_once 'discord-invite.php';
            from get-stakes.php. It must not calculate rewards by itself.
            Backend create, claim, complete, and unstake APIs remain authoritative. -->
       <div id="season13-v2-preview-panel" class="mt-6 hidden"></div>
+
+      <div class="mt-6">
+        <!-- 🧀 dSPOINC Buy Widget.
+                 DEVS FOR DECADES:
+                 This section is frontend-only bridge UI. It does not stake DSPOINC,
+                 unfreeze DSPOINC, freeze Genesis NFTs, claim Genesis Mouse Freezer rewards,
+                 credit DSPOINC, settle SPOINC, or mutate economy state.
+                 Backend bridge endpoints remain authoritative for quote, Solana/Gensuki
+                 verification, settlement, and exactly-once DSPOINC credit. -->
+        <div id="stake-lab-dspoinc-buy" class="mt-6 rounded-3xl border border-yellow-300/25 bg-slate-950/80 p-4 md:p-5 shadow-2xl shadow-yellow-500/10">
+              <div class="mb-4">
+                <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/35 bg-yellow-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-200">
+                  🧀 Bridge Utility
+                </div>
+                <h3 class="mt-3 text-xl md:text-2xl font-black text-white">
+                  Buy dSPOINC with SOL
+                </h3>
+                <p class="mt-2 text-sm text-slate-300">
+                  Enter a dSPOINC amount, request a bridge quote, and prepare a protected SOL → SPOINC → dSPOINC route.
+                  The backend stays authoritative for quote, wallet verification, Gensuki confirmation, and settlement.
+                </p>
+              </div>
+
+              <div class="narrrfs-dspoinc-buy-widget" data-default-dspoinc="1000000"></div>
+            </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -928,11 +959,11 @@ require_once 'discord-invite.php';
         <div class="bg-black/50 backdrop-blur-md rounded-xl p-6 border border-blue-400/30 mb-8">
           <div class="mb-6">
             <div class="mb-2 inline-flex items-center gap-2 rounded-full border border-blue-300/30 bg-blue-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
-              Season 13 V2 Staking · Legacy stakes protected
+              Season 14 DSPOINC Staking V2 · Legacy stakes protected
             </div>
             <h2 class="text-2xl font-bold text-blue-400">❄️ Freeze DSPOINC</h2>
             <p class="mt-2 text-sm leading-relaxed text-slate-300">
-  This form now creates Season 13 DSPOINC Staking V2 positions with day-based lock pools and backend-validated Genesis boost checks.
+  This form creates Season 14 DSPOINC Staking V2 positions with day-based lock pools and backend-validated Genesis boost checks.
   Existing legacy V1 stakes remain safe and continue under their original rules.
 </p>
           </div>
@@ -940,6 +971,13 @@ require_once 'discord-invite.php';
           <!-- Amount Input -->
           <div class="mb-6">
             <label class="block text-blue-300 font-semibold mb-2">Amount to Freeze (DSPOINC)</label>
+            <div id="stake-lab-freeze-available-dspoinc-helper" class="mb-3 rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-sm text-cyan-100">
+              <div class="text-xs uppercase tracking-[0.14em] text-cyan-200 font-black">Available dSPOINC</div>
+              <div id="stake-lab-freeze-visible-available-dspoinc" class="mt-1 text-2xl font-black text-white">Loading…</div>
+              <div class="mt-1 text-xs text-cyan-100/80">
+                This mirrors your available, unfrozen dSPOINC balance for new stakes. Backend staking validation remains authoritative.
+              </div>
+            </div>
             <input type="number" id="stake-amount" min="100" step="100" value="1000"
                    class="w-full bg-gray-800/50 border border-blue-400/30 rounded-lg px-4 py-3 text-white text-lg font-mono focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/50"
                    placeholder="Enter amount (minimum 100 DSPOINC)">
@@ -1816,7 +1854,7 @@ const tierRows = tiers.map((tier) => {
             <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-5 mb-6">
               <div>
                 <div class="inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-yellow-100 mb-4">
-                  🧬 Season 13 V2 Staking Preview
+                  🧬 Season 14 DSPOINC Staking V2 Preview
                 </div>
                 <h3 class="text-3xl md:text-4xl font-black text-white leading-tight">
                   Genesis Mice Become Staking Boosters
@@ -7927,11 +7965,71 @@ if (isMobilePhantom) {
 }
 
 // Run on page load try 2 
+/**
+ * Mirror available dSPOINC into the Freeze form.
+ *
+ * DEVS FOR DECADES:
+ * This is display-only convenience. It reads already-rendered Stake Lab balance
+ * text and mirrors it near the stake amount field so users do not need to scroll.
+ * It must never calculate staking authority, mutate DSPOINC, write DB rows,
+ * bypass backend staking checks, or replace final API validation.
+ */
+function syncStakeLabFreezeVisibleAvailableDspoinc() {
+  const target = document.getElementById('stake-lab-freeze-visible-available-dspoinc');
+
+  if (!target) {
+    return;
+  }
+
+  const candidateSelectors = [
+    '#available-dspoinc',
+    '#availableDspoinc',
+    '#available-balance',
+    '#availableBalance',
+    '#stake-available-dspoinc',
+    '#stakeAvailableDspoinc',
+    '[data-available-dspoinc]',
+    '[data-stake-available-dspoinc]'
+  ];
+
+  for (const selector of candidateSelectors) {
+    const source = document.querySelector(selector);
+    const value = String(source?.textContent || source?.value || '').trim();
+
+    if (value && value !== 'Loading...' && value !== 'Loading…') {
+      target.textContent = value.includes('DSPOINC') ? value : `${value} DSPOINC`;
+      return;
+    }
+  }
+
+  const balanceCards = Array.from(document.querySelectorAll('div, span'))
+    .filter((node) => /available/i.test(String(node.textContent || '')) && /dspoinc/i.test(String(node.textContent || '')));
+
+  for (const card of balanceCards) {
+    const valueMatch = String(card.textContent || '').match(/([0-9][0-9,.\s]*)\s*DSPOINC/i);
+    if (valueMatch) {
+      target.textContent = `${valueMatch[1].trim()} DSPOINC`;
+      return;
+    }
+  }
+
+  target.textContent = 'Refresh balance above';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initPage();
   initWalletConnection();
+  syncStakeLabFreezeVisibleAvailableDspoinc();
+  setTimeout(syncStakeLabFreezeVisibleAvailableDspoinc, 1000);
+  setTimeout(syncStakeLabFreezeVisibleAvailableDspoinc, 2500);
 });
   </script>
 <script src="js/cheese-auth-indicator.js"></script>
+
+  <!-- 🧀 Reusable dSPOINC Buy Widget.
+       DEVS FOR DECADES:
+       Frontend helper only. It must never credit DSPOINC or decide settlement. -->
+  <script src="js/dspoinc-buy-widget.js?v=dspoinc-buy-quote-v1-20260818-2248"></script>
+
 </body>
 </html>
