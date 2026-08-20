@@ -183,6 +183,7 @@
         </span>
       </a>
       <nav class="flex flex-wrap justify-end gap-2 text-sm font-bold">
+        <a href="#leagues" class="rounded-full border border-yellow-300/25 bg-yellow-300/10 px-4 py-2 text-yellow-100 hover:bg-yellow-300/15">🏆 Leagues</a>
         <a href="#rankings" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Rankings</a>
         <a href="#fighters" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">Genesis Fighters</a>
         <a href="#history" class="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-cyan-100 hover:bg-cyan-300/15">Fight Archive</a>
@@ -265,6 +266,98 @@
           <h2 class="text-3xl md:text-4xl font-black">Arena Leaders</h2>
         </div>
         <div id="featuredGrid" class="grid md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+      </section>
+
+      <section id="leagues" class="mb-10">
+        <div class="arena-card rounded-[30px] p-5 md:p-7">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div class="max-w-3xl">
+              <div class="text-xs uppercase tracking-[.24em] text-yellow-200 font-black">Current permanent Genesis progression</div>
+              <h2 class="text-3xl md:text-4xl font-black">🏆 Genesis Mouse Leagues</h2>
+              <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+                Every named Genesis mouse belongs to a current league. League Power uses permanent Genesis Traits, Abilities, the named-mouse bonus, and the Fitness unlock bonus. Genetic Items and temporary battle-mode power are excluded.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <a href="lab.html" class="rounded-2xl border border-green-300/25 bg-green-300/10 px-4 py-2 text-sm font-black text-green-100 hover:bg-green-300/15">🧪 Train in the Lab</a>
+              <a href="strongest-genesis-mice.html" class="rounded-2xl border border-yellow-300/25 bg-yellow-300/10 px-4 py-2 text-sm font-black text-yellow-100 hover:bg-yellow-300/15">🐭 Strongest Mice</a>
+            </div>
+          </div>
+
+          <div id="leagueStatus" class="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
+            Loading current Genesis leagues…
+          </div>
+
+          <!--
+            Live V2 snapshot intelligence.
+
+            DEVS FOR DECADES:
+            These cards display values already published by the authoritative
+            read-only V2 snapshot. Presentation ratios may be calculated from
+            published counts, but League placement and boundaries are never
+            calculated by the browser.
+          -->
+          <div id="leagueSnapshotGrid" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-4"></div>
+
+          <div id="leagueTierGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5"></div>
+
+          <!--
+            Daily Genesis League movement presentation.
+
+            DEVS FOR DECADES:
+            This section only displays movement rows already published by the
+            authoritative V2 League snapshot. The browser never compares
+            snapshots, calculates promotions/relegations, or changes League state.
+          -->
+          <div class="mt-7 border-t border-white/10 pt-6">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <div class="text-xs uppercase tracking-[.2em] text-yellow-200 font-black">
+                  📈 Daily League Movements
+                </div>
+                <h3 class="text-2xl md:text-3xl font-black mt-1">
+                  Promotions, Relegations & Reviews
+                </h3>
+                <p id="leagueMovementStatus" class="text-sm text-slate-400 mt-2">
+                  Loading the latest published League movement snapshot…
+                </p>
+              </div>
+            </div>
+
+            <div id="leagueMovementSummary" class="grid sm:grid-cols-3 gap-3 mt-5"></div>
+            <div id="leagueMovementList" class="grid md:grid-cols-2 xl:grid-cols-3 gap-3 mt-4"></div>
+          </div>
+
+          <div class="mt-7 border-t border-white/10 pt-6">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <div id="leagueRosterEyebrow" class="text-xs uppercase tracking-[.2em] text-cyan-200 font-black">Select a league</div>
+                <h3 id="leagueRosterTitle" class="text-2xl md:text-3xl font-black mt-1">Current Mouse Roster</h3>
+                <p id="leagueRosterDescription" class="text-sm text-slate-400 mt-2">
+                  Choose one league above to inspect its current named Genesis mice.
+                </p>
+              </div>
+              <div id="leagueRosterCount" class="text-sm font-black text-yellow-200"></div>
+            </div>
+
+            <div id="leagueMouseGrid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-5"></div>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-3 mt-6 text-sm">
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div class="font-black text-yellow-200">League Power</div>
+              <p class="text-slate-400 mt-2">Trait Power + Ability Power + Named Bonus + Fitness Bonus.</p>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div class="font-black text-cyan-200">Genetic Items Excluded</div>
+              <p class="text-slate-400 mt-2">Owner Genetic Support remains a MouseFight combat layer and never changes league classification.</p>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div class="font-black text-green-200">Train to Climb</div>
+              <p class="text-slate-400 mt-2">Permanent Genesis progression can move a named mouse into a higher league automatically.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="rankings" class="arena-card rounded-[30px] p-5 md:p-7 mb-10">
@@ -455,6 +548,7 @@
     const PLAYER_STATS_API = '/api/leaderboard/get-mousefight-player-stats.php';
     const HISTORY_API = '/api/leaderboard/get-recent-mousefights.php';
     const FIGHT_DETAILS_API = '/api/leaderboard/get-mousefight-details.php';
+    const LEAGUES_API = '/api/leaderboard/get-mousefight-leagues-v2.php';
     const DEFAULT_AVATAR = 'https://cdn.discordapp.com/embed/avatars/0.png';
     const DEFAULT_MOUSE_IMAGE = 'img/rumble/cheese_rumble.png';
 
@@ -468,6 +562,8 @@
       historyHasMore: false,
       historyRows: [],
       fightCache: new Map(),
+      leagueData: null,
+      activeLeagueRank: null,
     };
 
     const boardConfig = {
@@ -498,6 +594,17 @@
       criteriaText: document.getElementById('criteriaText'),
       playerBoard: document.getElementById('playerBoard'),
       fighterGrid: document.getElementById('fighterGrid'),
+      leagueStatus: document.getElementById('leagueStatus'),
+      leagueSnapshotGrid: document.getElementById('leagueSnapshotGrid'),
+      leagueTierGrid: document.getElementById('leagueTierGrid'),
+      leagueRosterEyebrow: document.getElementById('leagueRosterEyebrow'),
+      leagueRosterTitle: document.getElementById('leagueRosterTitle'),
+      leagueRosterDescription: document.getElementById('leagueRosterDescription'),
+      leagueRosterCount: document.getElementById('leagueRosterCount'),
+      leagueMouseGrid: document.getElementById('leagueMouseGrid'),
+      leagueMovementStatus: document.getElementById('leagueMovementStatus'),
+      leagueMovementSummary: document.getElementById('leagueMovementSummary'),
+      leagueMovementList: document.getElementById('leagueMovementList'),
       modeGrid: document.getElementById('modeGrid'),
       abilityGrid: document.getElementById('abilityGrid'),
       triggerStats: document.getElementById('triggerStats'),
@@ -591,6 +698,672 @@
         featureCard('Most Successful Mouse','🧀',f.most_successful_mouse,number(f.most_successful_mouse?.wins),'fight wins',true),
       ].join('');
       el.featuredGrid.querySelectorAll('[data-player-id]').forEach(button => button.addEventListener('click', () => openPlayer(button.dataset.playerId)));
+    }
+
+    function leaguePowerRange(tier) {
+      const minimum = number(tier?.minimum_power);
+      const maximum = tier?.maximum_power;
+
+      return maximum === null || maximum === undefined
+        ? `${minimum}+`
+        : `${minimum}–${number(maximum)}`;
+    }
+
+    function leagueSummaryByRank(rank) {
+      const summaries = state.leagueData?.summary?.tiers || [];
+      return summaries.find(row => number(row.rank) === number(rank)) || null;
+    }
+
+    function leagueTierByRank(rank) {
+      const tiers = state.leagueData?.tiers || [];
+      return tiers.find(row => number(row.rank) === number(rank)) || null;
+    }
+
+    function leagueMouseReadiness(mouse) {
+      return mouse?.eligibility?.default_mousefight_ready
+        ? '<span class="text-green-200 font-black">✓ MouseFight Ready</span>'
+        : '<span class="text-amber-200 font-black">Training Needed</span>';
+    }
+
+    /**
+     * Return a safe display percentage already calculated by the V2 publisher.
+     *
+     * DEVS FOR DECADES:
+     * This only clamps an API presentation value into the CSS width range.
+     * It never calculates League placement or progression from Power.
+     */
+    function leagueDisplayProgressPercent(mouse) {
+      const value = Number(mouse?.progression?.progress_percent);
+
+      if (!Number.isFinite(value)) {
+        return 0;
+      }
+
+      return Math.max(0, Math.min(100, value));
+    }
+
+    function leagueMovementRankLabel(rank) {
+      const tier = leagueTierByRank(rank);
+
+      if (!tier) {
+        return `League #${number(rank)}`;
+      }
+
+      return `${tier.symbol || '🐭'} ${tier.label || 'League'}`;
+    }
+
+    function leagueMouseByIdentity(identity) {
+      const cleanIdentity = String(identity || '');
+
+      return (state.leagueData?.mice || []).find(mouse => {
+        const mouseIdentity =
+          `${mouse?.token_id || ''}|${mouse?.collection || 'genesis'}`;
+
+        return mouseIdentity === cleanIdentity;
+      }) || null;
+    }
+
+    /**
+     * Render movements already published by the V2 daily snapshot.
+     *
+     * No promotion/relegation decision is made here.
+     */
+
+    /**
+     * Render high-level values already published by the V2 snapshot.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * This function is telemetry only. It does not classify mice, move
+     * boundaries, run H2/I6, or write any state.
+     */
+    function renderLeagueSnapshotIntelligence() {
+      if (!el.leagueSnapshotGrid) {
+        return;
+      }
+
+      const summary = state.leagueData?.summary || {};
+      const snapshot = state.leagueData?.snapshot || {};
+      const dynamics = snapshot.dynamics || {};
+      const movements = state.leagueData?.movements || {};
+
+      const h2Reasons = Array.isArray(snapshot.h2_reasons)
+        ? snapshot.h2_reasons
+        : [];
+
+      const retainedBoundaries = h2Reasons.filter(
+        reason => String(reason || '') === 'retained'
+      ).length;
+
+      const movementCount = [
+        'promotions',
+        'relegations',
+        'pending',
+        'new_mice',
+        'removed_mice'
+      ].reduce(
+        (total, key) =>
+          total + (
+            Array.isArray(movements[key])
+              ? movements[key].length
+              : 0
+          ),
+        0
+      );
+
+      const powerMin = number(summary.power_min);
+      const powerMax = number(summary.power_max);
+      const namedMice = number(summary.named_mice);
+      const readyMice = number(summary.default_mousefight_ready_mice);
+      const distinctOwners = number(summary.distinct_owners);
+
+      const readyRate = namedMice > 0
+        ? ((readyMice / namedMice) * 100)
+        : 0;
+
+      const populationChange = Number(
+        dynamics.population_change_percent || 0
+      );
+
+      const populationChangeLabel = Number.isFinite(populationChange)
+        ? `${populationChange >= 0 ? '+' : ''}${populationChange.toFixed(2).replace(/\.00$/, '')}%`
+        : '—';
+
+      el.leagueSnapshotGrid.innerHTML = `
+        <div class="rounded-2xl border border-yellow-300/20 bg-yellow-300/10 p-4">
+          <div class="text-xs uppercase tracking-[.15em] text-yellow-200 font-black">
+            🐭 League Population
+          </div>
+          <div class="text-2xl font-black text-yellow-100 mt-2">
+            ${number(namedMice)}
+          </div>
+          <div class="text-xs text-yellow-50/80 mt-1">
+            ${number(distinctOwners)} current owners
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4">
+          <div class="text-xs uppercase tracking-[.15em] text-cyan-200 font-black">
+            ⚡ Permanent Power
+          </div>
+          <div class="text-2xl font-black text-cyan-100 mt-2">
+            ${number(powerMin)}–${number(powerMax)}
+          </div>
+          <div class="text-xs text-cyan-50/80 mt-1">
+            Current published League Power span
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-green-300/20 bg-green-300/10 p-4">
+          <div class="text-xs uppercase tracking-[.15em] text-green-200 font-black">
+            ⚔️ Fight Readiness
+          </div>
+          <div class="text-2xl font-black text-green-100 mt-2">
+            ${number(readyMice)}
+          </div>
+          <div class="text-xs text-green-50/80 mt-1">
+            ${readyRate.toFixed(1)}% of named mice ready
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-purple-300/20 bg-purple-300/10 p-4">
+          <div class="text-xs uppercase tracking-[.15em] text-purple-200 font-black">
+            🧭 Snapshot Stability
+          </div>
+          <div class="text-2xl font-black text-purple-100 mt-2">
+            ${number(retainedBoundaries)}/${number(h2Reasons.length)}
+          </div>
+          <div class="text-xs text-purple-50/80 mt-1">
+            H2 boundaries retained • population ${escapeHtml(populationChangeLabel)} • ${number(movementCount)} movement row(s)
+          </div>
+        </div>
+      `;
+    }
+
+    function renderLeagueMovements() {
+      if (
+        !el.leagueMovementStatus ||
+        !el.leagueMovementSummary ||
+        !el.leagueMovementList
+      ) {
+        return;
+      }
+
+      const movements = state.leagueData?.movements || {};
+
+      const promotions = Array.isArray(movements.promotions)
+        ? movements.promotions
+        : [];
+
+      const relegations = Array.isArray(movements.relegations)
+        ? movements.relegations
+        : [];
+
+      const pending = Array.isArray(movements.pending)
+        ? movements.pending
+        : [];
+
+      const snapshotSequence = Number(
+        state.leagueData?.snapshot?.sequence || 0
+      );
+
+      const generatedAt = dateLabel(
+        state.leagueData?.generated_at
+      );
+
+      el.leagueMovementStatus.textContent =
+        `Snapshot #${snapshotSequence || '—'} • Published ${generatedAt} • ` +
+        `movement state comes directly from the authoritative daily V2 snapshot.`;
+
+      el.leagueMovementSummary.innerHTML = `
+        <div class="rounded-2xl border border-green-300/20 bg-green-300/10 p-4">
+          <div class="text-2xl font-black text-green-100">${number(promotions.length)}</div>
+          <div class="text-sm font-black text-green-200 mt-1">⬆ Promotions</div>
+        </div>
+        <div class="rounded-2xl border border-red-300/20 bg-red-300/10 p-4">
+          <div class="text-2xl font-black text-red-100">${number(relegations.length)}</div>
+          <div class="text-sm font-black text-red-200 mt-1">⬇ Relegations</div>
+        </div>
+        <div class="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
+          <div class="text-2xl font-black text-amber-100">${number(pending.length)}</div>
+          <div class="text-sm font-black text-amber-200 mt-1">⏳ Pending Review</div>
+        </div>
+      `;
+
+      const rows = [
+        ...promotions.map(row => ({ ...row, movementKind: 'promotion' })),
+        ...relegations.map(row => ({ ...row, movementKind: 'relegation' })),
+        ...pending.map(row => ({ ...row, movementKind: 'pending' })),
+      ];
+
+      if (!rows.length) {
+        el.leagueMovementList.innerHTML = `
+          <div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-white/15 bg-black/15 p-6 text-center">
+            <div class="text-xl">🧀</div>
+            <div class="font-black text-slate-200 mt-2">No published League movements in this snapshot.</div>
+            <div class="text-sm text-slate-500 mt-1">All currently published mice remained stable today.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const confirmationSnapshots = Number(
+        state.leagueData?.contract?.i6?.confirmation_snapshots || 0
+      );
+
+      el.leagueMovementList.innerHTML = rows.map(row => {
+        const movementKind = row.movementKind;
+        const mouse = leagueMouseByIdentity(row.identity);
+        const mouseMovement = mouse?.movement || {};
+
+        const icon = movementKind === 'promotion'
+          ? '⬆️'
+          : movementKind === 'relegation'
+            ? '⬇️'
+            : '⏳';
+
+        const label = movementKind === 'promotion'
+          ? 'Promotion'
+          : movementKind === 'relegation'
+            ? 'Relegation'
+            : 'League Review';
+
+        const name =
+          row.custom_name ||
+          mouse?.custom_name ||
+          'Named Genesis Mouse';
+
+        const previousLabel =
+          row.previous_rank === null || row.previous_rank === undefined
+            ? 'New League mouse'
+            : leagueMovementRankLabel(row.previous_rank);
+
+        const candidateLabel =
+          leagueMovementRankLabel(row.candidate_rank);
+
+        const publishedLabel =
+          leagueMovementRankLabel(row.published_rank);
+
+        const pendingCount = Number(
+          mouseMovement.pending_count || 0
+        );
+
+        const detail = movementKind === 'pending'
+          ? (
+              `Published ${escapeHtml(publishedLabel)} • ` +
+              `Candidate ${escapeHtml(candidateLabel)}` +
+              (
+                confirmationSnapshots > 0
+                  ? ` • Confirmation ${number(pendingCount)}/${number(confirmationSnapshots)}`
+                  : ''
+              )
+            )
+          : `${escapeHtml(previousLabel)} → ${escapeHtml(publishedLabel)}`;
+
+        return `
+          <article class="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xs uppercase tracking-[.16em] text-slate-500 font-black">
+                  ${icon} ${escapeHtml(label)}
+                </div>
+                <div class="font-black text-lg mt-1">${escapeHtml(name)}</div>
+              </div>
+              <div class="text-sm font-black text-yellow-200">
+                ${number(row.league_power)} Power
+              </div>
+            </div>
+            <div class="text-xs text-slate-300 mt-3 leading-relaxed">
+              ${detail}
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderLeagueTierCards() {
+      const tiers = state.leagueData?.tiers || [];
+
+      if (!tiers.length) {
+        el.leagueTierGrid.innerHTML = '<div class="sm:col-span-2 lg:col-span-4 rounded-2xl border border-dashed border-white/15 p-6 text-center text-slate-400">No current league tiers are available.</div>';
+        return;
+      }
+
+      el.leagueTierGrid.innerHTML = tiers.map(tier => {
+        const summary = leagueSummaryByRank(tier.rank) || {};
+        const active = number(tier.rank) === number(state.activeLeagueRank);
+
+        const totalNamedMice = number(
+          state.leagueData?.summary?.named_mice
+        );
+
+        const tierNamedMice = number(
+          summary.named_mice
+        );
+
+        const actualShare = totalNamedMice > 0
+          ? ((tierNamedMice / totalNamedMice) * 100)
+          : 0;
+
+        const readyRate = tierNamedMice > 0
+          ? (
+              number(summary.default_mousefight_ready_mice)
+              / tierNamedMice
+              * 100
+            )
+          : 0;
+
+        return `<button
+          type="button"
+          class="text-left rounded-3xl border p-5 transition ${active ? 'border-yellow-300/50 bg-yellow-300/10 shadow-lg shadow-yellow-950/20' : 'border-white/10 bg-black/20 hover:bg-white/5'}"
+          data-league-rank="${number(tier.rank)}"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-4xl">${escapeHtml(tier.symbol || '🐭')}</div>
+              <div class="text-xl font-black mt-3">${escapeHtml(tier.label || 'League')}</div>
+              <div class="text-xs uppercase tracking-[.16em] text-slate-500 mt-1">Power ${escapeHtml(leaguePowerRange(tier))}</div>
+            </div>
+            <div class="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs font-black text-yellow-100">
+              #${number(tier.rank)}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+            <div class="rounded-xl bg-black/25 p-2">
+              <div class="font-black text-yellow-200">${number(summary.named_mice)}</div>
+              <div class="text-[10px] text-slate-500">Mice</div>
+            </div>
+            <div class="rounded-xl bg-black/25 p-2">
+              <div class="font-black text-cyan-200">${number(summary.distinct_owners)}</div>
+              <div class="text-[10px] text-slate-500">Owners</div>
+            </div>
+            <div class="rounded-xl bg-black/25 p-2">
+              <div class="font-black text-green-200">${number(summary.default_mousefight_ready_mice)}</div>
+              <div class="text-[10px] text-slate-500">Ready</div>
+            </div>
+          </div>
+
+          <div class="mt-3 rounded-xl border border-white/10 bg-black/20 p-2 text-[11px] leading-relaxed text-slate-400">
+            Target share:
+            <strong class="text-yellow-100">${number(tier.target_share)}%</strong>
+            • Current:
+            <strong class="text-cyan-100">${actualShare.toFixed(1)}%</strong>
+            • Ready:
+            <strong class="text-green-100">${readyRate.toFixed(1)}%</strong>
+          </div>
+        </button>`;
+      }).join('');
+
+      el.leagueTierGrid.querySelectorAll('[data-league-rank]').forEach(button => {
+        button.addEventListener('click', () => {
+          state.activeLeagueRank = number(button.dataset.leagueRank);
+          renderLeagueTierCards();
+          renderLeagueRoster();
+        });
+      });
+    }
+
+    function renderLeagueRoster() {
+      const rank = number(state.activeLeagueRank);
+      const tier = leagueTierByRank(rank);
+      const summary = leagueSummaryByRank(rank);
+      const mice = (state.leagueData?.mice || [])
+        .filter(
+          mouse => number(mouse?.league?.rank) === rank
+        )
+        .sort(
+          (left, right) =>
+            number(right?.power?.league_power)
+            - number(left?.power?.league_power)
+        );
+
+      if (!tier) {
+        el.leagueRosterEyebrow.textContent = 'League unavailable';
+        el.leagueRosterTitle.textContent = 'Current Mouse Roster';
+        el.leagueRosterDescription.textContent = 'No tier information is available.';
+        el.leagueRosterCount.textContent = '';
+        el.leagueMouseGrid.innerHTML = '';
+        return;
+      }
+
+      el.leagueRosterEyebrow.textContent = `${tier.symbol || '🐭'} Current Genesis League`;
+      el.leagueRosterTitle.textContent = `${tier.label} League`;
+      el.leagueRosterDescription.textContent =
+        `Permanent League Power ${leaguePowerRange(tier)} • ` +
+        `${number(summary?.named_mice)} mice • ` +
+        `${number(summary?.distinct_owners)} owners • ` +
+        `${number(summary?.default_mousefight_ready_mice)} MouseFight-ready • ` +
+        `${number(tier?.target_share)}% target population share.`;
+      el.leagueRosterCount.textContent = `${number(mice.length)} named mice`;
+
+      if (!mice.length) {
+        el.leagueMouseGrid.innerHTML = '<div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-white/15 p-8 text-center text-slate-400">No named Genesis mice currently occupy this league.</div>';
+        return;
+      }
+
+      el.leagueMouseGrid.innerHTML = mice.map(mouse => {
+        const power = mouse.power || {};
+        const league = mouse.league || {};
+        const owner = mouse.owner || {};
+        const eligibility = mouse.eligibility || {};
+        const nextTier = league.next_tier || null;
+        const progression = mouse.progression || {};
+        const movement = mouse.movement || {};
+
+        const progressPercent = leagueDisplayProgressPercent(mouse);
+
+        const promotionText = progression.next_rank
+          ? `${escapeHtml(progression.next_symbol || '⬆️')} ${escapeHtml(progression.next_label || 'Next League')} at ${number(progression.next_threshold)} • current gap ${number(progression.power_needed)}`
+          : '🌌 Highest current league reached';
+
+        const progressCaption = progression.next_rank
+          ? `${progressPercent.toFixed(2).replace(/\.00$/, '')}% toward ${escapeHtml(progression.next_label || 'next League')} • ${number(progression.power_needed)} Power needed`
+          : 'Highest current League • progression meter complete';
+
+        const pendingRank = Number(
+          movement.pending_rank ||
+          movement.candidate_rank ||
+          0
+        );
+
+        const pendingTier = leagueTierByRank(
+          pendingRank
+        );
+
+        const confirmationSnapshots = Number(
+          state.leagueData?.contract?.i6?.confirmation_snapshots || 0
+        );
+
+        const pendingReview = movement.status === 'pending'
+          ? `
+            <div class="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-3 mt-4 text-xs">
+              <div class="font-black text-amber-100">⏳ League Review</div>
+              <div class="text-amber-50 mt-2">
+                Published: ${escapeHtml(league.symbol || '🐭')} ${escapeHtml(league.label || 'League')}
+              </div>
+              <div class="text-amber-50 mt-1">
+                Candidate: ${escapeHtml(pendingTier?.symbol || '🐭')} ${escapeHtml(pendingTier?.label || `League #${number(pendingRank)}`)}
+              </div>
+              ${confirmationSnapshots > 0
+                ? `<div class="text-amber-200 mt-1">Confirmation: ${number(movement.pending_count)}/${number(confirmationSnapshots)}</div>`
+                : ''}
+            </div>
+          `
+          : '';
+
+        const fitnessText = eligibility.fitness_unlocked
+          ? `Unlocked • +${number(power.fitness_bonus)} League Power`
+          : `Locked • highest Trait Lv${number(power.highest_trait_level)}`;
+
+        return `<article class="arena-card fighter-card rounded-3xl p-5">
+          <div class="flex gap-4 min-w-0">
+            <img
+              src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}"
+              alt="${escapeHtml(mouse.custom_name || 'Genesis Mouse')}"
+              class="fighter-image"
+              onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"
+            />
+
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="player-name font-black text-lg">${escapeHtml(mouse.custom_name || 'Named Genesis Mouse')}</div>
+                <span class="rounded-full border border-yellow-300/20 bg-yellow-300/10 px-2 py-1 text-[11px] font-black text-yellow-100">${escapeHtml(league.symbol || '')} ${escapeHtml(league.label || '')}</span>
+              </div>
+
+              <div class="text-xs text-slate-500 mt-1">${escapeHtml(mouse.metadata_name || 'Genesis Mouse')}</div>
+
+              <div class="mt-3 text-sm">
+                <span class="font-black text-yellow-200">${number(power.league_power)}</span>
+                <span class="text-slate-500"> League Power</span>
+              </div>
+
+              <div class="text-xs text-slate-400 mt-2">
+                Owner:
+                <span class="font-bold text-slate-200">${escapeHtml(owner.username || 'Unknown owner')}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-4 text-center">
+            <div class="rounded-xl bg-black/25 p-2">
+              <div class="font-black text-yellow-200">${number(power.trait_power)}</div>
+              <div class="text-[10px] text-slate-500">Trait Power</div>
+            </div>
+            <div class="rounded-xl bg-black/25 p-2">
+              <div class="font-black text-cyan-200">${number(power.ability_power)}</div>
+              <div class="text-[10px] text-slate-500">Ability Power</div>
+            </div>
+            <div class="rounded-xl bg-black/25 p-2">
+              <div class="font-black text-pink-200">Lv${number(power.highest_trait_level)}</div>
+              <div class="text-[10px] text-slate-500">Highest Trait</div>
+            </div>
+            <div class="rounded-xl bg-black/25 p-2">
+              <div class="font-black text-purple-200">${number(eligibility.canonical_ability_keys_present)}/9</div>
+              <div class="text-[10px] text-slate-500">Abilities Found</div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="flex items-center justify-between gap-3 text-xs">
+              <span class="font-black text-cyan-100">📈 League Progress</span>
+              <span class="font-black text-yellow-200">${progressPercent.toFixed(2).replace(/\.00$/, '')}%</span>
+            </div>
+            <div class="h-2.5 rounded-full bg-black/40 border border-white/10 overflow-hidden mt-2">
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-yellow-300 to-green-300"
+                style="width:${progressPercent}%"
+              ></div>
+            </div>
+            <div class="text-xs text-slate-400 mt-2">${progressCaption}</div>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-black/20 p-3 mt-4 text-xs leading-relaxed">
+            <div>${leagueMouseReadiness(mouse)}</div>
+            <div class="text-slate-400 mt-2">Fitness: ${escapeHtml(fitnessText)}</div>
+            <div class="text-cyan-100 mt-2">${promotionText}</div>
+          </div>
+
+          ${pendingReview}
+
+          <a href="lab.html" class="mt-3 block rounded-2xl border border-green-300/25 bg-green-300/10 px-4 py-2 text-center text-sm font-black text-green-100 hover:bg-green-300/15">
+            🧪 Continue League Training
+          </a>
+        </article>`;
+      }).join('');
+    }
+
+    function renderLeagues() {
+      if (!state.leagueData) {
+        return;
+      }
+
+      const namedMice = number(state.leagueData?.summary?.named_mice);
+      const distinctOwners = number(state.leagueData?.summary?.distinct_owners);
+      const readyMice = number(state.leagueData?.summary?.default_mousefight_ready_mice);
+      const generatedAt = dateLabel(state.leagueData?.generated_at);
+      const snapshotSequence = number(state.leagueData?.snapshot?.sequence);
+      const leagueCount = number(state.leagueData?.tiers?.length);
+
+      el.leagueStatus.innerHTML =
+        `<div class="flex flex-wrap gap-x-5 gap-y-2">` +
+          `<span><strong class="text-yellow-100">${namedMice}</strong> named Genesis mice</span>` +
+          `<span><strong class="text-cyan-100">${distinctOwners}</strong> current owners</span>` +
+          `<span><strong class="text-green-100">${readyMice}</strong> MouseFight ready</span>` +
+        `</div>` +
+        `<div class="text-slate-500 mt-2">` +
+          `Snapshot #${snapshotSequence} • Published ${escapeHtml(generatedAt)} • ` +
+          `${leagueCount} dynamic Genesis Leagues • permanent progression only.` +
+        `</div>`;
+
+      renderLeagueSnapshotIntelligence();
+      renderLeagueTierCards();
+      renderLeagueMovements();
+      renderLeagueRoster();
+    }
+
+    async function loadLeagues() {
+      el.leagueStatus.textContent = 'Loading current Genesis leagues…';
+
+      try {
+        const response = await fetch(
+          LEAGUES_API,
+          {
+            credentials: 'same-origin',
+            cache: 'no-store'
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.error ||
+            `League request failed with ${response.status}`
+          );
+        }
+
+        state.leagueData = data;
+
+        if (!leagueTierByRank(state.activeLeagueRank)) {
+          const returnedRanks = (data.tiers || [])
+            .map(tier => Number(tier?.rank || 0))
+            .filter(rank => Number.isFinite(rank) && rank > 0);
+
+          state.activeLeagueRank = returnedRanks.length
+            ? Math.max(...returnedRanks)
+            : 1;
+        }
+
+        renderLeagues();
+      } catch (error) {
+        state.leagueData = null;
+
+        el.leagueStatus.innerHTML =
+          `<span class="font-black text-red-200">Genesis leagues could not be loaded.</span> ` +
+          `<span class="text-slate-400">${escapeHtml(error.message || 'Unknown league API error.')}</span>`;
+
+        el.leagueTierGrid.innerHTML = '';
+
+        if (el.leagueSnapshotGrid) {
+          el.leagueSnapshotGrid.innerHTML = '';
+        }
+
+        el.leagueMouseGrid.innerHTML = '';
+        el.leagueRosterCount.textContent = '';
+
+        if (el.leagueMovementStatus) {
+          el.leagueMovementStatus.textContent =
+            'Daily League movements are unavailable because the V2 League snapshot could not be loaded.';
+        }
+
+        if (el.leagueMovementSummary) {
+          el.leagueMovementSummary.innerHTML = '';
+        }
+
+        if (el.leagueMovementList) {
+          el.leagueMovementList.innerHTML = '';
+        }
+      }
     }
 
     function renderBoardTabs() {
@@ -802,6 +1575,7 @@
       el.generatedAt.textContent = `Generated ${dateLabel(data.generated_at)}`;
       renderMetrics(); renderFeatured(); renderBoardTabs(); renderPlayerBoard(); renderFighters(); renderModes(); renderAbilities();
       loadHistory({ reset: true });
+      loadLeagues();
       el.loading.classList.add('hidden'); el.errorState.classList.add('hidden'); el.content.classList.remove('hidden');
     }
 

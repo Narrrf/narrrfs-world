@@ -583,6 +583,7 @@
                 <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="discordRace">🏁 Discord Race</button>
                 <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" data-tab="cheeseRumble">💣 Cheese Rumble</button>
                 <button class="tab-btn px-4 py-2 rounded-lg border border-orange-400/40 font-semibold text-sm whitespace-nowrap" data-tab="mouseFight">⚔️ MouseFight</button>
+                <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/40 font-semibold text-sm whitespace-nowrap" data-tab="genesisLeagues">🏆 Genesis Leagues</button>
               </div>
             </div>
 
@@ -2289,30 +2290,767 @@
 
     <div id="tab-mouseFight" class="tab-content">
       <div class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+        <!-- MOUSEFIGHT PLAYER HANDBOOK
+             DEVS FOR DECADES:
+             Documentation only. This tab does not start fights, settle economy,
+             mutate Genesis state, run Recovery, or execute Discord commands. -->
+
         <h1>⚔️ MouseFight — Game #10</h1>
+
         <p>
-          MouseFight lets verified Genesis mice battle in Discord. You choose your mouse,
-          enter PVP or a community event, and the game creates a temporary fighter from
-          your mouse name, Lab progress, abilities, and selected Genetic Items.
+          MouseFight is Narrrf's World's Genesis battle system.
+          A real named Genesis Mouse enters a Discord PVP challenge or moderator event,
+          but combat operates on an isolated temporary fighter snapshot.
         </p>
-        <h2>What players need to know</h2>
+
+        <div class="rounded-2xl border border-orange-300/25 bg-orange-400/10 p-4">
+          <strong>The central safety rule:</strong><br>
+          MouseFight may read permanent Genesis progression to prepare a fighter,
+          but the battle does not rewrite your real Genesis NFT.
+        </div>
+
+        <h2>How a MouseFight begins</h2>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
+            <h3>1. Choose a named Genesis Mouse</h3>
+            <p>
+              Mouse identity is tied to the Genesis token and collection.
+              Current ownership controls who can use that mouse.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
+            <h3>2. Prepare the fight snapshot</h3>
+            <p>
+              MouseFight reads the relevant permanent Genesis progression and the
+              selected owner support loadout, then prepares fight-only data.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-green-300/20 bg-green-400/10 p-4">
+            <h3>3. Resolve the match</h3>
+            <p>
+              The chosen Battle Mode and match format control the temporary combat.
+              Finished results become part of MouseFight history.
+            </p>
+          </div>
+        </div>
+
+        <h2>Two fight structures</h2>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-pink-300/20 bg-pink-400/10 p-4">
+            <h3>🥊 PVP Challenge</h3>
+            <p>
+              One holder challenges another holder.
+              The challenge waits for the challenged player to accept or decline
+              before real combat begins.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-purple-300/20 bg-purple-400/10 p-4">
+            <h3>🏟️ Moderator Event</h3>
+            <p>
+              A moderator can create a public bracket event.
+              Fighters join the lobby before the bracket is started.
+            </p>
+          </div>
+        </div>
+
+        <h2>Match formats and brackets</h2>
+
         <ul>
-          <li>Your Genesis Mouse needs a custom name.</li>
-          <li>Your permanent Lab progress can help your fighter.</li>
-          <li>Battle modes can make the match fairer, closer, or more unpredictable.</li>
-          <li>Finished fights build public history, rankings, and fighter records.</li>
-          <li>Your NFT and permanent progress are not changed by a fight.</li>
+          <li><strong>Best of 1:</strong> one decisive match.</li>
+          <li><strong>Best of 3:</strong> first fighter to the required match wins advances.</li>
+          <li><strong>Best of 5:</strong> longer competitive series.</li>
+          <li><strong>Random bracket:</strong> event pairings are randomized.</li>
+          <li><strong>Seeded bracket:</strong> event pairings use the configured seeding structure.</li>
+          <li><strong>Event size:</strong> MouseFight currently supports bracket sizes from 2 up to 32 fighters.</li>
         </ul>
-        <h2>The four modes</h2>
-        <p><strong>Champion:</strong> full progress matters.</p>
-        <p><strong>Underdog:</strong> the weaker mouse gets some help.</p>
-        <p><strong>Equalized:</strong> the fighters move closer together.</p>
-        <p><strong>Chaos:</strong> both fighters get random battle-only values.</p>
-        <h2>Where to go</h2>
+
+        <h2>The four Battle Modes</h2>
+
         <p>
-          <a href="mousefights.html">Open MouseFight Arena</a><br>
+          A Battle Mode changes temporary fight calculations.
+          It does not change permanent League placement or permanent Genesis progression.
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
+            <h3>🏆 Champion Mode</h3>
+            <p>
+              Full authentic Genesis progression and selected Owner Genetic Items
+              matter normally.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-green-300/20 bg-green-400/10 p-4">
+            <h3>🐭 Underdog Mode</h3>
+            <p>
+              The authentic weaker fighter receives bounded temporary support while
+              permanent upgrades still retain value.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
+            <h3>⚖️ Equalized Mode</h3>
+            <p>
+              Temporary fighter values are moved closer together for the matchup,
+              reducing the original combat gap without changing either real mouse.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-purple-300/20 bg-purple-400/10 p-4">
+            <h3>🎲 Chaos Mode</h3>
+            <p>
+              The matchup receives randomized fight-only Genesis, Ability,
+              Genetic Item support and chaos values.
+              The random fight snapshot stays isolated from permanent state.
+            </p>
+          </div>
+        </div>
+
+        <h2>The nine-Ability battle matrix</h2>
+
+        <p>
+          MouseFight recognizes the same nine canonical Genesis Ability keys
+          used by the Lab:
+        </p>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>♥ HP</strong></div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>» SPEED</strong></div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>◎ AIR</strong></div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>⚔ ATK</strong></div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>◆ DEF</strong></div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>★ SPECIAL</strong></div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>✦ SPELLS</strong></div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>⚒ CRAFTING</strong></div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3"><strong>⬡ EXPANSION</strong></div>
+        </div>
+
+        <p>
+          These Ability levels belong to the permanent Genesis/Lab layer.
+          MouseFight can read them into a temporary fighter snapshot,
+          but combat never writes new Ability levels back to the NFT.
+        </p>
+
+        <h2>Genetic Items in MouseFight</h2>
+
+        <p>
+          Owner Genetic Items are a separate support layer.
+          They can be selected for a fight where the configured rules allow inventory,
+          but they remain owner inventory and never become part of permanent League Power.
+        </p>
+
+        <div class="rounded-2xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+          <strong>Remember:</strong><br>
+          Genetic Item support can matter in combat.<br>
+          Genetic Items do <strong>not</strong> determine Genesis League classification.
+        </div>
+
+        <h2>League Power vs Fight Power</h2>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
+            <h3>🏆 League Power</h3>
+            <p>
+              Permanent progression ranking used by Genesis Leagues.
+              It comes from permanent Traits, permanent Abilities, the named-mouse bonus,
+              and the Fitness bonus.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-orange-300/20 bg-orange-400/10 p-4">
+            <h3>⚔️ Fight Power</h3>
+            <p>
+              Temporary combat-side values used to resolve the current matchup.
+              Battle Modes and fight-only support belong here.
+            </p>
+          </div>
+        </div>
+
+        <pre><code>League Power ≠ Fight Power
+League ≠ Battle Mode
+League classification ≠ fight result</code></pre>
+
+        <h2>Fight lifecycle</h2>
+
+        <p>
+          Persisted MouseFight records use four main states:
+        </p>
+
+        <pre><code>waiting
+→ active
+→ finished
+
+or
+
+waiting / active
+→ cancelled</code></pre>
+
+        <p>
+          Discord presentation, runtime state, persisted fight rows,
+          economy settlement, and Fight Recovery are separate layers.
+          One layer must never be used as proof that every other layer completed.
+        </p>
+
+        <h2>❄️ Fight Recovery</h2>
+
+        <p>
+          Fight Recovery belongs to the exact Genesis mouse identity:
+        </p>
+
+        <pre><code>token_id + collection</code></pre>
+
+        <p>
+          For PVP challenges, the published Recovery choices are currently
+          <strong>15, 30, or 60 minutes</strong>.
+          Moderator events can configure their own allowed Recovery duration.
+        </p>
+
+        <p>
+          Recovery is a protected gameplay system.
+          This Nerd Lab page only explains it; it does not create, clear,
+          shorten, or modify any cooldown.
+        </p>
+
+        <h2>Economy-sensitive fights</h2>
+
+        <p>
+          Depending on the configured fight, MouseFight can include protected
+          wager, event-entry, prize, refund, settlement, or token-payout paths.
+          Those actions belong to authoritative backend transaction flows.
+        </p>
+
+        <div class="rounded-2xl border border-red-300/25 bg-red-400/10 p-4">
+          <strong>Presentation is not settlement.</strong><br>
+          A Discord message or frontend status must never be treated as proof that
+          a wager, refund, prize, token payout, or Recovery action completed.
+        </div>
+
+        <h2>Useful player commands</h2>
+
+        <pre><code>/mousefight help
+/mousefight list
+/mousefight challenge
+/mousefight accept
+/mousefight decline
+/mousefight join
+/mousefight view</code></pre>
+
+        <h2>Genesis League commands</h2>
+
+        <pre><code>/mousefight leagues
+/mousefight league-player
+/mousefight league-tier</code></pre>
+
+        <p>
+          The League commands are read-only presentation consumers of the
+          published Genesis League directory.
+        </p>
+
+        <h2>Moderator controls</h2>
+
+        <p>
+          Moderators have additional event creation, start, cancellation,
+          result-repost and administration controls.
+          These controls remain permission-gated in Discord.
+        </p>
+
+        <h2>What a fight must never permanently change</h2>
+
+        <ul>
+          <li>Genesis ownership</li>
+          <li>custom mouse identity</li>
+          <li>permanent Trait levels</li>
+          <li>permanent Ability levels</li>
+          <li>Lab progression history</li>
+          <li>Genetic Item ownership</li>
+          <li>League identity</li>
+        </ul>
+
+        <h2>Where to go</h2>
+
+        <p>
+          <a href="mousefights.html">Open MouseFight Arena + League HQ</a><br>
+          <a href="lab.html">Enter Genesis Lab + League Journey</a><br>
           <a href="strongest-genesis-mice.html">View Current Genesis Power</a><br>
-          <a href="lab.html">Enter Genesis Lab</a>
+          <a href="nerd-lab.html">Return to Nerd Lab overview</a>
+        </p>
+      </div>
+    </div>
+
+
+    <div id="tab-genesisLeagues" class="tab-content">
+      <div class="markdown-content doc-card rounded-[2rem] p-6 md:p-8">
+        <!--
+          Genesis League V2 public documentation + live explorer.
+
+          DEVS FOR DECADES:
+          The live section is a read-only presentation consumer of the published
+          V2 snapshot. This page must never calculate League membership,
+          run H2/I6, mutate Genesis/Lab progression, touch Genetic Items,
+          change ownership, settle economy, or trigger Fight Recovery.
+        -->
+
+        <h1>🏆 Genesis Mouse Leagues</h1>
+
+        <p>
+          Genesis Leagues organize every <strong>named Genesis Mouse</strong>
+          by its permanent Genesis progression.
+          The system gives each mouse a current competitive League while keeping
+          permanent NFT progression, temporary MouseFight combat, owner inventory,
+          economy, and fight history as separate layers.
+        </p>
+
+        <div class="rounded-2xl border border-yellow-300/25 bg-yellow-400/10 p-4">
+          <strong>Most important rule:</strong><br>
+          League Power is not Fight Power.<br>
+          League classification is not fightability.<br>
+          A League is not a Battle Mode.<br>
+          The owner is not the League identity.
+        </div>
+
+        <h2>Live read-only League explorer</h2>
+
+        <p>
+          The cards below come directly from the latest published Genesis League V2
+          snapshot. The browser displays the result; it does not decide the result.
+        </p>
+
+        <div
+          id="nerdLeagueLiveStatus"
+          class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4 text-sm text-cyan-50">
+          Loading the latest published Genesis League V2 snapshot…
+        </div>
+
+        <div
+          id="nerdLeagueMetrics"
+          class="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-4">
+        </div>
+
+        <div
+          id="nerdLeagueTierGrid"
+          class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-5">
+        </div>
+
+        <div
+          id="nerdLeagueTierDetail"
+          class="mt-4">
+        </div>
+
+        <h2>League identity</h2>
+
+        <p>
+          A Genesis League belongs to the mouse itself, not to the current holder.
+          The stable League identity is:
+        </p>
+
+        <pre><code>token_id + collection</code></pre>
+
+        <p>
+          Ownership determines who currently controls and can use the mouse.
+          Ownership changes do not create a new League identity.
+        </p>
+
+        <h2>League Power formula</h2>
+
+        <pre><code>League Power
+=
+sum permanent Genesis Trait levels
++
+2 × sum permanent Genesis Ability levels
++
+25 Named Mouse bonus
++
+50 Fitness bonus when highest permanent Trait is Lv5+</code></pre>
+
+        <p>
+          A named mouse can belong to a League before Fitness is unlocked.
+          Fitness readiness is tracked separately from classification.
+        </p>
+
+        <h2>The nine permanent Ability keys</h2>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div class="rounded-2xl border border-red-300/20 bg-red-400/10 p-4"><strong>♥ HP</strong></div>
+          <div class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4"><strong>» SPEED</strong></div>
+          <div class="rounded-2xl border border-blue-300/20 bg-blue-400/10 p-4"><strong>◎ AIR</strong></div>
+          <div class="rounded-2xl border border-orange-300/20 bg-orange-400/10 p-4"><strong>⚔ ATK</strong></div>
+          <div class="rounded-2xl border border-slate-300/20 bg-white/5 p-4"><strong>◆ DEF</strong></div>
+          <div class="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4"><strong>★ SPECIAL</strong></div>
+          <div class="rounded-2xl border border-purple-300/20 bg-purple-400/10 p-4"><strong>✦ SPELLS</strong></div>
+          <div class="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-4"><strong>⚒ CRAFTING</strong></div>
+          <div class="rounded-2xl border border-green-300/20 bg-green-400/10 p-4"><strong>⬡ EXPANSION</strong></div>
+        </div>
+
+        <p>
+          Permanent Ability levels contribute twice their raw level value to League Power.
+          Temporary combat effects are not written back into these Ability levels.
+        </p>
+
+        <h2>What is excluded from League Power</h2>
+
+        <ul>
+          <li><strong>Genetic Items:</strong> owner inventory can support MouseFight combat, but never changes League classification.</li>
+          <li><strong>Fight Power:</strong> temporary combat calculations are separate from permanent League Power.</li>
+          <li><strong>Battle Modes:</strong> Champion, Underdog, Equalized, and Chaos affect fight-only calculations.</li>
+          <li><strong>Fight results:</strong> wins and losses do not move a mouse between Leagues.</li>
+          <li><strong>DSPOINC / SPOINC:</strong> economy balances do not affect League Power.</li>
+          <li><strong>Rewards and staking:</strong> reward state and staking state do not affect League classification.</li>
+          <li><strong>Fight Recovery:</strong> cooldown/recovery state does not affect League membership.</li>
+        </ul>
+
+        <h2>The nine Genesis Leagues</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="rounded-2xl border border-slate-300/20 bg-white/5 p-4">
+            <h3>▫️ Crumb</h3>
+            <p>Target share: 6%</p>
+          </div>
+          <div class="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
+            <h3>🧀 Cheese</h3>
+            <p>Target share: 24%</p>
+          </div>
+          <div class="rounded-2xl border border-orange-300/20 bg-orange-400/10 p-4">
+            <h3>🥉 Bronze</h3>
+            <p>Target share: 22%</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200/20 bg-slate-300/10 p-4">
+            <h3>🥈 Silver</h3>
+            <p>Target share: 18%</p>
+          </div>
+          <div class="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-4">
+            <h3>🥇 Golden</h3>
+            <p>Target share: 15%</p>
+          </div>
+          <div class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
+            <h3>💎 Diamond</h3>
+            <p>Target share: 8%</p>
+          </div>
+          <div class="rounded-2xl border border-green-300/20 bg-green-400/10 p-4">
+            <h3>🧬 Genesis Master</h3>
+            <p>Target share: 4%</p>
+          </div>
+          <div class="rounded-2xl border border-purple-300/20 bg-purple-400/10 p-4">
+            <h3>👑 Mouseverse Champion</h3>
+            <p>Target share: 2%</p>
+          </div>
+          <div class="rounded-2xl border border-fuchsia-300/20 bg-fuchsia-400/10 p-4">
+            <h3>🌌 Ultra Champion</h3>
+            <p>Target share: 1%</p>
+          </div>
+        </div>
+
+        <p>
+          The percentages are target population shares, not rigid quotas.
+          Actual populations can differ because the classifier protects equal-Power
+          mice from being split only to hit an exact percentage.
+        </p>
+
+        <h2>Approximate full-collection target populations</h2>
+
+        <p>
+          The canonical Genesis collection contains 3,333 NFTs.
+          The table below does not hardcode the current League target counts:
+          it reads each League's published V2 <strong>target share</strong>,
+          then calculates the approximate 3,333-mouse projection for presentation.
+        </p>
+
+        <div
+          id="nerdLeaguePopulationProjection"
+          class="rounded-2xl border border-yellow-300/20 bg-black/20 p-4 overflow-x-auto">
+          Loading current League population and target projections…
+        </div>
+
+        <p>
+          These values are planning targets, not permanent caps.
+          Actual League populations can differ because the real Power distribution
+          and equal-Power tie safety remain authoritative.
+        </p>
+
+        <h2>Why the Power ranges can change</h2>
+
+        <p>
+          The V2 system does not freeze permanent League ranges forever.
+          As more Genesis mice are named and permanent Traits and Abilities grow,
+          the population itself changes.
+        </p>
+
+        <p>
+          The classifier looks at:
+        </p>
+
+        <ul>
+          <li>the current permanent League Power distribution;</li>
+          <li>the target cumulative population shares;</li>
+          <li>nearby natural Power gaps;</li>
+          <li>a distance penalty that prevents unreasonable boundary choices;</li>
+          <li>equal-Power tie safety.</li>
+        </ul>
+
+        <pre><code>current permanent Power population
++
+target percentile
++
+nearby natural Power gaps
++
+distance penalty
+=
+candidate League boundaries</code></pre>
+
+        <p>
+          Current V2 research uses classifier distance weight
+          <strong>λ = 2.25</strong>.
+        </p>
+
+        <h2>Equal-Power tie safety</h2>
+
+        <p>
+          Two mice with exactly the same League Power must not be separated merely
+          to force a perfect percentile target.
+        </p>
+
+        <div class="rounded-2xl border border-green-300/25 bg-green-400/10 p-4">
+          <strong>Fairness rule:</strong><br>
+          Equal-Power tie safety is more important than an exact target percentage.
+        </div>
+
+        <h2>H2 — boundary hysteresis</h2>
+
+        <p>
+          Population distributions can move slightly from day to day.
+          H2 is the global boundary-stability layer.
+          It prevents small reversible noise from moving League boundaries unnecessarily.
+        </p>
+
+        <p>
+          The current published V2 contract uses:
+        </p>
+
+        <pre><code>population change trigger: 5%
+large progression gain trigger: 10
+small-noise maximum absolute Power delta: 2
+boundary move trigger: 2
+natural-gap ratio trigger: 1.5</code></pre>
+
+        <p>
+          H2 does not permanently freeze boundaries.
+          Meaningful population or progression changes can still move them.
+        </p>
+
+        <h2>I6 — individual mouse hysteresis</h2>
+
+        <p>
+          Even with stable global boundaries, one mouse can sit directly beside a boundary.
+          I6 protects individual published League movement from short-lived reversals
+          and threshold-only collateral movement.
+        </p>
+
+        <p>
+          Current V2 values:
+        </p>
+
+        <pre><code>strategy: I6
+Power margin: 3
+confirmation snapshots: 2</code></pre>
+
+        <p>
+          In simple language:
+        </p>
+
+        <ul>
+          <li>A genuine strong permanent progression move can be accepted quickly.</li>
+          <li>A threshold-only move where the mouse itself did not change can be delayed.</li>
+          <li>An immediate reversal of a recent League transition can be delayed.</li>
+          <li>If the new reality remains present across the required snapshots, the move is eventually accepted.</li>
+        </ul>
+
+        <div class="rounded-2xl border border-purple-300/25 bg-purple-400/10 p-4">
+          <strong>Temporary pressure → protected.</strong><br>
+          <strong>Persistent new reality → accepted.</strong>
+        </div>
+
+        <h2>Published League vs candidate League</h2>
+
+        <p>
+          The classifier can calculate a candidate League while I6 keeps the
+          currently published League temporarily unchanged.
+        </p>
+
+        <p>
+          During that state the mouse can appear as:
+        </p>
+
+        <pre><code>Published League: current public League
+Candidate League: possible new League
+Pending count: confirmation progress</code></pre>
+
+        <p>
+          MouseFight Arena and Genesis Lab display this as a League Review.
+          They do not decide whether the review confirms.
+        </p>
+
+        <h2>League classification vs MouseFight readiness</h2>
+
+        <p>
+          A League answers:
+          <strong>Where does this named Genesis Mouse rank by permanent progression?</strong>
+        </p>
+
+        <p>
+          Fightability answers a different question:
+          <strong>Can enough eligible mice and distinct owners actually fight in this League right now?</strong>
+        </p>
+
+        <p>
+          Therefore a mathematically valid top League can exist even when only a
+          small number of owners currently occupy it.
+        </p>
+
+        <h2>Fitness and readiness</h2>
+
+        <p>
+          Fitness unlock currently uses the highest permanent Genesis Trait level.
+          The published contract recognizes Fitness when the highest permanent Trait
+          reaches Level 5 or higher.
+        </p>
+
+        <p>
+          Fitness contributes a +50 League Power bonus when unlocked.
+          The API also reports MouseFight readiness separately so the frontend can show:
+        </p>
+
+        <ul>
+          <li>League membership;</li>
+          <li>Fitness unlocked or locked;</li>
+          <li>verified current ownership;</li>
+          <li>default MouseFight readiness.</li>
+        </ul>
+
+        <h2>League progression in the Lab</h2>
+
+        <p>
+          The Genesis Lab is where permanent Trait and Ability progression occurs.
+          The League Journey shown in the Lab reads the published V2 result for the
+          selected mouse.
+        </p>
+
+        <p>
+          The Lab can show:
+        </p>
+
+        <ul>
+          <li>current League;</li>
+          <li>current League Power;</li>
+          <li>Trait Power;</li>
+          <li>Ability Power;</li>
+          <li>Named Mouse bonus;</li>
+          <li>Fitness bonus;</li>
+          <li>next League threshold;</li>
+          <li>Power still needed;</li>
+          <li>published progression percentage;</li>
+          <li>pending League Review state.</li>
+        </ul>
+
+        <p>
+          The Lab still remains the authority for permanent upgrade actions.
+          The League display itself is read-only.
+        </p>
+
+        <h2>League vs the four MouseFight Battle Modes</h2>
+
+        <p>
+          A League describes permanent progression.
+          A Battle Mode describes how one temporary fight is calculated.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
+            <h3>🏆 Champion</h3>
+            <p>Full authentic progression matters normally.</p>
+          </div>
+
+          <div class="rounded-2xl border border-green-300/20 bg-green-400/10 p-4">
+            <h3>🐭 Underdog</h3>
+            <p>The authentic weaker fighter receives bounded fight-only support.</p>
+          </div>
+
+          <div class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
+            <h3>⚖️ Equalized</h3>
+            <p>Temporary fighter values are moved closer together for that matchup.</p>
+          </div>
+
+          <div class="rounded-2xl border border-purple-300/20 bg-purple-400/10 p-4">
+            <h3>🎲 Chaos</h3>
+            <p>The matchup receives randomized fight-only values that never overwrite permanent Genesis state.</p>
+          </div>
+        </div>
+
+        <h2>Daily League snapshots</h2>
+
+        <p>
+          V2 publishes an immutable daily snapshot chain.
+          Each new snapshot references the immediately previous snapshot and records:
+        </p>
+
+        <ul>
+          <li>population;</li>
+          <li>current published thresholds;</li>
+          <li>H2 reasons;</li>
+          <li>population dynamics;</li>
+          <li>each mouse's published League;</li>
+          <li>candidate League;</li>
+          <li>progression;</li>
+          <li>I6 pending state;</li>
+          <li>promotions;</li>
+          <li>relegations;</li>
+          <li>new named mice;</li>
+          <li>removed mice.</li>
+        </ul>
+
+        <h2>Discord daily publication</h2>
+
+        <p>
+          The Discord bot consumes the already-published snapshot.
+          It checks for a higher sequence and announces the new daily state once.
+        </p>
+
+        <pre><code>immutable V2 snapshot
+→ read-only V2 API
+→ Discord monitor
+→ higher sequence detected
+→ duplicate-message check
+→ one daily announcement
+→ presentation checkpoint</code></pre>
+
+        <p>
+          Discord does not classify mice and does not create League movement itself.
+        </p>
+
+        <h2>Current V2 rollout boundary</h2>
+
+        <p>
+          The current endpoint identifies itself as a
+          <strong>read-only shadow V2 publication</strong>.
+          V1 remains the production authority until the project explicitly approves
+          the production switch.
+        </p>
+
+        <p>
+          This separation lets the community inspect the new League model before
+          any production authority or League Mode enforcement is enabled.
+        </p>
+
+        <h2>Where to go</h2>
+
+        <p>
+          <a href="mousefights.html#leagues">Open the live MouseFight League HQ</a><br>
+          <a href="lab.html">Train and inspect your Genesis League Journey</a><br>
+          <a href="strongest-genesis-mice.html">View permanent Genesis strength</a><br>
+          <a href="profile.html">Open your Narrrfs profile</a>
         </p>
       </div>
     </div>
@@ -4497,6 +5235,7 @@
     'discordRace',
     'cheeseRumble',
     'mouseFight',
+    'genesisLeagues',
     'profileSystem',
     'rolesSystem',
     'lab',
@@ -4533,6 +5272,606 @@
     }
   }
 
+
+  const NERD_LEAGUE_API =
+    '/api/leaderboard/get-mousefight-leagues-v2.php';
+
+  let nerdLeagueData = null;
+  let nerdLeagueActiveRank = 9;
+
+  /**
+   * Escape one value before inserting published API text into Nerd Lab HTML.
+   */
+  function nerdLeagueEscapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  /**
+   * Return one safe integer for read-only League presentation.
+   */
+  function nerdLeagueNumber(value) {
+    const numeric = Number(value);
+
+    return Number.isFinite(numeric)
+      ? Math.round(numeric)
+      : 0;
+  }
+
+  /**
+   * Format one current published League Power range.
+   */
+  function nerdLeaguePowerRange(tier) {
+    const minimum = nerdLeagueNumber(
+      tier?.minimum_power
+    );
+
+    const maximum = tier?.maximum_power;
+
+    return maximum === null || maximum === undefined
+      ? `${minimum}+`
+      : `${minimum}–${nerdLeagueNumber(maximum)}`;
+  }
+
+  const NERD_LEAGUE_FULL_COLLECTION_SUPPLY =
+    3333;
+
+  /**
+   * Return the nine published tier rows used by Nerd Lab presentation.
+   *
+   * Plain language for DEVS FOR DECADES:
+   * The V2 API deliberately separates:
+   *
+   * payload.tiers
+   * = public tier contract / range rows
+   *
+   * payload.summary.tiers
+   * = current population / owner / readiness rows
+   *
+   * The page merges those two read-only representations by rank.
+   * It does not calculate League membership or boundaries.
+   */
+  function nerdLeaguePublishedTiers() {
+    const contractTiers =
+      Array.isArray(nerdLeagueData?.tiers)
+        ? nerdLeagueData.tiers
+        : [];
+
+    const summaryTiers =
+      Array.isArray(
+        nerdLeagueData?.summary?.tiers
+      )
+        ? nerdLeagueData.summary.tiers
+        : [];
+
+    return contractTiers.map(contractTier => {
+      const rank =
+        nerdLeagueNumber(
+          contractTier?.rank
+        );
+
+      const summaryTier =
+        summaryTiers.find(
+          tier =>
+            nerdLeagueNumber(tier?.rank)
+            === rank
+        ) || {};
+
+      return {
+        ...contractTier,
+        ...summaryTier,
+        rank
+      };
+    });
+  }
+
+  /**
+   * Render current population versus the published target-share model.
+   *
+   * Only the approximate 3,333 projection is calculated in the browser:
+   *
+   * round(3333 × published target_share / 100)
+   *
+   * This is presentation math only.
+   * It never classifies a mouse or moves a League boundary.
+   */
+  function renderNerdLeaguePopulationProjection(
+    publishedTiers
+  ) {
+    const container =
+      document.getElementById(
+        'nerdLeaguePopulationProjection'
+      );
+
+    if (!container) {
+      return;
+    }
+
+    const totalNamed =
+      nerdLeagueNumber(
+        nerdLeagueData?.summary?.named_mice
+      );
+
+    if (
+      !Array.isArray(publishedTiers)
+      || publishedTiers.length !== 9
+    ) {
+      container.innerHTML =
+        '<strong>Current League projection unavailable.</strong>';
+
+      return;
+    }
+
+    const rows =
+      publishedTiers.map(tier => {
+        const namedMice =
+          nerdLeagueNumber(
+            tier?.named_mice
+          );
+
+        const targetShare =
+          Number(
+            tier?.target_share || 0
+          );
+
+        const currentShare =
+          totalNamed > 0
+            ? (
+                namedMice
+                / totalNamed
+                * 100
+              )
+            : 0;
+
+        const projectedFullCollection =
+          Math.round(
+            NERD_LEAGUE_FULL_COLLECTION_SUPPLY
+            * targetShare
+            / 100
+          );
+
+        return `
+          <tr>
+            <td class="px-3 py-3 border-b border-white/10">
+              <strong>
+                ${nerdLeagueEscapeHtml(tier.symbol || '🐭')}
+                ${nerdLeagueEscapeHtml(tier.label || 'League')}
+              </strong>
+            </td>
+
+            <td class="px-3 py-3 text-center border-b border-white/10">
+              ${namedMice}
+            </td>
+
+            <td class="px-3 py-3 text-center border-b border-white/10">
+              ${currentShare.toFixed(1)}%
+            </td>
+
+            <td class="px-3 py-3 text-center border-b border-white/10 text-yellow-100 font-black">
+              ${targetShare.toFixed(0)}%
+            </td>
+
+            <td class="px-3 py-3 text-center border-b border-white/10 text-cyan-100 font-black">
+              ~${projectedFullCollection.toLocaleString('en-US')}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+    container.innerHTML = `
+      <div class="mb-4">
+        <div class="text-xs uppercase tracking-[0.16em] text-yellow-200 font-black">
+          Current vs Target Population
+        </div>
+
+        <div class="text-sm text-slate-400 mt-2">
+          Current named population:
+          <strong class="text-white">${totalNamed}</strong>
+          • Full-collection planning size:
+          <strong class="text-white">${NERD_LEAGUE_FULL_COLLECTION_SUPPLY.toLocaleString('en-US')}</strong>
+        </div>
+      </div>
+
+      <table class="w-full min-w-[720px] text-sm">
+        <thead>
+          <tr class="text-left text-xs uppercase tracking-[0.12em] text-slate-400">
+            <th class="px-3 py-3">League</th>
+            <th class="px-3 py-3 text-center">Current mice</th>
+            <th class="px-3 py-3 text-center">Current share</th>
+            <th class="px-3 py-3 text-center">Target share</th>
+            <th class="px-3 py-3 text-center">Approx @ 3,333</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+
+      <div class="mt-4 text-xs text-slate-400 leading-relaxed">
+        Target shares come from the current read-only V2 snapshot.
+        The final column is a display projection only:
+        round(3,333 × target share).
+        Equal-Power tie safety remains more important than an exact quota.
+      </div>
+    `;
+  }
+
+  /**
+   * Display details for one already-published League tier.
+   *
+   * This is interactive presentation only.
+   */
+  function renderNerdLeagueTierDetail(rank) {
+    const target =
+      nerdLeaguePublishedTiers().find(
+        tier =>
+          nerdLeagueNumber(tier?.rank)
+          === nerdLeagueNumber(rank)
+      );
+
+    const detail =
+      document.getElementById(
+        'nerdLeagueTierDetail'
+      );
+
+    if (!detail || !target) {
+      return;
+    }
+
+    nerdLeagueActiveRank =
+      nerdLeagueNumber(target.rank);
+
+    const namedMice =
+      nerdLeagueNumber(target.named_mice);
+
+    const readyMice =
+      nerdLeagueNumber(
+        target.default_mousefight_ready_mice
+      );
+
+    const readyRate = namedMice > 0
+      ? ((readyMice / namedMice) * 100)
+      : 0;
+
+    const totalNamed =
+      nerdLeagueNumber(
+        nerdLeagueData?.summary?.named_mice
+      );
+
+    const currentShare = totalNamed > 0
+      ? ((namedMice / totalNamed) * 100)
+      : 0;
+
+    detail.innerHTML = `
+      <div class="rounded-3xl border border-yellow-300/25 bg-yellow-400/10 p-5">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div class="text-xs uppercase tracking-[0.16em] text-yellow-200 font-black">
+              Selected Current League
+            </div>
+            <div class="text-2xl font-black text-white mt-2">
+              ${nerdLeagueEscapeHtml(target.symbol || '🐭')}
+              ${nerdLeagueEscapeHtml(target.label || 'Genesis League')}
+            </div>
+            <div class="text-sm text-slate-300 mt-1">
+              Published Power ${nerdLeagueEscapeHtml(nerdLeaguePowerRange(target))}
+            </div>
+          </div>
+
+          <div class="rounded-full border border-white/10 bg-black/20 px-3 py-2 text-sm font-black">
+            Rank #${nerdLeagueNumber(target.rank)}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-5 text-center">
+          <div class="rounded-2xl bg-black/20 p-3">
+            <div class="text-xl font-black text-yellow-100">${namedMice}</div>
+            <div class="text-xs text-slate-400">Named mice</div>
+          </div>
+
+          <div class="rounded-2xl bg-black/20 p-3">
+            <div class="text-xl font-black text-cyan-100">${nerdLeagueNumber(target.distinct_owners)}</div>
+            <div class="text-xs text-slate-400">Owners</div>
+          </div>
+
+          <div class="rounded-2xl bg-black/20 p-3">
+            <div class="text-xl font-black text-green-100">${readyMice}</div>
+            <div class="text-xs text-slate-400">Ready</div>
+          </div>
+
+          <div class="rounded-2xl bg-black/20 p-3">
+            <div class="text-xl font-black text-purple-100">${Number(target.target_share || 0).toFixed(0)}%</div>
+            <div class="text-xs text-slate-400">Target share</div>
+          </div>
+
+          <div class="rounded-2xl bg-black/20 p-3">
+            <div class="text-xl font-black text-orange-100">${currentShare.toFixed(1)}%</div>
+            <div class="text-xs text-slate-400">Current share</div>
+          </div>
+        </div>
+
+        <div class="mt-4 text-sm text-slate-300">
+          ${readyRate.toFixed(1)}% of the named mice currently published in this League
+          are default MouseFight-ready.
+        </div>
+      </div>
+    `;
+
+    document
+      .querySelectorAll('[data-nerd-league-rank]')
+      .forEach(button => {
+        const active =
+          nerdLeagueNumber(
+            button.getAttribute(
+              'data-nerd-league-rank'
+            )
+          ) === nerdLeagueActiveRank;
+
+        button.classList.toggle(
+          'border-yellow-300/60',
+          active
+        );
+
+        button.classList.toggle(
+          'bg-yellow-400/15',
+          active
+        );
+      });
+  }
+
+  /**
+   * Render the complete read-only live V2 summary.
+   */
+  function renderNerdLeagueLiveSnapshot() {
+    if (!nerdLeagueData) {
+      return;
+    }
+
+    const status =
+      document.getElementById(
+        'nerdLeagueLiveStatus'
+      );
+
+    const metrics =
+      document.getElementById(
+        'nerdLeagueMetrics'
+      );
+
+    const tierGrid =
+      document.getElementById(
+        'nerdLeagueTierGrid'
+      );
+
+    if (!status || !metrics || !tierGrid) {
+      return;
+    }
+
+    const summary =
+      nerdLeagueData.summary || {};
+
+    const snapshot =
+      nerdLeagueData.snapshot || {};
+
+    const dynamics =
+      snapshot.dynamics || {};
+
+    const movements =
+      nerdLeagueData.movements || {};
+
+    const publishedTiers =
+      nerdLeaguePublishedTiers();
+
+    const movementCount = [
+      'promotions',
+      'relegations',
+      'pending',
+      'new_mice',
+      'removed_mice'
+    ].reduce(
+      (total, key) =>
+        total + (
+          Array.isArray(movements[key])
+            ? movements[key].length
+            : 0
+        ),
+      0
+    );
+
+    const generatedAt =
+      nerdLeagueData.generated_at
+        ? new Date(
+            nerdLeagueData.generated_at
+          ).toLocaleString()
+        : 'Unavailable';
+
+    status.innerHTML = `
+      <strong>Snapshot #${nerdLeagueNumber(snapshot.sequence)}</strong>
+      • ${nerdLeagueEscapeHtml(generatedAt)}
+      • read-only V2 shadow publication
+      • ${nerdLeagueNumber(movementCount)} movement row(s)
+    `;
+
+    metrics.innerHTML = `
+      <div class="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
+        <div class="text-xs text-yellow-200 font-black">NAMED MICE</div>
+        <div class="text-2xl font-black mt-2">${nerdLeagueNumber(summary.named_mice)}</div>
+      </div>
+
+      <div class="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4">
+        <div class="text-xs text-cyan-200 font-black">OWNERS</div>
+        <div class="text-2xl font-black mt-2">${nerdLeagueNumber(summary.distinct_owners)}</div>
+      </div>
+
+      <div class="rounded-2xl border border-green-300/20 bg-green-400/10 p-4">
+        <div class="text-xs text-green-200 font-black">FIGHT READY</div>
+        <div class="text-2xl font-black mt-2">${nerdLeagueNumber(summary.default_mousefight_ready_mice)}</div>
+      </div>
+
+      <div class="rounded-2xl border border-purple-300/20 bg-purple-400/10 p-4">
+        <div class="text-xs text-purple-200 font-black">POWER RANGE</div>
+        <div class="text-2xl font-black mt-2">${nerdLeagueNumber(summary.power_min)}–${nerdLeagueNumber(summary.power_max)}</div>
+      </div>
+
+      <div class="rounded-2xl border border-orange-300/20 bg-orange-400/10 p-4">
+        <div class="text-xs text-orange-200 font-black">POPULATION CHANGE</div>
+        <div class="text-2xl font-black mt-2">
+          ${Number(dynamics.population_change_percent || 0) >= 0 ? '+' : ''}
+          ${Number(dynamics.population_change_percent || 0).toFixed(2).replace(/\.00$/, '')}%
+        </div>
+      </div>
+    `;
+
+    tierGrid.innerHTML =
+      publishedTiers.map(tier => `
+      <button
+        type="button"
+        data-nerd-league-rank="${nerdLeagueNumber(tier.rank)}"
+        class="text-left rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-yellow-300/45 hover:bg-yellow-400/10">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xl font-black">
+              ${nerdLeagueEscapeHtml(tier.symbol || '🐭')}
+              ${nerdLeagueEscapeHtml(tier.label || 'League')}
+            </div>
+            <div class="text-xs text-slate-400 mt-1">
+              Power ${nerdLeagueEscapeHtml(nerdLeaguePowerRange(tier))}
+            </div>
+          </div>
+
+          <div class="text-xs font-black text-yellow-200">
+            #${nerdLeagueNumber(tier.rank)}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
+          <div class="rounded-xl bg-black/20 p-2">
+            <strong>${nerdLeagueNumber(tier.named_mice)}</strong><br>Mice
+          </div>
+          <div class="rounded-xl bg-black/20 p-2">
+            <strong>${nerdLeagueNumber(tier.distinct_owners)}</strong><br>Owners
+          </div>
+          <div class="rounded-xl bg-black/20 p-2">
+            <strong>${nerdLeagueNumber(tier.default_mousefight_ready_mice)}</strong><br>Ready
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-400 mt-3">
+          Target population share:
+          <strong class="text-yellow-100">${nerdLeagueNumber(tier.target_share)}%</strong>
+        </div>
+      </button>
+    `).join('');
+
+    document
+      .querySelectorAll('[data-nerd-league-rank]')
+      .forEach(button => {
+        button.addEventListener(
+          'click',
+          () => {
+            renderNerdLeagueTierDetail(
+              button.getAttribute(
+                'data-nerd-league-rank'
+              )
+            );
+          }
+        );
+      });
+
+    const availableRanks =
+      publishedTiers
+      .map(
+        tier =>
+          nerdLeagueNumber(tier.rank)
+      )
+      .filter(
+        rank => rank > 0
+      );
+
+    nerdLeagueActiveRank =
+      availableRanks.includes(
+        nerdLeagueActiveRank
+      )
+        ? nerdLeagueActiveRank
+        : Math.max(
+            ...availableRanks,
+            1
+          );
+
+    renderNerdLeaguePopulationProjection(
+      publishedTiers
+    );
+
+    renderNerdLeagueTierDetail(
+      nerdLeagueActiveRank
+    );
+  }
+
+  /**
+   * Load one authoritative read-only V2 snapshot for public documentation.
+   */
+  async function loadNerdLeagueLiveSnapshot() {
+    const status =
+      document.getElementById(
+        'nerdLeagueLiveStatus'
+      );
+
+    try {
+      const response = await fetch(
+        NERD_LEAGUE_API,
+        {
+          method: 'GET',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      const payload =
+        await response.json();
+
+      const valid =
+        response.ok
+        && payload?.success === true
+        && payload?.contract?.read_only === true
+        && payload?.contract?.shadow_only === true
+        && Number(
+          payload?.contract?.league_count || 0
+        ) === 9
+        && Array.isArray(payload?.tiers)
+        && payload.tiers.length === 9
+        && Array.isArray(payload?.summary?.tiers)
+        && payload.summary.tiers.length === 9
+        && Array.isArray(payload?.mice);
+
+      if (!valid) {
+        throw new Error(
+          payload?.error
+          || `League request failed (${response.status})`
+        );
+      }
+
+      nerdLeagueData = payload;
+
+      renderNerdLeagueLiveSnapshot();
+    } catch (error) {
+      nerdLeagueData = null;
+
+      if (status) {
+        status.innerHTML = `
+          <strong>Live League snapshot unavailable.</strong>
+          The documentation below remains available.
+          No permanent Genesis, Lab, fight, or economy state was changed.
+        `;
+      }
+    }
+  }
+
   /**
    * Registers tab button clicks after the page loads.
    *
@@ -4551,6 +5890,7 @@
       });
     });
 
+    loadNerdLeagueLiveSnapshot();
     showTab('masterIndex');
   });
 </script>

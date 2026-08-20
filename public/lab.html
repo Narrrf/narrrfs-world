@@ -9139,6 +9139,7 @@ body.lab-season12-shell {
       stakingStatsEndpoint: '/api/user/get-staking-stats.php',
       stakesEndpoint: '/api/user/get-stakes.php',
       verifiedNftEndpoint: '/api/user/get-verified-nft-scan.php',
+      mousefightLeagueEndpoint: '/api/leaderboard/get-mousefight-leagues-v2.php',
       aggregateLabEndpoint: '/api/user/get-player-lab.php',
       upgradesEndpoint: '/api/user/get-nft-trait-upgrades.php',
       startUpgradeEndpoint: '/api/user/start-nft-trait-upgrade.php',
@@ -9187,6 +9188,13 @@ enhancedProfile: null,
       verifiedNfts: [],
       selectedNft: null,
       selectedNftTokenId: '',
+
+      // DEVS FOR DECADES:
+      // This is a read-only cache of the already-published MouseFight Genesis
+      // League V2 snapshot. It never becomes permanent Lab or Genesis state.
+      mousefightLeagueData: null,
+      mousefightLeagueLoadStatus: 'idle',
+
       upgradeRows: [],
       boosterInventory: [],
       boosterStoreItems: {},
@@ -9746,6 +9754,466 @@ function showLabMessageModal({
         throw new Error(`Endpoint returned non-JSON (${response.status})`);
       }
       return { ok: response.ok, status: response.status, payload: await response.json() };
+    }
+
+    /**
+     * Load the already-published MouseFight Genesis League V2 snapshot.
+     *
+     * DEVS FOR DECADES:
+     * This request is read-only and presentation-only.
+     *
+     * It does NOT calculate League Power, classify a mouse, run H2/I6,
+     * mutate Genesis/Lab progression, write DB rows, touch Genetic Items,
+     * settle MouseFight economy, or change Fight Recovery.
+     *
+     * Failure is intentionally non-fatal to the Lab. Permanent Lab features
+     * remain available even when the optional League presentation cannot load.
+     */
+    async function loadMousefightLeagueSnapshot() {
+      state.mousefightLeagueLoadStatus = 'loading';
+
+      try {
+        const res = await fetchJson(
+          getApiUrl(LAB_CONFIG.mousefightLeagueEndpoint),
+          {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+              'Accept': 'application/json'
+            }
+          },
+          true
+        );
+
+        const payload = res.payload;
+
+        const validContract =
+          res.ok &&
+          payload?.success === true &&
+          payload?.contract?.read_only === true &&
+          payload?.contract?.shadow_only === true &&
+          Number(payload?.contract?.league_count || 0) === 9 &&
+          Array.isArray(payload?.tiers) &&
+          Array.isArray(payload?.mice);
+
+        if (!validContract) {
+          throw new Error(
+            payload?.error ||
+            `League snapshot unavailable (${res.status || 'unknown status'})`
+          );
+        }
+
+        state.mousefightLeagueData = payload;
+        state.mousefightLeagueLoadStatus = 'ready';
+
+        logLab(
+          `Loaded MouseFight League V2 snapshot #${Number(payload?.snapshot?.sequence || 0)} for ${formatNumber(payload.mice.length)} named Genesis mouse/mice.`,
+          'success'
+        );
+      } catch (error) {
+        state.mousefightLeagueData = null;
+        state.mousefightLeagueLoadStatus = 'unavailable';
+
+        logLab(
+          `MouseFight League V2 snapshot not available: ${error.message}`,
+          'warn'
+        );
+      }
+    }
+
+    /**
+     * Find one selected Lab Genesis mouse inside the published V2 snapshot.
+     *
+     * League identity is token_id + collection.
+     * The Lab already normalizes accepted Genesis collection aliases to
+     * collection='genesis', so owner/user identity is never used here.
+     */
+    function getMousefightLeagueMouse(nft = state.selectedNft) {
+      if (!isValidGenesisNft(nft)) {
+        return null;
+      }
+
+      const tokenId = getSafeTokenId(nft);
+      const collection = String(
+        nft?.collection ||
+        LAB_CONFIG.genesisCollection ||
+        'genesis'
+      ).trim().toLowerCase();
+
+      return (state.mousefightLeagueData?.mice || []).find((mouse) => {
+        const mouseTokenId = String(
+          mouse?.token_id || ''
+        ).trim();
+
+        const mouseCollection = String(
+          mouse?.collection || 'genesis'
+        ).trim().toLowerCase();
+
+        return (
+          mouseTokenId === tokenId &&
+          mouseCollection === collection
+        );
+      }) || null;
+    }
+
+    /**
+     * Clamp the progression percentage already supplied by the V2 publisher.
+     *
+     * This is display safety only. It is NOT a League progression calculation.
+     */
+    function getMousefightLeagueDisplayProgress(mouse) {
+      const value = Number(
+        mouse?.progression?.progress_percent
+      );
+
+      if (!Number.isFinite(value)) {
+        return 0;
+      }
+
+      return Math.max(
+        0,
+        Math.min(100, value)
+      );
+    }
+
+    /**
+     * Render the selected mouse's already-published Genesis League Journey.
+     */
+    function renderGenesisLeagueJourney(nft = state.selectedNft) {
+      if (!isValidGenesisNft(nft)) {
+        return '';
+      }
+
+      if (
+        state.mousefightLeagueLoadStatus === 'loading'
+      ) {
+        return `
+          <div class="info text-sm">
+            <div class="font-black text-cyan-100">🏆 Genesis League Journey</div>
+            <div class="mt-2 text-slate-300">
+              Loading the latest published MouseFight League snapshot…
+            </div>
+          </div>
+        `;
+      }
+
+      if (!state.mousefightLeagueData) {
+        return `
+          <div class="info text-sm">
+            <div class="font-black text-cyan-100">🏆 Genesis League Journey</div>
+            <div class="mt-2 text-slate-300">
+              League snapshot presentation is currently unavailable.
+              Your permanent Lab progression is unchanged.
+            </div>
+          </div>
+        `;
+      }
+
+      const mouse = getMousefightLeagueMouse(nft);
+
+      if (!mouse) {
+        return `
+          <div class="info text-sm">
+            <div class="font-black text-cyan-100">🏆 Genesis League Journey</div>
+            <div class="mt-2 text-slate-300">
+              This verified Genesis mouse is not present in the currently published daily League snapshot.
+            </div>
+            <div class="mt-2 text-xs text-slate-500">
+              A newly named or newly eligible mouse can appear after a future published League snapshot.
+            </div>
+          </div>
+        `;
+      }
+
+      const power = mouse.power || {};
+      const league = mouse.league || {};
+      const progression = mouse.progression || {};
+      const movement = mouse.movement || {};
+      const eligibility = mouse.eligibility || {};
+
+      const leagueTierSummary = (
+        state.mousefightLeagueData?.summary?.tiers || []
+      ).find(
+        tier =>
+          Number(tier?.rank || 0)
+          === Number(league?.rank || 0)
+      ) || {};
+
+      const snapshotDynamics =
+        state.mousefightLeagueData?.snapshot?.dynamics || {};
+
+      const canonicalAbilityKeysPresent = Number(
+        eligibility.canonical_ability_keys_present || 0
+      );
+
+      const snapshotGeneratedAt = String(
+        state.mousefightLeagueData?.generated_at || ''
+      ).trim();
+
+      const snapshotGeneratedAtLabel = snapshotGeneratedAt
+        ? new Date(snapshotGeneratedAt).toLocaleString()
+        : 'Unavailable';
+
+      const populationChangePercent = Number(
+        snapshotDynamics.population_change_percent || 0
+      );
+
+      const progressPercent =
+        getMousefightLeagueDisplayProgress(mouse);
+
+      const snapshotSequence = Number(
+        state.mousefightLeagueData?.snapshot?.sequence || 0
+      );
+
+      const nextLeagueMarkup = progression.next_rank
+        ? `
+          <div class="mt-3 text-sm text-cyan-100">
+            Toward
+            <strong>
+              ${escapeHtml(progression.next_symbol || '⬆️')}
+              ${escapeHtml(progression.next_label || 'Next League')}
+            </strong>
+            • ${formatNumber(progression.power_needed)} Power needed
+            • threshold ${formatNumber(progression.next_threshold)}
+          </div>
+        `
+        : `
+          <div class="mt-3 text-sm font-black text-amber-200">
+            🌌 Highest current League reached
+          </div>
+        `;
+
+      const confirmationSnapshots = Number(
+        state.mousefightLeagueData?.contract?.i6?.confirmation_snapshots || 0
+      );
+
+      const pendingRank = Number(
+        movement.pending_rank ||
+        movement.candidate_rank ||
+        0
+      );
+
+      const pendingTier = (
+        state.mousefightLeagueData?.tiers || []
+      ).find(
+        tier => Number(tier?.rank || 0) === pendingRank
+      );
+
+      const pendingMarkup = movement.status === 'pending'
+        ? `
+          <div class="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
+            <div class="font-black text-amber-100">⏳ League Review</div>
+
+            <div class="mt-2 text-sm text-amber-50">
+              Published:
+              ${escapeHtml(league.symbol || '🐭')}
+              ${escapeHtml(league.label || 'League')}
+            </div>
+
+            <div class="mt-1 text-sm text-amber-50">
+              Candidate:
+              ${escapeHtml(pendingTier?.symbol || '🐭')}
+              ${escapeHtml(pendingTier?.label || `League #${formatNumber(pendingRank)}`)}
+            </div>
+
+            ${confirmationSnapshots > 0
+              ? `
+                <div class="mt-1 text-sm text-amber-200">
+                  Confirmation:
+                  ${formatNumber(movement.pending_count)}
+                  /
+                  ${formatNumber(confirmationSnapshots)}
+                </div>
+              `
+              : ''}
+          </div>
+        `
+        : '';
+
+      const readinessMarkup =
+        eligibility.default_mousefight_ready
+          ? '<span class="text-emerald-300 font-black">✓ MouseFight Ready</span>'
+          : '<span class="text-amber-300 font-black">Training Needed</span>';
+
+      return `
+        <div class="rounded-3xl border border-cyan-300/20 bg-slate-950/45 p-4 md:p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div class="text-xs uppercase tracking-[0.18em] text-cyan-300 font-black">
+                🏆 Genesis League Journey
+              </div>
+
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <div class="text-2xl font-black">
+                  ${escapeHtml(league.symbol || '🐭')}
+                  ${escapeHtml(league.label || 'Genesis League')}
+                </div>
+
+                <span class="pill idle">
+                  Rank #${formatNumber(league.rank)}
+                </span>
+              </div>
+
+              <div class="mt-2 text-sm text-slate-300">
+                <strong class="text-amber-200">
+                  ${formatNumber(power.league_power)}
+                </strong>
+                League Power
+              </div>
+            </div>
+
+            <div class="text-right text-xs text-slate-500">
+              <div>V2 Preview</div>
+              <div>Snapshot #${formatNumber(snapshotSequence)}</div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="flex items-center justify-between gap-3 text-xs">
+              <span class="font-black text-cyan-100">
+                League Progress
+              </span>
+
+              <span class="font-black text-amber-200">
+                ${progressPercent.toFixed(2).replace(/\.00$/, '')}%
+              </span>
+            </div>
+
+            <div class="mt-2 h-3 overflow-hidden rounded-full border border-white/10 bg-black/40">
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-amber-300 to-emerald-300"
+                style="width:${progressPercent}%"
+              ></div>
+            </div>
+
+            ${nextLeagueMarkup}
+          </div>
+
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.16em] text-slate-400">
+                Trait Power
+              </div>
+              <div class="mt-1 text-xl font-black text-amber-200">
+                ${formatNumber(power.trait_power)}
+              </div>
+            </div>
+
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.16em] text-slate-400">
+                Ability Power
+              </div>
+              <div class="mt-1 text-xl font-black text-cyan-200">
+                ${formatNumber(power.ability_power)}
+              </div>
+            </div>
+
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.16em] text-slate-400">
+                Named Bonus
+              </div>
+              <div class="mt-1 text-xl font-black text-emerald-200">
+                +${formatNumber(power.named_mouse_bonus)}
+              </div>
+            </div>
+
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.16em] text-slate-400">
+                Fitness Bonus
+              </div>
+              <div class="mt-1 text-xl font-black text-pink-200">
+                +${formatNumber(power.fitness_bonus)}
+              </div>
+            </div>
+          </div>
+
+          <!--
+            Selected-mouse League context.
+
+            DEVS FOR DECADES:
+            Every value in this block comes from the published V2 snapshot.
+            The Lab does not calculate League membership or thresholds here.
+          -->
+          <div class="grid md:grid-cols-3 gap-3 mt-4">
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.16em] text-slate-400">
+                Current League Population
+              </div>
+              <div class="mt-2 text-lg font-black text-yellow-100">
+                ${formatNumber(leagueTierSummary.named_mice || 0)} mice
+              </div>
+              <div class="mt-1 text-xs text-slate-400">
+                ${formatNumber(leagueTierSummary.distinct_owners || 0)} owners
+                • ${formatNumber(leagueTierSummary.default_mousefight_ready_mice || 0)} ready
+                • ${formatNumber(leagueTierSummary.target_share || 0)}% target share
+              </div>
+            </div>
+
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.16em] text-slate-400">
+                Permanent Progress Inputs
+              </div>
+              <div class="mt-2 text-lg font-black text-cyan-100">
+                ${formatNumber(canonicalAbilityKeysPresent)}/9 Abilities
+              </div>
+              <div class="mt-1 text-xs text-slate-400">
+                Highest Trait Lv${formatNumber(power.highest_trait_level)}
+                • Fitness ${eligibility.fitness_unlocked ? 'unlocked' : 'locked'}
+              </div>
+            </div>
+
+            <div class="kv">
+              <div class="text-xs uppercase tracking-[0.16em] text-slate-400">
+                Daily Snapshot
+              </div>
+              <div class="mt-2 text-lg font-black text-purple-100">
+                #${formatNumber(snapshotSequence)}
+              </div>
+              <div class="mt-1 text-xs text-slate-400">
+                ${escapeHtml(snapshotGeneratedAtLabel)}
+                • Population ${populationChangePercent >= 0 ? '+' : ''}${populationChangePercent.toFixed(2).replace(/\.00$/, '')}%
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-relaxed text-slate-400">
+            <div class="font-black text-slate-200">🧮 How this mouse climbs</div>
+            <div class="mt-2">
+              Permanent Trait levels + permanent Ability levels ×2 + named-mouse bonus
+              + Fitness bonus form the published League Power.
+              Genetic Items, Fight Power, battle-mode values and fight results stay outside League classification.
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="text-sm">
+              ${readinessMarkup}
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <a
+                class="btn compact ghost inline-flex items-center justify-center"
+                href="mousefights.html#leagues">
+                ⚔️ Open MouseFight Arena
+              </a>
+
+              <a
+                class="btn compact ghost inline-flex items-center justify-center"
+                href="nerd-lab.html">
+                🧠 League Guide
+              </a>
+            </div>
+          </div>
+
+          ${pendingMarkup}
+
+          <div class="mt-3 text-xs text-slate-500">
+            League Power uses published permanent Genesis progression only.
+            Genetic Items and temporary MouseFight battle-mode power are excluded.
+          </div>
+        </div>
+      `;
     }
 
     function saveSelectedTokenId(tokenId) {
@@ -14676,6 +15144,11 @@ function renderSelectedNftPanel(nft = null) {
   const tokenId = getSafeTokenId(resolvedNft);
   const traits = normalizeNftTraits(resolvedNft);
   const summary = getNftUpgradeSummary(resolvedNft);
+
+  // Read-only MouseFight League presentation for this selected Genesis mouse.
+  const leagueJourneyMarkup =
+    renderGenesisLeagueJourney(resolvedNft);
+
   const active = summary.activeCount > 0;
   const ready = summary.readyCount > 0;
 
@@ -14738,6 +15211,8 @@ ${getNftOriginalNameMarkup(resolvedNft)}
           </div>
         </div>
       </div>
+
+      ${leagueJourneyMarkup}
 
       <div>
         <div class="section-title text-lg"><span>🧾</span><span>Trait Snapshot</span></div>
@@ -20254,7 +20729,8 @@ const aggregateLoaded = await tryAggregateLab();
   loadGeneticTraitCatalog(),
   loadUserGeneticItems(),
   refreshGeneticMarketplaceData(),
-  refreshGeneticMarketplaceHistory()
+  refreshGeneticMarketplaceHistory(),
+  loadMousefightLeagueSnapshot()
 ]);
 
     renderAll();
