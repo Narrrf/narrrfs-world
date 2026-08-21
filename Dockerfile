@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y sqlite3
 COPY ./public /var/www/html
 COPY ./public/videos /var/www/html/videos
 COPY ./api /var/www/html/api
+COPY ./league-audit/mousefight-leagues-v2-shadow-snapshot-*.json /var/www/html/league-audit/
 COPY ./discord-tools /var/www/html/discord-tools
 COPY ./private /var/www/html/private
 COPY ./scripts /var/www/html/scripts
