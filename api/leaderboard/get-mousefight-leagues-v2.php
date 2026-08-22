@@ -50,9 +50,22 @@ const MOUSEFIGHT_LEAGUES_V2_EXPECTED_THRESHOLD_COUNT = 8;
 
 $projectRoot = dirname(__DIR__, 2);
 
+// mousefight_league_daily_production_v1
+//
+// DEVS FOR DECADES:
+// Production may keep immutable League snapshots on the persistent /data
+// volume. Local development continues to use project-root/league-audit.
+// This environment value is deployment-controlled and never user supplied.
+$configuredSnapshotDirectory = trim(
+    (string)getenv(
+        'MOUSEFIGHT_LEAGUE_SNAPSHOT_DIRECTORY'
+    )
+);
+
 $snapshotDirectory =
-    $projectRoot
-    . '/league-audit';
+    $configuredSnapshotDirectory !== ''
+        ? $configuredSnapshotDirectory
+        : $projectRoot . '/league-audit';
 
 $snapshotPattern =
     $snapshotDirectory

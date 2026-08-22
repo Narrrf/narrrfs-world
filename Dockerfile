@@ -7,12 +7,18 @@ RUN echo "ServerName narrrfs.world" >> /etc/apache2/apache2.conf
 RUN a2enmod rewrite
 
 # Install sqlite3 CLI (optional: useful for debugging)
-RUN apt-get update && apt-get install -y sqlite3
+# mousefight_league_daily_production_v1
+# Python 3 runs the read-only Genesis League daily snapshot publisher.
+RUN apt-get update \
+    && apt-get install -y sqlite3 python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy static files
 COPY ./public /var/www/html
 COPY ./public/videos /var/www/html/videos
 COPY ./api /var/www/html/api
+COPY ./league-audit/mousefight-league-v2-shadow-daily.py /var/www/html/league-audit/
+COPY ./league-audit/mousefight-league-v2-shadow-baseline.py /var/www/html/league-audit/
 COPY ./league-audit/mousefight-leagues-v2-shadow-snapshot-*.json /var/www/html/league-audit/
 COPY ./discord-tools /var/www/html/discord-tools
 COPY ./private /var/www/html/private
