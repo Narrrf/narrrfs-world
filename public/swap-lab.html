@@ -3047,7 +3047,40 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
     state.latestGensukiBuyIntent = null;
     await loadGensukiProjectDetails();
   } catch (error) {
-    elements.gensukiBuyResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(error.message || 'Gensuki buy confirmation failed.')}</span>`;
+    const errorMessage = String(error?.message || 'Gensuki buy confirmation failed.');
+    const lowerErrorMessage = errorMessage.toLowerCase();
+    const looksLikePreBroadcastFailure =
+      lowerErrorMessage.includes('encoding overruns uint8array') ||
+      lowerErrorMessage.includes('deserialize') ||
+      lowerErrorMessage.includes('transaction.from') ||
+      lowerErrorMessage.includes('did not return a buy transaction signature') ||
+      lowerErrorMessage.includes('signandSendTransaction'.toLowerCase()) ||
+      lowerErrorMessage.includes('signtransaction') ||
+      lowerErrorMessage.includes('user rejected') ||
+      lowerErrorMessage.includes('wallet') ||
+      lowerErrorMessage.includes('phantom');
+
+    if (looksLikePreBroadcastFailure) {
+      elements.gensukiBuyResult.innerHTML = `
+        <div class="rounded-xl border border-red-300/25 bg-red-500/10 p-4 text-red-100">
+          <div class="font-black">❌ Wallet transaction was not completed</div>
+          <div class="mt-2 text-sm">
+            The SPOINC buy transaction could not be prepared or signed by the wallet.
+            Nothing was confirmed on Solana from this page action.
+          </div>
+          <div class="mt-3 rounded-lg border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
+            No DSPOINC was credited or deducted by Narrrfs. No local bridge settlement happened.
+            Please do not retry this payment-token route until support checks the pending intent.
+          </div>
+          <div class="mt-3 text-xs text-slate-300">
+            Support detail: ${escapeHtml(errorMessage)}
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    elements.gensukiBuyResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(errorMessage)}</span>`;
   }
 }
 
