@@ -1034,6 +1034,7 @@ const DSPOINC_ECONOMY_OVERVIEW_ENDPOINT = '/api/admin/get-dspoinc-overview.php';
 
 const SPOINC_BUY_INTENT_ENDPOINT = '/api/partner/spoinc/create-gensuki-buy-intent.php';
 const SPOINC_BUY_CONFIRM_ENDPOINT = '/api/partner/spoinc/confirm-gensuki-buy-intent.php';
+const SPOINC_BUY_FAIL_ABANDONED_ENDPOINT = '/api/partner/spoinc/fail-abandoned-buy-intent.php';
 const GENSUKI_TOKEN_PRICE_ENDPOINT = '/api/partner/spoinc/get-gensuki-token-price.php';
 
 const SPOINC_BUY_PAYMENT_TOKENS = {
@@ -2924,6 +2925,61 @@ async function createGensukiBuyIntent() {
 }
 
 /**
+ * Ask Narrrfs backend to safely close an abandoned pre-broadcast Gensuki buy.
+ *
+ * DEVS FOR DECADES:
+ * This is used only after wallet/decode/signing fails before a usable Solana
+ * signature is returned to the page. The backend must re-read the local intent,
+ * look up the Gensuki transaction by idempotency, verify Solana not_found, and
+ * confirm failed without DSPOINC/SPOINC ledger movement.
+ */
+async function failAbandonedGensukiBuyIntent(intentData, reason, clientErrorMessage) {
+  const intentId = String(intentData?.intent_id || '').trim();
+
+  if (!intentId) {
+    return {
+      success: false,
+      message: 'No local intent ID was available for automatic cleanup.'
+    };
+  }
+
+  try {
+    const response = await fetch(SPOINC_BUY_FAIL_ABANDONED_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        user_id: getActiveBridgeUserId(),
+        intent_id: intentId,
+        reason,
+        client_error_message: clientErrorMessage
+      })
+    });
+
+    const payload = await response.json();
+
+    if (!payload.success) {
+      return {
+        success: false,
+        message: payload.error || 'Automatic abandoned buy cleanup did not complete.',
+        data: payload.data || null
+      };
+    }
+
+    return {
+      success: true,
+      message: payload.data?.message || 'Pending Gensuki buy was safely closed as failed.',
+      data: payload.data || null
+    };
+  } catch (cleanupError) {
+    return {
+      success: false,
+      message: cleanupError?.message || 'Automatic abandoned buy cleanup request failed.'
+    };
+  }
+}
+
+/**
  * Sign/send a prepared Gensuki buy transaction with Phantom.
  *
  * DEVS FOR DECADES:
@@ -3061,6 +3117,12 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
       lowerErrorMessage.includes('phantom');
 
     if (looksLikePreBroadcastFailure) {
+      const cleanupResult = await failAbandonedGensukiBuyIntent(
+        intentData,
+        'pre_broadcast_wallet_failure',
+        errorMessage
+      );
+
       elements.gensukiBuyResult.innerHTML = `
         <div class="rounded-xl border border-red-300/25 bg-red-500/10 p-4 text-red-100">
           <div class="font-black">❌ Wallet transaction was not completed</div>
@@ -3070,7 +3132,11 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
           </div>
           <div class="mt-3 rounded-lg border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
             No DSPOINC was credited or deducted by Narrrfs. No local bridge settlement happened.
-            Please do not retry this payment-token route until support checks the pending intent.
+          </div>
+          <div class="mt-3 rounded-lg border ${cleanupResult.success ? 'border-emerald-300/25 bg-emerald-500/10 text-emerald-100' : 'border-yellow-300/20 bg-yellow-400/10 text-yellow-50'} p-3 text-xs">
+            ${cleanupResult.success
+              ? '✅ Pending Gensuki buy row was safely closed as failed.'
+              : `⚠️ Pending row cleanup needs support review: ${escapeHtml(cleanupResult.message)}`}
           </div>
           <div class="mt-3 text-xs text-slate-300">
             Support detail: ${escapeHtml(errorMessage)}
