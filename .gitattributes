@@ -14,3 +14,10 @@
 *.hdr binary
 *.zip binary
 *.mp4 binary
+
+# Genesis League immutable historical snapshots.
+# Preserve exact audited bytes; never normalize CRLF/LF in Git.
+league-audit/mousefight-leagues-v2-shadow-snapshot-001.json -text
+league-audit/mousefight-leagues-v2-shadow-snapshot-002.json -text
+league-audit/mousefight-leagues-v2-shadow-snapshot-003.json -text
+league-audit/mousefight-leagues-v2-shadow-snapshot-004.json -text

@@ -89,9 +89,20 @@ SNAPSHOT_PREFIX = (
 
 SNAPSHOT_SUFFIX = ".json"
 
+# mousefight_league_retention_v1
+#
+# DEVS FOR DECADES:
+# The frozen Snapshot #001 audit root always comes from the packaged,
+# source-controlled league-audit directory. Production may prune old full
+# snapshots from persistent /data without deleting the immutable audit root.
 BASELINE_SNAPSHOT = (
-    SNAPSHOT_DIRECTORY
+    DEFAULT_SNAPSHOT_DIRECTORY
     / "mousefight-leagues-v2-shadow-snapshot-001.json"
+)
+
+RETENTION_ANCHOR = (
+    SNAPSHOT_DIRECTORY
+    / ".retention-anchor.json"
 )
 
 
@@ -383,6 +394,125 @@ def load_snapshot_payload(
     return payload
 
 
+def load_retention_anchor():
+    """
+    Load and validate the tiny persistent retention-chain anchor.
+
+    DEVS FOR DECADES:
+    Full historical snapshots may be pruned from persistent /data after the
+    newest five are retained. The anchor preserves the exact sequence,
+    logical reference and raw SHA256 of the one predecessor immediately
+    before the oldest retained full snapshot.
+
+    The anchor never replaces normal snapshot validation. It is accepted only
+    when the physical predecessor is absent and every continuity field matches
+    the immutable source fields already stored inside the retained snapshot.
+    """
+
+    if not RETENTION_ANCHOR.exists():
+        return None
+
+    try:
+        payload = json.loads(
+            RETENTION_ANCHOR.read_text(
+                encoding="utf-8"
+            )
+        )
+    except Exception as error:
+        raise RuntimeError(
+            "REFUSED: unable to parse Genesis League retention anchor.\n"
+            f"path={RETENTION_ANCHOR}\n"
+            f"error={error}"
+        ) from error
+
+    if not isinstance(
+        payload,
+        dict,
+    ):
+        raise RuntimeError(
+            "REFUSED: Genesis League retention anchor is not an object."
+        )
+
+    if (
+        payload.get(
+            "version"
+        )
+        != "mousefight_genesis_leagues_v2_retention_anchor_v1"
+    ):
+        raise RuntimeError(
+            "REFUSED: unknown Genesis League retention anchor version."
+        )
+
+    pruned_sequence = payload.get(
+        "pruned_sequence"
+    )
+
+    first_retained_sequence = payload.get(
+        "first_retained_sequence"
+    )
+
+    if (
+        type(
+            pruned_sequence
+        )
+        is not int
+        or pruned_sequence < 1
+        or type(
+            first_retained_sequence
+        )
+        is not int
+        or first_retained_sequence
+        != pruned_sequence + 1
+    ):
+        raise RuntimeError(
+            "REFUSED: invalid Genesis League retention anchor sequence."
+        )
+
+    pruned_hash = str(
+        payload.get(
+            "pruned_snapshot_sha256"
+        )
+        or ""
+    )
+
+    if (
+        len(
+            pruned_hash
+        )
+        != 64
+        or any(
+            character
+            not in "0123456789abcdef"
+            for character in pruned_hash
+        )
+    ):
+        raise RuntimeError(
+            "REFUSED: invalid Genesis League retention anchor SHA256."
+        )
+
+    if not str(
+        payload.get(
+            "pruned_snapshot"
+        )
+        or ""
+    ):
+        raise RuntimeError(
+            "REFUSED: retention anchor has no pruned snapshot reference."
+        )
+
+    if not str(
+        payload.get(
+            "first_retained_snapshot"
+        )
+        or ""
+    ):
+        raise RuntimeError(
+            "REFUSED: retention anchor has no first retained snapshot reference."
+        )
+
+    return payload
+
+
 def validate_snapshot_file(
     path: Path,
 ) -> tuple[int, dict]:
@@ -560,13 +690,6 @@ def validate_snapshot_file(
             f"actual_previous={actual_previous_reference_raw}"
         )
 
-    if not previous_path.exists():
-        raise RuntimeError(
-            "REFUSED: previous snapshot in publication chain is missing.\n"
-            f"snapshot={path}\n"
-            f"previous={previous_path}"
-        )
-
     expected_previous_hash = str(
         source.get(
             "previous_snapshot_sha256"
@@ -574,22 +697,96 @@ def validate_snapshot_file(
         or ""
     )
 
-    actual_previous_hash = sha256_file(
-        previous_path
-    )
-
-    if (
-        not expected_previous_hash
-        or expected_previous_hash
-        != actual_previous_hash
-    ):
+    if not expected_previous_hash:
         raise RuntimeError(
-            "REFUSED: previous snapshot SHA256 chain verification failed.\n"
-            f"snapshot={path}\n"
-            f"previous={previous_path}\n"
-            f"expected={expected_previous_hash}\n"
-            f"actual={actual_previous_hash}"
+            "REFUSED: recurring snapshot has no previous snapshot SHA256.\n"
+            f"snapshot={path}"
         )
+
+    if previous_path.exists():
+        actual_previous_hash = sha256_file(
+            previous_path
+        )
+
+        if (
+            expected_previous_hash
+            != actual_previous_hash
+        ):
+            raise RuntimeError(
+                "REFUSED: previous snapshot SHA256 chain verification failed.\n"
+                f"snapshot={path}\n"
+                f"previous={previous_path}\n"
+                f"expected={expected_previous_hash}\n"
+                f"actual={actual_previous_hash}"
+            )
+
+    else:
+        anchor = load_retention_anchor()
+
+        if anchor is None:
+            raise RuntimeError(
+                "REFUSED: previous snapshot in publication chain is missing "
+                "and no retention anchor exists.\n"
+                f"snapshot={path}\n"
+                f"previous={previous_path}"
+            )
+
+        anchor_pruned_reference = (
+            normalize_snapshot_reference(
+                anchor.get(
+                    "pruned_snapshot"
+                )
+            )
+        )
+
+        anchor_first_retained_reference = (
+            normalize_snapshot_reference(
+                anchor.get(
+                    "first_retained_snapshot"
+                )
+            )
+        )
+
+        expected_first_retained_reference = (
+            build_snapshot_reference(
+                path
+            )
+        )
+
+        if (
+            int(
+                anchor.get(
+                    "pruned_sequence",
+                    0,
+                )
+            )
+            != previous_sequence
+            or int(
+                anchor.get(
+                    "first_retained_sequence",
+                    0,
+                )
+            )
+            != sequence
+            or anchor_pruned_reference
+            != expected_previous_reference
+            or str(
+                anchor.get(
+                    "pruned_snapshot_sha256"
+                )
+                or ""
+            )
+            != expected_previous_hash
+            or anchor_first_retained_reference
+            != expected_first_retained_reference
+        ):
+            raise RuntimeError(
+                "REFUSED: Genesis League retention anchor does not prove "
+                "the missing predecessor.\n"
+                f"snapshot={path}\n"
+                f"previous={previous_path}\n"
+                f"anchor={RETENTION_ANCHOR}"
+            )
 
     return (
         sequence,

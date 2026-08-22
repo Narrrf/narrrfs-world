@@ -180,5 +180,45 @@ echo ""
 echo "✅ Startup complete - Partner & Asset persistence guaranteed!"
 echo "=========================================="
 
+# STEP 4.5: Daily Genesis League Snapshot Automation
+# mousefight_league_daily_production_v1
+#
+# DEVS FOR DECADES:
+# This block is additive. All existing Render database, asset, symlink,
+# verification and Apache startup behavior remains unchanged.
+#
+# The League scheduler reads the live DB only through the existing
+# read-only V1 League source and writes snapshot files only.
+# It never writes Genesis/Lab state, ownership, Genetic Items, economy,
+# Fight Recovery, staking, authentication or database schema rows.
+LEAGUE_DAILY_LOOP="/var/www/html/scripts/mousefight-league-daily-loop.sh"
+LEAGUE_PYTHON_BIN="$(command -v python3 || true)"
+LEAGUE_PHP_BIN="$(command -v php || true)"
+LEAGUE_SNAPSHOT_DIRECTORY="/data/mousefight-leagues"
+
+if [ -z "$LEAGUE_PYTHON_BIN" ]; then
+    echo "⚠️ Daily Genesis League automation disabled: python3 not found."
+elif [ -z "$LEAGUE_PHP_BIN" ]; then
+    echo "⚠️ Daily Genesis League automation disabled: PHP CLI not found."
+elif [ ! -f "$LEAGUE_DAILY_LOOP" ]; then
+    echo "⚠️ Daily Genesis League automation disabled: loop script missing."
+elif \
+    MOUSEFIGHT_LEAGUE_APP_ROOT="/var/www/html" \
+    MOUSEFIGHT_LEAGUE_PERSIST_DIR="$LEAGUE_SNAPSHOT_DIRECTORY" \
+    bash "$LEAGUE_DAILY_LOOP" --bootstrap
+then
+    export MOUSEFIGHT_LEAGUE_SNAPSHOT_DIRECTORY="$LEAGUE_SNAPSHOT_DIRECTORY"
+    export MOUSEFIGHT_LEAGUE_PYTHON_BIN="$LEAGUE_PYTHON_BIN"
+    export MOUSEFIGHT_LEAGUE_PHP_EXE="$LEAGUE_PHP_BIN"
+
+    echo "✅ Daily Genesis League snapshots: persistent chain ready."
+    echo "🕑 Daily Genesis League schedule: 02:00 UTC."
+
+    bash "$LEAGUE_DAILY_LOOP" &
+else
+    echo "⚠️ Daily Genesis League automation disabled: snapshot bootstrap failed."
+    echo "⚠️ Existing website startup continues with packaged League fallback."
+fi
+
 # STEP 5: Start Apache
 exec apache2-foreground

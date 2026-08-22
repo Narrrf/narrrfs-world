@@ -22,6 +22,13 @@ PUBLISHER="${APP_ROOT}/league-audit/mousefight-league-v2-shadow-daily.py"
 
 STATE_FILE="${PERSIST_DIRECTORY}/.last-successful-utc-date"
 
+# mousefight_league_retention_v1
+RETENTION_ANCHOR_FILE="${PERSIST_DIRECTORY}/.retention-anchor.json"
+
+# Keep only the newest five full immutable snapshot JSON files on persistent
+# Render storage. Older continuity is represented by the tiny anchor above.
+MAX_RETAINED_SNAPSHOTS=5
+
 LOCK_DIRECTORY="/tmp/narrrfs-mousefight-league-daily.lock"
 
 MIN_FREE_KB="${MOUSEFIGHT_LEAGUE_MIN_FREE_KB:-102400}"
@@ -61,6 +68,204 @@ atomic_copy() {
 }
 
 
+
+validate_retention_anchor_file() {
+    local python_bin
+
+    # DEVS FOR DECADES:
+    # Use the same configured Python resolver as publication and pruning.
+    # This honors MOUSEFIGHT_LEAGUE_PYTHON_BIN in local validation and keeps
+    # production behavior aligned with the rest of the League scheduler.
+    python_bin="$(
+        resolve_python
+    )"
+
+    if [ -z "$python_bin" ]; then
+        log_message \
+            "ERROR: cannot validate retention anchor because python3 is unavailable."
+        return 1
+    fi
+
+    "$python_bin" \
+        - \
+        "$RETENTION_ANCHOR_FILE" \
+        "$PERSIST_DIRECTORY" \
+        "$SNAPSHOT_PREFIX" \
+        "$SNAPSHOT_SUFFIX" \
+        <<'PY'
+from pathlib import Path
+import json
+import sys
+
+
+anchor_path = Path(sys.argv[1])
+directory = Path(sys.argv[2])
+prefix = sys.argv[3]
+suffix = sys.argv[4]
+
+
+def fail(message):
+    raise RuntimeError(message)
+
+
+payload = json.loads(
+    anchor_path.read_text(
+        encoding="utf-8"
+    )
+)
+
+if not isinstance(payload, dict):
+    fail("retention anchor is not an object")
+
+if (
+    payload.get("version")
+    != "mousefight_genesis_leagues_v2_retention_anchor_v1"
+):
+    fail("retention anchor version mismatch")
+
+pruned_sequence = payload.get(
+    "pruned_sequence"
+)
+
+first_retained_sequence = payload.get(
+    "first_retained_sequence"
+)
+
+if (
+    type(pruned_sequence) is not int
+    or pruned_sequence < 1
+    or type(first_retained_sequence) is not int
+    or first_retained_sequence != pruned_sequence + 1
+):
+    fail("retention anchor sequence is invalid")
+
+pruned_hash = str(
+    payload.get(
+        "pruned_snapshot_sha256"
+    )
+    or ""
+)
+
+if (
+    len(pruned_hash) != 64
+    or any(
+        character not in "0123456789abcdef"
+        for character in pruned_hash
+    )
+):
+    fail("retention anchor SHA256 is invalid")
+
+expected_pruned_reference = (
+    "league-audit/"
+    + f"{prefix}{pruned_sequence:03d}{suffix}"
+)
+
+expected_first_reference = (
+    "league-audit/"
+    + f"{prefix}{first_retained_sequence:03d}{suffix}"
+)
+
+actual_pruned_reference = str(
+    payload.get(
+        "pruned_snapshot"
+    )
+    or ""
+).replace("\\", "/")
+
+actual_first_reference = str(
+    payload.get(
+        "first_retained_snapshot"
+    )
+    or ""
+).replace("\\", "/")
+
+if actual_pruned_reference != expected_pruned_reference:
+    fail("retention anchor pruned reference mismatch")
+
+if actual_first_reference != expected_first_reference:
+    fail("retention anchor first-retained reference mismatch")
+
+first_path = (
+    directory
+    / f"{prefix}{first_retained_sequence:03d}{suffix}"
+)
+
+if not first_path.is_file():
+    fail("first retained snapshot file is missing")
+
+first_payload = json.loads(
+    first_path.read_text(
+        encoding="utf-8"
+    )
+)
+
+if (
+    int(
+        first_payload.get(
+            "snapshot",
+            {},
+        ).get(
+            "sequence",
+            0,
+        )
+    )
+    != first_retained_sequence
+):
+    fail("first retained snapshot sequence mismatch")
+
+source = first_payload.get(
+    "source",
+    {},
+)
+
+source_previous_reference = str(
+    source.get(
+        "previous_snapshot"
+    )
+    or ""
+).replace("\\", "/")
+
+source_previous_hash = str(
+    source.get(
+        "previous_snapshot_sha256"
+    )
+    or ""
+)
+
+if source_previous_reference != expected_pruned_reference:
+    fail("first retained snapshot predecessor reference mismatch")
+
+if source_previous_hash != pruned_hash:
+    fail("first retained snapshot predecessor SHA256 mismatch")
+
+snapshot_files = sorted(
+    directory.glob(
+        f"{prefix}*{suffix}"
+    )
+)
+
+if not snapshot_files:
+    fail("no retained full snapshot files exist")
+
+first_actual_name = snapshot_files[0].name
+
+if (
+    first_actual_name
+    != f"{prefix}{first_retained_sequence:03d}{suffix}"
+):
+    fail("retention anchor does not point to the oldest retained snapshot")
+
+print(
+    "Retention anchor validation: PASS"
+)
+print(
+    "first_retained_sequence=",
+    first_retained_sequence,
+)
+PY
+}
+
+
 bootstrap_snapshots() {
     mkdir -p \
         "$PERSIST_DIRECTORY" \
@@ -69,6 +274,21 @@ bootstrap_snapshots() {
                 "ERROR: unable to create persistent League snapshot directory."
             return 1
         }
+
+    # DEVS FOR DECADES:
+    # Once retention has pruned historical persistent snapshots, the anchor
+    # becomes the continuity boundary. Never re-copy packaged #001-#004 into
+    # /data after that point or old history would grow back after each deploy.
+    if [ -f "$RETENTION_ANCHOR_FILE" ]; then
+        if ! validate_retention_anchor_file; then
+            log_message                 "ERROR: persistent Genesis League retention anchor is invalid."
+            return 1
+        fi
+
+        log_message             "Genesis League persistent snapshot bootstrap: PASS (retained chain)"
+
+        return 0
+    fi
 
     local packaged_snapshots=()
 
@@ -297,6 +517,268 @@ verify_new_snapshot() {
 }
 
 
+
+prune_snapshot_history() {
+    local python_bin
+
+    python_bin="$(
+        resolve_python
+    )"
+
+    if [ -z "$python_bin" ] || [ ! -x "$python_bin" ]; then
+        log_message \
+            "ERROR: cannot prune Genesis League snapshots because python3 is unavailable."
+        return 1
+    fi
+
+    "$python_bin" \
+        - \
+        "$PERSIST_DIRECTORY" \
+        "$RETENTION_ANCHOR_FILE" \
+        "$SNAPSHOT_PREFIX" \
+        "$SNAPSHOT_SUFFIX" \
+        "$MAX_RETAINED_SNAPSHOTS" \
+        <<'PY'
+from pathlib import Path
+import hashlib
+import json
+import os
+import sys
+
+
+directory = Path(sys.argv[1])
+anchor_path = Path(sys.argv[2])
+prefix = sys.argv[3]
+suffix = sys.argv[4]
+max_retained = int(sys.argv[5])
+
+
+if max_retained != 5:
+    raise RuntimeError(
+        "REFUSED: Genesis League retention limit changed from approved value 5."
+    )
+
+
+def snapshot_sequence(path):
+    name = path.name
+
+    if (
+        not name.startswith(prefix)
+        or not name.endswith(suffix)
+    ):
+        raise RuntimeError(
+            f"invalid snapshot filename: {name}"
+        )
+
+    middle = name[
+        len(prefix):
+        -len(suffix)
+    ]
+
+    if (
+        len(middle) < 3
+        or not middle.isdigit()
+    ):
+        raise RuntimeError(
+            f"invalid snapshot sequence: {name}"
+        )
+
+    return int(middle)
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+
+    with path.open("rb") as handle:
+        for chunk in iter(
+            lambda: handle.read(
+                1024 * 1024
+            ),
+            b"",
+        ):
+            digest.update(chunk)
+
+    return digest.hexdigest()
+
+
+def canonical_reference(path):
+    return (
+        "league-audit/"
+        + path.name
+    )
+
+
+snapshot_files = sorted(
+    directory.glob(
+        f"{prefix}*{suffix}"
+    ),
+    key=snapshot_sequence,
+)
+
+while len(snapshot_files) > max_retained:
+    pruned_path = snapshot_files[0]
+    first_retained_path = snapshot_files[1]
+
+    pruned_sequence = snapshot_sequence(
+        pruned_path
+    )
+
+    first_retained_sequence = snapshot_sequence(
+        first_retained_path
+    )
+
+    if first_retained_sequence != pruned_sequence + 1:
+        raise RuntimeError(
+            "REFUSED: cannot prune a non-contiguous Genesis League chain."
+        )
+
+    first_payload = json.loads(
+        first_retained_path.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    if (
+        int(
+            first_payload.get(
+                "snapshot",
+                {},
+            ).get(
+                "sequence",
+                0,
+            )
+        )
+        != first_retained_sequence
+    ):
+        raise RuntimeError(
+            "REFUSED: first retained snapshot sequence mismatch."
+        )
+
+    source = first_payload.get(
+        "source",
+        {},
+    )
+
+    expected_previous_reference = (
+        canonical_reference(
+            pruned_path
+        )
+    )
+
+    actual_previous_reference = str(
+        source.get(
+            "previous_snapshot"
+        )
+        or ""
+    ).replace(
+        "\\",
+        "/",
+    )
+
+    actual_previous_hash = str(
+        source.get(
+            "previous_snapshot_sha256"
+        )
+        or ""
+    )
+
+    pruned_hash = sha256_file(
+        pruned_path
+    )
+
+    if actual_previous_reference != expected_previous_reference:
+        raise RuntimeError(
+            "REFUSED: first retained snapshot does not reference "
+            "the snapshot selected for pruning."
+        )
+
+    if actual_previous_hash != pruned_hash:
+        raise RuntimeError(
+            "REFUSED: first retained snapshot SHA256 does not prove "
+            "the snapshot selected for pruning."
+        )
+
+    anchor_payload = {
+        "version":
+            "mousefight_genesis_leagues_v2_retention_anchor_v1",
+
+        "pruned_sequence":
+            pruned_sequence,
+
+        "pruned_snapshot":
+            expected_previous_reference,
+
+        "pruned_snapshot_sha256":
+            pruned_hash,
+
+        "first_retained_sequence":
+            first_retained_sequence,
+
+        "first_retained_snapshot":
+            canonical_reference(
+                first_retained_path
+            ),
+    }
+
+    temporary_anchor = anchor_path.with_name(
+        anchor_path.name
+        + ".tmp"
+    )
+
+    temporary_anchor.write_text(
+        json.dumps(
+            anchor_payload,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    os.replace(
+        temporary_anchor,
+        anchor_path,
+    )
+
+    # SAFETY ORDER:
+    # The durable anchor exists before the old full snapshot is removed.
+    # A crash can therefore never leave the chain without either predecessor
+    # evidence or its replacement anchor.
+    pruned_path.unlink()
+
+    print(
+        "retention_pruned_sequence=",
+        pruned_sequence,
+    )
+
+    snapshot_files = snapshot_files[1:]
+
+
+print(
+    "retention_full_snapshots=",
+    len(
+        snapshot_files
+    ),
+)
+
+if snapshot_files:
+    print(
+        "retention_oldest_sequence=",
+        snapshot_sequence(
+            snapshot_files[0]
+        ),
+    )
+
+    print(
+        "retention_latest_sequence=",
+        snapshot_sequence(
+            snapshot_files[-1]
+        ),
+    )
+PY
+}
+
+
 record_success_date() {
     local today
     local temporary_state
@@ -450,6 +932,12 @@ run_publish_once() {
     if ! record_success_date; then
         log_message \
             "ERROR: snapshot published but daily success checkpoint could not be written."
+        return 1
+    fi
+
+    if ! prune_snapshot_history; then
+        log_message \
+            "ERROR: snapshot published and checkpoint recorded, but retention pruning failed."
         return 1
     fi
 
