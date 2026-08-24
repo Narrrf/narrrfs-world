@@ -11,7 +11,7 @@
 />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" href="favicon-phantom.png" type="image/png">
-  
+
   <style>
     :root {
       --primary-color: #f472b6;
@@ -21,22 +21,120 @@
       --card-bg: #1a1a2e;
       --border-color: #374151;
     }
-    
+
     body {
       background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #0f0f23 100%);
       min-height: 100vh;
       color: #fff;
     }
-    
+
     .leaderboard-card {
       background: rgba(26, 26, 46, 0.8);
       border: 2px solid rgba(124, 58, 237, 0.5);
       backdrop-filter: blur(10px);
     }
-    
+
     .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-weight: bold; }
     .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; font-weight: bold; }
     .rank-3 { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; font-weight: bold; }
+
+    /*
+     * Monthly Legend unified display theme.
+     * Plain language for DEVS:
+     * Monthly Legend role text and champion pills must stay readable on every
+     * leaderboard row background, including gold/silver/bronze rank rows.
+     *
+     * This is presentation-only. It does not change scores, sorting, seasons,
+     * role detection, Discord role grants, tbl_user_roles, DSPOINC, staking,
+     * MouseFight, or Fight Recovery.
+     */
+    .monthly-legend-role {
+      display: inline-block;
+      font-weight: 950;
+      letter-spacing: 0.01em;
+      text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.85),
+        0 0 10px currentColor;
+    }
+
+    .monthly-legend-role--tetris { color: #fde047; }
+    .monthly-legend-role--snake { color: #f9a8d4; }
+    .monthly-legend-role--space-invaders { color: #93c5fd; }
+    .monthly-legend-role--cheese-runner { color: #d8b4fe; }
+    .monthly-legend-role--labyrinth-blast { color: #67e8f9; }
+    .monthly-legend-role--glyph { color: #86efac; }
+
+    .monthly-legend-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      width: fit-content;
+      max-width: 100%;
+      padding: 0.38rem 0.72rem;
+      border-radius: 9999px;
+      border: 2px solid rgba(255, 255, 255, 0.78);
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 950;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow:
+        0 10px 24px rgba(0, 0, 0, 0.34),
+        0 0 22px var(--monthly-legend-glow, rgba(250, 204, 21, 0.42));
+      text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.82),
+        0 0 8px rgba(255, 255, 255, 0.18);
+      animation: monthlyLegendPulse 2.4s ease-in-out infinite;
+    }
+
+    .monthly-legend-badge--tetris {
+      --monthly-legend-glow: rgba(250, 204, 21, 0.50);
+      background: linear-gradient(135deg, #ca8a04, #facc15);
+    }
+
+    .monthly-legend-badge--snake {
+      --monthly-legend-glow: rgba(236, 72, 153, 0.48);
+      background: linear-gradient(135deg, #be185d, #f472b6);
+    }
+
+    .monthly-legend-badge--space-invaders {
+      --monthly-legend-glow: rgba(59, 130, 246, 0.48);
+      background: linear-gradient(135deg, #1d4ed8, #60a5fa);
+    }
+
+    .monthly-legend-badge--cheese-runner {
+      --monthly-legend-glow: rgba(168, 85, 247, 0.50);
+      background: linear-gradient(135deg, #7e22ce, #c084fc);
+    }
+
+    .monthly-legend-badge--labyrinth-blast {
+      --monthly-legend-glow: rgba(6, 182, 212, 0.50);
+      background: linear-gradient(135deg, #0e7490, #22d3ee);
+    }
+
+    .monthly-legend-badge--glyph {
+      --monthly-legend-glow: rgba(34, 197, 94, 0.48);
+      background: linear-gradient(135deg, #15803d, #4ade80);
+    }
+
+    @keyframes monthlyLegendPulse {
+      0%, 100% {
+        transform: translateY(0);
+        filter: brightness(1);
+      }
+
+      50% {
+        transform: translateY(-1px);
+        filter: brightness(1.12);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .monthly-legend-badge {
+        font-size: 0.66rem;
+        padding: 0.32rem 0.58rem;
+      }
+    }
 
         /**
      * Mobile leaderboard readability fix.
@@ -421,7 +519,7 @@ body.season12-leaderboard-shell {
             <span>🧩</span>
             <span>Cheese Tetris Leaderboard</span>
           </h2>
-          <a href="tetris.html" 
+          <a href="tetris.html"
              class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-purple-400 hover:border-purple-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
             🎮 Play Tetris
           </a>
@@ -438,7 +536,7 @@ body.season12-leaderboard-shell {
             <span>🐍</span>
             <span>Cheese Snake Leaderboard</span>
           </h2>
-          <a href="snake.html" 
+          <a href="snake.html"
              class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-green-400 hover:border-green-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
             🎮 Play Snake
           </a>
@@ -455,7 +553,7 @@ body.season12-leaderboard-shell {
             <span>👾</span>
             <span>Cheese Space Invaders Leaderboard</span>
           </h2>
-          <a href="space-cheese-invaders.html" 
+          <a href="space-cheese-invaders.html"
              class="bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-pink-400 hover:border-pink-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
             🎮 Play Space Invaders
           </a>
@@ -472,7 +570,7 @@ body.season12-leaderboard-shell {
       <span>🧀</span>
       <span>Cheese Runner Leaderboard</span>
     </h2>
-    <a href="cheeseman.html" 
+    <a href="cheeseman.html"
        class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-gray-900 font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-300 hover:border-yellow-200 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
       🎮 Play Cheese Runner
     </a>
@@ -697,7 +795,7 @@ body.season12-leaderboard-shell {
             <span>🔮</span>
             <span>Glyph Memory Leaderboard</span>
           </h2>
-          <a href="/glyph/glyph.html" 
+          <a href="/glyph/glyph.html"
              class="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-fuchsia-400 hover:border-fuchsia-300 text-sm md:text-base whitespace-nowrap flex items-center gap-2">
             🎮 Play Glyph
           </a>
@@ -734,7 +832,7 @@ body.season12-leaderboard-shell {
         Powered by 🧀 Cheese Architect <b>12.0</b> · Genesis Protocol · Discord + Game + Wallet Sync Engine 🌍
       </p>
       <p class="opacity-70 text-xs">
-        Vault Synced | 2025 | Scroll-Safe for 100 Years of Cheese | 
+        Vault Synced | 2025 | Scroll-Safe for 100 Years of Cheese |
         <a id="discord-link-footer" href="https://discord.gg/narrrfsworld" target="_blank" class="underline text-pink-500 hover:text-pink-600 transition-colors">Join Discord</a>
       </p>
     </div>
@@ -1552,9 +1650,12 @@ console.log('🏆 Leaderboard data loaded:', {
       if (!role) return 'text-gray-400';
       const roleLower = role.toLowerCase();
       // Monthly Legend roles (special champions - highest priority)
-      if (roleLower.includes('monthly tetris legend')) return 'text-yellow-400';
-      if (roleLower.includes('monthly snake legend')) return 'text-pink-400';
-      if (roleLower.includes('monthly cheese invaders legend')) return 'text-blue-400';
+      if (roleLower.includes('monthly tetris legend')) return 'monthly-legend-role monthly-legend-role--tetris';
+      if (roleLower.includes('monthly snake legend')) return 'monthly-legend-role monthly-legend-role--snake';
+      if (roleLower.includes('monthly cheese invaders legend')) return 'monthly-legend-role monthly-legend-role--space-invaders';
+      if (roleLower.includes('monthly cheese runner legend')) return 'monthly-legend-role monthly-legend-role--cheese-runner';
+      if (roleLower.includes('monthly labyrinth blast legend')) return 'monthly-legend-role monthly-legend-role--labyrinth-blast';
+      if (roleLower.includes('monthly glyph legend')) return 'monthly-legend-role monthly-legend-role--glyph';
       // Standard roles
       if (roleLower.includes('vip')) return 'text-yellow-400';
       if (roleLower.includes('holder')) return 'text-gray-300';
@@ -1564,83 +1665,222 @@ console.log('🏆 Leaderboard data loaded:', {
       if (roleLower.includes('cheese hunter')) return 'text-yellow-500';
       return 'text-gray-400';
     }
-    
+
     // Helper function to check if player has Monthly Legend role for a specific game
-    // 
+    //
     // CRITICAL: This function handles players with MULTIPLE Monthly Champion roles correctly.
     // For example, if a player has both "Monthly Tetris Legend" and "Monthly Snake Legend":
     // - On the Tetris leaderboard: Will detect and return "Monthly Tetris Legend"
-    // - On the Snake leaderboard: Will detect and return "Monthly Snake Legend"  
+    // - On the Snake leaderboard: Will detect and return "Monthly Snake Legend"
     // - On the Space Invaders leaderboard: Will return null (no matching role)
-    // 
+    //
     // This ensures each leaderboard shows the correct champion badge for its specific game.
     function getMonthlyLegendRole(roles, game) {
       if (!roles || !Array.isArray(roles) || roles.length === 0) return null;
-      
+
       // Normalize roles to lowercase for comparison (but preserve original for return)
       const normalizedRoles = roles.map(r => (r || '').toString().trim().toLowerCase());
-      
-      // Check for game-specific Monthly Legend role
-      // This ensures players with multiple champion roles show the correct badge on each leaderboard
-      if (game === 'tetris') {
-        // Check for Monthly Tetris Legend role
-        const tetrisIndex = normalizedRoles.findIndex(r => r.includes('monthly') && r.includes('tetris') && r.includes('legend'));
-        if (tetrisIndex !== -1) {
-          return roles[tetrisIndex]; // Return original role with proper casing
-        }
-      } else if (game === 'snake') {
-        // Check for Monthly Snake Legend role
-        const snakeIndex = normalizedRoles.findIndex(r => r.includes('monthly') && r.includes('snake') && r.includes('legend'));
-        if (snakeIndex !== -1) {
-          return roles[snakeIndex]; // Return original role with proper casing
-        }
-      } else if (game === 'space-invaders') {
-        // Check for Monthly Cheese Invaders Legend role (can be "cheese invaders" or "space invaders")
-        const invadersIndex = normalizedRoles.findIndex(r => 
-          r.includes('monthly') && 
-          (r.includes('cheese invaders') || r.includes('space invaders')) && 
+      const gameKey = String(game || '').trim().toLowerCase();
+
+      // DEVS FOR DECADES:
+      // Monthly Legend roles are game-specific display badges.
+      // A player can hold several legend roles, but each leaderboard must show
+      // only the role belonging to that exact game board.
+      const monthlyLegendMatchers = {
+        tetris: r => r.includes('monthly') && r.includes('tetris') && r.includes('legend'),
+        snake: r => r.includes('monthly') && r.includes('snake') && r.includes('legend'),
+        'space-invaders': r =>
+          r.includes('monthly') &&
+          (r.includes('cheese invaders') || r.includes('space invaders')) &&
+          r.includes('legend'),
+        cheeseman: r =>
+          r.includes('monthly') &&
+          (r.includes('cheese runner') || r.includes('cheeseman')) &&
+          r.includes('legend'),
+        'labyrinth-blast': r =>
+          r.includes('monthly') &&
+          r.includes('labyrinth') &&
+          r.includes('blast') &&
+          r.includes('legend'),
+        glyph: r =>
+          r.includes('monthly') &&
+          r.includes('glyph') &&
           r.includes('legend')
-        );
-        if (invadersIndex !== -1) {
-          return roles[invadersIndex]; // Return original role with proper casing
+      };
+
+      const matcher = gameKey.includes('glyph')
+        ? monthlyLegendMatchers.glyph
+        : monthlyLegendMatchers[gameKey];
+
+      if (!matcher) return null;
+
+      const matchIndex = normalizedRoles.findIndex(matcher);
+      return matchIndex !== -1 ? roles[matchIndex] : null;
+    }
+
+    /**
+     * Return the first Monthly Legend role a player has, independent of game.
+     *
+     * DEVS FOR DECADES:
+     * Monthly Legend roles are manually awarded Discord honors. The matching
+     * game board still gets the large champion badge, but the role line beside
+     * the player name should show the Monthly Legend role anywhere that player
+     * appears on leaderboard.html.
+     *
+     * This is presentation-only. It does not change scores, sorting, seasons,
+     * DSPOINC, role grants, or database rows.
+     */
+    function getAnyMonthlyLegendRole(roles) {
+      if (!roles || !Array.isArray(roles) || roles.length === 0) return null;
+
+      const monthlyLegendMatchers = [
+        r => r.includes('monthly') && r.includes('tetris') && r.includes('legend'),
+        r => r.includes('monthly') && r.includes('snake') && r.includes('legend'),
+        r => r.includes('monthly') && (r.includes('cheese invaders') || r.includes('space invaders')) && r.includes('legend'),
+        r => r.includes('monthly') && (r.includes('cheese runner') || r.includes('cheeseman')) && r.includes('legend'),
+        r => r.includes('monthly') && r.includes('labyrinth') && r.includes('blast') && r.includes('legend'),
+        r => r.includes('monthly') && r.includes('glyph') && r.includes('legend')
+      ];
+
+      const normalizedRoles = roles.map(r => (r || '').toString().trim().toLowerCase());
+
+      for (const matcher of monthlyLegendMatchers) {
+        const matchIndex = normalizedRoles.findIndex(matcher);
+        if (matchIndex !== -1) {
+          return roles[matchIndex];
         }
       }
-      
+
       return null;
     }
-    
+
+    /**
+     * Return whether a role name is one of the manually awarded Monthly Legend honors.
+     */
+    function isMonthlyLegendRoleName(role) {
+      const roleLower = String(role || '').trim().toLowerCase();
+
+      return (
+        roleLower.includes('monthly') &&
+        roleLower.includes('legend') &&
+        (
+          roleLower.includes('tetris') ||
+          roleLower.includes('snake') ||
+          roleLower.includes('cheese invaders') ||
+          roleLower.includes('space invaders') ||
+          roleLower.includes('cheese runner') ||
+          roleLower.includes('cheeseman') ||
+          roleLower.includes('labyrinth') ||
+          roleLower.includes('glyph')
+        )
+      );
+    }
+
+    /**
+     * Return the best normal role for the small role line under a player name.
+     *
+     * DEVS FOR DECADES:
+     * Monthly Legend is now shown only once as the styled champion pill.
+     * The normal role line should stay a normal community role such as VIP Holder
+     * or Holder, even when the backend reports a Monthly Legend as highest_role.
+     *
+     * This is presentation-only. It does not change role rows, Discord roles,
+     * score sorting, DSPOINC, staking, MouseFight, or Fight Recovery.
+     */
+    function getHighestNormalLeaderboardRole(roles, fallbackRole = 'Member') {
+      const roleList = Array.isArray(roles) ? roles : [];
+      const normalRoles = roleList.filter(role => !isMonthlyLegendRoleName(role));
+
+      const normalRoleMatchers = [
+        role => role.includes('vip holder'),
+        role => role.includes('holder'),
+        role => role.includes('champion'),
+        role => role.includes('season tester') || role === 'wl' || role.includes(' wl'),
+        role => role.includes('early bird'),
+        role => role.includes('cheese hunter')
+      ];
+
+      const normalizedNormalRoles = normalRoles.map(role =>
+        String(role || '').trim().toLowerCase()
+      );
+
+      for (const matcher of normalRoleMatchers) {
+        const matchIndex = normalizedNormalRoles.findIndex(matcher);
+
+        if (matchIndex !== -1) {
+          return normalRoles[matchIndex];
+        }
+      }
+
+      const fallback = String(fallbackRole || '').trim();
+
+      if (fallback && !isMonthlyLegendRoleName(fallback)) {
+        return fallback;
+      }
+
+      return 'Member';
+    }
+
+    /**
+     * Resolve the role and Monthly Legend pill that should display beside a leaderboard name.
+     */
+    function getLeaderboardDisplayRole(entry, game = null) {
+      const roles = Array.isArray(entry?.roles) ? entry.roles : [];
+      const gameMonthlyLegendRole = game ? getMonthlyLegendRole(roles, game) : null;
+      const anyMonthlyLegendRole = getAnyMonthlyLegendRole(roles);
+      const bestMonthlyLegendRole = gameMonthlyLegendRole || anyMonthlyLegendRole;
+      const highestRole = entry?.highest_role || 'Member';
+      const displayedRole = getHighestNormalLeaderboardRole(roles, highestRole);
+
+      return {
+        highestRole,
+        displayedRole,
+        monthlyLegendRole: bestMonthlyLegendRole,
+        gameMonthlyLegendRole,
+        anyMonthlyLegendRole,
+        hasMonthlyLegendRole: Boolean(bestMonthlyLegendRole)
+      };
+    }
+
     // Helper function to get Monthly Legend badge HTML
     function getMonthlyLegendBadge(legendRole, game) {
       if (!legendRole) return '';
-      
+
       const roleLower = legendRole.toLowerCase();
       let badgeClass = '';
       let shieldEmoji = '🛡️';
       let badgeText = '';
-      
+
       if (roleLower.includes('tetris')) {
-        badgeClass = 'bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-900';
-        shieldEmoji = '🛡️';
+        badgeClass = 'monthly-legend-badge monthly-legend-badge--tetris';
         badgeText = '🏆 Tetris Champion';
       } else if (roleLower.includes('snake')) {
-        badgeClass = 'bg-gradient-to-r from-pink-400 to-rose-500 text-pink-900';
-        shieldEmoji = '🛡️';
+        badgeClass = 'monthly-legend-badge monthly-legend-badge--snake';
         badgeText = '🏆 Snake Champion';
-      } else if (roleLower.includes('cheese invaders')) {
-        badgeClass = 'bg-gradient-to-r from-blue-400 to-indigo-500 text-blue-900';
-        shieldEmoji = '🛡️';
+      } else if (roleLower.includes('cheese invaders') || roleLower.includes('space invaders')) {
+        badgeClass = 'monthly-legend-badge monthly-legend-badge--space-invaders';
         badgeText = '🏆 Space Invaders Champion';
+      } else if (roleLower.includes('cheese runner') || roleLower.includes('cheeseman')) {
+        badgeClass = 'monthly-legend-badge monthly-legend-badge--cheese-runner';
+        badgeText = '🏆 Cheese Runner Champion';
+      } else if (roleLower.includes('labyrinth')) {
+        badgeClass = 'monthly-legend-badge monthly-legend-badge--labyrinth-blast';
+        badgeText = '🏆 Labyrinth Blast Champion';
+      } else if (roleLower.includes('glyph')) {
+        badgeClass = 'monthly-legend-badge monthly-legend-badge--glyph';
+        badgeText = '🏆 Glyph Champion';
       }
-      
+
       if (!badgeClass) return '';
-      
+
       return `
-        <div class="${badgeClass} px-3 py-1.5 rounded-full text-xs font-bold shadow-xl border-2 border-white/70 flex items-center gap-1.5 animate-pulse whitespace-nowrap inline-flex">
+        <div class="${badgeClass}">
           <span class="text-sm">${shieldEmoji}</span>
           <span>${badgeText}</span>
         </div>
       `;
     }
+
     function formatGlyphTime(ms) {
       if (ms == null || isNaN(ms)) return '--:--';
       const totalSec = Math.floor(ms / 1000);
@@ -1683,15 +1923,24 @@ console.log('🏆 Leaderboard data loaded:', {
         const avatarUrl = entry.avatar_url ||
           `https://cdn.discordapp.com/embed/avatars/${parseInt(entry.discord_id || 0, 10) % 5}.png`;
 
-        const highestRole = entry.highest_role || 'Member';
-        const roleColorClass = getRoleColorClass(highestRole);
+        const roleDisplay = getLeaderboardDisplayRole(entry, 'glyph');
+        const highestRole = roleDisplay.highestRole;
+        const displayedRole = roleDisplay.displayedRole;
+        const monthlyLegendRole = roleDisplay.monthlyLegendRole;
+        const hasMonthlyLegendRole = roleDisplay.hasMonthlyLegendRole;
+        const roleColorClass = getRoleColorClass(displayedRole);
+        const monthlyLegendBadge = monthlyLegendRole ? getMonthlyLegendBadge(monthlyLegendRole, 'glyph') : '';
+        const glyphLegendBorderClass = monthlyLegendRole
+          ? 'border-emerald-400 border-2 shadow-lg shadow-emerald-500/40 ring-2 ring-emerald-400/25'
+          : 'border-purple-500/30';
+        const glyphAvatarBorderClass = monthlyLegendRole ? 'border-emerald-400 border-2' : 'border-purple-500';
 
         const formattedTime =
           entry.best_time_formatted ||
           formatGlyphTime(entry.best_time_ms);
 
         return `
-          <div class="flex items-center justify-between p-3 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-purple-500/30 hover:border-purple-400 transition-all">
+          <div class="flex items-center justify-between p-3 rounded-lg ${rankClass || 'bg-gray-800/50'} border ${glyphLegendBorderClass} hover:border-purple-400 transition-all">
             <div class="flex items-center gap-3 flex-1 min-w-0">
               <div class="text-lg font-bold w-10 text-center flex-shrink-0">
                 ${medal}
@@ -1700,18 +1949,19 @@ console.log('🏆 Leaderboard data loaded:', {
               <img
                 src="${avatarUrl}"
                 alt="${entry.discord_name || 'Unknown'}"
-                class="w-10 h-10 rounded-full border-2 border-purple-500 hover:border-yellow-400 transition-colors flex-shrink-0"
+                class="w-10 h-10 rounded-full border-2 ${glyphAvatarBorderClass} hover:border-yellow-400 transition-colors flex-shrink-0"
                 onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"
               />
 
               <div class="flex-1 min-w-0">
                 <div class="font-semibold text-sm truncate">
-                  ${entry.discord_name || entry.discord_id || 'Unknown'}
+                  ${entry.discord_name || entry.discord_id || 'Unknown'}${hasMonthlyLegendRole ? ' 👑' : ''}
                 </div>
 
                 <div class="text-xs ${roleColorClass} truncate">
-                  ${highestRole}
+                  ${displayedRole}
                 </div>
+                ${monthlyLegendBadge ? `<div class="mt-2">${monthlyLegendBadge}</div>` : ''}
               </div>
             </div>
 
@@ -1733,7 +1983,7 @@ console.log('🏆 Leaderboard data loaded:', {
     function displayLeaderboard(game, leaderboard, isFrozen, customLabel = null) {
       const containerId = `${game}-leaderboard`;
       const container = document.getElementById(containerId);
-      
+
       if (!container) {
         console.error(`Container not found: ${containerId}`);
         return;
@@ -1762,43 +2012,45 @@ console.log('🏆 Leaderboard data loaded:', {
         const rank = index + 1;
         const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
         const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
-        
+
         // Format score with commas
         const formattedScore = entry.score ? Number(entry.score).toLocaleString() : '0';
-        
+
         // Get avatar URL (with fallback to default Discord avatar)
         const avatarUrl = entry.avatar_url || `https://cdn.discordapp.com/embed/avatars/${parseInt(entry.discord_id) % 5}.png`;
-        
+
         // Get highest role (with fallback to 'Member')
-        const highestRole = entry.highest_role || 'Member';
-        const roleColorClass = getRoleColorClass(highestRole);
-        
+        const roleDisplay = getLeaderboardDisplayRole(
+          entry,
+          typeof game === 'string' ? game : null
+        );
+        const highestRole = roleDisplay.highestRole;
+        const displayedRole = roleDisplay.displayedRole;
+        const hasMonthlyLegendRole = roleDisplay.hasMonthlyLegendRole;
+        const roleColorClass = getRoleColorClass(displayedRole);
+
         // Check if player has Monthly Legend role for this specific game
         // NOTE: If player has multiple Monthly Champion roles (e.g., Tetris + Snake),
         // this will only return the role matching the current game's leaderboard
-        const monthlyLegendRole = getMonthlyLegendRole(entry.roles || [], game);
+        const monthlyLegendRole = roleDisplay.monthlyLegendRole;
         const monthlyLegendBadge = monthlyLegendRole ? getMonthlyLegendBadge(monthlyLegendRole, game) : '';
-        
+
         // Add special styling for Monthly Legend champions
         let specialBorderClass = 'border-gray-600';
         let specialGlowClass = '';
         let avatarBorderClass = 'border-gray-500';
         if (monthlyLegendRole) {
-          if (game === 'tetris') {
-            specialBorderClass = 'border-yellow-400 border-2';
-            specialGlowClass = 'shadow-lg shadow-yellow-500/50 ring-2 ring-yellow-400/30';
-            avatarBorderClass = 'border-yellow-400 border-2';
-          } else if (game === 'snake') {
-            specialBorderClass = 'border-pink-400 border-2';
-            specialGlowClass = 'shadow-lg shadow-pink-500/50 ring-2 ring-pink-400/30';
-            avatarBorderClass = 'border-pink-400 border-2';
-          } else if (game === 'space-invaders') {
-            specialBorderClass = 'border-blue-400 border-2';
-            specialGlowClass = 'shadow-lg shadow-blue-500/50 ring-2 ring-blue-400/30';
-            avatarBorderClass = 'border-blue-400 border-2';
-          }
+          const legendStyleByGame = {
+            tetris: ['border-yellow-400 border-2', 'shadow-lg shadow-yellow-500/50 ring-2 ring-yellow-400/30', 'border-yellow-400 border-2'],
+            snake: ['border-pink-400 border-2', 'shadow-lg shadow-pink-500/50 ring-2 ring-pink-400/30', 'border-pink-400 border-2'],
+            'space-invaders': ['border-blue-400 border-2', 'shadow-lg shadow-blue-500/50 ring-2 ring-blue-400/30', 'border-blue-400 border-2'],
+            cheeseman: ['border-purple-400 border-2', 'shadow-lg shadow-purple-500/50 ring-2 ring-purple-400/30', 'border-purple-400 border-2'],
+            'labyrinth-blast': ['border-cyan-400 border-2', 'shadow-lg shadow-cyan-500/50 ring-2 ring-cyan-400/30', 'border-cyan-400 border-2']
+          };
+          const legendStyle = legendStyleByGame[game] || ['border-emerald-400 border-2', 'shadow-lg shadow-emerald-500/50 ring-2 ring-emerald-400/30', 'border-emerald-400 border-2'];
+          [specialBorderClass, specialGlowClass, avatarBorderClass] = legendStyle;
         }
-        
+
         return `
   <div class="narrrf-leaderboard-row flex flex-wrap sm:flex-nowrap items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border ${specialBorderClass} hover:border-yellow-400 transition-all ${specialGlowClass} relative overflow-visible">
     <div class="narrrf-leaderboard-player flex items-center gap-4 flex-1 min-w-0">
@@ -1807,10 +2059,10 @@ console.log('🏆 Leaderboard data loaded:', {
       <div class="flex-1 min-w-0">
         <div class="narrrf-leaderboard-name font-semibold text-lg flex items-center gap-2 flex-wrap">
           <span class="min-w-0">${entry.discord_name || entry.discord_id || 'Unknown'}</span>
-          ${monthlyLegendRole ? '<span class="text-lg animate-pulse flex-shrink-0">👑</span>' : ''}
+          ${hasMonthlyLegendRole ? '<span class="text-lg animate-pulse flex-shrink-0">👑</span>' : ''}
         </div>
         <div class="narrrf-leaderboard-role text-xs font-bold ${roleColorClass} flex items-center gap-2 flex-wrap mt-1">
-          <span>${highestRole}</span>
+          <span>${displayedRole}</span>
         </div>
         ${monthlyLegendBadge ? `<div class="mt-2">${monthlyLegendBadge}</div>` : ''}
       </div>

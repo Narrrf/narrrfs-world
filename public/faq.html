@@ -473,6 +473,80 @@ require_once 'discord-invite.php';
               </div>
             </details>
 
+            <!-- 🏆 Genesis League daily classification explanation.
+                 DEVS FOR DECADES:
+                 Public documentation only.
+                 This card explains the read-only League methodology.
+                 It does not calculate tiers, mutate Genesis/Lab progression,
+                 change MouseFight state, touch Fight Recovery, or move economy. -->
+            <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-violet-500">
+              <summary class="flex items-center justify-between gap-4">
+                <h3 class="text-xl font-black text-violet-200">🏆 Why can Genesis League Power requirements change?</h3>
+                <span class="faq-chevron text-violet-300">⌄</span>
+              </summary>
+
+              <div class="answer-copy mt-4 text-slate-300 leading-relaxed">
+                <p>
+                  Genesis Leagues are designed to grow with the real Genesis population
+                  instead of using one fixed set of Power requirements forever.
+                  Each daily read-only snapshot looks at the current permanent League Power
+                  distribution of all named Genesis mice and calculates candidate boundaries
+                  for the nine Leagues.
+                </p>
+
+                <p class="mt-3">
+                  <strong>League Power</strong> comes from permanent Genesis progression:
+                  Trait Levels, Ability Levels × 2, the named-mouse bonus, and the approved
+                  Fitness-unlock bonus.
+                </p>
+
+                <p class="mt-3">
+                  The classifier balances two mathematical goals:
+                  <strong>keeping League populations close to their intended shares</strong>
+                  and <strong>placing boundaries near natural gaps between real Power groups</strong>.
+                  Equal-Power mice are never split just to force a perfect percentage.
+                </p>
+
+                <p class="mt-3">
+                  For technical readers, this is a balance between
+                  <strong>percentile fidelity</strong> and
+                  <strong>natural cluster separation</strong>.
+                  The current classifier uses a distance weight of
+                  <strong>λ = 2.25</strong> for that balance.
+                </p>
+
+                <p class="mt-3">
+                  After candidate boundaries are calculated, <strong>H2</strong> protects
+                  the overall League boundaries from small day-to-day noise.
+                  <strong>I6</strong> then protects individual mice from unnecessary
+                  back-and-forth movement near a boundary.
+                </p>
+
+                <p class="mt-3">
+                  This is why a possible promotion or relegation can temporarily appear as
+                  <strong>pending</strong>. The mouse remains in its currently published League
+                  until the movement receives enough confirmation or the temporary pressure disappears.
+                </p>
+
+                <p class="mt-3">
+                  The important idea is simple:
+                  <strong>the League names and methodology remain stable, while the actual Power
+                  requirements can evolve as the population grows and permanent Genesis training increases.</strong>
+                </p>
+
+                <p class="mt-3">
+                  Genetic Items, temporary Fight Power, Battle Modes, fight results,
+                  DSPOINC, SPOINC, and rewards do <strong>not</strong> determine Genesis League placement.
+                </p>
+
+                <p class="mt-3">
+                  <a href="nerd-lab.html">Read the deeper League mathematics in the Nerd Lab</a>
+                  or
+                  <a href="mousefights.html#leagues">open the live Genesis League Explorer</a>.
+                </p>
+              </div>
+            </details>
+
             <details class="faq-details faq-card rounded-3xl p-5 border-l-4 border-red-500">
               <summary class="flex items-center justify-between gap-4">
                 <h3 class="text-xl font-black text-red-200">💥 What is Labyrinth Blast?</h3>
