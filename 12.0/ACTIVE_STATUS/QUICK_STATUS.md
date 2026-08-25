@@ -1,5 +1,3089 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-08-25 — MouseFight Leagues Expert 1.4 LIVE — L2-C2C Genesis League Matchmaking Queue LIVE UI / Production Availability Deployment Gate
+
+**Agent / version:** MouseFight Leagues Expert 1.4 LIVE  
+**Project:** Narrrfs World 13.0  
+**Branch:** `render-deploy`  
+**Primary scope:** Genesis League Matchmaking + NFT-bound Genesis League Points  
+**Current phase:** `L2-C — Interactive Exact-Tier Matchmaking Queue`  
+**Current milestone:** `L2-C2C — Matchmaking panel LIVE; production mouse_availability deployment required`  
+**Standby:** Active
+
+### Scope completed in this development cycle
+
+Implemented and validated the queue-only Genesis League matchmaking foundation in the local Discord bot.
+
+Player flow now implemented through runtime queue insertion:
+
+`Search League Fight`
+→ load owned MouseFight-ready named Genesis mice
+→ attach authoritative published V2 League
+→ private 25-per-page mouse picker
+→ select Genesis mouse
+→ fresh ownership/profile read
+→ fresh authoritative V2 League read
+→ read-only MouseFight availability check
+→ optional maximum-3 idle Genetic Item temporary loadout
+→ final ownership / League / availability / idle-item rechecks
+→ 30-minute runtime-only exact-tier queue entry
+→ permanent Discord matchmaking panel refresh.
+
+Real same-tier matching and PVP creation remain intentionally disabled.
+
+### L2-C1 — Runtime queue policy
+
+Verified local runtime queue policy:
+
+- nine isolated exact-League runtime buckets;
+- one active queued mouse per Discord user;
+- queue timeout = `30 minutes`;
+- maximum matchmaking Genetic Items = `3`;
+- queue state is in-memory Discord runtime state only;
+- expired entries are removed from runtime;
+- no SQLite queue persistence;
+- no PVP creation;
+- no economy action;
+- no Fight Recovery mutation.
+
+Isolated queue lifecycle test passed.
+
+### L2-C2A — Search picker / pagination
+
+Implemented:
+
+- `⚔️ Search League Fight`;
+- private owned Genesis mouse picker;
+- authoritative published V2 League attachment;
+- Discord 25-option page limit;
+- Previous / Next pagination;
+- `🐭 My League Mice`;
+- `❌ Leave Queue`;
+- matchmaking button routing before generic MouseFight parsing.
+
+Isolated test results:
+
+- picker page size = `25`;
+- matchmaking Genetic Item max = `3`;
+- test population = `28` owned mice;
+- authoritative published candidates = `27`;
+- one unpublished mouse correctly excluded;
+- Discord invented no League classification;
+- pagination = `25 + 2`;
+- token_id remained select identity;
+- published League label and League Power shown;
+- no queue insertion from picker construction;
+- feature gate correctly blocked controls while OFF.
+
+Test RC:
+
+`0`
+
+### L2-C2A.1 — Syntax repair
+
+Initial picker patch introduced one malformed JavaScript presentation string:
+
+`mouse\\'s`
+
+The issue was isolated to local source presentation.
+
+Guarded one-line syntax repair changed it to a valid double-quoted JavaScript string.
+
+Validation:
+
+- `commands/mousefight.js` syntax PASS;
+- `index.js` syntax PASS;
+- bot had not been restarted while syntax was invalid;
+- no runtime effect;
+- no DB/economy/Recovery effect.
+
+Backup:
+
+`discord/commands/mousefight.js.before-league-matchmaking-picker-syntax-20260825-214213.bak`
+
+### L2-C2B — Selected mouse → availability → Genetic Items → runtime queue
+
+Implemented:
+
+- matchmaking select routing before generic fight parser;
+- fresh ownership/profile re-read after selection;
+- fresh authoritative published V2 League re-read;
+- read-only `mouse_availability` check;
+- matchmaking-specific Genetic Item continuation;
+- maximum `3` idle Owner Genetic Items;
+- final idle Genetic Item revalidation;
+- final ownership / League / availability rechecks;
+- runtime queue insertion only after all checks pass;
+- `matchmaking_queue` loadouts do not require an `activeMouseFights` row;
+- immediate panel refresh after queue add/remove;
+- periodic panel refresh through existing League monitoring cycle.
+
+Unchanged:
+
+- no same-tier matcher;
+- no `pvp_create`;
+- no persisted matchmaking fight;
+- no DSPOINC/SPOINC movement;
+- no PVP escrow/settlement;
+- no event burn/refund;
+- no Fight Recovery mutation;
+- no permanent Genesis/Lab/Genetic Item mutation.
+
+### L2-C2B isolated queue-entry handoff proof
+
+Tested a synthetic fully revalidated Genesis queue snapshot.
+
+Verified:
+
+- queue TTL = `30 minutes`;
+- max Genetic Items = `3`;
+- token_id + collection identity preserved;
+- League `Diamond` provenance preserved;
+- League Power `271` preserved;
+- snapshot sequence `888` preserved;
+- selected Genetic Item IDs `[101, 202, 303]` preserved;
+- runtime add/find/remove works;
+- duplicate second mouse for same Discord user rejected with:
+  `user_already_queued`;
+- no Discord/API/SQLite/PVP/economy/Recovery operation performed.
+
+Test RC:
+
+`0`
+
+### UTF-8 League symbol proof
+
+Git Bash displayed several emojis as replacement glyphs in console output.
+
+Node Unicode inspection proved source data is correct:
+
+- Crumb: `U+25AB U+FE0F`
+- Cheese: `U+1F9C0`
+- Bronze: `U+1F949`
+- Silver: `U+1F948`
+- Golden: `U+1F947`
+- Diamond: `U+1F48E`
+- Genesis Master: `U+1F9EC`
+- Mouseverse Champion: `U+1F451`
+- Ultra Champion: `U+1F30C`
+
+No source corruption and no Unicode patch required.
+
+### L2-C2C — Permanent matchmaking panel activation
+
+Feature gate changed:
+
+`MOUSEFIGHT_LEAGUE_MATCHMAKING_PANEL_ENABLED = false`
+
+to:
+
+`MOUSEFIGHT_LEAGUE_MATCHMAKING_PANEL_ENABLED = true`
+
+Pre-restart validation passed:
+
+- `commands/mousefight.js` syntax PASS;
+- `index.js` syntax PASS;
+- channel ID:
+  `1540182398472421516`;
+- matchmaking image:
+  `public/img/searchleague.png`;
+- image verified:
+  `2172 x 724 PNG`;
+- buttons:
+  - `⚔️ Search League Fight`
+  - `❌ Leave Queue`
+  - `🐭 My League Mice`
+- no matcher/PVP/economy/Recovery mutation detected in queue-entry helper region.
+
+Backup:
+
+`discord/commands/mousefight.js.before-league-matchmaking-panel-enable-20260825-220137.bak`
+
+### Local Discord bot restart / LIVE presentation
+
+Old bot process was verified before restart:
+
+- PID: `47812`;
+- command:
+  `node index.js`;
+- heartbeat:
+  `ok = true`;
+- Discord:
+  `discord_ready = true`.
+
+Bot was restarted locally.
+
+New process:
+
+- PID: `36040`;
+- single-instance lock acquired;
+- Discord login succeeded;
+- bot ready as:
+  `Narrrf's World Bot#5750`;
+- heartbeat writer active.
+
+Startup MouseFight results:
+
+- existing stale waiting lobby was not restored because original Discord message was unavailable;
+- no DB status mutation was performed by that skip;
+- League Hub guide updated:
+  message `1541218666346188821`;
+- Genesis League Matchmaking permanent panel created:
+  message `1541901617723605114`;
+- channel:
+  `1540182398472421516`;
+- daily V2 League monitoring active every 5 minutes.
+
+Production Discord screenshot verified:
+
+- all nine League rows rendered;
+- all queue counts initially `0 searching`;
+- `searchleague.png` rendered;
+- Search / Leave / My League Mice controls rendered.
+
+### LIVE interaction verification
+
+`🐭 My League Mice`:
+
+**PASS**
+
+`⚔️ Search League Fight`:
+
+**PASS**
+
+Owned matchmaking picker:
+
+**PASS**
+
+User test returned:
+
+- eligible mice = `10`;
+- page = `1/1`;
+- 30-minute queue rule rendered;
+- maximum-3 Genetic Item rule rendered.
+
+After selecting one Genesis mouse the flow correctly failed closed with:
+
+`Genesis League matchmaking selection failed. Reason: Unsupported MouseFight economy action`
+
+Bot console:
+
+`[MOUSEFIGHT LEAGUE MATCHMAKING] Mouse selection failed: Unsupported MouseFight economy action`
+
+No queue entry was inserted.
+
+### Root cause — VERIFIED
+
+Running local Discord bot API target:
+
+`https://narrrfs.world/api/discord/mousefight-economy.php`
+
+The bot calls:
+
+`mouse_availability`
+
+Local tracked file:
+
+`api/discord/mousefight-economy.php`
+
+contains the new authenticated read-only action.
+
+Local implementation:
+
+- supports Genesis only;
+- reuses existing persisted Recovery/reservation SELECT helpers;
+- returns `available`;
+- returns `blocked_reason` / `blocked_reasons`;
+- returns active Recovery/reservation information;
+- returns:
+  `authority = read_only_ux_snapshot`;
+- requires:
+  `transaction_recheck_required = true`;
+- enables:
+  `PRAGMA query_only = ON`;
+- exits before:
+  `BEGIN IMMEDIATE`;
+- performs no economy/Recovery write.
+
+PHP syntax:
+
+**PASS**
+
+Git state:
+
+`api/discord/mousefight-economy.php` is tracked and modified.
+
+Critical deployment evidence:
+
+`HEAD DOES NOT CONTAIN mouse_availability`
+
+Therefore production currently serves the older protected economy endpoint and rejects the new bot action.
+
+The Discord matchmaking failure is an API-version/deployment boundary, not a picker, League classifier, queue, ownership, Genetic Item, or Discord routing failure.
+
+### Protected API transaction boundary
+
+Existing transactional actions remain unchanged:
+
+- `event_join`
+- `event_cancel`
+- `event_complete_recovery`
+- `pvp_create`
+- `pvp_accept_settle`
+- `pvp_cancel`
+
+`mouse_availability` runs before the existing `BEGIN IMMEDIATE` transaction.
+
+The read-only availability call remains only an early UX guard.
+
+It does not reserve the NFT.
+
+Future real pairing must still:
+
+fresh ownership
+→ fresh published League
+→ fresh availability
+→ authoritative existing `pvp_create`
+→ backend transactional availability recheck.
+
+### Downloaded-live local DB safety baseline
+
+Current observation baseline:
+
+SHA256:
+
+`d72df40932bae3f28b0eea8d6830ff1702903b89fe4852696ec83b22ca4af1ee`
+
+Integrity:
+
+`ok`
+
+Protected table counts:
+
+- fights: `339`
+- participants: `1234`
+- cooldowns: `643`
+- stakes: `185`
+- settlements: `80`
+- burns: `749`
+
+All L2-C isolated picker/queue tests left this baseline unchanged.
+
+### Local MouseFight backups created
+
+- `commands/mousefight.js.before-league-matchmaking-queue-policy-20260825-201459.bak`
+- `commands/mousefight.js.before-league-matchmaking-picker-20260825-213852.bak`
+- `commands/mousefight.js.before-league-matchmaking-picker-syntax-20260825-214213.bak`
+- `commands/mousefight.js.before-league-matchmaking-queue-entry-20260825-215521.bak`
+- `commands/mousefight.js.before-league-matchmaking-panel-enable-20260825-220137.bak`
+
+### Protected systems unchanged
+
+No approved L2-C work changed:
+
+- Fight Recovery state;
+- DSPOINC / SPOINC balances;
+- PVP escrow / settlement;
+- event burns / refunds;
+- champion rewards;
+- token payouts / airdrops;
+- Genesis ownership;
+- permanent Traits / Abilities;
+- Lab progression;
+- Genetic Item persistence;
+- staking;
+- authentication;
+- DB schema;
+- unrelated games.
+
+### Current live status
+
+**Production Discord presentation:** PASS  
+**My League Mice:** PASS  
+**Search picker:** PASS  
+**Mouse selection continuation:** BLOCKED SAFELY by old production API  
+**Runtime queue insertion in live Discord:** NOT YET VERIFIED  
+**Same-tier matcher:** NOT IMPLEMENTED  
+**Matchmaking PVP creation:** NOT IMPLEMENTED  
+**League Point award hook:** NOT IMPLEMENTED
+
+### Exact next step
+
+Deploy only the already-validated tracked protected API delta:
+
+`api/discord/mousefight-economy.php`
+
+together with this QUICK_STATUS continuity update.
+
+Deployment sequence:
+
+1. inspect focused Git status/diff;
+2. verify PHP syntax;
+3. verify staged files contain only the intended API + QUICK_STATUS;
+4. commit;
+5. push branch `render-deploy`;
+6. allow Render website/API deployment to complete;
+7. run authenticated production read-only `mouse_availability` contract test;
+8. verify no protected economy/Recovery mutation;
+9. retry Discord mouse selection;
+10. verify optional Genetic Item flow;
+11. verify runtime queue insertion;
+12. verify appropriate League row changes `0 searching → 1 searching`;
+13. test `Leave Queue`;
+14. verify row returns `1 searching → 0 searching`.
+
+Do not implement the same-tier matcher or `pvp_create` until this queue-only production integration is fully verified.
+
+**Standby:** Active.
+
+## 🐭🏆 MouseFight Leagues Expert 1.4 LIVE — Agent Sign-In
+
+**Agent / Version:** MouseFight Leagues Expert 1.4 LIVE
+**Project:** Narrrfs World 13.0
+**Agent System:** 26-specialist agent system
+**Branch:** `render-deploy`
+
+**Primary Scope:**
+Genesis League Matchmaking + NFT-bound Genesis League Points
+
+**Current Phase:**
+`L2-C — Interactive Exact-Tier Matchmaking Queue`
+
+**Canonical Continuity Source:**
+`12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+
+**Current inherited verified milestone:**
+`L2-C Matchmaking Availability Bridge Complete`
+
+**Immediate next development target:**
+`L2-C Interactive Genesis League Queue Entry`
+
+### Protected boundaries acknowledged
+
+I will not modify without explicit approval:
+
+* Fight Recovery
+* DSPOINC / SPOINC
+* PVP escrow / settlement
+* event burns / refunds
+* champion rewards
+* token payout / airdrop
+* Genesis ownership
+* permanent Traits / Abilities
+* Lab progression
+* Genetic Items persistence
+* staking
+* authentication
+* database migrations
+* deployment configuration
+* unrelated Narrrfs World systems
+
+### Working architecture acknowledged
+
+`League Power != Fight Power`
+
+`League classification != fightability`
+
+`League identity = token_id + collection`
+
+`Owner != League identity`
+
+`League Points != League Power`
+
+`League Points != Fight Power`
+
+`Runtime matchmaking queue != persisted fight`
+
+`Read-only availability check != NFT reservation`
+
+Real pairing must still revalidate through the existing authoritative PVP transaction path before a fight exists.
+
+### Current deployment/runtime state
+
+* L2-C matchmaking work: **local**
+* Matchmaking permanent-panel feature gate: **OFF**
+* Real matchmaking PVP creation: **NOT ACTIVE**
+* Discord bot: **unchanged / not restarted**
+* Production deployment: **not performed**
+* Protected economy/recovery systems: **unchanged**
+
+### Sign-In
+
+**Name / Role / Version:** MouseFight Leagues Expert 1.4 LIVE
+
+I accept the Narrrfs World Global Rules.
+
+**Accepted. Synchronized. Standby: Active.**
+
+**Exact next step:** Inspect the current verified `discord/commands/mousefight.js` interaction routing, matchmaking helpers, picker/loadout continuation patterns, and nearest callers before designing the smallest L2-C queue-entry patch.
+
+
+## 2026-08-25 — MouseFight Leagues 1.3 LIVE — L2-C Matchmaking Availability Bridge Complete
+
+**Agent / version:** MouseFight Leagues 1.3 LIVE  
+**Phase:** L2 — Genesis League Matchmaking + NFT-bound League Points  
+**Branch:** `render-deploy`  
+**Environment:** Local Windows/XAMPP development using downloaded-live DB snapshot  
+**Discord bot:** Existing local bot unchanged / not restarted  
+**Production status:** Current L2-C matchmaking work remains local and is not deployed  
+**Standby:** Active
+
+### Scope
+
+Continued implementation of the Genesis League matchmaking system for the permanent `#mousefights-leagues` Hub.
+
+Target player flow remains:
+
+`Search League Fight`
+→ select owned Genesis mouse
+→ verify published Genesis League
+→ verify current MouseFight availability
+→ optional Genetic Item loadout
+→ enter exact-tier runtime waiting queue
+→ live matchmaking panel updates
+→ later match into existing authoritative PVP flow.
+
+No real matchmaking PVP creation is active yet.
+
+### Matchmaking presentation foundation
+
+Local `discord/commands/mousefight.js` now contains the isolated matchmaking foundation:
+
+- permanent marker:
+  `NARRRFS_GENESIS_LEAGUE_MATCHMAKING_V1`
+- nine canonical runtime League queue buckets;
+- permanent matchmaking embed builder;
+- permanent Hub-message create/update architecture;
+- controls:
+  - `⚔️ Search League Fight`
+  - `❌ Leave Queue`
+  - `🐭 My League Mice`
+- local presentation image:
+  `public/img/searchleague.png`
+- image verified:
+  `2172 x 724 PNG`
+- matchmaking feature gate remains:
+  `MOUSEFIGHT_LEAGUE_MATCHMAKING_PANEL_ENABLED = false`
+
+The panel therefore cannot be published or interacted with yet.
+
+### Runtime queue boundary
+
+`mouseFightLeagueMatchmakingQueues` is runtime-only Discord state.
+
+Verified:
+
+- type = `Map`
+- League buckets = `9`
+- no SQLite persistence;
+- no queue entry created yet;
+- no PVP created;
+- no DSPOINC/SPOINC movement;
+- no Recovery action;
+- no permanent Genesis/Lab/Genetic Item mutation.
+
+Queue state remains intentionally separate from:
+
+- published League classification;
+- active MouseFight state;
+- PVP settlement;
+- Fight Recovery;
+- NFT progression;
+- League Points.
+
+### Availability investigation
+
+Verified that:
+
+`list-mousefight-mice.php`
+and
+`get-mousefight-profile.php`
+
+validate current Genesis ownership/profile/fitness, but do not independently block:
+
+- active Fight Recovery;
+- waiting/active fight participant reservation.
+
+The existing authoritative availability rules were found in:
+
+`api/discord/mousefight-economy.php`
+
+They use the established helpers for:
+
+- active mouse Recovery;
+- waiting/active fight reservation;
+- `token_id + collection` identity.
+
+Architectural decision:
+
+The matchmaking UX must use the same authoritative persisted availability rules instead of duplicating SQLite queries in Discord code.
+
+### Protected read-only availability API
+
+Explicit owner approval was received to modify the protected economy endpoint for one read-only action only.
+
+Added action:
+
+`mouse_availability`
+
+File:
+
+`api/discord/mousefight-economy.php`
+
+The action:
+
+- is authenticated;
+- supports Genesis collection only;
+- reuses existing Recovery/reservation SELECT helpers;
+- executes before `BEGIN IMMEDIATE`;
+- enables `PRAGMA query_only = ON`;
+- performs no INSERT/UPDATE/DELETE;
+- performs no escrow/burn/refund/settlement;
+- does not create or clear Fight Recovery.
+
+Existing transactional actions remained unchanged:
+
+- `event_join`
+- `event_cancel`
+- `event_complete_recovery`
+- `pvp_create`
+- `pvp_accept_settle`
+- `pvp_cancel`
+
+### Protected API validation
+
+PHP syntax:
+
+`api/discord/mousefight-economy.php` → PASS
+
+Router ordering:
+
+- `mouse_availability` branch: line `2745`
+- `BEGIN IMMEDIATE`: line `2768`
+- transactional switch: line `2776`
+
+Result:
+
+`PASS: mouse_availability is before BEGIN IMMEDIATE`
+
+Each existing protected transaction case remains present exactly once.
+
+Availability function safety grep:
+
+`PASS: no write/transaction calls in mouse_availability function`
+
+### Isolated local API test
+
+Downloaded-live DB snapshot before test:
+
+- hash:
+  `727ca7593eb2b215314b294128242847289efa46a78e8ccafa650794f1ad7ff5`
+- fights: `339`
+- participants: `1234`
+- cooldown rows: `643`
+- stakes: `185`
+- PVP settlements: `80`
+- burns: `749`
+
+Test results:
+
+Unauthenticated request:
+
+- HTTP `401`
+- `Unauthorized`
+
+Non-Genesis request:
+
+- HTTP `400`
+- correctly rejected
+
+Free Genesis mouse:
+
+`FRkkwNbYop4WuYcoNAcAFDrK5fabCpy8nctmCkTRD9ZF`
+
+Result:
+
+- HTTP `200`
+- `available = true`
+- no Recovery
+- no reservation
+
+Waiting/active reserved Genesis mouse:
+
+`F6axrvYPVeTAryHD9QTFBSwbVGWfJMhaqskeyDotKQoP`
+
+Result:
+
+- HTTP `200`
+- `available = false`
+- `blocked_reason = reservation`
+- reserved fight:
+  `mfevent_1787661846984_1inmd57`
+- fight status:
+  `waiting`
+- mode:
+  `admin_bracket_event`
+
+No currently active unexpired Recovery row existed in the downloaded snapshot, so the Recovery-blocked HTTP branch was not runtime-tested in this test.
+
+### Zero-write proof
+
+After all isolated API calls:
+
+- fights: `339 -> 339`
+- participants: `1234 -> 1234`
+- cooldowns: `643 -> 643`
+- stakes: `185 -> 185`
+- settlements: `80 -> 80`
+- burns: `749 -> 749`
+
+Downloaded-live DB SHA256 before:
+
+`727ca7593eb2b215314b294128242847289efa46a78e8ccafa650794f1ad7ff5`
+
+Downloaded-live DB SHA256 after:
+
+`727ca7593eb2b215314b294128242847289efa46a78e8ccafa650794f1ad7ff5`
+
+Result:
+
+`PASS: downloaded-live DB file hash unchanged`
+
+`PRAGMA integrity_check = ok`
+
+### Discord availability adapter
+
+Added to:
+
+`discord/commands/mousefight.js`
+
+Function:
+
+`checkMouseFightMouseAvailability(...)`
+
+The helper:
+
+- reuses existing `callMouseFightEconomyApi()`;
+- calls only `mouse_availability`;
+- verifies returned `token_id + collection`;
+- requires boolean `available`;
+- requires `transaction_recheck_required = true`;
+- returns Recovery/reservation information for matchmaking UX;
+- creates no fight;
+- modifies no queue;
+- writes no DB rows.
+
+JS syntax:
+
+- `commands/mousefight.js` → PASS
+- `index.js` → PASS
+
+Safety grep:
+
+`PASS: adapter contains no DB/fight/queue mutation calls`
+
+### JS → PHP integration proof
+
+The actual new JavaScript helper was tested against an isolated local PHP server using the downloaded-live DB.
+
+Free mouse result:
+
+- `available = true`
+- `authority = read_only_ux_snapshot`
+- `transactionRecheckRequired = true`
+
+Reserved mouse result:
+
+- `available = false`
+- `blockedReason = reservation`
+- correct waiting fight returned
+
+Node integration test:
+
+`rc = 0`
+
+Result:
+
+`PASS: JS availability adapter consumed the read-only PHP contract correctly.`
+
+DB hash again remained unchanged and integrity remained `ok`.
+
+### Important architecture rule
+
+The matchmaking availability check is only an early UX guard.
+
+It does NOT reserve the NFT and does NOT replace the authoritative availability check inside real PVP creation.
+
+Required future flow:
+
+queue search
+→ read-only availability check
+→ runtime waiting queue
+
+then when actually pairing:
+
+revalidate ownership
+→ revalidate published League
+→ revalidate availability
+→ existing authoritative `pvp_create`
+→ backend transaction checks availability again.
+
+### Protected systems unchanged
+
+No approved L2-C work changed:
+
+- DSPOINC / SPOINC balances;
+- PVP escrow / settlement;
+- event burns / refunds;
+- Fight Recovery creation/clearing;
+- Genesis ownership;
+- permanent Traits / Abilities;
+- Lab progression;
+- Genetic Items persistence;
+- staking;
+- champion rewards;
+- token payouts / airdrops;
+- authentication;
+- DB schema;
+- unrelated games.
+
+### Current unverified / unfinished
+
+Still not implemented:
+
+- active Search button routing;
+- matchmaking-specific mouse picker;
+- pagination for owners with more than 25 eligible mice;
+- matchmaking-specific Genetic Item continuation;
+- actual runtime queue insertion;
+- one-mouse-per-user enforcement;
+- queue timeout cleanup;
+- Leave Queue;
+- My League Mice;
+- immediate permanent-panel refresh after queue state changes;
+- same-tier matcher;
+- matchmaking PVP creation;
+- competitive matchmaking metadata handoff;
+- post-fight League Point award hook.
+
+Matchmaking panel feature gate remains OFF.
+
+### Exact next step
+
+Implement the next isolated L2-C queue-entry layer in `discord/commands/mousefight.js`:
+
+1. handle `⚔️ Search League Fight`;
+2. load fresh owned Genesis mice;
+3. attach current published V2 League identity;
+4. provide a paged private mouse picker;
+5. after mouse selection call `checkMouseFightMouseAvailability()`;
+6. reject Recovery/reservation-blocked mice;
+7. reuse existing Genetic Item loadout architecture with a dedicated `matchmaking_queue` continuation;
+8. insert only temporary runtime queue state;
+9. implement Leave Queue / My League Mice;
+10. refresh the permanent matchmaking panel after queue state changes;
+11. keep real PVP creation disabled until this queue-only layer passes focused testing.
+
+**Standby:** Active — L2-C interactive Genesis League queue next.
+
+## 2026-08-25 — Monthly Legend Sync Permission Issue Resolved
+
+**Agent / Version:** Leaderboard Monthly Legends Sync 1.1  
+**Scope:** Discord `/sync-legends` command verification and Monthly Legend leaderboard role display.  
+**Branch:** `render-deploy`  
+**Status:** Solved again after permission check.
+
+### Summary
+
+Monthly Legend leaderboard display was not broken in code.
+
+Verified layers:
+
+- `api/dev/get-leaderboard.php` still contains all six Monthly Legend role priorities.
+- `public/leaderboard.html` still contains the final Monthly Legend badge display logic.
+- `discord/commands/sync-legends.js` exists and passes syntax.
+- Local and live DB had fallen back to only three Monthly Legend rows.
+- `/sync-legends apply:false` initially worked after Discord admin permissions were corrected.
+- Preview found three missing rows:
+  - Monthly Cheese Runner Legend
+  - Monthly Labyrinth Blast Legend
+  - Monthly Glyph Legend
+- First apply attempt hit a Discord command timeout wrapper.
+- Second `/sync-legends apply:true` completed successfully.
+- Live leaderboard now displays the Monthly Legend roles correctly again.
+
+### Root Cause
+
+Discord permission/admin access was missing for the command user. Once corrected, the command worked.
+
+### Operational Reminder
+
+Monthly Legend maintenance flow:
+
+1. Ensure the command user has the required Discord admin/mod permission.
+2. Run `/sync-legends apply:false`.
+3. Confirm holders, missing rows, and stale rows.
+4. Run `/sync-legends apply:true`.
+5. Refresh `leaderboard.html`.
+6. Verify the six Monthly Legend DB rows.
+
+### Protected Systems Unchanged
+
+No changes to:
+
+- scores;
+- score sorting;
+- seasons;
+- DB schema / migrations;
+- DSPOINC / SPOINC;
+- staking;
+- Genesis ownership;
+- Lab progression;
+- Genetic Items;
+- MouseFight;
+- Fight Recovery;
+- rewards;
+- token payout / airdrop;
+- Discord role grants.
+
+**Standby:** Active.
+
+## 2026-08-24 — MouseFight Leagues 1.3 LIVE — L2-A2 Production Verification Complete
+
+**Agent / version:** MouseFight Leagues 1.3 LIVE  
+**Scope:** Production verification of Genesis League Points API and deployed League/leaderboard website updates.  
+**Branch:** `render-deploy`  
+**Status:** L2-A complete; L2-B/L2-C matchmaking next.
+
+### Production deployment verified
+
+Live smoke tests passed:
+
+- `leaderboard.html` -> HTTP `200`
+- `faq.html` -> HTTP `200`
+- `public/img/lab/pathofglory.png` -> HTTP `200`
+- unauthenticated `api/discord/mousefight-league-points.php` -> HTTP `401 Unauthorized`
+
+Authenticated production League Points read passed:
+
+- HTTP `200`
+- contract: `mousefight_genesis_league_points_v1`
+- `points_per_match = 1`
+- competitive source: `matchmaking`
+- lifetime points = `0`
+- lifetime awards = `0`
+- season ID = `16`
+- season name = `Season 14`
+- season points = `0`
+- season awards = `0`
+- recent awards = `[]`
+
+Direct LIVE runtime ledger verification:
+
+- `league_point_awards = 0`
+- `total_points = 0`
+- `PRAGMA integrity_check = ok`
+
+A later standalone CLI read of `tbl_seasons` returned transient SQLite `database is locked (5)` while production was active. This did not affect the authenticated API request, which had already successfully resolved active Season `16 / Season 14`. No DB write or retry mutation occurred.
+
+### L2-A final status
+
+L2-A1 production ledger migration: **PASS**  
+L2-A2 local syntax / rejection / +1 / idempotency tests: **PASS**  
+L2-A2 production authentication / read / empty-ledger verification: **PASS**
+
+No production League Point has been awarded yet.
+
+### Protected systems unchanged
+
+No changes to:
+
+- DSPOINC / SPOINC;
+- PVP escrow / settlement;
+- event burns / refunds;
+- Fight Recovery;
+- Genesis ownership;
+- permanent Traits / Abilities;
+- Lab progression;
+- Genetic Items;
+- staking;
+- champion rewards;
+- token payout / airdrop.
+
+### Exact next step
+
+Begin **L2-B / L2-C Genesis League Matchmaking** source inspection and implementation:
+
+1. verify permanent League Hub message/bootstrap path;
+2. verify button/router/custom-ID handling;
+3. verify owned Genesis mouse picker;
+4. verify existing inventory selection helpers;
+5. verify authoritative League lookup/revalidation;
+6. verify PVP creation/Accept/Decline handoff;
+7. add isolated runtime exact-tier queue;
+8. add third permanent `⚔️ GENESIS LEAGUE MATCHMAKING` Hub panel;
+9. do not alter protected economy or Fight Recovery paths.
+
+**Standby:** Active — Genesis League Matchmaking next.
+
+## 2026-08-24 — Monthly Legend Leaderboard Live Sync Solved
+
+**Agent / Version:** Leaderboard Monthly Legends Sync 1.0  
+**Scope:** Final live verification for Monthly Legend leaderboard badges and Discord role sync.  
+**Branch:** `render-deploy`  
+**Status:** Solved
+
+### Summary
+
+Monthly Legend leaderboard display is now solved locally and live.
+
+Final root cause of the local/live difference:
+
+- `leaderboard.html` was deployed correctly;
+- local file, local Apache-served HTML, and live HTML all had the final Monthly Legend display logic;
+- the remaining difference was the live/current `tbl_user_roles` sync state;
+- after running `/sync-legends`, the Discord Monthly Legend role holders synced into `tbl_user_roles`;
+- the leaderboard then displayed the intended badge behavior.
+
+### Final Behavior
+
+The leaderboard now shows:
+
+- crown beside any player with a Monthly Legend role;
+- normal role line as regular community role, such as `Holder` / `VIP Holder`;
+- Monthly Legend shown once only as the styled champion badge pill;
+- no duplicated plain Monthly Legend text under the name;
+- legend badge style consistent across leaderboard rows.
+
+### Discord Sync Command
+
+`/sync-legends` confirmed as the required monthly maintenance path.
+
+Use flow:
+
+1. `/sync-legends apply:false`
+2. verify holders / stale rows
+3. `/sync-legends apply:true`
+4. refresh leaderboard
+
+### Validation Passed
+
+Passed:
+
+- local browser display verified;
+- live served `leaderboard.html` verified to contain final logic;
+- `/sync-legends` fixed the data mismatch;
+- live leaderboard display confirmed working after sync;
+- `git diff --check -- public/leaderboard.html` previously passed;
+- inline JS syntax check previously passed.
+
+### Protected Systems Unchanged
+
+No changes to:
+
+- scores;
+- score sorting;
+- seasons;
+- DB schema / migrations;
+- DSPOINC / SPOINC;
+- staking;
+- Genesis ownership;
+- Lab progression;
+- Genetic Items;
+- MouseFight;
+- Fight Recovery;
+- rewards;
+- token payout / airdrop;
+- Discord role grants.
+
+### Final Status
+
+Solved and deployed.
+
+**Standby:** Active.
+
+## 2026-08-24 — MouseFight Leagues 1.3 LIVE — L2-A League Points Foundation Complete / L2 Matchmaking Approved Next
+
+**Agent / version:** MouseFight Leagues 1.3 LIVE  
+**Current phase:** L2 — Genesis League Matchmaking + NFT-bound League Points  
+**Branch:** `render-deploy`  
+**Primary local project:** `C:\xampp-server\htdocs\narrrfs-world`  
+**Discord runtime:** local Node bot; no L2 restart performed in this phase  
+**Production application:** `/var/www/html`  
+**Production runtime DB:** `/var/www/html/db/narrrf_world.sqlite`  
+**Production persistent DB:** `/data/narrrf_world.sqlite`
+
+### Scope completed
+
+L2-A established the permanent NFT-bound Genesis League Point foundation without changing League Power, Fight Power, Genesis Traits/Abilities, Lab progression, Genetic Items, DSPOINC/SPOINC, PVP escrow/settlement, event burns/refunds, Fight Recovery, staking, ownership, authentication, or token payout systems.
+
+League Point rule remains:
+
+- valid competitive Genesis League matchmaking win = `+1 League Point`;
+- League Points belong to `token_id + collection`;
+- League Points follow the NFT if ownership changes;
+- League Points do not contribute to League Power;
+- League Points do not contribute to Fight Power;
+- no retroactive points;
+- normal PVP does not award;
+- moderator Exact-Tier events do not award merely because League Mode is Exact;
+- search/join/accept/decline/cancel/abandon/round wins/reposts do not award;
+- initial competitive source is `matchmaking`.
+
+### L2-A1 — production League Point ledger
+
+LIVE Render schema migration completed successfully.
+
+Created table:
+
+`tbl_mousefight_league_point_awards`
+
+Fields:
+
+- `award_id INTEGER PRIMARY KEY AUTOINCREMENT`
+- `fight_id TEXT NOT NULL`
+- `token_id TEXT NOT NULL`
+- `collection TEXT NOT NULL DEFAULT 'genesis'`
+- `league_tier_key TEXT NOT NULL`
+- `source TEXT NOT NULL`
+- `points_awarded INTEGER NOT NULL DEFAULT 1`
+- `season_id INTEGER NOT NULL`
+- `season_name TEXT NOT NULL`
+- `awarded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`
+
+Indexes:
+
+- `idx_mousefight_league_points_unique_fight` — UNIQUE `fight_id`
+- `idx_mousefight_league_points_token` — `(token_id, collection)`
+- `idx_mousefight_league_points_season_token` — `(season_id, token_id, collection)`
+
+No mutable total-points column exists. Lifetime and season totals are derived from the immutable award ledger.
+
+### LIVE migration evidence
+
+Pre/post migration protected MouseFight counts remained unchanged during the migration transaction:
+
+- `tbl_mousefights`: `337 -> 337`
+- `tbl_mousefight_participants`: `1226 -> 1226`
+- `tbl_mousefight_rounds`: `2069 -> 2069`
+- `tbl_mousefight_dspoinc_stakes`: `185 -> 185`
+- `tbl_mousefight_dspoinc_pvp_settlements`: `80 -> 80`
+- `tbl_mousefight_dspoinc_burns`: `743 -> 743`
+- `tbl_mousefight_mouse_cooldowns`: `633 -> 633`
+
+Post-migration:
+
+- runtime DB integrity: `ok`
+- persistent DB integrity: `ok`
+- League Point table count: `1`
+- League Point index count: `3`
+- League Point award rows: `0`
+- active season: `season_id 16 / Season 14`
+
+Authoritative pre-League-Points rollback retained:
+
+`/data/narrrf_world.before-league-points-20260824-145615.sqlite`
+
+Render persistence routing was verified:
+
+`/data/narrrf_world.sqlite`
+→ copied by `scripts/render-startup.sh`
+→ `/var/www/html/db/narrrf_world.sqlite`
+
+The live application/API writes to `/var/www/html/db/narrrf_world.sqlite`.
+
+Operational rule: immediately before a Render deploy/restart, synchronize the current runtime DB back to `/data` using the verified persistence backup path so legitimate live writes are not rolled back by startup restoration.
+
+### Downloaded-live DB verification
+
+Fresh production DB was downloaded to:
+
+`C:\xampp-server\htdocs\narrrfs-world\db\narrrf_world.sqlite`
+
+Downloaded-live verification passed:
+
+- `PRAGMA integrity_check = ok`
+- League Point table = `1`
+- indexes = `3`
+- award rows = `0`
+- Season 14 / `season_id 16` active
+- existing MouseFight counts matched production snapshot
+- recent finished PVP winner token matched persisted Genesis participant with `status=winner` and `final_rank=1`.
+
+### L2-A2 — League Points API
+
+New endpoint:
+
+`api/discord/mousefight-league-points.php`
+
+Contract:
+
+`mousefight_genesis_league_points_v1`
+
+Actions:
+
+- `award_completed_match`
+- `get_mouse_points`
+
+Auth follows verified MouseFight Discord API convention using:
+
+- `DISCORD_BOT_SECRET`
+- `DISCORD_SECRET`
+- `Authorization` header
+
+Write action uses:
+
+`BEGIN IMMEDIATE -> guarded verification/write -> COMMIT`
+
+with rollback on failure.
+
+The award endpoint accepts only `fight_id` from the caller and derives authoritative winner, NFT identity, League tier, competitive provenance, and season from persisted DB state.
+
+Required competitive provenance:
+
+- `league_mode = exact`
+- canonical `league_tier_key`
+- `league_mode_version = mousefight_genesis_league_mode_v1`
+- `league_competitive = true`
+- `league_source = matchmaking`
+- `league_points_enabled = true`
+- `league_competitive_version = mousefight_genesis_league_competitive_v1`
+
+Required persisted result:
+
+- fight exists;
+- `status = finished`;
+- `mode = pvp_challenge`;
+- `winner_user_id` exists;
+- `winner_token_id` exists;
+- exactly one matching Genesis winner participant exists;
+- participant user matches fight winner;
+- participant `status = winner`;
+- participant `final_rank = 1`;
+- exactly one final persisted winner exists;
+- no conflicting previous award exists.
+
+Unique `fight_id` makes retries idempotent.
+
+### L2-A2 validation
+
+PHP syntax:
+
+- `api/discord/mousefight-league-points.php` PASS
+- `api/discord/mousefight-economy.php` PASS
+
+Protected-system safety grep:
+
+PASS — no economy, settlement, stake, burn/refund, Recovery, staking, Genesis/Lab, or Genetic Item table writes were introduced.
+
+Corrected isolated runtime test against a temporary copy of the downloaded-live DB:
+
+- authenticated `get_mouse_points` -> HTTP `200`
+- lifetime points = `0`
+- Season 14 points = `0`
+- active season resolved as `16 / Season 14`
+- historical normal PVP -> HTTP `400`
+- rejection: `This fight is not an Exact Tier League fight.`
+- temporary ledger remained `0`
+- authoritative downloaded-live ledger remained `0`
+- DB integrity remained `ok`
+
+Isolated positive/idempotency test against temporary DB only:
+
+Test fight:
+
+`mfpvp_1787503953030_3wmgue8`
+
+Temporary provenance only was changed to qualifying matchmaking data.
+
+First API request:
+
+- HTTP `200`
+- `awarded = true`
+- `idempotent = false`
+- `points_awarded = 1`
+- tier = `silver`
+- source = `matchmaking`
+- Season `16 / Season 14`
+- lifetime points = `1`
+- season points = `1`
+
+Second identical request:
+
+- HTTP `200`
+- `awarded = false`
+- `idempotent = true`
+- award rows remained `1`
+- total points remained `1`
+
+Temporary DB integrity remained `ok`.
+
+Real downloaded-live DB remained:
+
+- integrity `ok`
+- League Point awards `0`
+
+### Current deployment package
+
+Approved staged deployment set:
+
+- `api/dev/get-leaderboard.php`
+- `api/discord/mousefight-league-points.php`
+- `public/faq.html`
+- `public/img/lab/pathofglory.png`
+- `public/leaderboard.html`
+
+Staged diff check passed.
+
+League Points endpoint required explicit `git add -f` because root `.gitignore` contains broad `discord/` rule matching `api/discord/...`.
+
+`12.0/ACTIVE_STATUS/QUICK_STATUS.md` remained intentionally unstaged during the five-file package validation.
+
+Deployment has been explicitly approved by the owner.
+
+**Production commit/push/deployment confirmation and production smoke-test output are still pending in this status block and must not be claimed until observed.**
+
+### L2 Matchmaking — approved next direction
+
+Next feature is a permanent third panel underneath the two existing messages in Discord channel:
+
+`1540182398472421516` — `#mousefights-leagues`
+
+Target UX:
+
+`⚔️ GENESIS LEAGUE MATCHMAKING`
+
+with live exact-tier queue counts for all nine Leagues and primary controls:
+
+- `⚔️ Search League Fight`
+- `❌ Leave Queue`
+- `🐭 My League Mice`
+
+Search flow:
+
+Discord user
+→ private/ephemeral Genesis mouse picker
+→ choose one currently owned mouse
+→ authoritative League/current availability revalidation
+→ conditional inventory picker when matchmaking inventory is enabled
+→ enter exact published League queue
+→ public Hub queue counts update immediately
+→ compatible same-tier opponent found
+→ both NFTs revalidated
+→ existing authoritative PVP creation path
+→ existing Accept/Decline path
+→ existing combat/economy/Recovery path
+→ participant winner/final rank persistence
+→ League Points API
+→ winner NFT receives exactly `+1`.
+
+Queue design:
+
+- runtime-only V1;
+- nine exact-tier buckets;
+- `token_id + collection` NFT identity;
+- no same-user matching;
+- one queued mouse per user recommended;
+- no cross-tier borrowing;
+- no DB/economy write while merely searching;
+- restart clears runtime queue;
+- panel must recover cleanly to zero after restart;
+- public counts update on join/leave/match/timeout/invalidation.
+
+The frontend/Discord panel displays state only. Authoritative League classification, ownership, availability, final fight state, economy, Recovery, and League Point qualification remain backend-controlled.
+
+### Matchmaking implementation phases
+
+- **L2-B:** competitive provenance wiring into matchmaking-created PVP metadata.
+- **L2-C:** isolated runtime exact-tier matchmaking queues.
+- **L2-D:** permanent live matchmaking Hub panel + controls.
+- **L2-E:** ephemeral owned-mouse picker + conditional inventory selection.
+- **L2-F:** matcher -> existing authoritative Exact-Tier PVP challenge path.
+- **L2-G:** post-persistence League Point award hook.
+- **L2-H:** League Points displayed in fighter/results/League views and later leaderboard.
+
+Recommended initial matchmaking defaults pending final owner confirmation:
+
+- Exact Tier only;
+- Battle Mode: Champion;
+- match format: BO3;
+- wager: `0 DSPOINC`;
+- token prize: none;
+- League win reward: `+1 League Point`;
+- one active queued mouse per user;
+- queue timeout: 30 minutes;
+- Recovery: 15 minutes;
+- all named League mice may search regardless of League strength, subject to current availability/Recovery;
+- inventory selection occurs only when matchmaking inventory is enabled.
+
+### Protected systems unchanged
+
+No approved L2 work changed:
+
+- DSPOINC/SPOINC balances;
+- PVP escrow/settlement logic;
+- event burns/refunds;
+- Fight Recovery;
+- champion reward logic;
+- token payout/airdrop;
+- Genesis ownership;
+- permanent Traits/Abilities;
+- Lab progression;
+- Genetic Items;
+- staking;
+- authentication;
+- unrelated games.
+
+### Exact next step
+
+1. Complete the already-approved five-file Render commit/push/deployment.
+2. Immediately before Render restart/deploy, synchronize current runtime DB `/var/www/html/db/narrrf_world.sqlite` -> persistent `/data/narrrf_world.sqlite` using the verified backup route.
+3. Verify production leaderboard, FAQ, Path of Glory image, and League Points endpoint.
+4. Confirm production League Point ledger remains `0`.
+5. Begin L2-B/L2-C source inspection in `discord/commands/mousefight.js`.
+6. Verify existing Hub message/bootstrap helpers, interaction router/custom IDs, League API/picker helpers, inventory helpers, PVP challenge builder, and message ordering before patching.
+7. Implement the smallest runtime matchmaking foundation without changing protected economy/Recovery systems.
+
+**Standby:** Active — L2 Matchmaking next.
+
+## 2026-08-24 — Monthly Legend Leaderboard Display Finalized Locally
+
+**Agent / Version:** Leaderboard Monthly Legends Sync 1.0  
+**Scope:** Final local UI pass for Monthly Legend leaderboard role display and Discord sync support.  
+**Branch:** `render-deploy`  
+**Local project root:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Primary files:**  
+- `api/dev/get-leaderboard.php`
+- `public/leaderboard.html`
+- `discord/commands/sync-legends.js`
+
+### Summary
+
+Monthly Legend leaderboard display is now locally working as planned.
+
+The display rule is finalized:
+
+- player name shows crown if the user has any Monthly Legend role;
+- normal role line falls back to regular community role such as `Holder` / `VIP Holder`;
+- Monthly Legend appears once only as the styled champion badge pill;
+- no duplicated plain Monthly Legend role text under the name.
+
+### Verified Monthly Legend Holders
+
+- `946199839111266354` — cryptime — Monthly Tetris Legend + Monthly Snake Legend
+- `328601656659017732` — narrrf — Monthly Cheese Invaders Legend
+- `485210331983904785` — fohrerslayer — Monthly Cheese Runner Legend
+- `1090025975913390160` — azizanthegr8 — Monthly Labyrinth Blast Legend
+- `968457596770066432` — damistare / DaMistaRe — Monthly Glyph Legend
+
+### Local Validation Passed
+
+Passed:
+
+- `patch-leaderboard-monthly-legend-single-pill-v1.py`
+- file did not collapse into literal `\n` text
+- `grep -n "\\\\n<html" public/leaderboard.html` returned nothing
+- `git diff --check -- public/leaderboard.html` passed
+- inline JavaScript extraction wrote 5 script blocks
+- `node --check .leaderboard-inline-check.js` passed
+- local browser check passed visually
+
+### Discord Sync Command Status
+
+`discord/commands/sync-legends.js` exists locally.
+
+Command behavior:
+
+- `/sync-legends apply:false` preview mode passed
+- found 6 Discord holders
+- found 6 synced DB rows
+- stale rows: 0
+- `/sync-legends apply:true` remains available for future monthly sync after preview confirmation
+
+### Protected Systems Unchanged
+
+No changes to:
+
+- scores;
+- sorting;
+- seasons;
+- DB schema / migrations;
+- DSPOINC / SPOINC;
+- staking;
+- Genesis ownership;
+- Lab progression;
+- Genetic Items;
+- MouseFight;
+- Fight Recovery;
+- rewards;
+- token payout / airdrop;
+- Discord role grants.
+
+### Still Unverified
+
+- production deployment not pushed yet;
+- production UI not verified yet;
+- live `/sync-legends apply:true` not run after this final UI patch.
+
+### Exact Next Step
+
+Review focused diff, then commit/push only after approval:
+
+`git diff -- api/dev/get-leaderboard.php public/leaderboard.html discord/commands/sync-legends.js`
+
+**Standby:** Active.
+
+## 2026-08-24 — Monthly Legend Leaderboard Role Display + Discord Sync Command Follow-Up
+
+**Agent / Version:** Leaderboard Monthly Legends Sync 1.0  
+**Scope:** Monthly Legend role display on `leaderboard.html` and Discord bot sync command for manually awarded monthly game legend roles.  
+**Branch:** `render-deploy`  
+**Local project root:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Discord bot path:** `/c/xampp-server/htdocs/narrrfs-world/discord`
+
+### Summary
+
+Monthly Legend role display work continued after confirming the leaderboard page reads role data from `tbl_user_roles`, not directly from Discord role IDs.
+
+The six verified Monthly Legend Discord role holders are:
+
+- `946199839111266354` — cryptime — Monthly Tetris Legend
+- `946199839111266354` — cryptime — Monthly Snake Legend
+- `328601656659017732` — narrrf — Monthly Cheese Invaders Legend
+- `485210331983904785` — fohrerslayer — Monthly Cheese Runner Legend
+- `1090025975913390160` — azizanthegr8 — Monthly Labyrinth Blast Legend
+- `968457596770066432` — damistare / DaMistaRe — Monthly Glyph Legend
+
+Render/live `tbl_user_roles` was manually backfilled and then the live DB was downloaded locally. Local DB now shows all six Monthly Legend rows.
+
+### Files Changed Locally
+
+- `api/dev/get-leaderboard.php`
+  - Added missing Monthly Legend roles to backend role priority:
+    - Monthly Cheese Runner Legend
+    - Monthly Labyrinth Blast Legend
+    - Monthly Glyph Legend
+
+- `public/leaderboard.html`
+  - Added frontend Monthly Legend detection for:
+    - Cheese Runner
+    - Labyrinth Blast
+    - Glyph
+  - Added role colors and champion badge labels for the new roles.
+  - Added Glyph leaderboard path support.
+  - Pending/next patch: global display helper so any player with a Monthly Legend role shows that role beside their name anywhere they appear on `leaderboard.html`.
+
+- `discord/commands/sync-legends.js`
+  - New admin/mod-only slash command:
+    - `/sync-legends apply:false` preview mode
+    - `/sync-legends apply:true` DB write mode
+  - Reads the six verified Discord role IDs.
+  - Fetches actual Discord role holders.
+  - Syncs only the six Monthly Legend role names into `tbl_user_roles`.
+  - Does not grant/remove Discord roles.
+
+### Discord Sync Validation
+
+`/sync-legends apply:false` was tested successfully.
+
+Preview result:
+
+- Discord holders: `6`
+- Rows that would be synced: `6`
+- Stale rows that would be removed: `0`
+- Final DB rows matched the six verified Monthly Legend holders.
+
+### Protected Systems Unchanged
+
+No changes to:
+
+- score tables;
+- score sorting;
+- DSPOINC/SPOINC;
+- staking;
+- Genesis ownership;
+- Lab progression;
+- Genetic Items;
+- MouseFight;
+- Fight Recovery;
+- rewards;
+- token payout / airdrop;
+- DB schema / migrations;
+- deployment config.
+
+### Validation Status
+
+Passed:
+
+- Render DB Monthly Legend rows verified.
+- Local downloaded DB Monthly Legend rows verified.
+- Discord role holders verified by read-only role-holder script.
+- `/sync-legends apply:false` preview passed.
+- Bot command pattern verified from existing `commands/*.js` loader and `execute(interaction, queryDb)` structure.
+
+Pending:
+
+- Run `python patch-leaderboard-global-monthly-legend-display-v1.py`.
+- Run `git diff --check -- public/leaderboard.html`.
+- Run inline JS syntax check via `.leaderboard-inline-check.js`.
+- Hard refresh local `leaderboard.html`.
+- Verify Monthly Legend role text appears beside each legend holder anywhere their name appears on leaderboard page.
+- After local UI verification, commit/push approved files.
+
+### Exact Next Step
+
+Execute:
+
+`python patch-leaderboard-global-monthly-legend-display-v1.py`
+
+Then run path-limited diff checks and inline JS syntax check before browser validation.
+
+**Standby:** Active.
+
+## 2026-08-22 — SPOINC Buy Phase 1E Guarded Abandoned Cleanup Deployed
+
+**Agent / Version:** SPOINC Bridge Safety 1.0  
+**Scope:** Guarded cleanup for abandoned pre-broadcast Gensuki SPOINC buy intents.  
+**Branch:** `render-deploy`  
+**Local project root:** `/c/xampp-server/htdocs/narrrfs-world`  
+**Production site:** `https://narrrfs.world`
+
+### Summary
+
+Phase 1E was implemented, committed, pushed, and production-smoke-tested.
+
+This phase adds a guarded backend cleanup path for SPOINC buy attempts where the Gensuki buy payload cannot be decoded/prepared/signed/broadcast by the wallet before a usable Solana signature is returned to the page.
+
+Example trigger class:
+
+- `encoding overruns Uint8Array`
+- transaction deserialize failure
+- Phantom/signing/pre-broadcast failure
+- wallet rejection / wallet preparation failure before Narrrfs receives a usable transaction signature
+
+### Files Changed
+
+- `api/partner/spoinc/fail-abandoned-buy-intent.php`
+- `public/swap-lab.html`
+
+### Commits
+
+- `fa173fa` — `Improve SPOINC buy wallet failure message`
+- `9923e3b` — `Add guarded SPOINC buy abandoned cleanup`
+
+### Backend Change
+
+New endpoint added:
+
+- `api/partner/spoinc/fail-abandoned-buy-intent.php`
+
+The endpoint is POST-only and guards abandoned buy cleanup with these requirements:
+
+1. request must include a valid local `intent_id`;
+2. session/user must match the local buy intent owner;
+3. route must be one of:
+   - `SOL_TO_SPOINC`
+   - `EMPIRE_TO_SPOINC`
+   - `FOOK_TO_SPOINC`
+4. `SPOINC_TO_DSPOINC` is not allowed;
+5. local intent must not already be closed;
+6. local intent must have no DSPOINC/SPOINC ledger movement fields;
+7. local intent must have an `idempotency_id`;
+8. backend looks up Gensuki transaction by idempotency;
+9. backend extracts Gensuki transaction hash server-side;
+10. Solana RPC must return safe `not_found`;
+11. JSON-RPC errors and missing `result.value` are treated as `rpc_error` and blocked;
+12. only then Narrrfs sends Gensuki `/confirm` with status `failed`;
+13. local intent is marked failed with no ledger movement.
+
+### Frontend Change
+
+`public/swap-lab.html` now calls the new cleanup endpoint only inside the pre-broadcast failure branch.
+
+Customer-facing results:
+
+- success:
+  - `✅ Pending Gensuki buy row was safely closed as failed.`
+- blocked / not cleaned:
+  - `⚠️ Pending row cleanup needs support review: ...`
+
+The page still clearly states:
+
+- wallet transaction was not completed;
+- nothing was confirmed on Solana from this page action;
+- no DSPOINC was credited or deducted;
+- no local bridge settlement happened.
+
+### Validation Passed
+
+Local validation:
+
+- PHP syntax:
+  - `/c/xampp-server/php/php.exe -l api/partner/spoinc/fail-abandoned-buy-intent.php`
+  - PASS
+- inline JS syntax:
+  - extracted 5 inline scripts from `public/swap-lab.html`
+  - `node --check .swap-lab-inline-check.js`
+  - PASS
+- local missing-intent block test:
+  - PASS
+  - `gensuki_confirm_called: false`
+  - `dspoinc_credit_performed: false`
+  - `dspoinc_debit_performed: false`
+  - `local_bridge_settlement_performed: false`
+- local fake-intent block test:
+  - PASS
+  - `gensuki_confirm_called: false`
+  - `dspoinc_credit_performed: false`
+  - `dspoinc_debit_performed: false`
+  - `local_bridge_settlement_performed: false`
+- staged safety grep:
+  - PASS
+  - no score writes
+  - no DSPOINC table writes
+  - no ledger movement true path
+  - no complete-status path added
+- `git diff --check`:
+  - PASS
+
+Production smoke validation:
+
+- endpoint deployed:
+  - `https://narrrfs.world/api/partner/spoinc/fail-abandoned-buy-intent.php`
+- empty/missing intent request blocked:
+  - PASS
+  - `intent_id is required.`
+  - `gensuki_confirm_called: false`
+  - `dspoinc_credit_performed: false`
+  - `dspoinc_debit_performed: false`
+  - `local_bridge_settlement_performed: false`
+- `https://narrrfs.world/swap-lab.html`
+  - HTTP `200 OK`
+  - PASS
+
+### Protected Systems Unchanged
+
+No changes to:
+
+- DSPOINC credit logic;
+- DSPOINC debit logic;
+- SPOINC_TO_DSPOINC settlement;
+- Gensuki complete-confirm path;
+- score tables;
+- staking;
+- MouseFight;
+- Fight Recovery;
+- Genesis ownership;
+- Lab progression;
+- rewards;
+- token payout / airdrop;
+- DB schema / migrations;
+- deployment config.
+
+### Important Safety Boundary
+
+This Phase 1E cleanup is not a general transaction resolver.
+
+It only handles abandoned buy intents where the wallet/signing/decode path fails before a usable Solana signature is returned, and the server independently verifies that the Gensuki transaction hash is `not_found` on Solana.
+
+RPC errors, pending-on-chain results, complete-on-chain results, missing Gensuki hashes, unsupported routes, and unrelated claim routes are blocked.
+
+### Still Unverified
+
+- Real browser pre-broadcast failure path on production.
+- Real fresh Gensuki pending-row cleanup after another wallet/decode failure.
+- No forced real payment test was performed.
+
+### Exact Next Step
+
+Passively monitor the next real SPOINC buy pre-broadcast failure. If the customer hits the same wallet/decode error again, verify whether the UI shows:
+
+- `✅ Pending Gensuki buy row was safely closed as failed.`
+
+or:
+
+- `⚠️ Pending row cleanup needs support review: ...`
+
+Then inspect the matching local intent and Gensuki pending queue before any further cleanup changes.
+
+**Standby:** Active.
+
+## 2026-08-22 — MouseFight Genesis League Daily Automation LIVE / Snapshot #005 End-to-End Verified
+
+### Agent / Scope
+
+**Agent / Version:** MouseFight Leagues 1.3 LIVE  
+**Project:** Narrrfs World 13.0  
+**Branch:** `render-deploy`  
+**Production correction commit:** `4ee491e` — `fix: activate Genesis League scheduler with bounded retention`  
+**Previous automation commit:** `8103dac` — `feat: automate daily Genesis League snapshots`  
+**Canonical QUICK_STATUS:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+
+**Scope completed:**
+
+- corrected the actual Render startup entrypoint;
+- preserved exact immutable historical snapshot bytes;
+- activated the Genesis League daily scheduler on the real Render startup path;
+- added bounded persistent snapshot retention;
+- verified production `/data` bootstrap;
+- created and validated the first real automatic production snapshot `#005`;
+- verified the production V2 API serves snapshot `#005`;
+- verified the existing local Discord bot automatically detected and announced snapshot `#005`;
+- no manual Discord bot restart was required.
+
+---
+
+### Git / Deployment State
+
+Correction commit:
+
+```text
+4ee491e84425a0fd99012cff674f7d7b11321676
+fix: activate Genesis League scheduler with bounded retention
+
+## 2026-08-22 — MouseFight Genesis League Daily Automation Deployment Follow-Up
+
+**Agent / Version:** MouseFight Leagues 1.3 LIVE  
+**Scope:** Genesis League V2 daily immutable snapshot production automation  
+**Branch:** `render-deploy`  
+**Deployment Commit:** `8103dac` — `feat: automate daily Genesis League snapshots`
+
+### Deployment Status
+
+- User confirmed commit `8103dac` was deployed to Render production.
+- Deployment was performed after the full local staging / validation gates passed.
+- This QUICK_STATUS update records the deployment report only.
+- Post-deployment Render runtime verification has **not yet been performed in this follow-up** and must not be inferred from the successful local tests.
+
+### Production Automation Added
+
+The deployed design provides automatic daily Genesis League snapshot publication from the paid Render web service.
+
+Expected runtime flow:
+
+`Render web service start`
+→ `start.sh`
+→ persistent League snapshot bootstrap
+→ `mousefight-league-daily-loop.sh`
+→ wait until `02:00 UTC`
+→ execute `mousefight-league-v2-shadow-daily.py`
+→ create next immutable V2 snapshot under persistent `/data/mousefight-leagues`
+→ V2 League API serves newest valid snapshot
+→ local Discord bot detects new snapshot sequence
+→ Genesis League Daily standings / movement post is published once.
+
+This does **not** require a daily Render restart or redeploy.
+
+### Deployed Files
+
+Commit `8103dac` contains exactly these 9 production files:
+
+- `Dockerfile`
+- `start.sh`
+- `api/leaderboard/get-mousefight-leagues-v2.php`
+- `scripts/mousefight-league-daily-loop.sh`
+- `league-audit/mousefight-league-v2-shadow-baseline.py`
+- `league-audit/mousefight-league-v2-shadow-daily.py`
+- `league-audit/mousefight-leagues-v2-shadow-snapshot-001.json`
+- `league-audit/mousefight-leagues-v2-shadow-snapshot-002.json`
+- `league-audit/mousefight-leagues-v2-shadow-snapshot-003.json`
+
+Existing tracked authoritative snapshot:
+
+- `league-audit/mousefight-leagues-v2-shadow-snapshot-004.json`
+
+### Verified Local Runtime Evidence Before Deployment
+
+The complete isolated daily publication path was tested locally against the downloaded-live DB snapshot in **READ ONLY** mode.
+
+Temporary publication result:
+
+- previous snapshot: `#004`
+- temporary generated snapshot: `#005`
+- sequence: `5`
+- previous named mice: `342`
+- current named mice: `345`
+- current distinct owners: `56`
+- current default MouseFight-ready mice: `313`
+- promotions: `5`
+- relegations: `0`
+- pending movements: `2`
+- new named mice: `3`
+- removed named mice: `0`
+- positive permanent-power changes: `162`
+- negative permanent-power changes: `0`
+- maximum positive gain: `7`
+
+Temporary #005 was deleted after validation.
+
+Real local `league-audit` snapshot #005 was **not created** during testing.
+
+### Source Contract Verified
+
+Current V1 source contract verified:
+
+- `version = mousefight_genesis_leagues_v1`
+- `read_only = true`
+- `identity = token_id_plus_collection`
+- Genetic Items excluded from League Power
+- temporary battle-mode power excluded
+- fight results excluded from League classification
+- League movement remains based on current permanent League Power.
+
+### Snapshot / Consumer Contract Verified
+
+Published V2 snapshots use top-level:
+
+`movements`
+
+with:
+
+- `promotions`
+- `relegations`
+- `pending`
+- `new_mice`
+- `removed_mice`
+
+The V2 API validates the `movements` contract.
+
+Discord `commands/mousefight.js` was verified to consume:
+
+- `leagueData.movements`
+- `movements.promotions`
+- `movements.relegations`
+- `movements.pending`
+- `movements.new_mice`
+- `movements.removed_mice`
+
+Verified Discord daily functions include:
+
+- `buildMouseFightLeagueDailyMarker`
+- `readMouseFightLeagueDailyState`
+- `writeMouseFightLeagueDailyState`
+- `buildMouseFightLeagueDailyEmbed`
+- `findExistingMouseFightLeagueDailyMessage`
+- `monitorMouseFightLeagueDailySnapshot`
+- `startMouseFightLeagueDailyMonitoring`
+
+`discord/index.js` starts the League daily monitoring flow.
+
+### Persistence / Scheduling
+
+Production target:
+
+- web application: `/var/www/html`
+- live runtime DB: `/var/www/html/db/narrrf_world.sqlite`
+- persistent League snapshots: `/data/mousefight-leagues`
+- daily schedule: `02:00 UTC`
+- minimum free-space safety floor: `102400 KB`
+- publication retry after failure: `15 minutes`
+- duplicate same-day publication protection: enabled
+- local publication lock: enabled
+- immutable prior-snapshot SHA chain: preserved.
+
+Docker package verification confirmed:
+
+`COPY ./scripts /var/www/html/scripts`
+
+matches:
+
+`LEAGUE_DAILY_LOOP="/var/www/html/scripts/mousefight-league-daily-loop.sh"`
+
+### Local Validation Passed Before Deployment
+
+- staged diff whitespace check: PASS
+- staged/working production files matched: PASS
+- Python syntax: PASS
+- PHP syntax: PASS
+- daily loop Bash syntax: PASS
+- `start.sh` Bash syntax: PASS
+- frozen baseline SHA256: PASS
+- immutable snapshot #001 SHA256: PASS
+- immutable snapshot #002 SHA256: PASS
+- immutable snapshot #003 SHA256: PASS
+- immutable snapshot #004 SHA256: PASS
+- isolated persistent bootstrap: PASS
+- isolated #004 → #005 publication: PASS
+- previous-snapshot SHA chain: PASS
+- downloaded-live local SQLite DB SHA before/after: IDENTICAL
+- protected-write implementation grep: PASS
+- exact staged production scope: 9 files
+- unrelated dirty files remained outside deployment commit.
+
+### Protected Systems Unchanged
+
+No approved change was made to:
+
+- Fight Recovery
+- DSPOINC / SPOINC
+- PVP escrow / settlement
+- event burns / refunds
+- champion rewards
+- token payout / airdrop
+- Genesis ownership
+- permanent Traits / Abilities
+- Lab progression
+- Genetic Items
+- staking
+- authentication
+- DB schema / migrations
+- unrelated games.
+
+The daily League publisher is read-only with respect to SQLite / Genesis / Lab / economy state and publishes snapshot files only.
+
+### Still Unverified After Deployment
+
+The following must remain marked **UNVERIFIED** until checked directly on Render / live API:
+
+- Render build completed from exact commit `8103dac`
+- `python3` available in deployed container
+- production publisher and baseline files present
+- `/data/mousefight-leagues` bootstrapped with snapshots #001-#004
+- daily background scheduler process active
+- environment exported to Apache for persistent snapshot directory
+- production V2 API reading `/data/mousefight-leagues`
+- first real production snapshot #005 creation
+- live API sequence increment from #004 to #005
+- first post-deployment Discord daily movement announcement
+- Discord checkpoint increment to sequence `5`.
+
+Do not claim these as live-verified until matching evidence is collected.
+
+### Exact Next Step
+
+When work resumes:
+
+1. Open the Render shell for `narrrfs-world-portal`.
+2. Verify deployed commit / runtime files.
+3. Verify Python / PHP executables.
+4. Inspect `/data/mousefight-leagues` read-only.
+5. Verify scheduler process / startup logs.
+6. Check live V2 API sequence and population.
+7. Decide whether to wait for the automatic `02:00 UTC` publication or perform an explicitly approved first-production `--run-once`.
+8. Verify resulting live snapshot / API / Discord checkpoint and daily post.
+
+### Standby
+
+**MouseFight Leagues 1.3 LIVE — Standby: Active**
+
+Deployment reported complete by user.  
+Local validation complete.  
+Protected systems unchanged.  
+Post-deployment live verification remains the next controlled gate.
+
+## 2026-08-21 — MouseFight League Mode Phase 1J Local Validation Complete / Runtime Deployment Next
+
+### Agent / Scope
+
+- Agent: **MouseFight Leagues 1.3 LIVE**
+- Project: **Narrrfs World 13.0**
+- Branch: `render-deploy`
+- Local Discord source:
+  - `/c/xampp-server/htdocs/narrrfs-world/discord/commands/mousefight.js`
+- Approved scope:
+  - League Mode `OFF / MINIMUM / EXACT`;
+  - PVP challenges;
+  - moderator bracket events;
+  - persistence through existing `metadata_json`;
+  - strict League validation before protected economy / combat / Recovery paths;
+  - no DB schema migration.
+
+### Phase 1J Local Source Status
+
+Patched `mousefight.js` SHA256:
+
+`b5ba311488be0eadaa30076e0ae7d111bc9b8639baba24e7849c6dfb72c57061`
+
+Validated:
+
+```text
+mousefight.js syntax: PASS
+index.js syntax: PASS
+
+/mousefight challenge:
+- league_mode: off / minimum / exact
+- league_tier: 9 Genesis Leagues
+
+/mousefight event:
+- league_mode: off / minimum / exact
+- league_tier: 9 Genesis Leagues
+
+OFF behavior: PASS
+EXACT correct tier: PASS
+EXACT wrong tier rejection: PASS
+MINIMUM qualifying higher tier: PASS
+MINIMUM lower-tier rejection: PASS
+
+metadata restore:
+- restricted fight restores League Mode + tier: PASS
+- historic fight defaults safely to OFF: PASS
+
+## 2026-08-21 — MouseFight Genesis League V2 Phase 1I / 1I-D Three-Frontend Experience COMPLETE LOCAL
+
+### Agent / Scope
+
+- Agent: **MouseFight Leagues 1.3 LIVE**
+- Project: **Narrrfs World 13.0**
+- Branch: `render-deploy`
+- Local project root:
+  - `/c/xampp-server/htdocs/narrrfs-world`
+- Scope completed:
+  - Phase 1I-A — MouseFight League HQ data expansion;
+  - Phase 1I-B — Genesis Lab selected-mouse League Journey expansion;
+  - Phase 1I-C — Nerd Lab complete Genesis League handbook + live explorer;
+  - Phase 1I-D — Nerd Lab live-tier population fix + expanded MouseFight handbook;
+  - CRLF restoration after the initial three-page frontend patch;
+  - local syntax, API, HTTP and browser validation.
+
+V1 remains the production League authority until an explicit production-authority switch is approved.
+
+V2 remains:
+
+- read-only;
+- shadow publication;
+- nine-League model;
+- presentation-only on the website / Lab / Nerd Lab;
+- separate from League Mode enforcement.
+
+---
+
+### Final Frontend Files
+
+#### `public/mousefights.html`
+
+Final SHA256:
+
+`18aa97518eff0e8dd198a52a79dd1508a4832048f43ba156b939f8563d8dbdfa`
+
+Phase 1I additions:
+
+- live Snapshot intelligence cards;
+- named population / owner totals;
+- current permanent League Power span;
+- MouseFight readiness percentage;
+- H2 snapshot stability presentation;
+- nine dynamic League cards;
+- target share vs current share;
+- per-League readiness percentage;
+- League roster ordered by published League Power;
+- Trait Power;
+- Ability Power;
+- highest permanent Trait;
+- canonical Ability coverage `x/9`;
+- existing daily movements;
+- existing I6 review presentation;
+- existing progression-to-next-League presentation.
+
+Browser validation:
+
+```text
+MouseFight League HQ: PASS
+Older Arena sections retained: PASS
+League data presentation: PASS
+Tier browsing: PASS
+Roster presentation: PASS
+No reported visual regression: PASS
+
+## 2026-08-21 — MouseFight Genesis League V2 Phase 1C.1 + Phase 1H Complete / Frontend Data Expansion Next
+
+### Agent / Scope
+
+- Agent: **MouseFight Leagues 1.3 LIVE**
+- Scope completed:
+  - Phase 1C.1 — recurring immutable Genesis League V2 shadow publisher;
+  - Phase 1H — automatic read-only daily Genesis League Discord publication;
+  - first-run baseline suppression;
+  - higher-snapshot detection;
+  - checkpoint persistence;
+  - Discord-message deduplication / same-sequence idempotency.
+- Current authoritative rollout mode:
+  - **V1 remains production League authority**;
+  - V2 remains **read-only / shadow infrastructure**;
+  - no League DB persistence;
+  - no production switch performed.
+
+---
+
+### Environment
+
+- Local project:
+  - `C:\xampp-server\htdocs\narrrfs-world`
+  - Git Bash: `/c/xampp-server/htdocs/narrrfs-world`
+- Branch:
+  - `render-deploy`
+- Discord:
+  - `/c/xampp-server/htdocs/narrrfs-world/discord`
+- Local DB:
+  - `/c/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite`
+- Bot runtime:
+  - local Windows Discord bot
+- Local V2 API:
+  - `http://localhost/api/leaderboard/get-mousefight-leagues-v2.php`
+- Production V2 API check:
+  - `https://narrrfs.world/api/leaderboard/get-mousefight-leagues-v2.php`
+  - HTTP `404` at Phase 1H runtime validation
+- MouseFight API runtime preference:
+  - configured production base first;
+  - failed production V2 request falls through to localhost;
+  - local V2 API supplied the authoritative Phase 1H test snapshot.
+- Read/write boundary:
+  - League data / API / Discord classification flow remains read-only;
+  - only Phase 1H presentation checkpoint writes locally.
+
+---
+
+### Phase 1C.1 — Recurring Immutable Publisher COMPLETE LOCAL
+
+Source:
+
+- `league-audit/mousefight-league-v2-shadow-daily.py`
+
+Pre-patch SHA256:
+
+- `5a091860b3ed699f67af0e78a16aabb901152a268e212d242e4bfaa524246465`
+
+Post-patch SHA256:
+
+- `eaf946130d782a3bd47230f87746a9ad8051314edd93eda695f818dc6b766639`
+
+Backup:
+
+- `league-audit/mousefight-league-v2-shadow-daily.py.before-recurring-publisher-20260821-003523.bak`
+
+The old publisher was proven to be fixed specifically to:
+
+- previous snapshot `#001`;
+- output snapshot `#002`;
+- expected previous sequence `1`;
+- hardcoded payload sequence `2`.
+
+Phase 1C.1 generalized publication orchestration only.
+
+New recurring flow:
+
+```text
+discover highest valid immutable snapshot
+        ↓
+validate snapshot + publication chain
+        ↓
+previous_sequence = latest sequence
+        ↓
+next_sequence = previous_sequence + 1
+        ↓
+derive snapshot-NNN.json output
+        ↓
+refuse overwrite
+        ↓
+run existing classifier / H2 / I6 logic
+        ↓
+publish next immutable snapshot
+
+## 2026-08-20 — MouseFight Leagues 1.3 LIVE — V2-2C COMPLETE / V2-3 Production Contract Gate
+
+### Agent / Scope
+
+- Agent: **MouseFight Leagues 1.3 LIVE**
+- Project: **Narrrfs World 13.0**
+- Branch: `render-deploy`
+- Local project root: `/c/xampp-server/htdocs/narrrfs-world`
+- QUICK_STATUS authority: `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+- Current specialist scope:
+  - MouseFight Genesis League V2 mathematics;
+  - population scaling;
+  - League Power architecture;
+  - percentile + natural-gap classifier;
+  - H2 threshold hysteresis;
+  - I6 provenance-aware individual hysteresis;
+  - fightability / owner-population separation;
+  - future API / DB / website / Discord League integration.
+- Production-facing MouseFight V2 implementation has **not** started.
+- Production **V1 remains authoritative**.
+
+---
+
+### Major Milestone — V2-2C Research Is Complete
+
+The hostile / scale / hysteresis research phase has now passed its final open tests.
+
+Validated architecture:
+
+```text
+League Power
+!= Fight Power
+
+League classification
+!= fightability
+
+League identity
+= token_id + collection
+
+Owner
+!= League identity
+```
+
+League Power remains based only on permanent Genesis progression:
+
+```text
+sum permanent Trait levels
++
+2 × sum permanent Ability levels
++
+named-mouse bonus
++
+Fitness bonus
+```
+
+Excluded from League Power:
+
+```text
+Genetic Items
+temporary Fight Power
+Battle Mode calculations
+combat randomness
+fight results
+DSPOINC / SPOINC
+PVP escrow / settlement
+event burns / refunds
+Fight Recovery
+rewards
+staking
+```
+
+Protected system separation remains intact.
+
+---
+
+### Current Population Baseline
+
+Latest research population:
+
+```text
+Named Genesis mice:      328
+Default fight-ready:     309
+Distinct owners:          55
+League Power minimum:     49
+League Power maximum:    488
+Mean Power:          188.616
+Median Power:          162.5
+```
+
+Current collection maximum remains:
+
+```text
+3,333 Genesis NFTs
+```
+
+The V2 methodology has been tested against:
+
+```text
+328 current named population
+3,333 full Genesis collection scale
+100,000 synthetic future population
+×10 permanent Power scale
+large equal-Power tie clusters
+owner-concentrated populations
+progression waves
+Fitness waves
+top-end progression
+reversible threshold shocks
+persistent threshold shifts
+alternating boundary pressure
+```
+
+---
+
+### Candidate 9-League Population Model
+
+Current V2 candidate structure:
+
+```text
+1. Crumb
+2. Cheese
+3. Bronze
+4. Silver
+5. Golden
+6. Diamond
+7. Genesis Master
+8. Mouseverse Champion
+9. Ultra Champion
+```
+
+Candidate population shares:
+
+```text
+Crumb                  6%
+Cheese                24%
+Bronze                22%
+Silver                18%
+Golden                15%
+Diamond                8%
+Genesis Master         4%
+Mouseverse Champion    2%
+Ultra Champion         1%
+```
+
+Approximate target populations at the full 3,333 collection:
+
+```text
+Crumb                  ~200
+Cheese                 ~800
+Bronze                 ~733
+Silver                 ~600
+Golden                 ~500
+Diamond                ~267
+Genesis Master         ~133
+Mouseverse Champion     ~67
+Ultra Champion          ~33
+```
+
+These are **target shares, not rigid quotas**.
+
+Equal-Power mice must never be split only to satisfy an exact percentile target.
+
+Hard fairness rule:
+
+```text
+equal-Power tie safety
+>
+exact target percentage
+```
+
+---
+
+### Classifier / Scale Evidence
+
+V2 hybrid classifier architecture:
+
+```text
+current permanent League Power distribution
++
+target cumulative percentile
++
+nearby natural Power gaps
++
+distance penalty
+=
+League boundaries
+```
+
+Representative research boundaries around the current distribution remain approximately:
+
+```text
+103
+121
+168
+240
+284
+340
+370
+485
+```
+
+These are **research outputs only**, not production-fixed permanent Power ranges.
+
+Verified scale evidence:
+
+```text
+3,333 population test:        PASS
+100,000 population test:     PASS
+×10 Power invariance:         PASS
+giant tie safety:             PASS
+equal-Power split:            NONE
+```
+
+The methodology is intended to remain stable while the actual Power thresholds naturally rise over years as Traits and Abilities increase.
+
+---
+
+### H2 + I6 Hysteresis Final Evidence
+
+Global layer:
+
+```text
+H2 = published threshold hysteresis
+```
+
+Individual layer:
+
+```text
+I6 = provenance-aware individual hysteresis
+```
+
+I6 protects:
+
+```text
+1. threshold-only movement where the mouse's own Power did not change;
+2. immediate reversal of the mouse's latest published League transition.
+```
+
+Normal persistent movement is still accepted after confirmation.
+
+Current confirmation rule:
+
+```text
+INDIVIDUAL_CONFIRMATION_SNAPSHOTS = 2
+```
+
+Research H2 constants:
+
+```text
+H2_MOVE_TRIGGER = 2
+H2_GAP_RATIO_TRIGGER = 1.5
+```
+
+Current final candidate parameter set still to be formally locked in V2-3:
+
+```text
+classifier λ candidate: 2.25
+I6 margin candidate:    3
+```
+
+Margin 3 currently produces slightly lower hostile churn than margin 2 without a detected progression regression.
+
+---
+
+### H15 — Threshold-Only Collateral Demotion
+
+Status:
+
+```text
+PASS
+```
+
+Largest-owner reversible shock:
+
+```text
+owner mouse count: 71
+```
+
+Previously affected unrelated mice included:
+
+```text
+Gandalf the Grey
+Shroooomy
+Mighty Mouse
+```
+
+I6 result across λ `2.00 / 2.25` and margins `2 / 3`:
+
+```text
+day1_changed = 0
+positive-power relegations = []
+not_restored_after_day2 = []
+```
+
+Example behavior:
+
+```text
+own Power unchanged
+candidate rank 4 -> 3
+published rank stays 4
+delayed = True
+```
+
+When the threshold recovered:
+
+```text
+published roundtrip = NONE
+pending movement = cleared
+```
+
+H15 collateral-threshold failure is closed.
+
+---
+
+### H16 — Alternating Boundary Oscillation
+
+Status:
+
+```text
+PASS
+```
+
+Frozen I5 failure baseline:
+
+```text
+margin 2:
+43 published changes
+35 flipbacks
+maximum 6 changes / mouse
+8 mice with >=3 changes
+
+margin 3:
+28 published changes
+21 flipbacks
+maximum 6 changes / mouse
+5 mice with >=3 changes
+```
+
+I6 result:
+
+```text
+margin 2:
+8 published changes
+0 flipbacks
+maximum 1 change / mouse
+0 mice with >=3 changes
+
+margin 3:
+7 published changes
+0 flipbacks
+maximum 1 change / mouse
+0 mice with >=3 changes
+```
+
+Rocky hostile sequence:
+
+```text
+Power:
+119,121,117,121,117,121,117
+
+I5 ranks:
+2,3,2,3,2,3,2
+
+I6 ranks:
+2,3,3,3,3,3,3
+
+published changes: 1
+flipbacks: 0
+```
+
+H16 repeated reversal oscillation is closed.
+
+---
+
+### H18 — Long-Horizon Persistent Return
+
+Status:
+
+```text
+PASS
+```
+
+H18 V1 with research gain `+6` is preserved as an **invalid-scenario research artifact** because the target never completed the required League transition after classifier feedback moved the threshold.
+
+A full-pipeline target search then found **42 valid target/gain pairs across all four tested λ/margin combinations**.
+
+Smallest common valid target:
+
+```text
+Mouse:            MistaRe Mouse
+Baseline Power:   163
+Research gain:    +11
+Trained Power:    174
+Training boundary: 173
+Shock boundary:    177
+```
+
+The `+11` value is synthetic research input only and does not claim any production Lab action grants +11 Power.
+
+Final H18 V2 result for all four combinations:
+
+```text
+λ=2.00 margin=2  PASS
+λ=2.00 margin=3  PASS
+λ=2.25 margin=2  PASS
+λ=2.25 margin=3  PASS
+
+H18 ALL PASSED: True
+```
+
+Verified behavior:
+
+```text
+training:
+candidate 4
+published 4
+provenance 3 -> 4
+immediate=True
+
+five stable snapshots:
+candidate 4
+published 4
+provenance remains 3 -> 4
+
+persistent return snapshot 1:
+candidate 3
+published 4
+pending=3/1
+delayed=True
+
+persistent return snapshot 2:
+candidate 3
+published 3
+confirmed=True
+pending cleared
+provenance becomes 4 -> 3
+
+persistent return snapshot 3:
+candidate 3
+published 3
+stable
+```
+
+Conclusion:
+
+```text
+I6 does not create permanent League stickiness.
+
+temporary reversal pressure
+→ protected
+
+persistent new reality
+→ accepted after normal confirmation
+```
+
+H18 stale-provenance concern is closed.
+
+---
+
+### Frozen Final I6 / H18 Evidence
+
+I6 implementation:
+
+```text
+mousefight-league-v2c-i6-hysteresis-refinement.py
+SHA256:
+94983007a657a96122ddfc9fefed61588626712676d5536e4fbcbb309470e344
+```
+
+I6 hostile proof:
+
+```text
+mousefight-league-v2c-i6-hostile-proof.py
+ab9f3954008f4fbdc7375352b5924b739b5c13fdf69025595c310ac3aafdebed
+
+mousefight-league-v2c-i6-hostile-proof.json
+f7f2e3496833cf6e9e68a231d642723bda61ad4664f9a4e5a5f0396a3555e43e
+
+mousefight-league-v2c-i6-hostile-proof.txt
+a189a3dabfbb672ae111db253bff583cbbee1e3be4003002d9dba9558072a509
+```
+
+I6 final detailed diagnostics:
+
+```text
+mousefight-league-v2c-i6-final-diagnostics.py
+4ad0a89b047be056d8d22718e7eb0cd33e028e79c46e8dbb3b71cf7421cdb558
+
+mousefight-league-v2c-i6-final-diagnostics.json
+6ffff00e4faa68945b4ab693d7d5212aa8ac0fe18d2e19a1cab60fa35ef6a1e5
+
+mousefight-league-v2c-i6-final-diagnostics.txt
+5516a091809d98d7372015aa74f2b0bfc0c72fb4d3886f060a21fcc10cb3742f
+```
+
+H18 V2 final evidence:
+
+```text
+mousefight-league-v2c-i6-h18-long-horizon-diagnostic-v2.py
+604e2e1c06d1f623d02b2d3c8374fde6a6d8b42328ad4e1b088cb6bdc9fec7c1
+
+mousefight-league-v2c-i6-h18-long-horizon-diagnostic-v2.json
+b7c67391bf46721e046fbf93068e9c9bf13399b4c89e51bc72525e3d10d6d1ab
+
+mousefight-league-v2c-i6-h18-long-horizon-diagnostic-v2.txt
+7901ce1a28cf8e2dfe66d4c97c2853230aec0f91cf56856c7f56d26d74e56328
+```
+
+H18 V1 failed-scenario evidence remains preserved separately and must not be overwritten or interpreted as an I6 algorithm failure.
+
+---
+
+### Long-Term Population / Progression Decision
+
+Additional broad mathematical stress testing is now considered:
+
+```text
+useful future research
+but
+NON-BLOCKING for implementation
+```
+
+The long-term model is based on:
+
+> A mouse's League Power represents its permanent Genesis progression.  
+> Its League represents its relative position inside the current qualified Genesis population.
+
+Therefore:
+
+```text
+more named mice
+more holders
+higher Traits
+higher Abilities
+Fitness unlock waves
+many high-Power mice
+many equal max-Power mice
+full 3,333 participation
+```
+
+do not require fixed permanent Power brackets.
+
+The methodology adapts the boundaries while keeping tie fairness and hysteresis stable.
+
+Owner growth remains separate from classification:
+
+```text
+classification = mouse Power population
+fightability   = mice + ready mice + distinct owners
+```
+
+A League can remain mathematically valid even if current owner concentration makes a certain bracket size temporarily impractical.
+
+---
+
+### Production Integration Direction
+
+Broad V2 research is no longer the blocking task.
+
+Next production architecture:
+
+```text
+permanent Genesis/Lab state
+        ↓
+authoritative V2 League publisher
+        ↓
+published League snapshot/state in DB
+        ↓
+read-only League API
+        ↓
+website
+        ↓
+Discord
+```
+
+Website and Discord must **not** independently recalculate percentile boundaries.
+
+Published state must be authoritative and auditable.
+
+---
+
+### Existing Production V1 Surface
+
+Current production League authority remains:
+
+```text
+api/leaderboard/get-mousefight-leagues.php
+
+contract:
+mousefight_genesis_leagues_v1
+```
+
+Current website League presentation exists in:
+
+```text
+public/mousefights.html
+```
+
+Current Discord League presentation already exists in:
+
+```text
+discord/commands/mousefight.js
+```
+
+Verified Discord command surface already includes League-oriented presentation such as:
+
+```text
+/mousefight help
+/mousefight leagues
+/mousefight league-player
+/mousefight league-tier
+```
+
+Discord already consumes the authoritative League API instead of independently calculating League classification.
+
+Therefore production V2 does **not** require rebuilding the Discord League feature from zero.
+
+---
+
+### Accelerated Implementation Roadmap
+
+Current decision:
+
+```text
+V2-2C hostile / scale / hysteresis research:
+COMPLETE
+
+V2-3 final mathematical contract:
+NEXT
+
+Additional large calculation campaign:
+NOT REQUIRED AS IMPLEMENTATION BLOCKER
+```
+
+Planned implementation order:
+
+```text
+1. Lock concise V2-3 production contract.
+
+2. Inspect exact current DB schema and migration patterns.
+
+3. Design persistent published League snapshot/state storage.
+   DB migration remains protected and requires explicit approval.
+
+4. Implement authoritative V2 classifier/publisher.
+
+5. Publish and verify first local V2 snapshot.
+
+6. Add versioned/read-only V2 League API.
+
+7. Update mousefights.html from fixed V1 8-tier presentation
+   to authoritative V2 9-tier data.
+
+8. Update existing Discord League commands/presentation
+   to consume the same authoritative V2 contract.
+
+9. Local runtime validation.
+
+10. Production deployment only after approval and validation.
+
+11. Add automated daily League publication after manual publication
+    path is proven.
+
+12. Second release:
+    actual League Mode for challenges/events/join eligibility:
+    OFF / Exact Tier / Minimum Tier.
+```
+
+Actual League-restricted fights are deliberately a later protected phase because they intersect challenge creation, accept/join, event persistence, PVP wagers, event buy-ins, settlement, cancellation, runtime recovery, and Fight Recovery.
+
+---
+
+### V2-3 Items Still To Lock
+
+Only a concise production-contract decision remains before implementation:
+
+```text
+1. final 9 League names
+2. final target shares
+3. classifier λ
+4. I6 margin
+5. confirmation snapshots
+6. H2 movement trigger
+7. H2 gap-ratio trigger
+8. equal-Power tie rule
+9. minimum practical population behavior
+10. published snapshot semantics
+11. fightability contract boundaries
+12. versioned API contract
+```
+
+Current strongest research candidates:
+
+```text
+9 tiers
+shares = 6 / 24 / 22 / 18 / 15 / 8 / 4 / 2 / 1
+
+λ = 2.25
+I6 margin = 3
+confirmation snapshots = 2
+
+H2_MOVE_TRIGGER = 2
+H2_GAP_RATIO_TRIGGER = 1.5
+
+equal-Power mice are never split
+```
+
+These remain candidate production values until explicitly locked in V2-3.
+
+---
+
+### Database / Runtime / Protected Status
+
+Current status:
+
+```text
+Database inspected for V2 persistence:       NOT YET
+Database changed for V2:                     NO
+DB migration created/applied:                NO
+
+Production V2 classifier:                    NOT STARTED
+V2 published snapshot persistence:           NOT STARTED
+V2 API:                                      NOT STARTED
+V2 website integration:                      NOT STARTED
+V2 Discord integration:                      NOT STARTED
+League Mode fight restrictions:              NOT STARTED
+
+Production V1 League contract:               AUTHORITATIVE
+Production website/runtime changed:          NO
+Discord runtime changed:                     NO
+Render deployment performed:                 NO
+```
+
+Protected systems unchanged:
+
+```text
+Fight Recovery
+DSPOINC / SPOINC
+PVP escrow / settlement
+event burns / refunds
+champion rewards
+token payout / airdrop
+Genesis ownership
+permanent Traits / Abilities
+Lab progression
+Genetic Items
+staking
+auth
+DB schema
+deployment configuration
+unrelated games
+```
+
+---
+
+### Exact Next Step
+
+Start **V2-3 Final Mathematical / Production Contract** as a short decision phase.
+
+Do not begin another broad calculation campaign.
+
+Lock the final production constants and semantics from the completed evidence, then inspect:
+
+```text
+current League API
+current SQLite schema / migration patterns
+current mousefights.html League contract
+current mousefight.js League API consumption
+```
+
+After source verification, design the smallest safe persistent V2 League snapshot/state architecture.
+
+No DB write or migration is permitted until the exact schema, environment, backup plan, migration, and affected rows are inspected and explicitly approved.
+
+---
+
+### Standby
+
+```text
+MouseFight Leagues 1.3 LIVE
+
+V2-2C:
+COMPLETE / PASS
+
+V2-3:
+READY TO START
+
+Additional broad math:
+NON-BLOCKING
+
+Production V1:
+AUTHORITATIVE
+
+Production V2:
+NOT STARTED
+
+Protected systems:
+UNCHANGED
+
+Exact next action:
+lock V2-3 contract → inspect DB/API/frontend/Discord source → design V2 persistence/API implementation.
+
+Standby:
+ACTIVE
+```
+
 ## 2026-08-19 — Safe dSPOINC Buy Widget Local Validation / Swap Lab Placement Ready
 
 **Agent / Scope:** SPOINC / DSPOINC bridge frontend + Profile display + Swap Lab presentation  

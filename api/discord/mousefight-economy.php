@@ -7,6 +7,7 @@
  * SQLite transaction. It does not accept arbitrary SQL.
  *
  * Current supported actions:
+ * - mouse_availability (authenticated read-only availability snapshot)
  * - event_join
  * - event_cancel
  * - pvp_create
@@ -524,6 +525,137 @@ function mousefight_economy_assert_mouse_available(
         );
     }
 }
+
+/**
+ * Return one read-only availability snapshot for a Genesis mouse.
+ *
+ * Plain language for DEVS FOR DECADES:
+ * Matchmaking needs to avoid advertising a recovering or already-reserved
+ * Genesis mouse as available while a player is searching for a League fight.
+ *
+ * This action intentionally reuses the same recovery and reservation SELECT
+ * helpers used by the authoritative MouseFight economy transaction.
+ *
+ * It is an early UX guard only. It does not reserve the NFT and it never
+ * replaces mousefight_economy_assert_mouse_available(), which must still run
+ * inside the real PVP/event BEGIN IMMEDIATE transaction before any participant,
+ * burn, escrow, settlement, or Recovery write.
+ *
+ * This function performs SELECTs only. It never:
+ * - inserts or updates a participant;
+ * - creates or clears Fight Recovery;
+ * - moves DSPOINC / SPOINC;
+ * - creates/refunds stakes;
+ * - settles a fight;
+ * - changes Genesis/Lab/ownership/Genetic Item state.
+ */
+function mousefight_economy_mouse_availability(
+    SQLite3 $db,
+    array $data
+): array {
+    $tokenId = trim(
+        (string)($data['token_id'] ?? '')
+    );
+
+    $collection = strtolower(
+        trim(
+            (string)($data['collection'] ?? 'genesis')
+        )
+    );
+
+    if ($tokenId === '') {
+        throw new RuntimeException(
+            'token_id is required for MouseFight availability.'
+        );
+    }
+
+    if ($collection === '') {
+        $collection = 'genesis';
+    }
+
+    if ($collection !== 'genesis') {
+        throw new RuntimeException(
+            'MouseFight availability currently supports Genesis collection only.'
+        );
+    }
+
+    $activeRecovery =
+        mousefight_economy_get_active_mouse_recovery(
+            $db,
+            $tokenId,
+            $collection
+        );
+
+    $reservation =
+        mousefight_economy_get_mouse_reservation(
+            $db,
+            $tokenId,
+            $collection
+        );
+
+    $blockedReasons = [];
+
+    if ($activeRecovery) {
+        $blockedReasons[] = 'recovery';
+    }
+
+    if ($reservation) {
+        $blockedReasons[] = 'reservation';
+    }
+
+    $recoveryData = null;
+
+    if ($activeRecovery) {
+        $recoveryData = [
+            'fight_id' =>
+                (string)($activeRecovery['fight_id'] ?? ''),
+            'cooldown_minutes' =>
+                (int)($activeRecovery['cooldown_minutes'] ?? 0),
+            'cooldown_reason' =>
+                (string)($activeRecovery['cooldown_reason'] ?? ''),
+            'started_at' =>
+                (string)($activeRecovery['started_at'] ?? ''),
+            'expires_at' =>
+                (string)($activeRecovery['expires_at'] ?? ''),
+            'status' =>
+                (string)($activeRecovery['status'] ?? '')
+        ];
+    }
+
+    $reservationData = null;
+
+    if ($reservation) {
+        $reservationData = [
+            'fight_id' =>
+                (string)($reservation['fight_id'] ?? ''),
+            'status' =>
+                (string)($reservation['status'] ?? ''),
+            'mode' =>
+                (string)($reservation['mode'] ?? ''),
+            'title' =>
+                (string)($reservation['title'] ?? '')
+        ];
+    }
+
+    return [
+        'token_id' => $tokenId,
+        'collection' => $collection,
+        'available' => count($blockedReasons) === 0,
+        'blocked_reason' =>
+            $blockedReasons[0] ?? null,
+        'blocked_reasons' =>
+            $blockedReasons,
+        'active_recovery' =>
+            $recoveryData,
+        'reservation' =>
+            $reservationData,
+        'authority' =>
+            'read_only_ux_snapshot',
+        'transaction_recheck_required' =>
+            true
+    ];
+}
+
 
 /**
  * Create one persistent recovery row for a mouse that completed a real fight.
@@ -2558,6 +2690,7 @@ if (
     !in_array(
         $action,
         [
+            'mouse_availability',
             'event_join',
             'event_cancel',
             'event_complete_recovery',
@@ -2598,6 +2731,39 @@ try {
     $db->busyTimeout(60000);
 
     $db->exec('PRAGMA foreign_keys = ON');
+
+    /**
+     * Matchmaking availability is authenticated but strictly read-only.
+     *
+     * DEVS FOR DECADES:
+     * Handle this action before BEGIN IMMEDIATE so routine League searches do
+     * not acquire the SQLite write lock used by protected economy operations.
+     *
+     * query_only is defense-in-depth: SQLite will reject an accidental write
+     * if this read-only branch is changed incorrectly in the future.
+     */
+    if ($action === 'mouse_availability') {
+        if (!$db->exec('PRAGMA query_only = ON')) {
+            throw new RuntimeException(
+                'Could not enable read-only MouseFight availability mode.'
+            );
+        }
+
+        $result =
+            mousefight_economy_mouse_availability(
+                $db,
+                $data
+            );
+
+        $db->close();
+        $db = null;
+
+        mousefight_economy_output([
+            'success' => true,
+            'action' => $action,
+            'data' => $result
+        ]);
+    }
 
     if (!$db->exec('BEGIN IMMEDIATE')) {
         throw new RuntimeException(
