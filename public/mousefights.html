@@ -385,6 +385,123 @@
             <div id="leagueMouseGrid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-5"></div>
           </div>
 
+          <!--
+            NARRRFS_LEAGUE_COMPETITION_CENTER_V1
+
+            DEVS FOR DECADES:
+            This Competition Center is read-only presentation.
+
+            Automatic League Battles come from persisted fight metadata.
+            Competitive LP Battles require the persisted competitive provenance.
+            Actual League Points come only from tbl_mousefight_league_point_awards.
+
+            The browser must never infer LP from a normal/automatic fight,
+            classify Genesis mice, insert matchmaking queue entries, create fights,
+            settle economy, touch Fight Recovery, or mutate permanent Genesis/Lab
+            or Genetic Item state.
+
+            Search League Fight remains a navigation-only deep link into the
+            authoritative Discord Genesis League Hub.
+          -->
+          <div class="mt-7 border-t border-white/10 pt-6">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div class="max-w-3xl">
+                <div class="text-xs uppercase tracking-[.2em] text-pink-200 font-black">
+                  🏟️ Genesis League Competition Center
+                </div>
+
+                <h3 class="text-2xl md:text-3xl font-black mt-1">
+                  League Battles &amp; League Points
+                </h3>
+
+                <p class="text-sm text-slate-400 mt-2 leading-relaxed">
+                  Follow automatic exact-tier battles, competitive League Point fights,
+                  NFT-bound League Point leaders, and recent Genesis League results.
+                </p>
+              </div>
+
+              <a
+                href="https://discord.com/channels/1332015322546311218/1540182398472421516"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="rounded-2xl border border-green-300/25 bg-green-300/10 px-4 py-3 text-sm font-black text-green-100 hover:bg-green-300/15"
+              >
+                🔎 Search League Fight
+              </a>
+            </div>
+
+            <div
+              id="leagueCompetitionStatus"
+              class="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300"
+            >
+              Loading Genesis League competition statistics…
+            </div>
+
+            <div
+              id="leagueCompetitionSummary"
+              class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-4"
+            ></div>
+
+            <div class="mt-7">
+              <div class="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <div class="text-xs uppercase tracking-[.18em] text-cyan-200 font-black">
+                    📊 Battles by League
+                  </div>
+
+                  <h4 class="text-xl md:text-2xl font-black mt-1">
+                    League Battle Activity
+                  </h4>
+                </div>
+              </div>
+
+              <div
+                id="leagueCompetitionTierGrid"
+                class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4"
+              ></div>
+            </div>
+
+            <div class="grid xl:grid-cols-2 gap-6 mt-7">
+              <section>
+                <div class="text-xs uppercase tracking-[.18em] text-yellow-200 font-black">
+                  🏆 Top League Point Mice
+                </div>
+
+                <h4 class="text-xl md:text-2xl font-black mt-1">
+                  Season LP Leaders
+                </h4>
+
+                <p class="text-sm text-slate-400 mt-2">
+                  League Points belong to the Genesis NFT identity, not its owner.
+                </p>
+
+                <div
+                  id="leaguePointLeaderboard"
+                  class="space-y-3 mt-4"
+                ></div>
+              </section>
+
+              <section>
+                <div class="text-xs uppercase tracking-[.18em] text-orange-200 font-black">
+                  ⚔️ Recent League Battles
+                </div>
+
+                <h4 class="text-xl md:text-2xl font-black mt-1">
+                  Automatic Match History
+                </h4>
+
+                <p class="text-sm text-slate-400 mt-2">
+                  Older automatic League fights may predate competitive LP provenance.
+                </p>
+
+                <div
+                  id="leagueRecentBattles"
+                  class="space-y-3 mt-4"
+                ></div>
+              </section>
+            </div>
+          </div>
+
           <div class="grid md:grid-cols-3 gap-3 mt-6 text-sm">
             <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
               <div class="font-black text-yellow-200">League Power</div>
@@ -591,6 +708,7 @@
     const HISTORY_API = '/api/leaderboard/get-recent-mousefights.php';
     const FIGHT_DETAILS_API = '/api/leaderboard/get-mousefight-details.php';
     const LEAGUES_API = '/api/leaderboard/get-mousefight-leagues-v2.php';
+    const LEAGUE_STATS_API = '/api/leaderboard/get-mousefight-league-stats.php';
     const DEFAULT_AVATAR = 'https://cdn.discordapp.com/embed/avatars/0.png';
     const DEFAULT_MOUSE_IMAGE = 'img/rumble/cheese_rumble.png';
 
@@ -606,6 +724,7 @@
       fightCache: new Map(),
       leagueData: null,
       activeLeagueRank: null,
+      leagueStatsData: null,
     };
 
     const boardConfig = {
@@ -647,6 +766,11 @@
       leagueMovementStatus: document.getElementById('leagueMovementStatus'),
       leagueMovementSummary: document.getElementById('leagueMovementSummary'),
       leagueMovementList: document.getElementById('leagueMovementList'),
+      leagueCompetitionStatus: document.getElementById('leagueCompetitionStatus'),
+      leagueCompetitionSummary: document.getElementById('leagueCompetitionSummary'),
+      leagueCompetitionTierGrid: document.getElementById('leagueCompetitionTierGrid'),
+      leaguePointLeaderboard: document.getElementById('leaguePointLeaderboard'),
+      leagueRecentBattles: document.getElementById('leagueRecentBattles'),
       modeGrid: document.getElementById('modeGrid'),
       abilityGrid: document.getElementById('abilityGrid'),
       triggerStats: document.getElementById('triggerStats'),
@@ -803,6 +927,464 @@
 
         return mouseIdentity === cleanIdentity;
       }) || null;
+    }
+
+    /**
+     * Return presentation for one persisted League tier key.
+     *
+     * The authoritative V2 League API owns League membership and dynamic
+     * boundaries. This helper uses its published label/symbol when available.
+     *
+     * The fallback map is presentation only and never classifies a mouse.
+     */
+    function leagueStatsTierPresentation(tierKey) {
+      const cleanKey = String(tierKey || '').trim();
+
+      const publishedTier = (state.leagueData?.tiers || []).find(
+        tier => String(tier?.key || '').trim() === cleanKey
+      );
+
+      if (publishedTier) {
+        return {
+          key: cleanKey,
+          rank: number(publishedTier.rank),
+          symbol: publishedTier.symbol || '🐭',
+          label: publishedTier.label || cleanKey || 'Unknown League',
+        };
+      }
+
+      const fallback = {
+        crumb: ['▫️', 'Crumb'],
+        cheese: ['🧀', 'Cheese'],
+        bronze: ['🥉', 'Bronze'],
+        silver: ['🥈', 'Silver'],
+        golden: ['🥇', 'Golden'],
+        diamond: ['💎', 'Diamond'],
+        genesis_master: ['🧬', 'Genesis Master'],
+        mouseverse_champion: ['👑', 'Mouseverse Champion'],
+        ultra_champion: ['🌌', 'Ultra Champion'],
+      };
+
+      const presentation = fallback[cleanKey] || ['🐭', 'Unknown League'];
+
+      return {
+        key: cleanKey || 'unknown',
+        rank: 99,
+        symbol: presentation[0],
+        label: presentation[1],
+      };
+    }
+
+    function leagueStatsMouseName(mouse) {
+      return String(
+        mouse?.custom_name ||
+        mouse?.metadata_name ||
+        'Genesis Mouse'
+      ).trim();
+    }
+
+    /**
+     * Render the read-only League Competition Center.
+     *
+     * Automatic battles, competitive battles, and actual League Point awards
+     * are intentionally displayed as separate values.
+     *
+     * League Point truth comes from the new read-only statistics API, whose
+     * authoritative point source is tbl_mousefight_league_point_awards.
+     */
+    function renderLeagueCompetition() {
+      if (
+        !el.leagueCompetitionStatus ||
+        !el.leagueCompetitionSummary ||
+        !el.leagueCompetitionTierGrid ||
+        !el.leaguePointLeaderboard ||
+        !el.leagueRecentBattles
+      ) {
+        return;
+      }
+
+      const data = state.leagueStatsData;
+
+      if (!data) {
+        return;
+      }
+
+      const summary = data.summary || {};
+      const seasonName =
+        data.season?.season_name ||
+        state.data?.season?.season_name ||
+        'Current Season';
+
+      el.leagueCompetitionStatus.innerHTML = `
+        <div class="flex flex-wrap gap-x-5 gap-y-2">
+          <span>
+            <strong class="text-yellow-100">${escapeHtml(seasonName)}</strong>
+          </span>
+          <span>
+            <strong class="text-green-100">${number(summary.point_awarding_battles)}</strong>
+            point-awarding battle(s)
+          </span>
+        </div>
+
+        <div class="text-slate-500 mt-2">
+          Automatic League history, competitive provenance, and authoritative
+          League Point awards are tracked separately.
+        </div>
+      `;
+
+      el.leagueCompetitionSummary.innerHTML = `
+        <div class="rounded-2xl border border-orange-300/20 bg-orange-300/10 p-4">
+          <div class="text-xs uppercase tracking-[.15em] text-orange-200 font-black">
+            ⚔️ Automatic League Battles
+          </div>
+          <div class="text-3xl font-black text-orange-100 mt-2">
+            ${number(summary.automatic_league_battles)}
+          </div>
+          <div class="text-xs text-orange-50/80 mt-1">
+            Finished exact-tier automatic matchmaking fights
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4">
+          <div class="text-xs uppercase tracking-[.15em] text-cyan-200 font-black">
+            🏅 Competitive LP Battles
+          </div>
+          <div class="text-3xl font-black text-cyan-100 mt-2">
+            ${number(summary.competitive_league_battles)}
+          </div>
+          <div class="text-xs text-cyan-50/80 mt-1">
+            Battles carrying verified competitive provenance
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-yellow-300/20 bg-yellow-300/10 p-4">
+          <div class="text-xs uppercase tracking-[.15em] text-yellow-200 font-black">
+            ✨ League Points Awarded
+          </div>
+          <div class="text-3xl font-black text-yellow-100 mt-2">
+            ${number(summary.league_points_awarded)}
+          </div>
+          <div class="text-xs text-yellow-50/80 mt-1">
+            Authoritative persisted LP ledger total
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-green-300/20 bg-green-300/10 p-4">
+          <div class="text-xs uppercase tracking-[.15em] text-green-200 font-black">
+            🐭 LP-Winning Mice
+          </div>
+          <div class="text-3xl font-black text-green-100 mt-2">
+            ${number(summary.lp_winning_mice)}
+          </div>
+          <div class="text-xs text-green-50/80 mt-1">
+            Distinct Genesis NFT identities with LP
+          </div>
+        </div>
+      `;
+
+      const observedTierRows = new Map(
+        (data.tiers || []).map(row => [
+          String(row?.league_tier_key || '').trim(),
+          row
+        ])
+      );
+
+      const publishedTiers = Array.isArray(state.leagueData?.tiers)
+        ? [...state.leagueData.tiers]
+        : [];
+
+      const tierKeys = publishedTiers.length
+        ? publishedTiers
+            .sort((a, b) => number(a?.rank) - number(b?.rank))
+            .map(tier => String(tier?.key || '').trim())
+            .filter(Boolean)
+        : [...observedTierRows.keys()];
+
+      if (!tierKeys.length) {
+        el.leagueCompetitionTierGrid.innerHTML = `
+          <div class="sm:col-span-2 lg:col-span-3 rounded-2xl border border-dashed border-white/15 p-6 text-center text-slate-400">
+            No League battle activity has been recorded for this season.
+          </div>
+        `;
+      } else {
+        el.leagueCompetitionTierGrid.innerHTML = tierKeys.map(tierKey => {
+          const tier = leagueStatsTierPresentation(tierKey);
+          const row = observedTierRows.get(tierKey) || {};
+
+          return `
+            <article class="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="text-2xl">${escapeHtml(tier.symbol)}</div>
+                  <div class="font-black mt-1">
+                    ${escapeHtml(tier.label)}
+                  </div>
+                </div>
+
+                <div class="text-right">
+                  <div class="text-xl font-black text-yellow-100">
+                    ${number(row.automatic_league_battles)}
+                  </div>
+                  <div class="text-[10px] uppercase tracking-[.12em] text-slate-500">
+                    Battles
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+                <div class="rounded-xl bg-black/25 p-2">
+                  <div class="font-black text-orange-200">
+                    ${number(row.automatic_league_battles)}
+                  </div>
+                  <div class="text-[10px] text-slate-500">Automatic</div>
+                </div>
+
+                <div class="rounded-xl bg-black/25 p-2">
+                  <div class="font-black text-cyan-200">
+                    ${number(row.competitive_league_battles)}
+                  </div>
+                  <div class="text-[10px] text-slate-500">Competitive</div>
+                </div>
+
+                <div class="rounded-xl bg-black/25 p-2">
+                  <div class="font-black text-yellow-200">
+                    ${number(row.league_points_awarded)}
+                  </div>
+                  <div class="text-[10px] text-slate-500">LP</div>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      const topMice = Array.isArray(data.top_league_point_mice)
+        ? data.top_league_point_mice.slice(0, 10)
+        : [];
+
+      if (!topMice.length) {
+        el.leaguePointLeaderboard.innerHTML = `
+          <div class="rounded-2xl border border-dashed border-white/15 bg-black/15 p-6 text-center text-slate-400">
+            No League Points have been awarded this season yet.
+          </div>
+        `;
+      } else {
+        el.leaguePointLeaderboard.innerHTML = topMice.map(mouse => {
+          const tier = leagueStatsTierPresentation(
+            mouse?.league_tier_key
+          );
+
+          return `
+            <article class="rank-row">
+              <span class="rank-badge ${rankClass(number(mouse.rank))}">
+                ${rankLabel(number(mouse.rank))}
+              </span>
+
+              <img
+                src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}"
+                class="fighter-image !w-12 !h-12 !min-w-12"
+                alt="${escapeHtml(leagueStatsMouseName(mouse))}"
+                onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"
+              />
+
+              <div class="player-copy">
+                <div class="player-name font-black">
+                  ${escapeHtml(leagueStatsMouseName(mouse))}
+                </div>
+
+                <div class="text-xs text-slate-400 mt-1">
+                  ${escapeHtml(tier.symbol)}
+                  ${escapeHtml(tier.label)}
+                  • ${number(mouse.winning_fights)} LP win(s)
+                </div>
+              </div>
+
+              <div class="score-copy">
+                <div class="text-xl font-black text-yellow-200">
+                  ${number(mouse.league_points)} LP
+                </div>
+
+                <div class="score-secondary text-[11px] text-slate-500">
+                  NFT-bound
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      const recentBattles = Array.isArray(data.recent_league_battles)
+        ? data.recent_league_battles
+        : [];
+
+      if (!recentBattles.length) {
+        el.leagueRecentBattles.innerHTML = `
+          <div class="rounded-2xl border border-dashed border-white/15 bg-black/15 p-6 text-center text-slate-400">
+            No automatic League battles have been recorded this season.
+          </div>
+        `;
+      } else {
+        el.leagueRecentBattles.innerHTML = recentBattles.map(fight => {
+          const tier = leagueStatsTierPresentation(
+            fight?.league_tier_key
+          );
+
+          const fighters = Array.isArray(fight?.participants)
+            ? fight.participants.slice(0, 2)
+            : [];
+
+          const winner = fight?.winner || null;
+
+          const fighterCards = fighters.map(person => `
+            <div class="flex items-center gap-2 min-w-0">
+              <img
+                src="${escapeHtml(safeUrl(person?.image_url, DEFAULT_MOUSE_IMAGE))}"
+                class="w-9 h-9 min-w-9 rounded-xl object-cover border border-white/10"
+                alt=""
+                onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"
+              />
+
+              <div class="min-w-0">
+                <div class="player-name text-sm font-black">
+                  ${escapeHtml(leagueStatsMouseName(person))}
+                </div>
+
+                <div class="player-name text-[11px] text-slate-500">
+                  ${escapeHtml(person?.username || 'Unknown fighter')}
+                </div>
+              </div>
+            </div>
+          `).join('');
+
+          const provenanceBadge = fight?.competitive
+            ? `
+              <span class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-1 text-[10px] font-black text-cyan-100">
+                🏅 Competitive LP
+              </span>
+            `
+            : `
+              <span class="rounded-full border border-slate-300/15 bg-white/5 px-2 py-1 text-[10px] font-black text-slate-300">
+                🕰️ Historic Automatic
+              </span>
+            `;
+
+          const pointBadge = fight?.point_awarded
+            ? `
+              <span class="rounded-full border border-yellow-300/20 bg-yellow-300/10 px-2 py-1 text-[10px] font-black text-yellow-100">
+                ✨ +${number(fight.points_awarded)} LP
+              </span>
+            `
+            : '';
+
+          return `
+            <article class="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap gap-2">
+                  <span class="rounded-full border border-orange-300/20 bg-orange-300/10 px-2 py-1 text-[10px] font-black text-orange-100">
+                    ${escapeHtml(tier.symbol)}
+                    ${escapeHtml(tier.label)}
+                  </span>
+
+                  ${provenanceBadge}
+                  ${pointBadge}
+                </div>
+
+                <span class="text-[11px] text-slate-500">
+                  ${escapeHtml(dateLabel(fight?.ended_at || fight?.created_at))}
+                </span>
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3 mt-4">
+                ${fighterCards}
+              </div>
+
+              <div class="mt-4 rounded-xl border border-green-300/10 bg-green-300/5 p-3">
+                <div class="text-[10px] uppercase tracking-[.14em] text-green-200 font-black">
+                  Winner
+                </div>
+
+                <div class="text-sm font-black mt-1">
+                  ${escapeHtml(
+                    winner
+                      ? leagueStatsMouseName(winner)
+                      : 'Stored result unavailable'
+                  )}
+                </div>
+              </div>
+
+              <button
+                class="fight-detail-button mt-3 w-full rounded-xl border border-yellow-300/25 bg-yellow-300/10 px-3 py-2 text-sm font-black text-yellow-100 hover:bg-yellow-300/15"
+                data-fight-id="${escapeHtml(fight?.fight_id || '')}"
+              >
+                View Full Fight
+              </button>
+            </article>
+          `;
+        }).join('');
+      }
+    }
+
+    /**
+     * Load persisted Genesis League competition history.
+     *
+     * The endpoint is read-only. The browser never derives LP qualification.
+     */
+    async function loadLeagueCompetition() {
+      if (!el.leagueCompetitionStatus) {
+        return;
+      }
+
+      el.leagueCompetitionStatus.textContent =
+        'Loading Genesis League competition statistics…';
+
+      try {
+        const params = new URLSearchParams({
+          limit: '12'
+        });
+
+        const displayedSeasonId = Number(
+          state.data?.season?.season_id || 0
+        );
+
+        if (displayedSeasonId > 0) {
+          params.set(
+            'season_id',
+            String(displayedSeasonId)
+          );
+        }
+
+        const response = await fetch(
+          `${LEAGUE_STATS_API}?${params.toString()}`,
+          {
+            credentials: 'same-origin',
+            cache: 'no-store'
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.error ||
+            `League competition request failed with ${response.status}`
+          );
+        }
+
+        state.leagueStatsData = data;
+
+        renderLeagueCompetition();
+      } catch (error) {
+        state.leagueStatsData = null;
+
+        el.leagueCompetitionStatus.innerHTML =
+          `<span class="font-black text-red-200">League competition statistics could not be loaded.</span> ` +
+          `<span class="text-slate-400">${escapeHtml(error.message || 'Unknown League statistics API error.')}</span>`;
+
+        el.leagueCompetitionSummary.innerHTML = '';
+        el.leagueCompetitionTierGrid.innerHTML = '';
+        el.leaguePointLeaderboard.innerHTML = '';
+        el.leagueRecentBattles.innerHTML = '';
+      }
     }
 
     /**
@@ -1341,6 +1923,10 @@
       renderLeagueTierCards();
       renderLeagueMovements();
       renderLeagueRoster();
+
+      if (state.leagueStatsData) {
+        renderLeagueCompetition();
+      }
     }
 
     async function loadLeagues() {
@@ -1618,6 +2204,7 @@
       renderMetrics(); renderFeatured(); renderBoardTabs(); renderPlayerBoard(); renderFighters(); renderModes(); renderAbilities();
       loadHistory({ reset: true });
       loadLeagues();
+      loadLeagueCompetition();
       el.loading.classList.add('hidden'); el.errorState.classList.add('hidden'); el.content.classList.remove('hidden');
     }
 
@@ -1647,6 +2234,15 @@
       const button = event.target.closest('.fight-detail-button');
       if (button) openFight(button.dataset.fightId);
     });
+
+    el.leagueRecentBattles.addEventListener('click', event => {
+      const button = event.target.closest('.fight-detail-button');
+
+      if (button) {
+        openFight(button.dataset.fightId);
+      }
+    });
+
     el.closeFightModal.addEventListener('click', closeFightModal);
     el.fightModal.addEventListener('click', event => { if (event.target === el.fightModal) closeFightModal(); });
     el.retryButton.addEventListener('click', loadArena);

@@ -1,5 +1,2288 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-08-29 — MouseFight Leagues 1.5 LIVE — L2-F1-A3 Genesis League Competition Center Local PASS
+
+### Agent / Scope
+
+* Agent: `MouseFight Leagues Expert 1.5 LIVE`
+* Project: `Narrrfs World 13.0`
+* Branch: `render-deploy`
+* Phase:
+  `L2-F1 — Genesis League Website Experience`
+* Completed subphase:
+  `L2-F1-A3 — Genesis League Competition Center`
+
+### Files
+
+New:
+
+`api/leaderboard/get-mousefight-league-stats.php`
+
+Modified:
+
+`public/mousefights.html`
+
+Existing approved local frontend modifications retained:
+
+`public/lab.html`
+
+`public/profile.html`
+
+No change in this phase to:
+
+`discord/commands/mousefight.js`
+
+`discord/index.js`
+
+`db/narrrf_world.sqlite`
+
+### L2-F1-A3-A — Read-Only League Statistics API
+
+Added:
+
+`/api/leaderboard/get-mousefight-league-stats.php`
+
+Purpose:
+
+Provide the public MouseFight Genesis League Competition Center with read-only Season League battle statistics.
+
+The API preserves three separate historical layers:
+
+1. Automatic League Battle
+
+   * finished persisted fight
+   * `league_matchmaking = 1`
+
+2. Competitive League Battle
+
+   * automatic League battle
+   * `league_competitive = 1`
+   * `league_source = matchmaking`
+   * `league_points_enabled = 1`
+
+3. Actual League Point Award
+
+   * authoritative persisted row in
+     `tbl_mousefight_league_point_awards`
+
+The frontend never infers an LP award from fight metadata alone.
+
+Read-only protection:
+
+`PRAGMA query_only = ON`
+
+No schema or database write was introduced.
+
+### Verified Local Season 14 Statistics
+
+Local XAMPP database / Season 14:
+
+* Automatic League Battles: `72`
+* Competitive LP Battles: `50`
+* Point-Awarding Battles: `50`
+* League Points Awarded: `50`
+* LP-Winning Genesis Mice: `28`
+
+Independent SQLite comparison matched the API totals exactly.
+
+HTTP API test:
+
+`http://localhost/api/leaderboard/get-mousefight-league-stats.php?season_id=16&limit=12`
+
+Result:
+
+* `success = true`
+* `read_only = true`
+* season = `Season 14`
+* HTTP = `200`
+* observed battle tiers returned by statistics API = `6`
+* Top League Point mice returned = `20`
+* recent League battles returned = `12`
+
+Recent inspected competitive fights:
+
+* carried competitive provenance;
+* had `points_awarded = 1`;
+* had two persisted participant snapshots.
+
+### L2-F1-A3-B — Genesis League Competition Center
+
+Added inside the existing `#leagues` MouseFight League HQ.
+
+Marker:
+
+`NARRRFS_LEAGUE_COMPETITION_CENTER_V1`
+
+Added public sections:
+
+* `🏟️ Genesis League Competition Center`
+* `⚔️ Automatic League Battles`
+* `🏅 Competitive LP Battles`
+* `✨ League Points Awarded`
+* `🐭 LP-Winning Mice`
+* `📊 Battles by League`
+* `🏆 Top League Point Mice`
+* `⚔️ Recent League Battles`
+* `🔎 Search League Fight`
+
+New frontend API constant:
+
+`LEAGUE_STATS_API = '/api/leaderboard/get-mousefight-league-stats.php'`
+
+The frontend merges observed battle statistics with the authoritative published V2 League tier list so zero-activity published Leagues remain present without creating a second League classifier.
+
+League tier presentation remains display-only.
+
+League classification and boundaries remain authoritative in the V2 League publication/API.
+
+### Fight Detail Reuse
+
+Recent League battle cards reuse the existing:
+
+`.fight-detail-button`
+
+→
+
+`openFight(fightId)`
+
+path.
+
+No duplicate fight-details implementation was created.
+
+### Local Validation
+
+PHP syntax:
+
+`api/leaderboard/get-mousefight-league-stats.php` — PASS
+
+PHP parse:
+
+`public/mousefights.html` — PASS
+
+Inline JavaScript extraction:
+
+PASS
+
+Node syntax:
+
+`node --check` — PASS / rc `0`
+
+Competition Center DOM IDs:
+
+* `leagueCompetitionStatus` — unique
+* `leagueCompetitionSummary` — unique
+* `leagueCompetitionTierGrid` — unique
+* `leaguePointLeaderboard` — unique
+* `leagueRecentBattles` — unique
+
+Duplicate IDs:
+
+`NONE`
+
+Local Apache document root:
+
+`C:/xampp-server/htdocs/narrrfs-world`
+
+Verified local page:
+
+`http://localhost/public/mousefights.html`
+
+HTTP:
+
+`200`
+
+Verified local API:
+
+`http://localhost/api/leaderboard/get-mousefight-league-stats.php`
+
+HTTP:
+
+`200`
+
+Browser visual/runtime test:
+
+`PASS`
+
+Competition Center displayed correctly.
+
+### Backup
+
+Frontend backup created before patch:
+
+`public/mousefights.html.before-league-competition-center-20260829-015753.bak`
+
+### Protected Systems Unchanged
+
+No change to:
+
+* Discord matchmaking runtime queues
+* automatic matcher
+* PVP creation
+* PVP escrow / settlement
+* Fight Recovery
+* League Point award writer
+* DSPOINC / SPOINC
+* Genesis ownership
+* permanent Traits / Abilities
+* Lab progression
+* Genetic Items
+* staking
+* auth
+* DB schema
+* deployment configuration
+* unrelated games
+
+### Important Open Incident
+
+The earlier Friday Genesis Master matchmaking incident involving:
+
+* `GrandMouster`
+* `HenaMouse`
+
+remains a separate investigation.
+
+The Competition Center statistics work does not prove that historical incident resolved.
+
+Do not use the new statistics UI as evidence of matcher/recovery/settlement state for that incident.
+
+### Deployment Status
+
+`NOT DEPLOYED`
+
+No bot restart performed.
+
+No production DB mutation performed.
+
+### Exact Next Step
+
+Prepare the L2-F1 frontend deployment gate for:
+
+* `public/profile.html`
+* `public/lab.html`
+* `public/mousefights.html`
+* `api/leaderboard/get-mousefight-league-stats.php`
+
+Before deployment:
+
+1. inspect final focused Git diff;
+2. verify no unrelated source edits;
+3. verify API and frontend files intended for deployment;
+4. obtain explicit deployment approval;
+5. deploy only the approved website/API changes;
+6. verify production HTTP/API response;
+7. verify production Competition Center rendering;
+8. do not restart the Discord bot as part of this website deployment unless separately approved.
+
+### Standby
+
+`L2-F1-A3 LOCAL VERIFIED / COMPETITION CENTER VISUAL PASS / PRODUCTION NOT DEPLOYED / DEPLOYMENT GATE NEXT`
+
+
+## 2026-08-28 — MouseFight Leagues 1.5 LIVE — Agent Restart / Continuity Synced
+
+### Agent / Continuity
+
+* Agent: `MouseFight Leagues Expert 1.5 LIVE`
+* Project: `Narrrfs World 13.0`
+* Branch: `render-deploy`
+* Successor to: `MouseFight Leagues Expert 1.4 LIVE`
+* Current phase:
+  `L2-F1 — Genesis League Website Experience`
+
+The new 1.5 LIVE handover has been synchronized against the current QUICK_STATUS and supplied MouseFight source.
+
+Verified current Discord source hashes still match the previous status:
+
+`discord/commands/mousefight.js`
+`1d1ba898fd5ef969f3e6cf29752986da13355a2f1ca2fef3e90c02475c972aef`
+
+`discord/index.js`
+`46a56e4b1d16b8461d05059b3218d827e99c49ef6899dc3dc5f9ee290b90bbb7`
+
+### Current State Carried Forward
+
+Frontend League CTA work remains:
+
+* `public/lab.html` — LOCAL VERIFIED
+* `public/profile.html` — LOCAL VERIFIED
+* production deployment — `NOT DONE`
+
+Friday Genesis Master incident remains open:
+
+* `GrandMouster`
+* `HenaMouse`
+* panel observed: `Genesis Master — 2 searching`
+* no automatic fight was visibly started
+* production persisted fight state has not yet been verified
+
+Do not yet:
+
+* restart the bot;
+* clear matchmaking queues;
+* requeue either fighter;
+* manually create a replacement fight;
+* alter PVP settlement;
+* alter Fight Recovery;
+* alter League Points.
+
+### Exact Next Step
+
+Continue the Friday Genesis Master incident investigation read-only:
+
+1. inspect production fights / participants for the pair;
+2. inspect relevant League Point records;
+3. inspect local bot logs around HenaMouse queue entry;
+4. identify the exact matcher result or fail-closed path;
+5. only then decide whether any repair is required.
+
+### Protected Systems
+
+Unchanged:
+
+* DSPOINC / SPOINC
+* PVP escrow / settlement
+* Fight Recovery
+* League Points
+* Genesis ownership
+* permanent Traits / Abilities
+* Lab progression
+* Genetic Items
+* staking
+* auth
+* DB schema
+* deployment configuration
+
+### Standby
+
+`MOUSEFIGHT LEAGUES 1.5 LIVE SYNCHRONIZED / L2-F1 ACTIVE / GENESIS-MASTER INCIDENT READ-ONLY INVESTIGATION NEXT`
+
+
+## 2026-08-28 — MouseFight Leagues 1.4 LIVE — Frontend Local PASS / Friday Genesis-Master Matchmaking Incident
+
+### Agent / Scope
+
+- Agent: MouseFight Leagues Expert 1.4 LIVE
+- Project: Narrrfs World 13.0
+- Branch: `render-deploy`
+- Current phase:
+  `L2-F1 — Genesis League Website Experience`
+- Active incident:
+  Friday event Genesis Master exact-tier matchmaking investigation.
+
+### Frontend F1-B / F1-C2
+
+`public/lab.html`
+- `🔎 Search League Fight` added to Genesis League Journey.
+- `🏆 Open League HQ` retained.
+- Discord matchmaking remains authoritative.
+
+`public/profile.html`
+- `🔎 Search League Fight` added.
+- `🏆 Genesis League HQ` added.
+- Profile League actions changed to full-width horizontal bars.
+- Layout marker:
+  `NARRRFS_LEAGUE_FRONTEND_LAYOUT_V2`
+
+Local validation:
+- Profile PHP parse: PASS
+- Lab PHP parse: PASS
+- Profile HTTP: `200`
+- Lab HTTP: `200`
+- MouseFight HQ HTTP: `200`
+- Profile browser test: PASS
+- Lab browser test: PASS
+
+Production deployment:
+`NOT DONE`
+
+### Friday Genesis Master Matchmaking Incident
+
+Discord panel currently showed:
+
+`Genesis Master — 2 searching`
+
+Observed pair:
+- `GrandMouster`
+- `HenaMouse`
+
+Both were presented as Genesis Master exact-tier searches, but no automatic fight was visibly started while other League matches were operating.
+
+Current local Discord bot runtime:
+- PID: `78324`
+- heartbeat: `ok=true`
+- Discord ready: `true`
+- ping observed: `149 ms`
+- event-loop lag observed: `5 ms`
+
+Current source hashes:
+
+`discord/commands/mousefight.js`
+`1d1ba898fd5ef969f3e6cf29752986da13355a2f1ca2fef3e90c02475c972aef`
+
+`discord/index.js`
+`46a56e4b1d16b8461d05059b3218d827e99c49ef6899dc3dc5f9ee290b90bbb7`
+
+Syntax:
+- `mousefight.js`: PASS
+- `index.js`: PASS
+
+Verified source markers still present:
+- automatic matcher
+- automatic tier trigger
+- D3.9C real queue trigger
+- queue-trigger result logging
+- fail-closed logging
+- finalization-incomplete logging
+
+### Important Investigation Boundary
+
+Production DB persistence has **NOT yet been verified for this incident**.
+
+The attempted `/var/www/html` inspection was accidentally executed from local Windows Git Bash and therefore failed with:
+
+`No such file or directory`
+
+and:
+
+`unable to open database ...`
+
+Those errors do not indicate a production DB problem.
+
+Do not yet:
+- restart bot;
+- clear the queue;
+- requeue the two Genesis Master mice;
+- manually create a replacement fight;
+- mutate Recovery/economy/League Points.
+
+### Exact Next Step
+
+On the actual Render shell:
+
+1. inspect recent Genesis Master automatic fights and participants read-only;
+2. inspect recent League Point awards;
+3. inspect the local bot log around HenaMouse entering the queue;
+4. identify exact matcher result:
+   `NO_CANDIDATE / PAIR_BUSY / REVALIDATION_FAILED / CREATE_* / SETTLEMENT_* / FINALIZATION_* / thrown fail-closed error`.
+
+Then decide the smallest safe repair only after persisted fight state is known.
+
+### Protected Systems
+
+Unchanged:
+- DSPOINC/SPOINC
+- PVP escrow/settlement
+- Fight Recovery
+- League Points
+- Genesis ownership
+- permanent Traits/Abilities
+- Lab progression
+- Genetic Items
+- staking
+- auth
+- DB schema
+- deployment configuration
+
+### Standby
+
+`FRONTEND F1-B + F1-C2 LOCAL VERIFIED / PRODUCTION NOT DEPLOYED / FRIDAY GENESIS-MASTER INCIDENT UNDER READ-ONLY INVESTIGATION`
+
+## 2026-08-27 — MouseFight Leagues 1.4 LIVE — D3.11B Live Verified / Snapshot #11 Live / Frontend League CTA Phase Next
+
+### Agent / Scope
+
+- Agent: MouseFight Leagues Expert 1.4 LIVE
+- Project: Narrrfs World 13.0
+- Branch: `render-deploy`
+- Main Discord source:
+  `discord/commands/mousefight.js`
+- Frontend next scope:
+  `public/profile.html`
+  `public/lab.html`
+  later `public/mousefights.html`
+- Current phase:
+  `L2-F1 — Genesis League Website Experience`
+
+### D3.11B League Points — LIVE VERIFIED
+
+Restored source marker:
+
+`NARRRFS_MATCHMAKING_LEAGUE_POINTS_OPTION_B_V1`
+
+Restoration backup:
+
+`commands/mousefight.js.before-league-points-option-b-20260827-165939.bak`
+
+Post-repair local validation:
+
+- mousefight syntax PASS
+- index syntax PASS
+- D3.11B isolated test PASS
+- D3.11A-R3 PASS
+- D3.11A-R2 PASS
+- D3.9B PASS
+- D3.9C PASS
+- D3.8C PASS
+- D3.8B PASS
+- D3.8A PASS
+
+Final gate:
+
+`L2-D3.11B REAPPLY AFTER R4: PASS`
+
+Live verification fight:
+
+`mfpvp_1787848453513_b3jfd8a`
+
+Winner:
+
+`Mures Venenosus Futurus`
+
+Live Discord result showed:
+
+`✨ +1 League Point Awarded`
+
+`1 LP lifetime`
+
+`Season 14: 1 LP`
+
+Generated Canvas result card also showed:
+
+`LEAGUE WIN`
+
+`+1 LP`
+
+`TOTAL 1 LP`
+
+`Season 14 1 LP`
+
+D3.11B status:
+
+`LIVE VERIFIED`
+
+League Point award remains:
+
+- NFT-bound;
+- authoritative backend decision;
+- requested by Fight ID only;
+- idempotent by unique Fight ID;
+- separate from PVP settlement;
+- separate from Fight Recovery;
+- separate from DSPOINC/SPOINC;
+- separate from permanent Genesis/Lab state.
+
+### D3.11A-R4 Startup Panel Positioning
+
+One startup presentation line was changed so bot restart now uses:
+
+`repostMouseFightLeagueMatchmakingPanel(client)`
+
+instead of the old startup `ensure...` path.
+
+Verified live after restart:
+
+- new Matchmaking panel posted at bottom;
+- previous canonical panel removed;
+- normal five-minute refresh remains edit-in-place;
+- post-fight R3 repost remains working.
+
+Presentation only.
+
+No economy / DB / Recovery / League Point change.
+
+### V2 Snapshot #11 — LIVE VERIFIED
+
+Manual same-day full publication was explicitly approved after a temporary preview.
+
+Previous published snapshot:
+
+`#10`
+
+Previous population:
+
+`345`
+
+Snapshot #11:
+
+`sequence = 11`
+
+`population = 347`
+
+Preview/current approved SHA256:
+
+`8359be2aeee083c5078febccdeb3f44b9d2d7b03265bfcadb7dd4a9f5706ac0c`
+
+Previous Snapshot #10 SHA256:
+
+`c498f092ca32ceebfcb2bb350ed7a49c25ac60bddb22c85d1df75849494b75d6`
+
+Snapshot #11 movement:
+
+- promotions: 1
+- relegations: 2
+- pending: 8
+- new mice: 2
+- removed mice: 0
+
+Dynamics:
+
+- previous population: 345
+- current population: 347
+- continuing identities: 345
+- new identities: 2
+- removed identities: 0
+
+Published artifact:
+
+`/data/mousefight-leagues/mousefight-leagues-v2-shadow-snapshot-011.json`
+
+Publication backup:
+
+`/data/mousefight-leagues.before-manual-011-20260827-171522`
+
+Approved five-snapshot retention completed:
+
+- 007
+- 008
+- 009
+- 010
+- 011
+
+Retention anchor validation:
+
+`PASS`
+
+Production DB writes from snapshot publication:
+
+`NONE`
+
+### Newly Named Mouse Eligibility Case
+
+Discord user:
+
+`781427860497498112`
+
+Username:
+
+`digitoss.sol`
+
+Verified named Genesis mice:
+
+1. `Galactic Gnasher`
+   token:
+   `7zhNoNtTnqV66UvW5ux4gZUiK1PjxYR1KXkDZjTDrkoV`
+   highest Trait:
+   `9`
+   Fitness:
+   `true`
+   Snapshot #11 League:
+   `Bronze`
+   League Power:
+   `147`
+
+2. `Sir Swiss-a-Lot`
+   token:
+   `7GCnDXBoWS46fVqVqbaGW5yCj849SC5VZLG2VPPpqqQJ`
+   highest Trait:
+   `8`
+   Fitness:
+   `true`
+   Snapshot #11 League:
+   `Cheese`
+   League Power:
+   `118`
+
+Cause of initial matchmaking rejection:
+
+Both names were created after Snapshot #10 had already been generated.
+
+Snapshot #10 therefore contained neither NFT.
+
+No ownership/name/Lab repair was required.
+
+Full Snapshot #11 naturally classified both NFTs through the normal authoritative V2 publisher.
+
+### Current Genesis League Runtime
+
+Operational:
+
+- 9-tier V2 publication
+- H2 global hysteresis
+- I6 individual hysteresis
+- Discord daily League monitor
+- League Hub Guide
+- Matchmaking panel
+- Search League Fight
+- private mouse picker
+- Genetic Item picker
+- runtime queues
+- exact-tier matching
+- automatic PVP create
+- automatic settlement
+- Fight Recovery
+- generated fight presentation
+- public search ping
+- post-fight panel repost
+- startup panel repost
+- NFT-bound +1 League Points
+
+### Frontend Existing State
+
+`public/mousefights.html`
+
+Already has the Genesis League HQ / nine-tier presentation.
+
+Later frontend work should enhance it as the public competitive home rather than create a second League system.
+
+`public/lab.html`
+
+Already has:
+
+- verified selected Genesis mouse workflow;
+- published V2 League read path;
+- Genesis League Journey;
+- League Power/progression presentation.
+
+`public/profile.html`
+
+Already has Season 14 Profile Hub actions:
+
+- Play
+- Lab
+- Boards
+- Rewards
+
+Profile does not yet have the new League matchmaking CTA.
+
+### Approved Frontend Direction
+
+Next:
+
+`L2-F1 — Genesis League Website Experience`
+
+First two focused patches:
+
+#### F1-B — Lab
+
+Add a visible:
+
+`🔎 Search League Fight`
+
+CTA beside the selected mouse / Genesis League Journey.
+
+Website remains presentation/navigation only.
+
+The browser does NOT directly insert the selected mouse into the Discord runtime queue.
+
+The CTA opens the official Genesis League Discord Hub where the existing authoritative Discord picker performs:
+
+- current ownership revalidation;
+- Fitness validation;
+- V2 League validation;
+- availability validation;
+- Genetic Item selection;
+- queue insertion.
+
+Keep:
+
+`🏆 Open League HQ`
+
+link to:
+
+`mousefights.html#leagues`
+
+#### F1-C — Profile
+
+Add:
+
+`🔎 Search League Fight`
+
+as a first-class Profile Hub action.
+
+Also expose:
+
+`🏆 Genesis League HQ`
+
+as appropriate without replacing existing Play/Lab/Boards/Rewards actions.
+
+Profile remains read-only/navigation only for League matchmaking.
+
+### Frontend Safety Boundary
+
+Do NOT create a second browser matchmaking queue.
+
+Do NOT let Profile/Lab decide:
+
+- League classification;
+- ownership authority;
+- Fitness eligibility;
+- fight availability;
+- Genetic Item eligibility;
+- queue insertion;
+- PVP creation;
+- League Point awards;
+- Recovery;
+- economy.
+
+Correct flow:
+
+Website CTA
+→ Discord Genesis League Hub
+→ existing authoritative Search League Fight button
+→ Discord picker
+→ runtime queue
+→ automatic exact-tier matchmaking.
+
+### Separate Later Tasks
+
+Still separate from this frontend CTA phase:
+
+- review max 3 Genetic Items vs max 1 for competitive matchmaking;
+- League Point read-only totals on Profile/Lab/MouseFight HQ;
+- League Point leaderboard;
+- weekly Genesis League Friday;
+- weekly League holder DM;
+- Canvas unsupported emoji glyph polish.
+
+### Protected Systems Unchanged
+
+- DSPOINC/SPOINC
+- PVP escrow
+- PVP settlement
+- event burns/refunds
+- Fight Recovery
+- Genesis ownership
+- permanent Traits
+- permanent Abilities
+- Lab progression
+- Genetic Item permanent state
+- staking
+- authentication
+- DB schema
+- deployment configuration
+
+### Exact Next Step
+
+Inspect the exact current local `public/profile.html` and `public/lab.html` anchors plus the current Discord guild/channel deep-link values.
+
+Then:
+
+backup
+→ guarded frontend-only patch
+→ HTML/inline JS syntax
+→ focused diff
+→ local browser test
+→ no bot restart
+→ no DB/API write
+→ production deployment only after approval.
+
+### Standby
+
+MouseFight Leagues Expert 1.4 LIVE
+
+Status:
+
+`D3.11B LIVE VERIFIED / R4 LIVE VERIFIED / SNAPSHOT #11 LIVE VERIFIED / FRONTEND F1-B + F1-C READY FOR SOURCE INSPECTION`
+
+## 2026-08-27 — MouseFight Genesis League L2 / D3.11B Option-B Activated — First Live +1 Fight Pending
+
+### Agent / Scope
+
+- Agent: MouseFight Leagues Expert 1.4 LIVE
+- Project: Narrrfs World 13.0
+- Branch: `render-deploy`
+- Main Discord source:
+  `discord/commands/mousefight.js`
+- Discord router/runtime:
+  `discord/index.js`
+- Current phase:
+  `L2-D3.11B — NFT-bound League Point +1 integration / Option B`
+- Scope:
+  automatic Exact-Tier Genesis League matchmaking, authoritative League Point award handoff, final embed LP presentation, final Canvas LP effect, and post-fight Matchmaking panel repost.
+
+### Current Runtime Boundary
+
+- Local repo:
+  `/c/xampp-server/htdocs/narrrfs-world`
+- Discord bot:
+  local Windows Node runtime
+- Website/API:
+  Render production
+- Production DB:
+  `/var/www/html/db/narrrf_world.sqlite`
+- Persistent Render path:
+  `/data`
+- Local Discord bot may call live Narrrfs APIs during real MouseFight transactions.
+- Bot was restarted after D3.11B local validation and production pre-live gate.
+- No Render deployment was required for the Discord JS change.
+- No slash-command deployment was required.
+
+### D3.11B Option-B Source
+
+Implemented marker:
+
+`NARRRFS_MATCHMAKING_LEAGUE_POINTS_OPTION_B_V1`
+
+Guarded source backup:
+
+`commands/mousefight.js.before-league-points-option-b-20260827-002450.bak`
+
+Implemented for FUTURE automatic Exact-Tier matchmaking fights:
+
+- competitive League Point provenance persisted server-side by Discord bot;
+- authoritative League Point API client;
+- `award_completed_match` write request sends only `fight_id`;
+- backend remains authoritative for:
+  - finished fight verification;
+  - winner NFT;
+  - winner token ID;
+  - collection;
+  - League tier;
+  - active season;
+  - point amount;
+- API award response is verified against:
+  - exact Fight ID;
+  - expected League tier;
+  - expected winner Genesis NFT;
+- winner receives exactly `+1` League Point per eligible completed automatic match;
+- duplicate/retry award remains protected by authoritative Fight-ID idempotency;
+- final embed can show:
+  - `✨ +1 League Point Awarded`;
+  - updated lifetime LP;
+  - updated active-season LP;
+- final generated Canvas card can show:
+  - `LEAGUE WIN`;
+  - `+1 LP`;
+  - `TOTAL <n> LP`;
+  - active-season LP.
+
+### Competitive Provenance Activated for New Fights
+
+Future automatic matchmaking persistence now includes:
+
+`league_competitive = true`
+
+`league_source = matchmaking`
+
+`league_points_enabled = true`
+
+`league_competitive_version = mousefight_genesis_league_competitive_v1`
+
+Existing League Mode provenance remains:
+
+`league_mode = exact`
+
+`league_mode_version = mousefight_genesis_league_mode_v1`
+
+`league_matchmaking = true`
+
+Existing historical automatic fights created before D3.11B do NOT contain the new competitive provenance and therefore must NOT receive retroactive League Point awards.
+
+### League Point Ordering
+
+Approved D3.11B execution order:
+
+automatic Exact-Tier pair
+→ authoritative PVP create
+→ authoritative PVP settlement
+→ finished persisted fight
+→ final participant persistence + verification
+→ retry-safe round history persistence
+→ authoritative League Point API by Fight ID only
+→ authoritative +1/totals evidence
+→ paced League presentation
+→ final Canvas card
+→ final Discord embed
+→ exact queue cleanup
+→ Matchmaking panel refresh
+→ D1 pair lock release
+→ completed result
+→ cosmetic post-fight panel repost.
+
+Important separation:
+
+A League Point API/publication failure must NOT turn an already-completed MouseFight settlement into a failed PVP.
+
+If authoritative Point confirmation is unavailable:
+
+`League Point verification pending`
+
+must be shown instead of inventing a `+1`.
+
+### Local Validation
+
+PASS:
+
+- `node --check commands/mousefight.js`
+- `node --check index.js`
+- `node --check test-mousefight-league-points-option-b-v1.js`
+- D3.11B Option-B isolated test
+- D3.11A-R3 panel repost regression
+- D3.11A-R2 presentation regression
+- D3.9B automatic orchestrator regression
+- D3.9C real queue trigger regression
+- D3.8C automatic finalization regression
+- D3.8B settlement handoff regression
+- D3.8A create handoff regression
+- protected source diff scan
+- League Points PHP syntax validation
+
+Final local gate:
+
+`L2-D3.11B OPTION-B REGRESSION SET: PASS`
+
+Protected diff result:
+
+`PASS: no new PVP/economy/Recovery/direct SQL/schema execution`
+
+### Production Pre-Live League Point Gate
+
+Production Render inspection:
+
+`PASS`
+
+Production DB integrity:
+
+`ok`
+
+Production League Point table:
+
+`tbl_mousefight_league_point_awards`
+
+Verified columns:
+
+- `award_id`
+- `fight_id`
+- `token_id`
+- `collection`
+- `league_tier_key`
+- `source`
+- `points_awarded`
+- `season_id`
+- `season_name`
+- `awarded_at`
+
+Verified indexes:
+
+- `idx_mousefight_league_points_unique_fight`
+- `idx_mousefight_league_points_token`
+- `idx_mousefight_league_points_season_token`
+
+Critical idempotency:
+
+`idx_mousefight_league_points_unique_fight`
+is UNIQUE on:
+
+`fight_id`
+
+Production ledger before D3.11B activation:
+
+- award rows:
+  `0`
+- total League Points:
+  `0`
+- unique awarded fights:
+  `0`
+
+No persisted automatic waiting PVP fight was present during the pre-live gate.
+
+### Production Backup Before First Real League Point
+
+Verified backup:
+
+`/data/narrrf_world.before-d311b-first-live-point-20260826-222942.sqlite`
+
+Production runtime DB integrity:
+
+`ok`
+
+Backup DB integrity:
+
+`ok`
+
+Backup League Point ledger:
+
+- rows:
+  `0`
+- points:
+  `0`
+
+Source production DB was NOT modified by the pre-live audit/backup operation.
+
+### Historical Fight Cutoff Verified
+
+Recent finished automatic League fights on production showed:
+
+- `league_mode = exact`
+- `league_matchmaking = 1`
+
+but did NOT yet contain:
+
+- `league_competitive`
+- `league_source`
+- `league_points_enabled`
+- `league_competitive_version`
+
+Therefore:
+
+NO retroactive Point award is approved for those historical test fights.
+
+D3.11B eligibility begins only with new fights created after the D3.11B bot restart.
+
+### Current Live Discord Evidence After D3.11B Restart
+
+The restarted bot is active in the Genesis League Hub.
+
+Observed live after restart:
+
+- Genesis League Hub Guide displayed;
+- Genesis League Matchmaking panel displayed;
+- exact-tier search system active;
+- public `@MouseFight` search ping active;
+- Matchmaking panel correctly reports runtime queue counts.
+
+Current observed Golden search:
+
+Mouse:
+
+`Wizard`
+
+Owner:
+
+`@Narrrf`
+
+League:
+
+`Golden`
+
+League Power:
+
+`251`
+
+Selected Genetic Items:
+
+`3/3`
+
+Queue state:
+
+`Golden — 1 searching`
+
+Search remains runtime-only.
+
+Searching alone does NOT:
+
+- create PVP;
+- move DSPOINC;
+- start Recovery;
+- award League Points;
+- change Genesis progression;
+- change Lab progression.
+
+### First Live League Point Write Status
+
+NOT YET VERIFIED.
+
+At this checkpoint:
+
+- D3.11B source is loaded in the restarted bot;
+- the first eligible automatic fight has not yet completed for this checkpoint;
+- no new production League Point row has yet been verified;
+- Discord `+1 LP` end-card behavior has not yet been live-proven;
+- production NFT lifetime/season LP totals have not yet been live-proven.
+
+Therefore do NOT yet describe D3.11B as production-complete.
+
+Current narrow status:
+
+`ACTIVATED / WAITING FIRST LIVE ELIGIBLE MATCH`
+
+### Genetic Item Balance Feedback
+
+Current automatic League fight rule still allows:
+
+`max 3 selected Owner Genetic Items`
+
+Live tester feedback indicates Genetic Items currently have a strong effect on Fight Power.
+
+Observed discussion examples:
+
+- one fighter:
+  League Power `234`
+  → Fight Power approximately `302`
+- another fighter:
+  League Power `233`
+  → Fight Power approximately `272`
+
+Tester feedback raised the idea of reducing automatic League matchmaking from:
+
+`3 Genetic Items`
+
+to:
+
+`1 Genetic Item`
+
+This is NOT implemented at this checkpoint.
+
+Do not mix this future balance decision into D3.11B League Point verification.
+
+Required future balance review:
+
+- inspect exact Genetic Item contribution in Fight Power;
+- compare 0 / 1 / 2 / 3 item scenarios;
+- preserve Genetic Item marketplace utility;
+- decide whether competitive automatic League matchmaking should use max 1 item;
+- patch only after explicit approval and dedicated regression testing.
+
+Permanent Genetic Item state remains untouched.
+
+### Existing Matchmaking Presentation Status
+
+Live D3.11A-R2/R3 remains healthy:
+
+- themed League search ping;
+- exact League search;
+- generated fighter/round cards;
+- League Power vs Fight Power explanation;
+- winner-first score;
+- authoritative settlement display;
+- completed-PVP Recovery display;
+- final Matchmaking panel moved beneath a completed fight;
+- no duplicate canonical Matchmaking panel intentionally left behind.
+
+Members/testers reported the matchmaking feature is working well and the search-ping flow is understandable.
+
+### Protected Systems
+
+D3.11B does NOT change:
+
+- League Power calculation;
+- Fight Power calculation;
+- Battle Mode calculation;
+- PVP create transaction rules;
+- PVP escrow;
+- PVP settlement;
+- PVP cancellation;
+- DSPOINC;
+- SPOINC;
+- event burns/refunds;
+- Fight Recovery transaction ownership;
+- champion rewards;
+- token payout/airdrop;
+- Genesis ownership;
+- permanent Genesis Traits;
+- permanent Genesis Abilities;
+- Lab progression;
+- Genetic Item permanent state;
+- staking;
+- authentication;
+- DB schema;
+- deployment configuration.
+
+The new protected mutation is ONLY:
+
+eligible completed automatic League fight
+→ authoritative existing League Point API
+→ idempotent NFT-bound `+1`.
+
+### Exact Next Step After Break
+
+Do NOT code more before the first live D3.11B verification.
+
+Wait for one new automatic Exact-Tier fight created after the D3.11B restart.
+
+Capture:
+
+1. exact Fight ID;
+2. League tier;
+3. winner NFT;
+4. final Discord embed;
+5. final Canvas card;
+6. bot console League Point result;
+7. post-fight Matchmaking panel position.
+
+Then inspect production DB READ ONLY for that exact Fight ID.
+
+Expected first-ever successful live evidence:
+
+`rows_for_fight = 1`
+
+`points_for_fight = 1`
+
+and, if this is still the first production award:
+
+`award_rows = 1`
+
+`total_points = 1`
+
+`unique_fights = 1`
+
+Also verify persisted fight provenance:
+
+`league_competitive = 1`
+
+`league_source = matchmaking`
+
+`league_points_enabled = 1`
+
+`league_competitive_version = mousefight_genesis_league_competitive_v1`
+
+Only after Discord + application/API + production DB all agree may D3.11B be marked:
+
+`LIVE VERIFIED`
+
+### Following Phase
+
+After the first League Point live proof:
+
+1. close D3.11B with exact Fight-ID evidence;
+2. decide/test the competitive Genetic Item limit separately;
+3. later expose NFT League Point totals/leaderboards through approved read-only presentation paths.
+
+Do NOT award historical fights retroactively unless a separate explicit rule is approved.
+
+### Standby
+
+MouseFight Leagues Expert 1.4 LIVE
+
+Status:
+
+`D3.11B OPTION-B LOCAL PASS / PRODUCTION PRE-LIVE GATE PASS / VERIFIED BACKUP CREATED / BOT RESTARTED WITH NEW SOURCE / GOLDEN SEARCH ACTIVE / FIRST LIVE NFT-BOUND +1 MATCH PENDING / NO FURTHER CODE TONIGHT`
+
+## 2026-08-26 — MouseFight Genesis League L2 / D3.11A-R3 Live Presentation + Post-Fight Panel Repost Checkpoint
+
+### Agent / Scope
+
+- Agent: MouseFight Leagues Expert 1.4 LIVE
+- Project: Narrrfs World 13.0
+- Branch: `render-deploy`
+- Main Discord source:
+  `discord/commands/mousefight.js`
+- Discord startup/router:
+  `discord/index.js`
+- Scope:
+  automatic Exact-Tier Genesis League matchmaking V1 presentation, live queue messaging, and post-completed-fight matchmaking panel positioning.
+- League Points remain a separate later protected phase.
+- No competitive League Point provenance or award write has been activated by D3.11A.
+
+### Environment / Runtime Boundary
+
+- Local repo:
+  `/c/xampp-server/htdocs/narrrfs-world`
+- Discord runtime:
+  local Windows Node bot
+- Website/API:
+  Render production
+- Local Discord bot may call authoritative live Narrrfs APIs during real MouseFight transactions.
+- Discord bot was restarted after D3.11A-R3 local regression PASS.
+- New runtime source is active.
+- No Render deployment was required.
+- No slash command deployment was required for D3.11A-R2/R3.
+
+### D3.11A-R2 — League Presentation
+
+Implemented and locally regression-tested before restart.
+
+Live automatic League fight presentation now includes:
+
+- public `@MouseFight` exact-League search ping;
+- exact published League symbol/name;
+- queued Genesis mouse;
+- owner mention;
+- League Power;
+- selected Genetic Item count;
+- 30-minute runtime queue expiry;
+- same-message League combat presentation;
+- Champion Mode / Best of 3 presentation;
+- League-themed resolved round cards;
+- Genesis fighter images / battle cards;
+- League Power and Fight Power shown separately;
+- winner-first final score;
+- Final Clash recap;
+- authoritative settlement status;
+- completed-PVP Fight Recovery presentation;
+- League Points explicitly shown as activation pending.
+
+Verified Discord role used for search notification:
+
+`1527317529792352387`
+
+`@MouseFight`
+
+D3.11A-R2 does NOT:
+
+- award League Points;
+- mutate competitive League provenance;
+- change Genesis/Lab progression;
+- change ownership;
+- mutate Genetic Items permanently;
+- add a second Recovery write;
+- change PVP wager/economy behavior.
+
+### D3.11A-R3 — Post-Fight Matchmaking Panel Repost
+
+Marker:
+
+`NARRRFS_MATCHMAKING_POSTFIGHT_PANEL_REPOST_V1`
+
+Backup:
+
+`commands/mousefight.js.before-league-postfight-panel-repost-20260826-233552.bak`
+
+Purpose:
+
+Discord edits do not move an existing Matchmaking panel to the bottom of the channel.
+
+R3 adds a presentation-only post-completion action:
+
+automatic League fight reaches D3.8C COMPLETE
+→ protected participant / round finalization complete
+→ final League result message complete
+→ exact queue cleanup complete
+→ existing required panel refresh complete
+→ D1 pair lock released
+→ D3.8C COMPLETE
+→ send current Matchmaking panel as a new Discord message
+→ remove previous marked Matchmaking panel
+→ new Matchmaking panel becomes newest channel panel.
+
+Safety rule:
+
+The panel repost is cosmetic and occurs only after the automatic fight is already COMPLETE.
+
+A Discord failure in this cosmetic repost must NOT:
+
+- downgrade a completed fight;
+- retry PVP creation;
+- retry settlement;
+- create/cancel another fight;
+- alter queue finalization;
+- reacquire/release protected pair ownership incorrectly;
+- change Recovery;
+- change economy;
+- award League Points.
+
+New panel is sent before old panel deletion.
+
+Unexpected old-panel deletion failure rolls back the newly-created panel best-effort to avoid intentionally leaving duplicate permanent Matchmaking panels.
+
+### D3.11A-R3 Local Validation
+
+PASS:
+
+- `node --check commands/mousefight.js`
+- `node --check index.js`
+- `node --check test-mousefight-league-postfight-panel-repost-v1.js`
+- D3.11A-R3 isolated panel repost test
+- D3.11A-R2 presentation regression
+- D3.9B automatic orchestrator regression
+- D3.9C real queue trigger regression
+- D3.8C automatic PVP finalization regression
+- D3.8B automatic PVP settlement handoff regression
+- D3.8A automatic PVP create handoff regression
+- protected execution / DB mutation diff scan
+
+Final local gate:
+
+`L2-D3.11A-R3 REGRESSION SET: PASS`
+
+Protected scan:
+
+`PASS: post-fight panel patch adds no protected transaction / DB mutation execution`
+
+### Live Discord Evidence After Restart
+
+Automatic Silver League fight completed:
+
+Fight ID:
+
+`mfpvp_1787780364277_kn5ymrr`
+
+Result:
+
+- League:
+  Silver
+- Winner:
+  `Archie #2`
+- Runner-Up:
+  `Tiny`
+- Winner League Power:
+  `233`
+- Winner Fight Power:
+  `485`
+- Runner-Up League Power:
+  `222`
+- Runner-Up Fight Power:
+  `300`
+- Battle Mode:
+  Champion
+- Match format:
+  Best of 3
+- Final displayed score:
+  `2-0`
+- DSPOINC wager:
+  `0`
+- authoritative PVP settlement displayed:
+  `confirmed`
+- Fight Recovery displayed:
+  `15 minutes • completed_pvp`
+- League Points:
+  `Activation pending`
+- no League Point award claimed by presentation.
+
+The live final embed correctly explains:
+
+`League Power ≠ Fight Power`
+
+and separates permanent published League classification from the temporary MouseFight combat snapshot.
+
+### Live R3 Panel Position Evidence
+
+After the completed Silver League result, Discord displayed a newly-positioned:
+
+`⚔️ Genesis League Matchmaking • NARRRFS_GENESIS_LEAGUE_MATCHMAKING_V1`
+
+panel immediately below the completed fight result.
+
+This is live Discord evidence consistent with the new D3.11A-R3 post-COMPLETE panel repost path.
+
+Later queue-search announcements naturally become newer channel messages.
+
+Therefore the next completed automatic League fight is the next live observation point:
+
+completed result
+→ Matchmaking panel should be reposted beneath that result again.
+
+Do not interpret later search-ping messages below the panel as R3 failure; those messages were sent after the panel repost.
+
+### Current Runtime Queue Evidence
+
+Current observed live queue/search activity includes:
+
+Bronze:
+
+`Little Tony Cheese`
+
+- owner:
+  `@fohrerslayer`
+- League Power:
+  `160`
+- selected Genetic Items:
+  `3/3`
+
+Golden:
+
+`Wizard`
+
+- owner:
+  `@Narrrf`
+- League Power:
+  `251`
+- selected Genetic Items:
+  `3/3`
+
+The permanent Matchmaking panel displayed at the observed checkpoint:
+
+- Bronze:
+  `1 searching`
+- Golden:
+  `1 searching`
+- other shown tiers:
+  `0 searching`
+
+Queue searches remain temporary Discord runtime state only.
+
+Searching alone still does NOT:
+
+- create a fight;
+- move DSPOINC;
+- start Recovery;
+- mutate Genesis/Lab progression.
+
+### League / Matchmaking Contract Preserved
+
+Automatic matchmaking remains:
+
+- exact published League only;
+- different Discord users;
+- different Genesis NFTs;
+- FIFO same-tier queue;
+- current authoritative pre-transaction revalidation;
+- Champion Battle Mode;
+- Best of 3;
+- zero DSPOINC wager;
+- no token prize;
+- max 3 selected Owner Genetic Items;
+- 15-minute completed-PVP Recovery through authoritative settlement;
+- backend creation required before confirmed fight presentation;
+- ambiguous transaction state reconciled by exact Fight ID.
+
+League identity remains:
+
+`token_id + collection`
+
+League Power remains separate from:
+
+- Fight Power;
+- Genetic Items;
+- temporary combat effects;
+- fight results;
+- DSPOINC/SPOINC;
+- League Points.
+
+### Protected Systems Status
+
+D3.11A-R2/R3 did not intentionally change:
+
+- Fight Recovery transaction ownership;
+- DSPOINC/SPOINC;
+- PVP escrow/settlement rules;
+- event burns/refunds;
+- champion rewards;
+- token payout/airdrop;
+- Genesis ownership;
+- permanent Genesis Traits;
+- permanent Genesis Abilities;
+- Lab progression;
+- Genetic Item permanent state;
+- staking;
+- auth;
+- DB schema/migrations;
+- deployment configuration.
+
+League Points remain unimplemented in this presentation phase.
+
+### Known Observation
+
+One owner reported that a Bronze mouse was still unavailable due to active Fight Recovery.
+
+That is not currently classified as a bug from this checkpoint.
+
+Active completed-PVP Recovery is expected to block immediate reuse of that Genesis fighter until the authoritative Recovery window expires.
+
+No Recovery row should be manually cleared or altered for matchmaking convenience.
+
+### Exact Next Step
+
+WAIT for the next automatic same-tier League match to complete.
+
+Observe only:
+
+1. automatic queue finds compatible exact-tier opponent;
+2. protected create/settle/finalization completes normally;
+3. final League battle result/card is shown;
+4. queue counts update;
+5. D3.11A-R3 reposts `Genesis League Matchmaking` beneath the completed result;
+6. old permanent Matchmaking panel is no longer left as the canonical panel higher in the channel;
+7. no duplicate permanent panel remains;
+8. completed fight remains COMPLETE regardless of cosmetic panel behavior.
+
+After that live observation:
+
+- capture Fight ID;
+- capture console `Post-fight panel position` output if available;
+- verify bot remains healthy;
+- then close D3.11A-R3 as live-verified if all evidence matches.
+
+Do NOT begin League Point writes or competitive provenance changes until the separate protected League Point phase is explicitly approved.
+
+### Standby
+
+MouseFight Leagues Expert 1.4 LIVE
+
+Status:
+
+`D3.11A-R3 LOCAL PASS / NEW BOT RUNTIME ACTIVE / LIVE PRESENTATION VERIFIED / POST-FIGHT PANEL REPOST OBSERVED ON SILVER MATCH / WAITING FOR NEXT AUTOMATIC FIGHT CONFIRMATION`
+
+## 2026-08-26 — MouseFight Genesis League L2 / D3.8C Local Finalization PASS
+
+### Scope
+
+- Agent: MouseFight Leagues Expert 1.4 LIVE
+- Branch: `render-deploy`
+- Scope: automatic Exact-Tier Genesis League matchmaking V1.
+- Main file: `discord/commands/mousefight.js`.
+- D3.8 protected automatic zero-wager PVP flow remains explicitly approved.
+- League Points remain outside D3.8.
+
+### D3.8C — PASS LOCALLY
+
+Implemented marker:
+
+`NARRRFS_MATCHMAKING_AUTOMATIC_PVP_FINALIZATION_V1`
+
+Backup:
+
+`commands/mousefight.js.before-league-automatic-pvp-finalization-20260826-214338.bak`
+
+Implemented:
+
+- Fight-ID runtime finalization lock;
+- final participant UPSERT + exact SELECT verification;
+- retry-safe BO3 round history without DB migration;
+- exact round coordinate verify/skip/insert/reverify behavior;
+- contradictory round protection;
+- dedicated permanent Genesis League result embed;
+- explicit League Power vs Fight Power presentation;
+- exact queue cleanup using user + token + collection + tier;
+- preservation of a different/newer same-user search;
+- permanent matchmaking panel refresh;
+- D1 pair lock release LAST;
+- finished `activeMouseFights` lifecycle preserved.
+
+Downloaded-live DB snapshot inspected read-only before patch:
+
+SHA256:
+`841909dc478ec3c29e2c21d3b04d8f169b24b745a7047c2351752183be30b5ee`
+
+Integrity:
+`ok`
+
+`tbl_mousefight_rounds`:
+
+- no unique round-coordinate constraint;
+- current duplicate `(fight_id, bracket_round, match_number, round_number)` groups: `0`;
+- no schema migration performed.
+
+`tbl_mousefight_participants`:
+
+- unique `(fight_id,user_id)`;
+- unique `(fight_id,token_id,collection)`;
+- duplicate participant keys: none observed.
+
+### Validation
+
+PASS:
+
+- `node --check commands/mousefight.js`
+- `node --check index.js`
+- D3.8C isolated finalization test
+- D3.8B regression
+- D3.8A regression
+- D3.7B regression
+- D3.7A regression
+- D3.6C regression
+- D3.6B regression
+- D3.5B regression
+
+D3.8C negative-path proof:
+
+synthetic Discord final-message failure correctly returned finalization incomplete while preserving both queue searches and the D1 pair lock.
+
+### Protected / Live Status
+
+No:
+
+- bot restart;
+- live matcher;
+- live Discord fight message;
+- live API call;
+- real DB write;
+- DB migration;
+- actual PVP create/settle/cancel;
+- separate Recovery write;
+- real running-bot queue removal;
+- League Point;
+- deployment.
+
+Bot still running pre-new-source runtime:
+
+PID `36040`
+started `2026-08-25T20:05:06.406Z`
+
+### Exact Next Step
+
+`L2-D3.9A — automatic matcher orchestration source gate`
+
+Inspect exact queue-insertion caller, D1 candidate/lock API, D2 fresh pair validator, D3.5B builder, D3.8A/B/C signatures, Discord channel acquisition, Fight-ID construction, and failure/requeue behavior.
+
+Then build one smallest orchestration helper connecting:
+
+queue insertion
+→ D1
+→ D2
+→ D3.5B
+→ D3.8A
+→ D3.8B
+→ D3.8C
+
+No restart/live activation until isolated end-to-end orchestration passes.
+
+League Point remains a separate later phase.
+
+## 2026-08-26 — MouseFight Genesis League Matchmaking L2 / D3.8B Protected Settlement Handoff Synch
+
+### Agent / Scope
+
+- Agent: MouseFight Leagues Expert 1.4 LIVE
+- Project: Narrrfs World 13.0
+- Branch: `render-deploy`
+- Scope: Genesis League automatic matchmaking V1
+- Current workstream: automatic Exact-League PVP transaction + crash-safety architecture
+- Authoritative League classification remains the published Genesis League V2 data contract.
+- League Power remains separate from Fight Power.
+- Genetic Items remain temporary fight-only support and are excluded from League Power.
+- League Points remain separate from PVP settlement and are NOT implemented in this phase.
+
+### Environment
+
+- Local repo:
+  `/c/xampp-server/htdocs/narrrfs-world`
+- Discord source:
+  `/c/xampp-server/htdocs/narrrfs-world/discord`
+- Main file:
+  `discord/commands/mousefight.js`
+- Router/startup:
+  `discord/index.js`
+- Local Discord bot runtime remains:
+  PID `36040`
+- Bot started:
+  `2026-08-25T20:05:06.406Z`
+- Bot cwd:
+  `C:\xampp-server\htdocs\narrrfs-world\discord`
+- Website/API remains on Render.
+- Local Discord bot may call live Narrrfs APIs, but no live transaction was executed during D3.5B–D3.8B validation.
+
+### Automatic Genesis League Match Contract
+
+Approved automatic League matchmaking V1 remains:
+
+- exact published Genesis League only;
+- two different Discord users;
+- two different Genesis NFTs;
+- FIFO same-tier queue;
+- Champion Battle Mode;
+- Best of 3;
+- zero DSPOINC wager;
+- no SPL/token prize;
+- maximum 3 selected idle Owner Genetic Items;
+- 15-minute completed-PVP Recovery;
+- one public League fight message;
+- no confirmed public fight before authoritative backend creation succeeds;
+- Fight Recovery owned by the authoritative PVP settlement transaction;
+- League Point award remains a separate later phase.
+
+### Completed Matchmaking Safety Layers
+
+#### D1 — FIFO Candidate Pair + Runtime Pair Lock — PASS
+
+Implemented and isolated locally.
+
+Responsibilities:
+
+- find exact-tier FIFO pair;
+- require different Discord users;
+- require different Genesis NFTs;
+- acquire canonical pair lock;
+- no API/DB/economy action.
+
+#### D2 — Fresh Pair Revalidation — PASS
+
+Implemented and isolated locally.
+
+Before transaction:
+
+- fresh ownership/profile check;
+- current published V2 League check;
+- exact same tier required;
+- current mouse availability check;
+- selected Genetic Items freshly checked as idle/eligible;
+- maximum 3 Genetic Items;
+- authentic fresh profiles remain unmodified.
+
+#### D3.4 — Persisted Exact-Fight Reconciliation — PASS
+
+Implemented locally.
+
+Stable states:
+
+- `ABSENT`
+- `WAITING_VALID`
+- `FINISHED_VALID`
+- `CONFLICT`
+
+Strictly reconciles:
+
+- Fight ID;
+- FIFO challenger/opponent identities;
+- Genesis token identities;
+- automatic matchmaking provenance;
+- pair key;
+- intended opponent;
+- Best of 3;
+- zero wager;
+- 15-minute Recovery contract;
+- waiting challenger-only participant state;
+- finished two-participant state;
+- winner identity;
+- zero-wager absence of DSPOINC settlement rows;
+- exactly two `completed_pvp` Recovery rows after valid completion.
+
+Transport/read failure is never interpreted as `ABSENT`.
+
+#### D3.5B — Automatic PVP Builder — PASS
+
+Implemented and isolated locally.
+
+Builds:
+
+- waiting PVP runtime package;
+- FIFO left fighter = challenger;
+- right fighter = intended opponent;
+- Champion / BO3 / Exact League;
+- wager `0`;
+- Recovery `15`;
+- max Genetic Items `3`;
+- challenger-only `fight.players` before settlement;
+- temporary GI loadouts applied only to cloned fight snapshots;
+- League Power retained separately for presentation.
+
+No API/DB transaction occurs inside builder.
+
+#### D3.6B — Persisted Automatic Provenance — PASS
+
+Automatic `pvp_create` metadata now includes:
+
+- `league_matchmaking=true`
+- matchmaking version;
+- canonical pair key;
+- intended opponent token ID;
+- opponent collection;
+- intended opponent selected GI IDs.
+
+Generic persistence preserves the same provenance.
+
+D3.4 reconciliation now requires this provenance for automatic PVP.
+
+#### D3.6C — Restart Quarantine — PASS
+
+Restored automatic waiting PVP now:
+
+- restores persisted automatic provenance;
+- remains registered in `activeMouseFights`;
+- is explicitly identified as automatic matchmaking;
+- shows `Automatic Genesis League Match — Recovery Pending`;
+- exposes read-only View only;
+- blocks manual Accept;
+- blocks manual Decline;
+- blocks manual Cancel;
+- hides automatic PVP from manual accept/decline/cancel autocomplete.
+
+Malformed automatic provenance remains quarantined and does NOT downgrade into ordinary manual PVP.
+
+Manual PVP challenge behavior remains unchanged.
+
+#### D3.7A — Crash-Recovery Fresh Validator — PASS
+
+Pure validator now distinguishes:
+
+- `RECOVERY_VALID`
+- `RECOVERY_BLOCKED`
+- `RECOVERY_CONFLICT`
+
+Fresh recovery rules:
+
+Challenger:
+- exact persisted Genesis identity;
+- current ownership/profile;
+- current exact V2 League;
+- current intended GI eligibility;
+- may be free OR reserved specifically by THIS SAME waiting PVP.
+
+Opponent:
+- exact persisted intended Genesis identity;
+- current ownership/profile;
+- current exact V2 League;
+- current intended GI eligibility;
+- must be genuinely available/free.
+
+Active Fight Recovery blocks continuation.
+
+No automatic cancellation occurs from BLOCKED/CONFLICT.
+
+#### D3.7B — Read-Only Recovery Evidence Orchestrator — PASS
+
+Implemented locally.
+
+Flow:
+
+restored quarantined automatic fight
+→ reconstruct canonical pair
+→ D3.4 exact persisted-state SELECT
+→ require `WAITING_VALID`
+→ fresh challenger state
+→ fresh opponent state
+→ fresh required GI inventories
+→ D3.7A validator
+→ VALID / BLOCKED / CONFLICT
+→ STOP
+
+No transaction/cancellation/settlement is performed by D3.7B.
+
+#### D3.8A — Protected Automatic `pvp_create` Handoff — PASS
+
+Explicit D3.8 protected-flow approval received from project owner.
+
+Implemented locally.
+
+Flow:
+
+D1 pair lock
+→ neutral `Preparing Genesis League Match…` Discord message
+→ set Discord message ID on fight
+→ existing authoritative `createMouseFightPvpEconomyChallenge()`
+→ exact Fight-ID reconciliation ALWAYS
+→ `WAITING_VALID` required before runtime registration.
+
+Important ambiguity rules proven:
+
+- successful create + `WAITING_VALID`
+  → confirmed waiting PVP;
+- HTTP/transport failure + `WAITING_VALID`
+  → backend committed; treat as confirmed;
+- failed create + authoritative `ABSENT`
+  → transaction not committed; pair lock may release and queue remains untouched;
+- successful response + `ABSENT`
+  → contradiction; quarantine;
+- persisted read failure
+  → quarantine, keep pair lock;
+- mismatched persisted Discord message ID
+  → quarantine.
+
+D3.8A does NOT:
+
+- settle PVP;
+- cancel PVP;
+- run combat;
+- remove queue entries;
+- award League Points;
+- create separate Recovery.
+
+#### D3.8B — Protected Automatic `pvp_accept_settle` Handoff — PASS
+
+Implemented locally and isolated tests PASS.
+
+Backup:
+
+`commands/mousefight.js.before-league-automatic-pvp-settlement-handoff-20260826-020712.bak`
+
+Marker:
+
+`NARRRFS_MATCHMAKING_AUTOMATIC_PVP_SETTLEMENT_HANDOFF_V1`
+
+Main state contract:
+
+- `FINISHED_CONFIRMED`
+- `WAITING_UNSETTLED`
+- `AMBIGUOUS`
+
+Main helper:
+
+`settleMouseFightLeagueAutomaticPvpHandoff(...)`
+
+Protected flow:
+
+D3.8A `WAITING_CONFIRMED`
+→ verify canonical pair
+→ verify D1 pair lock
+→ verify Champion / BO3 / Exact League / zero wager / 15-min Recovery contract
+→ `prepareMouseFightBattleModeMatch`
+→ `runMouseFightMatch`
+→ `mapMouseFightCombatResultToOriginalPlayers`
+→ authoritative `pvp_accept_settle`
+→ exact Fight-ID reconciliation ALWAYS.
+
+Only `FINISHED_VALID` may finalize runtime state.
+
+`FINISHED_VALID` additionally must prove:
+
+- both expected participants;
+- persisted winner belongs to matched pair;
+- persisted winner token matches winner user;
+- zero DSPOINC settlement rows for zero-wager League PVP;
+- exactly two `completed_pvp` Recovery rows.
+
+Persisted winner must exactly match the locally resolved Champion BO3 winner.
+
+Ambiguity behavior proven:
+
+- successful settlement + `FINISHED_VALID`
+  → `FINISHED_CONFIRMED`;
+- settlement response failure + `FINISHED_VALID`
+  → backend committed; `FINISHED_CONFIRMED`;
+- settlement failure + `WAITING_VALID`
+  → `WAITING_UNSETTLED`, quarantined, no retry;
+- successful response + `WAITING_VALID`
+  → contradictory, `AMBIGUOUS`;
+- reconciliation/read failure
+  → `AMBIGUOUS`;
+- persisted/local winner mismatch
+  → `AMBIGUOUS`;
+- missing D1 pair lock
+  → settlement prevented.
+
+Runtime winner/opponent/placements and battle preparation are attached only after authoritative `FINISHED_VALID`.
+
+### D3.8B Validation
+
+Syntax:
+
+- `node --check commands/mousefight.js` — PASS
+- `node --check index.js` — PASS
+- `node --check test-mousefight-league-automatic-pvp-settlement-handoff-v1.js` — PASS
+
+Regression results:
+
+- D3.8B — PASS
+- D3.8A — PASS
+- D3.7B — PASS
+- D3.7A — PASS
+- D3.6C — PASS
+- D3.6B — PASS
+- D3.5B — PASS
+
+Explicit isolated D3.8B proofs:
+
+- successful `pvp_accept_settle` requires `FINISHED_VALID`;
+- `FINISHED_VALID` attaches opponent/winner/placements/battle preparation;
+- failed settlement response + `FINISHED_VALID` is recognized as committed;
+- failed settlement + `WAITING_VALID` remains quarantined;
+- successful settlement response + `WAITING_VALID` fails closed;
+- reconciliation failure remains quarantined;
+- persisted/local winner mismatch fails closed;
+- missing D1 pair lock blocks settlement.
+
+### D3.8B Protected-System Status
+
+No real/live transaction was executed by tests.
+
+No:
+
+- bot restart;
+- live automatic matcher;
+- real Discord fight message;
+- live API transaction;
+- real DB read during isolated tests;
+- DB write;
+- actual `pvp_create`;
+- actual `pvp_accept_settle`;
+- `pvp_cancel`;
+- actual economy execution;
+- standalone Recovery write;
+- queue removal;
+- panel mutation from automatic fight;
+- League Point;
+- deployment.
+
+Fight Recovery remains owned by authoritative `pvp_accept_settle`.
+
+No separate Recovery code was added.
+
+### Current Runtime Status
+
+Local Discord bot remains the pre-D3.5–D3.8 runtime:
+
+PID:
+`36040`
+
+Started:
+`2026-08-25T20:05:06.406Z`
+
+cwd:
+`C:\xampp-server\htdocs\narrrfs-world\discord`
+
+Do NOT restart merely to inspect current work.
+
+The new automatic PVP transaction layers are source-tested but are NOT active in this running process.
+
+### Protected Systems Unchanged Outside Approved D3.8 Scope
+
+Unchanged:
+
+- DSPOINC/SPOINC general economy;
+- PVP escrow rules outside the approved automatic zero-wager handoff;
+- event burns/refunds;
+- champion rewards;
+- token payout/airdrop;
+- Genesis ownership;
+- permanent Traits/Abilities;
+- Lab progression;
+- Genetic Items persistence;
+- staking;
+- auth;
+- DB schema/migrations;
+- deployment configuration;
+- unrelated games.
+
+No manual protected rows were edited.
+
+### Important Remaining Work
+
+Next phase:
+
+`L2-D3.8C — FINISHED_VALID completion/finalization`
+
+Planned D3.8C scope:
+
+1. start ONLY from D3.8B `FINISHED_CONFIRMED`;
+2. mirror final participant placements using existing persistence helper;
+3. mirror generated PVP rounds as bracket round 1 / match 1;
+4. remove exactly the two matched runtime queue entries;
+5. refresh permanent Genesis League matchmaking panel;
+6. convert the SAME League fight Discord message into the permanent final result;
+7. preserve clear League Power vs Fight Power presentation;
+8. release D1 pair lock only after controlled completion;
+9. do NOT award League Points yet.
+
+After D3.8C:
+
+- wire the complete D1 → D2 → D3.5B → D3.8A → D3.8B → D3.8C automatic matcher orchestration;
+- connect/review crash-recovery startup continuation;
+- run isolated end-to-end tests;
+- inspect focused diff and regression chain;
+- only then consider bot restart / controlled live verification;
+- League Point `+1` remains a separate explicitly inspected authoritative phase.
+
+### Estimated Remaining Effort
+
+Automatic League fight V1 is now in the final integration stretch.
+
+Expected remaining work is approximately:
+
+- D3.8C finalization/history/queue/message cleanup;
+- automatic matcher orchestration;
+- crash-recovery/startup integration;
+- isolated end-to-end validation;
+- controlled runtime/live verification;
+- separate League Point implementation/verification.
+
+Estimate: approximately 2–4 focused development blocks, depending on what final integration tests reveal.
+
+Do not compress these protected phases just to finish faster.
+
+### Exact Next Step
+
+Tomorrow begin with:
+
+`L2-D3.8C — FINISHED_VALID completion/finalization source inspection + smallest patch`
+
+First verify exact current participant/round persistence, result-message edit, queue-removal, panel-refresh, active runtime cleanup, and pair-lock release behavior before patching.
+
+Do NOT restart/deploy before local D3.8C and orchestration validation pass.
+
+### Standby
+
+Status:
+`D3.8B COMPLETE LOCALLY — CLEAN STOP POINT`
+
+Automatic matchmaking production activation:
+`NOT YET`
+
+Bot:
+`KEEP PID 36040 RUNNING / OR STOP MANUALLY ONLY IF DESIRED, BUT DO NOT RESTART FOR THESE CHANGES TONIGHT`
+
+Next:
+`D3.8C tomorrow`
+
 ## 2026-08-25 — MouseFight Leagues Expert 1.4 LIVE — L2-C2C Genesis League Matchmaking Queue LIVE UI / Production Availability Deployment Gate
 
 **Agent / version:** MouseFight Leagues Expert 1.4 LIVE  

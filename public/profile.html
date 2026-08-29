@@ -3392,6 +3392,82 @@ body {
   font-size: 1.35rem;
 }
 
+/*
+ * NARRRFS_LEAGUE_FRONTEND_LAYOUT_V2
+ *
+ * DEVS FOR DECADES:
+ * The four original Profile actions remain compact dashboard tiles.
+ * Genesis League actions use dedicated full-width horizontal bars so longer
+ * competitive labels stay readable without changing their navigation targets.
+ *
+ * Presentation only:
+ * no matchmaking queue, PVP, League Point, Recovery, economy, Genesis or Lab logic.
+ */
+.profile-season12-league-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.profile-season12-league-action-btn {
+  width: 100%;
+  min-height: 3.8rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.8rem;
+  padding: 0.72rem 0.9rem;
+  border-radius: 1.15rem;
+  font-weight: 950;
+  line-height: 1.1;
+  text-align: left;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.profile-season12-league-action-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+}
+
+.profile-season12-league-action-icon {
+  width: 2.15rem;
+  min-width: 2.15rem;
+  height: 2.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.20);
+  font-size: 1.15rem;
+}
+
+.profile-season12-league-action-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.16rem;
+}
+
+.profile-season12-league-action-copy strong {
+  font-size: 0.86rem;
+  line-height: 1.05rem;
+}
+
+.profile-season12-league-action-copy small {
+  font-size: 0.65rem;
+  line-height: 0.85rem;
+  font-weight: 800;
+  opacity: 0.76;
+}
+
 @media (max-width: 1023px) {
   .profile-season12-actions {
     max-width: none;
@@ -3512,6 +3588,42 @@ body {
             <a href="#profile-chest-section" class="profile-season12-action-btn bg-orange-400 text-slate-950 hover:bg-orange-300 transition">
               <span>🎁</span>
               Rewards
+            </a>
+          </div>
+
+          <!-- NARRRFS_LEAGUE_FRONTEND_CTA_V1
+               NARRRFS_LEAGUE_FRONTEND_LAYOUT_V2
+
+               DEVS FOR DECADES:
+               These buttons are navigation only.
+               The website never inserts a matchmaking queue entry, creates a fight,
+               awards League Points, touches Recovery, or decides League eligibility.
+               Discord remains the authoritative Search League Fight workflow. -->
+          <div class="profile-season12-league-actions">
+            <a
+              href="https://discord.com/channels/1332015322546311218/1540182398472421516"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="profile-season12-league-action-btn bg-emerald-400 text-slate-950"
+            >
+              <span class="profile-season12-league-action-icon">🔎</span>
+
+              <span class="profile-season12-league-action-copy">
+                <strong>Search League Fight</strong>
+                <small>Open Discord matchmaking</small>
+              </span>
+            </a>
+
+            <a
+              href="mousefights.html#leagues"
+              class="profile-season12-league-action-btn bg-violet-500 text-white"
+            >
+              <span class="profile-season12-league-action-icon">🏆</span>
+
+              <span class="profile-season12-league-action-copy">
+                <strong>Genesis League HQ</strong>
+                <small>League data &amp; fight statistics</small>
+              </span>
             </a>
           </div>
         </div>
