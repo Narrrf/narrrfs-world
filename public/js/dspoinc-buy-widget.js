@@ -385,11 +385,13 @@
         <div class="flex flex-col sm:flex-row gap-3">
           <input
             data-dspoinc-buy-amount
-            type="number"
-            min="${MIN_DSPOINC_AMOUNT}"
-            max="${MAX_DSPOINC_AMOUNT}"
-            step="10000"
-            value="${escapeHtml(defaultDspoinc)}"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="dSPOINC amount"
+            placeholder="Example: 100,000"
+            value="${escapeHtml(formatDspoincInputValue(defaultDspoinc))}"
             class="w-full rounded-2xl border border-yellow-300/25 bg-black/45 px-4 py-3 text-white font-black outline-none focus:border-yellow-300"
           />
 
@@ -456,14 +458,48 @@
     statusEl.innerHTML = message;
   }
 
-  function updateLocalEstimate(widget) {
+  /**
+   * Parse a user-entered dSPOINC amount without fighting the cursor.
+   *
+   * Plain language for DEVS FOR DECADES:
+   * The buy widget accepts visual grouping characters because users naturally
+   * type amounts like 100,000 / 100.000 / 100 000. dSPOINC is still submitted
+   * as one whole integer amount. This is frontend input cleanup only.
+   *
+   * This helper must never quote, sign, settle, credit, debit, or confirm.
+   */
+  function parseDspoincAmountInput(value, fallbackAmount = DEFAULT_DSPOINC_AMOUNT) {
+    const rawValue = String(value ?? '').trim();
+
+    if (!rawValue) {
+      return normalizeInteger(fallbackAmount, DEFAULT_DSPOINC_AMOUNT);
+    }
+
+    const digitsOnly = rawValue.replace(/[^0-9]/g, '');
+
+    if (!digitsOnly) {
+      return normalizeInteger(fallbackAmount, DEFAULT_DSPOINC_AMOUNT);
+    }
+
+    return normalizeInteger(digitsOnly, fallbackAmount);
+  }
+
+  /**
+   * Format the amount for readability only when the user is not actively typing.
+   */
+  function formatDspoincInputValue(value) {
+    return formatNumber(normalizeInteger(value, DEFAULT_DSPOINC_AMOUNT));
+  }
+
+  function updateLocalEstimate(widget, options = {}) {
     const input = widget.querySelector('[data-dspoinc-buy-amount]');
-    const amount = normalizeInteger(input?.value, DEFAULT_DSPOINC_AMOUNT);
+    const amount = parseDspoincAmountInput(input?.value, DEFAULT_DSPOINC_AMOUNT);
     const safeAmount = Math.min(MAX_DSPOINC_AMOUNT, Math.max(MIN_DSPOINC_AMOUNT, amount));
     const spoincAmount = safeAmount / DSPOINC_PER_SPOINC;
+    const shouldCommitInput = Boolean(options?.commitInput);
 
-    if (input && Number(input.value) !== safeAmount) {
-      input.value = String(safeAmount);
+    if (input && shouldCommitInput) {
+      input.value = formatDspoincInputValue(safeAmount);
     }
 
     widget.querySelector('[data-dspoinc-buy-receive]').textContent = `${formatNumber(safeAmount)} dSPOINC`;
@@ -486,7 +522,7 @@
   }
 
   async function quoteDspoincBuy(widget) {
-    updateLocalEstimate(widget);
+    updateLocalEstimate(widget, { commitInput: true });
 
     const dspoincAmount = normalizeInteger(widget.dataset.dspoincAmount, DEFAULT_DSPOINC_AMOUNT);
     const discordId = resolveDiscordId();
@@ -540,6 +576,8 @@
   }
 
   async function startDspoincBuy(widget) {
+    updateLocalEstimate(widget, { commitInput: true });
+
     const dspoincAmount = normalizeInteger(widget.dataset.dspoincAmount, DEFAULT_DSPOINC_AMOUNT);
     const discordId = resolveDiscordId();
     const wallet = widget.dataset.wallet || await connectWallet();
@@ -801,13 +839,28 @@
     );
 
     widget.innerHTML = createWidgetHtml(defaultAmount);
-    updateLocalEstimate(widget);
+    updateLocalEstimate(widget, { commitInput: true });
 
     const input = widget.querySelector('[data-dspoinc-buy-amount]');
     const quoteButton = widget.querySelector('[data-dspoinc-buy-quote]');
     const startButton = widget.querySelector('[data-dspoinc-buy-start]');
 
-    input?.addEventListener('input', () => updateLocalEstimate(widget));
+    input?.addEventListener('focus', () => {
+      if (input.dataset.dspoincBuyUserEdited === 'true') {
+        return;
+      }
+
+      // Select the default formatted amount so users can immediately type
+      // 250000 / 250,000 / 250.000 without first deleting 10,000.
+      input.select();
+    });
+
+    input?.addEventListener('input', () => {
+      input.dataset.dspoincBuyUserEdited = 'true';
+      updateLocalEstimate(widget);
+    });
+
+    input?.addEventListener('blur', () => updateLocalEstimate(widget, { commitInput: true }));
 
     quoteButton?.addEventListener('click', async () => {
       try {
@@ -854,8 +907,9 @@
 
       const input = widget.querySelector('[data-dspoinc-buy-amount]');
       if (input) {
-        input.value = String(amount);
-        updateLocalEstimate(widget);
+        input.value = formatDspoincInputValue(amount);
+        delete input.dataset.dspoincBuyUserEdited;
+        updateLocalEstimate(widget, { commitInput: true });
       }
 
       widget.scrollIntoView({ behavior: 'smooth', block: 'center' });

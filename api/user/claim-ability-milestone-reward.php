@@ -722,7 +722,7 @@ function deliver_fitness_trait_milestone_reward(PDO $pdo, string $userId, array 
                 'reward_reference_id' => $referenceId,
                 'reward_amount' => $fallbackAmount,
                 'reward_currency' => 'DSPOINC',
-                'reward_title' => '100,000 DSPOINC Fallback',
+                'reward_title' => number_format($fallbackAmount) . ' DSPOINC Fallback',
                 'reward_description' => 'Gun Special was already in your Lab inventory, so you received DSPOINC instead.',
                 'delivery_payload' => [
                     'catalog_id' => $referenceId,

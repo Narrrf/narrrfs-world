@@ -69,11 +69,11 @@ const FITNESS_TRAIT_MILESTONE_REWARDS = [
         'milestone_key' => 'fitness_trait_level_15',
         'reward_type' => 'genetic_trait',
         'reward_reference_id' => 69,
-        'reward_amount' => 100000,
+        'reward_amount' => 1000000,
         'reward_currency' => 'DSPOINC_FALLBACK',
         'title' => 'Deep Training Fitness Chest',
         'description' => 'Deep Training Milestone unlocked — only 5 more trait levels until the Weapon Lane opens.',
-        'preview_label' => 'Gun Special Genetic Item or 100,000 DSPOINC fallback',
+        'preview_label' => 'Gun Special Genetic Item or 1,000,000 DSPOINC fallback',
         'source' => 'genesis_fitness_trait',
     ],
     [

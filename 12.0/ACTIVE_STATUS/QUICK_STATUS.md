@@ -1,5 +1,880 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-08-31 — Narrrfs World 13.0 — Aug 31 Validated Deployment Batch + MouseFight A8 Follow-Up
+
+### Deployment Scope
+
+Branch:
+
+`render-deploy`
+
+Root application:
+
+`C:\xampp-server\htdocs\narrrfs-world`
+
+This deployment batch contains the already-reviewed tracked website/API changes in:
+
+* `api/user/claim-ability-milestone-reward.php`
+* `api/user/get-ability-milestone-rewards.php`
+* `public/js/dspoinc-buy-widget.js`
+* `public/lab.html`
+* `public/labyrinth-blast.html`
+* `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+
+### Lv15 Fitness Chest Fallback Display
+
+Protected reward-path source was inspected before staging.
+
+Changes:
+
+* Lv15 Fitness Chest preview now shows:
+  * `Gun Special Genetic Item or 1,000,000 DSPOINC fallback`
+* claim response `reward_title` now derives its displayed DSPOINC amount from the authoritative `$fallbackAmount` instead of hardcoding `100,000`.
+
+Unchanged:
+
+* reward eligibility;
+* reward delivery path;
+* Genetic Item ownership;
+* fallback transaction behavior;
+* DSPOINC ledger mechanics;
+* Lab progression;
+* DB schema.
+
+PHP syntax:
+
+* `claim-ability-milestone-reward.php` — PASS
+* `get-ability-milestone-rewards.php` — PASS
+
+### dSPOINC Buy Widget Input UX
+
+File:
+
+`public/js/dspoinc-buy-widget.js`
+
+Changes:
+
+* amount entry is now easier to replace and type;
+* values such as `200000`, `250000`, `250,000`, and visually grouped equivalents can be entered without the prefilled `10,000` fighting the cursor;
+* formatting is committed after input/blur/quote/start rather than rewriting the field while the player types.
+
+Unchanged:
+
+* quote authority;
+* wallet signing;
+* DSPOINC credit/debit;
+* SPOINC conversion rules;
+* confirmation;
+* settlement;
+* DB schema.
+
+JS syntax:
+
+`PASS`
+
+### Lab UX / Navigation Batch
+
+File:
+
+`public/lab.html`
+
+Reviewed changes include:
+
+* duplicate selected-NFT mount cleanup;
+* single combined Trait Snapshot;
+* Trait Snapshot navigation actions into the existing authoritative Trait Research Chamber;
+* Ability Matrix keyboard mouse navigation;
+* Genesis League Search / League HQ CTA improvements;
+* aggregate Lab read fallback when the older verified-NFT scan route is unavailable.
+
+These additions are frontend presentation/navigation/read behavior.
+
+Unchanged:
+
+* ownership authority;
+* permanent Trait levels;
+* permanent Ability levels;
+* upgrade costs;
+* upgrade timers;
+* claims;
+* Genetic Item state;
+* DSPOINC/SPOINC;
+* MouseFight settlement;
+* Fight Recovery;
+* DB schema.
+
+### Labyrinth Blast Session Bootstrap
+
+File:
+
+`public/labyrinth-blast.html`
+
+Marker:
+
+`NARRRFS_LABYRINTH_WRAPPER_SESSION_BOOTSTRAP_V1`
+
+Change:
+
+* public Labyrinth wrapper now hydrates the existing Narrrfs Discord session/localStorage identity before the isolated game iframe loads.
+
+Unchanged:
+
+* Labyrinth score math;
+* leaderboard sorting;
+* score reward logic;
+* DSPOINC writes;
+* generated Vite game assets.
+
+### MouseFight A8 — Genesis Fighter Picker Player Copy
+
+Local Discord source:
+
+`discord/commands/mousefight.js`
+
+Marker:
+
+`NARRRFS_LEAGUE_FIGHTER_PICKER_PLAYER_COPY_V1`
+
+Starting A7 SHA:
+
+`4fdbb590c77b8a02b416bd3322894b10b1c472bcc904647f7bea197fe7762feb`
+
+Current A8 SHA:
+
+`dc2779c997c029c611902d24870881381d825f176628cede1ad249d75b47c38c`
+
+Player-facing picker wording was simplified.
+
+Old internal-style wording included:
+
+* `published V2 Genesis League`
+* `next L2-C step`
+* `Approved Queue Rule`
+* `Approved Matchmaking Loadout`
+* runtime queue-validation terminology.
+
+New player-facing flow uses:
+
+* `⚔️ Choose Your Genesis Fighter`
+* `🐭 Your Fighters`
+* `🔎 Matchmaking`
+* `🎒 Genetic Items`
+* `🐭 Choose your fighter`
+* `Choose a Genesis mouse below to continue.`
+
+Matchmaking still means:
+
+* search window: 30 minutes;
+* one searching mouse per Discord user;
+* same published League opponent;
+* up to 3 available Genetic Items.
+
+A8 validation:
+
+* `mousefight.js` syntax — PASS
+* `index.js` syntax — PASS
+* focused A7 → A8 diff — PASS
+* old player-facing developer wording removed — PASS
+* sensitive-keyword diff scan — clean.
+
+### Discord Git Boundary
+
+The root Narrrfs World Git repository explicitly ignores:
+
+`/discord/`
+
+Confirmed through:
+
+`git check-ignore -v discord/commands/mousefight.js`
+
+Therefore the following local Discord changes are intentionally **not part of the Render Git deployment**:
+
+* A6 — Fight Recovery UX;
+* A7 — pre-fight winner spoiler guard;
+* A8 — Genesis Fighter Picker player wording;
+* Cheese Race progress layout.
+
+Do not force-add `discord/` to the website repository.
+
+The production Discord bot continues to use the local `discord` runtime source.
+
+### Cleanup
+
+Local inspection artifacts identified as non-production files:
+
+* `.d311b-option-b.diff/`
+* `.lab-inline-check.js`
+* `lab-served-inspect.html`
+
+These are not deployment files and must remain outside the commit.
+
+### Protected Systems
+
+No DB migration.
+
+No manual DB write.
+
+No manual DSPOINC/SPOINC balance change.
+
+No Fight Recovery mutation.
+
+No PVP escrow/settlement mutation.
+
+No permanent Genesis ownership mutation.
+
+No permanent Trait/Ability mutation outside the existing authoritative APIs.
+
+No Genetic Item mutation.
+
+No staking mutation.
+
+### Deployment Status
+
+`LOCAL SOURCE / FOCUSED VALIDATION PASS`
+
+`ROOT GIT DEPLOYMENT APPROVED`
+
+`PRODUCTION RENDER VERIFICATION PENDING PUSH / DEPLOY`
+
+### Exact Next Step
+
+Stage only the six explicitly reviewed root-repository files, inspect the cached diff, commit on `render-deploy`, push to `origin/render-deploy`, then verify the resulting Render production deployment before changing this status to production PASS.
+
+## 2026-08-31 — Discord Bot Cheese Race Progress Layout Local PASS
+
+### Agent / Scope
+
+* Agent: `Bot Specialist`
+* Project: `Narrrfs World 13.0`
+* Branch: `render-deploy`
+* Scope: Discord Cheese Race live progress presentation improvement based on player feedback.
+
+### User Feedback
+
+Vince reported that the Cheese Race progress bars were hard to read because the progress bar stayed on the same line as each username and event text.
+
+Requested visual behavior:
+
+* username on its own line;
+* progress bar directly below the username;
+* event/status text below the progress bar.
+
+### File Changed
+
+`discord/commands/cheese-race.js`
+
+### Backup
+
+`discord/commands/cheese-race.js.before-progress-layout-v1-20260831-020744.bak`
+
+### Change
+
+Updated the compact `Race Progress` renderer for larger Cheese Races.
+
+Old display style compressed each racer into one line:
+
+`mouse username progressBar percent cheese event`
+
+New display style renders each racer as a readable block:
+
+`mouse username`
+
+`progressBar percent cheese`
+
+`event text`
+
+Marker/comment added:
+
+`Display-only Cheese Race progress layout`
+
+### Validation
+
+Local source patch applied successfully.
+
+Syntax:
+
+* `node --check commands/cheese-race.js` — PASS
+
+Focused source inspection confirmed:
+
+* `Race Progress` section still present;
+* progress bar still uses the same 10-segment calculation;
+* display-only DEVS FOR DECADES comment added;
+* username, progress bar, and event now render on separate lines.
+
+### Protected Systems Unchanged
+
+No change to:
+
+* race creation;
+* race start timers;
+* race speed;
+* race movement mechanics;
+* cheese collection logic;
+* winner calculation;
+* Lucky Loser logic;
+* DSPOINC rewards;
+* token payout;
+* database schema;
+* MouseFight;
+* Fight Recovery.
+
+### Runtime / Deploy Status
+
+Local bot restart is enough for this Discord command change to become active because the production Discord bot runs from the local `discord` folder.
+
+Render deploy is not required for runtime behavior, but commit/push is still recommended later so the repository and future agents preserve the fix.
+
+Runtime Discord verification remains pending until the next Cheese Race progress update after bot restart.
+
+### Status
+
+`LOCAL SOURCE PASS / SYNTAX PASS / DISPLAY-ONLY CHANGE / PROTECTED SYSTEMS UNCHANGED`
+
+### Exact Next Step
+
+Restart the local Discord bot when no sensitive race or rumble is mid-finalization, then verify one live Cheese Race progress embed shows the progress bar below each username.
+
+## 2026-08-31 — MouseFight Leagues 1.5 LIVE — Recovery UX + Winner Spoiler Guard Local PASS
+
+### Agent / Scope
+
+* Agent: `MouseFight Leagues Expert 1.5 LIVE`
+* Project: `Narrrfs World 13.0`
+* Branch: `render-deploy`
+* Scope:
+  * Genesis League Fight Recovery player UX improvement
+  * automatic Genesis League fight early-winner spoiler removal
+* File changed:
+
+`discord/commands/mousefight.js`
+
+No change to:
+
+`discord/index.js`
+
+`db/narrrf_world.sqlite`
+
+### User Feedback / Issues
+
+Two connected Recovery UX reports were investigated:
+
+1. players could not see the League Fight Recovery duration or remaining cooldown;
+2. `My Genesis League Mice` could show `⚔️ Ready` while the authoritative matchmaking availability check correctly blocked the same mouse because of active Fight Recovery.
+
+A separate League presentation issue was also confirmed:
+
+* immediately before the paced automatic League fight presentation started, Discord briefly displayed the already-persisted winner in a temporary `Settlement Confirmed` message;
+* this spoiled the fight result before Round 1 was visually presented.
+
+### Production Recovery Audit
+
+Production Render database inspected read-only:
+
+`/var/www/html/db/narrrf_world.sqlite`
+
+Integrity:
+
+`PRAGMA integrity_check;` → `ok`
+
+Verified Recovery schema:
+
+`tbl_mousefight_mouse_cooldowns`
+
+Relevant authoritative fields include:
+
+* `token_id`
+* `collection`
+* `user_id`
+* `fight_id`
+* `cooldown_minutes`
+* `cooldown_reason`
+* `started_at`
+* `expires_at`
+* `status`
+
+The inspected automatic League Recovery rows used:
+
+* `cooldown_minutes = 15`
+* `cooldown_reason = completed_pvp`
+
+Expired historical rows may retain `status = active`, but the backend blocks only when:
+
+`status = 'active'`
+
+and:
+
+`datetime(expires_at) > datetime('now')`
+
+No evidence of a broken Recovery writer or incorrect League Recovery duration was found.
+
+Diagnosis:
+
+`VALID 15-MINUTE RECOVERY + INSUFFICIENT PLAYER-FACING UX`
+
+No Recovery row was cleared, shortened, extended, or otherwise changed.
+
+---
+
+### A6 — Genesis League Recovery UX
+
+Marker:
+
+`NARRRFS_LEAGUE_RECOVERY_UX_V1`
+
+Backup:
+
+`discord/commands/mousefight.js.before-league-recovery-ux-20260831-013107.bak`
+
+A6 source SHA after patch:
+
+`94114098a2d290b9323036edae0724986880d1e2b72d38ea7b7c9139f4cfdf0d`
+
+Changes:
+
+* changed misleading My League Mice status:
+  * old: `⚔️ Ready`
+  * new: `🧬 League Eligible`
+* retained:
+  * `🧪 Training needed`
+* matchmaking availability still remains authoritative when the player actually selects a mouse;
+* Recovery refusal now uses the existing read-only `activeRecovery` payload returned by the backend;
+* Recovery refusal can show:
+  * selected Genesis mouse name;
+  * authoritative Recovery duration;
+  * authoritative `expires_at`;
+  * Discord relative timestamp;
+  * Discord local-time timestamp;
+* expiry presentation is derived from backend `expires_at`;
+* Discord does not create a replacement Recovery timer;
+* permanent Genesis League Matchmaking panel now explains:
+  * Search window: `30 minutes`
+  * Completed League Fight Recovery: `15 minutes per Genesis mouse`
+  * Search and Recovery are separate timers.
+
+Intended player presentation:
+
+`⏳ Fight Recovery Active`
+
+`Recovery period: 15 minutes`
+
+`Ready again: <Discord relative time>`
+
+`Available: <Discord local date/time>`
+
+The availability check remains read-only.
+
+### A6 Protected Systems Unchanged
+
+No change to:
+
+* Fight Recovery creation;
+* Fight Recovery expiry;
+* Fight Recovery clearing;
+* mouse availability backend;
+* automatic matchmaking queue policy;
+* automatic matcher;
+* PVP creation;
+* PVP settlement;
+* League Point writer;
+* DSPOINC / SPOINC;
+* Genesis progression;
+* Lab progression;
+* Genetic Items;
+* database schema.
+
+---
+
+### A7 — Automatic League Winner Spoiler Guard
+
+Issue confirmed in:
+
+`settleMouseFightLeagueAutomaticPvpHandoff()`
+
+Before A7, the temporary Discord message shown after authoritative settlement but before the paced visual fight contained:
+
+`Winner: <@${localWinnerUserId}>`
+
+Sequence before fix:
+
+`authoritative settlement → public winner leak → League intro → rounds → final result`
+
+This allowed players to briefly see the winner before the fight presentation began.
+
+Marker added:
+
+`NARRRFS_LEAGUE_WINNER_SPOILER_GUARD_V1`
+
+Backup:
+
+`discord/commands/mousefight.js.before-league-winner-spoiler-guard-20260831-015809.bak`
+
+Starting SHA:
+
+`94114098a2d290b9323036edae0724986880d1e2b72d38ea7b7c9139f4cfdf0d`
+
+Current SHA:
+
+`4fdbb590c77b8a02b416bd3322894b10b1c472bcc904647f7bea197fe7762feb`
+
+Change:
+
+Removed the temporary public:
+
+`✅ Genesis League Match — Settlement Confirmed`
+
+plus:
+
+`Winner: <@${localWinnerUserId}>`
+
+and replaced it with neutral presentation:
+
+`⚔️ Genesis League Match — Battle Ready`
+
+followed by:
+
+`The League clash presentation is starting now.`
+
+`The winner will be revealed only after the final presented round.`
+
+The authoritative winner remains available internally for settlement, persistence, final placements, League Points, and the eventual final result presentation.
+
+Expected public sequence after A7:
+
+`⚔️ Battle Ready`
+
+→ `🎬 League Clash Begins`
+
+→ `Round 1`
+
+→ `Round 2`
+
+→ `Round 3 if required`
+
+→ `🏆 Final Result / Winner`
+
+### A7 Validation
+
+Current source:
+
+`discord/commands/mousefight.js`
+
+SHA256:
+
+`4fdbb590c77b8a02b416bd3322894b10b1c472bcc904647f7bea197fe7762feb`
+
+Syntax:
+
+* `node --check discord/commands/mousefight.js` — PASS / rc `0`
+* `node --check discord/index.js` — PASS / rc `0`
+
+Focused verification:
+
+* A7 marker present — PASS
+* old `Settlement Confirmed` public message removed — PASS
+* early `Winner: <@${localWinnerUserId}>` presentation removed — PASS
+* neutral `Battle Ready` transition present — PASS
+* `presentMouseFightLeagueAutomaticSequence()` still present — PASS
+* `buildMouseFightLeagueAutomaticSequenceIntroEmbed()` still present — PASS
+
+Direct backup → current diff:
+
+PASS
+
+The diff contains only the intended Discord presentation change around the temporary post-settlement message.
+
+### Protected Systems Unchanged
+
+No change to:
+
+* winner calculation;
+* `result.winner`;
+* `applyMouseFightFinalPlacements()`;
+* authoritative PVP settlement;
+* persisted winner verification;
+* combat rounds;
+* persisted fight history;
+* automatic matcher;
+* matchmaking queue insertion/removal rules;
+* PVP escrow;
+* PVP settlement;
+* Fight Recovery;
+* League Point award writer;
+* DSPOINC;
+* SPOINC;
+* Genesis ownership;
+* Genesis permanent Traits / Abilities;
+* Lab progression;
+* Genetic Items;
+* staking;
+* database schema;
+* deployment configuration.
+
+### Current Status
+
+`A6 RECOVERY UX — LOCAL SOURCE PASS`
+
+`A7 WINNER SPOILER GUARD — LOCAL SOURCE PASS`
+
+`SYNTAX PASS`
+
+`FOCUSED BACKUP DIFF PASS`
+
+`NO DB WRITE`
+
+`NO RECOVERY CHANGE`
+
+`NO SETTLEMENT CHANGE`
+
+`NO ECONOMY CHANGE`
+
+### Runtime Status
+
+Bot restart has **not yet been performed after A6/A7**.
+
+Discord runtime verification therefore remains pending for:
+
+* `🧬 League Eligible` display;
+* Matchmaking Timers panel field;
+* active Recovery remaining-time presentation;
+* Discord local/relative Recovery timestamps;
+* absence of winner disclosure before the paced League fight;
+* final winner still appearing normally after the final presented round.
+
+Important:
+
+Genesis League matchmaking queues are runtime-only memory.
+
+Before restarting the local Discord bot, confirm no players are actively searching or consciously accept that those temporary searches will be cleared by restart.
+
+### Exact Next Step
+
+Perform one controlled local Discord bot restart after confirming the runtime matchmaking queues are safe to clear.
+
+Then verify one real automatic Genesis League fight end-to-end:
+
+1. Matchmaking panel shows the new timer explanation.
+2. My League Mice shows `🧬 League Eligible`.
+3. A recovering mouse shows authoritative remaining Recovery time.
+4. Automatic fight begins without exposing the winner.
+5. Pacing proceeds through the normal League intro and rounds.
+6. Winner is revealed only in the final result.
+7. Fight Recovery remains 15 minutes.
+8. League Point behavior remains unchanged.
+
+Do not modify Fight Recovery, settlement, League Points, economy, or permanent Genesis/Lab state unless separate evidence demonstrates a backend defect.
+
+## 2026-08-31 — SPOINC / dSPOINC Buy Widget Amount Input UX Local PASS
+
+### Agent / Scope
+
+* Agent: `SPOINC - DSPOINC Agent 5.0`
+* Project: `Narrrfs World 13.0`
+* Branch: `render-deploy`
+* Scope: Frontend-only usability fix for the dSPOINC amount input inside the Buy dSPOINC with SOL widget.
+
+### File Changed
+
+`public/js/dspoinc-buy-widget.js`
+
+### Issue
+
+User feedback reported that the dSPOINC amount input in the new swap widget was difficult to type into.
+
+Observed problem:
+
+* the field started with a prefilled amount such as `10,000`;
+* users could not smoothly replace it with amounts like `200000` or `250000`;
+* the old number-style input and live normalization made typing feel blocked/sticky.
+
+### Change
+
+Improved the dSPOINC amount input UX:
+
+* changed amount input behavior to cleaner text-based entry with numeric mobile keyboard support;
+* accepts normal user formats:
+  * `200000`
+  * `200,000`
+  * `200.000`
+  * `200 000`
+  * `200'000`
+* internally normalizes those to the correct integer dSPOINC amount;
+* formats the value only on blur / Quote / Start instead of fighting the cursor while typing;
+* selects the default amount on first focus so users can immediately type a new amount such as `250000`.
+
+### Validation
+
+Local browser test:
+
+* typing `250000` works as expected;
+* preview updates correctly;
+* field formats cleanly after blur / quote action;
+* widget remains usable.
+
+Code validation:
+
+* `node --check public/js/dspoinc-buy-widget.js` — PASS
+* `public/swap-lab.html` PHP parse — PASS from previous validation
+* focused diff inspection — frontend-only
+
+### Protected Systems Unchanged
+
+No change to:
+
+* backend quote APIs;
+* buy intent creation;
+* Gensuki transaction payload handling;
+* Gensuki confirm flow;
+* SPOINC → dSPOINC settlement;
+* DSPOINC credit/debit logic;
+* database schema;
+* staking;
+* rewards;
+* Genesis/Lab progression;
+* MouseFight;
+* Fight Recovery.
+
+### Status
+
+`LOCAL PASS / FRONTEND INPUT UX FIXED / PROTECTED ECONOMY UNCHANGED`
+
+### Exact Next Step
+
+Stage and commit only `public/js/dspoinc-buy-widget.js` after final diff review, then deploy after approval.
+
+## 2026-08-31 — Lab Trait Snapshot / Genesis League CTA Combined View Local PASS
+
+### Agent / Scope
+
+* Agent: `MouseFight Leagues Expert 1.5 LIVE`
+* Project: `Narrrfs World 13.0`
+* Branch: `render-deploy`
+* File changed:
+
+`public/lab.html`
+
+### Scope Completed
+
+Cleaned up the Lab selected Genesis mouse experience after the Trait Snapshot action-button work created a second lower snapshot area.
+
+Final intended layout is now locally visible:
+
+1. Selected Genesis Mouse panel remains the primary mouse view.
+2. Genesis League Journey remains directly under the selected mouse.
+3. `🔎 Search League Fight` and `🏆 Open League HQ` are both restored beside the League image.
+4. One combined `Trait Snapshot` now appears between the selected mouse / League journey and the Genesis Ability Matrix.
+5. The lower duplicate `Selected Mouse Snapshot` block was removed.
+6. Trait Snapshot cards now show action buttons such as `Anchor Trait Research`.
+7. Genesis Ability Matrix remains below the combined Trait Snapshot section.
+
+### Patch Applied
+
+`patch-lab-trait-snapshot-layout-v10-combine-view.py`
+
+Backup created:
+
+`public/lab.html.before-trait-snapshot-layout-v10-combined-view-20260831-001833.bak`
+
+### Change Details
+
+Added / retained markers:
+
+* `NARRRFS_TRAIT_SNAPSHOT_LAYOUT_V10_COMBINED_VIEW`
+* `NARRRFS_TRAIT_SNAPSHOT_LAYOUT_V10_LOWER_DUPLICATE_REMOVED`
+* `NARRRFS_TRAIT_SNAPSHOT_LAYOUT_V10_DELEGATED_CLICK`
+* existing `NARRRFS_TRAIT_SNAPSHOT_BINDING_V9`
+* existing `data-trait-snapshot-open`
+
+The patch:
+
+* moved the live `selectedTraitSummary` mount point into the selected Genesis mouse combined view;
+* removed the old static selected-panel Trait Snapshot cards;
+* removed the lower duplicate Selected Mouse Snapshot block;
+* restored the Lab Genesis League CTA pair:
+  * `🔎 Search League Fight`
+  * `🏆 Open League HQ`
+* switched Trait Snapshot button handling to document-level delegated click handling so buttons survive selected mouse panel re-renders.
+
+### Local Validation
+
+Commands run:
+
+```bash
+grep -n "NARRRFS_TRAIT_SNAPSHOT_LAYOUT_V10\|selectedTraitSummary\|Search League Fight\|Open League HQ\|data-trait-snapshot-open" public/lab.html | sed -n '1,260p'
+
+grep -n 'id="selectedTraitSummary"' public/lab.html
+
+git diff --check -- public/lab.html
+
+/c/xampp-server/php/php.exe -l public/lab.html
+
+node --check .lab-inline-check.js
+
+## 2026-08-30 — Discord Economy Command Timeout Fix / Runtime PASS
+
+### Scope
+
+Fixed `/economy` Discord command false failure where the public DSPOINC overview endpoint returned valid data but sometimes exceeded the bot-side 15-second fetch timeout during Render / SQLite event load.
+
+### Evidence
+
+Render live endpoint test:
+
+- `/api/admin/get-dspoinc-overview.php`
+- HTTP `200`
+- PHP syntax: PASS
+- DB integrity: `ok`
+- observed response times: approximately `14.47s` to `15.30s`
+
+The command failed because the local Discord bot used a `15000ms` timeout for an endpoint that can validly take about 15 seconds under live load.
+
+### File Changed
+
+`discord/commands/economy.js`
+
+### Backup
+
+`discord/commands/economy.js.before-economy-timeout-20260830-1955.bak`
+
+### Change
+
+Added:
+
+`DSPOINC_OVERVIEW_FETCH_TIMEOUT_MS = 45000`
+
+Replaced hardcoded fetch timeout:
+
+`timeout: 15000`
+
+with:
+
+`timeout: DSPOINC_OVERVIEW_FETCH_TIMEOUT_MS`
+
+### Validation
+
+- Local patch applied successfully.
+- Runtime Discord `/economy` command tested successfully.
+- Live Discord embed posted the DSPOINC Economy Overview instead of the unavailable error.
+
+### Protected Systems Unchanged
+
+No change to:
+
+- DSPOINC balances
+- SPOINC
+- staking
+- rewards
+- ledger rows
+- database schema
+- MouseFight
+- Fight Recovery
+- token payouts
+- admin API logic
+
+### Status
+
+`ECONOMY COMMAND TIMEOUT FIXED / RUNTIME PASS / PROTECTED ECONOMY UNCHANGED`
+
 ## 2026-08-29 — MouseFight Leagues 1.5 LIVE — L2-F1-A3 Genesis League Competition Center Local PASS
 
 ### Agent / Scope

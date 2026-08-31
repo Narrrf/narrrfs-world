@@ -682,7 +682,7 @@ hydrateSession();
   }
 }
 
-    
+
     .booster-panel {
       border-radius: 20px;
       border: 1px solid rgba(34,211,238,0.18);
@@ -1389,7 +1389,7 @@ hydrateSession();
         transform: translateY(0) scale(1);
       }
     }
-  
+
 
     .game-hero {
       display: grid;
@@ -4409,7 +4409,7 @@ body::after {
     transform: rotate(360deg) scale(1);
   }
 }
-  
+
 
 /* =========================================================
    GENESIS MINT OPPORTUNITY
@@ -8468,7 +8468,7 @@ body.lab-season12-shell {
             <span id="selectedNftStatus" class="pill idle">No Genesis mouse selected</span>
           </div>
           <div id="selectedNftPanel" class="mt-5"></div>
-                    <div id="selectedNftPanel" class="mt-5"></div>
+                    <div id="selectedNftPanelDuplicateRemoved" class="mt-5 hidden" aria-hidden="true"></div>
 
           <div id="genesisAbilityMatrixSection" class="glass p-5 md:p-6 hidden">
   <div class="ability-matrix-intro">
@@ -8575,11 +8575,13 @@ body.lab-season12-shell {
   <div id="genesisAbilityQueueBox" class="ability-queue-box"></div>
 </div>
 
-        <div class="glass p-5 md:p-6">
-          <div class="section-title text-lg md:text-xl"><span>📈</span><span>Selected Mouse Snapshot</span></div>
-          <p class="mt-2 text-sm text-slate-300">Review this mouse’s lab power, ready claims, strongest trait, and current chamber state before opening a research action.</p>
-          <div id="selectedTraitSummary" class="trait-summary-grid mt-4"></div>
-        </div>
+        <!--
+          NARRRFS_TRAIT_SNAPSHOT_LAYOUT_V10_LOWER_DUPLICATE_REMOVED
+
+          The selected mouse snapshot now renders in the combined selected-mouse
+          progress view above the Ability Matrix. Keep this lower area empty to
+          avoid duplicate snapshot cards.
+        -->
       </div>
 
       <div id="labBoosterPanel" class="mt-5"></div>
@@ -8890,7 +8892,7 @@ body.lab-season12-shell {
   </div>
 </div>
 
-    
+
     </div>
 
 <div id="geneticMarketplaceSidePanel" class="space-y-5"></div>
@@ -11914,17 +11916,195 @@ function toggleExpandedTraitKey(key) {
   state.expandedTraitKey = state.expandedTraitKey === key ? null : key;
 }
 
-function renderSelectedTraitSummary(nft = null) {
-  if (!el.selectedTraitSummary) return;
+/**
+ * Render the selected Genesis mouse trait snapshot with quick research actions.
+ *
+ * NARRRFS_TRAIT_SNAPSHOT_ACTIONS_V1
+ *
+ * Plain language for DEVS FOR DECADES:
+ * These buttons are navigation helpers only. They do not start, claim, finish,
+ * price, time, or authorize any Lab upgrade by themselves.
+ *
+ * Clicking a snapshot action expands the existing authoritative Trait Research
+ * Chamber card for the same exact NFT trait. The existing chamber buttons and
+ * backend endpoints remain the only source of truth for permanent Lab state.
+ */
+function openTraitResearchFromSnapshot(traitKey) {
+  const safeTraitKey = String(traitKey || '').trim();
 
-  const resolvedNft = nft || state.selectedNft || ensureSelectedNft();
-
-  if (!isValidGenesisNft(resolvedNft)) {
-    el.selectedTraitSummary.innerHTML = '';
+  if (!safeTraitKey) {
     return;
   }
 
+  /*
+   * NARRRFS_TRAIT_SNAPSHOT_ACTIONS_V5_FALLBACK_KEY
+   *
+   * Plain language for DEVS FOR DECADES:
+   * Some lower Trait Snapshot cards can render from lightweight NFT data that
+   * does not resolve the same accordion key as the top Trait Research Chamber.
+   *
+   * Exact keys still open the exact card. Fallback keys scroll players to the
+   * existing Trait Research Chamber without starting, claiming, finishing, or
+   * mutating any upgrade.
+   */
+  const isFallbackTraitSnapshotKey = safeTraitKey.startsWith('snapshot-fallback|');
+
+  if (!isFallbackTraitSnapshotKey) {
+    toggleExpandedTraitKey(safeTraitKey);
+    renderTraitGrid();
+  }
+
+  window.setTimeout(() => {
+    if (!isFallbackTraitSnapshotKey) {
+      const traitButton = document.querySelector(
+        `[data-trait-toggle="true"][data-trait-key="${CSS.escape(safeTraitKey)}"]`
+      );
+
+      const traitCard = traitButton?.closest('.card') || traitButton;
+
+      if (traitCard) {
+        traitCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        traitCard.classList.remove('chamber-pulse');
+        void traitCard.offsetWidth;
+        traitCard.classList.add('chamber-pulse');
+        traitButton?.focus?.({ preventScroll: true });
+        return;
+      }
+    }
+
+    document.getElementById('traitGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 90);
+}
+
+/**
+ * Return the small action/status control for one Trait Snapshot card.
+ *
+ * NARRRFS_TRAIT_SNAPSHOT_ACTIONS_V2
+ *
+ * Plain language for DEVS FOR DECADES:
+ * This is still navigation-only. It reads the already-loaded upgrade row and
+ * opens the existing authoritative Trait Research Chamber card.
+ *
+ * It does not start, claim, finish, price, time, authorize, write, or mutate
+ * any permanent Lab / Genesis state. Existing backend routes remain the source
+ * of truth.
+ */
+function getTraitSnapshotActionMarkup(nft, trait) {
+  const row = getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait);
+  const resolvedTraitKey = getTraitAccordionKey(nft, trait);
+  const fallbackTraitKey = `snapshot-fallback|${String(trait?.trait_type || '')}|${String(trait?.value || '')}`;
+  const traitKey = resolvedTraitKey || fallbackTraitKey;
+  const activeUpgradeRow = getNftActiveUpgradeRow(nft);
+
+  /*
+   * NARRRFS_TRAIT_SNAPSHOT_ACTIONS_V3_ALWAYS_SHOW
+   *
+   * Plain language for DEVS FOR DECADES:
+   * Trait Snapshot is a player navigation helper. Even when this lower
+   * snapshot receives a lightweight selected mouse object and cannot resolve
+   * the exact upgrade row, it should still show a safe "Open Trait Research"
+   * button.
+   *
+   * The button only opens the existing authoritative Trait Research Chamber.
+   * It never starts, claims, finishes, prices, authorizes, writes, or mutates
+   * permanent Genesis/Lab state.
+   */
+  if (!traitKey || traitKey === 'snapshot-fallback||') {
+    return '';
+  }
+
+  const status = row
+    ? mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at)
+    : 'idle';
+
+  const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.getTime() || 0) : 0;
+  const remainingMs = status === 'upgrading' ? Math.max(0, endTime - Date.now()) : 0;
+
+  const sameActiveTrait = Boolean(
+    activeUpgradeRow &&
+    row &&
+    String(activeUpgradeRow?.trait_type || '') === String(row?.trait_type || '') &&
+    String(activeUpgradeRow?.trait_value || '') === String(row?.trait_value || '')
+  );
+
+  const blocked = Boolean(activeUpgradeRow && row && !sameActiveTrait);
+
+  const actionLabel = status === 'upgrading'
+    ? `🔬 Research Running • ${formatRemainingLong(remainingMs)}`
+    : status === 'ready'
+      ? '✅ Claim Ready'
+      : blocked
+        ? '🔒 Another Trait Running'
+        : row
+          ? '🧪 Upgrade This Trait'
+          : resolvedTraitKey
+            ? '🧪 Open Trait Research'
+            : '🧪 Open Research Chamber';
+
+  const actionClass = status === 'upgrading'
+    ? 'cyan'
+    : status === 'ready'
+      ? 'green'
+      : blocked
+        ? 'ghost'
+        : 'primary';
+
+  return `
+    <button
+      type="button"
+      class="btn ${actionClass} mt-3 w-full text-xs"
+      data-trait-snapshot-open="${escapeHtml(traitKey)}"
+      title="Open this exact trait in the Trait Research Chamber"
+    >
+      ${escapeHtml(actionLabel)}
+    </button>
+  `;
+}
+
+function renderSelectedTraitSummary(nft = null) {
+  /*
+   * NARRRFS_TRAIT_SNAPSHOT_BINDING_V9
+   *
+   * Plain language for DEVS FOR DECADES:
+   * The selectedTraitSummary DOM node exists in the page, but older Lab boot
+   * paths can miss it in the cached `el` map. Re-resolve the real DOM node at
+   * render time so the read-only Trait Snapshot can paint reliably.
+   *
+   * This is presentation/navigation only. It never starts, claims, finishes,
+   * prices, authorizes, writes, verifies, or mutates permanent Genesis/Lab state.
+   */
+  const selectedTraitSummary =
+    document.getElementById('selectedTraitSummary') ||
+    el.selectedTraitSummary;
+
+  if (!selectedTraitSummary) {
+    return;
+  }
+
+  el.selectedTraitSummary = selectedTraitSummary;
+
+  const resolvedNft = nft || state.selectedNft || ensureSelectedNft();
   const traits = normalizeNftTraits(resolvedNft);
+
+  /*
+   * NARRRFS_TRAIT_SNAPSHOT_LIGHTWEIGHT_RENDER_V7
+   *
+   * Plain language for DEVS FOR DECADES:
+   * The lower Trait Snapshot is read-only presentation. Some selected mouse
+   * objects are lightweight and can still contain valid scanned traits even
+   * when they do not pass the full isValidGenesisNft() guard used by backend
+   * action flows.
+   *
+   * Render the snapshot when trait data exists. Keep the strict empty-state
+   * clear only when the mouse is invalid AND no traits are available.
+   *
+   * This does not start, claim, finish, price, authorize, write, verify,
+   * or mutate permanent Genesis/Lab state.
+   */
+  if (!isValidGenesisNft(resolvedNft) && traits.length === 0) {
+    el.selectedTraitSummary.innerHTML = '';
+    return;
+  }
 
   el.selectedTraitSummary.innerHTML = `
     <div class="w-full">
@@ -11933,12 +12113,13 @@ function renderSelectedTraitSummary(nft = null) {
         <span>Trait Snapshot</span>
       </div>
       <p class="mt-2 text-sm text-slate-300">
-        Review every exact scanned Genesis trait and its current Lab level before opening research.
+        Review every exact scanned Genesis trait and jump directly into the matching research card.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
         ${traits.map((trait) => {
           const levelBadge = getTraitSnapshotLevelBadge(resolvedNft, trait);
+          const traitActionMarkup = getTraitSnapshotActionMarkup(resolvedNft, trait);
 
           return `
             <div class="kv trait-snapshot-card">
@@ -11949,6 +12130,7 @@ function renderSelectedTraitSummary(nft = null) {
                 <div class="trait-value-text">${escapeHtml(trait.value)}</div>
                 ${levelBadge}
               </div>
+              ${traitActionMarkup}
             </div>
           `;
         }).join('') || `
@@ -11959,6 +12141,43 @@ function renderSelectedTraitSummary(nft = null) {
       </div>
     </div>
   `;
+
+  /*
+   * NARRRFS_TRAIT_SNAPSHOT_ACTIONS_V6_POST_RENDER_INJECT
+   *
+   * Plain language for DEVS FOR DECADES:
+   * Trait Snapshot buttons are navigation helpers only. The main template should
+   * render them directly, but browser/runtime refresh paths can reuse older card
+   * markup. This safety pass appends the already-existing helper output after
+   * the snapshot DOM exists.
+   *
+   * This never starts, claims, finishes, prices, authorizes, writes, or mutates
+   * permanent Genesis/Lab state. It only opens the existing Trait Research
+   * Chamber navigation path.
+   */
+  const snapshotCards = Array.from(
+    el.selectedTraitSummary.querySelectorAll('.trait-snapshot-card')
+  );
+
+  snapshotCards.forEach((card, index) => {
+    if (card.querySelector('[data-trait-snapshot-open]')) {
+      return;
+    }
+
+    const trait = traits[index];
+
+    if (!trait) {
+      return;
+    }
+
+    const actionMarkup = getTraitSnapshotActionMarkup(resolvedNft, trait);
+
+    if (!String(actionMarkup || '').trim()) {
+      return;
+    }
+
+    card.insertAdjacentHTML('beforeend', actionMarkup);
+  });
 }
 
     function renderVerificationWarning(html, visible) {
@@ -13480,6 +13699,65 @@ function selectAbilityMatrixMouseByTokenId(tokenId) {
  * Backend Ability APIs remain authoritative for ownership, costs, timers,
  * unlocks, and upgrade eligibility.
  */
+function isEditableLabField(target) {
+  const element = target instanceof Element ? target : null;
+
+  if (!element) {
+    return false;
+  }
+
+  const tagName = String(element.tagName || '').toLowerCase();
+
+  return (
+    tagName === 'input' ||
+    tagName === 'textarea' ||
+    tagName === 'select' ||
+    element.isContentEditable
+  );
+}
+
+/**
+ * Add desktop keyboard navigation to the Ability Matrix mouse switcher.
+ *
+ * NARRRFS_ABILITY_MATRIX_KEYBOARD_NAV_V1
+ *
+ * Plain language for DEVS FOR DECADES:
+ * ArrowLeft / ArrowRight here are frontend navigation only. They reuse
+ * switchAbilityMatrixMouse(), which reuses selectNftByTokenId().
+ *
+ * This never changes ownership, ability levels, timers, costs, upgrade
+ * eligibility, DSPOINC, Genesis state, Genetic Items, or database rows.
+ */
+function setupAbilityMatrixKeyboardNavigation() {
+  const abilitySection = document.getElementById('genesisAbilityMatrixSection');
+
+  if (!abilitySection || abilitySection.dataset.keyboardNavBound === '1') {
+    return;
+  }
+
+  abilitySection.setAttribute('tabindex', abilitySection.getAttribute('tabindex') || '0');
+  abilitySection.setAttribute(
+    'aria-label',
+    abilitySection.getAttribute('aria-label') || 'Genesis Ability Matrix. Use left and right arrow keys to switch selected mouse.'
+  );
+
+  abilitySection.addEventListener('keydown', event => {
+    if (isEditableLabField(event.target)) {
+      return;
+    }
+
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+      return;
+    }
+
+    event.preventDefault();
+
+    switchAbilityMatrixMouse(event.key === 'ArrowLeft' ? 'prev' : 'next');
+  });
+
+  abilitySection.dataset.keyboardNavBound = '1';
+}
+
 function renderAbilityMouseSwitcher() {
   const { verified, total, currentIndex } = getSelectedGenesisMouseNavigationState();
   const selected = currentIndex >= 0 ? verified[currentIndex] : state.selectedNft;
@@ -13526,6 +13804,8 @@ function renderAbilityMouseSwitcher() {
   if (el.abilityNextMouseButton) {
     el.abilityNextMouseButton.disabled = total <= 1;
   }
+
+  setupAbilityMatrixKeyboardNavigation();
 }
 
 function renderNftGrid(selectedNft = null) {
@@ -15260,36 +15540,39 @@ ${getNftOriginalNameMarkup(resolvedNft)}
             </div>
           </div>
 
-          <a
-            href="mousefights.html#leagues"
-            class="btn compact ghost"
-          >
-            ⚔️ Open League HQ
-          </a>
+          <div class="flex flex-wrap gap-2">
+            <a
+              href="mousefights.html#leagues"
+              class="btn compact primary"
+            >
+              🔎 Search League Fight
+            </a>
+            <a
+              href="mousefights.html#leagues"
+              class="btn compact ghost"
+            >
+              🏆 Open League HQ
+            </a>
+          </div>
         </div>
       </div>
 
       ${leagueJourneyMarkup}
 
-      <div>
-        <div class="section-title text-lg"><span>🧾</span><span>Trait Snapshot</span></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-          ${traits.map((trait) => {
-            const levelBadge = getTraitSnapshotLevelBadge(resolvedNft, trait);
+      <!--
+        NARRRFS_TRAIT_SNAPSHOT_LAYOUT_V10_COMBINED_VIEW
 
-            return `
-              <div class="kv trait-snapshot-card">
-                <div class="text-xs uppercase tracking-[0.18em] text-slate-400">
-                  ${escapeHtml(trait.trait_type)}
-                </div>
-                <div class="trait-value-row">
-                  <div class="trait-value-text">${escapeHtml(trait.value)}</div>
-                  ${levelBadge}
-                </div>
-              </div>
-            `;
-          }).join('') || `<div class="warnbox text-sm sm:col-span-2">No trait data was found on this verified Genesis snapshot.</div>`}
-        </div>
+        Plain language for DEVS FOR DECADES:
+        The visible Trait Snapshot belongs between the selected Genesis mouse
+        viewer and the Ability Matrix. This mount point is populated by the
+        existing renderSelectedTraitSummary() helper so there is only one
+        snapshot view and the action buttons stay centralized.
+
+        This is presentation/navigation only. It does not start, claim, finish,
+        price, authorize, write, verify, or mutate permanent Genesis/Lab state.
+      -->
+      <div class="glass p-4 md:p-5 border border-cyan-300/15 bg-slate-950/35">
+        <div id="selectedTraitSummary" class="trait-summary-grid"></div>
       </div>
     </div>
   `;
@@ -15635,7 +15918,7 @@ const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.ge
         : blocked
           ? 'blocked'
           : 'idle';
-    
+
     const boosterGlowClass = getTraitBoosterGlowClass(row, status);
 
     const statusText = blocked
@@ -16377,6 +16660,7 @@ async function tryAggregateLab() {
 
     async function loadVerifiedNftScan() {
       if (!state.userId) return;
+
       try {
         const res = await fetchJson(`${getApiUrl(LAB_CONFIG.verifiedNftEndpoint)}?user_id=${encodeURIComponent(state.userId)}`, { method: 'GET', credentials: 'include', headers: { 'Accept': 'application/json' } }, true);
 
@@ -16391,13 +16675,35 @@ async function tryAggregateLab() {
           logLab('Loaded verified NFT scan data from compatibility payload.', 'success');
           return;
         }
-
-if (Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
-  logLab('Genesis data confirmed through stable upgrade endpoint fallback.', 'info');
-}
       } catch (error) {
-        logLab(`Verified NFT scan load failed: ${error.message}`, 'warn');
+        logLab(`Verified NFT scan endpoint unavailable; using aggregate Lab data when present. ${error.message}`, 'warn');
       }
+
+      /*
+       * NARRRFS_LAB_VERIFIED_NFT_AGGREGATE_FALLBACK_V1
+       *
+       * Plain language for DEVS FOR DECADES:
+       * Some builds no longer ship api/user/get-verified-nft-scan.php.
+       * The Lab already has the aggregate player Lab endpoint, which can provide
+       * verified_nfts and genesis_trait_upgrades for frontend rendering.
+       *
+       * This fallback only preserves or loads frontend read data. It does not
+       * write DB rows, verify ownership, mutate Genesis NFTs, start/claim trait
+       * upgrades, touch Genetic Items, move DSPOINC/SPOINC, or affect MouseFight.
+       */
+      if (Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
+        logLab('Genesis data confirmed through aggregate Lab endpoint fallback.', 'info');
+        return;
+      }
+
+      const aggregateLoaded = await tryAggregateLab();
+
+      if (aggregateLoaded && Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
+        logLab('Loaded verified Genesis NFTs from aggregate Lab endpoint fallback.', 'success');
+        return;
+      }
+
+      logLab('No verified Genesis NFT data available after dedicated and aggregate Lab loaders.', 'warn');
     }
 
 async function loadLabBoosterStoreCatalog() {
@@ -20735,7 +21041,7 @@ async function handleBulkFavoriteTraitUpgrade() {
   }
 }
 
-    // 🧭 initLab() Load lab 
+    // 🧭 initLab() Load lab
 async function loadLab() {
   if (state.loading) return;
   state.loading = true;
@@ -20868,6 +21174,32 @@ el.refreshUpgradeButton?.addEventListener('click', async () => {
 
       renderAll();
     }
+  );
+});
+
+/*
+ * NARRRFS_TRAIT_SNAPSHOT_LAYOUT_V10_DELEGATED_CLICK
+ *
+ * Plain language for DEVS FOR DECADES:
+ * The selectedTraitSummary mount point now lives inside the selected mouse
+ * panel, which can be re-rendered when players switch mice. Use one document
+ * delegated listener so snapshot buttons keep working after the panel DOM is
+ * replaced.
+ *
+ * This opens existing Trait Research navigation only. It never starts, claims,
+ * finishes, prices, authorizes, writes, or mutates permanent Genesis/Lab state.
+ */
+document.addEventListener('click', event => {
+  const snapshotButton = event.target.closest('[data-trait-snapshot-open]');
+
+  if (!snapshotButton) {
+    return;
+  }
+
+  event.preventDefault();
+
+  openTraitResearchFromSnapshot(
+    snapshotButton.getAttribute('data-trait-snapshot-open') || ''
   );
 });
 

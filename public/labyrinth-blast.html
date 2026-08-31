@@ -1,3 +1,38 @@
+<?php
+// 🔐 Shared Narrrfs session bootstrap for Labyrinth Blast wrapper.
+// NARRRFS_LABYRINTH_WRAPPER_SESSION_BOOTSTRAP_V1
+// DEVS FOR DECADES:
+// This wrapper is the public Narrrfs page around the isolated React/Vite game.
+// It must hydrate the same Discord session/localStorage keys as profile.html
+// before the iframe starts, so the game can save scores with the existing
+// authenticated Narrrfs session. This does not change score math, rewards,
+// leaderboard sorting, DSPOINC writes, or the generated Vite assets.
+$sessionBootstrapCandidates = [
+    __DIR__ . '/api/config/session.php',
+    __DIR__ . '/../api/config/session.php'
+];
+
+$sessionBootstrapLoaded = false;
+
+foreach ($sessionBootstrapCandidates as $sessionBootstrapPath) {
+    if (file_exists($sessionBootstrapPath)) {
+        require_once $sessionBootstrapPath;
+        $sessionBootstrapLoaded = true;
+        break;
+    }
+}
+
+if (!$sessionBootstrapLoaded) {
+    error_log('❌ Narrrf Labyrinth Blast: api/config/session.php not found from labyrinth-blast.html');
+    session_start();
+}
+
+if (function_exists('narrrfs_touch_session')) {
+    narrrfs_touch_session();
+}
+
+$discordId = $_SESSION['discord_id'] ?? '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +43,54 @@
   <meta name="description" content="Enter Labyrinth Blast in Narrrf's World. Place glyph charges, dodge rivals, shatter walls, and reach the portal." />
 
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
+
+  <script>
+    window.sessionDiscordId = "<?= htmlspecialchars($discordId, ENT_QUOTES, 'UTF-8') ?>";
+
+    if (window.sessionDiscordId) {
+      localStorage.setItem("discord_id", window.sessionDiscordId);
+      localStorage.setItem("narrrfs_last_discord_id", window.sessionDiscordId);
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!window.sessionDiscordId) {
+        console.warn("🔐 Labyrinth Blast: No active Discord session detected. Local storage not updated.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/user/details.php?user_id=${encodeURIComponent(window.sessionDiscordId)}`, {
+          credentials: "include",
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data?.success && data.user) {
+          const username = String(data.user.username || "").trim();
+
+          if (username) {
+            window.sessionDiscordUsername = username;
+
+            localStorage.setItem("discord_name", username);
+            localStorage.setItem("narrrfs_last_discord_name", username);
+            localStorage.setItem("DISCORD_NAME", username);
+          }
+
+          window.narrrfsLabyrinthHydrated = true;
+          console.info("✅ Labyrinth Blast: Discord session synced for game iframe.");
+        } else {
+          console.warn("⚠️ Labyrinth Blast: Unable to hydrate username from API response.", data);
+        }
+      } catch (error) {
+        console.error("❌ Labyrinth Blast: Failed to sync Discord credentials.", error);
+      }
+    });
+  </script>
 
   <style>
     /*
