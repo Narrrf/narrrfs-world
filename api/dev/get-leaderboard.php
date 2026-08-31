@@ -216,7 +216,14 @@ $currentSeasonEndExact = $currentSeasonEnd;
 
     error_log("Total scores across all arcade games in $currentSeason: $totalScoresAcrossAllGames");
 
-    $useFrozenLeaderboard = ($totalScoresAcrossAllGames < 3);
+    // Season reset display policy: active seasonal boards show only the active season.
+    // DEVS FOR DECADES:
+    // Previous-season results remain preserved in historical tables, but an empty
+    // new season must not be visually replaced by archived rankings. Keeping this
+    // flag false affects leaderboard presentation only; it does not delete scores,
+    // mutate archives, change rewards, DSPOINC, staking, Lab, Genesis state,
+    // Genetic Items, MouseFight settlement, or Fight Recovery.
+    $useFrozenLeaderboard = false;
 
     // Core arcade leaderboards
 $tetrisResult = getLeaderboard($db, 'tetris', $currentSeason, $previousSeason, $useFrozenLeaderboard);

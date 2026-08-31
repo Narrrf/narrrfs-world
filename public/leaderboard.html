@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>☀️ Season 14 Leaderboards — Hot Summer MouseFight Arena | Narrrf's World</title>
+  <title>☀️ Season 15 Leaderboards — MouseFight Arena | Narrrf's World</title>
 <meta name="theme-color" content="#f97316" />
 <meta
   name="description"
-  content="Narrrf's World Season 14 leaderboards: fresh Hot Summer MouseFight Arena competition, archived Season 13 legends, DSPOINC earners, arcade scores, and official 10-game ecosystem rankings."
+  content="Narrrf's World Season 15 leaderboards: fresh MouseFight Arena competition, archived Season 14 legends, DSPOINC earners, arcade scores, and official 10-game ecosystem rankings."
 />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" href="favicon-phantom.png" type="image/png">
@@ -396,7 +396,7 @@ body.season12-leaderboard-shell {
   <header class="leaderboard-season12-header sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
       <div>
-        <h1 class="text-xl font-black tracking-wide text-yellow-300">☀️ Narrrf's World — Season 14 Leaderboards ⚔️</h1>
+        <h1 class="text-xl font-black tracking-wide text-yellow-300">☀️ Narrrf's World — Season 15 Leaderboards ⚔️</h1>
         <div id="season-status" class="text-xs text-orange-200 animate-pulse mt-1">
           Loading season status...
         </div>
@@ -413,8 +413,8 @@ body.season12-leaderboard-shell {
   <main class="relative z-10 max-w-7xl mx-auto px-4 py-8">
     <!-- Season Status Banner -->
     <div id="season-banner" class="leaderboard-season12-banner text-white text-center py-6 rounded-3xl mb-8 shadow-lg">
-      <div class="season12-mini-pill mx-auto mb-3 w-fit">☀️ Season 14 Hot Summer MouseFight Arena</div>
-      <div class="text-2xl md:text-4xl font-black" id="season-title">🏆 Fresh Season 14 Leaderboards</div>
+      <div class="season12-mini-pill mx-auto mb-3 w-fit">☀️ Season 15 MouseFight Arena</div>
+      <div class="text-2xl md:text-4xl font-black" id="season-title">🏆 Fresh Season 15 Leaderboards</div>
       <div class="text-sm md:text-base mt-3 text-orange-50 font-semibold" id="season-subtitle">Loading...</div>
       <!-- 🎮 Game Section Link -->
       <div class="mt-4">
@@ -670,8 +670,8 @@ body.season12-leaderboard-shell {
             </div>
 
             <p class="mt-2 max-w-3xl text-sm text-orange-100/80">
-              Season 14 battle rankings from official finished PVP challenges
-              and moderator-hosted Arena Events. Season 13 fight history remains preserved.
+              Season 15 battle rankings from official finished PVP challenges
+              and moderator-hosted Arena Events. Season 14 fight history remains preserved.
             </p>
 
             <div
@@ -1344,7 +1344,7 @@ function initializeMouseFightLeaderboardTabs() {
  * Load the compact Game #10 leaderboard preview.
  *
  * No season ID is hardcoded. The API therefore resolves the active season.
- * After the Season 14 reset, this section follows Season 14 automatically.
+ * After the Season 15 reset, this section follows Season 15 automatically.
  */
 async function loadMouseFightLeaderboard() {
   const loadingElement = document.getElementById(
@@ -1539,9 +1539,9 @@ async function loadLeaderboard() {
     //
     // DEVS FOR DECADES:
     // The API remains authoritative for which season's records are displayed.
-    // Before the Season 14 database cutover, the page branding can already
-    // present the Season 14 arena while the loaded Season 13 rows are honestly
-    // labelled as final Season 13 rankings. No score or season data is changed.
+    // Before the Season 15 database cutover, the page branding can already
+    // present the Season 15 arena while the loaded Season 14 rows are honestly
+    // labelled as final Season 14 rankings. No score or season data is changed.
     const activeSeasonLabel = String(
       data.current_season || data.display_season || 'Current Season'
     ).trim();
@@ -1550,12 +1550,12 @@ async function loadLeaderboard() {
       data.display_season || activeSeasonLabel
     ).trim();
 
-    const isSeason14PreparedPage =
-      document.title.includes('Season 14 Leaderboards');
+    const isSeason15PreparedPage =
+      document.title.includes('Season 15 Leaderboards');
 
-    const isPreSeason14Data =
-      isSeason14PreparedPage &&
-      activeSeasonLabel === 'Season 13';
+    const isPreSeason15Data =
+      isSeason15PreparedPage &&
+      activeSeasonLabel === 'Season 14';
 
     if (data.is_frozen) {
       seasonTitle.textContent =
@@ -1566,15 +1566,15 @@ async function loadLeaderboard() {
 
       seasonStatus.textContent =
         `⏸️ ${displayedSeasonLabel} Frozen • 🎮 ${activeSeasonLabel} Active`;
-    } else if (isPreSeason14Data) {
+    } else if (isPreSeason15Data) {
       seasonTitle.textContent =
-        '🏆 Fresh Season 14 Leaderboards';
+        '🏆 Fresh Season 15 Leaderboards';
 
       seasonSubtitle.textContent =
-        '☀️ The new arena is prepared. Rankings refresh automatically when Season 14 activates.';
+        '☀️ The new arena is prepared. Rankings refresh automatically when Season 15 activates.';
 
       seasonStatus.textContent =
-        '☀️ Season 14 Hot Summer MouseFight Arena';
+        '☀️ Season 15 MouseFight Arena';
     } else {
       seasonTitle.textContent =
         `🎮 ${displayedSeasonLabel} Leaderboard (Active)`;
@@ -1588,7 +1588,7 @@ async function loadLeaderboard() {
 
     // Label the first DSPOINC board with the season whose rows are actually shown.
     if (seasonLeaderboardTitle) {
-      seasonLeaderboardTitle.textContent = isPreSeason14Data
+      seasonLeaderboardTitle.textContent = isPreSeason15Data
         ? 'Current DSPOINC Rankings'
         : `${displayedSeasonLabel} Leaderboard`;
     }
