@@ -1,5 +1,2557 @@
 🧀 NARRRFS WORLD 13.0 — QUICK STATUS
 
+## 2026-09-06 — 🧪⚔️ MouseFight Event Battle Elixirs V1 + Combat Transparency V1 — LOCAL VERIFIED / CONTROLLED DEPLOYMENT NEXT
+
+### Agent / Scope
+
+**Agent:** MouseFight Leagues Expert 1.6 LIVE
+**Project:** Narrrfs World 13.0
+**Branch:** `render-deploy`
+
+Two connected MouseFight improvements are now locally verified:
+
+1. **League Event Battle Elixirs V1**
+2. **MouseFight Combat Transparency V1**
+
+No production deployment, slash-command publication, bot restart, or live inventory test had been performed at this checkpoint.
+
+---
+
+### 1. League Event Battle Elixirs V1 — LOCAL VERIFIED
+
+Approved contract implemented:
+
+* League Mode `OFF` → Event Battle Elixirs unavailable.
+* League Mode `MINIMUM` / `EXACT` → moderator may optionally enable them.
+* Event Battle Elixirs default `OFF`.
+* Fighter choices:
+
+  * Green / item `33` / `+5%`
+  * Blue / item `34` / `+10%`
+  * Red / item `35` / `+15%`
+  * No Elixir
+* maximum `1` Elixir per participant for the whole event;
+* no consumption on join;
+* no consumption on cancelled-before-combat event;
+* bye-only participant consumes nothing;
+* authoritative inventory revalidation occurs immediately before first real combat;
+* first real combat consumes exactly once;
+* later rounds do not burn a second Elixir;
+* retry after successful consumption is idempotent;
+* stale second inventory causes pair transaction rollback before new burn;
+* temporary Fight Power only;
+* League Power / Tier / permanent Genesis progression unchanged.
+
+Backend action:
+
+`event_battle_elixir_consume_pair`
+
+Current hashes:
+
+`discord/commands/mousefight.js`
+
+`f45938ec12155197ff826afbf5c53b6e5e3b33381920fffd7e9d13577f38016b`
+
+before Combat Transparency V1.
+
+`api/discord/mousefight-economy.php`
+
+`9ade2a9904a63de4d8385515a8728287d38082e0e7d7e4914a2029db44241d90`
+
+Validation:
+
+* JS syntax — PASS
+* PHP syntax — PASS
+* isolated XAMPP transaction test — PASS
+* first consume — PASS
+* retry exactly-once — PASS
+* stale pair rollback — PASS
+* League OFF rejection — PASS
+* disposable SQLite integrity — `ok`
+* main `db/narrrf_world.sqlite` unchanged — PASS
+* Discord-side 3-player bye simulation — PASS
+* first-real-combat hook — PASS
+* later-round no-stacking — PASS
+* normal tournament body unchanged — PASS
+
+---
+
+### 2. MouseFight Combat Transparency V1 — LOCAL VERIFIED
+
+Community feedback from a real PVP fight showed that players could see their raw Ability levels but could not clearly understand that all nine Ability values were present, and round embeds displayed only one Genetic Item even when several items had been selected.
+
+Scope approved and implemented as **presentation only**.
+
+Changed:
+
+* clearer shared 9-Ability level matrix;
+* complete selected Genetic Item loadout shown in round embeds;
+* all Genetic Items marked active in the resolved round are shown;
+* PVP challenge Genetic Item loadout presentation widened to prevent normal 7-item truncation.
+
+New shared public helpers include:
+
+* `buildMouseFightPublicGeneticItemList()`
+* `buildMouseFightPublicAbilityMatrix()`
+* `buildMouseFightPublicSelectedLoadout()`
+
+Shared round presentation now displays:
+
+* all 9 raw Ability levels;
+* selected Genetic Item count;
+* complete selected Genetic Item names + levels;
+* active Genetic Items for that resolved round;
+* existing public Item Support;
+* existing Final Round Score.
+
+The presentation deliberately does **NOT** expose:
+
+* Ability trigger probabilities;
+* combat weighting constants;
+* CRAFTING multipliers;
+* EXPANSION slot formulas;
+* scoring coefficients;
+* internal thresholds;
+* hidden combat formulas.
+
+The combat engine remains authoritative and unchanged.
+
+---
+
+### Combat Transparency V1 Source Authority
+
+Before:
+
+`discord/commands/mousefight.js`
+
+`f45938ec12155197ff826afbf5c53b6e5e3b33381920fffd7e9d13577f38016b`
+
+After:
+
+`discord/commands/mousefight.js`
+
+`c1d53f8b97ddbffe780f25fedc4c00e42c8d449392becef83748dc5f707d16e7`
+
+Backup:
+
+`discord/commands/mousefight.js.before-combat-transparency-v1-20260906-225322.bak`
+
+Focused diff:
+
+* `+157`
+* `-52`
+
+Validation:
+
+* guarded Python patch syntax — PASS
+* exact pre-patch authority hash — PASS
+* exact expected target hash — PASS
+* `node --check discord/commands/mousefight.js` — PASS
+* `node --check discord/index.js` — PASS
+* focused markers — PASS
+* protected engine locations — unchanged
+* no DB/API/runtime action during patch
+
+Uploaded post-patch source independently confirmed the new shared presentation markers.
+
+---
+
+### Shared Coverage
+
+`buildMouseFightRoundEmbed()` remains the common presentation layer used by:
+
+* manual PVP;
+* moderator Events;
+* automatic Genesis League battle replay.
+
+Therefore Combat Transparency V1 applies consistently across all three without creating separate combat implementations.
+
+---
+
+### Protected Systems — Unchanged
+
+Both changes preserve:
+
+* MouseFight winner calculation
+* Ability combat calculation
+* Genetic Item tactical calculation
+* normal `runMouseFightTournament()`
+* PVP escrow / settlement
+* DSPOINC / SPOINC
+* event entry burns
+* event cancellation refunds
+* Fight Recovery
+* League Points
+* League Power
+* League Tier
+* Genesis ownership
+* permanent Traits
+* permanent Abilities
+* Lab progression
+* Genetic Item ownership
+* staking / Genesis Mouse Freezer
+* token payout / airdrop
+* auth
+* DB schema
+* unrelated games
+
+---
+
+### Git / Runtime Boundary
+
+`discord/` remains intentionally ignored by Git.
+
+Therefore:
+
+`discord/commands/mousefight.js`
+
+is local Discord-bot runtime source and must **not** be force-added to Git.
+
+Tracked deployment change:
+
+`api/discord/mousefight-economy.php`
+
+QUICK_STATUS is also tracked.
+
+Do not change `.gitignore`.
+
+---
+
+### Controlled Deployment Order
+
+Required safe order:
+
+1. commit/push tracked `api/discord/mousefight-economy.php` + QUICK_STATUS only;
+2. allow Render deployment;
+3. verify exact production PHP hash;
+4. verify production PHP syntax;
+5. verify live SQLite integrity read-only;
+6. publish updated `/mousefight` slash-command schema containing `battle_elixirs`;
+7. restart the local Discord bot once;
+8. verify bot startup / heartbeat / League matchmaking recovery;
+9. test normal PVP Combat Transparency;
+10. test automatic Genesis League Combat Transparency;
+11. test moderator League Event with Event Battle Elixirs;
+12. verify first-real-combat inventory consumption exactly once;
+13. verify no duplicate consumption in later rounds;
+14. verify event completion / Fight Recovery;
+15. verify final production DB integrity.
+
+Real Event Battle Elixir testing will use the authoritative backend transaction path only.
+
+---
+
+### Current Status
+
+```text
+Event Battle Elixirs V1 ................... LOCAL VERIFIED ✅
+Combat Transparency V1 .................... LOCAL VERIFIED ✅
+
+PHP API syntax ............................ PASS
+JS syntax ................................. PASS
+Event transaction tests ................... PASS
+Discord Event Elixir behavior tests ....... PASS
+Combat Transparency source patch .......... PASS
+
+Combat formulas ........................... UNCHANGED
+PVP settlement ............................ UNCHANGED
+event burns/refunds ....................... UNCHANGED
+Fight Recovery ............................ UNCHANGED
+League Power / Points ..................... UNCHANGED
+Genesis / Lab / staking ................... UNCHANGED
+DB schema ................................. UNCHANGED
+
+Production API ............................ NOT YET DEPLOYED
+Slash schema .............................. NOT YET DEPLOYED
+Local bot restart ......................... NOT YET PERFORMED
+Production Discord tests .................. NOT YET PERFORMED
+Live inventory consumption test ........... NOT YET PERFORMED
+
+Persisted waiting-fight Recovery R2 ....... OPEN / UNCHANGED
+```
+
+### Exact Next Step
+
+Proceed with controlled deployment of:
+
+`api/discord/mousefight-economy.php`
+
+first.
+
+Do **not** restart the local Discord bot until the new production API hash and syntax have been verified.
+
+### Standby
+
+**MouseFight Leagues Expert 1.6 LIVE**
+
+Event Battle Elixirs V1:
+
+**LOCAL VERIFIED ✅**
+
+Combat Transparency V1:
+
+**LOCAL VERIFIED ✅**
+
+Next gate:
+
+**Production API deployment + verification**
+
+
+## 2026-09-06 — 🧪 MouseFight League Event Battle Elixirs V1 — LOCAL VERIFIED / READY FOR CONTROLLED DEPLOYMENT
+
+### Agent / Scope
+
+**Agent:** MouseFight Leagues Expert 1.6 LIVE
+**Project:** Narrrfs World 13.0
+**Branch:** `render-deploy`
+
+Scope completed:
+
+Implement the approved community request for **Battle Elixirs inside moderator MouseFight events when League Mode is enabled**.
+
+Approved V1 rule remains:
+
+**Maximum one Battle Elixir per participant for the entire League event.**
+
+This work remains isolated from automatic Genesis League matchmaking Battle Elixirs, PVP settlement, Event burns/refunds, Fight Recovery, League Power, permanent Genesis progression, staking, and unrelated games.
+
+---
+
+### Approved Event Battle Elixir Contract
+
+Implemented contract:
+
+* League Mode `OFF` → Battle Elixirs unavailable.
+* League Mode `MINIMUM` / `EXACT` → moderator may enable Battle Elixirs.
+* Event Battle Elixirs default `OFF`.
+* Participant may select:
+
+  * Green Elixir / item `33` — `+5%`
+  * Blue Elixir / item `34` — `+10%`
+  * Red Elixir / item `35` — `+15%`
+  * No Elixir
+* Maximum `1` Battle Elixir per participant for the complete event.
+* Selection remains pending while the event is waiting.
+* No Elixir is consumed on event join.
+* No Elixir is consumed when an event is cancelled before combat.
+* A participant receiving only a bye consumes nothing.
+* Authoritative Elixir consumption occurs immediately before that participant enters their **first real two-mouse combat**.
+* Later bracket rounds do not consume another Elixir.
+* Inventory is authoritatively revalidated before temporary Elixir Fight Power becomes active.
+* Pair consumption is atomic:
+
+  * both selected inventories prepare successfully;
+  * or neither new Elixir is consumed.
+* Retry after an already-successful first consumption is idempotent and does not burn a second bottle.
+* Battle Elixirs affect temporary Fight Power only.
+* League Power / League Tier / permanent Traits / Abilities / Lab progression remain unchanged.
+
+---
+
+### Source Implementation
+
+Changed:
+
+* `discord/commands/mousefight.js`
+* `api/discord/mousefight-economy.php`
+
+Unchanged:
+
+* `discord/index.js`
+* `discord/deploy-commands.js`
+
+New Event backend authority:
+
+`event_battle_elixir_consume_pair`
+
+New Discord Event flow includes:
+
+* `/mousefight event` optional `battle_elixirs` boolean;
+* default OFF;
+* League-OFF rejection;
+* Event Battle Elixir picker support;
+* Green / Blue / Red / Skip;
+* pending Event Elixir participant snapshot;
+* unboosted Fight Power retained for join / bracket seeding;
+* dedicated Event-Elixir tournament path;
+* authoritative consumption immediately before real combat;
+* temporary Elixir activation after backend success;
+* restored waiting-event metadata support;
+* Event embed indication.
+
+No DB schema migration was required.
+
+---
+
+### Current Verified Hashes
+
+Current patched sources:
+
+`discord/commands/mousefight.js`
+
+`f45938ec12155197ff826afbf5c53b6e5e3b33381920fffd7e9d13577f38016b`
+
+`api/discord/mousefight-economy.php`
+
+`9ade2a9904a63de4d8385515a8728287d38082e0e7d7e4914a2029db44241d90`
+
+Unchanged:
+
+`discord/index.js`
+
+`436a5c79372e9ab3439c4b7b555e4743a97915189ff9481b5b3649ba74970f7d`
+
+`discord/deploy-commands.js`
+
+`dc8c0d741e7cbc97cf3133116c57f37efcfd66b79bcdd1e39ccb40d367a49427`
+
+Verified pre-patch authority:
+
+`discord/commands/mousefight.js`
+
+`6fb7386aaff9f4f4b12e9b1ff643ee6c33297118d73fca7eb8e9d56afe91c707`
+
+`api/discord/mousefight-economy.php`
+
+`22ad892839b526f15060bd0365485102d445d65af13c92b7e507447d2d427d18`
+
+---
+
+### Backups
+
+Final revised implementation backups:
+
+* `discord/commands/mousefight.js.before-event-battle-elixir-v1-20260906-185308.bak`
+* `api/discord/mousefight-economy.php.before-event-battle-elixir-v1-20260906-185308.bak`
+
+Both backup hashes match the verified pre-implementation authority.
+
+An earlier implementation attempt was rejected during focused diff/contract review and safely rolled back before any bot restart, API execution, DB mutation, or deployment.
+
+---
+
+### Syntax Validation — PASS
+
+Passed:
+
+* `node --check discord/commands/mousefight.js`
+* `node --check discord/index.js`
+* PHP lint `api/discord/mousefight-economy.php`
+
+Current syntax status:
+
+**PASS**
+
+---
+
+### Isolated XAMPP Economy Transaction Test — PASS
+
+Environment:
+
+* Local XAMPP
+* disposable SQLite test DB only
+* main DB: `db/narrrf_world.sqlite`
+* no live API call
+* no production write
+
+Verified:
+
+* first Event Elixir consumption — PASS
+* retry idempotency — PASS
+* stale second fighter inventory → pair rollback — PASS
+* League OFF rejection — PASS
+* disposable DB integrity — `ok`
+* test return code — `0`
+
+Main local DB SHA256 before test:
+
+`9dd6dc155db5cd388fab3239835f3a77bb99bc5dc8e023282399c9e5247bdffe`
+
+Main local DB SHA256 after test:
+
+`9dd6dc155db5cd388fab3239835f3a77bb99bc5dc8e023282399c9e5247bdffe`
+
+Result:
+
+**Main local DB unchanged — PASS**
+
+Disposable test DB removed after test.
+
+---
+
+### Isolated Discord-Side Behavior Test — PASS
+
+Test:
+
+`test-event-battle-elixirs-v1-js.js`
+
+Verified:
+
+* current patched `mousefight.js` hash — PASS
+* pending selection keeps base / seeding Fight Power — PASS
+* League OFF runtime gate — PASS
+* first confirmed real combat activates temporary boost once — PASS
+* later rounds do not stack temporary Elixir boost — PASS
+* three-player opening bye consumes nothing — PASS
+* bye fighter first consumption hook occurs only when first real match begins — PASS
+* authoritative consumption hook occurs before each real combat — PASS
+* original normal `runMouseFightTournament()` body remains unchanged — PASS
+
+Test return code:
+
+`0`
+
+Source hashes were unchanged by the test.
+
+---
+
+### Focused Diff / Protected Execution Review — PASS
+
+Final diff against verified backups:
+
+`discord/commands/mousefight.js`
+
+* `+667`
+* `-28`
+* `25` verified feature hunks
+
+`api/discord/mousefight-economy.php`
+
+* `+407`
+* `-3`
+* `6` verified feature hunks
+
+Verified existing protected paths remain separate / unchanged:
+
+* normal `runMouseFightTournament()`
+* `runMouseFightMatch()`
+* normal Battle Mode preparation
+* backend `event_join`
+* backend `event_cancel`
+* `pvp_accept_settle`
+* `pvp_cancel`
+* `event_complete_recovery`
+
+The Event-specific implementation is isolated through:
+
+* `runMouseFightTournamentWithEventBattleElixirs()`
+* `startMouseFightEventBattleElixirTournament()`
+* `event_battle_elixir_consume_pair`
+
+---
+
+### Git / Local Discord Runtime Boundary Confirmed
+
+Important Git architecture verification:
+
+`discord/commands/mousefight.js`
+
+is intentionally **not Git tracked**.
+
+Audit confirmed:
+
+* not present in Git HEAD;
+* not present in Git index;
+* ignored by `.gitignore` rule:
+
+  * `/discord/`
+
+Therefore the changed local Discord file correctly does not appear in `git status`.
+
+Do NOT:
+
+* force-add `/discord/`;
+* change `.gitignore`;
+* use `git update-index` for this file.
+
+The Discord bot remains a local runtime system.
+
+Tracked deployment file currently changed:
+
+* `api/discord/mousefight-economy.php`
+
+---
+
+### Important Deployment Dependency
+
+The new local Discord code calls:
+
+`event_battle_elixir_consume_pair`
+
+through the authoritative MouseFight economy API.
+
+The local Discord bot normally targets the **live Narrrfs World API**.
+
+Therefore:
+
+**Do NOT restart the local Discord bot with the new Event Elixir code before the updated economy PHP action is deployed and verified live.**
+
+Safe rollout order:
+
+1. commit/push the tracked `api/discord/mousefight-economy.php` change;
+2. allow Render deployment;
+3. verify production PHP / API route authority;
+4. deploy the updated `/mousefight` slash-command definition containing `battle_elixirs`;
+5. restart the local Discord bot once;
+6. verify normal bot startup / heartbeat / existing League matchmaking recovery;
+7. run a controlled real Discord League event with Event Battle Elixirs;
+8. verify production inventory + usage-history consumption exactly once;
+9. verify normal Event completion and Fight Recovery;
+10. only then promote Event Battle Elixirs V1 to **PRODUCTION LIVE PASS**.
+
+Steps involving Git push, Render deployment, slash-command deployment, bot restart, or live state remain approval-gated.
+
+---
+
+### Protected Systems — Unchanged
+
+Verified unchanged by this implementation:
+
+* DSPOINC / SPOINC
+* PVP escrow / settlement
+* existing automatic League Battle Elixir settlement
+* event entry burns
+* event cancellation refunds
+* Fight Recovery rules
+* League Points
+* League Power
+* League Tier
+* Genesis ownership
+* permanent Traits
+* permanent Abilities
+* Lab progression
+* Genetic Item ownership / persistence
+* staking / Genesis Mouse Freezer
+* token payout / airdrop system
+* auth
+* DB schema
+* unrelated games
+
+No production DB write was performed during implementation/testing.
+
+---
+
+### Current Status
+
+```text
+Event Battle Elixirs V1 implementation .... LOCAL VERIFIED ✅
+Revised source patch ...................... PASS
+JS syntax ................................. PASS
+PHP syntax ................................ PASS
+Focused diff .............................. PASS
+Protected execution scan ................. PASS
+
+XAMPP transaction test .................... PASS
+Main local DB unchanged ................... PASS
+First consumption ........................ PASS
+Retry exactly-once ....................... PASS
+Stale pair rollback ....................... PASS
+League OFF backend rejection .............. PASS
+
+Discord behavior test ..................... PASS
+Pending selection keeps seed power ........ PASS
+Opening bye consumes nothing .............. PASS
+First-real-combat consumption ............. PASS
+Later-round duplicate burn ................ BLOCKED / PASS
+Temporary Fight Power activation .......... PASS
+Normal tournament body .................... UNCHANGED / PASS
+
+Production API deployment ................. NOT DONE
+Slash-command deployment .................. NOT DONE
+Local bot restart ......................... NOT DONE
+Production Discord test ................... NOT DONE
+Production DB verification ................ NOT DONE
+
+Persisted waiting-fight Recovery R2 ....... OPEN / UNCHANGED
+```
+
+### Exact Next Step
+
+**Event Battle Elixirs V1 is LOCAL VERIFIED / READY FOR CONTROLLED DEPLOYMENT.**
+
+Next approved deployment sequence must begin with:
+
+1. tracked PHP/API commit + push;
+2. Render deployment verification;
+3. production API verification;
+
+**before** deploying the Discord slash option or restarting the local bot.
+
+No deployment action has been performed yet.
+
+### Standby
+
+**MouseFight Leagues Expert 1.6 LIVE**
+
+Event Battle Elixirs V1:
+
+**LOCAL VERIFIED / READY FOR CONTROLLED DEPLOYMENT ✅**
+
+Standby: **Active**
+
+
+## 2026-09-04 — 🧪 MouseFight League Event Battle Elixirs V1 — APPROVED / IMPLEMENTATION PENDING
+
+### Agent Handover
+
+**Outgoing Agent:** MouseFight Leagues Expert 1.5 LIVE  
+**Incoming Agent:** MouseFight Leagues Expert 1.6 LIVE  
+**Project:** Narrrfs World 13.0  
+**Branch:** `render-deploy`
+
+### Community Request
+
+Friday event feedback requested Battle Elixirs inside moderator MouseFight events when League Mode is enabled.
+
+Current production behavior:
+
+- Battle Elixirs work in automatic Genesis League matchmaking.
+- `/mousefight event` already supports League Mode.
+- Event mode currently has no Battle Elixir selection/consumption path.
+
+### Approved Event Elixir V1 Contract
+
+Explicitly approved:
+
+**One Battle Elixir per participant per League event.**
+
+Rules:
+
+- League Mode `OFF` → Battle Elixirs unavailable.
+- League Mode `MINIMUM` or `EXACT` → moderator may enable Battle Elixirs.
+- Event Battle Elixirs default `OFF`.
+- Participant may choose:
+  - Green `+5%`
+  - Blue `+10%`
+  - Red `+15%`
+  - No Elixir
+- Maximum `1` Battle Elixir per participant for the whole event.
+- Selection is pending only while waiting.
+- No consumption on event join.
+- No consumption when event is cancelled before combat.
+- No consumption for a participant who never enters real combat.
+- Selected Elixir is consumed exactly once when that participant enters first real event combat.
+- Authoritative inventory revalidation + exactly-once consumption required before Elixir Fight Power may apply.
+- Elixir remains temporary Fight Power only.
+- League Power / Tier / permanent Traits / Abilities / Lab progression remain unchanged.
+- Do NOT implement one Elixir per bracket round.
+
+### Verified Preflight
+
+Current hashes before Event Elixir implementation:
+
+- `discord/commands/mousefight.js`
+  `6fb7386aaff9f4f4b12e9b1ff643ee6c33297118d73fca7eb8e9d56afe91c707`
+- `discord/index.js`
+  `436a5c79372e9ab3439c4b7b555e4743a97915189ff9481b5b3649ba74970f7d`
+- `api/discord/mousefight-economy.php`
+  `22ad892839b526f15060bd0365485102d445d65af13c92b7e507447d2d427d18`
+- `discord/deploy-commands.js`
+  `dc8c0d741e7cbc97cf3133116c57f37efcfd66b79bcdd1e39ccb40d367a49427`
+
+Baseline syntax:
+
+- `mousefight.js` — PASS
+- `index.js` — PASS
+- `mousefight-economy.php` — PASS
+
+Preflight performed READ ONLY:
+
+- no DB write;
+- no source change;
+- no bot restart;
+- no deploy.
+
+### Source Architecture Confirmed
+
+Current event path includes:
+
+- `/mousefight event`
+- League Mode / League Tier
+- event join
+- Genetic Item loadout
+- tournament start / `runMouseFightTournament()`
+- event Recovery
+
+Current Battle Elixir picker supports:
+
+- manual PVP
+- automatic League matchmaking
+
+Current protected Battle Elixir consumption is wired through:
+
+`pvp_accept_settle`
+
+Event path is separate and therefore requires an isolated authoritative event-consumption implementation.
+
+### Protected Systems
+
+Must remain unchanged unless explicitly required by the approved Event Elixir V1 contract:
+
+- DSPOINC / SPOINC
+- PVP escrow / settlement
+- event burns / refunds
+- Fight Recovery rules
+- League Points
+- Genesis ownership
+- permanent Traits / Abilities
+- Lab progression
+- Genetic Item ownership
+- staking
+- auth
+- DB schema
+- unrelated games
+
+### Exact Next Step for MouseFight Leagues Expert 1.6 LIVE
+
+1. Read newest `12.0/ACTIVE_STATUS/QUICK_STATUS.md`.
+2. Inspect exact current event creation → join → picker → tournament → completion flow.
+3. Inspect authoritative Battle Elixir helpers in `mousefight-economy.php`.
+4. Design the smallest event-specific exactly-once consumption path.
+5. Backup affected files.
+6. Patch only the approved Event Elixir V1 scope.
+7. Run JS/PHP syntax.
+8. Build isolated tests for:
+   - League OFF → Elixir unavailable;
+   - League ON + Elixir OFF;
+   - League ON + Elixir ON;
+   - Green / Blue / Red / Skip;
+   - no consumption on join;
+   - no consumption on cancelled-before-combat;
+   - bye-only participant consumes nothing;
+   - first real combat consumes exactly once;
+   - later rounds do not consume again;
+   - stale/missing inventory fails safely.
+9. Focused diff + protected execution scan.
+10. No bot restart / slash-command deploy / production deployment until explicitly approved.
+
+### Standby / Logoff
+
+**MouseFight Leagues Expert 1.5 LIVE**
+
+Mission status:
+
+- Battle Elixirs automatic League matchmaking — LIVE
+- League restart recovery R1 — LOCAL LIVE PASS
+- Event Battle Elixirs V1 — APPROVED / IMPLEMENTATION PENDING
+- Persisted waiting-fight recovery R2 — OPEN / UNCHANGED
+
+**Logoff complete.**
+
+Next agent:
+
+**MouseFight Leagues Expert 1.6 LIVE**
+
+
+## 2026-09-03 — 🧀 NARRRFS WORLD 13.0 — 26-Agent Operations Synch / Season 15 LIVE Control Snapshot
+
+### Central Operations
+
+**Coordinator:** Narrrfs World Operations 3.0 LIVE  
+**Project:** Narrrfs World 13.0  
+**Branch:** `render-deploy`  
+**Canonical continuity:** `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+
+Purpose of this entry:
+
+Provide one short cross-agent checkpoint for all Narrrfs World specialists signing in, signing out, restarting, or receiving a handover.
+
+This does not replace the detailed specialist entries below.
+
+All agents must inspect the newest relevant detailed QUICK_STATUS section before changing code, DB state, economy, MouseFight, Fight Recovery, Genesis progression, staking, auth, or deployment state.
+
+---
+
+### 26-Agent Coordination Status
+
+Current Narrrfs World specialist map:
+
+**26 agents synchronized / coordination map active.**
+
+Primary current development front:
+
+**MouseFight Genesis Leagues / Season 15**
+
+Current lead:
+
+**MouseFight Leagues Expert 1.5 LIVE**
+
+Central daily operations:
+
+**Narrrfs World Operations 3.0 LIVE**
+
+Season Reset Agent 15.0:
+
+**Season 14 → Season 15 mission complete / standby.**
+
+Other specialists remain available under their existing ownership boundaries for:
+
+- MouseFight core / Fight Recovery;
+- Discord bot;
+- DSPOINC / SPOINC ledger;
+- SPOINC bridge;
+- Lab progression;
+- Genetic Items / Marketplace;
+- staking / Genesis Mouse Freezer;
+- Airdrop Service;
+- Glyph Memory;
+- partner integrations;
+- Gensuki campaigns;
+- standalone 3D Riddle systems;
+- auth/session integration;
+- Genesis identity;
+- Traits / Abilities RPG integration;
+- Genetic loadouts;
+- profile/bootstrap API integration.
+
+Do not reinterpret another specialist's protected system from this summary.
+
+---
+
+### Season 15 — LIVE
+
+Season 15 remains the active Narrrfs World season.
+
+Verified season contract:
+
+- Season: `Season 15`
+- season_id: `17`
+- start: `2026-08-31 22:00:00 UTC`
+- end: `2026-09-30 22:00:00 UTC`
+- Season 14: archived / inactive
+- active season count: `1`
+
+Season 15 website presentation and fresh competitive leaderboards are live.
+
+The 10-game Narrrfs World ecosystem is open for September competition.
+
+Permanent Genesis progression remains preserved across the season reset.
+
+---
+
+### MouseFight Genesis Leagues — Major Season 15 Focus
+
+Genesis League matchmaking is operational.
+
+League structure remains the approved 9-League path:
+
+1. Crumb
+2. Cheese
+3. Bronze
+4. Silver
+5. Golden
+6. Diamond
+7. Genesis Master
+8. Mouseverse Champion
+9. Ultra Champion
+
+Important permanent boundary:
+
+`League Power != Fight Power`
+
+League Power / League classification must never include temporary Battle Elixir or Genetic Item combat effects.
+
+Identity remains:
+
+`token_id + collection`
+
+Ownership controls current use but does not redefine permanent League identity.
+
+---
+
+### Battle Elixirs — PRODUCTION LIVE
+
+Battle Elixirs are LIVE for:
+
+`Automatic Genesis League Matchmaking`
+
+Approved temporary combat effects:
+
+- Green Elixir / item `33` — `+5% Genesis Base Power`
+- Blue Elixir / item `34` — `+10% Genesis Base Power`
+- Red Elixir / item `35` — `+15% Genesis Base Power`
+
+Per fighter:
+
+- maximum `1` Battle Elixir;
+- separate from maximum `3` Genetic Items.
+
+Battle Elixirs affect temporary Fight Power only.
+
+They do NOT change:
+
+- League Power;
+- League Tier;
+- permanent Traits;
+- permanent Abilities;
+- Lab progression;
+- Genesis ownership;
+- staking.
+
+First production Battle Elixir League fight:
+
+**PASS end-to-end**
+
+Verified layers included:
+
+- temporary Fight Power;
+- authoritative Elixir consumption;
+- exactly-once usage history;
+- League Point award;
+- normal Fight Recovery;
+- zero-wager economy protection;
+- production DB integrity.
+
+---
+
+### Battle Elixir Holder Launch — COMPLETE
+
+Approved launch distribution completed for:
+
+`59` verified holders owning at least one named Genesis Mouse.
+
+Each eligible holder received:
+
+- `5×` Green Elixir
+- `3×` Blue Elixir
+- `2×` Red Elixir
+
+Total distributed:
+
+`590 Battle Elixirs`
+
+Breakdown:
+
+- Green: `295`
+- Blue: `177`
+- Red: `118`
+
+Important:
+
+The launch was **holder-based**, not mouse-based.
+
+Production backup, guarded inventory transaction, exact recipient audit, LIVE DB integrity, and persistent `/data` synchronization all passed.
+
+Holder notification campaign:
+
+- recipients evaluated: `59`
+- DMs delivered: `51`
+- Discord unreachable / no mutual guild: `8`
+- airdrop failures: `0`
+
+The 8 DM failures were notification-layer only; all 59 approved holders received their inventory grant.
+
+---
+
+### League Restart Recovery R1 — LOCAL LIVE PASS
+
+Fixed issue:
+
+Temporary automatic Genesis League matchmaking searches previously disappeared when the local Discord bot restarted.
+
+Implemented:
+
+`NARRRFS_MOUSEFIGHT_LEAGUE_MATCHMAKING_RESTART_CHECKPOINT_R1_V1`
+
+Checkpoint:
+
+`discord/.mousefight-league-matchmaking-queue-state.json`
+
+Restart restoration freshly revalidates:
+
+- ownership/profile;
+- published exact League;
+- mouse availability;
+- selected Genetic Items;
+- selected Battle Elixir;
+- expiration / original TTL.
+
+Real Discord proof:
+
+Before restart:
+
+`Golden — 1 searching • Wizard`
+
+After restart:
+
+`Golden — 1 searching • Wizard`
+
+Status:
+
+**R1 FIX VERIFIED — LOCAL LIVE PASS ✅**
+
+---
+
+### R2 — OPEN / NOT CHANGED
+
+Separate issue:
+
+A persisted `waiting` MouseFight may still be skipped during bot startup when its previous Discord fight message cannot be refreshed.
+
+Status:
+
+**R2 OPEN / NOT CHANGED**
+
+R2 touches persisted MouseFight recovery behavior.
+
+It must remain isolated from R1 and requires explicit approval, source inspection, failure-path review, and protected-system validation before implementation.
+
+---
+
+### Current System Health Summary
+
+```text
+Season 15 ................................ LIVE
+10-game ecosystem ........................ LIVE
+Season 15 leaderboards ................... LIVE
+Genesis Lab / permanent progression ...... PRESERVED
+MouseFight Genesis Leagues ............... LIVE
+League Points ............................ LIVE
+Battle Elixirs ........................... PRODUCTION LIVE
+Battle Elixir holder launch .............. COMPLETE
+59-holder inventory grant ................ PASS
+590 Elixirs distributed .................. PASS
+Holder DM campaign ....................... COMPLETE
+League restart recovery R1 ............... LOCAL LIVE PASS
+Persisted waiting-fight recovery R2 ...... OPEN / UNCHANGED
+
+DSPOINC / SPOINC .......................... PROTECTED
+PVP escrow / settlement .................. PROTECTED
+event burns / refunds .................... PROTECTED
+Fight Recovery rules ..................... PROTECTED
+Genesis ownership ........................ PROTECTED
+permanent Traits / Abilities ............. PROTECTED
+Lab progression .......................... PROTECTED
+Genetic Items ............................ PROTECTED
+staking / Genesis Mouse Freezer .......... PROTECTED
+token payout / airdrop service ........... PROTECTED
+auth ..................................... PROTECTED
+DB schema ................................ PROTECTED
+
+## 2026-09-02 — ✅ MouseFight League Restart Recovery R1 — LOCAL LIVE PASS
+
+### Agent / Scope
+
+**Agent:** MouseFight Leagues Expert 1.5 LIVE  
+**Branch:** `render-deploy`
+
+Issue:
+
+Genesis League players waiting in automatic matchmaking were stored only in the local Discord bot runtime `Map`.
+
+A local bot restart therefore removed unmatched waiting players from the permanent Genesis League matchmaking panel even though their 30-minute search had not finished.
+
+### R1 — Restart-Safe Matchmaking Queue Checkpoint
+
+Implemented:
+
+`NARRRFS_MOUSEFIGHT_LEAGUE_MATCHMAKING_RESTART_CHECKPOINT_R1_V1`
+
+Files:
+
+- `discord/commands/mousefight.js`
+- `discord/index.js`
+
+Local ignored runtime checkpoint:
+
+`discord/.mousefight-league-matchmaking-queue-state.json`
+
+Current hashes:
+
+- `commands/mousefight.js` — `6fb7386aaff9f4f4b12e9b1ff643ee6c33297118d73fca7eb8e9d56afe91c707`
+- `index.js` — `436a5c79372e9ab3439c4b7b555e4743a97915189ff9481b5b3649ba74970f7d`
+
+Backups:
+
+- `commands/mousefight.js.before-league-restart-checkpoint-r1-20260902-233708.bak`
+- `index.js.before-league-restart-checkpoint-r1-20260902-233708.bak`
+
+R1 now checkpoints temporary matchmaking intent on:
+
+- queue add;
+- Leave Queue;
+- queue expiration cleanup;
+- successful automatic match cleanup.
+
+On bot startup:
+
+1. persisted waiting MouseFights restore first;
+2. temporary League queue checkpoint is loaded;
+3. every saved search is freshly revalidated;
+4. only valid and unexpired searches return to the runtime queue;
+5. existing `createdAt` / `expiresAt` are preserved.
+
+Fresh checks cover:
+
+- current ownership/profile;
+- current published exact League;
+- mouse availability;
+- selected Genetic Items still idle;
+- selected Battle Elixir still available.
+
+### Validation — PASS
+
+- `node --check commands/mousefight.js` — PASS
+- `node --check index.js` — PASS
+- focused backup diff — PASS
+- protected execution scan — PASS
+- isolated restart simulation — PASS
+- valid waiting-search restore — PASS
+- original TTL preservation — PASS
+- duplicate restore blocking — PASS
+- expired search rejection — PASS
+- stale Genetic Item rejection — PASS
+- missing Battle Elixir rejection — PASS
+- temporary test checkpoint cleanup — PASS
+
+### Real Discord Restart Test — PASS
+
+Before local bot restart:
+
+`Golden — 1 searching • Wizard`
+
+After local bot restart:
+
+`Golden — 1 searching • Wizard`
+
+Result:
+
+**Real waiting Genesis League player successfully restored to the permanent matchmaking embed after local bot restart.**
+
+Original reported restart-loss bug:
+
+**R1 FIX VERIFIED — LOCAL LIVE PASS ✅**
+
+### Protected Systems — Unchanged
+
+R1 did not change:
+
+- live SQLite schema/data;
+- DSPOINC / SPOINC;
+- PVP escrow / settlement;
+- Fight Recovery rules;
+- League Power;
+- League Points;
+- Genesis ownership;
+- permanent Traits / Abilities;
+- Lab progression;
+- Genetic Item ownership;
+- Battle Elixir consumption;
+- staking;
+- unrelated games.
+
+### Separate Remaining Recovery Follow-Up
+
+`R2` remains separate and untouched:
+
+A persisted `waiting` MouseFight may still be skipped during startup if its old Discord fight message cannot be refreshed.
+
+R2 is **not required for the now-fixed runtime matchmaking queue-loss issue** and requires separate approval because it touches persisted MouseFight recovery behavior.
+
+### Standby
+
+**MouseFight Leagues Expert 1.5 LIVE**
+
+R1 restart-safe League matchmaking queue:
+
+**LOCAL LIVE PASS ✅**
+
+R2 persisted waiting-fight recovery:
+
+**OPEN / NOT CHANGED**
+
+Standby: **Active**
+
+## 2026-09-02 — ✅ Genesis League Battle Elixir Launch Airdrop + Holder DM Campaign COMPLETE
+
+### Agent / Milestone
+
+**Agent:** MouseFight Leagues Expert 1.5 LIVE  
+**Project:** Narrrfs World 13.0  
+**Branch:** `render-deploy`
+
+Continuation of:
+
+`Genesis League Battle Elixirs Alpha LIVE / First Production Fight Verified End-to-End`
+
+Battle Elixir Alpha is now not only production-verified in combat, but the launch holder distribution and Discord notification campaign are also complete.
+
+---
+
+### Approved Airdrop Contract
+
+Explicitly approved distribution rule:
+
+> One Battle Elixir launch package per each current verified holder who owns at least one named Genesis Mouse.
+
+Per eligible holder:
+
+- Green Elixir item `33`: `+5`
+- Blue Elixir item `34`: `+3`
+- Red Elixir item `35`: `+2`
+
+Important rule:
+
+This was **holder-based**, not mouse-based.
+
+A holder with multiple named Genesis mice received one package total.
+
+---
+
+### Production Recipient Preflight
+
+Environment:
+
+`PRODUCTION RENDER`
+
+Application:
+
+`/var/www/html`
+
+LIVE DB:
+
+`/var/www/html/db/narrrf_world.sqlite`
+
+Persistent DB:
+
+`/data/narrrf_world.sqlite`
+
+Operation before approval:
+
+`READ ONLY`
+
+Initial preflight result:
+
+- named Genesis rows: `352`
+- current verified named mice: `352`
+- distinct current verified holders: `59`
+- excluded missing/unverified: `0`
+
+Before the approved write was executed, the current named-mouse population had increased to:
+
+`380`
+
+The distinct eligible holder count remained exactly:
+
+`59`
+
+Because the approved grant contract was one package per holder, the economic distribution remained unchanged.
+
+No per-mouse multiplication was performed.
+
+---
+
+### Pre-Airdrop Production Backup — PASS
+
+Backup:
+
+`/data/narrrf_world.before-named-mouse-elixir-airdrop-20260902_201148.sqlite`
+
+Backup size:
+
+approximately `149 MB`
+
+Pre-write LIVE DB integrity:
+
+`ok`
+
+Backup integrity:
+
+`ok`
+
+Backup preserved after completion.
+
+No rollback was required.
+
+---
+
+### Approved LIVE Inventory Write — PASS
+
+Hard recipient guard:
+
+`59`
+
+Verified holder/item combinations:
+
+`177`
+
+Expected:
+
+`59 holders × 3 Elixir items = 177`
+
+All guards passed before COMMIT.
+
+#### Green Elixir — item 33
+
+Existing inventory rows updated:
+
+`41`
+
+Missing inventory rows inserted:
+
+`18`
+
+Total recipient rows after:
+
+`59`
+
+Quantity before:
+
+`91`
+
+Approved launch delta:
+
+`+295`
+
+Quantity after:
+
+`386`
+
+#### Blue Elixir — item 34
+
+Existing inventory rows updated:
+
+`34`
+
+Missing inventory rows inserted:
+
+`25`
+
+Total recipient rows after:
+
+`59`
+
+Quantity before:
+
+`81`
+
+Approved launch delta:
+
+`+177`
+
+Quantity after:
+
+`258`
+
+#### Red Elixir — item 35
+
+Existing inventory rows updated:
+
+`32`
+
+Missing inventory rows inserted:
+
+`27`
+
+Total recipient rows after:
+
+`59`
+
+Quantity before:
+
+`98`
+
+Approved launch delta:
+
+`+118`
+
+Quantity after:
+
+`216`
+
+Total launch distribution:
+
+`295 + 177 + 118 = 590 Battle Elixirs`
+
+Transaction result:
+
+`COMMIT COMPLETE`
+
+SQLite return code:
+
+`0`
+
+Post-write LIVE DB integrity:
+
+`ok`
+
+---
+
+### Recipient Receipt / Audit Artifact — PASS
+
+Exact successful airdrop recipient count:
+
+`59`
+
+Recipient receipt:
+
+`/data/named-mouse-elixir-airdrop-20260902-recipients.txt`
+
+Detailed audit CSV:
+
+`/data/named-mouse-elixir-airdrop-20260902-receipt.csv`
+
+Recipient-set SHA256:
+
+`15951d4ca6f03fb1182b3468551d41cde03a50011fecbd7297062905c9b985f0`
+
+Detail CSV SHA256:
+
+`769b692e1efb13aed999c7367df615a07ed7184f968d88370f4ffb68988df155`
+
+Exact-delta audit proved all 59 recipients received:
+
+- Green `+5`
+- Blue `+3`
+- Red `+2`
+
+Both LIVE and pre-airdrop backup integrity checks returned:
+
+`ok`
+
+---
+
+### Persistent Database Synchronization — PASS
+
+LIVE DB was copied through a temporary verified SQLite backup before replacing the persistent copy.
+
+Validation:
+
+- LIVE integrity: `ok`
+- temporary persistent copy integrity: `ok`
+- final `/data/narrrf_world.sqlite` integrity: `ok`
+
+Persistent eligible-holder totals after sync:
+
+- item `33`: `59 holders / 386`
+- item `34`: `59 holders / 258`
+- item `35`: `59 holders / 216`
+
+Persistent file:
+
+`/data/narrrf_world.sqlite`
+
+Pre-airdrop backup remains preserved separately.
+
+No Render restart was required.
+
+---
+
+### Holder DM Campaign — COMPLETE
+
+One-off local script:
+
+`discord/send-named-mouse-elixir-airdrop-dms-v1.js`
+
+Purpose:
+
+Send the Battle Elixir launch notification only to the exact verified holder set that received the airdrop.
+
+No Gateway bot instance was started.
+
+No normal Discord bot restart was required.
+
+The script used:
+
+- read-only production recipient lookup;
+- hard expected recipient count `59`;
+- SHA-locked recipient identity guard;
+- Discord REST DM delivery;
+- no inventory writes;
+- no DB writes.
+
+Initial dry-run issue:
+
+Production DB bridge rejects read-only CTE queries beginning with:
+
+`WITH`
+
+Exact error:
+
+`Query not allowed: Only SELECT, INSERT, UPDATE, DELETE permitted.`
+
+Small local compatibility patch changed only the recipient query shape so the same read-only query begins with:
+
+`SELECT`
+
+Patch:
+
+`patch-elixir-airdrop-dm-select-query-v1.py`
+
+Backup:
+
+`send-named-mouse-elixir-airdrop-dms-v1.js.before-select-query-v1-20260902-222233.bak`
+
+Validation:
+
+- JS syntax: PASS
+- DB bridge query accepted
+- recipient count: `59`
+- expected recipient SHA: MATCH
+- current recipient SHA: MATCH
+- identity guard: PASS
+- dry run sent `0` DMs
+
+---
+
+### LIVE Discord DM Delivery — COMPLETE
+
+Guild:
+
+`1332015322546311218`
+
+Genesis League channel:
+
+`1540182398472421516`
+
+Exact recipient set evaluated:
+
+`59`
+
+Successful DMs:
+
+`51`
+
+Failed DMs:
+
+`8`
+
+All eight failures returned the same Discord delivery condition:
+
+`50278 Cannot send messages to this user due to having no mutual guilds`
+
+Interpretation:
+
+These are Discord notification-layer failures only.
+
+They are NOT:
+
+- airdrop failures;
+- inventory failures;
+- DB failures;
+- Battle Elixir failures;
+- MouseFight settlement failures.
+
+All 59 approved holders already received their Battle Elixirs before the DM campaign began.
+
+No full DM resend should be performed because it would duplicate messages to the 51 successful recipients.
+
+If desired later, only the exact eight failed recipients may be considered for a targeted retry if they return to the Narrrfs Discord.
+
+DM audit artifact:
+
+`battle-elixir-airdrop-dm-results-2026-09-02T20-25-11-908Z.json`
+
+Final DM result:
+
+- sent: `51`
+- failed: `8`
+- inventory writes: `0`
+- DB writes: `0`
+- bot restarts: `0`
+
+Narrrf account production presentation check:
+
+**PASS**
+
+The holder launch DM was received with the expected Battle Elixir package text and League / Lab CTAs.
+
+---
+
+### Launch DM Content
+
+Recipients were informed of:
+
+🟢 `5× Green Elixir` — `+5% Genesis Base Power`
+
+🔵 `3× Blue Elixir` — `+10% Genesis Base Power`
+
+🔴 `2× Red Elixir` — `+15% Genesis Base Power`
+
+CTA destinations:
+
+- `#mousefight-leagues`
+- Genesis Lab
+
+Lab:
+
+`https://narrrfs.world/lab.html`
+
+Message emphasizes:
+
+- automatic Genesis League matchmaking;
+- one-use temporary Battle Elixirs;
+- use Elixirs wisely;
+- train permanent Traits / Abilities in the Genesis Lab;
+- League Power and League tier remain permanent and unchanged.
+
+---
+
+### Protected Systems — UNCHANGED
+
+This launch airdrop did NOT change:
+
+- DSPOINC;
+- SPOINC;
+- PVP wagers;
+- PVP escrow;
+- PVP settlement rules;
+- event burns/refunds;
+- Fight Recovery;
+- League Power;
+- League tier classification;
+- League Points rules;
+- permanent Genesis ownership;
+- permanent Genesis Traits;
+- permanent Genesis Abilities;
+- Lab progression;
+- Genetic Item ownership/progression;
+- staking;
+- token payout/airdrop service;
+- auth;
+- DB schema;
+- unrelated games.
+
+The only approved production mutation was:
+
+`tbl_user_inventory`
+
+for the exact approved Battle Elixir holder grant.
+
+---
+
+### Battle Elixir Launch Status
+
+```text
+Battle Elixir Alpha engine ................ PASS
+Atomic settlement ......................... PASS
+Sandbox rollback proof .................... PASS
+Production backend deployment ............. PASS
+Discord picker / routing .................. PASS
+First LIVE Battle Elixir fight ............ PASS
+Real Elixir consumption ................... PASS
+League Point settlement ................... PASS
+Fight Recovery ............................ PASS
+
+Named-holder recipient preflight .......... PASS
+Production backup ......................... PASS
+59-holder inventory airdrop ............... PASS
+590 total Elixirs distributed ............. PASS
+Exact recipient receipt ................... PASS
+Persistent /data synchronization .......... PASS
+Recipient SHA lock ........................ PASS
+
+Holder DM dry run ......................... PASS
+Holder DM campaign ........................ COMPLETE
+DM delivered .............................. 51
+DM unreachable / no mutual guild .......... 8
+Narrrf live DM presentation ............... PASS
+
+## 2026-09-02 — ✅ MILESTONE: Genesis League Battle Elixirs Alpha LIVE / First Production Fight Verified End-to-End
+
+### Agent / Scope
+
+**Agent:** MouseFight Leagues Expert 1.5 LIVE  
+**Project:** Narrrfs World 13.0  
+**Branch:** `render-deploy`
+
+Scope completed:
+
+- Battle Elixirs Alpha activated for **automatic Genesis League matchmaking only**.
+- Green / Blue / Red Elixirs can be selected as temporary League combat boosts.
+- Maximum **1 Battle Elixir per fighter**.
+- Battle Elixirs remain separate from the existing maximum **3 Genetic Items**.
+- Manual MouseFight PVP Battle Elixirs remain disabled.
+- Moderator MouseFight events remain excluded.
+- League Power / League tier remain permanent progression only.
+- Battle Elixirs modify temporary Fight Power only.
+
+---
+
+### Production Backend Deployment — PASS
+
+Tracked backend:
+
+`api/discord/mousefight-economy.php`
+
+Production commit:
+
+`0ed97ca` — `Deploy atomic Battle Elixir settlement for Genesis League`
+
+Production SHA256:
+
+`22ad892839b526f15060bd0365485102d445d65af13c92b7e507447d2d427d18`
+
+Marker:
+
+`NARRRFS_MOUSEFIGHT_BATTLE_ELIXIR_ATOMIC_SETTLEMENT_V1`
+
+Post-deploy Render verification:
+
+- deployed SHA matched local authoritative source;
+- E3C marker present;
+- PHP syntax: **PASS**;
+- LIVE DB `/var/www/html/db/narrrf_world.sqlite` integrity: **ok**;
+- persistent DB `/data/narrrf_world.sqlite` integrity: **ok**.
+
+Backend Battle Elixir consumption remains inside the existing authoritative MouseFight PVP settlement transaction.
+
+---
+
+### E5D — Discord Battle Elixir Select Router — LIVE PASS
+
+File:
+
+`discord/index.js`
+
+Problem discovered during first live picker test:
+
+Battle Elixir dropdown IDs:
+
+`mousefight_battle_elixir_*`
+
+were correctly created and handled in `commands/mousefight.js`, but the central `index.js` select-menu router did not forward that prefix.
+
+Observed exact runtime symptom:
+
+`[SELECT MENU] Unhandled select menu: mousefight_battle_elixir_...`
+
+Smallest fix:
+
+Added only:
+
+`interaction.customId.startsWith('mousefight_battle_elixir_')`
+
+to the existing MouseFight select-menu routing condition.
+
+Backup:
+
+`discord/index.js.before-battle-elixir-select-router-e5d-20260902-014714.bak`
+
+Pre-E5D SHA256:
+
+`3fcfde7505a2d3ba540174b6dfa9d4ba4536593f30b25d96fe7ece2810e063c5`
+
+Current `discord/index.js` SHA256:
+
+`81d7508afec34026585c6117642cbb3938ef3e8b8cdfc22a21259fa293edfa4a`
+
+Current `discord/commands/mousefight.js` SHA256 remained:
+
+`89ee8650adc17e4e189077a031a89fb8921579b092900c8893cebfb0aaaf1af6`
+
+Validation:
+
+- `node --check index.js` — PASS
+- `node --check commands/mousefight.js` — PASS
+- focused diff contained only the Battle Elixir select-router addition;
+- local Discord bot restarted successfully;
+- live Green Elixir picker selection succeeded;
+- no further `Unhandled select menu` error.
+
+Unchanged:
+
+- Battle Elixir math;
+- backend settlement;
+- League Points rules;
+- Fight Recovery rules;
+- DSPOINC / SPOINC;
+- permanent Genesis state;
+- Lab progression;
+- Genetic Items;
+- DB schema.
+
+---
+
+### First Ever LIVE Battle Elixir League Fight — PRODUCTION PASS
+
+Fight ID:
+
+`mfpvp_1788307665219_8o8nwt5`
+
+League:
+
+`Bronze`
+
+Source:
+
+`Automatic Genesis League Matchmaking`
+
+Battle Mode:
+
+`Champion Mode • Best of 3`
+
+Wager:
+
+`0 DSPOINC`
+
+Participants:
+
+#### Master Mouse
+
+Owner:
+
+`328601656659017732`
+
+Token:
+
+`GfTQvmqAiZL9UmngeBcdEDtJqf8sGSsbDVcjCmfayVN`
+
+League Power:
+
+`146`
+
+Genesis Base Power:
+
+`150`
+
+Genetic Item Support:
+
+`+33`
+
+Battle Elixir:
+
+`Green Elixir • +5% Genesis Base Power`
+
+Elixir Bonus:
+
+`+8`
+
+Final temporary Fight Power:
+
+`191`
+
+Result:
+
+**Winner • 2-0**
+
+#### gReen_flame_1793
+
+Owner:
+
+`1432482985935896577`
+
+Token:
+
+`EYDdsdVrQogCD2J6oZuJVt7pcAaTNf97x2YaQxA4C8L9`
+
+League Power:
+
+`130`
+
+Genesis Base Power:
+
+`132`
+
+Genetic Item Support:
+
+`+26`
+
+Battle Elixir:
+
+`Green Elixir • +5% Genesis Base Power`
+
+Elixir Bonus:
+
+`+7`
+
+Final temporary Fight Power:
+
+`165`
+
+Result:
+
+**Runner-Up**
+
+---
+
+### Authoritative Production DB Audit — PASS
+
+LIVE DB:
+
+`/var/www/html/db/narrrf_world.sqlite`
+
+Fight state:
+
+- status: `finished`
+- winner user: `328601656659017732`
+- winner token: `GfTQvmqAiZL9UmngeBcdEDtJqf8sGSsbDVcjCmfayVN`
+- recovery_minutes: `15`
+- wager_dspoinc: `0`
+- match_format: `best_of_3`
+
+Persisted participant Fight Power:
+
+- gReen_flame_1793: `165`
+- Master Mouse: `191`
+
+Battle Elixir usage-history rows:
+
+`2`
+
+Total Battle Elixirs consumed:
+
+`2`
+
+Usage row IDs:
+
+- `448`
+- `449`
+
+Both rows verified:
+
+- item_id: `33`
+- item_name: `Green Elixir`
+- quantity: `1`
+- status: `approved`
+- approved_by: `mousefight_system`
+
+Reasons:
+
+`mousefight_battle_elixir:mfpvp_1788307665219_8o8nwt5:challenger`
+
+`mousefight_battle_elixir:mfpvp_1788307665219_8o8nwt5:opponent`
+
+Master Mouse owner Green inventory:
+
+`4 → 3`
+
+exactly one real Green Elixir consumed.
+
+Capital_R current Green inventory after fight:
+
+`5`
+
+One approved Green Elixir consumption is independently proven by usage-history row `448`; pre-fight Capital_R inventory quantity was not captured, so no unsupported before-value is claimed.
+
+---
+
+### Fight Recovery — PASS
+
+Two Recovery rows created for the exact fight:
+
+Cooldown IDs:
+
+- `1030`
+- `1031`
+
+Both:
+
+- cooldown_minutes: `15`
+- cooldown_reason: `completed_pvp`
+- status: `active`
+- fight_id: `mfpvp_1788307665219_8o8nwt5`
+
+No Recovery rule was changed.
+
+---
+
+### League Points — PASS
+
+Bot authoritative result:
+
+- fight_id: `mfpvp_1788307665219_8o8nwt5`
+- winner token: `GfTQvmqAiZL9UmngeBcdEDtJqf8sGSsbDVcjCmfayVN`
+- points_awarded: `1`
+- lifetime_points: `13`
+- Season 15 points: `4`
+- idempotent: `false`
+
+League Point source remained:
+
+`Automatic Genesis League Matchmaking`
+
+---
+
+### Protected Economy Verification
+
+For this zero-wager fight:
+
+- `tbl_mousefight_dspoinc_pvp_settlements`: **0 rows**
+- `tbl_mousefight_dspoinc_stakes`: **0 rows**
+- LIVE DB integrity: **ok**
+
+No unexpected DSPOINC / SPOINC movement was observed.
+
+Protected systems unchanged:
+
+- permanent Genesis ownership;
+- permanent Traits;
+- permanent Abilities;
+- Lab progression;
+- League Power;
+- League classification;
+- Genetic Item ownership / progression;
+- staking;
+- PVP escrow rules;
+- event burns / refunds;
+- Fight Recovery rules;
+- token payout / airdrop system;
+- auth;
+- DB schema.
+
+---
+
+### Important Snapshot Audit Note
+
+Persisted participant `snapshot_json` correctly records the combat-time Battle Elixir snapshot, including:
+
+- selected item;
+- base Genesis Power;
+- Genetic Item support;
+- bonus Power;
+- final Fight Power.
+
+The snapshot still contains pre-settlement intent fields:
+
+`pendingConsumption: true`
+
+`consumed: false`
+
+after successful settlement.
+
+Authoritative inventory + `tbl_item_usage_history` prove the actual consumption succeeded.
+
+Current interpretation:
+
+The participant snapshot is a **fight/combat snapshot captured before final settlement**, not a post-settlement inventory receipt.
+
+No settlement change is approved or required from this observation.
+
+---
+
+### Separate Reliability Follow-Up
+
+One unrelated Discord interaction reliability case occurred while starting a League search:
+
+`DiscordAPIError[10062]: Unknown interaction`
+
+Immediately before the error the DB bridge reported:
+
+`Database locked. Retrying query...`
+
+A later search succeeded normally.
+
+Proposed future E5E hardening:
+
+- acknowledge/defer `Search League Fight` immediately;
+- perform ownership / DB / League reads after acknowledgement;
+- respond via edit/follow-up afterward.
+
+This is not yet implemented.
+
+It must remain separate from Battle Elixir settlement/economy logic.
+
+---
+
+### Battle Elixir Alpha Status
+
+```text
+E1    Fight-only power engine ................. PASS
+E2    Picker / pending selection ............... PASS
+E3    Atomic authoritative backend ............. PASS
+E4    Sandbox transaction / rollback proof ..... PASS
+E5A   Genesis League integration ............... PASS
+E5B   League Elixir feature gate ON ............ PASS
+E5C   Production backend deployment ............ PASS
+E5D   Discord Battle Elixir select routing ..... PASS
+
+Live Elixir picker ............................. PASS
+Live exact-League matchmaking ................. PASS
+Live Battle Elixir combat power ............... PASS
+Live authoritative consumption ................ PASS
+Exactly-once usage-history audit ............... PASS
+Live League Point award ....................... PASS
+Live Fight Recovery ........................... PASS
+Zero-wager economy protection ................. PASS
+Production DB integrity ....................... PASS
+
+## 2026-09-02 — MouseFight Genesis League Battle Elixirs Alpha — Local Implementation + Transaction Proof PASS / Production Deploy Pending
+
+### Agent / Scope
+
+**Agent:** MouseFight Leagues Expert 1.5 LIVE  
+**Project:** Narrrfs World 13.0  
+**Branch:** `render-deploy`
+
+Scope:
+
+- Battle Elixirs Alpha for **automatic Genesis League matchmaking fights only**.
+- Existing Green / Blue / Red Elixirs reused as one-time competitive Battle Elixirs.
+- Manual PVP Battle Elixirs remain disabled.
+- Moderator MouseFight events remain excluded.
+- League Power / League tier remain permanent progression only.
+- Battle Elixirs affect temporary Fight Power only.
+
+### Approved Battle Elixir Alpha Contract
+
+Battle Elixirs are available only for:
+
+`Automatic Genesis League Matchmaking`
+
+Not available for:
+
+- manual Champion PVP;
+- manual Underdog PVP;
+- manual Equalized PVP;
+- manual Chaos PVP;
+- moderator MouseFight events.
+
+Per fighter:
+
+- maximum **1 Battle Elixir**;
+- separate from the existing maximum **3 Genetic Items**.
+
+Approved Battle Elixirs:
+
+- Green Elixir — item `33` — `+5%` Genesis Base Power
+- Blue Elixir — item `34` — `+10%` Genesis Base Power
+- Red Elixir — item `35` — `+15%` Genesis Base Power
+
+Formula:
+
+`Genesis Base Power = Fight Power before Elixir - Genetic Item support`
+
+`Battle Elixir Bonus = round(Genesis Base Power × Elixir rate)`
+
+`Temporary Fight Power = Fight Power before Elixir + Battle Elixir Bonus`
+
+Genetic Item support is explicitly excluded from the Elixir multiplier.
+
+Battle Elixirs do not change:
+
+- League Power;
+- League classification;
+- permanent Genesis Traits;
+- permanent Genesis Abilities;
+- Lab progression;
+- Genetic Item ownership;
+- staking;
+- DSPOINC / SPOINC balances except existing unrelated MouseFight settlement rules.
+
+### E1 — Fight-Only Battle Elixir Engine — PASS
+
+File:
+
+`discord/commands/mousefight.js`
+
+Implemented:
+
+- Battle Elixir fixed definitions;
+- temporary boost calculation;
+- fight-only cloned mouse profile application;
+- no permanent Genesis / Lab mutation.
+
+Example verified:
+
+- original Fight Power: `250`
+- Genetic Item support: `100`
+- Genesis Base Power: `150`
+- Red Elixir 15% bonus: `+23`
+- temporary Fight Power: `273`
+
+No DB write.
+
+No API call.
+
+No inventory consumption.
+
+### E2 — Picker / Selection Architecture — PASS
+
+Implemented Battle Elixir selection architecture with:
+
+- read-only inventory lookup;
+- pending selection state;
+- selection is intent only;
+- no burn when selecting;
+- no burn while challenge/search state exists.
+
+Manual PVP Battle Elixir runtime gate remains:
+
+`MOUSEFIGHT_BATTLE_ELIXIR_MANUAL_PVP_ENABLED = false`
+
+### E3 — Atomic Backend Consumption — LOCAL SOURCE PASS
+
+Tracked backend:
+
+`api/discord/mousefight-economy.php`
+
+Current local SHA256:
+
+`22ad892839b526f15060bd0365485102d445d65af13c92b7e507447d2d427d18`
+
+Marker:
+
+`NARRRFS_MOUSEFIGHT_BATTLE_ELIXIR_ATOMIC_SETTLEMENT_V1`
+
+Backend behavior:
+
+- independently validates Battle Elixir metadata;
+- verifies supported item ID;
+- recomputes approved Battle Elixir power;
+- validates Fight Power and Genetic Item support;
+- verifies real authoritative inventory;
+- prepares both fighters before consuming either Elixir;
+- consumes inside the existing `BEGIN IMMEDIATE` PVP transaction;
+- uses guarded inventory UPDATE / DELETE;
+- requires `SELECT changes() = 1`;
+- writes one approved `tbl_item_usage_history` row;
+- uses:
+  - reason prefix `mousefight_battle_elixir`
+  - status `approved`
+  - approved_by `mousefight_system`;
+- any later exception rolls the Elixir inventory + usage audit back with the complete settlement transaction.
+
+No DB schema change.
+
+### E4 — Isolated Transaction Sandbox Proof — COMPLETE PASS
+
+Sandbox root:
+
+`C:\xampp-server\tmp\narrrfs-mousefight-e4-20260902-000004`
+
+Pristine source / sandbox DB SHA256:
+
+`ef6a319e061b97183ac53b6cfe0f3b11f469f75a6925927a49de739cf2e75b8e`
+
+#### E4B-1 — No-Elixir Regression
+
+PASS:
+
+- normal zero-wager PVP finished;
+- 2 participants;
+- 2 completed-PVP Fight Recovery rows;
+- 0 Battle Elixir usage rows;
+- 0 stake rows;
+- 0 PVP settlement rows;
+- source DB unchanged;
+- sandbox restored.
+
+#### E4B-2 — Successful Red Elixir Consume
+
+PASS:
+
+- Red inventory seeded synthetic `2`;
+- `pvp_create` did not consume it;
+- Red remained `2` while fight waited;
+- successful authoritative settlement consumed exactly one;
+- Red inventory `2 → 1`;
+- exactly one approved usage-history row;
+- Red +23 Fight Power verified server-side;
+- Genetic Item support `100` was not multiplied;
+- challenger Fight Power persisted as `273`;
+- 2 completed-PVP Recovery rows;
+- zero-wager stake rows `0`;
+- zero-wager settlement rows `0`;
+- source DB unchanged;
+- working sandbox restored.
+
+#### E4B-3 — Stale Elixir Rejection
+
+PASS:
+
+Scenario:
+
+`Elixir selected → fight waiting → Elixir disappears externally → opponent accepts`
+
+Verified:
+
+- backend rejected stale Red inventory;
+- fight remained `waiting`;
+- only challenger participant remained;
+- opponent participant `0`;
+- Battle Elixir usage rows `0`;
+- Recovery rows `0`;
+- stakes `0`;
+- settlements `0`;
+- no partial MouseFight settlement mutation;
+- source DB unchanged;
+- sandbox restored.
+
+#### E4B-4 — Forced Failure After Elixir Consumption
+
+PASS:
+
+Dedicated sandbox API copy only was patched with a forced test exception after Elixir consumption and before opponent stake creation.
+
+Verified transaction order:
+
+`consume challenger Elixir`
+
+`consume opponent Elixir`
+
+`forced exception`
+
+`ROLLBACK`
+
+Result:
+
+- HTTP `400`;
+- fight remained `waiting`;
+- participant rows `1`;
+- opponent rows `0`;
+- Red quantity restored to `2`;
+- Red `last_used_at` restored to `NULL`;
+- Battle Elixir usage rows rolled back to `0`;
+- Recovery `0`;
+- stakes `0`;
+- settlements `0`;
+- source DB pristine;
+- main sandbox DB pristine;
+- dedicated test DB restored;
+- all integrity checks `ok`.
+
+This proves Battle Elixir inventory and usage-history writes are atomic with the existing MouseFight PVP settlement transaction.
+
+### E5A — Genesis League-Only Integration — LOCAL PASS
+
+Backup:
+
+`discord/commands/mousefight.js.before-battle-elixir-league-e5a-20260902-010233.bak`
+
+Pre-E5A SHA256:
+
+`dc6d698b91428e60dba33957aee53cb3c189221114c22a4f9c4672da35a025d6`
+
+Post-E5A SHA256:
+
+`7d6c75afe9b889c78e67a41234aa43647d42a69eff7fdb33834aceb3c66dd1c5`
+
+Marker:
+
+`NARRRFS_MOUSEFIGHT_BATTLE_ELIXIR_LEAGUE_MATCHMAKING_ALPHA_V1`
+
+Implemented:
+
+- automatic Genesis League loadout can carry optional Battle Elixir intent;
+- Battle Elixir selection follows Genetic Item selection;
+- queue stores selected Battle Elixir item ID / count;
+- D2 automatic matchmaking revalidation checks fresh Elixir inventory;
+- automatic fighter snapshot applies temporary Elixir Fight Power;
+- opponent Elixir intent is persisted for waiting-fight restoration / recovery revalidation;
+- stale League Elixir inventory blocks continuation;
+- queue/search/final League presentation can show selected Battle Elixir;
+- League Power remains unchanged.
+
+Isolated test file:
+
+`discord/test-mousefight-battle-elixir-league-e5a-v1.js`
+
+Test SHA256:
+
+`b39b56cecd276eeccf25d1abaef88f374300130244a0b3b8c11c6ff971256c50`
+
+Isolated test:
+
+`PASS`
+
+Verified:
+
+- manual gate `false`;
+- League new-selection gate `false` during E5A test;
+- Red Fight Power `273`;
+- Blue Fight Power `165`;
+- persisted opponent Elixir item `34`;
+- stale recovery reason:
+  `opponent_battle_elixir_no_longer_available`.
+
+### E5B — League Battle Elixir Gate Enabled in Source — LOCAL PASS
+
+Backup:
+
+`discord/commands/mousefight.js.before-battle-elixir-league-e5b-enable-20260902-011150.bak`
+
+Backup SHA256:
+
+`7d6c75afe9b889c78e67a41234aa43647d42a69eff7fdb33834aceb3c66dd1c5`
+
+Current authoritative local `mousefight.js` SHA256:
+
+`89ee8650adc17e4e189077a031a89fb8921579b092900c8893cebfb0aaaf1af6`
+
+Focused E5B diff:
+
+```diff
+const MOUSEFIGHT_BATTLE_ELIXIR_LEAGUE_MATCHMAKING_ENABLED =
+-    false;
++    true;
+
+## 2026-09-01 — Season 14 → Season 15 Reset LIVE / Production Cutover Complete
+
+### Agent
+- **Agent:** Season Reset 15 Agent
+- **Project:** Narrrfs World 13.0
+- **Branch:** `render-deploy`
+- **Production commit:** `095e60f` — `Season 15 reset frontend and fresh leaderboard activation`
+
+### Scope completed
+- Season 14 competitive data archived.
+- Season 15 activated as the single current season.
+- Fresh Season 15 leaderboard presentation deployed across the public website.
+- Empty new-season leaderboards no longer visually fall back to archived Season 14 rankings.
+- Season 14 history remains preserved where intentionally historical.
+
+### Production season state
+- **Season 15:** `season_id=17`
+- **Start:** `2026-08-31 22:00:00 UTC`
+- **End:** `2026-09-30 22:00:00 UTC`
+- **Season 15 active:** `1`
+- **Season 14 / ID 16 active:** `0`
+- **Active season count:** `1`
+
+### Season 14 archive
+- Archive transaction completed successfully before Season 15 activation.
+- MouseFight archive includes finished fights only; waiting/cancelled fights remain excluded.
+- Historical Season 14 records remain preserved and were not deleted from source systems.
+
+### Production persistence / restart
+- Live DB: `/var/www/html/db/narrrf_world.sqlite`
+- Persistent DB: `/data/narrrf_world.sqlite`
+- Persistent copy was synchronized from the correct Season 15 live runtime DB before restart.
+- Post-restart `PRAGMA integrity_check`: **ok** on LIVE and `/data`.
+- Both LIVE and `/data` verified Season 15 active, Season 14 inactive, active count `1`.
+- Render restart completed successfully.
+
+### Leaderboard production verification
+- `api/dev/get-leaderboard.php` deployed with:
+  - `$useFrozenLeaderboard = false;`
+- Public HTTPS API verified:
+  - `HTTP 200`
+  - `current_season = Season 15`
+  - `display_season = Season 15`
+  - `is_frozen = false`
+- Fresh Season 15 seasonal boards returned empty immediately after reset as intended.
+- Permanent Genesis / Mouse power presentation remains populated and unchanged.
+
+### Frontend production verification
+- Production files verified under `/var/www/html/`.
+- `index.html`, `leaderboard.html`, and `profile.html` contain deployed Season 15 presentation.
+- Season 14 references retained only where they describe archived/history context.
+- Season 15 frontend source passed focused PHP/HTML syntax checks and `git diff --check`.
+
+### Protected systems unchanged
+- DSPOINC / SPOINC balances and settlement
+- staking and Genesis Mouse Freezer records
+- Genesis ownership, names, permanent Traits / Abilities
+- Lab progression
+- Genetic Items
+- Reward Chamber history
+- PVP escrow / settlement
+- event burns / refunds
+- Fight Recovery
+- token payouts / airdrops
+- auth and DB schema
+
+### Next step
+- Inspect the **local Discord bot `discord/index.js` holder-channel portal**.
+- Current uploaded source still contains Season 14 / Hot Summer holder messaging.
+- Update presentation to Season 15 only after verifying the exact current local source, callers, cooldown logic, holder-channel ID, embed/buttons, and restart path.
+- No Discord bot restart until syntax and focused diff checks pass.
+
+### Standby
+- Season 15 website/reset cutover: **LIVE**
+- Next active task: **Discord holder-channel Season 15 portal update**
+
 ## 2026-08-31 — ✅ MILESTONE: Season 14 Archived / Season 15 Backend Activated / Frontend Finalization In Progress
 
 ### Agent / Version

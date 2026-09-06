@@ -10,6 +10,7 @@
  * - mouse_availability (authenticated read-only availability snapshot)
  * - event_join
  * - event_cancel
+ * - event_battle_elixir_consume_pair
  * - pvp_create
  * - pvp_accept_settle
  * - pvp_cancel
@@ -114,6 +115,16 @@ const MOUSEFIGHT_BATTLE_ELIXIR_USAGE_REASON_PREFIX =
 
 const MOUSEFIGHT_BATTLE_ELIXIR_APPROVED_BY =
     'mousefight_system';
+
+/**
+ * Event Battle Elixir V1 contract marker.
+ *
+ * This version is separate from the existing Alpha combat-calculation version.
+ * It identifies moderator League events that permit one pending Battle Elixir
+ * per persisted participant for the whole event.
+ */
+const MOUSEFIGHT_EVENT_BATTLE_ELIXIR_VERSION =
+    'mousefight_event_battle_elixir_v1';
 
 /**
  * Return a JSON response and stop execution.
@@ -1539,9 +1550,9 @@ function mousefight_economy_require_single_change(
 /**
  * Consume one already-prepared Battle Elixir and record usage history.
  *
- * This must only run inside the existing BEGIN IMMEDIATE PVP settlement
- * transaction. Any later exception causes the shared request handler to
- * ROLLBACK this inventory write together with the complete fight settlement.
+ * This must only run inside an authoritative BEGIN IMMEDIATE MouseFight
+ * settlement or consumption transaction. Any later exception causes the shared
+ * request handler to ROLLBACK the protected inventory and audit writes together.
  */
 function mousefight_economy_consume_prepared_battle_elixir(
     SQLite3 $db,
@@ -1710,6 +1721,390 @@ function mousefight_economy_consume_prepared_battle_elixir(
         'remaining_inventory_quantity' => $quantityAfter,
         'usage_id' => $usageId
     ];
+}
+
+/**
+ * Resolve persisted Event Battle Elixir intent against base participant power.
+ *
+ * Event participants stay stored with pre-Elixir Fight Power for bracket seeding.
+ * This helper computes the approved temporary final power server-side and then
+ * reuses the strict Alpha resolver on an in-memory synthetic snapshot only.
+ */
+function mousefight_economy_resolve_event_battle_elixir(
+    array $participant,
+    string $participantRole
+): array {
+    $snapshot = mousefight_economy_decode_participant_snapshot($participant, $participantRole);
+    $mouseProfile = $snapshot['mouseProfile'] ?? null;
+
+    if (!is_array($mouseProfile)) {
+        throw new RuntimeException('Event Battle Elixir participant snapshot is missing.');
+    }
+
+    $selection = $mouseProfile['battleElixirSelection'] ?? null;
+
+    if (!is_array($selection)) {
+        throw new RuntimeException('Event Battle Elixir selection is missing from the persisted participant.');
+    }
+
+    if (!mousefight_economy_boolean($selection['selected'] ?? false)) {
+        return mousefight_economy_resolve_battle_elixir($participant, $participantRole);
+    }
+
+    $battleElixir = $mouseProfile['battleElixir'] ?? null;
+
+    if (
+        !is_array($battleElixir) ||
+        trim((string)($battleElixir['eventVersion'] ?? '')) !== MOUSEFIGHT_EVENT_BATTLE_ELIXIR_VERSION
+    ) {
+        throw new RuntimeException('Event Battle Elixir snapshot version is invalid.');
+    }
+
+    $itemId = mousefight_economy_battle_elixir_required_integer(
+        $selection['itemId'] ?? null,
+        $participantRole . '.battleElixirSelection.itemId',
+        100000
+    );
+    $definition = mousefight_economy_get_battle_elixir_definition($itemId);
+
+    if (!$definition) {
+        throw new RuntimeException('The Event Battle Elixir selection is not supported.');
+    }
+
+    $baseFightPower = mousefight_economy_battle_elixir_required_integer(
+        $participant['mouse_warrior_power'] ?? null,
+        $participantRole . '.mouse_warrior_power'
+    );
+    $geneticSupportPower = mousefight_economy_battle_elixir_required_integer(
+        $participant['genetic_support_power'] ?? null,
+        $participantRole . '.genetic_support_power'
+    );
+
+    if ($baseFightPower < $geneticSupportPower) {
+        throw new RuntimeException('Event Battle Elixir base Fight Power is below Genetic Item support.');
+    }
+
+    $profilePower = $mouseProfile['power'] ?? null;
+
+    if (!is_array($profilePower)) {
+        throw new RuntimeException('Event Battle Elixir power snapshot is missing.');
+    }
+
+    $snapshotBaseFightPower = mousefight_economy_battle_elixir_required_integer(
+        $profilePower['mouseWarriorPower'] ?? null,
+        $participantRole . '.mouseProfile.power.mouseWarriorPower'
+    );
+    $snapshotGeneticSupportPower = mousefight_economy_battle_elixir_required_integer(
+        $profilePower['geneticSupportPower'] ?? null,
+        $participantRole . '.mouseProfile.power.geneticSupportPower'
+    );
+
+    if ($snapshotBaseFightPower !== $baseFightPower) {
+        throw new RuntimeException('Event Battle Elixir persisted Fight Power does not match its snapshot.');
+    }
+
+    if ($snapshotGeneticSupportPower !== $geneticSupportPower) {
+        throw new RuntimeException('Event Battle Elixir persisted Genetic Item support does not match its snapshot.');
+    }
+
+    $baseGenesisPower = $baseFightPower - $geneticSupportPower;
+    $bonusPower = (int)round(
+        $baseGenesisPower * (float)$definition['boost_rate'],
+        0,
+        PHP_ROUND_HALF_UP
+    );
+    $finalFightPower = $baseFightPower + $bonusPower;
+
+    $syntheticSnapshot = $snapshot;
+    $syntheticSnapshot['mouseProfile']['power']['mouseWarriorPower'] = $finalFightPower;
+    $syntheticParticipant = $participant;
+    $syntheticParticipant['mouse_warrior_power'] = $finalFightPower;
+    $syntheticParticipant['snapshot_json'] = json_encode($syntheticSnapshot);
+
+    if ($syntheticParticipant['snapshot_json'] === false) {
+        throw new RuntimeException('Event Battle Elixir validation snapshot could not be encoded.');
+    }
+
+    $resolved = mousefight_economy_resolve_battle_elixir(
+        $syntheticParticipant,
+        $participantRole
+    );
+
+    if (
+        !$resolved['selected'] ||
+        (int)$resolved['item_id'] !== $itemId ||
+        (int)$resolved['original_fight_power'] !== $baseFightPower ||
+        (int)$resolved['genetic_support_power'] !== $geneticSupportPower ||
+        (int)$resolved['bonus_power'] !== $bonusPower ||
+        (int)$resolved['final_fight_power'] !== $finalFightPower
+    ) {
+        throw new RuntimeException('Event Battle Elixir combat proof is inconsistent.');
+    }
+
+    return $resolved;
+}
+
+/**
+ * Stable whole-event participant role used by existing Battle Elixir audit rows.
+ */
+function mousefight_economy_event_battle_elixir_role(array $participant): string
+{
+    $userId = trim((string)($participant['user_id'] ?? ''));
+    $tokenId = trim((string)($participant['token_id'] ?? ''));
+    $collection = strtolower(trim((string)($participant['collection'] ?? 'genesis')));
+
+    if ($userId === '' || $tokenId === '' || $collection !== 'genesis') {
+        throw new RuntimeException('Invalid Event Battle Elixir participant identity.');
+    }
+
+    return 'event:' . $userId . ':' . $tokenId . ':' . $collection;
+}
+
+/**
+ * Prepare one participant for exactly-once Event Battle Elixir consumption.
+ * Existing approved usage wins over inventory, making retries restart-safe.
+ */
+function mousefight_economy_prepare_event_battle_elixir_consumption(
+    SQLite3 $db,
+    string $fightId,
+    array $participant
+): array {
+    $role = mousefight_economy_event_battle_elixir_role($participant);
+    $selection = mousefight_economy_resolve_event_battle_elixir($participant, $role);
+
+    if (!$selection['selected']) {
+        return $selection;
+    }
+
+    $usageReason = MOUSEFIGHT_BATTLE_ELIXIR_USAGE_REASON_PREFIX . ':' . $fightId . ':' . $role;
+    $existingUsage = mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT usage_id, user_id, item_id, status, approved_by
+        FROM tbl_item_usage_history
+        WHERE reason = ?
+        ORDER BY usage_id ASC
+        LIMIT 1
+        ",
+        [$usageReason]
+    );
+
+    if ($existingUsage) {
+        if (
+            (string)$existingUsage['user_id'] !== (string)$selection['user_id'] ||
+            (int)$existingUsage['item_id'] !== (int)$selection['item_id'] ||
+            (string)$existingUsage['status'] !== 'approved' ||
+            (string)$existingUsage['approved_by'] !== MOUSEFIGHT_BATTLE_ELIXIR_APPROVED_BY
+        ) {
+            throw new RuntimeException(
+                'Existing Event Battle Elixir audit row does not match the persisted participant selection.'
+            );
+        }
+
+        return array_merge($selection, [
+            'fight_id' => $fightId,
+            'role' => $role,
+            'already_consumed' => true,
+            'usage_id' => (int)$existingUsage['usage_id']
+        ]);
+    }
+
+    $inventoryRow = mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT inventory_id, user_id, item_id, quantity, last_used_at
+        FROM tbl_user_inventory
+        WHERE user_id = ?
+          AND item_id = ?
+          AND COALESCE(quantity, 0) > 0
+        LIMIT 1
+        ",
+        [(string)$selection['user_id'], (int)$selection['item_id']]
+    );
+
+    if (!$inventoryRow) {
+        throw new RuntimeException(
+            (string)$selection['item_name'] . ' is no longer available for this Event Battle Elixir participant.'
+        );
+    }
+
+    $quantityBefore = mousefight_economy_battle_elixir_required_integer(
+        $inventoryRow['quantity'] ?? null,
+        $role . '.inventory.quantity',
+        100000000
+    );
+
+    if ($quantityBefore < 1) {
+        throw new RuntimeException(
+            (string)$selection['item_name'] . ' is no longer available for this Event Battle Elixir participant.'
+        );
+    }
+
+    return array_merge($selection, [
+        'fight_id' => $fightId,
+        'role' => $role,
+        'already_consumed' => false,
+        'inventory_id' => (int)$inventoryRow['inventory_id'],
+        'quantity_before' => $quantityBefore,
+        'quantity_after' => $quantityBefore - 1
+    ]);
+}
+
+/**
+ * Consume selected bottles for one real two-fighter League event match.
+ * Both persisted participants are prepared before either inventory write.
+ */
+function mousefight_economy_event_battle_elixir_consume_pair(
+    SQLite3 $db,
+    array $data
+): array {
+    $fightId = mousefight_economy_required_string($data, 'fight_id', 100);
+    $fighterInputs = $data['fighters'] ?? null;
+
+    if (!is_array($fighterInputs) || count($fighterInputs) !== 2) {
+        throw new RuntimeException('Event Battle Elixir consumption requires exactly two fighters.');
+    }
+
+    $fight = mousefight_economy_fetch_one(
+        $db,
+        "SELECT fight_id, status, mode, metadata_json FROM tbl_mousefights WHERE fight_id = ? LIMIT 1",
+        [$fightId]
+    );
+
+    if (!$fight) {
+        throw new RuntimeException('MouseFight event was not found.');
+    }
+
+    if ((string)$fight['mode'] !== MOUSEFIGHT_EVENT_MODE) {
+        throw new RuntimeException('Event Battle Elixir consumption requires a moderator event.');
+    }
+
+    if ((string)$fight['status'] !== 'active') {
+        throw new RuntimeException('Event Battle Elixirs can only be consumed during an active event.');
+    }
+
+    $metadataJson = trim((string)($fight['metadata_json'] ?? ''));
+    $metadata = $metadataJson !== '' ? json_decode($metadataJson, true) : null;
+
+    if (!is_array($metadata) || json_last_error() !== JSON_ERROR_NONE) {
+        throw new RuntimeException('Event Battle Elixir fight metadata is invalid.');
+    }
+
+    if (
+        !mousefight_economy_boolean($metadata['event_battle_elixirs_enabled'] ?? false) ||
+        trim((string)($metadata['event_battle_elixirs_version'] ?? '')) !== MOUSEFIGHT_EVENT_BATTLE_ELIXIR_VERSION
+    ) {
+        throw new RuntimeException('Event Battle Elixirs are not enabled for this fight.');
+    }
+
+    $leagueMode = strtolower(trim((string)($metadata['league_mode'] ?? '')));
+
+    if (!in_array($leagueMode, ['minimum', 'exact'], true)) {
+        throw new RuntimeException('Event Battle Elixirs require an active League Mode.');
+    }
+
+    $participants = [];
+    $identityKeys = [];
+
+    foreach ($fighterInputs as $fighterInput) {
+        if (!is_array($fighterInput)) {
+            throw new RuntimeException('Invalid Event Battle Elixir fighter payload.');
+        }
+
+        $userId = mousefight_economy_required_string($fighterInput, 'user_id', 64);
+        $tokenId = mousefight_economy_required_string($fighterInput, 'token_id', 200);
+        $collection = strtolower(trim((string)($fighterInput['collection'] ?? 'genesis')));
+
+        if ($collection !== 'genesis') {
+            throw new RuntimeException('Event Battle Elixirs currently support Genesis collection only.');
+        }
+
+        $identityKey = $userId . ':' . $tokenId . ':' . $collection;
+
+        if (isset($identityKeys[$identityKey])) {
+            throw new RuntimeException('Event Battle Elixir pair contains a duplicate fighter identity.');
+        }
+
+        $identityKeys[$identityKey] = true;
+        $participant = mousefight_economy_fetch_one(
+            $db,
+            "
+            SELECT id, user_id, token_id, collection, mouse_warrior_power, genetic_support_power, snapshot_json
+            FROM tbl_mousefight_participants
+            WHERE fight_id = ? AND user_id = ? AND token_id = ? AND collection = ?
+            LIMIT 1
+            ",
+            [$fightId, $userId, $tokenId, $collection]
+        );
+
+        if (!$participant) {
+            throw new RuntimeException('Persisted Event Battle Elixir participant was not found.');
+        }
+
+        $participants[] = $participant;
+    }
+
+    $prepared = array_map(
+        fn(array $participant): array => mousefight_economy_prepare_event_battle_elixir_consumption(
+            $db,
+            $fightId,
+            $participant
+        ),
+        $participants
+    );
+
+    $results = [];
+
+    foreach ($prepared as $index => $preparedFighter) {
+        $participant = $participants[$index];
+        $common = [
+            'user_id' => (string)$participant['user_id'],
+            'token_id' => (string)$participant['token_id'],
+            'collection' => (string)$participant['collection']
+        ];
+
+        if (!$preparedFighter['selected']) {
+            $results[] = array_merge($common, [
+                'selected' => false,
+                'status' => 'not_selected',
+                'item_id' => null,
+                'usage_id' => null,
+                'bonus_power' => 0,
+                'final_fight_power' => (int)$participant['mouse_warrior_power']
+            ]);
+            continue;
+        }
+
+        if (mousefight_economy_boolean($preparedFighter['already_consumed'] ?? false)) {
+            $results[] = array_merge($common, [
+                'selected' => true,
+                'status' => 'already_consumed',
+                'item_id' => (int)$preparedFighter['item_id'],
+                'usage_id' => (int)$preparedFighter['usage_id'],
+                'bonus_power' => (int)$preparedFighter['bonus_power'],
+                'final_fight_power' => (int)$preparedFighter['final_fight_power']
+            ]);
+            continue;
+        }
+
+        $consumption = mousefight_economy_consume_prepared_battle_elixir($db, $preparedFighter);
+
+        if (!$consumption) {
+            throw new RuntimeException('Event Battle Elixir consumption was not confirmed.');
+        }
+
+        $results[] = array_merge($common, [
+            'selected' => true,
+            'status' => 'consumed',
+            'item_id' => (int)$consumption['item_id'],
+            'usage_id' => (int)$consumption['usage_id'],
+            'bonus_power' => (int)$consumption['bonus_power'],
+            'final_fight_power' => (int)$consumption['final_fight_power'],
+            'remaining_inventory_quantity' => (int)$consumption['remaining_inventory_quantity']
+        ]);
+    }
+
+    return ['fight_id' => $fightId, 'status' => 'active', 'fighters' => $results];
 }
 
 /**
@@ -3649,6 +4044,7 @@ if (
             'mouse_availability',
             'event_join',
             'event_cancel',
+            'event_battle_elixir_consume_pair',
             'event_complete_recovery',
             'pvp_create',
             'pvp_accept_settle',
@@ -3736,6 +4132,14 @@ try {
 
         case 'event_cancel':
             $result = mousefight_economy_event_cancel($db, $data);
+            break;
+
+        case 'event_battle_elixir_consume_pair':
+            $result =
+                mousefight_economy_event_battle_elixir_consume_pair(
+                    $db,
+                    $data
+                );
             break;
 
         case 'event_complete_recovery':
