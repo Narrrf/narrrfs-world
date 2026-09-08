@@ -1,0 +1,39 @@
+{
+    "company_name": "Poolbauprofi.at",
+    "phone_number": "+43 660 8669020",
+    "email_address": "office@poolbauprofi.at",
+    "sender_email": "onboarding@resend.dev",
+    "from_email": "onboarding@resend.dev",
+    "from_name": "Poolbauprofi.at Website",
+    "_comment": "resend_api_key removed for security - uses RESEND_API_KEY environment variable in production (Render) or hardcoded value in smtp-helper.php for local testing only",
+    "smtp_host": "smtp.titan.email",
+    "smtp_port": "587",
+    "smtp_username": "office@poolbauprofi.at",
+    "smtp_password": "POOLBAU_SMTP_PASSWORD",
+    "smtp_encryption": "tls",
+    "slider_speed": 5,
+    "bubble_effect": "medium",
+    "bubble_color": "#12d9d6",
+    "last_updated": "2025-11-19",
+    "updated_by": "pooladmin",
+    "bubble_opacity": "low",
+    "bubble_speed": "slow",
+    "bubble_pages": {
+        "index": true,
+        "referenzen": true,
+        "anfragen": true,
+        "ueber_uns": true,
+        "kontakt": true,
+        "impressum": true
+    },
+    "hero_background": "background2.png",
+    "background_transparency": "full",
+    "page_backgrounds": {
+        "index": "background2.png",
+        "referenzen": "background2.png",
+        "anfragen": "background2.png",
+        "ueber_uns": "background2.png",
+        "kontakt": "background2.png",
+        "impressum": "background2.png"
+    }
+}

@@ -1,0 +1,102 @@
+[
+    {
+        "id": "project_20250128_160000_1",
+        "title": "Luxuspool mit Naturstein-umrandung",
+        "location": "Ferienhaus in den Bergen",
+        "project_type": "Schwimmbad",
+        "description": "Ein beeindruckender Luxuspool mit Natursteinverkleidung, Gegenstromanlage und Heizung",
+        "features": [
+            "Beheizung"
+        ],
+        "photos": [
+            "pool_20251005_224909_0.webp",
+            "pool_20251005_230531_0.PNG"
+        ],
+        "completion_date": "2024-08-15",
+        "pool_size": "12x6 Meter",
+        "special_features": "Premium Naturstein",
+        "created_at": "2025-01-28 16:00:00",
+        "updated_at": "2025-10-05 23:05:32",
+        "created_by": "admin",
+        "updated_by": "pooladmin"
+    },
+    {
+        "id": "project_20250128_160001_2",
+        "title": "Designpool im Innenhof (Urban Style)",
+        "location": "Salzburg",
+        "project_type": "Wellness-Bereich",
+        "description": "Ein großer Familienpool mit separatem Spa-Bereich für die ganze Familie.",
+        "features": [
+            "Solarheizung"
+        ],
+        "photos": [
+            "pool_20251005_223127_0.webp"
+        ],
+        "completion_date": "2024-07-22",
+        "pool_size": "10x5 Meter",
+        "special_features": "Integrierte Spa-Zone",
+        "created_at": "2025-01-28 16:00:01",
+        "updated_at": "2025-10-05 22:36:22",
+        "created_by": "admin",
+        "updated_by": "pooladmin"
+    },
+    {
+        "id": "project_20250128_160002_3",
+        "title": "Kompaktpool für kleine Gärten",
+        "location": "Reihenhaus mit wenig Terrasse",
+        "project_type": "Schwimmbad",
+        "description": "Platzsparend, klappbare Abdeckung als Terrasse nutzbar",
+        "features": [
+            "Automatische Abdeckung"
+        ],
+        "photos": [
+            "pool_20251005_223319_0.webp"
+        ],
+        "completion_date": "2024-09-10",
+        "pool_size": "8x4 Meter",
+        "special_features": "Gartengestaltung",
+        "created_at": "2025-01-28 16:00:02",
+        "updated_at": "2025-10-05 22:38:43",
+        "created_by": "admin",
+        "updated_by": "pooladmin"
+    },
+    {
+        "id": "project_20250128_160003_4",
+        "title": "Moderner Familienpool",
+        "location": "Einfamilienhaus am Stadtrand",
+        "project_type": "Schwimmbad",
+        "description": "Automatische Abdeckung, LED-Beleuchtung",
+        "features": [
+            "LED-Beleuchtung",
+            "Automatische Abdeckung"
+        ],
+        "photos": [
+            "pool_20251005_223217_0.webp"
+        ],
+        "completion_date": "2024-06-18",
+        "pool_size": "9x4.5 Meter",
+        "special_features": "Detail: Technikschacht mit moderner Steuerung",
+        "created_at": "2025-01-28 16:00:03",
+        "updated_at": "2025-10-05 22:39:41",
+        "created_by": "admin",
+        "updated_by": "pooladmin"
+    },
+    {
+        "id": "project_20250128_160004_5",
+        "title": "Renovierung eines Bestandsbeckens",
+        "location": "Hotel – Modernisierung des Wellnessbereichs",
+        "project_type": "Wellness-Bereich",
+        "description": "Umbau mit neuer Folientechnik",
+        "features": [],
+        "photos": [
+            "pool_20251005_223244_0.webp"
+        ],
+        "completion_date": "2024-05-30",
+        "pool_size": "15x8 Meter",
+        "special_features": "Energieeffiziente Technik",
+        "created_at": "2025-01-28 16:00:04",
+        "updated_at": "2025-10-05 22:37:40",
+        "created_by": "admin",
+        "updated_by": "pooladmin"
+    }
+]

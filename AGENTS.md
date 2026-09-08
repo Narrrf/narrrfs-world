@@ -31,8 +31,19 @@ Local continuity source when the local agent workspace exists:
 
 12.0/ACTIVE_STATUS/QUICK_STATUS.md
 
-The directory 12.0/ is a local-only Narrrfs agent and continuity workspace.
-It is intentionally excluded from GitHub and production deployment.
+The directory 12.0/ is a local-only Narrrfs agent and continuity workspace,
+except for the explicitly documented production application below.
+All other 12.0/ content remains excluded from GitHub and production deployment.
+
+Verified production exception: Poolbauprofi application
+
+`12.0/LAB_NOTES/2025/SPECIAL_PROJECTS/Special_Pool_Website/Pool_Website_Files/improved_pages/`
+
+This exact subtree contains the production website and its Dockerfile. It must
+remain tracked until a separately approved relocation. Its restoration does not
+authorize tracking any other 12.0/ content. ACTIVE_STATUS, RULES, LLM_SYNC_SYSTEM,
+agent notes, archives, and handovers remain local-only. Preserve /12.0/ in
+.gitignore; force-tracking requires explicit scope limited to this exception.
 
 When available locally, inspect the newest relevant QUICK_STATUS entry and
 verify it against current source/runtime evidence.
@@ -752,9 +763,10 @@ Maintenance and focused developer utilities.
 
 12.0/
 
-LOCAL-ONLY Narrrfs agent and continuity workspace.
+LOCAL-ONLY Narrrfs agent and continuity workspace, except for the exact
+Poolbauprofi production subtree documented in section 1.
 
-It is intentionally excluded from GitHub and production deployment.
+All non-exception content is excluded from GitHub and production deployment.
 
 When present locally it may contain:
 
