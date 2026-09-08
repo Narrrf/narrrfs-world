@@ -85,6 +85,14 @@ discord/commands/managepoints.js
 discord/commands/BOT_COMMANDS_REVIEW.md
 discord/commands/README_ADMIN_COMMANDS.md
 
+
+# 🧠 Narrrfs local agent / continuity workspace.
+# DEVS FOR DECADES:
+# 12.0 contains local LLM/Cursor/Codex status, handovers, investigations and
+# working documentation. It is not website/runtime source and must not deploy
+# through GitHub/Render.
+/12.0/
+
 # 🖱️ Cursor IDE Files - Local Development Only
 Cursor/
 cursor/

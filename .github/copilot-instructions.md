@@ -1,35 +1,40 @@
-# Narrrfs World VS Code Rules (Source: `12.0/RULES`)
+# Narrrfs World VS Code / Copilot Instructions
 
-This repository uses the rules in `12.0/RULES` as the primary operating standard.
+The repository-root `AGENTS.md` is the authoritative Narrrfs World operating
+contract for AI-assisted development.
 
-## Rule hierarchy (must follow)
+Read and follow `AGENTS.md` before substantial technical work.
 
-1. `12.0/RULES/01_MASTER_RULESET.md` (single source of truth)
-2. `12.0/RULES/08_CRITICAL_CODE_PRESERVATION_RULE.md` (never break working code)
-3. `12.0/RULES/20_TECHNICAL_DOCUMENTATION_SYNC_RULE.md` (rules ↔ technical docs sync)
-4. `12.0/RULES/00_RULES_INDEX.md` (index and scope of all rule files)
+## Local agent continuity workspace
 
-## Mandatory workflow for every task
+The directory:
 
-1. Read `01_MASTER_RULESET.md` before coding.
-2. Confirm target files and avoid unrelated modifications.
-3. Preserve existing working behavior unless explicitly asked to change it.
-4. For API/database/path work, validate local vs production rules before editing.
-5. Update documentation/status files when making meaningful changes.
+`12.0/`
 
-## Critical guardrails
+may exist on a developer workstation as a LOCAL-ONLY Narrrfs agent and
+continuity workspace.
 
-- Do not delete/replace working code blocks without explicit instruction.
-- Do not create duplicate APIs when existing endpoints can be extended.
-- Respect local vs production path rules:
-  - Local examples: `/public/...`, local DB in project `db/`
-  - Production examples: `/var/www/html/...`, live DB `/var/www/html/db/narrrf_world.sqlite`
-- Keep changes minimal, scoped, and reversible.
+It is intentionally excluded from GitHub and production deployment.
 
-## Technical documentation check
+When available locally, additional continuity may exist in:
 
-Before implementation details, cross-check:
+- `12.0/ACTIVE_STATUS/QUICK_STATUS.md`
+- `12.0/ACTIVE_STATUS/AGENT_REGISTRY.md`
+- `12.0/ACTIVE_STATUS/SYSTEM_MAP.md`
 
-- `12.0/YEAR_END_2025/TECHNICAL_COMPLETE_2025_MASTER_INDEX.md`
+Never assume those local files exist in GitHub, Render, production, or another
+clone.
 
-If rules and implementation docs differ, flag and resolve before proceeding.
+If they are absent, do not invent their contents and do not treat their absence
+as an application/runtime failure.
+
+## Mandatory operating boundary
+
+Follow the workflow, protected-system rules, database/economy safety rules,
+local/live separation, validation requirements, and approval boundaries defined
+in `AGENTS.md`.
+
+Current source, database, API, runtime, and deployment evidence remain
+authoritative for the specific layer being investigated.
+
+Do not add `12.0/` back to Git unless explicitly approved.

@@ -23,7 +23,6 @@ COPY ./league-audit/mousefight-leagues-v2-shadow-snapshot-*.json /var/www/html/l
 COPY ./discord-tools /var/www/html/discord-tools
 COPY ./private /var/www/html/private
 COPY ./scripts /var/www/html/scripts
-COPY ./12.0 /var/www/html/12.0
 
 # Copy database directory structure and migrations
 COPY ./db/migrations /var/www/html/db/migrations
