@@ -6,7 +6,7 @@ Your Resend API key has been added to `admin/settings.json`:
 
 ```json
 {
-  "resend_api_key": "re_9KCgAcb5_HdcFLVi7gvjdgJtjs6NYMmVw",
+  "resend_api_key": "",
   "email_address": "office@poolbauprofi.at",
   "sender_email": "onboarding@resend.dev",
   "from_name": "Poolbauprofi.at Website"
@@ -17,7 +17,7 @@ Your Resend API key has been added to `admin/settings.json`:
 
 ## ✅ What's Configured
 
-- ✅ **Resend API Key:** `re_9KCgAcb5_HdcFLVi7gvjdgJtjs6NYMmVw`
+- ✅ **Resend API Key:** ``
 - ✅ **Recipient Email:** `office@poolbauprofi.at` (where emails are delivered)
 - ✅ **Sender Email:** `onboarding@resend.dev` (for testing)
 - ✅ **From Name:** "Poolbauprofi.at Website"

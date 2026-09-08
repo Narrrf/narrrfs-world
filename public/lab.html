@@ -10726,6 +10726,12 @@ function selectNftByTokenId(tokenId, options = {}) {
   state.selectedNftTokenId = normalizedTokenId;
   saveSelectedTokenId(state.selectedNftTokenId);
 
+  // NARRRFS_ABILITY_MATRIX_SWITCHER_SELECTION_SYNC_V2
+  // Keep only the lightweight Ability Matrix selection controls aligned here.
+  // The full dropdown option list is rebuilt by the normal Ability Matrix render.
+  // Presentation/navigation only: no Lab progression or backend state changes.
+  syncAbilityMouseSwitcherSelection();
+
   renderNftGrid();
   renderSelectedNftPanel();
   renderSelectedTraitSummary();
@@ -13756,6 +13762,60 @@ function setupAbilityMatrixKeyboardNavigation() {
   });
 
   abilitySection.dataset.keyboardNavBound = '1';
+}
+
+/**
+ * Keep the Ability Matrix selected-mouse controls aligned without rebuilding
+ * the complete Jump to mouse option list on every Genesis selection.
+ *
+ * NARRRFS_ABILITY_MATRIX_SWITCHER_LIGHTWEIGHT_SYNC_V2
+ *
+ * Plain language for DEVS FOR DECADES:
+ * The full renderAbilityMouseSwitcher() remains responsible for building the
+ * verified-mouse dropdown when the Ability Matrix renders. This helper only
+ * updates the already-rendered current mouse label, count, select value, and
+ * arrow disabled state. It never calls APIs or mutates Lab/Genesis state.
+ */
+function syncAbilityMouseSwitcherSelection() {
+  const { verified, total, currentIndex } = getSelectedGenesisMouseNavigationState();
+  const selected = currentIndex >= 0 ? verified[currentIndex] : state.selectedNft;
+  const selectedTokenId = selected ? getSafeTokenId(selected) : '';
+  const selectedName = selected
+    ? getSafeNftName(selected, 'Selected Genesis Mouse')
+    : 'No mouse selected';
+
+  if (el.abilitySelectedMouseName) {
+    el.abilitySelectedMouseName.textContent = selectedName;
+    el.abilitySelectedMouseName.title = selectedName;
+  }
+
+  if (el.abilitySelectedMouseCount) {
+    el.abilitySelectedMouseCount.textContent = total
+      ? `${currentIndex >= 0 ? currentIndex + 1 : 1} / ${total} verified mice`
+      : 'No verified mice';
+  }
+
+  if (el.abilityMouseQuickSelect) {
+    el.abilityMouseQuickSelect.disabled = !total;
+
+    if (selectedTokenId) {
+      const hasSelectedOption = Array.from(el.abilityMouseQuickSelect.options).some(
+        (option) => String(option.value || '').trim() === selectedTokenId
+      );
+
+      if (hasSelectedOption) {
+        el.abilityMouseQuickSelect.value = selectedTokenId;
+      }
+    }
+  }
+
+  if (el.abilityPrevMouseButton) {
+    el.abilityPrevMouseButton.disabled = total <= 1;
+  }
+
+  if (el.abilityNextMouseButton) {
+    el.abilityNextMouseButton.disabled = total <= 1;
+  }
 }
 
 function renderAbilityMouseSwitcher() {
