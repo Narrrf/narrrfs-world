@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Events — Samuzi NFT</title>
-<meta name="description" content="Samuzi NFT events, raffles, giveaways, AkamaiLand Phase 4 mint updates, partner drops, and community announcements.">    <meta name="keywords" content="Samuzi NFT events, Samuzi giveaways, Samuzi raffles, Solana NFT events, Samuzi community">
+<meta name="description" content="Samuzi NFT events, daily raffles, SMZ missions, AKAMAILAND updates, partner giveaways, poker events, spaces, and community announcements.">    <meta name="keywords" content="Samuzi NFT events, Samuzi giveaways, Samuzi raffles, Solana NFT events, Samuzi community">
     <meta property="og:title" content="Events — Samuzi NFT">
-<meta property="og:description" content="Community events, raffles, giveaways, and AkamaiLand Phase 4 mint announcements.">    <meta property="og:type" content="website">
+<meta property="og:description" content="Daily raffles, SMZ missions, AKAMAILAND public mint updates, partner giveaways, poker events, spaces, and Samuzi community announcements.">    <meta property="og:type" content="website">
     <meta name="theme-color" content="#07070b">
 
     <link rel="icon" href="./favicon.ico" sizes="any">
     <link rel="icon" type="image/png" href="./favicon.png">
     <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-events-1">
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=samuzi-events-public-ready-1">
 
     <style>
         body {
@@ -294,7 +294,118 @@
                 width: 100%;
             }
         }
-    </style>
+    
+/* =========================================================
+   SAMUZI EVENTS PUBLIC READY V1
+   Public-ready Samuzi events page: raffles, spaces, poker,
+   Bear or Bull Saturday events, missions, partner giveaways.
+   ========================================================= */
+
+.events-live-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.6rem;
+}
+
+.events-live-pill {
+    padding: 1rem;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 18% 0%, rgba(250,204,21,0.14), transparent 36%),
+        rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.10);
+}
+
+.events-live-pill strong {
+    display: block;
+    color: #ffffff;
+    margin-bottom: 0.35rem;
+    font-size: 1rem;
+}
+
+.events-live-pill span {
+    color: #cbd5e1;
+    line-height: 1.45;
+    font-size: 0.9rem;
+}
+
+.events-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.events-feature-card {
+    padding: 1.25rem;
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 14% 0%, rgba(225,29,72,0.16), transparent 36%),
+        linear-gradient(180deg, rgba(18,18,28,0.92), rgba(9,9,15,0.84));
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 18px 58px rgba(0,0,0,0.42);
+}
+
+.events-feature-card.highlight {
+    border-color: rgba(250,204,21,0.36);
+    box-shadow:
+        0 18px 58px rgba(0,0,0,0.48),
+        0 0 34px rgba(250,204,21,0.10);
+}
+
+.events-feature-card span {
+    display: inline-flex;
+    color: #fecaca;
+    font-size: 0.74rem;
+    font-weight: 950;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+}
+
+.events-feature-card h3 {
+    color: #ffffff;
+    font-size: 1.35rem;
+    line-height: 1.1;
+    margin-bottom: 0.7rem;
+}
+
+.events-feature-card p,
+.events-feature-card li {
+    color: #cbd5e1;
+    line-height: 1.72;
+}
+
+.events-feature-card ul {
+    margin-top: 0.8rem;
+    padding-left: 1.1rem;
+}
+
+.events-warning-note {
+    margin-top: 1.4rem;
+    padding: 1rem;
+    border-radius: 18px;
+    background: rgba(250,204,21,0.08);
+    border: 1px solid rgba(250,204,21,0.22);
+    color: #fef3c7;
+    line-height: 1.65;
+}
+
+@media (max-width: 980px) {
+    .events-live-strip,
+    .events-feature-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .events-live-strip,
+    .events-feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
 </head>
 
 <body>
@@ -319,57 +430,80 @@
     </div>
 </header>
 
+
 <main class="main-content">
     <section class="events-hero">
         <div class="container">
             <div class="events-grid">
                 <div>
-                    <div class="events-kicker">🎁 Events & Giveaways</div>
+                    <div class="events-kicker">🎁 Samuzi Events</div>
 
-<h1 class="events-title">
-    AKAMAILAND Phase 4.
-    <span>Mint events live.</span>
-</h1>
+                    <h1 class="events-title">
+                        Daily raffles.
+                        <span>Community missions.</span>
+                    </h1>
 
-<p class="events-copy">
-    This page is the public board for Samuzi Phase 4 updates, AkamaiLand mint announcements,
-    giveaways, raffles, partner drops, holder rewards, and community events.
-</p>
+                    <p class="events-copy">
+                        Samuzi events are now active around AKAMAILAND Phase 4, SMZ token activity,
+                        daily raffles, community missions, partner giveaways, live spaces, poker nights,
+                        and upcoming website games. Follow Discord and X for live announcements,
+                        raffle winners, mission details, and event timing.
+                    </p>
 
                     <div class="events-actions">
                         <a href="https://discord.gg/D55VGqsQWH" target="_blank" rel="noopener noreferrer" class="button-primary">
                             Join Discord
                         </a>
-                        <a href="whitepaper.html" class="button-secondary">
-                            Read Whitepaper
+                        <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="button-secondary">
+                            Follow on X
                         </a>
-                        <a href="contact.html" class="button-secondary">
-                            Contact Samuzi
+                        <a href="https://akamailand.gensuki.xyz/" target="_blank" rel="noopener noreferrer" class="button-secondary">
+                            Mint AKAMAILAND
                         </a>
+                    </div>
+
+                    <div class="events-live-strip">
+                        <div class="events-live-pill">
+                            <strong>Daily Raffles</strong>
+                            <span>2.154 SOL distributed so far through ongoing AKAMAILAND raffles.</span>
+                        </div>
+                        <div class="events-live-pill">
+                            <strong>SMZ Missions</strong>
+                            <span>Discord missions and SMZ token opportunities for active community members.</span>
+                        </div>
+                        <div class="events-live-pill">
+                            <strong>Weekly Spaces</strong>
+                            <span>Regular Samuzi and Narrrfs World community spaces, often Monday PM UTC.</span>
+                        </div>
+                        <div class="events-live-pill">
+                            <strong>Saturday Events</strong>
+                            <span>Poker and Bear or Bull community events are planned around Saturdays.</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="events-panel">
-                    <span class="panel-kicker">Admin-ready</span>
-                    <h2>Events can be posted later.</h2>
+                    <span class="panel-kicker">Live Event Board</span>
+                    <h2>AKAMAILAND public mint, claims and raffles are active.</h2>
                     <p>
-                        The backend flow is already prepared through the existing project/showcase system.
-                        We keep the internal route stable, but present it publicly as Samuzi Events.
+                        The event layer now connects daily raffles, public mint activity, plot-holder SMZ claims,
+                        partner giveaways, Discord missions, and upcoming game activations. Event rewards and
+                        token missions can depend on treasury collection during minting and official campaign rules.
                     </p>
 
                     <div class="coming-list">
                         <div>
-                            <strong>Raffles & Giveaways</strong>
-                            <span>Public entries for community prizes, NFT giveaways, and holder reward campaigns.</span>
+                            <strong>Public Mint Live</strong>
+                            <span>AKAMAILAND public mint is open at 0.10 SOL through the official Gensuki mint page.</span>
                         </div>
                         <div>
-                            <strong>Partner Drops</strong>
-                            <span>Collab events, allowlist access, partner project signals, and cross-community updates.</span>
+                            <strong>SMZ Claims Online</strong>
+                            <span>Plot holders can claim SMZ through the AKAMAILAND claim system.</span>
                         </div>
-<div>
-    <strong>AkamaiLand Phase 4 Updates</strong>
-    <span>Mint windows, supply details, OG/WL/Public announcements, gameplay reveals, and partner utility news.</span>
-</div>
+                        <div>
+                            <strong>Raffle Winners</strong>
+                            <span>Winner announcements can highlight winning lands on the AKAMAILAND map.</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -379,62 +513,102 @@
     <section class="events-section">
         <div class="container">
             <div class="events-heading">
-                <span class="status-pill">What will appear here</span>
-                <h2>One board for Samuzi community activity.</h2>
+                <span class="status-pill">Current Samuzi Event Types</span>
+                <h2>One board for live community activity.</h2>
                 <p>
-                    The customer can use this area later as a flexible public news board.
-                    It can show planned events, completed giveaways, partner collaborations, and upcoming holder-only activities.
+                    This page summarizes the public Samuzi event ecosystem. Exact times, entry rules,
+                    claim rules, raffle mechanics, and reward amounts can change, so always verify the
+                    latest details through official Samuzi channels.
                 </p>
             </div>
 
-            <div class="event-types-grid">
-                <article class="event-card">
-                    <span>01 · Giveaway</span>
-                    <h3>NFT & reward campaigns</h3>
+            <div class="events-feature-grid">
+                <article class="events-feature-card highlight">
+                    <span>01 · Daily Raffles</span>
+                    <h3>AKAMAILAND raffle rewards</h3>
                     <p>
-                        Announce community giveaways, digital rewards, NFT raffles, and special holder campaigns.
+                        Samuzi runs daily ongoing raffles connected to AKAMAILAND. Total distributed so far:
+                        <strong>2.154 SOL</strong>. Raffle details and winners are announced through official channels.
                     </p>
                 </article>
 
-                <article class="event-card">
-                    <span>02 · Raffle</span>
-                    <h3>Community prize events</h3>
+                <article class="events-feature-card highlight">
+                    <span>02 · SMZ Missions</span>
+                    <h3>Daily Discord missions</h3>
                     <p>
-                        Publish raffle details, entry windows, winner notes, and official event status updates.
+                        Community members can join daily Discord missions and SMZ token-related activities.
+                        Mission rewards may depend on campaign rules, participation, and available treasury flow.
                     </p>
                 </article>
 
-                <article class="event-card">
-                    <span>03 · Collaboration</span>
-                    <h3>Partner access</h3>
+                <article class="events-feature-card">
+                    <span>03 · Plot Holder Claims</span>
+                    <h3>SMZ claims for AKAMAILAND holders</h3>
                     <p>
-                        Promote partner drops, allowlist access, cross-community events, and collaboration news.
+                        AKAMAILAND plot holders can access online SMZ claim mechanics. Land PH, plot activity,
+                        puzzles, games, and future mechanics may influence participation and claim behavior.
                     </p>
                 </article>
 
-                <article class="event-card">
-                    <span>04 · Holder Reward</span>
-                    <h3>Access for supporters</h3>
+                <article class="events-feature-card">
+                    <span>04 · Poker Events</span>
+                    <h3>Community poker nights</h3>
                     <p>
-                        Highlight private holder benefits, Discord activities, role-based rewards, and bonus content.
+                        Samuzi joins community poker activity, including Saturday event energy with Bear or Bull.
+                        Watch the official Discord for tournament posts, timing, and entry instructions.
                     </p>
                 </article>
 
-                <article class="event-card">
-                    <span>05 · Phase Update</span>
-                    <h3>Project progress</h3>
+                <article class="events-feature-card">
+                    <span>05 · Bear or Bull Saturdays</span>
+                    <h3>Weekend partner activity</h3>
                     <p>
-                        Share AKAMAILAND Phase 4 mint updates, land reveals, gameplay notes, partner drops, raffle news, and ecosystem progress.
+                        Saturday events with the Bear or Bull community bring partner energy, social competition,
+                        and cross-community activation into the Samuzi event calendar.
                     </p>
                 </article>
 
-                <article class="event-card">
-                    <span>06 · Announcement</span>
-                    <h3>Official news</h3>
+                <article class="events-feature-card">
+                    <span>06 · Partner Giveaways</span>
+                    <h3>Collaborations and prizes</h3>
                     <p>
-                        Keep important Samuzi information visible beyond Discord and social media feeds.
+                        Samuzi uses partner giveaways to connect communities, spotlight collaborations,
+                        and reward active supporters with official campaign opportunities.
                     </p>
                 </article>
+
+                <article class="events-feature-card">
+                    <span>07 · Weekly Spaces</span>
+                    <h3>Samuzi × Narrrfs World updates</h3>
+                    <p>
+                        Weekly X Spaces with Narrrfs World are planned most often around Monday at 5 PM UTC.
+                        Spaces can cover project news, mint status, raffles, games, and partner updates.
+                    </p>
+                </article>
+
+                <article class="events-feature-card">
+                    <span>08 · Ninja Runner</span>
+                    <h3>Upcoming website game events</h3>
+                    <p>
+                        Ninja Runner and other games are planned as future website event activations.
+                        These games can expand the Samuzi ecosystem with more playable event formats.
+                    </p>
+                </article>
+
+                <article class="events-feature-card">
+                    <span>09 · New Games</span>
+                    <h3>More interactive events coming</h3>
+                    <p>
+                        Samuzi is preparing additional website games and event formats. New releases will be
+                        announced through Discord, X, and the official website.
+                    </p>
+                </article>
+            </div>
+
+            <div class="events-warning-note">
+                Rewards, raffle mechanics, SMZ mission rewards, treasury-based campaigns, game access,
+                timing, and event rules may change as the ecosystem develops. Always verify official links,
+                avoid random DMs, and do your own research before connecting a wallet or joining a campaign.
             </div>
         </div>
     </section>
@@ -442,11 +616,12 @@
     <section class="events-final">
         <div class="container">
             <div class="events-final-panel">
-                <span class="status-pill">Launch note</span>
-                <h2>Events unlock after detailed review.</h2>
+                <span class="status-pill">Stay Active</span>
+                <h2>Join the daily Samuzi event loop.</h2>
                 <p>
-                    The page is intentionally styled and ready, but no live event cards are published yet.
-                    Follow Discord and X for the fastest updates while the public board is being finalized.
+                    Public mint is live, SMZ claims are online for AKAMAILAND plot holders, daily raffles are running,
+                    partner events are active, and new game-based events are on the way. Join Discord and follow X
+                    to catch missions, spaces, poker events, giveaways, and official announcements.
                 </p>
 
                 <div class="events-actions">
@@ -456,11 +631,15 @@
                     <a href="https://x.com/samuziNFT" target="_blank" rel="noopener noreferrer" class="button-secondary">
                         Follow on X
                     </a>
+                    <a href="https://akamailand.gensuki.xyz/" target="_blank" rel="noopener noreferrer" class="button-secondary">
+                        Mint AKAMAILAND
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 </main>
+
 
 <footer class="footer">
     <div class="container">
@@ -474,7 +653,7 @@
             <div class="footer-section">
                 <h4>Events</h4>
                 <p>Giveaways, raffles, drops.</p>
-                <p>AKAMAILAND Phase 4 mint updates are live.</p>
+                <p>Public mint, SMZ claims, and raffles live.</p>
             </div>
 
             <div class="footer-section">
@@ -485,6 +664,6 @@
         </div>
     </div>
 </footer>
-<script src="./assets/visual-effects.js?v=samuzi-lightning-1"></script>
+<script src="./assets/visual-effects.js?v=samuzi-lightning-events-public-1"></script>
 </body>
 </html>

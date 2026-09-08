@@ -347,6 +347,28 @@
     }
 }
 
+
+/* =========================================================
+   WHITEPAPER ROADMAP FOUR PHASES V1
+   Allows the whitepaper roadmap to show Phase 1-4 cleanly.
+   ========================================================= */
+
+.roadmap-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 1100px) {
+    .roadmap-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 700px) {
+    .roadmap-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 </style>
 </head>
 
@@ -386,8 +408,7 @@
     Samuzi NFT is evolving into its next ecosystem layer with Akamai Land:
     a land-based NFT game where every NFT represents a unique 10×10 digital plot
     inside a 10,000 land collection. Akamai Land is designed around digital ownership,
-    daily participation, Samuzi Token rewards, raffle mechanics, buybacks, and future
-    redeemable utility connected to the wider partner ecosystem.
+    daily participation, online SMZ claim mechanics, raffle rewards, buybacks, moderated plot images, and future redeemable utility connected to the wider partner ecosystem.
 </p>
 
             <div class="whitepaper-actions">
@@ -407,7 +428,7 @@
 
     <div class="meta-card">
 <strong>Current Focus</strong>
-<span>AKAMAILAND Phase 4 is in WL mint phase. OG phase has expired. WL mint is live at 0.07 SOL and the public phase opens next at 0.10 SOL.</span>
+<span>AKAMAILAND Phase 4 public mint is live now at 0.10 SOL. OG and WL phases are completed. SMZ claims are online for AKAMAILAND plot holders.</span>
     </div>
 
     <div class="meta-card">
@@ -447,9 +468,7 @@
             <p>
                 Akamai Land is a land-based NFT game developed by Samuzi NFTs.
                 Every Akamai Land NFT represents a unique 10×10 digital land plot
-                inside a 10,000 land collection. Land ownership creates a permanent
-                digital presence inside the Akamai ecosystem and connects holders to
-                future earning, participation, and utility mechanics.
+                inside a 10,000 land collection. Land ownership creates a permanent digital presence inside the Akamai ecosystem and connects holders to SMZ claim mechanics, raffle participation, Land PH growth, and utility mechanics.
             </p>
 
             <div class="whitepaper-grid">
@@ -465,7 +484,7 @@
 
                 <div class="mini-card">
                     <strong>Daily Streaks</strong>
-                    <p>Players can improve land performance by maintaining daily earning streaks through land-based tasks.</p>
+                    <p>Plot holders can grow Land PH through activity, puzzles, games, and future land-based tasks.</p>
                 </div>
 
                 <div class="mini-card">
@@ -513,6 +532,46 @@
 </section>
 
     
+
+<section class="whitepaper-section" id="akamailand-how-it-works">
+    <div class="container">
+        <article class="whitepaper-card">
+            <span class="section-eyebrow">00D · How AKAMAILAND Works</span>
+            <h2>Pick plots, mint one NFT, upload your image.</h2>
+
+            <div class="whitepaper-grid">
+                <div class="mini-card">
+                    <strong>01 · Pick Your Plots</strong>
+                    <p>Select a contiguous rectangle on the grid — from a single 10×10 plot to a full billboard. Each plot is 100 pixels.</p>
+                </div>
+
+                <div class="mini-card">
+                    <strong>02 · Buy It as One NFT</strong>
+                    <p>Pay in SOL and the selected rectangle is minted to your wallet as a single Solana NFT. You can hold, transfer, or resell it.</p>
+                </div>
+
+                <div class="mini-card">
+                    <strong>03 · Upload Your Image</strong>
+                    <p>Add your artwork or logo. Every image is moderated before it goes live so the public grid stays safe for everyone.</p>
+                </div>
+
+                <div class="mini-card">
+                    <strong>SMZ Claims + Land PH</strong>
+                    <p>Plot holders can claim SMZ through the Akamailand claim system. Puzzles and games can help increase Land PH and plot participation.</p>
+                </div>
+            </div>
+
+            <div class="disclaimer-box">
+                <p>
+                    SMZ rewards, Land PH, claim mechanics, raffle behavior, and gameplay mechanics may vary and may change as the ecosystem develops.
+                    Nothing here is a guaranteed return or financial promise.
+                </p>
+            </div>
+        </article>
+    </div>
+</section>
+
+
 <section class="whitepaper-section" id="samuzi-token-chart-whitepaper">
     <div class="container">
         <article class="whitepaper-card">
@@ -563,8 +622,7 @@
             <h2>Raffle, mining and reward mechanics</h2>
 
             <p>
-                AKAMAILAND Phase 4 adds a land-based participation layer around raffles,
-                mining rewards, map highlights, and $SMZ earning opportunities.
+                AKAMAILAND Phase 4 now has public mint access at 0.10 SOL, online SMZ claims for plot holders, daily raffle distribution, map highlights, and $SMZ earning opportunities.
             </p>
 
             <div class="whitepaper-grid">
@@ -575,7 +633,7 @@
 
                 <div class="mini-card">
                     <strong>Mining Claim Panel</strong>
-                    <p>The claim panel is planned to show unclaimed $SMZ, claimed $SMZ, mining pool status, and claim history.</p>
+                    <p>The claim panel is online for AKAMAILAND plot holders and shows claim-related SMZ information such as unclaimed/claimed balances, pool status, and claim history.</p>
                 </div>
 
                 <div class="mini-card">
@@ -586,6 +644,11 @@
                 <div class="mini-card">
                     <strong>Earning Plot Utility</strong>
                     <p>AKAMAILAND plots are designed as active ecosystem plots, not only static collectibles.</p>
+                </div>
+
+                <div class="mini-card">
+                    <strong>2.154 SOL distributed</strong>
+                    <p>Daily ongoing AKAMAILAND raffles have distributed 2.154 SOL in total so far.</p>
                 </div>
             </div>
 
@@ -601,7 +664,7 @@
             <div class="disclaimer-box">
                 <p>
                     Rewards, mining rates, claim mechanics, map highlights, raffle behavior, dates,
-                    and token features may change as the ecosystem develops. Official details should
+                    token features, and Land PH systems may change as the ecosystem develops. Official details should
                     always be verified through Samuzi channels.
                 </p>
             </div>
@@ -745,13 +808,25 @@
                         </ul>
                     </div>
 
+
+                    <div class="roadmap-card">
+                        <div class="phase">Phase 3 · Expansion</div>
+                        <h3>Bridge to AKAMAILAND</h3>
+                        <ul>
+                            <li>Community growth and holder communication</li>
+                            <li>Phase 4 preparation and AKAMAILAND reveal</li>
+                            <li>Partner ecosystem and utility planning</li>
+                            <li>SMZ token, raffle, and land-mechanic groundwork</li>
+                        </ul>
+                    </div>
+
                     <div class="roadmap-card">
                         <div class="phase">Phase 4 · AKAMAILAND</div>
 <h3>AKAMAILAND Land Game</h3>
 <ul>
     <li>10,000 digital land NFTs</li>
     <li>10×10 digital land plots</li>
-    <li>OG, WL, and Public mint windows</li>
+    <li>Public mint live now at 0.10 SOL; OG and WL completed</li>
     <li>Game ecosystem access, raffles, buybacks, and redeemable digital item utility</li>
 </ul>
                     </div>
@@ -871,8 +946,8 @@ redeemable digital item utility.
         <div class="footer-content">
 <div class="footer-section">
     <h4>Status</h4>
-    <p>AKAMAILAND Phase 4 announced</p>
-    <p>OG Mint: Wednesday, 22 July 2026 · 04:00 PM UTC</p>
+    <p>AKAMAILAND Phase 4 public mint live</p>
+    <p>Public Mint live now · 0.10 SOL</p>
 </div>
 
             <div class="footer-section">
