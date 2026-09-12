@@ -675,8 +675,20 @@ try {
             $mostUsedMouse = mousefight_leaderboards_mouse($ownedMice[0]);
         }
 
+        /**
+         * NARRRFS_MOUSEFIGHT_LEADERBOARD_DISCORD_ID_STRING_V1
+         *
+         * DEVS FOR DECADES:
+         * $players is keyed by Discord snowflake. PHP converts integer-shaped
+         * array keys to integers, so the foreach key must never become the
+         * public JSON identity. JavaScript cannot safely represent Discord
+         * snowflakes as Number values.
+         *
+         * Preserve the exact participant string stored before array-key
+         * conversion. This is presentation/read-contract only.
+         */
         $playerRows[] = [
-            'user_id' => $userId,
+            'user_id' => (string)($player['user_id'] ?? $userId),
             'username' => $player['username'],
             'historical_username' => $player['historical_username'],
             'avatar_url' => $player['avatar_url'],

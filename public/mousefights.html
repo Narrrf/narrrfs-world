@@ -161,8 +161,30 @@
       .rank-row { gap: 10px; padding: 12px; }
       .rank-badge { width: 34px; min-width: 34px; height: 34px; border-radius: 11px; font-size: .85rem; }
       .pfp { width: 40px; min-width: 40px; height: 40px; }
-      .score-copy { max-width: 88px; }
-      .score-secondary { display: none; }
+
+      /*
+       * NARRRFS_MOUSEFIGHT_PLAYER_BOARD_MOBILE_GRID_V1
+       *
+       * Keep the player score inside narrow phone viewports. Player ranking
+       * rows use a dedicated four-column grid so the flexible name column
+       * shrinks before the score can leave the card. Other rank-row uses keep
+       * their existing layout.
+       */
+      #playerBoard .rank-row {
+        display: grid;
+        grid-template-columns: 34px 40px minmax(0, 1fr) max-content;
+        align-items: center;
+        column-gap: 10px;
+      }
+      #playerBoard .score-copy {
+        max-width: none;
+        min-width: 0;
+      }
+      #playerBoard .score-copy > span:first-child {
+        font-size: 1rem;
+      }
+      #playerBoard .score-secondary { display: none; }
+
       .fighter-image { width: 72px; height: 72px; border-radius: 18px; }
     }
   </style>
@@ -2010,7 +2032,8 @@
       if (!rows.length) { el.playerBoard.innerHTML = '<div class="rounded-2xl border border-dashed border-white/15 p-8 text-center text-slate-400">No qualified fighters for this board yet.</div>'; return; }
       el.playerBoard.innerHTML = rows.map(row => {
         const primaryValue = cfg.primary === 'win_rate' ? percent(row[cfg.primary]) : number(row[cfg.primary]);
-        return `<button class="rank-row w-full text-left" data-player-id="${escapeHtml(row.user_id)}">
+        const playerId = String(row.user_id || '');
+        return `<button class="rank-row w-full text-left" data-player-id="${escapeHtml(playerId)}">
           <span class="rank-badge ${rankClass(row.rank)}">${rankLabel(row.rank)}</span>
           <img class="pfp" src="${escapeHtml(safeUrl(row.avatar_url, DEFAULT_AVATAR))}" alt="${escapeHtml(displayName(row))}" onerror="this.src='${DEFAULT_AVATAR}'" />
           <span class="player-copy"><span class="player-name block font-black text-white">${escapeHtml(displayName(row))}</span><span class="block text-xs text-slate-400 mt-1">${escapeHtml(mouseName(row.most_used_mouse))} • ${number(row.total_fights)} fights</span></span>
@@ -2189,6 +2212,7 @@
           <div class="arena-card rounded-3xl p-5 mt-5"><div class="flex items-center gap-4"><img src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}" class="fighter-image" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div><div class="text-xs uppercase tracking-[.18em] text-pink-200 font-black">Most-used Genesis mouse</div><div class="text-xl font-black mt-1">${escapeHtml(mouseName(mouse))}</div><div class="text-sm text-slate-400">${number(mouse.fights_used)} fights • ${number(mouse.wins)} wins • ${number(mouse.rounds_won)} round wins</div></div></div></div>
           <div class="grid md:grid-cols-2 gap-4 mt-5"><div class="rounded-3xl border border-white/10 bg-black/25 p-5"><div class="font-black text-cyan-200">PVP Record</div><div class="text-sm text-slate-300 mt-2">${number(stats.pvp_wins)} wins from ${number(stats.pvp_fights)} fights</div></div><div class="rounded-3xl border border-white/10 bg-black/25 p-5"><div class="font-black text-pink-200">Event Record</div><div class="text-sm text-slate-300 mt-2">${number(stats.event_championships)} championships from ${number(stats.event_fights)} events</div></div></div>`;
       } catch (error) {
+        el.modalHeader.innerHTML = '<div class="text-xs uppercase tracking-[.2em] text-red-200 font-black">Player profile</div><h2 class="text-2xl font-black mt-2">MouseFight statistics unavailable</h2>';
         el.modalBody.innerHTML = `<div class="rounded-2xl border border-red-300/20 bg-red-500/10 p-5 text-red-100">${escapeHtml(error.message || 'Unable to load player statistics.')}</div>`;
       }
     }
