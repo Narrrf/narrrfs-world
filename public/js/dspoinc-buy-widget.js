@@ -576,7 +576,15 @@
   }
 
   async function startDspoincBuy(widget) {
-    updateLocalEstimate(widget, { commitInput: true });
+    const input = widget.querySelector('[data-dspoinc-buy-amount]');
+
+    // Keep the already-approved quote alive.
+    // updateLocalEstimate() intentionally clears quoteToken / estimatedSolAmount
+    // when the user edits the amount. Start must not call it again after Quote,
+    // or Step 2 falsely says "Please request a fresh SOL quote before buying."
+    if (input) {
+      input.value = formatDspoincInputValue(widget.dataset.dspoincAmount || input.value);
+    }
 
     const dspoincAmount = normalizeInteger(widget.dataset.dspoincAmount, DEFAULT_DSPOINC_AMOUNT);
     const discordId = resolveDiscordId();
