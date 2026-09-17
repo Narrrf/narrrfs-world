@@ -1026,3 +1026,560 @@ Then state:
 
 I accept these rules.
 Accepted. Synchronized. Standby: Active.
+
+---
+
+# 28. CODEX MODEL ROUTING & TOKEN DISCIPLINE V1
+
+<!-- NARRRFS_CODEX_MODEL_ROUTING_TOKEN_DISCIPLINE_V1 -->
+
+Purpose:
+
+Use the least expensive Codex model and reasoning level that can safely perform
+the verified task while preserving Narrrfs World source verification,
+specialist ownership, protected-system safety, and final review quality.
+
+Model choice never changes:
+
+- role number;
+- agent identity;
+- department;
+- parent;
+- specialist ownership;
+- source authority;
+- approval boundaries;
+- protected-system rules;
+- database/economy authority;
+- deployment authority.
+
+A stronger model does not gain additional organizational authority.
+
+A cheaper model does not lose the responsibility to follow these Global Rules.
+
+## 28.1 Routing principle
+
+Use:
+
+Complexity chooses the worker.
+Risk chooses the reviewer.
+
+Do not automatically use the strongest model because a task is long.
+
+Do not automatically use the cheapest model because a task begins with grep,
+file inspection, or documentation.
+
+Classify the real work first.
+
+## 28.2 Standard model defaults
+
+Unless Markus explicitly selects another approved configuration:
+
+### General Ops / continuity controller
+
+#17 Narrrfs World General Ops Agent 13.0
+
+Default:
+
+GPT-5.6 Terra / Medium
+
+Use for:
+
+- continuity coordination;
+- migration serialization;
+- registry/status maintenance;
+- source-first coordination;
+- specialist handovers;
+- normal multi-agent synthesis.
+
+Do not default routine continuity work to Sol merely because the agent is a
+department/controller role.
+
+### 3D Development head
+
+#19 Narrrfs World 3D Riddle Development Leader 13.0
+
+Default:
+
+GPT-5.6 Terra / Medium
+
+Escalate only when the task meets the Sol criteria below.
+
+### API & Database technical lead
+
+#16 API & Database Expert 13.0
+
+Default:
+
+GPT-5.6 Terra / Medium
+
+Routine API source inspection, DB-path discovery, schema reading, endpoint
+mapping, read-only reconciliation, and documentation do not automatically
+require Sol.
+
+Sensitive transaction design, authorization architecture, concurrency,
+idempotency, financial integrity, or protected writes may require escalation.
+
+### Daily Operations
+
+#1 Narrrfs World Operations 3.0 LIVE
+
+Default:
+
+GPT-5.6 Luna / Medium
+
+Use for:
+
+- social/community operations;
+- announcements;
+- routine summaries;
+- planning;
+- ordinary coordination;
+- non-technical drafting.
+
+Escalate to Terra when technical project reasoning or substantial source
+analysis is required.
+
+### Normal technical specialists
+
+Default:
+
+GPT-5.6 Terra / Medium
+
+This includes normal read-only discovery, current-source reconciliation,
+focused implementation, endpoint tracing, validation, migration review, and
+specialist handover work.
+
+### Narrow repetitive work
+
+Prefer:
+
+GPT-5.6 Luna / Medium
+
+when the task is limited to actions such as:
+
+- locating files;
+- locating exact lines;
+- narrow grep output;
+- Git status inspection;
+- hash collection;
+- small extraction tasks;
+- concise summaries;
+- simple comparison;
+- syntax-result collection;
+- migration/status lookup.
+
+Do not delegate a protected-system judgment to Luna merely because its first
+step is simple file inspection.
+
+## 28.3 Sol escalation
+
+GPT-5.6 Sol / Medium is an escalation model, not the routine Narrrfs World
+default.
+
+Escalate from Terra to Sol / Medium when current evidence shows one or more of:
+
+- genuine cross-system ambiguity;
+- conflicting verified source evidence;
+- unresolved architecture requiring stronger reasoning;
+- disagreement between specialist findings;
+- authentication/security trust-boundary decisions;
+- protected-system review;
+- difficult transaction design;
+- difficult retry/idempotency reasoning;
+- difficult concurrency reasoning;
+- a complex bug remaining unresolved after appropriate Terra inspection;
+- owner-requested stronger review.
+
+The escalation reason must be connected to the actual unresolved task.
+
+Do not escalate merely because:
+
+- the prompt is long;
+- many files exist;
+- the agent is a department head;
+- the task is important;
+- another agent previously used Sol.
+
+## 28.4 Sol High
+
+GPT-5.6 Sol / High is reserved for high-complexity or high-risk reasoning such
+as:
+
+- protected financial mutation design;
+- DSPOINC/SPOINC settlement integrity;
+- MouseFight escrow/settlement concurrency;
+- Fight Recovery changes;
+- authentication/session mutation architecture;
+- complex transaction/idempotency failure analysis;
+- permanent Genesis/Lab/Genetic Item state changes;
+- another protected-system problem where Medium reasoning remains unresolved.
+
+Sol / High does not itself authorize implementation.
+
+All normal approval and protected-system rules still apply.
+
+## 28.5 Astra
+
+Astra is exceptional escalation only.
+
+Do not use Astra as a standing default for any Narrrfs World role.
+
+Use Astra only when:
+
+- Markus explicitly approves the escalation; or
+- the approved workflow specifically requires exceptional reasoning after
+  lower-cost approved models remain insufficient.
+
+Do not use Astra for:
+
+- routine grep;
+- ordinary source inspection;
+- status synchronization;
+- migration serialization;
+- simple handovers;
+- syntax checks;
+- documentation edits;
+- ordinary specialist reconciliation.
+
+## 28.6 Delegation discipline
+
+Before spawning another specialist or subagent:
+
+1. Check whether the required answer already exists in verified current
+   context.
+2. Check whether QUICK_STATUS, the registry, system map, hierarchy, migration
+   board, or an existing completed specialist report already contains the
+   required evidence.
+3. Reuse completed delegated results when their source baseline remains valid.
+4. Delegate only the unresolved portion.
+5. Prefer one specialist first.
+6. Add another specialist only when a real ownership or evidence boundary
+   requires it.
+7. Do not ask multiple agents to independently reread the same repository area
+   unless independent verification is specifically required.
+8. Do not rerun completed discovery merely because a quota reset or agent
+   switch occurred.
+9. If branch, HEAD, file hash, runtime, DB snapshot, or deployment state has
+   changed materially, reverify only the affected evidence.
+10. Preserve exact completed findings instead of reconstructing them from
+    memory.
+
+## 28.7 Context and token discipline
+
+Use narrow evidence.
+
+Prefer:
+
+- targeted grep;
+- bounded sed;
+- exact functions;
+- exact routes;
+- exact schema slices;
+- focused Git diff;
+- newest relevant QUICK_STATUS entries;
+- exact migration/role records;
+- existing verified specialist reports.
+
+Avoid:
+
+- blind full-file dumps;
+- repeatedly loading the entire QUICK_STATUS;
+- rereading unchanged large documents without a task-specific reason;
+- repeating the full migration history in every prompt;
+- reproducing large handovers when a verified reference already exists;
+- broad multi-agent repository scans when only one boundary is unresolved.
+
+Token savings must never replace source verification.
+
+If the verified source baseline has changed, revalidate the affected evidence.
+
+## 28.8 Multi-agent work
+
+For coordinated work:
+
+1. General Ops defines the exact unresolved question.
+2. Assign only specialists whose ownership boundaries are materially involved.
+3. Each specialist receives the smallest sufficient scope.
+4. Completed reports are reused.
+5. General Ops synthesizes results rather than asking every agent to repeat
+   every other agent's work.
+6. Interrupted work resumes from the last verified checkpoint.
+7. Usage-limit resets do not justify restarting completed investigations.
+
+Parallel work is appropriate when independent specialist authority is actually
+needed.
+
+Parallel work is not a default token strategy.
+
+## 28.9 Protected systems
+
+Model routing never weakens the Protected Systems rules.
+
+For:
+
+- Fight Recovery;
+- DSPOINC/SPOINC;
+- PVP escrow/settlement;
+- event burns/refunds;
+- champion rewards;
+- token payout/airdrop;
+- Genesis ownership;
+- permanent Traits/Abilities;
+- Lab progression;
+- Genetic Items;
+- staking;
+- authentication;
+- DB migrations;
+- deployment configuration;
+
+the specialist, evidence, backup, approval, and validation requirements remain
+unchanged.
+
+A low-cost worker may perform narrow read-only inspection.
+
+Protected decisions must still receive the level of specialist and reasoning
+review required by risk.
+
+## 28.10 Model switching and runtime capability
+
+Do not assume the current Codex runtime can automatically change the active
+main agent's model mid-turn.
+
+Where supported, routing may be implemented through:
+
+- the model selected for the current Codex chat;
+- explicitly configured specialist/subagent models;
+- approved task-specific profiles;
+- owner/operator model changes.
+
+If automatic model routing is not supported by the active Codex runtime:
+
+do not pretend that a model switch occurred.
+
+Report the recommended escalation and let Markus or the verified orchestration
+mechanism perform it.
+
+## 28.11 Fast mode
+
+Fast mode is not the default for Narrrfs World migration, engineering,
+continuity, or specialist work.
+
+Use it only when explicitly justified by the task or requested by Markus.
+
+Speed must not be purchased at the cost of unnecessary allowance consumption
+or weaker audit discipline.
+
+## 28.12 Escalation reporting
+
+When changing from the normal model tier to a stronger tier, state briefly:
+
+- current task;
+- unresolved reason;
+- current evidence;
+- requested model/reasoning tier;
+- whether protected systems are involved.
+
+Do not produce a large escalation report when one concise reason is sufficient.
+
+## 28.13 Standby behavior
+
+SIGNED IN / STANDBY means no work is running.
+
+Standby agents do not:
+
+- perform background repository scans;
+- reread continuity files;
+- spawn agents;
+- monitor systems;
+- consume Codex allowance;
+
+unless a new task is explicitly started.
+
+## 28.14 Owner authority
+
+Markus remains final owner approval authority.
+
+Markus may override the normal model tier for a specific task.
+
+A temporary model override:
+
+does not change the organizational role,
+does not change specialist ownership,
+does not create a new role,
+and does not permanently alter the default routing policy unless explicitly
+recorded as a rules change.
+
+## 28.15 Minimum-Sufficient-Evidence Rule
+
+<!-- NARRRFS_CODEX_TOKEN_EFFICIENCY_EXTENSIONS_V1 -->
+
+Use the minimum verified evidence required to safely complete the approved task.
+
+Once all required preconditions for the current task are verified:
+
+STOP DISCOVERY.
+
+Do not continue reading files, histories, agents, or related systems merely
+because additional context is available.
+
+More evidence is required only when:
+
+- the existing evidence conflicts;
+- a required source is missing;
+- the source baseline changed;
+- a protected-system boundary is unresolved;
+- the requested action cannot be safely determined from current evidence.
+
+Verification must be sufficient, not exhaustive.
+
+## 28.16 Checkpoint-First Resume Rule
+
+When resuming interrupted work:
+
+1. identify the last verified checkpoint;
+2. inspect only whether the target state changed since that checkpoint;
+3. reuse all still-valid completed findings;
+4. continue only the unfinished portion.
+
+Do not restart:
+
+- source discovery;
+- repository inspection;
+- specialist delegation;
+- migration review;
+- continuity reconstruction;
+
+merely because:
+
+- Codex quota reset;
+- the model changed;
+- the agent reopened;
+- a new turn started.
+
+A resumed task begins from the last verified checkpoint, not from zero.
+
+## 28.17 Change-Scope Verification Rule
+
+Verification scope must match change scope.
+
+Examples:
+
+One QUICK_STATUS record
+→ verify QUICK_STATUS target, backup, insertion, history preservation, diff.
+
+One documentation rule
+→ verify that document, anchor, backup, hash, focused diff.
+
+One function patch
+→ verify function, callers, syntax, focused behavior, focused diff.
+
+Do not perform repository-wide reconciliation for a narrow documentation or
+continuity change unless evidence shows the wider system is affected.
+
+## 28.18 Delegation Budget Rule
+
+Default:
+
+ONE primary agent.
+
+Additional agents require a specific unresolved ownership boundary.
+
+Before spawning each additional agent, determine:
+
+- what exact unanswered question requires that agent;
+- why current evidence cannot answer it;
+- what unique specialist authority that agent contributes.
+
+Do not spawn multiple agents merely for general confidence.
+
+Independent duplicate review requires explicit justification.
+
+## 28.19 Continuity Write Efficiency
+
+Routine continuity synchronization must be compact.
+
+For a completed and already-verified technical task:
+
+do not repeat the complete investigation inside QUICK_STATUS.
+
+Record only:
+
+- identity / task;
+- scope;
+- authoritative result;
+- files/functions;
+- validation level;
+- protected-system status;
+- unresolved issues;
+- exact next step;
+- source/report reference where available.
+
+QUICK_STATUS is a continuity index, not a duplicate technical report.
+
+## 28.20 Output Budget Rule
+
+Agent output should be proportional to the requested task.
+
+For routine operations:
+
+prefer concise result reporting.
+
+Do not reproduce:
+
+- full rules already present in AGENTS.md;
+- complete handovers already stored elsewhere;
+- full specialist reports when a summary plus exact reference is sufficient;
+- repeated environment descriptions already verified in the same task.
+
+Detailed reports remain appropriate for:
+
+- new architecture discovery;
+- protected-system investigations;
+- migration handovers;
+- owner-requested audits;
+- unresolved conflicts.
+
+## 28.21 Hash-Based Freshness Rule
+
+When a previously verified file has an exact hash or Git HEAD checkpoint:
+
+use that checkpoint to avoid unnecessary rereading.
+
+If:
+
+- repository HEAD is unchanged; and
+- target file hash is unchanged; and
+- relevant runtime/DB state is not part of the task;
+
+then previously verified source findings may be reused.
+
+Reinspect only the affected source when the relevant hash or baseline changes.
+
+Do not treat passage of time alone as evidence that unchanged local source
+must be reread.
+
+General Ops default behavior for established checkpoints:
+
+VERIFY DELTA
+not
+RECONSTRUCT HISTORY.
+
+## 28.22 Token-Aware Stop Rule
+
+If remaining Codex allowance is low:
+
+do not begin a multi-agent investigation, migration, architecture review, or
+protected-system analysis that is unlikely to complete safely in the available
+cycle.
+
+Allowed near quota exhaustion:
+
+- narrow read-only checks;
+- checkpoint creation;
+- concise continuity capture;
+- finishing an already-near-complete guarded task.
+
+Prefer a clean checkpoint over an interrupted investigation.
+
+Never sacrifice validation or protected-system safety merely to finish before
+quota exhaustion.
