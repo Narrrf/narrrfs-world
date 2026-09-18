@@ -250,9 +250,27 @@ try {
 
     $now = date('Y-m-d H:i:s');
 
-    // Determine what to add based on whether complete-stake.php already ran
-    if ($already_processed) {
-        // complete-stake.php already added original + reward, so only add reward now
+    /**
+     * Season 13 V2 claim-credit safety.
+     *
+     * Plain language for DEVS FOR DECADES:
+     * V2 principal is already released when the stake stops being active because
+     * available DSPOINC is calculated as total ledger minus active frozen stakes.
+     * Therefore a V2 claim must credit only the final reward. Adding principal
+     * again would create a second spendable copy of the original stake amount.
+     *
+     * Legacy staking keeps its historical payout behavior unchanged.
+     */
+    if (staking_is_v2_stake($stake)) {
+        $amount_to_add = $reward_amount;
+        $source_type = 'claim_reward_only';
+        $reason_text = sprintf(
+            'Stake reward claimed (Season 13 V2 reward only): %d DSPOINC reward (stake_id: %d)',
+            $reward_amount,
+            $stake_id
+        );
+    } elseif ($already_processed) {
+        // Legacy complete-stake.php already added original + reward, so only add reward now.
         $amount_to_add = $reward_amount;
         $source_type = 'claim_reward_only';
         $reason_text = sprintf(
@@ -261,7 +279,7 @@ try {
             $stake_id
         );
     } else {
-        // complete-stake.php didn't run, so add both original + reward
+        // Legacy stake was not previously processed, so preserve principal + reward behavior.
         $amount_to_add = $total_returned;
         $source_type = 'claim_reward';
         $reason_text = sprintf(
