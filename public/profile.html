@@ -7238,7 +7238,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   // DSPOINC Journey pagination state.
 // DEVS FOR DECADES:
 // This is read-only UI state for profile.html.
-// Backend remains authoritative through api/user/recent-adjustments.php.
+// The read-only profile score-history API merges real adjustments with V2
+// principal-unlock lifecycle events without creating ledger entries.
 const recentAdjustmentsState = {
   page: 1,
   pageSize: 20,
@@ -7331,6 +7332,23 @@ function getRecentAdjustmentRowClass(adjustment, amount) {
   return '';
 }
 
+/**
+ * Render a completed V2 stake as a lifecycle explanation, never as a new
+ * DSPOINC credit. The principal became spendable when the active-frozen
+ * subtraction ended; this display does not change balances or staking state.
+ */
+function renderStakePrincipalUnlockEvent(event) {
+  const timestamp = formatRecentAdjustmentTimestamp(event?.timestamp);
+  const stakeId = Number(event?.stake_id || 0);
+  const principalAmount = Math.max(0, Number(event?.principal_amount || 0));
+
+  return `<li class="rounded-xl border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-cyan-100">
+    <span class="font-mono">${timestamp}</span>
+    : <b class="text-cyan-200">🔓 ${principalAmount.toLocaleString()} DSPOINC principal unlocked</b>
+    <span class="italic text-cyan-100/90">(Stake #${stakeId} completed; principal became available again.)</span>
+  </li>`;
+}
+
 function renderRecentAdjustments(response) {
   const recentList = document.getElementById('recentAdjustments');
   const emptyMsg = document.getElementById('no-score-history');
@@ -7367,6 +7385,10 @@ function renderRecentAdjustments(response) {
     .slice()
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .map((adjustment) => {
+      if (adjustment?.event_type === 'stake_principal_unlocked') {
+        return renderStakePrincipalUnlockEvent(adjustment);
+      }
+
 const amount = getSignedRecentAdjustmentAmount(adjustment);
 const reason = formatRecentAdjustmentReason(adjustment);
 const timestamp = formatRecentAdjustmentTimestamp(adjustment.timestamp);
@@ -7428,7 +7450,7 @@ async function loadRecentAdjustmentsPage(userId, page = 1) {
   console.log('📊 Loading Recent Score Changes page:', safePage, 'for user:', userId);
 
   try {
-    const response = await fetch(`${apiBaseUrl}/api/user/recent-adjustments.php`, {
+    const response = await fetch(`${apiBaseUrl}/api/user/get-profile-score-history.php`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -7459,7 +7481,7 @@ async function loadRecentAdjustmentsPage(userId, page = 1) {
 
     try {
       const fallbackUrl =
-        `${apiBaseUrl}/api/user/recent-adjustments.php?user_id=${encodeURIComponent(userId)}&limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`;
+        `${apiBaseUrl}/api/user/get-profile-score-history.php?user_id=${encodeURIComponent(userId)}&limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`;
 
       const fallbackResponse = await fetch(fallbackUrl, {
         method: 'GET',
