@@ -104,10 +104,24 @@ try {
          ORDER BY timestamp DESC'
     );
     $adjustmentStmt->execute([$userId]);
+    $adjustments = $adjustmentStmt->fetchAll();
+    $claimAuditsByStake = [];
+    foreach ($adjustments as $adjustment) {
+        $reason = (string)($adjustment['reason'] ?? '');
+        if ((string)($adjustment['admin_id'] ?? '') !== 'system-staking'
+            || (string)($adjustment['action'] ?? '') !== 'add'
+            || strpos($reason, 'Stake reward claimed') !== 0
+            || !preg_match('/\\(stake_id:\\s*(\\d+)\\s*\\)$/', $reason, $match)) {
+            continue;
+        }
+
+        $claimAuditsByStake[(int)$match[1]][] = $adjustment;
+    }
+
     $events = array_map(static function (array $adjustment): array {
         $adjustment['event_type'] = 'score_adjustment';
         return $adjustment;
-    }, $adjustmentStmt->fetchAll());
+    }, $adjustments);
 
     // SELECT-only: completed V2 stakes explain principal availability without
     // writing a credit, audit row, status transition, or any staking mutation.
@@ -123,11 +137,20 @@ try {
     $unlockStmt->execute([$userId]);
 
     foreach ($unlockStmt->fetchAll() as $stake) {
+        $stakeId = (int)$stake['id'];
+        $matchingClaims = $claimAuditsByStake[$stakeId] ?? [];
+        $hasExactClaim = count($matchingClaims) === 1;
+        $completedAt = (string)$stake['completed_at'];
+        $claimTimestamp = $hasExactClaim ? (string)$matchingClaims[0]['timestamp'] : null;
+
         $events[] = [
             'event_type' => 'stake_principal_unlocked',
-            'stake_id' => (int)$stake['id'],
+            'stake_id' => $stakeId,
             'principal_amount' => (int)$stake['amount'],
-            'timestamp' => $stake['completed_at'],
+            'completed_at' => $completedAt,
+            'claim_timestamp' => $claimTimestamp,
+            'timestamp' => $hasExactClaim ? $claimTimestamp : $completedAt,
+            'event_priority' => 0,
         ];
     }
 
@@ -137,7 +160,12 @@ try {
             return $timestampComparison;
         }
 
-        return strcmp((string)($left['event_type'] ?? ''), (string)($right['event_type'] ?? ''));
+        $priorityComparison = ((int)($left['event_priority'] ?? 1)) <=> ((int)($right['event_priority'] ?? 1));
+        if ($priorityComparison !== 0) {
+            return $priorityComparison;
+        }
+
+        return ((int)($left['id'] ?? $left['stake_id'] ?? 0)) <=> ((int)($right['id'] ?? $right['stake_id'] ?? 0));
     });
 
     $totalEvents = count($events);
