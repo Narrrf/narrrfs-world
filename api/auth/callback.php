@@ -1,10 +1,18 @@
 <?php
+require_once __DIR__ . '/../config/oauth.php';
 require_once __DIR__ . '/../config/session.php';
 narrrfs_touch_session();
 
-$clientId = '1357927342265204858'; // Use exact client ID from working URL
-$clientSecret = getenv('DISCORD_SECRET');
-$redirectUri = 'https://narrrfs.world/api/auth/callback.php';
+try {
+    $oauth = narrrfs_oauth_configuration();
+} catch (RuntimeException $error) {
+    http_response_code(403);
+    exit('Local OAuth is not available.');
+}
+
+$clientId = $oauth['client_id'];
+$clientSecret = $oauth['client_secret'];
+$redirectUri = $oauth['redirect_uri'];
 
 // DEBUG: ensure secret is actually loaded
 if (!$clientSecret) {
@@ -18,6 +26,17 @@ if (!isset($_GET['code'])) {
     die('❌ No authorization code returned from Discord. Please try logging in again.');
 }
 $code = $_GET['code'];
+
+if ($oauth['is_local']) {
+    $receivedState = (string)($_GET['state'] ?? '');
+    $expectedState = (string)($_SESSION['narrrfs_local_oauth_state'] ?? '');
+    unset($_SESSION['narrrfs_local_oauth_state']);
+
+    if ($expectedState === '' || $receivedState === '' || !hash_equals($expectedState, $receivedState)) {
+        http_response_code(400);
+        exit('Invalid local OAuth state.');
+    }
+}
 
 // ✅ Step 2: Exchange code for token using exact format from working URL
 $tokenRequest = curl_init();
@@ -46,18 +65,17 @@ if ($curlError) {
 }
 
 error_log('🔎 Discord token HTTP status: ' . $httpCode);
-error_log('🔎 Discord token raw response: ' . $response);
 
 $token = json_decode($response, true);
 
 // Handle rate limiting from Discord / Cloudflare
 if ($httpCode === 429) {
-    error_log('❌ Discord OAuth rate limited (HTTP 429, Cloudflare 1015). Response: ' . $response);
+    error_log('❌ Discord OAuth rate limited (HTTP 429, Cloudflare 1015).');
     die('❌ Discord ist aktuell ausgelastet oder begrenzt unsere Anfragen (Rate Limit). Bitte versuche es in Kürze erneut. Wenn das Problem länger anhält, melde dich bitte bei Narrrf im Discord.');
 }
 
 if (!isset($token['access_token'])) {
-    error_log('❌ Failed to get access token: ' . $response);
+    error_log('❌ Failed to get access token.');
 
     if (isset($token['error'])) {
         switch ($token['error']) {
@@ -100,6 +118,11 @@ if (!isset($user['id'])) {
     die("❌ Fehler beim Abrufen der Benutzerinformationen. Bitte versuchen Sie es erneut.");
 }
 
+if ($oauth['is_local'] && !session_regenerate_id(true)) {
+    http_response_code(500);
+    exit('Unable to secure local OAuth session.');
+}
+
 // 🧀 Save key user fields to session with extended lifetime
 $_SESSION['user'] = [
     'username'      => $user['username'],
@@ -108,6 +131,20 @@ $_SESSION['user'] = [
     'email'         => $user['email'] ?? null,
 ];
 $_SESSION['discord_id']        = $user['id'];
+
+if ($oauth['is_local']) {
+    // The local bootstrap test needs only the server-derived subject. It must
+    // not persist user, role, ownership, or token data outside this session.
+    unset($_SESSION['access_token'], $_SESSION['token_expires_at'], $_SESSION['refresh_token'], $_SESSION['guilds']);
+    $target = $oauth['base_url'] . narrrfs_oauth_redirect_target(
+        $oauth,
+        isset($_SESSION['oauth_final_redirect']) ? (string)$_SESSION['oauth_final_redirect'] : null
+    );
+    unset($_SESSION['oauth_final_redirect']);
+    header('Location: ' . $target, true, 302);
+    exit;
+}
+
 $_SESSION['access_token']      = $accessToken;
 $_SESSION['token_expires_at']  = time() + 3600; // Discord tokens expire in 1 hour
 $_SESSION['refresh_token']     = $token['refresh_token'] ?? null; // Store refresh token if available

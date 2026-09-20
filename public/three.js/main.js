@@ -284,7 +284,7 @@ import { PlayerControls } from "./player-controls.js";
 import { VRInputProvider } from "./vr-input-provider.js";
 import { VRUIRaycaster } from "./vr-ui-raycaster.js"; // ✅ VR UI interaction system (January 20, 2026)
 import { PlayerModel } from "./player-model.js";
-import { GUISystem } from "./gui-system.js?v=2026-02-03-combined-boss-hud";
+import { GUISystem } from "./gui-system.js?v=2026-09-17-genesis-character-ui-v3";
 import { WeaponSystem } from "./weapon-system.js";
 import { PhoenixBoss2 } from "./phoenix2.js"; // New clean implementation
 import { AlienSpiderBoss, AlienSpiderMinion } from "./alien-spider.js"; // Alien Spider boss + minions
@@ -1505,6 +1505,328 @@ let resolvedDiscordId =
   null;
 
 console.log("✅ [DEBUG] Initial resolvedDiscordId:", resolvedDiscordId);
+
+// ============================================================================
+// GENESIS PLAYER BOOTSTRAP V1 — TEMPORARY GAME-SESSION BOUNDARY
+// ============================================================================
+// This state is populated only from session-bound, read-only Genesis endpoints.
+// Legacy profile/localStorage identity remains presentation-only and can never
+// authorize, select, or overwrite the gameplay bootstrap snapshot.
+const GENESIS_BOOTSTRAP_ENDPOINTS = Object.freeze({
+  selection: `${API_BASE_URL}/api/user/get-owned-genesis-selection.php`,
+  snapshot: `${API_BASE_URL}/api/user/get-genesis-player-bootstrap.php`
+});
+
+const GenesisBootstrapStatus = Object.freeze({
+  IDLE: "idle",
+  SELECTION_LOADING: "selection_loading",
+  SELECTION_REQUIRED: "selection_required",
+  SELECTION_SUBMITTING: "selection_submitting",
+  READY: "ready",
+  AUTH_REQUIRED: "auth_required",
+  NO_VERIFIED_GENESIS: "no_verified_genesis",
+  RETRYABLE_UNAVAILABLE: "retryable_unavailable",
+  SELECTION_REJECTED: "selection_rejected",
+  INVALIDATED: "invalidated",
+  FATAL_CONTRACT_ERROR: "fatal_contract_error"
+});
+
+let genesisBootstrapState = Object.freeze({ status: GenesisBootstrapStatus.IDLE, reason: null, selection: null, snapshot: null });
+let genesisBootstrapGeneration = 0;
+let genesisBootstrapAbortController = null;
+
+function freezeGenesisBootstrapValue(value) {
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map(freezeGenesisBootstrapValue));
+  }
+  if (value && typeof value === "object") {
+    const clone = {};
+    for (const [key, child] of Object.entries(value)) {
+      clone[key] = freezeGenesisBootstrapValue(child);
+    }
+    return Object.freeze(clone);
+  }
+  return value;
+}
+
+function setGenesisBootstrapState(nextState) {
+  genesisBootstrapState = freezeGenesisBootstrapValue(nextState);
+  window.genesisPlayerBootstrapState = genesisBootstrapState;
+}
+
+function cancelGenesisBootstrapRequest() {
+  if (genesisBootstrapAbortController) {
+    genesisBootstrapAbortController.abort();
+    genesisBootstrapAbortController = null;
+  }
+}
+
+function invalidateGenesisPlayerBootstrap(reason = "session_changed") {
+  genesisBootstrapGeneration += 1;
+  cancelGenesisBootstrapRequest();
+  setGenesisBootstrapState({
+    status: GenesisBootstrapStatus.INVALIDATED,
+    reason,
+    selection: null,
+    snapshot: null
+  });
+  console.info("🔐 [GENESIS BOOTSTRAP] Temporary snapshot invalidated:", reason);
+}
+
+function isCurrentGenesisBootstrapRequest(generation) {
+  return generation === genesisBootstrapGeneration;
+}
+
+async function fetchGenesisBootstrapJson(url, signal) {
+  const response = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+    headers: { Accept: "application/json" },
+    signal
+  });
+  let body;
+  try {
+    body = await response.json();
+  } catch (error) {
+    throw new Error("Bootstrap endpoint returned invalid JSON");
+  }
+  return { response, body };
+}
+
+function isGenesisDescriptor(value) {
+  return Boolean(
+    value &&
+    typeof value.token_id === "string" &&
+    value.token_id.trim() !== "" &&
+    value.collection === "genesis"
+  );
+}
+
+/**
+ * Preserve only the display fields approved by the read-only selector contract.
+ * Image URLs stay inert data until the GUI assigns them to an image element.
+ */
+function normalizeGenesisSelectionDescriptor(value) {
+  if (!isGenesisDescriptor(value)) return null;
+
+  const tokenId = value.token_id.trim();
+  const displayName = typeof value.display_name === "string" && value.display_name.trim() !== ""
+    ? value.display_name.trim()
+    : `Genesis Mouse #${tokenId}`;
+  const imageUrl = typeof value.image_url === "string" && value.image_url.trim() !== ""
+    ? value.image_url.trim()
+    : null;
+
+  return { token_id: tokenId, collection: "genesis", display_name: displayName, image_url: imageUrl };
+}
+
+function normalizeGenesisBootstrapSnapshot(body, expectedGenesis) {
+  if (!body || body.state !== "bootstrap_ready" || body.contract_version !== "genesis_player_bootstrap_v1") {
+    throw new Error("Bootstrap response did not satisfy the V1 contract");
+  }
+  if (!isGenesisDescriptor(body.selected_genesis) ||
+      body.selected_genesis.token_id !== expectedGenesis.token_id ||
+      !Array.isArray(body.traits) ||
+      !Array.isArray(body.abilities) ||
+      !body.genetic_inventory ||
+      !Array.isArray(body.genetic_inventory.items) ||
+      body.readiness?.gameplay !== "ready") {
+    throw new Error("Bootstrap response is missing a required V1 readiness field");
+  }
+
+  const snapshot = {
+    contractVersion: body.contract_version,
+    snapshotRevision: typeof body.snapshot_revision === "string" ? body.snapshot_revision : null,
+    selectedGenesis: { tokenId: body.selected_genesis.token_id, collection: "genesis" },
+    traits: body.traits.map((trait) => ({
+      traitType: String(trait?.trait_type ?? ""),
+      traitValue: String(trait?.trait_value ?? ""),
+      currentLevel: Number(trait?.current_level ?? 1)
+    })),
+    abilities: body.abilities.map((ability) => ({
+      category: String(ability?.category ?? ""),
+      abilityKey: String(ability?.ability_key ?? ""),
+      currentLevel: Number(ability?.current_level ?? 1)
+    })),
+    geneticInventory: {
+      state: body.genetic_inventory.state === "inventory_verified_empty" ? "inventory_verified_empty" : "inventory_ready",
+      items: body.genetic_inventory.items.map((item) => ({
+        traitType: String(item?.trait_type ?? ""),
+        traitValue: String(item?.trait_value ?? ""),
+        currentLevel: Number(item?.current_level ?? 1)
+      }))
+    }
+  };
+
+  return freezeGenesisBootstrapValue(snapshot);
+}
+
+function showGenesisBootstrapUi(options) {
+  if (guiSystem && typeof guiSystem.showGenesisSelectionMenu === "function") {
+    guiSystem.showGenesisSelectionMenu(options);
+  }
+}
+
+function showGenesisBootstrapFailure(status, message, retryable) {
+  setGenesisBootstrapState({ status, reason: message, selection: null, snapshot: null });
+  showGenesisBootstrapUi({
+    state: status,
+    message,
+    onRetry: retryable ? () => beginGenesisPlayerBootstrap() : null,
+    onBack: () => {
+      invalidateGenesisPlayerBootstrap("selection_cancelled");
+      guiSystem?.showMainMenu?.();
+    }
+  });
+}
+
+async function beginGenesisPlayerBootstrap() {
+  invalidateGenesisPlayerBootstrap("new_game_requested");
+  const generation = ++genesisBootstrapGeneration;
+  const controller = new AbortController();
+  genesisBootstrapAbortController = controller;
+  setGenesisBootstrapState({ status: GenesisBootstrapStatus.SELECTION_LOADING, reason: null, selection: null, snapshot: null });
+  showGenesisBootstrapUi({ state: GenesisBootstrapStatus.SELECTION_LOADING, message: "Verifying your Genesis ownership…" });
+
+  try {
+    const { response, body } = await fetchGenesisBootstrapJson(GENESIS_BOOTSTRAP_ENDPOINTS.selection, controller.signal);
+    if (!isCurrentGenesisBootstrapRequest(generation)) return;
+
+    if (response.status === 401 || body?.state === "unauthenticated") {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.AUTH_REQUIRED, "Sign in to select a verified Genesis mouse.", false);
+      return;
+    }
+    if (response.status === 503 || body?.state === "ownership_verification_unavailable") {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.RETRYABLE_UNAVAILABLE, "Genesis ownership verification is temporarily unavailable. Please retry.", true);
+      return;
+    }
+    if (!response.ok || !body || body.contract_version !== "owned_genesis_selection_v1") {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.FATAL_CONTRACT_ERROR, "Genesis selection is unavailable because its response contract is invalid.", false);
+      return;
+    }
+    if (body.state === "no_verified_genesis") {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.NO_VERIFIED_GENESIS, "No verified Genesis mouse is available for this session.", false);
+      return;
+    }
+    if (body.state !== "verified_genesis_available" || !Array.isArray(body.genesis)) {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.FATAL_CONTRACT_ERROR, "Genesis selection returned an unsupported state.", false);
+      return;
+    }
+
+    const selection = body.genesis.map(normalizeGenesisSelectionDescriptor);
+    if (selection.some((genesis) => genesis === null)) {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.FATAL_CONTRACT_ERROR, "Genesis selection returned an invalid descriptor.", false);
+      return;
+    }
+    if (selection.length === 0) {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.FATAL_CONTRACT_ERROR, "Genesis selection returned an invalid descriptor.", false);
+      return;
+    }
+
+    setGenesisBootstrapState({ status: GenesisBootstrapStatus.SELECTION_REQUIRED, reason: null, selection, snapshot: null });
+    showGenesisBootstrapUi({
+      state: GenesisBootstrapStatus.SELECTION_REQUIRED,
+      message: "Choose the verified Genesis mouse for this temporary game session.",
+      genesis: selection,
+      onSelect: (genesis) => selectGenesisPlayerBootstrap(genesis),
+      onBack: () => {
+        invalidateGenesisPlayerBootstrap("selection_cancelled");
+        guiSystem?.showMainMenu?.();
+      }
+    });
+  } catch (error) {
+    if (error?.name === "AbortError" || !isCurrentGenesisBootstrapRequest(generation)) return;
+    showGenesisBootstrapFailure(GenesisBootstrapStatus.RETRYABLE_UNAVAILABLE, "Genesis ownership verification could not be reached. Please retry.", true);
+  } finally {
+    if (isCurrentGenesisBootstrapRequest(generation)) genesisBootstrapAbortController = null;
+  }
+}
+
+async function selectGenesisPlayerBootstrap(genesis) {
+  if (!isGenesisDescriptor(genesis)) {
+    showGenesisBootstrapFailure(GenesisBootstrapStatus.FATAL_CONTRACT_ERROR, "The selected Genesis descriptor is invalid.", false);
+    return;
+  }
+
+  cancelGenesisBootstrapRequest();
+  const generation = ++genesisBootstrapGeneration;
+  const controller = new AbortController();
+  genesisBootstrapAbortController = controller;
+  setGenesisBootstrapState({ status: GenesisBootstrapStatus.SELECTION_SUBMITTING, reason: null, selection: null, snapshot: null });
+  showGenesisBootstrapUi({ state: GenesisBootstrapStatus.SELECTION_SUBMITTING, message: "Preparing your temporary Genesis game profile…" });
+
+  try {
+    const url = `${GENESIS_BOOTSTRAP_ENDPOINTS.snapshot}?token_id=${encodeURIComponent(genesis.token_id)}&collection=genesis`;
+    const { response, body } = await fetchGenesisBootstrapJson(url, controller.signal);
+    if (!isCurrentGenesisBootstrapRequest(generation)) return;
+
+    if (response.status === 401 || body?.state === "unauthenticated") {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.AUTH_REQUIRED, "Your sign-in session changed. Please sign in again.", false);
+      return;
+    }
+    if (response.status === 503 || ["ownership_verification_unavailable", "trait_data_unavailable", "ability_data_unavailable", "inventory_data_unavailable"].includes(body?.state)) {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.RETRYABLE_UNAVAILABLE, "Your Genesis profile is temporarily unavailable. Please retry.", true);
+      return;
+    }
+    if (body?.state === "selected_genesis_not_owned" || body?.state === "genesis_not_selected") {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.SELECTION_REJECTED, "That Genesis mouse is no longer verified for this session.", true);
+      return;
+    }
+    if (!response.ok) {
+      showGenesisBootstrapFailure(GenesisBootstrapStatus.FATAL_CONTRACT_ERROR, "Genesis profile startup returned an unsupported response.", false);
+      return;
+    }
+
+    const snapshot = normalizeGenesisBootstrapSnapshot(body, genesis);
+    if (!isCurrentGenesisBootstrapRequest(generation)) return;
+    setGenesisBootstrapState({ status: GenesisBootstrapStatus.READY, reason: null, selection: null, snapshot });
+    showGenesisBootstrapUi({
+      state: GenesisBootstrapStatus.READY,
+      message: "Your Genesis player profile is ready. Review it before playing.",
+      preview: { descriptor: genesis, snapshot },
+      onPlay: () => {
+        if (!canStartGameWithGenesisBootstrap()) {
+          requireGenesisBootstrapForGameStart();
+          return;
+        }
+        guiSystem?.hideGenesisSelectionMenu?.();
+        guiSystem?.showCharacterSelectionMenu?.();
+      },
+      onChooseAnother: () => beginGenesisPlayerBootstrap(),
+      onBack: () => {
+        invalidateGenesisPlayerBootstrap("selection_preview_cancelled");
+        guiSystem?.showMainMenu?.();
+      }
+    });
+    console.info("✅ [GENESIS BOOTSTRAP] Temporary V1 snapshot is ready for preview.");
+  } catch (error) {
+    if (error?.name === "AbortError" || !isCurrentGenesisBootstrapRequest(generation)) return;
+    showGenesisBootstrapFailure(GenesisBootstrapStatus.RETRYABLE_UNAVAILABLE, "Genesis profile startup could not be reached. Please retry.", true);
+  } finally {
+    if (isCurrentGenesisBootstrapRequest(generation)) genesisBootstrapAbortController = null;
+  }
+}
+
+function canStartGameWithGenesisBootstrap() {
+  return genesisBootstrapState.status === GenesisBootstrapStatus.READY && Boolean(genesisBootstrapState.snapshot);
+}
+
+function requireGenesisBootstrapForGameStart() {
+  if (canStartGameWithGenesisBootstrap()) return true;
+  console.warn("🔐 [GENESIS BOOTSTRAP] Game start blocked until a current session snapshot is ready.");
+  beginGenesisPlayerBootstrap();
+  return false;
+}
+
+window.invalidateGenesisPlayerBootstrap = invalidateGenesisPlayerBootstrap;
+["narrrfs:session-changed", "narrrfs:logout", "narrrfs:account-changed"].forEach((eventName) => {
+  window.addEventListener(eventName, () => invalidateGenesisPlayerBootstrap(eventName));
+});
+window.addEventListener("storage", (event) => {
+  if (["discord_id", "DISCORD_ID", "narrrfs_last_discord_id"].includes(event.key)) {
+    invalidateGenesisPlayerBootstrap("account_storage_changed");
+  }
+});
 
 // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
 // Store user roles from Discord API
@@ -6911,84 +7233,54 @@ function updateLevel4TripleShot(delta) {
   }
 }
 
-// FIX: Improved click handler for pointer lock (handles pause/resume and level loading)
+/**
+ * Request desktop pointer lock only from a trusted click on the active renderer canvas.
+ * Pending flags are cleared exclusively by pointerlockchange after the browser confirms
+ * that this renderer owns the lock.
+ */
+function requestDesktopPointerLock(reason, event) {
+  const canvas = renderer?.domElement;
+  const controls = playerControls?.getPointerLockControls?.();
+  const activeCameraMode = typeof getCameraMode === "function" ? getCameraMode() : cameraMode;
+  const eligible = Boolean(
+    event?.type === "click" &&
+    event.isTrusted &&
+    event.target === canvas &&
+    canvas?.isConnected &&
+    canvas.style.display !== "none" &&
+    !isMobile &&
+    activeCameraMode === 0 &&
+    !isGamePaused &&
+    !window.optionsMenuOpen &&
+    !isJoystickView() &&
+    controls
+  );
+
+  if (!eligible || document.pointerLockElement === canvas || controls.isLocked) return false;
+
+  try {
+    controls.lock();
+    console.info("🎮 [POINTER LOCK] Requested from active canvas", {
+      reason,
+      canvasConnected: canvas.isConnected,
+      canvasDisplay: canvas.style.display,
+      cameraMode: activeCameraMode,
+      pendingAfterLoad: Boolean(window.needsPointerLockAfterLoad),
+      pendingAfterPause: Boolean(window.needsPointerLockAfterPause)
+    });
+    return true;
+  } catch (error) {
+    console.error("❌ [POINTER LOCK] Request threw", { reason, error: String(error) });
+    return false;
+  }
+}
+
 document.addEventListener("click", (event) => {
-  // Don't lock pointer if options menu is open, game is paused, or clicking on UI elements
-  if (window.optionsMenuOpen || isGamePaused) {
-    return;
-  }
-  
-  // Don't lock if clicking on pause menu, options menu, main menu, or other UI elements
-  const target = event.target;
-  if (target.closest('.pause-menu') || target.closest('.options-menu') || target.closest('.main-menu') || target.closest('button')) {
-    return;
-  }
-  
-  // CRITICAL: Request pointer lock after level loads (January 4, 2026)
-  // This handles the case where pointer lock wasn't acquired during async loading
-  if (window.needsPointerLockAfterLoad && !isGamePaused && !window.optionsMenuOpen && !isJoystickView() && playerControls) {
-    const currentCameraMode = typeof getCameraMode === 'function' ? getCameraMode() : (typeof cameraMode !== 'undefined' ? cameraMode : 0);
-    if (currentCameraMode === 0) { // Only request for first-person view
-      try {
-        playerControls.getPointerLockControls().lock();
-        window.needsPointerLockAfterLoad = false; // Clear flag
-        console.log("✅ [GAME START] Pointer lock requested after level load (user click)");
-      } catch (e) {
-        console.log("⚠️ [GAME START] Pointer lock failed on click:", e);
-      }
-      return; // Don't continue to other pointer lock requests
-    }
-  }
-  
-  // FIX: Re-request pointer lock after pause (if needed)
-  if (window.needsPointerLockAfterPause && !isGamePaused && !window.optionsMenuOpen && !isJoystickView() && playerControls) {
-    try {
-      playerControls.getPointerLockControls().lock();
-      // Flag will be cleared in pointerlockchange event
-      console.log("🎮 [PAUSE] Pointer lock re-requested after resume");
-    } catch (e) {
-      console.log("🎮 [PAUSE] Pointer lock failed - user may need to click again:", e);
-    }
-    return; // Don't lock again below
-  }
-  
-  // Normal pointer lock (if not in joystick view)
-  if (!isJoystickView() && playerControls && !playerControls.getPointerLockControls().isLocked) {
-    playerControls.getPointerLockControls().lock(); // Lock pointer for both modes
-  }
+  requestDesktopPointerLock("active_canvas_click", event);
 });
 
 // Level 4 Shooting - Use mousedown event (separate from click for pointer lock)
 document.addEventListener("mousedown", (event) => {
-  // CRITICAL: Request pointer lock after level loads (January 4, 2026)
-  // This handles the case where pointer lock wasn't acquired during async loading
-  // Must check this FIRST, before pause check
-  if (window.needsPointerLockAfterLoad && !isGamePaused && !window.optionsMenuOpen && !isJoystickView() && playerControls) {
-    const currentCameraMode = typeof getCameraMode === 'function' ? getCameraMode() : (typeof cameraMode !== 'undefined' ? cameraMode : 0);
-    if (currentCameraMode === 0 && !playerControls.getPointerLockControls().isLocked) { // Only request for first-person view
-      try {
-        playerControls.getPointerLockControls().lock();
-        window.needsPointerLockAfterLoad = false; // Clear flag
-        console.log("✅ [GAME START] Pointer lock requested after level load (mousedown)");
-      } catch (e) {
-        console.log("⚠️ [GAME START] Pointer lock failed on mousedown:", e);
-      }
-      return; // Exit early - don't continue to other handlers
-    }
-  }
-  
-  // CRITICAL: Check if we need to restore pointer lock after pause
-  // This must happen AFTER level load check
-  if (window.needsPointerLockAfterPause && !isGamePaused && !window.optionsMenuOpen && !isJoystickView() && playerControls && !playerControls.getPointerLockControls().isLocked) {
-    try {
-      playerControls.getPointerLockControls().lock();
-      console.log("🎮 [PAUSE] Pointer lock restored via mousedown after resume");
-      // Flag will be cleared in pointerlockchange event
-    } catch (e) {
-      console.log("🎮 [PAUSE] Pointer lock failed on mousedown:", e);
-    }
-    // Continue to allow other handlers to run
-  }
   
   // Only handle shooting in Level 4 (Step 1 or Step 2 active), Level 5, or Level 6, first-person, and pointer locked
   const isLevel4WithActiveStep = currentLevel === LEVEL_IDS.LEVEL4 && (level4RiddleState.step1Active || level4RiddleState.step2Active);
@@ -7111,6 +7403,22 @@ document.addEventListener("pointerlockchange", () => {
   if (!locked && !isGamePaused && isFirstPerson()) {
     togglePause(true);
   }
+});
+
+document.addEventListener("pointerlockerror", () => {
+  const canvas = renderer?.domElement;
+  const controls = playerControls?.getPointerLockControls?.();
+  console.error("❌ [POINTER LOCK] Browser rejected request", {
+    canvasConnected: Boolean(canvas?.isConnected),
+    canvasDisplay: canvas?.style?.display ?? null,
+    pointerLockElementIsCanvas: document.pointerLockElement === canvas,
+    cameraMode: typeof getCameraMode === "function" ? getCameraMode() : cameraMode,
+    paused: Boolean(isGamePaused),
+    optionsOpen: Boolean(window.optionsMenuOpen),
+    controlsLocked: Boolean(controls?.isLocked),
+    pendingAfterLoad: Boolean(window.needsPointerLockAfterLoad),
+    pendingAfterPause: Boolean(window.needsPointerLockAfterPause)
+  });
 });
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.35));
@@ -10364,20 +10672,9 @@ const currentCameraMode = typeof getCameraMode === 'function'
 if (!isMobile && currentCameraMode === 0 && playerControls && playerControls.getPointerLockControls) {
   const pointerLockControls = playerControls.getPointerLockControls();
   if (pointerLockControls && !pointerLockControls.isLocked) {
-    // Set flag to request pointer lock on next user interaction (click/mousedown)
+    // The active renderer canvas click performs the request after loading completes.
     window.needsPointerLockAfterLoad = true;
     console.log("✅ [GAME START] Pointer lock flag set - will request on next user interaction");
-    
-    // Also try to request immediately (might work if triggered from user gesture)
-    setTimeout(() => {
-      try {
-        pointerLockControls.lock();
-        console.log("✅ [GAME START] Pointer lock requested immediately");
-      } catch (err) {
-        // Expected to fail - browser requires user gesture, so we use the flag instead
-        console.log("ℹ️ [GAME START] Pointer lock will be requested on next click (browser security requirement)");
-      }
-    }, 200);
   } else {
     console.log("✅ [GAME START] Pointer lock already active");
     window.needsPointerLockAfterLoad = false; // Clear flag if already locked
@@ -10439,6 +10736,10 @@ markGameStartedAndSyncMobileControls(`warpToLevelWithLoading(${levelName})`);
 let gameStartPendingLevel = null; // null = not pending, level ID = pending with specific level
 
 function startGame(startLevelId = null) {
+  if (!requireGenesisBootstrapForGameStart()) {
+    return;
+  }
+
   // Use provided level ID or default to Level 1
   const targetLevelId = startLevelId || LEVEL_IDS.LEVEL1;
   const targetLevelName = startLevelId 
@@ -10756,20 +11057,9 @@ resolve();
           if (currentCameraMode === 0 && playerControls && playerControls.getPointerLockControls) {
             const pointerLockControls = playerControls.getPointerLockControls();
             if (pointerLockControls && !pointerLockControls.isLocked) {
-              // Set flag to request pointer lock on next user interaction
+              // Keep the request pending for the next active-canvas user click.
               window.needsPointerLockAfterLoad = true;
               console.log("✅ [GAME START] Pointer lock flag set in startGame - will request on next user interaction");
-              
-              // Also try to request immediately (might work if triggered from user gesture)
-              setTimeout(() => {
-                try {
-                  pointerLockControls.lock();
-                  console.log("✅ [GAME START] Pointer lock requested immediately in startGame");
-                } catch (err) {
-                  // Expected to fail - browser requires user gesture, so we use the flag instead
-                  console.log("ℹ️ [GAME START] Pointer lock will be requested on next click (browser security requirement)");
-                }
-              }, 200);
             } else {
               window.needsPointerLockAfterLoad = false; // Clear flag if already locked
             }
@@ -12339,6 +12629,9 @@ onStartVRSession: async () => {
         // Note: level3State might not be initialized yet, so we don't access it here
         // Any necessary cleanup will be handled by the level loading functions
       },
+      onBeginGenesisBootstrap: () => {
+        beginGenesisPlayerBootstrap();
+      },
       onSelectCharacter: (characterKey) => {
         // Handle character selection
         if (characterKey === 'mouse') {
@@ -12385,19 +12678,6 @@ onStartVRSession: async () => {
           window.needsPointerLockAfterPause = true;
           console.log("🎮 [PAUSE] Game resumed - pointer lock will be re-enabled on next click");
           
-          // Try to lock immediately if user just clicked (e.g., clicked resume button)
-          // This might work in some cases, but the click handler will handle it if it fails
-          setTimeout(() => {
-            if (window.needsPointerLockAfterPause && !isGamePaused && playerControls && !playerControls.getPointerLockControls().isLocked) {
-              try {
-                // Request pointer lock (might work if triggered by user interaction)
-                renderer.domElement.requestPointerLock();
-              } catch (e) {
-                // Lock failed - will be re-requested on next click
-                console.log("🎮 [PAUSE] Pointer lock requires user gesture - will lock on next click");
-              }
-            }
-          }, 100); // Small delay to ensure pause menu is closed
         } else if (expectsPointerLock && playerControls && !playerControls.getPointerLockControls().isLocked) {
           // Even if the pointer wasn't locked before pausing, ensure we try to lock again
           // so first-person / third-person mouse look is consistent after resuming.
@@ -18204,9 +18484,9 @@ function setCameraMode(mode) {
         }
       });
     }
-    // Lock pointer for first-person mouse look (but not if options menu is open)
+    // Mark pointer lock pending; an active-canvas user click performs the request.
     if (document.pointerLockElement !== renderer.domElement && !isGamePaused && !optionsMenuOpen && playerControls) {
-      playerControls.getPointerLockControls().lock();
+      window.needsPointerLockAfterLoad = true;
     }
     // Hide camera joystick in first-person
     if (legacyCameraJoystick) {
@@ -18333,8 +18613,7 @@ function setCameraMode(mode) {
         console.warn("⚠️ [DEBUG] Third-person mode: GLTF character is null!");
       }
     }
-    // Lock pointer for third-person mouse look (but we override camera position)
-    // Don't lock if options menu is open
+    // Lock pointer for third-person mouse look (but we override camera position).
     if (document.pointerLockElement !== renderer.domElement && !isGamePaused && !optionsMenuOpen && playerControls) {
       playerControls.getPointerLockControls().lock();
     }
@@ -19232,15 +19511,6 @@ function hidePauseMenu() {
 
     console.log("🎮 [PAUSE] Game resumed - pointer lock will be re-enabled on next click");
 
-    setTimeout(() => {
-      if (window.needsPointerLockAfterPause && !isGamePaused && playerControls && !playerControls.getPointerLockControls().isLocked) {
-        try {
-          renderer.domElement.requestPointerLock();
-        } catch (e) {
-          console.log("🎮 [PAUSE] Pointer lock requires user gesture - will lock on next click");
-        }
-      }
-    }, 100);
   } else if (expectsPointerLock && playerControls && !playerControls.getPointerLockControls().isLocked) {
     window.needsPointerLockAfterPause = true;
   } else {
@@ -47878,14 +48148,8 @@ if (typeof weaponSystem !== 'undefined' && weaponSystem) {
                   if (playerControls && playerControls.getPointerLockControls) {
                     const pointerLockControls = playerControls.getPointerLockControls();
                     if (pointerLockControls && !pointerLockControls.isLocked) {
-                      setTimeout(() => {
-                        try {
-                          pointerLockControls.lock();
-                          console.log("✅ [LEVEL 1] Pointer lock requested");
-                        } catch (err) {
-                          console.warn("⚠️ [LEVEL 1] Pointer lock failed:", err);
-                        }
-                      }, 200);
+                      window.needsPointerLockAfterLoad = true;
+                      console.log("✅ [LEVEL 1] Pointer lock pending active canvas click");
                     }
                   }
                   
@@ -48222,16 +48486,6 @@ function restoreGameStateAfterWarp() {
     window.needsPointerLockAfterPause = true;
     console.log("🎮 [RESTORE] Pointer lock will be restored on next click");
     
-    // Try to lock immediately if possible (works if triggered by user interaction)
-    setTimeout(() => {
-      if (window.needsPointerLockAfterPause && !isGamePaused && playerControls && !playerControls.getPointerLockControls().isLocked) {
-        try {
-          renderer.domElement.requestPointerLock();
-        } catch (e) {
-          console.log("🎮 [RESTORE] Pointer lock requires user gesture - will lock on next click");
-        }
-      }
-    }, 100);
   }
   
   // Clear pointer lock state flag

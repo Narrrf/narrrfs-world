@@ -209,6 +209,7 @@ export class GUISystem {
       onWarpToLevel6: config.onWarpToLevel6 || (() => {}),
       onShowLevelSelector: config.onShowLevelSelector || (() => {}),
       onSelectCharacter: config.onSelectCharacter || ((path) => {}),
+      onBeginGenesisBootstrap: typeof config.onBeginGenesisBootstrap === "function" ? config.onBeginGenesisBootstrap : null,
       onStartGame: config.onStartGame || (() => {}),
       onPlayLevelUpSound: config.onPlayLevelUpSound || (() => {}),
       isGameStartPending: typeof config.isGameStartPending === "function" ? config.isGameStartPending : (() => false),
@@ -2974,8 +2975,13 @@ Object.assign(panel.style, {
     
     // New Game button
     const newGameBtn = this._createCompletionButton("New Game", () => {
+      if (this.config.onBeginGenesisBootstrap) {
+        this.hideMainMenu();
+        this.config.onBeginGenesisBootstrap();
+        return;
+      }
       this.hideMainMenu();
-      // Small delay to ensure main menu is fully hidden
+      // Legacy fallback when the Bootstrap boundary is not wired.
       setTimeout(() => {
         this.showCharacterSelectionMenu();
       }, 50);
@@ -3640,6 +3646,160 @@ const controlsBtn = this._createCompletionButton("Controls", () => {
   // CHARACTER SELECTION MENU
   // ========================================
   
+  /**
+   * Present only verified Genesis descriptors supplied by the Bootstrap V1
+   * controller. This UI never stores a selection or reads player identity.
+   */
+  showGenesisSelectionMenu({ state, message, genesis = [], preview = null, onSelect = null, onRetry = null, onPlay = null, onChooseAnother = null, onBack = null } = {}) {
+    this.hideGenesisSelectionMenu();
+
+    this.genesisSelectionMenu = document.createElement("div");
+    Object.assign(this.genesisSelectionMenu.style, {
+      position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: "20px",
+      boxSizing: "border-box", background: "rgba(5, 7, 16, 0.95)", zIndex: "1006",
+      color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", overflowY: "auto"
+    });
+
+    const panel = document.createElement("div");
+    Object.assign(panel.style, {
+      width: "min(100%, 920px)", maxHeight: "calc(100vh - 40px)", overflowY: "auto", padding: "28px", borderRadius: "14px", textAlign: "center",
+      background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
+      border: "1px solid rgba(255, 224, 102, 0.35)", boxShadow: "0 20px 60px rgba(0, 0, 0, 0.45)"
+    });
+    const title = document.createElement("h2");
+    title.textContent = state === "selection_required" ? "Select Genesis Mouse" : state === "ready" ? "Genesis Player Ready" : "Genesis Player Bootstrap";
+    title.style.color = "#ffe066";
+    panel.appendChild(title);
+
+    const description = document.createElement("p");
+    description.textContent = message || "Preparing Genesis player bootstrap…";
+    description.style.color = "#cbd5f5";
+    panel.appendChild(description);
+
+    if (state === "selection_required") {
+      const choices = document.createElement("div");
+      Object.assign(choices.style, {
+        display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginTop: "18px",
+        maxHeight: "min(58vh, 560px)", overflowY: "auto", padding: "4px"
+      });
+      genesis.forEach((descriptor) => {
+        const choice = document.createElement("button");
+        choice.type = "button";
+        choice.setAttribute("aria-label", `Select ${descriptor.display_name || `Genesis Mouse #${descriptor.token_id}`}`);
+        Object.assign(choice.style, {
+          display: "grid", gridTemplateColumns: "64px 1fr", alignItems: "center", gap: "12px", width: "100%", minHeight: "84px",
+          padding: "10px", border: "1px solid rgba(255, 224, 102, 0.35)", borderRadius: "10px", background: "rgba(15, 23, 42, 0.82)",
+          color: "#fef3c7", cursor: "pointer", textAlign: "left"
+        });
+        this._appendGenesisArt(choice, descriptor.image_url, descriptor.display_name || "Genesis Mouse");
+        const copy = document.createElement("span");
+        copy.style.minWidth = "0";
+        const name = document.createElement("strong");
+        name.textContent = descriptor.display_name || `Genesis Mouse #${descriptor.token_id}`;
+        name.style.display = "block";
+        const token = document.createElement("small");
+        token.textContent = descriptor.token_id;
+        Object.assign(token.style, { display: "block", color: "#cbd5f5", overflowWrap: "anywhere", marginTop: "4px" });
+        copy.append(name, token);
+        choice.appendChild(copy);
+        choice.addEventListener("click", () => { if (onSelect) onSelect(descriptor); });
+        choices.appendChild(choice);
+      });
+      panel.appendChild(choices);
+    }
+
+    if (state === "ready" && preview?.descriptor && preview?.snapshot) {
+      const details = document.createElement("div");
+      Object.assign(details.style, { display: "grid", gridTemplateColumns: "minmax(150px, 240px) minmax(0, 1fr)", gap: "22px", textAlign: "left", marginTop: "22px" });
+      const art = document.createElement("div");
+      this._appendGenesisArt(art, preview.descriptor.image_url, preview.descriptor.display_name || "Genesis Mouse", "180px");
+      details.appendChild(art);
+      const information = document.createElement("div");
+      const name = document.createElement("h3");
+      name.textContent = preview.descriptor.display_name || `Genesis Mouse #${preview.descriptor.token_id}`;
+      name.style.color = "#ffe066";
+      const token = document.createElement("p");
+      token.textContent = `Token: ${preview.descriptor.token_id}`;
+      token.style.overflowWrap = "anywhere";
+      information.append(name, token);
+      information.appendChild(this._createGenesisProjectionSection("Traits", preview.snapshot.traits, (trait) => `${trait.traitType}: ${trait.traitValue} · Lv ${trait.currentLevel}`));
+      information.appendChild(this._createGenesisProjectionSection("Abilities", preview.snapshot.abilities, (ability) => `${ability.category}: ${ability.abilityKey} · Lv ${ability.currentLevel}`));
+      details.appendChild(information);
+      panel.appendChild(details);
+    }
+
+    const actions = document.createElement("div");
+    Object.assign(actions.style, { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px", marginTop: "20px" });
+    if (onRetry) actions.appendChild(this._createCompletionButton("Retry", onRetry, false));
+    if (onChooseAnother) actions.appendChild(this._createCompletionButton("Choose another mouse", onChooseAnother, false));
+    if (onPlay) actions.appendChild(this._createCompletionButton("Play as this mouse", onPlay, true));
+    if (onBack) actions.appendChild(this._createCompletionButton("Back", onBack, false));
+    if (actions.childElementCount > 0) panel.appendChild(actions);
+
+    this.genesisSelectionMenu.appendChild(panel);
+    this.container.appendChild(this.genesisSelectionMenu);
+  }
+
+  /** Render remote art over neutral local mouse art without propagating load failures. */
+  _appendGenesisArt(container, imageUrl, altText, size = "64px") {
+    const placeholder = document.createElement("div");
+    Object.assign(placeholder.style, {
+      width: size, height: size, borderRadius: "10px", display: "grid", placeItems: "center", flex: "0 0 auto",
+      background: "linear-gradient(135deg, #facc15, #a16207)", color: "#1f2937", fontSize: "28px", fontWeight: "700"
+    });
+    placeholder.textContent = "🐭";
+    placeholder.setAttribute("role", "img");
+    placeholder.setAttribute("aria-label", altText);
+    if (typeof imageUrl !== "string" || imageUrl.trim() === "") {
+      container.appendChild(placeholder);
+      return;
+    }
+    try {
+      const parsed = new URL(imageUrl, window.location.origin);
+      if (!/^https?:$/.test(parsed.protocol)) throw new Error("Unsupported image protocol");
+      // Keep the local mouse visible when remote art fails. A CSS layer avoids
+      // dispatching an image-element error into the global game error overlay.
+      placeholder.style.backgroundImage = `url(${JSON.stringify(parsed.href)})`;
+      placeholder.style.backgroundSize = "cover";
+      placeholder.style.backgroundPosition = "center";
+      placeholder.style.backgroundRepeat = "no-repeat";
+    } catch (error) {
+      // The neutral local art is already the safe fallback.
+    }
+    container.appendChild(placeholder);
+  }
+
+  _createGenesisProjectionSection(titleText, values, formatter) {
+    const section = document.createElement("section");
+    section.style.marginTop = "14px";
+    const title = document.createElement("h4");
+    title.textContent = titleText;
+    title.style.color = "#fde68a";
+    section.appendChild(title);
+    const list = document.createElement("ul");
+    Object.assign(list.style, { margin: "6px 0 0", paddingLeft: "20px", color: "#e2e8f0" });
+    if (!Array.isArray(values) || values.length === 0) {
+      const empty = document.createElement("li");
+      empty.textContent = "Verified empty";
+      list.appendChild(empty);
+    } else {
+      values.forEach((value) => {
+        const item = document.createElement("li");
+        item.textContent = formatter(value);
+        list.appendChild(item);
+      });
+    }
+    section.appendChild(list);
+    return section;
+  }
+
+  hideGenesisSelectionMenu() {
+    if (!this.genesisSelectionMenu) return;
+    this.genesisSelectionMenu.remove();
+    this.genesisSelectionMenu = null;
+  }
+
   /**
    * Show character selection menu
    */
@@ -4539,4 +4699,3 @@ const controlsBtn = this._createCompletionButton("Controls", () => {
     this.isInitialized = false;
   }
 }
-
