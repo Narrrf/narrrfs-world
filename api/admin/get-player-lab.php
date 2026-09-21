@@ -34,6 +34,7 @@ foreach ($databaseIncludeCandidates as $databaseIncludePath) {
 }
 
 require_once __DIR__ . '/../user/genesis-ability-helpers.php';
+require_once __DIR__ . '/../user/genetic-upgrade-slot-helpers.php';
 
 
 $discordSecretCandidates = [
@@ -990,6 +991,7 @@ $resolvedRows = [];
 
     $nftSummaries = build_nft_summaries($verifiedGenesisNfts, $resolvedRows);
     $geneticItems = load_user_genetic_items($pdo, $userId);
+    $geneticUpgradeSlots = get_user_genetic_upgrade_slot_state($pdo, $userId);
     $abilityByToken = build_admin_ability_by_token($pdo, $userId, $verifiedGenesisNfts);
     $geneticInventoryCount = count($geneticItems);
     $totalLabPower = array_reduce($nftSummaries, function ($sum, $row) {
@@ -1008,6 +1010,7 @@ $resolvedRows = [];
         'nft_summaries' => $nftSummaries,
         'ability_by_token' => $abilityByToken,
         'genetic_items' => $geneticItems,
+        'genetic_upgrade_slots' => $geneticUpgradeSlots,
         'summary' => [
             'verified_nft_count' => count($verifiedGenesisNfts),
             'upgrade_row_count' => count($resolvedRows),

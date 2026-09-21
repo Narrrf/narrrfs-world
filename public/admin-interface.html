@@ -13055,24 +13055,73 @@ async function adminRemoveGeneticItem(encodedGeneticItemId, encodedUserId, encod
   }
 }
 
+async function adminUpdateGeneticUpgradeSlots(userId) {
+  const resolvedUserId = decodeURIComponent(userId || '');
+  const input = document.getElementById('geneticUpgradeSlotsInput');
+  const upgradeSlots = Number(input?.value || 0);
+
+  if (!resolvedUserId || !Number.isInteger(upgradeSlots) || upgradeSlots < 1 || upgradeSlots > 3) {
+    alert('Choose a Genetic upgrade slot limit from 1 to 3.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/admin/genetic-upgrade-slots.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ user_id: resolvedUserId, upgrade_slots: upgradeSlots })
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to update Genetic upgrade slots');
+    }
+
+    await refreshAdminPlayerProfileInventory();
+  } catch (error) {
+    console.error('❌ adminUpdateGeneticUpgradeSlots failed:', error);
+    alert(`❌ Failed to update Genetic upgrade slots: ${error.message}`);
+  }
+}
+
 function renderAdminPlayerGeneticSection(adminLabProfile) {
   const geneticItems = Array.isArray(adminLabProfile?.genetic_items)
     ? adminLabProfile.genetic_items
     : [];
-
-  if (!geneticItems.length) {
-    return `
-      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-4 text-sm text-gray-300">
-        No Genetic items found for this player.
-      </div>
-    `;
-  }
 
   const targetUserId =
     adminLabProfile?.user?.discord_id ||
     adminLabProfile?.discord_id ||
     adminLabProfile?.user_id ||
     '';
+  const upgradeSlots = adminLabProfile?.genetic_upgrade_slots || { limit: 1, active: 0, available: 1 };
+  const slotLimit = Math.min(3, Math.max(1, Number(upgradeSlots.limit || 1)));
+  const slotActive = Math.max(0, Number(upgradeSlots.active || 0));
+  const slotAvailable = Math.max(0, Number(upgradeSlots.available || 0));
+  const slotManagement = `
+    <div class="bg-gray-900/60 border border-pink-500/30 rounded-lg p-4 mb-4">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
+          <div class="text-lg font-semibold text-pink-300">Genetic Upgrade Slots</div>
+          <div class="text-sm text-gray-300 mt-1">${escapeAdminProfileHtml(String(slotActive))} active / claim-pending of ${escapeAdminProfileHtml(String(slotLimit))} entitlement · ${escapeAdminProfileHtml(String(slotAvailable))} available</div>
+        </div>
+        <div class="flex flex-wrap items-end gap-2">
+          <label class="text-xs text-gray-400 flex flex-col gap-1">Entitlement
+            <select id="geneticUpgradeSlotsInput" class="px-3 py-2 rounded text-gray-800">
+              ${[1, 2, 3].map(value => `<option value="${value}" ${value === slotLimit ? 'selected' : ''}>${value}</option>`).join('')}
+            </select>
+          </label>
+          <button type="button" onclick="adminUpdateGeneticUpgradeSlots('${encodeURIComponent(String(targetUserId))}')" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-all duration-200">Update Upgrade Slots</button>
+        </div>
+      </div>
+      <div class="text-xs text-gray-400 mt-3">Lowering this entitlement never cancels, completes, or otherwise changes existing Genetic Item upgrades.</div>
+    </div>
+  `;
+
+  if (!geneticItems.length) {
+    return `${slotManagement}<div class="bg-gray-800 bg-opacity-50 rounded-lg p-4 text-sm text-gray-300">No Genetic items found for this player.</div>`;
+  }
 
   const sortedItems = [...geneticItems].sort((a, b) => {
     const levelDiff = Number(b.current_level || 0) - Number(a.current_level || 0);
@@ -13086,6 +13135,7 @@ function renderAdminPlayerGeneticSection(adminLabProfile) {
   });
 
   return `
+    ${slotManagement}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       ${sortedItems.map(item => {
         const title = item.display_title || item.trait_value || 'Unknown Trait';

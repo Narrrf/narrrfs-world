@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/genetic-upgrade-slot-helpers.php';
 
 
 $localDiscordSecretPath = __DIR__ . '/../config/discord-secret.php';
@@ -395,6 +396,7 @@ try {
     }
 
     $summary = build_inventory_summary($items);
+    $upgradeSlots = get_user_genetic_upgrade_slot_state($pdo, $userId);
     $holderAccess = get_holder_access($pdo, $userId);
 
     json_response([
@@ -408,6 +410,7 @@ try {
                 'search' => $search
             ],
             'summary' => $summary,
+            'upgrade_slots' => $upgradeSlots,
             'items' => $items
         ]
     ]);

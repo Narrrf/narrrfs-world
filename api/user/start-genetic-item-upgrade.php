@@ -5,7 +5,7 @@
 // Stability-first rules:
 // - Genetic upgrades are USER-bound, never NFT-bound
 // - Upgrade belongs to exact genetic_item_id
-// - Only one active genetic upgrade per user
+// - User-level capacity is 1 by default and may be entitled up to 3 slots
 // - Listed items cannot be upgraded
 // - Upgrade timing follows the NFT curve shape at ~2x speed
 // - Level cap is 100 for now
@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/genetic-upgrade-slot-helpers.php';
 
 $localDiscordSecretPath = __DIR__ . '/../config/discord-secret.php';
 if (file_exists($localDiscordSecretPath)) {
@@ -178,31 +179,6 @@ function fetch_user_genetic_item(PDO $pdo, string $userId, int $geneticItemId): 
 
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     return $row ?: null;
-}
-
-/**
- * Return true if the user already has one active or claim-pending genetic upgrade.
- */
-function user_has_active_genetic_upgrade(PDO $pdo, string $userId, int $excludeGeneticItemId = 0): bool {
-    $sql = "
-        SELECT genetic_item_id
-        FROM tbl_user_genetic_items
-        WHERE user_id = ?
-          AND upgrade_status IN ('upgrading', 'ready_to_claim')
-    ";
-    $params = [$userId];
-
-    if ($excludeGeneticItemId > 0) {
-        $sql .= " AND genetic_item_id != ?";
-        $params[] = $excludeGeneticItemId;
-    }
-
-    $sql .= " LIMIT 1";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-
-    return (bool)$stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 /**
@@ -364,10 +340,12 @@ if (!$geneticAccess['can_upgrade']) {
         ], 409);
     }
 
-    if (user_has_active_genetic_upgrade($pdo, $userId, $geneticItemId)) {
+    $upgradeSlots = get_user_genetic_upgrade_slot_state($pdo, $userId, $geneticItemId);
+    if ($upgradeSlots['active'] >= $upgradeSlots['limit']) {
         json_response([
             'success' => false,
-            'error' => 'You already have another active genetic upgrade running'
+            'error' => 'All Genetic Item upgrade slots are currently occupied.',
+            'upgrade_slots' => $upgradeSlots
         ], 409);
     }
 
@@ -413,11 +391,13 @@ if (!$geneticAccess['can_upgrade']) {
         ], 409);
     }
 
-    if (user_has_active_genetic_upgrade($pdo, $userId, $geneticItemId)) {
+    $upgradeSlots = get_user_genetic_upgrade_slot_state($pdo, $userId, $geneticItemId);
+    if ($upgradeSlots['active'] >= $upgradeSlots['limit']) {
         $pdo->rollBack();
         json_response([
             'success' => false,
-            'error' => 'You already have another active genetic upgrade running'
+            'error' => 'All Genetic Item upgrade slots are currently occupied.',
+            'upgrade_slots' => $upgradeSlots
         ], 409);
     }
 
@@ -472,6 +452,8 @@ if (!$geneticAccess['can_upgrade']) {
 
     $pdo->commit();
 
+    $upgradeSlots = get_user_genetic_upgrade_slot_state($pdo, $userId);
+
     json_response([
         'success' => true,
         'message' => 'Genetic item upgrade started successfully',
@@ -489,6 +471,7 @@ if (!$geneticAccess['can_upgrade']) {
             'upgrade_started_at' => $updatedItem['upgrade_started_at'] ?? null,
             'upgrade_ends_at' => $updatedItem['upgrade_ends_at'] ?? null,
             'is_listed_for_sale' => (int)($updatedItem['is_listed_for_sale'] ?? 0) === 1,
+            'upgrade_slots' => $upgradeSlots,
             'genetic_access' => $geneticAccess,
             'holder_access' => $geneticAccess
         ]

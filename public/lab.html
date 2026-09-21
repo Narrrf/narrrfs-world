@@ -9214,6 +9214,7 @@ enhancedProfile: null,
       geneticHolderAccess: null,
       geneticInventory: [],
       geneticInventorySummary: null,
+      geneticUpgradeSlots: { limit: 1, active: 0, available: 1 },
       geneticMarketplaceListings: [],
 geneticMarketplaceSummary: null,
 geneticMarketplaceLoading: false,
@@ -17402,6 +17403,7 @@ async function loadUserGeneticItems() {
       listed_items: 0,
       max_level: 0
     };
+    state.geneticUpgradeSlots = { limit: 1, active: 0, available: 1 };
     return;
   }
 
@@ -17416,6 +17418,7 @@ async function loadUserGeneticItems() {
     if (!res.ok || !res.payload?.success) {
       state.geneticInventory = [];
       state.geneticInventorySummary = null;
+      state.geneticUpgradeSlots = { limit: 1, active: 0, available: 1 };
       logLab(`Genetic inventory fallback mode: ${(res.payload?.error || res.rawText || 'request failed')}`, 'warn');
       return;
     }
@@ -17423,6 +17426,7 @@ async function loadUserGeneticItems() {
     const payload = res.payload.data || {};
     state.geneticInventory = Array.isArray(payload.items) ? payload.items : [];
     state.geneticInventorySummary = payload.summary || null;
+    state.geneticUpgradeSlots = payload.upgrade_slots || { limit: 1, active: 0, available: 1 };
     if (!state.geneticHolderAccess && payload.holder_access) {
       state.geneticHolderAccess = payload.holder_access;
     }
@@ -17430,6 +17434,7 @@ async function loadUserGeneticItems() {
   } catch (error) {
     state.geneticInventory = [];
     state.geneticInventorySummary = null;
+    state.geneticUpgradeSlots = { limit: 1, active: 0, available: 1 };
     logLab(`Genetic inventory failed: ${error.message}`, 'warn');
   }
 }
@@ -17957,7 +17962,7 @@ function buildGeneticInventoryRuntimeSummary(items) {
   return summary;
 }
 
-function buildGeneticSummaryCards(summary) {
+function buildGeneticSummaryCards(summary, upgradeSlots = { limit: 1, active: 0, available: 1 }) {
   if (!summary) {
     return [];
   }
@@ -17967,6 +17972,8 @@ function buildGeneticSummaryCards(summary) {
     ['Accessories', formatNumber(summary.accessories_items || 0)],
     ['Upgrading', formatNumber(summary.upgrading_items || 0)],
     ['Ready To Claim', formatNumber(summary.ready_to_claim_items || 0)],
+    ['Genetic Upgrade Slots', `${formatNumber(upgradeSlots.active || 0)} / ${formatNumber(upgradeSlots.limit || 1)} active`],
+    ['Research Slots Available', formatNumber(upgradeSlots.available || 0)],
     ['Max Level', `Lv ${formatNumber(summary.max_level || 0)}`]
   ];
 }
@@ -18425,7 +18432,7 @@ function renderGeneticInventory() {
       ready_to_claim_items: 0,
       listed_items: 0,
       max_level: 0
-    });
+    }, state.geneticUpgradeSlots || { limit: 1, active: 0, available: 1 });
     el.geneticInventorySummary.innerHTML = cards.map(([label, value]) => `
       <div class="genetic-summary-card">
         <div class="value">${escapeHtml(value)}</div>
@@ -19837,7 +19844,7 @@ async function handleStartGeneticUpgrade(geneticItemId) {
     title: `Start ${item.display_title || item.trait_value}?`,
     icon: '🧬',
     message: `This starts a faster player-bound upgrade on the ${item.trait_type} Genetic Item. It uses the same curve philosophy as Genesis research, but at about double speed.`,
-    note: 'Only one active Genetic Item upgrade may run per user. The backend enforces this rule.',
+    note: 'Genetic Item upgrade capacity is set by your user-level entitlement. The backend enforces available slots.',
     highlightLabel: 'Next Level',
     highlightValue: `Lv ${formatNumber(item.current_level || 1)} → Lv ${formatNumber(getGeneticNextLevel(item))}`,
     confirmText: 'Start Upgrade',
@@ -19901,7 +19908,7 @@ async function handleStartGeneticUpgrade(geneticItemId) {
       title: 'Could Not Start Genetic Upgrade',
       icon: '⚠️',
       message: error.message || 'The backend rejected the upgrade start request.',
-      note: 'Common reasons are another active genetic upgrade, listed item protection, or stale inventory state.',
+      note: 'Common reasons are fully occupied Genetic Item upgrade slots, listed item protection, or stale inventory state.',
       confirmText: 'Close',
       confirmVariant: 'danger'
     });
