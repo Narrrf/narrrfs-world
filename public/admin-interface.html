@@ -13078,7 +13078,16 @@ async function adminUpdateGeneticUpgradeSlots(userId) {
       throw new Error(data.error || 'Failed to update Genetic upgrade slots');
     }
 
-    await refreshAdminPlayerProfileInventory();
+    const updatedSlotState = data?.data?.upgrade_slots;
+    const cachedProfile = window.currentAdminPlayerProfileData;
+
+    // The slot endpoint already returns the authoritative limit, occupied, and
+    // available values. Re-render the existing profile cache so a slot-only
+    // change does not reload unrelated player, economy, staking, or Lab data.
+    if (updatedSlotState && cachedProfile?.admin_lab_profile) {
+      cachedProfile.admin_lab_profile.genetic_upgrade_slots = updatedSlotState;
+      renderAdminPlayerProfile(cachedProfile);
+    }
   } catch (error) {
     console.error('❌ adminUpdateGeneticUpgradeSlots failed:', error);
     alert(`❌ Failed to update Genetic upgrade slots: ${error.message}`);
