@@ -5815,6 +5815,41 @@ const NAR_TARGET_PATHS = [
     let geneticAdminCatalogRaw = [];
     let geneticAdminCatalogFiltered = [];
     let geneticAdminInventorySnapshot = [];
+    // Dashboard requests are display work only. Keep one active summary load and
+    // never start new dashboard-only work after the operator leaves the tab.
+    let dashboardLoadPromise = null;
+    let dashboardAbortController = null;
+    let dashboardNotificationIntervalId = null;
+    let dashboardNotificationPromise = null;
+    let dashboardInitialSummaryLoaded = false;
+
+    function isDashboardVisible() {
+      const dashboardTab = document.getElementById('dashboardTab');
+      return window.currentTab === 'dashboard' && dashboardTab && dashboardTab.style.display !== 'none';
+    }
+
+    function stopDashboardDispatch() {
+      if (dashboardAbortController) {
+        dashboardAbortController.abort();
+        dashboardAbortController = null;
+      }
+    }
+
+    function refreshDashboardNotifications() {
+      if (!isDashboardVisible() || dashboardNotificationPromise) {
+        return dashboardNotificationPromise || Promise.resolve();
+      }
+
+      dashboardNotificationPromise = Promise.allSettled([
+        loadBugNotificationCount(),
+        loadQuestClaimNotificationCount(),
+        loadBossNotificationCount()
+      ]).finally(() => {
+        dashboardNotificationPromise = null;
+      });
+
+      return dashboardNotificationPromise;
+    }
 
     // Initialize the interface
     document.addEventListener('DOMContentLoaded', async function() {
@@ -5852,14 +5887,6 @@ const NAR_TARGET_PATHS = [
         }
 
         showAdminContent();
-        loadDashboardData();
-
-        console.log('🔔 FORCE LOADING NOTIFICATIONS FOR LOCAL DEVELOPMENT...');
-        setTimeout(() => {
-          loadBugNotificationCount();
-          loadQuestClaimNotificationCount();
-          loadBossNotificationCount();
-        }, 200);
 
         console.log('✅ Local development admin interface unlocked for Narrrf');
         return; // Skip normal authentication flow
@@ -5923,15 +5950,6 @@ const NAR_TARGET_PATHS = [
             
             // Show admin content immediately
             showAdminContent();
-            loadDashboardData();
-            
-            // FORCE LOAD NOTIFICATIONS FOR DISCORD AUTH
-            console.log('🔔 FORCE LOADING NOTIFICATIONS FOR DISCORD AUTH...');
-            setTimeout(() => {
-              loadBugNotificationCount();
-              loadQuestClaimNotificationCount();
-              loadBossNotificationCount();
-            }, 300);
             
             // Force navigation panel to be visible
             const navPanel = document.getElementById('navPanel');
@@ -5962,10 +5980,6 @@ const NAR_TARGET_PATHS = [
           // User is authenticated, show admin content
           console.log('✅ Discord auth successful, showing admin content');
           showAdminContent();
-          
-          // 🚀 CRITICAL FIX: Load dashboard data immediately after authentication
-          console.log('🚀 Loading dashboard data immediately after Discord auth...');
-          loadDashboardData();
           
           // Force navigation panel to be visible as a fallback
           setTimeout(() => {
@@ -6002,7 +6016,7 @@ const NAR_TARGET_PATHS = [
     // Dashboard refresh function
     function refreshDashboard() {
       console.log('🔄 Refreshing dashboard data...');
-      loadDashboardData();
+      loadDashboardData({ includeHeavy: true, force: true });
       addLog('✅ Dashboard data refreshed');
     }
 
@@ -6084,23 +6098,8 @@ function forceRevealAncestorChain(element) {
         console.error('❌ Navigation panel not found!');
       }
       
-      // Show dashboard tab by default and load overview game stats
+      // showTab owns the initial dashboard summary dispatch.
       showTab('dashboard');
-      
-      // FORCE LOAD NOTIFICATIONS IMMEDIATELY WHEN ADMIN CONTENT IS SHOWN
-      console.log('🔔 FORCE LOADING NOTIFICATIONS IN SHOWADMINCONTENT...');
-      setTimeout(() => {
-        loadBugNotificationCount();
-        loadQuestClaimNotificationCount();
-        loadBossNotificationCount();
-      }, 100);
-      
-      // Load overview game statistics for the dashboard and preload all game data
-      setTimeout(async () => {
-        await loadOverviewGameStats();
-        // Preload all game data to avoid manual reloading
-        await preloadAllGameData();
-      }, 500); // Small delay to ensure dashboard is loaded first
       
       console.log('🔓 Admin content should now be visible');
     }
@@ -7733,6 +7732,12 @@ function showTab(tabName) {
   console.log(`🚀 SUPER TAB SYSTEM: Switching to ${tabName}`);
   addLog(`📋 Switching to ${tabName} tab...`);
 
+  if (tabName !== 'dashboard') {
+    // Abort only browser-side summary work. This cannot prove that a server
+    // process stopped, but it prevents new stale dashboard dispatches here.
+    stopDashboardDispatch();
+  }
+
   // Update active tab button state
   document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
     btn.classList.remove('active');
@@ -7830,7 +7835,6 @@ function showTab(tabName) {
   try {
     if (tabName === 'dashboard') {
       loadDashboardData();
-      loadOverviewGameStats();
       addLog('📊 Dashboard data auto-loaded');
       return;
     }
@@ -9352,37 +9356,46 @@ async function loadDspoincOverview() {
       
       // Show dashboard tab
       showTab('dashboard');
-      
-      // Force reload of dashboard data
-      setTimeout(() => {
-        if (typeof loadDashboardData === 'function') {
-          loadDashboardData();
-        }
-        if (typeof loadOverviewGameStats === 'function') {
-          loadOverviewGameStats();
-        }
-        addLog('✅ All tabs force refreshed successfully');
-      }, 100);
+      addLog('✅ Dashboard summary refresh dispatched');
     }
 
-    // ULTIMATE COMBINED VERSION - Working Dashboard Functions
-    async function loadDashboardData() {
+    // The initial tab entry loads only the compact summary. Heavy dashboard
+    // panels run only through the explicit Refresh Data action while visible.
+    async function loadDashboardData({ includeHeavy = false, force = false } = {}) {
+      if (!isDashboardVisible()) {
+        return;
+      }
+
+      if (!force && !includeHeavy && dashboardInitialSummaryLoaded) {
+        return;
+      }
+
+      if (dashboardLoadPromise) {
+        return dashboardLoadPromise;
+      }
+
+      const controller = new AbortController();
+      dashboardAbortController = controller;
+      const requestInit = { signal: controller.signal };
+
+      dashboardLoadPromise = (async () => {
       console.log('📊 Loading dashboard data...');
       addLog('📊 Loading dashboard data...');
       
       // Update dashboard status to loading
       updateDashboardStatus('Loading dashboard data...');
       
-      // FORCE LOAD NOTIFICATIONS IMMEDIATELY
-      console.log('🔔 FORCE LOADING NOTIFICATIONS IN LOADDASHBOARDDATA...');
-      loadBugNotificationCount();
-      loadQuestClaimNotificationCount();
-      loadBossNotificationCount();
+      startNotificationRefresh();
+      refreshDashboardNotifications();
       
       try {
         // Load basic stats (always visible)
-        const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-stats.php');
+        const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-stats.php', requestInit);
         const stats = await statsResponse.json();
+
+        if (!isDashboardVisible()) {
+          return;
+        }
         
         if (stats.success) {
           // Update basic dashboard stats - API returns data directly
@@ -9397,8 +9410,6 @@ async function loadDspoincOverview() {
           // CRITICAL FIX: Update top menu stats
           updateTopMenuStats(dashboardStats);
           
-          // Load boss notifications count
-          loadBossNotificationCount();
         } else {
           console.error('❌ Stats API returned error:', stats.error);
           addLog(`❌ Stats API error: ${stats.error || 'Unknown error'}`);
@@ -9412,7 +9423,7 @@ async function loadDspoincOverview() {
 
         // Load cheese click statistics
         try {
-          const cheeseStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-cheese-stats.php');
+          const cheeseStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-cheese-stats.php', requestInit);
           const cheeseStats = await cheeseStatsResponse.json();
           
           if (cheeseStats.success) {
@@ -9428,7 +9439,7 @@ async function loadDspoincOverview() {
 
         // Load quest and role statistics
         try {
-          const questStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-quest-stats.php');
+          const questStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-quest-stats.php', requestInit);
           const questStats = await questStatsResponse.json();
           
           if (questStats.success) {
@@ -9442,55 +9453,23 @@ async function loadDspoincOverview() {
           addLog(`❌ Error loading quest stats: ${error.message}`);
         }
         
-        // Load pending quest claims for dashboard stats
-        try {
-          await loadPendingQuestClaims();
-        } catch (error) {
-          console.error('❌ Error loading pending quest claims:', error);
-          addLog(`❌ Error loading pending quest claims: ${error.message}`);
+        if (!isDashboardVisible()) {
+          return;
         }
 
-        // Load boss notification statistics
-        try {
-          const bossResponse = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php');
-          const bossData = await bossResponse.json();
-          
-          if (bossData.success) {
-            updateBossNotificationStats(bossData.notifications || bossData.data);
-          } else {
-            console.error('❌ Boss notifications API error:', bossData.error);
-            addLog(`❌ Boss notifications API error: ${bossData.error || 'Unknown error'}`);
-          }
-        } catch (error) {
-          console.error('❌ Error loading boss notifications:', error);
-          addLog(`❌ Error loading boss notifications: ${error.message}`);
+        if (includeHeavy) {
+          await loadVisibleDashboardDetails();
         }
 
-        // Load overview game stats
-        if (typeof loadOverviewGameStats === 'function') {
-          await loadOverviewGameStats();
-        }
-        
-        // Load canonical DSPOINC economy overview
-        try {
-          await loadDspoincOverview();
-        } catch (error) {
-          console.error('❌ Error loading DSPOINC overview in dashboard:', error);
-         addLog(`❌ Error loading DSPOINC overview in dashboard: ${error.message}`);
-        }
-
-        // Load enhanced dashboard statistics
-        try {
-          await loadEnhancedDashboardStats();
-        } catch (error) {
-          console.error('❌ Error loading enhanced dashboard stats:', error);
-          addLog(`❌ Error loading enhanced dashboard stats: ${error.message}`);
-        }
+        dashboardInitialSummaryLoaded = true;
         
         addLog('✅ Dashboard data loaded successfully');
         updateDashboardStatus('Dashboard data loaded');
         
       } catch (error) {
+        if (error.name === 'AbortError' || !isDashboardVisible()) {
+          return;
+        }
         console.error('❌ Error loading dashboard data:', error);
         addLog(`❌ Error loading dashboard data: ${error.message}`);
         updateDashboardStatus('Dashboard loading failed');
@@ -9505,6 +9484,33 @@ async function loadDspoincOverview() {
         updateSystemStats(errorStats);
         // CRITICAL FIX: Update top menu stats with error values
         updateTopMenuStats(errorStats);
+      }
+      })();
+
+      try {
+        return await dashboardLoadPromise;
+      } finally {
+        if (dashboardAbortController === controller) {
+          dashboardAbortController = null;
+        }
+        dashboardLoadPromise = null;
+      }
+    }
+
+    async function loadVisibleDashboardDetails() {
+      const visibleTasks = [
+        loadPendingQuestClaims,
+        loadOverviewGameStats,
+        loadDspoincOverview,
+        loadEnhancedDashboardStats,
+        preloadAllGameData
+      ];
+
+      for (const loadTask of visibleTasks) {
+        if (!isDashboardVisible()) {
+          return;
+        }
+        await loadTask();
       }
     }
     
@@ -9625,11 +9631,10 @@ async function loadDspoincOverview() {
         console.log('🔔 About to load notification counts...');
         console.log('🔔 API_BASE_URL:', API_BASE_URL);
         
-        // Load notification counts with a small delay to ensure DOM is ready
+        // Load notification counts with a small delay to ensure DOM is ready.
+        // The shared guard prevents this legacy path from adding a second batch.
         setTimeout(() => {
-          loadBugNotificationCount();
-          loadQuestClaimNotificationCount();
-          loadBossNotificationCount();
+          refreshDashboardNotifications();
         }, 1000);
         
         // Start auto-refresh for notification counts
@@ -9638,10 +9643,12 @@ async function loadDspoincOverview() {
 
     // Auto-refresh notification counts every 30 seconds
     function startNotificationRefresh() {
-      setInterval(() => {
-        loadBugNotificationCount();
-        loadQuestClaimNotificationCount();
-        loadBossNotificationCount();
+      if (dashboardNotificationIntervalId !== null) {
+        return;
+      }
+
+      dashboardNotificationIntervalId = setInterval(() => {
+        refreshDashboardNotifications();
       }, 30000); // 30 seconds
     }
 
@@ -9649,7 +9656,7 @@ async function loadDspoincOverview() {
     function loadBugNotificationCount() {
       console.log('🐛 Loading bug notification count...');
       
-      fetch(API_BASE_URL + '/api/admin/get-bug-data.php')
+      return fetch(API_BASE_URL + '/api/admin/get-bug-data.php')
         .then(response => {
           console.log('🐛 Bug API response status:', response.status);
           return response.json();
@@ -9686,7 +9693,7 @@ async function loadDspoincOverview() {
     function loadQuestClaimNotificationCount() {
       console.log('🏆 Loading quest claim notification count...');
       
-      fetch(API_BASE_URL + '/api/admin/get-quest-stats.php')
+      return fetch(API_BASE_URL + '/api/admin/get-quest-stats.php')
         .then(response => {
           console.log('🏆 Quest API response status:', response.status);
           return response.json();
@@ -9769,12 +9776,13 @@ async function loadDspoincOverview() {
     function loadBossNotificationCount() {
       console.log('👑 Loading boss notification count...');
       
-      fetch(API_BASE_URL + '/api/admin/boss-level-notification.php')
+      return fetch(API_BASE_URL + '/api/admin/boss-level-notification.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
             const notificationCount = data.notifications ? data.notifications.length : 0;
             const pendingCount = data.notifications ? data.notifications.filter(notif => notif.status === 'pending').length : 0;
+            updateBossNotificationStats(data.notifications || data.data);
             
             const bossElement = document.getElementById('bossNotifications');
             if (bossElement) {
@@ -9799,10 +9807,8 @@ async function loadDspoincOverview() {
       console.log('🔔 Testing notification buttons...');
       addLog('🔔 Testing notification buttons...');
       
-      // Force call all notification functions
-      loadBugNotificationCount();
-      loadQuestClaimNotificationCount();
-      loadBossNotificationCount();
+      // Reuse the dashboard single-flight guard for explicit notification tests.
+      refreshDashboardNotifications();
       
       addLog('✅ Notification functions called - check console for details');
     }
@@ -17739,6 +17745,12 @@ function showDatabaseUnlockForDiscordAdmin() {
 // 🔧 CRITICAL: Load game stats for authenticated users without database unlock
 async function loadAllGameStatsForAuthenticatedUser() {
     try {
+        // showTab owns normal dashboard entry. Authentication callbacks may
+        // arrive later, so they must not create another summary request.
+        if (dashboardInitialSummaryLoaded || dashboardLoadPromise) {
+            return;
+        }
+
         console.log('📊 Loading game statistics for authenticated user...');
         
         // Load dashboard stats using the REAL function
@@ -17883,7 +17895,6 @@ async function authenticateDiscord() {
             }
 
             showAdminContent();
-            loadDashboardData();
             addLog('✅ Local Narrrf admin session activated');
             return;
         }
@@ -33687,7 +33698,6 @@ Continue with Season 3 Reset?`)) {
         
         // Show admin content
         showAdminContent();
-        loadDashboardData();
         
         // Show navigation panel
         const navPanel = document.getElementById('navPanel');
