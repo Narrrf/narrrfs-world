@@ -911,11 +911,12 @@ document.addEventListener('visibilitychange', sync);
     boardEl.setAttribute('aria-label', `Card grid ${rows} by ${cols}`);
   }
 
-  function renderBoard() {
+  async function renderBoard() {
     boardEl.innerHTML = '';
     matchedPairs = 0;
 
     const frag = document.createDocumentFragment();
+    const cardImageReadiness = [];
 
     deck.forEach((card, index) => {
       const btn = document.createElement('button');
@@ -937,14 +938,33 @@ document.addEventListener('visibilitychange', sync);
       // Use eager loading so glyphs are visible immediately on flip
       img.loading = 'auto';
       img.decoding = 'async';
-      // CRITICAL (March, 7th , 2026): optimzed mobil glyph  loading 
-      img.src = card.glyphSrc;
-      // If a glyph file is missing or fails to load, show a clear fallback + log it
-      img.addEventListener('error', () => {
-        console.warn('Missing glyph file:', card.glyphSrc);
+      const showMissingGlyphFallback = () => {
+        if (front.classList.contains('missing')) return;
         front.textContent = 'MISSING';
         front.classList.add('missing');
+      };
+      // Register the fallback before assigning src so a cached failure cannot
+      // race past the handler.
+      img.addEventListener('error', () => {
+        console.warn('Missing glyph file:', card.glyphSrc);
+        showMissingGlyphFallback();
       }, { once: true });
+      // CRITICAL (March, 7th , 2026): optimzed mobil glyph loading
+      img.src = card.glyphSrc;
+      // The preload Image is not this DOM image. Wait for this element's
+      // decode before making the board interactive so mobile first paint
+      // cannot race a card reveal. A decode failure keeps the existing
+      // missing-image fallback and never blocks a new game.
+      if (typeof img.decode === 'function') {
+        cardImageReadiness.push(
+          img.decode().catch((error) => {
+            if (img.complete && img.naturalWidth === 0) {
+              showMissingGlyphFallback();
+            }
+            console.warn('Glyph image decode failed:', card.glyphSrc, error);
+          })
+        );
+      }
       img.draggable = false;
       // Optional: Auto-center glyph pixels so they look consistent at all card sizes.
       // Disabled by default because it uses data: URLs which may be blocked by CSP.
@@ -965,6 +985,7 @@ document.addEventListener('visibilitychange', sync);
       frag.appendChild(btn);
     });
 
+    await Promise.all(cardImageReadiness);
     boardEl.appendChild(frag);
   }
 
@@ -1337,7 +1358,7 @@ async function startGame() {
     console.log(`✅ [GLYPH] Deck validated successfully: ${deck.length} cards, ${Object.keys(glyphCounts).length} unique glyphs, all appear exactly 2 times`);
     
     setBoardGrid(activeDifficulty);
-    renderBoard();
+    await renderBoard();
 
     updateBestTimeUI(activeDifficulty);
     if (newBestBadgeEl) newBestBadgeEl.hidden = true;
@@ -1346,7 +1367,7 @@ showView('game');
 startTimer();
   }
 
-  function restartGame() {
+  async function restartGame() {
     winOverlay.hidden = true;
     resetTurnPicks();
 
@@ -1369,7 +1390,7 @@ startTimer();
     }
     
     setBoardGrid(activeDifficulty);
-    renderBoard();
+    await renderBoard();
 
     updateBestTimeUI(activeDifficulty);
     if (newBestBadgeEl) newBestBadgeEl.hidden = true;
