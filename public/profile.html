@@ -6427,7 +6427,7 @@ console.log('🔮 Glyph Memory: profile / leaderboard integration');
       const name = formatLeaderboardName(entry);
       const timeLabel =
         entry?.best_time_formatted ||
-        (entry?.best_time_ms != null ? `${Math.round(Number(entry.best_time_ms) / 1000)}s` : '?');
+        (entry?.best_time_ms != null ? formatGlyphTime(entry.best_time_ms) : '?');
 
       li.className = 'flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-black/25 px-2 py-2 text-xs hover:bg-white/10 transition';
       li.innerHTML = `
@@ -7119,10 +7119,7 @@ async function loadGamePortalStats() {
 
       if (glyphTimeEl) {
         if (glyphBestTimeMs !== null) {
-          const totalSec = Math.floor(glyphBestTimeMs / 1000);
-          const min = Math.floor(totalSec / 60);
-          const sec = totalSec % 60;
-          const formatted = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+          const formatted = formatGlyphTime(glyphBestTimeMs);
           glyphTimeEl.textContent = formatted;
           console.log('🔮 Glyph best time updated:', formatted);
         } else {
@@ -10644,7 +10641,19 @@ async function refreshProfileInventory() {
   }
 }
 
-// Function to format milliseconds into MM:SS
+// Glyph Memory scores are integer milliseconds, so all player-facing Glyph
+// surfaces retain the precision used for persistence and ranking.
+function formatGlyphTime(ms) {
+  if (ms == null || isNaN(ms)) return '--:--';
+  const totalMs = Math.max(0, Math.round(Number(ms)));
+  const totalSec = Math.floor(totalMs / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  const milliseconds = totalMs % 1000;
+  return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+}
+
+// Function to format non-Glyph duration displays into MM:SS.
 function formatMsToMinutesSeconds(ms) {
   if (ms == null || isNaN(ms)) return '--:--';
   const totalSec = Math.floor(ms / 1000);
@@ -10731,11 +10740,11 @@ function getGameStats(gameKey, game) {
         {
           const bestTime =
             stats.best_time_formatted ||
-            formatMsToMinutesSeconds(stats.best_time_ms);
+            formatGlyphTime(stats.best_time_ms);
           const avgTime =
             stats.avg_time_formatted ||
             (stats.avg_time_ms != null
-              ? formatMsToMinutesSeconds(stats.avg_time_ms)
+              ? formatGlyphTime(stats.avg_time_ms)
               : '--:--');
 
           statsHTML = `
@@ -11982,11 +11991,11 @@ const gamesPlayed = Object.values(stats.games || {}).filter(game => {
       if (glyph) {
         const bestTime =
           glyph.best_time_formatted ||
-          formatMsToMinutesSeconds(glyph.best_time_ms);
+          formatGlyphTime(glyph.best_time_ms);
         const avgTime =
           glyph.avg_time_formatted ||
           (glyph.avg_time_ms != null
-            ? formatMsToMinutesSeconds(glyph.avg_time_ms)
+            ? formatGlyphTime(glyph.avg_time_ms)
             : '--:--');
 
         cardsHTML += `

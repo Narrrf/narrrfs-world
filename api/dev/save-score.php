@@ -10,10 +10,12 @@ header('Content-Type: application/json');
 
 // Helper function for formatting time (for glyph memory)
 function formatTimeMs($ms) {
-    $totalSec = floor($ms / 1000);
+    $totalMs = max(0, (int) round((float) $ms));
+    $totalSec = intdiv($totalMs, 1000);
     $min = floor($totalSec / 60);
     $sec = $totalSec % 60;
-    return sprintf("%02d:%02d", $min, $sec);
+    $milliseconds = $totalMs % 1000;
+    return sprintf("%02d:%02d.%03d", $min, $sec, $milliseconds);
 }
 
 // Wrap everything in try-catch to ensure clean JSON output

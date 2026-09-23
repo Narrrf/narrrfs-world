@@ -32,18 +32,20 @@ function getSQLite3Connection() {
 }
 
 /**
- * Format time in ms to MM:SS for Glyph Memory display.
+ * Format a Glyph Memory duration as MM:SS.mmm without changing its numeric value.
  */
 function formatGlyphTimeMs($ms) {
     if ($ms === null || !is_numeric($ms)) {
         return '--:--';
     }
 
-    $totalSec = (int) floor($ms / 1000);
+    $totalMs = max(0, (int) round((float) $ms));
+    $totalSec = intdiv($totalMs, 1000);
     $min = (int) floor($totalSec / 60);
     $sec = (int) ($totalSec % 60);
+    $milliseconds = $totalMs % 1000;
 
-    return sprintf('%02d:%02d', $min, $sec);
+    return sprintf('%02d:%02d.%03d', $min, $sec, $milliseconds);
 }
 
 /**

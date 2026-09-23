@@ -561,10 +561,12 @@ function getGlyphMemoryLeaderboard($db, $seasonName) {
         $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($scores as &$entry) {
-            $totalSec = floor($entry['best_time_ms'] / 1000);
+            $totalMs = max(0, (int) round((float) $entry['best_time_ms']));
+            $totalSec = intdiv($totalMs, 1000);
             $min = floor($totalSec / 60);
             $sec = $totalSec % 60;
-            $entry['best_time_formatted'] = sprintf("%02d:%02d", $min, $sec);
+            $milliseconds = $totalMs % 1000;
+            $entry['best_time_formatted'] = sprintf("%02d:%02d.%03d", $min, $sec, $milliseconds);
             $entry = enrichLeaderboardEntry($db, $entry['discord_id'], $entry);
         }
         unset($entry);

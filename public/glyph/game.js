@@ -747,10 +747,12 @@ document.addEventListener('visibilitychange', sync);
   }
 
   function formatTime(ms) {
-    const totalSec = Math.floor(ms / 1000);
+    const totalMs = Math.max(0, Math.round(Number(ms)));
+    const totalSec = Math.floor(totalMs / 1000);
     const min = Math.floor(totalSec / 60);
     const sec = totalSec % 60;
-    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    const milliseconds = totalMs % 1000;
+    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
   }
 
   // ------- BEST TIME (per difficulty) -------
@@ -787,7 +789,7 @@ document.addEventListener('visibilitychange', sync);
   function startTimer() {
     stopTimer();
     timerStart = Date.now();
-    timerEl.textContent = '00:00';
+    timerEl.textContent = '00:00.000';
     timerInterval = window.setInterval(() => {
       const elapsed = Date.now() - timerStart;
       timerEl.textContent = formatTime(elapsed);
