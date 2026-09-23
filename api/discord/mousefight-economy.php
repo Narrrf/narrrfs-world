@@ -3153,7 +3153,7 @@ function mousefight_economy_pvp_create(
     $maximumInventoryItems = $inventoryEnabled === 1
         ? mousefight_economy_integer(
             $fightInput['max_inventory_items'] ?? 5,
-            1,
+            0,
             10
         )
         : 0;
