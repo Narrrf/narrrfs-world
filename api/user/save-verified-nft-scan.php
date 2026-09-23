@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../lib/genesis-image-url.php';
+
 /**
  * Save a full verified NFT scan into SQL for admin audit, holder verification,
  * Genesis trait search, and future ecosystem features.
@@ -684,6 +686,7 @@ $collection = strtolower($collectionRaw);
 
 $nftName = trim($nft['nft_name'] ?? $nft['name'] ?? 'Unnamed NFT');
 $imageUrl = trim($nft['image_url'] ?? $nft['image'] ?? '');
+$imageUrl = narrrfs_resolve_genesis_image_url($collection, $imageUrl);
 $metadata = $nft['metadata_json'] ?? $nft['metadata'] ?? $nft;
 $traits = $nft['traits'] ?? $nft['attributes'] ?? [];
 

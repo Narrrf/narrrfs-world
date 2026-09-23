@@ -836,6 +836,16 @@
       const url = String(value || '').trim();
       return /^(https?:\/\/|\/|\.\/|\.\.\/|[a-zA-Z0-9_-]+\/)/.test(url) ? url : fallback;
     }
+    function resolveMouseFightImageUrl(value) {
+      const url = String(value || '').trim();
+      const match = url.match(/^https:\/\/([A-Za-z0-9]+)\.ipfs\.w3s\.link(\/[^\s?#]+)(\?[^\s#]*)?(#\S*)?$/);
+      return match
+        ? `https://gensuki.4everland.link/ipfs/${match[1]}${match[2]}${match[3] || ''}${match[4] || ''}`
+        : url;
+    }
+    function safeMouseImageUrl(value) {
+      return safeUrl(resolveMouseFightImageUrl(value), DEFAULT_MOUSE_IMAGE);
+    }
     function rankClass(rank) { return rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : 'standard'; }
     function rankLabel(rank) { return rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`; }
     function displayName(row) { return String(row?.username || row?.historical_username || 'Unknown Mousefighter').trim(); }
@@ -863,7 +873,7 @@
     function featureCard(title, icon, entry, valueHtml, subtitle, isMouse = false) {
       if (!entry) return '';
       const name = isMouse ? mouseName(entry) : displayName(entry);
-      const image = isMouse ? safeUrl(entry.image_url, DEFAULT_MOUSE_IMAGE) : safeUrl(entry.avatar_url, DEFAULT_AVATAR);
+      const image = isMouse ? safeMouseImageUrl(entry.image_url) : safeUrl(entry.avatar_url, DEFAULT_AVATAR);
       const imageClass = isMouse ? 'fighter-image' : 'pfp !w-16 !h-16 !min-w-16';
       return `<button class="arena-card rounded-3xl p-5 text-left hover:-translate-y-1 transition" ${!isMouse ? `data-player-id="${escapeHtml(entry.user_id)}"` : ''}>
         <div class="flex items-center justify-between gap-3"><span class="text-xs uppercase tracking-[.2em] text-slate-400 font-black">${icon} ${escapeHtml(title)}</span><span class="text-xs text-slate-600">#1</span></div>
@@ -1203,7 +1213,7 @@
               </span>
 
               <img
-                src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}"
+                src="${escapeHtml(safeMouseImageUrl(mouse.image_url))}"
                 class="fighter-image !w-12 !h-12 !min-w-12"
                 alt="${escapeHtml(leagueStatsMouseName(mouse))}"
                 onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"
@@ -1260,7 +1270,7 @@
           const fighterCards = fighters.map(person => `
             <div class="flex items-center gap-2 min-w-0">
               <img
-                src="${escapeHtml(safeUrl(person?.image_url, DEFAULT_MOUSE_IMAGE))}"
+                src="${escapeHtml(safeMouseImageUrl(person?.image_url))}"
                 class="w-9 h-9 min-w-9 rounded-xl object-cover border border-white/10"
                 alt=""
                 onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"
@@ -1844,7 +1854,7 @@
         return `<article class="arena-card fighter-card rounded-3xl p-5">
           <div class="flex gap-4 min-w-0">
             <img
-              src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}"
+              src="${escapeHtml(safeMouseImageUrl(mouse.image_url))}"
               alt="${escapeHtml(mouse.custom_name || 'Genesis Mouse')}"
               class="fighter-image"
               onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"
@@ -2047,7 +2057,7 @@
       const rows = state.data.leaderboards?.[state.activeFighterBoard] || [];
       el.fighterGrid.innerHTML = rows.slice(0, 9).map(mouse => `<article class="arena-card fighter-card rounded-3xl p-5">
         <div class="flex gap-4 min-w-0">
-          <div class="relative"><img src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}" alt="${escapeHtml(mouseName(mouse))}" class="fighter-image" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><span class="absolute -top-2 -left-2 rank-badge ${rankClass(mouse.rank)} !w-9 !h-9 !min-w-9 text-xs">${rankLabel(mouse.rank)}</span></div>
+          <div class="relative"><img src="${escapeHtml(safeMouseImageUrl(mouse.image_url))}" alt="${escapeHtml(mouseName(mouse))}" class="fighter-image" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><span class="absolute -top-2 -left-2 rank-badge ${rankClass(mouse.rank)} !w-9 !h-9 !min-w-9 text-xs">${rankLabel(mouse.rank)}</span></div>
           <div class="min-w-0 flex-1"><div class="player-name font-black text-lg">${escapeHtml(mouseName(mouse))}</div><div class="text-xs text-slate-400 mt-1">${escapeHtml(mouse.metadata_name || 'Genesis fighter')}</div><div class="flex items-center gap-2 mt-3"><img class="pfp !w-7 !h-7 !min-w-7" src="${escapeHtml(safeUrl(mouse.owner?.avatar_url, DEFAULT_AVATAR))}" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><span class="text-sm font-bold player-name">${escapeHtml(mouse.owner?.username || 'Unknown owner')}</span></div></div>
         </div>
         <div class="grid grid-cols-3 gap-2 mt-4 text-center"><div class="rounded-xl bg-black/25 p-2"><div class="font-black text-yellow-200">${number(mouse.fights_used)}</div><div class="text-[11px] text-slate-500">Fights</div></div><div class="rounded-xl bg-black/25 p-2"><div class="font-black text-green-200">${number(mouse.wins)}</div><div class="text-[11px] text-slate-500">Wins</div></div><div class="rounded-xl bg-black/25 p-2"><div class="font-black text-cyan-200">${number(mouse.rounds_won)}</div><div class="text-[11px] text-slate-500">Rounds</div></div></div>
@@ -2124,7 +2134,7 @@
         return `<article class="rounded-3xl border border-white/10 bg-black/25 p-5">
           <div class="flex flex-wrap items-center justify-between gap-2"><div class="flex flex-wrap gap-2"><span class="rounded-full border border-orange-300/20 bg-orange-300/10 px-3 py-1 text-xs font-black text-orange-100">${escapeHtml(fightTypeLabel(fight.mode))}</span><span class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-100">${escapeHtml(battleModeLabel(fight.battle_mode))}</span></div><span class="text-xs text-slate-500">${escapeHtml(dateLabel(fight.ended_at || fight.created_at))}</span></div>
           <h3 class="text-xl font-black mt-4">${escapeHtml(fight.title || `MouseFight ${fight.fight_id}`)}</h3>
-          <div class="flex items-center gap-4 mt-4"><img src="${escapeHtml(safeUrl(winner.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-14 !h-14 !min-w-14" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><img src="${escapeHtml(safeUrl(winner.image_url, DEFAULT_MOUSE_IMAGE))}" class="fighter-image !w-14 !h-14" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div class="min-w-0"><div class="text-xs uppercase tracking-[.16em] text-green-200 font-black">Winner</div><div class="font-black player-name">${escapeHtml(winner.username || 'Unknown fighter')}</div><div class="text-xs text-slate-400 player-name">${escapeHtml(winnerMouse)}</div></div></div>
+          <div class="flex items-center gap-4 mt-4"><img src="${escapeHtml(safeUrl(winner.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-14 !h-14 !min-w-14" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><img src="${escapeHtml(safeMouseImageUrl(winner.image_url))}" class="fighter-image !w-14 !h-14" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div class="min-w-0"><div class="text-xs uppercase tracking-[.16em] text-green-200 font-black">Winner</div><div class="font-black player-name">${escapeHtml(winner.username || 'Unknown fighter')}</div><div class="text-xs text-slate-400 player-name">${escapeHtml(winnerMouse)}</div></div></div>
           <div class="grid grid-cols-3 gap-2 mt-4 text-center"><div class="rounded-xl bg-black/25 p-2"><strong>${number(fight.participant_count)}</strong><div class="text-[11px] text-slate-500">Fighters</div></div><div class="rounded-xl bg-black/25 p-2"><strong>${number(fight.round_count)}</strong><div class="text-[11px] text-slate-500">Rounds</div></div><div class="rounded-xl bg-black/25 p-2"><strong>${escapeHtml(formatMatchFormat(fight.match_format))}</strong><div class="text-[11px] text-slate-500">Format</div></div></div>
           ${economyParts.length ? `<p class="text-xs text-slate-500 mt-3">Configured terms: ${escapeHtml(economyParts.join(' • '))}</p>` : ''}
           <button class="fight-detail-button mt-4 w-full rounded-2xl border border-yellow-300/25 bg-yellow-300/10 px-4 py-3 font-black text-yellow-100 hover:bg-yellow-300/15" data-fight-id="${escapeHtml(fight.fight_id)}">View Full Fight</button>
@@ -2175,7 +2185,7 @@
         const fight = data.fight || {};
         const winner = fight.winner || {};
         el.fightModalHeader.innerHTML = `<div class="text-xs uppercase tracking-[.2em] text-cyan-200 font-black">${escapeHtml(fightTypeLabel(fight.mode))} • ${escapeHtml(battleModeLabel(fight.battle_mode))}</div><h2 class="text-2xl md:text-3xl font-black mt-2">${escapeHtml(fight.title || fight.fight_id || 'MouseFight')}</h2><p class="text-sm text-slate-400 mt-2">${number(fight.participant_count)} fighters • ${number(fight.match_count)} matches • ${number(fight.round_count)} rounds</p>`;
-        const participants = (data.participants || []).map(person => `<div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"><img src="${escapeHtml(safeUrl(person.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-11 !h-11 !min-w-11" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><img src="${escapeHtml(safeUrl(person.image_url, DEFAULT_MOUSE_IMAGE))}" class="fighter-image !w-11 !h-11" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div class="min-w-0"><div class="font-black player-name">${escapeHtml(person.username || 'Unknown')}</div><div class="text-xs text-slate-400 player-name">${escapeHtml(mouseName(person))}${person.is_winner ? ' • 🏆 Champion' : ''}</div></div></div>`).join('');
+        const participants = (data.participants || []).map(person => `<div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"><img src="${escapeHtml(safeUrl(person.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-11 !h-11 !min-w-11" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><img src="${escapeHtml(safeMouseImageUrl(person.image_url))}" class="fighter-image !w-11 !h-11" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div class="min-w-0"><div class="font-black player-name">${escapeHtml(person.username || 'Unknown')}</div><div class="text-xs text-slate-400 player-name">${escapeHtml(mouseName(person))}${person.is_winner ? ' • 🏆 Champion' : ''}</div></div></div>`).join('');
         const matches = (data.matches || []).map(match => `<article class="rounded-3xl border border-white/10 bg-black/20 p-4"><div class="flex flex-wrap justify-between gap-2"><div class="font-black text-yellow-100">Bracket ${number(match.bracket_round)} • Match ${number(match.match_number)}</div><div class="text-sm text-slate-400">${number(match.fighter_one_round_wins)}–${number(match.fighter_two_round_wins)}</div></div><div class="text-sm mt-2">${fighterSummary(match.fighter_one)} <span class="text-slate-600">vs</span> ${fighterSummary(match.fighter_two)}</div><div class="text-xs text-green-200 mt-2">Winner: ${fighterSummary(match.winner)}</div><div class="space-y-2 mt-3">${(match.rounds || []).map(round => { const events=round.events||{}; const tags=[]; if(events.combat_details_available===false) tags.push('Legacy detail unavailable'); else { if(events.attacker_special||events.defender_special) tags.push('★ Special'); if(events.attacker_spell||events.defender_spell) tags.push('✦ Spell'); if(events.attacker_dodge||events.defender_dodge) tags.push('◎ Dodge'); } return `<div class="rounded-xl border border-white/5 bg-black/25 p-3 text-xs"><div class="flex justify-between gap-3"><span>Round ${number(round.round_number)}</span><strong>${number(round.attacker_score)}–${number(round.defender_score)}</strong></div><div class="text-slate-400 mt-1">${escapeHtml(round.event_text || round.result || 'Stored round result')}</div>${tags.length ? `<div class="text-cyan-200 mt-1">${escapeHtml(tags.join(' • '))}</div>` : ''}</div>`; }).join('')}</div></article>`).join('');
         const legacyNotice = (data.matches || []).some(match => (match.rounds || []).some(round => round.events?.combat_details_available === false)) ? '<div class="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">Some legacy Champion rounds predate detailed Special, Spell, and Dodge metadata. Scores and winners remain available.</div>' : '';
         el.fightModalBody.innerHTML = `<div class="grid md:grid-cols-[1fr_2fr] gap-5"><aside class="space-y-4"><div class="rounded-3xl border border-green-300/20 bg-green-500/10 p-5"><div class="text-xs uppercase tracking-[.18em] text-green-200 font-black">Overall winner</div><div class="flex items-center gap-3 mt-3"><img src="${escapeHtml(safeUrl(winner.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-14 !h-14 !min-w-14" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><div><div class="font-black">${escapeHtml(winner.username || 'Unknown')}</div><div class="text-xs text-slate-300">${escapeHtml(mouseName(winner))}</div></div></div></div>${legacyNotice}<div><h3 class="font-black mb-3">Participants</h3><div class="space-y-2">${participants}</div></div></aside><section><h3 class="font-black text-xl mb-3">Bracket and rounds</h3><div class="space-y-4">${matches || '<div class="text-slate-400">No match rows recorded.</div>'}</div></section></div>`;
@@ -2209,7 +2219,7 @@
         el.modalHeader.innerHTML = `<div class="flex items-center gap-4"><img src="${escapeHtml(safeUrl(player.avatar_url, DEFAULT_AVATAR))}" class="pfp !w-16 !h-16 !min-w-16" alt="" onerror="this.src='${DEFAULT_AVATAR}'" /><div class="min-w-0"><div class="text-xs uppercase tracking-[.2em] text-cyan-200 font-black">MouseFight player</div><h2 class="text-2xl md:text-3xl font-black player-name">${escapeHtml(player.username || 'Unknown fighter')}</h2></div></div>`;
         const statCards = [['Fights',stats.total_fights],['Wins',stats.wins],['Win Rate',percent(stats.win_rate)],['PVP Wins',stats.pvp_wins],['Event Titles',stats.event_championships],['Round Wins',stats.rounds_won]];
         el.modalBody.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-3 gap-3">${statCards.map(([label,value]) => `<div class="rounded-2xl border border-white/10 bg-black/25 p-4"><div class="text-2xl font-black text-yellow-200">${typeof value === 'string' ? escapeHtml(value) : number(value)}</div><div class="text-xs text-slate-400">${escapeHtml(label)}</div></div>`).join('')}</div>
-          <div class="arena-card rounded-3xl p-5 mt-5"><div class="flex items-center gap-4"><img src="${escapeHtml(safeUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE))}" class="fighter-image" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div><div class="text-xs uppercase tracking-[.18em] text-pink-200 font-black">Most-used Genesis mouse</div><div class="text-xl font-black mt-1">${escapeHtml(mouseName(mouse))}</div><div class="text-sm text-slate-400">${number(mouse.fights_used)} fights • ${number(mouse.wins)} wins • ${number(mouse.rounds_won)} round wins</div></div></div></div>
+          <div class="arena-card rounded-3xl p-5 mt-5"><div class="flex items-center gap-4"><img src="${escapeHtml(safeMouseImageUrl(mouse.image_url))}" class="fighter-image" alt="" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'" /><div><div class="text-xs uppercase tracking-[.18em] text-pink-200 font-black">Most-used Genesis mouse</div><div class="text-xl font-black mt-1">${escapeHtml(mouseName(mouse))}</div><div class="text-sm text-slate-400">${number(mouse.fights_used)} fights • ${number(mouse.wins)} wins • ${number(mouse.rounds_won)} round wins</div></div></div></div>
           <div class="grid md:grid-cols-2 gap-4 mt-5"><div class="rounded-3xl border border-white/10 bg-black/25 p-5"><div class="font-black text-cyan-200">PVP Record</div><div class="text-sm text-slate-300 mt-2">${number(stats.pvp_wins)} wins from ${number(stats.pvp_fights)} fights</div></div><div class="rounded-3xl border border-white/10 bg-black/25 p-5"><div class="font-black text-pink-200">Event Record</div><div class="text-sm text-slate-300 mt-2">${number(stats.event_championships)} championships from ${number(stats.event_fights)} events</div></div></div>`;
       } catch (error) {
         el.modalHeader.innerHTML = '<div class="text-xs uppercase tracking-[.2em] text-red-200 font-black">Player profile</div><h2 class="text-2xl font-black mt-2">MouseFight statistics unavailable</h2>';

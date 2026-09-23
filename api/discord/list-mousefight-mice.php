@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../lib/genesis-image-url.php';
+
 /**
  * MouseFight API — List eligible Genesis mice for one Discord user.
  *
@@ -259,7 +261,10 @@ function mousefight_build_mouse_profile(
         'collection' => $collection,
         'custom_name' => $mouse['custom_name'],
         'metadata_name' => $mouse['nft_name'] ?: mousefight_short_token($tokenId),
-        'image_url' => $mouse['image_url'] ?: '',
+        'image_url' => narrrfs_resolve_genesis_image_url(
+            $collection,
+            $mouse['image_url'] ?? ''
+        ),
         'wallet' => $mouse['wallet'] ?? '',
         'owner_user_id' => $ownerUserId,
         'owner_username' => $mouse['owner_username'] ?: $ownerUserId,
