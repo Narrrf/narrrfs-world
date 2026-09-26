@@ -147,6 +147,23 @@ chown -h www-data:www-data "$GLYPH_WEB_BASE/glyph3d" 2>/dev/null || true
 
 echo "✅ Glyph asset symlinks created"
 
+# STEP 3.6: Create persistent Store item image directory
+# Store uploads are item-bound presentation assets. Only this directory is
+# writable by Apache; the rest of /data/public keeps its existing ownership.
+STORE_IMAGE_DATA_DIR="/data/public/store-items"
+STORE_IMAGE_WEB_DIR="/var/www/html/public/store-items"
+
+mkdir -p "$STORE_IMAGE_DATA_DIR"
+chown www-data:www-data "$STORE_IMAGE_DATA_DIR"
+chmod 775 "$STORE_IMAGE_DATA_DIR"
+
+rm -rf "$STORE_IMAGE_WEB_DIR"
+mkdir -p "$(dirname "$STORE_IMAGE_WEB_DIR")"
+ln -s "$STORE_IMAGE_DATA_DIR" "$STORE_IMAGE_WEB_DIR"
+chown -h www-data:www-data "$STORE_IMAGE_WEB_DIR" 2>/dev/null || true
+
+echo "✅ Store item image persistence ready"
+
 # STEP 4: Verify Setup
 echo ""
 echo "🔍 Verification:"

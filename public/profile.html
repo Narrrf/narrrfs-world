@@ -4987,11 +4987,11 @@ document.addEventListener('DOMContentLoaded', async function() {
       <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
     </div>
     <div class="bg-gradient-to-br from-gray-800/30 via-purple-800/20 to-gray-700/30 rounded-xl shadow-lg p-4 mt-6 max-w-lg w-full mx-auto border border-purple-400/30">
-      <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
+      <h3 class="text-yellow-300 font-semibold mb-2">Recent Transactions</h3>
       <ul id="recentAdjustments" class="text-sm space-y-1 text-yellow-100"></ul>
 
 <div id="no-score-history" class="text-gray-400 text-center py-4 hidden">
-  No recent score changes found.
+  No recent transactions found.
 </div>
 
 <!-- DSPOINC Journey pagination.
@@ -7282,12 +7282,25 @@ function formatRecentAdjustmentAmount(amount) {
   return value.toLocaleString();
 }
 
+function getRecentAdjustmentCurrency(adjustment) {
+  return String(adjustment?.currency || '').toLowerCase() === 'lp' ? 'LP' : 'DSPOINC';
+}
+
 function formatRecentAdjustmentTimestamp(timestamp) {
   if (!timestamp) {
     return '';
   }
 
   return String(timestamp).replace('T', ' ').slice(0, 19);
+}
+
+// This renderer runs before the later Genetics script defines its own escapeHtml
+// helper. Keep this local helper here so Recent Transactions never depends on
+// script-tag execution order when it renders server-provided audit text.
+function escapeProfileRecentHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value == null ? '' : String(value);
+  return div.innerHTML;
 }
 
 /**
@@ -7299,6 +7312,14 @@ function formatRecentAdjustmentTimestamp(timestamp) {
  * This helper only makes bridge credits visible and readable to users.
  */
 function formatRecentAdjustmentReason(adjustment) {
+  if (adjustment?.event_type === 'mouse_lp_store_lp_purchase') {
+    const itemTitle = String(adjustment?.item_title || 'Store item').trim();
+    const mouseName = String(adjustment?.mouse_name || '').trim();
+    return mouseName
+      ? `Lab Store purchase: ${itemTitle} · Paid by ${mouseName}`
+      : `Lab Store purchase: ${itemTitle}`;
+  }
+
   const adminId = String(adjustment?.admin_id || '').trim();
   const rawReason = String(adjustment?.reason || adjustment?.action || 'Score adjustment').trim();
 
@@ -7310,6 +7331,10 @@ function formatRecentAdjustmentReason(adjustment) {
     const spoincText = spoincMatch ? ` · ${spoincMatch[1]} SPOINC settled` : '';
 
     return `🧀 SPOINC Bridge Credit${spoincText}`;
+  }
+
+  if (rawReason.startsWith('Mouse LP Store purchase:')) {
+    return rawReason.replace(/^Mouse LP Store purchase:/, 'Lab Store purchase:');
   }
 
   return rawReason || 'Score adjustment';
@@ -7405,11 +7430,12 @@ const amount = getSignedRecentAdjustmentAmount(adjustment);
 const reason = formatRecentAdjustmentReason(adjustment);
 const timestamp = formatRecentAdjustmentTimestamp(adjustment.timestamp);
 const rowClass = getRecentAdjustmentRowClass(adjustment, amount);
+const currency = getRecentAdjustmentCurrency(adjustment);
 
       return `<li class="${rowClass}">
-        <span class="font-mono">${timestamp}</span>
-        : <b class="${amount >= 0 ? 'text-green-400' : 'text-red-400'}">${formatRecentAdjustmentAmount(amount)}</b>
-        <span class="italic">(${reason})</span>
+        <span class="font-mono">${escapeProfileRecentHtml(timestamp)}</span>
+        : <b class="${amount >= 0 ? 'text-green-400' : 'text-red-400'}">${escapeProfileRecentHtml(formatRecentAdjustmentAmount(amount))} ${escapeProfileRecentHtml(currency)}</b>
+        <span class="italic">(${escapeProfileRecentHtml(reason)})</span>
       </li>`;
     })
     .join('');
@@ -16128,4 +16154,3 @@ function scrollToProfileHub() {
 </script>
 </body>
 </html>
-

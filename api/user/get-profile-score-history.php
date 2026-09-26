@@ -120,8 +120,40 @@ try {
 
     $events = array_map(static function (array $adjustment): array {
         $adjustment['event_type'] = 'score_adjustment';
+        $adjustment['currency'] = 'dspoinc';
+        $adjustment['event_sort_id'] = 'score_adjustment:' . (int)$adjustment['id'];
         return $adjustment;
     }, $adjustments);
+
+    // LP purchases have no DSPOINC ledger row by design. Project the completed
+    // purchase audit here so Profile can show one currency-aware transaction
+    // without changing balances, score adjustments, or purchase records.
+    $lpPurchaseStmt = $db->prepare(
+        "SELECT purchase_id, item_title_snapshot, amount_paid, mouse_name_snapshot,
+                selected_token_id, completed_at
+         FROM tbl_mouse_lp_store_purchases
+         WHERE purchaser_user_id = ?
+           AND payment_method = 'lp'
+           AND completed_at IS NOT NULL
+         ORDER BY completed_at DESC, purchase_id DESC"
+    );
+    $lpPurchaseStmt->execute([$userId]);
+    foreach ($lpPurchaseStmt->fetchAll() as $purchase) {
+        $purchaseId = (int)$purchase['purchase_id'];
+        $events[] = [
+            'event_type' => 'mouse_lp_store_lp_purchase',
+            'currency' => 'lp',
+            'event_sort_id' => 'mouse_lp_purchase:' . $purchaseId,
+            'purchase_id' => $purchaseId,
+            'amount' => (int)$purchase['amount_paid'],
+            'action' => 'remove',
+            'item_title' => (string)$purchase['item_title_snapshot'],
+            'mouse_name' => (string)($purchase['mouse_name_snapshot'] ?? ''),
+            'selected_token_id' => (string)($purchase['selected_token_id'] ?? ''),
+            'timestamp' => (string)$purchase['completed_at'],
+            'event_priority' => 1,
+        ];
+    }
 
     // SELECT-only: completed V2 stakes explain principal availability without
     // writing a credit, audit row, status transition, or any staking mutation.
@@ -151,6 +183,7 @@ try {
             'claim_timestamp' => $claimTimestamp,
             'timestamp' => $hasExactClaim ? $claimTimestamp : $completedAt,
             'event_priority' => 0,
+            'event_sort_id' => 'stake_principal_unlocked:' . $stakeId,
         ];
     }
 
@@ -165,7 +198,7 @@ try {
             return $priorityComparison;
         }
 
-        return ((int)($left['id'] ?? $left['stake_id'] ?? 0)) <=> ((int)($right['id'] ?? $right['stake_id'] ?? 0));
+        return strcmp((string)($left['event_sort_id'] ?? $left['id'] ?? $left['stake_id'] ?? ''), (string)($right['event_sort_id'] ?? $right['id'] ?? $right['stake_id'] ?? ''));
     });
 
     $totalEvents = count($events);

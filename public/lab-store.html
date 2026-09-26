@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f59e0b" />
+  <meta name="description" content="Review League Points, DSPOINC, and the Narrrf's Lab Store catalog." />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>🐭 Lab Store | Narrrf's World</title>
+  <link rel="icon" href="favicon-phantom.png" type="image/png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { color-scheme: dark; }
+    body { min-height: 100vh; margin: 0; color: #f8fafc; background: radial-gradient(circle at 10% 6%, rgba(245,158,11,.22), transparent 28%), radial-gradient(circle at 88% 20%, rgba(34,211,238,.14), transparent 29%), linear-gradient(135deg,#020617,#111827 54%,#431407); font-family: ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    .panel { border: 1px solid rgba(255,255,255,.12); background: linear-gradient(145deg,rgba(15,23,42,.95),rgba(15,23,42,.72)); box-shadow: 0 20px 52px rgba(0,0,0,.28); backdrop-filter: blur(16px); }
+    .mouse-option { border: 1px solid rgba(255,255,255,.12); background: rgba(15,23,42,.64); transition: border-color .18s ease, transform .18s ease, background .18s ease; }
+    .mouse-option:hover { transform: translateY(-2px); border-color: rgba(250,204,21,.54); }
+    .mouse-option.is-selected { border-color: rgba(250,204,21,.92); background: rgba(120,53,15,.38); box-shadow: 0 0 0 1px rgba(250,204,21,.25),0 0 28px rgba(245,158,11,.14); }
+    .art { background: #111827; object-fit: cover; }
+    .badge { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); }
+    .status { border: 1px solid rgba(255,255,255,.12); background: rgba(15,23,42,.78); }
+    .status[data-tone="error"] { border-color: rgba(248,113,113,.44); background: rgba(127,29,29,.28); }
+    .status[data-tone="warning"] { border-color: rgba(251,191,36,.44); background: rgba(120,53,15,.30); }
+    .status[data-tone="success"] { border-color: rgba(74,222,128,.36); background: rgba(20,83,45,.25); }
+    .offer-card { border: 1px solid rgba(255,255,255,.12); background: rgba(15,23,42,.68); }
+    .offer-card img { aspect-ratio: 1; width: 100%; object-fit: contain; background: rgba(2,6,23,.7); }
+    .lp-modal-backdrop { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 16px; background: radial-gradient(circle at 50% 15%, rgba(250,204,21,.18), transparent 34%), rgba(2,6,23,.78); backdrop-filter: blur(12px); }
+    .lp-modal-backdrop[hidden] { display: none !important; }
+    .lp-modal-card { width: min(540px,100%); max-height: calc(100vh - 32px); overflow: auto; border: 1px solid rgba(250,204,21,.35); border-radius: 26px; background: linear-gradient(180deg,rgba(15,23,42,.98),rgba(2,6,23,.98)); box-shadow: 0 30px 90px rgba(0,0,0,.58),0 0 40px rgba(250,204,21,.12); }
+    .lp-modal-detail { border: 1px solid rgba(255,255,255,.11); border-radius: 16px; background: rgba(15,23,42,.65); padding: 12px; }
+    .lp-modal-detail-label { font-size: .68rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; color: #94a3b8; }
+    .lp-modal-detail-value { margin-top: 4px; overflow-wrap: anywhere; font-weight: 800; color: #f8fafc; }
+  </style>
+</head>
+<body>
+  <header class="border-b border-yellow-300/20 bg-slate-950/75 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
+      <a href="index.html" class="flex min-w-0 items-center gap-3 no-underline text-white">
+        <span class="text-3xl">🐭</span>
+        <span class="min-w-0"><span class="block text-xs font-black uppercase tracking-[.22em] text-amber-200">Narrrf's World</span><span class="block truncate font-black">Lab Store</span></span>
+      </a>
+      <nav class="flex flex-wrap gap-2 text-sm font-bold">
+        <a href="mousefights.html" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:bg-white/10">MouseFight Arena</a>
+        <a href="lab.html" class="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-cyan-100 hover:bg-cyan-300/20">Genesis Lab</a>
+        <a href="profile.html" class="rounded-full border border-yellow-300/25 bg-yellow-300/10 px-4 py-2 text-yellow-100 hover:bg-yellow-300/20">Profile</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 md:py-12">
+    <section class="panel rounded-3xl p-6 md:p-10">
+      <div class="grid gap-6 lg:grid-cols-[1.35fr_.65fr] lg:items-center">
+        <div>
+          <p class="text-xs font-black uppercase tracking-[.24em] text-amber-200">MouseFight rewards</p>
+          <h1 class="mt-3 text-4xl font-black tracking-tight text-white md:text-6xl">🐭 Lab Store</h1>
+          <p class="mt-4 max-w-2xl text-lg leading-8 text-slate-200">Fight. Earn LP. Reward your mouse.</p>
+          <p class="mt-3 max-w-2xl leading-7 text-slate-300">League Points are earned by named Genesis mice. Browse Lab Store items that may support LP, DSPOINC, or both; future physical products can use this same Store home.</p>
+        </div>
+        <div class="rounded-3xl border border-amber-300/25 bg-amber-300/10 p-5 text-sm leading-6 text-amber-50">
+          <div class="font-black text-amber-200">Local purchase test checkpoint</div>
+          <p class="mt-2">Only server-approved local test combinations can be purchased. Other offers remain preview-only.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="session-heading">
+      <h2 id="session-heading" class="sr-only">Session state</h2>
+      <div id="sessionStatus" class="status rounded-2xl p-4 text-sm text-slate-200" data-tone="loading">Checking your Discord session…</div>
+    </section>
+
+    <section class="mt-8 grid gap-8 xl:grid-cols-[1fr_1.35fr]">
+      <div class="space-y-5">
+        <section class="panel rounded-3xl p-5 md:p-6" aria-labelledby="mice-heading">
+          <div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.2em] text-cyan-200">Step 1</p><h2 id="mice-heading" class="mt-1 text-2xl font-black">Choose a named Genesis mouse</h2></div><span id="seasonLabel" class="badge rounded-full px-3 py-1 text-xs text-slate-300" hidden></span></div>
+          <div id="mouseState" class="mt-5 text-sm text-slate-300">Loading your eligible mice…</div>
+          <div id="mouseList" class="mt-5 grid gap-3 sm:grid-cols-2" aria-live="polite"></div>
+        </section>
+
+        <section class="panel rounded-3xl p-5 md:p-6" aria-labelledby="selected-heading">
+          <p class="text-xs font-black uppercase tracking-[.2em] text-amber-200">Selected mouse</p>
+          <h2 id="selected-heading" class="mt-1 text-2xl font-black">League Point balance</h2>
+          <div id="selectedMouse" class="mt-5 text-slate-300">Select a currently owned named Genesis mouse to view its verified League Points.</div>
+        </section>
+      </div>
+
+      <section class="panel rounded-3xl p-5 md:p-6" aria-labelledby="offers-heading">
+        <div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.2em] text-pink-200">Public Store catalog</p><h2 id="offers-heading" class="mt-1 text-2xl font-black">Active offers</h2></div><span class="badge rounded-full px-3 py-1 text-xs text-amber-100">Browse publicly · one local LP checkpoint</span></div>
+        <div id="offersState" class="mt-5 text-sm text-slate-300">Loading active offers…</div>
+        <div id="offerList" class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-live="polite"></div>
+      </section>
+    </section>
+  </main>
+
+  <div id="lpPurchaseModal" class="lp-modal-backdrop" hidden aria-hidden="true">
+    <section class="lp-modal-card" role="dialog" aria-modal="true" aria-labelledby="lpPurchaseModalTitle">
+      <div class="border-b border-white/10 p-5 sm:p-6">
+        <p class="text-xs font-black uppercase tracking-[.2em] text-amber-200">MouseFight rewards</p>
+        <h2 id="lpPurchaseModalTitle" class="mt-2 text-2xl font-black text-white">🐭 Confirm Lab Store Purchase</h2>
+        <p id="lpPurchaseModalMessage" class="mt-3 text-sm leading-6 text-slate-300"></p>
+      </div>
+      <div class="grid gap-3 p-5 sm:p-6">
+        <div class="lp-modal-detail"><div class="lp-modal-detail-label">Item</div><div id="lpPurchaseModalItem" class="lp-modal-detail-value"></div></div>
+        <div id="lpPurchaseModalMouseDetail" class="lp-modal-detail"><div class="lp-modal-detail-label">Selected mouse</div><div id="lpPurchaseModalMouse" class="lp-modal-detail-value"></div></div>
+        <div class="grid gap-3 sm:grid-cols-2"><div class="lp-modal-detail"><div class="lp-modal-detail-label">Purchase</div><div id="lpPurchaseModalPrice" class="lp-modal-detail-value text-amber-200"></div></div><div class="lp-modal-detail"><div class="lp-modal-detail-label">After purchase</div><div id="lpPurchaseModalRemaining" class="lp-modal-detail-value text-yellow-200"></div></div></div>
+        <p id="lpPurchaseModalNote" class="text-xs leading-5 text-slate-400">Preview only. The backend verifies the offer, ownership, selected mouse, and current LP before recording anything.</p>
+        <p id="lpPurchaseModalError" class="rounded-xl border border-red-400/35 bg-red-950/35 p-3 text-sm font-bold text-red-100" hidden></p>
+      </div>
+      <div class="flex flex-col-reverse gap-3 border-t border-white/10 p-5 sm:flex-row sm:justify-end sm:p-6">
+        <button id="lpPurchaseModalCancel" type="button" class="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-black text-slate-200 hover:bg-white/10">Cancel</button>
+        <button id="lpPurchaseModalConfirm" type="button" class="rounded-xl border border-yellow-300/45 bg-yellow-300/15 px-4 py-3 text-sm font-black text-yellow-100 hover:bg-yellow-300/25 disabled:cursor-not-allowed disabled:opacity-60"></button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const CONTEXT_API = '/api/user/get-mouse-lp-store-context.php';
+    const OFFERS_API = '/api/user/get-mouse-lp-store-offers.php';
+    const PURCHASE_API = '/api/user/purchase-mouse-lp-store-item.php';
+    const LOGIN_URL = 'profile.html';
+    const DEFAULT_MOUSE_IMAGE = 'img/rumble/cheese_rumble.png';
+    const state = { mice: [], offers: [], selectedTokenId: '', contextReady: false, sessionState: 'loading', availableDspoinc: null, lpPurchaseKeys: {}, purchasePending: false, modalOfferId: null, modalPayment: '' };
+    const el = {
+      sessionStatus: document.getElementById('sessionStatus'), seasonLabel: document.getElementById('seasonLabel'), mouseState: document.getElementById('mouseState'), mouseList: document.getElementById('mouseList'), selectedMouse: document.getElementById('selectedMouse'), offersState: document.getElementById('offersState'), offerList: document.getElementById('offerList'), modal: document.getElementById('lpPurchaseModal'), modalTitle: document.getElementById('lpPurchaseModalTitle'), modalMessage: document.getElementById('lpPurchaseModalMessage'), modalItem: document.getElementById('lpPurchaseModalItem'), modalMouseDetail: document.getElementById('lpPurchaseModalMouseDetail'), modalMouse: document.getElementById('lpPurchaseModalMouse'), modalPrice: document.getElementById('lpPurchaseModalPrice'), modalRemaining: document.getElementById('lpPurchaseModalRemaining'), modalNote: document.getElementById('lpPurchaseModalNote'), modalError: document.getElementById('lpPurchaseModalError'), modalCancel: document.getElementById('lpPurchaseModalCancel'), modalConfirm: document.getElementById('lpPurchaseModalConfirm')
+    };
+
+    function escapeHtml(value) { return String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
+    function formatNumber(value) { const number = Number(value); return Number.isFinite(number) ? number.toLocaleString() : 'Unavailable'; }
+    function safeImageUrl(value, fallback) { const url = String(value || '').trim(); return /^(https?:\/\/|\/|\.\/|\.\.\/|[A-Za-z0-9_-]+\/)/.test(url) ? url : fallback; }
+    // Keep the catalog's production preview authority while applying the same
+    // localhost preview mapping already used by the Genetic Lab.
+    function resolveOfferImageUrl(offer) {
+      const image = safeImageUrl(offer.image_url, '');
+      if (offer.source_type === 'genetic_item' && ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+        return image.replace(/^\/public\/three\.js\/public\/genetic\/previews\//i, '/public/img/genetic/previews/');
+      }
+      return image;
+    }
+    function setStatus(message, tone = 'loading') { el.sessionStatus.dataset.tone = tone; el.sessionStatus.innerHTML = message; }
+    function requestJson(url, options = {}) { return fetch(url, { credentials: 'include', cache: 'no-store', ...options }).then(async response => { const contentType = response.headers.get('content-type') || ''; const body = contentType.includes('application/json') ? await response.json() : {}; return { response, body }; }); }
+    function selectedMouse() { return state.mice.find(mouse => String(mouse.token_id) === state.selectedTokenId) || null; }
+
+    function renderMice() {
+      if (!state.mice.length) { el.mouseList.innerHTML = ''; el.selectedMouse.innerHTML = 'No named Genesis mice are currently available for this session.'; return; }
+      el.mouseList.innerHTML = state.mice.map(mouse => {
+        const selected = String(mouse.token_id) === state.selectedTokenId;
+        const image = safeImageUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE);
+        return `<button type="button" class="mouse-option ${selected ? 'is-selected' : ''} rounded-2xl p-3 text-left" data-token-id="${escapeHtml(mouse.token_id)}" aria-pressed="${selected}"><div class="flex gap-3"><img src="${escapeHtml(image)}" alt="" class="art h-14 w-14 rounded-xl border border-yellow-300/30" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"><div class="min-w-0"><div class="truncate font-black text-white">${escapeHtml(mouse.custom_name)}</div><div class="mt-1 text-xs text-slate-400">${escapeHtml(mouse.token_id)}</div><div class="mt-2 text-sm font-bold text-amber-200">✨ ${escapeHtml(formatNumber(mouse.spendable_lp))} LP available</div></div></div></button>`;
+      }).join('');
+      el.mouseList.querySelectorAll('[data-token-id]').forEach(button => button.addEventListener('click', () => { state.selectedTokenId = button.dataset.tokenId || ''; renderMice(); renderSelectedMouse(); renderOffers(state.offers); }));
+    }
+
+    function renderSelectedMouse() {
+      const mouse = selectedMouse();
+      if (!mouse) { el.selectedMouse.innerHTML = '<div class="status rounded-2xl p-4" data-tone="warning">Selected mouse unavailable. Choose another currently owned named Genesis mouse.</div>'; return; }
+      const image = safeImageUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE);
+      el.selectedMouse.innerHTML = `<div class="flex flex-col gap-5 sm:flex-row sm:items-center"><img src="${escapeHtml(image)}" alt="${escapeHtml(mouse.custom_name)}" class="art h-28 w-28 rounded-3xl border-2 border-yellow-300/40" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"><div class="min-w-0 flex-1"><div class="text-2xl font-black text-white">${escapeHtml(mouse.custom_name)}</div><div class="mt-1 break-all text-xs text-slate-400">${escapeHtml(mouse.token_id)}</div><div class="mt-4 rounded-2xl border border-yellow-300/30 bg-yellow-300/10 p-4"><div class="text-xs font-black uppercase tracking-[.16em] text-yellow-100">Spendable League Points</div><div class="mt-1 text-3xl font-black text-yellow-200">✨ ${escapeHtml(formatNumber(mouse.spendable_lp))} LP available</div></div></div></div><div class="mt-5 grid grid-cols-3 gap-3 text-center"><div class="badge rounded-2xl p-3"><div class="text-xs text-slate-400">Lifetime LP</div><div class="mt-1 font-black">${escapeHtml(formatNumber(mouse.lifetime_lp))}</div></div><div class="badge rounded-2xl p-3"><div class="text-xs text-slate-400">Season LP</div><div class="mt-1 font-black">${escapeHtml(formatNumber(mouse.season_lp))}</div></div><div class="badge rounded-2xl p-3"><div class="text-xs text-slate-400">Spent LP</div><div class="mt-1 font-black">${escapeHtml(formatNumber(mouse.spent_lp))}</div></div></div>`;
+    }
+
+    function purchasePreviewControls(offer) {
+      const methods = [];
+      if (offer.lp_price !== null) methods.push({ label: `Buy for ✨ ${formatNumber(offer.lp_price)} LP`, key: 'lp' });
+      if (offer.dspoinc_price !== null) methods.push({ label: `Buy for 🧀 ${formatNumber(offer.dspoinc_price)} DSPOINC`, key: 'dspoinc' });
+      return methods.map(method => {
+        if (state.sessionState === 'unauthenticated') return `<a href="${LOGIN_URL}" class="block rounded-xl border border-yellow-300/30 bg-yellow-300/10 px-3 py-2 text-center text-sm font-bold text-yellow-100 hover:bg-yellow-300/20">${escapeHtml(method.label)} → Sign in required</a>`;
+        if (state.sessionState === 'authenticated' && method.key === 'lp' && offer.lp_purchase_enabled === true) {
+          const mouse = selectedMouse();
+          if (!mouse) return `<button type="button" disabled class="w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-slate-400">${escapeHtml(method.label)} · Select a mouse</button>`;
+          if (Number(mouse.spendable_lp) < Number(offer.lp_price)) return `<button type="button" disabled class="w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-slate-400">${escapeHtml(method.label)} · Insufficient LP</button>`;
+          const disabled = state.purchasePending ? ' disabled' : '';
+          return `<button type="button" data-purchase-offer="${escapeHtml(offer.offer_id)}" data-purchase-method="lp"${disabled} class="w-full rounded-xl border border-yellow-300/40 bg-yellow-300/15 px-3 py-2 text-sm font-black text-yellow-100 hover:bg-yellow-300/25 disabled:cursor-not-allowed disabled:opacity-60">${escapeHtml(method.label)} · Buy with ${escapeHtml(mouse.custom_name)}</button>`;
+        }
+        if (state.sessionState === 'authenticated' && method.key === 'dspoinc' && offer.dspoinc_purchase_enabled === true) {
+          if (state.availableDspoinc === null) return `<button type="button" disabled class="w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-slate-400">${escapeHtml(method.label)} · DSPOINC unavailable</button>`;
+          if (Number(state.availableDspoinc) < Number(offer.dspoinc_price)) return `<button type="button" disabled class="w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-slate-400">${escapeHtml(method.label)} · Insufficient DSPOINC</button>`;
+          const disabled = state.purchasePending ? ' disabled' : '';
+          return `<button type="button" data-purchase-offer="${escapeHtml(offer.offer_id)}" data-purchase-method="dspoinc"${disabled} class="w-full rounded-xl border border-orange-300/40 bg-orange-300/15 px-3 py-2 text-sm font-black text-orange-100 hover:bg-orange-300/25 disabled:cursor-not-allowed disabled:opacity-60">${escapeHtml(method.label)} · Buy with DSPOINC</button>`;
+        }
+        if (state.sessionState === 'authenticated') return `<button type="button" disabled class="w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-slate-400">${escapeHtml(method.label)} · Not enabled in this local checkpoint</button>`;
+        return `<button type="button" disabled class="w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-slate-400">${escapeHtml(method.label)} · Session check required</button>`;
+      }).join('');
+    }
+
+    function createIdempotencyKey() { return (window.crypto && typeof window.crypto.randomUUID === 'function') ? window.crypto.randomUUID() : `mouse-lp-${Date.now()}-${Math.random().toString(36).slice(2)}`; }
+    function closePurchaseModal() {
+      if (state.purchasePending) return;
+      state.modalOfferId = null;
+      state.modalPayment = '';
+      el.modal.hidden = true;
+      el.modal.setAttribute('aria-hidden', 'true');
+    }
+    function showPurchaseModal(offerId, payment) {
+      const offer = state.offers.find(candidate => Number(candidate.offer_id) === offerId);
+      const mouse = selectedMouse();
+      const isLp = payment === 'lp';
+      const isDspoinc = payment === 'dspoinc';
+      if (!offer || state.purchasePending || (isLp && (!offer.lp_purchase_enabled || !mouse)) || (isDspoinc && (!offer.dspoinc_purchase_enabled || state.availableDspoinc === null))) return;
+      const price = isLp ? Number(offer.lp_price) : Number(offer.dspoinc_price);
+      const available = isLp ? Number(mouse.spendable_lp) : Number(state.availableDspoinc);
+      if (!Number.isFinite(price) || !Number.isFinite(available) || available < price) return;
+      state.modalOfferId = offerId;
+      state.modalPayment = payment;
+      const remaining = available - price;
+      el.modalTitle.textContent = '🐭 Confirm Lab Store Purchase';
+      el.modalMessage.textContent = isLp ? 'Review this selected-mouse League Point purchase before sending it to the server.' : 'Review this account-level DSPOINC purchase before sending it to the server.';
+      el.modalItem.textContent = offer.item_title;
+      el.modalMouseDetail.hidden = !isLp;
+      if (isLp) el.modalMouse.textContent = `${mouse.custom_name} · ${formatNumber(mouse.spendable_lp)} LP available`;
+      el.modalPrice.textContent = `${formatNumber(price)} ${isLp ? 'LP' : 'DSPOINC'}`;
+      el.modalRemaining.textContent = `${formatNumber(remaining)} ${isLp ? 'LP' : 'DSPOINC'} estimated`;
+      el.modalNote.textContent = isLp ? 'Preview only. The backend verifies the offer, ownership, selected mouse, and current LP before recording anything.' : 'Preview only. The backend verifies the offer, current DSPOINC availability, and Genetic delivery rules before recording anything.';
+      el.modalError.hidden = true;
+      el.modalCancel.hidden = false;
+      el.modalCancel.disabled = false;
+      el.modalConfirm.disabled = false;
+      el.modalConfirm.dataset.mode = 'confirm';
+      el.modalConfirm.textContent = `Buy for ${formatNumber(price)} ${isLp ? 'LP' : 'DSPOINC'}`;
+      el.modal.hidden = false;
+      el.modal.setAttribute('aria-hidden', 'false');
+      el.modalConfirm.focus();
+    }
+    async function purchaseLpOffer() {
+      const offer = state.offers.find(candidate => Number(candidate.offer_id) === state.modalOfferId);
+      const mouse = selectedMouse();
+      const payment = state.modalPayment;
+      const isLp = payment === 'lp';
+      const isDspoinc = payment === 'dspoinc';
+      if (!offer || state.purchasePending || (isLp && (!offer.lp_purchase_enabled || !mouse)) || (isDspoinc && !offer.dspoinc_purchase_enabled)) return;
+      const price = isLp ? Number(offer.lp_price) : Number(offer.dspoinc_price);
+      const keyScope = `${offer.offer_id}:${payment}:${isLp ? mouse.token_id : 'account'}`;
+      const idempotencyKey = state.lpPurchaseKeys[keyScope] || (state.lpPurchaseKeys[keyScope] = createIdempotencyKey());
+      state.purchasePending = true;
+      el.modalCancel.disabled = true;
+      el.modalConfirm.disabled = true;
+      el.modalConfirm.textContent = 'Processing purchase…';
+      el.modalError.hidden = true;
+      renderOffers(state.offers);
+      setStatus('Submitting the server-verified League Point purchase…', 'loading');
+      try {
+        const payload = { offer_id: Number(offer.offer_id), payment_method: payment, idempotency_key: idempotencyKey };
+        if (isLp) { payload.token_id = mouse.token_id; payload.collection = 'genesis'; }
+        const { response, body } = await requestJson(PURCHASE_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok || body.success !== true) throw new Error(body.message || body.error || 'purchase_rejected');
+        setStatus(body.replayed ? 'Previous purchase confirmed. No League Points were spent again.' : 'Purchase confirmed. The server recorded the League Point spend and item delivery.', 'success');
+        const [contextRefreshed, offersRefreshed] = await Promise.all([loadContext(), loadOffers()]);
+        const refreshSucceeded = contextRefreshed && offersRefreshed;
+        el.modalTitle.textContent = '🐭 Purchase complete';
+        el.modalMessage.textContent = `${offer.item_title} was added to your ${offer.source_type === 'genetic_item' ? 'Genetic inventory' : 'inventory'}.`;
+        el.modalNote.textContent = refreshSucceeded
+          ? (isLp ? `${mouse.custom_name} spent ${formatNumber(body.receipt.amount_paid)} LP. Your refreshed balances and offer stock are shown on the page.` : `${formatNumber(body.receipt.amount_paid)} DSPOINC spent. Your refreshed balance and offer stock are shown on the page.`)
+          : 'Purchase completed successfully. Refresh the page to load the current balance and stock.';
+        el.modalCancel.hidden = true;
+        el.modalConfirm.disabled = false;
+        el.modalConfirm.dataset.mode = 'success';
+        el.modalConfirm.textContent = 'Done';
+      } catch (error) {
+        const message = error.message || 'purchase_unavailable';
+        setStatus(`Purchase was not completed: ${escapeHtml(message)}. No success is assumed.`, 'error');
+        el.modalError.textContent = message;
+        el.modalError.hidden = false;
+        el.modalCancel.disabled = false;
+        el.modalConfirm.disabled = false;
+        el.modalConfirm.textContent = `Buy for ${formatNumber(price)} ${isLp ? 'LP' : 'DSPOINC'}`;
+      } finally { state.purchasePending = false; renderOffers(state.offers); }
+    }
+    function renderOffers(offers) {
+      if (!offers.length) { el.offerList.innerHTML = ''; el.offersState.innerHTML = '<div class="status rounded-2xl p-5" data-tone="warning"><div class="font-black text-amber-100">Lab Store is being stocked.</div><p class="mt-2 text-slate-200">Check back soon.</p></div>'; return; }
+      el.offersState.textContent = `${offers.length} active offer${offers.length === 1 ? '' : 's'} available for preview.`;
+      el.offerList.innerHTML = offers.map(offer => {
+        const sourceLabel = offer.source_type === 'genetic_item' ? 'GENETIC ITEM' : 'NORMAL ITEM';
+        const image = resolveOfferImageUrl(offer);
+        const art = image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(offer.item_title)}" onerror="this.onerror=null;this.src='${DEFAULT_MOUSE_IMAGE}'">` : '<div class="grid aspect-square place-items-center text-5xl">🧀</div>';
+        const prices = [offer.lp_price === null ? '' : `<span class="badge rounded-full px-3 py-1 text-sm font-black text-yellow-100">✨ ${escapeHtml(formatNumber(offer.lp_price))} LP</span>`, offer.dspoinc_price === null ? '' : `<span class="badge rounded-full px-3 py-1 text-sm font-black text-orange-100">🧀 ${escapeHtml(formatNumber(offer.dspoinc_price))} DSPOINC</span>`].filter(Boolean).join('');
+        return `<article class="offer-card overflow-hidden rounded-2xl"><div class="grid max-h-44 place-items-center overflow-hidden">${art}</div><div class="p-4"><div class="flex flex-wrap items-center justify-between gap-2"><span class="badge rounded-full px-2 py-1 text-[10px] font-black tracking-[.13em] text-cyan-100">${sourceLabel}</span><span class="text-xs text-slate-400">${escapeHtml(formatNumber(offer.stock))} left</span></div><h3 class="mt-3 font-black text-white">${escapeHtml(offer.item_title)}</h3><div class="mt-3 flex flex-wrap gap-2">${prices}</div><div class="mt-4 grid gap-2">${purchasePreviewControls(offer)}</div></div></article>`;
+      }).join('');
+      el.offerList.querySelectorAll('[data-purchase-offer]').forEach(button => button.addEventListener('click', () => showPurchaseModal(Number(button.dataset.purchaseOffer), button.dataset.purchaseMethod || '')));
+    }
+
+    async function loadOffers() {
+      el.offersState.textContent = 'Loading active offers…';
+      try { const { response, body } = await requestJson(OFFERS_API); if (!response.ok || body.success !== true || !Array.isArray(body.offers)) { throw new Error('offers_unavailable'); } state.offers = body.offers; renderOffers(state.offers); return true; }
+      catch (error) { el.offerList.innerHTML = ''; el.offersState.innerHTML = '<div class="status rounded-2xl p-5" data-tone="error">Store offers are unavailable right now. Your LP balance was not changed.</div>'; return false; }
+    }
+
+    async function loadContext() {
+      try { const { response, body } = await requestJson(CONTEXT_API); if (response.status === 401 || body.error === 'unauthenticated') { state.sessionState = 'unauthenticated'; setStatus(`Sign in to select a mouse and purchase. <a class="font-black text-yellow-200 underline" href="${LOGIN_URL}">Open your Profile to sign in.</a>`, 'warning'); el.mouseState.textContent = 'Sign-in required.'; renderOffers(state.offers); return false; } if (!response.ok || body.success !== true || !Array.isArray(body.mice)) { throw new Error('context_unavailable'); }
+        const priorSelection = state.selectedTokenId; state.contextReady = true; state.sessionState = 'authenticated'; state.availableDspoinc = Number.isFinite(Number(body.available_dspoinc)) ? Number(body.available_dspoinc) : null; state.mice = body.mice; state.selectedTokenId = state.mice.some(mouse => String(mouse.token_id) === priorSelection) ? priorSelection : (state.mice[0] ? String(state.mice[0].token_id) : '');
+        if (body.current_season && body.current_season.season_name) { el.seasonLabel.hidden = false; el.seasonLabel.textContent = body.current_season.season_name; }
+        if (!state.mice.length) { setStatus('Your Discord session is active, but no currently owned named Genesis mice were found.', 'warning'); el.mouseState.textContent = 'No named Genesis mice are available yet. Name and verify a Genesis mouse before returning to the Store.'; renderMice(); renderOffers(state.offers); return true; }
+        setStatus('Discord session verified. Select a named Genesis mouse to review server-calculated League Points.', 'success'); el.mouseState.textContent = 'Choose a mouse. Selection is temporary and is never saved as Genesis state.'; renderMice(); renderSelectedMouse(); renderOffers(state.offers); return true;
+      } catch (error) { state.sessionState = 'unavailable'; setStatus('League Point context is unavailable. LP was not read as zero.', 'error'); el.mouseState.textContent = 'LP unavailable. Try again later.'; el.selectedMouse.innerHTML = '<div class="status rounded-2xl p-4" data-tone="error">LP unavailable because the context API did not return verified totals.</div>'; renderOffers(state.offers); return false; }
+    }
+    el.modalCancel.addEventListener('click', closePurchaseModal);
+    el.modalConfirm.addEventListener('click', () => el.modalConfirm.dataset.mode === 'success' ? closePurchaseModal() : purchaseLpOffer());
+    el.modal.addEventListener('click', event => { if (event.target === el.modal) closePurchaseModal(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !el.modal.hidden) closePurchaseModal(); });
+    loadOffers();
+    loadContext();
+  </script>
+</body>
+</html>

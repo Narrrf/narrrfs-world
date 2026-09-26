@@ -997,6 +997,7 @@ const NAR_TARGET_PATHS = [
         <button class="tab-btn px-4 py-2 rounded" data-tab="missionsStatus">🎯 Missions Status</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="points">💰 Point Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="store">🏪 Store Management</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="mouseLpStore">🐭 Lab Store</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="games">🎮 Game Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bosses">👑 Boss Management</button>
@@ -1752,9 +1753,32 @@ const NAR_TARGET_PATHS = [
           <input type="text" id="newItemName" placeholder="Item Name" class="px-3 py-2 rounded text-gray-800">
           <input type="number" id="newItemPrice" placeholder="Price in $DSPOINC" class="px-3 py-2 rounded text-gray-800">
           <input type="number" id="newItemQuantity" placeholder="Quantity (0 = unlimited)" class="px-3 py-2 rounded text-gray-800" min="0" value="0">
-          <input type="text" id="newItemImageUrl" placeholder="Image URL (optional)" class="px-3 py-2 rounded text-gray-800">
+          <div>
+            <label class="block text-xs text-gray-300 mb-1" for="newItemImageUrl">Manual Image URL (optional)</label>
+            <input type="text" id="newItemImageUrl" placeholder="Manual Image URL (optional)" class="w-full px-3 py-2 rounded text-gray-800">
+            <p class="mt-1 text-xs text-gray-300">Or upload an image after the item is created.</p>
+          </div>
           <textarea id="newItemDescription" placeholder="Item Description" class="px-3 py-2 rounded text-gray-800 md:col-span-2"></textarea>
           <button onclick="createStoreItem()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Create Item</button>
+        </div>
+        <div id="newStoreItemImageUploadPanel" class="hidden mt-4 rounded border border-purple-500 bg-purple-900 bg-opacity-20 p-4">
+          <p id="newStoreItemImageUploadStatus" class="font-semibold text-purple-100"></p>
+          <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm text-gray-200 mb-1" for="newStoreItemImageFile">Add image now</label>
+              <input type="file" id="newStoreItemImageFile" accept="image/png,image/jpeg,image/webp"
+                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+              <p id="newStoreItemImageFileName" class="mt-1 text-xs text-gray-300">PNG, JPEG, or WEBP · maximum 2 MB</p>
+            </div>
+            <div>
+              <img id="newStoreItemImagePreview" class="hidden h-24 w-24 rounded border border-gray-600 object-cover" alt="New Store item image preview">
+              <p id="newStoreItemImageUrl" class="mt-2 break-all text-xs text-gray-300"></p>
+            </div>
+          </div>
+          <button type="button" id="newStoreItemImageUploadButton"
+                  class="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
+            Upload Image
+          </button>
         </div>
       </div>
 
@@ -2735,6 +2759,66 @@ const NAR_TARGET_PATHS = [
     </div>
   </div>
 </div>
+
+    <!-- Mouse LP Store Management Tab -->
+    <div class="admin-card mb-6" id="mouseLpStoreTab" style="display: none;">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
+        <div>
+          <h2 class="text-xl font-semibold">🐭 Lab Store Management</h2>
+          <p class="text-sm text-blue-100 mt-1">Configure independent Lab Store allocations from existing catalogs. This does not edit either source catalog or execute purchases.</p>
+        </div>
+        <button type="button" onclick="mouseLpStoreAdminLoad()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Refresh offers</button>
+      </div>
+
+      <div id="mouseLpStoreAdminStatus" class="bg-gray-800 bg-opacity-50 border border-gray-600 rounded p-3 text-sm text-gray-200 mb-5">Choose a source type to load existing catalog items.</div>
+
+      <div class="bg-gray-800 bg-opacity-50 rounded-lg p-4 mb-6">
+        <h3 class="text-lg font-semibold mb-4">Publish or update offer</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block text-sm">Source type
+            <select id="mouseLpStoreSourceType" onchange="mouseLpStoreAdminLoadSources()" class="mt-1 w-full px-3 py-2 rounded text-gray-800">
+              <option value="normal_store">Normal Store Item</option>
+              <option value="genetic_item">Genetic Item</option>
+            </select>
+          </label>
+          <label class="block text-sm">Existing catalog product
+            <select id="mouseLpStoreSourceItem" onchange="mouseLpStoreAdminShowSourceWarning()" class="mt-1 w-full px-3 py-2 rounded text-gray-800">
+              <option value="">Load a source type first</option>
+            </select>
+          </label>
+        </div>
+        <div id="mouseLpStoreSourceWarning" class="hidden mt-3 rounded border border-yellow-500 bg-yellow-900 bg-opacity-30 p-3 text-sm text-yellow-100"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+          <div class="rounded bg-gray-900 bg-opacity-60 p-4">
+            <label class="flex items-center gap-2 font-semibold"><input id="mouseLpStoreAcceptLp" type="checkbox" checked onchange="mouseLpStoreAdminTogglePrice('Lp')"> Accept LP</label>
+            <label class="block text-sm mt-3">LP price
+              <input id="mouseLpStoreLpPrice" type="number" min="1" step="1" value="1" class="mt-1 w-full px-3 py-2 rounded text-gray-800">
+            </label>
+          </div>
+          <div class="rounded bg-gray-900 bg-opacity-60 p-4">
+            <label class="flex items-center gap-2 font-semibold"><input id="mouseLpStoreAcceptDspoinc" type="checkbox" onchange="mouseLpStoreAdminTogglePrice('Dspoinc')"> Accept DSPOINC</label>
+            <label class="block text-sm mt-3">DSPOINC price
+              <input id="mouseLpStoreDspoincPrice" type="number" min="1" step="1" disabled class="mt-1 w-full px-3 py-2 rounded text-gray-800" placeholder="Disabled">
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+          <label class="block text-sm">Lab Store stock
+            <input id="mouseLpStoreStock" type="number" min="0" step="1" value="0" class="mt-1 w-full px-3 py-2 rounded text-gray-800">
+            <span class="block mt-1 text-xs text-gray-300">Independent allocation; the original Store quantity is never changed.</span>
+          </label>
+          <label class="flex items-center gap-2 pt-6 text-sm font-semibold"><input id="mouseLpStoreIsActive" type="checkbox" checked> Active offer</label>
+        </div>
+        <button type="button" onclick="mouseLpStoreAdminSaveOffer()" class="mt-5 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Save offer</button>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-3">Current Lab Store offers</h3>
+        <div id="mouseLpStoreOffers" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"><div class="text-gray-300">Load offers to review their configuration.</div></div>
+      </div>
+    </div>
 
     <!-- Quest System Tab -->
     <div class="admin-card mb-6" id="questsTab" style="display: none;">
@@ -7761,6 +7845,7 @@ function showTab(tabName) {
     'missionsStatusTab',
     'pointsTab',
     'storeTab',
+    'mouseLpStoreTab',
     'questsTab',
     'gamesTab',
     'bossesTab',
@@ -7861,6 +7946,12 @@ function showTab(tabName) {
       loadStoreItems();
       loadGeneticCatalogAdminStore();
       addLog('🏪 Store tab auto-loaded');
+      return;
+    }
+
+    if (tabName === 'mouseLpStore') {
+      mouseLpStoreAdminLoad();
+      addLog('🐭 Lab Store Management tab loaded');
       return;
     }
 
@@ -15244,6 +15335,18 @@ function displayStoreItems(items) {
             </div>
             
             <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Managed image upload</label>
+              <img id="editItemImagePreview" class="mb-2 hidden h-24 w-24 rounded border border-gray-600 object-cover" alt="Current Store item image preview">
+              <input type="file" id="editItemImageFile" accept="image/png,image/jpeg,image/webp"
+                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+              <p id="editItemImageFileName" class="mt-1 text-xs text-gray-400">PNG, JPEG, or WEBP · maximum 2 MB</p>
+              <button type="button" id="editItemImageUploadButton"
+                      class="mt-2 w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
+                Upload Image
+              </button>
+            </div>
+
+            <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Status</label>
               <select id="editItemActive" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
                 <option value="1" ${item.is_active == 1 ? 'selected' : ''}>Active</option>
@@ -15265,7 +15368,13 @@ function displayStoreItems(items) {
       `;
       
       document.body.appendChild(modal);
-      
+      setStoreItemImagePreview(item.image_url || '');
+
+      const imageInput = document.getElementById('editItemImageFile');
+      const imageUploadButton = document.getElementById('editItemImageUploadButton');
+      imageInput.addEventListener('change', updateStoreItemImageSelection);
+      imageUploadButton.addEventListener('click', () => uploadStoreItemImage(item.item_id));
+
       // Handle form submission
       document.getElementById('editStoreItemForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -15280,6 +15389,122 @@ function closeEditStoreItemModal() {
     modal.remove();
   }
 }
+
+    // Store image uploads update only the existing item's presentation URL.
+    // The server independently authenticates the admin and validates image bytes.
+    function setStoreItemImagePreview(imageUrl, previewId = 'editItemImagePreview') {
+      const preview = document.getElementById(previewId);
+      if (!preview) return;
+      if (String(imageUrl || '').trim() === '') {
+        preview.removeAttribute('src');
+        preview.classList.add('hidden');
+        return;
+      }
+      preview.src = imageUrl;
+      preview.classList.remove('hidden');
+    }
+
+    function updateStoreItemImageSelection(inputId = 'editItemImageFile', labelId = 'editItemImageFileName') {
+      const input = document.getElementById(inputId);
+      const label = document.getElementById(labelId);
+      if (!input || !label) return;
+      label.textContent = input.files?.[0]
+        ? 'Selected: ' + input.files[0].name + ' · upload to replace the managed image'
+        : 'PNG, JPEG, or WEBP · maximum 2 MB';
+    }
+
+    async function uploadStoreItemImage(itemId, controls = {}) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return false;
+      }
+
+      const inputId = controls.inputId || 'editItemImageFile';
+      const buttonId = controls.buttonId || 'editItemImageUploadButton';
+      const imageUrlId = controls.imageUrlId || 'editItemImageUrl';
+      const previewId = controls.previewId || 'editItemImagePreview';
+      const fileNameId = controls.fileNameId || 'editItemImageFileName';
+      const input = document.getElementById(inputId);
+      const button = document.getElementById(buttonId);
+      const imageUrlInput = document.getElementById(imageUrlId);
+      const file = input?.files?.[0];
+      if (!file || !button) {
+        addLog('❌ Choose a PNG, JPEG, or WEBP image first');
+        return false;
+      }
+
+      const request = new FormData();
+      request.append('item_id', String(itemId));
+      request.append('image', file);
+      button.disabled = true;
+      button.textContent = 'Uploading…';
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/upload-store-item-image.php', {
+          method: 'POST',
+          credentials: 'include',
+          body: request
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Image upload failed');
+        }
+
+        if (imageUrlInput) imageUrlInput.value = data.image_url;
+        setStoreItemImagePreview(data.image_url, previewId);
+        input.value = '';
+        updateStoreItemImageSelection(inputId, fileNameId);
+        if (typeof controls.onSuccess === 'function') controls.onSuccess(data);
+        addLog('✅ Store item image uploaded successfully! Item ID: ' + itemId);
+        loadStoreItems();
+        return true;
+      } catch (error) {
+        if (typeof controls.onFailure === 'function') controls.onFailure(error);
+        addLog('❌ Store image upload error: ' + error.message);
+        return false;
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Upload Image';
+      }
+    }
+
+    function setNewStoreItemImageUploadStatus(message, tone = 'success') {
+      const status = document.getElementById('newStoreItemImageUploadStatus');
+      if (!status) return;
+      status.textContent = message;
+      status.className = tone === 'error' ? 'font-semibold text-red-200' : 'font-semibold text-purple-100';
+    }
+
+    function showNewStoreItemImageUpload(itemId, imageUrl = '') {
+      const panel = document.getElementById('newStoreItemImageUploadPanel');
+      const input = document.getElementById('newStoreItemImageFile');
+      const button = document.getElementById('newStoreItemImageUploadButton');
+      const url = document.getElementById('newStoreItemImageUrl');
+      if (!panel || !input || !button || !url) return;
+
+      panel.classList.remove('hidden');
+      input.value = '';
+      url.textContent = imageUrl || '';
+      setStoreItemImagePreview(imageUrl, 'newStoreItemImagePreview');
+      updateStoreItemImageSelection('newStoreItemImageFile', 'newStoreItemImageFileName');
+      setNewStoreItemImageUploadStatus('✅ Store item #' + itemId + ' created. Add an image now or continue without one.');
+
+      input.onchange = () => updateStoreItemImageSelection('newStoreItemImageFile', 'newStoreItemImageFileName');
+      button.onclick = () => uploadStoreItemImage(itemId, {
+        inputId: 'newStoreItemImageFile',
+        buttonId: 'newStoreItemImageUploadButton',
+        imageUrlId: 'newStoreItemImageUrl',
+        previewId: 'newStoreItemImagePreview',
+        fileNameId: 'newStoreItemImageFileName',
+        onSuccess: (data) => {
+          document.getElementById('newStoreItemImageUrl').textContent = data.image_url;
+          setNewStoreItemImageUploadStatus('✅ Image uploaded for Store item #' + itemId + '.');
+        },
+        onFailure: () => {
+          setNewStoreItemImageUploadStatus('Item created successfully, but image upload failed.', 'error');
+        }
+      });
+    }
 
     // Update store item
     async function updateStoreItem(itemId) {
@@ -17049,6 +17274,10 @@ function closeEditStoreItemModal() {
           document.getElementById('newItemQuantity').value = '0';
           document.getElementById('newItemImageUrl').value = '';
           
+          // The item now has an authoritative ID, so image upload can safely
+          // target this exact row without creating another Store item.
+          showNewStoreItemImageUpload(data.item_id, data.item?.image_url || '');
+
           // Reload store items
           loadStoreItems();
         } else {
@@ -36456,6 +36685,135 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
     
+  </script>
+  <script>
+    /* Mouse LP Store offer UI. This is intentionally isolated from the legacy
+       Store editor: it reads existing catalog rows and writes only offer rows. */
+    const MOUSE_LP_STORE_ADMIN_API = '/api/admin/mouse-lp-store-management.php';
+    const mouseLpStoreAdminState = { sources: [], offers: [] };
+
+    function mouseLpStoreAdminElement(id) { return document.getElementById(id); }
+    function mouseLpStoreAdminStatus(message, tone = 'info') {
+      const status = mouseLpStoreAdminElement('mouseLpStoreAdminStatus');
+      if (!status) return;
+      status.textContent = message;
+      status.className = `rounded p-3 text-sm mb-5 ${tone === 'error' ? 'bg-red-900 bg-opacity-40 border border-red-500 text-red-100' : tone === 'warning' ? 'bg-yellow-900 bg-opacity-30 border border-yellow-500 text-yellow-100' : 'bg-gray-800 bg-opacity-50 border border-gray-600 text-gray-200'}`;
+    }
+    async function mouseLpStoreAdminRequest(action, method = 'GET', payload = null) {
+      const url = new URL(API_BASE_URL + MOUSE_LP_STORE_ADMIN_API, window.location.origin);
+      const init = { method, credentials: 'include', headers: { Accept: 'application/json' } };
+      if (method === 'GET') {
+        url.searchParams.set('action', action);
+        if (payload?.source_type) url.searchParams.set('source_type', payload.source_type);
+      } else {
+        init.headers['Content-Type'] = 'application/json';
+        init.body = JSON.stringify({ action, ...(payload || {}) });
+      }
+      const response = await fetch(url.toString(), init);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.success) throw new Error(data.error || `HTTP ${response.status}`);
+      return data;
+    }
+    function mouseLpStoreAdminTogglePrice(payment) {
+      const enabled = mouseLpStoreAdminElement(`mouseLpStoreAccept${payment}`).checked;
+      const input = mouseLpStoreAdminElement(`mouseLpStore${payment}Price`);
+      input.disabled = !enabled;
+      if (!enabled) input.value = '';
+      if (enabled && !input.value) input.value = '1';
+    }
+    function mouseLpStoreAdminFormat(value) { return Number(value).toLocaleString(); }
+    function mouseLpStoreAdminSelectedSource() {
+      const id = Number(mouseLpStoreAdminElement('mouseLpStoreSourceItem')?.value || 0);
+      return mouseLpStoreAdminState.sources.find(source => Number(source.source_item_id) === id) || null;
+    }
+    function mouseLpStoreAdminShowSourceWarning() {
+      const source = mouseLpStoreAdminSelectedSource();
+      const warning = mouseLpStoreAdminElement('mouseLpStoreSourceWarning');
+      if (!warning) return;
+      if (!source || Number(source.is_available) === 1) { warning.classList.add('hidden'); warning.textContent = ''; return; }
+      warning.classList.remove('hidden');
+      warning.textContent = 'Warning: this catalog source is inactive, hidden, or unavailable. The offer can remain for history, but public purchases will fail closed until the source is available.';
+    }
+    function mouseLpStoreAdminRenderSources() {
+      const select = mouseLpStoreAdminElement('mouseLpStoreSourceItem');
+      const prior = select.value;
+      select.replaceChildren();
+      const placeholder = document.createElement('option'); placeholder.value = ''; placeholder.textContent = 'Select an existing catalog product'; select.appendChild(placeholder);
+      mouseLpStoreAdminState.sources.forEach(source => {
+        const option = document.createElement('option');
+        option.value = String(source.source_item_id);
+        const availability = Number(source.is_available) === 1 ? 'active' : 'unavailable';
+        const genetic = source.trait_type ? ` • ${source.trait_type}: ${source.trait_value}` : '';
+        option.textContent = `#${source.source_item_id} • ${source.item_title || 'Untitled'}${genetic} • ${availability}`;
+        select.appendChild(option);
+      });
+      if ([...select.options].some(option => option.value === prior)) select.value = prior;
+      mouseLpStoreAdminShowSourceWarning();
+    }
+    async function mouseLpStoreAdminLoadSources() {
+      const sourceType = mouseLpStoreAdminElement('mouseLpStoreSourceType')?.value;
+      if (!sourceType) return;
+      mouseLpStoreAdminStatus('Loading existing catalog sources…');
+      try {
+        const data = await mouseLpStoreAdminRequest('list_sources', 'GET', { source_type: sourceType });
+        mouseLpStoreAdminState.sources = Array.isArray(data.sources) ? data.sources : [];
+        mouseLpStoreAdminRenderSources();
+        mouseLpStoreAdminStatus(`Loaded ${mouseLpStoreAdminState.sources.length} existing ${sourceType === 'normal_store' ? 'normal Store' : 'Genetic'} catalog items.`);
+      } catch (error) { mouseLpStoreAdminStatus(`Source list failed: ${error.message}`, 'error'); }
+    }
+    function mouseLpStoreAdminOfferCard(offer) {
+      const card = document.createElement('article'); card.className = 'bg-gray-800 bg-opacity-60 border border-gray-600 rounded-lg p-4';
+      const title = document.createElement('h4'); title.className = 'font-semibold text-white'; title.textContent = offer.item_title || `Missing source #${offer.source_item_id}`; card.appendChild(title);
+      const details = document.createElement('p'); details.className = 'text-xs text-gray-300 mt-1'; details.textContent = `${offer.source_type === 'genetic_item' ? 'Genetic Item' : 'Normal Store Item'} • source #${offer.source_item_id}${offer.trait_type ? ` • ${offer.trait_type}: ${offer.trait_value}` : ''}`; card.appendChild(details);
+      const state = document.createElement('p'); state.className = `text-sm mt-3 ${offer.source_exists && offer.source_available ? 'text-green-300' : 'text-yellow-200'}`; state.textContent = offer.source_exists && offer.source_available ? 'Source available' : 'Warning: source inactive, hidden, or missing; public purchase fails closed.'; card.appendChild(state);
+      const config = document.createElement('p'); config.className = 'text-sm mt-2 text-gray-100'; config.textContent = `LP: ${offer.lp_price === null ? 'disabled' : mouseLpStoreAdminFormat(offer.lp_price)} • DSPOINC: ${offer.dspoinc_price === null ? 'disabled' : mouseLpStoreAdminFormat(offer.dspoinc_price)} • Stock: ${mouseLpStoreAdminFormat(offer.stock)} • ${Number(offer.is_active) === 1 ? 'Active' : 'Inactive'}`; card.appendChild(config);
+      const actions = document.createElement('div'); actions.className = 'flex flex-wrap gap-2 mt-4';
+      const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm'; edit.textContent = 'Edit'; edit.addEventListener('click', () => mouseLpStoreAdminEditOffer(offer)); actions.appendChild(edit);
+      const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded text-sm'; toggle.textContent = Number(offer.is_active) === 1 ? 'Deactivate' : 'Activate'; toggle.addEventListener('click', () => mouseLpStoreAdminSetActive(offer.offer_id, Number(offer.is_active) === 1 ? 0 : 1)); actions.appendChild(toggle);
+      card.appendChild(actions); return card;
+    }
+    function mouseLpStoreAdminRenderOffers() {
+      const container = mouseLpStoreAdminElement('mouseLpStoreOffers'); if (!container) return;
+      container.replaceChildren();
+      if (!mouseLpStoreAdminState.offers.length) { container.textContent = 'No Lab Store offers are configured.'; return; }
+      mouseLpStoreAdminState.offers.forEach(offer => container.appendChild(mouseLpStoreAdminOfferCard(offer)));
+    }
+    async function mouseLpStoreAdminLoadOffers() {
+      const data = await mouseLpStoreAdminRequest('list_offers');
+      mouseLpStoreAdminState.offers = Array.isArray(data.offers) ? data.offers : [];
+      mouseLpStoreAdminRenderOffers();
+    }
+    async function mouseLpStoreAdminLoad() {
+      try { await Promise.all([mouseLpStoreAdminLoadSources(), mouseLpStoreAdminLoadOffers()]); mouseLpStoreAdminStatus(`Loaded ${mouseLpStoreAdminState.offers.length} Lab Store offers.`); }
+      catch (error) { mouseLpStoreAdminStatus(`Lab Store management failed: ${error.message}`, 'error'); }
+    }
+    async function mouseLpStoreAdminEditOffer(offer) {
+      mouseLpStoreAdminElement('mouseLpStoreSourceType').value = offer.source_type;
+      await mouseLpStoreAdminLoadSources();
+      mouseLpStoreAdminElement('mouseLpStoreSourceItem').value = String(offer.source_item_id);
+      mouseLpStoreAdminElement('mouseLpStoreAcceptLp').checked = offer.lp_price !== null;
+      mouseLpStoreAdminElement('mouseLpStoreLpPrice').value = offer.lp_price ?? '';
+      mouseLpStoreAdminElement('mouseLpStoreAcceptDspoinc').checked = offer.dspoinc_price !== null;
+      mouseLpStoreAdminElement('mouseLpStoreDspoincPrice').value = offer.dspoinc_price ?? '';
+      mouseLpStoreAdminElement('mouseLpStoreStock').value = offer.stock;
+      mouseLpStoreAdminElement('mouseLpStoreIsActive').checked = Number(offer.is_active) === 1;
+      mouseLpStoreAdminTogglePrice('Lp'); mouseLpStoreAdminTogglePrice('Dspoinc'); mouseLpStoreAdminShowSourceWarning();
+      mouseLpStoreAdminStatus(`Editing offer #${offer.offer_id}. Saving updates the same source-type/source-item offer.`);
+    }
+    async function mouseLpStoreAdminSaveOffer() {
+      const source = mouseLpStoreAdminSelectedSource();
+      if (!source) { mouseLpStoreAdminStatus('Select an existing catalog product first.', 'warning'); return; }
+      const lpEnabled = mouseLpStoreAdminElement('mouseLpStoreAcceptLp').checked;
+      const dspoincEnabled = mouseLpStoreAdminElement('mouseLpStoreAcceptDspoinc').checked;
+      if (!lpEnabled && !dspoincEnabled) { mouseLpStoreAdminStatus('Enable LP, DSPOINC, or both.', 'warning'); return; }
+      const payload = { source_type: mouseLpStoreAdminElement('mouseLpStoreSourceType').value, source_item_id: source.source_item_id, lp_price: lpEnabled ? mouseLpStoreAdminElement('mouseLpStoreLpPrice').value : null, dspoinc_price: dspoincEnabled ? mouseLpStoreAdminElement('mouseLpStoreDspoincPrice').value : null, stock: mouseLpStoreAdminElement('mouseLpStoreStock').value, is_active: mouseLpStoreAdminElement('mouseLpStoreIsActive').checked ? 1 : 0 };
+      try { const data = await mouseLpStoreAdminRequest('save_offer', 'POST', payload); mouseLpStoreAdminState.offers = data.offers || []; mouseLpStoreAdminRenderOffers(); mouseLpStoreAdminStatus(`Offer #${data.offer_id} saved. No catalog product was changed.`); }
+      catch (error) { mouseLpStoreAdminStatus(`Offer was not saved: ${error.message}`, 'error'); }
+    }
+    async function mouseLpStoreAdminSetActive(offerId, isActive) {
+      try { const data = await mouseLpStoreAdminRequest('set_offer_active', 'POST', { offer_id: offerId, is_active: isActive }); mouseLpStoreAdminState.offers = data.offers || []; mouseLpStoreAdminRenderOffers(); mouseLpStoreAdminStatus(`Offer #${offerId} is now ${isActive ? 'active' : 'inactive'}.`); }
+      catch (error) { mouseLpStoreAdminStatus(`Offer state was not changed: ${error.message}`, 'error'); }
+    }
   </script>
 <script src="js/cheese-auth-indicator.js"></script>
 </body>
