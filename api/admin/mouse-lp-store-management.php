@@ -13,9 +13,8 @@ require_once __DIR__ . '/../config/admin-auth.php';
 header('Content-Type: application/json');
 header('Cache-Control: no-store');
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+// checkAdminAuthentication() owns guarded session initialization so this
+// endpoint cannot emit a duplicate-session notice before its JSON response.
 
 function mouse_lp_store_admin_json(array $payload, int $status = 200): void
 {
@@ -71,9 +70,8 @@ function mouse_lp_store_admin_request(): array
 }
 
 /**
- * admin-auth.php owns the established admin DB path helper. It cannot be
- * included beside database.php because both legacy files declare that helper.
- * This local connection keeps this endpoint on the same verified DB path.
+ * admin-auth.php loads the shared database helper once. This local connection
+ * stays on that verified path without redefining any configuration helper.
  */
 function mouse_lp_store_admin_database(): PDO
 {

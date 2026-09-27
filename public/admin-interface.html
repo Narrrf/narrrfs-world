@@ -36710,8 +36710,15 @@ function escapeHtml(value) {
         init.body = JSON.stringify({ action, ...(payload || {}) });
       }
       const response = await fetch(url.toString(), init);
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.success) throw new Error(data.error || `HTTP ${response.status}`);
+      const contentType = response.headers.get('content-type') || 'missing';
+      const rawBody = await response.text();
+      let data;
+      try {
+        data = JSON.parse(rawBody);
+      } catch (_) {
+        throw new Error('Lab Store Admin API returned non-JSON (HTTP ' + response.status + '; content type ' + contentType + '). Check server logs.');
+      }
+      if (!response.ok || !data.success) throw new Error(data.error || ('HTTP ' + response.status));
       return data;
     }
     function mouseLpStoreAdminTogglePrice(payment) {

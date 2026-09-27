@@ -5,6 +5,12 @@
  */
 
 /**
+ * Shared database configuration is loaded once so Discord role lookup and
+ * admin endpoints use the single canonical getDatabasePath() declaration.
+ */
+require_once __DIR__ . '/database.php';
+
+/**
  * Check Admin Authentication (for admin-only APIs)
  * Used by admin interface APIs
  */
@@ -16,8 +22,11 @@ function checkAdminAuthentication() {
         return true;
     }
 
-    // Production authentication - multiple methods
-    session_start();
+    // Production authentication - multiple methods. Callers may already have
+    // opened the session, so avoid emitting a notice before JSON responses.
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
     
     // Method 1: Check for admin session
     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
@@ -40,7 +49,6 @@ function checkAdminAuthentication() {
         
         // Get user roles from database
         try {
-            require_once __DIR__ . '/database.php';
             $db = getSQLite3Connection();
             $stmt = $db->prepare('SELECT role_name FROM tbl_user_roles WHERE user_id = ?');
             $stmt->bindValue(1, $discord_user_id, SQLITE3_TEXT);
@@ -93,8 +101,11 @@ function checkUserAuthentication() {
         return true;
     }
 
-    // Production authentication - multiple methods
-    session_start();
+    // Production authentication - multiple methods. Callers may already have
+    // opened the session, so avoid emitting a notice before JSON responses.
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
     
     // Method 1: Check for Discord session
     if (isset($_SESSION['discord_id']) && !empty($_SESSION['discord_id'])) {
@@ -112,15 +123,4 @@ function checkUserAuthentication() {
     exit;
 }
 
-/**
- * Get database path based on environment
- */
-function getDatabasePath() {
-    $isLocalDevelopment = $_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.1';
-    if ($isLocalDevelopment) {
-        return __DIR__ . '/../../db/narrrf_world.sqlite';
-    } else {
-        return '/var/www/html/db/narrrf_world.sqlite';
-    }
-}
 ?>
