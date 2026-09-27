@@ -51,16 +51,31 @@
     <section class="panel rounded-3xl p-6 md:p-10">
       <div class="grid gap-6 lg:grid-cols-[1.35fr_.65fr] lg:items-center">
         <div>
-          <p class="text-xs font-black uppercase tracking-[.24em] text-amber-200">MouseFight rewards</p>
+          <p class="text-xs font-black uppercase tracking-[.24em] text-amber-200">MouseFight &amp; Lab rewards</p>
           <h1 class="mt-3 text-4xl font-black tracking-tight text-white md:text-6xl">🐭 Lab Store</h1>
-          <p class="mt-4 max-w-2xl text-lg leading-8 text-slate-200">Fight. Earn LP. Reward your mouse.</p>
-          <p class="mt-3 max-w-2xl leading-7 text-slate-300">League Points are earned by named Genesis mice. Browse Lab Store items that may support LP, DSPOINC, or both; future physical products can use this same Store home.</p>
+          <p class="mt-4 max-w-2xl text-lg leading-8 text-slate-200">Fight. Earn LP. Spend DSPOINC. Reward your mouse.</p>
+          <p class="mt-3 max-w-2xl leading-7 text-slate-300">Use League Points earned by your named Genesis mice or your account DSPOINC balance to purchase eligible Lab Store offers. Each offer shows which payment methods are available.</p>
         </div>
         <div class="rounded-3xl border border-amber-300/25 bg-amber-300/10 p-5 text-sm leading-6 text-amber-50">
-          <div class="font-black text-amber-200">Local purchase test checkpoint</div>
-          <p class="mt-2">Only server-approved local test combinations can be purchased. Other offers remain preview-only.</p>
+          <div class="font-black text-amber-200">Store payments</div>
+          <p class="mt-2">Offers can support LP, DSPOINC, or both.</p>
+          <p class="mt-3">LP purchases use the selected named Genesis mouse and its available League Points.</p>
+          <p class="mt-3">DSPOINC purchases use your available account balance and do not require a mouse selection.</p>
         </div>
       </div>
+    </section>
+
+    <section
+      class="mt-8 overflow-hidden rounded-3xl border border-cyan-300/20 bg-slate-950/70 shadow-2xl"
+      aria-label="Narrrf's World Lab Store banner"
+    >
+      <img
+        src="img/lab-store.png"
+        alt="Narrrf's World Lab Store — Fight, Earn LP, Reward your mouse"
+        class="block h-auto w-full"
+        loading="eager"
+        decoding="async"
+      />
     </section>
 
     <section class="mt-8" aria-labelledby="session-heading">
@@ -81,10 +96,16 @@
           <h2 id="selected-heading" class="mt-1 text-2xl font-black">League Point balance</h2>
           <div id="selectedMouse" class="mt-5 text-slate-300">Select a currently owned named Genesis mouse to view its verified League Points.</div>
         </section>
+
+        <section class="panel rounded-3xl p-5 md:p-6" aria-labelledby="dspoinc-heading">
+          <p class="text-xs font-black uppercase tracking-[.2em] text-orange-200">Account balance</p>
+          <h2 id="dspoinc-heading" class="mt-1 text-2xl font-black">Available DSPOINC</h2>
+          <div id="dspoincBalance" class="mt-5 text-slate-300">Checking DSPOINC balance…</div>
+        </section>
       </div>
 
       <section class="panel rounded-3xl p-5 md:p-6" aria-labelledby="offers-heading">
-        <div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.2em] text-pink-200">Public Store catalog</p><h2 id="offers-heading" class="mt-1 text-2xl font-black">Active offers</h2></div><span class="badge rounded-full px-3 py-1 text-xs text-amber-100">Browse publicly · one local LP checkpoint</span></div>
+        <div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.2em] text-pink-200">Public Store catalog</p><h2 id="offers-heading" class="mt-1 text-2xl font-black">Active offers</h2></div><span class="badge rounded-full px-3 py-1 text-xs text-amber-100">Browse publicly · payment methods vary by offer</span></div>
         <div id="offersState" class="mt-5 text-sm text-slate-300">Loading active offers…</div>
         <div id="offerList" class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-live="polite"></div>
       </section>
@@ -120,7 +141,7 @@
     const DEFAULT_MOUSE_IMAGE = 'img/rumble/cheese_rumble.png';
     const state = { mice: [], offers: [], selectedTokenId: '', contextReady: false, sessionState: 'loading', availableDspoinc: null, lpPurchaseKeys: {}, purchasePending: false, modalOfferId: null, modalPayment: '' };
     const el = {
-      sessionStatus: document.getElementById('sessionStatus'), seasonLabel: document.getElementById('seasonLabel'), mouseState: document.getElementById('mouseState'), mouseList: document.getElementById('mouseList'), selectedMouse: document.getElementById('selectedMouse'), offersState: document.getElementById('offersState'), offerList: document.getElementById('offerList'), modal: document.getElementById('lpPurchaseModal'), modalTitle: document.getElementById('lpPurchaseModalTitle'), modalMessage: document.getElementById('lpPurchaseModalMessage'), modalItem: document.getElementById('lpPurchaseModalItem'), modalMouseDetail: document.getElementById('lpPurchaseModalMouseDetail'), modalMouse: document.getElementById('lpPurchaseModalMouse'), modalPrice: document.getElementById('lpPurchaseModalPrice'), modalRemaining: document.getElementById('lpPurchaseModalRemaining'), modalNote: document.getElementById('lpPurchaseModalNote'), modalError: document.getElementById('lpPurchaseModalError'), modalCancel: document.getElementById('lpPurchaseModalCancel'), modalConfirm: document.getElementById('lpPurchaseModalConfirm')
+      sessionStatus: document.getElementById('sessionStatus'), seasonLabel: document.getElementById('seasonLabel'), mouseState: document.getElementById('mouseState'), mouseList: document.getElementById('mouseList'), selectedMouse: document.getElementById('selectedMouse'), dspoincBalance: document.getElementById('dspoincBalance'), offersState: document.getElementById('offersState'), offerList: document.getElementById('offerList'), modal: document.getElementById('lpPurchaseModal'), modalTitle: document.getElementById('lpPurchaseModalTitle'), modalMessage: document.getElementById('lpPurchaseModalMessage'), modalItem: document.getElementById('lpPurchaseModalItem'), modalMouseDetail: document.getElementById('lpPurchaseModalMouseDetail'), modalMouse: document.getElementById('lpPurchaseModalMouse'), modalPrice: document.getElementById('lpPurchaseModalPrice'), modalRemaining: document.getElementById('lpPurchaseModalRemaining'), modalNote: document.getElementById('lpPurchaseModalNote'), modalError: document.getElementById('lpPurchaseModalError'), modalCancel: document.getElementById('lpPurchaseModalCancel'), modalConfirm: document.getElementById('lpPurchaseModalConfirm')
     };
 
     function escapeHtml(value) { return String(value ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
@@ -154,6 +175,24 @@
       if (!mouse) { el.selectedMouse.innerHTML = '<div class="status rounded-2xl p-4" data-tone="warning">Selected mouse unavailable. Choose another currently owned named Genesis mouse.</div>'; return; }
       const image = safeImageUrl(mouse.image_url, DEFAULT_MOUSE_IMAGE);
       el.selectedMouse.innerHTML = `<div class="flex flex-col gap-5 sm:flex-row sm:items-center"><img src="${escapeHtml(image)}" alt="${escapeHtml(mouse.custom_name)}" class="art h-28 w-28 rounded-3xl border-2 border-yellow-300/40" onerror="this.src='${DEFAULT_MOUSE_IMAGE}'"><div class="min-w-0 flex-1"><div class="text-2xl font-black text-white">${escapeHtml(mouse.custom_name)}</div><div class="mt-1 break-all text-xs text-slate-400">${escapeHtml(mouse.token_id)}</div><div class="mt-4 rounded-2xl border border-yellow-300/30 bg-yellow-300/10 p-4"><div class="text-xs font-black uppercase tracking-[.16em] text-yellow-100">Spendable League Points</div><div class="mt-1 text-3xl font-black text-yellow-200">✨ ${escapeHtml(formatNumber(mouse.spendable_lp))} LP available</div></div></div></div><div class="mt-5 grid grid-cols-3 gap-3 text-center"><div class="badge rounded-2xl p-3"><div class="text-xs text-slate-400">Lifetime LP</div><div class="mt-1 font-black">${escapeHtml(formatNumber(mouse.lifetime_lp))}</div></div><div class="badge rounded-2xl p-3"><div class="text-xs text-slate-400">Season LP</div><div class="mt-1 font-black">${escapeHtml(formatNumber(mouse.season_lp))}</div></div><div class="badge rounded-2xl p-3"><div class="text-xs text-slate-400">Spent LP</div><div class="mt-1 font-black">${escapeHtml(formatNumber(mouse.spent_lp))}</div></div></div>`;
+    }
+
+    // DSPOINC remains account-level: this presentation reads only the existing
+    // context response and never depends on the selected Genesis mouse.
+    function renderDspoincBalance() {
+      if (state.sessionState === 'loading') {
+        el.dspoincBalance.textContent = 'Checking DSPOINC balance…';
+        return;
+      }
+      if (state.sessionState === 'unauthenticated') {
+        el.dspoincBalance.innerHTML = '<div class="status rounded-2xl p-4" data-tone="warning">Sign in to view your available account DSPOINC balance.</div>';
+        return;
+      }
+      if (state.sessionState !== 'authenticated' || state.availableDspoinc === null) {
+        el.dspoincBalance.innerHTML = '<div class="status rounded-2xl p-4" data-tone="error">DSPOINC balance unavailable</div>';
+        return;
+      }
+      el.dspoincBalance.innerHTML = `<div class="rounded-2xl border border-orange-300/30 bg-orange-300/10 p-4"><div class="text-3xl font-black text-orange-100">🧀 ${escapeHtml(formatNumber(state.availableDspoinc))} DSPOINC</div><p class="mt-2 text-sm leading-6 text-slate-200">Account-wide balance available for eligible DSPOINC Lab Store purchases.</p></div>`;
     }
 
     function purchasePreviewControls(offer) {
@@ -264,7 +303,7 @@
     }
     function renderOffers(offers) {
       if (!offers.length) { el.offerList.innerHTML = ''; el.offersState.innerHTML = '<div class="status rounded-2xl p-5" data-tone="warning"><div class="font-black text-amber-100">Lab Store is being stocked.</div><p class="mt-2 text-slate-200">Check back soon.</p></div>'; return; }
-      el.offersState.textContent = `${offers.length} active offer${offers.length === 1 ? '' : 's'} available for preview.`;
+      el.offersState.textContent = `${offers.length} active offer${offers.length === 1 ? '' : 's'} available now.`;
       el.offerList.innerHTML = offers.map(offer => {
         const sourceLabel = offer.source_type === 'genetic_item' ? 'GENETIC ITEM' : 'NORMAL ITEM';
         const image = resolveOfferImageUrl(offer);
@@ -282,12 +321,13 @@
     }
 
     async function loadContext() {
-      try { const { response, body } = await requestJson(CONTEXT_API); if (response.status === 401 || body.error === 'unauthenticated') { state.sessionState = 'unauthenticated'; setStatus(`Sign in to select a mouse and purchase. <a class="font-black text-yellow-200 underline" href="${LOGIN_URL}">Open your Profile to sign in.</a>`, 'warning'); el.mouseState.textContent = 'Sign-in required.'; renderOffers(state.offers); return false; } if (!response.ok || body.success !== true || !Array.isArray(body.mice)) { throw new Error('context_unavailable'); }
+      try { const { response, body } = await requestJson(CONTEXT_API); if (response.status === 401 || body.error === 'unauthenticated') { state.sessionState = 'unauthenticated'; renderDspoincBalance(); setStatus(`Sign in to select a mouse and purchase. <a class="font-black text-yellow-200 underline" href="${LOGIN_URL}">Open your Profile to sign in.</a>`, 'warning'); el.mouseState.textContent = 'Sign-in required.'; renderOffers(state.offers); return false; } if (!response.ok || body.success !== true || !Array.isArray(body.mice)) { throw new Error('context_unavailable'); }
         const priorSelection = state.selectedTokenId; state.contextReady = true; state.sessionState = 'authenticated'; state.availableDspoinc = Number.isFinite(Number(body.available_dspoinc)) ? Number(body.available_dspoinc) : null; state.mice = body.mice; state.selectedTokenId = state.mice.some(mouse => String(mouse.token_id) === priorSelection) ? priorSelection : (state.mice[0] ? String(state.mice[0].token_id) : '');
+        renderDspoincBalance();
         if (body.current_season && body.current_season.season_name) { el.seasonLabel.hidden = false; el.seasonLabel.textContent = body.current_season.season_name; }
         if (!state.mice.length) { setStatus('Your Discord session is active, but no currently owned named Genesis mice were found.', 'warning'); el.mouseState.textContent = 'No named Genesis mice are available yet. Name and verify a Genesis mouse before returning to the Store.'; renderMice(); renderOffers(state.offers); return true; }
         setStatus('Discord session verified. Select a named Genesis mouse to review server-calculated League Points.', 'success'); el.mouseState.textContent = 'Choose a mouse. Selection is temporary and is never saved as Genesis state.'; renderMice(); renderSelectedMouse(); renderOffers(state.offers); return true;
-      } catch (error) { state.sessionState = 'unavailable'; setStatus('League Point context is unavailable. LP was not read as zero.', 'error'); el.mouseState.textContent = 'LP unavailable. Try again later.'; el.selectedMouse.innerHTML = '<div class="status rounded-2xl p-4" data-tone="error">LP unavailable because the context API did not return verified totals.</div>'; renderOffers(state.offers); return false; }
+      } catch (error) { state.sessionState = 'unavailable'; renderDspoincBalance(); setStatus('League Point context is unavailable. LP was not read as zero.', 'error'); el.mouseState.textContent = 'LP unavailable. Try again later.'; el.selectedMouse.innerHTML = '<div class="status rounded-2xl p-4" data-tone="error">LP unavailable because the context API did not return verified totals.</div>'; renderOffers(state.offers); return false; }
     }
     el.modalCancel.addEventListener('click', closePurchaseModal);
     el.modalConfirm.addEventListener('click', () => el.modalConfirm.dataset.mode === 'success' ? closePurchaseModal() : purchaseLpOffer());
