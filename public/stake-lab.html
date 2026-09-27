@@ -3526,15 +3526,8 @@ const GENESIS_FREEZER_PUBLIC_RPC_FALLBACK_URLS = [
  * holder verification wallet lane. Backend APIs still verify the exact Memo
  * transaction before changing freezer rows.
  */
-function getGenesisFreezerWalletProvider() {
-  if (typeof getSolanaProvider === 'function') {
-    const sharedProvider = getSolanaProvider();
-
-    if (sharedProvider && typeof sharedProvider.connect === 'function') {
-      return sharedProvider;
-    }
-  }
-
+function getGenesisFreezerWalletProvider(expectedWalletAddress = '') {
+  const expectedWallet = String(expectedWalletAddress || '').trim();
   const directCandidates = [
     window.phantom?.solana,
     window.solflare,
@@ -3543,29 +3536,41 @@ function getGenesisFreezerWalletProvider() {
     window.backpack?.solana,
     window.xnft?.solana,
     window.solana
-  ].filter(Boolean);
-
-  for (const provider of directCandidates) {
-    if (provider && typeof provider.connect === 'function') {
-      return provider;
-    }
-  }
+  ].filter(provider => provider && typeof provider.connect === 'function');
 
   const multiProviders = Array.isArray(window.solana?.providers)
     ? window.solana.providers
     : [];
 
-  const preferredProvider =
-    multiProviders.find(provider => provider?.isPhantom) ||
-    multiProviders.find(provider => provider?.isSolflare) ||
-    multiProviders.find(provider => provider?.isBackpack) ||
-    multiProviders.find(provider => typeof provider?.connect === 'function');
+  const candidates = Array.from(new Set([
+    ...directCandidates,
+    ...multiProviders.filter(provider => provider && typeof provider.connect === 'function')
+  ]));
 
-  if (preferredProvider) {
-    return preferredProvider;
+  if (candidates.length === 0) {
+    throw new Error('Solana wallet not found. Please install or unlock Phantom, Solflare, or Backpack, then refresh Stake Lab.');
   }
 
-  throw new Error('Solana wallet not found. Please install or unlock Phantom, Solflare, or Backpack, then refresh Stake Lab.');
+  const connectedCandidates = candidates.filter(provider => provider?.publicKey);
+  const matchingProvider = connectedCandidates.find(provider =>
+    String(provider.publicKey?.toString?.() || '').trim() === expectedWallet
+  );
+
+  if (matchingProvider) {
+    return matchingProvider;
+  }
+
+  const unconnectedCandidates = candidates.filter(provider => !provider?.publicKey);
+
+  if (unconnectedCandidates.length === 1) {
+    return unconnectedCandidates[0];
+  }
+
+  if (unconnectedCandidates.length === 0) {
+    throw new Error('Connected wallet mismatch. Please switch to the wallet that owns the selected Genesis mouse and refresh Stake Lab.');
+  }
+
+  throw new Error('More than one Solana wallet is installed. Open the wallet that owns the selected Genesis mouse, then refresh Stake Lab and try again.');
 }
 
 /**
@@ -3592,20 +3597,29 @@ function getGenesisFreezerSolanaWeb3() {
  * This proves only which wallet is connected in the browser. The backend still
  * validates that the same wallet signed the exact Memo transaction.
  */
-async function connectGenesisFreezerWallet() {
-  const provider = getGenesisFreezerWalletProvider();
+async function connectGenesisFreezerWallet(expectedWalletAddress = '') {
+  const expectedWallet = String(expectedWalletAddress || '').trim();
+  const provider = getGenesisFreezerWalletProvider(expectedWallet);
+  let connectResponse = null;
 
   if (!provider.publicKey) {
-    await provider.connect({ onlyIfTrusted: false });
+    connectResponse = await provider.connect({ onlyIfTrusted: false });
   }
 
-  if (!provider.publicKey) {
+  const resolvedPublicKey = connectResponse?.publicKey || provider.publicKey;
+  const walletAddress = String(resolvedPublicKey?.toString?.() || '').trim();
+
+  if (!walletAddress) {
     throw new Error('Wallet connection failed. Please approve the wallet connection.');
+  }
+
+  if (expectedWallet && walletAddress !== expectedWallet) {
+    throw new Error('Connected wallet mismatch. Please switch to the wallet that owns the selected Genesis mouse and refresh Stake Lab.');
   }
 
   return {
     provider,
-    walletAddress: provider.publicKey.toString()
+    walletAddress
   };
 }
 /**
@@ -3625,7 +3639,7 @@ async function connectGenesisFreezerWallet() {
  */
 async function sendGenesisFreezerMemoTransaction(messageOrMessages, expectedWalletAddress) {
   const web3 = getGenesisFreezerSolanaWeb3();
-  const provider = getGenesisFreezerWalletProvider();
+  const provider = getGenesisFreezerWalletProvider(expectedWalletAddress);
 
   const safeMessage = String(Array.isArray(messageOrMessages) ? messageOrMessages[0] : messageOrMessages || '').trim();
   const walletAddress = String(expectedWalletAddress || provider?.publicKey?.toString?.() || '').trim();
@@ -3899,7 +3913,7 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
   }
 
   try {
-    const { walletAddress } = await connectGenesisFreezerWallet();
+    const { walletAddress } = await connectGenesisFreezerWallet(selectedWallet);
 
     if (walletAddress !== selectedWallet) {
       showGenesisFreezerToast(
@@ -3910,10 +3924,12 @@ async function freezeSelectedGenesisMiceWithWalletMemo() {
       return;
     }
   } catch (error) {
+    console.error('Genesis Mouse Freezer wallet connection failed:', error);
+
     showGenesisFreezerToast(
       'error',
       'Wallet connection failed',
-      error.message || 'Please connect the wallet that owns the selected Genesis mice.'
+      error?.message || 'Unexpected error'
     );
     return;
   }
