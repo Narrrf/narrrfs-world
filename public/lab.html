@@ -11050,6 +11050,22 @@ function getNftActiveUpgradeRow(nft) {
 }
 
 /**
+ * Return any Trait research that keeps this Genesis mouse pending.
+ *
+ * This deliberately differs from getNftActiveUpgradeRow(): a completed
+ * ready-to-claim row remains permanent progression awaiting claim, so the
+ * chamber must not offer a new start on another Trait yet.
+ */
+function getNftPendingTraitResearchRow(nft) {
+  return normalizeNftTraits(nft)
+    .map((trait) => getTraitUpgradeDisplayRow(nft, trait) || buildFallbackUpgradeRow(nft, trait))
+    .find((row) => {
+      const status = mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at);
+      return status === 'upgrading' || status === 'ready';
+    }) || null;
+}
+
+/**
  * Build a compact training overview for one Genesis mouse slider card.
  *
  * Plain language for DEVS:
@@ -13256,6 +13272,13 @@ function renderResearchQueueTableRow(queueItem) {
             >
               🔁 Claim + Renew
             </button>
+            <button
+              type="button"
+              class="btn warn compact"
+              data-queue-view-research-token="${escapeHtml(tokenId)}"
+            >
+              🧪 View Research
+            </button>
           ` : ''}
         </div>
       </td>
@@ -13478,6 +13501,13 @@ function renderActiveResearchQueue() {
                 data-queue-renew-token="${escapeHtml(tokenId)}"
               >
                 🔁 Claim + Renew
+              </button>
+              <button
+                type="button"
+                class="btn warn"
+                data-queue-view-research-token="${escapeHtml(tokenId)}"
+              >
+                🧪 View Research
               </button>
             ` : ''}
           </div>
@@ -14079,6 +14109,14 @@ ${getNftSliderTrainingOverviewMarkup(nft, summary)}
   onclick="${actionHandler}">
   ${actionLabel}
 </button>
+${hasReady ? `
+<button
+  type="button"
+  class="btn compact warn"
+  data-open-research="true"
+  onclick="event.preventDefault(); event.stopPropagation(); openGenesisLabFromQueue('${escapeHtml(String(tokenId))}')">
+  🧪 View Research
+</button>` : ''}
 <button
   type="button"
   class="btn compact ghost"
@@ -15919,7 +15957,7 @@ function renderTraitGrid() {
   }
 
   const traits = normalizeNftTraits(nft);
-  const activeUpgradeRow = getNftActiveUpgradeRow(nft);
+  const pendingTraitResearchRow = getNftPendingTraitResearchRow(nft);
   const modeText = state.upgradeEndpointAvailable ? 'Live upgrade endpoint detected' : 'Read-safe mode: upgrade endpoints not yet confirmed';
   el.upgradeModeBadge.textContent = modeText;
 el.traitUpgradeInfo.innerHTML = `
@@ -15973,13 +16011,17 @@ const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.ge
     const instantCost = status === 'upgrading' ? calculateInstantFinishCost(currentLevel, remainingMs) : 0;
 
     const blocked = Boolean(
-  activeUpgradeRow &&
+  pendingTraitResearchRow &&
   row &&
   !(
-    String(activeUpgradeRow?.trait_type || '') === String(row?.trait_type || '') &&
-    String(activeUpgradeRow?.trait_value || '') === String(row?.trait_value || '')
+    String(pendingTraitResearchRow?.trait_type || '') === String(row?.trait_type || '') &&
+    String(pendingTraitResearchRow?.trait_value || '') === String(row?.trait_value || '')
   )
 );
+    const pendingClaimElsewhere = blocked && mapUpgradeStatus(
+      pendingTraitResearchRow?.upgrade_status,
+      pendingTraitResearchRow?.upgrade_ends_at
+    ) === 'ready';
 
     const canStart = !blocked && status === 'idle';
     const canClaim = status === 'ready';
@@ -15996,7 +16038,7 @@ const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.ge
     const boosterGlowClass = getTraitBoosterGlowClass(row, status);
 
     const statusText = blocked
-      ? 'Another trait is upgrading'
+      ? (pendingClaimElsewhere ? 'Claim pending on another trait' : 'Another trait is upgrading')
       : status === 'ready'
         ? 'Research complete'
         : status === 'upgrading'
@@ -16004,7 +16046,9 @@ const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.ge
           : 'Ready to start';
 
     const chamberNote = blocked
-      ? 'Another trait on this NFT is already upgrading. One active upgrade per NFT is enforced by design.'
+      ? (pendingClaimElsewhere
+        ? 'Another trait on this NFT is ready to claim. Claim it before starting new Trait research.'
+        : 'Another trait on this NFT is already upgrading. One active upgrade per NFT is enforced by design.')
       : status === 'ready'
         ? 'This trait is ready to claim. Claiming finalizes the new level for the current player.'
         : status === 'upgrading'
@@ -21805,6 +21849,19 @@ if (el.activeResearchQueue && el.activeResearchQueue.dataset.queueActionsBound !
         readyRow.trait_type,
         readyRow.trait_value
       );
+      return;
+    }
+
+    const viewResearchButton = event.target.closest('[data-queue-view-research-token]');
+    if (viewResearchButton) {
+      event.preventDefault();
+
+      const tokenId = String(viewResearchButton.getAttribute('data-queue-view-research-token') || '').trim();
+      if (!tokenId || viewResearchButton.disabled || state.actionInFlight) {
+        return;
+      }
+
+      openGenesisLabFromQueue(tokenId);
       return;
     }
 

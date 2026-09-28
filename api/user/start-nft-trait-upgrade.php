@@ -447,6 +447,34 @@ function nft_has_active_upgrade(PDO $pdo, $token_id, $collection) {
 }
 
 /**
+ * Return pending Trait research for one Genesis mouse.
+ *
+ * A completed row is still permanent Lab progression awaiting its existing
+ * claim transaction. It must block every new Trait start on the same token
+ * and collection until that claim succeeds. "ready" remains included as the
+ * legacy alias already accepted by the read and claim paths.
+ */
+function nft_has_pending_trait_research(PDO $pdo, $token_id, $collection) {
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM tbl_nft_trait_upgrades
+        WHERE token_id = ?
+          AND collection = ?
+          AND upgrade_status IN ('upgrading', 'ready_to_claim', 'ready')
+        ORDER BY CASE upgrade_status
+            WHEN 'ready_to_claim' THEN 0
+            WHEN 'ready' THEN 0
+            ELSE 1
+        END
+        LIMIT 1
+    ");
+    $stmt->execute([$token_id, $collection]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $row ?: null;
+}
+
+/**
  * Return true when a SQLite table exists.
  */
 function sqlite_table_exists(PDO $pdo, string $tableName): bool {
@@ -660,25 +688,28 @@ try {
         ], 400);
     }
 
-    $activeUpgrade = nft_has_active_upgrade($pdo, $token_id, 'genesis');
-    if ($activeUpgrade) {
-        $activeTraitType = $activeUpgrade['trait_type'] ?? '';
-        $activeTraitValue = $activeUpgrade['trait_value'] ?? '';
+    $pendingTraitResearch = nft_has_pending_trait_research($pdo, $token_id, 'genesis');
+    if ($pendingTraitResearch) {
+        $pendingStatus = strtolower((string)($pendingTraitResearch['upgrade_status'] ?? 'upgrading'));
+        $pendingEndsAt = !empty($pendingTraitResearch['upgrade_ends_at'])
+            ? strtotime($pendingTraitResearch['upgrade_ends_at'])
+            : false;
+        $pendingIsReadyToClaim = $pendingStatus === 'ready_to_claim'
+            || $pendingStatus === 'ready'
+            || ($pendingStatus === 'upgrading' && $pendingEndsAt && $pendingEndsAt <= time());
 
-        if (
-            normalize_trait_type($activeTraitType) !== $trait_type ||
-            (string)$activeTraitValue !== $trait_value
-        ) {
-            json_response([
-                'success' => false,
-                'error' => 'Another trait on this NFT is already upgrading',
-                'active_upgrade' => [
-                    'trait_type' => normalize_trait_type($activeTraitType),
-                    'trait_value' => (string)$activeTraitValue,
-                    'upgrade_ends_at' => $activeUpgrade['upgrade_ends_at'] ?? null
-                ]
-            ], 409);
-        }
+        json_response([
+            'success' => false,
+            'error' => $pendingIsReadyToClaim
+                ? 'A completed trait on this NFT must be claimed before starting another upgrade'
+                : 'Another trait on this NFT is already upgrading',
+            'pending_trait_research' => [
+                'trait_type' => normalize_trait_type($pendingTraitResearch['trait_type'] ?? ''),
+                'trait_value' => (string)($pendingTraitResearch['trait_value'] ?? ''),
+                'upgrade_status' => $pendingIsReadyToClaim ? 'ready_to_claim' : 'upgrading',
+                'upgrade_ends_at' => $pendingTraitResearch['upgrade_ends_at'] ?? null
+            ]
+        ], 409);
     }
 
     $availableDspoinc = get_user_available_dspoinc($pdo, $user_id);
