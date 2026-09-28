@@ -9,6 +9,9 @@
  * Current supported actions:
  * - mouse_availability (authenticated read-only availability snapshot)
  * - event_join
+ * - event_leave
+ * - event_start
+ * - event_complete
  * - event_cancel
  * - event_battle_elixir_consume_pair
  * - pvp_create
@@ -48,7 +51,9 @@ error_reporting(0);
 const MOUSEFIGHT_ECONOMY_GAME = 'mousefight';
 const MOUSEFIGHT_EVENT_MODE = 'admin_bracket_event';
 const MOUSEFIGHT_WAITING_STATUS = 'waiting';
+const MOUSEFIGHT_ACTIVE_STATUS = 'active';
 const MOUSEFIGHT_CANCELLED_STATUS = 'cancelled';
+const MOUSEFIGHT_EVENT_MIN_PLAYERS = 2;
 
 const MOUSEFIGHT_EVENT_BURN_SOURCE_PREFIX =
     'mousefight_event_buy_in_burn';
@@ -61,6 +66,12 @@ const MOUSEFIGHT_EVENT_REFUND_SOURCE_PREFIX =
 
 const MOUSEFIGHT_EVENT_REFUND_REASON_PREFIX =
     'MouseFight cancelled event buy-in refund - Fight ID:';
+
+const MOUSEFIGHT_EVENT_LEAVE_REFUND_SOURCE_PREFIX =
+    'mousefight_event_leave_refund';
+
+const MOUSEFIGHT_EVENT_LEAVE_REFUND_REASON_PREFIX =
+    'MouseFight event leave buy-in refund - Fight ID:';
 
 
 const MOUSEFIGHT_PVP_MODE = 'pvp_challenge';
@@ -2654,6 +2665,356 @@ function mousefight_economy_event_join(
 }
 
 /**
+ * Claim the single authoritative waiting-to-active transition for a moderator
+ * bracket event. The caller supplies no fight state: SQLite reloads it under
+ * the request's BEGIN IMMEDIATE transaction.
+ */
+function mousefight_economy_event_start(
+    SQLite3 $db,
+    array $data
+): array {
+    $fightId = mousefight_economy_required_string($data, 'fight_id', 100);
+    $trigger = mousefight_economy_required_string($data, 'trigger', 32);
+
+    if ($trigger !== 'manual' && $trigger !== 'auto_full') {
+        throw new RuntimeException('Unsupported MouseFight event start trigger.');
+    }
+
+    $fight = mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT fight_id, mode, status, max_players, metadata_json
+        FROM tbl_mousefights
+        WHERE fight_id = ?
+        LIMIT 1
+        ",
+        [$fightId]
+    );
+
+    if (!$fight) {
+        throw new RuntimeException('MouseFight event was not found.');
+    }
+
+    if ((string)$fight['mode'] !== MOUSEFIGHT_EVENT_MODE) {
+        throw new RuntimeException('This MouseFight is not an event.');
+    }
+
+    if (
+        (string)$fight['status'] !== MOUSEFIGHT_WAITING_STATUS &&
+        (string)$fight['status'] !== MOUSEFIGHT_ACTIVE_STATUS
+    ) {
+        throw new RuntimeException('This MouseFight event cannot be started from its current state.');
+    }
+
+    $countRow = mousefight_economy_fetch_one(
+        $db,
+        "SELECT COUNT(*) AS participant_count FROM tbl_mousefight_participants WHERE fight_id = ?",
+        [$fightId]
+    );
+    $participantCount = (int)($countRow['participant_count'] ?? 0);
+
+    if ($participantCount < MOUSEFIGHT_EVENT_MIN_PLAYERS) {
+        throw new RuntimeException('Need at least two persisted fighters to start this MouseFight event.');
+    }
+
+    if ((string)$fight['status'] === MOUSEFIGHT_ACTIVE_STATUS) {
+        return [
+            'fight_id' => $fightId,
+            'status' => MOUSEFIGHT_ACTIVE_STATUS,
+            'state' => 'already_started',
+            'start_claimed' => false
+        ];
+    }
+
+    if ($trigger === 'auto_full') {
+        /**
+         * Auto-start is opt-in persisted Event configuration. The bot may ask
+         * for auto_full, but it cannot supply or coerce this authority.
+         */
+        $metadataJson = trim((string)($fight['metadata_json'] ?? ''));
+        $metadata = $metadataJson === '' ? null : json_decode($metadataJson, true);
+        $autoStartEnabled = is_array($metadata)
+            && json_last_error() === JSON_ERROR_NONE
+            && ($metadata['auto_start_when_full'] ?? null) === true;
+
+        if (!$autoStartEnabled) {
+            throw new RuntimeException('MouseFight event auto-start when full is disabled.');
+        }
+
+        $maximumPlayers = (int)($fight['max_players'] ?? 0);
+        if ($maximumPlayers < MOUSEFIGHT_EVENT_MIN_PLAYERS) {
+            throw new RuntimeException('MouseFight event auto-start capacity is invalid.');
+        }
+
+        if ($participantCount !== $maximumPlayers) {
+            throw new RuntimeException('MouseFight event is not exactly full for auto-start.');
+        }
+    }
+
+    mousefight_economy_write(
+        $db,
+        "
+        UPDATE tbl_mousefights
+        SET status = ?, started_at = datetime('now')
+        WHERE fight_id = ?
+          AND mode = ?
+          AND status = ?
+        ",
+        [
+            MOUSEFIGHT_ACTIVE_STATUS,
+            $fightId,
+            MOUSEFIGHT_EVENT_MODE,
+            MOUSEFIGHT_WAITING_STATUS
+        ]
+    );
+    mousefight_economy_require_single_change($db, 'MouseFight event start transition');
+
+    $receipt = mousefight_economy_fetch_one(
+        $db,
+        "SELECT fight_id, status, started_at FROM tbl_mousefights WHERE fight_id = ? LIMIT 1",
+        [$fightId]
+    );
+
+    return [
+        'fight_id' => $fightId,
+        'status' => (string)$receipt['status'],
+        'started_at' => (string)$receipt['started_at'],
+        'participant_count' => $participantCount,
+        'state' => 'started',
+        'start_claimed' => true
+    ];
+}
+
+/**
+ * Load durable placement and combat evidence required before an Event can be
+ * finished. It intentionally derives the winner from persisted participant
+ * rows, never from a Discord runtime payload.
+ */
+function mousefight_economy_event_completion_evidence(
+    SQLite3 $db,
+    string $fightId
+): array {
+    $rankOne = mousefight_economy_fetch_all(
+        $db,
+        "
+        SELECT user_id, token_id
+        FROM tbl_mousefight_participants
+        WHERE fight_id = ? AND final_rank = 1
+        ORDER BY id ASC
+        ",
+        [$fightId]
+    );
+    $rankTwo = mousefight_economy_fetch_all(
+        $db,
+        "
+        SELECT user_id
+        FROM tbl_mousefight_participants
+        WHERE fight_id = ? AND final_rank = 2
+        ORDER BY id ASC
+        ",
+        [$fightId]
+    );
+
+    if (count($rankOne) !== 1 || trim((string)$rankOne[0]['user_id']) === '' || trim((string)$rankOne[0]['token_id']) === '') {
+        throw new RuntimeException('MouseFight event completion requires exactly one persisted rank-one participant.');
+    }
+
+    if (count($rankTwo) !== 1 || trim((string)$rankTwo[0]['user_id']) === '') {
+        throw new RuntimeException('MouseFight event completion requires exactly one persisted rank-two participant.');
+    }
+
+    $winner = $rankOne[0];
+    $round = mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT id
+        FROM tbl_mousefight_rounds
+        WHERE fight_id = ?
+          AND winner_user_id = ?
+          AND winner_token_id = ?
+        LIMIT 1
+        ",
+        [$fightId, (string)$winner['user_id'], (string)$winner['token_id']]
+    );
+
+    if (!$round) {
+        throw new RuntimeException('MouseFight event completion requires persisted combat-round evidence for the rank-one winner.');
+    }
+
+    return [
+        'winner_user_id' => (string)$winner['user_id'],
+        'winner_token_id' => (string)$winner['token_id']
+    ];
+}
+
+/**
+ * Claim the single authoritative active-to-finished transition after combat
+ * snapshots, final placements, and round evidence are already durable.
+ */
+function mousefight_economy_event_complete(
+    SQLite3 $db,
+    array $data
+): array {
+    $fightId = mousefight_economy_required_string($data, 'fight_id', 100);
+    $fight = mousefight_economy_fetch_one(
+        $db,
+        "
+        SELECT fight_id, mode, status, winner_user_id, winner_token_id, ended_at
+        FROM tbl_mousefights
+        WHERE fight_id = ?
+        LIMIT 1
+        ",
+        [$fightId]
+    );
+
+    if (!$fight) {
+        throw new RuntimeException('MouseFight event was not found.');
+    }
+
+    if ((string)$fight['mode'] !== MOUSEFIGHT_EVENT_MODE) {
+        throw new RuntimeException('This MouseFight is not an event.');
+    }
+
+    $evidence = mousefight_economy_event_completion_evidence($db, $fightId);
+
+    if ((string)$fight['status'] === MOUSEFIGHT_FINISHED_STATUS) {
+        if (
+            !hash_equals((string)$fight['winner_user_id'], $evidence['winner_user_id']) ||
+            !hash_equals((string)$fight['winner_token_id'], $evidence['winner_token_id'])
+        ) {
+            throw new RuntimeException('Persisted MouseFight completion conflicts with final-rank evidence.');
+        }
+
+        return [
+            'fight_id' => $fightId,
+            'status' => MOUSEFIGHT_FINISHED_STATUS,
+            'ended_at' => (string)$fight['ended_at'],
+            'winner_user_id' => $evidence['winner_user_id'],
+            'winner_token_id' => $evidence['winner_token_id'],
+            'state' => 'already_finished',
+            'completion_claimed' => false
+        ];
+    }
+
+    if ((string)$fight['status'] !== MOUSEFIGHT_ACTIVE_STATUS) {
+        throw new RuntimeException('This MouseFight event cannot be completed from its current state.');
+    }
+
+    mousefight_economy_write(
+        $db,
+        "
+        UPDATE tbl_mousefights
+        SET
+            status = ?,
+            ended_at = datetime('now'),
+            winner_user_id = ?,
+            winner_token_id = ?
+        WHERE fight_id = ?
+          AND mode = ?
+          AND status = ?
+        ",
+        [
+            MOUSEFIGHT_FINISHED_STATUS,
+            $evidence['winner_user_id'],
+            $evidence['winner_token_id'],
+            $fightId,
+            MOUSEFIGHT_EVENT_MODE,
+            MOUSEFIGHT_ACTIVE_STATUS
+        ]
+    );
+    mousefight_economy_require_single_change($db, 'MouseFight event completion transition');
+
+    $receipt = mousefight_economy_fetch_one(
+        $db,
+        "SELECT fight_id, status, ended_at, winner_user_id, winner_token_id FROM tbl_mousefights WHERE fight_id = ? LIMIT 1",
+        [$fightId]
+    );
+
+    return [
+        'fight_id' => $fightId,
+        'status' => (string)$receipt['status'],
+        'ended_at' => (string)$receipt['ended_at'],
+        'winner_user_id' => (string)$receipt['winner_user_id'],
+        'winner_token_id' => (string)$receipt['winner_token_id'],
+        'state' => 'finished',
+        'completion_claimed' => true
+    ];
+}
+
+/**
+ * Remove one waiting Event participant. Paid entries are refunded from their
+ * original durable burn row; Discord supplies only participant selectors.
+ */
+function mousefight_economy_event_leave(SQLite3 $db, array $data): array {
+    $fightId = mousefight_economy_required_string($data, 'fight_id', 100);
+    $userId = mousefight_economy_required_string($data, 'user_id', 100);
+    $tokenId = mousefight_economy_required_string($data, 'token_id', 100);
+    $collection = mousefight_economy_required_string($data, 'collection', 100);
+    $fight = mousefight_economy_fetch_one($db, "SELECT fight_id, mode, status, buy_in_dspoinc FROM tbl_mousefights WHERE fight_id = ? LIMIT 1", [$fightId]);
+
+    if (!$fight) throw new RuntimeException('MouseFight event was not found.');
+    if ((string)$fight['mode'] !== MOUSEFIGHT_EVENT_MODE) throw new RuntimeException('This MouseFight is not an event.');
+
+    $burn = mousefight_economy_fetch_one($db, "SELECT burn_id, user_id, amount, status, refund_score_id, refund_adjustment_id, refunded_at FROM tbl_mousefight_dspoinc_burns WHERE fight_id = ? AND user_id = ? LIMIT 1", [$fightId, $userId]);
+
+    if ($burn && (string)$burn['status'] === 'refunded') {
+        if ($burn['refund_score_id'] === null || $burn['refund_adjustment_id'] === null) {
+            throw new RuntimeException('MouseFight event leave refund has incomplete durable receipt state.');
+        }
+        return [
+            'fight_id' => $fightId,
+            'user_id' => $userId,
+            'state' => 'already_refunded',
+            'left' => true,
+            'refunded' => true,
+            'refund_amount' => (int)$burn['amount'],
+            'refund_score_id' => (int)$burn['refund_score_id'],
+            'refund_adjustment_id' => (int)$burn['refund_adjustment_id'],
+            'refunded_at' => (string)$burn['refunded_at']
+        ];
+    }
+
+    if ((string)$fight['status'] !== MOUSEFIGHT_WAITING_STATUS) {
+        throw new RuntimeException('This MouseFight event is no longer waiting.');
+    }
+
+    $participant = mousefight_economy_fetch_one($db, "SELECT id, user_id FROM tbl_mousefight_participants WHERE fight_id = ? AND user_id = ? AND token_id = ? AND collection = ? LIMIT 1", [$fightId, $userId, $tokenId, $collection]);
+    $isPaidEvent = mousefight_economy_integer($fight['buy_in_dspoinc'] ?? 0, 0, 100000000) > 0;
+
+    if (!$participant) {
+        $identityConflict = mousefight_economy_fetch_one($db, "SELECT id FROM tbl_mousefight_participants WHERE fight_id = ? AND (user_id = ? OR (token_id = ? AND collection = ?)) LIMIT 1", [$fightId, $userId, $tokenId, $collection]);
+        if ($identityConflict) {
+            throw new RuntimeException('MouseFight event participant selectors do not match the persisted participant.');
+        }
+        if (!$isPaidEvent && !$burn) {
+            return ['fight_id' => $fightId, 'user_id' => $userId, 'state' => 'already_left', 'left' => true, 'refunded' => false];
+        }
+        throw new RuntimeException('MouseFight event participant was not found.');
+    }
+
+    if (!$isPaidEvent) {
+        if ($burn) throw new RuntimeException('Free MouseFight event has incompatible paid burn state.');
+        mousefight_economy_write($db, "DELETE FROM tbl_mousefight_participants WHERE fight_id = ? AND user_id = ? AND token_id = ? AND collection = ?", [$fightId, $userId, $tokenId, $collection]);
+        mousefight_economy_require_single_change($db, 'MouseFight free event participant release');
+        return ['fight_id' => $fightId, 'user_id' => $userId, 'state' => 'left', 'left' => true, 'refunded' => false];
+    }
+
+    if (!$burn) throw new RuntimeException('MouseFight paid event buy-in burn was not found.');
+    if ((string)$burn['status'] !== 'burned') throw new RuntimeException('MouseFight paid event burn is not eligible for leave refund.');
+    $amount = (int)$burn['amount'];
+    if ($amount <= 0) throw new RuntimeException('MouseFight paid event burn amount is invalid.');
+
+    $scoreId = mousefight_economy_write($db, "INSERT INTO tbl_user_scores (user_id, game, score, timestamp, source) VALUES (?, ?, ?, datetime('now'), ?)", [$userId, MOUSEFIGHT_ECONOMY_GAME, $amount, MOUSEFIGHT_EVENT_LEAVE_REFUND_SOURCE_PREFIX . ':' . $fightId]);
+    $adjustmentId = mousefight_economy_write($db, "INSERT INTO tbl_score_adjustments (user_id, admin_id, amount, action, reason, timestamp) VALUES (?, ?, ?, 'add', ?, datetime('now'))", [$userId, $userId, $amount, MOUSEFIGHT_EVENT_LEAVE_REFUND_REASON_PREFIX . ' ' . $fightId]);
+    mousefight_economy_write($db, "UPDATE tbl_mousefight_dspoinc_burns SET status = 'refunded', refunded_at = datetime('now'), refund_score_id = ?, refund_adjustment_id = ?, updated_at = datetime('now') WHERE burn_id = ? AND status = 'burned'", [$scoreId, $adjustmentId, (int)$burn['burn_id']]);
+    mousefight_economy_require_single_change($db, 'MouseFight event leave burn refund transition');
+    mousefight_economy_write($db, "DELETE FROM tbl_mousefight_participants WHERE fight_id = ? AND user_id = ? AND token_id = ? AND collection = ?", [$fightId, $userId, $tokenId, $collection]);
+    mousefight_economy_require_single_change($db, 'MouseFight paid event participant release');
+
+    return ['fight_id' => $fightId, 'user_id' => $userId, 'state' => 'refunded', 'left' => true, 'refunded' => true, 'refund_amount' => $amount, 'refund_score_id' => $scoreId, 'refund_adjustment_id' => $adjustmentId];
+}
+
+/**
  * Cancel one waiting event and refund every unrefunded event burn.
  */
 function mousefight_economy_event_cancel(
@@ -3972,6 +4333,10 @@ function mousefight_economy_event_complete_recovery(
     ];
 }
 
+if (defined('MOUSEFIGHT_ECONOMY_LIBRARY_ONLY') && MOUSEFIGHT_ECONOMY_LIBRARY_ONLY) {
+    return;
+}
+
 $authToken = mousefight_economy_get_auth_token();
 
 $validTokens = array_values(
@@ -4043,6 +4408,9 @@ if (
         [
             'mouse_availability',
             'event_join',
+            'event_leave',
+            'event_start',
+            'event_complete',
             'event_cancel',
             'event_battle_elixir_consume_pair',
             'event_complete_recovery',
@@ -4128,6 +4496,18 @@ try {
     switch ($action) {
         case 'event_join':
             $result = mousefight_economy_event_join($db, $data);
+            break;
+
+        case 'event_leave':
+            $result = mousefight_economy_event_leave($db, $data);
+            break;
+
+        case 'event_start':
+            $result = mousefight_economy_event_start($db, $data);
+            break;
+
+        case 'event_complete':
+            $result = mousefight_economy_event_complete($db, $data);
             break;
 
         case 'event_cancel':
