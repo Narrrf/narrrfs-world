@@ -50,6 +50,59 @@ const WEAPON_MILESTONE_REWARDS = [
     ],
 ];
 
+const WEAPON_MILESTONE_REWARD_OVERRIDES = [
+    'ATK' => [
+        25 => [
+            'reward_amount' => 150000,
+        ],
+        50 => [
+            'reward_amount' => 500000,
+        ],
+    ],
+    'DEF' => [
+        50 => [
+            'reward_type' => 'store_item',
+            'reward_reference_id' => 33,
+            'reward_quantity' => 10,
+            'reward_amount' => 0,
+            'reward_currency' => 'ITEM',
+            'title' => 'Legendary Weapon Chest',
+            'description' => 'Your DEF ability reached level 50.',
+            'preview_label' => '10× Green Elixir',
+        ],
+    ],
+    'SPECIAL' => [
+        50 => [
+            'reward_type' => 'store_item',
+            'reward_reference_id' => 35,
+            'reward_quantity' => 10,
+            'reward_amount' => 0,
+            'reward_currency' => 'ITEM',
+            'title' => 'Legendary Weapon Chest',
+            'description' => 'Your SPECIAL ability reached level 50.',
+            'preview_label' => '10× Red Elixir',
+        ],
+    ],
+];
+
+const CRAFTING_MILESTONE_REWARDS = [
+    [
+        'milestone_key' => 'crafting_level_50',
+        'ability_key' => 'CRAFTING',
+        'ability_category' => 'Education',
+        'required_level' => 50,
+        'reward_type' => 'store_item',
+        'reward_reference_id' => 35,
+        'reward_quantity' => 10,
+        'reward_amount' => 0,
+        'reward_currency' => 'ITEM',
+        'title' => 'Crafting Master Chest',
+        'description' => 'Your CRAFTING ability reached level 50.',
+        'preview_label' => '10× Red Elixir',
+        'source' => 'genesis_education_ability',
+    ],
+];
+
 
 const FITNESS_TRAIT_MILESTONE_REWARDS = [
     [
@@ -222,6 +275,34 @@ function fetch_weapon_ability_rows(PDO $pdo, string $tokenId, string $collection
 }
 
 /**
+ * Return the one canonical Crafting Ability row used by the Crafting chest.
+ */
+function fetch_crafting_ability_row(PDO $pdo, string $tokenId, string $collection): ?array {
+    $stmt = $pdo->prepare("
+        SELECT
+            ability_upgrade_id,
+            user_id,
+            token_id,
+            collection,
+            category,
+            ability_key,
+            current_level,
+            upgrade_status,
+            unlock_source_trait_level
+        FROM tbl_nft_ability_upgrades
+        WHERE token_id = ?
+          AND collection = ?
+          AND category = 'Education'
+          AND ability_key = 'CRAFTING'
+        LIMIT 1
+    ");
+    $stmt->execute([$tokenId, $collection]);
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return is_array($row) ? $row : null;
+}
+
+/**
  * Return already claimed milestone keys for this user and mouse.
  */
 function fetch_claimed_milestone_keys(PDO $pdo, string $userId, string $tokenId, string $collection): array {
@@ -327,6 +408,8 @@ try {
         foreach (WEAPON_MILESTONE_REWARDS as $milestone) {
             $requiredLevel = (int)$milestone['required_level'];
             $milestoneKey = build_weapon_milestone_key($abilityKey, $requiredLevel);
+            $override = WEAPON_MILESTONE_REWARD_OVERRIDES[$abilityKey][$requiredLevel] ?? [];
+            $resolvedMilestone = array_merge($milestone, $override);
 
             $rewards[] = [
                 'milestone_key' => $milestoneKey,
@@ -335,12 +418,14 @@ try {
                 'ability_key' => $abilityKey,
                 'current_level' => $currentLevel,
                 'required_level' => $requiredLevel,
-                'reward_amount' => (int)$milestone['reward_amount'],
-                'reward_currency' => 'DSPOINC',
-                'reward_type' => 'dspoinc',
-                'reward_reference_id' => null,
-                'title' => $milestone['title'],
-                'description' => $milestone['description'],
+                'reward_amount' => (int)$resolvedMilestone['reward_amount'],
+                'reward_currency' => (string)($resolvedMilestone['reward_currency'] ?? 'DSPOINC'),
+                'reward_type' => (string)($resolvedMilestone['reward_type'] ?? 'dspoinc'),
+                'reward_reference_id' => $resolvedMilestone['reward_reference_id'] ?? null,
+                'reward_quantity' => (int)($resolvedMilestone['reward_quantity'] ?? 1),
+                'reward_preview' => (string)($resolvedMilestone['preview_label'] ?? ''),
+                'title' => $resolvedMilestone['title'],
+                'description' => $resolvedMilestone['description'],
                 'highest_genesis_trait_level' => $highestGenesisTraitLevel,
                 'unlock_required_trait_level' => 20,
                 'category_unlocked' => $weaponsUnlocked,
@@ -348,6 +433,38 @@ try {
                 'claimed' => isset($claimedKeys[$milestoneKey]),
             ];
         }
+    }
+
+    $craftingAbilityRow = fetch_crafting_ability_row($pdo, $tokenId, $collection);
+    $craftingLevel = (int)($craftingAbilityRow['current_level'] ?? 0);
+    $educationUnlockRequiredTraitLevel = (int)(NFT_ABILITY_UNLOCK_LEVELS['Education'] ?? PHP_INT_MAX);
+    $educationUnlocked = $highestGenesisTraitLevel >= $educationUnlockRequiredTraitLevel;
+
+    foreach (CRAFTING_MILESTONE_REWARDS as $milestone) {
+        $milestoneKey = (string)$milestone['milestone_key'];
+        $requiredLevel = (int)$milestone['required_level'];
+
+        $rewards[] = [
+            'milestone_key' => $milestoneKey,
+            'source' => (string)$milestone['source'],
+            'ability_category' => (string)$milestone['ability_category'],
+            'ability_key' => (string)$milestone['ability_key'],
+            'current_level' => $craftingLevel,
+            'required_level' => $requiredLevel,
+            'reward_amount' => (int)$milestone['reward_amount'],
+            'reward_currency' => (string)$milestone['reward_currency'],
+            'reward_type' => (string)$milestone['reward_type'],
+            'reward_reference_id' => $milestone['reward_reference_id'],
+            'reward_quantity' => (int)$milestone['reward_quantity'],
+            'reward_preview' => (string)$milestone['preview_label'],
+            'title' => (string)$milestone['title'],
+            'description' => (string)$milestone['description'],
+            'highest_genesis_trait_level' => $highestGenesisTraitLevel,
+            'unlock_required_trait_level' => $educationUnlockRequiredTraitLevel,
+            'category_unlocked' => $educationUnlocked,
+            'eligible' => $craftingAbilityRow !== null && $educationUnlocked && $craftingLevel >= $requiredLevel,
+            'claimed' => isset($claimedKeys[$milestoneKey]),
+        ];
     }
 
     $fitnessTraitRewards = [];

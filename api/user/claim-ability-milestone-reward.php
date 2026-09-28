@@ -57,6 +57,63 @@ const WEAPON_MILESTONE_REWARDS = [
     ],
 ];
 
+/**
+ * Per-ability exceptions keep a shared Weapon milestone tier from changing
+ * another permanent ability's reward.
+ */
+const WEAPON_MILESTONE_REWARD_OVERRIDES = [
+    'ATK' => [
+        25 => [
+            'reward_amount' => 150000,
+        ],
+        50 => [
+            'reward_amount' => 500000,
+        ],
+    ],
+    'DEF' => [
+        50 => [
+            'reward_type' => 'store_item',
+            'reward_reference_id' => 33,
+            'reward_quantity' => 10,
+            'reward_amount' => 0,
+            'reward_currency' => 'ITEM',
+            'title' => 'Legendary Weapon Chest',
+            'description' => 'Your DEF ability reached level 50.',
+            'preview_label' => '10× Green Elixir',
+        ],
+    ],
+    'SPECIAL' => [
+        50 => [
+            'reward_type' => 'store_item',
+            'reward_reference_id' => 35,
+            'reward_quantity' => 10,
+            'reward_amount' => 0,
+            'reward_currency' => 'ITEM',
+            'title' => 'Legendary Weapon Chest',
+            'description' => 'Your SPECIAL ability reached level 50.',
+            'preview_label' => '10× Red Elixir',
+        ],
+    ],
+];
+
+const CRAFTING_MILESTONE_REWARDS = [
+    [
+        'milestone_key' => 'crafting_level_50',
+        'ability_key' => 'CRAFTING',
+        'ability_category' => 'Education',
+        'required_level' => 50,
+        'reward_type' => 'store_item',
+        'reward_reference_id' => 35,
+        'reward_quantity' => 10,
+        'reward_amount' => 0,
+        'reward_currency' => 'ITEM',
+        'title' => 'Crafting Master Chest',
+        'description' => 'Your CRAFTING ability reached level 50.',
+        'preview_label' => '10× Red Elixir',
+        'source' => 'genesis_education_ability',
+    ],
+];
+
 
 const FITNESS_TRAIT_MILESTONE_REWARDS = [
     [
@@ -191,18 +248,41 @@ function resolve_weapon_milestone_reward(string $milestoneKey): ?array {
                 continue;
             }
 
+            $override = WEAPON_MILESTONE_REWARD_OVERRIDES[$abilityKey][$requiredLevel] ?? [];
+            $resolvedMilestone = array_merge($milestone, $override);
+
             return [
                 'milestone_key' => $expectedKey,
                 'ability_key' => $abilityKey,
                 'ability_category' => 'Weapons',
                 'required_level' => $requiredLevel,
-                'reward_amount' => (int)$milestone['reward_amount'],
-                'reward_currency' => 'DSPOINC',
-                'title' => $milestone['title'],
-                'description' => $milestone['description'],
+                'reward_amount' => (int)$resolvedMilestone['reward_amount'],
+                'reward_currency' => (string)($resolvedMilestone['reward_currency'] ?? 'DSPOINC'),
+                'reward_type' => (string)($resolvedMilestone['reward_type'] ?? 'dspoinc'),
+                'reward_reference_id' => $resolvedMilestone['reward_reference_id'] ?? null,
+                'reward_quantity' => (int)($resolvedMilestone['reward_quantity'] ?? 1),
+                'title' => $resolvedMilestone['title'],
+                'description' => $resolvedMilestone['description'],
+                'preview_label' => (string)($resolvedMilestone['preview_label'] ?? ''),
                 'source' => 'genesis_weapon_ability',
             ];
         }
+    }
+
+    return null;
+}
+
+/**
+ * Return the configured Crafting milestone without creating a second identity
+ * for an existing permanent Ability level.
+ */
+function resolve_crafting_milestone_reward(string $milestoneKey): ?array {
+    foreach (CRAFTING_MILESTONE_REWARDS as $milestone) {
+        if ((string)$milestone['milestone_key'] !== $milestoneKey) {
+            continue;
+        }
+
+        return $milestone;
     }
 
     return null;
@@ -275,9 +355,9 @@ function user_controls_claim_genesis_mouse(PDO $pdo, string $userId, string $tok
 }
 
 /**
- * Return one Weapon ability row for this Genesis mouse.
+ * Return one canonical Ability row for this Genesis mouse.
  */
-function fetch_claim_weapon_ability_row(PDO $pdo, string $tokenId, string $collection, string $abilityKey): ?array {
+function fetch_claim_ability_row(PDO $pdo, string $tokenId, string $collection, string $category, string $abilityKey): ?array {
     $stmt = $pdo->prepare("
         SELECT
             ability_upgrade_id,
@@ -292,11 +372,11 @@ function fetch_claim_weapon_ability_row(PDO $pdo, string $tokenId, string $colle
         FROM tbl_nft_ability_upgrades
         WHERE token_id = ?
           AND collection = ?
-          AND category = 'Weapons'
+          AND category = ?
           AND ability_key = ?
         LIMIT 1
     ");
-    $stmt->execute([$tokenId, $collection, $abilityKey]);
+    $stmt->execute([$tokenId, $collection, $category, $abilityKey]);
 
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -661,19 +741,20 @@ function grant_claim_genetic_trait_to_user(PDO $pdo, string $userId, array $cata
 }
 
 /**
- * Deliver one Fitness Journey reward.
+ * Deliver one configured inventory or Genetic Item milestone reward.
  */
-function deliver_fitness_trait_milestone_reward(PDO $pdo, string $userId, array $reward): array {
+function deliver_configured_milestone_reward(PDO $pdo, string $userId, array $reward): array {
     $rewardType = (string)($reward['reward_type'] ?? '');
     $referenceId = (int)($reward['reward_reference_id'] ?? 0);
 
     if ($rewardType === 'store_item') {
         $storeItem = fetch_claim_store_item_row($pdo, $referenceId);
         if (!$storeItem) {
-            throw new RuntimeException('Fitness milestone store item could not be loaded');
+            throw new RuntimeException('Milestone store item could not be loaded');
         }
 
-        $deliveryPayload = grant_claim_store_item_to_user($pdo, $userId, $storeItem, 1, 'fitness_milestone');
+        $quantity = max(1, (int)($reward['reward_quantity'] ?? 1));
+        $deliveryPayload = grant_claim_store_item_to_user($pdo, $userId, $storeItem, $quantity, 'lab_milestone');
 
         return [
             'reward_type' => 'store_item',
@@ -845,12 +926,16 @@ try {
         ], 400);
     }
 
-        $reward = resolve_weapon_milestone_reward($milestoneKey);
+    $reward = resolve_weapon_milestone_reward($milestoneKey);
     $isFitnessTraitMilestone = false;
 
     if (!$reward) {
         $reward = resolve_fitness_trait_milestone_reward($milestoneKey);
         $isFitnessTraitMilestone = $reward !== null;
+    }
+
+    if (!$reward) {
+        $reward = resolve_crafting_milestone_reward($milestoneKey);
     }
 
     if (!$reward) {
@@ -874,6 +959,7 @@ try {
     $highestGenesisTraitLevel = fetch_claim_highest_genesis_trait_level($pdo, $tokenId, $collection);
     $currentLevel = 0;
     $requiredLevel = (int)$reward['required_level'];
+    $abilityCategory = (string)($reward['ability_category'] ?? '');
 
     if ($isFitnessTraitMilestone) {
         $currentLevel = $highestGenesisTraitLevel;
@@ -888,29 +974,29 @@ try {
             ], 409);
         }
     } else {
-        if (!is_valid_nft_ability_key('Weapons', (string)$reward['ability_key'])) {
+        if (!is_valid_nft_ability_key($abilityCategory, (string)$reward['ability_key'])) {
             milestone_json_response([
                 'success' => false,
-                'error' => 'Invalid Weapon ability key',
+                'error' => 'Invalid ability milestone key',
             ], 400);
         }
 
-        $abilityRow = fetch_claim_weapon_ability_row($pdo, $tokenId, $collection, (string)$reward['ability_key']);
+        $abilityRow = fetch_claim_ability_row($pdo, $tokenId, $collection, $abilityCategory, (string)$reward['ability_key']);
         if (!$abilityRow) {
             milestone_json_response([
                 'success' => false,
-                'error' => 'Weapon ability row not found for this Genesis mouse',
+                'error' => 'Ability row not found for this Genesis mouse',
             ], 404);
         }
 
-        $weaponUnlockRequiredTraitLevel = 20;
+        $abilityUnlockRequiredTraitLevel = (int)(NFT_ABILITY_UNLOCK_LEVELS[$abilityCategory] ?? PHP_INT_MAX);
 
-        if ($highestGenesisTraitLevel < $weaponUnlockRequiredTraitLevel) {
+        if ($highestGenesisTraitLevel < $abilityUnlockRequiredTraitLevel) {
             milestone_json_response([
                 'success' => false,
-                'error' => 'Weapons are not unlocked for this Genesis mouse yet',
+                'error' => 'This ability category is not unlocked for this Genesis mouse yet',
                 'highest_genesis_trait_level' => $highestGenesisTraitLevel,
-                'required_trait_level' => $weaponUnlockRequiredTraitLevel,
+                'required_trait_level' => $abilityUnlockRequiredTraitLevel,
             ], 409);
         }
 
@@ -919,11 +1005,11 @@ try {
         if ($currentLevel < $requiredLevel) {
             milestone_json_response([
                 'success' => false,
-                'error' => 'This Weapon Ability milestone is not unlocked yet',
+                'error' => 'This Ability milestone is not unlocked yet',
                 'current_level' => $currentLevel,
                 'required_level' => $requiredLevel,
                 'highest_genesis_trait_level' => $highestGenesisTraitLevel,
-                'weapon_unlock_required_trait_level' => $weaponUnlockRequiredTraitLevel,
+                'ability_unlock_required_trait_level' => $abilityUnlockRequiredTraitLevel,
             ], 409);
         }
     }
@@ -949,8 +1035,8 @@ try {
          */
         $deliveryPayload = [];
 
-        if ($isFitnessTraitMilestone) {
-            $deliveryPayload = deliver_fitness_trait_milestone_reward($pdo, $userId, $reward);
+        if ($isFitnessTraitMilestone || (string)($reward['reward_type'] ?? 'dspoinc') !== 'dspoinc') {
+            $deliveryPayload = deliver_configured_milestone_reward($pdo, $userId, $reward);
             $rewardId = insert_lab_milestone_reward_claim($pdo, $userId, $tokenId, $collection, $reward, $deliveryPayload);
         } else {
             $rewardAmount = (int)$reward['reward_amount'];
@@ -1022,6 +1108,15 @@ try {
     $responseRewardTitle = (string)($deliveryPayload['reward_title'] ?? $reward['title']);
     $responseRewardAmount = (int)($deliveryPayload['reward_amount'] ?? $reward['reward_amount']);
     $responseRewardCurrency = (string)($deliveryPayload['reward_currency'] ?? $reward['reward_currency']);
+    $chestType = $isFitnessTraitMilestone
+        ? 'fitness_journey'
+        : ($abilityCategory === 'Education' ? 'education_ability' : 'weapon_ability');
+    $chestSubtitle = $isFitnessTraitMilestone
+        ? 'Fitness Journey Reward Chest'
+        : ($abilityCategory === 'Education' ? 'Education Ability Milestone Reward' : 'Weapon Ability Milestone Reward');
+    $chestMessage = $isFitnessTraitMilestone
+        ? 'Your Genesis mouse opened a Fitness Journey Reward Chest!'
+        : ($abilityCategory === 'Education' ? 'Your Genesis mouse opened an Education Ability Reward Chest!' : 'Your Genesis mouse opened a Weapon Ability Reward Chest!');
 
     milestone_json_response([
         'success' => true,
@@ -1050,12 +1145,10 @@ try {
         'available_dspoinc' => $availableDspoinc,
         'new_available_dspoinc' => $availableDspoinc,
         'chest' => [
-            'type' => $isFitnessTraitMilestone ? 'fitness_journey' : 'weapon_ability',
+            'type' => $chestType,
             'title' => $isFitnessTraitMilestone ? $reward['title'] : $responseRewardTitle,
-            'subtitle' => $isFitnessTraitMilestone ? 'Fitness Journey Reward Chest' : 'Weapon Ability Milestone Reward',
-            'message' => $isFitnessTraitMilestone
-                ? 'Your Genesis mouse opened a Fitness Journey Reward Chest!'
-                : 'Your Genesis mouse opened a Weapon Ability Reward Chest!',
+            'subtitle' => $chestSubtitle,
+            'message' => $chestMessage,
             'reward_type' => $responseRewardType,
             'reward_title' => $responseRewardTitle,
             'amount' => $responseRewardAmount,

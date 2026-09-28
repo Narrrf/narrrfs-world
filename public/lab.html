@@ -14936,8 +14936,8 @@ function renderWeaponAbilityMilestoneChests() {
     ? genesisAbilityState.milestoneRewards
     : [];
 
-    const weaponRewards = rewards.filter((reward) =>
-    String(reward?.ability_category || '').toLowerCase() === 'weapons'
+  const weaponRewards = rewards.filter((reward) =>
+    ['weapons', 'education'].includes(String(reward?.ability_category || '').toLowerCase())
   );
 
   /**
@@ -14980,16 +14980,22 @@ function renderWeaponAbilityMilestoneChests() {
   const claimableHtml = claimableRewards.map((reward) => {
     const milestoneKey = String(reward.milestone_key || '').trim();
     const isClaiming = genesisAbilityState.milestoneClaimingKey === milestoneKey;
+    const isEducationReward = String(reward.ability_category || '').toLowerCase() === 'education';
+    const rewardPreview = String(reward.reward_type || '').toLowerCase() === 'store_item'
+      ? (reward.reward_preview || `${formatNumber(reward.reward_quantity || 1)}× Red Elixir`)
+      : `${formatNumber(reward.reward_amount || 0)} DSPOINC`;
+    const chestLabel = isEducationReward ? '📚 Education Reward Chest Available' : '⚔️ Weapon Reward Chest Available';
+    const fallbackTitle = isEducationReward ? 'Education Ability Chest' : 'Weapon Ability Chest';
 
     return `
       <div class="weapon-milestone-chest-card weapon-milestone-chest-card--claimable">
         <div class="weapon-milestone-chest-icon">🎁</div>
         <div class="weapon-milestone-chest-copy">
-          <div class="weapon-milestone-kicker">⚔️ Weapon Reward Chest Available</div>
-          <div class="weapon-milestone-title">${escapeHtml(reward.title || 'Weapon Ability Chest')}</div>
+          <div class="weapon-milestone-kicker">${chestLabel}</div>
+          <div class="weapon-milestone-title">${escapeHtml(reward.title || fallbackTitle)}</div>
           <div class="weapon-milestone-text">
-            ${escapeHtml(reward.ability_key || 'Weapon')} reached Lv ${formatNumber(reward.required_level || 1)}.
-            Open this chest to claim ${formatNumber(reward.reward_amount || 0)} DSPOINC.
+            ${escapeHtml(reward.ability_key || (isEducationReward ? 'Education' : 'Weapon'))} reached Lv ${formatNumber(reward.required_level || 1)}.
+            Open this chest to claim ${escapeHtml(rewardPreview)}.
           </div>
         </div>
         <button
@@ -15032,7 +15038,10 @@ async function claimWeaponAbilityMilestoneReward(milestoneKey) {
   const safeTokenId = String(genesisAbilityState.tokenId || getSafeTokenId(state.selectedNft) || '').trim();
 
   const isFitnessMilestone = safeMilestoneKey.startsWith('fitness_trait_');
-  const chestEyebrow = isFitnessMilestone ? 'Fitness Journey Chest' : 'Weapon Reward Chest';
+  const isCraftingMilestone = safeMilestoneKey === 'crafting_level_50';
+  const chestEyebrow = isFitnessMilestone
+    ? 'Fitness Journey Chest'
+    : (isCraftingMilestone ? 'Education Reward Chest' : 'Weapon Reward Chest');
 
   if (!safeTokenId || !safeMilestoneKey) {
     await showLabMessageModal({
@@ -15106,8 +15115,8 @@ async function claimWeaponAbilityMilestoneReward(milestoneKey) {
  *
  * Plain language for DEVS:
  * This is a visual celebration only. The backend already wrote the reward
- * before this modal appears. It supports Weapon DSPOINC rewards, Fitness Store
- * Items, Fitness Genetic Items, and Fitness fallback DSPOINC.
+ * before this modal appears. It supports DSPOINC, Store Item, and Genetic Item
+ * milestones without deciding reward eligibility or delivery.
  */
 function showWeaponAbilityRewardChestModal(result) {
   const chest = result?.chest || {};
@@ -15117,13 +15126,17 @@ function showWeaponAbilityRewardChestModal(result) {
   const rewardType = String(result?.reward_type || chest.reward_type || '').toLowerCase();
   const currency = String(result?.reward_currency || chest.currency || '').trim();
   const isFitnessChest = String(chest.type || '').toLowerCase() === 'fitness_journey';
+  const isEducationChest = String(chest.type || '').toLowerCase() === 'education_ability';
   const isDspoincReward = currency === 'DSPOINC' || rewardType.includes('dspoinc');
-  const icon = isFitnessChest ? '💪' : '⚔️';
-  const kicker = isFitnessChest ? 'Fitness Journey Milestone' : 'Weapon Ability Milestone';
+  const inventoryQuantity = Number(result?.delivery_payload?.quantity_awarded || 0);
+  const icon = isFitnessChest ? '💪' : (isEducationChest ? '📚' : '⚔️');
+  const kicker = isFitnessChest
+    ? 'Fitness Journey Milestone'
+    : (isEducationChest ? 'Education Ability Milestone' : 'Weapon Ability Milestone');
 
   const rewardValue = isDspoincReward
     ? `+${formatNumber(amount)} DSPOINC`
-    : escapeHtml(title);
+    : `${inventoryQuantity > 1 ? `${formatNumber(inventoryQuantity)}× ` : ''}${escapeHtml(title)}`;
 
   const rewardNote = isDspoincReward
     ? 'This reward was written by the backend ledger and can only be claimed once per mouse milestone.'
