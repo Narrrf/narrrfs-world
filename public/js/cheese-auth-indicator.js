@@ -498,6 +498,12 @@ window.NarrrfsSound = window.NarrrfsSound || {
       );
     }
 
+    // Keep the shared controls truthful when a page-specific control changes
+    // either preference through the documented NarrrfsAudio event contract.
+    // Replacing this callback on each render avoids listeners holding stale
+    // button references after the auth indicator refreshes.
+    window.NarrrfsAudio.refreshControls = refreshAudioButtons;
+
     musicButton.addEventListener('mouseenter', () => {
       musicButton.style.transform = 'translateY(-1px) scale(1.03)';
     });
@@ -603,7 +609,20 @@ window.NarrrfsSound = window.NarrrfsSound || {
   }
 
   function handleStorageEvent(event) {
-    if (!event || !AUTH_STORAGE_KEYS.includes(String(event.key || ''))) {
+    if (!event) {
+      return;
+    }
+
+    const key = String(event.key || '');
+
+    if ([SOUND_STORAGE_KEY, MUSIC_STORAGE_KEY, SFX_STORAGE_KEY].includes(key)) {
+      if (window.NarrrfsAudio && typeof window.NarrrfsAudio.refreshControls === 'function') {
+        window.NarrrfsAudio.refreshControls();
+      }
+      return;
+    }
+
+    if (!AUTH_STORAGE_KEYS.includes(key)) {
       return;
     }
 
@@ -624,6 +643,9 @@ window.NarrrfsSound = window.NarrrfsSound || {
 
   window.addEventListener('focus', handleWindowFocus);
   window.addEventListener('storage', handleStorageEvent);
+  window.addEventListener('narrrfs:music-toggle', () => window.NarrrfsAudio.refreshControls?.());
+  window.addEventListener('narrrfs:sfx-toggle', () => window.NarrrfsAudio.refreshControls?.());
+  window.addEventListener('narrrfs:sound-toggle', () => window.NarrrfsAudio.refreshControls?.());
 
   window.NarrrfsCheeseAuth = {
     refresh(options = {}) {

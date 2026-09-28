@@ -13617,7 +13617,9 @@ function stopAllProfileSounds() {
 }
 
 window.addEventListener('narrrfs:sound-toggle', (event) => {
-  const enabled = Boolean(event?.detail?.enabled);
+  // Legacy combined events do not expose a separate SFX value. New shared
+  // controls do, so changing Music alone must never stop Profile SFX.
+  const enabled = event?.detail?.sfxEnabled ?? Boolean(event?.detail?.enabled);
 
   if (enabled) {
     return;
@@ -15070,6 +15072,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
 
   document.addEventListener('click', () => {
+  if (!isProfileSoundEnabled()) return;
+
   const audio = document.getElementById('reward-open-sound');
   if (!audio) return;
 

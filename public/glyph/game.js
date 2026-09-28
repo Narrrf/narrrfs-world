@@ -139,6 +139,10 @@ window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function crea
   let wantsPlayback = false;
 
   function isSoundAllowed() {
+    if (window.NarrrfsAudio && typeof window.NarrrfsAudio.isMusicEnabled === 'function') {
+      return window.NarrrfsAudio.isMusicEnabled();
+    }
+
     if (window.NarrrfsSound && typeof window.NarrrfsSound.isEnabled === 'function') {
       return window.NarrrfsSound.isEnabled();
     }
@@ -316,10 +320,14 @@ function updateGlyphMusicButtonState() {
 function toggleGlyphMusic() {
   const nextEnabled = !isGlyphMusicAllowed();
 
-  localStorage.setItem('narrrfs_sound_enabled', nextEnabled ? 'true' : 'false');
-  window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
-    detail: { enabled: nextEnabled }
-  }));
+  if (window.NarrrfsAudio && typeof window.NarrrfsAudio.setMusicEnabled === 'function') {
+    window.NarrrfsAudio.setMusicEnabled(nextEnabled);
+  } else {
+    localStorage.setItem('narrrfs_sound_enabled', nextEnabled ? 'true' : 'false');
+    window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
+      detail: { enabled: nextEnabled }
+    }));
+  }
 
   if (nextEnabled) {
     resumeGlyphDirectMusic();
