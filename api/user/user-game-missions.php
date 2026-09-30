@@ -167,14 +167,6 @@ try {
         $currentSeasonStart = date('Y-m-d 00:00:00');
     }
     
-    // Ensure we're using the exact start time (00:00:00) for strict filtering
-    // This prevents including data from the same day but before the season officially started
-    if ($currentSeasonStart && strpos($currentSeasonStart, ' ') !== false) {
-        // Extract just the date part and set to 00:00:00 to ensure strict filtering
-        $datePart = explode(' ', $currentSeasonStart)[0];
-        $currentSeasonStart = $datePart . ' 00:00:00';
-    }
-
     // Initialize response data structure
     $response = [
         'tetris' => [
