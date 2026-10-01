@@ -2507,13 +2507,24 @@ function mousefight_economy_event_join(
     );
 
     if ($buyInAmount > 0) {
-        $existingBurn = mousefight_economy_fetch_one(
+        /*
+         * A refunded waiting-event entry is a completed historical attempt,
+         * not a current reservation. A player may re-enter after that refund
+         * and receives a new immutable burn row. Any non-refunded row remains
+         * a fail-closed guard against duplicate active buy-ins.
+         */
+        $existingActiveBurn = mousefight_economy_fetch_one(
             $db,
             "
             SELECT burn_id, status
             FROM tbl_mousefight_dspoinc_burns
             WHERE fight_id = ?
               AND user_id = ?
+              AND (
+                    status <> 'refunded'
+                    OR status IS NULL
+              )
+            ORDER BY burn_id DESC
             LIMIT 1
             ",
             [
@@ -2522,9 +2533,9 @@ function mousefight_economy_event_join(
             ]
         );
 
-        if ($existingBurn) {
+        if ($existingActiveBurn) {
             throw new RuntimeException(
-                'A MouseFight event buy-in already exists for this user.'
+                'An active MouseFight event buy-in already exists for this user.'
             );
         }
 
@@ -2943,7 +2954,8 @@ function mousefight_economy_event_complete(
 
 /**
  * Remove one waiting Event participant. Paid entries are refunded from their
- * original durable burn row; Discord supplies only participant selectors.
+ * current durable burn attempt; Discord supplies only participant selectors.
+ * Refunded attempts remain immutable audit history and allow a later re-entry.
  */
 function mousefight_economy_event_leave(SQLite3 $db, array $data): array {
     $fightId = mousefight_economy_required_string($data, 'fight_id', 100);
@@ -2955,25 +2967,6 @@ function mousefight_economy_event_leave(SQLite3 $db, array $data): array {
     if (!$fight) throw new RuntimeException('MouseFight event was not found.');
     if ((string)$fight['mode'] !== MOUSEFIGHT_EVENT_MODE) throw new RuntimeException('This MouseFight is not an event.');
 
-    $burn = mousefight_economy_fetch_one($db, "SELECT burn_id, user_id, amount, status, refund_score_id, refund_adjustment_id, refunded_at FROM tbl_mousefight_dspoinc_burns WHERE fight_id = ? AND user_id = ? LIMIT 1", [$fightId, $userId]);
-
-    if ($burn && (string)$burn['status'] === 'refunded') {
-        if ($burn['refund_score_id'] === null || $burn['refund_adjustment_id'] === null) {
-            throw new RuntimeException('MouseFight event leave refund has incomplete durable receipt state.');
-        }
-        return [
-            'fight_id' => $fightId,
-            'user_id' => $userId,
-            'state' => 'already_refunded',
-            'left' => true,
-            'refunded' => true,
-            'refund_amount' => (int)$burn['amount'],
-            'refund_score_id' => (int)$burn['refund_score_id'],
-            'refund_adjustment_id' => (int)$burn['refund_adjustment_id'],
-            'refunded_at' => (string)$burn['refunded_at']
-        ];
-    }
-
     if ((string)$fight['status'] !== MOUSEFIGHT_WAITING_STATUS) {
         throw new RuntimeException('This MouseFight event is no longer waiting.');
     }
@@ -2981,14 +2974,41 @@ function mousefight_economy_event_leave(SQLite3 $db, array $data): array {
     $participant = mousefight_economy_fetch_one($db, "SELECT id, user_id FROM tbl_mousefight_participants WHERE fight_id = ? AND user_id = ? AND token_id = ? AND collection = ? LIMIT 1", [$fightId, $userId, $tokenId, $collection]);
     $isPaidEvent = mousefight_economy_integer($fight['buy_in_dspoinc'] ?? 0, 0, 100000000) > 0;
 
+    $burn = $isPaidEvent
+        ? mousefight_economy_fetch_one($db, "SELECT burn_id, user_id, amount, status, refund_score_id, refund_adjustment_id, refunded_at FROM tbl_mousefight_dspoinc_burns WHERE fight_id = ? AND user_id = ? AND status = 'burned' ORDER BY burn_id DESC LIMIT 1", [$fightId, $userId])
+        : null;
+
     if (!$participant) {
         $identityConflict = mousefight_economy_fetch_one($db, "SELECT id FROM tbl_mousefight_participants WHERE fight_id = ? AND (user_id = ? OR (token_id = ? AND collection = ?)) LIMIT 1", [$fightId, $userId, $tokenId, $collection]);
         if ($identityConflict) {
             throw new RuntimeException('MouseFight event participant selectors do not match the persisted participant.');
         }
-        if (!$isPaidEvent && !$burn) {
+        if (!$isPaidEvent) {
             return ['fight_id' => $fightId, 'user_id' => $userId, 'state' => 'already_left', 'left' => true, 'refunded' => false];
         }
+
+        if (!$burn) {
+            $refundedBurn = mousefight_economy_fetch_one($db, "SELECT burn_id, amount, refund_score_id, refund_adjustment_id, refunded_at FROM tbl_mousefight_dspoinc_burns WHERE fight_id = ? AND user_id = ? AND status = 'refunded' ORDER BY burn_id DESC LIMIT 1", [$fightId, $userId]);
+
+            if ($refundedBurn) {
+                if ($refundedBurn['refund_score_id'] === null || $refundedBurn['refund_adjustment_id'] === null) {
+                    throw new RuntimeException('MouseFight event leave refund has incomplete durable receipt state.');
+                }
+
+                return [
+                    'fight_id' => $fightId,
+                    'user_id' => $userId,
+                    'state' => 'already_refunded',
+                    'left' => true,
+                    'refunded' => true,
+                    'refund_amount' => (int)$refundedBurn['amount'],
+                    'refund_score_id' => (int)$refundedBurn['refund_score_id'],
+                    'refund_adjustment_id' => (int)$refundedBurn['refund_adjustment_id'],
+                    'refunded_at' => (string)$refundedBurn['refunded_at']
+                ];
+            }
+        }
+
         throw new RuntimeException('MouseFight event participant was not found.');
     }
 
