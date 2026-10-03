@@ -25,8 +25,10 @@
     quote: '/api/partner/spoinc/quote-dspoinc-buy.php',
     buyCreate: '/api/partner/spoinc/create-gensuki-buy-intent.php',
     buyConfirm: '/api/partner/spoinc/confirm-gensuki-buy-intent.php',
+    buyAbandonedFail: '/api/partner/spoinc/fail-abandoned-buy-intent.php',
     depositCreate: '/api/partner/spoinc/create-spoinc-to-dspoinc-deposit-intent.php',
-    depositConfirm: '/api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php'
+    depositConfirm: '/api/partner/spoinc/confirm-spoinc-to-dspoinc-deposit.php',
+    depositAbandonedFail: '/api/partner/spoinc/fail-abandoned-spoinc-to-dspoinc-claim.php'
   });
 
   const WIDGET_SELECTOR = '.narrrfs-dspoinc-buy-widget';
@@ -155,23 +157,111 @@
     return loaded;
   }
 
-  async function connectWallet() {
-    const provider = window.solana;
+  function getProviderPublicKey(provider) {
+    const publicKey = provider?.publicKey;
 
-    if (!provider || !provider.isPhantom) {
-      throw new Error('Phantom wallet not found. Please install/open Phantom.');
+    return publicKey?.toBase58
+      ? publicKey.toBase58()
+      : String(publicKey || '').trim();
+  }
+
+  function getBridgeWalletProviders() {
+    const candidates = [
+      window.phantom?.solana,
+      window.solflare,
+      window.solflare?.solana,
+      window.solana,
+      ...(Array.isArray(window.solana?.providers) ? window.solana.providers : [])
+    ];
+    const seen = new Set();
+
+    return candidates.filter((provider) => {
+      if (!provider || typeof provider.connect !== 'function' || seen.has(provider)) {
+        return false;
+      }
+
+      seen.add(provider);
+      return true;
+    });
+  }
+
+  function providerLabel(provider) {
+    if (provider?.isPhantom) return 'Phantom';
+    if (provider?.isSolflare) return 'Solflare';
+    return 'selected wallet';
+  }
+
+  function createConfirmedNoBroadcastError(message) {
+    const error = new Error(message);
+    error.bridgeNoBroadcastConfirmed = true;
+    return error;
+  }
+
+  function isExplicitWalletRejection(error) {
+    const code = Number(error?.code);
+    const message = String(error?.message || '').toLowerCase();
+
+    return code === 4001 || message.includes('user rejected') || message.includes('user denied');
+  }
+
+  function resolveBridgeWalletProvider(expectedWallet = '') {
+    const candidates = getBridgeWalletProviders();
+
+    if (candidates.length === 0) {
+      throw createConfirmedNoBroadcastError('No supported Phantom or Solflare wallet provider was found.');
     }
 
-    const response = await provider.connect();
+    const normalizedExpectedWallet = String(expectedWallet || '').trim();
+    const matchingConnectedProvider = candidates.find(
+      (provider) => normalizedExpectedWallet && getProviderPublicKey(provider) === normalizedExpectedWallet
+    );
+
+    if (matchingConnectedProvider) {
+      return matchingConnectedProvider;
+    }
+
+    const connectedProviders = candidates.filter((provider) => getProviderPublicKey(provider) !== '');
+
+    if (normalizedExpectedWallet && connectedProviders.length > 0) {
+      throw createConfirmedNoBroadcastError('The connected wallet does not match the quoted bridge wallet. Reconnect the expected wallet before continuing.');
+    }
+
+    if (normalizedExpectedWallet && candidates.length > 1) {
+      throw createConfirmedNoBroadcastError('Multiple wallet providers are available. Connect the quoted wallet in Phantom or Solflare before continuing.');
+    }
+
+    return candidates.find((provider) => provider.isPhantom)
+      || candidates.find((provider) => provider.isSolflare)
+      || candidates[0];
+  }
+
+  async function connectWallet(expectedWallet = '', preferredProvider = null) {
+    const provider = preferredProvider || resolveBridgeWalletProvider(expectedWallet);
+    let response;
+
+    try {
+      response = await provider.connect();
+    } catch (error) {
+      if (isExplicitWalletRejection(error)) {
+        throw createConfirmedNoBroadcastError(`${providerLabel(provider)} signature request was rejected before broadcast.`);
+      }
+
+      throw error;
+    }
+
     const publicKey = response?.publicKey?.toBase58
       ? response.publicKey.toBase58()
-      : String(response?.publicKey || '');
+      : (getProviderPublicKey(provider) || String(response?.publicKey || '').trim());
 
     if (!publicKey) {
-      throw new Error('Could not read Phantom wallet address.');
+      throw createConfirmedNoBroadcastError(`Could not read the ${providerLabel(provider)} wallet address.`);
     }
 
-    return publicKey;
+    if (expectedWallet && publicKey !== expectedWallet) {
+      throw createConfirmedNoBroadcastError(`Connected ${providerLabel(provider)} wallet does not match the expected bridge wallet.`);
+    }
+
+    return { provider, wallet: publicKey };
   }
 
   async function requestJson(path, payload) {
@@ -236,41 +326,60 @@
     return solanaWeb3.Transaction.from(rawTransactionBytes);
   }
 
-  async function sendGensukiTransactionWithPhantom(intentData, label) {
-    if (!window.solana || !window.solana.isPhantom) {
-      throw new Error('Phantom wallet is required for this bridge flow.');
-    }
-
+  async function sendGensukiTransactionWithProvider(provider, intentData, label) {
     const transactionPayload = intentData.transaction || intentData.gensuki_transaction || intentData.transaction_base64 || '';
     if (!transactionPayload) {
-      throw new Error(`Gensuki did not return a signable ${label} transaction payload.`);
+      throw createConfirmedNoBroadcastError(`Gensuki did not return a signable ${label} transaction payload.`);
     }
 
-    const connectedWallet = await connectWallet();
     const expectedWallet = String(intentData.wallet || intentData.buyer_wallet || '').trim();
+    const walletConnection = await connectWallet(expectedWallet, provider);
 
-    if (expectedWallet && connectedWallet !== expectedWallet) {
-      throw new Error(`Connected Phantom wallet does not match ${label} intent wallet. Expected ${expectedWallet}`);
+    if (expectedWallet && walletConnection.wallet !== expectedWallet) {
+      throw createConfirmedNoBroadcastError(`Connected wallet does not match ${label} intent wallet. Expected ${expectedWallet}`);
     }
 
-    const transaction = await decodeGensukiTransactionPayload(transactionPayload);
+    let transaction;
+    try {
+      transaction = await decodeGensukiTransactionPayload(transactionPayload);
+    } catch (error) {
+      throw createConfirmedNoBroadcastError(`Could not decode the ${label} transaction before signing: ${error.message || error}`);
+    }
 
-    if (window.solana.signAndSendTransaction) {
-      const result = await window.solana.signAndSendTransaction(transaction);
+    if (provider.signAndSendTransaction) {
+      let result;
+      try {
+        result = await provider.signAndSendTransaction(transaction);
+      } catch (error) {
+        if (isExplicitWalletRejection(error)) {
+          throw createConfirmedNoBroadcastError(`${providerLabel(provider)} rejected the ${label} transaction before broadcast.`);
+        }
+
+        throw error;
+      }
       const signature = result && result.signature ? String(result.signature) : '';
 
       if (!signature) {
-        throw new Error(`Phantom did not return a ${label} transaction signature.`);
+        throw new Error(`${providerLabel(provider)} did not return a ${label} transaction signature. The transaction may require retry or manual review.`);
       }
 
       return signature;
     }
 
-    if (!window.solana.signTransaction) {
-      throw new Error('Phantom signTransaction is unavailable.');
+    if (!provider.signTransaction) {
+      throw createConfirmedNoBroadcastError(`${providerLabel(provider)} signTransaction is unavailable.`);
     }
 
-    const signedTransaction = await window.solana.signTransaction(transaction);
+    let signedTransaction;
+    try {
+      signedTransaction = await provider.signTransaction(transaction);
+    } catch (error) {
+      if (isExplicitWalletRejection(error)) {
+        throw createConfirmedNoBroadcastError(`${providerLabel(provider)} rejected the ${label} transaction before broadcast.`);
+      }
+
+      throw error;
+    }
     const solanaWeb3 = await ensureSolanaWeb3();
 
     if (!solanaWeb3.Connection) {
@@ -280,6 +389,25 @@
     const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
 
     return await connection.sendRawTransaction(signedTransaction.serialize());
+  }
+
+  async function requestAbandonedCleanup(endpoint, intentId, reason, clientErrorMessage) {
+    if (!intentId) {
+      return { success: false, message: 'No local bridge intent ID was available for cleanup.' };
+    }
+
+    try {
+      const payload = await requestJson(endpoint, {
+        intent_id: intentId,
+        reason,
+        client_error_message: clientErrorMessage
+      });
+      const data = payload?.data || payload;
+
+      return { success: true, message: data?.message || 'Pending bridge row was safely closed as failed.' };
+    } catch (error) {
+      return { success: false, message: error.message || String(error) };
+    }
   }
 
   function buildResumeStorageKey(discordId, wallet, dspoincAmount) {
@@ -533,7 +661,7 @@
 
     setStatus(widget, 'Requesting bridge quote…', 'info');
 
-    const wallet = await connectWallet();
+    const { wallet } = await connectWallet();
 
     const data = await requestJson(ENDPOINTS.quote, {
       request_type: 'quote_dspoinc_buy_with_sol',
@@ -588,7 +716,10 @@
 
     const dspoincAmount = normalizeInteger(widget.dataset.dspoincAmount, DEFAULT_DSPOINC_AMOUNT);
     const discordId = resolveDiscordId();
-    const wallet = widget.dataset.wallet || await connectWallet();
+    const quotedWallet = String(widget.dataset.wallet || '').trim();
+    const walletConnection = await connectWallet(quotedWallet);
+    const wallet = walletConnection.wallet;
+    const walletProvider = walletConnection.provider;
     const estimatedSolAmount = normalizeDecimalString(widget.dataset.estimatedSolAmount || '');
     const spoincAmount = normalizeDecimalString(widget.dataset.spoincAmount || '');
 
@@ -622,7 +753,24 @@
         'info'
       );
 
-      buySignature = await sendGensukiTransactionWithPhantom(buyIntent, 'SOL → SPOINC buy');
+      try {
+        buySignature = await sendGensukiTransactionWithProvider(walletProvider, buyIntent, 'SOL → SPOINC buy');
+      } catch (error) {
+        if (error?.bridgeNoBroadcastConfirmed && buyIntentId && !buySignature) {
+          const cleanup = await requestAbandonedCleanup(
+            ENDPOINTS.buyAbandonedFail,
+            buyIntentId,
+            'direct_widget_pre_broadcast_buy_failure',
+            error.message || String(error)
+          );
+
+          if (cleanup.success) {
+            clearResumeState(resumeKey);
+          }
+        }
+
+        throw error;
+      }
 
       resumeState = writeResumeState(resumeKey, {
         discordId,
@@ -643,6 +791,8 @@
         `Step 1/5: Creating SOL → SPOINC buy intent for <strong>${escapeHtml(estimatedSolAmount)} SOL</strong>…`,
         'info'
       );
+
+      await connectWallet(wallet, walletProvider);
 
       const buyCreateResponse = await requestJson(ENDPOINTS.buyCreate, {
         request_type: 'create_sol_to_spoinc_for_dspoinc_buy',
@@ -682,7 +832,24 @@
         'info'
       );
 
-      buySignature = await sendGensukiTransactionWithPhantom(buyIntent, 'SOL → SPOINC buy');
+      try {
+        buySignature = await sendGensukiTransactionWithProvider(walletProvider, buyIntent, 'SOL → SPOINC buy');
+      } catch (error) {
+        if (error?.bridgeNoBroadcastConfirmed && buyIntentId && !buySignature) {
+          const cleanup = await requestAbandonedCleanup(
+            ENDPOINTS.buyAbandonedFail,
+            buyIntentId,
+            'direct_widget_pre_broadcast_buy_failure',
+            error.message || String(error)
+          );
+
+          if (cleanup.success) {
+            clearResumeState(resumeKey);
+          }
+        }
+
+        throw error;
+      }
 
       resumeState = writeResumeState(resumeKey, {
         buySignature,
@@ -737,7 +904,24 @@
         'info'
       );
 
-      depositSignature = await sendGensukiTransactionWithPhantom(depositIntent, 'SPOINC → dSPOINC deposit');
+      try {
+        depositSignature = await sendGensukiTransactionWithProvider(walletProvider, depositIntent, 'SPOINC → dSPOINC deposit');
+      } catch (error) {
+        if (error?.bridgeNoBroadcastConfirmed && depositIntentId && !depositSignature) {
+          const cleanup = await requestAbandonedCleanup(
+            ENDPOINTS.depositAbandonedFail,
+            depositIntentId,
+            'direct_widget_pre_broadcast_claim_failure',
+            error.message || String(error)
+          );
+
+          if (cleanup.success) {
+            clearResumeState(resumeKey);
+          }
+        }
+
+        throw error;
+      }
 
       resumeState = writeResumeState(resumeKey, {
         depositSignature,
@@ -751,6 +935,8 @@
         `Step 4/5: SPOINC buy confirmed. Creating SPOINC → dSPOINC deposit intent for <strong>${escapeHtml(spoincAmount)} SPOINC</strong>…`,
         'info'
       );
+
+      await connectWallet(wallet, walletProvider);
 
       const depositCreateResponse = await requestJson(ENDPOINTS.depositCreate, {
         request_type: 'create_spoinc_to_dspoinc_after_sol_buy',
@@ -786,7 +972,24 @@
         'info'
       );
 
-      depositSignature = await sendGensukiTransactionWithPhantom(depositIntent, 'SPOINC → dSPOINC deposit');
+      try {
+        depositSignature = await sendGensukiTransactionWithProvider(walletProvider, depositIntent, 'SPOINC → dSPOINC deposit');
+      } catch (error) {
+        if (error?.bridgeNoBroadcastConfirmed && depositIntentId && !depositSignature) {
+          const cleanup = await requestAbandonedCleanup(
+            ENDPOINTS.depositAbandonedFail,
+            depositIntentId,
+            'direct_widget_pre_broadcast_claim_failure',
+            error.message || String(error)
+          );
+
+          if (cleanup.success) {
+            clearResumeState(resumeKey);
+          }
+        }
+
+        throw error;
+      }
 
       resumeState = writeResumeState(resumeKey, {
         depositSignature,

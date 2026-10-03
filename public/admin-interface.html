@@ -6967,11 +6967,12 @@ function formatSpoincBridgeOpsBucket(bucket) {
  */
 function renderSpoincBridgeOpsQueueRow(row, index) {
   const bucket = escapeSpoincBridgeHtml(formatSpoincBridgeOpsBucket(row.bucket));
+  const localRow = row.local_match?.found ? (row.local_match.row || {}) : {};
   const signature = escapeSpoincBridgeHtml(row.signature || 'No signature');
   const status = escapeSpoincBridgeHtml(row.status || 'unknown');
-  const wallet = escapeSpoincBridgeHtml(row.wallet || 'unknown wallet');
+  const wallet = escapeSpoincBridgeHtml(localRow.wallet || row.wallet || 'unknown wallet');
   const amount = escapeSpoincBridgeHtml(row.amount || 'unknown amount');
-  const routeHint = escapeSpoincBridgeHtml(row.route_hint || 'unknown route');
+  const routeHint = escapeSpoincBridgeHtml(localRow.route_key || row.route_hint || 'unknown route');
   const solanaState = escapeSpoincBridgeHtml(row.solana?.state || 'not_checked');
   const localState = row.local_match?.found
     ? `Local: ${escapeSpoincBridgeHtml(row.local_match.table || 'matched')}`
