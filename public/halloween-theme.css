@@ -1,0 +1,143 @@
+/*
+ * NARRRFS_HALLOWEEN_THEME_2026
+ *
+ * A scoped, presentation-only seasonal layer for public pages linked by the
+ * main navigation. It must not control page state, navigation, forms, wallet
+ * behavior, API calls, authentication, economy, or gameplay.
+ */
+:root {
+  --halloween-bg: #100817;
+  --halloween-panel: rgba(31, 17, 42, 0.88);
+  --halloween-orange: #fb923c;
+  --halloween-purple: #a855f7;
+  --halloween-green: #a3e635;
+  --halloween-text: #fff7ed;
+  --halloween-glow: rgba(251, 146, 60, 0.24);
+}
+
+body.halloween-theme {
+  background-color: var(--halloween-bg);
+  background-image:
+    radial-gradient(ellipse at 8% 6%, rgba(251, 146, 60, 0.13), transparent 28%),
+    radial-gradient(ellipse at 92% 12%, rgba(168, 85, 247, 0.16), transparent 30%),
+    radial-gradient(ellipse at 50% 100%, rgba(163, 230, 53, 0.08), transparent 34%),
+    linear-gradient(145deg, #0c0712 0%, #1c102b 48%, #120a19 100%);
+  color: var(--halloween-text);
+}
+
+body.halloween-theme header {
+  border-color: rgba(251, 146, 60, 0.34) !important;
+  background-color: rgba(16, 8, 23, 0.9) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35), 0 0 26px rgba(168, 85, 247, 0.10);
+}
+
+body.halloween-theme header nav a {
+  text-shadow: 0 0 12px rgba(168, 85, 247, 0.18);
+}
+
+body.halloween-theme header nav a:hover,
+body.halloween-theme header nav a:focus-visible {
+  color: var(--halloween-green) !important;
+  outline: none;
+  text-shadow: 0 0 14px rgba(163, 230, 53, 0.5);
+}
+
+/* Homepage layers use opaque local colors, so the seasonal treatment is
+   applied directly to the established visual containers as well. */
+body.halloween-theme #season14-hero {
+  background:
+    radial-gradient(circle at 14% 12%, rgba(251, 146, 60, 0.24), transparent 32%),
+    radial-gradient(circle at 88% 18%, rgba(168, 85, 247, 0.26), transparent 36%),
+    linear-gradient(135deg, #16091e 0%, #29113c 54%, #130b1d 100%) !important;
+  border-color: rgba(251, 146, 60, 0.48) !important;
+  box-shadow: 0 28px 68px rgba(0, 0, 0, 0.42), 0 0 44px rgba(168, 85, 247, 0.18) !important;
+}
+
+body.halloween-theme #cookie-consent-banner {
+  background: linear-gradient(110deg, #1a0c24, #55206d 58%, #c2410c) !important;
+  border-bottom-color: rgba(163, 230, 53, 0.5) !important;
+}
+
+body.halloween-theme #season14-hero :is(h1, h2, h3) {
+  text-shadow: 0 0 24px rgba(251, 146, 60, 0.20);
+}
+
+/* Shared CSS pumpkin: decorative only, outside the main reading column and
+   never interactive. The face is drawn with gradients to avoid image assets. */
+body.halloween-theme .halloween-pumpkin {
+  position: fixed;
+  top: clamp(12rem, 46vh, 32rem);
+  right: -0.55rem;
+  z-index: 2;
+  width: 4.75rem;
+  height: 3.75rem;
+  border: 2px solid rgba(255, 201, 112, 0.68);
+  border-radius: 48% 48% 44% 44%;
+  background:
+    radial-gradient(ellipse at 32% 46%, #ffbe64 0 15%, transparent 16%),
+    radial-gradient(ellipse at 68% 46%, #ffbe64 0 15%, transparent 16%),
+    radial-gradient(ellipse at 50% 56%, #f97316 0 58%, #c2410c 59% 75%, transparent 76%);
+  box-shadow: inset -0.55rem -0.3rem 0 rgba(124, 45, 18, 0.35), 0 0 18px rgba(251, 146, 60, 0.52);
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.32));
+  pointer-events: none;
+  user-select: none;
+  animation: halloween-pumpkin-sway 7s ease-in-out infinite;
+}
+
+body.halloween-theme .halloween-pumpkin::before {
+  content: "";
+  position: absolute;
+  top: -0.86rem;
+  left: 50%;
+  width: 0.78rem;
+  height: 1rem;
+  border-radius: 0.5rem 0.15rem 0.35rem 0.2rem;
+  background: linear-gradient(100deg, #84cc16, #3f6212);
+  box-shadow: 0 0 10px rgba(163, 230, 53, 0.28);
+  transform: translateX(-50%) rotate(12deg);
+}
+
+body.halloween-theme .halloween-pumpkin::after {
+  content: "";
+  position: absolute;
+  inset: 1.25rem 1rem 0.65rem;
+  background:
+    radial-gradient(circle at 25% 30%, #27101d 0 0.24rem, transparent 0.26rem),
+    radial-gradient(circle at 75% 30%, #27101d 0 0.24rem, transparent 0.26rem),
+    radial-gradient(ellipse at 50% 82%, #27101d 0 0.53rem, transparent 0.56rem);
+}
+
+@keyframes halloween-pumpkin-sway {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50% { transform: rotate(3deg) translateY(-7px); }
+}
+
+@media (max-width: 1023px) {
+  body.halloween-theme .halloween-pumpkin { display: none; }
+}
+
+body.halloween-theme :is(.faq-card, .updates-card, .partner-card, .partner-shell-card, .season-shell-card, .doc-card, .mint-card, .role-card, .leaderboard-card, .stake-card, .nft-card, .panel, .offer-card, .arena-card, .strongest-hero) {
+  border-color: rgba(168, 85, 247, 0.34) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.3), 0 0 22px rgba(251, 146, 60, 0.07);
+}
+
+body.halloween-theme :is(.faq-card, .updates-card, .partner-card, .partner-shell-card, .season-shell-card, .doc-card, .mint-card, .role-card, .leaderboard-card, .stake-card, .nft-card, .panel, .offer-card, .arena-card, .strongest-hero):hover {
+  border-color: rgba(251, 146, 60, 0.58) !important;
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.38), 0 0 30px var(--halloween-glow);
+}
+
+body.halloween-theme :is(button, .rounded-full, .rounded-xl, .rounded-2xl, .rounded-lg):focus-visible {
+  outline: 2px solid var(--halloween-green);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.halloween-theme *,
+  body.halloween-theme *::before,
+  body.halloween-theme *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
