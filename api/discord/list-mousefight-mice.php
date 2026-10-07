@@ -316,6 +316,7 @@ try {
 
     $search = trim((string)($_GET['search'] ?? ''));
     $limit = mousefight_bounded_int($_GET['limit'] ?? null, MOUSEFIGHT_DEFAULT_LIMIT, 1, MOUSEFIGHT_MAX_LIMIT);
+    $offset = mousefight_bounded_int($_GET['offset'] ?? null, 0, 0, PHP_INT_MAX);
     $inventoryEnabled = mousefight_bool($_GET['inventory_enabled'] ?? null, true);
     $maxInventoryItems = mousefight_bounded_int(
         $_GET['max_inventory_items'] ?? null,
@@ -392,6 +393,12 @@ try {
             'data' => [
                 'discord_id' => $discordId,
                 'mice' => [],
+                'pagination' => [
+                    'offset' => $offset,
+                    'limit' => $limit,
+                    'total' => 0,
+                    'next_offset' => null,
+                ],
             ],
             'criteria' => [
                 'requires_custom_name' => true,
@@ -499,10 +506,15 @@ try {
             return $bPower <=> $aPower;
         }
 
-        return strcmp((string)$a['custom_name'], (string)$b['custom_name']);
+        $nameOrder = strcmp((string)$a['custom_name'], (string)$b['custom_name']);
+        // Stable identity order prevents equal-power/name ties moving between pages.
+        return $nameOrder ?: strcmp((string)$a['token_id'], (string)$b['token_id']);
     });
 
-    $mice = array_slice($mice, 0, $limit);
+    // Page only after current ownership, naming, search, fitness and ranking.
+    // League filtering remains with the caller, which must read all pages first.
+    $total = count($mice);
+    $mice = array_slice($mice, $offset, $limit);
 
     mousefight_json_response([
         'success' => true,
@@ -510,6 +522,12 @@ try {
         'data' => [
             'discord_id' => $discordId,
             'mice' => $mice,
+            'pagination' => [
+                'offset' => $offset,
+                'limit' => $limit,
+                'total' => $total,
+                'next_offset' => $offset + count($mice) < $total ? $offset + count($mice) : null,
+            ],
         ],
         'criteria' => [
             'requires_custom_name' => true,
