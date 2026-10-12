@@ -910,19 +910,34 @@ function updateAggregatedMovement() {
 
 
 // 🚀 GOD MODE & ACCESS FLAGS (must be declared BEFORE any GUI/Options use them)
-var godMode = false;          // Use var to avoid TDZ issues inside callbacks
-// 🚨 TEST ONLY: force God Mode access so level selector + panels are visible
-// Remember to remove this before going live
-var hasGodModeAccess = true;
+// DEVS FOR DECADES: God Mode and external level warps are default-deny until
+// a future server policy plus server-bound READY proof contract is implemented.
+// Browser roles, localStorage, query parameters, and globals can never grant it.
+var godMode = false; // Use var to avoid TDZ issues inside callbacks.
+var hasGodModeAccess = false;
 
-// Try to restore God Mode from localStorage (optional, but keeps old behavior)
-try {
-  const storedGodMode = localStorage.getItem("cheese_temple_god_mode");
-  if (storedGodMode === "true") {
-    godMode = true;
+function hasServerAuthorizedExternalWarp() {
+  // No server policy/READY-proof contract exists yet. Fail closed without
+  // starting Bootstrap or invoking a warp from an external/admin entry point.
+  return false;
+}
+
+function requestExternalLevelWarp(targetLevelId, warp) {
+  if (!hasServerAuthorizedExternalWarp()) {
+    console.warn("🔐 [GOD MODE] External level warp denied: server policy and READY proof are unavailable.", {
+      targetLevelId
+    });
+    return false;
   }
-} catch (e) {
-  console.warn("⚠️ [GOD MODE] localStorage not available:", e);
+
+  // Future server-authorized implementations must retain the existing
+  // temporary Bootstrap gate before invoking the requested warp callback.
+  if (!requireGenesisBootstrapForGameStart()) {
+    return false;
+  }
+
+  warp();
+  return true;
 }
 
 // 🔧 DEBUG HELPERS MENU VISIBILITY STATE (must be declared BEFORE any Options menu uses it)
@@ -1832,11 +1847,9 @@ window.addEventListener("storage", (event) => {
 // Store user roles from Discord API
 let userRoles = [];
 
-// ✅ TEST MODE: force God Mode access so level selector & God UI are visible
-// IMPORTANT: set this back to "false" before going live
-hasGodModeAccess = true; // <-- FORCE ENABLED FOR TESTING
+// Default-deny until a server policy supplies a current, session-bound grant.
+hasGodModeAccess = false;
 let userAvatarUrl = null; // User's Discord avatar URL
-const GOD_MODE_ROLES = ["admin", "moderator", "game tester"]; // Discord role names (case-insensitive)
 
 const ROLE_MULTIPLIERS_BY_NAME = {
   '🎴 VIP Holder': { multiplier: 2.0, name: '🎴 VIP Holder' },
@@ -1855,19 +1868,11 @@ const ROLE_MULTIPLIERS_BY_NAME = {
 // Role names are checked in ROLE_MULTIPLIERS_BY_NAME order
 
 /**
- * Check if user has God Mode access based on roles
- * @returns {boolean} True if user has Admin, Moderator, or Game Tester role
+ * Browser-fetched roles are presentation data and cannot authorize God Mode.
+ * A future server/session policy contract may replace this fail-closed result.
  */
 function checkGodModeAccess() {
-  if (!userRoles || userRoles.length === 0) {
-    return false;
-  }
-  
-  // Check for role names (case-insensitive) - no role IDs exposed
-  return userRoles.some(role => {
-    const roleLower = typeof role === 'string' ? role.toLowerCase() : '';
-    return GOD_MODE_ROLES.some(allowedRole => roleLower === allowedRole.toLowerCase());
-  });
+  return false;
 }
 
 /**
@@ -12550,9 +12555,8 @@ onStartVRSession: async () => {
           if (typeof guiSystem.showCharacterSelectionMenu === 'function') {
             guiSystem.showCharacterSelectionMenu();
           }
-          if (typeof guiSystem.showLevelSelector === 'function') {
-            guiSystem.showLevelSelector();
-          }
+          // Do not open the external selector from VR. It remains disabled
+          // until the server policy and server-bound READY proof exist.
         }
       } catch (guiErr) {
         console.warn('⚠️ [VR] Failed to reopen menus after VR start:', guiErr);
@@ -12603,27 +12607,13 @@ onStartVRSession: async () => {
       onRestartLevel6: () => {
         restartLevel6();
       },
-      onWarpToLevel1: () => {
-        warpToLevel1();
-      },
-      onWarpToLevel2: () => {
-        warpToLevel2();
-      },
-      onWarpToLevel3: () => {
-        warpToLevel3();
-      },
-      onWarpToLevel4: async () => {
-        await warpToLevel4();
-      },
-      onWarpToLevel5: async () => {
-        await warpToLevel5();
-      },
-      onWarpToLevel6: async () => {
-        await warpToLevel6();
-      },
-      onShowLevelSelector: () => {
-        showLevelSelector();
-      },
+      onWarpToLevel1: () => requestExternalLevelWarp(LEVEL_IDS.LEVEL1, () => warpToLevel1()),
+      onWarpToLevel2: () => requestExternalLevelWarp(LEVEL_IDS.LEVEL2, () => warpToLevel2()),
+      onWarpToLevel3: () => requestExternalLevelWarp(LEVEL_IDS.LEVEL3, () => warpToLevel3()),
+      onWarpToLevel4: () => requestExternalLevelWarp(LEVEL_IDS.LEVEL4, () => warpToLevel4()),
+      onWarpToLevel5: () => requestExternalLevelWarp(LEVEL_IDS.LEVEL5, () => warpToLevel5()),
+      onWarpToLevel6: () => requestExternalLevelWarp(LEVEL_IDS.LEVEL6, () => warpToLevel6()),
+      onShowLevelSelector: () => showLevelSelector(),
       onHideLevelSelector: () => {
         // Restore previous God Mode state if needed
         // Note: level3State might not be initialized yet, so we don't access it here
@@ -14173,11 +14163,6 @@ generalTabContent.appendChild(vrRescueContainer);
       // Reset fly states when disabling GOD mode
       movement.flyUp = false;
       movement.flyDown = false;
-      try {
-        localStorage.setItem("cheese_temple_god_mode", "false");
-      } catch (e) {
-        console.warn("Failed to save GOD mode setting:", e);
-      }
       updateGodModeButtons();
       // Hide sky, ground, and phoenix boss system sections when god mode is off
       if (optionsMenu._skySystemSection) {
@@ -14219,11 +14204,6 @@ generalTabContent.appendChild(vrRescueContainer);
       // Reset fly states when enabling GOD mode (start fresh)
       movement.flyUp = false;
       movement.flyDown = false;
-      try {
-        localStorage.setItem("cheese_temple_god_mode", "true");
-      } catch (e) {
-        console.warn("Failed to save GOD mode setting:", e);
-      }
       updateGodModeButtons();
       // Show sky, ground, and phoenix boss system sections when god mode is on
       if (optionsMenu._skySystemSection) {
@@ -18726,11 +18706,6 @@ function updateGodModeButtons() {
   if (!hasGodModeAccess) {
     if (godMode) {
       godMode = false;
-      try {
-        localStorage.setItem("cheese_temple_god_mode", "false");
-      } catch (e) {
-        console.warn("⚠️ [GOD MODE] Failed to save God Mode setting:", e);
-      }
     }
     return; // Don't update buttons if section is hidden
   }
@@ -19347,11 +19322,6 @@ try {
       if (!hasGodModeAccess && godMode) {
         console.log("🔐 [GOD MODE] Disabling God Mode - user does not have access");
         godMode = false;
-        try {
-          localStorage.setItem("cheese_temple_god_mode", "false");
-        } catch (e) {
-          console.warn("⚠️ [GOD MODE] Failed to save God Mode setting:", e);
-        }
         // Update UI if options menu is already created
         if (typeof updateGodModeButtons === 'function') {
           updateGodModeButtons();
@@ -22303,19 +22273,11 @@ function showLevel3GameOverScreen() {
       }, true)
     );
     
-    // Level Select button (only show for Level 3 crush deaths)
-    buttonContainer.appendChild(
+    // Level Select is unavailable until the server policy/READY-proof contract exists.
+    if (hasServerAuthorizedExternalWarp()) buttonContainer.appendChild(
       createButton("🎮 Level Select", () => {
         hideLevel3GameOverScreen();
-        // Temporarily enable God Mode to access level selector
-        const wasGodMode = godMode;
-        if (!godMode) {
-          godMode = true;
-          localStorage.setItem("cheese_temple_god_mode", "true");
-        }
-        // Open level selector
         showLevelSelector();
-        // Restore previous God Mode state after selector closes (handled in hideLevelSelector)
         level3State.crushActive = false;
       })
     );
@@ -36441,6 +36403,11 @@ if (typeof updateLevel6 === 'undefined') {
 let levelSelectorScreen = null;
 
 function showLevelSelector() {
+  if (!hasServerAuthorizedExternalWarp()) {
+    console.warn("🔐 [GOD MODE] Level selector denied: server policy and READY proof are unavailable.");
+    return false;
+  }
+
   // Use GUI System if available
   if (guiSystem && typeof guiSystem.showLevelSelector === 'function') {
     guiSystem.showLevelSelector();
@@ -36548,10 +36515,10 @@ function showLevelSelector() {
     level1Btn.style.transform = "scale(1)";
   });
   level1Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL1) {
-      warpToLevel1(); // Use warpToLevel1() for consistent initialization
-    }
+    requestExternalLevelWarp(LEVEL_IDS.LEVEL1, () => {
+      hideLevelSelector();
+      if (currentLevel !== LEVEL_IDS.LEVEL1) warpToLevel1();
+    });
   });
   buttonContainer.appendChild(level1Btn);
 
@@ -36582,10 +36549,10 @@ function showLevelSelector() {
     level2Btn.style.transform = "scale(1)";
   });
   level2Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL2) {
-      warpToLevel2();
-    }
+    requestExternalLevelWarp(LEVEL_IDS.LEVEL2, () => {
+      hideLevelSelector();
+      if (currentLevel !== LEVEL_IDS.LEVEL2) warpToLevel2();
+    });
   });
   buttonContainer.appendChild(level2Btn);
 
@@ -36616,10 +36583,10 @@ function showLevelSelector() {
     level3Btn.style.transform = "scale(1)";
   });
   level3Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL3) {
-      warpToLevel3();
-    }
+    requestExternalLevelWarp(LEVEL_IDS.LEVEL3, () => {
+      hideLevelSelector();
+      if (currentLevel !== LEVEL_IDS.LEVEL3) warpToLevel3();
+    });
   });
   buttonContainer.appendChild(level3Btn);
 
@@ -36650,10 +36617,10 @@ function showLevelSelector() {
     level4Btn.style.transform = "scale(1)";
   });
   level4Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL4) {
-      warpToLevel4();
-    }
+    requestExternalLevelWarp(LEVEL_IDS.LEVEL4, () => {
+      hideLevelSelector();
+      if (currentLevel !== LEVEL_IDS.LEVEL4) warpToLevel4();
+    });
   });
   buttonContainer.appendChild(level4Btn);
 
@@ -36684,10 +36651,10 @@ function showLevelSelector() {
     level5Btn.style.transform = "scale(1)";
   });
   level5Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL5) {
-      warpToLevel5();
-    }
+    requestExternalLevelWarp(LEVEL_IDS.LEVEL5, () => {
+      hideLevelSelector();
+      if (currentLevel !== LEVEL_IDS.LEVEL5) warpToLevel5();
+    });
   });
   buttonContainer.appendChild(level5Btn);
 
