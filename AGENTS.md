@@ -1583,3 +1583,50 @@ Prefer a clean checkpoint over an interrupted investigation.
 
 Never sacrifice validation or protected-system safety merely to finish before
 quota exhaustion.
+
+## Repository and Worktree Separation — Mandatory
+
+1. **Application repository**
+
+   - Canonical filesystem path: `C:\xampp-server\htdocs\narrrfs-world`
+   - Git branch: `render-deploy`
+   - GitHub purpose: Narrrfs World application source, APIs, public pages,
+     local XAMPP testing, and approved production deployment.
+
+2. **Agent Brain repository**
+
+   - Canonical filesystem path:
+     `C:\xampp-server\htdocs\narrrfs-world-agent-brain`
+   - GitHub purpose: agent roles, handoffs, manifests, governance, milestones,
+     restore points, and CI-validated coordination records.
+   - The Agent Brain repository never substitutes for application source or
+     deployment.
+
+3. **Isolated Codex worktrees**
+
+   - Isolated Codex worktrees are review and build locations only.
+   - They are not automatically served by XAMPP.
+   - They are not the canonical local runtime source.
+
+4. **Canonical local runtime validation**
+
+   - Local runtime validation must use the canonical XAMPP application root:
+     `C:\xampp-server\htdocs\narrrfs-world`.
+   - Example: [http://localhost/public/lab-store.html](http://localhost/public/lab-store.html)
+
+5. **Required application patch path**
+
+   Isolated worktree → focused reviewed transfer to canonical XAMPP source →
+   local validation → focused application Git commit/push → approved
+   deployment.
+
+6. **Focused transfer only**
+
+   Never copy whole files across worktrees when canonical files contain
+   unrelated changes. Transfer only reviewed hunks, make targeted backups,
+   inspect the focused diff, and preserve unrelated work.
+
+7. **Mandatory reporting boundary**
+
+   Every report must state which repository and which filesystem path was
+   edited, tested, committed, or published.

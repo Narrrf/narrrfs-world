@@ -110,7 +110,7 @@
         </section>
 
         <section class="panel rounded-3xl p-5 md:p-6" aria-labelledby="history-heading">
-          <p class="text-xs font-black uppercase tracking-[.2em] text-cyan-200">Lab Store history</p>
+          <p class="text-xs font-black uppercase tracking-[.2em] text-cyan-200">Community Lab Store history</p>
           <h2 id="history-heading" class="mt-1 text-2xl font-black">Recent purchases</h2>
           <div id="purchaseHistory" class="mt-5 text-sm text-slate-300">Loading recent purchases…</div>
         </section>
@@ -168,7 +168,7 @@
     const PURCHASE_HISTORY_API = '/api/user/get-mouse-lp-purchase-history.php';
     const LOGIN_URL = 'profile.html';
     const DEFAULT_MOUSE_IMAGE = 'img/rumble/cheese_rumble.png';
-    const state = { mice: [], offers: [], selectedTokenId: '', contextReady: false, sessionState: 'loading', availableDspoinc: null, lpPurchaseKeys: {}, purchasePending: false, modalOfferId: null, modalPayment: '' };
+    const state = { mice: [], offers: [], selectedTokenId: '', contextReady: false, sessionState: 'loading', availableDspoinc: null, lpPurchaseKeys: {}, purchasePending: false, modalOfferId: null, modalPayment: '', purchaseHistory: { purchases: [], offset: 0, total: 0, hasMore: false } };
     const el = {
       sessionStatus: document.getElementById('sessionStatus'), seasonLabel: document.getElementById('seasonLabel'), mouseState: document.getElementById('mouseState'), mouseList: document.getElementById('mouseList'), selectedMouse: document.getElementById('selectedMouse'), dspoincBalance: document.getElementById('dspoincBalance'), purchaseHistory: document.getElementById('purchaseHistory'), offersState: document.getElementById('offersState'), offerList: document.getElementById('offerList'), modal: document.getElementById('lpPurchaseModal'), modalTitle: document.getElementById('lpPurchaseModalTitle'), modalMessage: document.getElementById('lpPurchaseModalMessage'), modalItem: document.getElementById('lpPurchaseModalItem'), modalMouseDetail: document.getElementById('lpPurchaseModalMouseDetail'), modalMouse: document.getElementById('lpPurchaseModalMouse'), modalPrice: document.getElementById('lpPurchaseModalPrice'), modalRemaining: document.getElementById('lpPurchaseModalRemaining'), modalNote: document.getElementById('lpPurchaseModalNote'), modalError: document.getElementById('lpPurchaseModalError'), modalCancel: document.getElementById('lpPurchaseModalCancel'), modalConfirm: document.getElementById('lpPurchaseModalConfirm'), geneticViewerModal: document.getElementById('geneticViewerModal'), geneticViewerTitle: document.getElementById('geneticViewerTitle'), geneticViewerClose: document.getElementById('geneticViewerClose'), geneticViewerContent: document.getElementById('geneticViewerContent'), geneticViewerError: document.getElementById('geneticViewerError')
     };
@@ -251,9 +251,9 @@
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       return `${match[3]} ${months[Number(match[2]) - 1] || match[2]} ${match[1]} · ${match[4]}`;
     }
-    function renderPurchaseHistory(purchases) {
+    function renderPurchaseHistory(purchases = state.purchaseHistory.purchases) {
       if (!Array.isArray(purchases) || !purchases.length) {
-        el.purchaseHistory.innerHTML = '<p class="rounded-2xl border border-white/10 bg-slate-950/35 p-4 text-sm text-slate-300">No completed Lab Store purchases are available for this account yet.</p>';
+        el.purchaseHistory.innerHTML = '<p class="rounded-2xl border border-white/10 bg-slate-950/35 p-4 text-sm text-slate-300">No completed Lab Store purchases are available yet.</p>';
         return;
       }
       el.purchaseHistory.innerHTML = purchases.map(purchase => {
@@ -262,18 +262,17 @@
         const paymentDetail = isLp
           ? `✨ ${escapeHtml(formatNumber(purchase.amount_paid))} LP${purchase.mouse_name_snapshot ? ` · ${escapeHtml(purchase.mouse_name_snapshot)}` : ''}`
           : `🧀 ${escapeHtml(formatNumber(purchase.amount_paid))} DSPOINC · Account-level`;
-        const sourceLabel = purchase.source_type === 'genetic_item' ? 'Genetic Item' : 'Store Item';
-        return `<article class="rounded-2xl border border-white/10 bg-slate-950/35 p-4"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.14em] text-cyan-200">${escapeHtml(sourceLabel)} · ${escapeHtml(paymentLabel)}</p><h3 class="mt-1 font-black text-white">${escapeHtml(purchase.item_title_snapshot || 'Lab Store item')}</h3><p class="mt-2 text-sm font-bold text-amber-100">${paymentDetail}</p></div><time class="text-xs text-slate-400">${escapeHtml(formatPurchaseDate(purchase.completed_at))}</time></div></article>`;
-      }).join('');
+        const sourceLabel = purchase.source_type === 'genetic_item' ? 'Genetic Item' : 'Store Item'; const receipt = purchase.receipt?.display_id || `${purchase.receipt_source}:${purchase.receipt_id}`;
+        return `<article class="rounded-2xl border border-white/10 bg-slate-950/35 p-4"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.14em] text-cyan-200">${escapeHtml(sourceLabel)} · ${escapeHtml(paymentLabel)}</p><h3 class="mt-1 font-black text-white">${escapeHtml(purchase.item_title_snapshot || 'Lab Store item')}</h3><p class="mt-2 text-sm font-bold text-amber-100">${paymentDetail}</p><p class="mt-2 text-xs text-slate-400">Receipt ${escapeHtml(receipt)}</p></div><time class="text-xs text-slate-400">${escapeHtml(formatPurchaseDate(purchase.completed_at))}</time></div></article>`;
+      }).join('') + (state.purchaseHistory.hasMore ? '<button type="button" data-load-more-history>Load more purchases</button>' : ''); const more = el.purchaseHistory.querySelector('[data-load-more-history]'); if (more) more.addEventListener('click', () => loadPurchaseHistory(false));
     }
     function setPurchaseHistoryState(message, tone = 'loading') { el.purchaseHistory.innerHTML = `<p class="status rounded-2xl p-4 text-sm" data-tone="${tone}">${message}</p>`; }
-    async function loadPurchaseHistory() {
-      if (state.sessionState === 'unauthenticated') { setPurchaseHistoryState('Sign in to view your Lab Store purchase history.', 'warning'); return false; }
+    async function loadPurchaseHistory(reset = true) {
       try {
-        const { response, body } = await requestJson(`${PURCHASE_HISTORY_API}?limit=5&offset=0`);
-        if (response.status === 401 || body.error === 'unauthenticated') { setPurchaseHistoryState('Sign in to view your Lab Store purchase history.', 'warning'); return false; }
+        const { response, body } = await requestJson(`${PURCHASE_HISTORY_API}?limit=20&offset=${encodeURIComponent(reset ? 0 : state.purchaseHistory.offset)}`);
+        if (response.status === 401 || body.error === 'unauthenticated') { setPurchaseHistoryState('Purchase history is available to all visitors.', 'warning'); return false; }
         if (!response.ok || body.success !== true || !Array.isArray(body.purchases)) throw new Error('purchase_history_unavailable');
-        renderPurchaseHistory(body.purchases);
+        state.purchaseHistory.purchases = reset ? body.purchases : state.purchaseHistory.purchases.concat(body.purchases); state.purchaseHistory.offset = (reset ? 0 : state.purchaseHistory.offset) + body.purchases.length; state.purchaseHistory.total = Number(body.pagination?.total) || state.purchaseHistory.purchases.length; state.purchaseHistory.hasMore = body.pagination?.has_more === true; renderPurchaseHistory();
         return true;
       } catch (error) {
         setPurchaseHistoryState('Purchase history is unavailable right now. No purchase state was changed.', 'error');
@@ -450,7 +449,7 @@
     }
 
     async function loadContext() {
-      try { const { response, body } = await requestJson(CONTEXT_API); if (response.status === 401 || body.error === 'unauthenticated') { state.sessionState = 'unauthenticated'; renderDspoincBalance(); setPurchaseHistoryState('Sign in to view your Lab Store purchase history.', 'warning'); setStatus(`Sign in to select a mouse and purchase. <a class="font-black text-yellow-200 underline" href="${LOGIN_URL}">Open your Profile to sign in.</a>`, 'warning'); el.mouseState.textContent = 'Sign-in required.'; renderOffers(state.offers); return false; } if (!response.ok || body.success !== true || !Array.isArray(body.mice)) { throw new Error('context_unavailable'); }
+      try { const { response, body } = await requestJson(CONTEXT_API); if (response.status === 401 || body.error === 'unauthenticated') { state.sessionState = 'unauthenticated'; renderDspoincBalance(); await loadPurchaseHistory(); setStatus(`Sign in to select a mouse and purchase. <a class="font-black text-yellow-200 underline" href="${LOGIN_URL}">Open your Profile to sign in.</a>`, 'warning'); el.mouseState.textContent = 'Sign-in required.'; renderOffers(state.offers); return false; } if (!response.ok || body.success !== true || !Array.isArray(body.mice)) { throw new Error('context_unavailable'); }
         const priorSelection = state.selectedTokenId; state.contextReady = true; state.sessionState = 'authenticated'; state.availableDspoinc = Number.isFinite(Number(body.available_dspoinc)) ? Number(body.available_dspoinc) : null; state.mice = body.mice; state.selectedTokenId = state.mice.some(mouse => String(mouse.token_id) === priorSelection) ? priorSelection : (state.mice[0] ? String(state.mice[0].token_id) : '');
         renderDspoincBalance();
         await loadPurchaseHistory();
