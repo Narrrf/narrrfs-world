@@ -15,6 +15,8 @@
  * - No cross-granting: VIP collection grants VIP role, Genesis collection grants Holder role
  */
 
+require_once __DIR__ . '/../config/session.php';
+
 ob_start();
 
 error_reporting(E_ALL);
@@ -77,6 +79,14 @@ const VIP_ROLE_ID = '1332016526848692345';
 
 const MEMO_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 
+$sessionDiscordId = trim((string)($_SESSION['discord_id'] ?? ''));
+if ($sessionDiscordId === '') {
+    respondJson([
+        'success' => false,
+        'error' => 'Please sign in with Discord before verifying your NFTs.'
+    ], 401);
+}
+
 try {
     $input = json_decode(file_get_contents('php://input'), true);
 
@@ -84,7 +94,15 @@ try {
         throw new Exception('Invalid JSON input');
     }
 
-    $userId = trim((string)($input['user_id'] ?? ''));
+    $requestedUserId = trim((string)($input['user_id'] ?? ''));
+    if ($requestedUserId !== '' && !hash_equals($sessionDiscordId, $requestedUserId)) {
+        respondJson([
+            'success' => false,
+            'error' => 'Verification identity does not match the signed-in Discord user.'
+        ], 403);
+    }
+
+    $userId = $sessionDiscordId;
     $walletAddress = trim((string)($input['wallet_address'] ?? ''));
     $collection = trim((string)($input['collection'] ?? ''));
     $signature = trim((string)($input['signature'] ?? ''));

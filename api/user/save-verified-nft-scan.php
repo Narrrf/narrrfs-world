@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../lib/genesis-image-url.php';
 
 /**
@@ -11,6 +12,16 @@ require_once __DIR__ . '/../lib/genesis-image-url.php';
  */
 
 header('Content-Type: application/json');
+
+$sessionDiscordId = trim((string)($_SESSION['discord_id'] ?? ''));
+if ($sessionDiscordId === '') {
+    http_response_code(401);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Please sign in with Discord before verifying your NFTs.'
+    ]);
+    exit;
+}
 
 /**
  * Genesis tier role IDs.
@@ -457,7 +468,17 @@ try {
         throw new Exception('Invalid JSON payload');
     }
 
-    $userId = trim($input['user_id'] ?? '');
+    $requestedUserId = trim($input['user_id'] ?? '');
+    if ($requestedUserId !== '' && !hash_equals($sessionDiscordId, $requestedUserId)) {
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Verification identity does not match the signed-in Discord user.'
+        ]);
+        exit;
+    }
+
+    $userId = $sessionDiscordId;
     $username = trim($input['username'] ?? '');
     $wallet = trim($input['wallet'] ?? '');
     $signature = trim($input['signature'] ?? '');

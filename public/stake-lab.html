@@ -7521,24 +7521,42 @@ function disconnectWallet() {
       galleryDiv.innerHTML = nftCards.join('');
     }
 
+// Resolve the current PHP Discord session before any wallet proof or verification request.
+// Browser storage is presentation compatibility only and never verification authority.
+async function getAuthoritativeDiscordVerificationSession() {
+  try {
+    const response = await fetch('/api/user/get-session.php', {
+      credentials: 'include',
+      cache: 'no-store'
+    });
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok || !contentType.includes('application/json')) return null;
+    const data = await response.json();
+    const discordId = String(data?.discord_id || '').trim();
+    if (!data?.success || !discordId) return null;
+    const username = String(data?.discord_username || '').trim();
+    window.sessionDiscordId = discordId;
+    window.sessionDiscordUsername = username;
+    return { discordId, username };
+  } catch (error) {
+    console.warn('Unable to confirm Discord session before NFT verification:', error);
+    return null;
+  }
+}
+
 // Verify collections with backend and persist the full verified NFT scan for admin trait audit.
 // IMPORTANT:
 // - Verified NFT ownership and SQL save must NOT depend on Discord role grant success.
 // - Discord role grant is a secondary outcome.
 // - SQL verified profile creation should happen when at least one supported collection
 //   is cryptographically verified and backend confirms count > 0.
-async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts = []) {
+async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts = [], authenticatedSession = null) {
   try {
-    const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-    const username =
-      window.sessionDiscordUsername ||
-      localStorage.getItem('discord_username') ||
-      localStorage.getItem('discord_name') ||
-      localStorage.getItem('username') ||
-      'Unknown';
+    const userId = String(authenticatedSession?.discordId || '').trim();
+    const username = String(authenticatedSession?.username || '').trim() || 'Unknown';
 
     if (!userId) {
-      alert("Please login with Discord first.");
+      alert('Please sign in with Discord before verifying your NFTs.');
       return;
     }
 
@@ -7751,23 +7769,35 @@ async function verifyWithBackend(walletAddress, collectionMatches, scannedNfts =
 
     const saveResult = await saveResponse.json();
 
-    if (!saveResult.success) {
-      throw new Error(saveResult.error || 'Unknown NFT scan save error');
+    if (!saveResponse.ok || !saveResult.success) {
+      throw new Error(saveResult.error || `NFT scan save failed with HTTP ${saveResponse.status}`);
+    }
+
+    const persistedCounts = saveResult.counts || {};
+    const persistedCollections = [
+      { key: 'genesis', label: 'Narrrfs World: Genesis Genetic' },
+      { key: 'vip', label: 'Narrrf Genesis VIP Drop' }
+    ].map(({ key, label }) => ({ collection: label, count: Number(persistedCounts[key] || 0) }))
+      .filter(({ count }) => Number.isSafeInteger(count) && count > 0);
+    const savedNftCount = Number(saveResult.saved_nft_count);
+    const persistedCountTotal = persistedCollections.reduce((total, collection) => total + collection.count, 0);
+    if (persistedCollections.length === 0 || !Number.isSafeInteger(savedNftCount) || savedNftCount !== normalizedNfts.length || persistedCountTotal !== savedNftCount) {
+      throw new Error('Verified ownership could not be confirmed from the saved NFT result.');
     }
 
     console.log('✅ [NFT SCAN SAVE] Verified NFT scan saved successfully:', saveResult);
 
     let successMessage = "✅ NFT Verification Successful!\n\n";
-    successMessage += "Verified collections:\n";
+    successMessage += "Verified ownership saved:\n";
 
-    verifiedCollections.forEach((col, i) => {
+    persistedCollections.forEach((col, i) => {
       successMessage += `${i + 1}. ${col.collection} (${col.count} NFTs)\n`;
     });
 
     if (grantedCollections.length > 0) {
   successMessage += `\nDiscord roles granted:\n`;
   grantedCollections.forEach((col, i) => {
-    successMessage += `${i + 1}. ${col.role}\n`;
+    successMessage += `${i + 1}. ${col.role} (role verification response)\n`;
   });
 } else {
   successMessage += `\n⚠️ NFT ownership was saved to your player profile, but no Discord role was granted yet.\n`;
@@ -7809,14 +7839,13 @@ async function verifyStakeLabNFTs() {
     return;
   }
 
+  const discordSession = await getAuthoritativeDiscordVerificationSession();
+  if (!discordSession) {
+    alert('Please sign in with Discord before verifying your NFTs.');
+    return;
+  }
+
   try {
-    const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-
-    if (!userId) {
-      alert("Please login with Discord first.");
-      return;
-    }
-
 const verificationProof = await requestVerificationProof();
 const signature = verificationProof.signature;
 const message = verificationProof.message;
@@ -7874,7 +7903,8 @@ for (const [collectionAddress, info] of Object.entries(collections)) {
     await verifyWithBackend(
       connectedWalletAddress,
       foundNFTs,
-      loadedNFTs
+      loadedNFTs,
+      discordSession
     );
 
     setTimeout(() => {
