@@ -2,7 +2,7 @@
 // 🧩 Riddle Trait Unlock API — unlocks traits for Three.js Dimension riddles
 // CORS handled by .htaccess - no duplicate headers here
 
-session_start();
+require_once __DIR__ . '/../lib/protected-operation-receipts.php';
 
 // Set JSON response header (must be before any output)
 header('Content-Type: application/json');
@@ -20,24 +20,35 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Get JSON input
+// Get JSON input before the fail-closed policy gate. This performs no persistence.
 $input = json_decode(file_get_contents('php://input'), true);
+if (!is_array($input)) {
+    $input = $_POST;
+}
 $trait_name = $input['trait_name'] ?? null;
 $trait_value = $input['trait_value'] ?? 'true';
-$user_id = $input['user_id'] ?? null; // Allow user_id from JSON body for local testing
+$requestedUserId = trim((string)($input['user_id'] ?? ''));
 
-// Get Discord ID from session (production) or JSON body (local testing)
-$discord_id = null;
-if (isset($_SESSION['discord_id'])) {
-    // Production: Use session Discord ID
-    $discord_id = $_SESSION['discord_id'];
-} elseif ($user_id) {
-    // Local testing: Use user_id from JSON body (LOCAL_TEST_DISCORD)
-    $discord_id = $user_id;
-} else {
-    // No Discord ID found
-    http_response_code(401);
-    echo json_encode(['error' => '❌ User not logged in. No Discord ID found in session or request body.']);
+// P2-I1E safety boundary: all current actions are disabled, so no database
+// connection or protected write is reachable until a separately approved policy
+// enables one exact registry action and supplies its server-owned delivery path.
+try {
+    $discord_id = protected_operation_require_session_actor();
+    if ($requestedUserId !== '' && !hash_equals($discord_id, $requestedUserId)) {
+        throw new ProtectedOperationException(403, 'actor_mismatch', 'Request actor does not match the Discord session.');
+    }
+    protected_operation_resolve_action(
+        trim((string)($input['contract_version'] ?? '')),
+        'trait_unlock',
+        trim((string)($input['action_key'] ?? ''))
+    );
+} catch (ProtectedOperationException $error) {
+    http_response_code($error->httpStatus);
+    echo json_encode([
+        'success' => false,
+        'error' => $error->getMessage(),
+        'code' => $error->errorCode,
+    ]);
     exit;
 }
 

@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../lib/protected-operation-receipts.php';
 
 /**
  * Role multiplier lookup (ID → multiplier)
@@ -58,6 +58,36 @@ function json_response($payload, $code = 200) {
     exit;
 }
 
+// Parse only enough request data to enforce the fail-closed action policy.
+// This occurs before any database connection, schema action, or protected write.
+$rawInput = file_get_contents('php://input');
+$data = json_decode($rawInput, true);
+
+if (!is_array($data)) {
+    $data = $_POST;
+}
+
+$requestedDiscordId = trim((string)($data['discord_id'] ?? ''));
+try {
+    $discordId = protected_operation_require_session_actor();
+    if ($requestedDiscordId !== '' && !hash_equals($discordId, $requestedDiscordId)) {
+        throw new ProtectedOperationException(403, 'actor_mismatch', 'Request actor does not match the Discord session.');
+    }
+    protected_operation_resolve_action(
+        trim((string)($data['contract_version'] ?? '')),
+        'riddle_reward',
+        trim((string)($data['action_key'] ?? ''))
+    );
+} catch (ProtectedOperationException $error) {
+    json_response([
+        'success' => false,
+        'error' => $error->getMessage(),
+        'code' => $error->errorCode,
+    ], $error->httpStatus);
+}
+
+require_once __DIR__ . '/../config/database.php';
+
 try {
     $pdo = getDatabaseConnection();
 } catch (Exception $e) {
@@ -92,14 +122,6 @@ $pdo->exec("
     ON tbl_riddle_completions(discord_id, riddle_id)
 ");
 
-$rawInput = file_get_contents('php://input');
-$data = json_decode($rawInput, true);
-
-if (!is_array($data)) {
-    $data = $_POST;
-}
-
-$discordId = isset($data['discord_id']) ? trim((string)$data['discord_id']) : '';
 $discordName = isset($data['discord_name']) ? trim((string)$data['discord_name']) : null;
 $riddleId = isset($data['riddle_id']) ? trim((string)$data['riddle_id']) : 'CHEESE_TEMPLE_RIDDLE_01';
 $levelId = isset($data['level_id']) ? trim((string)$data['level_id']) : 'CHEESE_TEMPLE_LVL1';
