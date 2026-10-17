@@ -6,6 +6,12 @@ RUN echo "ServerName narrrfs.world" >> /etc/apache2/apache2.conf
 # Enable mod_rewrite
 RUN a2enmod rewrite
 
+# SEV-1 emergency containment is enabled at the Apache server layer so it does
+# not depend on per-directory .htaccess behavior.
+COPY ./deploy/apache/narrrfs-emergency-containment.conf /etc/apache2/conf-available/narrrfs-emergency-containment.conf
+RUN a2enconf narrrfs-emergency-containment \
+    && apache2ctl configtest
+
 # Install sqlite3 CLI (optional: useful for debugging)
 # mousefight_league_daily_production_v1
 # Python 3 runs the read-only Genesis League daily snapshot publisher.
