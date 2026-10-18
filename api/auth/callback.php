@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/oauth.php';
-require_once __DIR__ . '/../config/session.php';
-narrrfs_touch_session();
+require_once __DIR__ . '/../config/admin-session.php';
 
 try {
     $oauth = narrrfs_oauth_configuration();
@@ -20,22 +19,28 @@ if (!$clientSecret) {
     die('❌ Discord-Konfiguration fehlt. Bitte informiere den Admin.');
 }
 
-// ✅ Step 1: Get code
-if (!isset($_GET['code'])) {
-    error_log('❌ No authorization code received from Discord');
-    die('❌ No authorization code returned from Discord. Please try logging in again.');
+// ✅ Step 1: Validate and consume server-side state before touching the code.
+$receivedState = null;
+if (array_key_exists('state', $_GET)) {
+    $receivedState = is_string($_GET['state']) ? $_GET['state'] : '__invalid_state_type__';
 }
-$code = $_GET['code'];
+$stateDecision = narrrfs_consume_oauth_state($_SESSION, $receivedState);
+if ($stateDecision['status'] === 'missing') {
+    // Direct legacy Discord links cannot become trusted callbacks. Discard the
+    // received code and restart through the canonical state issuer.
+    header('Location: /api/discord-login.php?redirect=%2Fpublic%2Fprofile.html', true, 303);
+    exit;
+}
+if ($stateDecision['status'] !== 'valid') {
+    http_response_code(400);
+    exit('Invalid OAuth state.');
+}
+$finalRedirect = (string)$stateDecision['final_redirect'];
 
-if ($oauth['is_local']) {
-    $receivedState = (string)($_GET['state'] ?? '');
-    $expectedState = (string)($_SESSION['narrrfs_local_oauth_state'] ?? '');
-    unset($_SESSION['narrrfs_local_oauth_state']);
-
-    if ($expectedState === '' || $receivedState === '' || !hash_equals($expectedState, $receivedState)) {
-        http_response_code(400);
-        exit('Invalid local OAuth state.');
-    }
+$code = isset($_GET['code']) && is_string($_GET['code']) ? $_GET['code'] : '';
+if ($code === '') {
+    http_response_code(400);
+    exit('No authorization code returned from Discord.');
 }
 
 // ✅ Step 2: Exchange code for token using exact format from working URL
@@ -118,9 +123,13 @@ if (!isset($user['id'])) {
     die("❌ Fehler beim Abrufen der Benutzerinformationen. Bitte versuchen Sie es erneut.");
 }
 
-if ($oauth['is_local'] && !session_regenerate_id(true)) {
+if (!narrrfs_establish_discord_oauth_session(
+    $_SESSION,
+    $user,
+    static fn(): bool => session_regenerate_id(true)
+)) {
     http_response_code(500);
-    exit('Unable to secure local OAuth session.');
+    exit('Unable to establish secure OAuth session.');
 }
 
 // 🧀 Save key user fields to session with extended lifetime
@@ -130,17 +139,11 @@ $_SESSION['user'] = [
     'avatar'        => $user['avatar'],
     'email'         => $user['email'] ?? null,
 ];
-$_SESSION['discord_id']        = $user['id'];
-
 if ($oauth['is_local']) {
     // The local bootstrap test needs only the server-derived subject. It must
     // not persist user, role, ownership, or token data outside this session.
     unset($_SESSION['access_token'], $_SESSION['token_expires_at'], $_SESSION['refresh_token'], $_SESSION['guilds']);
-    $target = $oauth['base_url'] . narrrfs_oauth_redirect_target(
-        $oauth,
-        isset($_SESSION['oauth_final_redirect']) ? (string)$_SESSION['oauth_final_redirect'] : null
-    );
-    unset($_SESSION['oauth_final_redirect']);
+    $target = $oauth['base_url'] . narrrfs_oauth_redirect_target($oauth, $finalRedirect);
     header('Location: ' . $target, true, 302);
     exit;
 }
@@ -148,8 +151,6 @@ if ($oauth['is_local']) {
 $_SESSION['access_token']      = $accessToken;
 $_SESSION['token_expires_at']  = time() + 3600; // Discord tokens expire in 1 hour
 $_SESSION['refresh_token']     = $token['refresh_token'] ?? null; // Store refresh token if available
-
-error_log('Discord ID Fetched: ' . $_SESSION['discord_id']);
 
 // Optional: Store guilds if scope includes `guilds`
 $guildsResponse = file_get_contents(
@@ -211,11 +212,7 @@ try {
 include_once(__DIR__ . '/sync-role.php');
 
 // 📌 Determine redirect target from session (stored during login)
-$target = 'https://narrrfs.world/profile.html';
-if (isset($_SESSION['oauth_final_redirect'])) {
-    $target = 'https://narrrfs.world' . $_SESSION['oauth_final_redirect'];
-    unset($_SESSION['oauth_final_redirect']); // clean up
-}
+$target = 'https://narrrfs.world' . narrrfs_oauth_redirect_target($oauth, $finalRedirect);
 
 // ✅ Inject localStorage and redirect with admin redirect check
 $discordIdSafe   = htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8');

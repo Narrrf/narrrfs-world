@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/oauth.php';
+require_once __DIR__ . '/config/admin-session.php';
 
 try {
     $oauth = narrrfs_oauth_configuration();
@@ -13,33 +14,20 @@ $redirect = narrrfs_oauth_redirect_target(
     isset($_GET['redirect']) ? (string)$_GET['redirect'] : null
 );
 
-if ($oauth['is_local']) {
-    require_once __DIR__ . '/config/session.php';
-    try {
-        $state = bin2hex(random_bytes(32));
-    } catch (Throwable $error) {
-        http_response_code(500);
-        exit('Unable to initialize local OAuth session.');
-    }
-
-    $_SESSION['narrrfs_local_oauth_state'] = $state;
-} else {
-    // Preserve the established production session and callback behavior.
-    session_start();
-    $state = null;
+try {
+    $state = narrrfs_issue_oauth_state($_SESSION, $redirect);
+} catch (Throwable $error) {
+    http_response_code(500);
+    exit('Unable to initialize OAuth session.');
 }
-
-$_SESSION['oauth_final_redirect'] = $redirect;
 
 $authorizationParameters = [
     'client_id' => $oauth['client_id'],
     'response_type' => 'code',
     'redirect_uri' => $oauth['redirect_uri'],
-    'scope' => 'guilds+identify+guilds.members.read'
+    'scope' => 'guilds+identify+guilds.members.read',
+    'state' => $state,
 ];
-if ($state !== null) {
-    $authorizationParameters['state'] = $state;
-}
 
 header('Location: https://discord.com/oauth2/authorize?' . http_build_query($authorizationParameters, '', '&', PHP_QUERY_RFC3986));
 exit;

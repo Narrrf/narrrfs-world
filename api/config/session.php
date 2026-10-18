@@ -46,3 +46,20 @@ function narrrfs_touch_session(): void {
 
     $_SESSION['narrrfs_last_seen_at'] = time();
 }
+
+/** Expire the active PHP session cookie with the same attributes used at creation. */
+function narrrfs_expire_session_cookie(): void {
+    if (!filter_var(ini_get('session.use_cookies'), FILTER_VALIDATE_BOOLEAN)) {
+        return;
+    }
+
+    $cookie = session_get_cookie_params();
+    setcookie(session_name(), '', [
+        'expires' => time() - 42000,
+        'path' => $cookie['path'] ?? '/',
+        'domain' => $cookie['domain'] ?? '',
+        'secure' => (bool)($cookie['secure'] ?? false),
+        'httponly' => (bool)($cookie['httponly'] ?? true),
+        'samesite' => $cookie['samesite'] ?? 'Lax',
+    ]);
+}
