@@ -32,7 +32,13 @@ session_set_cookie_params([
     'samesite' => 'Lax'
 ]);
 
-session_start();
+$readOnlySession = defined('NARRRFS_SESSION_READ_ONLY') && NARRRFS_SESSION_READ_ONLY === true;
+if ($readOnlySession) {
+    // Owner canary reads trusted session identity without refreshing or rewriting it.
+    session_start(['read_and_close' => true]);
+} else {
+    session_start();
+}
 
 /**
  * Refresh the active session cookie lifetime.

@@ -3,12 +3,22 @@ declare(strict_types=1);
 
 // 🔐 Narrrfs World owner-control route policy registry
 // DEVS FOR DECADES:
-// This registry is deliberately empty in Wave A. A route is unreachable through
-// the shared guard until a later, separately approved change adds an exact policy
-// and the deployment layer adds an exact-path exception. Missing policy is deny.
+// Every route remains unreachable until it has an exact, owner-approved policy
+// and a matching deployment-layer exception. Missing or disabled policy is deny.
 
 return [
     'version' => 1,
     'default' => 'deny',
-    'routes' => [],
+    'routes' => [
+        'owner_control.canary.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_CANARY_ENABLED') === '1',
+            'ownerOnly' => true,
+            'mutating' => false,
+            'methods' => ['GET', 'HEAD'],
+            'csrf' => false,
+            'contentTypes' => [],
+            'origins' => [],
+            'allowRefererFallback' => false,
+        ],
+    ],
 ];

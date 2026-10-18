@@ -4,7 +4,7 @@ declare(strict_types=1);
 // 🔐 Narrrfs World fail-closed owner authorization foundation
 // DEVS FOR DECADES:
 // This file grants nothing by itself. Every caller must name an exact route key,
-// and that key must have a valid enabled policy. Wave A ships with no policies.
+// and that key must have a valid enabled policy.
 // Never derive owner authority from request data, display names, ordinary cookies,
 // browser storage, Host/localhost, IP addresses, or legacy admin session flags.
 
@@ -347,14 +347,23 @@ function narrrfs_admin_fail_closed(int $status, string $code, array $allow = [])
 /**
  * Require an exact owner policy before any future route business logic.
  *
- * Plain language: Wave A has no route policy, so every call fails closed.
- * A later endpoint must call this function before loading DB or domain code.
+ * Plain language: a route must call this function before loading any domain
+ * code. Missing, disabled, or malformed policy and authority fail closed.
  */
 function narrrfs_require_admin_request(string $routeKey): string
 {
     try {
         $policies = narrrfs_load_admin_route_policies();
         $policy = $policies['routes'][$routeKey] ?? null;
+        $readOnlySession = defined('NARRRFS_SESSION_READ_ONLY') && NARRRFS_SESSION_READ_ONLY === true;
+
+        // A read-only session may authorize only a policy that is explicitly
+        // non-mutating. This prevents a future mutation route from opting out
+        // of session and CSRF state transitions.
+        $validatedReadOnlyPolicy = narrrfs_validate_admin_route_policy($policy);
+        if ($readOnlySession && is_array($validatedReadOnlyPolicy) && $validatedReadOnlyPolicy['mutating']) {
+            narrrfs_admin_fail_closed(500, 'authorization_unavailable');
+        }
 
         $sessionBootstrap = __DIR__ . '/session.php';
         if (!is_file($sessionBootstrap)) {
@@ -362,7 +371,7 @@ function narrrfs_require_admin_request(string $routeKey): string
         }
         require_once $sessionBootstrap;
 
-        if (!narrrfs_admin_session_is_current($_SESSION)) {
+        if (!$readOnlySession && !narrrfs_admin_session_is_current($_SESSION)) {
             narrrfs_clear_admin_authority_state($_SESSION);
         }
 
@@ -388,10 +397,12 @@ function narrrfs_require_admin_request(string $routeKey): string
             narrrfs_admin_fail_closed($decision['status'], $decision['code'], $decision['allow']);
         }
 
-        narrrfs_touch_admin_authority($_SESSION);
-        narrrfs_consume_admin_csrf($_SESSION, $decision['consumeCsrf']);
-        if ($decision['consumeCsrf']) {
-            session_write_close();
+        if (!$readOnlySession) {
+            narrrfs_touch_admin_authority($_SESSION);
+            narrrfs_consume_admin_csrf($_SESSION, $decision['consumeCsrf']);
+            if ($decision['consumeCsrf']) {
+                session_write_close();
+            }
         }
 
         return (string)$decision['subject'];
