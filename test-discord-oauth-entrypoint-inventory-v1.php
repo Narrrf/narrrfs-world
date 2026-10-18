@@ -12,7 +12,14 @@ $root = __DIR__;
 $loginSource = file_get_contents($root . '/api/discord-login.php');
 $callbackSource = file_get_contents($root . '/api/auth/callback.php');
 $sessionSource = file_get_contents($root . '/api/config/admin-session.php');
-oauth_inventory_test_assert(is_string($loginSource) && is_string($callbackSource) && is_string($sessionSource), 'B1 sources are readable');
+$logoutSource = file_get_contents($root . '/api/auth/logout.php');
+$logoutCsrfSource = file_get_contents($root . '/api/auth/logout-csrf.php');
+$logoutCallerSource = file_get_contents($root . '/public/admin/manage-scores.html');
+oauth_inventory_test_assert(
+    is_string($loginSource) && is_string($callbackSource) && is_string($sessionSource) &&
+    is_string($logoutSource) && is_string($logoutCsrfSource) && is_string($logoutCallerSource),
+    'B1 sources are readable'
+);
 
 oauth_inventory_test_assert(str_contains($loginSource, "'state' => \$state"), 'canonical initializer always submits state');
 oauth_inventory_test_assert(str_contains($callbackSource, "\$stateDecision['status'] === 'missing'"), 'callback distinguishes direct callers without state');
@@ -54,5 +61,12 @@ oauth_inventory_test_assert($directAuthorizationFiles !== [], 'legacy direct OAu
 oauth_inventory_test_assert(!preg_match('/\b(?:PDO|SQLite3)\b|sqlite:|\/db\//i', $sessionSource), 'trusted session foundation has no database coupling');
 oauth_inventory_test_assert(!preg_match('/\b(?:curl_|file_get_contents\s*\(\s*[\'\"]https?:)/i', $sessionSource), 'trusted session foundation has no network coupling');
 oauth_inventory_test_assert(!str_contains($sessionSource, 'NARRRFS_ADMIN_DISCORD_IDS'), 'session provenance does not embed or consult owner allowlist values');
+oauth_inventory_test_assert(str_contains($logoutCallerSource, "fetch('/api/auth/logout-csrf.php'"), 'legacy logout caller obtains same-origin CSRF first');
+oauth_inventory_test_assert(str_contains($logoutCallerSource, "method: 'POST'"), 'legacy logout caller uses POST');
+oauth_inventory_test_assert(str_contains($logoutCallerSource, "'X-CSRF-Token': tokenResult.csrf_token"), 'legacy logout caller sends issued CSRF token');
+oauth_inventory_test_assert(str_contains($logoutSource, 'narrrfs_consume_logout_csrf_session'), 'logout consumes only logout CSRF state');
+oauth_inventory_test_assert(!str_contains($logoutSource, 'narrrfs_oauth_configuration()'), 'logout does not require OAuth credentials');
+oauth_inventory_test_assert(!str_contains($logoutCsrfSource, 'narrrfs_oauth_configuration()'), 'logout CSRF issuer does not require OAuth credentials');
+oauth_inventory_test_assert(!preg_match('/\b(?:PDO|SQLite3)\b|sqlite:|\/db\//i', $logoutCsrfSource), 'logout CSRF issuer has no database coupling');
 
 echo 'PASS: OAuth entrypoint inventory B1 (' . count($directAuthorizationFiles) . " legacy direct sources use fail-closed restart)\n";

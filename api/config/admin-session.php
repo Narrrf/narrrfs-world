@@ -23,6 +23,9 @@ const NARRRFS_ADMIN_AUTH_FUTURE_SKEW_SECONDS = 60;
 const NARRRFS_ADMIN_CSRF_SESSION_KEY = 'narrrfs_admin_csrf_token';
 const NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY = 'narrrfs_admin_csrf_issued_at';
 const NARRRFS_ADMIN_CSRF_TTL_SECONDS = 300;
+const NARRRFS_LOGOUT_CSRF_SESSION_KEY = 'narrrfs_logout_csrf_token';
+const NARRRFS_LOGOUT_CSRF_ISSUED_AT_SESSION_KEY = 'narrrfs_logout_csrf_issued_at';
+const NARRRFS_LOGOUT_CSRF_TTL_SECONDS = 300;
 
 /** Remove owner-only provenance and CSRF state without destroying normal-user identity. */
 function narrrfs_clear_admin_authority_state(array &$session): void
@@ -167,7 +170,9 @@ function narrrfs_establish_discord_oauth_session(
         $session['admin_authenticated'],
         $session['admin_logged_in'],
         $session['admin_role'],
-        $session['admin_roles']
+        $session['admin_roles'],
+        $session[NARRRFS_LOGOUT_CSRF_SESSION_KEY],
+        $session[NARRRFS_LOGOUT_CSRF_ISSUED_AT_SESSION_KEY]
     );
     narrrfs_clear_admin_authority_state($session);
     if (!$regenerateSessionId()) {
@@ -243,6 +248,147 @@ function narrrfs_consume_admin_csrf_session(array &$session): void
     unset($session[NARRRFS_ADMIN_CSRF_SESSION_KEY], $session[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY]);
 }
 
+/** Confirm the session contains an ordinary server-side Discord identity. */
+function narrrfs_session_has_discord_identity(array $session): bool
+{
+    $subject = $session['discord_id'] ?? null;
+    return is_string($subject) && preg_match('/^\d{17,20}$/', $subject) === 1;
+}
+
+/** Map only canonical application hosts to their fixed same-origin logout URL. */
+function narrrfs_logout_allowed_origin_for_host(string $host): ?string
+{
+    $normalizedHost = strtolower(trim(explode(':', $host, 2)[0]));
+    if ($normalizedHost === 'localhost') {
+        return 'http://localhost';
+    }
+    if ($normalizedHost === 'narrrfs.world') {
+        return 'https://narrrfs.world';
+    }
+    return null;
+}
+
+/** Normalize a configured/request origin without accepting paths or credentials. */
+function narrrfs_normalize_origin(string $value): ?string
+{
+    $value = trim($value);
+    if ($value === '') {
+        return null;
+    }
+    $parts = parse_url($value);
+    if (
+        !is_array($parts) || !isset($parts['scheme'], $parts['host']) ||
+        isset($parts['user']) || isset($parts['pass']) || isset($parts['path']) ||
+        isset($parts['query']) || isset($parts['fragment'])
+    ) {
+        return null;
+    }
+    $scheme = strtolower((string)$parts['scheme']);
+    if (!in_array($scheme, ['http', 'https'], true)) {
+        return null;
+    }
+    $origin = $scheme . '://' . strtolower((string)$parts['host']);
+    if (isset($parts['port'])) {
+        $origin .= ':' . (int)$parts['port'];
+    }
+    return $origin;
+}
+
+/** Extract only the origin from a same-origin Referer, where a path is expected. */
+function narrrfs_extract_referer_origin(string $value): ?string
+{
+    $value = trim($value);
+    if ($value === '') {
+        return null;
+    }
+    $parts = parse_url($value);
+    if (
+        !is_array($parts) || !isset($parts['scheme'], $parts['host']) ||
+        isset($parts['user']) || isset($parts['pass'])
+    ) {
+        return null;
+    }
+    $scheme = strtolower((string)$parts['scheme']);
+    if (!in_array($scheme, ['http', 'https'], true)) {
+        return null;
+    }
+    $origin = $scheme . '://' . strtolower((string)$parts['host']);
+    if (isset($parts['port'])) {
+        $origin .= ':' . (int)$parts['port'];
+    }
+    return $origin;
+}
+
+/** Prove a logout-token request came from the configured same-origin site. */
+function narrrfs_logout_csrf_issue_decision(array $session, array $request, string $allowedOrigin): array
+{
+    if (strtoupper((string)($request['method'] ?? '')) !== 'GET') {
+        return ['allowed' => false, 'status' => 405, 'code' => 'method_not_allowed', 'allow' => ['GET']];
+    }
+    if (!narrrfs_session_has_discord_identity($session)) {
+        return ['allowed' => false, 'status' => 401, 'code' => 'authentication_required', 'allow' => ['GET']];
+    }
+
+    $expectedOrigin = narrrfs_normalize_origin($allowedOrigin);
+    $rawOrigin = trim((string)($request['origin'] ?? ''));
+    $rawReferer = trim((string)($request['referer'] ?? ''));
+    $requestOrigin = narrrfs_normalize_origin($rawOrigin);
+    $refererOrigin = narrrfs_extract_referer_origin($rawReferer);
+    $fetchSite = strtolower(trim((string)($request['fetchSite'] ?? '')));
+    if (($rawOrigin !== '' && $requestOrigin === null) || ($rawReferer !== '' && $refererOrigin === null)) {
+        return ['allowed' => false, 'status' => 403, 'code' => 'origin_rejected', 'allow' => ['GET']];
+    }
+    $sameOrigin = $expectedOrigin !== null && (
+        ($requestOrigin !== null && hash_equals($expectedOrigin, $requestOrigin)) ||
+        ($requestOrigin === null && $refererOrigin !== null && hash_equals($expectedOrigin, $refererOrigin)) ||
+        ($requestOrigin === null && $refererOrigin === null && $fetchSite === 'same-origin')
+    );
+    if (!$sameOrigin) {
+        return ['allowed' => false, 'status' => 403, 'code' => 'origin_rejected', 'allow' => ['GET']];
+    }
+    return ['allowed' => true, 'status' => 200, 'code' => 'authorized', 'allow' => ['GET']];
+}
+
+/** Issue a one-time logout token without granting owner or admin authority. */
+function narrrfs_issue_logout_csrf_token(
+    array &$session,
+    ?int $now = null,
+    ?callable $randomBytes = null
+): string {
+    $now = $now ?? time();
+    $rawBytes = $randomBytes === null ? random_bytes(32) : $randomBytes(32);
+    if (!is_string($rawBytes) || strlen($rawBytes) !== 32) {
+        throw new RuntimeException('Unable to initialize logout protection.');
+    }
+    $token = bin2hex($rawBytes);
+    $session[NARRRFS_LOGOUT_CSRF_SESSION_KEY] = $token;
+    $session[NARRRFS_LOGOUT_CSRF_ISSUED_AT_SESSION_KEY] = $now;
+    return $token;
+}
+
+/** Validate a logout-only one-time token and its five-minute session lifetime. */
+function narrrfs_logout_csrf_is_current(array $session, mixed $requestToken, ?int $now = null): bool
+{
+    $now = $now ?? time();
+    $sessionToken = $session[NARRRFS_LOGOUT_CSRF_SESSION_KEY] ?? null;
+    $issuedAt = $session[NARRRFS_LOGOUT_CSRF_ISSUED_AT_SESSION_KEY] ?? null;
+    if (
+        !is_string($sessionToken) || !preg_match('/^[a-f0-9]{64}$/', $sessionToken) ||
+        !is_string($requestToken) || !preg_match('/^[a-f0-9]{64}$/', $requestToken) ||
+        !is_int($issuedAt) || $issuedAt > $now + NARRRFS_ADMIN_AUTH_FUTURE_SKEW_SECONDS ||
+        $now - $issuedAt >= NARRRFS_LOGOUT_CSRF_TTL_SECONDS
+    ) {
+        return false;
+    }
+    return hash_equals($sessionToken, $requestToken);
+}
+
+/** Consume only logout CSRF state; future protected-route CSRF remains separate. */
+function narrrfs_consume_logout_csrf_session(array &$session): void
+{
+    unset($session[NARRRFS_LOGOUT_CSRF_SESSION_KEY], $session[NARRRFS_LOGOUT_CSRF_ISSUED_AT_SESSION_KEY]);
+}
+
 /** Build a pure logout decision; runtime destruction happens only after allowed=true. */
 function narrrfs_logout_decision(
     array $session,
@@ -258,11 +404,15 @@ function narrrfs_logout_decision(
     if ($contentType !== 'application/json') {
         return ['allowed' => false, 'status' => 415, 'code' => 'unsupported_media_type', 'allow' => []];
     }
-    $origin = strtolower(rtrim(trim((string)($request['origin'] ?? '')), '/'));
-    if ($origin === '' || !hash_equals(strtolower(rtrim($allowedOrigin, '/')), $origin)) {
+    if (!narrrfs_session_has_discord_identity($session)) {
+        return ['allowed' => false, 'status' => 401, 'code' => 'authentication_required', 'allow' => []];
+    }
+    $origin = narrrfs_normalize_origin((string)($request['origin'] ?? ''));
+    $expectedOrigin = narrrfs_normalize_origin($allowedOrigin);
+    if ($origin === null || $expectedOrigin === null || !hash_equals($expectedOrigin, $origin)) {
         return ['allowed' => false, 'status' => 403, 'code' => 'origin_rejected', 'allow' => []];
     }
-    if (!narrrfs_admin_csrf_is_current($session, $request['csrfToken'] ?? null, $now)) {
+    if (!narrrfs_logout_csrf_is_current($session, $request['csrfToken'] ?? null, $now)) {
         return ['allowed' => false, 'status' => 403, 'code' => 'csrf_rejected', 'allow' => []];
     }
     return ['allowed' => true, 'status' => 200, 'code' => 'authorized', 'allow' => ['POST']];

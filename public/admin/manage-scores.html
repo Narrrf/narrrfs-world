@@ -224,12 +224,37 @@
             loadRecentAdjustments();
         }
 
-        function logout() {
-            fetch('/api/auth/logout.php')
-                .then(() => {
-                    window.location.reload();
-                })
-                .catch(error => console.error('Logout error:', error));
+        async function logout() {
+            try {
+                const tokenResponse = await fetch('/api/auth/logout-csrf.php', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const tokenResult = await tokenResponse.json();
+                if (!tokenResponse.ok || !tokenResult.success || !tokenResult.csrf_token) {
+                    throw new Error(tokenResult.error || 'Unable to prepare secure logout');
+                }
+
+                const logoutResponse = await fetch('/api/auth/logout.php', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': tokenResult.csrf_token
+                    },
+                    body: '{}'
+                });
+                const logoutResult = await logoutResponse.json();
+                if (!logoutResponse.ok || !logoutResult.success) {
+                    throw new Error(logoutResult.error || 'Secure logout failed');
+                }
+                window.location.reload();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
         }
 
         // Handle score form submission
@@ -533,4 +558,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

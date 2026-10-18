@@ -81,15 +81,20 @@ foreach ([
     admin_session_test_assert(!narrrfs_admin_session_is_current($malformed, $now), 'malformed timestamp fails closed: ' . $key);
 }
 
-$csrfSession = [
-    NARRRFS_ADMIN_CSRF_SESSION_KEY => str_repeat('a', 64),
-    NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY => $now,
-];
+$csrfSession = ['discord_id' => '222222222222222222'];
+$issuedLogoutToken = narrrfs_issue_logout_csrf_token(
+    $csrfSession,
+    $now,
+    static fn(int $length): string => str_repeat("\x0a", $length)
+);
+admin_session_test_assert($issuedLogoutToken === str_repeat('0a', 32), 'logout CSRF issuer returns opaque 32-byte token');
+admin_session_test_assert(!isset($csrfSession[NARRRFS_ADMIN_CSRF_SESSION_KEY]), 'logout issuer does not grant admin CSRF authority');
+admin_session_test_assert(!narrrfs_admin_csrf_is_current($csrfSession, $issuedLogoutToken, $now), 'logout token cannot authorize an admin mutation');
 $validLogoutRequest = [
     'method' => 'POST',
     'contentType' => 'application/json',
     'origin' => 'https://narrrfs.world',
-    'csrfToken' => str_repeat('a', 64),
+    'csrfToken' => $issuedLogoutToken,
 ];
 admin_session_test_assert(narrrfs_logout_decision($csrfSession, $validLogoutRequest, 'https://narrrfs.world', $now)['allowed'], 'valid POST logout foundation is accepted');
 admin_session_test_assert(narrrfs_logout_decision($csrfSession, ['method' => 'GET'], 'https://narrrfs.world', $now)['status'] === 405, 'logout rejects GET');
@@ -99,7 +104,13 @@ admin_session_test_assert(narrrfs_logout_decision($csrfSession, $missingToken, '
 $invalidToken = $validLogoutRequest;
 $invalidToken['csrfToken'] = str_repeat('b', 64);
 admin_session_test_assert(narrrfs_logout_decision($csrfSession, $invalidToken, 'https://narrrfs.world', $now)['status'] === 403, 'logout rejects invalid CSRF');
-narrrfs_consume_admin_csrf_session($csrfSession);
+$adminCsrfSession = $csrfSession;
+$adminCsrfSession[NARRRFS_ADMIN_CSRF_SESSION_KEY] = str_repeat('d', 64);
+$adminCsrfSession[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY] = $now;
+$adminTokenRequest = $validLogoutRequest;
+$adminTokenRequest['csrfToken'] = str_repeat('d', 64);
+admin_session_test_assert(narrrfs_logout_decision($adminCsrfSession, $adminTokenRequest, 'https://narrrfs.world', $now)['status'] === 403, 'admin mutation token cannot authorize logout');
+narrrfs_consume_logout_csrf_session($csrfSession);
 admin_session_test_assert(narrrfs_logout_decision($csrfSession, $validLogoutRequest, 'https://narrrfs.world', $now)['status'] === 403, 'logout rejects replay after token consumption');
 
 $_SESSION['normal_session_regression'] = true;
