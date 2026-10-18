@@ -36,6 +36,13 @@ if ($stateDecision['status'] !== 'valid') {
     exit('Invalid OAuth state.');
 }
 $finalRedirect = (string)$stateDecision['final_redirect'];
+$productionRedirectAllowlist = [
+    '/profile.html',
+    '/public/profile.html',
+];
+if (!$oauth['is_local'] && !in_array($finalRedirect, $productionRedirectAllowlist, true)) {
+    $finalRedirect = $oauth['default_redirect'];
+}
 
 $code = isset($_GET['code']) && is_string($_GET['code']) ? $_GET['code'] : '';
 if ($code === '') {
@@ -214,30 +221,24 @@ include_once(__DIR__ . '/sync-role.php');
 // 📌 Determine redirect target from session (stored during login)
 $target = 'https://narrrfs.world' . narrrfs_oauth_redirect_target($oauth, $finalRedirect);
 
-// ✅ Inject localStorage and redirect with admin redirect check
+// ✅ Preserve the legacy profile display values, then follow only the
+// server-validated OAuth target. Browser storage is presentation state and
+// must never select an authentication or administration destination.
 $discordIdSafe   = htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8');
 $discordNameSafe = htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8');
+$targetForJavaScript = json_encode(
+    $target,
+    JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES
+);
+if (!is_string($targetForJavaScript)) {
+    http_response_code(500);
+    exit('Unable to prepare the OAuth redirect.');
+}
 
 echo "<script>
   localStorage.setItem('discord_id', '$discordIdSafe');
   localStorage.setItem('discord_name', '$discordNameSafe');
-  
-  // Check if user was redirected from admin interface
-  const adminRedirect = localStorage.getItem('adminRedirect');
-  if (adminRedirect) {
-    localStorage.removeItem('adminRedirect'); // Clear the flag
-    console.log('🔄 Admin redirect detected, redirecting to admin interface');
-    console.log('✅ Discord authentication successful for admin interface');
-    
-    // Set additional admin authentication flags
-    localStorage.setItem('adminAuthenticated', 'true');
-    localStorage.setItem('adminAuthTime', Date.now().toString());
-    
-    window.location.href = 'https://narrrfs.world/admin-interface.html';
-  } else {
-    console.log('🔄 No admin redirect, going to profile page');
-    window.location.href = '$target';
-  }
+  window.location.replace(" . $targetForJavaScript . ");
 </script>";
 
 exit;
