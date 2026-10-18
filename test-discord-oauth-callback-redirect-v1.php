@@ -28,9 +28,22 @@ oauth_callback_redirect_test_assert(
     'production callback has an exact server-side redirect allowlist'
 );
 oauth_callback_redirect_test_assert(
-    str_contains($callbackSource, "'/profile.html'") &&
-        str_contains($callbackSource, "'/public/profile.html'"),
-    'production callback preserves both evidenced profile destinations'
+    preg_match('/\\$productionRedirectAllowlist\\s*=\\s*\\[(.*?)\\];/s', $callbackSource, $allowlistMatch) === 1,
+    'production callback allowlist is readable'
+);
+$productionAllowlistSource = $allowlistMatch[1];
+oauth_callback_redirect_test_assert(
+    substr_count($productionAllowlistSource, "'/profile.html'") === 1,
+    'production final-target allowlist contains only the live profile route'
+);
+oauth_callback_redirect_test_assert(
+    !str_contains($productionAllowlistSource, '/public/profile.html'),
+    'non-live public profile route is absent from the production final-target allowlist'
+);
+oauth_callback_redirect_test_assert(
+    str_contains($callbackSource, "!in_array(\$finalRedirect, \$productionRedirectAllowlist, true)") &&
+        str_contains($callbackSource, "\$finalRedirect = \$oauth['default_redirect']"),
+    'non-allowlisted state-bound targets fall back before final navigation'
 );
 oauth_callback_redirect_test_assert(
     str_contains($callbackSource, "!in_array(\$finalRedirect, \$productionRedirectAllowlist, true)"),

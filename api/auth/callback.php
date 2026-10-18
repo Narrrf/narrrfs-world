@@ -38,7 +38,6 @@ if ($stateDecision['status'] !== 'valid') {
 $finalRedirect = (string)$stateDecision['final_redirect'];
 $productionRedirectAllowlist = [
     '/profile.html',
-    '/public/profile.html',
 ];
 if (!$oauth['is_local'] && !in_array($finalRedirect, $productionRedirectAllowlist, true)) {
     $finalRedirect = $oauth['default_redirect'];
