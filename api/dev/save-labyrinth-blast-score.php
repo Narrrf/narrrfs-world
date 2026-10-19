@@ -1,256 +1,117 @@
 <?php
-// 💥 Labyrinth Blast Score Save API
-// Backend-authoritative score save for Labyrinth Blast.
-//
-// Plain language for DEVS:
-// Labyrinth Blast sends only raw gameplay data from the frontend.
-// This API validates that data, resolves the real Discord user from session,
-// calculates DSPOINC on the backend, and writes to the existing Narrrfs score tables.
-//
-// Writes:
-// - tbl_tetris_scores = seasonal leaderboard source
-// - tbl_user_scores = DSPOINC ledger source
-// - tbl_score_adjustments = audit/source trail
-//
-// Rules:
-// - Append-only
-// - POST only
-// - JSON only
-// - Session-first auth in production
-// - Localhost fallback allowed only for testing
-// - Frontend does not decide DSPOINC
-// - Uses active season from tbl_seasons
+declare(strict_types=1);
 
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
+// LABYRINTH BLAST SECURITY RECOVERY V1.
+//
+// DEVS FOR DECADES:
+// The browser reports bounded gameplay facts only.
+// Identity, display name, role multiplier, final DSPOINC reward, and season
+// are resolved by the server.
+//
+// Successful rewarded run:
+//   tbl_tetris_scores      = seasonal leaderboard
+//   tbl_user_scores        = DSPOINC ledger
+//   tbl_score_adjustments  = Profile/audit history
+//
+// All three writes are one SQLite transaction.
+//
+// Important limitation:
+// Raw gameplay score still originates in the browser. Authentication,
+// server-side role resolution, reward calculation, and replay protection make
+// the economy substantially safer, but do not constitute server-proven gameplay.
+
+error_reporting(0);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
 
 date_default_timezone_set('UTC');
-header('Content-Type: application/json');
 
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, max-age=0');
+header('Pragma: no-cache');
+header('X-Content-Type-Options: nosniff');
 
-session_start();
+const LABYRINTH_GAME_KEY = 'labyrinth_blast';
+const LABYRINTH_GAME_SOURCE = 'game_reward';
+const LABYRINTH_GAME_NAME = 'Labyrinth Blast';
 
-const LOCAL_TEST_DISCORD_ID = '328601656659017732';
-const GAME_KEY = 'labyrinth_blast';
-const GAME_SOURCE = 'game_reward';
-const GAME_DISPLAY_NAME = 'Labyrinth Blast';
-const DSP_CONVERSION_RATE = 10;
-const MAX_DSP_REWARD = 5000;
-const MAX_REASONABLE_RAW_SCORE = 250000;
-const DEFAULT_ROLE_MULTIPLIER = 1.0;
-const LOCAL_TEST_ROLE_MULTIPLIER = 2.0;
+const LABYRINTH_CONVERSION_RATE = 10;
+const LABYRINTH_MAX_DSP_REWARD = 5000;
+const LABYRINTH_MAX_RAW_SCORE = 250000;
+const LABYRINTH_MAX_LEVEL = 100;
+const LABYRINTH_MAX_DURATION_SECONDS = 86400;
+const LABYRINTH_MAX_REQUEST_BYTES = 8192;
+const LABYRINTH_REPLAY_WINDOW_SECONDS = 30;
 
-function json_response(array $payload, int $code = 200): void {
-    http_response_code($code);
+
+/**
+ * End one request with a non-sensitive JSON response.
+ */
+function labyrinth_response(
+    int $status,
+    array $payload
+): never {
+    http_response_code($status);
     echo json_encode($payload);
     exit;
 }
 
-function is_localhost_env(): bool {
-    $host = (string)($_SERVER['HTTP_HOST'] ?? '');
-    return strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false;
-}
 
 /**
- * Reads JSON, GET, or POST data in the same safe style as other Narrrfs game APIs.
+ * Normalize Discord role presentation so emoji and non-emoji variants use
+ * the same server-owned reward rule.
  */
-function get_request_data(): array {
-    $raw = file_get_contents('php://input');
-    $json = json_decode($raw, true);
+function labyrinth_normalize_role_name(
+    string $roleName
+): string {
+    $normalized = preg_replace(
+        '/[\x{1F300}-\x{1FAFF}]/u',
+        '',
+        $roleName
+    );
 
-    if (is_array($json)) {
-        return $json;
-    }
-
-    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
-        return is_array($_GET) ? $_GET : [];
-    }
-
-    return is_array($_POST) ? $_POST : [];
+    return trim(
+        is_string($normalized)
+            ? $normalized
+            : $roleName
+    );
 }
 
-/**
- * Opens the Narrrfs SQLite database in local XAMPP or production Render.
- */
-function get_database_connection(): PDO {
-    $candidates = [];
-
-    if (is_localhost_env()) {
-        $candidates[] = __DIR__ . '/../../db/narrrf_world.sqlite';
-        $candidates[] = 'C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite';
-    }
-
-    $candidates[] = __DIR__ . '/../../db/narrrf_world.sqlite';
-    $candidates[] = '/var/www/html/db/narrrf_world.sqlite';
-
-    foreach ($candidates as $path) {
-        if ($path && file_exists($path)) {
-            $pdo = new PDO('sqlite:' . $path);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-            return $pdo;
-        }
-    }
-
-    throw new Exception('Database file not found');
-}
 
 /**
- * Resolves the active Discord user.
- *
- * Plain language for DEVS:
- * Production trusts the PHP session. Localhost may use a request/user fallback
- * so we can test the game without a full Discord login loop.
+ * Resolve the strongest approved Labyrinth Blast multiplier from roles stored
+ * in tbl_user_roles. Browser multiplier values are never used.
  */
-function resolve_user_id(array $request): string {
-    $sessionUserId = trim((string)($_SESSION['discord_id'] ?? ''));
-    $requestUserId = trim((string)($request['user_id'] ?? $request['discord_id'] ?? ''));
-    $isLocalhost = is_localhost_env();
-
-    if ($sessionUserId !== '') {
-        if ($requestUserId !== '' && $requestUserId !== $sessionUserId && !$isLocalhost) {
-            json_response([
-                'success' => false,
-                'error' => 'Unauthorized: user_id mismatch'
-            ], 403);
-        }
-
-        return $sessionUserId;
-    }
-
-    if ($isLocalhost && $requestUserId !== '') {
-        return $requestUserId;
-    }
-
-    if ($isLocalhost) {
-        return LOCAL_TEST_DISCORD_ID;
-    }
-
-    return '';
-}
-
-/**
- * Returns the active season name.
- *
- * Plain language for DEVS:
- * This is important for the Season 11 -> Season 12 transition.
- * When tbl_seasons changes the active season, this API follows automatically.
- */
-function get_current_season(PDO $pdo): string {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT season_name
-            FROM tbl_seasons
-            WHERE is_active = 1
-            ORDER BY start_date DESC
-            LIMIT 1
-        ");
-        $stmt->execute();
-        $season = trim((string)$stmt->fetchColumn());
-
-        return $season !== '' ? $season : 'Season 12';
-    } catch (Exception $e) {
-        error_log('Labyrinth Blast season lookup failed: ' . $e->getMessage());
-        return 'Season 12';
-    }
-}
-
-/**
- * Resolves display name from tbl_users or request fallback.
- */
-function get_discord_name(PDO $pdo, string $userId, array $request): string {
-    $requestName = trim((string)($request['discord_name'] ?? $request['username'] ?? ''));
-
-    try {
-        $stmt = $pdo->prepare("
-            SELECT username
-            FROM tbl_users
-            WHERE discord_id = ?
-            LIMIT 1
-        ");
-        $stmt->execute([$userId]);
-        $name = trim((string)$stmt->fetchColumn());
-
-        if ($name !== '') {
-            return $name;
-        }
-    } catch (Exception $e) {
-        error_log('Labyrinth Blast username lookup failed: ' . $e->getMessage());
-    }
-
-    return $requestName !== '' ? $requestName : $userId;
-}
-
-/**
- * Returns role names stored for this Discord user.
- *
- * Plain language for DEVS:
- * Narrrfs role sync writes Discord role names into tbl_user_roles.
- * Labyrinth Blast reads those roles on the backend so the browser cannot decide
- * the economy multiplier.
- */
-function get_user_roles(PDO $pdo, string $userId): array {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT role_name
-            FROM tbl_user_roles
-            WHERE user_id = ?
-        ");
-        $stmt->execute([$userId]);
-        $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-        return is_array($roles) ? $roles : [];
-    } catch (Exception $e) {
-        error_log('Labyrinth Blast role lookup failed: ' . $e->getMessage());
-        return [];
-    }
-}
-
-/**
- * Normalizes role names so emoji and non-emoji role variants both work.
- */
-function normalize_role_name(string $role): string {
-    $cleanRole = preg_replace('/[\x{1F300}-\x{1FAFF}]/u', '', $role);
-    $cleanRole = trim((string)$cleanRole);
-    return $cleanRole !== '' ? $cleanRole : trim($role);
-}
-
-/**
- * Calculates the Narrrfs role multiplier for Labyrinth Blast.
- *
- * Plain language for DEVS:
- * This mirrors the existing Snake multiplier ladder, but the calculation happens
- * server-side for Labyrinth Blast so the final DSPOINC reward stays authoritative.
- */
-function calculate_role_multiplier(array $roles): array {
-    $roleMultipliers = [
+function labyrinth_role_bonus(array $roles): array
+{
+    $multipliers = [
         'VIP Holder' => 2.0,
         'Holder' => 1.5,
         'Champion' => 1.4,
         'Season Tester' => 1.3,
         'WL' => 1.3,
         'Early Bird' => 1.2,
-        'Cheese Hunter' => 1.1
+        'Cheese Hunter' => 1.1,
     ];
 
     $bestRole = null;
-    $bestMultiplier = DEFAULT_ROLE_MULTIPLIER;
+    $bestMultiplier = 1.0;
 
-    foreach ($roles as $role) {
-        $roleName = trim((string)$role);
-        $cleanRoleName = normalize_role_name($roleName);
+    foreach ($roles as $storedRole) {
+        $roleName = trim(
+            (string)$storedRole
+        );
 
-        foreach ([$roleName, $cleanRoleName] as $candidate) {
-            if (!isset($roleMultipliers[$candidate])) {
+        foreach ([
+            $roleName,
+            labyrinth_normalize_role_name($roleName)
+        ] as $candidate) {
+            if (!isset($multipliers[$candidate])) {
                 continue;
             }
 
-            $candidateMultiplier = (float)$roleMultipliers[$candidate];
+            $candidateMultiplier =
+                (float)$multipliers[$candidate];
 
             if ($candidateMultiplier > $bestMultiplier) {
                 $bestMultiplier = $candidateMultiplier;
@@ -261,282 +122,763 @@ function calculate_role_multiplier(array $roles): array {
 
     return [
         'role' => $bestRole,
-        'multiplier' => $bestMultiplier
+        'multiplier' => $bestMultiplier,
     ];
 }
 
-/**
- * Reads table columns so inserts survive older/newer DB shapes.
- */
-function get_table_columns(PDO $pdo, string $table): array {
-    $stmt = $pdo->query("PRAGMA table_info($table)");
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    return array_map(static fn($row) => $row['name'], $rows);
-}
 
 /**
- * Inserts only columns that exist in the current SQLite table.
+ * Preserve the existing Labyrinth Blast economy formula:
  *
- * Plain language for DEVS:
- * Narrrfs DB tables have evolved over seasons. This keeps the API compatible
- * without requiring schema changes during game integration.
- */
-function adaptive_insert(PDO $pdo, string $table, array $values): void {
-    $columns = get_table_columns($pdo, $table);
-    $insertValues = [];
-
-    foreach ($values as $column => $value) {
-        if (in_array($column, $columns, true)) {
-            $insertValues[$column] = $value;
-        }
-    }
-
-    if (empty($insertValues)) {
-        throw new Exception("No compatible columns found for $table");
-    }
-
-    $columnNames = array_keys($insertValues);
-    $placeholders = array_map(static fn($column) => ':' . $column, $columnNames);
-
-    $sql = sprintf(
-        'INSERT INTO %s (%s) VALUES (%s)',
-        $table,
-        implode(', ', $columnNames),
-        implode(', ', $placeholders)
-    );
-
-    $stmt = $pdo->prepare($sql);
-
-    foreach ($insertValues as $column => $value) {
-        if (is_int($value)) {
-            $stmt->bindValue(':' . $column, $value, PDO::PARAM_INT);
-            continue;
-        }
-
-        $stmt->bindValue(':' . $column, $value);
-    }
-
-    $stmt->execute();
-}
-
-/**
- * Calculates DSPOINC from Labyrinth Blast raw gameplay score.
+ * floor(raw score × server role multiplier / 10)
  *
- * Plain language for DEVS:
- * The frontend is allowed to send raw score only.
- * The economy reward is calculated here to avoid client-side reward exploits.
+ * Reward stays between 1 and 5000 DSPOINC for an accepted positive run.
  */
-function calculate_dspoinc_reward(int $rawScore, float $roleMultiplier): int {
+function labyrinth_calculate_reward(
+    int $rawScore,
+    float $roleMultiplier
+): int {
     if ($rawScore <= 0) {
         return 0;
     }
 
-    $safeMultiplier = max(DEFAULT_ROLE_MULTIPLIER, min(2.0, $roleMultiplier));
-    $reward = (int)floor(($rawScore * $safeMultiplier) / DSP_CONVERSION_RATE);
+    $safeMultiplier = max(
+        1.0,
+        min(2.0, $roleMultiplier)
+    );
+
+    $reward = (int)floor(
+        ($rawScore * $safeMultiplier)
+        / LABYRINTH_CONVERSION_RATE
+    );
 
     if ($reward < 1) {
         return 1;
     }
 
-    return min($reward, MAX_DSP_REWARD);
+    return min(
+        $reward,
+        LABYRINTH_MAX_DSP_REWARD
+    );
 }
 
-/**
- * Validates the Labyrinth Blast score payload.
+
+$requestMethod = strtoupper(
+    (string)($_SERVER['REQUEST_METHOD'] ?? '')
+);
+
+if ($requestMethod !== 'POST') {
+    header('Allow: POST');
+
+    labyrinth_response(405, [
+        'success' => false,
+        'code' => 'method_not_allowed',
+        'error' => 'POST is required.',
+    ]);
+}
+
+
+$contentType = strtolower(trim(
+    explode(
+        ';',
+        (string)($_SERVER['CONTENT_TYPE'] ?? ''),
+        2
+    )[0]
+));
+
+if ($contentType !== 'application/json') {
+    labyrinth_response(415, [
+        'success' => false,
+        'code' => 'unsupported_media_type',
+        'error' => 'application/json is required.',
+    ]);
+}
+
+
+$origin = strtolower(rtrim(
+    trim((string)($_SERVER['HTTP_ORIGIN'] ?? '')),
+    '/'
+));
+
+if (
+    $origin !== '' &&
+    !in_array($origin, [
+        'https://narrrfs.world',
+        'http://localhost',
+        'http://127.0.0.1',
+    ], true)
+) {
+    labyrinth_response(403, [
+        'success' => false,
+        'code' => 'origin_rejected',
+        'error' => 'Request origin is not allowed.',
+    ]);
+}
+
+
+$fetchSite = strtolower(trim(
+    (string)($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '')
+));
+
+if (
+    $fetchSite !== '' &&
+    !in_array(
+        $fetchSite,
+        ['same-origin', 'same-site', 'none'],
+        true
+    )
+) {
+    labyrinth_response(403, [
+        'success' => false,
+        'code' => 'cross_site_rejected',
+        'error' => 'Cross-site score submission is not allowed.',
+    ]);
+}
+
+
+/*
+ * Shared session bootstrap is the only authentication path.
+ * There is deliberately no Host-based localhost authentication fallback.
  */
-function validate_score_payload(array $request, float $roleMultiplier): array {
-    $rawScore = (int)floor((float)($request['score'] ?? 0));
-    $level = (int)floor((float)($request['level'] ?? 1));
-    $durationSeconds = (int)floor((float)($request['duration_seconds'] ?? $request['time'] ?? 0));
-    $status = trim((string)($request['status'] ?? ''));
-    $character = trim((string)($request['character'] ?? ''));
+require_once __DIR__ . '/../config/session.php';
 
-    $allowedStatuses = ['won', 'lost'];
-    $allowedCharacters = ['nightfox', 'bear', 'bull'];
+$sessionDiscordId = trim(
+    (string)($_SESSION['discord_id'] ?? '')
+);
 
-    if ($rawScore <= 0) {
-        json_response([
-            'success' => false,
-            'error' => 'Score must be positive'
-        ], 400);
-    }
-
-    if ($rawScore > MAX_REASONABLE_RAW_SCORE) {
-        json_response([
-            'success' => false,
-            'error' => 'Score exceeds validation limit'
-        ], 400);
-    }
-
-    if ($level < 1 || $level > 100) {
-        json_response([
-            'success' => false,
-            'error' => 'Invalid level value'
-        ], 400);
-    }
-
-    if ($durationSeconds < 0 || $durationSeconds > 86400) {
-        json_response([
-            'success' => false,
-            'error' => 'Invalid duration value'
-        ], 400);
-    }
-
-    if (!in_array($status, $allowedStatuses, true)) {
-        json_response([
-            'success' => false,
-            'error' => 'Invalid run status'
-        ], 400);
-    }
-
-    if (!in_array($character, $allowedCharacters, true)) {
-        json_response([
-            'success' => false,
-            'error' => 'Invalid character value'
-        ], 400);
-    }
-
-    $dspoincScore = calculate_dspoinc_reward($rawScore, $roleMultiplier);
-
-    if ($dspoincScore <= 0) {
-        json_response([
-            'success' => false,
-            'error' => 'DSPOINC reward must be positive'
-        ], 400);
-    }
-
-    return [
-        'raw_score' => $rawScore,
-        'dspoinc_score' => $dspoincScore,
-        'level' => $level,
-        'duration_seconds' => $durationSeconds,
-        'status' => $status,
-        'character' => $character,
-        'role_multiplier' => $roleMultiplier
-    ];
+if (
+    !preg_match(
+        '/\A[0-9]{17,20}\z/',
+        $sessionDiscordId
+    )
+) {
+    labyrinth_response(401, [
+        'success' => false,
+        'code' => 'authentication_required',
+        'error' => 'Authentication is required.',
+    ]);
 }
+
+
+$rawBody = file_get_contents('php://input');
+
+if (
+    !is_string($rawBody) ||
+    $rawBody === '' ||
+    strlen($rawBody) > LABYRINTH_MAX_REQUEST_BYTES
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_request_body',
+        'error' => 'A bounded JSON object is required.',
+    ]);
+}
+
+
+$request = json_decode(
+    $rawBody,
+    true
+);
+
+if (
+    !is_array($request) ||
+    json_last_error() !== JSON_ERROR_NONE
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_json',
+        'error' => 'A valid JSON object is required.',
+    ]);
+}
+
+
+/*
+ * Existing clients may send discord_id, user_id, or both.
+ * Every submitted identity must agree with the authenticated PHP session.
+ */
+$requestDiscordId = trim(
+    (string)($request['discord_id'] ?? '')
+);
+
+$requestUserId = trim(
+    (string)($request['user_id'] ?? '')
+);
+
+if (
+    $requestDiscordId === '' &&
+    $requestUserId === ''
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'missing_request_identity',
+        'error' => 'A request identity is required.',
+    ]);
+}
+
+foreach ([
+    'discord_id' => $requestDiscordId,
+    'user_id' => $requestUserId,
+] as $identityField => $identityValue) {
+    if ($identityValue === '') {
+        continue;
+    }
+
+    if (
+        !preg_match(
+            '/\A[0-9]{17,20}\z/',
+            $identityValue
+        )
+    ) {
+        labyrinth_response(400, [
+            'success' => false,
+            'code' => 'invalid_request_identity',
+            'error' =>
+                $identityField .
+                ' is not a valid Discord identity.',
+        ]);
+    }
+
+    if (
+        !hash_equals(
+            $sessionDiscordId,
+            $identityValue
+        )
+    ) {
+        labyrinth_response(403, [
+            'success' => false,
+            'code' => 'identity_mismatch',
+            'error' =>
+                'The request identity does not match the authenticated session.',
+        ]);
+    }
+}
+
+
+$requestGame = strtolower(trim(
+    (string)($request['game'] ?? LABYRINTH_GAME_KEY)
+));
+
+if ($requestGame !== LABYRINTH_GAME_KEY) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_game',
+        'error' => 'Invalid Labyrinth Blast game key.',
+    ]);
+}
+
+
+/*
+ * Raw gameplay facts remain client-originated but are tightly bounded.
+ */
+$submittedRawScore =
+    $request['score']
+    ?? $request['raw_score']
+    ?? null;
+
+if (
+    (!is_int($submittedRawScore) &&
+        !is_float($submittedRawScore)) ||
+    !is_finite((float)$submittedRawScore)
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_raw_score',
+        'error' => 'Raw score must be a JSON number.',
+    ]);
+}
+
+$rawScore = (int)floor(
+    (float)$submittedRawScore
+);
+
+if (
+    $rawScore <= 0 ||
+    $rawScore > LABYRINTH_MAX_RAW_SCORE
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'raw_score_out_of_range',
+        'error' => 'Raw score is outside the accepted range.',
+    ]);
+}
+
+
+$levelValue = $request['level'] ?? 1;
+
+if (
+    !is_int($levelValue) &&
+    !is_float($levelValue)
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_level',
+        'error' => 'Level is invalid.',
+    ]);
+}
+
+$level = (int)floor(
+    (float)$levelValue
+);
+
+if (
+    $level < 1 ||
+    $level > LABYRINTH_MAX_LEVEL
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_level',
+        'error' => 'Level is outside the accepted range.',
+    ]);
+}
+
+
+$durationValue =
+    $request['duration_seconds']
+    ?? $request['time']
+    ?? 0;
+
+if (
+    !is_int($durationValue) &&
+    !is_float($durationValue)
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_duration',
+        'error' => 'Duration is invalid.',
+    ]);
+}
+
+$durationSeconds = (int)floor(
+    (float)$durationValue
+);
+
+if (
+    $durationSeconds < 0 ||
+    $durationSeconds >
+        LABYRINTH_MAX_DURATION_SECONDS
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_duration',
+        'error' => 'Duration is outside the accepted range.',
+    ]);
+}
+
+
+$status = strtolower(trim(
+    (string)($request['status'] ?? '')
+));
+
+if (
+    !in_array(
+        $status,
+        ['won', 'lost'],
+        true
+    )
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_status',
+        'error' => 'Run status is invalid.',
+    ]);
+}
+
+
+$character = strtolower(trim(
+    (string)($request['character'] ?? '')
+));
+
+if (
+    !in_array(
+        $character,
+        ['nightfox', 'bear', 'bull'],
+        true
+    )
+) {
+    labyrinth_response(400, [
+        'success' => false,
+        'code' => 'invalid_character',
+        'error' => 'Character is invalid.',
+    ]);
+}
+
+
+$dbPath = __DIR__
+    . '/../../db/narrrf_world.sqlite';
+
+if (
+    !is_file($dbPath) ||
+    !is_writable($dbPath)
+) {
+    labyrinth_response(503, [
+        'success' => false,
+        'code' => 'score_store_unavailable',
+        'error' => 'Score storage is unavailable.',
+    ]);
+}
+
 
 try {
-    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-        json_response([
+    $db = new PDO(
+        'sqlite:' . $dbPath,
+        null,
+        null,
+        [
+            PDO::ATTR_ERRMODE =>
+                PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE =>
+                PDO::FETCH_ASSOC,
+            PDO::ATTR_TIMEOUT => 5,
+        ]
+    );
+
+    $db->exec(
+        'PRAGMA busy_timeout = 5000'
+    );
+
+
+    /*
+     * Require exactly one active season.
+     * No stale historical fallback is permitted on an economy route.
+     */
+    $seasonStmt = $db->query(
+        'SELECT season_name
+         FROM tbl_seasons
+         WHERE is_active = 1
+         ORDER BY start_date DESC
+         LIMIT 2'
+    );
+
+    $activeSeasons = $seasonStmt->fetchAll(
+        PDO::FETCH_COLUMN
+    );
+
+    if (
+        count($activeSeasons) !== 1 ||
+        trim((string)$activeSeasons[0]) === ''
+    ) {
+        labyrinth_response(503, [
             'success' => false,
-            'error' => 'POST required'
-        ], 405);
+            'code' => 'active_season_unavailable',
+            'error' => 'Active season state is unavailable.',
+        ]);
     }
 
-    $request = get_request_data();
-    $pdo = get_database_connection();
+    $season = trim(
+        (string)$activeSeasons[0]
+    );
 
-    $userId = resolve_user_id($request);
-    if ($userId === '') {
-        json_response([
-            'success' => false,
-            'error' => 'Discord login required'
-        ], 401);
+
+    /*
+     * Resolve display identity from server-owned tbl_users.
+     * Browser discord_name is ignored.
+     */
+    $nameStmt = $db->prepare(
+        'SELECT username
+         FROM tbl_users
+         WHERE discord_id = ?
+         LIMIT 1'
+    );
+
+    $nameStmt->execute([
+        $sessionDiscordId
+    ]);
+
+    $discordName = trim(
+        (string)$nameStmt->fetchColumn()
+    );
+
+    if ($discordName === '') {
+        $discordName = $sessionDiscordId;
     }
 
-    $discordName = get_discord_name($pdo, $userId, $request);
-$userRoles = get_user_roles($pdo, $userId);
 
-if (is_localhost_env() && empty($userRoles)) {
-    $userRoles = ['VIP Holder'];
-}
+    /*
+     * Resolve role multiplier from server-owned Discord roles.
+     */
+    $roleStmt = $db->prepare(
+        'SELECT role_name
+         FROM tbl_user_roles
+         WHERE user_id = ?'
+    );
 
-$roleBonus = calculate_role_multiplier($userRoles);
-$validated = validate_score_payload($request, (float)$roleBonus['multiplier']);
-$season = get_current_season($pdo);
-$timestamp = gmdate('Y-m-d H:i:s');
-
-    $metadata = [
-        'raw_score' => $validated['raw_score'],
-        'dspoinc_score' => $validated['dspoinc_score'],
-        'level' => $validated['level'],
-        'duration_seconds' => $validated['duration_seconds'],
-        'status' => $validated['status'],
-        'character' => $validated['character'],
-        'role_multiplier' => $validated['role_multiplier'],
-'role_bonus_role' => $roleBonus['role'],
-'roles' => $userRoles,
-        'conversion_rate' => DSP_CONVERSION_RATE,
-        'max_dsp_reward' => MAX_DSP_REWARD,
-
-        'season' => $season
-    ];
-
-    $pdo->beginTransaction();
-
-    adaptive_insert($pdo, 'tbl_tetris_scores', [
-        'discord_id' => $userId,
-        'discord_name' => $discordName,
-        'wallet' => $userId,
-        'score' => $validated['dspoinc_score'],
-        'raw_score' => $validated['raw_score'],
-        'game' => GAME_KEY,
-        'season' => $season,
-        'timestamp' => $timestamp,
-        'created_at' => $timestamp,
-        'level' => $validated['level'],
-        'role_multiplier' => $validated['role_multiplier'],
-        'role_bonus_role' => $roleBonus['role'],
-        'metadata' => json_encode($metadata)
+    $roleStmt->execute([
+        $sessionDiscordId
     ]);
 
-    adaptive_insert($pdo, 'tbl_user_scores', [
-        'user_id' => $userId,
-        'discord_id' => $userId,
-        'score' => $validated['dspoinc_score'],
-        'game' => GAME_KEY,
-        'source' => GAME_SOURCE,
-        'season' => $season,
-        'timestamp' => $timestamp,
-        'created_at' => $timestamp,
-        'reason' => GAME_DISPLAY_NAME . ' game reward',
-        'metadata' => json_encode($metadata)
+    $storedRoles = $roleStmt->fetchAll(
+        PDO::FETCH_COLUMN
+    );
+
+    $roleBonus = labyrinth_role_bonus(
+        is_array($storedRoles)
+            ? $storedRoles
+            : []
+    );
+
+    $roleMultiplier = (float)(
+        $roleBonus['multiplier']
+        ?? 1.0
+    );
+
+    $reward = labyrinth_calculate_reward(
+        $rawScore,
+        $roleMultiplier
+    );
+
+    if ($reward <= 0) {
+        labyrinth_response(400, [
+            'success' => false,
+            'code' => 'reward_below_minimum',
+            'error' => 'Run does not produce a positive DSPOINC reward.',
+        ]);
+    }
+
+
+    $db->beginTransaction();
+
+
+    /*
+     * Prevent an immediate exact replay from issuing a second reward.
+     *
+     * Historical tbl_tetris_scores stores the DSPOINC reward in score.
+     */
+    $duplicateStmt = $db->prepare(
+        "SELECT id
+         FROM tbl_tetris_scores
+         WHERE discord_id = ?
+           AND game = ?
+           AND season = ?
+           AND score = ?
+           AND timestamp >= datetime(
+               'now',
+               '-30 seconds'
+           )
+         ORDER BY id DESC
+         LIMIT 1"
+    );
+
+    $duplicateStmt->execute([
+        $sessionDiscordId,
+        LABYRINTH_GAME_KEY,
+        $season,
+        $reward,
     ]);
 
-    adaptive_insert($pdo, 'tbl_score_adjustments', [
-        'user_id' => $userId,
-        'discord_id' => $userId,
-        'amount' => $validated['dspoinc_score'],
-        'action' => 'add',
-        'reason' => GAME_DISPLAY_NAME . ' game score: ' . $validated['dspoinc_score'] . ' DSPOINC from raw score ' . $validated['raw_score'],
-        'source' => GAME_SOURCE,
-        'game' => GAME_KEY,
-        'season' => $season,
-        'timestamp' => $timestamp,
-        'created_at' => $timestamp,
-        'admin_id' => 'system',
-        'metadata' => json_encode($metadata)
+    $existingScoreId =
+        $duplicateStmt->fetchColumn();
+
+
+    if ($existingScoreId !== false) {
+        /*
+         * A duplicate is accepted only if the matching V1 audit exists.
+         * Missing audit means state is ambiguous, so fail closed and do not
+         * issue another DSPOINC reward.
+         */
+        $reasonMarker =
+            '(score_id: ' .
+            (int)$existingScoreId .
+            ')';
+
+        $auditStmt = $db->prepare(
+            "SELECT id
+             FROM tbl_score_adjustments
+             WHERE user_id = ?
+               AND admin_id = 'system'
+               AND amount = ?
+               AND action = 'add'
+               AND reason LIKE ?
+             ORDER BY id DESC
+             LIMIT 1"
+        );
+
+        $auditStmt->execute([
+            $sessionDiscordId,
+            $reward,
+            '%' . $reasonMarker,
+        ]);
+
+        $existingAuditId =
+            $auditStmt->fetchColumn();
+
+        $db->commit();
+
+        if ($existingAuditId === false) {
+            labyrinth_response(409, [
+                'success' => false,
+                'code' =>
+                    'duplicate_reward_state_unverified',
+                'error' =>
+                    'A matching leaderboard result exists without a verified reward audit. No additional reward was credited.',
+                'score_id' =>
+                    (int)$existingScoreId,
+            ]);
+        }
+
+        labyrinth_response(200, [
+            'success' => true,
+            'duplicate' => true,
+            'score_id' =>
+                (int)$existingScoreId,
+            'game' =>
+                LABYRINTH_GAME_KEY,
+            'season' => $season,
+            'user_id' =>
+                $sessionDiscordId,
+            'discord_name' =>
+                $discordName,
+            'raw_score' => $rawScore,
+            'dspoinc_score' =>
+                $reward,
+            'role_multiplier' =>
+                $roleMultiplier,
+            'role_bonus_role' =>
+                $roleBonus['role'],
+            'level' => $level,
+            'status' => $status,
+            'character' => $character,
+            'duration_seconds' =>
+                $durationSeconds,
+        ]);
+    }
+
+
+    /*
+     * All three persistence writes are atomic.
+     */
+    $leaderboardStmt = $db->prepare(
+        'INSERT INTO tbl_tetris_scores
+         (
+             wallet,
+             score,
+             discord_id,
+             discord_name,
+             game,
+             season
+         )
+         VALUES (?, ?, ?, ?, ?, ?)'
+    );
+
+    $leaderboardStmt->execute([
+        $sessionDiscordId,
+        $reward,
+        $sessionDiscordId,
+        $discordName,
+        LABYRINTH_GAME_KEY,
+        $season,
     ]);
 
-    $pdo->commit();
+    $scoreId = (int)$db->lastInsertId();
 
-    json_response([
+
+    $ledgerStmt = $db->prepare(
+        'INSERT INTO tbl_user_scores
+         (
+             user_id,
+             game,
+             score,
+             source,
+             season
+         )
+         VALUES (?, ?, ?, ?, ?)'
+    );
+
+    $ledgerStmt->execute([
+        $sessionDiscordId,
+        LABYRINTH_GAME_KEY,
+        $reward,
+        LABYRINTH_GAME_SOURCE,
+        $season,
+    ]);
+
+
+    $rewardReason =
+        LABYRINTH_GAME_NAME .
+        ' game reward: ' .
+        $reward .
+        ' DSPOINC from raw score ' .
+        $rawScore .
+        ' at server role multiplier ' .
+        number_format(
+            $roleMultiplier,
+            1,
+            '.',
+            ''
+        ) .
+        'x (score_id: ' .
+        $scoreId .
+        ')';
+
+
+    $adjustmentStmt = $db->prepare(
+        'INSERT INTO tbl_score_adjustments
+         (
+             user_id,
+             admin_id,
+             amount,
+             action,
+             reason
+         )
+         VALUES (?, ?, ?, ?, ?)'
+    );
+
+    $adjustmentStmt->execute([
+        $sessionDiscordId,
+        'system',
+        $reward,
+        'add',
+        $rewardReason,
+    ]);
+
+
+    $db->commit();
+
+
+    labyrinth_response(200, [
         'success' => true,
-        'message' => GAME_DISPLAY_NAME . ' score saved',
-        'game' => GAME_KEY,
+        'duplicate' => false,
+        'message' =>
+            'Labyrinth Blast score and DSPOINC reward saved.',
+        'score_id' => $scoreId,
+        'game' =>
+            LABYRINTH_GAME_KEY,
         'season' => $season,
-        'user_id' => $userId,
-        'discord_name' => $discordName,
-        'raw_score' => $validated['raw_score'],
-        'dspoinc_score' => $validated['dspoinc_score'],
-        'role_multiplier' => $validated['role_multiplier'],
-        'role_bonus_role' => $roleBonus['role'],
-        'level' => $validated['level'],
-        'status' => $validated['status'],
-        'character' => $validated['character'],
-        'duration_seconds' => $validated['duration_seconds']
+        'user_id' =>
+            $sessionDiscordId,
+        'discord_name' =>
+            $discordName,
+        'raw_score' => $rawScore,
+        'dspoinc_score' =>
+            $reward,
+        'role_multiplier' =>
+            $roleMultiplier,
+        'role_bonus_role' =>
+            $roleBonus['role'],
+        'level' => $level,
+        'status' => $status,
+        'character' => $character,
+        'duration_seconds' =>
+            $durationSeconds,
     ]);
-} catch (Exception $e) {
-    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
-        $pdo->rollBack();
+
+} catch (Throwable $error) {
+    if (
+        isset($db) &&
+        $db instanceof PDO &&
+        $db->inTransaction()
+    ) {
+        $db->rollBack();
     }
 
-    error_log('Labyrinth Blast save error: ' . $e->getMessage());
+    error_log(
+        'Labyrinth Blast secure score save failed: ' .
+        $error->getMessage()
+    );
 
-    json_response([
+    labyrinth_response(500, [
         'success' => false,
-        'error' => GAME_DISPLAY_NAME . ' score save failed',
-        'details' => is_localhost_env() ? $e->getMessage() : null
-    ], 500);
+        'code' => 'score_save_failed',
+        'error' =>
+            'Labyrinth Blast score saving failed.',
+    ]);
 }
