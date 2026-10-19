@@ -1,12 +1,13 @@
 <?php
 declare(strict_types=1);
 
-// SECURITY RECOVERY — authenticated leaderboard-only score persistence.
+// SECURITY RECOVERY V2 — authenticated score + audited DSPOINC persistence.
 // DEVS FOR DECADES:
-// This route restores only leaderboard rows for Tetris, Snake, Space Invaders,
-// and Glyph Memory. It intentionally does NOT credit DSPOINC/SPOINC, write
-// score-adjustment ledgers, grant WL roles, or create season settings.
-// Client results are bounded but are not server-proven gameplay results.
+// Tetris, Snake, and Space Invaders atomically persist the seasonal leaderboard
+// row, DSPOINC ledger credit, and Profile/audit adjustment.
+// Glyph Memory remains leaderboard-only and never credits DSPOINC.
+// WL grants and season-setting creation remain disabled.
+// Client results are session-bound and bounded but are not server-proven gameplay results.
 
 error_reporting(0);
 ini_set('display_errors', '0');
@@ -470,7 +471,45 @@ try {
     $existingId = $duplicateStmt->fetchColumn();
 
     if ($existingId !== false) {
+        /*
+         * A duplicate leaderboard row is safe only when this V2 route can
+         * verify that the original atomic transaction also wrote its reward
+         * audit. Never issue a second reward merely because the client retried.
+         */
+        $rewardReasonMarker = '(score_id: ' . (int)$existingId . ')';
+
+        $rewardAuditStmt = $db->prepare(
+            "SELECT id
+             FROM tbl_score_adjustments
+             WHERE user_id = ?
+               AND admin_id = 'system'
+               AND amount = ?
+               AND action = 'add'
+               AND reason LIKE ?
+             ORDER BY id DESC
+             LIMIT 1"
+        );
+
+        $rewardAuditStmt->execute([
+            $sessionDiscordId,
+            $storedScore,
+            '%' . $rewardReasonMarker
+        ]);
+
+        $rewardAuditId = $rewardAuditStmt->fetchColumn();
+
         $db->commit();
+
+        if ($rewardAuditId === false) {
+            score_response(409, [
+                'success' => false,
+                'code' => 'duplicate_reward_state_unverified',
+                'error' => 'A matching leaderboard result exists without a verified reward audit. No additional reward was credited.',
+                'score_id' => (int)$existingId,
+                'game' => $game,
+                'season' => $season
+            ]);
+        }
 
         score_response(200, [
             'success' => true,
@@ -481,8 +520,8 @@ try {
             'raw_score' => $submittedScore,
             'dspoinc_score' => $storedScore,
             'max_score' => $maxScore,
-            'leaderboard_only' => true,
-            'rewards_credited' => false
+            'leaderboard_only' => false,
+            'rewards_credited' => true
         ]);
     }
 
@@ -514,11 +553,70 @@ try {
 
     $scoreId = (int)$db->lastInsertId();
 
+    /*
+     * Append the real DSPOINC credit inside the SAME transaction as the
+     * leaderboard row. A failure in either ledger/audit write rolls back all
+     * three records, preventing leaderboard/economy divergence.
+     */
+    $ledgerStmt = $db->prepare(
+        'INSERT INTO tbl_user_scores
+         (
+             user_id,
+             score,
+             game,
+             source,
+             season
+         )
+         VALUES (?, ?, ?, ?, ?)'
+    );
+
+    $ledgerStmt->execute([
+        $sessionDiscordId,
+        $storedScore,
+        $game,
+        'game_score',
+        $season
+    ]);
+
+    $gameDisplayName = match ($game) {
+        'tetris' => 'Tetris',
+        'snake' => 'Snake',
+        'space_invaders' => 'Space Invaders',
+    };
+
+    $rewardReason =
+        $gameDisplayName .
+        ' game reward: ' .
+        $storedScore .
+        ' DSPOINC (score_id: ' .
+        $scoreId .
+        ')';
+
+    $adjustmentStmt = $db->prepare(
+        'INSERT INTO tbl_score_adjustments
+         (
+             user_id,
+             admin_id,
+             amount,
+             action,
+             reason
+         )
+         VALUES (?, ?, ?, ?, ?)'
+    );
+
+    $adjustmentStmt->execute([
+        $sessionDiscordId,
+        'system',
+        $storedScore,
+        'add',
+        $rewardReason
+    ]);
+
     $db->commit();
 
     score_response(200, [
         'success' => true,
-        'message' => 'Leaderboard score saved. Rewards remain disabled on this recovery route.',
+        'message' => 'Leaderboard score and DSPOINC reward saved.',
         'score_id' => $scoreId,
         'duplicate' => false,
         'game' => $game,
@@ -526,8 +624,8 @@ try {
         'raw_score' => $submittedScore,
         'dspoinc_score' => $storedScore,
         'max_score' => $maxScore,
-        'leaderboard_only' => true,
-        'rewards_credited' => false,
+        'leaderboard_only' => false,
+        'rewards_credited' => true,
         'wl_check' => [
             'eligible' => false,
             'message' => 'WL grants remain disabled on this recovery route.'
@@ -543,7 +641,7 @@ try {
     }
 
     error_log(
-        'Leaderboard-only score save failed: ' .
+        'Authenticated score save failed: ' .
         $error->getMessage()
     );
 

@@ -119,7 +119,9 @@ sort($insertTargets);
 
 $expectedInsertTargets = [
     'tbl_glyph_memory_scores',
-    'tbl_tetris_scores'
+    'tbl_score_adjustments',
+    'tbl_tetris_scores',
+    'tbl_user_scores'
 ];
 
 sort($expectedInsertTargets);
@@ -130,11 +132,10 @@ score_recovery_test_assert(
 );
 
 /*
- * Protected/economy state stays absent.
+ * Only unrelated protected persistence stays absent.
+ * tbl_user_scores and tbl_score_adjustments are explicitly approved here.
  */
 foreach ([
-    'tbl_user_scores',
-    'tbl_score_adjustments',
     'tbl_wl_role_grants'
 ] as $forbiddenTable) {
     score_recovery_test_assert(
@@ -183,22 +184,39 @@ score_recovery_test_assert(
 );
 
 /*
- * Recovery response makes the economic boundary explicit.
+ * Recovery response must distinguish the non-economic Glyph path from the
+ * explicitly approved rewarded classic-game path.
  */
 score_recovery_test_assert(
     str_contains(
         $source,
         "'leaderboard_only' => true"
+    ) &&
+    str_contains(
+        $source,
+        "'leaderboard_only' => false"
     ),
-    'response identifies leaderboard-only mode'
+    'response distinguishes leaderboard-only and rewarded paths'
 );
 
 score_recovery_test_assert(
     str_contains(
         $source,
         "'rewards_credited' => false"
+    ) &&
+    str_contains(
+        $source,
+        "'rewards_credited' => true"
     ),
-    'response confirms rewards are not credited'
+    'response distinguishes non-reward and rewarded results'
+);
+
+score_recovery_test_assert(
+    str_contains(
+        $source,
+        "'game_score'"
+    ),
+    'classic reward uses the established game_score ledger source'
 );
 
 /*
@@ -239,4 +257,4 @@ score_recovery_test_assert(
     'terminal SEV-1 disable is replaced by bounded recovery'
 );
 
-echo "PASS: save-score recovery is authenticated, bounded, leaderboard-only, and economy-isolated\n";
+echo "PASS: save-score V2 is authenticated, bounded, replay-guarded, and atomically audits classic DSPOINC rewards\n";

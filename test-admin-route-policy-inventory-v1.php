@@ -52,27 +52,31 @@ policy_test_assert(str_contains($dockerfile, 'a2enconf narrrfs-emergency-contain
 policy_test_assert(str_contains($dockerfile, 'apache2ctl configtest'), 'Docker image validates Apache configuration');
 
 policy_test_assert(
-    str_contains($saveScore, 'SECURITY RECOVERY — authenticated leaderboard-only score persistence'),
-    'save-score is explicitly scoped to leaderboard-only recovery'
+    str_contains($saveScore, 'SECURITY RECOVERY V2 — authenticated score + audited DSPOINC persistence'),
+    'save-score is explicitly scoped to guarded score/economy recovery'
 );
 
 policy_test_assert(
     str_contains($saveScore, 'INSERT INTO tbl_tetris_scores') &&
-    str_contains($saveScore, 'INSERT INTO tbl_glyph_memory_scores'),
-    'save-score writes only the approved leaderboard targets'
+    str_contains($saveScore, 'INSERT INTO tbl_glyph_memory_scores') &&
+    str_contains($saveScore, 'INSERT INTO tbl_user_scores') &&
+    str_contains($saveScore, 'INSERT INTO tbl_score_adjustments'),
+    'save-score uses only the approved leaderboard and DSPOINC audit targets'
 );
 
 policy_test_assert(
-    !str_contains($saveScore, 'tbl_user_scores') &&
-    !str_contains($saveScore, 'tbl_score_adjustments') &&
-    !str_contains($saveScore, 'tbl_wl_role_grants'),
-    'save-score does not restore economy, adjustment, or WL persistence'
+    !str_contains($saveScore, 'tbl_wl_role_grants') &&
+    !preg_match('/INSERT\s+INTO\s+tbl_season_settings/i', $saveScore) &&
+    !preg_match('/\b(?:UPDATE|DELETE|REPLACE)\b\s+/i', $saveScore),
+    'save-score does not restore WL, season-setting, update, delete, or replace mutations'
 );
 
 policy_test_assert(
     str_contains($saveScore, "'leaderboard_only' => true") &&
-    str_contains($saveScore, "'rewards_credited' => false"),
-    'save-score response preserves the non-economic recovery boundary'
+    str_contains($saveScore, "'leaderboard_only' => false") &&
+    str_contains($saveScore, "'rewards_credited' => false") &&
+    str_contains($saveScore, "'rewards_credited' => true"),
+    'save-score distinguishes Glyph leaderboard-only from classic rewarded results'
 );
 
 $trackedCallers = [];
