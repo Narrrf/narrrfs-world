@@ -51,10 +51,29 @@ policy_test_assert(str_contains($containment, '/var/www/html/db'), 'database fil
 policy_test_assert(str_contains($dockerfile, 'a2enconf narrrfs-emergency-containment'), 'Docker image enables containment');
 policy_test_assert(str_contains($dockerfile, 'apache2ctl configtest'), 'Docker image validates Apache configuration');
 
-policy_test_assert(!preg_match('/\b(?:PDO|SQLite3)\b|sqlite:/i', $saveScore), 'save-score has no database connector');
-policy_test_assert(!preg_match('/\b(?:INSERT|UPDATE|DELETE|REPLACE)\b/i', $saveScore), 'save-score has no SQL mutation');
-policy_test_assert(str_contains($saveScore, 'score_submission_temporarily_disabled'), 'save-score remains terminally disabled');
-policy_test_assert(!preg_match('/[\'\"]success[\'\"]\s*=>\s*true/i', $saveScore), 'save-score cannot report success');
+policy_test_assert(
+    str_contains($saveScore, 'SECURITY RECOVERY — authenticated leaderboard-only score persistence'),
+    'save-score is explicitly scoped to leaderboard-only recovery'
+);
+
+policy_test_assert(
+    str_contains($saveScore, 'INSERT INTO tbl_tetris_scores') &&
+    str_contains($saveScore, 'INSERT INTO tbl_glyph_memory_scores'),
+    'save-score writes only the approved leaderboard targets'
+);
+
+policy_test_assert(
+    !str_contains($saveScore, 'tbl_user_scores') &&
+    !str_contains($saveScore, 'tbl_score_adjustments') &&
+    !str_contains($saveScore, 'tbl_wl_role_grants'),
+    'save-score does not restore economy, adjustment, or WL persistence'
+);
+
+policy_test_assert(
+    str_contains($saveScore, "'leaderboard_only' => true") &&
+    str_contains($saveScore, "'rewards_credited' => false"),
+    'save-score response preserves the non-economic recovery boundary'
+);
 
 $trackedCallers = [];
 $guardPath = realpath($root . '/api/config/admin-authorization.php');
