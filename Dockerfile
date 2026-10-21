@@ -1,4 +1,16 @@
-FROM php:8.1-apache
+FROM php:8.2.35-apache-trixie
+
+# PHP2Shell emergency hardening for CVE-2026-109618 / CVE-2026-109619.
+#
+# DEVS FOR DECADES:
+# Pin the patched PHP 8.2.35 Apache/Trixie runtime and disable PHP session
+# upload-progress processing before request parsing. This changes deployment
+# runtime security only. It does not modify application auth, database state,
+# Genesis/Lab progression, Genetic Items, MouseFight, or economy state.
+RUN printf '%s\n' \
+    'session.upload_progress.enabled=0' \
+    > /usr/local/etc/php/conf.d/narrrfs-security.ini \
+    && php -r 'if (PHP_VERSION_ID !== 80235) { fwrite(STDERR, "ERROR: expected PHP 8.2.35.\\n"); exit(1); } if (ini_get("session.upload_progress.enabled") !== "0") { fwrite(STDERR, "ERROR: session.upload_progress.enabled must be 0.\\n"); exit(1); } echo "PHP security runtime gate passed\\n";'
 
 # 2 Fix Apache FQDN warning
 RUN echo "ServerName narrrfs.world" >> /etc/apache2/apache2.conf
