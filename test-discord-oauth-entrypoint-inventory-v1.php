@@ -26,6 +26,34 @@ oauth_inventory_test_assert(str_contains($callbackSource, "\$stateDecision['stat
 oauth_inventory_test_assert(str_contains($callbackSource, 'redirect=%2Fpublic%2Fprofile.html'), 'direct callers restart through fixed canonical initializer');
 oauth_inventory_test_assert(strpos($callbackSource, 'narrrfs_consume_oauth_state') < strpos($callbackSource, 'CURLOPT_URL'), 'callback state gate precedes token exchange');
 
+$canonicalPlayerLoginFiles = [
+    $root . '/public/js/cheese-auth-indicator.js',
+    $root . '/public/profile.html',
+    $root . '/public/lab.html',
+    $root . '/public/stake-lab.html',
+    $root . '/public/Bingo.html',
+    $root . '/public/labyrinth-blast/assets/index-Cy5G_4hB.js',
+];
+
+foreach ($canonicalPlayerLoginFiles as $playerLoginFile) {
+    $playerLoginSource = file_get_contents($playerLoginFile);
+
+    oauth_inventory_test_assert(
+        is_string($playerLoginSource),
+        'canonical player login source is readable: ' . $playerLoginFile
+    );
+
+    oauth_inventory_test_assert(
+        !str_contains($playerLoginSource, 'discord.com/oauth2/authorize'),
+        'player login source does not bypass canonical OAuth issuer: ' . $playerLoginFile
+    );
+
+    oauth_inventory_test_assert(
+        str_contains($playerLoginSource, '/api/discord-login.php'),
+        'player login source uses canonical OAuth issuer: ' . $playerLoginFile
+    );
+}
+
 $directAuthorizationFiles = [];
 foreach ([$root . '/api', $root . '/public'] as $scanRoot) {
     $iterator = new RecursiveIteratorIterator(

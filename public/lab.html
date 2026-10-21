@@ -8144,7 +8144,7 @@ body.lab-season12-shell {
           <div class="lab-member-action-grid">
             <a
               class="lab-member-action primary"
-              href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
+              href="/api/discord-login.php?redirect=%2Fprofile.html"
               onclick="event.preventDefault(); window.location.href = getDiscordLoginUrl();"
             >
               <span class="lab-member-action-icon">🔐</span>
@@ -9519,7 +9519,7 @@ function getLabModalElements() {
 
 
 function getDiscordLoginUrl() {
-  const profileStyleOauthUrl = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read';
+  const profileStyleOauthUrl = '/api/discord-login.php?redirect=%2Fprofile.html';
 
   if (window.location.hostname === 'narrrfs.world') {
     return profileStyleOauthUrl;

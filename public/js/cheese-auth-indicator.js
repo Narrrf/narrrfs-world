@@ -1,6 +1,6 @@
 (function () {
   const DISCORD_AUTH_URL =
-    'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read';
+    '/api/discord-login.php?redirect=%2Fprofile.html';
 
   const AUTH_STORAGE_KEYS = [
     'discord_id',
