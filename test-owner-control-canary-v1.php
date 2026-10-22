@@ -35,6 +35,21 @@ canary_test_assert($policy['mutating'] === false && $policy['csrf'] === false, '
 $now = 2000000000;
 $owner = '111111111111111111';
 $normalUser = '222222222222222222';
+
+$parsedOwnerIds = narrrfs_parse_admin_owner_ids($owner);
+canary_test_assert(
+    $parsedOwnerIds === [$owner],
+    'valid parsed owner ID preserves its exact string type and value'
+);
+canary_test_assert(
+    narrrfs_admin_subject_is_owner($owner, $parsedOwnerIds) === true,
+    'parsed valid owner matches the exact authenticated subject'
+);
+canary_test_assert(
+    narrrfs_parse_admin_owner_ids($owner . ',' . $owner) === [$owner],
+    'duplicate valid owner IDs remain deduplicated without losing string type'
+);
+
 $ownerSession = [
     'discord_id' => $owner,
     NARRRFS_ADMIN_PROVENANCE_SESSION_KEY => NARRRFS_ADMIN_AUTH_PROVENANCE,
@@ -44,9 +59,21 @@ $ownerSession = [
 ];
 
 foreach (['GET', 'HEAD'] as $method) {
-    $decision = narrrfs_admin_authorization_decision($policy, $ownerSession, ['method' => $method], [$owner], $now);
-    canary_test_assert($decision['allowed'] === true, $method . ' is allowed for the exact trusted owner');
-    canary_test_assert($decision['consumeCsrf'] === false, $method . ' performs no CSRF/session transition');
+    $decision = narrrfs_admin_authorization_decision(
+        $policy,
+        $ownerSession,
+        ['method' => $method],
+        $parsedOwnerIds,
+        $now
+    );
+    canary_test_assert(
+        $decision['allowed'] === true,
+        $method . ' is allowed for the exact trusted owner parsed from configuration'
+    );
+    canary_test_assert(
+        $decision['consumeCsrf'] === false,
+        $method . ' performs no CSRF/session transition'
+    );
 }
 
 $postDecision = narrrfs_admin_authorization_decision($policy, $ownerSession, ['method' => 'POST'], [$owner], $now);

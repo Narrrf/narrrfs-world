@@ -32,10 +32,14 @@ function narrrfs_parse_admin_owner_ids(?string $rawOwnerIds): array
         if (!preg_match('/^\d{17,20}$/', $candidate)) {
             return [];
         }
-        $ownerIds[$candidate] = true;
+
+        // Discord IDs are numeric strings. PHP converts numeric-string array
+        // keys to integers, so store the canonical ID as the value and use a
+        // prefixed string key only for deduplication.
+        $ownerIds['discord:' . $candidate] = $candidate;
     }
 
-    return array_keys($ownerIds);
+    return array_values($ownerIds);
 }
 
 /**
