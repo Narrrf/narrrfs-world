@@ -34,11 +34,18 @@ $environmentLabel = $isLocal
     ? 'LOCAL XAMPP'
     : 'OWNER CONTROL';
 
+$dashboardAvailable =
+    getenv('NARRRFS_OWNER_DASHBOARD_UI_ENABLED') === '1'
+    && getenv('NARRRFS_OWNER_DASHBOARD_SUMMARY_ENABLED') === '1';
+
 $capabilities = [
     [
         'name' => 'Dashboard',
-        'status' => 'REVIEW',
-        'description' => 'Operational overview. Read-only source review pending.',
+        'status' => $dashboardAvailable ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Six read-only operational metrics from the guarded Dashboard Summary.',
+        'href' => $dashboardAvailable
+            ? '/owner-control/v1/dashboard.php'
+            : null,
     ],
     [
         'name' => 'User Management',
