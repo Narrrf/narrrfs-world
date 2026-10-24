@@ -38,6 +38,10 @@ $dashboardAvailable =
     getenv('NARRRFS_OWNER_DASHBOARD_UI_ENABLED') === '1'
     && getenv('NARRRFS_OWNER_DASHBOARD_SUMMARY_ENABLED') === '1';
 
+$userManagementAvailable =
+    getenv('NARRRFS_OWNER_USERS_UI_ENABLED') === '1'
+    && getenv('NARRRFS_OWNER_USER_SEARCH_ENABLED') === '1';
+
 $capabilities = [
     [
         'name' => 'Dashboard',
@@ -49,8 +53,11 @@ $capabilities = [
     ],
     [
         'name' => 'User Management',
-        'status' => 'REVIEW',
-        'description' => 'User lookup capability requires privacy and source review.',
+        'status' => $userManagementAvailable ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Owner-only, read-only search by username or Discord ID.',
+        'href' => $userManagementAvailable
+            ? '/owner-control/v1/users.php'
+            : null,
     ],
     [
         'name' => 'Missions Status',
