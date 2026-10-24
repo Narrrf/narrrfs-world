@@ -60,6 +60,16 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
+        'owner_control.player_overview.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_PLAYER_OVERVIEW_ENABLED') === '1',
+            'ownerOnly' => true,
+            'mutating' => false,
+            'methods' => ['GET', 'HEAD'],
+            'csrf' => false,
+            'contentTypes' => [],
+            'origins' => [],
+            'allowRefererFallback' => false,
+        ],
         'owner_control.users_ui.v1' => [
             'enabled' => getenv('NARRRFS_OWNER_USERS_UI_ENABLED') === '1',
             'ownerOnly' => true,
