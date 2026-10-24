@@ -225,6 +225,46 @@ function narrrfs_touch_admin_authority(array &$session, ?int $now = null): void
     }
 }
 
+/**
+ * Issue one one-time token for an Owner Control mutation.
+ *
+ * Plain language:
+ * This creates only CSRF state inside an already-current trusted owner session.
+ * It does not establish Discord identity, grant owner authority, extend the
+ * absolute lifetime, or change the configured owner-session timeout rules.
+ */
+function narrrfs_issue_admin_csrf_token(
+    array &$session,
+    ?int $now = null,
+    ?callable $randomBytes = null
+): string {
+    $now = $now ?? time();
+
+    if (!narrrfs_admin_session_is_current($session, $now)) {
+        throw new RuntimeException(
+            'Unable to initialize admin mutation protection.'
+        );
+    }
+
+    $rawBytes = $randomBytes === null
+        ? random_bytes(32)
+        : $randomBytes(32);
+
+    if (!is_string($rawBytes) || strlen($rawBytes) !== 32) {
+        throw new RuntimeException(
+            'Unable to initialize admin mutation protection.'
+        );
+    }
+
+    $token = bin2hex($rawBytes);
+
+    $session[NARRRFS_ADMIN_CSRF_SESSION_KEY] = $token;
+    $session[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY] = $now;
+
+    return $token;
+}
+
+
 /** Validate an exact one-time CSRF token and its five-minute server-session lifetime. */
 function narrrfs_admin_csrf_is_current(array $session, mixed $requestToken, ?int $now = null): bool
 {
