@@ -42,6 +42,10 @@ $userManagementAvailable =
     getenv('NARRRFS_OWNER_USERS_UI_ENABLED') === '1'
     && getenv('NARRRFS_OWNER_USER_SEARCH_ENABLED') === '1';
 
+$playerProfilesAvailable =
+    getenv('NARRRFS_OWNER_PLAYER_PROFILES_UI_ENABLED') === '1'
+    && getenv('NARRRFS_OWNER_PLAYER_PROFILE_READ_ENABLED') === '1';
+
 $capabilities = [
     [
         'name' => 'Dashboard',
@@ -111,8 +115,9 @@ $capabilities = [
     ],
     [
         'name' => 'Player Profiles',
-        'status' => 'REVIEW',
-        'description' => 'Read-only player lookup is a future migration candidate.',
+        'status' => $playerProfilesAvailable ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Owner-only, read-only account, game, inventory, role and Genetic Item slot visibility.',
+        'href' => $playerProfilesAvailable ? '/owner-control/v1/player-profiles.php' : null,
     ],
     [
         'name' => 'Lab / Trait System',
