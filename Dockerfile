@@ -35,6 +35,7 @@ RUN apt-get update \
 COPY ./public /var/www/html
 COPY ./public/videos /var/www/html/videos
 COPY ./api /var/www/html/api
+COPY ./owner-control /var/www/html/owner-control
 COPY ./league-audit/mousefight-league-v2-shadow-daily.py /var/www/html/league-audit/
 COPY ./league-audit/mousefight-league-v2-shadow-baseline.py /var/www/html/league-audit/
 COPY ./league-audit/mousefight-leagues-v2-shadow-snapshot-*.json /var/www/html/league-audit/
