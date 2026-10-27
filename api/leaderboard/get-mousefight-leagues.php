@@ -238,6 +238,10 @@ try {
      * Ownership is LEFT JOINed because league identity belongs to the named
      * Genesis NFT. Missing/unverified current ownership is reported separately
      * and must not silently erase the named mouse from the league directory.
+     *
+     * Historical custom-name rows remain after ownership transfers. When a
+     * current owner exists, only that owner's naming row may represent the
+     * current token_id + collection League identity.
      */
     $namedMiceStmt = $db->prepare("
         WITH current_ownership AS (
@@ -276,6 +280,10 @@ try {
             ON u.discord_id = COALESCE(co.user_id, cn.user_id)
         WHERE cn.collection = 'genesis'
           AND TRIM(COALESCE(cn.custom_name, '')) <> ''
+          AND (
+                co.user_id IS NULL
+                OR CAST(cn.user_id AS TEXT) = CAST(co.user_id AS TEXT)
+              )
         ORDER BY cn.updated_at DESC, cn.custom_name_id DESC
     ");
 
