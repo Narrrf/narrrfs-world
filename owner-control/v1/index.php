@@ -46,6 +46,10 @@ $playerProfilesAvailable =
     getenv('NARRRFS_OWNER_PLAYER_PROFILES_UI_ENABLED') === '1'
     && getenv('NARRRFS_OWNER_PLAYER_PROFILE_READ_ENABLED') === '1';
 
+$geneticCatalogAvailable =
+    getenv('NARRRFS_OWNER_GENETIC_CATALOG_UI_ENABLED') === '1'
+    && getenv('NARRRFS_OWNER_GENETIC_CATALOG_READ_ENABLED') === '1';
+
 $capabilities = [
     [
         'name' => 'Dashboard',
@@ -123,6 +127,14 @@ $capabilities = [
         'name' => 'Lab / Trait System',
         'status' => 'PROTECTED',
         'description' => 'Permanent Traits, Abilities and Lab progression are protected.',
+    ],
+    [
+        'name' => 'Genetic Catalog',
+        'status' => $geneticCatalogAvailable ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Owner-only, read-only Genetic catalog metadata. No ownership, pricing, stock, or mutation capability.',
+        'href' => $geneticCatalogAvailable
+            ? '/owner-control/v1/genetic-catalog.php'
+            : null,
     ],
     [
         'name' => 'Cheese Guide',
