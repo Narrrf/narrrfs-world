@@ -3478,6 +3478,7 @@ body {
   }
 }
 </style>
+<link rel="stylesheet" href="css/halloween-pumpkin-2026.css?v=20261028" />
 </head>
 
 
@@ -3821,6 +3822,38 @@ body {
 </section>
 
 
+
+<!-- 🎃 HALLOWEEN 2026 — SPECIAL ONE-TIME PROFILE GIFT
+     DEVS FOR DECADES: Visual event only; reward authority remains entirely
+     in the dedicated session-bound server route. This is NOT a Reward Chamber box. -->
+<section id="halloween-pumpkin-2026" class="halloween26" aria-label="Halloween 2026 Cheesy Pumpkin Gift" hidden>
+  <div class="halloween26-card">
+    <div class="halloween26-layout">
+      <button type="button" id="halloween26-art" class="halloween26-art-button" aria-label="Wake the Halloween pumpkin to claim a one-time DSPOINC gift" disabled>
+        <img src="img/halloween/halloween-pumpkin-profile-art.png" alt="Friendly witch-hat mouse popping out of a glowing cheesy jack-o-lantern" width="774" height="636" loading="lazy" />
+      </button>
+      <div>
+        <div class="halloween26-kicker">🎃 Halloween 2026 · MouseGang Special</div>
+        <h2 class="halloween26-title">The Great Cheesy Pumpkin!</h2>
+        <p class="halloween26-copy">Our cheeky Halloween mouse has hidden a magical one-time DSPOINC surprise! Click the pumpkin, watch it wiggle and glow green, and discover your cheesy gift.</p>
+        <div class="halloween26-range">🧀 10,000–500,000 DSPOINC · One per Discord account</div>
+        <button type="button" class="halloween26-cta" id="halloween26-claim" disabled>🎃 Checking Halloween gift…</button>
+        <a id="halloween26-login" class="halloween26-login" href="/api/discord-login.php?redirect=%2Fprofile.html" hidden>🔐 Sign in with Discord to claim</a>
+        <p class="halloween26-status" id="halloween26-status" role="status" aria-live="polite">Checking event eligibility…</p>
+      </div>
+    </div>
+  </div>
+</section>
+<div id="halloween26-modal" class="halloween26-modal" role="dialog" aria-modal="true" aria-labelledby="halloween26-modal-title" aria-hidden="true" hidden>
+  <div class="halloween26-modal-card">
+    <div class="halloween26-modal-icon" aria-hidden="true">🎃🧀✨</div>
+    <h2 class="halloween26-modal-title" id="halloween26-modal-title">Happy Halloween, MouseGang!</h2>
+    <p class="halloween26-modal-note">The Great Cheesy Pumpkin has blessed you with:</p>
+    <div class="halloween26-modal-amount" id="halloween26-modal-amount">0 DSPOINC</div>
+    <p class="halloween26-modal-note">Your reward was added to your DSPOINC balance and Recent Transactions.</p>
+    <button type="button" class="halloween26-modal-close" id="halloween26-modal-close">Awesome! 🧀</button>
+  </div>
+</div>
 
 <!-- 🎁 PROFILE CHEST LOOTBOX SECTION -->
 <div id="profile-chest-section" class="max-w-7xl w-full mx-auto px-4 mt-6 mb-8 relative z-10">
@@ -7156,6 +7189,12 @@ async function loadGamePortalStats() {
 document.addEventListener('DOMContentLoaded', async function() {
   let user = {};
   let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+  // Halloween 2026: refresh existing transactions after confirmed credit.
+  // This event does not write or calculate DSPOINC.
+  window.addEventListener('narrrfs:halloween26-credit-confirmed', () => {
+    if (userId) void loadRecentAdjustmentsPage(userId, 1);
+  });
+
 
   // 🎮 Load game portal stats automatically (always on localhost, only if logged in on production)
   const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -16208,5 +16247,6 @@ function scrollToProfileHub() {
     window.addEventListener('load', runHolderVerificationDeepLink);
   })();
 </script>
+<script defer src="js/halloween-pumpkin-2026.js?v=20261028"></script>
 </body>
 </html>
