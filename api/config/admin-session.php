@@ -188,6 +188,22 @@ function narrrfs_establish_discord_oauth_session(
     return true;
 }
 
+/**
+ * Confirm that a normal player identity came from the canonical server-side
+ * Discord OAuth callback. This is intentionally not owner authorization: it
+ * grants no owner capability and does not apply owner-session idle limits.
+ */
+function narrrfs_session_has_trusted_discord_oauth_provenance(array $session): bool
+{
+    $subject = $session['discord_id'] ?? null;
+    $provenance = $session[NARRRFS_ADMIN_PROVENANCE_SESSION_KEY] ?? null;
+
+    return is_string($subject)
+        && preg_match('/^\d{17,20}$/', $subject) === 1
+        && is_string($provenance)
+        && hash_equals(NARRRFS_ADMIN_AUTH_PROVENANCE, $provenance);
+}
+
 /** Validate provenance and owner-authority age without consulting the owner allowlist. */
 function narrrfs_admin_session_is_current(array $session, ?int $now = null): bool
 {

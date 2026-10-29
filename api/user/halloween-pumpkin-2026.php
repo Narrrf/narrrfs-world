@@ -16,7 +16,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, private');
 header('X-Content-Type-Options: nosniff');
 
-require_once __DIR__ . '/../config/session.php';
+require_once __DIR__ . '/../config/admin-session.php';
 require_once __DIR__ . '/../lib/halloween-pumpkin-2026.php';
 
 /** Send a consistent JSON response without exposing server-side errors. */
@@ -38,11 +38,13 @@ if ($method !== 'GET' && $method !== 'POST') {
     halloween26_json(405, ['success' => false, 'error' => 'method_not_allowed']);
 }
 
-$sessionUser = $_SESSION['discord_id'] ?? null;
-$userId = is_string($sessionUser) || is_int($sessionUser) ? trim((string)$sessionUser) : '';
-if (!ctype_digit($userId) || strlen($userId) < 15 || strlen($userId) > 20) {
+// A numeric session value alone is not authority for an economy credit. The
+// canonical callback sets this provenance only after server-fetched Discord
+// identity verification and session-ID rotation.
+if (!narrrfs_session_has_trusted_discord_oauth_provenance($_SESSION)) {
     halloween26_json(401, ['success' => false, 'error' => 'authentication_required']);
 }
+$userId = $_SESSION['discord_id'];
 
 if ($method === 'POST') {
     // Do not trust a client-provided user, prize, timestamp, or origin.
