@@ -6,6 +6,8 @@ $policyGates = [
     'NARRRFS_OWNER_CANARY_ENABLED',
     'NARRRFS_OWNER_GENETIC_CATALOG_READ_ENABLED',
     'NARRRFS_OWNER_GENETIC_CATALOG_UI_ENABLED',
+    'NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED',
+    'NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED',
 ];
 $priorGates = [];
 foreach ($policyGates as $gate) {
@@ -28,6 +30,8 @@ foreach ([
     'owner_control.canary.v1',
     'owner_control.genetic_catalog.read.v1',
     'owner_control.genetic_catalog.ui.v1',
+    'owner_control.lab_store_offers.read.v1',
+    'owner_control.lab_store_offers.ui.v1',
 ] as $key) {
     $policy = $policies['routes'][$key] ?? null;
     policy_test_assert(is_array($policy), $key . ' policy is present');
@@ -36,11 +40,17 @@ foreach ([
 
 putenv('NARRRFS_OWNER_CANARY_ENABLED=1');
 putenv('NARRRFS_OWNER_GENETIC_CATALOG_READ_ENABLED=1');
+putenv('NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED=1');
+putenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED=1');
 $enabledPolicies = require $root . '/api/config/admin-route-policies.php';
 $enabledCanary = $enabledPolicies['routes']['owner_control.canary.v1'] ?? null;
 policy_test_assert(is_array($enabledCanary) && ($enabledCanary['enabled'] ?? null) === true, 'exact environment value enables only the canary policy');
 $enabledCatalog = $enabledPolicies['routes']['owner_control.genetic_catalog.read.v1'] ?? null;
 policy_test_assert(is_array($enabledCatalog) && ($enabledCatalog['enabled'] ?? null) === true, 'exact environment value enables only the Genetic Catalog read policy');
+$enabledLabRead = $enabledPolicies['routes']['owner_control.lab_store_offers.read.v1'] ?? null;
+$enabledLabUi = $enabledPolicies['routes']['owner_control.lab_store_offers.ui.v1'] ?? null;
+policy_test_assert(is_array($enabledLabRead) && ($enabledLabRead['enabled'] ?? null) === true, 'exact environment value enables only the Lab Store API policy');
+policy_test_assert(is_array($enabledLabUi) && ($enabledLabUi['enabled'] ?? null) === true, 'exact environment value enables only the Lab Store UI policy');
 foreach ($priorGates as $gate => $value) {
     $value === false ? putenv($gate) : putenv($gate . '=' . $value);
 }
@@ -61,6 +71,8 @@ policy_test_assert(str_contains($containment, '^/admin-interface\\.html'), 'lega
 policy_test_assert(str_contains($containment, '^/api/admin'), 'legacy admin API remains denied');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/canary\.php'), 'owner-control containment retains the exact canary exception');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/genetic/catalog\.php'), 'owner-control containment names the exact Genetic Catalog route');
+policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/offers\.php'), 'owner-control containment names the exact Lab Store API route');
+policy_test_assert(!str_contains($containment, '/api/owner-control/v1/lab-store/(?:'), 'containment has no broad Lab Store exception');
 policy_test_assert(str_contains($containment, '^/db'), 'database URL remains denied');
 policy_test_assert(str_contains($containment, '/var/www/html/db'), 'database filesystem path remains denied');
 policy_test_assert(str_contains($dockerfile, 'a2enconf narrrfs-emergency-containment'), 'Docker image enables containment');
@@ -114,6 +126,10 @@ foreach ($iterator as $file) {
 policy_test_assert(
     in_array(realpath($root . '/api/owner-control/v1/genetic/catalog.php'), array_map('realpath', $trackedCallers), true),
     'Genetic Catalog route calls the exact owner guard'
+);
+policy_test_assert(
+    in_array(realpath($root . '/api/owner-control/v1/lab-store/offers.php'), array_map('realpath', $trackedCallers), true),
+    'Lab Store offers route calls the exact owner guard'
 );
 
 echo "PASS: admin route policy inventory Stage B2\n";

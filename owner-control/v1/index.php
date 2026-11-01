@@ -50,6 +50,8 @@ $geneticCatalogAvailable =
     getenv('NARRRFS_OWNER_GENETIC_CATALOG_UI_ENABLED') === '1'
     && getenv('NARRRFS_OWNER_GENETIC_CATALOG_READ_ENABLED') === '1';
 
+$labStoreOffersAvailable = getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED') === '1';
+
 $capabilities = [
     [
         'name' => 'Dashboard',
@@ -84,8 +86,9 @@ $capabilities = [
     ],
     [
         'name' => 'Lab Store',
-        'status' => 'PROTECTED',
-        'description' => 'LP, DSPOINC and Genetic Item boundaries are protected.',
+        'status' => $labStoreOffersAvailable ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Owner-only, read-only offer presentation. No prices, stock, purchases, inventory, or mutation controls.',
+        'href' => $labStoreOffersAvailable ? '/owner-control/v1/lab-store-offers.php' : null,
     ],
     [
         'name' => 'Quest System',
