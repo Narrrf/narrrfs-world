@@ -50,6 +50,10 @@ $geneticCatalogAvailable =
     getenv('NARRRFS_OWNER_GENETIC_CATALOG_UI_ENABLED') === '1'
     && getenv('NARRRFS_OWNER_GENETIC_CATALOG_READ_ENABLED') === '1';
 
+$questHuntOverviewAvailable =
+    getenv('NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_UI_ENABLED') === '1'
+    && getenv('NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_READ_ENABLED') === '1';
+
 $labStoreOffersAvailable = getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED') === '1';
 
 $capabilities = [
@@ -92,8 +96,11 @@ $capabilities = [
     ],
     [
         'name' => 'Quest System',
-        'status' => 'REVIEW',
-        'description' => 'Read visibility may return before any quest mutation.',
+        'status' => $questHuntOverviewAvailable ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Owner-only, read-only aggregate Quest and Hunt status. No player, claim, reward, or action controls.',
+        'href' => $questHuntOverviewAvailable
+            ? '/owner-control/v1/quest-hunt-overview.php'
+            : null,
     ],
     [
         'name' => 'Game Management',

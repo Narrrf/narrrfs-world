@@ -70,6 +70,30 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
+        'owner_control.quest_hunt_overview.read.v1' => [
+            'enabled' => getenv(
+                'NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_READ_ENABLED'
+            ) === '1',
+            'ownerOnly' => true,
+            'mutating' => false,
+            'methods' => ['GET', 'HEAD'],
+            'csrf' => false,
+            'contentTypes' => [],
+            'origins' => [],
+            'allowRefererFallback' => false,
+        ],
+        'owner_control.quest_hunt_overview.ui.v1' => [
+            'enabled' => getenv(
+                'NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_UI_ENABLED'
+            ) === '1',
+            'ownerOnly' => true,
+            'mutating' => false,
+            'methods' => ['GET', 'HEAD'],
+            'csrf' => false,
+            'contentTypes' => [],
+            'origins' => [],
+            'allowRefererFallback' => false,
+        ],
         'owner_control.lab_store_offers.read.v1' => [
             'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED') === '1',
             'ownerOnly' => true,
