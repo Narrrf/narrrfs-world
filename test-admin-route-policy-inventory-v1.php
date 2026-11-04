@@ -10,6 +10,9 @@ $policyGates = [
     'NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_UI_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED',
+    'NARRRFS_OWNER_BUG_TRACKER_READ_ENABLED',
+    'NARRRFS_OWNER_BUG_TRACKER_UI_ENABLED',
+    'NARRRFS_OWNER_BUG_TRACKER_DETAILS_ENABLED',
 ];
 $priorGates = [];
 foreach ($policyGates as $gate) {
@@ -36,6 +39,9 @@ foreach ([
     'owner_control.quest_hunt_overview.ui.v1',
     'owner_control.lab_store_offers.read.v1',
     'owner_control.lab_store_offers.ui.v1',
+    'owner_control.bug_tracker.read.v1',
+    'owner_control.bug_tracker.ui.v1',
+    'owner_control.bug_tracker.details.v1',
 ] as $key) {
     $policy = $policies['routes'][$key] ?? null;
     policy_test_assert(is_array($policy), $key . ' policy is present');
@@ -47,6 +53,9 @@ putenv('NARRRFS_OWNER_GENETIC_CATALOG_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED=1');
+putenv('NARRRFS_OWNER_BUG_TRACKER_READ_ENABLED=1');
+putenv('NARRRFS_OWNER_BUG_TRACKER_UI_ENABLED=1');
+putenv('NARRRFS_OWNER_BUG_TRACKER_DETAILS_ENABLED=1');
 $enabledPolicies = require $root . '/api/config/admin-route-policies.php';
 $enabledCanary = $enabledPolicies['routes']['owner_control.canary.v1'] ?? null;
 policy_test_assert(is_array($enabledCanary) && ($enabledCanary['enabled'] ?? null) === true, 'exact environment value enables only the canary policy');
@@ -58,6 +67,12 @@ $enabledLabRead = $enabledPolicies['routes']['owner_control.lab_store_offers.rea
 $enabledLabUi = $enabledPolicies['routes']['owner_control.lab_store_offers.ui.v1'] ?? null;
 policy_test_assert(is_array($enabledLabRead) && ($enabledLabRead['enabled'] ?? null) === true, 'exact environment value enables only the Lab Store API policy');
 policy_test_assert(is_array($enabledLabUi) && ($enabledLabUi['enabled'] ?? null) === true, 'exact environment value enables only the Lab Store UI policy');
+$enabledBugTrackerRead = $enabledPolicies['routes']['owner_control.bug_tracker.read.v1'] ?? null;
+$enabledBugTrackerUi = $enabledPolicies['routes']['owner_control.bug_tracker.ui.v1'] ?? null;
+$enabledBugTrackerDetails = $enabledPolicies['routes']['owner_control.bug_tracker.details.v1'] ?? null;
+policy_test_assert(is_array($enabledBugTrackerRead) && ($enabledBugTrackerRead['enabled'] ?? null) === true, 'exact environment value enables only the Bug Tracker read policy');
+policy_test_assert(is_array($enabledBugTrackerUi) && ($enabledBugTrackerUi['enabled'] ?? null) === true, 'exact environment value enables only the Bug Tracker UI policy');
+policy_test_assert(is_array($enabledBugTrackerDetails) && ($enabledBugTrackerDetails['enabled'] ?? null) === true, 'exact environment value enables only the Bug Tracker details policy');
 foreach ($priorGates as $gate => $value) {
     $value === false ? putenv($gate) : putenv($gate . '=' . $value);
 }
@@ -81,6 +96,11 @@ policy_test_assert(str_contains($containment, '/api/owner-control/v1/genetic/cat
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/quests/overview\.php'), 'owner-control containment names the exact Quest/Hunt overview route');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/offers\.php'), 'owner-control containment names the exact Lab Store API route');
 policy_test_assert(!str_contains($containment, '/api/owner-control/v1/lab-store/(?:'), 'containment has no broad Lab Store exception');
+policy_test_assert(str_contains($containment, '/api/owner-control/v1/bug-tracker\.php'), 'owner-control containment names the exact Bug Tracker list route');
+policy_test_assert(str_contains($containment, '/api/owner-control/v1/bug-tracker-details\.php'), 'owner-control containment names the exact Bug Tracker details route');
+policy_test_assert(!str_contains($containment, '/api/owner-control/v1/bug-tracker(?:'), 'containment has no broad Bug Tracker exception');
+policy_test_assert(!str_contains($containment, '/api/owner-control/v1/csrf\.php'), 'Bug Tracker CSRF route remains contained in read phase');
+policy_test_assert(!str_contains($containment, '/api/owner-control/v1/bug-tracker-update\.php'), 'Bug Tracker update route remains contained in read phase');
 policy_test_assert(str_contains($containment, '^/db'), 'database URL remains denied');
 policy_test_assert(str_contains($containment, '/var/www/html/db'), 'database filesystem path remains denied');
 policy_test_assert(str_contains($dockerfile, 'a2enconf narrrfs-emergency-containment'), 'Docker image enables containment');
@@ -141,4 +161,6 @@ policy_test_assert(
 );
 
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/offers.php'), array_map('realpath', $trackedCallers), true), 'Lab Store offers route calls the exact owner guard');
+policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/bug-tracker.php'), array_map('realpath', $trackedCallers), true), 'Bug Tracker list route calls the exact owner guard');
+policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/bug-tracker-details.php'), array_map('realpath', $trackedCallers), true), 'Bug Tracker details route calls the exact owner guard');
 echo "PASS: admin route policy inventory Stage B2\n";
