@@ -12,36 +12,15 @@ if [ ! -f /var/www/html/db/narrrf_world.sqlite ]; then
     exit 1
 fi
 
-# Create backup with timestamp
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-BACKUP_PATH="/data/narrrf_world.sqlite.backup.$TIMESTAMP"
+PUBLISHER="/var/www/html/scripts/sqlite-durability-publish.sh"
 
-# Create backup first
-echo "📦 Creating backup at $BACKUP_PATH..."
-cp /var/www/html/db/narrrf_world.sqlite "$BACKUP_PATH"
-
-if [ $? -eq 0 ]; then
-    echo "✅ Backup created successfully"
-else
-    echo "❌ Failed to create backup"
+if [ ! -x "$PUBLISHER" ]; then
+    echo "❌ Error: Verified SQLite publisher is unavailable at $PUBLISHER"
     exit 1
 fi
 
-# Copy to persistent storage
-echo "💾 Copying to persistent storage..."
-cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world.sqlite
+echo "📦 Publishing verified SQLite backup to persistent storage..."
+"$PUBLISHER" publish
+echo "✅ Verified canonical database publication completed"
 
-if [ $? -eq 0 ]; then
-    echo "✅ Database successfully backed up to persistent storage"
-    echo "📊 Backup file: $BACKUP_PATH"
-    echo "💾 Active database: /data/narrrf_world.sqlite"
-else
-    echo "❌ Failed to copy to persistent storage"
-    exit 1
-fi
-
-# Set proper permissions
-chmod 664 /data/narrrf_world.sqlite
-echo "🔐 Permissions set correctly"
-
-echo "🎉 Database backup completed successfully!" 
+echo "🎉 Database backup completed successfully!"

@@ -10,15 +10,53 @@
 echo "🚀 Narrrf's World - Render Startup Script"
 echo "=========================================="
 
+DURABILITY_PUBLISHER="${NARRRFS_DURABILITY_PUBLISHER:-/var/www/html/scripts/sqlite-durability-publish.sh}"
+APACHE_FOREGROUND_COMMAND="${NARRRFS_APACHE_FOREGROUND_COMMAND:-apache2-foreground}"
+
+run_apache_supervisor() {
+    APACHE_PID=""
+
+    graceful_shutdown() {
+        trap - TERM INT
+        echo "🛑 Shutdown signal received; stopping Apache before final SQLite publication..."
+        if [ -n "$APACHE_PID" ] && kill -0 "$APACHE_PID" 2>/dev/null; then
+            kill -TERM "$APACHE_PID"
+            wait "$APACHE_PID" || true
+        fi
+
+        if "$DURABILITY_PUBLISHER" publish; then
+            echo "✅ Final verified SQLite publication completed"
+            exit 0
+        fi
+
+        echo "❌ Final SQLite publication failed; preserved /data canonical database remains unchanged"
+        exit 1
+    }
+
+    trap 'graceful_shutdown' TERM INT
+    echo "ℹ️ Periodic SQLite publication is disabled pending a separately approved interval benchmark."
+    "$APACHE_FOREGROUND_COMMAND" &
+    APACHE_PID=$!
+    wait "$APACHE_PID"
+    exit $?
+}
+
+# Disposable lifecycle tests use an explicit opt-in only. Production always
+# performs the existing restore and setup sequence below before Apache starts.
+if [ "${NARRRFS_STARTUP_TEST_MODE:-0}" = "1" ]; then
+    run_apache_supervisor
+fi
+
 # STEP 1: Restore Database from Persistent Storage
 echo "📊 Restoring database from /data..."
 if [ -f /data/narrrf_world.sqlite ]; then
-  cp /data/narrrf_world.sqlite /var/www/html/db/narrrf_world.sqlite
+  "$DURABILITY_PUBLISHER" restore
   chmod 664 /var/www/html/db/narrrf_world.sqlite
   chown www-data:www-data /var/www/html/db/narrrf_world.sqlite
   echo "✅ Database restored successfully"
 else
-  echo "⚠️ Warning: No database backup found in /data/"
+  echo "❌ Persistent canonical database is missing in /data/"
+  exit 1
 fi
 
 # STEP 2: Create Partner Images Symlink
@@ -237,5 +275,7 @@ else
     echo "⚠️ Existing website startup continues with packaged League fallback."
 fi
 
-# STEP 5: Start Apache
-exec apache2-foreground
+# STEP 5: Start Apache under this PID 1 supervisor.
+# apache2-foreground previously replaced this script with exec, preventing a
+# final verified SQLite publication after Render sends SIGTERM/SIGINT.
+run_apache_supervisor
