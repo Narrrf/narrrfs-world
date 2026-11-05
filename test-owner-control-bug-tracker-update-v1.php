@@ -151,6 +151,7 @@ try {
                 resolution_notes TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                owner_control_version INTEGER NOT NULL DEFAULT 1,
                 resolved_at DATETIME,
                 FOREIGN KEY(category_id)
                     REFERENCES tbl_bug_categories(category_id),
@@ -186,6 +187,20 @@ try {
                 assignment_notes TEXT,
                 FOREIGN KEY(bug_id)
                     REFERENCES tbl_bug_reports(bug_id)
+            );
+
+            CREATE TABLE tbl_owner_control_bug_update_receipts (
+                receipt_id INTEGER PRIMARY KEY,
+                actor_subject TEXT NOT NULL,
+                idempotency_key_hash TEXT NOT NULL,
+                request_hash TEXT NOT NULL,
+                bug_id INTEGER NOT NULL,
+                expected_version INTEGER NOT NULL,
+                result_version INTEGER NOT NULL,
+                result_json TEXT NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                expires_at DATETIME NOT NULL,
+                UNIQUE (actor_subject, idempotency_key_hash)
             );
             '
         ),
@@ -258,6 +273,8 @@ try {
                 'Verified in isolated test.',
             'change_reason' =>
                 'R2 isolated status test',
+            'expected_version' => 1,
+            'idempotency_key' => 'r21-first-retry-key-00001',
         ],
         $ownerSubject
     );
@@ -267,6 +284,93 @@ try {
         (int)$resolved['bug']['status_id'] === 5,
         'status changed to resolved'
     );
+
+    owner_bug_update_assert(
+        (int)$resolved['bug']['owner_control_version'] === 2,
+        'successful update increments expected version'
+    );
+
+    $replayed = narrrfs_owner_bug_tracker_update(
+        $db,
+        9001,
+        [
+            'title' => 'Updated title', 'description' => 'Updated description',
+            'category_id' => 1, 'priority_id' => 1, 'status_id' => 5,
+            'assigned_to' => 'DEECZO', 'resolution_notes' => 'Verified in isolated test.',
+            'change_reason' => 'R2 isolated status test', 'expected_version' => 1,
+            'idempotency_key' => 'r21-first-retry-key-00001',
+        ],
+        $ownerSubject
+    );
+    owner_bug_update_assert($replayed['idempotent_replay'] === true, 'same key retry returns stored result');
+    owner_bug_update_assert(
+        isset($replayed['retry_metadata'])
+        && (int)$replayed['retry_metadata']['bug_id'] === 9001
+        && (int)$replayed['retry_metadata']['owner_control_version'] === 2,
+        'same key retry exposes only defined safe metadata'
+    );
+
+    $storedReceipt = (string)$db->querySingle('SELECT result_json FROM tbl_owner_control_bug_update_receipts LIMIT 1');
+    $storedReceiptMetadata = json_decode($storedReceipt, true, 32, JSON_THROW_ON_ERROR);
+    owner_bug_update_assert(
+        !str_contains($storedReceipt, 'Updated title')
+        && !str_contains($storedReceipt, 'Updated description')
+        && !str_contains($storedReceipt, 'Verified in isolated test.')
+        && !str_contains($storedReceipt, 'DEECZO')
+        && !array_key_exists('assigned_to', $storedReceiptMetadata),
+        'receipt excludes free-form Bug Tracker content and assignment values'
+    );
+
+    $reusedKeyRejected = false;
+    try {
+        narrrfs_owner_bug_tracker_update(
+            $db, 9001,
+            [
+                'title' => 'Different payload', 'description' => 'Updated description',
+                'category_id' => 1, 'priority_id' => 1, 'status_id' => 5,
+                'assigned_to' => 'DEECZO', 'resolution_notes' => 'Verified in isolated test.',
+                'change_reason' => 'R2 isolated status test', 'expected_version' => 1,
+                'idempotency_key' => 'r21-first-retry-key-00001',
+            ], $ownerSubject
+        );
+    } catch (NarrrfsOwnerBugTrackerUpdateException $error) {
+        $reusedKeyRejected = $error->publicCode() === 'idempotency_key_reused';
+    }
+    owner_bug_update_assert($reusedKeyRejected, 'same key with a different payload is rejected');
+
+    $historyBeforeExpiry = (int)$db->querySingle('SELECT COUNT(*) FROM tbl_bug_status_history');
+    $db->exec("UPDATE tbl_owner_control_bug_update_receipts SET expires_at = datetime(CURRENT_TIMESTAMP, '-1 second')");
+    $expiredRejected = false;
+    try {
+        narrrfs_owner_bug_tracker_update($db, 9001, [
+            'title' => 'Updated title', 'description' => 'Updated description',
+            'category_id' => 1, 'priority_id' => 1, 'status_id' => 5,
+            'assigned_to' => 'DEECZO', 'resolution_notes' => 'Verified in isolated test.',
+            'change_reason' => 'R2 isolated status test', 'expected_version' => 1,
+            'idempotency_key' => 'r21-first-retry-key-00001',
+        ], $ownerSubject);
+    } catch (NarrrfsOwnerBugTrackerUpdateException $error) {
+        $expiredRejected = $error->publicCode() === 'idempotency_key_expired';
+    }
+    owner_bug_update_assert($expiredRejected, 'expired receipt cannot replay a stale success');
+    owner_bug_update_assert((int)$db->querySingle('SELECT COUNT(*) FROM tbl_bug_status_history') === $historyBeforeExpiry, 'expired retry creates no second audit');
+
+    $staleRejected = false;
+    try {
+        narrrfs_owner_bug_tracker_update(
+            $db, 9001,
+            [
+                'title' => 'Stale writer', 'description' => 'Updated description',
+                'category_id' => 1, 'priority_id' => 1, 'status_id' => 5,
+                'assigned_to' => 'DEECZO', 'resolution_notes' => null,
+                'change_reason' => 'stale test', 'expected_version' => 1,
+                'idempotency_key' => 'r21-stale-retry-key-00001',
+            ], $ownerSubject
+        );
+    } catch (NarrrfsOwnerBugTrackerUpdateException $error) {
+        $staleRejected = $error->publicCode() === 'version_conflict';
+    }
+    owner_bug_update_assert($staleRejected, 'stale writer cannot create history or mutate fields');
 
     owner_bug_update_assert(
         $resolved['bug']['resolved_at'] !== null,
@@ -336,6 +440,8 @@ try {
             'resolution_notes' => null,
             'change_reason' =>
                 'R2 isolated reopen test',
+            'expected_version' => 2,
+            'idempotency_key' => 'r21-reopen-retry-key-0002',
         ],
         $ownerSubject
     );
@@ -393,6 +499,8 @@ try {
                 'status_id' => 1,
                 'assigned_to' => null,
                 'resolution_notes' => null,
+                'expected_version' => 3,
+                'idempotency_key' => 'r21-invalid-retry-key-0003',
             ],
             $ownerSubject
         );

@@ -117,6 +117,25 @@ function narrrfs_owner_bug_update_positive_integer(
     return $value;
 }
 
+/** Read a browser retry key without ever trusting it as actor authority. */
+function narrrfs_owner_bug_update_idempotency_key(array $input): string
+{
+    $value = $input['idempotency_key'] ?? null;
+
+    if (!is_string($value) || !preg_match('/^[A-Za-z0-9_-]{24,128}$/', $value)) {
+        throw new NarrrfsOwnerBugTrackerUpdateException(400, 'invalid_idempotency_key');
+    }
+
+    return $value;
+}
+
+/** Hash a canonical semantic request so a retry key cannot be reused for another write. */
+function narrrfs_owner_bug_update_request_hash(array $payload): string
+{
+    ksort($payload);
+    return hash('sha256', json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+}
+
 
 /**
  * Execute one prepared SELECT and return its first row or NULL.
@@ -220,6 +239,25 @@ function narrrfs_owner_bug_tracker_update(
             500
         ) ?? 'Owner Control Bug Tracker update';
 
+    $expectedVersion = narrrfs_owner_bug_update_positive_integer(
+        $input,
+        'expected_version'
+    );
+    $idempotencyKey = narrrfs_owner_bug_update_idempotency_key($input);
+    $idempotencyHash = hash('sha256', $ownerSubject . "\n" . $idempotencyKey);
+    $requestHash = narrrfs_owner_bug_update_request_hash([
+        'bug_id' => $bugId,
+        'title' => $title,
+        'description' => $description,
+        'category_id' => $categoryId,
+        'priority_id' => $priorityId,
+        'status_id' => $statusId,
+        'assigned_to' => $assignedTo,
+        'resolution_notes' => $resolutionNotes,
+        'change_reason' => $changeReason,
+        'expected_version' => $expectedVersion,
+    ]);
+
     if (!$db->exec('PRAGMA foreign_keys = ON')) {
         throw new RuntimeException(
             'Unable to enable SQLite foreign keys.'
@@ -235,6 +273,37 @@ function narrrfs_owner_bug_tracker_update(
     $transactionOpen = true;
 
     try {
+        $receiptStatement = $db->prepare(
+            'SELECT request_hash, result_json, expires_at FROM tbl_owner_control_bug_update_receipts WHERE actor_subject = :actor_subject AND idempotency_key_hash = :key_hash LIMIT 1'
+        );
+        if (!$receiptStatement instanceof SQLite3Stmt) {
+            throw new RuntimeException('Unable to prepare idempotency receipt lookup.');
+        }
+        $receiptStatement->bindValue(':actor_subject', $ownerSubject, SQLITE3_TEXT);
+        $receiptStatement->bindValue(':key_hash', $idempotencyHash, SQLITE3_TEXT);
+        $receipt = narrrfs_owner_bug_update_fetch_one($receiptStatement);
+        if ($receipt !== null) {
+            $expiresAt = strtotime((string)$receipt['expires_at'] . ' UTC');
+            if ($expiresAt === false || $expiresAt <= time()) {
+                throw new NarrrfsOwnerBugTrackerUpdateException(409, 'idempotency_key_expired');
+            }
+            if (!hash_equals((string)$receipt['request_hash'], $requestHash)) {
+                throw new NarrrfsOwnerBugTrackerUpdateException(409, 'idempotency_key_reused');
+            }
+            $retryMetadata = json_decode((string)$receipt['result_json'], true, 32, JSON_THROW_ON_ERROR);
+            if (!is_array($retryMetadata)) {
+                throw new RuntimeException('Stored idempotency receipt is invalid.');
+            }
+            if (!$db->exec('COMMIT')) {
+                throw new RuntimeException('Unable to commit idempotent retry.');
+            }
+            $transactionOpen = false;
+            return [
+                'retry_metadata' => $retryMetadata,
+                'idempotent_replay' => true,
+            ];
+        }
+
         $bugStatement = $db->prepare(
             '
             SELECT
@@ -242,6 +311,7 @@ function narrrfs_owner_bug_tracker_update(
                 bug.status_id,
                 bug.assigned_to,
                 bug.resolved_at,
+                bug.owner_control_version,
                 status.is_resolved AS old_is_resolved
             FROM tbl_bug_reports AS bug
             LEFT JOIN tbl_bug_statuses AS status
@@ -408,8 +478,10 @@ function narrrfs_owner_bug_tracker_update(
                     END
                     ELSE NULL
                 END,
-                updated_at = CURRENT_TIMESTAMP
+                updated_at = CURRENT_TIMESTAMP,
+                owner_control_version = owner_control_version + 1
             WHERE bug_id = :bug_id
+              AND owner_control_version = :expected_version
             '
         );
 
@@ -476,6 +548,7 @@ function narrrfs_owner_bug_tracker_update(
             $bugId,
             SQLITE3_INTEGER
         );
+        $updateStatement->bindValue(':expected_version', $expectedVersion, SQLITE3_INTEGER);
 
         $updateResult =
             $updateStatement->execute();
@@ -489,9 +562,7 @@ function narrrfs_owner_bug_tracker_update(
         $updateResult->finalize();
 
         if ($db->changes() !== 1) {
-            throw new RuntimeException(
-                'Bug Tracker update changed an unexpected row count.'
-            );
+            throw new NarrrfsOwnerBugTrackerUpdateException(409, 'version_conflict');
         }
 
 
@@ -729,6 +800,7 @@ function narrrfs_owner_bug_tracker_update(
                 created_at,
                 updated_at,
                 resolved_at
+                ,owner_control_version
             FROM tbl_bug_reports
             WHERE bug_id = :bug_id
             LIMIT 1
@@ -758,6 +830,41 @@ function narrrfs_owner_bug_tracker_update(
             );
         }
 
+        $result = [
+            'bug' => $finalBug,
+            'status_history_written' => $statusHistoryWritten,
+            'assignment_changed' => $assignmentChanged,
+        ];
+        // Receipts deliberately retain only retry-safe operational metadata.
+        // Free-form reporter and resolution content remains only in the
+        // authoritative Bug Tracker tables and is never duplicated here.
+        $receiptResult = [
+            'bug_id' => (int)$finalBug['bug_id'],
+            'owner_control_version' => (int)$finalBug['owner_control_version'],
+            'status_id' => (int)$finalBug['status_id'],
+            'updated_at' => (string)$finalBug['updated_at'],
+            'status_history_written' => $statusHistoryWritten,
+            'assignment_changed' => $assignmentChanged,
+        ];
+        $receiptInsert = $db->prepare(
+            'INSERT INTO tbl_owner_control_bug_update_receipts (actor_subject, idempotency_key_hash, request_hash, bug_id, expected_version, result_version, result_json, expires_at) VALUES (:actor_subject, :key_hash, :request_hash, :bug_id, :expected_version, :result_version, :result_json, datetime(CURRENT_TIMESTAMP, \'+24 hours\'))'
+        );
+        if (!$receiptInsert instanceof SQLite3Stmt) {
+            throw new RuntimeException('Unable to prepare idempotency receipt write.');
+        }
+        $receiptInsert->bindValue(':actor_subject', $ownerSubject, SQLITE3_TEXT);
+        $receiptInsert->bindValue(':key_hash', $idempotencyHash, SQLITE3_TEXT);
+        $receiptInsert->bindValue(':request_hash', $requestHash, SQLITE3_TEXT);
+        $receiptInsert->bindValue(':bug_id', $bugId, SQLITE3_INTEGER);
+        $receiptInsert->bindValue(':expected_version', $expectedVersion, SQLITE3_INTEGER);
+        $receiptInsert->bindValue(':result_version', (int)$finalBug['owner_control_version'], SQLITE3_INTEGER);
+        $receiptInsert->bindValue(':result_json', json_encode($receiptResult, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), SQLITE3_TEXT);
+        $receiptResult = $receiptInsert->execute();
+        if (!$receiptResult instanceof SQLite3Result) {
+            throw new RuntimeException('Idempotency receipt write failed.');
+        }
+        $receiptResult->finalize();
+
 
         if (!$db->exec('COMMIT')) {
             throw new RuntimeException(
@@ -767,13 +874,8 @@ function narrrfs_owner_bug_tracker_update(
 
         $transactionOpen = false;
 
-        return [
-            'bug' => $finalBug,
-            'status_history_written' =>
-                $statusHistoryWritten,
-            'assignment_changed' =>
-                $assignmentChanged,
-        ];
+        $result['idempotent_replay'] = false;
+        return $result;
 
     } catch (Throwable $error) {
         if ($transactionOpen) {

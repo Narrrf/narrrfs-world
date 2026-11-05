@@ -50,6 +50,10 @@ $requiredMarkers = [
     'textContent',
     'replaceChildren',
     'showModal',
+    'let pendingSaveRequest = null',
+    'pendingSaveRequest.fingerprint',
+    'payload.idempotency_key =',
+    'pendingSaveRequest = null',
 ];
 
 foreach ($requiredMarkers as $marker) {
@@ -89,6 +93,11 @@ owner_bug_edit_ui_assert(
         'id="saveBugButton"'
     ),
     'save button exists'
+);
+
+owner_bug_edit_ui_assert(
+    substr_count($page, 'crypto.randomUUID().replace(/-/g, \'\')') === 1,
+    'one idempotency key is generated only for a new pending payload'
 );
 
 owner_bug_edit_ui_assert(

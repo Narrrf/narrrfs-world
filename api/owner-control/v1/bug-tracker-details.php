@@ -140,6 +140,7 @@ try {
             assigned_to,
             created_at,
             updated_at,
+            owner_control_version,
             resolved_at,
             resolution_notes
         FROM tbl_bug_reports

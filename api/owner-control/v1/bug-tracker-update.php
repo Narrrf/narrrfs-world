@@ -133,6 +133,17 @@ try {
         $ownerSubject
     );
 
+    $retryMetadata = $result['retry_metadata'] ?? null;
+    $publicBug = is_array($retryMetadata)
+        ? [
+            'bug_id' => $retryMetadata['bug_id'] ?? null,
+            'owner_control_version' =>
+                $retryMetadata['owner_control_version'] ?? null,
+            'status_id' => $retryMetadata['status_id'] ?? null,
+            'updated_at' => $retryMetadata['updated_at'] ?? null,
+        ]
+        : $result['bug'];
+
     echo json_encode(
         [
             'success' => true,
@@ -140,17 +151,17 @@ try {
                 'owner_control_bug_tracker_update',
             'version' => 1,
             'writes' => true,
-            'bug' => $result['bug'],
+            'bug' => $publicBug,
             'audit' => [
                 'status_history_written' =>
-                    $result[
-                        'status_history_written'
-                    ],
+                    $retryMetadata['status_history_written']
+                    ?? $result['status_history_written'],
                 'assignment_changed' =>
-                    $result[
-                        'assignment_changed'
-                    ],
+                    $retryMetadata['assignment_changed']
+                    ?? $result['assignment_changed'],
             ],
+            'idempotent_replay' =>
+                $result['idempotent_replay'] ?? false,
             'discord_sync' =>
                 'existing_bot_observer',
         ],

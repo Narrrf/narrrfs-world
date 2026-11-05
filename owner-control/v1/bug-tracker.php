@@ -739,6 +739,8 @@ header('Referrer-Policy: no-referrer');
     let detailsLoading = false;
     let lastPageData = null;
     let currentBugId = null;
+    let currentBugVersion = null;
+    let pendingSaveRequest = null;
 
     const requestStatus = document.getElementById(
         'requestStatus'
@@ -1061,6 +1063,8 @@ header('Referrer-Policy: no-referrer');
 
     function resetDialog() {
         currentBugId = null;
+        currentBugVersion = null;
+        pendingSaveRequest = null;
 
         bugDialogTitle.textContent = 'Bug details';
         bugDialogStatus.className = 'status';
@@ -1122,6 +1126,7 @@ header('Referrer-Policy: no-referrer');
             const bug = data.bug || {};
 
             currentBugId = Number(bug.bug_id);
+            currentBugVersion = Number(bug.owner_control_version);
 
             bugDialogTitle.textContent =
                 `Bug #${currentBugId}`;
@@ -1332,6 +1337,7 @@ header('Referrer-Policy: no-referrer');
 
             const payload = {
                 bug_id: currentBugId,
+                expected_version: currentBugVersion,
                 title: bugTitleInput.value,
                 description:
                     bugDescriptionInput.value,
@@ -1349,6 +1355,21 @@ header('Referrer-Policy: no-referrer');
                     bugChangeReasonInput.value.trim()
                     || 'Owner Control Bug Tracker update',
             };
+
+            const payloadFingerprint = JSON.stringify(payload);
+            if (
+                pendingSaveRequest === null
+                || pendingSaveRequest.fingerprint
+                    !== payloadFingerprint
+            ) {
+                pendingSaveRequest = {
+                    fingerprint: payloadFingerprint,
+                    idempotencyKey:
+                        crypto.randomUUID().replace(/-/g, ''),
+                };
+            }
+            payload.idempotency_key =
+                pendingSaveRequest.idempotencyKey;
 
             const response = await fetch(
                 '/api/owner-control/v1/bug-tracker-update.php',
@@ -1375,6 +1396,8 @@ header('Referrer-Policy: no-referrer');
 
             bugDialogStatus.textContent =
                 'Changes saved.';
+
+            pendingSaveRequest = null;
 
             await loadPage();
             await loadBugDetails(currentBugId);

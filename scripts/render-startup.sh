@@ -11,6 +11,8 @@ echo "🚀 Narrrf's World - Render Startup Script"
 echo "=========================================="
 
 DURABILITY_PUBLISHER="${NARRRFS_DURABILITY_PUBLISHER:-/var/www/html/scripts/sqlite-durability-publish.sh}"
+MIGRATION_RUNNER="${NARRRFS_MIGRATION_RUNNER:-/var/www/html/scripts/apply-migration-manifest.sh}"
+MIGRATION_MANIFEST="${NARRRFS_MIGRATION_MANIFEST:-/var/www/html/db/migrations/manifest-v1.txt}"
 APACHE_FOREGROUND_COMMAND="${NARRRFS_APACHE_FOREGROUND_COMMAND:-apache2-foreground}"
 
 run_apache_supervisor() {
@@ -44,13 +46,39 @@ run_apache_supervisor() {
 # Disposable lifecycle tests use an explicit opt-in only. Production always
 # performs the existing restore and setup sequence below before Apache starts.
 if [ "${NARRRFS_STARTUP_TEST_MODE:-0}" = "1" ]; then
+    # Lifecycle tests supply harmless mock paths and assert that a failed
+    # migration blocks both persistence publication and Apache launch.
+    if [ "${NARRRFS_STARTUP_TEST_LIFECYCLE:-0}" = "1" ]; then
+        "$DURABILITY_PUBLISHER" restore
+        if ! "$MIGRATION_RUNNER" \
+            "${NARRRFS_RUNTIME_DB_PATH:-/var/www/html/db/narrrf_world.sqlite}" \
+            "$MIGRATION_MANIFEST"; then
+            echo "❌ Migration failed; Apache will not start."
+            exit 1
+        fi
+        if ! "$DURABILITY_PUBLISHER" publish; then
+            echo "❌ Verified migration publication failed; Apache will not start."
+            exit 1
+        fi
+    fi
     run_apache_supervisor
 fi
 
 # STEP 1: Restore Database from Persistent Storage
 echo "📊 Restoring database from /data..."
 if [ -f /data/narrrf_world.sqlite ]; then
-  "$DURABILITY_PUBLISHER" restore
+  "$DURABILITY_PUBLISHER" restore || exit 1
+  # The manifest is deliberately applied only after canonical /data has been
+  # restored and before Apache can accept requests. A second verified publish
+  # makes a successful schema change durable before the service starts.
+  if ! "$MIGRATION_RUNNER" /var/www/html/db/narrrf_world.sqlite "$MIGRATION_MANIFEST"; then
+    echo "❌ Migration failed; Apache will not start."
+    exit 1
+  fi
+  if ! "$DURABILITY_PUBLISHER" publish; then
+    echo "❌ Verified migration publication failed; Apache will not start."
+    exit 1
+  fi
   chmod 664 /var/www/html/db/narrrf_world.sqlite
   chown www-data:www-data /var/www/html/db/narrrf_world.sqlite
   echo "✅ Database restored successfully"

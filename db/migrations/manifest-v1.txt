@@ -1,0 +1,3 @@
+# immutable_id|relative_sql_path|sha256
+owner-control-bug-tracker-r21-20261104|20261104_owner_control_bug_tracker_r21.sql|82d6982944ab2335e0e9878be2066a6ddd2be37f8a6b129fa5b051bc02abd284
+christmas-advent-2026-claims-v1|create_christmas_advent_2026_claims_v1.sql|4a82ff33664aa2f219830cec82deb42cd8d7dddfa88f781dca78f94a6f228d0a
