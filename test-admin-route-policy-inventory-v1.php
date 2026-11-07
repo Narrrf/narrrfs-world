@@ -13,6 +13,8 @@ $policyGates = [
     'NARRRFS_OWNER_BUG_TRACKER_READ_ENABLED',
     'NARRRFS_OWNER_BUG_TRACKER_UI_ENABLED',
     'NARRRFS_OWNER_BUG_TRACKER_DETAILS_ENABLED',
+    'NARRRFS_OWNER_CSRF_ENABLED',
+    'NARRRFS_OWNER_BUG_TRACKER_UPDATE_ENABLED',
 ];
 $priorGates = [];
 foreach ($policyGates as $gate) {
@@ -42,6 +44,8 @@ foreach ([
     'owner_control.bug_tracker.read.v1',
     'owner_control.bug_tracker.ui.v1',
     'owner_control.bug_tracker.details.v1',
+    'owner_control.csrf.v1',
+    'owner_control.bug_tracker.update.v1',
 ] as $key) {
     $policy = $policies['routes'][$key] ?? null;
     policy_test_assert(is_array($policy), $key . ' policy is present');
@@ -56,6 +60,8 @@ putenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED=1');
 putenv('NARRRFS_OWNER_BUG_TRACKER_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_BUG_TRACKER_UI_ENABLED=1');
 putenv('NARRRFS_OWNER_BUG_TRACKER_DETAILS_ENABLED=1');
+putenv('NARRRFS_OWNER_CSRF_ENABLED=1');
+putenv('NARRRFS_OWNER_BUG_TRACKER_UPDATE_ENABLED=1');
 $enabledPolicies = require $root . '/api/config/admin-route-policies.php';
 $enabledCanary = $enabledPolicies['routes']['owner_control.canary.v1'] ?? null;
 policy_test_assert(is_array($enabledCanary) && ($enabledCanary['enabled'] ?? null) === true, 'exact environment value enables only the canary policy');
@@ -73,6 +79,10 @@ $enabledBugTrackerDetails = $enabledPolicies['routes']['owner_control.bug_tracke
 policy_test_assert(is_array($enabledBugTrackerRead) && ($enabledBugTrackerRead['enabled'] ?? null) === true, 'exact environment value enables only the Bug Tracker read policy');
 policy_test_assert(is_array($enabledBugTrackerUi) && ($enabledBugTrackerUi['enabled'] ?? null) === true, 'exact environment value enables only the Bug Tracker UI policy');
 policy_test_assert(is_array($enabledBugTrackerDetails) && ($enabledBugTrackerDetails['enabled'] ?? null) === true, 'exact environment value enables only the Bug Tracker details policy');
+$enabledOwnerCsrf = $enabledPolicies['routes']['owner_control.csrf.v1'] ?? null;
+$enabledBugTrackerUpdate = $enabledPolicies['routes']['owner_control.bug_tracker.update.v1'] ?? null;
+policy_test_assert(is_array($enabledOwnerCsrf) && ($enabledOwnerCsrf['enabled'] ?? null) === true, 'exact environment value enables only the Owner Control CSRF policy');
+policy_test_assert(is_array($enabledBugTrackerUpdate) && ($enabledBugTrackerUpdate['enabled'] ?? null) === true, 'exact environment value enables only the Bug Tracker update policy');
 foreach ($priorGates as $gate => $value) {
     $value === false ? putenv($gate) : putenv($gate . '=' . $value);
 }
@@ -98,9 +108,10 @@ policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/o
 policy_test_assert(!str_contains($containment, '/api/owner-control/v1/lab-store/(?:'), 'containment has no broad Lab Store exception');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/bug-tracker\.php'), 'owner-control containment names the exact Bug Tracker list route');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/bug-tracker-details\.php'), 'owner-control containment names the exact Bug Tracker details route');
-policy_test_assert(!str_contains($containment, '/api/owner-control/v1/bug-tracker(?:'), 'containment has no broad Bug Tracker exception');
-policy_test_assert(!str_contains($containment, '/api/owner-control/v1/csrf\.php'), 'Bug Tracker CSRF route remains contained in read phase');
-policy_test_assert(!str_contains($containment, '/api/owner-control/v1/bug-tracker-update\.php'), 'Bug Tracker update route remains contained in read phase');
+policy_test_assert(str_contains($containment, '/api/owner-control/v1/csrf\.php'), 'owner-control containment names the exact Bug Tracker CSRF route');
+policy_test_assert(str_contains($containment, '/api/owner-control/v1/bug-tracker-update\.php'), 'owner-control containment names the exact Bug Tracker update route');
+policy_test_assert(!str_contains($containment, '/api/owner-control/v1/bug-tracker(?:/|$)'), 'containment has no broad Bug Tracker exception');
+policy_test_assert(!str_contains($containment, '/api/owner-control/v1/csrf(?:/|$)'), 'containment has no broad CSRF exception');
 policy_test_assert(str_contains($containment, '^/db'), 'database URL remains denied');
 policy_test_assert(str_contains($containment, '/var/www/html/db'), 'database filesystem path remains denied');
 policy_test_assert(str_contains($dockerfile, 'a2enconf narrrfs-emergency-containment'), 'Docker image enables containment');
