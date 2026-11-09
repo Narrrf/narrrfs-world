@@ -15,7 +15,12 @@ command -v "$SQLITE_BIN" >/dev/null 2>&1 || fail 'sqlite3 unavailable'
 ROOT="$(cd "$(dirname "$MANIFEST_PATH")" && pwd)"
 entries=()
 declare -A seen_ids=()
-while IFS='|' read -r id relative expected; do
+while IFS= read -r line || [ -n "$line" ]; do
+  # The manifest checksum is defined over canonical LF text.  Git-for-Windows
+  # may materialize tracked text as CRLF, so remove only a terminal CR before
+  # parsing each record and normalize SQL line endings for the checksum.
+  line="${line%$'\r'}"
+  IFS='|' read -r id relative expected <<< "$line"
   [ -z "${id:-}" ] && continue
   [[ "$id" =~ ^# ]] && continue
   [[ "$id" =~ ^[a-z0-9][a-z0-9-]{2,127}$ ]] || fail 'invalid migration id'
@@ -25,7 +30,7 @@ while IFS='|' read -r id relative expected; do
   [[ "$expected" =~ ^[a-f0-9]{64}$ ]] || fail 'invalid manifest checksum'
   sql="$ROOT/$relative"
   [ -f "$sql" ] && [ -r "$sql" ] || fail "migration file missing: $relative"
-  actual="$(sha256sum "$sql" | awk '{print $1}')"
+  actual="$(sed 's/\r$//' "$sql" | sha256sum | awk '{print $1}')"
   [ "$actual" = "$expected" ] || fail "migration checksum mismatch: $relative"
   entries+=("$id|$sql|$expected")
 done < "$MANIFEST_PATH"

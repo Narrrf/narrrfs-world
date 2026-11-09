@@ -6,6 +6,7 @@ RUNNER="$ROOT/scripts/apply-migration-manifest.sh"
 R21="$ROOT/db/migrations/20261104_owner_control_bug_tracker_r21.sql"
 CHRISTMAS="$ROOT/db/migrations/create_christmas_advent_2026_claims_v1.sql"
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
+manifest_sha() { sed 's/\r$//' "$1" | sha256sum | awk '{print $1}'; }
 
 make_base() {
   local db="$1"
@@ -14,8 +15,8 @@ make_base() {
 
 cp "$R21" "$WORK/20261104_owner_control_bug_tracker_r21.sql"
 cp "$CHRISTMAS" "$WORK/create_christmas_advent_2026_claims_v1.sql"
-r21_sha="$(sha256sum "$WORK/20261104_owner_control_bug_tracker_r21.sql" | awk '{print $1}')"
-christmas_sha="$(sha256sum "$WORK/create_christmas_advent_2026_claims_v1.sql" | awk '{print $1}')"
+r21_sha="$(manifest_sha "$WORK/20261104_owner_control_bug_tracker_r21.sql")"
+christmas_sha="$(manifest_sha "$WORK/create_christmas_advent_2026_claims_v1.sql")"
 printf 'owner-control-bug-tracker-r21-20261104|20261104_owner_control_bug_tracker_r21.sql|%s\nchristmas-advent-2026-claims-v1|create_christmas_advent_2026_claims_v1.sql|%s\n' "$r21_sha" "$christmas_sha" > "$WORK/manifest.txt"
 
 DB="$WORK/ordered.sqlite"; make_base "$DB"
@@ -31,7 +32,7 @@ DB="$WORK/ordered.sqlite"; make_base "$DB"
 FAIL_DB="$WORK/christmas-failure.sqlite"; make_base "$FAIL_DB"
 cp "$CHRISTMAS" "$WORK/failing-christmas.sql"
 printf '\nTHIS IS INVALID SQL;\n' >> "$WORK/failing-christmas.sql"
-fail_sha="$(sha256sum "$WORK/failing-christmas.sql" | awk '{print $1}')"
+fail_sha="$(manifest_sha "$WORK/failing-christmas.sql")"
 printf 'owner-control-bug-tracker-r21-20261104|20261104_owner_control_bug_tracker_r21.sql|%s\nchristmas-advent-2026-claims-v1|failing-christmas.sql|%s\n' "$r21_sha" "$fail_sha" > "$WORK/failing-manifest.txt"
 if "$RUNNER" "$FAIL_DB" "$WORK/failing-manifest.txt"; then exit 1; fi
 [ "$(sqlite3 "$FAIL_DB" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='tbl_christmas_advent_2026_claims';")" = 0 ]

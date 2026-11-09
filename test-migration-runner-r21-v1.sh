@@ -4,11 +4,12 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 RUNNER="$ROOT/scripts/apply-migration-manifest.sh"
 MIGRATION="$ROOT/db/migrations/20261104_owner_control_bug_tracker_r21.sql"
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
+manifest_sha() { sed 's/\r$//' "$1" | sha256sum | awk '{print $1}'; }
 DB="$WORK/runtime.sqlite"; MANIFEST="$WORK/manifest.txt"
 sqlite3 "$DB" 'CREATE TABLE tbl_bug_reports (bug_id INTEGER PRIMARY KEY, title TEXT, owner_control_version INTEGER);'
 # Representative pre-migration schema deliberately has no version column.
 sqlite3 "$DB" "DROP TABLE tbl_bug_reports; CREATE TABLE tbl_bug_reports (bug_id INTEGER PRIMARY KEY, title TEXT); INSERT INTO tbl_bug_reports VALUES (1, 'before');"
-sha="$(sha256sum "$MIGRATION" | awk '{print $1}')"
+sha="$(manifest_sha "$MIGRATION")"
 printf 'owner-control-bug-tracker-r21-20261104|%s|%s\n' "$MIGRATION" "$sha" > "$MANIFEST"
 # The runner accepts manifest-relative names; copy the immutable candidate only
 # into the disposable directory for this test.
@@ -30,7 +31,7 @@ if "$RUNNER" "$BAD" "$WORK/bad.txt"; then exit 1; fi
 # schema object can be created.
 DUP="$WORK/duplicate.sqlite"; sqlite3 "$DUP" 'CREATE TABLE tbl_bug_reports (bug_id INTEGER PRIMARY KEY);'
 cp "$MIGRATION" "$WORK/duplicate.sql"
-dup_sha="$(sha256sum "$WORK/duplicate.sql" | awk '{print $1}')"
+dup_sha="$(manifest_sha "$WORK/duplicate.sql")"
 printf 'duplicate-r21|duplicate.sql|%s\nduplicate-r21|duplicate.sql|%s\n' "$dup_sha" "$dup_sha" > "$WORK/duplicate.txt"
 before_duplicate="$(sha256sum "$DUP" | awk '{print $1}')"
 if "$RUNNER" "$DUP" "$WORK/duplicate.txt"; then exit 1; fi
@@ -39,7 +40,7 @@ if "$RUNNER" "$DUP" "$WORK/duplicate.txt"; then exit 1; fi
 # candidate schema change and the ledger record.
 FAIL="$WORK/fail.sqlite"; sqlite3 "$FAIL" 'CREATE TABLE tbl_bug_reports (bug_id INTEGER PRIMARY KEY);'
 printf 'ALTER TABLE tbl_bug_reports ADD COLUMN temporary_value TEXT;\nTHIS IS INVALID SQL;\n' > "$WORK/fail.sql"
-fail_sha="$(sha256sum "$WORK/fail.sql" | awk '{print $1}')"
+fail_sha="$(manifest_sha "$WORK/fail.sql")"
 printf 'failure-proof-r21|fail.sql|%s\n' "$fail_sha" > "$WORK/fail.txt"
 before_fail="$(sha256sum "$FAIL" | awk '{print $1}')"
 if "$RUNNER" "$FAIL" "$WORK/fail.txt"; then exit 1; fi
