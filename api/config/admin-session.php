@@ -22,6 +22,7 @@ const NARRRFS_ADMIN_AUTH_ABSOLUTE_SECONDS = 43200;
 const NARRRFS_ADMIN_AUTH_FUTURE_SKEW_SECONDS = 60;
 const NARRRFS_ADMIN_CSRF_SESSION_KEY = 'narrrfs_admin_csrf_token';
 const NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY = 'narrrfs_admin_csrf_issued_at';
+const NARRRFS_ADMIN_CSRF_SCOPE_SESSION_KEY = 'narrrfs_admin_csrf_scope';
 const NARRRFS_ADMIN_CSRF_TTL_SECONDS = 300;
 const NARRRFS_LOGOUT_CSRF_SESSION_KEY = 'narrrfs_logout_csrf_token';
 const NARRRFS_LOGOUT_CSRF_ISSUED_AT_SESSION_KEY = 'narrrfs_logout_csrf_issued_at';
@@ -36,7 +37,8 @@ function narrrfs_clear_admin_authority_state(array &$session): void
         $session[NARRRFS_ADMIN_AUTH_LAST_SEEN_AT_SESSION_KEY],
         $session[NARRRFS_ADMIN_AUTH_EXPIRES_AT_SESSION_KEY],
         $session[NARRRFS_ADMIN_CSRF_SESSION_KEY],
-        $session[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY]
+        $session[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY],
+        $session[NARRRFS_ADMIN_CSRF_SCOPE_SESSION_KEY]
     );
 }
 
@@ -252,7 +254,8 @@ function narrrfs_touch_admin_authority(array &$session, ?int $now = null): void
 function narrrfs_issue_admin_csrf_token(
     array &$session,
     ?int $now = null,
-    ?callable $randomBytes = null
+    ?callable $randomBytes = null,
+    ?string $scope = null
 ): string {
     $now = $now ?? time();
 
@@ -272,26 +275,45 @@ function narrrfs_issue_admin_csrf_token(
         );
     }
 
+    if ($scope !== null && preg_match('/^[a-z0-9][a-z0-9._-]{0,79}$/', $scope) !== 1) {
+        throw new RuntimeException(
+            'Unable to initialize admin mutation protection.'
+        );
+    }
+
     $token = bin2hex($rawBytes);
 
     $session[NARRRFS_ADMIN_CSRF_SESSION_KEY] = $token;
     $session[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY] = $now;
+    if ($scope === null) {
+        unset($session[NARRRFS_ADMIN_CSRF_SCOPE_SESSION_KEY]);
+    } else {
+        $session[NARRRFS_ADMIN_CSRF_SCOPE_SESSION_KEY] = $scope;
+    }
 
     return $token;
 }
 
 
 /** Validate an exact one-time CSRF token and its five-minute server-session lifetime. */
-function narrrfs_admin_csrf_is_current(array $session, mixed $requestToken, ?int $now = null): bool
+function narrrfs_admin_csrf_is_current(
+    array $session,
+    mixed $requestToken,
+    ?int $now = null,
+    ?string $expectedScope = null
+): bool
 {
     $now = $now ?? time();
     $sessionToken = $session[NARRRFS_ADMIN_CSRF_SESSION_KEY] ?? null;
     $issuedAt = $session[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY] ?? null;
+    $actualScope = $session[NARRRFS_ADMIN_CSRF_SCOPE_SESSION_KEY] ?? null;
     if (
         !is_string($sessionToken) || !preg_match('/^[a-f0-9]{64}$/', $sessionToken) ||
         !is_string($requestToken) || !preg_match('/^[a-f0-9]{64}$/', $requestToken) ||
         !is_int($issuedAt) || $issuedAt > $now + NARRRFS_ADMIN_AUTH_FUTURE_SKEW_SECONDS ||
-        $now - $issuedAt >= NARRRFS_ADMIN_CSRF_TTL_SECONDS
+        $now - $issuedAt >= NARRRFS_ADMIN_CSRF_TTL_SECONDS ||
+        ($expectedScope !== null && (!is_string($actualScope) || !hash_equals($expectedScope, $actualScope))) ||
+        ($expectedScope === null && $actualScope !== null)
     ) {
         return false;
     }
@@ -301,7 +323,11 @@ function narrrfs_admin_csrf_is_current(array $session, mixed $requestToken, ?int
 /** Consume a CSRF token before protected route logic so it cannot be replayed. */
 function narrrfs_consume_admin_csrf_session(array &$session): void
 {
-    unset($session[NARRRFS_ADMIN_CSRF_SESSION_KEY], $session[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY]);
+    unset(
+        $session[NARRRFS_ADMIN_CSRF_SESSION_KEY],
+        $session[NARRRFS_ADMIN_CSRF_ISSUED_AT_SESSION_KEY],
+        $session[NARRRFS_ADMIN_CSRF_SCOPE_SESSION_KEY]
+    );
 }
 
 /** Confirm the session contains an ordinary server-side Discord identity. */

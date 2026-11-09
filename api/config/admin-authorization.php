@@ -122,6 +122,12 @@ function narrrfs_validate_admin_route_policy(mixed $policy): ?array
     $contentTypes = $policy['contentTypes'] ?? [];
     $origins = $policy['origins'] ?? [];
     $allowRefererFallback = ($policy['allowRefererFallback'] ?? false) === true;
+    $csrfScope = $policy['csrfScope'] ?? null;
+    $csrfIssuer = ($policy['csrfIssuer'] ?? false) === true;
+
+    if ($csrfScope !== null && (!is_string($csrfScope) || preg_match('/^[a-z0-9][a-z0-9._-]{0,79}$/', $csrfScope) !== 1)) {
+        return null;
+    }
 
     if ($mutating) {
         foreach ($normalizedMethods as $method) {
@@ -133,6 +139,16 @@ function narrrfs_validate_admin_route_policy(mixed $policy): ?array
             return null;
         }
         if (!is_array($origins) || $origins === []) {
+            return null;
+        }
+    } elseif ($csrfIssuer) {
+        if (
+            $csrfRequired ||
+            $normalizedMethods !== ['POST'] ||
+            !is_array($contentTypes) || $contentTypes === [] ||
+            !is_array($origins) || $origins === [] ||
+            $allowRefererFallback
+        ) {
             return null;
         }
     } else {
@@ -175,6 +191,8 @@ function narrrfs_validate_admin_route_policy(mixed $policy): ?array
         'contentTypes' => array_values(array_unique($normalizedContentTypes)),
         'origins' => array_keys($normalizedOrigins),
         'allowRefererFallback' => $allowRefererFallback,
+        'csrfScope' => $csrfScope,
+        'csrfIssuer' => $csrfIssuer,
     ];
 }
 
@@ -239,7 +257,7 @@ function narrrfs_admin_authorization_decision(
         return $deny(405, 'method_not_allowed', $policy['methods']);
     }
 
-    if ($policy['mutating']) {
+    if ($policy['mutating'] || $policy['csrfIssuer']) {
         $contentType = strtolower(trim(explode(';', (string)($request['contentType'] ?? ''), 2)[0]));
         if (!in_array($contentType, $policy['contentTypes'], true)) {
             return $deny(415, 'unsupported_media_type');
@@ -266,9 +284,11 @@ function narrrfs_admin_authorization_decision(
             return $deny(403, 'origin_rejected');
         }
 
-        $requestCsrf = $request['csrfToken'] ?? null;
-        if (!narrrfs_admin_csrf_is_current($session, $requestCsrf, $now)) {
-            return $deny(403, 'csrf_rejected');
+        if ($policy['mutating']) {
+            $requestCsrf = $request['csrfToken'] ?? null;
+            if (!narrrfs_admin_csrf_is_current($session, $requestCsrf, $now, $policy['csrfScope'])) {
+                return $deny(403, 'csrf_rejected');
+            }
         }
     }
 

@@ -1,0 +1,7 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../../../config/admin-authorization.php';
+$actor=narrrfs_require_admin_request('owner_control.lab_store_drafts.update.v1');
+header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store, max-age=0');header('X-Content-Type-Options: nosniff');
+$raw=file_get_contents('php://input');try{$input=json_decode(is_string($raw)?$raw:'',true,32,JSON_THROW_ON_ERROR);if(!is_array($input))throw new JsonException();}catch(Throwable){http_response_code(400);echo json_encode(['success'=>false,'error'=>'invalid_json']);exit;}
+require_once __DIR__ . '/../../../config/database.php';require_once __DIR__ . '/../../../lib/owner-lab-store-drafts-v1.php';$db=null;try{$db=new SQLite3(getDatabasePath(),SQLITE3_OPEN_READWRITE);$db->busyTimeout(5000);$result=narrrfs_lab_store_draft_write($db,$input,$actor,true);echo json_encode(['success'=>true,'capability'=>'owner_control_lab_store_draft_update','version'=>1,'writes'=>true,'idempotent_replay'=>$result['replayed'],'draft'=>$result['draft']??['draft_id'=>$result['draft_id'],'version'=>$result['version'],'state'=>'draft']],JSON_UNESCAPED_SLASHES);}catch(NarrrfsOwnerLabStoreDraftException $e){http_response_code($e->status());echo json_encode(['success'=>false,'error'=>$e->publicCode()]);}catch(Throwable $e){error_log('[OWNER CONTROL] Lab Store draft update failed: '.$e->getMessage());http_response_code(500);echo json_encode(['success'=>false,'error'=>'draft_write_failed']);}finally{if($db instanceof SQLite3)$db->close();}
