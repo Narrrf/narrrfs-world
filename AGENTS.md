@@ -390,6 +390,22 @@ This workflow never weakens source verification, targeted backups, audit
 evidence, specialist review, protected economy, ownership, or recovery rules,
 or the required separation of local, disposable, and live environments.
 
+## 10B. TOKEN-EFFICIENT AGENT COLLABORATION
+
+Use delta-only reports: state only new evidence, changed files, checks, blockers,
+and the exact next step. Do not repeat acknowledgements or unchanged history.
+
+Each task uses one bounded approval packet with explicit output limits. Route work
+to the lowest adequate model; escalate only when evidence, authorization, or
+protected-system reasoning requires it. Keep reports concise and evidence-based.
+
+Create a fresh checkpoint handoff when context grows enough to risk losing the
+active scope, baseline, or unresolved decision.
+
+STOP only for scope expansion, failed or inconclusive checks, protected-system
+risk, or live action. This discipline never weakens source verification,
+backups, specialist review, protected-system rules, or local/live separation.
+
 # 11. VALIDATION
 
 JavaScript / TypeScript:
