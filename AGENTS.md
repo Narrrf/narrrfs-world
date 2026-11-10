@@ -367,6 +367,29 @@ Do not use blind replacements for:
 
 ---
 
+## 10A. BOUNDED LOCAL CANDIDATE WORKFLOW
+
+One explicit owner approval may authorize only the stated local candidate packet:
+
+inspect → smallest guarded patch → local/disposable validation → required
+specialist review → one local commit.
+
+That approval applies only to the named worktree, files, tests, and local or
+disposable database targets. It does not authorize scope expansion.
+
+STOP and obtain a renewed owner decision before any:
+
+- unexpected changed or staged file;
+- failed, skipped, or inconclusive required check;
+- source, route, schema, or protected-system change outside the approved packet;
+- non-disposable database, production-like data, or live-connected service;
+- push, deployment, Render or production action;
+- gate activation, restart, or runtime configuration change.
+
+This workflow never weakens source verification, targeted backups, audit
+evidence, specialist review, protected economy, ownership, or recovery rules,
+or the required separation of local, disposable, and live environments.
+
 # 11. VALIDATION
 
 JavaScript / TypeScript:
