@@ -78,6 +78,11 @@ function narrrfs_lab_store_draft_public(array $row): array
         'draft_id' => (int)$row['draft_id'], 'title' => (string)$row['title'],
         'category' => (string)$row['category'], 'description' => (string)$row['description'],
         'media_reference' => $row['media_reference'] === null ? null : (string)$row['media_reference'],
+        'proposed_source_type' => $row['proposed_source_type'] ?? null,
+        'proposed_source_item_id' => ($row['proposed_source_item_id'] ?? null) === null ? null : (int)$row['proposed_source_item_id'],
+        'proposed_lp_price' => ($row['proposed_lp_price'] ?? null) === null ? null : (int)$row['proposed_lp_price'],
+        'proposed_dspoinc_price' => ($row['proposed_dspoinc_price'] ?? null) === null ? null : (int)$row['proposed_dspoinc_price'],
+        'proposed_stock' => ($row['proposed_stock'] ?? null) === null ? null : (int)$row['proposed_stock'],
         'state' => 'draft', 'version' => (int)$row['version'],
         'created_at' => (string)$row['created_at'], 'updated_at' => (string)$row['updated_at'],
     ];
@@ -89,7 +94,12 @@ function narrrfs_lab_store_draft_payload(array $input): array
     $category = narrrfs_lab_store_draft_text($input, 'category', 80);
     $description = narrrfs_lab_store_draft_text($input, 'description', 4000);
     $media = narrrfs_lab_store_draft_media_reference(narrrfs_lab_store_draft_text($input, 'media_reference', 500, true));
-    return compact('title', 'category', 'description', 'media');
+    $type = $input['proposed_source_type'] ?? null;
+    if ($type !== null && !in_array($type, ['normal_store', 'genetic_item'], true)) throw new NarrrfsOwnerLabStoreDraftException(400, 'invalid_proposed_source_type');
+    $item = $input['proposed_source_item_id'] ?? null; if ($item !== null && (!is_int($item) || $item < 1)) throw new NarrrfsOwnerLabStoreDraftException(400, 'invalid_proposed_source_item');
+    $lp = $input['proposed_lp_price'] ?? null; $dsp = $input['proposed_dspoinc_price'] ?? null; $stock = $input['proposed_stock'] ?? null;
+    foreach ([$lp, $dsp, $stock] as $value) if ($value !== null && (!is_int($value) || $value < 0)) throw new NarrrfsOwnerLabStoreDraftException(400, 'invalid_proposed_value');
+    return compact('title', 'category', 'description', 'media', 'type', 'item', 'lp', 'dsp', 'stock');
 }
 
 function narrrfs_lab_store_draft_write(SQLite3 $db, array $input, string $actor, bool $update): array
@@ -118,19 +128,20 @@ function narrrfs_lab_store_draft_write(SQLite3 $db, array $input, string $actor,
             return ['replayed' => true, 'draft_id' => (int)$oldReceipt['draft_id'], 'version' => (int)$oldReceipt['resulting_version'], 'action' => (string)$oldReceipt['action']];
         }
         if ($update) {
-            $statement = $db->prepare('UPDATE tbl_owner_control_lab_store_drafts SET title=:title,category=:category,description=:description,media_reference=:media,updated_by=:actor,updated_at=CURRENT_TIMESTAMP,version=version+1 WHERE draft_id=:id AND state=\'draft\' AND version=:expected');
+            $statement = $db->prepare('UPDATE tbl_owner_control_lab_store_drafts SET title=:title,category=:category,description=:description,media_reference=:media,proposed_source_type=:type,proposed_source_item_id=:item,proposed_lp_price=:lp,proposed_dspoinc_price=:dsp,proposed_stock=:stock,updated_by=:actor,updated_at=CURRENT_TIMESTAMP,version=version+1 WHERE draft_id=:id AND state=\'draft\' AND version=:expected');
             $statement->bindValue(':id', $draftId, SQLITE3_INTEGER); $statement->bindValue(':expected', $expected, SQLITE3_INTEGER);
             $prior = $expected;
         } else {
-            $statement = $db->prepare('INSERT INTO tbl_owner_control_lab_store_drafts (title,category,description,media_reference,state,version,created_by,updated_by) VALUES (:title,:category,:description,:media,\'draft\',1,:actor,:actor)');
+            $statement = $db->prepare('INSERT INTO tbl_owner_control_lab_store_drafts (title,category,description,media_reference,proposed_source_type,proposed_source_item_id,proposed_lp_price,proposed_dspoinc_price,proposed_stock,state,version,created_by,updated_by) VALUES (:title,:category,:description,:media,:type,:item,:lp,:dsp,:stock,\'draft\',1,:actor,:actor)');
             $prior = null;
         }
         foreach (['title' => $payload['title'], 'category' => $payload['category'], 'description' => $payload['description']] as $name => $value) $statement->bindValue(':'.$name, $value, SQLITE3_TEXT);
         $statement->bindValue(':media', $payload['media'], $payload['media'] === null ? SQLITE3_NULL : SQLITE3_TEXT); $statement->bindValue(':actor', $actor, SQLITE3_TEXT);
+        $statement->bindValue(':type', $payload['type'], $payload['type'] === null ? SQLITE3_NULL : SQLITE3_TEXT); $statement->bindValue(':item', $payload['item'], $payload['item'] === null ? SQLITE3_NULL : SQLITE3_INTEGER); $statement->bindValue(':lp', $payload['lp'], $payload['lp'] === null ? SQLITE3_NULL : SQLITE3_INTEGER); $statement->bindValue(':dsp', $payload['dsp'], $payload['dsp'] === null ? SQLITE3_NULL : SQLITE3_INTEGER); $statement->bindValue(':stock', $payload['stock'], $payload['stock'] === null ? SQLITE3_NULL : SQLITE3_INTEGER);
         $result = $statement->execute(); if (!$result instanceof SQLite3Result) throw new RuntimeException('Draft write failed.'); $result->finalize();
         if ($update && $db->changes() !== 1) throw new NarrrfsOwnerLabStoreDraftException(409, 'version_conflict');
         $id = $update ? $draftId : (int)$db->lastInsertRowID();
-        $lookup = $db->prepare('SELECT draft_id,title,category,description,media_reference,state,version,created_at,updated_at FROM tbl_owner_control_lab_store_drafts WHERE draft_id=:id LIMIT 1'); $lookup->bindValue(':id',$id,SQLITE3_INTEGER);
+        $lookup = $db->prepare('SELECT * FROM tbl_owner_control_lab_store_drafts WHERE draft_id=:id LIMIT 1'); $lookup->bindValue(':id',$id,SQLITE3_INTEGER);
         $row = narrrfs_lab_store_draft_fetch_one($lookup); if ($row === null) throw new RuntimeException('Draft result unavailable.');
         $version = (int)$row['version']; $action = $update ? 'updated' : 'created';
         $audit = $db->prepare('INSERT INTO tbl_owner_control_lab_store_draft_audit (draft_id,actor_subject,action,prior_version,resulting_version,change_hash) VALUES (:id,:actor,:action,:prior,:result,:hash)');
