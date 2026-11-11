@@ -12,6 +12,7 @@ $policyGates = [
     'NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_DRAFTS_READ_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_DRAFTS_CATALOG_READ_ENABLED',
+    'NARRRFS_OWNER_LAB_STORE_DRAFTS_MEDIA_UPLOAD_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_DRAFTS_WRITE_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_DRAFTS_UI_ENABLED',
     'NARRRFS_OWNER_BUG_TRACKER_READ_ENABLED',
@@ -47,6 +48,7 @@ foreach ([
     'owner_control.lab_store_offers.ui.v1',
     'owner_control.lab_store_drafts.read.v1',
     'owner_control.lab_store_drafts.catalog_read.v1',
+    'owner_control.lab_store_drafts.media_upload.v1',
     'owner_control.lab_store_drafts.csrf.v1',
     'owner_control.lab_store_drafts.create.v1',
     'owner_control.lab_store_drafts.update.v1',
@@ -69,6 +71,7 @@ putenv('NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_CATALOG_READ_ENABLED=1');
+putenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_MEDIA_UPLOAD_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_WRITE_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_UI_ENABLED=1');
 putenv('NARRRFS_OWNER_BUG_TRACKER_READ_ENABLED=1');
@@ -89,12 +92,14 @@ policy_test_assert(is_array($enabledLabRead) && ($enabledLabRead['enabled'] ?? n
 policy_test_assert(is_array($enabledLabUi) && ($enabledLabUi['enabled'] ?? null) === true, 'exact environment value enables only the Lab Store UI policy');
 $enabledLabDraftRead = $enabledPolicies['routes']['owner_control.lab_store_drafts.read.v1'] ?? null;
 $enabledLabDraftCatalogRead = $enabledPolicies['routes']['owner_control.lab_store_drafts.catalog_read.v1'] ?? null;
+$enabledLabDraftMediaUpload = $enabledPolicies['routes']['owner_control.lab_store_drafts.media_upload.v1'] ?? null;
 $enabledLabDraftCsrf = $enabledPolicies['routes']['owner_control.lab_store_drafts.csrf.v1'] ?? null;
 $enabledLabDraftCreate = $enabledPolicies['routes']['owner_control.lab_store_drafts.create.v1'] ?? null;
 $enabledLabDraftUpdate = $enabledPolicies['routes']['owner_control.lab_store_drafts.update.v1'] ?? null;
 $enabledLabDraftUi = $enabledPolicies['routes']['owner_control.lab_store_drafts.ui.v1'] ?? null;
 policy_test_assert(is_array($enabledLabDraftRead) && ($enabledLabDraftRead['enabled'] ?? null) === true, 'exact environment value enables only the Lab Store draft read policy');
 policy_test_assert(is_array($enabledLabDraftCatalogRead) && ($enabledLabDraftCatalogRead['enabled'] ?? null) === true && ($enabledLabDraftCatalogRead['methods'] ?? null) === ['GET', 'HEAD'] && ($enabledLabDraftCatalogRead['mutating'] ?? null) === false, 'exact environment value enables only the Lab Store draft source-picker read policy');
+policy_test_assert(is_array($enabledLabDraftMediaUpload) && ($enabledLabDraftMediaUpload['enabled'] ?? null) === true && ($enabledLabDraftMediaUpload['methods'] ?? null) === ['POST'] && ($enabledLabDraftMediaUpload['csrfScope'] ?? null) === 'owner_control.lab_store_drafts.media_upload.v1' && ($enabledLabDraftMediaUpload['contentTypes'] ?? null) === ['multipart/form-data'], 'exact environment value enables only the scoped Lab Store draft media upload policy');
 policy_test_assert(is_array($enabledLabDraftCsrf) && ($enabledLabDraftCsrf['enabled'] ?? null) === true && ($enabledLabDraftCsrf['csrfIssuer'] ?? null) === true && ($enabledLabDraftCsrf['methods'] ?? null) === ['POST'] && !array_key_exists('csrfScope', $enabledLabDraftCsrf), 'exact draft write gate enables only the action-selecting dedicated CSRF issuer');
 policy_test_assert(is_array($enabledLabDraftCreate) && ($enabledLabDraftCreate['enabled'] ?? null) === true && ($enabledLabDraftCreate['mutating'] ?? null) === true && ($enabledLabDraftCreate['csrfScope'] ?? null) === 'owner_control.lab_store_drafts.create.v1', 'exact environment value enables only the Lab Store draft create policy with its distinct scope');
 policy_test_assert(is_array($enabledLabDraftUpdate) && ($enabledLabDraftUpdate['enabled'] ?? null) === true && ($enabledLabDraftUpdate['mutating'] ?? null) === true && ($enabledLabDraftUpdate['csrfScope'] ?? null) === 'owner_control.lab_store_drafts.update.v1', 'exact environment value enables only the Lab Store draft update policy with its distinct scope');
@@ -133,6 +138,7 @@ policy_test_assert(str_contains($containment, '/api/owner-control/v1/quests/over
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/offers\.php'), 'owner-control containment names the exact Lab Store API route');
 foreach (['drafts', 'draft-details', 'draft-create', 'draft-update', 'draft-csrf'] as $draftRoute) policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/' . $draftRoute . '\\.php'), 'owner-control containment names exact Lab Store draft route ' . $draftRoute);
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/draft-sources\\.php'), 'owner-control containment names the exact Lab Store draft source-picker route');
+policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/draft-media-upload\\.php'), 'owner-control containment names the exact Lab Store draft media upload route');
 policy_test_assert(!str_contains($containment, '/api/owner-control/v1/lab-store/(?:'), 'containment has no broad Lab Store exception');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/bug-tracker\.php'), 'owner-control containment names the exact Bug Tracker list route');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/bug-tracker-details\.php'), 'owner-control containment names the exact Bug Tracker details route');
@@ -202,6 +208,7 @@ policy_test_assert(
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/offers.php'), array_map('realpath', $trackedCallers), true), 'Lab Store offers route calls the exact owner guard');
 foreach (['drafts.php', 'draft-details.php', 'draft-create.php', 'draft-update.php', 'draft-csrf.php'] as $draftRoute) policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/' . $draftRoute), array_map('realpath', $trackedCallers), true), 'Lab Store draft route calls the exact owner guard: ' . $draftRoute);
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/draft-sources.php'), array_map('realpath', $trackedCallers), true), 'Lab Store draft source-picker route calls the exact owner guard');
+policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/draft-media-upload.php'), array_map('realpath', $trackedCallers), true), 'Lab Store draft media upload route calls the exact owner guard');
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/bug-tracker.php'), array_map('realpath', $trackedCallers), true), 'Bug Tracker list route calls the exact owner guard');
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/bug-tracker-details.php'), array_map('realpath', $trackedCallers), true), 'Bug Tracker details route calls the exact owner guard');
 echo "PASS: admin route policy inventory Stage B2\n";

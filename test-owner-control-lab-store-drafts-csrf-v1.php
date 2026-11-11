@@ -13,13 +13,17 @@ function draft_csrf_assert(bool $condition, string $label): void
 
 $gate = 'NARRRFS_OWNER_LAB_STORE_DRAFTS_WRITE_ENABLED';
 $priorGate = getenv($gate);
+$mediaGate = 'NARRRFS_OWNER_LAB_STORE_DRAFTS_MEDIA_UPLOAD_ENABLED';
+$priorMediaGate = getenv($mediaGate);
 putenv($gate . '=1');
+putenv($mediaGate . '=1');
 
 try {
     $policies = require __DIR__ . '/api/config/admin-route-policies.php';
     $issuerPolicy = $policies['routes']['owner_control.lab_store_drafts.csrf.v1'];
     $createPolicy = $policies['routes']['owner_control.lab_store_drafts.create.v1'];
     $updatePolicy = $policies['routes']['owner_control.lab_store_drafts.update.v1'];
+    $mediaPolicy = $policies['routes']['owner_control.lab_store_drafts.media_upload.v1'];
     $owner = '12345678901234567';
     $now = 2000000000;
     $makeSession = static function () use ($owner, $now): array {
@@ -63,7 +67,8 @@ try {
     draft_csrf_assert(
         !array_key_exists('csrfScope', $issuerPolicy)
         && $createPolicy['csrfScope'] === 'owner_control.lab_store_drafts.create.v1'
-        && $updatePolicy['csrfScope'] === 'owner_control.lab_store_drafts.update.v1',
+        && $updatePolicy['csrfScope'] === 'owner_control.lab_store_drafts.update.v1'
+        && $mediaPolicy['csrfScope'] === 'owner_control.lab_store_drafts.media_upload.v1',
         'issuer has no generic scope and each M1 action has an immutable distinct scope'
     );
 
@@ -130,6 +135,16 @@ try {
         'update token is denied by the create action'
     );
 
+    $mediaSession = $makeSession();
+    $mediaToken = narrrfs_issue_admin_csrf_token($mediaSession, $now, static fn (int $bytes): string => str_repeat('c', $bytes), 'owner_control.lab_store_drafts.media_upload.v1');
+    $mediaRequest = ['method' => 'POST', 'contentType' => 'multipart/form-data; boundary=test', 'origin' => 'https://narrrfs.world', 'csrfToken' => $mediaToken];
+    draft_csrf_assert(narrrfs_admin_authorization_decision($mediaPolicy, $mediaSession, $mediaRequest, [$owner], $now)['allowed'] === true, 'upload token authorizes only multipart media upload');
+    $wrongActionRequest = $mediaRequest;
+    $wrongActionRequest['contentType'] = 'application/json';
+    draft_csrf_assert(narrrfs_admin_authorization_decision($createPolicy, $mediaSession, $wrongActionRequest, [$owner], $now)['status'] === 403, 'upload token is denied by draft create');
+    narrrfs_consume_admin_csrf_session($mediaSession);
+    draft_csrf_assert(narrrfs_admin_authorization_decision($mediaPolicy, $mediaSession, $mediaRequest, [$owner], $now)['status'] === 403, 'consumed upload token cannot replay');
+
     $endpoint = file_get_contents(__DIR__ . '/api/owner-control/v1/lab-store/draft-csrf.php');
     draft_csrf_assert(
         is_string($endpoint)
@@ -137,12 +152,14 @@ try {
         && str_contains($endpoint, 'narrrfs_require_admin_request($routeKey)')
         && str_contains($endpoint, "'create' => 'owner_control.lab_store_drafts.create.v1'")
         && str_contains($endpoint, "'update' => 'owner_control.lab_store_drafts.update.v1'")
+        && str_contains($endpoint, "'upload_media' => 'owner_control.lab_store_drafts.media_upload.v1'")
         && str_contains($endpoint, 'count($requestBody) !== 1')
         && !str_contains($endpoint, 'SQLite3') && !str_contains($endpoint, 'openDatabase'),
         'issuer allowlists action-to-scope mapping and has no database access'
     );
 } finally {
     $priorGate === false ? putenv($gate) : putenv($gate . '=' . $priorGate);
+    $priorMediaGate === false ? putenv($mediaGate) : putenv($mediaGate . '=' . $priorMediaGate);
 }
 
 echo "PASS: Lab Store M1 dedicated CSRF suite\n";

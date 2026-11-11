@@ -134,6 +134,17 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
+        'owner_control.lab_store_drafts.media_upload.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_MEDIA_UPLOAD_ENABLED') === '1',
+            'ownerOnly' => true,
+            'mutating' => true,
+            'methods' => ['POST'],
+            'csrf' => true,
+            'csrfScope' => 'owner_control.lab_store_drafts.media_upload.v1',
+            'contentTypes' => ['multipart/form-data'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'],
+            'allowRefererFallback' => false,
+        ],
         // This issuer accepts only a server-allowlisted M1 draft action. The
         // endpoint maps that action to its immutable route-specific scope.
         'owner_control.lab_store_drafts.csrf.v1' => [

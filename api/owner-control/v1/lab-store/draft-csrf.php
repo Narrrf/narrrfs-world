@@ -41,6 +41,7 @@ try {
     $scopeByAction = [
         'create' => 'owner_control.lab_store_drafts.create.v1',
         'update' => 'owner_control.lab_store_drafts.update.v1',
+        'upload_media' => 'owner_control.lab_store_drafts.media_upload.v1',
     ];
     $scope = $scopeByAction[$requestBody['action']] ?? null;
     if (!is_string($scope)) {
