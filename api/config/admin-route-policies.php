@@ -124,6 +124,16 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
+        'owner_control.lab_store_drafts.catalog_read.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_CATALOG_READ_ENABLED') === '1',
+            'ownerOnly' => true,
+            'mutating' => false,
+            'methods' => ['GET', 'HEAD'],
+            'csrf' => false,
+            'contentTypes' => [],
+            'origins' => [],
+            'allowRefererFallback' => false,
+        ],
         // This issuer accepts only a server-allowlisted M1 draft action. The
         // endpoint maps that action to its immutable route-specific scope.
         'owner_control.lab_store_drafts.csrf.v1' => [
