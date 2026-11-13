@@ -114,6 +114,28 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
+        // M2-R deliberately uses a distinct contract from the redacted R0
+        // offer presentation. It is read-only operational visibility only.
+        'owner_control.lab_store_live_offers.read.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_READ_ENABLED') === '1',
+            'ownerOnly' => true,
+            'mutating' => false,
+            'methods' => ['GET', 'HEAD'],
+            'csrf' => false,
+            'contentTypes' => [],
+            'origins' => [],
+            'allowRefererFallback' => false,
+        ],
+        'owner_control.lab_store_live_offers.ui.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_UI_ENABLED') === '1',
+            'ownerOnly' => true,
+            'mutating' => false,
+            'methods' => ['GET', 'HEAD'],
+            'csrf' => false,
+            'contentTypes' => [],
+            'origins' => [],
+            'allowRefererFallback' => false,
+        ],
         'owner_control.lab_store_drafts.read.v1' => [
             'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_READ_ENABLED') === '1',
             'ownerOnly' => true,

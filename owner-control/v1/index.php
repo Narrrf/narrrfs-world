@@ -55,6 +55,7 @@ $questHuntOverviewAvailable =
     && getenv('NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_READ_ENABLED') === '1';
 
 $labStoreOffersAvailable = getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED') === '1';
+$labStoreLiveOffersAvailable = getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_UI_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_READ_ENABLED') === '1';
 $labStoreDraftsAvailable = getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_UI_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_READ_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_WRITE_ENABLED') === '1';
 
 $capabilities = [
@@ -100,6 +101,12 @@ $capabilities = [
         'status' => $labStoreDraftsAvailable ? 'AVAILABLE' : 'REVIEW',
         'description' => 'Owner-only private drafts. Publication, prices, stock, purchases and delivery remain unavailable.',
         'href' => $labStoreDraftsAvailable ? '/owner-control/v1/lab-store-drafts.php' : null,
+    ],
+    [
+        'name' => 'Lab Store Live Offers',
+        'status' => $labStoreLiveOffersAvailable ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Owner-only, read-only current shop state. No activation, publish, edit, or purchase controls.',
+        'href' => $labStoreLiveOffersAvailable ? '/owner-control/v1/lab-store-live-offers.php' : null,
     ],
     [
         'name' => 'Quest System',
