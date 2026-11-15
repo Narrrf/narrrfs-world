@@ -62,7 +62,7 @@ try {
         if (!$db->exec('PRAGMA query_only = ON')) {
             throw new RuntimeException();
         }
-        $statement = $db->prepare("SELECT o.offer_id, o.source_type, o.lp_price, o.dspoinc_price, o.stock, CASE WHEN o.is_active=1 THEN 1 ELSE 0 END AS offer_active, s.item_name AS normal_title, s.image_url AS normal_image, CASE WHEN COALESCE(s.is_active,0)=1 THEN 1 ELSE 0 END AS normal_available, g.display_title AS genetic_title, g.preview_path AS genetic_preview, CASE WHEN g.is_active=1 AND g.is_visible=1 THEN 1 ELSE 0 END AS genetic_available FROM tbl_mouse_lp_store_offers o LEFT JOIN tbl_store_items s ON o.source_type='normal_store' AND s.item_id=o.source_item_id LEFT JOIN tbl_genetic_trait_catalog g ON o.source_type='genetic_item' AND g.catalog_id=o.source_item_id WHERE o.source_type IN ('normal_store','genetic_item') AND o.offer_id > :cursor ORDER BY o.offer_id ASC LIMIT :limit");
+        $statement = $db->prepare("SELECT o.offer_id, o.source_type, o.lp_price, o.dspoinc_price, o.stock, o.owner_control_version, CASE WHEN o.is_active=1 THEN 1 ELSE 0 END AS offer_active, s.item_name AS normal_title, s.image_url AS normal_image, CASE WHEN COALESCE(s.is_active,0)=1 THEN 1 ELSE 0 END AS normal_available, g.display_title AS genetic_title, g.preview_path AS genetic_preview, CASE WHEN g.is_active=1 AND g.is_visible=1 THEN 1 ELSE 0 END AS genetic_available FROM tbl_mouse_lp_store_offers o LEFT JOIN tbl_store_items s ON o.source_type='normal_store' AND s.item_id=o.source_item_id LEFT JOIN tbl_genetic_trait_catalog g ON o.source_type='genetic_item' AND g.catalog_id=o.source_item_id WHERE o.source_type IN ('normal_store','genetic_item') AND o.offer_id > :cursor ORDER BY o.offer_id ASC LIMIT :limit");
         if (!$statement instanceof SQLite3Stmt) {
             throw new RuntimeException();
         }
@@ -79,6 +79,7 @@ try {
             $title = trim((string) ($normal ? $row['normal_title'] : $row['genetic_title']));
             $offers[] = [
                 'offer_id' => (int) $row['offer_id'],
+                'owner_control_version' => (int) $row['owner_control_version'],
                 'title' => $title === '' ? 'Untitled item' : $title,
                 'category' => $normal ? 'Normal Store Item' : 'Genetic Item',
                 'source_type' => (string) $row['source_type'],
