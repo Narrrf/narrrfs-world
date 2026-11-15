@@ -136,8 +136,7 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
-        // M2A is the only Owner Control mutation permitted for existing offers:
-        // it may transition is_active, never commercial or fulfilment fields.
+        // M2A may transition is_active, never commercial or fulfilment fields.
         'owner_control.lab_store_live_offers.csrf.v1' => [
             'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_TOGGLE_ENABLED') === '1',
             'ownerOnly' => true,
@@ -156,6 +155,29 @@ return [
             'methods' => ['POST'],
             'csrf' => true,
             'csrfScope' => 'owner_control.lab_store_live_offers.toggle.v1',
+            'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'],
+            'allowRefererFallback' => false,
+        ],
+        // Commercial edits have a separate gate and CSRF scope from state toggles.
+        'owner_control.lab_store_live_offers.commercial_csrf.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_COMMERCIAL_ENABLED') === '1',
+            'ownerOnly' => true,
+            'mutating' => false,
+            'csrfIssuer' => true,
+            'methods' => ['POST'],
+            'csrf' => false,
+            'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'],
+            'allowRefererFallback' => false,
+        ],
+        'owner_control.lab_store_live_offers.commercial.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_COMMERCIAL_ENABLED') === '1',
+            'ownerOnly' => true,
+            'mutating' => true,
+            'methods' => ['POST'],
+            'csrf' => true,
+            'csrfScope' => 'owner_control.lab_store_live_offers.commercial.v1',
             'contentTypes' => ['application/json'],
             'origins' => ['http://localhost', 'https://narrrfs.world'],
             'allowRefererFallback' => false,

@@ -13,6 +13,7 @@ $policyGates = [
     'NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_READ_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_UI_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_TOGGLE_ENABLED',
+    'NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_COMMERCIAL_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_DRAFTS_READ_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_DRAFTS_CATALOG_READ_ENABLED',
     'NARRRFS_OWNER_LAB_STORE_DRAFTS_MEDIA_UPLOAD_ENABLED',
@@ -53,6 +54,8 @@ foreach ([
     'owner_control.lab_store_live_offers.ui.v1',
     'owner_control.lab_store_live_offers.csrf.v1',
     'owner_control.lab_store_live_offers.toggle.v1',
+    'owner_control.lab_store_live_offers.commercial_csrf.v1',
+    'owner_control.lab_store_live_offers.commercial.v1',
     'owner_control.lab_store_drafts.read.v1',
     'owner_control.lab_store_drafts.catalog_read.v1',
     'owner_control.lab_store_drafts.media_upload.v1',
@@ -79,6 +82,7 @@ putenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_UI_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_TOGGLE_ENABLED=1');
+putenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_COMMERCIAL_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_CATALOG_READ_ENABLED=1');
 putenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_MEDIA_UPLOAD_ENABLED=1');
@@ -108,6 +112,10 @@ policy_test_assert(is_array($enabledLiveLabRead) && ($enabledLiveLabRead['enable
 policy_test_assert(is_array($enabledLiveLabUi) && ($enabledLiveLabUi['enabled'] ?? null) === true && ($enabledLiveLabUi['methods'] ?? null) === ['GET', 'HEAD'] && ($enabledLiveLabUi['mutating'] ?? null) === false, 'exact environment value enables only the M2-R Live Offers UI policy');
 policy_test_assert(is_array($enabledLiveLabCsrf) && ($enabledLiveLabCsrf['enabled'] ?? null) === true && ($enabledLiveLabCsrf['csrfIssuer'] ?? null) === true && ($enabledLiveLabCsrf['methods'] ?? null) === ['POST'], 'toggle gate enables only the scoped M2A CSRF issuer');
 policy_test_assert(is_array($enabledLiveLabToggle) && ($enabledLiveLabToggle['enabled'] ?? null) === true && ($enabledLiveLabToggle['csrfScope'] ?? null) === 'owner_control.lab_store_live_offers.toggle.v1' && ($enabledLiveLabToggle['mutating'] ?? null) === true, 'toggle gate enables only the scoped M2A mutation policy');
+$commercialCsrf = $enabledPolicies['routes']['owner_control.lab_store_live_offers.commercial_csrf.v1'] ?? null;
+$commercial = $enabledPolicies['routes']['owner_control.lab_store_live_offers.commercial.v1'] ?? null;
+policy_test_assert(is_array($commercialCsrf) && ($commercialCsrf['enabled'] ?? false) && ($commercialCsrf['ownerOnly'] ?? false) && ($commercialCsrf['csrfIssuer'] ?? false) && ($commercialCsrf['methods'] ?? null) === ['POST'], 'commercial gate enables the owner-only CSRF issuer');
+policy_test_assert(is_array($commercial) && ($commercial['enabled'] ?? false) && ($commercial['ownerOnly'] ?? false) && ($commercial['csrfScope'] ?? null) === 'owner_control.lab_store_live_offers.commercial.v1' && ($commercial['methods'] ?? null) === ['POST'], 'commercial gate enables the separately scoped owner mutation');
 $enabledLabDraftRead = $enabledPolicies['routes']['owner_control.lab_store_drafts.read.v1'] ?? null;
 $enabledLabDraftCatalogRead = $enabledPolicies['routes']['owner_control.lab_store_drafts.catalog_read.v1'] ?? null;
 $enabledLabDraftMediaUpload = $enabledPolicies['routes']['owner_control.lab_store_drafts.media_upload.v1'] ?? null;
@@ -157,6 +165,7 @@ policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/o
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/live-offers\.php'), 'owner-control containment names the exact M2-R Live Offers API route');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/live-offer-csrf\.php'), 'owner-control containment names the exact M2A CSRF route');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/live-offer-active\.php'), 'owner-control containment names the exact M2A active-state route');
+foreach (['live-offer-commercial-csrf', 'live-offer-commercial'] as $route) policy_test_assert(substr_count($containment, '/api/owner-control/v1/lab-store/' . $route . '\\.php') === 1, 'owner-control containment names exact commercial route ' . $route);
 foreach (['drafts', 'draft-details', 'draft-create', 'draft-update', 'draft-csrf'] as $draftRoute) policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/' . $draftRoute . '\\.php'), 'owner-control containment names exact Lab Store draft route ' . $draftRoute);
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/draft-sources\\.php'), 'owner-control containment names the exact Lab Store draft source-picker route');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/lab-store/draft-media-upload\\.php'), 'owner-control containment names the exact Lab Store draft media upload route');
@@ -229,6 +238,7 @@ policy_test_assert(
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/offers.php'), array_map('realpath', $trackedCallers), true), 'Lab Store offers route calls the exact owner guard');
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/live-offers.php'), array_map('realpath', $trackedCallers), true), 'M2-R Live Offers route calls the exact owner guard');
 foreach (['live-offer-csrf.php', 'live-offer-active.php'] as $m2aRoute) policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/' . $m2aRoute), array_map('realpath', $trackedCallers), true), 'M2A route calls the exact owner guard: ' . $m2aRoute);
+foreach (['live-offer-commercial-csrf.php', 'live-offer-commercial.php'] as $route) policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/' . $route), array_map('realpath', $trackedCallers), true), 'M2B route calls the exact owner guard: ' . $route);
 foreach (['drafts.php', 'draft-details.php', 'draft-create.php', 'draft-update.php', 'draft-csrf.php'] as $draftRoute) policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/' . $draftRoute), array_map('realpath', $trackedCallers), true), 'Lab Store draft route calls the exact owner guard: ' . $draftRoute);
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/draft-sources.php'), array_map('realpath', $trackedCallers), true), 'Lab Store draft source-picker route calls the exact owner guard');
 policy_test_assert(in_array(realpath($root . '/api/owner-control/v1/lab-store/draft-media-upload.php'), array_map('realpath', $trackedCallers), true), 'Lab Store draft media upload route calls the exact owner guard');

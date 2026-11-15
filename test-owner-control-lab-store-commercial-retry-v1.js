@@ -1,0 +1,16 @@
+'use strict';
+const fs = require('fs');
+const vm = require('vm');
+const source = fs.readFileSync(__dirname + '/owner-control/v1/lab-store-live-offers.php', 'utf8');
+const match = source.match(/let pendingCommercial=null;\s*function commercialKey\(payload\)\{[^\n]+\}/);
+if (!match) throw Error('commercial retry lifecycle missing');
+let nextKey = 0;
+const context = { idempotencyKey: () => 'key-' + (++nextKey) };
+vm.createContext(context);
+vm.runInContext(match[0], context);
+const first = {offer_id: 1, expected_version: 2, lp_price: 10, dspoinc_price: null, stock: 5};
+const key = context.commercialKey(first);
+if (key !== context.commercialKey({...first})) throw Error('unchanged retry did not reuse key');
+if (key === context.commercialKey({...first, stock: 4})) throw Error('changed payload reused key');
+if (context.commercialKey({...first, stock: 4}) === context.commercialKey({...first, offer_id: 2})) throw Error('changed target reused key');
+console.log('PASS: commercial retry key reuse and target/payload replacement');
