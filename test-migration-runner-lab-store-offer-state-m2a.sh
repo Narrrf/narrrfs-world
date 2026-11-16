@@ -26,11 +26,11 @@ while IFS='|' read -r migration_id migration_file migration_checksum; do
   sqlite3 "$DB" "INSERT INTO tbl_schema_migrations (migration_id, checksum) VALUES ('$migration_id', '$migration_checksum');"
 done < "$WORK/manifest.txt"
 "$RUNNER" "$DB" "$WORK/manifest.txt"
-test "$(sqlite3 "$DB" 'SELECT COUNT(*) FROM tbl_schema_migrations;')" = 6
+test "$(sqlite3 "$DB" 'SELECT COUNT(*) FROM tbl_schema_migrations;')" = "$(grep -cvE '^(#|$)' "$WORK/manifest.txt")"
 test "$(sqlite3 "$DB" 'SELECT owner_control_version FROM tbl_mouse_lp_store_offers WHERE offer_id=1;')" = 1
 test "$(sqlite3 "$DB" "SELECT checksum FROM tbl_schema_migrations WHERE migration_id='owner-control-lab-store-offer-state-m2a-20261113';")" = "$SHA"
 "$RUNNER" "$DB" "$WORK/manifest.txt"
-test "$(sqlite3 "$DB" 'SELECT COUNT(*) FROM tbl_schema_migrations;')" = 6
+test "$(sqlite3 "$DB" 'SELECT COUNT(*) FROM tbl_schema_migrations;')" = "$(grep -cvE '^(#|$)' "$WORK/manifest.txt")"
 
 printf 'CREATE TABLE m2a_should_roll_back (id INTEGER);\nBROKEN SQL;\n' > "$WORK/broken.sql"
 BROKEN_SHA="$(manifest_sha "$WORK/broken.sql")"

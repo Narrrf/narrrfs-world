@@ -22,7 +22,7 @@ test "$(sqlite3 "$DB" "SELECT group_concat(migration_id,'|') FROM (SELECT migrat
 SHA="$(sha256sum "$WORK/20261115_owner_control_lab_store_offer_commercial_m2b.sql" | awk '{print $1}')"
 test "$(sqlite3 "$DB" "SELECT checksum FROM tbl_schema_migrations WHERE migration_id='owner-control-lab-store-offer-commercial-m2b-20261115';")" = "$SHA"
 "$ROOT/scripts/apply-migration-manifest.sh" "$DB" "$WORK/manifest.txt"
-test "$(sqlite3 "$DB" 'SELECT COUNT(*) FROM tbl_schema_migrations;')" = 6
+test "$(sqlite3 "$DB" 'SELECT COUNT(*) FROM tbl_schema_migrations;')" = "$(grep -cvE '^(#|$)' "$WORK/manifest.txt")"
 printf 'CREATE TABLE should_rollback(id INTEGER);\nBROKEN SQL;\n' > "$WORK/broken.sql"
 SHA="$(sha256sum "$WORK/broken.sql" | awk '{print $1}')"
 printf 'broken-test|broken.sql|%s\n' "$SHA" > "$WORK/broken-manifest.txt"

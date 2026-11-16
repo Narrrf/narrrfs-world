@@ -192,6 +192,28 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
+        'owner_control.lab_store_publish.review.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_DRAFT_PUBLISH_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => false, 'methods' => ['GET', 'HEAD'],
+            'csrf' => false, 'contentTypes' => [], 'origins' => [], 'allowRefererFallback' => false,
+        ],
+        'owner_control.lab_store_publish.history.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_DRAFT_PUBLISH_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => false, 'methods' => ['GET', 'HEAD'],
+            'csrf' => false, 'contentTypes' => [], 'origins' => [], 'allowRefererFallback' => false,
+        ],
+        'owner_control.lab_store_publish.csrf.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_DRAFT_PUBLISH_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => false, 'csrfIssuer' => true, 'methods' => ['POST'],
+            'csrf' => false, 'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
+        'owner_control.lab_store_publish.create.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_DRAFT_PUBLISH_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => true, 'methods' => ['POST'], 'csrf' => true,
+            'csrfScope' => 'owner_control.lab_store_publish.create.v1', 'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
         'owner_control.lab_store_drafts.catalog_read.v1' => [
             'enabled' => getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_CATALOG_READ_ENABLED') === '1',
             'ownerOnly' => true,
