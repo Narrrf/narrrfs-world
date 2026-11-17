@@ -86,6 +86,13 @@ $capabilities = [
         'description' => 'DSPOINC economy mutation. Legacy backend is not reusable as-is.',
     ],
     [
+        // Christmas 2026 planning card only; never expose a link before
+        // the owner-only editor route, data contract and gates are approved.
+        'name' => 'Christmas Advent 2026',
+        'status' => 'REVIEW',
+        'description' => '24-day reward manager planned: guaranteed DSPOINC and optional Store item bonuses. No configuration, claims, grants or writes available yet.',
+    ],
+    [
         'name' => 'Store Management',
         'status' => 'PROTECTED',
         'description' => 'Catalog and inventory mutations require dedicated review.',
@@ -402,6 +409,180 @@ function owner_control_escape(string $value): string
             background: #303844;
         }
 
+        /* Christmas preparation preview is presentation-only and cannot issue rewards. */
+        .christmas-preview {
+            margin-top: 2rem;
+            padding: 1.4rem;
+            border: 1px solid #6d5832;
+            border-radius: 18px;
+            background: linear-gradient(145deg, #211d18, #15191c 68%);
+        }
+
+        .christmas-preview summary {
+            cursor: pointer;
+            color: #ffdb8b;
+            font-weight: 800;
+            font-size: 1.05rem;
+        }
+
+        .christmas-preview:focus-within {
+            border-color: #c5a263;
+        }
+
+        .christmas-preview p {
+            color: #c0c5cc;
+            line-height: 1.55;
+        }
+
+        .christmas-preview-label {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: .3rem .65rem;
+            border: 1px solid #695b42;
+            border-radius: 999px;
+            color: #ffe0a3;
+            font-size: .75rem;
+        }
+
+        .christmas-day-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: .8rem;
+            margin-top: 1.2rem;
+        }
+
+        .christmas-day {
+            border: 1px solid #36403c;
+            border-radius: 13px;
+            padding: 1rem;
+            background: #17201d;
+        }
+
+        .christmas-day--finale {
+            border-color: #bd9c5f;
+            background: #282319;
+        }
+
+        .christmas-day h3 {
+            margin: 0 0 .7rem;
+            font-size: 1rem;
+            color: #ffe0a3;
+        }
+
+        .christmas-day p {
+            margin: .35rem 0;
+            font-size: .8rem;
+        }
+
+        /* Owner preview controls are browser-only; they have no persistence authority. */
+        .christmas-draft-editor {
+            margin: 1.2rem 0;
+            padding: 1rem;
+            border: 1px solid #49564b;
+            border-radius: 13px;
+            background: #1b2420;
+        }
+
+        .christmas-draft-editor h3 {
+            margin: 0 0 .5rem;
+            color: #ffe0a3;
+        }
+
+        .christmas-draft-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: .85rem;
+            margin: 1rem 0;
+        }
+
+        .christmas-draft-controls label {
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            font-size: .82rem;
+            color: #dce4df;
+        }
+
+        .christmas-draft-controls input,
+        .christmas-draft-controls select {
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 2.6rem;
+            border: 1px solid #5a675e;
+            border-radius: 8px;
+            background: #101815;
+            color: #f3f6f4;
+            padding: .55rem;
+            font: inherit;
+        }
+
+        .christmas-draft-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem;
+        }
+
+        .christmas-draft-actions button {
+            padding: .7rem 1rem;
+            border: 1px solid #a78c59;
+            border-radius: 9px;
+            background: #3a3121;
+            color: #ffe4a9;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .christmas-draft-actions button:focus-visible {
+            outline: 3px solid #ffce70;
+            outline-offset: 3px;
+        }
+
+        .christmas-portable-draft {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid #56634d;
+            border-radius: 10px;
+            background: #15211b;
+        }
+        .christmas-portable-draft h4 {
+            margin: 0 0 .8rem;
+            color: #ffe0a3;
+        }
+        .christmas-portable-draft label {
+            display: block;
+            margin: .6rem 0;
+            font-size: .82rem;
+            color: #dce4df;
+        }
+        .christmas-portable-draft input[type="file"],
+        .christmas-portable-draft select {
+            display: block;
+            margin-top: .4rem;
+            max-width: 100%;
+            min-height: 2.5rem;
+            padding: .4rem;
+            border: 1px solid #5a675e;
+            border-radius: 8px;
+            color: #f3f6f4;
+            background: #101815;
+        }
+        .christmas-portable-draft .christmas-draft-actions {
+            margin: .7rem 0;
+        }
+
+        .christmas-draft-status {
+            margin-top: .75rem;
+            font-size: .83rem;
+            color: #ffe0a3;
+        }
+
+        .christmas-preview-note {
+            border-left: 3px solid #b28f56;
+            padding-left: .8rem;
+            font-size: .85rem;
+        }
+
         footer {
             margin-top: 3rem;
             padding-top: 1.5rem;
@@ -513,8 +694,515 @@ function owner_control_escape(string $value): string
         <?php endforeach; ?>
     </section>
 
+    <!-- DEVS FOR DECADES: review-only layout; no endpoint, policy, or claim authority. -->
+    <details
+        class="christmas-preview"
+        id="christmas-advent-2026-preview"
+    >
+        <summary>🎄 Christmas Advent 2026 · 24-day preparation preview</summary>
+        <span class="christmas-preview-label">NOT CONFIGURED · NO REWARDS ENABLED</span>
+        <p>
+            This owner-only preview illustrates the future 24-day manager.
+            Every successfully claimed day is planned to award configured
+            DSPOINC plus an optional Store inventory bonus. Nothing below is
+            saved, published, or connected to a reward endpoint. For planning,
+            December 1–23 may propose 1,000–10,000 DSPOINC per claim; December 24
+            may propose 50,000–250,000. This is not a live random-payout rule.
+        </p>
+        <p class="christmas-preview-note">
+            Candidate bonus items are displayed from the current active
+            Store catalog (read-only). Catalog visibility does not establish
+            giveaway eligibility, stock reservations, event allocations or
+            any first-bonus guarantee. None are approved or enabled.
+            An inventory item is not a blockchain token airdrop.
+        </p>
+        <!-- Planning only: no form submit, storage, API, or publication action. -->
+        <section
+            class="christmas-draft-editor"
+            id="christmas-day-draft-editor-v3"
+            aria-labelledby="christmas-draft-heading"
+        >
+            <h3 id="christmas-draft-heading">Draft day simulator · not saved</h3>
+            <p>
+                Try proposed daily rewards in this browser tab. Applying a preview
+                updates only the matching card below. Closing or reloading this
+                page clears all previews. Nothing is saved or published.
+            </p>
+            <div class="christmas-draft-controls">
+                <label for="christmas-draft-day">
+                    December day
+                    <select id="christmas-draft-day">
+                        <?php foreach (range(1, 24) as $draftDay): ?>
+                            <option value="<?= (int)$draftDay ?>">
+                                December <?= (int)$draftDay ?><?= $draftDay === 24 ? ' · Finale' : '' ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label for="christmas-draft-dspoinc">
+                    Proposed minimum DSPOINC (not saved)
+                    <input id="christmas-draft-dspoinc" type="number" min="1000" max="10000" step="1" placeholder="1,000 (days 1–23)">
+                </label>
+                <label for="christmas-draft-dspoinc-max">
+                    Proposed maximum DSPOINC (not saved)
+                    <input id="christmas-draft-dspoinc-max" type="number" min="1000" max="10000" step="1" placeholder="10,000 (days 1–23)">
+                </label>
+                <label for="christmas-draft-claim-cap">
+                    Maximum daily claims (illustrative)
+                    <input id="christmas-draft-claim-cap" type="number" min="1" max="100000" step="1" placeholder="Required for preflight export">
+                </label>
+                <label for="christmas-draft-item">
+                    Candidate Store bonus
+                    <select id="christmas-draft-item">
+                        <option value="none">No Store bonus</option>
+                    </select>
+                    <span id="christmas-draft-catalog-status" class="christmas-draft-status" role="status" aria-live="polite">
+                        Loading active Store items (read-only)…
+                    </span>
+                </label>
+                <label for="christmas-draft-chance">
+                    Bonus drop chance (%)
+                    <input id="christmas-draft-chance" type="number" min="0" max="100" step="0.1" value="0">
+                </label>
+                <label for="christmas-draft-max-winners">
+                    Illustrative daily winner limit
+                    <input id="christmas-draft-max-winners" type="number" min="0" max="100000" step="1" value="0">
+                </label>
+            </div>
+            <div class="christmas-draft-actions">
+                <button id="christmas-draft-preview-button" type="button">Preview selected day (not saved)</button>
+                <button id="christmas-draft-clear-button" type="button">Clear selected day's preview</button>
+            </div>
+            <!-- Local JSON handoff only; not an authorized policy or server save. -->
+            <section class="christmas-portable-draft" aria-labelledby="christmas-portable-heading">
+                <h4 id="christmas-portable-heading">Portable 24-day draft · local file only</h4>
+                <label for="christmas-draft-per-player-cap">
+                    Proposed maximum bonus item wins per player (event-wide)
+                    <select id="christmas-draft-per-player-cap">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                    </select>
+                </label>
+                <div class="christmas-draft-actions">
+                    <button id="christmas-draft-export-button" type="button">Download all 24 days as unapproved JSON</button>
+                </div>
+                <label for="christmas-draft-import-input">
+                    Reload a previously exported local draft file
+                    <input id="christmas-draft-import-input" type="file" accept=".json,application/json">
+                </label>
+                <p id="christmas-draft-file-status" class="christmas-draft-status" role="status" aria-live="polite">
+                    No file loaded or exported. This is not server persistence or an approved policy.
+                </p>
+                <p class="christmas-preview-note">
+                    Range drafts use the Stage 9 V2 offline preflight. An actual random amount
+                    must later be drawn once on the server, stored with its claim receipt,
+                    and accounted for at the maximum bound. No randomness or payout happens here.
+                    First-win guarantee stays disabled pending eligibility and inventory proof.
+                    A valid draft is never publishable.
+                </p>
+            </section>
+            <p class="christmas-draft-status" id="christmas-draft-status" role="status" aria-live="polite">
+                No preview changes applied. All real rewards remain disabled.
+            </p>
+            <p class="christmas-preview-note">
+                Store catalog lookup is read-only. Stock reservations,
+                first-win guarantees, item-grant eligibility and actual token
+                delivery remain unimplemented. A preview is not authorization.
+            </p>
+        </section>
+        <div class="christmas-day-grid" aria-label="Unconfigured Advent days">
+            <?php foreach (range(1, 24) as $christmasDay): ?>
+                <article
+                    class="christmas-day<?= $christmasDay === 24 ? ' christmas-day--finale' : '' ?>"
+                    data-christmas-day="<?= (int)$christmasDay ?>"
+                >
+                    <h3>
+                        December <?= (int)$christmasDay ?>
+                        <?= $christmasDay === 24 ? ' · Finale' : '' ?>
+                    </h3>
+                    <p>Guaranteed DSPOINC: <strong data-christmas-preview-field="dspoinc">Not configured</strong></p>
+                    <p>Store bonus chance: <strong data-christmas-preview-field="bonus">Not configured</strong></p>
+                    <p>Item allocation: <strong data-christmas-preview-field="allocation">Not configured</strong></p>
+                    <p>Policy status: <strong data-christmas-preview-field="status">Not published</strong></p>
+                </article>
+            <?php endforeach; ?>
+        </div>
+        <p class="christmas-preview-note">
+            This is an informational layout only: no inputs, Save/Publish
+            actions, database reads, draws, inventory changes, or payouts.
+            The real owner editor requires separately reviewed routes and
+            an immutable, owner-approved financial/Store reward policy.
+        </p>
+    </details>
+
+    <script>
+    // DEVS FOR DECADES: This is a visual-only draft simulator. Never use it as
+    // reward authority; the browser contains no published policy or claim data.
+    (() => {
+        'use strict';
+        const root = document.getElementById('christmas-day-draft-editor-v3');
+        if (!root) {
+            return;
+        }
+        const dayInput = document.getElementById('christmas-draft-day');
+        const amountInput = document.getElementById('christmas-draft-dspoinc');
+        const maxAmountInput = document.getElementById('christmas-draft-dspoinc-max');
+        const itemInput = document.getElementById('christmas-draft-item');
+        const catalogStatus = document.getElementById('christmas-draft-catalog-status');
+        const chanceInput = document.getElementById('christmas-draft-chance');
+        const winnersInput = document.getElementById('christmas-draft-max-winners');
+        const claimCapInput = document.getElementById('christmas-draft-claim-cap');
+        const perPlayerCapInput = document.getElementById('christmas-draft-per-player-cap');
+        const importInput = document.getElementById('christmas-draft-import-input');
+        const fileStatus = document.getElementById('christmas-draft-file-status');
+        const status = document.getElementById('christmas-draft-status');
+        const previews = new Map(); // In-memory only; reload discards all entries.
+        const itemLabels = new Map([['none', 'No Store bonus']]);
+
+        function makeStoreOption(value, label) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label; // Never interpolate Store data into HTML.
+            return option;
+        }
+
+        // Existing public Store endpoint selects is_active=1 using SELECT only.
+        // This enumeration is NOT independent giveaway eligibility or stock proof.
+        async function loadActiveStoreCandidates() {
+            try {
+                const response = await fetch('/api/store/items.php', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: { Accept: 'application/json' }
+                });
+                if (!response.ok) {
+                    throw new Error(`Catalog HTTP ${response.status}`);
+                }
+                const payload = await response.json();
+                if (!payload || payload.success !== true || !Array.isArray(payload.items) ||
+                    payload.items.length > 10000) {
+                    throw new Error('Invalid catalog response');
+                }
+                const candidates = new Map();
+                for (const row of payload.items) {
+                    if (!row || typeof row !== 'object' || Number(row.is_active) !== 1) {
+                        continue;
+                    }
+                    const id = Number(row.item_id);
+                    if (!Number.isSafeInteger(id) || id < 1 || id > 1000000 ||
+                        typeof row.item_name !== 'string' || !row.item_name.trim()) {
+                        continue;
+                    }
+                    const key = String(id);
+                    if (!candidates.has(key)) {
+                        candidates.set(key, `#${key} · ${row.item_name.trim().slice(0, 200)}`);
+                    }
+                }
+
+                itemLabels.clear();
+                itemLabels.set('none', 'No Store bonus');
+                itemInput.replaceChildren(makeStoreOption('none', 'No Store bonus'));
+                for (const [key, label] of candidates) {
+                    itemLabels.set(key, label);
+                    itemInput.appendChild(makeStoreOption(key, label));
+                }
+                // Keep compatibility with previously exported #60-or-#61 drafts.
+                // Never offer this legacy pair unless both are currently active.
+                if (candidates.has('60') && candidates.has('61')) {
+                    const pairLabel = '#60 or #61 · legacy selection (not reserved)';
+                    itemLabels.set('both', pairLabel);
+                    itemInput.appendChild(makeStoreOption('both', pairLabel));
+                }
+                catalogStatus.textContent = candidates.size
+                    ? `${candidates.size} active Store item(s) loaded. Candidates only; stock not reserved.`
+                    : 'No active Store items returned. Only No Store bonus is selectable.';
+                showDay(selectedDay());
+            } catch (error) {
+                itemLabels.clear();
+                itemLabels.set('none', 'No Store bonus');
+                itemInput.replaceChildren(makeStoreOption('none', 'No Store bonus'));
+                catalogStatus.textContent = 'Store catalog unavailable or invalid. Bonus choices disabled; no rewards affected.';
+                showDay(selectedDay());
+            }
+        }
+
+        function selectedDay() {
+            return Number(dayInput.value);
+        }
+
+        function dayCard(day) {
+            return document.querySelector(`[data-christmas-day="${day}"]`);
+        }
+
+        function setCardField(card, field, value) {
+            const target = card.querySelector(`[data-christmas-preview-field="${field}"]`);
+            if (target) {
+                target.textContent = value;
+            }
+        }
+
+        // Planning limits only. Never use browser values as payout authority.
+        function rangeForDay(day) {
+            return day === 24 ? { low: 50000, high: 250000 } : { low: 1000, high: 10000 };
+        }
+
+        function formatDraftRange(entry) {
+            const minimum = entry.minAmount.toLocaleString('en-US');
+            const maximum = entry.maxAmount.toLocaleString('en-US');
+            return `${minimum}${entry.minAmount === entry.maxAmount ? '' : '–' + maximum} DSPOINC · unsaved`;
+        }
+
+        function showDay(day) {
+            const bounds = rangeForDay(day);
+            amountInput.min = String(bounds.low);
+            amountInput.max = String(bounds.high);
+            maxAmountInput.min = String(bounds.low);
+            maxAmountInput.max = String(bounds.high);
+            amountInput.placeholder = `Minimum ${bounds.low.toLocaleString('en-US')}`;
+            maxAmountInput.placeholder = `Maximum ${bounds.high.toLocaleString('en-US')}`;
+            const draft = previews.get(day);
+            amountInput.value = draft ? String(draft.minAmount) : '';
+            maxAmountInput.value = draft ? String(draft.maxAmount) : '';
+            itemInput.value = draft && itemLabels.has(draft.item) ? draft.item : 'none';
+            chanceInput.value = draft ? String(draft.chance) : '0';
+            winnersInput.value = draft ? String(draft.maxWinners) : '0';
+            claimCapInput.value = draft ? String(draft.maxDailyClaims) : '';
+            status.textContent = draft && !itemLabels.has(draft.item)
+                ? `December ${day}: previously previewed item is no longer an active catalog option; select a new item.`
+                : draft
+                    ? `December ${day}: unsaved preview loaded from this tab.`
+                    : `December ${day}: no preview entered. No rewards configured.`;
+        }
+
+        function previewDay() {
+            const day = selectedDay();
+            const minAmount = Number(amountInput.value);
+            const maxAmount = Number(maxAmountInput.value);
+            const bounds = rangeForDay(day);
+            const item = itemInput.value;
+            const chance = Number(chanceInput.value);
+            const maxWinners = Number(winnersInput.value);
+            const maxDailyClaims = Number(claimCapInput.value);
+            const card = dayCard(day);
+
+            if (!Number.isInteger(day) || day < 1 || day > 24 || !card ||
+                !amountInput.value || !maxAmountInput.value ||
+                !Number.isSafeInteger(minAmount) || !Number.isSafeInteger(maxAmount) ||
+                minAmount < bounds.low || maxAmount > bounds.high || minAmount > maxAmount ||
+                !itemLabels.has(item) ||
+                !chanceInput.value || !Number.isFinite(chance) ||
+                chance < 0 || chance > 100 ||
+                Math.round(chance * 10) !== chance * 10 ||
+                !winnersInput.value || !Number.isSafeInteger(maxWinners) ||
+                maxWinners < 0 || maxWinners > 100000 ||
+                !claimCapInput.value || !Number.isSafeInteger(maxDailyClaims) ||
+                maxDailyClaims < 1 || maxDailyClaims > 100000 ||
+                maxWinners > maxDailyClaims ||
+                (item === 'none' && (chance !== 0 || maxWinners !== 0)) ||
+                (item !== 'none' && (chance <= 0 || maxWinners <= 0))) {
+                status.textContent = `Preview rejected: DSPOINC must be within ${bounds.low.toLocaleString('en-US')}–${bounds.high.toLocaleString('en-US')} (minimum ≤ maximum). Check claim cap, active bonus item, chance and winner cap.`;
+                return;
+            }
+
+            previews.set(day, { minAmount, maxAmount, item, chance, maxWinners, maxDailyClaims });
+            setCardField(card, 'dspoinc', formatDraftRange({ minAmount, maxAmount }));
+            setCardField(card, 'bonus', `${chance}% · ${itemLabels.get(item)}`);
+            setCardField(card, 'allocation', `${maxWinners} candidate winner(s) / ${maxDailyClaims} claim(s) · NOT RESERVED`);
+            setCardField(card, 'status', 'PREVIEW ONLY · NOT SAVED');
+            status.textContent = `December ${day}: browser-only preview updated. No policy published, no grants or payouts.`;
+        }
+
+        function clearDay() {
+            const day = selectedDay();
+            const card = dayCard(day);
+            if (!card) {
+                return;
+            }
+            previews.delete(day);
+            setCardField(card, 'dspoinc', 'Not configured');
+            setCardField(card, 'bonus', 'Not configured');
+            setCardField(card, 'allocation', 'Not configured');
+            setCardField(card, 'status', 'Not published');
+            showDay(day);
+        }
+
+        // V2 adds a range contract. The older V1 preflight handles fixed amounts
+        // only and must never be treated as a validator of this new range schema.
+        function buildPortableDraft() {
+            const maxBonusWins = Number(perPlayerCapInput.value);
+            if (!Number.isInteger(maxBonusWins) || maxBonusWins < 1 || maxBonusWins > 3) {
+                throw new Error('Invalid event-wide bonus win cap.');
+            }
+            const days = [];
+            for (let day = 1; day <= 24; day += 1) {
+                const entry = previews.get(day);
+                if (!entry) {
+                    throw new Error(`December ${day} has no preview. Complete all 24 days.`);
+                }
+                if (!itemLabels.has(entry.item)) {
+                    throw new Error(`December ${day}: Store item is not in the active catalog.`);
+                }
+                const itemIds = entry.item === 'both' ? [60, 61]
+                    : entry.item === 'none' ? [] : [Number(entry.item)];
+                days.push({
+                    day_number: day,
+                    dspoinc_min: entry.minAmount,
+                    dspoinc_max: entry.maxAmount,
+                    max_daily_claims: entry.maxDailyClaims,
+                    bonus: {
+                        enabled: itemIds.length > 0,
+                        item_ids: itemIds,
+                        chance_basis_points: Math.round(entry.chance * 100),
+                        max_winners: entry.maxWinners,
+                        quantity_per_win: 1
+                    }
+                });
+            }
+            return {
+                schema_version: 'christmas_advent_2026_draft_v2',
+                event_key: 'christmas_advent_2026',
+                max_bonus_wins_per_player: maxBonusWins,
+                first_bonus_guarantee: { enabled: false },
+                days
+            };
+        }
+
+        // Never send a preview to a server: the download is local-only.
+        function exportDraft() {
+            try {
+                const json = JSON.stringify(buildPortableDraft(), null, 2) + '\n';
+                const file = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(file);
+                const download = document.createElement('a');
+                download.href = url;
+                download.download = 'christmas-advent-2026-UNAPPROVED-draft.json';
+                document.body.appendChild(download);
+                download.click();
+                download.remove();
+                URL.revokeObjectURL(url);
+                fileStatus.textContent = 'Local JSON download requested. Still unapproved and never sent to the server.';
+            } catch (error) {
+                fileStatus.textContent = `Export blocked: ${error.message}`;
+            }
+        }
+
+        // Parse into a temporary Map first: a malformed or incompatible import
+        // must leave every already-previewed day unchanged.
+        function decodePortableDay(input, expectedDay, schemaVersion) {
+            const legacy = schemaVersion === 'christmas_advent_2026_draft_v1';
+            const minimum = legacy ? input?.guaranteed_dspoinc : input?.dspoinc_min;
+            const maximum = legacy ? input?.guaranteed_dspoinc : input?.dspoinc_max;
+            const bounds = rangeForDay(expectedDay);
+            if (!input || typeof input !== 'object' || Array.isArray(input) ||
+                input.day_number !== expectedDay ||
+                !Number.isSafeInteger(minimum) || !Number.isSafeInteger(maximum) ||
+                minimum < bounds.low || maximum > bounds.high || minimum > maximum ||
+                !Number.isSafeInteger(input.max_daily_claims) ||
+                input.max_daily_claims < 1 || input.max_daily_claims > 100000 ||
+                !input.bonus || typeof input.bonus !== 'object' || Array.isArray(input.bonus)) {
+                throw new Error(`Invalid day ${expectedDay} structure.`);
+            }
+            const bonus = input.bonus;
+            const ids = bonus.item_ids;
+            const item = Array.isArray(ids) && ids.length === 0 ? 'none'
+                : Array.isArray(ids) && ids.length === 1 &&
+                    Number.isSafeInteger(ids[0]) && ids[0] >= 1 && ids[0] <= 1000000 &&
+                    itemLabels.has(String(ids[0])) ? String(ids[0])
+                : Array.isArray(ids) && ids.length === 2 &&
+                    ids[0] === 60 && ids[1] === 61 && itemLabels.has('both') ? 'both'
+                : null;
+            if (item === null || typeof bonus.enabled !== 'boolean' ||
+                !Number.isInteger(bonus.chance_basis_points) ||
+                bonus.chance_basis_points < 0 || bonus.chance_basis_points > 10000 ||
+                bonus.chance_basis_points % 10 !== 0 ||
+                !Number.isInteger(bonus.max_winners) ||
+                bonus.max_winners < 0 || bonus.max_winners > input.max_daily_claims ||
+                bonus.quantity_per_win !== 1 ||
+                bonus.enabled !== (item !== 'none') ||
+                (item === 'none' && (bonus.chance_basis_points !== 0 || bonus.max_winners !== 0)) ||
+                (item !== 'none' && (bonus.chance_basis_points <= 0 || bonus.max_winners <= 0))) {
+                throw new Error(`Invalid day ${expectedDay} bonus.`);
+            }
+            return {
+                minAmount: minimum,
+                maxAmount: maximum,
+                maxDailyClaims: input.max_daily_claims,
+                item,
+                chance: bonus.chance_basis_points / 100,
+                maxWinners: bonus.max_winners
+            };
+        }
+
+        function showImportedCard(day, entry) {
+            const card = dayCard(day);
+            if (!card) {
+                throw new Error(`Missing December ${day} preview card.`);
+            }
+            setCardField(card, 'dspoinc', formatDraftRange(entry));
+            setCardField(card, 'bonus', `${entry.chance}% · ${itemLabels.get(entry.item)}`);
+            setCardField(card, 'allocation', `${entry.maxWinners} candidate winner(s) / ${entry.maxDailyClaims} claim(s) · NOT RESERVED`);
+            setCardField(card, 'status', 'PREVIEW ONLY · NOT SAVED');
+        }
+
+        async function importDraft() {
+            const inputFile = importInput.files && importInput.files[0];
+            if (!inputFile) {
+                return;
+            }
+            if (inputFile.size > 131072) {
+                fileStatus.textContent = 'Import blocked: file is larger than the 128 KiB planning limit.';
+                importInput.value = '';
+                return;
+            }
+            try {
+                const proposed = JSON.parse(await inputFile.text());
+                if (!proposed || typeof proposed !== 'object' || Array.isArray(proposed) ||
+                    !['christmas_advent_2026_draft_v1', 'christmas_advent_2026_draft_v2'].includes(proposed.schema_version) ||
+                    proposed.event_key !== 'christmas_advent_2026' ||
+                    !Number.isInteger(proposed.max_bonus_wins_per_player) ||
+                    proposed.max_bonus_wins_per_player < 1 ||
+                    proposed.max_bonus_wins_per_player > 3 ||
+                    !proposed.first_bonus_guarantee ||
+                    proposed.first_bonus_guarantee.enabled !== false ||
+                    !Array.isArray(proposed.days) || proposed.days.length !== 24) {
+                    throw new Error('Invalid 24-day schema or unsupported first-win guarantee.');
+                }
+                const loaded = new Map();
+                for (let day = 1; day <= 24; day += 1) {
+                    loaded.set(day, decodePortableDay(proposed.days[day - 1], day, proposed.schema_version));
+                    if (!dayCard(day)) {
+                        throw new Error(`December ${day} card missing.`);
+                    }
+                }
+                previews.clear();
+                for (const [day, entry] of loaded) {
+                    previews.set(day, entry);
+                    showImportedCard(day, entry);
+                }
+                perPlayerCapInput.value = String(proposed.max_bonus_wins_per_player);
+                showDay(selectedDay());
+                fileStatus.textContent = '24-day draft loaded into this browser tab only. Not saved or published.';
+            } catch (error) {
+                fileStatus.textContent = `Import blocked: ${error.message}`;
+            } finally {
+                importInput.value = '';
+            }
+        }
+
+        document.getElementById('christmas-draft-export-button').addEventListener('click', exportDraft);
+        importInput.addEventListener('change', importDraft);
+        dayInput.addEventListener('change', () => showDay(selectedDay()));
+        document.getElementById('christmas-draft-preview-button').addEventListener('click', previewDay);
+        document.getElementById('christmas-draft-clear-button').addEventListener('click', clearDay);
+        showDay(selectedDay());
+        loadActiveStoreCandidates(); // Exactly one read-only catalog GET on page load.
+    })();
+    </script>
+
     <footer>
-        Owner Control V2 shell · no database access ·
+        Owner Control V2 shell · read-only Store catalog · no database writes ·
         no legacy Admin API calls · no economy mutation
     </footer>
 </main>

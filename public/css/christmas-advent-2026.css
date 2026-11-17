@@ -1,0 +1,354 @@
+/* 🎄 Christmas Advent 2026 V0 — standalone PROFILE PRESENTATION ONLY.
+   DEVS FOR DECADES: all classes are scoped to .christmas26 to avoid changing
+   Reward Chamber, Profile tabs, economy presentation or unrelated games.
+   Unlocks/rewards must never be authorized by this CSS or browser-only dates. */
+.christmas26 {
+  position: relative;
+  isolation: isolate;
+  width: min(1160px, calc(100% - 28px));
+  margin: 1.25rem auto 1.4rem;
+  color: #fffaf0;
+  font-family: inherit;
+}
+.christmas26 * { box-sizing: border-box; }
+.christmas26-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(220px, .65fr);
+  gap: 1rem;
+  overflow: hidden;
+  padding: clamp(1.25rem, 3.5vw, 2.3rem);
+  border: 1px solid rgba(249, 214, 138, .5);
+  border-radius: 26px 26px 0 0;
+  background: radial-gradient(circle at 93% 18%, rgba(255, 205, 90, .18), transparent 29%),
+              radial-gradient(circle at 4% 96%, rgba(40, 171, 130, .17), transparent 37%),
+              linear-gradient(120deg, #092c29 0%, #0e5148 47%, #6f1928 100%);
+  box-shadow: 0 15px 38px rgba(0, 0, 0, .28), inset 0 0 0 1px rgba(255,255,255,.055);
+}
+.christmas26-hero-copy { position: relative; z-index: 2; }
+.christmas26-snow {
+  position: absolute;
+  inset: 0;
+  opacity: .4;
+  pointer-events: none;
+  background-image: radial-gradient(#fff 1.2px, transparent 1.8px), radial-gradient(#fce7b1 1px, transparent 1.5px);
+  background-size: 42px 42px, 65px 65px;
+  background-position: 3px 10px, 25px 4px;
+}
+.christmas26-kicker {
+  color: #fce8b4;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  line-height: 1.5;
+}
+.christmas26-title {
+  margin: .65rem 0 .85rem;
+  font-size: clamp(1.85rem, 3.7vw, 3.35rem);
+  font-weight: 950;
+  line-height: 1.06;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+  text-shadow: 0 4px 20px rgba(0,0,0,.23);
+}
+.christmas26-title span { display: block; color: #f8dc91; }
+.christmas26-description {
+  max-width: 48ch;
+  margin: 0;
+  line-height: 1.65;
+  font-size: .98rem;
+  color: rgba(255, 250, 240, .9);
+}
+.christmas26-meta { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1.1rem; }
+.christmas26-meta span {
+  padding: .48rem .73rem;
+  border-radius: 999px;
+  background: rgba(0,0,0,.2);
+  border: 1px solid rgba(255, 237, 195, .24);
+  font-size: .73rem;
+  font-weight: 800;
+  white-space: normal;
+}
+.christmas26-countdown-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1rem;
+  align-items: center;
+  width: fit-content;
+  margin-top: 1.4rem;
+  padding: .7rem .95rem;
+  border-radius: 12px;
+  background: rgba(255, 237, 194, .1);
+  border: 1px solid rgba(255, 222, 154, .31);
+}
+.christmas26-countdown-label { font-size: .75rem; color: #ffedd5; font-weight: 800; }
+.christmas26-countdown-card strong { color: #fff4c7; font-size: .86rem; font-weight: 900; }
+.christmas26-hero-art { position: relative; z-index: 1; display: grid; place-items: center; align-content: center; min-height: 220px; }
+.christmas26-wreath {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(13.3rem, 100%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 29%, #285e52 0%, #123c35 56%, #092d29 100%);
+  border: 13px solid #2a8063;
+  box-shadow: 0 0 0 5px rgba(251, 220, 144, .22), inset 0 0 20px rgba(0,0,0,.45), 0 12px 35px rgba(0,0,0,.3);
+  transform: rotate(-5deg);
+}
+.christmas26-wreath::before {
+  content: '✦  ✦  ✦  ✦  ✦';
+  position: absolute;
+  inset: -18px 0 auto;
+  color: #f6d78d;
+  font-size: .9rem;
+  letter-spacing: .65rem;
+  text-align: center;
+}
+.christmas26-mouse { font-size: clamp(4.3rem, 9vw, 6.6rem); filter: drop-shadow(0 8px 8px rgba(0,0,0,.34)); }
+.christmas26-hat { position: absolute; top: -.8rem; right: .15rem; font-size: 2.25rem; transform: rotate(18deg); }
+.christmas26-cheese { position: absolute; bottom: -.7rem; left: -.7rem; font-size: 3.2rem; transform: rotate(-12deg); }
+.christmas26-art-star { position: absolute; z-index: 1; color: #ffe6a3; text-shadow: 0 0 18px #fbd38a; }
+.christmas26-art-star--a { top: 4%; left: 14%; font-size: 1.8rem; }
+.christmas26-art-star--b { top: 15%; right: 8%; font-size: 1.25rem; }
+.christmas26-art-star--c { bottom: 24%; right: 4%; font-size: 2rem; }
+.christmas26-art-caption { margin-top: 1.2rem; color: #ffedc0; font-size: .76rem; font-weight: 850; text-align: center; }
+.christmas26-calendar {
+  padding: clamp(1rem, 2.8vw, 1.8rem);
+  border: 1px solid rgba(251, 221, 156, .23);
+  border-top: 0;
+  border-radius: 0 0 24px 24px;
+  background: radial-gradient(circle at 90% 0, rgba(174, 30, 45, .16), transparent 45%),
+              linear-gradient(180deg, #101d25, #111a28);
+  box-shadow: 0 15px 38px rgba(0,0,0,.22);
+}
+.christmas26-calendar-head { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 1.2rem; }
+.christmas26-calendar-eyebrow { margin: 0 0 .25rem; font-size: .67rem; letter-spacing: .18em; font-weight: 900; color: #e3c17a; }
+.christmas26-calendar-head h3 { margin: 0; font-size: clamp(1.2rem, 2vw, 1.75rem); font-weight: 900; color: #fff6db; }
+.christmas26-calendar-intro { margin: .3rem 0 0; max-width: 58ch; color: #bccbd3; font-size: .79rem; line-height: 1.55; }
+.christmas26-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 105px;
+  padding: .65rem .85rem;
+  border-radius: 14px;
+  color: #fae3a7;
+  border: 1px solid rgba(234, 204, 140, .3);
+  background: rgba(255, 216, 133, .07);
+}
+.christmas26-progress span { font-size: 1.14rem; font-weight: 900; }
+.christmas26-progress small { font-size: .63rem; color: #e2ceaa; font-weight: 750; }
+.christmas26-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .65rem; }
+.christmas26-day { min-width: 0; }
+.christmas26-door {
+  width: 100%;
+  min-height: 115px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .32rem;
+  position: relative;
+  border: 1px solid rgba(255, 226, 157, .32);
+  border-radius: 14px;
+  padding: .65rem .25rem;
+  background: linear-gradient(155deg, #1c6b5b, #125149 55%, #0c3335);
+  color: #fff5dc;
+  box-shadow: inset 0 0 0 3px rgba(4,28,25,.23), 0 6px 13px rgba(0,0,0,.17);
+  opacity: .76;
+  cursor: not-allowed;
+  font: inherit;
+}
+.christmas26-day:nth-child(even) .christmas26-door { background: linear-gradient(145deg, #9a293a, #6f1f35 55%, #471c2e); }
+.christmas26-day:nth-child(3n) .christmas26-door { background: linear-gradient(145deg, #234a6d, #153453 55%, #132438); }
+.christmas26-door::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px dashed rgba(255, 236, 194, .3);
+  border-radius: 9px;
+  pointer-events: none;
+}
+.christmas26-door:disabled { opacity: .76; }
+.christmas26-door-symbol { font-size: 1.3rem; filter: grayscale(.25); line-height: 1.25; }
+.christmas26-door-day { font-size: 1.9rem; line-height: 1; font-weight: 950; letter-spacing: -.02em; }
+.christmas26-door-state { font-size: .55rem; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; color: #ffedc5; }
+.christmas26-day--finale .christmas26-door {
+  border: 2px solid #ffdf8f;
+  background: linear-gradient(135deg, #a77624, #6e3c21 70%, #493125);
+  box-shadow: 0 0 22px rgba(250, 202, 91, .17), inset 0 0 0 3px rgba(77,36,17,.3);
+}
+.christmas26-day--finale .christmas26-door-state { color: #fff5bd; }
+.christmas26-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .6rem 1rem;
+  margin-top: 1rem;
+  padding: .8rem .9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(252, 213, 143, .15);
+  background: rgba(0,0,0,.22);
+  color: #d2d8d7;
+  font-size: .75rem;
+  line-height: 1.55;
+}
+.christmas26-footer strong { color: #ffe8ad; }
+.christmas26-loading { color: #d2d8d7; }
+@media (max-width: 950px) {
+  .christmas26-hero { grid-template-columns: minmax(0, 1fr) minmax(170px, .55fr); }
+  .christmas26-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .christmas26 { width: min(100% - 20px, 1160px); }
+  .christmas26-hero { grid-template-columns: 1fr; padding: 1.25rem; }
+  .christmas26-hero-art { min-height: 150px; }
+  .christmas26-wreath { width: 140px; border-width: 9px; }
+  .christmas26-mouse { font-size: 4.2rem; }
+  .christmas26-hat { font-size: 1.7rem; }
+  .christmas26-cheese { font-size: 2.2rem; }
+  .christmas26-calendar-head { align-items: start; }
+  .christmas26-progress { min-width: 80px; padding: .5rem; }
+  .christmas26-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .48rem; }
+  .christmas26-door { min-height: 100px; }
+  .christmas26-door-day { font-size: 1.6rem; }
+  .christmas26-meta span { font-size: .67rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .christmas26 * { animation: none !important; transition: none !important; }
+}
+
+
+/* 🎄 NARRRFS_CHRISTMAS26_VISUAL_V1
+   DEVS FOR DECADES: presentation only. The image is cropped from the owner-selected
+   concept art to avoid rendering fake doors or a permanently stale countdown.
+   Keep the 24 real disabled HTML door buttons as the sole future interaction layer.
+   No selectors or styles outside .christmas26 are changed here. */
+.christmas26 .christmas26-hero {
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr);
+  border-color: rgba(253, 212, 112, .6);
+  background:
+    radial-gradient(circle at 95% 7%, rgba(122, 58, 216, .30), transparent 45%),
+    radial-gradient(circle at 9% 100%, rgba(16, 180, 156, .22), transparent 50%),
+    linear-gradient(115deg, #091d32 0%, #192449 46%, #432051 75%, #2c1839 100%);
+}
+.christmas26 .christmas26-hero::before {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 9px;
+  background: linear-gradient(180deg, #fff, #d8edff 68%, rgba(170,216,255,.12));
+  border-radius: 24px 24px 50% 44%;
+  box-shadow: 0 3px 14px rgba(220, 239, 255, .20);
+  pointer-events: none;
+}
+.christmas26 .christmas26-hero-copy { align-self: center; }
+.christmas26 .christmas26-title span {
+  color: #ffdf83;
+  text-shadow: 0 0 24px rgba(250, 176, 53, .33), 0 3px 12px rgba(0,0,0,.48);
+}
+.christmas26 .christmas26-kicker { color: #e9ccff; }
+.christmas26 .christmas26-meta span {
+  border-color: rgba(225, 183, 253, .30);
+  background: rgba(41, 17, 74, .52);
+  box-shadow: 0 0 10px rgba(169, 85, 247, .10);
+}
+.christmas26 .christmas26-countdown-card {
+  background: rgba(30, 15, 57, .7);
+  border-color: rgba(252, 206, 112, .48);
+  box-shadow: 0 0 22px rgba(167, 72, 248, .14);
+}
+.christmas26 .christmas26-hero-art {
+  min-width: 0;
+  min-height: 245px;
+  align-content: center;
+  gap: .35rem;
+}
+.christmas26 .christmas26-mouse-art {
+  display: block;
+  width: min(100%, 27rem);
+  height: auto;
+  aspect-ratio: 633 / 340;
+  object-fit: cover;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(255, 225, 168, .52);
+  box-shadow: 0 0 0 4px rgba(55, 18, 93, .44), 0 14px 35px rgba(2,6,23,.4), 0 0 25px rgba(187,92,255,.23);
+}
+.christmas26 .christmas26-art-caption { margin-top: .6rem; color: #f7e7ff; }
+.christmas26 .christmas26-snow {
+  z-index: 1;
+  opacity: .45;
+  animation: christmas26SnowFall 26s linear infinite;
+}
+@keyframes christmas26SnowFall {
+  from { background-position: 3px 10px, 25px 4px; }
+  to { background-position: 3px 262px, 25px 394px; }
+}
+.christmas26 .christmas26-calendar {
+  position: relative;
+  background:
+    radial-gradient(circle at 0 0, rgba(73,35,117,.28), transparent 44%),
+    radial-gradient(circle at 100% 30%, rgba(31,93,124,.18), transparent 48%),
+    linear-gradient(180deg, #14142b, #0d1b30);
+  border-color: rgba(216, 177, 252, .28);
+}
+.christmas26 .christmas26-calendar::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(223,241,255,.92), rgba(254,255,255,.56), rgba(223,241,255,.92));
+  box-shadow: 0 2px 12px rgba(204, 231, 255, .13);
+}
+.christmas26 .christmas26-door {
+  overflow: hidden;
+  border-color: rgba(248,216,158,.45);
+  background: linear-gradient(150deg, #493a83, #2b245c 60%, #191d43);
+  box-shadow: inset 0 0 0 3px rgba(10,14,45,.37), 0 7px 18px rgba(0,0,0,.26), 0 0 13px rgba(184,113,255,.10);
+}
+.christmas26 .christmas26-day:nth-child(even) .christmas26-door {
+  background: linear-gradient(145deg, #802c59, #542547 60%, #30213e);
+}
+.christmas26 .christmas26-day:nth-child(3n) .christmas26-door {
+  background: linear-gradient(145deg, #2a5579, #193958 60%, #192948);
+}
+.christmas26 .christmas26-door::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 auto;
+  height: 12px;
+  border-radius: 12px 12px 40% 35%;
+  background: linear-gradient(180deg, #fff, #dbedfc 65%, rgba(181,214,245,.5));
+  box-shadow: 0 3px 7px rgba(220, 237, 255, .24);
+  pointer-events: none;
+}
+.christmas26 .christmas26-door-day { color: #ffe5a5; text-shadow: 0 1px 10px rgba(252, 188, 66,.25); }
+.christmas26 .christmas26-day--finale .christmas26-door {
+  border-color: #ffe185;
+  background: linear-gradient(145deg, #88601a, #60411d 62%, #493222);
+  box-shadow: 0 0 22px rgba(252, 195, 61,.24), inset 0 0 0 3px rgba(89,50,12,.33);
+}
+.christmas26 .christmas26-progress {
+  background: rgba(54,23,86,.55);
+  border-color: rgba(252, 207, 110,.38);
+}
+@media (max-width: 950px) {
+  .christmas26 .christmas26-hero { grid-template-columns: minmax(0, 1fr) minmax(190px, .8fr); }
+  .christmas26 .christmas26-hero-art { min-height: 190px; }
+}
+@media (max-width: 620px) {
+  .christmas26 .christmas26-hero { grid-template-columns: 1fr; }
+  .christmas26 .christmas26-hero-art { min-height: 0; }
+  .christmas26 .christmas26-mouse-art { width: min(100%, 28rem); }
+  .christmas26 .christmas26-door::before { height: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .christmas26 .christmas26-snow { animation: none; }
+}
