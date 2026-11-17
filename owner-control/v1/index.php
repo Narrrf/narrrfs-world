@@ -92,9 +92,9 @@ $capabilities = [
     ],
     [
         'name' => 'Lab Store',
-        'status' => $labStoreOffersAvailable ? 'AVAILABLE' : 'REVIEW',
-        'description' => 'Owner-only, read-only offer presentation. No prices, stock, purchases, inventory, or mutation controls.',
-        'href' => $labStoreOffersAvailable ? '/owner-control/v1/lab-store-offers.php' : null,
+        'status' => ($labStoreOffersAvailable || $labStoreDraftsAvailable || $labStoreLiveOffersAvailable) ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Owner-only Lab Store workspace: private drafts, live offers and gated history.',
+        'href' => $labStoreDraftsAvailable ? '/owner-control/v1/lab-store-drafts.php' : ($labStoreLiveOffersAvailable ? '/owner-control/v1/lab-store-live-offers.php' : ($labStoreOffersAvailable ? '/owner-control/v1/lab-store-offers.php' : null)),
     ],
     [
         'name' => 'Lab Store Drafts',
