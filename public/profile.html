@@ -3478,7 +3478,7 @@ body {
   }
 }
 </style>
-<link rel="stylesheet" href="css/halloween-pumpkin-2026.css?v=20261028" />
+<link rel="stylesheet" href="css/christmas-advent-2026.css?v=20261117-v10-preview" />
 </head>
 
 
@@ -3823,35 +3823,80 @@ body {
 
 
 
-<!-- 🎃 HALLOWEEN 2026 — SPECIAL ONE-TIME PROFILE GIFT
-     DEVS FOR DECADES: Visual event only; reward authority remains entirely
-     in the dedicated session-bound server route. This is NOT a Reward Chamber box. -->
-<section id="halloween-pumpkin-2026" class="halloween26" aria-label="Halloween 2026 Cheesy Pumpkin Gift" hidden>
-  <div class="halloween26-card">
-    <div class="halloween26-layout">
-      <button type="button" id="halloween26-art" class="halloween26-art-button" aria-label="Wake the Halloween pumpkin to claim a one-time DSPOINC gift" disabled>
-        <img src="img/halloween/halloween-pumpkin-profile-art.png" alt="Friendly witch-hat mouse popping out of a glowing cheesy jack-o-lantern" width="774" height="636" loading="lazy" />
-      </button>
-      <div>
-        <div class="halloween26-kicker">🎃 Halloween 2026 · MouseGang Special</div>
-        <h2 class="halloween26-title">The Great Cheesy Pumpkin!</h2>
-        <p class="halloween26-copy">Our cheeky Halloween mouse has hidden a magical one-time DSPOINC surprise! Click the pumpkin, watch it wiggle and glow green, and discover your cheesy gift.</p>
-        <div class="halloween26-range">🧀 10,000–500,000 DSPOINC · One per Discord account</div>
-        <button type="button" class="halloween26-cta" id="halloween26-claim" disabled>🎃 Checking Halloween gift…</button>
-        <a id="halloween26-login" class="halloween26-login" href="/api/discord-login.php?redirect=%2Fprofile.html" hidden>🔐 Sign in with Discord to claim</a>
-        <p class="halloween26-status" id="halloween26-status" role="status" aria-live="polite">Checking event eligibility…</p>
+<!-- 🎄 CHRISTMAS 2026 — ADVENT CALENDAR FRONTEND V0
+     DEVS FOR DECADES: this module is a NON-CLAIMING VISUAL PREVIEW.
+     Do not treat a browser date, door state or animation as payout authority.
+     No Christmas reward endpoint is called; all 24 doors remain disabled until
+     a separate security-reviewed backend and owner-approved economy release. -->
+<section id="christmas-advent-2026" class="christmas26" aria-labelledby="christmas26-title">
+  <div class="christmas26-hero">
+    <div class="christmas26-snow" aria-hidden="true"></div>
+    <div class="christmas26-hero-copy">
+      <div class="christmas26-kicker">❄️ NARRRFS WORLD · MOUSEGANG HOLIDAY SPECIAL</div>
+      <h2 class="christmas26-title" id="christmas26-title">The Great Cheesy <span>Advent Calendar</span></h2>
+      <p class="christmas26-description">Twenty-four festive doors. Twenty-four December surprises. The MouseGang is getting ready for a very cheesy Christmas!</p>
+      <div class="christmas26-meta" aria-label="Calendar details">
+        <span>🎁 December 1–24, 2026</span>
+        <span>🧀 One door per day planned</span>
+        <span>✨ Christmas Eve finale</span>
       </div>
+      <div class="christmas26-countdown-card" role="status" aria-live="off">
+        <span class="christmas26-countdown-label">⏳ Countdown to December 1</span>
+        <strong id="christmas26-countdown">Preparing the calendar…</strong>
+      </div>
+    </div>
+    <div class="christmas26-hero-art" aria-hidden="true">
+      <!-- NARRRFS_CHRISTMAS26_VISUAL_V1: original seasonal concept art crop.
+           Purely decorative: never represent baked-in concept doors as real controls. -->
+      <img class="christmas26-mouse-art"
+           src="img/christmas/christmas-advent-2026-hero-mice.webp"
+           alt="" width="633" height="340" loading="lazy" decoding="async" />
+      <span class="christmas26-art-caption">A little magic. A lot of cheese.</span>
+    </div>
+  </div>
+
+  <div class="christmas26-calendar">
+    <div class="christmas26-calendar-head">
+      <div>
+        <p class="christmas26-calendar-eyebrow">🎄 DECEMBER 2026</p>
+        <h3>Unlock the holiday magic</h3>
+        <p class="christmas26-calendar-intro">Explore the advent doors. Claims will be enabled only after the secure reward system is approved.</p>
+      </div>
+      <div class="christmas26-progress" aria-label="Preview progress: zero of twenty-four doors opened">
+        <span>0 / 24</span>
+        <small>Preview · no claims</small>
+      </div>
+    </div>
+    <div class="christmas26-grid" id="christmas26-door-grid" role="list" aria-label="24 December advent calendar doors">
+      <p class="christmas26-loading">Preparing all 24 festive doors…</p>
+    </div>
+    <div class="christmas26-footer" role="note">
+      <span>🔒 <strong>Preview mode:</strong> every door is locked, and no DSPOINC or other reward can be claimed here yet.</span>
+      <span>🕯️ Future daily claims will follow Europe/Vienna calendar days.</span>
     </div>
   </div>
 </section>
-<div id="halloween26-modal" class="halloween26-modal" role="dialog" aria-modal="true" aria-labelledby="halloween26-modal-title" aria-hidden="true" hidden>
-  <div class="halloween26-modal-card">
-    <div class="halloween26-modal-icon" aria-hidden="true">🎃🧀✨</div>
-    <h2 class="halloween26-modal-title" id="halloween26-modal-title">Happy Halloween, MouseGang!</h2>
-    <p class="halloween26-modal-note">The Great Cheesy Pumpkin has blessed you with:</p>
-    <div class="halloween26-modal-amount" id="halloween26-modal-amount">0 DSPOINC</div>
-    <p class="halloween26-modal-note">Your reward was added to your DSPOINC balance and Recent Transactions.</p>
-    <button type="button" class="halloween26-modal-close" id="halloween26-modal-close">Awesome! 🧀</button>
+
+<!-- 🎄 Christmas 2026 locked-door information modal.
+     DEVS FOR DECADES: clicking a preview door opens ONLY this informational dialog.
+     This is not the normal Reward Chamber, not a claim receipt, and not evidence of a payout.
+     A future server-verified result must use a separately approved claim integration. -->
+<div id="christmas26-modal" class="christmas26-modal" role="dialog" aria-modal="true"
+     aria-labelledby="christmas26-modal-title" aria-describedby="christmas26-modal-description" hidden>
+  <div class="christmas26-modal-backdrop" data-christmas26-dismiss="true" aria-hidden="true"></div>
+  <div class="christmas26-modal-card" role="document">
+    <div class="christmas26-modal-stars" aria-hidden="true"></div>
+    <button type="button" id="christmas26-modal-close" class="christmas26-modal-close" aria-label="Close Christmas preview">×</button>
+    <div class="christmas26-modal-emblem" aria-hidden="true">🎁</div>
+    <p class="christmas26-modal-kicker">❄️ MOUSEGANG CHRISTMAS · PREVIEW</p>
+    <h3 id="christmas26-modal-title" class="christmas26-modal-title">A little Christmas magic is coming!</h3>
+    <p class="christmas26-modal-day" id="christmas26-modal-day">December 1</p>
+    <p class="christmas26-modal-description" id="christmas26-modal-description">
+      This festive door is part of the upcoming Advent Calendar. Your surprise stays locked until the verified reward system is ready.
+    </p>
+    <div class="christmas26-modal-cheese" aria-hidden="true">🧀 ✨ 🎄 ✨ 🧀</div>
+    <div class="christmas26-modal-locked">🔒 Preview only · No claim, DSPOINC or Store item is awarded</div>
+    <button type="button" class="christmas26-modal-return" id="christmas26-modal-return">Back to the calendar</button>
   </div>
 </div>
 
@@ -7200,11 +7245,6 @@ async function loadGamePortalStats() {
 document.addEventListener('DOMContentLoaded', async function() {
   let user = {};
   let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-  // Halloween 2026: refresh existing transactions after confirmed credit.
-  // This event does not write or calculate DSPOINC.
-  window.addEventListener('narrrfs:halloween26-credit-confirmed', () => {
-    if (userId) void loadRecentAdjustmentsPage(userId, 1);
-  });
 
 
   // 🎮 Load game portal stats automatically (always on localhost, only if logged in on production)
@@ -16262,6 +16302,6 @@ function scrollToProfileHub() {
     window.addEventListener('load', runHolderVerificationDeepLink);
   })();
 </script>
-<script defer src="js/halloween-pumpkin-2026.js?v=20261028"></script>
+<script defer src="js/christmas-advent-2026.js?v=20261117-v10-preview"></script>
 </body>
 </html>

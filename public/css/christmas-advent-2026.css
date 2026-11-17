@@ -352,3 +352,194 @@
 @media (prefers-reduced-motion: reduce) {
   .christmas26 .christmas26-snow { animation: none; }
 }
+
+/* 🎄 NARRRFS_CHRISTMAS26_LOCKED_PREVIEW_V10
+ * DEVS FOR DECADES: visually enhanced but reward-inert UI.
+ * Claimed styling below is reserved for verified server receipt states in a
+ * separately approved future release. Do not use a local click to add that class.
+ * Unique christmas26-* selectors never alter the normal Reward Chamber. */
+.christmas26 .christmas26-door:not(:disabled) {
+  opacity: 1;
+  cursor: pointer; /* Opens informational modal; never initiates claim. */
+  transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease, filter .24s ease;
+}
+.christmas26 .christmas26-door:not(:disabled):hover {
+  transform: translateY(-5px) scale(1.025);
+  border-color: #ffe7a0;
+  filter: brightness(1.1);
+  box-shadow: inset 0 0 0 3px rgba(243,211,120,.13),
+              0 12px 26px rgba(0,0,0,.30), 0 0 28px rgba(252,201,92,.32),
+              0 0 21px rgba(59,205,171,.15);
+}
+.christmas26 .christmas26-door:not(:disabled):focus-visible {
+  outline: 3px solid #b9ffdc;
+  outline-offset: 3px;
+}
+.christmas26 .christmas26-door:not(:disabled):active {
+  transform: translateY(-1px) scale(.99);
+}
+.christmas26 .christmas26-door-symbol { filter: drop-shadow(0 0 6px rgba(255,223,145,.32)); }
+.christmas26 .christmas26-day--finale .christmas26-door:not(:disabled):hover {
+  box-shadow: 0 0 34px rgba(255,213,111,.5), inset 0 0 0 3px rgba(255,226,161,.18);
+}
+/* Future claimed state: presentation class ONLY, NOT currently assigned by JS.
+ * Real server-confirmed receipt must control whether this appears. */
+.christmas26 .christmas26-day.christmas26-day--claimed .christmas26-door {
+  background: radial-gradient(circle at 50% 25%, rgba(255,230,137,.26), transparent 58%),
+              linear-gradient(145deg, #13664e, #174e4f 62%, #183a55);
+  border-color: #f9e49b;
+  box-shadow: inset 0 0 0 3px rgba(253,232,169,.15),
+              0 0 22px rgba(63,227,160,.32), 0 0 32px rgba(253,210,122,.32);
+  opacity: 1;
+  animation: christmas26ClaimedBreath 3.6s ease-in-out infinite;
+}
+.christmas26 .christmas26-day.christmas26-day--claimed .christmas26-door-state {
+  color: #c7ffdd;
+  text-shadow: 0 0 12px rgba(129,255,197,.55);
+}
+@keyframes christmas26ClaimedBreath {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.12); }
+}
+/* Separate Christmas informational popup, outside the main calendar section.
+ * Its stacking layer must remain above the Profile's sticky header and normal
+ * Reward Chamber, but it never invokes or modifies their handlers. */
+.christmas26-modal[hidden] { display: none !important; }
+.christmas26-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10120;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  isolation: isolate;
+}
+.christmas26-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 8, 24, .86);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+.christmas26-modal-card {
+  position: relative;
+  width: min(100%, 490px);
+  max-height: min(90vh, 720px);
+  overflow: auto;
+  border-radius: 24px;
+  border: 1px solid rgba(255,227,152,.68);
+  padding: clamp(1.35rem, 4vw, 2.25rem);
+  text-align: center;
+  color: #fff8e6;
+  background: radial-gradient(circle at 50% 0, rgba(72,210,171,.20), transparent 42%),
+              radial-gradient(circle at 100% 100%, rgba(138,78,237,.27), transparent 50%),
+              linear-gradient(150deg, #102c34, #20244d 53%, #4b213e);
+  box-shadow: 0 26px 80px rgba(0,0,0,.65), 0 0 55px rgba(250,191,83,.18),
+              inset 0 0 0 3px rgba(255,255,255,.055);
+  animation: christmas26ModalEnter .28s ease-out both;
+}
+.christmas26-modal-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .4;
+  background-image: radial-gradient(#fff 1px, transparent 1.5px),
+                    radial-gradient(#ffe8ac 1.2px, transparent 1.6px);
+  background-size: 34px 38px, 67px 61px;
+  animation: christmas26StarDrift 18s linear infinite;
+}
+.christmas26-modal-card > :not(.christmas26-modal-stars) { position: relative; z-index: 1; }
+.christmas26-modal-close {
+  position: absolute !important;
+  top: .75rem;
+  right: .85rem;
+  border: 1px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.christmas26-modal-emblem {
+  display: grid;
+  place-items: center;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  margin: .35rem auto 1rem;
+  font-size: 3.6rem;
+  background: radial-gradient(circle, rgba(255,219,125,.28), rgba(255,219,125,.03));
+  box-shadow: 0 0 40px rgba(255,201,85,.26), inset 0 0 22px rgba(255,224,143,.13);
+  animation: christmas26PresentFloat 3s ease-in-out infinite;
+}
+.christmas26-modal-kicker { color: #bbffe0; font-size: .68rem; font-weight: 900; letter-spacing: .16em; }
+.christmas26-modal-title {
+  margin: .45rem 0 .4rem;
+  font-size: clamp(1.45rem, 5vw, 2.1rem);
+  line-height: 1.14;
+  font-weight: 950;
+  color: #ffe3a0;
+  text-shadow: 0 0 26px rgba(255,212,102,.18);
+}
+.christmas26-modal-day { margin: .75rem 0; color: #b9ffe2; font-size: 1.08rem; font-weight: 900; }
+.christmas26-modal-description { margin: .5rem 0 0; color: #e3e9f1; line-height: 1.6; }
+.christmas26-modal-cheese { padding: 1rem 0; font-size: 1.45rem; letter-spacing: .13em; }
+.christmas26-modal-locked {
+  border-radius: 13px;
+  padding: .85rem 1rem;
+  border: 1px solid rgba(250,220,145,.25);
+  background: rgba(7,20,31,.58);
+  color: #ffe9b5;
+  font-size: .8rem;
+  font-weight: 800;
+}
+.christmas26-modal-return {
+  width: 100%;
+  margin-top: 1rem;
+  padding: .85rem 1.15rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255,230,159,.7);
+  color: #1b2430;
+  background: linear-gradient(115deg, #ffdf8c, #f6b94b 70%, #ffe4ac);
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(244,174,55,.19);
+  transition: filter .18s ease, transform .18s ease;
+}
+.christmas26-modal-return:hover { filter: brightness(1.07); transform: translateY(-1px); }
+.christmas26-modal button:focus-visible { outline: 3px solid #b7ffe5; outline-offset: 3px; }
+@keyframes christmas26ModalEnter {
+  from { opacity: 0; transform: translateY(16px) scale(.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes christmas26PresentFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes christmas26StarDrift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 175px, 55px 130px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .christmas26-modal *, .christmas26 .christmas26-day--claimed .christmas26-door {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Lab-style shimmer on locked-door previews; pointer activation remains non-claiming. */
+.christmas26 .christmas26-door-symbol {
+  transition: transform .26s ease, filter .26s ease;
+}
+.christmas26 .christmas26-door:not(:disabled):hover .christmas26-door-symbol,
+.christmas26 .christmas26-door:not(:disabled):focus-visible .christmas26-door-symbol {
+  transform: translateY(-3px) rotate(-8deg) scale(1.17);
+  filter: drop-shadow(0 0 12px rgba(255,223,144,.72));
+}
+@media (prefers-reduced-motion: reduce) {
+  .christmas26 .christmas26-door-symbol { transition: none; }
+}
