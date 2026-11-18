@@ -169,8 +169,3 @@ echo 'ok';
     finally:
         server.terminate()
         server.wait(timeout=10)
-
-
-
-
-
