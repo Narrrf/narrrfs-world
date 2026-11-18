@@ -786,6 +786,8 @@ function owner_control_escape(string $value): string
                 </label>
                 <div class="christmas-draft-actions">
                     <button id="christmas-draft-export-button" type="button">Download all 24 days as unapproved JSON</button>
+                    <button id="christmas-draft-load-server" type="button">Reload saved draft</button>
+                    <button id="christmas-draft-save-server" type="button" disabled>Save draft for review</button>
                 </div>
                 <label for="christmas-draft-import-input">
                     Reload a previously exported local draft file
@@ -1191,13 +1193,72 @@ function owner_control_escape(string $value): string
             }
         }
 
+        // Owner-only draft persistence remains separate from publication and rewards.
+        let savedRevision = null;
+        const serverSaveButton = document.getElementById('christmas-draft-save-server');
+        async function loadServerDraft() {
+            try {
+                const response = await fetch('/api/owner-control/v1/christmas-draft.php', { credentials: 'same-origin', cache: 'no-store' });
+                const body = await response.json();
+                if (!response.ok || body.success !== true) throw new Error('Draft persistence unavailable');
+                serverSaveButton.disabled = body.write_enabled !== true;
+                const saved = body.result;
+                if (saved === null) { savedRevision = 0; fileStatus.textContent = 'Local unsaved draft. No saved server revision.'; return; }
+                const proposed = saved.draft;
+                if (!proposed || proposed.schema_version !== 'christmas_advent_2026_draft_v2' || proposed.event_key !== 'christmas_advent_2026' ||
+                    !Number.isInteger(proposed.max_bonus_wins_per_player) || proposed.max_bonus_wins_per_player < 1 || proposed.max_bonus_wins_per_player > 3 ||
+                    proposed.first_bonus_guarantee?.enabled !== false || !Array.isArray(proposed.days) || proposed.days.length !== 24 ||
+                    !Number.isSafeInteger(saved.revision) || saved.revision < 1) throw new Error('Saved draft is incompatible');
+                const loaded = new Map();
+                for (let day = 1; day <= 24; day += 1) {
+                    if (!dayCard(day)) throw new Error('Calendar unavailable');
+                    loaded.set(day, decodePortableDay(proposed.days[day - 1], day, proposed.schema_version));
+                }
+                previews.clear();
+                for (const [day, entry] of loaded) { previews.set(day, entry); showImportedCard(day, entry); }
+                perPlayerCapInput.value = String(proposed.max_bonus_wins_per_player);
+                savedRevision = saved.revision; showDay(selectedDay());
+                fileStatus.textContent = `Saved on server: revision ${savedRevision}. Not published.`;
+            } catch (error) { savedRevision = null; serverSaveButton.disabled = true; fileStatus.textContent = 'Server save unavailable. Local import/export remains available.'; }
+        }
+        async function saveServerDraft() {
+            try {
+                if (savedRevision === null) throw new Error('Reload saved draft before saving');
+                const draft = buildPortableDraft();
+                const csrfResponse = await fetch('/api/owner-control/v1/csrf.php', { credentials: 'same-origin', cache: 'no-store' });
+                const csrfBody = await csrfResponse.json();
+                if (!csrfResponse.ok || typeof csrfBody.csrf_token !== 'string') throw new Error('Owner authorization unavailable');
+                const response = await fetch('/api/owner-control/v1/christmas-draft.php', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfBody.csrf_token },
+                    body: JSON.stringify({ revision: savedRevision, draft })
+                });
+                const body = await response.json();
+                if (!response.ok || body.success !== true) {
+                    if (response.status === 409) { savedRevision = null; serverSaveButton.disabled = true; }
+                    const details = Array.isArray(body.details) ? body.details.filter(value => typeof value === 'string').slice(0, 5).join(', ') : '';
+                    throw new Error(response.status === 409 ? 'Draft changed elsewhere; reload before saving' : (details ? `Draft validation: ${details}` : 'Draft save unavailable'));
+                }
+                savedRevision = body.result.revision;
+                const review = body.result.review;
+                fileStatus.textContent = `Saved on server: revision ${savedRevision}, not published. Per-account exposure: ${review.min_per_player_dspoinc}–${review.max_per_player_dspoinc} DSPOINC; event at claim caps: ${review.min_event_dspoinc_at_claim_caps}–${review.max_event_dspoinc_at_claim_caps}.`;
+            } catch (error) { fileStatus.textContent = error.message; }
+        }
+        function markLocalDraft() {
+            fileStatus.textContent = 'Local unsaved draft. Save to create a new server revision.';
+        }
+        root.addEventListener('input', markLocalDraft);
+        document.getElementById('christmas-draft-preview-button').addEventListener('click', markLocalDraft);
+        document.getElementById('christmas-draft-clear-button').addEventListener('click', markLocalDraft);
+        document.getElementById('christmas-draft-load-server').addEventListener('click', loadServerDraft);
+        document.getElementById('christmas-draft-save-server').addEventListener('click', saveServerDraft);
         document.getElementById('christmas-draft-export-button').addEventListener('click', exportDraft);
         importInput.addEventListener('change', importDraft);
         dayInput.addEventListener('change', () => showDay(selectedDay()));
         document.getElementById('christmas-draft-preview-button').addEventListener('click', previewDay);
         document.getElementById('christmas-draft-clear-button').addEventListener('click', clearDay);
         showDay(selectedDay());
-        loadActiveStoreCandidates(); // Exactly one read-only catalog GET on page load.
+        loadActiveStoreCandidates().then(loadServerDraft); // Load catalog first so saved candidates can be decoded.
     })();
     </script>
 

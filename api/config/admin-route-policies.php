@@ -330,6 +330,18 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
+        // Christmas planning drafts only. These policies confer no publication or payout authority.
+        'owner_control.christmas_draft.read.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_CHRISTMAS_DRAFT_READ_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => false, 'methods' => ['GET'],
+            'csrf' => false, 'contentTypes' => [], 'origins' => [], 'allowRefererFallback' => false,
+        ],
+        'owner_control.christmas_draft.write.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_CHRISTMAS_DRAFT_WRITE_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => true, 'methods' => ['POST'],
+            'csrf' => true, 'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
         'owner_control.csrf.v1' => [
             'enabled' => getenv('NARRRFS_OWNER_CSRF_ENABLED') === '1',
             'ownerOnly' => true,
