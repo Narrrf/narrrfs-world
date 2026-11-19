@@ -19,8 +19,9 @@ function outputJson($data) {
 function get_auth_token() {
     $headers = [];
     if (function_exists('getallheaders')) $headers = getallheaders();
-    foreach (['Authorization', 'authorization'] as $key) {
-        if (isset($headers[$key])) return $headers[$key];
+    if (!is_array($headers)) $headers = [];
+    foreach ($headers as $key => $value) {
+        if (strcasecmp((string)$key, 'Authorization') === 0 && is_string($value)) return $value;
     }
     return '';
 }
@@ -31,11 +32,25 @@ $valid_tokens = [
     $_ENV['DISCORD_SECRET'] ?? getenv('DISCORD_SECRET')
 ];
 
-// Debug logging
-error_log('[DB API DEBUG] Received token: ' . ($auth_token ? substr($auth_token, 0, 10) . '...' : 'NO TOKEN'));
-error_log('[DB API DEBUG] Valid tokens: ' . implode(', ', array_map(function($t) { return $t ? substr($t, 0, 10) . '...' : 'EMPTY'; }, $valid_tokens)));
-
-if (!in_array($auth_token, $valid_tokens)) {
+// Keep the existing raw Authorization contract, but reject empty/missing secrets
+// before using constant-time comparisons. Never log any credential material.
+$valid_tokens = array_values(array_filter($valid_tokens, static function ($token) {
+    return is_string($token) && $token !== '';
+}));
+if ($valid_tokens === []) {
+    http_response_code(503);
+    outputJson(['success' => false, 'error' => 'Service unavailable']);
+}
+$authorized = false;
+if ($auth_token !== '') {
+    foreach ($valid_tokens as $valid_token) {
+        if (hash_equals($valid_token, $auth_token)) {
+            $authorized = true;
+        }
+    }
+}
+if (!$authorized) {
+    http_response_code(401);
     outputJson(['success' => false, 'error' => 'Unauthorized']);
 }
 
