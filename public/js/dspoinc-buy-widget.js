@@ -19,7 +19,9 @@
   const DSPOINC_PER_SPOINC = 10000;
   const NATIVE_SOL_ADDRESS = '11111111111111111111111111111111';
   const RESUME_STORAGE_PREFIX = 'narrrfs_dspoinc_buy_resume_v1';
-  const SOLANA_WEB3_SRC = 'https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js';
+  const SOLANA_WEB3_SRC = 'https://unpkg.com/@solana/web3.js@1.99.0/lib/index.iife.min.js';
+  const V1_CODEC_SRC = new URL('gensuki-v1-codec.js?v=gensuki-v1-20261120', document.currentScript?.src || new URL('/js/dspoinc-buy-widget.js', window.location.href).href).href;
+  let v1CodecLoadPromise = null;
 
   const ENDPOINTS = Object.freeze({
     quote: '/api/partner/spoinc/quote-dspoinc-buy.php',
@@ -235,6 +237,20 @@
       || candidates[0];
   }
 
+  // The chosen extension remains the signer for both steps, including hardware accounts.
+  function getSelectedWidgetProvider(widget) {
+    const selection = widget.querySelector('[data-dspoinc-buy-wallet]')?.value;
+    if (!['phantom', 'solflare'].includes(selection)) {
+      throw createConfirmedNoBroadcastError('Choose Phantom or Solflare before requesting a quote.');
+    }
+    const candidates = getBridgeWalletProviders();
+    const provider = candidates.find((item) => selection === 'phantom'
+      ? item.isPhantom || item === window.phantom?.solana
+      : item.isSolflare || item === window.solflare || item === window.solflare?.solana);
+    if (!provider) throw createConfirmedNoBroadcastError(`The selected ${selection} wallet is unavailable.`);
+    return provider;
+  }
+
   async function connectWallet(expectedWallet = '', preferredProvider = null) {
     const provider = preferredProvider || resolveBridgeWalletProvider(expectedWallet);
     let response;
@@ -299,6 +315,32 @@
    * Gensuki may return either a legacy Solana Transaction or a VersionedTransaction.
    * Frontend only signs/sends. Frontend never credits DSPOINC.
    */
+  // Load the V1 codec only when needed; V0 and legacy retain their existing path.
+  async function ensureV1Codec() {
+    if (window.NarrrfsGensukiV1?.decodeV1) return window.NarrrfsGensukiV1;
+    if (!v1CodecLoadPromise) {
+      v1CodecLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = V1_CODEC_SRC;
+        script.onload = () => window.NarrrfsGensukiV1?.decodeV1
+          ? resolve(window.NarrrfsGensukiV1)
+          : reject(new Error('V1 transaction codec did not initialize.'));
+        script.onerror = () => reject(new Error('V1 transaction codec failed to load.'));
+        document.head.appendChild(script);
+      });
+    }
+    return v1CodecLoadPromise;
+  }
+
+  async function getWalletTransactionVersion(provider) {
+    try {
+      const codec = await ensureV1Codec();
+      return codec.detectWalletVersion(provider);
+    } catch (_) {
+      return 'v0';
+    }
+  }
+
   async function decodeGensukiTransactionPayload(transactionPayload) {
     const solanaWeb3 = await ensureSolanaWeb3();
 
@@ -310,6 +352,12 @@
       atob(transactionPayload),
       (character) => character.charCodeAt(0)
     );
+
+    // Do not reinterpret invalid V1 as legacy after a codec failure.
+    if (rawTransactionBytes[0] === 0x81) {
+      const codec = await ensureV1Codec();
+      return codec.decodeV1(rawTransactionBytes);
+    }
 
     if (solanaWeb3.VersionedTransaction) {
       try {
@@ -344,6 +392,11 @@
       transaction = await decodeGensukiTransactionPayload(transactionPayload);
     } catch (error) {
       throw createConfirmedNoBroadcastError(`Could not decode the ${label} transaction before signing: ${error.message || error}`);
+    }
+
+    if ((transaction.version === 1 && (intentData.transactionVersion !== 'v1' || await getWalletTransactionVersion(provider) !== 'v1')) ||
+        (intentData.transactionVersion === 'v1' && transaction.version !== 1)) {
+      throw createConfirmedNoBroadcastError('Transaction version or selected wallet support does not match this intent.');
     }
 
     if (provider.signAndSendTransaction) {
@@ -467,6 +520,11 @@
       return '';
     }
 
+    if ((state.stage === 'buy_wallet_pending' && !state.buySignature) ||
+        (state.stage === 'deposit_wallet_pending' && !state.depositSignature)) {
+      return 'A previous wallet request has an uncertain outcome. Contact support before retrying.';
+    }
+
     if (state.depositSignature) {
       return 'Resume found: SPOINC → dSPOINC signature already exists. The widget will retry final backend confirmation.';
     }
@@ -505,6 +563,15 @@
           This live bridge uses two protected wallet signatures: first SOL → SPOINC, then SPOINC → dSPOINC.
           dSPOINC is credited only after backend confirmation succeeds.
         </p>
+
+        <label class="block text-xs font-black uppercase tracking-[0.14em] text-yellow-200 mb-2">
+          Wallet
+          <select data-dspoinc-buy-wallet class="mt-2 w-full rounded-2xl border border-yellow-300/25 bg-slate-950 px-4 py-3 text-white">
+            <option value="">Choose a wallet</option>
+            <option value="phantom">Phantom (including Ledger)</option>
+            <option value="solflare">Solflare (including Ledger)</option>
+          </select>
+        </label>
 
         <label class="block text-xs font-black uppercase tracking-[0.14em] text-yellow-200 mb-2">
           dSPOINC amount
@@ -661,7 +728,7 @@
 
     setStatus(widget, 'Requesting bridge quote…', 'info');
 
-    const { wallet } = await connectWallet();
+    const { wallet } = await connectWallet('', getSelectedWidgetProvider(widget));
 
     const data = await requestJson(ENDPOINTS.quote, {
       request_type: 'quote_dspoinc_buy_with_sol',
@@ -717,7 +784,7 @@
     const dspoincAmount = normalizeInteger(widget.dataset.dspoincAmount, DEFAULT_DSPOINC_AMOUNT);
     const discordId = resolveDiscordId();
     const quotedWallet = String(widget.dataset.wallet || '').trim();
-    const walletConnection = await connectWallet(quotedWallet);
+    const walletConnection = await connectWallet(quotedWallet, getSelectedWidgetProvider(widget));
     const wallet = walletConnection.wallet;
     const walletProvider = walletConnection.provider;
     const estimatedSolAmount = normalizeDecimalString(widget.dataset.estimatedSolAmount || '');
@@ -745,15 +812,20 @@
     let buyIntentId = Number(resumeState?.buyIntentId || 0);
     let buySignature = String(resumeState?.buySignature || '');
     let buyConfirm = resumeState?.buyConfirm || null;
+    if (resumeState?.stage === 'buy_wallet_pending' && !buySignature) {
+      throw new Error('The prior buy wallet request has an uncertain outcome. Contact support before retrying.');
+    }
 
     if (!buySignature && buyIntentId && buyIntent) {
       setStatus(
         widget,
-        'Resume: SOL → SPOINC intent exists. Phantom will ask you to sign the saved transaction payload.',
+        'Resume: SOL → SPOINC intent exists. Your selected wallet will ask you to sign the saved transaction payload.',
         'info'
       );
 
       try {
+        // Persist before the wallet call: a lost response must not be resent automatically.
+        resumeState = writeResumeState(resumeKey, { stage: 'buy_wallet_pending' });
         buySignature = await sendGensukiTransactionWithProvider(walletProvider, buyIntent, 'SOL → SPOINC buy');
       } catch (error) {
         if (error?.bridgeNoBroadcastConfirmed && buyIntentId && !buySignature) {
@@ -794,7 +866,9 @@
 
       await connectWallet(wallet, walletProvider);
 
+      const transactionVersion = await getWalletTransactionVersion(walletProvider);
       const buyCreateResponse = await requestJson(ENDPOINTS.buyCreate, {
+        transactionVersion,
         request_type: 'create_sol_to_spoinc_for_dspoinc_buy',
         discord_id: discordId,
         discord_name: resolveDiscordName(),
@@ -828,11 +902,13 @@
 
       setStatus(
         widget,
-        'Step 2/5: Phantom will ask you to sign the SOL → SPOINC transaction. This does not credit dSPOINC yet.',
+        'Step 2/5: Your selected wallet will ask you to sign the SOL → SPOINC transaction. This does not credit dSPOINC yet.',
         'info'
       );
 
       try {
+        // Persist before the wallet call: a lost response must not be resent automatically.
+        resumeState = writeResumeState(resumeKey, { stage: 'buy_wallet_pending' });
         buySignature = await sendGensukiTransactionWithProvider(walletProvider, buyIntent, 'SOL → SPOINC buy');
       } catch (error) {
         if (error?.bridgeNoBroadcastConfirmed && buyIntentId && !buySignature) {
@@ -858,7 +934,7 @@
     }
 
     if (!buySignature) {
-      throw new Error('SOL → SPOINC signature is missing. Please reconnect Phantom and resume.');
+      throw new Error('SOL → SPOINC signature is missing. Please reconnect the selected wallet and resume.');
     }
 
     if (!resumeState?.buyConfirmed) {
@@ -896,15 +972,20 @@
     let depositIntent = resumeState?.depositIntent || null;
     let depositIntentId = Number(resumeState?.depositIntentId || 0);
     let depositSignature = String(resumeState?.depositSignature || '');
+    if (resumeState?.stage === 'deposit_wallet_pending' && !depositSignature) {
+      throw new Error('The prior deposit wallet request has an uncertain outcome. Contact support before retrying.');
+    }
 
     if (!depositSignature && depositIntentId && depositIntent) {
       setStatus(
         widget,
-        'Resume: SPOINC → dSPOINC intent exists. Phantom will ask you to sign the saved transaction payload.',
+        'Resume: SPOINC → dSPOINC intent exists. Your selected wallet will ask you to sign the saved transaction payload.',
         'info'
       );
 
       try {
+        // Keep the completed buy and mark the deposit request before touching the wallet.
+        resumeState = writeResumeState(resumeKey, { stage: 'deposit_wallet_pending' });
         depositSignature = await sendGensukiTransactionWithProvider(walletProvider, depositIntent, 'SPOINC → dSPOINC deposit');
       } catch (error) {
         if (error?.bridgeNoBroadcastConfirmed && depositIntentId && !depositSignature) {
@@ -916,7 +997,10 @@
           );
 
           if (cleanup.success) {
-            clearResumeState(resumeKey);
+            resumeState = writeResumeState(resumeKey, {
+              depositIntentId: null, depositIntent: null, depositSignature: null,
+              stage: 'buy_confirmed_no_dspoinc_yet'
+            });
           }
         }
 
@@ -938,7 +1022,9 @@
 
       await connectWallet(wallet, walletProvider);
 
+      const transactionVersion = await getWalletTransactionVersion(walletProvider);
       const depositCreateResponse = await requestJson(ENDPOINTS.depositCreate, {
+        transactionVersion,
         request_type: 'create_spoinc_to_dspoinc_after_sol_buy',
         discord_id: discordId,
         discord_name: resolveDiscordName(),
@@ -968,11 +1054,13 @@
 
       setStatus(
         widget,
-        'Step 5/5: Phantom will ask you to sign the SPOINC → dSPOINC transaction. Backend credits dSPOINC only after this confirmation succeeds.',
+        'Step 5/5: Your selected wallet will ask you to sign the SPOINC → dSPOINC transaction. Backend credits dSPOINC only after this confirmation succeeds.',
         'info'
       );
 
       try {
+        // Keep the completed buy and mark the deposit request before touching the wallet.
+        resumeState = writeResumeState(resumeKey, { stage: 'deposit_wallet_pending' });
         depositSignature = await sendGensukiTransactionWithProvider(walletProvider, depositIntent, 'SPOINC → dSPOINC deposit');
       } catch (error) {
         if (error?.bridgeNoBroadcastConfirmed && depositIntentId && !depositSignature) {
@@ -984,7 +1072,10 @@
           );
 
           if (cleanup.success) {
-            clearResumeState(resumeKey);
+            resumeState = writeResumeState(resumeKey, {
+              depositIntentId: null, depositIntent: null, depositSignature: null,
+              stage: 'buy_confirmed_no_dspoinc_yet'
+            });
           }
         }
 
@@ -998,7 +1089,7 @@
     }
 
     if (!depositSignature) {
-      throw new Error('SPOINC → dSPOINC signature is missing. Please reconnect Phantom and resume.');
+      throw new Error('SPOINC → dSPOINC signature is missing. Please reconnect the selected wallet and resume.');
     }
 
     setStatus(
@@ -1053,6 +1144,8 @@
     updateLocalEstimate(widget, { commitInput: true });
 
     const input = widget.querySelector('[data-dspoinc-buy-amount]');
+    const walletSelect = widget.querySelector('[data-dspoinc-buy-wallet]');
+    walletSelect?.addEventListener('change', () => updateLocalEstimate(widget));
     const quoteButton = widget.querySelector('[data-dspoinc-buy-quote]');
     const startButton = widget.querySelector('[data-dspoinc-buy-start]');
 
@@ -1076,22 +1169,26 @@
     quoteButton?.addEventListener('click', async () => {
       try {
         quoteButton.disabled = true;
+        if (walletSelect) walletSelect.disabled = true;
         await quoteDspoincBuy(widget);
       } catch (error) {
         setStatus(widget, escapeHtml(error.message || error), 'error');
       } finally {
         quoteButton.disabled = false;
+        if (walletSelect) walletSelect.disabled = false;
       }
     });
 
     startButton?.addEventListener('click', async () => {
       try {
         startButton.disabled = true;
+        if (walletSelect) walletSelect.disabled = true;
         await startDspoincBuy(widget);
       } catch (error) {
         setStatus(widget, escapeHtml(error.message || error), 'error');
       } finally {
         startButton.disabled = false;
+        if (walletSelect) walletSelect.disabled = false;
       }
     });
   }

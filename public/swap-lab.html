@@ -10,7 +10,8 @@
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="discord-config.js"></script>
-  <script src="https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@1.99.0/lib/index.iife.min.js"></script>
+  <script src="js/gensuki-v1-codec.js?v=gensuki-v1-20261120"></script>
   <style>
     :root {
       --cheese: #facc15;
@@ -664,12 +665,20 @@
         </div>
       </div>
 
+      <label class="block mt-5 text-sm text-slate-300" for="bridgeWalletProvider">
+        Wallet for buy and conversion
+        <select id="bridgeWalletProvider" class="input mt-2 w-full">
+          <option value="">Choose a wallet</option>
+          <option value="phantom">Phantom (including Ledger)</option>
+          <option value="solflare">Solflare (including Ledger)</option>
+        </select>
+      </label>
       <div class="mt-6 grid gap-6 xl:grid-cols-2">
         <article id="buy-spoinc-card" class="rounded-3xl border border-yellow-300/25 bg-yellow-400/10 p-5">
           <div class="pill mb-4">☀️ Step 1 • Buy SPOINC</div>
 <h3 class="text-2xl font-black text-yellow-100">Buy SPOINC through Narrrfs</h3>
 <p class="mt-2 text-sm leading-relaxed text-slate-300">
-  Choose SOL, EMPIRE, or FOOK as payment token. Narrrfs prepares the Gensuki /buy transaction, Phantom signs it, and Narrrfs records Gensuki confirmation. No DSPOINC is credited or deducted in this buy step.
+  Choose SOL, EMPIRE, or FOOK as payment token. Narrrfs prepares the Gensuki /buy transaction, your selected wallet signs it, and Narrrfs records Gensuki confirmation. No DSPOINC is credited or deducted in this buy step.
 </p>
 
 <div class="mt-4">
@@ -687,7 +696,7 @@
           <div class="mt-4 grid gap-4 md:grid-cols-2">
             <label class="block">
               <span class="label">Buyer Wallet</span>
-              <input id="gensukiBuyWallet" class="input mt-2 w-full" type="text" placeholder="Your Phantom wallet" />
+              <input id="gensukiBuyWallet" class="input mt-2 w-full" type="text" placeholder="Your Solana wallet address" />
             </label>
 
            <label class="block">
@@ -717,7 +726,7 @@
 
           <label class="mt-4 block">
             <span class="label">Gensuki Buy Transaction Hash / Signature fallback</span>
-            <input id="gensukiBuySignature" class="input mt-2 w-full" type="text" placeholder="Auto-filled after Phantom sends. Manual paste only if needed." />
+            <input id="gensukiBuySignature" class="input mt-2 w-full" type="text" placeholder="Auto-filled after your wallet sends. Manual paste only if needed." />
           </label>
 
           <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-relaxed text-slate-300">
@@ -1814,7 +1823,7 @@ async function updateGensukiBuyPreview() {
       elements.gensukiBuyEstimatedSpoinc.textContent = 'Wallet confirms final amount';
 
       if (elements.gensukiBuyEstimateNote) {
-        elements.gensukiBuyEstimateNote.textContent = `${selectedToken.label} price loaded, but no USD-worth field was returned. Final amount is confirmed in Phantom.`;
+        elements.gensukiBuyEstimateNote.textContent = `${selectedToken.label} price loaded, but no USD-worth field was returned. Final amount is confirmed in your wallet.`;
       }
 
       return;
@@ -1830,7 +1839,7 @@ async function updateGensukiBuyPreview() {
     elements.gensukiBuyEstimatedSpoinc.textContent = 'Wallet confirms final amount';
 
     if (elements.gensukiBuyEstimateNote) {
-      elements.gensukiBuyEstimateNote.textContent = `${selectedToken.label} preview quote failed. ${error.message || 'Final amount is confirmed in Phantom.'}`;
+      elements.gensukiBuyEstimateNote.textContent = `${selectedToken.label} preview quote failed. ${error.message || 'Final amount is confirmed in your wallet.'}`;
     }
   }
 }
@@ -2589,6 +2598,12 @@ function decodeGensukiTransactionPayload(transactionPayload) {
 
   const rawTransactionBytes = Uint8Array.from(atob(transactionPayload), (character) => character.charCodeAt(0));
 
+  // V1 has a distinct wire prefix; malformed V1 must never fall back to legacy.
+  if (rawTransactionBytes[0] === 0x81) {
+    if (!window.NarrrfsGensukiV1?.decodeV1) throw new Error('V1 transaction codec is unavailable.');
+    return window.NarrrfsGensukiV1.decodeV1(rawTransactionBytes);
+  }
+
   if (window.solanaWeb3.VersionedTransaction) {
     try {
       return window.solanaWeb3.VersionedTransaction.deserialize(rawTransactionBytes);
@@ -2604,50 +2619,77 @@ function decodeGensukiTransactionPayload(transactionPayload) {
   return window.solanaWeb3.Transaction.from(rawTransactionBytes);
 }
 
+// Select the named extension explicitly; Ledger accounts are handled by that wallet.
+// Never silently switch extensions after a transaction intent has been created.
+function getSelectedSwapWalletProvider() {
+  const choice = document.getElementById('bridgeWalletProvider')?.value;
+  if (!['phantom', 'solflare'].includes(choice)) throw new Error('Choose Phantom or Solflare first.');
+  const candidates = [window.phantom?.solana, window.solflare, window.solflare?.solana,
+    window.solana, ...(Array.isArray(window.solana?.providers) ? window.solana.providers : [])];
+  const provider = candidates.find((item) => item && typeof item.connect === 'function' &&
+    (choice === 'phantom' ? (item.isPhantom || item === window.phantom?.solana)
+      : (item.isSolflare || item === window.solflare || item === window.solflare?.solana)));
+  if (!provider) throw new Error(`The selected ${choice} wallet is unavailable.`);
+  return provider;
+}
+
+// Connect before creating an intent so it is bound to the selected account.
+async function verifySelectedSwapWallet(expectedWallet) {
+  const provider = getSelectedSwapWalletProvider();
+  const response = await provider.connect();
+  const actualWallet = response?.publicKey?.toBase58?.() || provider.publicKey?.toBase58?.() || '';
+  if (!actualWallet || actualWallet !== expectedWallet) {
+    throw new Error('Connected wallet does not match the entered wallet address.');
+  }
+  return provider;
+}
+
 /**
- * Sign and send the Gensuki-prepared claim transaction through Phantom.
+ * Sign and send the Gensuki-prepared claim transaction through the selected wallet.
  *
  * DEVS FOR DECADES:
  * Option B means Narrrfs does not manually build the SPOINC transfer anymore.
- * Gensuki prepares the /claim transaction. Phantom signs it. Narrrfs only settles
+ * Gensuki prepares the /claim transaction. The selected wallet signs it. Narrrfs only settles
  * DSPOINC after backend confirmation succeeds.
  */
 async function sendGensukiClaimTransactionWithPhantom(intentData) {
-  if (!window.solana || !window.solana.isPhantom) {
-    throw new Error('Phantom wallet is required for this bridge flow.');
-  }
+  const walletProvider = getSelectedSwapWalletProvider();
 
   const transactionPayload = intentData.transaction || intentData.gensuki_transaction || '';
   if (!transactionPayload) {
     throw new Error('Gensuki did not return a signable transaction payload.');
   }
 
-  const connectResponse = await window.solana.connect();
+  const connectResponse = await walletProvider.connect();
   const connectedWallet = connectResponse.publicKey ? connectResponse.publicKey.toBase58() : '';
   const expectedWallet = String(intentData.wallet || '').trim();
 
   if (expectedWallet && connectedWallet !== expectedWallet) {
-    throw new Error(`Connected Phantom wallet does not match intent wallet. Expected ${expectedWallet}`);
+    throw new Error(`Connected wallet does not match intent wallet. Expected ${expectedWallet}`);
   }
 
   const transaction = decodeGensukiTransactionPayload(transactionPayload);
+  if ((transaction.version === 1 && (intentData.transactionVersion !== 'v1' || window.NarrrfsGensukiV1?.detectWalletVersion(walletProvider) !== 'v1')) ||
+      (intentData.transactionVersion === 'v1' && transaction.version !== 1)) {
+    throw new Error('Transaction version or selected wallet support does not match this intent.');
+  }
 
-  if (window.solana.signAndSendTransaction) {
-    const result = await window.solana.signAndSendTransaction(transaction);
+  if (walletProvider.signAndSendTransaction) {
+    const result = await walletProvider.signAndSendTransaction(transaction);
     const signature = result && result.signature ? result.signature : '';
 
     if (!signature) {
-      throw new Error('Phantom did not return a transaction signature.');
+      throw new Error('The selected wallet did not return a transaction signature.');
     }
 
     return signature;
   }
 
-  if (!window.solana.signTransaction) {
-    throw new Error('Phantom signTransaction is unavailable.');
+  if (!walletProvider.signTransaction) {
+    throw new Error('The selected wallet signTransaction is unavailable.');
   }
 
-  const signedTransaction = await window.solana.signTransaction(transaction);
+  const signedTransaction = await walletProvider.signTransaction(transaction);
 
   if (!window.solanaWeb3.Connection) {
     throw new Error('Solana Web3 connection is unavailable.');
@@ -2689,6 +2731,10 @@ async function createRealSpoincDepositIntent() {
     return;
   }
 
+  if (state.uncertainDepositIntentId) {
+    elements.realDepositResult.textContent = 'The prior claim needs confirmation or reconciliation before creating another intent.';
+    return;
+  }
   const wallet = elements.realDepositWallet.value.trim();
   const amount = elements.realDepositAmount.value.trim();
 
@@ -2705,6 +2751,8 @@ async function createRealSpoincDepositIntent() {
   elements.realDepositResult.textContent = 'Creating Gensuki SPOINC → DSPOINC claim intent...';
 
   try {
+    const provider = await verifySelectedSwapWallet(wallet);
+    const transactionVersion = window.NarrrfsGensukiV1?.detectWalletVersion(provider) || 'v0';
     const response = await fetch(SPOINC_DEPOSIT_INTENT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2712,7 +2760,8 @@ async function createRealSpoincDepositIntent() {
       body: JSON.stringify({
         user_id: getActiveBridgeUserId(),
         wallet,
-        amount
+        amount,
+        transactionVersion
       })
     });
 
@@ -2727,7 +2776,7 @@ async function createRealSpoincDepositIntent() {
     elements.realDepositSignature.value = '';
 
     const responseMode = data.transaction
-      ? 'transaction payload — Phantom should open next'
+      ? 'transaction payload — selected wallet should open next'
       : (data.signature || data.transactionHash || data.transaction_hash)
         ? 'signature returned — confirm can run directly'
         : 'unknown — stop and ask Zeno';
@@ -2735,7 +2784,7 @@ async function createRealSpoincDepositIntent() {
     const warningBlock = data.transaction || data.signature || data.transactionHash || data.transaction_hash
       ? `
         <div class="mt-3 rounded-xl border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
-          Click “Send with Phantom + Auto Credit” next. Swap Lab will use the Gensuki /claim response,
+          Click “Send with wallet + Auto Credit” next. Swap Lab will use the Gensuki /claim response,
           then call Narrrfs backend confirmation. DSPOINC credit only happens after backend confirmation.
         </div>
       `
@@ -2793,7 +2842,14 @@ async function confirmRealSpoincDeposit() {
   elements.realDepositResult.textContent = 'Preparing Gensuki claim transaction...';
 
   try {
-    const transactionHash = await resolveGensukiClaimTransactionHash(intentData);
+    const savedSignature = elements.realDepositSignature.value.trim();
+    if (!savedSignature && String(state.uncertainDepositIntentId || '') === intentId) {
+      throw new Error('The previous wallet request has an uncertain outcome; reconcile before retrying.');
+    }
+    // A wallet or response failure may occur after broadcast; retain this intent
+    // and never silently ask the wallet to send the same claim a second time.
+    state.uncertainDepositIntentId = intentId;
+    const transactionHash = savedSignature || await resolveGensukiClaimTransactionHash(intentData);
 
     if (!transactionHash) {
       throw new Error('No transaction hash/signature was returned.');
@@ -2837,6 +2893,7 @@ async function confirmRealSpoincDeposit() {
     `;
 
     state.latestRealDepositIntent = null;
+    state.uncertainDepositIntentId = null;
     await loadUserPreview();
   } catch (error) {
     elements.realDepositResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(error.message || 'Claim confirmation failed.')}</span>`;
@@ -2848,7 +2905,7 @@ async function confirmRealSpoincDeposit() {
  *
  * DEVS FOR DECADES:
  * This is a Gensuki /buy wrapper for SOL, EMPIRE, and FOOK. It only prepares
- * a transaction for Phantom. It must never credit or debit DSPOINC.
+ * a transaction for the selected wallet. It must never credit or debit DSPOINC.
  */
 async function createGensukiBuyIntent() {
   const selectedToken = getSelectedGensukiBuyToken();
@@ -2874,6 +2931,8 @@ async function createGensukiBuyIntent() {
   elements.gensukiBuyResult.textContent = `Creating Gensuki ${selectedToken.label} → SPOINC buy intent...`;
 
   try {
+    const provider = await verifySelectedSwapWallet(wallet);
+    const transactionVersion = window.NarrrfsGensukiV1?.detectWalletVersion(provider) || 'v0';
     const response = await fetch(SPOINC_BUY_INTENT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2884,7 +2943,8 @@ async function createGensukiBuyIntent() {
         wallet,
         payment_amount: amount,
         payment_token: selectedToken.label,
-        payment_token_address: selectedToken.paymentTokenAddress
+        payment_token_address: selectedToken.paymentTokenAddress,
+        transactionVersion
       })
     });
 
@@ -2911,12 +2971,12 @@ async function createGensukiBuyIntent() {
         <div>Intent ID: <strong id="latestGensukiBuyIntentId">${escapeHtml(data.intent_id)}</strong></div>
         <div>Route: <strong>${escapeHtml(data.route_key || selectedToken.routeKey)}</strong></div>
         <div>${escapeHtml(selectedToken.label)} Input: <strong>${escapeHtml(data.payment_amount || amount)} ${escapeHtml(selectedToken.label)}</strong></div>
-        <div>Mode: <strong>${hasTransaction ? 'transaction payload — Phantom should open next' : 'unknown — stop and inspect response'}</strong></div>
+        <div>Mode: <strong>${hasTransaction ? 'transaction payload — selected wallet should open next' : 'unknown — stop and inspect response'}</strong></div>
         <div>Idempotency: <strong>${escapeHtml(data.idempotency_id || '')}</strong></div>
         <div>Gensuki Idempotency: <strong>${escapeHtml(data.gensuki_idempotency_id || '')}</strong></div>
       </div>
       <div class="mt-3 rounded-xl border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
-        Next step: click “Sign with Wallet + Confirm”. This buy step does not move DSPOINC. LUT is handled by Gensuki automatically.
+        Next step: click “Sign with Wallet + Confirm”. This buy step does not move DSPOINC. The selected transaction version depends on your wallet.
       </div>
     `;
   } catch (error) {
@@ -2980,48 +3040,50 @@ async function failAbandonedGensukiBuyIntent(intentData, reason, clientErrorMess
 }
 
 /**
- * Sign/send a prepared Gensuki buy transaction with Phantom.
+ * Sign/send a prepared Gensuki buy transaction with the selected wallet.
  *
  * DEVS FOR DECADES:
- * Gensuki builds the transaction. Phantom signs. Narrrfs confirms after the
+ * Gensuki builds the transaction. The selected wallet signs. Narrrfs confirms after the
  * wallet returns a signature. No DSPOINC ledger action is allowed here.
  */
 async function sendGensukiBuyTransactionWithPhantom(intentData) {
-  if (!window.solana || !window.solana.isPhantom) {
-    throw new Error('Phantom wallet is required for this buy flow.');
-  }
+  const walletProvider = getSelectedSwapWalletProvider();
 
   const transactionPayload = intentData.transaction || intentData.gensuki_transaction || '';
   if (!transactionPayload) {
     throw new Error('Gensuki did not return a signable buy transaction payload.');
   }
 
-  const connectResponse = await window.solana.connect();
+  const connectResponse = await walletProvider.connect();
   const connectedWallet = connectResponse.publicKey ? connectResponse.publicKey.toBase58() : '';
   const expectedWallet = String(intentData.wallet || intentData.buyer_wallet || '').trim();
 
   if (expectedWallet && connectedWallet !== expectedWallet) {
-    throw new Error(`Connected Phantom wallet does not match buy intent wallet. Expected ${expectedWallet}`);
+    throw new Error(`Connected wallet does not match buy intent wallet. Expected ${expectedWallet}`);
   }
 
   const transaction = decodeGensukiTransactionPayload(transactionPayload);
+  if ((transaction.version === 1 && (intentData.transactionVersion !== 'v1' || window.NarrrfsGensukiV1?.detectWalletVersion(walletProvider) !== 'v1')) ||
+      (intentData.transactionVersion === 'v1' && transaction.version !== 1)) {
+    throw new Error('Transaction version or selected wallet support does not match this intent.');
+  }
 
-  if (window.solana.signAndSendTransaction) {
-    const result = await window.solana.signAndSendTransaction(transaction);
+  if (walletProvider.signAndSendTransaction) {
+    const result = await walletProvider.signAndSendTransaction(transaction);
     const signature = result && result.signature ? result.signature : '';
 
     if (!signature) {
-      throw new Error('Phantom did not return a buy transaction signature.');
+      throw new Error('The selected wallet did not return a buy transaction signature.');
     }
 
     return signature;
   }
 
-  if (!window.solana.signTransaction) {
-    throw new Error('Phantom signTransaction is unavailable.');
+  if (!walletProvider.signTransaction) {
+    throw new Error('The selected wallet signTransaction is unavailable.');
   }
 
-  const signedTransaction = await window.solana.signTransaction(transaction);
+  const signedTransaction = await walletProvider.signTransaction(transaction);
 
   if (!window.solanaWeb3.Connection) {
     throw new Error('Solana Web3 connection is unavailable.');
@@ -3060,6 +3122,9 @@ if (!canUseBridgeExecution(selectedRouteKey)) {
 
   try {
     const manualSignature = elements.gensukiBuySignature.value.trim();
+    if (String(state.uncertainBuyIntentId || '') === intentId && !manualSignature) {
+      throw new Error('Existing buy intent needs reconciliation before another wallet request.');
+    }
 const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPhantom(intentData);
 
     elements.gensukiBuySignature.value = transactionHash;
@@ -3104,49 +3169,18 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
     await loadGensukiProjectDetails();
   } catch (error) {
     const errorMessage = String(error?.message || 'Gensuki buy confirmation failed.');
-    const lowerErrorMessage = errorMessage.toLowerCase();
-    const looksLikePreBroadcastFailure =
-      lowerErrorMessage.includes('encoding overruns uint8array') ||
-      lowerErrorMessage.includes('deserialize') ||
-      lowerErrorMessage.includes('transaction.from') ||
-      lowerErrorMessage.includes('did not return a buy transaction signature') ||
-      lowerErrorMessage.includes('signandSendTransaction'.toLowerCase()) ||
-      lowerErrorMessage.includes('signtransaction') ||
-      lowerErrorMessage.includes('user rejected') ||
-      lowerErrorMessage.includes('wallet') ||
-      lowerErrorMessage.includes('phantom');
-
-    if (looksLikePreBroadcastFailure) {
-      const cleanupResult = await failAbandonedGensukiBuyIntent(
-        intentData,
-        'pre_broadcast_wallet_failure',
-        errorMessage
-      );
-
-      elements.gensukiBuyResult.innerHTML = `
-        <div class="rounded-xl border border-red-300/25 bg-red-500/10 p-4 text-red-100">
-          <div class="font-black">❌ Wallet transaction was not completed</div>
-          <div class="mt-2 text-sm">
-            The SPOINC buy transaction could not be prepared or signed by the wallet.
-            Nothing was confirmed on Solana from this page action.
-          </div>
-          <div class="mt-3 rounded-lg border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
-            No DSPOINC was credited or deducted by Narrrfs. No local bridge settlement happened.
-          </div>
-          <div class="mt-3 rounded-lg border ${cleanupResult.success ? 'border-emerald-300/25 bg-emerald-500/10 text-emerald-100' : 'border-yellow-300/20 bg-yellow-400/10 text-yellow-50'} p-3 text-xs">
-            ${cleanupResult.success
-              ? '✅ Pending Gensuki buy row was safely closed as failed.'
-              : `⚠️ Pending row cleanup needs support review: ${escapeHtml(cleanupResult.message)}`}
-          </div>
-          <div class="mt-3 text-xs text-slate-300">
-            Support detail: ${escapeHtml(errorMessage)}
-          </div>
-        </div>
-      `;
-      return;
+    if (state.latestGensukiBuyIntent && !elements.gensukiBuySignature.value.trim()) {
+      state.uncertainBuyIntentId = intentId;
     }
-
-    elements.gensukiBuyResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(errorMessage)}</span>`;
+    // A provider error or lost response does not prove that broadcast failed.
+    // Keep the existing intent for reconciliation; never auto-close it by matching text.
+    elements.gensukiBuyResult.innerHTML = `
+      <div class="rounded-xl border border-yellow-300/25 bg-yellow-400/10 p-4 text-yellow-50">
+        <div class="font-black">Transaction status needs verification</div>
+        <div class="mt-2 text-sm">The wallet or confirmation did not return a conclusive result.
+          Do not create another buy until the existing intent and wallet activity have been checked.</div>
+        <div class="mt-3 text-xs">Intent: ${escapeHtml(intentId)}. ${escapeHtml(errorMessage)}</div>
+      </div>`;
   }
 }
 
@@ -3243,6 +3277,6 @@ updateCalculator();
 
 init();
   </script>
-  <script src="js/dspoinc-buy-widget.js?v=dspoinc-buy-quote-preserve-v4-20260913"></script>
+  <script src="js/dspoinc-buy-widget.js?v=gensuki-v1-wallet-20261120"></script>
 </body>
 </html>

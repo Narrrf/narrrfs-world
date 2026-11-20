@@ -17,6 +17,7 @@
 
 require_once __DIR__ . '/bridge-helpers.php';
 require_once __DIR__ . '/bridge-tester-helpers.php';
+require_once __DIR__ . '/transaction-version.php';
 
 spoinc_bridge_boot_json_api(['POST', 'OPTIONS']);
 
@@ -357,6 +358,10 @@ function read_gensuki_buy_value(array $payload, string $field): string
 
 try {
     $requestData = spoinc_bridge_get_request_data();
+    $transactionVersion = spoinc_requested_transaction_version($requestData);
+    if ($transactionVersion === null) {
+        spoinc_bridge_json_response(['success' => false, 'error' => 'Invalid transactionVersion.'], 400);
+    }
     $pdo = spoinc_bridge_open_database();
 
     $requestedPaymentTokenAddress = trim((string)($requestData['payment_token_address'] ?? SPOINC_BUY_NATIVE_SOL_ADDRESS));
@@ -431,7 +436,8 @@ try {
         'paymentAmount' => (float)$paymentAmount,
         'paymentTokenAddress' => $paymentTokenAddress,
         'latestBlockhash' => $blockhashResult['blockhash'],
-        'idempotencyId' => $idempotencyId
+        'idempotencyId' => $idempotencyId,
+        'transactionVersion' => $transactionVersion
     ];
 
     $rawRequestJson = json_encode([
@@ -482,15 +488,24 @@ try {
     $gensukiJson = $gensukiResult['json'] ?? [];
     $gensukiSuccess = !empty($gensukiResult['success']) && !empty($gensukiJson['success']);
     $transactionPayload = is_array($gensukiJson) ? read_gensuki_buy_value($gensukiJson, 'transaction') : '';
+    // A conflicting or unreadable upstream version is not safe to sign.
+    // Keep the intent pending for reconciliation rather than declaring it failed.
+    $reportedVersion = is_array($gensukiJson) ? ($gensukiJson['transactionVersion'] ?? ($gensukiJson['data']['transactionVersion'] ?? null)) : null;
+    $versionMismatch = $gensukiSuccess && (!spoinc_partner_version_matches($transactionVersion, $reportedVersion)
+        || ($transactionPayload !== '' && !spoinc_partner_payload_version_matches($transactionVersion, $transactionPayload, $wallet))
+        || ($transactionVersion === 'v1' && $transactionPayload === ''));
+    if ($versionMismatch) { $transactionPayload = ''; $gensukiSuccess = false; }
     $returnedIdempotencyId = is_array($gensukiJson) ? read_gensuki_buy_value($gensukiJson, 'idempotencyId') : '';
     $lookupTableAddress = is_array($gensukiJson) ? (read_gensuki_buy_value($gensukiJson, 'lookupTableAddress') ?: read_gensuki_buy_value($gensukiJson, 'lutAddress')) : '';
 
     $status = $gensukiSuccess && $transactionPayload !== '' ? 'buy_payload_ready' : 'buy_failed';
     $gensukiStatus = $gensukiSuccess && $transactionPayload !== '' ? 'buy_payload_ready' : 'buy_request_failed';
     $narrrfsStatus = $gensukiSuccess && $transactionPayload !== '' ? 'awaiting_user_signature_no_ledger_movement' : 'buy_failed_no_ledger_movement';
+    if ($versionMismatch) { $status = 'buy_pending'; $gensukiStatus = 'buy_request_created'; $narrrfsStatus = 'awaiting_gensuki_buy_payload'; }
 
     $responseData = [
         'intent_id' => $intentId,
+        'transactionVersion' => $transactionVersion,
         'idempotency_id' => $idempotencyId,
         'gensuki_idempotency_id' => $returnedIdempotencyId,
         'discord_id' => $userId,
@@ -546,10 +561,10 @@ try {
     if (!$gensukiSuccess || $transactionPayload === '') {
         spoinc_bridge_json_response([
             'success' => false,
-            'error' => 'Gensuki buy request failed or returned no transaction. No DSPOINC movement happened.',
+            'error' => $versionMismatch ? 'Gensuki transaction version mismatch; intent requires review.' : 'Gensuki buy request failed or returned no transaction. No DSPOINC movement happened.',
             'data' => $responseData,
             'gensuki_http_code' => $gensukiResult['http_code'] ?? null,
-            'gensuki_response' => $gensukiJson
+            'gensuki_response' => $versionMismatch ? null : $gensukiJson
         ], 502);
     }
 

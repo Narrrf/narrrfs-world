@@ -27,6 +27,7 @@
  */
 
 require_once __DIR__ . '/bridge-helpers.php';
+require_once __DIR__ . '/transaction-binding.php';
 require_once __DIR__ . '/bridge-tester-helpers.php';
 
 spoinc_bridge_boot_json_api(['POST', 'OPTIONS']);
@@ -396,6 +397,16 @@ try {
         ], 404);
     }
 
+    // A previous confirmation may have reached Gensuki even if its response was
+    // lost. Never submit a second confirmation without reconciling that attempt.
+    if (($intent['status'] ?? '') === 'claim_confirm_pending') {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'This claim confirmation is pending reconciliation; do not retry the wallet transaction.',
+            'safety' => ['dspoinc_credited' => false, 'gensuki_confirm_sent' => false]
+        ], 409);
+    }
+
     $expiresAt = trim((string)($intent['expires_at'] ?? ''));
     if ($expiresAt !== '' && strtotime($expiresAt . ' UTC') < time()) {
         spoinc_bridge_json_response([
@@ -498,6 +509,52 @@ $solanaSignatureStatus = spoinc_bridge_wait_for_solana_signature_status($transac
         ], 425);
     }
 
+    // A successful signature alone does not bind it to this intent. Compare the
+    // confirmed wire message with the exact Gensuki-prepared message first.
+    // Inconclusive RPC data never triggers partner confirmation or a DB write.
+    $bindingRpc = spoinc_binding_fetch_rpc($transactionHash);
+    if ($bindingRpc === null || !isset($bindingRpc['result'])) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Transaction details are unavailable. Retry confirmation; no DSPOINC was credited.',
+            'safety' => ['dspoinc_credited' => false, 'gensuki_confirm_sent' => false]
+        ], 503);
+    }
+    if (!spoinc_binding_rpc_matches($bindingRpc, $intent, $transactionHash, $requestedStatus === 'failed')
+        || ($requestedStatus === 'complete' && !spoinc_binding_rpc_debit_matches($bindingRpc, $intent, $config))) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Transaction does not match the prepared claim, wallet and required token debit. No DSPOINC was credited.',
+            'safety' => ['dspoinc_credited' => false, 'gensuki_confirm_sent' => false]
+        ], 409);
+    }
+
+    // One atomic SQLite update reserves this intent before the external call.
+    // Keep uncertain reservations for explicit reconciliation after failures.
+    $originalResponse = (string)($intent['raw_response_json'] ?? '');
+    $reservationRecord = json_decode($originalResponse, true);
+    if (!is_array($reservationRecord)) {
+        spoinc_bridge_json_response(['success' => false, 'error' => 'Claim record is unavailable; reconcile before retrying.'], 409);
+    }
+    $reservationRecord['confirmation_attempt'] = [
+        'signature' => $transactionHash,
+        'requested_status' => $requestedStatus,
+        'reserved_at' => gmdate('Y-m-d H:i:s')
+    ];
+    $reservedResponse = json_encode($reservationRecord);
+    if ($reservedResponse === false) {
+        spoinc_bridge_json_response(['success' => false, 'error' => 'Could not record the confirmation reservation.'], 500);
+    }
+    $reserveStmt = $pdo->prepare("UPDATE tbl_spoinc_bridge_intents SET status = 'claim_confirm_pending', raw_response_json = ?, updated_at = CURRENT_TIMESTAMP WHERE intent_id = ? AND discord_id = ? AND status IN ('claim_payload_ready', 'claim_pending', 'claim_signature_returned') AND narrrfs_status IN ('awaiting_user_signature', 'awaiting_gensuki_confirm', 'awaiting_gensuki_claim_payload') AND raw_response_json = ?");
+    $reserveStmt->execute([$reservedResponse, (int)$intent['intent_id'], $userId, $originalResponse]);
+    if ($reserveStmt->rowCount() !== 1) {
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'This claim was already reserved or changed; reconcile before retrying.',
+            'safety' => ['dspoinc_credited' => false, 'gensuki_confirm_sent' => false]
+        ], 409);
+    }
+
     $confirmEndpoint = spoinc_bridge_build_gensuki_endpoint($config, SPOINC_GENSUKI_CONFIRM_PATH);
     $confirmRequest = [
         'projectId' => $projectId,
@@ -508,6 +565,18 @@ $solanaSignatureStatus = spoinc_bridge_wait_for_solana_signature_status($transac
     $gensukiConfirmResult = spoinc_bridge_post_gensuki_json($confirmEndpoint, $apiKey, $confirmRequest);
     $gensukiConfirmJson = $gensukiConfirmResult['json'] ?? [];
     $gensukiConfirmSuccess = !empty($gensukiConfirmResult['success']) && !empty($gensukiConfirmJson['success']);
+
+    if (!$gensukiConfirmSuccess) {
+        // A timeout or malformed response does not prove partner confirmation failed.
+        // Keep the original intent and prepared payload for reconciliation; never
+        // mark it failed or issue a replacement credit from this ambiguous result.
+        spoinc_bridge_json_response([
+            'success' => false,
+            'error' => 'Gensuki confirmation is inconclusive. This intent is reserved for reconciliation; no DSPOINC was credited.',
+            'gensuki_http_code' => $gensukiConfirmResult['http_code'] ?? null,
+            'safety' => ['dspoinc_credited' => false, 'intent_retained' => true]
+        ], 502);
+    }
 
     if ($requestedStatus === 'failed') {
         $pdo->beginTransaction();
@@ -531,26 +600,6 @@ $solanaSignatureStatus = spoinc_bridge_wait_for_solana_signature_status($transac
                 'message' => 'Transaction marked failed. No DSPOINC credited.'
             ]
         ]);
-    }
-
-    if (!$gensukiConfirmSuccess) {
-        $pdo->beginTransaction();
-        mark_spoinc_claim_intent_failed($pdo, (int)$intent['intent_id'], 'Gensuki confirm failed. No DSPOINC credited.', [
-            'confirm_endpoint' => $confirmEndpoint,
-            'confirm_request' => $confirmRequest,
-            'gensuki_confirm_http_code' => $gensukiConfirmResult['http_code'] ?? null,
-            'gensuki_confirm_response' => $gensukiConfirmJson,
-            'gensuki_confirm_raw_body' => $gensukiConfirmResult['raw_body'] ?? '',
-            'gensuki_confirm_error' => $gensukiConfirmResult['error'] ?? ''
-        ]);
-        $pdo->commit();
-
-        spoinc_bridge_json_response([
-            'success' => false,
-            'error' => 'Gensuki confirm failed. No DSPOINC was credited.',
-            'gensuki_http_code' => $gensukiConfirmResult['http_code'] ?? null,
-            'gensuki_response' => $gensukiConfirmJson
-        ], 502);
     }
 
     $season = load_spoinc_bridge_active_season($pdo);
