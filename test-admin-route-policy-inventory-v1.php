@@ -158,6 +158,9 @@ policy_test_assert(is_string($saveScore), 'save-score source is readable');
 
 policy_test_assert(str_contains($containment, '^/admin-interface\\.html'), 'legacy admin page remains denied');
 policy_test_assert(str_contains($containment, '^/api/admin'), 'legacy admin API remains denied');
+foreach (['dashboard-summary', 'player-profile', 'user-search'] as $route) {
+    policy_test_assert(substr_count($containment, '/api/owner-control/v1/' . $route . '\\.php') === 1, 'exact read route exception ' . $route);
+}
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/canary\.php'), 'owner-control containment retains the exact canary exception');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/genetic/catalog\.php'), 'owner-control containment names the exact Genetic Catalog route');
 policy_test_assert(str_contains($containment, '/api/owner-control/v1/quests/overview\.php'), 'owner-control containment names the exact Quest/Hunt overview route');

@@ -1030,7 +1030,7 @@ const SOLANA_SYSTEM_PROGRAM_ID = '11111111111111111111111111111111';
 const LOCAL_TEST_DISCORD_ID = '328601656659017732';
 const LOCAL_TEST_DISCORD_NAME = 'Narrrf Local Test';
 
-const DSPOINC_ECONOMY_OVERVIEW_ENDPOINT = '/api/admin/get-dspoinc-overview.php';
+const DSPOINC_ECONOMY_OVERVIEW_ENDPOINT = '/api/user/economy-pulse.php';
 
 const SPOINC_BUY_INTENT_ENDPOINT = '/api/partner/spoinc/create-gensuki-buy-intent.php';
 const SPOINC_BUY_CONFIRM_ENDPOINT = '/api/partner/spoinc/confirm-gensuki-buy-intent.php';
@@ -2005,7 +2005,9 @@ async function loadDspoincEconomyPulse() {
 
     const result = await response.json();
 
-    if (!response.ok || !result.success || !result.data) {
+    if (!response.ok || !result.success || !result.data ||
+        !Number.isSafeInteger(result.data.total_supply) ||
+        !Number.isSafeInteger(result.data.average_balance)) {
       throw new Error(result.error || `Economy API failed with HTTP ${response.status}`);
     }
 
