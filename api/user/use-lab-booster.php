@@ -437,6 +437,7 @@ function get_inventory_row(PDO $pdo, $user_id, $item_id) {
     return $row ?: null;
 }
 
+$boosterTransactionOpen = false;
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         json_response([
@@ -525,8 +526,27 @@ try {
         ], 409);
     }
 
+    // Serialize the authoritative quantity read with the consumption and
+    // owner inventory adjustments. Manual BEGIN requires explicit SQL cleanup.
+    $pdo->exec('PRAGMA busy_timeout = 5000');
+    $pdo->exec('BEGIN IMMEDIATE');
+    $boosterTransactionOpen = true;
+    // A second booster may have changed the timer while this request waited
+    // for the writer lock. Calculate its reduction from the committed timer.
+    $upgradeRow = get_existing_upgrade_row($pdo, $token_id, 'genesis', $trait_type, $trait_value);
+    $upgradeStatus = strtolower(trim((string)($upgradeRow['upgrade_status'] ?? 'idle')));
+    $upgradeEndsAt = $upgradeRow['upgrade_ends_at'] ?? null;
+    $endTs = !empty($upgradeEndsAt) ? strtotime($upgradeEndsAt) : false;
+    $nowTs = time();
+    if (!$upgradeRow || $upgradeStatus !== 'upgrading' || !$endTs || $endTs <= $nowTs) {
+        $pdo->exec('ROLLBACK');
+        $boosterTransactionOpen = false;
+        json_response(['success' => false, 'error' => 'This upgrade is no longer eligible for a booster'], 409);
+    }
     $inventoryRow = get_inventory_row($pdo, $user_id, $item_id);
     if (!$inventoryRow || (int)($inventoryRow['quantity'] ?? 0) < 1) {
+        $pdo->exec('ROLLBACK');
+        $boosterTransactionOpen = false;
         json_response([
             'success' => false,
             'error' => 'You do not own this Lab booster item'
@@ -556,8 +576,6 @@ $newRemainingSeconds = max(1, $remainingSeconds - $reductionSeconds);
         $trait_type,
         $trait_value
     );
-
-    $pdo->beginTransaction();
 
 $updateUpgradeStmt = $pdo->prepare("
     UPDATE tbl_nft_trait_upgrades
@@ -621,7 +639,8 @@ $updateUpgradeStmt->execute([
         'lab_system'
     ]);
 
-    $pdo->commit();
+    $pdo->exec('COMMIT');
+    $boosterTransactionOpen = false;
 
     json_response([
         'success' => true,
@@ -642,9 +661,11 @@ $updateUpgradeStmt->execute([
             'remaining_inventory_quantity' => $newQuantity
         ]
     ]);
-} catch (Exception $e) {
-    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
-        $pdo->rollBack();
+} catch (Throwable $e) {
+    if ($boosterTransactionOpen && isset($pdo) && $pdo instanceof PDO) {
+        try { $pdo->exec('ROLLBACK'); }
+        catch (Throwable $rollbackError) { error_log('Lab booster rollback failed: ' . $rollbackError->getMessage()); }
+        $boosterTransactionOpen = false;
     }
 
     error_log('🧪 Use Lab Booster ERROR: ' . $e->getMessage());

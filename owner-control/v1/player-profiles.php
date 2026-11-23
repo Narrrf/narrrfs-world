@@ -22,6 +22,9 @@ if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? '')) === 'HEAD') { exit; }
 </style></head><body><main>
 <p><a href="/owner-control/v1/index.php">← Owner Control</a> · <a href="/owner-control/v1/users.php">User Management</a></p>
 <h1>Player Profile Center — R5.1</h1>
+<?php if (getenv('NARRRFS_OWNER_PLAYER_ADJUSTMENT_UI_ENABLED') === '1'): ?>
+<p><a href="/owner-control/v1/player-adjustments.php">Adjust player points or elixirs</a></p>
+<?php endif; ?>
 <p class="note">Read-only account, game activity, regular inventory, roles and Genetic Item research slot capacity. Does not grant, claim, or change anything.</p>
 <form id="profile-form"><label for="player-id">Exact Discord ID</label> <input id="player-id" inputmode="numeric" pattern="[0-9]{17,20}" minlength="17" maxlength="20" required> <button type="submit">Load profile</button></form>
 <div class="panel" aria-label="Find player by username"><label for="profile-lookup">Find by username</label> <input id="profile-lookup" type="text" minlength="2" maxlength="64" autocomplete="off" aria-label="Find player by username" role="combobox" aria-autocomplete="list" aria-controls="profile-suggestions" aria-expanded="false"><div id="profile-suggestions" role="listbox" hidden></div><p class="note" id="profile-lookup-status">Type at least 2 characters to find players.</p></div>

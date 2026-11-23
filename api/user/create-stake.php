@@ -111,6 +111,9 @@ if (!$user_id) {
 
 try {
     $pdo = getDatabaseConnection();
+    // Schema checks below may also encounter a writer, before the stake
+    // transaction begins. Bound contention on this connection from the start.
+    $pdo->exec('PRAGMA busy_timeout = 5000');
 } catch (Exception $e) {
     json_response([
         'success' => false,
@@ -281,33 +284,9 @@ $seasonStmt = $pdo->prepare("SELECT season_name FROM tbl_seasons WHERE is_active
 $seasonStmt->execute();
 $seasonRow = $seasonStmt->fetch(PDO::FETCH_ASSOC);
 $currentSeason = $seasonRow['season_name'] ?? 'Season 6';
-
-// Check user balance
-$balanceStmt = $pdo->prepare("SELECT SUM(score) AS total_balance FROM tbl_user_scores WHERE user_id = ?");
-$balanceStmt->execute([$user_id]);
-$balanceRow = $balanceStmt->fetch(PDO::FETCH_ASSOC);
-$total_balance = (int)($balanceRow['total_balance'] ?? 0);
-
-// Get frozen balance
-$frozenStmt = $pdo->prepare("
-    SELECT COALESCE(SUM(amount), 0) AS frozen_balance 
-    FROM tbl_dspoinc_stakes 
-    WHERE user_id = ? AND status = 'active'
-");
-$frozenStmt->execute([$user_id]);
-$frozenRow = $frozenStmt->fetch(PDO::FETCH_ASSOC);
-$frozen_balance = (int)($frozenRow['frozen_balance'] ?? 0);
-
-$available_balance = $total_balance - $frozen_balance;
-
-if ($amount > $available_balance) {
-    json_response([
-        'success' => false,
-        'error' => 'Insufficient balance',
-        'available_balance' => $available_balance,
-        'requested_amount' => $amount
-    ], 400);
-}
+// Release the read cursor before requesting the SQLite writer lock. Keeping a
+// read transaction open here can make a lock upgrade fail immediately.
+$seasonStmt->closeCursor();
 
 // Calculate unfreeze date
 $frozen_at = date('Y-m-d H:i:s');
@@ -317,8 +296,32 @@ if (staking_is_v2_active()) {
     $unfreeze_at = date('Y-m-d H:i:s', strtotime("+{$freeze_duration_months} months"));
 }
 
+$stakeTransactionOpen = false;
 try {
-    $pdo->beginTransaction();
+    // Serialize the available-balance check with the stake insert and any
+    // other writer using the same SQLite database. PDO does not track a
+    // manually issued BEGIN IMMEDIATE, so use SQL COMMIT/ROLLBACK below.
+    $pdo->exec('BEGIN IMMEDIATE');
+    $stakeTransactionOpen = true;
+    $balanceStmt = $pdo->prepare("SELECT SUM(score) AS total_balance FROM tbl_user_scores WHERE user_id = ?");
+    $balanceStmt->execute([$user_id]);
+    $balanceRow = $balanceStmt->fetch(PDO::FETCH_ASSOC);
+    $total_balance = (int)($balanceRow['total_balance'] ?? 0);
+    $frozenStmt = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) AS frozen_balance FROM tbl_dspoinc_stakes WHERE user_id = ? AND status = 'active'");
+    $frozenStmt->execute([$user_id]);
+    $frozenRow = $frozenStmt->fetch(PDO::FETCH_ASSOC);
+    $frozen_balance = (int)($frozenRow['frozen_balance'] ?? 0);
+    $available_balance = $total_balance - $frozen_balance;
+    if ($amount > $available_balance) {
+        $pdo->exec('ROLLBACK');
+        $stakeTransactionOpen = false;
+        json_response([
+            'success' => false,
+            'error' => 'Insufficient balance',
+            'available_balance' => $available_balance,
+            'requested_amount' => $amount
+        ], 400);
+    }
 
     // Create stake record
     try {
@@ -464,11 +467,17 @@ $stakeStmt->execute([
         // But log it prominently so we can fix it
     }
 
-    $pdo->commit();
+    $pdo->exec('COMMIT');
+    $stakeTransactionOpen = false;
     error_log("✅ Transaction committed successfully");
-} catch (Exception $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
+} catch (Throwable $e) {
+    if ($stakeTransactionOpen) {
+        try {
+            $pdo->exec('ROLLBACK');
+        } catch (Throwable $rollbackError) {
+            error_log('Stake transaction rollback failed: ' . $rollbackError->getMessage());
+        }
+        $stakeTransactionOpen = false;
     }
     
     // Log detailed error for debugging

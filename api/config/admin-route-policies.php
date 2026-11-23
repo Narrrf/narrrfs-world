@@ -280,6 +280,30 @@ return [
             'origins' => [],
             'allowRefererFallback' => false,
         ],
+        // Player changes are separately gated, owner-only and one-time scoped.
+        'owner_control.player_adjustment.ui.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_PLAYER_ADJUSTMENT_UI_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => false, 'methods' => ['GET', 'HEAD'],
+            'csrf' => false, 'contentTypes' => [], 'origins' => [], 'allowRefererFallback' => false,
+        ],
+        'owner_control.player_adjustment.csrf.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_PLAYER_ADJUSTMENT_CSRF_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => false, 'csrfIssuer' => true,
+            'methods' => ['POST'], 'csrf' => false, 'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
+        'owner_control.player_adjustment.points.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_PLAYER_POINTS_ADJUST_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => true, 'methods' => ['POST'], 'csrf' => true,
+            'csrfScope' => 'owner_control.player_adjustment.points.v1', 'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
+        'owner_control.player_adjustment.inventory.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_PLAYER_INVENTORY_ADJUST_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => true, 'methods' => ['POST'], 'csrf' => true,
+            'csrfScope' => 'owner_control.player_adjustment.inventory.v1', 'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
         'owner_control.user_search.v1' => [
             'enabled' => getenv('NARRRFS_OWNER_USER_SEARCH_ENABLED') === '1',
             'ownerOnly' => true,
