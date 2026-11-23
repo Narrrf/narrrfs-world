@@ -2531,6 +2531,181 @@ function triggerCheeseHuntEscapeAfterCatch(clickedEggId) {
   </div>
 </section>
 
+<!-- 🧀🧬 THE CHEESE ENGINE — INTERACTIVE PUBLIC SHOWCASE
+     DEVS FOR DECADES:
+     Presentation-only public neural map showcase. It displays how the 28-agent
+     Cheese Engine squads collaborate under Narrrf + Team with simulated particle waves.
+     It has zero connections to game scores, DSPOINC/SPOINC, wallets, DBs, or admin/brain state. -->
+<section
+  id="cheese-engine-showcase"
+  class="relative z-20 px-4 py-12 bg-gradient-to-b from-slate-950 via-amber-950/25 to-slate-950 border-b border-yellow-300/15 overflow-hidden"
+>
+  <style>
+    #cheese-engine-showcase {
+      --ce-card: #17130e;
+      --ce-panel: #100d0a;
+      --ce-border: #3d3121;
+      --ce-fg: #faf5eb;
+      --ce-muted: #cbbba0;
+      --ce-gold: #f5b82e;
+      --ce-cyan: #22d3ee;
+      --ce-emerald: #34d399;
+      --ce-violet: #c084fc;
+      --ce-orange: #fb923c;
+      --ce-coral: #fb7185;
+      --ce-spot: rgba(245, 184, 46, 0.055);
+    }
+    #cheese-engine-showcase .ce-stage {
+      width: 100%;
+      height: 460px;
+      display: block;
+      touch-action: pan-y;
+      user-select: none;
+      cursor: grab;
+    }
+    @media (max-width: 767px) {
+      #cheese-engine-showcase .ce-stage {
+        height: 350px;
+      }
+    }
+    @keyframes cePulseHalo {
+      0%, 100% { opacity: 0.95; stroke-width: 3; }
+      50% { opacity: 0.35; stroke-width: 5.5; }
+    }
+    @keyframes ceEdgeFlowDash {
+      to { stroke-dashoffset: -28; }
+    }
+    #cheese-engine-showcase .ce-node-halo {
+      animation: cePulseHalo 1.6s ease-in-out infinite;
+    }
+    #cheese-engine-showcase .ce-edge-flow {
+      stroke-dasharray: 8 6;
+      animation: ceEdgeFlowDash 1.1s linear infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #cheese-engine-showcase .ce-node-halo,
+      #cheese-engine-showcase .ce-edge-flow {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute -top-20 left-1/4 h-72 w-72 rounded-full bg-amber-400/10 blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto">
+    <div class="rounded-[2rem] border border-yellow-300/25 bg-slate-950/85 p-4 md:p-6 shadow-2xl overflow-hidden space-y-4">
+
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="shrink-0 w-12 h-12 rounded-2xl border border-amber-300/35 bg-amber-500/10 p-1.5 shadow-lg shadow-amber-950/40" aria-hidden="true">
+            <svg viewBox="0 0 40 40" class="w-full h-full">
+              <defs>
+                <linearGradient id="ce-hdr-wedge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fde047" />
+                  <stop offset="100%" stop-color="#f59e0b" />
+                </linearGradient>
+              </defs>
+              <path d="M 5 28 L 29 11 L 35 30 Z" fill="url(#ce-hdr-wedge-grad)" stroke="#b45309" stroke-width="1.6" stroke-linejoin="round" />
+              <circle cx="17" cy="25" r="2.2" fill="#92400e" />
+              <circle cx="25" cy="22" r="1.7" fill="#92400e" />
+              <circle cx="28" cy="27" r="1.3" fill="#92400e" />
+              <path d="M 4 12 C 11 5, 19 18, 28 7" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" />
+              <path d="M 4 7 C 11 18, 19 5, 28 12" fill="none" stroke="#c084fc" stroke-width="1.6" stroke-linecap="round" opacity="0.9" />
+            </svg>
+          </div>
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full border border-amber-300/35 bg-amber-400/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-amber-200 mb-1.5">
+              🧀🧬 The Cheese Engine • 28 Specialist Agents
+            </div>
+            <h2 class="text-2xl md:text-4xl font-black text-white leading-tight">
+              Inside Narrrf's Living <span class="text-amber-300">Cheese Engine</span>
+            </h2>
+            <p class="mt-1 text-xs md:text-sm text-slate-300 max-w-3xl">
+              Watch cheese DNA and golden crumbs zip between squads under <strong class="text-amber-200">Narrrf + Team</strong> — from the Mousetrap Arena and Cheddar Vault to the 3D Cheese-Verse Foundry. Click any node to meet that crew!
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5" id="ce-dept-chips" aria-label="Quick focus squad chips"></div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 bg-slate-900/75 px-3 py-2">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-xs font-bold text-slate-400 mr-1">Data Flow:</span>
+          <button type="button" data-ce-flow="both">🧬🧀 DNA + Crumbs</button>
+          <button type="button" data-ce-flow="crumbs">🧀 Crumbs</button>
+          <button type="button" data-ce-flow="dna">🧬 DNA</button>
+          <button type="button" data-ce-flow="off">⏸ Calm</button>
+          <button type="button" id="ce-tour-btn">⚡ Live Tour: ON</button>
+          <span id="ce-tour-status" class="text-xs font-semibold text-amber-200 ml-1"></span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button type="button" id="ce-zoom-in" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-100 border border-white/10 transition">+ Zoom</button>
+          <button type="button" id="ce-zoom-out" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-100 border border-white/10 transition">- Zoom</button>
+          <button type="button" id="ce-zoom-reset" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-100 border border-white/10 transition">Reset</button>
+          <button type="button" id="ce-clear-trace" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-amber-500/20 text-amber-200 border border-amber-300/30 transition">Show All</button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-amber-300/20 bg-[#100d0a] overflow-hidden shadow-inner">
+        <svg id="ce-public-svg" viewBox="0 0 1240 568" class="ce-stage" role="img" aria-label="Interactive Narrrf's World Cheese Engine Neural Map">
+          <defs>
+            <pattern id="ce-pub-swiss" width="90" height="90" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="24" r="9" fill="var(--ce-spot)" />
+              <circle cx="66" cy="54" r="13" fill="var(--ce-spot)" />
+              <circle cx="72" cy="18" r="5" fill="var(--ce-spot)" />
+            </pattern>
+            <filter id="ce-pub-glow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="1.8" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <linearGradient id="ce-pub-wedge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fde047" />
+              <stop offset="100%" stop-color="#f59e0b" />
+            </linearGradient>
+            <g id="ce-pub-crumb-wedge">
+              <path d="M -7 -5 L 8 0 L -7 5 Z" fill="url(#ce-pub-wedge-grad)" stroke="#b45309" stroke-width="1" stroke-linejoin="round" />
+              <circle cx="-2.2" cy="-1.4" r="1.35" fill="#92400e" />
+              <circle cx="-3.1" cy="2.1" r="1.05" fill="#92400e" />
+            </g>
+            <g id="ce-pub-crumb-mini">
+              <path d="M -4 -2.5 L 1.5 -3.5 L 4.5 0 L 1 3.2 L -3.5 2 Z" fill="#fbbf24" stroke="#b45309" stroke-width="0.8" stroke-linejoin="round" />
+              <circle cx="0.2" cy="-0.4" r="0.85" fill="#92400e" />
+            </g>
+            <g id="ce-pub-dna-helix" filter="url(#ce-pub-glow)">
+              <line x1="-6" y1="-2.8" x2="-6" y2="2.8" stroke="#c084fc" stroke-width="1.1" opacity="0.9" />
+              <line x1="0" y1="3.4" x2="0" y2="-3.4" stroke="#fde68a" stroke-width="1.1" opacity="0.95" />
+              <line x1="6" y1="-2.8" x2="6" y2="2.8" stroke="#c084fc" stroke-width="1.1" opacity="0.9" />
+              <path d="M -10 -3.8 C -5 -3.8, -5 3.8, 0 3.8 C 5 3.8, 5 -3.8, 10 -3.8" fill="none" stroke="#22d3ee" stroke-width="1.65" stroke-linecap="round" />
+              <path d="M -10 3.8 C -5 3.8, -5 -3.8, 0 -3.8 C 5 -3.8, 5 3.8, 10 3.8" fill="none" stroke="#f5b82e" stroke-width="1.65" stroke-linecap="round" />
+            </g>
+            <g id="ce-pub-dna-active" filter="url(#ce-pub-glow)">
+              <line x1="-7.5" y1="-3" x2="-7.5" y2="3" stroke="#ffffff" stroke-width="1.2" opacity="0.95" />
+              <line x1="-2.5" y1="3.6" x2="-2.5" y2="-3.6" stroke="#fde68a" stroke-width="1.2" />
+              <line x1="2.5" y1="-3.6" x2="2.5" y2="3.6" stroke="#a7f3d0" stroke-width="1.2" />
+              <line x1="7.5" y1="3" x2="7.5" y2="-3" stroke="#ffffff" stroke-width="1.2" opacity="0.95" />
+              <path d="M -11 -4.2 C -6 -4.2, -5 4.2, 0 4.2 C 5 4.2, 6 -4.2, 11 -4.2" fill="none" stroke="#10b981" stroke-width="1.9" stroke-linecap="round" />
+              <path d="M -11 4.2 C -6 4.2, -5 -4.2, 0 -4.2 C 5 -4.2, 6 4.2, 11 4.2" fill="none" stroke="#f5b82e" stroke-width="1.9" stroke-linecap="round" />
+            </g>
+          </defs>
+          <rect width="1240" height="568" fill="url(#ce-pub-swiss)" pointer-events="none" />
+          <g id="ce-viewport"></g>
+        </svg>
+      </div>
+
+      <div id="ce-spotlight" class="rounded-2xl border border-white/10 bg-slate-900/80 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4"></div>
+
+    </div>
+  </div>
+</section>
+
 <section class="relative z-20 py-16 px-4 bg-gradient-to-b from-slate-950 via-orange-950/35 to-slate-950 overflow-hidden">
     <!-- ☀️ Summer background glow.
        DEVS FOR DECADES:
@@ -5240,5 +5415,6 @@ setTimeout(() => {
 
 <!-- 🍩 Footer removed - integrated into main footer section above -->
  <script src="js/cheese-auth-indicator.js"></script>
+ <script src="js/cheese-engine-showcase.js"></script>
 </body>
 </html>
