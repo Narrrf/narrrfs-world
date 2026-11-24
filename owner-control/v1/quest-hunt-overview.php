@@ -6,6 +6,9 @@ define('NARRRFS_SESSION_READ_ONLY', true);
 require_once __DIR__ . '/../../api/config/admin-authorization.php';
 narrrfs_require_admin_request('owner_control.quest_hunt_overview.ui.v1');
 
+$cheeseHuntAvailable = getenv('NARRRFS_OWNER_CHEESE_HUNT_UI_ENABLED') === '1'
+    && getenv('NARRRFS_OWNER_CHEESE_HUNT_READ_ENABLED') === '1';
+
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store, max-age=0');
 header('Pragma: no-cache');
@@ -34,7 +37,7 @@ if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? '')) === 'HEAD') {
 </head>
 <body>
 <main>
-  <p><a href="/owner-control/v1/index.php">← Owner Control</a></p>
+  <p><a href="/owner-control/v1/index.php">← Owner Control</a><?php if ($cheeseHuntAvailable): ?> · <a href="/owner-control/v1/cheese-hunt.php">Open Cheese Hunt Workspace →</a><?php endif; ?></p>
   <h1>Quest / Hunt Overview</h1>
   <p class="meta">Owner-only read-only aggregate status. No player, claim, reward, configuration, or action controls are available.</p>
   <p id="status" role="status">Loading aggregate overview…</p>

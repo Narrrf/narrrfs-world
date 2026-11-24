@@ -54,6 +54,16 @@ $questHuntOverviewAvailable =
     getenv('NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_UI_ENABLED') === '1'
     && getenv('NARRRFS_OWNER_QUEST_HUNT_OVERVIEW_READ_ENABLED') === '1';
 
+$cheeseHuntAvailable =
+    getenv('NARRRFS_OWNER_CHEESE_HUNT_UI_ENABLED') === '1'
+    && getenv('NARRRFS_OWNER_CHEESE_HUNT_READ_ENABLED') === '1';
+
+// The workspace shell may advertise this route once its read-only UI gate is
+// enabled. The page itself grants no mutation capability: its CSRF, points,
+// and inventory operations remain behind separate server-side gates.
+$playerAdjustmentsAvailable =
+    getenv('NARRRFS_OWNER_PLAYER_ADJUSTMENT_UI_ENABLED') === '1';
+
 $labStoreOffersAvailable = getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_UI_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_OFFERS_READ_ENABLED') === '1';
 $labStoreLiveOffersAvailable = getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_UI_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_LIVE_OFFERS_READ_ENABLED') === '1';
 $labStoreDraftsAvailable = getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_UI_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_READ_ENABLED') === '1' && getenv('NARRRFS_OWNER_LAB_STORE_DRAFTS_WRITE_ENABLED') === '1';
@@ -81,9 +91,12 @@ $capabilities = [
         'description' => 'Mission visibility is a future read-only candidate.',
     ],
     [
-        'name' => 'Point Management',
-        'status' => 'PROTECTED',
-        'description' => 'DSPOINC economy mutation. Legacy backend is not reusable as-is.',
+        'name' => 'Player Adjustments',
+        'status' => $playerAdjustmentsAvailable ? 'AVAILABLE' : 'PROTECTED',
+        'description' => 'Owner-only player adjustment workspace. DSPOINC and elixir changes remain separately CSRF- and gate-protected.',
+        'href' => $playerAdjustmentsAvailable
+            ? '/owner-control/v1/player-adjustments.php'
+            : null,
     ],
     [
         // Christmas 2026 planning card only; never expose a link before
@@ -121,6 +134,14 @@ $capabilities = [
         'description' => 'Owner-only, read-only aggregate Quest and Hunt status. No player, claim, reward, or action controls.',
         'href' => $questHuntOverviewAvailable
             ? '/owner-control/v1/quest-hunt-overview.php'
+            : null,
+    ],
+    [
+        'name' => 'Cheese Hunt',
+        'status' => $cheeseHuntAvailable ? 'AVAILABLE' : 'REVIEW',
+        'description' => 'Owner-only Cheese Hunt missions and pending claim reviews. Mutations remain separately CSRF- and gate-protected.',
+        'href' => $cheeseHuntAvailable
+            ? '/owner-control/v1/cheese-hunt.php'
             : null,
     ],
     [

@@ -616,6 +616,24 @@ setTimeout(() => {
   // Global variable to store active cheese hunt quest
   let activeCheeseHuntQuest = null;
 
+  function escapeCheeseHuntHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function randomCheeseCaptureKey() {
+    if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+      const bytes = new Uint8Array(18);
+      window.crypto.getRandomValues(bytes);
+      return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    }
+    return 'ch_' + String(Date.now()) + '_' + Math.random().toString(36).slice(2, 12) + '_v1';
+  }
+
   // Show cheese hunt notification
   function showCheeseHuntNotification(quest) {
     // Remove any existing notification
@@ -661,9 +679,9 @@ setTimeout(() => {
         <strong>Cheese Hunt Active!</strong>
       </div>
       <div style="font-size: 12px; opacity: 0.9;">
-        ${quest.description}<br>
-        <strong>Find:</strong> ${requiredEggs} cheese eggs<br>
-        <strong>Reward:</strong> ${quest.reward} $DSPOINC
+        ${escapeCheeseHuntHtml(quest.description)}<br>
+        <strong>Find:</strong> ${escapeCheeseHuntHtml(requiredEggs)} cheese eggs<br>
+        <strong>Reward:</strong> ${escapeCheeseHuntHtml(quest.reward)} $DSPOINC
       </div>
       <button onclick="this.parentElement.remove()" style="
         position: absolute;
@@ -1246,7 +1264,7 @@ function applyCheeseHuntMovementVisuals(egg, pattern) {
           <strong>Quest Completed!</strong>
         </div>
         <div style="font-size: 12px; opacity: 0.9;">
-          ${result.winner_message || 'Congratulations! You completed the cheese hunt!'}
+          ${escapeCheeseHuntHtml(result.winner_message || 'Congratulations! You completed the cheese hunt!')}
         </div>
       `;
     } else if (result.progress) {
@@ -1256,8 +1274,8 @@ function applyCheeseHuntMovementVisuals(egg, pattern) {
           <strong>Progress Update!</strong>
         </div>
         <div style="font-size: 12px; opacity: 0.9;">
-          ${result.progress}<br>
-          ${result.message || 'Keep hunting for more cheese!'}
+          ${escapeCheeseHuntHtml(result.progress)}<br>
+          ${escapeCheeseHuntHtml(result.message || 'Keep hunting for more cheese!')}
         </div>
       `;
     }
@@ -1389,7 +1407,13 @@ function applyCheeseHuntMovementVisuals(egg, pattern) {
     const requiredEggs = result.required_eggs || activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
     
     // Update mission progress
-    if (activeCheeseHuntQuest && result.progress) {
+    if (activeCheeseHuntQuest && activeCheeseHuntQuest.source === 'owner_cheese_hunt_v1' && result.authenticated === false) {
+      missionProgressEl.textContent = `Mission: Login with Discord to hunt (0/${requiredEggs})`;
+      if (display) {
+        display.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        display.style.borderColor = '#34d399';
+      }
+    } else if (activeCheeseHuntQuest && result.progress) {
       // Parse progress (e.g., "2/3 eggs found" or "2/3") for current count only
       const progressMatch = result.progress.match(/(\d+)\/(\d+)/);
       if (progressMatch) {
@@ -1448,9 +1472,11 @@ function applyCheeseHuntMovementVisuals(egg, pattern) {
       }
     }
     
-    // Update total clicks
-    const total = result.total_clicks || 0;
-    totalClicksEl.textContent = `Total Clicks: ${total.toLocaleString()}`;
+    // Update total clicks when provided
+    if (result.total_clicks !== undefined && result.total_clicks !== null) {
+      const total = result.total_clicks || 0;
+      totalClicksEl.textContent = `Total Clicks: ${total.toLocaleString()}`;
+    }
     
     console.log('✅ Cheese Hunt persistent display updated:', {
       mission: missionProgressEl.textContent,
@@ -1465,10 +1491,12 @@ function applyCheeseHuntMovementVisuals(egg, pattern) {
   async function initializeCheeseHuntPersistentDisplay() {
     // Create display element
     createCheeseHuntPersistentDisplay();
-    
-    // Get user Discord ID
+
+    const isOwnerHuntV1 = Boolean(activeCheeseHuntQuest && activeCheeseHuntQuest.source === 'owner_cheese_hunt_v1');
+
+    // Get user Discord ID for legacy mode
     const discordId = localStorage.getItem('discord_id');
-    if (!discordId || discordId === 'null' || discordId === 'undefined' || discordId.trim() === '') {
+    if (!isOwnerHuntV1 && (!discordId || discordId === 'null' || discordId === 'undefined' || discordId.trim() === '')) {
       // User not logged in - hide display
       const display = document.getElementById('cheese-hunt-persistent-display');
       if (display) {
@@ -1476,34 +1504,38 @@ function applyCheeseHuntMovementVisuals(egg, pattern) {
       }
       return;
     }
-    
-    // Show display for logged-in users
+
+    // Show display for logged-in users (or active Owner Control Cheese Hunt V1)
     const display = document.getElementById('cheese-hunt-persistent-display');
     if (display) {
       display.style.display = 'block';
     }
-    
+
     // Fetch initial stats
     try {
-      // Get total clicks and quest progress from API
-      const response = await fetch(`/api/user/get-cheese-hunt-stats.php?user_id=${discordId}`, {
-        credentials: 'include'
+      const statsUrl = isOwnerHuntV1
+        ? '/api/user/get-cheese-hunt-stats.php'
+        : `/api/user/get-cheese-hunt-stats.php?user_id=${encodeURIComponent(discordId)}`;
+      const response = await fetch(statsUrl, {
+        credentials: isOwnerHuntV1 ? 'same-origin' : 'include',
+        cache: 'no-store'
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
           // Update display with initial stats
           updateCheeseHuntPersistentDisplay({
+            authenticated: isOwnerHuntV1 ? (data.authenticated !== false) : true,
             progress: activeCheeseHuntQuest && data.quest_clicks !== undefined ? `${data.quest_clicks}/${data.required_eggs}` : null,
             total_clicks: data.total_clicks || 0,
             quest_completed: data.quest_completed || false,
-            required_eggs: data.required_eggs || (activeCheeseHuntQuest?.cheese_config?.cheese_count || 3)
+            required_eggs: data.required_eggs || (activeCheeseHuntQuest?.cheese_config?.required_clicks || activeCheeseHuntQuest?.cheese_config?.cheese_count || 3)
           });
           console.log('✅ Cheese Hunt stats loaded:', data);
         } else {
           // API returned error - use default values
-          const requiredEggs = activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
+          const requiredEggs = activeCheeseHuntQuest?.cheese_config?.required_clicks || activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
           updateCheeseHuntPersistentDisplay({
             progress: activeCheeseHuntQuest ? `0/${requiredEggs}` : null,
             total_clicks: 0,
@@ -1513,7 +1545,7 @@ function applyCheeseHuntMovementVisuals(egg, pattern) {
         }
       } else {
         // API not available - use default values
-        const requiredEggs = activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
+        const requiredEggs = activeCheeseHuntQuest?.cheese_config?.required_clicks || activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
         updateCheeseHuntPersistentDisplay({
           progress: activeCheeseHuntQuest ? `0/${requiredEggs}` : null,
           total_clicks: 0,
@@ -1524,7 +1556,7 @@ function applyCheeseHuntMovementVisuals(egg, pattern) {
     } catch (error) {
       console.error('Error fetching cheese hunt stats:', error);
       // Use default values on error
-      const requiredEggs = activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
+      const requiredEggs = activeCheeseHuntQuest?.cheese_config?.required_clicks || activeCheeseHuntQuest?.cheese_config?.cheese_count || 3;
       updateCheeseHuntPersistentDisplay({
         progress: activeCheeseHuntQuest ? `0/${requiredEggs}` : null,
         total_clicks: 0,
@@ -1826,6 +1858,89 @@ function triggerCheeseHuntEscapeAfterCatch(clickedEggId) {
       }
     }
 
+    if (activeCheeseHuntQuest && activeCheeseHuntQuest.source === 'owner_cheese_hunt_v1') {
+      try {
+        const response = await fetch('/api/user/cheese-hunt/capture.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idempotency_key: randomCheeseCaptureKey() })
+        });
+        const result = await response.json().catch(() => null);
+
+        if (response.status === 401) {
+          showUserNotLoggedInWarning();
+          return;
+        }
+
+        if (response.status === 429) {
+          showCheeseHuntAntiCheatWarning(
+            'Slow down, Speedy Gonzales. Give the cheese a moment before the next bite. 🐭'
+          );
+          return;
+        }
+
+        if (response.status === 409 && result && result.error === 'mission_already_completed') {
+          const req = activeCheeseHuntQuest.cheese_config?.required_clicks || activeCheeseHuntQuest.cheese_config?.cheese_count || 3;
+          const completedPayload = {
+            authenticated: true,
+            quest_completed: true,
+            required_eggs: req,
+            progress: `${req}/${req} eggs found!`,
+            winner_message: '✅ Cheese Hunt already completed — your claim is recorded for owner review!'
+          };
+          updateCheeseHuntPersistentDisplay(completedPayload);
+          showCheeseHuntProgress(completedPayload);
+          return;
+        }
+
+        if (response.ok && result && result.success && result.result) {
+          const res = result.result;
+          const req = res.required_clicks || activeCheeseHuntQuest.cheese_config?.required_clicks || 3;
+          const done = Boolean(res.claim_pending);
+          const progressText = done ? `${req}/${req} eggs found!` : `${res.click_count}/${req} eggs found`;
+          const uiPayload = {
+            authenticated: true,
+            progress: progressText,
+            quest_completed: done,
+            required_eggs: req,
+            winner_message: res.winner_message || activeCheeseHuntQuest.cheese_config?.winner_message || '🎉 Cheese Hunt completed! Submitted for owner review.',
+            message: done
+              ? 'Cheese Hunt completed! Claim submitted for owner review.'
+              : `Great! You caught ${res.click_count} of ${req} cheeses. Keep hunting!`
+          };
+          updateCheeseHuntPersistentDisplay(uiPayload);
+          showCheeseHuntProgress(uiPayload);
+
+          fetch('/api/user/get-cheese-hunt-stats.php', { credentials: 'same-origin', cache: 'no-store' })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((stats) => {
+              if (stats && stats.success && typeof stats.total_clicks === 'number') {
+                updateCheeseHuntPersistentDisplay({ ...uiPayload, total_clicks: stats.total_clicks });
+              }
+            })
+            .catch(() => {});
+
+          if (!done) {
+            triggerCheeseHuntEscapeAfterCatch(eggId);
+            return;
+          }
+
+          const targetUrl = egg ? egg.getAttribute('href') : null;
+          scheduleCheeseHuntNavigation(targetUrl, '(after Cheese Hunt completion)');
+          return;
+        }
+
+        showCheeseHuntAntiCheatWarning('Cheese capture could not be confirmed. Please try again.');
+        return;
+      } catch (error) {
+        console.warn('❌ Error in guarded Cheese Hunt capture:', error);
+        showCheeseHuntAntiCheatWarning('Network error recording cheese click. Please try again.');
+        return;
+      }
+    }
+
     // Get user wallet or Discord ID with better validation.
     let currentUserWallet = localStorage.getItem('discord_id');
 
@@ -1957,7 +2072,7 @@ function triggerCheeseHuntEscapeAfterCatch(clickedEggId) {
     
     // Load active cheese hunt quest
     try {
-      const response = await fetch('/api/get-active-cheese-hunt.php');
+      const response = await fetch('/api/get-active-cheese-hunt.php', { cache: 'no-store' });
       const data = await response.json();
       if (data.success && data.quest) {
         activeCheeseHuntQuest = data.quest;

@@ -1,12 +1,100 @@
 <?php
-header('Content-Type: application/json');
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, max-age=0');
+header('Pragma: no-cache');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: no-referrer');
+
+if (getenv('NARRRFS_CHEESE_HUNT_PLAYER_ENABLED') === '1') {
+    if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? '')) === 'HEAD') {
+        exit;
+    }
+
+    $db = null;
+    try {
+        require_once __DIR__ . '/config/database.php';
+        $databasePath = getDatabasePath();
+        if (!is_file($databasePath) || !is_readable($databasePath)) {
+            throw new RuntimeException('Database unavailable.');
+        }
+
+        $db = new SQLite3($databasePath, SQLITE3_OPEN_READONLY);
+        $db->busyTimeout(5000);
+        $db->exec('PRAGMA query_only = ON');
+
+        $hasMissionsTable = (int)$db->querySingle(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'tbl_owner_cheese_hunt_missions'"
+        ) === 1;
+
+        if (!$hasMissionsTable) {
+            echo json_encode([
+                'success' => true,
+                'player_capture_enabled' => true,
+                'quest' => null,
+            ], JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        $mission = $db->querySingle(
+            "SELECT mission_id, description, reward_amount, required_clicks,
+                    movement_pattern, movement_speed, hidden_areas, winner_message, expires_at
+             FROM tbl_owner_cheese_hunt_missions
+             WHERE status = 'active'
+               AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+             ORDER BY mission_id DESC
+             LIMIT 1",
+            true
+        );
+
+        if (!is_array($mission)) {
+            echo json_encode([
+                'success' => true,
+                'player_capture_enabled' => true,
+                'quest' => null,
+            ], JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        $requiredClicks = (int)$mission['required_clicks'];
+        echo json_encode([
+            'success' => true,
+            'player_capture_enabled' => true,
+            'quest' => [
+                'quest_id' => (int)$mission['mission_id'],
+                'source' => 'owner_cheese_hunt_v1',
+                'description' => (string)$mission['description'],
+                'reward' => (int)$mission['reward_amount'],
+                'expires_at' => $mission['expires_at'],
+                'cheese_config' => [
+                    'cheese_count' => $requiredClicks,
+                    'required_clicks' => $requiredClicks,
+                    'movement_pattern' => (string)$mission['movement_pattern'],
+                    'movement_speed' => (string)$mission['movement_speed'],
+                    'hidden_areas' => ((int)$mission['hidden_areas']) === 1,
+                    'winner_message' => (string)$mission['winner_message'],
+                ],
+            ],
+        ], JSON_UNESCAPED_SLASHES);
+    } catch (Throwable) {
+        http_response_code(503);
+        echo json_encode([
+            'success' => false,
+            'error' => 'cheese_hunt_unavailable',
+        ]);
+    } finally {
+        if ($db instanceof SQLite3) {
+            $db->close();
+        }
+    }
+    exit;
+}
+
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
-
-// Security headers
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
 
 try {
@@ -63,4 +151,3 @@ try {
         'error' => 'Database error: ' . $e->getMessage()
     ]);
 }
-?>
