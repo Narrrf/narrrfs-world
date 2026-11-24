@@ -379,6 +379,43 @@
   transform: translateY(-1px) scale(.99);
 }
 .christmas26 .christmas26-door-symbol { filter: drop-shadow(0 0 6px rgba(255,223,145,.32)); }
+.christmas26 .christmas26-day--available .christmas26-door {
+  border-color: #93ffd8;
+  box-shadow: 0 0 26px rgba(63,227,160,.4), inset 0 0 0 3px rgba(147,255,216,.22);
+}
+.christmas26-modal-receipt {
+  margin: .9rem 0;
+  padding: .8rem .95rem;
+  border-radius: 13px;
+  border: 1px solid rgba(154,255,210,.38);
+  background: rgba(8,29,34,.68);
+  display: grid;
+  gap: .45rem;
+  text-align: left;
+  font-size: .84rem;
+}
+.christmas26-modal-receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  align-items: center;
+}
+.christmas26-modal-receipt-row span { color: #cce6df; }
+.christmas26-modal-receipt-row strong { color: #ffe7a3; }
+.christmas26-modal-claim {
+  width: 100%;
+  margin-top: .85rem;
+  padding: .9rem 1.15rem;
+  border-radius: 14px;
+  border: 1px solid rgba(154,255,210,.75);
+  color: #07261f;
+  background: linear-gradient(115deg, #98ffd7, #46e3ad 70%, #b5ffe4);
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(70,227,173,.25);
+}
+.christmas26-modal-claim:disabled { opacity: .65; cursor: wait; }
 .christmas26 .christmas26-day--finale .christmas26-door:not(:disabled):hover {
   box-shadow: 0 0 34px rgba(255,213,111,.5), inset 0 0 0 3px rgba(255,226,161,.18);
 }

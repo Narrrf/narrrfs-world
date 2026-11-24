@@ -825,6 +825,30 @@ function owner_control_escape(string $value): string
                     A valid draft is never publishable.
                 </p>
             </section>
+            <section class="christmas-portable-draft" id="christmas-policy-publication-box" aria-labelledby="christmas-policy-pub-heading">
+                <h4 id="christmas-policy-pub-heading">Immutable Policy Publication · Owner Approval Gate</h4>
+                <div class="christmas-draft-controls">
+                    <label for="christmas-policy-version">
+                        Target policy version
+                        <input id="christmas-policy-version" type="text" value="christmas_advent_2026_v1" pattern="christmas_advent_2026_v[1-9][0-9]{0,3}">
+                    </label>
+                    <label for="christmas-policy-replace-active">
+                        Post-launch replacement
+                        <select id="christmas-policy-replace-active">
+                            <option value="0" selected>Reject if another approved policy exists</option>
+                            <option value="1">Retire existing approved policy on approval</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="christmas-draft-actions">
+                    <button id="christmas-policy-refresh" type="button">Refresh policy status</button>
+                    <button id="christmas-policy-stage" type="button" disabled>Stage release candidate (from saved draft)</button>
+                    <button id="christmas-policy-approve" type="button" disabled>Approve immutable policy</button>
+                </div>
+                <p id="christmas-policy-status" class="christmas-draft-status" role="status" aria-live="polite">
+                    Policy publication gates default OFF. Saving a draft never publishes or activates payouts.
+                </p>
+            </section>
             <p class="christmas-draft-status" id="christmas-draft-status" role="status" aria-live="polite">
                 No preview changes applied. All real rewards remain disabled.
             </p>
@@ -1280,6 +1304,138 @@ function owner_control_escape(string $value): string
         document.getElementById('christmas-draft-clear-button').addEventListener('click', clearDay);
         showDay(selectedDay());
         loadActiveStoreCandidates().then(loadServerDraft); // Load catalog first so saved candidates can be decoded.
+
+        // Owner-only Candidate -> Approved Immutable Policy controls (separate from Save Draft).
+        const policyVersionInput = document.getElementById('christmas-policy-version');
+        const policyReplaceSelect = document.getElementById('christmas-policy-replace-active');
+        const policyRefreshBtn = document.getElementById('christmas-policy-refresh');
+        const policyStageBtn = document.getElementById('christmas-policy-stage');
+        const policyApproveBtn = document.getElementById('christmas-policy-approve');
+        const policyStatus = document.getElementById('christmas-policy-status');
+        let latestCandidateFingerprint = null;
+        let latestCandidateVersion = null;
+
+        async function loadPolicyOverview() {
+            if (!policyStatus) return;
+            try {
+                const res = await fetch('/api/owner-control/v1/christmas-policy.php', { credentials: 'same-origin', cache: 'no-store' });
+                if (res.status === 404) {
+                    policyStageBtn.disabled = true;
+                    policyApproveBtn.disabled = true;
+                    policyStatus.textContent = 'Policy publication endpoint disabled (default OFF).';
+                    return;
+                }
+                const body = await res.json();
+                if (!res.ok || body.success !== true || !body.result) {
+                    throw new Error('Policy overview unavailable');
+                }
+                const ov = body.result;
+                const policies = Array.isArray(ov.policies) ? ov.policies : [];
+                const approved = policies.find((p) => p.status === 'approved') || null;
+                const candidate = policies.find((p) => p.status === 'candidate') || null;
+                latestCandidateFingerprint = candidate ? candidate.policy_fingerprint : null;
+                latestCandidateVersion = candidate ? candidate.policy_version : null;
+
+                policyStageBtn.disabled = !(ov.gates?.policy_stage_enabled && ov.latest_draft?.revision >= 1);
+                policyApproveBtn.disabled = !(ov.gates?.policy_approve_enabled && candidate);
+
+                for (const p of policies) {
+                    if (p.status === 'approved') {
+                        for (let d = 1; d <= 24; d += 1) {
+                            const c = dayCard(d);
+                            if (c) setCardField(c, 'status', `APPROVED · ${p.policy_version}`);
+                        }
+                    }
+                }
+
+                const parts = [];
+                if (approved) {
+                    parts.push(`Approved: ${approved.policy_version} (${String(approved.policy_fingerprint).slice(0, 12)}…)`);
+                } else {
+                    parts.push('Approved: none');
+                }
+                if (candidate) {
+                    parts.push(`Candidate: ${candidate.policy_version} from draft rev ${candidate.source_draft_revision} (${String(candidate.policy_fingerprint).slice(0, 12)}…)`);
+                } else {
+                    parts.push('Candidate: none');
+                }
+                parts.push(`Player claims: ${ov.gates?.player_payout_enabled ? 'ENABLED' : 'OFF (safe)'}`);
+                policyStatus.textContent = parts.join(' · ');
+            } catch (err) {
+                policyStageBtn.disabled = true;
+                policyApproveBtn.disabled = true;
+                policyStatus.textContent = 'Policy status unavailable.';
+            }
+        }
+
+        async function fetchPolicyCsrf(action) {
+            const r = await fetch('/api/owner-control/v1/christmas-policy-csrf.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action })
+            });
+            const b = await r.json();
+            if (!r.ok || typeof b.csrf_token !== 'string') {
+                throw new Error(b.error || 'Policy CSRF unavailable');
+            }
+            return b.csrf_token;
+        }
+
+        if (policyRefreshBtn) {
+            policyRefreshBtn.addEventListener('click', loadPolicyOverview);
+            policyStageBtn.addEventListener('click', async () => {
+                try {
+                    if (!savedRevision || savedRevision < 1) throw new Error('Save a draft revision first.');
+                    const token = await fetchPolicyCsrf('stage');
+                    const r = await fetch('/api/owner-control/v1/christmas-policy-stage.php', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+                        body: JSON.stringify({
+                            draft_revision: savedRevision,
+                            policy_version: String(policyVersionInput.value || '').trim()
+                        })
+                    });
+                    const b = await r.json();
+                    if (!r.ok || b.success !== true) {
+                        const det = Array.isArray(b.details) && b.details.length ? `: ${b.details.slice(0, 3).join(', ')}` : '';
+                        throw new Error((b.error || 'Stage rejected') + det);
+                    }
+                    await loadPolicyOverview();
+                } catch (err) {
+                    policyStatus.textContent = `Stage blocked: ${err.message}`;
+                }
+            });
+            policyApproveBtn.addEventListener('click', async () => {
+                try {
+                    if (!latestCandidateVersion || !latestCandidateFingerprint) {
+                        throw new Error('Stage a release candidate first.');
+                    }
+                    const token = await fetchPolicyCsrf('approve');
+                    const r = await fetch('/api/owner-control/v1/christmas-policy-approve.php', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+                        body: JSON.stringify({
+                            policy_version: latestCandidateVersion,
+                            policy_fingerprint: latestCandidateFingerprint,
+                            replace_active: policyReplaceSelect.value === '1'
+                        })
+                    });
+                    const b = await r.json();
+                    if (!r.ok || b.success !== true) {
+                        const det = Array.isArray(b.details) && b.details.length ? `: ${b.details.slice(0, 3).join(', ')}` : '';
+                        throw new Error((b.error || 'Approval rejected') + det);
+                    }
+                    await loadPolicyOverview();
+                } catch (err) {
+                    policyStatus.textContent = `Approval blocked: ${err.message}`;
+                }
+            });
+            loadPolicyOverview();
+        }
     })();
     </script>
 

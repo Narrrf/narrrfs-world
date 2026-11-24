@@ -421,6 +421,33 @@ return [
             'csrf' => true, 'contentTypes' => ['application/json'],
             'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
         ],
+        // Christmas immutable policy staging and owner approval (default OFF).
+        'owner_control.christmas_policy.read.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_CHRISTMAS_POLICY_READ_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => false, 'methods' => ['GET', 'HEAD'],
+            'csrf' => false, 'contentTypes' => [], 'origins' => [], 'allowRefererFallback' => false,
+        ],
+        'owner_control.christmas_policy.csrf.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_CHRISTMAS_POLICY_WRITE_ENABLED') === '1'
+                || getenv('NARRRFS_OWNER_CHRISTMAS_POLICY_APPROVE_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => false, 'csrfIssuer' => true, 'methods' => ['POST'],
+            'csrf' => false, 'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
+        'owner_control.christmas_policy.stage.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_CHRISTMAS_POLICY_WRITE_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => true, 'methods' => ['POST'],
+            'csrf' => true, 'csrfScope' => 'owner_control.christmas_policy.stage.v1',
+            'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
+        'owner_control.christmas_policy.approve.v1' => [
+            'enabled' => getenv('NARRRFS_OWNER_CHRISTMAS_POLICY_APPROVE_ENABLED') === '1',
+            'ownerOnly' => true, 'mutating' => true, 'methods' => ['POST'],
+            'csrf' => true, 'csrfScope' => 'owner_control.christmas_policy.approve.v1',
+            'contentTypes' => ['application/json'],
+            'origins' => ['http://localhost', 'https://narrrfs.world'], 'allowRefererFallback' => false,
+        ],
         'owner_control.csrf.v1' => [
             'enabled' => getenv('NARRRFS_OWNER_CSRF_ENABLED') === '1',
             'ownerOnly' => true,
