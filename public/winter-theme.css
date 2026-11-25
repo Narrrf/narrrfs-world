@@ -1,0 +1,274 @@
+/*
+ * NARRRFS_WINTER_THEME_2026
+ *
+ * A scoped, presentation-only seasonal layer for main public pages.
+ * It must not control page state, navigation, forms, wallet behavior,
+ * API calls, authentication, economy, or gameplay.
+ */
+:root {
+  --winter-bg: #05111f;
+  --winter-bg-mid: #0a2138;
+  --winter-bg-deep: #071728;
+  --winter-panel: rgba(10, 28, 48, 0.86);
+  --winter-ice: #7dd3fc;
+  --winter-cyan: #38bdf8;
+  --winter-pine: #34d399;
+  --winter-gold: #fde68a;
+  --winter-text: #f0f9ff;
+  --winter-glow: rgba(125, 211, 252, 0.22);
+}
+
+body.winter-theme,
+body.winter-theme:is(
+  .profile-season12-shell,
+  .lab-season12-shell,
+  .stake-season12-shell,
+  .season12-leaderboard-shell,
+  .strongest-mice-shell
+) {
+  background-color: var(--winter-bg) !important;
+  background-image:
+    radial-gradient(ellipse at 10% 6%, rgba(56, 189, 248, 0.15), transparent 32%),
+    radial-gradient(ellipse at 90% 12%, rgba(186, 230, 253, 0.11), transparent 32%),
+    radial-gradient(ellipse at 50% 100%, rgba(52, 211, 153, 0.08), transparent 36%),
+    linear-gradient(155deg, #040d19 0%, #0a2138 48%, #071626 100%) !important;
+  color: var(--winter-text);
+}
+
+body.winter-theme :is(
+  header,
+  .profile-season12-header,
+  .stake-season12-header,
+  .leaderboard-season12-header,
+  .strongest-header,
+  .arena-header
+) {
+  border-color: rgba(125, 211, 252, 0.28) !important;
+  background-color: rgba(5, 17, 31, 0.88) !important;
+  box-shadow: 0 14px 36px rgba(2, 8, 20, 0.45), 0 0 24px rgba(56, 189, 248, 0.10) !important;
+}
+
+body.winter-theme header nav a {
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.16);
+}
+
+body.winter-theme header nav a:hover,
+body.winter-theme header nav a:focus-visible {
+  color: #bae6fd !important;
+  outline: none;
+  text-shadow: 0 0 14px rgba(125, 211, 252, 0.45);
+}
+
+/* Homepage and main page hero shells: frost midnight glass & subtle pine/starlight warmth */
+body.winter-theme #season14-hero {
+  background:
+    radial-gradient(circle at 14% 12%, rgba(56, 189, 248, 0.22), transparent 34%),
+    radial-gradient(circle at 88% 18%, rgba(52, 211, 153, 0.16), transparent 38%),
+    linear-gradient(135deg, #061527 0%, #0d2b45 54%, #071a2c 100%) !important;
+  border-color: rgba(125, 211, 252, 0.40) !important;
+  box-shadow: 0 28px 68px rgba(2, 8, 20, 0.46), 0 0 42px rgba(56, 189, 248, 0.14) !important;
+}
+
+body.winter-theme #season14-hero :is(h1, h2, h3) {
+  text-shadow: 0 0 24px rgba(125, 211, 252, 0.20);
+}
+
+body.winter-theme #season12-game-zone {
+  background: linear-gradient(
+    180deg,
+    rgba(5, 17, 31, 0.96) 0%,
+    rgba(11, 35, 58, 0.78) 50%,
+    rgba(5, 17, 31, 0.96) 100%
+  ) !important;
+}
+
+body.winter-theme :is(
+  .profile-season12-hero,
+  .stake-season12-hero,
+  .strongest-hero,
+  .arena-hero
+) {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(56, 189, 248, 0.18), transparent 34%),
+    radial-gradient(circle at 86% 20%, rgba(253, 230, 138, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(7, 22, 38, 0.92), rgba(11, 34, 57, 0.88)) !important;
+  border-color: rgba(125, 211, 252, 0.30) !important;
+}
+
+body.winter-theme #cookie-consent-banner {
+  background: linear-gradient(110deg, #061526, #0d2d4a 58%, #0f3d5e) !important;
+  border-bottom-color: rgba(125, 211, 252, 0.45) !important;
+}
+
+/* Recolor seasonal orange/pink/purple ambient orbs into cool winter frost & aurora */
+body.winter-theme :is(.profile-summer-orb, .stake-season12-orb, .arena-orb, .swap-orb).orange,
+body.winter-theme .orb.one {
+  background: rgba(56, 189, 248, 0.22) !important;
+}
+
+body.winter-theme :is(.profile-summer-orb, .stake-season12-orb, .arena-orb, .swap-orb).pink,
+body.winter-theme .orb.two {
+  background: rgba(186, 230, 253, 0.16) !important;
+}
+
+body.winter-theme :is(.profile-summer-orb, .stake-season12-orb, .arena-orb, .swap-orb).cyan,
+body.winter-theme .orb.three {
+  background: rgba(52, 211, 153, 0.14) !important;
+}
+
+/* Override Tailwind Season 12 fixed backdrop layers and purple/orange full-bleed sections */
+body.winter-theme > div.fixed.inset-0.pointer-events-none > div.absolute.inset-0 {
+  background-color: var(--winter-bg) !important;
+  background-image:
+    radial-gradient(ellipse at 10% 6%, rgba(56, 189, 248, 0.16), transparent 34%),
+    radial-gradient(ellipse at 90% 12%, rgba(186, 230, 253, 0.12), transparent 34%),
+    radial-gradient(ellipse at 50% 100%, rgba(52, 211, 153, 0.09), transparent 38%),
+    linear-gradient(155deg, #040d19 0%, #0a2138 48%, #071626 100%) !important;
+}
+
+body.winter-theme > div.fixed.inset-0.pointer-events-none :is([class*="bg-orange-"], [class*="bg-amber-"]) {
+  background-color: rgba(56, 189, 248, 0.12) !important;
+}
+
+body.winter-theme > div.fixed.inset-0.pointer-events-none :is([class*="bg-fuchsia-"], [class*="bg-purple-"], [class*="bg-pink-"]) {
+  background-color: rgba(125, 211, 252, 0.10) !important;
+}
+
+body.winter-theme section[class*="via-purple-"],
+body.winter-theme section[class*="via-orange-"] {
+  background: linear-gradient(
+    180deg,
+    rgba(4, 13, 25, 0.94) 0%,
+    rgba(10, 35, 58, 0.86) 50%,
+    rgba(4, 13, 25, 0.94) 100%
+  ) !important;
+}
+
+body.winter-theme #connect-wallet-btn {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9) !important;
+  border: 1px solid rgba(186, 230, 253, 0.42) !important;
+}
+
+body.winter-theme #connect-wallet-btn:hover {
+  background: linear-gradient(135deg, #0369a1, #0284c7) !important;
+}
+
+/* Shared cards across main pages (leaves #christmas-advent-2026 & .genesis-freezer-frozen-shell untouched) */
+body.winter-theme :is(
+  .faq-card,
+  .updates-card,
+  .partner-card,
+  .partner-shell-card,
+  .season-shell-card,
+  .doc-card,
+  .mint-card,
+  .role-card,
+  .leaderboard-card,
+  .stake-card,
+  .nft-card,
+  .panel,
+  .offer-card,
+  .arena-card,
+  .bingo-shell-card
+) {
+  border-color: rgba(125, 211, 252, 0.24) !important;
+  box-shadow: 0 18px 48px rgba(2, 8, 20, 0.34), 0 0 22px rgba(56, 189, 248, 0.08);
+}
+
+body.winter-theme :is(
+  .faq-card,
+  .updates-card,
+  .partner-card,
+  .partner-shell-card,
+  .season-shell-card,
+  .doc-card,
+  .mint-card,
+  .role-card,
+  .leaderboard-card,
+  .stake-card,
+  .nft-card,
+  .panel,
+  .offer-card,
+  .arena-card,
+  .bingo-shell-card
+):hover {
+  border-color: rgba(186, 230, 253, 0.50) !important;
+  box-shadow: 0 22px 56px rgba(2, 8, 20, 0.42), 0 0 30px var(--winter-glow);
+}
+
+body.winter-theme :is(button, .rounded-full, .rounded-xl, .rounded-2xl, .rounded-lg):focus-visible {
+  outline: 2px solid var(--winter-ice);
+  outline-offset: 3px;
+}
+
+/* Safety guard in case any cached markup leaves a pumpkin decoration element behind */
+body.winter-theme .halloween-pumpkin {
+  display: none !important;
+}
+
+/* Very low, GPU-composited snowfall overlay: floats gently above z-10/z-20 sections, below z-30 header & modals */
+.winter-snowfield {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+.winter-flake {
+  position: absolute;
+  top: -2.5rem;
+  pointer-events: none;
+  user-select: none;
+  color: rgba(224, 242, 254, 0.85);
+  line-height: 1;
+  will-change: transform;
+  animation: winter-snow-fall var(--flake-duration, 30s) linear var(--flake-delay, 0s) infinite;
+}
+
+.winter-flake--dot {
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(240, 249, 255, 0.95) 0%,
+    rgba(186, 230, 253, 0.35) 68%,
+    transparent 100%
+  );
+}
+
+@keyframes winter-snow-fall {
+  0% {
+    transform: translate3d(0, -4vh, 0);
+  }
+  50% {
+    transform: translate3d(var(--flake-sway, 14px), 52vh, 0);
+  }
+  100% {
+    transform: translate3d(calc(var(--flake-sway, 14px) * -0.5), 108vh, 0);
+  }
+}
+
+body.winter-tab-hidden .winter-flake {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .winter-snowfield {
+    display: none !important;
+  }
+  body.winter-theme *,
+  body.winter-theme *::before,
+  body.winter-theme *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .winter-snowfield {
+    display: none !important;
+  }
+}
