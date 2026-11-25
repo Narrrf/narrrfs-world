@@ -93,9 +93,12 @@ christmas26_draft_assert_v1(christmas26_draft_has_error_v1($bad, 'invalid_bonus_
 $bad = $base;
 $bad['days'][0]['bonus']['chance_basis_points'] = 300;
 christmas26_draft_assert_v1(christmas26_draft_has_error_v1($bad, 'disabled_bonus_has_rewards_day_1'), 'disabled bonus cannot promise draws');
+$ok24 = $bonus;
+$ok24['max_bonus_wins_per_player'] = 24;
+christmas26_draft_assert_v1(christmas26_draft_preflight_v1($ok24)['valid'], 'player bonus win cap up to 24 accepted');
 $bad = $bonus;
-$bad['max_bonus_wins_per_player'] = 4;
-christmas26_draft_assert_v1(christmas26_draft_has_error_v1($bad, 'invalid_max_bonus_wins_per_player'), 'player special win cap limited to 1–3');
+$bad['max_bonus_wins_per_player'] = 25;
+christmas26_draft_assert_v1(christmas26_draft_has_error_v1($bad, 'invalid_max_bonus_wins_per_player'), 'player special win cap limited to 1–24');
 $bad = $bonus;
 $bad['first_bonus_guarantee'] = [
     'enabled' => true, 'qualifying_claim_days' => 24,

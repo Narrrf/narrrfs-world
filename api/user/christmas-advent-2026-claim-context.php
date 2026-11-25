@@ -27,7 +27,7 @@ function christmas26_context_json(int $code, array $body): void
 
 $statusEnabled = christmas26_status_feature_is_enabled(getenv(CHRISTMAS26_STATUS_GATE) ?: null);
 $policyVersion = getenv(CHRISTMAS26_POLICY_VERSION_ENV) ?: null;
-$payoutGateEnabled = christmas26_claim_payout_is_enabled(getenv(CHRISTMAS26_PAYOUT_GATE) ?: null, $policyVersion);
+$payoutGateEnabled = christmas26_claim_runtime_gate_is_enabled(getenv(CHRISTMAS26_PAYOUT_GATE) ?: null, $policyVersion);
 
 if (!$statusEnabled && !$payoutGateEnabled) {
     christmas26_context_json(404, ['success' => false, 'error' => 'status_unavailable']);
@@ -74,9 +74,9 @@ try {
 
     $receipts = christmas26_player_receipts_v1($db, $userId);
     $approvedPolicy = null;
-    if ($payoutGateEnabled && is_string($policyVersion)) {
+    if ($payoutGateEnabled) {
         try {
-            $approvedPolicy = christmas26_load_verified_policy($db, $policyVersion, false);
+            $approvedPolicy = christmas26_load_active_approved_policy($db);
         } catch (Throwable) {
             $approvedPolicy = null;
         }

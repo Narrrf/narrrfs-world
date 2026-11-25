@@ -794,68 +794,44 @@ function owner_control_escape(string $value): string
                 <button id="christmas-draft-preview-button" type="button">Preview selected day (not saved)</button>
                 <button id="christmas-draft-clear-button" type="button">Clear selected day's preview</button>
             </div>
-            <!-- Local JSON handoff only; not an authorized policy or server save. -->
             <section class="christmas-portable-draft" aria-labelledby="christmas-portable-heading">
-                <h4 id="christmas-portable-heading">Portable 24-day draft · local file only</h4>
+                <h4 id="christmas-portable-heading">24-Day Schedule Controls · Load · Save · Activate</h4>
                 <label for="christmas-draft-per-player-cap">
-                    Proposed maximum bonus item wins per player (event-wide)
+                    Maximum bonus item wins per player (event-wide)
                     <select id="christmas-draft-per-player-cap">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3" selected>3</option>
+                        <option value="24" selected>24 — No event limit (players can win all 24 days)</option>
+                        <?php for ($capOpt = 23; $capOpt >= 1; $capOpt--): ?>
+                            <option value="<?= $capOpt ?>"><?= $capOpt ?> <?= $capOpt === 1 ? 'item max' : 'items max' ?></option>
+                        <?php endfor; ?>
                     </select>
                 </label>
                 <div class="christmas-draft-actions">
-                    <button id="christmas-draft-export-button" type="button">Download all 24 days as unapproved JSON</button>
-                    <button id="christmas-draft-load-server" type="button">Reload saved draft</button>
-                    <button id="christmas-draft-save-server" type="button" disabled>Save draft for review</button>
+                    <button id="christmas-draft-load-server" type="button">📥 Load</button>
+                    <button id="christmas-draft-save-server" type="button" disabled>💾 Save</button>
+                    <button id="christmas-policy-activate" type="button" disabled>🚀 Activate</button>
                 </div>
-                <label for="christmas-draft-import-input">
-                    Reload a previously exported local draft file
-                    <input id="christmas-draft-import-input" type="file" accept=".json,application/json">
-                </label>
                 <p id="christmas-draft-file-status" class="christmas-draft-status" role="status" aria-live="polite">
-                    No file loaded or exported. This is not server persistence or an approved policy.
+                    Checking saved draft…
                 </p>
-                <p class="christmas-preview-note">
-                    Range drafts use the Stage 9 V2 offline preflight. An actual random amount
-                    must later be drawn once on the server, stored with its claim receipt,
-                    and accounted for at the maximum bound. No randomness or payout happens here.
-                    First-win guarantee stays disabled pending eligibility and inventory proof.
-                    A valid draft is never publishable.
-                </p>
-            </section>
-            <section class="christmas-portable-draft" id="christmas-policy-publication-box" aria-labelledby="christmas-policy-pub-heading">
-                <h4 id="christmas-policy-pub-heading">Immutable Policy Publication · Owner Approval Gate</h4>
-                <div class="christmas-draft-controls">
-                    <label for="christmas-policy-version">
-                        Target policy version
-                        <input id="christmas-policy-version" type="text" value="christmas_advent_2026_v1" pattern="christmas_advent_2026_v[1-9][0-9]{0,3}">
-                    </label>
-                    <label for="christmas-policy-replace-active">
-                        Post-launch replacement
-                        <select id="christmas-policy-replace-active">
-                            <option value="0" selected>Reject if another approved policy exists</option>
-                            <option value="1">Retire existing approved policy on approval</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="christmas-draft-actions">
-                    <button id="christmas-policy-refresh" type="button">Refresh policy status</button>
-                    <button id="christmas-policy-stage" type="button" disabled>Stage release candidate (from saved draft)</button>
-                    <button id="christmas-policy-approve" type="button" disabled>Approve immutable policy</button>
-                </div>
                 <p id="christmas-policy-status" class="christmas-draft-status" role="status" aria-live="polite">
-                    Policy publication gates default OFF. Saving a draft never publishes or activates payouts.
+                    Checking active policy status…
                 </p>
+                <details style="margin-top:.75rem;">
+                    <summary style="cursor:pointer;font-size:.82rem;color:#cfe2f7;">Optional JSON Backup / Import (local file)</summary>
+                    <div class="christmas-draft-actions" style="margin-top:.5rem;">
+                        <button id="christmas-draft-export-button" type="button">Download all 24 days as JSON</button>
+                    </div>
+                    <label for="christmas-draft-import-input" style="margin-top:.4rem;display:block;">
+                        Import a saved 24-day JSON file into this tab
+                        <input id="christmas-draft-import-input" type="file" accept=".json,application/json">
+                    </label>
+                </details>
             </section>
             <p class="christmas-draft-status" id="christmas-draft-status" role="status" aria-live="polite">
                 No preview changes applied. All real rewards remain disabled.
             </p>
             <p class="christmas-preview-note">
-                Store catalog lookup is read-only. Stock reservations,
-                first-win guarantees, item-grant eligibility and actual token
-                delivery remain unimplemented. A preview is not authorization.
+                Saving persists a draft revision without activating anything. Clicking Activate freezes an immutable policy from your latest 24-day draft (requires Owner Policy gates enabled; player claims remain gated separately by Render env).
             </p>
         </section>
         <div class="christmas-day-grid" aria-label="Unconfigured Advent days">
@@ -1079,8 +1055,8 @@ function owner_control_escape(string $value): string
         // only and must never be treated as a validator of this new range schema.
         function buildPortableDraft() {
             const maxBonusWins = Number(perPlayerCapInput.value);
-            if (!Number.isInteger(maxBonusWins) || maxBonusWins < 1 || maxBonusWins > 3) {
-                throw new Error('Invalid event-wide bonus win cap.');
+            if (!Number.isInteger(maxBonusWins) || maxBonusWins < 1 || maxBonusWins > 24) {
+                throw new Error('Invalid event-wide bonus win cap (must be 1–24).');
             }
             const days = [];
             for (let day = 1; day <= 24; day += 1) {
@@ -1210,7 +1186,7 @@ function owner_control_escape(string $value): string
                     proposed.event_key !== 'christmas_advent_2026' ||
                     !Number.isInteger(proposed.max_bonus_wins_per_player) ||
                     proposed.max_bonus_wins_per_player < 1 ||
-                    proposed.max_bonus_wins_per_player > 3 ||
+                    proposed.max_bonus_wins_per_player > 24 ||
                     !proposed.first_bonus_guarantee ||
                     proposed.first_bonus_guarantee.enabled !== false ||
                     !Array.isArray(proposed.days) || proposed.days.length !== 24) {
@@ -1238,135 +1214,12 @@ function owner_control_escape(string $value): string
             }
         }
 
-        // Owner-only draft persistence remains separate from publication and rewards.
+        // Unified 3-button online control flow: Load -> Save -> Activate.
         let savedRevision = null;
+        let hasUnsavedChanges = false;
         const serverSaveButton = document.getElementById('christmas-draft-save-server');
-        async function loadServerDraft() {
-            try {
-                const response = await fetch('/api/owner-control/v1/christmas-draft.php', { credentials: 'same-origin', cache: 'no-store' });
-                const body = await response.json();
-                if (!response.ok || body.success !== true) throw new Error('Draft persistence unavailable');
-                serverSaveButton.disabled = body.write_enabled !== true;
-                const saved = body.result;
-                if (saved === null) { savedRevision = 0; fileStatus.textContent = 'Local unsaved draft. No saved server revision.'; return; }
-                const proposed = saved.draft;
-                if (!proposed || proposed.schema_version !== 'christmas_advent_2026_draft_v2' || proposed.event_key !== 'christmas_advent_2026' ||
-                    !Number.isInteger(proposed.max_bonus_wins_per_player) || proposed.max_bonus_wins_per_player < 1 || proposed.max_bonus_wins_per_player > 3 ||
-                    proposed.first_bonus_guarantee?.enabled !== false || !Array.isArray(proposed.days) || proposed.days.length !== 24 ||
-                    !Number.isSafeInteger(saved.revision) || saved.revision < 1) throw new Error('Saved draft is incompatible');
-                const loaded = new Map();
-                for (let day = 1; day <= 24; day += 1) {
-                    if (!dayCard(day)) throw new Error('Calendar unavailable');
-                    loaded.set(day, decodePortableDay(proposed.days[day - 1], day, proposed.schema_version));
-                }
-                previews.clear();
-                for (const [day, entry] of loaded) { previews.set(day, entry); showImportedCard(day, entry); }
-                perPlayerCapInput.value = String(proposed.max_bonus_wins_per_player);
-                savedRevision = saved.revision; showDay(selectedDay());
-                fileStatus.textContent = `Saved on server: revision ${savedRevision}. Not published.`;
-            } catch (error) { savedRevision = null; serverSaveButton.disabled = true; fileStatus.textContent = 'Server save unavailable. Local import/export remains available.'; }
-        }
-        async function saveServerDraft() {
-            try {
-                if (savedRevision === null) throw new Error('Reload saved draft before saving');
-                const draft = buildPortableDraft();
-                const csrfResponse = await fetch('/api/owner-control/v1/csrf.php', { credentials: 'same-origin', cache: 'no-store' });
-                const csrfBody = await csrfResponse.json();
-                if (!csrfResponse.ok || typeof csrfBody.csrf_token !== 'string') throw new Error('Owner authorization unavailable');
-                const response = await fetch('/api/owner-control/v1/christmas-draft.php', {
-                    method: 'POST', credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfBody.csrf_token },
-                    body: JSON.stringify({ revision: savedRevision, draft })
-                });
-                const body = await response.json();
-                if (!response.ok || body.success !== true) {
-                    if (response.status === 409) { savedRevision = null; serverSaveButton.disabled = true; }
-                    const details = Array.isArray(body.details) ? body.details.filter(value => typeof value === 'string').slice(0, 5).join(', ') : '';
-                    throw new Error(response.status === 409 ? 'Draft changed elsewhere; reload before saving' : (details ? `Draft validation: ${details}` : 'Draft save unavailable'));
-                }
-                savedRevision = body.result.revision;
-                const review = body.result.review;
-                fileStatus.textContent = `Saved on server: revision ${savedRevision}, not published. Per-account exposure: ${review.min_per_player_dspoinc}–${review.max_per_player_dspoinc} DSPOINC; event at claim caps: ${review.min_event_dspoinc_at_claim_caps}–${review.max_event_dspoinc_at_claim_caps}.`;
-            } catch (error) { fileStatus.textContent = error.message; }
-        }
-        function markLocalDraft() {
-            fileStatus.textContent = 'Local unsaved draft. Save to create a new server revision.';
-        }
-        root.addEventListener('input', markLocalDraft);
-        document.getElementById('christmas-draft-preview-button').addEventListener('click', markLocalDraft);
-        document.getElementById('christmas-draft-clear-button').addEventListener('click', markLocalDraft);
-        document.getElementById('christmas-draft-load-server').addEventListener('click', loadServerDraft);
-        document.getElementById('christmas-draft-save-server').addEventListener('click', saveServerDraft);
-        document.getElementById('christmas-draft-export-button').addEventListener('click', exportDraft);
-        importInput.addEventListener('change', importDraft);
-        dayInput.addEventListener('change', () => showDay(selectedDay()));
-        document.getElementById('christmas-draft-preview-button').addEventListener('click', previewDay);
-        document.getElementById('christmas-draft-clear-button').addEventListener('click', clearDay);
-        showDay(selectedDay());
-        loadActiveStoreCandidates().then(loadServerDraft); // Load catalog first so saved candidates can be decoded.
-
-        // Owner-only Candidate -> Approved Immutable Policy controls (separate from Save Draft).
-        const policyVersionInput = document.getElementById('christmas-policy-version');
-        const policyReplaceSelect = document.getElementById('christmas-policy-replace-active');
-        const policyRefreshBtn = document.getElementById('christmas-policy-refresh');
-        const policyStageBtn = document.getElementById('christmas-policy-stage');
-        const policyApproveBtn = document.getElementById('christmas-policy-approve');
+        const policyActivateBtn = document.getElementById('christmas-policy-activate');
         const policyStatus = document.getElementById('christmas-policy-status');
-        let latestCandidateFingerprint = null;
-        let latestCandidateVersion = null;
-
-        async function loadPolicyOverview() {
-            if (!policyStatus) return;
-            try {
-                const res = await fetch('/api/owner-control/v1/christmas-policy.php', { credentials: 'same-origin', cache: 'no-store' });
-                if (res.status === 404) {
-                    policyStageBtn.disabled = true;
-                    policyApproveBtn.disabled = true;
-                    policyStatus.textContent = 'Policy publication endpoint disabled (default OFF).';
-                    return;
-                }
-                const body = await res.json();
-                if (!res.ok || body.success !== true || !body.result) {
-                    throw new Error('Policy overview unavailable');
-                }
-                const ov = body.result;
-                const policies = Array.isArray(ov.policies) ? ov.policies : [];
-                const approved = policies.find((p) => p.status === 'approved') || null;
-                const candidate = policies.find((p) => p.status === 'candidate') || null;
-                latestCandidateFingerprint = candidate ? candidate.policy_fingerprint : null;
-                latestCandidateVersion = candidate ? candidate.policy_version : null;
-
-                policyStageBtn.disabled = !(ov.gates?.policy_stage_enabled && ov.latest_draft?.revision >= 1);
-                policyApproveBtn.disabled = !(ov.gates?.policy_approve_enabled && candidate);
-
-                for (const p of policies) {
-                    if (p.status === 'approved') {
-                        for (let d = 1; d <= 24; d += 1) {
-                            const c = dayCard(d);
-                            if (c) setCardField(c, 'status', `APPROVED · ${p.policy_version}`);
-                        }
-                    }
-                }
-
-                const parts = [];
-                if (approved) {
-                    parts.push(`Approved: ${approved.policy_version} (${String(approved.policy_fingerprint).slice(0, 12)}…)`);
-                } else {
-                    parts.push('Approved: none');
-                }
-                if (candidate) {
-                    parts.push(`Candidate: ${candidate.policy_version} from draft rev ${candidate.source_draft_revision} (${String(candidate.policy_fingerprint).slice(0, 12)}…)`);
-                } else {
-                    parts.push('Candidate: none');
-                }
-                parts.push(`Player claims: ${ov.gates?.player_payout_enabled ? 'ENABLED' : 'OFF (safe)'}`);
-                policyStatus.textContent = parts.join(' · ');
-            } catch (err) {
-                policyStageBtn.disabled = true;
-                policyApproveBtn.disabled = true;
-                policyStatus.textContent = 'Policy status unavailable.';
-            }
-        }
 
         async function fetchPolicyCsrf(action) {
             const r = await fetch('/api/owner-control/v1/christmas-policy-csrf.php', {
@@ -1383,59 +1236,233 @@ function owner_control_escape(string $value): string
             return b.csrf_token;
         }
 
-        if (policyRefreshBtn) {
-            policyRefreshBtn.addEventListener('click', loadPolicyOverview);
-            policyStageBtn.addEventListener('click', async () => {
-                try {
-                    if (!savedRevision || savedRevision < 1) throw new Error('Save a draft revision first.');
-                    const token = await fetchPolicyCsrf('stage');
-                    const r = await fetch('/api/owner-control/v1/christmas-policy-stage.php', {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
-                        body: JSON.stringify({
-                            draft_revision: savedRevision,
-                            policy_version: String(policyVersionInput.value || '').trim()
-                        })
-                    });
-                    const b = await r.json();
-                    if (!r.ok || b.success !== true) {
-                        const det = Array.isArray(b.details) && b.details.length ? `: ${b.details.slice(0, 3).join(', ')}` : '';
-                        throw new Error((b.error || 'Stage rejected') + det);
-                    }
-                    await loadPolicyOverview();
-                } catch (err) {
-                    policyStatus.textContent = `Stage blocked: ${err.message}`;
+        function computeNextPolicyVersion(policies) {
+            let maxVer = 0;
+            let reusableCandidate = null;
+            for (const p of policies) {
+                const m = /^christmas_advent_2026_v([1-9][0-9]*)$/.exec(String(p?.policy_version || ''));
+                if (!m) continue;
+                const num = Number(m[1]);
+                if (num > maxVer) maxVer = num;
+                if (p.status === 'candidate' && (!reusableCandidate || num > reusableCandidate.num)) {
+                    reusableCandidate = { num, version: p.policy_version };
                 }
-            });
-            policyApproveBtn.addEventListener('click', async () => {
-                try {
-                    if (!latestCandidateVersion || !latestCandidateFingerprint) {
-                        throw new Error('Stage a release candidate first.');
-                    }
-                    const token = await fetchPolicyCsrf('approve');
-                    const r = await fetch('/api/owner-control/v1/christmas-policy-approve.php', {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
-                        body: JSON.stringify({
-                            policy_version: latestCandidateVersion,
-                            policy_fingerprint: latestCandidateFingerprint,
-                            replace_active: policyReplaceSelect.value === '1'
-                        })
-                    });
-                    const b = await r.json();
-                    if (!r.ok || b.success !== true) {
-                        const det = Array.isArray(b.details) && b.details.length ? `: ${b.details.slice(0, 3).join(', ')}` : '';
-                        throw new Error((b.error || 'Approval rejected') + det);
-                    }
-                    await loadPolicyOverview();
-                } catch (err) {
-                    policyStatus.textContent = `Approval blocked: ${err.message}`;
-                }
-            });
-            loadPolicyOverview();
+            }
+            if (maxVer === 0) return 'christmas_advent_2026_v1';
+            // Always increment after approved/retired versions, or reuse latest candidate if highest version is still candidate.
+            if (reusableCandidate && reusableCandidate.num === maxVer) {
+                return reusableCandidate.version;
+            }
+            return `christmas_advent_2026_v${maxVer + 1}`;
         }
+
+        async function loadPolicyOverview() {
+            if (!policyStatus || !policyActivateBtn) return null;
+            try {
+                const res = await fetch('/api/owner-control/v1/christmas-policy.php', { credentials: 'same-origin', cache: 'no-store' });
+                if (res.status === 404) {
+                    policyActivateBtn.disabled = true;
+                    policyStatus.textContent = 'Policy activation endpoint disabled (enable NARRRFS_OWNER_CHRISTMAS_POLICY_* gates on Render).';
+                    return null;
+                }
+                const body = await res.json();
+                if (!res.ok || body.success !== true || !body.result) {
+                    throw new Error('Policy overview unavailable');
+                }
+                const ov = body.result;
+                const policies = Array.isArray(ov.policies) ? ov.policies : [];
+                const approved = policies.find((p) => p.status === 'approved') || null;
+                const candidate = policies.find((p) => p.status === 'candidate') || null;
+                const canActivate = Boolean(ov.gates?.policy_stage_enabled && ov.gates?.policy_approve_enabled);
+                policyActivateBtn.disabled = !canActivate;
+
+                if (approved) {
+                    for (let d = 1; d <= 24; d += 1) {
+                        const c = dayCard(d);
+                        if (c) setCardField(c, 'status', `ACTIVE · ${approved.policy_version}`);
+                    }
+                    policyStatus.textContent = `✅ ACTIVE POLICY: ${approved.policy_version} (Draft rev ${approved.source_draft_revision} · up to ${approved.max_bonus_grants} bonus grants) · Player Claims: ${ov.gates?.player_payout_enabled ? 'ENABLED' : 'OFF (safe)'}`;
+                } else if (candidate) {
+                    policyStatus.textContent = `⏳ Candidate staged (${candidate.policy_version}, Draft rev ${candidate.source_draft_revision}) — click 🚀 Activate to make it live · Player Claims: ${ov.gates?.player_payout_enabled ? 'ENABLED' : 'OFF'}`;
+                } else {
+                    policyStatus.textContent = `No active policy yet — click 🚀 Activate after reviewing all 24 days · Player Claims: ${ov.gates?.player_payout_enabled ? 'ENABLED' : 'OFF'}`;
+                }
+                return ov;
+            } catch (err) {
+                policyActivateBtn.disabled = true;
+                policyStatus.textContent = 'Policy status unavailable.';
+                return null;
+            }
+        }
+
+        async function loadServerDraft() {
+            try {
+                const response = await fetch('/api/owner-control/v1/christmas-draft.php', { credentials: 'same-origin', cache: 'no-store' });
+                const body = await response.json();
+                if (!response.ok || body.success !== true) throw new Error('Draft persistence unavailable');
+                serverSaveButton.disabled = body.write_enabled !== true;
+                const saved = body.result;
+                if (saved === null) {
+                    savedRevision = 0;
+                    hasUnsavedChanges = previews.size > 0;
+                    fileStatus.textContent = 'No saved server revision yet.';
+                    await loadPolicyOverview();
+                    return;
+                }
+                const proposed = saved.draft;
+                if (!proposed || proposed.schema_version !== 'christmas_advent_2026_draft_v2' || proposed.event_key !== 'christmas_advent_2026' ||
+                    !Number.isInteger(proposed.max_bonus_wins_per_player) || proposed.max_bonus_wins_per_player < 1 || proposed.max_bonus_wins_per_player > 24 ||
+                    proposed.first_bonus_guarantee?.enabled !== false || !Array.isArray(proposed.days) || proposed.days.length !== 24 ||
+                    !Number.isSafeInteger(saved.revision) || saved.revision < 1) throw new Error('Saved draft is incompatible');
+                const loaded = new Map();
+                for (let day = 1; day <= 24; day += 1) {
+                    if (!dayCard(day)) throw new Error('Calendar unavailable');
+                    loaded.set(day, decodePortableDay(proposed.days[day - 1], day, proposed.schema_version));
+                }
+                previews.clear();
+                for (const [day, entry] of loaded) { previews.set(day, entry); showImportedCard(day, entry); }
+                perPlayerCapInput.value = String(proposed.max_bonus_wins_per_player);
+                savedRevision = saved.revision;
+                hasUnsavedChanges = false;
+                showDay(selectedDay());
+                fileStatus.textContent = `📥 Loaded Draft revision ${savedRevision} (max ${proposed.max_bonus_wins_per_player} bonus wins/player).`;
+                await loadPolicyOverview();
+            } catch (error) {
+                savedRevision = null;
+                serverSaveButton.disabled = true;
+                fileStatus.textContent = 'Server load unavailable. Local JSON import/export remains available.';
+            }
+        }
+
+        function currentDayInputsDirty() {
+            const d = selectedDay();
+            const existing = previews.get(d);
+            const curMin = Number(amountInput.value);
+            const curMax = Number(maxAmountInput.value);
+            const curItem = itemInput.value;
+            const curChance = Number(chanceInput.value);
+            const curWinners = Number(winnersInput.value);
+            const curCap = Number(claimCapInput.value);
+            if (!existing) {
+                return Boolean(amountInput.value || maxAmountInput.value || claimCapInput.value || curItem !== 'none');
+            }
+            return curMin !== existing.minAmount || curMax !== existing.maxAmount || curItem !== existing.item
+                || curChance !== existing.chance || curWinners !== existing.maxWinners || curCap !== existing.maxDailyClaims;
+        }
+
+        async function saveServerDraft() {
+            try {
+                if (currentDayInputsDirty()) {
+                    const prevSize = previews.size;
+                    previewDay();
+                    if (status.textContent.startsWith('Preview rejected:') || (!previews.get(selectedDay()) && prevSize === previews.size)) {
+                        throw new Error(status.textContent);
+                    }
+                }
+                if (savedRevision === null) {
+                    const syncRes = await fetch('/api/owner-control/v1/christmas-draft.php', { credentials: 'same-origin', cache: 'no-store' });
+                    const syncBody = await syncRes.json().catch(() => null);
+                    savedRevision = (syncRes.ok && syncBody?.success) ? (syncBody.result ? syncBody.result.revision : 0) : null;
+                }
+                if (savedRevision === null) throw new Error('Load saved draft first');
+                const draft = buildPortableDraft();
+                const csrfResponse = await fetch('/api/owner-control/v1/csrf.php', { credentials: 'same-origin', cache: 'no-store' });
+                const csrfBody = await csrfResponse.json();
+                if (!csrfResponse.ok || typeof csrfBody.csrf_token !== 'string') throw new Error('Owner authorization unavailable');
+                const response = await fetch('/api/owner-control/v1/christmas-draft.php', {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfBody.csrf_token },
+                    body: JSON.stringify({ revision: savedRevision, draft })
+                });
+                const body = await response.json();
+                if (!response.ok || body.success !== true) {
+                    if (response.status === 409) { savedRevision = null; }
+                    const details = Array.isArray(body.details) ? body.details.filter(value => typeof value === 'string').slice(0, 5).join(', ') : '';
+                    throw new Error(response.status === 409 ? 'Draft changed elsewhere; click Load then Save again' : (details ? `Draft validation: ${details}` : 'Draft save unavailable'));
+                }
+                savedRevision = body.result.revision;
+                hasUnsavedChanges = false;
+                const review = body.result.review;
+                fileStatus.textContent = `💾 Saved Draft revision ${savedRevision} (not activated yet). Exposure: ${review.min_per_player_dspoinc.toLocaleString('en-US')}–${review.max_per_player_dspoinc.toLocaleString('en-US')} DSPOINC/player.`;
+                return savedRevision;
+            } catch (error) {
+                fileStatus.textContent = error.message;
+                return null;
+            }
+        }
+
+        async function activatePolicyOneClick() {
+            if (!policyStatus || !policyActivateBtn) return;
+            policyActivateBtn.disabled = true;
+            try {
+                if (hasUnsavedChanges || currentDayInputsDirty() || !savedRevision || savedRevision < 1) {
+                    policyStatus.textContent = '⏳ Saving latest 24-day draft before activating…';
+                    const newRev = await saveServerDraft();
+                    if (!newRev) {
+                        throw new Error('Fix draft errors above before activating.');
+                    }
+                }
+                policyStatus.textContent = '⏳ Determining next immutable policy version…';
+                const ov = await loadPolicyOverview();
+                const targetVersion = computeNextPolicyVersion(Array.isArray(ov?.policies) ? ov.policies : []);
+
+                policyStatus.textContent = `⏳ Staging release candidate ${targetVersion} from Draft rev ${savedRevision}…`;
+                const stageToken = await fetchPolicyCsrf('stage');
+                const stageRes = await fetch('/api/owner-control/v1/christmas-policy-stage.php', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': stageToken },
+                    body: JSON.stringify({ draft_revision: savedRevision, policy_version: targetVersion })
+                });
+                const stageBody = await stageRes.json();
+                if (!stageRes.ok || stageBody.success !== true || !stageBody.result?.policy_fingerprint) {
+                    const det = Array.isArray(stageBody.details) && stageBody.details.length ? `: ${stageBody.details.slice(0, 3).join(', ')}` : '';
+                    throw new Error((stageBody.error || 'Stage rejected') + det);
+                }
+
+                policyStatus.textContent = `⏳ Locking immutable policy ${targetVersion} as live…`;
+                const approveToken = await fetchPolicyCsrf('approve');
+                const appRes = await fetch('/api/owner-control/v1/christmas-policy-approve.php', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': approveToken },
+                    body: JSON.stringify({
+                        policy_version: targetVersion,
+                        policy_fingerprint: stageBody.result.policy_fingerprint,
+                        replace_active: true
+                    })
+                });
+                const appBody = await appRes.json();
+                if (!appRes.ok || appBody.success !== true) {
+                    const det = Array.isArray(appBody.details) && appBody.details.length ? `: ${appBody.details.slice(0, 3).join(', ')}` : '';
+                    throw new Error((appBody.error || 'Approval rejected') + det);
+                }
+                await loadPolicyOverview();
+            } catch (err) {
+                policyStatus.textContent = `❌ Activate failed: ${err.message}`;
+                await loadPolicyOverview();
+            }
+        }
+
+        function markLocalDraft() {
+            hasUnsavedChanges = true;
+            fileStatus.textContent = 'Unsaved edits in tab — click 💾 Save or 🚀 Activate.';
+        }
+
+        root.addEventListener('input', (e) => { if (e.target !== dayInput && e.target !== importInput) markLocalDraft(); });
+        root.addEventListener('change', (e) => { if (e.target !== dayInput && e.target !== importInput) markLocalDraft(); });
+        document.getElementById('christmas-draft-preview-button').addEventListener('click', () => { previewDay(); markLocalDraft(); });
+        document.getElementById('christmas-draft-clear-button').addEventListener('click', () => { clearDay(); markLocalDraft(); });
+        document.getElementById('christmas-draft-load-server').addEventListener('click', loadServerDraft);
+        document.getElementById('christmas-draft-save-server').addEventListener('click', saveServerDraft);
+        if (policyActivateBtn) {
+            policyActivateBtn.addEventListener('click', activatePolicyOneClick);
+        }
+        document.getElementById('christmas-draft-export-button').addEventListener('click', exportDraft);
+        importInput.addEventListener('change', () => { importDraft().then(() => { hasUnsavedChanges = true; }); });
+        dayInput.addEventListener('change', () => showDay(selectedDay()));
+        showDay(selectedDay());
+        loadActiveStoreCandidates().then(loadServerDraft);
     })();
     </script>
 

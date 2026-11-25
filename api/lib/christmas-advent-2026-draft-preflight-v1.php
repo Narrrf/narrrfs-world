@@ -44,7 +44,7 @@ function christmas26_draft_preflight_v1(array $draft): array
     if (($draft['event_key'] ?? null) !== CHRISTMAS26_EVENT_KEY) {
         $errors[] = 'invalid_event_key';
     }
-    if (!christmas26_draft_int_in_range_v1($draft['max_bonus_wins_per_player'] ?? null, 1, 3)) {
+    if (!christmas26_draft_int_in_range_v1($draft['max_bonus_wins_per_player'] ?? null, 1, 24)) {
         $errors[] = 'invalid_max_bonus_wins_per_player';
     }
 

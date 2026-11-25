@@ -210,15 +210,15 @@ echo json_encode(['csrf_token' => $tok]);
         check(req(anon, port, '/api/owner-control/v1/christmas-policy.php')[0] == 401, 'Case 23: anonymous policy GET -> 401')
         check(req(nonowner, port, '/api/owner-control/v1/christmas-policy.php')[0] == 403, 'Case 23: non-owner policy GET -> 403')
 
-        # Save Draft revision 1 via owner HTTP.
+        # Save Draft revision 1 via owner HTTP with max_bonus_wins_per_player=24 & #54 1 SPOINC voucher.
         days = [{
             'day_number': d,
             'dspoinc_min': 50000 if d == 24 else 1000,
             'dspoinc_max': 250000 if d == 24 else (9000 if d == 1 else 10000),
             'max_daily_claims': 100,
-            'bonus': {'enabled': d == 1, 'item_ids': [34] if d == 1 else [], 'chance_basis_points': 5000 if d == 1 else 0, 'max_winners': 10 if d == 1 else 0, 'quantity_per_win': 1}
+            'bonus': {'enabled': d in (1, 2), 'item_ids': [34] if d == 1 else ([10] if d == 2 else []), 'chance_basis_points': 5000 if d in (1, 2) else 0, 'max_winners': 10 if d in (1, 2) else 0, 'quantity_per_win': 1}
         } for d in range(1, 25)]
-        draft = {'schema_version': 'christmas_advent_2026_draft_v2', 'event_key': 'christmas_advent_2026', 'max_bonus_wins_per_player': 3, 'first_bonus_guarantee': {'enabled': False}, 'days': days}
+        draft = {'schema_version': 'christmas_advent_2026_draft_v2', 'event_key': 'christmas_advent_2026', 'max_bonus_wins_per_player': 24, 'first_bonus_guarantee': {'enabled': False}, 'days': days}
 
         _, raw_csrf = req(owner, port, '/api/owner-control/v1/csrf.php')
         draft_csrf = json.loads(raw_csrf)['csrf_token']
@@ -290,8 +290,8 @@ $goAt = (float)$argv[2];
 while (microtime(true) < $goAt) { usleep(1000); }
 $db = new SQLite3(__DIR__ . '/db/narrrf_world.sqlite', SQLITE3_OPEN_READWRITE);
 try {
-    $res = christmas26_claim_execute_v1($db, $uid, new DateTimeImmutable('2026-12-01T12:00:00+01:00'), 'christmas_advent_2026_v2');
-    echo 'WIN:' . $res['claim_id'] . ':' . ($res['bonus_awarded'] ? '1' : '0');
+    $res = christmas26_claim_execute_v1($db, $uid, new DateTimeImmutable('2026-12-01T12:00:00+01:00'), 'active');
+    echo 'WIN:' . $res['claim_id'] . ':' . ($res['bonus_awarded'] ? '1' : '0') . ':' . $res['policy_version'];
 } catch (Christmas26ClaimException $e) {
     echo 'ERR:' . $e->publicCode;
 }
@@ -305,7 +305,7 @@ try {
 
     wins = [x for x in results if x.startswith('WIN:')]
     cap_errs = [x for x in results if x == 'ERR:daily_claim_limit_reached']
-    check(len(wins) == 1 and wins[0].endswith(':1') and len(cap_errs) == 5, f'Case 13: 6-process barrier race produces 1 winner + 5 cap rejections ({results})')
+    check(len(wins) == 1 and wins[0].endswith(':1:christmas_advent_2026_v2') and len(cap_errs) == 5, f'Case 13: 6-process barrier race produces 1 winner on active v2 + 5 cap rejections ({results})')
 
     conn = sqlite3.connect(dbpath)
     c_count = conn.execute('SELECT COUNT(*) FROM tbl_christmas_advent_2026_claims').fetchone()[0]
@@ -313,6 +313,6 @@ try {
     inv_total = conn.execute('SELECT COALESCE(SUM(quantity),0) FROM tbl_user_inventory WHERE item_id=34').fetchone()[0]
     integ = conn.execute('PRAGMA integrity_check').fetchone()[0]
     conn.close()
-    check(c_count == 1 and stock_left == 0 and inv_total == 1 and integ == 'ok', 'Case 13 & 30: exactly 1 claim, 0 stock left, 1 inventory unit, integrity ok')
+    check(c_count == 1 and stock_left == 1 and inv_total == 1 and integ == 'ok', 'Case 13 & 30: exactly 1 claim, 1 inventory unit delivered, catalog stock intact, integrity ok')
 
 print(f'ALL HTTP & CONCURRENCY CHECKS PASSED ({passes} assertions)')

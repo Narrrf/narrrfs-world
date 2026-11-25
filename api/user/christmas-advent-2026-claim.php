@@ -28,7 +28,7 @@ function christmas26_claim_json(int $code, array $body): void
 }
 
 $policyVersion = getenv(CHRISTMAS26_POLICY_VERSION_ENV) ?: null;
-if (!christmas26_claim_payout_is_enabled(getenv(CHRISTMAS26_PAYOUT_GATE) ?: null, $policyVersion)) {
+if (!christmas26_claim_runtime_gate_is_enabled(getenv(CHRISTMAS26_PAYOUT_GATE) ?: null, $policyVersion)) {
     christmas26_claim_json(404, ['success' => false, 'error' => 'claim_unavailable']);
 }
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
@@ -63,7 +63,7 @@ if (!is_file($dbPath) || !is_writable($dbPath)) {
 
 try {
     $db = new SQLite3($dbPath, SQLITE3_OPEN_READWRITE);
-    $receipt = christmas26_claim_execute_v1($db, $userId, new DateTimeImmutable('now'), (string)$policyVersion);
+    $receipt = christmas26_claim_execute_v1($db, $userId, new DateTimeImmutable('now'), 'active');
     $db->close();
     christmas26_claim_json(200, ['success' => true, 'claim' => $receipt]);
 } catch (Christmas26ClaimException $e) {

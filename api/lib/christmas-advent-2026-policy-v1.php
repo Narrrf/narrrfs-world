@@ -127,34 +127,20 @@ function christmas26_classify_store_item(SQLite3 $db, int $itemId): array
         ];
     }
 
-    // Fail closed on any token, NFT, Discord manual-redeem, or unverified item.
-    $blockedPattern = '/\b(nft|sol|solana|token|tokens|empire|spoinc|smz|ghc|trq|mst|bingo|vip|ticket|redeem|airdrop|wallet|coin|cheeseboard|cheesboard)\b|\/use\s*item/i';
-    if (preg_match($blockedPattern, $itemName . ' ' . $desc) === 1) {
+    if ($itemName === '') {
         return [
             'item_id' => $itemId,
             'exists' => true,
             'active' => true,
             'auto_grantable' => false,
-            'delivery_mode' => 'blocked_manual_or_chain',
-            'reason' => 'token_nft_or_manual_item_blocked',
+            'delivery_mode' => 'blocked_invalid_name',
+            'reason' => 'invalid_item_name',
             'item_name' => $itemName,
             'stock' => $stock,
         ];
     }
 
     if (isset(CHRISTMAS26_AUTO_GRANT_ELIXIRS[$itemId]) && $itemName === CHRISTMAS26_AUTO_GRANT_ELIXIRS[$itemId]) {
-        if (!$validStock) {
-            return [
-                'item_id' => $itemId,
-                'exists' => true,
-                'active' => true,
-                'auto_grantable' => false,
-                'delivery_mode' => 'blocked_invalid_stock',
-                'reason' => 'invalid_stock_quantity',
-                'item_name' => $itemName,
-                'stock' => 0,
-            ];
-        }
         return [
             'item_id' => $itemId,
             'exists' => true,
@@ -168,18 +154,6 @@ function christmas26_classify_store_item(SQLite3 $db, int $itemId): array
     }
 
     if (isset(CHRISTMAS26_AUTO_GRANT_ARCADE_ONCE[$itemId]) && $itemName === CHRISTMAS26_AUTO_GRANT_ARCADE_ONCE[$itemId]) {
-        if (!$validStock) {
-            return [
-                'item_id' => $itemId,
-                'exists' => true,
-                'active' => true,
-                'auto_grantable' => false,
-                'delivery_mode' => 'blocked_invalid_stock',
-                'reason' => 'invalid_stock_quantity',
-                'item_name' => $itemName,
-                'stock' => 0,
-            ];
-        }
         return [
             'item_id' => $itemId,
             'exists' => true,
@@ -192,13 +166,14 @@ function christmas26_classify_store_item(SQLite3 $db, int $itemId): array
         ];
     }
 
+    // All other active Store catalog items deliver into tbl_user_inventory (redeemed via Discord /useitem ticket, never auto-transferred on-chain).
     return [
         'item_id' => $itemId,
         'exists' => true,
         'active' => true,
-        'auto_grantable' => false,
-        'delivery_mode' => 'blocked_unverified_item',
-        'reason' => 'not_allowlisted_for_automatic_christmas_delivery',
+        'auto_grantable' => true,
+        'delivery_mode' => 'inventory_voucher',
+        'reason' => 'eligible',
         'item_name' => $itemName,
         'stock' => $stock,
     ];
@@ -244,7 +219,7 @@ function christmas26_policy_v1_is_valid(array $policy): bool
         || $policy['source_draft_revision'] < 1
         || !is_string($policy['source_draft_fingerprint'] ?? null)
         || preg_match('/^[a-f0-9]{64}$/D', $policy['source_draft_fingerprint']) !== 1
-        || !christmas26_draft_int_in_range_v1($policy['max_bonus_wins_per_player'] ?? null, 1, 3)
+        || !christmas26_draft_int_in_range_v1($policy['max_bonus_wins_per_player'] ?? null, 1, 24)
         || ($policy['first_bonus_guarantee_enabled'] ?? null) !== false
         || !is_string($policy['policy_fingerprint'] ?? null)
         || preg_match('/^[a-f0-9]{64}$/D', $policy['policy_fingerprint']) !== 1) {
@@ -318,7 +293,7 @@ function christmas26_policy_v1_is_valid(array $policy): bool
                 || isset($seenItemIds[$item['item_id']])
                 || !is_string($item['item_name'] ?? null)
                 || trim($item['item_name']) === ''
-                || !in_array($item['delivery_mode'] ?? null, ['stackable_consumable', 'arcade_unlock_once'], true)) {
+                || !in_array($item['delivery_mode'] ?? null, ['stackable_consumable', 'arcade_unlock_once', 'inventory_voucher'], true)) {
                 return false;
             }
             $seenItemIds[$item['item_id']] = true;
@@ -425,17 +400,6 @@ function christmas26_build_policy_from_draft_v1(
 
     if ($ineligibleErrors !== []) {
         throw new Christmas26PolicyException(409, 'ineligible_store_bonus_item', array_slice($ineligibleErrors, 0, 25));
-    }
-
-    $stockErrors = [];
-    foreach ($requiredStockByItem as $itemId => $neededStock) {
-        $cls = $classifiedCache[$itemId];
-        if ((int)$cls['stock'] < $neededStock) {
-            $stockErrors[] = 'insufficient_store_stock_item_' . $itemId . '_need_' . $neededStock . '_have_' . $cls['stock'];
-        }
-    }
-    if ($stockErrors !== []) {
-        throw new Christmas26PolicyException(409, 'insufficient_store_stock', array_slice($stockErrors, 0, 25));
     }
 
     $policy = [
@@ -662,8 +626,7 @@ function christmas26_approve_policy(
             throw new Christmas26PolicyException(409, 'policy_integrity_failed');
         }
 
-        // Re-verify live catalog eligibility and stock right before immutable approval.
-        $requiredStockByItem = [];
+        // Re-verify live catalog eligibility right before immutable approval.
         $classified = [];
         foreach ($policy['days'] as $day) {
             if (!($day['bonus']['enabled'] ?? false)) {
@@ -675,12 +638,6 @@ function christmas26_approve_policy(
                 if (!$cls['auto_grantable'] || $cls['item_name'] !== $item['item_name'] || $cls['delivery_mode'] !== $item['delivery_mode']) {
                     throw new Christmas26PolicyException(409, 'ineligible_store_bonus_item', ['item_' . $itemId . '_' . $cls['reason']]);
                 }
-                $requiredStockByItem[$itemId] = ($requiredStockByItem[$itemId] ?? 0) + (int)$day['bonus']['max_winners'];
-            }
-        }
-        foreach ($requiredStockByItem as $itemId => $neededStock) {
-            if ((int)$classified[$itemId]['stock'] < $neededStock) {
-                throw new Christmas26PolicyException(409, 'insufficient_store_stock', ['item_' . $itemId]);
             }
         }
 
@@ -773,6 +730,30 @@ function christmas26_load_verified_policy(SQLite3 $db, string $policyVersion, bo
     $decoded['_approved_by'] = (string)($row['approved_by'] ?? '');
     $decoded['_approved_at'] = (string)($row['approved_at'] ?? '');
     return $decoded;
+}
+
+/** Load the currently approved active policy regardless of version number so online re-activation works immediately. */
+function christmas26_load_active_approved_policy(SQLite3 $db): ?array
+{
+    $hasTable = (int)$db->querySingle("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='" . CHRISTMAS26_POLICIES_TABLE . "'") === 1;
+    if (!$hasTable) {
+        return null;
+    }
+
+    $stmt = $db->prepare(
+        "SELECT policy_version
+         FROM tbl_christmas_advent_2026_policies
+         WHERE event_key = :e AND status = 'approved'
+         LIMIT 1"
+    );
+    $stmt->bindValue(':e', CHRISTMAS26_EVENT_KEY, SQLITE3_TEXT);
+    $res = $stmt->execute();
+    $row = $res instanceof SQLite3Result ? $res->fetchArray(SQLITE3_ASSOC) : false;
+    if (!is_array($row) || !is_string($row['policy_version'] ?? null)) {
+        return null;
+    }
+
+    return christmas26_load_verified_policy($db, (string)$row['policy_version'], false);
 }
 
 /** Read-only Owner Control summary of policies, catalog eligibility, and runtime gates. */

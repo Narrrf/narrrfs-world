@@ -30,6 +30,21 @@ function christmas26_claim_payout_is_enabled(?string $gate, ?string $version): b
     return $gate === '1' && is_string($version) && christmas26_policy_version_is_valid($version);
 }
 
+/**
+ * Runtime HTTP gate: allows PAYOUT_ENABLED=1 when policy version env is 'active',
+ * empty, or any valid policy_version string, and resolves the single approved DB policy.
+ */
+function christmas26_claim_runtime_gate_is_enabled(?string $gate, ?string $versionEnv = null): bool
+{
+    if ($gate !== '1') {
+        return false;
+    }
+    if ($versionEnv === null || $versionEnv === '' || $versionEnv === 'active') {
+        return true;
+    }
+    return christmas26_policy_version_is_valid($versionEnv);
+}
+
 function christmas26_claim_origin_is_allowed(array $server): bool
 {
     return in_array(
@@ -395,7 +410,8 @@ function christmas26_claim_execute_v1(
     ?callable $hook = null,
     ?callable $rng = null
 ): array {
-    if (!preg_match('/^\d{17,20}$/D', $userId) || !christmas26_policy_version_is_valid($expectedPolicyVersion)) {
+    if (!preg_match('/^\d{17,20}$/D', $userId)
+        || ($expectedPolicyVersion !== '' && $expectedPolicyVersion !== 'active' && !christmas26_policy_version_is_valid($expectedPolicyVersion))) {
         throw new Christmas26ClaimException(400, 'claim_unavailable');
     }
 
@@ -459,7 +475,9 @@ function christmas26_claim_execute_v1(
 
         // Load and cryptographically verify the currently approved immutable policy.
         try {
-            $policy = christmas26_load_verified_policy($db, $expectedPolicyVersion, false);
+            $policy = ($expectedPolicyVersion === '' || $expectedPolicyVersion === 'active')
+                ? christmas26_load_active_approved_policy($db)
+                : christmas26_load_verified_policy($db, $expectedPolicyVersion, false);
         } catch (RuntimeException $e) {
             throw new Christmas26ClaimException(503, $e->getMessage());
         }
@@ -552,9 +570,9 @@ function christmas26_claim_execute_v1(
                 if ($roll > (int)$bonus['chance_basis_points']) {
                     $bonusStatus = 'miss';
                 } else {
-                    // Roll hit! Check catalog eligibility and live stock.
+                    // Roll hit! Check live catalog active status and per-user eligibility.
+                    // Event allocation is governed by each day's bonus.max_winners cap (matching Reward Chamber / Store).
                     $eligibleItems = [];
-                    $inStockItems = [];
                     foreach ($bonus['items'] as $candidate) {
                         $candId = (int)$candidate['item_id'];
                         $cls = christmas26_classify_store_item($db, $candId);
@@ -567,37 +585,21 @@ function christmas26_claim_execute_v1(
                             continue;
                         }
                         $eligibleItems[] = $cls;
-                        if ((int)$cls['stock'] >= 1) {
-                            $inStockItems[] = $cls;
-                        }
                     }
 
                     if ($eligibleItems === []) {
                         $bonusStatus = 'ineligible_item';
-                    } elseif ($inStockItems === []) {
-                        $bonusStatus = 'out_of_stock';
                     } else {
-                        $pickIndex = count($inStockItems) === 1 ? 0 : $draw(0, count($inStockItems) - 1);
-                        if (!is_int($pickIndex) || !isset($inStockItems[$pickIndex])) {
+                        $pickIndex = count($eligibleItems) === 1 ? 0 : $draw(0, count($eligibleItems) - 1);
+                        if (!is_int($pickIndex) || !isset($eligibleItems[$pickIndex])) {
                             throw new Christmas26ClaimException(500, 'invalid_draw_result');
                         }
-                        $chosen = $inStockItems[$pickIndex];
+                        $chosen = $eligibleItems[$pickIndex];
                         $bonusItemId = (int)$chosen['item_id'];
                         $bonusItemName = (string)$chosen['item_name'];
                         $bonusQty = 1;
 
-                        // From here on, stock/inventory grant failure must ROLLBACK the entire claim.
-                        $decStmt = $db->prepare(
-                            'UPDATE tbl_store_items
-                             SET quantity = quantity - 1, updated_at = CURRENT_TIMESTAMP
-                             WHERE item_id = :id AND COALESCE(is_active, 0) = 1 AND quantity >= 1'
-                        );
-                        $decStmt->bindValue(':id', $bonusItemId, SQLITE3_INTEGER);
-                        $decStmt->execute();
-                        if ($db->changes() !== 1) {
-                            throw new RuntimeException('inventory_stock_decrement_failed');
-                        }
-
+                        // From here on, any inventory grant failure MUST rollback the entire claim.
                         $hook && $hook('during_inventory', $db);
 
                         $invSel = $db->prepare('SELECT inventory_id, quantity FROM tbl_user_inventory WHERE user_id = :u AND item_id = :id LIMIT 1');

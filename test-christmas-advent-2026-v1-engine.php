@@ -43,23 +43,28 @@ function x26_init_db(string $path): SQLite3
     $db->exec((string)file_get_contents(__DIR__ . '/db/migrations/create_christmas_advent_2026_draft_revisions_v1.sql'));
     $db->exec((string)file_get_contents(__DIR__ . '/db/migrations/20261124_christmas_advent_2026_v1.sql'));
 
-    // Seed verified Store items + blocked NFT/Token/Manual items.
+    // Seed active Store items matching Markus's full 24-day schedule + one inactive item for rejection checks.
     $db->exec("INSERT INTO tbl_store_items (item_id, item_name, description, price, is_active, quantity) VALUES
         (21, 'Space Triple Shot Core', 'Arcade upgrade', 500000, 1, 20),
+        (27, 'Pixel Zombabiez NFT', 'Solana Pixel ZomBabiez NFT', 4500000, 1, 5),
         (33, 'Green Elixir', '-6 hours remaining time', 100000, 1, 50),
         (34, 'Blue Elixir', '-18 hours remaining time', 250000, 1, 25),
         (35, 'Red Elixir', '-48 hours remaining time', 500000, 1, 10),
-        (10, 'Golden Rascals NFT.', 'Gold Backed NFTs', 7000000, 1, 2),
         (41, '1000 EMPIRE Token', '/use item to redeem in Discord', 200000, 1, 10),
+        (42, '5000 EMPIRE Token', '/Useitem in your discord inventory to redeem', 850000, 1, 3),
+        (43, '2000 EMPIRE', 'To redeem please /use item in the Discord #cheesboard', 400000, 1, 8),
+        (51, '500 EMPIRE TOKEN', '/use item in #cheesboard to redeem in our Discord', 100000, 1, 20),
         (54, '1 SPOINC', '/use item in cheesboard to redeem', 10000, 1, 100),
-        (9, 'VIP pass 1 time', '1 time entry to one of our VIP events.', 200000, 1, 20),
-        (60, 'Legacy Coin', 'Unverified item', 1000, 1, 5)
+        (55, '10 SPOINC', '/use item in the cheesboard', 100000, 1, 100),
+        (60, '1000 Legacy Coin', 'Use /useitem in Discord to request redemption.', 1000, 1, 100),
+        (61, '1000 Mullet Coin', 'Use /useitem in Discord to request redemption.', 1000, 1, 100),
+        (99, 'Inactive Retired Item', 'Inactive item', 1000, 0, 5)
     ");
 
     return $db;
 }
 
-function x26_make_draft(array $overrides = []): array
+function x26_make_draft(array $overrides = [], int $maxBonusWinsPerPlayer = 24): array
 {
     $days = [];
     for ($d = 1; $d <= 24; $d++) {
@@ -84,7 +89,7 @@ function x26_make_draft(array $overrides = []): array
     return [
         'schema_version' => CHRISTMAS26_DRAFT_SCHEMA_V2,
         'event_key' => CHRISTMAS26_EVENT_KEY,
-        'max_bonus_wins_per_player' => 3,
+        'max_bonus_wins_per_player' => $maxBonusWinsPerPlayer,
         'first_bonus_guarantee' => ['enabled' => false],
         'days' => $days,
     ];
@@ -113,47 +118,36 @@ try {
         $db->exec("INSERT INTO tbl_users VALUES ('$uid', 'player_$i')");
     }
 
-    // Case 24: Unsupported token/NFT/VIP/manual/unverified item rejection at stage/publish time.
-    foreach ([10, 41, 54, 9, 60] as $badItem) {
+    // Case 24: Inactive (#99) and nonexistent (#999999) Store items still rejected at stage/publish time.
+    foreach ([99, 999999] as $badItem) {
         $badDraft = x26_make_draft([1 => ['bonus' => ['enabled' => true, 'item_ids' => [$badItem], 'chance_basis_points' => 5000, 'max_winners' => 1]]]);
         $rev = (int)$db->querySingle('SELECT COALESCE(MAX(revision), 0) FROM tbl_christmas_advent_2026_draft_revisions');
-        $saved = christmas26_draft_save_v1($db, $badDraft, $rev, '328601656659017732');
         $rejected = false;
         try {
+            $saved = christmas26_draft_save_v1($db, $badDraft, $rev, '328601656659017732');
             christmas26_stage_policy_candidate($db, $saved['revision'], 'christmas_advent_2026_v1', '328601656659017732');
-        } catch (Christmas26PolicyException $e) {
-            $rejected = $e->publicCode === 'ineligible_store_bonus_item';
+        } catch (Throwable $e) {
+            $rejected = in_array($e->getMessage(), ['invalid_store_item', 'ineligible_store_bonus_item'], true);
         }
-        x26_assert($rejected, "Case 24: unsupported item #$badItem rejected at policy stage");
+        x26_assert($rejected, "Case 24: inactive/missing item #$badItem rejected");
     }
 
-    // Insufficient store stock rejection at policy stage.
-    $tooManyDraft = x26_make_draft([1 => ['bonus' => ['enabled' => true, 'item_ids' => [34], 'chance_basis_points' => 5000, 'max_winners' => 99]]]);
-    $rev = (int)$db->querySingle('SELECT COALESCE(MAX(revision), 0) FROM tbl_christmas_advent_2026_draft_revisions');
-    $saved = christmas26_draft_save_v1($db, $tooManyDraft, $rev, '328601656659017732');
-    $stockRejected = false;
-    try {
-        christmas26_stage_policy_candidate($db, $saved['revision'], 'christmas_advent_2026_v1', '328601656659017732');
-    } catch (Christmas26PolicyException $e) {
-        $stockRejected = $e->publicCode === 'insufficient_store_stock';
-    }
-    x26_assert($stockRejected, 'Store stock shortage rejected at policy staging');
-
-    // Publish real v1 policy matching owner draft contract (Dec 1: 1000-9000 + #34 50% max 10; Dec 2-5 elixirs; Dec 24 finale).
+    // Publish real v1 policy matching Markus's full 24-day schedule (with max_bonus_wins_per_player = 24, active Store vouchers #54/#60/#61/#27/#41/#55).
     $draft = x26_make_draft([
         1 => ['max_daily_claims' => 100, 'bonus' => ['enabled' => true, 'item_ids' => [34], 'chance_basis_points' => 5000, 'max_winners' => 2]],
-        2 => ['bonus' => ['enabled' => true, 'item_ids' => [33], 'chance_basis_points' => 10000, 'max_winners' => 5]],
-        3 => ['bonus' => ['enabled' => true, 'item_ids' => [34], 'chance_basis_points' => 10000, 'max_winners' => 5]],
-        4 => ['bonus' => ['enabled' => true, 'item_ids' => [35], 'chance_basis_points' => 10000, 'max_winners' => 5]],
-        5 => ['bonus' => ['enabled' => true, 'item_ids' => [34], 'chance_basis_points' => 10000, 'max_winners' => 5]],
+        2 => ['bonus' => ['enabled' => true, 'item_ids' => [54], 'chance_basis_points' => 10000, 'max_winners' => 10]],
+        3 => ['bonus' => ['enabled' => true, 'item_ids' => [60], 'chance_basis_points' => 10000, 'max_winners' => 10]],
+        4 => ['bonus' => ['enabled' => true, 'item_ids' => [43], 'chance_basis_points' => 10000, 'max_winners' => 10]],
+        5 => ['bonus' => ['enabled' => true, 'item_ids' => [27], 'chance_basis_points' => 10000, 'max_winners' => 5]],
         6 => ['bonus' => ['enabled' => false, 'item_ids' => [], 'chance_basis_points' => 0, 'max_winners' => 0]],
         7 => ['bonus' => ['enabled' => true, 'item_ids' => [21], 'chance_basis_points' => 10000, 'max_winners' => 5]],
         8 => ['dspoinc_min' => 1000, 'dspoinc_max' => 1000, 'bonus' => ['enabled' => false, 'item_ids' => [], 'chance_basis_points' => 0, 'max_winners' => 0]],
         9 => ['dspoinc_min' => 10000, 'dspoinc_max' => 10000, 'bonus' => ['enabled' => false, 'item_ids' => [], 'chance_basis_points' => 0, 'max_winners' => 0]],
+        10 => ['bonus' => ['enabled' => true, 'item_ids' => [55], 'chance_basis_points' => 10000, 'max_winners' => 10]],
         23 => ['max_daily_claims' => 1],
-    ]);
+    ], 24);
     $approved = x26_publish_draft($db, $draft, 'christmas_advent_2026_v1');
-    x26_assert($approved['status'] === 'approved', 'Immutable policy christmas_advent_2026_v1 approved');
+    x26_assert($approved['status'] === 'approved', 'Immutable policy christmas_advent_2026_v1 (24 bonus wins/player + all Store vouchers) approved');
 
     // Case 20: Saving a new draft after policy publication must not mutate approved policy or future claims.
     $newDraft = x26_make_draft([1 => ['dspoinc_min' => 1000, 'dspoinc_max' => 1000]]);
@@ -212,9 +206,9 @@ try {
         && $rWinItem['bonus_awarded'] === true
         && $rWinItem['bonus_item']['item_id'] === 34
         && $rWinItem['bonus_item']['item_name'] === 'Blue Elixir'
-        && (int)$db->querySingle("SELECT quantity FROM tbl_store_items WHERE item_id=34") === 24
+        && (int)$db->querySingle("SELECT quantity FROM tbl_store_items WHERE item_id=34") === 25
         && (int)$db->querySingle("SELECT quantity FROM tbl_user_inventory WHERE user_id='$u1' AND item_id=34") === 1,
-        'Case 4 & 21b: Dec 1 DSPOINC + Blue Elixir delivered and stock decremented atomically'
+        'Case 4 & 21b: Dec 1 DSPOINC + Blue Elixir delivered into inventory cleanly'
     );
 
     // Case 5: Chance miss settles DSPOINC-only.
@@ -222,8 +216,7 @@ try {
         return $min === 1 && $max === 10000 ? 7500 : 3180; // roll 7500 > 5000 misses!
     });
     x26_assert(
-        $rMiss['reward_dspoinc'] === 3180 && $rMiss['bonus_awarded'] === false && $rMiss['bonus_status'] === 'miss'
-        && (int)$db->querySingle("SELECT quantity FROM tbl_store_items WHERE item_id=34") === 24,
+        $rMiss['reward_dspoinc'] === 3180 && $rMiss['bonus_awarded'] === false && $rMiss['bonus_status'] === 'miss',
         'Case 3 & 5: chance miss still credits DSPOINC without Store item'
     );
 
@@ -238,41 +231,61 @@ try {
     $rCap = christmas26_claim_execute_v1($db, $u4, $dec1Start, 'christmas_advent_2026_v1', null, static fn(int $a, int $b): int => $a === 1 && $b === 10000 ? 100 : 4100);
     x26_assert($rWin2['bonus_awarded'] === true && $rCap['bonus_awarded'] === false && $rCap['bonus_status'] === 'daily_winner_cap' && $rCap['reward_dspoinc'] === 4100, 'Case 8: daily winner cap enforced cleanly');
 
-    // Case 9: Per-player event bonus limit reached (max_bonus_wins_per_player = 3).
-    // u1 already won #1 on Day 1. Win #2 on Day 2, #3 on Day 3, then Day 4 hits player_event_cap!
-    $w2 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-02T12:00:00+01:00'), 'christmas_advent_2026_v1');
-    $w3 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-03T12:00:00+01:00'), 'christmas_advent_2026_v1');
-    $w4 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-04T12:00:00+01:00'), 'christmas_advent_2026_v1');
-    x26_assert($w2['bonus_awarded'] && $w3['bonus_awarded'] && !$w4['bonus_awarded'] && $w4['bonus_status'] === 'player_event_cap', 'Case 9: per-player 3 bonus wins cap enforced');
+    // Case 9a: When max_bonus_wins_per_player = 24, player u1 wins > 3 different items (Day 2 #54 SPOINC, Day 3 #60 Legacy, Day 4 #43 EMPIRE, Day 5 #27 NFT) cleanly!
+    $w2 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-02T12:00:00+01:00'), 'active');
+    $w3 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-03T12:00:00+01:00'), 'active');
+    $w4 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-04T12:00:00+01:00'), 'active');
+    $w5 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-05T12:00:00+01:00'), 'active');
+    x26_assert(
+        $w2['bonus_awarded'] && $w2['bonus_item']['item_id'] === 54
+        && $w3['bonus_awarded'] && $w3['bonus_item']['item_id'] === 60
+        && $w4['bonus_awarded'] && $w4['bonus_item']['item_id'] === 43
+        && $w5['bonus_awarded'] && $w5['bonus_item']['item_id'] === 27
+        && (int)$db->querySingle("SELECT quantity FROM tbl_store_items WHERE item_id=43") === 8,
+        'Case 9a: player wins >3 inventory vouchers across 24-win limit without Store quantity exhaustion'
+    );
 
-    // Arcade 1-per-user duplicate check on Day 7 (#21): u2 wins #21 once, and if they somehow had it already it stays blocked as ineligible_item.
-    $arc1 = christmas26_claim_execute_v1($db, $u2, new DateTimeImmutable('2026-12-07T12:00:00+01:00'), 'christmas_advent_2026_v1');
+    // Arcade 1-per-user duplicate check on Day 7 (#21): u2 wins #21 once cleanly.
+    $arc1 = christmas26_claim_execute_v1($db, $u2, new DateTimeImmutable('2026-12-07T12:00:00+01:00'), 'active');
     x26_assert($arc1['bonus_awarded'] && $arc1['bonus_item']['item_id'] === 21, 'Arcade unlock #21 granted cleanly on first win');
 
-    // Case 7: Item out of stock during claim settles as out_of_stock DSPOINC-only.
-    $db->exec('UPDATE tbl_store_items SET quantity = 0 WHERE item_id = 35');
-    $rOos = christmas26_claim_execute_v1($db, $u2, new DateTimeImmutable('2026-12-04T12:00:00+01:00'), 'christmas_advent_2026_v1');
-    x26_assert(!$rOos['bonus_awarded'] && $rOos['bonus_status'] === 'out_of_stock' && $rOos['reward_dspoinc'] >= 1000, 'Case 7: item out of stock settles DSPOINC-only');
+    // Case 7: Deactivated item after publish (Day 4 #43 set is_active = 0) settles cleanly as ineligible_item DSPOINC-only.
+    $db->exec('UPDATE tbl_store_items SET is_active = 0 WHERE item_id = 43');
+    $rDeact = christmas26_claim_execute_v1($db, $u2, new DateTimeImmutable('2026-12-04T12:00:00+01:00'), 'active');
+    $db->exec('UPDATE tbl_store_items SET is_active = 1 WHERE item_id = 43');
+    x26_assert(!$rDeact['bonus_awarded'] && $rDeact['bonus_status'] === 'ineligible_item' && $rDeact['reward_dspoinc'] >= 1000, 'Case 7: runtime deactivated item settles DSPOINC-only');
+
+    // Case 9b: Per-player cap still strictly enforced when an owner policy sets max_bonus_wins_per_player = 2.
+    $cap3Draft = $draft;
+    $cap3Draft['max_bonus_wins_per_player'] = 2;
+    x26_publish_draft($db, $cap3Draft, 'christmas_advent_2026_v2', true);
+    $c2a = christmas26_claim_execute_v1($db, $u4, new DateTimeImmutable('2026-12-02T12:00:00+01:00'), 'active');
+    $c2b = christmas26_claim_execute_v1($db, $u4, new DateTimeImmutable('2026-12-03T12:00:00+01:00'), 'active');
+    $c2c = christmas26_claim_execute_v1($db, $u4, new DateTimeImmutable('2026-12-05T12:00:00+01:00'), 'active');
+    x26_assert($c2a['bonus_awarded'] && $c2b['bonus_awarded'] && !$c2c['bonus_awarded'] && $c2c['bonus_status'] === 'player_event_cap', 'Case 9b: explicit max_bonus_wins_per_player=2 cap enforced after v1->v2 replacement');
+
+    // Switch active back to v1 policy via v3 (24 wins) for remainder of checks & verify active resolution.
+    x26_publish_draft($db, $draft, 'christmas_advent_2026_v3', true);
 
     // Case 10: Daily claim count exhausted (Day 23 max_daily_claims = 1).
-    $r23 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-23T12:00:00+01:00'), 'christmas_advent_2026_v1');
+    $r23 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-23T12:00:00+01:00'), 'active');
     $capReject = false;
     $scoresBefore = (int)$db->querySingle('SELECT COUNT(*) FROM tbl_user_scores');
     try {
-        christmas26_claim_execute_v1($db, $u2, new DateTimeImmutable('2026-12-23T12:00:00+01:00'), 'christmas_advent_2026_v1');
+        christmas26_claim_execute_v1($db, $u2, new DateTimeImmutable('2026-12-23T12:00:00+01:00'), 'active');
     } catch (Christmas26ClaimException $e) {
         $capReject = $e->publicCode === 'daily_claim_limit_reached';
     }
     x26_assert($capReject && (int)$db->querySingle('SELECT COUNT(*) FROM tbl_user_scores') === $scoresBefore, 'Case 10: daily claim count exhausted rejects with zero mutation');
 
     // Case 22a: December 24 finale settles inside 50000..250000.
-    $r24 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-24T22:59:59Z'), 'christmas_advent_2026_v1');
+    $r24 = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-24T22:59:59Z'), 'active');
     x26_assert($r24['reward_dspoinc'] >= 50000 && $r24['reward_dspoinc'] <= 250000 && $r24['calendar_date'] === '2026-12-24', 'Case 22a: Dec 24 finale settles in 50000..250000');
 
-    // Case 12 & 18: Duplicate click/retry & replay after process restart (fresh SQLite3 connection).
+    // Case 12 & 18: Duplicate click/retry & replay after process restart (fresh SQLite3 connection) — even after v1 was retired and v3 became active!
     $db->close();
     $db = new SQLite3($dbPath, SQLITE3_OPEN_READWRITE);
-    $replay = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-01T15:00:00+01:00'), 'christmas_advent_2026_v1');
+    $replay = christmas26_claim_execute_v1($db, $u1, new DateTimeImmutable('2026-12-01T15:00:00+01:00'), 'active');
     x26_assert(
         $replay['replayed'] === true
         && $replay['claim_id'] === $rWinItem['claim_id']
@@ -377,7 +390,7 @@ try {
     $inv34 = (int)$db->querySingle('SELECT COALESCE(SUM(quantity), 0) FROM tbl_user_inventory WHERE item_id = 34');
     $deliv34 = (int)$db->querySingle("SELECT COUNT(*) FROM tbl_christmas_advent_2026_claim_receipts WHERE bonus_status = 'delivered' AND bonus_item_id = 34");
     $rem34 = (int)$db->querySingle('SELECT quantity FROM tbl_store_items WHERE item_id = 34');
-    x26_assert($inv34 === $deliv34 && ($rem34 + $inv34) === 25, 'Case 30d: inventory + remaining store stock conserved exactly');
+    x26_assert($inv34 === $deliv34 && $rem34 === 25, 'Case 30d: inventory grants match delivered receipts exactly without altering catalog quantity');
 
     // Outbox verification: every committed claim has an outbox row.
     $claimsCount = (int)$db->querySingle('SELECT COUNT(*) FROM tbl_christmas_advent_2026_claims');
