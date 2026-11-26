@@ -14206,6 +14206,7 @@ window.emergencyCollisionCheck = function() {
   function lockSpaceInvadersScroll() {
     window.NarrrfsMobileArcade?.lock({
       stageEl: document.getElementById('space-invaders-play-stage') || document.getElementById('space-cheese-invaders'),
+      controlsEl: document.getElementById('space-invaders-mobile-controls'),
       gameKey: 'space-invaders'
     });
     document.body.style.overflow = 'hidden';

@@ -1121,6 +1121,7 @@ function initSnake() {
   let perfectGame = true; // Track if player hits walls
 
   function startGameWithCountdown() {
+    lockSnakeScroll();
     const countdownEl = document.getElementById("snake-countdown");
     let count = 5;
 
@@ -2843,12 +2844,10 @@ function disableGlobalSnakeTouch() {
 
 // Helper: Lock/unlock scrolling for Snake (uses shared NarrrfsMobileArcade lock)
 function lockSnakeScroll() {
-  if (!snakeScrollLocked) {
-    document.body.style.overflow = "hidden";
-    snakeScrollLocked = true;
-  }
+  snakeScrollLocked = true;
   window.NarrrfsMobileArcade?.lock({
     stageEl: document.getElementById('snake-play-stage') || document.getElementById('cheese-snake'),
+    controlsEl: document.getElementById('snake-mobile-controls'),
     gameKey: 'snake'
   });
 }

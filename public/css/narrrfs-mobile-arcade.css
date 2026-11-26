@@ -3,8 +3,10 @@
  * Does NOT alter score math, role multipliers, anti-cheat rules, or save APIs.
  */
 
-html.narrrfs-game-locked,
-body.narrrfs-game-locked {
+/* Apply scroll-freeze ONLY after NarrrfsMobileArcade.lock() finishes compacting
+   and scrolling the stage + bottom touch buttons into view. */
+html.narrrfs-game-scroll-freeze,
+body.narrrfs-game-scroll-freeze {
   overflow: hidden !important;
   overscroll-behavior: none !important;
   touch-action: none !important;
@@ -330,6 +332,12 @@ body.narrrfs-game-locked header a {
 }
 
 @media (max-width: 900px) {
+  body.narrrfs-game-locked header {
+    position: relative !important;
+    padding-top: 0.38rem !important;
+    padding-bottom: 0.38rem !important;
+  }
+
   #fast-shoot-container,
   #reload-button,
   #game-panel-btn {

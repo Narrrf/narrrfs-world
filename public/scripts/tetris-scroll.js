@@ -1006,7 +1006,8 @@ window.startTetrisGame = async function () {
   }
   
   pendingTetrisStart = false;
-  
+  lockTetrisScroll();
+
   if (startBtn) {
     startBtn.disabled = true;
     startBtn.textContent = "🕹️ Playing...";
@@ -3191,9 +3192,9 @@ window.restartTetrisGame = function() {
 };
 
 function lockTetrisScroll() {
-    document.body.style.overflow = "hidden";
     window.NarrrfsMobileArcade?.lock({
       stageEl: document.getElementById('tetris-play-stage') || document.getElementById('cheese-tetris'),
+      controlsEl: document.getElementById('tetris-mobile-controls'),
       gameKey: 'tetris'
     });
 }

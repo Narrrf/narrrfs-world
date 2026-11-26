@@ -10,6 +10,7 @@
   let lockedScrollX = 0;
   let lockedScrollY = 0;
   let listenersAttached = false;
+  let lockGeneration = 0;
 
   function isTouchOrCompactViewport() {
     return (
@@ -53,30 +54,40 @@
     listenersAttached = false;
   }
 
-  function frameStageForMobile(stageEl) {
+  function frameStageForMobile(stageEl, controlsEl = null) {
     if (!stageEl || typeof stageEl.getBoundingClientRect !== 'function') return;
     if (!isTouchOrCompactViewport()) return;
 
-    const headerEl = document.querySelector('header');
-    let headerOffset = 4;
-    if (headerEl) {
-      const headerStyle = window.getComputedStyle(headerEl);
-      if (headerStyle.position === 'sticky' || headerStyle.position === 'fixed') {
-        headerOffset = Math.min(84, Math.ceil(headerEl.getBoundingClientRect().height) + 4);
+    const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight || 0;
+    const activeControls = controlsEl || (stageEl ? stageEl.querySelector('.narrrfs-arcade-controls') : null);
+    const stageRect = stageEl.getBoundingClientRect();
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const stageTopDoc = stageRect.top + scrollY;
+
+    let bottomEdgeDoc = stageRect.bottom + scrollY + 8;
+    if (activeControls && typeof activeControls.getBoundingClientRect === 'function') {
+      const controlsRect = activeControls.getBoundingClientRect();
+      if (controlsRect.height > 0) {
+        bottomEdgeDoc = controlsRect.bottom + scrollY + 10;
       }
     }
 
-    const rect = stageEl.getBoundingClientRect();
-    const docTop = rect.top + (window.scrollY || window.pageYOffset || 0);
-    const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight || 0;
-    let targetY = Math.max(0, docTop - headerOffset);
-
-    if (rect.height > 0 && vh > 0 && rect.height + headerOffset < vh) {
-      const freeSpace = vh - headerOffset - rect.height;
-      targetY = Math.max(0, docTop - headerOffset - Math.min(20, Math.floor(freeSpace / 2)));
+    const playHeight = Math.max(0, bottomEdgeDoc - stageTopDoc);
+    let targetY;
+    if (vh > 0 && playHeight <= vh - 8) {
+      const extra = Math.floor((vh - playHeight) / 2);
+      targetY = Math.max(0, Math.round(stageTopDoc - Math.min(16, extra)));
+      if (bottomEdgeDoc - targetY > vh) {
+        targetY = Math.max(0, Math.ceil(bottomEdgeDoc - vh));
+      }
+    } else if (vh > 0) {
+      // Always prioritize keeping the bottom of the mobile controls inside the viewport!
+      targetY = Math.max(0, Math.ceil(bottomEdgeDoc - vh));
+    } else {
+      targetY = Math.max(0, Math.round(stageTopDoc - 4));
     }
 
-    window.scrollTo({ top: targetY, left: 0, behavior: 'instant' });
+    window.scrollTo(0, targetY);
   }
 
   function dispatchLockState(locked, gameKey) {
@@ -91,36 +102,76 @@
 
   function lock(options = {}) {
     const stageEl = options.stageEl || null;
+    const controlsEl = options.controlsEl || null;
     const gameKey = String(options.gameKey || 'arcade');
+    const gen = ++lockGeneration;
 
-    if (!isLocked) {
-      frameStageForMobile(stageEl);
+    // 1. Temporarily unfreeze scrolling so Android Chrome permits synchronous framing
+    document.documentElement.classList.remove('narrrfs-game-scroll-freeze');
+    if (document.body) {
+      document.body.classList.remove('narrrfs-game-scroll-freeze');
+      if (document.body.style.overflow === 'hidden') {
+        document.body.style.overflow = '';
+      }
     }
 
-    lockedScrollX = window.scrollX || window.pageXOffset || 0;
-    lockedScrollY = window.scrollY || window.pageYOffset || 0;
-    isLocked = true;
-    activeGameKey = gameKey;
-
+    // 2. Apply compact locked layout classes BEFORE measuring bounding boxes
     document.documentElement.classList.add('narrrfs-game-locked');
     if (document.body) {
       document.body.classList.add('narrrfs-game-locked');
       document.body.dataset.activeArcadeGame = gameKey;
     }
 
+    // 3. Scroll synchronously keeping mobile touch controls visible inside visualViewport
+    frameStageForMobile(stageEl, controlsEl);
+
+    lockedScrollX = window.scrollX || window.pageXOffset || 0;
+    lockedScrollY = window.scrollY || window.pageYOffset || 0;
+    isLocked = true;
+    activeGameKey = gameKey;
+
+    // 4. Freeze scroll AFTER framing completes
+    document.documentElement.classList.add('narrrfs-game-scroll-freeze');
+    if (document.body) {
+      document.body.classList.add('narrrfs-game-scroll-freeze');
+    }
+
     attachGlobalGuards();
     dispatchLockState(true, gameKey);
+
+    // 5. Next-frame post-paint guard in case late image/canvas sizing pushed controls down
+    if (typeof window.requestAnimationFrame === 'function' && stageEl && isTouchOrCompactViewport()) {
+      window.requestAnimationFrame(() => {
+        if (!isLocked || gen !== lockGeneration) return;
+        const activeControls = controlsEl || (stageEl ? stageEl.querySelector('.narrrfs-arcade-controls') : null);
+        if (!activeControls || typeof activeControls.getBoundingClientRect !== 'function') return;
+        const cRect = activeControls.getBoundingClientRect();
+        const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight || 0;
+        if (vh > 0 && cRect.height > 0 && cRect.bottom > vh - 2) {
+          document.documentElement.classList.remove('narrrfs-game-scroll-freeze');
+          if (document.body) document.body.classList.remove('narrrfs-game-scroll-freeze');
+          const curY = window.scrollY || window.pageYOffset || 0;
+          const nextY = Math.max(0, Math.ceil(curY + cRect.bottom - vh + 6));
+          window.scrollTo(0, nextY);
+          lockedScrollX = window.scrollX || window.pageXOffset || 0;
+          lockedScrollY = window.scrollY || window.pageYOffset || 0;
+          document.documentElement.classList.add('narrrfs-game-scroll-freeze');
+          if (document.body) document.body.classList.add('narrrfs-game-scroll-freeze');
+        }
+      });
+    }
   }
 
   function unlock() {
     const previousKey = activeGameKey;
+    lockGeneration++;
     isLocked = false;
     activeGameKey = '';
 
     detachGlobalGuards();
-    document.documentElement.classList.remove('narrrfs-game-locked');
+    document.documentElement.classList.remove('narrrfs-game-scroll-freeze', 'narrrfs-game-locked');
     if (document.body) {
-      document.body.classList.remove('narrrfs-game-locked');
+      document.body.classList.remove('narrrfs-game-scroll-freeze', 'narrrfs-game-locked');
       delete document.body.dataset.activeArcadeGame;
     }
 

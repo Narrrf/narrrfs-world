@@ -1884,6 +1884,7 @@ isPaused = false;
 
 window.NarrrfsMobileArcade?.lock({
   stageEl: document.getElementById('cheeseman-play-stage'),
+  controlsEl: document.getElementById('cheeseman-mobile-controls'),
   gameKey: 'cheeseman'
 });
 
@@ -1911,6 +1912,7 @@ startGameTimer();
 
 window.NarrrfsMobileArcade?.lock({
   stageEl: document.getElementById('cheeseman-play-stage'),
+  controlsEl: document.getElementById('cheeseman-mobile-controls'),
   gameKey: 'cheeseman'
 });
 

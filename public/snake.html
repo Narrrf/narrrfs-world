@@ -199,29 +199,98 @@
       display: block;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
+      body.narrrfs-game-locked > header + div,
+      body.narrrfs-game-locked > header + div + div {
+        display: none !important;
+      }
+
+      body.narrrfs-game-locked #cheese-snake {
+        margin-top: 0.25rem !important;
+      }
+
       #snake-play-stage {
-        padding: 0.9rem 0.85rem !important;
+        padding: 0.7rem 0.65rem !important;
+      }
+
+      body.narrrfs-game-locked #snake-play-stage {
+        padding: 0.45rem 0.55rem !important;
+      }
+
+      body.narrrfs-game-locked #snake-play-stage > div.absolute.top-4.left-4,
+      body.narrrfs-game-locked #snake-play-stage > h2 + div,
+      body.narrrfs-game-locked #pause-snake-btn + p,
+      body.narrrfs-game-locked #snake-mobile-controls .narrrfs-swipe-hint {
+        display: none !important;
       }
 
       body.narrrfs-game-locked #snake-play-stage h2 {
-        font-size: 1.35rem;
-        margin-bottom: 0.35rem;
+        font-size: 0.95rem !important;
+        margin-bottom: 0.1rem !important;
+      }
+
+      body.narrrfs-game-locked #snake-score {
+        font-size: 0.88rem !important;
+        line-height: 1.2 !important;
+      }
+
+      body.narrrfs-game-locked #snake-play-stage > div.text-center.mb-4 {
+        margin-bottom: 0.2rem !important;
+      }
+
+      body.narrrfs-game-locked #start-snake-btn,
+      body.narrrfs-game-locked #pause-snake-btn {
+        display: inline-block;
+        width: auto !important;
+        padding: 0.22rem 0.65rem !important;
+        font-size: 0.76rem !important;
+        margin-top: 0 !important;
+      }
+
+      body.narrrfs-game-locked #snake-play-stage .flex.justify-center.items-center.mb-4 {
+        margin-bottom: 0.2rem !important;
       }
 
       #snake-canvas {
-        max-height: min(46dvh, 340px);
+        height: min(42dvh, 320px) !important;
         width: auto !important;
-        max-width: 92vw;
-        aspect-ratio: 200 / 400;
-        margin-left: auto;
-        margin-right: auto;
+        max-width: 90vw !important;
+        aspect-ratio: 1 / 2 !important;
+        margin: 0 auto !important;
+      }
+
+      body.narrrfs-game-locked #snake-canvas {
+        height: min(38dvh, 275px) !important;
+        max-height: min(38dvh, 275px) !important;
+      }
+
+      body.narrrfs-game-locked #snake-mobile-controls {
+        margin-top: 0.2rem !important;
+        gap: 0.22rem !important;
+      }
+
+      body.narrrfs-game-locked #snake-dpad-grid {
+        grid-template-columns: repeat(3, 52px) !important;
+        gap: 0.28rem !important;
+      }
+
+      body.narrrfs-game-locked #snake-dpad-grid .narrrfs-touch-btn {
+        min-height: 42px !important;
+        min-width: 52px !important;
+        font-size: 0.98rem !important;
+      }
+    }
+
+    @media (max-width: 900px) and (max-height: 700px) {
+      body.narrrfs-game-locked #snake-canvas {
+        height: min(33dvh, 228px) !important;
+        max-height: min(33dvh, 228px) !important;
       }
     }
   </style>
   <link rel="stylesheet" href="winter-theme.css?v=20261126-winter-v3" />
-  <link rel="stylesheet" href="css/narrrfs-mobile-arcade.css?v=20261126-arcade-v1" />
-  <script src="js/narrrfs-mobile-arcade.js?v=20261126-arcade-v1"></script>
+  <link rel="stylesheet" href="css/narrrfs-mobile-arcade.css?v=20261126-arcade-v3" />
+  <script src="js/narrrfs-mobile-arcade.js?v=20261126-arcade-v3"></script>
 </head>
 
 <body class="winter-theme bg-[#2f3136] text-white font-sans min-h-screen">
@@ -732,7 +801,7 @@
 </section>
 
 <!-- 🎮 Game Script -->
-<script src="scripts/snake-scroll.js?v=5.4.0&season5_standalone=1730649600"></script>
+<script src="scripts/snake-scroll.js?v=5.4.0&season5_standalone=1730649600&arcade_v3=20261126"></script>
 
 <!-- 🔐 Authentication & Initialization -->
 <script>
