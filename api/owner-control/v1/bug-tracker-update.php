@@ -84,9 +84,10 @@ if (!is_array($input)) {
 }
 
 
+$isBulk = ($input['bulk'] ?? false) === true;
 $bugId = $input['bug_id'] ?? null;
 
-if (!is_int($bugId) || $bugId < 1) {
+if (!$isBulk && (!is_int($bugId) || $bugId < 1)) {
     http_response_code(400);
 
     echo json_encode(
@@ -106,6 +107,7 @@ require_once __DIR__
 
 require_once __DIR__
     . '/../../lib/owner-bug-tracker-update-v1.php';
+if ($isBulk) require_once __DIR__ . '/../../lib/owner-bug-tracker-bulk-v1.php';
 
 
 $db = null;
@@ -126,6 +128,11 @@ try {
 
     $db->busyTimeout(5000);
 
+    if ($isBulk) {
+        $bulkResult = narrrfs_owner_bug_bulk($db, $input, $ownerSubject);
+        echo json_encode(['success'=>true,'bulk'=>$bulkResult], JSON_THROW_ON_ERROR);
+        return;
+    }
     $result = narrrfs_owner_bug_tracker_update(
         $db,
         $bugId,

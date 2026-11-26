@@ -451,6 +451,23 @@ header('Referrer-Policy: no-referrer');
     </section>
 
     <section class="panel">
+        <div class="toolbar" aria-label="Filter bug reports">
+            <label>Search <input id="bugSearch" type="search" maxlength="100" placeholder="Title, reporter or ID"></label>
+            <label>Status <select id="bugStatusFilter"><option value="">All statuses</option></select></label>
+            <label>Priority <select id="bugPriorityFilter"><option value="">All priorities</option></select></label>
+            <label>Assignee <input id="bugAssigneeFilter" maxlength="100" placeholder="Exact assignee"></label>
+            <label><input id="bugUnassignedFilter" type="checkbox"> Unassigned only</label>
+            <label>Sort <select id="bugSort"><option value="recent">Recently updated</option><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="priority">Priority</option></select></label>
+            <button type="button" id="bugApplyFilters">Apply filters</button>
+        </div>
+        <div class="toolbar" aria-label="Bulk actions">
+            <label><input type="checkbox" id="selectPageBugs"> Select this page</label>
+            <label>Status <select id="bulkStatus"><option value="">Choose status</option></select></label>
+            <button type="button" id="bulkStatusButton">Apply status</button>
+            <label>Assignee <input id="bulkAssignee" maxlength="100" placeholder="Blank removes assignment"></label>
+            <button type="button" id="bulkAssignButton">Apply assignment</button>
+            <span id="bulkResult" role="status" aria-live="polite"></span>
+        </div>
         <div class="toolbar">
             <div class="status" id="pageStatus">
                 Page data pending
@@ -486,7 +503,7 @@ header('Referrer-Policy: no-referrer');
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Select</th><th>ID</th>
                         <th>Title / Reporter</th>
                         <th>Category</th>
                         <th>Priority</th>
@@ -573,6 +590,11 @@ header('Referrer-Policy: no-referrer');
                             ></textarea>
                         </div>
 
+                        <div class="field field-wide">
+                            <button type="button" id="createAiPromptButton">Create AI prompt</button>
+                            <p>Review and remove private information before sharing this prompt with an AI.</p>
+                            <textarea id="aiPromptOutput" rows="8" readonly aria-label="AI prompt to review and copy"></textarea>
+                        </div>
                         <div class="field">
                             <label for="bugCategorySelect">
                                 Category
@@ -735,12 +757,39 @@ header('Referrer-Policy: no-referrer');
     const bugTrackerMutationUiEnabled = true;
 
     let offset = 0;
+    document.getElementById('createAiPromptButton').addEventListener('click', () => {
+        if (detailsLoading || !verifiedPromptBug || currentBugId !== verifiedPromptBug.id) return;
+        const { title, description } = verifiedPromptBug;
+        document.getElementById('aiPromptOutput').value =
+            `Investigate Bug #${currentBugId}: ${title}\n\nReported issue:\n${description}\n\nInspect the relevant source and reproduce the issue. Explain the cause, propose a minimal fix, and run focused tests. Do not access production or change protected data without approval.`;
+    });
     let loading = false;
     let detailsLoading = false;
     let lastPageData = null;
     let currentBugId = null;
     let currentBugVersion = null;
     let pendingSaveRequest = null;
+    let verifiedPromptBug = null, pendingBulk = null, detailsRequestSequence = 0;
+    const selectedBugs = new Map();
+    async function submitBulk(action) {
+        const cases = [...selectedBugs].map(([bug_id, expected_version]) => ({bug_id, expected_version}));
+        const value = action === 'status' ? Number(document.getElementById('bulkStatus').value) : (document.getElementById('bulkAssignee').value.trim() || null);
+        const output = document.getElementById('bulkResult');
+        if (!cases.length || (action === 'status' && !value)) { output.textContent='Select cases and an action value.'; return; }
+        const fingerprint=JSON.stringify({cases,action,value});
+        if (!pendingBulk || pendingBulk.fingerprint !== fingerprint) pendingBulk={fingerprint,key:crypto.randomUUID().replace(/-/g,'')};
+        if (!confirm(`Apply ${action} to ${cases.length} selected cases? All changes succeed together or none are saved.`)) return;
+        try {
+            const c=await fetch('/api/owner-control/v1/csrf.php',{credentials:'same-origin',cache:'no-store'});const csrf=await c.json();if(!c.ok||!csrf.success)throw Error('Authorization unavailable');
+            const r=await fetch('/api/owner-control/v1/bug-tracker-update.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf.csrf_token},body:JSON.stringify({bulk:true,cases,action,value,idempotency_key:pendingBulk.key})});const data=await r.json();if(!r.ok||!data.success)throw Error(data.error||'Bulk update failed');
+            output.textContent=`Saved ${cases.length} cases${data.bulk.replayed?' (replayed)':''}.`;pendingBulk=null;selectedBugs.clear();await loadPage();
+        } catch(e){output.textContent=`Not confirmed: ${e.message}. Retry unchanged, or reload on a version conflict.`;}
+    }
+    document.getElementById('bulkStatusButton').addEventListener('click',()=>submitBulk('status'));
+    document.getElementById('bulkAssignButton').addEventListener('click',()=>submitBulk('assign'));
+    document.getElementById('selectPageBugs').addEventListener('change',event=>{for(const checkbox of rows.querySelectorAll('input[data-bug-id]')){checkbox.checked=event.target.checked;checkbox.dispatchEvent(new Event('change'));}});
+
+    document.getElementById('bugApplyFilters').addEventListener('click', () => { offset = 0; loadPage(); });
 
     const requestStatus = document.getElementById(
         'requestStatus'
@@ -1062,6 +1111,10 @@ header('Referrer-Policy: no-referrer');
 
 
     function resetDialog() {
+        detailsRequestSequence++;
+        detailsLoading = false;
+        verifiedPromptBug = null;
+        document.getElementById('aiPromptOutput').value = '';
         currentBugId = null;
         currentBugVersion = null;
         pendingSaveRequest = null;
@@ -1089,10 +1142,10 @@ header('Referrer-Policy: no-referrer');
 
 
     async function loadBugDetails(bugId) {
-        if (detailsLoading) {
-            return;
-        }
-
+        document.getElementById('aiPromptOutput').value = '';
+        verifiedPromptBug = null;
+        currentBugVersion = null;
+        const requestSequence = ++detailsRequestSequence;
         detailsLoading = true;
         currentBugId = Number(bugId);
 
@@ -1117,6 +1170,8 @@ header('Referrer-Policy: no-referrer');
 
             const data = await response.json();
 
+            if (requestSequence !== detailsRequestSequence) return;
+
             if (!response.ok || data.success !== true) {
                 throw new Error(
                     data.error || `HTTP ${response.status}`
@@ -1125,8 +1180,11 @@ header('Referrer-Policy: no-referrer');
 
             const bug = data.bug || {};
 
+            document.getElementById('aiPromptOutput').value = '';
+
             currentBugId = Number(bug.bug_id);
             currentBugVersion = Number(bug.owner_control_version);
+            verifiedPromptBug = {id:currentBugId,title:String(bug.title || ''),description:String(bug.description || '')};
 
             bugDialogTitle.textContent =
                 `Bug #${currentBugId}`;
@@ -1250,6 +1308,7 @@ header('Referrer-Policy: no-referrer');
                 'Details loaded';
 
         } catch (error) {
+            if (requestSequence !== detailsRequestSequence) return;
             currentBugId = null;
 
             const message = error instanceof Error
@@ -1263,8 +1322,10 @@ header('Referrer-Policy: no-referrer');
                 message;
 
         } finally {
-            detailsLoading = false;
-            setMutationUiState();
+            if (requestSequence === detailsRequestSequence) {
+                detailsLoading = false;
+                setMutationUiState();
+            }
         }
     }
 
@@ -1469,6 +1530,8 @@ header('Referrer-Policy: no-referrer');
 
             const row = document.createElement('tr');
 
+            const selectCell=document.createElement('td'), checkbox=document.createElement('input'); checkbox.type='checkbox';checkbox.dataset.bugId=String(bug.bug_id);checkbox.checked=selectedBugs.has(Number(bug.bug_id));checkbox.setAttribute('aria-label',`Select bug ${bug.bug_id}`);checkbox.addEventListener('change',()=>{if(checkbox.checked)selectedBugs.set(Number(bug.bug_id),Number(bug.owner_control_version));else selectedBugs.delete(Number(bug.bug_id));});selectCell.append(checkbox);row.append(selectCell);
+
             row.appendChild(
                 textCell(`#${bug.bug_id}`)
             );
@@ -1556,6 +1619,11 @@ header('Referrer-Policy: no-referrer');
             const query = new URLSearchParams({
                 limit: String(pageSize),
                 offset: String(offset),
+                search: document.getElementById('bugSearch').value,
+                status: document.getElementById('bugStatusFilter').value,
+                priority: document.getElementById('bugPriorityFilter').value,
+                assignee: document.getElementById('bugUnassignedFilter').checked ? '__unassigned__' : document.getElementById('bugAssigneeFilter').value,
+                sort: document.getElementById('bugSort').value,
             });
 
             const response = await fetch(
@@ -1606,6 +1674,14 @@ header('Referrer-Policy: no-referrer');
 
             lastPageData = data;
 
+            for (const [id, items, key, label] of [['bugStatusFilter', data.statuses, 'status_id', 'status_name'], ['bugPriorityFilter', data.priorities, 'priority_id', 'priority_name']]) {
+                const select = document.getElementById(id), previous = select.value;
+                select.replaceChildren(new Option(id === 'bugStatusFilter' ? 'All statuses' : 'All priorities', ''));
+                for (const item of items || []) select.add(new Option(String(item[label]), String(item[key])));
+                select.value = previous;
+            }
+            {const select=document.getElementById('bulkStatus'),previous=select.value;select.replaceChildren(new Option('Choose status',''));for(const item of data.statuses || [])if(Number(item.is_active)===1)select.add(new Option(String(item.status_name),String(item.status_id)));select.value=previous;}
+
             renderRows(data);
 
             const returned = Number(
@@ -1613,7 +1689,7 @@ header('Referrer-Policy: no-referrer');
             );
 
             const total = Number(
-                data.summary?.total || 0
+                data.pagination?.filtered_total ?? data.summary?.total ?? 0
             );
 
             pageStatus.textContent =

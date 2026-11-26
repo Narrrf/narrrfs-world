@@ -175,7 +175,8 @@ function narrrfs_owner_bug_tracker_update(
     SQLite3 $db,
     int $bugId,
     array $input,
-    string $ownerSubject
+    string $ownerSubject,
+    bool $outerTransaction = false
 ): array {
     if (
         $bugId < 1
@@ -258,19 +259,19 @@ function narrrfs_owner_bug_tracker_update(
         'expected_version' => $expectedVersion,
     ]);
 
-    if (!$db->exec('PRAGMA foreign_keys = ON')) {
+    if (!$outerTransaction && !$db->exec('PRAGMA foreign_keys = ON')) {
         throw new RuntimeException(
             'Unable to enable SQLite foreign keys.'
         );
     }
 
-    if (!$db->exec('BEGIN IMMEDIATE')) {
+    if (!$outerTransaction && !$db->exec('BEGIN IMMEDIATE')) {
         throw new RuntimeException(
             'Unable to begin Bug Tracker transaction.'
         );
     }
 
-    $transactionOpen = true;
+    $transactionOpen = !$outerTransaction;
 
     try {
         $receiptStatement = $db->prepare(
@@ -294,7 +295,7 @@ function narrrfs_owner_bug_tracker_update(
             if (!is_array($retryMetadata)) {
                 throw new RuntimeException('Stored idempotency receipt is invalid.');
             }
-            if (!$db->exec('COMMIT')) {
+            if (!$outerTransaction && !$db->exec('COMMIT')) {
                 throw new RuntimeException('Unable to commit idempotent retry.');
             }
             $transactionOpen = false;
@@ -866,7 +867,7 @@ function narrrfs_owner_bug_tracker_update(
         $receiptResult->finalize();
 
 
-        if (!$db->exec('COMMIT')) {
+        if (!$outerTransaction && !$db->exec('COMMIT')) {
             throw new RuntimeException(
                 'Unable to commit Bug Tracker update.'
             );

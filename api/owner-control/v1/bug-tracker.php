@@ -143,6 +143,30 @@ $offset = narrrfs_owner_bug_tracker_query_integer(
     100000
 );
 
+// Filter values are bound as data; the ordering comes only from this allowlist.
+$filters = [];
+foreach (['search', 'status', 'priority', 'assignee'] as $name) {
+    $value = $_GET[$name] ?? '';
+    if (!is_string($value) || strlen($value) > 100 || preg_match('/[\x00-\x1f\x7f]/', $value)) {
+        http_response_code(400); echo json_encode(['success'=>false,'error'=>'invalid_filter']); exit;
+    }
+    $filters[$name] = trim($value);
+}
+foreach (['status','priority'] as $name) {
+    if ($filters[$name] !== '' && !preg_match('/^[1-9][0-9]{0,8}$/D', $filters[$name])) {
+        http_response_code(400); echo json_encode(['success'=>false,'error'=>'invalid_filter']); exit;
+    }
+}
+$orders = ['recent'=>'CASE WHEN COALESCE(s.is_resolved, 0) = 0 THEN 0 ELSE 1 END ASC, b.updated_at DESC, b.bug_id DESC', 'oldest'=>'b.created_at ASC, b.bug_id ASC', 'newest'=>'b.created_at DESC, b.bug_id DESC', 'priority'=>'p.priority_level ASC, b.bug_id DESC'];
+$sort = $_GET['sort'] ?? 'recent';
+if (!is_string($sort) || !isset($orders[$sort])) { http_response_code(400); echo json_encode(['success'=>false,'error'=>'invalid_sort']); exit; }
+$where = ['1=1']; $bindings = [];
+if ($filters['search'] !== '') { $where[] = '(b.title LIKE :search ESCAPE \'\\\' OR b.discord_username LIKE :search ESCAPE \'\\\' OR CAST(b.bug_id AS TEXT) = :search_id)'; $bindings[':search'] = '%' . str_replace(['\\','%','_'], ['\\\\','\\%','\\_'], $filters['search']) . '%'; $bindings[':search_id'] = $filters['search']; }
+foreach (['status'=>'status_id','priority'=>'priority_id'] as $key=>$column) if ($filters[$key] !== '') { $where[] = "b.$column = :$key"; $bindings[":$key"] = (int)$filters[$key]; }
+if ($filters['assignee'] === '__unassigned__') $where[] = "(b.assigned_to IS NULL OR TRIM(b.assigned_to) = '')";
+elseif ($filters['assignee'] !== '') { $where[] = 'b.assigned_to = :assignee'; $bindings[':assignee'] = $filters['assignee']; }
+$whereSql = implode(' AND ', $where);
+
 $database = null;
 
 try {
@@ -211,10 +235,14 @@ try {
         );
     }
 
+    $countStatement = $database->prepare("SELECT COUNT(*) FROM tbl_bug_reports AS b WHERE $whereSql");
+    foreach ($bindings as $key=>$value) $countStatement->bindValue($key, $value, is_int($value) ? SQLITE3_INTEGER : SQLITE3_TEXT);
+    $filteredTotal = (int)$countStatement->execute()->fetchArray(SQLITE3_NUM)[0];
     $bugsStatement = $database->prepare(
         "
         SELECT
             b.bug_id,
+            b.owner_control_version,
             b.discord_username,
             b.title,
             b.category_id,
@@ -227,14 +255,10 @@ try {
         FROM tbl_bug_reports AS b
         LEFT JOIN tbl_bug_statuses AS s
             ON s.status_id = b.status_id
-        ORDER BY
-            CASE
-                WHEN COALESCE(s.is_resolved, 0) = 0
-                THEN 0
-                ELSE 1
-            END ASC,
-            b.updated_at DESC,
-            b.bug_id DESC
+        LEFT JOIN tbl_bug_priorities AS p
+            ON p.priority_id = b.priority_id
+        WHERE $whereSql
+        ORDER BY {$orders[$sort]}
         LIMIT :limit
         OFFSET :offset
         "
@@ -245,6 +269,8 @@ try {
             'Unable to prepare Bug Tracker list.'
         );
     }
+
+    foreach ($bindings as $key=>$value) $bugsStatement->bindValue($key, $value, is_int($value) ? SQLITE3_INTEGER : SQLITE3_TEXT);
 
     $bugsStatement->bindValue(
         ':limit',
@@ -334,6 +360,7 @@ try {
                 'limit' => $limit,
                 'offset' => $offset,
                 'returned' => count($bugs),
+                'filtered_total' => $filteredTotal,
             ],
             'bugs' => $bugs,
             'categories' => $categories,
