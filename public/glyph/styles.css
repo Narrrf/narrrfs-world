@@ -5,14 +5,14 @@ Glyph Memory — Phase 1 CSS
 */
 
 :root {
-  --bg: #0c0c0c;
-  --panel: rgba(12, 12, 12, 0.72);
-  --panelBorder: rgba(255, 215, 0, 0.22);
-  --text: #f3f3f3;
-  --muted: rgba(243, 243, 243, 0.75);
+  --bg: #05111f;
+  --panel: rgba(8, 25, 44, 0.84);
+  --panelBorder: rgba(125, 211, 252, 0.30);
+  --text: #f0f9ff;
+  --muted: rgba(224, 242, 254, 0.78);
   --gold: #ffd700;
-  --teal: #00ced1;
-  --shadow: 0 18px 40px rgba(0,0,0,0.55);
+  --teal: #38bdf8;
+  --shadow: 0 18px 40px rgba(2, 8, 20, 0.6);
 }
 
 * { box-sizing: border-box; }
@@ -23,10 +23,13 @@ html, body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text);
   background: var(--bg);
+  overscroll-behavior: none;
+  touch-action: manipulation;
 }
 
 .app {
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   overflow: hidden;
 }
@@ -34,9 +37,9 @@ html, body {
 .bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 10%, rgba(0, 206, 209, 0.18), transparent 40%),
-              radial-gradient(circle at 80% 90%, rgba(255, 215, 0, 0.14), transparent 42%),
-              linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.75));
+  background: radial-gradient(circle at 20% 10%, rgba(56, 189, 248, 0.20), transparent 44%),
+              radial-gradient(circle at 80% 90%, rgba(250, 204, 21, 0.12), transparent 44%),
+              linear-gradient(180deg, rgba(4, 13, 25, 0.3), rgba(5, 17, 31, 0.85));
   transform: scale(1.02);
   filter: saturate(1.05);
   z-index: 0;
@@ -46,6 +49,7 @@ html, body {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  min-height: 100dvh;
   display: none;
   padding: 24px 16px;
 }
@@ -385,6 +389,8 @@ html, body {
   background: rgba(0,0,0,0.35);
   color: var(--text);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: transform 120ms ease, border-color 120ms ease;
 }
 
@@ -510,13 +516,15 @@ html, body {
   position: relative;
   height: 100%;
   width: 100%;
-border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(0,0,0,0.35);
+  border-radius: 16px;
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  background: rgba(7, 22, 38, 0.72);
   /* CRITICAL (January 15, 2026): Contain content within grid cell - no overlap with adjacent cards */
   /* overflow: hidden keeps white frame glow contained within card boundaries */
   overflow: hidden;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   user-select: none;
   transform: translateZ(0);
   /* No external padding - cards fit exactly within grid cells */
@@ -647,35 +655,66 @@ border-radius: 16px;
   color: rgba(0, 206, 209, 0.95);
 }
 
-/* Small screens */
-@media (max-width: 520px) {
-  /* CRITICAL (January 15, 2026): Mobile board - ensure cards fit grid field without cutting */
-  .board {
-    grid-auto-rows: clamp(160px, 22vh, 240px);
-    gap: 16px;
-    padding: 16px;
-    /* Increased bottom padding to prevent cards from being cut off on mobile */
-    padding-bottom: 40px;
-    overflow: visible;
+/* Small & Mobile Screens — fits 4x4, 5x4, and 6x6 cleanly inside 100dvh */
+@media (max-width: 768px) {
+  #gameView.view--active {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: 10px 8px max(12px, env(safe-area-inset-bottom));
+    gap: 8px;
+    overflow: hidden;
   }
-  
+
+  .topbar {
+    padding: 8px 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .topbar__left {
+    gap: 12px;
+  }
+
+  .stat__label {
+    font-size: 10px;
+  }
+
+  .stat__value {
+    font-size: 14px;
+  }
+
+  .topbar__right {
+    gap: 6px;
+  }
+
+  .topbar__right .btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
   .boardWrap {
-    /* Ensure mobile board has enough bottom padding */
-    padding-bottom: 40px;
+    padding-bottom: 4px;
+    height: 100%;
+    min-height: 0;
+    align-items: center;
   }
-  
+
+  .board {
+    width: min(96vw, 440px);
+    height: 100%;
+    max-height: calc(100dvh - 84px);
+    gap: 8px;
+    padding: 6px;
+    padding-bottom: 6px;
+    grid-auto-rows: minmax(46px, 1fr);
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 520px) {
   .controls--row {
     grid-auto-flow: row;
-  }
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .topbar__right {
-    justify-content: stretch;
-  }
-  .topbar__right .btn {
-    width: 100%;
   }
   
   /* CRITICAL (January 15, 2026): Mobile styles - white shimmer for visibility, no inner frame border */
@@ -985,8 +1024,5 @@ border-radius: 16px;
 .lab-btn__text {
   letter-spacing: 0.5px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-0, 0, 0, 0.3);
 }
 

@@ -697,8 +697,13 @@ document.addEventListener('visibilitychange', sync);
 
     if (isMenu) {
       setBackground('menu');
+      window.NarrrfsMobileArcade?.unlock();
     } else {
       setBackground(activeDifficulty);
+      window.NarrrfsMobileArcade?.lock({
+        stageEl: gameView,
+        gameKey: 'glyph'
+      });
     }
   }
 
@@ -1205,6 +1210,7 @@ glyphMemoryMusicController.stop();
       if (newBestBadgeEl) newBestBadgeEl.hidden = !isNewBest;
 
       console.log(`✅ [GLYPH] Game won! Time: ${formatTime(elapsed)}, Pairs matched: ${matchedPairs}/${totalPairs}`);
+      window.NarrrfsMobileArcade?.unlock();
       winOverlay.hidden = false;
     }
   }
@@ -1404,6 +1410,7 @@ startTimer();
     if (newBestBadgeEl) newBestBadgeEl.hidden = true;
 
 glyphMemoryMusicController.start();
+window.NarrrfsMobileArcade?.lock({ stageEl: gameView, gameKey: 'glyph' });
 startTimer();
   }
 

@@ -716,39 +716,121 @@ Object.entries(pieceImageMap).forEach(([key, filename]) => {
   blockImages[key] = img;
 });
 
-// 🎮 MOBILE TOUCH CONTROLS - Fixed Implementation
+// 🎮 MOBILE TOUCH CONTROLS - Fixed Full-Stage + Button Bar Implementation
 function initTouchControls(canvas) {
-  console.log('📱 Initializing Tetris touch controls for canvas:', canvas.id);
-  
-  // Remove any existing touch listeners to prevent duplicates
-  canvas.removeEventListener("touchstart", handleTouchStart);
-  canvas.removeEventListener("touchmove", handleTouchMove);
-  canvas.removeEventListener("touchend", handleTouchEnd);
-  
-  // Store references on the canvas for proper cleanup
+  const playStage = document.getElementById('tetris-play-stage') || canvas;
+  console.log('📱 Initializing Tetris touch controls for stage:', playStage.id || canvas.id);
+
+  // Clean previous listeners on both canvas and stage
+  [canvas, playStage].forEach(el => {
+    if (!el) return;
+    el.removeEventListener("touchstart", handleTouchStart);
+    el.removeEventListener("touchmove", handleTouchMove);
+    el.removeEventListener("touchend", handleTouchEnd);
+  });
+
+  // Store references on canvas for existing cleanup & recovery hooks
   canvas.tetrisTouchStart = handleTouchStart;
   canvas.tetrisTouchMove = handleTouchMove;
   canvas.tetrisTouchEnd = handleTouchEnd;
-  
-  // Add new touch listeners with stored references
-  canvas.addEventListener("touchstart", canvas.tetrisTouchStart, { passive: false });
-  canvas.addEventListener("touchmove", canvas.tetrisTouchMove, { passive: false });
-  canvas.addEventListener("touchend", canvas.tetrisTouchEnd, { passive: false });
-  
-  console.log('📱 Touch controls initialized successfully');
-  console.log('📱 Canvas touch listeners after init:', {
-    touchstart: !!canvas.tetrisTouchStart,
-    touchmove: !!canvas.tetrisTouchMove,
-    touchend: !!canvas.tetrisTouchEnd
-  });
+
+  playStage.addEventListener("touchstart", canvas.tetrisTouchStart, { passive: false });
+  playStage.addEventListener("touchmove", canvas.tetrisTouchMove, { passive: false });
+  playStage.addEventListener("touchend", canvas.tetrisTouchEnd, { passive: false });
+
+  initTetrisMobileButtons();
+}
+
+function initTetrisMobileButtons() {
+  const controlsWrap = document.getElementById('tetris-mobile-controls');
+  if (!controlsWrap || controlsWrap.dataset.tetrisMobileBound === '1') return;
+  controlsWrap.dataset.tetrisMobileBound = '1';
+
+  const touchBar = document.getElementById('tetris-touch-bar');
+  const modeButtonsBtn = document.getElementById('tetris-mode-buttons-btn');
+  const modeSwipeBtn = document.getElementById('tetris-mode-swipe-btn');
+  const leftBtn = document.getElementById('tetris-touch-left');
+  const rightBtn = document.getElementById('tetris-touch-right');
+  const rotateBtn = document.getElementById('tetris-touch-rotate');
+  const softBtn = document.getElementById('tetris-touch-soft');
+  const dropBtn = document.getElementById('tetris-touch-drop');
+
+  function canControlTetris() {
+    return (
+      !isTetrisPaused &&
+      typeof window.tetrisCollide === 'function' &&
+      window.tetrisCurrent &&
+      window.tetrisCurrent.shape
+    );
+  }
+
+  function stepMove(dx) {
+    if (!canControlTetris()) return;
+    if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col + dx)) {
+      window.tetrisCurrent.col += dx;
+      window.tetrisDraw?.();
+    }
+  }
+
+  function stepSoftDrop() {
+    if (!canControlTetris()) return;
+    if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
+      window.tetrisCurrent.row++;
+      window.tetrisDraw?.();
+    } else {
+      drop();
+    }
+  }
+
+  function stepRotate() {
+    if (!canControlTetris()) return;
+    if (typeof window.tetrisRotatePiece === 'function') {
+      window.tetrisRotatePiece();
+      window.tetrisDraw?.();
+    }
+  }
+
+  function stepHardDrop() {
+    if (!canControlTetris()) return;
+    while (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
+      window.tetrisCurrent.row++;
+    }
+    drop();
+  }
+
+  if (window.NarrrfsMobileArcade && typeof window.NarrrfsMobileArcade.bindHoldButton === 'function') {
+    window.NarrrfsMobileArcade.bindHoldButton(leftBtn, () => stepMove(-1), { initialDelayMs: 170, repeatMs: 75 });
+    window.NarrrfsMobileArcade.bindHoldButton(rightBtn, () => stepMove(1), { initialDelayMs: 170, repeatMs: 75 });
+    window.NarrrfsMobileArcade.bindHoldButton(softBtn, stepSoftDrop, { initialDelayMs: 120, repeatMs: 65 });
+    window.NarrrfsMobileArcade.bindHoldButton(rotateBtn, stepRotate, { repeatMs: 0 });
+    window.NarrrfsMobileArcade.bindHoldButton(dropBtn, stepHardDrop, { repeatMs: 0 });
+  }
+
+  function applyMode(mode) {
+    const normalized = mode === 'swipe' ? 'swipe' : 'buttons';
+    touchBar?.classList.toggle('narrrfs-is-hidden', normalized === 'swipe');
+    modeButtonsBtn?.classList.toggle('is-active', normalized === 'buttons');
+    modeSwipeBtn?.classList.toggle('is-active', normalized === 'swipe');
+    try {
+      localStorage.setItem('tetris_mobile_mode', normalized);
+    } catch (_) {}
+  }
+  modeButtonsBtn?.addEventListener('click', () => applyMode('buttons'));
+  modeSwipeBtn?.addEventListener('click', () => applyMode('swipe'));
+  try {
+    applyMode(localStorage.getItem('tetris_mobile_mode') === 'swipe' ? 'swipe' : 'buttons');
+  } catch (_) {
+    applyMode('buttons');
+  }
 }
 
 function handleTouchStart(e) {
-  console.log('📱 Touch start detected on Tetris canvas');
-  
+  if (e.target && e.target.closest && e.target.closest('button, a, [data-allow-arcade-scroll="true"]')) {
+    return;
+  }
+
   // Check if game is running and functions are available
   if (isTetrisPaused || typeof window.tetrisDraw !== 'function') {
-    console.log('📱 Touch ignored - game not running or functions not available');
     return;
   }
   
@@ -787,9 +869,11 @@ function handleTouchStart(e) {
 }
 
 function handleTouchMove(e) {
+  if (e.target && e.target.closest && e.target.closest('button, a, [data-allow-arcade-scroll="true"]')) {
+    return;
+  }
   // Check if game is running and functions are available
   if (isTetrisPaused || typeof window.tetrisDraw !== 'function') {
-    console.log('📱 Touch move ignored - game not running or functions not available');
     return;
   }
 
@@ -878,9 +962,13 @@ function handleTouchMove(e) {
 }
 
 function handleTouchEnd(e) {
-  console.log('📱 Touch end detected on Tetris canvas');
-  e.preventDefault();
-  e.stopPropagation();
+  if (e.target && e.target.closest && e.target.closest('button, a, [data-allow-arcade-scroll="true"]')) {
+    return;
+  }
+  if (!isTetrisPaused && typeof window.tetrisDraw === 'function') {
+    e.preventDefault();
+    e.stopPropagation();
+  }
 
   clearTimeout(tetrisHoldTimeout);
   clearInterval(tetrisHoldInterval);
@@ -1260,8 +1348,8 @@ window.tetrisMusicController?.start();
   // 🐛 BUG #322 FIX: Hide boss HUD on game start
   hideTetrisBossHUD();
   
-  // 📱 PREVENT SCREEN SWIPE (like Snake!)
-  document.body.style.overflow = "hidden";
+  // 📱 PREVENT SCREEN SWIPE (shared lock + stage framing)
+  lockTetrisScroll();
   console.log('📱 Screen swipe prevented - Tetris active');
   
   // 🚨 BUG #263 FIX: Disable all page links/buttons when game starts (except game controls and modal buttons)
@@ -2178,7 +2266,7 @@ function toggleTetrisPause() {
 
   if (isTetrisPaused) {
     // 📱 PAUSED: Allow screen swipe (like Snake!)
-    document.body.style.overflow = "";
+    unlockTetrisScroll();
     console.log('📱 Game PAUSED - Screen swipe ENABLED (user can scroll)');
     clearInterval(gameInterval);
 window.tetrisMusicController?.suspend();
@@ -2191,7 +2279,7 @@ window.tetrisMusicController?.suspend();
     console.log('🔓 Page links/buttons re-enabled during Tetris pause');
   } else {
     // 📱 RESUMED: Lock screen swipe again (like Snake!)
-    document.body.style.overflow = "hidden";
+    lockTetrisScroll();
     console.log('📱 Game RESUMED - Screen swipe LOCKED (no scrolling)');
     clearInterval(gameInterval); // always reset interval
     gameInterval = setInterval(drop, dropInterval);
@@ -2465,7 +2553,7 @@ if (collide(current.shape, current.row, current.col)) {
     }, 100);
     
     // 📱 RESTORE SCREEN SWIPE (allow scrolling again)
-    document.body.style.overflow = "";
+    unlockTetrisScroll();
     console.log('📱 Screen swipe restored - Tetris ended');
     
     cleanupTouchControls();
@@ -2477,7 +2565,7 @@ if (collide(current.shape, current.row, current.col)) {
     alert(`🧠 GAME OVER\n\nYou earned $${score} DSPOINC!\n\nRefresh the page to play again.`);
     
     // 📱 RESTORE SCREEN SWIPE
-    document.body.style.overflow = "";
+    unlockTetrisScroll();
     
     cleanupTouchControls();
   }
@@ -3080,6 +3168,7 @@ window.endTetrisGame = function() {
   console.log('🏁 OK button clicked - ending Legacy Tetris game');
   // Reload the page to ensure a clean reset (no auto-start)
   cleanupTouchControls();
+  unlockTetrisScroll();
   localStorage.removeItem('tetris_auto_start');
   window.tetrisMusicController?.stop();
   window.location.reload();
@@ -3095,6 +3184,7 @@ window.restartTetrisGame = function() {
     modal.style.display = "none";
   }
   cleanupTouchControls();
+  unlockTetrisScroll();
   localStorage.setItem('tetris_auto_start', 'true');
   window.tetrisMusicController?.stop();
   window.location.reload();
@@ -3102,10 +3192,15 @@ window.restartTetrisGame = function() {
 
 function lockTetrisScroll() {
     document.body.style.overflow = "hidden";
+    window.NarrrfsMobileArcade?.lock({
+      stageEl: document.getElementById('tetris-play-stage') || document.getElementById('cheese-tetris'),
+      gameKey: 'tetris'
+    });
 }
 
 function unlockTetrisScroll() {
     document.body.style.overflow = "";
+    window.NarrrfsMobileArcade?.unlock();
 }
 
 // 🔧 MOBILE FIX: Removed conflicting global touch listeners
@@ -3269,12 +3364,14 @@ window.testLineClearing = function() {
 window.forceTetrisTouch = function() {
   console.log('🚨 EMERGENCY: Forcing Tetris touch controls...');
   const canvas = document.getElementById('tetris-canvas');
+  const playStage = document.getElementById('tetris-play-stage') || canvas;
+  [canvas, playStage].forEach(el => {
+    if (!el) return;
+    el.removeEventListener("touchstart", handleTouchStart);
+    el.removeEventListener("touchmove", handleTouchMove);
+    el.removeEventListener("touchend", handleTouchEnd);
+  });
   if (canvas) {
-    // Remove ALL existing listeners
-    canvas.removeEventListener("touchstart", handleTouchStart);
-    canvas.removeEventListener("touchmove", handleTouchMove);
-    canvas.removeEventListener("touchend", handleTouchEnd);
-    
     // Clear any stored references
     delete canvas.tetrisTouchStart;
     delete canvas.tetrisTouchMove;

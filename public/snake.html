@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0ea5e9" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -197,10 +198,33 @@
     #snake-boss-hud-container:not(.hidden) {
       display: block;
     }
+
+    @media (max-width: 768px) {
+      #snake-play-stage {
+        padding: 0.9rem 0.85rem !important;
+      }
+
+      body.narrrfs-game-locked #snake-play-stage h2 {
+        font-size: 1.35rem;
+        margin-bottom: 0.35rem;
+      }
+
+      #snake-canvas {
+        max-height: min(46dvh, 340px);
+        width: auto !important;
+        max-width: 92vw;
+        aspect-ratio: 200 / 400;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
   </style>
+  <link rel="stylesheet" href="winter-theme.css?v=20261126-winter-v3" />
+  <link rel="stylesheet" href="css/narrrfs-mobile-arcade.css?v=20261126-arcade-v1" />
+  <script src="js/narrrfs-mobile-arcade.js?v=20261126-arcade-v1"></script>
 </head>
 
-<body class="bg-[#2f3136] text-white font-sans min-h-screen">
+<body class="winter-theme bg-[#2f3136] text-white font-sans min-h-screen">
 
 <!-- 🔰 Header -->
 <header class="w-full bg-gradient-to-r from-green-900 to-emerald-800 py-4 px-6 text-yellow-400 shadow-lg border-b border-yellow-400/30">
@@ -245,11 +269,11 @@
 
 <!-- 🐍 SNAKE PANEL -->
 <section id="cheese-snake" class="max-w-6xl w-full mx-auto px-4 mt-6 flex flex-col items-center justify-center">
-  <section class="relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-2xl ring-4 ring-green-400/50 border-2 border-green-500/30 max-w-md w-full mx-auto">
-    <!-- 🎨 Animated Background Gradient -->
-    <div class="absolute inset-0 bg-gradient-to-br from-green-900/40 via-emerald-900/40 to-green-900/40 rounded-3xl -z-10"></div>
+  <section id="snake-play-stage" class="relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-2xl ring-4 ring-sky-400/40 border-2 border-sky-500/30 max-w-md w-full mx-auto">
+    <!-- 🎨 Arctic Background Gradient -->
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-950/85 via-sky-950/60 to-slate-950/90 rounded-3xl -z-10"></div>
     
-    <div class="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse z-10">
+    <div class="absolute top-4 left-4 bg-sky-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse z-10">
       🐍 SNAKE
     </div>
 
@@ -333,6 +357,23 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 📱 Mobile D-Pad + Mode Switch (all IDs include 'snake' so BUG #263 keeps them enabled) -->
+    <div id="snake-mobile-controls" class="narrrfs-arcade-controls narrrfs-mobile-only-controls">
+      <div class="narrrfs-mode-switch" role="group" aria-label="Snake touch control mode">
+        <button type="button" id="snake-mode-dpad-btn" class="narrrfs-mode-btn is-active">🕹️ D-PAD + SWIPE</button>
+        <button type="button" id="snake-mode-swipe-btn" class="narrrfs-mode-btn">👆 SWIPE ONLY</button>
+      </div>
+      <div id="snake-dpad-grid" class="narrrfs-dpad-grid" aria-label="Snake directional pad">
+        <span></span>
+        <button type="button" id="snake-touch-up" data-snake-dir="up" class="narrrfs-touch-btn" aria-label="Move up">▲</button>
+        <span></span>
+        <button type="button" id="snake-touch-left" data-snake-dir="left" class="narrrfs-touch-btn" aria-label="Move left">◀</button>
+        <button type="button" id="snake-touch-down" data-snake-dir="down" class="narrrfs-touch-btn" aria-label="Move down">▼</button>
+        <button type="button" id="snake-touch-right" data-snake-dir="right" class="narrrfs-touch-btn" aria-label="Move right">▶</button>
+      </div>
+      <p class="narrrfs-swipe-hint">Slide across D-pad or swipe anywhere on the stage</p>
     </div>
 
     <!-- Score display removed - now shown in top UI only -->

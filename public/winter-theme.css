@@ -36,7 +36,7 @@ body.winter-theme:is(
 }
 
 body.winter-theme :is(
-  header,
+  header:not(.topbar),
   .profile-season12-header,
   .stake-season12-header,
   .leaderboard-season12-header,
@@ -45,6 +45,7 @@ body.winter-theme :is(
 ) {
   border-color: rgba(125, 211, 252, 0.28) !important;
   background-color: rgba(5, 17, 31, 0.88) !important;
+  background-image: none !important;
   box-shadow: 0 14px 36px rgba(2, 8, 20, 0.45), 0 0 24px rgba(56, 189, 248, 0.10) !important;
 }
 
@@ -204,6 +205,40 @@ body.winter-theme :is(button, .rounded-full, .rounded-xl, .rounded-2xl, .rounded
 /* Safety guard in case any cached markup leaves a pumpkin decoration element behind */
 body.winter-theme .halloween-pumpkin {
   display: none !important;
+}
+
+/* Standalone arcade pages: Winter color palette (without snowflakes) while preserving role frames */
+body.winter-theme #cheeseman-season-banner {
+  background: linear-gradient(135deg, rgba(6, 21, 39, 0.94), rgba(13, 43, 69, 0.90)) !important;
+  border-color: rgba(125, 211, 252, 0.36) !important;
+  box-shadow: 0 18px 46px rgba(2, 8, 20, 0.45), 0 0 28px rgba(56, 189, 248, 0.14) !important;
+}
+
+body.winter-theme :is(
+  #tetris-controls-section,
+  #snake-controls-section,
+  #space-invaders-controls-section,
+  #cheeseman-controls-section
+):not(.golden):not(.silver):not(.cheese):not(.green):not(.blue):not(.red) {
+  background: linear-gradient(145deg, rgba(7, 22, 38, 0.94), rgba(11, 35, 58, 0.90)) !important;
+  border-color: rgba(125, 211, 252, 0.34) !important;
+}
+
+body.winter-theme :is(
+  #toggle-tetris-guide-btn,
+  #toggle-snake-guide-btn,
+  #toggle-cheeseman-guide-btn
+) {
+  background-image: linear-gradient(135deg, #0284c7, #0369a1) !important;
+  border: 1px solid rgba(186, 230, 253, 0.35) !important;
+}
+
+body.winter-theme :is(
+  #toggle-tetris-guide-btn,
+  #toggle-snake-guide-btn,
+  #toggle-cheeseman-guide-btn
+):hover {
+  background-image: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
 }
 
 /* Very low, GPU-composited snowfall overlay: floats gently above z-10/z-20 sections, below z-30 header & modals */

@@ -2766,13 +2766,46 @@ function initSnake() {
 let touchStartX = 0, touchStartY = 0;
 let isSnakeGameActive = false;
 let snakeScrollLocked = false;
-const SNAKE_SWIPE_THRESHOLD = 45; // Safer threshold to avoid accidental turns
+let snakeSwipeActive = false;
+const SNAKE_SWIPE_THRESHOLD = 28; // Live touchmove threshold without lifting finger
 const SNAKE_AXIS_LOCK_RATIO = 1.2; // Require clearer dominant axis
+
+function applySnakeDirection(dir) {
+  if (!isSnakeGameActive || isSnakePaused) return;
+  if (dir === 'right') {
+    if (velocity.x === 0) {
+      velocity = { x: 1, y: 0 };
+    } else if (velocity.x === -1) {
+      invalidTurnGlow = 1.0;
+      invalidTurnGlowDirection = 'right';
+    }
+  } else if (dir === 'left') {
+    if (velocity.x === 0) {
+      velocity = { x: -1, y: 0 };
+    } else if (velocity.x === 1) {
+      invalidTurnGlow = 1.0;
+      invalidTurnGlowDirection = 'left';
+    }
+  } else if (dir === 'down') {
+    if (velocity.y === 0) {
+      velocity = { x: 0, y: 1 };
+    } else if (velocity.y === -1) {
+      invalidTurnGlow = 1.0;
+      invalidTurnGlowDirection = 'down';
+    }
+  } else if (dir === 'up') {
+    if (velocity.y === 0) {
+      velocity = { x: 0, y: -1 };
+    } else if (velocity.y === 1) {
+      invalidTurnGlow = 1.0;
+      invalidTurnGlowDirection = 'up';
+    }
+  }
+}
 
 function enableGlobalSnakeTouch() { 
   isSnakeGameActive = true; 
-  document.body.style.overflow = "hidden";
-  snakeScrollLocked = true;
+  lockSnakeScroll();
   
   // 🚨 BUG #263 FIX: Disable all page links/buttons during active gameplay (except game controls and modal buttons)
   document.querySelectorAll('a, button').forEach(el => {
@@ -2798,8 +2831,6 @@ function enableGlobalSnakeTouch() {
 
 function disableGlobalSnakeTouch() { 
   isSnakeGameActive = false;
-  document.body.style.overflow = "";
-  snakeScrollLocked = false;
   unlockSnakeScroll(); // 🎯 Ensure scrolling is unlocked when disabling touch
   
   // 🚨 BUG #263 FIX: Re-enable all page links/buttons when game ends
@@ -2810,12 +2841,16 @@ function disableGlobalSnakeTouch() {
   console.log('🔓 Page links/buttons re-enabled after Snake gameplay');
 }
 
-// Helper: Lock/unlock scrolling for Snake (like Tetris)
+// Helper: Lock/unlock scrolling for Snake (uses shared NarrrfsMobileArcade lock)
 function lockSnakeScroll() {
   if (!snakeScrollLocked) {
     document.body.style.overflow = "hidden";
     snakeScrollLocked = true;
   }
+  window.NarrrfsMobileArcade?.lock({
+    stageEl: document.getElementById('snake-play-stage') || document.getElementById('cheese-snake'),
+    gameKey: 'snake'
+  });
 }
 
 function unlockSnakeScroll() {
@@ -2823,41 +2858,41 @@ function unlockSnakeScroll() {
     document.body.style.overflow = "";
     snakeScrollLocked = false;
   }
+  window.NarrrfsMobileArcade?.unlock();
 }
 
-// Prevent scrolling on the game canvas - Enhanced for mobile
-document.addEventListener('touchmove', function(e) {
-  const isSnakeCanvasTarget = Boolean(e.target && (e.target.id === 'snake-canvas' || e.target.closest?.('#snake-canvas')));
-  if (isSnakeGameActive && !isSnakePaused && isSnakeCanvasTarget) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-}, { passive: false });
+const snakeSwipeSurface = document.getElementById('snake-play-stage') || canvas;
 
-canvas.addEventListener("touchstart", function(e) {
+// Full-stage touch swipe detection: works cleanly even when fingers start near canvas edges
+snakeSwipeSurface.addEventListener("touchstart", function(e) {
   if (!isSnakeGameActive || isSnakePaused) return;
+  if (e.target && e.target.closest && e.target.closest('button, a')) {
+    snakeSwipeActive = false;
+    return;
+  }
   e.preventDefault();
   e.stopPropagation();
   if (!e.touches || !e.touches.length) return;
   const touch = e.touches[0];
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
+  snakeSwipeActive = true;
 }, { passive: false });
 
-canvas.addEventListener("touchend", function(e) {
+snakeSwipeSurface.addEventListener("touchmove", function(e) {
   if (!isSnakeGameActive || isSnakePaused) return;
+  if (!snakeSwipeActive) return;
+  if (e.target && e.target.closest && e.target.closest('[data-allow-arcade-scroll="true"]')) return;
   e.preventDefault();
   e.stopPropagation();
-  if (!e.changedTouches || !e.changedTouches.length) return;
-  const touch = e.changedTouches[0];
+  if (!e.touches || !e.touches.length) return;
+  const touch = e.touches[0];
   const deltaX = touch.clientX - touchStartX;
   const deltaY = touch.clientY - touchStartY;
   const absDeltaX = Math.abs(deltaX);
   const absDeltaY = Math.abs(deltaY);
-  
-  // Ignore micro-swipes/taps
-  const minSwipeDistance = SNAKE_SWIPE_THRESHOLD;
-  if (Math.max(absDeltaX, absDeltaY) < minSwipeDistance) {
+
+  if (Math.max(absDeltaX, absDeltaY) < SNAKE_SWIPE_THRESHOLD) {
     return;
   }
 
@@ -2866,57 +2901,49 @@ canvas.addEventListener("touchend", function(e) {
   if (!isHorizontalSwipe && !isVerticalSwipe) {
     return;
   }
-  
-  // Only process swipes if game is active and not paused
-  // 🐛 BUG #312 FIX: Prevent opposite direction turns for touch controls too
+
   if (isHorizontalSwipe) {
-    // Horizontal swipe detection - more responsive
-    if (deltaX > minSwipeDistance) {
-      // Only allow right if not moving left (opposite direction)
-      if (velocity.x === 0) {
-        velocity = { x: 1, y: 0 }; // Right
-      } else if (velocity.x === -1) {
-        // Attempted opposite turn - show glow instead
-        invalidTurnGlow = 1.0;
-        invalidTurnGlowDirection = 'right';
-        console.log('🚫 Invalid turn (touch): Cannot turn right while moving left');
-      }
-    } else if (deltaX < -minSwipeDistance) {
-      // Only allow left if not moving right (opposite direction)
-      if (velocity.x === 0) {
-        velocity = { x: -1, y: 0 }; // Left
-      } else if (velocity.x === 1) {
-        // Attempted opposite turn - show glow instead
-        invalidTurnGlow = 1.0;
-        invalidTurnGlowDirection = 'left';
-        console.log('🚫 Invalid turn (touch): Cannot turn left while moving right');
-      }
-    }
+    applySnakeDirection(deltaX > 0 ? 'right' : 'left');
   } else if (isVerticalSwipe) {
-    // Vertical swipe detection - more responsive
-    if (deltaY > minSwipeDistance) {
-      // Only allow down if not moving up (opposite direction)
-      if (velocity.y === 0) {
-        velocity = { x: 0, y: 1 }; // Down
-      } else if (velocity.y === -1) {
-        // Attempted opposite turn - show glow instead
-        invalidTurnGlow = 1.0;
-        invalidTurnGlowDirection = 'down';
-        console.log('🚫 Invalid turn (touch): Cannot turn down while moving up');
-      }
-    } else if (deltaY < -minSwipeDistance) {
-      // Only allow up if not moving down (opposite direction)
-      if (velocity.y === 0) {
-        velocity = { x: 0, y: -1 }; // Up
-      } else if (velocity.y === 1) {
-        // Attempted opposite turn - show glow instead
-        invalidTurnGlow = 1.0;
-        invalidTurnGlowDirection = 'up';
-        console.log('🚫 Invalid turn (touch): Cannot turn up while moving down');
-      }
-    }
+    applySnakeDirection(deltaY > 0 ? 'down' : 'up');
   }
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
 }, { passive: false });
+
+snakeSwipeSurface.addEventListener("touchend", function() {
+  snakeSwipeActive = false;
+}, { passive: true });
+
+snakeSwipeSurface.addEventListener("touchcancel", function() {
+  snakeSwipeActive = false;
+}, { passive: true });
+
+// Slide-capable Snake D-Pad + Mode Switch
+(function initSnakeMobileDpadControls() {
+  const dpadGrid = document.getElementById('snake-dpad-grid');
+  const modeDpadBtn = document.getElementById('snake-mode-dpad-btn');
+  const modeSwipeBtn = document.getElementById('snake-mode-swipe-btn');
+  if (dpadGrid && window.NarrrfsMobileArcade && typeof window.NarrrfsMobileArcade.bindSlideDpad === 'function') {
+    window.NarrrfsMobileArcade.bindSlideDpad(dpadGrid, dir => applySnakeDirection(dir), 'data-snake-dir');
+  }
+  function applyMode(mode) {
+    const normalized = mode === 'swipe' ? 'swipe' : 'dpad';
+    dpadGrid?.classList.toggle('narrrfs-is-hidden', normalized === 'swipe');
+    modeDpadBtn?.classList.toggle('is-active', normalized === 'dpad');
+    modeSwipeBtn?.classList.toggle('is-active', normalized === 'swipe');
+    try {
+      localStorage.setItem('snake_mobile_mode', normalized);
+    } catch (_) {}
+  }
+  modeDpadBtn?.addEventListener('click', () => applyMode('dpad'));
+  modeSwipeBtn?.addEventListener('click', () => applyMode('swipe'));
+  try {
+    applyMode(localStorage.getItem('snake_mobile_mode') === 'swipe' ? 'swipe' : 'dpad');
+  } catch (_) {
+    applyMode('dpad');
+  }
+})();
 
 // Touch control activation/deactivation is handled in the main startGame function above
 

@@ -1822,6 +1822,7 @@ function buildMaze() {
 function resetGame() {
   clearGameTimer();
   cheeseRunnerMusicController.stop();
+  window.NarrrfsMobileArcade?.unlock();
 
   score = 0;
   level = 1;
@@ -1881,6 +1882,11 @@ if (modal) {
     isRunning = true;
 isPaused = false;
 
+window.NarrrfsMobileArcade?.lock({
+  stageEl: document.getElementById('cheeseman-play-stage'),
+  gameKey: 'cheeseman'
+});
+
 cheeseRunnerMusicController.start();
 
 setStatus('Eat the visible cheese. Blue portals are travel lanes only.');
@@ -1897,10 +1903,16 @@ startGameTimer();
     if (isPaused) {
   clearGameTimer();
   cheeseRunnerMusicController.suspend();
+  window.NarrrfsMobileArcade?.unlock();
   setStatus('Paused.');
   render();
   return;
 }
+
+window.NarrrfsMobileArcade?.lock({
+  stageEl: document.getElementById('cheeseman-play-stage'),
+  gameKey: 'cheeseman'
+});
 
 cheeseRunnerMusicController.start();
 
@@ -3023,6 +3035,7 @@ function ensureGameOverNavigationLinks() {
 async function endGame() {
   clearGameTimer();
   cheeseRunnerMusicController.stop();
+  window.NarrrfsMobileArcade?.unlock();
   isRunning = false;
   isPaused = false;
   glyphBoostUntil = 0;
@@ -3994,34 +4007,89 @@ window.restartCheesemanGame = restartCheesemanGame;
       if (event.key === 'Enter') startGame();
     }, { passive: false });
 
-    canvas.addEventListener('touchstart', event => {
-      const touch = event.changedTouches[0];
+    const playStage = document.getElementById('cheeseman-play-stage') || canvas;
+    const swipeSurface = playStage;
+    let stageSwipeActive = false;
+
+    swipeSurface.addEventListener('touchstart', event => {
+      if (event.target && event.target.closest && event.target.closest('button, a')) {
+        stageSwipeActive = false;
+        return;
+      }
+      if (!event.touches || !event.touches.length) return;
+      const touch = event.touches[0];
       touchStartX = touch.clientX;
       touchStartY = touch.clientY;
-      event.preventDefault();
+      stageSwipeActive = true;
+      if (isRunning && !isPaused) {
+        event.preventDefault();
+      }
     }, { passive: false });
 
-    canvas.addEventListener('touchend', event => {
-      const touch = event.changedTouches[0];
+    swipeSurface.addEventListener('touchmove', event => {
+      if (!stageSwipeActive || !isRunning || isPaused) return;
+      if (!event.touches || !event.touches.length) return;
+      const touch = event.touches[0];
       const deltaX = touch.clientX - touchStartX;
       const deltaY = touch.clientY - touchStartY;
-
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        setDirection(deltaX > 0 ? 'right' : 'left');
-      } else {
-        setDirection(deltaY > 0 ? 'down' : 'up');
-      }
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+      const swipeThreshold = 22;
 
       event.preventDefault();
+      if (Math.max(absX, absY) < swipeThreshold) return;
+
+      if (absX >= absY * 1.1) {
+        setDirection(deltaX > 0 ? 'right' : 'left');
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      } else if (absY >= absX * 1.1) {
+        setDirection(deltaY > 0 ? 'down' : 'up');
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      }
     }, { passive: false });
 
-    document.querySelectorAll('[data-cheeseman-dir]').forEach(button => {
-      button.addEventListener('click', () => setDirection(button.dataset.cheesemanDir));
-      button.addEventListener('touchstart', event => {
-        setDirection(button.dataset.cheesemanDir);
-        event.preventDefault();
-      }, { passive: false });
-    });
+    swipeSurface.addEventListener('touchend', () => {
+      stageSwipeActive = false;
+    }, { passive: true });
+    swipeSurface.addEventListener('touchcancel', () => {
+      stageSwipeActive = false;
+    }, { passive: true });
+
+    const dpadGrid = document.getElementById('cheeseman-dpad-grid');
+    if (dpadGrid && window.NarrrfsMobileArcade && typeof window.NarrrfsMobileArcade.bindSlideDpad === 'function') {
+      window.NarrrfsMobileArcade.bindSlideDpad(dpadGrid, dir => setDirection(dir), 'data-cheeseman-dir');
+    } else {
+      document.querySelectorAll('[data-cheeseman-dir]').forEach(button => {
+        button.addEventListener('click', () => setDirection(button.dataset.cheesemanDir));
+        button.addEventListener('touchstart', event => {
+          setDirection(button.dataset.cheesemanDir);
+          event.preventDefault();
+        }, { passive: false });
+      });
+    }
+
+    const modeDpadBtn = document.getElementById('cheeseman-mode-dpad-btn');
+    const modeSwipeBtn = document.getElementById('cheeseman-mode-swipe-btn');
+    function applyCheesemanControlMode(mode) {
+      const normalized = mode === 'swipe' ? 'swipe' : 'dpad';
+      if (dpadGrid) {
+        dpadGrid.classList.toggle('narrrfs-is-hidden', normalized === 'swipe');
+      }
+      modeDpadBtn?.classList.toggle('is-active', normalized === 'dpad');
+      modeSwipeBtn?.classList.toggle('is-active', normalized === 'swipe');
+      try {
+        localStorage.setItem('cheeseman_mobile_mode', normalized);
+      } catch (_) {}
+    }
+    modeDpadBtn?.addEventListener('click', () => applyCheesemanControlMode('dpad'));
+    modeSwipeBtn?.addEventListener('click', () => applyCheesemanControlMode('swipe'));
+    try {
+      applyCheesemanControlMode(localStorage.getItem('cheeseman_mobile_mode') === 'swipe' ? 'swipe' : 'dpad');
+    } catch (_) {
+      applyCheesemanControlMode('dpad');
+    }
 
     startBtn?.addEventListener('click', startGame);
     pauseBtn?.addEventListener('click', togglePause);

@@ -37,7 +37,8 @@ $discordId = $_SESSION['discord_id'] ?? '';
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0ea5e9" />
 
   <title>Labyrinth Blast - Narrrf's World</title>
   <meta name="description" content="Enter Labyrinth Blast in Narrrf's World. Place glyph charges, dodge rivals, shatter walls, and reach the portal." />
@@ -104,8 +105,11 @@ $discordId = $_SESSION['discord_id'] ?? '';
     html,
     body {
       margin: 0;
+      height: 100%;
       min-height: 100%;
-      background: #0a0805;
+      background: #05111f;
+      overscroll-behavior: none;
+      touch-action: none;
     }
 
     body {
@@ -115,9 +119,10 @@ $discordId = $_SESSION['discord_id'] ?? '';
     .labyrinth-blast-frame {
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       border: 0;
       display: block;
-      background: #0a0805;
+      background: #05111f;
     }
 
     .labyrinth-blast-back {
@@ -130,44 +135,67 @@ $discordId = $_SESSION['discord_id'] ?? '';
       gap: 0.4rem;
       padding: 0.65rem 0.9rem;
       border-radius: 999px;
-      border: 1px solid rgba(212, 164, 53, 0.45);
-      background: rgba(10, 8, 5, 0.82);
-      color: #f4c769;
+      border: 1px solid rgba(125, 211, 252, 0.48);
+      background: rgba(5, 17, 31, 0.88);
+      color: #e0f2fe;
       font-family: Georgia, serif;
       font-size: 0.85rem;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-decoration: none;
-      box-shadow: 0 0 18px rgba(212, 164, 53, 0.18);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.2);
       backdrop-filter: blur(8px);
+      transition: opacity 0.18s ease, visibility 0.18s ease;
+    }
+
+    .labyrinth-blast-back.is-playing-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .labyrinth-blast-back:hover {
       color: #ffffff;
-      border-color: rgba(43, 201, 201, 0.7);
-      box-shadow: 0 0 22px rgba(43, 201, 201, 0.22);
+      border-color: rgba(250, 204, 21, 0.72);
+      box-shadow: 0 0 22px rgba(250, 204, 21, 0.24);
     }
 
     @media (max-width: 640px) {
       .labyrinth-blast-back {
         top: 8px;
         left: 8px;
-        padding: 0.55rem 0.75rem;
+        padding: 0.5rem 0.72rem;
         font-size: 0.72rem;
       }
     }
   </style>
 </head>
 <body>
-  <a class="labyrinth-blast-back" href="profile.html#game-section">
+  <a id="labyrinth-back-link" class="labyrinth-blast-back" href="profile.html#game-section">
     ← Narrrfs Games
   </a>
 
   <iframe
+    id="labyrinth-blast-iframe"
     class="labyrinth-blast-frame"
-    src="labyrinth-blast/index.html"
+    src="labyrinth-blast/index.html?v=20261126-mobile-v1"
     title="Labyrinth Blast"
     allow="autoplay; fullscreen"
   ></iframe>
+
+  <script>
+    (function () {
+      const backLink = document.getElementById('labyrinth-back-link');
+      const frame = document.getElementById('labyrinth-blast-iframe');
+      window.addEventListener('message', function (event) {
+        if (!backLink) return;
+        if (event.origin && event.origin !== window.location.origin) return;
+        if (frame && frame.contentWindow && event.source && event.source !== frame.contentWindow) return;
+        if (event.data && event.data.type === 'narrrfs:labyrinth-play-state') {
+          backLink.classList.toggle('is-playing-hidden', Boolean(event.data.active));
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -1,0 +1,403 @@
+/* ❄️ NARRRFS_MOBILE_ARCADE_V1
+ * Presentation & mobile-ergonomics layer shared across all 6 arcade games.
+ * Does NOT alter score math, role multipliers, anti-cheat rules, or save APIs.
+ */
+
+html.narrrfs-game-locked,
+body.narrrfs-game-locked {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+}
+
+/* Hide floating navigation/auth/audio pills during active unpaused mobile runs
+   so thumbs near the bottom-right D-pad or fire controls never navigate away. */
+html.narrrfs-game-locked body.narrrfs-game-locked #cheese-auth-indicator,
+html.narrrfs-game-locked body.narrrfs-game-locked #narrrfs-audio-controls,
+html.narrrfs-game-locked body.narrrfs-game-locked #narrrfs-sound-toggle {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.narrrfs-game-locked header a {
+  pointer-events: none !important;
+}
+
+/* Shared mobile touch control dock styling (Arctic Winter keycaps + frost accents) */
+.narrrfs-arcade-controls {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+.narrrfs-mode-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem;
+  border-radius: 9999px;
+  background: rgba(5, 17, 31, 0.9);
+  border: 1px solid rgba(125, 211, 252, 0.3);
+  box-shadow: 0 6px 18px rgba(2, 8, 20, 0.38);
+  touch-action: none;
+}
+
+.narrrfs-mode-btn {
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  padding: 0.32rem 0.72rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: rgba(224, 242, 254, 0.78);
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+
+.narrrfs-mode-btn.is-active {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  border-color: rgba(186, 230, 253, 0.52);
+  color: #f0f9ff;
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.32);
+}
+
+.narrrfs-dpad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(56px, 68px));
+  gap: 0.4rem;
+  justify-content: center;
+  align-items: center;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.narrrfs-touch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  min-width: 56px;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(160deg, rgba(12, 36, 60, 0.96), rgba(6, 19, 34, 0.98));
+  border: 1.5px solid rgba(125, 211, 252, 0.42);
+  color: #f0f9ff;
+  font-weight: 900;
+  font-size: 1.1rem;
+  line-height: 1;
+  box-shadow:
+    0 6px 16px rgba(2, 8, 20, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease, border-color 0.08s ease, background 0.08s ease;
+}
+
+.narrrfs-touch-btn:active,
+.narrrfs-touch-btn.is-pressed {
+  transform: scale(0.95);
+  border-color: #bae6fd;
+  background: linear-gradient(160deg, rgba(14, 116, 144, 0.95), rgba(3, 105, 161, 0.95));
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.42);
+}
+
+.narrrfs-touch-btn--accent {
+  border-color: rgba(250, 204, 21, 0.6);
+  color: #fef08a;
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.98));
+}
+
+.narrrfs-touch-btn--accent:active,
+.narrrfs-touch-btn--accent.is-pressed {
+  border-color: #fde047;
+  background: linear-gradient(160deg, rgba(202, 138, 4, 0.92), rgba(161, 98, 7, 0.95));
+  color: #fff;
+}
+
+.narrrfs-tetris-bar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.38rem;
+  width: min(94vw, 390px);
+  margin: 0.35rem auto 0;
+  touch-action: none !important;
+}
+
+.narrrfs-invaders-bar {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr 1fr;
+  gap: 0.38rem;
+  width: min(94vw, 410px);
+  margin: 0.35rem auto 0;
+  touch-action: none !important;
+}
+
+.narrrfs-invaders-top-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: min(94vw, 410px);
+  touch-action: none;
+}
+
+.narrrfs-utility-pill {
+  border: 1px solid rgba(125, 211, 252, 0.34);
+  border-radius: 9999px;
+  padding: 0.3rem 0.62rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #e0f2fe;
+  background: rgba(8, 25, 45, 0.92);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.narrrfs-utility-pill:active {
+  transform: scale(0.95);
+}
+
+.narrrfs-utility-pill.is-active {
+  background: linear-gradient(135deg, #059669, #10b981);
+  border-color: rgba(167, 243, 208, 0.6);
+  color: #ecfdf5;
+}
+
+.narrrfs-invaders-cockpit {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: stretch;
+  width: min(94vw, 410px);
+  margin: 0.25rem auto 0;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.narrrfs-invaders-cockpit.is-touch-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.narrrfs-invaders-cockpit.is-touch-only .narrrfs-invaders-dpad,
+.narrrfs-invaders-cockpit.is-touch-only #space-invaders-touch-shoot {
+  display: none !important;
+}
+
+.narrrfs-invaders-cockpit.is-touch-only .narrrfs-invaders-weapons {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.narrrfs-invaders-cockpit.is-touch-only .narrrfs-weapon-btn {
+  min-height: 46px;
+}
+
+.narrrfs-invaders-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 42px);
+  grid-template-rows: repeat(3, 40px);
+  gap: 0.28rem;
+  align-content: center;
+  justify-content: center;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.narrrfs-invaders-dpad .narrrfs-touch-btn {
+  min-width: 42px;
+  min-height: 40px;
+  padding: 0;
+  font-size: 1rem;
+  border-radius: 0.7rem;
+}
+
+.narrrfs-dpad-hub {
+  pointer-events: none;
+  opacity: 0.35;
+  font-size: 0.75rem;
+  color: #7dd3fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.narrrfs-invaders-weapons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  align-content: stretch;
+  touch-action: none !important;
+}
+
+.narrrfs-weapon-btn {
+  min-height: 58px;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  padding: 0.3rem 0.35rem;
+}
+
+.narrrfs-weapon-ammo {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.06rem 0.38rem;
+  border-radius: 9999px;
+  background: rgba(2, 8, 20, 0.55);
+  color: #bae6fd;
+  line-height: 1.15;
+}
+
+.narrrfs-touch-btn--laser {
+  border-color: rgba(56, 189, 248, 0.65);
+  color: #e0f2fe;
+  background: linear-gradient(160deg, rgba(12, 74, 110, 0.94), rgba(7, 89, 133, 0.98));
+}
+
+.narrrfs-touch-btn--laser:active,
+.narrrfs-touch-btn--laser.is-pressed {
+  border-color: #7dd3fc;
+  background: linear-gradient(160deg, rgba(14, 165, 233, 0.95), rgba(2, 132, 199, 0.98));
+  color: #ffffff;
+}
+
+.narrrfs-touch-btn--bomb {
+  border-color: rgba(248, 113, 113, 0.65);
+  color: #fee2e2;
+  background: linear-gradient(160deg, rgba(127, 29, 29, 0.94), rgba(153, 27, 27, 0.98));
+}
+
+.narrrfs-touch-btn--bomb:active,
+.narrrfs-touch-btn--bomb.is-pressed {
+  border-color: #fca5a5;
+  background: linear-gradient(160deg, rgba(220, 38, 38, 0.95), rgba(185, 28, 28, 0.98));
+  color: #ffffff;
+}
+
+.narrrfs-touch-btn--shield {
+  border-color: rgba(45, 212, 191, 0.65);
+  color: #ccfbf1;
+  background: linear-gradient(160deg, rgba(17, 94, 89, 0.94), rgba(15, 118, 110, 0.98));
+}
+
+.narrrfs-touch-btn--shield:active,
+.narrrfs-touch-btn--shield.is-pressed {
+  border-color: #5eead4;
+  background: linear-gradient(160deg, rgba(20, 184, 166, 0.95), rgba(13, 148, 136, 0.98));
+  color: #ffffff;
+}
+
+/* Override Space Invaders BUG #263 inline opacity resets via class state */
+.narrrfs-touch-btn.is-depleted {
+  opacity: 0.38 !important;
+  filter: saturate(0.25);
+}
+
+.narrrfs-swipe-hint {
+  font-size: 0.7rem;
+  color: rgba(186, 230, 253, 0.72);
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+.narrrfs-is-hidden {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  #fast-shoot-container,
+  #reload-button,
+  #game-panel-btn {
+    display: none !important;
+    pointer-events: none !important;
+  }
+}
+
+@media (min-width: 901px) {
+  .narrrfs-mobile-only-controls {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  #snake-play-stage,
+  #tetris-play-stage,
+  #space-invaders-play-stage,
+  #cheeseman-play-stage {
+    touch-action: none;
+  }
+
+  body.narrrfs-game-locked header {
+    padding-top: 0.45rem !important;
+    padding-bottom: 0.45rem !important;
+  }
+
+  .narrrfs-dpad-grid {
+    grid-template-columns: repeat(3, minmax(54px, 64px));
+    gap: 0.35rem;
+  }
+
+  .narrrfs-touch-btn {
+    min-height: 48px;
+    font-size: 1.05rem;
+  }
+
+  .narrrfs-invaders-dpad .narrrfs-touch-btn {
+    min-width: 42px;
+    min-height: 40px;
+    font-size: 1rem;
+  }
+
+  .narrrfs-weapon-btn {
+    min-height: 54px;
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .narrrfs-invaders-dpad {
+    grid-template-columns: repeat(3, 38px);
+    grid-template-rows: repeat(3, 38px);
+    gap: 0.24rem;
+  }
+
+  .narrrfs-invaders-dpad .narrrfs-touch-btn {
+    min-width: 38px;
+    min-height: 38px;
+    font-size: 0.92rem;
+  }
+
+  .narrrfs-invaders-cockpit {
+    gap: 0.4rem;
+  }
+
+  .narrrfs-weapon-btn {
+    min-height: 52px;
+    font-size: 0.7rem;
+  }
+}

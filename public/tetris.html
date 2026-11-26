@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0ea5e9" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -197,10 +198,39 @@
       pointer-events: none; /* Don't block input when hidden */
     }
 
+    @media (max-width: 768px) {
+      #tetris-play-stage {
+        padding: 0.8rem 0.75rem !important;
+      }
+
+      body.narrrfs-game-locked #tetris-play-stage h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+
+      body.narrrfs-game-locked #next-canvas {
+        width: 56px;
+        height: 56px;
+      }
+
+      #tetris-canvas {
+        max-height: min(44dvh, 330px) !important;
+        width: auto !important;
+        height: auto !important;
+        max-width: 92vw !important;
+        aspect-ratio: 200 / 400;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
   </style>
+  <link rel="stylesheet" href="winter-theme.css?v=20261126-winter-v3" />
+  <link rel="stylesheet" href="css/narrrfs-mobile-arcade.css?v=20261126-arcade-v1" />
+  <script src="js/narrrfs-mobile-arcade.js?v=20261126-arcade-v1"></script>
 </head>
 
-<body class="bg-[#2f3136] text-white font-sans min-h-screen">
+<body class="winter-theme bg-[#2f3136] text-white font-sans min-h-screen">
 
 <!-- 🔰 Header -->
 <header class="w-full bg-gradient-to-r from-purple-900 to-indigo-800 py-4 px-6 text-yellow-400 shadow-lg border-b border-yellow-400/30">
@@ -245,11 +275,11 @@
 
 <!-- 🧩 TETRIS PANEL -->
 <section id="cheese-tetris" class="max-w-6xl w-full mx-auto px-4 mt-6 flex flex-col items-center justify-center">
-  <section class="relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-2xl ring-4 ring-purple-400/50 border-2 border-purple-500/30 max-w-md w-full mx-auto">
-    <!-- 🎨 Animated Background Gradient -->
-    <div class="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-indigo-900/40 to-purple-900/40 rounded-3xl -z-10"></div>
+  <section id="tetris-play-stage" class="relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-2xl ring-4 ring-sky-400/40 border-2 border-sky-500/30 max-w-md w-full mx-auto">
+    <!-- 🎨 Arctic Background Gradient -->
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-950/85 via-sky-950/60 to-slate-950/90 rounded-3xl -z-10"></div>
     
-    <div class="absolute top-4 left-4 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse z-10">
+    <div class="absolute top-4 left-4 bg-sky-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse z-10">
       🧩 TETRIS
     </div>
 
@@ -326,8 +356,24 @@
       </div>
     </div>
     
-    <!-- 💣 Bomb Warning Popup -->
-    <div class="text-center mt-2">
+    <!-- 📱 Mobile Control Bar + Mode Switch (all IDs include 'tetris' so BUG #263 keeps them enabled) -->
+    <div id="tetris-mobile-controls" class="narrrfs-arcade-controls narrrfs-mobile-only-controls">
+      <div class="narrrfs-mode-switch" role="group" aria-label="Tetris touch control mode">
+        <button type="button" id="tetris-mode-buttons-btn" class="narrrfs-mode-btn is-active">🎛️ BUTTONS + SWIPE</button>
+        <button type="button" id="tetris-mode-swipe-btn" class="narrrfs-mode-btn">👆 SWIPE ONLY</button>
+      </div>
+      <div id="tetris-touch-bar" class="narrrfs-tetris-bar" aria-label="Tetris touch buttons">
+        <button type="button" id="tetris-touch-left" class="narrrfs-touch-btn" aria-label="Move left">◀</button>
+        <button type="button" id="tetris-touch-rotate" class="narrrfs-touch-btn narrrfs-touch-btn--accent" aria-label="Rotate piece">⟳</button>
+        <button type="button" id="tetris-touch-right" class="narrrfs-touch-btn" aria-label="Move right">▶</button>
+        <button type="button" id="tetris-touch-soft" class="narrrfs-touch-btn" aria-label="Soft drop">▼</button>
+        <button type="button" id="tetris-touch-drop" class="narrrfs-touch-btn narrrfs-touch-btn--accent" aria-label="Hard drop">⏬</button>
+      </div>
+      <p class="narrrfs-swipe-hint">Tap buttons or swipe stage to move, rotate & drop</p>
+    </div>
+
+    <!-- 💣 Bomb Warning Popup (reserved height prevents mobile layout jump) -->
+    <div class="text-center mt-1 min-h-[18px]">
       <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold">💣 Incoming Cheese Bomb!</p>
     </div>
     

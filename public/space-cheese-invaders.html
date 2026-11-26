@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0ea5e9" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -249,11 +250,103 @@
       #space-invaders-hud-line3 span {
         font-size: 0.85em;
       }
+
+      #space-invaders-play-stage {
+        padding: 0.75rem 0.7rem !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-play-stage {
+        padding: 0.45rem 0.55rem !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-play-stage > div.absolute.top-4.left-4,
+      body.narrrfs-game-locked #space-invaders-play-stage > h2 + div,
+      body.narrrfs-game-locked #pause-space-invaders-btn + p,
+      body.narrrfs-game-locked #space-invaders-mobile-controls + div {
+        display: none !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-play-stage h2 {
+        font-size: 1rem;
+        margin-bottom: 0.15rem;
+      }
+
+      body.narrrfs-game-locked #space-invaders-top-score {
+        font-size: 0.92rem;
+        line-height: 1.2;
+      }
+
+      body.narrrfs-game-locked #space-invaders-role-multiplier {
+        font-size: 0.72rem;
+        line-height: 1.15;
+      }
+
+      body.narrrfs-game-locked #space-invaders-play-stage > div.text-center.mb-4 {
+        margin-bottom: 0.2rem !important;
+      }
+
+      body.narrrfs-game-locked #start-space-invaders-btn,
+      body.narrrfs-game-locked #pause-space-invaders-btn {
+        width: auto !important;
+        padding: 0.25rem 0.65rem !important;
+        font-size: 0.78rem !important;
+        margin-top: 0 !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-hud-container {
+        margin-bottom: 0.25rem !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-hud-line1,
+      body.narrrfs-game-locked #space-invaders-hud-line2 {
+        padding: 3px 8px !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-hud-line3 {
+        padding: 2px 8px !important;
+      }
+
+      #space-invaders-hud-line3:not(:has(span:not(.hidden))) {
+        display: none;
+      }
+
+      #space-invaders-canvas {
+        max-height: min(46dvh, 410px) !important;
+        width: auto !important;
+        height: auto !important;
+        max-width: 92vw !important;
+        aspect-ratio: 400 / 600;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      body.narrrfs-game-locked #space-invaders-canvas {
+        max-height: min(44dvh, 380px) !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-mobile-controls {
+        margin-top: 0.3rem;
+        gap: 0.25rem;
+      }
+
+      body.narrrfs-game-locked #game-panel-btn {
+        bottom: max(14px, env(safe-area-inset-bottom)) !important;
+        right: 12px !important;
+      }
+    }
+
+    @media (max-width: 768px) and (max-height: 720px) {
+      body.narrrfs-game-locked #space-invaders-canvas {
+        max-height: min(37dvh, 255px) !important;
+      }
     }
   </style>
+  <link rel="stylesheet" href="winter-theme.css?v=20261126-winter-v3" />
+  <link rel="stylesheet" href="css/narrrfs-mobile-arcade.css?v=20261126-arcade-v2" />
+  <script src="js/narrrfs-mobile-arcade.js?v=20261126-arcade-v2"></script>
 </head>
 
-<body class="bg-[#2f3136] text-white font-sans min-h-screen">
+<body class="winter-theme bg-[#2f3136] text-white font-sans min-h-screen">
 
 <!-- 🔰 Header -->
 <header class="w-full bg-gradient-to-r from-gray-900 to-gray-800 py-4 px-6 text-yellow-400 shadow-lg border-b border-yellow-400/30">
@@ -298,8 +391,8 @@
 
 <!-- 🚀 SPACE INVADERS PANEL -->
 <section id="space-cheese-invaders" class="max-w-6xl w-full mx-auto px-4 mt-6 flex flex-col items-center justify-center">
-  <section class="relative bg-black text-yellow-300 py-6 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 max-w-md w-full">
-    <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+  <section id="space-invaders-play-stage" class="relative bg-black text-yellow-300 py-6 px-6 rounded-3xl shadow-xl ring-4 ring-sky-400/40 border border-sky-500/30 max-w-md w-full">
+    <div class="absolute top-4 left-4 bg-sky-400 text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
       🚀 SPACE INVADERS
     </div>
 
@@ -421,6 +514,50 @@
       <div id="space-invaders-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
         5
       </div>
+    </div>
+
+    <!-- Unified 4-Way D-Pad + Full Weapon Deck (IDs contain 'space-invaders' so BUG #263 keeps all enabled) -->
+    <div id="space-invaders-mobile-controls" class="narrrfs-arcade-controls narrrfs-mobile-only-controls">
+      <div class="narrrfs-invaders-top-row">
+        <div class="narrrfs-mode-switch" role="group" aria-label="Space Invaders control mode">
+          <button type="button" id="space-invaders-mode-buttons-btn" class="narrrfs-mode-btn is-active">🕹️ PAD + WEAPONS</button>
+          <button type="button" id="space-invaders-mode-touch-btn" class="narrrfs-mode-btn">👆 TOUCH + SPECIALS</button>
+        </div>
+        <button type="button" id="space-invaders-touch-auto" class="narrrfs-utility-pill" aria-label="Toggle auto-shoot">🎯 AUTO: OFF</button>
+        <button type="button" id="space-invaders-touch-panel" class="narrrfs-utility-pill" aria-label="Open weapons and wave panel">⚙️ PANEL</button>
+      </div>
+      <div id="space-invaders-touch-bar" class="narrrfs-invaders-cockpit" aria-label="Space Invaders cockpit controls">
+        <div id="space-invaders-dpad" class="narrrfs-invaders-dpad" role="group" aria-label="4-way ship movement D-pad">
+          <span></span>
+          <button type="button" id="space-invaders-touch-up" class="narrrfs-touch-btn" data-invaders-dir="up" aria-label="Move ship forward">▲</button>
+          <span></span>
+          <button type="button" id="space-invaders-touch-left" class="narrrfs-touch-btn" data-invaders-dir="left" aria-label="Move ship left">◀</button>
+          <span class="narrrfs-dpad-hub" aria-hidden="true">✦</span>
+          <button type="button" id="space-invaders-touch-right" class="narrrfs-touch-btn" data-invaders-dir="right" aria-label="Move ship right">▶</button>
+          <span></span>
+          <button type="button" id="space-invaders-touch-down" class="narrrfs-touch-btn" data-invaders-dir="down" aria-label="Move ship back">▼</button>
+          <span></span>
+        </div>
+        <div id="space-invaders-weapons-grid" class="narrrfs-invaders-weapons" role="group" aria-label="Weapons and defense controls">
+          <button type="button" id="space-invaders-touch-shoot" class="narrrfs-touch-btn narrrfs-weapon-btn narrrfs-touch-btn--accent" aria-label="Fire normal weapon">
+            <span>🔥 FIRE</span>
+            <span id="space-invaders-fire-ammo" class="narrrfs-weapon-ammo">∞</span>
+          </button>
+          <button type="button" id="space-invaders-touch-laser" class="narrrfs-touch-btn narrrfs-weapon-btn narrrfs-touch-btn--laser" aria-label="Fire piercing laser">
+            <span>⚡ LASER</span>
+            <span id="space-invaders-laser-ammo" class="narrrfs-weapon-ammo">5</span>
+          </button>
+          <button type="button" id="space-invaders-touch-bomb" class="narrrfs-touch-btn narrrfs-weapon-btn narrrfs-touch-btn--bomb" aria-label="Launch screen bomb">
+            <span>💣 BOMB</span>
+            <span id="space-invaders-bomb-ammo" class="narrrfs-weapon-ammo">3</span>
+          </button>
+          <button type="button" id="space-invaders-touch-shield" class="narrrfs-touch-btn narrrfs-weapon-btn narrrfs-touch-btn--shield" aria-label="Activate shield">
+            <span>🛡️ SHIELD</span>
+            <span id="space-invaders-shield-ammo" class="narrrfs-weapon-ammo">2</span>
+          </button>
+        </div>
+      </div>
+      <p class="narrrfs-swipe-hint">Slide D-pad to steer • Tap specials or drag inside the arena</p>
     </div>
 
     <!-- 💰 Game Status Display -->
@@ -1053,7 +1190,7 @@ function toggleSpaceInvadersDSPOINScores() {
 </script>
 
 <!-- 🧀 Load Space Cheese Invaders Script -->
-    <script src="scripts/space-cheese-invaders.js?v=5.0.0&season5_boss_balance=1730520000"></script>
+    <script src="scripts/space-cheese-invaders.js?v=5.0.0&season5_boss_balance=1730520000&arcade_v2=20261126"></script>
 
 <!-- 🧪 Load Boss Test Helper Script -->
 <script src="scripts/boss-test-helper.js"></script>

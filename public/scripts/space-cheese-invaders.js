@@ -3100,8 +3100,10 @@ let reloadButtonInterval = null;
         updateWeaponAmmoDisplay();
       }
       
-      // 🚀 FIX: Show weapon switch notification
-      showWeaponSwitchNotification(weaponType);
+      // 🚀 FIX: Show weapon switch notification (skip during quick-shot special weapon triggers)
+      if (!window.isQuickShotCall) {
+        showWeaponSwitchNotification(weaponType);
+      }
       
       // 🚀 FIX: Update fast-shoot buttons immediately
       if (typeof updateFastShootButtons === 'function') {
@@ -5705,6 +5707,7 @@ let reloadButtonInterval = null;
     // 🚀 NEW: Setup global mouse controls for shooting anywhere on screen
     setupGlobalMouseControls();
     setupHeatSystemDebug();
+    initSpaceInvadersMobileButtons();
     
     // 🚀 CRITICAL FIX: Automatically disable mouse controls on mobile devices
     if (isMobileDevice) {
@@ -6401,6 +6404,7 @@ startGameWithCountdown();
       
       // Lock scroll only when game is actually running
       lockSpaceInvadersScroll();
+      syncSpaceInvadersMobileDeck();
       
       // 🐛 CRITICAL FIX (Nov 3): Re-enable touch controls on game start
       // Touch controls are disabled in cleanupSpaceInvadersControls() when game ends
@@ -6562,6 +6566,7 @@ startGameWithCountdown();
     
     // 🐛 BUG #214 FIX: Clear pressed keys to prevent stuck controls on restart
     pressedKeys.clear();
+    syncSpaceInvadersMobileDeck();
     console.log('⌨️ Pressed keys cleared - ship movement restored!');
     
     // 🐛 BUG #327 FIX: Position ship at bottom of canvas when game starts
@@ -11543,36 +11548,40 @@ lastAutoShootTime = Date.now();
     });
   }
 
-  // 🐛 BUG #118 FIX: Continuous keyboard movement - allows hold-to-move + shoot simultaneously
+  // 🐛 BUG #118 FIX: Continuous keyboard & mobile D-pad movement - allows hold-to-move + shoot simultaneously
   function applyContinuousKeyboardMovement() {
     if (!continuousMovementEnabled || isSpaceInvadersPaused || !playerShip) return;
-    
-    // Check each direction and move if key is held
+
+    const beforeX = playerShip.x;
+    const beforeY = playerShip.y;
+    const shipWidth = playerShip.width || 40;
+    const shipHeight = playerShip.height || 30;
+    const maxX = Math.max(0, canvasWidth - shipWidth);
+    const maxY = Math.max(0, canvasHeight - shipHeight);
+
+    // Check each direction and move if key or mobile D-pad direction is held
     if (pressedKeys.has('arrowleft') || pressedKeys.has('a')) {
-      const oldX = playerShip.x;
       playerShip.x = Math.max(0, playerShip.x - getPlayerSpeed());
-      // Don't call movePlayer to avoid double auto-shoot triggering
     }
-    
+
     if (pressedKeys.has('arrowright') || pressedKeys.has('d')) {
-      const oldX = playerShip.x;
-      playerShip.x = Math.min(canvasWidth - playerShip.width, playerShip.x + getPlayerSpeed());
+      playerShip.x = Math.min(maxX, playerShip.x + getPlayerSpeed());
     }
-    
+
     if (pressedKeys.has('arrowup') || pressedKeys.has('w')) {
-      const oldY = playerShip.y;
       playerShip.y = Math.max(0, playerShip.y - getPlayerSpeed());
     }
-    
+
     if (pressedKeys.has('arrowdown')) {
-      // Allow ship to go down further - extended bottom boundary
-      const extendedBottomBoundary = canvasHeight + 20;
-      const oldY = playerShip.y;
-      playerShip.y = Math.min(extendedBottomBoundary, playerShip.y + getPlayerSpeed());
+      playerShip.y = Math.min(maxY, playerShip.y + getPlayerSpeed());
     }
-    
-    // Note: Auto-shoot is handled in the original movePlayer function calls from keydown
-    // This continuous movement supplements the discrete keydown events
+
+    if (autoShootEnabled && (playerShip.x !== beforeX || playerShip.y !== beforeY)) {
+      const currentTime = Date.now();
+      if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
+        autoShoot();
+      }
+    }
   }
 
   function movePlayer(direction) {
@@ -11582,6 +11591,7 @@ lastAutoShootTime = Date.now();
     const moveAmount = getPlayerSpeed();
     const oldX = playerShip.x;
     const oldY = playerShip.y;
+    const shipHeight = playerShip.height || 30;
     
     switch (direction) {
       case 'left':
@@ -11594,9 +11604,7 @@ lastAutoShootTime = Date.now();
         playerShip.y = Math.max(0, playerShip.y - moveAmount);
         break;
       case 'down':
-        // Allow ship to go down further - extended bottom boundary for better gameplay
-        const extendedBottomBoundary = canvasHeight + 20; // Allow 20px beyond canvas bottom
-        playerShip.y = Math.min(extendedBottomBoundary, playerShip.y + moveAmount);
+        playerShip.y = Math.min(Math.max(0, canvasHeight - shipHeight), playerShip.y + moveAmount);
         break;
     }
     
@@ -13818,8 +13826,10 @@ window.emergencyCollisionCheck = function() {
       const canvas = document.getElementById('space-invaders-canvas');
       if (canvas) {
         const rect = canvas.getBoundingClientRect();
-        const touchX = touch.clientX - rect.left;
-        const touchY = touch.clientY - rect.top;
+        const scaleX = rect.width > 0 ? canvasWidth / rect.width : 1;
+        const scaleY = rect.height > 0 ? canvasHeight / rect.height : 1;
+        const touchX = (touch.clientX - rect.left) * scaleX;
+        const touchY = (touch.clientY - rect.top) * scaleY;
         
         // Store old position for comparison
         const oldX = playerShip.x;
@@ -13897,8 +13907,10 @@ window.emergencyCollisionCheck = function() {
       const canvas = document.getElementById('space-invaders-canvas');
       if (canvas) {
         const rect = canvas.getBoundingClientRect();
-        const touchX = touch.clientX - rect.left;
-        const touchY = touch.clientY - rect.top;
+        const scaleX = rect.width > 0 ? canvasWidth / rect.width : 1;
+        const scaleY = rect.height > 0 ? canvasHeight / rect.height : 1;
+        const touchX = (touch.clientX - rect.left) * scaleX;
+        const touchY = (touch.clientY - rect.top) * scaleY;
         
         // 🚀 NEW: Direct ship positioning (like mouse controls)
         // Convert touch position to ship center position
@@ -14028,42 +14040,187 @@ window.emergencyCollisionCheck = function() {
     }
   }
 
+  function syncSpaceInvadersMobileDeck() {
+    const laserAmmoEl = document.getElementById('space-invaders-laser-ammo');
+    const bombAmmoEl = document.getElementById('space-invaders-bomb-ammo');
+    const shieldAmmoEl = document.getElementById('space-invaders-shield-ammo');
+    const laserDeckBtn = document.getElementById('space-invaders-touch-laser');
+    const bombDeckBtn = document.getElementById('space-invaders-touch-bomb');
+    const shieldDeckBtn = document.getElementById('space-invaders-touch-shield');
+    const autoBtn = document.getElementById('space-invaders-touch-auto');
+
+    const laserAmmo = Number(weaponAmmo?.laser || 0);
+    const bombAmmo = Number(weaponAmmo?.bomb || 0);
+    const shieldAmmo = Number(typeof speedBoostAmmo !== 'undefined' ? speedBoostAmmo : 0);
+
+    if (laserAmmoEl) laserAmmoEl.textContent = String(laserAmmo);
+    if (bombAmmoEl) bombAmmoEl.textContent = String(bombAmmo);
+    if (shieldAmmoEl) shieldAmmoEl.textContent = String(shieldAmmo);
+
+    laserDeckBtn?.classList.toggle('is-depleted', laserAmmo <= 0);
+    bombDeckBtn?.classList.toggle('is-depleted', bombAmmo <= 0);
+    shieldDeckBtn?.classList.toggle('is-depleted', shieldAmmo <= 0);
+
+    if (autoBtn) {
+      autoBtn.textContent = autoShootEnabled ? '🎯 AUTO: ON' : '🎯 AUTO: OFF';
+      autoBtn.classList.toggle('is-active', Boolean(autoShootEnabled));
+    }
+  }
+
+  function triggerMobileSpecialShot(weaponType) {
+    if (isSpaceInvadersPaused || !spaceInvadersGameInterval || isOverheated) return;
+    if ((weaponAmmo?.[weaponType] || 0) <= 0) {
+      if (typeof showAmmoWarning === 'function') {
+        showAmmoWarning(weaponType);
+      }
+      syncSpaceInvadersMobileDeck();
+      return;
+    }
+    if ((weaponCooldowns?.[weaponType] || 0) > 0) return;
+
+    window.isQuickShotCall = true;
+    switchWeapon(weaponType);
+    playerShoot();
+    window.isQuickShotCall = true;
+    switchWeapon('normal');
+    window.isQuickShotCall = false;
+    updateFastShootButtons();
+  }
+
+  function initSpaceInvadersMobileButtons() {
+    const controlsWrap = document.getElementById('space-invaders-mobile-controls');
+    if (!controlsWrap || controlsWrap.dataset.spaceInvadersBound === '1') {
+      syncSpaceInvadersMobileDeck();
+      return;
+    }
+    controlsWrap.dataset.spaceInvadersBound = '1';
+
+    const cockpitEl = document.getElementById('space-invaders-touch-bar');
+    const dpadEl = document.getElementById('space-invaders-dpad');
+    const modeButtonsBtn = document.getElementById('space-invaders-mode-buttons-btn');
+    const modeTouchBtn = document.getElementById('space-invaders-mode-touch-btn');
+    const shootBtn = document.getElementById('space-invaders-touch-shoot');
+    const laserBtn = document.getElementById('space-invaders-touch-laser');
+    const bombBtn = document.getElementById('space-invaders-touch-bomb');
+    const shieldBtn = document.getElementById('space-invaders-touch-shield');
+    const autoBtn = document.getElementById('space-invaders-touch-auto');
+    const panelBtn = document.getElementById('space-invaders-touch-panel');
+
+    function clearDpadKeys() {
+      pressedKeys.delete('arrowup');
+      pressedKeys.delete('arrowdown');
+      pressedKeys.delete('arrowleft');
+      pressedKeys.delete('arrowright');
+    }
+
+    if (window.NarrrfsMobileArcade && typeof window.NarrrfsMobileArcade.bindSlideDpad === 'function' && dpadEl) {
+      window.NarrrfsMobileArcade.bindSlideDpad(
+        dpadEl,
+        (dir) => {
+          clearDpadKeys();
+          if (isSpaceInvadersPaused || !spaceInvadersGameInterval) return;
+          pressedKeys.add(`arrow${dir}`);
+          if (typeof movePlayer === 'function') {
+            movePlayer(dir);
+          }
+        },
+        'data-invaders-dir',
+        { onRelease: clearDpadKeys }
+      );
+    }
+
+    if (window.NarrrfsMobileArcade && typeof window.NarrrfsMobileArcade.bindHoldButton === 'function') {
+      window.NarrrfsMobileArcade.bindHoldButton(
+        shootBtn,
+        () => {
+          if (isSpaceInvadersPaused || !spaceInvadersGameInterval || isOverheated) return;
+          playerShoot();
+        },
+        { initialDelayMs: 130, repeatMs: 110 }
+      );
+
+      window.NarrrfsMobileArcade.bindHoldButton(
+        laserBtn,
+        () => triggerMobileSpecialShot('laser'),
+        { repeatMs: 0 }
+      );
+
+      window.NarrrfsMobileArcade.bindHoldButton(
+        bombBtn,
+        () => triggerMobileSpecialShot('bomb'),
+        { repeatMs: 0 }
+      );
+
+      window.NarrrfsMobileArcade.bindHoldButton(
+        shieldBtn,
+        () => {
+          if (isSpaceInvadersPaused || !spaceInvadersGameInterval) return;
+          if (speedBoostAmmo > 0 && playerShip) {
+            playerShip.invincible = true;
+            playerShip.invincibleTimer = 300;
+            speedBoostAmmo--;
+            cheeseSoundManager?.playExplosionSound?.('shield');
+            updateFastShootButtons();
+          } else if (typeof showAmmoWarning === 'function') {
+            showAmmoWarning('shield');
+            syncSpaceInvadersMobileDeck();
+          }
+        },
+        { repeatMs: 0 }
+      );
+    }
+
+    autoBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleAutoShoot();
+    });
+
+    panelBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (typeof toggleGamePanel === 'function') {
+        toggleGamePanel();
+      }
+    });
+
+    function applyMode(mode) {
+      const normalized = mode === 'touch' ? 'touch' : 'buttons';
+      cockpitEl?.classList.toggle('is-touch-only', normalized === 'touch');
+      modeButtonsBtn?.classList.toggle('is-active', normalized === 'buttons');
+      modeTouchBtn?.classList.toggle('is-active', normalized === 'touch');
+      try {
+        localStorage.setItem('space_invaders_mobile_mode', normalized);
+      } catch (_) {}
+    }
+
+    modeButtonsBtn?.addEventListener('click', () => applyMode('buttons'));
+    modeTouchBtn?.addEventListener('click', () => applyMode('touch'));
+    try {
+      applyMode(localStorage.getItem('space_invaders_mobile_mode') === 'touch' ? 'touch' : 'buttons');
+    } catch (_) {
+      applyMode('buttons');
+    }
+
+    syncSpaceInvadersMobileDeck();
+  }
+
   function lockSpaceInvadersScroll() {
-    // Mobile-friendly scroll lock (like Tetris and Snake)
-    // Modified to not cut off bottom content
-    
-    // Prevent scroll on body and html
+    window.NarrrfsMobileArcade?.lock({
+      stageEl: document.getElementById('space-invaders-play-stage') || document.getElementById('space-cheese-invaders'),
+      gameKey: 'space-invaders'
+    });
     document.body.style.overflow = 'hidden';
     document.body.style.touchAction = 'none';
-    
-    // Also lock scroll on html element for better mobile support
     document.documentElement.style.overflow = 'hidden';
     document.documentElement.style.touchAction = 'none';
-    
-    // Store current scroll position to prevent jumping
-    if (!window.spaceInvadersScrollPosition) {
-      window.spaceInvadersScrollPosition = window.pageYOffset;
-    }
-    
-    // 🚫 MOBILE FIX: Don't scroll the page - prevents bottom cutoff on mobile
-    // Users reported game container moves up and cuts off bottom play area
-    // Keeping the scroll position as-is allows full game area visibility
-    // (Removed automatic scrollTo that was causing mobile viewport issues)
   }
 
   function unlockSpaceInvadersScroll() {
-    // Restore scroll for mobile devices (like Tetris and Snake)
-    
-    // Restore body scroll
+    pressedKeys.clear();
     document.body.style.overflow = '';
     document.body.style.touchAction = '';
-    
-    // Also restore scroll on html element
     document.documentElement.style.overflow = '';
     document.documentElement.style.touchAction = '';
-    
-    // 🚫 MOBILE FIX: Don't restore scroll position - prevents viewport jumping
-    // Keep the page at its current position for better mobile experience
+    window.NarrrfsMobileArcade?.unlock();
     if (window.spaceInvadersScrollPosition !== undefined) {
       delete window.spaceInvadersScrollPosition;
     }
@@ -14139,6 +14296,7 @@ window.emergencyCollisionCheck = function() {
   function toggleAutoShoot() {
     autoShootEnabled = !autoShootEnabled;
     console.log(`🎯 Auto-shoot ${autoShootEnabled ? 'enabled' : 'disabled'}`);
+    syncSpaceInvadersMobileDeck();
   }
 
   // 🎮 Button event listeners
@@ -14692,6 +14850,7 @@ window.emergencyCollisionCheck = function() {
 
   // 🚀 NEW: Update fast-shoot button states
   function updateFastShootButtons() {
+    syncSpaceInvadersMobileDeck();
     const laserBtn = document.getElementById('fast-laser-btn');
     const bombBtn = document.getElementById('fast-bomb-btn');
     const shieldBtn = document.getElementById('fast-shield-btn');
@@ -14868,6 +15027,7 @@ window.emergencyCollisionCheck = function() {
     
     // Create panel content
     const panelContent = document.createElement('div');
+    panelContent.setAttribute('data-allow-arcade-scroll', 'true');
     panelContent.style.cssText = `
       background: linear-gradient(135deg, #1a1a1a, #374151);
       border: 3px solid #fbbf24;

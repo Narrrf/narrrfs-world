@@ -553,7 +553,27 @@ window.NarrrfsSound = window.NarrrfsSound || {
       audioControls.style.transformOrigin = 'bottom right';
     }
 
+    syncIndicatorLockVisibility();
   }
+
+  function syncIndicatorLockVisibility() {
+    const locked = Boolean(
+      document.documentElement.classList.contains('narrrfs-game-locked') ||
+      (document.body && document.body.classList.contains('narrrfs-game-locked'))
+    );
+    const wrapper = document.getElementById('cheese-auth-indicator');
+    const audioControls = document.getElementById('narrrfs-audio-controls');
+    if (wrapper) {
+      wrapper.style.display = locked ? 'none' : '';
+      wrapper.style.pointerEvents = locked ? 'none' : '';
+    }
+    if (audioControls) {
+      audioControls.style.display = locked ? 'none' : 'flex';
+      audioControls.style.pointerEvents = locked ? 'none' : '';
+    }
+  }
+
+  window.addEventListener('narrrfs:arcade-lock-change', syncIndicatorLockVisibility);
 
   function toggleProfileBanner() {
     const prominentBanner = document.getElementById('discord-login-prominent');
