@@ -7884,6 +7884,58 @@ body::after {
     grid-column: 1 / -1 !important;
   }
 }
+/* Give the mouse switcher a full-width home beside the ability cards. */
+#genesisAbilityMatrixSection .ability-mouse-switcher-pro {
+  width: 100% !important;
+  grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr) 56px;
+  gap: 12px;
+  padding: clamp(12px, 2vw, 24px);
+  border-color: rgba(103, 232, 249, 0.45);
+  background: radial-gradient(ellipse at top, #16445a, #101b32 68%);
+}
+.ability-mouse-portrait,
+.ability-mouse-claim-notice {
+  grid-column: 1 / -1;
+  text-align: center;
+}
+.ability-mouse-portrait img,
+.ability-mouse-portrait .empty-art {
+  display: grid;
+  place-items: center;
+  width: clamp(88px, 16vw, 152px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  margin-inline: auto;
+  border: 1px solid rgba(103, 232, 249, 0.45);
+  border-radius: 18px;
+  background: #0f172a;
+}
+#genesisAbilityMatrixSection .ability-mouse-nav-button {
+  min-height: 48px;
+}
+.ability-mouse-claim-notice {
+  order: 5;
+}
+.ability-mouse-claim-notice:empty {
+  position: absolute;
+}
+.ability-mouse-claim-notice > div {
+  padding: 10px;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  border-radius: 14px;
+  background: #272318;
+  color: #fef3c7;
+}
+.ability-mouse-claim-notice .btn {
+  margin: 6px 4px 0;
+  white-space: normal;
+}
+@media (max-width: 900px) {
+  #genesisAbilityMatrixSection .ability-mouse-switcher-pro .ability-mouse-select-wrap {
+    order: 4;
+  }
+}
+
 /* ☀️ Season 12 Lab Summer Shell.
    DEVS FOR DECADES:
    Visual-only atmosphere for the Lab page.
@@ -8606,6 +8658,8 @@ body.lab-season12-shell {
        duplicate protection, dSPOINC delivery, and final reward state. -->
   <div id="weaponAbilityMilestoneChestSlot" class="mt-5"></div>
 
+  <div id="genesisAbilityCards" class="ability-cards-grid"></div>
+
   <!--
     NARRRFS_ABILITY_MATRIX_SWITCHER_NEAR_UPGRADES_V1
 
@@ -8615,7 +8669,9 @@ body.lab-season12-shell {
     selected-NFT flow; it never changes ownership, upgrade authority, costs,
     timers, eligibility, inventory, or DSPOINC.
   -->
-  <div class="ability-mouse-switcher ability-mouse-switcher-pro" aria-label="Switch selected Genesis mouse from Ability Matrix">
+  <div class="ability-mouse-switcher ability-mouse-switcher-pro" role="group" aria-label="Switch selected Genesis mouse from Ability Matrix">
+    <div id="abilityMousePortrait" class="ability-mouse-portrait" aria-hidden="true"></div>
+    <div id="abilityMouseClaimNotice" class="ability-mouse-claim-notice" aria-live="polite"></div>
     <button
       id="abilityPrevMouseButton"
       type="button"
@@ -8650,7 +8706,6 @@ body.lab-season12-shell {
     </button>
   </div>
 
-  <div id="genesisAbilityCards" class="ability-cards-grid"></div>
   <div id="genesisAbilityQueueBox" class="ability-queue-box"></div>
 </div>
 
@@ -9086,22 +9141,18 @@ body.lab-season12-shell {
         <div class="glass p-5 md:p-6">
           <div class="section-title text-xl md:text-2xl"><span>📈</span><span>Genesis unlock map</span></div>
           <div class="feature-list">
-            <div class="feature-item"><strong>Trait Lv5+:</strong> Fitness lane becomes visible and your mouse starts entering the real long-term progression path.</div>
-            <div class="feature-item"><strong>Trait Lv10:</strong> Fitness Journey Chest unlocks with the 500 EMPIRE TOKEN reward.</div>
-            <div class="feature-item"><strong>Trait Lv15:</strong> Deep Training Fitness Chest unlocks with the Gun Special Genetic Item, or a dSPOINC fallback if the item cannot be granted again.</div>
-            <div class="feature-item"><strong>Trait Lv20:</strong> Final Fitness Journey Chest unlocks with the 500 EMPIRE TOKEN reward, and the Weapon Journey opens.</div>
-            <div class="feature-item"><strong>Trait Lv30 direction:</strong> Education is the future high-level knowledge lane and should stay treated as future expansion unless the backend/UI is explicitly activated.</div>
+            <div class="feature-item"><strong>Trait Lv5:</strong> The Fitness ability lane unlocks.</div>
+            <div class="feature-item"><strong>Trait Lv20:</strong> The Weapons ability lane unlocks.</div>
+            <div class="feature-item"><strong>Trait Lv30 direction:</strong> Education is a future high-level knowledge lane unless the backend and UI are activated.</div>
           </div>
         </div>
 
         <div class="glass p-5 md:p-6">
           <div class="section-title text-xl md:text-2xl"><span>🎁</span><span>Fitness Journey reward chests</span></div>
           <div class="feature-list">
-            <div class="feature-item"><strong>Lv10 Fitness Chest:</strong> 500 EMPIRE TOKEN.</div>
-            <div class="feature-item"><strong>Lv15 Fitness Chest:</strong> Gun Special Genetic Item.</div>
-            <div class="feature-item"><strong>Lv15 fallback:</strong> 1,000,000 dSPOINC if the Gun Special Genetic Item is already owned or cannot be granted again.</div>
-            <div class="feature-item"><strong>Lv20 Fitness Chest:</strong> 500 EMPIRE TOKEN and the transition into the Weapon Journey.</div>
-            <div class="feature-item"><strong>Claim rule:</strong> Fitness Journey chests are one-time milestone rewards and the backend checks your verified Genesis ownership, required trait level, and previous claim history.</div>
+            <div class="feature-item"><strong>When they unlock:</strong> Reach trait level 10, 15, and 20 to unlock a Fitness Journey chest at each milestone.</div>
+            <div class="feature-item"><strong>See your reward:</strong> Select your Genesis mouse in My Genesis Lab to see each chest's current reward and claim status. Some rewards may have a fallback if the item cannot be granted.</div>
+            <div class="feature-item"><strong>How to claim:</strong> Open each available chest once for that mouse. Verified ownership, the required trait level, and previous claims are checked when you claim.</div>
           </div>
         </div>
 
@@ -12170,7 +12221,29 @@ function getTraitSnapshotActionMarkup(nft, trait) {
   `;
 }
 
+/**
+ * Show navigation to finished traits for the selected mouse using snapshot readiness.
+ */
+function renderAbilityMouseClaimNotice(nft) {
+  const notice = document.getElementById('abilityMouseClaimNotice');
+  if (!notice) return;
+
+  const actions = normalizeNftTraits(nft).flatMap(trait => {
+    const row = getTraitUpgradeDisplayRow(nft, trait);
+    if (mapUpgradeStatus(row?.upgrade_status, row?.upgrade_ends_at) !== 'ready') return [];
+
+    const key = getTraitAccordionKey(nft, trait);
+    return `<button type="button" class="btn green" data-trait-snapshot-open="${escapeHtml(key)}">Claim Ready · ${escapeHtml(trait.trait_type)}</button>`;
+  });
+
+  const markup = actions.length
+    ? `<div><strong>Trait research ready to claim</strong><br>${actions.join('')}</div>`
+    : '';
+  if (notice.innerHTML !== markup) notice.innerHTML = markup;
+}
+
 function renderSelectedTraitSummary(nft = null) {
+  renderAbilityMouseClaimNotice(state.selectedNft);
   /*
    * NARRRFS_TRAIT_SNAPSHOT_BINDING_V9
    *
@@ -13896,6 +13969,12 @@ function setupAbilityMatrixKeyboardNavigation() {
 function syncAbilityMouseSwitcherSelection() {
   const { verified, total, currentIndex } = getSelectedGenesisMouseNavigationState();
   const selected = currentIndex >= 0 ? verified[currentIndex] : state.selectedNft;
+  const portrait = document.getElementById('abilityMousePortrait');
+  const imageUrl = getSafeNftImageUrl(selected);
+  if (portrait && portrait.dataset.imageUrl !== imageUrl) {
+    portrait.dataset.imageUrl = imageUrl;
+    portrait.innerHTML = renderGenesisLabImage(selected, '', 'ability-mouse-image');
+  }
   const selectedTokenId = selected ? getSafeTokenId(selected) : '';
   const selectedName = selected
     ? getSafeNftName(selected, 'Selected Genesis Mouse')
@@ -13982,6 +14061,7 @@ function renderAbilityMouseSwitcher() {
     el.abilityNextMouseButton.disabled = total <= 1;
   }
 
+  syncAbilityMouseSwitcherSelection();
   setupAbilityMatrixKeyboardNavigation();
 }
 
