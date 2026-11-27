@@ -1190,7 +1190,7 @@ function toggleSpaceInvadersDSPOINScores() {
 </script>
 
 <!-- 🧀 Load Space Cheese Invaders Script -->
-    <script src="scripts/space-cheese-invaders.js?v=5.0.0&season5_boss_balance=1730520000&arcade_v2=20261126"></script>
+    <script src="scripts/space-cheese-invaders.js?v=5.0.0&season5_boss_balance=1730520000&arcade_v3=20261127"></script>
 
 <!-- 🧪 Load Boss Test Helper Script -->
 <script src="scripts/boss-test-helper.js"></script>
@@ -1224,15 +1224,20 @@ document.addEventListener('DOMContentLoaded', function() {
   if (startBtn) {
     console.log('✅ Start button found');
     startBtn.addEventListener('click', function() {
+      const lastTapAt = Number(startBtn.dataset.invadersLastTapAt || 0);
+      if (lastTapAt && (Date.now() - lastTapAt) < 450) {
+        return;
+      }
       console.log('🚀 Start button clicked');
-      if (window.initSpaceInvaders) {
+      if (typeof window.startGameWithCountdown === 'function') {
+        console.log('🚀 Starting game with countdown');
+        window.startGameWithCountdown();
+        startBtn.disabled = true;
+        startBtn.textContent = '🎮 Playing...';
+      } else if (window.initSpaceInvaders) {
         console.log('✅ Calling initSpaceInvaders');
         window.initSpaceInvaders();
-        // Start the game immediately after initialization
-        if (window.startGameWithCountdown) {
-          console.log('🚀 Starting game with countdown');
-          window.startGameWithCountdown();
-        } else {
+        if (window.startGame) {
           console.log('🚀 Starting game directly');
           window.startGame();
         }
@@ -1905,7 +1910,7 @@ function showError(message) {
   document.getElementById('user-stats-content').appendChild(errorDiv);
 }
 </script>
-<script src="js/cheese-auth-indicator.js"></script>
+<script src="js/cheese-auth-indicator.js?v=20261127-ios-v1"></script>
 </body>
 </html>
 

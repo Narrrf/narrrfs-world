@@ -1888,6 +1888,16 @@ window.NarrrfsMobileArcade?.lock({
   gameKey: 'cheeseman'
 });
 
+try {
+  const audioContext = getCheesemanAudioContext();
+  if (audioContext && (audioContext.state === 'suspended' || audioContext.state === 'interrupted')) {
+    const p = audioContext.resume();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {});
+    }
+  }
+} catch (_) {}
+
 cheeseRunnerMusicController.start();
 
 setStatus('Eat the visible cheese. Blue portals are travel lanes only.');
@@ -1915,6 +1925,16 @@ window.NarrrfsMobileArcade?.lock({
   controlsEl: document.getElementById('cheeseman-mobile-controls'),
   gameKey: 'cheeseman'
 });
+
+try {
+  const audioContext = getCheesemanAudioContext();
+  if (audioContext && (audioContext.state === 'suspended' || audioContext.state === 'interrupted')) {
+    const p = audioContext.resume();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {});
+    }
+  }
+} catch (_) {}
 
 cheeseRunnerMusicController.start();
 
@@ -4093,9 +4113,51 @@ window.restartCheesemanGame = restartCheesemanGame;
       applyCheesemanControlMode('dpad');
     }
 
-    startBtn?.addEventListener('click', startGame);
-    pauseBtn?.addEventListener('click', togglePause);
-    restartBtn?.addEventListener('click', () => {
+    function bindCheesemanTap(btn, handler) {
+      if (!btn || typeof handler !== 'function') return;
+      btn.style.touchAction = 'manipulation';
+      btn.style.webkitTapHighlightColor = 'transparent';
+
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchMoved = false;
+      let lastTapAt = 0;
+
+      btn.addEventListener('touchstart', (e) => {
+        const touch = e.touches && e.touches[0];
+        if (!touch) return;
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        touchMoved = false;
+      }, { passive: true });
+
+      btn.addEventListener('touchmove', (e) => {
+        const touch = e.touches && e.touches[0];
+        if (!touch) return;
+        if (Math.abs(touch.clientX - touchStartX) > 12 || Math.abs(touch.clientY - touchStartY) > 12) {
+          touchMoved = true;
+        }
+      }, { passive: true });
+
+      btn.addEventListener('touchend', (e) => {
+        if (touchMoved || btn.disabled) return;
+        if (e.cancelable) e.preventDefault();
+        lastTapAt = Date.now();
+        handler(e);
+      }, { passive: false });
+
+      btn.addEventListener('click', (e) => {
+        if (Date.now() - lastTapAt < 450) {
+          e.preventDefault();
+          return;
+        }
+        handler(e);
+      });
+    }
+
+    bindCheesemanTap(startBtn, startGame);
+    bindCheesemanTap(pauseBtn, togglePause);
+    bindCheesemanTap(restartBtn, () => {
       resetGame();
       startGame();
     });

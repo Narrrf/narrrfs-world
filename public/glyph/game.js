@@ -11,6 +11,42 @@ Glyph Memory — Phase 1 JS
 */
 
 (() => {
+  const memoryStorage = new Map();
+
+  function safeLocalGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (_) {
+      return memoryStorage.has(key) ? memoryStorage.get(key) : null;
+    }
+  }
+
+  function safeLocalSet(key, value) {
+    const str = String(value);
+    memoryStorage.set(key, str);
+    try {
+      window.localStorage.setItem(key, str);
+    } catch (_) {
+      // Ignore storage errors in iOS Private Mode or sandboxed WebViews.
+    }
+  }
+
+  function safeSessionGet(key) {
+    try {
+      return window.sessionStorage.getItem(key);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function safeSessionSet(key, value) {
+    try {
+      window.sessionStorage.setItem(key, String(value));
+    } catch (_) {
+      // Ignore storage errors in iOS Private Mode or sandboxed WebViews.
+    }
+  }
+
   // ------- CONFIG -------
   const DIFFICULTIES = {
     easy:   { pairs: 6,  cols: 4 }, // 3x4
@@ -147,7 +183,7 @@ window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function crea
       return window.NarrrfsSound.isEnabled();
     }
 
-    return localStorage.getItem('narrrfs_sound_enabled') !== 'false';
+    return safeLocalGet('narrrfs_sound_enabled') !== 'false';
   }
 
   function getAudio() {
@@ -263,7 +299,7 @@ function isGlyphMusicAllowed() {
     return window.NarrrfsSound.isEnabled();
   }
 
-  return localStorage.getItem('narrrfs_music_enabled') !== 'false';
+  return safeLocalGet('narrrfs_music_enabled') !== 'false';
 }
 
 /**
@@ -289,9 +325,16 @@ function resumeGlyphDirectMusic() {
     return;
   }
 
-  window.glyphMemoryDirectMusic.play().catch((error) => {
+  try {
+    const playResult = window.glyphMemoryDirectMusic.play();
+    if (playResult && typeof playResult.catch === 'function') {
+      playResult.catch((error) => {
+        console.warn('🎵 [GLYPH] Background music resume blocked:', error);
+      });
+    }
+  } catch (error) {
     console.warn('🎵 [GLYPH] Background music resume blocked:', error);
-  });
+  }
 }
 
 /**
@@ -323,7 +366,7 @@ function toggleGlyphMusic() {
   if (window.NarrrfsAudio && typeof window.NarrrfsAudio.setMusicEnabled === 'function') {
     window.NarrrfsAudio.setMusicEnabled(nextEnabled);
   } else {
-    localStorage.setItem('narrrfs_sound_enabled', nextEnabled ? 'true' : 'false');
+    safeLocalSet('narrrfs_sound_enabled', nextEnabled ? 'true' : 'false');
     window.dispatchEvent(new CustomEvent('narrrfs:sound-toggle', {
       detail: { enabled: nextEnabled }
     }));
@@ -400,6 +443,7 @@ document.addEventListener('visibilitychange', syncGlyphMusicFromGlobalToggle);
 
   let timerStart = 0;
   let timerInterval = null;
+  let isStartingGame = false;
 
   // Best times (stored locally per difficulty)
   const BEST_TIME_PREFIX = 'glyph_memory_best_ms_';
@@ -553,25 +597,43 @@ document.addEventListener('visibilitychange', syncGlyphMusicFromGlobalToggle);
     return p;
   }
 
-function preloadGlyphImages(sources) {
+const glyphPreloadCache = new Set();
+
+function preloadGlyphImages(sources, timeoutMs = 800) {
   if (!Array.isArray(sources) || sources.length === 0) return Promise.resolve();
 
-  const uniqueSources = [...new Set(sources)];
+  const pendingSources = [...new Set(sources)]
+    .map((src) => getOptimizedGlyphPath(src))
+    .filter((resolvedSrc) => !glyphPreloadCache.has(resolvedSrc));
 
-  return Promise.all(
-    uniqueSources.map((src) => {
+  if (pendingSources.length === 0) {
+    return Promise.resolve();
+  }
+
+  const preloadPromise = Promise.all(
+    pendingSources.map((resolvedSrc) => {
       return new Promise((resolve) => {
         const img = new Image();
         img.decoding = 'async';
-        img.onload = () => resolve(src);
-        img.onerror = () => {
-          console.warn('⚠️ [GLYPH] Preload failed:', src);
-          resolve(src);
+        img.onload = () => {
+          glyphPreloadCache.add(resolvedSrc);
+          resolve(resolvedSrc);
         };
-        img.src = getOptimizedGlyphPath(src);
+        img.onerror = () => {
+          console.warn('⚠️ [GLYPH] Preload failed:', resolvedSrc);
+          resolve(resolvedSrc);
+        };
+        img.src = resolvedSrc;
       });
     })
   );
+
+  return Promise.race([
+    preloadPromise,
+    new Promise((resolve) => {
+      window.setTimeout(resolve, timeoutMs);
+    }),
+  ]);
 }
 
 /**
@@ -595,7 +657,7 @@ window.NarrrfsGameMusicFactory = window.NarrrfsGameMusicFactory || function crea
     return window.NarrrfsSound.isEnabled();
   }
 
-  return localStorage.getItem('narrrfs_music_enabled') !== 'false';
+  return safeLocalGet('narrrfs_music_enabled') !== 'false';
 }
 
   function getAudio() {
@@ -909,27 +971,32 @@ document.addEventListener('visibilitychange', sync);
     const cfg = DIFFICULTIES[difficultyKey];
     const totalCards = cfg.pairs * 2;
     const cols = cfg.cols;
+    const rows = Math.ceil(totalCards / cols);
 
     boardEl.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
 
-    // Card size: scale up to use the available empty space, while staying responsive
-    const usableWidth = Math.min(1400, Math.floor(window.innerWidth * 0.96));
-    const gutter = 22; // matches CSS gap
-    const perCol = Math.floor((usableWidth - gutter * (cols - 1)) / cols);
-    // Clamp so easy/medium can be larger, hard stays sensible
-    const maxCard = Math.max(140, Math.min(240, perCol));
-    boardEl.style.gridAutoRows = `${maxCard}px`;
+    if (window.innerWidth <= 768) {
+      boardEl.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+      boardEl.style.gridAutoRows = '';
+    } else {
+      boardEl.style.gridTemplateRows = '';
+      // Card size: scale up to use the available empty space, while staying responsive
+      const usableWidth = Math.min(1400, Math.floor(window.innerWidth * 0.96));
+      const gutter = 22; // matches CSS gap
+      const perCol = Math.floor((usableWidth - gutter * (cols - 1)) / cols);
+      // Clamp so easy/medium can be larger, hard stays sensible
+      const maxCard = Math.max(140, Math.min(240, perCol));
+      boardEl.style.gridAutoRows = `${maxCard}px`;
+    }
 
-    const rows = Math.ceil(totalCards / cols);
     boardEl.setAttribute('aria-label', `Card grid ${rows} by ${cols}`);
   }
 
-  async function renderBoard() {
+  function renderBoard() {
     boardEl.innerHTML = '';
     matchedPairs = 0;
 
     const frag = document.createDocumentFragment();
-    const cardImageReadiness = [];
 
     deck.forEach((card, index) => {
       const btn = document.createElement('button');
@@ -948,8 +1015,8 @@ document.addEventListener('visibilitychange', sync);
 
       const img = document.createElement('img');
       img.alt = 'Glyph';
-      // Use eager loading so glyphs are visible immediately on flip
-      img.loading = 'auto';
+      // Use eager loading so glyphs decode cleanly once attached to visible DOM
+      img.loading = 'eager';
       img.decoding = 'async';
       const showMissingGlyphFallback = () => {
         if (front.classList.contains('missing')) return;
@@ -962,22 +1029,7 @@ document.addEventListener('visibilitychange', sync);
         console.warn('Missing glyph file:', card.glyphSrc);
         showMissingGlyphFallback();
       }, { once: true });
-      // CRITICAL (March, 7th , 2026): optimzed mobil glyph loading
       img.src = card.glyphSrc;
-      // The preload Image is not this DOM image. Wait for this element's
-      // decode before making the board interactive so mobile first paint
-      // cannot race a card reveal. A decode failure keeps the existing
-      // missing-image fallback and never blocks a new game.
-      if (typeof img.decode === 'function') {
-        cardImageReadiness.push(
-          img.decode().catch((error) => {
-            if (img.complete && img.naturalWidth === 0) {
-              showMissingGlyphFallback();
-            }
-            console.warn('Glyph image decode failed:', card.glyphSrc, error);
-          })
-        );
-      }
       img.draggable = false;
       // Optional: Auto-center glyph pixels so they look consistent at all card sizes.
       // Disabled by default because it uses data: URLs which may be blocked by CSP.
@@ -998,7 +1050,6 @@ document.addEventListener('visibilitychange', sync);
       frag.appendChild(btn);
     });
 
-    await Promise.all(cardImageReadiness);
     boardEl.appendChild(frag);
   }
 
@@ -1227,29 +1278,29 @@ glyphMemoryMusicController.stop();
   function resolveGlyphScorePlayer() {
     const discordId = String(
       window.sessionDiscordId ||
-      localStorage.getItem('discord_id') ||
-      sessionStorage.getItem('discord_id') ||
-      localStorage.getItem('narrrfs_last_discord_id') ||
+      safeLocalGet('discord_id') ||
+      safeSessionGet('discord_id') ||
+      safeLocalGet('narrrfs_last_discord_id') ||
       ''
     ).trim();
 
     const discordName = String(
       window.sessionDiscordUsername ||
-      localStorage.getItem('discord_name') ||
-      sessionStorage.getItem('discord_name') ||
-      localStorage.getItem('narrrfs_last_discord_name') ||
-      localStorage.getItem('DISCORD_NAME') ||
+      safeLocalGet('discord_name') ||
+      safeSessionGet('discord_name') ||
+      safeLocalGet('narrrfs_last_discord_name') ||
+      safeLocalGet('DISCORD_NAME') ||
       'Player'
     ).trim();
 
     if (discordId) {
-      localStorage.setItem('discord_id', discordId);
-      sessionStorage.setItem('discord_id', discordId);
+      safeLocalSet('discord_id', discordId);
+      safeSessionSet('discord_id', discordId);
     }
 
     if (discordName && discordName !== 'Player') {
-      localStorage.setItem('discord_name', discordName);
-      sessionStorage.setItem('discord_name', discordName);
+      safeLocalSet('discord_name', discordName);
+      safeSessionSet('discord_name', discordName);
     }
 
     return { discordId, discordName };
@@ -1330,97 +1381,154 @@ glyphMemoryMusicController.stop();
   }
 
   // ------- FLOW CONTROLS -------
-async function startGame() {
-  activeDifficulty = difficultySelect.value;
-
-  winOverlay.hidden = true;
-  resetTurnPicks();
-
-    deck = buildDeck(activeDifficulty);
-
-    // Preload only the glyphs used in this round before rendering the board
-    const deckSources = deck.map(card => card.glyphSrc);
-    await preloadGlyphImages(deckSources);
-    
-    // CRITICAL: Verify deck integrity before starting game
-    if (!verifyDeckIntegrity()) {
-      console.error(`❌ [GLYPH] Cannot start game - deck is corrupted!`);
-      alert('⚠️ Error: Game deck is invalid. Please try restarting the game.');
-      return; // Don't start with corrupted deck
-    }
-    
-    // CRITICAL: Verify deck has correct number of cards
-    const expectedCards = DIFFICULTIES[activeDifficulty].pairs * 2;
-    if (deck.length !== expectedCards) {
-      console.error(`❌ [GLYPH] Deck has wrong number of cards: expected ${expectedCards}, got ${deck.length}`);
-      alert('⚠️ Error: Game deck has incorrect number of cards. Please try restarting the game.');
+  async function startGame() {
+    if (isStartingGame) {
       return;
     }
-    
-    // CRITICAL: Verify all glyphs appear exactly twice
-    const glyphCounts = {};
-    deck.forEach(card => {
-      glyphCounts[card.glyphSrc] = (glyphCounts[card.glyphSrc] || 0) + 1;
-    });
-    const invalidPairs = Object.entries(glyphCounts).filter(([src, count]) => count !== 2);
-    if (invalidPairs.length > 0) {
-      console.error(`❌ [GLYPH] Deck validation failed - glyphs with incorrect counts:`, invalidPairs);
-      alert('⚠️ Error: Game deck validation failed. Please try restarting the game.');
-      return;
+
+    isStartingGame = true;
+    if (startBtn) {
+      startBtn.disabled = true;
+      startBtn.textContent = 'Starting…';
     }
-    
-    console.log(`✅ [GLYPH] Deck validated successfully: ${deck.length} cards, ${Object.keys(glyphCounts).length} unique glyphs, all appear exactly 2 times`);
-    
-    setBoardGrid(activeDifficulty);
-    await renderBoard();
 
-    updateBestTimeUI(activeDifficulty);
-    if (newBestBadgeEl) newBestBadgeEl.hidden = true;
+    try {
+      activeDifficulty = (difficultySelect && difficultySelect.value) || 'easy';
 
-showView('game');
-startTimer();
+      winOverlay.hidden = true;
+      resetTurnPicks();
+
+      deck = buildDeck(activeDifficulty);
+
+      // CRITICAL: Verify deck integrity before starting game
+      if (!verifyDeckIntegrity()) {
+        console.error(`❌ [GLYPH] Cannot start game - deck is corrupted!`);
+        alert('⚠️ Error: Game deck is invalid. Please try restarting the game.');
+        return; // Don't start with corrupted deck
+      }
+
+      // CRITICAL: Verify deck has correct number of cards
+      const expectedCards = DIFFICULTIES[activeDifficulty].pairs * 2;
+      if (deck.length !== expectedCards) {
+        console.error(`❌ [GLYPH] Deck has wrong number of cards: expected ${expectedCards}, got ${deck.length}`);
+        alert('⚠️ Error: Game deck has incorrect number of cards. Please try restarting the game.');
+        return;
+      }
+
+      // CRITICAL: Verify all glyphs appear exactly twice
+      const glyphCounts = {};
+      deck.forEach(card => {
+        glyphCounts[card.glyphSrc] = (glyphCounts[card.glyphSrc] || 0) + 1;
+      });
+      const invalidPairs = Object.entries(glyphCounts).filter(([src, count]) => count !== 2);
+      if (invalidPairs.length > 0) {
+        console.error(`❌ [GLYPH] Deck validation failed - glyphs with incorrect counts:`, invalidPairs);
+        alert('⚠️ Error: Game deck validation failed. Please try restarting the game.');
+        return;
+      }
+
+      console.log(`✅ [GLYPH] Deck validated successfully: ${deck.length} cards, ${Object.keys(glyphCounts).length} unique glyphs, all appear exactly 2 times`);
+
+      updateBestTimeUI(activeDifficulty);
+      if (newBestBadgeEl) newBestBadgeEl.hidden = true;
+
+      showView('game');
+      setBoardGrid(activeDifficulty);
+      renderBoard();
+
+      const deckSources = deck.map(card => card.glyphSrc);
+      lockBoard = true;
+      await preloadGlyphImages(deckSources, 700);
+      if (!gameView.classList.contains('view--active')) {
+        return;
+      }
+      lockBoard = false;
+      startTimer();
+    } catch (error) {
+      console.error('❌ [GLYPH] Failed to start game:', error);
+      lockBoard = false;
+      alert('⚠️ Could not start game. Please try again.');
+      goToMenu();
+    } finally {
+      isStartingGame = false;
+      if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.textContent = 'Start Game';
+      }
+    }
   }
 
   async function restartGame() {
-    winOverlay.hidden = true;
-    resetTurnPicks();
-
-    deck = buildDeck(activeDifficulty);
-    
-    // CRITICAL: Verify deck integrity before restarting game
-    if (!verifyDeckIntegrity()) {
-      console.error(`❌ [GLYPH] Cannot restart game - deck is corrupted!`);
-      alert('⚠️ Error: Game deck is invalid. Please try restarting the game.');
-      goToMenu(); // Return to menu if deck is corrupted
+    if (isStartingGame) {
       return;
     }
-    
-    // CRITICAL: Verify deck has correct number of cards
-    const expectedCards = DIFFICULTIES[activeDifficulty].pairs * 2;
-    if (deck.length !== expectedCards) {
-      console.error(`❌ [GLYPH] Deck has wrong number of cards: expected ${expectedCards}, got ${deck.length}`);
+
+    isStartingGame = true;
+    stopTimer();
+
+    try {
+      winOverlay.hidden = true;
+      resetTurnPicks();
+
+      deck = buildDeck(activeDifficulty);
+
+      // CRITICAL: Verify deck integrity before restarting game
+      if (!verifyDeckIntegrity()) {
+        console.error(`❌ [GLYPH] Cannot restart game - deck is corrupted!`);
+        alert('⚠️ Error: Game deck is invalid. Please try restarting the game.');
+        goToMenu(); // Return to menu if deck is corrupted
+        return;
+      }
+
+      // CRITICAL: Verify deck has correct number of cards
+      const expectedCards = DIFFICULTIES[activeDifficulty].pairs * 2;
+      if (deck.length !== expectedCards) {
+        console.error(`❌ [GLYPH] Deck has wrong number of cards: expected ${expectedCards}, got ${deck.length}`);
+        goToMenu();
+        return;
+      }
+
+      updateBestTimeUI(activeDifficulty);
+      if (newBestBadgeEl) newBestBadgeEl.hidden = true;
+
+      showView('game');
+      setBoardGrid(activeDifficulty);
+      renderBoard();
+
+      resumeGlyphDirectMusic();
+      glyphMemoryMusicController.start();
+      window.NarrrfsMobileArcade?.lock({ stageEl: gameView, gameKey: 'glyph' });
+
+      const deckSources = deck.map(card => card.glyphSrc);
+      lockBoard = true;
+      await preloadGlyphImages(deckSources, 500);
+      if (!gameView.classList.contains('view--active')) {
+        return;
+      }
+      lockBoard = false;
+      startTimer();
+    } catch (error) {
+      console.error('❌ [GLYPH] Failed to restart game:', error);
+      lockBoard = false;
       goToMenu();
-      return;
+    } finally {
+      isStartingGame = false;
     }
-    
-    setBoardGrid(activeDifficulty);
-    await renderBoard();
-
-    updateBestTimeUI(activeDifficulty);
-    if (newBestBadgeEl) newBestBadgeEl.hidden = true;
-
-glyphMemoryMusicController.start();
-window.NarrrfsMobileArcade?.lock({ stageEl: gameView, gameKey: 'glyph' });
-startTimer();
   }
 
 function goToMenu() {
+  isStartingGame = false;
   stopTimer();
 
   stopGlyphDirectMusic(true);
-glyphMemoryMusicController.stop();
+  glyphMemoryMusicController.stop();
   winOverlay.hidden = true;
   resetTurnPicks();
+
+  if (startBtn) {
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start Game';
+  }
 
   if (newBestBadgeEl) {
     newBestBadgeEl.hidden = true;
@@ -1441,47 +1549,96 @@ glyphMemoryMusicController.stop();
  * sound button decide whether it should play.
  */
 function startGlyphMemoryRunFromButton(event) {
-  if (event) {
+  if (event && event.cancelable) {
     event.preventDefault();
   }
 
-  console.log('🎵 [GLYPH] Start button clicked. Music src:', getGlyphMemoryMusicSrc());
+  try {
+    console.log('🎵 [GLYPH] Start button clicked. Music src:', getGlyphMemoryMusicSrc());
 
-  if (!window.glyphMemoryDirectMusic) {
-    const music = new Audio(getGlyphMemoryMusicSrc());
-    music.loop = true;
-    music.preload = 'auto';
-    music.volume = 0.18;
+    if (!window.glyphMemoryDirectMusic) {
+      const music = new Audio(getGlyphMemoryMusicSrc());
+      music.loop = true;
+      music.preload = 'auto';
+      music.volume = 0.18;
 
-    window.glyphMemoryDirectMusic = music;
+      window.glyphMemoryDirectMusic = music;
+    }
+
+    if (isGlyphMusicAllowed()) {
+      const playResult = window.glyphMemoryDirectMusic.play();
+      if (playResult && typeof playResult.then === 'function') {
+        playResult
+          .then(() => {
+            console.log('✅ [GLYPH] Background music started.');
+          })
+          .catch((error) => {
+            console.warn('🎵 [GLYPH] Background music could not start:', error);
+          });
+      }
+    } else {
+      console.log('🔇 [GLYPH] Music is disabled by shared Narrrfs sound toggle.');
+      stopGlyphDirectMusic(false);
+    }
+  } catch (audioError) {
+    console.warn('🎵 [GLYPH] Audio startup error ignored so gameplay can start:', audioError);
   }
 
-  if (isGlyphMusicAllowed()) {
-    window.glyphMemoryDirectMusic.play()
-      .then(() => {
-        console.log('✅ [GLYPH] Background music started.');
-      })
-      .catch((error) => {
-        console.warn('🎵 [GLYPH] Background music could not start:', error);
-      });
-  } else {
-    console.log('🔇 [GLYPH] Music is disabled by shared Narrrfs sound toggle.');
-    stopGlyphDirectMusic(false);
-  }
-
-  startGame();
+  void startGame();
 }
 
-startBtn.addEventListener('click', startGlyphMemoryRunFromButton);
+function bindFastTap(el, handler) {
+  if (!el || typeof handler !== 'function') return;
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchMoved = false;
+  let lastTouchTapAt = 0;
+
+  el.addEventListener('touchstart', (e) => {
+    const touch = e.touches && e.touches[0];
+    if (!touch) return;
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchMoved = false;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', (e) => {
+    const touch = e.touches && e.touches[0];
+    if (!touch) return;
+    if (Math.abs(touch.clientX - touchStartX) > 12 || Math.abs(touch.clientY - touchStartY) > 12) {
+      touchMoved = true;
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchend', (e) => {
+    if (touchMoved || el.disabled) return;
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+    lastTouchTapAt = Date.now();
+    handler(e);
+  }, { passive: false });
+
+  el.addEventListener('click', (e) => {
+    if (Date.now() - lastTouchTapAt < 450) {
+      e.preventDefault();
+      return;
+    }
+    handler(e);
+  });
+}
+
+bindFastTap(startBtn, startGlyphMemoryRunFromButton);
   difficultySelect.addEventListener('change', () => {
     // Update the menu best-time preview for the currently selected difficulty
     updateBestTimeUI(difficultySelect.value);
   });
-  restartBtn.addEventListener('click', restartGame);
-  menuBtn.addEventListener('click', goToMenu);
+  bindFastTap(restartBtn, restartGame);
+  bindFastTap(menuBtn, goToMenu);
 
-  playAgainBtn.addEventListener('click', restartGame);
-  backToMenuBtn.addEventListener('click', goToMenu);
+  bindFastTap(playAgainBtn, restartGame);
+  bindFastTap(backToMenuBtn, goToMenu);
 
   // Prevent any drag previews in-game
   document.addEventListener('dragstart', (ev) => {
@@ -1500,6 +1657,13 @@ startBtn.addEventListener('click', startGlyphMemoryRunFromButton);
  */
 function setupGlyphMusicControls() {
   const existingButton = document.getElementById('glyph-music-toggle');
+
+  if (document.getElementById('narrrfs-audio-controls') || window.NarrrfsAudio) {
+    if (existingButton) {
+      existingButton.remove();
+    }
+    return;
+  }
 
   if (existingButton) {
     updateGlyphMusicButtonState();
@@ -1539,8 +1703,8 @@ setupGlyphMusicControls();
   
   async function updateUserDisplay() {
     try {
-      const discordId = localStorage.getItem('discord_id');
-      const discordName = localStorage.getItem('discord_name');
+      const discordId = safeLocalGet('discord_id');
+      const discordName = safeLocalGet('discord_name');
       
       if (!userDisplayEl || !userNameEl) return;
       

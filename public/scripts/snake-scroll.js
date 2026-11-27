@@ -67,6 +67,25 @@ class SnakeSoundManager {
     }
   }
 
+  resumeAudio() {
+    try {
+      if (!this.audioContext) {
+        this.initAudio();
+      }
+      if (
+        this.audioContext &&
+        (this.audioContext.state === 'suspended' || this.audioContext.state === 'interrupted')
+      ) {
+        const p = this.audioContext.resume();
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => {});
+        }
+      }
+    } catch (_) {
+      // Ignore WebAudio resume restrictions until next gesture.
+    }
+  }
+
   // Generate professional sound effects using Web Audio API
  playSound(type) {
     // Respect the shared Narrrfs SFX toggle from cheese-auth-indicator.js.
@@ -80,6 +99,8 @@ class SnakeSoundManager {
   if (!window.NarrrfsAudio && window.NarrrfsSound && !window.NarrrfsSound.isEnabled()) {
     return;
   }
+
+  this.resumeAudio();
 
   if (!this.audioContext) {
     return;
@@ -158,6 +179,7 @@ const snakeSounds = new SnakeSoundManager();
 // ✅ GENOME 10.5 FINAL FIXED — Mutation on Score 100 + No Duplication + Global Scope Fix
 
 let gameInterval; // ✅ Global scope
+let snakeCountdownInterval = null;
 window.brainUnlocked = false; // ✅ Mutation flag, resets on game start
 
 // 🧬 Load images (global scope) - Snake-specific naming to avoid conflicts
@@ -1121,7 +1143,20 @@ function initSnake() {
   let perfectGame = true; // Track if player hits walls
 
   function startGameWithCountdown() {
+    if (snakeCountdownInterval || gameInterval) {
+      return;
+    }
+
+    window.snakeMusicController?.start();
+    snakeSounds?.resumeAudio?.();
     lockSnakeScroll();
+
+    const startBtn = document.getElementById("start-snake-btn");
+    if (startBtn) {
+      startBtn.disabled = true;
+      startBtn.textContent = "🕹️ Playing...";
+    }
+
     const countdownEl = document.getElementById("snake-countdown");
     let count = 5;
 
@@ -1134,14 +1169,15 @@ function initSnake() {
     countdownEl.classList.remove("hidden");
     countdownEl.textContent = count;
 
-    const countdownInterval = setInterval(() => {
+    snakeCountdownInterval = setInterval(() => {
       count--;
       if (count > 0) {
         countdownEl.textContent = count;
       } else if (count === 0) {
         countdownEl.textContent = "GO!";
       } else {
-        clearInterval(countdownInterval);
+        clearInterval(snakeCountdownInterval);
+        snakeCountdownInterval = null;
         countdownEl.classList.add("hidden");
         startGame(); // begin actual game
       }
@@ -1242,6 +1278,11 @@ function initSnake() {
       window.snakeAchievementPopups = [];
     }
     
+    if (snakeCountdownInterval) {
+      clearInterval(snakeCountdownInterval);
+      snakeCountdownInterval = null;
+    }
+
     // 🎯 Ensure scrolling is locked when game is reset and active
     if (gameInterval) {
       lockSnakeScroll();
@@ -3122,9 +3163,49 @@ lockSnakeScroll();
   // Start button
   const startBtn = document.getElementById("start-snake-btn");
   if (startBtn) {
-    startBtn.addEventListener("click", () => {
+    startBtn.style.touchAction = 'manipulation';
+    startBtn.style.webkitTapHighlightColor = 'transparent';
+
+    let snakeStartTouchX = 0;
+    let snakeStartTouchY = 0;
+    let snakeStartTouchMoved = false;
+    let lastSnakeStartTapAt = 0;
+
+    const triggerSnakeStart = () => {
       window.snakeMusicController?.start();
-startGameWithCountdown();
+      snakeSounds?.resumeAudio?.();
+      startGameWithCountdown();
+    };
+
+    startBtn.addEventListener('touchstart', (e) => {
+      const touch = e.touches && e.touches[0];
+      if (!touch) return;
+      snakeStartTouchX = touch.clientX;
+      snakeStartTouchY = touch.clientY;
+      snakeStartTouchMoved = false;
+    }, { passive: true });
+
+    startBtn.addEventListener('touchmove', (e) => {
+      const touch = e.touches && e.touches[0];
+      if (!touch) return;
+      if (Math.abs(touch.clientX - snakeStartTouchX) > 12 || Math.abs(touch.clientY - snakeStartTouchY) > 12) {
+        snakeStartTouchMoved = true;
+      }
+    }, { passive: true });
+
+    startBtn.addEventListener('touchend', (e) => {
+      if (snakeStartTouchMoved || startBtn.disabled) return;
+      if (e.cancelable) e.preventDefault();
+      lastSnakeStartTapAt = Date.now();
+      triggerSnakeStart();
+    }, { passive: false });
+
+    startBtn.addEventListener("click", (e) => {
+      if (Date.now() - lastSnakeStartTapAt < 450) {
+        e.preventDefault();
+        return;
+      }
+      triggerSnakeStart();
     });
     
     // 🚀 Check for auto-start flag (from Play Again button)
@@ -3132,8 +3213,7 @@ startGameWithCountdown();
       console.log('🚀 Auto-start flag detected - starting game automatically');
       localStorage.removeItem('snake_auto_start'); // Clear flag
       setTimeout(() => {
-        window.snakeMusicController?.start();
-        startGameWithCountdown();
+        triggerSnakeStart();
       }, 500); // Small delay to ensure page is fully loaded
     }
   } else {
@@ -3169,7 +3249,11 @@ startGameWithCountdown();
 
     window.snakeMusicController?.stop();
     
-    // 🚨 CRITICAL: Clear any existing game interval
+    // 🚨 CRITICAL: Clear any existing game interval or countdown
+    if (snakeCountdownInterval) {
+      clearInterval(snakeCountdownInterval);
+      snakeCountdownInterval = null;
+    }
     if (gameInterval) {
       clearInterval(gameInterval);
       gameInterval = null;

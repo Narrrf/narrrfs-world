@@ -68,6 +68,7 @@ html, body {
   background: var(--panel);
   border: 1px solid var(--panelBorder);
   box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -245,6 +246,8 @@ html, body {
   background: rgba(0, 0, 0, 0.35);
   color: var(--muted);
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   font-size: 12px;
   transition: all 120ms ease;
 }
@@ -380,6 +383,8 @@ html, body {
   background: rgba(0,0,0,0.35);
   color: var(--text);
   outline: none;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .btn {
@@ -460,6 +465,7 @@ html, body {
   border-radius: 16px;
   border: 1px solid rgba(255, 215, 0, 0.18);
   background: rgba(0,0,0,0.35);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -979,6 +985,7 @@ html, body {
   box-shadow: 
     0 4px 12px rgba(255, 215, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;

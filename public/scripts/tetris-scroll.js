@@ -475,6 +475,7 @@ window.tetrisMusicController = window.NarrrfsGameMusicFactory({
 let allImagesLoaded = false;
 let loadedCount = 0;
 let pendingTetrisStart = false;
+let isTetrisStarting = false;
 
 const blockImages = {};
 const pieceImageMap = {
@@ -634,19 +635,37 @@ function checkAndStartTetris() {
     // auto-start fallback if no button present
     window.startTetrisGame();
   } else {
-    // 🔧 MOBILE FIX: Ensure button is clickable on mobile
+    // 🔧 MOBILE FIX: Ensure button is clickable on mobile without blocking page scroll
     btn.style.touchAction = "manipulation";
     btn.style.webkitTapHighlightColor = "transparent";
-    
-    // Add mobile-specific event listeners
-    if ('ontouchstart' in window) {
-      console.log('📱 Mobile device detected, adding touch event listeners');
+
+    if ('ontouchstart' in window && btn.dataset.tetrisTapBound !== '1') {
+      btn.dataset.tetrisTapBound = '1';
+      let startTouchX = 0;
+      let startTouchY = 0;
+      let startTouchMoved = false;
+
       btn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        console.log('📱 Mobile Tetris start button touched');
+        const touch = e.touches && e.touches[0];
+        if (!touch) return;
+        startTouchX = touch.clientX;
+        startTouchY = touch.clientY;
+        startTouchMoved = false;
+      }, { passive: true });
+
+      btn.addEventListener('touchmove', (e) => {
+        const touch = e.touches && e.touches[0];
+        if (!touch) return;
+        if (Math.abs(touch.clientX - startTouchX) > 12 || Math.abs(touch.clientY - startTouchY) > 12) {
+          startTouchMoved = true;
+        }
+      }, { passive: true });
+
+      btn.addEventListener('touchend', (e) => {
+        if (startTouchMoved || btn.disabled) return;
+        if (e.cancelable) e.preventDefault();
+        btn.dataset.tetrisLastTapAt = String(Date.now());
         window.startTetrisGame();
-        btn.disabled = true;
-        btn.textContent = "🕹️ Playing...";
       }, { passive: false });
     }
 
@@ -993,8 +1012,21 @@ function handleTouchEnd(e) {
 
 window.startTetrisGame = async function () {
   console.log('🎮 startTetrisGame called');
+  if (isTetrisStarting) {
+    return;
+  }
+
   const startBtn = document.getElementById("start-tetris-btn");
-  
+
+  // Unlock iOS WebAudio and music synchronously inside the tap gesture before awaits
+  try {
+    const audioContext = tetrisSounds.getAudioContext();
+    if (audioContext && (audioContext.state === 'suspended' || audioContext.state === 'interrupted')) {
+      audioContext.resume().catch(() => {});
+    }
+  } catch (_) {}
+  window.tetrisMusicController?.start();
+
   if (!allImagesLoaded) {
     console.warn("Assets still loading... deferring Tetris start until ready");
     pendingTetrisStart = true;
@@ -1004,7 +1036,8 @@ window.startTetrisGame = async function () {
     }
     return;
   }
-  
+
+  isTetrisStarting = true;
   pendingTetrisStart = false;
   lockTetrisScroll();
 
@@ -1012,7 +1045,7 @@ window.startTetrisGame = async function () {
     startBtn.disabled = true;
     startBtn.textContent = "🕹️ Playing...";
   }
-  
+
   // 🔧 MOBILE FIX: Ensure canvas is properly sized for mobile
   const canvas = document.getElementById("tetris-canvas");
   if (canvas) {
@@ -1021,7 +1054,7 @@ window.startTetrisGame = async function () {
     canvas.height = 400;
     canvas.style.width = '200px';
     canvas.style.height = '400px';
-    
+
     // Mobile-specific canvas settings
     if ('ontouchstart' in window) {
       console.log('📱 Mobile canvas setup');
@@ -1030,9 +1063,19 @@ window.startTetrisGame = async function () {
       canvas.style.userSelect = 'none';
     }
   }
-  
+
   console.log('🚀 Starting Tetris game...');
-  await startTetris(); // ← main game logic (now async)
+  try {
+    await startTetris(); // ← main game logic (now async)
+  } catch (error) {
+    console.error('❌ Failed to start Tetris:', error);
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.textContent = "▶️ Start";
+    }
+  } finally {
+    isTetrisStarting = false;
+  }
 };
 
 // 🎨 Cheese-Themed Block Colors do not work now code does so kind of backup 

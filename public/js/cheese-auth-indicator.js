@@ -29,28 +29,67 @@
   let lastKnownDiscordId = '';
   let pendingRefreshTimeout = null;
 
+  const memoryAudioPrefs = new Map();
+
+  function safeStorageGet(storageType, key) {
+    try {
+      const storage = storageType === 'session' ? window.sessionStorage : window.localStorage;
+      return storage ? storage.getItem(key) : null;
+    } catch (_) {
+      return storageType === 'local' && memoryAudioPrefs.has(key) ? memoryAudioPrefs.get(key) : null;
+    }
+  }
+
+  function safeStorageSet(storageType, key, value) {
+    if (storageType === 'local') {
+      memoryAudioPrefs.set(key, String(value));
+    }
+    try {
+      const storage = storageType === 'session' ? window.sessionStorage : window.localStorage;
+      if (storage) {
+        storage.setItem(key, String(value));
+      }
+    } catch (_) {
+      // Ignore storage write restrictions in iOS Private Mode or sandboxed WebViews.
+    }
+  }
+
+  function safeStorageRemove(storageType, key) {
+    if (storageType === 'local') {
+      memoryAudioPrefs.delete(key);
+    }
+    try {
+      const storage = storageType === 'session' ? window.sessionStorage : window.localStorage;
+      if (storage) {
+        storage.removeItem(key);
+      }
+    } catch (_) {
+      // Ignore storage removal errors in restricted WebViews.
+    }
+  }
+
   function clearStoredAuth() {
     AUTH_STORAGE_KEYS.forEach((key) => {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
+      safeStorageRemove('local', key);
+      safeStorageRemove('session', key);
     });
   }
 
   function getStoredDiscordName() {
     return String(
-      localStorage.getItem('discord_name') ||
-      localStorage.getItem('narrrfs_last_discord_name') ||
-      localStorage.getItem('DISCORD_NAME') ||
-      sessionStorage.getItem('discord_name') ||
+      safeStorageGet('local', 'discord_name') ||
+      safeStorageGet('local', 'narrrfs_last_discord_name') ||
+      safeStorageGet('local', 'DISCORD_NAME') ||
+      safeStorageGet('session', 'discord_name') ||
       ''
     ).trim();
   }
 
   function getStoredDiscordId() {
     return String(
-      localStorage.getItem('discord_id') ||
-      localStorage.getItem('narrrfs_last_discord_id') ||
-      sessionStorage.getItem('discord_id') ||
+      safeStorageGet('local', 'discord_id') ||
+      safeStorageGet('local', 'narrrfs_last_discord_id') ||
+      safeStorageGet('session', 'discord_id') ||
       window.sessionDiscordId ||
       ''
     ).trim();
@@ -70,14 +109,14 @@
     window.sessionDiscordId = discordId;
     window.sessionDiscordUsername = resolvedName || '';
 
-    localStorage.setItem('discord_id', discordId);
-    localStorage.setItem('narrrfs_last_discord_id', discordId);
-    localStorage.setItem('auth_timestamp', String(Date.now()));
+    safeStorageSet('local', 'discord_id', discordId);
+    safeStorageSet('local', 'narrrfs_last_discord_id', discordId);
+    safeStorageSet('local', 'auth_timestamp', String(Date.now()));
 
     if (resolvedName) {
-      localStorage.setItem('discord_name', resolvedName);
-      localStorage.setItem('narrrfs_last_discord_name', resolvedName);
-      localStorage.setItem('DISCORD_NAME', resolvedName);
+      safeStorageSet('local', 'discord_name', resolvedName);
+      safeStorageSet('local', 'narrrfs_last_discord_name', resolvedName);
+      safeStorageSet('local', 'DISCORD_NAME', resolvedName);
     }
   }
 
@@ -187,14 +226,18 @@
  * keep the same game behavior they had before this split Music/SFX upgrade.
  */
 function readNarrrfsAudioPreference(key) {
-  return localStorage.getItem(key) !== 'false';
+  if (memoryAudioPrefs.has(key)) {
+    return memoryAudioPrefs.get(key) !== 'false';
+  }
+  const value = safeStorageGet('local', key);
+  return value !== 'false';
 }
 
 /**
  * Writes one Narrrfs audio preference as a stable string value.
  */
 function writeNarrrfsAudioPreference(key, enabled) {
-  localStorage.setItem(key, enabled ? 'true' : 'false');
+  safeStorageSet('local', key, enabled ? 'true' : 'false');
 }
 
 /**

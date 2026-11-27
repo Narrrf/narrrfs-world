@@ -5660,7 +5660,14 @@ let reloadButtonInterval = null;
     ctx.textAlign = 'left';
   }
 
+  let spaceInvadersInitialized = false;
+  let spaceInvadersCountdownInterval = null;
+
   async function initSpaceInvaders() {
+    if (spaceInvadersInitialized) {
+      return;
+    }
+    spaceInvadersInitialized = true;
     console.log('🚀 Initializing Space Invaders...');
     
     // 🏆 Initialize role detection for Space Invaders (CRITICAL: await this!) - Phase 2 security
@@ -5671,12 +5678,14 @@ let reloadButtonInterval = null;
     // Get canvas and context
     const canvas = document.getElementById('space-invaders-canvas');
     if (!canvas) {
+      spaceInvadersInitialized = false;
       console.error('❌ Canvas not found - make sure element with id "space-invaders-canvas" exists');
       return;
     }
 
     ctx = canvas.getContext('2d');
     if (!ctx) {
+      spaceInvadersInitialized = false;
       console.error('❌ Canvas context not found');
       return;
     }
@@ -6014,6 +6023,10 @@ startGameWithCountdown();
   window.spaceInvadersMusicController?.stop();
     
     // 🚨 CRITICAL: Force stop all game loops and timers
+    if (spaceInvadersCountdownInterval) {
+      clearInterval(spaceInvadersCountdownInterval);
+      spaceInvadersCountdownInterval = null;
+    }
     if (spaceInvadersGameInterval) {
       clearInterval(spaceInvadersGameInterval);
       spaceInvadersGameInterval = null;
@@ -6313,6 +6326,28 @@ startGameWithCountdown();
 
   // 🎮 Start game with countdown (same as Snake)
   async function startGameWithCountdown() {
+    if (spaceInvadersCountdownInterval || gameRunning) {
+      return;
+    }
+
+    window.spaceInvadersMusicController?.start();
+    try {
+      if (
+        cheeseSoundManager?.audioContext &&
+        (cheeseSoundManager.audioContext.state === 'suspended' || cheeseSoundManager.audioContext.state === 'interrupted')
+      ) {
+        cheeseSoundManager.audioContext.resume().catch(() => {});
+      }
+    } catch (_) {}
+    lockSpaceInvadersScroll();
+    syncSpaceInvadersMobileDeck();
+
+    const startBtn = document.getElementById("start-space-invaders-btn");
+    if (startBtn) {
+      startBtn.disabled = true;
+      startBtn.textContent = "🎮 Playing...";
+    }
+
     const countdownEl = document.getElementById("space-invaders-countdown");
     let count = 5;
 
@@ -6324,12 +6359,13 @@ startGameWithCountdown();
 
     countdownEl.classList.remove("hidden");
 
-    const countdownInterval = setInterval(async () => {
+    spaceInvadersCountdownInterval = setInterval(async () => {
         countdownEl.textContent = count;
       count--;
       
       if (count < 0) {
-        clearInterval(countdownInterval);
+        clearInterval(spaceInvadersCountdownInterval);
+        spaceInvadersCountdownInterval = null;
         countdownEl.classList.add("hidden");
         await startGame();
       }
@@ -6399,6 +6435,10 @@ startGameWithCountdown();
     loadPhoenixConfiguration().then(() => {
       console.log('🔥 Phoenix configuration loaded, starting game...');
       
+      if (spaceInvadersGameInterval) {
+        clearInterval(spaceInvadersGameInterval);
+        spaceInvadersGameInterval = null;
+      }
       spaceInvadersGameInterval = setInterval(gameLoop, 50); // FAST GAME LOOP (50ms instead of 100ms) - MUCH more responsive!
       document.getElementById("start-space-invaders-btn").textContent = "🔄 Restart";
       
@@ -6420,7 +6460,11 @@ startGameWithCountdown();
   }
 
   function resetGame() {
-    // Clear any existing game interval
+    // Clear any existing countdown or game interval
+    if (spaceInvadersCountdownInterval) {
+      clearInterval(spaceInvadersCountdownInterval);
+      spaceInvadersCountdownInterval = null;
+    }
     if (spaceInvadersGameInterval) {
       clearInterval(spaceInvadersGameInterval);
       spaceInvadersGameInterval = null;
@@ -14305,9 +14349,48 @@ window.emergencyCollisionCheck = function() {
   const pauseBtn = document.getElementById("pause-space-invaders-btn");
 
  if (startBtn) {
-  startBtn.addEventListener("click", () => {
+  startBtn.style.touchAction = 'manipulation';
+  startBtn.style.webkitTapHighlightColor = 'transparent';
+
+  let invadersTouchStartX = 0;
+  let invadersTouchStartY = 0;
+  let invadersTouchMoved = false;
+
+  const triggerSpaceInvadersStart = () => {
     window.spaceInvadersMusicController?.start();
     startGameWithCountdown();
+  };
+
+  startBtn.addEventListener('touchstart', (e) => {
+    const touch = e.touches && e.touches[0];
+    if (!touch) return;
+    invadersTouchStartX = touch.clientX;
+    invadersTouchStartY = touch.clientY;
+    invadersTouchMoved = false;
+  }, { passive: true });
+
+  startBtn.addEventListener('touchmove', (e) => {
+    const touch = e.touches && e.touches[0];
+    if (!touch) return;
+    if (Math.abs(touch.clientX - invadersTouchStartX) > 12 || Math.abs(touch.clientY - invadersTouchStartY) > 12) {
+      invadersTouchMoved = true;
+    }
+  }, { passive: true });
+
+  startBtn.addEventListener('touchend', (e) => {
+    if (invadersTouchMoved || startBtn.disabled) return;
+    if (e.cancelable) e.preventDefault();
+    startBtn.dataset.invadersLastTapAt = String(Date.now());
+    triggerSpaceInvadersStart();
+  }, { passive: false });
+
+  startBtn.addEventListener("click", (e) => {
+    const lastTapAt = Number(startBtn.dataset.invadersLastTapAt || 0);
+    if (lastTapAt && (Date.now() - lastTapAt) < 450) {
+      e.preventDefault();
+      return;
+    }
+    triggerSpaceInvadersStart();
   });
 }
 

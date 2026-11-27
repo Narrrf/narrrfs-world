@@ -838,7 +838,7 @@
 </section>
 
 <!-- 🎮 Game Script -->
-<script src="scripts/tetris-scroll.js?v=10.1&arcade_v3=20261126"></script>
+<script src="scripts/tetris-scroll.js?v=10.1&arcade_v4=20261127"></script>
 
 <!-- 🔐 Authentication & Initialization -->
 <script>
@@ -906,12 +906,15 @@
     
     if (tetrisBtn) {
       console.log('✅ Tetris start button found, adding click listener');
-      tetrisBtn.addEventListener("click", () => {
+      tetrisBtn.addEventListener("click", (e) => {
+        const lastTapAt = Number(tetrisBtn.dataset.tetrisLastTapAt || 0);
+        if (lastTapAt && (Date.now() - lastTapAt) < 450) {
+          e.preventDefault();
+          return;
+        }
         console.log('🎮 Start button clicked!');
         if (typeof window.startTetrisGame === 'function') {
           window.startTetrisGame();
-          tetrisBtn.disabled = true;
-          tetrisBtn.textContent = "🕹️ Playing...";
         } else {
           console.error('❌ startTetrisGame function not found!');
         }
@@ -1629,7 +1632,7 @@
   }
 })();
 </script>
-<script src="js/cheese-auth-indicator.js"></script>
+<script src="js/cheese-auth-indicator.js?v=20261127-ios-v1"></script>
 </body>
 </html>
 
