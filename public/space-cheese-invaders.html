@@ -232,53 +232,96 @@
       transition: width 0.2s ease-out, background-color 0.2s ease-out;
     }
     
-    /* Mobile responsive HUD */
-    @media (max-width: 768px) {
+    /* Mobile responsive HUD + full-screen centered arcade cabinet */
+    @media (max-width: 900px), (hover: none) and (pointer: coarse) {
       #space-invaders-hud-container {
-        padding: 0 8px;
-        font-size: 0.9em;
+        padding: 0 4px;
+        font-size: 0.88em;
       }
-      
+
       #space-invaders-hud-line1,
       #space-invaders-hud-line2,
       #space-invaders-hud-line3 {
-        padding: 6px 10px;
+        padding: 5px 9px;
       }
-      
+
       #space-invaders-hud-line1 span,
       #space-invaders-hud-line2 span,
       #space-invaders-hud-line3 span {
-        font-size: 0.85em;
+        font-size: 0.84em;
       }
 
       #space-invaders-play-stage {
-        padding: 0.75rem 0.7rem !important;
+        padding: 0.8rem 0.7rem !important;
       }
 
-      body.narrrfs-game-locked #space-invaders-play-stage {
-        padding: 0.45rem 0.55rem !important;
+      #space-invaders-canvas {
+        height: clamp(280px, 44dvh, 420px) !important;
+        max-height: clamp(280px, 44dvh, 420px) !important;
+        width: auto !important;
+        max-width: min(92vw, 320px) !important;
+        aspect-ratio: 2 / 3 !important;
+        margin: 0 auto !important;
       }
 
+      body.narrrfs-game-locked > header,
+      body.narrrfs-game-locked > header + div,
+      body.narrrfs-game-locked > header + div + div,
+      body.narrrfs-game-locked > footer,
+      body.narrrfs-game-locked #user-stats-section,
       body.narrrfs-game-locked #space-invaders-play-stage > div.absolute.top-4.left-4,
       body.narrrfs-game-locked #space-invaders-play-stage > h2 + div,
       body.narrrfs-game-locked #pause-space-invaders-btn + p,
-      body.narrrfs-game-locked #space-invaders-mobile-controls + div {
+      body.narrrfs-game-locked #space-invaders-mobile-controls .narrrfs-swipe-hint,
+      body.narrrfs-game-locked #space-invaders-bottom-status,
+      body.narrrfs-game-locked #space-invaders-guide-btn-wrap,
+      body.narrrfs-game-locked #space-invaders-scores-btn-wrap,
+      body.narrrfs-game-locked #space-invaders-controls-section,
+      body.narrrfs-game-locked #spaceInvadersGameGuide,
+      body.narrrfs-game-locked #spaceInvadersDSPOINScores {
         display: none !important;
       }
 
+      body.narrrfs-game-locked #space-cheese-invaders {
+        min-height: 100dvh !important;
+        margin-top: 0 !important;
+        padding: 0.25rem 0.45rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-play-stage {
+        padding: 0.5rem 0.6rem 0.45rem !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 440px !important;
+      }
+
       body.narrrfs-game-locked #space-invaders-play-stage h2 {
-        font-size: 1rem;
-        margin-bottom: 0.15rem;
+        font-size: 1.05rem !important;
+        line-height: 1.15 !important;
+        margin-bottom: 0.1rem !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-score-wrap {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+        margin-bottom: 0.2rem !important;
       }
 
       body.narrrfs-game-locked #space-invaders-top-score {
-        font-size: 0.92rem;
-        line-height: 1.2;
+        font-size: 0.92rem !important;
+        line-height: 1.2 !important;
       }
 
       body.narrrfs-game-locked #space-invaders-role-multiplier {
-        font-size: 0.72rem;
-        line-height: 1.15;
+        font-size: 0.76rem !important;
+        line-height: 1.2 !important;
       }
 
       body.narrrfs-game-locked #space-invaders-play-stage > div.text-center.mb-4 {
@@ -287,46 +330,62 @@
 
       body.narrrfs-game-locked #start-space-invaders-btn,
       body.narrrfs-game-locked #pause-space-invaders-btn {
+        display: inline-block;
         width: auto !important;
-        padding: 0.25rem 0.65rem !important;
-        font-size: 0.78rem !important;
+        padding: 0.3rem 0.8rem !important;
+        font-size: 0.8rem !important;
         margin-top: 0 !important;
       }
 
       body.narrrfs-game-locked #space-invaders-hud-container {
-        margin-bottom: 0.25rem !important;
+        margin-bottom: 0.2rem !important;
+        padding: 0 !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-hud-container > div + div {
+        margin-top: 0.2rem !important;
       }
 
       body.narrrfs-game-locked #space-invaders-hud-line1,
-      body.narrrfs-game-locked #space-invaders-hud-line2 {
-        padding: 3px 8px !important;
-      }
-
+      body.narrrfs-game-locked #space-invaders-hud-line2,
       body.narrrfs-game-locked #space-invaders-hud-line3 {
         padding: 2px 8px !important;
+        font-size: 0.74rem !important;
       }
 
       #space-invaders-hud-line3:not(:has(span:not(.hidden))) {
         display: none;
       }
 
-      #space-invaders-canvas {
-        max-height: min(46dvh, 410px) !important;
-        width: auto !important;
-        height: auto !important;
-        max-width: 92vw !important;
-        aspect-ratio: 400 / 600;
-        margin-left: auto;
-        margin-right: auto;
+      body.narrrfs-game-locked #space-invaders-boss-hud-container,
+      body.narrrfs-game-locked #space-invaders-phoenix-hud-container {
+        margin-bottom: 0.2rem !important;
+      }
+
+      body.narrrfs-game-locked #space-invaders-boss-hp-bar {
+        padding: 3px 8px !important;
       }
 
       body.narrrfs-game-locked #space-invaders-canvas {
-        max-height: min(44dvh, 380px) !important;
+        height: clamp(220px, calc(100dvh - 372px), 470px) !important;
+        max-height: clamp(220px, calc(100dvh - 372px), 470px) !important;
+        width: auto !important;
+        max-width: min(92vw, 314px) !important;
+        aspect-ratio: 2 / 3 !important;
+        margin: 0 auto !important;
       }
 
       body.narrrfs-game-locked #space-invaders-mobile-controls {
-        margin-top: 0.3rem;
-        gap: 0.25rem;
+        margin-top: 0.25rem !important;
+        gap: 0.25rem !important;
+      }
+
+      body.narrrfs-game-locked #always-visible-heat-display {
+        top: 6px !important;
+        right: 6px !important;
+        transform: scale(0.82) !important;
+        transform-origin: top right !important;
+        pointer-events: none !important;
       }
 
       body.narrrfs-game-locked #game-panel-btn {
@@ -334,16 +393,10 @@
         right: 12px !important;
       }
     }
-
-    @media (max-width: 768px) and (max-height: 720px) {
-      body.narrrfs-game-locked #space-invaders-canvas {
-        max-height: min(37dvh, 255px) !important;
-      }
-    }
   </style>
   <link rel="stylesheet" href="winter-theme.css?v=20261126-winter-v3" />
   <link rel="stylesheet" href="css/narrrfs-mobile-arcade.css?v=20261127-arcade-v5" />
-  <script src="js/narrrfs-mobile-arcade.js?v=20261127-arcade-v6"></script>
+  <script src="js/narrrfs-mobile-arcade.js?v=20261127-arcade-v7"></script>
 </head>
 
 <body class="winter-theme bg-[#2f3136] text-white font-sans min-h-screen">
@@ -406,7 +459,7 @@
     </div>
     
     <!-- 💰 Top Score Display with Role Multiplier -->
-    <div class="text-center mb-4">
+    <div id="space-invaders-score-wrap" class="text-center mb-4">
       <p id="space-invaders-top-score" class="text-yellow-300 font-mono text-lg font-bold">💰 Score: $0 dSPOINC</p>
       <p id="space-invaders-role-multiplier" class="text-cyan-300 font-bold text-sm">Role Bonus: 1.0x</p>
     </div>
@@ -520,8 +573,8 @@
     <div id="space-invaders-mobile-controls" class="narrrfs-arcade-controls narrrfs-mobile-only-controls">
       <div class="narrrfs-invaders-top-row">
         <div class="narrrfs-mode-switch" role="group" aria-label="Space Invaders control mode">
-          <button type="button" id="space-invaders-mode-buttons-btn" class="narrrfs-mode-btn is-active">🕹️ PAD + WEAPONS</button>
-          <button type="button" id="space-invaders-mode-touch-btn" class="narrrfs-mode-btn">👆 TOUCH + SPECIALS</button>
+          <button type="button" id="space-invaders-mode-buttons-btn" class="narrrfs-mode-btn is-active">🕹️ ARROWS + WEAPONS</button>
+          <button type="button" id="space-invaders-mode-touch-btn" class="narrrfs-mode-btn">👆 DRAG SHIP ONLY</button>
         </div>
         <button type="button" id="space-invaders-touch-auto" class="narrrfs-utility-pill" aria-label="Toggle auto-shoot">🎯 AUTO: OFF</button>
         <button type="button" id="space-invaders-touch-panel" class="narrrfs-utility-pill" aria-label="Open weapons and wave panel">⚙️ PANEL</button>
@@ -561,7 +614,7 @@
     </div>
 
     <!-- 💰 Game Status Display -->
-    <div class="text-center mt-4 space-y-1">
+    <div id="space-invaders-bottom-status" class="text-center mt-4 space-y-1">
       <p id="space-invaders-score" class="text-sm font-semibold text-yellow-200 animate-pulse">
         💰 Space Invaders Score: $0 dSPOINC
       </p>
@@ -571,14 +624,14 @@
     </div>
     
     <!-- 📖 SPACE INVADERS GAME GUIDE BUTTON -->
-    <div class="text-center mt-4 mb-2">
+    <div id="space-invaders-guide-btn-wrap" class="text-center mt-4 mb-2">
       <button onclick="toggleSpaceInvadersGuide()" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-pink-400 transition-all duration-300 transform hover:scale-105">
         📖 Space Invaders Game Guide - Waves & Bosses
       </button>
     </div>
     
     <!-- 💰 dSPOINC Scores Toggle Button -->
-    <div class="text-center mt-4 mb-2">
+    <div id="space-invaders-scores-btn-wrap" class="text-center mt-4 mb-2">
       <button onclick="toggleSpaceInvadersDSPOINScores()" class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-yellow-400 transition-all duration-300 transform hover:scale-105">
         💰 dSPOINC Scores - Rewards & Bosses
       </button>
@@ -1190,7 +1243,7 @@ function toggleSpaceInvadersDSPOINScores() {
 </script>
 
 <!-- 🧀 Load Space Cheese Invaders Script -->
-    <script src="scripts/space-cheese-invaders.js?v=5.0.0&season5_boss_balance=1730520000&arcade_v5=20261127"></script>
+    <script src="scripts/space-cheese-invaders.js?v=5.0.0&season5_boss_balance=1730520000&arcade_v6=20261127"></script>
 
 <!-- 🧪 Load Boss Test Helper Script -->
 <script src="scripts/boss-test-helper.js"></script>

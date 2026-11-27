@@ -11682,8 +11682,8 @@ lastAutoShootTime = Date.now();
 
   // 🖱️ GLOBAL MOUSE TRACKING: Handle mouse movement for ship positioning (works everywhere!)
   function updateMouseMovement() {
-    // 🚀 CRITICAL FIX: Disable mouse controls when mobile touch is active OR on mobile devices
-    if (!isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isMobileDevice) {
+    // 🚀 CRITICAL FIX: Disable mouse controls when mobile touch / mobile lock is active OR on mobile devices
+    if (!isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isMobileDevice || window.NarrrfsMobileArcade?.isLocked?.()) {
       return;
     }
     
@@ -12750,39 +12750,14 @@ lastAutoShootTime = Date.now();
     //   checkAndShowMobileInstructions();
     // });
     
-    // 📱 NEW: Mobile control status indicator
+    // 📱 Disabled legacy floating "Touch Ready" pill (collided with #always-visible-heat-display)
     function updateMobileControlStatus() {
-      let statusIndicator = document.getElementById('mobile-control-status');
-      
-      if (!statusIndicator) {
-        statusIndicator = document.createElement('div');
-        statusIndicator.id = 'mobile-control-status';
-        statusIndicator.style.cssText = `
-          position: fixed;
-          top: 10px;
-          right: 10px;
-          background: rgba(0, 0, 0, 0.8);
-          color: white;
-          padding: 8px 12px;
-          border-radius: 8px;
-          font-size: 12px;
-          z-index: 9999;
-          font-family: Arial, sans-serif;
-        `;
-        document.body.appendChild(statusIndicator);
-      }
-      
-      if (isTouching) {
-        statusIndicator.innerHTML = '📱 Touch Active';
-        statusIndicator.style.background = 'rgba(0, 255, 0, 0.8)';
-      } else {
-        statusIndicator.innerHTML = '📱 Touch Ready';
-        statusIndicator.style.background = 'rgba(0, 0, 0, 0.8)';
+      const legacyIndicator = document.getElementById('mobile-control-status');
+      if (legacyIndicator) {
+        legacyIndicator.remove();
       }
     }
-    
-    // 📱 NEW: Update mobile control status in game loop
-    setInterval(updateMobileControlStatus, 100);
+    updateMobileControlStatus();
     
     // 🔥 NEW: Add heat system debug functions
     window.debugHeatSystem = () => {
@@ -14234,15 +14209,21 @@ window.emergencyCollisionCheck = function() {
       try {
         localStorage.setItem('space_invaders_mobile_mode', normalized);
       } catch (_) {}
+      if (window.NarrrfsMobileArcade?.isLocked?.()) {
+        lockSpaceInvadersScroll();
+      }
     }
 
-    modeButtonsBtn?.addEventListener('click', () => applyMode('buttons'));
-    modeTouchBtn?.addEventListener('click', () => applyMode('touch'));
-    try {
-      applyMode(localStorage.getItem('space_invaders_mobile_mode') === 'touch' ? 'touch' : 'buttons');
-    } catch (_) {
+    modeButtonsBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
       applyMode('buttons');
-    }
+    });
+    modeTouchBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      applyMode('touch');
+    });
+    // Always default to 4-way arrow D-pad + weapons so directional arrows are visible on every mobile load.
+    applyMode('buttons');
 
     syncSpaceInvadersMobileDeck();
   }

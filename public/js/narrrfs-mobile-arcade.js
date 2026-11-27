@@ -7,6 +7,7 @@
 
   let isLocked = false;
   let activeGameKey = '';
+  let activeRunOptions = null;
   let lockedScrollX = 0;
   let lockedScrollY = 0;
   let listenersAttached = false;
@@ -122,9 +123,15 @@
   }
 
   function lock(options = {}) {
+    activeRunOptions = {
+      stageEl: options.stageEl || null,
+      controlsEl: options.controlsEl || null,
+      gameKey: String(options.gameKey || 'arcade')
+    };
+
     if (!shouldEngageMobileLock()) {
       if (isLocked) {
-        unlock();
+        disengageMobileDom();
       }
       return;
     }
@@ -198,7 +205,7 @@
     }
   }
 
-  function unlock() {
+  function disengageMobileDom() {
     const previousKey = activeGameKey;
     lockGeneration++;
     isLocked = false;
@@ -212,6 +219,11 @@
     }
 
     dispatchLockState(false, previousKey);
+  }
+
+  function unlock() {
+    activeRunOptions = null;
+    disengageMobileDom();
   }
 
   /**
@@ -484,13 +496,23 @@
     return stopHold;
   }
 
+  function syncViewportLockState() {
+    if (shouldEngageMobileLock()) {
+      if (!isLocked && activeRunOptions) {
+        lock(activeRunOptions);
+      }
+    } else if (isLocked) {
+      disengageMobileDom();
+    }
+  }
+
   window.addEventListener('pagehide', unlock);
   window.addEventListener('beforeunload', unlock);
-  window.addEventListener('resize', () => {
-    if (isLocked && !shouldEngageMobileLock()) {
-      unlock();
-    }
-  }, { passive: true });
+  window.addEventListener('resize', syncViewportLockState, { passive: true });
+  if (typeof window.matchMedia === 'function') {
+    window.matchMedia('(pointer: coarse)')?.addEventListener?.('change', syncViewportLockState);
+    window.matchMedia('(hover: none)')?.addEventListener?.('change', syncViewportLockState);
+  }
 
   window.NarrrfsMobileArcade = {
     lock,
