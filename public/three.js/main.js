@@ -138,7 +138,7 @@ console.log("✅ [STABLE VERSION] main.js v2026-01-09-STABLE-PRODUCTION loaded -
  *    Initialized: Once at game start (usually in weapon system init)
  *    Updated: Event-driven (checks interactions in update())
  *    Key Functions: createChestsForLevel(), update(), registerExclusionZones()
- *    Features: Animation, rewards (DSPOINC), persistence, grass exclusion zones
+ *    Features: Animation, rewards (dSPOINC), persistence, grass exclusion zones
  * 
  * ┌─────────────────────────────────────────────────────────────────────────┐
  * │ BOSS SYSTEMS (Level 6)                                                  │
@@ -4873,7 +4873,7 @@ const LEVEL5_WAVES_COUNT = 10; // 10 waves total
 const LEVEL5_MONSTERS_PER_WAVE = 10; // 10 monsters per wave
 const LEVEL5_TOTAL_MONSTERS = 100; // 100 monsters total (10 × 10)
 const LEVEL5_WAVE_COUNTDOWN_TIME = 3; // 3 second countdown between waves
-const LEVEL5_DSPOINC_PER_MONSTER = 50; // 50 DSPOINC per monster (5,000 total)
+const LEVEL5_DSPOINC_PER_MONSTER = 50; // 50 dSPOINC per monster (5,000 total)
 const LEVEL5_MONSTER_ATTACK_RANGE = 2.4; // Melee range around player
 const LEVEL5_MONSTER_ATTACK_COOLDOWN_MS = 1200; // Per-monster attack interval
 
@@ -4889,13 +4889,13 @@ const LEVEL4_CHEESES_TO_CATCH = 50; // Total cheeses to catch
 const LEVEL4_WAVES_COUNT = 12; // 12 waves of 4 cheeses each = 48 cheeses
 const LEVEL4_CHEESES_PER_WAVE = 4; // 4 cheeses per wave
 const LEVEL4_FINAL_WAVE_CHEESES = 2; // Final wave: 2 extra big aggressive cheeses
-const LEVEL4_DSPOINC_PER_CHEESE = 50; // DSPOINC reward per cheese
+const LEVEL4_DSPOINC_PER_CHEESE = 50; // dSPOINC reward per cheese
 const LEVEL4_WAVE_COUNTDOWN_TIME = 3; // 3 second countdown between waves
 // NEW: Monster wave constants
 const LEVEL4_MONSTER_WAVES_COUNT = 10; // 10 waves of 3 monsters each
 const LEVEL4_MONSTERS_PER_WAVE = 3; // 3 monsters per wave (troops)
 const LEVEL4_TOTAL_MONSTERS = 30; // 30 monsters total
-const LEVEL4_DSPOINC_PER_MONSTER = 50; // DSPOINC reward per monster
+const LEVEL4_DSPOINC_PER_MONSTER = 50; // dSPOINC reward per monster
 const LEVEL4_MONSTER_WAVE_COUNTDOWN = 3; // 3 seconds between waves
 const LEVEL4_FINAL_MONSTER_WAVE_HEALTH = 2; // Final wave: 2 hits per monster
 const LEVEL4_MONSTER_PROJECTILE_SPEED = 12; // Projectile speed for final wave
@@ -6026,10 +6026,10 @@ function initializePlayerControls() {
         }
         // E key interaction - open nearest chest if available
         if (nearestInteractableChest && !nearestInteractableChest.opened && chestSystem) {
-          // Award DSPOINC reward via API
+          // Award dSPOINC reward via API
           const awardRewardCallback = async (chest) => {
             if (!resolvedDiscordId) {
-              console.warn(`🎁 [CHEST] Skipping DSPOINC reward for ${chest.id} — no Discord ID.`);
+              console.warn(`🎁 [CHEST] Skipping dSPOINC reward for ${chest.id} — no Discord ID.`);
               return;
             }
             try {
@@ -6042,7 +6042,7 @@ function initializePlayerControls() {
                 session_id: cheeseSessionId
               };
               
-              console.log(`🎁 [CHEST] Awarding ${chest.dspoincAmount} DSPOINC for opening ${chest.id}`, payload);
+              console.log(`🎁 [CHEST] Awarding ${chest.dspoincAmount} dSPOINC for opening ${chest.id}`, payload);
               
               const response = await fetch(RIDDLE_REWARD_ENDPOINT, {
                 method: 'POST',
@@ -6066,7 +6066,7 @@ function initializePlayerControls() {
                 // Show reward notification
                 showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
                 
-                console.log(`✅ [CHEST] DSPOINC awarded successfully for ${chest.id}:`, {
+                console.log(`✅ [CHEST] dSPOINC awarded successfully for ${chest.id}:`, {
                   baseReward: chest.dspoincAmount,
                   dsPoincAwarded,
                   totalDspoinc,
@@ -6091,11 +6091,11 @@ function initializePlayerControls() {
                 }
                 showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
               } else {
-                console.warn(`🎁 [CHEST] DSPOINC reward failed for ${chest.id}:`, result.error);
+                console.warn(`🎁 [CHEST] dSPOINC reward failed for ${chest.id}:`, result.error);
                 showRiddleRewardNotification(0, 1.0, true); // Show error as "already completed" to avoid confusion
               }
             } catch (error) {
-              console.error(`❌ [CHEST] Failed to award DSPOINC for ${chest.id}:`, error);
+              console.error(`❌ [CHEST] Failed to award dSPOINC for ${chest.id}:`, error);
             }
           };
           
@@ -13078,7 +13078,7 @@ if (autoSeededLocalIdentity) {
   const storedBalanceRaw = window.localStorage.getItem("narrrfs_last_ds_balance");
   const storedBalance = storedBalanceRaw !== null ? Number(storedBalanceRaw) : 0;
   currentTotalDspoinc = Number.isFinite(storedBalance) ? storedBalance : 0;
-  console.info("🧪 [DEBUG] Loaded local test DSPOINC balance", currentTotalDspoinc);
+  console.info("🧪 [DEBUG] Loaded local test dSPOINC balance", currentTotalDspoinc);
 }
 
 function getPauseMenu() {
@@ -19196,7 +19196,7 @@ function updatePausePlayerInfo() {
     return;
   }
   const nameLine = `Player: <span style="color: #fcd34d; font-weight: 700;">${playerDisplayName || "Guest"}</span>`;
-  const dspoLine = `DSPOINC: <span style="color: #fcd34d; font-weight: 700;">${currentTotalDspoinc !== null && Number.isFinite(currentTotalDspoinc) ? currentTotalDspoinc.toLocaleString() : "Loading..."}</span>`;
+  const dspoLine = `dSPOINC: <span style="color: #fcd34d; font-weight: 700;">${currentTotalDspoinc !== null && Number.isFinite(currentTotalDspoinc) ? currentTotalDspoinc.toLocaleString() : "Loading..."}</span>`;
   info.innerHTML = `<div>${nameLine}</div><div>${dspoLine}</div>`;
   console.log("✅ [DEBUG] Pause menu info updated", { nameLine, dspoLine });
 }
@@ -19273,7 +19273,7 @@ async function fetchPlayerDetails() {
       }
       if (typeof data.user.balance === "number") {
         currentTotalDspoinc = data.user.balance;
-        console.log("✅ [DEBUG] DSPOINC balance updated:", currentTotalDspoinc);
+        console.log("✅ [DEBUG] dSPOINC balance updated:", currentTotalDspoinc);
       } else {
         console.warn("⚠️ [DEBUG] Balance not a number:", data.user.balance);
       }
@@ -19994,13 +19994,13 @@ function buildLevel(mapData) {
     createLevel1Plant2(mapData.spawn, blockSize);
   }
   
-  // 🎁 Create chests in Level 1 (3 treasure chests with DSPOINC rewards)
+  // 🎁 Create chests in Level 1 (3 treasure chests with dSPOINC rewards)
   // 
   // 📝 QUICK REFERENCE (see createLevel1Chests() for full docs):
   // ============================================================
-  // - chest_001: Y=1.0 (ground level) - 100 DSPOINC
-  // - chest_002: Y=1.0 (ground level) - 250 DSPOINC
-  // - chest_003: Y=29.0 (tower top, elevated) - 500 DSPOINC
+  // - chest_001: Y=1.0 (ground level) - 100 dSPOINC
+  // - chest_002: Y=1.0 (ground level) - 250 dSPOINC
+  // - chest_003: Y=29.0 (tower top, elevated) - 500 dSPOINC
   //
   // Grass exclusion zones automatically registered for all chests
   // Elevated chests (Y>5.0) use custom positioning mode
@@ -23049,13 +23049,13 @@ function captureLevel3Monster(monster) {
     cheeseAimClearSound.play();
   }
   
-  // Award 50 DSPOINC per monster
+  // Award 50 dSPOINC per monster
   awardLevel3MonsterDspoincReward(level3RiddleState.monstersCaught);
   
   // Check if step is complete
   if (monstersCaughtInStep < LEVEL3_MONSTERS_PER_STEP) {
     // More monsters to catch in this step
-    showRiddleToast(`🎯 Step ${currentStep} - Monster ${monstersCaughtInStep}/${LEVEL3_MONSTERS_PER_STEP} caught! +${LEVEL3_DSPOINC_PER_MONSTER} DSPOINC`, { 
+    showRiddleToast(`🎯 Step ${currentStep} - Monster ${monstersCaughtInStep}/${LEVEL3_MONSTERS_PER_STEP} caught! +${LEVEL3_DSPOINC_PER_MONSTER} dSPOINC`, {
       id: `level3_step${currentStep}_monster_${monstersCaughtInStep}_caught`, 
       duration: 3000 
     });
@@ -25490,11 +25490,11 @@ async function unlockLevel5Trait(traitKey, description) {
   }
 }
 
-// Award Level 5 DSPOINC reward (helper function)
+// Award Level 5 dSPOINC reward (helper function)
 async function awardLevel5DspoincReward(stepId, baseReward, contextLabel = "") {
   const resolvedDiscordId = localStorage.getItem("discord_id") || localStorage.getItem("DISCORD_ID") || localStorage.getItem("narrrfs_last_discord_id");
   if (!resolvedDiscordId) {
-    console.warn(`🎯 [LEVEL 5] Skipping DSPOINC reward (${stepId}) — no Discord ID.`);
+    console.warn(`🎯 [LEVEL 5] Skipping dSPOINC reward (${stepId}) — no Discord ID.`);
     return;
   }
   try {
@@ -25523,7 +25523,7 @@ async function awardLevel5DspoincReward(stepId, baseReward, contextLabel = "") {
         if (isGamePaused) updatePausePlayerInfo();
       }
       showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
-      console.log(`🎯 [LEVEL 5] DSPOINC reward granted (${stepId})`, {
+      console.log(`🎯 [LEVEL 5] dSPOINC reward granted (${stepId})`, {
         baseReward,
         dsPoincAwarded,
         totalDspoinc,
@@ -25533,10 +25533,10 @@ async function awardLevel5DspoincReward(stepId, baseReward, contextLabel = "") {
       console.warn(`🎯 [LEVEL 5] Reward already claimed for ${stepId}`);
       showRiddleRewardNotification(0, 1.0, true);
     } else {
-      console.warn(`🎯 [LEVEL 5] DSPOINC reward failed (${stepId}):`, result.error);
+      console.warn(`🎯 [LEVEL 5] dSPOINC reward failed (${stepId}):`, result.error);
     }
   } catch (error) {
-    console.error(`🎯 [LEVEL 5] Error awarding DSPOINC reward (${stepId}):`, error);
+    console.error(`🎯 [LEVEL 5] Error awarding dSPOINC reward (${stepId}):`, error);
   }
 }
 
@@ -26068,7 +26068,7 @@ function defeatLevel5Monster(monsterIndex) {
   monster.defeated = true;
   level5RiddleState.monstersDefeated++;
   
-  // Award DSPOINC reward (50 DSPOINC per monster)
+  // Award dSPOINC reward (50 dSPOINC per monster)
   const monsterId = monster.monsterId !== undefined ? monster.monsterId : level5RiddleState.monstersDefeated - 1;
   awardLevel5DspoincReward(`CHEESE_TEMPLE_LEVEL5_MONSTER_${monsterId}`, LEVEL5_DSPOINC_PER_MONSTER, `Level 5 Monster Defeated (#${level5RiddleState.monstersDefeated})`);
   
@@ -26301,7 +26301,7 @@ async function completeLevel5Step1() {
   level5RiddleState.step1Complete = true;
   level5RiddleState.step1TimerActive = false;
   
-  // Award DSPOINC reward (2,500 base)
+  // Award dSPOINC reward (2,500 base)
   if (!level5RiddleState.step1TraitUnlocked) {
     unlockLevel5Trait(LEVEL5_STEP1_TRAIT, "Level 5 Step 1 - All Monsters Defeated");
   }
@@ -28591,7 +28591,7 @@ function captureLevel4Cheese(cheeseIndex) {
   level4RiddleState.cheesesCaught++;
   level4RiddleState.difficultyLevel = level4RiddleState.cheesesCaught;
 
-  // Award DSPOINC
+  // Award dSPOINC
   awardLevel4DspoincReward(
     `CHEESE_TEMPLE_LEVEL4_CHEESE_${level4RiddleState.cheesesCaught}`,
     LEVEL4_DSPOINC_PER_CHEESE,
@@ -28947,7 +28947,7 @@ function defeatLevel4Monster(monsterIndex) {
     }
   }
   
-  // Award DSPOINC
+  // Award dSPOINC
   awardLevel4DspoincReward(
     `CHEESE_TEMPLE_LEVEL4_MONSTER_${level4RiddleState.monstersDefeated}`,
     LEVEL4_DSPOINC_PER_MONSTER,
@@ -30095,7 +30095,7 @@ async function unlockLevel4Trait(traitKey, description) {
 
 async function awardLevel4DspoincReward(stepId, baseReward, contextLabel = "") {
   if (!resolvedDiscordId) {
-    console.warn(`🎯 [LEVEL 4] Skipping DSPOINC reward (${stepId}) — no Discord ID.`);
+    console.warn(`🎯 [LEVEL 4] Skipping dSPOINC reward (${stepId}) — no Discord ID.`);
     return;
   }
   try {
@@ -30123,7 +30123,7 @@ async function awardLevel4DspoincReward(stepId, baseReward, contextLabel = "") {
         if (isGamePaused) updatePausePlayerInfo();
       }
       showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
-      console.log(`🎯 [LEVEL 4] DSPOINC reward granted (${stepId})`, {
+      console.log(`🎯 [LEVEL 4] dSPOINC reward granted (${stepId})`, {
         baseReward,
         dsPoincAwarded,
         totalDspoinc,
@@ -30133,10 +30133,10 @@ async function awardLevel4DspoincReward(stepId, baseReward, contextLabel = "") {
       console.warn(`🎯 [LEVEL 4] Reward already claimed for ${stepId}`);
       showRiddleRewardNotification(0, 1.0, true);
     } else {
-      console.warn(`🎯 [LEVEL 4] DSPOINC reward failed (${stepId}):`, result.error);
+      console.warn(`🎯 [LEVEL 4] dSPOINC reward failed (${stepId}):`, result.error);
     }
   } catch (error) {
-    console.error(`🎯 [LEVEL 4] Error awarding DSPOINC reward (${stepId}):`, error);
+    console.error(`🎯 [LEVEL 4] Error awarding dSPOINC reward (${stepId}):`, error);
   }
 }
 
@@ -32607,7 +32607,7 @@ async function unlockLevel3Trait(traitName, contextLabel = "") {
 
 async function awardLevel3DspoincReward(stepId, baseReward, contextLabel = "") {
   if (!resolvedDiscordId) {
-    console.warn(`🧀 [LEVEL 3] Skipping DSPOINC reward (${stepId}) — no Discord ID.`);
+    console.warn(`🧀 [LEVEL 3] Skipping dSPOINC reward (${stepId}) — no Discord ID.`);
     return;
   }
   try {
@@ -32635,7 +32635,7 @@ async function awardLevel3DspoincReward(stepId, baseReward, contextLabel = "") {
         if (isGamePaused) updatePausePlayerInfo();
       }
       showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
-      console.log(`🧀 [LEVEL 3] DSPOINC reward granted (${stepId})`, {
+      console.log(`🧀 [LEVEL 3] dSPOINC reward granted (${stepId})`, {
         baseReward,
         dsPoincAwarded,
         totalDspoinc,
@@ -32645,10 +32645,10 @@ async function awardLevel3DspoincReward(stepId, baseReward, contextLabel = "") {
       console.warn(`🧀 [LEVEL 3] Reward already claimed for ${stepId}`);
       showRiddleRewardNotification(0, 1.0, true);
     } else {
-      console.warn(`🧀 [LEVEL 3] DSPOINC reward failed (${stepId}):`, result.error);
+      console.warn(`🧀 [LEVEL 3] dSPOINC reward failed (${stepId}):`, result.error);
     }
   } catch (error) {
-    console.error(`🧀 [LEVEL 3] Error awarding DSPOINC reward (${stepId}):`, error);
+    console.error(`🧀 [LEVEL 3] Error awarding dSPOINC reward (${stepId}):`, error);
   }
 }
 
@@ -32682,7 +32682,7 @@ async function unlockLevel6Trait(traitName, contextLabel = "") {
 
 async function awardLevel6DspoincReward(stepId, baseReward, contextLabel = "") {
   if (!resolvedDiscordId) {
-    console.warn(`🧀 [LEVEL 6] Skipping DSPOINC reward (${stepId}) — no Discord ID.`);
+    console.warn(`🧀 [LEVEL 6] Skipping dSPOINC reward (${stepId}) — no Discord ID.`);
     return;
   }
   try {
@@ -32710,7 +32710,7 @@ async function awardLevel6DspoincReward(stepId, baseReward, contextLabel = "") {
         if (isGamePaused) updatePausePlayerInfo();
       }
       showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
-      console.log(`🧀 [LEVEL 6] DSPOINC reward granted (${stepId})`, {
+      console.log(`🧀 [LEVEL 6] dSPOINC reward granted (${stepId})`, {
         baseReward,
         dsPoincAwarded,
         totalDspoinc,
@@ -32720,10 +32720,10 @@ async function awardLevel6DspoincReward(stepId, baseReward, contextLabel = "") {
       console.warn(`🧀 [LEVEL 6] Reward already claimed for ${stepId}`);
       showRiddleRewardNotification(0, 1.0, true);
     } else {
-      console.warn(`🧀 [LEVEL 6] DSPOINC reward failed (${stepId}):`, result.error);
+      console.warn(`🧀 [LEVEL 6] dSPOINC reward failed (${stepId}):`, result.error);
     }
   } catch (error) {
-    console.error(`🧀 [LEVEL 6] Error awarding DSPOINC reward (${stepId}):`, error);
+    console.error(`🧀 [LEVEL 6] Error awarding dSPOINC reward (${stepId}):`, error);
   }
 }
 
@@ -35761,7 +35761,7 @@ function cycleLevel2Step() {
     
     // CRITICAL: Complete Step 2 and activate portal
     if (!level2RiddleState.step2Complete) {
-      completeLevel2Step2(); // This unlocks trait, awards DSPOINC, and activates portal
+      completeLevel2Step2(); // This unlocks trait, awards dSPOINC, and activates portal
     } else if (!level2State.portalActive) {
       activateLevel2Portal(); // Ensure portal is active
     }
@@ -36275,7 +36275,7 @@ async function cycleLevel4Step() {
     level4State.portal.visible = true;
     level4State.portalActive = true;
     
-    // CRITICAL: Award Step 3 DSPOINC reward (portal entry)
+    // CRITICAL: Award Step 3 dSPOINC reward (portal entry)
     awardLevel4DspoincReward("CHEESE_TEMPLE_LEVEL4_STEP3", 200, "Level 4 Step 3 - Portal Entry");
     
     console.log("🧩 [LEVEL 4] Jumped to Step 3 - Portal activated, all steps complete");
@@ -42810,7 +42810,7 @@ function checkRiddle4Combination() {
   }
 }
 
-// Unlock Riddle #4 reward (1000 DSPOINC)
+// Unlock Riddle #4 reward (1000 dSPOINC)
 async function unlockRiddle4Reward() {
   const rewardAmount = 1000;
   const rewardId = "CHEESE_TEMPLE_RIDDLE_04_SECRET";
@@ -42818,7 +42818,7 @@ async function unlockRiddle4Reward() {
   
   const discordId = resolvedDiscordId;
   if (!discordId) {
-    console.warn(`🧩 [RIDDLE #4] Skipping DSPOINC reward — no Discord ID.`);
+    console.warn(`🧩 [RIDDLE #4] Skipping dSPOINC reward — no Discord ID.`);
     return;
   }
   
@@ -42828,7 +42828,7 @@ async function unlockRiddle4Reward() {
       discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
       riddle_id: rewardId,
       level_id: 'CHEESE_TEMPLE_LVL1',
-      base_reward: rewardAmount, // 1000 DSPOINC fixed reward (no role multiplier)
+      base_reward: rewardAmount, // 1000 dSPOINC fixed reward (no role multiplier)
       session_id: cheeseSessionId
     };
     
@@ -42845,7 +42845,7 @@ async function unlockRiddle4Reward() {
       const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
       const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
       
-      // Update HUD with new DSPOINC balance
+      // Update HUD with new dSPOINC balance
       if (typeof totalDspoinc === "number") {
         currentTotalDspoinc = totalDspoinc;
         window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
@@ -42855,7 +42855,7 @@ async function unlockRiddle4Reward() {
       // Show reward notification
       showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
       
-      console.log(`🧩 [RIDDLE #4] 🎁 DSPOINC reward awarded successfully!`, {
+      console.log(`🧩 [RIDDLE #4] 🎁 dSPOINC reward awarded successfully!`, {
         dsPoincAwarded,
         totalDspoinc,
         multiplier: rewardResult.data?.multiplier
@@ -42866,17 +42866,17 @@ async function unlockRiddle4Reward() {
         console.warn(`🧩 [RIDDLE #4] Riddle already completed - no reward awarded`);
         showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
       } else {
-        console.warn(`🧩 [RIDDLE #4] DSPOINC reward failed:`, rewardResult.error);
+        console.warn(`🧩 [RIDDLE #4] dSPOINC reward failed:`, rewardResult.error);
       }
     }
   } catch (error) {
-    console.error(`🧩 [RIDDLE #4] Error awarding DSPOINC reward:`, error);
+    console.error(`🧩 [RIDDLE #4] Error awarding dSPOINC reward:`, error);
   }
 }
 
 // Show success message when riddle is solved
 function showRiddle4SuccessMessage() {
-  const message = "🎉 You found a hidden riddle! 🎉\n\n+1,000 DSPOINC";
+  const message = "🎉 You found a hidden riddle! 🎉\n\n+1,000 dSPOINC";
   
   showRiddleToast(message, {
     duration: 5000,
@@ -43041,7 +43041,7 @@ async function unlockRiddle5Reward() {
 
   const discordId = resolvedDiscordId;
   if (!discordId) {
-    console.warn(`🧩 [RIDDLE #5] Skipping DSPOINC reward — no Discord ID.`);
+    console.warn(`🧩 [RIDDLE #5] Skipping dSPOINC reward — no Discord ID.`);
     return;
   }
 
@@ -43082,7 +43082,7 @@ async function unlockRiddle5Reward() {
 
       showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
 
-      console.log(`🧩 [RIDDLE #5] 🎁 DSPOINC reward awarded successfully!`, {
+      console.log(`🧩 [RIDDLE #5] 🎁 dSPOINC reward awarded successfully!`, {
         dsPoincAwarded,
         totalDspoinc,
         multiplier: rewardResult.data?.multiplier,
@@ -43092,17 +43092,17 @@ async function unlockRiddle5Reward() {
         console.warn(`🧩 [RIDDLE #5] Riddle already completed - no reward awarded`);
         showRiddleRewardNotification(0, 1.0, true);
       } else {
-        console.warn(`🧩 [RIDDLE #5] DSPOINC reward failed:`, rewardResult.error);
+        console.warn(`🧩 [RIDDLE #5] dSPOINC reward failed:`, rewardResult.error);
       }
     }
   } catch (error) {
-    console.error(`🧩 [RIDDLE #5] Error awarding DSPOINC reward:`, error);
+    console.error(`🧩 [RIDDLE #5] Error awarding dSPOINC reward:`, error);
   }
 }
 
 // Show success message when riddle is solved
 function showRiddle5SuccessMessage() {
-  showRiddleToast("🎉 Secret Wall Riddle solved! 🎉\n\n+1,000 DSPOINC", {
+  showRiddleToast("🎉 Secret Wall Riddle solved! 🎉\n\n+1,000 dSPOINC", {
     duration: 5000,
     backgroundColor: "rgba(0, 255, 200, 0.9)",
     color: "#000",
@@ -44032,9 +44032,9 @@ function verifyAndFixLevel1ChestPositions() {
 //
 // CHEST STATE & REWARDS:
 // ======================
-// - chest_001: 100 DSPOINC (ground level, near spawn)
-// - chest_002: 250 DSPOINC (ground level, left side)
-// - chest_003: 500 DSPOINC (tower top at Y=29)
+// - chest_001: 100 dSPOINC (ground level, near spawn)
+// - chest_002: 250 dSPOINC (ground level, left side)
+// - chest_003: 500 dSPOINC (tower top at Y=29)
 // - State persists in localStorage
 // - Once opened, stays open permanently
 // - Reward given only once
@@ -44712,7 +44712,7 @@ function createLevel5Chests() {
     console.warn(`⚠️ [LEVEL 5] Only placed ${positions.length} chests (spacing constraint)`);
   }
 
-  console.log("🎁 [LEVEL 5] Creating 50 chests (50 DSPOINC each, random spread)...", {
+  console.log("🎁 [LEVEL 5] Creating 50 chests (50 dSPOINC each, random spread)...", {
     spawnY,
     bounds: { minX, maxX, minZ, maxZ },
     positionCount: positions.length,
@@ -45089,7 +45089,7 @@ function checkLevel1BearTrapCollision() {
 // COLLISION BEHAVIOR:
 // ===================
 // - Chests are solid obstacles (push player away like trees/plants)
-// - But also give DSPOINC reward when approached (proximity check in chest-system.js)
+// - But also give dSPOINC reward when approached (proximity check in chest-system.js)
 // - Chest collision is handled in TWO parts:
 //   1. This function: Physical collision (push-away)
 //   2. chest-system.js: Proximity check for opening (5.0 units)
@@ -45112,7 +45112,7 @@ function checkLevel1BearTrapCollision() {
 // ================
 // - Physical push-away when walking into chest
 // - Chest lid opens when within 5.0 units (handled by chest-system.js)
-// - Floating "+X DSPOINC" text on reward collection
+// - Floating "+X dSPOINC" text on reward collection
 // - Permanent state (once opened, stays open)
 //
 // HOW THIS DIFFERS FROM OTHER COLLISIONS:
@@ -47017,7 +47017,7 @@ function showRiddleRewardNotification(dsPoincAwarded, multiplier, alreadyComplet
       backdropFilter: "blur(4px)"  // Subtle blur for better visibility
     });
     const multiplierText = multiplier > 1.0 ? ` (×${multiplier.toFixed(1)})` : "";
-    notification.textContent = `🎉 +${dsPoincAwarded.toLocaleString()} DSPOINC${multiplierText}! 🧀`;
+    notification.textContent = `🎉 +${dsPoincAwarded.toLocaleString()} dSPOINC${multiplierText}! 🧀`;
   }
 
   document.body.appendChild(notification);
@@ -47044,7 +47044,7 @@ function showRiddleRewardNotification(dsPoincAwarded, multiplier, alreadyComplet
 
 async function awardLevel2DspoincReward(stepId, baseReward, contextLabel = "") {
   if (!resolvedDiscordId) {
-    console.warn(`🧀 [LEVEL 2] Skipping DSPOINC reward (${stepId}) — no Discord ID.`);
+    console.warn(`🧀 [LEVEL 2] Skipping dSPOINC reward (${stepId}) — no Discord ID.`);
     return;
   }
   try {
@@ -47072,7 +47072,7 @@ async function awardLevel2DspoincReward(stepId, baseReward, contextLabel = "") {
         if (isGamePaused) updatePausePlayerInfo();
       }
       showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
-      console.log(`🧀 [LEVEL 2] DSPOINC reward granted (${stepId})`, {
+      console.log(`🧀 [LEVEL 2] dSPOINC reward granted (${stepId})`, {
         baseReward,
         dsPoincAwarded,
         totalDspoinc,
@@ -47082,10 +47082,10 @@ async function awardLevel2DspoincReward(stepId, baseReward, contextLabel = "") {
       console.warn(`🧀 [LEVEL 2] Reward already claimed for ${stepId}`);
       showRiddleRewardNotification(0, 1.0, true);
     } else {
-      console.warn(`🧀 [LEVEL 2] DSPOINC reward failed (${stepId}):`, result.error);
+      console.warn(`🧀 [LEVEL 2] dSPOINC reward failed (${stepId}):`, result.error);
     }
   } catch (error) {
-    console.error(`🧀 [LEVEL 2] Error awarding DSPOINC reward (${stepId}):`, error);
+    console.error(`🧀 [LEVEL 2] Error awarding dSPOINC reward (${stepId}):`, error);
   }
 }
 
@@ -47516,7 +47516,7 @@ function updateRiddle3(delta) {
   }
 }
 
-// Complete Riddle #3: Unlock trait and award DSPOINC
+// Complete Riddle #3: Unlock trait and award dSPOINC
 let riddle3Completed = false; // Flag to prevent duplicate completion
 async function completeRiddle3() {
   // Only complete once (prevent duplicate API calls)
@@ -47545,7 +47545,7 @@ async function completeRiddle3() {
   // Show completion message
   showRiddle3CompletionMessage();
   
-  // Unlock trait and award DSPOINC via API
+  // Unlock trait and award dSPOINC via API
   const discordId = resolvedDiscordId;
   // Allow LOCAL_TEST_DISCORD for local testing (will create test data in database)
   if (discordId) {
@@ -47572,14 +47572,14 @@ async function completeRiddle3() {
       console.error("🧩 [RIDDLE #3] Error unlocking trait:", error);
     }
     
-    // Step 2: Award DSPOINC reward via API
+    // Step 2: Award dSPOINC reward via API
     try {
       const rewardPayload = {
         discord_id: discordId,
         discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
         riddle_id: 'CHEESE_TEMPLE_RIDDLE_03',
         level_id: 'CHEESE_TEMPLE_LVL1',
-        base_reward: 750, // 750 DSPOINC base reward for riddle completion
+        base_reward: 750, // 750 dSPOINC base reward for riddle completion
         session_id: cheeseSessionId
       };
       
@@ -47596,7 +47596,7 @@ async function completeRiddle3() {
         const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
         const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
         
-        // Update HUD with new DSPOINC balance
+        // Update HUD with new dSPOINC balance
         if (typeof totalDspoinc === "number") {
           currentTotalDspoinc = totalDspoinc;
           window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
@@ -47606,7 +47606,7 @@ async function completeRiddle3() {
         // Show reward notification
         showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
         
-        console.log("🧩 [RIDDLE #3] DSPOINC reward awarded successfully!", {
+        console.log("🧩 [RIDDLE #3] dSPOINC reward awarded successfully!", {
           dsPoincAwarded,
           totalDspoinc,
           multiplier: rewardResult.data?.multiplier,
@@ -47618,14 +47618,14 @@ async function completeRiddle3() {
           console.warn("🧩 [RIDDLE #3] Riddle already completed - no reward awarded");
           showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
         } else {
-          console.warn("🧩 [RIDDLE #3] DSPOINC reward failed:", rewardResult.error);
+          console.warn("🧩 [RIDDLE #3] dSPOINC reward failed:", rewardResult.error);
         }
       }
     } catch (error) {
-      console.error("🧩 [RIDDLE #3] Error awarding DSPOINC reward:", error);
+      console.error("🧩 [RIDDLE #3] Error awarding dSPOINC reward:", error);
     }
   } else {
-    console.warn("🧩 [RIDDLE #3] No Discord ID found - trait unlock and DSPOINC reward skipped");
+    console.warn("🧩 [RIDDLE #3] No Discord ID found - trait unlock and dSPOINC reward skipped");
   }
 }
 
@@ -48512,7 +48512,7 @@ function restartLevel1() {
   console.log("🔄 [LEVEL 1] Restarted from beginning.");
 }
 
-// Complete Riddle #2: Unlock trait and award DSPOINC
+// Complete Riddle #2: Unlock trait and award dSPOINC
 async function completeRiddle2() {
   if (riddleState.riddle2.step2Complete) {
     // Show completion message
@@ -48538,7 +48538,7 @@ async function completeRiddle2() {
       }
     }
     
-    // Unlock trait and award DSPOINC via API
+    // Unlock trait and award dSPOINC via API
     const discordId = resolvedDiscordId;
     // Allow LOCAL_TEST_DISCORD for local testing (will create test data in database)
     if (discordId) {
@@ -48565,14 +48565,14 @@ async function completeRiddle2() {
         console.error("🧩 [RIDDLE #2] Error unlocking trait:", error);
       }
       
-      // Step 2: Award DSPOINC reward via API
+      // Step 2: Award dSPOINC reward via API
       try {
         const rewardPayload = {
           discord_id: discordId,
           discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
           riddle_id: 'CHEESE_TEMPLE_RIDDLE_02',
           level_id: 'CHEESE_TEMPLE_LVL1',
-          base_reward: 500, // 500 DSPOINC base reward for riddle completion
+          base_reward: 500, // 500 dSPOINC base reward for riddle completion
           session_id: cheeseSessionId
         };
         
@@ -48589,7 +48589,7 @@ async function completeRiddle2() {
           const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
           const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
           
-          // Update HUD with new DSPOINC balance
+          // Update HUD with new dSPOINC balance
           if (typeof totalDspoinc === "number") {
             currentTotalDspoinc = totalDspoinc;
             window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
@@ -48599,7 +48599,7 @@ async function completeRiddle2() {
           // Show reward notification
           showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
           
-          console.log("🧩 [RIDDLE #2] DSPOINC reward awarded successfully!", {
+          console.log("🧩 [RIDDLE #2] dSPOINC reward awarded successfully!", {
             dsPoincAwarded,
             totalDspoinc,
             multiplier: rewardResult.data?.multiplier,
@@ -48611,14 +48611,14 @@ async function completeRiddle2() {
             console.warn("🧩 [RIDDLE #2] Riddle already completed - no reward awarded");
             showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
           } else {
-            console.warn("🧩 [RIDDLE #2] DSPOINC reward failed:", rewardResult.error);
+            console.warn("🧩 [RIDDLE #2] dSPOINC reward failed:", rewardResult.error);
           }
         }
       } catch (error) {
-        console.error("🧩 [RIDDLE #2] Error awarding DSPOINC reward:", error);
+        console.error("🧩 [RIDDLE #2] Error awarding dSPOINC reward:", error);
       }
     } else {
-      console.warn("🧩 [RIDDLE #2] No Discord ID found - trait unlock and DSPOINC reward skipped");
+      console.warn("🧩 [RIDDLE #2] No Discord ID found - trait unlock and dSPOINC reward skipped");
     }
   }
 }
@@ -48704,13 +48704,13 @@ function unlockRiddleBlock() {
   }
 }
 
-// Complete the riddle and unlock trait + award DSPOINC
+// Complete the riddle and unlock trait + award dSPOINC
 async function completeRiddle() {
   if (riddleState.step2Complete) {
     // Show completion message
     showRiddleCompletionMessage();
     
-    // Unlock trait and award DSPOINC via API
+    // Unlock trait and award dSPOINC via API
     const discordId = resolvedDiscordId;
     // Allow LOCAL_TEST_DISCORD for local testing (will create test data in database)
     if (discordId) {
@@ -48737,14 +48737,14 @@ async function completeRiddle() {
         console.error("🧩 [RIDDLE] Error unlocking trait:", error);
       }
       
-      // Step 2: Award DSPOINC reward via API
+      // Step 2: Award dSPOINC reward via API
       try {
         const rewardPayload = {
           discord_id: discordId,
           discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
           riddle_id: 'CHEESE_TEMPLE_RIDDLE_01',
           level_id: 'CHEESE_TEMPLE_LVL1',
-          base_reward: 500, // 500 DSPOINC base reward for riddle completion
+          base_reward: 500, // 500 dSPOINC base reward for riddle completion
           session_id: cheeseSessionId
         };
         
@@ -48761,7 +48761,7 @@ async function completeRiddle() {
           const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
           const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
           
-          // Update HUD with new DSPOINC balance
+          // Update HUD with new dSPOINC balance
           if (typeof totalDspoinc === "number") {
             currentTotalDspoinc = totalDspoinc;
             window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
@@ -48771,7 +48771,7 @@ async function completeRiddle() {
           // Show reward notification
           showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
           
-          console.log("🧩 [RIDDLE] DSPOINC reward awarded successfully!", {
+          console.log("🧩 [RIDDLE] dSPOINC reward awarded successfully!", {
             dsPoincAwarded,
             totalDspoinc,
             multiplier: rewardResult.data?.multiplier,
@@ -48783,14 +48783,14 @@ async function completeRiddle() {
             console.warn("🧩 [RIDDLE] Riddle already completed - no reward awarded");
             showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
           } else {
-            console.warn("🧩 [RIDDLE] DSPOINC reward failed:", rewardResult.error);
+            console.warn("🧩 [RIDDLE] dSPOINC reward failed:", rewardResult.error);
           }
         }
       } catch (error) {
-        console.error("🧩 [RIDDLE] Error awarding DSPOINC reward:", error);
+        console.error("🧩 [RIDDLE] Error awarding dSPOINC reward:", error);
       }
     } else {
-      console.warn("🧩 [RIDDLE] No Discord ID found - trait unlock and DSPOINC reward skipped");
+      console.warn("🧩 [RIDDLE] No Discord ID found - trait unlock and dSPOINC reward skipped");
     }
   }
 }

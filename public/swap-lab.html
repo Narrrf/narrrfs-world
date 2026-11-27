@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🌉 SPOINC Gateway — Season 17 MouseFight Arena Economy | Narrrf's World</title>
-  <meta name="description" content="Narrrfs World Season 17 SPOINC Gateway: buy SPOINC, preview SPOINC to DSPOINC conversion, use protected V2 staking and Genesis Mouse Freezer utility, and understand the Mouseverse economy safely." />
+  <meta name="description" content="Narrrfs World Season 17 SPOINC Gateway: buy SPOINC, preview SPOINC to dSPOINC conversion, use protected V2 staking and Genesis Mouse Freezer utility, and understand the Mouseverse economy safely." />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0ea5e9" />
   <link rel="icon" href="favicon-phantom.png" type="image/png" />
@@ -402,21 +402,21 @@
         <div>
           <div class="flex flex-wrap gap-2">
             <span class="pill">Official SPOINC Gateway</span>
-            <span class="pill cyan">DSPOINC Economy Bridge</span>
+            <span class="pill cyan">dSPOINC Economy Bridge</span>
             <span class="pill green">Season 17 Gateway</span>
           </div>
           <h1 class="mt-6 text-4xl font-black leading-tight md:text-6xl">
             Buy SPOINC, bring it into the <span class="bg-gradient-to-r from-yellow-300 via-orange-300 to-pink-400 bg-clip-text text-transparent">Mouseverse</span>, and prepare V2 staking.
           </h1>
           <p class="mt-5 max-w-4xl text-lg leading-relaxed text-slate-300 md:text-xl">
-            The SPOINC Gateway is the Season 17 connection between the Solana token SPOINC and the Narrrfs in-game currency DSPOINC. Buy SPOINC, convert it into DSPOINC, then use DSPOINC for protected V2 staking, Genesis Mouse Freezer utility, Reward Chamber actions, and Mouseverse systems.
+            The SPOINC Gateway is the Season 17 connection between the Solana token SPOINC and the Narrrfs in-game currency dSPOINC. Buy SPOINC, convert it into dSPOINC, then use dSPOINC for protected V2 staking, Genesis Mouse Freezer utility, Reward Chamber actions, and Mouseverse systems.
           </p>
           <p class="mt-4 max-w-4xl text-base leading-relaxed text-slate-400">
-            Choose the path you trust most: buy through the Narrrfs page, buy directly on Gensuki, or bring already-owned SPOINC into Narrrfs World as DSPOINC. Public routes only work when the backend route safety flags are opened.
+            Choose the path you trust most: buy through the Narrrfs page, buy directly on Gensuki, or bring already-owned SPOINC into Narrrfs World as dSPOINC. Public routes only work when the backend route safety flags are opened.
           </p>
           <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a href="#buy-spoinc-card" class="btn primary">🌉 Buy SPOINC with SOL</a>
-            <a href="#convert-spoinc-card" class="btn green">🧀 Convert SPOINC → DSPOINC</a>
+            <a href="#convert-spoinc-card" class="btn green">🧀 Convert SPOINC → dSPOINC</a>
             <a href="https://app.gensuki.xyz/gunfun/custom-presale/7e04b38a-7bd4-4fab-acc4-dfa53a99b639" target="_blank" rel="noopener noreferrer" class="btn cyan">🟣 Open Gensuki Pool</a>
             <a href="stake-lab.html" class="btn ghost">🧊 V2 Stake Lab</a>
           </div>
@@ -438,9 +438,9 @@
               <div class="mt-1 text-xs text-slate-400">Only backend-enabled routes can create live transactions.</div>
             </div>
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div class="label">DSPOINC Settlement</div>
+              <div class="label">dSPOINC Settlement</div>
               <div id="ledgerState" class="mt-2 font-black text-red-200">OFF</div>
-              <div class="mt-1 text-xs text-slate-400">DSPOINC credits only after Gensuki confirms a signed transaction.</div>
+              <div class="mt-1 text-xs text-slate-400">dSPOINC credits only after Gensuki confirms a signed transaction.</div>
             </div>
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
               <div class="label">API Key</div>
@@ -461,7 +461,7 @@
     <div>
       <div class="pill cyan mb-4">📡 Live Gensuki Market Pulse</div>
 <h2 class="text-3xl font-black md:text-4xl">Season 17 Economy Gateway</h2>     <p class="mt-3 max-w-5xl text-sm leading-relaxed text-slate-300">
-  Check the key SPOINC and DSPOINC numbers before buying, converting, or preparing for V2 staking and NFT freezing.
+  Check the key SPOINC and dSPOINC numbers before buying, converting, or preparing for V2 staking and NFT freezing.
 </p>
     </div>
     <button id="refreshMarketPulseButton" class="btn cyan shrink-0" type="button">🔄 Refresh</button>
@@ -475,22 +475,22 @@
     </article>
 
     <article class="stat-card border-2 border-cyan-300/40 bg-cyan-400/10">
-      <div class="label">💎 DSPOINC Total Supply</div>
+      <div class="label">💎 dSPOINC Total Supply</div>
       <div id="economyTotalSupplyPublic" class="metric-value text-cyan-100">Loading...</div>
-      <div class="metric-hint">Live public DSPOINC economy supply.</div>
+      <div class="metric-hint">Live public dSPOINC economy supply.</div>
     </article>
 
     <article class="stat-card border-2 border-emerald-300/40 bg-emerald-400/10">
-      <div class="label">Available DSPOINC</div>
+      <div class="label">Available dSPOINC</div>
       <div id="availableDspoinc" class="metric-value text-emerald-100">Login needed</div>
-      <div class="metric-hint">Your spendable DSPOINC after frozen staking balance.</div>
+      <div class="metric-hint">Your spendable dSPOINC after frozen staking balance.</div>
     </article>
 
     <article class="stat-card border-2 border-purple-300/40 bg-purple-400/10">
   <div class="label">SPOINC Value Preview</div>
   <div id="maxConvertibleSpoinc" class="metric-value text-purple-100">—</div>
   <div id="availableSolValuePreview" class="mt-2 text-xl font-black text-purple-200">≈ — SOL</div>
-  <div class="metric-hint">Your available DSPOINC shown as SPOINC and estimated SOL value.</div>
+  <div class="metric-hint">Your available dSPOINC shown as SPOINC and estimated SOL value.</div>
 </article>
   </div>
 
@@ -509,13 +509,13 @@
       <article class="stat-card">
         <div class="label">Bridge Rate</div>
         <div id="bridgeRate" class="metric-value">10,000 : 1</div>
-        <div class="metric-hint">10,000 DSPOINC equals 1 SPOINC.</div>
+        <div class="metric-hint">10,000 dSPOINC equals 1 SPOINC.</div>
       </article>
 
       <article class="stat-card">
         <div class="label">📊 Average Holder Balance</div>
         <div id="economyAverageHolderPublic" class="metric-value">Loading...</div>
-        <div class="metric-hint">Average funded holder DSPOINC balance.</div>
+        <div class="metric-hint">Average funded holder dSPOINC balance.</div>
       </article>
 
       <article class="stat-card">
@@ -561,7 +561,7 @@
           <div class="pill green mb-4">🚪 Season 17 Gateway</div>
           <h2 class="text-3xl font-black md:text-4xl">Choose how you want to enter the Mouseverse economy</h2>
           <p class="mt-3 max-w-5xl text-sm leading-relaxed text-slate-300">
-            SPOINC lives on Solana. DSPOINC lives inside Narrrfs World. This gateway gives members three clear choices without hiding the safety rules.
+            SPOINC lives on Solana. dSPOINC lives inside Narrrfs World. This gateway gives members three clear choices without hiding the safety rules.
           </p>
         </div>
         <a href="profile.html" class="btn ghost shrink-0">👤 Check Profile Balance</a>
@@ -581,7 +581,7 @@
           <div class="pill pink mb-4">Path B</div>
           <h3 class="text-2xl font-black text-pink-100">Buy directly on Gensuki</h3>
           <p class="mt-3 text-sm leading-relaxed text-slate-300">
-            Prefer the original pool interface? Buy SPOINC on Gensuki, then return here to convert SPOINC into DSPOINC.
+            Prefer the original pool interface? Buy SPOINC on Gensuki, then return here to convert SPOINC into dSPOINC.
           </p>
           <a href="https://app.gensuki.xyz/gunfun/custom-presale/7e04b38a-7bd4-4fab-acc4-dfa53a99b639" target="_blank" rel="noopener noreferrer" class="btn cyan mt-5 w-full">🟣 Open Gensuki Pool</a>
         </article>
@@ -590,9 +590,9 @@
           <div class="pill green mb-4">Path C</div>
           <h3 class="text-2xl font-black text-emerald-100">Already hold SPOINC?</h3>
           <p class="mt-3 text-sm leading-relaxed text-slate-300">
-            Convert SPOINC into DSPOINC so it can be used in V2 staking, Genesis Mouse Freezer utility, Reward Chamber actions, games, events, and Season 17 systems.
+            Convert SPOINC into dSPOINC so it can be used in V2 staking, Genesis Mouse Freezer utility, Reward Chamber actions, games, events, and Season 17 systems.
           </p>
-          <a href="#convert-spoinc-card" class="btn green mt-5 w-full">🧀 Convert to DSPOINC</a>
+          <a href="#convert-spoinc-card" class="btn green mt-5 w-full">🧀 Convert to dSPOINC</a>
         </article>
       </div>
     </section>
@@ -603,7 +603,7 @@
        This is a frontend-only reusable bridge widget shell.
        The widget asks protected backend routes for quotes/intents and wallet signatures.
        It does not expose Gensuki API keys, does not decide settlement,
-       does not credit DSPOINC by itself, and does not bypass SPOINC bridge safety checks. -->
+       does not credit dSPOINC by itself, and does not bypass SPOINC bridge safety checks. -->
   <section id="swap-lab-dspoinc-buy-widget" class="mx-auto max-w-6xl px-4 md:px-6 mt-6">
     <div class="rounded-[2rem] border border-yellow-300/35 bg-gradient-to-br from-yellow-300/15 via-amber-900/20 to-cyan-400/10 p-5 md:p-7 shadow-2xl shadow-yellow-500/10">
       <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] items-stretch">
@@ -671,7 +671,7 @@
           <div class="pill mb-4">☀️ Step 1 • Buy SPOINC</div>
 <h3 class="text-2xl font-black text-yellow-100">Buy SPOINC through Narrrfs</h3>
 <p class="mt-2 text-sm leading-relaxed text-slate-300">
-  Choose SOL, EMPIRE, or FOOK as payment token. Narrrfs prepares the Gensuki /buy transaction, Phantom signs it, and Narrrfs records Gensuki confirmation. No DSPOINC is credited or deducted in this buy step.
+  Choose SOL, EMPIRE, or FOOK as payment token. Narrrfs prepares the Gensuki /buy transaction, Phantom signs it, and Narrrfs records Gensuki confirmation. No dSPOINC is credited or deducted in this buy step.
 </p>
 
 <div class="mt-4">
@@ -732,10 +732,10 @@
         </article>
 
         <article id="convert-spoinc-card" class="rounded-3xl border border-cyan-300/25 bg-cyan-400/10 p-5">
-          <div class="pill cyan mb-4">🧀 Step 2 • Convert to DSPOINC</div>
-          <h3 class="text-2xl font-black text-cyan-100">Convert SPOINC into DSPOINC</h3>
+          <div class="pill cyan mb-4">🧀 Step 2 • Convert to dSPOINC</div>
+          <h3 class="text-2xl font-black text-cyan-100">Convert SPOINC into dSPOINC</h3>
           <p class="mt-2 text-sm leading-relaxed text-slate-300">
-            This is the core Mouseverse bridge. Gensuki prepares the /claim transaction. Your wallet signs it. Narrrfs credits DSPOINC only after backend confirmation succeeds.
+            This is the core Mouseverse bridge. Gensuki prepares the /claim transaction. Your wallet signs it. Narrrfs credits dSPOINC only after backend confirmation succeeds.
           </p>
 
           <div class="mt-5 grid gap-4 lg:grid-cols-2">
@@ -748,7 +748,7 @@
             <div>
               <label for="realDepositAmount" class="label">SPOINC Amount</label>
               <input id="realDepositAmount" class="input mt-2" type="number" min="0" max="10000" step="0.0001" placeholder="Example: 1" value="1" />
-<p class="mt-2 text-xs text-slate-400">1 SPOINC credits 10,000 DSPOINC after confirmed settlement. Max: 10,000 SPOINC per conversion.</p>
+<p class="mt-2 text-xs text-slate-400">1 SPOINC credits 10,000 dSPOINC after confirmed settlement. Max: 10,000 SPOINC per conversion.</p>
             </div>
 
             <div class="lg:col-span-2">
@@ -762,12 +762,12 @@
               1️⃣ Create Conversion Transaction
             </button>
             <button id="confirmRealDepositButton" class="btn green" type="button">
-              2️⃣ Sign + Auto Credit DSPOINC
+              2️⃣ Sign + Auto Credit dSPOINC
             </button>
           </div>
 
           <div id="realDepositResult" class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
-            Ready to convert SPOINC into DSPOINC. DSPOINC is credited only after Gensuki confirmation.
+            Ready to convert SPOINC into dSPOINC. dSPOINC is credited only after Gensuki confirmation.
           </div>
         </article>
       </div>
@@ -779,7 +779,7 @@
           <div class="pill mb-4">🧭 Member Flow</div>
           <h2 class="text-3xl font-black md:text-4xl">What can members do here?</h2>
           <p class="mt-3 max-w-4xl text-slate-300">
-            This page guides members step by step: buy SPOINC through Narrrfs or Gensuki, convert SPOINC into DSPOINC, stake in V2, freeze NFTs, and use Mouseverse systems.
+            This page guides members step by step: buy SPOINC through Narrrfs or Gensuki, convert SPOINC into dSPOINC, stake in V2, freeze NFTs, and use Mouseverse systems.
           </p>
         </div>
         <a href="stake-lab.html" class="btn primary shrink-0">🧊 Attend V2 Staking</a>
@@ -793,18 +793,18 @@
         </article>
         <article class="step-card">
           <div class="text-3xl">2️⃣</div>
-          <h3 class="mt-3 text-xl font-black text-cyan-100">Swap to DSPOINC</h3>
-          <p class="mt-2 text-sm leading-relaxed text-slate-300">After public safety testing, SPOINC can be bridged into DSPOINC so it can be used inside games, labs, staking, raffles, rewards, and community utilities.</p>
+          <h3 class="mt-3 text-xl font-black text-cyan-100">Swap to dSPOINC</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">After public safety testing, SPOINC can be bridged into dSPOINC so it can be used inside games, labs, staking, raffles, rewards, and community utilities.</p>
         </article>
         <article class="step-card">
           <div class="text-3xl">3️⃣</div>
           <h3 class="mt-3 text-xl font-black text-emerald-100">Stake in V2</h3>
-          <p class="mt-2 text-sm leading-relaxed text-slate-300">Use DSPOINC in the V2 Stake Lab to freeze value, track rewards, and connect with Genesis holder boosts through the protected V2 systems.</p>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">Use dSPOINC in the V2 Stake Lab to freeze value, track rewards, and connect with Genesis holder boosts through the protected V2 systems.</p>
         </article>
         <article class="step-card">
           <div class="text-3xl">4️⃣</div>
           <h3 class="mt-3 text-xl font-black text-pink-100">Use the Mouseverse</h3>
-          <p class="mt-2 text-sm leading-relaxed text-slate-300">DSPOINC powers Narrrfs World actions: games, reward systems, Genesis Lab activity, future raffles, events, boosts, and ecosystem access.</p>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">dSPOINC powers Narrrfs World actions: games, reward systems, Genesis Lab activity, future raffles, events, boosts, and ecosystem access.</p>
         </article>
       </div>
     </section>
@@ -813,16 +813,16 @@
       <div id="conversion-panel" class="section-card p-5 md:p-7">
         <div class="pill mb-4">🔢 Conversion Preview</div>
         <h2 class="text-3xl font-black md:text-4xl">Preview the bridge rate</h2>
-        <p class="mt-3 text-slate-300">This calculator is educational and safe. It shows the bridge math, but it does not send a transaction and does not change your DSPOINC balance.</p>
+        <p class="mt-3 text-slate-300">This calculator is educational and safe. It shows the bridge math, but it does not send a transaction and does not change your dSPOINC balance.</p>
 
         <form id="previewForm" class="mt-6 grid gap-4">
           <div>
             <label for="directionSelect" class="label">Bridge Direction</label>
             <select id="directionSelect" class="select mt-2">
-              <option value="SPOINC_TO_DSPOINC">SPOINC → DSPOINC</option>
-              <option value="DSPOINC_TO_SPOINC">DSPOINC → SPOINC</option>
+              <option value="SPOINC_TO_DSPOINC">SPOINC → dSPOINC</option>
+              <option value="DSPOINC_TO_SPOINC">dSPOINC → SPOINC</option>
             </select>
-            <p id="directionExplain" class="mt-2 text-sm text-slate-400">Bring SPOINC into the Narrrfs in-game economy as DSPOINC.</p>
+            <p id="directionExplain" class="mt-2 text-sm text-slate-400">Bring SPOINC into the Narrrfs in-game economy as dSPOINC.</p>
           </div>
 
           <div class="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-end">
@@ -833,18 +833,18 @@
             <div class="flow-arrow mb-1">→</div>
             <div>
               <div class="label">Preview Output</div>
-              <div id="previewOutput" class="mt-2 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4 text-2xl font-black text-yellow-100">10,000 DSPOINC</div>
+              <div id="previewOutput" class="mt-2 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4 text-2xl font-black text-yellow-100">10,000 dSPOINC</div>
             </div>
           </div>
 
           <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-relaxed text-slate-300">
-            <div id="previewHint">1 SPOINC previews as 10,000 DSPOINC.</div>
+            <div id="previewHint">1 SPOINC previews as 10,000 dSPOINC.</div>
             <div class="mt-2 text-xs text-slate-500">Final public conversion will only open after private settlement testing is complete.</div>
           </div>
 
           <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <button id="previewButton" type="submit" class="btn primary">Preview Only — No Balance Change</button>
-            <a href="stake-lab.html" class="btn green">🧊 Use DSPOINC in V2 Stake Lab</a>
+            <a href="stake-lab.html" class="btn green">🧊 Use dSPOINC in V2 Stake Lab</a>
           </div>
         </form>
       </div>
@@ -852,7 +852,7 @@
       <aside class="profile-card p-5 md:p-7">
         <div class="pill cyan mb-4">👤 Your Profile Preview</div>
         <h2 class="text-2xl font-black md:text-3xl">Loaded member data</h2>
-        <p class="mt-3 text-sm leading-relaxed text-slate-300">When you are logged in, this card shows your DSPOINC state from the backend-authoritative balance preview.</p>
+        <p class="mt-3 text-sm leading-relaxed text-slate-300">When you are logged in, this card shows your dSPOINC state from the backend-authoritative balance preview.</p>
 
         <div class="mt-5 grid gap-3">
           <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -860,12 +860,12 @@
             <div id="profileIdentity" class="mt-2 font-black text-white">Not loaded yet</div>
           </div>
           <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div class="label">Available DSPOINC</div>
+            <div class="label">Available dSPOINC</div>
             <div id="profileAvailable" class="mt-2 text-xl font-black text-yellow-100">Login needed</div>
-            <p class="mt-1 text-xs text-slate-400">Available means total DSPOINC minus active frozen DSPOINC.</p>
+            <p class="mt-1 text-xs text-slate-400">Available means total dSPOINC minus active frozen dSPOINC.</p>
           </div>
           <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div class="label">Frozen DSPOINC</div>
+            <div class="label">Frozen dSPOINC</div>
             <div id="profileFrozen" class="mt-2 text-xl font-black text-cyan-100">—</div>
           </div>
           <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -884,7 +884,7 @@
     <section id="buy-guide" class="section-card mt-8 p-5 md:p-7">
       <div class="pill pink mb-4">💳 Buy SPOINC Guide</div>
       <h2 class="text-3xl font-black md:text-4xl">How buying and using SPOINC fits Narrrfs World</h2>
-      <p class="mt-3 max-w-5xl text-slate-300">SPOINC is the Solana token side. DSPOINC is the in-game Narrrfs value side. The bridge connects both worlds so members can choose whether they want token exposure, in-game utility, or staking utility.</p>
+      <p class="mt-3 max-w-5xl text-slate-300">SPOINC is the Solana token side. dSPOINC is the in-game Narrrfs value side. The bridge connects both worlds so members can choose whether they want token exposure, in-game utility, or staking utility.</p>
 
       <div class="mt-6 grid gap-4 lg:grid-cols-3">
         <article class="explain-card">
@@ -909,13 +909,13 @@
         </article>
         <article class="explain-card">
           <div class="pill">Swap</div>
-          <h3 class="mt-4 text-xl font-black text-white">Swap SPOINC to DSPOINC</h3>
-          <p class="mt-2 text-sm leading-relaxed text-slate-300">This is the core game bridge. Members who buy SPOINC can later bring value into the Narrrfs game economy as DSPOINC after the protected settlement flow is live.</p>
+          <h3 class="mt-4 text-xl font-black text-white">Swap SPOINC to dSPOINC</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">This is the core game bridge. Members who buy SPOINC can later bring value into the Narrrfs game economy as dSPOINC after the protected settlement flow is live.</p>
         </article>
         <article class="explain-card">
           <div class="pill green">Use</div>
           <h3 class="mt-4 text-xl font-black text-white">Stake, play, reward, build</h3>
-          <p class="mt-2 text-sm leading-relaxed text-slate-300">DSPOINC is useful across the Mouseverse: V2 staking, Genesis utility, games, events, raffles, reward systems, and future ecosystem features.</p>
+          <p class="mt-2 text-sm leading-relaxed text-slate-300">dSPOINC is useful across the Mouseverse: V2 staking, Genesis utility, games, events, raffles, reward systems, and future ecosystem features.</p>
         </article>
       </div>
     </section>
@@ -936,8 +936,8 @@
 
       <div class="section-card p-5 md:p-7">
         <div class="pill mb-4">🧊 V2 Staking Attention</div>
-        <h2 class="text-2xl font-black md:text-3xl">After you have DSPOINC, the next stop is V2 staking</h2>
-        <p class="mt-3 text-sm leading-relaxed text-slate-300">The SPOINC Gateway helps members understand the path. Buying SPOINC is not the end; the Mouseverse utility begins when DSPOINC connects to Narrrfs systems.</p>
+        <h2 class="text-2xl font-black md:text-3xl">After you have dSPOINC, the next stop is V2 staking</h2>
+        <p class="mt-3 text-sm leading-relaxed text-slate-300">The SPOINC Gateway helps members understand the path. Buying SPOINC is not the end; the Mouseverse utility begins when dSPOINC connects to Narrrfs systems.</p>
 
         <div class="mt-5 grid gap-3 md:grid-cols-2">
           <a href="stake-lab.html" class="btn primary w-full">🧊 Open V2 Stake Lab</a>
@@ -947,7 +947,7 @@
         </div>
 
         <div class="mt-5 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4 text-sm leading-relaxed text-yellow-50">
-          <strong>Simple member explanation:</strong> Buy SPOINC if you want the Solana token. Swap SPOINC to DSPOINC if you want to use value inside Narrrfs World. Stake or spend DSPOINC through the connected Season 17 systems when their backend routes are enabled.
+          <strong>Simple member explanation:</strong> Buy SPOINC if you want the Solana token. Swap SPOINC to dSPOINC if you want to use value inside Narrrfs World. Stake or spend dSPOINC through the connected Season 17 systems when their backend routes are enabled.
         </div>
       </div>
     </section>
@@ -959,7 +959,7 @@
   <h2 class="text-3xl font-black md:text-4xl">Choose the right SPOINC path</h2>
   <p class="mt-3 max-w-4xl text-slate-300">
     This section shows which SPOINC routes are open, paused, or still being prepared.
-    Use it as a simple guide before you buy, convert, or move between SPOINC and DSPOINC.
+    Use it as a simple guide before you buy, convert, or move between SPOINC and dSPOINC.
   </p>
 </div>
         <button id="refreshRoutesButton" class="btn ghost shrink-0" type="button">Refresh Routes</button>
@@ -975,7 +975,7 @@
           <div class="pill green mb-4">🧪 Private Tester Mode</div>
           <h2 class="text-3xl font-black text-emerald-100 md:text-4xl">Narrrf + justme preview tools</h2>
           <p class="mt-3 text-sm leading-relaxed text-slate-300">
-            This panel is only visible after backend tester allowlist confirmation. It creates audit-only preview rows for route testing and does not call Gensuki transaction endpoints or change DSPOINC balances.
+            This panel is only visible after backend tester allowlist confirmation. It creates audit-only preview rows for route testing and does not call Gensuki transaction endpoints or change dSPOINC balances.
           </p>
           <div id="testerIdentity" class="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-sm font-black text-emerald-100">Tester loading...</div>
         </div>
@@ -990,13 +990,13 @@
             <label for="testerAmount" class="label">Test Amount</label>
             <input id="testerAmount" class="input mt-2" type="number" min="0" step="0.000001" placeholder="Example: 1 or 10000" />
             <p class="mt-2 text-xs text-slate-400">
-              For DSPOINC → SPOINC, enter DSPOINC. For SPOINC → DSPOINC, enter SPOINC.
+              For dSPOINC → SPOINC, enter dSPOINC. For SPOINC → dSPOINC, enter SPOINC.
             </p>
           </div>
 
           <div class="grid gap-3 sm:grid-cols-2">
-            <button id="testerDspoincToSpoinc" class="btn primary" type="button">Intent: DSPOINC → SPOINC</button>
-            <button id="testerSpoincToDspoinc" class="btn cyan" type="button">Intent: SPOINC → DSPOINC</button>
+            <button id="testerDspoincToSpoinc" class="btn primary" type="button">Intent: dSPOINC → SPOINC</button>
+            <button id="testerSpoincToDspoinc" class="btn cyan" type="button">Intent: SPOINC → dSPOINC</button>
           </div>
         </div>
       </div>
@@ -1008,8 +1008,8 @@
       <h2 class="text-2xl font-black md:text-3xl">What remains protected</h2>
       <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-yellow-100">Backend flags decide access</div><p class="mt-1 text-sm text-slate-400">Public route buttons only execute after route flags are opened.</p></div>
-<div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No DSPOINC debit</div><p class="mt-1 text-sm text-slate-400">DSPOINC → SPOINC payout is still disabled.</p></div>
-<div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-emerald-100">SPOINC → DSPOINC tested live</div><p class="mt-1 text-sm text-slate-400">DSPOINC credit only happens after Gensuki confirmation.</p></div>
+<div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No dSPOINC debit</div><p class="mt-1 text-sm text-slate-400">dSPOINC → SPOINC payout is still disabled.</p></div>
+<div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-emerald-100">SPOINC → dSPOINC tested live</div><p class="mt-1 text-sm text-slate-400">dSPOINC credit only happens after Gensuki confirmation.</p></div>
 <div class="rounded-2xl border border-white/10 bg-black/20 p-4"><div class="font-black text-red-100">No frontend key</div><p class="mt-1 text-sm text-slate-400">Gensuki key stays backend-only.</p></div>
       </div>
     </section>
@@ -1278,7 +1278,7 @@ realDepositResult: document.getElementById('realDepositResult')
     }
 
     /**
- * Format DSPOINC economy numbers with Narrrfs public dot separators.
+ * Format dSPOINC economy numbers with Narrrfs public dot separators.
  */
 function formatDspoincEconomyNumber(value) {
   const numberValue = Number(value || 0);
@@ -1507,10 +1507,10 @@ function formatMarketAmount(value, maximumFractionDigits = 4) {
 }
 
 /**
- * Update the top value preview for the user's available DSPOINC.
+ * Update the top value preview for the user's available dSPOINC.
  *
  * Plain language for DEVS:
- * Available DSPOINC is an in-game balance. This preview converts it to the
+ * Available dSPOINC is an in-game balance. This preview converts it to the
  * internal SPOINC bridge equivalent and then estimates the SOL value using
  * Gensuki's live token_price_native. It is display-only and never moves funds.
  */
@@ -1987,7 +1987,7 @@ updateAvailableSolanaValuePreview();
 }
 
 /**
- * Load public DSPOINC economy totals for the Swap Lab top market pulse.
+ * Load public dSPOINC economy totals for the Swap Lab top market pulse.
  *
  * Plain language for DEVS:
  * This is read-only economy data. It must never mutate balances and must never
@@ -2016,14 +2016,14 @@ async function loadDspoincEconomyPulse() {
     const data = result.data;
 
     if (elements.economyTotalSupplyPublic) {
-      elements.economyTotalSupplyPublic.textContent = `${formatDspoincEconomyNumber(data.total_supply)} DSPOINC`;
+      elements.economyTotalSupplyPublic.textContent = `${formatDspoincEconomyNumber(data.total_supply)} dSPOINC`;
     }
 
     if (elements.economyAverageHolderPublic) {
-      elements.economyAverageHolderPublic.textContent = `${formatDspoincEconomyNumber(data.average_balance)} DSPOINC`;
+      elements.economyAverageHolderPublic.textContent = `${formatDspoincEconomyNumber(data.average_balance)} dSPOINC`;
     }
   } catch (error) {
-    console.warn('[SPOINC SWAP LAB] Failed to load DSPOINC economy pulse:', error);
+    console.warn('[SPOINC SWAP LAB] Failed to load dSPOINC economy pulse:', error);
 
     if (elements.economyTotalSupplyPublic) {
       elements.economyTotalSupplyPublic.textContent = 'Unavailable';
@@ -2066,7 +2066,7 @@ if (elements.marketPulseStatus) {
     <div class="font-black text-red-100">❌ Gensuki market pulse unavailable</div>
     <div class="mt-2 text-xs text-slate-400">
       The read-only presale details proxy did not return public-safe project data.
-      No transaction was created and no DSPOINC ledger movement happened.
+      No transaction was created and no dSPOINC ledger movement happened.
     </div>
   `;
 }
@@ -2076,10 +2076,10 @@ console.warn(error);
     }
 
  /**
- * Load the active user's DSPOINC bridge preview.
+ * Load the active user's dSPOINC bridge preview.
  *
  * DEVS FOR DECADES:
- * This function is read-only. It only displays backend-authoritative DSPOINC
+ * This function is read-only. It only displays backend-authoritative dSPOINC
  * balance math. It must not create bridge intents, clear transaction signatures,
  * or prepare settlement state.
  */
@@ -2133,10 +2133,10 @@ async function loadUserPreview() {
   }
 };
 
-elements.availableDspoinc.textContent = `${formatNumber(available, 0)} DSPOINC`;
+elements.availableDspoinc.textContent = `${formatNumber(available, 0)} dSPOINC`;
 elements.maxConvertibleSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
-elements.profileAvailable.textContent = `${formatNumber(available, 0)} DSPOINC`;
-elements.profileFrozen.textContent = `${formatNumber(frozen, 0)} DSPOINC`;
+elements.profileAvailable.textContent = `${formatNumber(available, 0)} dSPOINC`;
+elements.profileFrozen.textContent = `${formatNumber(frozen, 0)} dSPOINC`;
 elements.profileMaxSpoinc.textContent = `${formatFlexible(maxSpoinc, 4)} SPOINC`;
 elements.profileIdentity.textContent = `${state.discordName || 'Discord member'} (${activeDiscordId})`;
 
@@ -2199,7 +2199,7 @@ function getPublicRouteInfo(route) {
       pill: 'Ready',
       pillClass: 'cyan',
       status: 'Ready for public activation',
-      summary: 'Convert SPOINC into DSPOINC after wallet signing and Gensuki confirmation. DSPOINC is credited only after backend settlement succeeds.'
+      summary: 'Convert SPOINC into dSPOINC after wallet signing and Gensuki confirmation. dSPOINC is credited only after backend settlement succeeds.'
     };
   }
 
@@ -2208,7 +2208,7 @@ function getPublicRouteInfo(route) {
       pill: 'Protected',
       pillClass: 'red',
       status: 'Closed for V1 public launch',
-      summary: 'DSPOINC → SPOINC stays protected for now. It will open only after the next safety and recovery phase is complete.'
+      summary: 'dSPOINC → SPOINC stays protected for now. It will open only after the next safety and recovery phase is complete.'
     };
   }
 
@@ -2310,7 +2310,7 @@ function getBridgeExecutionClosedMessage(routeKey) {
   }
 
   if (routeKey === 'SPOINC_TO_DSPOINC') {
-    return 'SPOINC → DSPOINC conversion is not publicly enabled yet. The frontend is ready, but backend route flags still protect public execution.';
+    return 'SPOINC → dSPOINC conversion is not publicly enabled yet. The frontend is ready, but backend route flags still protect public execution.';
   }
 
   return 'This bridge route is currently protected and not publicly enabled.';
@@ -2323,23 +2323,23 @@ function getBridgeExecutionClosedMessage(routeKey) {
       if (direction === 'SPOINC_TO_DSPOINC') {
         elements.amountLabel.textContent = 'SPOINC Amount';
         elements.amountInput.placeholder = 'Example: 1.5';
-        elements.directionExplain.textContent = 'Bring SPOINC into the Narrrfs in-game economy as DSPOINC.';
+        elements.directionExplain.textContent = 'Bring SPOINC into the Narrrfs in-game economy as dSPOINC.';
         const dspoinc = Math.floor(amount * DSPOINC_PER_SPOINC);
-        elements.previewOutput.textContent = `${formatNumber(dspoinc, 0)} DSPOINC`;
+        elements.previewOutput.textContent = `${formatNumber(dspoinc, 0)} dSPOINC`;
         elements.previewHint.textContent = amount > 0
-          ? `${formatFlexible(amount, 6)} SPOINC previews as ${formatNumber(dspoinc, 0)} DSPOINC.`
-          : 'Enter a SPOINC amount to preview DSPOINC.';
+          ? `${formatFlexible(amount, 6)} SPOINC previews as ${formatNumber(dspoinc, 0)} dSPOINC.`
+          : 'Enter a SPOINC amount to preview dSPOINC.';
         return;
       }
 
-      elements.amountLabel.textContent = 'DSPOINC Amount';
+      elements.amountLabel.textContent = 'dSPOINC Amount';
       elements.amountInput.placeholder = 'Example: 10000';
-      elements.directionExplain.textContent = 'Convert game-earned DSPOINC into SPOINC after the protected flow opens.';
+      elements.directionExplain.textContent = 'Convert game-earned dSPOINC into SPOINC after the protected flow opens.';
       const spoinc = amount / DSPOINC_PER_SPOINC;
       elements.previewOutput.textContent = `${formatFlexible(spoinc, 6)} SPOINC`;
       elements.previewHint.textContent = amount > 0
-        ? `${formatNumber(amount, 0)} DSPOINC previews as ${formatFlexible(spoinc, 6)} SPOINC.`
-        : 'Enter a DSPOINC amount to preview SPOINC.';
+        ? `${formatNumber(amount, 0)} dSPOINC previews as ${formatFlexible(spoinc, 6)} SPOINC.`
+        : 'Enter a dSPOINC amount to preview SPOINC.';
     }
 
 /**
@@ -2431,7 +2431,7 @@ async function loadPrivateTesterAccess() {
             <div>Expected Output: <strong>${escapeHtml(preview.expected_output_amount || '—')}</strong></div>
           </div>
           <div class="mt-3 break-all text-xs text-slate-400">${escapeHtml(data.idempotency_id || '')}</div>
-          <div class="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">No transaction created. No Gensuki execution call. No DSPOINC balance change.</div>
+          <div class="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">No transaction created. No Gensuki execution call. No dSPOINC balance change.</div>
         `;
       } catch (error) {
         elements.testerResult.innerHTML = `<span class="text-red-200">❌ ${escapeHtml(error.message || 'Private intent preview failed.')}</span>`;
@@ -2580,7 +2580,7 @@ async function solanaAccountExists(connection, publicKey) {
  * DEVS FOR DECADES:
  * Gensuki may return either a legacy Solana Transaction or a VersionedTransaction.
  * We support both so the bridge can test before the final docs clarify the exact
- * claim response format. Frontend only signs; frontend never credits DSPOINC.
+ * claim response format. Frontend only signs; frontend never credits dSPOINC.
  */
 function decodeGensukiTransactionPayload(transactionPayload) {
   if (!window.solanaWeb3) {
@@ -2614,7 +2614,7 @@ function decodeGensukiTransactionPayload(transactionPayload) {
  * DEVS FOR DECADES:
  * Option B means Narrrfs does not manually build the SPOINC transfer anymore.
  * Gensuki prepares the /claim transaction. Phantom signs it. Narrrfs only settles
- * DSPOINC after backend confirmation succeeds.
+ * dSPOINC after backend confirmation succeeds.
  */
 async function sendGensukiClaimTransactionWithPhantom(intentData) {
   if (!window.solana || !window.solana.isPhantom) {
@@ -2684,7 +2684,7 @@ async function resolveGensukiClaimTransactionHash(intentData) {
  *
  * DEVS FOR DECADES:
  * This calls the Narrrfs backend, and the backend calls Gensuki /claim with
- * spoincAmount. This does not credit DSPOINC. Credit only happens after the
+ * spoincAmount. This does not credit dSPOINC. Credit only happens after the
  * confirm endpoint verifies the completed Gensuki lifecycle.
  */
 async function createRealSpoincDepositIntent() {
@@ -2706,7 +2706,7 @@ async function createRealSpoincDepositIntent() {
     return;
   }
 
-  elements.realDepositResult.textContent = 'Creating Gensuki SPOINC → DSPOINC claim intent...';
+  elements.realDepositResult.textContent = 'Creating Gensuki SPOINC → dSPOINC claim intent...';
 
   try {
     const response = await fetch(SPOINC_DEPOSIT_INTENT_ENDPOINT, {
@@ -2740,7 +2740,7 @@ async function createRealSpoincDepositIntent() {
       ? `
         <div class="mt-3 rounded-xl border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
           Click “Send with Phantom + Auto Credit” next. Swap Lab will use the Gensuki /claim response,
-          then call Narrrfs backend confirmation. DSPOINC credit only happens after backend confirmation.
+          then call Narrrfs backend confirmation. dSPOINC credit only happens after backend confirmation.
         </div>
       `
       : `
@@ -2755,7 +2755,7 @@ async function createRealSpoincDepositIntent() {
         <div>Intent ID: <strong id="latestRealDepositIntentId">${escapeHtml(data.intent_id)}</strong></div>
         <div>Route: <strong>${escapeHtml(data.route_key || 'SPOINC_TO_DSPOINC')}</strong></div>
         <div>SPOINC Input: <strong>${escapeHtml(data.spoinc_amount)} SPOINC</strong></div>
-        <div>Expected Credit: <strong>${escapeHtml(data.expected_dspoinc_amount)} DSPOINC</strong></div>
+        <div>Expected Credit: <strong>${escapeHtml(data.expected_dspoinc_amount)} dSPOINC</strong></div>
         <div>Gensuki Mode: <strong>${escapeHtml(responseMode)}</strong></div>
         <div>Idempotency: <strong>${escapeHtml(data.idempotency_id || '')}</strong></div>
       </div>
@@ -2770,7 +2770,7 @@ async function createRealSpoincDepositIntent() {
  * Confirm a SPOINC_TO_DSPOINC claim through Narrrfs backend.
  *
  * Plain language for DEVS:
- * DSPOINC is credited only after the backend verifies the signed transaction
+ * dSPOINC is credited only after the backend verifies the signed transaction
  * with Gensuki and settles the intent.
  */
 async function confirmRealSpoincDeposit() {
@@ -2804,7 +2804,7 @@ async function confirmRealSpoincDeposit() {
     }
 
     elements.realDepositSignature.value = transactionHash;
-    elements.realDepositResult.textContent = 'Transaction ready. Backend is confirming with Gensuki and settling DSPOINC...';
+    elements.realDepositResult.textContent = 'Transaction ready. Backend is confirming with Gensuki and settling dSPOINC...';
 
     const response = await fetch(SPOINC_DEPOSIT_CONFIRM_ENDPOINT, {
       method: 'POST',
@@ -2827,16 +2827,16 @@ async function confirmRealSpoincDeposit() {
     const data = payload.data || {};
 
     elements.realDepositResult.innerHTML = `
-      <div class="font-black text-emerald-200">✅ Gensuki claim confirmed — DSPOINC credited</div>
+      <div class="font-black text-emerald-200">✅ Gensuki claim confirmed — dSPOINC credited</div>
       <div class="mt-2 grid gap-2 md:grid-cols-2">
         <div>Intent ID: <strong>${escapeHtml(data.intent_id)}</strong></div>
         <div>Transaction ID: <strong>${escapeHtml(data.transaction_id || '')}</strong></div>
         <div>SPOINC: <strong>${escapeHtml(data.spoinc_amount)}</strong></div>
-        <div>Credited: <strong>${escapeHtml(data.credited_dspoinc_amount)} DSPOINC</strong></div>
+        <div>Credited: <strong>${escapeHtml(data.credited_dspoinc_amount)} dSPOINC</strong></div>
       </div>
       <div class="mt-3 break-all text-xs text-slate-400">${escapeHtml(data.signature || data.transactionHash || transactionHash)}</div>
       <div class="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">
-        Backend called Gensuki confirmation, blocked replay, credited DSPOINC once, and refreshed the Swap Lab balance preview.
+        Backend called Gensuki confirmation, blocked replay, credited dSPOINC once, and refreshed the Swap Lab balance preview.
       </div>
     `;
 
@@ -2852,7 +2852,7 @@ async function confirmRealSpoincDeposit() {
  *
  * DEVS FOR DECADES:
  * This is a Gensuki /buy wrapper for SOL, EMPIRE, and FOOK. It only prepares
- * a transaction for Phantom. It must never credit or debit DSPOINC.
+ * a transaction for Phantom. It must never credit or debit dSPOINC.
  */
 async function createGensukiBuyIntent() {
   const selectedToken = getSelectedGensukiBuyToken();
@@ -2920,7 +2920,7 @@ async function createGensukiBuyIntent() {
         <div>Gensuki Idempotency: <strong>${escapeHtml(data.gensuki_idempotency_id || '')}</strong></div>
       </div>
       <div class="mt-3 rounded-xl border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
-        Next step: click “Sign with Wallet + Confirm”. This buy step does not move DSPOINC. LUT is handled by Gensuki automatically.
+        Next step: click “Sign with Wallet + Confirm”. This buy step does not move dSPOINC. LUT is handled by Gensuki automatically.
       </div>
     `;
   } catch (error) {
@@ -2935,7 +2935,7 @@ async function createGensukiBuyIntent() {
  * This is used only after wallet/decode/signing fails before a usable Solana
  * signature is returned to the page. The backend must re-read the local intent,
  * look up the Gensuki transaction by idempotency, verify Solana not_found, and
- * confirm failed without DSPOINC/SPOINC ledger movement.
+ * confirm failed without dSPOINC/SPOINC ledger movement.
  */
 async function failAbandonedGensukiBuyIntent(intentData, reason, clientErrorMessage) {
   const intentId = String(intentData?.intent_id || '').trim();
@@ -2988,7 +2988,7 @@ async function failAbandonedGensukiBuyIntent(intentData, reason, clientErrorMess
  *
  * DEVS FOR DECADES:
  * Gensuki builds the transaction. Phantom signs. Narrrfs confirms after the
- * wallet returns a signature. No DSPOINC ledger action is allowed here.
+ * wallet returns a signature. No dSPOINC ledger action is allowed here.
  */
 async function sendGensukiBuyTransactionWithPhantom(intentData) {
   if (!window.solana || !window.solana.isPhantom) {
@@ -3040,7 +3040,7 @@ async function sendGensukiBuyTransactionWithPhantom(intentData) {
  *
  * Plain language for DEVS:
  * Buying SPOINC is on-chain only. This confirmation records the lifecycle but
- * never credits or deducts DSPOINC.
+ * never credits or deducts dSPOINC.
  */
 async function confirmGensukiBuyIntent() {
   const selectedToken = getSelectedGensukiBuyToken();
@@ -3096,11 +3096,11 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
         <div>Intent ID: <strong>${escapeHtml(data.intent_id || intentId)}</strong></div>
         <div>Transaction ID: <strong>${escapeHtml(data.transaction_id || '')}</strong></div>
         <div>Route: <strong>${escapeHtml(data.route_key || selectedRouteKey)}</strong></div>
-        <div>DSPOINC Movement: <strong>none</strong></div>
+        <div>dSPOINC Movement: <strong>none</strong></div>
       </div>
       <div class="mt-3 break-all text-xs text-slate-400">${escapeHtml(data.signature || data.transactionHash || transactionHash)}</div>
       <div class="mt-3 rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">
-        Buy confirmation finished. This only buys SPOINC on-chain and records the Gensuki confirmation. No DSPOINC was credited or deducted.
+        Buy confirmation finished. This only buys SPOINC on-chain and records the Gensuki confirmation. No dSPOINC was credited or deducted.
       </div>
     `;
 
@@ -3135,7 +3135,7 @@ const transactionHash = manualSignature || await sendGensukiBuyTransactionWithPh
             Nothing was confirmed on Solana from this page action.
           </div>
           <div class="mt-3 rounded-lg border border-yellow-300/20 bg-yellow-400/10 p-3 text-xs text-yellow-50">
-            No DSPOINC was credited or deducted by Narrrfs. No local bridge settlement happened.
+            No dSPOINC was credited or deducted by Narrrfs. No local bridge settlement happened.
           </div>
           <div class="mt-3 rounded-lg border ${cleanupResult.success ? 'border-emerald-300/25 bg-emerald-500/10 text-emerald-100' : 'border-yellow-300/20 bg-yellow-400/10 text-yellow-50'} p-3 text-xs">
             ${cleanupResult.success
@@ -3172,7 +3172,7 @@ if (elements.refreshMarketPulseButton) {
     });
 
     loadDspoincEconomyPulse().catch((error) => {
-      console.warn('[SPOINC SWAP LAB] DSPOINC economy pulse refresh failed:', error);
+      console.warn('[SPOINC SWAP LAB] dSPOINC economy pulse refresh failed:', error);
     });
   });
 }
@@ -3229,7 +3229,7 @@ updateCalculator();
   }
 
   loadDspoincEconomyPulse().catch((error) => {
-    console.warn('[SPOINC SWAP LAB] Non-critical DSPOINC economy pulse failed:', error);
+    console.warn('[SPOINC SWAP LAB] Non-critical dSPOINC economy pulse failed:', error);
   });
 
   try {

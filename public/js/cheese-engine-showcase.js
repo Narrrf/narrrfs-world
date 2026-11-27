@@ -41,7 +41,7 @@
     cheddar: {
       iconCode: "🪙 CHEDDAR VAULT",
       cheeseName: "Golden Cheddar Treasury & Mint",
-      tagline: "Audits DSPOINC ledgers, SPOINC bridge flow & reward drops"
+      tagline: "Audits dSPOINC ledgers, SPOINC bridge flow & reward drops"
     },
     lab: {
       iconCode: "🧪 GENETIC LAB",
@@ -203,7 +203,7 @@
       name: "Chief Cheddar Accountant",
       deptKey: "cheddar",
       roleLabel: "Treasury Specialist • Balance Integrity",
-      summary: "Watches every single DSPOINC crumb so arena prizes, store purchases, and leaderboard totals balance down to the last bite.",
+      summary: "Watches every single dSPOINC crumb so arena prizes, store purchases, and leaderboard totals balance down to the last bite.",
       ctaLabel: "🏆 Economy Leaders",
       ctaHref: "leaderboard.html",
       x: 624, y: 280, w: 126, h: 50, color: "var(--ce-violet)"
@@ -224,7 +224,7 @@
       id: "role-18",
       badge: "#18",
       shortLabel: "SPOINC Bridge",
-      name: "SPOINC ↔ DSPOINC Alchemist",
+      name: "SPOINC ↔ dSPOINC Alchemist",
       deptKey: "cheddar",
       roleLabel: "Treasury Specialist • Swap Lab",
       summary: "Operates verified SPOINC gateway paths and Swap Lab conversion routes bridging ecosystem tokens with in-world cheese utility.",
@@ -543,7 +543,7 @@
       maxMs: 13000
     },
     {
-      label: "💱 SPOINC ↔ DSPOINC Alchemist",
+      label: "💱 SPOINC ↔ dSPOINC Alchemist",
       group: "swap",
       working: ["role-1", "role-18"],
       recent: ["role-4"],

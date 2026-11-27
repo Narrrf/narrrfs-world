@@ -533,7 +533,7 @@ function initSnake() {
     applesRequired: [5, 10, 10, 10, 10, 10, 10, 10, 10],  // Baby: 5 apples (easy!), others: 10
     goldenApplesRequired: 10,
     
-    // 💰 DSPOINC rewards
+    // 💰 dSPOINC rewards
     rewards: [30, 50, 80, 120, 170, 230, 300, 400, 550],  // Baby: 30, Boss 9: 550
     
     // 🎨 Boss colors (progressive danger)
@@ -907,7 +907,7 @@ function initSnake() {
       // Award bonus points
       score += bonusPoints;
       totalBossesDefeated++; // Increment boss counter after using bossNumber
-      console.log(`🏆 ${bossName} defeated! Bonus: ${bonusPoints} DSPOINC`);
+      console.log(`🏆 ${bossName} defeated! Bonus: ${bonusPoints} dSPOINC`);
       
       // 🚨 PAUSE GAME for victory countdown
       isSnakePaused = true;
@@ -1587,7 +1587,7 @@ function initSnake() {
                   width: 400px;
                   pointer-events: auto;">
         <div style="font-size: clamp(20px, 5vw, 28px);">${victoryTitle}</div>
-        <div style="font-size: clamp(16px, 4vw, 22px); color: #FFD700; margin-top: 8px;">+${bonus} DSPOINC!</div>
+        <div style="font-size: clamp(16px, 4vw, 22px); color: #FFD700; margin-top: 8px;">+${bonus} dSPOINC!</div>
       </div>
       <style>
         @keyframes countdownPulse {
@@ -1918,10 +1918,10 @@ function initSnake() {
       const roleMultiplier = getSnakeRoleScoreMultiplier();
       
       if (roleMultiplier > 1.0) {
-        // Show DSPOINC score (already calculated with multiplier)
-        scoreDisplay.textContent = `💰 Snake Score: $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+        // Show dSPOINC score (already calculated with multiplier)
+        scoreDisplay.textContent = `💰 Snake Score: $${score} dSPOINC (${roleMultiplier}x Role Bonus!)`;
       } else {
-        scoreDisplay.textContent = `💰 Snake Score: $${score} DSPOINC`;
+        scoreDisplay.textContent = `💰 Snake Score: $${score} dSPOINC`;
       }
     }
   }
@@ -1950,7 +1950,7 @@ function initSnake() {
 
   // ✅ TRAIT TRIGGER FUNCTION (only when x cheese eaten defined in score threshold is passed for first time)
   function tryActivateMutation(score) {
-    if (score >= 1000 && !window.brainUnlocked) { // Updated from 100 to 1000 (score is now in DSPOINC)
+    if (score >= 1000 && !window.brainUnlocked) { // Updated from 100 to 1000 (score is now in dSPOINC)
       unlockTrait("GENETIC_SENTINEL");
       mutationActive = true;
       localStorage.setItem("snake_mutation", "true");
@@ -2327,7 +2327,7 @@ function initSnake() {
       
       // Role-based scoring with multipliers
       const roleMultiplier = getSnakeRoleScoreMultiplier();
-      const baseScore = 10; // Changed from 1 to 10 for proper DSPOINC calculation
+      const baseScore = 10; // Changed from 1 to 10 for proper dSPOINC calculation
       const totalScore = Math.floor(baseScore * roleMultiplier);
       score += totalScore;
       
@@ -2368,10 +2368,10 @@ function initSnake() {
         spawnGiantCheeseBoss(cheeseEaten, bossNumber);
       }
       
-      // 🎵 Check for score milestones (every 100 DSPOINC)
+      // 🎵 Check for score milestones (every 100 dSPOINC)
       if (score % 100 === 0) {
         snakeSounds.playSound('scoreMilestone');
-        console.log(`🎵 Score milestone reached: ${score} DSPOINC!`);
+        console.log(`🎵 Score milestone reached: ${score} dSPOINC!`);
       }
       
       updateScore();
@@ -2426,9 +2426,9 @@ function initSnake() {
 
     if (modal && finalScoreText) {
       // ✅ Only update score content, no style changes — handled in HTML
-      // Score is already in DSPOINC (baseScore = 10 with role multiplier applied)
-      finalScoreText.textContent = `You earned $${finalScore} DSPOINC`;
-      console.log("🐍 Displaying final score:", finalScore, "DSPOINC");
+      // Score is already in dSPOINC (baseScore = 10 with role multiplier applied)
+      finalScoreText.textContent = `You earned $${finalScore} dSPOINC`;
+      console.log("🐍 Displaying final score:", finalScore, "dSPOINC");
 
       modal.classList.remove("hidden");
       modal.style.display = "flex"; // fallback for older browsers
@@ -2478,9 +2478,9 @@ function initSnake() {
     
     // Check achievements based on current game state
     // 🏆 REVISED 2025-10-26: Score thresholds based on realistic max (Grid: 10×20 = 200 tiles)
-    // Theoretical max: 3,920 DSPOINC (196 cheese with VIP 2.0x, 98% grid coverage)
-    // Expert realistic: 2,000 DSPOINC (100 cheese, 50% grid coverage)
-    // Legendary challenge: 3,500 DSPOINC (175 cheese, 88% grid coverage)
+    // Theoretical max: 3,920 dSPOINC (196 cheese with VIP 2.0x, 98% grid coverage)
+    // Expert realistic: 2,000 dSPOINC (100 cheese, 50% grid coverage)
+    // Legendary challenge: 3,500 dSPOINC (175 cheese, 88% grid coverage)
     const achievements = [
       // === CHEESE-BASED (5 achievements) ===
       { key: 'first_cheese', condition: cheeseEaten >= 1 },
@@ -3037,7 +3037,7 @@ function saveScore(finalScore) {
                        const li = document.createElement("li");
                        const emoji = rankEmojis[i] || "";
 
-                       li.innerHTML = `${emoji} #${i + 1} <strong>${name}</strong> – ${entry.score} $DSPOINC`;
+                       li.innerHTML = `${emoji} #${i + 1} <strong>${name}</strong> – ${entry.score} $dSPOINC`;
                        li.classList.add("animate-pop", rankColors[i] || "text-white");
                        list.appendChild(li);
                      });
@@ -3272,7 +3272,7 @@ startGameWithCountdown();
 ------------------------------------------------------------
 ✅ FEATURE OVERVIEW:
 - Cheese-styled food block (png)
-- Game Over modal with DSPOINC score
+- Game Over modal with dSPOINC score
 - Discord + Wallet linked save logic
 - Countdown overlay intro (5..GO!)
 - Touch gesture controls for mobile
@@ -3342,7 +3342,7 @@ function showWLNotification(wlData) {
       <div>
         <div class="font-bold text-lg">WL Role Granted!</div>
         <div class="text-sm opacity-90">${roleName}</div>
-        <div class="text-xs opacity-75">+${wlData.bonus_points} DSPOINC Bonus</div>
+        <div class="text-xs opacity-75">+${wlData.bonus_points} dSPOINC Bonus</div>
       </div>
     </div>
   `;

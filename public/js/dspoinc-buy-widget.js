@@ -2,11 +2,11 @@
  * Narrrfs dSPOINC Buy Widget.
  *
  * Plain language for DEVS FOR DECADES:
- * This file is frontend UI only. It lets a logged-in player enter a DSPOINC
+ * This file is frontend UI only. It lets a logged-in player enter a dSPOINC
  * amount, request an authoritative backend quote, and start the protected
- * SOL -> SPOINC -> DSPOINC bridge flow.
+ * SOL -> SPOINC -> dSPOINC bridge flow.
  *
- * This file must never credit DSPOINC, decide settlement, bypass Gensuki,
+ * This file must never credit dSPOINC, decide settlement, bypass Gensuki,
  * bypass Solana verification, or write economy state. The backend remains
  * authoritative for quote, transaction payload, confirmation, and credit.
  */
@@ -297,7 +297,7 @@
    *
    * DEVS FOR DECADES:
    * Gensuki may return either a legacy Solana Transaction or a VersionedTransaction.
-   * Frontend only signs/sends. Frontend never credits DSPOINC.
+   * Frontend only signs/sends. Frontend never credits dSPOINC.
    */
   async function decodeGensukiTransactionPayload(transactionPayload) {
     const solanaWeb3 = await ensureSolanaWeb3();

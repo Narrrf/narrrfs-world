@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0ea5e9" />
 <meta
   name="description"
-  content="Narrrf's World Season 17 leaderboards: fresh MouseFight Arena competition, archived Season 14 legends, DSPOINC earners, arcade scores, and official 10-game ecosystem rankings."
+  content="Narrrf's World Season 17 leaderboards: fresh MouseFight Arena competition, archived Season 14 legends, dSPOINC earners, arcade scores, and official 10-game ecosystem rankings."
 />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" href="favicon-phantom.png" type="image/png">
@@ -45,7 +45,7 @@
      * leaderboard row background, including gold/silver/bronze rank rows.
      *
      * This is presentation-only. It does not change scores, sorting, seasons,
-     * role detection, Discord role grants, tbl_user_roles, DSPOINC, staking,
+     * role detection, Discord role grants, tbl_user_roles, dSPOINC, staking,
      * MouseFight, or Fight Recovery.
      */
     .monthly-legend-role {
@@ -251,7 +251,7 @@
    DEVS FOR DECADES:
    Visual-only leaderboard atmosphere. This does not control API calls,
    season detection, frozen leaderboard logic, score sorting, player rows,
-   DSPOINC totals, or game leaderboard data. */
+   dSPOINC totals, or game leaderboard data. */
 :root {
   --season12-orange: #f97316;
   --season12-amber: #f59e0b;
@@ -392,7 +392,7 @@ body.season12-leaderboard-shell {
   <!-- ☀️ Season 12 leaderboard background.
        DEVS FOR DECADES:
        Visual-only atmosphere. Does not change leaderboard API fetches,
-       season state, frozen display logic, score rows, or DSPOINC totals. -->
+       season state, frozen display logic, score rows, or dSPOINC totals. -->
   <div class="leaderboard-summer-bg"></div>
   <!-- Header -->
   <header class="leaderboard-season12-header sticky top-0 z-50">
@@ -449,14 +449,14 @@ body.season12-leaderboard-shell {
 
     <!-- Leaderboard Content -->
     <div id="leaderboard-content" class="hidden">
-      <!-- DSPOINC Earnings Leaderboard (Season Top Earners) -->
+      <!-- dSPOINC Earnings Leaderboard (Season Top Earners) -->
       <div class="leaderboard-card rounded-xl p-6 mb-6 border-4 border-yellow-400 shadow-2xl">
         <h2 class="text-3xl font-bold text-yellow-300 mb-2 flex items-center gap-2">
           <span>💰</span>
           <span id="season-leaderboard-title">Current Season Leaderboard</span>
         </h2>
         <p class="text-sm text-yellow-100 mb-4 opacity-90">
-  Top 10 DSPOINC earners across games, missions, rewards, and platform actions.
+  Top 10 dSPOINC earners across games, missions, rewards, and platform actions.
 </p>
         <div id="dspoinc-earnings-leaderboard" class="space-y-2">
           <!-- Populated by JavaScript -->
@@ -592,7 +592,7 @@ body.season12-leaderboard-shell {
               <span>Labyrinth Blast Leaderboard</span>
             </h2>
             <p class="text-sm text-cyan-100/80 mt-2">
-              Top maze survivors by DSPOINC reward score • Bomb walls, dodge rivals, and reach the portal.
+              Top maze survivors by dSPOINC reward score • Bomb walls, dodge rivals, and reach the portal.
             </p>
           </div>
 
@@ -1588,14 +1588,14 @@ async function loadLeaderboard() {
         `🎮 ${displayedSeasonLabel} Active`;
     }
 
-    // Label the first DSPOINC board with the season whose rows are actually shown.
+    // Label the first dSPOINC board with the season whose rows are actually shown.
     if (seasonLeaderboardTitle) {
       seasonLeaderboardTitle.textContent = isPreSeason15Data
-        ? 'Current DSPOINC Rankings'
+        ? 'Current dSPOINC Rankings'
         : `${displayedSeasonLabel} Leaderboard`;
     }
 
-    // Display DSPOINC earnings leaderboard (season top earners - at top)
+    // Display dSPOINC earnings leaderboard (season top earners - at top)
 displayLeaderboard('dspoinc-earnings', data.dspoinc_earnings || [], data.is_frozen);
 
 // Display leaderboards
@@ -1606,7 +1606,7 @@ displayLeaderboard('cheeseman', data.cheeseman || [], data.is_frozen);
 displayLeaderboard('cheese-hunt', data.cheese_hunt || [], data.is_frozen);
 displayLeaderboard('discord-race', data.discord_race || [], data.is_frozen);
 displayLeaderboard('cheese-rumble', data.cheese_rumble || [], data.is_frozen);
-displayLeaderboard('labyrinth-blast', data.labyrinth_blast || [], data.is_frozen, 'DSPOINC');
+displayLeaderboard('labyrinth-blast', data.labyrinth_blast || [], data.is_frozen, 'dSPOINC');
 
 // 🧬 Top Genetic leaderboard
 displayMouseLeaderboard(data.mouse_leaderboard || [], data.is_frozen);
@@ -1730,7 +1730,7 @@ console.log('🏆 Leaderboard data loaded:', {
      * appears on leaderboard.html.
      *
      * This is presentation-only. It does not change scores, sorting, seasons,
-     * DSPOINC, role grants, or database rows.
+     * dSPOINC, role grants, or database rows.
      */
     function getAnyMonthlyLegendRole(roles) {
       if (!roles || !Array.isArray(roles) || roles.length === 0) return null;
@@ -1787,7 +1787,7 @@ console.log('🏆 Leaderboard data loaded:', {
      * or Holder, even when the backend reports a Monthly Legend as highest_role.
      *
      * This is presentation-only. It does not change role rows, Discord roles,
-     * score sorting, DSPOINC, staking, MouseFight, or Fight Recovery.
+     * score sorting, dSPOINC, staking, MouseFight, or Fight Recovery.
      */
     function getHighestNormalLeaderboardRole(roles, fallbackRole = 'Member') {
       const roleList = Array.isArray(roles) ? roles : [];
@@ -2005,7 +2005,7 @@ console.log('🏆 Leaderboard data loaded:', {
       // Determine score label based on game (or use custom label)
       let scoreLabel = customLabel || 'score';
       if (!customLabel) {
-        if (game === 'dspoinc-earnings') scoreLabel = 'DSPOINC';
+        if (game === 'dspoinc-earnings') scoreLabel = 'dSPOINC';
         else if (game === 'cheese-hunt') scoreLabel = 'clicks';
         else if (game === 'discord-race') scoreLabel = 'races';
         else if (game === 'cheese-rumble') scoreLabel = 'rumbles';

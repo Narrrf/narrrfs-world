@@ -632,7 +632,7 @@
         <div class="mb-5">
           <div class="text-xs uppercase tracking-[.24em] text-green-200 font-black">Temporary combat formats</div>
           <h2 class="text-3xl md:text-4xl font-black">Battle Mode Laboratory</h2>
-          <p class="text-slate-400 mt-2 max-w-3xl">Battle modes affect only temporary MouseFight calculations. They do not modify Genesis metadata, permanent traits, abilities, ownership, Lab progression, Genetic Items, DSPOINC, SPL tokens, or Fight Recovery.</p>
+          <p class="text-slate-400 mt-2 max-w-3xl">Battle modes affect only temporary MouseFight calculations. They do not modify Genesis metadata, permanent traits, abilities, ownership, Lab progression, Genetic Items, dSPOINC, SPL tokens, or Fight Recovery.</p>
         </div>
         <div id="modeGrid" class="grid md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
       </section>
@@ -2130,9 +2130,9 @@
         const winnerMouse = mouseName(winner);
         const economy = fight.configured_economy || {};
         const economyParts = [];
-        if (number(economy.wager_dspoinc_per_player) > 0) economyParts.push(`${number(economy.wager_dspoinc_per_player)} DSPOINC wager`);
-        if (number(economy.entry_cost_dspoinc) > 0) economyParts.push(`${number(economy.entry_cost_dspoinc)} DSPOINC entry`);
-        if (number(economy.prize_dspoinc) > 0) economyParts.push(`${number(economy.prize_dspoinc)} DSPOINC configured prize`);
+        if (number(economy.wager_dspoinc_per_player) > 0) economyParts.push(`${number(economy.wager_dspoinc_per_player)} dSPOINC wager`);
+        if (number(economy.entry_cost_dspoinc) > 0) economyParts.push(`${number(economy.entry_cost_dspoinc)} dSPOINC entry`);
+        if (number(economy.prize_dspoinc) > 0) economyParts.push(`${number(economy.prize_dspoinc)} dSPOINC configured prize`);
         return `<article class="rounded-3xl border border-white/10 bg-black/25 p-5">
           <div class="flex flex-wrap items-center justify-between gap-2"><div class="flex flex-wrap gap-2"><span class="rounded-full border border-orange-300/20 bg-orange-300/10 px-3 py-1 text-xs font-black text-orange-100">${escapeHtml(fightTypeLabel(fight.mode))}</span><span class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-100">${escapeHtml(battleModeLabel(fight.battle_mode))}</span></div><span class="text-xs text-slate-500">${escapeHtml(dateLabel(fight.ended_at || fight.created_at))}</span></div>
           <h3 class="text-xl font-black mt-4">${escapeHtml(fight.title || `MouseFight ${fight.fight_id}`)}</h3>

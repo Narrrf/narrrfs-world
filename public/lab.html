@@ -392,7 +392,7 @@ hydrateSession();
 /* Genetic Marketplace history toggle.
    DEVS FOR DECADES:
    This is visual-only. It does not change marketplace history loading,
-   filters, buying, selling, cancelling, DSPOINC, or inventory behavior. */
+   filters, buying, selling, cancelling, dSPOINC, or inventory behavior. */
 .genetic-history-toggle {
   border: 1px solid rgba(34, 211, 238, 0.42);
   background:
@@ -1834,7 +1834,7 @@ hydrateSession();
    Visual-only mouse overview layer for the slider cards.
    This reads already-loaded frontend Lab state from getNftUpgradeSummary(),
    trait upgrade display rows, and verified Genesis NFT traits.
-   It does not decide rewards, ownership, timers, DSPOINC, ability unlocks,
+   It does not decide rewards, ownership, timers, dSPOINC, ability unlocks,
    inventory, marketplace state, or backend permissions. */
 .slider-training-overview {
   display: grid;
@@ -2462,7 +2462,7 @@ hydrateSession();
    DEVS FOR DECADES:
    Visual-only helper area above the real Lab Control Panel.
    These cards only call existing tab navigation and do not decide rewards,
-   ownership, timers, DSPOINC, marketplace state, or backend permissions. */
+   ownership, timers, dSPOINC, marketplace state, or backend permissions. */
 .lab-quickstart-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2564,7 +2564,7 @@ hydrateSession();
 /* Lab member helper panel.
    DEVS FOR DECADES:
    Visual/navigation-only helper beside the Lab Quick Start.
-   These links do not decide login state, ownership, rewards, DSPOINC,
+   These links do not decide login state, ownership, rewards, dSPOINC,
    inventory, timers, marketplace state, or verification results.
    Discord login uses getDiscordLoginUrl(), matching the common auth flow. */
 .lab-member-helper-panel {
@@ -2724,7 +2724,7 @@ hydrateSession();
    DEVS FOR DECADES:
    Visual-only readability fix for the top Lab helper area.
    This does not control tab switching, Discord login, rewards, ownership,
-   DSPOINC, verification, inventory, marketplace state, or backend permissions. */
+   dSPOINC, verification, inventory, marketplace state, or backend permissions. */
 .lab-command-panel,
 .lab-member-helper-panel,
 .lab-quickstart-card,
@@ -5432,7 +5432,7 @@ body::after {
 /* Genesis Ability Matrix premium layout.
    DEVS FOR DECADES:
    This is visual-only. Backend remains authoritative for owner binding,
-   unlock levels, DSPOINC cost, timers, active upgrade locks, and final state. */
+   unlock levels, dSPOINC cost, timers, active upgrade locks, and final state. */
 #genesisAbilityMatrixSection {
   position: relative;
   overflow: hidden;
@@ -5821,7 +5821,7 @@ body::after {
    This scoped block intentionally comes AFTER the older Ability Matrix CSS.
    It prevents old grid/media rules from forcing Ability cards into a left-bound
    single column on desktop. Visual-only: backend remains authoritative for
-   ownership, unlock levels, DSPOINC cost, timers, and ability state. */
+   ownership, unlock levels, dSPOINC cost, timers, and ability state. */
 #genesisAbilityMatrixSection {
   width: 100%;
   max-width: 100%;
@@ -5898,7 +5898,7 @@ body::after {
 /* 🏪 Marketplace view toggle + list view.
    DEVS FOR DECADES:
    This is frontend-only display logic for issue #814.
-   It does not change marketplace filters, buy/cancel/create APIs, DSPOINC,
+   It does not change marketplace filters, buy/cancel/create APIs, dSPOINC,
    inventory ownership, listing state, or Genetic progression rules. */
 .genetic-marketplace-view-toggle {
   display: flex;
@@ -5923,7 +5923,7 @@ body::after {
 /* 📋 Shared Lab list-view shells.
    DEVS FOR DECADES:
    These list modes are frontend-only display layers.
-   They do not mutate inventory, DSPOINC, timers, ownership, listings, or rewards. */
+   They do not mutate inventory, dSPOINC, timers, ownership, listings, or rewards. */
 #geneticInventoryGrid.genetic-inventory-list-view,
 #geneticShopGrid.genetic-shop-list-view,
 #activeResearchQueue.research-queue-list-view {
@@ -6051,7 +6051,7 @@ body::after {
    DEVS FOR DECADES:
    This is a frontend-only queue display layer.
    It does not decide claim readiness, timer completion, ownership, costs,
-   DSPOINC, or Genesis progression. Backend-loaded upgrade rows remain source of truth. */
+   dSPOINC, or Genesis progression. Backend-loaded upgrade rows remain source of truth. */
 #activeResearchQueue.research-queue-list-view {
   display: block;
   overflow-x: auto;
@@ -6304,7 +6304,7 @@ body::after {
    DEVS FOR DECADES:
    This is visual-only styling for the Inventory table view.
    It must not change upgrade logic, inventory state, listing behavior,
-   DSPOINC, timers, backend authority, or marketplace rules. */
+   dSPOINC, timers, backend authority, or marketplace rules. */
 #geneticInventoryGrid.genetic-inventory-list-view {
   padding: 10px;
   border-radius: 22px;
@@ -6461,7 +6461,7 @@ body::after {
    DEVS FOR DECADES:
    This is frontend-only display logic for issue #814.
    The list view is a comparison table, not a card grid. Buy/cancel/create APIs,
-   DSPOINC, inventory ownership, listing state, and Genetic progression remain backend-owned. */
+   dSPOINC, inventory ownership, listing state, and Genetic progression remain backend-owned. */
 .genetic-marketplace-table {
   width: 100%;
   min-width: 760px;
@@ -6496,7 +6496,7 @@ body::after {
    DEVS FOR DECADES:
    This is frontend-only table sorting for large marketplace views.
    Sorting changes display order only. It does not change listings, prices,
-   ownership, DSPOINC, inventory, or marketplace backend rules. */
+   ownership, dSPOINC, inventory, or marketplace backend rules. */
 .genetic-marketplace-sort-button {
   width: 100%;
   display: inline-flex;
@@ -6583,7 +6583,7 @@ body::after {
    The real price column stays in the table for desktop/list comparison.
    On phones, the sticky Actions column can hide the price column off-screen,
    so this mirrors the same display price above View/Buy.
-   This is visual-only. Buy price and DSPOINC spending remain backend-owned. */
+   This is visual-only. Buy price and dSPOINC spending remain backend-owned. */
 .table-mobile-price-pill {
   display: none;
   color: #fde68a;
@@ -6771,7 +6771,7 @@ body::after {
    This is frontend-only display logic for issue #814.
    List view is intentionally table-like: no GLB/media previews, no large cards,
    no graphical seller blocks. It lets players compare many listings quickly.
-   Marketplace buy/cancel/create logic, DSPOINC, inventory, and ownership stay backend-owned. */
+   Marketplace buy/cancel/create logic, dSPOINC, inventory, and ownership stay backend-owned. */
 .genetic-marketplace-table {
   width: 100%;
   min-width: 980px;
@@ -6870,7 +6870,7 @@ body::after {
 /* 🏪 Marketplace card readability fix.
    DEVS FOR DECADES:
    This only changes active marketplace listing presentation.
-   It does not touch marketplace buy/cancel/create logic, DSPOINC, inventory,
+   It does not touch marketplace buy/cancel/create logic, dSPOINC, inventory,
    listing ownership, or Genetic item progression state. */
 #geneticMarketplaceGrid.genetic-card-grid {
   grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
@@ -6931,7 +6931,7 @@ body::after {
    DEVS FOR DECADES:
    This fixes the List View action buttons being pushed outside the Marketplace panel.
    It is frontend-only table layout CSS. It does not touch buy/cancel/create APIs,
-   DSPOINC, inventory ownership, listing history, or marketplace economy rules. */
+   dSPOINC, inventory ownership, listing history, or marketplace economy rules. */
 #geneticMarketplaceGrid.genetic-marketplace-list-view {
   overflow-x: auto;
   max-width: 100%;
@@ -7166,7 +7166,7 @@ body::after {
 /* 🏪 Premium Marketplace Cards.
    DEVS FOR DECADES:
    This improves card-mode readability and uses the existing shared genetic media viewer.
-   It does not change marketplace buy/cancel/create APIs, DSPOINC, inventory,
+   It does not change marketplace buy/cancel/create APIs, dSPOINC, inventory,
    listing ownership, listing history, or Genetic item progression. */
 #geneticMarketplaceGrid.genetic-card-grid {
   grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)) !important;
@@ -7402,7 +7402,7 @@ body::after {
    DEVS FOR DECADES:
    This is a frontend-only fast navigation strip inside My Genesis Lab.
    It does not change Genesis trait logic, Ability Matrix backend authority,
-   timers, DSPOINC, ownership, claiming, queue state, or NFT-bound progression. */
+   timers, dSPOINC, ownership, claiming, queue state, or NFT-bound progression. */
 .genesis-quick-dock {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -7564,7 +7564,7 @@ body::after {
    DEVS FOR DECADES:
    This is frontend-only fast navigation for big Genesis holders.
    It reuses the normal selected NFT flow and does not change NFT ownership,
-   Ability backend authority, timers, costs, upgrade eligibility, or DSPOINC. */
+   Ability backend authority, timers, costs, upgrade eligibility, or dSPOINC. */
 .ability-matrix-title-row {
   display: flex;
   justify-content: space-between;
@@ -7577,7 +7577,7 @@ body::after {
    DEVS FOR DECADES:
    This is frontend-only fast navigation for big Genesis holders.
    It reuses the normal selected NFT flow and does not change NFT ownership,
-   Ability backend authority, timers, costs, upgrade eligibility, or DSPOINC. */
+   Ability backend authority, timers, costs, upgrade eligibility, or dSPOINC. */
 .ability-matrix-title-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -7756,7 +7756,7 @@ body::after {
    This repairs the Ability Matrix after the mouse switcher/dropdown addition.
    The switcher is a normal top control row. Status, tabs, ability cards, and
    queue must stack vertically. Backend remains authoritative for NFT ownership,
-   ability levels, timers, DSPOINC costs, and upgrade eligibility. */
+   ability levels, timers, dSPOINC costs, and upgrade eligibility. */
 #genesisAbilityMatrixSection {
   display: block !important;
 }
@@ -7821,7 +7821,7 @@ body::after {
    Visual-only atmosphere for the Lab page.
    This does not control session hydration, Discord login, NFT ownership,
    trait upgrades, ability upgrades, custom names, Genetic inventory,
-   marketplace actions, DSPOINC costs, instant finish, or API behavior. */
+   marketplace actions, dSPOINC costs, instant finish, or API behavior. */
 :root {
   --season12-orange: #f97316;
   --season12-amber: #f59e0b;
@@ -7887,7 +7887,7 @@ body.lab-season12-shell {
 /* ⚔️ Weapon Ability Milestone Reward Chests.
    DEVS FOR DECADES:
    Visual-only reward presentation. Backend claim endpoint verifies Genesis
-   ownership, ability level, duplicate state, and DSPOINC ledger delivery. */
+   ownership, ability level, duplicate state, and dSPOINC ledger delivery. */
 .weapon-milestone-wrap {
   display: grid;
   gap: 0.85rem;
@@ -8176,7 +8176,7 @@ body.lab-season12-shell {
               <span class="lab-member-action-icon">📊</span>
               <span class="lab-member-action-text">
                 <strong>Season 17 Leaderboards</strong>
-                <small>Compare game scores, DSPOINC earners, and ecosystem ranks.</small>
+                <small>Compare game scores, dSPOINC earners, and ecosystem ranks.</small>
               </span>
             </a>
           </div>
@@ -8285,7 +8285,7 @@ body.lab-season12-shell {
             <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
               <div>
                 <div class="section-title text-xl md:text-2xl"><span>🧠</span><span>Research Overview</span></div>
-                <p class="mt-2 text-sm md:text-base text-slate-300 max-w-3xl">Track your player identity, DSPOINC, verified Genesis access, and current research strength. This area stays useful even before your first verified Genesis mouse is loaded.</p>
+                <p class="mt-2 text-sm md:text-base text-slate-300 max-w-3xl">Track your player identity, dSPOINC, verified Genesis access, and current research strength. This area stays useful even before your first verified Genesis mouse is loaded.</p>
               </div>
               <div class="flex flex-wrap gap-2">
                 <button id="refreshLabButton" class="btn primary">🔄 Refresh Lab Data</button>
@@ -8298,7 +8298,7 @@ body.lab-season12-shell {
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-cyan-300 font-bold">Player Identity</div><div id="identitySummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
-              <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-emerald-300 font-bold">DSPOINC & Economy</div><div id="economySummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
+              <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-emerald-300 font-bold">dSPOINC & Economy</div><div id="economySummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
               <div class="card p-4"><div class="text-xs uppercase tracking-[0.18em] text-violet-300 font-bold">Genetic Progress</div><div id="gameSummary" class="mt-3 text-sm text-slate-200 space-y-2"></div></div>
             </div>
 
@@ -8332,9 +8332,9 @@ body.lab-season12-shell {
           </details>
         <!-- 🧀 dSPOINC Buy Widget.
              DEVS FOR DECADES:
-             Frontend-only bridge utility. It does not spend Lab DSPOINC,
+             Frontend-only bridge utility. It does not spend Lab dSPOINC,
              start upgrades, claim rewards, mutate Genesis progression,
-             credit DSPOINC, settle SPOINC, or write DB rows. -->
+             credit dSPOINC, settle SPOINC, or write DB rows. -->
         <section id="lab-dspoinc-buy-widget" class="card p-5 mt-6 border border-yellow-300/25">
           <div class="grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-5 items-start">
             <div>
@@ -8533,7 +8533,7 @@ body.lab-season12-shell {
 
             <div id="genesisAbilityStatusBar" class="ability-status-bar">
     <div>
-      <strong>Available DSPOINC:</strong>
+      <strong>Available dSPOINC:</strong>
       <span id="genesisAbilityAvailableDsp">--</span>
     </div>
     <div>
@@ -8563,14 +8563,14 @@ body.lab-season12-shell {
    <!-- 💪 Fitness Journey Milestone Reward slot.
        DEVS FOR DECADES:
        This is frontend display only. Backend endpoints decide eligibility,
-       duplicate protection, Store Item / Genetic Item delivery, fallback DSPOINC,
+       duplicate protection, Store Item / Genetic Item delivery, fallback dSPOINC,
        and final reward state. -->
   <div id="fitnessJourneyMilestoneChestSlot" class="mt-5"></div>
 
   <!-- ⚔️ Weapon Ability Milestone Reward slot.
        DEVS FOR DECADES:
        This is frontend display only. Backend endpoints decide eligibility,
-       duplicate protection, DSPOINC delivery, and final reward state. -->
+       duplicate protection, dSPOINC delivery, and final reward state. -->
   <div id="weaponAbilityMilestoneChestSlot" class="mt-5"></div>
 
   <div id="genesisAbilityCards" class="ability-cards-grid"></div>
@@ -8966,7 +8966,7 @@ body.lab-season12-shell {
             <div class="mt-4 text-sm text-slate-100 space-y-3">
               <p>1. Pick a verified mouse in <strong>My Genesis Lab</strong>.</p>
               <p>2. Start a trait or ability upgrade and let the chamber work.</p>
-              <p>3. Return when the timer finishes or use DSPOINC for speed.</p>
+              <p>3. Return when the timer finishes or use dSPOINC for speed.</p>
               <p>4. Claim the level and get ready for future Mouseverse utility.</p>
             </div>
           </div>
@@ -8992,7 +8992,7 @@ body.lab-season12-shell {
             <div class="feature-item">Your Lab starts with your verified Genesis mice. Use the Holder Verify / Stake Lab flow first, then return here to manage the mice that are saved to your profile.</div>
             <div class="feature-item">Select one Genesis mouse to inspect its real traits, current research level, ability progress, custom name, and available milestone reward chests.</div>
             <div class="feature-item">Genesis trait upgrades are researched one by one. When a timer finishes, you must manually claim the finished research before starting the next upgrade.</div>
-            <div class="feature-item">The frontend explains and displays your progress, but the backend remains the authority for ownership, timers, reward eligibility, costs, claims, inventory, and DSPOINC ledger writes.</div>
+            <div class="feature-item">The frontend explains and displays your progress, but the backend remains the authority for ownership, timers, reward eligibility, costs, claims, inventory, and dSPOINC ledger writes.</div>
           </div>
         </div>
 
@@ -9011,7 +9011,7 @@ body.lab-season12-shell {
           <div class="feature-list">
             <div class="feature-item"><strong>Trait Lv5+:</strong> Fitness lane becomes visible and your mouse starts entering the real long-term progression path.</div>
             <div class="feature-item"><strong>Trait Lv10:</strong> Fitness Journey Chest unlocks with the 500 EMPIRE TOKEN reward.</div>
-            <div class="feature-item"><strong>Trait Lv15:</strong> Deep Training Fitness Chest unlocks with the Gun Special Genetic Item, or a DSPOINC fallback if the item cannot be granted again.</div>
+            <div class="feature-item"><strong>Trait Lv15:</strong> Deep Training Fitness Chest unlocks with the Gun Special Genetic Item, or a dSPOINC fallback if the item cannot be granted again.</div>
             <div class="feature-item"><strong>Trait Lv20:</strong> Final Fitness Journey Chest unlocks with the 500 EMPIRE TOKEN reward, and the Weapon Journey opens.</div>
             <div class="feature-item"><strong>Trait Lv30 direction:</strong> Education is the future high-level knowledge lane and should stay treated as future expansion unless the backend/UI is explicitly activated.</div>
           </div>
@@ -9022,7 +9022,7 @@ body.lab-season12-shell {
           <div class="feature-list">
             <div class="feature-item"><strong>Lv10 Fitness Chest:</strong> 500 EMPIRE TOKEN.</div>
             <div class="feature-item"><strong>Lv15 Fitness Chest:</strong> Gun Special Genetic Item.</div>
-            <div class="feature-item"><strong>Lv15 fallback:</strong> 1,000,000 DSPOINC if the Gun Special Genetic Item is already owned or cannot be granted again.</div>
+            <div class="feature-item"><strong>Lv15 fallback:</strong> 1,000,000 dSPOINC if the Gun Special Genetic Item is already owned or cannot be granted again.</div>
             <div class="feature-item"><strong>Lv20 Fitness Chest:</strong> 500 EMPIRE TOKEN and the transition into the Weapon Journey.</div>
             <div class="feature-item"><strong>Claim rule:</strong> Fitness Journey chests are one-time milestone rewards and the backend checks your verified Genesis ownership, required trait level, and previous claim history.</div>
           </div>
@@ -9033,9 +9033,9 @@ body.lab-season12-shell {
           <div class="feature-list">
             <div class="feature-item"><strong>Unlock rule:</strong> Weapon rewards require your selected Genesis mouse path to reach highest Genesis trait level Lv20 first.</div>
             <div class="feature-item"><strong>Weapon lanes:</strong> ATK, DEF, and SPECIAL each have their own ability level progress and milestone reward checks.</div>
-            <div class="feature-item"><strong>Lv1 Weapon chests:</strong> ATK Lv1, DEF Lv1, and SPECIAL Lv1 currently reward 25,000 DSPOINC each.</div>
+            <div class="feature-item"><strong>Lv1 Weapon chests:</strong> ATK Lv1, DEF Lv1, and SPECIAL Lv1 currently reward 25,000 dSPOINC each.</div>
             <div class="feature-item"><strong>Higher milestones:</strong> Weapon Lv5, Lv10, Lv25, and Lv50 milestone tiers exist, but they stay locked until the matching ability reaches the required level.</div>
-            <div class="feature-item"><strong>Backend rule:</strong> A visible chest does not mean the frontend can grant it. The claim endpoint verifies ability category, ability level, ownership, duplicate claim state, and DSPOINC delivery.</div>
+            <div class="feature-item"><strong>Backend rule:</strong> A visible chest does not mean the frontend can grant it. The claim endpoint verifies ability category, ability level, ownership, duplicate claim state, and dSPOINC delivery.</div>
           </div>
         </div>
 
@@ -9048,7 +9048,7 @@ body.lab-season12-shell {
             <div class="feature-item"><strong>Level 4 → 5:</strong> 192 hours / 8 days.</div>
             <div class="feature-item"><strong>Level 5 → 16:</strong> after 8 days, each next level adds 24 more hours.</div>
             <div class="feature-item"><strong>Level 16+:</strong> each next level adds only 1 more hour.</div>
-            <div class="feature-item"><strong>Instant Finish:</strong> spends DSPOINC to finish an active timer immediately. The backend always recalculates the final price.</div>
+            <div class="feature-item"><strong>Instant Finish:</strong> spends dSPOINC to finish an active timer immediately. The backend always recalculates the final price.</div>
             <div class="feature-item"><strong>Elixirs:</strong> Green, Blue, and Red Elixirs reduce active research time by fixed hours and consume 1 inventory item.</div>
             <div class="feature-item"><strong>Lootbox-only utility:</strong> Elixirs are not sold directly in the store. They come from Reward Chamber lootboxes and special Lab reward drops.</div>
           </div>
@@ -9059,7 +9059,7 @@ body.lab-season12-shell {
           <div class="feature-list">
             <div class="feature-item">Genetic Shop lets Discord-logged-in players buy missing Outfit and Accessories trait items into their Discord-bound Lab inventory.</div>
             <div class="feature-item">Genetic Items do <strong>not</strong> mutate on-chain Genesis NFTs. They progress in the parallel Discord inventory lane.</div>
-            <div class="feature-item">Genetic Item upgrades are timed research. Normal start upgrades are free timed research, while Instant Finish is the paid DSPOINC shortcut.</div>
+            <div class="feature-item">Genetic Item upgrades are timed research. Normal start upgrades are free timed research, while Instant Finish is the paid dSPOINC shortcut.</div>
             <div class="feature-item">Marketplace listings transfer the full owned item state between players while respecting the 2-copy exact-trait ownership limit.</div>
             <div class="feature-item">Listed Genetic Items cannot be upgraded, claimed, boosted, or instant-finished until they are no longer listed.</div>
           </div>
@@ -9089,7 +9089,7 @@ body.lab-season12-shell {
             </div>
 
             <div class="knowledge-faq-card">
-              <strong>Why did I get DSPOINC instead of an item?</strong>
+              <strong>Why did I get dSPOINC instead of an item?</strong>
               <div class="text-sm text-slate-300">Some rewards use a fallback when an item is already owned or cannot be granted again. The backend decides the safe delivery path.</div>
             </div>
 
@@ -10636,7 +10636,7 @@ Changing the favorite replaces the previous favorite to prevent duplicate auto-u
           Eligible favorite upgrades now: ${formatNumber(eligibleRows)}
         </div>
         <div class="text-xs uppercase tracking-[0.18em] text-cyan-200 font-bold mt-1">
-  Estimated bulk cost preview: ${formatNumber(estimatedBulkCost)} DSPOINC
+  Estimated bulk cost preview: ${formatNumber(estimatedBulkCost)} dSPOINC
 </div>
         <div class="text-xs text-slate-400">
           Bulk upgrade uses your one saved favorite trait type and starts eligible idle Genesis trait upgrades through the backend authority.
@@ -10959,7 +10959,7 @@ function getTraitUpgradeDisplayRow(nft, trait) {
 }
 
 /**
- * Calculate the visible DSPOINC preview cost for starting the next Genesis trait upgrade.
+ * Calculate the visible dSPOINC preview cost for starting the next Genesis trait upgrade.
  * Plain language for DEVS: this mirrors the current backend formula in start-nft-trait-upgrade.php.
  * Backend remains the final authority; this is only for clearer player confirmation text.
  */
@@ -11081,7 +11081,7 @@ function getNftPendingTraitResearchRow(nft) {
  * This is display-only. It uses already-loaded Lab state so members can see
  * training status directly inside the Verified Collection Slider.
  * Backend APIs remain authoritative for ownership, timers, claim state,
- * rewards, DSPOINC, inventory, ability unlocks, and all final actions.
+ * rewards, dSPOINC, inventory, ability unlocks, and all final actions.
  */
 function getNftSliderTrainingOverview(nft, summary = null) {
   const traits = normalizeNftTraits(nft);
@@ -11199,7 +11199,7 @@ function getNftSliderTrainingOverview(nft, summary = null) {
  *
  * Plain language for DEVS:
  * This is frontend navigation/display only. It does not decide ownership,
- * rewards, ability unlocks, DSPOINC, inventory, or upgrade eligibility.
+ * rewards, ability unlocks, dSPOINC, inventory, or upgrade eligibility.
  */
 function isNftSliderSelectedMouse(nft) {
   const cardTokenId = String(getSafeTokenId(nft) || '').trim();
@@ -11301,7 +11301,7 @@ function getGenesisAbilityCategoryLabelForStat(statName, fallbackLabel = 'Abilit
  * Safety:
  * - Selected mouse: reads real genesisAbilityState.data.rows.
  * - Non-selected mouse: shows Select to check, because ability rows are loaded per selected NFT.
- * - It does not start upgrades, claim rewards, spend DSPOINC, or change backend state.
+ * - It does not start upgrades, claim rewards, spend dSPOINC, or change backend state.
  */
 function getSelectedNftSliderAbilityLane(nft, overview) {
   const pathLane = getNftSliderAbilityLane(overview);
@@ -11836,7 +11836,7 @@ function renderOverviewCards() {
     (Array.isArray(state.geneticInventory) ? state.geneticInventory.length : 0);
 
   el.overviewStatsGrid.innerHTML = [
-    createStatCard('DSPOINC Total', formatCompactNumber(totalDspoinc), 'All known score balance tied to the current player.', 'text-cyan-300'),
+    createStatCard('dSPOINC Total', formatCompactNumber(totalDspoinc), 'All known score balance tied to the current player.', 'text-cyan-300'),
     createStatCard('Genesis NFTs', formatNumber(verifiedGenesisCount), 'Verified saved Genesis mice available in the lab.', 'text-violet-300'),
     createStatCard('Lab Power', formatNumber(labPower), 'Combined Genesis trait upgrade strength across all NFT-bound progression rows.', 'text-emerald-300'),
     createStatCard('Genetic Items', formatNumber(geneticItemCount), 'Owned Discord-bound Genetic items available for long-term progression.', 'text-amber-300')
@@ -12594,7 +12594,7 @@ function getAllReadyClaimRows() {
  *
  * Plain language for DEVS:
  * This is a user convenience wrapper around two existing backend-authoritative
- * actions. It never grants levels directly and never decides DSPOINC cost.
+ * actions. It never grants levels directly and never decides dSPOINC cost.
  * If claim succeeds but renew fails, the claim stays valid and the player can
  * start the next cycle manually.
  */
@@ -12625,7 +12625,7 @@ async function handleClaimAndRenewUpgrade(tokenId, traitType, traitValue) {
       `This will claim the completed level first, then immediately try to start the next research cycle for the same trait.\n\n` +
       `Trait: ${traitType}: ${traitValue}`,
     note:
-      'The renew step spends DSPOINC. Backend authority still verifies ownership, balance, exact trait, cost, timer rules, and one-active-upgrade-per-NFT before anything is renewed.',
+      'The renew step spends dSPOINC. Backend authority still verifies ownership, balance, exact trait, cost, timer rules, and one-active-upgrade-per-NFT before anything is renewed.',
     confirmText: 'Claim + Renew',
     cancelText: 'Cancel',
     confirmVariant: 'primary'
@@ -12646,7 +12646,7 @@ async function handleClaimAndRenewUpgrade(tokenId, traitType, traitValue) {
     const spentDspoinc = Number(renewData.spent_dspoinc || 0);
 
     logLab(
-      `Renewed research for ${traitType}: ${traitValue}${spentDspoinc > 0 ? ` (-${formatNumber(spentDspoinc)} DSPOINC)` : ''}`,
+      `Renewed research for ${traitType}: ${traitValue}${spentDspoinc > 0 ? ` (-${formatNumber(spentDspoinc)} dSPOINC)` : ''}`,
       'success'
     );
 
@@ -12660,7 +12660,7 @@ async function handleClaimAndRenewUpgrade(tokenId, traitType, traitValue) {
       message:
         `The completed level was claimed and the next research cycle was started.`,
       note: spentDspoinc > 0
-        ? `Backend confirmed the renewal spend: ${formatNumber(spentDspoinc)} DSPOINC.`
+        ? `Backend confirmed the renewal spend: ${formatNumber(spentDspoinc)} dSPOINC.`
         : 'The backend accepted the renewal and refreshed the queue state.',
       confirmText: 'Nice'
     });
@@ -12736,7 +12736,7 @@ async function handleClaimAndRenewAllReadyUpgrades() {
       `This will process ${readyRows.length} completed Genesis trait upgrade${readyRows.length === 1 ? '' : 's'} one by one.\n\n` +
       `Each row will be claimed first, then the same trait will try to start the next research cycle.`,
     note:
-      'Renewals spend DSPOINC. Backend authority recalculates every cost and can reject rows if balance, ownership, or one-active-upgrade rules do not pass.',
+      'Renewals spend dSPOINC. Backend authority recalculates every cost and can reject rows if balance, ownership, or one-active-upgrade rules do not pass.',
     confirmText: `Claim + Renew All (${readyRows.length})`,
     cancelText: 'Cancel',
     confirmVariant: 'primary'
@@ -13164,7 +13164,7 @@ function handleGenesisLabImageError(imageElement) {
  *
  * Plain language for DEVS:
  * This is display-only. It does not change the selected NFT, token ID, traits,
- * ownership, research rows, DSPOINC, staking, or rewards.
+ * ownership, research rows, dSPOINC, staking, or rewards.
  */
 function renderGenesisLabImage(nft, altText, className = 'nft-image') {
   const imageUrl = getSafeNftImageUrl(nft);
@@ -13772,7 +13772,7 @@ function isEditableLabField(target) {
  * switchAbilityMatrixMouse(), which reuses selectNftByTokenId().
  *
  * This never changes ownership, ability levels, timers, costs, upgrade
- * eligibility, DSPOINC, Genesis state, Genetic Items, or database rows.
+ * eligibility, dSPOINC, Genesis state, Genetic Items, or database rows.
  */
 function setupAbilityMatrixKeyboardNavigation() {
   const abilitySection = document.getElementById('genesisAbilityMatrixSection');
@@ -14426,12 +14426,12 @@ const durationText = formatAbilityDuration(durationSeconds);
             `Current Level: Lv ${formatNumber(currentLevel)}\n` +
             `Target Level: Lv ${formatNumber(nextLevel)}\n` +
             `Research Time: ${durationText}\n` +
-            `DSPOINC Spend: ${formatNumber(previewCost)} DSPOINC`,
+            `dSPOINC Spend: ${formatNumber(previewCost)} dSPOINC`,
           highlightLabel: 'Ability Upgrade Preview',
-          highlightValue: `${formatNumber(previewCost)} DSPOINC • ${durationText}`,
+          highlightValue: `${formatNumber(previewCost)} dSPOINC • ${durationText}`,
           note:
-            'Backend authority verifies Genesis ownership, category unlock, available DSPOINC, and the one-active-ability-upgrade-per-NFT rule before anything is spent.',
-          confirmText: 'Start & Spend DSPOINC',
+            'Backend authority verifies Genesis ownership, category unlock, available dSPOINC, and the one-active-ability-upgrade-per-NFT rule before anything is spent.',
+          confirmText: 'Start & Spend dSPOINC',
           cancelText: 'Cancel',
           confirmVariant: 'primary'
         });
@@ -14475,7 +14475,7 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
       title: 'No Genesis Mouse Selected',
       icon: '⚠️',
       message: 'Please select a verified Genesis mouse before starting Ability research.',
-      note: 'No DSPOINC was spent.',
+      note: 'No dSPOINC was spent.',
       confirmText: 'Close',
       confirmVariant: 'danger'
     });
@@ -14489,7 +14489,7 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
       title: 'Ability Category Missing',
       icon: '⚠️',
       message: 'The Lab could not detect which Ability category should be upgraded.',
-      note: 'Refresh the Lab and try again. No DSPOINC was spent.',
+      note: 'Refresh the Lab and try again. No dSPOINC was spent.',
       confirmText: 'Close',
       confirmVariant: 'danger'
     });
@@ -14503,7 +14503,7 @@ async function startGenesisAbilityUpgrade(tokenId, category, abilityKey) {
       title: 'Ability Missing',
       icon: '⚠️',
       message: 'The Lab could not detect which Ability should be upgraded.',
-      note: 'Refresh the Lab and try again. No DSPOINC was spent.',
+      note: 'Refresh the Lab and try again. No dSPOINC was spent.',
       confirmText: 'Close',
       confirmVariant: 'danger'
     });
@@ -14600,14 +14600,14 @@ throw new Error(
 
     await showLabMessageModal({
       eyebrow: 'Genesis Ability Research',
-      title: isDspoincProblem ? 'Not Enough Available DSPOINC' : 'Ability Upgrade Failed',
+      title: isDspoincProblem ? 'Not Enough Available dSPOINC' : 'Ability Upgrade Failed',
       icon: '⚠️',
       message: isDspoincProblem
-  ? `This Ability upgrade could not start because you do not have enough available DSPOINC.\n\n${message}`
+  ? `This Ability upgrade could not start because you do not have enough available dSPOINC.\n\n${message}`
   : `The Ability upgrade did not start.\n\n${message}`,
 note: isDspoincProblem
-  ? 'Staked or frozen DSPOINC cannot be spent. Only available DSPOINC can be used for Ability research. No DSPOINC was spent.'
-  : 'No DSPOINC was spent if the backend rejected the request. Please screenshot this message so we can see token, category, ability, and backend data.',
+  ? 'Staked or frozen dSPOINC cannot be spent. Only available dSPOINC can be used for Ability research. No dSPOINC was spent.'
+  : 'No dSPOINC was spent if the backend rejected the request. Please screenshot this message so we can see token, category, ability, and backend data.',
       confirmText: 'Close',
       confirmVariant: 'danger'
     });
@@ -14810,7 +14810,7 @@ function renderGenesisAbilityQueueBox() {
  * Load read-only Lab milestone reward state for the selected mouse.
  *
  * Plain language for DEVS:
- * This does not award DSPOINC, Store Items, or Genetic Items. It only asks
+ * This does not award dSPOINC, Store Items, or Genetic Items. It only asks
  * the backend which reward chests are eligible/claimed so the Lab can show
  * claim buttons safely.
  */
@@ -14892,7 +14892,7 @@ async function loadAbilityMilestoneRewards(tokenId, options = {}) {
  * Fitness Journey chests are based on the selected Genesis mouse's highest
  * single Genesis trait level. This renderer only displays backend state.
  * The backend remains authoritative for ownership, trait level, duplicate
- * protection, Store Item delivery, Genetic Item delivery, and fallback DSPOINC.
+ * protection, Store Item delivery, Genetic Item delivery, and fallback dSPOINC.
  */
 function renderFitnessJourneyMilestoneChests() {
   const slot = document.getElementById('fitnessJourneyMilestoneChestSlot');
@@ -14972,7 +14972,7 @@ function renderFitnessJourneyMilestoneChests() {
  * Render claimable and claimed Weapon Ability milestone chests.
  *
  * Plain language for DEVS:
- * This is display-only. Reward amount, duplicate protection, and DSPOINC credit
+ * This is display-only. Reward amount, duplicate protection, and dSPOINC credit
  * are decided by claim-ability-milestone-reward.php.
  */
 function renderWeaponAbilityMilestoneChests() {
@@ -15030,7 +15030,7 @@ function renderWeaponAbilityMilestoneChests() {
     const isEducationReward = String(reward.ability_category || '').toLowerCase() === 'education';
     const rewardPreview = String(reward.reward_type || '').toLowerCase() === 'store_item'
       ? (reward.reward_preview || `${formatNumber(reward.reward_quantity || 1)}× Red Elixir`)
-      : `${formatNumber(reward.reward_amount || 0)} DSPOINC`;
+      : `${formatNumber(reward.reward_amount || 0)} dSPOINC`;
     const chestLabel = isEducationReward ? '📚 Education Reward Chest Available' : '⚔️ Weapon Reward Chest Available';
     const fallbackTitle = isEducationReward ? 'Education Ability Chest' : 'Weapon Ability Chest';
 
@@ -15078,7 +15078,7 @@ function renderWeaponAbilityMilestoneChests() {
  *
  * Plain language for DEVS:
  * The frontend sends the selected mouse and milestone key only. The backend
- * verifies ownership, ability level, duplicate claim state, and DSPOINC payout.
+ * verifies ownership, ability level, duplicate claim state, and dSPOINC payout.
  */
 async function claimWeaponAbilityMilestoneReward(milestoneKey) {
   const safeMilestoneKey = String(milestoneKey || '').trim();
@@ -15162,7 +15162,7 @@ async function claimWeaponAbilityMilestoneReward(milestoneKey) {
  *
  * Plain language for DEVS:
  * This is a visual celebration only. The backend already wrote the reward
- * before this modal appears. It supports DSPOINC, Store Item, and Genetic Item
+ * before this modal appears. It supports dSPOINC, Store Item, and Genetic Item
  * milestones without deciding reward eligibility or delivery.
  */
 function showWeaponAbilityRewardChestModal(result) {
@@ -15174,7 +15174,7 @@ function showWeaponAbilityRewardChestModal(result) {
   const currency = String(result?.reward_currency || chest.currency || '').trim();
   const isFitnessChest = String(chest.type || '').toLowerCase() === 'fitness_journey';
   const isEducationChest = String(chest.type || '').toLowerCase() === 'education_ability';
-  const isDspoincReward = currency === 'DSPOINC' || rewardType.includes('dspoinc');
+  const isDspoincReward = currency.toLowerCase() === 'dspoinc' || rewardType.includes('dspoinc');
   const inventoryQuantity = Number(result?.delivery_payload?.quantity_awarded || 0);
   const icon = isFitnessChest ? '💪' : (isEducationChest ? '📚' : '⚔️');
   const kicker = isFitnessChest
@@ -15182,7 +15182,7 @@ function showWeaponAbilityRewardChestModal(result) {
     : (isEducationChest ? 'Education Ability Milestone' : 'Weapon Ability Milestone');
 
   const rewardValue = isDspoincReward
-    ? `+${formatNumber(amount)} DSPOINC`
+    ? `+${formatNumber(amount)} dSPOINC`
     : `${inventoryQuantity > 1 ? `${formatNumber(inventoryQuantity)}× ` : ''}${escapeHtml(title)}`;
 
   const rewardNote = isDspoincReward
@@ -15372,7 +15372,7 @@ function renderGenesisAbilityMatrix() {
           ? `This ability is currently upgrading on the selected Genesis mouse. The timer follows the NFT.`
           : (activeUpgradeExists && !isThisActive)
             ? `Another ability is already upgrading on this NFT. Only one active ability upgrade can run per Genesis mouse.`
-            : `Ready for research. Next upgrade uses ${formatNumber(row.next_cost)} DSPOINC and takes ${nextDuration}.`;
+            : `Ready for research. Next upgrade uses ${formatNumber(row.next_cost)} dSPOINC and takes ${nextDuration}.`;
 
     const buttonLabel = getGenesisAbilityButtonLabel({
       isLocked,
@@ -15392,7 +15392,7 @@ function renderGenesisAbilityMatrix() {
           <div><strong>Current Level:</strong> ${row.current_level}</div>
           <div><strong>Current State:</strong> ${escapeHtml(isLocked ? 'locked' : row.state)}</div>
           <div><strong>Next Duration:</strong> ${isLocked || isMaxed ? '--' : nextDuration}</div>
-          <div><strong>Next Cost:</strong> ${isLocked || isMaxed ? '--' : `${formatNumber(row.next_cost)} DSPOINC`}</div>
+          <div><strong>Next Cost:</strong> ${isLocked || isMaxed ? '--' : `${formatNumber(row.next_cost)} dSPOINC`}</div>
         </div>
 
                 <div class="ability-card-actions">
@@ -15775,7 +15775,7 @@ function getLabBoosterPriceLabel(itemId) {
     return 'Store price unavailable';
   }
 
-  return `${formatNumber(price)} DSPOINC`;
+  return `${formatNumber(price)} dSPOINC`;
 }
 
 function getActiveUpgradeableTraitRow(nft = state.selectedNft) {
@@ -15977,7 +15977,7 @@ el.traitUpgradeInfo.innerHTML = `
     </div>
     <div>
       <strong class="text-cyan-300">Instant finish model:</strong>
-      DSPOINC-based and intentionally more expensive than simple time scaling. This UI calculates a preview cost, but the backend remains source of truth.
+      dSPOINC-based and intentionally more expensive than simple time scaling. This UI calculates a preview cost, but the backend remains source of truth.
     </div>
     <div>
       <strong class="text-cyan-300">Current page mode:</strong>
@@ -16155,7 +16155,7 @@ const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.ge
             </div>
             <div class="kv">
               <div class="text-xs uppercase tracking-[0.18em] text-slate-400">Instant Finish</div>
-              <div class="mt-2 text-lg font-black">${canFinish ? `${formatNumber(instantCost)} DSPOINC` : '—'}</div>
+              <div class="mt-2 text-lg font-black">${canFinish ? `${formatNumber(instantCost)} dSPOINC` : '—'}</div>
             </div>
           </div>
 
@@ -16200,7 +16200,7 @@ const endTime = row?.upgrade_ends_at ? (parseLabUtcDate(row.upgrade_ends_at)?.ge
             ${canFinish ? '' : 'disabled'}
             data-finish-upgrade="${escapeHtml(row.token_id)}|${escapeHtml(row.trait_type)}|${escapeHtml(row.trait_value)}"
           >
-            ⚡ Instant Finish • ${canFinish ? `${formatNumber(instantCost)} DSPOINC` : '0 DSPOINC'}
+            ⚡ Instant Finish • ${canFinish ? `${formatNumber(instantCost)} dSPOINC` : '0 dSPOINC'}
           </button>
 
           <div class="mt-3 text-xs text-slate-400" data-trait-remaining-note>
@@ -16265,7 +16265,7 @@ async function handleBuyBooster(itemId) {
       title: 'Elixirs Cannot Be Bought Directly',
       icon: '🎁',
       message: 'Green, Blue, and Red Elixirs are special Lab booster drops from the Reward Chamber.',
-      note: 'Use Instant Finish when you want to spend DSPOINC directly. Use Elixirs when you earn them from lootboxes or special rewards.',
+      note: 'Use Instant Finish when you want to spend dSPOINC directly. Use Elixirs when you earn them from lootboxes or special rewards.',
       confirmText: 'Understood',
       confirmVariant: 'primary'
     });
@@ -16816,7 +16816,7 @@ async function tryAggregateLab() {
        *
        * This fallback only preserves or loads frontend read data. It does not
        * write DB rows, verify ownership, mutate Genesis NFTs, start/claim trait
-       * upgrades, touch Genetic Items, move DSPOINC/SPOINC, or affect MouseFight.
+       * upgrades, touch Genetic Items, move dSPOINC/SPOINC, or affect MouseFight.
        */
       if (Array.isArray(state.verifiedNfts) && state.verifiedNfts.length > 0) {
         logLab('Genesis data confirmed through aggregate Lab endpoint fallback.', 'info');
@@ -17016,12 +17016,12 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
       `Current Level: Lv ${formatNumber(currentLevel)}\n` +
       `Target Level: Lv ${formatNumber(nextLevel)}\n` +
       `Research Time: ${formatDurationWords(durationHours)}\n` +
-      `DSPOINC Spend: ${formatNumber(previewCost)} DSPOINC`,
+      `dSPOINC Spend: ${formatNumber(previewCost)} dSPOINC`,
     highlightLabel: 'Upgrade Cost Preview',
-    highlightValue: `${formatNumber(previewCost)} DSPOINC • ${formatDurationWords(durationHours)}`,
+    highlightValue: `${formatNumber(previewCost)} dSPOINC • ${formatDurationWords(durationHours)}`,
     note:
-      'Backend authority still verifies ownership, exact NFT trait match, available DSPOINC, and the one-active-upgrade-per-NFT rule before anything is spent.',
-    confirmText: 'Start & Spend DSPOINC',
+      'Backend authority still verifies ownership, exact NFT trait match, available dSPOINC, and the one-active-upgrade-per-NFT rule before anything is spent.',
+    confirmText: 'Start & Spend dSPOINC',
     cancelText: 'Cancel',
     confirmVariant: 'primary'
   });
@@ -17059,7 +17059,7 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
         title: 'Upgrade Start Failed',
         icon: '⚠️',
         message,
-        note: 'No DSPOINC was spent by this page action if the backend rejected the request.',
+        note: 'No dSPOINC was spent by this page action if the backend rejected the request.',
         confirmText: 'Close',
         confirmVariant: 'danger'
       });
@@ -17072,7 +17072,7 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
     const backendNextLevel = Number(startData.next_level || nextLevel);
 
     logLab(
-      `Started upgrade for ${traitType}: ${traitValue} (-${formatNumber(spentDspoinc)} DSPOINC)`,
+      `Started upgrade for ${traitType}: ${traitValue} (-${formatNumber(spentDspoinc)} dSPOINC)`,
       'success'
     );
 
@@ -17094,7 +17094,7 @@ async function handleStartUpgrade(tokenId, traitType, traitValue) {
       message:
         `Target Level: Lv ${formatNumber(backendNextLevel)}\n` +
         `Research Time: ${formatDurationWords(backendDurationHours)}\n` +
-        `DSPOINC Spent: ${formatNumber(spentDspoinc)} DSPOINC`,
+        `dSPOINC Spent: ${formatNumber(spentDspoinc)} dSPOINC`,
       note: 'The upgrade is now running on the backend. When the timer finishes, claim it to apply the new level.',
       confirmText: 'Excellent'
     });
@@ -17150,7 +17150,7 @@ async function claimUpgradeRequest(tokenId, traitType, traitValue) {
  * Claim + Renew is a two-step convenience flow. The claim step applies the
  * completed level, then this helper asks the existing backend start endpoint
  * to begin the next timed cycle for the same NFT trait. The backend still
- * verifies ownership, exact trait match, DSPOINC balance, cost, duration, and
+ * verifies ownership, exact trait match, dSPOINC balance, cost, duration, and
  * one-active-upgrade-per-NFT rules. The frontend never decides cost or level.
  */
 async function startUpgradeRenewRequest(tokenId, traitType, traitValue) {
@@ -17296,15 +17296,15 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
     title: `Finish ${traitType}: ${traitValue}?`,
     icon: '⚡',
     message:
-      `This spends DSPOINC to skip the remaining timer for this Genesis trait upgrade.\n\n` +
+      `This spends dSPOINC to skip the remaining timer for this Genesis trait upgrade.\n\n` +
       `Current Level: Lv ${formatNumber(currentLevel)}\n` +
       `Remaining Time: ${formatRemainingLong(remainingMs)}\n` +
-      `Estimated Instant Finish Cost: ${formatNumber(previewCost)} DSPOINC`,
+      `Estimated Instant Finish Cost: ${formatNumber(previewCost)} dSPOINC`,
     highlightLabel: 'Instant Finish Cost Preview',
-    highlightValue: `${formatNumber(previewCost)} DSPOINC`,
+    highlightValue: `${formatNumber(previewCost)} dSPOINC`,
     note:
       'Backend authority recalculates the final price and verifies ownership, balance, and timer state before spending. Instant finish makes the trait ready to claim; it does not auto-claim the level.',
-    confirmText: 'Spend DSPOINC',
+    confirmText: 'Spend dSPOINC',
     cancelText: 'Keep Timer Running',
     confirmVariant: 'primary'
   });
@@ -17360,7 +17360,7 @@ async function handleInstantFinish(tokenId, traitType, traitValue) {
 
     if (finalCost > 0) {
       logLab(
-        `Instant finish completed for ${traitType}: ${traitValue} (-${formatNumber(finalCost)} DSPOINC)`,
+        `Instant finish completed for ${traitType}: ${traitValue} (-${formatNumber(finalCost)} dSPOINC)`,
         'success'
       );
     } else {
@@ -17548,7 +17548,7 @@ function renderGeneticAccessStrip() {
     ['Catalog Visibility', `${formatNumber(totalVisible)} Traits`, 'Public preview stays open for everyone.'],
     ['Holder Access', getGeneticAccessLabel(access), access.can_buy ? 'Buying is unlocked because holder verification exists.' : getGeneticLockedMessage()],
     ['Owned Genetic Items', formatNumber(ownedCount), 'Traits bought here live on the Discord profile, not on NFTs.'],
-    ['Economy Readout', `${formatNumber(state.boosterStoreBalance ?? state.stakingStats?.total_balance ?? 0)} DSPOINC`, 'The backend price and spend flow stays authoritative.']
+    ['Economy Readout', `${formatNumber(state.boosterStoreBalance ?? state.stakingStats?.total_balance ?? 0)} dSPOINC`, 'The backend price and spend flow stays authoritative.']
   ];
 
   el.geneticAccessStrip.innerHTML = tiles.map(([eyebrow, value, note]) => `
@@ -17630,11 +17630,11 @@ function openGeneticListingModal(geneticItemId) {
 
       <div class="px-5 py-5 space-y-4">
         <div class="text-sm text-slate-300">
-          Set the DSPOINC price for this Discord-bound Genetic Item. The full level state will transfer to the buyer.
+          Set the dSPOINC price for this Discord-bound Genetic Item. The full level state will transfer to the buyer.
         </div>
 
         <div>
-          <label for="geneticListingPriceInput" class="block text-sm font-semibold text-slate-200 mb-2">Price (DSPOINC)</label>
+          <label for="geneticListingPriceInput" class="block text-sm font-semibold text-slate-200 mb-2">Price (dSPOINC)</label>
           <input
             id="geneticListingPriceInput"
             type="number"
@@ -17676,7 +17676,7 @@ function openGeneticListingModal(geneticItemId) {
     const priceValue = Number(document.getElementById('geneticListingPriceInput')?.value || 0);
 
     if (!Number.isFinite(priceValue) || priceValue < 1) {
-      logLab('❌ Enter a valid marketplace price in DSPOINC.', 'error');
+      logLab('❌ Enter a valid marketplace price in dSPOINC.', 'error');
       return;
     }
 
@@ -17793,7 +17793,7 @@ async function createGeneticMarketplaceListing(geneticItemId, priceDspoinc) {
 
 const listingData = data.data || null;
 
-logLab(`🧀 Listed Genetic Item #${formatNumber(geneticItemId)} for ${formatNumber(priceDspoinc)} DSPOINC.`, 'success');
+logLab(`🧀 Listed Genetic Item #${formatNumber(geneticItemId)} for ${formatNumber(priceDspoinc)} dSPOINC.`, 'success');
 
 await refreshGeneticMarketplaceData();
 await refreshGeneticMarketplaceHistory();
@@ -17820,7 +17820,7 @@ showLabMessageModal({
   note: 'Your item is now locked for sale until it is cancelled or purchased.',
   tone: 'success',
   highlightLabel: 'Price',
-  highlightValue: `${formatNumber(priceDspoinc)} DSPOINC`,
+  highlightValue: `${formatNumber(priceDspoinc)} dSPOINC`,
   confirmText: 'Nice'
 });
 
@@ -18161,7 +18161,7 @@ function getGeneticCardDescription(item) {
  *
  * Plain language for DEVS:
  * This is a compact catalog display only. Buying still uses the existing
- * backend-authoritative buy flow, DSPOINC checks, and max-2 exact trait rules.
+ * backend-authoritative buy flow, dSPOINC checks, and max-2 exact trait rules.
  */
 function renderGeneticShopTableRow(item) {
   const rawCatalogId = Number(item.catalog_id || 0);
@@ -18363,7 +18363,7 @@ function renderGeneticOwnedItemCard(item) {
  * calculateInstantFinishCost() defaults to the Genesis trait formula.
  * Genetic Items have their own backend formula, so the inventory card preview
  * must pass "genetic" here to match the confirmation popup/API preview.
- * Backend still recalculates the final DSPOINC cost before spending.
+ * Backend still recalculates the final dSPOINC cost before spending.
  */
 const instantFinishPreview = runtimeState === 'upgrading'
   ? calculateInstantFinishCost(currentLevel, remainingMs, 'genetic')
@@ -18445,7 +18445,7 @@ if (item.is_listed_for_sale) {
     extraActions = `
       <div class="genetic-upgrade-actions-stack">
         <button type="button" class="genetic-mini-chip finish" ${actionDisabled ? 'disabled' : ''} data-instant-finish-genetic-upgrade="${escapeHtml(item.genetic_item_id)}">
-          ⚡ Instant Finish • ${formatNumber(instantFinishPreview)} DSPOINC
+          ⚡ Instant Finish • ${formatNumber(instantFinishPreview)} dSPOINC
         </button>
         <div class="genetic-mini-actions">
           ${boosterButtons}
@@ -18691,7 +18691,7 @@ function getMarketplaceNumberValue(value, fallback = 0) {
  *
  * Plain language for DEVS:
  * This only changes frontend display order. The backend remains authoritative
- * for listings, ownership, prices, DSPOINC, duplicate checks, and transfers.
+ * for listings, ownership, prices, dSPOINC, duplicate checks, and transfers.
  */
 function setGeneticMarketplaceSort(sortKey) {
   const safeSortKey = String(sortKey || '').trim();
@@ -18919,10 +18919,10 @@ function renderGeneticMarketplaceTradingTableRow(item) {
       <td>${escapeHtml(traitType)}</td>
       <td><span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(rarityTier)}</span></td>
       <td class="table-center-cell">Lv ${formatNumber(currentLevel)}</td>
-      <td class="table-price-cell">${formatNumber(price)} DSPOINC</td>
+      <td class="table-price-cell">${formatNumber(price)} dSPOINC</td>
       <td class="table-seller-cell" title="${escapeHtml(sellerName)}">${escapeHtml(sellerName)}</td>
 <td class="table-action-cell">
-        <div class="table-mobile-price-pill">${formatNumber(price)} DSPOINC</div>
+        <div class="table-mobile-price-pill">${formatNumber(price)} dSPOINC</div>
         <div class="table-action-wrap">
           <button
             type="button"
@@ -18992,7 +18992,7 @@ function renderGeneticMarketplaceTableDetailRow(item) {
               </div>
               <div class="genetic-marketplace-list-detail-pill">
                 <div class="genetic-marketplace-list-detail-label">Price</div>
-                <div class="genetic-marketplace-list-detail-value">${formatNumber(price)} DSPOINC</div>
+                <div class="genetic-marketplace-list-detail-value">${formatNumber(price)} dSPOINC</div>
               </div>
               <div class="genetic-marketplace-list-detail-pill">
                 <div class="genetic-marketplace-list-detail-label">Seller</div>
@@ -19035,7 +19035,7 @@ function renderGeneticMarketplaceBuyAction(item) {
     return `<button type="button" class="btn" disabled title="You cannot buy your own marketplace listing.">Your Listing</button>`;
   }
 
-  return `<button type="button" class="btn primary" ${disabled ? 'disabled' : ''} data-buy-genetic-marketplace-listing="${escapeHtml(String(listingId))}" title="Buy this leveled genetic item with DSPOINC.">🛒 Buy Now</button>`;
+  return `<button type="button" class="btn primary" ${disabled ? 'disabled' : ''} data-buy-genetic-marketplace-listing="${escapeHtml(String(listingId))}" title="Buy this leveled genetic item with dSPOINC.">🛒 Buy Now</button>`;
 }
 
 async function handleBuyGeneticMarketplaceListing(listingId) {
@@ -19100,7 +19100,7 @@ async function handleBuyGeneticMarketplaceListing(listingId) {
     message: 'This purchase transfers the full user-bound Genetic Item exactly as listed, including its preserved level snapshot and current upgrade state.',
     note: 'The backend remains authoritative for balance checks, ownership transfer, listing status, and duplicate-trait protection.',
     highlightLabel: 'Price',
-    highlightValue: `${formatNumber(activeListing.price_dspoinc || 0)} DSPOINC`,
+    highlightValue: `${formatNumber(activeListing.price_dspoinc || 0)} dSPOINC`,
     confirmText: 'Buy Listing',
     cancelText: 'Cancel',
     confirmVariant: 'primary'
@@ -19180,9 +19180,9 @@ async function handleBuyGeneticMarketplaceListing(listingId) {
           normalizedDetails.includes('not enough dspoinc')
         )
       ) {
-        playerTitle = 'Not Enough DSPOINC';
+        playerTitle = 'Not Enough dSPOINC';
         playerIcon = '💸';
-        playerMessage = 'You do not have enough available DSPOINC to complete this purchase.';
+        playerMessage = 'You do not have enough available dSPOINC to complete this purchase.';
         playerNote = 'Frozen staking funds do not count as spendable balance.';
       } else if (
         response.status === 409 &&
@@ -19245,9 +19245,9 @@ async function handleBuyGeneticMarketplaceListing(listingId) {
       title: 'Purchase Complete',
       icon: '✅',
       message: `${activeListing.display_title || activeListing.trait_value || 'Genetic Item'} is now in your Genetic Inventory.`,
-      note: 'Ownership, listing state, DSPOINC movement, and transferred item progression were finalized by the backend.',
+      note: 'Ownership, listing state, dSPOINC movement, and transferred item progression were finalized by the backend.',
       highlightLabel: 'Spent',
-      highlightValue: `${formatNumber(activeListing.price_dspoinc || 0)} DSPOINC`,
+      highlightValue: `${formatNumber(activeListing.price_dspoinc || 0)} dSPOINC`,
       confirmText: 'Nice'
     });
 
@@ -19358,7 +19358,7 @@ function renderGeneticMarketplaceTradingCard(item) {
         </div>
         <div class="marketplace-card-pro-stat highlight">
           <div class="label">Price</div>
-          <div class="value">${formatNumber(price)} DSPOINC</div>
+          <div class="value">${formatNumber(price)} dSPOINC</div>
         </div>
       </div>
 
@@ -19399,7 +19399,7 @@ function renderGeneticMarketplaceTradingCard(item) {
           </div>
           <p>
             Buyer receives this Discord-bound Genetic Item with its current level preserved.
-            Backend still verifies ownership, DSPOINC, and max-2 exact trait rules.
+            Backend still verifies ownership, dSPOINC, and max-2 exact trait rules.
           </p>
         </div>
       ` : ''}
@@ -19432,7 +19432,7 @@ function renderGeneticMarketplaceCard(item) {
  * Return compact marketplace stats for the current active listing view.
  * Plain language for DEVS:
  * These are frontend display stats only. Backend remains authoritative for
- * listing validity, ownership, buying, cancelling, and DSPOINC movement.
+ * listing validity, ownership, buying, cancelling, and dSPOINC movement.
  */
 function getGeneticMarketplacePulseStats() {
   const filteredListings = getFilteredGeneticMarketplaceListings();
@@ -19468,7 +19468,7 @@ function getGeneticMarketplacePulseStats() {
  * Render one compact history row for the Marketplace side panel.
  * Plain language for DEVS:
  * This is read-only display. It does not deliver rewards, transfer items,
- * move DSPOINC, or mutate marketplace history.
+ * move dSPOINC, or mutate marketplace history.
  */
 function renderGeneticMarketplaceMiniHistoryRow(entry) {
   const action = String(entry?.action || 'listed').trim().toLowerCase();
@@ -19524,7 +19524,7 @@ function renderGeneticMarketplacePreviewSidePanel() {
           <div class="genetic-helper-item">Only idle Genetic Items can be listed. Upgrading or claim-ready runs stay blocked from sale.</div>
           <div class="genetic-helper-item">The buyer receives the full Discord-bound item with its current level preserved.</div>
           <div class="genetic-helper-item">One Discord user can own up to 2 copies of the same exact trait per type/value combination. Buying a third copy is blocked by the backend.</div>
-          <div class="genetic-helper-item">DSPOINC is the only marketplace currency.</div>
+          <div class="genetic-helper-item">dSPOINC is the only marketplace currency.</div>
         </div>
       </div>
 
@@ -19574,15 +19574,15 @@ const earned = Number(summary.dspoinc_earned ?? summary.earned_dspoinc ?? summar
         </div>
         <div class="marketplace-pulse-stat">
           <div class="marketplace-pulse-label">Avg Visible Price</div>
-          <div class="marketplace-pulse-value">${formatNumber(pulseStats.averageFilteredPrice)} DSPOINC</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.averageFilteredPrice)} dSPOINC</div>
         </div>
         <div class="marketplace-pulse-stat">
           <div class="marketplace-pulse-label">Lowest Visible</div>
-          <div class="marketplace-pulse-value">${formatNumber(pulseStats.lowestFilteredPrice)} DSPOINC</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.lowestFilteredPrice)} dSPOINC</div>
         </div>
         <div class="marketplace-pulse-stat">
           <div class="marketplace-pulse-label">Highest Visible</div>
-          <div class="marketplace-pulse-value">${formatNumber(pulseStats.highestFilteredPrice)} DSPOINC</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.highestFilteredPrice)} dSPOINC</div>
         </div>
       </div>
     </div>
@@ -19651,7 +19651,7 @@ function renderGeneticMarketplaceTradingSidePanel() {
           <div class="genetic-helper-item">Only idle Genetic Items can be listed. Upgrading or claim-ready runs stay blocked from sale.</div>
           <div class="genetic-helper-item">The buyer receives the full Discord-bound item with its current level preserved.</div>
           <div class="genetic-helper-item">One Discord user can own up to 2 copies of the same exact trait per type/value combination. Buying a third copy is blocked by the backend.</div>
-          <div class="genetic-helper-item">DSPOINC is the only marketplace currency.</div>
+          <div class="genetic-helper-item">dSPOINC is the only marketplace currency.</div>
         </div>
       </div>
 
@@ -19701,15 +19701,15 @@ const earned = Number(summary.dspoinc_earned ?? summary.earned_dspoinc ?? summar
         </div>
         <div class="marketplace-pulse-stat">
           <div class="marketplace-pulse-label">Avg Visible Price</div>
-          <div class="marketplace-pulse-value">${formatNumber(pulseStats.averageFilteredPrice)} DSPOINC</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.averageFilteredPrice)} dSPOINC</div>
         </div>
         <div class="marketplace-pulse-stat">
           <div class="marketplace-pulse-label">Lowest Visible</div>
-          <div class="marketplace-pulse-value">${formatNumber(pulseStats.lowestFilteredPrice)} DSPOINC</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.lowestFilteredPrice)} dSPOINC</div>
         </div>
         <div class="marketplace-pulse-stat">
           <div class="marketplace-pulse-label">Highest Visible</div>
-          <div class="marketplace-pulse-value">${formatNumber(pulseStats.highestFilteredPrice)} DSPOINC</div>
+          <div class="marketplace-pulse-value">${formatNumber(pulseStats.highestFilteredPrice)} dSPOINC</div>
         </div>
       </div>
     </div>
@@ -19949,7 +19949,7 @@ function renderGeneticMarketplace() {
 /**
  * Load the active user's Genetic Marketplace trading history.
  * Plain language for DEVS: this is read-only display data. It never decides ownership,
- * prices, payouts, inventory state, or DSPOINC movement.
+ * prices, payouts, inventory state, or dSPOINC movement.
  */
 async function refreshGeneticMarketplaceHistory() {
   if (!state.userId) {
@@ -20117,7 +20117,7 @@ function renderGeneticMarketplaceHistoryTableRow(entry) {
       <td><span class="genetic-rarity-badge ${escapeHtml(rarityClass)}">${escapeHtml(rarity)}</span></td>
       <td class="table-center-cell">Lv ${formatNumber(level)}</td>
       <td class="table-number-cell">${formatNumber(price)}</td>
-      <td>DSPOINC</td>
+      <td>dSPOINC</td>
       <td class="table-seller-cell" title="${escapeHtml(otherPlayer || '—')}">${escapeHtml(otherPlayer || '—')}</td>
       <td>${escapeHtml(entry?.status || 'unknown')}</td>
       <td>${escapeHtml(eventTime || '—')}</td>
@@ -20162,7 +20162,7 @@ function renderGeneticMarketplaceHistoryCard(entry) {
       <div class="genetic-card-meta mt-4">
         <span class="genetic-pill">Lv ${formatNumber(level)}</span>
         <span class="genetic-pill">${escapeHtml(rarity)}</span>
-        <span class="genetic-pill">${formatNumber(price)} DSPOINC</span>
+        <span class="genetic-pill">${formatNumber(price)} dSPOINC</span>
       </div>
 
       <div class="mt-4 grid gap-2 text-sm text-slate-300">
@@ -20225,8 +20225,8 @@ if (el.geneticMarketplaceHistoryToggle) {
       ['Sold', formatNumber(summary.total_sells || 0)],
       ['Listed', formatNumber(summary.total_active_listings || 0)],
       ['Cancelled', formatNumber(summary.total_cancelled || 0)],
-      ['Spent', `${formatNumber(summary.dspoinc_spent || 0)} DSPOINC`],
-      ['Earned', `${formatNumber(summary.dspoinc_earned || 0)} DSPOINC`]
+      ['Spent', `${formatNumber(summary.dspoinc_spent || 0)} dSPOINC`],
+      ['Earned', `${formatNumber(summary.dspoinc_earned || 0)} dSPOINC`]
     ];
 
     el.geneticMarketplaceHistorySummary.innerHTML = cards.map(([label, value]) => `
@@ -20553,11 +20553,11 @@ async function handleInstantFinishGeneticUpgrade(geneticItemId) {
     eyebrow: 'Genetic Instant Finish',
     title: `Finish ${item.display_title || item.trait_value}?`,
     icon: '⚡',
-    message: 'Instantly finish this Genetic Item upgrade using DSPOINC.',
-    highlightLabel: 'Estimated DSPOINC Cost',
-    highlightValue: `${formatNumber(previewCost)} DSPOINC`,
+    message: 'Instantly finish this Genetic Item upgrade using dSPOINC.',
+    highlightLabel: 'Estimated dSPOINC Cost',
+    highlightValue: `${formatNumber(previewCost)} dSPOINC`,
     note: 'Backend validation remains the source of truth for the final price, finish state, and level application.',
-    confirmText: 'Spend DSPOINC',
+    confirmText: 'Spend dSPOINC',
     cancelText: 'Keep Running',
     confirmVariant: 'primary'
   });
@@ -20608,7 +20608,7 @@ async function handleInstantFinishGeneticUpgrade(geneticItemId) {
       title: `${payload.display_title || item.display_title || item.trait_value} reached Lv ${formatNumber(payload.current_level || getGeneticNextLevel(item))}`,
       icon: '⚡',
       message: 'The active Genetic Item upgrade was instantly completed and the row is idle again.',
-      note: `${formatNumber(payload.instant_finish_cost || previewCost)} DSPOINC was consumed by the backend-authoritative finish action.`,
+      note: `${formatNumber(payload.instant_finish_cost || previewCost)} dSPOINC was consumed by the backend-authoritative finish action.`,
       confirmText: 'Excellent'
     });
   } catch (error) {
@@ -20801,8 +20801,8 @@ async function handleBuyGeneticTrait(catalogId) {
     icon: '🛒',
     message: `${catalogItem.trait_type} will be added to your Discord-bound Genetic Inventory.`,
     highlightLabel: 'Store Price',
-    highlightValue: `${formatNumber(catalogItem.base_price_dspoinc || 0)} DSPOINC`,
-    note: 'The backend remains authoritative for Discord access, duplicate ownership checks, and DSPOINC spend.',
+    highlightValue: `${formatNumber(catalogItem.base_price_dspoinc || 0)} dSPOINC`,
+    note: 'The backend remains authoritative for Discord access, duplicate ownership checks, and dSPOINC spend.',
     confirmText: 'Buy Trait',
     cancelText: 'Cancel',
     confirmVariant: 'primary'
@@ -20843,7 +20843,7 @@ async function handleBuyGeneticTrait(catalogId) {
       message: `${catalogItem.display_title || catalogItem.trait_value} is now stored in your Genetic Inventory.`,
       note: 'This user-bound item can now be upgraded, instantly finished, and boosted directly inside the Genetic Inventory tab.',
       highlightLabel: 'Spent',
-      highlightValue: `${formatNumber(catalogItem.base_price_dspoinc || 0)} DSPOINC`,
+      highlightValue: `${formatNumber(catalogItem.base_price_dspoinc || 0)} dSPOINC`,
       confirmText: 'Nice'
     });
 
@@ -21582,12 +21582,12 @@ async function handleBulkFavoriteTraitUpgrade() {
       title: 'Bulk Favorite Upgrade Started',
       icon: '⭐',
       message: `Started ${formatNumber(startedCount)} favorite Genesis trait upgrade${startedCount === 1 ? '' : 's'} across your verified collection.`,
-      note: `Preview: ${formatNumber(estimatedBulkCost)} DSPOINC • Final spend: ${formatNumber(spentTotal)} DSPOINC • Eligible checked: ${formatNumber(eligibleCount)} • Skipped: ${formatNumber(skippedCount)} • Remaining available: ${formatNumber(remainingBalance)} DSPOINC`,
+      note: `Preview: ${formatNumber(estimatedBulkCost)} dSPOINC • Final spend: ${formatNumber(spentTotal)} dSPOINC • Eligible checked: ${formatNumber(eligibleCount)} • Skipped: ${formatNumber(skippedCount)} • Remaining available: ${formatNumber(remainingBalance)} dSPOINC`,
       confirmText: 'Excellent',
       confirmVariant: 'primary'
     });
 
-    logLab(`Bulk favorite upgrade started ${startedCount} row(s), skipped ${skippedCount}, spent ${spentTotal} DSPOINC.`, 'success');
+    logLab(`Bulk favorite upgrade started ${startedCount} row(s), skipped ${skippedCount}, spent ${spentTotal} dSPOINC.`, 'success');
 
     await Promise.allSettled([
       loadTraitUpgrades(),
@@ -21606,7 +21606,7 @@ async function handleBulkFavoriteTraitUpgrade() {
       title: 'Bulk Favorite Upgrade Failed',
       icon: '⚠️',
       message: error.message || 'The backend rejected the bulk favorite trait upgrade request.',
-      note: `Estimated preview before request: ${formatNumber(estimatedBulkCost)} DSPOINC. No manual Genesis upgrade or ability paths were changed by this action.`,
+      note: `Estimated preview before request: ${formatNumber(estimatedBulkCost)} dSPOINC. No manual Genesis upgrade or ability paths were changed by this action.`,
       confirmText: 'Understood',
       confirmVariant: 'primary'
     });

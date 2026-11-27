@@ -21,7 +21,7 @@
   let claimed = false;
   let pendingReveal = null;
 
-  const formatAmount = amount => Number(amount).toLocaleString('en-US') + ' DSPOINC';
+  const formatAmount = amount => Number(amount).toLocaleString('en-US') + ' dSPOINC';
 
   /** Refresh authoritative claim eligibility; never infer it from localStorage. */
   async function refreshStatus() {

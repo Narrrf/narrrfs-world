@@ -81,7 +81,7 @@
     receiptBox.replaceChildren();
 
     const rows = [
-      ['🪙 DSPOINC Awarded', `+${formatDspoinc(receipt.reward_dspoinc)} DSPOINC`],
+      ['🪙 dSPOINC Awarded', `+${formatDspoinc(receipt.reward_dspoinc)} dSPOINC`],
       [
         '🎁 Bonus Prize',
         receipt.bonus_awarded && receipt.bonus_item
@@ -138,7 +138,7 @@
       if (modalEmblem) modalEmblem.textContent = '🎁';
       if (modalKicker) modalKicker.textContent = '✨ DOOR READY TO OPEN';
       if (modalTitle) modalTitle.textContent = isFinale ? 'Open the Christmas Eve Finale!' : `Open December ${day}!`;
-      modalDescription.textContent = 'Claim today’s server-rolled DSPOINC reward plus a chance at an automatic Store bonus.';
+      modalDescription.textContent = 'Claim today’s server-rolled dSPOINC reward plus a chance at an automatic Store bonus.';
       if (modalLocked) {
         modalLocked.textContent = '🕯️ One claim per account per Europe/Vienna calendar day.';
       }
@@ -417,7 +417,7 @@
       const firstNote = footerBox.querySelector('span');
       if (firstNote) {
         firstNote.textContent = serverState.claimsEnabled
-          ? '🎄 Daily rewards active: open today’s glowing door for DSPOINC + Store bonus chance.'
+          ? '🎄 Daily rewards active: open today’s glowing door for dSPOINC + Store bonus chance.'
           : '🔒 Claims currently paused by owner · verified calendar status only.';
       }
     }

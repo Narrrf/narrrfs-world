@@ -1576,10 +1576,10 @@ setupGlyphMusicControls();
                 }
               }
               
-              // Update DSPOINC balance (formatted with commas, like 3D riddle game)
+              // Update dSPOINC balance (formatted with commas, like 3D riddle game)
               if (userBalanceEl) {
                 const balance = data.user.balance || 0;
-                userBalanceEl.textContent = `DSPOINC: ${typeof balance === 'number' && Number.isFinite(balance) ? balance.toLocaleString() : '0'}`;
+                userBalanceEl.textContent = `dSPOINC: ${typeof balance === 'number' && Number.isFinite(balance) ? balance.toLocaleString() : '0'}`;
               }
               
               // Show user display, hide login message
@@ -1614,7 +1614,7 @@ setupGlyphMusicControls();
           userAvatarEl.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
         }
         if (userBalanceEl) {
-          userBalanceEl.textContent = 'DSPOINC: 0';
+          userBalanceEl.textContent = 'dSPOINC: 0';
         }
         userDisplayEl.style.display = 'flex';
         if (loginMessageEl) loginMessageEl.style.display = 'none';

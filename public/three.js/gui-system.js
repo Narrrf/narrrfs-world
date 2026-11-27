@@ -1637,7 +1637,7 @@ export class GUISystem {
     const dspoinc = this.config.getDSPOINC();
     
     const nameLine = `Player: <span style="color: #fcd34d; font-weight: 700;">${playerName || "Guest"}</span>`;
-    const dspoLine = `DSPOINC: <span style="color: #fcd34d; font-weight: 700;">${dspoinc !== null && Number.isFinite(dspoinc) ? dspoinc.toLocaleString() : "Loading..."}</span>`;
+    const dspoLine = `dSPOINC: <span style="color: #fcd34d; font-weight: 700;">${dspoinc !== null && Number.isFinite(dspoinc) ? dspoinc.toLocaleString() : "Loading..."}</span>`;
     info.innerHTML = `<div>${nameLine}</div><div>${dspoLine}</div>`;
     
     // Update subtitle
@@ -2954,7 +2954,7 @@ Object.assign(panel.style, {
     
     // User Info Panel (for logged-in users) or Login Advice Banner (for guests)
     if (isLoggedIn) {
-      // USER INFO PANEL - Show PFP, DSPOINC, Role/Multiplier
+      // USER INFO PANEL - Show PFP, dSPOINC, Role/Multiplier
       const userInfoPanel = this._createUserInfoPanel();
       panel.appendChild(userInfoPanel);
     } else {
@@ -3200,7 +3200,7 @@ const controlsBtn = this._createCompletionButton("Controls", () => {
   } // <-- closes showMainMenu, only this one
 
   /**
-   * Create user info panel (PFP, DSPOINC, Role/Multiplier) - Phase 2 (January 9, 2026)
+   * Create user info panel (PFP, dSPOINC, Role/Multiplier) - Phase 2 (January 9, 2026)
    * @returns {HTMLElement} User info panel element
    */
   _createUserInfoPanel() {
@@ -3242,7 +3242,7 @@ const controlsBtn = this._createCompletionButton("Controls", () => {
     avatarContainer.appendChild(avatarImg);
     userInfoPanel.appendChild(avatarContainer);
     
-    // User Info (Name, DSPOINC, Role/Multiplier)
+    // User Info (Name, dSPOINC, Role/Multiplier)
     const infoContainer = document.createElement("div");
     Object.assign(infoContainer.style, {
       display: "flex",
@@ -3264,10 +3264,10 @@ const controlsBtn = this._createCompletionButton("Controls", () => {
     });
     infoContainer.appendChild(usernameDiv);
     
-    // DSPOINC Balance
+    // dSPOINC Balance
     const dspoinc = this.config.getDSPOINC ? this.config.getDSPOINC() : 0;
     const dspoincDiv = document.createElement("div");
-    dspoincDiv.textContent = `DSPOINC: ${typeof dspoinc === 'number' && Number.isFinite(dspoinc) ? dspoinc.toLocaleString() : '0'}`;
+    dspoincDiv.textContent = `dSPOINC: ${typeof dspoinc === 'number' && Number.isFinite(dspoinc) ? dspoinc.toLocaleString() : '0'}`;
     Object.assign(dspoincDiv.style, {
       fontSize: "16px",
       fontWeight: "600",
@@ -3330,7 +3330,7 @@ const controlsBtn = this._createCompletionButton("Controls", () => {
     
     // Message
     const messageDiv = document.createElement("div");
-    messageDiv.textContent = "Log in to earn DSPOINC and unlock prizes!";
+    messageDiv.textContent = "Log in to earn dSPOINC and unlock prizes!";
     Object.assign(messageDiv.style, {
       fontSize: "14px",
       color: "#cbd5f5",
@@ -3399,10 +3399,10 @@ const controlsBtn = this._createCompletionButton("Controls", () => {
       this.mainMenu._usernameDiv.textContent = playerName;
     }
     
-    // Update DSPOINC
+    // Update dSPOINC
     if (this.mainMenu._dspoincDiv) {
       const dspoinc = this.config.getDSPOINC ? this.config.getDSPOINC() : 0;
-      this.mainMenu._dspoincDiv.textContent = `DSPOINC: ${typeof dspoinc === 'number' && Number.isFinite(dspoinc) ? dspoinc.toLocaleString() : '0'}`;
+      this.mainMenu._dspoincDiv.textContent = `dSPOINC: ${typeof dspoinc === 'number' && Number.isFinite(dspoinc) ? dspoinc.toLocaleString() : '0'}`;
     }
     
     // Update role/multiplier

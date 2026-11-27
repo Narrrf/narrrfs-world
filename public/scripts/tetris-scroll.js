@@ -3,7 +3,7 @@
 // 🏆 SEASON 5 UPDATE (2025-11-06):
 // - ROLE SYSTEM: Fetches live roles via /api/user/roles.php (emoji-safe normalization)
 // - UX PARITY: OK/Play Again buttons, auto-start flag, guide locking, P-key pause
-// - SCORE SYNC: Global score HUD, Snake-style achievement popups, DSPOINC parity
+// - SCORE SYNC: Global score HUD, Snake-style achievement popups, dSPOINC parity
 // - TEST HELPERS: forceLoadTestRoles(), testRoleSystem(), testRoleFeatures()
 //
 // 🏆 SEASON 3 PHASE 2 COMPLETE (2025-01-28):
@@ -349,9 +349,9 @@ function updateTetrisScoreDisplay() {
     const roleMultiplier = getRoleScoreMultiplier();
     
     if (roleMultiplier > 1.0) {
-      tetrisScoreDisplay.textContent = `💰 Tetris Score: $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+      tetrisScoreDisplay.textContent = `💰 Tetris Score: $${score} dSPOINC (${roleMultiplier}x Role Bonus!)`;
     } else {
-      tetrisScoreDisplay.textContent = `💰 Tetris Score: $${score} DSPOINC`;
+      tetrisScoreDisplay.textContent = `💰 Tetris Score: $${score} dSPOINC`;
     }
   }
 }
@@ -1806,7 +1806,7 @@ function collide(shape, row, col) {
               showBombDefusedPopup();
               
               // 🚨 FIX: Bomb defusal gets special scoring (NOT regular line clearing bonus)
-              // Bomb defusal = 10 DSPOINC + role bonus (no double counting)
+              // Bomb defusal = 10 dSPOINC + role bonus (no double counting)
               const baseBombScore = 10; // Bonus for defusing bomb (reduced for balance)
               const roleMultiplier = getRoleScoreMultiplier();
               const roleBombBonus = Math.round(baseBombScore * (roleMultiplier - 1)); // Changed Math.floor to Math.round for fairer bonuses
@@ -1861,7 +1861,7 @@ function collide(shape, row, col) {
             console.log(`🏆 SCORING: Regular line scoring triggered for ${lines} lines`);
             
             // 🚀 SEASON 5: MULTI-LINE BONUS SYSTEM (rewards clearing more lines!)
-            // Base: 2 DSPOINC per line
+            // Base: 2 dSPOINC per line
             // Bonus: Extra points for 2, 3, or 4 lines cleared at once
             let baseScore = lines * 2; // Base 2 per line
             let multiLineBonus = 0;
@@ -1881,7 +1881,7 @@ function collide(shape, row, col) {
               reactorTriggered = true;
               reactorFirstClearPending = false;
               totalBase *= 2;
-              console.log('🧬 Cheese Drop Reactor activated! First clear DSPOINC doubled.');
+              console.log('🧬 Cheese Drop Reactor activated! First clear dSPOINC doubled.');
             }
 
             const roleMultiplier = getRoleScoreMultiplier();
@@ -2017,7 +2017,7 @@ function collide(shape, row, col) {
     
     bossLinesCleared = 0;
     
-    console.log(`👑 BOSS SPAWNED: ${bossName} | Lines: ${requiredLines} | Reward: ${reward} DSPOINC`);
+    console.log(`👑 BOSS SPAWNED: ${bossName} | Lines: ${requiredLines} | Reward: ${reward} dSPOINC`);
     
     // 🐛 BUG #322 FIX: Show boss HUD
     updateTetrisBossHUD();
@@ -2046,7 +2046,7 @@ function collide(shape, row, col) {
     const reward = currentBoss.reward;
     const bossColor = currentBoss.color;
     
-    console.log(`🎉 BOSS DEFEATED: ${bossName} | Reward: ${reward} DSPOINC`);
+    console.log(`🎉 BOSS DEFEATED: ${bossName} | Reward: ${reward} dSPOINC`);
     
     // ⏸️ PAUSE GAME during victory countdown (like Snake!)
     isTetrisPaused = true;
@@ -2059,7 +2059,7 @@ function collide(shape, row, col) {
     const oldScore = score;
     score += totalReward;
     
-    console.log(`💰 BOSS REWARD APPLIED: ${oldScore} + ${totalReward} = ${score} DSPOINC`);
+    console.log(`💰 BOSS REWARD APPLIED: ${oldScore} + ${totalReward} = ${score} dSPOINC`);
     console.log(`💰 Base reward: ${reward} | Role multiplier: ${roleMultiplier}x | Total: ${totalReward}`);
     
     updateTetrisScoreDisplay();
@@ -2133,7 +2133,7 @@ function collide(shape, row, col) {
     notification.innerHTML = `
       <div style="font-size: clamp(20px, 5vw, 32px); margin-bottom: 10px; color: ${bossColor};">${bossName}</div>
       <div style="font-size: clamp(14px, 3.5vw, 18px); margin-bottom: 8px;">Clear ${requiredLines} lines to win!</div>
-      <div style="font-size: clamp(12px, 3vw, 16px); color: #FFD700;">Reward: +${reward} DSPOINC</div>
+      <div style="font-size: clamp(12px, 3vw, 16px); color: #FFD700;">Reward: +${reward} dSPOINC</div>
       <div id="boss-countdown" style="font-size: clamp(32px, 8vw, 48px); margin-top: 15px; color: ${bossColor};">3</div>
     `;
     
@@ -2191,7 +2191,7 @@ function collide(shape, row, col) {
     notification.innerHTML = `
       <div style="font-size: clamp(24px, 6vw, 36px); margin-bottom: 10px;">🎉 BOSS DEFEATED! 🎉</div>
       <div style="font-size: clamp(16px, 4vw, 24px); margin-bottom: 8px; color: ${bossColor};">${bossName}</div>
-      <div style="font-size: clamp(14px, 3.5vw, 20px); color: #FFD700;">+${totalReward} DSPOINC!</div>
+      <div style="font-size: clamp(14px, 3.5vw, 20px); color: #FFD700;">+${totalReward} dSPOINC!</div>
       <div id="victory-countdown" style="font-size: clamp(32px, 8vw, 48px); margin-top: 15px; color: #FFD700;">3</div>
     `;
     
@@ -2235,7 +2235,7 @@ function showBombDefusedPopup() {
     notification.innerHTML = `
       <div class="flex items-center gap-2">
         <span>💣</span>
-        <span>Bomb Defused! +10 DSPOINC</span>
+        <span>Bomb Defused! +10 dSPOINC</span>
         <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-lg">×</button>
       </div>
     `;
@@ -2528,8 +2528,8 @@ if (collide(current.shape, current.row, current.col)) {
       }
     }
     try {
-      finalScoreText.textContent = `You earned $${score} DSPOINC`;
-      console.log(`✅ Final score set: ${score} DSPOINC`);
+      finalScoreText.textContent = `You earned $${score} dSPOINC`;
+      console.log(`✅ Final score set: ${score} dSPOINC`);
     } catch (error) {
       console.log('⚠️ Could not update final score text:', error);
     }
@@ -2549,7 +2549,7 @@ if (collide(current.shape, current.row, current.col)) {
       
       if (!isVisible) {
         console.log('🚨 Modal not visible - showing fallback alert');
-        alert(`🧠 GAME OVER\n\nYou earned $${score} DSPOINC!\n\nRefresh the page to play again.`);
+        alert(`🧠 GAME OVER\n\nYou earned $${score} dSPOINC!\n\nRefresh the page to play again.`);
       }
     }, 100);
     
@@ -2563,7 +2563,7 @@ if (collide(current.shape, current.row, current.col)) {
     console.log('Modal:', modal);
     console.log('Score text:', finalScoreText);
     // ✅ CRITICAL FALLBACK: Always show alert if modal not found
-    alert(`🧠 GAME OVER\n\nYou earned $${score} DSPOINC!\n\nRefresh the page to play again.`);
+    alert(`🧠 GAME OVER\n\nYou earned $${score} dSPOINC!\n\nRefresh the page to play again.`);
     
     // 📱 RESTORE SCREEN SWIPE
     unlockTetrisScroll();
@@ -2642,12 +2642,12 @@ if (collide(current.shape, current.row, current.col)) {
     }
 
     // 💾 Save score to database
-    // 🔧 FIX: Send DSPOINC score directly (frontend already calculated it)
+    // 🔧 FIX: Send dSPOINC score directly (frontend already calculated it)
     // The API should NOT multiply again - frontend already did lines * 2
-    const dspoincScore = score; // Send DSPOINC score (already calculated as lines * 2)
+    const dspoincScore = score; // Send dSPOINC score (already calculated as lines * 2)
     const payload = {
       wallet: wallet,
-      score: dspoincScore, // Send DSPOINC score directly
+      score: dspoincScore, // Send dSPOINC score directly
       discord_id: discordId,
       discord_name: discordName,
       game: "tetris"
@@ -2710,7 +2710,7 @@ if (collide(current.shape, current.row, current.col)) {
   function checkTetrisAchievements(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn) {
     
     // 🏆 Define achievement checks (REVISED 2025-10-26 - Bug #131, #136, #127, #134)
-    // Based on max score ~2500 DSPOINC, balanced for realistic gameplay
+    // Based on max score ~2500 dSPOINC, balanced for realistic gameplay
     const achievementChecks = [
       // === SCORE-BASED (5 achievements - 8% to 100% of max) ===
       { key: 'score_hunter', condition: gameScore >= 200 },   // 8% of max
@@ -2775,7 +2775,7 @@ if (collide(current.shape, current.row, current.col)) {
     console.log('💾 saveAchievementsToDatabase called with:', { userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn });
     
     // 🏆 Define achievement checks (REVISED 2025-10-26 - Bug #131, #136, #127, #134)
-    // Based on max score ~2500 DSPOINC, balanced for realistic gameplay
+    // Based on max score ~2500 dSPOINC, balanced for realistic gameplay
     const achievementChecks = [
       // === SCORE-BASED (5 achievements - 8% to 100% of max) ===
       { key: 'score_hunter', condition: gameScore >= 200 },   // 8% of max
@@ -2944,11 +2944,11 @@ if (collide(current.shape, current.row, current.col)) {
             // 🏆 Achievement titles and descriptions (REVISED 2025-10-26)
             const achievementData = {
               // SCORE-BASED
-              'score_hunter': { title: 'Score Hunter', desc: 'Earn 200 DSPOINC in one game' },
-              'high_roller': { title: 'High Roller', desc: 'Earn 800 DSPOINC in one game' },
-              'point_master': { title: 'Point Master', desc: 'Earn 1,500 DSPOINC in one game' },
-              'score_legend': { title: 'Score Legend', desc: 'Earn 2,000 DSPOINC in one game' },
-              'tetris_king': { title: 'Tetris King', desc: 'Earn 2,500 DSPOINC (maximum score!)' },
+              'score_hunter': { title: 'Score Hunter', desc: 'Earn 200 dSPOINC in one game' },
+              'high_roller': { title: 'High Roller', desc: 'Earn 800 dSPOINC in one game' },
+              'point_master': { title: 'Point Master', desc: 'Earn 1,500 dSPOINC in one game' },
+              'score_legend': { title: 'Score Legend', desc: 'Earn 2,000 dSPOINC in one game' },
+              'tetris_king': { title: 'Tetris King', desc: 'Earn 2,500 dSPOINC (maximum score!)' },
               
               // LINE-BASED
               'first_line': { title: 'First Line', desc: 'Clear your first line' },
@@ -3002,11 +3002,11 @@ if (collide(current.shape, current.row, current.col)) {
     // 🏆 Achievement data (REVISED 2025-10-26 - removed score_god duplicate)
     const achievementData = {
       // SCORE-BASED
-      'score_hunter': { title: 'Score Hunter', desc: 'Earn 200 DSPOINC in one game' },
-      'high_roller': { title: 'High Roller', desc: 'Earn 800 DSPOINC in one game' },
-      'point_master': { title: 'Point Master', desc: 'Earn 1,500 DSPOINC in one game' },
-      'score_legend': { title: 'Score Legend', desc: 'Earn 2,000 DSPOINC in one game' },
-      'tetris_king': { title: 'Tetris King', desc: 'Earn 2,500 DSPOINC (maximum score!)' },
+      'score_hunter': { title: 'Score Hunter', desc: 'Earn 200 dSPOINC in one game' },
+      'high_roller': { title: 'High Roller', desc: 'Earn 800 dSPOINC in one game' },
+      'point_master': { title: 'Point Master', desc: 'Earn 1,500 dSPOINC in one game' },
+      'score_legend': { title: 'Score Legend', desc: 'Earn 2,000 dSPOINC in one game' },
+      'tetris_king': { title: 'Tetris King', desc: 'Earn 2,500 dSPOINC (maximum score!)' },
       
       // LINE-BASED
       'first_line': { title: 'First Line', desc: 'Clear your first line' },

@@ -22,7 +22,7 @@
  * 🎯 PURPOSE
  * ============================================================================
  *
- * Game-wide treasure chest system: spawning, E-key interaction, DSPOINC rewards
+ * Game-wide treasure chest system: spawning, E-key interaction, dSPOINC rewards
  * via API, grass exclusion, collision, persistence (database).
  *
  * PRIMARY METHOD (simpler): Dual-model – closed GLB + opened GLB, instant swap.
@@ -56,7 +56,7 @@
  * - No lid rotation, no duplicate detection – just swap two GLBs
  *
  * LEGACY chest2 (fallback): Single GLB with lid rotation + duplicate lid detection.
- * - ✅ Reward system integrated with API (DSPOINC rewards)
+ * - ✅ Reward system integrated with API (dSPOINC rewards)
  * - ✅ Visual effects (sparkling particles, emissive glow)
  * - ✅ Sound effects (opening sound with fallback)
  * - ✅ Interaction system (E key detection, UI prompts)
@@ -150,25 +150,25 @@
  * 
  * **LEVEL 2 CHESTS (January 4, 2026):**
  * =======================================
- * - chest_004: X: 22.8, Y: 0.0 (ground level), Z: 589 - 150 DSPOINC
- * - chest_005: X: 9.72, Y: 0.0 (ground level), Z: 648 - 200 DSPOINC
+ * - chest_004: X: 22.8, Y: 0.0 (ground level), Z: 589 - 150 dSPOINC
+ * - chest_005: X: 9.72, Y: 0.0 (ground level), Z: 648 - 200 dSPOINC
  *   ✅ FIXED: Level 2 uses Y: 0.0 for ground level (level2Config.origin.y = 0, spawnPosition.y = 0)
  *   Previous code used Y: 1.0 which caused chests to appear 1 unit too high
  *   Now correctly uses level2Config.origin.y (0.0) for ground level
  * 
  * **LEVEL 3 CHESTS (December 30, 2025):**
  * =======================================
- * - chest_006: X: 77, Y: spawnY (spawn position Y), Z: 724 - 180 DSPOINC (Level 3 uses spawn position Y, same approach as Level 5)
- * - chest_007: X: 55, Y: spawnY (spawn position Y), Z: 805 - 200 DSPOINC (Level 3 uses spawn position Y, same approach as Level 5)
+ * - chest_006: X: 77, Y: spawnY (spawn position Y), Z: 724 - 180 dSPOINC (Level 3 uses spawn position Y, same approach as Level 5)
+ * - chest_007: X: 55, Y: spawnY (spawn position Y), Z: 805 - 200 dSPOINC (Level 3 uses spawn position Y, same approach as Level 5)
  * 
  * **LEVEL 4 CHESTS (December 30, 2025):**
  * =======================================
- * - chest_008: X: 75, Y: 0, Z: 923 - 220 DSPOINC (Level 4 ground is at Y: 0, not Y: 1)
- * - chest_009: X: 54, Y: 0, Z: 1050 - 250 DSPOINC (Level 4 ground is at Y: 0, not Y: 1)
+ * - chest_008: X: 75, Y: 0, Z: 923 - 220 dSPOINC (Level 4 ground is at Y: 0, not Y: 1)
+ * - chest_009: X: 54, Y: 0, Z: 1050 - 250 dSPOINC (Level 4 ground is at Y: 0, not Y: 1)
  * 
  * **LEVEL 5 CHESTS (December 30, 2025):**
  * =======================================
- * - chest_010: X: 33, Y: detected ground level at chest position, Z: -41 - 280 DSPOINC
+ * - chest_010: X: 33, Y: detected ground level at chest position, Z: -41 - 280 dSPOINC
  *   ✅ WORKING: Level 5 uses dynamic ground detection via raycast at chest's specific X/Z position (January 4, 2026)
  *   CRITICAL: Level 5 has uneven terrain (city map), so ground level varies by position
  *   - Chest Y is detected via raycast at chest position (33, -41), NOT at spawn position (0, 0)
@@ -179,7 +179,7 @@
  * 
  * **LEVEL 6 CHESTS (December 30, 2025):**
  * =======================================
- * - chest_011: X: 79, Y: 0.0 (ground level), Z: -98 - 300 DSPOINC (Level 6 ground is at Y: 0.0, same as Level 3/4)
+ * - chest_011: X: 79, Y: 0.0 (ground level), Z: -98 - 300 dSPOINC (Level 6 ground is at Y: 0.0, same as Level 3/4)
  * 
  * ============================================================================
  * 📦 WHAT THIS MODULE LOADS
@@ -315,10 +315,10 @@
  *    - Underground: Y < -4.0 (caves, dungeons, sewers)
  * 
  * 4. REWARD SCALING:
- *    - Early levels (1-10): 50-250 DSPOINC
- *    - Mid levels (11-50): 250-500 DSPOINC
- *    - Late levels (51-100): 500-1000+ DSPOINC
- *    - Boss levels: 1000-5000 DSPOINC
+ *    - Early levels (1-10): 50-250 dSPOINC
+ *    - Mid levels (11-50): 250-500 dSPOINC
+ *    - Late levels (51-100): 500-1000+ dSPOINC
+ *    - Boss levels: 1000-5000 dSPOINC
  * 
  * MEMORY MANAGEMENT:
  * ==================
@@ -414,7 +414,7 @@
  *     type: 'chest2',                      // REQUIRED: Always use 'chest2' (standardized, has animation)
  *     position: new THREE.Vector3(55, 1.0, 20),  // REQUIRED: THREE.Vector3 position
  *                                            // Y position should be 1.0 (matches bear trap)
- *     dspoincAmount: 100,                   // REQUIRED: Base DSPOINC reward amount
+ *     dspoincAmount: 100,                   // REQUIRED: Base dSPOINC reward amount
  *     levelId: 'CHEESE_TEMPLE_LEVEL1'      // REQUIRED: Level identifier for API
  *   });
  * 
@@ -460,10 +460,10 @@
  * STEP 4: Reward Amount Guidelines
  * ----------------------------------------------------------------------------
  * 
- * - Small chests: 50-100 DSPOINC
- * - Medium chests: 100-250 DSPOINC
- * - Large chests: 250-500 DSPOINC
- * - Special chests: 500+ DSPOINC
+ * - Small chests: 50-100 dSPOINC
+ * - Medium chests: 100-250 dSPOINC
+ * - Large chests: 250-500 dSPOINC
+ * - Special chests: 500+ dSPOINC
  * 
  * Note: Rewards are multiplied by player's role multiplier (e.g., VIP = 2.0x)
  * 
@@ -532,7 +532,7 @@
  *    - Opened chest is shown (with body and handles)
  * 5. Reward is awarded:
  *    - API call to /api/dev/riddle-reward.php
- *    - DSPOINC saved to database (tbl_riddle_completions)
+ *    - dSPOINC saved to database (tbl_riddle_completions)
  *    - Player balance updated
  *    - Notification shown with reward amount
  * 6. Chest counter incremented (for statistics)
@@ -848,7 +848,7 @@ class Chest {
     this.id = config.id;                    // Unique chest ID
     this.type = config.type;                // 'chest1' or 'chest2'
     this.position = config.position;        // THREE.Vector3 position
-    this.dspoincAmount = config.dspoincAmount; // Base DSPOINC reward
+    this.dspoincAmount = config.dspoincAmount; // Base dSPOINC reward
     this.levelId = config.levelId;          // Level identifier
     this.opened = false;                     // Opening state
     this.mesh = null;                        // Three.js mesh/group
@@ -1655,8 +1655,8 @@ class Chest {
   }
   
   /**
-   * Open chest and award DSPOINC reward
-   * @param {Function} awardRewardCallback - Callback function to award DSPOINC
+   * Open chest and award dSPOINC reward
+   * @param {Function} awardRewardCallback - Callback function to award dSPOINC
    */
   async open(awardRewardCallback) {
     if (this.opened || !this.isLoaded) {
@@ -1676,7 +1676,7 @@ class Chest {
     // Play opening animation (if available)
     this.playOpenAnimation();
     
-    // Award DSPOINC reward via callback
+    // Award dSPOINC reward via callback
     if (awardRewardCallback && typeof awardRewardCallback === 'function') {
       await awardRewardCallback(this);
     }
@@ -2793,7 +2793,7 @@ class Chest {
  * - Interaction detection (distance-based)
  * - Opening: dual-model swap (closed GLB → opened GLB) or legacy lid animation
  * - State management (closed/opened)
- * - Reward system (DSPOINC via API)
+ * - Reward system (dSPOINC via API)
  * - Chest counter (tracks opened chests)
  * 
  * ============================================================================
@@ -3073,7 +3073,7 @@ export class ChestSystem {
    * @param {string} config.type - REQUIRED: Always use 'chest2' (standardized, has animation)
    *                                Legacy 'chest1' automatically converts to 'chest2'
    * @param {THREE.Vector3} config.position - REQUIRED: Chest position (Y should be 1.0 to match bear trap)
-   * @param {number} config.dspoincAmount - REQUIRED: Base DSPOINC reward amount
+   * @param {number} config.dspoincAmount - REQUIRED: Base dSPOINC reward amount
    * @param {string} config.levelId - REQUIRED: Level identifier for API (e.g., 'CHEESE_TEMPLE_LEVEL1')
    * 
    * @example

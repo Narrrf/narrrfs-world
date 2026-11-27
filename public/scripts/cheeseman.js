@@ -26,7 +26,7 @@ const POWER_MODE_MS = 8000;
 // Power Cheese reward cap.
 // Plain language for DEVS:
 // Skilled players may eat several enemies during one Power Cheese,
-// but the reward is capped so DSPOINC cannot be farmed endlessly.
+// but the reward is capped so dSPOINC cannot be farmed endlessly.
 const POWER_CHEESE_ENEMY_REWARD_CAP = 3;
 
 const BASE_TICK_MS = 175;
@@ -45,7 +45,7 @@ const ENEMY_SMART_CHANCE_BY_LEVEL = [0.08, 0.12, 0.18, 0.25, 0.34, 0.44, 0.55, 0
 // 🧠 CheeseMind AI memory settings.
 // Plain language for DEVS:
 // CheeseMind learns only during the current run. It does not persist player behavior,
-// does not touch the DB, and does not change scoring or DSPOINC.
+// does not touch the DB, and does not change scoring or dSPOINC.
 const CHEESEMIND_PLAYER_TRAIL_LIMIT = 32;
 const CHEESEMIND_RECENT_TURN_LIMIT = 16;
 const CHEESEMIND_DEBUG_MAP_LIMIT = 12;
@@ -62,20 +62,20 @@ const CHEESEMIND_RANDOM_FALLBACK_CHANCE = 0.18;
 // 🧠 CheeseMind team coordination settings.
 // Plain language for DEVS:
 // Patch 3 makes enemies act like a squad instead of three isolated chasers.
-// This changes target selection only. It does not change DB, API, score, or DSPOINC.
+// This changes target selection only. It does not change DB, API, score, or dSPOINC.
 const CHEESEMIND_COORDINATION_MIN_LEVEL = 6;
 const CHEESEMIND_CUTOFF_MIN_LEVEL = 6;
 const CHEESEMIND_ASSIGNMENT_OVERLAP_PENALTY = 1.15;
 
 // 🧠 CheeseMind Observatory settings.
 // Plain language for DEVS:
-// These messages make enemy thinking visible to testers without changing movement, DB, API, scoring, or DSPOINC.
+// These messages make enemy thinking visible to testers without changing movement, DB, API, scoring, or dSPOINC.
 const CHEESEMIND_OBSERVATORY_STATUS_COOLDOWN_MS = 4500;
 
 // 🧠 CheeseMind visual counterplay settings.
 // Plain language for DEVS:
 // These canvas hints let players understand enemy intent without opening console.
-// They are visual-only and must never affect score, DSPOINC, DB, API, or movement.
+// They are visual-only and must never affect score, dSPOINC, DB, API, or movement.
 const CHEESEMIND_VISUAL_SIGNAL_MIN_LEVEL = 3;
 const CHEESEMIND_TARGET_MARKER_RADIUS = 8;
 const CHEESEMIND_ENEMY_BADGE_RADIUS = 7;
@@ -683,7 +683,7 @@ const LEVEL_TEMPLATES = [
    * Plain language for DEVS FOR DECADES:
    * When Cheese Runner is opened with a Narrrfs partner session token, the
    * game submits only to the isolated Partner Bridge close-session API.
-   * It must not call the normal Cheese Runner DSPOINC / leaderboard save path.
+   * It must not call the normal Cheese Runner dSPOINC / leaderboard save path.
    */
   const cheesemanPartnerSessionToken =
     new URLSearchParams(window.location.search).get('session') || '';
@@ -795,7 +795,7 @@ if (isCheesemanPartnerMode) {
   }
 
   if (roleEl) {
-    roleEl.textContent = 'Partner Mode: no Narrrfs DSPOINC / leaderboard write';
+    roleEl.textContent = 'Partner Mode: no Narrrfs dSPOINC / leaderboard write';
   }
 
   renderCheesemanPartnerIdentity();
@@ -810,7 +810,7 @@ if (isCheesemanPartnerMode) {
   if (seasonBannerEl) {
     const partnerNotice = document.createElement('div');
     partnerNotice.className = 'mt-4 rounded-2xl border border-cyan-300/40 bg-cyan-950/50 p-3 text-sm text-cyan-100';
-    partnerNotice.textContent = 'Partner iframe mode: this run closes an isolated Samuzi partner session. It does not credit Narrrfs DSPOINC or write the public Narrrfs leaderboard.';
+    partnerNotice.textContent = 'Partner iframe mode: this run closes an isolated Samuzi partner session. It does not credit Narrrfs dSPOINC or write the public Narrrfs leaderboard.';
     seasonBannerEl.appendChild(partnerNotice);
   }
 
@@ -3056,7 +3056,7 @@ confusionMushroomItem = null;
   if (finalDspoincEl) {
     finalDspoincEl.textContent = isCheesemanPartnerMode
       ? 'Partner Points: pending'
-      : `DSPOINC: ${calculateDspoincReward().toLocaleString()}`;
+      : `dSPOINC: ${calculateDspoincReward().toLocaleString()}`;
   }
 
   if (saveStatusEl) {
@@ -3077,7 +3077,7 @@ confusionMushroomItem = null;
 
   /**
    * Save Cheese Runner score through the backend-authoritative API.
-   * The API writes the seasonal game score and the DSPOINC ledger reward.
+   * The API writes the seasonal game score and the dSPOINC ledger reward.
    */
   async function submitCheesemanScore() {
     if (hasScoreBeenSaved) {
@@ -3141,7 +3141,7 @@ confusionMushroomItem = null;
       }
 
       if (saveStatusEl) {
-        saveStatusEl.textContent = `✅ Score saved for ${data.season}: ${Number(data.dspoinc_score || 0).toLocaleString()} DSPOINC`;
+        saveStatusEl.textContent = `✅ Score saved for ${data.season}: ${Number(data.dspoinc_score || 0).toLocaleString()} dSPOINC`;
       }
 
       console.log('✅ Cheese Runner score saved:', data);
@@ -3162,7 +3162,7 @@ confusionMushroomItem = null;
    * Plain language for DEVS FOR DECADES:
    * This is the partner iframe save path. It writes only to the isolated
    * partner bridge tables through close-session.php. It does not credit
-   * Narrrfs DSPOINC, does not write tbl_tetris_scores, and does not touch the
+   * Narrrfs dSPOINC, does not write tbl_tetris_scores, and does not touch the
    * public leaderboard or normal Cheese Runner reward API.
    */
   async function submitCheesemanPartnerSessionScore() {
@@ -3227,7 +3227,7 @@ confusionMushroomItem = null;
   /**
  * Saves Cheese Runner score to backend.
  * Backend is authoritative and writes:
- * - tbl_user_scores (DSPOINC ledger)
+ * - tbl_user_scores (dSPOINC ledger)
  * - tbl_tetris_scores (leaderboard)
  */
 async function saveCheeseRunnerScore(score, dspoinc) {

@@ -209,7 +209,7 @@
 
     <div class="safety">
       Safety boundary: this demo writes only isolated partner session/result rows.
-      It does not write Narrrfs DSPOINC, SPOINC, public leaderboards, score ledgers,
+      It does not write Narrrfs dSPOINC, SPOINC, public leaderboards, score ledgers,
       Genesis ownership, Lab progression, Genetic Items, MouseFight, rewards, or staking.
     </div>
   </main>
@@ -221,7 +221,7 @@
      * Plain language for DEVS FOR DECADES:
      * This page proves the partner session lifecycle only.
      * It submits a test score to the isolated partner bridge endpoint.
-     * It does not save a Narrrfs leaderboard score and does not credit DSPOINC.
+     * It does not save a Narrrfs leaderboard score and does not credit dSPOINC.
      */
     const urlParams = new URLSearchParams(window.location.search);
     const sessionToken = String(urlParams.get('session') || '').trim();

@@ -12,7 +12,7 @@ const NERD_LAB_OVERVIEWS = {
       "✅ Database System - 67 tables managing all user data, scores, achievements, and system state",
       "✅ Frontend Website - 22+ pages with complete backend integration and 55+ API connections",
       "✅ Cheese Engine 13.0 - 12 AI agents working in harmony to maintain and develop the system",
-      "✅ DSPOINC Staking System - Complete token freezing and reward system with 6 freeze durations",
+      "✅ dSPOINC Staking System - Complete token freezing and reward system with 6 freeze durations",
       "✅ 100+ Achievements - Comprehensive achievement systems across all games",
       "✅ Season Management - Enterprise-level season system with data preservation",
       "✅ Role-Based System - Complete multiplier and theme system for all roles",
@@ -42,10 +42,10 @@ const NERD_LAB_OVERVIEWS = {
       "✅ Boss System - Challenging end-game content with multiple boss types",
       "✅ Full Integration - Profile page, Admin Interface, Discord bot, leaderboards",
       "✅ Season Support - Complete season management with data preservation",
-      "✅ Real-Time Scoring - Instant DSPOINC rewards with role multipliers",
+      "✅ Real-Time Scoring - Instant dSPOINC rewards with role multipliers",
       "✅ Mobile Optimized - Touch controls and responsive design"
     ],
-    description: "Tetris game built with vanilla JavaScript (no frameworks), featuring real-time score tracking, DSPOINC rewards, role-based multipliers, store upgrades, and seamless integration with our backend systems. All achievements are dynamically loaded from the database, ensuring easy updates without code changes.",
+    description: "Tetris game built with vanilla JavaScript (no frameworks), featuring real-time score tracking, dSPOINC rewards, role-based multipliers, store upgrades, and seamless integration with our backend systems. All achievements are dynamically loaded from the database, ensuring easy updates without code changes.",
     techStack: "Vanilla JavaScript, Canvas API, Web Audio API, PHP Backend, SQLite Database",
     fileSize: "~62KB HTML + ~145KB JavaScript",
     databaseTables: ["tbl_tetris_scores", "tbl_tetris_achievements", "tbl_user_scores"]
@@ -60,9 +60,9 @@ const NERD_LAB_OVERVIEWS = {
       "✅ Golden Apple System - Special power-ups that grant bonuses and special effects",
       "✅ Store Upgrades - Enhanced gameplay mechanics (Speed Core, Apple Booster)",
       "✅ Role-Based Scoring - Multiplier bonuses for all Discord roles",
-      "✅ Full Backend Integration - Real-time score tracking and DSPOINC rewards",
+      "✅ Full Backend Integration - Real-time score tracking and dSPOINC rewards",
       "✅ Boss AI System - Intelligent boss movement and attack patterns",
-      "✅ Score Multipliers - Role-based DSPOINC multipliers applied in real-time"
+      "✅ Score Multipliers - Role-based dSPOINC multipliers applied in real-time"
     ],
     description: "Snake game featuring boss mechanics, power-up systems, and full integration with our database and reward distribution systems. The boss system includes advanced AI that adapts to player skill level.",
     techStack: "Vanilla JavaScript, Canvas API, PHP Backend, SQLite Database",
@@ -76,10 +76,10 @@ const NERD_LAB_OVERVIEWS = {
       "✅ 28 Achievements - Most achievements in any game (database-driven)",
       "✅ 4 Boss Types - Regular, Phoenix, Mini-Phoenix, Giant Cheese Boss",
       "✅ Phoenix Shooting - Special weapon mechanics with fire trails",
-      "✅ 10:1 Score Conversion - Efficient DSPOINC rewards (100 score = 10 DSPOINC)",
+      "✅ 10:1 Score Conversion - Efficient dSPOINC rewards (100 score = 10 dSPOINC)",
       "✅ Store Upgrades - Triple shot, ship colors, enhanced weapons",
       "✅ Advanced Enemy AI - Multiple enemy types with different behaviors",
-      "✅ Combo System - Kill streaks multiply DSPOINC rewards",
+      "✅ Combo System - Kill streaks multiply dSPOINC rewards",
       "✅ Power-Up System - Multiple power-ups (Speed Boost, Bomb, Laser)",
       "✅ Screen Shake Effects - Immersive visual feedback",
       "✅ Dynamic Starfield - Parallax scrolling stars for depth"
@@ -105,7 +105,7 @@ const NERD_LAB_OVERVIEWS = {
 
   discordRace: {
     title: "🏁 Discord Race - Complete Technical Documentation",
-    summary: "Text-based racing game played entirely in Discord! Join races, compete for first place, and earn DSPOINC rewards. Full Discord bot integration.",
+    summary: "Text-based racing game played entirely in Discord! Join races, compete for first place, and earn dSPOINC rewards. Full Discord bot integration.",
     achievements: [
       "✅ Discord Bot Integration - Play directly in Discord",
       "✅ Real-Time Racing - Interactive race mechanics",
@@ -206,14 +206,14 @@ const NERD_LAB_OVERVIEWS = {
 
   database: {
     title: "🗄️ Database System - Complete Technical Documentation",
-    summary: "SQLite database with 67 tables managing all user data, game scores, achievements, store items, Discord events, DSPOINC staking, and complete system state. The single source of truth for all Narrrf's World data.",
+    summary: "SQLite database with 67 tables managing all user data, game scores, achievements, store items, Discord events, dSPOINC staking, and complete system state. The single source of truth for all Narrrf's World data.",
     achievements: [
       "✅ 67 Tables - Complete data structure organized into 16 categories",
       "✅ User Management - Accounts (tbl_users), roles (tbl_user_roles), scores (tbl_user_scores), staking (tbl_dspoinc_stakes)",
       "✅ Game Data - All 7 games tracked (tbl_tetris_scores, tbl_cheese_clicks, tbl_race_participants, etc.)",
       "✅ Achievement System - All achievements stored (tbl_tetris_achievements, tbl_snake_achievements, etc.)",
       "✅ Store System - Items (tbl_store_items), inventory (tbl_user_inventory), purchases (tbl_purchase_history)",
-      "✅ DSPOINC Staking System - Complete staking/freezing system (tbl_dspoinc_stakes) with 6 freeze durations",
+      "✅ dSPOINC Staking System - Complete staking/freezing system (tbl_dspoinc_stakes) with 6 freeze durations",
       "✅ Season Management - Historical data preservation (tbl_seasons, tbl_season_leaderboards)",
       "✅ Discord Events - Complete bot event tracking (tbl_giveaways, tbl_giveaway_participants, etc.)",
       "✅ Quest System - Mission definitions and claims (tbl_quests, tbl_quest_claims)",
@@ -221,7 +221,7 @@ const NERD_LAB_OVERVIEWS = {
       "✅ NFT Integration - Holder verification and collections (tbl_nft_ownership, tbl_holder_verifications)",
       "✅ Audit Trail - Complete transaction tracking (tbl_score_adjustments, tbl_wallet_transactions)"
     ],
-    description: "Our database system is the foundation of Narrrf's World, storing all user data, game progress, achievements, DSPOINC staking, and system state across all platforms. The database is optimized for performance with proper indexes, and all data is preserved across seasons and system updates. The new DSPOINC Staking System (tbl_dspoinc_stakes) enables users to freeze their tokens for various durations and earn rewards.",
+    description: "Our database system is the foundation of Narrrf's World, storing all user data, game progress, achievements, dSPOINC staking, and system state across all platforms. The database is optimized for performance with proper indexes, and all data is preserved across seasons and system updates. The new dSPOINC Staking System (tbl_dspoinc_stakes) enables users to freeze their tokens for various durations and earn rewards.",
     techStack: "SQLite3, PHP PDO, Database migrations system",
     databaseSize: "~6.8MB (production), growing with user data",
     backupSystem: "Automated backups before deployments, manual backup tools available"
@@ -274,12 +274,12 @@ const NERD_LAB_OVERVIEWS = {
   },
 
   staking: {
-    title: "🧊 DSPOINC Staking System - Complete Technical Documentation",
-    summary: "Revolutionary DSPOINC staking/freezing system allowing users to freeze their DSPOINC tokens for selected time periods (1, 3, 6, 12, 24, 36 months) and earn progressive rewards. Frozen DSPOINC cannot be spent until the freeze period ends, ensuring long-term commitment and reward distribution.",
+    title: "🧊 dSPOINC Staking System - Complete Technical Documentation",
+    summary: "Revolutionary dSPOINC staking/freezing system allowing users to freeze their dSPOINC tokens for selected time periods (1, 3, 6, 12, 24, 36 months) and earn progressive rewards. Frozen dSPOINC cannot be spent until the freeze period ends, ensuring long-term commitment and reward distribution.",
     achievements: [
       "✅ 6 Freeze Durations - 1, 3, 6, 12, 24, 36 months with progressive reward rates",
       "✅ Progressive Reward Rates - 5% (1mo), 10% (3mo), 15% (6mo), 20% (12mo), 35% (24mo), 50% (36mo)",
-      "✅ Frozen Balance Protection - Frozen DSPOINC cannot be spent (validated in store purchases)",
+      "✅ Frozen Balance Protection - Frozen dSPOINC cannot be spent (validated in store purchases)",
       "✅ Transaction Tracking - All stakes appear in Recent Score Changes with detailed reasons",
       "✅ Profile Integration - Staking overview section on profile page showing Total, Available, Frozen",
       "✅ Dedicated Staking Page - Full-featured `stake-lab.html` interface (681 lines)",
@@ -290,7 +290,7 @@ const NERD_LAB_OVERVIEWS = {
       "✅ Persistence System - Stakes survive game restarts and sessions",
       "✅ Complete Integration - Works seamlessly with profile, store, and balance systems"
     ],
-    description: "The DSPOINC Staking System is a complete token freezing and reward system that allows users to commit their DSPOINC for various time periods in exchange for rewards. The system ensures frozen DSPOINC cannot be spent, provides complete transaction transparency, and integrates seamlessly with the profile page and store system. Users can view their staking statistics, active stakes, and completed stakes all in one dedicated interface.",
+    description: "The dSPOINC Staking System is a complete token freezing and reward system that allows users to commit their dSPOINC for various time periods in exchange for rewards. The system ensures frozen dSPOINC cannot be spent, provides complete transaction transparency, and integrates seamlessly with the profile page and store system. Users can view their staking statistics, active stakes, and completed stakes all in one dedicated interface.",
     techStack: "HTML5, Tailwind CSS, Vanilla JavaScript, PHP 8.x, SQLite3, Discord OAuth 2.0",
     fileSize: "~681 lines (stake-lab.html), ~6,663 lines (profile.html with staking section)",
     databaseTables: ["tbl_dspoinc_stakes", "tbl_score_adjustments", "tbl_user_scores"],

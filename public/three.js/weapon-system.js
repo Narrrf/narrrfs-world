@@ -486,7 +486,7 @@ export class WeaponSystem {
     // Level 5 monster hit callback (January 11, 2026)
     // Used when player shoots and hits a Level 5 monster during Step 1 (monster hunt)
     // Calls defeatLevel5Monster(index) which handles:
-    // - Awarding 50 DSPOINC per monster (with role multipliers)
+    // - Awarding 50 dSPOINC per monster (with role multipliers)
     // - Creating sparkling explosion particles
     // - Removing monster from scene
     // - Checking for Step 1 completion (all monsters defeated)

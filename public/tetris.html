@@ -373,7 +373,7 @@
     
     <!-- 💰 Top Score Display with Role Multiplier -->
     <div class="text-center mb-4">
-      <p id="tetris-score" class="text-yellow-300 font-mono text-lg font-bold">💰 Score: $0 DSPOINC</p>
+      <p id="tetris-score" class="text-yellow-300 font-mono text-lg font-bold">💰 Score: $0 dSPOINC</p>
     </div>
     
     <!-- 🎮 Game Controls -->
@@ -418,7 +418,7 @@
       <div id="game-over-modal" class="hidden absolute inset-0 flex items-center justify-center bg-black bg-opacity-90 z-50 backdrop-blur-sm rounded-lg">
         <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
           <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-          <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-4">You earned $0 DSPOINC</p>
+          <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-4">You earned $0 dSPOINC</p>
           <p class="text-sm text-green-700 font-semibold mb-6">✅ Score Saved!</p>
           
           <!-- PRIMARY ACTION: OK Button (BUG #171 FIX) -->
@@ -458,7 +458,7 @@
     
     <!-- 💣 Bomb Defused Popup - Positioned relative to game area -->
     <div id="bomb-defused-popup" class="absolute top-4 right-4 bg-yellow-300 text-black px-3 py-2 rounded-lg text-sm shadow-lg hidden z-50 font-bold">
-      💣 BOMB DEFUSED! +50 DSPOINC
+      💣 BOMB DEFUSED! +50 dSPOINC
     </div>
 
     <!-- Score display removed - now shown in top UI only -->
@@ -470,10 +470,10 @@
       </button>
     </div>
     
-    <!-- 💰 DSPOINC Scores Toggle Button -->
+    <!-- 💰 dSPOINC Scores Toggle Button -->
     <div class="text-center mt-4">
       <button id="toggle-tetris-dspoin-scores-btn" onclick="toggleTetrisDSPOINScores()" class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
-        💰 DSPOINC Scores - Rewards & Bosses
+        💰 dSPOINC Scores - Rewards & Bosses
       </button>
     </div>
     
@@ -507,10 +507,10 @@
         <div>
           <h4 style="color: #a78bfa; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #a78bfa; padding-bottom: 5px;">💰 SCORING & SPECIALS</h4>
           <div style="font-size: 0.9em; line-height: 1.6;">
-            <p><strong>Line Clear:</strong> 2 DSPOINC per line</p>
-            <p><strong>Multi-Line Bonus:</strong> 2→5, 3→9, 4→16 DSPOINC</p>
-            <p><strong>💣 Bomb Blocks:</strong> 3x3 explosion + 10 DSPOINC</p>
-            <p><strong>🧀 Boss Rewards:</strong> 50-1,000 DSPOINC per boss!</p>
+            <p><strong>Line Clear:</strong> 2 dSPOINC per line</p>
+            <p><strong>Multi-Line Bonus:</strong> 2→5, 3→9, 4→16 dSPOINC</p>
+            <p><strong>💣 Bomb Blocks:</strong> 3x3 explosion + 10 dSPOINC</p>
+            <p><strong>🧀 Boss Rewards:</strong> 50-1,000 dSPOINC per boss!</p>
           </div>
         </div>
         
@@ -546,21 +546,21 @@
             <div class="text-yellow-400 font-bold mb-1">🧀 Boss 1: Cheese Block King</div>
             <div class="text-xs text-gray-300">Spawn: 3 lines (test) / 10 lines (live)</div>
             <div class="text-xs text-yellow-300">Frozen: 15% | Giant: 20%</div>
-            <div class="text-xs text-green-400">Reward: 50 DSPOINC (100 VIP!)</div>
+            <div class="text-xs text-green-400">Reward: 50 dSPOINC (100 VIP!)</div>
           </div>
           
           <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
             <div class="text-purple-400 font-bold mb-1">👑 Boss 2: Tetris Emperor</div>
             <div class="text-xs text-gray-300">Spawn: 10 lines / 30 lines</div>
             <div class="text-xs text-purple-300">Frozen: 20% | Giant: 25%</div>
-            <div class="text-xs text-green-400">Reward: 100 DSPOINC (200 VIP!)</div>
+            <div class="text-xs text-green-400">Reward: 100 dSPOINC (200 VIP!)</div>
           </div>
           
           <div class="bg-cyan-900/30 p-3 rounded-lg border border-cyan-500/50">
             <div class="text-cyan-400 font-bold mb-1">⚡ Boss 3: Lightning Lord</div>
             <div class="text-xs text-gray-300">Spawn: 20 lines / 60 lines</div>
             <div class="text-xs text-cyan-300">Frozen: 25% | Giant: 30%</div>
-            <div class="text-xs text-green-400">Reward: 150 DSPOINC (300 VIP!)</div>
+            <div class="text-xs text-green-400">Reward: 150 dSPOINC (300 VIP!)</div>
           </div>
         </div>
         
@@ -570,11 +570,11 @@
           <div class="text-red-400 font-bold text-lg mb-1">🏆 Boss 9: ULTIMATE CHEESE GOD</div>
           <div class="text-sm text-gray-300">Spawn: 185 lines (test) / 450 lines (live)</div>
           <div class="text-sm text-red-300">Frozen: 60% | Giant: 70% | Lines: 25</div>
-          <div class="text-lg text-green-400 font-bold">Reward: 1,000 DSPOINC (2,000 VIP!)</div>
+          <div class="text-lg text-green-400 font-bold">Reward: 1,000 dSPOINC (2,000 VIP!)</div>
         </div>
         
         <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
-          Total All Bosses: 3,550 DSPOINC (7,100 VIP!)
+          Total All Bosses: 3,550 dSPOINC (7,100 VIP!)
         </div>
       </div>
       
@@ -600,7 +600,7 @@
           
           <div class="bg-green-900/20 p-3 rounded-lg border border-green-500/30">
             <div class="font-bold text-green-400 mb-1">⭐ Multi-Line Bonus</div>
-            <div class="text-xs text-gray-300">2 lines = 5 DSPOINC | 3 lines = 9 | 4 lines = 16 (rewards skill!)</div>
+            <div class="text-xs text-gray-300">2 lines = 5 dSPOINC | 3 lines = 9 | 4 lines = 16 (rewards skill!)</div>
           </div>
         </div>
       </div>
@@ -611,16 +611,16 @@
         <div class="space-y-2 text-sm text-gray-300">
           <div>✅ <span class="text-green-400">Field Explosion</span> - All blocks clear!</div>
           <div>✅ <span class="text-blue-400">Speed Boost</span> - Game gets 100ms faster!</div>
-          <div>✅ <span class="text-yellow-400">Big Rewards</span> - 50-1,000 DSPOINC per boss!</div>
+          <div>✅ <span class="text-yellow-400">Big Rewards</span> - 50-1,000 dSPOINC per boss!</div>
           <div>✅ <span class="text-purple-400">Countdown Timer</span> - Game pauses for celebration!</div>
         </div>
       </div>
     </div>
     
-    <!-- 💰 TETRIS DSPOINC SCORES (Expandable) -->
+    <!-- 💰 TETRIS dSPOINC SCORES (Expandable) -->
     <div id="tetrisDSPOINScores" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 to-yellow-900 rounded-xl border-2 border-yellow-400 shadow-2xl">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-bold text-yellow-300">💰 Tetris DSPOINC Rewards</h3>
+        <h3 class="text-2xl font-bold text-yellow-300">💰 Tetris dSPOINC Rewards</h3>
         <button onclick="toggleTetrisDSPOINScores()" class="text-yellow-400 hover:text-yellow-300 text-2xl font-bold">✕</button>
       </div>
       
@@ -630,23 +630,23 @@
         <div class="space-y-2 text-sm text-gray-300">
           <div class="flex justify-between">
             <span>Line Clear:</span>
-            <span class="text-green-400 font-bold">2 DSPOINC per line</span>
+            <span class="text-green-400 font-bold">2 dSPOINC per line</span>
           </div>
           <div class="flex justify-between">
             <span>2 Lines (Multi-Line):</span>
-            <span class="text-green-400 font-bold">5 DSPOINC</span>
+            <span class="text-green-400 font-bold">5 dSPOINC</span>
           </div>
           <div class="flex justify-between">
             <span>3 Lines (Multi-Line):</span>
-            <span class="text-green-400 font-bold">9 DSPOINC</span>
+            <span class="text-green-400 font-bold">9 dSPOINC</span>
           </div>
           <div class="flex justify-between">
             <span>4 Lines (Multi-Line):</span>
-            <span class="text-green-400 font-bold">16 DSPOINC</span>
+            <span class="text-green-400 font-bold">16 dSPOINC</span>
           </div>
           <div class="flex justify-between">
             <span>💣 Bomb Defused:</span>
-            <span class="text-green-400 font-bold">10 DSPOINC</span>
+            <span class="text-green-400 font-bold">10 dSPOINC</span>
           </div>
         </div>
       </div>
@@ -658,51 +658,51 @@
           <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
             <div class="text-yellow-400 font-bold mb-1">🧀 Boss 1: Cheese Block King</div>
             <div class="text-xs text-gray-300">Spawn: 10 lines</div>
-            <div class="text-xs text-green-400 font-bold">50 DSPOINC (100 VIP!)</div>
+            <div class="text-xs text-green-400 font-bold">50 dSPOINC (100 VIP!)</div>
           </div>
           <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
             <div class="text-purple-400 font-bold mb-1">👑 Boss 2: Tetris Emperor</div>
             <div class="text-xs text-gray-300">Spawn: 30 lines</div>
-            <div class="text-xs text-green-400 font-bold">100 DSPOINC (200 VIP!)</div>
+            <div class="text-xs text-green-400 font-bold">100 dSPOINC (200 VIP!)</div>
           </div>
           <div class="bg-cyan-900/30 p-3 rounded-lg border border-cyan-500/50">
             <div class="text-cyan-400 font-bold mb-1">⚡ Boss 3: Lightning Lord</div>
             <div class="text-xs text-gray-300">Spawn: 60 lines</div>
-            <div class="text-xs text-green-400 font-bold">150 DSPOINC (300 VIP!)</div>
+            <div class="text-xs text-green-400 font-bold">150 dSPOINC (300 VIP!)</div>
           </div>
           <div class="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50">
             <div class="text-blue-400 font-bold mb-1">🌊 Boss 4: Wave Master</div>
             <div class="text-xs text-gray-300">Spawn: 100 lines</div>
-            <div class="text-xs text-green-400 font-bold">200 DSPOINC (400 VIP!)</div>
+            <div class="text-xs text-green-400 font-bold">200 dSPOINC (400 VIP!)</div>
           </div>
           <div class="bg-indigo-900/30 p-3 rounded-lg border border-indigo-500/50">
             <div class="text-indigo-400 font-bold mb-1">⚔️ Boss 5: Block Crusher</div>
             <div class="text-xs text-gray-300">Spawn: 150 lines</div>
-            <div class="text-xs text-green-400 font-bold">250 DSPOINC (500 VIP!)</div>
+            <div class="text-xs text-green-400 font-bold">250 dSPOINC (500 VIP!)</div>
           </div>
           <div class="bg-pink-900/30 p-3 rounded-lg border border-pink-500/50">
             <div class="text-pink-400 font-bold mb-1">💎 Boss 6: Crystal King</div>
             <div class="text-xs text-gray-300">Spawn: 210 lines</div>
-            <div class="text-xs text-green-400 font-bold">300 DSPOINC (600 VIP!)</div>
+            <div class="text-xs text-green-400 font-bold">300 dSPOINC (600 VIP!)</div>
           </div>
           <div class="bg-teal-900/30 p-3 rounded-lg border border-teal-500/50">
             <div class="text-teal-400 font-bold mb-1">🔥 Boss 7: Fire Lord</div>
             <div class="text-xs text-gray-300">Spawn: 280 lines</div>
-            <div class="text-xs text-green-400 font-bold">400 DSPOINC (800 VIP!)</div>
+            <div class="text-xs text-green-400 font-bold">400 dSPOINC (800 VIP!)</div>
           </div>
           <div class="bg-violet-900/30 p-3 rounded-lg border border-violet-500/50">
             <div class="text-violet-400 font-bold mb-1">🌟 Boss 8: Star Emperor</div>
             <div class="text-xs text-gray-300">Spawn: 360 lines</div>
-            <div class="text-xs text-green-400 font-bold">500 DSPOINC (1,000 VIP!)</div>
+            <div class="text-xs text-green-400 font-bold">500 dSPOINC (1,000 VIP!)</div>
           </div>
           <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50 text-center">
             <div class="text-red-400 font-bold text-lg mb-1">🏆 Boss 9: ULTIMATE CHEESE GOD</div>
             <div class="text-xs text-gray-300 mb-1">Spawn: 450 lines</div>
-            <div class="text-lg text-green-400 font-bold">1,000 DSPOINC (2,000 VIP!)</div>
+            <div class="text-lg text-green-400 font-bold">1,000 dSPOINC (2,000 VIP!)</div>
           </div>
         </div>
         <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
-          Total All Bosses: 3,550 DSPOINC (7,100 VIP!)
+          Total All Bosses: 3,550 dSPOINC (7,100 VIP!)
         </div>
       </div>
       
@@ -740,8 +740,8 @@
       <!-- Total Potential -->
       <div class="bg-green-900/30 p-4 rounded-lg border border-green-500/50 text-center">
         <div class="text-green-400 font-bold text-lg mb-2">💰 Maximum Potential Per Game</div>
-        <div class="text-2xl text-yellow-400 font-bold">3,550+ DSPOINC</div>
-        <div class="text-sm text-gray-300 mt-2">(7,100+ DSPOINC with VIP Holder role!)</div>
+        <div class="text-2xl text-yellow-400 font-bold">3,550+ dSPOINC</div>
+        <div class="text-sm text-gray-300 mt-2">(7,100+ dSPOINC with VIP Holder role!)</div>
       </div>
     </div>
   </section>
@@ -780,7 +780,7 @@
             <span id="tetris-total-score" class="text-yellow-300 font-bold">-</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-400">DSPOINC Earned:</span>
+            <span class="text-gray-400">dSPOINC Earned:</span>
             <span id="tetris-dspoin-earned" class="text-green-400 font-bold">-</span>
           </div>
         </div>
@@ -883,7 +883,7 @@
     }
   }
   
-  // DSPOINC Scores toggle function
+  // dSPOINC Scores toggle function
   function toggleTetrisDSPOINScores() {
     const scores = document.getElementById('tetrisDSPOINScores');
     if (scores) {
@@ -951,7 +951,7 @@
       key: 'reactor',
       title: 'Cheese Drop Reactor',
       icon: '🧬',
-      description: 'First line clear each run grants double DSPOINC and hold-to-drop kickstarts faster.',
+      description: 'First line clear each run grants double dSPOINC and hold-to-drop kickstarts faster.',
       warning: '⚠️ Precision required: combo momentum ramps up immediately.',
       match: ['Tetris Cheese Drop Reactor', 'Cheese Drop Reactor']
     }
@@ -1045,7 +1045,7 @@
       document.getElementById('tetris-total-games').textContent = stats.total_games ?? '0';
       document.getElementById('tetris-best-score').textContent = tetrisFormatNumber(stats.best_score ?? 0);
       document.getElementById('tetris-total-score').textContent = tetrisFormatNumber(stats.total_score ?? 0);
-      document.getElementById('tetris-dspoin-earned').textContent = `${tetrisFormatNumber(stats.dspoinc_earned ?? 0)} DSPOINC`;
+      document.getElementById('tetris-dspoin-earned').textContent = `${tetrisFormatNumber(stats.dspoinc_earned ?? 0)} dSPOINC`;
     } catch (error) {
       console.error('🧩 Error loading Tetris game stats:', error);
       throw error;
@@ -1122,7 +1122,7 @@
             </span>
             ${isUser ? '<span class="text-xs text-purple-300">(You)</span>' : ''}
           </div>
-          <span class="text-xs text-yellow-300 font-bold">${player.score} DSPOINC</span>
+          <span class="text-xs text-yellow-300 font-bold">${player.score} dSPOINC</span>
         `;
         container.appendChild(row);
       });
@@ -1223,7 +1223,7 @@
 
       if (balanceEl) {
         if (tetrisStoreState.balance !== null) {
-          balanceEl.textContent = `Current Balance: ${formatTetrisStoreNumber(tetrisStoreState.balance)} DSPOINC`;
+          balanceEl.textContent = `Current Balance: ${formatTetrisStoreNumber(tetrisStoreState.balance)} dSPOINC`;
           balanceEl.classList.remove('hidden');
         } else {
           balanceEl.classList.add('hidden');
@@ -1275,7 +1275,7 @@
   function buildTetrisStoreCard(defKey, item, def, owned) {
     const card = document.createElement('div');
     card.className = 'bg-gray-900/60 rounded-xl border border-gray-700/50 p-4 shadow-inner';
-    const priceText = `${formatTetrisStoreNumber(item.price)} DSPOINC`;
+    const priceText = `${formatTetrisStoreNumber(item.price)} dSPOINC`;
     const statusId = `tetris-store-status-${item.item_id}`;
     const isPurchaseDisabled = defKey === 'reactor';
 
@@ -1404,7 +1404,7 @@
     }
 
     // 🛒 CONFIRMATION DIALOG: Ask user to confirm purchase
-    const priceText = `${formatTetrisStoreNumber(item.price)} DSPOINC`;
+    const priceText = `${formatTetrisStoreNumber(item.price)} dSPOINC`;
     const confirmMessage = `Are you sure you want to purchase "${def.title}" for ${priceText}?`;
     
     if (!confirm(confirmMessage)) {
@@ -1440,7 +1440,7 @@
           tetrisStoreState.balance = data.new_balance;
           const balanceEl = document.getElementById('tetris-store-balance');
           if (balanceEl) {
-            balanceEl.textContent = `Current Balance: ${formatTetrisStoreNumber(tetrisStoreState.balance)} DSPOINC`;
+            balanceEl.textContent = `Current Balance: ${formatTetrisStoreNumber(tetrisStoreState.balance)} dSPOINC`;
             balanceEl.classList.remove('hidden');
           }
         }
