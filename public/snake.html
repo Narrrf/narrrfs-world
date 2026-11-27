@@ -199,92 +199,118 @@
       display: block;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 900px), (hover: none) and (pointer: coarse) {
+      #snake-play-stage {
+        padding: 0.85rem 0.75rem !important;
+      }
+
+      #snake-canvas {
+        height: clamp(320px, 46dvh, 420px) !important;
+        width: auto !important;
+        max-width: min(88vw, 248px) !important;
+        aspect-ratio: 1 / 2 !important;
+        margin: 0 auto !important;
+      }
+
+      body.narrrfs-game-locked > header,
       body.narrrfs-game-locked > header + div,
-      body.narrrfs-game-locked > header + div + div {
+      body.narrrfs-game-locked > header + div + div,
+      body.narrrfs-game-locked #snake-play-stage > div.absolute.top-4.left-4,
+      body.narrrfs-game-locked #snake-play-stage > h2 + div,
+      body.narrrfs-game-locked #pause-snake-btn + p,
+      body.narrrfs-game-locked #snake-mobile-controls .narrrfs-swipe-hint,
+      body.narrrfs-game-locked #snake-guide-btn-wrap,
+      body.narrrfs-game-locked #snake-scores-btn-wrap,
+      body.narrrfs-game-locked #snake-controls-section,
+      body.narrrfs-game-locked #snakeGameGuide,
+      body.narrrfs-game-locked #snakeDSPOINScores,
+      body.narrrfs-game-locked #cheese-snake ~ section {
         display: none !important;
       }
 
       body.narrrfs-game-locked #cheese-snake {
-        margin-top: 0.25rem !important;
-      }
-
-      #snake-play-stage {
-        padding: 0.7rem 0.65rem !important;
+        min-height: 100dvh !important;
+        margin-top: 0 !important;
+        padding: 0.35rem 0.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
       }
 
       body.narrrfs-game-locked #snake-play-stage {
-        padding: 0.45rem 0.55rem !important;
-      }
-
-      body.narrrfs-game-locked #snake-play-stage > div.absolute.top-4.left-4,
-      body.narrrfs-game-locked #snake-play-stage > h2 + div,
-      body.narrrfs-game-locked #pause-snake-btn + p,
-      body.narrrfs-game-locked #snake-mobile-controls .narrrfs-swipe-hint {
-        display: none !important;
+        padding: 0.6rem 0.7rem 0.5rem !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 430px !important;
       }
 
       body.narrrfs-game-locked #snake-play-stage h2 {
-        font-size: 0.95rem !important;
-        margin-bottom: 0.1rem !important;
+        font-size: 1.15rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0.15rem !important;
       }
 
       body.narrrfs-game-locked #snake-score {
-        font-size: 0.88rem !important;
-        line-height: 1.2 !important;
+        font-size: 0.98rem !important;
+        line-height: 1.25 !important;
       }
 
       body.narrrfs-game-locked #snake-play-stage > div.text-center.mb-4 {
-        margin-bottom: 0.2rem !important;
+        margin-bottom: 0.25rem !important;
       }
 
       body.narrrfs-game-locked #start-snake-btn,
       body.narrrfs-game-locked #pause-snake-btn {
         display: inline-block;
         width: auto !important;
-        padding: 0.22rem 0.65rem !important;
-        font-size: 0.76rem !important;
+        padding: 0.34rem 0.85rem !important;
+        font-size: 0.82rem !important;
         margin-top: 0 !important;
       }
 
-      body.narrrfs-game-locked #snake-play-stage .flex.justify-center.items-center.mb-4 {
-        margin-bottom: 0.2rem !important;
+      body.narrrfs-game-locked #snake-boss-hud-container {
+        top: 6px !important;
+        bottom: auto !important;
+        margin-bottom: 0 !important;
+        width: calc(100% - 12px) !important;
+        z-index: 15 !important;
+        pointer-events: none !important;
       }
 
-      #snake-canvas {
-        height: min(42dvh, 320px) !important;
-        width: auto !important;
-        max-width: 90vw !important;
-        aspect-ratio: 1 / 2 !important;
-        margin: 0 auto !important;
+      body.narrrfs-game-locked #snake-boss-hp-bar,
+      body.narrrfs-game-locked #snake-boss-apples-counter,
+      body.narrrfs-game-locked #snake-boss-timer-bonus {
+        padding: 4px 8px !important;
+        font-size: 0.74rem !important;
+      }
+
+      body.narrrfs-game-locked #snake-play-stage .flex.justify-center.items-center.mb-4 {
+        margin-bottom: 0.25rem !important;
       }
 
       body.narrrfs-game-locked #snake-canvas {
-        height: min(38dvh, 275px) !important;
-        max-height: min(38dvh, 275px) !important;
+        height: clamp(270px, calc(100dvh - 274px), 480px) !important;
+        max-height: clamp(270px, calc(100dvh - 274px), 480px) !important;
+        width: auto !important;
+        max-width: min(88vw, 248px) !important;
+        aspect-ratio: 1 / 2 !important;
       }
 
       body.narrrfs-game-locked #snake-mobile-controls {
-        margin-top: 0.2rem !important;
-        gap: 0.22rem !important;
-      }
-
-      body.narrrfs-game-locked #snake-dpad-grid {
-        grid-template-columns: repeat(3, 52px) !important;
+        margin-top: 0.3rem !important;
         gap: 0.28rem !important;
       }
 
-      body.narrrfs-game-locked #snake-dpad-grid .narrrfs-touch-btn {
-        min-height: 42px !important;
-        min-width: 52px !important;
-        font-size: 0.98rem !important;
+      body.narrrfs-game-locked #snake-dpad-grid {
+        grid-template-columns: repeat(3, 56px) !important;
+        gap: 0.3rem !important;
       }
-    }
 
-    @media (max-width: 900px) and (max-height: 700px) {
-      body.narrrfs-game-locked #snake-canvas {
-        height: min(33dvh, 228px) !important;
-        max-height: min(33dvh, 228px) !important;
+      body.narrrfs-game-locked #snake-dpad-grid .narrrfs-touch-btn {
+        min-height: 44px !important;
+        min-width: 56px !important;
+        font-size: 1rem !important;
       }
     }
   </style>
@@ -448,14 +474,14 @@
     <!-- Score display removed - now shown in top UI only -->
     
     <!-- 📖 Game Guide Toggle Button -->
-    <div class="text-center mt-4">
+    <div id="snake-guide-btn-wrap" class="text-center mt-4">
       <button id="toggle-snake-guide-btn" onclick="toggleSnakeGuide()" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
         📖 Snake Game Guide - Bosses & Mechanics
       </button>
     </div>
     
     <!-- 💰 dSPOINC Scores Toggle Button -->
-    <div class="text-center mt-4">
+    <div id="snake-scores-btn-wrap" class="text-center mt-4">
       <button id="toggle-snake-dspoin-scores-btn" onclick="toggleSnakeDSPOINScores()" class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
         💰 dSPOINC Scores - Rewards & Bosses
       </button>
