@@ -3,9 +3,11 @@
 These instructions apply to the entire Narrrfs World repository unless a
 future, explicitly approved, more-specific AGENTS.md states otherwise.
 
-Every response begins:
+Every response begins (use `✨ Following Global + Brain Rules ✨` when private Agent Brain records are also active), naming only skills whose `SKILL.md` was actually loaded in the session (`none` if none):
 
-✨ Following Global Rules ✨
+✨ Following Global Rules ✨ | Skills: [loaded skill names or none]
+Lead: [active role or head] | Agents: [consulted roles/subagents or none]
+Status: [concise evidence-backed current state]
 
 ---
 
@@ -944,9 +946,11 @@ Do not print secrets into terminal output, documentation, patches, or chat.
 
 # 26. FINAL RESPONSE STANDARD
 
-Every response begins:
+Every response begins (use `✨ Following Global + Brain Rules ✨` when private Agent Brain records are also active), naming only skills whose `SKILL.md` was actually loaded in the session (`none` if none):
 
-✨ Following Global Rules ✨
+✨ Following Global Rules ✨ | Skills: [loaded skill names or none]
+Lead: [active role or head] | Agents: [consulted roles/subagents or none]
+Status: [concise evidence-backed current state]
 
 For technical work, report:
 
