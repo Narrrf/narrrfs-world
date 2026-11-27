@@ -6436,6 +6436,74 @@ body::after {
   }
 }
 
+/* Inventory rows wrap their existing table fields so finish times and actions
+   remain visible in the split panel and on phones. Display only: the backend
+   remains authoritative for timers, inventory and upgrade actions. */
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table {
+  width: 100%;
+  min-width: 0;
+  display: block;
+}
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table tbody {
+  display: grid;
+  gap: 8px;
+}
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table tbody tr {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-radius: 14px;
+  padding: 6px;
+}
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table td {
+  min-width: 0;
+  padding: 6px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-table td::before {
+  display: block;
+  color: #67e8f9;
+  font-size: 0.65rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+#geneticInventoryGrid.genetic-inventory-list-view td:nth-child(1) { grid-column: 1 / -1; }
+#geneticInventoryGrid.genetic-inventory-list-view td:nth-child(2)::before { content: 'Rarity'; }
+#geneticInventoryGrid.genetic-inventory-list-view td:nth-child(3)::before { content: 'Type'; }
+#geneticInventoryGrid.genetic-inventory-list-view td:nth-child(4)::before { content: 'Level'; }
+#geneticInventoryGrid.genetic-inventory-list-view td:nth-child(5)::before { content: 'Next'; }
+#geneticInventoryGrid.genetic-inventory-list-view td:nth-child(6)::before { content: 'Status'; }
+#geneticInventoryGrid.genetic-inventory-list-view td:nth-child(7)::before { content: 'Remaining'; }
+#geneticInventoryGrid.genetic-inventory-list-view td:nth-child(8)::before { content: 'Finish At'; }
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-title,
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-subtitle {
+  max-width: none;
+  white-space: normal;
+}
+#geneticInventoryGrid.genetic-inventory-list-view .table-action-cell {
+  position: static;
+  min-width: 0;
+  grid-column: 1 / -1;
+  background: transparent;
+  box-shadow: none;
+}
+#geneticInventoryGrid.genetic-inventory-list-view .lab-list-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+@media (max-width: 520px) {
+  #geneticInventoryGrid.genetic-inventory-list-view .lab-list-table tbody tr {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 #geneticMarketplaceGrid.genetic-marketplace-list-view {
   display: block;
   overflow-x: auto;
