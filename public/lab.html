@@ -8484,41 +8484,6 @@ body.lab-season12-shell {
         </div>
       </div>
 
-      <div class="ability-mouse-switcher ability-mouse-switcher-pro" aria-label="Switch selected Genesis mouse from Ability Matrix">
-        <button
-          id="abilityPrevMouseButton"
-          type="button"
-          class="ability-mouse-nav-button"
-          aria-label="Previous Genesis mouse"
-          title="Previous Genesis mouse"
-        >
-          ←
-        </button>
-
-        <div class="ability-selected-mouse-name-card">
-          <div class="ability-selected-mouse-label">Selected Mouse</div>
-          <div id="abilitySelectedMouseName" class="ability-selected-mouse-name">No mouse selected</div>
-          <div id="abilitySelectedMouseCount" class="ability-selected-mouse-count">—</div>
-        </div>
-
-        <label class="ability-mouse-select-wrap" for="abilityMouseQuickSelect">
-          <span>Jump to mouse</span>
-          <select id="abilityMouseQuickSelect" class="ability-mouse-quick-select">
-            <option value="">No verified Genesis loaded</option>
-          </select>
-        </label>
-
-        <button
-          id="abilityNextMouseButton"
-          type="button"
-          class="ability-mouse-nav-button"
-          aria-label="Next Genesis mouse"
-          title="Next Genesis mouse"
-        >
-          →
-        </button>
-      </div>
-
       <p class="ability-matrix-subtitle">
         This 9-stat matrix forms the long-term RPG identity of your selected Genesis mouse. Combine Fitness, Weapons, Education, 6 Genesis traits, and Genetic Items to create thousands of possible personal Mouse Fighter builds for Narrrf’s World games and future connected systems. Ability levels, timers, and progress follow the NFT when ownership changes.
       </p>
@@ -8572,6 +8537,50 @@ body.lab-season12-shell {
        This is frontend display only. Backend endpoints decide eligibility,
        duplicate protection, dSPOINC delivery, and final reward state. -->
   <div id="weaponAbilityMilestoneChestSlot" class="mt-5"></div>
+
+  <!--
+    NARRRFS_ABILITY_MATRIX_SWITCHER_NEAR_UPGRADES_V1
+
+    Keep the mouse switcher immediately beside the upgrade cards. Large holders
+    can now move between Genesis mice without repeatedly scrolling back to the
+    matrix header. This remains frontend-only navigation and reuses the normal
+    selected-NFT flow; it never changes ownership, upgrade authority, costs,
+    timers, eligibility, inventory, or DSPOINC.
+  -->
+  <div class="ability-mouse-switcher ability-mouse-switcher-pro" aria-label="Switch selected Genesis mouse from Ability Matrix">
+    <button
+      id="abilityPrevMouseButton"
+      type="button"
+      class="ability-mouse-nav-button"
+      aria-label="Previous Genesis mouse"
+      title="Previous Genesis mouse"
+    >
+      ←
+    </button>
+
+    <div class="ability-selected-mouse-name-card">
+      <div class="ability-selected-mouse-label">Selected Mouse</div>
+      <div id="abilitySelectedMouseName" class="ability-selected-mouse-name">No mouse selected</div>
+      <div id="abilitySelectedMouseCount" class="ability-selected-mouse-count">—</div>
+    </div>
+
+    <label class="ability-mouse-select-wrap" for="abilityMouseQuickSelect">
+      <span>Jump to mouse</span>
+      <select id="abilityMouseQuickSelect" class="ability-mouse-quick-select">
+        <option value="">No verified Genesis loaded</option>
+      </select>
+    </label>
+
+    <button
+      id="abilityNextMouseButton"
+      type="button"
+      class="ability-mouse-nav-button"
+      aria-label="Next Genesis mouse"
+      title="Next Genesis mouse"
+    >
+      →
+    </button>
+  </div>
 
   <div id="genesisAbilityCards" class="ability-cards-grid"></div>
   <div id="genesisAbilityQueueBox" class="ability-queue-box"></div>
