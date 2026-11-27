@@ -462,34 +462,184 @@
 
   const TOUR_SCENARIOS = [
     {
-      label: "🧬 Cheese DNA Sync",
-      working: ["narrrf-team", "gemini-intel", "role-17", "role-1"],
-      recent: ["role-16", "role-19"],
-      focus: "gemini-intel"
+      label: "🌙 Quiet Cellar Heartbeat",
+      group: "calm-cellar",
+      working: ["role-17"],
+      recent: ["narrrf-team"],
+      focus: "role-17",
+      minMs: 9500,
+      maxMs: 14500
     },
     {
-      label: "⚔️ MouseFight Arena Rush",
-      working: ["role-1", "role-2", "role-3", "role-4"],
-      recent: ["role-16", "role-14"],
-      focus: "role-2"
+      label: "👑 Morning Taste-Test Check",
+      group: "command",
+      working: ["narrrf-team", "role-1"],
+      recent: ["role-16"],
+      focus: "narrrf-team",
+      minMs: 9000,
+      maxMs: 13500
     },
     {
-      label: "🧪 Genesis Lab Evolution",
-      working: ["role-1", "role-15", "role-5", "role-13"],
-      recent: ["role-17", "role-11"],
-      focus: "role-15"
+      label: "⚔️ Arena Bracket Matchmaking",
+      group: "arena",
+      working: ["role-1", "role-2"],
+      recent: ["role-3"],
+      focus: "role-2",
+      minMs: 8500,
+      maxMs: 13000
     },
     {
-      label: "🧊 3D Cheese-Verse Render",
-      working: ["narrrf-team", "role-19", "role-20", "role-24", "role-27"],
-      recent: ["role-21", "role-23"],
-      focus: "role-19"
+      label: "🥊 Live Fight Lobby Relay",
+      group: "arena-bot",
+      working: ["role-1", "role-3"],
+      recent: ["role-10"],
+      focus: "role-3",
+      minMs: 8500,
+      maxMs: 12500
     },
     {
-      label: "🪙 Golden Cheddar Bridge",
-      working: ["role-1", "role-18", "role-4", "role-16"],
-      recent: ["role-11", "role-10"],
-      focus: "role-18"
+      label: "🧩 Secret Cheese Hunt Spark",
+      group: "bakery",
+      working: ["role-1", "role-6"],
+      recent: ["role-16"],
+      focus: "role-6",
+      minMs: 9000,
+      maxMs: 13500
+    },
+    {
+      label: "🔮 Glyph Dojo Streak Pulse",
+      group: "glyph",
+      working: ["role-1", "role-9"],
+      recent: ["role-4"],
+      focus: "role-9",
+      minMs: 8500,
+      maxMs: 12500
+    },
+    {
+      label: "🥛 Dairy API Health Check",
+      group: "creamery",
+      working: ["narrrf-team", "role-16"],
+      recent: ["role-1"],
+      focus: "role-16",
+      minMs: 9500,
+      maxMs: 14000
+    },
+    {
+      label: "🪙 Cheddar Ledger Balance Audit",
+      group: "cheddar",
+      working: ["role-1", "role-4", "role-16"],
+      recent: [],
+      focus: "role-4",
+      minMs: 9000,
+      maxMs: 13500
+    },
+    {
+      label: "🎁 Chamber Crate Drop",
+      group: "drops",
+      working: ["role-1", "role-11"],
+      recent: ["role-5"],
+      focus: "role-11",
+      minMs: 8500,
+      maxMs: 13000
+    },
+    {
+      label: "💱 SPOINC ↔ DSPOINC Alchemist",
+      group: "swap",
+      working: ["role-1", "role-18"],
+      recent: ["role-4"],
+      focus: "role-18",
+      minMs: 9000,
+      maxMs: 13500
+    },
+    {
+      label: "🛒 Lab Store Shelf Restock",
+      group: "shop",
+      working: ["role-1", "role-5"],
+      recent: ["role-15"],
+      focus: "role-5",
+      minMs: 8500,
+      maxMs: 13000
+    },
+    {
+      label: "🧊 Cryo-Freezer Vault Watch",
+      group: "stake",
+      working: ["role-1", "role-13"],
+      recent: ["role-16"],
+      focus: "role-13",
+      minMs: 9500,
+      maxMs: 14500
+    },
+    {
+      label: "🧬 Permanent Trait Incubation",
+      group: "lab",
+      working: ["role-1", "role-15"],
+      recent: ["role-5"],
+      focus: "role-15",
+      minMs: 9000,
+      maxMs: 13500
+    },
+    {
+      label: "📡 Discord Holder Role Sync",
+      group: "discord",
+      working: ["role-1", "role-10"],
+      recent: ["role-8"],
+      focus: "role-10",
+      minMs: 8500,
+      maxMs: 12500
+    },
+    {
+      label: "🤝 Partner Bridge & Town Crier",
+      group: "community",
+      working: ["role-1", "role-8", "role-12"],
+      recent: [],
+      focus: "role-12",
+      minMs: 9000,
+      maxMs: 13500
+    },
+    {
+      label: "🗓️ Season 17 Ladder Archive",
+      group: "vintage",
+      working: ["role-1", "role-14"],
+      recent: ["role-17"],
+      focus: "role-14",
+      minMs: 9500,
+      maxMs: 14000
+    },
+    {
+      label: "🧊 3D World & Mobile Stick Pass",
+      group: "foundry3d-a",
+      working: ["role-19", "role-20", "role-21"],
+      recent: ["role-22"],
+      focus: "role-20",
+      minMs: 9000,
+      maxMs: 13500
+    },
+    {
+      label: "🐭 3D Genesis Avatar & Chest Glow",
+      group: "foundry3d-b",
+      working: ["role-19", "role-23", "role-27"],
+      recent: ["role-24"],
+      focus: "role-23",
+      minMs: 9000,
+      maxMs: 13500
+    },
+    {
+      label: "🧬 Gemini Blueprint → Brain Cellar",
+      group: "intel",
+      working: ["narrrf-team", "gemini-intel", "role-17"],
+      recent: [],
+      focus: "gemini-intel",
+      minMs: 9500,
+      maxMs: 14000
+    },
+    {
+      label: "🌙 Midnight Vault Standby",
+      group: "calm-command",
+      working: ["narrrf-team"],
+      recent: ["role-17", "gemini-intel"],
+      focus: "narrrf-team",
+      minMs: 10000,
+      maxMs: 15000
     }
   ];
 
@@ -507,14 +657,63 @@
 
   const state = {
     flowMode: reducedMotion ? "off" : "both",
-    tourActive: !reducedMotion,
+    tourActive: false,
     tourIndex: 0,
+    tourDeck: [],
+    ambientSeed: Math.floor(Math.random() * 15),
     tourTimer: null,
     selectedId: "narrrf-team",
-    tracedId: null,
+    tracedId: "narrrf-team",
     pan: { x: 0, y: 0 },
     scale: 1
   };
+
+  function getGroupPrefix(idx) {
+    if (idx < 0 || !TOUR_SCENARIOS[idx]) return "";
+    const grp = TOUR_SCENARIOS[idx].group || "";
+    return grp.split("-")[0];
+  }
+
+  function refillTourDeck() {
+    const indices = TOUR_SCENARIOS.map(function (_, idx) { return idx; });
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = indices[i];
+      indices[i] = indices[j];
+      indices[j] = tmp;
+    }
+    state.tourDeck = indices;
+  }
+
+  function drawNextScenarioIndex(prevIndex) {
+    if (!state.tourDeck || state.tourDeck.length === 0) {
+      refillTourDeck();
+    }
+    const prevPrefix = getGroupPrefix(prevIndex);
+    let pickPos = -1;
+
+    for (let i = 0; i < state.tourDeck.length; i++) {
+      const candidate = state.tourDeck[i];
+      if (candidate !== prevIndex && getGroupPrefix(candidate) !== prevPrefix) {
+        pickPos = i;
+        break;
+      }
+    }
+
+    if (pickPos === -1) {
+      for (let i = 0; i < state.tourDeck.length; i++) {
+        if (state.tourDeck[i] !== prevIndex) {
+          pickPos = i;
+          break;
+        }
+      }
+    }
+
+    if (pickPos === -1) pickPos = 0;
+    return state.tourDeck.splice(pickPos, 1)[0];
+  }
+
+  state.tourIndex = drawNextScenarioIndex(-1);
 
   function clearNode(node) {
     while (node.firstChild) node.removeChild(node.firstChild);
@@ -592,35 +791,43 @@
     }
 
     if (isWorkingEdge) {
+      const fwdDur = 4.1 + (edgeIdx % 3) * 0.35;
+      const revDur = 5.2 + (edgeIdx % 2) * 0.45;
       return [
-        { sym: resolveSym("ce-pub-dna-active"), dur: 1.85, offset: (edgeIdx * 0.41) % 1.85, rev: false, opacity: "0.98" },
-        { sym: resolveSym("ce-pub-crumb-wedge"), dur: 2.25, offset: (edgeIdx * 0.73 + 0.9) % 2.25, rev: false, opacity: "0.95" },
-        { sym: resolveSym("ce-pub-dna-active"), dur: 2.45, offset: (edgeIdx * 0.59 + 0.4) % 2.45, rev: true, opacity: "0.92" }
+        { sym: resolveSym("ce-pub-dna-active"), dur: fwdDur, offset: (edgeIdx * 0.61) % fwdDur, rev: false, opacity: "0.92" },
+        { sym: resolveSym("ce-pub-crumb-wedge"), dur: revDur, offset: (edgeIdx * 0.97 + 1.4) % revDur, rev: true, opacity: "0.78" }
       ];
     }
 
-    if (isMatch || isRecentEdge) {
+    if (isMatch) {
       const fSym = edge.type === "operational" ? "ce-pub-crumb-wedge" : "ce-pub-dna-helix";
       const rSym = edge.type === "operational" ? "ce-pub-dna-helix" : "ce-pub-crumb-wedge";
       return [
-        { sym: resolveSym(fSym), dur: 2.9, offset: (edgeIdx * 0.53) % 2.9, rev: false, opacity: "0.92" },
-        { sym: resolveSym(rSym), dur: 3.6, offset: (edgeIdx * 0.87 + 1.1) % 3.6, rev: true, opacity: "0.84" }
+        { sym: resolveSym(fSym), dur: 3.5, offset: (edgeIdx * 0.53) % 3.5, rev: false, opacity: "0.9" },
+        { sym: resolveSym(rSym), dur: 4.5, offset: (edgeIdx * 0.87 + 1.1) % 4.5, rev: true, opacity: "0.8" }
       ];
     }
 
-    const baseDur = 4.8 + ((edgeIdx * 7) % 5) * 0.65;
-    let idleSym;
-    if (edge.type === "serializer") idleSym = "ce-pub-dna-helix";
-    else if (edge.type === "direct") idleSym = (edgeIdx % 2 === 0) ? "ce-pub-dna-helix" : "ce-pub-crumb-wedge";
-    else idleSym = (edgeIdx % 3 === 0) ? "ce-pub-crumb-wedge" : "ce-pub-crumb-mini";
+    if (isRecentEdge) {
+      const rDur = 5.6 + (edgeIdx % 3) * 0.4;
+      const rSym = edge.type === "operational" ? "ce-pub-crumb-wedge" : "ce-pub-dna-helix";
+      return [
+        { sym: resolveSym(rSym), dur: rDur, offset: (edgeIdx * 0.79) % rDur, rev: false, opacity: "0.72" }
+      ];
+    }
 
+    if (edge.to === "role-7") return [];
+    if ((edgeIdx + state.ambientSeed) % 15 !== 0) return [];
+
+    const ambientDur = 10.5 + (edgeIdx % 4) * 1.1;
+    const ambientSym = (edge.type === "direct" || edge.type === "serializer") ? "ce-pub-dna-helix" : "ce-pub-crumb-mini";
     return [
       {
-        sym: resolveSym(idleSym),
-        dur: baseDur,
-        offset: (edgeIdx * 1.17) % baseDur,
-        rev: edgeIdx % 4 === 3,
-        opacity: edge.type === "operational" ? "0.62" : "0.84"
+        sym: resolveSym(ambientSym),
+        dur: ambientDur,
+        offset: (edgeIdx * 1.37) % ambientDur,
+        rev: edgeIdx % 2 === 1,
+        opacity: "0.34"
       }
     ];
   }
@@ -680,8 +887,12 @@
       const dimmed = !!(traceId && !isMatch);
       const sFrom = statusMap[edge.from] || "standby";
       const sTo = statusMap[edge.to] || "standby";
-      const isWorkingEdge = sFrom === "working" || sTo === "working";
-      const isRecentEdge = !isWorkingEdge && (sFrom === "recent" || sTo === "recent");
+      const isWorkingEdge = sFrom === "working" && sTo === "working";
+      const isRecentEdge = !isWorkingEdge && (
+        (sFrom === "working" && sTo === "recent") ||
+        (sFrom === "recent" && sTo === "working") ||
+        (sFrom === "recent" && sTo === "recent")
+      );
 
       let d;
       if (edge.type === "serializer") {
@@ -716,7 +927,8 @@
           class: "ce-edge-flow",
           stroke: "var(--ce-gold)",
           "stroke-width": "1.6",
-          opacity: "0.78"
+          opacity: "0.58",
+          style: "animation-duration: 2.6s;"
         }));
       }
 
@@ -749,7 +961,8 @@
       if (liveState === "working") {
         g.appendChild(svgEl("rect", {
           x: -4, y: -4, width: n.w + 8, height: n.h + 8, rx: 11,
-          fill: "none", stroke: "#10b981", class: "ce-node-halo"
+          fill: "none", stroke: "#10b981", class: "ce-node-halo",
+          style: "animation-duration: 2.8s;"
         }));
       } else if (liveState === "recent") {
         g.appendChild(svgEl("rect", {
@@ -931,13 +1144,30 @@
     renderSpotlight();
   }
 
+  function scheduleNextTourStep() {
+    if (state.tourTimer) {
+      clearTimeout(state.tourTimer);
+      state.tourTimer = null;
+    }
+    if (!state.tourActive) return;
+    const sc = TOUR_SCENARIOS[state.tourIndex % TOUR_SCENARIOS.length];
+    const minMs = sc.minMs || 9000;
+    const maxMs = sc.maxMs || 14000;
+    const delayMs = minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
+    state.tourTimer = setTimeout(stepTour, delayMs);
+  }
+
   function stepTour() {
-    if (!state.tourActive || state.tracedId || document.hidden) return;
-    state.tourIndex = (state.tourIndex + 1) % TOUR_SCENARIOS.length;
-    state.selectedId = TOUR_SCENARIOS[state.tourIndex].focus;
-    updateToolbarUI();
-    renderGraph();
-    renderSpotlight();
+    if (!state.tourActive) return;
+    if (!state.tracedId && !document.hidden) {
+      state.tourIndex = drawNextScenarioIndex(state.tourIndex);
+      state.ambientSeed = (state.ambientSeed + 4) % 15;
+      state.selectedId = TOUR_SCENARIOS[state.tourIndex].focus;
+      updateToolbarUI();
+      renderGraph();
+      renderSpotlight();
+    }
+    scheduleNextTourStep();
   }
 
   function setupInteractions() {
@@ -1003,14 +1233,21 @@
       renderChips();
       renderGraph();
       renderSpotlight();
+      scheduleNextTourStep();
     });
     if (tourBtn) tourBtn.addEventListener("click", function () {
       state.tourActive = !state.tourActive;
-      if (state.tourActive) state.tracedId = null;
+      if (state.tourActive) {
+        state.tracedId = null;
+        state.tourIndex = drawNextScenarioIndex(state.tourIndex);
+        state.ambientSeed = (state.ambientSeed + 4) % 15;
+        state.selectedId = TOUR_SCENARIOS[state.tourIndex].focus;
+      }
       updateToolbarUI();
       renderChips();
       renderGraph();
       renderSpotlight();
+      scheduleNextTourStep();
     });
 
     document.querySelectorAll("[data-ce-flow]").forEach(function (btn) {
@@ -1024,8 +1261,7 @@
       });
     });
 
-    if (state.tourTimer) clearInterval(state.tourTimer);
-    state.tourTimer = setInterval(stepTour, 5500);
+    scheduleNextTourStep();
   }
 
   renderChips();
