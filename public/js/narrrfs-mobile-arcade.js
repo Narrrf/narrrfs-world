@@ -68,14 +68,16 @@
 
     const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight || 0;
     const activeControls = controlsEl || (stageEl ? stageEl.querySelector('.narrrfs-arcade-controls') : null);
-    const primaryPlaySurface = stageEl.querySelector('canvas, #board, [data-arcade-surface="true"]');
+    const primaryPlaySurface = stageEl.querySelector(
+      '#tetris-canvas, #snake-canvas, #space-invaders-canvas, #cheeseman-canvas, #board, [data-arcade-surface="true"], canvas:not(#next-canvas)'
+    );
     const stageRect = stageEl.getBoundingClientRect();
     const surfaceRect =
       primaryPlaySurface && typeof primaryPlaySurface.getBoundingClientRect === 'function'
         ? primaryPlaySurface.getBoundingClientRect()
         : stageRect;
     const scrollY = window.scrollY || window.pageYOffset || 0;
-    const topAnchorDoc = surfaceRect.top + scrollY;
+    const stageTopDoc = stageRect.top + scrollY;
 
     let bottomEdgeDoc = surfaceRect.bottom + scrollY + 10;
     if (activeControls && typeof activeControls.getBoundingClientRect === 'function') {
@@ -85,23 +87,26 @@
       }
     }
 
-    const playHeight = Math.max(0, bottomEdgeDoc - topAnchorDoc);
+    const playHeight = Math.max(0, bottomEdgeDoc - stageTopDoc);
     let targetY;
-    if (vh > 0 && playHeight <= vh - 8) {
-      const extra = Math.floor((vh - playHeight) / 2);
-      targetY = Math.max(0, Math.round(topAnchorDoc - Math.min(16, extra)));
-      if (bottomEdgeDoc - targetY > vh) {
-        targetY = Math.max(0, Math.ceil(bottomEdgeDoc - vh));
+    if (vh > 0 && playHeight <= vh - 4) {
+      if (stageTopDoc <= 24) {
+        targetY = 0;
+      } else {
+        const extra = Math.floor((vh - playHeight) / 2);
+        targetY = Math.max(0, Math.round(stageTopDoc - Math.min(14, extra)));
+        if (bottomEdgeDoc - targetY > vh) {
+          targetY = Math.max(0, Math.ceil(bottomEdgeDoc - vh));
+        }
       }
     } else if (vh > 0) {
       // Always prioritize keeping the bottom of the mobile controls inside the viewport!
       targetY = Math.max(0, Math.ceil(bottomEdgeDoc - vh));
+      const maxSafeY = Math.max(0, Math.round(surfaceRect.top + scrollY - 8));
+      targetY = Math.min(targetY, maxSafeY);
     } else {
-      targetY = Math.max(0, Math.round(topAnchorDoc - 4));
+      targetY = Math.max(0, Math.round(stageTopDoc - 4));
     }
-
-    const maxSafeY = Math.max(0, Math.round(topAnchorDoc + Math.max(24, surfaceRect.height * 0.18)));
-    targetY = Math.min(targetY, maxSafeY);
 
     window.scrollTo(0, targetY);
   }
@@ -174,13 +179,14 @@
           document.documentElement.classList.remove('narrrfs-game-scroll-freeze');
           if (document.body) document.body.classList.remove('narrrfs-game-scroll-freeze');
           const curY = window.scrollY || window.pageYOffset || 0;
-          const primaryPlaySurface = stageEl.querySelector('canvas, #board, [data-arcade-surface="true"]');
+          const primaryPlaySurface = stageEl.querySelector(
+            '#tetris-canvas, #snake-canvas, #space-invaders-canvas, #cheeseman-canvas, #board, [data-arcade-surface="true"], canvas:not(#next-canvas)'
+          );
           const sRect =
             primaryPlaySurface && typeof primaryPlaySurface.getBoundingClientRect === 'function'
               ? primaryPlaySurface.getBoundingClientRect()
               : stageEl.getBoundingClientRect();
-          const topAnchorDoc = sRect.top + curY;
-          const maxSafeY = Math.max(0, Math.round(topAnchorDoc + Math.max(24, sRect.height * 0.18)));
+          const maxSafeY = Math.max(0, Math.round(sRect.top + curY - 8));
           const nextY = Math.min(maxSafeY, Math.max(0, Math.ceil(curY + cRect.bottom - vh + 6)));
           window.scrollTo(0, nextY);
           lockedScrollX = window.scrollX || window.pageXOffset || 0;

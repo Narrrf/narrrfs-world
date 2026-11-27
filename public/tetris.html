@@ -198,115 +198,130 @@
       pointer-events: none; /* Don't block input when hidden */
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 900px), (hover: none) and (pointer: coarse) {
+      #tetris-play-stage {
+        padding: 0.85rem 0.75rem !important;
+      }
+
+      #tetris-canvas {
+        height: clamp(320px, 46dvh, 420px) !important;
+        width: auto !important;
+        max-width: min(88vw, 248px) !important;
+        aspect-ratio: 1 / 2 !important;
+        margin: 0 auto !important;
+      }
+
+      body.narrrfs-game-locked > header,
       body.narrrfs-game-locked > header + div,
-      body.narrrfs-game-locked > header + div + div {
+      body.narrrfs-game-locked > header + div + div,
+      body.narrrfs-game-locked #tetris-play-stage > div.absolute.top-4.left-4,
+      body.narrrfs-game-locked #tetris-play-stage > h2 + div,
+      body.narrrfs-game-locked #pause-tetris-btn + p,
+      body.narrrfs-game-locked #tetris-mobile-controls .narrrfs-swipe-hint,
+      body.narrrfs-game-locked #tetris-guide-btn-wrap,
+      body.narrrfs-game-locked #tetris-scores-btn-wrap,
+      body.narrrfs-game-locked #tetris-controls-section,
+      body.narrrfs-game-locked #tetrisGameGuide,
+      body.narrrfs-game-locked #tetrisDSPOINScores,
+      body.narrrfs-game-locked #cheese-tetris ~ section {
         display: none !important;
       }
 
       body.narrrfs-game-locked #cheese-tetris {
-        margin-top: 0.25rem !important;
-      }
-
-      #tetris-play-stage {
-        padding: 0.7rem 0.65rem !important;
+        min-height: 100dvh !important;
+        margin-top: 0 !important;
+        padding: 0.35rem 0.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
       }
 
       body.narrrfs-game-locked #tetris-play-stage {
-        padding: 0.45rem 0.55rem !important;
-      }
-
-      body.narrrfs-game-locked #tetris-play-stage > div.absolute.top-4.left-4,
-      body.narrrfs-game-locked #tetris-play-stage > h2 + div,
-      body.narrrfs-game-locked #pause-tetris-btn + p,
-      body.narrrfs-game-locked #tetris-mobile-controls .narrrfs-swipe-hint {
-        display: none !important;
+        padding: 0.6rem 0.7rem 0.5rem !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 430px !important;
       }
 
       body.narrrfs-game-locked #tetris-play-stage h2 {
-        font-size: 0.95rem !important;
-        margin-bottom: 0.1rem !important;
+        font-size: 1.15rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0.15rem !important;
       }
 
       body.narrrfs-game-locked #tetris-score {
-        font-size: 0.88rem !important;
-        line-height: 1.2 !important;
+        font-size: 0.98rem !important;
+        line-height: 1.25 !important;
       }
 
       body.narrrfs-game-locked #tetris-play-stage > div.text-center.mb-4 {
-        margin-bottom: 0.2rem !important;
+        margin-bottom: 0.25rem !important;
       }
 
       body.narrrfs-game-locked #start-tetris-btn,
       body.narrrfs-game-locked #pause-tetris-btn {
         display: inline-block;
         width: auto !important;
-        padding: 0.22rem 0.65rem !important;
-        font-size: 0.76rem !important;
+        padding: 0.34rem 0.85rem !important;
+        font-size: 0.82rem !important;
         margin-top: 0 !important;
       }
 
-      body.narrrfs-game-locked #tetris-play-stage div:has(> #next-canvas) {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.45rem;
-        margin-bottom: 0.2rem !important;
+      body.narrrfs-game-locked #tetris-next-wrap {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.55rem !important;
+        margin-bottom: 0.3rem !important;
       }
 
-      body.narrrfs-game-locked #tetris-play-stage div:has(> #next-canvas) p {
+      body.narrrfs-game-locked #tetris-next-wrap p {
         margin-bottom: 0 !important;
-        font-size: 0.75rem !important;
+        font-size: 0.82rem !important;
       }
 
       body.narrrfs-game-locked #next-canvas {
-        width: 40px !important;
-        height: 40px !important;
+        width: 54px !important;
+        height: 54px !important;
         margin: 0 !important;
       }
 
       body.narrrfs-game-locked #tetris-boss-hud-container {
-        margin-bottom: 46px !important;
+        top: 8px !important;
+        bottom: auto !important;
+        margin-bottom: 0 !important;
+        width: calc(100% - 12px) !important;
+        z-index: 15 !important;
+        pointer-events: none !important;
       }
 
       body.narrrfs-game-locked #tetris-play-stage .flex.justify-center.items-center.mb-4 {
-        margin-bottom: 0.2rem !important;
-      }
-
-      #tetris-canvas {
-        height: min(42dvh, 320px) !important;
-        width: auto !important;
-        max-width: 90vw !important;
-        aspect-ratio: 1 / 2 !important;
-        margin: 0 auto !important;
+        margin-bottom: 0.25rem !important;
       }
 
       body.narrrfs-game-locked #tetris-canvas {
-        height: min(38dvh, 280px) !important;
-        max-height: min(38dvh, 280px) !important;
+        height: clamp(270px, calc(100dvh - 294px), 480px) !important;
+        max-height: clamp(270px, calc(100dvh - 294px), 480px) !important;
+        width: auto !important;
+        max-width: min(88vw, 248px) !important;
+        aspect-ratio: 1 / 2 !important;
       }
 
       body.narrrfs-game-locked #tetris-mobile-controls {
-        margin-top: 0.2rem !important;
-        gap: 0.25rem !important;
+        margin-top: 0.3rem !important;
+        gap: 0.3rem !important;
       }
 
       body.narrrfs-game-locked .narrrfs-tetris-bar .narrrfs-touch-btn {
-        min-height: 44px !important;
-      }
-    }
-
-    @media (max-width: 900px) and (max-height: 700px) {
-      body.narrrfs-game-locked #tetris-canvas {
-        height: min(34dvh, 236px) !important;
-        max-height: min(34dvh, 236px) !important;
+        min-height: 48px !important;
       }
     }
 
   </style>
   <link rel="stylesheet" href="winter-theme.css?v=20261126-winter-v3" />
   <link rel="stylesheet" href="css/narrrfs-mobile-arcade.css?v=20261127-arcade-v5" />
-  <script src="js/narrrfs-mobile-arcade.js?v=20261127-arcade-v5"></script>
+  <script src="js/narrrfs-mobile-arcade.js?v=20261127-arcade-v6"></script>
 </head>
 
 <body class="winter-theme bg-[#2f3136] text-white font-sans min-h-screen">
@@ -384,7 +399,7 @@
     </div>
     
     <!-- 🔮 Next Block Preview -->
-    <div class="text-center mb-4">
+    <div id="tetris-next-wrap" class="text-center mb-4">
       <p class="text-yellow-300 text-sm mb-2">Next Block:</p>
       <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block mx-auto border-2 border-gray-700"></canvas>
     </div>
@@ -464,14 +479,14 @@
     <!-- Score display removed - now shown in top UI only -->
     
     <!-- 📖 Game Guide Toggle Button -->
-    <div class="text-center mt-4">
+    <div id="tetris-guide-btn-wrap" class="text-center mt-4">
       <button id="toggle-tetris-guide-btn" onclick="toggleTetrisGuide()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
         📖 Tetris Game Guide - Bosses & Mechanics
       </button>
     </div>
     
     <!-- 💰 dSPOINC Scores Toggle Button -->
-    <div class="text-center mt-4">
+    <div id="tetris-scores-btn-wrap" class="text-center mt-4">
       <button id="toggle-tetris-dspoin-scores-btn" onclick="toggleTetrisDSPOINScores()" class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
         💰 dSPOINC Scores - Rewards & Bosses
       </button>
@@ -838,7 +853,7 @@
 </section>
 
 <!-- 🎮 Game Script -->
-<script src="scripts/tetris-scroll.js?v=10.1&arcade_v5=20261127"></script>
+<script src="scripts/tetris-scroll.js?v=10.1&arcade_v6=20261127"></script>
 
 <!-- 🔐 Authentication & Initialization -->
 <script>

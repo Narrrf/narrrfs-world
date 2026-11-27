@@ -1046,17 +1046,24 @@ window.startTetrisGame = async function () {
     startBtn.textContent = "🕹️ Playing...";
   }
 
-  // 🔧 MOBILE FIX: Ensure canvas is properly sized for mobile
+  // 🔧 MOBILE FIX: Preserve pixel resolution (200x400) while letting mobile CSS scale display cleanly
   const canvas = document.getElementById("tetris-canvas");
   if (canvas) {
-    // Force canvas size for mobile compatibility
     canvas.width = 200;
     canvas.height = 400;
-    canvas.style.width = '200px';
-    canvas.style.height = '400px';
+    const isCompactOrCoarseTetris =
+      window.innerWidth <= 900 ||
+      (typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches);
+    if (isCompactOrCoarseTetris) {
+      canvas.style.width = '';
+      canvas.style.height = '';
+    } else {
+      canvas.style.width = '200px';
+      canvas.style.height = '400px';
+    }
 
     // Mobile-specific canvas settings
-    if ('ontouchstart' in window) {
+    if ('ontouchstart' in window || isCompactOrCoarseTetris) {
       console.log('📱 Mobile canvas setup');
       canvas.style.touchAction = 'none';
       canvas.style.webkitUserSelect = 'none';
