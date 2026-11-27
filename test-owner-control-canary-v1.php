@@ -129,8 +129,12 @@ $forbiddenRoutePatterns = '/\b(?:PDO|SQLite3|INSERT|UPDATE|DELETE|REPLACE|file_p
 canary_test_assert(!preg_match($forbiddenRoutePatterns, $routeSource), 'canary has no DB, filesystem, process, network, or mutation capability');
 canary_test_assert(!preg_match('/\$_SESSION\s*\[.*\]\s*=|narrrfs_touch_admin_authority|narrrfs_consume_admin_csrf/i', $routeSource), 'canary route performs no session-authority write');
 
-$ownerControlDeny = '~^(?!/api/owner-control/v1/canary\.php$)(?i:/api/owner-control)(?:/|$)~';
-canary_test_assert(preg_match($ownerControlDeny, '/api/owner-control/v1/canary.php') === 0, 'exact canary path is the sole namespace exception');
+canary_test_assert(
+    preg_match('/<LocationMatch\s+"(\^\(\?\!.*?\/api\/owner-control[^"]+)">/', $containmentSource, $containmentMatch) === 1,
+    'Apache defines the exact negative-lookahead owner-control LocationMatch rule'
+);
+$ownerControlDeny = '~' . $containmentMatch[1] . '~';
+canary_test_assert(preg_match($ownerControlDeny, '/api/owner-control/v1/canary.php') === 0, 'exact canary path remains allowed by Apache containment');
 foreach ([
     '/api/owner-control',
     '/api/owner-control/',
@@ -141,7 +145,6 @@ foreach ([
 ] as $deniedPath) {
     canary_test_assert(preg_match($ownerControlDeny, $deniedPath) === 1, 'owner-control path remains denied: ' . $deniedPath);
 }
-canary_test_assert(str_contains($containmentSource, '^(?!/api/owner-control/v1/canary\.php$)(?i:/api/owner-control)'), 'Apache uses the reviewed exact exception rule');
 canary_test_assert(str_contains($containmentSource, '(?i)^/admin-interface\.html'), 'legacy admin interface remains denied');
 canary_test_assert(str_contains($containmentSource, '(?i)^/api/admin'), 'legacy admin API remains denied');
 canary_test_assert(str_contains($containmentSource, '(?i)^/db'), 'database URL remains denied');

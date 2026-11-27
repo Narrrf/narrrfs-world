@@ -26,13 +26,21 @@ oauth_inventory_test_assert(str_contains($callbackSource, "\$stateDecision['stat
 oauth_inventory_test_assert(str_contains($callbackSource, 'redirect=%2Fpublic%2Fprofile.html'), 'direct callers restart through fixed canonical initializer');
 oauth_inventory_test_assert(strpos($callbackSource, 'narrrfs_consume_oauth_state') < strpos($callbackSource, 'CURLOPT_URL'), 'callback state gate precedes token exchange');
 
+$labyrinthHtml = file_get_contents($root . '/public/labyrinth-blast/index.html');
+oauth_inventory_test_assert(
+    is_string($labyrinthHtml) &&
+        preg_match('#\./assets/(index-[A-Za-z0-9_-]+\.js)#', $labyrinthHtml, $labyrinthMatch) === 1,
+    'active Labyrinth Blast HTML references one hashed entry bundle'
+);
+$activeLabyrinthBundle = $root . '/public/labyrinth-blast/assets/' . $labyrinthMatch[1];
+
 $canonicalPlayerLoginFiles = [
     $root . '/public/js/cheese-auth-indicator.js',
     $root . '/public/profile.html',
     $root . '/public/lab.html',
     $root . '/public/stake-lab.html',
     $root . '/public/Bingo.html',
-    $root . '/public/labyrinth-blast/assets/index-Cy5G_4hB.js',
+    $activeLabyrinthBundle,
 ];
 
 foreach ($canonicalPlayerLoginFiles as $playerLoginFile) {
