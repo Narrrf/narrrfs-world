@@ -21,12 +21,20 @@ try {
     exit('Unable to initialize OAuth session.');
 }
 
+// Default to Discord silent re-auth ('none') so returning players who already
+// authorized Narrrfs World skip the repetitive Authorize screen. Fallback
+// redirects from callback.php pass prompt=consent for first-time consent.
+$promptMode = (isset($_GET['prompt']) && is_string($_GET['prompt']) && $_GET['prompt'] === 'consent')
+    ? 'consent'
+    : 'none';
+
 $authorizationParameters = [
     'client_id' => $oauth['client_id'],
     'response_type' => 'code',
     'redirect_uri' => $oauth['redirect_uri'],
     'scope' => 'guilds+identify+guilds.members.read',
     'state' => $state,
+    'prompt' => $promptMode,
 ];
 
 header('Location: https://discord.com/oauth2/authorize?' . http_build_query($authorizationParameters, '', '&', PHP_QUERY_RFC3986));

@@ -1,16 +1,28 @@
 FROM php:8.2.35-apache-trixie
 
-# PHP2Shell emergency hardening for CVE-2026-109618 / CVE-2026-109619.
+# PHP2Shell emergency hardening for CVE-2026-109618 / CVE-2026-109619 +
+# container-wide 24-hour PHP session lifetime floor.
 #
 # DEVS FOR DECADES:
-# Pin the patched PHP 8.2.35 Apache/Trixie runtime and disable PHP session
-# upload-progress processing before request parsing. This changes deployment
-# runtime security only. It does not modify application auth, database state,
-# Genesis/Lab progression, Genetic Items, MouseFight, or economy state.
+# Pin the patched PHP 8.2.35 Apache/Trixie runtime, disable PHP session
+# upload-progress processing before request parsing, and set a 24h (86400s)
+# session GC/cookie floor so legacy bare session_start() endpoints never
+# garbage-collect active 24h public Discord or 12h Owner Control sessions at
+# PHP's 1440s (24-minute) default. This changes deployment runtime security
+# and session floor config only; do not hardcode session.cookie_secure=1
+# globally so HTTP localhost testing remains compatible (session.php sets
+# cookie_secure dynamically for HTTPS requests). It does not modify database
+# state, Genesis/Lab progression, Genetic Items, MouseFight, or economy state.
 RUN printf '%s\n' \
     'session.upload_progress.enabled=0' \
+    'session.gc_maxlifetime=86400' \
+    'session.cookie_lifetime=86400' \
+    'session.use_strict_mode=1' \
+    'session.use_only_cookies=1' \
+    'session.cookie_httponly=1' \
+    'session.cookie_samesite=Lax' \
     > /usr/local/etc/php/conf.d/narrrfs-security.ini \
-    && php -r 'if (PHP_VERSION_ID !== 80235) { fwrite(STDERR, "ERROR: expected PHP 8.2.35.\\n"); exit(1); } if (ini_get("session.upload_progress.enabled") !== "0") { fwrite(STDERR, "ERROR: session.upload_progress.enabled must be 0.\\n"); exit(1); } echo "PHP security runtime gate passed\\n";'
+    && php -r 'if (PHP_VERSION_ID !== 80235) { fwrite(STDERR, "ERROR: expected PHP 8.2.35.\\n"); exit(1); } if (ini_get("session.upload_progress.enabled") !== "0") { fwrite(STDERR, "ERROR: session.upload_progress.enabled must be 0.\\n"); exit(1); } if (ini_get("session.gc_maxlifetime") !== "86400" || ini_get("session.cookie_lifetime") !== "86400") { fwrite(STDERR, "ERROR: session lifetime floor must be 86400.\\n"); exit(1); } echo "PHP security runtime gate passed\\n";'
 
 # 2 Fix Apache FQDN warning
 RUN echo "ServerName narrrfs.world" >> /etc/apache2/apache2.conf

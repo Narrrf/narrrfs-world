@@ -95,8 +95,8 @@ $serverIdentityMismatch = $normalUser;
 $serverIdentityMismatch['client_claimed_owner'] = '111111111111111111';
 guard_test_denied(guard_test_decision(['session' => $serverIdentityMismatch]), 403, 'server-derived non-owner identity defeats client owner mismatch');
 
-$expiredOwner = guard_test_decision(['now' => 2000001800]);
-guard_test_denied($expiredOwner, 401, 'idle-expired owner authority');
+$expiredOwner = guard_test_decision(['now' => 2000043200]);
+guard_test_denied($expiredOwner, 401, '12h-expired owner authority');
 $malformedTimestamp = [
     'discord_id' => '111111111111111111',
     NARRRFS_ADMIN_PROVENANCE_SESSION_KEY => NARRRFS_ADMIN_AUTH_PROVENANCE,

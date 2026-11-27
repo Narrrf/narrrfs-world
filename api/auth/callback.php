@@ -43,6 +43,24 @@ if (!$oauth['is_local'] && !in_array($finalRedirect, $productionRedirectAllowlis
     $finalRedirect = $oauth['default_redirect'];
 }
 
+// Handle Discord prompt=none interaction/consent fallbacks and user cancellation
+// only AFTER the one-time server OAuth state has been validated and consumed.
+$oauthError = isset($_GET['error']) && is_string($_GET['error']) ? trim($_GET['error']) : '';
+if (in_array($oauthError, ['consent_required', 'interaction_required', 'login_required'], true)) {
+    $retryRedirect = narrrfs_oauth_redirect_target($oauth, $finalRedirect);
+    header(
+        'Location: /api/discord-login.php?prompt=consent&redirect=' . rawurlencode($retryRedirect),
+        true,
+        303
+    );
+    exit;
+}
+if ($oauthError === 'access_denied') {
+    $cancelRedirect = narrrfs_oauth_redirect_target($oauth, $finalRedirect);
+    header('Location: ' . $oauth['base_url'] . $cancelRedirect, true, 303);
+    exit;
+}
+
 $code = isset($_GET['code']) && is_string($_GET['code']) ? $_GET['code'] : '';
 if ($code === '') {
     http_response_code(400);

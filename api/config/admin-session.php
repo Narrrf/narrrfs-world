@@ -17,7 +17,13 @@ const NARRRFS_ADMIN_PROVENANCE_SESSION_KEY = 'auth_provenance';
 const NARRRFS_ADMIN_AUTH_ISSUED_AT_SESSION_KEY = 'narrrfs_admin_auth_issued_at';
 const NARRRFS_ADMIN_AUTH_LAST_SEEN_AT_SESSION_KEY = 'narrrfs_admin_auth_last_seen_at';
 const NARRRFS_ADMIN_AUTH_EXPIRES_AT_SESSION_KEY = 'narrrfs_admin_auth_expires_at';
-const NARRRFS_ADMIN_AUTH_IDLE_SECONDS = 1800;
+// DEVS FOR DECADES:
+// Owner Control read-only pages (NARRRFS_SESSION_READ_ONLY, e.g. bug-tracker.php)
+// intentionally do not mutate narrrfs_admin_auth_last_seen_at. Aligning both
+// idle and absolute owner-authority windows to 12 hours (43200s) prevents false
+// mid-session lockouts while keeping public Discord sessions at 24h (86400s) and
+// mutation one-time CSRF tokens strict at 5 minutes (300s).
+const NARRRFS_ADMIN_AUTH_IDLE_SECONDS = 43200;
 const NARRRFS_ADMIN_AUTH_ABSOLUTE_SECONDS = 43200;
 const NARRRFS_ADMIN_AUTH_FUTURE_SKEW_SECONDS = 60;
 const NARRRFS_ADMIN_CSRF_SESSION_KEY = 'narrrfs_admin_csrf_token';

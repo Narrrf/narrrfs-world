@@ -21,8 +21,8 @@ function owner_csrf_test_assert(
 
 
 owner_csrf_test_assert(
-    NARRRFS_ADMIN_AUTH_IDLE_SECONDS === 1800,
-    'owner idle timeout remains 30 minutes'
+    NARRRFS_ADMIN_AUTH_IDLE_SECONDS === 43200,
+    'owner idle timeout remains 12 hours'
 );
 
 owner_csrf_test_assert(
@@ -273,6 +273,6 @@ echo "ONE_TIME_CONSUMER=present\n";
 echo "DB_ACCESS=none\n";
 echo "DISCORD_ACCESS=none\n";
 echo "LEGACY_ADMIN_API=none\n";
-echo "AUTH_IDLE_SECONDS=1800\n";
+echo "AUTH_IDLE_SECONDS=43200\n";
 echo "AUTH_ABSOLUTE_SECONDS=43200\n";
 echo "AUTH_RULES_CHANGED=NO\n";

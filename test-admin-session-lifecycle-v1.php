@@ -37,8 +37,8 @@ admin_session_test_assert($session[NARRRFS_ADMIN_AUTH_LAST_SEEN_AT_SESSION_KEY] 
 admin_session_test_assert($session[NARRRFS_ADMIN_AUTH_EXPIRES_AT_SESSION_KEY] === $now + 43200, 'absolute expiry is exact');
 admin_session_test_assert($session['normal_user_preference'] === 'preserved', 'unrelated normal-user session data remains');
 admin_session_test_assert(!isset($session[NARRRFS_ADMIN_CSRF_SESSION_KEY]), 'OAuth rotation clears prior CSRF state');
-admin_session_test_assert(narrrfs_admin_session_is_current($session, $now + 1799), 'owner authority is current before idle timeout');
-admin_session_test_assert(!narrrfs_admin_session_is_current($session, $now + 1800), 'owner authority expires at idle timeout');
+admin_session_test_assert(narrrfs_admin_session_is_current($session, $now + 43199), 'owner authority is current before 12h timeout');
+admin_session_test_assert(!narrrfs_admin_session_is_current($session, $now + 43200), 'owner authority expires at 12h timeout');
 
 $touched = $session;
 narrrfs_touch_admin_authority($touched, $now + 1200);
