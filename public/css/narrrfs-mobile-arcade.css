@@ -346,7 +346,7 @@ body.narrrfs-game-locked header a {
   }
 }
 
-@media (min-width: 901px) {
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) {
   .narrrfs-mobile-only-controls {
     display: none !important;
   }

@@ -323,7 +323,7 @@ function getRoleScoreMultiplier() {
 }
 
 // Detect mobile device
-if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+if (window.innerWidth <= 900 || (typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches)) {
   isTetrisMobileDevice = true;
   console.log('📱 Mobile device detected');
   

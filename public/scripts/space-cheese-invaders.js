@@ -14253,10 +14253,6 @@ window.emergencyCollisionCheck = function() {
       controlsEl: document.getElementById('space-invaders-mobile-controls'),
       gameKey: 'space-invaders'
     });
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
-    document.documentElement.style.overflow = 'hidden';
-    document.documentElement.style.touchAction = 'none';
   }
 
   function unlockSpaceInvadersScroll() {

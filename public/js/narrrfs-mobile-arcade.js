@@ -12,12 +12,20 @@
   let listenersAttached = false;
   let lockGeneration = 0;
 
-  function isTouchOrCompactViewport() {
+  function isCoarsePrimaryPointer() {
+    if (typeof window.matchMedia !== 'function') return false;
     return (
-      window.innerWidth <= 1024 ||
-      'ontouchstart' in window ||
-      (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0)
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
+      window.matchMedia('(pointer: coarse)').matches
     );
+  }
+
+  function shouldEngageMobileLock() {
+    const vw = window.innerWidth || document.documentElement.clientWidth || 0;
+    if (vw > 0 && vw <= 900) {
+      return true;
+    }
+    return isCoarsePrimaryPointer();
   }
 
   function handleWindowTouchMove(event) {
@@ -56,27 +64,32 @@
 
   function frameStageForMobile(stageEl, controlsEl = null) {
     if (!stageEl || typeof stageEl.getBoundingClientRect !== 'function') return;
-    if (!isTouchOrCompactViewport()) return;
+    if (!shouldEngageMobileLock()) return;
 
     const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight || 0;
     const activeControls = controlsEl || (stageEl ? stageEl.querySelector('.narrrfs-arcade-controls') : null);
+    const primaryPlaySurface = stageEl.querySelector('canvas, #board, [data-arcade-surface="true"]');
     const stageRect = stageEl.getBoundingClientRect();
+    const surfaceRect =
+      primaryPlaySurface && typeof primaryPlaySurface.getBoundingClientRect === 'function'
+        ? primaryPlaySurface.getBoundingClientRect()
+        : stageRect;
     const scrollY = window.scrollY || window.pageYOffset || 0;
-    const stageTopDoc = stageRect.top + scrollY;
+    const topAnchorDoc = surfaceRect.top + scrollY;
 
-    let bottomEdgeDoc = stageRect.bottom + scrollY + 8;
+    let bottomEdgeDoc = surfaceRect.bottom + scrollY + 10;
     if (activeControls && typeof activeControls.getBoundingClientRect === 'function') {
       const controlsRect = activeControls.getBoundingClientRect();
       if (controlsRect.height > 0) {
-        bottomEdgeDoc = controlsRect.bottom + scrollY + 10;
+        bottomEdgeDoc = Math.max(bottomEdgeDoc, controlsRect.bottom + scrollY + 10);
       }
     }
 
-    const playHeight = Math.max(0, bottomEdgeDoc - stageTopDoc);
+    const playHeight = Math.max(0, bottomEdgeDoc - topAnchorDoc);
     let targetY;
     if (vh > 0 && playHeight <= vh - 8) {
       const extra = Math.floor((vh - playHeight) / 2);
-      targetY = Math.max(0, Math.round(stageTopDoc - Math.min(16, extra)));
+      targetY = Math.max(0, Math.round(topAnchorDoc - Math.min(16, extra)));
       if (bottomEdgeDoc - targetY > vh) {
         targetY = Math.max(0, Math.ceil(bottomEdgeDoc - vh));
       }
@@ -84,8 +97,11 @@
       // Always prioritize keeping the bottom of the mobile controls inside the viewport!
       targetY = Math.max(0, Math.ceil(bottomEdgeDoc - vh));
     } else {
-      targetY = Math.max(0, Math.round(stageTopDoc - 4));
+      targetY = Math.max(0, Math.round(topAnchorDoc - 4));
     }
+
+    const maxSafeY = Math.max(0, Math.round(topAnchorDoc + Math.max(24, surfaceRect.height * 0.18)));
+    targetY = Math.min(targetY, maxSafeY);
 
     window.scrollTo(0, targetY);
   }
@@ -101,6 +117,13 @@
   }
 
   function lock(options = {}) {
+    if (!shouldEngageMobileLock()) {
+      if (isLocked) {
+        unlock();
+      }
+      return;
+    }
+
     const stageEl = options.stageEl || null;
     const controlsEl = options.controlsEl || null;
     const gameKey = String(options.gameKey || 'arcade');
@@ -140,7 +163,7 @@
     dispatchLockState(true, gameKey);
 
     // 5. Next-frame post-paint guard in case late image/canvas sizing pushed controls down
-    if (typeof window.requestAnimationFrame === 'function' && stageEl && isTouchOrCompactViewport()) {
+    if (typeof window.requestAnimationFrame === 'function' && stageEl && shouldEngageMobileLock()) {
       window.requestAnimationFrame(() => {
         if (!isLocked || gen !== lockGeneration) return;
         const activeControls = controlsEl || (stageEl ? stageEl.querySelector('.narrrfs-arcade-controls') : null);
@@ -151,7 +174,14 @@
           document.documentElement.classList.remove('narrrfs-game-scroll-freeze');
           if (document.body) document.body.classList.remove('narrrfs-game-scroll-freeze');
           const curY = window.scrollY || window.pageYOffset || 0;
-          const nextY = Math.max(0, Math.ceil(curY + cRect.bottom - vh + 6));
+          const primaryPlaySurface = stageEl.querySelector('canvas, #board, [data-arcade-surface="true"]');
+          const sRect =
+            primaryPlaySurface && typeof primaryPlaySurface.getBoundingClientRect === 'function'
+              ? primaryPlaySurface.getBoundingClientRect()
+              : stageEl.getBoundingClientRect();
+          const topAnchorDoc = sRect.top + curY;
+          const maxSafeY = Math.max(0, Math.round(topAnchorDoc + Math.max(24, sRect.height * 0.18)));
+          const nextY = Math.min(maxSafeY, Math.max(0, Math.ceil(curY + cRect.bottom - vh + 6)));
           window.scrollTo(0, nextY);
           lockedScrollX = window.scrollX || window.pageXOffset || 0;
           lockedScrollY = window.scrollY || window.pageYOffset || 0;
@@ -450,6 +480,11 @@
 
   window.addEventListener('pagehide', unlock);
   window.addEventListener('beforeunload', unlock);
+  window.addEventListener('resize', () => {
+    if (isLocked && !shouldEngageMobileLock()) {
+      unlock();
+    }
+  }, { passive: true });
 
   window.NarrrfsMobileArcade = {
     lock,
