@@ -101,10 +101,7 @@ Glyph Memory — Phase 1 JS
   // NOTE: Query parameters are added but ignored if no PHP endpoint exists
   // If /api/glyph/compress-image.php exists, it can use these params to resize/encode.
 function getOptimizedGlyphPath(originalPath) {
-  // TEMP FIX: use original asset path on all devices
-  // Query-string based mobile rewriting can cause slow/blank glyph loading
-  // on some mobile browsers / cache layers when no image-processing backend exists.
-  return originalPath;
+  return String(originalPath || '').replace('assets/glyphs/', 'assets/glyphs-sm/');
 }
 
   // Your glyph filenames:
@@ -142,17 +139,10 @@ function getOptimizedGlyphPath(originalPath) {
     hard: "assets/backgrounds/bg_hard.jpg",
   };
 
-  // Mobile background optimization (smaller JPEGs on phones)
+  // Mobile background optimization (smaller static JPEGs on phones)
   function getOptimizedBackgroundPath(originalPath) {
     if (!isMobileDevice) return originalPath;
-
-    // Low-end: ~1280 wide, others ~1920
-    const maxWidth  = isLowEndMobile ? 1280 : 1920;
-    const maxHeight = Math.round(maxWidth * 9 / 16); // ~16:9
-    const quality   = isLowEndMobile ? 70 : 80;
-
-    const separator = originalPath.includes("?") ? "&" : "?";
-    return `${originalPath}${separator}w=${maxWidth}&h=${maxHeight}&c=cover&q=${quality}&m=1`;
+    return String(originalPath || '').replace(/\.jpg$/i, '_mobile.jpg');
   }
 
   // Three sounds: match, mismatch, and card flip
@@ -428,11 +418,13 @@ document.addEventListener('visibilitychange', syncGlyphMusicFromGlobalToggle);
   const finalTimeEl = document.getElementById('finalTime');
   const overlayBestTimeEl = document.getElementById('overlayBestTime');
   const newBestBadgeEl = document.getElementById('newBestBadge');
+  const saveStatusEl = document.getElementById('saveStatus');
   const playAgainBtn = document.getElementById('playAgainBtn');
   const backToMenuBtn = document.getElementById('backToMenuBtn');
 
   // ------- STATE -------
   let activeDifficulty = 'easy';
+  let activeSeasonKey = safeLocalGet('glyph_memory_active_season') || '';
   let deck = []; // { id, glyphSrc, matched }
 
   let firstPick = null;
@@ -441,60 +433,89 @@ document.addEventListener('visibilitychange', syncGlyphMusicFromGlobalToggle);
 
   let matchedPairs = 0;
 
-  let timerStart = 0;
+  let timerStartPerf = 0;
   let timerInterval = null;
-  let isStartingGame = false;
+  let currentRunId = 0;
+  let lastStartOrRestartAt = 0;
+  let mismatchTimerId = null;
+  let mismatchSettleUntil = 0;
+  let winRevealTimerId = null;
+  let isRoundFinished = false;
 
-  // Best times (stored locally per difficulty)
-  const BEST_TIME_PREFIX = 'glyph_memory_best_ms_';
-
-  function getBestKey(difficultyKey) {
-    return `${BEST_TIME_PREFIX}${difficultyKey}`;
-  }
-
-  function getBestTimeMs(difficultyKey) {
-    try {
-      const raw = window.localStorage.getItem(getBestKey(difficultyKey));
-      if (!raw) return null;
-      const n = Number(raw);
-      return Number.isFinite(n) && n > 0 ? n : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function setBestTimeMs(difficultyKey, ms) {
-    try {
-      window.localStorage.setItem(getBestKey(difficultyKey), String(ms));
-    } catch {
-      // ignore (private mode / storage blocked)
-    }
-  }
-
-  function updateBestTimeUI(difficultyKey) {
-    const bestMs = getBestTimeMs(difficultyKey);
-    const label = bestMs ? formatTime(bestMs) : '—';
-    if (bestTimeEl) bestTimeEl.textContent = label;
-    if (menuBestTimeEl) menuBestTimeEl.textContent = label;
-    if (overlayBestTimeEl) overlayBestTimeEl.textContent = label;
-  }
-
-
-
-  // Audio (graceful)
-  const audio = {
-    match: SOUNDS.match ? new Audio(SOUNDS.match) : null,
-    fail:  SOUNDS.fail ? new Audio(SOUNDS.fail) : null,
-    flip:  SOUNDS.flip ? new Audio(SOUNDS.flip) : null,
-  };
-
-    function playSound(key) {
-    const a = audio[key];
-
-    if (!a) {
+  function setSaveStatus(message, tone = 'info') {
+    if (!saveStatusEl) return;
+    if (!message) {
+      saveStatusEl.textContent = '';
+      saveStatusEl.hidden = true;
+      saveStatusEl.className = 'saveStatus';
       return;
     }
+    saveStatusEl.hidden = false;
+    saveStatusEl.textContent = message;
+    saveStatusEl.className = 'saveStatus' +
+      (tone === 'warn' ? ' saveStatus--warn' : tone === 'muted' ? ' saveStatus--muted' : '');
+  }
 
+  // Zero-lag Web Audio API SFX engine with round-robin HTMLAudio fallback
+  function createAudioPool(src, size = 3) {
+    if (!src) return { pool: [], idx: 0 };
+    const pool = Array.from({ length: size }, () => {
+      const el = new Audio(src);
+      el.preload = 'auto';
+      return el;
+    });
+    return { pool, idx: 0 };
+  }
+
+  const audioPools = {
+    match: createAudioPool(SOUNDS.match, 2),
+    fail:  createAudioPool(SOUNDS.fail, 2),
+    flip:  createAudioPool(SOUNDS.flip, 3),
+  };
+
+  let glyphAudioCtx = null;
+  const glyphSfxBuffers = new Map();
+  const glyphSfxLoading = new Map();
+
+  function loadSfxBuffer(key, url) {
+    if (!glyphAudioCtx || !url || glyphSfxBuffers.has(key) || glyphSfxLoading.has(key)) {
+      return;
+    }
+    const promise = fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.arrayBuffer();
+      })
+      .then((buf) => glyphAudioCtx.decodeAudioData(buf))
+      .then((decoded) => {
+        glyphSfxBuffers.set(key, decoded);
+      })
+      .catch((error) => {
+        console.warn(`🔊 [GLYPH] WebAudio SFX decode skipped for ${key}:`, error);
+      });
+    glyphSfxLoading.set(key, promise);
+  }
+
+  function unlockGlyphAudio() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!glyphAudioCtx) {
+        glyphAudioCtx = new AudioCtx();
+      }
+      if (glyphAudioCtx.state === 'suspended' || glyphAudioCtx.state === 'interrupted') {
+        const res = glyphAudioCtx.resume();
+        if (res && typeof res.catch === 'function') {
+          res.catch(() => {});
+        }
+      }
+      Object.entries(SOUNDS).forEach(([key, url]) => loadSfxBuffer(key, url));
+    } catch (_) {
+      // Fall back cleanly to HTMLAudio pool.
+    }
+  }
+
+  function playSound(key) {
     // Respect the shared Narrrfs SFX toggle.
     // DEVS FOR DECADES:
     // Glyph card flip/match/fail sounds are short SFX and must not depend on
@@ -507,9 +528,34 @@ document.addEventListener('visibilitychange', syncGlyphMusicFromGlobalToggle);
       return;
     }
 
+    if (glyphAudioCtx && glyphSfxBuffers.has(key)) {
+      try {
+        if (glyphAudioCtx.state === 'suspended' || glyphAudioCtx.state === 'interrupted') {
+          glyphAudioCtx.resume().catch(() => {});
+        }
+        const source = glyphAudioCtx.createBufferSource();
+        source.buffer = glyphSfxBuffers.get(key);
+        source.connect(glyphAudioCtx.destination);
+        source.start(0);
+        return;
+      } catch (_) {
+        // Fall through to HTMLAudio pool.
+      }
+    }
+
+    const entry = audioPools[key];
+    if (!entry || !entry.pool.length) {
+      return;
+    }
+    const a = entry.pool[entry.idx % entry.pool.length];
+    entry.idx = (entry.idx + 1) % entry.pool.length;
+
     try {
       a.currentTime = 0;
-      void a.play();
+      const playRes = a.play();
+      if (playRes && typeof playRes.catch === 'function') {
+        playRes.catch(() => {});
+      }
     } catch {
       // ignore
     }
@@ -597,14 +643,17 @@ document.addEventListener('visibilitychange', syncGlyphMusicFromGlobalToggle);
     return p;
   }
 
-const glyphPreloadCache = new Set();
+const glyphPreloadCache = new Map();
 
-function preloadGlyphImages(sources, timeoutMs = 800) {
+function preloadGlyphImages(sources, timeoutMs = 350) {
   if (!Array.isArray(sources) || sources.length === 0) return Promise.resolve();
 
   const pendingSources = [...new Set(sources)]
     .map((src) => getOptimizedGlyphPath(src))
-    .filter((resolvedSrc) => !glyphPreloadCache.has(resolvedSrc));
+    .filter((resolvedSrc) => {
+      const cached = glyphPreloadCache.get(resolvedSrc);
+      return !(cached && cached.complete && cached.naturalWidth > 0);
+    });
 
   if (pendingSources.length === 0) {
     return Promise.resolve();
@@ -616,7 +665,7 @@ function preloadGlyphImages(sources, timeoutMs = 800) {
         const img = new Image();
         img.decoding = 'async';
         img.onload = () => {
-          glyphPreloadCache.add(resolvedSrc);
+          glyphPreloadCache.set(resolvedSrc, img);
           resolve(resolvedSrc);
         };
         img.onerror = () => {
@@ -624,6 +673,7 @@ function preloadGlyphImages(sources, timeoutMs = 800) {
           resolve(resolvedSrc);
         };
         img.src = resolvedSrc;
+        glyphPreloadCache.set(resolvedSrc, img);
       });
     })
   );
@@ -830,27 +880,22 @@ document.addEventListener('visibilitychange', sync);
     return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
   }
 
-  // ------- BEST TIME (per difficulty) -------
+  // ------- BEST TIME (per difficulty, season-scoped) -------
   function bestKey(diff) {
-    return `glyphMemoryBestTime:${diff}`;
+    return activeSeasonKey
+      ? `glyphMemoryBestTime:${activeSeasonKey}:${diff}`
+      : `glyphMemoryBestTime:${diff}`;
   }
 
   function getBestTime(diff) {
-    try {
-      const raw = window.localStorage.getItem(bestKey(diff));
-      const n = raw ? Number(raw) : NaN;
-      return Number.isFinite(n) && n > 0 ? n : null;
-    } catch {
-      return null;
-    }
+    const raw = safeLocalGet(bestKey(diff));
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : null;
   }
 
   function setBestTime(diff, ms) {
-    try {
-      window.localStorage.setItem(bestKey(diff), String(ms));
-    } catch {
-      // ignore (private mode etc.)
-    }
+    const rounded = Math.max(1, Math.round(Number(ms) || 0));
+    safeLocalSet(bestKey(diff), String(rounded));
   }
 
   function updateBestTimeUI(diff) {
@@ -861,27 +906,67 @@ document.addEventListener('visibilitychange', sync);
     if (overlayBestTimeEl) overlayBestTimeEl.textContent = label;
   }
 
-  function startTimer() {
-    stopTimer();
-    timerStart = Date.now();
-    timerEl.textContent = '00:00.000';
-    timerInterval = window.setInterval(() => {
-      const elapsed = Date.now() - timerStart;
-      timerEl.textContent = formatTime(elapsed);
-    }, 250);
+  function clearTurnTimeouts() {
+    if (mismatchTimerId) {
+      window.clearTimeout(mismatchTimerId);
+      mismatchTimerId = null;
+    }
+    if (winRevealTimerId) {
+      window.clearTimeout(winRevealTimerId);
+      winRevealTimerId = null;
+    }
   }
 
-  function stopTimer() {
+  function getElapsedTimerMs() {
+    if (timerStartPerf <= 0) {
+      return 0;
+    }
+    return Math.max(1, Math.round(performance.now() - timerStartPerf));
+  }
+
+  function startTimer(runId = currentRunId) {
+    stopTimer();
+    if (timerEl) {
+      timerEl.textContent = '00:00.000';
+    }
+    const schedule = typeof window.requestAnimationFrame === 'function'
+      ? window.requestAnimationFrame.bind(window)
+      : (cb) => window.setTimeout(cb, 0);
+
+    schedule(() => {
+      if (runId !== currentRunId || isRoundFinished) {
+        return;
+      }
+      timerStartPerf = performance.now();
+      timerInterval = window.setInterval(() => {
+        if (runId !== currentRunId || isRoundFinished) {
+          stopTimer();
+          return;
+        }
+        if (timerEl) {
+          timerEl.textContent = formatTime(getElapsedTimerMs());
+        }
+      }, 47);
+    });
+  }
+
+  function stopTimer(finalMs = null) {
     if (timerInterval) {
       window.clearInterval(timerInterval);
       timerInterval = null;
     }
+    timerStartPerf = 0;
+    if (finalMs != null && timerEl) {
+      timerEl.textContent = formatTime(finalMs);
+    }
   }
 
   function resetTurnPicks() {
+    clearTurnTimeouts();
     firstPick = null;
     secondPick = null;
     lockBoard = false;
+    mismatchSettleUntil = 0;
   }
 
   // ------- BUILD DECK + BOARD -------
@@ -968,9 +1053,9 @@ document.addEventListener('visibilitychange', sync);
   }
 
   function setBoardGrid(difficultyKey) {
-    const cfg = DIFFICULTIES[difficultyKey];
+    const cfg = DIFFICULTIES[difficultyKey] || DIFFICULTIES.easy;
     const totalCards = cfg.pairs * 2;
-    const cols = cfg.cols;
+    const cols = (window.innerWidth <= 560 && difficultyKey === 'hard') ? 4 : cfg.cols;
     const rows = Math.ceil(totalCards / cols);
 
     boardEl.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
@@ -992,6 +1077,43 @@ document.addEventListener('visibilitychange', sync);
     boardEl.setAttribute('aria-label', `Card grid ${rows} by ${cols}`);
   }
 
+  window.addEventListener('resize', () => {
+    if (gameView && gameView.classList.contains('view--active')) {
+      setBoardGrid(activeDifficulty);
+    }
+  });
+
+  function bindCardTap(el, onSelect) {
+    if (!el || typeof onSelect !== 'function') return;
+
+    if (typeof window.PointerEvent === 'function') {
+      el.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.pointerType !== 'mouse' && e.cancelable) {
+          e.preventDefault();
+        }
+        el._lastPointerDownAt = performance.now();
+        onSelect();
+      });
+    } else {
+      el.addEventListener('touchstart', (e) => {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        el._lastPointerDownAt = performance.now();
+        onSelect();
+      }, { passive: false });
+    }
+
+    el.addEventListener('click', (e) => {
+      if (e.detail === 0 || (performance.now() - (el._lastPointerDownAt || 0)) > 450) {
+        onSelect();
+        return;
+      }
+      e.preventDefault();
+    });
+  }
+
   function renderBoard() {
     boardEl.innerHTML = '';
     matchedPairs = 0;
@@ -1001,10 +1123,13 @@ document.addEventListener('visibilitychange', sync);
     deck.forEach((card, index) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'card';
+      btn.className = 'card card--deal';
       btn.dataset.index = String(index);
       btn.setAttribute('role', 'gridcell');
       btn.setAttribute('aria-label', 'Hidden card');
+      btn.addEventListener('animationend', () => {
+        btn.classList.remove('card--deal');
+      }, { once: true });
 
       const back = document.createElement('div');
       back.className = 'cardInner cardBack';
@@ -1023,19 +1148,22 @@ document.addEventListener('visibilitychange', sync);
         front.textContent = 'MISSING';
         front.classList.add('missing');
       };
-      // Register the fallback before assigning src so a cached failure cannot
-      // race past the handler.
+      const optimizedSrc = getOptimizedGlyphPath(card.glyphSrc);
+      // Fall back cleanly from glyphs-sm to original full-size PNG before showing MISSING.
       img.addEventListener('error', () => {
+        if (!img.dataset.triedOriginal && optimizedSrc !== card.glyphSrc) {
+          img.dataset.triedOriginal = '1';
+          img.src = card.glyphSrc;
+          return;
+        }
         console.warn('Missing glyph file:', card.glyphSrc);
         showMissingGlyphFallback();
-      }, { once: true });
-      img.src = card.glyphSrc;
+      });
+      img.src = optimizedSrc;
       img.draggable = false;
       // Optional: Auto-center glyph pixels so they look consistent at all card sizes.
       // Disabled by default because it uses data: URLs which may be blocked by CSP.
       if (ENABLE_GLYPH_NORMALIZATION) {
-        // Use optimized path for normalization on mobile
-        const optimizedSrc = getOptimizedGlyphPath(card.glyphSrc);
         normalizeGlyphImage(optimizedSrc).then((dataUrl) => {
           if (!front.classList.contains('missing')) img.src = dataUrl;
         });
@@ -1045,7 +1173,7 @@ document.addEventListener('visibilitychange', sync);
       btn.appendChild(back);
       btn.appendChild(front);
 
-      btn.addEventListener('click', onCardClick);
+      bindCardTap(btn, () => handleCardSelect(btn));
 
       frag.appendChild(btn);
     });
@@ -1069,10 +1197,26 @@ document.addEventListener('visibilitychange', sync);
   }
 
   // ------- GAMEPLAY -------
-  function onCardClick(e) {
-    if (lockBoard) return;
+  function handleCardSelect(cardBtn) {
+    unlockGlyphAudio();
+    if (lockBoard || isRoundFinished || !cardBtn) return;
 
-    const cardBtn = e.currentTarget;
+    // Fast-cancel any open mismatch once the brief 140ms anti-bounce window passes
+    if (firstPick && secondPick) {
+      if (performance.now() < mismatchSettleUntil) {
+        return;
+      }
+      if (cardBtn === firstPick.el || cardBtn === secondPick.el) {
+        return;
+      }
+      clearTurnTimeouts();
+      flipCardDown(firstPick.el);
+      flipCardDown(secondPick.el);
+      firstPick = null;
+      secondPick = null;
+      mismatchSettleUntil = 0;
+    }
+
     const index = Number(cardBtn.dataset.index);
     const card = deck[index];
 
@@ -1083,6 +1227,10 @@ document.addEventListener('visibilitychange', sync);
 
     if (card.matched) return;
     if (cardBtn.classList.contains('is-flipped')) return;
+
+    if (timerStartPerf <= 0) {
+      timerStartPerf = performance.now();
+    }
 
     flipCardUp(cardBtn);
 
@@ -1105,25 +1253,31 @@ document.addEventListener('visibilitychange', sync);
       return;
     }
 
-    lockBoard = true;
-
     // CRITICAL: Use strict comparison and verify glyphSrc values
     const firstSrc = String(firstCard.glyphSrc || '').trim();
     const secondSrc = String(secondCard.glyphSrc || '').trim();
-    
+
     if (!firstSrc || !secondSrc) {
       console.error(`❌ [GLYPH] Empty glyphSrc detected! First: "${firstSrc}", Second: "${secondSrc}"`);
       playSound('fail');
-      window.setTimeout(() => {
-        flipCardDown(firstPick.el);
-        flipCardDown(secondPick.el);
-        resetTurnPicks();
-      }, 900);
+      mismatchSettleUntil = performance.now() + 140;
+      const runId = currentRunId;
+      const pickA = firstPick.el;
+      const pickB = secondPick.el;
+      mismatchTimerId = window.setTimeout(() => {
+        mismatchTimerId = null;
+        if (runId !== currentRunId) return;
+        flipCardDown(pickA);
+        flipCardDown(pickB);
+        firstPick = null;
+        secondPick = null;
+        mismatchSettleUntil = 0;
+      }, 650);
       return;
     }
 
     const isMatch = firstSrc === secondSrc;
-    
+
     // Diagnostic logging for mismatches (especially near the end)
     if (!isMatch) {
       const remainingUnmatched = deck.filter(c => !c.matched);
@@ -1150,25 +1304,42 @@ document.addEventListener('visibilitychange', sync);
       secondPick.el.setAttribute('aria-label', 'Matched card');
 
       matchedPairs += 1;
+      firstPick = null;
+      secondPick = null;
+      lockBoard = false;
+
+      if (matchedPairs >= DIFFICULTIES[activeDifficulty].pairs) {
+        const exactElapsedMs = getElapsedTimerMs();
+        stopTimer(exactElapsedMs);
+        isRoundFinished = true;
+        lockBoard = true;
+        playSound('match');
+        completeWin(exactElapsedMs, currentRunId);
+        return;
+      }
+
       playSound('match');
-
-      window.setTimeout(() => {
-        resetTurnPicks();
-        checkWin();
-      }, 220);
-
     } else {
       playSound('fail');
+      mismatchSettleUntil = performance.now() + 140;
+      const runId = currentRunId;
+      const pickA = firstPick.el;
+      const pickB = secondPick.el;
 
-      window.setTimeout(() => {
-        flipCardDown(firstPick.el);
-        flipCardDown(secondPick.el);
-        resetTurnPicks();
-      }, 900);
+      mismatchTimerId = window.setTimeout(() => {
+        mismatchTimerId = null;
+        if (runId !== currentRunId) return;
+        flipCardDown(pickA);
+        flipCardDown(pickB);
+        firstPick = null;
+        secondPick = null;
+        mismatchSettleUntil = 0;
+      }, 650);
     }
   }
 
   function flipCardUp(el) {
+    el.classList.remove('card--deal');
     el.classList.add('is-flipped');
     el.setAttribute('aria-label', 'Revealed card');
     // Play flip sound when card is revealed
@@ -1206,63 +1377,73 @@ document.addEventListener('visibilitychange', sync);
     if (back) back.style.display = '';
   }
 
-  function checkWin() {
+  function completeWin(elapsedMs, runId) {
+    if (runId !== currentRunId) {
+      return;
+    }
+
     const totalPairs = DIFFICULTIES[activeDifficulty].pairs;
-    
+
     // CRITICAL: Diagnostic check before win - verify all pairs are matched correctly
     const unmatchedCards = deck.filter(card => !card.matched);
     if (unmatchedCards.length > 0) {
       console.warn(`⚠️ [GLYPH] Win check: ${unmatchedCards.length} unmatched card(s) remaining:`, unmatchedCards.map(c => c.glyphSrc));
-      
+
       // CRITICAL: Check if remaining unmatched cards can form pairs
       const remainingGlyphCounts = {};
       unmatchedCards.forEach(card => {
         remainingGlyphCounts[card.glyphSrc] = (remainingGlyphCounts[card.glyphSrc] || 0) + 1;
       });
-      
+
       const unmatchedPairs = Object.entries(remainingGlyphCounts).filter(([src, count]) => count !== 2);
       if (unmatchedPairs.length > 0) {
         console.error(`❌ [GLYPH] CRITICAL BUG: Unmatched cards cannot form pairs!`, unmatchedPairs);
         unmatchedPairs.forEach(([src, count]) => {
           console.error(`  - Glyph "${src}": appears ${count} time(s) (should be 2 for matching)`);
         });
-        
+
         // Prevent win if deck is corrupted
         console.error(`❌ [GLYPH] Blocking win - deck corruption detected!`);
+        isRoundFinished = false;
+        lockBoard = false;
         return; // Don't allow win with corrupted deck
       }
     }
-    
+
     if (matchedPairs >= totalPairs) {
       // CRITICAL: Final validation - verify all cards are actually matched
       const stillUnmatched = deck.filter(card => !card.matched);
       if (stillUnmatched.length > 0) {
         console.error(`❌ [GLYPH] Win condition met but ${stillUnmatched.length} card(s) still unmatched!`, stillUnmatched);
-        // Don't show win screen if there are still unmatched cards
+        isRoundFinished = false;
+        lockBoard = false;
         return;
       }
-      
-      stopTimer();
+
       stopGlyphDirectMusic(true);
-glyphMemoryMusicController.stop();
+      glyphMemoryMusicController.stop();
 
-      const elapsed = Date.now() - timerStart;
-      finalTimeEl.textContent = formatTime(elapsed);
+      const safeElapsedMs = Math.max(1, Math.round(Number(elapsedMs) || 0));
+      finalTimeEl.textContent = formatTime(safeElapsedMs);
 
-      // Best time logic (per difficulty)
+      // Best time logic (per difficulty, season-scoped)
       const prevBest = getBestTime(activeDifficulty);
-      const isNewBest = prevBest == null || elapsed < prevBest;
-      if (isNewBest) setBestTime(activeDifficulty, elapsed);
+      const isNewBest = prevBest == null || safeElapsedMs < prevBest;
+      if (isNewBest) setBestTime(activeDifficulty, safeElapsedMs);
       updateBestTimeUI(activeDifficulty);
 
-      // 🧩 Save score to database if Discord is logged in
-      saveGlyphScore(activeDifficulty, elapsed, totalPairs);
+      setSaveStatus('⏳ Saving time to leaderboard…', 'muted');
+      void saveGlyphScore(activeDifficulty, safeElapsedMs, totalPairs, runId);
 
       if (newBestBadgeEl) newBestBadgeEl.hidden = !isNewBest;
 
-      console.log(`✅ [GLYPH] Game won! Time: ${formatTime(elapsed)}, Pairs matched: ${matchedPairs}/${totalPairs}`);
+      console.log(`✅ [GLYPH] Game won! Time: ${formatTime(safeElapsedMs)}, Pairs matched: ${matchedPairs}/${totalPairs}`);
       window.NarrrfsMobileArcade?.unlock();
-      winOverlay.hidden = false;
+      winRevealTimerId = window.setTimeout(() => {
+        winRevealTimerId = null;
+        if (runId !== currentRunId) return;
+        winOverlay.hidden = false;
+      }, 160);
     }
   }
 
@@ -1307,17 +1488,21 @@ glyphMemoryMusicController.stop();
   }
 
   // 🧩 Save Glyph Memory score to database (if Discord logged in)
-  async function saveGlyphScore(difficulty, timeMs, pairsMatched) {
+  async function saveGlyphScore(difficulty, timeMs, pairsMatched, runId = currentRunId) {
     const normalizedDifficulty = String(difficulty || '').trim().toLowerCase();
     const allowedDifficulties = ['easy', 'medium', 'hard'];
+    const integerTimeMs = Math.max(1, Math.round(Number(timeMs) || 0));
 
     if (!allowedDifficulties.includes(normalizedDifficulty)) {
       console.warn('⚠️ Glyph score not saved: invalid difficulty payload', {
         difficulty,
         normalizedDifficulty,
-        timeMs,
+        timeMs: integerTimeMs,
         pairsMatched
       });
+      if (runId === currentRunId) {
+        setSaveStatus('⚠️ Could not reach leaderboard — saved locally', 'warn');
+      }
       return;
     }
 
@@ -1327,9 +1512,12 @@ glyphMemoryMusicController.stop();
       // Not logged in - use localStorage only (existing behavior)
       console.warn('🧩 Glyph score stayed local only: no Discord ID found for backend save', {
         difficulty: normalizedDifficulty,
-        time_ms: timeMs,
+        time_ms: integerTimeMs,
         pairs_matched: pairsMatched
       });
+      if (runId === currentRunId) {
+        setSaveStatus('ℹ️ Guest run — best saved on this device', 'muted');
+      }
       return;
     }
 
@@ -1338,7 +1526,7 @@ glyphMemoryMusicController.stop();
       discord_id: discordId,
       discord_name: discordName || 'Player',
       difficulty: normalizedDifficulty,
-      time_ms: timeMs,
+      time_ms: integerTimeMs,
       pairs_matched: pairsMatched,
       wallet: '' // Not required for glyph memory
     };
@@ -1361,7 +1549,10 @@ glyphMemoryMusicController.stop();
 
       if (response.ok && data.success) {
         console.log('✅ Glyph Memory score saved to database:', data.message || data);
-        // Refresh leaderboard after saving score.
+        if (runId === currentRunId) {
+          setSaveStatus('✅ Saved to Season Leaderboard', 'info');
+        }
+        setActiveLeaderboardDifficulty(normalizedDifficulty);
         fetchLeaderboard();
         return;
       }
@@ -1371,31 +1562,44 @@ glyphMemoryMusicController.stop();
         response: data,
         payload: scorePayload
       });
+      if (runId === currentRunId) {
+        setSaveStatus('⚠️ Could not reach leaderboard — saved locally', 'warn');
+      }
     } catch (error) {
       console.error('❌ Error saving Glyph Memory score:', {
         error,
         payload: scorePayload
       });
+      if (runId === currentRunId) {
+        setSaveStatus('⚠️ Could not reach leaderboard — saved locally', 'warn');
+      }
       // LocalStorage fallback already saved the best time.
     }
   }
 
   // ------- FLOW CONTROLS -------
-  async function startGame() {
-    if (isStartingGame) {
+  async function launchRun(difficultyKey, isRestart = false) {
+    const now = performance.now();
+    if (now - lastStartOrRestartAt < 180) {
       return;
     }
+    lastStartOrRestartAt = now;
 
-    isStartingGame = true;
-    if (startBtn) {
+    const runId = ++currentRunId;
+    const normalizedDifficulty = DIFFICULTIES[difficultyKey] ? difficultyKey : 'easy';
+    activeDifficulty = normalizedDifficulty;
+
+    if (!isRestart && startBtn) {
       startBtn.disabled = true;
       startBtn.textContent = 'Starting…';
     }
 
     try {
-      activeDifficulty = (difficultySelect && difficultySelect.value) || 'easy';
-
+      stopTimer();
+      clearTurnTimeouts();
+      isRoundFinished = false;
       winOverlay.hidden = true;
+      setSaveStatus('', 'muted');
       resetTurnPicks();
 
       deck = buildDeck(activeDifficulty);
@@ -1404,7 +1608,8 @@ glyphMemoryMusicController.stop();
       if (!verifyDeckIntegrity()) {
         console.error(`❌ [GLYPH] Cannot start game - deck is corrupted!`);
         alert('⚠️ Error: Game deck is invalid. Please try restarting the game.');
-        return; // Don't start with corrupted deck
+        if (isRestart) goToMenu();
+        return;
       }
 
       // CRITICAL: Verify deck has correct number of cards
@@ -1412,6 +1617,7 @@ glyphMemoryMusicController.stop();
       if (deck.length !== expectedCards) {
         console.error(`❌ [GLYPH] Deck has wrong number of cards: expected ${expectedCards}, got ${deck.length}`);
         alert('⚠️ Error: Game deck has incorrect number of cards. Please try restarting the game.');
+        if (isRestart) goToMenu();
         return;
       }
 
@@ -1424,10 +1630,11 @@ glyphMemoryMusicController.stop();
       if (invalidPairs.length > 0) {
         console.error(`❌ [GLYPH] Deck validation failed - glyphs with incorrect counts:`, invalidPairs);
         alert('⚠️ Error: Game deck validation failed. Please try restarting the game.');
+        if (isRestart) goToMenu();
         return;
       }
 
-      console.log(`✅ [GLYPH] Deck validated successfully: ${deck.length} cards, ${Object.keys(glyphCounts).length} unique glyphs, all appear exactly 2 times`);
+      console.log(`✅ [GLYPH] Deck validated (${activeDifficulty}, run #${runId}): ${deck.length} cards, ${Object.keys(glyphCounts).length} unique glyphs`);
 
       updateBestTimeUI(activeDifficulty);
       if (newBestBadgeEl) newBestBadgeEl.hidden = true;
@@ -1435,22 +1642,30 @@ glyphMemoryMusicController.stop();
       showView('game');
       setBoardGrid(activeDifficulty);
       renderBoard();
+      if (timerEl) timerEl.textContent = '00:00.000';
+
+      if (isRestart) {
+        resumeGlyphDirectMusic();
+        glyphMemoryMusicController.start();
+        window.NarrrfsMobileArcade?.lock({ stageEl: gameView, gameKey: 'glyph' });
+      }
 
       const deckSources = deck.map(card => card.glyphSrc);
       lockBoard = true;
-      await preloadGlyphImages(deckSources, 700);
-      if (!gameView.classList.contains('view--active')) {
+      await preloadGlyphImages(deckSources, isRestart ? 250 : 350);
+      if (runId !== currentRunId || !gameView.classList.contains('view--active')) {
         return;
       }
       lockBoard = false;
-      startTimer();
+      startTimer(runId);
     } catch (error) {
-      console.error('❌ [GLYPH] Failed to start game:', error);
-      lockBoard = false;
-      alert('⚠️ Could not start game. Please try again.');
-      goToMenu();
+      console.error('❌ [GLYPH] Failed to launch run:', error);
+      if (runId === currentRunId) {
+        lockBoard = false;
+        alert('⚠️ Could not start game. Please try again.');
+        goToMenu();
+      }
     } finally {
-      isStartingGame = false;
       if (startBtn) {
         startBtn.disabled = false;
         startBtn.textContent = 'Start Game';
@@ -1458,71 +1673,25 @@ glyphMemoryMusicController.stop();
     }
   }
 
-  async function restartGame() {
-    if (isStartingGame) {
-      return;
-    }
+  function startGame() {
+    const selectedDiff = (difficultySelect && difficultySelect.value) || 'easy';
+    return launchRun(selectedDiff, false);
+  }
 
-    isStartingGame = true;
-    stopTimer();
-
-    try {
-      winOverlay.hidden = true;
-      resetTurnPicks();
-
-      deck = buildDeck(activeDifficulty);
-
-      // CRITICAL: Verify deck integrity before restarting game
-      if (!verifyDeckIntegrity()) {
-        console.error(`❌ [GLYPH] Cannot restart game - deck is corrupted!`);
-        alert('⚠️ Error: Game deck is invalid. Please try restarting the game.');
-        goToMenu(); // Return to menu if deck is corrupted
-        return;
-      }
-
-      // CRITICAL: Verify deck has correct number of cards
-      const expectedCards = DIFFICULTIES[activeDifficulty].pairs * 2;
-      if (deck.length !== expectedCards) {
-        console.error(`❌ [GLYPH] Deck has wrong number of cards: expected ${expectedCards}, got ${deck.length}`);
-        goToMenu();
-        return;
-      }
-
-      updateBestTimeUI(activeDifficulty);
-      if (newBestBadgeEl) newBestBadgeEl.hidden = true;
-
-      showView('game');
-      setBoardGrid(activeDifficulty);
-      renderBoard();
-
-      resumeGlyphDirectMusic();
-      glyphMemoryMusicController.start();
-      window.NarrrfsMobileArcade?.lock({ stageEl: gameView, gameKey: 'glyph' });
-
-      const deckSources = deck.map(card => card.glyphSrc);
-      lockBoard = true;
-      await preloadGlyphImages(deckSources, 500);
-      if (!gameView.classList.contains('view--active')) {
-        return;
-      }
-      lockBoard = false;
-      startTimer();
-    } catch (error) {
-      console.error('❌ [GLYPH] Failed to restart game:', error);
-      lockBoard = false;
-      goToMenu();
-    } finally {
-      isStartingGame = false;
-    }
+  function restartGame() {
+    unlockGlyphAudio();
+    return launchRun(activeDifficulty, true);
   }
 
 function goToMenu() {
-  isStartingGame = false;
+  currentRunId += 1;
+  isRoundFinished = false;
   stopTimer();
 
   stopGlyphDirectMusic(true);
   glyphMemoryMusicController.stop();
   winOverlay.hidden = true;
+  setSaveStatus('', 'muted');
   resetTurnPicks();
 
   if (startBtn) {
@@ -1535,6 +1704,7 @@ function goToMenu() {
   }
 
   showView('menu');
+  updateBestTimeUI((difficultySelect && difficultySelect.value) || activeDifficulty);
 }
 
 
@@ -1552,6 +1722,8 @@ function startGlyphMemoryRunFromButton(event) {
   if (event && event.cancelable) {
     event.preventDefault();
   }
+
+  unlockGlyphAudio();
 
   try {
     console.log('🎵 [GLYPH] Start button clicked. Music src:', getGlyphMemoryMusicSrc());
@@ -1631,8 +1803,9 @@ function bindFastTap(el, handler) {
 
 bindFastTap(startBtn, startGlyphMemoryRunFromButton);
   difficultySelect.addEventListener('change', () => {
-    // Update the menu best-time preview for the currently selected difficulty
+    // Update the menu best-time preview and leaderboard tab for the selected difficulty
     updateBestTimeUI(difficultySelect.value);
+    setActiveLeaderboardDifficulty(difficultySelect.value);
   });
   bindFastTap(restartBtn, restartGame);
   bindFastTap(menuBtn, goToMenu);
@@ -1703,16 +1876,43 @@ setupGlyphMusicControls();
   
   async function updateUserDisplay() {
     try {
-      const discordId = safeLocalGet('discord_id');
-      const discordName = safeLocalGet('discord_name');
-      
+      let discordId = safeLocalGet('discord_id') || safeSessionGet('discord_id') || '';
+      let discordName = safeLocalGet('discord_name') || safeSessionGet('discord_name') || '';
+
       if (!userDisplayEl || !userNameEl) return;
-      
+
       // Check for local bypass user (for local development)
-      const isLocal = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1' || 
+      const isLocal = window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
                     window.location.hostname === '';
-      
+
+      if (!discordId && !isLocal) {
+        try {
+          const sessionRes = await fetch(`${API_BASE_URL}/api/user/get-session.php`, {
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+          });
+          if (sessionRes.ok) {
+            const sessionData = await sessionRes.json();
+            const sessionId = String(sessionData?.discord_id || '').trim();
+            const sessionName = String(sessionData?.discord_username || '').trim();
+            if (sessionId) {
+              discordId = sessionId;
+              discordName = sessionName || discordName || 'Player';
+              safeLocalSet('discord_id', discordId);
+              safeSessionSet('discord_id', discordId);
+              if (discordName && discordName !== 'Player') {
+                safeLocalSet('discord_name', discordName);
+                safeSessionSet('discord_name', discordName);
+              }
+            }
+          }
+        } catch (sessionError) {
+          console.warn('Glyph session check skipped:', sessionError);
+        }
+      }
+
       if (discordId && discordName) {
         // User is logged in with Discord - fetch full user details
         try {
@@ -1827,6 +2027,17 @@ setupGlyphMusicControls();
     }
   }
 
+  function setActiveLeaderboardDifficulty(difficulty) {
+    if (!DIFFICULTIES[difficulty]) return;
+    currentLeaderboardDifficulty = difficulty;
+    tabButtons.forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-difficulty') === difficulty);
+    });
+    if (leaderboardData) {
+      displayLeaderboard(difficulty);
+    }
+  }
+
   // Fetch leaderboard from API
   async function fetchLeaderboard() {
     if (!leaderboardSection || !leaderboardList) return;
@@ -1837,11 +2048,39 @@ setupGlyphMusicControls();
       leaderboardError.hidden = true;
       leaderboardLoading.hidden = false;
       
-      const response = await fetch('/api/dev/get-leaderboard.php');
+      const response = await fetch('/api/dev/get-leaderboard.php', {
+        credentials: 'include',
+        cache: 'no-store'
+      });
       const data = await response.json();
       
       if (data.success && data.glyph_memory) {
+        if (data.current_season) {
+          activeSeasonKey = String(data.current_season).trim();
+          safeLocalSet('glyph_memory_active_season', activeSeasonKey);
+        }
         leaderboardData = data.glyph_memory;
+
+        const { discordId } = resolveGlyphScorePlayer();
+        if (discordId) {
+          Object.keys(DIFFICULTIES).forEach((diff) => {
+            const entries = data.glyph_memory[diff] || [];
+            const match = entries.find((entry) => String(entry.discord_id || '') === discordId);
+            const serverBestMs = match ? Number(match.best_time_ms) : NaN;
+            if (Number.isFinite(serverBestMs) && serverBestMs > 0) {
+              const localBest = getBestTime(diff);
+              if (localBest == null || serverBestMs < localBest) {
+                setBestTime(diff, Math.round(serverBestMs));
+              }
+            }
+          });
+        }
+        updateBestTimeUI(
+          gameView && gameView.classList.contains('view--active')
+            ? activeDifficulty
+            : ((difficultySelect && difficultySelect.value) || activeDifficulty)
+        );
+
         displayLeaderboard(currentLeaderboardDifficulty);
       } else {
         showLeaderboardError();
@@ -1894,24 +2133,23 @@ setupGlyphMusicControls();
     btn.addEventListener('click', () => {
       const difficulty = btn.getAttribute('data-difficulty');
       if (!difficulty) return;
-      
-      // Update active tab
-      tabButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      // Update displayed leaderboard
-      currentLeaderboardDifficulty = difficulty;
-      if (leaderboardData) {
-        displayLeaderboard(difficulty);
-      } else {
+      setActiveLeaderboardDifficulty(difficulty);
+      if (!leaderboardData) {
         fetchLeaderboard();
       }
     });
   });
 
+  window.addEventListener('storage', (ev) => {
+    if (!ev || !ev.key || ['discord_id', 'discord_name'].includes(ev.key)) {
+      updateUserDisplay();
+    }
+  });
+
   // ------- INIT -------
   // Ensure overlay is hidden on load
   winOverlay.hidden = true;
+  setSaveStatus('', 'muted');
   if (newBestBadgeEl) newBestBadgeEl.hidden = true;
   updateBestTimeUI(difficultySelect.value || activeDifficulty);
   updateUserDisplay(); // Show user info on load

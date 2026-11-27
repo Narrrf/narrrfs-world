@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Glyph Memory - Narrrf's World</title>
-  <link rel="stylesheet" href="styles.css?v=glyph-mobile-2" />
+  <link rel="stylesheet" href="styles.css?v=glyph-mobile-3" />
 
   <style>
     /* 🎵 Glyph page sound toggle override.
@@ -298,6 +298,7 @@
         <h2 class="title title--sm">You've matched all the glyphs!</h2>
         <p class="subtitle">Time: <strong id="finalTime">00:00.000</strong></p>
         <p class="subtitle">Best: <strong id="overlayBestTime">—</strong> <span id="newBestBadge" class="newBest" hidden>NEW BEST</span></p>
+        <p id="saveStatus" class="saveStatus" aria-live="polite" hidden></p>
 
         <div class="controls controls--row">
           <button id="playAgainBtn" class="btn btn--primary" type="button">Play Again</button>
@@ -311,6 +312,6 @@
   <script src="../js/cheese-auth-indicator.js?v=glyph-audio-4"></script>
 
   <!-- 🎮 Glyph Memory logic. Bump this whenever public/glyph/game.js changes. -->
-  <script src="game.js?v=glyph-mobile-2"></script>
+  <script src="game.js?v=glyph-mobile-3"></script>
 </body>
 </html>

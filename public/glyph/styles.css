@@ -615,22 +615,16 @@ html, body {
   margin: 0 auto;
   position: relative;
   z-index: 1;
-  /* White shimmer effect for visibility - especially important on mobile */
-  /* Brightness and contrast boost + white glow drop-shadows for shimmer effect */
-  filter: 
-    brightness(1.3)
-    contrast(1.3)
-    drop-shadow(0 0 4px rgba(255, 255, 255, 0.8))
-    drop-shadow(0 0 8px rgba(255, 255, 255, 0.6))
-    drop-shadow(0 0 12px rgba(255, 255, 255, 0.4))
-    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8))
-    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+  /* Crisp GPU-fast halo filter (replaces 5-pass drop-shadow + rectangular box-shadow lag on iOS WebKit) */
+  filter:
+    brightness(1.36)
+    contrast(1.34)
+    drop-shadow(0 0 6px rgba(255, 255, 255, 0.88))
+    drop-shadow(0 2px 5px rgba(0, 0, 0, 0.85));
   mix-blend-mode: normal;
   opacity: 1;
-  /* White shimmer glow - subtle white box-shadow for visibility (not a frame border) */
-  box-shadow: 
-    0 0 10px rgba(255, 255, 255, 0.4),
-    0 0 20px rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  will-change: opacity;
 }
 
 /* Duplicate removed - see above for cardFront styles */
@@ -661,8 +655,44 @@ html, body {
   color: rgba(0, 206, 209, 0.95);
 }
 
+.saveStatus {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--teal);
+  min-height: 18px;
+}
+
+.saveStatus--warn {
+  color: #fbbf24;
+}
+
+.saveStatus--muted {
+  color: var(--muted);
+}
+
+.card--deal {
+  animation: glyphCardDeal 140ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes glyphCardDeal {
+  from {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Small & Mobile Screens — fits 4x4, 5x4, and 6x6 cleanly inside 100dvh */
 @media (max-width: 768px) {
+  #gameView .cardBack::before {
+    animation: none;
+    transform: translateX(0) rotate(12deg);
+    opacity: 0.32;
+  }
+
   #gameView.view--active {
     height: 100vh;
     height: 100dvh;
@@ -760,19 +790,14 @@ html, body {
     object-fit: contain;
     object-position: center;
     margin: 0 auto;
-    /* White shimmer effect on mobile - more prominent for better visibility on small screens */
-    filter: 
-      brightness(1.4)
-      contrast(1.4)
-      drop-shadow(0 0 5px rgba(255, 255, 255, 0.9))
-      drop-shadow(0 0 10px rgba(255, 255, 255, 0.7))
-      drop-shadow(0 0 15px rgba(255, 255, 255, 0.5))
-      drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8))
-      drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
-    /* White shimmer glow - subtle but visible (not a frame border) */
-    box-shadow: 
-      0 0 12px rgba(255, 255, 255, 0.5),
-      0 0 24px rgba(255, 255, 255, 0.3);
+    /* Crisp GPU-fast halo filter on mobile without multi-pass blur or rectangular box-shadow lag */
+    filter:
+      brightness(1.36)
+      contrast(1.34)
+      drop-shadow(0 0 6px rgba(255, 255, 255, 0.88))
+      drop-shadow(0 2px 5px rgba(0, 0, 0, 0.85));
+    box-shadow: none;
+    will-change: opacity;
   }
   
   /* User display mobile adjustments */
