@@ -9,7 +9,7 @@ trap 'rm -rf "$WORK"' EXIT
 grep -q '"$DURABILITY_PUBLISHER" restore' "$STARTUP"
 grep -q '"$APACHE_FOREGROUND_COMMAND" &' "$STARTUP"
 grep -q "trap 'graceful_shutdown' TERM INT" "$STARTUP"
-grep -q '"$DURABILITY_PUBLISHER" publish' "$STARTUP"
+grep -q '"$DURABILITY_PUBLISHER" publish-shutdown' "$STARTUP"
 if grep -q 'exec apache2-foreground' "$STARTUP"; then
     echo 'FAIL: startup still bypasses shutdown traps' >&2
     exit 1
@@ -47,7 +47,7 @@ run_signal_case() {
     local status=$?
     set -e
     [ "$status" -eq "$expected_status" ]
-    [ "$(cat "$WORK/publish.log")" = 'publish' ]
+    [ "$(cat "$WORK/publish.log")" = 'publish-shutdown' ]
 }
 
 run_signal_case 0 0

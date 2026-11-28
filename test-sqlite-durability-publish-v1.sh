@@ -13,10 +13,25 @@ cat > "$WORK/bin/sqlite3" <<'EOF'
 set -euo pipefail
 native="${NARRRFS_TEST_NATIVE_SQLITE3:?native sqlite3 path is required}"
 readonly_flag=''
-if [ "${1:-}" = '-readonly' ]; then
-    readonly_flag='-readonly'
-    shift
-fi
+cmd_args=()
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -readonly)
+            readonly_flag='-readonly'
+            shift
+            ;;
+        -cmd)
+            if [ -n "${NARRRFS_TEST_SQLITE_CMD_LOG:-}" ]; then
+                printf '%s\n' "$2" >> "$NARRRFS_TEST_SQLITE_CMD_LOG"
+            fi
+            cmd_args+=("-cmd" "$2")
+            shift 2
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 if [ "$#" -eq 1 ] && [ "$1" = '--version' ]; then
     exec "$native" --version
 fi
@@ -27,7 +42,7 @@ else
 fi
 shift
 if [ "$#" -eq 0 ]; then
-    exec "$native" $readonly_flag "$db"
+    exec "$native" $readonly_flag "${cmd_args[@]}" "$db"
 fi
 sql="$1"
 if [[ "$sql" =~ ^\.backup\ \'(.*)\'$ ]]; then
@@ -38,7 +53,7 @@ if [[ "$sql" =~ ^\.backup\ \'(.*)\'$ ]]; then
     fi
     sql=".backup \"$target\""
 fi
-exec "$native" $readonly_flag "$db" "$sql"
+exec "$native" $readonly_flag "${cmd_args[@]}" "$db" "$sql"
 EOF
 chmod +x "$WORK/bin/sqlite3"
 cat > "$WORK/bin/sqlite3-fail-backup" <<'EOF'
@@ -55,12 +70,27 @@ chmod +x "$WORK/bin/sqlite3-fail-backup"
 cat > "$WORK/bin/flock" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-[ "$1" = "-n" ] || exit 64
-shift
+wait_secs=0
+if [ "$1" = "-n" ]; then
+    shift
+elif [ "$1" = "-w" ]; then
+    wait_secs="$2"
+    shift 2
+else
+    exit 64
+fi
 lock="$1"
 shift
 guard="${lock}.test-guard"
-mkdir "$guard" 2>/dev/null || exit 75
+elapsed=0
+max_iters=$(( wait_secs * 20 ))
+while ! mkdir "$guard" 2>/dev/null; do
+    if [ "$wait_secs" -le 0 ] || [ "$elapsed" -ge "$max_iters" ]; then
+        exit 75
+    fi
+    sleep 0.05
+    elapsed=$(( elapsed + 1 ))
+done
 trap 'rmdir "$guard"' EXIT
 "$@"
 EOF
@@ -77,8 +107,10 @@ sqlite3 "$NARRRFS_RUNTIME_DB_PATH" "CREATE TABLE proof(value TEXT); INSERT INTO 
 sqlite3 "$NARRRFS_PERSISTENT_DB_PATH" "CREATE TABLE preserved(value TEXT); INSERT INTO preserved VALUES ('old');"
 
 start_ns="$(date +%s%N)"
-"$PUBLISHER" publish
+: > "$WORK/sqlite-cmd.log"
+NARRRFS_TEST_SQLITE_CMD_LOG="$WORK/sqlite-cmd.log" "$PUBLISHER" publish
 elapsed_ms=$(( ($(date +%s%N) - start_ns) / 1000000 ))
+grep -qxF '.timeout 30000' "$WORK/sqlite-cmd.log"
 [ "$(sqlite3 -readonly "$NARRRFS_PERSISTENT_DB_PATH" 'SELECT value FROM proof;')" = "first" ]
 [ "$(sqlite3 -readonly "$NARRRFS_PERSISTENT_DB_PATH" 'PRAGMA integrity_check;')" = "ok" ]
 
@@ -122,6 +154,29 @@ wait "$holder"
 before_hash="$(sha256sum "$NARRRFS_PERSISTENT_DB_PATH" | awk '{print $1}')"
 if NARRRFS_DB_PUBLISH_MIN_FREE_BYTES=999999999999 "$PUBLISHER" publish; then
     echo 'FAIL: free-space guard unexpectedly passed' >&2
+    exit 1
+fi
+after_hash="$(sha256sum "$NARRRFS_PERSISTENT_DB_PATH" | awk '{print $1}')"
+[ "$before_hash" = "$after_hash" ]
+
+# Fast publish-shutdown waits behind a held lock, passes .timeout 15000, and checks with quick_check.
+rm -f "$NARRRFS_RUNTIME_DB_PATH"
+sqlite3 "$NARRRFS_RUNTIME_DB_PATH" "CREATE TABLE proof(value TEXT); INSERT INTO proof VALUES ('shutdown-v2');"
+flock -n "${NARRRFS_PERSISTENT_DB_PATH}.publish.lock" sleep 0.6 &
+lock_holder=$!
+sleep 0.1
+: > "$WORK/sqlite-cmd.log"
+NARRRFS_TEST_SQLITE_CMD_LOG="$WORK/sqlite-cmd.log" "$PUBLISHER" publish-shutdown
+wait "$lock_holder"
+grep -qxF '.timeout 15000' "$WORK/sqlite-cmd.log"
+[ "$(sqlite3 -readonly "$NARRRFS_PERSISTENT_DB_PATH" 'SELECT value FROM proof;')" = "shutdown-v2" ]
+[ "$(sqlite3 -readonly "$NARRRFS_PERSISTENT_DB_PATH" 'PRAGMA quick_check;')" = "ok" ]
+
+# Corrupt runtime DB during publish-shutdown fails and preserves prior canonical bytes.
+before_hash="$(sha256sum "$NARRRFS_PERSISTENT_DB_PATH" | awk '{print $1}')"
+printf 'corrupt shutdown db' > "$NARRRFS_RUNTIME_DB_PATH"
+if "$PUBLISHER" publish-shutdown; then
+    echo 'FAIL: corrupt shutdown source unexpectedly published' >&2
     exit 1
 fi
 after_hash="$(sha256sum "$NARRRFS_PERSISTENT_DB_PATH" | awk '{print $1}')"

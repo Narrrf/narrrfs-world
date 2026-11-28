@@ -14,6 +14,7 @@ DURABILITY_PUBLISHER="${NARRRFS_DURABILITY_PUBLISHER:-/var/www/html/scripts/sqli
 MIGRATION_RUNNER="${NARRRFS_MIGRATION_RUNNER:-/var/www/html/scripts/apply-migration-manifest.sh}"
 MIGRATION_MANIFEST="${NARRRFS_MIGRATION_MANIFEST:-/var/www/html/db/migrations/manifest-v1.txt}"
 APACHE_FOREGROUND_COMMAND="${NARRRFS_APACHE_FOREGROUND_COMMAND:-apache2-foreground}"
+LEAGUE_LOOP_PID=""
 
 run_apache_supervisor() {
     APACHE_PID=""
@@ -21,12 +22,16 @@ run_apache_supervisor() {
     graceful_shutdown() {
         trap - TERM INT
         echo "🛑 Shutdown signal received; stopping Apache before final SQLite publication..."
+        if [ -n "${LEAGUE_LOOP_PID:-}" ] && kill -0 "$LEAGUE_LOOP_PID" 2>/dev/null; then
+            kill -TERM "$LEAGUE_LOOP_PID" 2>/dev/null || true
+            wait "$LEAGUE_LOOP_PID" 2>/dev/null || true
+        fi
         if [ -n "$APACHE_PID" ] && kill -0 "$APACHE_PID" 2>/dev/null; then
             kill -TERM "$APACHE_PID"
             wait "$APACHE_PID" || true
         fi
 
-        if "$DURABILITY_PUBLISHER" publish; then
+        if "$DURABILITY_PUBLISHER" publish-shutdown; then
             echo "✅ Final verified SQLite publication completed"
             exit 0
         fi
@@ -298,6 +303,7 @@ then
     echo "🕑 Daily Genesis League schedule: 02:00 UTC."
 
     bash "$LEAGUE_DAILY_LOOP" &
+    LEAGUE_LOOP_PID=$!
 else
     echo "⚠️ Daily Genesis League automation disabled: snapshot bootstrap failed."
     echo "⚠️ Existing website startup continues with packaged League fallback."

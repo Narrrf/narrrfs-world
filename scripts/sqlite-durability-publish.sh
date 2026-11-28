@@ -13,6 +13,9 @@ SQLITE_BIN="${NARRRFS_SQLITE_BIN:-sqlite3}"
 RUNTIME_DB="${NARRRFS_RUNTIME_DB_PATH:-/var/www/html/db/narrrf_world.sqlite}"
 PERSISTENT_DB="${NARRRFS_PERSISTENT_DB_PATH:-/data/narrrf_world.sqlite}"
 MIN_FREE_BYTES="${NARRRFS_DB_PUBLISH_MIN_FREE_BYTES:-67108864}"
+BUSY_TIMEOUT_MS="${NARRRFS_SQLITE_BUSY_TIMEOUT_MS:-30000}"
+SHUTDOWN_BUSY_TIMEOUT_MS="${NARRRFS_SQLITE_SHUTDOWN_BUSY_TIMEOUT_MS:-15000}"
+SHUTDOWN_LOCK_WAIT_SECONDS="${NARRRFS_PUBLISHER_SHUTDOWN_LOCK_WAIT_SECONDS:-10}"
 LOCK_FILE="${PERSISTENT_DB}.publish.lock"
 TEMP_DB=""
 
@@ -42,6 +45,10 @@ integrity_is_ok() {
     [ "$("$SQLITE_BIN" -readonly "$1" 'PRAGMA integrity_check;' 2>/dev/null)" = "ok" ]
 }
 
+quick_check_is_ok() {
+    [ "$("$SQLITE_BIN" -readonly "$1" 'PRAGMA quick_check;' 2>/dev/null)" = "ok" ]
+}
+
 file_size() {
     stat -c '%s' "$1"
 }
@@ -53,6 +60,8 @@ free_bytes() {
 make_backup_copy() {
     local source_db="$1"
     local target_db="$2"
+    local verify_mode="${3:-full}"
+    local timeout_ms="${4:-$BUSY_TIMEOUT_MS}"
     local target_dir
     local source_size
     local available
@@ -75,12 +84,21 @@ make_backup_copy() {
     # artifact is removed before backup creation.
     rm -f -- "$TEMP_DB"
 
-    "$SQLITE_BIN" "$source_db" ".backup '$TEMP_DB'" || fail "SQLite online backup failed"
+    "$SQLITE_BIN" -cmd ".timeout $timeout_ms" "$source_db" ".backup '$TEMP_DB'" || fail "SQLite online backup failed"
     [ -s "$TEMP_DB" ] || fail "SQLite backup is empty"
-    integrity_is_ok "$TEMP_DB" || fail "SQLite backup integrity check failed"
 
     local output_size output_hash
     output_size="$(file_size "$TEMP_DB")"
+
+    if [ "$verify_mode" = "quick" ]; then
+        quick_check_is_ok "$TEMP_DB" || fail "SQLite backup quick check failed"
+        mv -f -- "$TEMP_DB" "$target_db" || fail "atomic database rename failed"
+        TEMP_DB=""
+        echo "SQLite durability: shutdown-published size=$output_size check=quick_check"
+        return 0
+    fi
+
+    integrity_is_ok "$TEMP_DB" || fail "SQLite backup integrity check failed"
     output_hash="$(sha256sum "$TEMP_DB" | awk '{print $1}')"
     [ -n "$output_hash" ] || fail "SQLite backup hash is empty"
 
@@ -96,6 +114,10 @@ publish_locked() {
     make_backup_copy "$RUNTIME_DB" "$PERSISTENT_DB"
 }
 
+publish_shutdown_locked() {
+    make_backup_copy "$RUNTIME_DB" "$PERSISTENT_DB" "quick" "$SHUTDOWN_BUSY_TIMEOUT_MS"
+}
+
 restore_locked() {
     [ -f "$PERSISTENT_DB" ] || fail "persistent canonical database is missing"
     [ -r "$PERSISTENT_DB" ] || fail "persistent canonical database is unreadable"
@@ -108,12 +130,19 @@ case "$MODE" in
         require_tooling
         flock -n "$LOCK_FILE" "$SCRIPT_PATH" publish-locked || fail "publisher lock unavailable or publication failed"
         ;;
+    publish-shutdown)
+        require_tooling
+        flock -w "$SHUTDOWN_LOCK_WAIT_SECONDS" "$LOCK_FILE" "$SCRIPT_PATH" publish-shutdown-locked || fail "publisher lock unavailable or shutdown publication failed"
+        ;;
     restore)
         require_tooling
         flock -n "$LOCK_FILE" "$SCRIPT_PATH" restore-locked || fail "publisher lock unavailable or restore failed"
         ;;
     publish-locked)
         publish_locked
+        ;;
+    publish-shutdown-locked)
+        publish_shutdown_locked
         ;;
     restore-locked)
         restore_locked
